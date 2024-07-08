@@ -30,9 +30,9 @@ export function Home() {
 
 	return (
 		<>
-			<h1>Dashboard</h1>
+			<h1 class="my-5">Dashboard</h1>
 			{systems.length && <DataTable data={systems} />}
-			<pre>{JSON.stringify(systems, null, 2)}</pre>
+			{/* <pre>{JSON.stringify(systems, null, 2)}</pre> */}
 		</>
 	)
 }
