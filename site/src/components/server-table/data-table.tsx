@@ -33,34 +33,40 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 import { SystemRecord } from '@/types'
-import { MoreHorizontal, ArrowUpDown } from 'lucide-react'
+import { MoreHorizontal, ArrowUpDown, Copy, RefreshCcw } from 'lucide-react'
 import { Link } from 'wouter-preact'
 import { useState } from 'preact/hooks'
 
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	const val = info.getValue() as number
 	let background = '#42b768'
-	if (val > 25) {
+	if (val > 80) {
+		// red
 		background = '#da2a49'
-	} else if (val > 10) {
+	} else if (val > 50) {
+		// yellow
 		background = '#daa42a'
 	}
 	return (
 		<div class="flex gap-2 items-center">
 			<span class="grow block bg-secondary h-4 relative rounded-sm overflow-hidden">
 				<span
-					className="absolute inset-0 w-full h-full origin-left transition-all duration-500 ease-in-out"
+					className="absolute inset-0 w-full h-full origin-left"
 					style={{ transform: `scalex(${val}%)`, background }}
 				></span>
 			</span>
-			<span class="w-14">{val.toFixed(2)}%</span>
+			<span class="w-16">{val.toFixed(2)}%</span>
 		</div>
 	)
 }
 
 function sortableHeader(column: Column<SystemRecord, unknown>, name: string) {
 	return (
-		<Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
+		<Button
+			variant="ghost"
+			className="h-9 px-3"
+			onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+		>
 			{name}
 			<ArrowUpDown className="ml-2 h-4 w-4" />
 		</Button>
@@ -72,7 +78,19 @@ export function DataTable({ data }: { data: SystemRecord[] }) {
 		{
 			size: 40,
 			accessorKey: 'name',
-			cell: (info) => <strong>{info.getValue() as string}</strong>,
+			cell: (info) => (
+				<span className="flex gap-2 items-center text-base">
+					{info.getValue() as string}{' '}
+					<button
+						title={`Copy "${info.getValue() as string}" to clipboard`}
+						class="opacity-50 hover:opacity-70 active:opacity-100 duration-75"
+						onClick={() => navigator.clipboard.writeText(info.getValue() as string)}
+					>
+						<Copy className="h-3.5 w-3.5 " />
+					</button>
+					{/* </Button> */}
+				</span>
+			),
 			header: ({ column }) => sortableHeader(column, 'Node'),
 		},
 		{
@@ -145,7 +163,7 @@ export function DataTable({ data }: { data: SystemRecord[] }) {
 	})
 
 	return (
-		<>
+		<div className="w-full my-6">
 			<div className="flex items-center py-4">
 				<Input
 					// @ts-ignore
@@ -154,10 +172,20 @@ export function DataTable({ data }: { data: SystemRecord[] }) {
 					onChange={(event: Event) => table.getColumn('name')?.setFilterValue(event.target.value)}
 					className="max-w-sm"
 				/>
+				<Button
+					onClick={() => {
+						alert('todo: refresh')
+					}}
+					className="ml-auto flex gap-2"
+					variant="outline"
+				>
+					<RefreshCcw className="h-4 w-4" />
+					Refresh
+				</Button>
 			</div>
-			<div className="rounded-md border tabular-nums">
+			<div className="rounded-md border">
 				<Table>
-					<TableHeader>
+					<TableHeader className="bg-muted/60">
 						{table.getHeaderGroups().map((headerGroup) => (
 							<TableRow key={headerGroup.id}>
 								{headerGroup.headers.map((header) => {
@@ -193,6 +221,6 @@ export function DataTable({ data }: { data: SystemRecord[] }) {
 					</TableBody>
 				</Table>
 			</div>
-		</>
+		</div>
 	)
 }

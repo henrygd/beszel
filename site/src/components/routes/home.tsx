@@ -7,31 +7,38 @@ export function Home() {
 	const [systems, setSystems] = useState([] as SystemRecord[])
 
 	useEffect(() => {
+		document.title = 'Home'
+	}, [])
+
+	useEffect(() => {
 		pb.collection<SystemRecord>('systems')
-			.getList(1, 20)
-			.then(({ items }) => {
+			.getFullList({
+				sort: 'name',
+			})
+			.then((items) => {
 				setSystems(items)
 			})
 
-		pb.collection<SystemRecord>('systems').subscribe('*', (e) => {
-			setSystems((curSystems) => {
-				const i = curSystems.findIndex((s) => s.id === e.record.id)
-				if (i > -1) {
-					const newSystems = [...curSystems]
-					newSystems[i] = e.record
-					return newSystems
-				} else {
-					return [...curSystems, e.record]
-				}
-			})
-		})
-		return () => pb.collection('systems').unsubscribe('*')
+		// pb.collection<SystemRecord>('systems').subscribe('*', (e) => {
+		// 	setSystems((curSystems) => {
+		// 		const i = curSystems.findIndex((s) => s.id === e.record.id)
+		// 		if (i > -1) {
+		// 			const newSystems = [...curSystems]
+		// 			newSystems[i] = e.record
+		// 			return newSystems
+		// 		} else {
+		// 			return [...curSystems, e.record]
+		// 		}
+		// 	})
+		// })
+		// return () => pb.collection('systems').unsubscribe('*')
 	}, [])
+
+	// if (!systems.length) return <>Loading...</>
 
 	return (
 		<>
-			<h1 class="my-5">Dashboard</h1>
-			{systems.length && <DataTable data={systems} />}
+			<DataTable data={systems} />
 			{/* <pre>{JSON.stringify(systems, null, 2)}</pre> */}
 		</>
 	)
