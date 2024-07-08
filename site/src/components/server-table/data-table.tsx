@@ -27,13 +27,13 @@ function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	}
 	return (
 		<div class="flex gap-2 items-center">
-			<span>{val.toFixed(2)}%</span>
 			<span class="grow block bg-secondary h-4 relative rounded-sm overflow-hidden">
 				<span
-					className="absolute inset-0 w-full h-full origin-left"
+					className="absolute inset-0 w-full h-full origin-left transition-all duration-500 ease-in-out"
 					style={{ transform: `scalex(${val}%)`, background }}
 				></span>
 			</span>
+			<span class="w-14">{val.toFixed(2)}%</span>
 		</div>
 	)
 }

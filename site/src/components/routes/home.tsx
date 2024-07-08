@@ -17,7 +17,7 @@ export function Home() {
 			setSystems((curSystems) => {
 				const i = curSystems.findIndex((s) => s.id === e.record.id)
 				if (i > -1) {
-					const newSystems = [...systems]
+					const newSystems = [...curSystems]
 					newSystems[i] = e.record
 					return newSystems
 				} else {
