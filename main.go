@@ -3,17 +3,19 @@ package main
 import (
 	"fmt"
 	"log"
+	_ "monitor-site/migrations"
+	"net/http/httputil"
+	"net/url"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"
 	"github.com/pocketbase/pocketbase/tools/cron"
-
-	_ "monitor-site/migrations"
 )
 
 func main() {
@@ -21,10 +23,27 @@ func main() {
 
 	// loosely check if it was executed using "go run"
 	isGoRun := strings.HasPrefix(os.Args[0], os.TempDir())
+
 	// enable auto creation of migration files when making collection changes in the Admin UI
 	migratecmd.MustRegister(app, app.RootCmd, migratecmd.Config{
 		// (the isGoRun check is to enable it only during development)
 		Automigrate: isGoRun,
+	})
+
+	// serve site
+	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+		switch isGoRun {
+		case true:
+			proxy := httputil.NewSingleHostReverseProxy(&url.URL{
+				Scheme: "http",
+				Host:   "localhost:5173",
+			})
+			e.Router.Any("/*", echo.WrapHandler(proxy))
+			e.Router.Any("/", echo.WrapHandler(proxy))
+		default:
+			e.Router.GET("/*", apis.StaticDirectoryHandler(os.DirFS("./site/dist"), true))
+		}
+		return nil
 	})
 
 	// set up cron job to delete records older than 30 days
@@ -62,12 +81,6 @@ func main() {
 			}
 		})
 		scheduler.Start()
-		return nil
-	})
-
-	// serves static files from the provided public dir (if exists)
-	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		e.Router.GET("/*", apis.StaticDirectoryHandler(os.DirFS("./pb_public"), false))
 		return nil
 	})
 
