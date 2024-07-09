@@ -32,10 +32,23 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+
 import { SystemRecord } from '@/types'
-import { MoreHorizontal, ArrowUpDown, Copy, RefreshCcw } from 'lucide-react'
-import { Link } from 'wouter-preact'
-import { useState } from 'preact/hooks'
+import { MoreHorizontal, ArrowUpDown, Copy, RefreshCcw, Eye } from 'lucide-react'
+import { useMemo, useState } from 'preact/hooks'
+import { navigate } from 'wouter-preact/use-browser-location'
+import { $servers, pb } from '@/lib/stores'
+import { useStore } from '@nanostores/preact'
 
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	const val = info.getValue() as number
@@ -73,76 +86,91 @@ function sortableHeader(column: Column<SystemRecord, unknown>, name: string) {
 	)
 }
 
-export function DataTable({ data }: { data: SystemRecord[] }) {
-	const columns: ColumnDef<SystemRecord>[] = [
-		{
-			// size: 70,
-			accessorKey: 'name',
-			cell: (info) => (
-				<span className="flex gap-2 items-center text-base">
-					{info.getValue() as string}{' '}
-					<button
-						title={`Copy "${info.getValue() as string}" to clipboard`}
-						class="opacity-50 hover:opacity-70 active:opacity-100 duration-75"
-						onClick={() => navigator.clipboard.writeText(info.getValue() as string)}
-					>
-						<Copy className="h-3.5 w-3.5 " />
-					</button>
-					{/* </Button> */}
-				</span>
-			),
-			header: ({ column }) => sortableHeader(column, 'Node'),
-		},
-		{
-			accessorKey: 'stats.cpu',
-			cell: CellFormatter,
-			header: ({ column }) => sortableHeader(column, 'CPU'),
-		},
-		{
-			accessorKey: 'stats.memPct',
-			cell: CellFormatter,
-			header: ({ column }) => sortableHeader(column, 'Memory'),
-		},
-		{
-			accessorKey: 'stats.diskPct',
-			cell: CellFormatter,
-			header: ({ column }) => sortableHeader(column, 'Disk'),
-		},
-		{
-			id: 'actions',
-			size: 32,
-			maxSize: 32,
-			cell: ({ row }) => {
-				const system = row.original
+export function DataTable() {
+	const data = useStore($servers)
+	const [liveUpdates, setLiveUpdates] = useState(true)
+	const [deleteServer, setDeleteServer] = useState({} as SystemRecord)
 
-				return (
-					<div class={'flex justify-end'}>
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button variant="ghost" className="h-8 w-8 p-0">
-									<span className="sr-only">Open menu</span>
-									<MoreHorizontal className="h-4 w-4" />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end">
-								<DropdownMenuLabel>Actions</DropdownMenuLabel>
-								<DropdownMenuItem>
-									<Link class="w-full" href={`/server/${system.name}`}>
-										View details
-									</Link>
-								</DropdownMenuItem>
-								<DropdownMenuItem onClick={() => navigator.clipboard.writeText(system.id)}>
-									Copy IP address
-								</DropdownMenuItem>
-								<DropdownMenuSeparator />
-								<DropdownMenuItem>Delete node</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
-					</div>
-				)
+	const columns: ColumnDef<SystemRecord>[] = useMemo(
+		() => [
+			{
+				// size: 70,
+				accessorKey: 'name',
+				cell: (info) => (
+					<span className="flex gap-2 items-center text-base">
+						{info.getValue() as string}{' '}
+						<button
+							title={`Copy "${info.getValue() as string}" to clipboard`}
+							class="opacity-50 hover:opacity-70 active:opacity-100 duration-75"
+							onClick={() => navigator.clipboard.writeText(info.getValue() as string)}
+						>
+							<Copy className="h-3.5 w-3.5 " />
+						</button>
+						{/* </Button> */}
+					</span>
+				),
+				header: ({ column }) => sortableHeader(column, 'Server'),
 			},
-		},
-	]
+			{
+				accessorKey: 'stats.cpu',
+				cell: CellFormatter,
+				header: ({ column }) => sortableHeader(column, 'CPU'),
+			},
+			{
+				accessorKey: 'stats.memPct',
+				cell: CellFormatter,
+				header: ({ column }) => sortableHeader(column, 'Memory'),
+			},
+			{
+				accessorKey: 'stats.diskPct',
+				cell: CellFormatter,
+				header: ({ column }) => sortableHeader(column, 'Disk'),
+			},
+			{
+				id: 'actions',
+				size: 32,
+				maxSize: 32,
+				cell: ({ row }) => {
+					const system = row.original
+
+					return (
+						<div class={'flex justify-end'}>
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button variant="ghost" className="h-8 w-8 p-0">
+										<span className="sr-only">Open menu</span>
+										<MoreHorizontal className="h-4 w-4" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end">
+									<DropdownMenuLabel>Actions</DropdownMenuLabel>
+									<DropdownMenuItem
+										onSelect={() => {
+											navigate(`/server/${system.name}`)
+										}}
+									>
+										View details
+									</DropdownMenuItem>
+									<DropdownMenuItem onClick={() => navigator.clipboard.writeText(system.id)}>
+										Copy IP address
+									</DropdownMenuItem>
+									<DropdownMenuSeparator />
+									<DropdownMenuItem
+										onSelect={() => {
+											setDeleteServer(system)
+										}}
+									>
+										Delete server
+									</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
+						</div>
+					)
+				},
+			},
+		],
+		[]
+	)
 
 	const [sorting, setSorting] = useState<SortingState>([])
 
@@ -172,16 +200,32 @@ export function DataTable({ data }: { data: SystemRecord[] }) {
 					onChange={(event: Event) => table.getColumn('name')?.setFilterValue(event.target.value)}
 					className="max-w-sm"
 				/>
-				<Button
-					variant="outline"
-					onClick={() => {
-						alert('todo: refresh')
-					}}
-					className="ml-auto flex gap-2"
-				>
-					<RefreshCcw className="h-4 w-4" />
-					Refresh
-				</Button>
+				<div className="ml-auto flex gap-3">
+					{liveUpdates || (
+						<Button
+							variant="outline"
+							onClick={() => {
+								alert('todo: refresh')
+							}}
+							className="flex gap-2"
+						>
+							Refresh
+							<RefreshCcw className="h-4 w-4" />
+						</Button>
+					)}
+					<Button
+						variant="outline"
+						onClick={() => {
+							setLiveUpdates(!liveUpdates)
+						}}
+						className="flex gap-2"
+					>
+						Live Updates
+						<div
+							className={`h-2.5 w-2.5 rounded-full ${liveUpdates ? 'bg-green-500' : 'bg-red-500'}`}
+						/>
+					</Button>
+				</div>
 			</div>
 			<div className="rounded-md border">
 				<Table>
@@ -203,7 +247,7 @@ export function DataTable({ data }: { data: SystemRecord[] }) {
 					<TableBody>
 						{table.getRowModel().rows?.length ? (
 							table.getRowModel().rows.map((row) => (
-								<TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+								<TableRow key={row.original.id} data-state={row.getIsSelected() && 'selected'}>
 									{row.getVisibleCells().map((cell) => (
 										<TableCell key={cell.id} style={{ width: `${cell.column.getSize()}px` }}>
 											{flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -221,6 +265,32 @@ export function DataTable({ data }: { data: SystemRecord[] }) {
 					</TableBody>
 				</Table>
 			</div>
+			<AlertDialog open={deleteServer?.name}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							Are you sure you want to delete {deleteServer.name}?
+						</AlertDialogTitle>
+						<AlertDialogDescription>
+							This action cannot be undone. This will permanently delete all current records for{' '}
+							<code class={'bg-muted rounded-sm px-1'}>{deleteServer.name}</code> from the database.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel onClick={() => setDeleteServer({} as SystemRecord)}>
+							Cancel
+						</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={() => {
+								setDeleteServer({} as SystemRecord)
+								pb.collection('systems').delete(deleteServer.id)
+							}}
+						>
+							Continue
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 		</div>
 	)
 }

@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui
 
 export function ServerDetail() {
 	const [_, params] = useRoute('/server/:name')
-	const [node, setNode] = useState({} as SystemRecord)
+	const [server, setServer] = useState({} as SystemRecord)
 
 	useEffect(() => {
 		document.title = params!.name
@@ -16,7 +16,7 @@ export function ServerDetail() {
 		pb.collection<SystemRecord>('systems')
 			.getFirstListItem(`name="${params!.name}"`)
 			.then((record) => {
-				setNode(record)
+				setServer(record)
 			})
 	})
 
@@ -24,11 +24,11 @@ export function ServerDetail() {
 		<>
 			<Card>
 				<CardHeader>
-					<CardTitle className={'mb-3'}>{node.name}</CardTitle>
+					<CardTitle className={'mb-3'}>{server.name}</CardTitle>
 					<CardDescription>5.342.34.234</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<pre>{JSON.stringify(node, null, 2)}</pre>
+					<pre>{JSON.stringify(server, null, 2)}</pre>
 				</CardContent>
 			</Card>
 		</>
