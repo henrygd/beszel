@@ -49,7 +49,7 @@ function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	}
 	return (
 		<div class="flex gap-2 items-center">
-			<span class="grow block bg-secondary h-4 relative rounded-sm overflow-hidden">
+			<span class="grow block bg-muted h-4 relative rounded-sm overflow-hidden">
 				<span
 					className="absolute inset-0 w-full h-full origin-left"
 					style={{ transform: `scalex(${val}%)`, background }}
@@ -76,7 +76,7 @@ function sortableHeader(column: Column<SystemRecord, unknown>, name: string) {
 export function DataTable({ data }: { data: SystemRecord[] }) {
 	const columns: ColumnDef<SystemRecord>[] = [
 		{
-			size: 40,
+			// size: 70,
 			accessorKey: 'name',
 			cell: (info) => (
 				<span className="flex gap-2 items-center text-base">
@@ -163,21 +163,21 @@ export function DataTable({ data }: { data: SystemRecord[] }) {
 	})
 
 	return (
-		<div className="w-full my-6">
-			<div className="flex items-center py-4">
+		<div className="w-full">
+			<div className="flex items-center mb-4">
 				<Input
 					// @ts-ignore
-					placeholder="Filter nodes..."
+					placeholder="Filter..."
 					value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
 					onChange={(event: Event) => table.getColumn('name')?.setFilterValue(event.target.value)}
 					className="max-w-sm"
 				/>
 				<Button
+					variant="outline"
 					onClick={() => {
 						alert('todo: refresh')
 					}}
 					className="ml-auto flex gap-2"
-					variant="outline"
 				>
 					<RefreshCcw className="h-4 w-4" />
 					Refresh
@@ -185,7 +185,7 @@ export function DataTable({ data }: { data: SystemRecord[] }) {
 			</div>
 			<div className="rounded-md border">
 				<Table>
-					<TableHeader className="bg-muted/60">
+					<TableHeader className="bg-muted/40">
 						{table.getHeaderGroups().map((headerGroup) => (
 							<TableRow key={headerGroup.id}>
 								{headerGroup.headers.map((header) => {

@@ -6,6 +6,8 @@ import { ThemeProvider } from './components/theme-provider.tsx'
 import LoginPage from './components/login.tsx'
 import { pb } from './lib/stores.ts'
 import { ServerDetail } from './components/routes/server.tsx'
+import { ModeToggle } from './components/mode-toggle.tsx'
+import { CommandPalette } from './components/command-dialog.tsx'
 
 // import { ModeToggle } from './components/mode-toggle.tsx'
 
@@ -19,13 +21,10 @@ console.log('pb.authStore', pb.authStore)
 const App = () => <ThemeProvider>{pb.authStore.isValid ? <Main /> : <LoginPage />}</ThemeProvider>
 
 const Main = () => (
-	<div className="container">
-		<nav class="flex gap-5 bg-white/10 p-4 rounded-md mb-3">
-			<Link href="/">Home</Link>
-			<Link href="/server/kagemusha">kagemusha</Link>
-			<Link href="/server/rashomon">rashomon</Link>
-			{/* <ModeToggle /> */}
-		</nav>
+	<div className="container mt-7 mb-14">
+		<div class="flex mb-4 justify-end">
+			<ModeToggle />
+		</div>
 
 		{/* 
       Routes below are matched exclusively -
@@ -39,6 +38,7 @@ const Main = () => (
 			{/* Default route in a switch */}
 			<Route>404: No such page!</Route>
 		</Switch>
+		<CommandPalette />
 	</div>
 )
 
