@@ -2,6 +2,9 @@ import { RecordModel } from 'pocketbase'
 
 export interface SystemRecord extends RecordModel {
 	name: string
+	ip: string
+	active: boolean
+	port: string
 	stats: SystemStats
 }
 

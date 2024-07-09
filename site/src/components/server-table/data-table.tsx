@@ -20,7 +20,7 @@ import {
 	TableRow,
 } from '@/components/ui/table'
 
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 import {
@@ -44,28 +44,29 @@ import {
 } from '@/components/ui/alert-dialog'
 
 import { SystemRecord } from '@/types'
-import { MoreHorizontal, ArrowUpDown, Copy, RefreshCcw, Eye } from 'lucide-react'
+import { MoreHorizontal, ArrowUpDown, Copy, RefreshCcw } from 'lucide-react'
 import { useMemo, useState } from 'preact/hooks'
 import { navigate } from 'wouter-preact/use-browser-location'
 import { $servers, pb } from '@/lib/stores'
 import { useStore } from '@nanostores/preact'
+import { AddServerButton } from '../add-server'
+import clsx from 'clsx'
+import { cn } from '@/lib/utils'
 
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	const val = info.getValue() as number
-	let background = '#42b768'
+	let color = 'green'
 	if (val > 80) {
-		// red
-		background = '#da2a49'
+		color = 'red'
 	} else if (val > 50) {
-		// yellow
-		background = '#daa42a'
+		color = 'yellow'
 	}
 	return (
 		<div class="flex gap-2 items-center">
 			<span class="grow block bg-muted h-4 relative rounded-sm overflow-hidden">
 				<span
-					className="absolute inset-0 w-full h-full origin-left"
-					style={{ transform: `scalex(${val}%)`, background }}
+					className={clsx('absolute inset-0 w-full h-full origin-left', `bg-${color}-500`)}
+					style={{ transform: `scalex(${val}%)` }}
 				></span>
 			</span>
 			<span class="w-16">{val.toFixed(2)}%</span>
@@ -90,6 +91,8 @@ export function DataTable() {
 	const data = useStore($servers)
 	const [liveUpdates, setLiveUpdates] = useState(true)
 	const [deleteServer, setDeleteServer] = useState({} as SystemRecord)
+	const [sorting, setSorting] = useState<SortingState>([])
+	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
 	const columns: ColumnDef<SystemRecord>[] = useMemo(
 		() => [
@@ -97,8 +100,15 @@ export function DataTable() {
 				// size: 70,
 				accessorKey: 'name',
 				cell: (info) => (
-					<span className="flex gap-2 items-center text-base">
-						{info.getValue() as string}{' '}
+					<span className="flex gap-1.5 items-center text-base">
+						<span
+							className={clsx(
+								'w-2.5 h-2.5 block left-0 rounded-full',
+								info.row.original.active ? 'bg-green-500' : 'bg-red-500'
+							)}
+							style={{ marginBottom: '-1px' }}
+						></span>
+						{info.getValue() as string}
 						<button
 							title={`Copy "${info.getValue() as string}" to clipboard`}
 							class="opacity-50 hover:opacity-70 active:opacity-100 duration-75"
@@ -106,7 +116,6 @@ export function DataTable() {
 						>
 							<Copy className="h-3.5 w-3.5 " />
 						</button>
-						{/* </Button> */}
 					</span>
 				),
 				header: ({ column }) => sortableHeader(column, 'Server'),
@@ -151,7 +160,7 @@ export function DataTable() {
 									>
 										View details
 									</DropdownMenuItem>
-									<DropdownMenuItem onClick={() => navigator.clipboard.writeText(system.id)}>
+									<DropdownMenuItem onClick={() => navigator.clipboard.writeText(system.ip)}>
 										Copy IP address
 									</DropdownMenuItem>
 									<DropdownMenuSeparator />
@@ -172,10 +181,6 @@ export function DataTable() {
 		[]
 	)
 
-	const [sorting, setSorting] = useState<SortingState>([])
-
-	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-
 	const table = useReactTable({
 		data,
 		columns,
@@ -191,79 +196,89 @@ export function DataTable() {
 	})
 
 	return (
-		<div className="w-full">
-			<div className="flex items-center mb-4">
-				<Input
-					// @ts-ignore
-					placeholder="Filter..."
-					value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
-					onChange={(event: Event) => table.getColumn('name')?.setFilterValue(event.target.value)}
-					className="max-w-sm"
-				/>
-				<div className="ml-auto flex gap-3">
-					{liveUpdates || (
-						<Button
+		<>
+			<div className="w-full">
+				<div className="flex items-center mb-4">
+					<Input
+						// @ts-ignore
+						placeholder="Filter..."
+						value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
+						onChange={(event: Event) => table.getColumn('name')?.setFilterValue(event.target.value)}
+						className="max-w-sm"
+					/>
+					<div className="ml-auto flex gap-2">
+						{liveUpdates || (
+							<Button
+								variant="outline"
+								onClick={() => {
+									alert('todo: refresh')
+								}}
+								className="flex gap-2"
+							>
+								<RefreshCcw className="h-4 w-4" />
+								Refresh
+							</Button>
+						)}
+						{/* <Button
 							variant="outline"
 							onClick={() => {
-								alert('todo: refresh')
+								setLiveUpdates(!liveUpdates)
 							}}
 							className="flex gap-2"
 						>
-							Refresh
-							<RefreshCcw className="h-4 w-4" />
-						</Button>
-					)}
-					<Button
-						variant="outline"
-						onClick={() => {
-							setLiveUpdates(!liveUpdates)
-						}}
-						className="flex gap-2"
-					>
-						Live Updates
-						<div
-							className={`h-2.5 w-2.5 rounded-full ${liveUpdates ? 'bg-green-500' : 'bg-red-500'}`}
-						/>
-					</Button>
-				</div>
-			</div>
-			<div className="rounded-md border">
-				<Table>
-					<TableHeader className="bg-muted/40">
-						{table.getHeaderGroups().map((headerGroup) => (
-							<TableRow key={headerGroup.id}>
-								{headerGroup.headers.map((header) => {
-									return (
-										<TableHead className="px-2" key={header.id}>
-											{header.isPlaceholder
-												? null
-												: flexRender(header.column.columnDef.header, header.getContext())}
-										</TableHead>
-									)
+							<span
+								className={clsx('h-2.5 w-2.5 rounded-full', {
+									'bg-green-500': liveUpdates,
+									'bg-red-500': !liveUpdates,
 								})}
-							</TableRow>
-						))}
-					</TableHeader>
-					<TableBody>
-						{table.getRowModel().rows?.length ? (
-							table.getRowModel().rows.map((row) => (
-								<TableRow key={row.original.id} data-state={row.getIsSelected() && 'selected'}>
-									{row.getVisibleCells().map((cell) => (
-										<TableCell key={cell.id} style={{ width: `${cell.column.getSize()}px` }}>
-											{flexRender(cell.column.columnDef.cell, cell.getContext())}
-										</TableCell>
-									))}
+							/>
+							Live Updates
+						</Button> */}
+						<AddServerButton />
+					</div>
+				</div>
+				<div className="rounded-md border overflow-hidden">
+					<Table>
+						<TableHeader className="bg-muted/40">
+							{table.getHeaderGroups().map((headerGroup) => (
+								<TableRow key={headerGroup.id}>
+									{headerGroup.headers.map((header) => {
+										return (
+											<TableHead className="px-2" key={header.id}>
+												{header.isPlaceholder
+													? null
+													: flexRender(header.column.columnDef.header, header.getContext())}
+											</TableHead>
+										)
+									})}
 								</TableRow>
-							))
-						) : (
-							<TableRow>
-								<TableCell colSpan={columns.length} className="h-24 text-center">
-									No results.
-								</TableCell>
-							</TableRow>
-						)}
-					</TableBody>
-				</Table>
+							))}
+						</TableHeader>
+						<TableBody>
+							{table.getRowModel().rows?.length ? (
+								table.getRowModel().rows.map((row) => (
+									<TableRow key={row.original.id} data-state={row.getIsSelected() && 'selected'}>
+										{row.getVisibleCells().map((cell) => (
+											<TableCell
+												key={cell.id}
+												style={{ width: `${cell.column.getSize()}px` }}
+												className={'overflow-hidden relative'}
+											>
+												{flexRender(cell.column.columnDef.cell, cell.getContext())}
+											</TableCell>
+										))}
+									</TableRow>
+								))
+							) : (
+								<TableRow>
+									<TableCell colSpan={columns.length} className="h-24 text-center">
+										No servers found
+									</TableCell>
+								</TableRow>
+							)}
+						</TableBody>
+					</Table>
+				</div>
 			</div>
 			<AlertDialog open={deleteServer?.name}>
 				<AlertDialogContent>
@@ -281,6 +296,7 @@ export function DataTable() {
 							Cancel
 						</AlertDialogCancel>
 						<AlertDialogAction
+							className={cn(buttonVariants({ variant: 'destructive' }))}
 							onClick={() => {
 								setDeleteServer({} as SystemRecord)
 								pb.collection('systems').delete(deleteServer.id)
@@ -291,6 +307,6 @@ export function DataTable() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
-		</div>
+		</>
 	)
 }

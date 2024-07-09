@@ -1,6 +1,6 @@
 import './index.css'
 import { render } from 'preact'
-import { Link, Route, Switch } from 'wouter-preact'
+import { Route, Switch } from 'wouter-preact'
 import { Home } from './components/routes/home.tsx'
 import { ThemeProvider } from './components/theme-provider.tsx'
 import LoginPage from './components/login.tsx'
