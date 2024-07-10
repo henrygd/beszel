@@ -167,9 +167,7 @@ func updateServer(record *models.Record) {
 		client, err := getServerConnection(&server)
 		if err != nil {
 			app.Logger().Error("Failed to connect:", "err", err.Error(), "server", server.Ip, "port", server.Port)
-			// todo update record to not connected
-			record.Set("active", false)
-			delete(serverConnections, record.Id)
+			setInactive(record)
 			return
 		}
 		server.Client = client
@@ -179,11 +177,7 @@ func updateServer(record *models.Record) {
 	systemData, err := requestJson(&server)
 	if err != nil {
 		app.Logger().Error("Failed to get server stats: ", "err", err.Error())
-		record.Set("active", false)
-		if server.Client != nil {
-			server.Client.Close()
-		}
-		delete(serverConnections, record.Id)
+		setInactive(record)
 		return
 	}
 	// update system record
@@ -209,6 +203,22 @@ func updateServer(record *models.Record) {
 		if err := app.Dao().SaveRecord(container_stats_record); err != nil {
 			app.Logger().Error("Failed to save record: ", "err", err.Error())
 		}
+	}
+}
+
+// set server to inactive and close connection
+func setInactive(record *models.Record) {
+	// if in map, close connection and remove from map
+	if _, ok := serverConnections[record.Id]; ok {
+		if serverConnections[record.Id].Client != nil {
+			serverConnections[record.Id].Client.Close()
+		}
+		delete(serverConnections, record.Id)
+	}
+	// set inactive
+	record.Set("active", false)
+	if err := app.Dao().SaveRecord(record); err != nil {
+		app.Logger().Error("Failed to update record: ", "err", err.Error())
 	}
 }
 
