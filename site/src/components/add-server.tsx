@@ -8,10 +8,12 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '@/components/ui/dialog'
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
+
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { pb } from '@/lib/stores'
-import { Plus } from 'lucide-react'
+import { $publicKey, pb } from '@/lib/stores'
+import { ClipboardIcon, Plus } from 'lucide-react'
 import { MutableRef, useRef, useState } from 'preact/hooks'
 
 function copyDockerCompose(port: string) {
@@ -100,6 +102,36 @@ export function AddServerButton() {
 								className="col-span-3"
 								required
 							/>
+						</div>
+						<div className="grid grid-cols-4 items-center gap-4 relative">
+							<Label for="s-port" className="text-right">
+								Public Key
+							</Label>
+							<Input
+								readonly
+								name="s-port"
+								id="s-port"
+								value={$publicKey.get()}
+								className="col-span-3"
+								required
+							></Input>
+							<div
+								className={
+									'h-6 w-28 bg-gradient-to-r from-transparent to-background to-70% absolute right-1 pointer-events-none'
+								}
+							></div>
+							<TooltipProvider className="z-10">
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<Button type="button" variant={'link'} className="absolute right-0 z-50">
+											<ClipboardIcon className="h-4 w-4 " />
+										</Button>
+									</TooltipTrigger>
+									<TooltipContent>
+										<p>Click to copy</p>
+									</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
 						</div>
 					</div>
 					<DialogFooter>

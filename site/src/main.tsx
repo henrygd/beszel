@@ -25,12 +25,17 @@ const Main = () => {
 	// const servers = useStore($servers)
 
 	useEffect(() => {
-		console.log('fetching servers')
+		// get servers
 		pb.collection<SystemRecord>('systems')
 			.getFullList({ sort: '+name' })
 			.then((records) => {
 				$servers.set(records)
 			})
+
+		// get public key
+		pb.send('/getkey', {}).then(({ key }) => {
+			console.log('key', key)
+		})
 	}, [])
 
 	return (

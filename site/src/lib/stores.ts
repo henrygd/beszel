@@ -12,3 +12,5 @@ export const $authenticated = atom(pb.authStore.isValid)
 pb.authStore.onChange(() => {
 	$authenticated.set(pb.authStore.isValid)
 })
+
+export const $publicKey = atom('')
