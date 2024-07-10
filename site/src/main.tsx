@@ -5,15 +5,14 @@ import { Route, Switch } from 'wouter'
 import { Home } from './components/routes/home.tsx'
 import { ThemeProvider } from './components/theme-provider.tsx'
 import LoginPage from './components/login.tsx'
-import { $authenticated, $servers, pb } from './lib/stores.ts'
+import { $authenticated } from './lib/stores.ts'
 import { ServerDetail } from './components/routes/server.tsx'
 import { ModeToggle } from './components/mode-toggle.tsx'
 import { CommandPalette } from './components/command-palette.tsx'
-import { cn } from './lib/utils.ts'
+import { cn, updateServerList } from './lib/utils.ts'
 import { buttonVariants } from './components/ui/button.tsx'
 import { Github } from 'lucide-react'
 import { useStore } from '@nanostores/react'
-import { SystemRecord } from './types'
 import { Toaster } from './components/ui/toaster.tsx'
 
 const App = () => {
@@ -24,13 +23,7 @@ const App = () => {
 
 const Main = () => {
 	// get servers
-	useEffect(() => {
-		pb.collection<SystemRecord>('systems')
-			.getFullList({ sort: '+name' })
-			.then((records) => {
-				$servers.set(records)
-			})
-	}, [])
+	useEffect(updateServerList, [])
 
 	return (
 		<div className="container mt-7 mb-14">

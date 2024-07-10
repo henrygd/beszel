@@ -239,7 +239,17 @@ export function DataTable() {
 						<TableBody>
 							{table.getRowModel().rows?.length ? (
 								table.getRowModel().rows.map((row) => (
-									<TableRow key={row.original.id} data-state={row.getIsSelected() && 'selected'}>
+									<TableRow
+										key={row.original.id}
+										data-state={row.getIsSelected() && 'selected'}
+										className="cursor-pointer"
+										onClick={(e) => {
+											const target = e.target as HTMLElement
+											if (target.tagName !== 'BUTTON' && !target.hasAttribute('role')) {
+												navigate(`/server/${row.original.name}`)
+											}
+										}}
+									>
 										{row.getVisibleCells().map((cell) => (
 											<TableCell
 												key={cell.id}

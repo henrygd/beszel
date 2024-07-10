@@ -17,3 +17,15 @@ export interface SystemStats {
 	memPct: number
 	memUsed: number
 }
+
+export interface ContainerStatsRecord extends RecordModel {
+	system: string
+	stats: ContainerStats
+}
+
+interface ContainerStats {
+	name: string
+	cpu: number
+	mem: number
+	mempct: number
+}

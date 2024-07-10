@@ -2,20 +2,15 @@ import { useEffect } from 'react'
 import { $servers, pb } from '@/lib/stores'
 import { DataTable } from '../server-table/data-table'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
-import { useStore } from '@nanostores/react'
 import { SystemRecord } from '@/types'
+import { updateServerList } from '@/lib/utils'
 
 export function Home() {
-	const servers = useStore($servers)
-	// const [systems, setSystems] = useState([] as SystemRecord[])
-
 	useEffect(() => {
 		document.title = 'Home'
 	}, [])
 
-	useEffect(() => {
-		console.log('servers', servers)
-	}, [servers])
+	useEffect(updateServerList, [])
 
 	useEffect(() => {
 		pb.collection<SystemRecord>('systems').subscribe('*', (e) => {
@@ -52,9 +47,9 @@ export function Home() {
 		<>
 			<Card>
 				<CardHeader>
-					<CardTitle className={'mb-3'}>All Servers</CardTitle>
+					<CardTitle className={'mb-1.5'}>All Servers</CardTitle>
 					<CardDescription>
-						Press{' '}
+						Updated in real time. Press{' '}
 						<kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-0.5 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
 							<span className="text-xs">⌘</span>K
 						</kbd>{' '}
