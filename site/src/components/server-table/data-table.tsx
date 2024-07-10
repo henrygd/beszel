@@ -44,7 +44,16 @@ import {
 } from '@/components/ui/alert-dialog'
 
 import { SystemRecord } from '@/types'
-import { MoreHorizontal, ArrowUpDown, Copy, RefreshCcw } from 'lucide-react'
+import {
+	MoreHorizontal,
+	ArrowUpDown,
+	Copy,
+	RefreshCcw,
+	Server,
+	Cpu,
+	MemoryStick,
+	HardDrive,
+} from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { navigate } from 'wouter/use-browser-location'
 import { $servers, pb } from '@/lib/stores'
@@ -74,13 +83,14 @@ function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	)
 }
 
-function sortableHeader(column: Column<SystemRecord, unknown>, name: string) {
+function sortableHeader(column: Column<SystemRecord, unknown>, name: string, Icon: any) {
 	return (
 		<Button
 			variant="ghost"
 			className="h-9 px-3"
 			onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
 		>
+			<Icon className="mr-2 h-4 w-4" />
 			{name}
 			<ArrowUpDown className="ml-2 h-4 w-4" />
 		</Button>
@@ -89,7 +99,6 @@ function sortableHeader(column: Column<SystemRecord, unknown>, name: string) {
 
 export function DataTable() {
 	const data = useStore($servers)
-	const [liveUpdates, setLiveUpdates] = useState(true)
 	const [deleteServer, setDeleteServer] = useState({} as SystemRecord)
 	const [sorting, setSorting] = useState<SortingState>([])
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -118,22 +127,22 @@ export function DataTable() {
 						</Button>
 					</span>
 				),
-				header: ({ column }) => sortableHeader(column, 'Server'),
+				header: ({ column }) => sortableHeader(column, 'Server', Server),
 			},
 			{
 				accessorKey: 'stats.cpu',
 				cell: CellFormatter,
-				header: ({ column }) => sortableHeader(column, 'CPU'),
+				header: ({ column }) => sortableHeader(column, 'CPU', Cpu),
 			},
 			{
 				accessorKey: 'stats.memPct',
 				cell: CellFormatter,
-				header: ({ column }) => sortableHeader(column, 'Memory'),
+				header: ({ column }) => sortableHeader(column, 'Memory', MemoryStick),
 			},
 			{
 				accessorKey: 'stats.diskPct',
 				cell: CellFormatter,
-				header: ({ column }) => sortableHeader(column, 'Disk'),
+				header: ({ column }) => sortableHeader(column, 'Disk', HardDrive),
 			},
 			{
 				id: 'actions',
@@ -203,37 +212,10 @@ export function DataTable() {
 						// @ts-ignore
 						placeholder="Filter..."
 						value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
-						onChange={(event: Event) => table.getColumn('name')?.setFilterValue(event.target.value)}
+						onChange={(event) => table.getColumn('name')?.setFilterValue(event.target.value)}
 						className="max-w-sm"
 					/>
 					<div className="ml-auto flex gap-2">
-						{liveUpdates || (
-							<Button
-								variant="outline"
-								onClick={() => {
-									alert('todo: refresh')
-								}}
-								className="flex gap-2"
-							>
-								<RefreshCcw className="h-4 w-4" />
-								Refresh
-							</Button>
-						)}
-						{/* <Button
-							variant="outline"
-							onClick={() => {
-								setLiveUpdates(!liveUpdates)
-							}}
-							className="flex gap-2"
-						>
-							<span
-								className={clsx('h-2.5 w-2.5 rounded-full', {
-									'bg-green-500': liveUpdates,
-									'bg-red-500': !liveUpdates,
-								})}
-							/>
-							Live Updates
-						</Button> */}
 						<AddServerButton />
 					</div>
 				</div>
@@ -280,7 +262,7 @@ export function DataTable() {
 					</Table>
 				</div>
 			</div>
-			<AlertDialog open={deleteServer?.name}>
+			<AlertDialog open={!!deleteServer?.name}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>

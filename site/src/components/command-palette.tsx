@@ -38,7 +38,7 @@ export function CommandPalette() {
 			<CommandInput placeholder="Type a command or search..." />
 			<CommandList>
 				<CommandEmpty>No results found.</CommandEmpty>
-				<CommandGroup heading="Suggestions0">
+				<CommandGroup heading="Suggestions">
 					<CommandItem
 						onSelect={() => {
 							navigate('/')
@@ -47,16 +47,16 @@ export function CommandPalette() {
 					>
 						<Home className="mr-2 h-4 w-4" />
 						<span>Home</span>
-						<CommandShortcut>⌘H</CommandShortcut>
+						<CommandShortcut>Page</CommandShortcut>
 					</CommandItem>
 					<CommandItem
 						onSelect={() => {
-							window.location.href = '/_/'
+							window.location.href = '/_/#/collections?collectionId=2hz5ncl8tizk5nx'
 						}}
 					>
 						<Database className="mr-2 h-4 w-4" />
-						<span>PocketBase</span>
-						<CommandShortcut>⌘P</CommandShortcut>
+						<span>Admin UI</span>
+						<CommandShortcut>PocketBase</CommandShortcut>
 					</CommandItem>
 					<CommandItem
 						onSelect={() => {
@@ -65,7 +65,7 @@ export function CommandPalette() {
 					>
 						<Github className="mr-2 h-4 w-4" />
 						<span>Documentation</span>
-						<CommandShortcut>⌘D</CommandShortcut>
+						<CommandShortcut>GitHub</CommandShortcut>
 					</CommandItem>
 				</CommandGroup>
 				<CommandSeparator />

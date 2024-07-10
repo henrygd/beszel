@@ -13,7 +13,7 @@ import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/comp
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { $publicKey, pb } from '@/lib/stores'
-import { ClipboardIcon, Plus } from 'lucide-react'
+import { Copy, Plus } from 'lucide-react'
 import { useState, useRef, MutableRefObject, useEffect } from 'react'
 import { useStore } from '@nanostores/react'
 import { copyToClipboard } from '@/lib/utils'
@@ -25,14 +25,16 @@ export function AddServerButton() {
 
 	function copyDockerCompose(port: string) {
 		copyToClipboard(`services:
-		agent:
-			image: 'henrygd/monitor-agent'
-			container_name: 'monitor-agent'
-			restart: unless-stopped
-			ports:
-				- '${port}:45876'
-			volumes:
-				- /var/run/docker.sock:/var/run/docker.sock`)
+  agent:
+    image: 'henrygd/monitor-agent'
+    container_name: 'monitor-agent'
+    restart: unless-stopped
+    ports:
+      - '${port}:45876'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - KEY="${publicKey}"`)
 	}
 
 	useEffect(() => {
@@ -119,7 +121,7 @@ export function AddServerButton() {
 							<Input readOnly id="pkey" value={publicKey} className="col-span-3" required></Input>
 							<div
 								className={
-									'h-6 w-28 bg-gradient-to-r from-transparent to-background to-70% absolute right-1 pointer-events-none'
+									'h-6 w-24 bg-gradient-to-r from-transparent to-background to-65% absolute right-1 pointer-events-none'
 								}
 							></div>
 							<TooltipProvider delayDuration={100}>
@@ -131,7 +133,7 @@ export function AddServerButton() {
 											className="absolute right-0"
 											onClick={() => copyToClipboard(publicKey)}
 										>
-											<ClipboardIcon className="h-4 w-4 " />
+											<Copy className="h-4 w-4 " />
 										</Button>
 									</TooltipTrigger>
 									<TooltipContent>
