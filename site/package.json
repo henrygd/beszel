@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@nanostores/react": "^0.7.2",
+    "@nanostores/router": "^0.15.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",
     "@radix-ui/react-dialog": "^1.1.1",
     "@radix-ui/react-dropdown-menu": "^2.1.1",
@@ -22,15 +23,15 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
-    "lucide-react": "^0.401.0",
+    "lucide-react": "^0.407.0",
     "nanostores": "^0.10.3",
     "pocketbase": "^0.21.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "recharts": "^2.12.7",
     "tailwind-merge": "^2.4.0",
     "tailwindcss-animate": "^1.0.7",
-    "valibot": "^0.36.0",
-    "wouter": "^3.3.1"
+    "valibot": "^0.36.0"
   },
   "devDependencies": {
     "@types/bun": "^1.1.6",

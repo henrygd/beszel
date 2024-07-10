@@ -31,3 +31,14 @@ export const updateServerList = () => {
 			$servers.set(records)
 		})
 }
+
+export const shortDateFormatter = new Intl.DateTimeFormat('en-US', {
+	// day: 'numeric',
+	// month: 'numeric',
+	// year: '2-digit',
+	// hour12: false,
+	hour: 'numeric',
+	minute: 'numeric',
+})
+
+export const formatDateShort = (timestamp: string) => shortDateFormatter.format(new Date(timestamp))

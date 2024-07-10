@@ -1,40 +1,58 @@
 import './index.css'
-import React, { useEffect } from 'react'
+import React, { Suspense, lazy, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
-import { Route, Switch } from 'wouter'
-import { Home } from './components/routes/home.tsx'
+import Home from './components/routes/home.tsx'
 import { ThemeProvider } from './components/theme-provider.tsx'
-import LoginPage from './components/login.tsx'
-import { $authenticated } from './lib/stores.ts'
-import { ServerDetail } from './components/routes/server.tsx'
+// import LoginPage from './components/login.tsx'
+import { $authenticated, $router } from './lib/stores.ts'
 import { ModeToggle } from './components/mode-toggle.tsx'
-import { CommandPalette } from './components/command-palette.tsx'
+// import { CommandPalette } from './components/command-palette.tsx'
 import { cn, updateServerList } from './lib/utils.ts'
 import { buttonVariants } from './components/ui/button.tsx'
 import { Github } from 'lucide-react'
 import { useStore } from '@nanostores/react'
 import { Toaster } from './components/ui/toaster.tsx'
 
+const ServerDetail = lazy(() => import('./components/routes/server.tsx'))
+const CommandPalette = lazy(() => import('./components/command-palette.tsx'))
+const LoginPage = lazy(() => import('./components/login.tsx'))
+
 const App = () => {
-	const authenticated = useStore($authenticated)
+	const page = useStore($router)
 
-	return <ThemeProvider>{authenticated ? <Main /> : <LoginPage />}</ThemeProvider>
-}
-
-const Main = () => {
 	// get servers
 	useEffect(updateServerList, [])
 
+	if (!page) {
+		return <h1>404</h1>
+	} else if (page.path === '/') {
+		return <Home />
+	} else if (page.route === 'server') {
+		return (
+			<Suspense>
+				<ServerDetail name={page.params.name} />
+			</Suspense>
+		)
+	}
+}
+
+const Layout = () => {
+	const authenticated = useStore($authenticated)
+
+	if (!authenticated) {
+		return <LoginPage />
+	}
+
 	return (
-		<div className="container mt-7 mb-14">
+		<div className="container mt-7 mb-14 relative">
 			<div className="flex mb-4">
-				{/* <Link
+				{/* <a
 				className={cn('', buttonVariants({ variant: 'ghost', size: 'icon' }))}
 				href="/"
 				title={'All servers'}
 			>
 				<HomeIcon className="h-[1.2rem] w-[1.2rem]" />
-			</Link> */}
+			</a> */}
 				<div className={'flex gap-1 ml-auto'}>
 					<a
 						title={'Github'}
@@ -47,18 +65,7 @@ const Main = () => {
 				</div>
 			</div>
 
-			{/* 
-      Routes below are matched exclusively -
-      the first matched route gets rendered
-    */}
-			<Switch>
-				<Route path="/" component={Home} />
-
-				<Route path="/server/:name" component={ServerDetail}></Route>
-
-				{/* Default route in a switch */}
-				<Route>404: No such page!</Route>
-			</Switch>
+			<App />
 			<CommandPalette />
 			<Toaster />
 		</div>
@@ -67,6 +74,8 @@ const Main = () => {
 
 ReactDOM.createRoot(document.getElementById('app')!).render(
 	<React.StrictMode>
-		<App />
+		<ThemeProvider>
+			<Layout />
+		</ThemeProvider>
 	</React.StrictMode>
 )

@@ -1,11 +1,9 @@
-import { Link } from 'wouter'
-
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
 import { UserAuthForm } from '@/components/user-auth-form'
 import { ChevronLeft } from 'lucide-react'
 
-export default function LoginPage() {
+export default function () {
 	return (
 		<div className="container relative hidden h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
 			<div className="lg:p-8">
@@ -23,9 +21,9 @@ export default function LoginPage() {
 					</div>
 					<UserAuthForm />
 					<p className="px-8 text-center text-sm text-muted-foreground">
-						<Link href="/register" className="hover:text-brand underline underline-offset-4">
+						<a href="/register" className="hover:text-brand underline underline-offset-4">
 							Don&apos;t have an account? Sign Up
-						</Link>
+						</a>
 					</p>
 				</div>
 			</div>

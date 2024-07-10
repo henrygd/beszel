@@ -48,18 +48,15 @@ import {
 	MoreHorizontal,
 	ArrowUpDown,
 	Copy,
-	RefreshCcw,
 	Server,
 	Cpu,
 	MemoryStick,
 	HardDrive,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { navigate } from 'wouter/use-browser-location'
-import { $servers, pb } from '@/lib/stores'
+import { $servers, pb, navigate } from '@/lib/stores'
 import { useStore } from '@nanostores/react'
 import { AddServerButton } from '../add-server'
-import clsx from 'clsx'
 import { cn, copyToClipboard } from '@/lib/utils'
 
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
@@ -74,7 +71,7 @@ function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 		<div className="flex gap-2 items-center">
 			<span className="grow block bg-muted h-4 relative rounded-sm overflow-hidden">
 				<span
-					className={clsx('absolute inset-0 w-full h-full origin-left', `bg-${color}-500`)}
+					className={cn('absolute inset-0 w-full h-full origin-left', `bg-${color}-500`)}
 					style={{ transform: `scalex(${val}%)` }}
 				></span>
 			</span>
@@ -97,7 +94,7 @@ function sortableHeader(column: Column<SystemRecord, unknown>, name: string, Ico
 	)
 }
 
-export function DataTable() {
+export default function () {
 	const data = useStore($servers)
 	const [deleteServer, setDeleteServer] = useState({} as SystemRecord)
 	const [sorting, setSorting] = useState<SortingState>([])
@@ -111,7 +108,7 @@ export function DataTable() {
 				cell: (info) => (
 					<span className="flex gap-1 items-center text-base">
 						<span
-							className={clsx(
+							className={cn(
 								'w-2.5 h-2.5 block left-0 rounded-full',
 								info.row.original.active ? 'bg-green-500' : 'bg-red-500'
 							)}

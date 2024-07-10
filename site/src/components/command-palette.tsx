@@ -13,11 +13,10 @@ import {
 	CommandShortcut,
 } from '@/components/ui/command'
 import { useEffect, useState } from 'react'
-import { navigate } from 'wouter/use-browser-location'
 import { useStore } from '@nanostores/react'
-import { $servers } from '@/lib/stores'
+import { $servers, navigate } from '@/lib/stores'
 
-export function CommandPalette() {
+export default function () {
 	const [open, setOpen] = useState(false)
 	const servers = useStore($servers)
 

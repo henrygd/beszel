@@ -1,11 +1,13 @@
-import { useEffect } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 import { $servers, pb } from '@/lib/stores'
-import { DataTable } from '../server-table/data-table'
+// import { DataTable } from '../server-table/data-table'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 import { SystemRecord } from '@/types'
 import { updateServerList } from '@/lib/utils'
 
-export function Home() {
+const DataTable = lazy(() => import('../server-table/data-table'))
+
+export default function () {
 	useEffect(() => {
 		document.title = 'Home'
 	}, [])
@@ -57,7 +59,9 @@ export function Home() {
 					</CardDescription>
 				</CardHeader>
 				<CardContent>
-					<DataTable />
+					<Suspense>
+						<DataTable />
+					</Suspense>
 				</CardContent>
 			</Card>
 		</>
