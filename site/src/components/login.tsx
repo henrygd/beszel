@@ -1,4 +1,4 @@
-import { Link } from 'wouter-preact'
+import { Link } from 'wouter'
 
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
@@ -29,14 +29,14 @@ export default function LoginPage() {
 					</p>
 				</div>
 			</div>
-			<div class="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
+			<div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
 				<div
-					class="absolute inset-0 bg-slate-900 bg-cover opacity-80"
+					className="absolute inset-0 bg-slate-900 bg-cover opacity-80"
 					style={{
 						backgroundImage: `url(https://directus.cloud/assets/waves.2b156907.svg)`,
 					}}
 				></div>
-				<div class="relative z-20 flex gap-2 items-center text-lg font-medium ml-auto">
+				<div className="relative z-20 flex gap-2 items-center text-lg font-medium ml-auto">
 					placeholder
 					<img
 						className={'w-6 h-6'}
@@ -44,13 +44,13 @@ export default function LoginPage() {
 						alt=""
 					/>
 				</div>
-				{/* <div class="relative z-20 mt-auto">
-					<blockquote class="space-y-2">
-						<p class="text-lg">
+				{/* <div className="relative z-20 mt-auto">
+					<blockquote className="space-y-2">
+						<p className="text-lg">
 							“This library has saved me countless hours of work and helped me deliver stunning
 							designs to my clients faster than ever before.”
 						</p>
-						<footer class="text-sm">Sofia Davis</footer>
+						<footer className="text-sm">Sofia Davis</footer>
 					</blockquote>
 				</div> */}
 			</div>

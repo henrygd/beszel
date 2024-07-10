@@ -1,6 +1,7 @@
 import './index.css'
-import { render } from 'preact'
-import { Route, Switch } from 'wouter-preact'
+import React, { useEffect } from 'react'
+import ReactDOM from 'react-dom/client'
+import { Route, Switch } from 'wouter'
 import { Home } from './components/routes/home.tsx'
 import { ThemeProvider } from './components/theme-provider.tsx'
 import LoginPage from './components/login.tsx'
@@ -11,9 +12,9 @@ import { CommandPalette } from './components/command-dialog.tsx'
 import { cn } from './lib/utils.ts'
 import { buttonVariants } from './components/ui/button.tsx'
 import { Github } from 'lucide-react'
-import { useStore } from '@nanostores/preact'
-import { useEffect } from 'preact/hooks'
+import { useStore } from '@nanostores/react'
 import { SystemRecord } from './types'
+import { Toaster } from './components/ui/toaster.tsx'
 
 const App = () => {
 	const authenticated = useStore($authenticated)
@@ -22,25 +23,18 @@ const App = () => {
 }
 
 const Main = () => {
-	// const servers = useStore($servers)
-
+	// get servers
 	useEffect(() => {
-		// get servers
 		pb.collection<SystemRecord>('systems')
 			.getFullList({ sort: '+name' })
 			.then((records) => {
 				$servers.set(records)
 			})
-
-		// get public key
-		pb.send('/getkey', {}).then(({ key }) => {
-			console.log('key', key)
-		})
 	}, [])
 
 	return (
 		<div className="container mt-7 mb-14">
-			<div class="flex mb-4">
+			<div className="flex mb-4">
 				{/* <Link
 				className={cn('', buttonVariants({ variant: 'ghost', size: 'icon' }))}
 				href="/"
@@ -73,7 +67,13 @@ const Main = () => {
 				<Route>404: No such page!</Route>
 			</Switch>
 			<CommandPalette />
+			<Toaster />
 		</div>
 	)
 }
-render(<App />, document.getElementById('app')!)
+
+ReactDOM.createRoot(document.getElementById('app')!).render(
+	<React.StrictMode>
+		<App />
+	</React.StrictMode>
+)

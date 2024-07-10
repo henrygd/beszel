@@ -1,7 +1,7 @@
 import { pb } from '@/lib/stores'
 import { SystemRecord } from '@/types'
-import { useEffect, useState } from 'preact/hooks'
-import { useRoute } from 'wouter-preact'
+import { useEffect, useState } from 'react'
+import { useRoute } from 'wouter'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card'
 
 export function ServerDetail() {
@@ -18,7 +18,7 @@ export function ServerDetail() {
 			.then((record) => {
 				setServer(record)
 			})
-	})
+	}, [])
 
 	return (
 		<>

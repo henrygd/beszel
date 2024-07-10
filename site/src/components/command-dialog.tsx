@@ -12,9 +12,9 @@ import {
 	CommandSeparator,
 	CommandShortcut,
 } from '@/components/ui/command'
-import { useEffect, useState } from 'preact/hooks'
-import { navigate } from 'wouter-preact/use-browser-location'
-import { useStore } from '@nanostores/preact'
+import { useEffect, useState } from 'react'
+import { navigate } from 'wouter/use-browser-location'
+import { useStore } from '@nanostores/react'
 import { $servers } from '@/lib/stores'
 
 export function CommandPalette() {
@@ -24,7 +24,6 @@ export function CommandPalette() {
 	useEffect(() => {
 		const down = (e: KeyboardEvent) => {
 			if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
-				console.log('open')
 				e.preventDefault()
 				setOpen((open) => !open)
 			}
@@ -39,7 +38,7 @@ export function CommandPalette() {
 			<CommandInput placeholder="Type a command or search..." />
 			<CommandList>
 				<CommandEmpty>No results found.</CommandEmpty>
-				<CommandGroup heading="Suggestions">
+				<CommandGroup heading="Suggestions0">
 					<CommandItem
 						onSelect={() => {
 							navigate('/')

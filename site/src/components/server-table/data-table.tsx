@@ -45,13 +45,13 @@ import {
 
 import { SystemRecord } from '@/types'
 import { MoreHorizontal, ArrowUpDown, Copy, RefreshCcw } from 'lucide-react'
-import { useMemo, useState } from 'preact/hooks'
-import { navigate } from 'wouter-preact/use-browser-location'
+import { useMemo, useState } from 'react'
+import { navigate } from 'wouter/use-browser-location'
 import { $servers, pb } from '@/lib/stores'
-import { useStore } from '@nanostores/preact'
+import { useStore } from '@nanostores/react'
 import { AddServerButton } from '../add-server'
 import clsx from 'clsx'
-import { cn } from '@/lib/utils'
+import { cn, copyToClipboard } from '@/lib/utils'
 
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	const val = info.getValue() as number
@@ -62,14 +62,14 @@ function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 		color = 'yellow'
 	}
 	return (
-		<div class="flex gap-2 items-center">
-			<span class="grow block bg-muted h-4 relative rounded-sm overflow-hidden">
+		<div className="flex gap-2 items-center">
+			<span className="grow block bg-muted h-4 relative rounded-sm overflow-hidden">
 				<span
 					className={clsx('absolute inset-0 w-full h-full origin-left', `bg-${color}-500`)}
 					style={{ transform: `scalex(${val}%)` }}
 				></span>
 			</span>
-			<span class="w-16">{val.toFixed(2)}%</span>
+			<span className="w-16">{val.toFixed(2)}%</span>
 		</div>
 	)
 }
@@ -100,7 +100,7 @@ export function DataTable() {
 				// size: 70,
 				accessorKey: 'name',
 				cell: (info) => (
-					<span className="flex gap-1.5 items-center text-base">
+					<span className="flex gap-1 items-center text-base">
 						<span
 							className={clsx(
 								'w-2.5 h-2.5 block left-0 rounded-full',
@@ -108,14 +108,14 @@ export function DataTable() {
 							)}
 							style={{ marginBottom: '-1px' }}
 						></span>
-						{info.getValue() as string}
-						<button
-							title={`Copy "${info.getValue() as string}" to clipboard`}
-							class="opacity-50 hover:opacity-70 active:opacity-100 duration-75"
-							onClick={() => navigator.clipboard.writeText(info.getValue() as string)}
+						<Button
+							variant={'ghost'}
+							className="text-foreground/80 h-7 px-2 gap-1.5"
+							onClick={() => copyToClipboard(info.getValue() as string)}
 						>
-							<Copy className="h-3.5 w-3.5 " />
-						</button>
+							{info.getValue() as string}
+							<Copy className="h-3.5 w-3.5 opacity-70" />
+						</Button>
 					</span>
 				),
 				header: ({ column }) => sortableHeader(column, 'Server'),
@@ -143,7 +143,7 @@ export function DataTable() {
 					const system = row.original
 
 					return (
-						<div class={'flex justify-end'}>
+						<div className={'flex justify-end'}>
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild>
 									<Button variant="ghost" className="h-8 w-8 p-0">
@@ -288,7 +288,8 @@ export function DataTable() {
 						</AlertDialogTitle>
 						<AlertDialogDescription>
 							This action cannot be undone. This will permanently delete all current records for{' '}
-							<code class={'bg-muted rounded-sm px-1'}>{deleteServer.name}</code> from the database.
+							<code className={'bg-muted rounded-sm px-1'}>{deleteServer.name}</code> from the
+							database.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>

@@ -9,8 +9,6 @@
 		"skipLibCheck": true,
 		"baseUrl": ".",
 		"paths": {
-			"react": ["./node_modules/preact/compat/"],
-			"react-dom": ["./node_modules/preact/compat/"],
 			"@/*": ["./src/*"]
 		},
 
@@ -22,7 +20,6 @@
 		"moduleDetection": "force",
 		"noEmit": true,
 		"jsx": "react-jsx",
-		"jsxImportSource": "preact",
 
 		/* Linting */
 		"strict": true,

@@ -112,7 +112,7 @@ func main() {
 
 	// start ticker for server updates
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		// go serverUpdateTicker()
+		go serverUpdateTicker()
 		return nil
 	})
 
@@ -128,7 +128,7 @@ func main() {
 }
 
 func serverUpdateTicker() {
-	ticker := time.NewTicker(15 * time.Second)
+	ticker := time.NewTicker(60 * time.Second)
 	for range ticker.C {
 		updateServers()
 	}
@@ -144,7 +144,7 @@ func updateServers() {
 
 	records := []*models.Record{}
 	if err := query.All(&records); err != nil {
-		app.Logger().Error("Failed to get servers: ", "err", err)
+		app.Logger().Error("Failed to get servers: ", "err", err.Error())
 		// return nil, err
 	}
 
@@ -166,7 +166,7 @@ func updateServer(record *models.Record) {
 		}
 		client, err := getServerConnection(&server)
 		if err != nil {
-			app.Logger().Error("Failed to connect:", "err", err, "server", server.Ip, "port", server.Port)
+			app.Logger().Error("Failed to connect:", "err", err.Error(), "server", server.Ip, "port", server.Port)
 			// todo update record to not connected
 			record.Set("active", false)
 			delete(serverConnections, record.Id)
@@ -178,7 +178,7 @@ func updateServer(record *models.Record) {
 	// get server stats from agent
 	systemData, err := requestJson(&server)
 	if err != nil {
-		app.Logger().Error("Failed to get server stats: ", "err", err)
+		app.Logger().Error("Failed to get server stats: ", "err", err.Error())
 		record.Set("active", false)
 		if server.Client != nil {
 			server.Client.Close()
@@ -190,7 +190,7 @@ func updateServer(record *models.Record) {
 	record.Set("active", true)
 	record.Set("stats", systemData.System)
 	if err := app.Dao().SaveRecord(record); err != nil {
-		app.Logger().Error("Failed to update record: ", "err", err)
+		app.Logger().Error("Failed to update record: ", "err", err.Error())
 	}
 	// add new system_stats record
 	system_stats, _ := app.Dao().FindCollectionByNameOrId("system_stats")
@@ -198,7 +198,7 @@ func updateServer(record *models.Record) {
 	system_stats_record.Set("system", record.Id)
 	system_stats_record.Set("stats", systemData.System)
 	if err := app.Dao().SaveRecord(system_stats_record); err != nil {
-		app.Logger().Error("Failed to save record: ", "err", err)
+		app.Logger().Error("Failed to save record: ", "err", err.Error())
 	}
 	// add new container_stats record
 	if len(systemData.Containers) > 0 {
@@ -207,7 +207,7 @@ func updateServer(record *models.Record) {
 		container_stats_record.Set("system", record.Id)
 		container_stats_record.Set("stats", systemData.Containers)
 		if err := app.Dao().SaveRecord(container_stats_record); err != nil {
-			app.Logger().Error("Failed to save record: ", "err", err)
+			app.Logger().Error("Failed to save record: ", "err", err.Error())
 		}
 	}
 }
@@ -216,7 +216,7 @@ func getServerConnection(server *Server) (*ssh.Client, error) {
 	// app.Logger().Debug("new ssh connection", "server", server.Ip)
 	key, err := getSSHKey()
 	if err != nil {
-		app.Logger().Error("Failed to get SSH key: ", "err", err)
+		app.Logger().Error("Failed to get SSH key: ", "err", err.Error())
 		return nil, err
 	}
 	time.Sleep(time.Second)
@@ -284,27 +284,27 @@ func getSSHKey() ([]byte, error) {
 	// Generate the Ed25519 key pair
 	pubKey, privKey, err := ed25519.GenerateKey(nil)
 	if err != nil {
-		// app.Logger().Error("Error generating key pair:", "err", err)
+		// app.Logger().Error("Error generating key pair:", "err", err.Error())
 		return nil, err
 	}
 
 	// Get the private key in OpenSSH format
 	privKeyBytes, err := ssh.MarshalPrivateKey(privKey, "")
 	if err != nil {
-		// app.Logger().Error("Error marshaling private key:", "err", err)
+		// app.Logger().Error("Error marshaling private key:", "err", err.Error())
 		return nil, err
 	}
 
 	// Save the private key to a file
 	privateFile, err := os.Create("./pb_data/id_ed25519")
 	if err != nil {
-		// app.Logger().Error("Error creating private key file:", "err", err)
+		// app.Logger().Error("Error creating private key file:", "err", err.Error())
 		return nil, err
 	}
 	defer privateFile.Close()
 
 	if err := pem.Encode(privateFile, privKeyBytes); err != nil {
-		// app.Logger().Error("Error writing private key to file:", "err", err)
+		// app.Logger().Error("Error writing private key to file:", "err", err.Error())
 		return nil, err
 	}
 

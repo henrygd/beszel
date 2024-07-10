@@ -1,8 +1,8 @@
-import { useEffect } from 'preact/hooks'
+import { useEffect } from 'react'
 import { $servers, pb } from '@/lib/stores'
 import { DataTable } from '../server-table/data-table'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
-import { useStore } from '@nanostores/preact'
+import { useStore } from '@nanostores/react'
 import { SystemRecord } from '@/types'
 
 export function Home() {
@@ -43,7 +43,9 @@ export function Home() {
 			}
 			$servers.set(newServers)
 		})
-		return () => pb.collection('systems').unsubscribe('*')
+		return () => {
+			pb.collection('systems').unsubscribe('*')
+		}
 	}, [])
 
 	return (

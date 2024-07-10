@@ -1,9 +1,9 @@
 import { defineConfig } from 'vite'
-import preact from '@preact/preset-vite'
+import react from '@vitejs/plugin-react'
 import path from 'path'
 
 export default defineConfig({
-	plugins: [preact()],
+	plugins: [react()],
 	esbuild: {
 		legalComments: 'external',
 	},
