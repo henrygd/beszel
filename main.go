@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	_ "monitor-site/migrations"
+	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"os"
@@ -93,8 +94,31 @@ func main() {
 		return nil
 	})
 
+	// create ssh key if it doesn't exist
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		go serverUpdateTicker()
+		e.Router.GET("/getkey", func(c echo.Context) error {
+			requestData := apis.RequestInfo(c)
+			if requestData.Admin == nil {
+				return apis.NewForbiddenError("Forbidden", nil)
+			}
+			key, err := os.ReadFile("./pb_data/id_ed25519.pub")
+			if err != nil {
+				return err
+			}
+			return c.JSON(http.StatusOK, map[string]string{"key": strings.TrimSuffix(string(key), "\n")})
+		})
+		return nil
+	})
+
+	// start ticker for server updates
+	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+		// go serverUpdateTicker()
+		return nil
+	})
+
+	// immediately create connection for new servers
+	app.OnRecordAfterCreateRequest("systems").Add(func(e *core.RecordCreateEvent) error {
+		go updateServer(e.Record)
 		return nil
 	})
 
@@ -104,7 +128,7 @@ func main() {
 }
 
 func serverUpdateTicker() {
-	ticker := time.NewTicker(5 * time.Second)
+	ticker := time.NewTicker(15 * time.Second)
 	for range ticker.C {
 		updateServers()
 	}
@@ -114,10 +138,9 @@ func updateServers() {
 	// serverCount := len(serverConnections)
 	// fmt.Println("server count: ", serverCount)
 	query := app.Dao().RecordQuery("systems").
-		// todo check that asc is correct
 		OrderBy("updated ASC").
 		// todo get total count of servers and divide by 4 or something
-		Limit(1)
+		Limit(5)
 
 	records := []*models.Record{}
 	if err := query.All(&records); err != nil {
@@ -126,61 +149,65 @@ func updateServers() {
 	}
 
 	for _, record := range records {
-		var server Server
-		// check if server connection data exists
-		if _, ok := serverConnections[record.Id]; ok {
-			server = serverConnections[record.Id]
-		} else {
-			// create server connection struct
-			server = Server{
-				Ip:   record.Get("ip").(string),
-				Port: record.Get("port").(string),
-			}
-			client, err := getServerConnection(&server)
-			if err != nil {
-				app.Logger().Error("Failed to connect:", "err", err, "server", server.Ip, "port", server.Port)
-				// todo update record to not connected
-				record.Set("active", false)
-				delete(serverConnections, record.Id)
-				continue
-			}
-			server.Client = client
-			serverConnections[record.Id] = server
+		updateServer(record)
+	}
+}
+
+func updateServer(record *models.Record) {
+	var server Server
+	// check if server connection data exists
+	if _, ok := serverConnections[record.Id]; ok {
+		server = serverConnections[record.Id]
+	} else {
+		// create server connection struct
+		server = Server{
+			Ip:   record.Get("ip").(string),
+			Port: record.Get("port").(string),
 		}
-		// get server stats
-		systemData, err := requestJson(&server)
+		client, err := getServerConnection(&server)
 		if err != nil {
-			app.Logger().Error("Failed to get server stats: ", "err", err)
+			app.Logger().Error("Failed to connect:", "err", err, "server", server.Ip, "port", server.Port)
+			// todo update record to not connected
 			record.Set("active", false)
-			if server.Client != nil {
-				server.Client.Close()
-			}
 			delete(serverConnections, record.Id)
-			continue
+			return
 		}
-		// update system record
-		record.Set("active", true)
-		record.Set("stats", systemData.System)
-		if err := app.Dao().SaveRecord(record); err != nil {
-			app.Logger().Error("Failed to update record: ", "err", err)
+		server.Client = client
+		serverConnections[record.Id] = server
+	}
+	// get server stats from agent
+	systemData, err := requestJson(&server)
+	if err != nil {
+		app.Logger().Error("Failed to get server stats: ", "err", err)
+		record.Set("active", false)
+		if server.Client != nil {
+			server.Client.Close()
 		}
-		// add new system_stats record
-		system_stats, _ := app.Dao().FindCollectionByNameOrId("system_stats")
-		system_stats_record := models.NewRecord(system_stats)
-		system_stats_record.Set("system", record.Id)
-		system_stats_record.Set("stats", systemData.System)
-		if err := app.Dao().SaveRecord(system_stats_record); err != nil {
+		delete(serverConnections, record.Id)
+		return
+	}
+	// update system record
+	record.Set("active", true)
+	record.Set("stats", systemData.System)
+	if err := app.Dao().SaveRecord(record); err != nil {
+		app.Logger().Error("Failed to update record: ", "err", err)
+	}
+	// add new system_stats record
+	system_stats, _ := app.Dao().FindCollectionByNameOrId("system_stats")
+	system_stats_record := models.NewRecord(system_stats)
+	system_stats_record.Set("system", record.Id)
+	system_stats_record.Set("stats", systemData.System)
+	if err := app.Dao().SaveRecord(system_stats_record); err != nil {
+		app.Logger().Error("Failed to save record: ", "err", err)
+	}
+	// add new container_stats record
+	if len(systemData.Containers) > 0 {
+		container_stats, _ := app.Dao().FindCollectionByNameOrId("container_stats")
+		container_stats_record := models.NewRecord(container_stats)
+		container_stats_record.Set("system", record.Id)
+		container_stats_record.Set("stats", systemData.Containers)
+		if err := app.Dao().SaveRecord(container_stats_record); err != nil {
 			app.Logger().Error("Failed to save record: ", "err", err)
-		}
-		// add new container_stats record
-		if len(systemData.Containers) > 0 {
-			container_stats, _ := app.Dao().FindCollectionByNameOrId("container_stats")
-			container_stats_record := models.NewRecord(container_stats)
-			container_stats_record.Set("system", record.Id)
-			container_stats_record.Set("stats", systemData.Containers)
-			if err := app.Dao().SaveRecord(container_stats_record); err != nil {
-				app.Logger().Error("Failed to save record: ", "err", err)
-			}
 		}
 	}
 }
