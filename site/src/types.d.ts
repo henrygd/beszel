@@ -20,7 +20,7 @@ export interface SystemStats {
 
 export interface ContainerStatsRecord extends RecordModel {
 	system: string
-	stats: ContainerStats
+	stats: ContainerStats[]
 }
 
 interface ContainerStats {
@@ -28,4 +28,9 @@ interface ContainerStats {
 	cpu: number
 	mem: number
 	mempct: number
+}
+
+export interface SystemStatsRecord extends RecordModel {
+	system: string
+	stats: SystemStats
 }

@@ -32,7 +32,7 @@ export const updateServerList = () => {
 		})
 }
 
-export const shortDateFormatter = new Intl.DateTimeFormat('en-US', {
+const shortTimeFormatter = new Intl.DateTimeFormat(undefined, {
 	// day: 'numeric',
 	// month: 'numeric',
 	// year: '2-digit',
@@ -40,5 +40,14 @@ export const shortDateFormatter = new Intl.DateTimeFormat('en-US', {
 	hour: 'numeric',
 	minute: 'numeric',
 })
+export const formatShortTime = (timestamp: string) => shortTimeFormatter.format(new Date(timestamp))
 
-export const formatDateShort = (timestamp: string) => shortDateFormatter.format(new Date(timestamp))
+const shortDateFormatter = new Intl.DateTimeFormat(undefined, {
+	day: 'numeric',
+	month: 'short',
+	// year: '2-digit',
+	// hour12: false,
+	hour: 'numeric',
+	minute: 'numeric',
+})
+export const formatShortDate = (timestamp: string) => shortDateFormatter.format(new Date(timestamp))
