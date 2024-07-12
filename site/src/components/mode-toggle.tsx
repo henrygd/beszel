@@ -1,4 +1,4 @@
-import { Moon, Sun } from 'lucide-react'
+import { MoonStarIcon, Sun } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -17,7 +17,7 @@ export function ModeToggle() {
 			<DropdownMenuTrigger asChild>
 				<Button variant={'ghost'} size="icon">
 					<Sun className="h-[1.2rem] w-[1.2rem] dark:opacity-0" />
-					<Moon className="absolute h-[1.2rem] w-[1.2rem] opacity-0 dark:opacity-100" />
+					<MoonStarIcon className="absolute h-[1.2rem] w-[1.2rem] opacity-0 dark:opacity-100" />
 					<span className="sr-only">Toggle theme</span>
 				</Button>
 			</DropdownMenuTrigger>

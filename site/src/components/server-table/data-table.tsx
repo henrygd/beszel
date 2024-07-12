@@ -106,7 +106,7 @@ export default function () {
 				// size: 70,
 				accessorKey: 'name',
 				cell: (info) => (
-					<span className="flex gap-1 items-center text-base">
+					<span className="flex gap-0.5 items-center text-base">
 						<span
 							className={cn(
 								'w-2.5 h-2.5 block left-0 rounded-full',
@@ -116,7 +116,7 @@ export default function () {
 						></span>
 						<Button
 							variant={'ghost'}
-							className="text-foreground/80 h-7 px-2 gap-1.5"
+							className="text-foreground/80 h-7 px-1.5 gap-1.5"
 							onClick={() => copyToClipboard(info.getValue() as string)}
 						>
 							{info.getValue() as string}

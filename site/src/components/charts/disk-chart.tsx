@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/chart'
 import { formatShortDate, formatShortTime } from '@/lib/utils'
 import { useMemo } from 'react'
+import Spinner from '../spinner'
 // for (const data of chartData) {
 //   data.month = formatDateShort(data.month)
 // }
@@ -37,6 +38,10 @@ export default function ({
 	// 	return ticks
 	// }, [diskSize])
 
+	if (!chartData.length) {
+		return <Spinner />
+	}
+
 	return (
 		<ChartContainer config={chartConfig} className="h-full w-full absolute aspect-auto">
 			<AreaChart
@@ -45,14 +50,13 @@ export default function ({
 				margin={{
 					left: 0,
 					right: 0,
-					top: 7,
-					bottom: 7,
+					top: 0,
+					bottom: 0,
 				}}
 			>
 				<CartesianGrid vertical={false} />
 				<YAxis
 					domain={[0, diskSize]}
-					tickCount={10}
 					// ticks={ticks}
 					tickLine={false}
 					axisLine={false}

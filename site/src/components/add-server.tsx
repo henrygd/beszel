@@ -26,8 +26,8 @@ export function AddServerButton() {
 	function copyDockerCompose(port: string) {
 		copyToClipboard(`services:
   agent:
-    image: 'henrygd/monitor-agent'
-    container_name: 'monitor-agent'
+    image: 'henrygd/ubik-agent'
+    container_name: 'ubik-agent'
     restart: unless-stopped
     ports:
       - '${port}:45876'
