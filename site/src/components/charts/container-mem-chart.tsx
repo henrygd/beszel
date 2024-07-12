@@ -11,14 +11,7 @@ import { useMemo } from 'react'
 import { formatShortDate, formatShortTime } from '@/lib/utils'
 import Spinner from '../spinner'
 
-export default function ({
-	chartData,
-	max,
-}: {
-	chartData: Record<string, number | string>[]
-	max: number
-}) {
-	console.log('max', max)
+export default function ({ chartData }: { chartData: Record<string, number | string>[] }) {
 	const chartConfig = useMemo(() => {
 		let config = {} as Record<
 			string,
@@ -63,6 +56,7 @@ export default function ({
 			<AreaChart
 				accessibilityLayer
 				data={chartData}
+				reverseStackOrder={true}
 				margin={{
 					top: 10,
 				}}
@@ -71,12 +65,16 @@ export default function ({
 			>
 				<CartesianGrid vertical={false} />
 				<YAxis
-					domain={[0, max]}
-					tickCount={9}
+					domain={[0, (max: number) => Math.ceil(max)]}
+					// tickCount={9}
 					allowDecimals={false}
 					tickLine={false}
 					axisLine={false}
-					tickFormatter={(v) => `${Math.ceil(v / 1024)} GiB`}
+					unit={' GiB'}
+					tickFormatter={(x) => {
+						x = x / 1024
+						return x % 1 === 0 ? x : x.toFixed(1)
+					}}
 				/>
 				<XAxis
 					dataKey="time"
@@ -89,10 +87,8 @@ export default function ({
 				<ChartTooltip
 					cursor={false}
 					labelFormatter={formatShortDate}
-					// itemSorter={(item) => {
-					// 	console.log('itemSorter', item)
-					// 	return -item.value
-					// }}
+					// @ts-ignore
+					itemSorter={(a, b) => b.value - a.value}
 					content={<ChartTooltipContent unit=" MiB" indicator="line" />}
 				/>
 				{Object.keys(chartConfig).map((key) => (
@@ -101,7 +97,7 @@ export default function ({
 						// isAnimationActive={false}
 						animateNewValues={false}
 						dataKey={key}
-						type="natural"
+						type="monotone"
 						fill={chartConfig[key].color}
 						fillOpacity={0.4}
 						stroke={chartConfig[key].color}

@@ -61,12 +61,12 @@ export default function ({
 				<ChartTooltip
 					cursor={false}
 					content={
-						<ChartTooltipContent unit=" GiB" labelFormatter={formatShortDate} indicator="line" />
+						<ChartTooltipContent unit="GiB" labelFormatter={formatShortDate} indicator="line" />
 					}
 				/>
 				<Area
 					dataKey="memUsed"
-					type="bump"
+					type="monotone"
 					fill="var(--color-memUsed)"
 					fillOpacity={0.4}
 					stroke="var(--color-memUsed)"

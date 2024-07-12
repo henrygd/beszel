@@ -19,13 +19,7 @@ const chartConfig = {
 	},
 } satisfies ChartConfig
 
-export default function ({
-	chartData,
-	max,
-}: {
-	chartData: { time: string; cpu: number }[]
-	max: number
-}) {
+export default function ({ chartData }: { chartData: { time: string; cpu: number }[] }) {
 	if (!chartData?.length) {
 		return <Spinner />
 	}
@@ -35,7 +29,7 @@ export default function ({
 			<AreaChart accessibilityLayer data={chartData} margin={{ top: 10 }}>
 				<CartesianGrid vertical={false} />
 				<YAxis
-					domain={[0, max]}
+					domain={[0, (max: number) => Math.ceil(max)]}
 					width={47}
 					// tickCount={5}
 					tickLine={false}

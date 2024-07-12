@@ -82,7 +82,7 @@ export default function ({
 				/>
 				<Area
 					dataKey="diskUsed"
-					type="bump"
+					type="monotone"
 					fill="var(--color-diskUsed)"
 					fillOpacity={0.4}
 					stroke="var(--color-diskUsed)"

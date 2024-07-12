@@ -31,14 +31,12 @@ export default function ServerDetail({ name }: { name: string }) {
 	const [containers, setContainers] = useState([] as ContainerStatsRecord[])
 
 	const [serverStats, setServerStats] = useState([] as SystemStatsRecord[])
-	const [cpuChartData, setCpuChartData] = useState(
-		{} as { max: number; data: { time: string; cpu: number }[] }
-	)
+	const [cpuChartData, setCpuChartData] = useState([] as { time: string; cpu: number }[])
 	const [memChartData, setMemChartData] = useState(
-		{} as { time: string; mem: number; memUsed: number }[]
+		[] as { time: string; mem: number; memUsed: number }[]
 	)
 	const [diskChartData, setDiskChartData] = useState(
-		{} as { time: string; disk: number; diskUsed: number }[]
+		[] as { time: string; disk: number; diskUsed: number }[]
 	)
 	const [containerCpuChartData, setContainerCpuChartData] = useState(
 		[] as Record<string, number | string>[]
@@ -51,7 +49,7 @@ export default function ServerDetail({ name }: { name: string }) {
 		document.title = name
 		return () => {
 			setContainerCpuChartData([])
-			setCpuChartData({} as { max: number; data: { time: string; cpu: number }[] })
+			setCpuChartData([])
 			setMemChartData([])
 			setDiskChartData([])
 		}
@@ -70,7 +68,7 @@ export default function ServerDetail({ name }: { name: string }) {
 				sort: '-created',
 			})
 			.then((records) => {
-				console.log('stats', records)
+				// console.log('sctats', records)
 				setServerStats(records.items)
 			})
 	}, [server])
@@ -80,35 +78,32 @@ export default function ServerDetail({ name }: { name: string }) {
 		if (!serverStats.length) {
 			return
 		}
-		let maxCpu = 0
+		// let maxCpu = 0
 		const cpuData = [] as { time: string; cpu: number }[]
 		const memData = [] as { time: string; mem: number; memUsed: number }[]
 		const diskData = [] as { time: string; disk: number; diskUsed: number }[]
 		for (let { created, stats } of serverStats) {
 			cpuData.push({ time: created, cpu: stats.c })
-			maxCpu = Math.max(maxCpu, stats.c)
+			// maxCpu = Math.max(maxCpu, stats.c)
 			memData.push({ time: created, mem: stats.m, memUsed: stats.mu })
 			diskData.push({ time: created, disk: stats.d, diskUsed: stats.du })
 		}
-		setCpuChartData({
-			max: Math.ceil(maxCpu),
-			data: cpuData.reverse(),
-		})
+		setCpuChartData(cpuData.reverse())
 		setMemChartData(memData.reverse())
 		setDiskChartData(diskData.reverse())
 	}, [serverStats])
 
 	useEffect(() => {
 		if ($servers.get().length === 0) {
-			console.log('skipping')
+			// console.log('skipping')
 			return
 		}
-		console.log('running')
+		// console.log('running')
 		const matchingServer = servers.find((s) => s.name === name) as SystemRecord
 
 		setServer(matchingServer)
 
-		console.log('matchingServer', matchingServer)
+		console.log('found server', matchingServer)
 		// pb.collection<SystemRecord>('systems')
 		// 	.getOne(serverId)
 		// 	.then((record) => {
@@ -129,7 +124,7 @@ export default function ServerDetail({ name }: { name: string }) {
 
 	// container stats for charts
 	useEffect(() => {
-		console.log('containers', containers)
+		// console.log('containers', containers)
 		const containerCpuData = [] as Record<string, number | string>[]
 		const containerMemData = [] as Record<string, number | string>[]
 
@@ -153,7 +148,7 @@ export default function ServerDetail({ name }: { name: string }) {
 				<Card className="pb-2">
 					<CardHeader>
 						<CardTitle className="flex gap-2 justify-between">
-							<span>CPU Usage</span>
+							<span>Total CPU Usage</span>
 							<CpuIcon className="opacity-70" />
 						</CardTitle>
 						<CardDescription>
@@ -162,7 +157,7 @@ export default function ServerDetail({ name }: { name: string }) {
 					</CardHeader>
 					<CardContent className={'pl-1 w-[calc(100%-2em)] h-52 relative'}>
 						<Suspense fallback={<Spinner />}>
-							<CpuChart chartData={cpuChartData.data} max={cpuChartData.max} />
+							<CpuChart chartData={cpuChartData} />
 						</Suspense>
 					</CardContent>
 				</Card>
@@ -177,15 +172,15 @@ export default function ServerDetail({ name }: { name: string }) {
 						</CardHeader>
 						<CardContent className={'pl-1 w-[calc(100%-2em)] h-52 relative'}>
 							<Suspense fallback={<Spinner />}>
-								<ContainerCpuChart chartData={containerCpuChartData} max={cpuChartData.max} />
+								<ContainerCpuChart chartData={containerCpuChartData} />
 							</Suspense>
 						</CardContent>
 					</Card>
 				)}
 				<Card className="pb-2">
 					<CardHeader>
-						<CardTitle>Memory Usage</CardTitle>
-						<CardDescription>Precise usage at the recorded time</CardDescription>
+						<CardTitle>Total Memory Usage</CardTitle>
+						<CardDescription>Precise utilization at the recorded time</CardDescription>
 					</CardHeader>
 					<CardContent className={'pl-1 w-[calc(100%-2em)] h-52 relative'}>
 						<Suspense fallback={<Spinner />}>
@@ -204,12 +199,7 @@ export default function ServerDetail({ name }: { name: string }) {
 						</CardHeader>
 						<CardContent className={'pl-1 w-[calc(100%-2em)] h-52 relative'}>
 							<Suspense fallback={<Spinner />}>
-								{server?.stats?.m && (
-									<ContainerMemChart
-										chartData={containerMemChartData}
-										max={server.stats.m * 1024}
-									/>
-								)}
+								{server?.stats?.m && <ContainerMemChart chartData={containerMemChartData} />}
 							</Suspense>
 						</CardContent>
 					</Card>

@@ -11,13 +11,7 @@ import { useMemo } from 'react'
 import { formatShortDate, formatShortTime } from '@/lib/utils'
 import Spinner from '../spinner'
 
-export default function ({
-	chartData,
-	max,
-}: {
-	chartData: Record<string, number | string>[]
-	max: number
-}) {
+export default function ({ chartData }: { chartData: Record<string, number | string>[] }) {
 	const chartConfig = useMemo(() => {
 		let config = {} as Record<
 			string,
@@ -65,8 +59,7 @@ export default function ({
 				margin={{
 					top: 10,
 				}}
-
-				// reverseStackOrder={true}
+				reverseStackOrder={true}
 			>
 				<CartesianGrid vertical={false} />
 				<YAxis
@@ -88,10 +81,8 @@ export default function ({
 				<ChartTooltip
 					cursor={false}
 					labelFormatter={formatShortDate}
-					// itemSorter={(item) => {
-					// 	console.log('itemSorter', item)
-					// 	return -item.value
-					// }}
+					// @ts-ignore
+					itemSorter={(a, b) => b.value - a.value}
 					content={<ChartTooltipContent unit="%" indicator="line" />}
 				/>
 				{Object.keys(chartConfig).map((key) => (
@@ -100,7 +91,7 @@ export default function ({
 						// isAnimationActive={false}
 						animateNewValues={false}
 						dataKey={key}
-						type="bump"
+						type="monotone"
 						fill={chartConfig[key].color}
 						fillOpacity={0.4}
 						stroke={chartConfig[key].color}
