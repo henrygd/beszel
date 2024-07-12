@@ -62,16 +62,20 @@ export default function ({
 			<AreaChart
 				accessibilityLayer
 				data={chartData}
+				margin={{
+					top: 10,
+				}}
 
 				// reverseStackOrder={true}
 			>
 				<CartesianGrid vertical={false} />
 				<YAxis
-					domain={[0, max]}
-					tickCount={5}
+					domain={[0, (max: number) => Math.ceil(max)]}
+					// tickCount={5}
 					tickLine={false}
 					axisLine={false}
-					tickFormatter={(v) => `${v}%`}
+					unit={'%'}
+					tickFormatter={(x) => (x % 1 === 0 ? x : x.toFixed(1))}
 				/>
 				<XAxis
 					dataKey="time"
@@ -88,7 +92,7 @@ export default function ({
 					// 	console.log('itemSorter', item)
 					// 	return -item.value
 					// }}
-					content={<ChartTooltipContent indicator="line" />}
+					content={<ChartTooltipContent unit="%" indicator="line" />}
 				/>
 				{Object.keys(chartConfig).map((key) => (
 					<Area
@@ -96,7 +100,7 @@ export default function ({
 						// isAnimationActive={false}
 						animateNewValues={false}
 						dataKey={key}
-						type="natural"
+						type="bump"
 						fill={chartConfig[key].color}
 						fillOpacity={0.4}
 						stroke={chartConfig[key].color}

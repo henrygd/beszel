@@ -36,10 +36,7 @@ export default function ({
 				accessibilityLayer
 				data={chartData}
 				margin={{
-					left: 0,
-					right: 0,
-					top: 0,
-					bottom: 0,
+					top: 10,
 				}}
 			>
 				<CartesianGrid vertical={false} />
@@ -48,6 +45,7 @@ export default function ({
 					domain={[0, totalMem]}
 					tickCount={9}
 					tickLine={false}
+					allowDecimals={false}
 					axisLine={false}
 					tickFormatter={(v) => `${v} GiB`}
 				/>
@@ -62,11 +60,13 @@ export default function ({
 				/>
 				<ChartTooltip
 					cursor={false}
-					content={<ChartTooltipContent labelFormatter={formatShortDate} indicator="line" />}
+					content={
+						<ChartTooltipContent unit=" GiB" labelFormatter={formatShortDate} indicator="line" />
+					}
 				/>
 				<Area
 					dataKey="memUsed"
-					type="natural"
+					type="bump"
 					fill="var(--color-memUsed)"
 					fillOpacity={0.4}
 					stroke="var(--color-memUsed)"

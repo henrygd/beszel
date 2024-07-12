@@ -52,26 +52,18 @@ const Layout = () => {
 		<>
 			<div className="container">
 				<div className="flex items-center h-16 bg-card px-6 border bt-0 rounded-md my-5">
-					<TooltipProvider delayDuration={300}>
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<a
-									href="/"
-									aria-label="Home"
-									className={'p-2 pl-0 -mb-1'}
-									onClick={(e) => {
-										e.preventDefault()
-										navigate('/')
-									}}
-								>
-									<Logo className="h-[1.1em] fill-foreground" />
-								</a>
-							</TooltipTrigger>
-							<TooltipContent>
-								<p>Home</p>
-							</TooltipContent>
-						</Tooltip>
-					</TooltipProvider>
+					<a
+						href="/"
+						aria-label="Home"
+						className={'p-2 pl-0 -mb-1'}
+						onClick={(e) => {
+							e.preventDefault()
+							navigate('/')
+						}}
+					>
+						<Logo className="h-[1.1em] fill-foreground" />
+					</a>
+
 					<div className={'flex gap-1 ml-auto'}>
 						<TooltipProvider delayDuration={300}>
 							<Tooltip>

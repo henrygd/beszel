@@ -16,18 +16,19 @@ type SystemData struct {
 }
 
 type SystemStats struct {
-	Cpu      float64 `json:"cpu"`
-	Mem      float64 `json:"mem"`
-	MemUsed  float64 `json:"memUsed"`
-	MemPct   float64 `json:"memPct"`
-	Disk     float64 `json:"disk"`
-	DiskUsed float64 `json:"diskUsed"`
-	DiskPct  float64 `json:"diskPct"`
+	Cpu      float64 `json:"c"`
+	Mem      float64 `json:"m"`
+	MemUsed  float64 `json:"mu"`
+	MemPct   float64 `json:"mp"`
+	MemBuf   float64 `json:"mb"`
+	Disk     float64 `json:"d"`
+	DiskUsed float64 `json:"du"`
+	DiskPct  float64 `json:"dp"`
 }
 
 type ContainerStats struct {
-	Name   string  `json:"name"`
-	Cpu    float64 `json:"cpu"`
-	Mem    float64 `json:"mem"`
-	MemPct float64 `json:"memPct"`
+	Name string  `json:"n"`
+	Cpu  float64 `json:"c"`
+	Mem  float64 `json:"m"`
+	// MemPct float64 `json:"mp"`
 }

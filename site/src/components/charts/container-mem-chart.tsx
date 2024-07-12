@@ -63,6 +63,9 @@ export default function ({
 			<AreaChart
 				accessibilityLayer
 				data={chartData}
+				margin={{
+					top: 10,
+				}}
 
 				// reverseStackOrder={true}
 			>
@@ -70,6 +73,7 @@ export default function ({
 				<YAxis
 					domain={[0, max]}
 					tickCount={9}
+					allowDecimals={false}
 					tickLine={false}
 					axisLine={false}
 					tickFormatter={(v) => `${Math.ceil(v / 1024)} GiB`}
@@ -89,7 +93,7 @@ export default function ({
 					// 	console.log('itemSorter', item)
 					// 	return -item.value
 					// }}
-					content={<ChartTooltipContent indicator="line" />}
+					content={<ChartTooltipContent unit=" MiB" indicator="line" />}
 				/>
 				{Object.keys(chartConfig).map((key) => (
 					<Area

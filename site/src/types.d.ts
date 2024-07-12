@@ -9,13 +9,20 @@ export interface SystemRecord extends RecordModel {
 }
 
 export interface SystemStats {
-	cpu: number
-	disk: number
-	diskPct: number
-	diskUsed: number
-	mem: number
-	memPct: number
-	memUsed: number
+	/** cpu percent */
+	c: number
+	/** disk size (gb) */
+	d: number
+	/** disk percent */
+	dp: number
+	/** disk used (gb) */
+	du: number
+	/** total memory (gb) */
+	m: number
+	/** memory percent */
+	mp: number
+	/** memory used (gb) */
+	mu: number
 }
 
 export interface ContainerStatsRecord extends RecordModel {
@@ -24,10 +31,12 @@ export interface ContainerStatsRecord extends RecordModel {
 }
 
 interface ContainerStats {
-	name: string
-	cpu: number
-	mem: number
-	memPct: number
+	/** name */
+	n: string
+	/** cpu percent */
+	c: number
+	/** memory used (gb) */
+	m: number
 }
 
 export interface SystemStatsRecord extends RecordModel {

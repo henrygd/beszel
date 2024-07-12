@@ -85,10 +85,10 @@ export default function ServerDetail({ name }: { name: string }) {
 		const memData = [] as { time: string; mem: number; memUsed: number }[]
 		const diskData = [] as { time: string; disk: number; diskUsed: number }[]
 		for (let { created, stats } of serverStats) {
-			cpuData.push({ time: created, cpu: stats.cpu })
-			maxCpu = Math.max(maxCpu, stats.cpu)
-			memData.push({ time: created, mem: stats.mem, memUsed: stats.memUsed })
-			diskData.push({ time: created, disk: stats.disk, diskUsed: stats.diskUsed })
+			cpuData.push({ time: created, cpu: stats.c })
+			maxCpu = Math.max(maxCpu, stats.c)
+			memData.push({ time: created, mem: stats.m, memUsed: stats.mu })
+			diskData.push({ time: created, disk: stats.d, diskUsed: stats.du })
 		}
 		setCpuChartData({
 			max: Math.ceil(maxCpu),
@@ -137,8 +137,8 @@ export default function ServerDetail({ name }: { name: string }) {
 			let cpuData = { time: created } as Record<string, number | string>
 			let memData = { time: created } as Record<string, number | string>
 			for (let container of stats) {
-				cpuData[container.name] = container.cpu
-				memData[container.name] = container.mem
+				cpuData[container.n] = container.c
+				memData[container.n] = container.m
 			}
 			containerCpuData.push(cpuData)
 			containerMemData.push(memData)
@@ -157,7 +157,7 @@ export default function ServerDetail({ name }: { name: string }) {
 							<CpuIcon className="opacity-70" />
 						</CardTitle>
 						<CardDescription>
-							Average usage of the one minute preceding the recorded time
+							System-wide CPU utilization of the preceding one minute as a percentage
 						</CardDescription>
 					</CardHeader>
 					<CardContent className={'pl-1 w-[calc(100%-2em)] h-52 relative'}>
@@ -166,20 +166,22 @@ export default function ServerDetail({ name }: { name: string }) {
 						</Suspense>
 					</CardContent>
 				</Card>
-				<Card className="pb-2">
-					<CardHeader>
-						<CardTitle className="flex gap-2 justify-between">
-							<span>Docker CPU Usage</span>
-							<CpuIcon className="opacity-70" />
-						</CardTitle>{' '}
-						<CardDescription>CPU usage of docker containers</CardDescription>
-					</CardHeader>
-					<CardContent className={'pl-1 w-[calc(100%-2em)] h-52 relative'}>
-						<Suspense fallback={<Spinner />}>
-							<ContainerCpuChart chartData={containerCpuChartData} max={cpuChartData.max} />
-						</Suspense>
-					</CardContent>
-				</Card>
+				{containerCpuChartData.length > 0 && (
+					<Card className="pb-2">
+						<CardHeader>
+							<CardTitle className="flex gap-2 justify-between">
+								<span>Docker CPU Usage</span>
+								<CpuIcon className="opacity-70" />
+							</CardTitle>{' '}
+							<CardDescription>CPU utilization of docker containers</CardDescription>
+						</CardHeader>
+						<CardContent className={'pl-1 w-[calc(100%-2em)] h-52 relative'}>
+							<Suspense fallback={<Spinner />}>
+								<ContainerCpuChart chartData={containerCpuChartData} max={cpuChartData.max} />
+							</Suspense>
+						</CardContent>
+					</Card>
+				)}
 				<Card className="pb-2">
 					<CardHeader>
 						<CardTitle>Memory Usage</CardTitle>
@@ -191,25 +193,27 @@ export default function ServerDetail({ name }: { name: string }) {
 						</Suspense>
 					</CardContent>
 				</Card>
-				<Card className="pb-2">
-					<CardHeader>
-						<CardTitle className="flex gap-2 justify-between">
-							<span>Docker Memory Usage</span>
-							<MemoryStickIcon className="opacity-70" />
-						</CardTitle>{' '}
-						<CardDescription>Memory usage of docker containers</CardDescription>
-					</CardHeader>
-					<CardContent className={'pl-1 w-[calc(100%-2em)] h-52 relative'}>
-						<Suspense fallback={<Spinner />}>
-							{server?.stats?.mem && (
-								<ContainerMemChart
-									chartData={containerMemChartData}
-									max={server.stats.mem * 1024}
-								/>
-							)}
-						</Suspense>
-					</CardContent>
-				</Card>
+				{containerMemChartData.length > 0 && (
+					<Card className="pb-2">
+						<CardHeader>
+							<CardTitle className="flex gap-2 justify-between">
+								<span>Docker Memory Usage</span>
+								<MemoryStickIcon className="opacity-70" />
+							</CardTitle>{' '}
+							<CardDescription>Memory usage of docker containers</CardDescription>
+						</CardHeader>
+						<CardContent className={'pl-1 w-[calc(100%-2em)] h-52 relative'}>
+							<Suspense fallback={<Spinner />}>
+								{server?.stats?.m && (
+									<ContainerMemChart
+										chartData={containerMemChartData}
+										max={server.stats.m * 1024}
+									/>
+								)}
+							</Suspense>
+						</CardContent>
+					</Card>
+				)}
 				<Card className="pb-2">
 					<CardHeader>
 						<CardTitle>Disk Usage</CardTitle>

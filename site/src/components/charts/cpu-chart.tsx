@@ -7,7 +7,6 @@ import {
 	ChartTooltipContent,
 } from '@/components/ui/chart'
 import { formatShortDate, formatShortTime } from '@/lib/utils'
-import { useEffect } from 'react'
 import Spinner from '../spinner'
 // for (const data of chartData) {
 //   data.month = formatDateShort(data.month)
@@ -33,14 +32,16 @@ export default function ({
 
 	return (
 		<ChartContainer config={chartConfig} className="h-full w-full absolute aspect-auto">
-			<AreaChart accessibilityLayer data={chartData}>
+			<AreaChart accessibilityLayer data={chartData} margin={{ top: 10 }}>
 				<CartesianGrid vertical={false} />
 				<YAxis
 					domain={[0, max]}
-					tickCount={5}
+					width={47}
+					// tickCount={5}
 					tickLine={false}
 					axisLine={false}
-					tickFormatter={(v) => `${v}%`}
+					unit={'%'}
+					// tickFormatter={(v) => `${v}%`}
 				/>
 				{/* todo: short time if first date is same day, otherwise short date */}
 				<XAxis
@@ -54,16 +55,12 @@ export default function ({
 				<ChartTooltip
 					cursor={false}
 					content={
-						<ChartTooltipContent
-							labelFormatter={formatShortDate}
-							defaultValue={'%'}
-							indicator="line"
-						/>
+						<ChartTooltipContent unit="%" labelFormatter={formatShortDate} indicator="line" />
 					}
 				/>
 				<Area
 					dataKey="cpu"
-					type="natural"
+					type="monotone"
 					fill="var(--color-cpu)"
 					fillOpacity={0.4}
 					stroke="var(--color-cpu)"

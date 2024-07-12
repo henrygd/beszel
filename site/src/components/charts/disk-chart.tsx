@@ -50,17 +50,20 @@ export default function ({
 				margin={{
 					left: 0,
 					right: 0,
-					top: 0,
+					top: 10,
 					bottom: 0,
 				}}
 			>
 				<CartesianGrid vertical={false} />
 				<YAxis
+					width={75}
 					domain={[0, diskSize]}
 					// ticks={ticks}
+					tickCount={9}
+					minTickGap={8}
 					tickLine={false}
 					axisLine={false}
-					tickFormatter={(v) => `${v} GiB`}
+					unit={' GiB'}
 				/>
 				{/* todo: short time if first date is same day, otherwise short date */}
 				<XAxis
@@ -73,11 +76,13 @@ export default function ({
 				/>
 				<ChartTooltip
 					cursor={false}
-					content={<ChartTooltipContent labelFormatter={formatShortDate} indicator="line" />}
+					content={
+						<ChartTooltipContent unit=" GiB" labelFormatter={formatShortDate} indicator="line" />
+					}
 				/>
 				<Area
 					dataKey="diskUsed"
-					type="natural"
+					type="bump"
 					fill="var(--color-diskUsed)"
 					fillOpacity={0.4}
 					stroke="var(--color-diskUsed)"

@@ -17,6 +17,7 @@ import { Copy, Plus } from 'lucide-react'
 import { useState, useRef, MutableRefObject, useEffect } from 'react'
 import { useStore } from '@nanostores/react'
 import { copyToClipboard } from '@/lib/utils'
+import { SystemStats } from '@/types'
 
 export function AddServerButton() {
 	const [open, setOpen] = useState(false)
@@ -53,14 +54,14 @@ export function AddServerButton() {
 		const formData = new FormData(e.target as HTMLFormElement)
 		const data = Object.fromEntries(formData) as Record<string, any>
 		data.stats = {
-			cpu: 0,
-			mem: 0,
-			memUsed: 0,
-			memPct: 0,
-			disk: 0,
-			diskUsed: 0,
-			diskPct: 0,
-		}
+			c: 0,
+			d: 0,
+			dp: 0,
+			du: 0,
+			m: 0,
+			mp: 0,
+			mu: 0,
+		} as SystemStats
 		try {
 			setOpen(false)
 			await pb.collection('systems').create(data)
@@ -97,7 +98,7 @@ export function AddServerButton() {
 						</div>
 						<div className="grid grid-cols-4 items-center gap-4">
 							<Label htmlFor="ip" className="text-right">
-								IP Address
+								Host / IP
 							</Label>
 							<Input id="ip" name="ip" className="col-span-3" required />
 						</div>

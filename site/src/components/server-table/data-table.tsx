@@ -52,6 +52,8 @@ import {
 	Cpu,
 	MemoryStick,
 	HardDrive,
+	PauseIcon,
+	CopyIcon,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { $servers, pb, navigate } from '@/lib/stores'
@@ -109,7 +111,7 @@ export default function () {
 					<span className="flex gap-0.5 items-center text-base">
 						<span
 							className={cn(
-								'w-2.5 h-2.5 left-0 rounded-full',
+								'w-2 h-2 left-0 rounded-full',
 								info.row.original.active ? 'bg-green-500' : 'bg-red-500'
 							)}
 							style={{ marginBottom: '-1px' }}
@@ -120,24 +122,24 @@ export default function () {
 							onClick={() => copyToClipboard(info.getValue() as string)}
 						>
 							{info.getValue() as string}
-							<Copy className="h-3.5 w-3.5 opacity-70" />
+							<CopyIcon className="h-3 w-3" />
 						</Button>
 					</span>
 				),
 				header: ({ column }) => sortableHeader(column, 'Server', Server),
 			},
 			{
-				accessorKey: 'stats.cpu',
+				accessorKey: 'stats.c',
 				cell: CellFormatter,
 				header: ({ column }) => sortableHeader(column, 'CPU', Cpu),
 			},
 			{
-				accessorKey: 'stats.memPct',
+				accessorKey: 'stats.mp',
 				cell: CellFormatter,
 				header: ({ column }) => sortableHeader(column, 'Memory', MemoryStick),
 			},
 			{
-				accessorKey: 'stats.diskPct',
+				accessorKey: 'stats.dp',
 				cell: CellFormatter,
 				header: ({ column }) => sortableHeader(column, 'Disk', HardDrive),
 			},
@@ -169,8 +171,8 @@ export default function () {
 									<DropdownMenuItem onClick={() => console.log('pause server')}>
 										Pause
 									</DropdownMenuItem>
-									<DropdownMenuItem onClick={() => navigator.clipboard.writeText(system.ip)}>
-										Copy IP address
+									<DropdownMenuItem onClick={() => copyToClipboard(system.ip)}>
+										Copy host
 									</DropdownMenuItem>
 									<DropdownMenuSeparator />
 									<DropdownMenuItem
