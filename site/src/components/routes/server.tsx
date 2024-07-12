@@ -8,7 +8,8 @@ import CpuChart from '../charts/cpu-chart'
 import MemChart from '../charts/mem-chart'
 import DiskChart from '../charts/disk-chart'
 import ContainerCpuChart from '../charts/container-cpu-chart'
-import { CpuIcon } from 'lucide-react'
+import { CpuIcon, MemoryStickIcon } from 'lucide-react'
+import ContainerMemChart from '../charts/container-mem-chart'
 
 // const CpuChart = lazy(() => import('../cpu-chart'))
 
@@ -42,14 +43,17 @@ export default function ServerDetail({ name }: { name: string }) {
 	const [containerCpuChartData, setContainerCpuChartData] = useState(
 		[] as Record<string, number | string>[]
 	)
+	const [containerMemChartData, setContainerMemChartData] = useState(
+		[] as Record<string, number | string>[]
+	)
 
 	useEffect(() => {
 		document.title = name
 		return () => {
 			setContainerCpuChartData([])
 			setCpuChartData({} as { max: number; data: { time: string; cpu: number }[] })
-			setMemChartData([] as { time: string; mem: number; memUsed: number }[])
-			setDiskChartData([] as { time: string; disk: number; diskUsed: number }[])
+			setMemChartData([])
+			setDiskChartData([])
 		}
 	}, [name])
 
@@ -76,16 +80,18 @@ export default function ServerDetail({ name }: { name: string }) {
 		if (!serverStats.length) {
 			return
 		}
+		let maxCpu = 0
 		const cpuData = [] as { time: string; cpu: number }[]
 		const memData = [] as { time: string; mem: number; memUsed: number }[]
 		const diskData = [] as { time: string; disk: number; diskUsed: number }[]
 		for (let { created, stats } of serverStats) {
 			cpuData.push({ time: created, cpu: stats.cpu })
+			maxCpu = Math.max(maxCpu, stats.cpu)
 			memData.push({ time: created, mem: stats.mem, memUsed: stats.memUsed })
 			diskData.push({ time: created, disk: stats.disk, diskUsed: stats.diskUsed })
 		}
 		setCpuChartData({
-			max: Math.ceil(Math.max(...cpuData.map((d) => d.cpu))),
+			max: Math.ceil(maxCpu),
 			data: cpuData.reverse(),
 		})
 		setMemChartData(memData.reverse())
@@ -125,15 +131,20 @@ export default function ServerDetail({ name }: { name: string }) {
 	useEffect(() => {
 		console.log('containers', containers)
 		const containerCpuData = [] as Record<string, number | string>[]
+		const containerMemData = [] as Record<string, number | string>[]
 
 		for (let { created, stats } of containers) {
-			let obj = { time: created } as Record<string, number | string>
-			for (let { name, cpu } of stats) {
-				obj[name] = cpu
+			let cpuData = { time: created } as Record<string, number | string>
+			let memData = { time: created } as Record<string, number | string>
+			for (let container of stats) {
+				cpuData[container.name] = container.cpu
+				memData[container.name] = container.mem
 			}
-			containerCpuData.push(obj)
+			containerCpuData.push(cpuData)
+			containerMemData.push(memData)
 		}
 		setContainerCpuChartData(containerCpuData.reverse())
+		setContainerMemChartData(containerMemData.reverse())
 	}, [containers])
 
 	return (
@@ -175,9 +186,28 @@ export default function ServerDetail({ name }: { name: string }) {
 						<CardDescription>Precise usage at the recorded time</CardDescription>
 					</CardHeader>
 					<CardContent className={'pl-1 w-[calc(100%-2em)] h-52 relative'}>
-						{/* <Suspense fallback={<Spinner />}> */}
-						<MemChart chartData={memChartData} />
-						{/* </Suspense> */}
+						<Suspense fallback={<Spinner />}>
+							<MemChart chartData={memChartData} />
+						</Suspense>
+					</CardContent>
+				</Card>
+				<Card className="pb-2">
+					<CardHeader>
+						<CardTitle className="flex gap-2 justify-between">
+							<span>Docker Memory Usage</span>
+							<MemoryStickIcon className="opacity-70" />
+						</CardTitle>{' '}
+						<CardDescription>Memory usage of docker containers</CardDescription>
+					</CardHeader>
+					<CardContent className={'pl-1 w-[calc(100%-2em)] h-52 relative'}>
+						<Suspense fallback={<Spinner />}>
+							{server?.stats?.mem && (
+								<ContainerMemChart
+									chartData={containerMemChartData}
+									max={server.stats.mem * 1024}
+								/>
+							)}
+						</Suspense>
 					</CardContent>
 				</Card>
 				<Card className="pb-2">

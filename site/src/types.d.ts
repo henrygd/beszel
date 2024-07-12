@@ -27,7 +27,7 @@ interface ContainerStats {
 	name: string
 	cpu: number
 	mem: number
-	mempct: number
+	memPct: number
 }
 
 export interface SystemStatsRecord extends RecordModel {

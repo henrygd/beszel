@@ -10,7 +10,7 @@ import { buttonVariants } from './components/ui/button.tsx'
 import { Github } from 'lucide-react'
 import { useStore } from '@nanostores/react'
 import { Toaster } from './components/ui/toaster.tsx'
-import { Can, Logo } from './components/logo.tsx'
+import { Logo } from './components/logo.tsx'
 import {
 	TooltipProvider,
 	Tooltip,
@@ -51,19 +51,20 @@ const Layout = () => {
 	return (
 		<>
 			<div className="container">
-				<div className="flex items-center py-3.5 bg-card px-6 border bt-0 rounded-md my-5">
+				<div className="flex items-center h-16 bg-card px-6 border bt-0 rounded-md my-5">
 					<TooltipProvider delayDuration={300}>
 						<Tooltip>
 							<TooltipTrigger asChild>
 								<a
 									href="/"
 									aria-label="Home"
+									className={'p-2 pl-0 -mb-1'}
 									onClick={(e) => {
 										e.preventDefault()
 										navigate('/')
 									}}
 								>
-									<Logo className="h-5 fill-foreground" />
+									<Logo className="h-[1.1em] fill-foreground" />
 								</a>
 							</TooltipTrigger>
 							<TooltipContent>

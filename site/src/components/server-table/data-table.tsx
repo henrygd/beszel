@@ -69,7 +69,7 @@ function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	}
 	return (
 		<div className="flex gap-2 items-center">
-			<span className="grow block bg-muted h-4 relative rounded-sm overflow-hidden">
+			<span className="grow min-w-10 block bg-muted h-4 relative rounded-sm overflow-hidden">
 				<span
 					className={cn('absolute inset-0 w-full h-full origin-left', `bg-${color}-500`)}
 					style={{ transform: `scalex(${val}%)` }}
@@ -109,7 +109,7 @@ export default function () {
 					<span className="flex gap-0.5 items-center text-base">
 						<span
 							className={cn(
-								'w-2.5 h-2.5 block left-0 rounded-full',
+								'w-2.5 h-2.5 left-0 rounded-full',
 								info.row.original.active ? 'bg-green-500' : 'bg-red-500'
 							)}
 							style={{ marginBottom: '-1px' }}
@@ -159,12 +159,15 @@ export default function () {
 								</DropdownMenuTrigger>
 								<DropdownMenuContent align="end">
 									<DropdownMenuLabel>Actions</DropdownMenuLabel>
-									<DropdownMenuItem
+									{/* <DropdownMenuItem
 										onSelect={() => {
 											navigate(`/server/${system.name}`)
 										}}
 									>
 										View details
+									</DropdownMenuItem> */}
+									<DropdownMenuItem onClick={() => console.log('pause server')}>
+										Pause
 									</DropdownMenuItem>
 									<DropdownMenuItem onClick={() => navigator.clipboard.writeText(system.ip)}>
 										Copy IP address
