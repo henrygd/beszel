@@ -40,18 +40,24 @@ const App = () => {
 	// update favicon
 	useEffect(() => {
 		if (!authenticated || !servers.length) {
+			console.log('no auth favicon')
 			updateFavicon('/favicon.svg')
 		} else {
+			const cleanup = () => {
+				updateFavicon('/favicon.svg')
+			}
 			let up = false
 			for (const server of servers) {
 				if (server.status === 'down') {
+					console.log('down', server)
 					updateFavicon('/favicon-red.svg')
-					break
+					return cleanup
 				} else if (server.status === 'up') {
 					up = true
 				}
 			}
 			updateFavicon(up ? '/favicon-green.svg' : '/favicon.svg')
+			return cleanup
 		}
 		return () => {
 			updateFavicon('/favicon.svg')

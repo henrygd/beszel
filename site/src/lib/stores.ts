@@ -19,11 +19,11 @@ export const navigate = (urlString: string) => {
 	$router.open(urlString)
 }
 
-export const $servers = atom([] as SystemRecord[])
-
 export const $authenticated = atom(pb.authStore.isValid)
 pb.authStore.onChange(() => {
 	$authenticated.set(pb.authStore.isValid)
 })
+
+export const $servers = atom([] as SystemRecord[])
 
 export const $publicKey = atom('')

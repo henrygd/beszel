@@ -131,7 +131,7 @@ func main() {
 }
 
 func serverUpdateTicker() {
-	ticker := time.NewTicker(30 * time.Second)
+	ticker := time.NewTicker(60 * time.Second)
 	for range ticker.C {
 		updateServers()
 	}
@@ -220,9 +220,11 @@ func setInactive(record *models.Record) {
 		delete(serverConnections, record.Id)
 	}
 	// set inactive
-	record.Set("status", "down")
-	if err := app.Dao().SaveRecord(record); err != nil {
-		app.Logger().Error("Failed to update record: ", "err", err.Error())
+	if record.Get("status") != "down" {
+		record.Set("status", "down")
+		if err := app.Dao().SaveRecord(record); err != nil {
+			app.Logger().Error("Failed to update record: ", "err", err.Error())
+		}
 	}
 }
 

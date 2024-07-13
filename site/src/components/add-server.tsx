@@ -44,7 +44,6 @@ export function AddServerButton() {
 		}
 		// get public key
 		pb.send('/getkey', {}).then(({ key }) => {
-			console.log('key', key)
 			$publicKey.set(key)
 		})
 	}, [open])
@@ -77,12 +76,12 @@ export function AddServerButton() {
 			<DialogTrigger asChild>
 				<Button variant="outline" className="flex gap-1">
 					<Plus className="h-4 w-4 mr-auto" />
-					Add <span className="hidden sm:inline">Server</span>
+					Add <span className="hidden sm:inline">System</span>
 				</Button>
 			</DialogTrigger>
 			<DialogContent className="sm:max-w-[425px]">
 				<DialogHeader>
-					<DialogTitle>Add New Server</DialogTitle>
+					<DialogTitle>Add New System</DialogTitle>
 					<DialogDescription>
 						The agent must be running on the server to connect. Copy the{' '}
 						<code className="bg-muted px-1 rounded-sm">docker-compose.yml</code> for the agent
@@ -153,7 +152,7 @@ export function AddServerButton() {
 						>
 							Copy docker compose
 						</Button>
-						<Button>Add server</Button>
+						<Button>Add system</Button>
 					</DialogFooter>
 				</form>
 			</DialogContent>

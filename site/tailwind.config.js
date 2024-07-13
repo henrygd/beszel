@@ -11,7 +11,7 @@ module.exports = {
 	theme: {
 		container: {
 			center: true,
-			padding: '2rem',
+			padding: '1rem',
 			screens: {
 				'2xl': '1400px',
 			},
@@ -22,6 +22,9 @@ module.exports = {
 			// display: ['Inter', 'sans-serif'],
 		},
 		extend: {
+			screens: {
+				xs: '425px',
+			},
 			colors: {
 				green: {
 					50: '#EBF9F0',

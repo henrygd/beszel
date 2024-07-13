@@ -55,6 +55,7 @@ import {
 	PauseCircleIcon,
 	PlayCircleIcon,
 	Trash2Icon,
+	BellIcon,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { $servers, pb, navigate } from '@/lib/stores'
@@ -65,7 +66,7 @@ import { cn, copyToClipboard } from '@/lib/utils'
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	const val = info.getValue() as number
 	return (
-		<div className="flex gap-2 items-center">
+		<div className="flex gap-2 items-center tabular-nums tracking-tight">
 			<span className="grow min-w-10 block bg-muted h-4 relative rounded-sm overflow-hidden">
 				<span
 					className={cn(
@@ -103,12 +104,14 @@ export default function () {
 	const columns: ColumnDef<SystemRecord>[] = useMemo(() => {
 		return [
 			{
-				// size: 70,
+				// size: 200,
+				size: 200,
+				minSize: 0,
 				accessorKey: 'name',
 				cell: (info) => {
 					const { status } = info.row.original
 					return (
-						<span className="flex gap-0.5 items-center text-base">
+						<span className="flex gap-0.5 items-center text-base md:pr-5">
 							<span
 								className={cn('w-2 h-2 left-0 rounded-full', {
 									'bg-green-500': status === 'up',
@@ -147,18 +150,25 @@ export default function () {
 			},
 			{
 				id: 'actions',
-				size: 32,
-				maxSize: 32,
+				size: 120,
+				// minSize: 0,
 				cell: ({ row }) => {
 					const { id, name, status, host } = row.original
 					return (
-						<div className={'flex justify-end'}>
+						<div className={'flex justify-end items-center gap-1'}>
+							<Button
+								variant="ghost"
+								size={'icon'}
+								onClick={() => alert('notifications coming soon')}
+							>
+								<BellIcon className="h-[1.2em] w-[1.2em] pointer-events-none" />
+							</Button>
 							<AlertDialog>
 								<DropdownMenu>
 									<DropdownMenuTrigger asChild>
-										<Button variant="ghost" className="h-8 w-8 p-0">
+										<Button variant="ghost" size={'icon'}>
 											<span className="sr-only">Open menu</span>
-											<MoreHorizontal className="h-4 w-4" />
+											<MoreHorizontal className="w-5" />
 										</Button>
 									</DropdownMenuTrigger>
 									<DropdownMenuContent align="end">
@@ -241,6 +251,11 @@ export default function () {
 			sorting,
 			columnFilters,
 		},
+		defaultColumn: {
+			minSize: 0,
+			size: Number.MAX_SAFE_INTEGER,
+			maxSize: Number.MAX_SAFE_INTEGER,
+		},
 	})
 
 	return (
@@ -294,8 +309,13 @@ export default function () {
 										{row.getVisibleCells().map((cell) => (
 											<TableCell
 												key={cell.id}
-												style={{ width: `${cell.column.getSize()}px` }}
-												className={'overflow-hidden relative'}
+												style={{
+													width:
+														cell.column.getSize() === Number.MAX_SAFE_INTEGER
+															? 'auto'
+															: cell.column.getSize(),
+												}}
+												className={'overflow-hidden relative py-3'}
 											>
 												{flexRender(cell.column.columnDef.cell, cell.getContext())}
 											</TableCell>
