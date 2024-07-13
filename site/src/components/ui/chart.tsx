@@ -124,14 +124,12 @@ const ChartTooltipContent = React.forwardRef<
 	) => {
 		const { config } = useChart()
 
-		payload = React.useMemo(() => {
+		React.useMemo(() => {
 			if (itemSorter) {
-				return payload.sort(itemSorter)
+				// @ts-ignore
+				payload?.sort(itemSorter)
 			}
-			return payload
 		}, [itemSorter, payload])
-
-		// console.log('iiiiii', itemSorter)
 
 		const tooltipLabel = React.useMemo(() => {
 			if (hideLabel || !payload?.length) {

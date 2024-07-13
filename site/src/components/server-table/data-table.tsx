@@ -27,7 +27,6 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
-	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
@@ -53,6 +52,9 @@ import {
 	MemoryStick,
 	HardDrive,
 	CopyIcon,
+	PauseCircleIcon,
+	PlayCircleIcon,
+	Trash2Icon,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { $servers, pb, navigate } from '@/lib/stores'
@@ -62,12 +64,6 @@ import { cn, copyToClipboard } from '@/lib/utils'
 
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	const val = info.getValue() as number
-	// let color = 'green'
-	// if (val > 80) {
-	// 	color = 'red'
-	// } else if (val > 50) {
-	// 	color = 'yellow'
-	// }
 	return (
 		<div className="flex gap-2 items-center">
 			<span className="grow min-w-10 block bg-muted h-4 relative rounded-sm overflow-hidden">
@@ -181,14 +177,28 @@ export default function () {
 												})
 											}}
 										>
-											{status === 'paused' ? 'Resume' : 'Pause'}
+											{status === 'paused' ? (
+												<>
+													<PlayCircleIcon className="mr-2.5 h-4 w-4" />
+													Resume
+												</>
+											) : (
+												<>
+													<PauseCircleIcon className="mr-2.5 h-4 w-4" />
+													Pause
+												</>
+											)}
 										</DropdownMenuItem>
 										<DropdownMenuItem onClick={() => copyToClipboard(host)}>
+											<CopyIcon className="mr-2.5 h-4 w-4" />
 											Copy host
 										</DropdownMenuItem>
 										<DropdownMenuSeparator />
 										<AlertDialogTrigger asChild>
-											<DropdownMenuItem>Delete server</DropdownMenuItem>
+											<DropdownMenuItem>
+												<Trash2Icon className="mr-2.5 h-4 w-4" />
+												Delete
+											</DropdownMenuItem>
 										</AlertDialogTrigger>
 									</DropdownMenuContent>
 								</DropdownMenu>
@@ -236,7 +246,7 @@ export default function () {
 	return (
 		<>
 			<div className="w-full">
-				<div className="flex items-center mb-4">
+				<div className="flex items-center mb-4 gap-2">
 					<Input
 						// @ts-ignore
 						placeholder="Filter..."
@@ -271,7 +281,9 @@ export default function () {
 									<TableRow
 										key={row.original.id}
 										data-state={row.getIsSelected() && 'selected'}
-										className="cursor-pointer"
+										className={cn('cursor-pointer transition-opacity', {
+											'opacity-50': row.original.status === 'paused',
+										})}
 										onClick={(e) => {
 											const target = e.target as HTMLElement
 											if (target.tagName !== 'BUTTON' && !target.hasAttribute('role')) {

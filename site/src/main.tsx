@@ -3,11 +3,11 @@ import React, { Suspense, lazy, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import Home from './components/routes/home.tsx'
 import { ThemeProvider } from './components/theme-provider.tsx'
-import { $authenticated, $router, $servers, navigate } from './lib/stores.ts'
+import { $authenticated, $router, $servers, navigate, pb } from './lib/stores.ts'
 import { ModeToggle } from './components/mode-toggle.tsx'
 import { cn, updateFavicon, updateServerList } from './lib/utils.ts'
 import { buttonVariants } from './components/ui/button.tsx'
-import { Github } from 'lucide-react'
+import { DatabaseBackupIcon, Github, LogOutIcon, LogsIcon, UserIcon } from 'lucide-react'
 import { useStore } from '@nanostores/react'
 import { Toaster } from './components/ui/toaster.tsx'
 import { Logo } from './components/logo.tsx'
@@ -17,6 +17,13 @@ import {
 	TooltipTrigger,
 	TooltipContent,
 } from '@/components/ui/tooltip.tsx'
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from './components/ui/dropdown-menu.tsx'
 
 const ServerDetail = lazy(() => import('./components/routes/server.tsx'))
 const CommandPalette = lazy(() => import('./components/command-palette.tsx'))
@@ -39,17 +46,20 @@ const App = () => {
 			for (const server of servers) {
 				if (server.status === 'down') {
 					updateFavicon('/favicon-red.svg')
-					return
+					break
 				} else if (server.status === 'up') {
 					up = true
 				}
 			}
 			updateFavicon(up ? '/favicon-green.svg' : '/favicon.svg')
 		}
+		return () => {
+			updateFavicon('/favicon.svg')
+		}
 	}, [authenticated, servers])
 
 	if (!page) {
-		return <h1>404</h1>
+		return <h1 className="text-3xl text-center my-14">404</h1>
 	} else if (page.path === '/') {
 		return <Home />
 	} else if (page.route === 'server') {
@@ -84,7 +94,37 @@ const Layout = () => {
 						<Logo className="h-[1.2em] fill-foreground" />
 					</a>
 
-					<div className={'flex gap-1 ml-auto'}>
+					<div className={'flex ml-auto'}>
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<a
+									aria-label="User Actions"
+									href={'https://github.com/henrygd'}
+									className={cn('', buttonVariants({ variant: 'ghost', size: 'icon' }))}
+								>
+									<UserIcon className="h-[1.2rem] w-[1.2rem]" />
+								</a>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent>
+								<DropdownMenuItem onSelect={() => pb.authStore.clear()}>
+									<LogOutIcon className="mr-2.5 h-4 w-4" />
+									<span>Log out</span>
+								</DropdownMenuItem>
+								<DropdownMenuSeparator />
+								<DropdownMenuItem asChild>
+									<a href="/_/#/logs">
+										<LogsIcon className="mr-2.5 h-4 w-4" />
+										<span>Logs</span>
+									</a>
+								</DropdownMenuItem>
+								<DropdownMenuItem asChild>
+									<a href="/_/#/settings/backups">
+										<DatabaseBackupIcon className="mr-2.5 h-4 w-4" />
+										<span>Backups</span>
+									</a>
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
 						<TooltipProvider delayDuration={300}>
 							<Tooltip>
 								<TooltipTrigger asChild>
@@ -118,7 +158,9 @@ const Layout = () => {
 ReactDOM.createRoot(document.getElementById('app')!).render(
 	<React.StrictMode>
 		<ThemeProvider>
-			<Layout />
+			<Suspense>
+				<Layout />
+			</Suspense>
 		</ThemeProvider>
 	</React.StrictMode>
 )

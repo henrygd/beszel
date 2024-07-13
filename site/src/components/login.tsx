@@ -29,7 +29,7 @@ export default function () {
 			</div>
 			<div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">
 				<div
-					className="absolute inset-0 bg-slate-900 bg-cover opacity-80"
+					className="absolute inset-0 bg-background bg-cover opacity-80"
 					style={{
 						backgroundImage: `url(https://directus.cloud/assets/waves.2b156907.svg)`,
 					}}

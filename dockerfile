@@ -26,4 +26,6 @@ COPY ./site/dist /site/dist
 
 EXPOSE 8080
 
-CMD ["/server", "serve", "--http=0.0.0.0:8080"]
+ENTRYPOINT [ "/server" ]
+
+CMD ["serve", "--http=0.0.0.0:8080"]

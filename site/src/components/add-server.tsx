@@ -77,7 +77,7 @@ export function AddServerButton() {
 			<DialogTrigger asChild>
 				<Button variant="outline" className="flex gap-1">
 					<Plus className="h-4 w-4 mr-auto" />
-					Add Server
+					Add <span className="hidden sm:inline">Server</span>
 				</Button>
 			</DialogTrigger>
 			<DialogContent className="sm:max-w-[425px]">
