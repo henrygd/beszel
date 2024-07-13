@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v5"
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
@@ -130,7 +131,7 @@ func main() {
 }
 
 func serverUpdateTicker() {
-	ticker := time.NewTicker(60 * time.Second)
+	ticker := time.NewTicker(30 * time.Second)
 	for range ticker.C {
 		updateServers()
 	}
@@ -140,6 +141,7 @@ func updateServers() {
 	// serverCount := len(serverConnections)
 	// fmt.Println("server count: ", serverCount)
 	query := app.Dao().RecordQuery("systems").
+		Where(dbx.NewExp("status != \"paused\"")).
 		OrderBy("updated ASC").
 		// todo get total count of servers and divide by 4 or something
 		Limit(5)
@@ -163,12 +165,12 @@ func updateServer(record *models.Record) {
 	} else {
 		// create server connection struct
 		server = Server{
-			Ip:   record.Get("ip").(string),
+			Host: record.Get("host").(string),
 			Port: record.Get("port").(string),
 		}
 		client, err := getServerConnection(&server)
 		if err != nil {
-			app.Logger().Error("Failed to connect:", "err", err.Error(), "server", server.Ip, "port", server.Port)
+			app.Logger().Error("Failed to connect:", "err", err.Error(), "server", server.Host, "port", server.Port)
 			setInactive(record)
 			return
 		}
@@ -183,7 +185,7 @@ func updateServer(record *models.Record) {
 		return
 	}
 	// update system record
-	record.Set("active", true)
+	record.Set("status", "up")
 	record.Set("stats", systemData.System)
 	if err := app.Dao().SaveRecord(record); err != nil {
 		app.Logger().Error("Failed to update record: ", "err", err.Error())
@@ -208,7 +210,7 @@ func updateServer(record *models.Record) {
 	}
 }
 
-// set server to inactive and close connection
+// set server to status down and close connection
 func setInactive(record *models.Record) {
 	// if in map, close connection and remove from map
 	if _, ok := serverConnections[record.Id]; ok {
@@ -218,14 +220,14 @@ func setInactive(record *models.Record) {
 		delete(serverConnections, record.Id)
 	}
 	// set inactive
-	record.Set("active", false)
+	record.Set("status", "down")
 	if err := app.Dao().SaveRecord(record); err != nil {
 		app.Logger().Error("Failed to update record: ", "err", err.Error())
 	}
 }
 
 func getServerConnection(server *Server) (*ssh.Client, error) {
-	// app.Logger().Debug("new ssh connection", "server", server.Ip)
+	// app.Logger().Debug("new ssh connection", "server", server.Host)
 	key, err := getSSHKey()
 	if err != nil {
 		app.Logger().Error("Failed to get SSH key: ", "err", err.Error())
@@ -248,7 +250,7 @@ func getServerConnection(server *Server) (*ssh.Client, error) {
 		Timeout:         5 * time.Second,
 	}
 
-	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%s", server.Ip, server.Port), config)
+	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%s", server.Host, server.Port), config)
 	if err != nil {
 		return nil, err
 	}

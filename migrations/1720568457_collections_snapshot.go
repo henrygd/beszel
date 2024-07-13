@@ -15,7 +15,7 @@ func init() {
 			{
 				"id": "_pb_users_auth_",
 				"created": "2024-07-07 15:59:04.262Z",
-				"updated": "2024-07-07 20:52:28.847Z",
+				"updated": "2024-07-09 23:42:40.542Z",
 				"name": "users",
 				"type": "auth",
 				"system": false,
@@ -78,7 +78,7 @@ func init() {
 			{
 				"id": "2hz5ncl8tizk5nx",
 				"created": "2024-07-07 16:08:20.979Z",
-				"updated": "2024-07-09 22:46:22.047Z",
+				"updated": "2024-07-13 01:18:43.529Z",
 				"name": "systems",
 				"type": "base",
 				"system": false,
@@ -99,18 +99,25 @@ func init() {
 					},
 					{
 						"system": false,
-						"id": "4fbh8our",
-						"name": "active",
-						"type": "bool",
-						"required": false,
+						"id": "waj7seaf",
+						"name": "status",
+						"type": "select",
+						"required": true,
 						"presentable": false,
 						"unique": false,
-						"options": {}
+						"options": {
+							"maxSelect": 1,
+							"values": [
+								"up",
+								"down",
+								"paused"
+							]
+						}
 					},
 					{
 						"system": false,
 						"id": "ve781smf",
-						"name": "ip",
+						"name": "host",
 						"type": "text",
 						"required": true,
 						"presentable": false,
@@ -161,7 +168,7 @@ func init() {
 			{
 				"id": "ej9oowivz8b2mht",
 				"created": "2024-07-07 16:09:09.179Z",
-				"updated": "2024-07-07 20:52:28.848Z",
+				"updated": "2024-07-09 23:42:40.542Z",
 				"name": "system_stats",
 				"type": "base",
 				"system": false,
@@ -208,7 +215,7 @@ func init() {
 			{
 				"id": "juohu4jipgc13v7",
 				"created": "2024-07-07 16:09:57.976Z",
-				"updated": "2024-07-07 20:52:28.848Z",
+				"updated": "2024-07-09 23:42:40.542Z",
 				"name": "container_stats",
 				"type": "base",
 				"system": false,

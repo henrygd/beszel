@@ -53,6 +53,7 @@ export function AddServerButton() {
 		e.preventDefault()
 		const formData = new FormData(e.target as HTMLFormElement)
 		const data = Object.fromEntries(formData) as Record<string, any>
+		data.status = 'down'
 		data.stats = {
 			c: 0,
 			d: 0,
@@ -97,10 +98,10 @@ export function AddServerButton() {
 							<Input id="name" name="name" className="col-span-3" required />
 						</div>
 						<div className="grid grid-cols-4 items-center gap-4">
-							<Label htmlFor="ip" className="text-right">
+							<Label htmlFor="host" className="text-right">
 								Host / IP
 							</Label>
-							<Input id="ip" name="ip" className="col-span-3" required />
+							<Input id="host" name="host" className="col-span-3" required />
 						</div>
 						<div className="grid grid-cols-4 items-center gap-4">
 							<Label htmlFor="port" className="text-right">

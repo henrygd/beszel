@@ -34,11 +34,17 @@ const App = () => {
 	useEffect(() => {
 		if (!authenticated || !servers.length) {
 			updateFavicon('/favicon.svg')
-		} else if (servers.find((server) => !server.active)) {
-			updateFavicon('/favicon-red.svg')
 		} else {
-			// all servers good
-			updateFavicon('/favicon-green.svg')
+			let up = false
+			for (const server of servers) {
+				if (server.status === 'down') {
+					updateFavicon('/favicon-red.svg')
+					return
+				} else if (server.status === 'up') {
+					up = true
+				}
+			}
+			updateFavicon(up ? '/favicon-green.svg' : '/favicon.svg')
 		}
 	}, [authenticated, servers])
 

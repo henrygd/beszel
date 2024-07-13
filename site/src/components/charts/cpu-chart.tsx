@@ -31,16 +31,13 @@ export default function ({ chartData }: { chartData: { time: string; cpu: number
 				<YAxis
 					domain={[0, (max: number) => Math.ceil(max)]}
 					width={47}
-					// tickCount={5}
 					tickLine={false}
 					axisLine={false}
 					unit={'%'}
-					// tickFormatter={(v) => `${v}%`}
 				/>
 				{/* todo: short time if first date is same day, otherwise short date */}
 				<XAxis
 					dataKey="time"
-					tickLine={true}
 					axisLine={false}
 					tickMargin={8}
 					minTickGap={30}

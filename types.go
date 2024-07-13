@@ -5,7 +5,7 @@ import (
 )
 
 type Server struct {
-	Ip     string
+	Host   string
 	Port   string
 	Client *ssh.Client
 }

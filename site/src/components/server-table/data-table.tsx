@@ -41,18 +41,17 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
+	AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 
 import { SystemRecord } from '@/types'
 import {
 	MoreHorizontal,
 	ArrowUpDown,
-	Copy,
 	Server,
 	Cpu,
 	MemoryStick,
 	HardDrive,
-	PauseIcon,
 	CopyIcon,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
@@ -63,17 +62,20 @@ import { cn, copyToClipboard } from '@/lib/utils'
 
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	const val = info.getValue() as number
-	let color = 'green'
-	if (val > 80) {
-		color = 'red'
-	} else if (val > 50) {
-		color = 'yellow'
-	}
+	// let color = 'green'
+	// if (val > 80) {
+	// 	color = 'red'
+	// } else if (val > 50) {
+	// 	color = 'yellow'
+	// }
 	return (
 		<div className="flex gap-2 items-center">
 			<span className="grow min-w-10 block bg-muted h-4 relative rounded-sm overflow-hidden">
 				<span
-					className={cn('absolute inset-0 w-full h-full origin-left', `bg-${color}-500`)}
+					className={cn(
+						'absolute inset-0 w-full h-full origin-left',
+						(val < 50 && 'bg-green-500') || (val < 80 && 'bg-yellow-500') || 'bg-red-500'
+					)}
 					style={{ transform: `scalex(${val}%)` }}
 				></span>
 			</span>
@@ -98,34 +100,38 @@ function sortableHeader(column: Column<SystemRecord, unknown>, name: string, Ico
 
 export default function () {
 	const data = useStore($servers)
-	const [deleteServer, setDeleteServer] = useState({} as SystemRecord)
+	// const [deleteServer, setDeleteServer] = useState({} as SystemRecord)
 	const [sorting, setSorting] = useState<SortingState>([])
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
-	const columns: ColumnDef<SystemRecord>[] = useMemo(
-		() => [
+	const columns: ColumnDef<SystemRecord>[] = useMemo(() => {
+		return [
 			{
 				// size: 70,
 				accessorKey: 'name',
-				cell: (info) => (
-					<span className="flex gap-0.5 items-center text-base">
-						<span
-							className={cn(
-								'w-2 h-2 left-0 rounded-full',
-								info.row.original.active ? 'bg-green-500' : 'bg-red-500'
-							)}
-							style={{ marginBottom: '-1px' }}
-						></span>
-						<Button
-							variant={'ghost'}
-							className="text-foreground/80 h-7 px-1.5 gap-1.5"
-							onClick={() => copyToClipboard(info.getValue() as string)}
-						>
-							{info.getValue() as string}
-							<CopyIcon className="h-3 w-3" />
-						</Button>
-					</span>
-				),
+				cell: (info) => {
+					const { status } = info.row.original
+					return (
+						<span className="flex gap-0.5 items-center text-base">
+							<span
+								className={cn('w-2 h-2 left-0 rounded-full', {
+									'bg-green-500': status === 'up',
+									'bg-red-500': status === 'down',
+									'bg-yellow-500': status === 'paused',
+								})}
+								style={{ marginBottom: '-1px' }}
+							></span>
+							<Button
+								variant={'ghost'}
+								className="text-foreground/80 h-7 px-1.5 gap-1.5"
+								onClick={() => copyToClipboard(info.getValue() as string)}
+							>
+								{info.getValue() as string}
+								<CopyIcon className="h-3 w-3" />
+							</Button>
+						</span>
+					)
+				},
 				header: ({ column }) => sortableHeader(column, 'Server', Server),
 			},
 			{
@@ -148,49 +154,70 @@ export default function () {
 				size: 32,
 				maxSize: 32,
 				cell: ({ row }) => {
-					const system = row.original
-
+					const { id, name, status, host } = row.original
 					return (
 						<div className={'flex justify-end'}>
-							<DropdownMenu>
-								<DropdownMenuTrigger asChild>
-									<Button variant="ghost" className="h-8 w-8 p-0">
-										<span className="sr-only">Open menu</span>
-										<MoreHorizontal className="h-4 w-4" />
-									</Button>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent align="end">
-									<DropdownMenuLabel>Actions</DropdownMenuLabel>
-									{/* <DropdownMenuItem
+							<AlertDialog>
+								<DropdownMenu>
+									<DropdownMenuTrigger asChild>
+										<Button variant="ghost" className="h-8 w-8 p-0">
+											<span className="sr-only">Open menu</span>
+											<MoreHorizontal className="h-4 w-4" />
+										</Button>
+									</DropdownMenuTrigger>
+									<DropdownMenuContent align="end">
+										{/* <DropdownMenuLabel>Actions</DropdownMenuLabel> */}
+										{/* <DropdownMenuItem
 										onSelect={() => {
-											navigate(`/server/${system.name}`)
+											navigate(`/server/${name}`)
 										}}
 									>
 										View details
 									</DropdownMenuItem> */}
-									<DropdownMenuItem onClick={() => console.log('pause server')}>
-										Pause
-									</DropdownMenuItem>
-									<DropdownMenuItem onClick={() => copyToClipboard(system.ip)}>
-										Copy host
-									</DropdownMenuItem>
-									<DropdownMenuSeparator />
-									<DropdownMenuItem
-										onSelect={() => {
-											setDeleteServer(system)
-										}}
-									>
-										Delete server
-									</DropdownMenuItem>
-								</DropdownMenuContent>
-							</DropdownMenu>
+										<DropdownMenuItem
+											onClick={() => {
+												pb.collection('systems').update(id, {
+													status: status === 'paused' ? 'up' : 'paused',
+												})
+											}}
+										>
+											{status === 'paused' ? 'Resume' : 'Pause'}
+										</DropdownMenuItem>
+										<DropdownMenuItem onClick={() => copyToClipboard(host)}>
+											Copy host
+										</DropdownMenuItem>
+										<DropdownMenuSeparator />
+										<AlertDialogTrigger asChild>
+											<DropdownMenuItem>Delete server</DropdownMenuItem>
+										</AlertDialogTrigger>
+									</DropdownMenuContent>
+								</DropdownMenu>
+								<AlertDialogContent>
+									<AlertDialogHeader>
+										<AlertDialogTitle>Are you sure you want to delete {name}?</AlertDialogTitle>
+										<AlertDialogDescription>
+											This action cannot be undone. This will permanently delete all current records
+											for <code className={'bg-muted rounded-sm px-1'}>{name}</code> from the
+											database.
+										</AlertDialogDescription>
+									</AlertDialogHeader>
+									<AlertDialogFooter>
+										<AlertDialogCancel>Cancel</AlertDialogCancel>
+										<AlertDialogAction
+											className={cn(buttonVariants({ variant: 'destructive' }))}
+											onClick={() => pb.collection('systems').delete(id)}
+										>
+											Continue
+										</AlertDialogAction>
+									</AlertDialogFooter>
+								</AlertDialogContent>
+							</AlertDialog>
 						</div>
 					)
 				},
 			},
-		],
-		[]
-	)
+		]
+	}, [])
 
 	const table = useReactTable({
 		data,
@@ -274,34 +301,6 @@ export default function () {
 					</Table>
 				</div>
 			</div>
-			<AlertDialog open={!!deleteServer?.name}>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>
-							Are you sure you want to delete {deleteServer.name}?
-						</AlertDialogTitle>
-						<AlertDialogDescription>
-							This action cannot be undone. This will permanently delete all current records for{' '}
-							<code className={'bg-muted rounded-sm px-1'}>{deleteServer.name}</code> from the
-							database.
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel onClick={() => setDeleteServer({} as SystemRecord)}>
-							Cancel
-						</AlertDialogCancel>
-						<AlertDialogAction
-							className={cn(buttonVariants({ variant: 'destructive' }))}
-							onClick={() => {
-								setDeleteServer({} as SystemRecord)
-								pb.collection('systems').delete(deleteServer.id)
-							}}
-						>
-							Continue
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
 		</>
 	)
 }
