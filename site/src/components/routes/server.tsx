@@ -71,7 +71,7 @@ export default function ServerDetail({ name }: { name: string }) {
 				// console.log('sctats', records)
 				setServerStats(records.items)
 			})
-	}, [server])
+	}, [server, servers])
 
 	// get cpu data
 	useEffect(() => {
@@ -100,15 +100,8 @@ export default function ServerDetail({ name }: { name: string }) {
 		}
 		// console.log('running')
 		const matchingServer = servers.find((s) => s.name === name) as SystemRecord
-
+		// console.log('found server', matchingServer)
 		setServer(matchingServer)
-
-		console.log('found server', matchingServer)
-		// pb.collection<SystemRecord>('systems')
-		// 	.getOne(serverId)
-		// 	.then((record) => {
-		// 		setServer(record)
-		// 	})
 
 		pb.collection<ContainerStatsRecord>('container_stats')
 			.getList(1, 60, {

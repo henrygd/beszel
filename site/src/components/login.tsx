@@ -1,22 +1,24 @@
 import { UserAuthForm } from '@/components/user-auth-form'
 import { Logo } from './logo'
+import { useEffect } from 'react'
 
 export default function () {
+	useEffect(() => {
+		document.title = 'Login / Qoma'
+	}, [])
 	return (
-		<div className="relative h-screen grid lg:max-w-none lg:grid-cols-2 lg:px-0">
-			<div className="grid items-center">
-				<div className="flex flex-col justify-center space-y-6 w-full px-4 max-w-[22em] mx-auto">
+		<div className="relative h-screen grid lg:max-w-none lg:px-0">
+			<div className="grid items-center py-12">
+				<div className="grid gap-5 w-full px-4 max-w-[22em] mx-auto">
 					<div className="text-center">
-						<h1 className="mb-4">
-							<Logo className="h-6 fill-foreground mx-auto" />
-							<div className="sr-only">Qoma</div>
+						<h1 className="mb-3">
+							<Logo className="h-7 fill-foreground mx-auto" />
+							<span className="sr-only">Qoma</span>
 						</h1>
-						<p className="text-sm text-muted-foreground">
-							Enter your email to sign in to your account
-						</p>
+						<p className="text-sm text-muted-foreground">Please sign in to your account</p>
 					</div>
 					<UserAuthForm />
-					<p className="px-8 text-center text-sm text-muted-foreground">
+					<p className="text-center text-sm opacity-70 hover:opacity-100 transition-opacity">
 						{/* todo: add forgot password section to readme and link to section
 						    reset w/ command or link to pb reset */}
 						<a
@@ -28,12 +30,12 @@ export default function () {
 					</p>
 				</div>
 			</div>
-			<div className="relative hidden h-full bg-primary lg:block">
+			{/* <div className="relative hidden h-full bg-primary lg:block">
 				<img
 					className="absolute inset-0 h-full w-full object-cover bg-primary"
 					src="/penguin-and-egg.avif"
 				></img>
-			</div>
+			</div> */}
 		</div>
 	)
 }

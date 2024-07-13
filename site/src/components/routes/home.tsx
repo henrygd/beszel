@@ -1,48 +1,12 @@
 import { Suspense, lazy, useEffect } from 'react'
-import { $servers, pb } from '@/lib/stores'
 // import { DataTable } from '../server-table/data-table'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
-import { SystemRecord } from '@/types'
-import { updateServerList } from '@/lib/utils'
 
 const DataTable = lazy(() => import('../server-table/data-table'))
 
 export default function () {
 	useEffect(() => {
-		document.title = 'Qoma Dashboard'
-	}, [])
-
-	useEffect(updateServerList, [])
-
-	useEffect(() => {
-		pb.collection<SystemRecord>('systems').subscribe('*', (e) => {
-			const curServers = $servers.get()
-			const newServers = []
-			console.log('e', e)
-			if (e.action === 'delete') {
-				for (const server of curServers) {
-					if (server.id !== e.record.id) {
-						newServers.push(server)
-					}
-				}
-			} else {
-				let found = 0
-				for (const server of curServers) {
-					if (server.id === e.record.id) {
-						found = newServers.push(e.record)
-					} else {
-						newServers.push(server)
-					}
-				}
-				if (!found) {
-					newServers.push(e.record)
-				}
-			}
-			$servers.set(newServers)
-		})
-		return () => {
-			pb.collection('systems').unsubscribe('*')
-		}
+		document.title = 'Dashboard / Qoma'
 	}, [])
 
 	return (

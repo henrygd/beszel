@@ -51,10 +51,11 @@ export default function ({ chartData }: { chartData: { time: string; cpu: number
 				/>
 				<Area
 					dataKey="cpu"
-					type="monotone"
+					type="natural"
 					fill="var(--color-cpu)"
 					fillOpacity={0.4}
 					stroke="var(--color-cpu)"
+					animateNewValues={false}
 				/>
 			</AreaChart>
 		</ChartContainer>

@@ -88,7 +88,6 @@ export default function ({ chartData }: { chartData: Record<string, number | str
 				{Object.keys(chartConfig).map((key) => (
 					<Area
 						key={key}
-						// isAnimationActive={false}
 						animateNewValues={false}
 						dataKey={key}
 						type="monotone"

@@ -8,78 +8,88 @@ import * as React from 'react'
 // import * as z from 'zod'
 
 import { cn } from '@/lib/utils'
-import { userAuthSchema } from '@/lib/validations/auth'
 import { buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 // import { toast } from '@/components/ui/use-toast'
-import { Github, LoaderCircle } from 'lucide-react'
+import { Github, LoaderCircle, LogInIcon } from 'lucide-react'
+import { pb } from '@/lib/stores'
+import * as v from 'valibot'
+import { toast } from './ui/use-toast'
+import {
+	Dialog,
+	DialogContent,
+	DialogTrigger,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from '@/components/ui/dialog'
 
-interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
+const LoginSchema = v.object({
+	email: v.pipe(v.string(), v.email('Invalid email address.')),
+	password: v.pipe(v.string(), v.minLength(10, 'Password must be at least 10 characters long.')),
+})
 
-type FormData = z.infer<typeof userAuthSchema>
+// type LoginData = v.InferOutput<typeof LoginSchema> // { email: string; password: string }
 
-export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
-	const signIn = (s: string) => console.log(s)
-	const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-		// e.preventDefault()
-		signIn('github')
-	}
-
-	const errors = {
-		email: 'This field is required',
-		password: 'This field is required',
-	}
-
-	// const {
-	// 	register,
-	// 	handleSubmit,
-	// 	formState: { errors },
-	// } = useForm<FormData>({
-	// 	resolver: zodResolver(userAuthSchema),
-	// })
+export function UserAuthForm({ className, ...props }: { className?: string }) {
 	const [isLoading, setIsLoading] = React.useState<boolean>(false)
 	const [isGitHubLoading, setIsGitHubLoading] = React.useState<boolean>(false)
+	const [errors, setErrors] = React.useState<Record<string, string | undefined>>({})
+
 	// const searchParams = useSearchParams()
 
-	async function onSubmit(data: FormData) {
+	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+		e.preventDefault()
 		setIsLoading(true)
-
-		alert('do pb stuff')
-
-		// const signInResult = await signIn('email', {
-		// 	email: data.email.toLowerCase(),
-		// 	redirect: false,
-		// 	callbackUrl: searchParams?.get('from') || '/dashboard',
-		// })
-
-		setIsLoading(false)
-
-		if (!signInResult?.ok) {
-			alert('Your sign in request failed. Please try again.')
-			// return toast({
-			// 	title: 'Something went wrong.',
-			// 	description: 'Your sign in request failed. Please try again.',
-			// 	variant: 'destructive',
-			// })
+		try {
+			const formData = new FormData(e.target as HTMLFormElement)
+			const data = Object.fromEntries(formData) as Record<string, any>
+			const result = v.safeParse(LoginSchema, data)
+			if (!result.success) {
+				let errors = {}
+				for (const issue of result.issues) {
+					// @ts-ignore
+					errors[issue.path[0].key] = issue.message
+				}
+				setErrors(errors)
+				return
+			}
+			const { email, password } = result.output
+			let firstRun = true
+			if (firstRun) {
+				await pb.admins.create({
+					email,
+					password,
+					passwordConfirm: password,
+				})
+				await pb.admins.authWithPassword(email, password)
+			} else {
+				await pb.admins.authWithPassword(email, password)
+			}
+		} catch (e) {
+			return toast({
+				title: 'Login attempt failed',
+				description: 'Please check your credentials and try again',
+				variant: 'destructive',
+			})
+		} finally {
+			setIsLoading(false)
 		}
-
-		// return toast({
-		// 	title: 'Check your email',
-		// 	description: 'We sent you a login link. Be sure to check your spam too.',
-		// })
 	}
 
 	return (
 		<div className={cn('grid gap-6', className)} {...props}>
 			<form onSubmit={handleSubmit}>
-				<div className="grid gap-2">
+				<div className="grid gap-2.5">
 					<div className="grid gap-1">
 						<Label className="sr-only" htmlFor="email">
 							Email
 						</Label>
 						<Input
 							id="email"
+							name="email"
+							required
 							placeholder="name@example.com"
 							type="email"
 							autoCapitalize="none"
@@ -87,11 +97,30 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
 							autoCorrect="off"
 							disabled={isLoading || isGitHubLoading}
 						/>
-						{errors?.email && <p className="px-1 text-xs text-red-600">{errors.email.message}</p>}
+						{errors?.email && <p className="px-1 text-xs text-red-600">{errors.email}</p>}
+					</div>
+					<div className="grid gap-1">
+						<Label className="sr-only" htmlFor="email">
+							Email
+						</Label>
+						<Input
+							id="pass"
+							name="password"
+							placeholder="password"
+							required
+							type="password"
+							autoComplete="current-password"
+							disabled={isLoading || isGitHubLoading}
+						/>
+						{errors?.password && <p className="px-1 text-xs text-red-600">{errors.password}</p>}
 					</div>
 					<button className={cn(buttonVariants())} disabled={isLoading}>
-						{isLoading && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-						Sign In with Email
+						{isLoading ? (
+							<LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+						) : (
+							<LogInIcon className="mr-2 h-4 w-4" />
+						)}
+						Sign In
 					</button>
 				</div>
 			</form>
@@ -103,23 +132,35 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
 					<span className="bg-background px-2 text-muted-foreground">Or continue with</span>
 				</div>
 			</div>
-			<button
-				type="button"
-				className={cn(buttonVariants({ variant: 'outline' }))}
-				onClick={() => {
-					localStorage.setItem('auth', 'true')
-					setIsGitHubLoading(true)
-					signIn('github')
-				}}
-				disabled={isLoading || isGitHubLoading}
-			>
-				{isGitHubLoading ? (
-					<LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-				) : (
-					<Github className="mr-2 h-4 w-4" />
-				)}{' '}
-				Github
-			</button>
+			<Dialog>
+				<DialogTrigger asChild>
+					<button
+						type="button"
+						className={cn(buttonVariants({ variant: 'outline' }))}
+						// onClick={async () => {
+						// setIsGitHubLoading(true)
+						// do stuff
+						// setIsGitHubLoading(false)
+						// }}
+						disabled={isLoading || isGitHubLoading}
+					>
+						{isGitHubLoading ? (
+							<LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+						) : (
+							<Github className="mr-2 h-4 w-4" />
+						)}{' '}
+						Github
+					</button>
+				</DialogTrigger>
+				<DialogContent className="sm:max-w-[425px]">
+					<DialogHeader>
+						<DialogTitle>OAuth support coming soon</DialogTitle>
+						<DialogDescription>
+							OAuth / OpenID with all major providers should be available at 1.0.0.
+						</DialogDescription>
+					</DialogHeader>
+				</DialogContent>
+			</Dialog>
 		</div>
 	)
 }

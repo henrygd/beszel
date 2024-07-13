@@ -62,6 +62,14 @@ import { $servers, pb, navigate } from '@/lib/stores'
 import { useStore } from '@nanostores/react'
 import { AddServerButton } from '../add-server'
 import { cn, copyToClipboard } from '@/lib/utils'
+import {
+	Dialog,
+	DialogContent,
+	DialogTrigger,
+	DialogDescription,
+	DialogTitle,
+	DialogHeader,
+} from '@/components/ui/dialog'
 
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	const val = info.getValue() as number
@@ -121,6 +129,7 @@ export default function () {
 								style={{ marginBottom: '-1px' }}
 							></span>
 							<Button
+								data-nolink
 								variant={'ghost'}
 								className="text-foreground/80 h-7 px-1.5 gap-1.5"
 								onClick={() => copyToClipboard(info.getValue() as string)}
@@ -156,17 +165,27 @@ export default function () {
 					const { id, name, status, host } = row.original
 					return (
 						<div className={'flex justify-end items-center gap-1'}>
-							<Button
-								variant="ghost"
-								size={'icon'}
-								onClick={() => alert('notifications coming soon')}
-							>
-								<BellIcon className="h-[1.2em] w-[1.2em] pointer-events-none" />
-							</Button>
+							<Dialog>
+								<DialogTrigger asChild>
+									<Button variant="ghost" size={'icon'} aria-label="Notifications" data-nolink>
+										<BellIcon className="h-[1.2em] w-[1.2em] pointer-events-none" />
+									</Button>
+								</DialogTrigger>
+								<DialogContent>
+									<DialogHeader>
+										<DialogTitle>Notifications</DialogTitle>
+									</DialogHeader>
+									<DialogDescription>
+										The agent must be running on the server to connect. Copy the{' '}
+										<code className="bg-muted px-1 rounded-sm">docker-compose.yml</code> for the
+										agent below.
+									</DialogDescription>
+								</DialogContent>
+							</Dialog>
 							<AlertDialog>
 								<DropdownMenu>
 									<DropdownMenuTrigger asChild>
-										<Button variant="ghost" size={'icon'}>
+										<Button variant="ghost" size={'icon'} data-nolink>
 											<span className="sr-only">Open menu</span>
 											<MoreHorizontal className="w-5" />
 										</Button>
@@ -301,7 +320,7 @@ export default function () {
 										})}
 										onClick={(e) => {
 											const target = e.target as HTMLElement
-											if (target.tagName !== 'BUTTON' && !target.hasAttribute('role')) {
+											if (!target.closest('[data-nolink]') && e.currentTarget.contains(target)) {
 												navigate(`/server/${row.original.name}`)
 											}
 										}}

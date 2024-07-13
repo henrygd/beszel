@@ -24,6 +24,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from './components/ui/dropdown-menu.tsx'
+import { SystemRecord } from './types'
 
 const ServerDetail = lazy(() => import('./components/routes/server.tsx'))
 const CommandPalette = lazy(() => import('./components/command-palette.tsx'))
@@ -37,27 +38,53 @@ const App = () => {
 	// get servers
 	useEffect(updateServerList, [])
 
+	useEffect(() => {
+		pb.collection<SystemRecord>('systems').subscribe('*', (e) => {
+			const curServers = $servers.get()
+			const newServers = []
+			// console.log('e', e)
+			if (e.action === 'delete') {
+				for (const server of curServers) {
+					if (server.id !== e.record.id) {
+						newServers.push(server)
+					}
+				}
+			} else {
+				let found = 0
+				for (const server of curServers) {
+					if (server.id === e.record.id) {
+						found = newServers.push(e.record)
+					} else {
+						newServers.push(server)
+					}
+				}
+				if (!found) {
+					newServers.push(e.record)
+				}
+			}
+			$servers.set(newServers)
+		})
+		return () => {
+			pb.collection('systems').unsubscribe('*')
+		}
+	}, [])
+
 	// update favicon
 	useEffect(() => {
 		if (!authenticated || !servers.length) {
-			console.log('no auth favicon')
 			updateFavicon('/favicon.svg')
 		} else {
-			const cleanup = () => {
-				updateFavicon('/favicon.svg')
-			}
 			let up = false
 			for (const server of servers) {
 				if (server.status === 'down') {
-					console.log('down', server)
 					updateFavicon('/favicon-red.svg')
-					return cleanup
+					return () => updateFavicon('/favicon.svg')
 				} else if (server.status === 'up') {
 					up = true
 				}
 			}
 			updateFavicon(up ? '/favicon-green.svg' : '/favicon.svg')
-			return cleanup
+			return () => updateFavicon('/favicon.svg')
 		}
 		return () => {
 			updateFavicon('/favicon.svg')
@@ -155,7 +182,6 @@ const Layout = () => {
 			<div className="container mb-14 relative">
 				<App />
 				<CommandPalette />
-				<Toaster />
 			</div>
 		</>
 	)
@@ -166,6 +192,9 @@ ReactDOM.createRoot(document.getElementById('app')!).render(
 		<ThemeProvider>
 			<Suspense>
 				<Layout />
+			</Suspense>
+			<Suspense>
+				<Toaster />
 			</Suspense>
 		</ThemeProvider>
 	</React.StrictMode>
