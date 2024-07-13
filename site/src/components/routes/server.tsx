@@ -33,7 +33,7 @@ export default function ServerDetail({ name }: { name: string }) {
 	const [serverStats, setServerStats] = useState([] as SystemStatsRecord[])
 	const [cpuChartData, setCpuChartData] = useState([] as { time: string; cpu: number }[])
 	const [memChartData, setMemChartData] = useState(
-		[] as { time: string; mem: number; memUsed: number }[]
+		[] as { time: string; mem: number; memUsed: number; memCache: number }[]
 	)
 	const [diskChartData, setDiskChartData] = useState(
 		[] as { time: string; disk: number; diskUsed: number }[]
@@ -46,7 +46,7 @@ export default function ServerDetail({ name }: { name: string }) {
 	)
 
 	useEffect(() => {
-		document.title = name
+		document.title = `${name} / Qoma`
 		return () => {
 			setContainerCpuChartData([])
 			setCpuChartData([])
@@ -80,12 +80,12 @@ export default function ServerDetail({ name }: { name: string }) {
 		}
 		// let maxCpu = 0
 		const cpuData = [] as { time: string; cpu: number }[]
-		const memData = [] as { time: string; mem: number; memUsed: number }[]
+		const memData = [] as { time: string; mem: number; memUsed: number; memCache: number }[]
 		const diskData = [] as { time: string; disk: number; diskUsed: number }[]
 		for (let { created, stats } of serverStats) {
 			cpuData.push({ time: created, cpu: stats.c })
 			// maxCpu = Math.max(maxCpu, stats.c)
-			memData.push({ time: created, mem: stats.m, memUsed: stats.mu })
+			memData.push({ time: created, mem: stats.m, memUsed: stats.mu, memCache: stats.mb })
 			diskData.push({ time: created, disk: stats.d, diskUsed: stats.du })
 		}
 		setCpuChartData(cpuData.reverse())

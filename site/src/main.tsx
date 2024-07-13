@@ -3,9 +3,9 @@ import React, { Suspense, lazy, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import Home from './components/routes/home.tsx'
 import { ThemeProvider } from './components/theme-provider.tsx'
-import { $authenticated, $router, navigate } from './lib/stores.ts'
+import { $authenticated, $router, $servers, navigate } from './lib/stores.ts'
 import { ModeToggle } from './components/mode-toggle.tsx'
-import { cn, updateServerList } from './lib/utils.ts'
+import { cn, updateFavicon, updateServerList } from './lib/utils.ts'
 import { buttonVariants } from './components/ui/button.tsx'
 import { Github } from 'lucide-react'
 import { useStore } from '@nanostores/react'
@@ -24,9 +24,23 @@ const LoginPage = lazy(() => import('./components/login.tsx'))
 
 const App = () => {
 	const page = useStore($router)
+	const authenticated = useStore($authenticated)
+	const servers = useStore($servers)
 
 	// get servers
 	useEffect(updateServerList, [])
+
+	// update favicon
+	useEffect(() => {
+		if (!authenticated || !servers.length) {
+			updateFavicon('/favicon.svg')
+		} else if (servers.find((server) => !server.active)) {
+			updateFavicon('/favicon-red.svg')
+		} else {
+			// all servers good
+			updateFavicon('/favicon-green.svg')
+		}
+	}, [authenticated, servers])
 
 	if (!page) {
 		return <h1>404</h1>
@@ -61,7 +75,7 @@ const Layout = () => {
 							navigate('/')
 						}}
 					>
-						<Logo className="h-[1.1em] fill-foreground" />
+						<Logo className="h-[1.2em] fill-foreground" />
 					</a>
 
 					<div className={'flex gap-1 ml-auto'}>

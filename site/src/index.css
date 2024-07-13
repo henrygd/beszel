@@ -62,6 +62,10 @@
 	z-index: 1;
 }
 
+.recharts-yAxis {
+	font-variant-numeric: tabular-nums;
+}
+
 /* charts */
 @layer base {
 	:root {

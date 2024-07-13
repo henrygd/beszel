@@ -94,8 +94,10 @@ func main() {
 		return nil
 	})
 
-	// create ssh key if it doesn't exist
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+		// create ssh key if it doesn't exist
+		getSSHKey()
+		// api route to return public key
 		e.Router.GET("/getkey", func(c echo.Context) error {
 			requestData := apis.RequestInfo(c)
 			if requestData.Admin == nil {

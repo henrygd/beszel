@@ -15,7 +15,7 @@ import Spinner from '../spinner'
 
 const chartConfig = {
 	diskUsed: {
-		label: 'Disk Use',
+		label: 'Disk Usage',
 		color: 'hsl(var(--chart-3))',
 	},
 } satisfies ChartConfig

@@ -51,3 +51,6 @@ const shortDateFormatter = new Intl.DateTimeFormat(undefined, {
 	minute: 'numeric',
 })
 export const formatShortDate = (timestamp: string) => shortDateFormatter.format(new Date(timestamp))
+
+export const updateFavicon = (newIconUrl: string) =>
+	((document.querySelector("link[rel='icon']") as HTMLLinkElement).href = newIconUrl)

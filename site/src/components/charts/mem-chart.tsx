@@ -10,21 +10,28 @@ import { formatShortDate, formatShortTime } from '@/lib/utils'
 import { useMemo } from 'react'
 import Spinner from '../spinner'
 
-const chartConfig = {
-	memUsed: {
-		label: 'Memory Use',
-		color: 'hsl(var(--chart-2))',
-	},
-} satisfies ChartConfig
-
 export default function ({
 	chartData,
 }: {
-	chartData: { time: string; mem: number; memUsed: number }[]
+	chartData: { time: string; mem: number; memUsed: number; memCache: number }[]
 }) {
 	const totalMem = useMemo(() => {
 		return Math.ceil(chartData[0]?.mem)
 	}, [chartData])
+
+	const chartConfig = useMemo(
+		() => ({
+			memCache: {
+				label: 'Cache / Buffers',
+				color: 'hsl(var(--chart-2))',
+			},
+			memUsed: {
+				label: 'Used',
+				color: 'hsl(var(--chart-2))',
+			},
+		}),
+		[]
+	) satisfies ChartConfig
 
 	if (!chartData.length) {
 		return <Spinner />
@@ -61,7 +68,13 @@ export default function ({
 				<ChartTooltip
 					cursor={false}
 					content={
-						<ChartTooltipContent unit="GiB" labelFormatter={formatShortDate} indicator="line" />
+						<ChartTooltipContent
+							unit="GiB"
+							// @ts-ignore
+							itemSorter={(a, b) => a.name.localeCompare(b.name)}
+							labelFormatter={formatShortDate}
+							indicator="line"
+						/>
 					}
 				/>
 				<Area
@@ -70,6 +83,16 @@ export default function ({
 					fill="var(--color-memUsed)"
 					fillOpacity={0.4}
 					stroke="var(--color-memUsed)"
+					stackId="a"
+				/>
+				<Area
+					dataKey="memCache"
+					type="monotone"
+					fill="var(--color-memCache)"
+					fillOpacity={0.2}
+					strokeOpacity={0.3}
+					stroke="var(--color-memCache)"
+					stackId="a"
 				/>
 			</AreaChart>
 		</ChartContainer>

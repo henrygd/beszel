@@ -27,8 +27,8 @@ export function AddServerButton() {
 	function copyDockerCompose(port: string) {
 		copyToClipboard(`services:
   agent:
-    image: 'henrygd/quoma-agent'
-    container_name: 'quoma-agent'
+    image: 'henrygd/qoma-agent'
+    container_name: 'qoma-agent'
     restart: unless-stopped
     ports:
       - '${port}:45876'

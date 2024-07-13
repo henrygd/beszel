@@ -63,7 +63,7 @@ export default function ({ chartData }: { chartData: Record<string, number | str
 			>
 				<CartesianGrid vertical={false} />
 				<YAxis
-					domain={[0, (max: number) => Math.ceil(max)]}
+					domain={[0, (max: number) => Math.max(Math.ceil(max), 0.4)]}
 					// tickCount={5}
 					tickLine={false}
 					axisLine={false}

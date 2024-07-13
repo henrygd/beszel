@@ -21,6 +21,8 @@ export interface SystemStats {
 	m: number
 	/** memory percent */
 	mp: number
+	/** memory buffer + cache (gb) */
+	mb: number
 	/** memory used (gb) */
 	mu: number
 }
