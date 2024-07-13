@@ -7,7 +7,7 @@ import { $authenticated, $router, $servers, navigate, pb } from './lib/stores.ts
 import { ModeToggle } from './components/mode-toggle.tsx'
 import { cn, updateFavicon, updateServerList } from './lib/utils.ts'
 import { buttonVariants } from './components/ui/button.tsx'
-import { DatabaseBackupIcon, Github, LogOutIcon, LogsIcon, UserIcon } from 'lucide-react'
+import { DatabaseBackupIcon, Github, LogOutIcon, LogsIcon, MailIcon, UserIcon } from 'lucide-react'
 import { useStore } from '@nanostores/react'
 import { Toaster } from './components/ui/toaster.tsx'
 import { Logo } from './components/logo.tsx'

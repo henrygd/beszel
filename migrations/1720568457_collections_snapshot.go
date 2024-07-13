@@ -78,7 +78,7 @@ func init() {
 			{
 				"id": "2hz5ncl8tizk5nx",
 				"created": "2024-07-07 16:08:20.979Z",
-				"updated": "2024-07-13 01:18:43.529Z",
+				"updated": "2024-07-13 23:20:50.678Z",
 				"name": "systems",
 				"type": "base",
 				"system": false,
@@ -155,9 +155,7 @@ func init() {
 						}
 					}
 				],
-				"indexes": [
-					"CREATE UNIQUE INDEX ` + "`" + `idx_eggNgAn` + "`" + ` ON ` + "`" + `systems` + "`" + ` (` + "`" + `name` + "`" + `)"
-				],
+				"indexes": [],
 				"listRule": null,
 				"viewRule": null,
 				"createRule": null,

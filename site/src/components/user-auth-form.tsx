@@ -1,17 +1,8 @@
-'use client'
-
 import * as React from 'react'
-// import { useSearchParams } from 'next/navigation'
-// import { zodResolver } from '@hookform/resolvers/zod'
-// import { signIn } from 'next-auth/react'
-// import { useForm } from 'react-hook-form'
-// import * as z from 'zod'
-
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-// import { toast } from '@/components/ui/use-toast'
 import { Github, LoaderCircle, LogInIcon } from 'lucide-react'
 import { pb } from '@/lib/stores'
 import * as v from 'valibot'
@@ -25,14 +16,34 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog'
 
-const LoginSchema = v.object({
-	email: v.pipe(v.string(), v.email('Invalid email address.')),
-	password: v.pipe(v.string(), v.minLength(10, 'Password must be at least 10 characters long.')),
+const honeypot = v.literal('')
+const emailSchema = v.pipe(v.string(), v.email('Invalid email address.'))
+const passwordSchema = v.pipe(
+	v.string(),
+	v.minLength(10, 'Password must be at least 10 characters.')
+)
+
+const LoginSchema = v.looseObject({
+	username: honeypot,
+	email: emailSchema,
+	password: passwordSchema,
 })
 
-// type LoginData = v.InferOutput<typeof LoginSchema> // { email: string; password: string }
+const RegisterSchema = v.looseObject({
+	username: honeypot,
+	email: emailSchema,
+	password: passwordSchema,
+	passwordConfirm: passwordSchema,
+})
 
-export function UserAuthForm({ className, ...props }: { className?: string }) {
+export function UserAuthForm({
+	className,
+	isFirstRun,
+	...props
+}: {
+	className?: string
+	isFirstRun: boolean
+}) {
 	const [isLoading, setIsLoading] = React.useState<boolean>(false)
 	const [isGitHubLoading, setIsGitHubLoading] = React.useState<boolean>(false)
 	const [errors, setErrors] = React.useState<Record<string, string | undefined>>({})
@@ -45,8 +56,10 @@ export function UserAuthForm({ className, ...props }: { className?: string }) {
 		try {
 			const formData = new FormData(e.target as HTMLFormElement)
 			const data = Object.fromEntries(formData) as Record<string, any>
-			const result = v.safeParse(LoginSchema, data)
+			const Schema = isFirstRun ? RegisterSchema : LoginSchema
+			const result = v.safeParse(Schema, data)
 			if (!result.success) {
+				console.log(result)
 				let errors = {}
 				for (const issue of result.issues) {
 					// @ts-ignore
@@ -55,9 +68,14 @@ export function UserAuthForm({ className, ...props }: { className?: string }) {
 				setErrors(errors)
 				return
 			}
-			const { email, password } = result.output
-			let firstRun = true
-			if (firstRun) {
+			const { email, password, passwordConfirm } = result.output
+			if (isFirstRun) {
+				// check that passwords match
+				if (password !== passwordConfirm) {
+					let msg = 'Passwords do not match'
+					setErrors({ passwordConfirm: msg })
+					return
+				}
 				await pb.admins.create({
 					email,
 					password,
@@ -80,13 +98,19 @@ export function UserAuthForm({ className, ...props }: { className?: string }) {
 
 	return (
 		<div className={cn('grid gap-6', className)} {...props}>
-			<form onSubmit={handleSubmit}>
+			<form onSubmit={handleSubmit} onChange={() => setErrors({})}>
 				<div className="grid gap-2.5">
+					<div className="sr-only">
+						{/* honeypot */}
+						<label htmlFor="username"></label>
+						<input id="username" type="text" name="username" tabIndex={-1} />
+					</div>
 					<div className="grid gap-1">
 						<Label className="sr-only" htmlFor="email">
 							Email
 						</Label>
 						<Input
+							autoFocus={true}
 							id="email"
 							name="email"
 							required
@@ -100,8 +124,8 @@ export function UserAuthForm({ className, ...props }: { className?: string }) {
 						{errors?.email && <p className="px-1 text-xs text-red-600">{errors.email}</p>}
 					</div>
 					<div className="grid gap-1">
-						<Label className="sr-only" htmlFor="email">
-							Email
+						<Label className="sr-only" htmlFor="pass">
+							Password
 						</Label>
 						<Input
 							id="pass"
@@ -114,13 +138,32 @@ export function UserAuthForm({ className, ...props }: { className?: string }) {
 						/>
 						{errors?.password && <p className="px-1 text-xs text-red-600">{errors.password}</p>}
 					</div>
+					{isFirstRun && (
+						<div className="grid gap-1">
+							<Label className="sr-only" htmlFor="pass2">
+								Confirm password
+							</Label>
+							<Input
+								id="pass2"
+								name="passwordConfirm"
+								placeholder="confirm password"
+								required
+								type="password"
+								autoComplete="current-password"
+								disabled={isLoading || isGitHubLoading}
+							/>
+							{errors?.passwordConfirm && (
+								<p className="px-1 text-xs text-red-600">{errors.passwordConfirm}</p>
+							)}
+						</div>
+					)}
 					<button className={cn(buttonVariants())} disabled={isLoading}>
 						{isLoading ? (
 							<LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
 						) : (
 							<LogInIcon className="mr-2 h-4 w-4" />
 						)}
-						Sign In
+						{isFirstRun ? 'Create account' : 'Sign in'}
 					</button>
 				</div>
 			</form>
@@ -152,11 +195,20 @@ export function UserAuthForm({ className, ...props }: { className?: string }) {
 						Github
 					</button>
 				</DialogTrigger>
-				<DialogContent className="sm:max-w-[425px]">
+				<DialogContent style={{ maxWidth: 440, width: '90%' }}>
 					<DialogHeader>
-						<DialogTitle>OAuth support coming soon</DialogTitle>
-						<DialogDescription>
-							OAuth / OpenID with all major providers should be available at 1.0.0.
+						<DialogTitle className="mb-2">OAuth 2 / OIDC support</DialogTitle>
+						<DialogDescription className="grid gap-3">
+							<p>
+								Support for OAuth / OIDC (all major providers) will be available in the future. As
+								well as an option to disable password auth.
+							</p>
+							<p>First I need to decide what to do with additional users.</p>
+							<p>
+								Should systems be shared across all accounts? Or should they be private by default
+								with team-based sharing?
+							</p>
+							<p>Let me know if you have strong opinions either way.</p>
 						</DialogDescription>
 					</DialogHeader>
 				</DialogContent>

@@ -43,7 +43,7 @@ export function AddServerButton() {
 			return
 		}
 		// get public key
-		pb.send('/getkey', {}).then(({ key }) => {
+		pb.send('/api/qoma/getkey', {}).then(({ key }) => {
 			$publicKey.set(key)
 		})
 	}, [open])

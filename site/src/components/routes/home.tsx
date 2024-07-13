@@ -2,7 +2,7 @@ import { Suspense, lazy, useEffect } from 'react'
 // import { DataTable } from '../server-table/data-table'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 
-const DataTable = lazy(() => import('../server-table/data-table'))
+const SystemsTable = lazy(() => import('../server-table/systems-table'))
 
 export default function () {
 	useEffect(() => {
@@ -24,7 +24,7 @@ export default function () {
 				</CardHeader>
 				<CardContent>
 					<Suspense>
-						<DataTable />
+						<SystemsTable />
 					</Suspense>
 				</CardContent>
 			</Card>

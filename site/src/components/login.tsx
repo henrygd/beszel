@@ -1,11 +1,19 @@
 import { UserAuthForm } from '@/components/user-auth-form'
 import { Logo } from './logo'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { pb } from '@/lib/stores'
 
 export default function () {
+	const [isFirstRun, setFirstRun] = useState(false)
+
 	useEffect(() => {
 		document.title = 'Login / Qoma'
+
+		pb.send('/api/qoma/first-run', {}).then(({ firstRun }) => {
+			setFirstRun(firstRun)
+		})
 	}, [])
+
 	return (
 		<div className="relative h-screen grid lg:max-w-none lg:px-0">
 			<div className="grid items-center py-12">
@@ -15,9 +23,11 @@ export default function () {
 							<Logo className="h-7 fill-foreground mx-auto" />
 							<span className="sr-only">Qoma</span>
 						</h1>
-						<p className="text-sm text-muted-foreground">Please sign in to your account</p>
+						<p className="text-sm text-muted-foreground">
+							{isFirstRun ? 'Please create your admin account' : 'Please sign in to your account'}
+						</p>
 					</div>
-					<UserAuthForm />
+					<UserAuthForm isFirstRun={isFirstRun} />
 					<p className="text-center text-sm opacity-70 hover:opacity-100 transition-opacity">
 						{/* todo: add forgot password section to readme and link to section
 						    reset w/ command or link to pb reset */}

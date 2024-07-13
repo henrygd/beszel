@@ -103,7 +103,7 @@ function sortableHeader(column: Column<SystemRecord, unknown>, name: string, Ico
 	)
 }
 
-export default function () {
+export default function SystemsTable() {
 	const data = useStore($servers)
 	// const [deleteServer, setDeleteServer] = useState({} as SystemRecord)
 	const [sorting, setSorting] = useState<SortingState>([])
@@ -135,7 +135,7 @@ export default function () {
 								onClick={() => copyToClipboard(info.getValue() as string)}
 							>
 								{info.getValue() as string}
-								<CopyIcon className="h-3 w-3" />
+								<CopyIcon className="h-2.5 w-2.5" />
 							</Button>
 						</span>
 					)

@@ -41,6 +41,20 @@ func main() {
 		Automigrate: isGoRun,
 	})
 
+	app.OnAfterBootstrap().Add(func(e *core.BootstrapEvent) error {
+		// update app settings on first run
+		settings := app.Settings()
+		if app.Settings().Meta.AppName == "Acme" {
+			app.Settings().Meta.AppName = "Qoma"
+			app.Settings().Meta.HideControls = true
+			err := app.Dao().SaveSettings(settings)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
 	// serve site
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		switch isGoRun {
@@ -95,11 +109,12 @@ func main() {
 		return nil
 	})
 
+	// ssh key setup
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		// create ssh key if it doesn't exist
 		getSSHKey()
 		// api route to return public key
-		e.Router.GET("/getkey", func(c echo.Context) error {
+		e.Router.GET("/api/qoma/getkey", func(c echo.Context) error {
 			requestData := apis.RequestInfo(c)
 			if requestData.Admin == nil {
 				return apis.NewForbiddenError("Forbidden", nil)
@@ -109,6 +124,19 @@ func main() {
 				return err
 			}
 			return c.JSON(http.StatusOK, map[string]string{"key": strings.TrimSuffix(string(key), "\n")})
+		})
+		return nil
+	})
+
+	// other api routes
+	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+		// check if first time setup on login page
+		e.Router.GET("/api/qoma/first-run", func(c echo.Context) error {
+			adminNum, err := app.Dao().TotalAdmins()
+			if err != nil {
+				return err
+			}
+			return c.JSON(http.StatusOK, map[string]bool{"firstRun": adminNum == 0})
 		})
 		return nil
 	})
