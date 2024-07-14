@@ -15,7 +15,7 @@ func init() {
 			{
 				"id": "2hz5ncl8tizk5nx",
 				"created": "2024-07-07 16:08:20.979Z",
-				"updated": "2024-07-14 03:36:23.090Z",
+				"updated": "2024-07-14 19:51:52.377Z",
 				"name": "systems",
 				"type": "base",
 				"system": false,
@@ -47,7 +47,8 @@ func init() {
 							"values": [
 								"up",
 								"down",
-								"paused"
+								"paused",
+								"pending"
 							]
 						}
 					},
@@ -82,7 +83,7 @@ func init() {
 					{
 						"system": false,
 						"id": "qoq64ntl",
-						"name": "stats",
+						"name": "info",
 						"type": "json",
 						"required": true,
 						"presentable": false,
@@ -194,8 +195,8 @@ func init() {
 			},
 			{
 				"id": "_pb_users_auth_",
-				"created": "2024-07-14 03:36:23.076Z",
-				"updated": "2024-07-14 03:36:23.087Z",
+				"created": "2024-07-14 16:25:18.226Z",
+				"updated": "2024-07-14 16:25:18.235Z",
 				"name": "users",
 				"type": "auth",
 				"system": false,

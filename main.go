@@ -139,13 +139,30 @@ func main() {
 		return nil
 	})
 
+	// do things after a systems record is updated
+	app.OnRecordAfterUpdateRequest("systems").Add(func(e *core.RecordUpdateEvent) error {
+		status := e.Record.Get("status")
+		// if server connection exists, close it
+		if status == "down" || status == "paused" {
+			deleteServerConnection(e.Record)
+		}
+		return nil
+	})
+
+	// do things after a systems record is deleted
+	app.OnRecordAfterDeleteRequest("systems").Add(func(e *core.RecordDeleteEvent) error {
+		// if server connection exists, close it
+		deleteServerConnection(e.Record)
+		return nil
+	})
+
 	if err := app.Start(); err != nil {
 		log.Fatal(err)
 	}
 }
 
 func serverUpdateTicker() {
-	ticker := time.NewTicker(60 * time.Second)
+	ticker := time.NewTicker(10 * time.Second)
 	for range ticker.C {
 		updateServers()
 	}
@@ -185,7 +202,7 @@ func updateServer(record *models.Record) {
 		client, err := getServerConnection(&server)
 		if err != nil {
 			app.Logger().Error("Failed to connect:", "err", err.Error(), "server", server.Host, "port", server.Port)
-			setInactive(record)
+			updateServerStatus(record, "down")
 			return
 		}
 		server.Client = client
@@ -195,12 +212,12 @@ func updateServer(record *models.Record) {
 	systemData, err := requestJson(&server)
 	if err != nil {
 		app.Logger().Error("Failed to get server stats: ", "err", err.Error())
-		setInactive(record)
+		updateServerStatus(record, "down")
 		return
 	}
 	// update system record
 	record.Set("status", "up")
-	record.Set("stats", systemData.System)
+	record.Set("info", systemData.Info)
 	if err := app.Dao().SaveRecord(record); err != nil {
 		app.Logger().Error("Failed to update record: ", "err", err.Error())
 	}
@@ -208,7 +225,7 @@ func updateServer(record *models.Record) {
 	system_stats, _ := app.Dao().FindCollectionByNameOrId("system_stats")
 	system_stats_record := models.NewRecord(system_stats)
 	system_stats_record.Set("system", record.Id)
-	system_stats_record.Set("stats", systemData.System)
+	system_stats_record.Set("stats", systemData.Stats)
 	if err := app.Dao().SaveRecord(system_stats_record); err != nil {
 		app.Logger().Error("Failed to save record: ", "err", err.Error())
 	}
@@ -225,20 +242,26 @@ func updateServer(record *models.Record) {
 }
 
 // set server to status down and close connection
-func setInactive(record *models.Record) {
+func updateServerStatus(record *models.Record, status string) {
 	// if in map, close connection and remove from map
+	// this is now down automatically in an after update hook
+	// if status == "down" || status == "paused" {
+	// 	deleteServerConnection(record)
+	// }
+	if record.Get("status") != status {
+		record.Set("status", status)
+		if err := app.Dao().SaveRecord(record); err != nil {
+			app.Logger().Error("Failed to update record: ", "err", err.Error())
+		}
+	}
+}
+
+func deleteServerConnection(record *models.Record) {
 	if _, ok := serverConnections[record.Id]; ok {
 		if serverConnections[record.Id].Client != nil {
 			serverConnections[record.Id].Client.Close()
 		}
 		delete(serverConnections, record.Id)
-	}
-	// set inactive
-	if record.Get("status") != "down" {
-		record.Set("status", "down")
-		if err := app.Dao().SaveRecord(record); err != nil {
-			app.Logger().Error("Failed to update record: ", "err", err.Error())
-		}
 	}
 }
 

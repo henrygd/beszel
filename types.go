@@ -7,23 +7,38 @@ import (
 type Server struct {
 	Host   string
 	Port   string
+	Status string
 	Client *ssh.Client
 }
 
 type SystemData struct {
-	System     SystemStats      `json:"stats"`
+	Stats      SystemStats      `json:"stats"`
+	Info       SystemInfo       `json:"info"`
 	Containers []ContainerStats `json:"container"`
 }
 
-type SystemStats struct {
-	Cpu      float64 `json:"c"`
-	Mem      float64 `json:"m"`
-	MemUsed  float64 `json:"mu"`
+type SystemInfo struct {
+	Cores    int     `json:"c"`
+	Threads  int     `json:"t"`
+	CpuModel string  `json:"m"`
+	Os       string  `json:"o"`
+	Uptime   uint64  `json:"u"`
+	Cpu      float64 `json:"cpu"`
 	MemPct   float64 `json:"mp"`
-	MemBuf   float64 `json:"mb"`
-	Disk     float64 `json:"d"`
-	DiskUsed float64 `json:"du"`
 	DiskPct  float64 `json:"dp"`
+}
+
+type SystemStats struct {
+	Cpu          float64 `json:"cpu"`
+	Mem          float64 `json:"m"`
+	MemUsed      float64 `json:"mu"`
+	MemPct       float64 `json:"mp"`
+	MemBuffCache float64 `json:"mb"`
+	Disk         float64 `json:"d"`
+	DiskUsed     float64 `json:"du"`
+	DiskPct      float64 `json:"dp"`
+	DiskRead     float64 `json:"dr"`
+	DiskWrite    float64 `json:"dw"`
 }
 
 type ContainerStats struct {
