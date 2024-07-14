@@ -61,7 +61,7 @@ import { useMemo, useState } from 'react'
 import { $servers, pb, navigate } from '@/lib/stores'
 import { useStore } from '@nanostores/react'
 import { AddServerButton } from '../add-server'
-import { cn, copyToClipboard } from '@/lib/utils'
+import { cn, copyToClipboard, isAdmin } from '@/lib/utils'
 import {
 	Dialog,
 	DialogContent,
@@ -75,7 +75,7 @@ function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	const val = info.getValue() as number
 	return (
 		<div className="flex gap-2 items-center tabular-nums tracking-tight">
-			<span className="grow min-w-10 block bg-muted h-4 relative rounded-sm overflow-hidden">
+			<span className="grow min-w-10 block bg-muted h-[1em] relative rounded-sm overflow-hidden">
 				<span
 					className={cn(
 						'absolute inset-0 w-full h-full origin-left',
@@ -288,9 +288,11 @@ export default function SystemsTable() {
 						onChange={(event) => table.getColumn('name')?.setFilterValue(event.target.value)}
 						className="max-w-sm"
 					/>
-					<div className="ml-auto flex gap-2">
-						<AddServerButton />
-					</div>
+					{isAdmin() && (
+						<div className="ml-auto flex gap-2">
+							<AddServerButton />
+						</div>
+					)}
 				</div>
 				<div className="rounded-md border overflow-hidden">
 					<Table>

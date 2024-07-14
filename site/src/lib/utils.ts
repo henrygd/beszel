@@ -54,3 +54,5 @@ export const formatShortDate = (timestamp: string) => shortDateFormatter.format(
 
 export const updateFavicon = (newIconUrl: string) =>
 	((document.querySelector("link[rel='icon']") as HTMLLinkElement).href = newIconUrl)
+
+export const isAdmin = () => pb.authStore.model?.admin

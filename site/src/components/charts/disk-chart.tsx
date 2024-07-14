@@ -20,7 +20,7 @@ const chartConfig = {
 	},
 } satisfies ChartConfig
 
-export default function ({
+export default function DiskChart({
 	chartData,
 }: {
 	chartData: { time: string; disk: number; diskUsed: number }[]

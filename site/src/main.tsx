@@ -5,7 +5,7 @@ import Home from './components/routes/home.tsx'
 import { ThemeProvider } from './components/theme-provider.tsx'
 import { $authenticated, $router, $servers, navigate, pb } from './lib/stores.ts'
 import { ModeToggle } from './components/mode-toggle.tsx'
-import { cn, updateFavicon, updateServerList } from './lib/utils.ts'
+import { cn, isAdmin, updateFavicon, updateServerList } from './lib/utils.ts'
 import { buttonVariants } from './components/ui/button.tsx'
 import { DatabaseBackupIcon, Github, LogOutIcon, LogsIcon, MailIcon, UserIcon } from 'lucide-react'
 import { useStore } from '@nanostores/react'
@@ -35,8 +35,14 @@ const App = () => {
 	const authenticated = useStore($authenticated)
 	const servers = useStore($servers)
 
-	// get servers
-	useEffect(updateServerList, [])
+	useEffect(() => {
+		// get servers
+		updateServerList()
+		// change auth store on auth change
+		pb.authStore.onChange(() => {
+			$authenticated.set(pb.authStore.isValid)
+		})
+	}, [])
 
 	useEffect(() => {
 		pb.collection<SystemRecord>('systems').subscribe('*', (e) => {
@@ -128,36 +134,7 @@ const Layout = () => {
 					</a>
 
 					<div className={'flex ml-auto'}>
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<a
-									aria-label="User Actions"
-									href={'https://github.com/henrygd'}
-									className={cn('', buttonVariants({ variant: 'ghost', size: 'icon' }))}
-								>
-									<UserIcon className="h-[1.2rem] w-[1.2rem]" />
-								</a>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent>
-								<DropdownMenuItem onSelect={() => pb.authStore.clear()}>
-									<LogOutIcon className="mr-2.5 h-4 w-4" />
-									<span>Log out</span>
-								</DropdownMenuItem>
-								<DropdownMenuSeparator />
-								<DropdownMenuItem asChild>
-									<a href="/_/#/logs">
-										<LogsIcon className="mr-2.5 h-4 w-4" />
-										<span>Logs</span>
-									</a>
-								</DropdownMenuItem>
-								<DropdownMenuItem asChild>
-									<a href="/_/#/settings/backups">
-										<DatabaseBackupIcon className="mr-2.5 h-4 w-4" />
-										<span>Backups</span>
-									</a>
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
+						<ModeToggle />
 						<TooltipProvider delayDuration={300}>
 							<Tooltip>
 								<TooltipTrigger asChild>
@@ -175,7 +152,40 @@ const Layout = () => {
 								</TooltipContent>
 							</Tooltip>
 						</TooltipProvider>
-						<ModeToggle />
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<a
+									aria-label="User Actions"
+									href={'https://github.com/henrygd'}
+									className={cn('', buttonVariants({ variant: 'ghost', size: 'icon' }))}
+								>
+									<UserIcon className="h-[1.2rem] w-[1.2rem]" />
+								</a>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end">
+								<DropdownMenuItem onSelect={() => pb.authStore.clear()}>
+									<LogOutIcon className="mr-2.5 h-4 w-4" />
+									<span>Log out</span>
+								</DropdownMenuItem>
+								{isAdmin() && (
+									<>
+										<DropdownMenuSeparator />
+										<DropdownMenuItem asChild>
+											<a href="/_/#/logs">
+												<LogsIcon className="mr-2.5 h-4 w-4" />
+												<span>Logs</span>
+											</a>
+										</DropdownMenuItem>
+										<DropdownMenuItem asChild>
+											<a href="/_/#/settings/backups">
+												<DatabaseBackupIcon className="mr-2.5 h-4 w-4" />
+												<span>Backups</span>
+											</a>
+										</DropdownMenuItem>
+									</>
+								)}
+							</DropdownMenuContent>
+						</DropdownMenu>
 					</div>
 				</div>
 			</div>

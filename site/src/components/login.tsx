@@ -24,7 +24,7 @@ export default function () {
 							<span className="sr-only">Qoma</span>
 						</h1>
 						<p className="text-sm text-muted-foreground">
-							{isFirstRun ? 'Please create your admin account' : 'Please sign in to your account'}
+							{isFirstRun ? 'Please create an admin account' : 'Please sign in to your account'}
 						</p>
 					</div>
 					<UserAuthForm isFirstRun={isFirstRun} />

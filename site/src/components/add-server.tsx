@@ -79,17 +79,17 @@ export function AddServerButton() {
 					Add <span className="hidden sm:inline">System</span>
 				</Button>
 			</DialogTrigger>
-			<DialogContent className="sm:max-w-[425px]">
+			<DialogContent className="w-[90%] sm:max-w-[425px] rounded-lg">
 				<DialogHeader>
-					<DialogTitle>Add New System</DialogTitle>
+					<DialogTitle className="mb-2">Add New System</DialogTitle>
 					<DialogDescription>
 						The agent must be running on the server to connect. Copy the{' '}
 						<code className="bg-muted px-1 rounded-sm">docker-compose.yml</code> for the agent
 						below.
 					</DialogDescription>
 				</DialogHeader>
-				<form name="testing" action="/" onSubmit={handleSubmit as any}>
-					<div className="grid gap-4 py-4">
+				<form onSubmit={handleSubmit as any}>
+					<div className="grid gap-4 mt-1 mb-4">
 						<div className="grid grid-cols-4 items-center gap-4">
 							<Label htmlFor="name" className="text-right">
 								Name
@@ -116,7 +116,7 @@ export function AddServerButton() {
 							/>
 						</div>
 						<div className="grid grid-cols-4 items-center gap-4 relative">
-							<Label htmlFor="pkey" className="text-right">
+							<Label htmlFor="pkey" className="text-right whitespace-pre">
 								Public Key
 							</Label>
 							<Input readOnly id="pkey" value={publicKey} className="col-span-3" required></Input>
@@ -144,7 +144,7 @@ export function AddServerButton() {
 							</TooltipProvider>
 						</div>
 					</div>
-					<DialogFooter>
+					<DialogFooter className="flex justify-end gap-2">
 						<Button
 							type="button"
 							variant={'ghost'}

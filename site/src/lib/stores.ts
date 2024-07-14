@@ -4,8 +4,6 @@ import { SystemRecord } from '@/types'
 import { createRouter } from '@nanostores/router'
 
 export const pb = new PocketBase('/')
-// @ts-ignore
-pb.authStore.storageKey = 'pb_admin_auth'
 
 export const $router = createRouter(
 	{
@@ -20,9 +18,6 @@ export const navigate = (urlString: string) => {
 }
 
 export const $authenticated = atom(pb.authStore.isValid)
-pb.authStore.onChange(() => {
-	$authenticated.set(pb.authStore.isValid)
-})
 
 export const $servers = atom([] as SystemRecord[])
 

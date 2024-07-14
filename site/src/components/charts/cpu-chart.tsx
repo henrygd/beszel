@@ -19,7 +19,7 @@ const chartConfig = {
 	},
 } satisfies ChartConfig
 
-export default function ({ chartData }: { chartData: { time: string; cpu: number }[] }) {
+export default function CpuChart({ chartData }: { chartData: { time: string; cpu: number }[] }) {
 	if (!chartData?.length) {
 		return <Spinner />
 	}

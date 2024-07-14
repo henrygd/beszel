@@ -3,8 +3,8 @@ import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Github, LoaderCircle, LogInIcon } from 'lucide-react'
-import { pb } from '@/lib/stores'
+import { Github, LoaderCircle, LockIcon, LogInIcon, MailIcon, UserIcon } from 'lucide-react'
+import { $authenticated, pb } from '@/lib/stores'
 import * as v from 'valibot'
 import { toast } from './ui/use-toast'
 import {
@@ -24,13 +24,21 @@ const passwordSchema = v.pipe(
 )
 
 const LoginSchema = v.looseObject({
-	username: honeypot,
+	name: honeypot,
 	email: emailSchema,
 	password: passwordSchema,
 })
 
 const RegisterSchema = v.looseObject({
-	username: honeypot,
+	name: honeypot,
+	username: v.pipe(
+		v.string(),
+		v.regex(
+			/^(?=.*[a-zA-Z])[a-zA-Z0-9_-]+$/,
+			'Invalid username. You may use alphanumeric characters, underscores, and hyphens.'
+		),
+		v.minLength(3, 'Username must be at least 3 characters long.')
+	),
 	email: emailSchema,
 	password: passwordSchema,
 	passwordConfirm: passwordSchema,
@@ -68,7 +76,7 @@ export function UserAuthForm({
 				setErrors(errors)
 				return
 			}
-			const { email, password, passwordConfirm } = result.output
+			const { email, password, passwordConfirm, username } = result.output
 			if (isFirstRun) {
 				// check that passwords match
 				if (password !== passwordConfirm) {
@@ -82,9 +90,19 @@ export function UserAuthForm({
 					passwordConfirm: password,
 				})
 				await pb.admins.authWithPassword(email, password)
+				await pb.collection('users').create({
+					username,
+					email,
+					password,
+					passwordConfirm: password,
+					admin: true,
+					verified: true,
+				})
+				await pb.collection('users').authWithPassword(email, password)
 			} else {
-				await pb.admins.authWithPassword(email, password)
+				await pb.collection('users').authWithPassword(email, password)
 			}
+			$authenticated.set(true)
 		} catch (e) {
 			return toast({
 				title: 'Login attempt failed',
@@ -100,30 +118,49 @@ export function UserAuthForm({
 		<div className={cn('grid gap-6', className)} {...props}>
 			<form onSubmit={handleSubmit} onChange={() => setErrors({})}>
 				<div className="grid gap-2.5">
-					<div className="sr-only">
-						{/* honeypot */}
-						<label htmlFor="username"></label>
-						<input id="username" type="text" name="username" tabIndex={-1} />
-					</div>
-					<div className="grid gap-1">
+					{isFirstRun && (
+						<div className="grid gap-1 relative">
+							<UserIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+							<Label className="sr-only" htmlFor="username">
+								Username
+							</Label>
+							<Input
+								autoFocus={true}
+								id="username"
+								name="username"
+								required
+								placeholder="username"
+								type="username"
+								autoCapitalize="none"
+								autoComplete="username"
+								autoCorrect="off"
+								disabled={isLoading || isGitHubLoading}
+								className="pl-9"
+							/>
+							{errors?.username && <p className="px-1 text-xs text-red-600">{errors.username}</p>}
+						</div>
+					)}
+					<div className="grid gap-1 relative">
+						<MailIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 						<Label className="sr-only" htmlFor="email">
 							Email
 						</Label>
 						<Input
-							autoFocus={true}
 							id="email"
 							name="email"
 							required
-							placeholder="name@example.com"
+							placeholder={isFirstRun ? 'email' : 'name@example.com'}
 							type="email"
 							autoCapitalize="none"
 							autoComplete="email"
 							autoCorrect="off"
 							disabled={isLoading || isGitHubLoading}
+							className="pl-9"
 						/>
 						{errors?.email && <p className="px-1 text-xs text-red-600">{errors.email}</p>}
 					</div>
-					<div className="grid gap-1">
+					<div className="grid gap-1 relative">
+						<LockIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 						<Label className="sr-only" htmlFor="pass">
 							Password
 						</Label>
@@ -135,11 +172,13 @@ export function UserAuthForm({
 							type="password"
 							autoComplete="current-password"
 							disabled={isLoading || isGitHubLoading}
+							className="pl-9"
 						/>
 						{errors?.password && <p className="px-1 text-xs text-red-600">{errors.password}</p>}
 					</div>
 					{isFirstRun && (
-						<div className="grid gap-1">
+						<div className="grid gap-1 relative">
+							<LockIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 							<Label className="sr-only" htmlFor="pass2">
 								Confirm password
 							</Label>
@@ -151,12 +190,18 @@ export function UserAuthForm({
 								type="password"
 								autoComplete="current-password"
 								disabled={isLoading || isGitHubLoading}
+								className="pl-9"
 							/>
 							{errors?.passwordConfirm && (
 								<p className="px-1 text-xs text-red-600">{errors.passwordConfirm}</p>
 							)}
 						</div>
 					)}
+					<div className="sr-only">
+						{/* honeypot */}
+						<label htmlFor="name"></label>
+						<input id="name" type="text" name="name" tabIndex={-1} />
+					</div>
 					<button className={cn(buttonVariants())} disabled={isLoading}>
 						{isLoading ? (
 							<LoaderCircle className="mr-2 h-4 w-4 animate-spin" />

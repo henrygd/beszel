@@ -13,72 +13,9 @@ func init() {
 	m.Register(func(db dbx.Builder) error {
 		jsonData := `[
 			{
-				"id": "_pb_users_auth_",
-				"created": "2024-07-07 15:59:04.262Z",
-				"updated": "2024-07-09 23:42:40.542Z",
-				"name": "users",
-				"type": "auth",
-				"system": false,
-				"schema": [
-					{
-						"system": false,
-						"id": "users_name",
-						"name": "name",
-						"type": "text",
-						"required": false,
-						"presentable": false,
-						"unique": false,
-						"options": {
-							"min": null,
-							"max": null,
-							"pattern": ""
-						}
-					},
-					{
-						"system": false,
-						"id": "users_avatar",
-						"name": "avatar",
-						"type": "file",
-						"required": false,
-						"presentable": false,
-						"unique": false,
-						"options": {
-							"mimeTypes": [
-								"image/jpeg",
-								"image/png",
-								"image/svg+xml",
-								"image/gif",
-								"image/webp"
-							],
-							"thumbs": null,
-							"maxSelect": 1,
-							"maxSize": 5242880,
-							"protected": false
-						}
-					}
-				],
-				"indexes": [],
-				"listRule": "id = @request.auth.id",
-				"viewRule": "id = @request.auth.id",
-				"createRule": "",
-				"updateRule": "id = @request.auth.id",
-				"deleteRule": "id = @request.auth.id",
-				"options": {
-					"allowEmailAuth": true,
-					"allowOAuth2Auth": true,
-					"allowUsernameAuth": true,
-					"exceptEmailDomains": null,
-					"manageRule": null,
-					"minPasswordLength": 8,
-					"onlyEmailDomains": null,
-					"onlyVerified": false,
-					"requireEmail": false
-				}
-			},
-			{
 				"id": "2hz5ncl8tizk5nx",
 				"created": "2024-07-07 16:08:20.979Z",
-				"updated": "2024-07-13 23:20:50.678Z",
+				"updated": "2024-07-14 03:36:23.090Z",
 				"name": "systems",
 				"type": "base",
 				"system": false,
@@ -156,17 +93,17 @@ func init() {
 					}
 				],
 				"indexes": [],
-				"listRule": null,
-				"viewRule": null,
-				"createRule": null,
-				"updateRule": null,
-				"deleteRule": null,
+				"listRule": "",
+				"viewRule": "@request.auth.id != \"\"",
+				"createRule": "@request.auth.id != \"\" && @request.auth.admin = true",
+				"updateRule": "",
+				"deleteRule": "@request.auth.id != \"\" && @request.auth.admin = true",
 				"options": {}
 			},
 			{
 				"id": "ej9oowivz8b2mht",
 				"created": "2024-07-07 16:09:09.179Z",
-				"updated": "2024-07-09 23:42:40.542Z",
+				"updated": "2024-07-14 03:36:23.089Z",
 				"name": "system_stats",
 				"type": "base",
 				"system": false,
@@ -203,7 +140,7 @@ func init() {
 				"indexes": [
 					"CREATE INDEX ` + "`" + `idx_GxIee0j` + "`" + ` ON ` + "`" + `system_stats` + "`" + ` (` + "`" + `system` + "`" + `)"
 				],
-				"listRule": null,
+				"listRule": "@request.auth.id != \"\"",
 				"viewRule": null,
 				"createRule": null,
 				"updateRule": null,
@@ -213,7 +150,7 @@ func init() {
 			{
 				"id": "juohu4jipgc13v7",
 				"created": "2024-07-07 16:09:57.976Z",
-				"updated": "2024-07-09 23:42:40.542Z",
+				"updated": "2024-07-14 03:36:23.090Z",
 				"name": "container_stats",
 				"type": "base",
 				"system": false,
@@ -248,12 +185,71 @@ func init() {
 					}
 				],
 				"indexes": [],
-				"listRule": null,
+				"listRule": "@request.auth.id != \"\"",
 				"viewRule": null,
 				"createRule": null,
 				"updateRule": null,
 				"deleteRule": null,
 				"options": {}
+			},
+			{
+				"id": "_pb_users_auth_",
+				"created": "2024-07-14 03:36:23.076Z",
+				"updated": "2024-07-14 03:36:23.087Z",
+				"name": "users",
+				"type": "auth",
+				"system": false,
+				"schema": [
+					{
+						"system": false,
+						"id": "users_avatar",
+						"name": "avatar",
+						"type": "file",
+						"required": false,
+						"presentable": false,
+						"unique": false,
+						"options": {
+							"mimeTypes": [
+								"image/jpeg",
+								"image/png",
+								"image/svg+xml",
+								"image/gif",
+								"image/webp"
+							],
+							"thumbs": null,
+							"maxSelect": 1,
+							"maxSize": 5242880,
+							"protected": false
+						}
+					},
+					{
+						"system": false,
+						"id": "ebyl7gfs",
+						"name": "admin",
+						"type": "bool",
+						"required": false,
+						"presentable": false,
+						"unique": false,
+						"options": {}
+					}
+				],
+				"indexes": [],
+				"listRule": "id = @request.auth.id",
+				"viewRule": "id = @request.auth.id",
+				"createRule": null,
+				"updateRule": null,
+				"deleteRule": null,
+				"options": {
+					"allowEmailAuth": true,
+					"allowOAuth2Auth": true,
+					"allowUsernameAuth": true,
+					"exceptEmailDomains": null,
+					"manageRule": null,
+					"minPasswordLength": 8,
+					"onlyEmailDomains": null,
+					"onlyVerified": false,
+					"requireEmail": false
+				}
 			}
 		]`
 

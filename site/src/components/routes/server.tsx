@@ -4,14 +4,18 @@ import { Suspense, lazy, useEffect, useState } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card'
 import { useStore } from '@nanostores/react'
 import Spinner from '../spinner'
-import CpuChart from '../charts/cpu-chart'
-import MemChart from '../charts/mem-chart'
-import DiskChart from '../charts/disk-chart'
-import ContainerCpuChart from '../charts/container-cpu-chart'
+// import CpuChart from '../charts/cpu-chart'
+// import MemChart from '../charts/mem-chart'
+// import DiskChart from '../charts/disk-chart'
+// import ContainerCpuChart from '../charts/container-cpu-chart'
+// import ContainerMemChart from '../charts/container-mem-chart'
 import { CpuIcon, MemoryStickIcon } from 'lucide-react'
-import ContainerMemChart from '../charts/container-mem-chart'
 
-// const CpuChart = lazy(() => import('../cpu-chart'))
+const CpuChart = lazy(() => import('../charts/cpu-chart'))
+const ContainerCpuChart = lazy(() => import('../charts/container-cpu-chart'))
+const MemChart = lazy(() => import('../charts/mem-chart'))
+const ContainerMemChart = lazy(() => import('../charts/container-mem-chart'))
+const DiskChart = lazy(() => import('../charts/disk-chart'))
 
 function timestampToBrowserTime(timestamp: string) {
 	const date = new Date(timestamp)
@@ -138,6 +142,9 @@ export default function ServerDetail({ name }: { name: string }) {
 	return (
 		<>
 			<div className="grid gap-6 mb-10">
+				<div className="p-6">
+					<h1 className="text-3xl font-semibold">{name}</h1>
+				</div>
 				<Card className="pb-2">
 					<CardHeader>
 						<CardTitle className="flex gap-2 justify-between">
@@ -203,9 +210,9 @@ export default function ServerDetail({ name }: { name: string }) {
 						<CardDescription>Precise usage at the recorded time</CardDescription>
 					</CardHeader>
 					<CardContent className={'pl-1 w-[calc(100%-2em)] h-52 relative'}>
-						{/* <Suspense fallback={<Spinner />}> */}
-						<DiskChart chartData={diskChartData} />
-						{/* </Suspense> */}
+						<Suspense fallback={<Spinner />}>
+							<DiskChart chartData={diskChartData} />
+						</Suspense>
 					</CardContent>
 				</Card>
 			</div>

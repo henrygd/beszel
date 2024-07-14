@@ -1,5 +1,4 @@
 import { Suspense, lazy, useEffect } from 'react'
-// import { DataTable } from '../server-table/data-table'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 
 const SystemsTable = lazy(() => import('../server-table/systems-table'))

@@ -41,20 +41,6 @@ func main() {
 		Automigrate: isGoRun,
 	})
 
-	app.OnAfterBootstrap().Add(func(e *core.BootstrapEvent) error {
-		// update app settings on first run
-		settings := app.Settings()
-		if app.Settings().Meta.AppName == "Acme" {
-			app.Settings().Meta.AppName = "Qoma"
-			app.Settings().Meta.HideControls = true
-			err := app.Dao().SaveSettings(settings)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
-
 	// serve site
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		switch isGoRun {
@@ -116,7 +102,7 @@ func main() {
 		// api route to return public key
 		e.Router.GET("/api/qoma/getkey", func(c echo.Context) error {
 			requestData := apis.RequestInfo(c)
-			if requestData.Admin == nil {
+			if requestData.AuthRecord == nil {
 				return apis.NewForbiddenError("Forbidden", nil)
 			}
 			key, err := os.ReadFile("./pb_data/id_ed25519.pub")
