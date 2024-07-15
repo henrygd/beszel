@@ -1,8 +1,10 @@
 import { toast } from '@/components/ui/use-toast'
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import { $servers, pb } from './stores'
-import { SystemRecord } from '@/types'
+import { $alerts, $systems, pb } from './stores'
+import { AlertRecord, SystemRecord } from '@/types'
+import { RecordModel, RecordSubscription } from 'pocketbase'
+import { WritableAtom } from 'nanostores'
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -28,7 +30,15 @@ export const updateServerList = () => {
 	pb.collection<SystemRecord>('systems')
 		.getFullList({ sort: '+name' })
 		.then((records) => {
-			$servers.set(records)
+			$systems.set(records)
+		})
+}
+
+export const updateAlerts = () => {
+	pb.collection('alerts')
+		.getFullList<AlertRecord>({ fields: 'id,name,system' })
+		.then((records) => {
+			$alerts.set(records)
 		})
 }
 
@@ -56,3 +66,33 @@ export const updateFavicon = (newIconUrl: string) =>
 	((document.querySelector("link[rel='icon']") as HTMLLinkElement).href = newIconUrl)
 
 export const isAdmin = () => pb.authStore.model?.admin
+
+/** Update systems / alerts list when records change  */
+export function updateRecordList<T extends RecordModel>(
+	e: RecordSubscription<T>,
+	$store: WritableAtom<T[]>
+) {
+	const curRecords = $store.get()
+	const newRecords = []
+	// console.log('e', e)
+	if (e.action === 'delete') {
+		for (const server of curRecords) {
+			if (server.id !== e.record.id) {
+				newRecords.push(server)
+			}
+		}
+	} else {
+		let found = 0
+		for (const server of curRecords) {
+			if (server.id === e.record.id) {
+				found = newRecords.push(e.record)
+			} else {
+				newRecords.push(server)
+			}
+		}
+		if (!found) {
+			newRecords.push(e.record)
+		}
+	}
+	$store.set(newRecords)
+}

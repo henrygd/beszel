@@ -1,4 +1,4 @@
-import { $servers, pb } from '@/lib/stores'
+import { $systems, pb } from '@/lib/stores'
 import { ContainerStatsRecord, SystemRecord, SystemStatsRecord } from '@/types'
 import { Suspense, lazy, useEffect, useState } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card'
@@ -39,7 +39,7 @@ function timestampToBrowserTime(timestamp: string) {
 // }
 
 export default function ServerDetail({ name }: { name: string }) {
-	const servers = useStore($servers)
+	const servers = useStore($systems)
 	const [server, setServer] = useState({} as SystemRecord)
 	const [containers, setContainers] = useState([] as ContainerStatsRecord[])
 
@@ -107,7 +107,7 @@ export default function ServerDetail({ name }: { name: string }) {
 	}, [serverStats])
 
 	useEffect(() => {
-		if ($servers.get().length === 0) {
+		if ($systems.get().length === 0) {
 			// console.log('skipping')
 			return
 		}

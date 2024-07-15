@@ -21,12 +21,12 @@ import {
 } from '@/components/ui/command'
 import { useEffect, useState } from 'react'
 import { useStore } from '@nanostores/react'
-import { $servers, navigate } from '@/lib/stores'
+import { $systems, navigate } from '@/lib/stores'
 import { isAdmin } from '@/lib/utils'
 
 export default function CommandPalette() {
 	const [open, setOpen] = useState(false)
-	const servers = useStore($servers)
+	const servers = useStore($systems)
 
 	useEffect(() => {
 		const down = (e: KeyboardEvent) => {

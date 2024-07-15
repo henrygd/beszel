@@ -1,8 +1,9 @@
 import PocketBase from 'pocketbase'
 import { atom } from 'nanostores'
-import { SystemRecord } from '@/types'
+import { AlertRecord, SystemRecord } from '@/types'
 import { createRouter } from '@nanostores/router'
 
+/** PocketBase JS Client */
 export const pb = new PocketBase('/')
 
 export const $router = createRouter(
@@ -13,12 +14,19 @@ export const $router = createRouter(
 	{ links: false }
 )
 
+/** Navigate to url using router */
 export const navigate = (urlString: string) => {
 	$router.open(urlString)
 }
 
+/** Store if user is authenticated */
 export const $authenticated = atom(pb.authStore.isValid)
 
-export const $servers = atom([] as SystemRecord[])
+/** List of system records */
+export const $systems = atom([] as SystemRecord[])
 
+/** List of alert records */
+export const $alerts = atom([] as AlertRecord[])
+
+/** SSH public key */
 export const $publicKey = atom('')

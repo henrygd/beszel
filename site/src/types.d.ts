@@ -68,3 +68,10 @@ export interface SystemStatsRecord extends RecordModel {
 	system: string
 	info: SystemStats
 }
+
+export interface AlertRecord extends RecordModel {
+	id: string
+	system: string
+	name: string
+	// user: string
+}

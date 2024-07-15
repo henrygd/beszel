@@ -55,23 +55,13 @@ import {
 	PauseCircleIcon,
 	PlayCircleIcon,
 	Trash2Icon,
-	BellIcon,
 } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
-import { $servers, pb, navigate } from '@/lib/stores'
+import { useMemo, useState } from 'react'
+import { $systems, pb, navigate } from '@/lib/stores'
 import { useStore } from '@nanostores/react'
 import { AddServerButton } from '../add-server'
 import { cn, copyToClipboard, isAdmin } from '@/lib/utils'
-import {
-	Dialog,
-	DialogContent,
-	DialogTrigger,
-	DialogDescription,
-	DialogTitle,
-	DialogHeader,
-} from '@/components/ui/dialog'
-import { Switch } from '@/components/ui/switch'
-import { Separator } from '../ui/separator'
+import AlertsButton from '../table-alerts'
 
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	const val = info.getValue() as number
@@ -106,13 +96,9 @@ function sortableHeader(column: Column<SystemRecord, unknown>, name: string, Ico
 }
 
 export default function SystemsTable() {
-	const data = useStore($servers)
+	const data = useStore($systems)
 	const [sorting, setSorting] = useState<SortingState>([])
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-
-	// useEffect(() => {
-	// 	console.log('servers', data)
-	// }, [data])
 
 	const columns: ColumnDef<SystemRecord>[] = useMemo(() => {
 		return [
@@ -171,49 +157,7 @@ export default function SystemsTable() {
 					const { id, name, status, host } = row.original
 					return (
 						<div className={'flex justify-end items-center gap-1'}>
-							<Dialog>
-								<DialogTrigger asChild>
-									<Button variant="ghost" size={'icon'} aria-label="Alerts" data-nolink>
-										<BellIcon className="h-[1.2em] w-[1.2em] pointer-events-none" />
-									</Button>
-								</DialogTrigger>
-								<DialogContent>
-									<DialogHeader>
-										<DialogTitle className="mb-1">Alerts for {name}</DialogTitle>
-										{isAdmin() && (
-											<DialogDescription>
-												Please{' '}
-												<a
-													href="/_/#/settings/mail"
-													className="font-medium text-primary opacity-80 hover:opacity-100 duration-100"
-												>
-													configure an SMTP server
-												</a>{' '}
-												to ensure alerts are delivered.
-											</DialogDescription>
-										)}
-									</DialogHeader>
-									<DialogDescription>
-										<div className="space-y-2 flex flex-row items-center justify-between rounded-lg border p-4">
-											<div className="space-y-0.5">
-												<label
-													className="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-base"
-													htmlFor=":r3m:-form-item"
-												>
-													Status change
-												</label>
-												<p
-													id=":r3m:-form-item-description"
-													className="text-[0.8rem] text-muted-foreground"
-												>
-													Triggers when system status switches between up and down.
-												</p>
-											</div>
-											<Switch />
-										</div>
-									</DialogDescription>
-								</DialogContent>
-							</Dialog>
+							<AlertsButton system={row.original} />
 							<AlertDialog>
 								<DropdownMenu>
 									<DropdownMenuTrigger asChild>

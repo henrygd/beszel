@@ -3,11 +3,18 @@ import React, { Suspense, lazy, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import Home from './components/routes/home.tsx'
 import { ThemeProvider } from './components/theme-provider.tsx'
-import { $authenticated, $router, $servers, navigate, pb } from './lib/stores.ts'
+import { $alerts, $authenticated, $router, $systems, navigate, pb } from './lib/stores.ts'
 import { ModeToggle } from './components/mode-toggle.tsx'
-import { cn, isAdmin, updateFavicon, updateServerList } from './lib/utils.ts'
+import {
+	cn,
+	isAdmin,
+	updateAlerts,
+	updateFavicon,
+	updateRecordList,
+	updateServerList,
+} from './lib/utils.ts'
 import { buttonVariants } from './components/ui/button.tsx'
-import { DatabaseBackupIcon, Github, LogOutIcon, LogsIcon, MailIcon, UserIcon } from 'lucide-react'
+import { DatabaseBackupIcon, Github, LogOutIcon, LogsIcon, UserIcon } from 'lucide-react'
 import { useStore } from '@nanostores/react'
 import { Toaster } from './components/ui/toaster.tsx'
 import { Logo } from './components/logo.tsx'
@@ -24,7 +31,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from './components/ui/dropdown-menu.tsx'
-import { SystemRecord } from './types'
+import { AlertRecord, SystemRecord } from './types'
 
 const ServerDetail = lazy(() => import('./components/routes/server.tsx'))
 const CommandPalette = lazy(() => import('./components/command-palette.tsx'))
@@ -33,45 +40,26 @@ const LoginPage = lazy(() => import('./components/login.tsx'))
 const App = () => {
 	const page = useStore($router)
 	const authenticated = useStore($authenticated)
-	const servers = useStore($servers)
+	const servers = useStore($systems)
 
 	useEffect(() => {
-		// get servers
-		updateServerList()
 		// change auth store on auth change
 		pb.authStore.onChange(() => {
 			$authenticated.set(pb.authStore.isValid)
 		})
-	}, [])
-
-	useEffect(() => {
+		// get servers / alerts
+		updateServerList()
+		updateAlerts()
+		// subscribe to real time updates for systems / alerts
 		pb.collection<SystemRecord>('systems').subscribe('*', (e) => {
-			const curServers = $servers.get()
-			const newServers = []
-			// console.log('e', e)
-			if (e.action === 'delete') {
-				for (const server of curServers) {
-					if (server.id !== e.record.id) {
-						newServers.push(server)
-					}
-				}
-			} else {
-				let found = 0
-				for (const server of curServers) {
-					if (server.id === e.record.id) {
-						found = newServers.push(e.record)
-					} else {
-						newServers.push(server)
-					}
-				}
-				if (!found) {
-					newServers.push(e.record)
-				}
-			}
-			$servers.set(newServers)
+			updateRecordList(e, $systems)
+		})
+		pb.collection<AlertRecord>('alerts').subscribe('*', (e) => {
+			updateRecordList(e, $alerts)
 		})
 		return () => {
 			pb.collection('systems').unsubscribe('*')
+			pb.collection('alerts').unsubscribe('*')
 		}
 	}, [])
 
@@ -114,7 +102,11 @@ const Layout = () => {
 	const authenticated = useStore($authenticated)
 
 	if (!authenticated) {
-		return <LoginPage />
+		return (
+			<Suspense>
+				<LoginPage />
+			</Suspense>
+		)
 	}
 
 	return (
@@ -191,7 +183,9 @@ const Layout = () => {
 			</div>
 			<div className="container mb-14 relative">
 				<App />
-				<CommandPalette />
+				<Suspense>
+					<CommandPalette />
+				</Suspense>
 			</div>
 		</>
 	)
@@ -200,12 +194,8 @@ const Layout = () => {
 ReactDOM.createRoot(document.getElementById('app')!).render(
 	<React.StrictMode>
 		<ThemeProvider>
-			<Suspense>
-				<Layout />
-			</Suspense>
-			<Suspense>
-				<Toaster />
-			</Suspense>
+			<Layout />
+			<Toaster />
 		</ThemeProvider>
 	</React.StrictMode>
 )

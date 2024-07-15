@@ -255,7 +255,7 @@ func init() {
 			{
 				"id": "elngm8x1l60zi2v",
 				"created": "2024-07-15 01:16:04.044Z",
-				"updated": "2024-07-15 01:19:11.639Z",
+				"updated": "2024-07-15 18:48:55.881Z",
 				"name": "alerts",
 				"type": "base",
 				"system": false,
@@ -270,7 +270,7 @@ func init() {
 						"unique": false,
 						"options": {
 							"collectionId": "_pb_users_auth_",
-							"cascadeDelete": false,
+							"cascadeDelete": true,
 							"minSelect": null,
 							"maxSelect": 1,
 							"displayFields": null
@@ -286,7 +286,7 @@ func init() {
 						"unique": false,
 						"options": {
 							"collectionId": "2hz5ncl8tizk5nx",
-							"cascadeDelete": false,
+							"cascadeDelete": true,
 							"minSelect": null,
 							"maxSelect": 1,
 							"displayFields": null
