@@ -251,6 +251,70 @@ func init() {
 					"onlyVerified": false,
 					"requireEmail": false
 				}
+			},
+			{
+				"id": "elngm8x1l60zi2v",
+				"created": "2024-07-15 01:16:04.044Z",
+				"updated": "2024-07-15 01:19:11.639Z",
+				"name": "alerts",
+				"type": "base",
+				"system": false,
+				"schema": [
+					{
+						"system": false,
+						"id": "hn5ly3vi",
+						"name": "user",
+						"type": "relation",
+						"required": true,
+						"presentable": false,
+						"unique": false,
+						"options": {
+							"collectionId": "_pb_users_auth_",
+							"cascadeDelete": false,
+							"minSelect": null,
+							"maxSelect": 1,
+							"displayFields": null
+						}
+					},
+					{
+						"system": false,
+						"id": "g5sl3jdg",
+						"name": "system",
+						"type": "relation",
+						"required": true,
+						"presentable": false,
+						"unique": false,
+						"options": {
+							"collectionId": "2hz5ncl8tizk5nx",
+							"cascadeDelete": false,
+							"minSelect": null,
+							"maxSelect": 1,
+							"displayFields": null
+						}
+					},
+					{
+						"system": false,
+						"id": "zj3ingrv",
+						"name": "name",
+						"type": "select",
+						"required": true,
+						"presentable": false,
+						"unique": false,
+						"options": {
+							"maxSelect": 1,
+							"values": [
+								"status"
+							]
+						}
+					}
+				],
+				"indexes": [],
+				"listRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
+				"viewRule": "",
+				"createRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
+				"updateRule": null,
+				"deleteRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
+				"options": {}
 			}
 		]`
 

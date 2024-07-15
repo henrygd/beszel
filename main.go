@@ -10,6 +10,7 @@ import (
 	_ "monitor-site/migrations"
 	"net/http"
 	"net/http/httputil"
+	"net/mail"
 	"net/url"
 	"os"
 	"strings"
@@ -23,6 +24,7 @@ import (
 	"github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"
 	"github.com/pocketbase/pocketbase/tools/cron"
+	"github.com/pocketbase/pocketbase/tools/mailer"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -134,25 +136,30 @@ func main() {
 	})
 
 	// immediately create connection for new servers
-	app.OnRecordAfterCreateRequest("systems").Add(func(e *core.RecordCreateEvent) error {
-		go updateServer(e.Record)
+	app.OnModelAfterCreate("systems").Add(func(e *core.ModelEvent) error {
+		go updateServer(e.Model.(*models.Record))
 		return nil
 	})
 
 	// do things after a systems record is updated
-	app.OnRecordAfterUpdateRequest("systems").Add(func(e *core.RecordUpdateEvent) error {
-		status := e.Record.Get("status")
-		// if server connection exists, close it
-		if status == "down" || status == "paused" {
-			deleteServerConnection(e.Record)
+	app.OnModelAfterUpdate("systems").Add(func(e *core.ModelEvent) error {
+		newRecord := e.Model.(*models.Record)
+		oldRecord := newRecord.OriginalCopy()
+		newStatus := newRecord.Get("status").(string)
+
+		// if server is disconnected and connection exists, remove it
+		if newStatus == "down" || newStatus == "paused" {
+			deleteServerConnection(newRecord)
 		}
+		// alerts
+		handleStatusAlerts(newStatus, oldRecord)
 		return nil
 	})
 
 	// do things after a systems record is deleted
-	app.OnRecordAfterDeleteRequest("systems").Add(func(e *core.RecordDeleteEvent) error {
+	app.OnModelAfterDelete("systems").Add(func(e *core.ModelEvent) error {
 		// if server connection exists, close it
-		deleteServerConnection(e.Record)
+		deleteServerConnection(e.Model.(*models.Record))
 		return nil
 	})
 
@@ -325,6 +332,69 @@ func requestJson(server *Server) (SystemData, error) {
 	}
 
 	return systemData, nil
+}
+
+func sendAlert(data EmailData) {
+	message := &mailer.Message{
+		From: mail.Address{
+			Address: app.Settings().Meta.SenderAddress,
+			Name:    app.Settings().Meta.SenderName,
+		},
+		To:      []mail.Address{{Address: data.to}},
+		Subject: data.subj,
+		Text:    data.body,
+	}
+	if err := app.NewMailClient().Send(message); err != nil {
+		app.Logger().Error("Failed to send alert: ", "err", err.Error())
+	}
+}
+
+func handleStatusAlerts(newStatus string, oldRecord *models.Record) error {
+	var alertStatus string
+	switch newStatus {
+	case "up":
+		if oldRecord.Get("status") == "down" {
+			alertStatus = "up"
+		}
+	case "down":
+		if oldRecord.Get("status") == "up" {
+			alertStatus = "down"
+		}
+	}
+	if alertStatus == "" {
+		return nil
+	}
+	alerts, err := app.Dao().FindRecordsByFilter("alerts", "name = 'status' && system = {:system}", "-created", -1, 0, dbx.Params{
+		"system": oldRecord.Get("id")})
+	if err != nil {
+		fmt.Println("failed to get users", "err", err.Error())
+		return nil
+	}
+	if len(alerts) == 0 {
+		return nil
+	}
+	// expand the user relation
+	if errs := app.Dao().ExpandRecords(alerts, []string{"user"}, nil); len(errs) > 0 {
+		return fmt.Errorf("failed to expand: %v", errs)
+	}
+	systemName := oldRecord.Get("name").(string)
+	emoji := "\U0001F534"
+	if alertStatus == "up" {
+		emoji = "\u2705"
+	}
+	for _, alert := range alerts {
+		user := alert.ExpandedOne("user")
+		if user == nil {
+			continue
+		}
+		// send alert
+		sendAlert(EmailData{
+			to:   user.Get("email").(string),
+			subj: fmt.Sprintf("Server %s is %s %v", systemName, alertStatus, emoji),
+			body: fmt.Sprintf("Server %s is %s %v", systemName, alertStatus, emoji),
+		})
+	}
+	return nil
 }
 
 func getSSHKey() ([]byte, error) {

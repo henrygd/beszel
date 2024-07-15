@@ -47,3 +47,9 @@ type ContainerStats struct {
 	Mem  float64 `json:"m"`
 	// MemPct float64 `json:"mp"`
 }
+
+type EmailData struct {
+	to   string
+	subj string
+	body string
+}
