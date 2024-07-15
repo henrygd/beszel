@@ -390,8 +390,8 @@ func handleStatusAlerts(newStatus string, oldRecord *models.Record) error {
 		// send alert
 		sendAlert(EmailData{
 			to:   user.Get("email").(string),
-			subj: fmt.Sprintf("Server %s is %s %v", systemName, alertStatus, emoji),
-			body: fmt.Sprintf("Server %s is %s %v", systemName, alertStatus, emoji),
+			subj: fmt.Sprintf("Connection to %s is %s %v", systemName, alertStatus, emoji),
+			body: fmt.Sprintf("Connection to %s is %s %v\n\n- Qoma", systemName, alertStatus, emoji),
 		})
 	}
 	return nil

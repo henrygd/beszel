@@ -57,7 +57,7 @@ import {
 	Trash2Icon,
 	BellIcon,
 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { $servers, pb, navigate } from '@/lib/stores'
 import { useStore } from '@nanostores/react'
 import { AddServerButton } from '../add-server'
@@ -70,6 +70,8 @@ import {
 	DialogTitle,
 	DialogHeader,
 } from '@/components/ui/dialog'
+import { Switch } from '@/components/ui/switch'
+import { Separator } from '../ui/separator'
 
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	const val = info.getValue() as number
@@ -105,9 +107,12 @@ function sortableHeader(column: Column<SystemRecord, unknown>, name: string, Ico
 
 export default function SystemsTable() {
 	const data = useStore($servers)
-	// const [deleteServer, setDeleteServer] = useState({} as SystemRecord)
 	const [sorting, setSorting] = useState<SortingState>([])
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+
+	// useEffect(() => {
+	// 	console.log('servers', data)
+	// }, [data])
 
 	const columns: ColumnDef<SystemRecord>[] = useMemo(() => {
 		return [
@@ -124,7 +129,8 @@ export default function SystemsTable() {
 								className={cn('w-2 h-2 left-0 rounded-full', {
 									'bg-green-500': status === 'up',
 									'bg-red-500': status === 'down',
-									'bg-yellow-500': status === 'paused',
+									'bg-primary/40': status === 'paused',
+									'bg-yellow-500': status === 'pending',
 								})}
 								style={{ marginBottom: '-1px' }}
 							></span>
@@ -143,17 +149,17 @@ export default function SystemsTable() {
 				header: ({ column }) => sortableHeader(column, 'Server', Server),
 			},
 			{
-				accessorKey: 'stats.c',
+				accessorKey: 'info.cpu',
 				cell: CellFormatter,
 				header: ({ column }) => sortableHeader(column, 'CPU', Cpu),
 			},
 			{
-				accessorKey: 'stats.mp',
+				accessorKey: 'info.mp',
 				cell: CellFormatter,
 				header: ({ column }) => sortableHeader(column, 'Memory', MemoryStick),
 			},
 			{
-				accessorKey: 'stats.dp',
+				accessorKey: 'info.dp',
 				cell: CellFormatter,
 				header: ({ column }) => sortableHeader(column, 'Disk', HardDrive),
 			},
@@ -167,18 +173,44 @@ export default function SystemsTable() {
 						<div className={'flex justify-end items-center gap-1'}>
 							<Dialog>
 								<DialogTrigger asChild>
-									<Button variant="ghost" size={'icon'} aria-label="Notifications" data-nolink>
+									<Button variant="ghost" size={'icon'} aria-label="Alerts" data-nolink>
 										<BellIcon className="h-[1.2em] w-[1.2em] pointer-events-none" />
 									</Button>
 								</DialogTrigger>
 								<DialogContent>
 									<DialogHeader>
-										<DialogTitle>Notifications</DialogTitle>
+										<DialogTitle className="mb-1">Alerts for {name}</DialogTitle>
+										{isAdmin() && (
+											<DialogDescription>
+												Please{' '}
+												<a
+													href="/_/#/settings/mail"
+													className="font-medium text-primary opacity-80 hover:opacity-100 duration-100"
+												>
+													configure an SMTP server
+												</a>{' '}
+												to ensure alerts are delivered.
+											</DialogDescription>
+										)}
 									</DialogHeader>
 									<DialogDescription>
-										The agent must be running on the server to connect. Copy the{' '}
-										<code className="bg-muted px-1 rounded-sm">docker-compose.yml</code> for the
-										agent below.
+										<div className="space-y-2 flex flex-row items-center justify-between rounded-lg border p-4">
+											<div className="space-y-0.5">
+												<label
+													className="font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-base"
+													htmlFor=":r3m:-form-item"
+												>
+													Status change
+												</label>
+												<p
+													id=":r3m:-form-item-description"
+													className="text-[0.8rem] text-muted-foreground"
+												>
+													Triggers when system status switches between up and down.
+												</p>
+											</div>
+											<Switch />
+										</div>
 									</DialogDescription>
 								</DialogContent>
 							</Dialog>
@@ -202,7 +234,7 @@ export default function SystemsTable() {
 										<DropdownMenuItem
 											onClick={() => {
 												pb.collection('systems').update(id, {
-													status: status === 'paused' ? 'up' : 'paused',
+													status: status === 'paused' ? 'pending' : 'paused',
 												})
 											}}
 										>

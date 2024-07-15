@@ -124,7 +124,7 @@ const Layout = () => {
 					<a
 						href="/"
 						aria-label="Home"
-						className={'p-2 pl-0 -mb-1'}
+						className={'p-2 pl-0'}
 						onClick={(e) => {
 							e.preventDefault()
 							navigate('/')

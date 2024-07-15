@@ -97,7 +97,6 @@ export default function CommandPalette() {
 								<CommandShortcut>Admin</CommandShortcut>
 							</CommandItem>
 							<CommandItem
-								keywords={['email']}
 								onSelect={() => {
 									window.location.href = '/_/#/settings/backups'
 								}}

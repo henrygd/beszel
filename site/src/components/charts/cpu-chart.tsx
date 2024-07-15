@@ -51,7 +51,7 @@ export default function CpuChart({ chartData }: { chartData: { time: string; cpu
 				/>
 				<Area
 					dataKey="cpu"
-					type="natural"
+					type="monotone"
 					fill="var(--color-cpu)"
 					fillOpacity={0.4}
 					stroke="var(--color-cpu)"

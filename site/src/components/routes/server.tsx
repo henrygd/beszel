@@ -9,7 +9,16 @@ import Spinner from '../spinner'
 // import DiskChart from '../charts/disk-chart'
 // import ContainerCpuChart from '../charts/container-cpu-chart'
 // import ContainerMemChart from '../charts/container-mem-chart'
-import { CpuIcon, MemoryStickIcon } from 'lucide-react'
+import { CpuIcon, MemoryStickIcon, ServerIcon } from 'lucide-react'
+import { RadialChart } from '../charts/radial'
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
 
 const CpuChart = lazy(() => import('../charts/cpu-chart'))
 const ContainerCpuChart = lazy(() => import('../charts/container-cpu-chart'))
@@ -87,7 +96,7 @@ export default function ServerDetail({ name }: { name: string }) {
 		const memData = [] as { time: string; mem: number; memUsed: number; memCache: number }[]
 		const diskData = [] as { time: string; disk: number; diskUsed: number }[]
 		for (let { created, stats } of serverStats) {
-			cpuData.push({ time: created, cpu: stats.c })
+			cpuData.push({ time: created, cpu: stats.cpu })
 			// maxCpu = Math.max(maxCpu, stats.c)
 			memData.push({ time: created, mem: stats.m, memUsed: stats.mu, memCache: stats.mb })
 			diskData.push({ time: created, disk: stats.d, diskUsed: stats.du })
@@ -135,18 +144,32 @@ export default function ServerDetail({ name }: { name: string }) {
 			containerCpuData.push(cpuData)
 			containerMemData.push(memData)
 		}
+		// console.log('containerMemData', containerMemData)
 		setContainerCpuChartData(containerCpuData.reverse())
 		setContainerMemChartData(containerMemData.reverse())
 	}, [containers])
 
 	return (
 		<>
-			<div className="grid gap-6 mb-10">
-				<div className="p-6">
-					<h1 className="text-3xl font-semibold">{name}</h1>
-				</div>
-				<Card className="pb-2">
+			<div className="grid gap-6 mb-10 grid-cols-3">
+				<Card className="col-span-full">
 					<CardHeader>
+						<CardTitle className="flex gap-2 items-center text-3xl">{name}</CardTitle>
+					</CardHeader>
+					<CardContent className="flex items-center justify-between gap-6">
+						<p>{server.status}</p>
+						<p>Uptime {(server.info?.u / 86400).toLocaleString()} days</p>
+						<p>
+							{server.info?.m} ({server.info?.c} cores / {server.info?.t} threads)
+						</p>
+					</CardContent>
+				</Card>
+				<RadialChart />
+				<RadialChart />
+				<RadialChart />
+
+				<Card className="pb-3 col-span-full">
+					<CardHeader className="pb-5">
 						<CardTitle className="flex gap-2 justify-between">
 							<span>Total CPU Usage</span>
 							<CpuIcon className="opacity-70" />
@@ -162,8 +185,8 @@ export default function ServerDetail({ name }: { name: string }) {
 					</CardContent>
 				</Card>
 				{containerCpuChartData.length > 0 && (
-					<Card className="pb-2">
-						<CardHeader>
+					<Card className="pb-3 col-span-full">
+						<CardHeader className="pb-5">
 							<CardTitle className="flex gap-2 justify-between">
 								<span>Docker CPU Usage</span>
 								<CpuIcon className="opacity-70" />
@@ -177,8 +200,8 @@ export default function ServerDetail({ name }: { name: string }) {
 						</CardContent>
 					</Card>
 				)}
-				<Card className="pb-2">
-					<CardHeader>
+				<Card className="pb-3 col-span-full">
+					<CardHeader className="pb-5">
 						<CardTitle>Total Memory Usage</CardTitle>
 						<CardDescription>Precise utilization at the recorded time</CardDescription>
 					</CardHeader>
@@ -189,8 +212,8 @@ export default function ServerDetail({ name }: { name: string }) {
 					</CardContent>
 				</Card>
 				{containerMemChartData.length > 0 && (
-					<Card className="pb-2">
-						<CardHeader>
+					<Card className="pb-3 col-span-full">
+						<CardHeader className="pb-5">
 							<CardTitle className="flex gap-2 justify-between">
 								<span>Docker Memory Usage</span>
 								<MemoryStickIcon className="opacity-70" />
@@ -199,13 +222,13 @@ export default function ServerDetail({ name }: { name: string }) {
 						</CardHeader>
 						<CardContent className={'pl-1 w-[calc(100%-2em)] h-52 relative'}>
 							<Suspense fallback={<Spinner />}>
-								{server?.stats?.m && <ContainerMemChart chartData={containerMemChartData} />}
+								<ContainerMemChart chartData={containerMemChartData} />
 							</Suspense>
 						</CardContent>
 					</Card>
 				)}
-				<Card className="pb-2">
-					<CardHeader>
+				<Card className="pb-3 col-span-full">
+					<CardHeader className="pb-5">
 						<CardTitle>Disk Usage</CardTitle>
 						<CardDescription>Precise usage at the recorded time</CardDescription>
 					</CardHeader>
