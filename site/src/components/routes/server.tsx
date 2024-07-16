@@ -27,22 +27,34 @@ export default function ServerDetail({ name }: { name: string }) {
 	const [containers, setContainers] = useState([] as ContainerStatsRecord[])
 
 	const [serverStats, setServerStats] = useState([] as SystemStatsRecord[])
-	const [cpuChartData, setCpuChartData] = useState([] as { time: string; cpu: number }[])
+	const [cpuChartData, setCpuChartData] = useState([] as { time: number; cpu: number }[])
 	const [memChartData, setMemChartData] = useState(
-		[] as { time: string; mem: number; memUsed: number; memCache: number }[]
+		[] as { time: number; mem: number; memUsed: number; memCache: number }[]
 	)
 	const [diskChartData, setDiskChartData] = useState(
-		[] as { time: string; disk: number; diskUsed: number }[]
+		[] as { time: number; disk: number; diskUsed: number }[]
 	)
-	const [containerCpuChartData, setContainerCpuChartData] = useState(
+	const [dockerCpuChartData, setDockerCpuChartData] = useState(
 		[] as Record<string, number | string>[]
 	)
-	const [containerMemChartData, setContainerMemChartData] = useState(
+	const [dockerMemChartData, setDockerMemChartData] = useState(
 		[] as Record<string, number | string>[]
 	)
 
 	useEffect(() => {
 		document.title = `${name} / Beszel`
+		return () => {
+			console.log('unmounting')
+			setServer({} as SystemRecord)
+			setCpuChartData([])
+			setMemChartData([])
+			setDiskChartData([])
+			setDockerCpuChartData([])
+			setDockerMemChartData([])
+		}
+	}, [name])
+
+	useEffect(() => {
 		if (server?.id && server.name === name) {
 			return
 		}
@@ -97,14 +109,19 @@ export default function ServerDetail({ name }: { name: string }) {
 
 		console.log('stats', serverStats)
 		// let maxCpu = 0
-		const cpuData = [] as { time: string; cpu: number }[]
-		const memData = [] as { time: string; mem: number; memUsed: number; memCache: number }[]
-		const diskData = [] as { time: string; disk: number; diskUsed: number }[]
+		const cpuData = [] as typeof cpuChartData
+		const memData = [] as typeof memChartData
+		const diskData = [] as typeof diskChartData
 		for (let { created, stats } of serverStats) {
-			cpuData.push({ time: created, cpu: stats.cpu })
-			// maxCpu = Math.max(maxCpu, stats.c)
-			memData.push({ time: created, mem: stats.m, memUsed: stats.mu, memCache: stats.mb })
-			diskData.push({ time: created, disk: stats.d, diskUsed: stats.du })
+			const time = new Date(created).getTime()
+			cpuData.push({ time, cpu: stats.cpu })
+			memData.push({
+				time,
+				mem: stats.m,
+				memUsed: stats.mu,
+				memCache: stats.mb,
+			})
+			diskData.push({ time, disk: stats.d, diskUsed: stats.du })
 		}
 		setCpuChartData(cpuData.reverse())
 		setMemChartData(memData.reverse())
@@ -119,7 +136,6 @@ export default function ServerDetail({ name }: { name: string }) {
 				sort: '-created',
 			})
 			.then((records) => {
-				// console.log('containers', records)
 				setContainers(records)
 			})
 	}, [server])
@@ -127,22 +143,23 @@ export default function ServerDetail({ name }: { name: string }) {
 	// container stats for charts
 	useEffect(() => {
 		// console.log('containers', containers)
-		const containerCpuData = [] as Record<string, number | string>[]
-		const containerMemData = [] as Record<string, number | string>[]
+		const dockerCpuData = [] as Record<string, number | string>[]
+		const dockerMemData = [] as Record<string, number | string>[]
 
 		for (let { created, stats } of containers) {
-			let cpuData = { time: created } as Record<string, number | string>
-			let memData = { time: created } as Record<string, number | string>
+			const time = new Date(created).getTime()
+			let cpuData = { time } as (typeof dockerCpuChartData)[0]
+			let memData = { time } as (typeof dockerMemChartData)[0]
 			for (let container of stats) {
 				cpuData[container.n] = container.c
 				memData[container.n] = container.m
 			}
-			containerCpuData.push(cpuData)
-			containerMemData.push(memData)
+			dockerCpuData.push(cpuData)
+			dockerMemData.push(memData)
 		}
 		// console.log('containerMemData', containerMemData)
-		setContainerCpuChartData(containerCpuData.reverse())
-		setContainerMemChartData(containerMemData.reverse())
+		setDockerCpuChartData(dockerCpuData.reverse())
+		setDockerMemChartData(dockerMemData.reverse())
 	}, [containers])
 	const uptime = useMemo(() => {
 		console.log('making uptime')
@@ -206,18 +223,18 @@ export default function ServerDetail({ name }: { name: string }) {
 				<CpuChart chartData={cpuChartData} />
 			</ChartCard>
 
-			{containerCpuChartData.length > 0 && (
+			{dockerCpuChartData.length > 0 && (
 				<ChartCard title="Docker CPU Usage" description="CPU utilization of docker containers">
-					<ContainerCpuChart chartData={containerCpuChartData} />
+					<ContainerCpuChart chartData={dockerCpuChartData} />
 				</ChartCard>
 			)}
 			<ChartCard title="Total Memory Usage" description="Precise utilization at the recorded time">
 				<MemChart chartData={memChartData} />
 			</ChartCard>
 
-			{containerMemChartData.length > 0 && (
+			{dockerMemChartData.length > 0 && (
 				<ChartCard title="Docker Memory Usage" description="Memory usage of docker containers">
-					<ContainerMemChart chartData={containerMemChartData} />
+					<ContainerMemChart chartData={dockerMemChartData} />
 				</ChartCard>
 			)}
 			<ChartCard title="Disk Usage" description="Precise usage at the recorded time">

@@ -6,8 +6,9 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from '@/components/ui/chart'
-import { formatShortDate, formatShortTime } from '@/lib/utils'
+import { calculateXaxisTicks, formatShortDate, formatShortTime } from '@/lib/utils'
 import Spinner from '../spinner'
+import { useMemo } from 'react'
 
 const chartConfig = {
 	cpu: {
@@ -16,10 +17,12 @@ const chartConfig = {
 	},
 } satisfies ChartConfig
 
-export default function CpuChart({ chartData }: { chartData: { time: string; cpu: number }[] }) {
+export default function CpuChart({ chartData }: { chartData: { time: number; cpu: number }[] }) {
 	if (!chartData?.length) {
 		return <Spinner />
 	}
+
+	const ticks = useMemo(() => calculateXaxisTicks(chartData), [chartData])
 
 	return (
 		<ChartContainer config={chartConfig} className="h-full w-full absolute aspect-auto">
@@ -35,15 +38,24 @@ export default function CpuChart({ chartData }: { chartData: { time: string; cpu
 				{/* todo: short time if first date is same day, otherwise short date */}
 				<XAxis
 					dataKey="time"
+					domain={[ticks[0], ticks.at(-1)!]}
+					ticks={ticks}
+					type="number"
+					scale={'time'}
 					axisLine={false}
 					tickMargin={8}
-					minTickGap={30}
+					minTickGap={35}
 					tickFormatter={formatShortTime}
 				/>
 				<ChartTooltip
-					cursor={false}
+					animationEasing="ease-out"
+					animationDuration={150}
 					content={
-						<ChartTooltipContent unit="%" labelFormatter={formatShortDate} indicator="line" />
+						<ChartTooltipContent
+							unit="%"
+							labelFormatter={(_, data) => formatShortDate(data[0].payload.time)}
+							indicator="line"
+						/>
 					}
 				/>
 				<Area

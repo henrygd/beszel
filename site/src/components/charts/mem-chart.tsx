@@ -6,15 +6,21 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from '@/components/ui/chart'
-import { formatShortDate, formatShortTime } from '@/lib/utils'
+import { calculateXaxisTicks, formatShortDate, formatShortTime } from '@/lib/utils'
 import { useMemo } from 'react'
 import Spinner from '../spinner'
 
-export default function ({
+export default function MemChart({
 	chartData,
 }: {
-	chartData: { time: string; mem: number; memUsed: number; memCache: number }[]
+	chartData: { time: number; mem: number; memUsed: number; memCache: number }[]
 }) {
+	if (!chartData.length) {
+		return <Spinner />
+	}
+
+	const ticks = useMemo(() => calculateXaxisTicks(chartData), [chartData])
+
 	const totalMem = useMemo(() => {
 		return Math.ceil(chartData[0]?.mem)
 	}, [chartData])
@@ -32,10 +38,6 @@ export default function ({
 		}),
 		[]
 	) satisfies ChartConfig
-
-	if (!chartData.length) {
-		return <Spinner />
-	}
 
 	return (
 		<ChartContainer config={chartConfig} className="h-full w-full absolute aspect-auto">
@@ -59,6 +61,10 @@ export default function ({
 				{/* todo: short time if first date is same day, otherwise short date */}
 				<XAxis
 					dataKey="time"
+					domain={[ticks[0], ticks.at(-1)!]}
+					ticks={ticks}
+					type="number"
+					scale={'time'}
 					tickLine={true}
 					axisLine={false}
 					tickMargin={8}
@@ -66,13 +72,15 @@ export default function ({
 					tickFormatter={formatShortTime}
 				/>
 				<ChartTooltip
-					cursor={false}
+					// cursor={false}
+					animationEasing="ease-out"
+					animationDuration={150}
 					content={
 						<ChartTooltipContent
 							unit="GiB"
 							// @ts-ignore
 							itemSorter={(a, b) => a.name.localeCompare(b.name)}
-							labelFormatter={formatShortDate}
+							labelFormatter={(_, data) => formatShortDate(data[0].payload.time)}
 							indicator="line"
 						/>
 					}

@@ -8,10 +8,14 @@ import {
 	ChartTooltipContent,
 } from '@/components/ui/chart'
 import { useMemo } from 'react'
-import { formatShortDate, formatShortTime } from '@/lib/utils'
+import { calculateXaxisTicks, formatShortDate, formatShortTime } from '@/lib/utils'
 import Spinner from '../spinner'
 
-export default function ({ chartData }: { chartData: Record<string, number | string>[] }) {
+export default function ContainerCpuChart({
+	chartData,
+}: {
+	chartData: Record<string, number | string>[]
+}) {
 	const chartConfig = useMemo(() => {
 		let config = {} as Record<
 			string,
@@ -47,6 +51,8 @@ export default function ({ chartData }: { chartData: Record<string, number | str
 		return config satisfies ChartConfig
 	}, [chartData])
 
+	const ticks = useMemo(() => calculateXaxisTicks(chartData), [chartData])
+
 	if (!chartData.length) {
 		return <Spinner />
 	}
@@ -64,7 +70,7 @@ export default function ({ chartData }: { chartData: Record<string, number | str
 				<CartesianGrid vertical={false} />
 				<YAxis
 					domain={[0, (max: number) => Math.max(Math.ceil(max), 0.4)]}
-					// tickCount={5}
+					width={47}
 					tickLine={false}
 					axisLine={false}
 					unit={'%'}
@@ -72,6 +78,10 @@ export default function ({ chartData }: { chartData: Record<string, number | str
 				/>
 				<XAxis
 					dataKey="time"
+					domain={[ticks[0], ticks.at(-1)!]}
+					ticks={ticks}
+					type="number"
+					scale={'time'}
 					tickLine={true}
 					axisLine={false}
 					tickMargin={8}
@@ -79,8 +89,10 @@ export default function ({ chartData }: { chartData: Record<string, number | str
 					tickFormatter={formatShortTime}
 				/>
 				<ChartTooltip
-					cursor={false}
-					labelFormatter={formatShortDate}
+					// cursor={false}
+					animationEasing="ease-out"
+					animationDuration={150}
+					labelFormatter={(_, data) => formatShortDate(data[0].payload.time)}
 					// @ts-ignore
 					itemSorter={(a, b) => b.value - a.value}
 					content={<ChartTooltipContent unit="%" indicator="line" />}

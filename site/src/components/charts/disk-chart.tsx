@@ -6,7 +6,7 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from '@/components/ui/chart'
-import { formatShortDate, formatShortTime } from '@/lib/utils'
+import { calculateXaxisTicks, formatShortDate, formatShortTime } from '@/lib/utils'
 import { useMemo } from 'react'
 import Spinner from '../spinner'
 // for (const data of chartData) {
@@ -23,11 +23,17 @@ const chartConfig = {
 export default function DiskChart({
 	chartData,
 }: {
-	chartData: { time: string; disk: number; diskUsed: number }[]
+	chartData: { time: number; disk: number; diskUsed: number }[]
 }) {
+	if (!chartData.length) {
+		return <Spinner />
+	}
+
 	const diskSize = useMemo(() => {
 		return Math.round(chartData[0]?.disk)
 	}, [chartData])
+
+	const ticks = useMemo(() => calculateXaxisTicks(chartData), [chartData])
 
 	// const ticks = useMemo(() => {
 	// 	let ticks = [0]
@@ -37,10 +43,6 @@ export default function DiskChart({
 	// 	ticks.push(diskSize)
 	// 	return ticks
 	// }, [diskSize])
-
-	if (!chartData.length) {
-		return <Spinner />
-	}
 
 	return (
 		<ChartContainer config={chartConfig} className="h-full w-full absolute aspect-auto">
@@ -68,6 +70,10 @@ export default function DiskChart({
 				{/* todo: short time if first date is same day, otherwise short date */}
 				<XAxis
 					dataKey="time"
+					domain={[ticks[0], ticks.at(-1)!]}
+					ticks={ticks}
+					type="number"
+					scale={'time'}
 					tickLine={true}
 					axisLine={false}
 					tickMargin={8}
@@ -77,7 +83,11 @@ export default function DiskChart({
 				<ChartTooltip
 					cursor={false}
 					content={
-						<ChartTooltipContent unit=" GiB" labelFormatter={formatShortDate} indicator="line" />
+						<ChartTooltipContent
+							unit=" GiB"
+							labelFormatter={(_, data) => formatShortDate(data[0].payload.time)}
+							indicator="line"
+						/>
 					}
 				/>
 				<Area

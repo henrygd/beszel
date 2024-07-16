@@ -50,7 +50,10 @@ const shortTimeFormatter = new Intl.DateTimeFormat(undefined, {
 	hour: 'numeric',
 	minute: 'numeric',
 })
-export const formatShortTime = (timestamp: string) => shortTimeFormatter.format(new Date(timestamp))
+export const formatShortTime = (timestamp: string) => {
+	// console.log('ts', timestamp)
+	return shortTimeFormatter.format(new Date(timestamp))
+}
 
 const shortDateFormatter = new Intl.DateTimeFormat(undefined, {
 	day: 'numeric',
@@ -60,7 +63,10 @@ const shortDateFormatter = new Intl.DateTimeFormat(undefined, {
 	hour: 'numeric',
 	minute: 'numeric',
 })
-export const formatShortDate = (timestamp: string) => shortDateFormatter.format(new Date(timestamp))
+export const formatShortDate = (timestamp: string) => {
+	console.log('ts', timestamp)
+	return shortDateFormatter.format(new Date(timestamp))
+}
 
 export const updateFavicon = (newIconUrl: string) =>
 	((document.querySelector("link[rel='icon']") as HTMLLinkElement).href = newIconUrl)
@@ -117,4 +123,13 @@ export function getPbTimestamp(timeString: string) {
 	const seconds = String(now.getUTCSeconds()).padStart(2, '0')
 
 	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+}
+
+export const calculateXaxisTicks = (chartData: any[]) => {
+	const ticks: number[] = []
+	const lastDate = chartData.at(-1)!.time
+	for (let i = 60; i >= 0; i--) {
+		ticks.push(lastDate - i * 60 * 1000)
+	}
+	return ticks
 }

@@ -8,10 +8,14 @@ import {
 	ChartTooltipContent,
 } from '@/components/ui/chart'
 import { useMemo } from 'react'
-import { formatShortDate, formatShortTime } from '@/lib/utils'
+import { calculateXaxisTicks, formatShortDate, formatShortTime } from '@/lib/utils'
 import Spinner from '../spinner'
 
 export default function ({ chartData }: { chartData: Record<string, number | string>[] }) {
+	if (!chartData.length) {
+		return <Spinner />
+	}
+
 	const chartConfig = useMemo(() => {
 		let config = {} as Record<
 			string,
@@ -47,9 +51,7 @@ export default function ({ chartData }: { chartData: Record<string, number | str
 		return config satisfies ChartConfig
 	}, [chartData])
 
-	if (!chartData.length) {
-		return <Spinner />
-	}
+	const ticks = useMemo(() => calculateXaxisTicks(chartData), [chartData])
 
 	return (
 		<ChartContainer config={chartConfig} className="h-full w-full absolute aspect-auto">
@@ -78,6 +80,10 @@ export default function ({ chartData }: { chartData: Record<string, number | str
 				/>
 				<XAxis
 					dataKey="time"
+					domain={[ticks[0], ticks.at(-1)!]}
+					ticks={ticks}
+					type="number"
+					scale={'time'}
 					tickLine={true}
 					axisLine={false}
 					tickMargin={8}
@@ -85,8 +91,10 @@ export default function ({ chartData }: { chartData: Record<string, number | str
 					tickFormatter={formatShortTime}
 				/>
 				<ChartTooltip
-					cursor={false}
-					labelFormatter={formatShortDate}
+					// cursor={false}
+					animationEasing="ease-out"
+					animationDuration={150}
+					labelFormatter={(_, data) => formatShortDate(data[0].payload.time)}
 					// @ts-ignore
 					itemSorter={(a, b) => b.value - a.value}
 					content={<ChartTooltipContent unit=" MiB" indicator="line" />}
