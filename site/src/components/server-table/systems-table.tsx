@@ -66,7 +66,8 @@ import AlertsButton from '../table-alerts'
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	const val = info.getValue() as number
 	return (
-		<div className="flex gap-2 items-center tabular-nums tracking-tight">
+		<div className="flex gap-1 items-center tabular-nums tracking-tight">
+			<span className="w-16">{val.toFixed(2)}%</span>
 			<span className="grow min-w-10 block bg-muted h-[1em] relative rounded-sm overflow-hidden">
 				<span
 					className={cn(
@@ -76,7 +77,6 @@ function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 					style={{ transform: `scalex(${val}%)` }}
 				></span>
 			</span>
-			<span className="w-16">{val.toFixed(2)}%</span>
 		</div>
 	)
 }

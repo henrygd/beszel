@@ -1,24 +1,13 @@
-import { $systems, pb } from '@/lib/stores'
+import { $updatedSystem, $systems, pb } from '@/lib/stores'
 import { ContainerStatsRecord, SystemRecord, SystemStatsRecord } from '@/types'
-import { Suspense, lazy, useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card'
 import { useStore } from '@nanostores/react'
 import Spinner from '../spinner'
-// import CpuChart from '../charts/cpu-chart'
-// import MemChart from '../charts/mem-chart'
-// import DiskChart from '../charts/disk-chart'
-// import ContainerCpuChart from '../charts/container-cpu-chart'
-// import ContainerMemChart from '../charts/container-mem-chart'
-import { CpuIcon, MemoryStickIcon, ServerIcon } from 'lucide-react'
-import { RadialChart } from '../charts/radial'
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '@/components/ui/select'
-import { Separator } from '@/components/ui/separator'
+import { ClockArrowUp, CpuIcon, GlobeIcon } from 'lucide-react'
+import ChartTimeSelect from '../charts/chart-time-select'
+import { cn, getPbTimestamp } from '@/lib/utils'
+import { Separator } from '../ui/separator'
 
 const CpuChart = lazy(() => import('../charts/cpu-chart'))
 const ContainerCpuChart = lazy(() => import('../charts/container-cpu-chart'))
@@ -31,15 +20,9 @@ function timestampToBrowserTime(timestamp: string) {
 	return date.toLocaleString()
 }
 
-// function addColors(objects: Record<string, any>[]) {
-// 	objects.forEach((obj, index) => {
-// 		const hue = ((index * 360) / objects.length) % 360 // Distribute hues evenly
-// 		obj.fill = `hsl(${hue}, 100%, 50%)` // Set fill to HSL color with full saturation and 50% lightness
-// 	})
-// }
-
 export default function ServerDetail({ name }: { name: string }) {
 	const servers = useStore($systems)
+	const updatedSystem = useStore($updatedSystem)
 	const [server, setServer] = useState({} as SystemRecord)
 	const [containers, setContainers] = useState([] as ContainerStatsRecord[])
 
@@ -59,38 +42,60 @@ export default function ServerDetail({ name }: { name: string }) {
 	)
 
 	useEffect(() => {
-		document.title = `${name} / Qoma`
-		return () => {
-			setContainerCpuChartData([])
-			setCpuChartData([])
-			setMemChartData([])
-			setDiskChartData([])
+		document.title = `${name} / Beszel`
+		if (server?.id && server.name === name) {
+			return
 		}
-	}, [name])
+		const matchingServer = servers.find((s) => s.name === name) as SystemRecord
+		if (matchingServer) {
+			setServer(matchingServer)
+		}
+	}, [name, server])
+
+	// if visiting directly, make sure server gets set when servers are loaded
+	// useEffect(() => {
+	// 	if (!('id' in server)) {
+	// 		const matchingServer = servers.find((s) => s.name === name) as SystemRecord
+	// 		if (matchingServer) {
+	// 			console.log('setting server')
+	// 			setServer(matchingServer)
+	// 		}
+	// 	}
+	// }, [servers])
 
 	// get stats
 	useEffect(() => {
-		if (!('name' in server)) {
+		if (!('id' in server)) {
+			console.log('no id in server')
 			return
+		} else {
+			console.log('id in server')
 		}
-
 		pb.collection<SystemStatsRecord>('system_stats')
-			.getList(1, 60, {
-				filter: `system="${server.id}"`,
+			.getFullList({
+				filter: `system="${server.id}" && created > "${getPbTimestamp('1h')}"`,
 				fields: 'created,stats',
 				sort: '-created',
 			})
 			.then((records) => {
 				// console.log('sctats', records)
-				setServerStats(records.items)
+				setServerStats(records)
 			})
-	}, [server, servers])
+	}, [server])
+
+	useEffect(() => {
+		if (updatedSystem.id === server.id) {
+			setServer(updatedSystem)
+		}
+	}, [updatedSystem])
 
 	// get cpu data
 	useEffect(() => {
 		if (!serverStats.length) {
 			return
 		}
+
+		console.log('stats', serverStats)
 		// let maxCpu = 0
 		const cpuData = [] as { time: string; cpu: number }[]
 		const memData = [] as { time: string; mem: number; memUsed: number; memCache: number }[]
@@ -107,26 +112,17 @@ export default function ServerDetail({ name }: { name: string }) {
 	}, [serverStats])
 
 	useEffect(() => {
-		if ($systems.get().length === 0) {
-			// console.log('skipping')
-			return
-		}
-		// console.log('running')
-		const matchingServer = servers.find((s) => s.name === name) as SystemRecord
-		// console.log('found server', matchingServer)
-		setServer(matchingServer)
-
 		pb.collection<ContainerStatsRecord>('container_stats')
-			.getList(1, 60, {
-				filter: `system="${matchingServer.id}"`,
+			.getFullList({
+				filter: `system="${server.id}" && created > "${getPbTimestamp('1h')}"`,
 				fields: 'created,stats',
 				sort: '-created',
 			})
 			.then((records) => {
-				// console.log('records', records)
-				setContainers(records.items)
+				// console.log('containers', records)
+				setContainers(records)
 			})
-	}, [servers, name])
+	}, [server])
 
 	// container stats for charts
 	useEffect(() => {
@@ -148,98 +144,85 @@ export default function ServerDetail({ name }: { name: string }) {
 		setContainerCpuChartData(containerCpuData.reverse())
 		setContainerMemChartData(containerMemData.reverse())
 	}, [containers])
+	const uptime = useMemo(() => {
+		console.log('making uptime')
+		let uptime = server.info?.u || 0
+		if (uptime < 172800) {
+			return `${Math.floor(uptime / 3600)} hours`
+		}
+		return `${Math.floor(server.info?.u / 86400)} days`
+	}, [server.info?.u])
+
+	if (!('id' in server)) {
+		return null
+	}
 
 	return (
-		<>
-			<div className="grid gap-6 mb-10 grid-cols-3">
-				<Card className="col-span-full">
-					<CardHeader>
-						<CardTitle className="flex gap-2 items-center text-3xl">{name}</CardTitle>
-					</CardHeader>
-					<CardContent className="flex items-center justify-between gap-6">
-						<p>{server.status}</p>
-						<p>Uptime {(server.info?.u / 86400).toLocaleString()} days</p>
-						<p>
-							{server.info?.m} ({server.info?.c} cores / {server.info?.t} threads)
-						</p>
-					</CardContent>
-				</Card>
-				<RadialChart />
-				<RadialChart />
-				<RadialChart />
+		<div className="grid gap-5 mb-10">
+			<Card>
+				<div className="grid gap-1.5 px-6 pt-4 pb-5">
+					<h1 className="text-[1.6rem] font-semibold">{server.name}</h1>
+					<div className="flex flex-wrap items-center gap-3 text-sm opacity-90">
+						<div className="capitalize flex gap-2 items-center">
+							<span className={cn('relative flex h-3 w-3')}>
+								{server.status === 'up' && (
+									<span
+										className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
+										style={{ animationDuration: '1.5s' }}
+									></span>
+								)}
+								<span
+									className={cn('relative inline-flex rounded-full h-3 w-3', {
+										'bg-green-500': server.status === 'up',
+										'bg-red-500': server.status === 'down',
+										'bg-primary/40': server.status === 'paused',
+										'bg-yellow-500': server.status === 'pending',
+									})}
+								></span>
+							</span>
+							{server.status}
+						</div>
+						<Separator orientation="vertical" className="h-4 bg-primary/30" />
+						<div className="flex gap-1.5 items-center">
+							<GlobeIcon className="h-4 w-4" /> {server.host}
+						</div>
+						<Separator orientation="vertical" className="h-4 bg-primary/30" />
+						<div className="flex gap-1.5 items-center">
+							<ClockArrowUp className="h-4 w-4" /> {uptime}
+						</div>
+						<Separator orientation="vertical" className="h-4 bg-primary/30" />
+						<div className="flex gap-1.5 items-center">
+							<CpuIcon className="h-4 w-4" />
+							{server.info?.m} ({server.info?.c}c / {server.info.t}t)
+						</div>
+					</div>
+				</div>
+			</Card>
 
-				<Card className="pb-3 col-span-full">
-					<CardHeader className="pb-5">
-						<CardTitle className="flex gap-2 justify-between">
-							<span>Total CPU Usage</span>
-							<CpuIcon className="opacity-70" />
-						</CardTitle>
-						<CardDescription>
-							System-wide CPU utilization of the preceding one minute as a percentage
-						</CardDescription>
-					</CardHeader>
-					<CardContent className={'pl-1 w-[calc(100%-2em)] h-52 relative'}>
-						<Suspense fallback={<Spinner />}>
-							<CpuChart chartData={cpuChartData} />
-						</Suspense>
-					</CardContent>
-				</Card>
-				{containerCpuChartData.length > 0 && (
-					<Card className="pb-3 col-span-full">
-						<CardHeader className="pb-5">
-							<CardTitle className="flex gap-2 justify-between">
-								<span>Docker CPU Usage</span>
-								<CpuIcon className="opacity-70" />
-							</CardTitle>{' '}
-							<CardDescription>CPU utilization of docker containers</CardDescription>
-						</CardHeader>
-						<CardContent className={'pl-1 w-[calc(100%-2em)] h-52 relative'}>
-							<Suspense fallback={<Spinner />}>
-								<ContainerCpuChart chartData={containerCpuChartData} />
-							</Suspense>
-						</CardContent>
-					</Card>
-				)}
-				<Card className="pb-3 col-span-full">
-					<CardHeader className="pb-5">
-						<CardTitle>Total Memory Usage</CardTitle>
-						<CardDescription>Precise utilization at the recorded time</CardDescription>
-					</CardHeader>
-					<CardContent className={'pl-1 w-[calc(100%-2em)] h-52 relative'}>
-						<Suspense fallback={<Spinner />}>
-							<MemChart chartData={memChartData} />
-						</Suspense>
-					</CardContent>
-				</Card>
-				{containerMemChartData.length > 0 && (
-					<Card className="pb-3 col-span-full">
-						<CardHeader className="pb-5">
-							<CardTitle className="flex gap-2 justify-between">
-								<span>Docker Memory Usage</span>
-								<MemoryStickIcon className="opacity-70" />
-							</CardTitle>{' '}
-							<CardDescription>Memory usage of docker containers</CardDescription>
-						</CardHeader>
-						<CardContent className={'pl-1 w-[calc(100%-2em)] h-52 relative'}>
-							<Suspense fallback={<Spinner />}>
-								<ContainerMemChart chartData={containerMemChartData} />
-							</Suspense>
-						</CardContent>
-					</Card>
-				)}
-				<Card className="pb-3 col-span-full">
-					<CardHeader className="pb-5">
-						<CardTitle>Disk Usage</CardTitle>
-						<CardDescription>Precise usage at the recorded time</CardDescription>
-					</CardHeader>
-					<CardContent className={'pl-1 w-[calc(100%-2em)] h-52 relative'}>
-						<Suspense fallback={<Spinner />}>
-							<DiskChart chartData={diskChartData} />
-						</Suspense>
-					</CardContent>
-				</Card>
-			</div>
+			<ChartCard
+				title="Total CPU Usage"
+				description="Average system-wide CPU utilization as a percentage"
+			>
+				<CpuChart chartData={cpuChartData} />
+			</ChartCard>
 
+			{containerCpuChartData.length > 0 && (
+				<ChartCard title="Docker CPU Usage" description="CPU utilization of docker containers">
+					<ContainerCpuChart chartData={containerCpuChartData} />
+				</ChartCard>
+			)}
+			<ChartCard title="Total Memory Usage" description="Precise utilization at the recorded time">
+				<MemChart chartData={memChartData} />
+			</ChartCard>
+
+			{containerMemChartData.length > 0 && (
+				<ChartCard title="Docker Memory Usage" description="Memory usage of docker containers">
+					<ContainerMemChart chartData={containerMemChartData} />
+				</ChartCard>
+			)}
+			<ChartCard title="Disk Usage" description="Precise usage at the recorded time">
+				<DiskChart chartData={diskChartData} />
+			</ChartCard>
 			<Card>
 				<CardHeader>
 					<CardTitle className={'mb-3'}>{server.name}</CardTitle>
@@ -251,15 +234,31 @@ export default function ServerDetail({ name }: { name: string }) {
 					<pre>{JSON.stringify(server, null, 2)}</pre>
 				</CardContent>
 			</Card>
+		</div>
+	)
+}
 
-			{/* <Card>
-				<CardHeader>
-					<CardTitle className={'mb-3'}>Containers</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<pre>{JSON.stringify(containers, null, 2)}</pre>
-				</CardContent>
-			</Card> */}
-		</>
+function ChartCard({
+	title,
+	description,
+	children,
+}: {
+	title: string
+	description: string
+	children: React.ReactNode
+}) {
+	return (
+		<Card className="pb-4 col-span-full">
+			<CardHeader className="pb-5 pt-4">
+				<CardTitle className="flex gap-2 items-center justify-between -mb-1.5">
+					{title}
+					<ChartTimeSelect className="translate-y-1" />
+				</CardTitle>
+				<CardDescription>{description}</CardDescription>
+			</CardHeader>
+			<CardContent className={'pl-1 w-[calc(100%-1.6em)] h-52 relative'}>
+				<Suspense fallback={<Spinner />}>{children}</Suspense>
+			</CardContent>
+		</Card>
 	)
 }

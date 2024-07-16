@@ -169,7 +169,7 @@ func main() {
 }
 
 func serverUpdateTicker() {
-	ticker := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(60 * time.Second)
 	for range ticker.C {
 		updateServers()
 	}

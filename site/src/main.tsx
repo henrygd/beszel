@@ -3,7 +3,15 @@ import React, { Suspense, lazy, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import Home from './components/routes/home.tsx'
 import { ThemeProvider } from './components/theme-provider.tsx'
-import { $alerts, $authenticated, $router, $systems, navigate, pb } from './lib/stores.ts'
+import {
+	$alerts,
+	$authenticated,
+	$updatedSystem,
+	$router,
+	$systems,
+	navigate,
+	pb,
+} from './lib/stores.ts'
 import { ModeToggle } from './components/mode-toggle.tsx'
 import {
 	cn,
@@ -53,6 +61,7 @@ const App = () => {
 		// subscribe to real time updates for systems / alerts
 		pb.collection<SystemRecord>('systems').subscribe('*', (e) => {
 			updateRecordList(e, $systems)
+			$updatedSystem.set(e.record)
 		})
 		pb.collection<AlertRecord>('alerts').subscribe('*', (e) => {
 			updateRecordList(e, $alerts)

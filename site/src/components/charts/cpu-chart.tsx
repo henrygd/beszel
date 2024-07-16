@@ -8,9 +8,6 @@ import {
 } from '@/components/ui/chart'
 import { formatShortDate, formatShortTime } from '@/lib/utils'
 import Spinner from '../spinner'
-// for (const data of chartData) {
-//   data.month = formatDateShort(data.month)
-// }
 
 const chartConfig = {
 	cpu: {

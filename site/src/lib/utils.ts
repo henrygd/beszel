@@ -96,3 +96,25 @@ export function updateRecordList<T extends RecordModel>(
 	}
 	$store.set(newRecords)
 }
+
+export function getPbTimestamp(timeString: string) {
+	const now = new Date()
+	let timeValue = parseInt(timeString.slice(0, -1))
+	let unit = timeString.slice(-1)
+
+	if (unit === 'h') {
+		now.setUTCHours(now.getUTCHours() - timeValue)
+	} else {
+		// d
+		now.setUTCDate(now.getUTCDate() - timeValue)
+	}
+
+	const year = now.getUTCFullYear()
+	const month = String(now.getUTCMonth() + 1).padStart(2, '0')
+	const day = String(now.getUTCDate()).padStart(2, '0')
+	const hours = String(now.getUTCHours()).padStart(2, '0')
+	const minutes = String(now.getUTCMinutes()).padStart(2, '0')
+	const seconds = String(now.getUTCSeconds()).padStart(2, '0')
+
+	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+}
