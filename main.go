@@ -153,7 +153,7 @@ func main() {
 			deleteServerConnection(newRecord)
 		}
 
-		// if server is set to pending, try to connect
+		// if server is set to pending (unpause), try to connect
 		if newStatus == "pending" {
 			go updateServer(newRecord)
 		}

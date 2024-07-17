@@ -75,7 +75,9 @@ export const formatDay = (timestamp: string) => {
 export const updateFavicon = (newIconUrl: string) =>
 	((document.querySelector("link[rel='icon']") as HTMLLinkElement).href = newIconUrl)
 
-export const isAdmin = () => pb.authStore.model?.admin
+export const isAdmin = () => pb.authStore.model?.role === 'admin'
+export const isReadOnlyUser = () => pb.authStore.model?.role === 'readonly'
+// export const isDefaultUser = () => pb.authStore.model?.role === 'user'
 
 /** Update systems / alerts list when records change  */
 export function updateRecordList<T extends RecordModel>(

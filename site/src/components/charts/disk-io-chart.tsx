@@ -45,7 +45,8 @@ export default function DiskIoChart({
 			>
 				<CartesianGrid vertical={false} />
 				<YAxis
-					width={75}
+					className="tracking-tighter"
+					width={80}
 					domain={[0, 'auto']}
 					// ticks={ticks}
 					tickCount={9}

@@ -60,7 +60,7 @@ import { useMemo, useState } from 'react'
 import { $systems, pb, navigate } from '@/lib/stores'
 import { useStore } from '@nanostores/react'
 import { AddServerButton } from '../add-server'
-import { cn, copyToClipboard, isAdmin } from '@/lib/utils'
+import { cn, copyToClipboard, isReadOnlyUser } from '@/lib/utils'
 import AlertsButton from '../table-alerts'
 
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
@@ -167,15 +167,8 @@ export default function SystemsTable() {
 										</Button>
 									</DropdownMenuTrigger>
 									<DropdownMenuContent align="end">
-										{/* <DropdownMenuLabel>Actions</DropdownMenuLabel> */}
-										{/* <DropdownMenuItem
-										onSelect={() => {
-											navigate(`/server/${name}`)
-										}}
-									>
-										View details
-									</DropdownMenuItem> */}
 										<DropdownMenuItem
+											className={cn(isReadOnlyUser() && 'hidden')}
 											onClick={() => {
 												pb.collection('systems').update(id, {
 													status: status === 'paused' ? 'pending' : 'paused',
@@ -198,9 +191,9 @@ export default function SystemsTable() {
 											<CopyIcon className="mr-2.5 h-4 w-4" />
 											Copy host
 										</DropdownMenuItem>
-										<DropdownMenuSeparator />
+										<DropdownMenuSeparator className={cn(isReadOnlyUser() && 'hidden')} />
 										<AlertDialogTrigger asChild>
-											<DropdownMenuItem>
+											<DropdownMenuItem className={cn(isReadOnlyUser() && 'hidden')}>
 												<Trash2Icon className="mr-2.5 h-4 w-4" />
 												Delete
 											</DropdownMenuItem>
@@ -264,11 +257,9 @@ export default function SystemsTable() {
 						onChange={(event) => table.getColumn('name')?.setFilterValue(event.target.value)}
 						className="max-w-sm"
 					/>
-					{isAdmin() && (
-						<div className="ml-auto flex gap-2">
-							<AddServerButton />
-						</div>
-					)}
+					<div className={cn('ml-auto flex gap-2', isReadOnlyUser() && 'hidden')}>
+						<AddServerButton />
+					</div>
 				</div>
 				<div className="rounded-md border overflow-hidden">
 					<Table>

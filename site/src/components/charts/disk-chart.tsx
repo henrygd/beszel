@@ -55,6 +55,7 @@ export default function DiskChart({
 			>
 				<CartesianGrid vertical={false} />
 				<YAxis
+					className="tracking-tighter"
 					width={75}
 					domain={[0, diskSize]}
 					// ticks={ticks}

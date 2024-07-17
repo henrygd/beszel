@@ -53,6 +53,7 @@ export function AddServerButton() {
 		const formData = new FormData(e.target as HTMLFormElement)
 		const data = Object.fromEntries(formData) as Record<string, any>
 		data.status = 'pending'
+		data.users = pb.authStore.model!.id
 		data.info = {
 			cpu: 0,
 			m: 0,

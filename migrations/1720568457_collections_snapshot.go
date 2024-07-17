@@ -15,7 +15,7 @@ func init() {
 			{
 				"id": "2hz5ncl8tizk5nx",
 				"created": "2024-07-07 16:08:20.979Z",
-				"updated": "2024-07-14 19:51:52.377Z",
+				"updated": "2024-07-17 15:27:00.429Z",
 				"name": "systems",
 				"type": "base",
 				"system": false,
@@ -91,20 +91,36 @@ func init() {
 						"options": {
 							"maxSize": 2000000
 						}
+					},
+					{
+						"system": false,
+						"id": "jcarjnjj",
+						"name": "users",
+						"type": "relation",
+						"required": true,
+						"presentable": false,
+						"unique": false,
+						"options": {
+							"collectionId": "_pb_users_auth_",
+							"cascadeDelete": false,
+							"minSelect": null,
+							"maxSelect": null,
+							"displayFields": null
+						}
 					}
 				],
 				"indexes": [],
-				"listRule": "",
-				"viewRule": "@request.auth.id != \"\"",
-				"createRule": "@request.auth.id != \"\" && @request.auth.admin = true",
-				"updateRule": "",
-				"deleteRule": "@request.auth.id != \"\" && @request.auth.admin = true",
+				"listRule": "@request.auth.id != \"\" && users.id ?= @request.auth.id",
+				"viewRule": "@request.auth.id != \"\" && users.id ?= @request.auth.id",
+				"createRule": "@request.auth.id != \"\" && users.id ?= @request.auth.id && @request.auth.role != \"readonly\"",
+				"updateRule": "@request.auth.id != \"\" && users.id ?= @request.auth.id && @request.auth.role != \"readonly\"",
+				"deleteRule": "@request.auth.id != \"\" && users.id ?= @request.auth.id && @request.auth.role != \"readonly\"",
 				"options": {}
 			},
 			{
 				"id": "ej9oowivz8b2mht",
 				"created": "2024-07-07 16:09:09.179Z",
-				"updated": "2024-07-14 03:36:23.089Z",
+				"updated": "2024-07-15 22:44:12.297Z",
 				"name": "system_stats",
 				"type": "base",
 				"system": false,
@@ -151,7 +167,7 @@ func init() {
 			{
 				"id": "juohu4jipgc13v7",
 				"created": "2024-07-07 16:09:57.976Z",
-				"updated": "2024-07-14 03:36:23.090Z",
+				"updated": "2024-07-15 22:44:12.297Z",
 				"name": "container_stats",
 				"type": "base",
 				"system": false,
@@ -196,11 +212,28 @@ func init() {
 			{
 				"id": "_pb_users_auth_",
 				"created": "2024-07-14 16:25:18.226Z",
-				"updated": "2024-07-14 16:25:18.235Z",
+				"updated": "2024-07-17 15:18:01.385Z",
 				"name": "users",
 				"type": "auth",
 				"system": false,
 				"schema": [
+					{
+						"system": false,
+						"id": "qkbp58ae",
+						"name": "role",
+						"type": "select",
+						"required": true,
+						"presentable": false,
+						"unique": false,
+						"options": {
+							"maxSelect": 1,
+							"values": [
+								"user",
+								"admin",
+								"readonly"
+							]
+						}
+					},
 					{
 						"system": false,
 						"id": "users_avatar",
@@ -222,16 +255,6 @@ func init() {
 							"maxSize": 5242880,
 							"protected": false
 						}
-					},
-					{
-						"system": false,
-						"id": "ebyl7gfs",
-						"name": "admin",
-						"type": "bool",
-						"required": false,
-						"presentable": false,
-						"unique": false,
-						"options": {}
 					}
 				],
 				"indexes": [],
@@ -255,7 +278,7 @@ func init() {
 			{
 				"id": "elngm8x1l60zi2v",
 				"created": "2024-07-15 01:16:04.044Z",
-				"updated": "2024-07-15 18:48:55.881Z",
+				"updated": "2024-07-15 22:44:12.297Z",
 				"name": "alerts",
 				"type": "base",
 				"system": false,

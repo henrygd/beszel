@@ -95,7 +95,7 @@ export function UserAuthForm({
 					email,
 					password,
 					passwordConfirm: password,
-					admin: true,
+					role: 'admin',
 					verified: true,
 				})
 				await pb.collection('users').authWithPassword(email, password)
