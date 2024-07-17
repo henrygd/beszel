@@ -57,11 +57,12 @@ import {
 	Trash2Icon,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { $systems, pb, navigate } from '@/lib/stores'
+import { $systems, pb } from '@/lib/stores'
 import { useStore } from '@nanostores/react'
 import { AddServerButton } from '../add-server'
 import { cn, copyToClipboard, isReadOnlyUser } from '@/lib/utils'
 import AlertsButton from '../table-alerts'
+import { navigate } from '../router'
 
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	const val = info.getValue() as number

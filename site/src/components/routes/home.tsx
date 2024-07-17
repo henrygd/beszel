@@ -5,7 +5,7 @@ const SystemsTable = lazy(() => import('../server-table/systems-table'))
 
 export default function () {
 	useEffect(() => {
-		document.title = 'Dashboard / Qoma'
+		document.title = 'Dashboard / Beszel'
 	}, [])
 
 	return (

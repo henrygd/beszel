@@ -52,10 +52,12 @@ func main() {
 				Scheme: "http",
 				Host:   "localhost:5173",
 			})
+			e.Router.GET("/icons/*", apis.StaticDirectoryHandler(os.DirFS("./site/public/icons"), false))
 			e.Router.Any("/*", echo.WrapHandler(proxy))
 			e.Router.Any("/", echo.WrapHandler(proxy))
 		default:
-			e.Router.GET("/*", apis.StaticDirectoryHandler(os.DirFS("./site/dist"), true))
+			e.Router.GET("/icons/*", apis.StaticDirectoryHandler(os.DirFS("./site/dist/icons"), false))
+			e.Router.Any("/*", apis.StaticDirectoryHandler(os.DirFS("./site/dist"), true))
 		}
 		return nil
 	})
@@ -103,7 +105,7 @@ func main() {
 		// create ssh key if it doesn't exist
 		getSSHKey()
 		// api route to return public key
-		e.Router.GET("/api/qoma/getkey", func(c echo.Context) error {
+		e.Router.GET("/api/beszel/getkey", func(c echo.Context) error {
 			requestData := apis.RequestInfo(c)
 			if requestData.AuthRecord == nil {
 				return apis.NewForbiddenError("Forbidden", nil)
@@ -120,7 +122,7 @@ func main() {
 	// other api routes
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		// check if first time setup on login page
-		e.Router.GET("/api/qoma/first-run", func(c echo.Context) error {
+		e.Router.GET("/api/beszel/first-run", func(c echo.Context) error {
 			adminNum, err := app.Dao().TotalAdmins()
 			if err != nil {
 				return err
@@ -405,7 +407,7 @@ func handleStatusAlerts(newStatus string, oldRecord *models.Record) error {
 		sendAlert(EmailData{
 			to:   user.Get("email").(string),
 			subj: fmt.Sprintf("Connection to %s is %s %v", systemName, alertStatus, emoji),
-			body: fmt.Sprintf("Connection to %s is %s %v\n\n- Qoma", systemName, alertStatus, emoji),
+			body: fmt.Sprintf("Connection to %s is %s\n\n- Beszel", systemName, alertStatus),
 		})
 	}
 	return nil

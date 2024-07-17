@@ -3,15 +3,7 @@ import React, { Suspense, lazy, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import Home from './components/routes/home.tsx'
 import { ThemeProvider } from './components/theme-provider.tsx'
-import {
-	$alerts,
-	$authenticated,
-	$updatedSystem,
-	$router,
-	$systems,
-	navigate,
-	pb,
-} from './lib/stores.ts'
+import { $alerts, $authenticated, $updatedSystem, $systems, pb } from './lib/stores.ts'
 import { ModeToggle } from './components/mode-toggle.tsx'
 import {
 	cn,
@@ -22,7 +14,16 @@ import {
 	updateServerList,
 } from './lib/utils.ts'
 import { buttonVariants } from './components/ui/button.tsx'
-import { DatabaseBackupIcon, Github, LogOutIcon, LogsIcon, UserIcon } from 'lucide-react'
+import {
+	DatabaseBackupIcon,
+	GithubIcon,
+	LockKeyholeIcon,
+	LogOutIcon,
+	LogsIcon,
+	ServerIcon,
+	UserIcon,
+	UsersIcon,
+} from 'lucide-react'
 import { useStore } from '@nanostores/react'
 import { Toaster } from './components/ui/toaster.tsx'
 import { Logo } from './components/logo.tsx'
@@ -35,15 +36,18 @@ import {
 import {
 	DropdownMenu,
 	DropdownMenuContent,
+	DropdownMenuGroup,
 	DropdownMenuItem,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
+	DropdownMenuLabel,
 } from './components/ui/dropdown-menu.tsx'
 import { AlertRecord, SystemRecord } from './types'
+import { $router, Link, navigate } from './components/router.tsx'
 
 const ServerDetail = lazy(() => import('./components/routes/server.tsx'))
 const CommandPalette = lazy(() => import('./components/command-palette.tsx'))
-const LoginPage = lazy(() => import('./components/login.tsx'))
+const LoginPage = lazy(() => import('./components/login/login.tsx'))
 
 const App = () => {
 	const page = useStore($router)
@@ -122,7 +126,7 @@ const Layout = () => {
 		<>
 			<div className="container">
 				<div className="flex items-center h-16 bg-card px-6 border bt-0 rounded-md my-5">
-					<a
+					<Link
 						href="/"
 						aria-label="Home"
 						className={'p-2 pl-0'}
@@ -132,7 +136,7 @@ const Layout = () => {
 						}}
 					>
 						<Logo className="h-[1.2em] fill-foreground" />
-					</a>
+					</Link>
 
 					<div className={'flex ml-auto'}>
 						<ModeToggle />
@@ -145,7 +149,7 @@ const Layout = () => {
 										href={'https://github.com/henrygd'}
 										className={cn('', buttonVariants({ variant: 'ghost', size: 'icon' }))}
 									>
-										<Github className="h-[1.2rem] w-[1.2rem]" />
+										<GithubIcon className="h-[1.2rem] w-[1.2rem]" />
 									</a>
 								</TooltipTrigger>
 								<TooltipContent>
@@ -163,28 +167,50 @@ const Layout = () => {
 									<UserIcon className="h-[1.2rem] w-[1.2rem]" />
 								</a>
 							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end">
+							<DropdownMenuContent align="end" className="min-w-44">
+								<DropdownMenuLabel>{pb.authStore.model?.email}</DropdownMenuLabel>
+								<DropdownMenuSeparator />
+								<DropdownMenuGroup>
+									{isAdmin() && (
+										<>
+											<DropdownMenuItem asChild>
+												<a href="/_/">
+													<UsersIcon className="mr-2.5 h-4 w-4" />
+													<span>Users</span>
+												</a>
+											</DropdownMenuItem>
+											<DropdownMenuItem asChild>
+												<a href="/_/#/collections?collectionId=2hz5ncl8tizk5nx">
+													<ServerIcon className="mr-2.5 h-4 w-4" />
+													<span>Systems</span>
+												</a>
+											</DropdownMenuItem>
+											<DropdownMenuItem asChild>
+												<a href="/_/#/logs">
+													<LogsIcon className="mr-2.5 h-4 w-4" />
+													<span>Logs</span>
+												</a>
+											</DropdownMenuItem>
+											<DropdownMenuItem asChild>
+												<a href="/_/#/settings/backups">
+													<DatabaseBackupIcon className="mr-2.5 h-4 w-4" />
+													<span>Backups</span>
+												</a>
+											</DropdownMenuItem>
+											<DropdownMenuItem asChild>
+												<a href="/_/#/settings/auth-providers">
+													<LockKeyholeIcon className="mr-2.5 h-4 w-4" />
+													<span>Auth providers</span>
+												</a>
+											</DropdownMenuItem>
+											<DropdownMenuSeparator />
+										</>
+									)}
+								</DropdownMenuGroup>
 								<DropdownMenuItem onSelect={() => pb.authStore.clear()}>
 									<LogOutIcon className="mr-2.5 h-4 w-4" />
 									<span>Log out</span>
 								</DropdownMenuItem>
-								{isAdmin() && (
-									<>
-										<DropdownMenuSeparator />
-										<DropdownMenuItem asChild>
-											<a href="/_/#/logs">
-												<LogsIcon className="mr-2.5 h-4 w-4" />
-												<span>Logs</span>
-											</a>
-										</DropdownMenuItem>
-										<DropdownMenuItem asChild>
-											<a href="/_/#/settings/backups">
-												<DatabaseBackupIcon className="mr-2.5 h-4 w-4" />
-												<span>Backups</span>
-											</a>
-										</DropdownMenuItem>
-									</>
-								)}
 							</DropdownMenuContent>
 						</DropdownMenu>
 					</div>

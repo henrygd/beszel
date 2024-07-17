@@ -1,12 +1,11 @@
-import * as React from 'react'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Github, LoaderCircle, LockIcon, LogInIcon, MailIcon, UserIcon } from 'lucide-react'
+import { LoaderCircle, LockIcon, LogInIcon, MailIcon, UserIcon } from 'lucide-react'
 import { $authenticated, pb } from '@/lib/stores'
 import * as v from 'valibot'
-import { toast } from './ui/use-toast'
+import { toast } from '../ui/use-toast'
 import {
 	Dialog,
 	DialogContent,
@@ -15,6 +14,9 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog'
+import { useEffect, useState } from 'react'
+import { AuthProviderInfo } from 'pocketbase'
+import { Link } from '../router'
 
 const honeypot = v.literal('')
 const emailSchema = v.pipe(v.string(), v.email('Invalid email address.'))
@@ -44,6 +46,14 @@ const RegisterSchema = v.looseObject({
 	passwordConfirm: passwordSchema,
 })
 
+const showLoginFaliedToast = () => {
+	toast({
+		title: 'Login attempt failed',
+		description: 'Please check your credentials and try again',
+		variant: 'destructive',
+	})
+}
+
 export function UserAuthForm({
 	className,
 	isFirstRun,
@@ -52,11 +62,21 @@ export function UserAuthForm({
 	className?: string
 	isFirstRun: boolean
 }) {
-	const [isLoading, setIsLoading] = React.useState<boolean>(false)
-	const [isGitHubLoading, setIsGitHubLoading] = React.useState<boolean>(false)
-	const [errors, setErrors] = React.useState<Record<string, string | undefined>>({})
+	const [isLoading, setIsLoading] = useState<boolean>(false)
+	const [isGitHubLoading, setIsOauthLoading] = useState<boolean>(false)
+	const [errors, setErrors] = useState<Record<string, string | undefined>>({})
+	const [authProviders, setAuthProviders] = useState<AuthProviderInfo[]>([])
 
-	// const searchParams = useSearchParams()
+	useEffect(() => {
+		pb.collection('users')
+			.listAuthMethods()
+			.then((methods) => {
+				console.log('methods', methods)
+				console.log('password active', methods.emailPassword)
+				setAuthProviders(methods.authProviders)
+				console.log('auth providers', authProviders)
+			})
+	}, [])
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault()
@@ -104,11 +124,7 @@ export function UserAuthForm({
 			}
 			$authenticated.set(true)
 		} catch (e) {
-			return toast({
-				title: 'Login attempt failed',
-				description: 'Please check your credentials and try again',
-				variant: 'destructive',
-			})
+			showLoginFaliedToast()
 		} finally {
 			setIsLoading(false)
 		}
@@ -220,44 +236,79 @@ export function UserAuthForm({
 					<span className="bg-background px-2 text-muted-foreground">Or continue with</span>
 				</div>
 			</div>
-			<Dialog>
-				<DialogTrigger asChild>
-					<button
-						type="button"
-						className={cn(buttonVariants({ variant: 'outline' }))}
-						// onClick={async () => {
-						// setIsGitHubLoading(true)
-						// do stuff
-						// setIsGitHubLoading(false)
-						// }}
-						disabled={isLoading || isGitHubLoading}
-					>
-						{isGitHubLoading ? (
-							<LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-						) : (
-							<Github className="mr-2 h-4 w-4" />
-						)}{' '}
-						Github
-					</button>
-				</DialogTrigger>
-				<DialogContent style={{ maxWidth: 440, width: '90%' }}>
-					<DialogHeader>
-						<DialogTitle className="mb-2">OAuth 2 / OIDC support</DialogTitle>
-						<DialogDescription className="grid gap-3">
+
+			{authProviders.length > 0 && (
+				<div className="grid gap-2">
+					{authProviders.map((provider) => (
+						<button
+							key={provider.name}
+							type="button"
+							className={cn(buttonVariants({ variant: 'outline' }))}
+							onClick={async () => {
+								setIsOauthLoading(true)
+								try {
+									await pb.collection('users').authWithOAuth2({ provider: provider.name })
+									$authenticated.set(pb.authStore.isValid)
+								} catch (e) {
+									showLoginFaliedToast()
+								} finally {
+									setIsOauthLoading(false)
+								}
+							}}
+							disabled={isLoading || isGitHubLoading}
+						>
+							{isGitHubLoading ? (
+								<LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+							) : (
+								<img
+									className="mr-2 h-4 w-4 dark:invert"
+									src={`/icons/${provider.name}.svg`}
+									alt=""
+									onError={(e) => {
+										e.currentTarget.src = '/icons/lock.svg'
+									}}
+								/>
+							)}
+							<span className="translate-y-[1px]">{provider.displayName}</span>
+						</button>
+					))}
+				</div>
+			)}
+
+			{!authProviders.length && (
+				<Dialog>
+					<DialogTrigger asChild>
+						<button type="button" className={cn(buttonVariants({ variant: 'outline' }))}>
+							<img className="mr-2 h-4 w-4 dark:invert" src="/icons/github.svg" alt="" />
+							<span className="translate-y-[1px]">GitHub</span>
+						</button>
+					</DialogTrigger>
+					<DialogContent style={{ maxWidth: 440, width: '90%' }}>
+						<DialogHeader>
+							<DialogTitle>OAuth 2 / OIDC support</DialogTitle>
+						</DialogHeader>
+						<div className="text-primary/70 text-[0.95em] contents">
+							<p>Beszel supports OpenID Connect and many OAuth2 authentication providers.</p>
 							<p>
-								Support for OAuth / OIDC (all major providers) will be available in the future. As
-								well as an option to disable password auth.
+								Please view the{' '}
+								<a
+									href="https://github.com/henrygd/beszel/blob/main/readme.md#oauth--oidc-integration"
+									className={cn(buttonVariants({ variant: 'link' }), 'p-0 h-auto')}
+								>
+									GitHub README
+								</a>{' '}
+								for instructions.
 							</p>
-							<p>First I need to decide what to do with additional users.</p>
-							<p>
-								Should systems be shared across all accounts? Or should they be private by default
-								with team-based sharing?
-							</p>
-							<p>Let me know if you have strong opinions either way.</p>
-						</DialogDescription>
-					</DialogHeader>
-				</DialogContent>
-			</Dialog>
+						</div>
+					</DialogContent>
+				</Dialog>
+			)}
+			<Link
+				href="/forgot-password"
+				className="text-sm mx-auto mt-2 hover:text-brand underline underline-offset-4 opacity-70 hover:opacity-100 transition-opacity"
+			>
+				Forgot password?
+			</Link>
 		</div>
 	)
 }

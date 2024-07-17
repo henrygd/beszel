@@ -21,8 +21,9 @@ import {
 } from '@/components/ui/command'
 import { useEffect, useState } from 'react'
 import { useStore } from '@nanostores/react'
-import { $systems, navigate } from '@/lib/stores'
+import { $systems } from '@/lib/stores'
 import { isAdmin } from '@/lib/utils'
+import { navigate } from './router'
 
 export default function CommandPalette() {
 	const [open, setOpen] = useState(false)

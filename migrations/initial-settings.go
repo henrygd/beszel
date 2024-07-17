@@ -11,7 +11,7 @@ func init() {
 		dao := daos.New(db)
 
 		settings, _ := dao.FindSettings()
-		settings.Meta.AppName = "Qoma"
+		settings.Meta.AppName = "Beszel"
 		settings.Meta.HideControls = true
 
 		return dao.SaveSettings(settings)

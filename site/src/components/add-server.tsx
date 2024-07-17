@@ -27,8 +27,8 @@ export function AddServerButton() {
 	function copyDockerCompose(port: string) {
 		copyToClipboard(`services:
   agent:
-    image: 'henrygd/qoma-agent'
-    container_name: 'qoma-agent'
+    image: 'henrygd/beszel-agent'
+    container_name: 'beszel-agent'
     restart: unless-stopped
     ports:
       - '${port}:45876'
@@ -43,7 +43,7 @@ export function AddServerButton() {
 			return
 		}
 		// get public key
-		pb.send('/api/qoma/getkey', {}).then(({ key }) => {
+		pb.send('/api/beszel/getkey', {}).then(({ key }) => {
 			$publicKey.set(key)
 		})
 	}, [open])
