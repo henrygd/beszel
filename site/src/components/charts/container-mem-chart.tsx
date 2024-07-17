@@ -8,11 +8,17 @@ import {
 	ChartTooltipContent,
 } from '@/components/ui/chart'
 import { useMemo } from 'react'
-import { calculateXaxisTicks, formatShortDate, formatShortTime } from '@/lib/utils'
+import { formatShortDate, hourWithMinutes } from '@/lib/utils'
 import Spinner from '../spinner'
 
-export default function ({ chartData }: { chartData: Record<string, number | string>[] }) {
-	if (!chartData.length) {
+export default function ({
+	chartData,
+	ticks,
+}: {
+	chartData: Record<string, number | string>[]
+	ticks: number[]
+}) {
+	if (!chartData.length || !ticks.length) {
 		return <Spinner />
 	}
 
@@ -45,13 +51,11 @@ export default function ({ chartData }: { chartData: Record<string, number | str
 			const hue = ((i * 360) / length) % 360
 			config[key] = {
 				label: key,
-				color: `hsl(${hue}, 60%, 60%)`,
+				color: `hsl(${hue}, 60%, 55%)`,
 			}
 		}
 		return config satisfies ChartConfig
 	}, [chartData])
-
-	const ticks = useMemo(() => calculateXaxisTicks(chartData), [chartData])
 
 	return (
 		<ChartContainer config={chartConfig} className="h-full w-full absolute aspect-auto">
@@ -72,7 +76,7 @@ export default function ({ chartData }: { chartData: Record<string, number | str
 					allowDecimals={false}
 					tickLine={false}
 					axisLine={false}
-					unit={' GiB'}
+					unit={' GB'}
 					tickFormatter={(x) => {
 						x = x / 1024
 						return x % 1 === 0 ? x : x.toFixed(1)
@@ -88,7 +92,7 @@ export default function ({ chartData }: { chartData: Record<string, number | str
 					axisLine={false}
 					tickMargin={8}
 					minTickGap={30}
-					tickFormatter={formatShortTime}
+					tickFormatter={hourWithMinutes}
 				/>
 				<ChartTooltip
 					// cursor={false}
@@ -102,10 +106,10 @@ export default function ({ chartData }: { chartData: Record<string, number | str
 				{Object.keys(chartConfig).map((key) => (
 					<Area
 						key={key}
-						// isAnimationActive={false}
+						isAnimationActive={chartData.length < 20}
 						animateNewValues={false}
 						dataKey={key}
-						type="monotone"
+						type="monotoneX"
 						fill={chartConfig[key].color}
 						fillOpacity={0.4}
 						stroke={chartConfig[key].color}

@@ -6,20 +6,20 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from '@/components/ui/chart'
-import { calculateXaxisTicks, formatShortDate, formatShortTime } from '@/lib/utils'
+import { formatShortDate, hourWithMinutes } from '@/lib/utils'
 import { useMemo } from 'react'
 import Spinner from '../spinner'
 
 export default function MemChart({
 	chartData,
+	ticks,
 }: {
 	chartData: { time: number; mem: number; memUsed: number; memCache: number }[]
+	ticks: number[]
 }) {
-	if (!chartData.length) {
+	if (!chartData.length || !ticks.length) {
 		return <Spinner />
 	}
-
-	const ticks = useMemo(() => calculateXaxisTicks(chartData), [chartData])
 
 	const totalMem = useMemo(() => {
 		return Math.ceil(chartData[0]?.mem)
@@ -56,7 +56,7 @@ export default function MemChart({
 					tickLine={false}
 					allowDecimals={false}
 					axisLine={false}
-					tickFormatter={(v) => `${v} GiB`}
+					tickFormatter={(v) => `${v} GB`}
 				/>
 				{/* todo: short time if first date is same day, otherwise short date */}
 				<XAxis
@@ -69,7 +69,7 @@ export default function MemChart({
 					axisLine={false}
 					tickMargin={8}
 					minTickGap={30}
-					tickFormatter={formatShortTime}
+					tickFormatter={hourWithMinutes}
 				/>
 				<ChartTooltip
 					// cursor={false}
@@ -77,7 +77,7 @@ export default function MemChart({
 					animationDuration={150}
 					content={
 						<ChartTooltipContent
-							unit="GiB"
+							unit="GB"
 							// @ts-ignore
 							itemSorter={(a, b) => a.name.localeCompare(b.name)}
 							labelFormatter={(_, data) => formatShortDate(data[0].payload.time)}
@@ -87,7 +87,7 @@ export default function MemChart({
 				/>
 				<Area
 					dataKey="memUsed"
-					type="monotone"
+					type="monotoneX"
 					fill="var(--color-memUsed)"
 					fillOpacity={0.4}
 					stroke="var(--color-memUsed)"
@@ -95,7 +95,7 @@ export default function MemChart({
 				/>
 				<Area
 					dataKey="memCache"
-					type="monotone"
+					type="monotoneX"
 					fill="var(--color-memCache)"
 					fillOpacity={0.2}
 					strokeOpacity={0.3}

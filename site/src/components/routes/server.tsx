@@ -1,4 +1,4 @@
-import { $updatedSystem, $systems, pb } from '@/lib/stores'
+import { $updatedSystem, $systems, pb, $chartTime } from '@/lib/stores'
 import { ContainerStatsRecord, SystemRecord, SystemStatsRecord } from '@/types'
 import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card'
@@ -6,8 +6,10 @@ import { useStore } from '@nanostores/react'
 import Spinner from '../spinner'
 import { ClockArrowUp, CpuIcon, GlobeIcon } from 'lucide-react'
 import ChartTimeSelect from '../charts/chart-time-select'
-import { cn, getPbTimestamp } from '@/lib/utils'
+import { chartTimeData, cn, getPbTimestamp } from '@/lib/utils'
 import { Separator } from '../ui/separator'
+import { scaleTime } from 'd3-scale'
+import DiskIoChart from '../charts/disk-io-chart'
 
 const CpuChart = lazy(() => import('../charts/cpu-chart'))
 const ContainerCpuChart = lazy(() => import('../charts/container-cpu-chart'))
@@ -23,6 +25,8 @@ function timestampToBrowserTime(timestamp: string) {
 export default function ServerDetail({ name }: { name: string }) {
 	const servers = useStore($systems)
 	const updatedSystem = useStore($updatedSystem)
+	const chartTime = useStore($chartTime)
+	const [ticks, setTicks] = useState([] as number[])
 	const [server, setServer] = useState({} as SystemRecord)
 	const [containers, setContainers] = useState([] as ContainerStatsRecord[])
 
@@ -34,6 +38,9 @@ export default function ServerDetail({ name }: { name: string }) {
 	const [diskChartData, setDiskChartData] = useState(
 		[] as { time: number; disk: number; diskUsed: number }[]
 	)
+	const [diskIoChartData, setDiskIoChartData] = useState(
+		[] as { time: number; read: number; write: number }[]
+	)
 	const [dockerCpuChartData, setDockerCpuChartData] = useState(
 		[] as Record<string, number | string>[]
 	)
@@ -44,7 +51,6 @@ export default function ServerDetail({ name }: { name: string }) {
 	useEffect(() => {
 		document.title = `${name} / Beszel`
 		return () => {
-			console.log('unmounting')
 			setServer({} as SystemRecord)
 			setCpuChartData([])
 			setMemChartData([])
@@ -55,14 +61,14 @@ export default function ServerDetail({ name }: { name: string }) {
 	}, [name])
 
 	useEffect(() => {
-		if (server?.id && server.name === name) {
+		if (server.id && server.name === name) {
 			return
 		}
 		const matchingServer = servers.find((s) => s.name === name) as SystemRecord
 		if (matchingServer) {
 			setServer(matchingServer)
 		}
-	}, [name, server])
+	}, [name, server, servers])
 
 	// if visiting directly, make sure server gets set when servers are loaded
 	// useEffect(() => {
@@ -77,17 +83,14 @@ export default function ServerDetail({ name }: { name: string }) {
 
 	// get stats
 	useEffect(() => {
-		if (!('id' in server)) {
-			console.log('no id in server')
+		if (!server.id) {
 			return
-		} else {
-			console.log('id in server')
 		}
 		pb.collection<SystemStatsRecord>('system_stats')
 			.getFullList({
 				filter: `system="${server.id}" && created > "${getPbTimestamp('1h')}"`,
 				fields: 'created,stats',
-				sort: '-created',
+				sort: 'created',
 			})
 			.then((records) => {
 				// console.log('sctats', records)
@@ -101,17 +104,15 @@ export default function ServerDetail({ name }: { name: string }) {
 		}
 	}, [updatedSystem])
 
-	// get cpu data
+	// create cpu / mem / disk data for charts
 	useEffect(() => {
 		if (!serverStats.length) {
 			return
 		}
-
-		console.log('stats', serverStats)
-		// let maxCpu = 0
 		const cpuData = [] as typeof cpuChartData
 		const memData = [] as typeof memChartData
 		const diskData = [] as typeof diskChartData
+		const diskIoData = [] as typeof diskIoChartData
 		for (let { created, stats } of serverStats) {
 			const time = new Date(created).getTime()
 			cpuData.push({ time, cpu: stats.cpu })
@@ -122,18 +123,33 @@ export default function ServerDetail({ name }: { name: string }) {
 				memCache: stats.mb,
 			})
 			diskData.push({ time, disk: stats.d, diskUsed: stats.du })
+			diskIoData.push({ time, read: stats.dr, write: stats.dw })
 		}
-		setCpuChartData(cpuData.reverse())
-		setMemChartData(memData.reverse())
-		setDiskChartData(diskData.reverse())
+		setCpuChartData(cpuData)
+		setMemChartData(memData)
+		setDiskChartData(diskData)
+		setDiskIoChartData(diskIoData)
 	}, [serverStats])
 
 	useEffect(() => {
+		if (!serverStats.length) {
+			return
+		}
+		const now = new Date()
+		const startTime = chartTimeData[chartTime].getOffset(now)
+		const scale = scaleTime([startTime.getTime(), now], [0, cpuChartData.length])
+		setTicks(scale.ticks().map((d) => d.getTime()))
+	}, [chartTime, serverStats])
+
+	useEffect(() => {
+		if (!server.id) {
+			return
+		}
 		pb.collection<ContainerStatsRecord>('container_stats')
 			.getFullList({
 				filter: `system="${server.id}" && created > "${getPbTimestamp('1h')}"`,
 				fields: 'created,stats',
-				sort: '-created',
+				sort: 'created',
 			})
 			.then((records) => {
 				setContainers(records)
@@ -158,19 +174,18 @@ export default function ServerDetail({ name }: { name: string }) {
 			dockerMemData.push(memData)
 		}
 		// console.log('containerMemData', containerMemData)
-		setDockerCpuChartData(dockerCpuData.reverse())
-		setDockerMemChartData(dockerMemData.reverse())
+		setDockerCpuChartData(dockerCpuData)
+		setDockerMemChartData(dockerMemData)
 	}, [containers])
 	const uptime = useMemo(() => {
-		console.log('making uptime')
 		let uptime = server.info?.u || 0
 		if (uptime < 172800) {
-			return `${Math.floor(uptime / 3600)} hours`
+			return `${Math.trunc(uptime / 3600)} hours`
 		}
-		return `${Math.floor(server.info?.u / 86400)} days`
+		return `${Math.trunc(server.info?.u / 86400)} days`
 	}, [server.info?.u])
 
-	if (!('id' in server)) {
+	if (!server.id) {
 		return null
 	}
 
@@ -220,25 +235,34 @@ export default function ServerDetail({ name }: { name: string }) {
 				title="Total CPU Usage"
 				description="Average system-wide CPU utilization as a percentage"
 			>
-				<CpuChart chartData={cpuChartData} />
+				<CpuChart chartData={cpuChartData} ticks={ticks} />
 			</ChartCard>
 
 			{dockerCpuChartData.length > 0 && (
 				<ChartCard title="Docker CPU Usage" description="CPU utilization of docker containers">
-					<ContainerCpuChart chartData={dockerCpuChartData} />
+					<ContainerCpuChart chartData={dockerCpuChartData} ticks={ticks} />
 				</ChartCard>
 			)}
 			<ChartCard title="Total Memory Usage" description="Precise utilization at the recorded time">
-				<MemChart chartData={memChartData} />
+				<MemChart chartData={memChartData} ticks={ticks} />
 			</ChartCard>
 
 			{dockerMemChartData.length > 0 && (
 				<ChartCard title="Docker Memory Usage" description="Memory usage of docker containers">
-					<ContainerMemChart chartData={dockerMemChartData} />
+					<ContainerMemChart chartData={dockerMemChartData} ticks={ticks} />
 				</ChartCard>
 			)}
-			<ChartCard title="Disk Usage" description="Precise usage at the recorded time">
-				<DiskChart chartData={diskChartData} />
+			<ChartCard
+				title="Disk Usage"
+				description="Usage of partition where the root filesystem is mounted"
+			>
+				<DiskChart chartData={diskChartData} ticks={ticks} />
+			</ChartCard>
+			<ChartCard
+				title="Disk I/O"
+				description="Throughput of disk where the root filesystem is mounted"
+			>
+				<DiskIoChart chartData={diskIoChartData} ticks={ticks} />
 			</ChartCard>
 			<Card>
 				<CardHeader>

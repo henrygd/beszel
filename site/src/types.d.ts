@@ -75,3 +75,5 @@ export interface AlertRecord extends RecordModel {
 	name: string
 	// user: string
 }
+
+export type ChartTimes = '1h' | '12h' | '24h' | '1w' | '30d'

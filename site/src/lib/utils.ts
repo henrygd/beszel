@@ -2,9 +2,10 @@ import { toast } from '@/components/ui/use-toast'
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { $alerts, $systems, pb } from './stores'
-import { AlertRecord, SystemRecord } from '@/types'
+import { AlertRecord, ChartTimes, SystemRecord } from '@/types'
 import { RecordModel, RecordSubscription } from 'pocketbase'
 import { WritableAtom } from 'nanostores'
+import { timeDay, timeHour } from 'd3-time'
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -42,30 +43,33 @@ export const updateAlerts = () => {
 		})
 }
 
-const shortTimeFormatter = new Intl.DateTimeFormat(undefined, {
-	// day: 'numeric',
-	// month: 'numeric',
-	// year: '2-digit',
-	// hour12: false,
+const hourWithMinutesFormatter = new Intl.DateTimeFormat(undefined, {
 	hour: 'numeric',
 	minute: 'numeric',
 })
-export const formatShortTime = (timestamp: string) => {
-	// console.log('ts', timestamp)
-	return shortTimeFormatter.format(new Date(timestamp))
+export const hourWithMinutes = (timestamp: string) => {
+	return hourWithMinutesFormatter.format(new Date(timestamp))
 }
 
 const shortDateFormatter = new Intl.DateTimeFormat(undefined, {
 	day: 'numeric',
 	month: 'short',
-	// year: '2-digit',
-	// hour12: false,
 	hour: 'numeric',
 	minute: 'numeric',
 })
 export const formatShortDate = (timestamp: string) => {
-	console.log('ts', timestamp)
+	// console.log('ts', timestamp)
 	return shortDateFormatter.format(new Date(timestamp))
+}
+
+const dayFormatter = new Intl.DateTimeFormat(undefined, {
+	day: 'numeric',
+	month: 'long',
+	// dateStyle: 'medium',
+})
+export const formatDay = (timestamp: string) => {
+	// console.log('ts', timestamp)
+	return dayFormatter.format(new Date(timestamp))
 }
 
 export const updateFavicon = (newIconUrl: string) =>
@@ -103,33 +107,42 @@ export function updateRecordList<T extends RecordModel>(
 	$store.set(newRecords)
 }
 
-export function getPbTimestamp(timeString: string) {
-	const now = new Date()
-	let timeValue = parseInt(timeString.slice(0, -1))
-	let unit = timeString.slice(-1)
-
-	if (unit === 'h') {
-		now.setUTCHours(now.getUTCHours() - timeValue)
-	} else {
-		// d
-		now.setUTCDate(now.getUTCDate() - timeValue)
-	}
-
-	const year = now.getUTCFullYear()
-	const month = String(now.getUTCMonth() + 1).padStart(2, '0')
-	const day = String(now.getUTCDate()).padStart(2, '0')
-	const hours = String(now.getUTCHours()).padStart(2, '0')
-	const minutes = String(now.getUTCMinutes()).padStart(2, '0')
-	const seconds = String(now.getUTCSeconds()).padStart(2, '0')
+export function getPbTimestamp(timeString: ChartTimes) {
+	const d = chartTimeData[timeString].getOffset(new Date())
+	const year = d.getUTCFullYear()
+	const month = String(d.getUTCMonth() + 1).padStart(2, '0')
+	const day = String(d.getUTCDate()).padStart(2, '0')
+	const hours = String(d.getUTCHours()).padStart(2, '0')
+	const minutes = String(d.getUTCMinutes()).padStart(2, '0')
+	const seconds = String(d.getUTCSeconds()).padStart(2, '0')
 
 	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
-export const calculateXaxisTicks = (chartData: any[]) => {
-	const ticks: number[] = []
-	const lastDate = chartData.at(-1)!.time
-	for (let i = 60; i >= 0; i--) {
-		ticks.push(lastDate - i * 60 * 1000)
-	}
-	return ticks
+export const chartTimeData = {
+	'1h': {
+		label: '1 hour',
+		format: (timestamp: string) => hourWithMinutes(timestamp),
+		getOffset: (endTime: Date) => timeHour.offset(endTime, -1),
+	},
+	'12h': {
+		label: '12 hours',
+		format: (timestamp: string) => hourWithMinutes(timestamp),
+		getOffset: (endTime: Date) => timeHour.offset(endTime, -12),
+	},
+	'24h': {
+		label: '24 hours',
+		format: (timestamp: string) => hourWithMinutes(timestamp),
+		getOffset: (endTime: Date) => timeHour.offset(endTime, -24),
+	},
+	'1w': {
+		label: '1 week',
+		format: (timestamp: string) => formatDay(timestamp),
+		getOffset: (endTime: Date) => timeDay.offset(endTime, -7),
+	},
+	'30d': {
+		label: '30 days',
+		format: (timestamp: string) => formatDay(timestamp),
+		getOffset: (endTime: Date) => timeDay.offset(endTime, -30),
+	},
 }

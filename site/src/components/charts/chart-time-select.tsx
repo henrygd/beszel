@@ -6,7 +6,8 @@ import {
 	SelectValue,
 } from '@/components/ui/select'
 import { $chartTime } from '@/lib/stores'
-import { cn } from '@/lib/utils'
+import { chartTimeData, cn } from '@/lib/utils'
+import { ChartTimes } from '@/types'
 import { useStore } from '@nanostores/react'
 import { useEffect } from 'react'
 
@@ -19,16 +20,20 @@ export default function ChartTimeSelect({ className }: { className?: string }) {
 	}, [])
 
 	return (
-		<Select defaultValue="1h" value={chartTime} onValueChange={(value) => $chartTime.set(value)}>
+		<Select
+			defaultValue="1h"
+			value={chartTime}
+			onValueChange={(value: ChartTimes) => $chartTime.set(value)}
+		>
 			<SelectTrigger className={cn(className, 'w-40 px-5')}>
-				<SelectValue placeholder="1h" />
+				<SelectValue />
 			</SelectTrigger>
 			<SelectContent>
-				<SelectItem value="1h">1 hour</SelectItem>
-				<SelectItem value="12h">12 hours</SelectItem>
-				<SelectItem value="24h">24 hours</SelectItem>
-				<SelectItem value="1w">1 week</SelectItem>
-				<SelectItem value="30d">30 days</SelectItem>
+				{Object.entries(chartTimeData).map(([value, { label }]) => (
+					<SelectItem key={label} value={value}>
+						{label}
+					</SelectItem>
+				))}
 			</SelectContent>
 		</Select>
 	)

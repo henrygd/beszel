@@ -1,6 +1,6 @@
 import PocketBase from 'pocketbase'
-import { atom } from 'nanostores'
-import { AlertRecord, SystemRecord } from '@/types'
+import { atom, WritableAtom } from 'nanostores'
+import { AlertRecord, ChartTimes, SystemRecord } from '@/types'
 import { createRouter } from '@nanostores/router'
 
 /** PocketBase JS Client */
@@ -35,4 +35,4 @@ export const $alerts = atom([] as AlertRecord[])
 export const $publicKey = atom('')
 
 /** Chart time period */
-export const $chartTime = atom('1h')
+export const $chartTime = atom('1h') as WritableAtom<ChartTimes>

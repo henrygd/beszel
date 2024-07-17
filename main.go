@@ -5,6 +5,7 @@ import (
 	"crypto/ed25519"
 	"encoding/json"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"log"
 	_ "monitor-site/migrations"
@@ -151,6 +152,12 @@ func main() {
 		if newStatus == "down" || newStatus == "paused" {
 			deleteServerConnection(newRecord)
 		}
+
+		// if server is set to pending, try to connect
+		if newStatus == "pending" {
+			go updateServer(newRecord)
+		}
+
 		// alerts
 		handleStatusAlerts(newStatus, oldRecord)
 		return nil
@@ -218,6 +225,13 @@ func updateServer(record *models.Record) {
 	// get server stats from agent
 	systemData, err := requestJson(&server)
 	if err != nil {
+		if err.Error() == "retry" {
+			// if previous connection was closed, try again
+			app.Logger().Error("Existing SSH connection closed. Retrying...", "host", server.Host, "port", server.Port)
+			deleteServerConnection(record)
+			updateServer(record)
+			return
+		}
 		app.Logger().Error("Failed to get server stats: ", "err", err.Error())
 		updateServerStatus(record, "down")
 		return
@@ -307,7 +321,7 @@ func getServerConnection(server *Server) (*ssh.Client, error) {
 func requestJson(server *Server) (SystemData, error) {
 	session, err := server.Client.NewSession()
 	if err != nil {
-		return SystemData{}, err
+		return SystemData{}, errors.New("retry")
 	}
 	defer session.Close()
 

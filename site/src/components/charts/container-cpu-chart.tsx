@@ -8,14 +8,20 @@ import {
 	ChartTooltipContent,
 } from '@/components/ui/chart'
 import { useMemo } from 'react'
-import { calculateXaxisTicks, formatShortDate, formatShortTime } from '@/lib/utils'
+import { formatShortDate, hourWithMinutes } from '@/lib/utils'
 import Spinner from '../spinner'
 
 export default function ContainerCpuChart({
 	chartData,
+	ticks,
 }: {
 	chartData: Record<string, number | string>[]
+	ticks: number[]
 }) {
+	if (!chartData.length || !ticks.length) {
+		return <Spinner />
+	}
+
 	const chartConfig = useMemo(() => {
 		let config = {} as Record<
 			string,
@@ -45,17 +51,11 @@ export default function ContainerCpuChart({
 			const hue = ((i * 360) / length) % 360
 			config[key] = {
 				label: key,
-				color: `hsl(${hue}, 60%, 60%)`,
+				color: `hsl(${hue}, 60%, 55%)`,
 			}
 		}
 		return config satisfies ChartConfig
 	}, [chartData])
-
-	const ticks = useMemo(() => calculateXaxisTicks(chartData), [chartData])
-
-	if (!chartData.length) {
-		return <Spinner />
-	}
 
 	return (
 		<ChartContainer config={chartConfig} className="h-full w-full absolute aspect-auto">
@@ -86,7 +86,7 @@ export default function ContainerCpuChart({
 					axisLine={false}
 					tickMargin={8}
 					minTickGap={30}
-					tickFormatter={formatShortTime}
+					tickFormatter={hourWithMinutes}
 				/>
 				<ChartTooltip
 					// cursor={false}
@@ -100,9 +100,10 @@ export default function ContainerCpuChart({
 				{Object.keys(chartConfig).map((key) => (
 					<Area
 						key={key}
+						// isAnimationActive={chartData.length < 20}
 						animateNewValues={false}
 						dataKey={key}
-						type="monotone"
+						type="monotoneX"
 						fill={chartConfig[key].color}
 						fillOpacity={0.4}
 						stroke={chartConfig[key].color}
