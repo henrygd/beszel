@@ -1,4 +1,4 @@
-import { LoaderCircle, MailIcon, SendIcon } from 'lucide-react'
+import { LoaderCircle, MailIcon, SendHorizonalIcon } from 'lucide-react'
 import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import { useCallback, useState } from 'react'
@@ -70,7 +70,7 @@ export default function ForgotPassword() {
 						{isLoading ? (
 							<LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
 						) : (
-							<SendIcon className="mr-2 h-4 w-4" />
+							<SendHorizonalIcon className="mr-2 h-4 w-4" />
 						)}
 						Reset password
 					</button>
@@ -78,7 +78,7 @@ export default function ForgotPassword() {
 			</form>
 			<Dialog>
 				<DialogTrigger asChild>
-					<button className="text-sm mx-auto mt-2 hover:text-brand underline underline-offset-4 opacity-70 hover:opacity-100 transition-opacity">
+					<button className="text-sm mx-auto hover:text-brand underline underline-offset-4 opacity-70 hover:opacity-100 transition-opacity">
 						Command line instructions
 					</button>
 				</DialogTrigger>

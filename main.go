@@ -23,7 +23,6 @@ import (
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/models"
-	"github.com/pocketbase/pocketbase/plugins/migratecmd"
 	"github.com/pocketbase/pocketbase/tools/cron"
 	"github.com/pocketbase/pocketbase/tools/mailer"
 	"golang.org/x/crypto/ssh"
@@ -38,10 +37,31 @@ func main() {
 	// loosely check if it was executed using "go run"
 	isGoRun := strings.HasPrefix(os.Args[0], os.TempDir())
 
-	// enable auto creation of migration files when making collection changes in the Admin UI
-	migratecmd.MustRegister(app, app.RootCmd, migratecmd.Config{
-		// (the isGoRun check is to enable it only during development)
-		Automigrate: isGoRun,
+	// // enable auto creation of migration files when making collection changes in the Admin UI
+	// migratecmd.MustRegister(app, app.RootCmd, migratecmd.Config{
+	// 	// (the isGoRun check is to enable it only during development)
+	// 	Automigrate: isGoRun,
+	// })
+
+	// set auth settings
+	app.OnAfterBootstrap().Add(func(e *core.BootstrapEvent) error {
+		usersCollection, err := app.Dao().FindCollectionByNameOrId("users")
+		if err != nil {
+			return err
+		}
+		usersAuthOptions := usersCollection.AuthOptions()
+		if os.Getenv("DISABLE_PASSWORD_AUTH") == "true" {
+			usersAuthOptions.AllowEmailAuth = false
+			usersAuthOptions.AllowUsernameAuth = false
+		} else {
+			usersAuthOptions.AllowEmailAuth = true
+			usersAuthOptions.AllowUsernameAuth = true
+		}
+		usersCollection.SetOptions(usersAuthOptions)
+		if err := app.Dao().SaveCollection(usersCollection); err != nil {
+			return err
+		}
+		return nil
 	})
 
 	// serve site

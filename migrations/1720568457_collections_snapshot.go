@@ -266,13 +266,13 @@ func init() {
 				"options": {
 					"allowEmailAuth": true,
 					"allowOAuth2Auth": true,
-					"allowUsernameAuth": true,
+					"allowUsernameAuth": false,
 					"exceptEmailDomains": null,
 					"manageRule": null,
 					"minPasswordLength": 8,
 					"onlyEmailDomains": null,
-					"onlyVerified": false,
-					"requireEmail": false
+					"onlyVerified": true,
+					"requireEmail": true
 				}
 			},
 			{

@@ -29,6 +29,12 @@ The hub and agent are distributed as single binary files, as well as docker imag
 
 ### Binary
 
+## Environment Variables
+
+| Name                    | Default | Description                                       |
+| ----------------------- | ------- | ------------------------------------------------- |
+| `DISABLE_PASSWORD_AUTH` | unset   | Disables password authentication if set to `true` |
+
 ## OAuth / OIDC integration
 
 Beszel supports OpenID Connect and many OAuth2 authentication providers (see list below). To enable this, you will need to:
@@ -64,7 +70,7 @@ Beszel supports OpenID Connect and many OAuth2 authentication providers (see lis
 - Yandex
 </details>
 
-## API
+## REST API
 
 Because Beszel is built on top of PocketBase, you can use the normal PocketBase API to read or update your data in your own applications.
 

@@ -10,12 +10,11 @@ import {
 	Dialog,
 	DialogContent,
 	DialogTrigger,
-	DialogDescription,
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog'
-import { useEffect, useState } from 'react'
-import { AuthProviderInfo } from 'pocketbase'
+import { useState } from 'react'
+import { AuthMethodsList } from 'pocketbase'
 import { Link } from '../router'
 
 const honeypot = v.literal('')
@@ -57,26 +56,16 @@ const showLoginFaliedToast = () => {
 export function UserAuthForm({
 	className,
 	isFirstRun,
+	authMethods,
 	...props
 }: {
 	className?: string
 	isFirstRun: boolean
+	authMethods: AuthMethodsList
 }) {
 	const [isLoading, setIsLoading] = useState<boolean>(false)
 	const [isGitHubLoading, setIsOauthLoading] = useState<boolean>(false)
 	const [errors, setErrors] = useState<Record<string, string | undefined>>({})
-	const [authProviders, setAuthProviders] = useState<AuthProviderInfo[]>([])
-
-	useEffect(() => {
-		pb.collection('users')
-			.listAuthMethods()
-			.then((methods) => {
-				console.log('methods', methods)
-				console.log('password active', methods.emailPassword)
-				setAuthProviders(methods.authProviders)
-				console.log('auth providers', authProviders)
-			})
-	}, [])
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault()
@@ -130,120 +119,133 @@ export function UserAuthForm({
 		}
 	}
 
+	if (!authMethods) {
+		return null
+	}
+
 	return (
 		<div className={cn('grid gap-6', className)} {...props}>
-			<form onSubmit={handleSubmit} onChange={() => setErrors({})}>
-				<div className="grid gap-2.5">
-					{isFirstRun && (
-						<div className="grid gap-1 relative">
-							<UserIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-							<Label className="sr-only" htmlFor="username">
-								Username
-							</Label>
-							<Input
-								autoFocus={true}
-								id="username"
-								name="username"
-								required
-								placeholder="username"
-								type="username"
-								autoCapitalize="none"
-								autoComplete="username"
-								autoCorrect="off"
-								disabled={isLoading || isGitHubLoading}
-								className="pl-9"
-							/>
-							{errors?.username && <p className="px-1 text-xs text-red-600">{errors.username}</p>}
-						</div>
-					)}
-					<div className="grid gap-1 relative">
-						<MailIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-						<Label className="sr-only" htmlFor="email">
-							Email
-						</Label>
-						<Input
-							id="email"
-							name="email"
-							required
-							placeholder={isFirstRun ? 'email' : 'name@example.com'}
-							type="email"
-							autoCapitalize="none"
-							autoComplete="email"
-							autoCorrect="off"
-							disabled={isLoading || isGitHubLoading}
-							className="pl-9"
-						/>
-						{errors?.email && <p className="px-1 text-xs text-red-600">{errors.email}</p>}
-					</div>
-					<div className="grid gap-1 relative">
-						<LockIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-						<Label className="sr-only" htmlFor="pass">
-							Password
-						</Label>
-						<Input
-							id="pass"
-							name="password"
-							placeholder="password"
-							required
-							type="password"
-							autoComplete="current-password"
-							disabled={isLoading || isGitHubLoading}
-							className="pl-9"
-						/>
-						{errors?.password && <p className="px-1 text-xs text-red-600">{errors.password}</p>}
-					</div>
-					{isFirstRun && (
-						<div className="grid gap-1 relative">
-							<LockIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-							<Label className="sr-only" htmlFor="pass2">
-								Confirm password
-							</Label>
-							<Input
-								id="pass2"
-								name="passwordConfirm"
-								placeholder="confirm password"
-								required
-								type="password"
-								autoComplete="current-password"
-								disabled={isLoading || isGitHubLoading}
-								className="pl-9"
-							/>
-							{errors?.passwordConfirm && (
-								<p className="px-1 text-xs text-red-600">{errors.passwordConfirm}</p>
+			{authMethods.emailPassword && (
+				<>
+					<form onSubmit={handleSubmit} onChange={() => setErrors({})}>
+						<div className="grid gap-2.5">
+							{isFirstRun && (
+								<div className="grid gap-1 relative">
+									<UserIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+									<Label className="sr-only" htmlFor="username">
+										Username
+									</Label>
+									<Input
+										autoFocus={true}
+										id="username"
+										name="username"
+										required
+										placeholder="username"
+										type="username"
+										autoCapitalize="none"
+										autoComplete="username"
+										autoCorrect="off"
+										disabled={isLoading || isGitHubLoading}
+										className="pl-9"
+									/>
+									{errors?.username && (
+										<p className="px-1 text-xs text-red-600">{errors.username}</p>
+									)}
+								</div>
 							)}
+							<div className="grid gap-1 relative">
+								<MailIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+								<Label className="sr-only" htmlFor="email">
+									Email
+								</Label>
+								<Input
+									id="email"
+									name="email"
+									required
+									placeholder={isFirstRun ? 'email' : 'name@example.com'}
+									type="email"
+									autoCapitalize="none"
+									autoComplete="email"
+									autoCorrect="off"
+									disabled={isLoading || isGitHubLoading}
+									className="pl-9"
+								/>
+								{errors?.email && <p className="px-1 text-xs text-red-600">{errors.email}</p>}
+							</div>
+							<div className="grid gap-1 relative">
+								<LockIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+								<Label className="sr-only" htmlFor="pass">
+									Password
+								</Label>
+								<Input
+									id="pass"
+									name="password"
+									placeholder="password"
+									required
+									type="password"
+									autoComplete="current-password"
+									disabled={isLoading || isGitHubLoading}
+									className="pl-9"
+								/>
+								{errors?.password && <p className="px-1 text-xs text-red-600">{errors.password}</p>}
+							</div>
+							{isFirstRun && (
+								<div className="grid gap-1 relative">
+									<LockIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+									<Label className="sr-only" htmlFor="pass2">
+										Confirm password
+									</Label>
+									<Input
+										id="pass2"
+										name="passwordConfirm"
+										placeholder="confirm password"
+										required
+										type="password"
+										autoComplete="current-password"
+										disabled={isLoading || isGitHubLoading}
+										className="pl-9"
+									/>
+									{errors?.passwordConfirm && (
+										<p className="px-1 text-xs text-red-600">{errors.passwordConfirm}</p>
+									)}
+								</div>
+							)}
+							<div className="sr-only">
+								{/* honeypot */}
+								<label htmlFor="name"></label>
+								<input id="name" type="text" name="name" tabIndex={-1} />
+							</div>
+							<button className={cn(buttonVariants())} disabled={isLoading}>
+								{isLoading ? (
+									<LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+								) : (
+									<LogInIcon className="mr-2 h-4 w-4" />
+								)}
+								{isFirstRun ? 'Create account' : 'Sign in'}
+							</button>
 						</div>
-					)}
-					<div className="sr-only">
-						{/* honeypot */}
-						<label htmlFor="name"></label>
-						<input id="name" type="text" name="name" tabIndex={-1} />
+					</form>
+					<div className="relative">
+						<div className="absolute inset-0 flex items-center">
+							<span className="w-full border-t" />
+						</div>
+						<div className="relative flex justify-center text-xs uppercase">
+							<span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+						</div>
 					</div>
-					<button className={cn(buttonVariants())} disabled={isLoading}>
-						{isLoading ? (
-							<LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-						) : (
-							<LogInIcon className="mr-2 h-4 w-4" />
-						)}
-						{isFirstRun ? 'Create account' : 'Sign in'}
-					</button>
-				</div>
-			</form>
-			<div className="relative">
-				<div className="absolute inset-0 flex items-center">
-					<span className="w-full border-t" />
-				</div>
-				<div className="relative flex justify-center text-xs uppercase">
-					<span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-				</div>
-			</div>
+				</>
+			)}
 
-			{authProviders.length > 0 && (
-				<div className="grid gap-2">
-					{authProviders.map((provider) => (
+			{authMethods.authProviders.length > 0 && (
+				<div className="grid gap-2 -mt-1">
+					{authMethods.authProviders.map((provider) => (
 						<button
 							key={provider.name}
 							type="button"
-							className={cn(buttonVariants({ variant: 'outline' }))}
+							className={cn(buttonVariants({ variant: 'outline' }), {
+								'justify-self-center': !authMethods.emailPassword,
+								'px-5': !authMethods.emailPassword,
+							})}
 							onClick={async () => {
 								setIsOauthLoading(true)
 								try {
@@ -275,7 +277,7 @@ export function UserAuthForm({
 				</div>
 			)}
 
-			{!authProviders.length && (
+			{!authMethods.authProviders.length && (
 				<Dialog>
 					<DialogTrigger asChild>
 						<button type="button" className={cn(buttonVariants({ variant: 'outline' }))}>
@@ -303,12 +305,15 @@ export function UserAuthForm({
 					</DialogContent>
 				</Dialog>
 			)}
-			<Link
-				href="/forgot-password"
-				className="text-sm mx-auto mt-2 hover:text-brand underline underline-offset-4 opacity-70 hover:opacity-100 transition-opacity"
-			>
-				Forgot password?
-			</Link>
+
+			{authMethods.emailPassword && (
+				<Link
+					href="/forgot-password"
+					className="text-sm mx-auto hover:text-brand underline underline-offset-4 opacity-70 hover:opacity-100 transition-opacity"
+				>
+					Forgot password?
+				</Link>
+			)}
 		</div>
 	)
 }
