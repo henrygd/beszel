@@ -44,10 +44,18 @@ The hub and agent are distributed as single binary files, as well as docker imag
 
 ## Environment Variables
 
-| Name                    | Default | Description                                      |
-| ----------------------- | ------- | ------------------------------------------------ |
-| `DISABLE_PASSWORD_AUTH` | false   | Disables password authentication                 |
-| `FILESYSTEM`            | unset   | Filesystem / partition to use for disk I/O stats |
+## Hub
+
+| Name                    | Default | Description                      |
+| ----------------------- | ------- | -------------------------------- |
+| `DISABLE_PASSWORD_AUTH` | false   | Disables password authentication |
+
+## Agent
+
+| Name         | Default | Description                                      |
+| ------------ | ------- | ------------------------------------------------ |
+| `FILESYSTEM` | unset   | Filesystem / partition to use for disk I/O stats |
+| `PORT`       | 45876   | Port to listen on                                |
 
 ## OAuth / OIDC setup
 
@@ -112,8 +120,6 @@ If it's not set, the agent will try to find the filesystem mounted on `/` and us
 - Run `df -h` and choose an option under "Filesystem"
 - Run `lsblk` and choose an option under "NAME"
 - Run `sudo fdisk -l` and choose an option under "Device"
-
-> Note: the first reading always comes in as 0 bytes because it needs to establish baseline values.
 
 ### Month / week records are not populating reliably
 

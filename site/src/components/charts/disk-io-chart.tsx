@@ -12,7 +12,7 @@ import Spinner from '../spinner'
 const chartConfig = {
 	read: {
 		label: 'Read',
-		color: 'hsl(var(--chart-5))',
+		color: 'hsl(var(--chart-1))',
 	},
 	write: {
 		label: 'Write',
@@ -79,18 +79,18 @@ export default function DiskIoChart({
 					}
 				/>
 				<Area
-					dataKey="read"
-					type="monotoneX"
-					fill="var(--color-read)"
-					fillOpacity={0.4}
-					stroke="var(--color-read)"
-				/>
-				<Area
 					dataKey="write"
 					type="monotoneX"
 					fill="var(--color-write)"
 					fillOpacity={0.4}
 					stroke="var(--color-write)"
+				/>
+				<Area
+					dataKey="read"
+					type="monotoneX"
+					fill="var(--color-read)"
+					fillOpacity={0.4}
+					stroke="var(--color-read)"
 				/>
 			</AreaChart>
 		</ChartContainer>

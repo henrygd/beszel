@@ -19,11 +19,6 @@ const DiskChart = lazy(() => import('../charts/disk-chart'))
 const DiskIoChart = lazy(() => import('../charts/disk-io-chart'))
 const BandwidthChart = lazy(() => import('../charts/bandwidth-chart'))
 
-function timestampToBrowserTime(timestamp: string) {
-	const date = new Date(timestamp)
-	return date.toLocaleString()
-}
-
 export default function ServerDetail({ name }: { name: string }) {
 	const servers = useStore($systems)
 	const updatedSystem = useStore($updatedSystem)
@@ -254,6 +249,7 @@ export default function ServerDetail({ name }: { name: string }) {
 					<ContainerCpuChart chartData={dockerCpuChartData} ticks={ticks} />
 				</ChartCard>
 			)}
+
 			<ChartCard title="Total Memory Usage" description="Precise utilization at the recorded time">
 				<MemChart chartData={memChartData} ticks={ticks} />
 			</ChartCard>
@@ -263,12 +259,14 @@ export default function ServerDetail({ name }: { name: string }) {
 					<ContainerMemChart chartData={dockerMemChartData} ticks={ticks} />
 				</ChartCard>
 			)}
+
 			<ChartCard
 				title="Disk Usage"
 				description="Usage of partition where the root filesystem is mounted"
 			>
 				<DiskChart chartData={diskChartData} ticks={ticks} />
 			</ChartCard>
+
 			<ChartCard
 				title="Disk I/O"
 				description="Throughput of disk where the root filesystem is mounted"
@@ -279,18 +277,6 @@ export default function ServerDetail({ name }: { name: string }) {
 			<ChartCard title="Bandwidth" description="Throughput of network interfaces">
 				<BandwidthChart chartData={bandwidthChartData} ticks={ticks} />
 			</ChartCard>
-
-			<Card>
-				<CardHeader>
-					<CardTitle className={'mb-3'}>{server.name}</CardTitle>
-					<CardDescription>
-						{server.ip} - last updated: {timestampToBrowserTime(server.updated)}
-					</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<pre>{JSON.stringify(server, null, 2)}</pre>
-				</CardContent>
-			</Card>
 		</div>
 	)
 }

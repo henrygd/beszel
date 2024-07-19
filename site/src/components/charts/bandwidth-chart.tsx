@@ -16,7 +16,7 @@ const chartConfig = {
 	},
 	sent: {
 		label: 'Sent',
-		color: 'hsl(var(--chart-1))',
+		color: 'hsl(var(--chart-5))',
 	},
 } satisfies ChartConfig
 
