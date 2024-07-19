@@ -44,8 +44,9 @@ import {
 } from './components/ui/dropdown-menu.tsx'
 import { AlertRecord, SystemRecord } from './types'
 import { $router, Link, navigate } from './components/router.tsx'
+import ServerDetail from './components/routes/server.tsx'
 
-const ServerDetail = lazy(() => import('./components/routes/server.tsx'))
+// const ServerDetail = lazy(() => import('./components/routes/server.tsx'))
 const CommandPalette = lazy(() => import('./components/command-palette.tsx'))
 const LoginPage = lazy(() => import('./components/login/login.tsx'))
 
@@ -103,11 +104,7 @@ const App = () => {
 	} else if (page.path === '/') {
 		return <Home />
 	} else if (page.route === 'server') {
-		return (
-			<Suspense>
-				<ServerDetail name={page.params.name} />
-			</Suspense>
-		)
+		return <ServerDetail name={page.params.name} />
 	}
 }
 

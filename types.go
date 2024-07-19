@@ -39,6 +39,8 @@ type SystemStats struct {
 	DiskPct      float64 `json:"dp"`
 	DiskRead     float64 `json:"dr"`
 	DiskWrite    float64 `json:"dw"`
+	NetworkSent  float64 `json:"ns"`
+	NetworkRecv  float64 `json:"nr"`
 }
 
 type ContainerStats struct {

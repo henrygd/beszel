@@ -48,6 +48,10 @@ export interface SystemStats {
 	dr: number
 	/** disk write (mb) */
 	dw: number
+	/** network sent (mb) */
+	ns: number
+	/** network received (mb) */
+	nr: number
 }
 
 export interface ContainerStatsRecord extends RecordModel {
@@ -66,7 +70,7 @@ interface ContainerStats {
 
 export interface SystemStatsRecord extends RecordModel {
 	system: string
-	info: SystemStats
+	stats: SystemStats
 }
 
 export interface AlertRecord extends RecordModel {

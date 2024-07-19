@@ -9,7 +9,6 @@ import ChartTimeSelect from '../charts/chart-time-select'
 import { chartTimeData, cn, getPbTimestamp } from '@/lib/utils'
 import { Separator } from '../ui/separator'
 import { scaleTime } from 'd3-scale'
-import DiskIoChart from '../charts/disk-io-chart'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
 
 const CpuChart = lazy(() => import('../charts/cpu-chart'))
@@ -17,6 +16,8 @@ const ContainerCpuChart = lazy(() => import('../charts/container-cpu-chart'))
 const MemChart = lazy(() => import('../charts/mem-chart'))
 const ContainerMemChart = lazy(() => import('../charts/container-mem-chart'))
 const DiskChart = lazy(() => import('../charts/disk-chart'))
+const DiskIoChart = lazy(() => import('../charts/disk-io-chart'))
+const BandwidthChart = lazy(() => import('../charts/bandwidth-chart'))
 
 function timestampToBrowserTime(timestamp: string) {
 	const date = new Date(timestamp)
@@ -42,6 +43,9 @@ export default function ServerDetail({ name }: { name: string }) {
 	const [diskIoChartData, setDiskIoChartData] = useState(
 		[] as { time: number; read: number; write: number }[]
 	)
+	const [bandwidthChartData, setBandwidthChartData] = useState(
+		[] as { time: number; sent: number; recv: number }[]
+	)
 	const [dockerCpuChartData, setDockerCpuChartData] = useState(
 		[] as Record<string, number | string>[]
 	)
@@ -56,6 +60,7 @@ export default function ServerDetail({ name }: { name: string }) {
 			setCpuChartData([])
 			setMemChartData([])
 			setDiskChartData([])
+			setBandwidthChartData([])
 			setDockerCpuChartData([])
 			setDockerMemChartData([])
 		}
@@ -70,17 +75,6 @@ export default function ServerDetail({ name }: { name: string }) {
 			setServer(matchingServer)
 		}
 	}, [name, server, servers])
-
-	// if visiting directly, make sure server gets set when servers are loaded
-	// useEffect(() => {
-	// 	if (!('id' in server)) {
-	// 		const matchingServer = servers.find((s) => s.name === name) as SystemRecord
-	// 		if (matchingServer) {
-	// 			console.log('setting server')
-	// 			setServer(matchingServer)
-	// 		}
-	// 	}
-	// }, [servers])
 
 	// get stats
 	useEffect(() => {
@@ -114,6 +108,7 @@ export default function ServerDetail({ name }: { name: string }) {
 		const memData = [] as typeof memChartData
 		const diskData = [] as typeof diskChartData
 		const diskIoData = [] as typeof diskIoChartData
+		const networkData = [] as typeof bandwidthChartData
 		for (let { created, stats } of serverStats) {
 			const time = new Date(created).getTime()
 			cpuData.push({ time, cpu: stats.cpu })
@@ -125,11 +120,13 @@ export default function ServerDetail({ name }: { name: string }) {
 			})
 			diskData.push({ time, disk: stats.d, diskUsed: stats.du })
 			diskIoData.push({ time, read: stats.dr, write: stats.dw })
+			networkData.push({ time, sent: stats.ns, recv: stats.nr })
 		}
 		setCpuChartData(cpuData)
 		setMemChartData(memData)
 		setDiskChartData(diskData)
 		setDiskIoChartData(diskIoData)
+		setBandwidthChartData(networkData)
 	}, [serverStats])
 
 	useEffect(() => {
@@ -278,6 +275,11 @@ export default function ServerDetail({ name }: { name: string }) {
 			>
 				<DiskIoChart chartData={diskIoChartData} ticks={ticks} />
 			</ChartCard>
+
+			<ChartCard title="Bandwidth" description="Throughput of network interfaces">
+				<BandwidthChart chartData={bandwidthChartData} ticks={ticks} />
+			</ChartCard>
+
 			<Card>
 				<CardHeader>
 					<CardTitle className={'mb-3'}>{server.name}</CardTitle>
