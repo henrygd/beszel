@@ -11,6 +11,19 @@ A lightweight resource monitoring hub with historical data, docker stats, and al
   </tbody>
 </table>
 
+## Features
+
+- **Historical data**: Stats are available for up to 30 days.
+- **Docker stats**: View CPU and memory usage for each container.
+- **Alerts**: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+- **Lightweight**: Much smaller and less demanding than leading solutions.
+- **Secure**: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+- **Simple setup**: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+- **Multi-user**: Each user has their own systems. Admins can share systems across users.
+- **Oauth / OIDC**: Supports many OAuth2 providers and password auth can be disabled.
+- **Automated backups**: Automatically back up your data to S3-compatible storage.
+- **Open source**: MIT license and no paywalled features.
+
 ## Introduction
 
 Beszel has two components: the hub and the agent.
@@ -23,19 +36,20 @@ The agent runs on each system you want to monitor. It provides a minimal SSH ser
 
 The hub and agent are distributed as single binary files, as well as docker images.
 
-> **Note**: The docker version does not support disk I/O stats, so use the binary version if that's important to you.
-
 ### Docker
+
+> **Note**: The docker version cannot automatically detect the filesystem to use for disk I/O stats, so use the binary version if that's important to you.
 
 ### Binary
 
 ## Environment Variables
 
-| Name                    | Default | Description                                       |
-| ----------------------- | ------- | ------------------------------------------------- |
-| `DISABLE_PASSWORD_AUTH` | unset   | Disables password authentication if set to `true` |
+| Name                    | Default | Description                                      |
+| ----------------------- | ------- | ------------------------------------------------ |
+| `DISABLE_PASSWORD_AUTH` | false   | Disables password authentication                 |
+| `FILESYSTEM`            | unset   | Filesystem / partition to use for disk I/O stats |
 
-## OAuth / OIDC integration
+## OAuth / OIDC setup
 
 Beszel supports OpenID Connect and many OAuth2 authentication providers (see list below). To enable this, you will need to:
 
@@ -61,7 +75,6 @@ Beszel supports OpenID Connect and many OAuth2 authentication providers (see lis
 - Microsoft
 - OpenID Connect
 - Patreon (v2)
-- Planning Center
 - Spotify
 - Strava
 - Twitch
@@ -80,4 +93,30 @@ The hub and agent communicate over SSH, so they do not need to be exposed to the
 
 When the hub is started for the first time, it generates an ED25519 key pair.
 
-The agent's SSH server is configured to only accept connections using this key. It also does not provide a pty or accept any input, so it is not possible to execute commands on the agent.
+The agent's SSH server is configured to accept connections only using this key. It also does not provide a pty or accept any input, so it is not possible to execute commands on the agent.
+
+## FAQ / Troubleshooting
+
+### Agent is not connecting
+
+Assuming the agent is running, the connection is probably being blocked by a firewall. You should add an inbound rule to allow TCP connections to the port. Check any active firewalls on the agent system, like iptables or ufw, and in your cloud provider account if applicable.
+
+Connectivity can be tested by running `telnet <agent-ip> <port>` or `nc -zv <agent-ip> <port>` from a remote machine.
+
+### Finding the correct filesystem
+
+The filesystem / partition to use for disk I/O stats is specified in the `FILESYSTEM` environment variable.
+
+If it's not set, the agent will try to find the filesystem mounted on `/` and use that. This doesn't seem to work in a container, so it's recommended to set this value. One of the following methods should work (you usually want the option mounted on `/`):
+
+- Run `df -h` and choose an option under "Filesystem"
+- Run `lsblk` and choose an option under "NAME"
+- Run `sudo fdisk -l` and choose an option under "Device"
+
+> Note: the first reading always comes in as 0 bytes because it needs to establish baseline values.
+
+### Month / week records are not populating reliably
+
+Records for longer time periods are made by averaging stats from the shorter time periods. They require the agent to be running uninterrupted for long enough to get a full set of data.
+
+If you pause / unpause the agent for longer than one minute, the data will be incomplete and the timing for the current interval will reset.

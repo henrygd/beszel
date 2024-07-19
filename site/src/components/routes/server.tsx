@@ -10,6 +10,7 @@ import { chartTimeData, cn, getPbTimestamp } from '@/lib/utils'
 import { Separator } from '../ui/separator'
 import { scaleTime } from 'd3-scale'
 import DiskIoChart from '../charts/disk-io-chart'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
 
 const CpuChart = lazy(() => import('../charts/cpu-chart'))
 const ContainerCpuChart = lazy(() => import('../charts/container-cpu-chart'))
@@ -218,15 +219,28 @@ export default function ServerDetail({ name }: { name: string }) {
 						<div className="flex gap-1.5 items-center">
 							<GlobeIcon className="h-4 w-4" /> {server.host}
 						</div>
-						<Separator orientation="vertical" className="h-4 bg-primary/30" />
-						<div className="flex gap-1.5 items-center">
-							<ClockArrowUp className="h-4 w-4" /> {uptime}
-						</div>
-						<Separator orientation="vertical" className="h-4 bg-primary/30" />
-						<div className="flex gap-1.5 items-center">
-							<CpuIcon className="h-4 w-4" />
-							{server.info?.m} ({server.info?.c}c / {server.info.t}t)
-						</div>
+						{server.info?.u && (
+							<TooltipProvider>
+								<Tooltip>
+									<Separator orientation="vertical" className="h-4 bg-primary/30" />
+									<TooltipTrigger asChild>
+										<div className="flex gap-1.5 items-center">
+											<ClockArrowUp className="h-4 w-4" /> {uptime}
+										</div>
+									</TooltipTrigger>
+									<TooltipContent>Uptime</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
+						)}
+						{server.info?.m && (
+							<>
+								<Separator orientation="vertical" className="h-4 bg-primary/30" />
+								<div className="flex gap-1.5 items-center">
+									<CpuIcon className="h-4 w-4" />
+									{server.info.m} ({server.info.c}c / {server.info.t}t)
+								</div>
+							</>
+						)}
 					</div>
 				</div>
 			</Card>

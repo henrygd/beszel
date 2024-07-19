@@ -272,7 +272,7 @@ func init() {
 					"minPasswordLength": 8,
 					"onlyEmailDomains": null,
 					"onlyVerified": true,
-					"requireEmail": true
+					"requireEmail": false
 				}
 			},
 			{
