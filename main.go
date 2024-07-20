@@ -28,11 +28,16 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+var Version = "0.0.1-alpha.0"
+
 var app *pocketbase.PocketBase
 var serverConnections = make(map[string]Server)
 
 func main() {
 	app = pocketbase.New()
+	app.RootCmd.Version = Version
+	app.RootCmd.Use = "beszel"
+	app.RootCmd.Short = ""
 
 	// loosely check if it was executed using "go run"
 	isGoRun := strings.HasPrefix(os.Args[0], os.TempDir())

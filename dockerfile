@@ -20,12 +20,12 @@ RUN apk add --no-cache \
     unzip \
     ca-certificates
 
-COPY --from=builder /server /
+COPY --from=builder /beszel /
 
 COPY ./site/dist /site/dist
 
 EXPOSE 8080
 
-ENTRYPOINT [ "/server" ]
+ENTRYPOINT [ "/beszel" ]
 
 CMD ["serve", "--http=0.0.0.0:8080"]
