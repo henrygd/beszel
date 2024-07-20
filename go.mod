@@ -1,4 +1,4 @@
-module monitor-site
+module beszel
 
 go 1.22.4
 

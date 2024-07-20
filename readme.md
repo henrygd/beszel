@@ -44,13 +44,13 @@ The hub and agent are distributed as single binary files, as well as docker imag
 
 ## Environment Variables
 
-## Hub
+### Hub
 
 | Name                    | Default | Description                      |
 | ----------------------- | ------- | -------------------------------- |
 | `DISABLE_PASSWORD_AUTH` | false   | Disables password authentication |
 
-## Agent
+### Agent
 
 | Name         | Default | Description                                      |
 | ------------ | ------- | ------------------------------------------------ |

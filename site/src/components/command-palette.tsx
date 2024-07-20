@@ -5,6 +5,8 @@ import {
 	DatabaseBackupIcon,
 	Github,
 	LayoutDashboard,
+	LockKeyholeIcon,
+	LogsIcon,
 	MailIcon,
 	Server,
 } from 'lucide-react'
@@ -99,11 +101,30 @@ export default function CommandPalette() {
 							</CommandItem>
 							<CommandItem
 								onSelect={() => {
+									window.location.href = '/_/#/logs'
+								}}
+							>
+								<LogsIcon className="mr-2 h-4 w-4" />
+								<span>Logs</span>
+								<CommandShortcut>Admin</CommandShortcut>
+							</CommandItem>
+							<CommandItem
+								onSelect={() => {
 									window.location.href = '/_/#/settings/backups'
 								}}
 							>
 								<DatabaseBackupIcon className="mr-2 h-4 w-4" />
 								<span>Database backups</span>
+								<CommandShortcut>Admin</CommandShortcut>
+							</CommandItem>
+							<CommandItem
+								keywords={['oauth', 'oicd']}
+								onSelect={() => {
+									window.location.href = '/_/#/settings/auth-providers'
+								}}
+							>
+								<LockKeyholeIcon className="mr-2 h-4 w-4" />
+								<span>Auth Providers</span>
 								<CommandShortcut>Admin</CommandShortcut>
 							</CommandItem>
 							<CommandItem

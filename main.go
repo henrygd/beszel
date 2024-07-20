@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "beszel/migrations"
 	"bytes"
 	"crypto/ed25519"
 	"encoding/json"
@@ -8,7 +9,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	_ "monitor-site/migrations"
 	"net/http"
 	"net/http/httputil"
 	"net/mail"
@@ -82,39 +82,21 @@ func main() {
 		return nil
 	})
 
-	// set up cron job to delete records older than 30 days
+	// set up cron jobs
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		scheduler := cron.New()
-		scheduler.MustAdd("delete old records", "* 2 * * *", func() {
-			// log.Println("Deleting old records...")
-			// Get the current time
-			now := time.Now().UTC()
-			// Subtract one month
-			oneMonthAgo := now.AddDate(0, 0, -30)
-			// Format the time as a string
-			timeString := oneMonthAgo.Format("2006-01-02 15:04:05")
-			// collections to be cleaned
-			collections := []string{"system_stats", "container_stats"}
-
-			for _, collection := range collections {
-				records, err := app.Dao().FindRecordsByFilter(
-					collection,
-					fmt.Sprintf("created <= \"%s\"", timeString), // filter
-					"", // sort
-					-1, // limit
-					0,  // offset
-				)
-				if err != nil {
-					log.Println(err)
-					return
-				}
-				// delete records
-				for _, record := range records {
-					if err := app.Dao().DeleteRecord(record); err != nil {
-						log.Fatal(err)
-					}
-				}
-			}
+		// delete records that are older than the display period
+		scheduler.MustAdd("delete old records", "0 */2 * * *", func() {
+			deleteOldRecords("system_stats", "1m", time.Hour)
+			deleteOldRecords("container_stats", "1m", time.Hour)
+			deleteOldRecords("system_stats", "10m", 12*time.Hour)
+			deleteOldRecords("container_stats", "10m", 12*time.Hour)
+			deleteOldRecords("system_stats", "20m", 24*time.Hour)
+			deleteOldRecords("container_stats", "20m", 24*time.Hour)
+			deleteOldRecords("system_stats", "120m", 7*24*time.Hour)
+			deleteOldRecords("container_stats", "120m", 7*24*time.Hour)
+			deleteOldRecords("system_stats", "480m", 30*24*time.Hour)
+			deleteOldRecords("container_stats", "480m", 30*24*time.Hour)
 		})
 		scheduler.Start()
 		return nil
@@ -176,10 +158,9 @@ func main() {
 		}
 
 		// if server is set to pending (unpause), try to connect immediately
-		// commenting out because we don't want to get off of the one min schedule
-		// if newStatus == "pending" {
-		// 	go updateSystem(newRecord)
-		// }
+		if newStatus == "pending" {
+			go updateSystem(newRecord)
+		}
 
 		// alerts
 		handleStatusAlerts(newStatus, oldRecord)
@@ -190,6 +171,12 @@ func main() {
 	app.OnModelAfterDelete("systems").Add(func(e *core.ModelEvent) error {
 		// if server connection exists, close it
 		deleteServerConnection(e.Model.(*models.Record))
+		return nil
+	})
+
+	app.OnModelAfterCreate("system_stats").Add(func(e *core.ModelEvent) error {
+		createLongerRecords(e.Model.(*models.Record))
+		// createLongerRecords(e.Model.(*models.Record).OriginalCopy(), e.Model.(*models.Record))
 		return nil
 	})
 
