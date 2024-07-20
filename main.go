@@ -34,7 +34,9 @@ var app *pocketbase.PocketBase
 var serverConnections = make(map[string]Server)
 
 func main() {
-	app = pocketbase.New()
+	app = pocketbase.NewWithConfig(pocketbase.Config{
+		DefaultDataDir: "beszel_data",
+	})
 	app.RootCmd.Version = Version
 	app.RootCmd.Use = "beszel"
 	app.RootCmd.Short = ""
@@ -117,7 +119,7 @@ func main() {
 			if requestData.AuthRecord == nil {
 				return apis.NewForbiddenError("Forbidden", nil)
 			}
-			key, err := os.ReadFile("./pb_data/id_ed25519.pub")
+			key, err := os.ReadFile(app.DataDir() + "/id_ed25519.pub")
 			if err != nil {
 				return err
 			}
@@ -400,7 +402,7 @@ func handleStatusAlerts(newStatus string, oldRecord *models.Record) error {
 	alerts, err := app.Dao().FindRecordsByFilter("alerts", "name = 'status' && system = {:system}", "-created", -1, 0, dbx.Params{
 		"system": oldRecord.Get("id")})
 	if err != nil {
-		fmt.Println("failed to get users", "err", err.Error())
+		log.Println("failed to get users", "err", err.Error())
 		return nil
 	}
 	if len(alerts) == 0 {
@@ -431,8 +433,9 @@ func handleStatusAlerts(newStatus string, oldRecord *models.Record) error {
 }
 
 func getSSHKey() ([]byte, error) {
+	dataDir := app.DataDir()
 	// check if the key pair already exists
-	existingKey, err := os.ReadFile("./pb_data/id_ed25519")
+	existingKey, err := os.ReadFile(dataDir + "/id_ed25519")
 	if err == nil {
 		return existingKey, nil
 	}
@@ -452,7 +455,7 @@ func getSSHKey() ([]byte, error) {
 	}
 
 	// Save the private key to a file
-	privateFile, err := os.Create("./pb_data/id_ed25519")
+	privateFile, err := os.Create(dataDir + "/id_ed25519")
 	if err != nil {
 		// app.Logger().Error("Error creating private key file:", "err", err.Error())
 		return nil, err
@@ -473,7 +476,7 @@ func getSSHKey() ([]byte, error) {
 	pubKeyBytes := ssh.MarshalAuthorizedKey(publicKey)
 
 	// Save the public key to a file
-	publicFile, err := os.Create("./pb_data/id_ed25519.pub")
+	publicFile, err := os.Create(dataDir + "/id_ed25519.pub")
 	if err != nil {
 		return nil, err
 	}
@@ -484,10 +487,10 @@ func getSSHKey() ([]byte, error) {
 	}
 
 	app.Logger().Info("ed25519 SSH key pair generated successfully.")
-	app.Logger().Info("Private key saved to: pb_data/id_ed25519")
-	app.Logger().Info("Public key saved to: pb_data/id_ed25519.pub")
+	app.Logger().Info("Private key saved to: " + dataDir + "/id_ed25519")
+	app.Logger().Info("Public key saved to: " + dataDir + "/id_ed25519.pub")
 
-	existingKey, err = os.ReadFile("./pb_data/id_ed25519")
+	existingKey, err = os.ReadFile(dataDir + "/id_ed25519")
 	if err == nil {
 		return existingKey, nil
 	}
