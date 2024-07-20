@@ -1,11 +1,11 @@
 services:
-  agent:
-    image: 'henrygd/qoma-agent'
-    container_name: 'qoma-agent'
+  beszel-agent:
+    image: 'henrygd/beszel-agent'
+    container_name: 'beszel-agent'
     restart: unless-stopped
-    ports:
-      - '45876:45876'
+    network_mode: host
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
+      - FILESYSTEM=/dev/sda1 # Set to the correct filesystem for disk I/O stats
       - KEY="ssh-ed25519 YOUR_PUBLIC_KEY"

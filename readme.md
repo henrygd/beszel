@@ -1,4 +1,4 @@
-# Beszel
+# Beszel \*WIP\*
 
 A lightweight server resource monitoring hub with historical data, docker stats, and alerts.
 
@@ -11,7 +11,7 @@ A lightweight server resource monitoring hub with historical data, docker stats,
   </tbody>
 </table> -->
 
-## Features
+<!-- ## Features
 
 - **Lightweight**: Much smaller and less demanding than leading solutions.
 - **Historical data**: Stats are available for up to 30 days.
@@ -22,7 +22,7 @@ A lightweight server resource monitoring hub with historical data, docker stats,
 - **Secure**: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 - **Oauth / OIDC**: Supports many OAuth2 providers and password auth can be disabled.
 - **Automated backups**: Automatically back up your data to S3-compatible storage.
-- **Open source**: MIT license and no paywalled features.
+- **Open source**: MIT license and no paywalled features. -->
 
 ## Introduction
 
@@ -38,9 +38,35 @@ The hub and agent are distributed as single binary files, as well as docker imag
 
 ### Docker
 
-> **Note**: The docker version cannot automatically detect the filesystem to use for disk I/O stats, so use the binary version if that's important to you.
+**Hub**: See the example [docker-compose.yml](/hub/docker-compose.yml) file.
+
+**Agent**: The hub provides compose content when adding a system to monitor, but you can also reference the example [docker-compose.yml](/agent/docker-compose.yml) file.
+
+The agent uses the `host` network mode, which automatically exposes the port. So change the port using an environment variable if you need to. It's set up this way so that can access stats for your host network interfaces.
+
+If you don't want to use the host network, you may remove that line from the compose file and manually expose the port. This will prevent the network stats from populating.
+
+> **Note**: The docker version of the agent cannot automatically detect the filesystem to use for disk I/O stats, so include the `FILESYSTEM` environment variable if you want that to work ([instructions here](#finding-the-correct-filesystem)).
 
 ### Binary
+
+Download and run the latest binaries from the [releases page](https://github.com/henrygd/beszel/releases) or use the commands below.
+
+#### Hub:
+
+```bash
+curl -sL "https://github.com/henrygd/beszel/releases/latest/download/beszel_$(uname -s)_$(uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/').tar.gz" | tar -xz -O beszel | tee ./beszel >/dev/null && chmod +x beszel && ls beszel
+```
+
+#### Agent:
+
+```bash
+curl -sL "https://github.com/henrygd/beszel/releases/latest/download/beszel-agent_$(uname -s)_$(uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/').tar.gz" | tar -xz -O beszel-agent | tee ./beszel-agent >/dev/null && chmod +x beszel-agent && ls beszel-agent
+```
+
+#### Updating
+
+Use `beszel update` and `beszel-agent update` to update to the latest version.
 
 ## Environment Variables
 
@@ -59,7 +85,7 @@ The hub and agent are distributed as single binary files, as well as docker imag
 
 ## OAuth / OIDC setup
 
-Beszel supports OpenID Connect and many OAuth2 authentication providers (see list below). To enable this, you will need to:
+Beszel supports OpenID Connect and many OAuth2 authentication providers (see list below). To enable, do the following:
 
 1. Create an OAuth2 application using your provider of choice. The redirect / callback URL should be `<your-beszel-url>/api/oauth2-redirect`.
 2. When you have the client ID and secret, go to the "Auth providers" page and enable your provider.
