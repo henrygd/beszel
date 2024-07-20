@@ -66,12 +66,18 @@ func createLongerRecords(collectionName string, shorterRecord *models.Record) {
 		// log.Println("not enough shorter records. returning")
 		return
 	}
-	// average the shorter records and create 10m record
-	averagedStats := averageSystemStats(allShorterRecords)
+	// average the shorter records and create longer record
+	var stats interface{}
+	switch collectionName {
+	case "system_stats":
+		stats = averageSystemStats(allShorterRecords)
+	case "container_stats":
+		stats = averageContainerStats(allShorterRecords)
+	}
 	collection, _ := app.Dao().FindCollectionByNameOrId(collectionName)
 	tenMinRecord := models.NewRecord(collection)
 	tenMinRecord.Set("system", systemId)
-	tenMinRecord.Set("stats", averagedStats)
+	tenMinRecord.Set("stats", stats)
 	tenMinRecord.Set("type", longerRecordType)
 	if err := app.Dao().SaveRecord(tenMinRecord); err != nil {
 		fmt.Println("failed to save longer record", "err", err.Error())
@@ -79,7 +85,7 @@ func createLongerRecords(collectionName string, shorterRecord *models.Record) {
 
 }
 
-// calculate the average of a list of SystemStats using reflection
+// calculate the average stats of a list of system_stats records
 func averageSystemStats(records []*models.Record) SystemStats {
 	count := float64(len(records))
 	sum := reflect.New(reflect.TypeOf(SystemStats{})).Elem()
@@ -102,42 +108,30 @@ func averageSystemStats(records []*models.Record) SystemStats {
 	return average.Interface().(SystemStats)
 }
 
-// func averageSystemStats(records []*models.Record) SystemStats {
-// 	var sum SystemStats
-// 	count := float64(len(records))
-
-// 	for _, record := range records {
-// 		var stats SystemStats
-// 		json.Unmarshal([]byte(record.Get("stats").(types.JsonRaw)), &stats)
-// 		sum.Cpu += stats.Cpu
-// 		sum.Mem += stats.Mem
-// 		sum.MemUsed += stats.MemUsed
-// 		sum.MemPct += stats.MemPct
-// 		sum.MemBuffCache += stats.MemBuffCache
-// 		sum.Disk += stats.Disk
-// 		sum.DiskUsed += stats.DiskUsed
-// 		sum.DiskPct += stats.DiskPct
-// 		sum.DiskRead += stats.DiskRead
-// 		sum.DiskWrite += stats.DiskWrite
-// 		sum.NetworkSent += stats.NetworkSent
-// 		sum.NetworkRecv += stats.NetworkRecv
-// 	}
-
-// 	return SystemStats{
-// 		Cpu:          twoDecimals(sum.Cpu / count),
-// 		Mem:          twoDecimals(sum.Mem / count),
-// 		MemUsed:      twoDecimals(sum.MemUsed / count),
-// 		MemPct:       twoDecimals(sum.MemPct / count),
-// 		MemBuffCache: twoDecimals(sum.MemBuffCache / count),
-// 		Disk:         twoDecimals(sum.Disk / count),
-// 		DiskUsed:     twoDecimals(sum.DiskUsed / count),
-// 		DiskPct:      twoDecimals(sum.DiskPct / count),
-// 		DiskRead:     twoDecimals(sum.DiskRead / count),
-// 		DiskWrite:    twoDecimals(sum.DiskWrite / count),
-// 		NetworkSent:  twoDecimals(sum.NetworkSent / count),
-// 		NetworkRecv:  twoDecimals(sum.NetworkRecv / count),
-// 	}
-// }
+// calculate the average stats of a list of container_stats records
+func averageContainerStats(records []*models.Record) (stats []ContainerStats) {
+	sums := make(map[string]*ContainerStats)
+	count := float64(len(records))
+	for _, record := range records {
+		var stats []ContainerStats
+		json.Unmarshal([]byte(record.Get("stats").(types.JsonRaw)), &stats)
+		for _, stat := range stats {
+			if _, ok := sums[stat.Name]; !ok {
+				sums[stat.Name] = &ContainerStats{Name: stat.Name, Cpu: 0, Mem: 0}
+			}
+			sums[stat.Name].Cpu += stat.Cpu
+			sums[stat.Name].Mem += stat.Mem
+		}
+	}
+	for _, value := range sums {
+		stats = append(stats, ContainerStats{
+			Name: value.Name,
+			Cpu:  twoDecimals(value.Cpu / count),
+			Mem:  twoDecimals(value.Mem / count),
+		})
+	}
+	return stats
+}
 
 /* Round float to two decimals */
 func twoDecimals(value float64) float64 {
@@ -146,7 +140,7 @@ func twoDecimals(value float64) float64 {
 
 /* Delete records of specified collection and type that are older than timeLimit */
 func deleteOldRecords(collection string, recordType string, timeLimit time.Duration) {
-	log.Println("Deleting old", recordType, "records...")
+	// log.Println("Deleting old", recordType, "records...")
 	timeLimitStamp := time.Now().UTC().Add(timeLimit).Format("2006-01-02 15:04:05")
 	records, _ := app.Dao().FindRecordsByExpr(collection,
 		dbx.NewExp("type = {:type}", dbx.Params{"type": recordType}),
