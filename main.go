@@ -44,7 +44,7 @@ func main() {
 	// })
 
 	// set auth settings
-	app.OnAfterBootstrap().Add(func(e *core.BootstrapEvent) error {
+	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		usersCollection, err := app.Dao().FindCollectionByNameOrId("users")
 		if err != nil {
 			return err
