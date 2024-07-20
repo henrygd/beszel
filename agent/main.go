@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"math"
@@ -22,6 +23,8 @@ import (
 	"github.com/shirou/gopsutil/v4/mem"
 	psutilNet "github.com/shirou/gopsutil/v4/net"
 )
+
+var Version = "0.0.1-alpha.0"
 
 var containerCpuMap = make(map[string][2]uint64)
 var containerCpuMutex = &sync.Mutex{}
@@ -318,6 +321,17 @@ func startServer(port string, pubKey []byte) {
 }
 
 func main() {
+	// handle flags / subcommands
+	if len(os.Args) > 1 {
+		switch os.Args[1] {
+		case "-v":
+			fmt.Println("beszel-agent", Version)
+		case "update":
+			updateBeszel()
+		}
+		os.Exit(0)
+	}
+
 	var pubKey []byte
 	if pubKeyEnv, exists := os.LookupEnv("KEY"); exists {
 		pubKey = []byte(pubKeyEnv)

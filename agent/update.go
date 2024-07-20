@@ -8,15 +8,14 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/rhysd/go-github-selfupdate/selfupdate"
-	"github.com/spf13/cobra"
 )
 
-func updateBeszel(cmd *cobra.Command, args []string) {
+func updateBeszel() {
 	var latest *selfupdate.Release
 	var found bool
 	var err error
 	currentVersion := semver.MustParse(Version)
-	fmt.Println("beszel", currentVersion)
+	fmt.Println("beszel-agent", currentVersion)
 	fmt.Println("Checking for updates...")
 	latest, found, err = selfupdate.DetectLatest("henrygd/beszel")
 

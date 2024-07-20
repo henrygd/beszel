@@ -4,5 +4,6 @@ data
 temp
 .vscode
 beszel
+beszel-agent
 beszel_data
 dist
