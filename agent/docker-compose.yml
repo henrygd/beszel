@@ -1,0 +1,11 @@
+services:
+  agent:
+    image: 'henrygd/qoma-agent'
+    container_name: 'qoma-agent'
+    restart: unless-stopped
+    ports:
+      - '45876:45876'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - KEY="ssh-ed25519 YOUR_PUBLIC_KEY"
