@@ -84,6 +84,7 @@ export default function DiskIoChart({
 					fill="var(--color-write)"
 					fillOpacity={0.4}
 					stroke="var(--color-write)"
+					animationDuration={1200}
 				/>
 				<Area
 					dataKey="read"
@@ -91,6 +92,7 @@ export default function DiskIoChart({
 					fill="var(--color-read)"
 					fillOpacity={0.4}
 					stroke="var(--color-read)"
+					animationDuration={1200}
 				/>
 			</AreaChart>
 		</ChartContainer>

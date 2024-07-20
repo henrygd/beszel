@@ -47,7 +47,6 @@ type ContainerStats struct {
 	Name string  `json:"n"`
 	Cpu  float64 `json:"c"`
 	Mem  float64 `json:"m"`
-	// MemPct float64 `json:"mp"`
 }
 
 type EmailData struct {

@@ -84,6 +84,7 @@ export default function BandwidthChart({
 					fill="var(--color-sent)"
 					fillOpacity={0.4}
 					stroke="var(--color-sent)"
+					animationDuration={1200}
 				/>
 				<Area
 					dataKey="recv"
@@ -91,6 +92,7 @@ export default function BandwidthChart({
 					fill="var(--color-recv)"
 					fillOpacity={0.4}
 					stroke="var(--color-recv)"
+					animationDuration={1200}
 				/>
 			</AreaChart>
 		</ChartContainer>

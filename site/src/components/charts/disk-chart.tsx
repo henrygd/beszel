@@ -24,10 +24,6 @@ export default function DiskChart({
 	chartData: { time: number; disk: number; diskUsed: number }[]
 	ticks: number[]
 }) {
-	if (!chartData.length || !ticks.length) {
-		return <Spinner />
-	}
-
 	const diskSize = useMemo(() => {
 		return Math.round(chartData[0]?.disk)
 	}, [chartData])
@@ -40,6 +36,10 @@ export default function DiskChart({
 	// 	ticks.push(diskSize)
 	// 	return ticks
 	// }, [diskSize])
+
+	if (!chartData.length || !ticks.length) {
+		return <Spinner />
+	}
 
 	return (
 		<ChartContainer config={chartConfig} className="h-full w-full absolute aspect-auto">
@@ -94,6 +94,7 @@ export default function DiskChart({
 					fill="var(--color-diskUsed)"
 					fillOpacity={0.4}
 					stroke="var(--color-diskUsed)"
+					animationDuration={1200}
 				/>
 			</AreaChart>
 		</ChartContainer>

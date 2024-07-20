@@ -264,10 +264,10 @@ export function UserAuthForm({
 							) : (
 								<img
 									className="mr-2 h-4 w-4 dark:invert"
-									src={`/icons/${provider.name}.svg`}
+									src={`/static/${provider.name}.svg`}
 									alt=""
 									onError={(e) => {
-										e.currentTarget.src = '/icons/lock.svg'
+										e.currentTarget.src = '/static/lock.svg'
 									}}
 								/>
 							)}

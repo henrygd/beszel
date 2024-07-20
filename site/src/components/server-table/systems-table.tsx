@@ -68,7 +68,7 @@ function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	const val = info.getValue() as number
 	return (
 		<div className="flex gap-1 items-center tabular-nums tracking-tight">
-			<span className="w-16">{val.toFixed(2)}%</span>
+			<span className="min-w-[3.5em]">{val.toFixed(1)}%</span>
 			<span className="grow min-w-10 block bg-muted h-[1em] relative rounded-sm overflow-hidden">
 				<span
 					className={cn(

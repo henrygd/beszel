@@ -17,10 +17,6 @@ export default function MemChart({
 	chartData: { time: number; mem: number; memUsed: number; memCache: number }[]
 	ticks: number[]
 }) {
-	if (!chartData.length || !ticks.length) {
-		return <Spinner />
-	}
-
 	const totalMem = useMemo(() => {
 		return Math.ceil(chartData[0]?.mem)
 	}, [chartData])
@@ -38,6 +34,10 @@ export default function MemChart({
 		}),
 		[]
 	) satisfies ChartConfig
+
+	if (!chartData.length || !ticks.length) {
+		return <Spinner />
+	}
 
 	return (
 		<ChartContainer config={chartConfig} className="h-full w-full absolute aspect-auto">
@@ -92,6 +92,7 @@ export default function MemChart({
 					fillOpacity={0.4}
 					stroke="var(--color-memUsed)"
 					stackId="a"
+					animationDuration={1200}
 				/>
 				<Area
 					dataKey="memCache"
@@ -101,6 +102,7 @@ export default function MemChart({
 					strokeOpacity={0.3}
 					stroke="var(--color-memCache)"
 					stackId="a"
+					animationDuration={1200}
 				/>
 			</AreaChart>
 		</ChartContainer>

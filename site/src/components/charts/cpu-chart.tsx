@@ -25,10 +25,11 @@ export default function CpuChart({
 	chartData: { time: number; cpu: number }[]
 	ticks: number[]
 }) {
+	const chartTime = useStore($chartTime)
+
 	if (!chartData.length || !ticks.length) {
 		return <Spinner />
 	}
-	const chartTime = useStore($chartTime)
 
 	return (
 		<ChartContainer config={chartConfig} className="h-full w-full absolute aspect-auto">
@@ -70,7 +71,9 @@ export default function CpuChart({
 					fill="var(--color-cpu)"
 					fillOpacity={0.4}
 					stroke="var(--color-cpu)"
-					animateNewValues={false}
+					animationDuration={1200}
+					// animationEasing="ease-out"
+					// animateNewValues={false}
 				/>
 			</AreaChart>
 		</ChartContainer>

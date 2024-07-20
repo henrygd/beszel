@@ -9,15 +9,9 @@ import { $chartTime } from '@/lib/stores'
 import { chartTimeData, cn } from '@/lib/utils'
 import { ChartTimes } from '@/types'
 import { useStore } from '@nanostores/react'
-import { useEffect } from 'react'
 
 export default function ChartTimeSelect({ className }: { className?: string }) {
 	const chartTime = useStore($chartTime)
-
-	useEffect(() => {
-		// todo make sure this doesn't cause multiple fetches on load
-		return () => $chartTime.set('1h')
-	}, [])
 
 	return (
 		<Select

@@ -49,7 +49,7 @@ func main() {
 	// // enable auto creation of migration files when making collection changes in the Admin UI
 	migratecmd.MustRegister(app, app.RootCmd, migratecmd.Config{
 		// (the isGoRun check is to enable it only during development)
-		// Automigrate: isGoRun,
+		Automigrate: isGoRun,
 	})
 
 	// set auth settings
@@ -81,11 +81,11 @@ func main() {
 				Scheme: "http",
 				Host:   "localhost:5173",
 			})
-			e.Router.GET("/icons/*", apis.StaticDirectoryHandler(os.DirFS("./site/public/icons"), false))
+			e.Router.GET("/static/*", apis.StaticDirectoryHandler(os.DirFS("./site/public/static"), false))
 			e.Router.Any("/*", echo.WrapHandler(proxy))
 			// e.Router.Any("/", echo.WrapHandler(proxy))
 		default:
-			e.Router.GET("/icons/*", apis.StaticDirectoryHandler(site.Icons, false))
+			e.Router.GET("/static/*", apis.StaticDirectoryHandler(site.Static, false))
 			e.Router.Any("/*", apis.StaticDirectoryHandler(site.Dist, true))
 		}
 		return nil
@@ -95,7 +95,7 @@ func main() {
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		scheduler := cron.New()
 		// delete records that are older than the display period
-		scheduler.MustAdd("delete old records", "0 */2 * * *", func() {
+		scheduler.MustAdd("delete old records", "8 */2 * * *", func() {
 			deleteOldRecords("system_stats", "1m", time.Hour)
 			deleteOldRecords("container_stats", "1m", time.Hour)
 			deleteOldRecords("system_stats", "10m", 12*time.Hour)
@@ -185,6 +185,11 @@ func main() {
 
 	app.OnModelAfterCreate("system_stats").Add(func(e *core.ModelEvent) error {
 		createLongerRecords("system_stats", e.Model.(*models.Record))
+		return nil
+	})
+
+	app.OnModelAfterCreate("container_stats").Add(func(e *core.ModelEvent) error {
+		createLongerRecords("container_stats", e.Model.(*models.Record))
 		return nil
 	})
 

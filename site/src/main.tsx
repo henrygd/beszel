@@ -80,22 +80,22 @@ const App = () => {
 	// update favicon
 	useEffect(() => {
 		if (!authenticated || !servers.length) {
-			updateFavicon('/favicon.svg')
+			updateFavicon('favicon.svg')
 		} else {
 			let up = false
 			for (const server of servers) {
 				if (server.status === 'down') {
-					updateFavicon('/favicon-red.svg')
-					return () => updateFavicon('/favicon.svg')
+					updateFavicon('favicon-red.svg')
+					return () => updateFavicon('favicon.svg')
 				} else if (server.status === 'up') {
 					up = true
 				}
 			}
-			updateFavicon(up ? '/favicon-green.svg' : '/favicon.svg')
-			return () => updateFavicon('/favicon.svg')
+			updateFavicon(up ? 'favicon-green.svg' : 'favicon.svg')
+			return () => updateFavicon('favicon.svg')
 		}
 		return () => {
-			updateFavicon('/favicon.svg')
+			updateFavicon('favicon.svg')
 		}
 	}, [authenticated, servers])
 

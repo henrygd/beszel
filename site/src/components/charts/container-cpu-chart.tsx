@@ -18,10 +18,6 @@ export default function ContainerCpuChart({
 	chartData: Record<string, number | string>[]
 	ticks: number[]
 }) {
-	if (!chartData.length || !ticks.length) {
-		return <Spinner />
-	}
-
 	const chartConfig = useMemo(() => {
 		let config = {} as Record<
 			string,
@@ -56,6 +52,10 @@ export default function ContainerCpuChart({
 		}
 		return config satisfies ChartConfig
 	}, [chartData])
+
+	if (!chartData.length || !ticks.length) {
+		return <Spinner />
+	}
 
 	return (
 		<ChartContainer config={chartConfig} className="h-full w-full absolute aspect-auto">
@@ -102,6 +102,7 @@ export default function ContainerCpuChart({
 						key={key}
 						// isAnimationActive={chartData.length < 20}
 						animateNewValues={false}
+						animationDuration={1200}
 						dataKey={key}
 						type="monotoneX"
 						fill={chartConfig[key].color}

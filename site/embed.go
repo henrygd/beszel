@@ -12,4 +12,4 @@ var assets embed.FS
 
 var Dist = echo.MustSubFS(assets, "dist")
 
-var Icons = echo.MustSubFS(assets, "dist/icons")
+var Static = echo.MustSubFS(assets, "dist/static")

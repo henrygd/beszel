@@ -1,6 +1,6 @@
 import { $updatedSystem, $systems, pb, $chartTime } from '@/lib/stores'
 import { ContainerStatsRecord, SystemRecord, SystemStatsRecord } from '@/types'
-import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card'
 import { useStore } from '@nanostores/react'
 import Spinner from '../spinner'
@@ -51,15 +51,22 @@ export default function ServerDetail({ name }: { name: string }) {
 	useEffect(() => {
 		document.title = `${name} / Beszel`
 		return () => {
-			setServer({} as SystemRecord)
-			setCpuChartData([])
-			setMemChartData([])
-			setDiskChartData([])
-			setBandwidthChartData([])
-			setDockerCpuChartData([])
-			setDockerMemChartData([])
+			resetCharts()
+			$chartTime.set('1h')
 		}
 	}, [name])
+
+	const resetCharts = useCallback(() => {
+		setServerStats([])
+		setCpuChartData([])
+		setMemChartData([])
+		setDiskChartData([])
+		setBandwidthChartData([])
+		setDockerCpuChartData([])
+		setDockerMemChartData([])
+	}, [])
+
+	useEffect(resetCharts, [chartTime])
 
 	useEffect(() => {
 		if (server.id && server.name === name) {
@@ -138,20 +145,25 @@ export default function ServerDetail({ name }: { name: string }) {
 		setTicks(scale.ticks().map((d) => d.getTime()))
 	}, [chartTime, serverStats])
 
+	// get container stats
 	useEffect(() => {
-		if (!server.id) {
+		if (!server.id || !chartTime) {
 			return
 		}
 		pb.collection<ContainerStatsRecord>('container_stats')
 			.getFullList({
-				filter: `system="${server.id}" && created > "${getPbTimestamp('1h')}"`,
+				filter: pb.filter('system={:id} && created > {:created} && type={:type}', {
+					id: server.id,
+					created: getPbTimestamp(chartTime),
+					type: chartTimeData[chartTime].type,
+				}),
 				fields: 'created,stats',
 				sort: 'created',
 			})
 			.then((records) => {
 				setContainers(records)
 			})
-	}, [server])
+	}, [server, chartTime])
 
 	// container stats for charts
 	useEffect(() => {

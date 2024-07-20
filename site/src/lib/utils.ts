@@ -72,8 +72,8 @@ export const formatDay = (timestamp: string) => {
 	return dayFormatter.format(new Date(timestamp))
 }
 
-export const updateFavicon = (newIconUrl: string) =>
-	((document.querySelector("link[rel='icon']") as HTMLLinkElement).href = newIconUrl)
+export const updateFavicon = (newIcon: string) =>
+	((document.querySelector("link[rel='icon']") as HTMLLinkElement).href = `/static/${newIcon}`)
 
 export const isAdmin = () => pb.authStore.model?.role === 'admin'
 export const isReadOnlyUser = () => pb.authStore.model?.role === 'readonly'

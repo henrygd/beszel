@@ -18,10 +18,6 @@ export default function ({
 	chartData: Record<string, number | string>[]
 	ticks: number[]
 }) {
-	if (!chartData.length || !ticks.length) {
-		return <Spinner />
-	}
-
 	const chartConfig = useMemo(() => {
 		let config = {} as Record<
 			string,
@@ -56,6 +52,10 @@ export default function ({
 		}
 		return config satisfies ChartConfig
 	}, [chartData])
+
+	if (!chartData.length || !ticks.length) {
+		return <Spinner />
+	}
 
 	return (
 		<ChartContainer config={chartConfig} className="h-full w-full absolute aspect-auto">
@@ -108,6 +108,7 @@ export default function ({
 						key={key}
 						isAnimationActive={chartData.length < 20}
 						animateNewValues={false}
+						animationDuration={1200}
 						dataKey={key}
 						type="monotoneX"
 						fill={chartConfig[key].color}
