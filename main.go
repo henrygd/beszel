@@ -27,6 +27,7 @@ import (
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"
 	"github.com/pocketbase/pocketbase/tools/cron"
 	"github.com/pocketbase/pocketbase/tools/mailer"
+	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -42,6 +43,13 @@ func main() {
 	app.RootCmd.Version = Version
 	app.RootCmd.Use = "beszel"
 	app.RootCmd.Short = ""
+
+	// add update command
+	app.RootCmd.AddCommand(&cobra.Command{
+		Use:   "update",
+		Short: "Update beszel to the latest version",
+		Run:   updateBeszel,
+	})
 
 	// loosely check if it was executed using "go run"
 	isGoRun := strings.HasPrefix(os.Args[0], os.TempDir())
