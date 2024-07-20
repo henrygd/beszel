@@ -123,26 +123,31 @@ export function getPbTimestamp(timeString: ChartTimes) {
 
 export const chartTimeData = {
 	'1h': {
+		type: '1m',
 		label: '1 hour',
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -1),
 	},
 	'12h': {
+		type: '10m',
 		label: '12 hours',
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -12),
 	},
 	'24h': {
+		type: '20m',
 		label: '24 hours',
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -24),
 	},
 	'1w': {
+		type: '120m',
 		label: '1 week',
 		format: (timestamp: string) => formatDay(timestamp),
 		getOffset: (endTime: Date) => timeDay.offset(endTime, -7),
 	},
 	'30d': {
+		type: '480m',
 		label: '30 days',
 		format: (timestamp: string) => formatDay(timestamp),
 		getOffset: (endTime: Date) => timeDay.offset(endTime, -30),

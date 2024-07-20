@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"reflect"
 	"time"
 
 	"github.com/pocketbase/dbx"
@@ -12,7 +13,7 @@ import (
 	"github.com/pocketbase/pocketbase/tools/types"
 )
 
-func createLongerRecords(shorterRecord *models.Record) {
+func createLongerRecords(collectionName string, shorterRecord *models.Record) {
 	shorterRecordType := shorterRecord.Get("type").(string)
 	systemId := shorterRecord.Get("system").(string)
 	// fmt.Println("create longer records", "recordType", shorterRecordType, "systemId", systemId)
@@ -41,7 +42,7 @@ func createLongerRecords(shorterRecord *models.Record) {
 	longerRecordPeriod := time.Now().UTC().Add(timeAgo + 10*time.Second).Format("2006-01-02 15:04:05")
 	// check creation time of last 10m record
 	lastLongerRecord, err := app.Dao().FindFirstRecordByFilter(
-		"system_stats",
+		collectionName,
 		"type = {:type} && system = {:system} && created > {:created}",
 		dbx.Params{"type": longerRecordType, "system": systemId, "created": longerRecordPeriod},
 	)
@@ -53,7 +54,7 @@ func createLongerRecords(shorterRecord *models.Record) {
 	// get shorter records from the past x minutes
 	// shorterRecordPeriod := time.Now().UTC().Add(timeAgo + time.Second).Format("2006-01-02 15:04:05")
 	allShorterRecords, err := app.Dao().FindRecordsByFilter(
-		"system_stats",
+		collectionName,
 		"type = {:type} && system = {:system} && created > {:created}",
 		"-created",
 		-1,
@@ -67,7 +68,7 @@ func createLongerRecords(shorterRecord *models.Record) {
 	}
 	// average the shorter records and create 10m record
 	averagedStats := averageSystemStats(allShorterRecords)
-	collection, _ := app.Dao().FindCollectionByNameOrId("system_stats")
+	collection, _ := app.Dao().FindCollectionByNameOrId(collectionName)
 	tenMinRecord := models.NewRecord(collection)
 	tenMinRecord.Set("system", systemId)
 	tenMinRecord.Set("stats", averagedStats)
@@ -78,64 +79,65 @@ func createLongerRecords(shorterRecord *models.Record) {
 
 }
 
-// func averageSystemStats(records []*models.Record) SystemStats {
-// 	numStats := len(records)
-// 	firstStats := records[0].Get("stats").(SystemStats)
-// 	sum := reflect.New(reflect.TypeOf(firstStats)).Elem()
-
-// 	for _, record := range records {
-// 		stats := record.Get("stats").(SystemStats)
-// 		statValue := reflect.ValueOf(stats)
-// 		for i := 0; i < statValue.NumField(); i++ {
-// 			field := sum.Field(i)
-// 			field.SetFloat(field.Float() + statValue.Field(i).Float())
-// 		}
-// 	}
-
-// 	average := reflect.New(reflect.TypeOf(firstStats)).Elem()
-// 	for i := 0; i < sum.NumField(); i++ {
-// 		average.Field(i).SetFloat(twoDecimals(sum.Field(i).Float() / float64(numStats)))
-// 	}
-
-// 	return average.Interface().(SystemStats)
-// }
-
+// calculate the average of a list of SystemStats using reflection
 func averageSystemStats(records []*models.Record) SystemStats {
-	var sum SystemStats
 	count := float64(len(records))
+	sum := reflect.New(reflect.TypeOf(SystemStats{})).Elem()
 
 	for _, record := range records {
 		var stats SystemStats
 		json.Unmarshal([]byte(record.Get("stats").(types.JsonRaw)), &stats)
-		sum.Cpu += stats.Cpu
-		sum.Mem += stats.Mem
-		sum.MemUsed += stats.MemUsed
-		sum.MemPct += stats.MemPct
-		sum.MemBuffCache += stats.MemBuffCache
-		sum.Disk += stats.Disk
-		sum.DiskUsed += stats.DiskUsed
-		sum.DiskPct += stats.DiskPct
-		sum.DiskRead += stats.DiskRead
-		sum.DiskWrite += stats.DiskWrite
-		sum.NetworkSent += stats.NetworkSent
-		sum.NetworkRecv += stats.NetworkRecv
+		statValue := reflect.ValueOf(stats)
+		for i := 0; i < statValue.NumField(); i++ {
+			field := sum.Field(i)
+			field.SetFloat(field.Float() + statValue.Field(i).Float())
+		}
 	}
 
-	return SystemStats{
-		Cpu:          twoDecimals(sum.Cpu / count),
-		Mem:          twoDecimals(sum.Mem / count),
-		MemUsed:      twoDecimals(sum.MemUsed / count),
-		MemPct:       twoDecimals(sum.MemPct / count),
-		MemBuffCache: twoDecimals(sum.MemBuffCache / count),
-		Disk:         twoDecimals(sum.Disk / count),
-		DiskUsed:     twoDecimals(sum.DiskUsed / count),
-		DiskPct:      twoDecimals(sum.DiskPct / count),
-		DiskRead:     twoDecimals(sum.DiskRead / count),
-		DiskWrite:    twoDecimals(sum.DiskWrite / count),
-		NetworkSent:  twoDecimals(sum.NetworkSent / count),
-		NetworkRecv:  twoDecimals(sum.NetworkRecv / count),
+	average := reflect.New(reflect.TypeOf(SystemStats{})).Elem()
+	for i := 0; i < sum.NumField(); i++ {
+		average.Field(i).SetFloat(twoDecimals(sum.Field(i).Float() / count))
 	}
+
+	return average.Interface().(SystemStats)
 }
+
+// func averageSystemStats(records []*models.Record) SystemStats {
+// 	var sum SystemStats
+// 	count := float64(len(records))
+
+// 	for _, record := range records {
+// 		var stats SystemStats
+// 		json.Unmarshal([]byte(record.Get("stats").(types.JsonRaw)), &stats)
+// 		sum.Cpu += stats.Cpu
+// 		sum.Mem += stats.Mem
+// 		sum.MemUsed += stats.MemUsed
+// 		sum.MemPct += stats.MemPct
+// 		sum.MemBuffCache += stats.MemBuffCache
+// 		sum.Disk += stats.Disk
+// 		sum.DiskUsed += stats.DiskUsed
+// 		sum.DiskPct += stats.DiskPct
+// 		sum.DiskRead += stats.DiskRead
+// 		sum.DiskWrite += stats.DiskWrite
+// 		sum.NetworkSent += stats.NetworkSent
+// 		sum.NetworkRecv += stats.NetworkRecv
+// 	}
+
+// 	return SystemStats{
+// 		Cpu:          twoDecimals(sum.Cpu / count),
+// 		Mem:          twoDecimals(sum.Mem / count),
+// 		MemUsed:      twoDecimals(sum.MemUsed / count),
+// 		MemPct:       twoDecimals(sum.MemPct / count),
+// 		MemBuffCache: twoDecimals(sum.MemBuffCache / count),
+// 		Disk:         twoDecimals(sum.Disk / count),
+// 		DiskUsed:     twoDecimals(sum.DiskUsed / count),
+// 		DiskPct:      twoDecimals(sum.DiskPct / count),
+// 		DiskRead:     twoDecimals(sum.DiskRead / count),
+// 		DiskWrite:    twoDecimals(sum.DiskWrite / count),
+// 		NetworkSent:  twoDecimals(sum.NetworkSent / count),
+// 		NetworkRecv:  twoDecimals(sum.NetworkRecv / count),
+// 	}
+// }
 
 /* Round float to two decimals */
 func twoDecimals(value float64) float64 {
@@ -148,7 +150,7 @@ func deleteOldRecords(collection string, recordType string, timeLimit time.Durat
 	timeLimitStamp := time.Now().UTC().Add(timeLimit).Format("2006-01-02 15:04:05")
 	records, _ := app.Dao().FindRecordsByExpr(collection,
 		dbx.NewExp("type = {:type}", dbx.Params{"type": recordType}),
-		dbx.NewExp("created < {:created}", dbx.Params{"created": timeLimitStamp}),
+		dbx.NewExp("created > {:created}", dbx.Params{"created": timeLimitStamp}),
 	)
 	for _, record := range records {
 		if err := app.Dao().DeleteRecord(record); err != nil {

@@ -1,17 +1,15 @@
+// Package site handles the Beszel frontend embedding.
 package site
 
 import (
 	"embed"
-	"io/fs"
+
+	"github.com/labstack/echo/v5"
 )
 
 //go:embed all:dist
 var assets embed.FS
 
-func Assets() (fs.FS, error) {
-	return fs.Sub(assets, "dist")
-}
+var Dist = echo.MustSubFS(assets, "dist")
 
-func Icons() (fs.FS, error) {
-	return fs.Sub(assets, "dist/icons")
-}
+var Icons = echo.MustSubFS(assets, "dist/icons")

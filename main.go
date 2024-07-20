@@ -83,12 +83,10 @@ func main() {
 			})
 			e.Router.GET("/icons/*", apis.StaticDirectoryHandler(os.DirFS("./site/public/icons"), false))
 			e.Router.Any("/*", echo.WrapHandler(proxy))
-			e.Router.Any("/", echo.WrapHandler(proxy))
+			// e.Router.Any("/", echo.WrapHandler(proxy))
 		default:
-			assets, _ := site.Assets()
-			icons, _ := site.Icons()
-			e.Router.GET("/icons/*", apis.StaticDirectoryHandler(icons, false))
-			e.Router.Any("/*", apis.StaticDirectoryHandler(assets, true))
+			e.Router.GET("/icons/*", apis.StaticDirectoryHandler(site.Icons, false))
+			e.Router.Any("/*", apis.StaticDirectoryHandler(site.Dist, true))
 		}
 		return nil
 	})
@@ -186,8 +184,7 @@ func main() {
 	})
 
 	app.OnModelAfterCreate("system_stats").Add(func(e *core.ModelEvent) error {
-		createLongerRecords(e.Model.(*models.Record))
-		// createLongerRecords(e.Model.(*models.Record).OriginalCopy(), e.Model.(*models.Record))
+		createLongerRecords("system_stats", e.Model.(*models.Record))
 		return nil
 	})
 

@@ -73,12 +73,16 @@ export default function ServerDetail({ name }: { name: string }) {
 
 	// get stats
 	useEffect(() => {
-		if (!server.id) {
+		if (!server.id || !chartTime) {
 			return
 		}
 		pb.collection<SystemStatsRecord>('system_stats')
 			.getFullList({
-				filter: `system="${server.id}" && created > "${getPbTimestamp('1h')}"`,
+				filter: pb.filter('system={:id} && created > {:created} && type={:type}', {
+					id: server.id,
+					created: getPbTimestamp(chartTime),
+					type: chartTimeData[chartTime].type,
+				}),
 				fields: 'created,stats',
 				sort: 'created',
 			})
@@ -86,7 +90,7 @@ export default function ServerDetail({ name }: { name: string }) {
 				// console.log('sctats', records)
 				setServerStats(records)
 			})
-	}, [server])
+	}, [server, chartTime])
 
 	useEffect(() => {
 		if (updatedSystem.id === server.id) {

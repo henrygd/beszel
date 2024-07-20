@@ -97,11 +97,11 @@ Because Beszel is built on top of PocketBase, you can use the normal PocketBase 
 
 ## Security
 
-The hub and agent communicate over SSH, so they do not need to be exposed to the internet.
+The hub and agent communicate over SSH, so they don't need to be exposed to the internet. And the connection won't break if you put your own auth gateway, such as Authelia, in front of the hub.
 
 When the hub is started for the first time, it generates an ED25519 key pair.
 
-The agent's SSH server is configured to accept connections only using this key. It also does not provide a pty or accept any input, so it is not possible to execute commands on the agent.
+The agent's SSH server is configured to accept connections only using this key. It does not provide a pty or accept any input, so it is not possible to execute commands on the agent even if your private key is compromised.
 
 ## FAQ / Troubleshooting
 
