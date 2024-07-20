@@ -120,7 +120,7 @@ func init() {
 			{
 				"id": "ej9oowivz8b2mht",
 				"created": "2024-07-07 16:09:09.179Z",
-				"updated": "2024-07-15 22:44:12.297Z",
+				"updated": "2024-07-18 15:56:45.302Z",
 				"name": "system_stats",
 				"type": "base",
 				"system": false,
@@ -130,7 +130,7 @@ func init() {
 						"id": "h9sg148r",
 						"name": "system",
 						"type": "relation",
-						"required": false,
+						"required": true,
 						"presentable": false,
 						"unique": false,
 						"options": {
@@ -146,11 +146,30 @@ func init() {
 						"id": "azftn0be",
 						"name": "stats",
 						"type": "json",
-						"required": false,
+						"required": true,
 						"presentable": false,
 						"unique": false,
 						"options": {
 							"maxSize": 2000000
+						}
+					},
+					{
+						"system": false,
+						"id": "m1ekhli3",
+						"name": "type",
+						"type": "select",
+						"required": true,
+						"presentable": false,
+						"unique": false,
+						"options": {
+							"maxSelect": 1,
+							"values": [
+								"1m",
+								"10m",
+								"20m",
+								"120m",
+								"480m"
+							]
 						}
 					}
 				],
@@ -167,7 +186,7 @@ func init() {
 			{
 				"id": "juohu4jipgc13v7",
 				"created": "2024-07-07 16:09:57.976Z",
-				"updated": "2024-07-15 22:44:12.297Z",
+				"updated": "2024-07-18 15:57:50.933Z",
 				"name": "container_stats",
 				"type": "base",
 				"system": false,
@@ -177,7 +196,7 @@ func init() {
 						"id": "hutcu6ps",
 						"name": "system",
 						"type": "relation",
-						"required": false,
+						"required": true,
 						"presentable": false,
 						"unique": false,
 						"options": {
@@ -199,6 +218,25 @@ func init() {
 						"options": {
 							"maxSize": 2000000
 						}
+					},
+					{
+						"system": false,
+						"id": "vo7iuj96",
+						"name": "type",
+						"type": "select",
+						"required": true,
+						"presentable": false,
+						"unique": false,
+						"options": {
+							"maxSelect": 1,
+							"values": [
+								"1m",
+								"10m",
+								"20m",
+								"120m",
+								"480m"
+							]
+						}
 					}
 				],
 				"indexes": [],
@@ -212,7 +250,7 @@ func init() {
 			{
 				"id": "_pb_users_auth_",
 				"created": "2024-07-14 16:25:18.226Z",
-				"updated": "2024-07-17 15:18:01.385Z",
+				"updated": "2024-07-20 00:55:02.071Z",
 				"name": "users",
 				"type": "auth",
 				"system": false,
@@ -266,7 +304,7 @@ func init() {
 				"options": {
 					"allowEmailAuth": true,
 					"allowOAuth2Auth": true,
-					"allowUsernameAuth": false,
+					"allowUsernameAuth": true,
 					"exceptEmailDomains": null,
 					"manageRule": null,
 					"minPasswordLength": 8,

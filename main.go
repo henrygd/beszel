@@ -24,6 +24,7 @@ import (
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/models"
+	"github.com/pocketbase/pocketbase/plugins/migratecmd"
 	"github.com/pocketbase/pocketbase/tools/cron"
 	"github.com/pocketbase/pocketbase/tools/mailer"
 	"golang.org/x/crypto/ssh"
@@ -46,10 +47,10 @@ func main() {
 	isGoRun := strings.HasPrefix(os.Args[0], os.TempDir())
 
 	// // enable auto creation of migration files when making collection changes in the Admin UI
-	// migratecmd.MustRegister(app, app.RootCmd, migratecmd.Config{
-	// 	// (the isGoRun check is to enable it only during development)
-	// 	Automigrate: isGoRun,
-	// })
+	migratecmd.MustRegister(app, app.RootCmd, migratecmd.Config{
+		// (the isGoRun check is to enable it only during development)
+		// Automigrate: isGoRun,
+	})
 
 	// set auth settings
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
