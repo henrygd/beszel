@@ -87,7 +87,7 @@ export default function ForgotPassword() {
 						<DialogTitle>Command line instructions</DialogTitle>
 					</DialogHeader>
 					<p className="text-primary/70 text-[0.95em]">
-						If you don't have an SMTP server configured, you can use the following command to reset
+						Use the following command to reset
 						your password:
 					</p>
 					<code className="bg-muted rounded-sm py-0.5 px-2.5 mr-auto text-sm">

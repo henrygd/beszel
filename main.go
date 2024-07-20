@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "beszel/migrations"
+	"beszel/site"
 	"bytes"
 	"crypto/ed25519"
 	"encoding/json"
@@ -83,8 +84,10 @@ func main() {
 			e.Router.Any("/*", echo.WrapHandler(proxy))
 			e.Router.Any("/", echo.WrapHandler(proxy))
 		default:
-			e.Router.GET("/icons/*", apis.StaticDirectoryHandler(os.DirFS("./site/dist/icons"), false))
-			e.Router.Any("/*", apis.StaticDirectoryHandler(os.DirFS("./site/dist"), true))
+			assets, _ := site.Assets()
+			icons, _ := site.Icons()
+			e.Router.GET("/icons/*", apis.StaticDirectoryHandler(icons, false))
+			e.Router.Any("/*", apis.StaticDirectoryHandler(assets, true))
 		}
 		return nil
 	})

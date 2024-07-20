@@ -306,7 +306,7 @@ export function UserAuthForm({
 				</Dialog>
 			)}
 
-			{authMethods.emailPassword && (
+			{authMethods.emailPassword && !isFirstRun && (
 				<Link
 					href="/forgot-password"
 					className="text-sm mx-auto hover:text-brand underline underline-offset-4 opacity-70 hover:opacity-100 transition-opacity"
