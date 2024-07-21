@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
@@ -37,7 +36,7 @@ func updateBeszel() {
 	}
 
 	var binaryPath string
-	fmt.Printf("Updating from %s to %s...", currentVersion, latest.Version)
+	fmt.Printf("Updating from %s to %s...\n", currentVersion, latest.Version)
 	binaryPath, err = os.Executable()
 	if err != nil {
 		fmt.Println("Error getting binary path:", err)
@@ -48,5 +47,5 @@ func updateBeszel() {
 		fmt.Println("Please try rerunning with sudo. Error:", err)
 		os.Exit(1)
 	}
-	log.Printf("Successfully updated: %s -> %s\n\n%s", currentVersion, latest.Version, strings.TrimSpace(latest.ReleaseNotes))
+	fmt.Printf("Successfully updated to %s\n\n%s\n", latest.Version, strings.TrimSpace(latest.ReleaseNotes))
 }
