@@ -281,7 +281,7 @@ export function UserAuthForm({
 				<Dialog>
 					<DialogTrigger asChild>
 						<button type="button" className={cn(buttonVariants({ variant: 'outline' }))}>
-							<img className="mr-2 h-4 w-4 dark:invert" src="/icons/github.svg" alt="" />
+							<img className="mr-2 h-4 w-4 dark:invert" src="/static/github.svg" alt="" />
 							<span className="translate-y-[1px]">GitHub</span>
 						</button>
 					</DialogTrigger>
