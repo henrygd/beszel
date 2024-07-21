@@ -1,4 +1,4 @@
-name: goreleaser
+name: Make release and binaries
 
 on:
   push:
@@ -16,23 +16,35 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Set up bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --cwd ./hub/site
+
+      - name: Build site
+        run: bun run --cwd ./hub/site build
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: '^1.22.1'
+
       - name: GoReleaser beszel
         uses: goreleaser/goreleaser-action@v6
         with:
-          workdir: ./beszel
+          workdir: ./hub
           distribution: goreleaser
           version: latest
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
+
       - name: GoReleaser beszel-agent
         uses: goreleaser/goreleaser-action@v6
         with:
-          workdir: ./beszel-agent
+          workdir: ./agent
           distribution: goreleaser
           version: latest
           args: release --clean
