@@ -9,17 +9,12 @@ before:
 builds:
   - env:
       - CGO_ENABLED=0
-    ignore:
-      - goos: darwin
-        goarch: 386
-      - goos: linux
-        goarch: arm
-      - goos: linux
-        goarch: 386
-      - goos: windows
-        goarch: arm64
-      - goos: windows
-        goarch: 386
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
 
 archives:
   - format: tar.gz
