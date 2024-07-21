@@ -7,5 +7,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - FILESYSTEM=/dev/sda1 # Set to the correct filesystem for disk I/O stats
+      - PORT=45876
       - KEY="ssh-ed25519 YOUR_PUBLIC_KEY"
+      # - FILESYSTEM=/dev/sda1 # set to the correct filesystem for disk I/O stats

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -43,14 +42,18 @@ var netIoStats = NetIoStats{
 	Name:      "",
 }
 
-// Create a custom HTTP transport
-var transport = &http.Transport{
-	DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
-		d := net.Dialer{
-			Timeout: 5 * time.Second,
-		}
-		// Connect to the Unix socket
-		return d.DialContext(ctx, "unix", "/var/run/docker.sock")
+// client for docker engine api
+var client = &http.Client{
+	Timeout: time.Second * 5,
+	Transport: &http.Transport{
+		Dial: func(proto, addr string) (net.Conn, error) {
+			return net.Dial("unix", "/var/run/docker.sock")
+		},
+		ForceAttemptHTTP2:   false,
+		MaxIdleConns:        100,
+		MaxIdleConnsPerHost: 100,
+		IdleConnTimeout:     90 * time.Second,
+		DisableKeepAlives:   false,
 	},
 }
 
@@ -180,16 +183,7 @@ func getSystemStats() (SystemInfo, SystemStats) {
 }
 
 func getDockerStats() ([]ContainerStats, error) {
-	client := &http.Client{
-		Transport: transport,
-	}
-	// Create a new HTTP request
-	req, err := http.NewRequest("GET", "http://localhost/containers/json", nil)
-	if err != nil {
-		return []ContainerStats{}, err
-	}
-	// Perform the request
-	resp, err := client.Do(req)
+	resp, err := client.Get("http://localhost/containers/json")
 	if err != nil {
 		return []ContainerStats{}, err
 	}
@@ -233,17 +227,7 @@ func getDockerStats() ([]ContainerStats, error) {
 }
 
 func getContainerStats(ctr Container) (ContainerStats, error) {
-	// stats, _ := apiClient.ContainerStats(context.Background(), ctr.ID, false)
-	client := &http.Client{
-		Transport: transport,
-	}
-	// Create a new HTTP request
-	req, err := http.NewRequest("GET", "http://localhost/containers/"+ctr.ID+"/stats?stream=0&one-shot=1", nil)
-	if err != nil {
-		return ContainerStats{}, err
-	}
-	// Perform the request
-	resp, err := client.Do(req)
+	resp, err := client.Get("http://localhost/containers/" + ctr.ID + "/stats?stream=0&one-shot=1")
 	if err != nil {
 		return ContainerStats{}, err
 	}
@@ -279,7 +263,7 @@ func getContainerStats(ctr Container) (ContainerStats, error) {
 		Name: name,
 		Cpu:  twoDecimals(cpuPct),
 		Mem:  bytesToMegabytes(float64(usedMemory)),
-		// MemPct: maxDecimals(pctMemory, 2),
+		// MemPct: twoDecimals(pctMemory),
 	}
 	return cStats, nil
 }
