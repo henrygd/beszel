@@ -11,7 +11,7 @@ import { useMemo } from 'react'
 import { formatShortDate, hourWithMinutes } from '@/lib/utils'
 import Spinner from '../spinner'
 
-export default function ({
+export default function ContainerMemChart({
 	chartData,
 	ticks,
 }: {
@@ -71,15 +71,14 @@ export default function ({
 			>
 				<CartesianGrid vertical={false} />
 				<YAxis
-					domain={[0, (max: number) => Math.ceil(max)]}
-					// tickCount={9}
-					allowDecimals={false}
+					// domain={[0, (max: number) => Math.ceil(max)]}
 					tickLine={false}
 					axisLine={false}
 					unit={' GB'}
-					tickFormatter={(x) => {
-						x = x / 1024
-						return x % 1 === 0 ? x : x.toFixed(1)
+					width={70}
+					tickFormatter={(value) => {
+						value = value / 1024
+						return value.toFixed((value * 100) % 1 === 0 ? 1 : 2)
 					}}
 				/>
 				<XAxis

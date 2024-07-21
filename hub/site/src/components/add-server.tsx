@@ -26,16 +26,17 @@ export function AddServerButton() {
 
 	function copyDockerCompose(port: string) {
 		copyToClipboard(`services:
-  agent:
+  beszel-agent:
     image: 'henrygd/beszel-agent'
     container_name: 'beszel-agent'
     restart: unless-stopped
-    ports:
-      - '${port}:45876'
-    volumes:
+    network_mode: host
+		volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - KEY="${publicKey}"`)
+		  - PORT=${port}
+      - KEY="${publicKey}"
+			# - FILESYSTEM=/dev/sda1 # set to the correct filesystem for disk I/O stats`)
 	}
 
 	useEffect(() => {
@@ -93,7 +94,7 @@ export function AddServerButton() {
 					</DialogDescription>
 				</DialogHeader>
 				<form onSubmit={handleSubmit as any}>
-					<div className="grid gap-4 mt-1 mb-4">
+					<div className="grid gap-3 mt-1 mb-4">
 						<div className="grid grid-cols-4 items-center gap-4">
 							<Label htmlFor="name" className="text-right">
 								Name

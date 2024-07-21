@@ -62,8 +62,9 @@ export default function CommandPalette() {
 						<CommandShortcut>Page</CommandShortcut>
 					</CommandItem>
 					<CommandItem
+						keywords={['github']}
 						onSelect={() => {
-							window.location.href = 'https://github.com/henrygd'
+							window.location.href = 'https://github.com/henrygd/beszel/blob/main/readme.md'
 						}}
 					>
 						<Github className="mr-2 h-4 w-4" />

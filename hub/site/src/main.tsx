@@ -143,7 +143,8 @@ const Layout = () => {
 									<a
 										title={'Github'}
 										aria-label="Github repo"
-										href={'https://github.com/henrygd'}
+										href={'https://github.com/henrygd/beszel'}
+										target="_blank"
 										className={cn('', buttonVariants({ variant: 'ghost', size: 'icon' }))}
 									>
 										<GithubIcon className="h-[1.2rem] w-[1.2rem]" />
@@ -156,13 +157,12 @@ const Layout = () => {
 						</TooltipProvider>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
-								<a
+								<button
 									aria-label="User Actions"
-									href={'https://github.com/henrygd'}
 									className={cn('', buttonVariants({ variant: 'ghost', size: 'icon' }))}
 								>
 									<UserIcon className="h-[1.2rem] w-[1.2rem]" />
-								</a>
+								</button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end" className="min-w-44">
 								<DropdownMenuLabel>{pb.authStore.model?.email}</DropdownMenuLabel>

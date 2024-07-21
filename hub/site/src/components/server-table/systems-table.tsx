@@ -124,7 +124,7 @@ export default function SystemsTable() {
 							<Button
 								data-nolink
 								variant={'ghost'}
-								className="text-foreground/80 h-7 px-1.5 gap-1.5"
+								className="text-foreground/90 h-7 px-1.5 gap-1.5"
 								onClick={() => copyToClipboard(info.getValue() as string)}
 							>
 								{info.getValue() as string}
