@@ -19,7 +19,7 @@ export default function ChartTimeSelect({ className }: { className?: string }) {
 			value={chartTime}
 			onValueChange={(value: ChartTimes) => $chartTime.set(value)}
 		>
-			<SelectTrigger className={cn(className, 'w-40 px-5')}>
+			<SelectTrigger className={cn(className, 'px-5')}>
 				<SelectValue />
 			</SelectTrigger>
 			<SelectContent>

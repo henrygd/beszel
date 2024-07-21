@@ -201,9 +201,9 @@ export default function ServerDetail({ name }: { name: string }) {
 	return (
 		<div className="grid gap-4 mb-10">
 			<Card>
-				<div className="grid gap-1.5 px-6 pt-4 pb-5">
+				<div className="grid gap-2 px-6 pt-4 pb-5">
 					<h1 className="text-[1.6rem] font-semibold">{server.name}</h1>
-					<div className="flex flex-wrap items-center gap-3 text-sm opacity-90">
+					<div className="flex flex-wrap items-center gap-3 gap-y-2 text-sm opacity-90">
 						<div className="capitalize flex gap-2 items-center">
 							<span className={cn('relative flex h-3 w-3')}>
 								{server.status === 'up' && (
@@ -224,16 +224,16 @@ export default function ServerDetail({ name }: { name: string }) {
 							{server.status}
 						</div>
 						<Separator orientation="vertical" className="h-4 bg-primary/30" />
-						<div className="flex gap-1.5 items-center">
-							<GlobeIcon className="h-4 w-4" /> {server.host}
+						<div className="flex gap-1.5">
+							<GlobeIcon className="h-4 w-4 mt-[1px]" /> {server.host}
 						</div>
 						{server.info?.u && (
 							<TooltipProvider>
 								<Tooltip>
 									<Separator orientation="vertical" className="h-4 bg-primary/30" />
 									<TooltipTrigger asChild>
-										<div className="flex gap-1.5 items-center">
-											<ClockArrowUp className="h-4 w-4" /> {uptime}
+										<div className="flex gap-1.5">
+											<ClockArrowUp className="h-4 w-4 mt-[1px]" /> {uptime}
 										</div>
 									</TooltipTrigger>
 									<TooltipContent>Uptime</TooltipContent>
@@ -243,8 +243,8 @@ export default function ServerDetail({ name }: { name: string }) {
 						{server.info?.m && (
 							<>
 								<Separator orientation="vertical" className="h-4 bg-primary/30" />
-								<div className="flex gap-1.5 items-center">
-									<CpuIcon className="h-4 w-4" />
+								<div className="flex gap-1.5">
+									<CpuIcon className="h-4 w-4 mt-[1px]" />
 									{server.info.m} ({server.info.c}c / {server.info.t}t)
 								</div>
 							</>
@@ -253,10 +253,7 @@ export default function ServerDetail({ name }: { name: string }) {
 				</div>
 			</Card>
 
-			<ChartCard
-				title="Total CPU Usage"
-				description="Average system-wide CPU utilization as a percentage"
-			>
+			<ChartCard title="Total CPU Usage" description="Average system-wide CPU utilization">
 				<CpuChart chartData={cpuChartData} ticks={ticks} />
 			</ChartCard>
 
@@ -283,14 +280,11 @@ export default function ServerDetail({ name }: { name: string }) {
 				<DiskChart chartData={diskChartData} ticks={ticks} />
 			</ChartCard>
 
-			<ChartCard
-				title="Disk I/O"
-				description="Throughput of disk where the root filesystem is mounted"
-			>
+			<ChartCard title="Disk I/O" description="Throughput of root filesystem">
 				<DiskIoChart chartData={diskIoChartData} ticks={ticks} />
 			</ChartCard>
 
-			<ChartCard title="Bandwidth" description="Throughput of network interfaces">
+			<ChartCard title="Bandwidth" description="Network traffic of public interfaces">
 				<BandwidthChart chartData={bandwidthChartData} ticks={ticks} />
 			</ChartCard>
 		</div>
@@ -308,12 +302,12 @@ function ChartCard({
 }) {
 	return (
 		<Card className="pb-4 col-span-full">
-			<CardHeader className="pb-5 pt-4">
-				<CardTitle className="flex gap-2 items-center justify-between -mb-1.5">
-					{title}
-					<ChartTimeSelect className="translate-y-1" />
-				</CardTitle>
+			<CardHeader className="pb-5 pt-4 relative space-y-1">
+				<CardTitle className="text-xl sm:text-2xl">{title}</CardTitle>
 				<CardDescription>{description}</CardDescription>
+				<div className="w-full pt-1 sm:w-40 sm:absolute top-1.5 right-3.5">
+					<ChartTimeSelect />
+				</div>
 			</CardHeader>
 			<CardContent className={'pl-1 w-[calc(100%-1.6em)] h-52 relative'}>
 				<Suspense fallback={<Spinner />}>{children}</Suspense>
