@@ -11,7 +11,7 @@ export default function () {
 	return (
 		<>
 			<Card>
-				<CardHeader>
+				<CardHeader className="pb-5">
 					<CardTitle className={'mb-1.5'}>All Systems</CardTitle>
 					<CardDescription>
 						Updated in real time. Press{' '}

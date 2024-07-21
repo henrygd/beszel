@@ -18,7 +18,8 @@ export default function MemChart({
 	ticks: number[]
 }) {
 	const totalMem = useMemo(() => {
-		return Math.ceil(chartData[0]?.mem)
+		const maxMem = Math.ceil(chartData[0]?.mem)
+		return maxMem > 2 && maxMem % 2 !== 0 ? maxMem + 1 : maxMem
 	}, [chartData])
 
 	const chartConfig = useMemo(
@@ -52,11 +53,11 @@ export default function MemChart({
 				<YAxis
 					// use "ticks" instead of domain / tickcount if need more control
 					domain={[0, totalMem]}
-					tickCount={9}
 					tickLine={false}
-					allowDecimals={false}
+					width={totalMem >= 100 ? 65 : 58}
+					// allowDecimals={false}
 					axisLine={false}
-					tickFormatter={(v) => `${v} GB`}
+					unit={' GB'}
 				/>
 				{/* todo: short time if first date is same day, otherwise short date */}
 				<XAxis
@@ -77,7 +78,7 @@ export default function MemChart({
 					animationDuration={150}
 					content={
 						<ChartTooltipContent
-							unit="GB"
+							unit=" GB"
 							// @ts-ignore
 							itemSorter={(a, b) => a.name.localeCompare(b.name)}
 							labelFormatter={(_, data) => formatShortDate(data[0].payload.time)}

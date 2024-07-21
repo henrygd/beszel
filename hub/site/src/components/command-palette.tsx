@@ -9,6 +9,7 @@ import {
 	LogsIcon,
 	MailIcon,
 	Server,
+	UsersIcon,
 } from 'lucide-react'
 
 import {
@@ -91,17 +92,18 @@ export default function CommandPalette() {
 						<CommandSeparator />
 						<CommandGroup heading="Admin">
 							<CommandItem
+								keywords={['pocketbase']}
 								onSelect={() => {
-									window.location.href = '/_/'
+									window.open('/_/', '_blank')
 								}}
 							>
-								<Database className="mr-2 h-4 w-4" />
-								<span>PocketBase</span>
+								<UsersIcon className="mr-2 h-4 w-4" />
+								<span>Users</span>
 								<CommandShortcut>Admin</CommandShortcut>
 							</CommandItem>
 							<CommandItem
 								onSelect={() => {
-									window.location.href = '/_/#/logs'
+									window.open('/_/#/logs', '_blank')
 								}}
 							>
 								<LogsIcon className="mr-2 h-4 w-4" />
@@ -110,7 +112,7 @@ export default function CommandPalette() {
 							</CommandItem>
 							<CommandItem
 								onSelect={() => {
-									window.location.href = '/_/#/settings/backups'
+									window.open('/_/#/settings/backups', '_blank')
 								}}
 							>
 								<DatabaseBackupIcon className="mr-2 h-4 w-4" />
@@ -120,7 +122,7 @@ export default function CommandPalette() {
 							<CommandItem
 								keywords={['oauth', 'oicd']}
 								onSelect={() => {
-									window.location.href = '/_/#/settings/auth-providers'
+									window.open('/_/#/settings/auth-providers', '_blank')
 								}}
 							>
 								<LockKeyholeIcon className="mr-2 h-4 w-4" />
@@ -130,7 +132,7 @@ export default function CommandPalette() {
 							<CommandItem
 								keywords={['email']}
 								onSelect={() => {
-									window.location.href = '/_/#/settings/mail'
+									window.open('/_/#/settings/mail', '_blank')
 								}}
 							>
 								<MailIcon className="mr-2 h-4 w-4" />

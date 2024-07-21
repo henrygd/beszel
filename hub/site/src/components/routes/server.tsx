@@ -199,7 +199,7 @@ export default function ServerDetail({ name }: { name: string }) {
 	}
 
 	return (
-		<div className="grid gap-5 mb-10">
+		<div className="grid gap-4 mb-10">
 			<Card>
 				<div className="grid gap-1.5 px-6 pt-4 pb-5">
 					<h1 className="text-[1.6rem] font-semibold">{server.name}</h1>

@@ -56,11 +56,9 @@ export default function DiskChart({
 				<CartesianGrid vertical={false} />
 				<YAxis
 					className="tracking-tighter"
-					width={75}
+					width={diskSize >= 1000 ? 75 : 65}
 					domain={[0, diskSize]}
-					// ticks={ticks}
 					tickCount={9}
-					minTickGap={8}
 					tickLine={false}
 					axisLine={false}
 					unit={' GB'}

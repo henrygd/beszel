@@ -122,7 +122,7 @@ const Layout = () => {
 	return (
 		<>
 			<div className="container">
-				<div className="flex items-center h-16 bg-card px-6 border bt-0 rounded-md my-5">
+				<div className="flex items-center h-16 bg-card px-6 border bt-0 rounded-md my-4">
 					<Link
 						href="/"
 						aria-label="Home"
@@ -132,7 +132,7 @@ const Layout = () => {
 							navigate('/')
 						}}
 					>
-						<Logo className="h-[1.2em] fill-foreground" />
+						<Logo className="h-[1.15em] fill-foreground" />
 					</Link>
 
 					<div className={'flex ml-auto'}>
@@ -171,31 +171,31 @@ const Layout = () => {
 									{isAdmin() && (
 										<>
 											<DropdownMenuItem asChild>
-												<a href="/_/">
+												<a href="/_/" target="_blank">
 													<UsersIcon className="mr-2.5 h-4 w-4" />
 													<span>Users</span>
 												</a>
 											</DropdownMenuItem>
 											<DropdownMenuItem asChild>
-												<a href="/_/#/collections?collectionId=2hz5ncl8tizk5nx">
+												<a href="/_/#/collections?collectionId=2hz5ncl8tizk5nx" target="_blank">
 													<ServerIcon className="mr-2.5 h-4 w-4" />
 													<span>Systems</span>
 												</a>
 											</DropdownMenuItem>
 											<DropdownMenuItem asChild>
-												<a href="/_/#/logs">
+												<a href="/_/#/logs" target="_blank">
 													<LogsIcon className="mr-2.5 h-4 w-4" />
 													<span>Logs</span>
 												</a>
 											</DropdownMenuItem>
 											<DropdownMenuItem asChild>
-												<a href="/_/#/settings/backups">
+												<a href="/_/#/settings/backups" target="_blank">
 													<DatabaseBackupIcon className="mr-2.5 h-4 w-4" />
 													<span>Backups</span>
 												</a>
 											</DropdownMenuItem>
 											<DropdownMenuItem asChild>
-												<a href="/_/#/settings/auth-providers">
+												<a href="/_/#/settings/auth-providers" target="_blank">
 													<LockKeyholeIcon className="mr-2.5 h-4 w-4" />
 													<span>Auth providers</span>
 												</a>

@@ -46,11 +46,8 @@ export default function BandwidthChart({
 				<CartesianGrid vertical={false} />
 				<YAxis
 					className="tracking-tighter"
-					width={80}
-					domain={[0, 'auto']}
-					// ticks={ticks}
-					tickCount={9}
-					minTickGap={8}
+					width={75}
+					domain={[0, (max: number) => (max < 0.4 ? 0.4 : Math.ceil(max))]}
 					tickLine={false}
 					axisLine={false}
 					unit={' MB/s'}

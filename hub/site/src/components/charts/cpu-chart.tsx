@@ -36,8 +36,8 @@ export default function CpuChart({
 			<AreaChart accessibilityLayer data={chartData} margin={{ top: 10 }}>
 				<CartesianGrid vertical={false} />
 				<YAxis
-					domain={[0, (max: number) => Math.ceil(max)]}
-					width={47}
+					// domain={[0, (max: number) => Math.ceil(max)]}
+					width={48}
 					tickLine={false}
 					axisLine={false}
 					unit={'%'}

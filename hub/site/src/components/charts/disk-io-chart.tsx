@@ -46,11 +46,14 @@ export default function DiskIoChart({
 				<CartesianGrid vertical={false} />
 				<YAxis
 					className="tracking-tighter"
-					width={80}
-					domain={[0, 'auto']}
-					// ticks={ticks}
-					tickCount={9}
-					minTickGap={8}
+					width={75}
+					domain={[0, (max: number) => (max < 0.4 ? 0.4 : Math.ceil(max))]}
+					tickFormatter={(value) => {
+						if (value >= 100) {
+							return value.toFixed(0)
+						}
+						return value.toFixed((value * 100) % 1 === 0 ? 1 : 2)
+					}}
 					tickLine={false}
 					axisLine={false}
 					unit={' MB/s'}
