@@ -67,12 +67,11 @@ func main() {
 			return err
 		}
 		usersAuthOptions := usersCollection.AuthOptions()
+		usersAuthOptions.AllowUsernameAuth = false
 		if os.Getenv("DISABLE_PASSWORD_AUTH") == "true" {
 			usersAuthOptions.AllowEmailAuth = false
-			usersAuthOptions.AllowUsernameAuth = false
 		} else {
 			usersAuthOptions.AllowEmailAuth = true
-			usersAuthOptions.AllowUsernameAuth = true
 		}
 		usersCollection.SetOptions(usersAuthOptions)
 		if err := app.Dao().SaveCollection(usersCollection); err != nil {
@@ -99,11 +98,13 @@ func main() {
 		return nil
 	})
 
-	// set up cron jobs
+	// set up cron jobs / ticker for system updates
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+		// 15 second ticker for system updates
+		go startSystemUpdateTicker()
+		// cron job to delete old records
 		scheduler := cron.New()
-		// delete records that are older than the display period
-		scheduler.MustAdd("delete old records", "8 */2 * * *", func() {
+		scheduler.MustAdd("delete old records", "8 * * * *", func() {
 			deleteOldRecords("system_stats", "1m", time.Hour)
 			deleteOldRecords("container_stats", "1m", time.Hour)
 			deleteOldRecords("system_stats", "10m", 12*time.Hour)
@@ -148,12 +149,6 @@ func main() {
 			}
 			return c.JSON(http.StatusOK, map[string]bool{"firstRun": adminNum == 0})
 		})
-		return nil
-	})
-
-	// start ticker for server updates
-	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		go serverUpdateTicker()
 		return nil
 	})
 
@@ -206,7 +201,7 @@ func main() {
 	}
 }
 
-func serverUpdateTicker() {
+func startSystemUpdateTicker() {
 	ticker := time.NewTicker(15 * time.Second)
 	for range ticker.C {
 		updateSystems()

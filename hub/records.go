@@ -140,11 +140,10 @@ func twoDecimals(value float64) float64 {
 
 /* Delete records of specified collection and type that are older than timeLimit */
 func deleteOldRecords(collection string, recordType string, timeLimit time.Duration) {
-	// log.Println("Deleting old", recordType, "records...")
-	timeLimitStamp := time.Now().UTC().Add(timeLimit).Format("2006-01-02 15:04:05")
+	timeLimitStamp := time.Now().UTC().Add(-timeLimit).Format("2006-01-02 15:04:05")
 	records, _ := app.Dao().FindRecordsByExpr(collection,
 		dbx.NewExp("type = {:type}", dbx.Params{"type": recordType}),
-		dbx.NewExp("created > {:created}", dbx.Params{"created": timeLimitStamp}),
+		dbx.NewExp("created < {:created}", dbx.Params{"created": timeLimitStamp}),
 	)
 	for _, record := range records {
 		if err := app.Dao().DeleteRecord(record); err != nil {

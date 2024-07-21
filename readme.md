@@ -30,7 +30,7 @@ Beszel has two components: the hub and the agent.
 
 The hub is a web application, built on top of [PocketBase](https://pocketbase.io/), that provides a dashboard to view and manage your connected systems.
 
-The agent runs on each system you want to monitor. It provides a minimal SSH server through which it communicates system information to the hub.
+The agent runs on each system you want to monitor. It creates a minimal SSH server through which it communicates system metrics to the hub.
 
 ## Installation
 
@@ -133,7 +133,7 @@ The agent's SSH server is configured to accept connections only using this key. 
 
 ### Agent is not connecting
 
-Assuming the agent is running, the connection is probably being blocked by a firewall. You should add an inbound rule to allow TCP connections to the port. Check any active firewalls on the agent system, like iptables or ufw, and in your cloud provider account if applicable.
+Assuming the agent is running, the connection is probably being blocked by a firewall. You need to add an inbound rule on the agent system to allow TCP connections to the port. Check any active firewalls, like iptables or ufw, and in your cloud provider account if applicable.
 
 Connectivity can be tested by running `telnet <agent-ip> <port>` or `nc -zv <agent-ip> <port>` from a remote machine.
 
