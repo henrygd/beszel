@@ -30,7 +30,7 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        run: bun install --cwd ./hub/site
+        run: bun install --no-save --cwd ./hub/site
 
       - name: Build site
         run: bun run --cwd ./hub/site build
