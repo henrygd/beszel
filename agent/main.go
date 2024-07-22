@@ -23,7 +23,7 @@ import (
 	psutilNet "github.com/shirou/gopsutil/v4/net"
 )
 
-var Version = "0.0.1-alpha.3"
+var Version = "0.0.1-alpha.5"
 
 var containerCpuMap = make(map[string][2]uint64)
 var containerCpuMutex = &sync.Mutex{}
