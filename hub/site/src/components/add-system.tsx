@@ -27,16 +27,16 @@ export function AddSystemButton() {
 	function copyDockerCompose(port: string) {
 		copyToClipboard(`services:
   beszel-agent:
-    image: 'henrygd/beszel-agent'
-    container_name: 'beszel-agent'
+    image: "henrygd/beszel-agent"
+    container_name: "beszel-agent"
     restart: unless-stopped
     network_mode: host
-		volumes:
+    volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-		  - PORT=${port}
-      - KEY="${publicKey}"
-			# - FILESYSTEM=/dev/sda1 # set to the correct filesystem for disk I/O stats`)
+      PORT: ${port}
+      KEY: "${publicKey}"
+      # FILESYSTEM: /dev/sda1 # set to the correct filesystem for disk I/O stats`)
 	}
 
 	useEffect(() => {
