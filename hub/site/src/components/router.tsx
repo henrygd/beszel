@@ -3,7 +3,7 @@ import { createRouter } from '@nanostores/router'
 export const $router = createRouter(
 	{
 		home: '/',
-		server: '/server/:name',
+		server: '/system/:name',
 		'forgot-password': '/forgot-password',
 	},
 	{ links: false }

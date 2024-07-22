@@ -28,23 +28,39 @@ A lightweight server resource monitoring hub with historical data, docker stats,
 
 Beszel has two components: the hub and the agent.
 
-The hub is a web application, built on top of [PocketBase](https://pocketbase.io/), that provides a dashboard to view and manage your connected systems.
+The hub is a web application that provides a dashboard to view and manage your connected systems. It's built on top of [PocketBase](https://pocketbase.io/).
 
 The agent runs on each system you want to monitor. It creates a minimal SSH server through which it communicates system metrics to the hub.
 
+[![Docker Image Size (tag)](https://img.shields.io/docker/image-size/henrygd/beszel-agent/0.0.1-alpha.3?logo=docker&label=agent%20image%20size)](https://hub.docker.com/r/henrygd/beszel-agent)
+[![Docker Image Size (tag)](https://img.shields.io/docker/image-size/henrygd/beszel/0.0.1-alpha.3?logo=docker&label=hub%20image%20size)](https://hub.docker.com/r/henrygd/beszel)
+
+## Getting started
+
+If using the binary instead of docker, ignore 4-5 and run the agent using the binary instead.
+
+1. Start the hub (see [Installation](#installation)). The binary command is `beszel serve`.
+2. Open http://localhost:8090 and create an admin user.
+3. Click "Add system." Enter the name and host of the system you want to monitor.
+4. Click "Copy docker compose" to copy the agent's docker-compose.yml file to your clipboard.
+5. On the agent system, create the compose file and run `docker compose up` to start the agent.
+6. Back in the hub, click the "Add system" button in the dialog to finish adding the system.
+
+If all goes well, you should see the system flip to green. If it goes red, check the Logs page, and see [troubleshooting tips](#faq--troubleshooting).
+
 ## Installation
 
-The hub and agent are distributed as single binary files, as well as docker images.
+You may choose to install the hub and agent as single binaries, or as docker images.
 
 ### Docker
 
 **Hub**: See the example [docker-compose.yml](/hub/docker-compose.yml) file.
 
-**Agent**: The hub provides compose content when adding a system to monitor, but you can also reference the example [docker-compose.yml](/agent/docker-compose.yml) file.
+**Agent**: The hub provides compose content for the agent, but you can also reference the example [docker-compose.yml](/agent/docker-compose.yml) file.
 
-The agent uses the `host` network mode, which automatically exposes the port. So change the port using an environment variable if you need to. It's set up this way so that can access stats for your host network interfaces.
+The agent uses the host network mode so it can access network interface stats. This automatically exposes the port, so change the port using an environment variable if you need to.
 
-If you don't want to use the host network, you may remove that line from the compose file and manually expose the port. This will prevent the network stats from populating.
+If you don't need network stats, remove that line from the compose file and map the port manually.
 
 > **Note**: The docker version of the agent cannot automatically detect the filesystem to use for disk I/O stats, so include the `FILESYSTEM` environment variable if you want that to work ([instructions here](#finding-the-correct-filesystem)).
 
@@ -78,10 +94,11 @@ Use `beszel update` and `beszel-agent update` to update to the latest version.
 
 ### Agent
 
-| Name         | Default | Description                                      |
-| ------------ | ------- | ------------------------------------------------ |
-| `FILESYSTEM` | unset   | Filesystem / partition to use for disk I/O stats |
-| `PORT`       | 45876   | Port to listen on                                |
+| Name         | Default | Description                                                |
+| ------------ | ------- | ---------------------------------------------------------- |
+| `FILESYSTEM` | unset   | Filesystem / partition to use for disk I/O stats           |
+| `KEY`        | unset   | Public SSH key to use for authentication. Provided in hub. |
+| `PORT`       | 45876   | Port to listen on                                          |
 
 ## OAuth / OIDC setup
 

@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 
-const SystemsTable = lazy(() => import('../server-table/systems-table'))
+const SystemsTable = lazy(() => import('../systems-table/systems-table'))
 
 export default function () {
 	useEffect(() => {

@@ -1,7 +1,4 @@
-'use client'
-
 import {
-	Database,
 	DatabaseBackupIcon,
 	Github,
 	LayoutDashboard,
@@ -30,7 +27,7 @@ import { navigate } from './router'
 
 export default function CommandPalette() {
 	const [open, setOpen] = useState(false)
-	const servers = useStore($systems)
+	const systems = useStore($systems)
 
 	useEffect(() => {
 		const down = (e: KeyboardEvent) => {
@@ -72,22 +69,26 @@ export default function CommandPalette() {
 						<CommandShortcut>GitHub</CommandShortcut>
 					</CommandItem>
 				</CommandGroup>
-				<CommandSeparator />
-				<CommandGroup heading="Servers">
-					{servers.map((server) => (
-						<CommandItem
-							key={server.id}
-							onSelect={() => {
-								navigate(`/server/${server.name}`)
-								setOpen((open) => !open)
-							}}
-						>
-							<Server className="mr-2 h-4 w-4" />
-							<span>{server.name}</span>
-							<CommandShortcut>{server.host}</CommandShortcut>
-						</CommandItem>
-					))}
-				</CommandGroup>
+				{systems.length > 0 && (
+					<>
+						<CommandSeparator />
+						<CommandGroup heading="Systems">
+							{systems.map((system) => (
+								<CommandItem
+									key={system.id}
+									onSelect={() => {
+										navigate(`/system/${system.name}`)
+										setOpen(false)
+									}}
+								>
+									<Server className="mr-2 h-4 w-4" />
+									<span>{system.name}</span>
+									<CommandShortcut>{system.host}</CommandShortcut>
+								</CommandItem>
+							))}
+						</CommandGroup>
+					</>
+				)}
 				{isAdmin() && (
 					<>
 						<CommandSeparator />
@@ -95,6 +96,7 @@ export default function CommandPalette() {
 							<CommandItem
 								keywords={['pocketbase']}
 								onSelect={() => {
+									setOpen(false)
 									window.open('/_/', '_blank')
 								}}
 							>
@@ -104,6 +106,7 @@ export default function CommandPalette() {
 							</CommandItem>
 							<CommandItem
 								onSelect={() => {
+									setOpen(false)
 									window.open('/_/#/logs', '_blank')
 								}}
 							>
@@ -113,6 +116,7 @@ export default function CommandPalette() {
 							</CommandItem>
 							<CommandItem
 								onSelect={() => {
+									setOpen(false)
 									window.open('/_/#/settings/backups', '_blank')
 								}}
 							>
@@ -123,6 +127,7 @@ export default function CommandPalette() {
 							<CommandItem
 								keywords={['oauth', 'oicd']}
 								onSelect={() => {
+									setOpen(false)
 									window.open('/_/#/settings/auth-providers', '_blank')
 								}}
 							>
@@ -133,6 +138,7 @@ export default function CommandPalette() {
 							<CommandItem
 								keywords={['email']}
 								onSelect={() => {
+									setOpen(false)
 									window.open('/_/#/settings/mail', '_blank')
 								}}
 							>

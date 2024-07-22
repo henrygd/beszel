@@ -20,14 +20,14 @@ const DiskIoChart = lazy(() => import('../charts/disk-io-chart'))
 const BandwidthChart = lazy(() => import('../charts/bandwidth-chart'))
 
 export default function ServerDetail({ name }: { name: string }) {
-	const servers = useStore($systems)
+	const systems = useStore($systems)
 	const updatedSystem = useStore($updatedSystem)
 	const chartTime = useStore($chartTime)
 	const [ticks, setTicks] = useState([] as number[])
 	const [server, setServer] = useState({} as SystemRecord)
 	const [containers, setContainers] = useState([] as ContainerStatsRecord[])
 
-	const [serverStats, setServerStats] = useState([] as SystemStatsRecord[])
+	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
 	const [cpuChartData, setCpuChartData] = useState([] as { time: number; cpu: number }[])
 	const [memChartData, setMemChartData] = useState(
 		[] as { time: number; mem: number; memUsed: number; memCache: number }[]
@@ -57,7 +57,7 @@ export default function ServerDetail({ name }: { name: string }) {
 	}, [name])
 
 	const resetCharts = useCallback(() => {
-		setServerStats([])
+		setSystemStats([])
 		setCpuChartData([])
 		setMemChartData([])
 		setDiskChartData([])
@@ -72,11 +72,11 @@ export default function ServerDetail({ name }: { name: string }) {
 		if (server.id && server.name === name) {
 			return
 		}
-		const matchingServer = servers.find((s) => s.name === name) as SystemRecord
+		const matchingServer = systems.find((s) => s.name === name) as SystemRecord
 		if (matchingServer) {
 			setServer(matchingServer)
 		}
-	}, [name, server, servers])
+	}, [name, server, systems])
 
 	// get stats
 	useEffect(() => {
@@ -95,7 +95,7 @@ export default function ServerDetail({ name }: { name: string }) {
 			})
 			.then((records) => {
 				// console.log('sctats', records)
-				setServerStats(records)
+				setSystemStats(records)
 			})
 	}, [server, chartTime])
 
@@ -107,7 +107,7 @@ export default function ServerDetail({ name }: { name: string }) {
 
 	// create cpu / mem / disk data for charts
 	useEffect(() => {
-		if (!serverStats.length) {
+		if (!systemStats.length) {
 			return
 		}
 		const cpuData = [] as typeof cpuChartData
@@ -115,7 +115,7 @@ export default function ServerDetail({ name }: { name: string }) {
 		const diskData = [] as typeof diskChartData
 		const diskIoData = [] as typeof diskIoChartData
 		const networkData = [] as typeof bandwidthChartData
-		for (let { created, stats } of serverStats) {
+		for (let { created, stats } of systemStats) {
 			const time = new Date(created).getTime()
 			cpuData.push({ time, cpu: stats.cpu })
 			memData.push({
@@ -133,17 +133,17 @@ export default function ServerDetail({ name }: { name: string }) {
 		setDiskChartData(diskData)
 		setDiskIoChartData(diskIoData)
 		setBandwidthChartData(networkData)
-	}, [serverStats])
+	}, [systemStats])
 
 	useEffect(() => {
-		if (!serverStats.length) {
+		if (!systemStats.length) {
 			return
 		}
 		const now = new Date()
 		const startTime = chartTimeData[chartTime].getOffset(now)
 		const scale = scaleTime([startTime.getTime(), now], [0, cpuChartData.length])
 		setTicks(scale.ticks().map((d) => d.getTime()))
-	}, [chartTime, serverStats])
+	}, [chartTime, systemStats])
 
 	// get container stats
 	useEffect(() => {

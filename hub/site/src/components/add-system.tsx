@@ -19,7 +19,7 @@ import { useStore } from '@nanostores/react'
 import { copyToClipboard } from '@/lib/utils'
 import { SystemStats } from '@/types'
 
-export function AddServerButton() {
+export function AddSystemButton() {
 	const [open, setOpen] = useState(false)
 	const port = useRef() as MutableRefObject<HTMLInputElement>
 	const publicKey = useStore($publicKey)

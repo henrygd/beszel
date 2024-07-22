@@ -11,7 +11,7 @@ import {
 	updateAlerts,
 	updateFavicon,
 	updateRecordList,
-	updateServerList,
+	updateSystemList,
 } from './lib/utils.ts'
 import { buttonVariants } from './components/ui/button.tsx'
 import {
@@ -44,16 +44,16 @@ import {
 } from './components/ui/dropdown-menu.tsx'
 import { AlertRecord, SystemRecord } from './types'
 import { $router, Link, navigate } from './components/router.tsx'
-import ServerDetail from './components/routes/server.tsx'
+import ServerDetail from './components/routes/system.tsx'
 
-// const ServerDetail = lazy(() => import('./components/routes/server.tsx'))
+// const ServerDetail = lazy(() => import('./components/routes/system.tsx'))
 const CommandPalette = lazy(() => import('./components/command-palette.tsx'))
 const LoginPage = lazy(() => import('./components/login/login.tsx'))
 
 const App = () => {
 	const page = useStore($router)
 	const authenticated = useStore($authenticated)
-	const servers = useStore($systems)
+	const systems = useStore($systems)
 
 	useEffect(() => {
 		// change auth store on auth change
@@ -61,7 +61,7 @@ const App = () => {
 			$authenticated.set(pb.authStore.isValid)
 		})
 		// get servers / alerts
-		updateServerList()
+		updateSystemList()
 		updateAlerts()
 		// subscribe to real time updates for systems / alerts
 		pb.collection<SystemRecord>('systems').subscribe('*', (e) => {
@@ -79,15 +79,15 @@ const App = () => {
 
 	// update favicon
 	useEffect(() => {
-		if (!authenticated || !servers.length) {
+		if (!authenticated || !systems.length) {
 			updateFavicon('favicon.svg')
 		} else {
 			let up = false
-			for (const server of servers) {
-				if (server.status === 'down') {
+			for (const system of systems) {
+				if (system.status === 'down') {
 					updateFavicon('favicon-red.svg')
 					return () => updateFavicon('favicon.svg')
-				} else if (server.status === 'up') {
+				} else if (system.status === 'up') {
 					up = true
 				}
 			}
@@ -97,7 +97,7 @@ const App = () => {
 		return () => {
 			updateFavicon('favicon.svg')
 		}
-	}, [authenticated, servers])
+	}, [authenticated, systems])
 
 	if (!page) {
 		return <h1 className="text-3xl text-center my-14">404</h1>

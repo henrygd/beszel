@@ -59,7 +59,7 @@ import {
 import { useMemo, useState } from 'react'
 import { $systems, pb } from '@/lib/stores'
 import { useStore } from '@nanostores/react'
-import { AddServerButton } from '../add-server'
+import { AddSystemButton } from '../add-system'
 import { cn, copyToClipboard, isReadOnlyUser } from '@/lib/utils'
 import AlertsButton from '../table-alerts'
 import { navigate } from '../router'
@@ -133,7 +133,7 @@ export default function SystemsTable() {
 						</span>
 					)
 				},
-				header: ({ column }) => sortableHeader(column, 'Server', Server),
+				header: ({ column }) => sortableHeader(column, 'System', Server),
 			},
 			{
 				accessorKey: 'info.cpu',
@@ -259,7 +259,7 @@ export default function SystemsTable() {
 						className="max-w-sm"
 					/>
 					<div className={cn('ml-auto flex gap-2', isReadOnlyUser() && 'hidden')}>
-						<AddServerButton />
+						<AddSystemButton />
 					</div>
 				</div>
 				<div className="rounded-md border overflow-hidden">
@@ -291,7 +291,7 @@ export default function SystemsTable() {
 										onClick={(e) => {
 											const target = e.target as HTMLElement
 											if (!target.closest('[data-nolink]') && e.currentTarget.contains(target)) {
-												navigate(`/server/${row.original.name}`)
+												navigate(`/system/${row.original.name}`)
 											}
 										}}
 									>
@@ -314,7 +314,7 @@ export default function SystemsTable() {
 							) : (
 								<TableRow>
 									<TableCell colSpan={columns.length} className="h-24 text-center">
-										No servers found
+										No systems found
 									</TableCell>
 								</TableRow>
 							)}
