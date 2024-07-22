@@ -31,4 +31,4 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 EXPOSE 8090
 
 ENTRYPOINT [ "/beszel" ]
-CMD ["serve", "--http=localhost:8090"]
+CMD ["serve", "--http=0.0.0.0:8090"]
