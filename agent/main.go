@@ -320,8 +320,7 @@ func main() {
 	if pubKeyEnv, exists := os.LookupEnv("KEY"); exists {
 		pubKey = []byte(pubKeyEnv)
 	} else {
-		pubKey = []byte("ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJgPK8kpPOwPFIq6BIa7Bu/xwrjt5VRQCz3az3Glt4jp")
-		// log.Fatal("KEY environment variable is not set")
+		log.Fatal("KEY environment variable is not set")
 	}
 
 	if filesystem, exists := os.LookupEnv("FILESYSTEM"); exists {
