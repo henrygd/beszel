@@ -13,9 +13,11 @@ jobs:
       matrix:
         include:
           - image: henrygd/beszel
-            context: hub
+            context: ./hub
+            dockerfile: ./hub/Dockerfile
           - image: henrygd/beszel-agent
-            context: agent
+            context: ./agent
+            dockerfile: ./agent/Dockerfile
     permissions:
       contents: read
       packages: write
@@ -62,7 +64,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: '{{defaultContext}}:${{ matrix.context }}'
+          context: '${{ matrix.context }}'
           file: ${{ matrix.dockerfile }}
           platforms: linux/amd64,linux/arm64
           push: ${{ github.ref_type == 'tag' }}
