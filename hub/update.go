@@ -17,7 +17,10 @@ func updateBeszel(cmd *cobra.Command, args []string) {
 	currentVersion := semver.MustParse(Version)
 	fmt.Println("beszel", currentVersion)
 	fmt.Println("Checking for updates...")
-	latest, found, err = selfupdate.DetectLatest("henrygd/beszel")
+	updater, _ := selfupdate.NewUpdater(selfupdate.Config{
+		Filters: []string{"beszel_"},
+	})
+	latest, found, err = updater.DetectLatest("henrygd/beszel")
 
 	if err != nil {
 		fmt.Println("Error checking for updates:", err)
@@ -29,7 +32,7 @@ func updateBeszel(cmd *cobra.Command, args []string) {
 		os.Exit(0)
 	}
 
-	fmt.Println("Latest version", "v", latest.Version)
+	fmt.Println("Latest version:", latest.Version)
 
 	if latest.Version.LTE(currentVersion) {
 		fmt.Println("You are up to date")
