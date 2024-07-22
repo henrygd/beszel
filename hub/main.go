@@ -12,7 +12,6 @@ import (
 	"log"
 	"net/http"
 	"net/http/httputil"
-	"net/mail"
 	"net/url"
 	"os"
 	"strings"
@@ -26,7 +25,6 @@ import (
 	"github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"
 	"github.com/pocketbase/pocketbase/tools/cron"
-	"github.com/pocketbase/pocketbase/tools/mailer"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
 )
@@ -175,7 +173,7 @@ func main() {
 		}
 
 		// alerts
-		handleStatusAlerts(newStatus, oldRecord)
+		handleSystemAlerts(newStatus, newRecord, oldRecord)
 		return nil
 	})
 
@@ -376,69 +374,6 @@ func requestJson(server *Server) (SystemData, error) {
 	}
 
 	return systemData, nil
-}
-
-func sendAlert(data EmailData) {
-	message := &mailer.Message{
-		From: mail.Address{
-			Address: app.Settings().Meta.SenderAddress,
-			Name:    app.Settings().Meta.SenderName,
-		},
-		To:      []mail.Address{{Address: data.to}},
-		Subject: data.subj,
-		Text:    data.body,
-	}
-	if err := app.NewMailClient().Send(message); err != nil {
-		app.Logger().Error("Failed to send alert: ", "err", err.Error())
-	}
-}
-
-func handleStatusAlerts(newStatus string, oldRecord *models.Record) error {
-	var alertStatus string
-	switch newStatus {
-	case "up":
-		if oldRecord.Get("status") == "down" {
-			alertStatus = "up"
-		}
-	case "down":
-		if oldRecord.Get("status") == "up" {
-			alertStatus = "down"
-		}
-	}
-	if alertStatus == "" {
-		return nil
-	}
-	alerts, err := app.Dao().FindRecordsByFilter("alerts", "name = 'status' && system = {:system}", "-created", -1, 0, dbx.Params{
-		"system": oldRecord.Get("id")})
-	if err != nil {
-		log.Println("failed to get users", "err", err.Error())
-		return nil
-	}
-	if len(alerts) == 0 {
-		return nil
-	}
-	// expand the user relation
-	if errs := app.Dao().ExpandRecords(alerts, []string{"user"}, nil); len(errs) > 0 {
-		return fmt.Errorf("failed to expand: %v", errs)
-	}
-	systemName := oldRecord.Get("name").(string)
-	emoji := "\U0001F534"
-	if alertStatus == "up" {
-		emoji = "\u2705"
-	}
-	for _, alert := range alerts {
-		user := alert.ExpandedOne("user")
-		if user == nil {
-			continue
-		}
-		// send alert
-		sendAlert(EmailData{
-			to:   user.Get("email").(string),
-			subj: fmt.Sprintf("Connection to %s is %s %v", systemName, alertStatus, emoji),
-			body: fmt.Sprintf("Connection to %s is %s\n\n- Beszel", systemName, alertStatus),
-		})
-	}
-	return nil
 }
 
 func getSSHKey() ([]byte, error) {

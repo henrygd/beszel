@@ -15,7 +15,7 @@ func init() {
 			{
 				"id": "2hz5ncl8tizk5nx",
 				"created": "2024-07-07 16:08:20.979Z",
-				"updated": "2024-07-17 15:27:00.429Z",
+				"updated": "2024-07-22 19:39:17.434Z",
 				"name": "systems",
 				"type": "base",
 				"system": false,
@@ -102,7 +102,7 @@ func init() {
 						"unique": false,
 						"options": {
 							"collectionId": "_pb_users_auth_",
-							"cascadeDelete": false,
+							"cascadeDelete": true,
 							"minSelect": null,
 							"maxSelect": null,
 							"displayFields": null
@@ -250,7 +250,7 @@ func init() {
 			{
 				"id": "_pb_users_auth_",
 				"created": "2024-07-14 16:25:18.226Z",
-				"updated": "2024-07-20 00:55:02.071Z",
+				"updated": "2024-07-22 20:10:20.670Z",
 				"name": "users",
 				"type": "auth",
 				"system": false,
@@ -304,7 +304,7 @@ func init() {
 				"options": {
 					"allowEmailAuth": true,
 					"allowOAuth2Auth": true,
-					"allowUsernameAuth": true,
+					"allowUsernameAuth": false,
 					"exceptEmailDomains": null,
 					"manageRule": null,
 					"minPasswordLength": 8,
@@ -316,7 +316,7 @@ func init() {
 			{
 				"id": "elngm8x1l60zi2v",
 				"created": "2024-07-15 01:16:04.044Z",
-				"updated": "2024-07-15 22:44:12.297Z",
+				"updated": "2024-07-22 19:13:16.498Z",
 				"name": "alerts",
 				"type": "base",
 				"system": false,
@@ -364,16 +364,43 @@ func init() {
 						"options": {
 							"maxSelect": 1,
 							"values": [
-								"status"
+								"Status",
+								"CPU",
+								"Memory",
+								"Disk"
 							]
 						}
+					},
+					{
+						"system": false,
+						"id": "o2ablxvn",
+						"name": "value",
+						"type": "number",
+						"required": false,
+						"presentable": false,
+						"unique": false,
+						"options": {
+							"min": null,
+							"max": null,
+							"noDecimal": false
+						}
+					},
+					{
+						"system": false,
+						"id": "6hgdf6hs",
+						"name": "triggered",
+						"type": "bool",
+						"required": false,
+						"presentable": false,
+						"unique": false,
+						"options": {}
 					}
 				],
 				"indexes": [],
 				"listRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
 				"viewRule": "",
 				"createRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
-				"updateRule": null,
+				"updateRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
 				"deleteRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
 				"options": {}
 			}

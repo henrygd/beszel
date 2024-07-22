@@ -13,8 +13,17 @@ import { cn, isAdmin } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { AlertRecord, SystemRecord } from '@/types'
-import { useMemo, useState } from 'react'
+import { lazy, Suspense, useMemo, useState } from 'react'
 import { toast } from './ui/use-toast'
+
+const Slider = lazy(() => import('./ui/slider'))
+
+const failedUpdateToast = () =>
+	toast({
+		title: 'Failed to update alert',
+		description: 'Please check logs for more details.',
+		variant: 'destructive',
+	})
 
 export default function AlertsButton({ system }: { system: SystemRecord }) {
 	const alerts = useStore($alerts)
@@ -38,7 +47,7 @@ export default function AlertsButton({ system }: { system: SystemRecord }) {
 					/>
 				</Button>
 			</DialogTrigger>
-			<DialogContent>
+			<DialogContent className="max-h-full overflow-auto">
 				<DialogHeader>
 					<DialogTitle className="mb-1">Alerts for {system.name}</DialogTitle>
 					<DialogDescription>
@@ -54,38 +63,57 @@ export default function AlertsButton({ system }: { system: SystemRecord }) {
 								to ensure alerts are delivered.{' '}
 							</span>
 						)}
-						Webhook delivery and more alert options will be added in the future.
 					</DialogDescription>
 				</DialogHeader>
-				<Alert system={system} alerts={systemAlerts} />
+				<div className="grid gap-3">
+					<AlertStatus system={system} alerts={systemAlerts} />
+					<AlertWithSlider
+						system={system}
+						alerts={systemAlerts}
+						name="CPU"
+						title="CPU usage"
+						description="Triggers when CPU usage exceeds a threshold."
+					/>
+					<AlertWithSlider
+						system={system}
+						alerts={systemAlerts}
+						name="Memory"
+						title="Memory usage"
+						description="Triggers when memory usage exceeds a threshold."
+					/>
+					<AlertWithSlider
+						system={system}
+						alerts={systemAlerts}
+						name="Disk"
+						title="Disk usage"
+						description="Triggers when disk usage exceeds a threshold."
+					/>
+				</div>
 			</DialogContent>
 		</Dialog>
 	)
 }
 
-function Alert({ system, alerts }: { system: SystemRecord; alerts: AlertRecord[] }) {
+function AlertStatus({ system, alerts }: { system: SystemRecord; alerts: AlertRecord[] }) {
 	const [pendingChange, setPendingChange] = useState(false)
 
 	const alert = useMemo(() => {
-		return alerts.find((alert) => alert.name === 'status')
+		return alerts.find((alert) => alert.name === 'Status')
 	}, [alerts])
 
 	return (
 		<label
-			htmlFor="status"
+			htmlFor="alert-status"
 			className="space-y-2 flex flex-row items-center justify-between rounded-lg border p-4 cursor-pointer"
 		>
 			<div className="grid gap-0.5 select-none">
-				<p className="font-medium text-base">System status</p>
-				<span
-					id=":r3m:-form-item-description"
-					className="block text-[0.8rem] text-foreground opacity-80"
-				>
+				<p className="font-medium text-[1.05em]">System status</p>
+				<span className="block text-[0.85em] text-foreground opacity-80">
 					Triggers when status switches between up and down.
 				</span>
 			</div>
 			<Switch
-				id="status"
+				id="alert-status"
 				className={cn('transition-opacity', pendingChange && 'opacity-40')}
 				checked={!!alert}
 				value={!!alert ? 'on' : 'off'}
@@ -101,20 +129,106 @@ function Alert({ system, alerts }: { system: SystemRecord; alerts: AlertRecord[]
 							pb.collection('alerts').create({
 								system: system.id,
 								user: pb.authStore.model!.id,
-								name: 'status',
+								name: 'Status',
 							})
 						}
 					} catch (e) {
-						toast({
-							title: 'Failed to update alert',
-							description: 'Please check logs for more details.',
-							variant: 'destructive',
-						})
+						failedUpdateToast()
 					} finally {
 						setPendingChange(false)
 					}
 				}}
 			/>
 		</label>
+	)
+}
+
+function AlertWithSlider({
+	system,
+	alerts,
+	name,
+	title,
+	description,
+}: {
+	system: SystemRecord
+	alerts: AlertRecord[]
+	name: string
+	title: string
+	description: string
+}) {
+	const [pendingChange, setPendingChange] = useState(false)
+	const [liveValue, setLiveValue] = useState(50)
+
+	const alert = useMemo(() => {
+		const alert = alerts.find((alert) => alert.name === name)
+		if (alert) {
+			setLiveValue(alert.value)
+		}
+		return alert
+	}, [alerts])
+
+	return (
+		<div className="rounded-lg border">
+			<label
+				htmlFor={`alert-${name}`}
+				className={cn('space-y-2 flex flex-row items-center justify-between cursor-pointer p-4', {
+					'pb-0': !!alert,
+				})}
+			>
+				<div className="grid gap-0.5 select-none">
+					<p className="font-medium text-[1.05em]">{title}</p>
+					<span className="block text-[0.85em] text-foreground opacity-80">{description}</span>
+				</div>
+				<Switch
+					id={`alert-${name}`}
+					className={cn('transition-opacity', pendingChange && 'opacity-40')}
+					checked={!!alert}
+					value={!!alert ? 'on' : 'off'}
+					onCheckedChange={async (active) => {
+						if (pendingChange) {
+							return
+						}
+						setPendingChange(true)
+						try {
+							if (!active && alert) {
+								await pb.collection('alerts').delete(alert.id)
+							} else if (active) {
+								pb.collection('alerts').create({
+									system: system.id,
+									user: pb.authStore.model!.id,
+									name,
+									value: liveValue,
+								})
+							}
+						} catch (e) {
+							failedUpdateToast()
+						} finally {
+							setPendingChange(false)
+						}
+					}}
+				/>
+			</label>
+			{alert && (
+				<div className="flex mt-2 mb-3 gap-3 px-4">
+					<Suspense>
+						<Slider
+							defaultValue={[liveValue]}
+							onValueCommit={(val) => {
+								pb.collection('alerts').update(alert.id, {
+									value: val[0],
+								})
+							}}
+							onValueChange={(val) => {
+								setLiveValue(val[0])
+							}}
+							min={10}
+							max={99}
+							// step={1}
+						/>
+					</Suspense>
+					<span className="tabular-nums tracking-tighter text-[.92em]">{liveValue}%</span>
+				</div>
+			)}
+		</div>
 	)
 }
