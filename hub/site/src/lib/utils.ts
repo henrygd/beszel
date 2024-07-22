@@ -26,13 +26,21 @@ export async function copyToClipboard(content: string) {
 		})
 	}
 }
-
-export const updateSystemList = () => {
-	pb.collection<SystemRecord>('systems')
-		.getFullList({ sort: '+name' })
-		.then((records) => {
-			$systems.set(records)
+const verifyAuth = () => {
+	pb.collection('users')
+		.authRefresh()
+		.catch(() => {
+			pb.authStore.clear()
 		})
+}
+
+export const updateSystemList = async () => {
+	try {
+		const records = await pb.collection<SystemRecord>('systems').getFullList({ sort: '+name' })
+		$systems.set(records)
+	} catch (e) {
+		verifyAuth()
+	}
 }
 
 export const updateAlerts = () => {
