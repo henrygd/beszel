@@ -304,7 +304,7 @@ export default function SystemsTable() {
 															? 'auto'
 															: cell.column.getSize(),
 												}}
-												className={'overflow-hidden relative py-3'}
+												className={'overflow-hidden relative py-2.5'}
 											>
 												{flexRender(cell.column.columnDef.cell, cell.getContext())}
 											</TableCell>

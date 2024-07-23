@@ -77,7 +77,8 @@ export default function DiskChart({
 					tickFormatter={hourWithMinutes}
 				/>
 				<ChartTooltip
-					// cursor={false}
+					animationEasing="ease-out"
+					animationDuration={150}
 					content={
 						<ChartTooltipContent
 							unit=" GB"

@@ -72,7 +72,8 @@ export default function DiskIoChart({
 					tickFormatter={hourWithMinutes}
 				/>
 				<ChartTooltip
-					// cursor={false}
+					animationEasing="ease-out"
+					animationDuration={150}
 					content={
 						<ChartTooltipContent
 							unit=" MB/s"

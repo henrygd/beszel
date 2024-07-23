@@ -95,8 +95,9 @@ Use `beszel update` and `beszel-agent update` to update to the latest version.
 
 Beszel supports OpenID Connect and many OAuth2 authentication providers (see list below). To enable, do the following:
 
-1. Create an OAuth2 application using your provider of choice. The redirect / callback URL should be `<your-beszel-url>/api/oauth2-redirect`.
-2. When you have the client ID and secret, go to the "Auth providers" page and enable your provider.
+1. Make sure your "Application URL" is set correctly in the PocketBase settings.
+2. Create an OAuth2 application using your provider of choice. The redirect / callback URL should be `<your-beszel-url>/api/oauth2-redirect`.
+3. When you have the client ID and secret, go to the "Auth providers" page and enable your provider.
 
 <details>
   <summary>Supported provider list</summary>
@@ -137,6 +138,24 @@ When the hub is started for the first time, it generates an ED25519 key pair.
 
 The agent's SSH server is configured to accept connections only using this key. It does not provide a pty or accept any input, so it is not possible to execute commands on the agent even if your private key is compromised.
 
+## User roles
+
+### Admin
+
+Assumed to have an admin account in PocketBase, so links to backups, SMTP settings, etc., are shown in the hub.
+
+The first user created automatically becomes an admin and can log into PocketBase.
+
+Please note that changing a user's role will not create a PocketBase admin account for them. If you want to do that, go to Settings > Admins in PocketBase and add them there.
+
+### User
+
+Can create their own systems and alerts. Links to PocketBase settings are not shown in the hub.
+
+### Read only
+
+Cannot create systems, but can view any system that has been shared with them by an admin. Can create alerts.
+
 ## FAQ / Troubleshooting
 
 ### Agent is not connecting
@@ -154,6 +173,10 @@ If it's not set, the agent will try to find the filesystem mounted on `/` and us
 - Run `df -h` and choose an option under "Filesystem"
 - Run `lsblk` and choose an option under "NAME"
 - Run `sudo fdisk -l` and choose an option under "Device"
+
+### Docker containers are not populating reliably
+
+Try upgrading your docker version on the agent system. I had this issue on a machine running docker 24. It was fixed by upgrading to version 27.
 
 ### Month / week records are not populating reliably
 
