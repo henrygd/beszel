@@ -69,7 +69,7 @@ export default function ContainerCpuChart({
 			>
 				<CartesianGrid vertical={false} />
 				<YAxis
-					domain={[0, (max: number) => Math.max(Math.ceil(max), 0.4)]}
+					// domain={[0, (max: number) => Math.max(Math.ceil(max), 0.4)]}
 					width={47}
 					tickLine={false}
 					axisLine={false}

@@ -71,21 +71,21 @@ export default function AlertsButton({ system }: { system: SystemRecord }) {
 						system={system}
 						alerts={systemAlerts}
 						name="CPU"
-						title="CPU usage"
+						title="CPU Usage"
 						description="Triggers when CPU usage exceeds a threshold."
 					/>
 					<AlertWithSlider
 						system={system}
 						alerts={systemAlerts}
 						name="Memory"
-						title="Memory usage"
+						title="Memory Usage"
 						description="Triggers when memory usage exceeds a threshold."
 					/>
 					<AlertWithSlider
 						system={system}
 						alerts={systemAlerts}
 						name="Disk"
-						title="Disk usage"
+						title="Disk Usage"
 						description="Triggers when disk usage exceeds a threshold."
 					/>
 				</div>
@@ -104,11 +104,11 @@ function AlertStatus({ system, alerts }: { system: SystemRecord; alerts: AlertRe
 	return (
 		<label
 			htmlFor="alert-status"
-			className="space-y-2 flex flex-row items-center justify-between rounded-lg border p-4 cursor-pointer"
+			className="flex flex-row items-center justify-between gap-4 rounded-lg border p-4 cursor-pointer"
 		>
-			<div className="grid gap-0.5 select-none">
-				<p className="font-medium text-[1.05em]">System status</p>
-				<span className="block text-[0.85em] text-foreground opacity-80">
+			<div className="grid gap-1 select-none">
+				<p className="font-semibold">System Status</p>
+				<span className="block text-sm text-foreground opacity-80">
 					Triggers when status switches between up and down.
 				</span>
 			</div>
@@ -171,13 +171,13 @@ function AlertWithSlider({
 		<div className="rounded-lg border">
 			<label
 				htmlFor={`alert-${name}`}
-				className={cn('space-y-2 flex flex-row items-center justify-between cursor-pointer p-4', {
+				className={cn('flex flex-row items-center justify-between gap-4 cursor-pointer p-4', {
 					'pb-0': !!alert,
 				})}
 			>
-				<div className="grid gap-0.5 select-none">
-					<p className="font-medium text-[1.05em]">{title}</p>
-					<span className="block text-[0.85em] text-foreground opacity-80">{description}</span>
+				<div className="grid gap-1 select-none">
+					<p className="font-semibold">{title}</p>
+					<span className="block text-sm text-foreground opacity-80">{description}</span>
 				</div>
 				<Switch
 					id={`alert-${name}`}

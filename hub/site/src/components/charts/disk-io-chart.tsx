@@ -47,7 +47,7 @@ export default function DiskIoChart({
 				<YAxis
 					className="tracking-tighter"
 					width={75}
-					domain={[0, (max: number) => (max < 0.4 ? 0.4 : Math.ceil(max))]}
+					domain={[0, (max: number) => (max <= 0.4 ? 0.4 : Math.ceil(max))]}
 					tickFormatter={(value) => {
 						if (value >= 100) {
 							return value.toFixed(0)
