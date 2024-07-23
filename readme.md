@@ -5,7 +5,7 @@ A lightweight server resource monitoring hub with historical data, docker stats,
 [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/henrygd/beszel-agent/0.0.1-alpha.6?logo=docker&label=agent%20image%20size)](https://hub.docker.com/r/henrygd/beszel-agent)
 [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/henrygd/beszel/0.0.1-alpha.6?logo=docker&label=hub%20image%20size)](https://hub.docker.com/r/henrygd/beszel)
 
-![Screenshot of the hub](https://henrygd-assets.b-cdn.net/beszel/screenshot.png?)
+![Screenshot of the hub](https://henrygd-assets.b-cdn.net/beszel/screenshot.png)
 
 ## Features
 
@@ -16,7 +16,7 @@ A lightweight server resource monitoring hub with historical data, docker stats,
 - **Simple**: Easy setup and doesn't require anything to be publicly available online.
 - **OAuth / OIDC**: Supports many OAuth2 providers. Password auth can be disabled.
 - **Automated backups**: Automatically back up your data to disk or S3-compatible storage.
-- **REST API**: Pull your metrics to use in your own scripts and applications.
+- **REST API**: Use your metrics in your own scripts and applications.
 
 ## Introduction
 
@@ -160,3 +160,8 @@ If it's not set, the agent will try to find the filesystem mounted on `/` and us
 Records for longer time periods are made by averaging stats from the shorter time periods. They require the agent to be running uninterrupted for long enough to get a full set of data.
 
 If you pause / unpause the agent for longer than one minute, the data will be incomplete and the timing for the current interval will reset.
+
+<!--
+## Support
+
+My country, the USA, and many others, are actively involved in the genocide of the Palestinian people. I would greatly appreciate any effort you could make to pressure your government to stop enabling this violence. -->
