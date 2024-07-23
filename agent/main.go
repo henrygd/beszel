@@ -188,7 +188,7 @@ func getDockerStats() ([]ContainerStats, error) {
 	}
 	defer resp.Body.Close()
 
-	var containers []Container
+	var containers []*Container
 	if err := json.NewDecoder(resp.Body).Decode(&containers); err != nil {
 		panic(err)
 	}
@@ -196,6 +196,7 @@ func getDockerStats() ([]ContainerStats, error) {
 	var containerStats []ContainerStats
 
 	for _, ctr := range containers {
+		ctr.IdShort = ctr.ID[:12]
 		cstats, err := getContainerStats(ctr)
 		if err != nil {
 			// retry once
@@ -208,22 +209,22 @@ func getDockerStats() ([]ContainerStats, error) {
 		containerStats = append(containerStats, cstats)
 	}
 
-	// clean up old containers from map
-	validNames := make(map[string]struct{}, len(containers))
+	// clean up old container ids from map
+	validIds := make(map[string]struct{}, len(containers))
 	for _, ctr := range containers {
-		validNames[ctr.Names[0][1:]] = struct{}{}
+		validIds[ctr.IdShort] = struct{}{}
 	}
-	for name := range containerCpuMap {
-		if _, exists := validNames[name]; !exists {
-			delete(containerCpuMap, name)
+	for id := range containerCpuMap {
+		if _, exists := validIds[id]; !exists {
+			delete(containerCpuMap, id)
 		}
 	}
 
 	return containerStats, nil
 }
 
-func getContainerStats(ctr Container) (ContainerStats, error) {
-	resp, err := client.Get("http://localhost/containers/" + ctr.ID + "/stats?stream=0&one-shot=1")
+func getContainerStats(ctr *Container) (ContainerStats, error) {
+	resp, err := client.Get("http://localhost/containers/" + ctr.IdShort + "/stats?stream=0&one-shot=1")
 	if err != nil {
 		return ContainerStats{}, err
 	}
@@ -244,16 +245,16 @@ func getContainerStats(ctr Container) (ContainerStats, error) {
 	// add default values to containerCpu if it doesn't exist
 	// containerCpuMutex.Lock()
 	// defer containerCpuMutex.Unlock()
-	if _, ok := containerCpuMap[name]; !ok {
-		containerCpuMap[name] = [2]uint64{0, 0}
+	if _, ok := containerCpuMap[ctr.IdShort]; !ok {
+		containerCpuMap[ctr.IdShort] = [2]uint64{0, 0}
 	}
-	cpuDelta := statsJson.CPUStats.CPUUsage.TotalUsage - containerCpuMap[name][0]
-	systemDelta := statsJson.CPUStats.SystemUsage - containerCpuMap[name][1]
+	cpuDelta := statsJson.CPUStats.CPUUsage.TotalUsage - containerCpuMap[ctr.IdShort][0]
+	systemDelta := statsJson.CPUStats.SystemUsage - containerCpuMap[ctr.IdShort][1]
 	cpuPct := float64(cpuDelta) / float64(systemDelta) * 100
 	if cpuPct > 100 {
 		return ContainerStats{}, fmt.Errorf("%s cpu pct greater than 100: %+v", name, cpuPct)
 	}
-	containerCpuMap[name] = [2]uint64{statsJson.CPUStats.CPUUsage.TotalUsage, statsJson.CPUStats.SystemUsage}
+	containerCpuMap[ctr.IdShort] = [2]uint64{statsJson.CPUStats.CPUUsage.TotalUsage, statsJson.CPUStats.SystemUsage}
 
 	cStats := ContainerStats{
 		Name: name,

@@ -4,6 +4,7 @@ import "time"
 
 type Container struct {
 	ID      string `json:"Id"`
+	IdShort string
 	Names   []string
 	Image   string
 	ImageID string
