@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -11,7 +10,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"sync"
 	"time"
 
 	sshServer "github.com/gliderlabs/ssh"
@@ -26,7 +24,8 @@ import (
 var Version = "0.0.1-alpha.6"
 
 var containerCpuMap = make(map[string][2]uint64)
-var containerCpuMutex = &sync.Mutex{}
+
+// var containerCpuMutex = &sync.Mutex{}
 
 var diskIoStats = DiskIoStats{
 	Read:       0,
@@ -44,16 +43,16 @@ var netIoStats = NetIoStats{
 
 // client for docker engine api
 var client = &http.Client{
-	Timeout: time.Second * 5,
+	Timeout: time.Second,
 	Transport: &http.Transport{
 		Dial: func(proto, addr string) (net.Conn, error) {
 			return net.Dial("unix", "/var/run/docker.sock")
 		},
-		ForceAttemptHTTP2:   false,
-		MaxIdleConns:        100,
-		MaxIdleConnsPerHost: 100,
-		IdleConnTimeout:     90 * time.Second,
-		DisableKeepAlives:   false,
+		ForceAttemptHTTP2:  false,
+		IdleConnTimeout:    90 * time.Second,
+		DisableCompression: true,
+		MaxIdleConns:       10,
+		DisableKeepAlives:  false,
 	},
 }
 
@@ -194,20 +193,19 @@ func getDockerStats() ([]ContainerStats, error) {
 		panic(err)
 	}
 
-	var wg sync.WaitGroup
 	var containerStats []ContainerStats
 
 	for _, ctr := range containers {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			cstats, err := getContainerStats(ctr)
+		cstats, err := getContainerStats(ctr)
+		if err != nil {
+			// retry once
+			cstats, err = getContainerStats(ctr)
 			if err != nil {
 				log.Printf("Error getting container stats: %+v\n", err)
-				return
+				continue
 			}
-			containerStats = append(containerStats, cstats)
-		}()
+		}
+		containerStats = append(containerStats, cstats)
 	}
 
 	// clean up old containers from map
@@ -220,8 +218,6 @@ func getDockerStats() ([]ContainerStats, error) {
 			delete(containerCpuMap, name)
 		}
 	}
-
-	wg.Wait()
 
 	return containerStats, nil
 }
@@ -246,8 +242,8 @@ func getContainerStats(ctr Container) (ContainerStats, error) {
 
 	// cpu
 	// add default values to containerCpu if it doesn't exist
-	containerCpuMutex.Lock()
-	defer containerCpuMutex.Unlock()
+	// containerCpuMutex.Lock()
+	// defer containerCpuMutex.Unlock()
 	if _, ok := containerCpuMap[name]; !ok {
 		containerCpuMap[name] = [2]uint64{0, 0}
 	}
@@ -255,7 +251,7 @@ func getContainerStats(ctr Container) (ContainerStats, error) {
 	systemDelta := statsJson.CPUStats.SystemUsage - containerCpuMap[name][1]
 	cpuPct := float64(cpuDelta) / float64(systemDelta) * 100
 	if cpuPct > 100 {
-		return ContainerStats{}, errors.New("cpu pct is greater than 100")
+		return ContainerStats{}, fmt.Errorf("%s cpu pct greater than 100: %+v", name, cpuPct)
 	}
 	containerCpuMap[name] = [2]uint64{statsJson.CPUStats.CPUUsage.TotalUsage, statsJson.CPUStats.SystemUsage}
 
