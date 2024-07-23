@@ -32,7 +32,7 @@ export function AddSystemButton() {
     restart: unless-stopped
     network_mode: host
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       PORT: ${port}
       KEY: "${publicKey}"
