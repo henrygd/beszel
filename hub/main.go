@@ -221,10 +221,10 @@ func updateSystems() {
 		// app.Logger().Error("Failed to query systems")
 		return
 	}
-	fiftyFiveSecondsAgo := time.Now().UTC().Add(-55 * time.Second)
+	fiftySecondsAgo := time.Now().UTC().Add(-50 * time.Second)
 	batchSize := len(records)/4 + 1
 	for i := 0; i < batchSize; i++ {
-		if records[i].Get("updated").(types.DateTime).Time().After(fiftyFiveSecondsAgo) {
+		if records[i].Get("updated").(types.DateTime).Time().After(fiftySecondsAgo) {
 			break
 		}
 		// log.Println("updating", records[i].Get(("name")))
