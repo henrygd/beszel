@@ -30,7 +30,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-var Version = "0.0.1"
+var Version = "0.1.0"
 
 var app *pocketbase.PocketBase
 var serverConnections = make(map[string]*Server)
