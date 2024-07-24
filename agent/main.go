@@ -56,46 +56,7 @@ var client = &http.Client{
 	},
 }
 
-type SystemData struct {
-	Stats      SystemStats      `json:"stats"`
-	Info       SystemInfo       `json:"info"`
-	Containers []ContainerStats `json:"container"`
-}
-
-type SystemInfo struct {
-	Cores    int    `json:"c"`
-	Threads  int    `json:"t"`
-	CpuModel string `json:"m"`
-	// Os       string  `json:"o"`
-	Uptime  uint64  `json:"u"`
-	Cpu     float64 `json:"cpu"`
-	MemPct  float64 `json:"mp"`
-	DiskPct float64 `json:"dp"`
-}
-
-type SystemStats struct {
-	Cpu          float64 `json:"cpu"`
-	Mem          float64 `json:"m"`
-	MemUsed      float64 `json:"mu"`
-	MemPct       float64 `json:"mp"`
-	MemBuffCache float64 `json:"mb"`
-	Disk         float64 `json:"d"`
-	DiskUsed     float64 `json:"du"`
-	DiskPct      float64 `json:"dp"`
-	DiskRead     float64 `json:"dr"`
-	DiskWrite    float64 `json:"dw"`
-	NetworkSent  float64 `json:"ns"`
-	NetworkRecv  float64 `json:"nr"`
-}
-
-type ContainerStats struct {
-	Name string  `json:"n"`
-	Cpu  float64 `json:"c"`
-	Mem  float64 `json:"m"`
-	// MemPct float64 `json:"mp"`
-}
-
-func getSystemStats() (SystemInfo, SystemStats) {
+func getSystemStats() (*SystemInfo, *SystemStats) {
 	c, _ := cpu.Percent(0, false)
 	v, _ := mem.VirtualMemory()
 	d, _ := disk.Usage("/")
@@ -104,7 +65,7 @@ func getSystemStats() (SystemInfo, SystemStats) {
 	memPct := twoDecimals(v.UsedPercent)
 	diskPct := twoDecimals(d.UsedPercent)
 
-	systemStats := SystemStats{
+	systemStats := &SystemStats{
 		Cpu:          cpuPct,
 		Mem:          bytesToGigabytes(v.Total),
 		MemUsed:      bytesToGigabytes(v.Used),
@@ -115,7 +76,7 @@ func getSystemStats() (SystemInfo, SystemStats) {
 		DiskPct:      diskPct,
 	}
 
-	systemInfo := SystemInfo{
+	systemInfo := &SystemInfo{
 		Cpu:     cpuPct,
 		MemPct:  memPct,
 		DiskPct: diskPct,
@@ -181,10 +142,10 @@ func getSystemStats() (SystemInfo, SystemStats) {
 
 }
 
-func getDockerStats() ([]ContainerStats, error) {
+func getDockerStats() ([]*ContainerStats, error) {
 	resp, err := client.Get("http://localhost/containers/json")
 	if err != nil {
-		return []ContainerStats{}, err
+		return []*ContainerStats{}, err
 	}
 	defer resp.Body.Close()
 
@@ -193,7 +154,7 @@ func getDockerStats() ([]ContainerStats, error) {
 		panic(err)
 	}
 
-	var containerStats []ContainerStats
+	containerStats := make([]*ContainerStats, 0, len(containers))
 
 	for _, ctr := range containers {
 		ctr.IdShort = ctr.ID[:12]
@@ -223,10 +184,10 @@ func getDockerStats() ([]ContainerStats, error) {
 	return containerStats, nil
 }
 
-func getContainerStats(ctr *Container) (ContainerStats, error) {
+func getContainerStats(ctr *Container) (*ContainerStats, error) {
 	resp, err := client.Get("http://localhost/containers/" + ctr.IdShort + "/stats?stream=0&one-shot=1")
 	if err != nil {
-		return ContainerStats{}, err
+		return &ContainerStats{}, err
 	}
 	defer resp.Body.Close()
 
@@ -252,11 +213,11 @@ func getContainerStats(ctr *Container) (ContainerStats, error) {
 	systemDelta := statsJson.CPUStats.SystemUsage - containerCpuMap[ctr.IdShort][1]
 	cpuPct := float64(cpuDelta) / float64(systemDelta) * 100
 	if cpuPct > 100 {
-		return ContainerStats{}, fmt.Errorf("%s cpu pct greater than 100: %+v", name, cpuPct)
+		return &ContainerStats{}, fmt.Errorf("%s cpu pct greater than 100: %+v", name, cpuPct)
 	}
 	containerCpuMap[ctr.IdShort] = [2]uint64{statsJson.CPUStats.CPUUsage.TotalUsage, statsJson.CPUStats.SystemUsage}
 
-	cStats := ContainerStats{
+	cStats := &ContainerStats{
 		Name: name,
 		Cpu:  twoDecimals(cpuPct),
 		Mem:  bytesToMegabytes(float64(usedMemory)),
@@ -265,12 +226,12 @@ func getContainerStats(ctr *Container) (ContainerStats, error) {
 	return cStats, nil
 }
 
-func gatherStats() SystemData {
+func gatherStats() *SystemData {
 	systemInfo, systemStats := getSystemStats()
-	stats := SystemData{
+	stats := &SystemData{
 		Stats:      systemStats,
 		Info:       systemInfo,
-		Containers: []ContainerStats{},
+		Containers: []*ContainerStats{},
 	}
 	containerStats, err := getDockerStats()
 	if err == nil {
