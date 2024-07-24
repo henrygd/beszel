@@ -20,12 +20,13 @@ export async function copyToClipboard(content: string) {
 			description: 'Copied to clipboard',
 		})
 	} catch (e: any) {
-		toast({
-			duration,
-			description: 'Failed to copy',
-		})
+		prompt(
+			'Automatic copy requires a secure context (https, localhost, or *.localhost). Please copy manually:',
+			content
+		)
 	}
 }
+
 const verifyAuth = () => {
 	pb.collection('users')
 		.authRefresh()
