@@ -217,8 +217,8 @@ func updateSystems() {
 		0,                    // offset
 	)
 	// log.Println("records", len(records))
-	if err != nil {
-		app.Logger().Error("Failed to query systems: ", "err", err.Error())
+	if err != nil || len(records) == 0 {
+		// app.Logger().Error("Failed to query systems")
 		return
 	}
 	fiftyFiveSecondsAgo := time.Now().UTC().Add(-55 * time.Second)
