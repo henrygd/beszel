@@ -21,7 +21,7 @@ import (
 	psutilNet "github.com/shirou/gopsutil/v4/net"
 )
 
-var Version = "0.0.1-alpha.7"
+var Version = "0.0.1-alpha.8"
 
 var containerCpuMap = make(map[string][2]uint64)
 
