@@ -86,9 +86,12 @@ export default function ForgotPassword() {
 					<DialogHeader>
 						<DialogTitle>Command line instructions</DialogTitle>
 					</DialogHeader>
-					<p className="text-primary/70 text-[0.95em]">
-						Use the following command to reset
-						your password:
+					<p className="text-primary/70 text-[0.95em] leading-relaxed">
+						If you've lost the password to your admin account, you may reset it using the following
+						command.
+					</p>
+					<p className="text-primary/70 text-[0.95em] leading-relaxed">
+						Then log into the backend and reset your user account password in the users table.
 					</p>
 					<code className="bg-muted rounded-sm py-0.5 px-2.5 mr-auto text-sm">
 						beszel admin update youremail@example.com newpassword
