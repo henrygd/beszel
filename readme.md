@@ -2,8 +2,8 @@
 
 A lightweight server resource monitoring hub with historical data, docker stats, and alerts.
 
-[![Docker Image Size (tag)](https://img.shields.io/docker/image-size/henrygd/beszel-agent/0.0.1-alpha.6?logo=docker&label=agent%20image%20size)](https://hub.docker.com/r/henrygd/beszel-agent)
-[![Docker Image Size (tag)](https://img.shields.io/docker/image-size/henrygd/beszel/0.0.1-alpha.6?logo=docker&label=hub%20image%20size)](https://hub.docker.com/r/henrygd/beszel)
+[![Docker Image Size (tag)](https://img.shields.io/docker/image-size/henrygd/beszel-agent/0.0.1-alpha.9?logo=docker&label=agent%20image%20size)](https://hub.docker.com/r/henrygd/beszel-agent)
+[![Docker Image Size (tag)](https://img.shields.io/docker/image-size/henrygd/beszel/0.0.1-alpha.9?logo=docker&label=hub%20image%20size)](https://hub.docker.com/r/henrygd/beszel)
 
 ![Screenshot of the hub](https://henrygd-assets.b-cdn.net/beszel/screenshot.png)
 
@@ -15,7 +15,7 @@ A lightweight server resource monitoring hub with historical data, docker stats,
 - **Multi-user**: Each user has their own systems. Admins can share systems across users.
 - **Simple**: Easy setup and doesn't require anything to be publicly available online.
 - **OAuth / OIDC**: Supports many OAuth2 providers. Password auth can be disabled.
-- **Automated backups**: Automatically back up your data to disk or S3-compatible storage.
+- **Automatic backups**: Save and restore your data to / from disk or S3-compatible storage.
 - **REST API**: Use your metrics in your own scripts and applications.
 
 ## Introduction
@@ -30,7 +30,7 @@ The agent runs on each system you want to monitor. It creates a minimal SSH serv
 
 If using the binary instead of docker, ignore 4-5 and run the agent using the binary instead.
 
-1. Start the hub (see [Installation](#installation)). The binary command is `beszel serve`.
+1. Start the hub (see [installation](#installation)). The binary command is `beszel serve`.
 2. Open http://localhost:8090 and create an admin user.
 3. Click "Add system." Enter the name and host of the system you want to monitor.
 4. Click "Copy docker compose" to copy the agent's docker-compose.yml file to your clipboard.
@@ -136,7 +136,7 @@ The hub and agent communicate over SSH, so they don't need to be exposed to the 
 
 When the hub is started for the first time, it generates an ED25519 key pair.
 
-The agent's SSH server is configured to accept connections only using this key. It does not provide a pty or accept any input, so it is not possible to execute commands on the agent even if your private key is compromised.
+The agent's SSH server is configured to accept connections only using this key. It does not provide a pseudo-terminal or accept input, so it's not possible to execute commands on the agent even if your private key is compromised.
 
 ## User roles
 
@@ -176,7 +176,7 @@ If it's not set, the agent will try to find the filesystem mounted on `/` and us
 
 ### Docker containers are not populating reliably
 
-Try upgrading your docker version on the agent system. I had this issue on a machine running docker 24. It was fixed by upgrading to version 27.
+Try upgrading your docker version on the agent system. I had this issue on a machine running version 24. It was fixed by upgrading to version 27.
 
 ### Month / week records are not populating reliably
 
