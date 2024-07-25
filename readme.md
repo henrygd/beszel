@@ -68,7 +68,7 @@ curl -sL "https://github.com/henrygd/beszel/releases/latest/download/beszel_$(un
 ##### Running Hub directly
 
 ```bash
-./beszel-agent
+./beszel
 ```
 
 ##### Running Hub as a system service
