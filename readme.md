@@ -65,10 +65,80 @@ Download and run the latest binaries from the [releases page](https://github.com
 curl -sL "https://github.com/henrygd/beszel/releases/latest/download/beszel_$(uname -s)_$(uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/').tar.gz" | tar -xz -O beszel | tee ./beszel >/dev/null && chmod +x beszel && ls beszel
 ```
 
+##### Running Hub directly
+
+```bash
+./beszel-agent
+```
+
+##### Running Hub as a system service
+
+This can let Agent running in the background continuously
+
+1. Create the system service at `/etc/systemd/system/beszel.service`
+
+```bash
+[Unit]
+Description=Beszel Hub Service
+After=network.target
+
+[Service]
+ExecStart={YOUR_BESZEL_HUB_BINARY_LOCATION} # example: /root/beszel
+Restart=always
+User={YOUR_USERNAME}
+
+[Install]
+WantedBy=multi-user.target
+```
+
+2. Start and enable the service to let it run after system boot
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable beszel.service
+sudo systemctl start beszel.service
+```
+
 #### Agent:
 
 ```bash
 curl -sL "https://github.com/henrygd/beszel/releases/latest/download/beszel-agent_$(uname -s)_$(uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/').tar.gz" | tar -xz -O beszel-agent | tee ./beszel-agent >/dev/null && chmod +x beszel-agent && ls beszel-agent
+```
+
+##### Running Agent directly
+
+> Usally `FILESYSTEM` does not need to be configured since beszel-agent can pick it by itself
+
+```bash
+PORT=45876 KEY="{PASTE_YOUR_KEY}" ./beszel-agent
+```
+
+##### Running Agent as a system service
+
+This can let Agent running in the background continuously
+
+1. Create the system service at `/etc/systemd/system/beszel-agent.service`
+
+```bash
+[Unit]
+Description=Beszel Agent Service
+After=network.target
+
+[Service]
+Environment="PORT={PASTE_YOUR_PORT_HERE}"
+Environment="KEY={PASTE_YOUR_KEY_HERE}"
+ExecStart={YOUR_BESZEL_AGENT_BINARY_LOCATION} # example: /root/beszel-agent
+Restart=always
+User={YOUR_USERNAME}
+
+[Install]
+WantedBy=multi-user.target
+```
+
+2. Start and enable the service to let it run after system boot
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable beszel-agent.service
+sudo systemctl start beszel-agent.service
 ```
 
 #### Updating
