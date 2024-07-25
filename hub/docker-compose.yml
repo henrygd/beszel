@@ -4,6 +4,6 @@ services:
     container_name: 'beszel'
     restart: unless-stopped
     ports:
-      - '127.0.0.1:8090:8090'
+      - '8090:8090'
     volumes:
       - ./beszel_data:/beszel_data
