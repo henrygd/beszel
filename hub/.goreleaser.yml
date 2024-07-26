@@ -15,6 +15,7 @@ builds:
     goarch:
       - amd64
       - arm64
+      - arm
 
 archives:
   - format: tar.gz
