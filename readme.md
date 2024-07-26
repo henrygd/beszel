@@ -62,18 +62,18 @@ Download and run the latest binaries from the [releases page](https://github.com
 #### Hub:
 
 ```bash
-curl -sL "https://github.com/henrygd/beszel/releases/latest/download/beszel_$(uname -s)_$(uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/').tar.gz" | tar -xz -O beszel | tee ./beszel >/dev/null && chmod +x beszel && ls beszel
+curl -sL "https://github.com/henrygd/beszel/releases/latest/download/beszel_$(uname -s)_$(uname -m | sed 's/x86_64/amd64/' | sed 's/armv7l/arm/' | sed 's/aarch64/arm64/').tar.gz" | tar -xz -O beszel | tee ./beszel >/dev/null && chmod +x beszel && ls beszel
 ```
 
-##### Running Hub directly
+##### Running the hub directly
 
 ```bash
-./beszel
+./beszel serve
 ```
 
-##### Running Hub as a system service
+##### Running the hub as a system service (Linux)
 
-This can let Agent running in the background continuously
+This runs the hub in the background continuously.
 
 1. Create the system service at `/etc/systemd/system/beszel.service`
 
@@ -83,15 +83,18 @@ Description=Beszel Hub Service
 After=network.target
 
 [Service]
-ExecStart={YOUR_BESZEL_HUB_BINARY_LOCATION} # example: /root/beszel
-Restart=always
+# update the values in the curly braces below (remove the braces)
+ExecStart={/path/to/working/directory}/beszel serve
+WorkingDirectory={/path/to/working/directory}
 User={YOUR_USERNAME}
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
 ```
 
 2. Start and enable the service to let it run after system boot
+
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable beszel.service
@@ -101,20 +104,18 @@ sudo systemctl start beszel.service
 #### Agent:
 
 ```bash
-curl -sL "https://github.com/henrygd/beszel/releases/latest/download/beszel-agent_$(uname -s)_$(uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/').tar.gz" | tar -xz -O beszel-agent | tee ./beszel-agent >/dev/null && chmod +x beszel-agent && ls beszel-agent
+curl -sL "https://github.com/henrygd/beszel/releases/latest/download/beszel-agent_$(uname -s)_$(uname -m | sed 's/x86_64/amd64/' | sed 's/armv7l/arm/' | sed 's/aarch64/arm64/').tar.gz" | tar -xz -O beszel-agent | tee ./beszel-agent >/dev/null && chmod +x beszel-agent && ls beszel-agent
 ```
 
-##### Running Agent directly
-
-> Usally `FILESYSTEM` does not need to be configured since beszel-agent can pick it by itself
+##### Running the agent directly
 
 ```bash
 PORT=45876 KEY="{PASTE_YOUR_KEY}" ./beszel-agent
 ```
 
-##### Running Agent as a system service
+##### Running the agent as a system service (Linux)
 
-This can let Agent running in the background continuously
+This runs the agent in the background continuously.
 
 1. Create the system service at `/etc/systemd/system/beszel-agent.service`
 
@@ -124,17 +125,19 @@ Description=Beszel Agent Service
 After=network.target
 
 [Service]
+# update the values in curly braces below (remove the braces)
 Environment="PORT={PASTE_YOUR_PORT_HERE}"
 Environment="KEY={PASTE_YOUR_KEY_HERE}"
-ExecStart={YOUR_BESZEL_AGENT_BINARY_LOCATION} # example: /root/beszel-agent
-Restart=always
+ExecStart={/path/to/directory}/beszel-agent
 User={YOUR_USERNAME}
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
 ```
 
 2. Start and enable the service to let it run after system boot
+
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable beszel-agent.service
