@@ -28,7 +28,7 @@ The agent runs on each system you want to monitor. It creates a minimal SSH serv
 
 ## Getting started
 
-If using the binary instead of docker, ignore 4-5 and run the agent using the binary instead.
+If not using docker, ignore 4-5 and run the agent using the binary instead.
 
 1. Start the hub (see [installation](#installation)). The binary command is `beszel serve`.
 2. Open http://localhost:8090 and create an admin user.
@@ -38,6 +38,10 @@ If using the binary instead of docker, ignore 4-5 and run the agent using the bi
 6. Back in the hub, click the "Add system" button in the dialog to finish adding the system.
 
 If all goes well, you should see the system flip to green. If it goes red, check the Logs page, and see [troubleshooting tips](#faq--troubleshooting).
+
+### Tutoriel en français
+
+Pour le tutoriel en français, consultez https://belginux.com/installer-beszel-avec-docker/
 
 ## Installation
 
@@ -256,6 +260,49 @@ Try upgrading your docker version on the agent system. I had this issue on a mac
 Records for longer time periods are made by averaging stats from the shorter time periods. They require the agent to be running uninterrupted for long enough to get a full set of data.
 
 If you pause / unpause the agent for longer than one minute, the data will be incomplete and the timing for the current interval will reset.
+
+## Compiling
+
+Both the hub and agent are written in Go, so you can easily build them yourself, or cross-compile for different platforms. Please [install Go](https://go.dev/doc/install) first if you haven't already.
+
+### Agent
+
+```bash
+cd agent
+# prepare / install dependencies
+go mod tidy
+# create a binary in the current directory
+CGO_ENABLED=0 go build -ldflags "-w -s" .
+```
+
+### Hub
+
+The hub embeds the web UI in the binary, so you must build the website first. I use [Bun](https://bun.sh/), but you may use Node.js if you prefer:
+
+```bash
+cd hub/site
+bun install
+bun run build
+```
+
+Then back in the hub directory:
+
+```bash
+go mod tidy
+CGO_ENABLED=0 go build -ldflags "-w -s" .
+```
+
+### Cross-compiling
+
+You can cross-compile for different platforms using the `GOOS` and `GOARCH` environment variables.
+
+For example, to build for Linux ARM64:
+
+```bash
+GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags "-w -s" .
+```
+
+You can see a list of valid options by running `go tool dist list`.
 
 <!--
 ## Support
