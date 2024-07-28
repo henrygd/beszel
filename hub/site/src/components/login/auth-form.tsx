@@ -14,7 +14,7 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog'
 import { useState } from 'react'
-import { AuthMethodsList } from 'pocketbase'
+import { AuthMethodsList, OAuth2AuthConfig } from 'pocketbase'
 import { Link } from '../router'
 
 const honeypot = v.literal('')
@@ -64,7 +64,7 @@ export function UserAuthForm({
 	authMethods: AuthMethodsList
 }) {
 	const [isLoading, setIsLoading] = useState<boolean>(false)
-	const [isGitHubLoading, setIsOauthLoading] = useState<boolean>(false)
+	const [isOauthLoading, setIsOauthLoading] = useState<boolean>(false)
 	const [errors, setErrors] = useState<Record<string, string | undefined>>({})
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -145,7 +145,7 @@ export function UserAuthForm({
 										autoCapitalize="none"
 										autoComplete="username"
 										autoCorrect="off"
-										disabled={isLoading || isGitHubLoading}
+										disabled={isLoading || isOauthLoading}
 										className="pl-9"
 									/>
 									{errors?.username && (
@@ -167,7 +167,7 @@ export function UserAuthForm({
 									autoCapitalize="none"
 									autoComplete="email"
 									autoCorrect="off"
-									disabled={isLoading || isGitHubLoading}
+									disabled={isLoading || isOauthLoading}
 									className="pl-9"
 								/>
 								{errors?.email && <p className="px-1 text-xs text-red-600">{errors.email}</p>}
@@ -184,7 +184,7 @@ export function UserAuthForm({
 									required
 									type="password"
 									autoComplete="current-password"
-									disabled={isLoading || isGitHubLoading}
+									disabled={isLoading || isOauthLoading}
 									className="pl-9"
 								/>
 								{errors?.password && <p className="px-1 text-xs text-red-600">{errors.password}</p>}
@@ -202,7 +202,7 @@ export function UserAuthForm({
 										required
 										type="password"
 										autoComplete="current-password"
-										disabled={isLoading || isGitHubLoading}
+										disabled={isLoading || isOauthLoading}
 										className="pl-9"
 									/>
 									{errors?.passwordConfirm && (
@@ -246,20 +246,40 @@ export function UserAuthForm({
 								'justify-self-center': !authMethods.emailPassword,
 								'px-5': !authMethods.emailPassword,
 							})}
-							onClick={async () => {
+							onClick={() => {
 								setIsOauthLoading(true)
-								try {
-									await pb.collection('users').authWithOAuth2({ provider: provider.name })
-									$authenticated.set(pb.authStore.isValid)
-								} catch (e) {
-									showLoginFaliedToast()
-								} finally {
-									setIsOauthLoading(false)
+								const oAuthOpts: OAuth2AuthConfig = {
+									provider: provider.name,
 								}
+								// https://github.com/pocketbase/pocketbase/discussions/2429#discussioncomment-5943061
+								if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
+									const authWindow = window.open()
+									if (!authWindow) {
+										setIsOauthLoading(false)
+										toast({
+											title: 'Error',
+											description: 'Please enable pop-ups for this site',
+											variant: 'destructive',
+										})
+										return
+									}
+									oAuthOpts.urlCallback = (url) => {
+										authWindow.location.href = url
+									}
+								}
+								pb.collection('users')
+									.authWithOAuth2(oAuthOpts)
+									.then(() => {
+										$authenticated.set(pb.authStore.isValid)
+									})
+									.catch(showLoginFaliedToast)
+									.finally(() => {
+										setIsOauthLoading(false)
+									})
 							}}
-							disabled={isLoading || isGitHubLoading}
+							disabled={isLoading || isOauthLoading}
 						>
-							{isGitHubLoading ? (
+							{isOauthLoading ? (
 								<LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
 							) : (
 								<img
