@@ -113,7 +113,7 @@ func getSystemStats() (*SystemInfo, *SystemStats) {
 		bytesSent := uint64(0)
 		bytesRecv := uint64(0)
 		for _, v := range netIO {
-			if skipNetworkInterface(v.Name) {
+			if skipNetworkInterface(&v) {
 				continue
 			}
 			// log.Printf("%+v: %+v recv, %+v sent\n", v.Name, v.BytesRecv, v.BytesSent)
@@ -346,8 +346,18 @@ func findDefaultFilesystem() string {
 	return ""
 }
 
-func skipNetworkInterface(name string) bool {
-	return strings.HasPrefix(name, "lo") || strings.HasPrefix(name, "docker") || strings.HasPrefix(name, "br-") || strings.HasPrefix(name, "veth")
+func skipNetworkInterface(v *psutilNet.IOCountersStat) bool {
+	switch {
+	case strings.HasPrefix(v.Name, "lo"),
+		strings.HasPrefix(v.Name, "docker"),
+		strings.HasPrefix(v.Name, "br-"),
+		strings.HasPrefix(v.Name, "veth"),
+		v.BytesRecv == 0,
+		v.BytesSent == 0:
+		return true
+	default:
+		return false
+	}
 }
 
 func initializeDiskIoStats() {
@@ -365,7 +375,7 @@ func initializeNetIoStats() {
 		bytesSent := uint64(0)
 		bytesRecv := uint64(0)
 		for _, v := range netIO {
-			if skipNetworkInterface(v.Name) {
+			if skipNetworkInterface(&v) {
 				continue
 			}
 			log.Printf("Found network interface: %+v (%+v recv, %+v sent)\n", v.Name, v.BytesRecv, v.BytesSent)
