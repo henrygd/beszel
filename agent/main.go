@@ -279,7 +279,7 @@ func gatherStats() *SystemData {
 	return stats
 }
 
-func startServer(port string, pubKey []byte) {
+func startServer(addr string, pubKey []byte) {
 	sshServer.Handle(func(s sshServer.Session) {
 		stats := gatherStats()
 		var jsonStats []byte
@@ -288,8 +288,8 @@ func startServer(port string, pubKey []byte) {
 		s.Exit(0)
 	})
 
-	log.Printf("Starting SSH server on port %s", port)
-	if err := sshServer.ListenAndServe(":"+port, nil, sshServer.NoPty(),
+	log.Printf("Starting SSH server on %s", addr)
+	if err := sshServer.ListenAndServe(addr, nil, sshServer.NoPty(),
 		sshServer.PublicKeyAuth(func(ctx sshServer.Context, key sshServer.PublicKey) bool {
 			data := []byte(pubKey)
 			allowed, _, _, _, _ := sshServer.ParseAuthorizedKey(data)
@@ -329,9 +329,13 @@ func main() {
 	initializeNetIoStats()
 
 	if port, exists := os.LookupEnv("PORT"); exists {
+		// allow passing an address in the form of "127.0.0.1:45876"
+		if !strings.Contains(port, ":") {
+			port = ":" + port
+		}
 		startServer(port, pubKey)
 	} else {
-		startServer("45876", pubKey)
+		startServer(":45876", pubKey)
 	}
 }
 
