@@ -6,8 +6,10 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from '@/components/ui/chart'
-import { formatShortDate, hourWithMinutes } from '@/lib/utils'
+import { chartTimeData, formatShortDate } from '@/lib/utils'
 import Spinner from '../spinner'
+import { useStore } from '@nanostores/react'
+import { $chartTime } from '@/lib/stores'
 
 const chartConfig = {
 	read: {
@@ -27,6 +29,8 @@ export default function DiskIoChart({
 	chartData: { time: number; read: number; write: number }[]
 	ticks: number[]
 }) {
+	const chartTime = useStore($chartTime)
+
 	if (!chartData.length || !ticks.length) {
 		return <Spinner />
 	}
@@ -58,18 +62,16 @@ export default function DiskIoChart({
 					axisLine={false}
 					unit={' MB/s'}
 				/>
-				{/* todo: short time if first date is same day, otherwise short date */}
 				<XAxis
 					dataKey="time"
 					domain={[ticks[0], ticks.at(-1)!]}
 					ticks={ticks}
 					type="number"
 					scale={'time'}
-					tickLine={true}
-					axisLine={false}
+					minTickGap={35}
 					tickMargin={8}
-					minTickGap={30}
-					tickFormatter={hourWithMinutes}
+					axisLine={false}
+					tickFormatter={chartTimeData[chartTime].format}
 				/>
 				<ChartTooltip
 					animationEasing="ease-out"

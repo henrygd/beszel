@@ -142,7 +142,7 @@ export default function ServerDetail({ name }: { name: string }) {
 		const now = new Date()
 		const startTime = chartTimeData[chartTime].getOffset(now)
 		const scale = scaleTime([startTime.getTime(), now], [0, cpuChartData.length])
-		setTicks(scale.ticks().map((d) => d.getTime()))
+		setTicks(scale.ticks(chartTimeData[chartTime].ticks).map((d) => d.getTime()))
 	}, [chartTime, systemStats])
 
 	// get container stats

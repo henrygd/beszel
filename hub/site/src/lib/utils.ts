@@ -2,7 +2,7 @@ import { toast } from '@/components/ui/use-toast'
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { $alerts, $systems, pb } from './stores'
-import { AlertRecord, ChartTimes, SystemRecord } from '@/types'
+import { AlertRecord, ChartTimeData, ChartTimes, SystemRecord } from '@/types'
 import { RecordModel, RecordSubscription } from 'pocketbase'
 import { WritableAtom } from 'nanostores'
 import { timeDay, timeHour } from 'd3-time'
@@ -71,9 +71,22 @@ export const formatShortDate = (timestamp: string) => {
 	return shortDateFormatter.format(new Date(timestamp))
 }
 
+// const dayTimeFormatter = new Intl.DateTimeFormat(undefined, {
+// 	// day: 'numeric',
+// 	// month: 'short',
+// 	hour: 'numeric',
+// 	weekday: 'short',
+// 	minute: 'numeric',
+// 	// dateStyle: 'short',
+// })
+// export const formatDayTime = (timestamp: string) => {
+// 	// console.log('ts', timestamp)
+// 	return dayTimeFormatter.format(new Date(timestamp))
+// }
+
 const dayFormatter = new Intl.DateTimeFormat(undefined, {
 	day: 'numeric',
-	month: 'long',
+	month: 'short',
 	// dateStyle: 'medium',
 })
 export const formatDay = (timestamp: string) => {
@@ -130,16 +143,18 @@ export function getPbTimestamp(timeString: ChartTimes) {
 	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
-export const chartTimeData = {
+export const chartTimeData: ChartTimeData = {
 	'1h': {
 		type: '1m',
 		label: '1 hour',
+		// ticks: 12,
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -1),
 	},
 	'12h': {
 		type: '10m',
 		label: '12 hours',
+		ticks: 12,
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -12),
 	},
@@ -152,12 +167,14 @@ export const chartTimeData = {
 	'1w': {
 		type: '120m',
 		label: '1 week',
-		format: (timestamp: string) => formatDay(timestamp),
+		ticks: 7,
+		format: (timestamp: string) => formatShortDate(timestamp),
 		getOffset: (endTime: Date) => timeDay.offset(endTime, -7),
 	},
 	'30d': {
 		type: '480m',
 		label: '30 days',
+		ticks: 30,
 		format: (timestamp: string) => formatDay(timestamp),
 		getOffset: (endTime: Date) => timeDay.offset(endTime, -30),
 	},

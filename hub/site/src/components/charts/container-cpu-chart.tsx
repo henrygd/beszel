@@ -8,8 +8,10 @@ import {
 	ChartTooltipContent,
 } from '@/components/ui/chart'
 import { useMemo } from 'react'
-import { formatShortDate, hourWithMinutes } from '@/lib/utils'
+import { chartTimeData, formatShortDate } from '@/lib/utils'
 import Spinner from '../spinner'
+import { useStore } from '@nanostores/react'
+import { $chartTime } from '@/lib/stores'
 
 export default function ContainerCpuChart({
 	chartData,
@@ -18,6 +20,8 @@ export default function ContainerCpuChart({
 	chartData: Record<string, number | string>[]
 	ticks: number[]
 }) {
+	const chartTime = useStore($chartTime)
+
 	const chartConfig = useMemo(() => {
 		let config = {} as Record<
 			string,
@@ -82,11 +86,10 @@ export default function ContainerCpuChart({
 					ticks={ticks}
 					type="number"
 					scale={'time'}
-					tickLine={true}
-					axisLine={false}
+					minTickGap={35}
 					tickMargin={8}
-					minTickGap={30}
-					tickFormatter={hourWithMinutes}
+					axisLine={false}
+					tickFormatter={chartTimeData[chartTime].format}
 				/>
 				<ChartTooltip
 					// cursor={false}

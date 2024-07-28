@@ -42,7 +42,6 @@ export default function CpuChart({
 					axisLine={false}
 					unit={'%'}
 				/>
-				{/* todo: short time if first date is same day, otherwise short date */}
 				<XAxis
 					dataKey="time"
 					domain={[ticks[0], ticks.at(-1)!]}

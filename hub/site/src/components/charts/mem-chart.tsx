@@ -6,9 +6,11 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from '@/components/ui/chart'
-import { formatShortDate, hourWithMinutes } from '@/lib/utils'
+import { chartTimeData, formatShortDate } from '@/lib/utils'
 import { useMemo } from 'react'
 import Spinner from '../spinner'
+import { useStore } from '@nanostores/react'
+import { $chartTime } from '@/lib/stores'
 
 export default function MemChart({
 	chartData,
@@ -17,6 +19,8 @@ export default function MemChart({
 	chartData: { time: number; mem: number; memUsed: number; memCache: number }[]
 	ticks: number[]
 }) {
+	const chartTime = useStore($chartTime)
+
 	const totalMem = useMemo(() => {
 		const maxMem = Math.ceil(chartData[0]?.mem)
 		return maxMem > 2 && maxMem % 2 !== 0 ? maxMem + 1 : maxMem
@@ -59,18 +63,16 @@ export default function MemChart({
 					axisLine={false}
 					unit={' GB'}
 				/>
-				{/* todo: short time if first date is same day, otherwise short date */}
 				<XAxis
 					dataKey="time"
 					domain={[ticks[0], ticks.at(-1)!]}
 					ticks={ticks}
 					type="number"
 					scale={'time'}
-					tickLine={true}
-					axisLine={false}
+					minTickGap={35}
 					tickMargin={8}
-					minTickGap={30}
-					tickFormatter={hourWithMinutes}
+					axisLine={false}
+					tickFormatter={chartTimeData[chartTime].format}
 				/>
 				<ChartTooltip
 					// cursor={false}
