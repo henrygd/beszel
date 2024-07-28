@@ -161,6 +161,15 @@ func main() {
 		return nil
 	})
 
+	// system creation defaults
+	app.OnModelBeforeCreate("systems").Add(func(e *core.ModelEvent) error {
+		record := e.Model.(*models.Record)
+		var info = SystemInfo{}
+		record.Set("info", info)
+		record.Set("status", "pending")
+		return nil
+	})
+
 	// immediately create connection for new servers
 	app.OnModelAfterCreate("systems").Add(func(e *core.ModelEvent) error {
 		go updateSystem(e.Model.(*models.Record))

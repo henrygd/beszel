@@ -53,20 +53,7 @@ export function AddSystemButton() {
 		e.preventDefault()
 		const formData = new FormData(e.target as HTMLFormElement)
 		const data = Object.fromEntries(formData) as Record<string, any>
-		data.status = 'pending'
 		data.users = pb.authStore.model!.id
-		data.info = {
-			cpu: 0,
-			m: 0,
-			mu: 0,
-			mp: 0,
-			mb: 0,
-			d: 0,
-			du: 0,
-			dp: 0,
-			dr: 0,
-			dw: 0,
-		} as SystemStats
 		try {
 			setOpen(false)
 			await pb.collection('systems').create(data)
