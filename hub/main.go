@@ -152,6 +152,15 @@ func main() {
 		return nil
 	})
 
+	// user creation - set default role to user if unset
+	app.OnModelBeforeCreate("users").Add(func(e *core.ModelEvent) error {
+		user := e.Model.(*models.Record)
+		if user.Get("role") == "" {
+			user.Set("role", "user")
+		}
+		return nil
+	})
+
 	// immediately create connection for new servers
 	app.OnModelAfterCreate("systems").Add(func(e *core.ModelEvent) error {
 		go updateSystem(e.Model.(*models.Record))
