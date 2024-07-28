@@ -42,23 +42,23 @@ type ContainerStats struct {
 }
 
 type Container struct {
-	ID      string `json:"Id"`
+	Id      string
 	IdShort string
 	Names   []string
-	Image   string
-	ImageID string
-	Command string
-	Created int64
+	Status  string
+	// Image   string
+	// ImageID string
+	// Command string
+	// Created int64
 	// Ports      []Port
-	SizeRw     int64 `json:",omitempty"`
-	SizeRootFs int64 `json:",omitempty"`
-	Labels     map[string]string
-	State      string
-	Status     string
-	HostConfig struct {
-		NetworkMode string            `json:",omitempty"`
-		Annotations map[string]string `json:",omitempty"`
-	}
+	// SizeRw     int64 `json:",omitempty"`
+	// SizeRootFs int64 `json:",omitempty"`
+	// Labels     map[string]string
+	// State      string
+	// HostConfig struct {
+	// 	NetworkMode string            `json:",omitempty"`
+	// 	Annotations map[string]string `json:",omitempty"`
+	// }
 	// NetworkSettings *SummaryNetworkSettings
 	// Mounts          []MountPoint
 }

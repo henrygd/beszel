@@ -178,14 +178,21 @@ func getDockerStats() ([]*ContainerStats, error) {
 	var wg sync.WaitGroup
 
 	for _, ctr := range containers {
-		ctr.IdShort = ctr.ID[:12]
+		ctr.IdShort = ctr.Id[:12]
 		validIds[ctr.IdShort] = struct{}{}
+		// check if container is less than 1 minute old (possible restart)
+		// note: can't use Created field because it's not updated on restart
+		if strings.HasSuffix(ctr.Status, "seconds") {
+			// if so, remove old container data
+			delete(containerCpuMap, ctr.IdShort)
+		}
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			cstats, err := getContainerStats(ctr)
 			if err != nil {
-				// retry once
+				// delete container from map and retry once
+				delete(containerCpuMap, ctr.IdShort)
 				cstats, err = getContainerStats(ctr)
 				if err != nil {
 					log.Printf("Error getting container stats: %+v\n", err)
