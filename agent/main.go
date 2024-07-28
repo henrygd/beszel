@@ -67,32 +67,32 @@ var client = &http.Client{
 }
 
 func getSystemStats() (*SystemInfo, *SystemStats) {
-	c, _ := cpu.Percent(0, false)
-	v, _ := mem.VirtualMemory()
-	d, _ := disk.Usage("/")
+	systemStats := &SystemStats{}
 
-	cpuPct := twoDecimals(c[0])
-	memPct := twoDecimals(v.UsedPercent)
-	diskPct := twoDecimals(d.UsedPercent)
-
-	systemStats := &SystemStats{
-		Cpu:          cpuPct,
-		Mem:          bytesToGigabytes(v.Total),
-		MemUsed:      bytesToGigabytes(v.Used),
-		MemBuffCache: bytesToGigabytes(v.Total - v.Free - v.Used),
-		MemPct:       memPct,
-		Disk:         bytesToGigabytes(d.Total),
-		DiskUsed:     bytesToGigabytes(d.Used),
-		DiskPct:      diskPct,
+	// cpu percent
+	cpuPct, err := cpu.Percent(0, false)
+	if err != nil {
+		log.Println("Error getting cpu percent:", err)
+	} else if len(cpuPct) > 0 {
+		systemStats.Cpu = twoDecimals(cpuPct[0])
 	}
 
-	systemInfo := &SystemInfo{
-		Cpu:     cpuPct,
-		MemPct:  memPct,
-		DiskPct: diskPct,
+	// memory
+	if v, err := mem.VirtualMemory(); err == nil {
+		systemStats.Mem = bytesToGigabytes(v.Total)
+		systemStats.MemUsed = bytesToGigabytes(v.Used)
+		systemStats.MemBuffCache = bytesToGigabytes(v.Total - v.Free - v.Used)
+		systemStats.MemPct = twoDecimals(v.UsedPercent)
 	}
 
-	// add disk stats
+	// disk usage
+	if d, err := disk.Usage("/"); err == nil {
+		systemStats.Disk = bytesToGigabytes(d.Total)
+		systemStats.DiskUsed = bytesToGigabytes(d.Used)
+		systemStats.DiskPct = twoDecimals(d.UsedPercent)
+	}
+
+	// disk i/o
 	if io, err := disk.IOCounters(diskIoStats.Filesystem); err == nil {
 		for _, d := range io {
 			// add to systemStats
@@ -108,7 +108,7 @@ func getSystemStats() (*SystemInfo, *SystemStats) {
 		}
 	}
 
-	// add network stats
+	// network stats
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
 		bytesSent := uint64(0)
 		bytesRecv := uint64(0)
@@ -132,13 +132,19 @@ func getSystemStats() (*SystemInfo, *SystemStats) {
 		netIoStats.Time = time.Now()
 	}
 
-	// add host stats
+	systemInfo := &SystemInfo{
+		Cpu:     systemStats.Cpu,
+		MemPct:  systemStats.MemPct,
+		DiskPct: systemStats.DiskPct,
+	}
+
+	// add host info
 	if info, err := host.Info(); err == nil {
 		systemInfo.Uptime = info.Uptime
 		// systemInfo.Os = info.OS
 	}
 	// add cpu stats
-	if info, err := cpu.Info(); err == nil {
+	if info, err := cpu.Info(); err == nil && len(info) > 0 {
 		systemInfo.CpuModel = info[0].ModelName
 	}
 	if cores, err := cpu.Counts(false); err == nil {
