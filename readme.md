@@ -30,7 +30,7 @@ The agent runs on each system you want to monitor. It creates a minimal SSH serv
 
 If not using docker, ignore 4-5 and run the agent using the binary instead.
 
-1. Start the hub (see [installation](#installation)). The binary command is `beszel serve`.
+1. Start the hub (see [installation](#installation)).
 2. Open http://localhost:8090 and create an admin user.
 3. Click "Add system." Enter the name and host of the system you want to monitor.
 4. Click "Copy docker compose" to copy the agent's docker-compose.yml file to your clipboard.
