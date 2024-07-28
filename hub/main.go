@@ -347,7 +347,6 @@ func getServerConnection(server *Server) (*ssh.Client, error) {
 		app.Logger().Error("Failed to get SSH key: ", "err", err.Error())
 		return nil, err
 	}
-	time.Sleep(time.Second)
 
 	// Create the Signer for this private key.
 	signer, err := ssh.ParsePrivateKey(key)
