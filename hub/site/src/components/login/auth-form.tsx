@@ -13,7 +13,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { AuthMethodsList, OAuth2AuthConfig } from 'pocketbase'
 import { Link } from '../router'
 
@@ -67,57 +67,60 @@ export function UserAuthForm({
 	const [isOauthLoading, setIsOauthLoading] = useState<boolean>(false)
 	const [errors, setErrors] = useState<Record<string, string | undefined>>({})
 
-	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-		e.preventDefault()
-		setIsLoading(true)
-		try {
-			const formData = new FormData(e.target as HTMLFormElement)
-			const data = Object.fromEntries(formData) as Record<string, any>
-			const Schema = isFirstRun ? RegisterSchema : LoginSchema
-			const result = v.safeParse(Schema, data)
-			if (!result.success) {
-				console.log(result)
-				let errors = {}
-				for (const issue of result.issues) {
-					// @ts-ignore
-					errors[issue.path[0].key] = issue.message
-				}
-				setErrors(errors)
-				return
-			}
-			const { email, password, passwordConfirm, username } = result.output
-			if (isFirstRun) {
-				// check that passwords match
-				if (password !== passwordConfirm) {
-					let msg = 'Passwords do not match'
-					setErrors({ passwordConfirm: msg })
+	const handleSubmit = useCallback(
+		async (e: React.FormEvent<HTMLFormElement>) => {
+			e.preventDefault()
+			setIsLoading(true)
+			try {
+				const formData = new FormData(e.target as HTMLFormElement)
+				const data = Object.fromEntries(formData) as Record<string, any>
+				const Schema = isFirstRun ? RegisterSchema : LoginSchema
+				const result = v.safeParse(Schema, data)
+				if (!result.success) {
+					console.log(result)
+					let errors = {}
+					for (const issue of result.issues) {
+						// @ts-ignore
+						errors[issue.path[0].key] = issue.message
+					}
+					setErrors(errors)
 					return
 				}
-				await pb.admins.create({
-					email,
-					password,
-					passwordConfirm: password,
-				})
-				await pb.admins.authWithPassword(email, password)
-				await pb.collection('users').create({
-					username,
-					email,
-					password,
-					passwordConfirm: password,
-					role: 'admin',
-					verified: true,
-				})
-				await pb.collection('users').authWithPassword(email, password)
-			} else {
-				await pb.collection('users').authWithPassword(email, password)
+				const { email, password, passwordConfirm, username } = result.output
+				if (isFirstRun) {
+					// check that passwords match
+					if (password !== passwordConfirm) {
+						let msg = 'Passwords do not match'
+						setErrors({ passwordConfirm: msg })
+						return
+					}
+					await pb.admins.create({
+						email,
+						password,
+						passwordConfirm: password,
+					})
+					await pb.admins.authWithPassword(email, password)
+					await pb.collection('users').create({
+						username,
+						email,
+						password,
+						passwordConfirm: password,
+						role: 'admin',
+						verified: true,
+					})
+					await pb.collection('users').authWithPassword(email, password)
+				} else {
+					await pb.collection('users').authWithPassword(email, password)
+				}
+				$authenticated.set(true)
+			} catch (e) {
+				showLoginFaliedToast()
+			} finally {
+				setIsLoading(false)
 			}
-			$authenticated.set(true)
-		} catch (e) {
-			showLoginFaliedToast()
-		} finally {
-			setIsLoading(false)
-		}
-	}
+		},
+		[isFirstRun]
+	)
 
 	if (!authMethods) {
 		return null
@@ -225,14 +228,17 @@ export function UserAuthForm({
 							</button>
 						</div>
 					</form>
-					<div className="relative">
-						<div className="absolute inset-0 flex items-center">
-							<span className="w-full border-t" />
+					{(isFirstRun || authMethods.authProviders.length > 0) && (
+						// only show 'continue with' during onboarding or if we have auth providers
+						<div className="relative">
+							<div className="absolute inset-0 flex items-center">
+								<span className="w-full border-t" />
+							</div>
+							<div className="relative flex justify-center text-xs uppercase">
+								<span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+							</div>
 						</div>
-						<div className="relative flex justify-center text-xs uppercase">
-							<span className="bg-background px-2 text-muted-foreground">Or continue with</span>
-						</div>
-					</div>
+					)}
 				</>
 			)}
 
@@ -297,7 +303,8 @@ export function UserAuthForm({
 				</div>
 			)}
 
-			{!authMethods.authProviders.length && (
+			{!authMethods.authProviders.length && isFirstRun && (
+				// only show GitHub button / dialog during onboarding
 				<Dialog>
 					<DialogTrigger asChild>
 						<button type="button" className={cn(buttonVariants({ variant: 'outline' }))}>
