@@ -150,7 +150,7 @@ sudo systemctl start beszel-agent.service
 
 #### Updating
 
-Use `beszel update` and `beszel-agent update` to update to the latest version.
+Use `./beszel update` and `./beszel-agent update` to update to the latest version.
 
 ## Environment Variables
 
