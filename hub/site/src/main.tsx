@@ -3,7 +3,7 @@ import React, { Suspense, lazy, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import Home from './components/routes/home.tsx'
 import { ThemeProvider } from './components/theme-provider.tsx'
-import { $alerts, $authenticated, $updatedSystem, $systems, pb } from './lib/stores.ts'
+import { $alerts, $authenticated, $updatedSystem, $systems, $settings, pb } from './lib/stores.ts'
 import { ModeToggle } from './components/mode-toggle.tsx'
 import {
 	cn,
@@ -11,6 +11,7 @@ import {
 	updateAlerts,
 	updateFavicon,
 	updateRecordList,
+	updateSettings,
 	updateSystemList,
 } from './lib/utils.ts'
 import { buttonVariants } from './components/ui/button.tsx'
@@ -42,9 +43,10 @@ import {
 	DropdownMenuTrigger,
 	DropdownMenuLabel,
 } from './components/ui/dropdown-menu.tsx'
-import { AlertRecord, SystemRecord } from './types'
+import { AlertRecord, SettingsRecord, SystemRecord } from './types'
 import { $router, Link, navigate } from './components/router.tsx'
 import ServerDetail from './components/routes/system.tsx'
+import SettingsButton from './components/table-settings.tsx'
 
 // const ServerDetail = lazy(() => import('./components/routes/system.tsx'))
 const CommandPalette = lazy(() => import('./components/command-palette.tsx'))
@@ -54,15 +56,17 @@ const App = () => {
 	const page = useStore($router)
 	const authenticated = useStore($authenticated)
 	const systems = useStore($systems)
+	const settings = useStore($settings)
 
 	useEffect(() => {
 		// change auth store on auth change
 		pb.authStore.onChange(() => {
 			$authenticated.set(pb.authStore.isValid)
 		})
-		// get servers / alerts
+		// get servers / alerts / settings
 		updateSystemList()
 		updateAlerts()
+		updateSettings()
 		// subscribe to real time updates for systems / alerts
 		pb.collection<SystemRecord>('systems').subscribe('*', (e) => {
 			updateRecordList(e, $systems)
@@ -70,6 +74,9 @@ const App = () => {
 		})
 		pb.collection<AlertRecord>('alerts').subscribe('*', (e) => {
 			updateRecordList(e, $alerts)
+		})
+		pb.collection<SettingsRecord>('settings').subscribe('*', (e) => {
+			updateRecordList(e, $settings)
 		})
 		return () => {
 			pb.collection('systems').unsubscribe('*')
@@ -210,6 +217,9 @@ const Layout = () => {
 								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
+						{isAdmin() && ( 
+							<SettingsButton />
+						 )}
 					</div>
 				</div>
 			</div>

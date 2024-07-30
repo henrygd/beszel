@@ -80,4 +80,11 @@ export interface AlertRecord extends RecordModel {
 	// user: string
 }
 
+export interface SettingsRecord extends RecordModel {
+	id: string
+
+	user: string
+	enum: number
+}
+
 export type ChartTimes = '1h' | '12h' | '24h' | '1w' | '30d'

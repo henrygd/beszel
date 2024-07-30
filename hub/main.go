@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v5"
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
@@ -193,6 +194,46 @@ func main() {
 
 	app.OnModelAfterCreate("container_stats").Add(func(e *core.ModelEvent) error {
 		createLongerRecords("container_stats", e.Model.(*models.Record))
+		return nil
+	})
+
+	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+		db := app.Dao().DB()
+		var count int
+
+		db.Select("COUNT(*)").From("settings").Row(&count)
+		if count == 0 {
+			//print
+			fmt.Println("No settings found, creating default settings")
+			db.Insert("settings", dbx.Params{
+				"enum":  ntfy_enabled,
+				"value": "false",
+			}).Execute()
+			db.Insert("settings", dbx.Params{
+				"enum":  ntfy_url,
+				"value": "",
+			}).Execute()
+			db.Insert("settings", dbx.Params{
+				"enum":  ntfy_user,
+				"value": "",
+			}).Execute()
+			db.Insert("settings", dbx.Params{
+				"enum":  ntfy_pass,
+				"value": "",
+			}).Execute()
+			db.Insert("settings", dbx.Params{
+				"enum":  ntfy_subject,
+				"value": "Beszel Alert",
+			}).Execute()
+			db.Insert("settings", dbx.Params{
+				"enum":  ntfy_body,
+				"value": "{ \"priority\": 3 }",
+			}).Execute()
+			db.Insert("settings", dbx.Params{
+				"enum":  smtp_enabled,
+				"value": "true",
+			}).Execute()
+		}
 		return nil
 	})
 

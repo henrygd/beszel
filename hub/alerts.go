@@ -1,15 +1,43 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"net/mail"
+	"strings"
 
 	"github.com/pocketbase/dbx"
+	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/tools/mailer"
 	"github.com/pocketbase/pocketbase/tools/types"
 )
+
+const (
+	/** NTFY SETTINGS **/
+	/** ntfy enabled */
+	ntfy_enabled = iota
+	/** server url */
+	ntfy_url
+	/** username */
+	ntfy_user
+	/** password */
+	ntfy_pass
+	/** ntfy subject */
+	ntfy_subject
+	/** ntfy_body */
+	ntfy_body
+
+	/** SMTP SETTINGS **/
+	/** smtp enabled */
+	smtp_enabled
+)
+
+type NtfyBody struct {
+	Priority int `json:"priority"`
+}
 
 func handleSystemAlerts(newStatus string, newRecord *models.Record, oldRecord *models.Record) {
 	alertRecords, err := app.Dao().FindRecordsByExpr("alerts",
@@ -125,18 +153,80 @@ func handleStatusAlerts(newStatus string, oldRecord *models.Record, alertRecord 
 	return nil
 }
 
+func findSetting(dao *daos.Dao, enum int) (*models.Record, error) {
+	return dao.FindFirstRecordByData("settings", "enum", enum)
+}
+
 func sendAlert(data EmailData) {
 	// fmt.Println("sending alert", "to", data.to, "subj", data.subj, "body", data.body)
-	message := &mailer.Message{
-		From: mail.Address{
-			Address: app.Settings().Meta.SenderAddress,
-			Name:    app.Settings().Meta.SenderName,
-		},
-		To:      []mail.Address{{Address: data.to}},
-		Subject: data.subj,
-		Text:    data.body,
+	isEmailAlert, err := app.Dao().FindFirstRecordByData(
+		"settings", "enum",
+		smtp_enabled,
+	)
+	if err != nil {
+		app.Logger().Error("Failed to find email alert settings: ", "err", err.Error())
+		return
 	}
-	if err := app.NewMailClient().Send(message); err != nil {
-		app.Logger().Error("Failed to send alert: ", "err", err.Error())
+	isNtfyAlert, err := app.Dao().FindFirstRecordByData(
+		"settings", "enum",
+		ntfy_enabled,
+	)
+	if err != nil {
+		app.Logger().Error("Failed to find ntfy alert settings: ", "err", err.Error())
+		return
+	}
+
+	fmt.Println("isEmailAlert", isEmailAlert.Get("value"))
+	fmt.Println("isNtfyAlert", isNtfyAlert.Get("value"))
+	if isEmailAlert.Get("value") == "true" {
+		message := &mailer.Message{
+			From: mail.Address{
+				Address: app.Settings().Meta.SenderAddress,
+				Name:    app.Settings().Meta.SenderName,
+			},
+			To:      []mail.Address{{Address: data.to}},
+			Subject: data.subj,
+			Text:    data.body,
+		}
+		if err := app.NewMailClient().Send(message); err != nil {
+			app.Logger().Error("Failed to send alert: ", "err", err.Error())
+		}
+	}
+
+	if isNtfyAlert.Get("value") == "true" {
+		settings := []int{ntfy_url, ntfy_user, ntfy_pass, ntfy_subject, ntfy_body}
+		results := make(map[int]*models.Record)
+
+		for _, setting := range settings {
+			record, err := findSetting(app.Dao(), setting)
+			if err != nil {
+				fmt.Printf("Error finding setting %s: %v", setting, err)
+			}
+			results[setting] = record
+		}
+		// send ntfy alert
+		ntfyUrl := results[ntfy_url].Get("value").(string)
+		ntfyUser := results[ntfy_user].Get("value").(string)
+		ntfyPass := results[ntfy_pass].Get("value").(string)
+		_ = results[ntfy_subject].Get("value").(string)
+		ntfyBodyStr := results[ntfy_body].Get("value").(string)
+
+		var ntfyBody NtfyBody
+		err := json.Unmarshal([]byte(ntfyBodyStr), &ntfyBody)
+		if err != nil {
+			fmt.Printf("Error unmarshalling ntfy body: %v", err)
+		}
+		// Call web url
+		req, _ := http.NewRequest("POST", ntfyUrl, strings.NewReader(data.body))
+		req.Header.Set("Title", data.subj)
+		req.Header.Set("Priority", fmt.Sprintf("%d", ntfyBody.Priority))
+
+		if ntfyUser != "" && ntfyPass != "" {
+			req.Header.Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(ntfyUser+":"+ntfyPass)))
+		} else if ntfyPass != "" && strings.HasPrefix(ntfyPass, "tk_") {
+			req.Header.Set("Authorization", "Bearer "+ntfyPass)
+		}
+
+		http.DefaultClient.Do(req)
 	}
 }

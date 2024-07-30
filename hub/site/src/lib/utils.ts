@@ -1,8 +1,8 @@
 import { toast } from '@/components/ui/use-toast'
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import { $alerts, $systems, pb } from './stores'
-import { AlertRecord, ChartTimes, SystemRecord } from '@/types'
+import { $alerts, $systems, $settings, pb } from './stores'
+import { AlertRecord, ChartTimes, SystemRecord, SettingsRecord } from '@/types'
 import { RecordModel, RecordSubscription } from 'pocketbase'
 import { WritableAtom } from 'nanostores'
 import { timeDay, timeHour } from 'd3-time'
@@ -49,6 +49,14 @@ export const updateAlerts = () => {
 		.getFullList<AlertRecord>({ fields: 'id,name,system,value' })
 		.then((records) => {
 			$alerts.set(records)
+		})
+}
+
+export const updateSettings = () => {
+	pb.collection('settings')
+		.getFullList<SettingsRecord>()
+		.then((records) => {
+			$settings.set(records)
 		})
 }
 

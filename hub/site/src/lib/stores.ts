@@ -1,6 +1,6 @@
 import PocketBase from 'pocketbase'
 import { atom, WritableAtom } from 'nanostores'
-import { AlertRecord, ChartTimes, SystemRecord } from '@/types'
+import { AlertRecord, ChartTimes, SettingsRecord, SystemRecord } from '@/types'
 
 /** PocketBase JS Client */
 export const pb = new PocketBase('/')
@@ -16,6 +16,9 @@ export const $updatedSystem = atom({} as SystemRecord)
 
 /** List of alert records */
 export const $alerts = atom([] as AlertRecord[])
+
+/** Settings object */
+export const $settings = atom([] as SettingsRecord[])
 
 /** SSH public key */
 export const $publicKey = atom('')
