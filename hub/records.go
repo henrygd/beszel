@@ -3,12 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"math"
 	"reflect"
 	"time"
 
 	"github.com/pocketbase/dbx"
+	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/tools/types"
 )
@@ -138,16 +138,22 @@ func twoDecimals(value float64) float64 {
 	return math.Round(value*100) / 100
 }
 
-/* Delete records of specified collection and type that are older than timeLimit */
-func deleteOldRecords(collection string, recordType string, timeLimit time.Duration) {
+/* Delete records of specified collections and type that are older than timeLimit */
+func deleteOldRecords(txDao *daos.Dao, collections []string, recordType string, timeLimit time.Duration) {
 	timeLimitStamp := time.Now().UTC().Add(-timeLimit).Format("2006-01-02 15:04:05")
-	records, _ := app.Dao().FindRecordsByExpr(collection,
-		dbx.NewExp("type = {:type}", dbx.Params{"type": recordType}),
-		dbx.NewExp("created < {:created}", dbx.Params{"created": timeLimitStamp}),
-	)
-	for _, record := range records {
-		if err := app.Dao().DeleteRecord(record); err != nil {
-			log.Fatal(err)
+
+	// db query
+	expType := dbx.NewExp("type = {:type}", dbx.Params{"type": recordType})
+	expCreated := dbx.NewExp("created < {:created}", dbx.Params{"created": timeLimitStamp})
+
+	var records []*models.Record
+	for _, collection := range collections {
+		if collectionRecords, err := txDao.FindRecordsByExpr(collection, expType, expCreated); err == nil {
+			records = append(records, collectionRecords...)
 		}
+	}
+
+	for _, record := range records {
+		txDao.DeleteRecord(record)
 	}
 }
