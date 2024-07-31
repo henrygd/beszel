@@ -1,0 +1,23 @@
+services:
+  beszel:
+    image: 'henrygd/beszel'
+    container_name: 'beszel'
+    restart: unless-stopped
+    ports:
+      - '8090:8090'
+    volumes:
+      - ./beszel_data:/beszel_data
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+
+  beszel-agent:
+    image: 'henrygd/beszel-agent'
+    container_name: 'beszel-agent'
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      PORT: 45876
+      KEY: '...'
+      # FILESYSTEM: /dev/sda1 # set to the correct filesystem for disk I/O stats

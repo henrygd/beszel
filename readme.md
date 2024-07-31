@@ -237,9 +237,20 @@ Cannot create systems, but can view any system that has been shared with them by
 
 ### Agent is not connecting
 
-Assuming the agent is running, the connection is probably being blocked by a firewall. You need to add an inbound rule on the agent system to allow TCP connections to the port. Check any active firewalls, like iptables or ufw, and in your cloud provider account if applicable.
+Assuming the agent is running, the connection is probably being blocked by a firewall. You have two options:
 
-Connectivity can be tested by running `telnet <agent-ip> <port>` or `nc -zv <agent-ip> <port>` from a remote machine.
+1. Add an inbound rule to the agent system's firewall(s) to allow TCP connections to the port. Check any active firewalls, like iptables, and in your cloud provider account if applicable.
+2. Alternatively, software like [Cloudflare Tunnel](https://www.cloudflare.com/products/tunnel/), [WireGuard](https://www.wireguard.com/), or [Tailscale](https://tailscale.com/) can be used to securely bypass your firewall.
+
+Connectivity can be tested by running `telnet <agent-ip> <port>`.
+
+### Connecting the hub and agent on the same system using Docker
+
+If using host network mode for the agent but not the hub, you can add your system using the hostname `host.docker.internal`, which resolves to the internal IP address used by the host. See [example docker-compose.yml](/supplemental/docker/examples/same-system/docker-compose.yml).
+
+If using host network for both, you can use `localhost` as the hostname.
+
+Otherwise you can use the agent's `container_name` as the hostname if both are in the same docker network.
 
 ### Finding the correct filesystem
 
