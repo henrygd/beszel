@@ -163,8 +163,7 @@ func main() {
 	// system creation defaults
 	app.OnModelBeforeCreate("systems").Add(func(e *core.ModelEvent) error {
 		record := e.Model.(*models.Record)
-		var info = SystemInfo{}
-		record.Set("info", info)
+		record.Set("info", SystemInfo{})
 		record.Set("status", "pending")
 		return nil
 	})

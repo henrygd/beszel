@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -8,6 +9,7 @@ import (
 	"math"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"sync"
@@ -51,20 +53,8 @@ var netIoStats = NetIoStats{
 	Name:      "",
 }
 
-// client for docker engine api
-var client = &http.Client{
-	Timeout: time.Second,
-	Transport: &http.Transport{
-		Dial: func(proto, addr string) (net.Conn, error) {
-			return net.Dial("unix", "/var/run/docker.sock")
-		},
-		ForceAttemptHTTP2:   false,
-		IdleConnTimeout:     90 * time.Second,
-		DisableCompression:  true,
-		MaxIdleConnsPerHost: 50,
-		DisableKeepAlives:   false,
-	},
-}
+// dockerClient for docker engine api
+var dockerClient = newDockerClient()
 
 func getSystemStats() (*SystemInfo, *SystemStats) {
 	systemStats := &SystemStats{}
@@ -159,7 +149,7 @@ func getSystemStats() (*SystemInfo, *SystemStats) {
 }
 
 func getDockerStats() ([]*ContainerStats, error) {
-	resp, err := client.Get("http://localhost/containers/json")
+	resp, err := dockerClient.Get("http://localhost/containers/json")
 	if err != nil {
 		return []*ContainerStats{}, err
 	}
@@ -167,7 +157,8 @@ func getDockerStats() ([]*ContainerStats, error) {
 
 	var containers []*Container
 	if err := json.NewDecoder(resp.Body).Decode(&containers); err != nil {
-		panic(err)
+		log.Printf("Error decoding containers: %+v\n", err)
+		return []*ContainerStats{}, err
 	}
 
 	containerStats := make([]*ContainerStats, 0, len(containers))
@@ -219,7 +210,7 @@ func getContainerStats(ctr *Container) (*ContainerStats, error) {
 	// use semaphore to limit concurrency
 	acquireSemaphore()
 	defer releaseSemaphore()
-	resp, err := client.Get("http://localhost/containers/" + ctr.IdShort + "/stats?stream=0&one-shot=1")
+	resp, err := dockerClient.Get("http://localhost/containers/" + ctr.IdShort + "/stats?stream=0&one-shot=1")
 	if err != nil {
 		return &ContainerStats{}, err
 	}
@@ -403,4 +394,45 @@ func initializeNetIoStats() {
 		netIoStats.BytesRecv = bytesRecv
 		netIoStats.Time = time.Now()
 	}
+}
+
+func newDockerClient() *http.Client {
+	dockerHost := "unix:///var/run/docker.sock"
+	if dockerHostEnv, exists := os.LookupEnv("DOCKER_HOST"); exists {
+		dockerHost = dockerHostEnv
+	}
+
+	parsedURL, err := url.Parse(dockerHost)
+	if err != nil {
+		log.Fatal("Error parsing DOCKER_HOST: " + err.Error())
+	}
+
+	transport := &http.Transport{
+		ForceAttemptHTTP2:   false,
+		IdleConnTimeout:     90 * time.Second,
+		DisableCompression:  true,
+		MaxIdleConnsPerHost: 50,
+		DisableKeepAlives:   false,
+	}
+
+	switch parsedURL.Scheme {
+	case "unix":
+		transport.DialContext = func(ctx context.Context, proto, addr string) (net.Conn, error) {
+			return (&net.Dialer{}).DialContext(ctx, "unix", parsedURL.Path)
+		}
+	case "tcp", "http", "https":
+		log.Println("Using DOCKER_HOST: " + dockerHost)
+		transport.DialContext = func(ctx context.Context, proto, addr string) (net.Conn, error) {
+			return (&net.Dialer{}).DialContext(ctx, "tcp", parsedURL.Host)
+		}
+	default:
+		log.Fatal("Unsupported DOCKER_HOST: " + parsedURL.Scheme)
+	}
+
+	client := &http.Client{
+		Timeout:   time.Second,
+		Transport: transport,
+	}
+
+	return client
 }

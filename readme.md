@@ -111,9 +111,12 @@ If using systemd, run `sudo systemctl restart beszel` and `sudo systemctl restar
 
 | Name         | Default | Description                                                |
 | ------------ | ------- | ---------------------------------------------------------- |
-| `FILESYSTEM` | unset   | Filesystem / partition to use for disk I/O stats           |
+| `FILESYSTEM` | unset   | Filesystem / partition to use for disk I/O stats.          |
 | `KEY`        | unset   | Public SSH key to use for authentication. Provided in hub. |
-| `PORT`       | 45876   | Port to listen on                                          |
+| `PORT`       | 45876   | Port to listen on.                                         |
+
+<!-- | `DOCKER_HOST` | unset   | Overrides the docker host (docker.sock) if using a proxy.[^socket] |
+[^socket]: Beszel only needs access to read container information. For [linuxserver/docker-socket-proxy](https://github.com/linuxserver/docker-socket-proxy) you would set `CONTAINERS=1`. -->
 
 ## OAuth / OIDC setup
 
