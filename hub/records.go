@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"math"
 	"reflect"
@@ -10,12 +9,11 @@ import (
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/models"
-	"github.com/pocketbase/pocketbase/tools/types"
 )
 
 func createLongerRecords(collectionName string, shorterRecord *models.Record) {
-	shorterRecordType := shorterRecord.Get("type").(string)
-	systemId := shorterRecord.Get("system").(string)
+	shorterRecordType := shorterRecord.GetString("type")
+	systemId := shorterRecord.GetString("system")
 	// fmt.Println("create longer records", "recordType", shorterRecordType, "systemId", systemId)
 	var longerRecordType string
 	var timeAgo time.Duration
@@ -92,7 +90,7 @@ func averageSystemStats(records []*models.Record) SystemStats {
 
 	for _, record := range records {
 		var stats SystemStats
-		json.Unmarshal([]byte(record.Get("stats").(types.JsonRaw)), &stats)
+		record.UnmarshalJSONField("stats", &stats)
 		statValue := reflect.ValueOf(stats)
 		for i := 0; i < statValue.NumField(); i++ {
 			field := sum.Field(i)
@@ -114,7 +112,7 @@ func averageContainerStats(records []*models.Record) (stats []ContainerStats) {
 	count := float64(len(records))
 	for _, record := range records {
 		var stats []ContainerStats
-		json.Unmarshal([]byte(record.Get("stats").(types.JsonRaw)), &stats)
+		record.UnmarshalJSONField("stats", &stats)
 		for _, stat := range stats {
 			if _, ok := sums[stat.Name]; !ok {
 				sums[stat.Name] = &ContainerStats{Name: stat.Name, Cpu: 0, Mem: 0}

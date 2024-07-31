@@ -26,7 +26,6 @@ import (
 	"github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"
 	"github.com/pocketbase/pocketbase/tools/cron"
-	"github.com/pocketbase/pocketbase/tools/types"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
 )
@@ -155,7 +154,7 @@ func main() {
 	// user creation - set default role to user if unset
 	app.OnModelBeforeCreate("users").Add(func(e *core.ModelEvent) error {
 		user := e.Model.(*models.Record)
-		if user.Get("role") == "" {
+		if user.GetString("role") == "" {
 			user.Set("role", "user")
 		}
 		return nil
@@ -180,7 +179,7 @@ func main() {
 	app.OnModelAfterUpdate("systems").Add(func(e *core.ModelEvent) error {
 		newRecord := e.Model.(*models.Record)
 		oldRecord := newRecord.OriginalCopy()
-		newStatus := newRecord.Get("status").(string)
+		newStatus := newRecord.GetString("status")
 
 		// if server is disconnected and connection exists, remove it
 		if newStatus == "down" || newStatus == "paused" {
@@ -242,7 +241,7 @@ func updateSystems() {
 	fiftySecondsAgo := time.Now().UTC().Add(-50 * time.Second)
 	batchSize := len(records)/4 + 1
 	for i := 0; i < batchSize; i++ {
-		if records[i].Get("updated").(types.DateTime).Time().After(fiftySecondsAgo) {
+		if records[i].GetDateTime("updated").Time().After(fiftySecondsAgo) {
 			break
 		}
 		// log.Println("updating", records[i].Get(("name")))
@@ -258,8 +257,8 @@ func updateSystem(record *models.Record) {
 	} else {
 		// create server connection struct
 		server = &Server{
-			Host: record.Get("host").(string),
-			Port: record.Get("port").(string),
+			Host: record.GetString("host"),
+			Port: record.GetString("port"),
 		}
 		client, err := getServerConnection(server)
 		if err != nil {
@@ -321,7 +320,7 @@ func updateServerStatus(record *models.Record, status string) {
 	// if status == "down" || status == "paused" {
 	// 	deleteServerConnection(record)
 	// }
-	if record.Get("status") != status {
+	if record.GetString("status") != status {
 		record.Set("status", status)
 		if err := app.Dao().SaveRecord(record); err != nil {
 			app.Logger().Error("Failed to update record: ", "err", err.Error())
