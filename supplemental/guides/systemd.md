@@ -49,6 +49,8 @@ curl -sL https://raw.githubusercontent.com/henrygd/beszel/main/supplemental/scri
 
 You may optionally include the SSH key and port as arguments. Run `./install-agent.sh -h` for more info.
 
+If specifying your key with `-k`, please make sure to enclose it in quotes.
+
 ```bash
 ./install-agent.sh
 ```
