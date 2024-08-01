@@ -9,13 +9,13 @@ while getopts ":k:p:uh" opt; do
     k) KEY="$OPTARG";;
     p) PORT="$OPTARG";;
     u) UNINSTALL="true";;
-    h) echo "Beszel Agent installation script"; echo ""
-       echo "Usage: ./install.sh [options]"; echo ""
-       echo "Options: "
-       echo "  -k  : SSH key (required, or interactive if not provided)"; echo ""
-       echo "  -p  : Port (default: $PORT)"; echo ""
-       echo "  -u  : Uninstall the Beszel Agent"; echo ""
-       echo "  -h  : Display this help message"; echo ""
+    h) printf "Beszel Agent installation script\n\n"
+       printf "Usage: ./install-agent.sh [options]\n\n"
+       printf "Options: \n"
+       printf "  -k  : SSH key (required, or interactive if not provided)\n"
+       printf "  -p  : Port (default: $PORT)\n"
+       printf "  -u  : Uninstall the Beszel Agent\n"
+       printf "  -h  : Display this help message\n"
        exit 0;;
     \?) echo "Invalid option: -$OPTARG"; exit 1;;
   esac
@@ -45,10 +45,27 @@ if [ "$UNINSTALL" = "true" ]; then
 
   echo "The Beszel Agent has been uninstalled successfully!"
 else
-  # Check if the distribution is supported
-  if [ "$(cat /etc/os-release | grep '^ID=')" != "ID=debian" ] && [ "$(cat /etc/os-release | grep '^ID=')" != "ID=ubuntu" ] && [ "$(cat /etc/os-release | grep '^ID_LIKE=')" != "ID_LIKE=debian" ]; then
-    echo "Error: This script only supports Debian and Ubuntu distributions."
-    exit 1
+  # Function to check if a package is installed
+  package_installed() {
+    command -v "$1" >/dev/null 2>&1
+  }
+
+  # Check for package manager and install necessary packages if not installed
+  if package_installed apt-get; then
+    if ! package_installed tar || ! package_installed curl; then
+      sudo apt-get update
+      sudo apt-get install -y tar curl
+    fi
+  elif package_installed yum; then
+    if ! package_installed tar || ! package_installed curl; then
+      sudo yum install -y tar curl
+    fi
+  elif package_installed pacman; then
+    if ! package_installed tar || ! package_installed curl; then
+      sudo pacman -Sy --noconfirm tar curl
+    fi
+  else
+    echo "Warning: Please ensure 'tar' and 'curl' are installed."
   fi
 
   # If no SSH key is provided, ask for the SSH key interactively
@@ -56,14 +73,10 @@ else
     read -p "Enter your SSH key: " KEY
   fi
 
-  # Check if necessary packages are installed
-  sudo apt update
-  sudo apt install -y tar curl
-
   # Create a dedicated user for the service if it doesn't exist
-  if ! id -u beszel-agent > /dev/null 2>&1; then
+  if ! id -u beszel > /dev/null 2>&1; then
     echo "Creating a dedicated user for the Beszel Agent service..."
-    sudo useradd -m -s /bin/false beszel
+    sudo useradd -M -s /bin/false beszel
   fi
 
   # Create the directory for the Beszel Agent
@@ -76,7 +89,8 @@ else
 
   # Download and install the Beszel Agent
   echo "Downloading and installing the Beszel Agent..."
-  curl -sL "https://github.com/henrygd/beszel/releases/latest/download/beszel-agent_$(uname -s)_$(uname -m | sed 's/x86_64/amd64/' | sed 's/armv7l/arm/' | sed 's/aarch64/arm64/').tar.gz" | tar -xz -C /opt/beszel-agent -f - beszel-agent
+  curl -sL "https://github.com/henrygd/beszel/releases/latest/download/beszel-agent_$(uname -s)_$(uname -m | sed 's/x86_64/amd64/' | sed 's/armv7l/arm/' | sed 's/aarch64/arm64/').tar.gz" | tar -xz -O beszel-agent | tee ./beszel-agent >/dev/null
+  sudo mv ./beszel-agent /opt/beszel-agent/beszel-agent
   sudo chown beszel:beszel /opt/beszel-agent/beszel-agent
   sudo chmod 755 /opt/beszel-agent/beszel-agent
 
@@ -99,14 +113,18 @@ WantedBy=multi-user.target
 EOF
 
   # Load and start the service
-  echo "Loading and starting the Beszel Agent service..."
+  printf "\nLoading and starting the Beszel Agent service...\n"
   sudo systemctl daemon-reload
   sudo systemctl enable beszel-agent.service
   sudo systemctl start beszel-agent.service
 
+  # Wait for the service to start or fail
+  sleep 1
+
   # Check if the service is running
   if [ "$(systemctl is-active beszel-agent.service)" != "active" ]; then
     echo "Error: The Beszel Agent service is not running."
+    echo "$(systemctl status beszel-agent.service)"
     exit 1
   fi
 
