@@ -61,6 +61,73 @@ If you don't need network stats, remove that line from the compose file and map 
 
 ### Binary
 
+#### Beszel Agent
+
+##### Prerequisites
+
+- Debian or Ubuntu distribution
+
+- System administrator privileges
+
+##### Installation
+
+To install Beszel Agent, follow these steps:
+
+1. Download the Beszel Agent installation script: wget https://raw.githubusercontent.com/henrygd/beszel/master/install-agent.sh
+
+2. Make the script executable: chmod +x install-agent.sh
+
+3. Run the script with the desired options:
+
+- ./install-agent.sh -k <ssh_key> -p <port> (specify the SSH key and port)
+
+- ./install-agent.sh -h (display the help message)
+
+4. Follow the prompts to complete the installation
+
+##### Uninstallation
+
+1. To uninstall Beszel Agent, follow these steps:
+
+2. Run the installation script with the -u option: ./install-agent.sh -u
+
+Follow the prompts to complete the uninstallation
+
+#### Beszel Hub
+
+##### Prerequisites
+
+- Debian or Ubuntu distribution
+
+- System administrator privileges
+
+##### Installation
+
+To install Beszel Hub, follow these steps:
+
+1. Download the Beszel Hub installation script: wget https://raw.githubusercontent.com/henrygd/beszel/master/install-hub.sh
+
+2. Make the script executable: chmod +x install-hub.sh
+
+3. Run the script:
+
+- ./install-hub.sh
+
+- ./install-hub.sh -h (display the help message)
+
+4. Follow the prompts to complete the installation
+
+##### Uninstallation
+
+To uninstall Beszel Hub, follow these steps:
+
+
+
+1. Run the installation script with the -u option: ./install-hub.sh -u
+
+2. Follow the prompts to complete the uninstallation
+
+### Alternative Binary
 Download and run the latest binaries from the [releases page](https://github.com/henrygd/beszel/releases) or use the commands below.
 
 #### Hub
