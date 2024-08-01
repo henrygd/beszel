@@ -61,73 +61,9 @@ If you don't need network stats, remove that line from the compose file and map 
 
 ### Binary
 
-#### Beszel Agent
+> [!TIP]
+> If using Linux, see [guides/systemd.md](/supplemental/guides/systemd.md) for a script to install the hub or agent as a system service. The agent installer will be built into the web UI in the future.
 
-##### Prerequisites
-
-- Debian or Ubuntu distribution
-
-- System administrator privileges
-
-##### Installation
-
-To install Beszel Agent, follow these steps:
-
-1. Download the Beszel Agent installation script: wget https://raw.githubusercontent.com/henrygd/beszel/master/install-agent.sh
-
-2. Make the script executable: chmod +x install-agent.sh
-
-3. Run the script with the desired options:
-
-- ./install-agent.sh -k <ssh_key> -p <port> (specify the SSH key and port)
-
-- ./install-agent.sh -h (display the help message)
-
-4. Follow the prompts to complete the installation
-
-##### Uninstallation
-
-1. To uninstall Beszel Agent, follow these steps:
-
-2. Run the installation script with the -u option: ./install-agent.sh -u
-
-Follow the prompts to complete the uninstallation
-
-#### Beszel Hub
-
-##### Prerequisites
-
-- Debian or Ubuntu distribution
-
-- System administrator privileges
-
-##### Installation
-
-To install Beszel Hub, follow these steps:
-
-1. Download the Beszel Hub installation script: wget https://raw.githubusercontent.com/henrygd/beszel/master/install-hub.sh
-
-2. Make the script executable: chmod +x install-hub.sh
-
-3. Run the script:
-
-- ./install-hub.sh
-
-- ./install-hub.sh -h (display the help message)
-
-4. Follow the prompts to complete the installation
-
-##### Uninstallation
-
-To uninstall Beszel Hub, follow these steps:
-
-
-
-1. Run the installation script with the -u option: ./install-hub.sh -u
-
-2. Follow the prompts to complete the uninstallation
-
-### Alternative Binary
 Download and run the latest binaries from the [releases page](https://github.com/henrygd/beszel/releases) or use the commands below.
 
 #### Hub
@@ -154,17 +90,9 @@ Running the agent directly:
 PORT=45876 KEY="{PASTE_YOUR_KEY}" ./beszel-agent
 ```
 
-#### Running as a system service (Linux)
-
-See [supplemental/systemd](/supplemental/systemd) for instructions on running in the background using systemd.
-
-In the future there will be a one line command for installing the binary and setting up the service.
-
 #### Updating
 
 Use `./beszel update` and `./beszel-agent update` to update to the latest version.
-
-If using systemd, run `sudo systemctl restart beszel` and `sudo systemctl restart beszel-agent` to restart the services.
 
 ## Environment Variables
 
@@ -263,7 +191,7 @@ Connectivity can be tested by running `telnet <agent-ip> <port>`.
 
 ### Connecting the hub and agent on the same system using Docker
 
-If using host network mode for the agent but not the hub, you can add your system using the hostname `host.docker.internal`, which resolves to the internal IP address used by the host. See [example docker-compose.yml](/supplemental/docker/examples/same-system/docker-compose.yml).
+If using host network mode for the agent but not the hub, you can add your system using the hostname `host.docker.internal`, which resolves to the internal IP address used by the host. See [example docker-compose.yml](/supplemental/docker/same-system/docker-compose.yml).
 
 If using host network for both, you can use `localhost` as the hostname.
 
