@@ -49,6 +49,10 @@ else
     echo "Error: This script only supports Debian and Ubuntu distributions."
     exit 1
   fi
+  
+  # Check if necessary packages are installed
+  sudo apt update
+  sudo apt install -y tar curl
 
   # Create a dedicated user for the service
   if ! id -u beszel > /dev/null 2>&1; then
