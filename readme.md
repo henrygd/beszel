@@ -61,6 +61,9 @@ If you don't need network stats, remove that line from the compose file and map 
 
 ### Binary
 
+> [!TIP]
+> If using Linux, see [guides/systemd.md](/supplemental/guides/systemd.md) for a script to install the hub or agent as a system service. The agent installer will be built into the web UI in the future.
+
 Download and run the latest binaries from the [releases page](https://github.com/henrygd/beszel/releases) or use the commands below.
 
 #### Hub
@@ -87,17 +90,9 @@ Running the agent directly:
 PORT=45876 KEY="{PASTE_YOUR_KEY}" ./beszel-agent
 ```
 
-#### Running as a system service (Linux)
-
-See [supplemental/systemd](/supplemental/systemd) for instructions on running in the background using systemd.
-
-In the future there will be a one line command for installing the binary and setting up the service.
-
 #### Updating
 
 Use `./beszel update` and `./beszel-agent update` to update to the latest version.
-
-If using systemd, run `sudo systemctl restart beszel` and `sudo systemctl restart beszel-agent` to restart the services.
 
 ## Environment Variables
 
@@ -196,7 +191,7 @@ Connectivity can be tested by running `telnet <agent-ip> <port>`.
 
 ### Connecting the hub and agent on the same system using Docker
 
-If using host network mode for the agent but not the hub, you can add your system using the hostname `host.docker.internal`, which resolves to the internal IP address used by the host. See [example docker-compose.yml](/supplemental/docker/examples/same-system/docker-compose.yml).
+If using host network mode for the agent but not the hub, you can add your system using the hostname `host.docker.internal`, which resolves to the internal IP address used by the host. See [example docker-compose.yml](/supplemental/docker/same-system/docker-compose.yml).
 
 If using host network for both, you can use `localhost` as the hostname.
 
