@@ -78,6 +78,8 @@ else
     echo "Creating a dedicated user for the Beszel Agent service..."
     sudo useradd -M -s /bin/false beszel
   fi
+  # Add the user to the docker group to allow access to the Docker socket
+  sudo usermod -aG docker beszel
 
   # Create the directory for the Beszel Agent
   if [ ! -d "/opt/beszel-agent" ]; then
