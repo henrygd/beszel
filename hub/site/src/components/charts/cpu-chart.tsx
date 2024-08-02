@@ -1,39 +1,28 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
-import {
-	ChartConfig,
-	ChartContainer,
-	ChartTooltip,
-	ChartTooltipContent,
-} from '@/components/ui/chart'
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { chartTimeData, formatShortDate } from '@/lib/utils'
 import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
-
-const chartConfig = {
-	cpu: {
-		label: 'CPU Usage',
-		color: 'hsl(var(--chart-1))',
-	},
-} satisfies ChartConfig
+import { SystemStatsRecord } from '@/types'
 
 export default function CpuChart({
-	chartData,
 	ticks,
+	systemData,
 }: {
-	chartData: { time: number; cpu: number }[]
 	ticks: number[]
+	systemData: SystemStatsRecord[]
 }) {
 	const chartTime = useStore($chartTime)
 
-	if (!chartData.length || !ticks.length) {
+	if (!systemData.length || !ticks.length) {
 		return <Spinner />
 	}
 
 	return (
-		<ChartContainer config={chartConfig} className="h-full w-full absolute aspect-auto">
-			<AreaChart accessibilityLayer data={chartData} margin={{ top: 10 }}>
+		<ChartContainer config={{}} className="h-full w-full absolute aspect-auto">
+			<AreaChart accessibilityLayer data={systemData} margin={{ top: 10 }}>
 				<CartesianGrid vertical={false} />
 				<YAxis
 					// domain={[0, (max: number) => Math.ceil(max)]}
@@ -43,7 +32,7 @@ export default function CpuChart({
 					unit={'%'}
 				/>
 				<XAxis
-					dataKey="time"
+					dataKey="created"
 					domain={[ticks[0], ticks.at(-1)!]}
 					ticks={ticks}
 					type="number"
@@ -59,17 +48,18 @@ export default function CpuChart({
 					content={
 						<ChartTooltipContent
 							unit="%"
-							labelFormatter={(_, data) => formatShortDate(data[0].payload.time)}
+							labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 							indicator="line"
 						/>
 					}
 				/>
 				<Area
-					dataKey="cpu"
+					dataKey="stats.cpu"
+					name="CPU Usage"
 					type="monotoneX"
-					fill="var(--color-cpu)"
+					fill="hsl(var(--chart-1))"
 					fillOpacity={0.4}
-					stroke="var(--color-cpu)"
+					stroke="hsl(var(--chart-1))"
 					animationDuration={1200}
 					// animationEasing="ease-out"
 					// animateNewValues={false}

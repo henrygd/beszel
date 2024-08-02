@@ -25,22 +25,7 @@ export default function ServerDetail({ name }: { name: string }) {
 	const chartTime = useStore($chartTime)
 	const [ticks, setTicks] = useState([] as number[])
 	const [server, setServer] = useState({} as SystemRecord)
-	const [containers, setContainers] = useState([] as ContainerStatsRecord[])
-
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
-	const [cpuChartData, setCpuChartData] = useState([] as { time: number; cpu: number }[])
-	const [memChartData, setMemChartData] = useState(
-		[] as { time: number; mem: number; memUsed: number; memCache: number }[]
-	)
-	const [diskChartData, setDiskChartData] = useState(
-		[] as { time: number; disk: number; diskUsed: number }[]
-	)
-	const [diskIoChartData, setDiskIoChartData] = useState(
-		[] as { time: number; read: number; write: number }[]
-	)
-	const [bandwidthChartData, setBandwidthChartData] = useState(
-		[] as { time: number; sent: number; recv: number }[]
-	)
 	const [dockerCpuChartData, setDockerCpuChartData] = useState(
 		[] as Record<string, number | string>[]
 	)
@@ -58,10 +43,6 @@ export default function ServerDetail({ name }: { name: string }) {
 
 	const resetCharts = useCallback(() => {
 		setSystemStats([])
-		setCpuChartData([])
-		setMemChartData([])
-		setDiskChartData([])
-		setBandwidthChartData([])
 		setDockerCpuChartData([])
 		setDockerMemChartData([])
 	}, [])
@@ -77,6 +58,13 @@ export default function ServerDetail({ name }: { name: string }) {
 			setServer(matchingServer)
 		}
 	}, [name, server, systems])
+
+	// update server when new data is available
+	useEffect(() => {
+		if (updatedSystem.id === server.id) {
+			setServer(updatedSystem)
+		}
+	}, [updatedSystem])
 
 	// get stats
 	useEffect(() => {
@@ -94,46 +82,13 @@ export default function ServerDetail({ name }: { name: string }) {
 				sort: 'created',
 			})
 			.then((records) => {
-				// console.log('sctats', records)
+				// convert created time to ms value
+				for (const record of records) {
+					record.created = new Date(record.created).getTime()
+				}
 				setSystemStats(records)
 			})
 	}, [server, chartTime])
-
-	useEffect(() => {
-		if (updatedSystem.id === server.id) {
-			setServer(updatedSystem)
-		}
-	}, [updatedSystem])
-
-	// create cpu / mem / disk data for charts
-	useEffect(() => {
-		if (!systemStats.length) {
-			return
-		}
-		const cpuData = [] as typeof cpuChartData
-		const memData = [] as typeof memChartData
-		const diskData = [] as typeof diskChartData
-		const diskIoData = [] as typeof diskIoChartData
-		const networkData = [] as typeof bandwidthChartData
-		for (let { created, stats } of systemStats) {
-			const time = new Date(created).getTime()
-			cpuData.push({ time, cpu: stats.cpu })
-			memData.push({
-				time,
-				mem: stats.m,
-				memUsed: stats.mu,
-				memCache: stats.mb,
-			})
-			diskData.push({ time, disk: stats.d, diskUsed: stats.du })
-			diskIoData.push({ time, read: stats.dr, write: stats.dw })
-			networkData.push({ time, sent: stats.ns, recv: stats.nr })
-		}
-		setCpuChartData(cpuData)
-		setMemChartData(memData)
-		setDiskChartData(diskData)
-		setDiskIoChartData(diskIoData)
-		setBandwidthChartData(networkData)
-	}, [systemStats])
 
 	useEffect(() => {
 		if (!systemStats.length) {
@@ -141,7 +96,7 @@ export default function ServerDetail({ name }: { name: string }) {
 		}
 		const now = new Date()
 		const startTime = chartTimeData[chartTime].getOffset(now)
-		const scale = scaleTime([startTime.getTime(), now], [0, cpuChartData.length])
+		const scale = scaleTime([startTime.getTime(), now], [0, systemStats.length])
 		setTicks(scale.ticks(chartTimeData[chartTime].ticks).map((d) => d.getTime()))
 	}, [chartTime, systemStats])
 
@@ -161,12 +116,13 @@ export default function ServerDetail({ name }: { name: string }) {
 				sort: 'created',
 			})
 			.then((records) => {
-				setContainers(records)
+				makeContainerData(records)
+				// setContainers(records)
 			})
 	}, [server, chartTime])
 
 	// container stats for charts
-	useEffect(() => {
+	const makeContainerData = useCallback((containers: ContainerStatsRecord[]) => {
 		// console.log('containers', containers)
 		const dockerCpuData = [] as Record<string, number | string>[]
 		const dockerMemData = [] as Record<string, number | string>[]
@@ -182,10 +138,10 @@ export default function ServerDetail({ name }: { name: string }) {
 			dockerCpuData.push(cpuData)
 			dockerMemData.push(memData)
 		}
-		// console.log('containerMemData', containerMemData)
 		setDockerCpuChartData(dockerCpuData)
 		setDockerMemChartData(dockerMemData)
-	}, [containers])
+	}, [])
+
 	const uptime = useMemo(() => {
 		let uptime = server.info?.u || 0
 		if (uptime < 172800) {
@@ -254,7 +210,7 @@ export default function ServerDetail({ name }: { name: string }) {
 			</Card>
 
 			<ChartCard title="Total CPU Usage" description="Average system-wide CPU utilization">
-				<CpuChart chartData={cpuChartData} ticks={ticks} />
+				<CpuChart ticks={ticks} systemData={systemStats} />
 			</ChartCard>
 
 			{dockerCpuChartData.length > 0 && (
@@ -264,7 +220,7 @@ export default function ServerDetail({ name }: { name: string }) {
 			)}
 
 			<ChartCard title="Total Memory Usage" description="Precise utilization at the recorded time">
-				<MemChart chartData={memChartData} ticks={ticks} />
+				<MemChart ticks={ticks} systemData={systemStats} />
 			</ChartCard>
 
 			{dockerMemChartData.length > 0 && (
@@ -277,15 +233,15 @@ export default function ServerDetail({ name }: { name: string }) {
 				title="Disk Usage"
 				description="Usage of partition where the root filesystem is mounted"
 			>
-				<DiskChart chartData={diskChartData} ticks={ticks} />
+				<DiskChart ticks={ticks} systemData={systemStats} />
 			</ChartCard>
 
 			<ChartCard title="Disk I/O" description="Throughput of root filesystem">
-				<DiskIoChart chartData={diskIoChartData} ticks={ticks} />
+				<DiskIoChart ticks={ticks} systemData={systemStats} />
 			</ChartCard>
 
 			<ChartCard title="Bandwidth" description="Network traffic of public interfaces">
-				<BandwidthChart chartData={bandwidthChartData} ticks={ticks} />
+				<BandwidthChart ticks={ticks} systemData={systemStats} />
 			</ChartCard>
 		</div>
 	)

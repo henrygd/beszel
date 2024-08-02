@@ -57,6 +57,7 @@ export interface SystemStats {
 export interface ContainerStatsRecord extends RecordModel {
 	system: string
 	stats: ContainerStats[]
+	created: string | number
 }
 
 interface ContainerStats {
@@ -71,6 +72,7 @@ interface ContainerStats {
 export interface SystemStatsRecord extends RecordModel {
 	system: string
 	stats: SystemStats
+	created: string | number
 }
 
 export interface AlertRecord extends RecordModel {

@@ -1,45 +1,30 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
-import {
-	ChartConfig,
-	ChartContainer,
-	ChartTooltip,
-	ChartTooltipContent,
-} from '@/components/ui/chart'
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { chartTimeData, formatShortDate } from '@/lib/utils'
 import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
-
-const chartConfig = {
-	recv: {
-		label: 'Received',
-		color: 'hsl(var(--chart-2))',
-	},
-	sent: {
-		label: 'Sent',
-		color: 'hsl(var(--chart-5))',
-	},
-} satisfies ChartConfig
+import { SystemStatsRecord } from '@/types'
 
 export default function BandwidthChart({
-	chartData,
 	ticks,
+	systemData,
 }: {
-	chartData: { time: number; sent: number; recv: number }[]
 	ticks: number[]
+	systemData: SystemStatsRecord[]
 }) {
 	const chartTime = useStore($chartTime)
 
-	if (!chartData.length || !ticks.length) {
+	if (!systemData.length || !ticks.length) {
 		return <Spinner />
 	}
 
 	return (
-		<ChartContainer config={chartConfig} className="h-full w-full absolute aspect-auto">
+		<ChartContainer config={{}} className="h-full w-full absolute aspect-auto">
 			<AreaChart
 				accessibilityLayer
-				data={chartData}
+				data={systemData}
 				margin={{
 					left: 0,
 					right: 0,
@@ -63,7 +48,7 @@ export default function BandwidthChart({
 					unit={' MB/s'}
 				/>
 				<XAxis
-					dataKey="time"
+					dataKey="created"
 					domain={[ticks[0], ticks.at(-1)!]}
 					ticks={ticks}
 					type="number"
@@ -79,25 +64,27 @@ export default function BandwidthChart({
 					content={
 						<ChartTooltipContent
 							unit=" MB/s"
-							labelFormatter={(_, data) => formatShortDate(data[0].payload.time)}
+							labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 							indicator="line"
 						/>
 					}
 				/>
 				<Area
-					dataKey="sent"
+					dataKey="stats.ns"
+					name="Sent"
 					type="monotoneX"
-					fill="var(--color-sent)"
+					fill="hsl(var(--chart-5))"
 					fillOpacity={0.4}
-					stroke="var(--color-sent)"
+					stroke="hsl(var(--chart-5))"
 					animationDuration={1200}
 				/>
 				<Area
-					dataKey="recv"
+					dataKey="stats.nr"
+					name="Received"
 					type="monotoneX"
-					fill="var(--color-recv)"
+					fill="hsl(var(--chart-2))"
 					fillOpacity={0.4}
-					stroke="var(--color-recv)"
+					stroke="hsl(var(--chart-2))"
 					animationDuration={1200}
 				/>
 			</AreaChart>

@@ -1,36 +1,25 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
-import {
-	ChartConfig,
-	ChartContainer,
-	ChartTooltip,
-	ChartTooltipContent,
-} from '@/components/ui/chart'
-import { chartTimeData, formatShortDate, hourWithMinutes } from '@/lib/utils'
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import { chartTimeData, formatShortDate } from '@/lib/utils'
 import { useMemo } from 'react'
 import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
-
-const chartConfig = {
-	diskUsed: {
-		label: 'Disk Usage',
-		color: 'hsl(var(--chart-4))',
-	},
-} satisfies ChartConfig
+import { SystemStatsRecord } from '@/types'
 
 export default function DiskChart({
-	chartData,
 	ticks,
+	systemData,
 }: {
-	chartData: { time: number; disk: number; diskUsed: number }[]
 	ticks: number[]
+	systemData: SystemStatsRecord[]
 }) {
 	const chartTime = useStore($chartTime)
 
 	const diskSize = useMemo(() => {
-		return Math.round(chartData[0]?.disk)
-	}, [chartData])
+		return Math.round(systemData[0]?.stats.d)
+	}, [systemData])
 
 	// const ticks = useMemo(() => {
 	// 	let ticks = [0]
@@ -41,15 +30,15 @@ export default function DiskChart({
 	// 	return ticks
 	// }, [diskSize])
 
-	if (!chartData.length || !ticks.length) {
+	if (!systemData.length || !ticks.length) {
 		return <Spinner />
 	}
 
 	return (
-		<ChartContainer config={chartConfig} className="h-full w-full absolute aspect-auto">
+		<ChartContainer config={{}} className="h-full w-full absolute aspect-auto">
 			<AreaChart
 				accessibilityLayer
-				data={chartData}
+				data={systemData}
 				margin={{
 					left: 0,
 					right: 0,
@@ -68,7 +57,7 @@ export default function DiskChart({
 					unit={' GB'}
 				/>
 				<XAxis
-					dataKey="time"
+					dataKey="created"
 					domain={[ticks[0], ticks.at(-1)!]}
 					ticks={ticks}
 					type="number"
@@ -84,17 +73,18 @@ export default function DiskChart({
 					content={
 						<ChartTooltipContent
 							unit=" GB"
-							labelFormatter={(_, data) => formatShortDate(data[0].payload.time)}
+							labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 							indicator="line"
 						/>
 					}
 				/>
 				<Area
-					dataKey="diskUsed"
+					dataKey="stats.du"
+					name="Disk Usage"
 					type="monotoneX"
-					fill="var(--color-diskUsed)"
+					fill="hsl(var(--chart-4))"
 					fillOpacity={0.4}
-					stroke="var(--color-diskUsed)"
+					stroke="hsl(var(--chart-4))"
 					animationDuration={1200}
 				/>
 			</AreaChart>

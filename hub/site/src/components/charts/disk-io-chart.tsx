@@ -1,45 +1,30 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
-import {
-	ChartConfig,
-	ChartContainer,
-	ChartTooltip,
-	ChartTooltipContent,
-} from '@/components/ui/chart'
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { chartTimeData, formatShortDate } from '@/lib/utils'
 import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
-
-const chartConfig = {
-	read: {
-		label: 'Read',
-		color: 'hsl(var(--chart-1))',
-	},
-	write: {
-		label: 'Write',
-		color: 'hsl(var(--chart-3))',
-	},
-} satisfies ChartConfig
+import { SystemStatsRecord } from '@/types'
 
 export default function DiskIoChart({
-	chartData,
 	ticks,
+	systemData,
 }: {
-	chartData: { time: number; read: number; write: number }[]
 	ticks: number[]
+	systemData: SystemStatsRecord[]
 }) {
 	const chartTime = useStore($chartTime)
 
-	if (!chartData.length || !ticks.length) {
+	if (!systemData.length || !ticks.length) {
 		return <Spinner />
 	}
 
 	return (
-		<ChartContainer config={chartConfig} className="h-full w-full absolute aspect-auto">
+		<ChartContainer config={{}} className="h-full w-full absolute aspect-auto">
 			<AreaChart
 				accessibilityLayer
-				data={chartData}
+				data={systemData}
 				margin={{
 					left: 0,
 					right: 0,
@@ -63,7 +48,7 @@ export default function DiskIoChart({
 					unit={' MB/s'}
 				/>
 				<XAxis
-					dataKey="time"
+					dataKey="created"
 					domain={[ticks[0], ticks.at(-1)!]}
 					ticks={ticks}
 					type="number"
@@ -79,25 +64,27 @@ export default function DiskIoChart({
 					content={
 						<ChartTooltipContent
 							unit=" MB/s"
-							labelFormatter={(_, data) => formatShortDate(data[0].payload.time)}
+							labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 							indicator="line"
 						/>
 					}
 				/>
 				<Area
-					dataKey="write"
+					dataKey="stats.dw"
+					name="Write"
 					type="monotoneX"
-					fill="var(--color-write)"
+					fill="hsl(var(--chart-3))"
 					fillOpacity={0.4}
-					stroke="var(--color-write)"
+					stroke="hsl(var(--chart-3))"
 					animationDuration={1200}
 				/>
 				<Area
-					dataKey="read"
+					dataKey="stats.dr"
+					name="Read"
 					type="monotoneX"
-					fill="var(--color-read)"
+					fill="hsl(var(--chart-1))"
 					fillOpacity={0.4}
-					stroke="var(--color-read)"
+					stroke="hsl(var(--chart-1))"
 					animationDuration={1200}
 				/>
 			</AreaChart>

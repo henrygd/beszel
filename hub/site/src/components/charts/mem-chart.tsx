@@ -1,54 +1,36 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
-import {
-	ChartConfig,
-	ChartContainer,
-	ChartTooltip,
-	ChartTooltipContent,
-} from '@/components/ui/chart'
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import { chartTimeData, formatShortDate } from '@/lib/utils'
 import { useMemo } from 'react'
 import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
+import { SystemStatsRecord } from '@/types'
 
 export default function MemChart({
-	chartData,
 	ticks,
+	systemData,
 }: {
-	chartData: { time: number; mem: number; memUsed: number; memCache: number }[]
 	ticks: number[]
+	systemData: SystemStatsRecord[]
 }) {
 	const chartTime = useStore($chartTime)
 
 	const totalMem = useMemo(() => {
-		const maxMem = Math.ceil(chartData[0]?.mem)
+		const maxMem = Math.ceil(systemData[0]?.stats.m)
 		return maxMem > 2 && maxMem % 2 !== 0 ? maxMem + 1 : maxMem
-	}, [chartData])
+	}, [systemData])
 
-	const chartConfig = useMemo(
-		() => ({
-			memCache: {
-				label: 'Cache / Buffers',
-				color: 'hsl(var(--chart-2))',
-			},
-			memUsed: {
-				label: 'Used',
-				color: 'hsl(var(--chart-2))',
-			},
-		}),
-		[]
-	) satisfies ChartConfig
-
-	if (!chartData.length || !ticks.length) {
+	if (!systemData.length || !ticks.length) {
 		return <Spinner />
 	}
 
 	return (
-		<ChartContainer config={chartConfig} className="h-full w-full absolute aspect-auto">
+		<ChartContainer config={{}} className="h-full w-full absolute aspect-auto">
 			<AreaChart
 				accessibilityLayer
-				data={chartData}
+				data={systemData}
 				margin={{
 					top: 10,
 				}}
@@ -64,7 +46,7 @@ export default function MemChart({
 					unit={' GB'}
 				/>
 				<XAxis
-					dataKey="time"
+					dataKey="created"
 					domain={[ticks[0], ticks.at(-1)!]}
 					ticks={ticks}
 					type="number"
@@ -83,27 +65,29 @@ export default function MemChart({
 							unit=" GB"
 							// @ts-ignore
 							itemSorter={(a, b) => a.name.localeCompare(b.name)}
-							labelFormatter={(_, data) => formatShortDate(data[0].payload.time)}
+							labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 							indicator="line"
 						/>
 					}
 				/>
 				<Area
-					dataKey="memUsed"
+					dataKey="stats.mu"
+					name="Used"
 					type="monotoneX"
-					fill="var(--color-memUsed)"
+					fill="hsl(var(--chart-2))"
 					fillOpacity={0.4}
-					stroke="var(--color-memUsed)"
+					stroke="hsl(var(--chart-2))"
 					stackId="a"
 					animationDuration={1200}
 				/>
 				<Area
-					dataKey="memCache"
+					dataKey="stats.mb"
+					name="Cache / Buffers"
 					type="monotoneX"
-					fill="var(--color-memCache)"
+					fill="hsl(var(--chart-2))"
 					fillOpacity={0.2}
 					strokeOpacity={0.3}
-					stroke="var(--color-memCache)"
+					stroke="hsl(var(--chart-2))"
 					stackId="a"
 					animationDuration={1200}
 				/>
