@@ -1,5 +1,3 @@
-'use client'
-
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 import {
 	ChartConfig,
@@ -103,7 +101,7 @@ export default function ContainerMemChart({
 					labelFormatter={(_, data) => formatShortDate(data[0].payload.time)}
 					// @ts-ignore
 					itemSorter={(a, b) => b.value - a.value}
-					content={<ChartTooltipContent unit=" MiB" indicator="line" />}
+					content={<ChartTooltipContent unit=" MB" indicator="line" />}
 				/>
 				{Object.keys(chartConfig).map((key) => (
 					<Area

@@ -26,8 +26,8 @@ import (
 
 var Version = "0.1.1"
 
-var containerCpuMap = make(map[string][2]uint64)
-var containerCpuMutex = &sync.Mutex{}
+var containerStatsMap = make(map[string]*PrevContainerStats)
+var containerStatsMutex = &sync.Mutex{}
 
 var sem = make(chan struct{}, 15)
 
@@ -53,7 +53,7 @@ var netIoStats = NetIoStats{
 	Name:      "",
 }
 
-// dockerClient for docker engine api
+// client for docker engine api
 var dockerClient = newDockerClient()
 
 func getSystemStats() (*SystemInfo, *SystemStats) {
@@ -175,7 +175,7 @@ func getDockerStats() ([]*ContainerStats, error) {
 		// note: can't use Created field because it's not updated on restart
 		if strings.HasSuffix(ctr.Status, "seconds") {
 			// if so, remove old container data
-			delete(containerCpuMap, ctr.IdShort)
+			delete(containerStatsMap, ctr.IdShort)
 		}
 		wg.Add(1)
 		go func() {
@@ -183,7 +183,7 @@ func getDockerStats() ([]*ContainerStats, error) {
 			cstats, err := getContainerStats(ctr)
 			if err != nil {
 				// delete container from map and retry once
-				delete(containerCpuMap, ctr.IdShort)
+				delete(containerStatsMap, ctr.IdShort)
 				cstats, err = getContainerStats(ctr)
 				if err != nil {
 					log.Printf("Error getting container stats: %+v\n", err)
@@ -196,10 +196,10 @@ func getDockerStats() ([]*ContainerStats, error) {
 
 	wg.Wait()
 
-	for id := range containerCpuMap {
+	for id := range containerStatsMap {
 		if _, exists := validIds[id]; !exists {
 			// log.Printf("Removing container cpu map entry: %+v\n", id)
-			delete(containerCpuMap, id)
+			delete(containerStatsMap, id)
 		}
 	}
 
@@ -229,27 +229,45 @@ func getContainerStats(ctr *Container) (*ContainerStats, error) {
 		memCache = statsJson.MemoryStats.Stats["cache"]
 	}
 	usedMemory := statsJson.MemoryStats.Usage - memCache
-	// pctMemory := float64(usedMemory) / float64(statsJson.MemoryStats.Limit) * 100
+
+	containerStatsMutex.Lock()
+	defer containerStatsMutex.Unlock()
+
+	// add empty values if they doesn't exist in map
+	_, initialized := containerStatsMap[ctr.IdShort]
+	if !initialized {
+		containerStatsMap[ctr.IdShort] = &PrevContainerStats{}
+	}
 
 	// cpu
-	// add default values to containerCpu if it doesn't exist
-	containerCpuMutex.Lock()
-	defer containerCpuMutex.Unlock()
-	if _, ok := containerCpuMap[ctr.IdShort]; !ok {
-		containerCpuMap[ctr.IdShort] = [2]uint64{0, 0}
-	}
-	cpuDelta := statsJson.CPUStats.CPUUsage.TotalUsage - containerCpuMap[ctr.IdShort][0]
-	systemDelta := statsJson.CPUStats.SystemUsage - containerCpuMap[ctr.IdShort][1]
+	cpuDelta := statsJson.CPUStats.CPUUsage.TotalUsage - containerStatsMap[ctr.IdShort].Cpu[0]
+	systemDelta := statsJson.CPUStats.SystemUsage - containerStatsMap[ctr.IdShort].Cpu[1]
 	cpuPct := float64(cpuDelta) / float64(systemDelta) * 100
 	if cpuPct > 100 {
 		return &ContainerStats{}, fmt.Errorf("%s cpu pct greater than 100: %+v", name, cpuPct)
 	}
-	containerCpuMap[ctr.IdShort] = [2]uint64{statsJson.CPUStats.CPUUsage.TotalUsage, statsJson.CPUStats.SystemUsage}
+	containerStatsMap[ctr.IdShort].Cpu = [2]uint64{statsJson.CPUStats.CPUUsage.TotalUsage, statsJson.CPUStats.SystemUsage}
+
+	// network
+	var total_sent, total_recv, sent_delta, recv_delta uint64
+	for _, v := range statsJson.Networks {
+		total_sent += v.TxBytes
+		total_recv += v.RxBytes
+	}
+	// prevent first run from sending all prev sent/recv bytes
+	if initialized {
+		sent_delta = total_sent - containerStatsMap[ctr.IdShort].Net[0]
+		recv_delta = total_recv - containerStatsMap[ctr.IdShort].Net[1]
+		// log.Printf("sent delta: %+v, recv delta: %+v\n", sent_delta, recv_delta)
+	}
+	containerStatsMap[ctr.IdShort].Net = [2]uint64{total_sent, total_recv}
 
 	cStats := &ContainerStats{
-		Name: name,
-		Cpu:  twoDecimals(cpuPct),
-		Mem:  bytesToMegabytes(float64(usedMemory)),
+		Name:        name,
+		Cpu:         twoDecimals(cpuPct),
+		Mem:         bytesToMegabytes(float64(usedMemory)),
+		NetworkSent: bytesToMegabytes(float64(sent_delta)),
+		NetworkRecv: bytesToMegabytes(float64(recv_delta)),
 		// MemPct: twoDecimals(pctMemory),
 	}
 	return cStats, nil
@@ -429,10 +447,8 @@ func newDockerClient() *http.Client {
 		log.Fatal("Unsupported DOCKER_HOST: " + parsedURL.Scheme)
 	}
 
-	client := &http.Client{
+	return &http.Client{
 		Timeout:   time.Second,
 		Transport: transport,
 	}
-
-	return client
 }

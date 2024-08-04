@@ -67,6 +67,10 @@ interface ContainerStats {
 	c: number
 	/** memory used (gb) */
 	m: number
+	// network sent (mb)
+	ns: number
+	// network received (mb)
+	nr: number
 }
 
 export interface SystemStatsRecord extends RecordModel {

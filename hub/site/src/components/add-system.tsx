@@ -17,7 +17,6 @@ import { Copy, Plus } from 'lucide-react'
 import { useState, useRef, MutableRefObject, useEffect } from 'react'
 import { useStore } from '@nanostores/react'
 import { copyToClipboard } from '@/lib/utils'
-import { SystemStats } from '@/types'
 
 export function AddSystemButton() {
 	const [open, setOpen] = useState(false)
@@ -75,7 +74,7 @@ export function AddSystemButton() {
 				<DialogHeader>
 					<DialogTitle className="mb-2">Add New System</DialogTitle>
 					<DialogDescription>
-						The agent must be running on the server to connect. Copy the{' '}
+						The agent must be running on the system to connect. Copy the{' '}
 						<code className="bg-muted px-1 rounded-sm">docker-compose.yml</code> for the agent
 						below.
 					</DialogDescription>

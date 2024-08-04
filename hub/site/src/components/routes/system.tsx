@@ -18,6 +18,7 @@ const ContainerMemChart = lazy(() => import('../charts/container-mem-chart'))
 const DiskChart = lazy(() => import('../charts/disk-chart'))
 const DiskIoChart = lazy(() => import('../charts/disk-io-chart'))
 const BandwidthChart = lazy(() => import('../charts/bandwidth-chart'))
+const ContainerNetChart = lazy(() => import('../charts/container-net-chart'))
 
 export default function ServerDetail({ name }: { name: string }) {
 	const systems = useStore($systems)
@@ -32,6 +33,9 @@ export default function ServerDetail({ name }: { name: string }) {
 	const [dockerMemChartData, setDockerMemChartData] = useState(
 		[] as Record<string, number | string>[]
 	)
+	const [dockerNetChartData, setDockerNetChartData] = useState(
+		[] as Record<string, number | number[]>[]
+	)
 
 	useEffect(() => {
 		document.title = `${name} / Beszel`
@@ -45,6 +49,7 @@ export default function ServerDetail({ name }: { name: string }) {
 		setSystemStats([])
 		setDockerCpuChartData([])
 		setDockerMemChartData([])
+		setDockerNetChartData([])
 	}, [])
 
 	useEffect(resetCharts, [chartTime])
@@ -124,22 +129,30 @@ export default function ServerDetail({ name }: { name: string }) {
 	// container stats for charts
 	const makeContainerData = useCallback((containers: ContainerStatsRecord[]) => {
 		// console.log('containers', containers)
-		const dockerCpuData = [] as Record<string, number | string>[]
-		const dockerMemData = [] as Record<string, number | string>[]
+		const dockerCpuData = [] as typeof dockerCpuChartData
+		const dockerMemData = [] as typeof dockerMemChartData
+		const dockerNetData = [] as typeof dockerNetChartData
 
 		for (let { created, stats } of containers) {
 			const time = new Date(created).getTime()
 			let cpuData = { time } as (typeof dockerCpuChartData)[0]
 			let memData = { time } as (typeof dockerMemChartData)[0]
+			let netData = { time } as (typeof dockerNetChartData)[0]
 			for (let container of stats) {
 				cpuData[container.n] = container.c
 				memData[container.n] = container.m
+				netData[container.n] = [container.ns, container.nr, container.ns + container.nr] // sent, received, total
 			}
 			dockerCpuData.push(cpuData)
 			dockerMemData.push(memData)
+			dockerNetData.push(netData)
 		}
+		console.log('dockerCpuData', dockerCpuData)
+		// console.log('dockerMemData', dockerMemData)
+		console.log('dockerNetData', dockerNetData)
 		setDockerCpuChartData(dockerCpuData)
 		setDockerMemChartData(dockerMemData)
+		setDockerNetChartData(dockerNetData)
 	}, [])
 
 	const uptime = useMemo(() => {
@@ -243,6 +256,15 @@ export default function ServerDetail({ name }: { name: string }) {
 			<ChartCard title="Bandwidth" description="Network traffic of public interfaces">
 				<BandwidthChart ticks={ticks} systemData={systemStats} />
 			</ChartCard>
+
+			{dockerNetChartData.length > 0 && (
+				<ChartCard
+					title="Docker Network I/O"
+					description="Includes traffic between internal services"
+				>
+					<ContainerNetChart chartData={dockerNetChartData} ticks={ticks} />
+				</ChartCard>
+			)}
 		</div>
 	)
 }

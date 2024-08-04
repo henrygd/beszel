@@ -73,11 +73,11 @@ func createLongerRecords(collectionName string, shorterRecord *models.Record) {
 		stats = averageContainerStats(allShorterRecords)
 	}
 	collection, _ := app.Dao().FindCollectionByNameOrId(collectionName)
-	tenMinRecord := models.NewRecord(collection)
-	tenMinRecord.Set("system", systemId)
-	tenMinRecord.Set("stats", stats)
-	tenMinRecord.Set("type", longerRecordType)
-	if err := app.Dao().SaveRecord(tenMinRecord); err != nil {
+	longerRecord := models.NewRecord(collection)
+	longerRecord.Set("system", systemId)
+	longerRecord.Set("stats", stats)
+	longerRecord.Set("type", longerRecordType)
+	if err := app.Dao().SaveRecord(longerRecord); err != nil {
 		fmt.Println("failed to save longer record", "err", err.Error())
 	}
 
@@ -119,13 +119,17 @@ func averageContainerStats(records []*models.Record) (stats []ContainerStats) {
 			}
 			sums[stat.Name].Cpu += stat.Cpu
 			sums[stat.Name].Mem += stat.Mem
+			sums[stat.Name].NetworkSent += stat.NetworkSent
+			sums[stat.Name].NetworkRecv += stat.NetworkRecv
 		}
 	}
 	for _, value := range sums {
 		stats = append(stats, ContainerStats{
-			Name: value.Name,
-			Cpu:  twoDecimals(value.Cpu / count),
-			Mem:  twoDecimals(value.Mem / count),
+			Name:        value.Name,
+			Cpu:         twoDecimals(value.Cpu / count),
+			Mem:         twoDecimals(value.Mem / count),
+			NetworkSent: twoDecimals(value.NetworkSent / count),
+			NetworkRecv: twoDecimals(value.NetworkRecv / count),
 		})
 	}
 	return stats

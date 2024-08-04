@@ -100,6 +100,7 @@ const ChartTooltipContent = React.forwardRef<
 			nameKey?: string
 			labelKey?: string
 			unit?: string
+			contentFormatter?: (item: any, key: string) => React.ReactNode | string
 		}
 >(
 	(
@@ -119,6 +120,7 @@ const ChartTooltipContent = React.forwardRef<
 			labelKey,
 			unit,
 			itemSorter,
+			contentFormatter: content = undefined,
 		},
 		ref
 	) => {
@@ -180,7 +182,7 @@ const ChartTooltipContent = React.forwardRef<
 
 						return (
 							<div
-								key={item.dataKey}
+								key={item?.name || item.dataKey}
 								className={cn(
 									'flex w-full items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground',
 									indicator === 'dot' && 'items-center'
@@ -228,7 +230,9 @@ const ChartTooltipContent = React.forwardRef<
 											</div>
 											{item.value !== undefined && (
 												<span className="font-mono font-medium tabular-nums text-foreground">
-													{item.value.toLocaleString() + (unit ? unit : '')}
+													{content && typeof content === 'function'
+														? content(item, key)
+														: item.value.toLocaleString() + (unit ? unit : '')}
 												</span>
 											)}
 										</div>
