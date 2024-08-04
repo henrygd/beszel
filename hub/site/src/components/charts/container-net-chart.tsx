@@ -5,8 +5,8 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from '@/components/ui/chart'
-import { useMemo } from 'react'
-import { chartTimeData, formatShortDate } from '@/lib/utils'
+import { useMemo, useRef } from 'react'
+import { chartTimeData, formatShortDate, useYaxisWidth } from '@/lib/utils'
 import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
@@ -19,6 +19,8 @@ export default function ContainerCpuChart({
 	chartData: Record<string, number | number[]>[]
 	ticks: number[]
 }) {
+	const chartRef = useRef<HTMLDivElement>(null)
+	const yAxisWidth = useYaxisWidth(chartRef)
 	const chartTime = useStore($chartTime)
 
 	const chartConfig = useMemo(() => {
@@ -60,88 +62,91 @@ export default function ContainerCpuChart({
 	}
 
 	return (
-		<ChartContainer config={{}} className="h-full w-full absolute aspect-auto">
-			<AreaChart
-				accessibilityLayer
-				data={chartData}
-				margin={{
-					top: 10,
-				}}
-				reverseStackOrder={true}
-			>
-				<CartesianGrid vertical={false} />
-				<YAxis
-					// domain={[0, (max: number) => Math.max(Math.ceil(max), 0.4)]}
-					width={75}
-					tickLine={false}
-					axisLine={false}
-					unit={' MB'}
-					tickFormatter={(x) => (x % 1 === 0 ? x : x.toFixed(1))}
-				/>
-				<XAxis
-					dataKey="time"
-					domain={[ticks[0], ticks.at(-1)!]}
-					ticks={ticks}
-					type="number"
-					scale={'time'}
-					minTickGap={35}
-					tickMargin={8}
-					axisLine={false}
-					tickFormatter={chartTimeData[chartTime].format}
-				/>
-				<ChartTooltip
-					// cursor={false}
-					animationEasing="ease-out"
-					animationDuration={150}
-					labelFormatter={(_, data) => {
-						return (
-							<span>
-								{formatShortDate(data[0].payload.time)}
-								<br />
-								<small className="opacity-70">Total MB received / transmitted</small>
-							</span>
-						)
+		<div ref={chartRef}>
+			<ChartContainer config={{}} className="h-full w-full absolute aspect-auto">
+				<AreaChart
+					accessibilityLayer
+					data={chartData}
+					margin={{
+						top: 10,
 					}}
-					// @ts-ignore
-
-					itemSorter={(a, b) => b.value - a.value}
-					content={
-						<ChartTooltipContent
-							indicator="line"
-							contentFormatter={(item, key) => {
-								try {
-									const sent = item?.payload?.[key][0] ?? 0
-									const received = item?.payload?.[key][1] ?? 0
-									return (
-										<span className="flex">
-											{received.toLocaleString()} MB<span className="opacity-70 ml-0.5"> rx </span>
-											<Separator orientation="vertical" className="h-3 mx-1.5 bg-primary/40" />
-											{sent.toLocaleString()} MB<span className="opacity-70 ml-0.5"> tx</span>
-										</span>
-									)
-								} catch (e) {
-									return null
-								}
-							}}
-						/>
-					}
-				/>
-				{Object.keys(chartConfig).map((key) => (
-					<Area
-						key={key}
-						name={key}
-						// isAnimationActive={chartData.length < 20}
-						animateNewValues={false}
-						animationDuration={1200}
-						dataKey={(data) => data?.[key]?.[2] ?? 0}
-						type="monotoneX"
-						fill={chartConfig[key].color}
-						fillOpacity={0.4}
-						stroke={chartConfig[key].color}
-						stackId="a"
+					reverseStackOrder={true}
+				>
+					<CartesianGrid vertical={false} />
+					<YAxis
+						// domain={[0, (max: number) => Math.max(Math.ceil(max), 0.4)]}
+						width={yAxisWidth}
+						tickLine={false}
+						axisLine={false}
+						unit={' MB'}
+						tickFormatter={(x) => (x % 1 === 0 ? x : x.toFixed(1))}
 					/>
-				))}
-			</AreaChart>
-		</ChartContainer>
+					<XAxis
+						dataKey="time"
+						domain={[ticks[0], ticks.at(-1)!]}
+						ticks={ticks}
+						type="number"
+						scale={'time'}
+						minTickGap={35}
+						tickMargin={8}
+						axisLine={false}
+						tickFormatter={chartTimeData[chartTime].format}
+					/>
+					<ChartTooltip
+						// cursor={false}
+						animationEasing="ease-out"
+						animationDuration={150}
+						labelFormatter={(_, data) => {
+							return (
+								<span>
+									{formatShortDate(data[0].payload.time)}
+									<br />
+									<small className="opacity-70">Total MB received / transmitted</small>
+								</span>
+							)
+						}}
+						// @ts-ignore
+
+						itemSorter={(a, b) => b.value - a.value}
+						content={
+							<ChartTooltipContent
+								indicator="line"
+								contentFormatter={(item, key) => {
+									try {
+										const sent = item?.payload?.[key][0] ?? 0
+										const received = item?.payload?.[key][1] ?? 0
+										return (
+											<span className="flex">
+												{received.toLocaleString()} MB
+												<span className="opacity-70 ml-0.5"> rx </span>
+												<Separator orientation="vertical" className="h-3 mx-1.5 bg-primary/40" />
+												{sent.toLocaleString()} MB<span className="opacity-70 ml-0.5"> tx</span>
+											</span>
+										)
+									} catch (e) {
+										return null
+									}
+								}}
+							/>
+						}
+					/>
+					{Object.keys(chartConfig).map((key) => (
+						<Area
+							key={key}
+							name={key}
+							// isAnimationActive={chartData.length < 20}
+							animateNewValues={false}
+							animationDuration={1200}
+							dataKey={(data) => data?.[key]?.[2] ?? 0}
+							type="monotoneX"
+							fill={chartConfig[key].color}
+							fillOpacity={0.4}
+							stroke={chartConfig[key].color}
+							stackId="a"
+						/>
+					))}
+				</AreaChart>
+			</ChartContainer>
+		</div>
 	)
 }

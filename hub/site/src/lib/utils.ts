@@ -6,6 +6,7 @@ import { AlertRecord, ChartTimeData, ChartTimes, SystemRecord } from '@/types'
 import { RecordModel, RecordSubscription } from 'pocketbase'
 import { WritableAtom } from 'nanostores'
 import { timeDay, timeHour } from 'd3-time'
+import { useEffect, useState } from 'react'
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -178,4 +179,21 @@ export const chartTimeData: ChartTimeData = {
 		format: (timestamp: string) => formatDay(timestamp),
 		getOffset: (endTime: Date) => timeDay.offset(endTime, -30),
 	},
+}
+
+/** Hacky solution to set the correct width of the yAxis in recharts */
+export function useYaxisWidth(chartRef: React.RefObject<HTMLDivElement>) {
+	const [yAxisWidth, setYAxisWidth] = useState(90)
+	useEffect(() => {
+		let interval = setInterval(() => {
+			// console.log('chartRef', chartRef.current)
+			const yAxisElement = chartRef?.current?.querySelector('.yAxis')
+			if (yAxisElement) {
+				console.log('yAxisElement', yAxisElement)
+				setYAxisWidth(yAxisElement.getBoundingClientRect().width + 22)
+				clearInterval(interval)
+			}
+		}, 16)
+	}, [])
+	return yAxisWidth
 }
