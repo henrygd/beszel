@@ -122,7 +122,7 @@ const Layout = () => {
 	return (
 		<>
 			<div className="container">
-				<div className="flex items-center h-16 bg-card px-6 border bt-0 rounded-md my-4">
+				<div className="flex items-center h-14 md:h-16 bg-card px-6 border bt-0 rounded-md my-4">
 					<Link
 						href="/"
 						aria-label="Home"

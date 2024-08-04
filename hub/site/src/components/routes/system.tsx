@@ -147,9 +147,7 @@ export default function ServerDetail({ name }: { name: string }) {
 			dockerMemData.push(memData)
 			dockerNetData.push(netData)
 		}
-		console.log('dockerCpuData', dockerCpuData)
 		// console.log('dockerMemData', dockerMemData)
-		console.log('dockerNetData', dockerNetData)
 		setDockerCpuChartData(dockerCpuData)
 		setDockerMemChartData(dockerMemData)
 		setDockerNetChartData(dockerNetData)
@@ -170,7 +168,7 @@ export default function ServerDetail({ name }: { name: string }) {
 	return (
 		<div className="grid gap-4 mb-10">
 			<Card>
-				<div className="grid gap-2 px-6 pt-4 pb-5">
+				<div className="grid gap-2 px-4 sm:px-6 pt-3 sm:pt-4 pb-5">
 					<h1 className="text-[1.6rem] font-semibold">{server.name}</h1>
 					<div className="flex flex-wrap items-center gap-3 gap-y-2 text-sm opacity-90">
 						<div className="capitalize flex gap-2 items-center">
@@ -219,6 +217,7 @@ export default function ServerDetail({ name }: { name: string }) {
 							</>
 						)}
 					</div>
+					<ChartTimeSelect className="mt-2 -ml-1 sm:hidden" />
 				</div>
 			</Card>
 
@@ -279,15 +278,15 @@ function ChartCard({
 	children: React.ReactNode
 }) {
 	return (
-		<Card className="pb-4 col-span-full">
-			<CardHeader className="pb-5 pt-4 relative space-y-1">
+		<Card className="pb-2 sm:pb-4 col-span-full">
+			<CardHeader className="pb-5 pt-4 relative space-y-1 max-sm:py-3 max-sm:px-4">
 				<CardTitle className="text-xl sm:text-2xl">{title}</CardTitle>
 				<CardDescription>{description}</CardDescription>
-				<div className="w-full pt-1 sm:w-40 sm:absolute top-1.5 right-3.5">
+				<div className="w-full pt-1 sm:w-40 hidden sm:block absolute top-1.5 right-3.5">
 					<ChartTimeSelect />
 				</div>
 			</CardHeader>
-			<CardContent className={'pl-1 w-[calc(100%-1.6em)] h-52 relative'}>
+			<CardContent className="pl-1 w-[calc(100%-1.6em)] h-52 relative">
 				<Suspense fallback={<Spinner />}>{children}</Suspense>
 			</CardContent>
 		</Card>
