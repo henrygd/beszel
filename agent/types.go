@@ -167,5 +167,9 @@ type NetIoStats struct {
 
 type PrevContainerStats struct {
 	Cpu [2]uint64
-	Net [2]uint64
+	Net struct {
+		Sent uint64
+		Recv uint64
+		Time time.Time
+	}
 }

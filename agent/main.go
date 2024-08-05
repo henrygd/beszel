@@ -234,41 +234,45 @@ func getContainerStats(ctr *Container) (*ContainerStats, error) {
 	defer containerStatsMutex.Unlock()
 
 	// add empty values if they doesn't exist in map
-	_, initialized := containerStatsMap[ctr.IdShort]
+	stats, initialized := containerStatsMap[ctr.IdShort]
 	if !initialized {
-		containerStatsMap[ctr.IdShort] = &PrevContainerStats{}
+		stats = &PrevContainerStats{}
+		containerStatsMap[ctr.IdShort] = stats
 	}
 
 	// cpu
-	cpuDelta := statsJson.CPUStats.CPUUsage.TotalUsage - containerStatsMap[ctr.IdShort].Cpu[0]
-	systemDelta := statsJson.CPUStats.SystemUsage - containerStatsMap[ctr.IdShort].Cpu[1]
+	cpuDelta := statsJson.CPUStats.CPUUsage.TotalUsage - stats.Cpu[0]
+	systemDelta := statsJson.CPUStats.SystemUsage - stats.Cpu[1]
 	cpuPct := float64(cpuDelta) / float64(systemDelta) * 100
 	if cpuPct > 100 {
 		return &ContainerStats{}, fmt.Errorf("%s cpu pct greater than 100: %+v", name, cpuPct)
 	}
-	containerStatsMap[ctr.IdShort].Cpu = [2]uint64{statsJson.CPUStats.CPUUsage.TotalUsage, statsJson.CPUStats.SystemUsage}
+	stats.Cpu = [2]uint64{statsJson.CPUStats.CPUUsage.TotalUsage, statsJson.CPUStats.SystemUsage}
 
 	// network
-	var total_sent, total_recv, sent_delta, recv_delta uint64
+	var total_sent, total_recv uint64
 	for _, v := range statsJson.Networks {
 		total_sent += v.TxBytes
 		total_recv += v.RxBytes
 	}
+	var sent_delta, recv_delta float64
 	// prevent first run from sending all prev sent/recv bytes
 	if initialized {
-		sent_delta = total_sent - containerStatsMap[ctr.IdShort].Net[0]
-		recv_delta = total_recv - containerStatsMap[ctr.IdShort].Net[1]
+		secondsElapsed := time.Since(stats.Net.Time).Seconds()
+		sent_delta = float64(total_sent-stats.Net.Sent) / secondsElapsed
+		recv_delta = float64(total_recv-stats.Net.Recv) / secondsElapsed
 		// log.Printf("sent delta: %+v, recv delta: %+v\n", sent_delta, recv_delta)
 	}
-	containerStatsMap[ctr.IdShort].Net = [2]uint64{total_sent, total_recv}
+	stats.Net.Sent = total_sent
+	stats.Net.Recv = total_recv
+	stats.Net.Time = time.Now()
 
 	cStats := &ContainerStats{
 		Name:        name,
 		Cpu:         twoDecimals(cpuPct),
 		Mem:         bytesToMegabytes(float64(usedMemory)),
-		NetworkSent: bytesToMegabytes(float64(sent_delta)),
-		NetworkRecv: bytesToMegabytes(float64(recv_delta)),
-		// MemPct: twoDecimals(pctMemory),
+		NetworkSent: bytesToMegabytes(sent_delta),
+		NetworkRecv: bytesToMegabytes(recv_delta),
 	}
 	return cStats, nil
 }
