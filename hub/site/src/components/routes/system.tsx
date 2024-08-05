@@ -246,13 +246,23 @@ export default function ServerDetail({ name }: { name: string }) {
 				<BandwidthChart ticks={ticks} systemData={systemStats} />
 			</ChartCard>
 
-			{hasDockerStats && (
-				<ChartCard
-					title="Docker Network I/O"
-					description="Includes traffic between internal services"
-				>
-					<ContainerNetChart chartData={dockerNetChartData} ticks={ticks} />
-				</ChartCard>
+			{hasDockerStats && dockerNetChartData.length > 0 && (
+				<>
+					<ChartCard
+						title="Docker Network I/O"
+						description="Includes traffic between internal services"
+					>
+						<ContainerNetChart chartData={dockerNetChartData} ticks={ticks} />
+					</ChartCard>
+					{/* add space for tooltip if more than 12 containers */}
+					{Object.keys(dockerNetChartData[0]).length > 12 && (
+						<div
+							style={{
+								height: (Object.keys(dockerNetChartData[0]).length - 13) * 18,
+							}}
+						/>
+					)}
+				</>
 			)}
 		</div>
 	)

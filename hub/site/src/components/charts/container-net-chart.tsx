@@ -6,7 +6,13 @@ import {
 	ChartTooltipContent,
 } from '@/components/ui/chart'
 import { useMemo, useRef } from 'react'
-import { chartTimeData, cn, formatShortDate, useYaxisWidth } from '@/lib/utils'
+import {
+	chartTimeData,
+	cn,
+	formatShortDate,
+	toFixedWithoutTrailingZeros,
+	useYaxisWidth,
+} from '@/lib/utils'
 // import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
@@ -86,8 +92,8 @@ export default function ContainerCpuChart({
 						width={yAxisWidth}
 						tickLine={false}
 						axisLine={false}
-						unit={' MB'}
-						tickFormatter={(x) => (x % 1 === 0 ? x : x.toFixed(1))}
+						unit={' MB/s'}
+						tickFormatter={(value) => toFixedWithoutTrailingZeros(value, 2)}
 					/>
 					<XAxis
 						dataKey="time"
@@ -104,17 +110,8 @@ export default function ContainerCpuChart({
 						// cursor={false}
 						animationEasing="ease-out"
 						animationDuration={150}
-						labelFormatter={(_, data) => {
-							return (
-								<span>
-									{formatShortDate(data[0].payload.time)}
-									<br />
-									<small className="opacity-70">Total MB received / transmitted</small>
-								</span>
-							)
-						}}
+						labelFormatter={(_, data) => formatShortDate(data[0].payload.time)}
 						// @ts-ignore
-
 						itemSorter={(a, b) => b.value - a.value}
 						content={
 							<ChartTooltipContent
@@ -125,10 +122,10 @@ export default function ContainerCpuChart({
 										const received = item?.payload?.[key][1] ?? 0
 										return (
 											<span className="flex">
-												{received.toLocaleString()} MB
+												{received.toLocaleString()} MB/s
 												<span className="opacity-70 ml-0.5"> rx </span>
 												<Separator orientation="vertical" className="h-3 mx-1.5 bg-primary/40" />
-												{sent.toLocaleString()} MB<span className="opacity-70 ml-0.5"> tx</span>
+												{sent.toLocaleString()} MB/s<span className="opacity-70 ml-0.5"> tx</span>
 											</span>
 										)
 									} catch (e) {

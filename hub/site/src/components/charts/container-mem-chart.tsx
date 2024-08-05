@@ -6,7 +6,13 @@ import {
 	ChartTooltipContent,
 } from '@/components/ui/chart'
 import { useMemo, useRef } from 'react'
-import { chartTimeData, cn, formatShortDate, useYaxisWidth } from '@/lib/utils'
+import {
+	chartTimeData,
+	cn,
+	formatShortDate,
+	toFixedWithoutTrailingZeros,
+	useYaxisWidth,
+} from '@/lib/utils'
 // import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
@@ -87,10 +93,7 @@ export default function ContainerMemChart({
 						axisLine={false}
 						unit={' GB'}
 						width={yAxisWidth}
-						tickFormatter={(value) => {
-							value = value / 1024
-							return value.toFixed((value * 100) % 1 === 0 ? 1 : 2)
-						}}
+						tickFormatter={(value) => toFixedWithoutTrailingZeros(value / 1024, 2)}
 					/>
 					<XAxis
 						dataKey="time"
