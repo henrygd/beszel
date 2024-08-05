@@ -27,25 +27,32 @@ export default function ServerDetail({ name }: { name: string }) {
 	const [ticks, setTicks] = useState([] as number[])
 	const [server, setServer] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
-	const [dockerCpuChartData, setDockerCpuChartData] = useState<Record<string, number | string>[]>()
-	const [dockerMemChartData, setDockerMemChartData] = useState<Record<string, number | string>[]>()
-	const [dockerNetChartData, setDockerNetChartData] =
-		useState<Record<string, number | number[]>[]>()
+	const [hasDockerStats, setHasDocker] = useState(false)
+	const [dockerCpuChartData, setDockerCpuChartData] = useState<Record<string, number | string>[]>(
+		[]
+	)
+	const [dockerMemChartData, setDockerMemChartData] = useState<Record<string, number | string>[]>(
+		[]
+	)
+	const [dockerNetChartData, setDockerNetChartData] = useState<Record<string, number | number[]>[]>(
+		[]
+	)
 
 	useEffect(() => {
 		document.title = `${name} / Beszel`
 		return () => {
 			resetCharts()
 			$chartTime.set('1h')
+			setHasDocker(false)
 		}
 	}, [name])
 
-	const resetCharts = useCallback(() => {
+	function resetCharts() {
 		setSystemStats([])
-		setDockerCpuChartData(undefined)
-		setDockerMemChartData(undefined)
-		setDockerNetChartData(undefined)
-	}, [])
+		setDockerCpuChartData([])
+		setDockerMemChartData([])
+		setDockerNetChartData([])
+	}
 
 	useEffect(resetCharts, [chartTime])
 
@@ -66,28 +73,38 @@ export default function ServerDetail({ name }: { name: string }) {
 		}
 	}, [updatedSystem])
 
+	async function getStats<T>(collection: string): Promise<T[]> {
+		return await pb.collection<T>(collection).getFullList({
+			filter: pb.filter('system={:id} && created > {:created} && type={:type}', {
+				id: server.id,
+				created: getPbTimestamp(chartTime),
+				type: chartTimeData[chartTime].type,
+			}),
+			fields: 'created,stats',
+			sort: 'created',
+		})
+	}
+
 	// get stats
 	useEffect(() => {
 		if (!server.id || !chartTime) {
 			return
 		}
-		pb.collection<SystemStatsRecord>('system_stats')
-			.getFullList({
-				filter: pb.filter('system={:id} && created > {:created} && type={:type}', {
-					id: server.id,
-					created: getPbTimestamp(chartTime),
-					type: chartTimeData[chartTime].type,
-				}),
-				fields: 'created,stats',
-				sort: 'created',
-			})
-			.then((records) => {
-				// convert created time to ms value
-				for (const record of records) {
+		Promise.allSettled([
+			getStats<SystemStatsRecord>('system_stats'),
+			getStats<ContainerStatsRecord>('container_stats'),
+		]).then(([systemStats, containerStats]) => {
+			if (containerStats.status === 'fulfilled' && containerStats.value.length) {
+				setHasDocker(true)
+				makeContainerData(containerStats.value)
+			}
+			if (systemStats.status === 'fulfilled') {
+				for (const record of systemStats.value) {
 					record.created = new Date(record.created).getTime()
 				}
-				setSystemStats(records)
-			})
+				setSystemStats(systemStats.value)
+			}
+		})
 	}, [server, chartTime])
 
 	useEffect(() => {
@@ -100,30 +117,7 @@ export default function ServerDetail({ name }: { name: string }) {
 		setTicks(scale.ticks(chartTimeData[chartTime].ticks).map((d) => d.getTime()))
 	}, [chartTime, systemStats])
 
-	// get container stats
-	useEffect(() => {
-		if (!server.id || !chartTime) {
-			return
-		}
-		pb.collection<ContainerStatsRecord>('container_stats')
-			.getFullList({
-				filter: pb.filter('system={:id} && created > {:created} && type={:type}', {
-					id: server.id,
-					created: getPbTimestamp(chartTime),
-					type: chartTimeData[chartTime].type,
-				}),
-				fields: 'created,stats',
-				sort: 'created',
-			})
-			.then((records) => {
-				if (records.length) {
-					makeContainerData(records)
-				}
-				// setContainers(records)
-			})
-	}, [server, chartTime])
-
-	// container stats for charts
+	// make container stats for charts
 	const makeContainerData = useCallback((containers: ContainerStatsRecord[]) => {
 		// console.log('containers', containers)
 		const dockerCpuData = []
@@ -221,7 +215,7 @@ export default function ServerDetail({ name }: { name: string }) {
 				<CpuChart ticks={ticks} systemData={systemStats} />
 			</ChartCard>
 
-			{dockerCpuChartData && (
+			{hasDockerStats && (
 				<ChartCard title="Docker CPU Usage" description="CPU utilization of docker containers">
 					<ContainerCpuChart chartData={dockerCpuChartData} ticks={ticks} />
 				</ChartCard>
@@ -231,7 +225,7 @@ export default function ServerDetail({ name }: { name: string }) {
 				<MemChart ticks={ticks} systemData={systemStats} />
 			</ChartCard>
 
-			{dockerMemChartData && (
+			{hasDockerStats && (
 				<ChartCard title="Docker Memory Usage" description="Memory usage of docker containers">
 					<ContainerMemChart chartData={dockerMemChartData} ticks={ticks} />
 				</ChartCard>
@@ -252,7 +246,7 @@ export default function ServerDetail({ name }: { name: string }) {
 				<BandwidthChart ticks={ticks} systemData={systemStats} />
 			</ChartCard>
 
-			{dockerNetChartData && (
+			{hasDockerStats && (
 				<ChartCard
 					title="Docker Network I/O"
 					description="Includes traffic between internal services"

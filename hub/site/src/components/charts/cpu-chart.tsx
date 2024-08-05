@@ -73,8 +73,8 @@ export default function CpuChart({
 						stroke="hsl(var(--chart-1))"
 						isAnimationActive={false}
 						// animationEasing="ease-out"
-						animationDuration={700}
-						animateNewValues={true}
+						// animationDuration={1200}
+						// animateNewValues={true}
 					/>
 				</AreaChart>
 			</ChartContainer>
