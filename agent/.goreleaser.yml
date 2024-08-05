@@ -12,10 +12,15 @@ builds:
     goos:
       - linux
       - darwin
+      - freebsd
     goarch:
       - amd64
       - arm64
       - arm
+      - mips64
+    ignore:
+      - goos: freebsd
+        goarch: arm
 
 archives:
   - format: tar.gz
