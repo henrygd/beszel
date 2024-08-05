@@ -1,9 +1,9 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-import { chartTimeData, formatShortDate, useYaxisWidth } from '@/lib/utils'
+import { chartTimeData, cn, formatShortDate, useYaxisWidth } from '@/lib/utils'
 import { useMemo, useRef } from 'react'
-import Spinner from '../spinner'
+// import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
 import { SystemStatsRecord } from '@/types'
@@ -15,9 +15,11 @@ export default function DiskChart({
 	ticks: number[]
 	systemData: SystemStatsRecord[]
 }) {
+	const chartTime = useStore($chartTime)
 	const chartRef = useRef<HTMLDivElement>(null)
 	const yAxisWidth = useYaxisWidth(chartRef)
-	const chartTime = useStore($chartTime)
+
+	const yAxisSet = useMemo(() => yAxisWidth !== 180, [yAxisWidth])
 
 	const diskSize = useMemo(() => {
 		return Math.round(systemData[0]?.stats.d)
@@ -32,13 +34,19 @@ export default function DiskChart({
 	// 	return ticks
 	// }, [diskSize])
 
-	if (!systemData.length || !ticks.length) {
-		return <Spinner />
-	}
+	// if (!systemData.length || !ticks.length) {
+	// 	return <Spinner />
+	// }
 
 	return (
 		<div ref={chartRef}>
-			<ChartContainer config={{}} className="h-full w-full absolute aspect-auto">
+			{/* {!yAxisSet && <Spinner />} */}
+			<ChartContainer
+				config={{}}
+				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
+					'opacity-100': yAxisSet,
+				})}
+			>
 				<AreaChart
 					accessibilityLayer
 					data={systemData}
@@ -88,7 +96,8 @@ export default function DiskChart({
 						fill="hsl(var(--chart-4))"
 						fillOpacity={0.4}
 						stroke="hsl(var(--chart-4))"
-						animationDuration={1200}
+						// animationDuration={1200}
+						isAnimationActive={false}
 					/>
 				</AreaChart>
 			</ChartContainer>

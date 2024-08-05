@@ -7,6 +7,7 @@ import { RecordModel, RecordSubscription } from 'pocketbase'
 import { WritableAtom } from 'nanostores'
 import { timeDay, timeHour } from 'd3-time'
 import { useEffect, useState } from 'react'
+import useIsInViewport, { CallbackRef, HookOptions } from 'use-is-in-viewport'
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -183,17 +184,36 @@ export const chartTimeData: ChartTimeData = {
 
 /** Hacky solution to set the correct width of the yAxis in recharts */
 export function useYaxisWidth(chartRef: React.RefObject<HTMLDivElement>) {
-	const [yAxisWidth, setYAxisWidth] = useState(90)
+	const [yAxisWidth, setYAxisWidth] = useState(180)
 	useEffect(() => {
 		let interval = setInterval(() => {
 			// console.log('chartRef', chartRef.current)
 			const yAxisElement = chartRef?.current?.querySelector('.yAxis')
 			if (yAxisElement) {
-				console.log('yAxisElement', yAxisElement)
+				// console.log('yAxisElement', yAxisElement)
 				setYAxisWidth(yAxisElement.getBoundingClientRect().width + 22)
 				clearInterval(interval)
 			}
-		}, 16)
+		}, 0)
+		return () => clearInterval(interval)
 	}, [])
 	return yAxisWidth
+}
+
+export function useClampedIsInViewport(options: HookOptions): [boolean | null, CallbackRef] {
+	const [isInViewport, wrappedTargetRef] = useIsInViewport(options)
+	const [wasInViewportAtleastOnce, setWasInViewportAtleastOnce] = useState(isInViewport)
+
+	useEffect(() => {
+		setWasInViewportAtleastOnce((prev) => {
+			// this will clamp it to the first true
+			// received from useIsInViewport
+			if (!prev) {
+				return isInViewport
+			}
+			return prev
+		})
+	}, [isInViewport])
+
+	return [wasInViewportAtleastOnce, wrappedTargetRef]
 }

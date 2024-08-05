@@ -1,12 +1,12 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-import { chartTimeData, formatShortDate, useYaxisWidth } from '@/lib/utils'
-import Spinner from '../spinner'
+import { chartTimeData, cn, formatShortDate, useYaxisWidth } from '@/lib/utils'
+// import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
 import { SystemStatsRecord } from '@/types'
-import { useRef } from 'react'
+import { useMemo, useRef } from 'react'
 
 export default function CpuChart({
 	ticks,
@@ -15,17 +15,24 @@ export default function CpuChart({
 	ticks: number[]
 	systemData: SystemStatsRecord[]
 }) {
+	const chartTime = useStore($chartTime)
 	const chartRef = useRef<HTMLDivElement>(null)
 	const yAxisWidth = useYaxisWidth(chartRef)
-	const chartTime = useStore($chartTime)
 
-	if (!systemData.length || !ticks.length) {
-		return <Spinner />
-	}
+	const yAxisSet = useMemo(() => yAxisWidth !== 180, [yAxisWidth])
+
+	// if (!systemData.length || !ticks.length) {
+	// 	return <Spinner />
+	// }
 
 	return (
 		<div ref={chartRef}>
-			<ChartContainer config={{}} className="h-full w-full absolute aspect-auto">
+			<ChartContainer
+				config={{}}
+				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
+					'opacity-100': yAxisSet,
+				})}
+			>
 				<AreaChart accessibilityLayer data={systemData} margin={{ top: 10 }}>
 					<CartesianGrid vertical={false} />
 					<YAxis
@@ -64,9 +71,10 @@ export default function CpuChart({
 						fill="hsl(var(--chart-1))"
 						fillOpacity={0.4}
 						stroke="hsl(var(--chart-1))"
-						animationDuration={1200}
+						isAnimationActive={false}
 						// animationEasing="ease-out"
-						// animateNewValues={false}
+						animationDuration={700}
+						animateNewValues={true}
 					/>
 				</AreaChart>
 			</ChartContainer>

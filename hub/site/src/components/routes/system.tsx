@@ -1,12 +1,12 @@
 import { $updatedSystem, $systems, pb, $chartTime } from '@/lib/stores'
 import { ContainerStatsRecord, SystemRecord, SystemStatsRecord } from '@/types'
-import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card'
 import { useStore } from '@nanostores/react'
 import Spinner from '../spinner'
 import { ClockArrowUp, CpuIcon, GlobeIcon } from 'lucide-react'
 import ChartTimeSelect from '../charts/chart-time-select'
-import { chartTimeData, cn, getPbTimestamp } from '@/lib/utils'
+import { chartTimeData, cn, getPbTimestamp, useClampedIsInViewport } from '@/lib/utils'
 import { Separator } from '../ui/separator'
 import { scaleTime } from 'd3-scale'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
@@ -27,15 +27,10 @@ export default function ServerDetail({ name }: { name: string }) {
 	const [ticks, setTicks] = useState([] as number[])
 	const [server, setServer] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
-	const [dockerCpuChartData, setDockerCpuChartData] = useState(
-		[] as Record<string, number | string>[]
-	)
-	const [dockerMemChartData, setDockerMemChartData] = useState(
-		[] as Record<string, number | string>[]
-	)
-	const [dockerNetChartData, setDockerNetChartData] = useState(
-		[] as Record<string, number | number[]>[]
-	)
+	const [dockerCpuChartData, setDockerCpuChartData] = useState<Record<string, number | string>[]>()
+	const [dockerMemChartData, setDockerMemChartData] = useState<Record<string, number | string>[]>()
+	const [dockerNetChartData, setDockerNetChartData] =
+		useState<Record<string, number | number[]>[]>()
 
 	useEffect(() => {
 		document.title = `${name} / Beszel`
@@ -47,9 +42,9 @@ export default function ServerDetail({ name }: { name: string }) {
 
 	const resetCharts = useCallback(() => {
 		setSystemStats([])
-		setDockerCpuChartData([])
-		setDockerMemChartData([])
-		setDockerNetChartData([])
+		setDockerCpuChartData(undefined)
+		setDockerMemChartData(undefined)
+		setDockerNetChartData(undefined)
 	}, [])
 
 	useEffect(resetCharts, [chartTime])
@@ -121,7 +116,9 @@ export default function ServerDetail({ name }: { name: string }) {
 				sort: 'created',
 			})
 			.then((records) => {
-				makeContainerData(records)
+				if (records.length) {
+					makeContainerData(records)
+				}
 				// setContainers(records)
 			})
 	}, [server, chartTime])
@@ -129,15 +126,14 @@ export default function ServerDetail({ name }: { name: string }) {
 	// container stats for charts
 	const makeContainerData = useCallback((containers: ContainerStatsRecord[]) => {
 		// console.log('containers', containers)
-		const dockerCpuData = [] as typeof dockerCpuChartData
-		const dockerMemData = [] as typeof dockerMemChartData
-		const dockerNetData = [] as typeof dockerNetChartData
-
+		const dockerCpuData = []
+		const dockerMemData = []
+		const dockerNetData = []
 		for (let { created, stats } of containers) {
 			const time = new Date(created).getTime()
-			let cpuData = { time } as (typeof dockerCpuChartData)[0]
-			let memData = { time } as (typeof dockerMemChartData)[0]
-			let netData = { time } as (typeof dockerNetChartData)[0]
+			let cpuData = { time } as Record<string, number | string>
+			let memData = { time } as Record<string, number | string>
+			let netData = { time } as Record<string, number | number[]>
 			for (let container of stats) {
 				cpuData[container.n] = container.c
 				memData[container.n] = container.m
@@ -225,7 +221,7 @@ export default function ServerDetail({ name }: { name: string }) {
 				<CpuChart ticks={ticks} systemData={systemStats} />
 			</ChartCard>
 
-			{dockerCpuChartData.length > 0 && (
+			{dockerCpuChartData && (
 				<ChartCard title="Docker CPU Usage" description="CPU utilization of docker containers">
 					<ContainerCpuChart chartData={dockerCpuChartData} ticks={ticks} />
 				</ChartCard>
@@ -235,7 +231,7 @@ export default function ServerDetail({ name }: { name: string }) {
 				<MemChart ticks={ticks} systemData={systemStats} />
 			</ChartCard>
 
-			{dockerMemChartData.length > 0 && (
+			{dockerMemChartData && (
 				<ChartCard title="Docker Memory Usage" description="Memory usage of docker containers">
 					<ContainerMemChart chartData={dockerMemChartData} ticks={ticks} />
 				</ChartCard>
@@ -256,7 +252,7 @@ export default function ServerDetail({ name }: { name: string }) {
 				<BandwidthChart ticks={ticks} systemData={systemStats} />
 			</ChartCard>
 
-			{dockerNetChartData.length > 0 && (
+			{dockerNetChartData && (
 				<ChartCard
 					title="Docker Network I/O"
 					description="Includes traffic between internal services"
@@ -277,8 +273,10 @@ function ChartCard({
 	description: string
 	children: React.ReactNode
 }) {
+	const target = useRef<HTMLDivElement>(null)
+	const [isInViewport, wrappedTargetRef] = useClampedIsInViewport({ target: target })
 	return (
-		<Card className="pb-2 sm:pb-4 col-span-full">
+		<Card className="pb-2 sm:pb-4 col-span-full" ref={wrappedTargetRef}>
 			<CardHeader className="pb-5 pt-4 relative space-y-1 max-sm:py-3 max-sm:px-4">
 				<CardTitle className="text-xl sm:text-2xl">{title}</CardTitle>
 				<CardDescription>{description}</CardDescription>
@@ -287,7 +285,8 @@ function ChartCard({
 				</div>
 			</CardHeader>
 			<CardContent className="pl-1 w-[calc(100%-1.6em)] h-52 relative">
-				<Suspense fallback={<Spinner />}>{children}</Suspense>
+				{<Spinner />}
+				{isInViewport && <Suspense>{children}</Suspense>}
 			</CardContent>
 		</Card>
 	)

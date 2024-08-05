@@ -37,6 +37,7 @@
 		"recharts": "^2.13.0-alpha.4",
 		"tailwind-merge": "^2.4.0",
 		"tailwindcss-animate": "^1.0.7",
+		"use-is-in-viewport": "^1.0.9",
 		"valibot": "^0.36.0"
 	},
 	"devDependencies": {

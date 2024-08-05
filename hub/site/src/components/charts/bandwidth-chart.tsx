@@ -1,12 +1,12 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-import { chartTimeData, formatShortDate, useYaxisWidth } from '@/lib/utils'
-import Spinner from '../spinner'
+import { chartTimeData, cn, formatShortDate, useYaxisWidth } from '@/lib/utils'
+// import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
 import { SystemStatsRecord } from '@/types'
-import { useRef } from 'react'
+import { useMemo, useRef } from 'react'
 
 export default function BandwidthChart({
 	ticks,
@@ -19,13 +19,17 @@ export default function BandwidthChart({
 	const yAxisWidth = useYaxisWidth(chartRef)
 	const chartTime = useStore($chartTime)
 
-	if (!systemData.length || !ticks.length) {
-		return <Spinner />
-	}
+	const yAxisSet = useMemo(() => yAxisWidth !== 180, [yAxisWidth])
 
 	return (
 		<div ref={chartRef}>
-			<ChartContainer config={{}} className="h-full w-full absolute aspect-auto">
+			{/* {!yAxisSet && <Spinner />} */}
+			<ChartContainer
+				config={{}}
+				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
+					'opacity-100': yAxisSet,
+				})}
+			>
 				<AreaChart
 					accessibilityLayer
 					data={systemData}
@@ -80,7 +84,8 @@ export default function BandwidthChart({
 						fill="hsl(var(--chart-5))"
 						fillOpacity={0.4}
 						stroke="hsl(var(--chart-5))"
-						animationDuration={1200}
+						// animationDuration={1200}
+						isAnimationActive={false}
 					/>
 					<Area
 						dataKey="stats.nr"
@@ -89,7 +94,8 @@ export default function BandwidthChart({
 						fill="hsl(var(--chart-2))"
 						fillOpacity={0.4}
 						stroke="hsl(var(--chart-2))"
-						animationDuration={1200}
+						// animationDuration={1200}
+						isAnimationActive={false}
 					/>
 				</AreaChart>
 			</ChartContainer>

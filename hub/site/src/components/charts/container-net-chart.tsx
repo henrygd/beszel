@@ -6,8 +6,8 @@ import {
 	ChartTooltipContent,
 } from '@/components/ui/chart'
 import { useMemo, useRef } from 'react'
-import { chartTimeData, formatShortDate, useYaxisWidth } from '@/lib/utils'
-import Spinner from '../spinner'
+import { chartTimeData, cn, formatShortDate, useYaxisWidth } from '@/lib/utils'
+// import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
 import { Separator } from '@/components/ui/separator'
@@ -19,9 +19,11 @@ export default function ContainerCpuChart({
 	chartData: Record<string, number | number[]>[]
 	ticks: number[]
 }) {
+	const chartTime = useStore($chartTime)
 	const chartRef = useRef<HTMLDivElement>(null)
 	const yAxisWidth = useYaxisWidth(chartRef)
-	const chartTime = useStore($chartTime)
+
+	const yAxisSet = useMemo(() => yAxisWidth !== 180, [yAxisWidth])
 
 	const chartConfig = useMemo(() => {
 		let config = {} as Record<
@@ -57,13 +59,19 @@ export default function ContainerCpuChart({
 		return config satisfies ChartConfig
 	}, [chartData])
 
-	if (!chartData.length || !ticks.length) {
-		return <Spinner />
-	}
+	// if (!chartData.length || !ticks.length) {
+	// 	return <Spinner />
+	// }
 
 	return (
 		<div ref={chartRef}>
-			<ChartContainer config={{}} className="h-full w-full absolute aspect-auto">
+			{/* {!yAxisSet && <Spinner />} */}
+			<ChartContainer
+				config={{}}
+				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
+					'opacity-100': yAxisSet,
+				})}
+			>
 				<AreaChart
 					accessibilityLayer
 					data={chartData}
@@ -134,9 +142,8 @@ export default function ContainerCpuChart({
 						<Area
 							key={key}
 							name={key}
-							// isAnimationActive={chartData.length < 20}
-							animateNewValues={false}
-							animationDuration={1200}
+							// animationDuration={1200}
+							isAnimationActive={false}
 							dataKey={(data) => data?.[key]?.[2] ?? 0}
 							type="monotoneX"
 							fill={chartConfig[key].color}
