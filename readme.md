@@ -45,7 +45,7 @@ Pour le tutoriel en français, consultez https://belginux.com/installer-beszel-a
 
 ## Installation
 
-You may choose to install the hub and agent as single binaries, or as docker images.
+You may install the hub and agent as single binaries, or by using Docker.
 
 ### Docker
 
@@ -108,18 +108,16 @@ Use `./beszel update` and `./beszel-agent update` to update to the latest versio
 | ------------ | ------- | ---------------------------------------------------------- |
 | `FILESYSTEM` | unset   | Filesystem / partition to use for disk I/O stats.          |
 | `KEY`        | unset   | Public SSH key to use for authentication. Provided in hub. |
-| `PORT`       | 45876   | Port to listen on.                                         |
+| `PORT`       | 45876   | Port or address:port to listen on.                         |
 
 <!-- | `DOCKER_HOST` | unset   | Overrides the docker host (docker.sock) if using a proxy.[^socket] |
 [^socket]: Beszel only needs access to read container information. For [linuxserver/docker-socket-proxy](https://github.com/linuxserver/docker-socket-proxy) you would set `CONTAINERS=1`. -->
 
 ## OAuth / OIDC setup
 
-Beszel supports OpenID Connect and many OAuth2 authentication providers (see list below). To enable, do the following:
+Beszel supports OpenID Connect and many OAuth2 authentication providers (see list below).
 
-1. Make sure your "Application URL" is set correctly in the PocketBase settings.
-2. Create an OAuth2 application using your provider of choice. The redirect / callback URL should be `<your-beszel-url>/api/oauth2-redirect`.
-3. When you have the client ID and secret, go to the "Auth providers" page and enable your provider.
+Visit the "Auth providers" page to enable your provider. The redirect / callback URL should be `<your-beszel-url>/api/oauth2-redirect`.
 
 <details>
   <summary>Supported provider list</summary>
