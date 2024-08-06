@@ -192,7 +192,7 @@ export function useYaxisWidth(chartRef: React.RefObject<HTMLDivElement>) {
 			if (yAxisElement) {
 				// console.log('yAxisElement', yAxisElement)
 				clearInterval(interval)
-				setYAxisWidth(yAxisElement.getBoundingClientRect().width + 22)
+				setYAxisWidth(yAxisElement.getBoundingClientRect().width + 24)
 			}
 		}, 16)
 		return () => clearInterval(interval)
