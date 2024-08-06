@@ -1,7 +1,13 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-import { chartTimeData, cn, formatShortDate, useYaxisWidth } from '@/lib/utils'
+import {
+	chartTimeData,
+	cn,
+	formatShortDate,
+	toFixedWithoutTrailingZeros,
+	useYaxisWidth,
+} from '@/lib/utils'
 import { useMemo, useRef } from 'react'
 // import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
@@ -21,10 +27,10 @@ export default function MemChart({
 
 	const yAxisSet = useMemo(() => yAxisWidth !== 180, [yAxisWidth])
 
-	const totalMem = useMemo(() => {
-		const maxMem = Math.ceil(systemData[0]?.stats.m)
-		return maxMem > 2 && maxMem % 2 !== 0 ? maxMem + 1 : maxMem
-	}, [systemData])
+	// const totalMem = useMemo(() => {
+	// 	const maxMem = Math.ceil(systemData[0]?.stats.m)
+	// 	return maxMem > 2 && maxMem % 2 !== 0 ? maxMem + 1 : maxMem
+	// }, [systemData])
 
 	// if (!systemData.length || !ticks.length) {
 	// 	return <Spinner />
@@ -49,7 +55,7 @@ export default function MemChart({
 					<CartesianGrid vertical={false} />
 					<YAxis
 						// use "ticks" instead of domain / tickcount if need more control
-						domain={[0, totalMem]}
+						domain={[0, () => toFixedWithoutTrailingZeros(systemData.at(-1)?.stats.m ?? 0.04, 1)]}
 						width={yAxisWidth}
 						tickLine={false}
 						axisLine={false}
