@@ -22,7 +22,6 @@ import (
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"
 	"github.com/pocketbase/pocketbase/tools/cron"
@@ -105,15 +104,12 @@ func main() {
 		// cron job to delete old records
 		scheduler := cron.New()
 		scheduler.MustAdd("delete old records", "8 * * * *", func() {
-			app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
-				collections := []string{"system_stats", "container_stats"}
-				deleteOldRecords(txDao, collections, "1m", time.Hour)
-				deleteOldRecords(txDao, collections, "10m", 12*time.Hour)
-				deleteOldRecords(txDao, collections, "20m", 24*time.Hour)
-				deleteOldRecords(txDao, collections, "120m", 7*24*time.Hour)
-				deleteOldRecords(txDao, collections, "480m", 30*24*time.Hour)
-				return nil
-			})
+			collections := []string{"system_stats", "container_stats"}
+			deleteOldRecords(collections, "1m", time.Hour)
+			deleteOldRecords(collections, "10m", 12*time.Hour)
+			deleteOldRecords(collections, "20m", 24*time.Hour)
+			deleteOldRecords(collections, "120m", 7*24*time.Hour)
+			deleteOldRecords(collections, "480m", 30*24*time.Hour)
 		})
 		scheduler.Start()
 		return nil

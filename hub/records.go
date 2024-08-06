@@ -141,7 +141,7 @@ func twoDecimals(value float64) float64 {
 }
 
 /* Delete records of specified collections and type that are older than timeLimit */
-func deleteOldRecords(txDao *daos.Dao, collections []string, recordType string, timeLimit time.Duration) {
+func deleteOldRecords(collections []string, recordType string, timeLimit time.Duration) {
 	timeLimitStamp := time.Now().UTC().Add(-timeLimit).Format("2006-01-02 15:04:05")
 
 	// db query
@@ -150,12 +150,18 @@ func deleteOldRecords(txDao *daos.Dao, collections []string, recordType string, 
 
 	var records []*models.Record
 	for _, collection := range collections {
-		if collectionRecords, err := txDao.FindRecordsByExpr(collection, expType, expCreated); err == nil {
+		if collectionRecords, err := app.Dao().FindRecordsByExpr(collection, expType, expCreated); err == nil {
 			records = append(records, collectionRecords...)
 		}
 	}
 
-	for _, record := range records {
-		txDao.DeleteRecord(record)
-	}
+	app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
+		for _, record := range records {
+			err := txDao.DeleteRecord(record)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
 }
