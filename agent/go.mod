@@ -6,7 +6,7 @@ require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/gliderlabs/ssh v0.3.7
 	github.com/rhysd/go-github-selfupdate v1.2.3
-	github.com/shirou/gopsutil/v4 v4.24.6
+	github.com/shirou/gopsutil/v4 v4.24.7
 )
 
 require (
@@ -23,8 +23,8 @@ require (
 	github.com/tklauser/numcpus v0.8.0 // indirect
 	github.com/ulikunitz/xz v0.5.12 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
-	golang.org/x/crypto v0.25.0 // indirect
+	golang.org/x/crypto v0.26.0 // indirect
 	golang.org/x/net v0.27.0 // indirect
-	golang.org/x/oauth2 v0.21.0 // indirect
-	golang.org/x/sys v0.22.0 // indirect
+	golang.org/x/oauth2 v0.22.0 // indirect
+	golang.org/x/sys v0.23.0 // indirect
 )
