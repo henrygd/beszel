@@ -175,7 +175,7 @@ func getDockerStats() ([]*ContainerStats, error) {
 		// note: can't use Created field because it's not updated on restart
 		if strings.HasSuffix(ctr.Status, "seconds") {
 			// if so, remove old container data
-			delete(containerStatsMap, ctr.IdShort)
+			deleteContainerStatsSync(ctr.IdShort)
 		}
 		wg.Add(1)
 		go func() {
@@ -183,7 +183,7 @@ func getDockerStats() ([]*ContainerStats, error) {
 			cstats, err := getContainerStats(ctr)
 			if err != nil {
 				// delete container from map and retry once
-				delete(containerStatsMap, ctr.IdShort)
+				deleteContainerStatsSync(ctr.IdShort)
 				cstats, err = getContainerStats(ctr)
 				if err != nil {
 					log.Printf("Error getting container stats: %+v\n", err)
@@ -275,6 +275,13 @@ func getContainerStats(ctr *Container) (*ContainerStats, error) {
 		NetworkRecv: bytesToMegabytes(recv_delta),
 	}
 	return cStats, nil
+}
+
+// delete container stats from map using mutex
+func deleteContainerStatsSync(id string) {
+	containerStatsMutex.Lock()
+	defer containerStatsMutex.Unlock()
+	delete(containerStatsMap, id)
 }
 
 func gatherStats() *SystemData {
