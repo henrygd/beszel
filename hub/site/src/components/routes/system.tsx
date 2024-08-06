@@ -19,6 +19,7 @@ const DiskChart = lazy(() => import('../charts/disk-chart'))
 const DiskIoChart = lazy(() => import('../charts/disk-io-chart'))
 const BandwidthChart = lazy(() => import('../charts/bandwidth-chart'))
 const ContainerNetChart = lazy(() => import('../charts/container-net-chart'))
+const SwapChart = lazy(() => import('../charts/swap-chart'))
 
 export default function ServerDetail({ name }: { name: string }) {
 	const systems = useStore($systems)
@@ -228,6 +229,12 @@ export default function ServerDetail({ name }: { name: string }) {
 			{hasDockerStats && (
 				<ChartCard title="Docker Memory Usage" description="Memory usage of docker containers">
 					<ContainerMemChart chartData={dockerMemChartData} ticks={ticks} />
+				</ChartCard>
+			)}
+
+			{(systemStats.at(-1)?.stats.s ?? 0) > 0 && (
+				<ChartCard title="Swap Usage" description="Swap space used by the system">
+					<SwapChart ticks={ticks} systemData={systemStats} />
 				</ChartCard>
 			)}
 

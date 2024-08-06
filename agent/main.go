@@ -73,6 +73,8 @@ func getSystemStats() (*SystemInfo, *SystemStats) {
 		systemStats.MemUsed = bytesToGigabytes(v.Used)
 		systemStats.MemBuffCache = bytesToGigabytes(v.Total - v.Free - v.Used)
 		systemStats.MemPct = twoDecimals(v.UsedPercent)
+		systemStats.Swap = bytesToGigabytes(v.SwapTotal)
+		systemStats.SwapUsed = bytesToGigabytes(v.SwapTotal - v.SwapFree)
 	}
 
 	// disk usage

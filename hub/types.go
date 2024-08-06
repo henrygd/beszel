@@ -34,6 +34,8 @@ type SystemStats struct {
 	MemUsed      float64 `json:"mu"`
 	MemPct       float64 `json:"mp"`
 	MemBuffCache float64 `json:"mb"`
+	Swap         float64 `json:"s"`
+	SwapUsed     float64 `json:"su"`
 	Disk         float64 `json:"d"`
 	DiskUsed     float64 `json:"du"`
 	DiskPct      float64 `json:"dp"`

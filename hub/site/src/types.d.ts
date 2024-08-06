@@ -38,6 +38,10 @@ export interface SystemStats {
 	mp: number
 	/** memory buffer + cache (gb) */
 	mb: number
+	/** swap space (gb) */
+	s: number
+	/** swap used (gb) */
+	su: number
 	/** disk size (gb) */
 	d: number
 	/** disk used (gb) */
