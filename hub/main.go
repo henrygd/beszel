@@ -235,12 +235,18 @@ func updateSystems() {
 	}
 	fiftySecondsAgo := time.Now().UTC().Add(-50 * time.Second)
 	batchSize := len(records)/4 + 1
-	for i := 0; i < batchSize; i++ {
-		if records[i].GetDateTime("updated").Time().After(fiftySecondsAgo) {
+	done := 0
+	for _, record := range records {
+		// break if batch size reached or if the system was updated less than 50 seconds ago
+		if done >= batchSize || record.GetDateTime("updated").Time().After(fiftySecondsAgo) {
 			break
 		}
-		// log.Println("updating", records[i].Get(("name")))
-		go updateSystem(records[i])
+		// don't increment for down systems to avoid them jamming the queue
+		// because they're always first when sorted by least recently updated
+		if record.GetString("status") != "down" {
+			done++
+		}
+		go updateSystem(record)
 	}
 }
 
