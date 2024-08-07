@@ -21,10 +21,6 @@ export default function CpuChart({
 
 	const yAxisSet = useMemo(() => yAxisWidth !== 180, [yAxisWidth])
 
-	// if (!systemData.length || !ticks.length) {
-	// 	return <Spinner />
-	// }
-
 	return (
 		<div ref={chartRef}>
 			<ChartContainer
@@ -36,6 +32,7 @@ export default function CpuChart({
 				<AreaChart accessibilityLayer data={systemData} margin={{ top: 10 }}>
 					<CartesianGrid vertical={false} />
 					<YAxis
+						className="tracking-tighter"
 						// domain={[0, (max: number) => Math.ceil(max)]}
 						width={yAxisWidth}
 						tickLine={false}

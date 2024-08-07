@@ -38,6 +38,7 @@ export default function SwapChart({
 				<AreaChart accessibilityLayer data={systemData} margin={{ top: 10 }}>
 					<CartesianGrid vertical={false} />
 					<YAxis
+						className="tracking-tighter"
 						domain={[0, () => toFixedWithoutTrailingZeros(systemData.at(-1)?.stats.s ?? 0.04, 2)]}
 						width={yAxisWidth}
 						tickLine={false}

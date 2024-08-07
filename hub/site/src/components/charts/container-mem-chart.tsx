@@ -88,6 +88,7 @@ export default function ContainerMemChart({
 				>
 					<CartesianGrid vertical={false} />
 					<YAxis
+						className="tracking-tighter"
 						// domain={[0, (max: number) => Math.ceil(max)]}
 						tickLine={false}
 						axisLine={false}

@@ -88,6 +88,7 @@ export default function ContainerCpuChart({
 				>
 					<CartesianGrid vertical={false} />
 					<YAxis
+						className="tracking-tighter"
 						// domain={[0, (max: number) => Math.max(Math.ceil(max), 0.4)]}
 						width={yAxisWidth}
 						tickLine={false}

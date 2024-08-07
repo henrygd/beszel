@@ -192,7 +192,7 @@ export function useYaxisWidth(chartRef: React.RefObject<HTMLDivElement>) {
 			if (yAxisElement) {
 				// console.log('yAxisElement', yAxisElement)
 				clearInterval(interval)
-				setYAxisWidth(yAxisElement.getBoundingClientRect().width + 24)
+				setYAxisWidth(yAxisElement.getBoundingClientRect().width + 22)
 			}
 		}, 16)
 		return () => clearInterval(interval)
@@ -220,4 +220,8 @@ export function useClampedIsInViewport(options: HookOptions): [boolean | null, C
 
 export function toFixedWithoutTrailingZeros(num: number, digits: number) {
 	return parseFloat(num.toFixed(digits)).toString()
+}
+
+export function toFixedFloat(num: number, digits: number) {
+	return parseFloat(num.toFixed(digits))
 }
