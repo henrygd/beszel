@@ -1,6 +1,7 @@
-package main
+package update
 
 import (
+	"beszel"
 	"fmt"
 	"os"
 	"strings"
@@ -10,11 +11,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func updateBeszel(cmd *cobra.Command, args []string) {
+func UpdateBeszel(cmd *cobra.Command, args []string) {
 	var latest *selfupdate.Release
 	var found bool
 	var err error
-	currentVersion := semver.MustParse(Version)
+	currentVersion := semver.MustParse(beszel.Version)
 	fmt.Println("beszel", currentVersion)
 	fmt.Println("Checking for updates...")
 	updater, _ := selfupdate.NewUpdater(selfupdate.Config{

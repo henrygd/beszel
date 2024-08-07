@@ -1,17 +1,28 @@
-package main
+package records
 
 import (
+	"beszel/internal/entities/container"
+	"beszel/internal/entities/system"
 	"fmt"
 	"math"
 	"reflect"
 	"time"
 
 	"github.com/pocketbase/dbx"
+	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/models"
 )
 
-func createLongerRecords(collectionName string, shorterRecord *models.Record) {
+type RecordManager struct {
+	app *pocketbase.PocketBase
+}
+
+func NewRecordManager(app *pocketbase.PocketBase) *RecordManager {
+	return &RecordManager{app: app}
+}
+
+func (rm *RecordManager) CreateLongerRecords(collectionName string, shorterRecord *models.Record) {
 	shorterRecordType := shorterRecord.GetString("type")
 	systemId := shorterRecord.GetString("system")
 	// fmt.Println("create longer records", "recordType", shorterRecordType, "systemId", systemId)
@@ -39,7 +50,7 @@ func createLongerRecords(collectionName string, shorterRecord *models.Record) {
 
 	longerRecordPeriod := time.Now().UTC().Add(timeAgo + 10*time.Second).Format("2006-01-02 15:04:05")
 	// check creation time of last 10m record
-	lastLongerRecord, err := app.Dao().FindFirstRecordByFilter(
+	lastLongerRecord, err := rm.app.Dao().FindFirstRecordByFilter(
 		collectionName,
 		"type = {:type} && system = {:system} && created > {:created}",
 		dbx.Params{"type": longerRecordType, "system": systemId, "created": longerRecordPeriod},
@@ -51,7 +62,7 @@ func createLongerRecords(collectionName string, shorterRecord *models.Record) {
 	}
 	// get shorter records from the past x minutes
 	// shorterRecordPeriod := time.Now().UTC().Add(timeAgo + time.Second).Format("2006-01-02 15:04:05")
-	allShorterRecords, err := app.Dao().FindRecordsByFilter(
+	allShorterRecords, err := rm.app.Dao().FindRecordsByFilter(
 		collectionName,
 		"type = {:type} && system = {:system} && created > {:created}",
 		"-created",
@@ -68,28 +79,28 @@ func createLongerRecords(collectionName string, shorterRecord *models.Record) {
 	var stats interface{}
 	switch collectionName {
 	case "system_stats":
-		stats = averageSystemStats(allShorterRecords)
+		stats = rm.AverageSystemStats(allShorterRecords)
 	case "container_stats":
-		stats = averageContainerStats(allShorterRecords)
+		stats = rm.AverageContainerStats(allShorterRecords)
 	}
-	collection, _ := app.Dao().FindCollectionByNameOrId(collectionName)
+	collection, _ := rm.app.Dao().FindCollectionByNameOrId(collectionName)
 	longerRecord := models.NewRecord(collection)
 	longerRecord.Set("system", systemId)
 	longerRecord.Set("stats", stats)
 	longerRecord.Set("type", longerRecordType)
-	if err := app.Dao().SaveRecord(longerRecord); err != nil {
+	if err := rm.app.Dao().SaveRecord(longerRecord); err != nil {
 		fmt.Println("failed to save longer record", "err", err.Error())
 	}
 
 }
 
 // calculate the average stats of a list of system_stats records
-func averageSystemStats(records []*models.Record) SystemStats {
+func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.SystemStats {
 	count := float64(len(records))
-	sum := reflect.New(reflect.TypeOf(SystemStats{})).Elem()
+	sum := reflect.New(reflect.TypeOf(system.SystemStats{})).Elem()
 
 	for _, record := range records {
-		var stats SystemStats
+		var stats system.SystemStats
 		record.UnmarshalJSONField("stats", &stats)
 		statValue := reflect.ValueOf(stats)
 		for i := 0; i < statValue.NumField(); i++ {
@@ -98,24 +109,24 @@ func averageSystemStats(records []*models.Record) SystemStats {
 		}
 	}
 
-	average := reflect.New(reflect.TypeOf(SystemStats{})).Elem()
+	average := reflect.New(reflect.TypeOf(system.SystemStats{})).Elem()
 	for i := 0; i < sum.NumField(); i++ {
 		average.Field(i).SetFloat(twoDecimals(sum.Field(i).Float() / count))
 	}
 
-	return average.Interface().(SystemStats)
+	return average.Interface().(system.SystemStats)
 }
 
 // calculate the average stats of a list of container_stats records
-func averageContainerStats(records []*models.Record) (stats []ContainerStats) {
-	sums := make(map[string]*ContainerStats)
+func (rm *RecordManager) AverageContainerStats(records []*models.Record) (stats []container.ContainerStats) {
+	sums := make(map[string]*container.ContainerStats)
 	count := float64(len(records))
 	for _, record := range records {
-		var stats []ContainerStats
+		var stats []container.ContainerStats
 		record.UnmarshalJSONField("stats", &stats)
 		for _, stat := range stats {
 			if _, ok := sums[stat.Name]; !ok {
-				sums[stat.Name] = &ContainerStats{Name: stat.Name, Cpu: 0, Mem: 0}
+				sums[stat.Name] = &container.ContainerStats{Name: stat.Name, Cpu: 0, Mem: 0}
 			}
 			sums[stat.Name].Cpu += stat.Cpu
 			sums[stat.Name].Mem += stat.Mem
@@ -124,7 +135,7 @@ func averageContainerStats(records []*models.Record) (stats []ContainerStats) {
 		}
 	}
 	for _, value := range sums {
-		stats = append(stats, ContainerStats{
+		stats = append(stats, container.ContainerStats{
 			Name:        value.Name,
 			Cpu:         twoDecimals(value.Cpu / count),
 			Mem:         twoDecimals(value.Mem / count),
@@ -141,7 +152,7 @@ func twoDecimals(value float64) float64 {
 }
 
 /* Delete records of specified collections and type that are older than timeLimit */
-func deleteOldRecords(collections []string, recordType string, timeLimit time.Duration) {
+func (rm *RecordManager) DeleteOldRecords(collections []string, recordType string, timeLimit time.Duration) {
 	timeLimitStamp := time.Now().UTC().Add(-timeLimit).Format("2006-01-02 15:04:05")
 
 	// db query
@@ -150,12 +161,12 @@ func deleteOldRecords(collections []string, recordType string, timeLimit time.Du
 
 	var records []*models.Record
 	for _, collection := range collections {
-		if collectionRecords, err := app.Dao().FindRecordsByExpr(collection, expType, expCreated); err == nil {
+		if collectionRecords, err := rm.app.Dao().FindRecordsByExpr(collection, expType, expCreated); err == nil {
 			records = append(records, collectionRecords...)
 		}
 	}
 
-	app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
+	rm.app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
 		for _, record := range records {
 			err := txDao.DeleteRecord(record)
 			if err != nil {

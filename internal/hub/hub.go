@@ -1,7 +1,10 @@
-package main
+package hub
 
 import (
-	_ "beszel/migrations"
+	"beszel/internal/alerts"
+	"beszel/internal/entities/server"
+	"beszel/internal/entities/system"
+	"beszel/internal/records"
 	"beszel/site"
 	"bytes"
 	"crypto/ed25519"
@@ -25,43 +28,40 @@ import (
 	"github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"
 	"github.com/pocketbase/pocketbase/tools/cron"
-	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh"
 )
 
-var Version = "0.1.2"
+type Hub struct {
+	app                   *pocketbase.PocketBase
+	serverConnectionsLock *sync.Mutex
+	serverConnections     map[string]*server.Server
+}
 
-var app *pocketbase.PocketBase
-var serverConnections = make(map[string]*Server)
-var serverConnectionsLock = sync.Mutex{}
+func NewHub(app *pocketbase.PocketBase) *Hub {
+	return &Hub{
+		app:                   app,
+		serverConnectionsLock: &sync.Mutex{},
+		serverConnections:     make(map[string]*server.Server),
+	}
+}
 
-func main() {
-	app = pocketbase.NewWithConfig(pocketbase.Config{
-		DefaultDataDir: "beszel_data",
-	})
-	app.RootCmd.Version = Version
-	app.RootCmd.Use = "beszel"
-	app.RootCmd.Short = ""
+func (h *Hub) Run() {
 
-	// add update command
-	app.RootCmd.AddCommand(&cobra.Command{
-		Use:   "update",
-		Short: "Update beszel to the latest version",
-		Run:   updateBeszel,
-	})
+	rm := records.NewRecordManager(h.app)
+	am := alerts.NewAlertManager(h.app)
 
 	// loosely check if it was executed using "go run"
 	isGoRun := strings.HasPrefix(os.Args[0], os.TempDir())
 
 	// // enable auto creation of migration files when making collection changes in the Admin UI
-	migratecmd.MustRegister(app, app.RootCmd, migratecmd.Config{
+	migratecmd.MustRegister(h.app, h.app.RootCmd, migratecmd.Config{
 		// (the isGoRun check is to enable it only during development)
 		Automigrate: isGoRun,
 	})
 
 	// set auth settings
-	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		usersCollection, err := app.Dao().FindCollectionByNameOrId("users")
+	h.app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+		usersCollection, err := h.app.Dao().FindCollectionByNameOrId("users")
 		if err != nil {
 			return err
 		}
@@ -73,14 +73,14 @@ func main() {
 			usersAuthOptions.AllowEmailAuth = true
 		}
 		usersCollection.SetOptions(usersAuthOptions)
-		if err := app.Dao().SaveCollection(usersCollection); err != nil {
+		if err := h.app.Dao().SaveCollection(usersCollection); err != nil {
 			return err
 		}
 		return nil
 	})
 
 	// serve site
-	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+	h.app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		switch isGoRun {
 		case true:
 			proxy := httputil.NewSingleHostReverseProxy(&url.URL{
@@ -98,34 +98,34 @@ func main() {
 	})
 
 	// set up cron jobs / ticker for system updates
-	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+	h.app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		// 15 second ticker for system updates
-		go startSystemUpdateTicker()
+		go h.startSystemUpdateTicker()
 		// cron job to delete old records
 		scheduler := cron.New()
 		scheduler.MustAdd("delete old records", "8 * * * *", func() {
 			collections := []string{"system_stats", "container_stats"}
-			deleteOldRecords(collections, "1m", time.Hour)
-			deleteOldRecords(collections, "10m", 12*time.Hour)
-			deleteOldRecords(collections, "20m", 24*time.Hour)
-			deleteOldRecords(collections, "120m", 7*24*time.Hour)
-			deleteOldRecords(collections, "480m", 30*24*time.Hour)
+			rm.DeleteOldRecords(collections, "1m", time.Hour)
+			rm.DeleteOldRecords(collections, "10m", 12*time.Hour)
+			rm.DeleteOldRecords(collections, "20m", 24*time.Hour)
+			rm.DeleteOldRecords(collections, "120m", 7*24*time.Hour)
+			rm.DeleteOldRecords(collections, "480m", 30*24*time.Hour)
 		})
 		scheduler.Start()
 		return nil
 	})
 
 	// ssh key setup
-	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+	h.app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		// create ssh key if it doesn't exist
-		getSSHKey()
+		h.getSSHKey()
 		// api route to return public key
 		e.Router.GET("/api/beszel/getkey", func(c echo.Context) error {
 			requestData := apis.RequestInfo(c)
 			if requestData.AuthRecord == nil {
 				return apis.NewForbiddenError("Forbidden", nil)
 			}
-			key, err := os.ReadFile(app.DataDir() + "/id_ed25519.pub")
+			key, err := os.ReadFile(h.app.DataDir() + "/id_ed25519.pub")
 			if err != nil {
 				return err
 			}
@@ -135,10 +135,10 @@ func main() {
 	})
 
 	// other api routes
-	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+	h.app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		// check if first time setup on login page
 		e.Router.GET("/api/beszel/first-run", func(c echo.Context) error {
-			adminNum, err := app.Dao().TotalAdmins()
+			adminNum, err := h.app.Dao().TotalAdmins()
 			if err != nil {
 				return err
 			}
@@ -148,7 +148,7 @@ func main() {
 	})
 
 	// user creation - set default role to user if unset
-	app.OnModelBeforeCreate("users").Add(func(e *core.ModelEvent) error {
+	h.app.OnModelBeforeCreate("users").Add(func(e *core.ModelEvent) error {
 		user := e.Model.(*models.Record)
 		if user.GetString("role") == "" {
 			user.Set("role", "user")
@@ -157,71 +157,71 @@ func main() {
 	})
 
 	// system creation defaults
-	app.OnModelBeforeCreate("systems").Add(func(e *core.ModelEvent) error {
+	h.app.OnModelBeforeCreate("systems").Add(func(e *core.ModelEvent) error {
 		record := e.Model.(*models.Record)
-		record.Set("info", SystemInfo{})
+		record.Set("info", system.SystemInfo{})
 		record.Set("status", "pending")
 		return nil
 	})
 
 	// immediately create connection for new servers
-	app.OnModelAfterCreate("systems").Add(func(e *core.ModelEvent) error {
-		go updateSystem(e.Model.(*models.Record))
+	h.app.OnModelAfterCreate("systems").Add(func(e *core.ModelEvent) error {
+		go h.updateSystem(e.Model.(*models.Record))
 		return nil
 	})
 
 	// do things after a systems record is updated
-	app.OnModelAfterUpdate("systems").Add(func(e *core.ModelEvent) error {
+	h.app.OnModelAfterUpdate("systems").Add(func(e *core.ModelEvent) error {
 		newRecord := e.Model.(*models.Record)
 		oldRecord := newRecord.OriginalCopy()
 		newStatus := newRecord.GetString("status")
 
 		// if server is disconnected and connection exists, remove it
 		if newStatus == "down" || newStatus == "paused" {
-			deleteServerConnection(newRecord)
+			h.deleteServerConnection(newRecord)
 		}
 
 		// if server is set to pending (unpause), try to connect immediately
 		if newStatus == "pending" {
-			go updateSystem(newRecord)
+			go h.updateSystem(newRecord)
 		}
 
 		// alerts
-		handleSystemAlerts(newStatus, newRecord, oldRecord)
+		am.HandleSystemAlerts(newStatus, newRecord, oldRecord)
 		return nil
 	})
 
 	// do things after a systems record is deleted
-	app.OnModelAfterDelete("systems").Add(func(e *core.ModelEvent) error {
+	h.app.OnModelAfterDelete("systems").Add(func(e *core.ModelEvent) error {
 		// if server connection exists, close it
-		deleteServerConnection(e.Model.(*models.Record))
+		h.deleteServerConnection(e.Model.(*models.Record))
 		return nil
 	})
 
-	app.OnModelAfterCreate("system_stats").Add(func(e *core.ModelEvent) error {
-		createLongerRecords("system_stats", e.Model.(*models.Record))
+	h.app.OnModelAfterCreate("system_stats").Add(func(e *core.ModelEvent) error {
+		rm.CreateLongerRecords("system_stats", e.Model.(*models.Record))
 		return nil
 	})
 
-	app.OnModelAfterCreate("container_stats").Add(func(e *core.ModelEvent) error {
-		createLongerRecords("container_stats", e.Model.(*models.Record))
+	h.app.OnModelAfterCreate("container_stats").Add(func(e *core.ModelEvent) error {
+		rm.CreateLongerRecords("container_stats", e.Model.(*models.Record))
 		return nil
 	})
 
-	if err := app.Start(); err != nil {
+	if err := h.app.Start(); err != nil {
 		log.Fatal(err)
 	}
 }
 
-func startSystemUpdateTicker() {
+func (h *Hub) startSystemUpdateTicker() {
 	ticker := time.NewTicker(15 * time.Second)
 	for range ticker.C {
-		updateSystems()
+		h.updateSystems()
 	}
 }
 
-func updateSystems() {
-	records, err := app.Dao().FindRecordsByFilter(
+func (h *Hub) updateSystems() {
+	records, err := h.app.Dao().FindRecordsByFilter(
 		"2hz5ncl8tizk5nx",    // collection
 		"status != 'paused'", // filter
 		"updated",            // sort
@@ -230,7 +230,7 @@ func updateSystems() {
 	)
 	// log.Println("records", len(records))
 	if err != nil || len(records) == 0 {
-		// app.Logger().Error("Failed to query systems")
+		// h.app.Logger().Error("Failed to query systems")
 		return
 	}
 	fiftySecondsAgo := time.Now().UTC().Add(-50 * time.Second)
@@ -246,76 +246,75 @@ func updateSystems() {
 		if record.GetString("status") != "down" {
 			done++
 		}
-		go updateSystem(record)
+		go h.updateSystem(record)
 	}
 }
 
-func updateSystem(record *models.Record) {
-	var server *Server
+func (h *Hub) updateSystem(record *models.Record) {
+	var s *server.Server
 	// check if server connection data exists
-	if _, ok := serverConnections[record.Id]; ok {
-		server = serverConnections[record.Id]
+	if _, ok := h.serverConnections[record.Id]; ok {
+		s = h.serverConnections[record.Id]
 	} else {
 		// create server connection struct
-		server = &Server{
-			Host: record.GetString("host"),
-			Port: record.GetString("port"),
-		}
-		client, err := getServerConnection(server)
+		s = server.NewServer(
+			record.GetString("host"),
+			record.GetString("port"))
+		client, err := h.getServerConnection(s)
 		if err != nil {
-			app.Logger().Error("Failed to connect:", "err", err.Error(), "server", server.Host, "port", server.Port)
-			updateServerStatus(record, "down")
+			h.app.Logger().Error("Failed to connect:", "err", err.Error(), "server", s.Host, "port", s.Port)
+			h.updateServerStatus(record, "down")
 			return
 		}
-		server.Client = client
-		serverConnectionsLock.Lock()
-		serverConnections[record.Id] = server
-		serverConnectionsLock.Unlock()
+		s.Client = client
+		h.serverConnectionsLock.Lock()
+		h.serverConnections[record.Id] = s
+		h.serverConnectionsLock.Unlock()
 	}
 	// get server stats from agent
-	systemData, err := requestJson(server)
+	systemData, err := requestJson(s)
 	if err != nil {
 		if err.Error() == "retry" {
 			// if previous connection was closed, try again
-			app.Logger().Error("Existing SSH connection closed. Retrying...", "host", server.Host, "port", server.Port)
-			deleteServerConnection(record)
-			updateSystem(record)
+			h.app.Logger().Error("Existing SSH connection closed. Retrying...", "host", s.Host, "port", s.Port)
+			h.deleteServerConnection(record)
+			h.updateSystem(record)
 			return
 		}
-		app.Logger().Error("Failed to get server stats: ", "err", err.Error())
-		updateServerStatus(record, "down")
+		h.app.Logger().Error("Failed to get server stats: ", "err", err.Error())
+		h.updateServerStatus(record, "down")
 		return
 	}
 	// update system record
 	record.Set("status", "up")
 	record.Set("info", systemData.Info)
-	if err := app.Dao().SaveRecord(record); err != nil {
-		app.Logger().Error("Failed to update record: ", "err", err.Error())
+	if err := h.app.Dao().SaveRecord(record); err != nil {
+		h.app.Logger().Error("Failed to update record: ", "err", err.Error())
 	}
 	// add new system_stats record
-	system_stats, _ := app.Dao().FindCollectionByNameOrId("system_stats")
+	system_stats, _ := h.app.Dao().FindCollectionByNameOrId("system_stats")
 	system_stats_record := models.NewRecord(system_stats)
 	system_stats_record.Set("system", record.Id)
 	system_stats_record.Set("stats", systemData.Stats)
 	system_stats_record.Set("type", "1m")
-	if err := app.Dao().SaveRecord(system_stats_record); err != nil {
-		app.Logger().Error("Failed to save record: ", "err", err.Error())
+	if err := h.app.Dao().SaveRecord(system_stats_record); err != nil {
+		h.app.Logger().Error("Failed to save record: ", "err", err.Error())
 	}
 	// add new container_stats record
 	if len(systemData.Containers) > 0 {
-		container_stats, _ := app.Dao().FindCollectionByNameOrId("container_stats")
+		container_stats, _ := h.app.Dao().FindCollectionByNameOrId("container_stats")
 		container_stats_record := models.NewRecord(container_stats)
 		container_stats_record.Set("system", record.Id)
 		container_stats_record.Set("stats", systemData.Containers)
 		container_stats_record.Set("type", "1m")
-		if err := app.Dao().SaveRecord(container_stats_record); err != nil {
-			app.Logger().Error("Failed to save record: ", "err", err.Error())
+		if err := h.app.Dao().SaveRecord(container_stats_record); err != nil {
+			h.app.Logger().Error("Failed to save record: ", "err", err.Error())
 		}
 	}
 }
 
 // set server to status down and close connection
-func updateServerStatus(record *models.Record, status string) {
+func (h *Hub) updateServerStatus(record *models.Record, status string) {
 	// if in map, close connection and remove from map
 	// this is now down automatically in an after update hook
 	// if status == "down" || status == "paused" {
@@ -323,28 +322,28 @@ func updateServerStatus(record *models.Record, status string) {
 	// }
 	if record.GetString("status") != status {
 		record.Set("status", status)
-		if err := app.Dao().SaveRecord(record); err != nil {
-			app.Logger().Error("Failed to update record: ", "err", err.Error())
+		if err := h.app.Dao().SaveRecord(record); err != nil {
+			h.app.Logger().Error("Failed to update record: ", "err", err.Error())
 		}
 	}
 }
 
-func deleteServerConnection(record *models.Record) {
-	if _, ok := serverConnections[record.Id]; ok {
-		if serverConnections[record.Id].Client != nil {
-			serverConnections[record.Id].Client.Close()
+func (h *Hub) deleteServerConnection(record *models.Record) {
+	if _, ok := h.serverConnections[record.Id]; ok {
+		if h.serverConnections[record.Id].Client != nil {
+			h.serverConnections[record.Id].Client.Close()
 		}
-		serverConnectionsLock.Lock()
-		defer serverConnectionsLock.Unlock()
-		delete(serverConnections, record.Id)
+		h.serverConnectionsLock.Lock()
+		defer h.serverConnectionsLock.Unlock()
+		delete(h.serverConnections, record.Id)
 	}
 }
 
-func getServerConnection(server *Server) (*ssh.Client, error) {
-	// app.Logger().Debug("new ssh connection", "server", server.Host)
-	key, err := getSSHKey()
+func (h *Hub) getServerConnection(server *server.Server) (*ssh.Client, error) {
+	// h.app.Logger().Debug("new ssh connection", "server", server.Host)
+	key, err := h.getSSHKey()
 	if err != nil {
-		app.Logger().Error("Failed to get SSH key: ", "err", err.Error())
+		h.app.Logger().Error("Failed to get SSH key: ", "err", err.Error())
 		return nil, err
 	}
 
@@ -371,10 +370,10 @@ func getServerConnection(server *Server) (*ssh.Client, error) {
 	return client, nil
 }
 
-func requestJson(server *Server) (SystemData, error) {
+func requestJson(server *server.Server) (system.SystemData, error) {
 	session, err := server.Client.NewSession()
 	if err != nil {
-		return SystemData{}, errors.New("retry")
+		return system.SystemData{}, errors.New("retry")
 	}
 	defer session.Close()
 
@@ -383,26 +382,26 @@ func requestJson(server *Server) (SystemData, error) {
 	session.Stdout = &outputBuffer
 
 	if err := session.Shell(); err != nil {
-		return SystemData{}, err
+		return system.SystemData{}, err
 	}
 
 	err = session.Wait()
 	if err != nil {
-		return SystemData{}, err
+		return system.SystemData{}, err
 	}
 
 	// Unmarshal the output into our struct
-	var systemData SystemData
+	var systemData system.SystemData
 	err = json.Unmarshal(outputBuffer.Bytes(), &systemData)
 	if err != nil {
-		return SystemData{}, err
+		return system.SystemData{}, err
 	}
 
 	return systemData, nil
 }
 
-func getSSHKey() ([]byte, error) {
-	dataDir := app.DataDir()
+func (h *Hub) getSSHKey() ([]byte, error) {
+	dataDir := h.app.DataDir()
 	// check if the key pair already exists
 	existingKey, err := os.ReadFile(dataDir + "/id_ed25519")
 	if err == nil {
@@ -412,27 +411,27 @@ func getSSHKey() ([]byte, error) {
 	// Generate the Ed25519 key pair
 	pubKey, privKey, err := ed25519.GenerateKey(nil)
 	if err != nil {
-		// app.Logger().Error("Error generating key pair:", "err", err.Error())
+		// h.app.Logger().Error("Error generating key pair:", "err", err.Error())
 		return nil, err
 	}
 
 	// Get the private key in OpenSSH format
 	privKeyBytes, err := ssh.MarshalPrivateKey(privKey, "")
 	if err != nil {
-		// app.Logger().Error("Error marshaling private key:", "err", err.Error())
+		// h.app.Logger().Error("Error marshaling private key:", "err", err.Error())
 		return nil, err
 	}
 
 	// Save the private key to a file
 	privateFile, err := os.Create(dataDir + "/id_ed25519")
 	if err != nil {
-		// app.Logger().Error("Error creating private key file:", "err", err.Error())
+		// h.app.Logger().Error("Error creating private key file:", "err", err.Error())
 		return nil, err
 	}
 	defer privateFile.Close()
 
 	if err := pem.Encode(privateFile, privKeyBytes); err != nil {
-		// app.Logger().Error("Error writing private key to file:", "err", err.Error())
+		// h.app.Logger().Error("Error writing private key to file:", "err", err.Error())
 		return nil, err
 	}
 
@@ -455,9 +454,9 @@ func getSSHKey() ([]byte, error) {
 		return nil, err
 	}
 
-	app.Logger().Info("ed25519 SSH key pair generated successfully.")
-	app.Logger().Info("Private key saved to: " + dataDir + "/id_ed25519")
-	app.Logger().Info("Public key saved to: " + dataDir + "/id_ed25519.pub")
+	h.app.Logger().Info("ed25519 SSH key pair generated successfully.")
+	h.app.Logger().Info("Private key saved to: " + dataDir + "/id_ed25519")
+	h.app.Logger().Info("Public key saved to: " + dataDir + "/id_ed25519.pub")
 
 	existingKey, err = os.ReadFile(dataDir + "/id_ed25519")
 	if err == nil {

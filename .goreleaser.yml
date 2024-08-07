@@ -16,6 +16,23 @@ builds:
       - amd64
       - arm64
       - arm
+    main: cmd/hub/hub.go
+
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - freebsd
+    goarch:
+      - amd64
+      - arm64
+      - arm
+      - mips64
+    ignore:
+      - goos: freebsd
+        goarch: arm
+    main: cmd/agent/agent.go
 
 archives:
   - format: tar.gz
