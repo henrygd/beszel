@@ -104,14 +104,14 @@ Use `./beszel update` and `./beszel-agent update` to update to the latest versio
 
 ### Agent
 
-| Name         | Default | Description                                                |
-| ------------ | ------- | ---------------------------------------------------------- |
-| `FILESYSTEM` | unset   | Filesystem / partition to use for disk I/O stats.          |
-| `KEY`        | unset   | Public SSH key to use for authentication. Provided in hub. |
-| `PORT`       | 45876   | Port or address:port to listen on.                         |
+| Name          | Default | Description                                                        |
+| ------------- | ------- | ------------------------------------------------------------------ |
+| `DOCKER_HOST` | unset   | Overrides the docker host (docker.sock) if using a proxy.[^socket] |
+| `FILESYSTEM`  | unset   | Filesystem / partition to use for disk I/O stats.                  |
+| `KEY`         | unset   | Public SSH key to use for authentication. Provided in hub.         |
+| `PORT`        | 45876   | Port or address:port to listen on.                                 |
 
-<!-- | `DOCKER_HOST` | unset   | Overrides the docker host (docker.sock) if using a proxy.[^socket] |
-[^socket]: Beszel only needs access to read container information. For [linuxserver/docker-socket-proxy](https://github.com/linuxserver/docker-socket-proxy) you would set `CONTAINERS=1`. -->
+[^socket]: Beszel only needs access to read container information. For [linuxserver/docker-socket-proxy](https://github.com/linuxserver/docker-socket-proxy) you would set `CONTAINERS=1`.
 
 ## OAuth / OIDC setup
 

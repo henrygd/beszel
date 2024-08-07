@@ -24,7 +24,7 @@ import (
 	psutilNet "github.com/shirou/gopsutil/v4/net"
 )
 
-var Version = "0.1.1"
+var Version = "0.1.2"
 
 var containerStatsMap = make(map[string]*PrevContainerStats)
 var containerStatsMutex = &sync.Mutex{}
