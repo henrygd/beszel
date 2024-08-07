@@ -153,6 +153,7 @@ func getSystemStats() (*SystemInfo, *SystemStats) {
 func getDockerStats() ([]*ContainerStats, error) {
 	resp, err := dockerClient.Get("http://localhost/containers/json")
 	if err != nil {
+		closeIdleConnections(err)
 		return []*ContainerStats{}, err
 	}
 	defer resp.Body.Close()
@@ -184,8 +185,15 @@ func getDockerStats() ([]*ContainerStats, error) {
 			defer wg.Done()
 			cstats, err := getContainerStats(ctr)
 			if err != nil {
-				// delete container from map and retry once
-				deleteContainerStatsSync(ctr.IdShort)
+				// Check if the error is a network timeout
+				if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+					// Close idle connections to prevent reuse of stale connections
+					closeIdleConnections(err)
+				} else {
+					// otherwise delete container from map
+					deleteContainerStatsSync(ctr.IdShort)
+				}
+				// retry once
 				cstats, err = getContainerStats(ctr)
 				if err != nil {
 					log.Printf("Error getting container stats: %+v\n", err)
@@ -442,7 +450,7 @@ func newDockerClient() *http.Client {
 		ForceAttemptHTTP2:   false,
 		IdleConnTimeout:     90 * time.Second,
 		DisableCompression:  true,
-		MaxIdleConnsPerHost: 50,
+		MaxIdleConnsPerHost: 20,
 		DisableKeepAlives:   false,
 	}
 
@@ -464,4 +472,9 @@ func newDockerClient() *http.Client {
 		Timeout:   time.Second,
 		Transport: transport,
 	}
+}
+
+func closeIdleConnections(err error) {
+	log.Printf("Closing idle connections. Error: %+v\n", err)
+	dockerClient.Transport.(*http.Transport).CloseIdleConnections()
 }
