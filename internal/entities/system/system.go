@@ -14,7 +14,7 @@ type SystemInfo struct {
 }
 
 type SystemData struct {
-	Stats      SystemStats                `json:"stats"`
-	Info       SystemInfo                 `json:"info"`
-	Containers []container.ContainerStats `json:"container"`
+	Stats      *SystemStats                `json:"stats"`
+	Info       *SystemInfo                 `json:"info"`
+	Containers []*container.ContainerStats `json:"container"`
 }

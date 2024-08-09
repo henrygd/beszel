@@ -1,6 +1,8 @@
-package main
+package agent
 
 import (
+	"beszel/internal/entities/container"
+	"beszel/internal/entities/system"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -15,38 +17,49 @@ import (
 	"sync"
 	"time"
 
-	sshServer "github.com/gliderlabs/ssh"
-
 	"github.com/shirou/gopsutil/v4/cpu"
 	"github.com/shirou/gopsutil/v4/disk"
 	"github.com/shirou/gopsutil/v4/host"
 	"github.com/shirou/gopsutil/v4/mem"
+
+	sshServer "github.com/gliderlabs/ssh"
 	psutilNet "github.com/shirou/gopsutil/v4/net"
 )
 
 var Version = "0.1.2"
 
-var containerStatsMap = make(map[string]*PrevContainerStats)
+var containerStatsMap = make(map[string]*container.PrevContainerStats)
 var containerStatsMutex = &sync.Mutex{}
 
-var sem = make(chan struct{}, 15)
-
-func acquireSemaphore() {
-	sem <- struct{}{}
+type Agent struct {
+	port   string
+	pubKey []byte
+	sem    chan struct{}
 }
 
-func releaseSemaphore() {
-	<-sem
+func NewAgent(pubKey []byte, port string) *Agent {
+	return &Agent{
+		pubKey: pubKey,
+		sem:    make(chan struct{}, 15),
+	}
 }
 
-var diskIoStats = DiskIoStats{
+func (a *Agent) acquireSemaphore() {
+	a.sem <- struct{}{}
+}
+
+func (a *Agent) releaseSemaphore() {
+	<-a.sem
+}
+
+var diskIoStats = system.DiskIoStats{
 	Read:       0,
 	Write:      0,
 	Time:       time.Now(),
 	Filesystem: "",
 }
 
-var netIoStats = NetIoStats{
+var netIoStats = system.NetIoStats{
 	BytesRecv: 0,
 	BytesSent: 0,
 	Time:      time.Now(),
@@ -56,8 +69,8 @@ var netIoStats = NetIoStats{
 // client for docker engine api
 var dockerClient = newDockerClient()
 
-func getSystemStats() (*SystemInfo, *SystemStats) {
-	systemStats := &SystemStats{}
+func getSystemStats() (*system.SystemInfo, *system.SystemStats) {
+	systemStats := &system.SystemStats{}
 
 	// cpu percent
 	cpuPct, err := cpu.Percent(0, false)
@@ -124,7 +137,7 @@ func getSystemStats() (*SystemInfo, *SystemStats) {
 		netIoStats.Time = time.Now()
 	}
 
-	systemInfo := &SystemInfo{
+	systemInfo := &system.SystemInfo{
 		Cpu:     systemStats.Cpu,
 		MemPct:  systemStats.MemPct,
 		DiskPct: systemStats.DiskPct,
@@ -150,21 +163,21 @@ func getSystemStats() (*SystemInfo, *SystemStats) {
 
 }
 
-func getDockerStats() ([]*ContainerStats, error) {
+func (a *Agent) getDockerStats() ([]*container.ContainerStats, error) {
 	resp, err := dockerClient.Get("http://localhost/containers/json")
 	if err != nil {
 		closeIdleConnections(err)
-		return []*ContainerStats{}, err
+		return []*container.ContainerStats{}, err
 	}
 	defer resp.Body.Close()
 
-	var containers []*Container
+	var containers []*container.Container
 	if err := json.NewDecoder(resp.Body).Decode(&containers); err != nil {
 		log.Printf("Error decoding containers: %+v\n", err)
-		return []*ContainerStats{}, err
+		return []*container.ContainerStats{}, err
 	}
 
-	containerStats := make([]*ContainerStats, 0, len(containers))
+	containerStats := make([]*container.ContainerStats, 0, len(containers))
 
 	// store valid ids to clean up old container ids from map
 	validIds := make(map[string]struct{}, len(containers))
@@ -183,7 +196,7 @@ func getDockerStats() ([]*ContainerStats, error) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			cstats, err := getContainerStats(ctr)
+			cstats, err := a.getContainerStats(ctr)
 			if err != nil {
 				// Check if the error is a network timeout
 				if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
@@ -194,7 +207,7 @@ func getDockerStats() ([]*ContainerStats, error) {
 					deleteContainerStatsSync(ctr.IdShort)
 				}
 				// retry once
-				cstats, err = getContainerStats(ctr)
+				cstats, err = a.getContainerStats(ctr)
 				if err != nil {
 					log.Printf("Error getting container stats: %+v\n", err)
 					return
@@ -216,17 +229,17 @@ func getDockerStats() ([]*ContainerStats, error) {
 	return containerStats, nil
 }
 
-func getContainerStats(ctr *Container) (*ContainerStats, error) {
+func (a *Agent) getContainerStats(ctr *container.Container) (*container.ContainerStats, error) {
 	// use semaphore to limit concurrency
-	acquireSemaphore()
-	defer releaseSemaphore()
+	a.acquireSemaphore()
+	defer a.releaseSemaphore()
 	resp, err := dockerClient.Get("http://localhost/containers/" + ctr.IdShort + "/stats?stream=0&one-shot=1")
 	if err != nil {
-		return &ContainerStats{}, err
+		return &container.ContainerStats{}, err
 	}
 	defer resp.Body.Close()
 
-	var statsJson CStats
+	var statsJson system.CStats
 	if err := json.NewDecoder(resp.Body).Decode(&statsJson); err != nil {
 		panic(err)
 	}
@@ -246,7 +259,7 @@ func getContainerStats(ctr *Container) (*ContainerStats, error) {
 	// add empty values if they doesn't exist in map
 	stats, initialized := containerStatsMap[ctr.IdShort]
 	if !initialized {
-		stats = &PrevContainerStats{}
+		stats = &container.PrevContainerStats{}
 		containerStatsMap[ctr.IdShort] = stats
 	}
 
@@ -255,7 +268,7 @@ func getContainerStats(ctr *Container) (*ContainerStats, error) {
 	systemDelta := statsJson.CPUStats.SystemUsage - stats.Cpu[1]
 	cpuPct := float64(cpuDelta) / float64(systemDelta) * 100
 	if cpuPct > 100 {
-		return &ContainerStats{}, fmt.Errorf("%s cpu pct greater than 100: %+v", name, cpuPct)
+		return &container.ContainerStats{}, fmt.Errorf("%s cpu pct greater than 100: %+v", name, cpuPct)
 	}
 	stats.Cpu = [2]uint64{statsJson.CPUStats.CPUUsage.TotalUsage, statsJson.CPUStats.SystemUsage}
 
@@ -277,7 +290,7 @@ func getContainerStats(ctr *Container) (*ContainerStats, error) {
 	stats.Net.Recv = total_recv
 	stats.Net.Time = time.Now()
 
-	cStats := &ContainerStats{
+	cStats := &container.ContainerStats{
 		Name:        name,
 		Cpu:         twoDecimals(cpuPct),
 		Mem:         bytesToMegabytes(float64(usedMemory)),
@@ -294,14 +307,14 @@ func deleteContainerStatsSync(id string) {
 	delete(containerStatsMap, id)
 }
 
-func gatherStats() *SystemData {
+func (a *Agent) gatherStats() *system.SystemData {
 	systemInfo, systemStats := getSystemStats()
-	stats := &SystemData{
+	stats := &system.SystemData{
 		Stats:      systemStats,
 		Info:       systemInfo,
-		Containers: []*ContainerStats{},
+		Containers: []*container.ContainerStats{},
 	}
-	containerStats, err := getDockerStats()
+	containerStats, err := a.getDockerStats()
 	if err == nil {
 		stats.Containers = containerStats
 	}
@@ -309,9 +322,9 @@ func gatherStats() *SystemData {
 	return stats
 }
 
-func startServer(addr string, pubKey []byte) {
+func (a *Agent) startServer(addr string, pubKey []byte) {
 	sshServer.Handle(func(s sshServer.Session) {
-		stats := gatherStats()
+		stats := a.gatherStats()
 		var jsonStats []byte
 		jsonStats, _ = json.Marshal(stats)
 		io.WriteString(s, string(jsonStats))
@@ -330,24 +343,7 @@ func startServer(addr string, pubKey []byte) {
 	}
 }
 
-func main() {
-	// handle flags / subcommands
-	if len(os.Args) > 1 {
-		switch os.Args[1] {
-		case "-v":
-			fmt.Println("beszel-agent", Version)
-		case "update":
-			updateBeszel()
-		}
-		os.Exit(0)
-	}
-
-	var pubKey []byte
-	if pubKeyEnv, exists := os.LookupEnv("KEY"); exists {
-		pubKey = []byte(pubKeyEnv)
-	} else {
-		log.Fatal("KEY environment variable is not set")
-	}
+func (a *Agent) Run() {
 
 	if filesystem, exists := os.LookupEnv("FILESYSTEM"); exists {
 		diskIoStats.Filesystem = filesystem
@@ -358,15 +354,7 @@ func main() {
 	initializeDiskIoStats()
 	initializeNetIoStats()
 
-	if port, exists := os.LookupEnv("PORT"); exists {
-		// allow passing an address in the form of "127.0.0.1:45876"
-		if !strings.Contains(port, ":") {
-			port = ":" + port
-		}
-		startServer(port, pubKey)
-	} else {
-		startServer(":45876", pubKey)
-	}
+	a.startServer(a.port, a.pubKey)
 }
 
 func bytesToMegabytes(b float64) float64 {
