@@ -26,21 +26,25 @@ import (
 	psutilNet "github.com/shirou/gopsutil/v4/net"
 )
 
-var Version = "0.1.2"
-
 var containerStatsMap = make(map[string]*container.PrevContainerStats)
-var containerStatsMutex = &sync.Mutex{}
 
 type Agent struct {
-	port   string
-	pubKey []byte
-	sem    chan struct{}
+	port                string
+	pubKey              []byte
+	sem                 chan struct{}
+	containerStatsMutex *sync.Mutex
+	diskIoStats         system.DiskIoStats
+	netIoStats          system.NetIoStats
 }
 
 func NewAgent(pubKey []byte, port string) *Agent {
 	return &Agent{
-		pubKey: pubKey,
-		sem:    make(chan struct{}, 15),
+		pubKey:              pubKey,
+		sem:                 make(chan struct{}, 15),
+		port:                port,
+		containerStatsMutex: &sync.Mutex{},
+		diskIoStats:         system.DiskIoStats{},
+		netIoStats:          system.NetIoStats{},
 	}
 }
 
@@ -52,24 +56,10 @@ func (a *Agent) releaseSemaphore() {
 	<-a.sem
 }
 
-var diskIoStats = system.DiskIoStats{
-	Read:       0,
-	Write:      0,
-	Time:       time.Now(),
-	Filesystem: "",
-}
-
-var netIoStats = system.NetIoStats{
-	BytesRecv: 0,
-	BytesSent: 0,
-	Time:      time.Now(),
-	Name:      "",
-}
-
 // client for docker engine api
 var dockerClient = newDockerClient()
 
-func getSystemStats() (*system.SystemInfo, *system.SystemStats) {
+func (a *Agent) getSystemStats() (*system.SystemInfo, *system.SystemStats) {
 	systemStats := &system.SystemStats{}
 
 	// cpu percent
@@ -98,18 +88,18 @@ func getSystemStats() (*system.SystemInfo, *system.SystemStats) {
 	}
 
 	// disk i/o
-	if io, err := disk.IOCounters(diskIoStats.Filesystem); err == nil {
+	if io, err := disk.IOCounters(a.diskIoStats.Filesystem); err == nil {
 		for _, d := range io {
 			// add to systemStats
-			secondsElapsed := time.Since(diskIoStats.Time).Seconds()
-			readPerSecond := float64(d.ReadBytes-diskIoStats.Read) / secondsElapsed
+			secondsElapsed := time.Since(a.diskIoStats.Time).Seconds()
+			readPerSecond := float64(d.ReadBytes-a.diskIoStats.Read) / secondsElapsed
 			systemStats.DiskRead = bytesToMegabytes(readPerSecond)
-			writePerSecond := float64(d.WriteBytes-diskIoStats.Write) / secondsElapsed
+			writePerSecond := float64(d.WriteBytes-a.diskIoStats.Write) / secondsElapsed
 			systemStats.DiskWrite = bytesToMegabytes(writePerSecond)
 			// update diskIoStats
-			diskIoStats.Time = time.Now()
-			diskIoStats.Read = d.ReadBytes
-			diskIoStats.Write = d.WriteBytes
+			a.diskIoStats.Time = time.Now()
+			a.diskIoStats.Read = d.ReadBytes
+			a.diskIoStats.Write = d.WriteBytes
 		}
 	}
 
@@ -126,15 +116,15 @@ func getSystemStats() (*system.SystemInfo, *system.SystemStats) {
 			bytesRecv += v.BytesRecv
 		}
 		// add to systemStats
-		secondsElapsed := time.Since(netIoStats.Time).Seconds()
-		sentPerSecond := float64(bytesSent-netIoStats.BytesSent) / secondsElapsed
-		recvPerSecond := float64(bytesRecv-netIoStats.BytesRecv) / secondsElapsed
+		secondsElapsed := time.Since(a.netIoStats.Time).Seconds()
+		sentPerSecond := float64(bytesSent-a.netIoStats.BytesSent) / secondsElapsed
+		recvPerSecond := float64(bytesRecv-a.netIoStats.BytesRecv) / secondsElapsed
 		systemStats.NetworkSent = bytesToMegabytes(sentPerSecond)
 		systemStats.NetworkRecv = bytesToMegabytes(recvPerSecond)
 		// update netIoStats
-		netIoStats.BytesSent = bytesSent
-		netIoStats.BytesRecv = bytesRecv
-		netIoStats.Time = time.Now()
+		a.netIoStats.BytesSent = bytesSent
+		a.netIoStats.BytesRecv = bytesRecv
+		a.netIoStats.Time = time.Now()
 	}
 
 	systemInfo := &system.SystemInfo{
@@ -191,7 +181,7 @@ func (a *Agent) getDockerStats() ([]*container.ContainerStats, error) {
 		// note: can't use Created field because it's not updated on restart
 		if strings.HasSuffix(ctr.Status, "seconds") {
 			// if so, remove old container data
-			deleteContainerStatsSync(ctr.IdShort)
+			a.deleteContainerStatsSync(ctr.IdShort)
 		}
 		wg.Add(1)
 		go func() {
@@ -204,7 +194,7 @@ func (a *Agent) getDockerStats() ([]*container.ContainerStats, error) {
 					closeIdleConnections(err)
 				} else {
 					// otherwise delete container from map
-					deleteContainerStatsSync(ctr.IdShort)
+					a.deleteContainerStatsSync(ctr.IdShort)
 				}
 				// retry once
 				cstats, err = a.getContainerStats(ctr)
@@ -253,8 +243,8 @@ func (a *Agent) getContainerStats(ctr *container.Container) (*container.Containe
 	}
 	usedMemory := statsJson.MemoryStats.Usage - memCache
 
-	containerStatsMutex.Lock()
-	defer containerStatsMutex.Unlock()
+	a.containerStatsMutex.Lock()
+	defer a.containerStatsMutex.Unlock()
 
 	// add empty values if they doesn't exist in map
 	stats, initialized := containerStatsMap[ctr.IdShort]
@@ -301,14 +291,14 @@ func (a *Agent) getContainerStats(ctr *container.Container) (*container.Containe
 }
 
 // delete container stats from map using mutex
-func deleteContainerStatsSync(id string) {
-	containerStatsMutex.Lock()
-	defer containerStatsMutex.Unlock()
+func (a *Agent) deleteContainerStatsSync(id string) {
+	a.containerStatsMutex.Lock()
+	defer a.containerStatsMutex.Unlock()
 	delete(containerStatsMap, id)
 }
 
 func (a *Agent) gatherStats() *system.SystemData {
-	systemInfo, systemStats := getSystemStats()
+	systemInfo, systemStats := a.getSystemStats()
 	stats := &system.SystemData{
 		Stats:      systemStats,
 		Info:       systemInfo,
@@ -346,13 +336,13 @@ func (a *Agent) startServer(addr string, pubKey []byte) {
 func (a *Agent) Run() {
 
 	if filesystem, exists := os.LookupEnv("FILESYSTEM"); exists {
-		diskIoStats.Filesystem = filesystem
+		a.diskIoStats.Filesystem = filesystem
 	} else {
-		diskIoStats.Filesystem = findDefaultFilesystem()
+		a.diskIoStats.Filesystem = findDefaultFilesystem()
 	}
 
-	initializeDiskIoStats()
-	initializeNetIoStats()
+	a.initializeDiskIoStats()
+	a.initializeNetIoStats()
 
 	a.startServer(a.port, a.pubKey)
 }
@@ -395,17 +385,17 @@ func skipNetworkInterface(v *psutilNet.IOCountersStat) bool {
 	}
 }
 
-func initializeDiskIoStats() {
-	if io, err := disk.IOCounters(diskIoStats.Filesystem); err == nil {
+func (a *Agent) initializeDiskIoStats() {
+	if io, err := disk.IOCounters(a.diskIoStats.Filesystem); err == nil {
 		for _, d := range io {
-			diskIoStats.Time = time.Now()
-			diskIoStats.Read = d.ReadBytes
-			diskIoStats.Write = d.WriteBytes
+			a.diskIoStats.Time = time.Now()
+			a.diskIoStats.Read = d.ReadBytes
+			a.diskIoStats.Write = d.WriteBytes
 		}
 	}
 }
 
-func initializeNetIoStats() {
+func (a *Agent) initializeNetIoStats() {
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
 		bytesSent := uint64(0)
 		bytesRecv := uint64(0)
@@ -417,9 +407,9 @@ func initializeNetIoStats() {
 			bytesSent += v.BytesSent
 			bytesRecv += v.BytesRecv
 		}
-		netIoStats.BytesSent = bytesSent
-		netIoStats.BytesRecv = bytesRecv
-		netIoStats.Time = time.Now()
+		a.netIoStats.BytesSent = bytesSent
+		a.netIoStats.BytesRecv = bytesRecv
+		a.netIoStats.Time = time.Now()
 	}
 }
 
