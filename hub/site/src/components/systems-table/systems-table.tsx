@@ -136,6 +136,14 @@ export default function SystemsTable() {
 				header: ({ column }) => sortableHeader(column, 'System', Server),
 			},
 			{
+				accessorKey: 'info.v',
+				cell: (info) => {
+					return(
+						<div>{info.getValue() as string}</div>)
+				},
+				header: ({ column }) => sortableHeader(column, 'Version', Server),
+			},
+			{
 				accessorKey: 'info.cpu',
 				cell: CellFormatter,
 				header: ({ column }) => sortableHeader(column, 'CPU', Cpu),

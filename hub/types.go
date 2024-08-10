@@ -22,6 +22,7 @@ type SystemInfo struct {
 	Threads  int    `json:"t"`
 	CpuModel string `json:"m"`
 	// Os       string  `json:"o"`
+	Version string `json:"v"`
 	Uptime  uint64  `json:"u"`
 	Cpu     float64 `json:"cpu"`
 	MemPct  float64 `json:"mp"`

@@ -6,6 +6,7 @@ export interface SystemRecord extends RecordModel {
 	status: 'up' | 'down' | 'paused' | 'pending'
 	port: string
 	info: SystemInfo
+	agentVersion: string
 }
 
 export interface SystemInfo {

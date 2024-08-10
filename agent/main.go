@@ -128,6 +128,7 @@ func getSystemStats() (*SystemInfo, *SystemStats) {
 		Cpu:     systemStats.Cpu,
 		MemPct:  systemStats.MemPct,
 		DiskPct: systemStats.DiskPct,
+		Vers: Version,
 	}
 
 	// add host info
