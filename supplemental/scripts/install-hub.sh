@@ -1,17 +1,19 @@
 #!/bin/bash
 version=0.0.1
-# Define default values
+PORT=8090 # Default port
 
 # Read command line options
-while getopts ":uh" opt; do
+while getopts ":uhp:" opt; do
   case $opt in
     u) UNINSTALL="true";;
     h) printf "Beszel Hub installation script\n\n";
        printf "Usage: ./install-hub.sh [options]\n\n";
        printf "Options: \n"
        printf "  -u  : Uninstall the Beszel Hub\n";
+       printf "  -p <port> : Specify a port number (default: 8090)\n";
        echo "  -h  : Display this help message";
        exit 0;;
+    p) PORT=$OPTARG;;
     \?) echo "Invalid option: -$OPTARG"; exit 1;;
   esac
 done
@@ -88,7 +90,7 @@ Description=Beszel Hub Service
 After=network.target
 
 [Service]
-ExecStart=/opt/beszel/beszel serve
+ExecStart=/opt/beszel/beszel serve --http "0.0.0.0:$PORT"
 WorkingDirectory=/opt/beszel
 User=beszel
 Restart=always
@@ -113,5 +115,5 @@ EOF
     exit 1
   fi
 
-  echo "The Beszel Hub has been installed and configured successfully! It is now accessible on port 8090."
+  echo "The Beszel Hub has been installed and configured successfully! It is now accessible on port $PORT."
 fi

@@ -21,6 +21,8 @@ curl -sL https://raw.githubusercontent.com/henrygd/beszel/main/supplemental/scri
 
 #### Install
 
+You may specify a port number with the `-p` flag. The default port is `8090`.
+
 ```bash
 ./install-hub.sh
 ```
@@ -34,7 +36,7 @@ curl -sL https://raw.githubusercontent.com/henrygd/beszel/main/supplemental/scri
 #### Update
 
 ```bash
-sudo /opt/beszel/beszel update && sudo systemctl restart beszel
+sudo /opt/beszel/beszel update && sudo systemctl restart beszel-hub
 ```
 
 ### Agent
