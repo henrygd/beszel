@@ -8,10 +8,9 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/rhysd/go-github-selfupdate/selfupdate"
-	"github.com/spf13/cobra"
 )
 
-func UpdateBeszel(cmd *cobra.Command, args []string) {
+func UpdateBeszel() {
 	var latest *selfupdate.Release
 	var found bool
 	var err error

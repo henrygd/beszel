@@ -22,7 +22,7 @@ func main() {
 	app.RootCmd.AddCommand(&cobra.Command{
 		Use:   "update",
 		Short: "Update " + beszel.AppName + " to the latest version",
-		Run:   update.UpdateBeszel,
+		Run:   func(_ *cobra.Command, _ []string) { update.UpdateBeszel() },
 	})
 
 	hubApp := hub.NewHub(app)
