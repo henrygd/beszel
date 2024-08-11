@@ -10,3 +10,4 @@ dist
 *.exe
 beszel/cmd/hub/hub
 beszel/cmd/agent/agent
+node_modules
