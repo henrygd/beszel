@@ -10,9 +10,7 @@ import (
 )
 
 func main() {
-	var app *pocketbase.PocketBase
-
-	app = pocketbase.NewWithConfig(pocketbase.Config{
+	app := pocketbase.NewWithConfig(pocketbase.Config{
 		DefaultDataDir: beszel.AppName + "_data",
 	})
 	app.RootCmd.Version = beszel.Version
