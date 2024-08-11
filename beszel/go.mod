@@ -5,8 +5,13 @@ go 1.22.4
 require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/gliderlabs/ssh v0.3.7
+	github.com/labstack/echo/v5 v5.0.0-20230722203903-ec5b858dab61
+	github.com/pocketbase/dbx v1.10.1
+	github.com/pocketbase/pocketbase v0.22.18
 	github.com/rhysd/go-github-selfupdate v1.2.3
 	github.com/shirou/gopsutil/v4 v4.24.7
+	github.com/spf13/cobra v1.8.1
+	golang.org/x/crypto v0.26.0
 )
 
 require (
@@ -51,20 +56,16 @@ require (
 	github.com/inconshreveable/go-update v0.0.0-20160112193335-8152e7eb6ccf // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
-	github.com/labstack/echo/v5 v5.0.0-20230722203903-ec5b858dab61 // indirect
 	github.com/lufia/plan9stats v0.0.0-20240513124658-fba389f38bae // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-sqlite3 v1.14.22 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/ncruces/go-strftime v0.1.9 // indirect
-	github.com/pocketbase/dbx v1.10.1 // indirect
-	github.com/pocketbase/pocketbase v0.22.18 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
-	github.com/spf13/cobra v1.8.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/tcnksm/go-gitconfig v0.1.2 // indirect
 	github.com/tklauser/go-sysconf v0.3.14 // indirect
@@ -75,7 +76,6 @@ require (
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	gocloud.dev v0.37.0 // indirect
-	golang.org/x/crypto v0.26.0 // indirect
 	golang.org/x/image v0.18.0 // indirect
 	golang.org/x/net v0.27.0 // indirect
 	golang.org/x/oauth2 v0.22.0 // indirect
