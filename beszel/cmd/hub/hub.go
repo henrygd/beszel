@@ -4,6 +4,7 @@ import (
 	"beszel"
 	"beszel/internal/hub"
 	"beszel/internal/update"
+	_ "beszel/migrations"
 
 	"github.com/pocketbase/pocketbase"
 	"github.com/spf13/cobra"

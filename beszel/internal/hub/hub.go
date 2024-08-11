@@ -57,6 +57,7 @@ func (h *Hub) Run() {
 	migratecmd.MustRegister(h.app, h.app.RootCmd, migratecmd.Config{
 		// (the isGoRun check is to enable it only during development)
 		Automigrate: isGoRun,
+		Dir:         "../../migrations",
 	})
 
 	// set auth settings

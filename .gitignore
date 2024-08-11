@@ -8,3 +8,5 @@ beszel_data
 beszel_data*
 dist
 *.exe
+beszel/cmd/hub/hub
+beszel/cmd/agent/agent
