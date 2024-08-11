@@ -1,0 +1,12 @@
+services:
+  beszel-agent:
+    image: 'henrygd/beszel-agent'
+    container_name: 'beszel-agent'
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      PORT: 45876
+      KEY: 'ssh-ed25519 YOUR_PUBLIC_KEY'
+      # FILESYSTEM: /dev/sda1 # set to the correct filesystem for disk I/O stats
