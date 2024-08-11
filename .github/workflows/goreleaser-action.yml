@@ -21,10 +21,10 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        run: bun install --no-save --cwd ./hub/site
+        run: bun install --no-save --cwd ./beszel/site
 
       - name: Build site
-        run: bun run --cwd ./hub/site build
+        run: bun run --cwd ./beszel/site build
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -34,17 +34,7 @@ jobs:
       - name: GoReleaser beszel
         uses: goreleaser/goreleaser-action@v6
         with:
-          workdir: ./hub
-          distribution: goreleaser
-          version: latest
-          args: release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
-
-      - name: GoReleaser beszel-agent
-        uses: goreleaser/goreleaser-action@v6
-        with:
-          workdir: ./agent
+          workdir: ./beszel
           distribution: goreleaser
           version: latest
           args: release --clean

@@ -1,4 +1,4 @@
-# version: 1
+version: 2
 
 project_name: beszel
 
@@ -7,7 +7,10 @@ before:
     - go mod tidy
 
 builds:
-  - env:
+  - id: beszel
+    binary: beszel
+    main: cmd/hub/hub.go
+    env:
       - CGO_ENABLED=0
     goos:
       - linux
@@ -16,9 +19,11 @@ builds:
       - amd64
       - arm64
       - arm
-    main: cmd/hub/hub.go
 
-  - env:
+  - id: beszel-agent
+    binary: beszel-agent
+    main: cmd/agent/agent.go
+    env:
       - CGO_ENABLED=0
     goos:
       - linux
@@ -32,12 +37,22 @@ builds:
     ignore:
       - goos: freebsd
         goarch: arm
-    main: cmd/agent/agent.go
 
 archives:
-  - format: tar.gz
+  - id: beszel
+    format: tar.gz
+    builds:
+      - beszel-agent
     name_template: >-
-      {{ .ProjectName }}_
+      {{ .Binary }}_
+      {{- .Os }}_
+      {{- .Arch }}
+  - id: beszel-agent
+    format: tar.gz
+    builds:
+      - beszel
+    name_template: >-
+      {{ .Binary }}_
       {{- .Os }}_
       {{- .Arch }}
     # use zip for windows archives
