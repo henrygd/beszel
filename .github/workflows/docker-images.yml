@@ -12,12 +12,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - image: henrygd/beszel
-            context: ./hub
-            dockerfile: ./hub/Dockerfile
-          - image: henrygd/beszel-agent
-            context: ./agent
-            dockerfile: ./agent/Dockerfile
+          - image: henrygd/beszel-test
+            context: ./beszel
+            dockerfile: ./dockerfile_Hub
+          - image: henrygd/beszel-agent-test
+            context: ./beszel
+            dockerfile: ./dockerfile_Agent
     permissions:
       contents: read
       packages: write
@@ -30,10 +30,10 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        run: bun install --no-save --cwd ./hub/site
+        run: bun install --no-save --cwd ./beszel/site
 
       - name: Build site
-        run: bun run --cwd ./hub/site build
+        run: bun run --cwd ./beszel/site build
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3

@@ -4,10 +4,12 @@ WORKDIR /app
 
 # Download Go modules
 COPY go.mod go.sum ./
-RUN go mod download
+# RUN go mod download
 
 # Copy source files
 COPY *.go ./
+COPY cmd ./cmd
+COPY internal ./internal
 COPY migrations ./migrations
 COPY site/dist ./site/dist
 COPY site/*.go ./site
@@ -20,7 +22,7 @@ RUN update-ca-certificates
 
 # Build
 ARG TARGETOS TARGETARCH
-RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-w -s" -o /beszel .
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-w -s" -o /beszel ./cmd/hub
 
 # ? -------------------------
 FROM scratch
