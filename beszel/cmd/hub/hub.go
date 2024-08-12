@@ -25,8 +25,5 @@ func main() {
 		Run:   func(_ *cobra.Command, _ []string) { update.UpdateBeszel() },
 	})
 
-	hubApp := hub.NewHub(app)
-
-	hubApp.Run()
-
+	hub.NewHub(app).Run()
 }

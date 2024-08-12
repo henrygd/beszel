@@ -46,6 +46,7 @@ export default function MemChart({
 						<YAxis
 							// use "ticks" instead of domain / tickcount if need more control
 							domain={[0, totalMem]}
+							tickCount={9}
 							className="tracking-tighter"
 							width={yAxisWidth}
 							tickLine={false}

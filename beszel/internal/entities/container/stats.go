@@ -2,6 +2,7 @@ package container
 
 import "time"
 
+// Docker container resources info from /containers/id/stats
 type Container struct {
 	Id      string
 	IdShort string
@@ -24,6 +25,7 @@ type Container struct {
 	// Mounts          []MountPoint
 }
 
+// Stats to return to the hub
 type ContainerStats struct {
 	Name        string  `json:"n"`
 	Cpu         float64 `json:"c"`
@@ -32,6 +34,7 @@ type ContainerStats struct {
 	NetworkRecv float64 `json:"nr"`
 }
 
+// Keeps track of container stats from previous run
 type PrevContainerStats struct {
 	Cpu [2]uint64
 	Net struct {

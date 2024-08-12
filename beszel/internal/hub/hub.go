@@ -46,9 +46,8 @@ func NewHub(app *pocketbase.PocketBase) *Hub {
 }
 
 func (h *Hub) Run() {
-
-	rm := records.NewRecordManager(h.app)
-	am := alerts.NewAlertManager(h.app)
+	var rm *records.RecordManager
+	var am *alerts.AlertManager
 
 	// loosely check if it was executed using "go run"
 	isGoRun := strings.HasPrefix(os.Args[0], os.TempDir())
@@ -58,6 +57,13 @@ func (h *Hub) Run() {
 		// (the isGoRun check is to enable it only during development)
 		Automigrate: isGoRun,
 		Dir:         "../../migrations",
+	})
+
+	// set up record manager and alert manager
+	h.app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+		rm = records.NewRecordManager(h.app)
+		am = alerts.NewAlertManager(h.app)
+		return nil
 	})
 
 	// set auth settings

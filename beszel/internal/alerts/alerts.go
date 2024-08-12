@@ -1,7 +1,6 @@
 package alerts
 
 import (
-	"beszel/internal/entities/email"
 	"beszel/internal/entities/system"
 	"fmt"
 	"net/mail"
@@ -72,12 +71,12 @@ func (am *AlertManager) handleSlidingValueAlert(newRecord *models.Record, alertR
 	if !triggered && curValue > threshold {
 		alertRecord.Set("triggered", true)
 		systemName := newRecord.GetString("name")
-		subject = fmt.Sprintf("%s usage threshold exceeded on %s", name, systemName)
+		subject = fmt.Sprintf("%s usage above threshold on %s", name, systemName)
 		body = fmt.Sprintf("%s usage on %s is %.1f%%.\n\n%s\n\n- Beszel", name, systemName, curValue, am.app.Settings().Meta.AppUrl+"/system/"+systemName)
 	} else if triggered && curValue <= threshold {
 		alertRecord.Set("triggered", false)
 		systemName := newRecord.GetString("name")
-		subject = fmt.Sprintf("%s usage returned below threshold on %s", name, systemName)
+		subject = fmt.Sprintf("%s usage below threshold on %s", name, systemName)
 		body = fmt.Sprintf("%s usage on %s is below threshold at %.1f%%.\n\n%s\n\n- Beszel", name, systemName, curValue, am.app.Settings().Meta.AppUrl+"/system/"+systemName)
 	} else {
 		// fmt.Println(name, "not triggered")
@@ -93,11 +92,11 @@ func (am *AlertManager) handleSlidingValueAlert(newRecord *models.Record, alertR
 		return
 	}
 	if user := alertRecord.ExpandedOne("user"); user != nil {
-		am.sendAlert(email.NewEmailData(
-			user.GetString("email"),
-			subject,
-			body,
-		))
+		am.sendAlert(&mailer.Message{
+			To:      []mail.Address{{Address: user.GetString("email")}},
+			Subject: subject,
+			Text:    body,
+		})
 	}
 }
 
@@ -130,24 +129,20 @@ func (am *AlertManager) handleStatusAlerts(newStatus string, oldRecord *models.R
 	}
 	// send alert
 	systemName := oldRecord.GetString("name")
-	am.sendAlert(email.NewEmailData(
-		user.GetString("email"),
-		fmt.Sprintf("Connection to %s is %s %v", systemName, alertStatus, emoji),
-		fmt.Sprintf("Connection to %s is %s\n\n- Beszel", systemName, alertStatus),
-	))
+	am.sendAlert(&mailer.Message{
+		To:      []mail.Address{{Address: user.GetString("email")}},
+		Subject: fmt.Sprintf("Connection to %s is %s %v", systemName, alertStatus, emoji),
+		Text:    fmt.Sprintf("Connection to %s is %s\n\n- Beszel", systemName, alertStatus),
+	})
+
 	return nil
 }
 
-func (am *AlertManager) sendAlert(data *email.EmailData) {
-	// fmt.Println("sending alert", "to", data.to, "subj", data.subj, "body", data.body)
-	message := &mailer.Message{
-		From: mail.Address{
-			Address: am.app.Settings().Meta.SenderAddress,
-			Name:    am.app.Settings().Meta.SenderName,
-		},
-		To:      []mail.Address{{Address: data.To()}},
-		Subject: data.Subject(),
-		Text:    data.Body(),
+func (am *AlertManager) sendAlert(message *mailer.Message) {
+	// fmt.Println("sending alert", "to", message.To, "subj", message.Subject, "body", message.Text)
+	message.From = mail.Address{
+		Address: am.app.Settings().Meta.SenderAddress,
+		Name:    am.app.Settings().Meta.SenderName,
 	}
 	if err := am.mailClient.Send(message); err != nil {
 		am.app.Logger().Error("Failed to send alert: ", "err", err.Error())
