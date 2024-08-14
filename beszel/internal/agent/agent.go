@@ -35,6 +35,7 @@ type Agent struct {
 	containerStatsMutex *sync.Mutex
 	diskIoStats         system.DiskIoStats
 	netIoStats          system.NetIoStats
+	dockerClient        *http.Client
 }
 
 func NewAgent(pubKey []byte, port string) *Agent {
@@ -45,6 +46,7 @@ func NewAgent(pubKey []byte, port string) *Agent {
 		containerStatsMutex: &sync.Mutex{},
 		diskIoStats:         system.DiskIoStats{},
 		netIoStats:          system.NetIoStats{},
+		dockerClient:        newDockerClient(),
 	}
 }
 
@@ -56,11 +58,8 @@ func (a *Agent) releaseSemaphore() {
 	<-a.sem
 }
 
-// client for docker engine api
-var dockerClient = newDockerClient()
-
-func (a *Agent) getSystemStats() (*system.SystemInfo, *system.SystemStats) {
-	systemStats := &system.SystemStats{}
+func (a *Agent) getSystemStats() (*system.Info, *system.Stats) {
+	systemStats := &system.Stats{}
 
 	// cpu percent
 	cpuPct, err := cpu.Percent(0, false)
@@ -127,7 +126,7 @@ func (a *Agent) getSystemStats() (*system.SystemInfo, *system.SystemStats) {
 		a.netIoStats.Time = time.Now()
 	}
 
-	systemInfo := &system.SystemInfo{
+	systemInfo := &system.Info{
 		Cpu:     systemStats.Cpu,
 		MemPct:  systemStats.MemPct,
 		DiskPct: systemStats.DiskPct,
@@ -153,21 +152,21 @@ func (a *Agent) getSystemStats() (*system.SystemInfo, *system.SystemStats) {
 
 }
 
-func (a *Agent) getDockerStats() ([]*container.ContainerStats, error) {
-	resp, err := dockerClient.Get("http://localhost/containers/json")
+func (a *Agent) getDockerStats() ([]*container.Stats, error) {
+	resp, err := a.dockerClient.Get("http://localhost/containers/json")
 	if err != nil {
-		closeIdleConnections(err)
-		return []*container.ContainerStats{}, err
+		a.closeIdleConnections(err)
+		return []*container.Stats{}, err
 	}
 	defer resp.Body.Close()
 
-	var containers []*container.Container
+	var containers []*container.ApiInfo
 	if err := json.NewDecoder(resp.Body).Decode(&containers); err != nil {
 		log.Printf("Error decoding containers: %+v\n", err)
-		return []*container.ContainerStats{}, err
+		return []*container.Stats{}, err
 	}
 
-	containerStats := make([]*container.ContainerStats, 0, len(containers))
+	containerStats := make([]*container.Stats, 0, len(containers))
 
 	// store valid ids to clean up old container ids from map
 	validIds := make(map[string]struct{}, len(containers))
@@ -188,12 +187,10 @@ func (a *Agent) getDockerStats() ([]*container.ContainerStats, error) {
 			defer wg.Done()
 			cstats, err := a.getContainerStats(ctr)
 			if err != nil {
-				// Check if the error is a network timeout
-				if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
-					// Close idle connections to prevent reuse of stale connections
-					closeIdleConnections(err)
-				} else {
-					// otherwise delete container from map
+				// close idle connections if error is a network timeout
+				isTimeout := a.closeIdleConnections(err)
+				// delete container from map if not a timeout
+				if !isTimeout {
 					a.deleteContainerStatsSync(ctr.IdShort)
 				}
 				// retry once
@@ -219,19 +216,19 @@ func (a *Agent) getDockerStats() ([]*container.ContainerStats, error) {
 	return containerStats, nil
 }
 
-func (a *Agent) getContainerStats(ctr *container.Container) (*container.ContainerStats, error) {
+func (a *Agent) getContainerStats(ctr *container.ApiInfo) (*container.Stats, error) {
 	// use semaphore to limit concurrency
 	a.acquireSemaphore()
 	defer a.releaseSemaphore()
-	resp, err := dockerClient.Get("http://localhost/containers/" + ctr.IdShort + "/stats?stream=0&one-shot=1")
+	resp, err := a.dockerClient.Get("http://localhost/containers/" + ctr.IdShort + "/stats?stream=0&one-shot=1")
 	if err != nil {
-		return &container.ContainerStats{}, err
+		return &container.Stats{}, err
 	}
 	defer resp.Body.Close()
 
-	var statsJson system.CStats
+	var statsJson container.ApiStats
 	if err := json.NewDecoder(resp.Body).Decode(&statsJson); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	name := ctr.Names[0][1:]
@@ -258,7 +255,7 @@ func (a *Agent) getContainerStats(ctr *container.Container) (*container.Containe
 	systemDelta := statsJson.CPUStats.SystemUsage - stats.Cpu[1]
 	cpuPct := float64(cpuDelta) / float64(systemDelta) * 100
 	if cpuPct > 100 {
-		return &container.ContainerStats{}, fmt.Errorf("%s cpu pct greater than 100: %+v", name, cpuPct)
+		return &container.Stats{}, fmt.Errorf("%s cpu pct greater than 100: %+v", name, cpuPct)
 	}
 	stats.Cpu = [2]uint64{statsJson.CPUStats.CPUUsage.TotalUsage, statsJson.CPUStats.SystemUsage}
 
@@ -280,7 +277,7 @@ func (a *Agent) getContainerStats(ctr *container.Container) (*container.Containe
 	stats.Net.Recv = total_recv
 	stats.Net.Time = time.Now()
 
-	cStats := &container.ContainerStats{
+	cStats := &container.Stats{
 		Name:        name,
 		Cpu:         twoDecimals(cpuPct),
 		Mem:         bytesToMegabytes(float64(usedMemory)),
@@ -297,19 +294,18 @@ func (a *Agent) deleteContainerStatsSync(id string) {
 	delete(containerStatsMap, id)
 }
 
-func (a *Agent) gatherStats() *system.SystemData {
+func (a *Agent) gatherStats() *system.CombinedData {
 	systemInfo, systemStats := a.getSystemStats()
-	stats := &system.SystemData{
-		Stats:      systemStats,
-		Info:       systemInfo,
-		Containers: []*container.ContainerStats{},
+	systemData := &system.CombinedData{
+		Stats: systemStats,
+		Info:  systemInfo,
+		// Containers: []*container.Stats{},
 	}
-	containerStats, err := a.getDockerStats()
-	if err == nil {
-		stats.Containers = containerStats
+	if containerStats, err := a.getDockerStats(); err == nil {
+		systemData.Containers = containerStats
 	}
 	// fmt.Printf("%+v\n", stats)
-	return stats
+	return systemData
 }
 
 func (a *Agent) startServer(addr string, pubKey []byte) {
@@ -324,8 +320,7 @@ func (a *Agent) startServer(addr string, pubKey []byte) {
 	log.Printf("Starting SSH server on %s", addr)
 	if err := sshServer.ListenAndServe(addr, nil, sshServer.NoPty(),
 		sshServer.PublicKeyAuth(func(ctx sshServer.Context, key sshServer.PublicKey) bool {
-			data := []byte(pubKey)
-			allowed, _, _, _, _ := sshServer.ParseAuthorizedKey(data)
+			allowed, _, _, _, _ := sshServer.ParseAuthorizedKey(pubKey)
 			return sshServer.KeysEqual(key, allowed)
 		}),
 	); err != nil {
@@ -334,7 +329,6 @@ func (a *Agent) startServer(addr string, pubKey []byte) {
 }
 
 func (a *Agent) Run() {
-
 	if filesystem, exists := os.LookupEnv("FILESYSTEM"); exists {
 		a.diskIoStats.Filesystem = filesystem
 	} else {
@@ -452,7 +446,12 @@ func newDockerClient() *http.Client {
 	}
 }
 
-func closeIdleConnections(err error) {
-	log.Printf("Closing idle connections. Error: %+v\n", err)
-	dockerClient.Transport.(*http.Transport).CloseIdleConnections()
+// closes idle connections on timeouts to prevent reuse of stale connections
+func (a *Agent) closeIdleConnections(err error) (isTimeout bool) {
+	if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+		log.Printf("Closing idle connections. Error: %+v\n", err)
+		a.dockerClient.Transport.(*http.Transport).CloseIdleConnections()
+		return true
+	}
+	return false
 }

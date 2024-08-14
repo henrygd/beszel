@@ -97,7 +97,7 @@ func (h *Hub) Run() {
 				Scheme: "http",
 				Host:   "localhost:5173",
 			})
-			e.Router.GET("/static/*", apis.StaticDirectoryHandler(os.DirFS("./site/public/static"), false))
+			e.Router.GET("/static/*", apis.StaticDirectoryHandler(os.DirFS("../../site/public/static"), false))
 			e.Router.Any("/*", echo.WrapHandler(proxy))
 			// e.Router.Any("/", echo.WrapHandler(proxy))
 		default:
@@ -162,7 +162,7 @@ func (h *Hub) Run() {
 	// system creation defaults
 	h.app.OnModelBeforeCreate("systems").Add(func(e *core.ModelEvent) error {
 		record := e.Model.(*models.Record)
-		record.Set("info", system.SystemInfo{})
+		record.Set("info", system.Info{})
 		record.Set("status", "pending")
 		return nil
 	})
@@ -367,10 +367,10 @@ func (h *Hub) createSSHClientConfig() error {
 	return nil
 }
 
-func requestJson(client *ssh.Client) (system.SystemData, error) {
+func requestJson(client *ssh.Client) (system.CombinedData, error) {
 	session, err := client.NewSession()
 	if err != nil {
-		return system.SystemData{}, errors.New("retry")
+		return system.CombinedData{}, errors.New("retry")
 	}
 	defer session.Close()
 
@@ -379,19 +379,19 @@ func requestJson(client *ssh.Client) (system.SystemData, error) {
 	session.Stdout = &outputBuffer
 
 	if err := session.Shell(); err != nil {
-		return system.SystemData{}, err
+		return system.CombinedData{}, err
 	}
 
 	err = session.Wait()
 	if err != nil {
-		return system.SystemData{}, err
+		return system.CombinedData{}, err
 	}
 
 	// Unmarshal the output into our struct
-	var systemData system.SystemData
+	var systemData system.CombinedData
 	err = json.Unmarshal(outputBuffer.Bytes(), &systemData)
 	if err != nil {
-		return system.SystemData{}, err
+		return system.CombinedData{}, err
 	}
 
 	return systemData, nil

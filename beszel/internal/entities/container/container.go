@@ -1,36 +1,50 @@
-package system
+package container
 
 import "time"
 
-type SystemStats struct {
-	Cpu          float64 `json:"cpu"`
-	Mem          float64 `json:"m"`
-	MemUsed      float64 `json:"mu"`
-	MemPct       float64 `json:"mp"`
-	MemBuffCache float64 `json:"mb"`
-	Swap         float64 `json:"s"`
-	SwapUsed     float64 `json:"su"`
-	Disk         float64 `json:"d"`
-	DiskUsed     float64 `json:"du"`
-	DiskPct      float64 `json:"dp"`
-	DiskRead     float64 `json:"dr"`
-	DiskWrite    float64 `json:"dw"`
-	NetworkSent  float64 `json:"ns"`
-	NetworkRecv  float64 `json:"nr"`
+// Docker container info from /containers/json
+type ApiInfo struct {
+	Id      string
+	IdShort string
+	Names   []string
+	Status  string
+	// Image   string
+	// ImageID string
+	// Command string
+	// Created int64
+	// Ports      []Port
+	// SizeRw     int64 `json:",omitempty"`
+	// SizeRootFs int64 `json:",omitempty"`
+	// Labels     map[string]string
+	// State      string
+	// HostConfig struct {
+	// 	NetworkMode string            `json:",omitempty"`
+	// 	Annotations map[string]string `json:",omitempty"`
+	// }
+	// NetworkSettings *SummaryNetworkSettings
+	// Mounts          []MountPoint
 }
 
-type DiskIoStats struct {
-	Read       uint64
-	Write      uint64
-	Time       time.Time
-	Filesystem string
-}
+// Docker container resources from /containers/{id}/stats
+type ApiStats struct {
+	// Common stats
+	// Read    time.Time `json:"read"`
+	// PreRead time.Time `json:"preread"`
 
-type NetIoStats struct {
-	BytesRecv uint64
-	BytesSent uint64
-	Time      time.Time
-	Name      string
+	// Linux specific stats, not populated on Windows.
+	// PidsStats  PidsStats  `json:"pids_stats,omitempty"`
+	// BlkioStats BlkioStats `json:"blkio_stats,omitempty"`
+
+	// Windows specific stats, not populated on Linux.
+	// NumProcs uint32 `json:"num_procs"`
+	// StorageStats StorageStats `json:"storage_stats,omitempty"`
+	// Networks request version >=1.21
+	Networks map[string]NetworkStats
+
+	// Shared stats
+	CPUStats CPUStats `json:"cpu_stats,omitempty"`
+	// PreCPUStats CPUStats    `json:"precpu_stats,omitempty"` // "Pre"="Previous"
+	MemoryStats MemoryStats `json:"memory_stats,omitempty"`
 }
 
 type CPUStats struct {
@@ -70,27 +84,6 @@ type CPUUsage struct {
 	// UsageInUsermode uint64 `json:"usage_in_usermode"`
 }
 
-type CStats struct {
-	// Common stats
-	// Read    time.Time `json:"read"`
-	// PreRead time.Time `json:"preread"`
-
-	// Linux specific stats, not populated on Windows.
-	// PidsStats  PidsStats  `json:"pids_stats,omitempty"`
-	// BlkioStats BlkioStats `json:"blkio_stats,omitempty"`
-
-	// Windows specific stats, not populated on Linux.
-	// NumProcs uint32 `json:"num_procs"`
-	// StorageStats StorageStats `json:"storage_stats,omitempty"`
-	// Networks request version >=1.21
-	Networks map[string]NetworkStats
-
-	// Shared stats
-	CPUStats CPUStats `json:"cpu_stats,omitempty"`
-	// PreCPUStats CPUStats    `json:"precpu_stats,omitempty"` // "Pre"="Previous"
-	MemoryStats MemoryStats `json:"memory_stats,omitempty"`
-}
-
 type MemoryStats struct {
 
 	// current res_counter usage for memory
@@ -118,4 +111,23 @@ type NetworkStats struct {
 	RxBytes uint64 `json:"rx_bytes"`
 	// Bytes sent. Windows and Linux.
 	TxBytes uint64 `json:"tx_bytes"`
+}
+
+// Container stats to return to the hub
+type Stats struct {
+	Name        string  `json:"n"`
+	Cpu         float64 `json:"c"`
+	Mem         float64 `json:"m"`
+	NetworkSent float64 `json:"ns"`
+	NetworkRecv float64 `json:"nr"`
+}
+
+// Keeps track of container stats from previous run
+type PrevContainerStats struct {
+	Cpu [2]uint64
+	Net struct {
+		Sent uint64
+		Recv uint64
+		Time time.Time
+	}
 }

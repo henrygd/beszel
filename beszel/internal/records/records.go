@@ -1,3 +1,4 @@
+// Package records handles creating longer records and deleting old records.
 package records
 
 import (
@@ -95,12 +96,12 @@ func (rm *RecordManager) CreateLongerRecords(collectionName string, shorterRecor
 }
 
 // calculate the average stats of a list of system_stats records
-func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.SystemStats {
+func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.Stats {
 	count := float64(len(records))
-	sum := reflect.New(reflect.TypeOf(system.SystemStats{})).Elem()
+	sum := reflect.New(reflect.TypeOf(system.Stats{})).Elem()
 
 	for _, record := range records {
-		var stats system.SystemStats
+		var stats system.Stats
 		record.UnmarshalJSONField("stats", &stats)
 		statValue := reflect.ValueOf(stats)
 		for i := 0; i < statValue.NumField(); i++ {
@@ -109,24 +110,24 @@ func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.Sys
 		}
 	}
 
-	average := reflect.New(reflect.TypeOf(system.SystemStats{})).Elem()
+	average := reflect.New(reflect.TypeOf(system.Stats{})).Elem()
 	for i := 0; i < sum.NumField(); i++ {
 		average.Field(i).SetFloat(twoDecimals(sum.Field(i).Float() / count))
 	}
 
-	return average.Interface().(system.SystemStats)
+	return average.Interface().(system.Stats)
 }
 
 // calculate the average stats of a list of container_stats records
-func (rm *RecordManager) AverageContainerStats(records []*models.Record) (stats []container.ContainerStats) {
-	sums := make(map[string]*container.ContainerStats)
+func (rm *RecordManager) AverageContainerStats(records []*models.Record) (stats []container.Stats) {
+	sums := make(map[string]*container.Stats)
 	count := float64(len(records))
 	for _, record := range records {
-		var stats []container.ContainerStats
+		var stats []container.Stats
 		record.UnmarshalJSONField("stats", &stats)
 		for _, stat := range stats {
 			if _, ok := sums[stat.Name]; !ok {
-				sums[stat.Name] = &container.ContainerStats{Name: stat.Name, Cpu: 0, Mem: 0}
+				sums[stat.Name] = &container.Stats{Name: stat.Name, Cpu: 0, Mem: 0}
 			}
 			sums[stat.Name].Cpu += stat.Cpu
 			sums[stat.Name].Mem += stat.Mem
@@ -135,7 +136,7 @@ func (rm *RecordManager) AverageContainerStats(records []*models.Record) (stats 
 		}
 	}
 	for _, value := range sums {
-		stats = append(stats, container.ContainerStats{
+		stats = append(stats, container.Stats{
 			Name:        value.Name,
 			Cpu:         twoDecimals(value.Cpu / count),
 			Mem:         twoDecimals(value.Mem / count),

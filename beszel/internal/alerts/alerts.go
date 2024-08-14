@@ -1,3 +1,4 @@
+// Package alerts handles alert management and delivery.
 package alerts
 
 import (
@@ -32,7 +33,7 @@ func (am *AlertManager) HandleSystemAlerts(newStatus string, newRecord *models.R
 		return
 	}
 	// log.Println("found alerts", len(alertRecords))
-	var systemInfo *system.SystemInfo
+	var systemInfo *system.Info
 	for _, alertRecord := range alertRecords {
 		name := alertRecord.GetString("name")
 		switch name {
@@ -56,8 +57,8 @@ func (am *AlertManager) HandleSystemAlerts(newStatus string, newRecord *models.R
 	}
 }
 
-func getSystemInfo(record *models.Record) *system.SystemInfo {
-	var SystemInfo system.SystemInfo
+func getSystemInfo(record *models.Record) *system.Info {
+	var SystemInfo system.Info
 	record.UnmarshalJSONField("info", &SystemInfo)
 	return &SystemInfo
 }

@@ -29,20 +29,14 @@ func main() {
 		log.Fatal("KEY environment variable is not set")
 	}
 
-	var port string
-
+	port := ":45876"
 	if p, exists := os.LookupEnv("PORT"); exists {
 		// allow passing an address in the form of "127.0.0.1:45876"
-		if !strings.Contains(port, ":") {
-			port = ":" + port
+		if !strings.Contains(p, ":") {
+			p = ":" + p
 		}
 		port = p
-	} else {
-		port = ":45876"
 	}
 
-	a := agent.NewAgent(pubKey, port)
-
-	a.Run()
-
+	agent.NewAgent(pubKey, port).Run()
 }
