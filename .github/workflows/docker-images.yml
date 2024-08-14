@@ -12,12 +12,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - image: henrygd/beszel-test
+          - image: henrygd/beszel
             context: ./beszel
-            dockerfile: ./dockerfile_Hub
-          - image: henrygd/beszel-agent-test
+            dockerfile: ./beszel/dockerfile_Hub
+          - image: henrygd/beszel-agent
             context: ./beszel
-            dockerfile: ./dockerfile_Agent
+            dockerfile: ./beszel/dockerfile_Agent
     permissions:
       contents: read
       packages: write
@@ -49,6 +49,7 @@ jobs:
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
             type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
 
       # https://github.com/docker/login-action
