@@ -83,7 +83,7 @@ export default function BandwidthChart({
 						name="Sent"
 						type="monotoneX"
 						fill="hsl(var(--chart-5))"
-						fillOpacity={0.4}
+						fillOpacity={0.2}
 						stroke="hsl(var(--chart-5))"
 						// animationDuration={1200}
 						isAnimationActive={false}
@@ -93,7 +93,7 @@ export default function BandwidthChart({
 						name="Received"
 						type="monotoneX"
 						fill="hsl(var(--chart-2))"
-						fillOpacity={0.4}
+						fillOpacity={0.2}
 						stroke="hsl(var(--chart-2))"
 						// animationDuration={1200}
 						isAnimationActive={false}

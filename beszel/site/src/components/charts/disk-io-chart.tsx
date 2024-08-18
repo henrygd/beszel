@@ -87,7 +87,7 @@ export default function DiskIoChart({
 						name="Write"
 						type="monotoneX"
 						fill="hsl(var(--chart-3))"
-						fillOpacity={0.4}
+						fillOpacity={0.3}
 						stroke="hsl(var(--chart-3))"
 						// animationDuration={1200}
 						isAnimationActive={false}
@@ -97,7 +97,7 @@ export default function DiskIoChart({
 						name="Read"
 						type="monotoneX"
 						fill="hsl(var(--chart-1))"
-						fillOpacity={0.4}
+						fillOpacity={0.3}
 						stroke="hsl(var(--chart-1))"
 						// animationDuration={1200}
 						isAnimationActive={false}
