@@ -13,11 +13,11 @@ jobs:
       matrix:
         include:
           - image: henrygd/beszel
-            context: ./hub
-            dockerfile: ./hub/Dockerfile
+            context: ./beszel
+            dockerfile: ./beszel/dockerfile_Hub
           - image: henrygd/beszel-agent
-            context: ./agent
-            dockerfile: ./agent/Dockerfile
+            context: ./beszel
+            dockerfile: ./beszel/dockerfile_Agent
     permissions:
       contents: read
       packages: write
@@ -30,10 +30,10 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        run: bun install --no-save --cwd ./hub/site
+        run: bun install --no-save --cwd ./beszel/site
 
       - name: Build site
-        run: bun run --cwd ./hub/site build
+        run: bun run --cwd ./beszel/site build
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -49,6 +49,7 @@ jobs:
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
             type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
 
       # https://github.com/docker/login-action

@@ -3,8 +3,11 @@ pb_data
 data
 temp
 .vscode
-beszel
 beszel-agent
 beszel_data
 beszel_data*
 dist
+*.exe
+beszel/cmd/hub/hub
+beszel/cmd/agent/agent
+node_modules

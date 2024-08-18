@@ -1,0 +1,69 @@
+version: 2
+
+project_name: beszel
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: beszel
+    binary: beszel
+    main: cmd/hub/hub.go
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+      - arm
+
+  - id: beszel-agent
+    binary: beszel-agent
+    main: cmd/agent/agent.go
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - freebsd
+    goarch:
+      - amd64
+      - arm64
+      - arm
+      - mips64
+    ignore:
+      - goos: freebsd
+        goarch: arm
+
+archives:
+  - id: beszel
+    format: tar.gz
+    builds:
+      - beszel-agent
+    name_template: >-
+      {{ .Binary }}_
+      {{- .Os }}_
+      {{- .Arch }}
+  - id: beszel-agent
+    format: tar.gz
+    builds:
+      - beszel
+    name_template: >-
+      {{ .Binary }}_
+      {{- .Os }}_
+      {{- .Arch }}
+    # use zip for windows archives
+    # format_overrides:
+    #   - goos: windows
+    #     format: zip
+
+changelog:
+  disable: true
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'

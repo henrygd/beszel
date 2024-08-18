@@ -2,8 +2,8 @@
 
 A lightweight server resource monitoring hub with historical data, docker stats, and alerts.
 
-[![Docker Image Size (tag)](https://img.shields.io/docker/image-size/henrygd/beszel-agent/0.0.1-alpha.9?logo=docker&label=agent%20image%20size)](https://hub.docker.com/r/henrygd/beszel-agent)
-[![Docker Image Size (tag)](https://img.shields.io/docker/image-size/henrygd/beszel/0.0.1-alpha.9?logo=docker&label=hub%20image%20size)](https://hub.docker.com/r/henrygd/beszel)
+[![Docker Image Size (tag)](https://img.shields.io/docker/image-size/henrygd/beszel-agent/0.1.0?logo=docker&label=agent%20image%20size)](https://hub.docker.com/r/henrygd/beszel-agent)
+[![Docker Image Size (tag)](https://img.shields.io/docker/image-size/henrygd/beszel/0.1.0?logo=docker&label=hub%20image%20size)](https://hub.docker.com/r/henrygd/beszel)
 
 ![Screenshot of the hub](https://henrygd-assets.b-cdn.net/beszel/screenshot.png)
 
@@ -49,9 +49,9 @@ You may install the hub and agent as single binaries, or by using Docker.
 
 ### Docker
 
-**Hub**: See the example [docker-compose.yml](/hub/docker-compose.yml) file.
+**Hub**: See the example [docker-compose.yml](/supplemental/docker/hub/docker-compose.yml) file.
 
-**Agent**: The hub provides compose content for the agent, but you can also reference the example [docker-compose.yml](/agent/docker-compose.yml) file.
+**Agent**: The hub provides compose content for the agent, but you can also reference the example [docker-compose.yml](/supplemental/docker/agent/docker-compose.yml) file.
 
 The agent uses the host network mode so it can access network interface stats. This automatically exposes the port, so change the port using an environment variable if you need to.
 
@@ -148,7 +148,7 @@ Visit the "Auth providers" page to enable your provider. The redirect / callback
 
 ## REST API
 
-Because Beszel is built on PocketBase, you can use the PocketBase [Web APIs](https://pocketbase.io/docs/api-records/) and [Client-side SDKs](https://pocketbase.io/docs/client-side-sdks/) to read or update data from outside Beszel itself.
+Because Beszel is built on PocketBase, you can use the PocketBase [web APIs](https://pocketbase.io/docs/api-records/) and [client-side SDKs](https://pocketbase.io/docs/client-side-sdks/) to read or update data from outside Beszel itself.
 
 ## Security
 
@@ -219,13 +219,17 @@ If you pause / unpause the agent for longer than one minute, the data will be in
 
 Both the hub and agent are written in Go, so you can easily build them yourself, or cross-compile for different platforms. Please [install Go](https://go.dev/doc/install) first if you haven't already.
 
-### Agent
+### Prepare dependencies
 
 ```bash
-cd agent
-# prepare / install dependencies
-go mod tidy
-# create a binary in the current directory
+cd beszel && go mod tidy
+```
+
+### Agent
+
+Go to `beszel/cmd/agent` and run the following command to create a binary in the current directory:
+
+```bash
 CGO_ENABLED=0 go build -ldflags "-w -s" .
 ```
 
@@ -234,15 +238,14 @@ CGO_ENABLED=0 go build -ldflags "-w -s" .
 The hub embeds the web UI in the binary, so you must build the website first. I use [Bun](https://bun.sh/), but you may use Node.js if you prefer:
 
 ```bash
-cd hub/site
+cd beszel/site
 bun install
 bun run build
 ```
 
-Then back in the hub directory:
+Then in `beszel/cmd/hub`:
 
 ```bash
-go mod tidy
 CGO_ENABLED=0 go build -ldflags "-w -s" .
 ```
 
@@ -250,10 +253,10 @@ CGO_ENABLED=0 go build -ldflags "-w -s" .
 
 You can cross-compile for different platforms using the `GOOS` and `GOARCH` environment variables.
 
-For example, to build for Linux ARM64:
+For example, to build for FreeBSD ARM64:
 
 ```bash
-GOOS=linux GOARCH=arm64 CGO_ENABLED=0 go build -ldflags "-w -s" .
+GOOS=freebsd GOARCH=arm64 CGO_ENABLED=0 go build -ldflags "-w -s" .
 ```
 
 You can see a list of valid options by running `go tool dist list`.
