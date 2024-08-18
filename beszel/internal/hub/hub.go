@@ -107,20 +107,16 @@ func (h *Hub) Run() {
 		return nil
 	})
 
-	// set up cron jobs / ticker for system updates
+	// set up scheduled jobs / ticker for system updates
 	h.app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		// 15 second ticker for system updates
 		go h.startSystemUpdateTicker()
-		// cron job to delete old records
+		// set up cron jobs
 		scheduler := cron.New()
-		scheduler.MustAdd("delete old records", "8 * * * *", func() {
-			collections := []string{"system_stats", "container_stats"}
-			rm.DeleteOldRecords(collections, "1m", time.Hour)
-			rm.DeleteOldRecords(collections, "10m", 12*time.Hour)
-			rm.DeleteOldRecords(collections, "20m", 24*time.Hour)
-			rm.DeleteOldRecords(collections, "120m", 7*24*time.Hour)
-			rm.DeleteOldRecords(collections, "480m", 30*24*time.Hour)
-		})
+		// delete old records once every hour
+		scheduler.MustAdd("delete old records", "8 * * * *", rm.DeleteOldRecords)
+		// create longer records every 10 minutes
+		scheduler.MustAdd("create longer records", "*/10 * * * *", rm.CreateLongerRecords)
 		scheduler.Start()
 		return nil
 	})
@@ -198,16 +194,6 @@ func (h *Hub) Run() {
 	h.app.OnModelAfterDelete("systems").Add(func(e *core.ModelEvent) error {
 		// if system connection exists, close it
 		h.deleteSystemConnection(e.Model.(*models.Record))
-		return nil
-	})
-
-	h.app.OnModelAfterCreate("system_stats").Add(func(e *core.ModelEvent) error {
-		rm.CreateLongerRecords("system_stats", e.Model.(*models.Record))
-		return nil
-	})
-
-	h.app.OnModelAfterCreate("container_stats").Add(func(e *core.ModelEvent) error {
-		rm.CreateLongerRecords("container_stats", e.Model.(*models.Record))
 		return nil
 	})
 
