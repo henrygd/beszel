@@ -5,10 +5,8 @@ import (
 	"beszel/internal/entities/system"
 	"beszel/internal/records"
 	"beszel/site"
-	"bytes"
 	"crypto/ed25519"
 	"encoding/pem"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -211,7 +209,7 @@ func (h *Hub) startSystemUpdateTicker() {
 
 func (h *Hub) updateSystems() {
 	records, err := h.app.Dao().FindRecordsByFilter(
-		"2hz5ncl8tizk5nx",    // collection
+		"2hz5ncl8tizk5nx",    // systems collection
 		"status != 'paused'", // filter
 		"updated",            // sort
 		-1,                   // limit
@@ -259,9 +257,9 @@ func (h *Hub) updateSystem(record *models.Record) {
 		h.connectionLock.Unlock()
 	}
 	// get system stats from agent
-	systemData, err := requestJson(client)
-	if err != nil {
-		if err.Error() == "retry" {
+	var systemData system.CombinedData
+	if err := requestJsonFromAgent(client, &systemData); err != nil {
+		if err.Error() == "bad client" {
 			// if previous connection was closed, try again
 			h.app.Logger().Error("Existing SSH connection closed. Retrying...", "host", record.GetString("host"), "port", record.GetString("port"))
 			h.deleteSystemConnection(record)
@@ -300,7 +298,7 @@ func (h *Hub) updateSystem(record *models.Record) {
 	}
 }
 
-// set system to status down and close connection
+// set system to specified status and save record
 func (h *Hub) updateSystemStatus(record *models.Record, status string) {
 	if record.GetString("status") != status {
 		record.Set("status", status)
@@ -353,34 +351,32 @@ func (h *Hub) createSSHClientConfig() error {
 	return nil
 }
 
-func requestJson(client *ssh.Client) (system.CombinedData, error) {
+func requestJsonFromAgent(client *ssh.Client, systemData *system.CombinedData) error {
 	session, err := client.NewSession()
 	if err != nil {
-		return system.CombinedData{}, errors.New("retry")
+		return fmt.Errorf("bad client")
 	}
 	defer session.Close()
 
-	// Create a buffer to capture the output
-	var outputBuffer bytes.Buffer
-	session.Stdout = &outputBuffer
+	stdout, err := session.StdoutPipe()
+	if err != nil {
+		return err
+	}
 
 	if err := session.Shell(); err != nil {
-		return system.CombinedData{}, err
+		return err
 	}
 
-	err = session.Wait()
-	if err != nil {
-		return system.CombinedData{}, err
+	if err := json.NewDecoder(stdout).Decode(systemData); err != nil {
+		return err
 	}
 
-	// Unmarshal the output into our struct
-	var systemData system.CombinedData
-	err = json.Unmarshal(outputBuffer.Bytes(), &systemData)
-	if err != nil {
-		return system.CombinedData{}, err
+	// wait for the session to complete
+	if err := session.Wait(); err != nil {
+		return err
 	}
 
-	return systemData, nil
+	return nil
 }
 
 func (h *Hub) getSSHKey() ([]byte, error) {
