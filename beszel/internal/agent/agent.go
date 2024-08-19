@@ -258,6 +258,11 @@ func (a *Agent) getContainerStats(ctr *container.ApiInfo) (*container.Stats, err
 
 	name := ctr.Names[0][1:]
 
+	// check if container has valid data, otherwise may be in restart loop (#103)
+	if len(statsJson.Networks) == 0 {
+		return nil, fmt.Errorf("%s - invalid data", name)
+	}
+
 	// memory (https://docs.docker.com/reference/cli/docker/container/stats/)
 	memCache := statsJson.MemoryStats.Stats["inactive_file"]
 	if memCache == 0 {
