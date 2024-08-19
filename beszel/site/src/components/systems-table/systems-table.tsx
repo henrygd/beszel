@@ -55,6 +55,7 @@ import {
 	PauseCircleIcon,
 	PlayCircleIcon,
 	Trash2Icon,
+	Wifi,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { $systems, pb } from '@/lib/stores'
@@ -134,6 +135,14 @@ export default function SystemsTable() {
 					)
 				},
 				header: ({ column }) => sortableHeader(column, 'System', Server),
+			},
+			{
+				accessorKey: 'info.v',
+				cell: (info) => {
+					return(
+						<div>{info.getValue() as string}</div>)
+					},
+					header: ({ column }) => sortableHeader(column, 'Version', Wifi),
 			},
 			{
 				accessorKey: 'info.cpu',

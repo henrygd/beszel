@@ -45,6 +45,7 @@ type Info struct {
 	Cpu     float64 `json:"cpu"`
 	MemPct  float64 `json:"mp"`
 	DiskPct float64 `json:"dp"`
+	Vers    string  `json:"v"`
 }
 
 // Final data structure to return to the hub

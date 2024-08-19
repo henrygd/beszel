@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"beszel"
 	"beszel/internal/entities/container"
 	"beszel/internal/entities/system"
 	"bytes"
@@ -143,6 +144,7 @@ func (a *Agent) getSystemStats() (*system.Info, *system.Stats) {
 		Cpu:     systemStats.Cpu,
 		MemPct:  systemStats.MemPct,
 		DiskPct: systemStats.DiskPct,
+		Vers:    beszel.Version,
 	}
 
 	// add host info
