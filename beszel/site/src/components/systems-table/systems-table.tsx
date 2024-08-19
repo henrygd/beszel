@@ -291,7 +291,7 @@ export default function SystemsTable() {
 										onClick={(e) => {
 											const target = e.target as HTMLElement
 											if (!target.closest('[data-nolink]') && e.currentTarget.contains(target)) {
-												navigate(`/system/${row.original.name}`)
+												navigate(`/system/${encodeURIComponent(row.original.name)}`)
 											}
 										}}
 									>

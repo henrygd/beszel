@@ -77,7 +77,7 @@ export default function CommandPalette() {
 								<CommandItem
 									key={system.id}
 									onSelect={() => {
-										navigate(`/system/${system.name}`)
+										navigate(`/system/${encodeURIComponent(system.name)}`)
 										setOpen(false)
 									}}
 								>
