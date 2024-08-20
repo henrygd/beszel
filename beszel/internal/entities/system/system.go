@@ -41,11 +41,11 @@ type Info struct {
 	Threads  int    `json:"t"`
 	CpuModel string `json:"m"`
 	// Os       string  `json:"o"`
-	Uptime  uint64  `json:"u"`
-	Cpu     float64 `json:"cpu"`
-	MemPct  float64 `json:"mp"`
-	DiskPct float64 `json:"dp"`
-	Vers    string  `json:"v"`
+	Uptime       uint64  `json:"u"`
+	Cpu          float64 `json:"cpu"`
+	MemPct       float64 `json:"mp"`
+	DiskPct      float64 `json:"dp"`
+	AgentVersion string  `json:"v"`
 }
 
 // Final data structure to return to the hub

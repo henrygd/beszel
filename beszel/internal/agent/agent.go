@@ -141,10 +141,10 @@ func (a *Agent) getSystemStats() (*system.Info, *system.Stats) {
 	}
 
 	systemInfo := &system.Info{
-		Cpu:     systemStats.Cpu,
-		MemPct:  systemStats.MemPct,
-		DiskPct: systemStats.DiskPct,
-		Vers:    beszel.Version,
+		Cpu:          systemStats.Cpu,
+		MemPct:       systemStats.MemPct,
+		DiskPct:      systemStats.DiskPct,
+		AgentVersion: beszel.Version,
 	}
 
 	// add host info
@@ -164,7 +164,6 @@ func (a *Agent) getSystemStats() (*system.Info, *system.Stats) {
 	}
 
 	return systemInfo, systemStats
-
 }
 
 func (a *Agent) getDockerStats() ([]*container.Stats, error) {
