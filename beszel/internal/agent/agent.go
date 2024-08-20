@@ -192,7 +192,7 @@ func (a *Agent) getDockerStats() ([]*container.Stats, error) {
 		validIds[ctr.IdShort] = struct{}{}
 		// check if container is less than 1 minute old (possible restart)
 		// note: can't use Created field because it's not updated on restart
-		if strings.HasSuffix(ctr.Status, "seconds") {
+		if strings.Contains(ctr.Status, "second") {
 			// if so, remove old container data
 			a.deleteContainerStatsSync(ctr.IdShort)
 		}
