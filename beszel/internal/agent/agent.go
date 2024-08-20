@@ -260,7 +260,7 @@ func (a *Agent) getContainerStats(ctr *container.ApiInfo) (*container.Stats, err
 	name := ctr.Names[0][1:]
 
 	// check if container has valid data, otherwise may be in restart loop (#103)
-	if len(statsJson.Networks) == 0 {
+	if statsJson.MemoryStats.Usage == 0 {
 		return nil, fmt.Errorf("%s - invalid data", name)
 	}
 
