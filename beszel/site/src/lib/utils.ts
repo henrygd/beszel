@@ -159,6 +159,7 @@ export function getPbTimestamp(timeString: ChartTimes) {
 export const chartTimeData: ChartTimeData = {
 	'1h': {
 		type: '1m',
+		expectedInterval: 60_000,
 		label: '1 hour',
 		// ticks: 12,
 		format: (timestamp: string) => hourWithMinutes(timestamp),
@@ -166,6 +167,7 @@ export const chartTimeData: ChartTimeData = {
 	},
 	'12h': {
 		type: '10m',
+		expectedInterval: 60_000 * 10,
 		label: '12 hours',
 		ticks: 12,
 		format: (timestamp: string) => hourWithMinutes(timestamp),
@@ -173,12 +175,14 @@ export const chartTimeData: ChartTimeData = {
 	},
 	'24h': {
 		type: '20m',
+		expectedInterval: 60_000 * 20,
 		label: '24 hours',
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -24),
 	},
 	'1w': {
 		type: '120m',
+		expectedInterval: 60_000 * 120,
 		label: '1 week',
 		ticks: 7,
 		format: (timestamp: string) => formatShortDate(timestamp),
@@ -186,6 +190,7 @@ export const chartTimeData: ChartTimeData = {
 	},
 	'30d': {
 		type: '480m',
+		expectedInterval: 60_000 * 480,
 		label: '30 days',
 		ticks: 30,
 		format: (timestamp: string) => formatDay(timestamp),

@@ -86,6 +86,30 @@ export default function ServerDetail({ name }: { name: string }) {
 		})
 	}
 
+	// add empty values between records to make gaps if interval is too large
+	function addEmptyValues<T extends SystemStatsRecord | ContainerStatsRecord>(
+		records: T[],
+		expectedInterval: number
+	) {
+		const modifiedRecords: T[] = []
+		let prevTime = 0
+		for (let i = 0; i < records.length; i++) {
+			const record = records[i]
+			record.created = new Date(record.created).getTime()
+			if (prevTime) {
+				const interval = record.created - prevTime
+				// if interval is too large, add a null record
+				if (interval - interval * 0.5 > expectedInterval) {
+					// @ts-ignore
+					modifiedRecords.push({ created: null, stats: null })
+				}
+			}
+			prevTime = record.created
+			modifiedRecords.push(record)
+		}
+		return modifiedRecords
+	}
+
 	// get stats
 	useEffect(() => {
 		if (!server.id || !chartTime) {
@@ -95,15 +119,13 @@ export default function ServerDetail({ name }: { name: string }) {
 			getStats<SystemStatsRecord>('system_stats'),
 			getStats<ContainerStatsRecord>('container_stats'),
 		]).then(([systemStats, containerStats]) => {
+			const expectedInterval = chartTimeData[chartTime].expectedInterval
 			if (containerStats.status === 'fulfilled' && containerStats.value.length) {
+				makeContainerData(addEmptyValues(containerStats.value, expectedInterval))
 				setHasDocker(true)
-				makeContainerData(containerStats.value)
 			}
 			if (systemStats.status === 'fulfilled') {
-				for (const record of systemStats.value) {
-					record.created = new Date(record.created).getTime()
-				}
-				setSystemStats(systemStats.value)
+				setSystemStats(addEmptyValues(systemStats.value, expectedInterval))
 			}
 		})
 	}, [server, chartTime])
@@ -125,6 +147,13 @@ export default function ServerDetail({ name }: { name: string }) {
 		const dockerMemData = []
 		const dockerNetData = []
 		for (let { created, stats } of containers) {
+			if (!created) {
+				let nullData = { time: null } as unknown
+				dockerCpuData.push(nullData as Record<string, number | string>)
+				dockerMemData.push(nullData as Record<string, number | string>)
+				dockerNetData.push(nullData as Record<string, number | number[]>)
+				continue
+			}
 			const time = new Date(created).getTime()
 			let cpuData = { time } as Record<string, number | string>
 			let memData = { time } as Record<string, number | string>
@@ -138,7 +167,6 @@ export default function ServerDetail({ name }: { name: string }) {
 			dockerMemData.push(memData)
 			dockerNetData.push(netData)
 		}
-		// console.log('dockerMemData', dockerMemData)
 		setDockerCpuChartData(dockerCpuData)
 		setDockerMemChartData(dockerMemData)
 		setDockerNetChartData(dockerNetData)

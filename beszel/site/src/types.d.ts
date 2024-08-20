@@ -96,6 +96,7 @@ export type ChartTimes = '1h' | '12h' | '24h' | '1w' | '30d'
 export interface ChartTimeData {
 	[key: string]: {
 		type: '1m' | '10m' | '20m' | '120m' | '480m'
+		expectedInterval: number
 		label: string
 		ticks?: number
 		format: (timestamp: string) => string
