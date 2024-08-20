@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { $publicKey, pb } from '@/lib/stores'
 import { Copy, Plus } from 'lucide-react'
-import { useState, useRef, MutableRefObject, useEffect } from 'react'
+import { useState, useRef, MutableRefObject } from 'react'
 import { useStore } from '@nanostores/react'
 import { copyToClipboard } from '@/lib/utils'
 
@@ -37,16 +37,6 @@ export function AddSystemButton() {
       KEY: "${publicKey}"
       # FILESYSTEM: /dev/sda1 # set to the correct filesystem for disk I/O stats`)
 	}
-
-	useEffect(() => {
-		if (publicKey || !open) {
-			return
-		}
-		// get public key
-		pb.send('/api/beszel/getkey', {}).then(({ key }) => {
-			$publicKey.set(key)
-		})
-	}, [open])
 
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault()

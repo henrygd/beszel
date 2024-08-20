@@ -55,9 +55,10 @@ import {
 	PauseCircleIcon,
 	PlayCircleIcon,
 	Trash2Icon,
+	WifiIcon,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
-import { $systems, pb } from '@/lib/stores'
+import { $hubVersion, $systems, pb } from '@/lib/stores'
 import { useStore } from '@nanostores/react'
 import { AddSystemButton } from '../add-system'
 import { cn, copyToClipboard, isReadOnlyUser } from '@/lib/utils'
@@ -82,7 +83,12 @@ function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	)
 }
 
-function sortableHeader(column: Column<SystemRecord, unknown>, name: string, Icon: any) {
+function sortableHeader(
+	column: Column<SystemRecord, unknown>,
+	name: string,
+	Icon: any,
+	hideSortIcon = false
+) {
 	return (
 		<Button
 			variant="ghost"
@@ -91,13 +97,14 @@ function sortableHeader(column: Column<SystemRecord, unknown>, name: string, Ico
 		>
 			<Icon className="mr-2 h-4 w-4" />
 			{name}
-			<ArrowUpDown className="ml-2 h-4 w-4" />
+			{!hideSortIcon && <ArrowUpDown className="ml-2 h-4 w-4" />}
 		</Button>
 	)
 }
 
 export default function SystemsTable() {
 	const data = useStore($systems)
+	const hubVersion = useStore($hubVersion)
 	const [sorting, setSorting] = useState<SortingState>([])
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
@@ -149,6 +156,29 @@ export default function SystemsTable() {
 				accessorKey: 'info.dp',
 				cell: CellFormatter,
 				header: ({ column }) => sortableHeader(column, 'Disk', HardDrive),
+			},
+			{
+				accessorKey: 'info.v',
+				size: 50,
+				cell: (info) => {
+					const version = info.getValue() as string
+					if (!version || !hubVersion) {
+						return null
+					}
+					return (
+						<span className="flex gap-2 items-center md:pr-5 tabular-nums pl-1.5">
+							<span
+								className={cn(
+									'w-2 h-2 left-0 rounded-full',
+									version === hubVersion ? 'bg-green-500' : 'bg-yellow-500'
+								)}
+								style={{ marginBottom: '-1px' }}
+							></span>
+							<span>{info.getValue() as string}</span>
+						</span>
+					)
+				},
+				header: ({ column }) => sortableHeader(column, 'Agent', WifiIcon, true),
 			},
 			{
 				id: 'actions',

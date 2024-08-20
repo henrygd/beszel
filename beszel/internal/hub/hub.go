@@ -1,6 +1,7 @@
 package hub
 
 import (
+	"beszel"
 	"beszel/internal/alerts"
 	"beszel/internal/entities/system"
 	"beszel/internal/records"
@@ -34,6 +35,7 @@ type Hub struct {
 	connectionLock    *sync.Mutex
 	systemConnections map[string]*ssh.Client
 	sshClientConfig   *ssh.ClientConfig
+	pubKey            string
 }
 
 func NewHub(app *pocketbase.PocketBase) *Hub {
@@ -127,11 +129,7 @@ func (h *Hub) Run() {
 			if requestData.AuthRecord == nil {
 				return apis.NewForbiddenError("Forbidden", nil)
 			}
-			key, err := os.ReadFile(h.app.DataDir() + "/id_ed25519.pub")
-			if err != nil {
-				return err
-			}
-			return c.JSON(http.StatusOK, map[string]string{"key": strings.TrimSuffix(string(key), "\n")})
+			return c.JSON(http.StatusOK, map[string]string{"key": h.pubKey, "v": beszel.Version})
 		})
 		// check if first time setup on login page
 		e.Router.GET("/api/beszel/first-run", func(c echo.Context) error {
@@ -384,6 +382,10 @@ func (h *Hub) getSSHKey() ([]byte, error) {
 	// check if the key pair already exists
 	existingKey, err := os.ReadFile(dataDir + "/id_ed25519")
 	if err == nil {
+		if pubKey, err := os.ReadFile(h.app.DataDir() + "/id_ed25519.pub"); err == nil {
+			h.pubKey = strings.TrimSuffix(string(pubKey), "\n")
+		}
+		// return existing private key
 		return existingKey, nil
 	}
 
@@ -421,6 +423,7 @@ func (h *Hub) getSSHKey() ([]byte, error) {
 	}
 
 	pubKeyBytes := ssh.MarshalAuthorizedKey(publicKey)
+	h.pubKey = strings.TrimSuffix(string(pubKeyBytes), "\n")
 
 	// Save the public key to a file
 	publicFile, err := os.Create(dataDir + "/id_ed25519.pub")

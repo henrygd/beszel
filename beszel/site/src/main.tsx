@@ -3,7 +3,15 @@ import React, { Suspense, lazy, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import Home from './components/routes/home.tsx'
 import { ThemeProvider } from './components/theme-provider.tsx'
-import { $alerts, $authenticated, $updatedSystem, $systems, pb } from './lib/stores.ts'
+import {
+	$alerts,
+	$authenticated,
+	$updatedSystem,
+	$systems,
+	pb,
+	$publicKey,
+	$hubVersion,
+} from './lib/stores.ts'
 import { ModeToggle } from './components/mode-toggle.tsx'
 import {
 	cn,
@@ -16,7 +24,6 @@ import {
 import { buttonVariants } from './components/ui/button.tsx'
 import {
 	DatabaseBackupIcon,
-	GithubIcon,
 	LockKeyholeIcon,
 	LogOutIcon,
 	LogsIcon,
@@ -27,12 +34,6 @@ import {
 import { useStore } from '@nanostores/react'
 import { Toaster } from './components/ui/toaster.tsx'
 import { Logo } from './components/logo.tsx'
-import {
-	TooltipProvider,
-	Tooltip,
-	TooltipTrigger,
-	TooltipContent,
-} from '@/components/ui/tooltip.tsx'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -59,6 +60,11 @@ const App = () => {
 		// change auth store on auth change
 		pb.authStore.onChange(() => {
 			$authenticated.set(pb.authStore.isValid)
+		})
+		// get version / public key
+		pb.send('/api/beszel/getkey', {}).then(({ key, v }) => {
+			$publicKey.set(key)
+			$hubVersion.set(v)
 		})
 		// get servers / alerts
 		updateSystemList()
@@ -137,24 +143,6 @@ const Layout = () => {
 
 					<div className={'flex ml-auto'}>
 						<ModeToggle />
-						<TooltipProvider delayDuration={300}>
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<a
-										title={'Github'}
-										aria-label="Github repo"
-										href={'https://github.com/henrygd/beszel'}
-										target="_blank"
-										className={cn('', buttonVariants({ variant: 'ghost', size: 'icon' }))}
-									>
-										<GithubIcon className="h-[1.2rem] w-[1.2rem]" />
-									</a>
-								</TooltipTrigger>
-								<TooltipContent>
-									<p>Github Repository</p>
-								</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<button
