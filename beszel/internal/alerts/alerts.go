@@ -147,5 +147,7 @@ func (am *AlertManager) sendAlert(message *mailer.Message) {
 	}
 	if err := am.mailClient.Send(message); err != nil {
 		am.app.Logger().Error("Failed to send alert: ", "err", err.Error())
+	} else {
+		am.app.Logger().Info("Sent alert", "to", message.To, "subj", message.Subject)
 	}
 }
