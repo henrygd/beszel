@@ -256,7 +256,7 @@ export default function SystemsTable() {
 				},
 			},
 		]
-	}, [])
+	}, [hubVersion])
 
 	const table = useReactTable({
 		data,
