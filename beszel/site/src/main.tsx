@@ -28,9 +28,9 @@ import {
 	DropdownMenuTrigger,
 	DropdownMenuLabel,
 } from './components/ui/dropdown-menu.tsx'
-import { AlertRecord, SystemRecord } from './types'
 import { $router, Link, navigate } from './components/router.tsx'
 import SystemDetail from './components/routes/system.tsx'
+import { AddSystemButton } from './components/add-system.tsx'
 
 // const ServerDetail = lazy(() => import('./components/routes/system.tsx'))
 const CommandPalette = lazy(() => import('./components/command-palette.tsx'))
@@ -101,7 +101,7 @@ const Layout = () => {
 	return (
 		<>
 			<div className="container">
-				<div className="flex items-center h-14 md:h-16 bg-card px-6 border bt-0 rounded-md my-4">
+				<div className="flex items-center h-14 md:h-16 bg-card px-4 pr-3 sm:px-6 border bt-0 rounded-md my-4">
 					<Link
 						href="/"
 						aria-label="Home"
@@ -114,18 +114,18 @@ const Layout = () => {
 						<Logo className="h-[1.15em] fill-foreground" />
 					</Link>
 
-					<div className={'flex ml-auto'}>
+					<div className={'flex ml-auto items-center'}>
 						<ModeToggle />
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<button
 									aria-label="User Actions"
-									className={cn('', buttonVariants({ variant: 'ghost', size: 'icon' }))}
+									className={cn('max-sm:w-9', buttonVariants({ variant: 'ghost', size: 'icon' }))}
 								>
 									<UserIcon className="h-[1.2rem] w-[1.2rem]" />
 								</button>
 							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end" className="min-w-44">
+							<DropdownMenuContent className="min-w-44">
 								<DropdownMenuLabel>{pb.authStore.model?.email}</DropdownMenuLabel>
 								<DropdownMenuSeparator />
 								<DropdownMenuGroup>
@@ -171,6 +171,7 @@ const Layout = () => {
 								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
+						<AddSystemButton className="ml-2" />
 					</div>
 				</div>
 			</div>

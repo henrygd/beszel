@@ -43,7 +43,7 @@ export default function CommandPalette() {
 
 	return (
 		<CommandDialog open={open} onOpenChange={setOpen}>
-			<CommandInput placeholder="Type a command or search..." />
+			<CommandInput placeholder="Search for systems or settings..." />
 			<CommandList>
 				<CommandEmpty>No results found.</CommandEmpty>
 				<CommandGroup heading="Suggestions">

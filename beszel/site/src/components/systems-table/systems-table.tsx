@@ -57,10 +57,9 @@ import {
 	Trash2Icon,
 	WifiIcon,
 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { $hubVersion, $systems, pb } from '@/lib/stores'
 import { useStore } from '@nanostores/react'
-import { AddSystemButton } from '../add-system'
 import { cn, copyToClipboard, isReadOnlyUser } from '@/lib/utils'
 import AlertsButton from '../table-alerts'
 import { navigate } from '../router'
@@ -102,11 +101,17 @@ function sortableHeader(
 	)
 }
 
-export default function SystemsTable() {
+export default function SystemsTable({ filter }: { filter?: string }) {
 	const data = useStore($systems)
 	const hubVersion = useStore($hubVersion)
 	const [sorting, setSorting] = useState<SortingState>([])
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+
+	useEffect(() => {
+		if (filter !== undefined) {
+			table.getColumn('name')?.setFilterValue(filter)
+		}
+	}, [filter])
 
 	const columns: ColumnDef<SystemRecord>[] = useMemo(() => {
 		return [
@@ -166,7 +171,7 @@ export default function SystemsTable() {
 						return null
 					}
 					return (
-						<span className="flex gap-2 items-center md:pr-5 tabular-nums pl-1.5">
+						<span className="flex gap-2 items-center md:pr-5 tabular-nums pl-1">
 							<span
 								className={cn(
 									'w-2 h-2 left-0 rounded-full',
@@ -278,80 +283,64 @@ export default function SystemsTable() {
 	})
 
 	return (
-		<>
-			<div className="w-full">
-				<div className="flex items-center mb-4 gap-2">
-					<Input
-						// @ts-ignore
-						placeholder="Filter..."
-						value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
-						onChange={(event) => table.getColumn('name')?.setFilterValue(event.target.value)}
-						className="max-w-sm"
-					/>
-					<div className={cn('ml-auto flex gap-2', isReadOnlyUser() && 'hidden')}>
-						<AddSystemButton />
-					</div>
-				</div>
-				<div className="rounded-md border overflow-hidden">
-					<Table>
-						<TableHeader className="bg-muted/40">
-							{table.getHeaderGroups().map((headerGroup) => (
-								<TableRow key={headerGroup.id}>
-									{headerGroup.headers.map((header) => {
-										return (
-											<TableHead className="px-2" key={header.id}>
-												{header.isPlaceholder
-													? null
-													: flexRender(header.column.columnDef.header, header.getContext())}
-											</TableHead>
-										)
-									})}
-								</TableRow>
-							))}
-						</TableHeader>
-						<TableBody>
-							{table.getRowModel().rows?.length ? (
-								table.getRowModel().rows.map((row) => (
-									<TableRow
-										key={row.original.id}
-										data-state={row.getIsSelected() && 'selected'}
-										className={cn('cursor-pointer transition-opacity', {
-											'opacity-50': row.original.status === 'paused',
-										})}
-										onClick={(e) => {
-											const target = e.target as HTMLElement
-											if (!target.closest('[data-nolink]') && e.currentTarget.contains(target)) {
-												navigate(`/system/${encodeURIComponent(row.original.name)}`)
-											}
+		<div className="rounded-md border overflow-hidden">
+			<Table>
+				<TableHeader className="bg-muted/40">
+					{table.getHeaderGroups().map((headerGroup) => (
+						<TableRow key={headerGroup.id}>
+							{headerGroup.headers.map((header) => {
+								return (
+									<TableHead className="px-2" key={header.id}>
+										{header.isPlaceholder
+											? null
+											: flexRender(header.column.columnDef.header, header.getContext())}
+									</TableHead>
+								)
+							})}
+						</TableRow>
+					))}
+				</TableHeader>
+				<TableBody>
+					{table.getRowModel().rows?.length ? (
+						table.getRowModel().rows.map((row) => (
+							<TableRow
+								key={row.original.id}
+								data-state={row.getIsSelected() && 'selected'}
+								className={cn('cursor-pointer transition-opacity', {
+									'opacity-50': row.original.status === 'paused',
+								})}
+								onClick={(e) => {
+									const target = e.target as HTMLElement
+									if (!target.closest('[data-nolink]') && e.currentTarget.contains(target)) {
+										navigate(`/system/${encodeURIComponent(row.original.name)}`)
+									}
+								}}
+							>
+								{row.getVisibleCells().map((cell) => (
+									<TableCell
+										key={cell.id}
+										style={{
+											width:
+												cell.column.getSize() === Number.MAX_SAFE_INTEGER
+													? 'auto'
+													: cell.column.getSize(),
 										}}
+										className={'overflow-hidden relative py-2.5'}
 									>
-										{row.getVisibleCells().map((cell) => (
-											<TableCell
-												key={cell.id}
-												style={{
-													width:
-														cell.column.getSize() === Number.MAX_SAFE_INTEGER
-															? 'auto'
-															: cell.column.getSize(),
-												}}
-												className={'overflow-hidden relative py-2.5'}
-											>
-												{flexRender(cell.column.columnDef.cell, cell.getContext())}
-											</TableCell>
-										))}
-									</TableRow>
-								))
-							) : (
-								<TableRow>
-									<TableCell colSpan={columns.length} className="h-24 text-center">
-										No systems found
+										{flexRender(cell.column.columnDef.cell, cell.getContext())}
 									</TableCell>
-								</TableRow>
-							)}
-						</TableBody>
-					</Table>
-				</div>
-			</div>
-		</>
+								))}
+							</TableRow>
+						))
+					) : (
+						<TableRow>
+							<TableCell colSpan={columns.length} className="h-24 text-center">
+								No systems found
+							</TableCell>
+						</TableRow>
+					)}
+				</TableBody>
+			</Table>
+		</div>
 	)
 }

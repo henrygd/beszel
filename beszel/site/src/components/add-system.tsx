@@ -13,12 +13,13 @@ import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/comp
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { $publicKey, pb } from '@/lib/stores'
-import { Copy, Plus } from 'lucide-react'
+import { Copy, PlusIcon } from 'lucide-react'
 import { useState, useRef, MutableRefObject } from 'react'
 import { useStore } from '@nanostores/react'
-import { copyToClipboard } from '@/lib/utils'
+import { cn, copyToClipboard, isReadOnlyUser } from '@/lib/utils'
+import { navigate } from './router'
 
-export function AddSystemButton() {
+export function AddSystemButton({ className }: { className?: string }) {
 	const [open, setOpen] = useState(false)
 	const port = useRef() as MutableRefObject<HTMLInputElement>
 	const publicKey = useStore($publicKey)
@@ -46,6 +47,7 @@ export function AddSystemButton() {
 		try {
 			setOpen(false)
 			await pb.collection('systems').create(data)
+			navigate('/')
 			// console.log(record)
 		} catch (e) {
 			console.log(e)
@@ -55,8 +57,11 @@ export function AddSystemButton() {
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
-				<Button variant="outline" className="flex gap-1">
-					<Plus className="h-4 w-4 mr-auto" />
+				<Button
+					variant="outline"
+					className={cn('flex gap-1 max-xs:h-[2.4rem]', className, isReadOnlyUser() && 'hidden')}
+				>
+					<PlusIcon className="h-4 w-4 -ml-1" />
 					Add <span className="hidden sm:inline">System</span>
 				</Button>
 			</DialogTrigger>
