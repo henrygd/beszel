@@ -1,4 +1,4 @@
-import { $updatedSystem, $systems, pb, $chartTime } from '@/lib/stores'
+import { $systems, pb, $chartTime } from '@/lib/stores'
 import { ContainerStatsRecord, SystemRecord, SystemStatsRecord } from '@/types'
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card'
@@ -21,12 +21,11 @@ const BandwidthChart = lazy(() => import('../charts/bandwidth-chart'))
 const ContainerNetChart = lazy(() => import('../charts/container-net-chart'))
 const SwapChart = lazy(() => import('../charts/swap-chart'))
 
-export default function ServerDetail({ name }: { name: string }) {
+export default function SystemDetail({ name }: { name: string }) {
 	const systems = useStore($systems)
-	const updatedSystem = useStore($updatedSystem)
 	const chartTime = useStore($chartTime)
 	const [ticks, setTicks] = useState([] as number[])
-	const [server, setServer] = useState({} as SystemRecord)
+	const [system, setSystem] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
 	const [hasDockerStats, setHasDocker] = useState(false)
 	const [dockerCpuChartData, setDockerCpuChartData] = useState<Record<string, number | string>[]>(
@@ -58,26 +57,32 @@ export default function ServerDetail({ name }: { name: string }) {
 	useEffect(resetCharts, [chartTime])
 
 	useEffect(() => {
-		if (server.id && server.name === name) {
+		if (system.id && system.name === name) {
 			return
 		}
-		const matchingServer = systems.find((s) => s.name === name) as SystemRecord
-		if (matchingServer) {
-			setServer(matchingServer)
+		const matchingSystem = systems.find((s) => s.name === name) as SystemRecord
+		if (matchingSystem) {
+			setSystem(matchingSystem)
 		}
-	}, [name, server, systems])
+	}, [name, system, systems])
 
-	// update server when new data is available
+	// update system when new data is available
 	useEffect(() => {
-		if (updatedSystem.id === server.id) {
-			setServer(updatedSystem)
+		if (!system.id) {
+			return
 		}
-	}, [updatedSystem])
+		pb.collection<SystemRecord>('systems').subscribe(system.id, (e) => {
+			setSystem(e.record)
+		})
+		return () => {
+			pb.collection('systems').unsubscribe(system.id)
+		}
+	}, [system])
 
 	async function getStats<T>(collection: string): Promise<T[]> {
 		return await pb.collection<T>(collection).getFullList({
 			filter: pb.filter('system={:id} && created > {:created} && type={:type}', {
-				id: server.id,
+				id: system.id,
 				created: getPbTimestamp(chartTime),
 				type: chartTimeData[chartTime].type,
 			}),
@@ -112,7 +117,7 @@ export default function ServerDetail({ name }: { name: string }) {
 
 	// get stats
 	useEffect(() => {
-		if (!server.id || !chartTime) {
+		if (!system.id || !chartTime) {
 			return
 		}
 		Promise.allSettled([
@@ -128,7 +133,7 @@ export default function ServerDetail({ name }: { name: string }) {
 				setSystemStats(addEmptyValues(systemStats.value, expectedInterval))
 			}
 		})
-	}, [server, chartTime])
+	}, [system, chartTime])
 
 	useEffect(() => {
 		if (!systemStats.length) {
@@ -173,14 +178,14 @@ export default function ServerDetail({ name }: { name: string }) {
 	}, [])
 
 	const uptime = useMemo(() => {
-		let uptime = server.info?.u || 0
+		let uptime = system.info?.u || 0
 		if (uptime < 172800) {
 			return `${Math.trunc(uptime / 3600)} hours`
 		}
-		return `${Math.trunc(server.info?.u / 86400)} days`
-	}, [server.info?.u])
+		return `${Math.trunc(system.info?.u / 86400)} days`
+	}, [system.info?.u])
 
-	if (!server.id) {
+	if (!system.id) {
 		return null
 	}
 
@@ -188,11 +193,11 @@ export default function ServerDetail({ name }: { name: string }) {
 		<div className="grid gap-4 mb-10">
 			<Card>
 				<div className="grid gap-2 px-4 sm:px-6 pt-3 sm:pt-4 pb-5">
-					<h1 className="text-[1.6rem] font-semibold">{server.name}</h1>
+					<h1 className="text-[1.6rem] font-semibold">{system.name}</h1>
 					<div className="flex flex-wrap items-center gap-3 gap-y-2 text-sm opacity-90">
 						<div className="capitalize flex gap-2 items-center">
 							<span className={cn('relative flex h-3 w-3')}>
-								{server.status === 'up' && (
+								{system.status === 'up' && (
 									<span
 										className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
 										style={{ animationDuration: '1.5s' }}
@@ -200,20 +205,20 @@ export default function ServerDetail({ name }: { name: string }) {
 								)}
 								<span
 									className={cn('relative inline-flex rounded-full h-3 w-3', {
-										'bg-green-500': server.status === 'up',
-										'bg-red-500': server.status === 'down',
-										'bg-primary/40': server.status === 'paused',
-										'bg-yellow-500': server.status === 'pending',
+										'bg-green-500': system.status === 'up',
+										'bg-red-500': system.status === 'down',
+										'bg-primary/40': system.status === 'paused',
+										'bg-yellow-500': system.status === 'pending',
 									})}
 								></span>
 							</span>
-							{server.status}
+							{system.status}
 						</div>
 						<Separator orientation="vertical" className="h-4 bg-primary/30" />
 						<div className="flex gap-1.5">
-							<GlobeIcon className="h-4 w-4 mt-[1px]" /> {server.host}
+							<GlobeIcon className="h-4 w-4 mt-[1px]" /> {system.host}
 						</div>
-						{server.info?.u && (
+						{system.info?.u && (
 							<TooltipProvider>
 								<Tooltip>
 									<Separator orientation="vertical" className="h-4 bg-primary/30" />
@@ -226,12 +231,12 @@ export default function ServerDetail({ name }: { name: string }) {
 								</Tooltip>
 							</TooltipProvider>
 						)}
-						{server.info?.m && (
+						{system.info?.m && (
 							<>
 								<Separator orientation="vertical" className="h-4 bg-primary/30" />
 								<div className="flex gap-1.5">
 									<CpuIcon className="h-4 w-4 mt-[1px]" />
-									{server.info.m} ({server.info.c}c / {server.info.t}t)
+									{system.info.m} ({system.info.c}c / {system.info.t}t)
 								</div>
 							</>
 						)}

@@ -3,24 +3,9 @@ import React, { Suspense, lazy, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import Home from './components/routes/home.tsx'
 import { ThemeProvider } from './components/theme-provider.tsx'
-import {
-	$alerts,
-	$authenticated,
-	$updatedSystem,
-	$systems,
-	pb,
-	$publicKey,
-	$hubVersion,
-} from './lib/stores.ts'
+import { $authenticated, $systems, pb, $publicKey, $hubVersion } from './lib/stores.ts'
 import { ModeToggle } from './components/mode-toggle.tsx'
-import {
-	cn,
-	isAdmin,
-	updateAlerts,
-	updateFavicon,
-	updateRecordList,
-	updateSystemList,
-} from './lib/utils.ts'
+import { cn, isAdmin, updateAlerts, updateFavicon, updateSystemList } from './lib/utils.ts'
 import { buttonVariants } from './components/ui/button.tsx'
 import {
 	DatabaseBackupIcon,
@@ -45,7 +30,7 @@ import {
 } from './components/ui/dropdown-menu.tsx'
 import { AlertRecord, SystemRecord } from './types'
 import { $router, Link, navigate } from './components/router.tsx'
-import ServerDetail from './components/routes/system.tsx'
+import SystemDetail from './components/routes/system.tsx'
 
 // const ServerDetail = lazy(() => import('./components/routes/system.tsx'))
 const CommandPalette = lazy(() => import('./components/command-palette.tsx'))
@@ -62,25 +47,13 @@ const App = () => {
 			$authenticated.set(pb.authStore.isValid)
 		})
 		// get version / public key
-		pb.send('/api/beszel/getkey', {}).then(({ key, v }) => {
-			$publicKey.set(key)
-			$hubVersion.set(v)
+		pb.send('/api/beszel/getkey', {}).then((data) => {
+			$publicKey.set(data.key)
+			$hubVersion.set(data.v)
 		})
 		// get servers / alerts
 		updateSystemList()
 		updateAlerts()
-		// subscribe to real time updates for systems / alerts
-		pb.collection<SystemRecord>('systems').subscribe('*', (e) => {
-			updateRecordList(e, $systems)
-			$updatedSystem.set(e.record)
-		})
-		pb.collection<AlertRecord>('alerts').subscribe('*', (e) => {
-			updateRecordList(e, $alerts)
-		})
-		return () => {
-			pb.collection('systems').unsubscribe('*')
-			pb.collection('alerts').unsubscribe('*')
-		}
 	}, [])
 
 	// update favicon
@@ -110,7 +83,7 @@ const App = () => {
 	} else if (page.path === '/') {
 		return <Home />
 	} else if (page.route === 'server') {
-		return <ServerDetail name={page.params.name} />
+		return <SystemDetail name={page.params.name} />
 	}
 }
 

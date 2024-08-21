@@ -11,9 +11,6 @@ export const $authenticated = atom(pb.authStore.isValid)
 /** List of system records */
 export const $systems = atom([] as SystemRecord[])
 
-/** Last updated system record (realtime) */
-export const $updatedSystem = atom({} as SystemRecord)
-
 /** List of alert records */
 export const $alerts = atom([] as AlertRecord[])
 

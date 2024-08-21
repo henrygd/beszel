@@ -1,9 +1,11 @@
 import { Suspense, lazy, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
-import { $hubVersion } from '@/lib/stores'
+import { $alerts, $hubVersion, $systems, pb } from '@/lib/stores'
 import { useStore } from '@nanostores/react'
 import { GithubIcon } from 'lucide-react'
 import { Separator } from '../ui/separator'
+import { updateRecordList } from '@/lib/utils'
+import { AlertRecord, SystemRecord } from '@/types'
 
 const SystemsTable = lazy(() => import('../systems-table/systems-table'))
 
@@ -12,6 +14,18 @@ export default function () {
 
 	useEffect(() => {
 		document.title = 'Dashboard / Beszel'
+
+		// subscribe to real time updates for systems / alerts
+		pb.collection<SystemRecord>('systems').subscribe('*', (e) => {
+			updateRecordList(e, $systems)
+		})
+		pb.collection<AlertRecord>('alerts').subscribe('*', (e) => {
+			updateRecordList(e, $alerts)
+		})
+		return () => {
+			pb.collection('systems').unsubscribe('*')
+			pb.collection('alerts').unsubscribe('*')
+		}
 	}, [])
 
 	return (
@@ -34,7 +48,7 @@ export default function () {
 				</CardContent>
 			</Card>
 			{hubVersion && (
-				<div className="flex gap-1.5 justify-end items-center pr-3 sm:pr-7 mt-3.5 text-xs opacity-80">
+				<div className="flex gap-1.5 justify-end items-center pr-3 sm:pr-6 mt-3.5 text-xs opacity-80">
 					<a
 						href="https://github.com/henrygd/beszel"
 						target="_blank"
@@ -42,7 +56,7 @@ export default function () {
 					>
 						<GithubIcon className="h-3 w-3" /> GitHub
 					</a>
-					<Separator orientation="vertical" className="h-3 bg-muted-foreground" />
+					<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 					<a
 						href="https://github.com/henrygd/beszel/releases"
 						target="_blank"
