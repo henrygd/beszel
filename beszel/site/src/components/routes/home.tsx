@@ -49,10 +49,9 @@ export default function () {
 							</CardDescription>
 						</div>
 						<Input
-							// @ts-ignore
 							placeholder="Filter..."
 							onChange={(e) => setFilter(e.target.value)}
-							className="w-full md:w-56 lg:w-80 ml-auto"
+							className="w-full md:w-56 lg:w-80 ml-auto pl-4"
 						/>
 					</div>
 				</CardHeader>
