@@ -166,7 +166,11 @@ func (rm *RecordManager) CreateLongerRecords() {
 // Calculate the average stats of a list of system_stats records without reflect
 func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.Stats {
 	var sum system.Stats
+	sum.Temperatures = make(map[string]float64)
+
 	count := float64(len(records))
+	// use different counter for temps in case some records don't have them
+	tempCount := float64(0)
 
 	var stats system.Stats
 	for _, record := range records {
@@ -185,9 +189,18 @@ func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.Sta
 		sum.DiskWrite += stats.DiskWrite
 		sum.NetworkSent += stats.NetworkSent
 		sum.NetworkRecv += stats.NetworkRecv
+		if stats.Temperatures != nil {
+			tempCount++
+			for key, value := range stats.Temperatures {
+				if _, ok := sum.Temperatures[key]; !ok {
+					sum.Temperatures[key] = 0
+				}
+				sum.Temperatures[key] += value
+			}
+		}
 	}
 
-	return system.Stats{
+	stats = system.Stats{
 		Cpu:          twoDecimals(sum.Cpu / count),
 		Mem:          twoDecimals(sum.Mem / count),
 		MemUsed:      twoDecimals(sum.MemUsed / count),
@@ -203,6 +216,15 @@ func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.Sta
 		NetworkSent:  twoDecimals(sum.NetworkSent / count),
 		NetworkRecv:  twoDecimals(sum.NetworkRecv / count),
 	}
+
+	if len(sum.Temperatures) != 0 {
+		stats.Temperatures = make(map[string]float64)
+		for key, value := range sum.Temperatures {
+			stats.Temperatures[key] = twoDecimals(value / tempCount)
+		}
+	}
+
+	return stats
 }
 
 // Calculate the average stats of a list of container_stats records

@@ -57,6 +57,8 @@ export interface SystemStats {
 	ns: number
 	/** network received (mb) */
 	nr: number
+	/** temperatures */
+	t?: Record<string, number>
 }
 
 export interface ContainerStatsRecord extends RecordModel {

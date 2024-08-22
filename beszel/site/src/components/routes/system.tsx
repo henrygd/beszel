@@ -20,6 +20,7 @@ const DiskIoChart = lazy(() => import('../charts/disk-io-chart'))
 const BandwidthChart = lazy(() => import('../charts/bandwidth-chart'))
 const ContainerNetChart = lazy(() => import('../charts/container-net-chart'))
 const SwapChart = lazy(() => import('../charts/swap-chart'))
+const TemperatureChart = lazy(() => import('../charts/temperature-chart'))
 
 export default function SystemDetail({ name }: { name: string }) {
 	const systems = useStore($systems)
@@ -268,6 +269,12 @@ export default function SystemDetail({ name }: { name: string }) {
 			{(systemStats.at(-1)?.stats.s ?? 0) > 0 && (
 				<ChartCard title="Swap Usage" description="Swap space used by the system">
 					<SwapChart ticks={ticks} systemData={systemStats} />
+				</ChartCard>
+			)}
+
+			{systemStats.at(-1)?.stats.t && (
+				<ChartCard title="Temperature" description="Temperature of system components">
+					<TemperatureChart ticks={ticks} systemData={systemStats} />
 				</ChartCard>
 			)}
 

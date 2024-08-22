@@ -21,7 +21,6 @@ import {
 } from '@/components/ui/table'
 
 import { Button, buttonVariants } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 
 import {
 	DropdownMenu,

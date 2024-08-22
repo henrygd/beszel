@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -23,6 +24,7 @@ import (
 	"github.com/shirou/gopsutil/v4/disk"
 	"github.com/shirou/gopsutil/v4/host"
 	"github.com/shirou/gopsutil/v4/mem"
+	"github.com/shirou/gopsutil/v4/sensors"
 
 	sshServer "github.com/gliderlabs/ssh"
 	psutilNet "github.com/shirou/gopsutil/v4/net"
@@ -138,6 +140,21 @@ func (a *Agent) getSystemStats() (*system.Info, *system.Stats) {
 		a.netIoStats.BytesSent = bytesSent
 		a.netIoStats.BytesRecv = bytesRecv
 		a.netIoStats.Time = time.Now()
+	}
+
+	// temperatures
+	if temps, err := sensors.SensorsTemperatures(); err == nil {
+		systemStats.Temperatures = make(map[string]float64)
+		// log.Printf("Temperatures: %+v\n", temps)
+		for i, temp := range temps {
+			if _, ok := systemStats.Temperatures[temp.SensorKey]; ok {
+				// if key already exists, append int to key
+				systemStats.Temperatures[temp.SensorKey+"_"+strconv.Itoa(i)] = twoDecimals(temp.Temperature)
+			} else {
+				systemStats.Temperatures[temp.SensorKey] = twoDecimals(temp.Temperature)
+			}
+		}
+		// log.Printf("Temperature map: %+v\n", systemStats.Temperatures)
 	}
 
 	systemInfo := &system.Info{

@@ -62,7 +62,7 @@ export function AddSystemButton({ className }: { className?: string }) {
 					className={cn('flex gap-1 max-xs:h-[2.4rem]', className, isReadOnlyUser() && 'hidden')}
 				>
 					<PlusIcon className="h-4 w-4 -ml-1" />
-					Add <span className="hidden sm:inline">System</span>
+					Add <span className="hidden xs:inline">System</span>
 				</Button>
 			</DialogTrigger>
 			<DialogContent className="w-[90%] sm:max-w-[425px] rounded-lg">
