@@ -116,7 +116,6 @@ export default function TemperatureChart({
 							type="monotoneX"
 							dot={false}
 							strokeWidth={1.5}
-							fill="hsl(360, 60%, 55%)"
 							stroke={newChartData.colors[key]}
 							isAnimationActive={false}
 						/>

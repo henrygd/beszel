@@ -74,6 +74,7 @@ export default function ContainerCpuChart({
 			>
 				<AreaChart
 					accessibilityLayer
+					// syncId={'cpu'}
 					data={chartData}
 					margin={{
 						top: 10,

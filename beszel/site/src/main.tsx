@@ -120,7 +120,7 @@ const Layout = () => {
 							<DropdownMenuTrigger asChild>
 								<button
 									aria-label="User Actions"
-									className={cn('max-sm:w-9', buttonVariants({ variant: 'ghost', size: 'icon' }))}
+									className={cn('', buttonVariants({ variant: 'ghost', size: 'icon' }))}
 								>
 									<UserIcon className="h-[1.2rem] w-[1.2rem]" />
 								</button>

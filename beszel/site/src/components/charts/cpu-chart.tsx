@@ -29,7 +29,12 @@ export default function CpuChart({
 					'opacity-100': yAxisSet,
 				})}
 			>
-				<AreaChart accessibilityLayer data={systemData} margin={{ top: 10 }}>
+				<AreaChart
+					accessibilityLayer
+					data={systemData}
+					margin={{ top: 10 }}
+					// syncId={'cpu'}
+				>
 					<CartesianGrid vertical={false} />
 					<YAxis
 						className="tracking-tighter"

@@ -191,58 +191,60 @@ export default function SystemDetail({ name }: { name: string }) {
 	}
 
 	return (
-		<div className="grid gap-4 mb-10">
-			<Card>
-				<div className="grid gap-2 px-4 sm:px-6 pt-3 sm:pt-4 pb-5">
-					<h1 className="text-[1.6rem] font-semibold">{system.name}</h1>
-					<div className="flex flex-wrap items-center gap-3 gap-y-2 text-sm opacity-90">
-						<div className="capitalize flex gap-2 items-center">
-							<span className={cn('relative flex h-3 w-3')}>
-								{system.status === 'up' && (
+		<div className="grid lg:grid-cols-2 gap-4 mb-10">
+			<Card className="col-span-full">
+				<div className="grid lg:flex items-center gap-4 px-4 sm:px-6 pt-3 sm:pt-4 pb-5">
+					<div>
+						<h1 className="text-[1.6rem] font-semibold mb-1.5">{system.name}</h1>
+						<div className="flex flex-wrap items-center gap-3 gap-y-2 text-sm opacity-90">
+							<div className="capitalize flex gap-2 items-center">
+								<span className={cn('relative flex h-3 w-3')}>
+									{system.status === 'up' && (
+										<span
+											className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
+											style={{ animationDuration: '1.5s' }}
+										></span>
+									)}
 									<span
-										className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
-										style={{ animationDuration: '1.5s' }}
+										className={cn('relative inline-flex rounded-full h-3 w-3', {
+											'bg-green-500': system.status === 'up',
+											'bg-red-500': system.status === 'down',
+											'bg-primary/40': system.status === 'paused',
+											'bg-yellow-500': system.status === 'pending',
+										})}
 									></span>
-								)}
-								<span
-									className={cn('relative inline-flex rounded-full h-3 w-3', {
-										'bg-green-500': system.status === 'up',
-										'bg-red-500': system.status === 'down',
-										'bg-primary/40': system.status === 'paused',
-										'bg-yellow-500': system.status === 'pending',
-									})}
-								></span>
-							</span>
-							{system.status}
-						</div>
-						<Separator orientation="vertical" className="h-4 bg-primary/30" />
-						<div className="flex gap-1.5">
-							<GlobeIcon className="h-4 w-4 mt-[1px]" /> {system.host}
-						</div>
-						{system.info?.u && (
-							<TooltipProvider>
-								<Tooltip>
+								</span>
+								{system.status}
+							</div>
+							<Separator orientation="vertical" className="h-4 bg-primary/30" />
+							<div className="flex gap-1.5">
+								<GlobeIcon className="h-4 w-4 mt-[1px]" /> {system.host}
+							</div>
+							{system.info?.u && (
+								<TooltipProvider>
+									<Tooltip>
+										<Separator orientation="vertical" className="h-4 bg-primary/30" />
+										<TooltipTrigger asChild>
+											<div className="flex gap-1.5">
+												<ClockArrowUp className="h-4 w-4 mt-[1px]" /> {uptime}
+											</div>
+										</TooltipTrigger>
+										<TooltipContent>Uptime</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
+							)}
+							{system.info?.m && (
+								<>
 									<Separator orientation="vertical" className="h-4 bg-primary/30" />
-									<TooltipTrigger asChild>
-										<div className="flex gap-1.5">
-											<ClockArrowUp className="h-4 w-4 mt-[1px]" /> {uptime}
-										</div>
-									</TooltipTrigger>
-									<TooltipContent>Uptime</TooltipContent>
-								</Tooltip>
-							</TooltipProvider>
-						)}
-						{system.info?.m && (
-							<>
-								<Separator orientation="vertical" className="h-4 bg-primary/30" />
-								<div className="flex gap-1.5">
-									<CpuIcon className="h-4 w-4 mt-[1px]" />
-									{system.info.m} ({system.info.c}c / {system.info.t}t)
-								</div>
-							</>
-						)}
+									<div className="flex gap-1.5">
+										<CpuIcon className="h-4 w-4 mt-[1px]" />
+										{system.info.m} ({system.info.c}c / {system.info.t}t)
+									</div>
+								</>
+							)}
+						</div>
 					</div>
-					<ChartTimeSelect className="mt-2 -ml-1 sm:hidden" />
+					<ChartTimeSelect className="w-full lg:w-40 xl:w-52 ml-auto max-sm:-mb-1" />
 				</div>
 			</Card>
 
@@ -273,15 +275,12 @@ export default function SystemDetail({ name }: { name: string }) {
 			)}
 
 			{systemStats.at(-1)?.stats.t && (
-				<ChartCard title="Temperature" description="Temperature of system components">
+				<ChartCard title="Temperature" description="Temperatures of system sensors">
 					<TemperatureChart ticks={ticks} systemData={systemStats} />
 				</ChartCard>
 			)}
 
-			<ChartCard
-				title="Disk Usage"
-				description="Usage of partition where the root filesystem is mounted"
-			>
+			<ChartCard title="Disk Usage" description="Space usage of root partition">
 				<DiskChart ticks={ticks} systemData={systemStats} />
 			</ChartCard>
 
@@ -303,7 +302,8 @@ export default function SystemDetail({ name }: { name: string }) {
 					</ChartCard>
 					{/* add space for tooltip if more than 12 containers */}
 					{Object.keys(dockerNetChartData[0]).length > 12 && (
-						<div
+						<span
+							className="block"
 							style={{
 								height: (Object.keys(dockerNetChartData[0]).length - 13) * 18,
 							}}
@@ -327,15 +327,15 @@ function ChartCard({
 	const target = useRef<HTMLDivElement>(null)
 	const [isInViewport, wrappedTargetRef] = useClampedIsInViewport({ target: target })
 	return (
-		<Card className="pb-2 sm:pb-4 col-span-full" ref={wrappedTargetRef}>
+		<Card className="pb-2 sm:pb-4 even:last-of-type:col-span-full" ref={wrappedTargetRef}>
 			<CardHeader className="pb-5 pt-4 relative space-y-1 max-sm:py-3 max-sm:px-4">
 				<CardTitle className="text-xl sm:text-2xl">{title}</CardTitle>
 				<CardDescription>{description}</CardDescription>
-				<div className="w-full pt-1 sm:w-40 hidden sm:block absolute top-1.5 right-3.5">
+				{/* <div className="w-full pt-1 sm:w-40 hidden sm:block absolute top-1.5 right-3.5">
 					<ChartTimeSelect />
-				</div>
+				</div> */}
 			</CardHeader>
-			<CardContent className="pl-1 w-[calc(100%-1.6em)] h-52 relative">
+			<CardContent className="pl-0 w-[calc(100%-1.6em)] h-52 relative">
 				{<Spinner />}
 				{isInViewport && <Suspense>{children}</Suspense>}
 			</CardContent>
