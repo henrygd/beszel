@@ -2,85 +2,85 @@
 @tailwind components;
 @tailwind utilities;
 @layer base {
-	:root {
-		--background: 30 8% 98.5%;
-		--foreground: 30 0% 0%;
-		--card: 30 0% 100%;
-		--card-foreground: 240 6.67% 2.94%;
-		--popover: 30 0% 100%;
-		--popover-foreground: 240 10% 6.2%;
-		--primary: 240 5.88% 10%;
-		--primary-foreground: 30 0% 100%;
-		--secondary: 240 4.76% 95.88%;
-		--secondary-foreground: 240 5.88% 10%;
-		--muted: 26 6% 94%;
-		--muted-foreground: 24 2.79% 35.1%;
-		--accent: 20 23.08% 94%;
-		--accent-foreground: 240 5.88% 10%;
-		--destructive: 0 66% 53%;
-		--destructive-foreground: 0 0% 98.04%;
-		--border: 30 8.11% 85.49%;
-		--input: 30 4.29% 72.55%;
-		--ring: 30 3.97% 49.41%;
-		--radius: 0.8rem;
-	}
+  :root {
+    --background: 30 8% 98.5%;
+    --foreground: 30 0% 0%;
+    --card: 30 0% 100%;
+    --card-foreground: 240 6.67% 2.94%;
+    --popover: 30 0% 100%;
+    --popover-foreground: 240 10% 6.2%;
+    --primary: 240 5.88% 10%;
+    --primary-foreground: 30 0% 100%;
+    --secondary: 240 4.76% 95.88%;
+    --secondary-foreground: 240 5.88% 10%;
+    --muted: 26 6% 94%;
+    --muted-foreground: 24 2.79% 35.1%;
+    --accent: 20 23.08% 94%;
+    --accent-foreground: 240 5.88% 10%;
+    --destructive: 0 66% 53%;
+    --destructive-foreground: 0 0% 98.04%;
+    --border: 30 8.11% 85.49%;
+    --input: 30 4.29% 72.55%;
+    --ring: 30 3.97% 49.41%;
+    --radius: 0.8rem;
+  }
 
-	.dark {
-		--background: 240 10% 6.2%;
-		--foreground: 0 0% 98.04%;
-		--card: 240 8.57% 8%;
-		--card-foreground: 0 0% 98.04%;
-		--popover: 240 10% 6.2%;
-		--popover-foreground: 0 0% 98.04%;
-		--primary: 0 0% 98.04%;
-		--primary-foreground: 240 5.88% 10%;
-		--secondary: 240 3.7% 15.88%;
-		--secondary-foreground: 0 0% 98.04%;
-		--muted: 240 3.7% 15.88%;
-		--muted-foreground: 240 5.03% 64.9%;
-		--accent: 240 3.7% 15.88%;
-		--accent-foreground: 0 0% 98.04%;
-		--destructive: 0 56.48% 42.35%;
-		--destructive-foreground: 0 0% 98.04%;
-		--border: 240 2.86% 12%;
-		--input: 240 3.7% 15.88%;
-		--ring: 240 4.88% 86%;
-		--radius: 0.8rem;
-	}
+  .dark {
+    --background: 240 10% 6.2%;
+    --foreground: 0 0% 98.04%;
+    --card: 240 8.57% 8%;
+    --card-foreground: 0 0% 98.04%;
+    --popover: 240 10% 6.2%;
+    --popover-foreground: 0 0% 98.04%;
+    --primary: 0 0% 98.04%;
+    --primary-foreground: 240 5.88% 10%;
+    --secondary: 240 3.7% 15.88%;
+    --secondary-foreground: 0 0% 98.04%;
+    --muted: 240 3.7% 15.88%;
+    --muted-foreground: 240 5.03% 64.9%;
+    --accent: 240 3.7% 15.88%;
+    --accent-foreground: 0 0% 98.04%;
+    --destructive: 0 56.48% 42.35%;
+    --destructive-foreground: 0 0% 98.04%;
+    --border: 240 2.86% 12%;
+    --input: 240 3.7% 15.88%;
+    --ring: 240 4.88% 86%;
+    --radius: 0.8rem;
+  }
 }
 
 @layer base {
-	* {
-		@apply border-border;
-	}
-	body {
-		@apply bg-background text-foreground;
-	}
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
 
 .recharts-tooltip-wrapper {
-	z-index: 1;
+  z-index: 1;
 }
 
 .recharts-yAxis {
-	font-variant-numeric: tabular-nums;
+  font-variant-numeric: tabular-nums;
 }
 
 /* charts */
 @layer base {
-	:root {
-		/* --chart-1: 12 76% 61%;
+  :root {
+    /* --chart-1: 12 76% 61%;
 		--chart-2: 173 58% 39%;
 		--chart-3: 197 37% 24%;
 		--chart-4: 43 74% 66%;
 		--chart-5: 27 87% 67%; */
-		--chart-1: 220 70% 50%;
-		--chart-2: 160 60% 45%;
-		--chart-3: 30 80% 55%;
-		--chart-4: 280 65% 60%;
-		--chart-5: 340 75% 55%;
-	}
-	/* 
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+  /* 
 	.dark {
 		--chart-1: 220 70% 50%;
 		--chart-2: 160 60% 45%;
@@ -88,4 +88,22 @@
 		--chart-4: 280 65% 60%;
 		--chart-5: 340 75% 55%;
 	} */
+}
+
+/* scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: hsla(var(--border) / 0.8);
+  border-radius: 0.125rem;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: hsl(var(--border));
 }
