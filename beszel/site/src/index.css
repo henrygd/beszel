@@ -101,7 +101,7 @@
 
 ::-webkit-scrollbar-thumb {
   background-color: hsla(var(--border) / 0.8);
-  border-radius: 0.125rem;
+  border-radius: 0.25rem;
 }
 
 ::-webkit-scrollbar-thumb:hover {
