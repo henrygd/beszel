@@ -21,7 +21,7 @@ export default function ChartTimeSelect({ className }: { className?: string }) {
 			onValueChange={(value: ChartTimes) => $chartTime.set(value)}
 		>
 			<SelectTrigger className={cn(className, 'relative pl-10 pr-5')}>
-				<HistoryIcon className="h-4 w-4 absolute left-4 top-1/2 -translate-y-1/2 opacity-80" />
+				<HistoryIcon className="h-4 w-4 absolute left-4 top-1/2 -translate-y-1/2 opacity-85" />
 				<SelectValue />
 			</SelectTrigger>
 			<SelectContent>

@@ -241,3 +241,22 @@ export function toFixedWithoutTrailingZeros(num: number, digits: number) {
 export function toFixedFloat(num: number, digits: number) {
 	return parseFloat(num.toFixed(digits))
 }
+
+/** Get value from local storage */
+function getStorageValue(key: string, defaultValue: any) {
+	const saved = localStorage?.getItem(key)
+	return saved ? JSON.parse(saved) : defaultValue
+}
+
+/** Hook to sync value in local storage */
+export const useLocalStorage = (key: string, defaultValue: any) => {
+	key = `besz-${key}`
+	const [value, setValue] = useState(() => {
+		return getStorageValue(key, defaultValue)
+	})
+	useEffect(() => {
+		localStorage?.setItem(key, JSON.stringify(value))
+	}, [key, value])
+
+	return [value, setValue]
+}

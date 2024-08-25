@@ -4,12 +4,20 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } fro
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card'
 import { useStore } from '@nanostores/react'
 import Spinner from '../spinner'
-import { ClockArrowUp, CpuIcon, GlobeIcon } from 'lucide-react'
+import { ClockArrowUp, CpuIcon, GlobeIcon, LayoutGridIcon } from 'lucide-react'
 import ChartTimeSelect from '../charts/chart-time-select'
-import { chartTimeData, cn, getPbTimestamp, useClampedIsInViewport } from '@/lib/utils'
+import {
+	chartTimeData,
+	cn,
+	getPbTimestamp,
+	useClampedIsInViewport,
+	useLocalStorage,
+} from '@/lib/utils'
 import { Separator } from '../ui/separator'
 import { scaleTime } from 'd3-scale'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
+import { Toggle } from '../ui/toggle'
+import { buttonVariants } from '../ui/button'
 
 const CpuChart = lazy(() => import('../charts/cpu-chart'))
 const ContainerCpuChart = lazy(() => import('../charts/container-cpu-chart'))
@@ -25,6 +33,7 @@ const TemperatureChart = lazy(() => import('../charts/temperature-chart'))
 export default function SystemDetail({ name }: { name: string }) {
 	const systems = useStore($systems)
 	const chartTime = useStore($chartTime)
+	const [grid, setGrid] = useLocalStorage('grid', true)
 	const [ticks, setTicks] = useState([] as number[])
 	const [system, setSystem] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
@@ -244,57 +253,96 @@ export default function SystemDetail({ name }: { name: string }) {
 							)}
 						</div>
 					</div>
-					<ChartTimeSelect className="w-full lg:w-40 xl:w-52 ml-auto max-sm:-mb-1" />
+					<div className="lg:ml-auto flex items-center gap-2 max-sm:-mb-1">
+						<ChartTimeSelect className="w-full lg:w-40" />
+						<TooltipProvider delayDuration={100}>
+							<Tooltip>
+								<TooltipTrigger asChild className="hidden lg:block opacity-85">
+									<span>
+										<Toggle
+											aria-label="Toggle grid"
+											className={cn(
+												'p-0 border border-card',
+												buttonVariants({ variant: 'ghost', size: 'icon' })
+											)}
+											pressed={grid}
+											onPressedChange={setGrid}
+										>
+											<LayoutGridIcon className="h-[1.2rem] w-[1.2rem]" />
+										</Toggle>
+									</span>
+								</TooltipTrigger>
+								<TooltipContent>Toggle grid</TooltipContent>
+							</Tooltip>
+						</TooltipProvider>
+					</div>
 				</div>
 			</Card>
 
-			<ChartCard title="Total CPU Usage" description="Average system-wide CPU utilization">
+			<ChartCard
+				grid={grid}
+				title="Total CPU Usage"
+				description="Average system-wide CPU utilization"
+			>
 				<CpuChart ticks={ticks} systemData={systemStats} />
 			</ChartCard>
 
 			{hasDockerStats && (
-				<ChartCard title="Docker CPU Usage" description="CPU utilization of docker containers">
+				<ChartCard
+					grid={grid}
+					title="Docker CPU Usage"
+					description="CPU utilization of docker containers"
+				>
 					<ContainerCpuChart chartData={dockerCpuChartData} ticks={ticks} />
 				</ChartCard>
 			)}
 
-			<ChartCard title="Total Memory Usage" description="Precise utilization at the recorded time">
+			<ChartCard
+				grid={grid}
+				title="Total Memory Usage"
+				description="Precise utilization at the recorded time"
+			>
 				<MemChart ticks={ticks} systemData={systemStats} />
 			</ChartCard>
 
 			{hasDockerStats && (
-				<ChartCard title="Docker Memory Usage" description="Memory usage of docker containers">
+				<ChartCard
+					grid={grid}
+					title="Docker Memory Usage"
+					description="Memory usage of docker containers"
+				>
 					<ContainerMemChart chartData={dockerMemChartData} ticks={ticks} />
 				</ChartCard>
 			)}
 
 			{(systemStats.at(-1)?.stats.s ?? 0) > 0 && (
-				<ChartCard title="Swap Usage" description="Swap space used by the system">
+				<ChartCard grid={grid} title="Swap Usage" description="Swap space used by the system">
 					<SwapChart ticks={ticks} systemData={systemStats} />
 				</ChartCard>
 			)}
 
+			<ChartCard grid={grid} title="Disk Space" description="Usage of root partition">
+				<DiskChart ticks={ticks} systemData={systemStats} />
+			</ChartCard>
+
 			{systemStats.at(-1)?.stats.t && (
-				<ChartCard title="Temperature" description="Temperatures of system sensors">
+				<ChartCard grid={grid} title="Temperature" description="Temperatures of system sensors">
 					<TemperatureChart ticks={ticks} systemData={systemStats} />
 				</ChartCard>
 			)}
 
-			<ChartCard title="Disk Usage" description="Space usage of root partition">
-				<DiskChart ticks={ticks} systemData={systemStats} />
-			</ChartCard>
-
-			<ChartCard title="Disk I/O" description="Throughput of root filesystem">
+			<ChartCard grid={grid} title="Disk I/O" description="Throughput of root filesystem">
 				<DiskIoChart ticks={ticks} systemData={systemStats} />
 			</ChartCard>
 
-			<ChartCard title="Bandwidth" description="Network traffic of public interfaces">
+			<ChartCard grid={grid} title="Bandwidth" description="Network traffic of public interfaces">
 				<BandwidthChart ticks={ticks} systemData={systemStats} />
 			</ChartCard>
 
 			{hasDockerStats && dockerNetChartData.length > 0 && (
 				<>
 					<ChartCard
+						grid={grid}
 						title="Docker Network I/O"
 						description="Includes traffic between internal services"
 					>
@@ -319,21 +367,23 @@ function ChartCard({
 	title,
 	description,
 	children,
+	grid,
 }: {
 	title: string
 	description: string
 	children: React.ReactNode
+	grid: boolean
 }) {
 	const target = useRef<HTMLDivElement>(null)
 	const [isInViewport, wrappedTargetRef] = useClampedIsInViewport({ target: target })
 	return (
-		<Card className="pb-2 sm:pb-4 even:last-of-type:col-span-full" ref={wrappedTargetRef}>
+		<Card
+			className={cn('pb-2 sm:pb-4 even:last-of-type:col-span-full', { 'col-span-full': !grid })}
+			ref={wrappedTargetRef}
+		>
 			<CardHeader className="pb-5 pt-4 relative space-y-1 max-sm:py-3 max-sm:px-4">
 				<CardTitle className="text-xl sm:text-2xl">{title}</CardTitle>
 				<CardDescription>{description}</CardDescription>
-				{/* <div className="w-full pt-1 sm:w-40 hidden sm:block absolute top-1.5 right-3.5">
-					<ChartTimeSelect />
-				</div> */}
 			</CardHeader>
 			<CardContent className="pl-0 w-[calc(100%-1.6em)] h-52 relative">
 				{<Spinner />}
