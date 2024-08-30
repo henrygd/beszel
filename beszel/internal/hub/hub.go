@@ -6,6 +6,7 @@ import (
 	"beszel/internal/entities/system"
 	"beszel/internal/records"
 	"beszel/site"
+	"context"
 	"crypto/ed25519"
 	"encoding/pem"
 	"fmt"
@@ -246,8 +247,10 @@ func (h *Hub) updateSystem(record *models.Record) {
 		// create system connection
 		client, err = h.createSystemConnection(record)
 		if err != nil {
-			h.app.Logger().Error("Failed to connect:", "err", err.Error(), "system", record.GetString("host"), "port", record.GetString("port"))
-			h.updateSystemStatus(record, "down")
+			if record.GetString("status") != "down" {
+				h.app.Logger().Error("Failed to connect:", "err", err.Error(), "system", record.GetString("host"), "port", record.GetString("port"))
+				h.updateSystemStatus(record, "down")
+			}
 			return
 		}
 		h.connectionLock.Lock()
@@ -350,7 +353,7 @@ func (h *Hub) createSSHClientConfig() error {
 }
 
 func requestJsonFromAgent(client *ssh.Client, systemData *system.CombinedData) error {
-	session, err := client.NewSession()
+	session, err := newSessionWithTimeout(client, 5*time.Second)
 	if err != nil {
 		return fmt.Errorf("bad client")
 	}
@@ -375,6 +378,32 @@ func requestJsonFromAgent(client *ssh.Client, systemData *system.CombinedData) e
 	}
 
 	return nil
+}
+
+// Adds timeout to SSH session creation to avoid hanging in case of network issues
+func newSessionWithTimeout(client *ssh.Client, timeout time.Duration) (*ssh.Session, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	// use goroutine to create the session
+	sessionChan := make(chan *ssh.Session, 1)
+	errChan := make(chan error, 1)
+	go func() {
+		if session, err := client.NewSession(); err != nil {
+			errChan <- err
+		} else {
+			sessionChan <- session
+		}
+	}()
+
+	select {
+	case session := <-sessionChan:
+		return session, nil
+	case err := <-errChan:
+		return nil, err
+	case <-ctx.Done():
+		return nil, fmt.Errorf("session creation timed out")
+	}
 }
 
 func (h *Hub) getSSHKey() ([]byte, error) {
