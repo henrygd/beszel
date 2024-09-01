@@ -6,28 +6,35 @@ import (
 )
 
 type Stats struct {
-	Cpu          float64            `json:"cpu"`
-	Mem          float64            `json:"m"`
-	MemUsed      float64            `json:"mu"`
-	MemPct       float64            `json:"mp"`
-	MemBuffCache float64            `json:"mb"`
-	Swap         float64            `json:"s"`
-	SwapUsed     float64            `json:"su"`
-	Disk         float64            `json:"d"`
-	DiskUsed     float64            `json:"du"`
-	DiskPct      float64            `json:"dp"`
-	DiskRead     float64            `json:"dr"`
-	DiskWrite    float64            `json:"dw"`
-	NetworkSent  float64            `json:"ns"`
-	NetworkRecv  float64            `json:"nr"`
-	Temperatures map[string]float64 `json:"t,omitempty"`
+	Cpu          float64             `json:"cpu"`
+	Mem          float64             `json:"m"`
+	MemUsed      float64             `json:"mu"`
+	MemPct       float64             `json:"mp"`
+	MemBuffCache float64             `json:"mb"`
+	Swap         float64             `json:"s,omitempty"`
+	SwapUsed     float64             `json:"su,omitempty"`
+	DiskTotal    float64             `json:"d"`
+	DiskUsed     float64             `json:"du"`
+	DiskPct      float64             `json:"dp"`
+	DiskReadPs   float64             `json:"dr"`
+	DiskWritePs  float64             `json:"dw"`
+	NetworkSent  float64             `json:"ns"`
+	NetworkRecv  float64             `json:"nr"`
+	Temperatures map[string]float64  `json:"t,omitempty"`
+	ExtraFs      map[string]*FsStats `json:"efs,omitempty"`
 }
 
-type DiskIoStats struct {
-	Read       uint64
-	Write      uint64
-	Time       time.Time
-	Filesystem string
+type FsStats struct {
+	Time        time.Time `json:"-"`
+	Device      string    `json:"-"`
+	Root        bool      `json:"-"`
+	Mountpoint  string    `json:"-"`
+	DiskTotal   float64   `json:"d"`
+	DiskUsed    float64   `json:"du"`
+	TotalRead   uint64    `json:"-"`
+	TotalWrite  uint64    `json:"-"`
+	DiskWritePs float64   `json:"w"`
+	DiskReadPs  float64   `json:"r"`
 }
 
 type NetIoStats struct {
@@ -51,7 +58,7 @@ type Info struct {
 
 // Final data structure to return to the hub
 type CombinedData struct {
-	Stats      *Stats             `json:"stats"`
-	Info       *Info              `json:"info"`
-	Containers []*container.Stats `json:"container"`
+	Stats      Stats             `json:"stats"`
+	Info       Info              `json:"info"`
+	Containers []container.Stats `json:"container"`
 }

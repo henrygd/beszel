@@ -140,33 +140,11 @@ func (rm *RecordManager) CreateLongerRecords() {
 	// log.Println("finished creating longer records", "time (ms)", time.Since(start).Milliseconds())
 }
 
-// Calculate the average stats of a list of system_stats records with reflect
-// func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.Stats {
-// 	count := float64(len(records))
-// 	sum := reflect.New(reflect.TypeOf(system.Stats{})).Elem()
-
-// 	var stats system.Stats
-// 	for _, record := range records {
-// 		record.UnmarshalJSONField("stats", &stats)
-// 		statValue := reflect.ValueOf(stats)
-// 		for i := 0; i < statValue.NumField(); i++ {
-// 			field := sum.Field(i)
-// 			field.SetFloat(field.Float() + statValue.Field(i).Float())
-// 		}
-// 	}
-
-// 	average := reflect.New(reflect.TypeOf(system.Stats{})).Elem()
-// 	for i := 0; i < sum.NumField(); i++ {
-// 		average.Field(i).SetFloat(twoDecimals(sum.Field(i).Float() / count))
-// 	}
-
-// 	return average.Interface().(system.Stats)
-// }
-
 // Calculate the average stats of a list of system_stats records without reflect
 func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.Stats {
 	var sum system.Stats
 	sum.Temperatures = make(map[string]float64)
+	sum.ExtraFs = make(map[string]*system.FsStats)
 
 	count := float64(len(records))
 	// use different counter for temps in case some records don't have them
@@ -182,13 +160,14 @@ func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.Sta
 		sum.MemBuffCache += stats.MemBuffCache
 		sum.Swap += stats.Swap
 		sum.SwapUsed += stats.SwapUsed
-		sum.Disk += stats.Disk
+		sum.DiskTotal += stats.DiskTotal
 		sum.DiskUsed += stats.DiskUsed
 		sum.DiskPct += stats.DiskPct
-		sum.DiskRead += stats.DiskRead
-		sum.DiskWrite += stats.DiskWrite
+		sum.DiskReadPs += stats.DiskReadPs
+		sum.DiskWritePs += stats.DiskWritePs
 		sum.NetworkSent += stats.NetworkSent
 		sum.NetworkRecv += stats.NetworkRecv
+		// add temps to sum
 		if stats.Temperatures != nil {
 			tempCount++
 			for key, value := range stats.Temperatures {
@@ -196,6 +175,18 @@ func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.Sta
 					sum.Temperatures[key] = 0
 				}
 				sum.Temperatures[key] += value
+			}
+		}
+		// add extra fs to sum
+		if stats.ExtraFs != nil {
+			for key, value := range stats.ExtraFs {
+				if _, ok := sum.ExtraFs[key]; !ok {
+					sum.ExtraFs[key] = &system.FsStats{}
+				}
+				sum.ExtraFs[key].DiskTotal += value.DiskTotal
+				sum.ExtraFs[key].DiskUsed += value.DiskUsed
+				sum.ExtraFs[key].DiskWritePs += value.DiskWritePs
+				sum.ExtraFs[key].DiskReadPs += value.DiskReadPs
 			}
 		}
 	}
@@ -208,11 +199,11 @@ func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.Sta
 		MemBuffCache: twoDecimals(sum.MemBuffCache / count),
 		Swap:         twoDecimals(sum.Swap / count),
 		SwapUsed:     twoDecimals(sum.SwapUsed / count),
-		Disk:         twoDecimals(sum.Disk / count),
+		DiskTotal:    twoDecimals(sum.DiskTotal / count),
 		DiskUsed:     twoDecimals(sum.DiskUsed / count),
 		DiskPct:      twoDecimals(sum.DiskPct / count),
-		DiskRead:     twoDecimals(sum.DiskRead / count),
-		DiskWrite:    twoDecimals(sum.DiskWrite / count),
+		DiskReadPs:   twoDecimals(sum.DiskReadPs / count),
+		DiskWritePs:  twoDecimals(sum.DiskWritePs / count),
 		NetworkSent:  twoDecimals(sum.NetworkSent / count),
 		NetworkRecv:  twoDecimals(sum.NetworkRecv / count),
 	}
@@ -221,6 +212,18 @@ func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.Sta
 		stats.Temperatures = make(map[string]float64)
 		for key, value := range sum.Temperatures {
 			stats.Temperatures[key] = twoDecimals(value / tempCount)
+		}
+	}
+
+	if len(sum.ExtraFs) != 0 {
+		stats.ExtraFs = make(map[string]*system.FsStats)
+		for key, value := range sum.ExtraFs {
+			stats.ExtraFs[key] = &system.FsStats{
+				DiskTotal:   twoDecimals(value.DiskTotal / count),
+				DiskUsed:    twoDecimals(value.DiskUsed / count),
+				DiskWritePs: twoDecimals(value.DiskWritePs / count),
+				DiskReadPs:  twoDecimals(value.DiskReadPs / count),
+			}
 		}
 	}
 
