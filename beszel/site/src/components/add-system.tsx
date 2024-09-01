@@ -33,10 +33,12 @@ export function AddSystemButton({ className }: { className?: string }) {
     network_mode: host
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      # monitor other disks / partitions by mounting a folder in /extra-filesystems
+      # - /mnt/disk1/.beszel:/extra-filesystems/disk1:ro
     environment:
       PORT: ${port}
       KEY: "${publicKey}"
-      # FILESYSTEM: /dev/sda1 # set to the correct filesystem for disk I/O stats`)
+      # FILESYSTEM: /dev/sda1 # override the root partition / device for disk I/O stats`)
 	}
 
 	async function handleSubmit(e: SubmitEvent) {
