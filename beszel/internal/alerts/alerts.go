@@ -176,7 +176,7 @@ func (am *AlertManager) sendAlert(message *mailer.Message) {
 	if am.config.NotificationType == "shoutrrr" {
 		err := shoutrrr.Send(am.config.NotificationURL, fmt.Sprintf("%s\n\n%s", message.Subject, message.Text))
 		if err == nil {
-			am.app.Logger().Info("Sent shoutrrr alert", "to", message.To, "subj", message.Subject)
+			am.app.Logger().Info("Sent shoutrrr alert", "to", am.config.NotificationURL, "subj", message.Subject)
 			return
 		}
 
