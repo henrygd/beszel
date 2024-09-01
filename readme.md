@@ -57,7 +57,7 @@ The agent uses the host network mode so it can access network interface stats. T
 
 If you don't need network stats, remove that line from the compose file and map the port manually.
 
-> **Note**: The docker version of the agent cannot automatically detect the filesystem to use for disk I/O stats, so include the `FILESYSTEM` environment variable if you want that to work ([instructions here](#finding-the-correct-filesystem)).
+> **Note**: If disk I/O stats are missing or incorrect, try using the `FILESYSTEM` environment variable ([instructions here](#finding-the-correct-filesystem)). Check agent logs to see the current device being used.
 
 ### Binary
 
@@ -107,9 +107,11 @@ Use `./beszel update` and `./beszel-agent update` to update to the latest versio
 | Name          | Default | Description                                                        |
 | ------------- | ------- | ------------------------------------------------------------------ |
 | `DOCKER_HOST` | unset   | Overrides the docker host (docker.sock) if using a proxy.[^socket] |
-| `FILESYSTEM`  | unset   | Filesystem / partition to use for disk I/O stats.                  |
+| `FILESYSTEM`  | unset   | Device or partition to use for root disk I/O stats.                |
 | `KEY`         | unset   | Public SSH key to use for authentication. Provided in hub.         |
 | `PORT`        | 45876   | Port or address:port to listen on.                                 |
+
+<!-- | `EXTRA_FILESYSTEMS` | unset   | See [Monitoring additional disks](#)                               | -->
 
 [^socket]: Beszel only needs access to read container information. For [linuxserver/docker-socket-proxy](https://github.com/linuxserver/docker-socket-proxy) you would set `CONTAINERS=1`.
 
@@ -197,13 +199,19 @@ Otherwise you can use the agent's `container_name` as the hostname if both are i
 
 ### Finding the correct filesystem
 
-The filesystem / partition to use for disk I/O stats is specified in the `FILESYSTEM` environment variable.
+The filesystem / device / partition to use for disk I/O stats is specified in the `FILESYSTEM` environment variable.
 
-If it's not set, the agent will try to find the filesystem mounted on `/` and use that. This doesn't seem to work in a container, so it's recommended to set this value. One of the following methods should work (you usually want the option mounted on `/`):
+If it's not set, the agent will try to find the partition mounted on `/` and use that. This doesn't seem to work in a container, so it's recommended to set this value. One of the following methods should work (you usually want the option mounted on `/`):
 
-- Run `df -h` and choose an option under "Filesystem"
 - Run `lsblk` and choose an option under "NAME"
+- Run `df -h` and choose an option under "Filesystem"
 - Run `sudo fdisk -l` and choose an option under "Device"
+
+### Docker container charts are empty or missing
+
+If container charts show empty data, or don't show up at all, you may need to enable cgroup memory accounting. To verify, run `docker stats`. If that also shows zero memory usage, follow this guide to fix:
+
+https://akashrajpurohit.com/blog/resolving-missing-memory-stats-in-docker-stats-on-raspberry-pi/
 
 ### Docker containers are not populating reliably
 
@@ -260,8 +268,3 @@ GOOS=freebsd GOARCH=arm64 CGO_ENABLED=0 go build -ldflags "-w -s" .
 ```
 
 You can see a list of valid options by running `go tool dist list`.
-
-<!--
-## Support
-
-My country, the USA, and many others, are actively involved in the genocide of the Palestinian people. I would greatly appreciate any effort you could make to pressure your government to stop enabling this violence. -->
