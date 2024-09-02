@@ -13,14 +13,12 @@ import (
 )
 
 type AlertManager struct {
-	app        *pocketbase.PocketBase
-	mailClient mailer.Mailer
+	app *pocketbase.PocketBase
 }
 
 func NewAlertManager(app *pocketbase.PocketBase) *AlertManager {
 	return &AlertManager{
-		app:        app,
-		mailClient: app.NewMailClient(),
+		app: app,
 	}
 }
 
@@ -145,7 +143,7 @@ func (am *AlertManager) sendAlert(message *mailer.Message) {
 		Address: am.app.Settings().Meta.SenderAddress,
 		Name:    am.app.Settings().Meta.SenderName,
 	}
-	if err := am.mailClient.Send(message); err != nil {
+	if err := am.app.NewMailClient().Send(message); err != nil {
 		am.app.Logger().Error("Failed to send alert: ", "err", err.Error())
 	} else {
 		am.app.Logger().Info("Sent alert", "to", message.To, "subj", message.Subject)
