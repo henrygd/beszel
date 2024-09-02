@@ -100,6 +100,7 @@ const ChartTooltipContent = React.forwardRef<
 			nameKey?: string
 			labelKey?: string
 			unit?: string
+			filter?: string
 			contentFormatter?: (item: any, key: string) => React.ReactNode | string
 		}
 >(
@@ -119,6 +120,7 @@ const ChartTooltipContent = React.forwardRef<
 			nameKey,
 			labelKey,
 			unit,
+			filter,
 			itemSorter,
 			contentFormatter: content = undefined,
 		},
@@ -127,6 +129,9 @@ const ChartTooltipContent = React.forwardRef<
 		const { config } = useChart()
 
 		React.useMemo(() => {
+			if (filter) {
+				payload = payload?.filter((item) => (item.name as string)?.includes(filter))
+			}
 			if (itemSorter) {
 				// @ts-ignore
 				payload?.sort(itemSorter)

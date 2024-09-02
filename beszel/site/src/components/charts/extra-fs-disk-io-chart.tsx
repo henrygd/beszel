@@ -1,19 +1,27 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-import { chartTimeData, cn, formatShortDate, useYaxisWidth } from '@/lib/utils'
-import { useMemo, useRef } from 'react'
+import {
+	chartTimeData,
+	cn,
+	formatShortDate,
+	toFixedWithoutTrailingZeros,
+	useYaxisWidth,
+} from '@/lib/utils'
 // import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
 import { SystemStatsRecord } from '@/types'
+import { useMemo, useRef } from 'react'
 
-export default function DiskChart({
+export default function ExFsDiskIoChart({
 	ticks,
 	systemData,
+	fs,
 }: {
 	ticks: number[]
 	systemData: SystemStatsRecord[]
+	fs: string
 }) {
 	const chartTime = useStore($chartTime)
 	const chartRef = useRef<HTMLDivElement>(null)
@@ -21,9 +29,9 @@ export default function DiskChart({
 
 	const yAxisSet = useMemo(() => yAxisWidth !== 180, [yAxisWidth])
 
-	const diskSize = useMemo(() => {
-		return Math.round(systemData.at(-1)?.stats.d ?? NaN)
-	}, [systemData])
+	// if (!systemData.length || !ticks.length) {
+	// 	return <Spinner />
+	// }
 
 	return (
 		<div ref={chartRef}>
@@ -48,12 +56,11 @@ export default function DiskChart({
 					<YAxis
 						className="tracking-tighter"
 						width={yAxisWidth}
-						domain={[0, diskSize]}
-						tickCount={9}
-						minTickGap={6}
+						// domain={[0, (max: number) => (max <= 0.4 ? 0.4 : Math.ceil(max))]}
+						tickFormatter={(value) => toFixedWithoutTrailingZeros(value, 2)}
 						tickLine={false}
 						axisLine={false}
-						unit={' GB'}
+						unit={' MB/s'}
 					/>
 					<XAxis
 						dataKey="created"
@@ -71,19 +78,29 @@ export default function DiskChart({
 						animationDuration={150}
 						content={
 							<ChartTooltipContent
-								unit=" GB"
+								unit=" MB/s"
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 								indicator="line"
 							/>
 						}
 					/>
 					<Area
-						dataKey="stats.du"
-						name="Disk Usage"
+						dataKey={`stats.efs.${fs}.w`}
+						name="Write"
 						type="monotoneX"
-						fill="hsl(var(--chart-4))"
-						fillOpacity={0.4}
-						stroke="hsl(var(--chart-4))"
+						fill="hsl(var(--chart-3))"
+						fillOpacity={0.3}
+						stroke="hsl(var(--chart-3))"
+						// animationDuration={1200}
+						isAnimationActive={false}
+					/>
+					<Area
+						dataKey={`stats.efs.${fs}.r`}
+						name="Read"
+						type="monotoneX"
+						fill="hsl(var(--chart-1))"
+						fillOpacity={0.3}
+						stroke="hsl(var(--chart-1))"
 						// animationDuration={1200}
 						isAnimationActive={false}
 					/>

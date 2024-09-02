@@ -59,6 +59,19 @@ export interface SystemStats {
 	nr: number
 	/** temperatures */
 	t?: Record<string, number>
+	/** extra filesystems */
+	efs?: Record<string, ExtraFsStats>
+}
+
+export interface ExtraFsStats {
+	/** disk size (gb) */
+	d: number
+	/** disk used (gb) */
+	du: number
+	/** total read (mb) */
+	r: number
+	/** total write (mb) */
+	w: number
 }
 
 export interface ContainerStatsRecord extends RecordModel {

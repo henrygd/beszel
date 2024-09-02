@@ -1,10 +1,17 @@
-import { $systems, pb, $chartTime } from '@/lib/stores'
+import { $systems, pb, $chartTime, $containerFilter } from '@/lib/stores'
 import { ContainerStatsRecord, SystemRecord, SystemStatsRecord } from '@/types'
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card'
 import { useStore } from '@nanostores/react'
 import Spinner from '../spinner'
-import { ClockArrowUp, CpuIcon, GlobeIcon, LayoutGridIcon } from 'lucide-react'
+import {
+	ClockArrowUp,
+	CpuIcon,
+	GlobeIcon,
+	LayoutGridIcon,
+	StretchHorizontalIcon,
+	XIcon,
+} from 'lucide-react'
 import ChartTimeSelect from '../charts/chart-time-select'
 import {
 	chartTimeData,
@@ -16,8 +23,8 @@ import {
 import { Separator } from '../ui/separator'
 import { scaleTime } from 'd3-scale'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
-import { Toggle } from '../ui/toggle'
-import { buttonVariants } from '../ui/button'
+import { Button, buttonVariants } from '../ui/button'
+import { Input } from '../ui/input'
 
 const CpuChart = lazy(() => import('../charts/cpu-chart'))
 const ContainerCpuChart = lazy(() => import('../charts/container-cpu-chart'))
@@ -29,6 +36,8 @@ const BandwidthChart = lazy(() => import('../charts/bandwidth-chart'))
 const ContainerNetChart = lazy(() => import('../charts/container-net-chart'))
 const SwapChart = lazy(() => import('../charts/swap-chart'))
 const TemperatureChart = lazy(() => import('../charts/temperature-chart'))
+const ExFsDiskChart = lazy(() => import('../charts/extra-fs-disk-chart'))
+const ExFsDiskIoChart = lazy(() => import('../charts/extra-fs-disk-io-chart'))
 
 export default function SystemDetail({ name }: { name: string }) {
 	const systems = useStore($systems)
@@ -38,6 +47,7 @@ export default function SystemDetail({ name }: { name: string }) {
 	const [system, setSystem] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
 	const [hasDockerStats, setHasDocker] = useState(false)
+	const netCardRef = useRef<HTMLDivElement>(null)
 	const [dockerCpuChartData, setDockerCpuChartData] = useState<Record<string, number | string>[]>(
 		[]
 	)
@@ -62,6 +72,7 @@ export default function SystemDetail({ name }: { name: string }) {
 		setDockerCpuChartData([])
 		setDockerMemChartData([])
 		setDockerNetChartData([])
+		$containerFilter.set('')
 	}
 
 	useEffect(resetCharts, [chartTime])
@@ -114,7 +125,7 @@ export default function SystemDetail({ name }: { name: string }) {
 			if (prevTime) {
 				const interval = record.created - prevTime
 				// if interval is too large, add a null record
-				if (interval - interval * 0.5 > expectedInterval) {
+				if (interval > expectedInterval / 2 + expectedInterval) {
 					// @ts-ignore
 					modifiedRecords.push({ created: null, stats: null })
 				}
@@ -195,169 +206,251 @@ export default function SystemDetail({ name }: { name: string }) {
 		return `${Math.trunc(system.info?.u / 86400)} days`
 	}, [system.info?.u])
 
+	/** Space for tooltip if more than 12 containers */
+	const bottomSpacing = useMemo(() => {
+		if (!netCardRef.current || !dockerNetChartData.length) {
+			return 0
+		}
+		const tooltipHeight = (Object.keys(dockerNetChartData[0]).length - 11) * 17.8 - 40
+		const wrapperEl = document.getElementById('chartwrap') as HTMLDivElement
+		const wrapperRect = wrapperEl.getBoundingClientRect()
+		const chartRect = netCardRef.current.getBoundingClientRect()
+		const distanceToBottom = wrapperRect.bottom - chartRect.bottom
+		return tooltipHeight - distanceToBottom
+	}, [netCardRef.current, dockerNetChartData])
+
 	if (!system.id) {
 		return null
 	}
 
 	return (
-		<div className="grid lg:grid-cols-2 gap-4 mb-10">
-			<Card className="col-span-full">
-				<div className="grid lg:flex items-center gap-4 px-4 sm:px-6 pt-3 sm:pt-4 pb-5">
-					<div>
-						<h1 className="text-[1.6rem] font-semibold mb-1.5">{system.name}</h1>
-						<div className="flex flex-wrap items-center gap-3 gap-y-2 text-sm opacity-90">
-							<div className="capitalize flex gap-2 items-center">
-								<span className={cn('relative flex h-3 w-3')}>
-									{system.status === 'up' && (
+		<>
+			<div id="chartwrap" className="grid gap-4 mb-10">
+				{/* system info */}
+				<Card>
+					<div className="grid lg:flex items-center gap-4 px-4 sm:px-6 pt-3 sm:pt-4 pb-5">
+						<div>
+							<h1 className="text-[1.6rem] font-semibold mb-1.5">{system.name}</h1>
+							<div className="flex flex-wrap items-center gap-3 gap-y-2 text-sm opacity-90">
+								<div className="capitalize flex gap-2 items-center">
+									<span className={cn('relative flex h-3 w-3')}>
+										{system.status === 'up' && (
+											<span
+												className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
+												style={{ animationDuration: '1.5s' }}
+											></span>
+										)}
 										<span
-											className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
-											style={{ animationDuration: '1.5s' }}
+											className={cn('relative inline-flex rounded-full h-3 w-3', {
+												'bg-green-500': system.status === 'up',
+												'bg-red-500': system.status === 'down',
+												'bg-primary/40': system.status === 'paused',
+												'bg-yellow-500': system.status === 'pending',
+											})}
 										></span>
-									)}
-									<span
-										className={cn('relative inline-flex rounded-full h-3 w-3', {
-											'bg-green-500': system.status === 'up',
-											'bg-red-500': system.status === 'down',
-											'bg-primary/40': system.status === 'paused',
-											'bg-yellow-500': system.status === 'pending',
-										})}
-									></span>
-								</span>
-								{system.status}
-							</div>
-							<Separator orientation="vertical" className="h-4 bg-primary/30" />
-							<div className="flex gap-1.5">
-								<GlobeIcon className="h-4 w-4 mt-[1px]" /> {system.host}
-							</div>
-							{system.info?.u && (
-								<TooltipProvider>
-									<Tooltip>
+									</span>
+									{system.status}
+								</div>
+								<Separator orientation="vertical" className="h-4 bg-primary/30" />
+								<div className="flex gap-1.5 items-center">
+									<GlobeIcon className="h-4 w-4" /> {system.host}
+								</div>
+								{system.info?.u && (
+									<TooltipProvider>
+										<Tooltip>
+											<Separator orientation="vertical" className="h-4 bg-primary/30" />
+											<TooltipTrigger asChild>
+												<div className="flex gap-1.5">
+													<ClockArrowUp className="h-4 w-4 mt-[1px]" /> {uptime}
+												</div>
+											</TooltipTrigger>
+											<TooltipContent>Uptime</TooltipContent>
+										</Tooltip>
+									</TooltipProvider>
+								)}
+								{system.info?.m && (
+									<>
 										<Separator orientation="vertical" className="h-4 bg-primary/30" />
-										<TooltipTrigger asChild>
-											<div className="flex gap-1.5">
-												<ClockArrowUp className="h-4 w-4 mt-[1px]" /> {uptime}
-											</div>
-										</TooltipTrigger>
-										<TooltipContent>Uptime</TooltipContent>
-									</Tooltip>
-								</TooltipProvider>
-							)}
-							{system.info?.m && (
-								<>
-									<Separator orientation="vertical" className="h-4 bg-primary/30" />
-									<div className="flex gap-1.5">
-										<CpuIcon className="h-4 w-4 mt-[1px]" />
-										{system.info.m} ({system.info.c}c / {system.info.t}t)
-									</div>
-								</>
-							)}
+										<div className="flex gap-1.5">
+											<CpuIcon className="h-4 w-4 mt-[1px]" />
+											{system.info.m} ({system.info.c}c / {system.info.t}t)
+										</div>
+									</>
+								)}
+							</div>
 						</div>
-					</div>
-					<div className="lg:ml-auto flex items-center gap-2 max-sm:-mb-1">
-						<ChartTimeSelect className="w-full lg:w-40" />
-						<TooltipProvider delayDuration={100}>
-							<Tooltip>
-								<TooltipTrigger asChild className="hidden lg:block opacity-85">
-									<span>
-										<Toggle
+						<div className="lg:ml-auto flex items-center gap-2 max-sm:-mb-1">
+							<ChartTimeSelect className="w-full lg:w-40" />
+							<TooltipProvider delayDuration={100}>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<Button
 											aria-label="Toggle grid"
 											className={cn(
-												'p-0 border border-card',
-												buttonVariants({ variant: 'ghost', size: 'icon' })
+												buttonVariants({ variant: 'outline', size: 'icon' }),
+												'hidden lg:flex p-0 text-primary'
 											)}
-											pressed={grid}
-											onPressedChange={setGrid}
+											onClick={() => setGrid(!grid)}
 										>
-											<LayoutGridIcon className="h-[1.2rem] w-[1.2rem]" />
-										</Toggle>
-									</span>
-								</TooltipTrigger>
-								<TooltipContent>Toggle grid</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>
+											{grid ? (
+												<LayoutGridIcon className="h-[1.2rem] w-[1.2rem] opacity-85" />
+											) : (
+												<StretchHorizontalIcon className="h-[1.2rem] w-[1.2rem] opacity-85" />
+											)}
+										</Button>
+									</TooltipTrigger>
+									<TooltipContent>Toggle grid</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
+						</div>
 					</div>
-				</div>
-			</Card>
+				</Card>
 
-			<ChartCard
-				grid={grid}
-				title="Total CPU Usage"
-				description="Average system-wide CPU utilization"
-			>
-				<CpuChart ticks={ticks} systemData={systemStats} />
-			</ChartCard>
-
-			{hasDockerStats && (
-				<ChartCard
-					grid={grid}
-					title="Docker CPU Usage"
-					description="CPU utilization of docker containers"
-				>
-					<ContainerCpuChart chartData={dockerCpuChartData} ticks={ticks} />
-				</ChartCard>
-			)}
-
-			<ChartCard
-				grid={grid}
-				title="Total Memory Usage"
-				description="Precise utilization at the recorded time"
-			>
-				<MemChart ticks={ticks} systemData={systemStats} />
-			</ChartCard>
-
-			{hasDockerStats && (
-				<ChartCard
-					grid={grid}
-					title="Docker Memory Usage"
-					description="Memory usage of docker containers"
-				>
-					<ContainerMemChart chartData={dockerMemChartData} ticks={ticks} />
-				</ChartCard>
-			)}
-
-			{(systemStats.at(-1)?.stats.s ?? 0) > 0 && (
-				<ChartCard grid={grid} title="Swap Usage" description="Swap space used by the system">
-					<SwapChart ticks={ticks} systemData={systemStats} />
-				</ChartCard>
-			)}
-
-			<ChartCard grid={grid} title="Disk Space" description="Usage of root partition">
-				<DiskChart ticks={ticks} systemData={systemStats} />
-			</ChartCard>
-
-			{systemStats.at(-1)?.stats.t && (
-				<ChartCard grid={grid} title="Temperature" description="Temperatures of system sensors">
-					<TemperatureChart ticks={ticks} systemData={systemStats} />
-				</ChartCard>
-			)}
-
-			<ChartCard grid={grid} title="Disk I/O" description="Throughput of root filesystem">
-				<DiskIoChart ticks={ticks} systemData={systemStats} />
-			</ChartCard>
-
-			<ChartCard grid={grid} title="Bandwidth" description="Network traffic of public interfaces">
-				<BandwidthChart ticks={ticks} systemData={systemStats} />
-			</ChartCard>
-
-			{hasDockerStats && dockerNetChartData.length > 0 && (
-				<>
+				{/* main charts */}
+				<div className="grid lg:grid-cols-2 gap-4">
 					<ChartCard
 						grid={grid}
-						title="Docker Network I/O"
-						description="Includes traffic between internal services"
+						title="Total CPU Usage"
+						description="Average system-wide CPU utilization"
 					>
-						<ContainerNetChart chartData={dockerNetChartData} ticks={ticks} />
+						<CpuChart ticks={ticks} systemData={systemStats} />
 					</ChartCard>
-					{/* add space for tooltip if more than 12 containers */}
-					{Object.keys(dockerNetChartData[0]).length > 12 && (
-						<span
-							className="block"
-							style={{
-								height: (Object.keys(dockerNetChartData[0]).length - 13) * 18,
-							}}
-						/>
+
+					{hasDockerStats && (
+						<ChartCard
+							grid={grid}
+							title="Docker CPU Usage"
+							description="CPU utilization of docker containers"
+							isContainerChart={true}
+						>
+							<ContainerCpuChart chartData={dockerCpuChartData} ticks={ticks} />
+						</ChartCard>
 					)}
-				</>
+
+					<ChartCard
+						grid={grid}
+						title="Total Memory Usage"
+						description="Precise utilization at the recorded time"
+					>
+						<MemChart ticks={ticks} systemData={systemStats} />
+					</ChartCard>
+
+					{hasDockerStats && (
+						<ChartCard
+							grid={grid}
+							title="Docker Memory Usage"
+							description="Memory usage of docker containers"
+							isContainerChart={true}
+						>
+							<ContainerMemChart chartData={dockerMemChartData} ticks={ticks} />
+						</ChartCard>
+					)}
+
+					{(systemStats.at(-1)?.stats.s ?? 0) > 0 && (
+						<ChartCard grid={grid} title="Swap Usage" description="Swap space used by the system">
+							<SwapChart ticks={ticks} systemData={systemStats} />
+						</ChartCard>
+					)}
+
+					<ChartCard grid={grid} title="Disk Space" description="Usage of root partition">
+						<DiskChart ticks={ticks} systemData={systemStats} />
+					</ChartCard>
+
+					<ChartCard grid={grid} title="Disk I/O" description="Throughput of root filesystem">
+						<DiskIoChart ticks={ticks} systemData={systemStats} />
+					</ChartCard>
+
+					<ChartCard
+						grid={grid}
+						title="Bandwidth"
+						description="Network traffic of public interfaces"
+					>
+						<BandwidthChart ticks={ticks} systemData={systemStats} />
+					</ChartCard>
+
+					{hasDockerStats && dockerNetChartData.length > 0 && (
+						<div
+							ref={netCardRef}
+							className={cn({
+								'col-span-full': !grid,
+							})}
+						>
+							<ChartCard
+								title="Docker Network I/O"
+								description="Includes traffic between internal services"
+								isContainerChart={true}
+							>
+								<ContainerNetChart chartData={dockerNetChartData} ticks={ticks} />
+							</ChartCard>
+						</div>
+					)}
+
+					{systemStats.at(-1)?.stats.t && (
+						<ChartCard grid={grid} title="Temperature" description="Temperatures of system sensors">
+							<TemperatureChart ticks={ticks} systemData={systemStats} />
+						</ChartCard>
+					)}
+				</div>
+
+				{/* extra filesystem charts */}
+				{Object.keys(systemStats.at(-1)?.stats.efs ?? {}).length > 0 && (
+					<div className="grid lg:grid-cols-2 gap-4">
+						{Object.keys(systemStats.at(-1)?.stats.efs ?? {}).map((extraFsName) => {
+							return (
+								<div key={extraFsName} className="contents">
+									<ChartCard
+										grid={true}
+										title={`${extraFsName} Usage`}
+										description={`Disk usage of ${extraFsName}`}
+									>
+										<ExFsDiskChart ticks={ticks} systemData={systemStats} fs={extraFsName} />
+									</ChartCard>
+									<ChartCard
+										grid={true}
+										title={`${extraFsName} I/O`}
+										description={`Throughput of of ${extraFsName}`}
+									>
+										<ExFsDiskIoChart ticks={ticks} systemData={systemStats} fs={extraFsName} />
+									</ChartCard>
+								</div>
+							)
+						})}
+					</div>
+				)}
+			</div>
+
+			{/* add space for tooltip if more than 12 containers */}
+			{bottomSpacing > 0 && <span className="block" style={{ height: bottomSpacing }} />}
+		</>
+	)
+}
+
+function ContainerFilterBar() {
+	const containerFilter = useStore($containerFilter)
+
+	const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+		$containerFilter.set(e.target.value)
+	}, []) // Use an empty dependency array to prevent re-creation
+
+	return (
+		<div className="relative py-1 block sm:w-44 sm:absolute sm:top-2.5 sm:right-3.5">
+			<Input
+				placeholder="Filter..."
+				className="pl-4 pr-8"
+				value={containerFilter}
+				onChange={handleChange}
+			/>
+			{containerFilter && (
+				<Button
+					type="button"
+					variant="ghost"
+					size="icon"
+					aria-label="Clear"
+					className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+					onClick={() => $containerFilter.set('')}
+				>
+					<XIcon className="h-4 w-4" />
+				</Button>
 			)}
 		</div>
 	)
@@ -368,22 +461,26 @@ function ChartCard({
 	description,
 	children,
 	grid,
+	isContainerChart,
 }: {
 	title: string
 	description: string
 	children: React.ReactNode
-	grid: boolean
+	grid?: boolean
+	isContainerChart?: boolean
 }) {
 	const target = useRef<HTMLDivElement>(null)
 	const [isInViewport, wrappedTargetRef] = useClampedIsInViewport({ target: target })
+
 	return (
 		<Card
-			className={cn('pb-2 sm:pb-4 even:last-of-type:col-span-full', { 'col-span-full': !grid })}
+			className={cn('pb-2 sm:pb-4 odd:last-of-type:col-span-full', { 'col-span-full': !grid })}
 			ref={wrappedTargetRef}
 		>
 			<CardHeader className="pb-5 pt-4 relative space-y-1 max-sm:py-3 max-sm:px-4">
 				<CardTitle className="text-xl sm:text-2xl">{title}</CardTitle>
 				<CardDescription>{description}</CardDescription>
+				{isContainerChart && <ContainerFilterBar />}
 			</CardHeader>
 			<CardContent className="pl-0 w-[calc(100%-1.6em)] h-52 relative">
 				{<Spinner />}

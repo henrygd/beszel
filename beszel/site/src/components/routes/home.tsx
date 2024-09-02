@@ -51,7 +51,7 @@ export default function () {
 						<Input
 							placeholder="Filter..."
 							onChange={(e) => setFilter(e.target.value)}
-							className="w-full md:w-56 lg:w-80 ml-auto pl-4"
+							className="w-full md:w-56 lg:w-80 ml-auto px-4"
 						/>
 					</div>
 				</CardHeader>

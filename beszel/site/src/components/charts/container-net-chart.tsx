@@ -15,7 +15,7 @@ import {
 } from '@/lib/utils'
 // import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
-import { $chartTime } from '@/lib/stores'
+import { $chartTime, $containerFilter } from '@/lib/stores'
 import { Separator } from '@/components/ui/separator'
 
 export default function ContainerCpuChart({
@@ -28,6 +28,7 @@ export default function ContainerCpuChart({
 	const chartTime = useStore($chartTime)
 	const chartRef = useRef<HTMLDivElement>(null)
 	const yAxisWidth = useYaxisWidth(chartRef)
+	const filter = useStore($containerFilter)
 
 	const yAxisSet = useMemo(() => yAxisWidth !== 180, [yAxisWidth])
 
@@ -116,6 +117,7 @@ export default function ContainerCpuChart({
 						itemSorter={(a, b) => b.value - a.value}
 						content={
 							<ChartTooltipContent
+								filter={filter}
 								indicator="line"
 								contentFormatter={(item, key) => {
 									try {
@@ -136,20 +138,27 @@ export default function ContainerCpuChart({
 							/>
 						}
 					/>
-					{Object.keys(chartConfig).map((key) => (
-						<Area
-							key={key}
-							name={key}
-							// animationDuration={1200}
-							isAnimationActive={false}
-							dataKey={(data) => data?.[key]?.[2] ?? 0}
-							type="monotoneX"
-							fill={chartConfig[key].color}
-							fillOpacity={0.4}
-							stroke={chartConfig[key].color}
-							stackId="a"
-						/>
-					))}
+					{Object.keys(chartConfig).map((key) => {
+						const filtered = filter && !key.includes(filter)
+						let fillOpacity = filtered ? 0.05 : 0.4
+						let strokeOpacity = filtered ? 0.1 : 1
+						return (
+							<Area
+								key={key}
+								name={key}
+								// animationDuration={1200}
+								isAnimationActive={false}
+								dataKey={(data) => data?.[key]?.[2] ?? 0}
+								type="monotoneX"
+								fill={chartConfig[key].color}
+								fillOpacity={fillOpacity}
+								stroke={chartConfig[key].color}
+								strokeOpacity={strokeOpacity}
+								activeDot={{ opacity: filtered ? 0 : 1 }}
+								stackId="a"
+							/>
+						)
+					})}
 				</AreaChart>
 			</ChartContainer>
 		</div>

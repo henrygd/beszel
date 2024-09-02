@@ -8,12 +8,14 @@ import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
 import { SystemStatsRecord } from '@/types'
 
-export default function DiskChart({
+export default function ExFsDiskChart({
 	ticks,
 	systemData,
+	fs,
 }: {
 	ticks: number[]
 	systemData: SystemStatsRecord[]
+	fs: string
 }) {
 	const chartTime = useStore($chartTime)
 	const chartRef = useRef<HTMLDivElement>(null)
@@ -22,12 +24,12 @@ export default function DiskChart({
 	const yAxisSet = useMemo(() => yAxisWidth !== 180, [yAxisWidth])
 
 	const diskSize = useMemo(() => {
-		return Math.round(systemData.at(-1)?.stats.d ?? NaN)
+		const size = systemData.at(-1)?.stats.efs?.[fs].d ?? 0
+		return size > 10 ? Math.round(size) : size
 	}, [systemData])
 
 	return (
 		<div ref={chartRef}>
-			{/* {!yAxisSet && <Spinner />} */}
 			<ChartContainer
 				config={{}}
 				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
@@ -38,10 +40,7 @@ export default function DiskChart({
 					accessibilityLayer
 					data={systemData}
 					margin={{
-						left: 0,
-						right: 0,
 						top: 10,
-						bottom: 0,
 					}}
 				>
 					<CartesianGrid vertical={false} />
@@ -78,13 +77,12 @@ export default function DiskChart({
 						}
 					/>
 					<Area
-						dataKey="stats.du"
+						dataKey={`stats.efs.${fs}.du`}
 						name="Disk Usage"
 						type="monotoneX"
 						fill="hsl(var(--chart-4))"
 						fillOpacity={0.4}
 						stroke="hsl(var(--chart-4))"
-						// animationDuration={1200}
 						isAnimationActive={false}
 					/>
 				</AreaChart>

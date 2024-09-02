@@ -15,7 +15,7 @@ import {
 } from '@/lib/utils'
 // import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
-import { $chartTime } from '@/lib/stores'
+import { $chartTime, $containerFilter } from '@/lib/stores'
 
 export default function ContainerMemChart({
 	chartData,
@@ -27,6 +27,7 @@ export default function ContainerMemChart({
 	const chartTime = useStore($chartTime)
 	const chartRef = useRef<HTMLDivElement>(null)
 	const yAxisWidth = useYaxisWidth(chartRef)
+	const filter = useStore($containerFilter)
 
 	const yAxisSet = useMemo(() => yAxisWidth !== 180, [yAxisWidth])
 
@@ -114,21 +115,27 @@ export default function ContainerMemChart({
 						labelFormatter={(_, data) => formatShortDate(data[0].payload.time)}
 						// @ts-ignore
 						itemSorter={(a, b) => b.value - a.value}
-						content={<ChartTooltipContent unit=" MB" indicator="line" />}
+						content={<ChartTooltipContent filter={filter} unit=" MB" indicator="line" />}
 					/>
-					{Object.keys(chartConfig).map((key) => (
-						<Area
-							key={key}
-							// animationDuration={1200}
-							isAnimationActive={false}
-							dataKey={key}
-							type="monotoneX"
-							fill={chartConfig[key].color}
-							fillOpacity={0.4}
-							stroke={chartConfig[key].color}
-							stackId="a"
-						/>
-					))}
+					{Object.keys(chartConfig).map((key) => {
+						const filtered = filter && !key.includes(filter)
+						let fillOpacity = filtered ? 0.05 : 0.4
+						let strokeOpacity = filtered ? 0.1 : 1
+						return (
+							<Area
+								key={key}
+								isAnimationActive={false}
+								dataKey={key}
+								type="monotoneX"
+								fill={chartConfig[key].color}
+								strokeOpacity={strokeOpacity}
+								fillOpacity={fillOpacity}
+								stroke={chartConfig[key].color}
+								activeDot={filtered ? false : {}}
+								stackId="a"
+							/>
+						)
+					})}
 				</AreaChart>
 			</ChartContainer>
 		</div>

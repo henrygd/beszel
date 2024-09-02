@@ -72,7 +72,7 @@ function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 				<span
 					className={cn(
 						'absolute inset-0 w-full h-full origin-left',
-						(val < 60 && 'bg-green-500') || (val < 90 && 'bg-yellow-500') || 'bg-red-600'
+						(val < 65 && 'bg-green-500') || (val < 90 && 'bg-yellow-500') || 'bg-red-600'
 					)}
 					style={{ transform: `scalex(${val}%)` }}
 				></span>

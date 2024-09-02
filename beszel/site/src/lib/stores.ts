@@ -22,3 +22,6 @@ export const $hubVersion = atom('')
 
 /** Chart time period */
 export const $chartTime = atom('1h') as WritableAtom<ChartTimes>
+
+/** Container chart filter */
+export const $containerFilter = atom('')
