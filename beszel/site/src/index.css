@@ -57,6 +57,20 @@
 	}
 }
 
+/* Fonts */
+@supports (font-variation-settings: normal) {
+	:root {
+		font-family: Inter, InterVariable, sans-serif;
+	}
+}
+@font-face {
+	font-family: InterVariable;
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url('/static/InterVariable.woff2?v=4.0') format('woff2');
+}
+
 @layer base {
 	* {
 		@apply border-border;
