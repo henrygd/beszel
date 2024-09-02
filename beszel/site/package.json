@@ -4,7 +4,7 @@
 	"version": "0.0.0",
 	"type": "module",
 	"scripts": {
-		"dev": "vite",
+		"dev": "NODE_ENV=production vite",
 		"build": "vite build",
 		"preview": "vite preview"
 	},
@@ -23,7 +23,7 @@
 		"@radix-ui/react-toast": "^1.2.1",
 		"@radix-ui/react-toggle": "^1.1.0",
 		"@radix-ui/react-tooltip": "^1.1.2",
-		"@tanstack/react-table": "^8.20.1",
+		"@tanstack/react-table": "^8.20.5",
 		"@vitejs/plugin-react": "^4.3.1",
 		"class-variance-authority": "^0.7.0",
 		"clsx": "^2.1.1",
@@ -32,23 +32,23 @@
 		"d3-time": "^3.1.0",
 		"lucide-react": "^0.407.0",
 		"nanostores": "^0.10.3",
-		"pocketbase": "^0.21.4",
+		"pocketbase": "^0.21.5",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
 		"recharts": "^2.13.0-alpha.4",
-		"tailwind-merge": "^2.4.0",
+		"tailwind-merge": "^2.5.2",
 		"tailwindcss-animate": "^1.0.7",
 		"use-is-in-viewport": "^1.0.9",
 		"valibot": "^0.36.0"
 	},
 	"devDependencies": {
-		"@types/bun": "^1.1.6",
-		"@types/react": "^18.3.3",
+		"@types/bun": "^1.1.8",
+		"@types/react": "^18.3.5",
 		"@types/react-dom": "^18.3.0",
 		"autoprefixer": "^10.4.20",
-		"postcss": "^8.4.40",
-		"tailwindcss": "^3.4.7",
+		"postcss": "^8.4.44",
+		"tailwindcss": "^3.4.10",
 		"typescript": "^5.5.4",
-		"vite": "^5.3.5"
+		"vite": "^5.4.2"
 	}
 }
