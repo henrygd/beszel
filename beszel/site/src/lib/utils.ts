@@ -1,7 +1,7 @@
 import { toast } from '@/components/ui/use-toast'
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import { $alerts, $systems, pb } from './stores'
+import { $alerts, $copyContent, $systems, pb } from './stores'
 import { AlertRecord, ChartTimeData, ChartTimes, SystemRecord } from '@/types'
 import { RecordModel, RecordSubscription } from 'pocketbase'
 import { WritableAtom } from 'nanostores'
@@ -22,10 +22,7 @@ export async function copyToClipboard(content: string) {
 			description: 'Copied to clipboard',
 		})
 	} catch (e: any) {
-		prompt(
-			'Automatic copy requires a secure context (https, localhost, or *.localhost). Please copy manually:',
-			content
-		)
+		$copyContent.set(content)
 	}
 }
 

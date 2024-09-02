@@ -25,3 +25,6 @@ export const $chartTime = atom('1h') as WritableAtom<ChartTimes>
 
 /** Container chart filter */
 export const $containerFilter = atom('')
+
+/** Fallback copy to clipboard dialog content */
+export const $copyContent = atom('')

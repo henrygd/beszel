@@ -16,12 +16,12 @@ module.exports = {
 				'2xl': '1400px',
 			},
 		},
-		fontFamily: {
-			sans: 'Inter, sans-serif',
-			// body: ['Inter', 'sans-serif'],
-			// display: ['Inter', 'sans-serif'],
-		},
 		extend: {
+			fontFamily: {
+				sans: 'Inter, sans-serif',
+				// body: ['Inter', 'sans-serif'],
+				// display: ['Inter', 'sans-serif'],
+			},
 			screens: {
 				xs: '425px',
 			},

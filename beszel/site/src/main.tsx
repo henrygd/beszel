@@ -3,7 +3,14 @@ import React, { Suspense, lazy, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import Home from './components/routes/home.tsx'
 import { ThemeProvider } from './components/theme-provider.tsx'
-import { $authenticated, $systems, pb, $publicKey, $hubVersion } from './lib/stores.ts'
+import {
+	$authenticated,
+	$systems,
+	pb,
+	$publicKey,
+	$hubVersion,
+	$copyContent,
+} from './lib/stores.ts'
 import { ModeToggle } from './components/mode-toggle.tsx'
 import {
 	cn,
@@ -42,6 +49,7 @@ import { AddSystemButton } from './components/add-system.tsx'
 // const ServerDetail = lazy(() => import('./components/routes/system.tsx'))
 const CommandPalette = lazy(() => import('./components/command-palette.tsx'))
 const LoginPage = lazy(() => import('./components/login/login.tsx'))
+const CopyToClipboardDialog = lazy(() => import('./components/copy-to-clipboard.tsx'))
 
 const App = () => {
 	const page = useStore($router)
@@ -96,6 +104,7 @@ const App = () => {
 
 const Layout = () => {
 	const authenticated = useStore($authenticated)
+	const copyContent = useStore($copyContent)
 
 	if (!authenticated) {
 		return (
@@ -187,16 +196,23 @@ const Layout = () => {
 				<Suspense>
 					<CommandPalette />
 				</Suspense>
+				{copyContent && (
+					<Suspense>
+						<CopyToClipboardDialog content={copyContent} />
+					</Suspense>
+				)}
 			</div>
 		</>
 	)
 }
 
 ReactDOM.createRoot(document.getElementById('app')!).render(
-	<React.StrictMode>
-		<ThemeProvider>
-			<Layout />
-			<Toaster />
-		</ThemeProvider>
-	</React.StrictMode>
+	// strict mode in dev mounts / unmounts components twice
+	// and breaks the clipboard dialog
+	//<React.StrictMode>
+	<ThemeProvider>
+		<Layout />
+		<Toaster />
+	</ThemeProvider>
+	//</React.StrictMode>
 )
