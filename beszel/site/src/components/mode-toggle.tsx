@@ -1,4 +1,4 @@
-import { MoonStarIcon, Sun } from 'lucide-react'
+import { LaptopIcon, MoonStarIcon, SunIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -16,15 +16,24 @@ export function ModeToggle() {
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
 				<Button variant={'ghost'} size="icon">
-					<Sun className="h-[1.2rem] w-[1.2rem] dark:opacity-0" />
+					<SunIcon className="h-[1.2rem] w-[1.2rem] dark:opacity-0" />
 					<MoonStarIcon className="absolute h-[1.2rem] w-[1.2rem] opacity-0 dark:opacity-100" />
 					<span className="sr-only">Toggle theme</span>
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent>
-				<DropdownMenuItem onClick={() => setTheme('light')}>Light</DropdownMenuItem>
-				<DropdownMenuItem onClick={() => setTheme('dark')}>Dark</DropdownMenuItem>
-				<DropdownMenuItem onClick={() => setTheme('system')}>System</DropdownMenuItem>
+				<DropdownMenuItem onClick={() => setTheme('light')}>
+					<SunIcon className="mr-2.5 h-4 w-4" />
+					Light
+				</DropdownMenuItem>
+				<DropdownMenuItem onClick={() => setTheme('dark')}>
+					<MoonStarIcon className="mr-2.5 h-4 w-4" />
+					Dark
+				</DropdownMenuItem>
+				<DropdownMenuItem onClick={() => setTheme('system')}>
+					<LaptopIcon className="mr-2.5 h-4 w-4" />
+					System
+				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>
 	)
