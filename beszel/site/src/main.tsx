@@ -5,7 +5,14 @@ import Home from './components/routes/home.tsx'
 import { ThemeProvider } from './components/theme-provider.tsx'
 import { $authenticated, $systems, pb, $publicKey, $hubVersion } from './lib/stores.ts'
 import { ModeToggle } from './components/mode-toggle.tsx'
-import { cn, isAdmin, updateAlerts, updateFavicon, updateSystemList } from './lib/utils.ts'
+import {
+	cn,
+	isAdmin,
+	isReadOnlyUser,
+	updateAlerts,
+	updateFavicon,
+	updateSystemList,
+} from './lib/utils.ts'
 import { buttonVariants } from './components/ui/button.tsx'
 import {
 	DatabaseBackupIcon,
@@ -125,7 +132,7 @@ const Layout = () => {
 									<UserIcon className="h-[1.2rem] w-[1.2rem]" />
 								</button>
 							</DropdownMenuTrigger>
-							<DropdownMenuContent className="min-w-44">
+							<DropdownMenuContent align={isReadOnlyUser() ? 'end' : 'center'} className="min-w-44">
 								<DropdownMenuLabel>{pb.authStore.model?.email}</DropdownMenuLabel>
 								<DropdownMenuSeparator />
 								<DropdownMenuGroup>
