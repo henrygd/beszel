@@ -38,6 +38,7 @@ type Agent struct {
 	containerStatsMutex *sync.Mutex
 	fsNames             []string
 	fsStats             map[string]*system.FsStats
+	netInterfaces       map[string]struct{}
 	netIoStats          *system.NetIoStats
 	dockerClient        *http.Client
 	bufferPool          *sync.Pool
@@ -135,10 +136,14 @@ func (a *Agent) getSystemStats() (system.Info, system.Stats) {
 
 	// network stats
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
+		secondsElapsed := time.Since(a.netIoStats.Time).Seconds()
+		a.netIoStats.Time = time.Now()
 		bytesSent := uint64(0)
 		bytesRecv := uint64(0)
+		// sum all bytes sent and received
 		for _, v := range netIO {
-			if skipNetworkInterface(&v) {
+			// skip if not in valid network interfaces list
+			if _, exists := a.netInterfaces[v.Name]; !exists {
 				continue
 			}
 			// log.Printf("%+v: %+v recv, %+v sent\n", v.Name, v.BytesRecv, v.BytesSent)
@@ -146,15 +151,28 @@ func (a *Agent) getSystemStats() (system.Info, system.Stats) {
 			bytesRecv += v.BytesRecv
 		}
 		// add to systemStats
-		secondsElapsed := time.Since(a.netIoStats.Time).Seconds()
 		sentPerSecond := float64(bytesSent-a.netIoStats.BytesSent) / secondsElapsed
 		recvPerSecond := float64(bytesRecv-a.netIoStats.BytesRecv) / secondsElapsed
-		systemStats.NetworkSent = bytesToMegabytes(sentPerSecond)
-		systemStats.NetworkRecv = bytesToMegabytes(recvPerSecond)
-		// update netIoStats
-		a.netIoStats.BytesSent = bytesSent
-		a.netIoStats.BytesRecv = bytesRecv
-		a.netIoStats.Time = time.Now()
+		networkSentPs := bytesToMegabytes(sentPerSecond)
+		networkRecvPs := bytesToMegabytes(recvPerSecond)
+		// add check for issue (#150) where sent is a massive number
+		if networkSentPs > 10_000 || networkRecvPs > 10_000 {
+			log.Printf("Warning: network sent/recv is %.2f/%.2f MB/s. Resetting stats.\n", networkSentPs, networkRecvPs)
+			for _, v := range netIO {
+				if _, exists := a.netInterfaces[v.Name]; !exists {
+					continue
+				}
+				log.Printf("%+s: %v recv, %v sent\n", v.Name, v.BytesRecv, v.BytesSent)
+			}
+			// reset network I/O stats
+			a.initializeNetIoStats()
+		} else {
+			systemStats.NetworkSent = networkSentPs
+			systemStats.NetworkRecv = networkRecvPs
+			// update netIoStats
+			a.netIoStats.BytesSent = bytesSent
+			a.netIoStats.BytesRecv = bytesRecv
+		}
 	}
 
 	// temperatures
@@ -508,20 +526,24 @@ func (a *Agent) initializeDiskIoStats() {
 }
 
 func (a *Agent) initializeNetIoStats() {
+	// reset valid network interfaces
+	a.netInterfaces = make(map[string]struct{}, 0)
+	// reset network I/O stats
+	a.netIoStats.BytesSent = 0
+	a.netIoStats.BytesRecv = 0
+	// get intial network I/O stats
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
-		bytesSent := uint64(0)
-		bytesRecv := uint64(0)
+		a.netIoStats.Time = time.Now()
 		for _, v := range netIO {
-			if skipNetworkInterface(&v) {
+			if skipNetworkInterface(v) {
 				continue
 			}
 			log.Printf("Detected network interface: %+v (%+v recv, %+v sent)\n", v.Name, v.BytesRecv, v.BytesSent)
-			bytesSent += v.BytesSent
-			bytesRecv += v.BytesRecv
+			a.netIoStats.BytesSent += v.BytesSent
+			a.netIoStats.BytesRecv += v.BytesRecv
+			// store as a valid network interface
+			a.netInterfaces[v.Name] = struct{}{}
 		}
-		a.netIoStats.BytesSent = bytesSent
-		a.netIoStats.BytesRecv = bytesRecv
-		a.netIoStats.Time = time.Now()
 	}
 }
 
@@ -537,7 +559,7 @@ func twoDecimals(value float64) float64 {
 	return math.Round(value*100) / 100
 }
 
-func skipNetworkInterface(v *psutilNet.IOCountersStat) bool {
+func skipNetworkInterface(v psutilNet.IOCountersStat) bool {
 	switch {
 	case strings.HasPrefix(v.Name, "lo"),
 		strings.HasPrefix(v.Name, "docker"),
