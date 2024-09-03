@@ -6,6 +6,7 @@ import {
 	cn,
 	formatShortDate,
 	toFixedWithoutTrailingZeros,
+	twoDecimalString,
 	useYaxisWidth,
 } from '@/lib/utils'
 // import Spinner from '../spinner'
@@ -76,8 +77,8 @@ export default function DiskIoChart({
 						animationDuration={150}
 						content={
 							<ChartTooltipContent
-								unit=" MB/s"
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
+								contentFormatter={(item) => twoDecimalString(item.value) + ' MB/s'}
 								indicator="line"
 							/>
 						}

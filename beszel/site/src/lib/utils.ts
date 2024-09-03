@@ -239,6 +239,19 @@ export function toFixedFloat(num: number, digits: number) {
 	return parseFloat(num.toFixed(digits))
 }
 
+let twoDecimalFormatter: Intl.NumberFormat
+/** Format number to two decimal places */
+export function twoDecimalString(num: number) {
+	if (!twoDecimalFormatter) {
+		twoDecimalFormatter = new Intl.NumberFormat(undefined, {
+			minimumFractionDigits: 2,
+			maximumFractionDigits: 2,
+		})
+	}
+	// Return a function that formats numbers using the saved formatter
+	return twoDecimalFormatter.format(num)
+}
+
 /** Get value from local storage */
 function getStorageValue(key: string, defaultValue: any) {
 	const saved = localStorage?.getItem(key)

@@ -6,7 +6,7 @@ import {
 	ChartTooltipContent,
 } from '@/components/ui/chart'
 import { useMemo, useRef } from 'react'
-import { chartTimeData, cn, formatShortDate, useYaxisWidth } from '@/lib/utils'
+import { chartTimeData, cn, formatShortDate, twoDecimalString, useYaxisWidth } from '@/lib/utils'
 // import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $chartTime, $containerFilter } from '@/lib/stores'
@@ -110,7 +110,13 @@ export default function ContainerCpuChart({
 						labelFormatter={(_, data) => formatShortDate(data[0].payload.time)}
 						// @ts-ignore
 						itemSorter={(a, b) => b.value - a.value}
-						content={<ChartTooltipContent filter={filter} unit="%" indicator="line" />}
+						content={
+							<ChartTooltipContent
+								filter={filter}
+								contentFormatter={(item) => twoDecimalString(item.value) + '%'}
+								indicator="line"
+							/>
+						}
 					/>
 					{Object.keys(chartConfig).map((key) => {
 						const filtered = filter && !key.includes(filter)

@@ -11,6 +11,7 @@ import {
 	cn,
 	formatShortDate,
 	toFixedWithoutTrailingZeros,
+	twoDecimalString,
 	useYaxisWidth,
 } from '@/lib/utils'
 // import Spinner from '../spinner'
@@ -115,7 +116,13 @@ export default function ContainerMemChart({
 						labelFormatter={(_, data) => formatShortDate(data[0].payload.time)}
 						// @ts-ignore
 						itemSorter={(a, b) => b.value - a.value}
-						content={<ChartTooltipContent filter={filter} unit=" MB" indicator="line" />}
+						content={
+							<ChartTooltipContent
+								filter={filter}
+								contentFormatter={(item) => twoDecimalString(item.value) + ' MB'}
+								indicator="line"
+							/>
+						}
 					/>
 					{Object.keys(chartConfig).map((key) => {
 						const filtered = filter && !key.includes(filter)

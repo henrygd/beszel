@@ -1,7 +1,7 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-import { chartTimeData, cn, formatShortDate, useYaxisWidth } from '@/lib/utils'
+import { chartTimeData, cn, formatShortDate, twoDecimalString, useYaxisWidth } from '@/lib/utils'
 import { useMemo, useRef } from 'react'
 // import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
@@ -70,8 +70,8 @@ export default function ExFsDiskChart({
 						animationDuration={150}
 						content={
 							<ChartTooltipContent
-								unit=" GB"
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
+								contentFormatter={(item) => twoDecimalString(item.value) + ' GB'}
 								indicator="line"
 							/>
 						}

@@ -1,7 +1,7 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-import { chartTimeData, cn, formatShortDate, useYaxisWidth } from '@/lib/utils'
+import { chartTimeData, cn, formatShortDate, twoDecimalString, useYaxisWidth } from '@/lib/utils'
 // import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
@@ -60,8 +60,8 @@ export default function CpuChart({
 						animationDuration={150}
 						content={
 							<ChartTooltipContent
-								unit="%"
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
+								contentFormatter={(item) => twoDecimalString(item.value) + '%'}
 								indicator="line"
 							/>
 						}
