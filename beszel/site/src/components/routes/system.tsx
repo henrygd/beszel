@@ -63,6 +63,7 @@ export default function SystemDetail({ name }: { name: string }) {
 		return () => {
 			resetCharts()
 			$chartTime.set('1h')
+			$containerFilter.set('')
 			setHasDocker(false)
 		}
 	}, [name])
@@ -72,7 +73,6 @@ export default function SystemDetail({ name }: { name: string }) {
 		setDockerCpuChartData([])
 		setDockerMemChartData([])
 		setDockerNetChartData([])
-		$containerFilter.set('')
 	}
 
 	useEffect(resetCharts, [chartTime])
