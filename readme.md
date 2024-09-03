@@ -9,43 +9,43 @@ A lightweight server resource monitoring hub with historical data, docker stats,
 
 ## Features
 
-- **Lightweight**: Much smaller and less demanding than leading solutions.
-- **Docker stats**: CPU and memory usage history for each container.
-- **Alerts**: Configurable alerts for CPU, memory, and disk usage, and system status.
-- **Multi-user**: Each user has their own systems. Admins can share systems across users.
-- **Simple**: Easy setup and doesn't require anything to be publicly available online.
-- **OAuth / OIDC**: Supports many OAuth2 providers. Password auth can be disabled.
-- **Automatic backups**: Save and restore your data to / from disk or S3-compatible storage.
-- **REST API**: Use your metrics in your own scripts and applications.
+- **Lightweight**: Smaller and less resource-intensive than leading solutions.
+- **Docker stats**: Tracks CPU and memory usage history for each container.
+- **Alerts**: Configurable alerts for CPU, memory, disk usage, and system status.
+- **Multi-user**: Each user manages their own systems. Admins can share systems across users.
+- **Simple**: Easy setup, no need for public internet exposure.
+- **OAuth / OIDC**: Supports multiple OAuth2 providers. Password authentication can be disabled.
+- **Automatic backups**: Save and restore data from disk or S3-compatible storage.
+- **REST API**: Integrate your metrics into your own scripts and applications.
 
 ## Introduction
 
-Beszel has two components: the hub and the agent.
+Beszel consists of two main components: the hub and the agent.
 
-The hub is a web application that provides a dashboard to view and manage your connected systems. It's built on top of [PocketBase](https://pocketbase.io/).
+- **Hub:** A web application that provides a dashboard for viewing and managing connected systems. Built on [PocketBase](https://pocketbase.io/).
 
-The agent runs on each system you want to monitor. It creates a minimal SSH server through which it communicates system metrics to the hub.
+- **Agent:** Runs on each system you want to monitor, creating a minimal SSH server to communicate system metrics to the hub.
 
-## Getting started
+## Getting Started
 
-If not using docker, ignore 4-5 and run the agent using the binary instead.
+If not using docker, skip steps 4-5 and run the agent using the binary.
 
 1. Start the hub (see [installation](#installation)).
-2. Open http://localhost:8090 and create an admin user.
+2. Open <http://localhost:8090> and create an admin user.
 3. Click "Add system." Enter the name and host of the system you want to monitor.
 4. Click "Copy docker compose" to copy the agent's docker-compose.yml file to your clipboard.
 5. On the agent system, create the compose file and run `docker compose up` to start the agent.
 6. Back in the hub, click the "Add system" button in the dialog to finish adding the system.
 
-If all goes well, you should see the system flip to green. If it goes red, check the Logs page, and see [troubleshooting tips](#faq--troubleshooting).
+If all goes well, the system should flip to green. If it turns red, check the Logs page and refer to [troubleshooting tips](#faq--troubleshooting).
 
 ### Tutoriel en français
 
-Pour le tutoriel en français, consultez https://belginux.com/installer-beszel-avec-docker/
+Pour le tutoriel en français, consultez <https://belginux.com/installer-beszel-avec-docker/>
 
 ## Installation
 
-You may install the hub and agent as single binaries, or by using Docker.
+You can install the hub and agent as single binaries or using Docker.
 
 ### Docker
 
@@ -53,9 +53,9 @@ You may install the hub and agent as single binaries, or by using Docker.
 
 **Agent**: The hub provides compose content for the agent, but you can also reference the example [docker-compose.yml](/supplemental/docker/agent/docker-compose.yml) file.
 
-The agent uses the host network mode so it can access network interface stats. This automatically exposes the port, so change the port using an environment variable if you need to.
+The agent uses host network mode to access network interface stats, which automatically exposes the port. Change the port using an environment variable if needed.
 
-If you don't need network stats, remove that line from the compose file and map the port manually.
+If you don't require network stats, remove that line from the compose file and map the port manually.
 
 > **Note**: If disk I/O stats are missing or incorrect, try using the `FILESYSTEM` environment variable ([instructions here](#finding-the-correct-filesystem)). Check agent logs to see the current device being used.
 
@@ -115,7 +115,7 @@ Use `./beszel update` and `./beszel-agent update` to update to the latest versio
 
 [^socket]: Beszel only needs access to read container information. For [linuxserver/docker-socket-proxy](https://github.com/linuxserver/docker-socket-proxy) you would set `CONTAINERS=1`.
 
-## OAuth / OIDC setup
+## OAuth / OIDC Setup
 
 Beszel supports OpenID Connect and many OAuth2 authentication providers (see list below).
 
@@ -146,6 +146,7 @@ Visit the "Auth providers" page to enable your provider. The redirect / callback
 - Twitter
 - VK
 - Yandex
+
 </details>
 
 ## REST API
@@ -154,80 +155,78 @@ Because Beszel is built on PocketBase, you can use the PocketBase [web APIs](htt
 
 ## Security
 
-The hub and agent communicate over SSH, so they don't need to be exposed to the internet. And the connection won't break if you put your own auth gateway, such as Authelia, in front of the hub.
+The hub and agent communicate over SSH, so they don't need to be exposed to the internet. Even with an external auth gateway like Authelia in front of the hub, the connection remains secure.
 
 When the hub is started for the first time, it generates an ED25519 key pair.
 
-The agent's SSH server is configured to accept connections only using this key. It does not provide a pseudo-terminal or accept input, so it's not possible to execute commands on the agent even if your private key is compromised.
+The agent's SSH server is configured to accept connections using this key only. It does not provide a pseudo-terminal or accept input, so it's impossible to execute commands on the agent even if your private key is compromised.
 
-## User roles
+## User Roles
 
 ### Admin
 
-Assumed to have an admin account in PocketBase, so links to backups, SMTP settings, etc., are shown in the hub.
+Admins have access to additional links in the hub, such as backups, SMTP settings, etc. The first user created is automatically an admin and can log into PocketBase.
 
-The first user created automatically becomes an admin and can log into PocketBase.
-
-Please note that changing a user's role will not create a PocketBase admin account for them. If you want to do that, go to Settings > Admins in PocketBase and add them there.
+Changing a user's role does not create a PocketBase admin account for them. To do that, go to Settings > Admins in PocketBase and add them manually.
 
 ### User
 
-Can create their own systems and alerts. Links to PocketBase settings are not shown in the hub.
+Users can create their own systems and alerts. Links to PocketBase settings are not shown in the hub.
 
-### Read only
+### Read Only
 
-Cannot create systems, but can view any system that has been shared with them by an admin. Can create alerts.
+Read-only users cannot create systems but can view any system shared with them by an admin and create alerts.
 
 ## FAQ / Troubleshooting
 
-### Agent is not connecting
+### Agent is Not Connecting
 
 Assuming the agent is running, the connection is probably being blocked by a firewall. You have two options:
 
-1. Add an inbound rule to the agent system's firewall(s) to allow TCP connections to the port. Check any active firewalls, like iptables, and in your cloud provider account if applicable.
-2. Alternatively, software like [Cloudflare Tunnel](https://www.cloudflare.com/products/tunnel/), [WireGuard](https://www.wireguard.com/), or [Tailscale](https://tailscale.com/) can be used to securely bypass your firewall.
+1. Add an inbound rule to the agent system's firewall(s) to allow TCP connections to the port. Check any active firewalls, like iptables, and your cloud provider's firewall settings if applicable.
+2. Alternatively, use software like [Cloudflare Tunnel](https://www.cloudflare.com/products/tunnel/), [WireGuard](https://www.wireguard.com/), or [Tailscale](https://tailscale.com/) to securely bypass your firewall.
 
-Connectivity can be tested by running `telnet <agent-ip> <port>`.
+You can test connectivity by running telnet `<agent-ip> <port>`.
 
-### Connecting the hub and agent on the same system using Docker
+### Connecting the Hub and Agent on the Same System Using Docker
 
-If using host network mode for the agent but not the hub, you can add your system using the hostname `host.docker.internal`, which resolves to the internal IP address used by the host. See [example docker-compose.yml](/supplemental/docker/same-system/docker-compose.yml).
+If using host network mode for the agent but not the hub, add your system using the hostname `host.docker.internal`, which resolves to the internal IP address used by the host. See the [example docker-compose.yml](/supplemental/docker/same-system/docker-compose.yml).
 
-If using host network for both, you can use `localhost` as the hostname.
+If using host network mode for both, you can use `localhost` as the hostname.
 
-Otherwise you can use the agent's `container_name` as the hostname if both are in the same docker network.
+Otherwise, use the agent's `container_name` as the hostname if both are in the same Docker network.
 
-### Finding the correct filesystem
+### Finding the Correct Filesystem
 
-The filesystem / device / partition to use for disk I/O stats is specified in the `FILESYSTEM` environment variable.
+Specify the filesystem/device/partition for disk I/O stats using the `FILESYSTEM` environment variable.
 
-If it's not set, the agent will try to find the partition mounted on `/` and use that. This doesn't seem to work in a container, so it's recommended to set this value. One of the following methods should work (you usually want the option mounted on `/`):
+If not set, the agent will try to find the partition mounted on `/` and use that. This may not work correctly in a container, so it's recommended to set this value. Use one of the following methods to find the correct filesystem:
 
-- Run `lsblk` and choose an option under "NAME"
-- Run `df -h` and choose an option under "Filesystem"
-- Run `sudo fdisk -l` and choose an option under "Device"
+- Run `lsblk` and choose an option under "NAME."
+- Run `df -h` and choose an option under "Filesystem."
+- Run `sudo fdisk -l` and choose an option under "Device."
 
-### Docker container charts are empty or missing
+### Docker Container Charts Are Empty or Missing
 
-If container charts show empty data, or don't show up at all, you may need to enable cgroup memory accounting. To verify, run `docker stats`. If that also shows zero memory usage, follow this guide to fix:
+If container charts show empty data or don't appear at all, you may need to enable cgroup memory accounting. To verify, run `docker stats`. If that shows zero memory usage, follow this guide to fix the issue:
 
-https://akashrajpurohit.com/blog/resolving-missing-memory-stats-in-docker-stats-on-raspberry-pi/
+<https://akashrajpurohit.com/blog/resolving-missing-memory-stats-in-docker-stats-on-raspberry-pi/>
 
-### Docker containers are not populating reliably
+### Docker Containers Are Not Populating Reliably
 
-Try upgrading your docker version on the agent system. I had this issue on a machine running version 24. It was fixed by upgrading to version 27.
+Try upgrading your Docker version on the agent system. This issue was observed on a machine running version 24 and was resolved by upgrading to version 27.
 
-### Month / week records are not populating reliably
+### Month/Week Records Are Not Populating Reliably
 
-Records for longer time periods are made by averaging stats from the shorter time periods. They require the agent to be running uninterrupted for long enough to get a full set of data.
+Records for longer time periods are created by averaging stats from shorter periods. The agent must run uninterrupted for a full set of data to populate these records.
 
-If you pause / unpause the agent for longer than one minute, the data will be incomplete and the timing for the current interval will reset.
+Pausing/unpausing the agent for longer than one minute will result in incomplete data, resetting the timing for the current interval.
 
 ## Compiling
 
 Both the hub and agent are written in Go, so you can easily build them yourself, or cross-compile for different platforms. Please [install Go](https://go.dev/doc/install) first if you haven't already.
 
-### Prepare dependencies
+### Prepare Dependencies
 
 ```bash
 cd beszel && go mod tidy
@@ -268,3 +267,7 @@ GOOS=freebsd GOARCH=arm64 CGO_ENABLED=0 go build -ldflags "-w -s" .
 ```
 
 You can see a list of valid options by running `go tool dist list`.
+
+## License
+
+Beszel is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
