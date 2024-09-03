@@ -104,18 +104,17 @@ Use `./beszel update` and `./beszel-agent update` to update to the latest versio
 
 ### Agent
 
-| Name          | Default | Description                                                        |
-| ------------- | ------- | ------------------------------------------------------------------ |
-| `DOCKER_HOST` | unset   | Overrides the docker host (docker.sock) if using a proxy.[^socket] |
-| `FILESYSTEM`  | unset   | Device or partition to use for root disk I/O stats.                |
-| `KEY`         | unset   | Public SSH key to use for authentication. Provided in hub.         |
-| `PORT`        | 45876   | Port or address:port to listen on.                                 |
-
-<!-- | `EXTRA_FILESYSTEMS` | unset   | See [Monitoring additional disks](#)                               | -->
+| Name                | Default | Description                                                                              |
+| ------------------- | ------- | ---------------------------------------------------------------------------------------- |
+| `DOCKER_HOST`       | unset   | Overrides the docker host (docker.sock) if using a proxy.[^socket]                       |
+| `EXTRA_FILESYSTEMS` | unset   | See [Monitoring additional disks / partitions](#monitoring-additional-disks--partitions) |
+| `FILESYSTEM`        | unset   | Device or partition to use for root disk I/O stats.                                      |
+| `KEY`               | unset   | Public SSH key to use for authentication. Provided in hub.                               |
+| `PORT`              | 45876   | Port or address:port to listen on.                                                       |
 
 [^socket]: Beszel only needs access to read container information. For [linuxserver/docker-socket-proxy](https://github.com/linuxserver/docker-socket-proxy) you would set `CONTAINERS=1`.
 
-## OAuth / OIDC setup
+## OAuth / OIDC Setup
 
 Beszel supports OpenID Connect and many OAuth2 authentication providers (see list below).
 
@@ -147,6 +146,33 @@ Visit the "Auth providers" page to enable your provider. The redirect / callback
 - VK
 - Yandex
 </details>
+
+## Monitoring additional disks / partitions
+
+> [!NOTE]
+> This feature is new and has been tested on a limited number of systems. Please report any issues.
+
+You can configure the agent to monitor the usage and I/O of more than one disk or partition. The approach differs depending on the deployment method.
+
+Use `lsblk` to find the names and mount points of your partitions. If you have trouble, check the agent logs.
+
+### Docker
+
+Mount a folder from the partition's filesystem in the container's `/extra-filesystems` directory, like the example below. The charts will use the name of the device or partition, not the name of the folder.
+
+```yaml
+volumes:
+  - /mnt/disk1/.beszel:/extra-filesystems/disk1:ro
+  - /dev/mmcblk0/.beszel:/extra-filesystems/sd-card:ro
+```
+
+### Binary
+
+Set the `EXTRA_FILESYSTEMS` environment variable to a comma-separated list of devices or partitions to monitor. For example:
+
+```bash
+EXTRA_FILESYSTEMS="sdb,sdc1,mmcblk0"
+```
 
 ## REST API
 
