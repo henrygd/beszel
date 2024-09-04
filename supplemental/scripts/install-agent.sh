@@ -106,6 +106,7 @@ After=network.target
 [Service]
 Environment="PORT=$PORT"
 Environment="KEY=$KEY"
+# Environment="EXTRA_FILESYSTEMS=sdb"
 ExecStart=/opt/beszel-agent/beszel-agent
 User=beszel
 Restart=always

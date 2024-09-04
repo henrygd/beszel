@@ -8,6 +8,8 @@ There are two scripts, one for the hub and one for the agent. You can run either
 
 The install script creates a dedicated user for the service (`beszel`), downloads the latest release, and installs the service.
 
+If you need to edit the service -- for instance, to change an environment variable -- you can edit the file(s) in `/etc/systemd/system/`. Then reload the systemd daemon and restart the service.
+
 > [!NOTE]
 > You need system administrator privileges to run the install script. If you encounter a problem, please [open an issue](https://github.com/henrygd/beszel/issues/new).
 
@@ -71,6 +73,8 @@ sudo /opt/beszel-agent/beszel-agent update && sudo systemctl restart beszel-agen
 
 ## Manual install
 
+### Hub
+
 1. Create the system service at `/etc/systemd/system/beszel.service`
 
 ```bash
@@ -97,9 +101,7 @@ sudo systemctl enable beszel.service
 sudo systemctl start beszel.service
 ```
 
-## Run the agent as a system service (Linux)
-
-This runs the agent in the background continuously using systemd.
+### Agent
 
 1. Create the system service at `/etc/systemd/system/beszel-agent.service`
 
@@ -112,6 +114,7 @@ After=network.target
 # update the values in curly braces below (remove the braces)
 Environment="PORT={PASTE_YOUR_PORT_HERE}"
 Environment="KEY={PASTE_YOUR_KEY_HERE}"
+# Environment="EXTRA_FILESYSTEMS={sdb}"
 ExecStart={/path/to/directory}/beszel-agent
 User={YOUR_USERNAME}
 Restart=always
