@@ -155,7 +155,7 @@ Because Beszel is built on PocketBase, you can use the PocketBase [web APIs](htt
 
 ## Security
 
-The hub and agent communicate over SSH, so they don't need to be exposed to the internet. Even with an external auth gateway like Authelia in front of the hub, the connection remains secure.
+The hub and agent communicate over SSH, so they don't need to be exposed to the internet. Even if you place an external auth gateway, such as Authelia, in front of the hub, it won't disrupt or break the connection between the hub and agent.
 
 When the hub is started for the first time, it generates an ED25519 key pair.
 
