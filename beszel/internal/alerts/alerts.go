@@ -6,20 +6,53 @@ import (
 	"fmt"
 	"net/mail"
 
+	"github.com/containrrr/shoutrrr"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/tools/mailer"
+	"github.com/spf13/viper"
 )
 
 type AlertManager struct {
-	app *pocketbase.PocketBase
+	app    *pocketbase.PocketBase
+	config AlertConfig
+}
+
+type AlertConfig struct {
+	NotificationType string `mapstructure:"NOTIFICATION_TYPE"`
+	NotificationURL  string `mapstructure:"NOTIFICATION_URL"`
 }
 
 func NewAlertManager(app *pocketbase.PocketBase) *AlertManager {
-	return &AlertManager{
-		app: app,
+	config, configErr := loadConfig("beszel_data")
+	if configErr != nil {
+		app.Logger().Error("Error loading config from beszel_data: ", "err", configErr.Error())
 	}
+
+	return &AlertManager{
+		app:    app,
+		config: config,
+	}
+}
+
+func loadConfig(path string) (AlertConfig, error) {
+	viper.AddConfigPath(path)
+	viper.SetConfigName("alerts")
+	viper.SetConfigType("env")
+
+	viper.AutomaticEnv()
+
+	config := AlertConfig{}
+	err := viper.ReadInConfig()
+	if err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return config, err
+		}
+	}
+
+	err = viper.Unmarshal(&config)
+	return config, err
 }
 
 func (am *AlertManager) HandleSystemAlerts(newStatus string, newRecord *models.Record, oldRecord *models.Record) {
@@ -139,6 +172,17 @@ func (am *AlertManager) handleStatusAlerts(newStatus string, oldRecord *models.R
 
 func (am *AlertManager) sendAlert(message *mailer.Message) {
 	// fmt.Println("sending alert", "to", message.To, "subj", message.Subject, "body", message.Text)
+
+	if am.config.NotificationType == "shoutrrr" {
+		err := shoutrrr.Send(am.config.NotificationURL, fmt.Sprintf("%s\n\n%s", message.Subject, message.Text))
+		if err == nil {
+			am.app.Logger().Info("Sent shoutrrr alert", "to", am.config.NotificationURL, "subj", message.Subject)
+			return
+		}
+
+		am.app.Logger().Error("Failed to send alert via shoutrrr, falling back to email notification. ", "err", err.Error())
+	}
+
 	message.From = mail.Address{
 		Address: am.app.Settings().Meta.SenderAddress,
 		Name:    am.app.Settings().Meta.SenderName,
@@ -146,6 +190,6 @@ func (am *AlertManager) sendAlert(message *mailer.Message) {
 	if err := am.app.NewMailClient().Send(message); err != nil {
 		am.app.Logger().Error("Failed to send alert: ", "err", err.Error())
 	} else {
-		am.app.Logger().Info("Sent alert", "to", message.To, "subj", message.Subject)
+		am.app.Logger().Info("Sent email alert", "to", message.To, "subj", message.Subject)
 	}
 }

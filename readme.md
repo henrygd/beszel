@@ -98,9 +98,11 @@ Use `./beszel update` and `./beszel-agent update` to update to the latest versio
 
 ### Hub
 
-| Name                    | Default | Description                      |
-| ----------------------- | ------- | -------------------------------- |
-| `DISABLE_PASSWORD_AUTH` | false   | Disables password authentication |
+| Name                    | Default | Description                             |
+| ----------------------- | ------- | --------------------------------------- |
+| `DISABLE_PASSWORD_AUTH` | false   | Disables password authentication        |
+| `NOTIFICATION_TYPE`     | ""      | Defines which notification type to use. |
+| `NOTIFICATION_URL`      | ""      | Notification URL to use for shoutrrr.   |
 
 ### Agent
 
@@ -202,6 +204,15 @@ Users can create their own systems and alerts. Links to PocketBase settings are 
 ### Read only
 
 Read-only users cannot create systems but can view any system shared with them by an admin and create alerts.
+
+## Alert services
+
+By default, alerts are sent as emails via the built-in PocketBase service, configurable on the PocketBase Settings page.
+
+[shoutrrr](https://containrrr.dev/shoutrrr) can be used instead by setting the `NOTIFICATION_TYPE` config value to `shoutrrr` and setting a valid `NOTIFICATION_URL` to [a supported service URL](https://containrrr.dev/shoutrrr/services/overview/). These values can be configured in one of two ways:
+
+- From an `alerts.env` file in the `beszel_data` directory in the form of `KEY=value` lines, one per setting
+- From environment variables
 
 ## FAQ / Troubleshooting
 
