@@ -20,10 +20,11 @@ import (
 )
 
 type AlertData struct {
-	User    *models.Record
-	Title   string
-	Message string
-	Link    string
+	User     *models.Record
+	Title    string
+	Message  string
+	Link     string
+	LinkText string
 }
 
 type AlertManager struct {
@@ -31,19 +32,9 @@ type AlertManager struct {
 }
 
 func NewAlertManager(app *pocketbase.PocketBase) *AlertManager {
-	am := &AlertManager{
+	return &AlertManager{
 		app: app,
 	}
-
-	// err := am.sendShoutrrrAlert(&mailer.Message{
-	// 	Subject: "Testing shoutrrr",
-	// 	Text:    "this is a test from beszel",
-	// })
-	// if err != nil {
-	// 	log.Println("Error sending shoutrrr alert", "err", err.Error())
-	// }
-
-	return am
 }
 
 func (am *AlertManager) HandleSystemAlerts(newStatus string, newRecord *models.Record, oldRecord *models.Record) {
@@ -116,16 +107,12 @@ func (am *AlertManager) handleSlidingValueAlert(newRecord *models.Record, alertR
 		return
 	}
 	if user := alertRecord.ExpandedOne("user"); user != nil {
-		// am.sendAlert(&mailer.Message{
-		// 	To:      []mail.Address{{Address: user.GetString("email")}},
-		// 	Subject: subject,
-		// 	Text:    body,
-		// })
 		am.sendAlert(AlertData{
-			User:    user,
-			Title:   subject,
-			Message: body,
-			Link:    am.app.Settings().Meta.AppUrl + "/system/" + url.QueryEscape(systemName),
+			User:     user,
+			Title:    subject,
+			Message:  body,
+			Link:     am.app.Settings().Meta.AppUrl + "/system/" + url.QueryEscape(systemName),
+			LinkText: "View " + systemName,
 		})
 	}
 }
@@ -160,10 +147,11 @@ func (am *AlertManager) handleStatusAlerts(newStatus string, oldRecord *models.R
 	// send alert
 	systemName := oldRecord.GetString("name")
 	am.sendAlert(AlertData{
-		User:    user,
-		Title:   fmt.Sprintf("Connection to %s is %s %v", systemName, alertStatus, emoji),
-		Message: fmt.Sprintf("Connection to %s is %s", systemName, alertStatus),
-		Link:    am.app.Settings().Meta.AppUrl + "/system/" + url.QueryEscape(systemName),
+		User:     user,
+		Title:    fmt.Sprintf("Connection to %s is %s %v", systemName, alertStatus, emoji),
+		Message:  fmt.Sprintf("Connection to %s is %s", systemName, alertStatus),
+		Link:     am.app.Settings().Meta.AppUrl + "/system/" + url.QueryEscape(systemName),
+		LinkText: "View " + systemName,
 	})
 	return nil
 }
@@ -171,7 +159,7 @@ func (am *AlertManager) handleStatusAlerts(newStatus string, oldRecord *models.R
 func (am *AlertManager) sendAlert(data AlertData) {
 	shoutrrrUrl := os.Getenv("SHOUTRRR_URL")
 	if shoutrrrUrl != "" {
-		err := am.SendShoutrrrAlert(shoutrrrUrl, data.Title, data.Message, data.Link)
+		err := am.SendShoutrrrAlert(shoutrrrUrl, data.Title, data.Message, data.Link, data.LinkText)
 		if err == nil {
 			log.Println("Sent shoutrrr alert")
 			return
@@ -196,7 +184,7 @@ func (am *AlertManager) sendAlert(data AlertData) {
 	}
 }
 
-func (am *AlertManager) SendShoutrrrAlert(notificationUrl string, title string, message string, link string) error {
+func (am *AlertManager) SendShoutrrrAlert(notificationUrl, title, message, link, linkText string) error {
 	supportsTitle := []string{"bark", "discord", "gotify", "ifttt", "join", "matrix", "ntfy", "opsgenie", "pushbullet", "pushover", "slack", "teams", "telegram", "zulip"}
 	supportsLink := []string{"ntfy"}
 	// Parse the URL
@@ -224,7 +212,7 @@ func (am *AlertManager) SendShoutrrrAlert(notificationUrl string, title string, 
 	} else {
 		// ntfy link
 		if scheme == "ntfy" {
-			queryParams.Add("Actions", fmt.Sprintf("view, Open Beszel, %s", am.app.Settings().Meta.AppUrl))
+			queryParams.Add("Actions", fmt.Sprintf("view, %s, %s", linkText, link))
 		}
 	}
 
@@ -269,7 +257,7 @@ func (am *AlertManager) SendTestNotification(c echo.Context) error {
 	if url == "" {
 		return c.JSON(http.StatusOK, map[string]string{"err": "URL is required"})
 	}
-	err := am.SendShoutrrrAlert(url, "Test Alert", "This is a notification from Beszel.", am.app.Settings().Meta.AppUrl)
+	err := am.SendShoutrrrAlert(url, "Test Alert", "This is a notification from Beszel.", am.app.Settings().Meta.AppUrl, "View Beszel")
 	if err != nil {
 		return c.JSON(http.StatusOK, map[string]string{"err": err.Error()})
 	}
