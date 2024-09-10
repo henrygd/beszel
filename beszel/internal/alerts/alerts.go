@@ -4,55 +4,46 @@ package alerts
 import (
 	"beszel/internal/entities/system"
 	"fmt"
+	"log"
+	"net/http"
 	"net/mail"
+	"net/url"
+	"os"
 
 	"github.com/containrrr/shoutrrr"
+	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
+	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/tools/mailer"
-	"github.com/spf13/viper"
 )
 
-type AlertManager struct {
-	app    *pocketbase.PocketBase
-	config AlertConfig
+type AlertData struct {
+	User    *models.Record
+	Title   string
+	Message string
+	Link    string
 }
 
-type AlertConfig struct {
-	NotificationType string `mapstructure:"NOTIFICATION_TYPE"`
-	NotificationURL  string `mapstructure:"NOTIFICATION_URL"`
+type AlertManager struct {
+	app *pocketbase.PocketBase
 }
 
 func NewAlertManager(app *pocketbase.PocketBase) *AlertManager {
-	config, configErr := loadConfig("beszel_data")
-	if configErr != nil {
-		app.Logger().Error("Error loading config from beszel_data: ", "err", configErr.Error())
+	am := &AlertManager{
+		app: app,
 	}
 
-	return &AlertManager{
-		app:    app,
-		config: config,
-	}
-}
+	// err := am.sendShoutrrrAlert(&mailer.Message{
+	// 	Subject: "Testing shoutrrr",
+	// 	Text:    "this is a test from beszel",
+	// })
+	// if err != nil {
+	// 	log.Println("Error sending shoutrrr alert", "err", err.Error())
+	// }
 
-func loadConfig(path string) (AlertConfig, error) {
-	viper.AddConfigPath(path)
-	viper.SetConfigName("alerts")
-	viper.SetConfigType("env")
-
-	viper.AutomaticEnv()
-
-	config := AlertConfig{}
-	err := viper.ReadInConfig()
-	if err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-			return config, err
-		}
-	}
-
-	err = viper.Unmarshal(&config)
-	return config, err
+	return am
 }
 
 func (am *AlertManager) HandleSystemAlerts(newStatus string, newRecord *models.Record, oldRecord *models.Record) {
@@ -100,16 +91,17 @@ func (am *AlertManager) handleSlidingValueAlert(newRecord *models.Record, alertR
 	// fmt.Println(name, curValue, "threshold", threshold, "triggered", triggered)
 	var subject string
 	var body string
+	var systemName string
 	if !triggered && curValue > threshold {
 		alertRecord.Set("triggered", true)
-		systemName := newRecord.GetString("name")
+		systemName = newRecord.GetString("name")
 		subject = fmt.Sprintf("%s usage above threshold on %s", name, systemName)
-		body = fmt.Sprintf("%s usage on %s is %.1f%%.\n\n%s\n\n- Beszel", name, systemName, curValue, am.app.Settings().Meta.AppUrl+"/system/"+systemName)
+		body = fmt.Sprintf("%s usage on %s is %.1f%%.", name, systemName, curValue)
 	} else if triggered && curValue <= threshold {
 		alertRecord.Set("triggered", false)
-		systemName := newRecord.GetString("name")
+		systemName = newRecord.GetString("name")
 		subject = fmt.Sprintf("%s usage below threshold on %s", name, systemName)
-		body = fmt.Sprintf("%s usage on %s is below threshold at %.1f%%.\n\n%s\n\n- Beszel", name, systemName, curValue, am.app.Settings().Meta.AppUrl+"/system/"+systemName)
+		body = fmt.Sprintf("%s usage on %s is below threshold at %.1f%%.", name, systemName, curValue)
 	} else {
 		// fmt.Println(name, "not triggered")
 		return
@@ -124,10 +116,16 @@ func (am *AlertManager) handleSlidingValueAlert(newRecord *models.Record, alertR
 		return
 	}
 	if user := alertRecord.ExpandedOne("user"); user != nil {
-		am.sendAlert(&mailer.Message{
-			To:      []mail.Address{{Address: user.GetString("email")}},
-			Subject: subject,
-			Text:    body,
+		// am.sendAlert(&mailer.Message{
+		// 	To:      []mail.Address{{Address: user.GetString("email")}},
+		// 	Subject: subject,
+		// 	Text:    body,
+		// })
+		am.sendAlert(AlertData{
+			User:    user,
+			Title:   subject,
+			Message: body,
+			Link:    am.app.Settings().Meta.AppUrl + "/system/" + url.QueryEscape(systemName),
 		})
 	}
 }
@@ -161,35 +159,119 @@ func (am *AlertManager) handleStatusAlerts(newStatus string, oldRecord *models.R
 	}
 	// send alert
 	systemName := oldRecord.GetString("name")
-	am.sendAlert(&mailer.Message{
-		To:      []mail.Address{{Address: user.GetString("email")}},
-		Subject: fmt.Sprintf("Connection to %s is %s %v", systemName, alertStatus, emoji),
-		Text:    fmt.Sprintf("Connection to %s is %s\n\n- Beszel", systemName, alertStatus),
+	am.sendAlert(AlertData{
+		User:    user,
+		Title:   fmt.Sprintf("Connection to %s is %s %v", systemName, alertStatus, emoji),
+		Message: fmt.Sprintf("Connection to %s is %s", systemName, alertStatus),
+		Link:    am.app.Settings().Meta.AppUrl + "/system/" + url.QueryEscape(systemName),
 	})
-
 	return nil
 }
 
-func (am *AlertManager) sendAlert(message *mailer.Message) {
-	// fmt.Println("sending alert", "to", message.To, "subj", message.Subject, "body", message.Text)
-
-	if am.config.NotificationType == "shoutrrr" {
-		err := shoutrrr.Send(am.config.NotificationURL, fmt.Sprintf("%s\n\n%s", message.Subject, message.Text))
+func (am *AlertManager) sendAlert(data AlertData) {
+	shoutrrrUrl := os.Getenv("SHOUTRRR_URL")
+	if shoutrrrUrl != "" {
+		err := am.SendShoutrrrAlert(shoutrrrUrl, data.Title, data.Message, data.Link)
 		if err == nil {
-			am.app.Logger().Info("Sent shoutrrr alert", "to", am.config.NotificationURL, "subj", message.Subject)
+			log.Println("Sent shoutrrr alert")
 			return
 		}
-
-		am.app.Logger().Error("Failed to send alert via shoutrrr, falling back to email notification. ", "err", err.Error())
+		log.Println("Failed to send alert via shoutrrr, falling back to email notification. ", "err", err.Error())
 	}
-
-	message.From = mail.Address{
-		Address: am.app.Settings().Meta.SenderAddress,
-		Name:    am.app.Settings().Meta.SenderName,
+	// todo: email enable / disable and testing
+	message := mailer.Message{
+		To:      []mail.Address{{Address: data.User.GetString("email")}},
+		Subject: data.Title,
+		Text:    data.Message + fmt.Sprintf("\n\n%s", data.Link),
+		From: mail.Address{
+			Address: am.app.Settings().Meta.SenderAddress,
+			Name:    am.app.Settings().Meta.SenderName,
+		},
 	}
-	if err := am.app.NewMailClient().Send(message); err != nil {
+	log.Println("Sending alert via email")
+	if err := am.app.NewMailClient().Send(&message); err != nil {
 		am.app.Logger().Error("Failed to send alert: ", "err", err.Error())
 	} else {
 		am.app.Logger().Info("Sent email alert", "to", message.To, "subj", message.Subject)
 	}
+}
+
+func (am *AlertManager) SendShoutrrrAlert(notificationUrl string, title string, message string, link string) error {
+	supportsTitle := []string{"bark", "discord", "gotify", "ifttt", "join", "matrix", "ntfy", "opsgenie", "pushbullet", "pushover", "slack", "teams", "telegram", "zulip"}
+	supportsLink := []string{"ntfy"}
+	// Parse the URL
+	parsedURL, err := url.Parse(notificationUrl)
+	if err != nil {
+		return fmt.Errorf("error parsing URL: %v", err)
+	}
+
+	scheme := parsedURL.Scheme
+
+	// // Get query parameters
+	queryParams := parsedURL.Query()
+
+	// Add title
+	if !sliceContains(supportsTitle, scheme) {
+		message = title + "\n\n" + message
+	} else {
+		queryParams.Add("title", title)
+
+	}
+	// Add link
+	if !sliceContains(supportsLink, scheme) {
+		// add link to the message
+		message += "\n\n" + link
+	} else {
+		// ntfy link
+		if scheme == "ntfy" {
+			queryParams.Add("Actions", fmt.Sprintf("view, Open Beszel, %s", am.app.Settings().Meta.AppUrl))
+		}
+	}
+
+	//
+	if scheme == "generic" {
+		queryParams.Add("template", "json")
+		queryParams.Add("$title", title)
+	}
+
+	// Encode the modified query parameters back into the URL
+	parsedURL.RawQuery = queryParams.Encode()
+	log.Println("URL after modification:", parsedURL.String())
+
+	err = shoutrrr.Send(parsedURL.String(), message)
+
+	if err == nil {
+		am.app.Logger().Info("Sent shoutrrr alert", "title", title)
+	} else {
+		am.app.Logger().Error("Error sending shoutrrr alert", "errs", err)
+		return err
+	}
+	return nil
+}
+
+// Contains checks if a string is present in a slice of strings
+func sliceContains(slice []string, item string) bool {
+	for _, v := range slice {
+		if v == item {
+			return true
+		}
+	}
+	return false
+}
+
+func (am *AlertManager) SendTestNotification(c echo.Context) error {
+	requestData := apis.RequestInfo(c)
+	if requestData.AuthRecord == nil {
+		return apis.NewForbiddenError("Forbidden", nil)
+	}
+	url := c.QueryParam("url")
+	log.Println("url", url)
+	if url == "" {
+		return c.JSON(http.StatusOK, map[string]string{"err": "URL is required"})
+	}
+	err := am.SendShoutrrrAlert(url, "Test Alert", "This is a notification from Beszel.", am.app.Settings().Meta.AppUrl)
+	if err != nil {
+		return c.JSON(http.StatusOK, map[string]string{"err": err.Error()})
+	}
+	return c.JSON(http.StatusOK, map[string]bool{"err": false})
 }

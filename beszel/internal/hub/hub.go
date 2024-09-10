@@ -140,6 +140,8 @@ func (h *Hub) Run() {
 			}
 			return c.JSON(http.StatusOK, map[string]bool{"firstRun": adminNum == 0})
 		})
+		// send test notification
+		e.Router.GET("/api/beszel/send-test-notification", am.SendTestNotification)
 		return nil
 	})
 
