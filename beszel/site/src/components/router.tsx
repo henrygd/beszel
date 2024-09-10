@@ -4,7 +4,7 @@ export const $router = createRouter(
 	{
 		home: '/',
 		server: '/system/:name',
-		'forgot-password': '/forgot-password',
+		settings: '/settings/:name?',
 	},
 	{ links: false }
 )
@@ -16,7 +16,7 @@ export const navigate = (urlString: string) => {
 
 function onClick(e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) {
 	e.preventDefault()
-	$router.open(new URL((e.target as HTMLAnchorElement).href).pathname)
+	$router.open(new URL((e.currentTarget as HTMLAnchorElement).href).pathname)
 }
 
 export const Link = (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {

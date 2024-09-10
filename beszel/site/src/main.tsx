@@ -1,5 +1,5 @@
 import './index.css'
-import React, { Suspense, lazy, useEffect } from 'react'
+import { Suspense, lazy, useEffect } from 'react'
 import ReactDOM from 'react-dom/client'
 import Home from './components/routes/home.tsx'
 import { ThemeProvider } from './components/theme-provider.tsx'
@@ -27,6 +27,7 @@ import {
 	LogOutIcon,
 	LogsIcon,
 	ServerIcon,
+	SettingsIcon,
 	UserIcon,
 	UsersIcon,
 } from 'lucide-react'
@@ -42,7 +43,7 @@ import {
 	DropdownMenuTrigger,
 	DropdownMenuLabel,
 } from './components/ui/dropdown-menu.tsx'
-import { $router, Link, navigate } from './components/router.tsx'
+import { $router, Link } from './components/router.tsx'
 import SystemDetail from './components/routes/system.tsx'
 import { AddSystemButton } from './components/add-system.tsx'
 
@@ -50,6 +51,7 @@ import { AddSystemButton } from './components/add-system.tsx'
 const CommandPalette = lazy(() => import('./components/command-palette.tsx'))
 const LoginPage = lazy(() => import('./components/login/login.tsx'))
 const CopyToClipboardDialog = lazy(() => import('./components/copy-to-clipboard.tsx'))
+const Settings = lazy(() => import('./components/routes/settings/layout.tsx'))
 
 const App = () => {
 	const page = useStore($router)
@@ -99,6 +101,12 @@ const App = () => {
 		return <Home />
 	} else if (page.route === 'server') {
 		return <SystemDetail name={page.params.name} />
+	} else if (page.path.startsWith('/settings')) {
+		return (
+			<Suspense>
+				<Settings />
+			</Suspense>
+		)
 	}
 }
 
@@ -118,20 +126,19 @@ const Layout = () => {
 		<>
 			<div className="container">
 				<div className="flex items-center h-14 md:h-16 bg-card px-4 pr-3 sm:px-6 border bt-0 rounded-md my-4">
-					<Link
-						href="/"
-						aria-label="Home"
-						className={'p-2 pl-0'}
-						onClick={(e) => {
-							e.preventDefault()
-							navigate('/')
-						}}
-					>
+					<Link href="/" aria-label="Home" className={'p-2 pl-0'}>
 						<Logo className="h-[1.15em] fill-foreground" />
 					</Link>
 
 					<div className={'flex ml-auto items-center'}>
 						<ModeToggle />
+						<Link
+							href="/settings/general"
+							aria-label="Settings"
+							className={cn('', buttonVariants({ variant: 'ghost', size: 'icon' }))}
+						>
+							<SettingsIcon className="h-[1.2rem] w-[1.2rem]" />
+						</Link>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<button
