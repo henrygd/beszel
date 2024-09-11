@@ -41,9 +41,9 @@ export default function SettingsLayout() {
 				<CardDescription>Manage notification and display preferences.</CardDescription>
 			</CardHeader>
 			<CardContent className="p-0">
-				<Separator className="my-5" />
-				<div className="flex flex-col space-y-8 lg:flex-row lg:space-x-12 lg:space-y-0">
-					<aside className="lg:w-48 w-full overflow-auto">
+				<Separator className="my-3 md:my-5" />
+				<div className="flex flex-col gap-3 md:flex-row md:gap-5 lg:gap-10">
+					<aside className="md:w-48 w-full">
 						<SidebarNav items={sidebarNavItems} />
 					</aside>
 					<div className="flex-1">

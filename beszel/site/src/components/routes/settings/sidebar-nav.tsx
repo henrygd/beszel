@@ -1,8 +1,16 @@
+import React from 'react'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '../../ui/button'
-import { $router, Link } from '../../router'
+import { $router, Link, navigate } from '../../router'
 import { useStore } from '@nanostores/react'
-import React from 'react'
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
 
 interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
 	items: {
@@ -16,25 +24,45 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
 	const page = useStore($router)
 
 	return (
-		<nav
-			className={cn('flex space-x-2 lg:flex-col lg:space-x-0 lg:space-y-1', className)}
-			{...props}
-		>
-			{items.map((item) => (
-				<Link
-					key={item.href}
-					href={item.href}
-					className={cn(
-						buttonVariants({ variant: 'ghost' }),
-						'flex items-center gap-3',
-						page?.path === item.href ? 'bg-muted hover:bg-muted' : 'hover:bg-muted/50',
-						'justify-start'
-					)}
-				>
-					{item.icon && <item.icon className="h-4 w-4" />}
-					{item.title}
-				</Link>
-			))}
-		</nav>
+		<>
+			{/* Mobile View */}
+			<div className="md:hidden">
+				<Select onValueChange={(value: string) => navigate(value)} defaultValue={page?.path}>
+					<SelectTrigger className="w-full mb-3">
+						<SelectValue placeholder="Select a page" />
+					</SelectTrigger>
+					<SelectContent>
+						{items.map((item) => (
+							<SelectItem key={item.href} value={item.href}>
+								<span className="flex items-center gap-2">
+									{item.icon && <item.icon className="h-4 w-4" />}
+									{item.title}
+								</span>
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+				<Separator />
+			</div>
+
+			{/* Desktop View */}
+			<nav className={cn('hidden md:grid gap-1', className)} {...props}>
+				{items.map((item) => (
+					<Link
+						key={item.href}
+						href={item.href}
+						className={cn(
+							buttonVariants({ variant: 'ghost' }),
+							'flex items-center gap-3',
+							page?.path === item.href ? 'bg-muted hover:bg-muted' : 'hover:bg-muted/50',
+							'justify-start'
+						)}
+					>
+						{item.icon && <item.icon className="h-4 w-4" />}
+						{item.title}
+					</Link>
+				))}
+			</nav>
+		</>
 	)
 }

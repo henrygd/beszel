@@ -5,7 +5,6 @@ import (
 	"beszel/internal/entities/system"
 	"fmt"
 	"log"
-	"net/http"
 	"net/mail"
 	"net/url"
 	"os"
@@ -254,13 +253,13 @@ func (am *AlertManager) SendTestNotification(c echo.Context) error {
 		return apis.NewForbiddenError("Forbidden", nil)
 	}
 	url := c.QueryParam("url")
-	log.Println("url", url)
+	// log.Println("url", url)
 	if url == "" {
-		return c.JSON(http.StatusOK, map[string]string{"err": "URL is required"})
+		return c.JSON(200, map[string]string{"err": "URL is required"})
 	}
 	err := am.SendShoutrrrAlert(url, "Test Alert", "This is a notification from Beszel.", am.app.Settings().Meta.AppUrl, "View Beszel")
 	if err != nil {
-		return c.JSON(http.StatusOK, map[string]string{"err": err.Error()})
+		return c.JSON(200, map[string]string{"err": err.Error()})
 	}
-	return c.JSON(http.StatusOK, map[string]bool{"err": false})
+	return c.JSON(200, map[string]bool{"err": false})
 }
