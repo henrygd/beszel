@@ -185,46 +185,47 @@ func (am *AlertManager) sendAlert(data AlertData) {
 }
 
 func (am *AlertManager) SendShoutrrrAlert(notificationUrl, title, message, link, linkText string) error {
+	// services that support title param
 	supportsTitle := []string{"bark", "discord", "gotify", "ifttt", "join", "matrix", "ntfy", "opsgenie", "pushbullet", "pushover", "slack", "teams", "telegram", "zulip"}
-	supportsLink := []string{"ntfy"}
+
 	// Parse the URL
 	parsedURL, err := url.Parse(notificationUrl)
 	if err != nil {
 		return fmt.Errorf("error parsing URL: %v", err)
 	}
-
 	scheme := parsedURL.Scheme
-
-	// // Get query parameters
 	queryParams := parsedURL.Query()
 
 	// Add title
-	if !sliceContains(supportsTitle, scheme) {
-		message = title + "\n\n" + message
-	} else {
+	if sliceContains(supportsTitle, scheme) {
 		queryParams.Add("title", title)
-
-	}
-	// Add link
-	if !sliceContains(supportsLink, scheme) {
-		// add link to the message
-		message += "\n\n" + link
-	} else {
-		// ntfy link
-		if scheme == "ntfy" {
-			queryParams.Add("Actions", fmt.Sprintf("view, %s, %s", linkText, link))
+	} else if scheme == "mattermost" {
+		// use markdown title for mattermost
+		message = "##### " + title + "\n\n" + message
+	} else if scheme == "generic" && queryParams.Has("template") {
+		// add title as property if using generic with template json
+		titleKey := queryParams.Get("titlekey")
+		if titleKey == "" {
+			titleKey = "title"
 		}
+		queryParams.Add("$"+titleKey, title)
+	} else {
+		// otherwise just add title to message
+		message = title + "\n\n" + message
 	}
 
-	//
-	if scheme == "generic" {
-		queryParams.Add("template", "json")
-		queryParams.Add("$title", title)
+	// Add link
+	if scheme == "ntfy" {
+		// if ntfy, add link to actions
+		queryParams.Add("Actions", fmt.Sprintf("view, %s, %s", linkText, link))
+	} else {
+		// else add link directly to the message
+		message += "\n\n" + link
 	}
 
 	// Encode the modified query parameters back into the URL
 	parsedURL.RawQuery = queryParams.Encode()
-	log.Println("URL after modification:", parsedURL.String())
+	// log.Println("URL after modification:", parsedURL.String())
 
 	err = shoutrrr.Send(parsedURL.String(), message)
 

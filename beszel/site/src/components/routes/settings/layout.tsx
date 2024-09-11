@@ -35,10 +35,10 @@ export default function SettingsLayout() {
 	}, [])
 
 	return (
-		<Card className="pt-5 px-4 pb-9 sm:pt-6 sm:px-7">
+		<Card className="pt-5 px-4 pb-8 sm:pt-6 sm:px-7">
 			<CardHeader className="p-0">
 				<CardTitle className="mb-1">Settings</CardTitle>
-				<CardDescription>Manage your account settings and set e-mail preferences.</CardDescription>
+				<CardDescription>Manage notification and display preferences.</CardDescription>
 			</CardHeader>
 			<CardContent className="p-0">
 				<Separator className="my-5" />

@@ -5,7 +5,9 @@ import { pb } from '@/lib/stores'
 import { Separator } from '@/components/ui/separator'
 import { Card } from '@/components/ui/card'
 // import { Switch } from '@/components/ui/switch'
-import { Trash2Icon } from 'lucide-react'
+import { LoaderCircleIcon, PlusIcon, SaveIcon, Trash2Icon } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from '@/components/ui/use-toast'
 
 export default function SettingsNotificationsPage() {
 	return (
@@ -20,7 +22,7 @@ export default function SettingsNotificationsPage() {
 					<div className="mb-4">
 						<h3 className="mb-1 text-lg font-medium">Email notifications</h3>
 						<p className="text-sm text-muted-foreground">
-							Get notified when new alerts are created.
+							Leave the emails field to disable email notifications.
 						</p>
 					</div>
 					<Label className="block">To email(s)</Label>
@@ -36,63 +38,99 @@ export default function SettingsNotificationsPage() {
 						<p className="text-sm text-muted-foreground">
 							Beszel uses{' '}
 							<a
-								href="https://containrrr.dev/shoutrrr/v0.8/services/overview/"
+								href="https://containrrr.dev/shoutrrr/services/overview/"
 								target="_blank"
-								className="font-medium text-primary opacity-80 hover:opacity-100 duration-100"
+								className="link"
 							>
 								Shoutrrr
 							</a>{' '}
 							to integrate with popular notification services.
 						</p>
 					</div>
-					<Card className="bg-muted/30 p-3.5">
-						<div className="flex items-center gap-1">
-							<Label htmlFor="name" className="sr-only">
-								URL
-							</Label>
-							<Input
-								id="name"
-								name="name"
-								className="light:bg-card"
-								required
-								placeholder="generic://example.com?@header=value"
-							/>
-							<Button
-								type="button"
-								variant="outline"
-								className=""
-								// onClick={() => append({ value: '' })}
-							>
-								Test
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								size="icon"
-								className="shrink-0"
-								// onClick={() => append({ value: '' })}
-							>
-								<Trash2Icon className="h-4 w-4" />
-							</Button>
-							{/* <Label htmlFor="enabled-01" className="sr-only">
-								Enabled
-							</Label>
-							<Switch defaultChecked id="enabled-01" className="ml-2" /> */}
-						</div>
-					</Card>
+					<ShoutrrrUrlCard />
 					<Button
 						type="button"
 						variant="outline"
 						size="sm"
-						className="mt-2"
+						className="mt-2 flex items-center gap-1"
 						// onClick={() => append({ value: '' })}
 					>
+						<PlusIcon className="h-4 w-4 -ml-0.5" />
 						Add URL
 					</Button>
 				</div>
 				<Separator />
-				<Button type="submit">Save settings</Button>
+				<Button type="submit" className="flex items-center gap-1.5">
+					<SaveIcon className="h-4 w-4" />
+					Save settings
+				</Button>
 			</div>
 		</div>
+	)
+}
+
+async function sendTestNotification(url: string) {
+	const res = await pb.send('/api/beszel/send-test-notification', { url })
+	if ('err' in res && !res.err) {
+		toast({
+			title: 'Test notification sent',
+			description: 'Check your notification service',
+		})
+	} else {
+		toast({
+			title: 'Error',
+			description: res.err ?? 'Failed to send test notification',
+			variant: 'destructive',
+		})
+	}
+}
+
+// todo unique ids
+function ShoutrrrUrlCard() {
+	const [url, setUrl] = useState('')
+	const [isLoading, setIsLoading] = useState(false)
+
+	return (
+		<Card className="bg-muted/30 p-3.5">
+			<div className="flex items-center gap-1">
+				<Label htmlFor="name" className="sr-only">
+					URL
+				</Label>
+				<Input
+					id="name"
+					name="name"
+					className="light:bg-card"
+					required
+					placeholder="generic://webhook.site/xxxxxx"
+					onChange={(e) => setUrl(e.target.value)}
+				/>
+				<Button
+					type="button"
+					variant="outline"
+					className="w-28"
+					disabled={isLoading || url === ''}
+					onClick={async () => {
+						setIsLoading(true)
+						await sendTestNotification(url)
+						setIsLoading(false)
+					}}
+				>
+					{isLoading ? <LoaderCircleIcon className="sh-4 w-4 animate-spin" /> : 'Test URL'}
+				</Button>
+				<Button
+					type="button"
+					variant="outline"
+					size="icon"
+					className="shrink-0"
+					// onClick={() => append({ value: '' })}
+				>
+					<Trash2Icon className="sh-4 w-4" />
+				</Button>
+				{/* <Label htmlFor="enabled-01" className="sr-only">
+								Enabled
+							</Label>
+							<Switch defaultChecked id="enabled-01" className="ml-2" /> */}
+			</div>
+		</Card>
 	)
 }

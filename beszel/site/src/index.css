@@ -78,6 +78,9 @@
 	body {
 		@apply bg-background text-foreground;
 	}
+	.link {
+		@apply text-primary font-medium underline-offset-4 hover:underline;
+	}
 }
 
 .recharts-tooltip-wrapper {
