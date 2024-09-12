@@ -15,7 +15,7 @@ func init() {
 			{
 				"id": "2hz5ncl8tizk5nx",
 				"created": "2024-07-07 16:08:20.979Z",
-				"updated": "2024-07-28 17:00:47.996Z",
+				"updated": "2024-07-28 17:14:24.492Z",
 				"name": "systems",
 				"type": "base",
 				"system": false,
@@ -120,7 +120,7 @@ func init() {
 			{
 				"id": "ej9oowivz8b2mht",
 				"created": "2024-07-07 16:09:09.179Z",
-				"updated": "2024-07-22 20:13:31.324Z",
+				"updated": "2024-07-28 17:14:24.492Z",
 				"name": "system_stats",
 				"type": "base",
 				"system": false,
@@ -186,7 +186,7 @@ func init() {
 			{
 				"id": "juohu4jipgc13v7",
 				"created": "2024-07-07 16:09:57.976Z",
-				"updated": "2024-07-22 20:13:31.324Z",
+				"updated": "2024-07-28 17:14:24.492Z",
 				"name": "container_stats",
 				"type": "base",
 				"system": false,
@@ -250,7 +250,7 @@ func init() {
 			{
 				"id": "_pb_users_auth_",
 				"created": "2024-07-14 16:25:18.226Z",
-				"updated": "2024-07-28 17:02:08.311Z",
+				"updated": "2024-09-12 23:19:36.280Z",
 				"name": "users",
 				"type": "auth",
 				"system": false,
@@ -316,7 +316,7 @@ func init() {
 			{
 				"id": "elngm8x1l60zi2v",
 				"created": "2024-07-15 01:16:04.044Z",
-				"updated": "2024-07-22 20:13:31.324Z",
+				"updated": "2024-07-28 17:14:24.492Z",
 				"name": "alerts",
 				"type": "base",
 				"system": false,
@@ -402,6 +402,53 @@ func init() {
 				"createRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
 				"updateRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
 				"deleteRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
+				"options": {}
+			},
+			{
+				"id": "4afacsdnlu8q8r2",
+				"created": "2024-09-12 17:42:55.324Z",
+				"updated": "2024-09-12 21:19:59.114Z",
+				"name": "user_settings",
+				"type": "base",
+				"system": false,
+				"schema": [
+					{
+						"system": false,
+						"id": "d5vztyxa",
+						"name": "user",
+						"type": "relation",
+						"required": true,
+						"presentable": false,
+						"unique": false,
+						"options": {
+							"collectionId": "_pb_users_auth_",
+							"cascadeDelete": false,
+							"minSelect": null,
+							"maxSelect": 1,
+							"displayFields": null
+						}
+					},
+					{
+						"system": false,
+						"id": "xcx4qgqq",
+						"name": "settings",
+						"type": "json",
+						"required": false,
+						"presentable": false,
+						"unique": false,
+						"options": {
+							"maxSize": 2000000
+						}
+					}
+				],
+				"indexes": [
+					"CREATE UNIQUE INDEX ` + "`" + `idx_30Lwgf2` + "`" + ` ON ` + "`" + `user_settings` + "`" + ` (` + "`" + `user` + "`" + `)"
+				],
+				"listRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
+				"viewRule": null,
+				"createRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
+				"updateRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
+				"deleteRule": null,
 				"options": {}
 			}
 		]`

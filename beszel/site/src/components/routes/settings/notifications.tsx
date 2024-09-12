@@ -4,13 +4,13 @@ import { Label } from '@/components/ui/label'
 import { pb } from '@/lib/stores'
 import { Separator } from '@/components/ui/separator'
 import { Card } from '@/components/ui/card'
-import { LoaderCircleIcon, PlusIcon, SaveIcon, Trash2Icon } from 'lucide-react'
+import { BellIcon, LoaderCircleIcon, PlusIcon, SaveIcon, Trash2Icon } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from '@/components/ui/use-toast'
-
-interface UserSettings {
-	webhooks: string[]
-}
+import { InputTags } from '@/components/ui/input-tags'
+import { UserSettings } from '@/types'
+import { saveSettings } from './layout'
+import * as v from 'valibot'
 
 interface ShoutrrrUrlCardProps {
 	url: string
@@ -18,13 +18,15 @@ interface ShoutrrrUrlCardProps {
 	onRemove: () => void
 }
 
-const userSettings: UserSettings = {
-	webhooks: ['generic://webhook.site/xxx'],
-}
+const NotificationSchema = v.object({
+	emails: v.array(v.pipe(v.string(), v.email())),
+	webhooks: v.array(v.pipe(v.string(), v.url())),
+})
 
-const SettingsNotificationsPage = () => {
-	const [email, setEmail] = useState(pb.authStore.model?.email || '')
+const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSettings }) => {
 	const [webhooks, setWebhooks] = useState(userSettings.webhooks ?? [])
+	const [emails, setEmails] = useState<string[]>(userSettings.emails ?? [])
+	const [isLoading, setIsLoading] = useState(false)
 
 	const addWebhook = () => setWebhooks([...webhooks, ''])
 	const removeWebhook = (index: number) => setWebhooks(webhooks.filter((_, i) => i !== index))
@@ -35,22 +37,35 @@ const SettingsNotificationsPage = () => {
 		setWebhooks(newWebhooks)
 	}
 
-	const saveSettings = async () => {
-		// TODO: Implement actual saving logic
-		console.log('Saving settings:', { email, webhooks })
-		toast({
-			title: 'Settings saved',
-			description: 'Your notification settings have been updated.',
-		})
+	async function updateSettings() {
+		setIsLoading(true)
+		try {
+			const parsedData = v.parse(NotificationSchema, { emails, webhooks })
+			console.log('parsedData', parsedData)
+			await saveSettings(parsedData)
+		} catch (e: any) {
+			toast({
+				title: 'Failed to save settings',
+				description: e.message,
+				variant: 'destructive',
+			})
+		}
+		setIsLoading(false)
 	}
 
 	return (
 		<div>
-			{/* <div>
-				<h3 className="text-xl font-medium mb-1">Notifications</h3>
-				<p className="text-sm text-muted-foreground">Configure how you receive notifications.</p>
+			<div>
+				<h3 className="text-xl font-medium mb-2">Notifications</h3>
+				<p className="text-sm text-muted-foreground">
+					Configure how you receive alert notifications.
+				</p>
+				<p className="text-sm text-muted-foreground mt-1.5">
+					Looking for where to create system alerts? Click the bell icons{' '}
+					<BellIcon className="inline h-4 w-4" /> in the dashboard table.
+				</p>
 			</div>
-			<Separator className="my-6" /> */}
+			<Separator className="my-4" />
 			<div className="space-y-5">
 				<div className="space-y-2">
 					<div className="mb-4">
@@ -60,13 +75,14 @@ const SettingsNotificationsPage = () => {
 						</p>
 					</div>
 					<Label className="block">To email(s)</Label>
-					<Input
-						placeholder="name@example.com"
-						value={email}
-						onChange={(e) => setEmail(e.target.value)}
+					<InputTags
+						value={emails}
+						onChange={setEmails}
+						placeholder="Enter email address..."
+						className="w-full"
 					/>
 					<p className="text-[0.8rem] text-muted-foreground">
-						Separate multiple emails with commas.
+						Save address using enter key or comma.
 					</p>
 				</div>
 				<Separator />
@@ -109,8 +125,17 @@ const SettingsNotificationsPage = () => {
 					</Button>
 				</div>
 				<Separator />
-				<Button type="button" className="flex items-center gap-1.5" onClick={saveSettings}>
-					<SaveIcon className="h-4 w-4" />
+				<Button
+					type="button"
+					className="flex items-center gap-1.5 disabled:opacity-100"
+					onClick={updateSettings}
+					disabled={isLoading}
+				>
+					{isLoading ? (
+						<LoaderCircleIcon className="h-4 w-4 animate-spin" />
+					) : (
+						<SaveIcon className="h-4 w-4" />
+					)}
 					Save settings
 				</Button>
 			</div>

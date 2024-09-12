@@ -4,6 +4,7 @@ import (
 	"beszel"
 	"beszel/internal/alerts"
 	"beszel/internal/entities/system"
+	"beszel/internal/entities/user"
 	"beszel/internal/records"
 	"beszel/site"
 	"context"
@@ -165,6 +166,36 @@ func (h *Hub) Run() {
 	// immediately create connection for new systems
 	h.app.OnModelAfterCreate("systems").Add(func(e *core.ModelEvent) error {
 		go h.updateSystem(e.Model.(*models.Record))
+		return nil
+	})
+	// default user settings
+	h.app.OnModelBeforeCreate("user_settings").Add(func(e *core.ModelEvent) error {
+		record := e.Model.(*models.Record)
+		// intialize settings with defaults
+		settings := user.UserSettings{
+			// Language:             "en",
+			ChartTime:            "1h",
+			NotificationEmails:   []string{},
+			NotificationWebhooks: []string{},
+		}
+		record.UnmarshalJSONField("settings", &settings)
+		if len(settings.NotificationEmails) == 0 {
+			// get user email from auth record
+			if errs := h.app.Dao().ExpandRecord(record, []string{"user"}, nil); len(errs) == 0 {
+				// app.Logger().Error("failed to expand user relation", "errs", errs)
+				if user := record.ExpandedOne("user"); user != nil {
+					settings.NotificationEmails = []string{user.GetString("email")}
+				} else {
+					log.Println("Failed to get user email from auth record")
+				}
+			} else {
+				log.Println("failed to expand user relation", "errs", errs)
+			}
+		}
+		// if len(settings.NotificationWebhooks) == 0 {
+		// 	settings.NotificationWebhooks = []string{""}
+		// }
+		record.Set("settings", settings)
 		return nil
 	})
 

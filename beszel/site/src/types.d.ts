@@ -118,3 +118,10 @@ export interface ChartTimeData {
 		getOffset: (endTime: Date) => Date
 	}
 }
+
+export type UserSettings = {
+	// lang?: string
+	chartTime: ChartTimes
+	emails?: string[]
+	webhooks?: string[]
+}

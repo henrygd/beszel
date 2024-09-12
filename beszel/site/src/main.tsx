@@ -14,6 +14,7 @@ import {
 import { ModeToggle } from './components/mode-toggle.tsx'
 import {
 	cn,
+	updateUserSettings,
 	isAdmin,
 	isReadOnlyUser,
 	updateAlerts,
@@ -68,9 +69,10 @@ const App = () => {
 			$publicKey.set(data.key)
 			$hubVersion.set(data.v)
 		})
-		// get servers / alerts
+		// get servers / alerts / settings
 		updateSystemList()
 		updateAlerts()
+		updateUserSettings()
 	}, [])
 
 	// update favicon
@@ -101,7 +103,7 @@ const App = () => {
 		return <Home />
 	} else if (page.route === 'server') {
 		return <SystemDetail name={page.params.name} />
-	} else if (page.path.startsWith('/settings')) {
+	} else if (page.route === 'settings') {
 		return (
 			<Suspense>
 				<Settings />

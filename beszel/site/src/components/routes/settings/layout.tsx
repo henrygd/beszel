@@ -6,6 +6,9 @@ import { useStore } from '@nanostores/react'
 import { $router } from '@/components/router.tsx'
 import { redirectPage } from '@nanostores/router'
 import { BellIcon, SettingsIcon } from 'lucide-react'
+import { $userSettings, pb } from '@/lib/stores.ts'
+import { toast } from '@/components/ui/use-toast.ts'
+import { UserSettings } from '@/types.js'
 
 const General = lazy(() => import('./general.tsx'))
 const Notifications = lazy(() => import('./notifications.tsx'))
@@ -22,6 +25,37 @@ const sidebarNavItems = [
 		icon: BellIcon,
 	},
 ]
+
+export async function saveSettings(newSettings: Partial<UserSettings>) {
+	// console.log('Updating settings:', newSettings)
+	try {
+		// get fresh copy of settings
+		const req = await pb.collection('user_settings').getFirstListItem('', {
+			fields: 'id,settings',
+		})
+		// make new user settings
+		const mergedSettings = {
+			...req.settings,
+			...newSettings,
+		}
+		// update user settings
+		const updatedSettings = await pb.collection('user_settings').update(req.id, {
+			settings: mergedSettings,
+		})
+		$userSettings.set(updatedSettings.settings)
+		toast({
+			title: 'Settings saved',
+			description: 'Your notification settings have been updated.',
+		})
+	} catch (e) {
+		console.log('update settings', e)
+		toast({
+			title: 'Failed to save settings',
+			description: 'Please check logs for more details.',
+			variant: 'destructive',
+		})
+	}
+}
 
 export default function SettingsLayout() {
 	const page = useStore($router)
@@ -59,13 +93,13 @@ export default function SettingsLayout() {
 }
 
 function SettingsContent({ name }: { name: string }) {
+	const userSettings = useStore($userSettings)
+
 	switch (name) {
 		case 'general':
-			return <General />
-		// case 'display':
-		// 	return <Display />
+			return <General userSettings={userSettings} />
 		case 'notifications':
-			return <Notifications />
+			return <Notifications userSettings={userSettings} />
 	}
 	return ''
 }

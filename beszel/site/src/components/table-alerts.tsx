@@ -54,10 +54,7 @@ export default function AlertsButton({ system }: { system: SystemRecord }) {
 						{isAdmin() && (
 							<span>
 								Please{' '}
-								<a
-									href="/_/#/settings/mail"
-									className="font-medium text-primary opacity-80 hover:opacity-100 duration-100"
-								>
+								<a href="/_/#/settings/mail" className="link">
 									configure an SMTP server
 								</a>{' '}
 								to ensure alerts are delivered.{' '}

@@ -1,7 +1,7 @@
 import { toast } from '@/components/ui/use-toast'
 import { type ClassValue, clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import { $alerts, $copyContent, $systems, pb } from './stores'
+import { $alerts, $copyContent, $systems, $userSettings, pb } from './stores'
 import { AlertRecord, ChartTimeData, ChartTimes, SystemRecord } from '@/types'
 import { RecordModel, RecordSubscription } from 'pocketbase'
 import { WritableAtom } from 'nanostores'
@@ -269,4 +269,23 @@ export const useLocalStorage = (key: string, defaultValue: any) => {
 	}, [key, value])
 
 	return [value, setValue]
+}
+
+export async function updateUserSettings() {
+	try {
+		const req = await pb.collection('user_settings').getFirstListItem('', { fields: 'settings' })
+		$userSettings.set(req.settings)
+		return
+	} catch (e) {
+		console.log('get settings', e)
+	}
+	// create user settings if error fetching existing
+	try {
+		const createdSettings = await pb
+			.collection('user_settings')
+			.create({ user: pb.authStore.model!.id })
+		$userSettings.set(createdSettings.settings)
+	} catch (e) {
+		console.log('create settings', e)
+	}
 }

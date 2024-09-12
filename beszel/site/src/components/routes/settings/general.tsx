@@ -9,25 +9,63 @@ import {
 } from '@/components/ui/select'
 import { chartTimeData } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
-import { SaveIcon } from 'lucide-react'
+import { LoaderCircleIcon, SaveIcon } from 'lucide-react'
+import { UserSettings } from '@/types'
+import { saveSettings } from './layout'
+import { useState } from 'react'
 
-export default function SettingsProfilePage() {
+export default function SettingsProfilePage({ userSettings }: { userSettings: UserSettings }) {
+	const [isLoading, setIsLoading] = useState(false)
+
+	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+		e.preventDefault()
+		setIsLoading(true)
+		const formData = new FormData(e.target as HTMLFormElement)
+		const data = Object.fromEntries(formData) as Partial<UserSettings>
+		await saveSettings(data)
+		setIsLoading(false)
+	}
+
 	return (
 		<div>
-			{/* <div>
-				<h3 className="text-lg font-medium mb-1">General</h3>
-				<p className="text-sm text-muted-foreground">Set your preferred language and timezone.</p>
+			<div>
+				<h3 className="text-xl font-medium mb-2">General</h3>
+				<p className="text-sm text-muted-foreground">
+					Set your preferred language and chart display options.
+				</p>
 			</div>
-			<Separator className="mt-6 mb-5" /> */}
-			<div className="space-y-5">
+			<Separator className="my-4" />
+			<form onSubmit={handleSubmit} className="space-y-5">
+				<div className="space-y-2">
+					<div className="mb-4">
+						<h3 className="mb-1 text-lg font-medium">Language</h3>
+						<p className="text-sm text-muted-foreground">
+							Additional language support coming soon.
+						</p>
+					</div>
+					<Label className="block" htmlFor="lang">
+						Preferred language
+					</Label>
+					<Select defaultValue="en">
+						<SelectTrigger id="lang">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="en">English</SelectItem>
+						</SelectContent>
+					</Select>
+				</div>
+				<Separator />
 				<div className="space-y-2">
 					<div className="mb-4">
 						<h3 className="mb-1 text-lg font-medium">Chart options</h3>
 						<p className="text-sm text-muted-foreground">Adjust display options for charts.</p>
 					</div>
-					<Label className="block">Default time period</Label>
-					<Select defaultValue="1h">
-						<SelectTrigger>
+					<Label className="block" htmlFor="chartTime">
+						Default time period
+					</Label>
+					<Select name="chartTime" defaultValue={userSettings.chartTime}>
+						<SelectTrigger id="chartTime">
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
@@ -43,11 +81,19 @@ export default function SettingsProfilePage() {
 					</p>
 				</div>
 				<Separator />
-				<Button type="submit" className="flex items-center gap-1.5">
-					<SaveIcon className="h-4 w-4" />
+				<Button
+					type="submit"
+					className="flex items-center gap-1.5 disabled:opacity-100"
+					disabled={isLoading}
+				>
+					{isLoading ? (
+						<LoaderCircleIcon className="h-4 w-4 animate-spin" />
+					) : (
+						<SaveIcon className="h-4 w-4" />
+					)}
 					Save settings
 				</Button>
-			</div>
+			</form>
 		</div>
 	)
 }

@@ -7,7 +7,6 @@ import (
 	"log"
 	"net/mail"
 	"net/url"
-	"os"
 
 	"github.com/containrrr/shoutrrr"
 	"github.com/labstack/echo/v5"
@@ -18,16 +17,21 @@ import (
 	"github.com/pocketbase/pocketbase/tools/mailer"
 )
 
+type AlertManager struct {
+	app *pocketbase.PocketBase
+}
+
 type AlertData struct {
-	User     *models.Record
+	UserID   string
 	Title    string
 	Message  string
 	Link     string
 	LinkText string
 }
 
-type AlertManager struct {
-	app *pocketbase.PocketBase
+type UserAlertSettings struct {
+	Emails   []string `json:"emails"`
+	Webhooks []string `json:"webhooks"`
 }
 
 func NewAlertManager(app *pocketbase.PocketBase) *AlertManager {
@@ -107,7 +111,7 @@ func (am *AlertManager) handleSlidingValueAlert(newRecord *models.Record, alertR
 	}
 	if user := alertRecord.ExpandedOne("user"); user != nil {
 		am.sendAlert(AlertData{
-			User:     user,
+			UserID:   user.GetId(),
 			Title:    subject,
 			Message:  body,
 			Link:     am.app.Settings().Meta.AppUrl + "/system/" + url.QueryEscape(systemName),
@@ -146,7 +150,7 @@ func (am *AlertManager) handleStatusAlerts(newStatus string, oldRecord *models.R
 	// send alert
 	systemName := oldRecord.GetString("name")
 	am.sendAlert(AlertData{
-		User:     user,
+		UserID:   user.GetId(),
 		Title:    fmt.Sprintf("Connection to %s is %s %v", systemName, alertStatus, emoji),
 		Message:  fmt.Sprintf("Connection to %s is %s", systemName, alertStatus),
 		Link:     am.app.Settings().Meta.AppUrl + "/system/" + url.QueryEscape(systemName),
@@ -156,18 +160,42 @@ func (am *AlertManager) handleStatusAlerts(newStatus string, oldRecord *models.R
 }
 
 func (am *AlertManager) sendAlert(data AlertData) {
-	shoutrrrUrl := os.Getenv("SHOUTRRR_URL")
-	if shoutrrrUrl != "" {
-		err := am.SendShoutrrrAlert(shoutrrrUrl, data.Title, data.Message, data.Link, data.LinkText)
-		if err == nil {
-			log.Println("Sent shoutrrr alert")
-			return
-		}
-		log.Println("Failed to send alert via shoutrrr, falling back to email notification. ", "err", err.Error())
+	// get user settings
+	record, err := am.app.Dao().FindFirstRecordByFilter(
+		"user_settings", "user={:user}",
+		dbx.Params{"user": data.UserID},
+	)
+	if err != nil {
+		log.Println("Failed to get user settings", "err", err.Error())
+		return
 	}
-	// todo: email enable / disable and testing
+	// unmarshal user settings
+	userAlertSettings := UserAlertSettings{
+		Emails:   []string{},
+		Webhooks: []string{},
+	}
+	if err := record.UnmarshalJSONField("settings", &userAlertSettings); err != nil {
+		log.Println("Failed to unmarshal user settings", "err", err.Error())
+	}
+	// send alerts via webhooks
+	for _, webhook := range userAlertSettings.Webhooks {
+		err := am.SendShoutrrrAlert(webhook, data.Title, data.Message, data.Link, data.LinkText)
+		if err != nil {
+			am.app.Logger().Error("Failed to send shoutrrr alert", "err", err.Error())
+		}
+	}
+	// send alerts via email
+	if len(userAlertSettings.Emails) == 0 {
+		log.Println("No email addresses found")
+		return
+	}
+	addresses := []mail.Address{}
+	for _, email := range userAlertSettings.Emails {
+		addresses = append(addresses, mail.Address{Address: email})
+		log.Println("Sending alert via email to", email)
+	}
 	message := mailer.Message{
-		To:      []mail.Address{{Address: data.User.GetString("email")}},
+		To:      addresses,
 		Subject: data.Title,
 		Text:    data.Message + fmt.Sprintf("\n\n%s", data.Link),
 		From: mail.Address{

@@ -1,4 +1,4 @@
-import { $systems, pb, $chartTime, $containerFilter } from '@/lib/stores'
+import { $systems, pb, $chartTime, $containerFilter, $userSettings } from '@/lib/stores'
 import { ContainerStatsRecord, SystemRecord, SystemStatsRecord } from '@/types'
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card'
@@ -62,7 +62,7 @@ export default function SystemDetail({ name }: { name: string }) {
 		document.title = `${name} / Beszel`
 		return () => {
 			resetCharts()
-			$chartTime.set('1h')
+			$chartTime.set($userSettings.get().chartTime)
 			$containerFilter.set('')
 			setHasDocker(false)
 		}
