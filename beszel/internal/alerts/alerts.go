@@ -29,7 +29,7 @@ type AlertData struct {
 	LinkText string
 }
 
-type UserAlertSettings struct {
+type UserNotificationSettings struct {
 	Emails   []string `json:"emails"`
 	Webhooks []string `json:"webhooks"`
 }
@@ -166,16 +166,16 @@ func (am *AlertManager) sendAlert(data AlertData) {
 		dbx.Params{"user": data.UserID},
 	)
 	if err != nil {
-		log.Println("Failed to get user settings", "err", err.Error())
+		am.app.Logger().Error("Failed to get user settings", "err", err.Error())
 		return
 	}
 	// unmarshal user settings
-	userAlertSettings := UserAlertSettings{
+	userAlertSettings := UserNotificationSettings{
 		Emails:   []string{},
 		Webhooks: []string{},
 	}
 	if err := record.UnmarshalJSONField("settings", &userAlertSettings); err != nil {
-		log.Println("Failed to unmarshal user settings", "err", err.Error())
+		am.app.Logger().Error("Failed to unmarshal user settings", "err", err.Error())
 	}
 	// send alerts via webhooks
 	for _, webhook := range userAlertSettings.Webhooks {
@@ -186,13 +186,12 @@ func (am *AlertManager) sendAlert(data AlertData) {
 	}
 	// send alerts via email
 	if len(userAlertSettings.Emails) == 0 {
-		log.Println("No email addresses found")
+		// log.Println("No email addresses found")
 		return
 	}
 	addresses := []mail.Address{}
 	for _, email := range userAlertSettings.Emails {
 		addresses = append(addresses, mail.Address{Address: email})
-		log.Println("Sending alert via email to", email)
 	}
 	message := mailer.Message{
 		To:      addresses,
@@ -211,6 +210,7 @@ func (am *AlertManager) sendAlert(data AlertData) {
 	}
 }
 
+// SendShoutrrrAlert sends an alert via a Shoutrrr URL
 func (am *AlertManager) SendShoutrrrAlert(notificationUrl, title, message, link, linkText string) error {
 	// services that support title param
 	supportsTitle := []string{"bark", "discord", "gotify", "ifttt", "join", "matrix", "ntfy", "opsgenie", "pushbullet", "pushover", "slack", "teams", "telegram", "zulip"}
@@ -259,7 +259,7 @@ func (am *AlertManager) SendShoutrrrAlert(notificationUrl, title, message, link,
 	if err == nil {
 		am.app.Logger().Info("Sent shoutrrr alert", "title", title)
 	} else {
-		am.app.Logger().Error("Error sending shoutrrr alert", "errs", err)
+		am.app.Logger().Error("Error sending shoutrrr alert", "err", err.Error())
 		return err
 	}
 	return nil

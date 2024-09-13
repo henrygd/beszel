@@ -13,6 +13,7 @@ import { LoaderCircleIcon, SaveIcon } from 'lucide-react'
 import { UserSettings } from '@/types'
 import { saveSettings } from './layout'
 import { useState } from 'react'
+// import { Input } from '@/components/ui/input'
 
 export default function SettingsProfilePage({ userSettings }: { userSettings: UserSettings }) {
 	const [isLoading, setIsLoading] = useState(false)
@@ -30,17 +31,22 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 		<div>
 			<div>
 				<h3 className="text-xl font-medium mb-2">General</h3>
-				<p className="text-sm text-muted-foreground">
-					Set your preferred language and chart display options.
+				<p className="text-sm text-muted-foreground leading-relaxed">
+					Change general application options.
 				</p>
 			</div>
 			<Separator className="my-4" />
 			<form onSubmit={handleSubmit} className="space-y-5">
+				{/* <Separator />
 				<div className="space-y-2">
 					<div className="mb-4">
 						<h3 className="mb-1 text-lg font-medium">Language</h3>
-						<p className="text-sm text-muted-foreground">
-							Additional language support coming soon.
+						<p className="text-sm text-muted-foreground leading-relaxed">
+							Internationalization will be added in a future release. Please see the{' '}
+							<a href="#" className="link" target="_blank">
+								discussion on GitHub
+							</a>{' '}
+							for more details.
 						</p>
 					</div>
 					<Label className="block" htmlFor="lang">
@@ -54,12 +60,13 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 							<SelectItem value="en">English</SelectItem>
 						</SelectContent>
 					</Select>
-				</div>
-				<Separator />
+				</div> */}
 				<div className="space-y-2">
 					<div className="mb-4">
 						<h3 className="mb-1 text-lg font-medium">Chart options</h3>
-						<p className="text-sm text-muted-foreground">Adjust display options for charts.</p>
+						<p className="text-sm text-muted-foreground leading-relaxed">
+							Adjust display options for charts.
+						</p>
 					</div>
 					<Label className="block" htmlFor="chartTime">
 						Default time period

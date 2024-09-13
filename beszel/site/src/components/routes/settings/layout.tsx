@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from 'react'
+import { useEffect } from 'react'
 import { Separator } from '../../ui/separator'
 import { SidebarNav } from './sidebar-nav.tsx'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.tsx'
@@ -9,9 +9,8 @@ import { BellIcon, SettingsIcon } from 'lucide-react'
 import { $userSettings, pb } from '@/lib/stores.ts'
 import { toast } from '@/components/ui/use-toast.ts'
 import { UserSettings } from '@/types.js'
-
-const General = lazy(() => import('./general.tsx'))
-const Notifications = lazy(() => import('./notifications.tsx'))
+import General from './general.tsx'
+import Notifications from './notifications.tsx'
 
 const sidebarNavItems = [
 	{
@@ -27,31 +26,28 @@ const sidebarNavItems = [
 ]
 
 export async function saveSettings(newSettings: Partial<UserSettings>) {
-	// console.log('Updating settings:', newSettings)
 	try {
 		// get fresh copy of settings
 		const req = await pb.collection('user_settings').getFirstListItem('', {
 			fields: 'id,settings',
 		})
-		// make new user settings
-		const mergedSettings = {
-			...req.settings,
-			...newSettings,
-		}
 		// update user settings
 		const updatedSettings = await pb.collection('user_settings').update(req.id, {
-			settings: mergedSettings,
+			settings: {
+				...req.settings,
+				...newSettings,
+			},
 		})
 		$userSettings.set(updatedSettings.settings)
 		toast({
 			title: 'Settings saved',
-			description: 'Your notification settings have been updated.',
+			description: 'Your user settings have been updated.',
 		})
 	} catch (e) {
-		console.log('update settings', e)
+		// console.error('update settings', e)
 		toast({
 			title: 'Failed to save settings',
-			description: 'Please check logs for more details.',
+			description: 'Check logs for more details.',
 			variant: 'destructive',
 		})
 	}
@@ -72,19 +68,17 @@ export default function SettingsLayout() {
 		<Card className="pt-5 px-4 pb-8 sm:pt-6 sm:px-7">
 			<CardHeader className="p-0">
 				<CardTitle className="mb-1">Settings</CardTitle>
-				<CardDescription>Manage notification and display preferences.</CardDescription>
+				<CardDescription>Manage display and notification preferences.</CardDescription>
 			</CardHeader>
 			<CardContent className="p-0">
-				<Separator className="my-3 md:my-5" />
-				<div className="flex flex-col gap-3 md:flex-row md:gap-5 lg:gap-10">
+				<Separator className="hidden md:block my-5" />
+				<div className="flex flex-col gap-3.5 md:flex-row md:gap-5 lg:gap-10">
 					<aside className="md:w-48 w-full">
 						<SidebarNav items={sidebarNavItems} />
 					</aside>
 					<div className="flex-1">
-						<Suspense>
-							{/* @ts-ignore */}
-							<SettingsContent name={page?.params?.name ?? 'general'} />
-						</Suspense>
+						{/* @ts-ignore */}
+						<SettingsContent name={page?.params?.name ?? 'general'} />
 					</div>
 				</div>
 			</CardContent>
@@ -101,5 +95,4 @@ function SettingsContent({ name }: { name: string }) {
 		case 'notifications':
 			return <Notifications userSettings={userSettings} />
 	}
-	return ''
 }

@@ -260,8 +260,8 @@ export default function SystemDetail({ name }: { name: string }) {
 										<Tooltip>
 											<Separator orientation="vertical" className="h-4 bg-primary/30" />
 											<TooltipTrigger asChild>
-												<div className="flex gap-1.5">
-													<ClockArrowUp className="h-4 w-4 mt-[1px]" /> {uptime}
+												<div className="flex gap-1.5 items-center">
+													<ClockArrowUp className="h-4 w-4" /> {uptime}
 												</div>
 											</TooltipTrigger>
 											<TooltipContent>Uptime</TooltipContent>
@@ -271,8 +271,8 @@ export default function SystemDetail({ name }: { name: string }) {
 								{system.info?.m && (
 									<>
 										<Separator orientation="vertical" className="h-4 bg-primary/30" />
-										<div className="flex gap-1.5">
-											<CpuIcon className="h-4 w-4 mt-[1px]" />
+										<div className="flex gap-1.5 items-center">
+											<CpuIcon className="h-4 w-4" />
 											{system.info.m} ({system.info.c}c / {system.info.t}t)
 										</div>
 									</>

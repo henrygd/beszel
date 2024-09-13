@@ -15,6 +15,7 @@ import { Switch } from '@/components/ui/switch'
 import { AlertRecord, SystemRecord } from '@/types'
 import { lazy, Suspense, useMemo, useState } from 'react'
 import { toast } from './ui/use-toast'
+import { Link } from './router'
 
 const Slider = lazy(() => import('./ui/slider'))
 
@@ -49,17 +50,13 @@ export default function AlertsButton({ system }: { system: SystemRecord }) {
 			</DialogTrigger>
 			<DialogContent className="max-h-full overflow-auto">
 				<DialogHeader>
-					<DialogTitle className="mb-1">Alerts for {system.name}</DialogTitle>
-					<DialogDescription>
-						{isAdmin() && (
-							<span>
-								Please{' '}
-								<a href="/_/#/settings/mail" className="link">
-									configure an SMTP server
-								</a>{' '}
-								to ensure alerts are delivered.{' '}
-							</span>
-						)}
+					<DialogTitle className="text-xl">{system.name} alerts</DialogTitle>
+					<DialogDescription className="mb-1">
+						See{' '}
+						<Link href="/settings/notifications" className="link">
+							notification settings
+						</Link>{' '}
+						to configure how you receive alerts.
 					</DialogDescription>
 				</DialogHeader>
 				<div className="grid gap-3">
@@ -83,7 +80,7 @@ export default function AlertsButton({ system }: { system: SystemRecord }) {
 						alerts={systemAlerts}
 						name="Disk"
 						title="Disk Usage"
-						description="Triggers when disk usage exceeds a threshold."
+						description="Triggers when root usage exceeds a threshold."
 					/>
 				</div>
 			</DialogContent>

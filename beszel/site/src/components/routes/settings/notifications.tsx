@@ -11,6 +11,7 @@ import { InputTags } from '@/components/ui/input-tags'
 import { UserSettings } from '@/types'
 import { saveSettings } from './layout'
 import * as v from 'valibot'
+import { isAdmin } from '@/lib/utils'
 
 interface ShoutrrrUrlCardProps {
 	url: string
@@ -41,7 +42,6 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 		setIsLoading(true)
 		try {
 			const parsedData = v.parse(NotificationSchema, { emails, webhooks })
-			console.log('parsedData', parsedData)
 			await saveSettings(parsedData)
 		} catch (e: any) {
 			toast({
@@ -57,12 +57,12 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 		<div>
 			<div>
 				<h3 className="text-xl font-medium mb-2">Notifications</h3>
-				<p className="text-sm text-muted-foreground">
+				<p className="text-sm text-muted-foreground leading-relaxed">
 					Configure how you receive alert notifications.
 				</p>
-				<p className="text-sm text-muted-foreground mt-1.5">
-					Looking for where to create system alerts? Click the bell icons{' '}
-					<BellIcon className="inline h-4 w-4" /> in the dashboard table.
+				<p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
+					Looking instead for where to create system alerts? Click the bell{' '}
+					<BellIcon className="inline h-4 w-4" /> icons in the systems table.
 				</p>
 			</div>
 			<Separator className="my-4" />
@@ -70,26 +70,36 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 				<div className="space-y-2">
 					<div className="mb-4">
 						<h3 className="mb-1 text-lg font-medium">Email notifications</h3>
-						<p className="text-sm text-muted-foreground">
-							Leave blank to disable email notifications.
-						</p>
+						{isAdmin() && (
+							<p className="text-sm text-muted-foreground leading-relaxed">
+								Please{' '}
+								<a href="/_/#/settings/mail" className="link" target="_blank">
+									configure an SMTP server
+								</a>{' '}
+								to ensure alerts are delivered.{' '}
+							</p>
+						)}
 					</div>
-					<Label className="block">To email(s)</Label>
+					<Label className="block" htmlFor="email">
+						To email(s)
+					</Label>
 					<InputTags
 						value={emails}
 						onChange={setEmails}
 						placeholder="Enter email address..."
 						className="w-full"
+						type="email"
+						id="email"
 					/>
 					<p className="text-[0.8rem] text-muted-foreground">
-						Save address using enter key or comma.
+						Save address using enter key or comma. Leave blank to disable email notifications.
 					</p>
 				</div>
 				<Separator />
-				<div className="space-y-4">
+				<div className="space-y-3">
 					<div>
 						<h3 className="mb-1 text-lg font-medium">Webhook / Push notifications</h3>
-						<p className="text-sm text-muted-foreground">
+						<p className="text-sm text-muted-foreground leading-relaxed">
 							Beszel uses{' '}
 							<a
 								href="https://containrrr.dev/shoutrrr/services/overview/"
@@ -102,7 +112,7 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 						</p>
 					</div>
 					{webhooks.length > 0 && (
-						<div className="grid gap-3">
+						<div className="grid gap-2.5">
 							{webhooks.map((webhook, index) => (
 								<ShoutrrrUrlCard
 									key={index}
