@@ -1,3 +1,4 @@
+// Package hub handles updating systems and serving the web UI.
 package hub
 
 import (
@@ -5,7 +6,7 @@ import (
 	"beszel/internal/alerts"
 	"beszel/internal/entities/system"
 	"beszel/internal/records"
-	"beszel/internal/user"
+	"beszel/internal/users"
 	"beszel/site"
 	"context"
 	"crypto/ed25519"
@@ -51,7 +52,7 @@ func NewHub(app *pocketbase.PocketBase) *Hub {
 func (h *Hub) Run() {
 	rm := records.NewRecordManager(h.app)
 	am := alerts.NewAlertManager(h.app)
-	um := user.NewUserManager(h.app)
+	um := users.NewUserManager(h.app)
 
 	// loosely check if it was executed using "go run"
 	isGoRun := strings.HasPrefix(os.Args[0], os.TempDir())

@@ -1,4 +1,5 @@
-package user
+// Package user handles user-related custom functionality.
+package users
 
 import (
 	"log"
