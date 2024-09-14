@@ -4,7 +4,6 @@ package alerts
 import (
 	"beszel/internal/entities/system"
 	"fmt"
-	"log"
 	"net/mail"
 	"net/url"
 
@@ -179,8 +178,7 @@ func (am *AlertManager) sendAlert(data AlertData) {
 	}
 	// send alerts via webhooks
 	for _, webhook := range userAlertSettings.Webhooks {
-		err := am.SendShoutrrrAlert(webhook, data.Title, data.Message, data.Link, data.LinkText)
-		if err != nil {
+		if err := am.SendShoutrrrAlert(webhook, data.Title, data.Message, data.Link, data.LinkText); err != nil {
 			am.app.Logger().Error("Failed to send shoutrrr alert", "err", err.Error())
 		}
 	}
@@ -202,7 +200,6 @@ func (am *AlertManager) sendAlert(data AlertData) {
 			Name:    am.app.Settings().Meta.SenderName,
 		},
 	}
-	log.Println("Sending alert via email")
 	if err := am.app.NewMailClient().Send(&message); err != nil {
 		am.app.Logger().Error("Failed to send alert: ", "err", err.Error())
 	} else {

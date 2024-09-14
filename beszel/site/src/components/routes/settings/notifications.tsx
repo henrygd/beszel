@@ -5,7 +5,7 @@ import { pb } from '@/lib/stores'
 import { Separator } from '@/components/ui/separator'
 import { Card } from '@/components/ui/card'
 import { BellIcon, LoaderCircleIcon, PlusIcon, SaveIcon, Trash2Icon } from 'lucide-react'
-import { useState } from 'react'
+import { ChangeEventHandler, useState } from 'react'
 import { toast } from '@/components/ui/use-toast'
 import { InputTags } from '@/components/ui/input-tags'
 import { UserSettings } from '@/types'
@@ -15,7 +15,7 @@ import { isAdmin } from '@/lib/utils'
 
 interface ShoutrrrUrlCardProps {
 	url: string
-	onUrlChange: (value: string) => void
+	onUrlChange: ChangeEventHandler<HTMLInputElement>
 	onRemove: () => void
 }
 
@@ -61,7 +61,7 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 					Configure how you receive alert notifications.
 				</p>
 				<p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
-					Looking instead for where to create system alerts? Click the bell{' '}
+					Looking instead for where to create alerts? Click the bell{' '}
 					<BellIcon className="inline h-4 w-4" /> icons in the systems table.
 				</p>
 			</div>
@@ -117,7 +117,9 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 								<ShoutrrrUrlCard
 									key={index}
 									url={webhook}
-									onUrlChange={(value: string) => updateWebhook(index, value)}
+									onUrlChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+										updateWebhook(index, e.target.value)
+									}
 									onRemove={() => removeWebhook(index)}
 								/>
 							))}
@@ -178,11 +180,12 @@ const ShoutrrrUrlCard = ({ url, onUrlChange, onRemove }: ShoutrrrUrlCardProps) =
 		<Card className="bg-muted/30 p-2 md:p-3">
 			<div className="flex items-center gap-1">
 				<Input
+					type="url"
 					className="light:bg-card"
 					required
 					placeholder="generic://webhook.site/xxxxxx"
 					value={url}
-					onChange={(e) => onUrlChange(e.target.value)}
+					onChange={onUrlChange}
 				/>
 				<Button
 					type="button"

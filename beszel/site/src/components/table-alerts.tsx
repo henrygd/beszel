@@ -9,7 +9,7 @@ import {
 	DialogTitle,
 } from '@/components/ui/dialog'
 import { BellIcon } from 'lucide-react'
-import { cn, isAdmin } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { AlertRecord, SystemRecord } from '@/types'
