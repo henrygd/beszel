@@ -10,6 +10,8 @@ export interface SystemRecord extends RecordModel {
 }
 
 export interface SystemInfo {
+	/** hostname */
+	h: string
 	/** cpu percent */
 	cpu: number
 	/** cpu threads */

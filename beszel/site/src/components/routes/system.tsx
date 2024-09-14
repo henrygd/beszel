@@ -9,6 +9,7 @@ import {
 	CpuIcon,
 	GlobeIcon,
 	LayoutGridIcon,
+	MonitorIcon,
 	StretchHorizontalIcon,
 	XIcon,
 } from 'lucide-react'
@@ -255,9 +256,23 @@ export default function SystemDetail({ name }: { name: string }) {
 								<div className="flex gap-1.5 items-center">
 									<GlobeIcon className="h-4 w-4" /> {system.host}
 								</div>
+								{/* show hostname if it's different than host or name */}
+								{system.info?.h && system.info.h != system.host && system.info.h != system.name && (
+									<TooltipProvider>
+										<Tooltip delayDuration={150}>
+											<Separator orientation="vertical" className="h-4 bg-primary/30" />
+											<TooltipTrigger asChild>
+												<div className="flex gap-1.5 items-center">
+													<MonitorIcon className="h-4 w-4" /> {system.info.h}
+												</div>
+											</TooltipTrigger>
+											<TooltipContent>Hostname</TooltipContent>
+										</Tooltip>
+									</TooltipProvider>
+								)}
 								{system.info?.u && (
 									<TooltipProvider>
-										<Tooltip>
+										<Tooltip delayDuration={150}>
 											<Separator orientation="vertical" className="h-4 bg-primary/30" />
 											<TooltipTrigger asChild>
 												<div className="flex gap-1.5 items-center">
@@ -273,7 +288,7 @@ export default function SystemDetail({ name }: { name: string }) {
 										<Separator orientation="vertical" className="h-4 bg-primary/30" />
 										<div className="flex gap-1.5 items-center">
 											<CpuIcon className="h-4 w-4" />
-											{system.info.m} ({system.info.c}c / {system.info.t}t)
+											{system.info.m} ({system.info.c}c/{system.info.t}t)
 										</div>
 									</>
 								)}
