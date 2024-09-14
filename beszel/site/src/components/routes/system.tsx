@@ -399,14 +399,14 @@ export default function SystemDetail({ name }: { name: string }) {
 							return (
 								<div key={extraFsName} className="contents">
 									<ChartCard
-										grid={true}
+										grid={grid}
 										title={`${extraFsName} Usage`}
 										description={`Disk usage of ${extraFsName}`}
 									>
 										<ExFsDiskChart ticks={ticks} systemData={systemStats} fs={extraFsName} />
 									</ChartCard>
 									<ChartCard
-										grid={true}
+										grid={grid}
 										title={`${extraFsName} I/O`}
 										description={`Throughput of of ${extraFsName}`}
 									>
