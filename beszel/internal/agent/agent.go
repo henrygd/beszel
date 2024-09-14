@@ -33,6 +33,7 @@ import (
 
 type Agent struct {
 	addr                string
+	nic                 string
 	pubKey              []byte
 	sem                 chan struct{}
 	containerStatsMap   map[string]*container.PrevContainerStats
@@ -439,6 +440,10 @@ func (a *Agent) Run() {
 		}
 	}
 
+	if nic, exists := os.LookupEnv("NIC"); exists {
+		a.nic = nic
+	}
+
 	a.initializeDiskInfo(fsEnvVarExists)
 	a.initializeDiskIoStats()
 	a.initializeNetIoStats()
@@ -536,7 +541,7 @@ func (a *Agent) initializeNetIoStats() {
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
 		a.netIoStats.Time = time.Now()
 		for _, v := range netIO {
-			if skipNetworkInterface(v) {
+			if a.skipNetworkInterface(v) {
 				continue
 			}
 			log.Printf("Detected network interface: %+v (%+v recv, %+v sent)\n", v.Name, v.BytesRecv, v.BytesSent)
@@ -560,9 +565,10 @@ func twoDecimals(value float64) float64 {
 	return math.Round(value*100) / 100
 }
 
-func skipNetworkInterface(v psutilNet.IOCountersStat) bool {
+func (a *Agent) skipNetworkInterface(v psutilNet.IOCountersStat) bool {
 	switch {
-	case strings.HasPrefix(v.Name, "lo"),
+	case a.nic != "" && v.Name != a.nic,
+		strings.HasPrefix(v.Name, "lo"),
 		strings.HasPrefix(v.Name, "docker"),
 		strings.HasPrefix(v.Name, "br-"),
 		strings.HasPrefix(v.Name, "veth"),
