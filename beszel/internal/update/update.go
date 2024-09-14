@@ -1,3 +1,4 @@
+// Package update handles updating beszel and beszel-agent.
 package update
 
 import (

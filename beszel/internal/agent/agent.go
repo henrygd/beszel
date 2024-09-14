@@ -1,3 +1,4 @@
+// Package agent handles the agent's SSH server and system stats collection.
 package agent
 
 import (

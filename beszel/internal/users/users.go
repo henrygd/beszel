@@ -1,4 +1,4 @@
-// Package user handles user-related custom functionality.
+// Package users handles user-related custom functionality.
 package users
 
 import (
@@ -14,10 +14,10 @@ type UserManager struct {
 }
 
 type UserSettings struct {
-	// Language             string   `json:"lang"`
 	ChartTime            string   `json:"chartTime"`
 	NotificationEmails   []string `json:"emails"`
 	NotificationWebhooks []string `json:"webhooks"`
+	// Language             string   `json:"lang"`
 }
 
 func NewUserManager(app *pocketbase.PocketBase) *UserManager {
