@@ -19,10 +19,10 @@ type RecordManager struct {
 }
 
 type LongerRecordData struct {
-	shorterType            string
-	longerType             string
-	longerTimeDuration     time.Duration
-	expectedShorterRecords int
+	shorterType        string
+	longerType         string
+	longerTimeDuration time.Duration
+	minShorterRecords  int
 }
 
 type RecordDeletionData struct {
@@ -39,28 +39,29 @@ func (rm *RecordManager) CreateLongerRecords() {
 	// start := time.Now()
 	recordData := []LongerRecordData{
 		{
-			shorterType:            "1m",
-			expectedShorterRecords: 10,
-			longerType:             "10m",
-			longerTimeDuration:     -10 * time.Minute,
+			shorterType: "1m",
+			// change to 9 from 10 to allow edge case timing or short pauses
+			minShorterRecords:  9,
+			longerType:         "10m",
+			longerTimeDuration: -10 * time.Minute,
 		},
 		{
-			shorterType:            "10m",
-			expectedShorterRecords: 2,
-			longerType:             "20m",
-			longerTimeDuration:     -20 * time.Minute,
+			shorterType:        "10m",
+			minShorterRecords:  2,
+			longerType:         "20m",
+			longerTimeDuration: -20 * time.Minute,
 		},
 		{
-			shorterType:            "20m",
-			expectedShorterRecords: 6,
-			longerType:             "120m",
-			longerTimeDuration:     -120 * time.Minute,
+			shorterType:        "20m",
+			minShorterRecords:  6,
+			longerType:         "120m",
+			longerTimeDuration: -120 * time.Minute,
 		},
 		{
-			shorterType:            "120m",
-			expectedShorterRecords: 4,
-			longerType:             "480m",
-			longerTimeDuration:     -480 * time.Minute,
+			shorterType:        "120m",
+			minShorterRecords:  4,
+			longerType:         "480m",
+			longerTimeDuration: -480 * time.Minute,
 		},
 	}
 	// wrap the operations in a transaction
@@ -111,7 +112,7 @@ func (rm *RecordManager) CreateLongerRecords() {
 					)
 
 					// continue if not enough shorter records
-					if err != nil || len(allShorterRecords) < recordData.expectedShorterRecords {
+					if err != nil || len(allShorterRecords) < recordData.minShorterRecords {
 						// log.Println("not enough shorter records. continue.", len(allShorterRecords), recordData.expectedShorterRecords)
 						continue
 					}
