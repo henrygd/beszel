@@ -21,6 +21,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/shirou/gopsutil/v4/common"
 	"github.com/shirou/gopsutil/v4/cpu"
 	"github.com/shirou/gopsutil/v4/disk"
 	"github.com/shirou/gopsutil/v4/host"
@@ -42,6 +43,7 @@ type Agent struct {
 	netInterfaces       map[string]struct{}
 	netIoStats          *system.NetIoStats
 	dockerClient        *http.Client
+	sensorsContext      context.Context
 	bufferPool          *sync.Pool
 }
 
@@ -54,6 +56,7 @@ func NewAgent(pubKey []byte, addr string) *Agent {
 		containerStatsMutex: &sync.Mutex{},
 		netIoStats:          &system.NetIoStats{},
 		dockerClient:        newDockerClient(),
+		sensorsContext:      context.Background(),
 		bufferPool: &sync.Pool{
 			New: func() interface{} {
 				return new(bytes.Buffer)
@@ -177,7 +180,7 @@ func (a *Agent) getSystemStats() (system.Info, system.Stats) {
 	}
 
 	// temperatures
-	if temps, err := sensors.SensorsTemperatures(); err == nil {
+	if temps, err := sensors.TemperaturesWithContext(a.sensorsContext); err == nil {
 		systemStats.Temperatures = make(map[string]float64)
 		// log.Printf("Temperatures: %+v\n", temps)
 		for i, temp := range temps {
@@ -436,6 +439,14 @@ func (a *Agent) Run() {
 		for _, filesystem := range strings.Split(extraFilesystems, ",") {
 			a.fsStats[filesystem] = &system.FsStats{}
 		}
+	}
+
+	// set sensors context (allows overriding sys location for sensors)
+	if sysSensors, exists := os.LookupEnv("SYS_SENSORS"); exists {
+		// log.Println("Using sys location for sensors:", sysSensors)
+		a.sensorsContext = context.WithValue(a.sensorsContext,
+			common.EnvKey, common.EnvMap{common.HostSysEnvKey: sysSensors},
+		)
 	}
 
 	a.initializeDiskInfo(fsEnvVarExists)
