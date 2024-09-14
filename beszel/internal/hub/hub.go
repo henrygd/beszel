@@ -4,8 +4,8 @@ import (
 	"beszel"
 	"beszel/internal/alerts"
 	"beszel/internal/entities/system"
-	"beszel/internal/entities/user"
 	"beszel/internal/records"
+	"beszel/internal/user"
 	"beszel/site"
 	"context"
 	"crypto/ed25519"
@@ -49,8 +49,9 @@ func NewHub(app *pocketbase.PocketBase) *Hub {
 }
 
 func (h *Hub) Run() {
-	var rm *records.RecordManager
-	var am *alerts.AlertManager
+	rm := records.NewRecordManager(h.app)
+	am := alerts.NewAlertManager(h.app)
+	um := user.NewUserManager(h.app)
 
 	// loosely check if it was executed using "go run"
 	isGoRun := strings.HasPrefix(os.Args[0], os.TempDir())
@@ -64,9 +65,6 @@ func (h *Hub) Run() {
 
 	// initial setup
 	h.app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
-		// set up record manager and alert manager
-		rm = records.NewRecordManager(h.app)
-		am = alerts.NewAlertManager(h.app)
 		// create ssh client config
 		err := h.createSSHClientConfig()
 		if err != nil {
@@ -146,15 +144,6 @@ func (h *Hub) Run() {
 		return nil
 	})
 
-	// user creation - set default role to user if unset
-	h.app.OnModelBeforeCreate("users").Add(func(e *core.ModelEvent) error {
-		user := e.Model.(*models.Record)
-		if user.GetString("role") == "" {
-			user.Set("role", "user")
-		}
-		return nil
-	})
-
 	// system creation defaults
 	h.app.OnModelBeforeCreate("systems").Add(func(e *core.ModelEvent) error {
 		record := e.Model.(*models.Record)
@@ -168,36 +157,10 @@ func (h *Hub) Run() {
 		go h.updateSystem(e.Model.(*models.Record))
 		return nil
 	})
-	// default user settings
-	h.app.OnModelBeforeCreate("user_settings").Add(func(e *core.ModelEvent) error {
-		record := e.Model.(*models.Record)
-		// intialize settings with defaults
-		settings := user.UserSettings{
-			// Language:             "en",
-			ChartTime:            "1h",
-			NotificationEmails:   []string{},
-			NotificationWebhooks: []string{},
-		}
-		record.UnmarshalJSONField("settings", &settings)
-		if len(settings.NotificationEmails) == 0 {
-			// get user email from auth record
-			if errs := h.app.Dao().ExpandRecord(record, []string{"user"}, nil); len(errs) == 0 {
-				// app.Logger().Error("failed to expand user relation", "errs", errs)
-				if user := record.ExpandedOne("user"); user != nil {
-					settings.NotificationEmails = []string{user.GetString("email")}
-				} else {
-					log.Println("Failed to get user email from auth record")
-				}
-			} else {
-				log.Println("failed to expand user relation", "errs", errs)
-			}
-		}
-		// if len(settings.NotificationWebhooks) == 0 {
-		// 	settings.NotificationWebhooks = []string{""}
-		// }
-		record.Set("settings", settings)
-		return nil
-	})
+
+	// handle default values for user / user_settings creation
+	h.app.OnModelBeforeCreate("users").Add(um.InitializeUserRole)
+	h.app.OnModelBeforeCreate("user_settings").Add(um.InitializeUserSettings)
 
 	// do things after a systems record is updated
 	h.app.OnModelAfterUpdate("systems").Add(func(e *core.ModelEvent) error {
