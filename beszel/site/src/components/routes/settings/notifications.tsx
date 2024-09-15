@@ -29,7 +29,14 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 	const [emails, setEmails] = useState<string[]>(userSettings.emails ?? [])
 	const [isLoading, setIsLoading] = useState(false)
 
-	const addWebhook = () => setWebhooks([...webhooks, ''])
+	const addWebhook = () => {
+		setWebhooks([...webhooks, ''])
+		// focus on the new input
+		queueMicrotask(() => {
+			const inputs = document.querySelectorAll('#webhooks input') as NodeListOf<HTMLInputElement>
+			inputs[inputs.length - 1]?.focus()
+		})
+	}
 	const removeWebhook = (index: number) => setWebhooks(webhooks.filter((_, i) => i !== index))
 
 	const updateWebhook = (index: number, value: string) => {
@@ -112,7 +119,7 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 						</p>
 					</div>
 					{webhooks.length > 0 && (
-						<div className="grid gap-2.5">
+						<div className="grid gap-2.5" id="webhooks">
 							{webhooks.map((webhook, index) => (
 								<ShoutrrrUrlCard
 									key={index}
