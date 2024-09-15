@@ -16,6 +16,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"sync"
@@ -430,17 +431,6 @@ func (a *Agent) handleSession(s sshServer.Session) {
 func (a *Agent) Run() {
 	a.fsStats = make(map[string]*system.FsStats)
 
-	filesystem, fsEnvVarExists := os.LookupEnv("FILESYSTEM")
-	if fsEnvVarExists {
-		a.fsStats[filesystem] = &system.FsStats{Root: true, Mountpoint: "/"}
-	}
-
-	if extraFilesystems, exists := os.LookupEnv("EXTRA_FILESYSTEMS"); exists {
-		for _, filesystem := range strings.Split(extraFilesystems, ",") {
-			a.fsStats[filesystem] = &system.FsStats{}
-		}
-	}
-
 	// set sensors context (allows overriding sys location for sensors)
 	if sysSensors, exists := os.LookupEnv("SYS_SENSORS"); exists {
 		// log.Println("Using sys location for sensors:", sysSensors)
@@ -449,7 +439,7 @@ func (a *Agent) Run() {
 		)
 	}
 
-	a.initializeDiskInfo(fsEnvVarExists)
+	a.initializeDiskInfo()
 	a.initializeDiskIoStats()
 	a.initializeNetIoStats()
 
@@ -458,26 +448,58 @@ func (a *Agent) Run() {
 }
 
 // Sets up the filesystems to monitor for disk usage and I/O.
-func (a *Agent) initializeDiskInfo(fsEnvVarExists bool) error {
+func (a *Agent) initializeDiskInfo() error {
+	filesystem := os.Getenv("FILESYSTEM")
+	hasRoot := false
+
+	// add values from EXTRA_FILESYSTEMS env var to fsStats
+	if extraFilesystems, exists := os.LookupEnv("EXTRA_FILESYSTEMS"); exists {
+		for _, filesystem := range strings.Split(extraFilesystems, ",") {
+			a.fsStats[filepath.Base(filesystem)] = &system.FsStats{}
+		}
+	}
+
 	partitions, err := disk.Partitions(false)
 	if err != nil {
 		return err
 	}
 
-	// log.Printf("Partitions: %+v\n", partitions)
-	for _, v := range partitions {
-		// binary - use root mountpoint if not already set by env var
-		if !fsEnvVarExists && v.Mountpoint == "/" {
-			a.fsStats[v.Device] = &system.FsStats{Root: true, Mountpoint: "/"}
+	// if FILESYSTEM env var is set, use it to find root filesystem
+	if filesystem != "" {
+		for _, v := range partitions {
+			// use filesystem env var if matching partition is found
+			if strings.HasSuffix(v.Device, filesystem) || v.Mountpoint == filesystem {
+				a.fsStats[filepath.Base(v.Device)] = &system.FsStats{Root: true, Mountpoint: v.Mountpoint}
+				hasRoot = true
+				break
+			}
 		}
-		// docker - use /etc/hosts device as root if not mapped
-		if !fsEnvVarExists && v.Mountpoint == "/etc/hosts" && strings.HasPrefix(v.Device, "/dev") && !strings.Contains(v.Device, "mapper") {
-			a.fsStats[v.Device] = &system.FsStats{Root: true, Mountpoint: "/"}
+		if !hasRoot {
+			// if no match, log available partition details
+			log.Printf("Partition details not found for %s:\n", filesystem)
+			for _, v := range partitions {
+				fmt.Printf("%+v\n", v)
+			}
+		}
+	}
+
+	for _, v := range partitions {
+		// binary root fallback - use root mountpoint
+		if !hasRoot && v.Mountpoint == "/" {
+			a.fsStats[filepath.Base(v.Device)] = &system.FsStats{Root: true, Mountpoint: "/"}
+			hasRoot = true
+		}
+		// docker root fallback - use /etc/hosts device if not mapped
+		if !hasRoot && v.Mountpoint == "/etc/hosts" && strings.HasPrefix(v.Device, "/dev") && !strings.Contains(v.Device, "mapper") {
+			a.fsStats[filepath.Base(v.Device)] = &system.FsStats{Root: true, Mountpoint: "/"}
+			hasRoot = true
 		}
 		// check if device is in /extra-filesystem
 		if strings.HasPrefix(v.Mountpoint, "/extra-filesystem") {
-			// todo: may be able to tweak this to be able to mount custom root at /extra-filesystems/root
-			a.fsStats[v.Device] = &system.FsStats{Mountpoint: v.Mountpoint}
+			// add to fsStats if not already there
+			if _, exists := a.fsStats[filepath.Base(v.Device)]; !exists {
+				a.fsStats[filepath.Base(v.Device)] = &system.FsStats{Mountpoint: v.Mountpoint}
+			}
 			continue
 		}
 		// set mountpoints for extra filesystems if passed in via env var
@@ -490,10 +512,8 @@ func (a *Agent) initializeDiskInfo(fsEnvVarExists bool) error {
 	}
 
 	// remove extra filesystems that don't have a mountpoint
-	hasRoot := false
 	for name, stats := range a.fsStats {
 		if stats.Root {
-			hasRoot = true
 			log.Println("Detected root fs:", name)
 		}
 		if stats.Mountpoint == "" {
@@ -504,8 +524,8 @@ func (a *Agent) initializeDiskInfo(fsEnvVarExists bool) error {
 
 	// if no root filesystem set, use most read device in /proc/diskstats
 	if !hasRoot {
-		rootDevice := findMaxReadsDevice()
-		log.Printf("Detected root fs: %+s\n", rootDevice)
+		rootDevice := findFallbackIoDevice(filepath.Base(filesystem))
+		log.Printf("Using / as mountpoint and %s for I/O\n", rootDevice)
 		a.fsStats[rootDevice] = &system.FsStats{Root: true, Mountpoint: "/"}
 	}
 
@@ -514,24 +534,20 @@ func (a *Agent) initializeDiskInfo(fsEnvVarExists bool) error {
 
 // Sets start values for disk I/O stats.
 func (a *Agent) initializeDiskIoStats() {
-	// create slice of fs names to pass to disk.IOCounters later
+	// create slice of fs names to pass to disk.IOCounters
 	a.fsNames = make([]string, 0, len(a.fsStats))
+	for name := range a.fsStats {
+		a.fsNames = append(a.fsNames, name)
+	}
 
-	for name, stats := range a.fsStats {
-		if io, err := disk.IOCounters(name); err == nil {
-			for _, d := range io {
-				// add name to slice
-				a.fsNames = append(a.fsNames, d.Name)
-				// normalize name with io counters
-				if name != d.Name {
-					// log.Println("Normalizing disk I/O stats:", name, d.Name)
-					a.fsStats[d.Name] = stats
-					delete(a.fsStats, name)
-				}
-				stats.Time = time.Now()
-				stats.TotalRead = d.ReadBytes
-				stats.TotalWrite = d.WriteBytes
+	if ioCounters, err := disk.IOCounters(a.fsNames...); err == nil {
+		for _, d := range ioCounters {
+			if a.fsStats[d.Name] == nil {
+				continue
 			}
+			a.fsStats[d.Name].Time = time.Now()
+			a.fsStats[d.Name].TotalRead = d.ReadBytes
+			a.fsStats[d.Name].TotalWrite = d.WriteBytes
 		}
 	}
 }
@@ -655,16 +671,20 @@ func (a *Agent) closeIdleConnections(err error) (isTimeout bool) {
 	return false
 }
 
-// Returns the device with the most reads in /proc/diskstats
+// Returns the device with the most reads in /proc/diskstats,
+// or the device specified by the filesystem argument if it exists
 // (fallback in case the root device is not supplied or detected)
-func findMaxReadsDevice() string {
+func findFallbackIoDevice(filesystem string) string {
 	var maxReadBytes uint64
 	maxReadDevice := "/"
 	counters, err := disk.IOCounters()
-		if err != nil {
+	if err != nil {
 		return maxReadDevice
 	}
 	for _, d := range counters {
+		if d.Name == filesystem {
+			return d.Name
+		}
 		if d.ReadBytes > maxReadBytes {
 			maxReadBytes = d.ReadBytes
 			maxReadDevice = d.Name
