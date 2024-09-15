@@ -658,36 +658,17 @@ func (a *Agent) closeIdleConnections(err error) (isTimeout bool) {
 // Returns the device with the most reads in /proc/diskstats
 // (fallback in case the root device is not supplied or detected)
 func findMaxReadsDevice() string {
-	content, err := os.ReadFile("/proc/diskstats")
-	if err != nil {
-		return "/"
-	}
-
-	lines := strings.Split(string(content), "\n")
-	var maxReadsSectors int64
-	var maxReadsDevice string
-
-	for _, line := range lines {
-		fields := strings.Fields(line)
-		if len(fields) < 7 {
-			continue
-		}
-
-		deviceName := fields[2]
-		readsSectors, err := strconv.ParseInt(fields[5], 10, 64)
+	var maxReadBytes uint64
+	maxReadDevice := "/"
+	counters, err := disk.IOCounters()
 		if err != nil {
-			continue
-		}
-
-		if readsSectors > maxReadsSectors {
-			maxReadsSectors = readsSectors
-			maxReadsDevice = deviceName
+		return maxReadDevice
+	}
+	for _, d := range counters {
+		if d.ReadBytes > maxReadBytes {
+			maxReadBytes = d.ReadBytes
+			maxReadDevice = d.Name
 		}
 	}
-
-	if maxReadsDevice == "" {
-		return "/"
-	}
-
-	return maxReadsDevice
+	return maxReadDevice
 }
