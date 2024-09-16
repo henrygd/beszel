@@ -10,13 +10,13 @@ A lightweight server resource monitoring hub with historical data, docker stats,
 ## Features
 
 - **Lightweight**: Smaller and less resource-intensive than leading solutions.
-- **Docker stats**: Tracks CPU and memory usage history for each container.
+- **Simple**: Easy setup, no need for public internet exposure.
+- **Docker stats**: Tracks CPU, memory, and network usage history for each container.
 - **Alerts**: Configurable alerts for CPU, memory, disk usage, and system status.
 - **Multi-user**: Each user manages their own systems. Admins can share systems across users.
-- **Simple**: Easy setup, no need for public internet exposure.
 - **OAuth / OIDC**: Supports multiple OAuth2 providers. Password authentication can be disabled.
 - **Automatic backups**: Save and restore data from disk or S3-compatible storage.
-- **REST API**: Integrate your metrics into your own scripts and applications.
+- **REST API**: Use or update your data in your own scripts and applications.
 
 ## Introduction
 
@@ -108,9 +108,12 @@ Use `./beszel update` and `./beszel-agent update` to update to the latest versio
 | ------------------- | ------- | ---------------------------------------------------------------------------------------- |
 | `DOCKER_HOST`       | unset   | Overrides the docker host (docker.sock) if using a proxy.[^socket]                       |
 | `EXTRA_FILESYSTEMS` | unset   | See [Monitoring additional disks / partitions](#monitoring-additional-disks--partitions) |
-| `FILESYSTEM`        | unset   | Device or partition to use for root disk I/O stats.                                      |
+| `FILESYSTEM`        | unset   | Device, partition, or mount point to use for root disk stats.                            |
 | `KEY`               | unset   | Public SSH key to use for authentication. Provided in hub.                               |
+| `NICS`              | unset   | Whitelist of network interfaces to monitor for bandwidth chart.                          |
 | `PORT`              | 45876   | Port or address:port to listen on.                                                       |
+
+<!-- | `SYS_SENSORS` | unset | Overrides the sys location for sensors. | -->
 
 [^socket]: Beszel only needs access to read container information. For [linuxserver/docker-socket-proxy](https://github.com/linuxserver/docker-socket-proxy) you would set `CONTAINERS=1`.
 
@@ -149,9 +152,6 @@ Visit the "Auth providers" page to enable your provider. The redirect / callback
 </details>
 
 ## Monitoring additional disks / partitions
-
-> [!NOTE]
-> This feature is new and has been tested on a limited number of systems. Please report any issues.
 
 You can configure the agent to monitor the usage and I/O of more than one disk or partition. The approach differs depending on the deployment method.
 
@@ -224,7 +224,7 @@ Otherwise, use the agent's `container_name` as the hostname if both are in the s
 
 ### Finding the correct filesystem
 
-Specify the filesystem/device/partition for disk I/O stats using the `FILESYSTEM` environment variable.
+Specify the filesystem/device/partition for root disk stats using the `FILESYSTEM` environment variable.
 
 If not set, the agent will try to find the partition mounted on `/` and use that. This may not work correctly in a container, so it's recommended to set this value. Use one of the following methods to find the correct filesystem:
 
