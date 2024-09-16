@@ -195,22 +195,27 @@ export const chartTimeData: ChartTimeData = {
 	},
 }
 
-/** Hacky solution to set the correct width of the yAxis in recharts */
-export function useYaxisWidth(chartRef: React.RefObject<HTMLDivElement>) {
-	const [yAxisWidth, setYAxisWidth] = useState(180)
-	useEffect(() => {
-		let interval = setInterval(() => {
-			// console.log('chartRef', chartRef.current)
-			const yAxisElement = chartRef?.current?.querySelector('.yAxis')
-			if (yAxisElement) {
-				// console.log('yAxisElement', yAxisElement)
-				clearInterval(interval)
-				setYAxisWidth(yAxisElement.getBoundingClientRect().width + 24)
-			}
-		}, 16)
-		return () => clearInterval(interval)
-	}, [])
-	return yAxisWidth
+/** Sets the correct width of the y axis in recharts based on the longest label */
+export function useYAxisWidth() {
+	const [yAxisWidth, setYAxisWidth] = useState(0)
+	let maxChars = 0
+	let timeout: Timer
+	function updateYAxisWidth(str: string) {
+		if (str.length > maxChars) {
+			maxChars = str.length
+			const div = document.createElement('div')
+			div.className = 'text-xs tabular-nums tracking-tighter table sr-only'
+			div.innerHTML = str
+			clearTimeout(timeout)
+			timeout = setTimeout(() => {
+				document.body.appendChild(div)
+				setYAxisWidth(div.offsetWidth + 24)
+				document.body.removeChild(div)
+			})
+		}
+		return str
+	}
+	return { yAxisWidth, updateYAxisWidth }
 }
 
 export function useClampedIsInViewport(options: HookOptions): [boolean | null, CallbackRef] {

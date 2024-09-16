@@ -2,18 +2,17 @@ import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import {
+	useYAxisWidth,
 	chartTimeData,
 	cn,
 	formatShortDate,
 	toFixedWithoutTrailingZeros,
 	twoDecimalString,
-	useYaxisWidth,
 } from '@/lib/utils'
 // import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
 import { SystemStatsRecord } from '@/types'
-import { useMemo, useRef } from 'react'
 
 export default function BandwidthChart({
 	ticks,
@@ -22,19 +21,16 @@ export default function BandwidthChart({
 	ticks: number[]
 	systemData: SystemStatsRecord[]
 }) {
-	const chartRef = useRef<HTMLDivElement>(null)
-	const yAxisWidth = useYaxisWidth(chartRef)
 	const chartTime = useStore($chartTime)
-
-	const yAxisSet = useMemo(() => yAxisWidth !== 180, [yAxisWidth])
+	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
 	return (
-		<div ref={chartRef}>
+		<div>
 			{/* {!yAxisSet && <Spinner />} */}
 			<ChartContainer
 				config={{}}
 				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
-					'opacity-100': yAxisSet,
+					'opacity-100': yAxisWidth,
 				})}
 			>
 				<AreaChart
@@ -52,10 +48,13 @@ export default function BandwidthChart({
 						className="tracking-tighter"
 						width={yAxisWidth}
 						// domain={[0, (max: number) => (max <= 0.4 ? 0.4 : Math.ceil(max))]}
-						tickFormatter={(value) => toFixedWithoutTrailingZeros(value, 2)}
+						tickFormatter={(value) => {
+							const val = toFixedWithoutTrailingZeros(value, 2) + ' MB/s'
+							return updateYAxisWidth(val)
+						}}
 						tickLine={false}
 						axisLine={false}
-						unit={' MB/s'}
+						// unit={' MB/s'}
 					/>
 					<XAxis
 						dataKey="created"

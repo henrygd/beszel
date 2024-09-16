@@ -1,12 +1,11 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-import { chartTimeData, cn, formatShortDate, twoDecimalString, useYaxisWidth } from '@/lib/utils'
+import { useYAxisWidth, chartTimeData, cn, formatShortDate, twoDecimalString } from '@/lib/utils'
 // import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
 import { SystemStatsRecord } from '@/types'
-import { useMemo, useRef } from 'react'
 
 export default function CpuChart({
 	ticks,
@@ -16,17 +15,14 @@ export default function CpuChart({
 	systemData: SystemStatsRecord[]
 }) {
 	const chartTime = useStore($chartTime)
-	const chartRef = useRef<HTMLDivElement>(null)
-	const yAxisWidth = useYaxisWidth(chartRef)
-
-	const yAxisSet = useMemo(() => yAxisWidth !== 180, [yAxisWidth])
+	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
 	return (
-		<div ref={chartRef}>
+		<div>
 			<ChartContainer
 				config={{}}
 				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
-					'opacity-100': yAxisSet,
+					'opacity-100': yAxisWidth,
 				})}
 			>
 				<AreaChart
@@ -42,7 +38,7 @@ export default function CpuChart({
 						width={yAxisWidth}
 						tickLine={false}
 						axisLine={false}
-						unit={'%'}
+						tickFormatter={(value) => updateYAxisWidth(value + '%')}
 					/>
 					<XAxis
 						dataKey="created"

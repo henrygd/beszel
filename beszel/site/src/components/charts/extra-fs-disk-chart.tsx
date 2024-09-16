@@ -1,8 +1,8 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-import { chartTimeData, cn, formatShortDate, twoDecimalString, useYaxisWidth } from '@/lib/utils'
-import { useMemo, useRef } from 'react'
+import { useYAxisWidth, chartTimeData, cn, formatShortDate, twoDecimalString } from '@/lib/utils'
+import { useMemo } from 'react'
 // import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
@@ -18,10 +18,7 @@ export default function ExFsDiskChart({
 	fs: string
 }) {
 	const chartTime = useStore($chartTime)
-	const chartRef = useRef<HTMLDivElement>(null)
-	const yAxisWidth = useYaxisWidth(chartRef)
-
-	const yAxisSet = useMemo(() => yAxisWidth !== 180, [yAxisWidth])
+	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
 	const diskSize = useMemo(() => {
 		const size = systemData.at(-1)?.stats.efs?.[fs].d ?? 0
@@ -29,11 +26,11 @@ export default function ExFsDiskChart({
 	}, [systemData])
 
 	return (
-		<div ref={chartRef}>
+		<div>
 			<ChartContainer
 				config={{}}
 				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
-					'opacity-100': yAxisSet,
+					'opacity-100': yAxisWidth,
 				})}
 			>
 				<AreaChart
@@ -52,7 +49,7 @@ export default function ExFsDiskChart({
 						minTickGap={6}
 						tickLine={false}
 						axisLine={false}
-						unit={' GB'}
+						tickFormatter={(value) => updateYAxisWidth(value + ' GB')}
 					/>
 					<XAxis
 						dataKey="created"

@@ -5,8 +5,8 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from '@/components/ui/chart'
-import { useMemo, useRef } from 'react'
-import { chartTimeData, cn, formatShortDate, twoDecimalString, useYaxisWidth } from '@/lib/utils'
+import { useMemo } from 'react'
+import { useYAxisWidth, chartTimeData, cn, formatShortDate, twoDecimalString } from '@/lib/utils'
 // import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $chartTime, $containerFilter } from '@/lib/stores'
@@ -18,12 +18,9 @@ export default function ContainerCpuChart({
 	chartData: Record<string, number | string>[]
 	ticks: number[]
 }) {
-	const chartRef = useRef<HTMLDivElement>(null)
-	const yAxisWidth = useYaxisWidth(chartRef)
 	const chartTime = useStore($chartTime)
 	const filter = useStore($containerFilter)
-
-	const yAxisSet = useMemo(() => yAxisWidth !== 180, [yAxisWidth])
+	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
 	const chartConfig = useMemo(() => {
 		let config = {} as Record<
@@ -65,12 +62,12 @@ export default function ContainerCpuChart({
 	// }
 
 	return (
-		<div ref={chartRef}>
+		<div>
 			{/* {!yAxisSet && <Spinner />} */}
 			<ChartContainer
 				config={{}}
 				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
-					'opacity-100': yAxisSet,
+					'opacity-100': yAxisWidth,
 				})}
 			>
 				<AreaChart
@@ -89,8 +86,10 @@ export default function ContainerCpuChart({
 						width={yAxisWidth}
 						tickLine={false}
 						axisLine={false}
-						unit={'%'}
-						tickFormatter={(x) => (x % 1 === 0 ? x : x.toFixed(1))}
+						tickFormatter={(x) => {
+							const val = (x % 1 === 0 ? x : x.toFixed(1)) + '%'
+							return updateYAxisWidth(val)
+						}}
 					/>
 					<XAxis
 						dataKey="time"

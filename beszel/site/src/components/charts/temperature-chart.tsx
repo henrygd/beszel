@@ -8,17 +8,17 @@ import {
 	ChartTooltipContent,
 } from '@/components/ui/chart'
 import {
+	useYAxisWidth,
 	chartTimeData,
 	cn,
 	formatShortDate,
 	toFixedWithoutTrailingZeros,
 	twoDecimalString,
-	useYaxisWidth,
 } from '@/lib/utils'
 import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
 import { SystemStatsRecord } from '@/types'
-import { useMemo, useRef } from 'react'
+import { useMemo } from 'react'
 
 export default function TemperatureChart({
 	ticks,
@@ -27,9 +27,8 @@ export default function TemperatureChart({
 	ticks: number[]
 	systemData: SystemStatsRecord[]
 }) {
-	const chartRef = useRef<HTMLDivElement>(null)
-	const yAxisWidth = useYaxisWidth(chartRef)
 	const chartTime = useStore($chartTime)
+	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
 	/** Format temperature data for chart and assign colors */
 	const newChartData = useMemo(() => {
@@ -55,15 +54,13 @@ export default function TemperatureChart({
 		return chartData
 	}, [systemData])
 
-	const yAxisSet = useMemo(() => yAxisWidth !== 180, [yAxisWidth])
-
 	return (
-		<div ref={chartRef}>
+		<div>
 			{/* {!yAxisSet && <Spinner />} */}
 			<ChartContainer
 				config={{}}
 				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
-					'opacity-100': yAxisSet,
+					'opacity-100': yAxisWidth,
 				})}
 			>
 				<LineChart
@@ -80,10 +77,12 @@ export default function TemperatureChart({
 					<YAxis
 						className="tracking-tighter"
 						width={yAxisWidth}
-						tickFormatter={(value) => toFixedWithoutTrailingZeros(value, 2)}
+						tickFormatter={(value) => {
+							const val = toFixedWithoutTrailingZeros(value, 2)
+							return updateYAxisWidth(val + ' °C')
+						}}
 						tickLine={false}
 						axisLine={false}
-						unit={' °C'}
 					/>
 					<XAxis
 						dataKey="created"

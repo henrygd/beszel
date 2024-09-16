@@ -2,14 +2,14 @@ import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
 import {
+	useYAxisWidth,
 	chartTimeData,
 	cn,
 	formatShortDate,
 	toFixedFloat,
 	twoDecimalString,
-	useYaxisWidth,
 } from '@/lib/utils'
-import { useMemo, useRef } from 'react'
+import { useMemo } from 'react'
 // import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
@@ -22,23 +22,20 @@ export default function MemChart({
 	ticks: number[]
 	systemData: SystemStatsRecord[]
 }) {
-	const chartRef = useRef<HTMLDivElement>(null)
-	const yAxisWidth = useYaxisWidth(chartRef)
 	const chartTime = useStore($chartTime)
-
-	const yAxisSet = useMemo(() => yAxisWidth !== 180, [yAxisWidth])
+	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
 	const totalMem = useMemo(() => {
 		return toFixedFloat(systemData.at(-1)?.stats.m ?? 0, 1)
 	}, [systemData])
 
 	return (
-		<div ref={chartRef}>
+		<div>
 			{/* {!yAxisSet && <Spinner />} */}
 			<ChartContainer
 				config={{}}
 				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
-					'opacity-100': yAxisSet,
+					'opacity-100': yAxisWidth,
 				})}
 			>
 				<AreaChart
@@ -58,7 +55,10 @@ export default function MemChart({
 							width={yAxisWidth}
 							tickLine={false}
 							axisLine={false}
-							unit={' GB'}
+							tickFormatter={(value) => {
+								const val = toFixedFloat(value, 1)
+								return updateYAxisWidth(val + ' GB')
+							}}
 						/>
 					)}
 					<XAxis

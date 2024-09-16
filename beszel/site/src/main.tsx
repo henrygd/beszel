@@ -1,5 +1,5 @@
 import './index.css'
-import { Suspense, lazy, useEffect } from 'react'
+import { Suspense, lazy, useEffect, StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 import Home from './components/routes/home.tsx'
 import { ThemeProvider } from './components/theme-provider.tsx'
@@ -218,10 +218,10 @@ const Layout = () => {
 ReactDOM.createRoot(document.getElementById('app')!).render(
 	// strict mode in dev mounts / unmounts components twice
 	// and breaks the clipboard dialog
-	//<React.StrictMode>
+	//<StrictMode>
 	<ThemeProvider>
 		<Layout />
 		<Toaster />
 	</ThemeProvider>
-	//</React.StrictMode>
+	//</StrictMode>
 )

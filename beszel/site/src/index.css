@@ -88,5 +88,5 @@
 }
 
 .recharts-yAxis {
-	font-variant-numeric: tabular-nums;
+	@apply tabular-nums;
 }

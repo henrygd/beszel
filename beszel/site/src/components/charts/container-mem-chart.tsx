@@ -5,14 +5,14 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from '@/components/ui/chart'
-import { useMemo, useRef } from 'react'
+import { useMemo } from 'react'
 import {
+	useYAxisWidth,
 	chartTimeData,
 	cn,
 	formatShortDate,
 	toFixedWithoutTrailingZeros,
 	twoDecimalString,
-	useYaxisWidth,
 } from '@/lib/utils'
 // import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
@@ -26,11 +26,8 @@ export default function ContainerMemChart({
 	ticks: number[]
 }) {
 	const chartTime = useStore($chartTime)
-	const chartRef = useRef<HTMLDivElement>(null)
-	const yAxisWidth = useYaxisWidth(chartRef)
 	const filter = useStore($containerFilter)
-
-	const yAxisSet = useMemo(() => yAxisWidth !== 180, [yAxisWidth])
+	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
 	const chartConfig = useMemo(() => {
 		let config = {} as Record<
@@ -72,12 +69,12 @@ export default function ContainerMemChart({
 	// }
 
 	return (
-		<div ref={chartRef}>
+		<div>
 			{/* {!yAxisSet && <Spinner />} */}
 			<ChartContainer
 				config={{}}
 				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
-					'opacity-100': yAxisSet,
+					'opacity-100': yAxisWidth,
 				})}
 			>
 				<AreaChart
@@ -94,9 +91,11 @@ export default function ContainerMemChart({
 						// domain={[0, (max: number) => Math.ceil(max)]}
 						tickLine={false}
 						axisLine={false}
-						unit={' GB'}
 						width={yAxisWidth}
-						tickFormatter={(value) => toFixedWithoutTrailingZeros(value / 1024, 2)}
+						tickFormatter={(value) => {
+							const val = toFixedWithoutTrailingZeros(value / 1024, 2) + ' GB'
+							return updateYAxisWidth(val)
+						}}
 					/>
 					<XAxis
 						dataKey="time"
