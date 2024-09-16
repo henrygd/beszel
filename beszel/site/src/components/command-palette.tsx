@@ -6,6 +6,7 @@ import {
 	LogsIcon,
 	MailIcon,
 	Server,
+	SettingsIcon,
 	UsersIcon,
 } from 'lucide-react'
 
@@ -46,33 +47,9 @@ export default function CommandPalette() {
 			<CommandInput placeholder="Search for systems or settings..." />
 			<CommandList>
 				<CommandEmpty>No results found.</CommandEmpty>
-				<CommandGroup heading="Suggestions">
-					<CommandItem
-						keywords={['home']}
-						onSelect={() => {
-							navigate('/')
-							setOpen((open) => !open)
-						}}
-					>
-						<LayoutDashboard className="mr-2 h-4 w-4" />
-						<span>Dashboard</span>
-						<CommandShortcut>Page</CommandShortcut>
-					</CommandItem>
-					<CommandItem
-						keywords={['github']}
-						onSelect={() => {
-							window.location.href = 'https://github.com/henrygd/beszel/blob/main/readme.md'
-						}}
-					>
-						<Github className="mr-2 h-4 w-4" />
-						<span>Documentation</span>
-						<CommandShortcut>GitHub</CommandShortcut>
-					</CommandItem>
-				</CommandGroup>
 				{systems.length > 0 && (
 					<>
-						<CommandSeparator />
-						<CommandGroup heading="Systems">
+						<CommandGroup>
 							{systems.map((system) => (
 								<CommandItem
 									key={system.id}
@@ -87,11 +64,56 @@ export default function CommandPalette() {
 								</CommandItem>
 							))}
 						</CommandGroup>
+						<CommandSeparator className="mb-1.5" />
 					</>
 				)}
+				<CommandGroup heading="Pages / Settings">
+					<CommandItem
+						keywords={['home']}
+						onSelect={() => {
+							navigate('/')
+							setOpen((open) => !open)
+						}}
+					>
+						<LayoutDashboard className="mr-2 h-4 w-4" />
+						<span>Dashboard</span>
+						<CommandShortcut>Page</CommandShortcut>
+					</CommandItem>
+					<CommandItem
+						onSelect={() => {
+							navigate('/settings/general')
+							setOpen((open) => !open)
+						}}
+					>
+						<SettingsIcon className="mr-2 h-4 w-4" />
+						<span>Settings</span>
+						<CommandShortcut>Settings</CommandShortcut>
+					</CommandItem>
+					<CommandItem
+						keywords={['alerts']}
+						onSelect={() => {
+							navigate('/settings/notifications')
+							setOpen((open) => !open)
+						}}
+					>
+						<MailIcon className="mr-2 h-4 w-4" />
+						<span>Notification settings</span>
+						<CommandShortcut>Settings</CommandShortcut>
+					</CommandItem>
+					<CommandItem
+						keywords={['github']}
+						onSelect={() => {
+							window.location.href = 'https://github.com/henrygd/beszel/blob/main/readme.md'
+						}}
+					>
+						<Github className="mr-2 h-4 w-4" />
+						<span>Documentation</span>
+						<CommandShortcut>GitHub</CommandShortcut>
+					</CommandItem>
+				</CommandGroup>
 				{isAdmin() && (
 					<>
-						<CommandSeparator />
+						<CommandSeparator className="mb-1.5" />
 						<CommandGroup heading="Admin">
 							<CommandItem
 								keywords={['pocketbase']}
