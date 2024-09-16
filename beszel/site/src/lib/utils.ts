@@ -40,18 +40,14 @@ const verifyAuth = () => {
 }
 
 export const updateSystemList = async () => {
-	// try {
-	const records = await pb.collection<SystemRecord>('systems').getFullList({ sort: '+name' })
+	const records = await pb
+		.collection<SystemRecord>('systems')
+		.getFullList({ sort: '+name', fields: 'id,name,host,info,status' })
 	if (records.length) {
 		$systems.set(records)
 	} else {
 		verifyAuth()
 	}
-	// }
-	// catch (e) {
-	// 	console.log('verifying auth error', e)
-	// 	verifyAuth()
-	// }
 }
 
 export const updateAlerts = () => {
