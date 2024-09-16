@@ -71,7 +71,11 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 					<Label className="block" htmlFor="chartTime">
 						Default time period
 					</Label>
-					<Select name="chartTime" defaultValue={userSettings.chartTime}>
+					<Select
+						name="chartTime"
+						key={userSettings.chartTime}
+						defaultValue={userSettings.chartTime}
+					>
 						<SelectTrigger id="chartTime">
 							<SelectValue />
 						</SelectTrigger>

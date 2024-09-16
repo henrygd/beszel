@@ -5,7 +5,7 @@ import { pb } from '@/lib/stores'
 import { Separator } from '@/components/ui/separator'
 import { Card } from '@/components/ui/card'
 import { BellIcon, LoaderCircleIcon, PlusIcon, SaveIcon, Trash2Icon } from 'lucide-react'
-import { ChangeEventHandler, useState } from 'react'
+import { ChangeEventHandler, useEffect, useState } from 'react'
 import { toast } from '@/components/ui/use-toast'
 import { InputTags } from '@/components/ui/input-tags'
 import { UserSettings } from '@/types'
@@ -29,7 +29,13 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 	const [emails, setEmails] = useState<string[]>(userSettings.emails ?? [])
 	const [isLoading, setIsLoading] = useState(false)
 
-	const addWebhook = () => {
+	// update values when userSettings changes
+	useEffect(() => {
+		setWebhooks(userSettings.webhooks ?? [])
+		setEmails(userSettings.emails ?? [])
+	}, [userSettings])
+
+	function addWebhook() {
 		setWebhooks([...webhooks, ''])
 		// focus on the new input
 		queueMicrotask(() => {
@@ -39,7 +45,7 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 	}
 	const removeWebhook = (index: number) => setWebhooks(webhooks.filter((_, i) => i !== index))
 
-	const updateWebhook = (index: number, value: string) => {
+	function updateWebhook(index: number, value: string) {
 		const newWebhooks = [...webhooks]
 		newWebhooks[index] = value
 		setWebhooks(newWebhooks)
