@@ -206,7 +206,9 @@ func (a *Agent) getSystemStats() (system.Info, system.Stats) {
 	if info, err := host.Info(); err == nil {
 		systemInfo.Uptime = info.Uptime
 		systemInfo.Hostname = info.Hostname
+		systemInfo.KernelVersion = info.KernelVersion
 	}
+
 	// add cpu stats
 	if info, err := cpu.Info(); err == nil && len(info) > 0 {
 		systemInfo.CpuModel = info[0].ModelName
