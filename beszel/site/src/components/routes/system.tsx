@@ -12,6 +12,7 @@ import {
 	MonitorIcon,
 	StretchHorizontalIcon,
 	XIcon,
+	BinaryIcon
 } from 'lucide-react'
 import ChartTimeSelect from '../charts/chart-time-select'
 import {
@@ -270,6 +271,18 @@ export default function SystemDetail({ name }: { name: string }) {
 										</Tooltip>
 									</TooltipProvider>
 								)}
+								{/* kernel */}
+								<TooltipProvider>
+									<Tooltip delayDuration={150}>
+										<Separator orientation="vertical" className="h-4 bg-primary/30" />
+										<TooltipTrigger asChild>
+											<div className="flex gap-1.5 items-center">
+												<BinaryIcon className="h-4 w-4" /> {system.info.k}
+											</div>
+										</TooltipTrigger>
+										<TooltipContent>Kernel</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
 								{system.info?.u && (
 									<TooltipProvider>
 										<Tooltip delayDuration={150}>

@@ -46,6 +46,7 @@ type NetIoStats struct {
 
 type Info struct {
 	Hostname string `json:"h"`
+	KernelVersion string `json:"k"`
 
 	Cores    int    `json:"c"`
 	Threads  int    `json:"t"`
