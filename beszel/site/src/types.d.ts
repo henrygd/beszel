@@ -13,7 +13,7 @@ export interface SystemInfo {
 	/** hostname */
 	h: string
 	/** kernel **/
-	k: string
+	k?: string
 	/** cpu percent */
 	cpu: number
 	/** cpu threads */
