@@ -374,7 +374,7 @@ export default function SystemDetail({ name }: { name: string }) {
 						</ChartCard>
 					)}
 
-					{(systemStats.at(-1)?.stats.s ?? 0) > 0 && (
+					{(systemStats.at(-1)?.stats.su ?? 0) > 0 && (
 						<ChartCard grid={grid} title="Swap Usage" description="Swap space used by the system">
 							<SwapChart ticks={ticks} systemData={systemStats} />
 						</ChartCard>
