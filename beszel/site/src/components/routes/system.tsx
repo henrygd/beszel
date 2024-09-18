@@ -12,7 +12,6 @@ import {
 	MonitorIcon,
 	StretchHorizontalIcon,
 	XIcon,
-	BinaryIcon
 } from 'lucide-react'
 import ChartTimeSelect from '../charts/chart-time-select'
 import {
@@ -27,6 +26,7 @@ import { scaleTime } from 'd3-scale'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
 import { Button, buttonVariants } from '../ui/button'
 import { Input } from '../ui/input'
+import { TuxIcon } from '../ui/icons'
 
 const CpuChart = lazy(() => import('../charts/cpu-chart'))
 const ContainerCpuChart = lazy(() => import('../charts/container-cpu-chart'))
@@ -200,13 +200,37 @@ export default function SystemDetail({ name }: { name: string }) {
 		setDockerNetChartData(dockerNetData)
 	}, [])
 
-	const uptime = useMemo(() => {
-		let uptime = system.info?.u || 0
-		if (uptime < 172800) {
-			return `${Math.trunc(uptime / 3600)} hours`
+	// values for system info bar
+	const systemInfo = useMemo(() => {
+		if (!system.info) {
+			return []
 		}
-		return `${Math.trunc(system.info?.u / 86400)} days`
-	}, [system.info?.u])
+		console.log('doing')
+		let uptime: number | string = system.info.u
+		if (system.info.u < 172800) {
+			uptime = `${Math.trunc(uptime / 3600)} hours`
+		} else {
+			uptime = `${Math.trunc(system.info?.u / 86400)} days`
+		}
+		return [
+			{ value: system.host, Icon: GlobeIcon },
+			{
+				value: system.info.h,
+				Icon: MonitorIcon,
+				label: 'Hostname',
+				// hide if hostname is same as host or name
+				hide: system.info.h === system.host || system.info.h === system.name,
+			},
+			{ value: uptime, Icon: ClockArrowUp, label: 'Uptime' },
+			{ value: system.info.k, Icon: TuxIcon, label: 'Kernel' },
+			{ value: `${system.info.m} (${system.info.c}c/${system.info.t}t)`, Icon: CpuIcon },
+		] as {
+			value: string | number | undefined
+			label?: string
+			Icon: any
+			hide?: boolean
+		}[]
+	}, [system.info])
 
 	/** Space for tooltip if more than 12 containers */
 	const bottomSpacing = useMemo(() => {
@@ -253,58 +277,31 @@ export default function SystemDetail({ name }: { name: string }) {
 									</span>
 									{system.status}
 								</div>
-								<Separator orientation="vertical" className="h-4 bg-primary/30" />
-								<div className="flex gap-1.5 items-center">
-									<GlobeIcon className="h-4 w-4" /> {system.host}
-								</div>
-								{/* show hostname if it's different than host or name */}
-								{system.info?.h && system.info.h != system.host && system.info.h != system.name && (
-									<TooltipProvider>
-										<Tooltip delayDuration={150}>
-											<Separator orientation="vertical" className="h-4 bg-primary/30" />
-											<TooltipTrigger asChild>
-												<div className="flex gap-1.5 items-center">
-													<MonitorIcon className="h-4 w-4" /> {system.info.h}
-												</div>
-											</TooltipTrigger>
-											<TooltipContent>Hostname</TooltipContent>
-										</Tooltip>
-									</TooltipProvider>
-								)}
-								{/* kernel */}
-								<TooltipProvider>
-									<Tooltip delayDuration={150}>
-										<Separator orientation="vertical" className="h-4 bg-primary/30" />
-										<TooltipTrigger asChild>
-											<div className="flex gap-1.5 items-center">
-												<BinaryIcon className="h-4 w-4" /> {system.info.k}
-											</div>
-										</TooltipTrigger>
-										<TooltipContent>Kernel</TooltipContent>
-									</Tooltip>
-								</TooltipProvider>
-								{system.info?.u && (
-									<TooltipProvider>
-										<Tooltip delayDuration={150}>
-											<Separator orientation="vertical" className="h-4 bg-primary/30" />
-											<TooltipTrigger asChild>
-												<div className="flex gap-1.5 items-center">
-													<ClockArrowUp className="h-4 w-4" /> {uptime}
-												</div>
-											</TooltipTrigger>
-											<TooltipContent>Uptime</TooltipContent>
-										</Tooltip>
-									</TooltipProvider>
-								)}
-								{system.info?.m && (
-									<>
-										<Separator orientation="vertical" className="h-4 bg-primary/30" />
+								{systemInfo.map(({ value, label, Icon, hide }, i) => {
+									if (hide || !value) {
+										return null
+									}
+									const content = (
 										<div className="flex gap-1.5 items-center">
-											<CpuIcon className="h-4 w-4" />
-											{system.info.m} ({system.info.c}c/{system.info.t}t)
+											<Icon className="h-4 w-4" /> {value}
 										</div>
-									</>
-								)}
+									)
+									return (
+										<div key={i} className="contents">
+											<Separator orientation="vertical" className="h-4 bg-primary/30" />
+											{label ? (
+												<TooltipProvider>
+													<Tooltip delayDuration={150}>
+														<TooltipTrigger asChild>{content}</TooltipTrigger>
+														<TooltipContent>{label}</TooltipContent>
+													</Tooltip>
+												</TooltipProvider>
+											) : (
+												content
+											)}
+										</div>
+									)
+								})}
 							</div>
 						</div>
 						<div className="lg:ml-auto flex items-center gap-2 max-sm:-mb-1">
