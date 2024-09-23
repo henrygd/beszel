@@ -17,9 +17,11 @@ import { SystemStatsRecord } from '@/types'
 export default function DiskIoChart({
 	ticks,
 	systemData,
+	dataKeys,
 }: {
 	ticks: number[]
 	systemData: SystemStatsRecord[]
+	dataKeys: string[]
 }) {
 	const chartTime = useStore($chartTime)
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
@@ -77,26 +79,21 @@ export default function DiskIoChart({
 							/>
 						}
 					/>
-					<Area
-						dataKey="stats.dw"
-						name="Write"
-						type="monotoneX"
-						fill="hsl(var(--chart-3))"
-						fillOpacity={0.3}
-						stroke="hsl(var(--chart-3))"
-						// animationDuration={1200}
-						isAnimationActive={false}
-					/>
-					<Area
-						dataKey="stats.dr"
-						name="Read"
-						type="monotoneX"
-						fill="hsl(var(--chart-1))"
-						fillOpacity={0.3}
-						stroke="hsl(var(--chart-1))"
-						// animationDuration={1200}
-						isAnimationActive={false}
-					/>
+					{dataKeys.map((dataKey, i) => {
+						const action = i ? 'Read' : 'Write'
+						const color = i ? 'hsl(var(--chart-1))' : 'hsl(var(--chart-3))'
+						return (
+							<Area
+								dataKey={dataKey}
+								name={action}
+								type="monotoneX"
+								fill={color}
+								fillOpacity={0.3}
+								stroke={color}
+								isAnimationActive={false}
+							/>
+						)
+					})}
 				</AreaChart>
 			</ChartContainer>
 		</div>

@@ -38,7 +38,6 @@ const BandwidthChart = lazy(() => import('../charts/bandwidth-chart'))
 const ContainerNetChart = lazy(() => import('../charts/container-net-chart'))
 const SwapChart = lazy(() => import('../charts/swap-chart'))
 const TemperatureChart = lazy(() => import('../charts/temperature-chart'))
-const ExFsDiskIoChart = lazy(() => import('../charts/extra-fs-disk-io-chart'))
 
 export default function SystemDetail({ name }: { name: string }) {
 	const systems = useStore($systems)
@@ -385,7 +384,11 @@ export default function SystemDetail({ name }: { name: string }) {
 					</ChartCard>
 
 					<ChartCard grid={grid} title="Disk I/O" description="Throughput of root filesystem">
-						<DiskIoChart ticks={ticks} systemData={systemStats} />
+						<DiskIoChart
+							ticks={ticks}
+							systemData={systemStats}
+							dataKeys={['stats.dw', 'stats.dr']}
+						/>
 					</ChartCard>
 
 					<ChartCard
@@ -443,7 +446,11 @@ export default function SystemDetail({ name }: { name: string }) {
 										title={`${extraFsName} I/O`}
 										description={`Throughput of of ${extraFsName}`}
 									>
-										<ExFsDiskIoChart ticks={ticks} systemData={systemStats} fs={extraFsName} />
+										<DiskIoChart
+											ticks={ticks}
+											systemData={systemStats}
+											dataKeys={[`stats.efs.${extraFsName}.w`, `stats.efs.${extraFsName}.r`]}
+										/>
 									</ChartCard>
 								</div>
 							)
