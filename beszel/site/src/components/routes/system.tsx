@@ -38,7 +38,6 @@ const BandwidthChart = lazy(() => import('../charts/bandwidth-chart'))
 const ContainerNetChart = lazy(() => import('../charts/container-net-chart'))
 const SwapChart = lazy(() => import('../charts/swap-chart'))
 const TemperatureChart = lazy(() => import('../charts/temperature-chart'))
-const ExFsDiskChart = lazy(() => import('../charts/extra-fs-disk-chart'))
 const ExFsDiskIoChart = lazy(() => import('../charts/extra-fs-disk-io-chart'))
 
 export default function SystemDetail({ name }: { name: string }) {
@@ -377,7 +376,12 @@ export default function SystemDetail({ name }: { name: string }) {
 					)}
 
 					<ChartCard grid={grid} title="Disk Space" description="Usage of root partition">
-						<DiskChart ticks={ticks} systemData={systemStats} />
+						<DiskChart
+							ticks={ticks}
+							systemData={systemStats}
+							dataKey="stats.du"
+							diskSize={Math.round(systemStats.at(-1)?.stats.d ?? NaN)}
+						/>
 					</ChartCard>
 
 					<ChartCard grid={grid} title="Disk I/O" description="Throughput of root filesystem">
@@ -427,7 +431,12 @@ export default function SystemDetail({ name }: { name: string }) {
 										title={`${extraFsName} Usage`}
 										description={`Disk usage of ${extraFsName}`}
 									>
-										<ExFsDiskChart ticks={ticks} systemData={systemStats} fs={extraFsName} />
+										<DiskChart
+											ticks={ticks}
+											systemData={systemStats}
+											dataKey={`stats.efs.${extraFsName}.du`}
+											diskSize={Math.round(systemStats.at(-1)?.stats.efs?.[extraFsName].d ?? NaN)}
+										/>
 									</ChartCard>
 									<ChartCard
 										grid={grid}

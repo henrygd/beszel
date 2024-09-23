@@ -1,8 +1,17 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-import { useYAxisWidth, chartTimeData, cn, formatShortDate, twoDecimalString } from '@/lib/utils'
-import { useMemo } from 'react'
+import {
+	useYAxisWidth,
+	chartTimeData,
+	cn,
+	formatShortDate,
+	twoDecimalString,
+	toFixedFloat,
+	getSizeVal,
+	getSizeUnit,
+} from '@/lib/utils'
+// import { useMemo } from 'react'
 // import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
@@ -11,16 +20,16 @@ import { SystemStatsRecord } from '@/types'
 export default function DiskChart({
 	ticks,
 	systemData,
+	dataKey,
+	diskSize,
 }: {
 	ticks: number[]
 	systemData: SystemStatsRecord[]
+	dataKey: string
+	diskSize: number
 }) {
 	const chartTime = useStore($chartTime)
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
-
-	const diskSize = useMemo(() => {
-		return Math.round(systemData.at(-1)?.stats.d ?? NaN)
-	}, [systemData])
 
 	return (
 		<div>
@@ -51,8 +60,8 @@ export default function DiskChart({
 						tickLine={false}
 						axisLine={false}
 						tickFormatter={(value) =>
-updateYAxisWidth(toFixedFloat(getSizeVal(value), 2) + getSizeUnit(value))
-}
+							updateYAxisWidth(toFixedFloat(getSizeVal(value), 2) + getSizeUnit(value))
+						}
 					/>
 					<XAxis
 						dataKey="created"
@@ -79,7 +88,7 @@ updateYAxisWidth(toFixedFloat(getSizeVal(value), 2) + getSizeUnit(value))
 						}
 					/>
 					<Area
-						dataKey="stats.du"
+						dataKey={dataKey}
 						name="Disk Usage"
 						type="monotoneX"
 						fill="hsl(var(--chart-4))"
