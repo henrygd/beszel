@@ -50,7 +50,9 @@ export default function DiskChart({
 						minTickGap={6}
 						tickLine={false}
 						axisLine={false}
-						tickFormatter={(value) => updateYAxisWidth(value + ' GB')}
+						tickFormatter={(value) =>
+updateYAxisWidth(toFixedFloat(getSizeVal(value), 2) + getSizeUnit(value))
+}
 					/>
 					<XAxis
 						dataKey="created"
@@ -69,7 +71,9 @@ export default function DiskChart({
 						content={
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
-								contentFormatter={(item) => twoDecimalString(item.value) + ' GB'}
+								contentFormatter={({ value }) =>
+									twoDecimalString(getSizeVal(value)) + getSizeUnit(value)
+								}
 								indicator="line"
 							/>
 						}

@@ -290,3 +290,17 @@ export async function updateUserSettings() {
 		console.log('create settings', e)
 	}
 }
+
+/**
+ * Get the unit of size (TB or GB) for a given size in gigabytes
+ * @param n size in gigabytes
+ * @returns unit of size (TB or GB)
+ */
+export const getSizeUnit = (n: number) => (n >= 1_000 ? ' TB' : ' GB')
+
+/**
+ * Get the value of number in gigabytes if less than 1000, otherwise in terabytes
+ * @param n size in gigabytes
+ * @returns value in GB if less than 1000, otherwise value in TB
+ */
+export const getSizeVal = (n: number) => (n >= 1_000 ? n / 1_000 : n)
