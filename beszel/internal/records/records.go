@@ -12,6 +12,7 @@ import (
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/daos"
 	"github.com/pocketbase/pocketbase/models"
+	"github.com/pocketbase/pocketbase/tools/types"
 )
 
 type RecordManager struct {
@@ -262,8 +263,8 @@ func (rm *RecordManager) AverageContainerStats(records []*models.Record) (stats 
 	return stats
 }
 
+// Deletes records older than what is displayed in the UI
 func (rm *RecordManager) DeleteOldRecords() {
-	// start := time.Now()
 	collections := []string{"system_stats", "container_stats"}
 	recordData := []RecordDeletionData{
 		{
@@ -287,29 +288,17 @@ func (rm *RecordManager) DeleteOldRecords() {
 			retention:  30 * 24 * time.Hour,
 		},
 	}
-	rm.app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
+	db := rm.app.Dao().NonconcurrentDB()
 		for _, recordData := range recordData {
-			exp := dbx.NewExp(
-				"type = {:type} AND created < {:created}",
-				dbx.Params{"type": recordData.recordType, "created": time.Now().UTC().Add(-recordData.retention)},
-			)
 			for _, collectionSlug := range collections {
-				collectionRecords, err := txDao.FindRecordsByExpr(collectionSlug, exp)
-				if err != nil {
-					return err
-				}
-				for _, record := range collectionRecords {
-					err := txDao.DeleteRecord(record)
+			formattedDate := time.Now().UTC().Add(-recordData.retention).Format(types.DefaultDateLayout)
+			expr := dbx.NewExp("[[created]] < {:date} AND [[type]] = {:type}", dbx.Params{"date": formattedDate, "type": recordData.recordType})
+			_, err := db.Delete(collectionSlug, expr).Execute()
 					if err != nil {
 						rm.app.Logger().Error("Failed to delete records", "err", err.Error())
-						return err
 					}
 				}
 			}
-		}
-		return nil
-	})
-	// log.Println("finished deleting old records", "time (ms)", time.Since(start).Milliseconds())
 }
 
 /* Round float to two decimals */
