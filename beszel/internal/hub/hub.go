@@ -90,7 +90,7 @@ func (h *Hub) Run() {
 		return nil
 	})
 
-	// serve site
+	// serve web ui
 	h.app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		switch isGoRun {
 		case true:
@@ -98,12 +98,17 @@ func (h *Hub) Run() {
 				Scheme: "http",
 				Host:   "localhost:5173",
 			})
-			e.Router.GET("/static/*", apis.StaticDirectoryHandler(os.DirFS("../../site/public/static"), false))
 			e.Router.Any("/*", echo.WrapHandler(proxy))
-			// e.Router.Any("/", echo.WrapHandler(proxy))
 		default:
-			e.Router.GET("/static/*", apis.StaticDirectoryHandler(site.Static, false))
-			e.Router.Any("/*", apis.StaticDirectoryHandler(site.Dist, true))
+			csp, cspExists := os.LookupEnv("CSP")
+			e.Router.Any("/*", func(c echo.Context) error {
+				if cspExists {
+					c.Response().Header().Del("X-Frame-Options")
+					c.Response().Header().Set("Content-Security-Policy", csp)
+				}
+				indexFallback := !strings.HasPrefix(c.Request().URL.Path, "/static/")
+				return apis.StaticDirectoryHandler(site.Dist, indexFallback)(c)
+			})
 		}
 		return nil
 	})

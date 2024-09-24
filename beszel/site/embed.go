@@ -11,5 +11,3 @@ import (
 var assets embed.FS
 
 var Dist = echo.MustSubFS(assets, "dist")
-
-var Static = echo.MustSubFS(assets, "dist/static")
