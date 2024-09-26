@@ -372,12 +372,6 @@ export default function SystemDetail({ name }: { name: string }) {
 						</ChartCard>
 					)}
 
-					{(systemStats.at(-1)?.stats.su ?? 0) > 0 && (
-						<ChartCard grid={grid} title="Swap Usage" description="Swap space used by the system">
-							<SwapChart ticks={ticks} systemData={systemStats} />
-						</ChartCard>
-					)}
-
 					<ChartCard grid={grid} title="Disk Space" description="Usage of root partition">
 						<DiskChart
 							ticks={ticks}
@@ -418,6 +412,12 @@ export default function SystemDetail({ name }: { name: string }) {
 								<ContainerNetChart chartData={dockerNetChartData} ticks={ticks} />
 							</ChartCard>
 						</div>
+					)}
+
+					{(systemStats.at(-1)?.stats.su ?? 0) > 0 && (
+						<ChartCard grid={grid} title="Swap Usage" description="Swap space used by the system">
+							<SwapChart ticks={ticks} systemData={systemStats} />
+						</ChartCard>
 					)}
 
 					{systemStats.at(-1)?.stats.t && (
