@@ -444,7 +444,7 @@ export default function SystemDetail({ name }: { name: string }) {
 									<ChartCard
 										grid={grid}
 										title={`${extraFsName} I/O`}
-										description={`Throughput of of ${extraFsName}`}
+										description={`Throughput of ${extraFsName}`}
 									>
 										<DiskIoChart
 											ticks={ticks}
