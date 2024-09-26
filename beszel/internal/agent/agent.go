@@ -45,7 +45,6 @@ type Agent struct {
 	netIoStats          *system.NetIoStats
 	dockerClient        *http.Client
 	sensorsContext      context.Context
-	bufferPool          *sync.Pool
 }
 
 func NewAgent(pubKey []byte, addr string) *Agent {
@@ -58,11 +57,6 @@ func NewAgent(pubKey []byte, addr string) *Agent {
 		netIoStats:          &system.NetIoStats{},
 		dockerClient:        newDockerClient(),
 		sensorsContext:      context.Background(),
-		bufferPool: &sync.Pool{
-			New: func() interface{} {
-				return new(bytes.Buffer)
-			},
-		},
 	}
 }
 
@@ -301,18 +295,9 @@ func (a *Agent) getContainerStats(ctr container.ApiInfo) (container.Stats, error
 	}
 	defer resp.Body.Close()
 
-	// use a pooled buffer to store the response body
-	buf := a.bufferPool.Get().(*bytes.Buffer)
-	defer a.bufferPool.Put(buf)
-	buf.Reset()
-	_, err = io.Copy(buf, resp.Body)
-	if err != nil {
-		return cStats, err
-	}
-
-	// unmarshal the json data from the buffer
+	// decode the json data from the response body
 	var statsJson container.ApiStats
-	if err := json.Unmarshal(buf.Bytes(), &statsJson); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&statsJson); err != nil {
 		return cStats, err
 	}
 
