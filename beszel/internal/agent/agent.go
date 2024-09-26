@@ -211,7 +211,12 @@ func (a *Agent) getSystemStats() (system.Info, system.Stats) {
 		systemInfo.Cores = cores
 	}
 	if threads, err := cpu.Counts(true); err == nil {
-		systemInfo.Threads = threads
+		if threads > 0 && threads < systemInfo.Cores {
+			// in lxc logical cores reflects container limits, so use that as cores if lower
+			systemInfo.Cores = threads
+		} else {
+			systemInfo.Threads = threads
+		}
 	}
 
 	return systemInfo, systemStats

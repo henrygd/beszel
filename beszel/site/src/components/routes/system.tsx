@@ -220,7 +220,11 @@ export default function SystemDetail({ name }: { name: string }) {
 			},
 			{ value: uptime, Icon: ClockArrowUp, label: 'Uptime' },
 			{ value: system.info.k, Icon: TuxIcon, label: 'Kernel' },
-			{ value: `${system.info.m} (${system.info.c}c/${system.info.t}t)`, Icon: CpuIcon },
+			{
+				value: `${system.info.m} (${system.info.c}c${system.info.t ? `/${system.info.t}t` : ''})`,
+				Icon: CpuIcon,
+				hide: !system.info.m,
+			},
 		] as {
 			value: string | number | undefined
 			label?: string

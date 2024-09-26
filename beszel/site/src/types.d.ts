@@ -17,7 +17,7 @@ export interface SystemInfo {
 	/** cpu percent */
 	cpu: number
 	/** cpu threads */
-	t: number
+	t?: number
 	/** cpu cores */
 	c: number
 	/** cpu model */

@@ -48,7 +48,7 @@ type Info struct {
 	Hostname      string `json:"h"`
 	KernelVersion string `json:"k,omitempty"`
 	Cores         int    `json:"c"`
-	Threads       int    `json:"t"`
+	Threads       int    `json:"t,omitempty"`
 	CpuModel      string `json:"m"`
 	// Os       string  `json:"o"`
 	Uptime       uint64  `json:"u"`
