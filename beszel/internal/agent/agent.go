@@ -385,7 +385,6 @@ func (a *Agent) Run() {
 	}
 
 	a.initializeDiskInfo()
-	a.initializeDiskIoStats()
 	a.initializeNetIoStats()
 
 	a.startServer()

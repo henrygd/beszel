@@ -26,7 +26,6 @@ type Stats struct {
 
 type FsStats struct {
 	Time        time.Time `json:"-"`
-	Device      string    `json:"-"`
 	Root        bool      `json:"-"`
 	Mountpoint  string    `json:"-"`
 	DiskTotal   float64   `json:"d"`
