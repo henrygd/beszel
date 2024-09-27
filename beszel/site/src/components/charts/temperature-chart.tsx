@@ -54,6 +54,8 @@ export default function TemperatureChart({
 		return chartData
 	}, [systemData])
 
+	const colors = Object.keys(newChartData.colors)
+
 	return (
 		<div>
 			{/* {!yAxisSet && <Spinner />} */}
@@ -108,7 +110,7 @@ export default function TemperatureChart({
 							/>
 						}
 					/>
-					{Object.keys(newChartData.colors).map((key) => (
+					{colors.map((key) => (
 						<Line
 							key={key}
 							dataKey={key}
@@ -120,7 +122,7 @@ export default function TemperatureChart({
 							isAnimationActive={false}
 						/>
 					))}
-					<ChartLegend content={<ChartLegendContent />} />
+					{colors.length < 12 && <ChartLegend content={<ChartLegendContent />} />}
 				</LineChart>
 			</ChartContainer>
 		</div>
