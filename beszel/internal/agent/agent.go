@@ -167,7 +167,7 @@ func (a *Agent) getSystemStats() (system.Info, system.Stats) {
 	}
 	if len(temps) > 0 {
 		slog.Debug("Temperatures", "data", temps)
-		systemStats.Temperatures = make(map[string]float64)
+		systemStats.Temperatures = make(map[string]float64, len(temps))
 		for i, sensor := range temps {
 			// skip if temperature is 0
 			if sensor.Temperature == 0 {
@@ -230,15 +230,14 @@ func (a *Agent) getDockerStats() ([]container.Stats, error) {
 	}
 
 	containersLength := len(*a.apiContainerList)
-	containerStats := make([]container.Stats, 0, containersLength)
-	containerStatsMutex := sync.Mutex{}
+	containerStats := make([]container.Stats, containersLength)
 
 	// store valid ids to clean up old container ids from map
 	validIds := make(map[string]struct{}, containersLength)
 
 	var wg sync.WaitGroup
 
-	for _, ctr := range *a.apiContainerList {
+	for i, ctr := range *a.apiContainerList {
 		ctr.IdShort = ctr.Id[:12]
 		validIds[ctr.IdShort] = struct{}{}
 		// check if container is less than 1 minute old (possible restart)
@@ -264,12 +263,9 @@ func (a *Agent) getDockerStats() ([]container.Stats, error) {
 				cstats, err = a.getContainerStats(ctr)
 				if err != nil {
 					slog.Error("Error getting container stats", "err", err)
-					return
 				}
 			}
-			containerStatsMutex.Lock()
-			defer containerStatsMutex.Unlock()
-			containerStats = append(containerStats, cstats)
+			containerStats[i] = cstats
 		}()
 	}
 
@@ -286,7 +282,7 @@ func (a *Agent) getDockerStats() ([]container.Stats, error) {
 }
 
 func (a *Agent) getContainerStats(ctr container.ApiInfo) (container.Stats, error) {
-	curStats := container.Stats{}
+	curStats := container.Stats{Name: ctr.Names[0][1:]}
 
 	resp, err := a.dockerClient.Get("http://localhost/containers/" + ctr.IdShort + "/stats?stream=0&one-shot=1")
 	if err != nil {
@@ -300,11 +296,9 @@ func (a *Agent) getContainerStats(ctr container.ApiInfo) (container.Stats, error
 		return curStats, err
 	}
 
-	name := ctr.Names[0][1:]
-
 	// check if container has valid data, otherwise may be in restart loop (#103)
 	if res.MemoryStats.Usage == 0 {
-		return curStats, fmt.Errorf("%s - no memory stats - see https://github.com/henrygd/beszel/issues/144", name)
+		return curStats, fmt.Errorf("%s - no memory stats - see https://github.com/henrygd/beszel/issues/144", curStats.Name)
 	}
 
 	// memory (https://docs.docker.com/reference/cli/docker/container/stats/)
@@ -329,7 +323,7 @@ func (a *Agent) getContainerStats(ctr container.ApiInfo) (container.Stats, error
 	systemDelta := res.CPUStats.SystemUsage - prevStats.Cpu[1]
 	cpuPct := float64(cpuDelta) / float64(systemDelta) * 100
 	if cpuPct > 100 {
-		return curStats, fmt.Errorf("%s cpu pct greater than 100: %+v", name, cpuPct)
+		return curStats, fmt.Errorf("%s cpu pct greater than 100: %+v", curStats.Name, cpuPct)
 	}
 	prevStats.Cpu = [2]uint64{res.CPUStats.CPUUsage.TotalUsage, res.CPUStats.SystemUsage}
 
@@ -350,7 +344,6 @@ func (a *Agent) getContainerStats(ctr container.ApiInfo) (container.Stats, error
 	prevStats.Net.Recv = total_recv
 	prevStats.Net.Time = time.Now()
 
-	curStats.Name = name
 	curStats.Cpu = twoDecimals(cpuPct)
 	curStats.Mem = bytesToMegabytes(float64(usedMemory))
 	curStats.NetworkSent = bytesToMegabytes(sent_delta)
