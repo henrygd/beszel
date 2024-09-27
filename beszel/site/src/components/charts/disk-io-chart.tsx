@@ -84,6 +84,7 @@ export default function DiskIoChart({
 						const color = i ? 'hsl(var(--chart-1))' : 'hsl(var(--chart-3))'
 						return (
 							<Area
+								key={i}
 								dataKey={dataKey}
 								name={action}
 								type="monotoneX"

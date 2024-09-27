@@ -178,7 +178,7 @@ export const chartTimeData: ChartTimeData = {
 		expectedInterval: 60_000 * 120,
 		label: '1 week',
 		ticks: 7,
-		format: (timestamp: string) => formatShortDate(timestamp),
+		format: (timestamp: string) => formatDay(timestamp),
 		getOffset: (endTime: Date) => timeDay.offset(endTime, -7),
 	},
 	'30d': {
