@@ -11,3 +11,15 @@ export function TuxIcon(props: SVGProps<SVGSVGElement>) {
 		</svg>
 	)
 }
+
+// MingCute Apache License 2.0 https://github.com/Richard9394/MingCute
+export function Rows(props: SVGProps<SVGSVGElement>) {
+	return (
+		<svg viewBox="0 0 24 24" {...props}>
+			<path
+				fill="currentColor"
+				d="M5 3a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 2h14v4H5zm0 8a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2zm0 2h14v4H5z"
+			/>
+		</svg>
+	)
+}

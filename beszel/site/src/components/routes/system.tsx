@@ -4,15 +4,7 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } fro
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../ui/card'
 import { useStore } from '@nanostores/react'
 import Spinner from '../spinner'
-import {
-	ClockArrowUp,
-	CpuIcon,
-	GlobeIcon,
-	LayoutGridIcon,
-	MonitorIcon,
-	StretchHorizontalIcon,
-	XIcon,
-} from 'lucide-react'
+import { ClockArrowUp, CpuIcon, GlobeIcon, LayoutGridIcon, MonitorIcon, XIcon } from 'lucide-react'
 import ChartTimeSelect from '../charts/chart-time-select'
 import {
 	chartTimeData,
@@ -26,7 +18,7 @@ import { scaleTime } from 'd3-scale'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
 import { Button, buttonVariants } from '../ui/button'
 import { Input } from '../ui/input'
-import { TuxIcon } from '../ui/icons'
+import { Rows, TuxIcon } from '../ui/icons'
 
 const CpuChart = lazy(() => import('../charts/cpu-chart'))
 const ContainerCpuChart = lazy(() => import('../charts/container-cpu-chart'))
@@ -46,7 +38,6 @@ export default function SystemDetail({ name }: { name: string }) {
 	const [ticks, setTicks] = useState([] as number[])
 	const [system, setSystem] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
-	const [hasDockerStats, setHasDocker] = useState(false)
 	const netCardRef = useRef<HTMLDivElement>(null)
 	const [dockerCpuChartData, setDockerCpuChartData] = useState<Record<string, number | string>[]>(
 		[]
@@ -57,6 +48,7 @@ export default function SystemDetail({ name }: { name: string }) {
 	const [dockerNetChartData, setDockerNetChartData] = useState<Record<string, number | number[]>[]>(
 		[]
 	)
+	const hasDockerStats = dockerCpuChartData.length > 0
 
 	useEffect(() => {
 		document.title = `${name} / Beszel`
@@ -64,7 +56,7 @@ export default function SystemDetail({ name }: { name: string }) {
 			resetCharts()
 			$chartTime.set($userSettings.get().chartTime)
 			$containerFilter.set('')
-			setHasDocker(false)
+			// setHasDocker(false)
 		}
 	}, [name])
 
@@ -148,7 +140,6 @@ export default function SystemDetail({ name }: { name: string }) {
 			const expectedInterval = chartTimeData[chartTime].expectedInterval
 			if (containerStats.status === 'fulfilled' && containerStats.value.length) {
 				makeContainerData(addEmptyValues(containerStats.value, expectedInterval))
-				setHasDocker(true)
 			}
 			if (systemStats.status === 'fulfilled') {
 				setSystemStats(addEmptyValues(systemStats.value, expectedInterval))
@@ -321,7 +312,7 @@ export default function SystemDetail({ name }: { name: string }) {
 											{grid ? (
 												<LayoutGridIcon className="h-[1.2rem] w-[1.2rem] opacity-85" />
 											) : (
-												<StretchHorizontalIcon className="h-[1.2rem] w-[1.2rem] opacity-85" />
+												<Rows className="h-[1.3rem] w-[1.3rem] opacity-85" />
 											)}
 										</Button>
 									</TooltipTrigger>
