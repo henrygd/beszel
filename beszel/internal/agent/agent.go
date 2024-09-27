@@ -159,19 +159,26 @@ func (a *Agent) getSystemStats() (system.Info, system.Stats) {
 	}
 
 	// temperatures
-	if temps, err := sensors.TemperaturesWithContext(a.sensorsContext); err == nil {
+	temps, err := sensors.TemperaturesWithContext(a.sensorsContext)
+	if err != nil && a.debug {
+		err.(*sensors.Warnings).Verbose = true
+		slog.Debug("Sensor error", "errs", err)
+	}
+	if len(temps) > 0 {
 		slog.Debug("Temperatures", "data", temps)
 		systemStats.Temperatures = make(map[string]float64)
-		for i, temp := range temps {
-			if _, ok := systemStats.Temperatures[temp.SensorKey]; ok {
+		for i, sensor := range temps {
+			// skip if temperature is 0
+			if sensor.Temperature == 0 {
+				continue
+			}
+			if _, ok := systemStats.Temperatures[sensor.SensorKey]; ok {
 				// if key already exists, append int to key
-				systemStats.Temperatures[temp.SensorKey+"_"+strconv.Itoa(i)] = twoDecimals(temp.Temperature)
+				systemStats.Temperatures[sensor.SensorKey+"_"+strconv.Itoa(i)] = twoDecimals(sensor.Temperature)
 			} else {
-				systemStats.Temperatures[temp.SensorKey] = twoDecimals(temp.Temperature)
+				systemStats.Temperatures[sensor.SensorKey] = twoDecimals(sensor.Temperature)
 			}
 		}
-	} else {
-		slog.Debug("Error getting temperatures", "err", err)
 	}
 
 	systemInfo := system.Info{
