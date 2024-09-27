@@ -2,10 +2,9 @@ package agent
 
 import (
 	"beszel/internal/entities/system"
+	"log/slog"
 	"time"
 
-	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -21,8 +20,9 @@ func (a *Agent) initializeDiskInfo() {
 
 	partitions, err := disk.Partitions(false)
 	if err != nil {
-		log.Println("Error getting disk partitions:", err.Error())
+		slog.Error("Error getting disk partitions", "err", err)
 	}
+	slog.Debug("Disk", "partitions", partitions)
 
 	// ioContext := context.WithValue(a.sensorsContext,
 	// 	common.EnvKey, common.EnvMap{common.HostProcEnvKey: "/tmp/testproc"},
@@ -31,20 +31,21 @@ func (a *Agent) initializeDiskInfo() {
 
 	diskIoCounters, err := disk.IOCounters()
 	if err != nil {
-		log.Println("Error getting diskstats:", err.Error())
+		slog.Error("Error getting diskstats", "err", err)
 	}
+	slog.Debug("Disk I/O", "diskstats", diskIoCounters)
 
 	// Helper function to add a filesystem to fsStats if it doesn't exist
 	addFsStat := func(device, mountpoint string, root bool) {
 		key := filepath.Base(device)
 		if _, exists := a.fsStats[key]; !exists {
 			if root {
-				log.Println("Detected root fs:", key)
+				slog.Info("Detected root device", "name", key)
 				// check if root device is in /proc/diskstats, use fallback if not
 				if _, exists := diskIoCounters[key]; !exists {
-					log.Printf("%s not found in diskstats\n", key)
+					slog.Warn("Device not found in diskstats", "name", key)
 					key = findFallbackIoDevice(filesystem, diskIoCounters)
-					log.Printf("Using %s for I/O\n", key)
+					slog.Info("Using I/O fallback", "name", key)
 				}
 			}
 			a.fsStats[key] = &system.FsStats{Root: root, Mountpoint: mountpoint}
@@ -61,10 +62,7 @@ func (a *Agent) initializeDiskInfo() {
 			}
 		}
 		if !hasRoot {
-			log.Printf("Partition details not found for %s\n", filesystem)
-			for _, p := range partitions {
-				fmt.Printf("%+v\n", p)
-			}
+			slog.Warn("Partition details not found", "filesystem", filesystem)
 		}
 	}
 
@@ -84,7 +82,7 @@ func (a *Agent) initializeDiskInfo() {
 				if _, err := disk.Usage(fs); err == nil {
 					addFsStat(filepath.Base(fs), fs, false)
 				} else {
-					log.Println(err, fs)
+					slog.Error("Invalid filesystem", "name", fs, "err", err)
 				}
 			}
 		}
@@ -107,7 +105,6 @@ func (a *Agent) initializeDiskInfo() {
 
 	// Check all folders in /extra-filesystems and add them if not already present
 	if folders, err := os.ReadDir(efPath); err == nil {
-		// log.Printf("Found %d extra filesystems in %s\n", len(folders), efPath)
 		existingMountpoints := make(map[string]bool)
 		for _, stats := range a.fsStats {
 			existingMountpoints[stats.Mountpoint] = true
@@ -115,6 +112,7 @@ func (a *Agent) initializeDiskInfo() {
 		for _, folder := range folders {
 			if folder.IsDir() {
 				mountpoint := filepath.Join(efPath, folder.Name())
+				slog.Debug("/extra-filesystems", "mountpoint", mountpoint)
 				if !existingMountpoints[mountpoint] {
 					a.fsStats[folder.Name()] = &system.FsStats{Mountpoint: mountpoint}
 				}
@@ -125,7 +123,7 @@ func (a *Agent) initializeDiskInfo() {
 	// If no root filesystem set, use fallback
 	if !hasRoot {
 		rootDevice := findFallbackIoDevice(filepath.Base(filesystem), diskIoCounters)
-		log.Printf("Using / as mountpoint and %s for I/O\n", rootDevice)
+		slog.Info("Root disk", "mountpoint", "/", "io", rootDevice)
 		a.fsStats[rootDevice] = &system.FsStats{Root: true, Mountpoint: "/"}
 	}
 
@@ -155,7 +153,7 @@ func (a *Agent) initializeDiskIoStats(diskIoCounters map[string]disk.IOCountersS
 		// skip if not in diskIoCounters
 		d, exists := diskIoCounters[device]
 		if !exists {
-			log.Println(device, "not found in diskstats")
+			slog.Warn("Device not found in diskstats", "name", device)
 			continue
 		}
 		// populate initial values

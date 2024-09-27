@@ -2,7 +2,7 @@ package agent
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/url"
@@ -47,7 +47,7 @@ func (a *Agent) initializeNetIoStats() {
 					continue
 				}
 			}
-			log.Printf("Detected network interface: %+v (%+v recv, %+v sent)\n", v.Name, v.BytesRecv, v.BytesSent)
+			slog.Info("Detected network interface", "name", v.Name, "sent", v.BytesSent, "recv", v.BytesRecv)
 			a.netIoStats.BytesSent += v.BytesSent
 			a.netIoStats.BytesRecv += v.BytesRecv
 			// store as a valid network interface
@@ -73,12 +73,14 @@ func (a *Agent) skipNetworkInterface(v psutilNet.IOCountersStat) bool {
 func newDockerClient() *http.Client {
 	dockerHost := "unix:///var/run/docker.sock"
 	if dockerHostEnv, exists := os.LookupEnv("DOCKER_HOST"); exists {
+		slog.Info("DOCKER_HOST", "host", dockerHostEnv)
 		dockerHost = dockerHostEnv
 	}
 
 	parsedURL, err := url.Parse(dockerHost)
 	if err != nil {
-		log.Fatal("Error parsing DOCKER_HOST: " + err.Error())
+		slog.Error("Error parsing DOCKER_HOST", "err", err)
+		os.Exit(1)
 	}
 
 	transport := &http.Transport{
@@ -96,12 +98,12 @@ func newDockerClient() *http.Client {
 			return (&net.Dialer{}).DialContext(ctx, "unix", parsedURL.Path)
 		}
 	case "tcp", "http", "https":
-		log.Println("Using DOCKER_HOST: " + dockerHost)
 		transport.DialContext = func(ctx context.Context, proto, addr string) (net.Conn, error) {
 			return (&net.Dialer{}).DialContext(ctx, "tcp", parsedURL.Host)
 		}
 	default:
-		log.Fatal("Unsupported DOCKER_HOST: " + parsedURL.Scheme)
+		slog.Error("Invalid DOCKER_HOST", "scheme", parsedURL.Scheme)
+		os.Exit(1)
 	}
 
 	return &http.Client{
@@ -113,7 +115,7 @@ func newDockerClient() *http.Client {
 // closes idle connections on timeouts to prevent reuse of stale connections
 func (a *Agent) closeIdleConnections(err error) (isTimeout bool) {
 	if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
-		log.Printf("Closing idle connections. Error: %+v\n", err)
+		slog.Warn("Closing idle connections", "err", err)
 		a.dockerClient.Transport.(*http.Transport).CloseIdleConnections()
 		return true
 	}

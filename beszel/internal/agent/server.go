@@ -2,7 +2,8 @@ package agent
 
 import (
 	"encoding/json"
-	"log"
+	"log/slog"
+	"os"
 
 	sshServer "github.com/gliderlabs/ssh"
 )
@@ -10,22 +11,23 @@ import (
 func (a *Agent) startServer() {
 	sshServer.Handle(a.handleSession)
 
-	log.Printf("Starting SSH server on %s", a.addr)
+	slog.Info("Starting SSH server", "address", a.addr)
 	if err := sshServer.ListenAndServe(a.addr, nil, sshServer.NoPty(),
 		sshServer.PublicKeyAuth(func(ctx sshServer.Context, key sshServer.PublicKey) bool {
 			allowed, _, _, _, _ := sshServer.ParseAuthorizedKey(a.pubKey)
 			return sshServer.KeysEqual(key, allowed)
 		}),
 	); err != nil {
-		log.Fatal(err)
+		slog.Error("Error starting SSH server", "err", err)
+		os.Exit(1)
 	}
 }
 
 func (a *Agent) handleSession(s sshServer.Session) {
 	stats := a.gatherStats()
-	encoder := json.NewEncoder(s)
-	if err := encoder.Encode(stats); err != nil {
-		log.Println("Error encoding stats:", err.Error())
+	slog.Debug("Sending stats", "data", stats)
+	if err := json.NewEncoder(s).Encode(stats); err != nil {
+		slog.Error("Error encoding stats", "err", err)
 		s.Exit(1)
 		return
 	}

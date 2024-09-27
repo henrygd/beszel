@@ -8,7 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"strconv"
@@ -59,7 +59,7 @@ func (a *Agent) getSystemStats() (system.Info, system.Stats) {
 	// cpu percent
 	cpuPct, err := cpu.Percent(0, false)
 	if err != nil {
-		log.Println("Error getting cpu percent:", err)
+		slog.Error("Error getting cpu percent", "err", err)
 	} else if len(cpuPct) > 0 {
 		systemStats.Cpu = twoDecimals(cpuPct[0])
 	}
@@ -76,7 +76,6 @@ func (a *Agent) getSystemStats() (system.Info, system.Stats) {
 
 	// disk usage
 	for _, stats := range a.fsStats {
-		// log.Println("Reading filesystem:", fs.Mountpoint)
 		if d, err := disk.Usage(stats.Mountpoint); err == nil {
 			stats.DiskTotal = bytesToGigabytes(d.Total)
 			stats.DiskUsed = bytesToGigabytes(d.Used)
@@ -87,7 +86,7 @@ func (a *Agent) getSystemStats() (system.Info, system.Stats) {
 			}
 		} else {
 			// reset stats if error (likely unmounted)
-			log.Printf("Error reading %s: %+v\n", stats.Mountpoint, err)
+			slog.Error("Error getting disk stats", "name", stats.Mountpoint, "err", err)
 			stats.DiskTotal = 0
 			stats.DiskUsed = 0
 			stats.TotalRead = 0
@@ -130,7 +129,6 @@ func (a *Agent) getSystemStats() (system.Info, system.Stats) {
 			if _, exists := a.netInterfaces[v.Name]; !exists {
 				continue
 			}
-			// log.Printf("%+v: %+v recv, %+v sent\n", v.Name, v.BytesRecv, v.BytesSent)
 			bytesSent += v.BytesSent
 			bytesRecv += v.BytesRecv
 		}
@@ -141,12 +139,12 @@ func (a *Agent) getSystemStats() (system.Info, system.Stats) {
 		networkRecvPs := bytesToMegabytes(recvPerSecond)
 		// add check for issue (#150) where sent is a massive number
 		if networkSentPs > 10_000 || networkRecvPs > 10_000 {
-			log.Printf("Warning: network sent/recv is %.2f/%.2f MB/s. Resetting stats.\n", networkSentPs, networkRecvPs)
+			slog.Warn("Invalid network stats. Resetting.", "sent", networkSentPs, "recv", networkRecvPs)
 			for _, v := range netIO {
 				if _, exists := a.netInterfaces[v.Name]; !exists {
 					continue
 				}
-				log.Printf("%+s: %v recv, %v sent\n", v.Name, v.BytesRecv, v.BytesSent)
+				slog.Info(v.Name, "recv", v.BytesRecv, "sent", v.BytesSent)
 			}
 			// reset network I/O stats
 			a.initializeNetIoStats()
@@ -161,8 +159,8 @@ func (a *Agent) getSystemStats() (system.Info, system.Stats) {
 
 	// temperatures
 	if temps, err := sensors.TemperaturesWithContext(a.sensorsContext); err == nil {
+		slog.Debug("Temperatures", "data", temps)
 		systemStats.Temperatures = make(map[string]float64)
-		// log.Printf("Temperatures: %+v\n", temps)
 		for i, temp := range temps {
 			if _, ok := systemStats.Temperatures[temp.SensorKey]; ok {
 				// if key already exists, append int to key
@@ -171,7 +169,8 @@ func (a *Agent) getSystemStats() (system.Info, system.Stats) {
 				systemStats.Temperatures[temp.SensorKey] = twoDecimals(temp.Temperature)
 			}
 		}
-		// log.Printf("Temperature map: %+v\n", systemStats.Temperatures)
+	} else {
+		slog.Debug("Error getting temperatures", "err", err)
 	}
 
 	systemInfo := system.Info{
@@ -183,6 +182,7 @@ func (a *Agent) getSystemStats() (system.Info, system.Stats) {
 
 	// add host info
 	if info, err := host.Info(); err == nil {
+		// slog.Debug("Virtualization", "system", info.VirtualizationSystem, "role", info.VirtualizationRole)
 		systemInfo.Uptime = info.Uptime
 		systemInfo.Hostname = info.Hostname
 		systemInfo.KernelVersion = info.KernelVersion
@@ -217,7 +217,7 @@ func (a *Agent) getDockerStats() ([]container.Stats, error) {
 
 	var containers []container.ApiInfo
 	if err := json.NewDecoder(resp.Body).Decode(&containers); err != nil {
-		log.Printf("Error decoding containers: %+v\n", err)
+		slog.Error("Error decoding containers", "err", err)
 		return nil, err
 	}
 
@@ -254,7 +254,7 @@ func (a *Agent) getDockerStats() ([]container.Stats, error) {
 				// retry once
 				cstats, err = a.getContainerStats(ctr)
 				if err != nil {
-					log.Printf("Error getting container stats: %+v\n", err)
+					slog.Error("Error getting container stats", "err", err)
 					return
 				}
 			}
@@ -266,9 +266,9 @@ func (a *Agent) getDockerStats() ([]container.Stats, error) {
 
 	wg.Wait()
 
+	// remove old / invalid container stats
 	for id := range a.containerStatsMap {
 		if _, exists := validIds[id]; !exists {
-			// log.Printf("Removing container cpu map entry: %+v\n", id)
 			delete(a.containerStatsMap, id)
 		}
 	}
@@ -295,7 +295,7 @@ func (a *Agent) getContainerStats(ctr container.ApiInfo) (container.Stats, error
 
 	// check if container has valid data, otherwise may be in restart loop (#103)
 	if statsJson.MemoryStats.Usage == 0 {
-		return cStats, fmt.Errorf("%s - invalid data", name)
+		return cStats, fmt.Errorf("%s - no memory stats - see https://github.com/henrygd/beszel/issues/144", name)
 	}
 
 	// memory (https://docs.docker.com/reference/cli/docker/container/stats/)
@@ -336,13 +336,11 @@ func (a *Agent) getContainerStats(ctr container.ApiInfo) (container.Stats, error
 		secondsElapsed := time.Since(stats.Net.Time).Seconds()
 		sent_delta = float64(total_sent-stats.Net.Sent) / secondsElapsed
 		recv_delta = float64(total_recv-stats.Net.Recv) / secondsElapsed
-		// log.Printf("sent delta: %+v, recv delta: %+v\n", sent_delta, recv_delta)
 	}
 	stats.Net.Sent = total_sent
 	stats.Net.Recv = total_recv
 	stats.Net.Time = time.Now()
 
-	// cStats := a.containerStatsPool.Get().(*container.Stats)
 	cStats.Name = name
 	cStats.Cpu = twoDecimals(cpuPct)
 	cStats.Mem = bytesToMegabytes(float64(usedMemory))
@@ -369,16 +367,28 @@ func (a *Agent) gatherStats() system.CombinedData {
 			systemData.Stats.ExtraFs[name] = stats
 		}
 	}
-	// log.Printf("%+v\n", systemData)
 	return systemData
 }
 
 func (a *Agent) Run() {
+	// Create map for disk stats
 	a.fsStats = make(map[string]*system.FsStats)
 
-	// set sensors context (allows overriding sys location for sensors)
+	// Set up slog with a log level determined by the LOG_LEVEL env var
+	if logLevelStr, exists := os.LookupEnv("LOG_LEVEL"); exists {
+		switch strings.ToLower(logLevelStr) {
+		case "debug":
+			slog.SetLogLoggerLevel(slog.LevelDebug)
+		case "warn":
+			slog.SetLogLoggerLevel(slog.LevelWarn)
+		case "error":
+			slog.SetLogLoggerLevel(slog.LevelError)
+		}
+	}
+
+	// Set sensors context (allows overriding sys location for sensors)
 	if sysSensors, exists := os.LookupEnv("SYS_SENSORS"); exists {
-		// log.Println("Using sys location for sensors:", sysSensors)
+		slog.Info("SYS_SENSORS", "path", sysSensors)
 		a.sensorsContext = context.WithValue(a.sensorsContext,
 			common.EnvKey, common.EnvMap{common.HostSysEnvKey: sysSensors},
 		)
