@@ -30,6 +30,7 @@ type Agent struct {
 	addr                    string                                   // Adress that the ssh server listens on
 	pubKey                  []byte                                   // Public key for ssh server
 	sem                     chan struct{}                            // Semaphore to limit concurrent access to docker api
+	debug                   bool                                     // true if LOG_LEVEL is set to debug
 	fsNames                 []string                                 // List of filesystem device names being monitored
 	fsStats                 map[string]*system.FsStats               // Keeps track of disk stats for each filesystem
 	netInterfaces           map[string]struct{}                      // Stores all valid network interfaces
@@ -37,8 +38,8 @@ type Agent struct {
 	prevContainerStatsMap   map[string]*container.PrevContainerStats // Keeps track of container stats
 	prevContainerStatsMutex *sync.Mutex                              // Mutex to prevent concurrent access to prevContainerStatsMap
 	dockerClient            *http.Client                             // HTTP client to query docker api
+	apiContainerList        *[]container.ApiInfo                     // List of containers from docker host
 	sensorsContext          context.Context                          // Sensors context to override sys location
-	debug                   bool                                     // true if LOG_LEVEL is set to debug
 }
 
 func NewAgent(pubKey []byte, addr string) *Agent {
@@ -223,22 +224,21 @@ func (a *Agent) getDockerStats() ([]container.Stats, error) {
 	}
 	defer resp.Body.Close()
 
-	// docker host container list response
-	var res []container.ApiInfo
-	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&a.apiContainerList); err != nil {
 		slog.Error("Error decoding containers", "err", err)
 		return nil, err
 	}
 
-	containerStats := make([]container.Stats, 0, len(res))
+	containersLength := len(*a.apiContainerList)
+	containerStats := make([]container.Stats, 0, containersLength)
 	containerStatsMutex := sync.Mutex{}
 
 	// store valid ids to clean up old container ids from map
-	validIds := make(map[string]struct{}, len(res))
+	validIds := make(map[string]struct{}, containersLength)
 
 	var wg sync.WaitGroup
 
-	for _, ctr := range res {
+	for _, ctr := range *a.apiContainerList {
 		ctr.IdShort = ctr.Id[:12]
 		validIds[ctr.IdShort] = struct{}{}
 		// check if container is less than 1 minute old (possible restart)
