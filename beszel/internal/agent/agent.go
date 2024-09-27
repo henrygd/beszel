@@ -27,17 +27,18 @@ import (
 )
 
 type Agent struct {
-	addr                string
-	pubKey              []byte
-	sem                 chan struct{}
-	containerStatsMap   map[string]*container.PrevContainerStats
-	containerStatsMutex *sync.Mutex
-	fsNames             []string
-	fsStats             map[string]*system.FsStats
-	netInterfaces       map[string]struct{}
-	netIoStats          *system.NetIoStats
-	dockerClient        *http.Client
-	sensorsContext      context.Context
+	addr                string                                   // Adress that the ssh server listens on
+	pubKey              []byte                                   // Public key for ssh server
+	sem                 chan struct{}                            // Semaphore to limit concurrent access to docker api
+	containerStatsMap   map[string]*container.PrevContainerStats // Keeps track of container stats
+	containerStatsMutex *sync.Mutex                              // Mutex to prevent concurrent access to containerStatsMap
+	fsNames             []string                                 // List of filesystem device names being monitored
+	fsStats             map[string]*system.FsStats               // Keeps track of disk stats for each filesystem
+	netInterfaces       map[string]struct{}                      // Stores all valid network interfaces
+	netIoStats          *system.NetIoStats                       // Keeps track of bandwidth usage
+	dockerClient        *http.Client                             // HTTP client to query docker api
+	sensorsContext      context.Context                          // Sensors context to override sys location
+	debug               bool                                     // true if LOG_LEVEL is set to debug
 }
 
 func NewAgent(pubKey []byte, addr string) *Agent {
@@ -378,6 +379,7 @@ func (a *Agent) Run() {
 	if logLevelStr, exists := os.LookupEnv("LOG_LEVEL"); exists {
 		switch strings.ToLower(logLevelStr) {
 		case "debug":
+			a.debug = true
 			slog.SetLogLoggerLevel(slog.LevelDebug)
 		case "warn":
 			slog.SetLogLoggerLevel(slog.LevelWarn)
