@@ -27,30 +27,30 @@ import (
 )
 
 type Agent struct {
-	addr                string                                   // Adress that the ssh server listens on
-	pubKey              []byte                                   // Public key for ssh server
-	sem                 chan struct{}                            // Semaphore to limit concurrent access to docker api
-	containerStatsMap   map[string]*container.PrevContainerStats // Keeps track of container stats
-	containerStatsMutex *sync.Mutex                              // Mutex to prevent concurrent access to containerStatsMap
-	fsNames             []string                                 // List of filesystem device names being monitored
-	fsStats             map[string]*system.FsStats               // Keeps track of disk stats for each filesystem
-	netInterfaces       map[string]struct{}                      // Stores all valid network interfaces
-	netIoStats          *system.NetIoStats                       // Keeps track of bandwidth usage
-	dockerClient        *http.Client                             // HTTP client to query docker api
-	sensorsContext      context.Context                          // Sensors context to override sys location
-	debug               bool                                     // true if LOG_LEVEL is set to debug
+	addr                    string                                   // Adress that the ssh server listens on
+	pubKey                  []byte                                   // Public key for ssh server
+	sem                     chan struct{}                            // Semaphore to limit concurrent access to docker api
+	fsNames                 []string                                 // List of filesystem device names being monitored
+	fsStats                 map[string]*system.FsStats               // Keeps track of disk stats for each filesystem
+	netInterfaces           map[string]struct{}                      // Stores all valid network interfaces
+	netIoStats              *system.NetIoStats                       // Keeps track of bandwidth usage
+	prevContainerStatsMap   map[string]*container.PrevContainerStats // Keeps track of container stats
+	prevContainerStatsMutex *sync.Mutex                              // Mutex to prevent concurrent access to prevContainerStatsMap
+	dockerClient            *http.Client                             // HTTP client to query docker api
+	sensorsContext          context.Context                          // Sensors context to override sys location
+	debug                   bool                                     // true if LOG_LEVEL is set to debug
 }
 
 func NewAgent(pubKey []byte, addr string) *Agent {
 	return &Agent{
-		addr:                addr,
-		pubKey:              pubKey,
-		sem:                 make(chan struct{}, 15),
-		containerStatsMap:   make(map[string]*container.PrevContainerStats),
-		containerStatsMutex: &sync.Mutex{},
-		netIoStats:          &system.NetIoStats{},
-		dockerClient:        newDockerClient(),
-		sensorsContext:      context.Background(),
+		addr:                    addr,
+		pubKey:                  pubKey,
+		sem:                     make(chan struct{}, 15),
+		prevContainerStatsMap:   make(map[string]*container.PrevContainerStats),
+		prevContainerStatsMutex: &sync.Mutex{},
+		netIoStats:              &system.NetIoStats{},
+		dockerClient:            newDockerClient(),
+		sensorsContext:          context.Background(),
 	}
 }
 
@@ -223,21 +223,22 @@ func (a *Agent) getDockerStats() ([]container.Stats, error) {
 	}
 	defer resp.Body.Close()
 
-	var containers []container.ApiInfo
-	if err := json.NewDecoder(resp.Body).Decode(&containers); err != nil {
+	// docker host container list response
+	var res []container.ApiInfo
+	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
 		slog.Error("Error decoding containers", "err", err)
 		return nil, err
 	}
 
-	containerStats := make([]container.Stats, 0, len(containers))
+	containerStats := make([]container.Stats, 0, len(res))
 	containerStatsMutex := sync.Mutex{}
 
 	// store valid ids to clean up old container ids from map
-	validIds := make(map[string]struct{}, len(containers))
+	validIds := make(map[string]struct{}, len(res))
 
 	var wg sync.WaitGroup
 
-	for _, ctr := range containers {
+	for _, ctr := range res {
 		ctr.IdShort = ctr.Id[:12]
 		validIds[ctr.IdShort] = struct{}{}
 		// check if container is less than 1 minute old (possible restart)
@@ -275,9 +276,9 @@ func (a *Agent) getDockerStats() ([]container.Stats, error) {
 	wg.Wait()
 
 	// remove old / invalid container stats
-	for id := range a.containerStatsMap {
+	for id := range a.prevContainerStatsMap {
 		if _, exists := validIds[id]; !exists {
-			delete(a.containerStatsMap, id)
+			delete(a.prevContainerStatsMap, id)
 		}
 	}
 
@@ -285,77 +286,77 @@ func (a *Agent) getDockerStats() ([]container.Stats, error) {
 }
 
 func (a *Agent) getContainerStats(ctr container.ApiInfo) (container.Stats, error) {
-	cStats := container.Stats{}
+	curStats := container.Stats{}
 
 	resp, err := a.dockerClient.Get("http://localhost/containers/" + ctr.IdShort + "/stats?stream=0&one-shot=1")
 	if err != nil {
-		return cStats, err
+		return curStats, err
 	}
 	defer resp.Body.Close()
 
-	// decode the json data from the response body
-	var statsJson container.ApiStats
-	if err := json.NewDecoder(resp.Body).Decode(&statsJson); err != nil {
-		return cStats, err
+	// docker host container stats response
+	var res container.ApiStats
+	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
+		return curStats, err
 	}
 
 	name := ctr.Names[0][1:]
 
 	// check if container has valid data, otherwise may be in restart loop (#103)
-	if statsJson.MemoryStats.Usage == 0 {
-		return cStats, fmt.Errorf("%s - no memory stats - see https://github.com/henrygd/beszel/issues/144", name)
+	if res.MemoryStats.Usage == 0 {
+		return curStats, fmt.Errorf("%s - no memory stats - see https://github.com/henrygd/beszel/issues/144", name)
 	}
 
 	// memory (https://docs.docker.com/reference/cli/docker/container/stats/)
-	memCache := statsJson.MemoryStats.Stats["inactive_file"]
+	memCache := res.MemoryStats.Stats["inactive_file"]
 	if memCache == 0 {
-		memCache = statsJson.MemoryStats.Stats["cache"]
+		memCache = res.MemoryStats.Stats["cache"]
 	}
-	usedMemory := statsJson.MemoryStats.Usage - memCache
+	usedMemory := res.MemoryStats.Usage - memCache
 
-	a.containerStatsMutex.Lock()
-	defer a.containerStatsMutex.Unlock()
+	a.prevContainerStatsMutex.Lock()
+	defer a.prevContainerStatsMutex.Unlock()
 
 	// add empty values if they doesn't exist in map
-	stats, initialized := a.containerStatsMap[ctr.IdShort]
+	prevStats, initialized := a.prevContainerStatsMap[ctr.IdShort]
 	if !initialized {
-		stats = &container.PrevContainerStats{}
-		a.containerStatsMap[ctr.IdShort] = stats
+		prevStats = &container.PrevContainerStats{}
+		a.prevContainerStatsMap[ctr.IdShort] = prevStats
 	}
 
 	// cpu
-	cpuDelta := statsJson.CPUStats.CPUUsage.TotalUsage - stats.Cpu[0]
-	systemDelta := statsJson.CPUStats.SystemUsage - stats.Cpu[1]
+	cpuDelta := res.CPUStats.CPUUsage.TotalUsage - prevStats.Cpu[0]
+	systemDelta := res.CPUStats.SystemUsage - prevStats.Cpu[1]
 	cpuPct := float64(cpuDelta) / float64(systemDelta) * 100
 	if cpuPct > 100 {
-		return cStats, fmt.Errorf("%s cpu pct greater than 100: %+v", name, cpuPct)
+		return curStats, fmt.Errorf("%s cpu pct greater than 100: %+v", name, cpuPct)
 	}
-	stats.Cpu = [2]uint64{statsJson.CPUStats.CPUUsage.TotalUsage, statsJson.CPUStats.SystemUsage}
+	prevStats.Cpu = [2]uint64{res.CPUStats.CPUUsage.TotalUsage, res.CPUStats.SystemUsage}
 
 	// network
 	var total_sent, total_recv uint64
-	for _, v := range statsJson.Networks {
+	for _, v := range res.Networks {
 		total_sent += v.TxBytes
 		total_recv += v.RxBytes
 	}
 	var sent_delta, recv_delta float64
 	// prevent first run from sending all prev sent/recv bytes
 	if initialized {
-		secondsElapsed := time.Since(stats.Net.Time).Seconds()
-		sent_delta = float64(total_sent-stats.Net.Sent) / secondsElapsed
-		recv_delta = float64(total_recv-stats.Net.Recv) / secondsElapsed
+		secondsElapsed := time.Since(prevStats.Net.Time).Seconds()
+		sent_delta = float64(total_sent-prevStats.Net.Sent) / secondsElapsed
+		recv_delta = float64(total_recv-prevStats.Net.Recv) / secondsElapsed
 	}
-	stats.Net.Sent = total_sent
-	stats.Net.Recv = total_recv
-	stats.Net.Time = time.Now()
+	prevStats.Net.Sent = total_sent
+	prevStats.Net.Recv = total_recv
+	prevStats.Net.Time = time.Now()
 
-	cStats.Name = name
-	cStats.Cpu = twoDecimals(cpuPct)
-	cStats.Mem = bytesToMegabytes(float64(usedMemory))
-	cStats.NetworkSent = bytesToMegabytes(sent_delta)
-	cStats.NetworkRecv = bytesToMegabytes(recv_delta)
+	curStats.Name = name
+	curStats.Cpu = twoDecimals(cpuPct)
+	curStats.Mem = bytesToMegabytes(float64(usedMemory))
+	curStats.NetworkSent = bytesToMegabytes(sent_delta)
+	curStats.NetworkRecv = bytesToMegabytes(recv_delta)
 
-	return cStats, nil
+	return curStats, nil
 }
 
 func (a *Agent) gatherStats() system.CombinedData {
