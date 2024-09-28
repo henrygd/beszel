@@ -27,8 +27,6 @@ import (
 )
 
 type Agent struct {
-	addr                    string // Adress that the ssh server listens on
-	pubKey                  []byte
 	hostname                string                                   // Hostname of the system
 	kernelVersion           string                                   // Kernel version of the system
 	cpuModel                string                                   // CPU model of the system
@@ -47,10 +45,8 @@ type Agent struct {
 	sensorsContext          context.Context                          // Sensors context to override sys location
 }
 
-func NewAgent(pubKey []byte, addr string) *Agent {
+func NewAgent() *Agent {
 	return &Agent{
-		addr:                    addr,
-		pubKey:                  pubKey,
 		sem:                     make(chan struct{}, 15),
 		prevContainerStatsMap:   make(map[string]*container.PrevContainerStats),
 		prevContainerStatsMutex: &sync.Mutex{},
@@ -360,7 +356,7 @@ func (a *Agent) gatherStats() system.CombinedData {
 	return systemData
 }
 
-func (a *Agent) Run() {
+func (a *Agent) Run(pubKey []byte, addr string) {
 	// Create map for disk stats
 	a.fsStats = make(map[string]*system.FsStats)
 
@@ -389,7 +385,7 @@ func (a *Agent) Run() {
 	a.initializeDiskInfo()
 	a.initializeNetIoStats()
 
-	a.startServer()
+	a.startServer(pubKey, addr)
 }
 
 // Sets initial / non-changing values about the host

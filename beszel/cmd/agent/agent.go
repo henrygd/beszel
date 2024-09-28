@@ -38,5 +38,5 @@ func main() {
 		addr = portEnvVar
 	}
 
-	agent.NewAgent(pubKey, addr).Run()
+	agent.NewAgent().Run(pubKey, addr)
 }
