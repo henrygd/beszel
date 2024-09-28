@@ -16,7 +16,7 @@ import (
 )
 
 // Returns stats for all running containers
-func (a *Agent) getDockerStats() ([]container.Stats, error) {
+func (a *Agent) getDockerStats() ([]*container.Stats, error) {
 	resp, err := a.dockerClient.Get("http://localhost/containers/json")
 	if err != nil {
 		a.closeIdleConnections(err)
@@ -30,7 +30,7 @@ func (a *Agent) getDockerStats() ([]container.Stats, error) {
 	}
 
 	containersLength := len(*a.apiContainerList)
-	containerStats := make([]container.Stats, containersLength)
+	containerStats := make([]*container.Stats, containersLength)
 
 	// store valid ids to clean up old container ids from map
 	validIds := make(map[string]struct{}, containersLength)
@@ -51,7 +51,7 @@ func (a *Agent) getDockerStats() ([]container.Stats, error) {
 		go func() {
 			defer a.releaseSemaphore()
 			defer wg.Done()
-			cstats, err := a.getContainerStats(ctr)
+			stats, err := a.getContainerStats(ctr)
 			if err != nil {
 				// close idle connections if error is a network timeout
 				isTimeout := a.closeIdleConnections(err)
@@ -60,21 +60,21 @@ func (a *Agent) getDockerStats() ([]container.Stats, error) {
 					a.deleteContainerStatsSync(ctr.IdShort)
 				}
 				// retry once
-				cstats, err = a.getContainerStats(ctr)
+				stats, err = a.getContainerStats(ctr)
 				if err != nil {
 					slog.Error("Error getting container stats", "err", err)
 				}
 			}
-			containerStats[i] = cstats
+			containerStats[i] = stats
 		}()
 	}
 
 	wg.Wait()
 
 	// remove old / invalid container stats
-	for id := range a.prevContainerStatsMap {
+	for id := range a.containerStatsMap {
 		if _, exists := validIds[id]; !exists {
-			delete(a.prevContainerStatsMap, id)
+			delete(a.containerStatsMap, id)
 		}
 	}
 
@@ -82,24 +82,40 @@ func (a *Agent) getDockerStats() ([]container.Stats, error) {
 }
 
 // Returns stats for individual container
-func (a *Agent) getContainerStats(ctr container.ApiInfo) (container.Stats, error) {
-	curStats := container.Stats{Name: ctr.Names[0][1:]}
+func (a *Agent) getContainerStats(ctr container.ApiInfo) (*container.Stats, error) {
+	name := ctr.Names[0][1:]
 
 	resp, err := a.dockerClient.Get("http://localhost/containers/" + ctr.IdShort + "/stats?stream=0&one-shot=1")
 	if err != nil {
-		return curStats, err
+		return &container.Stats{Name: name}, err
 	}
 	defer resp.Body.Close()
+
+	a.containerStatsMutex.Lock()
+	defer a.containerStatsMutex.Unlock()
+
+	// add empty values if they doesn't exist in map
+	stats, initialized := a.containerStatsMap[ctr.IdShort]
+	if !initialized {
+		stats = &container.Stats{Name: name}
+		a.containerStatsMap[ctr.IdShort] = stats
+	}
+
+	// reset current stats
+	stats.Cpu = 0
+	stats.Mem = 0
+	stats.NetworkSent = 0
+	stats.NetworkRecv = 0
 
 	// docker host container stats response
 	var res container.ApiStats
 	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
-		return curStats, err
+		return stats, err
 	}
 
 	// check if container has valid data, otherwise may be in restart loop (#103)
 	if res.MemoryStats.Usage == 0 {
-		return curStats, fmt.Errorf("%s - no memory stats - see https://github.com/henrygd/beszel/issues/144", curStats.Name)
+		return stats, fmt.Errorf("%s - no memory stats - see https://github.com/henrygd/beszel/issues/144", name)
 	}
 
 	// memory (https://docs.docker.com/reference/cli/docker/container/stats/)
@@ -109,24 +125,14 @@ func (a *Agent) getContainerStats(ctr container.ApiInfo) (container.Stats, error
 	}
 	usedMemory := res.MemoryStats.Usage - memCache
 
-	a.prevContainerStatsMutex.Lock()
-	defer a.prevContainerStatsMutex.Unlock()
-
-	// add empty values if they doesn't exist in map
-	prevStats, initialized := a.prevContainerStatsMap[ctr.IdShort]
-	if !initialized {
-		prevStats = &container.PrevContainerStats{}
-		a.prevContainerStatsMap[ctr.IdShort] = prevStats
-	}
-
 	// cpu
-	cpuDelta := res.CPUStats.CPUUsage.TotalUsage - prevStats.Cpu[0]
-	systemDelta := res.CPUStats.SystemUsage - prevStats.Cpu[1]
+	cpuDelta := res.CPUStats.CPUUsage.TotalUsage - stats.PrevCpu[0]
+	systemDelta := res.CPUStats.SystemUsage - stats.PrevCpu[1]
 	cpuPct := float64(cpuDelta) / float64(systemDelta) * 100
 	if cpuPct > 100 {
-		return curStats, fmt.Errorf("%s cpu pct greater than 100: %+v", curStats.Name, cpuPct)
+		return stats, fmt.Errorf("%s cpu pct greater than 100: %+v", name, cpuPct)
 	}
-	prevStats.Cpu = [2]uint64{res.CPUStats.CPUUsage.TotalUsage, res.CPUStats.SystemUsage}
+	stats.PrevCpu = [2]uint64{res.CPUStats.CPUUsage.TotalUsage, res.CPUStats.SystemUsage}
 
 	// network
 	var total_sent, total_recv uint64
@@ -137,20 +143,20 @@ func (a *Agent) getContainerStats(ctr container.ApiInfo) (container.Stats, error
 	var sent_delta, recv_delta float64
 	// prevent first run from sending all prev sent/recv bytes
 	if initialized {
-		secondsElapsed := time.Since(prevStats.Net.Time).Seconds()
-		sent_delta = float64(total_sent-prevStats.Net.Sent) / secondsElapsed
-		recv_delta = float64(total_recv-prevStats.Net.Recv) / secondsElapsed
+		secondsElapsed := time.Since(stats.PrevNet.Time).Seconds()
+		sent_delta = float64(total_sent-stats.PrevNet.Sent) / secondsElapsed
+		recv_delta = float64(total_recv-stats.PrevNet.Recv) / secondsElapsed
 	}
-	prevStats.Net.Sent = total_sent
-	prevStats.Net.Recv = total_recv
-	prevStats.Net.Time = time.Now()
+	stats.PrevNet.Sent = total_sent
+	stats.PrevNet.Recv = total_recv
+	stats.PrevNet.Time = time.Now()
 
-	curStats.Cpu = twoDecimals(cpuPct)
-	curStats.Mem = bytesToMegabytes(float64(usedMemory))
-	curStats.NetworkSent = bytesToMegabytes(sent_delta)
-	curStats.NetworkRecv = bytesToMegabytes(recv_delta)
+	stats.Cpu = twoDecimals(cpuPct)
+	stats.Mem = bytesToMegabytes(float64(usedMemory))
+	stats.NetworkSent = bytesToMegabytes(sent_delta)
+	stats.NetworkRecv = bytesToMegabytes(recv_delta)
 
-	return curStats, nil
+	return stats, nil
 }
 
 // Creates a new http client for docker api

@@ -113,21 +113,19 @@ type NetworkStats struct {
 	TxBytes uint64 `json:"tx_bytes"`
 }
 
-// Container stats to return to the hub
-type Stats struct {
-	Name        string  `json:"n"`
-	Cpu         float64 `json:"c"`
-	Mem         float64 `json:"m"`
-	NetworkSent float64 `json:"ns"`
-	NetworkRecv float64 `json:"nr"`
+type prevNetStats struct {
+	Sent uint64
+	Recv uint64
+	Time time.Time
 }
 
-// Keeps track of container stats from previous run
-type PrevContainerStats struct {
-	Cpu [2]uint64
-	Net struct {
-		Sent uint64
-		Recv uint64
-		Time time.Time
-	}
+// Docker container stats
+type Stats struct {
+	Name        string       `json:"n"`
+	Cpu         float64      `json:"c"`
+	Mem         float64      `json:"m"`
+	NetworkSent float64      `json:"ns"`
+	NetworkRecv float64      `json:"nr"`
+	PrevCpu     [2]uint64    `json:"-"`
+	PrevNet     prevNetStats `json:"-"`
 }

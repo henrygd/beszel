@@ -15,32 +15,32 @@ import (
 )
 
 type Agent struct {
-	hostname                string                                   // Hostname of the system
-	kernelVersion           string                                   // Kernel version of the system
-	cpuModel                string                                   // CPU model of the system
-	cores                   int                                      // Number of cores of the system
-	threads                 int                                      // Number of threads of the system
-	sem                     chan struct{}                            // Semaphore to limit concurrent access to docker api
-	debug                   bool                                     // true if LOG_LEVEL is set to debug
-	fsNames                 []string                                 // List of filesystem device names being monitored
-	fsStats                 map[string]*system.FsStats               // Keeps track of disk stats for each filesystem
-	netInterfaces           map[string]struct{}                      // Stores all valid network interfaces
-	netIoStats              system.NetIoStats                        // Keeps track of bandwidth usage
-	prevContainerStatsMap   map[string]*container.PrevContainerStats // Keeps track of container stats
-	prevContainerStatsMutex sync.Mutex                               // Mutex to prevent concurrent access to prevContainerStatsMap
-	dockerClient            *http.Client                             // HTTP client to query docker api
-	apiContainerList        *[]container.ApiInfo                     // List of containers from docker host
-	sensorsContext          context.Context                          // Sensors context to override sys location
+	hostname            string                      // Hostname of the system
+	kernelVersion       string                      // Kernel version of the system
+	cpuModel            string                      // CPU model of the system
+	cores               int                         // Number of cores of the system
+	threads             int                         // Number of threads of the system
+	sem                 chan struct{}               // Semaphore to limit concurrent access to docker api
+	debug               bool                        // true if LOG_LEVEL is set to debug
+	fsNames             []string                    // List of filesystem device names being monitored
+	fsStats             map[string]*system.FsStats  // Keeps track of disk stats for each filesystem
+	netInterfaces       map[string]struct{}         // Stores all valid network interfaces
+	netIoStats          system.NetIoStats           // Keeps track of bandwidth usage
+	containerStatsMap   map[string]*container.Stats // Keeps track of container stats
+	containerStatsMutex sync.Mutex                  // Mutex to prevent concurrent access to prevContainerStatsMap
+	dockerClient        *http.Client                // HTTP client to query docker api
+	apiContainerList    *[]container.ApiInfo        // List of containers from docker host
+	sensorsContext      context.Context             // Sensors context to override sys location
 }
 
 func NewAgent() *Agent {
 	return &Agent{
-		sem:                     make(chan struct{}, 15),
-		prevContainerStatsMap:   make(map[string]*container.PrevContainerStats),
-		prevContainerStatsMutex: sync.Mutex{},
-		netIoStats:              system.NetIoStats{},
-		dockerClient:            newDockerClient(),
-		sensorsContext:          context.Background(),
+		sem:                 make(chan struct{}, 15),
+		containerStatsMap:   make(map[string]*container.Stats),
+		containerStatsMutex: sync.Mutex{},
+		netIoStats:          system.NetIoStats{},
+		dockerClient:        newDockerClient(),
+		sensorsContext:      context.Background(),
 	}
 }
 

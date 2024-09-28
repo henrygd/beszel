@@ -12,9 +12,9 @@ func (a *Agent) releaseSemaphore() {
 
 // delete container stats from map using mutex
 func (a *Agent) deleteContainerStatsSync(id string) {
-	a.prevContainerStatsMutex.Lock()
-	defer a.prevContainerStatsMutex.Unlock()
-	delete(a.prevContainerStatsMap, id)
+	a.containerStatsMutex.Lock()
+	defer a.containerStatsMutex.Unlock()
+	delete(a.containerStatsMap, id)
 }
 
 func bytesToMegabytes(b float64) float64 {
