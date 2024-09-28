@@ -8,13 +8,13 @@ import (
 	sshServer "github.com/gliderlabs/ssh"
 )
 
-func (a *Agent) startServer() {
+func (a *Agent) startServer(pubKey []byte, addr string) {
 	sshServer.Handle(a.handleSession)
 
-	slog.Info("Starting SSH server", "address", a.addr)
-	if err := sshServer.ListenAndServe(a.addr, nil, sshServer.NoPty(),
+	slog.Info("Starting SSH server", "address", addr)
+	if err := sshServer.ListenAndServe(addr, nil, sshServer.NoPty(),
 		sshServer.PublicKeyAuth(func(ctx sshServer.Context, key sshServer.PublicKey) bool {
-			allowed, _, _, _, _ := sshServer.ParseAuthorizedKey(a.pubKey)
+			allowed, _, _, _, _ := sshServer.ParseAuthorizedKey(pubKey)
 			return sshServer.KeysEqual(key, allowed)
 		}),
 	); err != nil {

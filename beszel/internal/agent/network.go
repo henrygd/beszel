@@ -1,11 +1,7 @@
 package agent
 
 import (
-	"context"
 	"log/slog"
-	"net"
-	"net/http"
-	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -68,56 +64,4 @@ func (a *Agent) skipNetworkInterface(v psutilNet.IOCountersStat) bool {
 	default:
 		return false
 	}
-}
-
-func newDockerClient() *http.Client {
-	dockerHost := "unix:///var/run/docker.sock"
-	if dockerHostEnv, exists := os.LookupEnv("DOCKER_HOST"); exists {
-		slog.Info("DOCKER_HOST", "host", dockerHostEnv)
-		dockerHost = dockerHostEnv
-	}
-
-	parsedURL, err := url.Parse(dockerHost)
-	if err != nil {
-		slog.Error("Error parsing DOCKER_HOST", "err", err)
-		os.Exit(1)
-	}
-
-	transport := &http.Transport{
-		ForceAttemptHTTP2:   false,
-		IdleConnTimeout:     90 * time.Second,
-		DisableCompression:  true,
-		MaxConnsPerHost:     20,
-		MaxIdleConnsPerHost: 20,
-		DisableKeepAlives:   false,
-	}
-
-	switch parsedURL.Scheme {
-	case "unix":
-		transport.DialContext = func(ctx context.Context, proto, addr string) (net.Conn, error) {
-			return (&net.Dialer{}).DialContext(ctx, "unix", parsedURL.Path)
-		}
-	case "tcp", "http", "https":
-		transport.DialContext = func(ctx context.Context, proto, addr string) (net.Conn, error) {
-			return (&net.Dialer{}).DialContext(ctx, "tcp", parsedURL.Host)
-		}
-	default:
-		slog.Error("Invalid DOCKER_HOST", "scheme", parsedURL.Scheme)
-		os.Exit(1)
-	}
-
-	return &http.Client{
-		Timeout:   time.Second,
-		Transport: transport,
-	}
-}
-
-// closes idle connections on timeouts to prevent reuse of stale connections
-func (a *Agent) closeIdleConnections(err error) (isTimeout bool) {
-	if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
-		slog.Warn("Closing idle connections", "err", err)
-		a.dockerClient.Transport.(*http.Transport).CloseIdleConnections()
-		return true
-	}
-	return false
 }
