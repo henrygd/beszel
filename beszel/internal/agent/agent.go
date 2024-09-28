@@ -27,8 +27,13 @@ import (
 )
 
 type Agent struct {
-	addr                    string                                   // Adress that the ssh server listens on
-	pubKey                  []byte                                   // Public key for ssh server
+	addr                    string // Adress that the ssh server listens on
+	pubKey                  []byte
+	hostname                string                                   // Hostname of the system
+	kernelVersion           string                                   // Kernel version of the system
+	cpuModel                string                                   // CPU model of the system
+	cores                   int                                      // Number of cores of the system
+	threads                 int                                      // Number of threads of the system
 	sem                     chan struct{}                            // Semaphore to limit concurrent access to docker api
 	debug                   bool                                     // true if LOG_LEVEL is set to debug
 	fsNames                 []string                                 // List of filesystem device names being monitored
@@ -183,35 +188,18 @@ func (a *Agent) getSystemStats() (system.Info, system.Stats) {
 	}
 
 	systemInfo := system.Info{
-		Cpu:          systemStats.Cpu,
-		MemPct:       systemStats.MemPct,
-		DiskPct:      systemStats.DiskPct,
-		AgentVersion: beszel.Version,
+		Cpu:           systemStats.Cpu,
+		MemPct:        systemStats.MemPct,
+		DiskPct:       systemStats.DiskPct,
+		AgentVersion:  beszel.Version,
+		Hostname:      a.hostname,
+		KernelVersion: a.kernelVersion,
+		CpuModel:      a.cpuModel,
+		Cores:         a.cores,
+		Threads:       a.threads,
 	}
 
-	// add host info
-	if info, err := host.Info(); err == nil {
-		// slog.Debug("Virtualization", "system", info.VirtualizationSystem, "role", info.VirtualizationRole)
-		systemInfo.Uptime = info.Uptime
-		systemInfo.Hostname = info.Hostname
-		systemInfo.KernelVersion = info.KernelVersion
-	}
-
-	// add cpu stats
-	if info, err := cpu.Info(); err == nil && len(info) > 0 {
-		systemInfo.CpuModel = info[0].ModelName
-	}
-	if cores, err := cpu.Counts(false); err == nil {
-		systemInfo.Cores = cores
-	}
-	if threads, err := cpu.Counts(true); err == nil {
-		if threads > 0 && threads < systemInfo.Cores {
-			// in lxc logical cores reflects container limits, so use that as cores if lower
-			systemInfo.Cores = threads
-		} else {
-			systemInfo.Threads = threads
-		}
-	}
+	systemInfo.Uptime, _ = host.Uptime()
 
 	return systemInfo, systemStats
 }
@@ -397,8 +385,29 @@ func (a *Agent) Run() {
 		)
 	}
 
+	a.initializeHostInfo()
 	a.initializeDiskInfo()
 	a.initializeNetIoStats()
 
 	a.startServer()
+}
+
+// Sets initial / non-changing values about the host
+func (a *Agent) initializeHostInfo() {
+	a.kernelVersion, _ = host.KernelVersion()
+	a.hostname, _ = os.Hostname()
+
+	// add cpu stats
+	if info, err := cpu.Info(); err == nil && len(info) > 0 {
+		a.cpuModel = info[0].ModelName
+	}
+	a.cores, _ = cpu.Counts(false)
+	if threads, err := cpu.Counts(true); err == nil {
+		if threads > 0 && threads < a.cores {
+			// in lxc logical cores reflects container limits, so use that as cores if lower
+			a.cores = threads
+		} else {
+			a.threads = threads
+		}
+	}
 }
