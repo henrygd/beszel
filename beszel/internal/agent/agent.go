@@ -27,7 +27,7 @@ type Agent struct {
 	netInterfaces       map[string]struct{}         // Stores all valid network interfaces
 	netIoStats          system.NetIoStats           // Keeps track of bandwidth usage
 	containerStatsMap   map[string]*container.Stats // Keeps track of container stats
-	containerStatsMutex sync.Mutex                  // Mutex to prevent concurrent access to prevContainerStatsMap
+	containerStatsMutex sync.RWMutex                // Mutex to prevent concurrent access to prevContainerStatsMap
 	dockerClient        *http.Client                // HTTP client to query docker api
 	apiContainerList    *[]container.ApiInfo        // List of containers from docker host
 	sensorsContext      context.Context             // Sensors context to override sys location
@@ -37,7 +37,7 @@ func NewAgent() *Agent {
 	return &Agent{
 		sem:                 make(chan struct{}, 15),
 		containerStatsMap:   make(map[string]*container.Stats),
-		containerStatsMutex: sync.Mutex{},
+		containerStatsMutex: sync.RWMutex{},
 		netIoStats:          system.NetIoStats{},
 		dockerClient:        newDockerClient(),
 		sensorsContext:      context.Background(),
