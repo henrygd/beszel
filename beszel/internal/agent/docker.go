@@ -47,9 +47,7 @@ func (a *Agent) getDockerStats() ([]*container.Stats, error) {
 			a.deleteContainerStatsSync(ctr.IdShort)
 		}
 		wg.Add(1)
-		a.acquireSemaphore()
 		go func() {
-			defer a.releaseSemaphore()
 			defer wg.Done()
 			stats, err := a.getContainerStats(ctr)
 			if err != nil {
@@ -177,8 +175,8 @@ func newDockerClient() *http.Client {
 		ForceAttemptHTTP2:   false,
 		IdleConnTimeout:     90 * time.Second,
 		DisableCompression:  true,
-		MaxConnsPerHost:     20,
-		MaxIdleConnsPerHost: 20,
+		MaxConnsPerHost:     10,
+		MaxIdleConnsPerHost: 10,
 		DisableKeepAlives:   false,
 	}
 

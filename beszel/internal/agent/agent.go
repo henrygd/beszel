@@ -20,7 +20,6 @@ type Agent struct {
 	cpuModel            string                      // CPU model of the system
 	cores               int                         // Number of cores of the system
 	threads             int                         // Number of threads of the system
-	sem                 chan struct{}               // Semaphore to limit concurrent access to docker api
 	debug               bool                        // true if LOG_LEVEL is set to debug
 	fsNames             []string                    // List of filesystem device names being monitored
 	fsStats             map[string]*system.FsStats  // Keeps track of disk stats for each filesystem
@@ -35,7 +34,6 @@ type Agent struct {
 
 func NewAgent() *Agent {
 	return &Agent{
-		sem:                 make(chan struct{}, 15),
 		containerStatsMap:   make(map[string]*container.Stats),
 		containerStatsMutex: sync.RWMutex{},
 		netIoStats:          system.NetIoStats{},

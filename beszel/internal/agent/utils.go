@@ -2,14 +2,6 @@ package agent
 
 import "math"
 
-func (a *Agent) acquireSemaphore() {
-	a.sem <- struct{}{}
-}
-
-func (a *Agent) releaseSemaphore() {
-	<-a.sem
-}
-
 // delete container stats from map using mutex
 func (a *Agent) deleteContainerStatsSync(id string) {
 	a.containerStatsMutex.Lock()
