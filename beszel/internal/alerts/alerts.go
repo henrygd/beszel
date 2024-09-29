@@ -39,46 +39,31 @@ func NewAlertManager(app *pocketbase.PocketBase) *AlertManager {
 	}
 }
 
-func (am *AlertManager) HandleSystemAlerts(newStatus string, newRecord *models.Record, oldRecord *models.Record) {
+func (am *AlertManager) HandleSystemInfoAlerts(systemRecord *models.Record, systemInfo system.Info) {
 	alertRecords, err := am.app.Dao().FindRecordsByExpr("alerts",
-		dbx.NewExp("system = {:system}", dbx.Params{"system": oldRecord.GetId()}),
+		dbx.NewExp("system={:system}", dbx.Params{"system": systemRecord.GetId()}),
 	)
 	if err != nil || len(alertRecords) == 0 {
 		// log.Println("no alerts found for system")
 		return
 	}
 	// log.Println("found alerts", len(alertRecords))
-	var systemInfo *system.Info
 	for _, alertRecord := range alertRecords {
 		name := alertRecord.GetString("name")
 		switch name {
-		case "Status":
-			am.handleStatusAlerts(newStatus, oldRecord, alertRecord)
 		case "CPU", "Memory", "Disk":
-			if newStatus != "up" {
-				continue
-			}
-			if systemInfo == nil {
-				systemInfo = getSystemInfo(newRecord)
-			}
 			if name == "CPU" {
-				am.handleSlidingValueAlert(newRecord, alertRecord, name, systemInfo.Cpu)
+				am.handleSlidingValueAlert(systemRecord, alertRecord, name, systemInfo.Cpu)
 			} else if name == "Memory" {
-				am.handleSlidingValueAlert(newRecord, alertRecord, name, systemInfo.MemPct)
+				am.handleSlidingValueAlert(systemRecord, alertRecord, name, systemInfo.MemPct)
 			} else if name == "Disk" {
-				am.handleSlidingValueAlert(newRecord, alertRecord, name, systemInfo.DiskPct)
+				am.handleSlidingValueAlert(systemRecord, alertRecord, name, systemInfo.DiskPct)
 			}
 		}
 	}
 }
 
-func getSystemInfo(record *models.Record) *system.Info {
-	var SystemInfo system.Info
-	record.UnmarshalJSONField("info", &SystemInfo)
-	return &SystemInfo
-}
-
-func (am *AlertManager) handleSlidingValueAlert(newRecord *models.Record, alertRecord *models.Record, name string, curValue float64) {
+func (am *AlertManager) handleSlidingValueAlert(systemRecord *models.Record, alertRecord *models.Record, name string, curValue float64) {
 	triggered := alertRecord.GetBool("triggered")
 	threshold := alertRecord.GetFloat("value")
 	// fmt.Println(name, curValue, "threshold", threshold, "triggered", triggered)
@@ -87,12 +72,12 @@ func (am *AlertManager) handleSlidingValueAlert(newRecord *models.Record, alertR
 	var systemName string
 	if !triggered && curValue > threshold {
 		alertRecord.Set("triggered", true)
-		systemName = newRecord.GetString("name")
+		systemName = systemRecord.GetString("name")
 		subject = fmt.Sprintf("%s usage above threshold on %s", name, systemName)
 		body = fmt.Sprintf("%s usage on %s is %.1f%%.", name, systemName, curValue)
 	} else if triggered && curValue <= threshold {
 		alertRecord.Set("triggered", false)
-		systemName = newRecord.GetString("name")
+		systemName = systemRecord.GetString("name")
 		subject = fmt.Sprintf("%s usage below threshold on %s", name, systemName)
 		body = fmt.Sprintf("%s usage on %s is below threshold at %.1f%%.", name, systemName, curValue)
 	} else {
@@ -119,42 +104,55 @@ func (am *AlertManager) handleSlidingValueAlert(newRecord *models.Record, alertR
 	}
 }
 
-func (am *AlertManager) handleStatusAlerts(newStatus string, oldRecord *models.Record, alertRecord *models.Record) error {
+func (am *AlertManager) HandleStatusAlerts(newStatus string, oldSystemRecord *models.Record) error {
 	var alertStatus string
 	switch newStatus {
 	case "up":
-		if oldRecord.GetString("status") == "down" {
+		if oldSystemRecord.GetString("status") == "down" {
 			alertStatus = "up"
 		}
 	case "down":
-		if oldRecord.GetString("status") == "up" {
+		if oldSystemRecord.GetString("status") == "up" {
 			alertStatus = "down"
 		}
 	}
 	if alertStatus == "" {
 		return nil
 	}
-	// expand the user relation
-	if errs := am.app.Dao().ExpandRecord(alertRecord, []string{"user"}, nil); len(errs) > 0 {
-		return fmt.Errorf("failed to expand: %v", errs)
-	}
-	user := alertRecord.ExpandedOne("user")
-	if user == nil {
+	// check if use
+	alertRecords, err := am.app.Dao().FindRecordsByExpr("alerts",
+		dbx.HashExp{
+			"system": oldSystemRecord.GetId(),
+			"name":   "Status",
+		},
+	)
+	if err != nil || len(alertRecords) == 0 {
+		// log.Println("no alerts found for system")
 		return nil
 	}
-	emoji := "\U0001F534"
-	if alertStatus == "up" {
-		emoji = "\u2705"
+	for _, alertRecord := range alertRecords {
+		// expand the user relation
+		if errs := am.app.Dao().ExpandRecord(alertRecord, []string{"user"}, nil); len(errs) > 0 {
+			return fmt.Errorf("failed to expand: %v", errs)
+		}
+		user := alertRecord.ExpandedOne("user")
+		if user == nil {
+			return nil
+		}
+		emoji := "\U0001F534"
+		if alertStatus == "up" {
+			emoji = "\u2705"
+		}
+		// send alert
+		systemName := oldSystemRecord.GetString("name")
+		am.sendAlert(AlertData{
+			UserID:   user.GetId(),
+			Title:    fmt.Sprintf("Connection to %s is %s %v", systemName, alertStatus, emoji),
+			Message:  fmt.Sprintf("Connection to %s is %s", systemName, alertStatus),
+			Link:     am.app.Settings().Meta.AppUrl + "/system/" + url.QueryEscape(systemName),
+			LinkText: "View " + systemName,
+		})
 	}
-	// send alert
-	systemName := oldRecord.GetString("name")
-	am.sendAlert(AlertData{
-		UserID:   user.GetId(),
-		Title:    fmt.Sprintf("Connection to %s is %s %v", systemName, alertStatus, emoji),
-		Message:  fmt.Sprintf("Connection to %s is %s", systemName, alertStatus),
-		Link:     am.app.Settings().Meta.AppUrl + "/system/" + url.QueryEscape(systemName),
-		LinkText: "View " + systemName,
-	})
 	return nil
 }
 

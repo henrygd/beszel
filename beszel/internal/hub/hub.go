@@ -8,6 +8,7 @@ import (
 	"beszel/internal/records"
 	"beszel/internal/users"
 	"beszel/site"
+
 	"context"
 	"crypto/ed25519"
 	"encoding/pem"
@@ -22,7 +23,6 @@ import (
 	"time"
 
 	"github.com/goccy/go-json"
-
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
@@ -39,6 +39,9 @@ type Hub struct {
 	systemConnections map[string]*ssh.Client
 	sshClientConfig   *ssh.ClientConfig
 	pubKey            string
+	am                *alerts.AlertManager
+	um                *users.UserManager
+	rm                *records.RecordManager
 }
 
 func NewHub(app *pocketbase.PocketBase) *Hub {
@@ -46,13 +49,16 @@ func NewHub(app *pocketbase.PocketBase) *Hub {
 		app:               app,
 		connectionLock:    &sync.Mutex{},
 		systemConnections: make(map[string]*ssh.Client),
+		am:                alerts.NewAlertManager(app),
+		um:                users.NewUserManager(app),
+		rm:                records.NewRecordManager(app),
 	}
 }
 
 func (h *Hub) Run() {
-	rm := records.NewRecordManager(h.app)
-	am := alerts.NewAlertManager(h.app)
-	um := users.NewUserManager(h.app)
+	// rm := records.NewRecordManager(h.app)
+	// am := alerts.NewAlertManager(h.app)
+	// um := users.NewUserManager(h.app)
 
 	// loosely check if it was executed using "go run"
 	isGoRun := strings.HasPrefix(os.Args[0], os.TempDir())
@@ -120,9 +126,9 @@ func (h *Hub) Run() {
 		// set up cron jobs
 		scheduler := cron.New()
 		// delete old records once every hour
-		scheduler.MustAdd("delete old records", "8 * * * *", rm.DeleteOldRecords)
+		scheduler.MustAdd("delete old records", "8 * * * *", h.rm.DeleteOldRecords)
 		// create longer records every 10 minutes
-		scheduler.MustAdd("create longer records", "*/10 * * * *", rm.CreateLongerRecords)
+		scheduler.MustAdd("create longer records", "*/10 * * * *", h.rm.CreateLongerRecords)
 		scheduler.Start()
 		return nil
 	})
@@ -146,7 +152,7 @@ func (h *Hub) Run() {
 			return c.JSON(http.StatusOK, map[string]bool{"firstRun": adminNum == 0})
 		})
 		// send test notification
-		e.Router.GET("/api/beszel/send-test-notification", am.SendTestNotification)
+		e.Router.GET("/api/beszel/send-test-notification", h.am.SendTestNotification)
 		return nil
 	})
 
@@ -165,8 +171,8 @@ func (h *Hub) Run() {
 	})
 
 	// handle default values for user / user_settings creation
-	h.app.OnModelBeforeCreate("users").Add(um.InitializeUserRole)
-	h.app.OnModelBeforeCreate("user_settings").Add(um.InitializeUserSettings)
+	h.app.OnModelBeforeCreate("users").Add(h.um.InitializeUserRole)
+	h.app.OnModelBeforeCreate("user_settings").Add(h.um.InitializeUserSettings)
 
 	// do things after a systems record is updated
 	h.app.OnModelAfterUpdate("systems").Add(func(e *core.ModelEvent) error {
@@ -182,10 +188,11 @@ func (h *Hub) Run() {
 		// if system is set to pending (unpause), try to connect immediately
 		if newStatus == "pending" {
 			go h.updateSystem(newRecord)
+		} else {
+			h.am.HandleStatusAlerts(newStatus, oldRecord)
+
 		}
 
-		// alerts
-		am.HandleSystemAlerts(newStatus, newRecord, oldRecord)
 		return nil
 	})
 
@@ -261,7 +268,7 @@ func (h *Hub) updateSystem(record *models.Record) {
 	}
 	// get system stats from agent
 	var systemData system.CombinedData
-	if err := requestJsonFromAgent(client, &systemData); err != nil {
+	if err := h.requestJsonFromAgent(client, &systemData); err != nil {
 		if err.Error() == "bad client" {
 			// if previous connection was closed, try again
 			h.app.Logger().Error("Existing SSH connection closed. Retrying...", "host", record.GetString("host"), "port", record.GetString("port"))
@@ -299,6 +306,8 @@ func (h *Hub) updateSystem(record *models.Record) {
 			h.app.Logger().Error("Failed to save record: ", "err", err.Error())
 		}
 	}
+	// system info alerts (todo: temp alerts, extra fs alerts)
+	h.am.HandleSystemInfoAlerts(record, systemData.Info)
 }
 
 // set system to specified status and save record
@@ -354,7 +363,8 @@ func (h *Hub) createSSHClientConfig() error {
 	return nil
 }
 
-func requestJsonFromAgent(client *ssh.Client, systemData *system.CombinedData) error {
+// Fetches system stats from the agent and decodes the json data into the provided struct
+func (h *Hub) requestJsonFromAgent(client *ssh.Client, systemData *system.CombinedData) error {
 	session, err := newSessionWithTimeout(client, 5*time.Second)
 	if err != nil {
 		return fmt.Errorf("bad client")
