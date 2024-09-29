@@ -30,6 +30,7 @@ type Agent struct {
 	dockerClient        *http.Client                // HTTP client to query docker api
 	apiContainerList    *[]container.ApiInfo        // List of containers from docker host
 	sensorsContext      context.Context             // Sensors context to override sys location
+	sensorsWhitelist    map[string]struct{}         // List of sensors to monitor
 }
 
 func NewAgent() *Agent {
@@ -62,6 +63,14 @@ func (a *Agent) Run(pubKey []byte, addr string) {
 		a.sensorsContext = context.WithValue(a.sensorsContext,
 			common.EnvKey, common.EnvMap{common.HostSysEnvKey: sysSensors},
 		)
+	}
+
+	// Set sensors whitelist
+	if sensors, exists := os.LookupEnv("SENSORS"); exists {
+		a.sensorsWhitelist = make(map[string]struct{})
+		for _, sensor := range strings.Split(sensors, ",") {
+			a.sensorsWhitelist[sensor] = struct{}{}
+		}
 	}
 
 	a.initializeSystemInfo()

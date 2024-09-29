@@ -162,6 +162,15 @@ func (a *Agent) getSystemStats() (system.Info, system.Stats) {
 				systemStats.Temperatures[sensor.SensorKey] = twoDecimals(sensor.Temperature)
 			}
 		}
+		// remove sensors from systemStats if whitelist exists and sensor is not in whitelist
+		// (do this here instead of in initial loop so we have correct keys if int was appended)
+		if a.sensorsWhitelist != nil {
+			for key := range systemStats.Temperatures {
+				if _, nameInWhitelist := a.sensorsWhitelist[key]; !nameInWhitelist {
+					delete(systemStats.Temperatures, key)
+				}
+			}
+		}
 	}
 
 	systemInfo := system.Info{
