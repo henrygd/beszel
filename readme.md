@@ -98,9 +98,10 @@ Use `./beszel update` and `./beszel-agent update` to update to the latest versio
 
 ### Hub
 
-| Name                    | Default | Description                      |
-| ----------------------- | ------- | -------------------------------- |
-| `DISABLE_PASSWORD_AUTH` | false   | Disables password authentication |
+| Name                    | Default | Description                                                                                                                                 |
+| ----------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CSP`                   | unset   | Adds a [Content-Security-Policy](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy) header with this value. |
+| `DISABLE_PASSWORD_AUTH` | false   | Disables password authentication.                                                                                                           |
 
 ### Agent
 
@@ -110,8 +111,10 @@ Use `./beszel update` and `./beszel-agent update` to update to the latest versio
 | `EXTRA_FILESYSTEMS` | unset   | See [Monitoring additional disks / partitions](#monitoring-additional-disks--partitions) |
 | `FILESYSTEM`        | unset   | Device, partition, or mount point to use for root disk stats.                            |
 | `KEY`               | unset   | Public SSH key to use for authentication. Provided in hub.                               |
+| `LOG_LEVEL`         | info    | Logging level. Valid values: "debug", "info", "warn", "error".                           |
 | `NICS`              | unset   | Whitelist of network interfaces to monitor for bandwidth chart.                          |
 | `PORT`              | 45876   | Port or address:port to listen on.                                                       |
+| `SENSORS`           | unset   | Whitelist of temperature sensors to monitor.                                             |
 
 <!-- | `SYS_SENSORS` | unset | Overrides the sys location for sensors. | -->
 
@@ -151,15 +154,17 @@ Visit the "Auth providers" page to enable your provider. The redirect / callback
 
 </details>
 
-## Monitoring additional disks / partitions
+## Monitoring additional disks, partitions, or remote mounts
 
-You can configure the agent to monitor the usage and I/O of more than one disk or partition. The approach differs depending on the deployment method.
+The method for adding additional disks differs depending on your deployment method.
 
 Use `lsblk` to find the names and mount points of your partitions. If you have trouble, check the agent logs.
 
+> Note: The charts will use the name of the device or partition if available, and fall back to the folder name. You will not get I/O stats for network mounted drives.
+
 ### Docker
 
-Mount a folder from the partition's filesystem in the container's `/extra-filesystems` directory, like the example below. The charts will use the name of the device or partition, not the name of the folder.
+Mount a folder from the target filesystem in the container's `/extra-filesystems` directory. For example:
 
 ```yaml
 volumes:
@@ -169,10 +174,10 @@ volumes:
 
 ### Binary
 
-Set the `EXTRA_FILESYSTEMS` environment variable to a comma-separated list of devices or partitions to monitor. For example:
+Set the `EXTRA_FILESYSTEMS` environment variable to a comma-separated list of devices, partitions, or mount points to monitor. For example:
 
 ```bash
-EXTRA_FILESYSTEMS="sdb,sdc1,mmcblk0"
+EXTRA_FILESYSTEMS="sdb,sdc1,mmcblk0,/mnt/network-share"
 ```
 
 ## REST API
