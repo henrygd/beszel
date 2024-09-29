@@ -100,10 +100,10 @@ export default function MemChart({
 						dataKey="stats.mb"
 						name="Cache / Buffers"
 						type="monotoneX"
-						fill="hsl(160 60% 25%)"
-						fillOpacity={0.3}
-						strokeOpacity={0.5}
-						stroke="hsl(160 60% 25%)"
+						fill="hsla(160 60% 45% / 0.5)"
+						fillOpacity={0.4}
+						// strokeOpacity={1}
+						stroke="hsla(160 60% 45% / 0.5)"
 						stackId="1"
 						isAnimationActive={false}
 					/>
