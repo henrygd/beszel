@@ -144,9 +144,10 @@ func (rm *RecordManager) CreateLongerRecords() {
 
 // Calculate the average stats of a list of system_stats records without reflect
 func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.Stats {
-	var sum system.Stats
-	sum.Temperatures = make(map[string]float64)
-	sum.ExtraFs = make(map[string]*system.FsStats)
+	sum := system.Stats{
+		Temperatures: make(map[string]float64),
+		ExtraFs:      make(map[string]*system.FsStats),
+	}
 
 	count := float64(len(records))
 	// use different counter for temps in case some records don't have them
@@ -233,7 +234,7 @@ func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.Sta
 }
 
 // Calculate the average stats of a list of container_stats records
-func (rm *RecordManager) AverageContainerStats(records []*models.Record) (stats []container.Stats) {
+func (rm *RecordManager) AverageContainerStats(records []*models.Record) []container.Stats {
 	sums := make(map[string]*container.Stats)
 	count := float64(len(records))
 
@@ -242,7 +243,7 @@ func (rm *RecordManager) AverageContainerStats(records []*models.Record) (stats 
 		record.UnmarshalJSONField("stats", &containerStats)
 		for _, stat := range containerStats {
 			if _, ok := sums[stat.Name]; !ok {
-				sums[stat.Name] = &container.Stats{Name: stat.Name, Cpu: 0, Mem: 0}
+				sums[stat.Name] = &container.Stats{Name: stat.Name}
 			}
 			sums[stat.Name].Cpu += stat.Cpu
 			sums[stat.Name].Mem += stat.Mem
@@ -251,8 +252,9 @@ func (rm *RecordManager) AverageContainerStats(records []*models.Record) (stats 
 		}
 	}
 
+	result := make([]container.Stats, 0, len(sums))
 	for _, value := range sums {
-		stats = append(stats, container.Stats{
+		result = append(result, container.Stats{
 			Name:        value.Name,
 			Cpu:         twoDecimals(value.Cpu / count),
 			Mem:         twoDecimals(value.Mem / count),
@@ -260,7 +262,7 @@ func (rm *RecordManager) AverageContainerStats(records []*models.Record) (stats 
 			NetworkRecv: twoDecimals(value.NetworkRecv / count),
 		})
 	}
-	return stats
+	return result
 }
 
 // Deletes records older than what is displayed in the UI
@@ -289,16 +291,16 @@ func (rm *RecordManager) DeleteOldRecords() {
 		},
 	}
 	db := rm.app.Dao().NonconcurrentDB()
-		for _, recordData := range recordData {
-			for _, collectionSlug := range collections {
+	for _, recordData := range recordData {
+		for _, collectionSlug := range collections {
 			formattedDate := time.Now().UTC().Add(-recordData.retention).Format(types.DefaultDateLayout)
 			expr := dbx.NewExp("[[created]] < {:date} AND [[type]] = {:type}", dbx.Params{"date": formattedDate, "type": recordData.recordType})
 			_, err := db.Delete(collectionSlug, expr).Execute()
-					if err != nil {
-						rm.app.Logger().Error("Failed to delete records", "err", err.Error())
-					}
-				}
+			if err != nil {
+				rm.app.Logger().Error("Failed to delete records", "err", err.Error())
 			}
+		}
+	}
 }
 
 /* Round float to two decimals */
