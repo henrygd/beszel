@@ -117,9 +117,9 @@ func (a *Agent) getContainerStats(ctr container.ApiInfo) (*container.Stats, erro
 	}
 
 	// memory (https://docs.docker.com/reference/cli/docker/container/stats/)
-	memCache := res.MemoryStats.Stats["inactive_file"]
+	memCache := res.MemoryStats.Stats.InactiveFile
 	if memCache == 0 {
-		memCache = res.MemoryStats.Stats["cache"]
+		memCache = res.MemoryStats.Stats.Cache
 	}
 	usedMemory := res.MemoryStats.Usage - memCache
 

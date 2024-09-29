@@ -85,15 +85,13 @@ type CPUUsage struct {
 }
 
 type MemoryStats struct {
-
 	// current res_counter usage for memory
 	Usage uint64 `json:"usage,omitempty"`
-	Cache uint64 `json:"cache,omitempty"`
+	// all the stats exported via memory.stat.
+	Stats MemoryStatsStats `json:"stats,omitempty"`
 	// maximum usage ever recorded.
 	// MaxUsage uint64 `json:"max_usage,omitempty"`
 	// TODO(vishh): Export these as stronger types.
-	// all the stats exported via memory.stat.
-	Stats map[string]uint64 `json:"stats,omitempty"`
 	// number of times memory usage hits limits.
 	// Failcnt uint64 `json:"failcnt,omitempty"`
 	// Limit   uint64 `json:"limit,omitempty"`
@@ -104,6 +102,11 @@ type MemoryStats struct {
 	// CommitPeak uint64 `json:"commitpeakbytes,omitempty"`
 	// // private working set
 	// PrivateWorkingSet uint64 `json:"privateworkingset,omitempty"`
+}
+
+type MemoryStatsStats struct {
+	Cache        uint64 `json:"cache,omitempty"`
+	InactiveFile uint64 `json:"inactive_file,omitempty"`
 }
 
 type NetworkStats struct {
