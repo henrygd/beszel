@@ -78,6 +78,7 @@ export default function TemperatureChart({
 					<CartesianGrid vertical={false} />
 					<YAxis
 						className="tracking-tighter"
+						domain={[0, 'auto']}
 						width={yAxisWidth}
 						tickFormatter={(value) => {
 							const val = toFixedWithoutTrailingZeros(value, 2)
