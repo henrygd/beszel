@@ -217,7 +217,7 @@ Assuming the agent is running, the connection is probably being blocked by a fir
 1. Add an inbound rule to the agent system's firewall(s) to allow TCP connections to the port. Check any active firewalls, like iptables, and your cloud provider's firewall settings if applicable.
 2. Alternatively, use software like [Cloudflare Tunnel](https://www.cloudflare.com/products/tunnel/), [WireGuard](https://www.wireguard.com/), or [Tailscale](https://tailscale.com/) to securely bypass your firewall.
 
-You can test connectivity by running telnet `<agent-ip> <port>`.
+You can test connectivity by running `telnet <agent-ip> <port>`.
 
 ### Connecting the hub and agent on the same system using Docker
 
