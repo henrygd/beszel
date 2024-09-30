@@ -1,5 +1,5 @@
 {
-	"name": "site",
+	"name": "beszel",
 	"private": true,
 	"version": "0.0.0",
 	"type": "module",
@@ -23,7 +23,7 @@
 		"@radix-ui/react-toast": "^1.2.1",
 		"@radix-ui/react-tooltip": "^1.1.2",
 		"@tanstack/react-table": "^8.20.5",
-		"@vitejs/plugin-react": "^4.3.1",
+		"@vitejs/plugin-react": "^4.3.2",
 		"class-variance-authority": "^0.7.0",
 		"clsx": "^2.1.1",
 		"cmdk": "^1.0.0",
@@ -34,20 +34,19 @@
 		"pocketbase": "^0.21.5",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
-		"recharts": "^2.13.0-alpha.4",
+		"recharts": "^2.13.0-alpha.5",
 		"tailwind-merge": "^2.5.2",
 		"tailwindcss-animate": "^1.0.7",
-		"use-is-in-viewport": "^1.0.9",
 		"valibot": "^0.36.0"
 	},
 	"devDependencies": {
-		"@types/bun": "^1.1.8",
-		"@types/react": "^18.3.5",
+		"@types/bun": "^1.1.10",
+		"@types/react": "^18.3.10",
 		"@types/react-dom": "^18.3.0",
 		"autoprefixer": "^10.4.20",
-		"postcss": "^8.4.44",
-		"tailwindcss": "^3.4.10",
-		"typescript": "^5.5.4",
-		"vite": "^5.4.2"
+		"postcss": "^8.4.47",
+		"tailwindcss": "^3.4.13",
+		"typescript": "^5.6.2",
+		"vite": "^5.4.8"
 	}
 }

@@ -11,4 +11,3 @@ dist
 beszel/cmd/hub/hub
 beszel/cmd/agent/agent
 node_modules
-package-lock.json

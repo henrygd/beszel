@@ -7,7 +7,6 @@ import { RecordModel, RecordSubscription } from 'pocketbase'
 import { WritableAtom } from 'nanostores'
 import { timeDay, timeHour } from 'd3-time'
 import { useEffect, useState } from 'react'
-import useIsInViewport, { CallbackRef, HookOptions } from 'use-is-in-viewport'
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -212,24 +211,6 @@ export function useYAxisWidth() {
 		return str
 	}
 	return { yAxisWidth, updateYAxisWidth }
-}
-
-export function useClampedIsInViewport(options: HookOptions): [boolean | null, CallbackRef] {
-	const [isInViewport, wrappedTargetRef] = useIsInViewport(options)
-	const [wasInViewportAtleastOnce, setWasInViewportAtleastOnce] = useState(isInViewport)
-
-	useEffect(() => {
-		setWasInViewportAtleastOnce((prev) => {
-			// this will clamp it to the first true
-			// received from useIsInViewport
-			if (!prev) {
-				return isInViewport
-			}
-			return prev
-		})
-	}, [isInViewport])
-
-	return [wasInViewportAtleastOnce, wrappedTargetRef]
 }
 
 export function toFixedWithoutTrailingZeros(num: number, digits: number) {

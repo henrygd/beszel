@@ -6,19 +6,14 @@ import { useStore } from '@nanostores/react'
 import Spinner from '../spinner'
 import { ClockArrowUp, CpuIcon, GlobeIcon, LayoutGridIcon, MonitorIcon, XIcon } from 'lucide-react'
 import ChartTimeSelect from '../charts/chart-time-select'
-import {
-	chartTimeData,
-	cn,
-	getPbTimestamp,
-	useClampedIsInViewport,
-	useLocalStorage,
-} from '@/lib/utils'
+import { chartTimeData, cn, getPbTimestamp, useLocalStorage } from '@/lib/utils'
 import { Separator } from '../ui/separator'
 import { scaleTime } from 'd3-scale'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
 import { Button, buttonVariants } from '../ui/button'
 import { Input } from '../ui/input'
 import { Rows, TuxIcon } from '../ui/icons'
+import { useIntersectionObserver } from '@/lib/use-intersection-observer'
 
 const CpuChart = lazy(() => import('../charts/cpu-chart'))
 const ContainerCpuChart = lazy(() => import('../charts/container-cpu-chart'))
@@ -504,13 +499,12 @@ function ChartCard({
 	grid?: boolean
 	isContainerChart?: boolean
 }) {
-	const target = useRef<HTMLDivElement>(null)
-	const [isInViewport, wrappedTargetRef] = useClampedIsInViewport({ target: target })
+	const { isIntersecting, ref } = useIntersectionObserver()
 
 	return (
 		<Card
 			className={cn('pb-2 sm:pb-4 odd:last-of-type:col-span-full', { 'col-span-full': !grid })}
-			ref={wrappedTargetRef}
+			ref={ref}
 		>
 			<CardHeader className="pb-5 pt-4 relative space-y-1 max-sm:py-3 max-sm:px-4">
 				<CardTitle className="text-xl sm:text-2xl">{title}</CardTitle>
@@ -519,7 +513,7 @@ function ChartCard({
 			</CardHeader>
 			<CardContent className="pl-0 w-[calc(100%-1.6em)] h-52 relative">
 				{<Spinner />}
-				{isInViewport && <Suspense>{children}</Suspense>}
+				{isIntersecting && <Suspense>{children}</Suspense>}
 			</CardContent>
 		</Card>
 	)
