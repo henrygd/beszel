@@ -59,10 +59,16 @@ func (a *Agent) Run(pubKey []byte, addr string) {
 		}
 	}
 
+	// initialize system info / docker manager
 	a.initializeSystemInfo()
 	a.initializeDiskInfo()
 	a.initializeNetIoStats()
 	a.dockerManager = newDockerManager()
+
+	// if debugging, print stats
+	if a.debug {
+		slog.Debug("Stats", "data", a.gatherStats())
+	}
 
 	a.startServer(pubKey, addr)
 }
