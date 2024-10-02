@@ -2,13 +2,6 @@ package agent
 
 import "math"
 
-// delete container stats from map using mutex
-func (a *Agent) deleteContainerStatsSync(id string) {
-	a.containerStatsMutex.Lock()
-	defer a.containerStatsMutex.Unlock()
-	delete(a.containerStatsMap, id)
-}
-
 func bytesToMegabytes(b float64) float64 {
 	return twoDecimals(b / 1048576)
 }

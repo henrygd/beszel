@@ -2,40 +2,30 @@
 package agent
 
 import (
-	"beszel/internal/entities/container"
 	"beszel/internal/entities/system"
 	"context"
 	"log/slog"
-	"net/http"
 	"os"
 	"strings"
-	"sync"
 
 	"github.com/shirou/gopsutil/v4/common"
 )
 
 type Agent struct {
-	debug               bool                        // true if LOG_LEVEL is set to debug
-	fsNames             []string                    // List of filesystem device names being monitored
-	fsStats             map[string]*system.FsStats  // Keeps track of disk stats for each filesystem
-	netInterfaces       map[string]struct{}         // Stores all valid network interfaces
-	netIoStats          system.NetIoStats           // Keeps track of bandwidth usage
-	containerStatsMap   map[string]*container.Stats // Keeps track of container stats
-	containerStatsMutex sync.RWMutex                // Mutex to prevent concurrent access to prevContainerStatsMap
-	dockerClient        *http.Client                // HTTP client to query docker api
-	apiContainerList    *[]container.ApiInfo        // List of containers from docker host
-	sensorsContext      context.Context             // Sensors context to override sys location
-	sensorsWhitelist    map[string]struct{}         // List of sensors to monitor
-	systemInfo          system.Info                 // Host system info
+	debug            bool                       // true if LOG_LEVEL is set to debug
+	fsNames          []string                   // List of filesystem device names being monitored
+	fsStats          map[string]*system.FsStats // Keeps track of disk stats for each filesystem
+	netInterfaces    map[string]struct{}        // Stores all valid network interfaces
+	netIoStats       system.NetIoStats          // Keeps track of bandwidth usage
+	dockerManager    *dockerManager             // Manages Docker API requests
+	sensorsContext   context.Context            // Sensors context to override sys location
+	sensorsWhitelist map[string]struct{}        // List of sensors to monitor
+	systemInfo       system.Info                // Host system info
 }
 
 func NewAgent() *Agent {
 	return &Agent{
-		containerStatsMap:   make(map[string]*container.Stats),
-		containerStatsMutex: sync.RWMutex{},
-		netIoStats:          system.NetIoStats{},
-		dockerClient:        newDockerClient(),
-		sensorsContext:      context.Background(),
+		sensorsContext: context.Background(),
 	}
 }
 
@@ -72,6 +62,7 @@ func (a *Agent) Run(pubKey []byte, addr string) {
 	a.initializeSystemInfo()
 	a.initializeDiskInfo()
 	a.initializeNetIoStats()
+	a.dockerManager = newDockerManager()
 
 	a.startServer(pubKey, addr)
 }
@@ -82,7 +73,7 @@ func (a *Agent) gatherStats() system.CombinedData {
 		Info:  a.systemInfo,
 	}
 	// add docker stats
-	if containerStats, err := a.getDockerStats(); err == nil {
+	if containerStats, err := a.dockerManager.getDockerStats(); err == nil {
 		systemData.Containers = containerStats
 	} else {
 		slog.Debug("Error getting docker stats", "err", err)
