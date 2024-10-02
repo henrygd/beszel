@@ -191,7 +191,8 @@ export default function SystemDetail({ name }: { name: string }) {
 		}
 		let uptime: number | string = system.info.u
 		if (system.info.u < 172800) {
-			uptime = `${Math.trunc(uptime / 3600)} hours`
+			const hours = Math.trunc(uptime / 3600)
+			uptime = `${hours} hour${hours > 1 ? 's' : ''}`
 		} else {
 			uptime = `${Math.trunc(system.info?.u / 86400)} days`
 		}
