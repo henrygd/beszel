@@ -108,7 +108,7 @@ Use `./beszel update` and `./beszel-agent update` to update to the latest versio
 | Name                | Default | Description                                                                              |
 | ------------------- | ------- | ---------------------------------------------------------------------------------------- |
 | `DOCKER_HOST`       | unset   | Overrides the docker host (docker.sock) if using a proxy.[^socket]                       |
-| `EXTRA_FILESYSTEMS` | unset   | See [Monitoring additional disks / partitions](#monitoring-additional-disks--partitions) |
+| `EXTRA_FILESYSTEMS` | unset   | See [Monitoring additional disks / partitions](##monitoring-additional-disks-partitions-or-remote-mounts) |
 | `FILESYSTEM`        | unset   | Device, partition, or mount point to use for root disk stats.                            |
 | `KEY`               | unset   | Public SSH key to use for authentication. Provided in hub.                               |
 | `LOG_LEVEL`         | info    | Logging level. Valid values: "debug", "info", "warn", "error".                           |
