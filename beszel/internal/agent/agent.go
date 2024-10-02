@@ -15,11 +15,6 @@ import (
 )
 
 type Agent struct {
-	hostname            string                      // Hostname of the system
-	kernelVersion       string                      // Kernel version of the system
-	cpuModel            string                      // CPU model of the system
-	cores               int                         // Number of cores of the system
-	threads             int                         // Number of threads of the system
 	debug               bool                        // true if LOG_LEVEL is set to debug
 	fsNames             []string                    // List of filesystem device names being monitored
 	fsStats             map[string]*system.FsStats  // Keeps track of disk stats for each filesystem
@@ -31,6 +26,7 @@ type Agent struct {
 	apiContainerList    *[]container.ApiInfo        // List of containers from docker host
 	sensorsContext      context.Context             // Sensors context to override sys location
 	sensorsWhitelist    map[string]struct{}         // List of sensors to monitor
+	systemInfo          system.Info                 // Host system info
 }
 
 func NewAgent() *Agent {
@@ -81,14 +77,15 @@ func (a *Agent) Run(pubKey []byte, addr string) {
 }
 
 func (a *Agent) gatherStats() system.CombinedData {
-	systemInfo, SystemStats := a.getSystemStats()
 	systemData := system.CombinedData{
-		Stats: SystemStats,
-		Info:  systemInfo,
+		Stats: a.getSystemStats(),
+		Info:  a.systemInfo,
 	}
 	// add docker stats
 	if containerStats, err := a.getDockerStats(); err == nil {
 		systemData.Containers = containerStats
+	} else {
+		slog.Debug("Error getting docker stats", "err", err)
 	}
 	// add extra filesystems
 	systemData.Stats.ExtraFs = make(map[string]*system.FsStats)

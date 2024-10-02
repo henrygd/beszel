@@ -44,17 +44,16 @@ type NetIoStats struct {
 }
 
 type Info struct {
-	Hostname      string `json:"h"`
-	KernelVersion string `json:"k,omitempty"`
-	Cores         int    `json:"c"`
-	Threads       int    `json:"t,omitempty"`
-	CpuModel      string `json:"m"`
-	// Os       string  `json:"o"`
-	Uptime       uint64  `json:"u"`
-	Cpu          float64 `json:"cpu"`
-	MemPct       float64 `json:"mp"`
-	DiskPct      float64 `json:"dp"`
-	AgentVersion string  `json:"v"`
+	Hostname      string  `json:"h"`
+	KernelVersion string  `json:"k,omitempty"`
+	Cores         int     `json:"c"`
+	Threads       int     `json:"t,omitempty"`
+	CpuModel      string  `json:"m"`
+	Uptime        uint64  `json:"u"`
+	Cpu           float64 `json:"cpu"`
+	MemPct        float64 `json:"mp"`
+	DiskPct       float64 `json:"dp"`
+	AgentVersion  string  `json:"v"`
 }
 
 // Final data structure to return to the hub

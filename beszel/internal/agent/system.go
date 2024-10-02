@@ -18,26 +18,28 @@ import (
 
 // Sets initial / non-changing values about the host system
 func (a *Agent) initializeSystemInfo() {
-	a.kernelVersion, _ = host.KernelVersion()
-	a.hostname, _ = os.Hostname()
+	a.systemInfo.AgentVersion = beszel.Version
+	a.systemInfo.Hostname, _ = os.Hostname()
+	a.systemInfo.KernelVersion, _ = host.KernelVersion()
 
-	// add cpu stats
+	// cpu model
 	if info, err := cpu.Info(); err == nil && len(info) > 0 {
-		a.cpuModel = info[0].ModelName
+		a.systemInfo.CpuModel = info[0].ModelName
 	}
-	a.cores, _ = cpu.Counts(false)
+	// cores / threads
+	a.systemInfo.Cores, _ = cpu.Counts(false)
 	if threads, err := cpu.Counts(true); err == nil {
-		if threads > 0 && threads < a.cores {
+		if threads > 0 && threads < a.systemInfo.Cores {
 			// in lxc logical cores reflects container limits, so use that as cores if lower
-			a.cores = threads
+			a.systemInfo.Cores = threads
 		} else {
-			a.threads = threads
+			a.systemInfo.Threads = threads
 		}
 	}
 }
 
 // Returns current info, stats about the host system
-func (a *Agent) getSystemStats() (system.Info, system.Stats) {
+func (a *Agent) getSystemStats() system.Stats {
 	systemStats := system.Stats{}
 
 	// cpu percent
@@ -173,19 +175,11 @@ func (a *Agent) getSystemStats() (system.Info, system.Stats) {
 		}
 	}
 
-	systemInfo := system.Info{
-		Cpu:           systemStats.Cpu,
-		MemPct:        systemStats.MemPct,
-		DiskPct:       systemStats.DiskPct,
-		AgentVersion:  beszel.Version,
-		Hostname:      a.hostname,
-		KernelVersion: a.kernelVersion,
-		CpuModel:      a.cpuModel,
-		Cores:         a.cores,
-		Threads:       a.threads,
-	}
+	// update base system info
+	a.systemInfo.Cpu = systemStats.Cpu
+	a.systemInfo.MemPct = systemStats.MemPct
+	a.systemInfo.DiskPct = systemStats.DiskPct
+	a.systemInfo.Uptime, _ = host.Uptime()
 
-	systemInfo.Uptime, _ = host.Uptime()
-
-	return systemInfo, systemStats
+	return systemStats
 }
