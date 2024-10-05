@@ -105,20 +105,21 @@ Use `./beszel update` and `./beszel-agent update` to update to the latest versio
 
 ### Agent
 
-| Name                | Default | Description                                                                              |
-| ------------------- | ------- | ---------------------------------------------------------------------------------------- |
-| `DOCKER_HOST`       | unset   | Overrides the docker host (docker.sock) if using a proxy.[^socket]                       |
+| Name                | Default | Description                                                                                                               |
+| ------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `DOCKER_HOST`       | unset   | Overrides the docker host (docker.sock) if using a proxy.[^socket]                                                        |
 | `EXTRA_FILESYSTEMS` | unset   | See [Monitoring additional disks, partitions, or remote mounts](#monitoring-additional-disks-partitions-or-remote-mounts) |
-| `FILESYSTEM`        | unset   | Device, partition, or mount point to use for root disk stats.                            |
-| `KEY`               | unset   | Public SSH key to use for authentication. Provided in hub.                               |
-| `LOG_LEVEL`         | info    | Logging level. Valid values: "debug", "info", "warn", "error".                           |
-| `NICS`              | unset   | Whitelist of network interfaces to monitor for bandwidth chart.                          |
-| `PORT`              | 45876   | Port or address:port to listen on.                                                       |
-| `SENSORS`           | unset   | Whitelist of temperature sensors to monitor.                                             |
-
-<!-- | `SYS_SENSORS` | unset | Overrides the sys location for sensors. | -->
+| `FILESYSTEM`        | unset   | Device, partition, or mount point to use for root disk stats.                                                             |
+| `KEY`               | unset   | Public SSH key to use for authentication. Provided in hub.                                                                |
+| `LOG_LEVEL`         | info    | Logging level. Valid values: "debug", "info", "warn", "error".                                                            |
+| `MEM_CALC`          | unset   | Overrides the default memory calculation.[^memcalc]                                                                       |
+| `NICS`              | unset   | Whitelist of network interfaces to monitor for bandwidth chart.                                                           |
+| `PORT`              | 45876   | Port or address:port to listen on.                                                                                        |
+| `SENSORS`           | unset   | Whitelist of temperature sensors to monitor.                                                                              |
+| `SYS_SENSORS`       | unset   | Overrides sys path for sensors. See [#160](https://github.com/henrygd/beszel/discussions/160).                            |
 
 [^socket]: Beszel only needs access to read container information. For [linuxserver/docker-socket-proxy](https://github.com/linuxserver/docker-socket-proxy) you would set `CONTAINERS=1`.
+[^memcalc]: The default value for used memory is based on gopsutil's [Used](https://pkg.go.dev/github.com/shirou/gopsutil/v4@v4.24.6/mem#VirtualMemoryStat) calculation, which should align fairly closely with `free`. Set `MEM_CALC` to `htop` to align with htop's calculation.
 
 ## OAuth / OIDC Setup
 
