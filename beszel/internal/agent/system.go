@@ -3,9 +3,12 @@ package agent
 import (
 	"beszel"
 	"beszel/internal/entities/system"
+	"bufio"
+	"fmt"
 	"log/slog"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/shirou/gopsutil/v4/cpu"
@@ -36,6 +39,13 @@ func (a *Agent) initializeSystemInfo() {
 			a.systemInfo.Threads = threads
 		}
 	}
+
+	// zfs
+	if _, err := getARCSize(); err == nil {
+		a.zfs = true
+	} else {
+		slog.Debug("Not monitoring ZFS ARC", "err", err)
+	}
 }
 
 // Returns current info, stats about the host system
@@ -52,6 +62,9 @@ func (a *Agent) getSystemStats() system.Stats {
 
 	// memory
 	if v, err := mem.VirtualMemory(); err == nil {
+		// swap
+		systemStats.Swap = bytesToGigabytes(v.SwapTotal)
+		systemStats.SwapUsed = bytesToGigabytes(v.SwapTotal - v.SwapFree - v.SwapCached)
 		// cache + buffers value for default mem calculation
 		cacheBuff := v.Total - v.Free - v.Used
 		// htop memory calculation overrides
@@ -61,9 +74,15 @@ func (a *Agent) getSystemStats() system.Stats {
 			v.Used = v.Total - (v.Free + cacheBuff)
 			v.UsedPercent = float64(v.Used) / float64(v.Total) * 100.0
 		}
+		// subtract ZFS ARC size from used memory and add as its own category
+		if a.zfs {
+			if arcSize, _ := getARCSize(); arcSize > 0 && arcSize < v.Used {
+				v.Used = v.Used - arcSize
+				v.UsedPercent = float64(v.Used) / float64(v.Total) * 100.0
+				systemStats.MemZfsArc = bytesToGigabytes(arcSize)
+			}
+		}
 		systemStats.Mem = bytesToGigabytes(v.Total)
-		systemStats.Swap = bytesToGigabytes(v.SwapTotal)
-		systemStats.SwapUsed = bytesToGigabytes(v.SwapTotal - v.SwapFree - v.SwapCached)
 		systemStats.MemBuffCache = bytesToGigabytes(cacheBuff)
 		systemStats.MemUsed = bytesToGigabytes(v.Used)
 		systemStats.MemPct = twoDecimals(v.UsedPercent)
@@ -191,4 +210,30 @@ func (a *Agent) getSystemStats() system.Stats {
 	a.systemInfo.Uptime, _ = host.Uptime()
 
 	return systemStats
+}
+
+// Returns the size of the ZFS ARC memory cache in bytes
+func getARCSize() (uint64, error) {
+	file, err := os.Open("/proc/spl/kstat/zfs/arcstats")
+	if err != nil {
+		return 0, err
+	}
+	defer file.Close()
+
+	// Scan the lines
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, "size") {
+			// Example line: size 4 15032385536
+			fields := strings.Fields(line)
+			if len(fields) < 3 {
+				return 0, err
+			}
+			// Return the size as uint64
+			return strconv.ParseUint(fields[2], 10, 64)
+		}
+	}
+
+	return 0, fmt.Errorf("failed to parse size field")
 }

@@ -11,6 +11,7 @@ type Stats struct {
 	MemUsed      float64             `json:"mu"`
 	MemPct       float64             `json:"mp"`
 	MemBuffCache float64             `json:"mb"`
+	MemZfsArc    float64             `json:"mz,omitempty"` // ZFS ARC memory
 	Swap         float64             `json:"s,omitempty"`
 	SwapUsed     float64             `json:"su,omitempty"`
 	DiskTotal    float64             `json:"d"`

@@ -1,16 +1,8 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-import {
-	useYAxisWidth,
-	chartTimeData,
-	cn,
-	formatShortDate,
-	toFixedFloat,
-	twoDecimalString,
-} from '@/lib/utils'
+import { useYAxisWidth, chartTimeData, cn, toFixedFloat, twoDecimalString } from '@/lib/utils'
 import { useMemo } from 'react'
-// import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
 import { SystemStatsRecord } from '@/types'
@@ -79,16 +71,16 @@ export default function MemChart({
 						content={
 							<ChartTooltipContent
 								// @ts-ignore
-								itemSorter={(a, b) => a.name.localeCompare(b.name)}
-								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
+								itemSorter={(a, b) => a.order - b.order}
 								contentFormatter={(item) => twoDecimalString(item.value) + ' GB'}
 								indicator="line"
 							/>
 						}
 					/>
 					<Area
-						dataKey="stats.mu"
 						name="Used"
+						order={3}
+						dataKey="stats.mu"
 						type="monotoneX"
 						fill="hsl(var(--chart-2))"
 						fillOpacity={0.4}
@@ -96,9 +88,23 @@ export default function MemChart({
 						stackId="1"
 						isAnimationActive={false}
 					/>
+					{systemData.at(-1)?.stats.mz && (
+						<Area
+							name="ZFS ARC"
+							order={2}
+							dataKey="stats.mz"
+							type="monotoneX"
+							fill="hsla(175 60% 45% / 0.8)"
+							fillOpacity={0.5}
+							stroke="hsla(175 60% 45% / 0.8)"
+							stackId="1"
+							isAnimationActive={false}
+						/>
+					)}
 					<Area
-						dataKey="stats.mb"
 						name="Cache / Buffers"
+						order={1}
+						dataKey="stats.mb"
 						type="monotoneX"
 						fill="hsla(160 60% 45% / 0.5)"
 						fillOpacity={0.4}

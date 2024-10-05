@@ -43,6 +43,8 @@ export interface SystemStats {
 	mp: number
 	/** memory buffer + cache (gb) */
 	mb: number
+	/** zfs arc memory (gb) */
+	mz?: number
 	/** swap space (gb) */
 	s: number
 	/** swap used (gb) */

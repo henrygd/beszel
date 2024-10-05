@@ -13,6 +13,7 @@ import (
 
 type Agent struct {
 	debug            bool                       // true if LOG_LEVEL is set to debug
+	zfs              bool                       // true if system has arcstats
 	memCalc          string                     // Memory calculation formula
 	fsNames          []string                   // List of filesystem device names being monitored
 	fsStats          map[string]*system.FsStats // Keeps track of disk stats for each filesystem
