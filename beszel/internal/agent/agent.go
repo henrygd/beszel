@@ -13,6 +13,7 @@ import (
 
 type Agent struct {
 	debug            bool                       // true if LOG_LEVEL is set to debug
+	memCalc          string                     // Memory calculation formula
 	fsNames          []string                   // List of filesystem device names being monitored
 	fsStats          map[string]*system.FsStats // Keeps track of disk stats for each filesystem
 	netInterfaces    map[string]struct{}        // Stores all valid network interfaces
@@ -26,6 +27,7 @@ type Agent struct {
 func NewAgent() *Agent {
 	return &Agent{
 		sensorsContext: context.Background(),
+		memCalc:        os.Getenv("MEM_CALC"),
 	}
 }
 

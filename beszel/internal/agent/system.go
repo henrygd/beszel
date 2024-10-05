@@ -52,12 +52,21 @@ func (a *Agent) getSystemStats() system.Stats {
 
 	// memory
 	if v, err := mem.VirtualMemory(); err == nil {
+		// cache + buffers value for default mem calculation
+		cacheBuff := v.Total - v.Free - v.Used
+		// htop memory calculation overrides
+		if a.memCalc == "htop" {
+			// note: gopsutil automatically adds SReclaimable to v.Cached
+			cacheBuff = v.Cached + v.Buffers - v.Shared
+			v.Used = v.Total - (v.Free + cacheBuff)
+			v.UsedPercent = float64(v.Used) / float64(v.Total) * 100.0
+		}
 		systemStats.Mem = bytesToGigabytes(v.Total)
-		systemStats.MemUsed = bytesToGigabytes(v.Used)
-		systemStats.MemBuffCache = bytesToGigabytes(v.Total - v.Free - v.Used)
-		systemStats.MemPct = twoDecimals(v.UsedPercent)
 		systemStats.Swap = bytesToGigabytes(v.SwapTotal)
-		systemStats.SwapUsed = bytesToGigabytes(v.SwapTotal - v.SwapFree)
+		systemStats.SwapUsed = bytesToGigabytes(v.SwapTotal - v.SwapFree - v.SwapCached)
+		systemStats.MemBuffCache = bytesToGigabytes(cacheBuff)
+		systemStats.MemUsed = bytesToGigabytes(v.Used)
+		systemStats.MemPct = twoDecimals(v.UsedPercent)
 	}
 
 	// disk usage
