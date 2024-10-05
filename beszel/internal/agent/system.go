@@ -154,7 +154,7 @@ func (a *Agent) getSystemStats() system.Stats {
 		systemStats.Temperatures = make(map[string]float64, len(temps))
 		for i, sensor := range temps {
 			// skip if temperature is 0
-			if sensor.Temperature == 0 {
+			if sensor.Temperature <= 0 || sensor.Temperature >= 200 {
 				continue
 			}
 			if _, ok := systemStats.Temperatures[sensor.SensorKey]; ok {
