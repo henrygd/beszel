@@ -94,19 +94,28 @@ export function UserAuthForm({
 						setErrors({ passwordConfirm: msg })
 						return
 					}
+					// create admin user
 					await pb.admins.create({
 						email,
 						password,
 						passwordConfirm: password,
 					})
 					await pb.admins.authWithPassword(email, password)
-					await pb.collection('users').create({
+					// create regular user
+					const user = await pb.collection('users').create({
 						username,
 						email,
 						password,
 						passwordConfirm: password,
 						role: 'admin',
 						verified: true,
+					})
+					// create hubsys
+					await pb.collection('systems').create({
+						name: 'x',
+						port: 'x',
+						host: 'hubsys',
+						users: user.id,
 					})
 					await pb.collection('users').authWithPassword(email, password)
 				} else {

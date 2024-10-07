@@ -197,7 +197,7 @@ export default function SystemDetail({ name }: { name: string }) {
 			uptime = `${Math.trunc(system.info?.u / 86400)} days`
 		}
 		return [
-			{ value: system.host, Icon: GlobeIcon },
+			{ value: system.host, Icon: GlobeIcon, hide: system.host === 'hubsys' },
 			{
 				value: system.info.h,
 				Icon: MonitorIcon,

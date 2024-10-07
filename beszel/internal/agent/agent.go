@@ -70,13 +70,15 @@ func (a *Agent) Run(pubKey []byte, addr string) {
 
 	// if debugging, print stats
 	if a.debug {
-		slog.Debug("Stats", "data", a.gatherStats())
+		slog.Debug("Stats", "data", a.GatherStats())
 	}
 
-	a.startServer(pubKey, addr)
+	if pubKey != nil {
+		a.startServer(pubKey, addr)
+	}
 }
 
-func (a *Agent) gatherStats() system.CombinedData {
+func (a *Agent) GatherStats() system.CombinedData {
 	systemData := system.CombinedData{
 		Stats: a.getSystemStats(),
 		Info:  a.systemInfo,

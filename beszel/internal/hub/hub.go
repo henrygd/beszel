@@ -3,6 +3,7 @@ package hub
 
 import (
 	"beszel"
+	"beszel/internal/agent"
 	"beszel/internal/alerts"
 	"beszel/internal/entities/system"
 	"beszel/internal/records"
@@ -42,6 +43,7 @@ type Hub struct {
 	am                *alerts.AlertManager
 	um                *users.UserManager
 	rm                *records.RecordManager
+	hubAgent          *agent.Agent
 }
 
 func NewHub(app *pocketbase.PocketBase) *Hub {
@@ -56,10 +58,6 @@ func NewHub(app *pocketbase.PocketBase) *Hub {
 }
 
 func (h *Hub) Run() {
-	// rm := records.NewRecordManager(h.app)
-	// am := alerts.NewAlertManager(h.app)
-	// um := users.NewUserManager(h.app)
-
 	// loosely check if it was executed using "go run"
 	isGoRun := strings.HasPrefix(os.Args[0], os.TempDir())
 
@@ -73,25 +71,22 @@ func (h *Hub) Run() {
 	// initial setup
 	h.app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		// create ssh client config
-		err := h.createSSHClientConfig()
-		if err != nil {
+		if err := h.createSSHClientConfig(); err != nil {
 			log.Fatal(err)
 		}
 		// set auth settings
-		usersCollection, err := h.app.Dao().FindCollectionByNameOrId("users")
-		if err != nil {
-			return err
-		}
-		usersAuthOptions := usersCollection.AuthOptions()
-		usersAuthOptions.AllowUsernameAuth = false
-		if os.Getenv("DISABLE_PASSWORD_AUTH") == "true" {
-			usersAuthOptions.AllowEmailAuth = false
-		} else {
-			usersAuthOptions.AllowEmailAuth = true
-		}
-		usersCollection.SetOptions(usersAuthOptions)
-		if err := h.app.Dao().SaveCollection(usersCollection); err != nil {
-			return err
+		if usersCollection, err := h.app.Dao().FindCollectionByNameOrId("users"); err == nil {
+			usersAuthOptions := usersCollection.AuthOptions()
+			usersAuthOptions.AllowUsernameAuth = false
+			if os.Getenv("DISABLE_PASSWORD_AUTH") == "true" {
+				usersAuthOptions.AllowEmailAuth = false
+			} else {
+				usersAuthOptions.AllowEmailAuth = true
+			}
+			usersCollection.SetOptions(usersAuthOptions)
+			if err := h.app.Dao().SaveCollection(usersCollection); err != nil {
+				return err
+			}
 		}
 		return nil
 	})
@@ -159,6 +154,16 @@ func (h *Hub) Run() {
 	// system creation defaults
 	h.app.OnModelBeforeCreate("systems").Add(func(e *core.ModelEvent) error {
 		record := e.Model.(*models.Record)
+		if record.GetString("host") == "hubsys" {
+			// todo: check for hubsys existance and return error if exists (or make sure user is admin)
+			if record.GetString("name") == "x" {
+				hostname, _ := os.Hostname()
+				if hostname == "" {
+					hostname = "localhost"
+				}
+				record.Set("name", hostname)
+			}
+		}
 		record.Set("info", system.Info{})
 		record.Set("status", "pending")
 		return nil
@@ -246,6 +251,26 @@ func (h *Hub) updateSystems() {
 }
 
 func (h *Hub) updateSystem(record *models.Record) {
+	switch record.GetString("host") {
+	case "hubsys":
+		h.updateHubSystem(record)
+	default:
+		h.updateRemoteSystem(record)
+	}
+}
+
+// Update hub system stats with built-in agent
+func (h *Hub) updateHubSystem(record *models.Record) {
+	if h.hubAgent == nil {
+		h.hubAgent = agent.NewAgent()
+		h.hubAgent.Run(nil, "")
+	}
+	systemData := h.hubAgent.GatherStats()
+	h.saveSystemStats(record, &systemData)
+}
+
+// Connect to remote system and update system stats
+func (h *Hub) updateRemoteSystem(record *models.Record) {
 	var client *ssh.Client
 	var err error
 
@@ -273,7 +298,7 @@ func (h *Hub) updateSystem(record *models.Record) {
 			// if previous connection was closed, try again
 			h.app.Logger().Error("Existing SSH connection closed. Retrying...", "host", record.GetString("host"), "port", record.GetString("port"))
 			h.deleteSystemConnection(record)
-			h.updateSystem(record)
+			h.updateRemoteSystem(record)
 			return
 		}
 		h.app.Logger().Error("Failed to get system stats: ", "err", err.Error())
@@ -281,6 +306,11 @@ func (h *Hub) updateSystem(record *models.Record) {
 		return
 	}
 	// update system record
+	h.saveSystemStats(record, &systemData)
+}
+
+// Update system record with provided system.CombinedData
+func (h *Hub) saveSystemStats(record *models.Record, systemData *system.CombinedData) {
 	record.Set("status", "up")
 	record.Set("info", systemData.Info)
 	if err := h.app.Dao().SaveRecord(record); err != nil {
@@ -320,14 +350,20 @@ func (h *Hub) updateSystemStatus(record *models.Record, status string) {
 	}
 }
 
+// Deletes the SSH connection (remote) or built-in agent reference
 func (h *Hub) deleteSystemConnection(record *models.Record) {
-	if _, ok := h.systemConnections[record.Id]; ok {
-		if h.systemConnections[record.Id] != nil {
-			h.systemConnections[record.Id].Close()
+	switch record.GetString("host") {
+	case "hubsys":
+		h.hubAgent = nil
+	default:
+		if _, ok := h.systemConnections[record.Id]; ok {
+			if h.systemConnections[record.Id] != nil {
+				h.systemConnections[record.Id].Close()
+			}
+			h.connectionLock.Lock()
+			defer h.connectionLock.Unlock()
+			delete(h.systemConnections, record.Id)
 		}
-		h.connectionLock.Lock()
-		defer h.connectionLock.Unlock()
-		delete(h.systemConnections, record.Id)
 	}
 }
 
