@@ -35,6 +35,8 @@ export interface SystemInfo {
 export interface SystemStats {
 	/** cpu percent */
 	cpu: number
+	/** peak cpu */
+	pcpu?: number
 	/** total memory (gb) */
 	m: number
 	/** memory used (gb) */
@@ -61,8 +63,12 @@ export interface SystemStats {
 	dw: number
 	/** network sent (mb) */
 	ns: number
+	/** peak network sent (mb) */
+	pns?: number
 	/** network received (mb) */
 	nr: number
+	/** peak network received (mb) */
+	pnr?: number
 	/** temperatures */
 	t?: Record<string, number>
 	/** extra filesystems */
