@@ -161,6 +161,7 @@ func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.Sta
 		sum.MemUsed += stats.MemUsed
 		sum.MemPct += stats.MemPct
 		sum.MemBuffCache += stats.MemBuffCache
+		sum.MemZfsArc += stats.MemZfsArc
 		sum.Swap += stats.Swap
 		sum.SwapUsed += stats.SwapUsed
 		sum.DiskTotal += stats.DiskTotal
@@ -200,6 +201,7 @@ func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.Sta
 		MemUsed:      twoDecimals(sum.MemUsed / count),
 		MemPct:       twoDecimals(sum.MemPct / count),
 		MemBuffCache: twoDecimals(sum.MemBuffCache / count),
+		MemZfsArc:    twoDecimals(sum.MemZfsArc / count),
 		Swap:         twoDecimals(sum.Swap / count),
 		SwapUsed:     twoDecimals(sum.SwapUsed / count),
 		DiskTotal:    twoDecimals(sum.DiskTotal / count),
