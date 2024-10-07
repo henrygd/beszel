@@ -1,7 +1,14 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-import { useYAxisWidth, chartTimeData, cn, toFixedFloat, twoDecimalString } from '@/lib/utils'
+import {
+	useYAxisWidth,
+	chartTimeData,
+	cn,
+	toFixedFloat,
+	twoDecimalString,
+	formatShortDate,
+} from '@/lib/utils'
 import { useMemo } from 'react'
 import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
@@ -72,6 +79,7 @@ export default function MemChart({
 							<ChartTooltipContent
 								// @ts-ignore
 								itemSorter={(a, b) => a.order - b.order}
+								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 								contentFormatter={(item) => twoDecimalString(item.value) + ' GB'}
 								indicator="line"
 							/>
