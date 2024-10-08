@@ -118,17 +118,15 @@ func (rm *RecordManager) CreateLongerRecords() {
 						continue
 					}
 					// average the shorter records and create longer record
-					var stats interface{}
-					switch collection.Name {
-					case "system_stats":
-						stats = rm.AverageSystemStats(allShorterRecords)
-					case "container_stats":
-						stats = rm.AverageContainerStats(allShorterRecords)
-					}
 					longerRecord := models.NewRecord(collection)
 					longerRecord.Set("system", system.Id)
-					longerRecord.Set("stats", stats)
 					longerRecord.Set("type", recordData.longerType)
+					switch collection.Name {
+					case "system_stats":
+						longerRecord.Set("stats", rm.AverageSystemStats(allShorterRecords))
+					case "container_stats":
+						longerRecord.Set("stats", rm.AverageContainerStats(allShorterRecords))
+					}
 					if err := txDao.SaveRecord(longerRecord); err != nil {
 						log.Println("failed to save longer record", "err", err.Error())
 					}
