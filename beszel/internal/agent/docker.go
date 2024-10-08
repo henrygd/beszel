@@ -219,7 +219,7 @@ func newDockerManager() *dockerManager {
 
 	dockerClient := &dockerManager{
 		client: &http.Client{
-			Timeout:   time.Millisecond * 1100,
+			Timeout:   time.Millisecond * 2100,
 			Transport: transport,
 		},
 		containerStatsMap: make(map[string]*container.Stats),
