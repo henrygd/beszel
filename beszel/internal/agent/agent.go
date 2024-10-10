@@ -78,6 +78,7 @@ func (a *Agent) Run(pubKey []byte, addr string) {
 }
 
 func (a *Agent) gatherStats() system.CombinedData {
+	slog.Debug("Getting stats")
 	systemData := system.CombinedData{
 		Stats: a.getSystemStats(),
 		Info:  a.systemInfo,

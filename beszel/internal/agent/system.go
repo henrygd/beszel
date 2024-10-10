@@ -53,6 +53,7 @@ func (a *Agent) getSystemStats() system.Stats {
 	systemStats := system.Stats{}
 
 	// cpu percent
+	slog.Debug("Getting cpu percent")
 	cpuPct, err := cpu.Percent(0, false)
 	if err != nil {
 		slog.Error("Error getting cpu percent", "err", err)
@@ -61,6 +62,7 @@ func (a *Agent) getSystemStats() system.Stats {
 	}
 
 	// memory
+	slog.Debug("Getting memory stats")
 	if v, err := mem.VirtualMemory(); err == nil {
 		// swap
 		systemStats.Swap = bytesToGigabytes(v.SwapTotal)
@@ -89,6 +91,7 @@ func (a *Agent) getSystemStats() system.Stats {
 	}
 
 	// disk usage
+	slog.Debug("Getting disk stats")
 	for _, stats := range a.fsStats {
 		if d, err := disk.Usage(stats.Mountpoint); err == nil {
 			stats.DiskTotal = bytesToGigabytes(d.Total)
@@ -109,6 +112,7 @@ func (a *Agent) getSystemStats() system.Stats {
 	}
 
 	// disk i/o
+	slog.Debug("Getting disk I/O stats")
 	if ioCounters, err := disk.IOCounters(a.fsNames...); err == nil {
 		for _, d := range ioCounters {
 			stats := a.fsStats[d.Name]
@@ -132,6 +136,7 @@ func (a *Agent) getSystemStats() system.Stats {
 	}
 
 	// network stats
+	slog.Debug("Getting network stats")
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
 		secondsElapsed := time.Since(a.netIoStats.Time).Seconds()
 		a.netIoStats.Time = time.Now()
@@ -172,6 +177,7 @@ func (a *Agent) getSystemStats() system.Stats {
 	}
 
 	// temperatures
+	slog.Debug("Getting temperatures")
 	temps, err := sensors.TemperaturesWithContext(a.sensorsContext)
 	if err != nil && a.debug {
 		err.(*sensors.Warnings).Verbose = true
