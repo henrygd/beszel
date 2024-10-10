@@ -6,7 +6,14 @@ import {
 	ChartTooltipContent,
 } from '@/components/ui/chart'
 import { useMemo } from 'react'
-import { useYAxisWidth, chartTimeData, cn, formatShortDate, twoDecimalString } from '@/lib/utils'
+import {
+	useYAxisWidth,
+	chartTimeData,
+	cn,
+	formatShortDate,
+	twoDecimalString,
+	chartMargin,
+} from '@/lib/utils'
 // import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $chartTime, $containerFilter } from '@/lib/stores'
@@ -65,7 +72,6 @@ export default function ContainerCpuChart({
 		<div>
 			{/* {!yAxisSet && <Spinner />} */}
 			<ChartContainer
-				config={{}}
 				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
 					'opacity-100': yAxisWidth,
 				})}
@@ -74,9 +80,7 @@ export default function ContainerCpuChart({
 					accessibilityLayer
 					// syncId={'cpu'}
 					data={chartData}
-					margin={{
-						top: 10,
-					}}
+					margin={chartMargin}
 					reverseStackOrder={true}
 				>
 					<CartesianGrid vertical={false} />

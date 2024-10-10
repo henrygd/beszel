@@ -8,6 +8,7 @@ import {
 	toFixedFloat,
 	twoDecimalString,
 	formatShortDate,
+	chartMargin,
 } from '@/lib/utils'
 import { useMemo } from 'react'
 import { useStore } from '@nanostores/react'
@@ -32,18 +33,11 @@ export default function MemChart({
 		<div>
 			{/* {!yAxisSet && <Spinner />} */}
 			<ChartContainer
-				config={{}}
 				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
 					'opacity-100': yAxisWidth,
 				})}
 			>
-				<AreaChart
-					accessibilityLayer
-					data={systemData}
-					margin={{
-						top: 10,
-					}}
-				>
+				<AreaChart accessibilityLayer data={systemData} margin={chartMargin}>
 					<CartesianGrid vertical={false} />
 					{totalMem && (
 						<YAxis

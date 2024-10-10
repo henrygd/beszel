@@ -151,11 +151,6 @@ func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.Sta
 	// use different counter for temps in case some records don't have them
 	tempCount := float64(0)
 
-	// peak values
-	peakCpu := float64(0)
-	peakNs := float64(0)
-	peakNr := float64(0)
-
 	var stats system.Stats
 	for _, record := range records {
 		record.UnmarshalJSONField("stats", &stats)
@@ -175,9 +170,11 @@ func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.Sta
 		sum.NetworkSent += stats.NetworkSent
 		sum.NetworkRecv += stats.NetworkRecv
 		// set peak values
-		peakCpu = max(peakCpu, stats.PeakCpu, stats.Cpu)
-		peakNs = max(peakNs, stats.PeakNetworkSent, stats.NetworkSent)
-		peakNr = max(peakNr, stats.PeakNetworkRecv, stats.NetworkRecv)
+		sum.MaxCpu = max(sum.MaxCpu, stats.MaxCpu, stats.Cpu)
+		sum.MaxNetworkSent = max(sum.MaxNetworkSent, stats.MaxNetworkSent, stats.NetworkSent)
+		sum.MaxNetworkRecv = max(sum.MaxNetworkRecv, stats.MaxNetworkRecv, stats.NetworkRecv)
+		sum.MaxDiskReadPs = max(sum.MaxDiskReadPs, stats.MaxDiskReadPs, stats.DiskReadPs)
+		sum.MaxDiskWritePs = max(sum.MaxDiskWritePs, stats.MaxDiskWritePs, stats.DiskWritePs)
 		// add temps to sum
 		if stats.Temperatures != nil {
 			tempCount++
@@ -198,29 +195,34 @@ func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.Sta
 				sum.ExtraFs[key].DiskUsed += value.DiskUsed
 				sum.ExtraFs[key].DiskWritePs += value.DiskWritePs
 				sum.ExtraFs[key].DiskReadPs += value.DiskReadPs
+				// peak values
+				sum.ExtraFs[key].MaxDiskReadPS = max(sum.ExtraFs[key].MaxDiskReadPS, value.MaxDiskReadPS, value.DiskReadPs)
+				sum.ExtraFs[key].MaxDiskWritePS = max(sum.ExtraFs[key].MaxDiskWritePS, value.MaxDiskWritePS, value.DiskWritePs)
 			}
 		}
 	}
 
 	stats = system.Stats{
-		Cpu:             twoDecimals(sum.Cpu / count),
-		PeakCpu:         twoDecimals(peakCpu),
-		Mem:             twoDecimals(sum.Mem / count),
-		MemUsed:         twoDecimals(sum.MemUsed / count),
-		MemPct:          twoDecimals(sum.MemPct / count),
-		MemBuffCache:    twoDecimals(sum.MemBuffCache / count),
-		MemZfsArc:       twoDecimals(sum.MemZfsArc / count),
-		Swap:            twoDecimals(sum.Swap / count),
-		SwapUsed:        twoDecimals(sum.SwapUsed / count),
-		DiskTotal:       twoDecimals(sum.DiskTotal / count),
-		DiskUsed:        twoDecimals(sum.DiskUsed / count),
-		DiskPct:         twoDecimals(sum.DiskPct / count),
-		DiskReadPs:      twoDecimals(sum.DiskReadPs / count),
-		DiskWritePs:     twoDecimals(sum.DiskWritePs / count),
-		NetworkSent:     twoDecimals(sum.NetworkSent / count),
-		PeakNetworkSent: twoDecimals(peakNs),
-		NetworkRecv:     twoDecimals(sum.NetworkRecv / count),
-		PeakNetworkRecv: twoDecimals(peakNr),
+		Cpu:            twoDecimals(sum.Cpu / count),
+		Mem:            twoDecimals(sum.Mem / count),
+		MemUsed:        twoDecimals(sum.MemUsed / count),
+		MemPct:         twoDecimals(sum.MemPct / count),
+		MemBuffCache:   twoDecimals(sum.MemBuffCache / count),
+		MemZfsArc:      twoDecimals(sum.MemZfsArc / count),
+		Swap:           twoDecimals(sum.Swap / count),
+		SwapUsed:       twoDecimals(sum.SwapUsed / count),
+		DiskTotal:      twoDecimals(sum.DiskTotal / count),
+		DiskUsed:       twoDecimals(sum.DiskUsed / count),
+		DiskPct:        twoDecimals(sum.DiskPct / count),
+		DiskReadPs:     twoDecimals(sum.DiskReadPs / count),
+		DiskWritePs:    twoDecimals(sum.DiskWritePs / count),
+		NetworkSent:    twoDecimals(sum.NetworkSent / count),
+		NetworkRecv:    twoDecimals(sum.NetworkRecv / count),
+		MaxCpu:         sum.MaxCpu,
+		MaxDiskReadPs:  sum.MaxDiskReadPs,
+		MaxDiskWritePs: sum.MaxDiskWritePs,
+		MaxNetworkSent: sum.MaxNetworkSent,
+		MaxNetworkRecv: sum.MaxNetworkRecv,
 	}
 
 	if len(sum.Temperatures) != 0 {
@@ -234,10 +236,12 @@ func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.Sta
 		stats.ExtraFs = make(map[string]*system.FsStats)
 		for key, value := range sum.ExtraFs {
 			stats.ExtraFs[key] = &system.FsStats{
-				DiskTotal:   twoDecimals(value.DiskTotal / count),
-				DiskUsed:    twoDecimals(value.DiskUsed / count),
-				DiskWritePs: twoDecimals(value.DiskWritePs / count),
-				DiskReadPs:  twoDecimals(value.DiskReadPs / count),
+				DiskTotal:      twoDecimals(value.DiskTotal / count),
+				DiskUsed:       twoDecimals(value.DiskUsed / count),
+				DiskWritePs:    twoDecimals(value.DiskWritePs / count),
+				DiskReadPs:     twoDecimals(value.DiskReadPs / count),
+				MaxDiskReadPS:  value.MaxDiskReadPS,
+				MaxDiskWritePS: value.MaxDiskWritePS,
 			}
 		}
 	}

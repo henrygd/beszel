@@ -204,7 +204,10 @@ export function useYAxisWidth() {
 			clearTimeout(timeout)
 			timeout = setTimeout(() => {
 				document.body.appendChild(div)
-				setYAxisWidth(div.offsetWidth + 24)
+				const width = div.offsetWidth + 24
+				if (width > yAxisWidth) {
+					setYAxisWidth(div.offsetWidth + 24)
+				}
 				document.body.removeChild(div)
 			})
 		}
@@ -285,3 +288,5 @@ export const getSizeUnit = (n: number) => (n >= 1_000 ? ' TB' : ' GB')
  * @returns value in GB if less than 1000, otherwise value in TB
  */
 export const getSizeVal = (n: number) => (n >= 1_000 ? n / 1_000 : n)
+
+export const chartMargin = { top: 12 }

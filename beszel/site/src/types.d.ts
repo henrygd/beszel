@@ -36,7 +36,7 @@ export interface SystemStats {
 	/** cpu percent */
 	cpu: number
 	/** peak cpu */
-	pcpu?: number
+	cpum?: number
 	/** total memory (gb) */
 	m: number
 	/** memory used (gb) */
@@ -61,14 +61,18 @@ export interface SystemStats {
 	dr: number
 	/** disk write (mb) */
 	dw: number
+	/** max disk read (mb) */
+	drm?: number
+	/** max disk write (mb) */
+	dwm?: number
 	/** network sent (mb) */
 	ns: number
-	/** peak network sent (mb) */
-	pns?: number
 	/** network received (mb) */
 	nr: number
-	/** peak network received (mb) */
-	pnr?: number
+	/** max network sent (mb) */
+	nsm?: number
+	/** max network received (mb) */
+	nrm?: number
 	/** temperatures */
 	t?: Record<string, number>
 	/** extra filesystems */
@@ -84,6 +88,10 @@ export interface ExtraFsStats {
 	r: number
 	/** total write (mb) */
 	w: number
+	/** max read (mb) */
+	rm: number
+	/** max write (mb) */
+	wm: number
 }
 
 export interface ContainerStatsRecord extends RecordModel {

@@ -23,3 +23,25 @@ export function Rows(props: SVGProps<SVGSVGElement>) {
 		</svg>
 	)
 }
+
+// IconPark Apache License 2.0 https://github.com/bytedance/IconPark
+export function ChartAverage(props: SVGProps<SVGSVGElement>) {
+	return (
+		<svg fill="none" viewBox="0 0 48 48" stroke="currentColor" {...props}>
+			<path strokeWidth="3" d="M4 4v40h40" />
+			<path strokeWidth="3" d="M10 38S15.3 4 27 4s17 34 17 34" />
+			<path strokeWidth="4" d="M10 24h34" />
+		</svg>
+	)
+}
+
+// IconPark Apache License 2.0 https://github.com/bytedance/IconPark
+export function ChartMax(props: SVGProps<SVGSVGElement>) {
+	return (
+		<svg fill="none" viewBox="0 0 48 48" stroke="currentColor" {...props}>
+			<path strokeWidth="3" d="M4 4v40h40" />
+			<path strokeWidth="3" d="M10 38S15.3 4 27 4s17 34 17 34" />
+			<path strokeWidth="4" d="M10 4h34" />
+		</svg>
+	)
+}

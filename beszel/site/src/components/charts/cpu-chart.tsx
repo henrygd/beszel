@@ -1,11 +1,19 @@
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
-import { useYAxisWidth, chartTimeData, cn, formatShortDate, twoDecimalString } from '@/lib/utils'
+import {
+	useYAxisWidth,
+	chartTimeData,
+	cn,
+	formatShortDate,
+	twoDecimalString,
+	chartMargin,
+} from '@/lib/utils'
 // import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
-import { $chartTime } from '@/lib/stores'
+import { $chartTime, $cpuMax } from '@/lib/stores'
 import { SystemStatsRecord } from '@/types'
+import { useMemo } from 'react'
 
 export default function CpuChart({
 	ticks,
@@ -16,11 +24,16 @@ export default function CpuChart({
 }) {
 	const chartTime = useStore($chartTime)
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
+	const showMax = useStore($cpuMax)
+
+	const dataKey = useMemo(
+		() => `stats.cpu${showMax && chartTime !== '1h' ? 'm' : ''}`,
+		[showMax, systemData]
+	)
 
 	return (
 		<div>
 			<ChartContainer
-				config={{}}
 				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
 					'opacity-100': yAxisWidth,
 				})}
@@ -28,7 +41,7 @@ export default function CpuChart({
 				<AreaChart
 					accessibilityLayer
 					data={systemData}
-					margin={{ top: 10 }}
+					margin={chartMargin}
 					// syncId={'cpu'}
 				>
 					<CartesianGrid vertical={false} />
@@ -63,16 +76,13 @@ export default function CpuChart({
 						}
 					/>
 					<Area
-						dataKey="stats.cpu"
+						dataKey={dataKey}
 						name="CPU Usage"
 						type="monotoneX"
 						fill="hsl(var(--chart-1))"
 						fillOpacity={0.4}
 						stroke="hsl(var(--chart-1))"
 						isAnimationActive={false}
-						// animationEasing="ease-out"
-						// animationDuration={1200}
-						// animateNewValues={true}
 					/>
 				</AreaChart>
 			</ChartContainer>

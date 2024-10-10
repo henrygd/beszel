@@ -8,8 +8,8 @@ import {
 	formatShortDate,
 	toFixedWithoutTrailingZeros,
 	twoDecimalString,
+	chartMargin,
 } from '@/lib/utils'
-// import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
 import { SystemStatsRecord } from '@/types'
@@ -27,12 +27,11 @@ export default function SwapChart({
 	return (
 		<div>
 			<ChartContainer
-				config={{}}
 				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
 					'opacity-100': yAxisWidth,
 				})}
 			>
-				<AreaChart accessibilityLayer data={systemData} margin={{ top: 10 }}>
+				<AreaChart accessibilityLayer data={systemData} margin={chartMargin}>
 					<CartesianGrid vertical={false} />
 					<YAxis
 						className="tracking-tighter"

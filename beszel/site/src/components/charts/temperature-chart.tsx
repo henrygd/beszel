@@ -14,6 +14,7 @@ import {
 	formatShortDate,
 	toFixedWithoutTrailingZeros,
 	twoDecimalString,
+	chartMargin,
 } from '@/lib/utils'
 import { useStore } from '@nanostores/react'
 import { $chartTime } from '@/lib/stores'
@@ -60,21 +61,11 @@ export default function TemperatureChart({
 		<div>
 			{/* {!yAxisSet && <Spinner />} */}
 			<ChartContainer
-				config={{}}
 				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
 					'opacity-100': yAxisWidth,
 				})}
 			>
-				<LineChart
-					accessibilityLayer
-					data={newChartData.data}
-					margin={{
-						left: 0,
-						right: 0,
-						top: 10,
-						bottom: 0,
-					}}
-				>
+				<LineChart accessibilityLayer data={newChartData.data} margin={chartMargin}>
 					<CartesianGrid vertical={false} />
 					<YAxis
 						className="tracking-tighter"
