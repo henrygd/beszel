@@ -25,6 +25,8 @@ const ContainerNetChart = lazy(() => import('../charts/container-net-chart'))
 const SwapChart = lazy(() => import('../charts/swap-chart'))
 const TemperatureChart = lazy(() => import('../charts/temperature-chart'))
 
+const cache = new Map<string, SystemStatsRecord[] | ContainerStatsRecord[]>()
+
 export default function SystemDetail({ name }: { name: string }) {
 	const systems = useStore($systems)
 	const chartTime = useStore($chartTime)
@@ -95,10 +97,12 @@ export default function SystemDetail({ name }: { name: string }) {
 	}, [system])
 
 	async function getStats<T>(collection: string): Promise<T[]> {
+		const lastCached = cache.get(`${system.id}_${chartTime}_${collection}`)?.at(-1)
+			?.created as number
 		return await pb.collection<T>(collection).getFullList({
 			filter: pb.filter('system={:id} && created > {:created} && type={:type}', {
 				id: system.id,
-				created: getPbTimestamp(chartTime),
+				created: getPbTimestamp(chartTime, lastCached ? new Date(lastCached + 1000) : undefined),
 				type: chartTimeData[chartTime].type,
 			}),
 			fields: 'created,stats',
@@ -139,16 +143,34 @@ export default function SystemDetail({ name }: { name: string }) {
 			getStats<SystemStatsRecord>('system_stats'),
 			getStats<ContainerStatsRecord>('container_stats'),
 		]).then(([systemStats, containerStats]) => {
-			const expectedInterval = chartTimeData[chartTime].expectedInterval
-			if (systemStats.status === 'fulfilled') {
-				setSystemStats(addEmptyValues(systemStats.value, expectedInterval))
+			const { expectedInterval } = chartTimeData[chartTime]
+			// make new system stats
+			const ss_cache_key = `${system.id}_${chartTime}_system_stats`
+			let systemData = (cache.get(ss_cache_key) || []) as SystemStatsRecord[]
+			if (systemStats.status === 'fulfilled' && systemStats.value.length) {
+				systemData = systemData.concat(addEmptyValues(systemStats.value, expectedInterval))
+				if (systemData.length > 120) {
+					systemData = systemData.slice(-100)
+				}
+				cache.set(ss_cache_key, systemData)
 			}
+			setSystemStats(systemData)
+			// make new container stats
+			const cs_cache_key = `${system.id}_${chartTime}_container_stats`
+			let containerData = (cache.get(cs_cache_key) || []) as ContainerStatsRecord[]
 			if (containerStats.status === 'fulfilled' && containerStats.value.length) {
+				containerData = containerData.concat(addEmptyValues(containerStats.value, expectedInterval))
+				if (containerData.length > 120) {
+					containerData = containerData.slice(-100)
+				}
+				cache.set(cs_cache_key, containerData)
+			}
+			if (containerData.length) {
 				!containerFilterBar && setContainerFilterBar(<ContainerFilterBar />)
-				makeContainerData(addEmptyValues(containerStats.value, expectedInterval))
-			} else {
+			} else if (containerFilterBar) {
 				setContainerFilterBar(null)
 			}
+			makeContainerData(containerData)
 		})
 	}, [system, chartTime])
 

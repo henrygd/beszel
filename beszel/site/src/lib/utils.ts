@@ -136,8 +136,8 @@ export function updateRecordList<T extends RecordModel>(
 	$store.set(newRecords)
 }
 
-export function getPbTimestamp(timeString: ChartTimes) {
-	const d = chartTimeData[timeString].getOffset(new Date())
+export function getPbTimestamp(timeString: ChartTimes, d?: Date) {
+	d ||= chartTimeData[timeString].getOffset(new Date())
 	const year = d.getUTCFullYear()
 	const month = String(d.getUTCMonth() + 1).padStart(2, '0')
 	const day = String(d.getUTCDate()).padStart(2, '0')
