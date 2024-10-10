@@ -18,9 +18,6 @@ func (a *Agent) initializeDiskInfo() {
 	efPath := "/extra-filesystems"
 	hasRoot := false
 
-	// Create map for disk stats
-	a.fsStats = make(map[string]*system.FsStats)
-
 	partitions, err := disk.Partitions(false)
 	if err != nil {
 		slog.Error("Error getting disk partitions", "err", err)

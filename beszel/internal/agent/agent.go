@@ -29,6 +29,7 @@ func NewAgent() *Agent {
 	return &Agent{
 		sensorsContext: context.Background(),
 		memCalc:        os.Getenv("MEM_CALC"),
+		fsStats:        make(map[string]*system.FsStats),
 	}
 }
 
