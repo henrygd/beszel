@@ -3,7 +3,6 @@ package main
 import (
 	"beszel"
 	"beszel/internal/agent"
-	"beszel/internal/update"
 	"fmt"
 	"log"
 	"os"
@@ -17,7 +16,7 @@ func main() {
 		case "-v":
 			fmt.Println(beszel.AppName+"-agent", beszel.Version)
 		case "update":
-			update.UpdateBeszelAgent()
+			agent.Update()
 		}
 		os.Exit(0)
 	}

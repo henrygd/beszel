@@ -3,7 +3,6 @@ package main
 import (
 	"beszel"
 	"beszel/internal/hub"
-	"beszel/internal/update"
 	_ "beszel/migrations"
 
 	"github.com/pocketbase/pocketbase"
@@ -22,7 +21,7 @@ func main() {
 	app.RootCmd.AddCommand(&cobra.Command{
 		Use:   "update",
 		Short: "Update " + beszel.AppName + " to the latest version",
-		Run:   func(_ *cobra.Command, _ []string) { update.UpdateBeszel() },
+		Run:   hub.Update,
 	})
 
 	hub.NewHub(app).Run()
