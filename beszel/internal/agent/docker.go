@@ -219,7 +219,7 @@ func newDockerManager() *dockerManager {
 
 	dockerClient := &dockerManager{
 		client: &http.Client{
-			Timeout:   time.Millisecond * 2100,
+			Timeout:   time.Second * 8,
 			Transport: transport,
 		},
 		containerStatsMap: make(map[string]*container.Stats),
@@ -243,9 +243,10 @@ func newDockerManager() *dockerManager {
 		return dockerClient
 	}
 
-	// if version > 25, one-shot works correctly and we can limit concurrent connections / goroutines to 5
+	// if version > 24, one-shot works correctly and we can limit concurrent operations
 	if dockerVersion, err := semver.Parse(versionInfo.Version); err == nil && dockerVersion.Major > 24 {
 		concurrency = 5
+		dockerClient.client.Timeout = time.Millisecond * 1100
 	}
 	slog.Debug("Docker", "version", versionInfo.Version, "concurrency", concurrency)
 
