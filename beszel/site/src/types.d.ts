@@ -30,6 +30,10 @@ export interface SystemInfo {
 	mp: number
 	/** disk percent */
 	dp: number
+	/** bandwidth (mb) */
+	b: number
+	/** agent version */
+	v: string
 }
 
 export interface SystemStats {

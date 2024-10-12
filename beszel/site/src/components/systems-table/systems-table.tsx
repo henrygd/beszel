@@ -59,15 +59,16 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import { $hubVersion, $systems, pb } from '@/lib/stores'
 import { useStore } from '@nanostores/react'
-import { cn, copyToClipboard, isReadOnlyUser } from '@/lib/utils'
+import { cn, copyToClipboard, decimalString, isReadOnlyUser } from '@/lib/utils'
 import AlertsButton from '../table-alerts'
 import { navigate } from '../router'
+import { EthernetIcon } from '../ui/icons'
 
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	const val = info.getValue() as number
 	return (
 		<div className="flex gap-1 items-center tabular-nums tracking-tight">
-			<span className="min-w-[3.5em]">{val.toFixed(1)}%</span>
+			<span className="min-w-[3.5em]">{decimalString(val, 1)}%</span>
 			<span className="grow min-w-10 block bg-muted h-[1em] relative rounded-sm overflow-hidden">
 				<span
 					className={cn(
@@ -162,8 +163,21 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 				header: ({ column }) => sortableHeader(column, 'Disk', HardDrive),
 			},
 			{
+				accessorKey: 'info.b',
+				size: 80,
+				header: ({ column }) => sortableHeader(column, 'Net', EthernetIcon),
+				cell: (info) => {
+					return (
+						<span className="tabular-nums whitespace-nowrap pl-1">
+							{decimalString((info.getValue() as number) || 0, 2)} MB/s
+						</span>
+					)
+				},
+			},
+			{
 				accessorKey: 'info.v',
 				size: 50,
+				header: ({ column }) => sortableHeader(column, 'Agent', WifiIcon, true),
 				cell: (info) => {
 					const version = info.getValue() as string
 					if (!version || !hubVersion) {
@@ -182,7 +196,6 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 						</span>
 					)
 				},
-				header: ({ column }) => sortableHeader(column, 'Agent', WifiIcon, true),
 			},
 			{
 				id: 'actions',
