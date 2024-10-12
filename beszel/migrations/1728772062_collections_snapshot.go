@@ -15,7 +15,7 @@ func init() {
 			{
 				"id": "2hz5ncl8tizk5nx",
 				"created": "2024-07-07 16:08:20.979Z",
-				"updated": "2024-07-28 17:14:24.492Z",
+				"updated": "2024-10-12 18:55:51.623Z",
 				"name": "systems",
 				"type": "base",
 				"system": false,
@@ -120,7 +120,7 @@ func init() {
 			{
 				"id": "ej9oowivz8b2mht",
 				"created": "2024-07-07 16:09:09.179Z",
-				"updated": "2024-07-28 17:14:24.492Z",
+				"updated": "2024-10-12 18:55:51.623Z",
 				"name": "system_stats",
 				"type": "base",
 				"system": false,
@@ -186,7 +186,7 @@ func init() {
 			{
 				"id": "juohu4jipgc13v7",
 				"created": "2024-07-07 16:09:57.976Z",
-				"updated": "2024-07-28 17:14:24.492Z",
+				"updated": "2024-10-12 18:55:51.623Z",
 				"name": "container_stats",
 				"type": "base",
 				"system": false,
@@ -250,7 +250,7 @@ func init() {
 			{
 				"id": "_pb_users_auth_",
 				"created": "2024-07-14 16:25:18.226Z",
-				"updated": "2024-09-12 23:19:36.280Z",
+				"updated": "2024-10-12 22:27:19.081Z",
 				"name": "users",
 				"type": "auth",
 				"system": false,
@@ -316,7 +316,7 @@ func init() {
 			{
 				"id": "elngm8x1l60zi2v",
 				"created": "2024-07-15 01:16:04.044Z",
-				"updated": "2024-07-28 17:14:24.492Z",
+				"updated": "2024-10-12 22:27:29.128Z",
 				"name": "alerts",
 				"type": "base",
 				"system": false,
@@ -367,7 +367,9 @@ func init() {
 								"Status",
 								"CPU",
 								"Memory",
-								"Disk"
+								"Disk",
+								"Temperature",
+								"Bandwidth"
 							]
 						}
 					},
@@ -383,6 +385,20 @@ func init() {
 							"min": null,
 							"max": null,
 							"noDecimal": false
+						}
+					},
+					{
+						"system": false,
+						"id": "fstdehcq",
+						"name": "min",
+						"type": "number",
+						"required": false,
+						"presentable": false,
+						"unique": false,
+						"options": {
+							"min": null,
+							"max": 60,
+							"noDecimal": true
 						}
 					},
 					{
@@ -407,7 +423,7 @@ func init() {
 			{
 				"id": "4afacsdnlu8q8r2",
 				"created": "2024-09-12 17:42:55.324Z",
-				"updated": "2024-09-12 21:19:59.114Z",
+				"updated": "2024-10-12 18:55:51.624Z",
 				"name": "user_settings",
 				"type": "base",
 				"system": false,
