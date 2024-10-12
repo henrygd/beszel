@@ -57,6 +57,8 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *models.Record, systemIn
 			am.handleSlidingValueAlert(systemRecord, alertRecord, name, "%", systemInfo.MemPct)
 		case "Disk":
 			am.handleSlidingValueAlert(systemRecord, alertRecord, name+" usage", "%", systemInfo.DiskPct)
+		case "Bandwidth":
+			am.handleSlidingValueAlert(systemRecord, alertRecord, name, " MB/s", systemInfo.Bandwidth)
 		case "Temperature":
 			if temperatures == nil {
 				continue

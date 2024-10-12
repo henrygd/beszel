@@ -61,6 +61,7 @@ type Info struct {
 	Cpu           float64 `json:"cpu"`
 	MemPct        float64 `json:"mp"`
 	DiskPct       float64 `json:"dp"`
+	Bandwidth     float64 `json:"b"`
 	AgentVersion  string  `json:"v"`
 }
 

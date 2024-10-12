@@ -143,7 +143,7 @@ export default function CommandPalette() {
 								}}
 							>
 								<DatabaseBackupIcon className="mr-2 h-4 w-4" />
-								<span>Database backups</span>
+								<span>Backups</span>
 								<CommandShortcut>Admin</CommandShortcut>
 							</CommandItem>
 							<CommandItem

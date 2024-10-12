@@ -164,12 +164,13 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 			},
 			{
 				accessorKey: 'info.b',
-				size: 80,
+				size: 115,
 				header: ({ column }) => sortableHeader(column, 'Net', EthernetIcon),
 				cell: (info) => {
+					const val = (info.getValue() as number) || 0
 					return (
 						<span className="tabular-nums whitespace-nowrap pl-1">
-							{decimalString((info.getValue() as number) || 0, 2)} MB/s
+							{decimalString(val, val >= 100 ? 1 : 2)} MB/s
 						</span>
 					)
 				},

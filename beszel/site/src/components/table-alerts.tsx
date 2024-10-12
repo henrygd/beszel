@@ -48,7 +48,7 @@ export default function AlertsButton({ system }: { system: SystemRecord }) {
 					/>
 				</Button>
 			</DialogTrigger>
-			<DialogContent className="max-h-full overflow-auto">
+			<DialogContent className="max-h-full overflow-auto max-w-[35rem]">
 				<DialogHeader>
 					<DialogTitle className="text-xl">{system.name} alerts</DialogTitle>
 					<DialogDescription className="mb-1">
@@ -81,6 +81,14 @@ export default function AlertsButton({ system }: { system: SystemRecord }) {
 						name="Disk"
 						title="Disk Usage"
 						description="Triggers when root usage exceeds a threshold."
+					/>
+					<AlertWithSlider
+						system={system}
+						alerts={systemAlerts}
+						name="Bandwidth"
+						title="Bandwidth"
+						description="Triggers when combined up/down exceeds a threshold."
+						unit=" MB/s"
 					/>
 					<AlertWithSlider
 						system={system}
@@ -152,6 +160,7 @@ function AlertWithSlider({
 	title,
 	description,
 	unit = '%',
+	max = 99,
 }: {
 	system: SystemRecord
 	alerts: AlertRecord[]
@@ -159,6 +168,7 @@ function AlertWithSlider({
 	title: string
 	description: string
 	unit?: string
+	max?: number
 }) {
 	const [pendingChange, setPendingChange] = useState(false)
 	const [liveValue, setLiveValue] = useState(80)
@@ -226,7 +236,7 @@ function AlertWithSlider({
 								setLiveValue(val[0])
 							}}
 							min={1}
-							max={99}
+							max={max}
 							// step={1}
 						/>
 					</Suspense>
