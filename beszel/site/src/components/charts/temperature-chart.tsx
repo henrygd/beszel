@@ -13,7 +13,7 @@ import {
 	cn,
 	formatShortDate,
 	toFixedWithoutTrailingZeros,
-	twoDecimalString,
+	decimalString,
 	chartMargin,
 } from '@/lib/utils'
 import { useStore } from '@nanostores/react'
@@ -97,7 +97,7 @@ export default function TemperatureChart({
 						content={
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
-								contentFormatter={(item) => twoDecimalString(item.value) + ' °C'}
+								contentFormatter={(item) => decimalString(item.value) + ' °C'}
 								indicator="line"
 							/>
 						}

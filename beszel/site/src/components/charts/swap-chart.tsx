@@ -7,7 +7,7 @@ import {
 	cn,
 	formatShortDate,
 	toFixedWithoutTrailingZeros,
-	twoDecimalString,
+	decimalString,
 	chartMargin,
 } from '@/lib/utils'
 import { useStore } from '@nanostores/react'
@@ -58,7 +58,7 @@ export default function SwapChart({
 						content={
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
-								contentFormatter={(item) => twoDecimalString(item.value) + ' GB'}
+								contentFormatter={(item) => decimalString(item.value) + ' GB'}
 								indicator="line"
 							/>
 						}

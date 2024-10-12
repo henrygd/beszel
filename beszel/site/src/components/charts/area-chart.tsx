@@ -7,7 +7,7 @@ import {
 	cn,
 	formatShortDate,
 	toFixedWithoutTrailingZeros,
-	twoDecimalString,
+	decimalString,
 	chartMargin,
 } from '@/lib/utils'
 // import Spinner from '../spinner'
@@ -103,7 +103,7 @@ export default function AreaChartDefault({
 						content={
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
-								contentFormatter={(item) => twoDecimalString(item.value) + unit}
+								contentFormatter={(item) => decimalString(item.value) + unit}
 								indicator="line"
 							/>
 						}

@@ -11,7 +11,7 @@ import {
 	chartTimeData,
 	cn,
 	formatShortDate,
-	twoDecimalString,
+	decimalString,
 	chartMargin,
 } from '@/lib/utils'
 // import Spinner from '../spinner'
@@ -116,7 +116,7 @@ export default function ContainerCpuChart({
 						content={
 							<ChartTooltipContent
 								filter={filter}
-								contentFormatter={(item) => twoDecimalString(item.value) + '%'}
+								contentFormatter={(item) => decimalString(item.value) + '%'}
 								indicator="line"
 							/>
 						}

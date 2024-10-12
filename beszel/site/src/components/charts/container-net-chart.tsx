@@ -12,7 +12,7 @@ import {
 	cn,
 	formatShortDate,
 	toFixedWithoutTrailingZeros,
-	twoDecimalString,
+	decimalString,
 	chartMargin,
 } from '@/lib/utils'
 // import Spinner from '../spinner'
@@ -119,10 +119,10 @@ export default function ContainerCpuChart({
 										const received = item?.payload?.[key][1] ?? 0
 										return (
 											<span className="flex">
-												{twoDecimalString(received)} MB/s
+												{decimalString(received)} MB/s
 												<span className="opacity-70 ml-0.5"> rx </span>
 												<Separator orientation="vertical" className="h-3 mx-1.5 bg-primary/40" />
-												{twoDecimalString(sent)} MB/s<span className="opacity-70 ml-0.5"> tx</span>
+												{decimalString(sent)} MB/s<span className="opacity-70 ml-0.5"> tx</span>
 											</span>
 										)
 									} catch (e) {

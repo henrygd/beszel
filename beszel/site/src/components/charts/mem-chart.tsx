@@ -6,7 +6,7 @@ import {
 	chartTimeData,
 	cn,
 	toFixedFloat,
-	twoDecimalString,
+	decimalString,
 	formatShortDate,
 	chartMargin,
 } from '@/lib/utils'
@@ -74,7 +74,7 @@ export default function MemChart({
 								// @ts-ignore
 								itemSorter={(a, b) => a.order - b.order}
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
-								contentFormatter={(item) => twoDecimalString(item.value) + ' GB'}
+								contentFormatter={(item) => decimalString(item.value) + ' GB'}
 								indicator="line"
 							/>
 						}

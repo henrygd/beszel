@@ -224,17 +224,18 @@ export function toFixedFloat(num: number, digits: number) {
 	return parseFloat(num.toFixed(digits))
 }
 
-let twoDecimalFormatter: Intl.NumberFormat
-/** Format number to two decimal places */
-export function twoDecimalString(num: number) {
-	if (!twoDecimalFormatter) {
-		twoDecimalFormatter = new Intl.NumberFormat(undefined, {
-			minimumFractionDigits: 2,
-			maximumFractionDigits: 2,
+let decimalFormatters: Map<number, Intl.NumberFormat> = new Map()
+/** Format number to x decimal places */
+export function decimalString(num: number, digits = 2) {
+	let formatter = decimalFormatters.get(digits)
+	if (!formatter) {
+		formatter = new Intl.NumberFormat(undefined, {
+			minimumFractionDigits: digits,
+			maximumFractionDigits: digits,
 		})
+		decimalFormatters.set(digits, formatter)
 	}
-	// Return a function that formats numbers using the saved formatter
-	return twoDecimalFormatter.format(num)
+	return formatter.format(num)
 }
 
 /** Get value from local storage */

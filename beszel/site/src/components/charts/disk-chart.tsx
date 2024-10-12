@@ -6,7 +6,7 @@ import {
 	chartTimeData,
 	cn,
 	formatShortDate,
-	twoDecimalString,
+	decimalString,
 	toFixedFloat,
 	getSizeVal,
 	getSizeUnit,
@@ -72,7 +72,7 @@ export default function DiskChart({
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 								contentFormatter={({ value }) =>
-									twoDecimalString(getSizeVal(value)) + getSizeUnit(value)
+									decimalString(getSizeVal(value)) + getSizeUnit(value)
 								}
 								indicator="line"
 							/>

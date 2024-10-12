@@ -12,7 +12,7 @@ import {
 	cn,
 	formatShortDate,
 	toFixedWithoutTrailingZeros,
-	twoDecimalString,
+	decimalString,
 	chartMargin,
 } from '@/lib/utils'
 // import Spinner from '../spinner'
@@ -116,7 +116,7 @@ export default function ContainerMemChart({
 						content={
 							<ChartTooltipContent
 								filter={filter}
-								contentFormatter={(item) => twoDecimalString(item.value) + ' MB'}
+								contentFormatter={(item) => decimalString(item.value) + ' MB'}
 								indicator="line"
 							/>
 						}
