@@ -82,6 +82,14 @@ export default function AlertsButton({ system }: { system: SystemRecord }) {
 						title="Disk Usage"
 						description="Triggers when root usage exceeds a threshold."
 					/>
+					<AlertWithSlider
+						system={system}
+						alerts={systemAlerts}
+						name="Temperature"
+						title="Temperature"
+						description="Triggers when any sensor exceeds a threshold."
+						unit=" °C"
+					/>
 				</div>
 			</DialogContent>
 		</Dialog>
@@ -143,15 +151,17 @@ function AlertWithSlider({
 	name,
 	title,
 	description,
+	unit = '%',
 }: {
 	system: SystemRecord
 	alerts: AlertRecord[]
 	name: string
 	title: string
 	description: string
+	unit?: string
 }) {
 	const [pendingChange, setPendingChange] = useState(false)
-	const [liveValue, setLiveValue] = useState(50)
+	const [liveValue, setLiveValue] = useState(80)
 
 	const alert = useMemo(() => {
 		const alert = alerts.find((alert) => alert.name === name)
@@ -215,12 +225,15 @@ function AlertWithSlider({
 							onValueChange={(val) => {
 								setLiveValue(val[0])
 							}}
-							min={10}
+							min={1}
 							max={99}
 							// step={1}
 						/>
 					</Suspense>
-					<span className="tabular-nums tracking-tighter text-[.92em]">{liveValue}%</span>
+					<span className="tabular-nums tracking-tighter text-[.92em] shrink-0">
+						{liveValue}
+						{unit}
+					</span>
 				</div>
 			)}
 		</div>

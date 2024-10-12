@@ -39,7 +39,7 @@ func NewAlertManager(app *pocketbase.PocketBase) *AlertManager {
 	}
 }
 
-func (am *AlertManager) HandleSystemInfoAlerts(systemRecord *models.Record, systemInfo system.Info) {
+func (am *AlertManager) HandleSystemAlerts(systemRecord *models.Record, systemInfo system.Info, temperatures map[string]float64) {
 	alertRecords, err := am.app.Dao().FindRecordsByExpr("alerts",
 		dbx.NewExp("system={:system}", dbx.Params{"system": systemRecord.GetId()}),
 	)
@@ -51,19 +51,28 @@ func (am *AlertManager) HandleSystemInfoAlerts(systemRecord *models.Record, syst
 	for _, alertRecord := range alertRecords {
 		name := alertRecord.GetString("name")
 		switch name {
-		case "CPU", "Memory", "Disk":
-			if name == "CPU" {
-				am.handleSlidingValueAlert(systemRecord, alertRecord, name, systemInfo.Cpu)
-			} else if name == "Memory" {
-				am.handleSlidingValueAlert(systemRecord, alertRecord, name, systemInfo.MemPct)
-			} else if name == "Disk" {
-				am.handleSlidingValueAlert(systemRecord, alertRecord, name, systemInfo.DiskPct)
+		case "CPU":
+			am.handleSlidingValueAlert(systemRecord, alertRecord, name, "%", systemInfo.Cpu)
+		case "Memory":
+			am.handleSlidingValueAlert(systemRecord, alertRecord, name, "%", systemInfo.MemPct)
+		case "Disk":
+			am.handleSlidingValueAlert(systemRecord, alertRecord, name+" usage", "%", systemInfo.DiskPct)
+		case "Temperature":
+			if temperatures == nil {
+				continue
 			}
+			highTemp := 0.0
+			for _, temp := range temperatures {
+				if temp > highTemp {
+					highTemp = temp
+				}
+			}
+			am.handleSlidingValueAlert(systemRecord, alertRecord, name, "°C", highTemp)
 		}
 	}
 }
 
-func (am *AlertManager) handleSlidingValueAlert(systemRecord *models.Record, alertRecord *models.Record, name string, curValue float64) {
+func (am *AlertManager) handleSlidingValueAlert(systemRecord *models.Record, alertRecord *models.Record, name, unit string, curValue float64) {
 	triggered := alertRecord.GetBool("triggered")
 	threshold := alertRecord.GetFloat("value")
 	// fmt.Println(name, curValue, "threshold", threshold, "triggered", triggered)
@@ -73,13 +82,13 @@ func (am *AlertManager) handleSlidingValueAlert(systemRecord *models.Record, ale
 	if !triggered && curValue > threshold {
 		alertRecord.Set("triggered", true)
 		systemName = systemRecord.GetString("name")
-		subject = fmt.Sprintf("%s usage above threshold on %s", name, systemName)
-		body = fmt.Sprintf("%s usage on %s is %.1f%%.", name, systemName, curValue)
+		subject = fmt.Sprintf("%s above threshold on %s", name, systemName)
+		body = fmt.Sprintf("%s on %s is %v%s.", name, systemName, curValue, unit)
 	} else if triggered && curValue <= threshold {
 		alertRecord.Set("triggered", false)
 		systemName = systemRecord.GetString("name")
-		subject = fmt.Sprintf("%s usage below threshold on %s", name, systemName)
-		body = fmt.Sprintf("%s usage on %s is below threshold at %.1f%%.", name, systemName, curValue)
+		subject = fmt.Sprintf("%s below threshold on %s", name, systemName)
+		body = fmt.Sprintf("%s on %s is below threshold at %v%s.", name, systemName, curValue, unit)
 	} else {
 		// fmt.Println(name, "not triggered")
 		return

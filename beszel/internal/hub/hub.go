@@ -306,8 +306,8 @@ func (h *Hub) updateSystem(record *models.Record) {
 			h.app.Logger().Error("Failed to save record: ", "err", err.Error())
 		}
 	}
-	// system info alerts (todo: temp alerts, extra fs alerts)
-	h.am.HandleSystemInfoAlerts(record, systemData.Info)
+	// system info alerts (todo: extra fs alerts)
+	h.am.HandleSystemAlerts(record, systemData.Info, systemData.Stats.Temperatures)
 }
 
 // set system to specified status and save record
