@@ -61,33 +61,19 @@ export default function AlertsButton({ system }: { system: SystemRecord }) {
 				</DialogHeader>
 				<div className="grid gap-3">
 					<AlertStatus system={system} alerts={systemAlerts} />
-					<AlertWithSlider
-						system={system}
-						alerts={systemAlerts}
-						name="CPU"
-						title="CPU Usage"
-						description="Triggers when CPU usage exceeds a threshold."
-					/>
+					<AlertWithSlider system={system} alerts={systemAlerts} name="CPU" title="CPU Usage" />
 					<AlertWithSlider
 						system={system}
 						alerts={systemAlerts}
 						name="Memory"
 						title="Memory Usage"
-						description="Triggers when memory usage exceeds a threshold."
 					/>
-					<AlertWithSlider
-						system={system}
-						alerts={systemAlerts}
-						name="Disk"
-						title="Disk Usage"
-						description="Triggers when root usage exceeds a threshold."
-					/>
+					<AlertWithSlider system={system} alerts={systemAlerts} name="Disk" title="Disk Usage" />
 					<AlertWithSlider
 						system={system}
 						alerts={systemAlerts}
 						name="Bandwidth"
 						title="Bandwidth"
-						description="Triggers when combined up/down exceeds a threshold."
 						unit=" MB/s"
 					/>
 					<AlertWithSlider
@@ -95,7 +81,6 @@ export default function AlertsButton({ system }: { system: SystemRecord }) {
 						alerts={systemAlerts}
 						name="Temperature"
 						title="Temperature"
-						description="Triggers when any sensor exceeds a threshold."
 						unit=" °C"
 					/>
 				</div>
@@ -158,7 +143,6 @@ function AlertWithSlider({
 	alerts,
 	name,
 	title,
-	description,
 	unit = '%',
 	max = 99,
 }: {
@@ -166,17 +150,18 @@ function AlertWithSlider({
 	alerts: AlertRecord[]
 	name: string
 	title: string
-	description: string
 	unit?: string
 	max?: number
 }) {
 	const [pendingChange, setPendingChange] = useState(false)
 	const [liveValue, setLiveValue] = useState(80)
+	const [liveMinutes, setLiveMinutes] = useState(10)
 
 	const alert = useMemo(() => {
 		const alert = alerts.find((alert) => alert.name === name)
 		if (alert) {
 			setLiveValue(alert.value)
+			setLiveMinutes(alert.min || 1)
 		}
 		return alert
 	}, [alerts])
@@ -191,7 +176,7 @@ function AlertWithSlider({
 			>
 				<div className="grid gap-1 select-none">
 					<p className="font-semibold">{title}</p>
-					<span className="block text-sm text-foreground opacity-80">{description}</span>
+					{/* <span className="block text-sm text-foreground opacity-80">{description}</span> */}
 				</div>
 				<Switch
 					id={`alert-${name}`}
@@ -212,6 +197,7 @@ function AlertWithSlider({
 									user: pb.authStore.model!.id,
 									name,
 									value: liveValue,
+									min: liveMinutes,
 								})
 							}
 						} catch (e) {
@@ -223,27 +209,51 @@ function AlertWithSlider({
 				/>
 			</label>
 			{alert && (
-				<div className="flex mt-2 mb-3 gap-3 px-4">
+				<div className="grid sm:grid-cols-2 mt-1.5 gap-5 px-4 pb-5 tabular-nums opacity-85">
 					<Suspense>
-						<Slider
-							defaultValue={[liveValue]}
-							onValueCommit={(val) => {
-								pb.collection('alerts').update(alert.id, {
-									value: val[0],
-								})
-							}}
-							onValueChange={(val) => {
-								setLiveValue(val[0])
-							}}
-							min={1}
-							max={max}
-							// step={1}
-						/>
+						<div>
+							<label htmlFor="alert-slider" className="text-sm block h-8">
+								Exceeds{' '}
+								<strong>
+									{liveValue}
+									{unit}
+								</strong>
+							</label>
+							<div className="flex gap-3">
+								<Slider
+									id="alert-slider"
+									defaultValue={[liveValue]}
+									onValueCommit={(val) => {
+										pb.collection('alerts').update(alert.id, {
+											value: val[0],
+										})
+									}}
+									onValueChange={(val) => setLiveValue(val[0])}
+									min={1}
+									max={max}
+								/>
+							</div>
+						</div>
+						<div>
+							<label htmlFor="alert-slider" className="text-sm block h-8">
+								For <strong>{liveMinutes}</strong> minute{liveMinutes > 1 && 's'}
+							</label>
+							<div className="flex gap-3">
+								<Slider
+									id="alert-slider"
+									defaultValue={[liveMinutes]}
+									onValueCommit={(val) => {
+										pb.collection('alerts').update(alert.id, {
+											min: val[0],
+										})
+									}}
+									onValueChange={(val) => setLiveMinutes(val[0])}
+									min={1}
+									max={60}
+								/>
+							</div>
+						</div>
 					</Suspense>
-					<span className="tabular-nums tracking-tighter text-[.92em] shrink-0">
-						{liveValue}
-						{unit}
-					</span>
 				</div>
 			)}
 		</div>

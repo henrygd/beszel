@@ -77,6 +77,17 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *models.Record, systemIn
 func (am *AlertManager) handleSlidingValueAlert(systemRecord *models.Record, alertRecord *models.Record, name, unit string, curValue float64) {
 	triggered := alertRecord.GetBool("triggered")
 	threshold := alertRecord.GetFloat("value")
+
+	// IF alert is not triggered and curValue is less than threshold
+	// OR alert is triggered and curValue is greater than threshold
+	if (!triggered && curValue <= threshold) || (triggered && curValue > threshold) {
+		return
+	}
+
+	minutes := alertRecord.GetInt("min")
+	// if one minute, use curValue as threshold
+	// otherwise, use average of last x minutes from system_stats
+
 	// fmt.Println(name, curValue, "threshold", threshold, "triggered", triggered)
 	var subject string
 	var body string
