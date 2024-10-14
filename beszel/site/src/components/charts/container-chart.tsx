@@ -59,7 +59,7 @@ export default memo(function ContainerChart({
 					totalUsage[key] = 0
 				}
 				if (isNetChart) {
-					totalUsage[key] += stats[key]?.ns ?? 0 + stats[key]?.nr ?? 0
+					totalUsage[key] += (stats[key]?.nr ?? 0) + (stats[key]?.ns ?? 0)
 				} else {
 					// @ts-ignore
 					totalUsage[key] += stats[key]?.[dataKey] ?? 0
@@ -79,6 +79,55 @@ export default memo(function ContainerChart({
 		}
 		return config satisfies ChartConfig
 	}, [chartData])
+
+	const { toolTipFormatter, dataFunction, tickFormatter } = useMemo(() => {
+		const obj = {} as {
+			toolTipFormatter: (item: any, key: string) => React.ReactNode | string
+			dataFunction: (key: string, data: any) => number | null
+			tickFormatter: (value: any) => string
+		}
+		// tick formatter
+		if (chartName === 'cpu') {
+			obj.tickFormatter = (value) => {
+				const val = toFixedWithoutTrailingZeros(value, 2) + unit
+				return updateYAxisWidth(val)
+			}
+		} else {
+			obj.tickFormatter = (value) => {
+				const { v, u } = getSizeAndUnit(value, false)
+				return updateYAxisWidth(`${toFixedFloat(v, 2)}${u}${isNetChart ? '/s' : ''}`)
+			}
+		}
+		// tooltip formatter
+		if (isNetChart) {
+			obj.toolTipFormatter = (item: any, key: string) => {
+				try {
+					const sent = item?.payload?.[key]?.ns ?? 0
+					const received = item?.payload?.[key]?.nr ?? 0
+					return (
+						<span className="flex">
+							{decimalString(received)} MB/s
+							<span className="opacity-70 ml-0.5"> rx </span>
+							<Separator orientation="vertical" className="h-3 mx-1.5 bg-primary/40" />
+							{decimalString(sent)} MB/s
+							<span className="opacity-70 ml-0.5"> tx</span>
+						</span>
+					)
+				} catch (e) {
+					return null
+				}
+			}
+		} else {
+			obj.toolTipFormatter = (item: any) => decimalString(item.value) + unit
+		}
+		// data function
+		if (isNetChart) {
+			obj.dataFunction = (key: string, data: any) => (data[key]?.nr ?? 0) + (data[key]?.ns ?? 0)
+		} else {
+			obj.dataFunction = (key: string, data: any) => data[key]?.[dataKey] ?? 0
+		}
+		return obj
+	}, [])
 
 	// console.log('rendered at', new Date())
 
@@ -100,14 +149,7 @@ export default memo(function ContainerChart({
 					<YAxis
 						className="tracking-tighter"
 						width={yAxisWidth}
-						tickFormatter={(value) => {
-							if (chartName === 'cpu') {
-								const val = toFixedWithoutTrailingZeros(value, 2) + unit
-								return updateYAxisWidth(val)
-							}
-							const { v, u } = getSizeAndUnit(value, false)
-							return updateYAxisWidth(`${toFixedFloat(v, 2)}${u}${isNetChart ? '/s' : ''}`)
-						}}
+						tickFormatter={tickFormatter}
 						tickLine={false}
 						axisLine={false}
 					/>
@@ -129,31 +171,7 @@ export default memo(function ContainerChart({
 						labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 						// @ts-ignore
 						itemSorter={(a, b) => b.value - a.value}
-						content={
-							<ChartTooltipContent
-								filter={filter}
-								contentFormatter={(item, key) => {
-									if (!isNetChart) {
-										return decimalString(item.value) + unit
-									}
-									try {
-										const sent = item?.payload?.[key]?.ns ?? 0
-										const received = item?.payload?.[key]?.nr ?? 0
-										return (
-											<span className="flex">
-												{decimalString(received)} MB/s
-												<span className="opacity-70 ml-0.5"> rx </span>
-												<Separator orientation="vertical" className="h-3 mx-1.5 bg-primary/40" />
-												{decimalString(sent)} MB/s
-												<span className="opacity-70 ml-0.5"> tx</span>
-											</span>
-										)
-									} catch (e) {
-										return null
-									}
-								}}
-							/>
-						}
+						content={<ChartTooltipContent filter={filter} contentFormatter={toolTipFormatter} />}
 					/>
 					{Object.keys(chartConfig).map((key) => {
 						const filtered = filter && !key.includes(filter)
@@ -163,12 +181,7 @@ export default memo(function ContainerChart({
 							<Area
 								key={key}
 								isAnimationActive={false}
-								dataKey={(data) => {
-									if (isNetChart) {
-										return data[key]?.ns ?? 0 + data?.[key]?.nr ?? 0
-									}
-									return data[key]?.[dataKey] ?? 0
-								}}
+								dataKey={dataFunction.bind(null, key)}
 								name={key}
 								type="monotoneX"
 								fill={chartConfig[key].color}
