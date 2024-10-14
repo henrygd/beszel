@@ -16,19 +16,19 @@ import {
 	decimalString,
 	chartMargin,
 } from '@/lib/utils'
-import { useStore } from '@nanostores/react'
-import { $chartTime } from '@/lib/stores'
-import { SystemStatsRecord } from '@/types'
-import { useMemo } from 'react'
+import { ChartTimes, SystemStatsRecord } from '@/types'
+import { memo, useMemo } from 'react'
 
-export default function TemperatureChart({
-	ticks,
-	systemData,
+export default memo(function TemperatureChart({
+	systemChartData,
 }: {
-	ticks: number[]
-	systemData: SystemStatsRecord[]
+	systemChartData: {
+		systemStats: SystemStatsRecord[]
+		ticks: number[]
+		domain: number[]
+		chartTime: ChartTimes
+	}
 }) {
-	const chartTime = useStore($chartTime)
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
 	/** Format temperature data for chart and assign colors */
@@ -38,7 +38,7 @@ export default function TemperatureChart({
 			colors: Record<string, string>
 		}
 		const tempSums = {} as Record<string, number>
-		for (let data of systemData) {
+		for (let data of systemChartData.systemStats) {
 			let newData = { created: data.created } as Record<string, number | string>
 			let keys = Object.keys(data.stats?.t ?? {})
 			for (let i = 0; i < keys.length; i++) {
@@ -53,13 +53,14 @@ export default function TemperatureChart({
 			chartData.colors[key] = `hsl(${((keys.indexOf(key) * 360) / keys.length) % 360}, 60%, 55%)`
 		}
 		return chartData
-	}, [systemData])
+	}, [systemChartData])
 
 	const colors = Object.keys(newChartData.colors)
 
+	// console.log('rendered at', new Date())
+
 	return (
 		<div>
-			{/* {!yAxisSet && <Spinner />} */}
 			<ChartContainer
 				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
 					'opacity-100': yAxisWidth,
@@ -80,14 +81,15 @@ export default function TemperatureChart({
 					/>
 					<XAxis
 						dataKey="created"
-						domain={[ticks[0], ticks.at(-1)!]}
-						ticks={ticks}
+						domain={systemChartData.domain}
+						ticks={systemChartData.ticks}
+						allowDataOverflow
 						type="number"
-						scale={'time'}
-						minTickGap={35}
+						scale="time"
+						minTickGap={30}
 						tickMargin={8}
 						axisLine={false}
-						tickFormatter={chartTimeData[chartTime].format}
+						tickFormatter={chartTimeData[systemChartData.chartTime].format}
 					/>
 					<ChartTooltip
 						animationEasing="ease-out"
@@ -98,7 +100,7 @@ export default function TemperatureChart({
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 								contentFormatter={(item) => decimalString(item.value) + ' °C'}
-								indicator="line"
+								// indicator="line"
 							/>
 						}
 					/>
@@ -119,4 +121,4 @@ export default function TemperatureChart({
 			</ChartContainer>
 		</div>
 	)
-}
+})

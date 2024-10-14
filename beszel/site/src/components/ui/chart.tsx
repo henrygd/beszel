@@ -95,7 +95,6 @@ const ChartTooltipContent = React.forwardRef<
 	React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
 		React.ComponentProps<'div'> & {
 			hideLabel?: boolean
-			hideIndicator?: boolean
 			indicator?: 'line' | 'dot' | 'dashed'
 			nameKey?: string
 			labelKey?: string
@@ -109,9 +108,8 @@ const ChartTooltipContent = React.forwardRef<
 			active,
 			payload,
 			className,
-			indicator = 'dot',
+			indicator = 'line',
 			hideLabel = false,
-			hideIndicator = false,
 			label,
 			labelFormatter,
 			labelClassName,
@@ -145,7 +143,7 @@ const ChartTooltipContent = React.forwardRef<
 			}
 
 			const [item] = payload
-			const key = `${labelKey || item.dataKey || item.name || 'value'}`
+			const key = `${labelKey || item.name || 'value'}`
 			const itemConfig = getPayloadConfigFromPayload(config, item, key)
 			const value = !labelKey && typeof label === 'string' ? label : itemConfig?.label
 
@@ -166,7 +164,8 @@ const ChartTooltipContent = React.forwardRef<
 			return null
 		}
 
-		const nestLabel = payload.length === 1 && indicator !== 'dot'
+		// const nestLabel = payload.length === 1 && indicator !== 'dot'
+		const nestLabel = false
 
 		return (
 			<div
@@ -198,26 +197,24 @@ const ChartTooltipContent = React.forwardRef<
 										{itemConfig?.icon ? (
 											<itemConfig.icon />
 										) : (
-											!hideIndicator && (
-												<div
-													className={cn(
-														'shrink-0 rounded-[2px] border-[--color-border] bg-[--color-bg]',
-														{
-															'h-2.5 w-2.5': indicator === 'dot',
-															'w-1': indicator === 'line',
-															'w-0 border-[1.5px] border-dashed bg-transparent':
-																indicator === 'dashed',
-															'my-0.5': nestLabel && indicator === 'dashed',
-														}
-													)}
-													style={
-														{
-															'--color-bg': indicatorColor,
-															'--color-border': indicatorColor,
-														} as React.CSSProperties
+											<div
+												className={cn(
+													'shrink-0 rounded-[2px] border-[--color-border] bg-[--color-bg]',
+													{
+														'h-2.5 w-2.5': indicator === 'dot',
+														'w-1': indicator === 'line',
+														'w-0 border-[1.5px] border-dashed bg-transparent':
+															indicator === 'dashed',
+														'my-0.5': nestLabel && indicator === 'dashed',
 													}
-												/>
-											)
+												)}
+												style={
+													{
+														'--color-bg': indicatorColor,
+														'--color-border': indicatorColor,
+													} as React.CSSProperties
+												}
+											/>
 										)}
 										<div
 											className={cn(

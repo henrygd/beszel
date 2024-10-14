@@ -5,30 +5,39 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from '@/components/ui/chart'
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import {
 	useYAxisWidth,
 	chartTimeData,
 	cn,
 	formatShortDate,
-	toFixedWithoutTrailingZeros,
 	decimalString,
 	chartMargin,
+	toFixedWithoutTrailingZeros,
 } from '@/lib/utils'
 // import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
-import { $chartTime, $containerFilter } from '@/lib/stores'
+import { $containerFilter } from '@/lib/stores'
+import { ChartTimes, ContainerStats } from '@/types'
 
-export default function ContainerMemChart({
-	chartData,
-	ticks,
+export default memo(function ContainerCpuChart({
+	dataKey,
+	unit = '%',
+	containerChartData,
 }: {
-	chartData: Record<string, number | string>[]
-	ticks: number[]
+	dataKey: string
+	unit?: string
+	containerChartData: {
+		containerData: Record<string, number | ContainerStats>[]
+		ticks: number[]
+		domain: number[]
+		chartTime: ChartTimes
+	}
 }) {
-	const chartTime = useStore($chartTime)
 	const filter = useStore($containerFilter)
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
+
+	const { containerData, ticks, domain, chartTime } = containerChartData
 
 	const chartConfig = useMemo(() => {
 		let config = {} as Record<
@@ -39,16 +48,16 @@ export default function ContainerMemChart({
 			}
 		>
 		const totalUsage = {} as Record<string, number>
-		for (let stats of chartData) {
+		for (let stats of containerData) {
 			for (let key in stats) {
-				if (key === 'time') {
+				if (!key || typeof stats[key] === 'number') {
 					continue
 				}
 				if (!(key in totalUsage)) {
 					totalUsage[key] = 0
 				}
 				// @ts-ignore
-				totalUsage[key] += stats[key]
+				totalUsage[key] += stats[key]?.[dataKey] ?? 0
 			}
 		}
 		let keys = Object.keys(totalUsage)
@@ -63,15 +72,12 @@ export default function ContainerMemChart({
 			}
 		}
 		return config satisfies ChartConfig
-	}, [chartData])
+	}, [containerChartData])
 
-	// if (!chartData.length || !ticks.length) {
-	// 	return <Spinner />
-	// }
+	// console.log('rendered at', new Date())
 
 	return (
 		<div>
-			{/* {!yAxisSet && <Spinner />} */}
 			<ChartContainer
 				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
 					'opacity-100': yAxisWidth,
@@ -79,45 +85,45 @@ export default function ContainerMemChart({
 			>
 				<AreaChart
 					accessibilityLayer
-					data={chartData}
-					reverseStackOrder={true}
+					// syncId={'cpu'}
+					data={containerData}
 					margin={chartMargin}
+					reverseStackOrder={true}
 				>
 					<CartesianGrid vertical={false} />
 					<YAxis
 						className="tracking-tighter"
-						// domain={[0, (max: number) => Math.ceil(max)]}
-						tickLine={false}
-						axisLine={false}
 						width={yAxisWidth}
 						tickFormatter={(value) => {
-							const val = toFixedWithoutTrailingZeros(value / 1024, 2) + ' GB'
+							const val = toFixedWithoutTrailingZeros(value, 2) + unit
 							return updateYAxisWidth(val)
 						}}
+						tickLine={false}
+						axisLine={false}
 					/>
 					<XAxis
-						dataKey="time"
-						domain={[ticks[0], ticks.at(-1)!]}
+						dataKey="created"
+						domain={domain}
+						allowDataOverflow
 						ticks={ticks}
 						type="number"
-						scale={'time'}
+						scale="time"
 						minTickGap={35}
 						tickMargin={8}
 						axisLine={false}
 						tickFormatter={chartTimeData[chartTime].format}
 					/>
 					<ChartTooltip
-						// cursor={false}
 						animationEasing="ease-out"
 						animationDuration={150}
-						labelFormatter={(_, data) => formatShortDate(data[0].payload.time)}
+						labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 						// @ts-ignore
 						itemSorter={(a, b) => b.value - a.value}
 						content={
 							<ChartTooltipContent
 								filter={filter}
-								contentFormatter={(item) => decimalString(item.value) + ' MB'}
-								indicator="line"
+								contentFormatter={(item) => decimalString(item.value) + unit}
+								// indicator="line"
 							/>
 						}
 					/>
@@ -129,13 +135,14 @@ export default function ContainerMemChart({
 							<Area
 								key={key}
 								isAnimationActive={false}
-								dataKey={key}
+								dataKey={`${key}.${dataKey}`}
+								name={key}
 								type="monotoneX"
 								fill={chartConfig[key].color}
-								strokeOpacity={strokeOpacity}
 								fillOpacity={fillOpacity}
 								stroke={chartConfig[key].color}
-								activeDot={filtered ? false : {}}
+								strokeOpacity={strokeOpacity}
+								activeDot={{ opacity: filtered ? 0 : 1 }}
 								stackId="a"
 							/>
 						)
@@ -144,4 +151,4 @@ export default function ContainerMemChart({
 			</ChartContainer>
 		</div>
 	)
-}
+})

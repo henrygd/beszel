@@ -1,5 +1,5 @@
 import { $systems, pb, $chartTime, $containerFilter, $userSettings } from '@/lib/stores'
-import { ContainerStatsRecord, SystemRecord, SystemStatsRecord } from '@/types'
+import { ContainerStats, ContainerStatsRecord, SystemRecord, SystemStatsRecord } from '@/types'
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription } from '../ui/card'
 import { useStore } from '@nanostores/react'
@@ -16,11 +16,10 @@ import { ChartAverage, ChartMax, Rows, TuxIcon } from '../ui/icons'
 import { useIntersectionObserver } from '@/lib/use-intersection-observer'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 
-const ContainerCpuChart = lazy(() => import('../charts/container-cpu-chart'))
-const MemChart = lazy(() => import('../charts/mem-chart'))
-const ContainerMemChart = lazy(() => import('../charts/container-mem-chart'))
-const DiskChart = lazy(() => import('../charts/disk-chart'))
 const AreaChartDefault = lazy(() => import('../charts/area-chart'))
+const ContainerChartDefault = lazy(() => import('../charts/container-chart'))
+const MemChart = lazy(() => import('../charts/mem-chart'))
+const DiskChart = lazy(() => import('../charts/disk-chart'))
 const ContainerNetChart = lazy(() => import('../charts/container-net-chart'))
 const SwapChart = lazy(() => import('../charts/swap-chart'))
 const TemperatureChart = lazy(() => import('../charts/temperature-chart'))
@@ -35,27 +34,22 @@ export default function SystemDetail({ name }: { name: string }) {
 	const bandwidthMaxStore = useState(false)
 	const diskIoMaxStore = useState(false)
 	const [grid, setGrid] = useLocalStorage('grid', true)
-	const [ticks, setTicks] = useState([] as number[])
 	const [system, setSystem] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
+	const [containerData, setContainerData] = useState(
+		[] as Record<string, ContainerStats | number>[]
+	)
 	const netCardRef = useRef<HTMLDivElement>(null)
 	const [containerFilterBar, setContainerFilterBar] = useState(null as null | JSX.Element)
-	const [dockerCpuChartData, setDockerCpuChartData] = useState<Record<string, number | string>[]>(
-		[]
-	)
-	const [dockerMemChartData, setDockerMemChartData] = useState<Record<string, number | string>[]>(
-		[]
-	)
-	const [dockerNetChartData, setDockerNetChartData] = useState<Record<string, number | number[]>[]>(
-		[]
-	)
 	const isLongerChart = chartTime !== '1h'
 
 	useEffect(() => {
 		document.title = `${name} / Beszel`
 		return () => {
-			resetCharts()
 			$chartTime.set($userSettings.get().chartTime)
+			// resetCharts()
+			setSystemStats([])
+			setContainerData([])
 			setContainerFilterBar(null)
 			$containerFilter.set('')
 			cpuMaxStore[1](false)
@@ -64,15 +58,14 @@ export default function SystemDetail({ name }: { name: string }) {
 		}
 	}, [name])
 
-	function resetCharts() {
-		setSystemStats([])
-		setDockerCpuChartData([])
-		setDockerMemChartData([])
-		setDockerNetChartData([])
-	}
+	// function resetCharts() {
+	// 	setSystemStats([])
+	// 	setContainerData([])
+	// }
 
-	useEffect(resetCharts, [chartTime])
+	// useEffect(resetCharts, [chartTime])
 
+	// find matching system
 	useEffect(() => {
 		if (system.id && system.name === name) {
 			return
@@ -95,6 +88,33 @@ export default function SystemDetail({ name }: { name: string }) {
 			pb.collection('systems').unsubscribe(system.id)
 		}
 	}, [system])
+
+	function getTimeData() {
+		const now = new Date()
+		const startTime = chartTimeData[chartTime].getOffset(now)
+		const scale = scaleTime([startTime.getTime(), now], [0, systemStats.length])
+		const ticks = scale.ticks(chartTimeData[chartTime].ticks).map((d) => d.getTime())
+
+		return {
+			ticks,
+			chartTime,
+			domain: [chartTimeData[chartTime].getOffset(now).getTime(), now.getTime()],
+		}
+	}
+
+	const systemChartData = useMemo(() => {
+		return {
+			systemStats,
+			...getTimeData(),
+		}
+	}, [systemStats])
+
+	const containerChartData = useMemo(() => {
+		return {
+			containerData,
+			...getTimeData(),
+		}
+	}, [containerData])
 
 	async function getStats<T>(collection: string): Promise<T[]> {
 		const lastCached = cache.get(`${system.id}_${chartTime}_${collection}`)?.at(-1)
@@ -174,49 +194,24 @@ export default function SystemDetail({ name }: { name: string }) {
 		})
 	}, [system, chartTime])
 
-	useEffect(() => {
-		if (!systemStats.length) {
-			return
-		}
-		const now = new Date()
-		const startTime = chartTimeData[chartTime].getOffset(now)
-		const scale = scaleTime([startTime.getTime(), now], [0, systemStats.length])
-		const newTicks = scale.ticks(chartTimeData[chartTime].ticks).map((d) => d.getTime())
-		if (newTicks[0] !== ticks[0]) {
-			setTicks(newTicks)
-		}
-	}, [chartTime, systemStats])
-
 	// make container stats for charts
 	const makeContainerData = useCallback((containers: ContainerStatsRecord[]) => {
 		// console.log('containers', containers)
-		const dockerCpuData = []
-		const dockerMemData = []
-		const dockerNetData = []
+		const containerData = [] as Record<string, ContainerStats | number>[]
 		for (let { created, stats } of containers) {
 			if (!created) {
-				let nullData = { time: null } as unknown
-				dockerCpuData.push(nullData as Record<string, number | string>)
-				dockerMemData.push(nullData as Record<string, number | string>)
-				dockerNetData.push(nullData as Record<string, number | number[]>)
+				let nullData = { created: null } as unknown
+				containerData.push(nullData as Record<string, ContainerStats | number>)
 				continue
 			}
-			const time = new Date(created).getTime()
-			let cpuData = { time } as Record<string, number | string>
-			let memData = { time } as Record<string, number | string>
-			let netData = { time } as Record<string, number | number[]>
+			created = new Date(created).getTime()
+			let containerStats = { created } as Record<string, number | ContainerStats>
 			for (let container of stats) {
-				cpuData[container.n] = container.c
-				memData[container.n] = container.m
-				netData[container.n] = [container.ns, container.nr, container.ns + container.nr] // sent, received, total
+				containerStats[container.n] = container
 			}
-			dockerCpuData.push(cpuData)
-			dockerMemData.push(memData)
-			dockerNetData.push(netData)
+			containerData.push(containerStats)
 		}
-		setDockerCpuChartData(dockerCpuData)
-		setDockerMemChartData(dockerMemData)
-		setDockerNetChartData(dockerNetData)
+		setContainerData(containerData)
 	}, [])
 
 	// values for system info bar
@@ -257,16 +252,16 @@ export default function SystemDetail({ name }: { name: string }) {
 
 	/** Space for tooltip if more than 12 containers */
 	const bottomSpacing = useMemo(() => {
-		if (!netCardRef.current || !dockerNetChartData.length) {
+		if (!netCardRef.current || !containerData.length) {
 			return 0
 		}
-		const tooltipHeight = (Object.keys(dockerNetChartData[0]).length - 11) * 17.8 - 40
+		const tooltipHeight = (Object.keys(containerData[0]).length - 11) * 17.8 - 40
 		const wrapperEl = document.getElementById('chartwrap') as HTMLDivElement
 		const wrapperRect = wrapperEl.getBoundingClientRect()
 		const chartRect = netCardRef.current.getBoundingClientRect()
 		const distanceToBottom = wrapperRect.bottom - chartRect.bottom
 		return tooltipHeight - distanceToBottom
-	}, [netCardRef.current, dockerNetChartData])
+	}, [netCardRef.current, containerData])
 
 	if (!system.id) {
 		return null
@@ -365,12 +360,10 @@ export default function SystemDetail({ name }: { name: string }) {
 						cornerEl={isLongerChart ? <SelectAvgMax store={cpuMaxStore} /> : null}
 					>
 						<AreaChartDefault
-							ticks={ticks}
-							systemData={systemStats}
+							systemChartData={systemChartData}
 							chartName="CPU Usage"
-							showMax={isLongerChart && cpuMaxStore[0]}
+							maxToggled={cpuMaxStore[0]}
 							unit="%"
-							chartTime={chartTime}
 						/>
 					</ChartCard>
 
@@ -381,7 +374,7 @@ export default function SystemDetail({ name }: { name: string }) {
 							description="Average CPU utilization of containers"
 							cornerEl={containerFilterBar}
 						>
-							<ContainerCpuChart chartData={dockerCpuChartData} ticks={ticks} />
+							<ContainerChartDefault dataKey="c" containerChartData={containerChartData} />
 						</ChartCard>
 					)}
 
@@ -390,7 +383,7 @@ export default function SystemDetail({ name }: { name: string }) {
 						title="Total Memory Usage"
 						description="Precise utilization at the recorded time"
 					>
-						<MemChart ticks={ticks} systemData={systemStats} />
+						<MemChart systemChartData={systemChartData} />
 					</ChartCard>
 
 					{containerFilterBar && (
@@ -400,14 +393,17 @@ export default function SystemDetail({ name }: { name: string }) {
 							description="Memory usage of docker containers"
 							cornerEl={containerFilterBar}
 						>
-							<ContainerMemChart chartData={dockerMemChartData} ticks={ticks} />
+							<ContainerChartDefault
+								containerChartData={containerChartData}
+								dataKey="m"
+								unit=" MB"
+							/>
 						</ChartCard>
 					)}
 
 					<ChartCard grid={grid} title="Disk Space" description="Usage of root partition">
 						<DiskChart
-							ticks={ticks}
-							systemData={systemStats}
+							systemChartData={systemChartData}
 							dataKey="stats.du"
 							diskSize={Math.round(systemStats.at(-1)?.stats.d ?? NaN)}
 						/>
@@ -420,11 +416,9 @@ export default function SystemDetail({ name }: { name: string }) {
 						cornerEl={isLongerChart ? <SelectAvgMax store={diskIoMaxStore} /> : null}
 					>
 						<AreaChartDefault
-							ticks={ticks}
-							systemData={systemStats}
-							showMax={isLongerChart && diskIoMaxStore[0]}
+							systemChartData={systemChartData}
+							maxToggled={diskIoMaxStore[0]}
 							chartName="dio"
-							chartTime={chartTime}
 						/>
 					</ChartCard>
 
@@ -435,15 +429,13 @@ export default function SystemDetail({ name }: { name: string }) {
 						description="Network traffic of public interfaces"
 					>
 						<AreaChartDefault
-							ticks={ticks}
-							systemData={systemStats}
-							showMax={isLongerChart && bandwidthMaxStore[0]}
+							systemChartData={systemChartData}
+							maxToggled={bandwidthMaxStore[0]}
 							chartName="bw"
-							chartTime={chartTime}
 						/>
 					</ChartCard>
 
-					{containerFilterBar && dockerNetChartData.length > 0 && (
+					{containerFilterBar && containerData.length > 0 && (
 						<div
 							ref={netCardRef}
 							className={cn({
@@ -455,20 +447,21 @@ export default function SystemDetail({ name }: { name: string }) {
 								description="Includes traffic between internal services"
 								cornerEl={containerFilterBar}
 							>
-								<ContainerNetChart chartData={dockerNetChartData} ticks={ticks} />
+								{/* @ts-ignore */}
+								<ContainerNetChart containerChartData={containerChartData} />
 							</ChartCard>
 						</div>
 					)}
 
 					{(systemStats.at(-1)?.stats.su ?? 0) > 0 && (
 						<ChartCard grid={grid} title="Swap Usage" description="Swap space used by the system">
-							<SwapChart ticks={ticks} systemData={systemStats} />
+							<SwapChart systemChartData={systemChartData} />
 						</ChartCard>
 					)}
 
 					{systemStats.at(-1)?.stats.t && (
 						<ChartCard grid={grid} title="Temperature" description="Temperatures of system sensors">
-							<TemperatureChart ticks={ticks} systemData={systemStats} />
+							<TemperatureChart systemChartData={systemChartData} />
 						</ChartCard>
 					)}
 				</div>
@@ -485,8 +478,7 @@ export default function SystemDetail({ name }: { name: string }) {
 										description={`Disk usage of ${extraFsName}`}
 									>
 										<DiskChart
-											ticks={ticks}
-											systemData={systemStats}
+											systemChartData={systemChartData}
 											dataKey={`stats.efs.${extraFsName}.du`}
 											diskSize={Math.round(systemStats.at(-1)?.stats.efs?.[extraFsName].d ?? NaN)}
 										/>
@@ -498,11 +490,9 @@ export default function SystemDetail({ name }: { name: string }) {
 										cornerEl={isLongerChart ? <SelectAvgMax store={diskIoMaxStore} /> : null}
 									>
 										<AreaChartDefault
-											ticks={ticks}
-											systemData={systemStats}
-											showMax={isLongerChart && diskIoMaxStore[0]}
+											systemChartData={systemChartData}
+											maxToggled={diskIoMaxStore[0]}
 											chartName={`efs.${extraFsName}`}
-											chartTime={chartTime}
 										/>
 									</ChartCard>
 								</div>

@@ -10,18 +10,19 @@ import {
 	decimalString,
 	chartMargin,
 } from '@/lib/utils'
-import { useStore } from '@nanostores/react'
-import { $chartTime } from '@/lib/stores'
-import { SystemStatsRecord } from '@/types'
+import { ChartTimes, SystemStatsRecord } from '@/types'
+import { memo } from 'react'
 
-export default function SwapChart({
-	ticks,
-	systemData,
+export default memo(function SwapChart({
+	systemChartData,
 }: {
-	ticks: number[]
-	systemData: SystemStatsRecord[]
+	systemChartData: {
+		systemStats: SystemStatsRecord[]
+		ticks: number[]
+		domain: number[]
+		chartTime: ChartTimes
+	}
 }) {
-	const chartTime = useStore($chartTime)
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
 	return (
@@ -31,11 +32,15 @@ export default function SwapChart({
 					'opacity-100': yAxisWidth,
 				})}
 			>
-				<AreaChart accessibilityLayer data={systemData} margin={chartMargin}>
+				<AreaChart accessibilityLayer data={systemChartData.systemStats} margin={chartMargin}>
 					<CartesianGrid vertical={false} />
 					<YAxis
 						className="tracking-tighter"
-						domain={[0, () => toFixedWithoutTrailingZeros(systemData.at(-1)?.stats.s ?? 0.04, 2)]}
+						domain={[
+							0,
+							() =>
+								toFixedWithoutTrailingZeros(systemChartData.systemStats.at(-1)?.stats.s ?? 0.04, 2),
+						]}
 						width={yAxisWidth}
 						tickLine={false}
 						axisLine={false}
@@ -43,14 +48,15 @@ export default function SwapChart({
 					/>
 					<XAxis
 						dataKey="created"
-						domain={[ticks[0], ticks.at(-1)!]}
-						ticks={ticks}
+						domain={systemChartData.domain}
+						ticks={systemChartData.ticks}
+						allowDataOverflow
 						type="number"
-						scale={'time'}
-						minTickGap={35}
+						scale="time"
+						minTickGap={30}
 						tickMargin={8}
 						axisLine={false}
-						tickFormatter={chartTimeData[chartTime].format}
+						tickFormatter={chartTimeData[systemChartData.chartTime].format}
 					/>
 					<ChartTooltip
 						animationEasing="ease-out"
@@ -59,7 +65,7 @@ export default function SwapChart({
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 								contentFormatter={(item) => decimalString(item.value) + ' GB'}
-								indicator="line"
+								// indicator="line"
 							/>
 						}
 					/>
@@ -76,4 +82,4 @@ export default function SwapChart({
 			</ChartContainer>
 		</div>
 	)
-}
+})

@@ -12,7 +12,7 @@ import {
 } from '@/lib/utils'
 // import Spinner from '../spinner'
 import { ChartTimes, SystemStatsRecord } from '@/types'
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 
 /** [label, key, color, opacity] */
 type DataKeys = [string, string, number, number]
@@ -27,22 +27,27 @@ const getNestedValue = (path: string, max = false, data: any): number | null => 
 		.reduce((acc: any, key: string) => acc?.[key] ?? (data.stats?.cpum ? 0 : null), data)
 }
 
-export default function AreaChartDefault({
-	ticks,
-	systemData,
-	showMax = false,
+export default memo(function AreaChartDefault({
+	maxToggled = false,
 	unit = ' MB/s',
 	chartName,
-	chartTime,
+	systemChartData,
 }: {
-	ticks: number[]
-	systemData: SystemStatsRecord[]
-	showMax?: boolean
+	maxToggled?: boolean
 	unit?: string
 	chartName: string
-	chartTime: ChartTimes
+	systemChartData: {
+		systemStats: SystemStatsRecord[]
+		ticks: number[]
+		domain: number[]
+		chartTime: ChartTimes
+	}
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
+
+	const { chartTime } = systemChartData
+
+	const showMax = chartTime !== '1h' && maxToggled
 
 	const dataKeys: DataKeys[] = useMemo(() => {
 		// [label, key, color, opacity]
@@ -67,6 +72,8 @@ export default function AreaChartDefault({
 		return []
 	}, [])
 
+	// console.log('Rendered at', new Date())
+
 	return (
 		<div>
 			<ChartContainer
@@ -74,7 +81,7 @@ export default function AreaChartDefault({
 					'opacity-100': yAxisWidth,
 				})}
 			>
-				<AreaChart accessibilityLayer data={systemData} margin={chartMargin}>
+				<AreaChart accessibilityLayer data={systemChartData.systemStats} margin={chartMargin}>
 					<CartesianGrid vertical={false} />
 					<YAxis
 						className="tracking-tighter"
@@ -88,11 +95,12 @@ export default function AreaChartDefault({
 					/>
 					<XAxis
 						dataKey="created"
-						domain={[ticks[0], ticks.at(-1)!]}
-						ticks={ticks}
+						domain={systemChartData.domain}
+						ticks={systemChartData.ticks}
+						allowDataOverflow
 						type="number"
-						scale={'time'}
-						minTickGap={35}
+						scale="time"
+						minTickGap={30}
 						tickMargin={8}
 						axisLine={false}
 						tickFormatter={chartTimeData[chartTime].format}
@@ -104,7 +112,7 @@ export default function AreaChartDefault({
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 								contentFormatter={(item) => decimalString(item.value) + unit}
-								indicator="line"
+								// indicator="line"
 							/>
 						}
 					/>
@@ -128,4 +136,4 @@ export default function AreaChartDefault({
 			</ChartContainer>
 		</div>
 	)
-}
+})

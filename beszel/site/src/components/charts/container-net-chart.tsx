@@ -5,7 +5,7 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from '@/components/ui/chart'
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import {
 	useYAxisWidth,
 	chartTimeData,
@@ -15,21 +15,25 @@ import {
 	decimalString,
 	chartMargin,
 } from '@/lib/utils'
-// import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
-import { $chartTime, $containerFilter } from '@/lib/stores'
+import { $containerFilter } from '@/lib/stores'
 import { Separator } from '@/components/ui/separator'
+import { ChartTimes, ContainerStats } from '@/types'
 
-export default function ContainerCpuChart({
-	chartData,
-	ticks,
+export default memo(function ContainerCpuChart({
+	containerChartData,
 }: {
-	chartData: Record<string, number | number[]>[]
-	ticks: number[]
+	containerChartData: {
+		containerData: Record<string, ContainerStats | number>[]
+		ticks: number[]
+		domain: number[]
+		chartTime: ChartTimes
+	}
 }) {
-	const chartTime = useStore($chartTime)
 	const filter = useStore($containerFilter)
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
+
+	const { containerData, ticks, domain, chartTime } = containerChartData
 
 	const chartConfig = useMemo(() => {
 		let config = {} as Record<
@@ -40,15 +44,16 @@ export default function ContainerCpuChart({
 			}
 		>
 		const totalUsage = {} as Record<string, number>
-		for (let stats of chartData) {
+		for (let stats of containerData) {
 			for (let key in stats) {
-				if (!Array.isArray(stats[key])) {
+				// continue if number and not container stats
+				if (!key || typeof stats[key] === 'number') {
 					continue
 				}
 				if (!(key in totalUsage)) {
 					totalUsage[key] = 0
 				}
-				totalUsage[key] += stats[key][2] ?? 0
+				totalUsage[key] += stats[key]?.ns ?? 0 + stats[key]?.nr ?? 0
 			}
 		}
 		let keys = Object.keys(totalUsage)
@@ -63,7 +68,9 @@ export default function ContainerCpuChart({
 			}
 		}
 		return config satisfies ChartConfig
-	}, [chartData])
+	}, [containerChartData])
+
+	// console.log('rendered at', new Date())
 
 	return (
 		<div>
@@ -75,7 +82,7 @@ export default function ContainerCpuChart({
 			>
 				<AreaChart
 					accessibilityLayer
-					data={chartData}
+					data={containerData}
 					margin={chartMargin}
 					reverseStackOrder={true}
 				>
@@ -92,11 +99,12 @@ export default function ContainerCpuChart({
 						}}
 					/>
 					<XAxis
-						dataKey="time"
-						domain={[ticks[0], ticks.at(-1)!]}
+						dataKey="created"
+						domain={domain}
+						allowDataOverflow
 						ticks={ticks}
 						type="number"
-						scale={'time'}
+						scale="time"
 						minTickGap={35}
 						tickMargin={8}
 						axisLine={false}
@@ -106,17 +114,17 @@ export default function ContainerCpuChart({
 						// cursor={false}
 						animationEasing="ease-out"
 						animationDuration={150}
-						labelFormatter={(_, data) => formatShortDate(data[0].payload.time)}
+						labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 						// @ts-ignore
 						itemSorter={(a, b) => b.value - a.value}
 						content={
 							<ChartTooltipContent
 								filter={filter}
-								indicator="line"
+								// indicator="line"
 								contentFormatter={(item, key) => {
 									try {
-										const sent = item?.payload?.[key][0] ?? 0
-										const received = item?.payload?.[key][1] ?? 0
+										const sent = item?.payload?.[key]?.ns ?? 0
+										const received = item?.payload?.[key]?.nr ?? 0
 										return (
 											<span className="flex">
 												{decimalString(received)} MB/s
@@ -140,9 +148,8 @@ export default function ContainerCpuChart({
 							<Area
 								key={key}
 								name={key}
-								// animationDuration={1200}
 								isAnimationActive={false}
-								dataKey={(data) => data?.[key]?.[2] ?? 0}
+								dataKey={(data) => data?.[key]?.ns ?? 0 + data?.[key]?.nr ?? 0}
 								type="monotoneX"
 								fill={chartConfig[key].color}
 								fillOpacity={fillOpacity}
@@ -157,4 +164,4 @@ export default function ContainerCpuChart({
 			</ChartContainer>
 		</div>
 	)
-}
+})

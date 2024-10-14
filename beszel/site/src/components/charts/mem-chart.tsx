@@ -10,24 +10,24 @@ import {
 	formatShortDate,
 	chartMargin,
 } from '@/lib/utils'
-import { useMemo } from 'react'
-import { useStore } from '@nanostores/react'
-import { $chartTime } from '@/lib/stores'
-import { SystemStatsRecord } from '@/types'
+import { memo } from 'react'
+import { ChartTimes, SystemStatsRecord } from '@/types'
 
-export default function MemChart({
-	ticks,
-	systemData,
+export default memo(function MemChart({
+	systemChartData,
 }: {
-	ticks: number[]
-	systemData: SystemStatsRecord[]
+	systemChartData: {
+		systemStats: SystemStatsRecord[]
+		ticks: number[]
+		domain: number[]
+		chartTime: ChartTimes
+	}
 }) {
-	const chartTime = useStore($chartTime)
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
-	const totalMem = useMemo(() => {
-		return toFixedFloat(systemData.at(-1)?.stats.m ?? 0, 1)
-	}, [systemData])
+	const totalMem = toFixedFloat(systemChartData.systemStats.at(-1)?.stats.m ?? 0, 1)
+
+	// console.log('rendered at', new Date())
 
 	return (
 		<div>
@@ -37,7 +37,7 @@ export default function MemChart({
 					'opacity-100': yAxisWidth,
 				})}
 			>
-				<AreaChart accessibilityLayer data={systemData} margin={chartMargin}>
+				<AreaChart accessibilityLayer data={systemChartData.systemStats} margin={chartMargin}>
 					<CartesianGrid vertical={false} />
 					{totalMem && (
 						<YAxis
@@ -56,14 +56,15 @@ export default function MemChart({
 					)}
 					<XAxis
 						dataKey="created"
-						domain={[ticks[0], ticks.at(-1)!]}
-						ticks={ticks}
+						domain={systemChartData.domain}
+						ticks={systemChartData.ticks}
+						allowDataOverflow
 						type="number"
-						scale={'time'}
-						minTickGap={35}
+						scale="time"
+						minTickGap={30}
 						tickMargin={8}
 						axisLine={false}
-						tickFormatter={chartTimeData[chartTime].format}
+						tickFormatter={chartTimeData[systemChartData.chartTime].format}
 					/>
 					<ChartTooltip
 						// cursor={false}
@@ -75,7 +76,7 @@ export default function MemChart({
 								itemSorter={(a, b) => a.order - b.order}
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 								contentFormatter={(item) => decimalString(item.value) + ' GB'}
-								indicator="line"
+								// indicator="line"
 							/>
 						}
 					/>
@@ -90,7 +91,7 @@ export default function MemChart({
 						stackId="1"
 						isAnimationActive={false}
 					/>
-					{systemData.at(-1)?.stats.mz && (
+					{systemChartData.systemStats.at(-1)?.stats.mz && (
 						<Area
 							name="ZFS ARC"
 							order={2}
@@ -119,4 +120,4 @@ export default function MemChart({
 			</ChartContainer>
 		</div>
 	)
-}
+})

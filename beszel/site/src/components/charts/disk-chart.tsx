@@ -12,35 +12,35 @@ import {
 	getSizeUnit,
 	chartMargin,
 } from '@/lib/utils'
-// import { useMemo } from 'react'
-// import Spinner from '../spinner'
-import { useStore } from '@nanostores/react'
-import { $chartTime } from '@/lib/stores'
-import { SystemStatsRecord } from '@/types'
+import { ChartTimes, SystemStatsRecord } from '@/types'
+import { memo } from 'react'
 
-export default function DiskChart({
-	ticks,
-	systemData,
+export default memo(function DiskChart({
 	dataKey,
 	diskSize,
+	systemChartData,
 }: {
-	ticks: number[]
-	systemData: SystemStatsRecord[]
 	dataKey: string
 	diskSize: number
+	systemChartData: {
+		systemStats: SystemStatsRecord[]
+		ticks: number[]
+		domain: number[]
+		chartTime: ChartTimes
+	}
 }) {
-	const chartTime = useStore($chartTime)
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
+
+	// console.log('rendered at', new Date())
 
 	return (
 		<div>
-			{/* {!yAxisSet && <Spinner />} */}
 			<ChartContainer
 				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
 					'opacity-100': yAxisWidth,
 				})}
 			>
-				<AreaChart accessibilityLayer data={systemData} margin={chartMargin}>
+				<AreaChart accessibilityLayer data={systemChartData.systemStats} margin={chartMargin}>
 					<CartesianGrid vertical={false} />
 					<YAxis
 						className="tracking-tighter"
@@ -56,14 +56,15 @@ export default function DiskChart({
 					/>
 					<XAxis
 						dataKey="created"
-						domain={[ticks[0], ticks.at(-1)!]}
-						ticks={ticks}
+						domain={systemChartData.domain}
+						ticks={systemChartData.ticks}
+						allowDataOverflow
 						type="number"
-						scale={'time'}
-						minTickGap={35}
+						scale="time"
+						minTickGap={30}
 						tickMargin={8}
 						axisLine={false}
-						tickFormatter={chartTimeData[chartTime].format}
+						tickFormatter={chartTimeData[systemChartData.chartTime].format}
 					/>
 					<ChartTooltip
 						animationEasing="ease-out"
@@ -74,7 +75,7 @@ export default function DiskChart({
 								contentFormatter={({ value }) =>
 									decimalString(getSizeVal(value)) + getSizeUnit(value)
 								}
-								indicator="line"
+								// indicator="line"
 							/>
 						}
 					/>
@@ -92,4 +93,4 @@ export default function DiskChart({
 			</ChartContainer>
 		</div>
 	)
-}
+})
