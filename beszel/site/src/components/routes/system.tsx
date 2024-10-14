@@ -107,6 +107,7 @@ export default function SystemDetail({ name }: { name: string }) {
 	const [containerData, setContainerData] = useState([] as ChartData['containerData'])
 	const netCardRef = useRef<HTMLDivElement>(null)
 	const [containerFilterBar, setContainerFilterBar] = useState(null as null | JSX.Element)
+	const [bottomSpacing, setBottomSpacing] = useState(0)
 	const isLongerChart = chartTime !== '1h'
 
 	useEffect(() => {
@@ -265,17 +266,18 @@ export default function SystemDetail({ name }: { name: string }) {
 	}, [system.info])
 
 	/** Space for tooltip if more than 12 containers */
-	const bottomSpacing = useMemo(() => {
+	useEffect(() => {
 		if (!netCardRef.current || !containerData.length) {
-			return 0
+			setBottomSpacing(0)
+			return
 		}
 		const tooltipHeight = (Object.keys(containerData[0]).length - 11) * 17.8 - 40
 		const wrapperEl = document.getElementById('chartwrap') as HTMLDivElement
 		const wrapperRect = wrapperEl.getBoundingClientRect()
 		const chartRect = netCardRef.current.getBoundingClientRect()
 		const distanceToBottom = wrapperRect.bottom - chartRect.bottom
-		return tooltipHeight - distanceToBottom
-	}, [netCardRef.current, containerData])
+		setBottomSpacing(tooltipHeight - distanceToBottom)
+	}, [netCardRef, containerData])
 
 	if (!system.id) {
 		return null
