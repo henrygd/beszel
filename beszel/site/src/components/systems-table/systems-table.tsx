@@ -44,17 +44,17 @@ import {
 
 import { SystemRecord } from '@/types'
 import {
-	MoreHorizontal,
-	ArrowUpDown,
-	Server,
-	Cpu,
-	MemoryStick,
-	HardDrive,
+	MoreHorizontalIcon,
+	ArrowUpDownIcon,
+	MemoryStickIcon,
 	CopyIcon,
 	PauseCircleIcon,
 	PlayCircleIcon,
 	Trash2Icon,
 	WifiIcon,
+	HardDriveIcon,
+	ServerIcon,
+	CpuIcon,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { $hubVersion, $systems, pb } from '@/lib/stores'
@@ -96,7 +96,7 @@ function sortableHeader(
 		>
 			<Icon className="mr-2 h-4 w-4" />
 			{name}
-			{!hideSortIcon && <ArrowUpDown className="ml-2 h-4 w-4" />}
+			{!hideSortIcon && <ArrowUpDownIcon className="ml-2 h-4 w-4" />}
 		</Button>
 	)
 }
@@ -145,22 +145,22 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 						</span>
 					)
 				},
-				header: ({ column }) => sortableHeader(column, 'System', Server),
+				header: ({ column }) => sortableHeader(column, 'System', ServerIcon),
 			},
 			{
 				accessorKey: 'info.cpu',
 				cell: CellFormatter,
-				header: ({ column }) => sortableHeader(column, 'CPU', Cpu),
+				header: ({ column }) => sortableHeader(column, 'CPU', CpuIcon),
 			},
 			{
 				accessorKey: 'info.mp',
 				cell: CellFormatter,
-				header: ({ column }) => sortableHeader(column, 'Memory', MemoryStick),
+				header: ({ column }) => sortableHeader(column, 'Memory', MemoryStickIcon),
 			},
 			{
 				accessorKey: 'info.dp',
 				cell: CellFormatter,
-				header: ({ column }) => sortableHeader(column, 'Disk', HardDrive),
+				header: ({ column }) => sortableHeader(column, 'Disk', HardDriveIcon),
 			},
 			{
 				accessorKey: 'info.b',
@@ -212,7 +212,7 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 									<DropdownMenuTrigger asChild>
 										<Button variant="ghost" size={'icon'} data-nolink>
 											<span className="sr-only">Open menu</span>
-											<MoreHorizontal className="w-5" />
+											<MoreHorizontalIcon className="w-5" />
 										</Button>
 									</DropdownMenuTrigger>
 									<DropdownMenuContent align="end">

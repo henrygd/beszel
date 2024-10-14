@@ -5,7 +5,7 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from '@/components/ui/chart'
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import {
 	useYAxisWidth,
 	chartTimeData,
@@ -13,21 +13,31 @@ import {
 	formatShortDate,
 	decimalString,
 	chartMargin,
+	toFixedWithoutTrailingZeros,
 } from '@/lib/utils'
 // import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
-import { $chartTime, $containerFilter } from '@/lib/stores'
+import { $containerFilter } from '@/lib/stores'
+import { ChartTimes, ContainerStats } from '@/types'
 
-export default function ContainerCpuChart({
-	chartData,
-	ticks,
+export default memo(function ContainerCpuChart({
+	dataKey,
+	unit = '%',
+	containerChartData,
 }: {
-	chartData: Record<string, number | string>[]
-	ticks: number[]
+	dataKey: string
+	unit?: string
+	containerChartData: {
+		containerData: Record<string, number | ContainerStats>[]
+		ticks: number[]
+		domain: number[]
+		chartTime: ChartTimes
+	}
 }) {
-	const chartTime = useStore($chartTime)
 	const filter = useStore($containerFilter)
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
+
+	const { containerData, ticks, domain, chartTime } = containerChartData
 
 	const chartConfig = useMemo(() => {
 		let config = {} as Record<
@@ -38,16 +48,16 @@ export default function ContainerCpuChart({
 			}
 		>
 		const totalUsage = {} as Record<string, number>
-		for (let stats of chartData) {
+		for (let stats of containerData) {
 			for (let key in stats) {
-				if (key === 'time') {
+				if (typeof stats[key] === 'number') {
 					continue
 				}
 				if (!(key in totalUsage)) {
 					totalUsage[key] = 0
 				}
 				// @ts-ignore
-				totalUsage[key] += stats[key]
+				totalUsage[key] += stats[key]?.[dataKey] ?? 0
 			}
 		}
 		let keys = Object.keys(totalUsage)
@@ -62,15 +72,12 @@ export default function ContainerCpuChart({
 			}
 		}
 		return config satisfies ChartConfig
-	}, [chartData])
+	}, [containerChartData])
 
-	// if (!chartData.length || !ticks.length) {
-	// 	return <Spinner />
-	// }
+	// console.log('rendered at', new Date())
 
 	return (
 		<div>
-			{/* {!yAxisSet && <Spinner />} */}
 			<ChartContainer
 				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
 					'opacity-100': yAxisWidth,
@@ -79,44 +86,43 @@ export default function ContainerCpuChart({
 				<AreaChart
 					accessibilityLayer
 					// syncId={'cpu'}
-					data={chartData}
+					data={containerData}
 					margin={chartMargin}
 					reverseStackOrder={true}
 				>
 					<CartesianGrid vertical={false} />
 					<YAxis
 						className="tracking-tighter"
-						// domain={[0, (max: number) => Math.max(Math.ceil(max), 0.4)]}
 						width={yAxisWidth}
-						tickLine={false}
-						axisLine={false}
-						tickFormatter={(x) => {
-							const val = (x % 1 === 0 ? x : x.toFixed(1)) + '%'
+						tickFormatter={(value) => {
+							const val = toFixedWithoutTrailingZeros(value, 2) + unit
 							return updateYAxisWidth(val)
 						}}
+						tickLine={false}
+						axisLine={false}
 					/>
 					<XAxis
-						dataKey="time"
-						domain={[ticks[0], ticks.at(-1)!]}
+						dataKey="created"
+						domain={domain}
+						allowDataOverflow
 						ticks={ticks}
 						type="number"
-						scale={'time'}
+						scale="time"
 						minTickGap={35}
 						tickMargin={8}
 						axisLine={false}
 						tickFormatter={chartTimeData[chartTime].format}
 					/>
 					<ChartTooltip
-						// cursor={false}
 						animationEasing="ease-out"
 						animationDuration={150}
-						labelFormatter={(_, data) => formatShortDate(data[0].payload.time)}
+						labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 						// @ts-ignore
 						itemSorter={(a, b) => b.value - a.value}
 						content={
 							<ChartTooltipContent
 								filter={filter}
-								contentFormatter={(item) => decimalString(item.value) + '%'}
+								contentFormatter={(item) => decimalString(item.value) + unit}
 								indicator="line"
 							/>
 						}
@@ -129,7 +135,8 @@ export default function ContainerCpuChart({
 							<Area
 								key={key}
 								isAnimationActive={false}
-								dataKey={key}
+								dataKey={`${key}.${dataKey}`}
+								name={key}
 								type="monotoneX"
 								fill={chartConfig[key].color}
 								fillOpacity={fillOpacity}
@@ -144,4 +151,4 @@ export default function ContainerCpuChart({
 			</ChartContainer>
 		</div>
 	)
-}
+})

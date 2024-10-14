@@ -8,7 +8,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog'
-import { BellIcon } from 'lucide-react'
+import { BellIcon, CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
@@ -16,6 +16,7 @@ import { AlertRecord, SystemRecord } from '@/types'
 import { lazy, Suspense, useMemo, useState } from 'react'
 import { toast } from './ui/use-toast'
 import { Link } from './router'
+import { EthernetIcon, ThermometerIcon } from './ui/icons'
 
 const Slider = lazy(() => import('./ui/slider'))
 
@@ -65,38 +66,38 @@ export default function AlertsButton({ system }: { system: SystemRecord }) {
 						system={system}
 						alerts={systemAlerts}
 						name="CPU"
-						title="CPU Usage"
-						description="Triggers when CPU usage exceeds a threshold."
+						title="CPU usage"
+						Icon={CpuIcon}
 					/>
 					<AlertWithSlider
 						system={system}
 						alerts={systemAlerts}
 						name="Memory"
-						title="Memory Usage"
-						description="Triggers when memory usage exceeds a threshold."
+						title="Memory usage"
+						Icon={MemoryStickIcon}
 					/>
 					<AlertWithSlider
 						system={system}
 						alerts={systemAlerts}
 						name="Disk"
-						title="Disk Usage"
-						description="Triggers when root usage exceeds a threshold."
+						title="Disk usage"
+						Icon={HardDriveIcon}
 					/>
 					<AlertWithSlider
 						system={system}
 						alerts={systemAlerts}
 						name="Bandwidth"
 						title="Bandwidth"
-						description="Triggers when combined up/down exceeds a threshold."
 						unit=" MB/s"
+						Icon={EthernetIcon}
 					/>
 					<AlertWithSlider
 						system={system}
 						alerts={systemAlerts}
 						name="Temperature"
 						title="Temperature"
-						description="Triggers when any sensor exceeds a threshold."
 						unit=" °C"
+						Icon={ThermometerIcon}
 					/>
 				</div>
 			</DialogContent>
@@ -114,11 +115,13 @@ function AlertStatus({ system, alerts }: { system: SystemRecord; alerts: AlertRe
 	return (
 		<label
 			htmlFor="alert-status"
-			className="flex flex-row items-center justify-between gap-4 rounded-lg border p-4 cursor-pointer"
+			className="flex flex-row items-center justify-between gap-4 rounded-lg border border-muted-foreground/15 hover:border-muted-foreground/20 transition-colors duration-100 p-4 cursor-pointer"
 		>
 			<div className="grid gap-1 select-none">
-				<p className="font-semibold">System Status</p>
-				<span className="block text-sm text-foreground opacity-80">
+				<p className="font-semibold flex gap-3 items-center">
+					<ServerIcon className="h-4 w-4 opacity-85" /> System status
+				</p>
+				<span className="block text-sm text-muted-foreground mt-0.5">
 					Triggers when status switches between up and down.
 				</span>
 			</div>
@@ -158,31 +161,33 @@ function AlertWithSlider({
 	alerts,
 	name,
 	title,
-	description,
 	unit = '%',
 	max = 99,
+	Icon,
 }: {
 	system: SystemRecord
 	alerts: AlertRecord[]
 	name: string
 	title: string
-	description: string
 	unit?: string
 	max?: number
+	Icon: React.FC<React.SVGProps<SVGSVGElement>>
 }) {
 	const [pendingChange, setPendingChange] = useState(false)
 	const [liveValue, setLiveValue] = useState(80)
+	const [liveMinutes, setLiveMinutes] = useState(10)
 
 	const alert = useMemo(() => {
 		const alert = alerts.find((alert) => alert.name === name)
 		if (alert) {
 			setLiveValue(alert.value)
+			setLiveMinutes(alert.min || 1)
 		}
 		return alert
 	}, [alerts])
 
 	return (
-		<div className="rounded-lg border">
+		<div className="rounded-lg border border-muted-foreground/15 hover:border-muted-foreground/20 transition-colors duration-100 group">
 			<label
 				htmlFor={`alert-${name}`}
 				className={cn('flex flex-row items-center justify-between gap-4 cursor-pointer p-4', {
@@ -190,8 +195,9 @@ function AlertWithSlider({
 				})}
 			>
 				<div className="grid gap-1 select-none">
-					<p className="font-semibold">{title}</p>
-					<span className="block text-sm text-foreground opacity-80">{description}</span>
+					<p className="font-semibold flex gap-3 items-center">
+						<Icon className="h-4 w-4 opacity-85" /> {title}
+					</p>
 				</div>
 				<Switch
 					id={`alert-${name}`}
@@ -212,6 +218,7 @@ function AlertWithSlider({
 									user: pb.authStore.model!.id,
 									name,
 									value: liveValue,
+									min: liveMinutes,
 								})
 							}
 						} catch (e) {
@@ -223,27 +230,52 @@ function AlertWithSlider({
 				/>
 			</label>
 			{alert && (
-				<div className="flex mt-2 mb-3 gap-3 px-4">
+				<div className="grid sm:grid-cols-2 mt-1.5 gap-5 px-4 pb-5 tabular-nums text-muted-foreground">
 					<Suspense>
-						<Slider
-							defaultValue={[liveValue]}
-							onValueCommit={(val) => {
-								pb.collection('alerts').update(alert.id, {
-									value: val[0],
-								})
-							}}
-							onValueChange={(val) => {
-								setLiveValue(val[0])
-							}}
-							min={1}
-							max={max}
-							// step={1}
-						/>
+						<div>
+							<label htmlFor="alert-slider" className="text-sm block h-8">
+								Exceeds{' '}
+								<strong className="text-foreground">
+									{liveValue}
+									{unit}
+								</strong>
+							</label>
+							<div className="flex gap-3">
+								<Slider
+									id="alert-slider"
+									defaultValue={[liveValue]}
+									onValueCommit={(val) => {
+										pb.collection('alerts').update(alert.id, {
+											value: val[0],
+										})
+									}}
+									onValueChange={(val) => setLiveValue(val[0])}
+									min={1}
+									max={max}
+								/>
+							</div>
+						</div>
+						<div>
+							<label htmlFor="alert-slider" className="text-sm block h-8">
+								For <strong className="text-foreground">{liveMinutes}</strong> minute
+								{liveMinutes > 1 && 's'}
+							</label>
+							<div className="flex gap-3">
+								<Slider
+									id="alert-slider"
+									defaultValue={[liveMinutes]}
+									onValueCommit={(val) => {
+										pb.collection('alerts').update(alert.id, {
+											min: val[0],
+										})
+									}}
+									onValueChange={(val) => setLiveMinutes(val[0])}
+									min={1}
+									max={60}
+								/>
+							</div>
+						</div>
 					</Suspense>
-					<span className="tabular-nums tracking-tighter text-[.92em] shrink-0">
-						{liveValue}
-						{unit}
-					</span>
 				</div>
 			)}
 		</div>

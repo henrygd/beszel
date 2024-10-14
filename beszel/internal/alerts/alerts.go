@@ -4,10 +4,13 @@ package alerts
 import (
 	"beszel/internal/entities/system"
 	"fmt"
+	"log"
 	"net/mail"
 	"net/url"
+	"time"
 
 	"github.com/containrrr/shoutrrr"
+	"github.com/goccy/go-json"
 	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
@@ -77,6 +80,84 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *models.Record, systemIn
 func (am *AlertManager) handleSlidingValueAlert(systemRecord *models.Record, alertRecord *models.Record, name, unit string, curValue float64) {
 	triggered := alertRecord.GetBool("triggered")
 	threshold := alertRecord.GetFloat("value")
+
+	// IF alert is not triggered and curValue is less than threshold
+	// OR alert is triggered and curValue is greater than threshold
+	if (!triggered && curValue <= threshold) || (triggered && curValue > threshold) {
+		log.Println("alert is not triggered and curValue is less than threshold")
+		return
+	}
+
+	minutes := alertRecord.GetInt("min")
+	// if one minute, use curValue
+	// otherwise, use average of last x minutes from system_stats
+	if minutes > 1 {
+		// get last x minutes from system_stats
+		// check if min number of records is met
+		// then sum the value we need
+		type Vals struct {
+			Val float32 `json:"cpu"`
+		}
+
+		// temps := []struct {
+		// 	temps types.JsonRaw `db:"stats"`
+		// }
+
+		start := time.Now()
+
+		cpuValues := []struct {
+			Stats []byte `db:"stats"`
+		}{}
+
+		err := am.app.Dao().DB().
+			Select("stats").
+			From("system_stats").
+			AndWhere(dbx.NewExp(
+				"system={:system} AND type='1m' AND created > {:created}",
+				dbx.Params{
+					"system":  systemRecord.Id,
+					"created": time.Now().UTC().Add(-time.Duration(minutes)*time.Minute + time.Second*15),
+				},
+			)).
+			All(&cpuValues)
+
+		if err != nil {
+			log.Println("failed to get cpuValues", "err", err.Error())
+		}
+
+		// Process the cpu field only
+		var sum float32
+		for _, value := range cpuValues {
+			// log.Println("value", value)
+
+			// log.Println("cpuData", value)
+			val := Vals{}
+			err := json.Unmarshal(value.Stats, &val)
+			if err != nil {
+				log.Println("failed to get cpuValues", "err", err.Error())
+			}
+
+			// log.Println("val", val.Val)
+			sum += val.Val
+		}
+
+		curValue = float64(sum) / float64(len(cpuValues))
+
+		log.Println("time taken", time.Since(start), "curValue", curValue)
+		// return
+		// if err != nil || len(stats) == 0 {
+		// 	// log.Println("no stats found for system")
+		// 	return
+		// }
+		// // get average of last x minutes
+		// var total float64
+		// for _, stat := range stats {
+		// 	total += stat.GetFloat("stats.m")
+		// }
+		// curValue = total / float64(len(stats))
+	}
+	return
+
 	// fmt.Println(name, curValue, "threshold", threshold, "triggered", triggered)
 	var subject string
 	var body string

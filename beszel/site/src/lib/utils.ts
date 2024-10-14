@@ -51,7 +51,7 @@ export const updateSystemList = async () => {
 
 export const updateAlerts = () => {
 	pb.collection('alerts')
-		.getFullList<AlertRecord>({ fields: 'id,name,system,value' })
+		.getFullList<AlertRecord>({ fields: 'id,name,system,value,min' })
 		.then((records) => {
 			$alerts.set(records)
 		})
