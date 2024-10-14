@@ -61,3 +61,15 @@ export function EthernetIcon(props: SVGProps<SVGSVGElement>) {
 		</svg>
 	)
 }
+
+// Phosphor MIT https://github.com/phosphor-icons/core
+export function ThermometerIcon(props: SVGProps<SVGSVGElement>) {
+	return (
+		<svg viewBox="0 0 256 256" {...props}>
+			<path
+				fill="currentColor"
+				d="M212 56a28 28 0 1 0 28 28 28 28 0 0 0-28-28m0 40a12 12 0 1 1 12-12 12 12 0 0 1-12 12m-60 50V40a32 32 0 0 0-64 0v106a56 56 0 1 0 64 0m-16-42h-32V40a16 16 0 0 1 32 0Z"
+			/>
+		</svg>
+	)
+}

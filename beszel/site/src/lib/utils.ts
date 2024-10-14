@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react'
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
 }
+// export const cn = clsx
 
 export async function copyToClipboard(content: string) {
 	const duration = 1500
@@ -51,7 +52,7 @@ export const updateSystemList = async () => {
 
 export const updateAlerts = () => {
 	pb.collection('alerts')
-		.getFullList<AlertRecord>({ fields: 'id,name,system,value' })
+		.getFullList<AlertRecord>({ fields: 'id,name,system,value,min' })
 		.then((records) => {
 			$alerts.set(records)
 		})

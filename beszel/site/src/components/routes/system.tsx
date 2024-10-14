@@ -15,7 +15,7 @@ import ChartTimeSelect from '../charts/chart-time-select'
 import { chartTimeData, cn, getPbTimestamp, useLocalStorage } from '@/lib/utils'
 import { Separator } from '../ui/separator'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
-import { Button, buttonVariants } from '../ui/button'
+import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { ChartAverage, ChartMax, Rows, TuxIcon } from '../ui/icons'
 import { useIntersectionObserver } from '@/lib/use-intersection-observer'
@@ -286,7 +286,7 @@ export default function SystemDetail({ name }: { name: string }) {
 			<div id="chartwrap" className="grid gap-4 mb-10 overflow-x-clip">
 				{/* system info */}
 				<Card>
-					<div className="grid lg:flex items-center gap-4 px-4 sm:px-6 pt-3 sm:pt-4 pb-5">
+					<div className="grid lg:flex gap-4 px-4 sm:px-6 pt-3 sm:pt-4 pb-5">
 						<div>
 							<h1 className="text-[1.6rem] font-semibold mb-1.5">{system.name}</h1>
 							<div className="flex flex-wrap items-center gap-3 gap-y-2 text-sm opacity-90">
