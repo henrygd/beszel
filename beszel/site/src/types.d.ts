@@ -149,3 +149,17 @@ export type UserSettings = {
 	emails?: string[]
 	webhooks?: string[]
 }
+
+type ChartDataContainer = {
+	created: number | null
+} & {
+	[key: string]: key extends 'created' ? never : ContainerStats
+}
+
+export interface ChartData {
+	systemStats: SystemStatsRecord[]
+	containerData: ChartDataContainer[]
+	ticks: number[]
+	domain: number[]
+	chartTime: ChartTimes
+}

@@ -1,5 +1,11 @@
 import { $systems, pb, $chartTime, $containerFilter, $userSettings } from '@/lib/stores'
-import { ContainerStats, ContainerStatsRecord, SystemRecord, SystemStatsRecord } from '@/types'
+import {
+	ChartData,
+	ChartTimes,
+	ContainerStatsRecord,
+	SystemRecord,
+	SystemStatsRecord,
+} from '@/types'
 import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription } from '../ui/card'
 import { useStore } from '@nanostores/react'
@@ -8,23 +14,85 @@ import { ClockArrowUp, CpuIcon, GlobeIcon, LayoutGridIcon, MonitorIcon, XIcon } 
 import ChartTimeSelect from '../charts/chart-time-select'
 import { chartTimeData, cn, getPbTimestamp, useLocalStorage } from '@/lib/utils'
 import { Separator } from '../ui/separator'
-import { scaleTime } from 'd3-scale'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
 import { Button, buttonVariants } from '../ui/button'
 import { Input } from '../ui/input'
 import { ChartAverage, ChartMax, Rows, TuxIcon } from '../ui/icons'
 import { useIntersectionObserver } from '@/lib/use-intersection-observer'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
+import { timeTicks } from 'd3-time'
 
 const AreaChartDefault = lazy(() => import('../charts/area-chart'))
-const ContainerChartDefault = lazy(() => import('../charts/container-chart'))
+const ContainerChart = lazy(() => import('../charts/container-chart'))
 const MemChart = lazy(() => import('../charts/mem-chart'))
 const DiskChart = lazy(() => import('../charts/disk-chart'))
-const ContainerNetChart = lazy(() => import('../charts/container-net-chart'))
 const SwapChart = lazy(() => import('../charts/swap-chart'))
 const TemperatureChart = lazy(() => import('../charts/temperature-chart'))
 
-const cache = new Map<string, SystemStatsRecord[] | ContainerStatsRecord[]>()
+const cache = new Map<string, any>()
+
+// create ticks and domain for charts
+function getTimeData(chartTime: ChartTimes, lastCreated: number) {
+	const cached = cache.get('td')
+	if (cached && cached.chartTime === chartTime) {
+		if (!lastCreated || cached.time >= lastCreated) {
+			return cached.data
+		}
+	}
+
+	const now = new Date()
+	const startTime = chartTimeData[chartTime].getOffset(now)
+	const ticks = timeTicks(startTime, now, chartTimeData[chartTime].ticks ?? 12).map((date) =>
+		date.getTime()
+	)
+	const data = {
+		ticks,
+		domain: [chartTimeData[chartTime].getOffset(now).getTime(), now.getTime()],
+	}
+	cache.set('td', { time: now.getTime(), data, chartTime })
+	return data
+}
+
+// add empty values between records to make gaps if interval is too large
+function addEmptyValues<T extends SystemStatsRecord | ContainerStatsRecord>(
+	records: T[],
+	expectedInterval: number
+) {
+	const modifiedRecords: T[] = []
+	let prevTime = 0
+	for (let i = 0; i < records.length; i++) {
+		const record = records[i]
+		record.created = new Date(record.created).getTime()
+		if (prevTime) {
+			const interval = record.created - prevTime
+			// if interval is too large, add a null record
+			if (interval > expectedInterval / 2 + expectedInterval) {
+				// @ts-ignore
+				modifiedRecords.push({ created: null, stats: null })
+			}
+		}
+		prevTime = record.created
+		modifiedRecords.push(record)
+	}
+	return modifiedRecords
+}
+
+async function getStats<T>(
+	collection: string,
+	system: SystemRecord,
+	chartTime: ChartTimes
+): Promise<T[]> {
+	const lastCached = cache.get(`${system.id}_${chartTime}_${collection}`)?.at(-1)?.created as number
+	return await pb.collection<T>(collection).getFullList({
+		filter: pb.filter('system={:id} && created > {:created} && type={:type}', {
+			id: system.id,
+			created: getPbTimestamp(chartTime, lastCached ? new Date(lastCached + 1000) : undefined),
+			type: chartTimeData[chartTime].type,
+		}),
+		fields: 'created,stats',
+		sort: 'created',
+	})
+}
 
 export default function SystemDetail({ name }: { name: string }) {
 	const systems = useStore($systems)
@@ -36,9 +104,7 @@ export default function SystemDetail({ name }: { name: string }) {
 	const [grid, setGrid] = useLocalStorage('grid', true)
 	const [system, setSystem] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
-	const [containerData, setContainerData] = useState(
-		[] as Record<string, ContainerStats | number>[]
-	)
+	const [containerData, setContainerData] = useState([] as ChartData['containerData'])
 	const netCardRef = useRef<HTMLDivElement>(null)
 	const [containerFilterBar, setContainerFilterBar] = useState(null as null | JSX.Element)
 	const isLongerChart = chartTime !== '1h'
@@ -89,70 +155,18 @@ export default function SystemDetail({ name }: { name: string }) {
 		}
 	}, [system])
 
-	function getTimeData() {
-		const now = new Date()
-		const startTime = chartTimeData[chartTime].getOffset(now)
-		const scale = scaleTime([startTime.getTime(), now], [0, systemStats.length])
-		const ticks = scale.ticks(chartTimeData[chartTime].ticks).map((d) => d.getTime())
-
-		return {
-			ticks,
-			chartTime,
-			domain: [chartTimeData[chartTime].getOffset(now).getTime(), now.getTime()],
-		}
-	}
-
-	const systemChartData = useMemo(() => {
+	const chartData: ChartData = useMemo(() => {
+		const lastCreated = Math.max(
+			(systemStats.at(-1)?.created as number) ?? 0,
+			(containerData.at(-1)?.created as number) ?? 0
+		)
 		return {
 			systemStats,
-			...getTimeData(),
-		}
-	}, [systemStats])
-
-	const containerChartData = useMemo(() => {
-		return {
 			containerData,
-			...getTimeData(),
+			chartTime,
+			...getTimeData(chartTime, lastCreated),
 		}
-	}, [containerData])
-
-	async function getStats<T>(collection: string): Promise<T[]> {
-		const lastCached = cache.get(`${system.id}_${chartTime}_${collection}`)?.at(-1)
-			?.created as number
-		return await pb.collection<T>(collection).getFullList({
-			filter: pb.filter('system={:id} && created > {:created} && type={:type}', {
-				id: system.id,
-				created: getPbTimestamp(chartTime, lastCached ? new Date(lastCached + 1000) : undefined),
-				type: chartTimeData[chartTime].type,
-			}),
-			fields: 'created,stats',
-			sort: 'created',
-		})
-	}
-
-	// add empty values between records to make gaps if interval is too large
-	function addEmptyValues<T extends SystemStatsRecord | ContainerStatsRecord>(
-		records: T[],
-		expectedInterval: number
-	) {
-		const modifiedRecords: T[] = []
-		let prevTime = 0
-		for (let i = 0; i < records.length; i++) {
-			const record = records[i]
-			record.created = new Date(record.created).getTime()
-			if (prevTime) {
-				const interval = record.created - prevTime
-				// if interval is too large, add a null record
-				if (interval > expectedInterval / 2 + expectedInterval) {
-					// @ts-ignore
-					modifiedRecords.push({ created: null, stats: null })
-				}
-			}
-			prevTime = record.created
-			modifiedRecords.push(record)
-		}
-		return modifiedRecords
-	}
+	}, [systemStats, containerData])
 
 	// get stats
 	useEffect(() => {
@@ -160,8 +174,8 @@ export default function SystemDetail({ name }: { name: string }) {
 			return
 		}
 		Promise.allSettled([
-			getStats<SystemStatsRecord>('system_stats'),
-			getStats<ContainerStatsRecord>('container_stats'),
+			getStats<SystemStatsRecord>('system_stats', system, chartTime),
+			getStats<ContainerStatsRecord>('container_stats', system, chartTime),
 		]).then(([systemStats, containerStats]) => {
 			const { expectedInterval } = chartTimeData[chartTime]
 			// make new system stats
@@ -196,16 +210,16 @@ export default function SystemDetail({ name }: { name: string }) {
 
 	// make container stats for charts
 	const makeContainerData = useCallback((containers: ContainerStatsRecord[]) => {
-		// console.log('containers', containers)
-		const containerData = [] as Record<string, ContainerStats | number>[]
+		const containerData = [] as ChartData['containerData']
 		for (let { created, stats } of containers) {
 			if (!created) {
-				let nullData = { created: null } as unknown
-				containerData.push(nullData as Record<string, ContainerStats | number>)
+				// @ts-ignore add null value for gaps
+				containerData.push({ created: null })
 				continue
 			}
 			created = new Date(created).getTime()
-			let containerStats = { created } as Record<string, number | ContainerStats>
+			// @ts-ignore not dealing with this rn
+			let containerStats: ChartData['containerData'][0] = { created }
 			for (let container of stats) {
 				containerStats[container.n] = container
 			}
@@ -329,10 +343,9 @@ export default function SystemDetail({ name }: { name: string }) {
 									<TooltipTrigger asChild>
 										<Button
 											aria-label="Toggle grid"
-											className={cn(
-												buttonVariants({ variant: 'outline', size: 'icon' }),
-												'hidden lg:flex p-0 text-primary'
-											)}
+											variant="outline"
+											size="icon"
+											className="hidden lg:flex p-0 text-primary"
 											onClick={() => setGrid(!grid)}
 										>
 											{grid ? (
@@ -360,7 +373,7 @@ export default function SystemDetail({ name }: { name: string }) {
 						cornerEl={isLongerChart ? <SelectAvgMax store={cpuMaxStore} /> : null}
 					>
 						<AreaChartDefault
-							systemChartData={systemChartData}
+							chartData={chartData}
 							chartName="CPU Usage"
 							maxToggled={cpuMaxStore[0]}
 							unit="%"
@@ -374,7 +387,7 @@ export default function SystemDetail({ name }: { name: string }) {
 							description="Average CPU utilization of containers"
 							cornerEl={containerFilterBar}
 						>
-							<ContainerChartDefault dataKey="c" containerChartData={containerChartData} />
+							<ContainerChart chartData={chartData} dataKey="c" chartName="cpu" />
 						</ChartCard>
 					)}
 
@@ -383,7 +396,7 @@ export default function SystemDetail({ name }: { name: string }) {
 						title="Total Memory Usage"
 						description="Precise utilization at the recorded time"
 					>
-						<MemChart systemChartData={systemChartData} />
+						<MemChart chartData={chartData} />
 					</ChartCard>
 
 					{containerFilterBar && (
@@ -393,17 +406,13 @@ export default function SystemDetail({ name }: { name: string }) {
 							description="Memory usage of docker containers"
 							cornerEl={containerFilterBar}
 						>
-							<ContainerChartDefault
-								containerChartData={containerChartData}
-								dataKey="m"
-								unit=" MB"
-							/>
+							<ContainerChart chartData={chartData} chartName="mem" dataKey="m" unit=" MB" />
 						</ChartCard>
 					)}
 
 					<ChartCard grid={grid} title="Disk Space" description="Usage of root partition">
 						<DiskChart
-							systemChartData={systemChartData}
+							chartData={chartData}
 							dataKey="stats.du"
 							diskSize={Math.round(systemStats.at(-1)?.stats.d ?? NaN)}
 						/>
@@ -416,7 +425,7 @@ export default function SystemDetail({ name }: { name: string }) {
 						cornerEl={isLongerChart ? <SelectAvgMax store={diskIoMaxStore} /> : null}
 					>
 						<AreaChartDefault
-							systemChartData={systemChartData}
+							chartData={chartData}
 							maxToggled={diskIoMaxStore[0]}
 							chartName="dio"
 						/>
@@ -429,7 +438,7 @@ export default function SystemDetail({ name }: { name: string }) {
 						description="Network traffic of public interfaces"
 					>
 						<AreaChartDefault
-							systemChartData={systemChartData}
+							chartData={chartData}
 							maxToggled={bandwidthMaxStore[0]}
 							chartName="bw"
 						/>
@@ -448,20 +457,20 @@ export default function SystemDetail({ name }: { name: string }) {
 								cornerEl={containerFilterBar}
 							>
 								{/* @ts-ignore */}
-								<ContainerNetChart containerChartData={containerChartData} />
+								<ContainerChart chartData={chartData} chartName="net" dataKey="n" />
 							</ChartCard>
 						</div>
 					)}
 
 					{(systemStats.at(-1)?.stats.su ?? 0) > 0 && (
 						<ChartCard grid={grid} title="Swap Usage" description="Swap space used by the system">
-							<SwapChart systemChartData={systemChartData} />
+							<SwapChart chartData={chartData} />
 						</ChartCard>
 					)}
 
 					{systemStats.at(-1)?.stats.t && (
 						<ChartCard grid={grid} title="Temperature" description="Temperatures of system sensors">
-							<TemperatureChart systemChartData={systemChartData} />
+							<TemperatureChart chartData={chartData} />
 						</ChartCard>
 					)}
 				</div>
@@ -478,7 +487,7 @@ export default function SystemDetail({ name }: { name: string }) {
 										description={`Disk usage of ${extraFsName}`}
 									>
 										<DiskChart
-											systemChartData={systemChartData}
+											chartData={chartData}
 											dataKey={`stats.efs.${extraFsName}.du`}
 											diskSize={Math.round(systemStats.at(-1)?.stats.efs?.[extraFsName].d ?? NaN)}
 										/>
@@ -490,7 +499,7 @@ export default function SystemDetail({ name }: { name: string }) {
 										cornerEl={isLongerChart ? <SelectAvgMax store={diskIoMaxStore} /> : null}
 									>
 										<AreaChartDefault
-											systemChartData={systemChartData}
+											chartData={chartData}
 											maxToggled={diskIoMaxStore[0]}
 											chartName={`efs.${extraFsName}`}
 										/>

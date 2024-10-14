@@ -11,21 +11,12 @@ import {
 	chartMargin,
 } from '@/lib/utils'
 import { memo } from 'react'
-import { ChartTimes, SystemStatsRecord } from '@/types'
+import { ChartData } from '@/types'
 
-export default memo(function MemChart({
-	systemChartData,
-}: {
-	systemChartData: {
-		systemStats: SystemStatsRecord[]
-		ticks: number[]
-		domain: number[]
-		chartTime: ChartTimes
-	}
-}) {
+export default memo(function MemChart({ chartData }: { chartData: ChartData }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
-	const totalMem = toFixedFloat(systemChartData.systemStats.at(-1)?.stats.m ?? 0, 1)
+	const totalMem = toFixedFloat(chartData.systemStats.at(-1)?.stats.m ?? 0, 1)
 
 	// console.log('rendered at', new Date())
 
@@ -37,7 +28,7 @@ export default memo(function MemChart({
 					'opacity-100': yAxisWidth,
 				})}
 			>
-				<AreaChart accessibilityLayer data={systemChartData.systemStats} margin={chartMargin}>
+				<AreaChart accessibilityLayer data={chartData.systemStats} margin={chartMargin}>
 					<CartesianGrid vertical={false} />
 					{totalMem && (
 						<YAxis
@@ -56,15 +47,15 @@ export default memo(function MemChart({
 					)}
 					<XAxis
 						dataKey="created"
-						domain={systemChartData.domain}
-						ticks={systemChartData.ticks}
+						domain={chartData.domain}
+						ticks={chartData.ticks}
 						allowDataOverflow
 						type="number"
 						scale="time"
 						minTickGap={30}
 						tickMargin={8}
 						axisLine={false}
-						tickFormatter={chartTimeData[systemChartData.chartTime].format}
+						tickFormatter={chartTimeData[chartData.chartTime].format}
 					/>
 					<ChartTooltip
 						// cursor={false}
@@ -91,7 +82,7 @@ export default memo(function MemChart({
 						stackId="1"
 						isAnimationActive={false}
 					/>
-					{systemChartData.systemStats.at(-1)?.stats.mz && (
+					{chartData.systemStats.at(-1)?.stats.mz && (
 						<Area
 							name="ZFS ARC"
 							order={2}

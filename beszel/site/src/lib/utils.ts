@@ -277,17 +277,20 @@ export async function updateUserSettings() {
 }
 
 /**
- * Get the unit of size (TB or GB) for a given size in gigabytes
- * @param n size in gigabytes
- * @returns unit of size (TB or GB)
+ * Get the value and unit of size (TB, GB, or MB) for a given size
+ * @param n size in gigabytes or megabytes
+ * @param isGigabytes boolean indicating if n represents gigabytes (true) or megabytes (false)
+ * @returns an object containing the value and unit of size
  */
-export const getSizeUnit = (n: number) => (n >= 1_000 ? ' TB' : ' GB')
+export const getSizeAndUnit = (n: number, isGigabytes = true) => {
+	const sizeInGB = isGigabytes ? n : n / 1_000
 
-/**
- * Get the value of number in gigabytes if less than 1000, otherwise in terabytes
- * @param n size in gigabytes
- * @returns value in GB if less than 1000, otherwise value in TB
- */
-export const getSizeVal = (n: number) => (n >= 1_000 ? n / 1_000 : n)
+	if (sizeInGB >= 1_000) {
+		return { v: sizeInGB / 1_000, u: ' TB' }
+	} else if (sizeInGB >= 1) {
+		return { v: sizeInGB, u: ' GB' }
+	}
+	return { v: n, u: ' MB' }
+}
 
 export const chartMargin = { top: 12 }

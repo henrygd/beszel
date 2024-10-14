@@ -11,7 +11,7 @@ import {
 	chartMargin,
 } from '@/lib/utils'
 // import Spinner from '../spinner'
-import { ChartTimes, SystemStatsRecord } from '@/types'
+import { ChartData } from '@/types'
 import { memo, useMemo } from 'react'
 
 /** [label, key, color, opacity] */
@@ -31,21 +31,16 @@ export default memo(function AreaChartDefault({
 	maxToggled = false,
 	unit = ' MB/s',
 	chartName,
-	systemChartData,
+	chartData,
 }: {
 	maxToggled?: boolean
 	unit?: string
 	chartName: string
-	systemChartData: {
-		systemStats: SystemStatsRecord[]
-		ticks: number[]
-		domain: number[]
-		chartTime: ChartTimes
-	}
+	chartData: ChartData
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
-	const { chartTime } = systemChartData
+	const { chartTime } = chartData
 
 	const showMax = chartTime !== '1h' && maxToggled
 
@@ -81,7 +76,7 @@ export default memo(function AreaChartDefault({
 					'opacity-100': yAxisWidth,
 				})}
 			>
-				<AreaChart accessibilityLayer data={systemChartData.systemStats} margin={chartMargin}>
+				<AreaChart accessibilityLayer data={chartData.systemStats} margin={chartMargin}>
 					<CartesianGrid vertical={false} />
 					<YAxis
 						className="tracking-tighter"
@@ -95,8 +90,8 @@ export default memo(function AreaChartDefault({
 					/>
 					<XAxis
 						dataKey="created"
-						domain={systemChartData.domain}
-						ticks={systemChartData.ticks}
+						domain={chartData.domain}
+						ticks={chartData.ticks}
 						allowDataOverflow
 						type="number"
 						scale="time"

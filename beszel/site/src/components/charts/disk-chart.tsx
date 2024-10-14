@@ -8,26 +8,20 @@ import {
 	formatShortDate,
 	decimalString,
 	toFixedFloat,
-	getSizeVal,
-	getSizeUnit,
 	chartMargin,
+	getSizeAndUnit,
 } from '@/lib/utils'
-import { ChartTimes, SystemStatsRecord } from '@/types'
+import { ChartData } from '@/types'
 import { memo } from 'react'
 
 export default memo(function DiskChart({
 	dataKey,
 	diskSize,
-	systemChartData,
+	chartData,
 }: {
 	dataKey: string
 	diskSize: number
-	systemChartData: {
-		systemStats: SystemStatsRecord[]
-		ticks: number[]
-		domain: number[]
-		chartTime: ChartTimes
-	}
+	chartData: ChartData
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
@@ -40,7 +34,7 @@ export default memo(function DiskChart({
 					'opacity-100': yAxisWidth,
 				})}
 			>
-				<AreaChart accessibilityLayer data={systemChartData.systemStats} margin={chartMargin}>
+				<AreaChart accessibilityLayer data={chartData.systemStats} margin={chartMargin}>
 					<CartesianGrid vertical={false} />
 					<YAxis
 						className="tracking-tighter"
@@ -50,21 +44,22 @@ export default memo(function DiskChart({
 						minTickGap={6}
 						tickLine={false}
 						axisLine={false}
-						tickFormatter={(value) =>
-							updateYAxisWidth(toFixedFloat(getSizeVal(value), 2) + getSizeUnit(value))
-						}
+						tickFormatter={(value) => {
+							const { v, u } = getSizeAndUnit(value)
+							return updateYAxisWidth(toFixedFloat(v, 2) + u)
+						}}
 					/>
 					<XAxis
 						dataKey="created"
-						domain={systemChartData.domain}
-						ticks={systemChartData.ticks}
+						domain={chartData.domain}
+						ticks={chartData.ticks}
 						allowDataOverflow
 						type="number"
 						scale="time"
 						minTickGap={30}
 						tickMargin={8}
 						axisLine={false}
-						tickFormatter={chartTimeData[systemChartData.chartTime].format}
+						tickFormatter={chartTimeData[chartData.chartTime].format}
 					/>
 					<ChartTooltip
 						animationEasing="ease-out"
@@ -72,10 +67,10 @@ export default memo(function DiskChart({
 						content={
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
-								contentFormatter={({ value }) =>
-									decimalString(getSizeVal(value)) + getSizeUnit(value)
-								}
-								// indicator="line"
+								contentFormatter={({ value }) => {
+									const { v, u } = getSizeAndUnit(value)
+									return decimalString(v) + u
+								}}
 							/>
 						}
 					/>

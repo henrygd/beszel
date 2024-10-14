@@ -10,19 +10,10 @@ import {
 	decimalString,
 	chartMargin,
 } from '@/lib/utils'
-import { ChartTimes, SystemStatsRecord } from '@/types'
+import { ChartData } from '@/types'
 import { memo } from 'react'
 
-export default memo(function SwapChart({
-	systemChartData,
-}: {
-	systemChartData: {
-		systemStats: SystemStatsRecord[]
-		ticks: number[]
-		domain: number[]
-		chartTime: ChartTimes
-	}
-}) {
+export default memo(function SwapChart({ chartData }: { chartData: ChartData }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
 	return (
@@ -32,14 +23,13 @@ export default memo(function SwapChart({
 					'opacity-100': yAxisWidth,
 				})}
 			>
-				<AreaChart accessibilityLayer data={systemChartData.systemStats} margin={chartMargin}>
+				<AreaChart accessibilityLayer data={chartData.systemStats} margin={chartMargin}>
 					<CartesianGrid vertical={false} />
 					<YAxis
 						className="tracking-tighter"
 						domain={[
 							0,
-							() =>
-								toFixedWithoutTrailingZeros(systemChartData.systemStats.at(-1)?.stats.s ?? 0.04, 2),
+							() => toFixedWithoutTrailingZeros(chartData.systemStats.at(-1)?.stats.s ?? 0.04, 2),
 						]}
 						width={yAxisWidth}
 						tickLine={false}
@@ -48,15 +38,15 @@ export default memo(function SwapChart({
 					/>
 					<XAxis
 						dataKey="created"
-						domain={systemChartData.domain}
-						ticks={systemChartData.ticks}
+						domain={chartData.domain}
+						ticks={chartData.ticks}
 						allowDataOverflow
 						type="number"
 						scale="time"
 						minTickGap={30}
 						tickMargin={8}
 						axisLine={false}
-						tickFormatter={chartTimeData[systemChartData.chartTime].format}
+						tickFormatter={chartTimeData[chartData.chartTime].format}
 					/>
 					<ChartTooltip
 						animationEasing="ease-out"

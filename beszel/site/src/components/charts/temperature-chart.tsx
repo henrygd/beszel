@@ -16,29 +16,20 @@ import {
 	decimalString,
 	chartMargin,
 } from '@/lib/utils'
-import { ChartTimes, SystemStatsRecord } from '@/types'
+import { ChartData } from '@/types'
 import { memo, useMemo } from 'react'
 
-export default memo(function TemperatureChart({
-	systemChartData,
-}: {
-	systemChartData: {
-		systemStats: SystemStatsRecord[]
-		ticks: number[]
-		domain: number[]
-		chartTime: ChartTimes
-	}
-}) {
+export default memo(function TemperatureChart({ chartData }: { chartData: ChartData }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
 	/** Format temperature data for chart and assign colors */
 	const newChartData = useMemo(() => {
-		const chartData = { data: [], colors: {} } as {
+		const newChartData = { data: [], colors: {} } as {
 			data: Record<string, number | string>[]
 			colors: Record<string, string>
 		}
 		const tempSums = {} as Record<string, number>
-		for (let data of systemChartData.systemStats) {
+		for (let data of chartData.systemStats) {
 			let newData = { created: data.created } as Record<string, number | string>
 			let keys = Object.keys(data.stats?.t ?? {})
 			for (let i = 0; i < keys.length; i++) {
@@ -46,14 +37,14 @@ export default memo(function TemperatureChart({
 				newData[key] = data.stats.t![key]
 				tempSums[key] = (tempSums[key] ?? 0) + newData[key]
 			}
-			chartData.data.push(newData)
+			newChartData.data.push(newData)
 		}
 		const keys = Object.keys(tempSums).sort((a, b) => tempSums[b] - tempSums[a])
 		for (let key of keys) {
-			chartData.colors[key] = `hsl(${((keys.indexOf(key) * 360) / keys.length) % 360}, 60%, 55%)`
+			newChartData.colors[key] = `hsl(${((keys.indexOf(key) * 360) / keys.length) % 360}, 60%, 55%)`
 		}
-		return chartData
-	}, [systemChartData])
+		return newChartData
+	}, [chartData])
 
 	const colors = Object.keys(newChartData.colors)
 
@@ -81,15 +72,15 @@ export default memo(function TemperatureChart({
 					/>
 					<XAxis
 						dataKey="created"
-						domain={systemChartData.domain}
-						ticks={systemChartData.ticks}
+						domain={chartData.domain}
+						ticks={chartData.ticks}
 						allowDataOverflow
 						type="number"
 						scale="time"
 						minTickGap={30}
 						tickMargin={8}
 						axisLine={false}
-						tickFormatter={chartTimeData[systemChartData.chartTime].format}
+						tickFormatter={chartTimeData[chartData.chartTime].format}
 					/>
 					<ChartTooltip
 						animationEasing="ease-out"

@@ -13,31 +13,33 @@ import {
 	formatShortDate,
 	decimalString,
 	chartMargin,
+	toFixedFloat,
+	getSizeAndUnit,
 	toFixedWithoutTrailingZeros,
 } from '@/lib/utils'
 // import Spinner from '../spinner'
 import { useStore } from '@nanostores/react'
 import { $containerFilter } from '@/lib/stores'
-import { ChartTimes, ContainerStats } from '@/types'
+import { ChartData } from '@/types'
+import { Separator } from '../ui/separator'
 
-export default memo(function ContainerCpuChart({
+export default memo(function ContainerChart({
 	dataKey,
+	chartData,
+	chartName,
 	unit = '%',
-	containerChartData,
 }: {
 	dataKey: string
+	chartData: ChartData
+	chartName: string
 	unit?: string
-	containerChartData: {
-		containerData: Record<string, number | ContainerStats>[]
-		ticks: number[]
-		domain: number[]
-		chartTime: ChartTimes
-	}
 }) {
 	const filter = useStore($containerFilter)
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
-	const { containerData, ticks, domain, chartTime } = containerChartData
+	const { containerData, ticks, domain, chartTime } = chartData
+
+	const isNetChart = chartName === 'net'
 
 	const chartConfig = useMemo(() => {
 		let config = {} as Record<
@@ -50,14 +52,18 @@ export default memo(function ContainerCpuChart({
 		const totalUsage = {} as Record<string, number>
 		for (let stats of containerData) {
 			for (let key in stats) {
-				if (!key || typeof stats[key] === 'number') {
+				if (!key || key === 'created') {
 					continue
 				}
 				if (!(key in totalUsage)) {
 					totalUsage[key] = 0
 				}
-				// @ts-ignore
-				totalUsage[key] += stats[key]?.[dataKey] ?? 0
+				if (isNetChart) {
+					totalUsage[key] += stats[key]?.ns ?? 0 + stats[key]?.nr ?? 0
+				} else {
+					// @ts-ignore
+					totalUsage[key] += stats[key]?.[dataKey] ?? 0
+				}
 			}
 		}
 		let keys = Object.keys(totalUsage)
@@ -72,7 +78,7 @@ export default memo(function ContainerCpuChart({
 			}
 		}
 		return config satisfies ChartConfig
-	}, [containerChartData])
+	}, [chartData])
 
 	// console.log('rendered at', new Date())
 
@@ -95,8 +101,12 @@ export default memo(function ContainerCpuChart({
 						className="tracking-tighter"
 						width={yAxisWidth}
 						tickFormatter={(value) => {
-							const val = toFixedWithoutTrailingZeros(value, 2) + unit
-							return updateYAxisWidth(val)
+							if (chartName === 'cpu') {
+								const val = toFixedWithoutTrailingZeros(value, 2) + unit
+								return updateYAxisWidth(val)
+							}
+							const { v, u } = getSizeAndUnit(value, false)
+							return updateYAxisWidth(`${toFixedFloat(v, 2)}${u}${isNetChart ? '/s' : ''}`)
 						}}
 						tickLine={false}
 						axisLine={false}
@@ -122,8 +132,26 @@ export default memo(function ContainerCpuChart({
 						content={
 							<ChartTooltipContent
 								filter={filter}
-								contentFormatter={(item) => decimalString(item.value) + unit}
-								// indicator="line"
+								contentFormatter={(item, key) => {
+									if (!isNetChart) {
+										return decimalString(item.value) + unit
+									}
+									try {
+										const sent = item?.payload?.[key]?.ns ?? 0
+										const received = item?.payload?.[key]?.nr ?? 0
+										return (
+											<span className="flex">
+												{decimalString(received)} MB/s
+												<span className="opacity-70 ml-0.5"> rx </span>
+												<Separator orientation="vertical" className="h-3 mx-1.5 bg-primary/40" />
+												{decimalString(sent)} MB/s
+												<span className="opacity-70 ml-0.5"> tx</span>
+											</span>
+										)
+									} catch (e) {
+										return null
+									}
+								}}
 							/>
 						}
 					/>
@@ -135,7 +163,12 @@ export default memo(function ContainerCpuChart({
 							<Area
 								key={key}
 								isAnimationActive={false}
-								dataKey={`${key}.${dataKey}`}
+								dataKey={(data) => {
+									if (isNetChart) {
+										return data[key]?.ns ?? 0 + data?.[key]?.nr ?? 0
+									}
+									return data[key]?.[dataKey] ?? 0
+								}}
 								name={key}
 								type="monotoneX"
 								fill={chartConfig[key].color}
