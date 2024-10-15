@@ -113,7 +113,7 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 		}
 	}, [filter])
 
-	const columns: ColumnDef<SystemRecord>[] = useMemo(() => {
+	const columns = useMemo(() => {
 		return [
 			{
 				// size: 200,
@@ -149,25 +149,30 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 			},
 			{
 				accessorKey: 'info.cpu',
+				invertSorting: true,
 				cell: CellFormatter,
 				header: ({ column }) => sortableHeader(column, 'CPU', CpuIcon),
 			},
 			{
 				accessorKey: 'info.mp',
+				invertSorting: true,
 				cell: CellFormatter,
 				header: ({ column }) => sortableHeader(column, 'Memory', MemoryStickIcon),
 			},
 			{
 				accessorKey: 'info.dp',
+				invertSorting: true,
 				cell: CellFormatter,
 				header: ({ column }) => sortableHeader(column, 'Disk', HardDriveIcon),
 			},
 			{
-				accessorKey: 'info.b',
+				accessorFn: (originalRow) => originalRow.info.b || 0,
+				id: 'n',
+				invertSorting: true,
 				size: 115,
 				header: ({ column }) => sortableHeader(column, 'Net', EthernetIcon),
 				cell: (info) => {
-					const val = (info.getValue() as number) || 0
+					const val = info.getValue() as number
 					return (
 						<span className="tabular-nums whitespace-nowrap pl-1">
 							{decimalString(val, val >= 100 ? 1 : 2)} MB/s
@@ -177,6 +182,7 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 			},
 			{
 				accessorKey: 'info.v',
+				invertSorting: true,
 				size: 50,
 				header: ({ column }) => sortableHeader(column, 'Agent', WifiIcon, true),
 				cell: (info) => {
@@ -273,7 +279,7 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 					)
 				},
 			},
-		]
+		] as ColumnDef<SystemRecord>[]
 	}, [hubVersion])
 
 	const table = useReactTable({
