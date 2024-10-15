@@ -8,6 +8,7 @@ import (
 	"math"
 	"time"
 
+	"github.com/goccy/go-json"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/daos"
@@ -29,6 +30,10 @@ type LongerRecordData struct {
 type RecordDeletionData struct {
 	recordType string
 	retention  time.Duration
+}
+
+type RecordStats []*struct {
+	Stats []byte `db:"stats"`
 }
 
 func NewRecordManager(app *pocketbase.PocketBase) *RecordManager {
@@ -73,6 +78,7 @@ func (rm *RecordManager) CreateLongerRecords() {
 			return err
 		}
 
+		// need *models.Collection to create a new record with models.NewRecord
 		collections := map[string]*models.Collection{}
 		for _, collectionName := range []string{"system_stats", "container_stats"} {
 			collection, _ := txDao.FindCollectionByNameOrId(collectionName)
@@ -104,16 +110,31 @@ func (rm *RecordManager) CreateLongerRecords() {
 						}
 					}
 					// get shorter records from the past x minutes
-					allShorterRecords, err := txDao.FindRecordsByExpr(
-						collection.Id,
-						dbx.NewExp(
-							"type = {:type} AND system = {:system} AND created > {:created}",
-							dbx.Params{"type": recordData.shorterType, "system": system.Id, "created": shorterRecordPeriod},
-						),
-					)
+					var stats RecordStats
+
+					// allShorterRecords, err := txDao.FindRecordsByExpr(
+					// 	collection,
+					// 	dbx.NewExp(
+					// 		"type = {:type} AND system = {:system} AND created > {:created}",
+					// 		dbx.Params{"type": recordData.shorterType, "system": system.Id, "created": shorterRecordPeriod},
+					// 	),
+					// )
+
+					err := txDao.DB().
+						Select("stats").
+						From(collection.Name).
+						AndWhere(dbx.NewExp(
+							"type={:type} AND system={:system} AND created > {:created}",
+							dbx.Params{
+								"type":    recordData.shorterType,
+								"system":  system.Id,
+								"created": shorterRecordPeriod,
+							},
+						)).
+						All(&stats)
 
 					// continue if not enough shorter records
-					if err != nil || len(allShorterRecords) < recordData.minShorterRecords {
+					if err != nil || len(stats) < recordData.minShorterRecords {
 						// log.Println("not enough shorter records. continue.", len(allShorterRecords), recordData.expectedShorterRecords)
 						continue
 					}
@@ -123,9 +144,9 @@ func (rm *RecordManager) CreateLongerRecords() {
 					longerRecord.Set("type", recordData.longerType)
 					switch collection.Name {
 					case "system_stats":
-						longerRecord.Set("stats", rm.AverageSystemStats(allShorterRecords))
+						longerRecord.Set("stats", rm.AverageSystemStats(stats))
 					case "container_stats":
-						longerRecord.Set("stats", rm.AverageContainerStats(allShorterRecords))
+						longerRecord.Set("stats", rm.AverageContainerStats(stats))
 					}
 					if err := txDao.SaveRecord(longerRecord); err != nil {
 						log.Println("failed to save longer record", "err", err.Error())
@@ -141,7 +162,7 @@ func (rm *RecordManager) CreateLongerRecords() {
 }
 
 // Calculate the average stats of a list of system_stats records without reflect
-func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.Stats {
+func (rm *RecordManager) AverageSystemStats(records RecordStats) system.Stats {
 	sum := system.Stats{
 		Temperatures: make(map[string]float64),
 		ExtraFs:      make(map[string]*system.FsStats),
@@ -153,7 +174,7 @@ func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.Sta
 
 	var stats system.Stats
 	for _, record := range records {
-		record.UnmarshalJSONField("stats", &stats)
+		json.Unmarshal(record.Stats, &stats)
 		sum.Cpu += stats.Cpu
 		sum.Mem += stats.Mem
 		sum.MemUsed += stats.MemUsed
@@ -226,14 +247,14 @@ func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.Sta
 	}
 
 	if len(sum.Temperatures) != 0 {
-		stats.Temperatures = make(map[string]float64)
+		stats.Temperatures = make(map[string]float64, len(sum.Temperatures))
 		for key, value := range sum.Temperatures {
 			stats.Temperatures[key] = twoDecimals(value / tempCount)
 		}
 	}
 
 	if len(sum.ExtraFs) != 0 {
-		stats.ExtraFs = make(map[string]*system.FsStats)
+		stats.ExtraFs = make(map[string]*system.FsStats, len(sum.ExtraFs))
 		for key, value := range sum.ExtraFs {
 			stats.ExtraFs[key] = &system.FsStats{
 				DiskTotal:      twoDecimals(value.DiskTotal / count),
@@ -250,13 +271,17 @@ func (rm *RecordManager) AverageSystemStats(records []*models.Record) system.Sta
 }
 
 // Calculate the average stats of a list of container_stats records
-func (rm *RecordManager) AverageContainerStats(records []*models.Record) []container.Stats {
+func (rm *RecordManager) AverageContainerStats(records RecordStats) []container.Stats {
 	sums := make(map[string]*container.Stats)
 	count := float64(len(records))
 
 	var containerStats []container.Stats
 	for _, record := range records {
-		record.UnmarshalJSONField("stats", &containerStats)
+		// Reset the slice length to 0, but keep the capacity
+		containerStats = containerStats[:0]
+		if err := json.Unmarshal(record.Stats, &containerStats); err != nil {
+			return []container.Stats{}
+		}
 		for _, stat := range containerStats {
 			if _, ok := sums[stat.Name]; !ok {
 				sums[stat.Name] = &container.Stats{Name: stat.Name}
