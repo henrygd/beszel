@@ -44,7 +44,7 @@ func (a *Agent) initializeDiskInfo() {
 				// check if root device is in /proc/diskstats, use fallback if not
 				if _, exists := diskIoCounters[key]; !exists {
 					slog.Warn("Device not found in diskstats", "name", key)
-					key = findFallbackIoDevice(filesystem, diskIoCounters)
+					key = findFallbackIoDevice(filesystem, diskIoCounters, a.fsStats)
 					slog.Info("Using I/O fallback", "name", key)
 				}
 			}
@@ -122,7 +122,7 @@ func (a *Agent) initializeDiskInfo() {
 
 	// If no root filesystem set, use fallback
 	if !hasRoot {
-		rootDevice := findFallbackIoDevice(filepath.Base(filesystem), diskIoCounters)
+		rootDevice := findFallbackIoDevice(filepath.Base(filesystem), diskIoCounters, a.fsStats)
 		slog.Info("Root disk", "mountpoint", "/", "io", rootDevice)
 		a.fsStats[rootDevice] = &system.FsStats{Root: true, Mountpoint: "/"}
 	}
@@ -132,7 +132,7 @@ func (a *Agent) initializeDiskInfo() {
 
 // Returns the device with the most reads in /proc/diskstats,
 // or the device specified by the filesystem argument if it exists
-func findFallbackIoDevice(filesystem string, diskIoCounters map[string]disk.IOCountersStat) string {
+func findFallbackIoDevice(filesystem string, diskIoCounters map[string]disk.IOCountersStat, fsStats map[string]*system.FsStats) string {
 	var maxReadBytes uint64
 	maxReadDevice := "/"
 	for _, d := range diskIoCounters {
@@ -140,8 +140,11 @@ func findFallbackIoDevice(filesystem string, diskIoCounters map[string]disk.IOCo
 			return d.Name
 		}
 		if d.ReadBytes > maxReadBytes {
-			maxReadBytes = d.ReadBytes
-			maxReadDevice = d.Name
+			// don't use if device already exists in fsStats
+			if _, exists := fsStats[d.Name]; !exists {
+				maxReadBytes = d.ReadBytes
+				maxReadDevice = d.Name
+			}
 		}
 	}
 	return maxReadDevice
