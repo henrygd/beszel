@@ -4,7 +4,6 @@ package alerts
 import (
 	"beszel/internal/entities/system"
 	"fmt"
-	"log"
 	"net/mail"
 	"net/url"
 	"time"
@@ -58,7 +57,7 @@ type SystemAlertData struct {
 	time         time.Time
 	count        uint8
 	min          uint8
-	tempSums     map[string]float32
+	mapSums      map[string]float32
 	descriptor   string // override descriptor in notification body (for temp sensor, disk partition, etc)
 }
 
@@ -68,18 +67,17 @@ func NewAlertManager(app *pocketbase.PocketBase) *AlertManager {
 	}
 }
 
-func (am *AlertManager) HandleSystemAlerts(systemRecord *models.Record, systemInfo system.Info, temperatures map[string]float64) {
+func (am *AlertManager) HandleSystemAlerts(systemRecord *models.Record, systemInfo system.Info, temperatures map[string]float64, extraFs map[string]*system.FsStats) error {
 	// start := time.Now()
 	// defer func() {
 	// 	log.Println("alert stats took", time.Since(start))
 	// }()
-
 	alertRecords, err := am.app.Dao().FindRecordsByExpr("alerts",
-		dbx.NewExp("system={:system}", dbx.Params{"system": systemRecord.GetId()}),
+		dbx.NewExp("system={:system}", dbx.Params{"system": systemRecord.Id}),
 	)
 	if err != nil || len(alertRecords) == 0 {
 		// log.Println("no alerts found for system")
-		return
+		return nil
 	}
 
 	var validAlerts []SystemAlertData
@@ -96,11 +94,18 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *models.Record, systemIn
 			val = systemInfo.Cpu
 		case "Memory":
 			val = systemInfo.MemPct
-		case "Disk":
-			val = systemInfo.DiskPct
 		case "Bandwidth":
 			val = systemInfo.Bandwidth
-			unit = "MB/s"
+			unit = " MB/s"
+		case "Disk":
+			maxUsedPct := systemInfo.DiskPct
+			for _, fs := range extraFs {
+				usedPct := fs.DiskUsed / fs.DiskTotal * 100
+				if usedPct > maxUsedPct {
+					maxUsedPct = usedPct
+				}
+			}
+			val = maxUsedPct
 		case "Temperature":
 			if temperatures == nil {
 				continue
@@ -126,7 +131,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *models.Record, systemIn
 
 		min := max(1, cast.ToUint8(alertRecord.Get("min")))
 		// add time to alert time to make sure it's slighty after record creation
-		time := now.Add(-time.Duration(min)*time.Minute + time.Second*5)
+		time := now.Add(-time.Duration(min) * time.Minute)
 		if time.Before(oldestTime) {
 			oldestTime = time
 		}
@@ -164,7 +169,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *models.Record, systemIn
 		All(&systemStats)
 
 	if err != nil {
-		return
+		return err
 	}
 
 	// get oldest record creation time from first record in the slice
@@ -181,7 +186,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *models.Record, systemIn
 
 	if len(validAlerts) == 0 {
 		// log.Println("no valid alerts found")
-		return
+		return nil
 	}
 
 	var stats SystemAlertStats
@@ -189,9 +194,11 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *models.Record, systemIn
 	// we can skip the latest systemStats record since it's the current value
 	for i := 0; i < len(systemStats); i++ {
 		stat := systemStats[i]
-		// log.Println("created", stat.Created.Time(), "now", time.Now().UTC())
-		statTime := stat.Created.Time().Add(time.Second)
-		json.Unmarshal(stat.Stats, &stats)
+		// subtract 10 seconds to give a small time buffer
+		systemStatsCreation := stat.Created.Time().Add(-time.Second * 10)
+		if err := json.Unmarshal(stat.Stats, &stats); err != nil {
+			return err
+		}
 		// log.Println("stats", stats)
 		for j := range validAlerts {
 			alert := &validAlerts[j]
@@ -199,8 +206,8 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *models.Record, systemIn
 			if i == 0 {
 				alert.val = 0
 			}
-			// continue if stat is older than alert time range
-			if statTime.Before(alert.time) {
+			// continue if system_stats is older than alert time range
+			if systemStatsCreation.Before(alert.time) {
 				continue
 			}
 			// add to alert value
@@ -212,17 +219,30 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *models.Record, systemIn
 			case "Bandwidth":
 				alert.val += stats.NetSent + stats.NetRecv
 			case "Disk":
-				// todo: check all disks instead of just root
-				alert.val += stats.Disk
-			case "Temperature":
-				if alert.tempSums == nil {
-					alert.tempSums = make(map[string]float32, len(stats.Temperatures))
+				if alert.mapSums == nil {
+					alert.mapSums = make(map[string]float32, len(extraFs)+1)
 				}
-				for key, value := range stats.Temperatures {
-					if _, ok := alert.tempSums[key]; !ok {
-						alert.tempSums[key] = float32(0)
+				// add root disk
+				if _, ok := alert.mapSums["root"]; !ok {
+					alert.mapSums["root"] = 0.0
+				}
+				alert.mapSums["root"] += float32(stats.Disk)
+				// add extra disks
+				for key, fs := range extraFs {
+					if _, ok := alert.mapSums[key]; !ok {
+						alert.mapSums[key] = 0.0
 					}
-					alert.tempSums[key] += value
+					alert.mapSums[key] += float32(fs.DiskUsed / fs.DiskTotal * 100)
+				}
+			case "Temperature":
+				if alert.mapSums == nil {
+					alert.mapSums = make(map[string]float32, len(stats.Temperatures))
+				}
+				for key, temp := range stats.Temperatures {
+					if _, ok := alert.mapSums[key]; !ok {
+						alert.mapSums[key] = float32(0)
+					}
+					alert.mapSums[key] += temp
 				}
 			default:
 				continue
@@ -233,13 +253,23 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *models.Record, systemIn
 	// sum up vals for each alert
 	for _, alert := range validAlerts {
 		switch alert.name {
+		case "Disk":
+			maxPct := float32(0)
+			for key, value := range alert.mapSums {
+				sumPct := float32(value)
+				if sumPct > maxPct {
+					maxPct = sumPct
+					alert.descriptor = fmt.Sprintf("Usage of %s", key)
+				}
+			}
+			alert.val = float64(maxPct / float32(alert.count))
 		case "Temperature":
 			maxTemp := float32(0)
-			for key, value := range alert.tempSums {
+			for key, value := range alert.mapSums {
 				sumTemp := float32(value) / float32(alert.count)
 				if sumTemp > maxTemp {
 					maxTemp = sumTemp
-					alert.descriptor = fmt.Sprintf("Hottest sensor %s", key)
+					alert.descriptor = fmt.Sprintf("Highest sensor %s", key)
 				}
 			}
 			alert.val = float64(maxTemp)
@@ -260,10 +290,11 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *models.Record, systemIn
 			}
 		}
 	}
+	return nil
 }
 
 func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
-	log.Printf("Sending alert %s: val %f | count %d | threshold %f\n", alert.name, alert.val, alert.count, alert.threshold)
+	// log.Printf("Sending alert %s: val %f | count %d | threshold %f\n", alert.name, alert.val, alert.count, alert.threshold)
 
 	systemName := alert.systemRecord.GetString("name")
 

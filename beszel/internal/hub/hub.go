@@ -315,7 +315,9 @@ func (h *Hub) updateSystem(record *models.Record) {
 		}
 	}
 	// system info alerts (todo: extra fs alerts)
-	h.am.HandleSystemAlerts(record, systemData.Info, systemData.Stats.Temperatures)
+	if err := h.am.HandleSystemAlerts(record, systemData.Info, systemData.Stats.Temperatures, systemData.Stats.ExtraFs); err != nil {
+		h.app.Logger().Error("System alerts error", "err", err.Error())
+	}
 }
 
 // set system to specified status and save record

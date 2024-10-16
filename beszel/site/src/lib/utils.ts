@@ -54,7 +54,7 @@ export const updateSystemList = async () => {
 
 export const updateAlerts = () => {
 	pb.collection('alerts')
-		.getFullList<AlertRecord>({ fields: 'id,name,system,value,min,triggered' })
+		.getFullList<AlertRecord>({ fields: 'id,name,system,value,min,triggered', sort: 'updated' })
 		.then((records) => {
 			$alerts.set(records)
 		})
@@ -315,7 +315,7 @@ export const alertInfo = {
 		name: 'Disk usage',
 		unit: '%',
 		icon: HardDriveIcon,
-		desc: 'Triggers when root usage exceeds a threshold.',
+		desc: 'Triggers when usage of any disk exceeds a threshold.',
 	},
 	Bandwidth: {
 		name: 'Bandwidth',
