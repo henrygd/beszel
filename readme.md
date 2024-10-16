@@ -12,7 +12,7 @@ A lightweight server resource monitoring hub with historical data, docker stats,
 - **Lightweight**: Smaller and less resource-intensive than leading solutions.
 - **Simple**: Easy setup, no need for public internet exposure.
 - **Docker stats**: Tracks CPU, memory, and network usage history for each container.
-- **Alerts**: Configurable alerts for CPU, memory, disk usage, and system status.
+- **Alerts**: Configurable alerts for CPU, memory, disk, bandwidth, temperature, and system status.
 - **Multi-user**: Each user manages their own systems. Admins can share systems across users.
 - **OAuth / OIDC**: Supports multiple OAuth2 providers. Password authentication can be disabled.
 - **Automatic backups**: Save and restore data from disk or S3-compatible storage.
