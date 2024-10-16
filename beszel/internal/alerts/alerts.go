@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/mail"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/containrrr/shoutrrr"
@@ -295,19 +296,24 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *models.Record, systemIn
 
 func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 	// log.Printf("Sending alert %s: val %f | count %d | threshold %f\n", alert.name, alert.val, alert.count, alert.threshold)
-
 	systemName := alert.systemRecord.GetString("name")
 
 	// change Disk to Disk usage
 	if alert.name == "Disk" {
-		alert.name = "Disk usage"
+		alert.name += " usage"
+	}
+
+	// make title alert name lowercase if not CPU
+	titleAlertName := alert.name
+	if titleAlertName != "CPU" {
+		titleAlertName = strings.ToLower(titleAlertName)
 	}
 
 	var subject string
 	if alert.triggered {
-		subject = fmt.Sprintf("%s above threshold on %s", alert.name, systemName)
+		subject = fmt.Sprintf("%s %s above threshold", systemName, titleAlertName)
 	} else {
-		subject = fmt.Sprintf("%s below threshold on %s", alert.name, systemName)
+		subject = fmt.Sprintf("%s %s below threshold", systemName, titleAlertName)
 	}
 	minutesLabel := "minute"
 	if alert.min > 1 {
