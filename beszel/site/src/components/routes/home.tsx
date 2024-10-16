@@ -1,18 +1,33 @@
-import { Suspense, lazy, useEffect, useState } from 'react'
+import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
 import { $alerts, $hubVersion, $systems, pb } from '@/lib/stores'
 import { useStore } from '@nanostores/react'
 import { GithubIcon } from 'lucide-react'
 import { Separator } from '../ui/separator'
-import { updateRecordList, updateSystemList } from '@/lib/utils'
+import { alertInfo, updateRecordList, updateSystemList } from '@/lib/utils'
 import { AlertRecord, SystemRecord } from '@/types'
 import { Input } from '../ui/input'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Link } from '../router'
 
 const SystemsTable = lazy(() => import('../systems-table/systems-table'))
 
 export default function () {
 	const hubVersion = useStore($hubVersion)
 	const [filter, setFilter] = useState<string>()
+	const alerts = useStore($alerts)
+	const systems = useStore($systems)
+
+	const activeAlerts = useMemo(() => {
+		if (!systems.length) {
+			return []
+		}
+		const activeAlerts = alerts.filter((alert) => alert.triggered && alert.name in alertInfo)
+		for (const alert of activeAlerts) {
+			alert.sysname = systems.find((system) => system.id === alert.system)?.name
+		}
+		return activeAlerts
+	}, [alerts])
 
 	useEffect(() => {
 		document.title = 'Dashboard / Beszel'
@@ -24,17 +39,57 @@ export default function () {
 		pb.collection<SystemRecord>('systems').subscribe('*', (e) => {
 			updateRecordList(e, $systems)
 		})
+		// todo: add toast if new triggered alert comes in
 		pb.collection<AlertRecord>('alerts').subscribe('*', (e) => {
 			updateRecordList(e, $alerts)
 		})
 		return () => {
 			pb.collection('systems').unsubscribe('*')
-			pb.collection('alerts').unsubscribe('*')
+			// pb.collection('alerts').unsubscribe('*')
 		}
 	}, [])
 
 	return (
 		<>
+			{/* show active alerts */}
+			{activeAlerts.length > 0 && (
+				<Card className="mb-4">
+					<CardHeader className="pb-4 px-2 sm:px-6 max-sm:pt-5 max-sm:pb-1">
+						<div className="px-2 sm:px-1">
+							<CardTitle>Active Alerts</CardTitle>
+						</div>
+					</CardHeader>
+					<CardContent className="max-sm:p-2">
+						{activeAlerts.length > 0 && (
+							<div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3 mb-1">
+								{activeAlerts.map((alert) => {
+									const a = alertInfo[alert.name as keyof typeof alertInfo]
+									return (
+										<Alert
+											key={alert.id}
+											className="hover:-translate-y-[1px] duration-200 bg-transparent border-foreground/10  hover:shadow-md shadow-black"
+										>
+											<a.icon className="h-4 w-4" />
+											<AlertTitle className="mb-2">
+												{alert.sysname} {a.name}
+											</AlertTitle>
+											<AlertDescription>
+												Exceeds {alert.value}
+												{a.unit} threshold in last {alert.min} min
+											</AlertDescription>
+											<Link
+												href={`/system/${encodeURIComponent(alert.sysname!)}`}
+												className="absolute inset-0 w-full h-full"
+												aria-label="View system"
+											></Link>
+										</Alert>
+									)
+								})}
+							</div>
+						)}
+					</CardContent>
+				</Card>
+			)}
 			<Card>
 				<CardHeader className="pb-5 px-2 sm:px-6 max-sm:pt-5 max-sm:pb-1">
 					<div className="grid md:flex gap-3 w-full items-end">
@@ -61,6 +116,7 @@ export default function () {
 					</Suspense>
 				</CardContent>
 			</Card>
+
 			{hubVersion && (
 				<div className="flex gap-1.5 justify-end items-center pr-3 sm:pr-6 mt-3.5 text-xs opacity-80">
 					<a

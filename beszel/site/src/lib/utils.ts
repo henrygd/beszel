@@ -7,6 +7,8 @@ import { RecordModel, RecordSubscription } from 'pocketbase'
 import { WritableAtom } from 'nanostores'
 import { timeDay, timeHour } from 'd3-time'
 import { useEffect, useState } from 'react'
+import { CpuIcon, HardDriveIcon, MemoryStickIcon } from 'lucide-react'
+import { EthernetIcon, ThermometerIcon } from '@/components/ui/icons'
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -52,7 +54,7 @@ export const updateSystemList = async () => {
 
 export const updateAlerts = () => {
 	pb.collection('alerts')
-		.getFullList<AlertRecord>({ fields: 'id,name,system,value,min' })
+		.getFullList<AlertRecord>({ fields: 'id,name,system,value,min,triggered' })
 		.then((records) => {
 			$alerts.set(records)
 		})
@@ -295,3 +297,31 @@ export const getSizeAndUnit = (n: number, isGigabytes = true) => {
 }
 
 export const chartMargin = { top: 12 }
+
+export const alertInfo = {
+	CPU: {
+		name: 'CPU usage',
+		unit: '%',
+		icon: CpuIcon,
+	},
+	Memory: {
+		name: 'Memory usage',
+		unit: '%',
+		icon: MemoryStickIcon,
+	},
+	Disk: {
+		name: 'Disk usage',
+		unit: '%',
+		icon: HardDriveIcon,
+	},
+	Bandwidth: {
+		name: 'Bandwidth',
+		unit: 'MB/s',
+		icon: EthernetIcon,
+	},
+	Temperature: {
+		name: 'Temperature',
+		unit: '°C',
+		icon: ThermometerIcon,
+	},
+}

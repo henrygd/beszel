@@ -127,6 +127,8 @@ export interface AlertRecord extends RecordModel {
 	id: string
 	system: string
 	name: string
+	triggered: boolean
+	sysname?: string
 	// user: string
 }
 

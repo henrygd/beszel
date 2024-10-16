@@ -244,7 +244,7 @@ function AlertWithSlider({
 					<Suspense fallback={<div className="h-10" />}>
 						<div>
 							<label htmlFor={`v${key}`} className="text-sm block h-8">
-								Exceeds{' '}
+								Average exceeds{' '}
 								<strong className="text-foreground">
 									{liveValue}
 									{unit}
