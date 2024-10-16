@@ -83,9 +83,11 @@ func (a *Agent) gatherStats() system.CombinedData {
 		Stats: a.getSystemStats(),
 		Info:  a.systemInfo,
 	}
+	slog.Debug("System stats", "data", systemData)
 	// add docker stats
 	if containerStats, err := a.dockerManager.getDockerStats(); err == nil {
 		systemData.Containers = containerStats
+		slog.Debug("Docker stats", "data", systemData.Containers)
 	} else {
 		slog.Debug("Error getting docker stats", "err", err)
 	}
@@ -96,5 +98,6 @@ func (a *Agent) gatherStats() system.CombinedData {
 			systemData.Stats.ExtraFs[name] = stats
 		}
 	}
+	slog.Debug("Extra filesystems", "data", systemData.Stats.ExtraFs)
 	return systemData
 }

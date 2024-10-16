@@ -25,7 +25,6 @@ func (a *Agent) startServer(pubKey []byte, addr string) {
 
 func (a *Agent) handleSession(s sshServer.Session) {
 	stats := a.gatherStats()
-	slog.Debug("Sending stats", "data", stats)
 	if err := json.NewEncoder(s).Encode(stats); err != nil {
 		slog.Error("Error encoding stats", "err", err)
 		s.Exit(1)
