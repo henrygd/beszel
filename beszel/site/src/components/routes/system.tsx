@@ -55,13 +55,14 @@ function getTimeData(chartTime: ChartTimes, lastCreated: number) {
 
 // add empty values between records to make gaps if interval is too large
 function addEmptyValues<T extends SystemStatsRecord | ContainerStatsRecord>(
-	records: T[],
+	prevRecords: T[],
+	newRecords: T[],
 	expectedInterval: number
 ) {
 	const modifiedRecords: T[] = []
-	let prevTime = 0
-	for (let i = 0; i < records.length; i++) {
-		const record = records[i]
+	let prevTime = (prevRecords.at(-1)?.created ?? 0) as number
+	for (let i = 0; i < newRecords.length; i++) {
+		const record = newRecords[i]
 		record.created = new Date(record.created).getTime()
 		if (prevTime) {
 			const interval = record.created - prevTime
@@ -183,7 +184,9 @@ export default function SystemDetail({ name }: { name: string }) {
 			const ss_cache_key = `${system.id}_${chartTime}_system_stats`
 			let systemData = (cache.get(ss_cache_key) || []) as SystemStatsRecord[]
 			if (systemStats.status === 'fulfilled' && systemStats.value.length) {
-				systemData = systemData.concat(addEmptyValues(systemStats.value, expectedInterval))
+				systemData = systemData.concat(
+					addEmptyValues(systemData, systemStats.value, expectedInterval)
+				)
 				if (systemData.length > 120) {
 					systemData = systemData.slice(-100)
 				}
@@ -194,7 +197,9 @@ export default function SystemDetail({ name }: { name: string }) {
 			const cs_cache_key = `${system.id}_${chartTime}_container_stats`
 			let containerData = (cache.get(cs_cache_key) || []) as ContainerStatsRecord[]
 			if (containerStats.status === 'fulfilled' && containerStats.value.length) {
-				containerData = containerData.concat(addEmptyValues(containerStats.value, expectedInterval))
+				containerData = containerData.concat(
+					addEmptyValues(containerData, containerStats.value, expectedInterval)
+				)
 				if (containerData.length > 120) {
 					containerData = containerData.slice(-100)
 				}
