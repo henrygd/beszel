@@ -303,25 +303,30 @@ export const alertInfo = {
 		name: 'CPU usage',
 		unit: '%',
 		icon: CpuIcon,
+		desc: 'Triggers when CPU usage exceeds a threshold.',
 	},
 	Memory: {
 		name: 'Memory usage',
 		unit: '%',
 		icon: MemoryStickIcon,
+		desc: 'Triggers when memory usage exceeds a threshold.',
 	},
 	Disk: {
 		name: 'Disk usage',
 		unit: '%',
 		icon: HardDriveIcon,
+		desc: 'Triggers when root usage exceeds a threshold.',
 	},
 	Bandwidth: {
 		name: 'Bandwidth',
-		unit: 'MB/s',
+		unit: ' MB/s',
 		icon: EthernetIcon,
+		desc: 'Triggers when combined up/down exceeds a threshold.',
 	},
 	Temperature: {
 		name: 'Temperature',
 		unit: '°C',
 		icon: ThermometerIcon,
+		desc: 'Triggers when any sensor exceeds a threshold.',
 	},
 }

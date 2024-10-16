@@ -70,9 +70,9 @@ const App = () => {
 			$hubVersion.set(data.v)
 		})
 		// get servers / alerts / settings
-		updateSystemList()
-		updateAlerts()
 		updateUserSettings()
+		// get alerts after system list is loaded
+		updateSystemList().then(updateAlerts)
 	}, [])
 
 	// update favicon

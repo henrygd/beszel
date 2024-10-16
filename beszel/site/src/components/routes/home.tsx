@@ -18,14 +18,16 @@ export default function () {
 	const alerts = useStore($alerts)
 	const systems = useStore($systems)
 
+	// todo: maybe remove active alert if changed
 	const activeAlerts = useMemo(() => {
-		if (!systems.length) {
-			return []
-		}
-		const activeAlerts = alerts.filter((alert) => alert.triggered && alert.name in alertInfo)
-		for (const alert of activeAlerts) {
+		const activeAlerts = alerts.filter((alert) => {
+			const active = alert.triggered && alert.name in alertInfo
+			if (!active) {
+				return false
+			}
 			alert.sysname = systems.find((system) => system.id === alert.system)?.name
-		}
+			return true
+		})
 		return activeAlerts
 	}, [alerts])
 
@@ -61,21 +63,21 @@ export default function () {
 					</CardHeader>
 					<CardContent className="max-sm:p-2">
 						{activeAlerts.length > 0 && (
-							<div className="grid sm:grid-cols-2 md:grid-cols-3 gap-3 mb-1">
+							<div className="grid sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3">
 								{activeAlerts.map((alert) => {
-									const a = alertInfo[alert.name as keyof typeof alertInfo]
+									const info = alertInfo[alert.name as keyof typeof alertInfo]
 									return (
 										<Alert
 											key={alert.id}
 											className="hover:-translate-y-[1px] duration-200 bg-transparent border-foreground/10  hover:shadow-md shadow-black"
 										>
-											<a.icon className="h-4 w-4" />
+											<info.icon className="h-4 w-4" />
 											<AlertTitle className="mb-2">
-												{alert.sysname} {a.name}
+												{alert.sysname} {info.name}
 											</AlertTitle>
 											<AlertDescription>
 												Exceeds {alert.value}
-												{a.unit} threshold in last {alert.min} min
+												{info.unit} average in last {alert.min} min
 											</AlertDescription>
 											<Link
 												href={`/system/${encodeURIComponent(alert.sysname!)}`}

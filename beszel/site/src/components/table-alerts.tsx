@@ -8,15 +8,14 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@/components/ui/dialog'
-import { BellIcon, CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { BellIcon, ServerIcon } from 'lucide-react'
+import { alertInfo, cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { AlertRecord, SystemRecord } from '@/types'
 import { lazy, Suspense, useMemo, useState } from 'react'
 import { toast } from './ui/use-toast'
 import { Link } from './router'
-import { EthernetIcon, ThermometerIcon } from './ui/icons'
 
 const Slider = lazy(() => import('./ui/slider'))
 
@@ -29,19 +28,22 @@ const failedUpdateToast = () =>
 
 export default function AlertsButton({ system }: { system: SystemRecord }) {
 	const alerts = useStore($alerts)
+	const [opened, setOpened] = useState(false)
 
-	const active = useMemo(() => {
-		return alerts.find((alert) => alert.system === system.id)
-	}, [alerts, system])
+	const systemAlerts = alerts.filter((alert) => alert.system === system.id) as AlertRecord[]
 
-	const systemAlerts = useMemo(() => {
-		return alerts.filter((alert) => alert.system === system.id) as AlertRecord[]
-	}, [alerts, system])
+	const active = systemAlerts.length > 0
 
 	return (
 		<Dialog>
 			<DialogTrigger asChild>
-				<Button variant="ghost" size={'icon'} aria-label="Alerts" data-nolink>
+				<Button
+					variant="ghost"
+					size={'icon'}
+					aria-label="Alerts"
+					data-nolink
+					onClick={() => setOpened(true)}
+				>
 					<BellIcon
 						className={cn('h-[1.2em] w-[1.2em] pointer-events-none', {
 							'fill-foreground': active,
@@ -49,62 +51,42 @@ export default function AlertsButton({ system }: { system: SystemRecord }) {
 					/>
 				</Button>
 			</DialogTrigger>
-			<DialogContent className="max-h-full overflow-auto max-w-[35rem]">
-				<DialogHeader>
-					<DialogTitle className="text-xl">{system.name} alerts</DialogTitle>
-					<DialogDescription className="mb-1">
-						See{' '}
-						<Link href="/settings/notifications" className="link">
-							notification settings
-						</Link>{' '}
-						to configure how you receive alerts.
-					</DialogDescription>
-				</DialogHeader>
-				<div className="grid gap-3">
-					<AlertStatus system={system} alerts={systemAlerts} />
-					<AlertWithSlider
-						system={system}
-						alerts={systemAlerts}
-						name="CPU"
-						title="CPU usage"
-						description="Triggers when CPU usage exceeds a threshold."
-						Icon={CpuIcon}
-					/>
-					<AlertWithSlider
-						system={system}
-						alerts={systemAlerts}
-						name="Memory"
-						title="Memory usage"
-						description="Triggers when memory usage exceeds a threshold."
-						Icon={MemoryStickIcon}
-					/>
-					<AlertWithSlider
-						system={system}
-						alerts={systemAlerts}
-						name="Disk"
-						title="Disk usage"
-						description="Triggers when root usage exceeds a threshold."
-						Icon={HardDriveIcon}
-					/>
-					<AlertWithSlider
-						system={system}
-						alerts={systemAlerts}
-						name="Bandwidth"
-						title="Bandwidth"
-						description="Triggers when combined up/down exceeds a threshold."
-						unit=" MB/s"
-						Icon={EthernetIcon}
-					/>
-					<AlertWithSlider
-						system={system}
-						alerts={systemAlerts}
-						name="Temperature"
-						title="Temperature"
-						description="Triggers when any sensor exceeds a threshold."
-						unit=" °C"
-						Icon={ThermometerIcon}
-					/>
-				</div>
+			<DialogContent
+				className="max-h-full overflow-auto max-w-[35rem]"
+				// onCloseAutoFocus={() => setOpened(false)}
+			>
+				{opened && (
+					<>
+						<DialogHeader>
+							<DialogTitle className="text-xl">{system.name} alerts</DialogTitle>
+							<DialogDescription className="mb-1">
+								See{' '}
+								<Link href="/settings/notifications" className="link">
+									notification settings
+								</Link>{' '}
+								to configure how you receive alerts.
+							</DialogDescription>
+						</DialogHeader>
+						<div className="grid gap-3">
+							<AlertStatus system={system} alerts={systemAlerts} />
+							{Object.keys(alertInfo).map((key) => {
+								const alert = alertInfo[key as keyof typeof alertInfo]
+								return (
+									<AlertWithSlider
+										key={key}
+										system={system}
+										alerts={systemAlerts}
+										name={key}
+										title={alert.name}
+										description={alert.desc}
+										unit={alert.unit}
+										Icon={alert.icon}
+									/>
+								)
+							})}
+						</div>
+					</>
+				)}
 			</DialogContent>
 		</Dialog>
 	)
@@ -113,9 +95,7 @@ export default function AlertsButton({ system }: { system: SystemRecord }) {
 function AlertStatus({ system, alerts }: { system: SystemRecord; alerts: AlertRecord[] }) {
 	const [pendingChange, setPendingChange] = useState(false)
 
-	const alert = useMemo(() => {
-		return alerts.find((alert) => alert.name === 'Status')
-	}, [alerts])
+	const alert = alerts.find((alert) => alert.name === 'Status')
 
 	return (
 		<label
@@ -198,7 +178,7 @@ function AlertWithSlider({
 	return (
 		<div className="rounded-lg border border-muted-foreground/15 hover:border-muted-foreground/20 transition-colors duration-100 group">
 			<label
-				htmlFor={`v${key}`}
+				htmlFor={`s${key}`}
 				className={cn('flex flex-row items-center justify-between gap-4 cursor-pointer p-4', {
 					'pb-0': !!alert,
 				})}
@@ -210,7 +190,7 @@ function AlertWithSlider({
 					{!alert && <span className="block text-sm text-muted-foreground">{description}</span>}
 				</div>
 				<Switch
-					id={`v${key}`}
+					id={`s${key}`}
 					className={cn('transition-opacity', pendingChange && 'opacity-40')}
 					checked={!!alert}
 					value={!!alert ? 'on' : 'off'}
@@ -243,16 +223,16 @@ function AlertWithSlider({
 				<div className="grid sm:grid-cols-2 mt-1.5 gap-5 px-4 pb-5 tabular-nums text-muted-foreground">
 					<Suspense fallback={<div className="h-10" />}>
 						<div>
-							<label htmlFor={`v${key}`} className="text-sm block h-8">
+							<p id={`v${key}`} className="text-sm block h-8">
 								Average exceeds{' '}
 								<strong className="text-foreground">
 									{liveValue}
 									{unit}
 								</strong>
-							</label>
+							</p>
 							<div className="flex gap-3">
 								<Slider
-									id={`v${key}`}
+									aria-labelledby={`v${key}`}
 									defaultValue={[liveValue]}
 									onValueCommit={(val) => {
 										pb.collection('alerts').update(alert.id, {
@@ -266,13 +246,13 @@ function AlertWithSlider({
 							</div>
 						</div>
 						<div>
-							<label htmlFor={`t${key}`} className="text-sm block h-8">
+							<p id={`t${key}`} className="text-sm block h-8">
 								For <strong className="text-foreground">{liveMinutes}</strong> minute
 								{liveMinutes > 1 && 's'}
-							</label>
+							</p>
 							<div className="flex gap-3">
 								<Slider
-									id={`t${key}`}
+									aria-labelledby={`v${key}`}
 									defaultValue={[liveMinutes]}
 									onValueCommit={(val) => {
 										pb.collection('alerts').update(alert.id, {
