@@ -390,7 +390,7 @@ func (am *AlertManager) HandleStatusAlerts(newStatus string, oldSystemRecord *mo
 			UserID:   user.GetId(),
 			Title:    fmt.Sprintf("Connection to %s is %s %v", systemName, alertStatus, emoji),
 			Message:  fmt.Sprintf("Connection to %s is %s", systemName, alertStatus),
-			Link:     am.app.Settings().Meta.AppUrl + "/system/" + url.QueryEscape(systemName),
+			Link:     am.app.Settings().Meta.AppUrl + "/system/" + url.PathEscape(systemName),
 			LinkText: "View " + systemName,
 		})
 	}
