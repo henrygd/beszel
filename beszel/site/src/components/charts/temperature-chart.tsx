@@ -1,4 +1,4 @@
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from 'recharts'
+import { CartesianGrid, Line, LineChart, YAxis } from 'recharts'
 
 import {
 	ChartContainer,
@@ -6,10 +6,10 @@ import {
 	ChartLegendContent,
 	ChartTooltip,
 	ChartTooltipContent,
+	xAxis,
 } from '@/components/ui/chart'
 import {
 	useYAxisWidth,
-	chartTimeData,
 	cn,
 	formatShortDate,
 	toFixedWithoutTrailingZeros,
@@ -70,18 +70,7 @@ export default memo(function TemperatureChart({ chartData }: { chartData: ChartD
 						tickLine={false}
 						axisLine={false}
 					/>
-					<XAxis
-						dataKey="created"
-						domain={chartData.domain}
-						ticks={chartData.ticks}
-						allowDataOverflow
-						type="number"
-						scale="time"
-						minTickGap={30}
-						tickMargin={8}
-						axisLine={false}
-						tickFormatter={chartTimeData[chartData.chartTime].format}
-					/>
+					{xAxis(chartData)}
 					<ChartTooltip
 						animationEasing="ease-out"
 						animationDuration={150}

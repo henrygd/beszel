@@ -1,9 +1,8 @@
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
+import { Area, AreaChart, CartesianGrid, YAxis } from 'recharts'
 
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from '@/components/ui/chart'
 import {
 	useYAxisWidth,
-	chartTimeData,
 	cn,
 	formatShortDate,
 	decimalString,
@@ -24,8 +23,6 @@ export default memo(function DiskChart({
 	chartData: ChartData
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
-
-	// console.log('rendered at', new Date())
 
 	return (
 		<div>
@@ -49,18 +46,7 @@ export default memo(function DiskChart({
 							return updateYAxisWidth(toFixedFloat(v, 2) + u)
 						}}
 					/>
-					<XAxis
-						dataKey="created"
-						domain={chartData.domain}
-						ticks={chartData.ticks}
-						allowDataOverflow
-						type="number"
-						scale="time"
-						minTickGap={30}
-						tickMargin={8}
-						axisLine={false}
-						tickFormatter={chartTimeData[chartData.chartTime].format}
-					/>
+					{xAxis(chartData)}
 					<ChartTooltip
 						animationEasing="ease-out"
 						animationDuration={150}

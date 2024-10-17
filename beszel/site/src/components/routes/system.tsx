@@ -612,7 +612,7 @@ function ChartCard({
 			</CardHeader>
 			<div className="pl-0 w-[calc(100%-1.6em)] h-52 relative">
 				{<Spinner />}
-				{isIntersecting && <Suspense>{children}</Suspense>}
+				{isIntersecting && children}
 			</div>
 		</Card>
 	)

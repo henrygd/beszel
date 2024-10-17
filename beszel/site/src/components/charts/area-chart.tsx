@@ -1,9 +1,8 @@
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
+import { Area, AreaChart, CartesianGrid, YAxis } from 'recharts'
 
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart'
+import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from '@/components/ui/chart'
 import {
 	useYAxisWidth,
-	chartTimeData,
 	cn,
 	formatShortDate,
 	toFixedWithoutTrailingZeros,
@@ -88,18 +87,7 @@ export default memo(function AreaChartDefault({
 						tickLine={false}
 						axisLine={false}
 					/>
-					<XAxis
-						dataKey="created"
-						domain={chartData.domain}
-						ticks={chartData.ticks}
-						allowDataOverflow
-						type="number"
-						scale="time"
-						minTickGap={30}
-						tickMargin={8}
-						axisLine={false}
-						tickFormatter={chartTimeData[chartTime].format}
-					/>
+					{xAxis(chartData)}
 					<ChartTooltip
 						animationEasing="ease-out"
 						animationDuration={150}

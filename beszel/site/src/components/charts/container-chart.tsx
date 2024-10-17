@@ -1,14 +1,14 @@
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from 'recharts'
+import { Area, AreaChart, CartesianGrid, YAxis } from 'recharts'
 import {
 	ChartConfig,
 	ChartContainer,
 	ChartTooltip,
 	ChartTooltipContent,
+	xAxis,
 } from '@/components/ui/chart'
 import { memo, useMemo } from 'react'
 import {
 	useYAxisWidth,
-	chartTimeData,
 	cn,
 	formatShortDate,
 	decimalString,
@@ -37,7 +37,7 @@ export default memo(function ContainerChart({
 	const filter = useStore($containerFilter)
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
-	const { containerData, ticks, domain, chartTime } = chartData
+	const { containerData } = chartData
 
 	const isNetChart = chartName === 'net'
 
@@ -153,18 +153,7 @@ export default memo(function ContainerChart({
 						tickLine={false}
 						axisLine={false}
 					/>
-					<XAxis
-						dataKey="created"
-						domain={domain}
-						allowDataOverflow
-						ticks={ticks}
-						type="number"
-						scale="time"
-						minTickGap={35}
-						tickMargin={8}
-						axisLine={false}
-						tickFormatter={chartTimeData[chartTime].format}
-					/>
+					{xAxis(chartData)}
 					<ChartTooltip
 						animationEasing="ease-out"
 						animationDuration={150}

@@ -1,7 +1,8 @@
 import * as React from 'react'
 import * as RechartsPrimitive from 'recharts'
 
-import { cn } from '@/lib/utils'
+import { chartTimeData, cn } from '@/lib/utils'
+import { ChartData } from '@/types'
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: '', dark: '.dark' } as const
@@ -331,11 +332,34 @@ function getPayloadConfigFromPayload(config: ChartConfig, payload: unknown, key:
 	return configLabelKey in config ? config[configLabelKey] : config[key as keyof typeof config]
 }
 
+let cachedAxis: JSX.Element
+const xAxis = function ({ domain, ticks, chartTime }: ChartData) {
+	if (cachedAxis && domain[0] === cachedAxis.props.domain[0]) {
+		return cachedAxis
+	}
+	cachedAxis = (
+		<RechartsPrimitive.XAxis
+			dataKey="created"
+			domain={domain}
+			ticks={ticks}
+			allowDataOverflow
+			type="number"
+			scale="time"
+			minTickGap={15}
+			tickMargin={8}
+			axisLine={false}
+			tickFormatter={chartTimeData[chartTime].format}
+		/>
+	)
+	return cachedAxis
+}
+
 export {
 	ChartContainer,
 	ChartTooltip,
 	ChartTooltipContent,
 	ChartLegend,
 	ChartLegendContent,
+	xAxis,
 	// ChartStyle,
 }
