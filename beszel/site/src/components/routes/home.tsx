@@ -72,7 +72,7 @@ export default function () {
 											className="hover:-translate-y-[1px] duration-200 bg-transparent border-foreground/10  hover:shadow-md shadow-black"
 										>
 											<info.icon className="h-4 w-4" />
-											<AlertTitle className="mb-2">
+											<AlertTitle>
 												{alert.sysname} {info.name}
 											</AlertTitle>
 											<AlertDescription>

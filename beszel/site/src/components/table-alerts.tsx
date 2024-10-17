@@ -104,7 +104,7 @@ function AlertStatus({ system, alerts }: { system: SystemRecord; alerts: AlertRe
 		>
 			<div className="grid gap-1 select-none">
 				<p className="font-semibold flex gap-3 items-center">
-					<ServerIcon className="h-4 w-4 opacity-85" /> System status
+					<ServerIcon className="h-4 w-4 opacity-85" /> System Status
 				</p>
 				<span className="block text-sm text-muted-foreground">
 					Triggers when status switches between up and down.
@@ -189,7 +189,7 @@ function AlertWithSlider({
 				})}
 			>
 				<div className="grid gap-1 select-none">
-					<p className="font-semibold flex gap-3 items-center">
+					<p className="font-semibold flex gap-3 items-center capitalize">
 						<Icon className="h-4 w-4 opacity-85" /> {title}
 					</p>
 					{!alert && <span className="block text-sm text-muted-foreground">{description}</span>}
