@@ -161,19 +161,24 @@ function AlertWithSlider({
 	Icon: React.FC<React.SVGProps<SVGSVGElement>>
 }) {
 	const [pendingChange, setPendingChange] = useState(false)
-	const [liveValue, setLiveValue] = useState(80)
-	const [liveMinutes, setLiveMinutes] = useState(10)
+	const [value, setValue] = useState(80)
+	const [min, setMin] = useState(10)
 
 	const key = name.replaceAll(' ', '-')
 
 	const alert = useMemo(() => {
 		const alert = alerts.find((alert) => alert.name === name)
 		if (alert) {
-			setLiveValue(alert.value)
-			setLiveMinutes(alert.min || 1)
+			setValue(alert.value)
+			setMin(alert.min || 1)
 		}
 		return alert
 	}, [alerts])
+
+	const updateAlert = (obj: Partial<AlertRecord>) => {
+		obj.triggered = false
+		alert && pb.collection('alerts').update(alert.id, obj)
+	}
 
 	return (
 		<div className="rounded-lg border border-muted-foreground/15 hover:border-muted-foreground/20 transition-colors duration-100 group">
@@ -207,8 +212,8 @@ function AlertWithSlider({
 									system: system.id,
 									user: pb.authStore.model!.id,
 									name,
-									value: liveValue,
-									min: liveMinutes,
+									value: value,
+									min: min,
 								})
 							}
 						} catch (e) {
@@ -226,20 +231,16 @@ function AlertWithSlider({
 							<p id={`v${key}`} className="text-sm block h-8">
 								Average exceeds{' '}
 								<strong className="text-foreground">
-									{liveValue}
+									{value}
 									{unit}
 								</strong>
 							</p>
 							<div className="flex gap-3">
 								<Slider
 									aria-labelledby={`v${key}`}
-									defaultValue={[liveValue]}
-									onValueCommit={(val) => {
-										pb.collection('alerts').update(alert.id, {
-											value: val[0],
-										})
-									}}
-									onValueChange={(val) => setLiveValue(val[0])}
+									defaultValue={[value]}
+									onValueCommit={(val) => updateAlert({ value: val[0] })}
+									onValueChange={(val) => setValue(val[0])}
 									min={1}
 									max={max}
 								/>
@@ -247,19 +248,15 @@ function AlertWithSlider({
 						</div>
 						<div>
 							<p id={`t${key}`} className="text-sm block h-8">
-								For <strong className="text-foreground">{liveMinutes}</strong> minute
-								{liveMinutes > 1 && 's'}
+								For <strong className="text-foreground">{min}</strong> minute
+								{min > 1 && 's'}
 							</p>
 							<div className="flex gap-3">
 								<Slider
 									aria-labelledby={`v${key}`}
-									defaultValue={[liveMinutes]}
-									onValueCommit={(val) => {
-										pb.collection('alerts').update(alert.id, {
-											min: val[0],
-										})
-									}}
-									onValueChange={(val) => setLiveMinutes(val[0])}
+									defaultValue={[min]}
+									onValueCommit={(val) => updateAlert({ min: val[0] })}
+									onValueChange={(val) => setMin(val[0])}
 									min={1}
 									max={60}
 								/>
