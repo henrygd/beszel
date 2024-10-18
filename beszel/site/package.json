@@ -10,7 +10,7 @@
 	},
 	"dependencies": {
 		"@nanostores/react": "^0.7.3",
-		"@nanostores/router": "^0.15.1",
+		"@nanostores/router": "^0.11.0",
 		"@radix-ui/react-alert-dialog": "^1.1.2",
 		"@radix-ui/react-dialog": "^1.1.2",
 		"@radix-ui/react-dropdown-menu": "^2.1.2",
