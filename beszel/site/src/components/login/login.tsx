@@ -43,7 +43,7 @@ export default function () {
 	}
 
 	return (
-		<div className="min-h-screen grid items-center py-12">
+		<div className="min-h-svh grid items-center py-12">
 			<div className="grid gap-5 w-full px-4 mx-auto" style={{ maxWidth: '22em' }}>
 				<div className="text-center">
 					<h1 className="mb-3">
