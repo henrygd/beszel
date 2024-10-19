@@ -2,6 +2,7 @@
 package agent
 
 import (
+	"beszel"
 	"beszel/internal/entities/system"
 	"context"
 	"log/slog"
@@ -46,6 +47,8 @@ func (a *Agent) Run(pubKey []byte, addr string) {
 			slog.SetLogLoggerLevel(slog.LevelError)
 		}
 	}
+
+	slog.Debug(beszel.Version)
 
 	// Set sensors context (allows overriding sys location for sensors)
 	if sysSensors, exists := os.LookupEnv("SYS_SENSORS"); exists {

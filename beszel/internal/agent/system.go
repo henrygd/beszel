@@ -173,12 +173,12 @@ func (a *Agent) getSystemStats() system.Stats {
 
 	// temperatures
 	temps, err := sensors.TemperaturesWithContext(a.sensorsContext)
-	if err != nil && a.debug {
-		err.(*sensors.Warnings).Verbose = true
-		slog.Debug("Sensor error", "errs", err)
+	if err != nil {
+		// err.(*sensors.Warnings).Verbose = true
+		slog.Debug("Sensor error", "err", err)
 	}
+	slog.Debug("Temperature", "sensors", temps)
 	if len(temps) > 0 {
-		slog.Debug("Temperatures", "data", temps)
 		systemStats.Temperatures = make(map[string]float64, len(temps))
 		for i, sensor := range temps {
 			// skip if temperature is 0
@@ -209,6 +209,7 @@ func (a *Agent) getSystemStats() system.Stats {
 	a.systemInfo.DiskPct = systemStats.DiskPct
 	a.systemInfo.Uptime, _ = host.Uptime()
 	a.systemInfo.Bandwidth = twoDecimals(systemStats.NetworkSent + systemStats.NetworkRecv)
+	slog.Debug("sysinfo", "data", a.systemInfo)
 
 	return systemStats
 }
