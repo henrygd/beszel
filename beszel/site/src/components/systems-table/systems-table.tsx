@@ -60,7 +60,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { $hubVersion, $systems, pb } from '@/lib/stores'
 import { useStore } from '@nanostores/react'
 import { cn, copyToClipboard, decimalString, isReadOnlyUser } from '@/lib/utils'
-import AlertsButton from '../table-alerts'
+import AlertsButton from '../alerts/alert-button'
 import { navigate } from '../router'
 import { EthernetIcon } from '../ui/icons'
 
