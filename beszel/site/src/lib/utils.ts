@@ -9,6 +9,7 @@ import { timeDay, timeHour } from 'd3-time'
 import { useEffect, useState } from 'react'
 import { CpuIcon, HardDriveIcon, MemoryStickIcon } from 'lucide-react'
 import { EthernetIcon, ThermometerIcon } from '@/components/ui/icons'
+import { newQueue, Queue } from '@henrygd/queue'
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -330,3 +331,18 @@ export const alertInfo = {
 		desc: 'Triggers when any sensor exceeds a threshold.',
 	},
 }
+
+let queue: Queue
+export const alertQueue = () => {
+	if (!queue) {
+		queue = newQueue(5)
+	}
+	return queue
+}
+
+export const failedUpdateToast = () =>
+	toast({
+		title: 'Failed to update alert',
+		description: 'Please check logs for more details.',
+		variant: 'destructive',
+	})
