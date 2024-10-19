@@ -73,29 +73,27 @@ const App = () => {
 		updateUserSettings()
 		// get alerts after system list is loaded
 		updateSystemList().then(updateAlerts)
+
+		return () => updateFavicon('favicon.svg')
 	}, [])
 
 	// update favicon
 	useEffect(() => {
-		if (!authenticated || !systems.length) {
+		if (!systems.length || !authenticated) {
 			updateFavicon('favicon.svg')
 		} else {
 			let up = false
 			for (const system of systems) {
 				if (system.status === 'down') {
 					updateFavicon('favicon-red.svg')
-					return () => updateFavicon('favicon.svg')
+					return
 				} else if (system.status === 'up') {
 					up = true
 				}
 			}
 			updateFavicon(up ? 'favicon-green.svg' : 'favicon.svg')
-			return () => updateFavicon('favicon.svg')
 		}
-		return () => {
-			updateFavicon('favicon.svg')
-		}
-	}, [authenticated, systems])
+	}, [systems])
 
 	if (!page) {
 		return <h1 className="text-3xl text-center my-14">404</h1>

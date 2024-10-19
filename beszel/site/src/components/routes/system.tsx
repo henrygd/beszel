@@ -155,7 +155,7 @@ export default function SystemDetail({ name }: { name: string }) {
 		return () => {
 			pb.collection('systems').unsubscribe(system.id)
 		}
-	}, [system])
+	}, [system.id])
 
 	const chartData: ChartData = useMemo(() => {
 		const lastCreated = Math.max(

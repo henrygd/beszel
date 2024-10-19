@@ -9,7 +9,6 @@ import { timeDay, timeHour } from 'd3-time'
 import { useEffect, useState } from 'react'
 import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from 'lucide-react'
 import { EthernetIcon, ThermometerIcon } from '@/components/ui/icons'
-import { newQueue, Queue } from '@henrygd/queue'
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -103,8 +102,9 @@ export const formatDay = (timestamp: string) => {
 	return dayFormatter.format(new Date(timestamp))
 }
 
-export const updateFavicon = (newIcon: string) =>
-	((document.querySelector("link[rel='icon']") as HTMLLinkElement).href = `/static/${newIcon}`)
+export const updateFavicon = (newIcon: string) => {
+	;(document.querySelector("link[rel='icon']") as HTMLLinkElement).href = `/static/${newIcon}`
+}
 
 export const isAdmin = () => pb.authStore.model?.role === 'admin'
 export const isReadOnlyUser = () => pb.authStore.model?.role === 'readonly'
