@@ -284,10 +284,10 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *models.Record, systemIn
 		if float32(alert.count) >= minCount {
 			if !alert.triggered && alert.val > alert.threshold {
 				alert.triggered = true
-				am.sendSystemAlert(alert)
+				go am.sendSystemAlert(alert)
 			} else if alert.triggered && alert.val <= alert.threshold {
 				alert.triggered = false
-				am.sendSystemAlert(alert)
+				go am.sendSystemAlert(alert)
 			}
 		}
 	}
@@ -339,7 +339,7 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 			UserID:   user.GetId(),
 			Title:    subject,
 			Message:  body,
-			Link:     am.app.Settings().Meta.AppUrl + "/system/" + url.QueryEscape(systemName),
+			Link:     am.app.Settings().Meta.AppUrl + "/system/" + url.PathEscape(systemName),
 			LinkText: "View " + systemName,
 		})
 	}
