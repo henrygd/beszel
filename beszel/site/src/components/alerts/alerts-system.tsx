@@ -79,7 +79,7 @@ export function SystemAlertGlobal({
 	alerts: AlertRecord[]
 	systems: SystemRecord[]
 }) {
-	const systemsWithExistingAlerts = useRef<{ set: Set<SystemRecord>; populatedSet: boolean }>({
+	const systemsWithExistingAlerts = useRef<{ set: Set<string>; populatedSet: boolean }>({
 		set: new Set(),
 		populatedSet: false,
 	})
@@ -106,7 +106,7 @@ export function SystemAlertGlobal({
 		}
 		for (let system of systems) {
 			// if overwrite is false and system is in set (alert existed), skip
-			if (!overwrite && set.has(system)) {
+			if (!overwrite && set.has(system.id)) {
 				continue
 			}
 			// find matching existing alert
@@ -115,7 +115,7 @@ export function SystemAlertGlobal({
 			)
 			// if first run, add system to set (alert already existed when global panel was opened)
 			if (existingAlert && !populatedSet && !overwrite) {
-				set.add(system)
+				set.add(system.id)
 				continue
 			}
 			const requestOptions: RecordOptions = {

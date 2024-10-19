@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import { useStore } from '@nanostores/react'
 import { $alerts, $systems } from '@/lib/stores'
 import {
@@ -18,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Checkbox } from '../ui/checkbox'
 import { SystemAlert, SystemAlertGlobal } from './alerts-system'
 
-export default function AlertsButton({ system }: { system: SystemRecord }) {
+export default memo(function AlertsButton({ system }: { system: SystemRecord }) {
 	const alerts = useStore($alerts)
 	const [opened, setOpened] = useState(false)
 
@@ -47,7 +47,7 @@ export default function AlertsButton({ system }: { system: SystemRecord }) {
 			</DialogContent>
 		</Dialog>
 	)
-}
+})
 
 function TheContent({
 	data: { system, alerts, systemAlerts },
