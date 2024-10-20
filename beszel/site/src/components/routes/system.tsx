@@ -6,7 +6,7 @@ import {
 	SystemRecord,
 	SystemStatsRecord,
 } from '@/types'
-import React, { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Card, CardHeader, CardTitle, CardDescription } from '../ui/card'
 import { useStore } from '@nanostores/react'
 import Spinner from '../spinner'
