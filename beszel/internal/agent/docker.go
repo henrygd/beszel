@@ -60,6 +60,8 @@ func (dm *dockerManager) getDockerStats() ([]*container.Stats, error) {
 		clear(dm.validIds)
 	}
 
+	var failedContainters []container.ApiInfo
+
 	for _, ctr := range *dm.apiContainerList {
 		ctr.IdShort = ctr.Id[:12]
 		dm.validIds[ctr.IdShort] = struct{}{}
@@ -74,17 +76,32 @@ func (dm *dockerManager) getDockerStats() ([]*container.Stats, error) {
 			defer dm.dequeue()
 			err := dm.updateContainerStats(ctr)
 			if err != nil {
-				dm.deleteContainerStatsSync(ctr.IdShort)
-				// retry once
-				err = dm.updateContainerStats(ctr)
-				if err != nil {
-					slog.Error("Error getting container stats", "err", err)
-				}
+				dm.containerStatsMutex.Lock()
+				delete(dm.containerStatsMap, ctr.IdShort)
+				failedContainters = append(failedContainters, ctr)
+				dm.containerStatsMutex.Unlock()
 			}
 		}()
 	}
 
 	dm.wg.Wait()
+
+	// retry failed containers separately so we can run them in parallel (docker 24 bug)
+	if len(failedContainters) > 0 {
+		slog.Debug("Retrying failed containers", "count", len(failedContainters))
+		// time.Sleep(time.Millisecond * 1100)
+		for _, ctr := range failedContainters {
+			dm.wg.Add(1)
+			go func() {
+				defer dm.wg.Done()
+				err = dm.updateContainerStats(ctr)
+				if err != nil {
+					slog.Error("Error getting container stats", "err", err)
+				}
+			}()
+		}
+		dm.wg.Wait()
+	}
 
 	// populate final stats and remove old / invalid container stats
 	stats := make([]*container.Stats, 0, containersLength)
