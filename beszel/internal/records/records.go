@@ -112,14 +112,6 @@ func (rm *RecordManager) CreateLongerRecords() {
 					// get shorter records from the past x minutes
 					var stats RecordStats
 
-					// allShorterRecords, err := txDao.FindRecordsByExpr(
-					// 	collection,
-					// 	dbx.NewExp(
-					// 		"type = {:type} AND system = {:system} AND created > {:created}",
-					// 		dbx.Params{"type": recordData.shorterType, "system": system.Id, "created": shorterRecordPeriod},
-					// 	),
-					// )
-
 					err := txDao.DB().
 						Select("stats").
 						From(collection.Name).

@@ -56,14 +56,10 @@ func NewHub(app *pocketbase.PocketBase) *Hub {
 }
 
 func (h *Hub) Run() {
-	// rm := records.NewRecordManager(h.app)
-	// am := alerts.NewAlertManager(h.app)
-	// um := users.NewUserManager(h.app)
-
 	// loosely check if it was executed using "go run"
 	isGoRun := strings.HasPrefix(os.Args[0], os.TempDir())
 
-	// // enable auto creation of migration files when making collection changes in the Admin UI
+	// enable auto creation of migration files when making collection changes in the Admin UI
 	migratecmd.MustRegister(h.app, h.app.RootCmd, migratecmd.Config{
 		// (the isGoRun check is to enable it only during development)
 		Automigrate: isGoRun,
@@ -93,7 +89,8 @@ func (h *Hub) Run() {
 		if err := h.app.Dao().SaveCollection(usersCollection); err != nil {
 			return err
 		}
-		return nil
+		// sync systems with config
+		return h.syncSystemsWithConfig()
 	})
 
 	// serve web ui
