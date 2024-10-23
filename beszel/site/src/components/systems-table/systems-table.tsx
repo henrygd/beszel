@@ -260,7 +260,7 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 										<AlertDialogTitle>Are you sure you want to delete {name}?</AlertDialogTitle>
 										<AlertDialogDescription>
 											This action cannot be undone. This will permanently delete all current records
-											for <code className={'bg-muted rounded-sm px-1'}>{name}</code> from the
+											for <code className="bg-muted rounded-sm px-1">{name}</code> from the
 											database.
 										</AlertDialogDescription>
 									</AlertDialogHeader>

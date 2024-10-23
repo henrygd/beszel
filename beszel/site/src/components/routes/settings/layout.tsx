@@ -5,12 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useStore } from '@nanostores/react'
 import { $router } from '@/components/router.tsx'
 import { redirectPage } from '@nanostores/router'
-import { BellIcon, SettingsIcon } from 'lucide-react'
+import { BellIcon, FileSlidersIcon, SettingsIcon } from 'lucide-react'
 import { $userSettings, pb } from '@/lib/stores.ts'
 import { toast } from '@/components/ui/use-toast.ts'
 import { UserSettings } from '@/types.js'
 import General from './general.tsx'
 import Notifications from './notifications.tsx'
+import ConfigYaml from './config-yaml.tsx'
+import { isAdmin } from '@/lib/utils.ts'
 
 const sidebarNavItems = [
 	{
@@ -24,6 +26,14 @@ const sidebarNavItems = [
 		icon: BellIcon,
 	},
 ]
+
+if (isAdmin()) {
+	sidebarNavItems.push({
+		title: 'YAML Config',
+		href: '/settings/config',
+		icon: FileSlidersIcon,
+	})
+}
 
 export async function saveSettings(newSettings: Partial<UserSettings>) {
 	try {
@@ -94,5 +104,7 @@ function SettingsContent({ name }: { name: string }) {
 			return <General userSettings={userSettings} />
 		case 'notifications':
 			return <Notifications userSettings={userSettings} />
+		case 'config':
+			return <ConfigYaml />
 	}
 }

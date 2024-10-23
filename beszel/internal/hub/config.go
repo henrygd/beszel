@@ -6,8 +6,13 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 
+	"github.com/labstack/echo/v5"
+	"github.com/pocketbase/dbx"
+	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/models"
+	"github.com/spf13/cast"
 	"gopkg.in/yaml.v3"
 )
 
@@ -18,7 +23,7 @@ type Config struct {
 type SystemConfig struct {
 	Name  string   `yaml:"name"`
 	Host  string   `yaml:"host"`
-	Port  string   `yaml:"port"`
+	Port  uint16   `yaml:"port"`
 	Users []string `yaml:"users"`
 }
 
@@ -45,7 +50,7 @@ func (h *Hub) syncSystemsWithConfig() error {
 
 	// Create a map of email to user ID
 	userEmailToID := make(map[string]string)
-	users, err := h.app.Dao().FindRecordsByFilter("users", "id != ''", "created", -1, 0)
+	users, err := h.app.Dao().FindRecordsByExpr("users", dbx.NewExp("id != ''"))
 	if err != nil {
 		return err
 	}
@@ -59,8 +64,8 @@ func (h *Hub) syncSystemsWithConfig() error {
 	// add default settings for systems if not defined in config
 	for i := range config.Systems {
 		system := &config.Systems[i]
-		if system.Port == "" {
-			system.Port = "45876"
+		if system.Port == 0 {
+			system.Port = 45876
 		}
 		if len(users) > 0 && len(system.Users) == 0 {
 			// default to first user if none are defined
@@ -80,7 +85,7 @@ func (h *Hub) syncSystemsWithConfig() error {
 	}
 
 	// Get existing systems
-	existingSystems, err := h.app.Dao().FindRecordsByFilter("systems", "id != ''", "", -1, 0)
+	existingSystems, err := h.app.Dao().FindRecordsByExpr("systems", dbx.NewExp("id != ''"))
 	if err != nil {
 		return err
 	}
@@ -94,7 +99,7 @@ func (h *Hub) syncSystemsWithConfig() error {
 
 	// Process systems from config
 	for _, sysConfig := range config.Systems {
-		key := sysConfig.Host + ":" + sysConfig.Port
+		key := sysConfig.Host + ":" + strconv.Itoa(int(sysConfig.Port))
 		if existingSystem, ok := existingSystemsMap[key]; ok {
 			// Update existing system
 			existingSystem.Set("name", sysConfig.Name)
@@ -132,4 +137,86 @@ func (h *Hub) syncSystemsWithConfig() error {
 
 	log.Println("Systems synced with config.yml")
 	return nil
+}
+
+// Generates content for the config.yml file as a YAML string
+func (h *Hub) generateConfigYAML() (string, error) {
+	// Fetch all systems from the database
+	systems, err := h.app.Dao().FindRecordsByFilter("systems", "id != ''", "name", -1, 0)
+	if err != nil {
+		return "", err
+	}
+
+	// Create a Config struct to hold the data
+	config := Config{
+		Systems: make([]SystemConfig, 0, len(systems)),
+	}
+
+	// Fetch all users at once
+	allUserIDs := make([]string, 0)
+	for _, system := range systems {
+		allUserIDs = append(allUserIDs, system.GetStringSlice("users")...)
+	}
+	userEmailMap, err := h.getUserEmailMap(allUserIDs)
+	if err != nil {
+		return "", err
+	}
+
+	// Populate the Config struct with system data
+	for _, system := range systems {
+		userIDs := system.GetStringSlice("users")
+		userEmails := make([]string, 0, len(userIDs))
+		for _, userID := range userIDs {
+			if email, ok := userEmailMap[userID]; ok {
+				userEmails = append(userEmails, email)
+			}
+		}
+
+		sysConfig := SystemConfig{
+			Name:  system.GetString("name"),
+			Host:  system.GetString("host"),
+			Port:  cast.ToUint16(system.Get("port")),
+			Users: userEmails,
+		}
+		config.Systems = append(config.Systems, sysConfig)
+	}
+
+	// Marshal the Config struct to YAML
+	yamlData, err := yaml.Marshal(&config)
+	if err != nil {
+		return "", err
+	}
+
+	// Add a header to the YAML
+	yamlData = append([]byte("# Values for port and users are optional.\n# Defaults are port 45876 and the first created user.\n\n"), yamlData...)
+
+	return string(yamlData), nil
+}
+
+// New helper function to get a map of user IDs to emails
+func (h *Hub) getUserEmailMap(userIDs []string) (map[string]string, error) {
+	users, err := h.app.Dao().FindRecordsByIds("users", userIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	userEmailMap := make(map[string]string, len(users))
+	for _, user := range users {
+		userEmailMap[user.Id] = user.GetString("email")
+	}
+
+	return userEmailMap, nil
+}
+
+// Returns the current config.yml file as a JSON object
+func (h *Hub) getYamlConfig(c echo.Context) error {
+	requestData := apis.RequestInfo(c)
+	if requestData.AuthRecord == nil || requestData.AuthRecord.GetString("role") != "admin" {
+		return apis.NewForbiddenError("Forbidden", nil)
+	}
+	configContent, err := h.generateConfigYAML()
+	if err != nil {
+		return err
+	}
+	return c.JSON(200, map[string]string{"config": configContent})
 }

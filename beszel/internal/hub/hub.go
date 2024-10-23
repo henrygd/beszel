@@ -156,6 +156,8 @@ func (h *Hub) Run() {
 		})
 		// send test notification
 		e.Router.GET("/api/beszel/send-test-notification", h.am.SendTestNotification)
+		// API endpoint to get config.yml content
+		e.Router.GET("/api/beszel/config-yaml", h.getYamlConfig)
 		return nil
 	})
 
