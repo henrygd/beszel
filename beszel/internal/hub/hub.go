@@ -42,6 +42,8 @@ type Hub struct {
 	am                *alerts.AlertManager
 	um                *users.UserManager
 	rm                *records.RecordManager
+	systemStats       *models.Collection
+	containerStats    *models.Collection
 }
 
 func NewHub(app *pocketbase.PocketBase) *Hub {
@@ -125,7 +127,11 @@ func (h *Hub) Run() {
 		// delete old records once every hour
 		scheduler.MustAdd("delete old records", "8 * * * *", h.rm.DeleteOldRecords)
 		// create longer records every 10 minutes
-		scheduler.MustAdd("create longer records", "*/10 * * * *", h.rm.CreateLongerRecords)
+		scheduler.MustAdd("create longer records", "*/10 * * * *", func() {
+			if systemStats, containerStats, err := h.getCollections(); err == nil {
+				h.rm.CreateLongerRecords([]*models.Collection{systemStats, containerStats})
+			}
+		})
 		scheduler.Start()
 		return nil
 	})
@@ -286,35 +292,59 @@ func (h *Hub) updateSystem(record *models.Record) {
 		return
 	}
 	// update system record
+	dao := h.app.Dao()
 	record.Set("status", "up")
 	record.Set("info", systemData.Info)
-	if err := h.app.Dao().SaveRecord(record); err != nil {
+	if err := dao.SaveRecord(record); err != nil {
 		h.app.Logger().Error("Failed to update record: ", "err", err.Error())
 	}
-	// add new system_stats record
-	system_stats, _ := h.app.Dao().FindCollectionByNameOrId("system_stats")
-	systemStatsRecord := models.NewRecord(system_stats)
-	systemStatsRecord.Set("system", record.Id)
-	systemStatsRecord.Set("stats", systemData.Stats)
-	systemStatsRecord.Set("type", "1m")
-	if err := h.app.Dao().SaveRecord(systemStatsRecord); err != nil {
-		h.app.Logger().Error("Failed to save record: ", "err", err.Error())
-	}
-	// add new container_stats record
-	if len(systemData.Containers) > 0 {
-		container_stats, _ := h.app.Dao().FindCollectionByNameOrId("container_stats")
-		containerStatsRecord := models.NewRecord(container_stats)
-		containerStatsRecord.Set("system", record.Id)
-		containerStatsRecord.Set("stats", systemData.Containers)
-		containerStatsRecord.Set("type", "1m")
-		if err := h.app.Dao().SaveRecord(containerStatsRecord); err != nil {
+	// add system_stats and container_stats records
+	if systemStats, containerStats, err := h.getCollections(); err != nil {
+		h.app.Logger().Error("Failed to get collections: ", "err", err.Error())
+	} else {
+		// add new system_stats record
+		systemStatsRecord := models.NewRecord(systemStats)
+		systemStatsRecord.Set("system", record.Id)
+		systemStatsRecord.Set("stats", systemData.Stats)
+		systemStatsRecord.Set("type", "1m")
+		if err := dao.SaveRecord(systemStatsRecord); err != nil {
 			h.app.Logger().Error("Failed to save record: ", "err", err.Error())
 		}
+		// add new container_stats record
+		if len(systemData.Containers) > 0 {
+			containerStatsRecord := models.NewRecord(containerStats)
+			containerStatsRecord.Set("system", record.Id)
+			containerStatsRecord.Set("stats", systemData.Containers)
+			containerStatsRecord.Set("type", "1m")
+			if err := dao.SaveRecord(containerStatsRecord); err != nil {
+				h.app.Logger().Error("Failed to save record: ", "err", err.Error())
+			}
+		}
 	}
+
 	// system info alerts (todo: extra fs alerts)
 	if err := h.am.HandleSystemAlerts(record, systemData.Info, systemData.Stats.Temperatures, systemData.Stats.ExtraFs); err != nil {
 		h.app.Logger().Error("System alerts error", "err", err.Error())
 	}
+}
+
+// return system_stats and container_stats collections
+func (h *Hub) getCollections() (*models.Collection, *models.Collection, error) {
+	if h.systemStats == nil {
+		systemStats, err := h.app.Dao().FindCollectionByNameOrId("system_stats")
+		if err != nil {
+			return nil, nil, err
+		}
+		h.systemStats = systemStats
+	}
+	if h.containerStats == nil {
+		containerStats, err := h.app.Dao().FindCollectionByNameOrId("container_stats")
+		if err != nil {
+			return nil, nil, err
+		}
+		h.containerStats = containerStats
+	}
+	return h.systemStats, h.containerStats, nil
 }
 
 // set system to specified status and save record

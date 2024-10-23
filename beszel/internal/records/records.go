@@ -32,7 +32,7 @@ type RecordDeletionData struct {
 	retention  time.Duration
 }
 
-type RecordStats []*struct {
+type RecordStats []struct {
 	Stats []byte `db:"stats"`
 }
 
@@ -41,9 +41,9 @@ func NewRecordManager(app *pocketbase.PocketBase) *RecordManager {
 }
 
 // Create longer records by averaging shorter records
-func (rm *RecordManager) CreateLongerRecords() {
+func (rm *RecordManager) CreateLongerRecords(collections []*models.Collection) {
 	// start := time.Now()
-	recordData := []LongerRecordData{
+	longerRecordData := []LongerRecordData{
 		{
 			shorterType: "1m",
 			// change to 9 from 10 to allow edge case timing or short pauses
@@ -78,17 +78,11 @@ func (rm *RecordManager) CreateLongerRecords() {
 			return err
 		}
 
-		// need *models.Collection to create a new record with models.NewRecord
-		collections := map[string]*models.Collection{}
-		for _, collectionName := range []string{"system_stats", "container_stats"} {
-			collection, _ := txDao.FindCollectionByNameOrId(collectionName)
-			collections[collectionName] = collection
-		}
-
 		// loop through all active systems, time periods, and collections
 		for _, system := range activeSystems {
 			// log.Println("processing system", system.GetString("name"))
-			for _, recordData := range recordData {
+			for i := range longerRecordData {
+				recordData := longerRecordData[i]
 				// log.Println("processing longer record type", recordData.longerType)
 				// add one minute padding for longer records because they are created slightly later than the job start time
 				longerRecordPeriod := time.Now().UTC().Add(recordData.longerTimeDuration + time.Minute)
@@ -165,8 +159,8 @@ func (rm *RecordManager) AverageSystemStats(records RecordStats) system.Stats {
 	tempCount := float64(0)
 
 	var stats system.Stats
-	for _, record := range records {
-		json.Unmarshal(record.Stats, &stats)
+	for i := range records {
+		json.Unmarshal(records[i].Stats, &stats)
 		sum.Cpu += stats.Cpu
 		sum.Mem += stats.Mem
 		sum.MemUsed += stats.MemUsed
@@ -268,13 +262,14 @@ func (rm *RecordManager) AverageContainerStats(records RecordStats) []container.
 	count := float64(len(records))
 
 	var containerStats []container.Stats
-	for _, record := range records {
+	for i := range records {
 		// Reset the slice length to 0, but keep the capacity
 		containerStats = containerStats[:0]
-		if err := json.Unmarshal(record.Stats, &containerStats); err != nil {
+		if err := json.Unmarshal(records[i].Stats, &containerStats); err != nil {
 			return []container.Stats{}
 		}
-		for _, stat := range containerStats {
+		for i := range containerStats {
+			stat := containerStats[i]
 			if _, ok := sums[stat.Name]; !ok {
 				sums[stat.Name] = &container.Stats{Name: stat.Name}
 			}
