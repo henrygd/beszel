@@ -172,10 +172,12 @@ func (a *Agent) getSystemStats() system.Stats {
 	}
 
 	// temperatures (skip if sensors whitelist is set to empty string)
-	if a.sensorsWhitelist == nil || len(a.sensorsWhitelist) > 0 {
+	if a.sensorsWhitelist != nil && len(a.sensorsWhitelist) == 0 {
+		slog.Debug("Skipping temperature collection")
+	} else {
 		temps, err := sensors.TemperaturesWithContext(a.sensorsContext)
 		if err != nil {
-			// err.(*sensors.Warnings).Verbose = true
+			err.(*sensors.Warnings).Verbose = true
 			slog.Debug("Sensor error", "err", err)
 		}
 		slog.Debug("Temperature", "sensors", temps)

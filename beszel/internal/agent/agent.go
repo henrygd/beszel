@@ -62,7 +62,9 @@ func (a *Agent) Run(pubKey []byte, addr string) {
 	if sensors, exists := os.LookupEnv("SENSORS"); exists {
 		a.sensorsWhitelist = make(map[string]struct{})
 		for _, sensor := range strings.Split(sensors, ",") {
-			a.sensorsWhitelist[sensor] = struct{}{}
+			if sensor != "" {
+				a.sensorsWhitelist[sensor] = struct{}{}
+			}
 		}
 	}
 
