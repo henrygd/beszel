@@ -177,7 +177,6 @@ func (a *Agent) getSystemStats() system.Stats {
 	} else {
 		temps, err := sensors.TemperaturesWithContext(a.sensorsContext)
 		if err != nil {
-			err.(*sensors.Warnings).Verbose = true
 			slog.Debug("Sensor error", "err", err)
 		}
 		slog.Debug("Temperature", "sensors", temps)
