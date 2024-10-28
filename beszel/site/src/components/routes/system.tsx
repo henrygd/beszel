@@ -97,6 +97,8 @@ async function getStats<T>(
 }
 
 export default function SystemDetail({ name }: { name: string }) {
+	const { t } = useTranslation()
+
 	const systems = useStore($systems)
 	const chartTime = useStore($chartTime)
 	/** Max CPU toggle value */
@@ -350,7 +352,7 @@ export default function SystemDetail({ name }: { name: string }) {
 								<Tooltip>
 									<TooltipTrigger asChild>
 										<Button
-											aria-label="Toggle grid"
+											aria-label={t('monitor.toggle_grid')}
 											variant="outline"
 											size="icon"
 											className="hidden lg:flex p-0 text-primary"
@@ -363,7 +365,7 @@ export default function SystemDetail({ name }: { name: string }) {
 											)}
 										</Button>
 									</TooltipTrigger>
-									<TooltipContent>Toggle grid</TooltipContent>
+									<TooltipContent>{t('monitor.toggle_grid')}</TooltipContent>
 								</Tooltip>
 							</TooltipProvider>
 						</div>
@@ -374,9 +376,8 @@ export default function SystemDetail({ name }: { name: string }) {
 				<div className="grid lg:grid-cols-2 gap-4">
 					<ChartCard
 						grid={grid}
-						title="Total CPU Usage"
-						description={`${cpuMaxStore[0] && isLongerChart ? 'Max 1 min ' : 'Average'
-							} system-wide CPU utilization`}
+						title={t('monitor.total_cpu_usage')}
+						description={`${cpuMaxStore[0] && isLongerChart ? t('monitor.max_1_min') : t('monitor.average') } ${t('monitor.cpu_des')}`}
 						cornerEl={isLongerChart ? <SelectAvgMax store={cpuMaxStore} /> : null}
 					>
 						<AreaChartDefault
@@ -390,8 +391,8 @@ export default function SystemDetail({ name }: { name: string }) {
 					{containerFilterBar && (
 						<ChartCard
 							grid={grid}
-							title="Docker CPU Usage"
-							description="Average CPU utilization of containers"
+							title={t('monitor.docker_cpu_usage')}
+							description={t('monitor.docker_cpu_des')}
 							cornerEl={containerFilterBar}
 						>
 							<ContainerChart chartData={chartData} dataKey="c" chartName="cpu" />
@@ -400,8 +401,8 @@ export default function SystemDetail({ name }: { name: string }) {
 
 					<ChartCard
 						grid={grid}
-						title="Total Memory Usage"
-						description="Precise utilization at the recorded time"
+						title={t('monitor.total_memory_usage')}
+						description={t('monitor.memory_des')}
 					>
 						<MemChart chartData={chartData} />
 					</ChartCard>
@@ -409,15 +410,15 @@ export default function SystemDetail({ name }: { name: string }) {
 					{containerFilterBar && (
 						<ChartCard
 							grid={grid}
-							title="Docker Memory Usage"
-							description="Memory usage of docker containers"
+							title={t('monitor.docker_memory_usage')}
+							description={t('monitor.docker_memory_des')}
 							cornerEl={containerFilterBar}
 						>
 							<ContainerChart chartData={chartData} chartName="mem" dataKey="m" unit=" MB" />
 						</ChartCard>
 					)}
 
-					<ChartCard grid={grid} title="Disk Space" description="Usage of root partition">
+					<ChartCard grid={grid} title={t('monitor.disk_space')} description={t('monitor.disk_des')}>
 						<DiskChart
 							chartData={chartData}
 							dataKey="stats.du"
@@ -427,8 +428,8 @@ export default function SystemDetail({ name }: { name: string }) {
 
 					<ChartCard
 						grid={grid}
-						title="Disk I/O"
-						description="Throughput of root filesystem"
+						title={t('monitor.disk_io')}
+						description={t('monitor.disk_io_des')}
 						cornerEl={isLongerChart ? <SelectAvgMax store={diskIoMaxStore} /> : null}
 					>
 						<AreaChartDefault
@@ -440,9 +441,9 @@ export default function SystemDetail({ name }: { name: string }) {
 
 					<ChartCard
 						grid={grid}
-						title="Bandwidth"
+						title={t('monitor.bandwidth')}
 						cornerEl={isLongerChart ? <SelectAvgMax store={bandwidthMaxStore} /> : null}
-						description="Network traffic of public interfaces"
+						description={t('monitor.bandwidth_des')}
 					>
 						<AreaChartDefault
 							chartData={chartData}
@@ -459,8 +460,8 @@ export default function SystemDetail({ name }: { name: string }) {
 							})}
 						>
 							<ChartCard
-								title="Docker Network I/O"
-								description="Includes traffic between internal services"
+								title={t('monitor.docker_network_io')}
+								description={t('monitor.docker_network_io_des')}
 								cornerEl={containerFilterBar}
 							>
 								{/* @ts-ignore */}
@@ -470,13 +471,13 @@ export default function SystemDetail({ name }: { name: string }) {
 					)}
 
 					{(systemStats.at(-1)?.stats.su ?? 0) > 0 && (
-						<ChartCard grid={grid} title="Swap Usage" description="Swap space used by the system">
+						<ChartCard grid={grid} title={t('monitor.swap_usage')} description={t('monitor.swap_des')}>
 							<SwapChart chartData={chartData} />
 						</ChartCard>
 					)}
 
 					{systemStats.at(-1)?.stats.t && (
-						<ChartCard grid={grid} title="Temperature" description="Temperatures of system sensors">
+						<ChartCard grid={grid} title={t('monitor.temperature')} description={t('monitor.temperature_des')}>
 							<TemperatureChart chartData={chartData} />
 						</ChartCard>
 					)}
@@ -490,8 +491,8 @@ export default function SystemDetail({ name }: { name: string }) {
 								<div key={extraFsName} className="contents">
 									<ChartCard
 										grid={grid}
-										title={`${extraFsName} Usage`}
-										description={`Disk usage of ${extraFsName}`}
+										title={`${extraFsName} ${t('monitor.usage')}`}
+										description={`${t('monitor.disk_usage_of')} ${extraFsName}`}
 									>
 										<DiskChart
 											chartData={chartData}
@@ -502,7 +503,7 @@ export default function SystemDetail({ name }: { name: string }) {
 									<ChartCard
 										grid={grid}
 										title={`${extraFsName} I/O`}
-										description={`Throughput of ${extraFsName}`}
+										description={`${t('monitor.throughput_of')} ${extraFsName}`}
 										cornerEl={isLongerChart ? <SelectAvgMax store={diskIoMaxStore} /> : null}
 									>
 										<AreaChartDefault
@@ -562,6 +563,8 @@ function SelectAvgMax({
 }: {
 	store: [boolean, React.Dispatch<React.SetStateAction<boolean>>]
 }) {
+	const { t } = useTranslation()
+
 	const [max, setMax] = store
 	const Icon = max ? ChartMax : ChartAverage
 
@@ -573,10 +576,10 @@ function SelectAvgMax({
 			</SelectTrigger>
 			<SelectContent>
 				<SelectItem key="avg" value="avg">
-					Average
+					{t('monitor.average')}
 				</SelectItem>
 				<SelectItem key="max" value="max">
-					Max 1 min
+					{t('monitor.max_1_min')}
 				</SelectItem>
 			</SelectContent>
 		</Select>

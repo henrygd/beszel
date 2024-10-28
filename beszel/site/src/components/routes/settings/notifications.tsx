@@ -85,38 +85,42 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 			<div className="space-y-5">
 				<div className="space-y-2">
 					<div className="mb-4">
-						<h3 className="mb-1 text-lg font-medium">Email notifications</h3>
+						<h3 className="mb-1 text-lg font-medium">
+							{t('settings.notifications.email.title')}
+						</h3>
 						{isAdmin() && (
 							<p className="text-sm text-muted-foreground leading-relaxed">
-								Please{' '}
+								{t('settings.notifications.email.please')}{' '}
 								<a href="/_/#/settings/mail" className="link" target="_blank">
-									configure an SMTP server
+									{t('settings.notifications.email.configure_an_SMTP_server')}
 								</a>{' '}
-								to ensure alerts are delivered.{' '}
+								{t('settings.notifications.email.to_ensure_alerts_are_delivered')}{' '}
 							</p>
 						)}
 					</div>
 					<Label className="block" htmlFor="email">
-						To email(s)
+						{t('settings.notifications.email.to_email_s')}
 					</Label>
 					<InputTags
 						value={emails}
 						onChange={setEmails}
-						placeholder="Enter email address..."
+						placeholder={t('settings.notifications.email.enter_email_address')}
 						className="w-full"
 						type="email"
 						id="email"
 					/>
 					<p className="text-[0.8rem] text-muted-foreground">
-						Save address using enter key or comma. Leave blank to disable email notifications.
+						{t('settings.notifications.email.des')}
 					</p>
 				</div>
 				<Separator />
 				<div className="space-y-3">
 					<div>
-						<h3 className="mb-1 text-lg font-medium">Webhook / Push notifications</h3>
+						<h3 className="mb-1 text-lg font-medium">
+							{t('settings.notifications.webhook_push.title')}
+						</h3>
 						<p className="text-sm text-muted-foreground leading-relaxed">
-							Beszel uses{' '}
+							{t('settings.notifications.webhook_push.des_1')}{' '}
 							<a
 								href="https://containrrr.dev/shoutrrr/services/overview/"
 								target="_blank"
@@ -124,7 +128,7 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 							>
 								Shoutrrr
 							</a>{' '}
-							to integrate with popular notification services.
+							{t('settings.notifications.webhook_push.des_2')}
 						</p>
 					</div>
 					{webhooks.length > 0 && (
@@ -149,7 +153,7 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 						onClick={addWebhook}
 					>
 						<PlusIcon className="h-4 w-4 -ml-0.5" />
-						Add URL
+						{t('settings.notifications.webhook_push.add_url')}
 					</Button>
 				</div>
 				<Separator />

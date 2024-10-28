@@ -61,7 +61,7 @@ export default function SettingsLayout() {
 
 	if (isAdmin()) {
 		sidebarNavItems.push({
-			title: 'YAML Config',
+			title: t('settings.yaml_config.short_title'),
 			href: '/settings/config',
 			icon: FileSlidersIcon,
 		})

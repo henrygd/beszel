@@ -35,12 +35,31 @@
         "subtitle_1": "See",
         "notification_settings": "notification settings",
         "subtitle_2": "to configure how you receive alerts.",
-        "overwrite_existing_alerts": "Overwrite existing alerts"
+        "overwrite_existing_alerts": "Overwrite existing alerts",
+        "info": {
+            "status": "Status",
+            "status_des": "Triggers when status switches between up and down.",
+            "cpu_usage": "CPU Usage",
+            "cpu_usage_des": "Triggers when CPU usage exceeds a threshold.",
+            "memory_usage": "Memory Usage",
+            "memory_usage_des": "Triggers when memory usage exceeds a threshold.",
+            "disk_usage": "Disk Usage",
+            "disk_usage_des": "Triggers when usage of any disk exceeds a threshold.",
+            "bandwidth": "Bandwidth",
+            "bandwidth_des": "Triggers when combined up/down exceeds a threshold.",
+            "temperature": "Temperature",
+            "temperature_des": "Triggers when any sensor exceeds a threshold."
+        },
+        "average_exceeds": "Average exceeds",
+        "for": "For",
+        "minute": "minute",
+        "minutes": "minutes"
     },
     "settings": {
         "settings": "Settings",
         "subtitle": "Manage display and notification preferences.",
         "save_settings": "Save Settings",
+        "export_configuration": "Export configuration",
         "general": {
             "title": "General",
             "subtitle": "Change general application options.",
@@ -61,7 +80,35 @@
             "title": "Notifications",
             "subtitle_1": "Configure how you receive alert notifications.",
             "subtitle_2": "Looking instead for where to create alerts? Click the bell",
-            "subtitle_3": "icons in the systems table."
+            "subtitle_3": "icons in the systems table.",
+            "email": {
+                "title": "Email notifications",
+                "please": "Please",
+                "configure_an_SMTP_server": "configure an SMTP server",
+                "to_ensure_alerts_are_delivered": "to ensure alerts are delivered.",
+                "to_email_s": "To email(s)",
+                "enter_email_address": "Enter email address...",
+                "des": "Save address using enter key or comma. Leave blank to disable email notifications."
+            },
+            "webhook_push": {
+                "title": "Webhook / Push notifications",
+                "des_1": "Beszel uses",
+                "des_2": "to integrate with popular notification services.",
+                "add_url": "Add URL"
+            }
+        },
+        "yaml_config": {
+            "short_title": "YAML Config",
+            "title": "YAML Configuration",
+            "subtitle": "Export your current systems configuration.",
+            "des_1": "Systems may be managed in a",
+            "des_2": "file inside your data directory.",
+            "des_3": "On each restart, systems in the database will be updated to match the systems defined in the file.",
+            "alert": {
+                "title": "Caution - potential data loss",
+                "des_1": "Existing systems not defined in",
+                "des_2": "will be deleted. Please make regular backups."
+            }
         },
         "language": "Language"
     },
@@ -90,5 +137,42 @@
         "click_to_copy": "Click to copy",
         "command": "command",
         "add_system": "Add system"
+    },
+    "command": {
+        "search": "Search for systems or settings...",
+        "pages_settings": "Pages / Settings",
+        "dashboard": "Dashboard",
+        "documentation": "Documentation",
+        "SMTP_settings": "SMTP settings",
+        "page": "Page",
+        "admin": "Admin"
+    },
+    "monitor": {
+        "toggle_grid": "Toggle grid",
+        "average": "Average",
+        "max_1_min": "Max 1 min ",
+        "total_cpu_usage": "Total CPU Usage",
+        "cpu_des": "system-wide CPU utilization",
+        "docker_cpu_usage": "Docker CPU Usage",
+        "docker_cpu_des": "Average CPU utilization of containers",
+        "total_memory_usage": "Total Memory Usage",
+        "memory_des": "Precise utilization at the recorded time",
+        "docker_memory_usage": "Docker Memory Usage",
+        "docker_memory_des": "Memory usage of docker containers",
+        "disk_space": "Disk Space",
+        "disk_des": "Usage of root partition",
+        "disk_io": "Disk I/O",
+        "disk_io_des": "Throughput of root filesystem",
+        "bandwidth": "Bandwidth",
+        "bandwidth_des": "Network traffic of public interfaces",
+        "docker_network_io": "Docker Network I/O",
+        "docker_network_io_des": "Network traffic of docker containers",
+        "swap_usage": "Swap Usage",
+        "swap_des": "Swap space used by the system",
+        "temperature": "Temperature",
+        "temperature_des": "Temperatures of system sensors",
+        "usage": "Usage",
+        "disk_usage_of": "Disk usage of",
+        "throughput_of": "Throughput of"
     }
 }
