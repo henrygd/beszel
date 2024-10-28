@@ -1,0 +1,94 @@
+{
+    "all_systems": "All Systems",
+    "filter": "Filter...",
+    "copy": "Copy",
+    "add": "Add",
+    "system": "System",
+    "systems": "Systems",
+    "cancel": "Cancel",
+    "continue": "Continue",
+    "home": {
+        "active_alerts": "Active Alerts",
+        "active_des": "Exceeds {{value}}{{unit}} average in last {{minutes}} minutes",
+        "subtitle_1": "Updated in real time. Press",
+        "subtitle_2": "to open the command palette."
+    },
+    "systems_table": {
+        "system": "System",
+        "memory": "Memory",
+        "cpu": "CPU",
+        "disk": "Disk",
+        "net": "Net",
+        "agent": "Agent",
+        "no_systems_found": "No systems found.",
+        "open_menu": "Open menu",
+        "resume": "Resume",
+        "pause": "Pause",
+        "copy_host": "Copy host",
+        "delete": "Delete",
+        "delete_confirm": "Are you sure you want to delete {{name}}?",
+        "delete_confirm_des_1": "This action cannot be undone. This will permanently delete all current records for",
+        "delete_confirm_des_2": "from the database."
+    },
+    "alerts": {
+        "title": "Alerts",
+        "subtitle_1": "See",
+        "notification_settings": "notification settings",
+        "subtitle_2": "to configure how you receive alerts.",
+        "overwrite_existing_alerts": "Overwrite existing alerts"
+    },
+    "settings": {
+        "settings": "Settings",
+        "subtitle": "Manage display and notification preferences.",
+        "save_settings": "Save Settings",
+        "general": {
+            "title": "General",
+            "subtitle": "Change general application options.",
+            "language": {
+                "title": "Language",
+                "subtitle_1": "Want to help us make our translations even better? Check out",
+                "subtitle_2": "for more details.",
+                "preferred_language": "Preferred Language"
+            },
+            "chart_options": {
+                "title": "Chart options",
+                "subtitle": "Adjust display options for charts.",
+                "default_time_period": "Default time period",
+                "default_time_period_des": "Sets the default time range for charts when a system is viewed."
+            }
+        },
+        "notifications": {
+            "title": "Notifications",
+            "subtitle_1": "Configure how you receive alert notifications.",
+            "subtitle_2": "Looking instead for where to create alerts? Click the bell",
+            "subtitle_3": "icons in the systems table."
+        },
+        "language": "Language"
+    },
+    "user_dm": {
+        "users": "Users",
+        "logs": "Logs",
+        "backups": "Backups",
+        "auth_providers": "Auth Providers",
+        "log_out": "Log Out"
+    },
+    "themes": {
+        "toggle_theme": "Toggle theme",
+        "light": "Light",
+        "dark": "Dark",
+        "system": "System"
+    },
+    "add_system": {
+        "add_new_system": "Add New System",
+        "binary": "Binary",
+        "dialog_des_1": "The agent must be running on the system to connect. Copy the",
+        "dialog_des_2": "for the agent below.",
+        "name": "Name",
+        "host_ip": "Host / IP",
+        "port": "Port",
+        "public_key": "Public Key",
+        "click_to_copy": "Click to copy",
+        "command": "command",
+        "add_system": "Add system"
+    }
+}

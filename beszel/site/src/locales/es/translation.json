@@ -1,0 +1,94 @@
+{
+    "all_systems": "Todos los sistemas",
+    "filter": "Filtrar...",
+    "copy": "Copiar",
+    "add": "Agregar",
+    "system": "Sistema",
+    "systems": "Sistemas",
+    "cancel": "Cancelar",
+    "continue": "Continuar",
+    "home": {
+        "active_alerts": "Alertas activas",
+        "active_des": "Excede el promedio de {{value}}{{unit}} en los últimos {{minutes}} minutos",
+        "subtitle_1": "Actualizado en tiempo real. Presione",
+        "subtitle_2": "para abrir la paleta de comandos."
+    },
+    "systems_table": {
+        "system": "Sistema",
+        "memory": "Memoria",
+        "cpu": "CPU",
+        "disk": "Disco",
+        "net": "Red",
+        "agent": "Agente",
+        "no_systems_found": "No se encontraron sistemas.",
+        "open_menu": "Abrir menú",
+        "resume": "Reanudar",
+        "pause": "Pausar",
+        "copy_host": "Copiar host",
+        "delete": "Eliminar",
+        "delete_confirm": "¿Estás seguro de que quieres eliminar {{name}}?",
+        "delete_confirm_des_1": "Esta acción no se puede deshacer. Esto eliminará permanentemente todos los registros actuales para",
+        "delete_confirm_des_2": "de la base de datos."
+    },
+    "alerts": {
+        "title": "Alertas",
+        "subtitle_1": "Ver",
+        "notification_settings": "configuración de notificaciones",
+        "subtitle_2": "para configurar cómo recibe las alertas.",
+        "overwrite_existing_alerts": "Sobrescribir alertas existentes"
+    },
+    "settings": {
+        "settings": "Configuración",
+        "subtitle": "Administrar las preferencias de visualización y notificación.",
+        "save_settings": "Guardar configuración",
+        "general": {
+            "title": "General",
+            "subtitle": "Cambiar las opciones generales de la aplicación.",
+            "language": {
+                "title": "Idioma",
+                "subtitle_1": "¿Quieres ayudarnos a mejorar nuestras traducciones? Consulta",
+                "subtitle_2": "para más detalles.",
+                "preferred_language": "Idioma preferido"
+            },
+            "chart_options": {
+                "title": "Opciones de gráfico",
+                "subtitle": "Ajustar las opciones de visualización para los gráficos.",
+                "default_time_period": "Periodo de tiempo predeterminado",
+                "default_time_period_des": "Establece el rango de tiempo predeterminado para los gráficos cuando se visualiza un sistema."
+            }
+        },
+        "notifications": {
+            "title": "Notificaciones",
+            "subtitle_1": "Configure cómo recibe las notificaciones de alerta.",
+            "subtitle_2": "¿Busca dónde crear alertas? Haga clic en el icono de campana",
+            "subtitle_3": "en la tabla de sistemas."
+        },
+        "language": "Idioma"
+    },
+    "user_dm": {
+        "users": "Usuarios",
+        "logs": "Registros",
+        "backups": "Respaldos",
+        "auth_providers": "Proveedores de autenticación",
+        "log_out": "Cerrar sesión"
+    },
+    "themes": {
+        "toggle_theme": "Alternar tema",
+        "light": "Claro",
+        "dark": "Oscuro",
+        "system": "Sistema"
+    },
+    "add_system": {
+        "add_new_system": "Agregar nuevo sistema",
+        "binary": "Binario",
+        "dialog_des_1": "El agente debe estar ejecutándose en el sistema para conectarse. Copie el",
+        "dialog_des_2": "para el agente a continuación.",
+        "name": "Nombre",
+        "host_ip": "Host / IP",
+        "port": "Puerto",
+        "public_key": "Clave pública",
+        "click_to_copy": "Haga clic para copiar",
+        "command": "comando",
+        "add_system": "Agregar sistema"
+    }
+}

@@ -63,6 +63,7 @@ import { cn, copyToClipboard, decimalString, isReadOnlyUser } from '@/lib/utils'
 import AlertsButton from '../alerts/alert-button'
 import { navigate } from '../router'
 import { EthernetIcon } from '../ui/icons'
+import { useTranslation } from 'react-i18next'
 
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	const val = info.getValue() as number
@@ -102,6 +103,8 @@ function sortableHeader(
 }
 
 export default function SystemsTable({ filter }: { filter?: string }) {
+	const { t } = useTranslation()
+
 	const data = useStore($systems)
 	const hubVersion = useStore($hubVersion)
 	const [sorting, setSorting] = useState<SortingState>([])
@@ -145,32 +148,32 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 						</span>
 					)
 				},
-				header: ({ column }) => sortableHeader(column, 'System', ServerIcon),
+				header: ({ column }) => sortableHeader(column, t('systems_table.system'), ServerIcon),
 			},
 			{
 				accessorKey: 'info.cpu',
 				invertSorting: true,
 				cell: CellFormatter,
-				header: ({ column }) => sortableHeader(column, 'CPU', CpuIcon),
+				header: ({ column }) => sortableHeader(column, t('systems_table.cpu'), CpuIcon),
 			},
 			{
 				accessorKey: 'info.mp',
 				invertSorting: true,
 				cell: CellFormatter,
-				header: ({ column }) => sortableHeader(column, 'Memory', MemoryStickIcon),
+				header: ({ column }) => sortableHeader(column, t('systems_table.memory'), MemoryStickIcon),
 			},
 			{
 				accessorKey: 'info.dp',
 				invertSorting: true,
 				cell: CellFormatter,
-				header: ({ column }) => sortableHeader(column, 'Disk', HardDriveIcon),
+				header: ({ column }) => sortableHeader(column, t('systems_table.disk'), HardDriveIcon),
 			},
 			{
 				accessorFn: (originalRow) => originalRow.info.b || 0,
 				id: 'n',
 				invertSorting: true,
 				size: 115,
-				header: ({ column }) => sortableHeader(column, 'Net', EthernetIcon),
+				header: ({ column }) => sortableHeader(column, t('systems_table.net'), EthernetIcon),
 				cell: (info) => {
 					const val = info.getValue() as number
 					return (
@@ -184,7 +187,7 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 				accessorKey: 'info.v',
 				invertSorting: true,
 				size: 50,
-				header: ({ column }) => sortableHeader(column, 'Agent', WifiIcon, true),
+				header: ({ column }) => sortableHeader(column, t('systems_table.agent'), WifiIcon, true),
 				cell: (info) => {
 					const version = info.getValue() as string
 					if (!version || !hubVersion) {
@@ -217,7 +220,7 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 								<DropdownMenu>
 									<DropdownMenuTrigger asChild>
 										<Button variant="ghost" size={'icon'} data-nolink>
-											<span className="sr-only">Open menu</span>
+											<span className="sr-only">{t('systems_table.open_menu')}</span>
 											<MoreHorizontalIcon className="w-5" />
 										</Button>
 									</DropdownMenuTrigger>
@@ -233,44 +236,42 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 											{status === 'paused' ? (
 												<>
 													<PlayCircleIcon className="mr-2.5 h-4 w-4" />
-													Resume
+													{t('systems_table.resume')}
 												</>
 											) : (
 												<>
 													<PauseCircleIcon className="mr-2.5 h-4 w-4" />
-													Pause
+													{t('systems_table.pause')}
 												</>
 											)}
 										</DropdownMenuItem>
 										<DropdownMenuItem onClick={() => copyToClipboard(host)}>
 											<CopyIcon className="mr-2.5 h-4 w-4" />
-											Copy host
+											{t('systems_table.copy_host')}
 										</DropdownMenuItem>
 										<DropdownMenuSeparator className={cn(isReadOnlyUser() && 'hidden')} />
 										<AlertDialogTrigger asChild>
 											<DropdownMenuItem className={cn(isReadOnlyUser() && 'hidden')}>
 												<Trash2Icon className="mr-2.5 h-4 w-4" />
-												Delete
+												{t('systems_table.delete')}
 											</DropdownMenuItem>
 										</AlertDialogTrigger>
 									</DropdownMenuContent>
 								</DropdownMenu>
 								<AlertDialogContent>
 									<AlertDialogHeader>
-										<AlertDialogTitle>Are you sure you want to delete {name}?</AlertDialogTitle>
+										<AlertDialogTitle>{t('systems_table.delete_confirm', { name })}</AlertDialogTitle>
 										<AlertDialogDescription>
-											This action cannot be undone. This will permanently delete all current records
-											for <code className="bg-muted rounded-sm px-1">{name}</code> from the
-											database.
+											{t('systems_table.delete_confirm_des_1')} <code className="bg-muted rounded-sm px-1">{name}</code> {t('systems_table.delete_confirm_des_2')}
 										</AlertDialogDescription>
 									</AlertDialogHeader>
 									<AlertDialogFooter>
-										<AlertDialogCancel>Cancel</AlertDialogCancel>
+										<AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
 										<AlertDialogAction
 											className={cn(buttonVariants({ variant: 'destructive' }))}
 											onClick={() => pb.collection('systems').delete(id)}
 										>
-											Continue
+											{t('continue')}
 										</AlertDialogAction>
 									</AlertDialogFooter>
 								</AlertDialogContent>
@@ -354,7 +355,7 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 					) : (
 						<TableRow>
 							<TableCell colSpan={columns.length} className="h-24 text-center">
-								No systems found
+								{t('systems_table.no_systems_found')}
 							</TableCell>
 						</TableRow>
 					)}

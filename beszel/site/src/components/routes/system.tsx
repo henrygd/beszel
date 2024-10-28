@@ -21,6 +21,7 @@ import { ChartAverage, ChartMax, Rows, TuxIcon } from '../ui/icons'
 import { useIntersectionObserver } from '@/lib/use-intersection-observer'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 import { timeTicks } from 'd3-time'
+import { useTranslation } from 'react-i18next'
 
 const AreaChartDefault = lazy(() => import('../charts/area-chart'))
 const ContainerChart = lazy(() => import('../charts/container-chart'))
@@ -374,9 +375,8 @@ export default function SystemDetail({ name }: { name: string }) {
 					<ChartCard
 						grid={grid}
 						title="Total CPU Usage"
-						description={`${
-							cpuMaxStore[0] && isLongerChart ? 'Max 1 min ' : 'Average'
-						} system-wide CPU utilization`}
+						description={`${cpuMaxStore[0] && isLongerChart ? 'Max 1 min ' : 'Average'
+							} system-wide CPU utilization`}
 						cornerEl={isLongerChart ? <SelectAvgMax store={cpuMaxStore} /> : null}
 					>
 						<AreaChartDefault
@@ -525,6 +525,8 @@ export default function SystemDetail({ name }: { name: string }) {
 }
 
 function ContainerFilterBar() {
+	const { t } = useTranslation()
+
 	const containerFilter = useStore($containerFilter)
 
 	const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -534,7 +536,7 @@ function ContainerFilterBar() {
 	return (
 		<>
 			<Input
-				placeholder="Filter..."
+				placeholder={t('filter')}
 				className="pl-4 pr-8"
 				value={containerFilter}
 				onChange={handleChange}

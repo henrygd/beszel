@@ -12,6 +12,7 @@ import { UserSettings } from '@/types'
 import { saveSettings } from './layout'
 import * as v from 'valibot'
 import { isAdmin } from '@/lib/utils'
+import { useTranslation } from 'react-i18next'
 
 interface ShoutrrrUrlCardProps {
 	url: string
@@ -25,6 +26,8 @@ const NotificationSchema = v.object({
 })
 
 const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSettings }) => {
+	const { t } = useTranslation()
+
 	const [webhooks, setWebhooks] = useState(userSettings.webhooks ?? [])
 	const [emails, setEmails] = useState<string[]>(userSettings.emails ?? [])
 	const [isLoading, setIsLoading] = useState(false)
@@ -69,13 +72,13 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 	return (
 		<div>
 			<div>
-				<h3 className="text-xl font-medium mb-2">Notifications</h3>
+				<h3 className="text-xl font-medium mb-2">{t('settings.notifications.title')}</h3>
 				<p className="text-sm text-muted-foreground leading-relaxed">
-					Configure how you receive alert notifications.
+					{t('settings.notifications.subtitle_1')}
 				</p>
 				<p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
-					Looking instead for where to create alerts? Click the bell{' '}
-					<BellIcon className="inline h-4 w-4" /> icons in the systems table.
+					{t('settings.notifications.subtitle_2')}{' '}
+					<BellIcon className="inline h-4 w-4" /> {t('settings.notifications.subtitle_3')}
 				</p>
 			</div>
 			<Separator className="my-4" />
@@ -161,7 +164,7 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 					) : (
 						<SaveIcon className="h-4 w-4" />
 					)}
-					Save settings
+					{t('settings.save_settings')}
 				</Button>
 			</div>
 		</div>
