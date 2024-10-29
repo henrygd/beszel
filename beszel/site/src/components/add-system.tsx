@@ -9,12 +9,7 @@ import {
 	DialogTrigger,
 } from '@/components/ui/dialog'
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
-import {
-	Tabs,
-	TabsContent,
-	TabsList,
-	TabsTrigger,
-} from "@/components/ui/tabs"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -51,7 +46,9 @@ export function AddSystemButton({ className }: { className?: string }) {
 	}
 
 	function copyInstallCommand(port: string) {
-		copyToClipboard(`curl -sL https://raw.githubusercontent.com/henrygd/beszel/main/supplemental/scripts/install-agent.sh -o install-agent.sh && chmod +x install-agent.sh && ./install-agent.sh -p ${port} -k "${publicKey}"`)
+		copyToClipboard(
+			`curl -sL https://raw.githubusercontent.com/henrygd/beszel/main/supplemental/scripts/install-agent.sh -o install-agent.sh && chmod +x install-agent.sh && ./install-agent.sh -p ${port} -k "${publicKey}"`
+		)
 	}
 
 	async function handleSubmit(e: SubmitEvent) {
@@ -77,10 +74,11 @@ export function AddSystemButton({ className }: { className?: string }) {
 					className={cn('flex gap-1 max-xs:h-[2.4rem]', className, isReadOnlyUser() && 'hidden')}
 				>
 					<PlusIcon className="h-4 w-4 -ml-1" />
-					{t('add')}<span className="hidden xs:inline">{t('system')}</span>
+					{t('add')}
+					<span className="hidden sm:inline">{t('system')}</span>
 				</Button>
 			</DialogTrigger>
-			<DialogContent className="w-[90%] sm:max-w-[425px] rounded-lg">
+			<DialogContent className="w-[90%] sm:max-w-[440px] rounded-lg">
 				<Tabs defaultValue="docker">
 					<DialogHeader>
 						<DialogTitle className="mb-2">{t('add_system.add_new_system')}</DialogTitle>
@@ -93,14 +91,16 @@ export function AddSystemButton({ className }: { className?: string }) {
 					<TabsContent value="docker">
 						<DialogDescription className={'mb-4'}>
 							{t('add_system.dialog_des_1')}{' '}
-							<code className="bg-muted px-1 rounded-sm">docker-compose.yml</code> {t('add_system.dialog_des_2')}
+							<code className="bg-muted px-1 rounded-sm">docker-compose.yml</code>{' '}
+							{t('add_system.dialog_des_2')}
 						</DialogDescription>
 					</TabsContent>
 					{/* Binary */}
 					<TabsContent value="binary">
 						<DialogDescription className={'mb-4'}>
 							{t('add_system.dialog_des_1')}{' '}
-							<code className="bg-muted px-1 rounded-sm">install command</code> {t('add_system.dialog_des_2')}
+							<code className="bg-muted px-1 rounded-sm">install command</code>{' '}
+							{t('add_system.dialog_des_2')}
 						</DialogDescription>
 					</TabsContent>
 					<form onSubmit={handleSubmit as any}>
@@ -161,7 +161,7 @@ export function AddSystemButton({ className }: { className?: string }) {
 						</div>
 						{/* Docker */}
 						<TabsContent value="docker">
-							<DialogFooter className="flex justify-end gap-2">
+							<DialogFooter className="flex justify-end gap-2 sm:w-[calc(100%+20px)] sm:-ml-[20px]">
 								<Button
 									type="button"
 									variant={'ghost'}
@@ -174,7 +174,7 @@ export function AddSystemButton({ className }: { className?: string }) {
 						</TabsContent>
 						{/* Binary */}
 						<TabsContent value="binary">
-							<DialogFooter className="flex justify-end gap-2">
+							<DialogFooter className="flex justify-end gap-2 sm:w-[calc(100%+20px)] sm:-ml-[20px]">
 								<Button
 									type="button"
 									variant={'ghost'}

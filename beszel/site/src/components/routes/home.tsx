@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next'
 
 const SystemsTable = lazy(() => import('../systems-table/systems-table'))
 
-const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0
 
 export default function () {
 	const { t } = useTranslation()
@@ -78,13 +78,13 @@ export default function () {
 										>
 											<info.icon className="h-4 w-4" />
 											<AlertTitle>
-												{alert.sysname} {info.name}
+												{alert.sysname} {t(info.name)}
 											</AlertTitle>
 											<AlertDescription>
-												{t('active_des', {
+												{t('home.active_des', {
 													value: alert.value,
 													unit: info.unit,
-													minutes: alert.min
+													minutes: alert.min,
 												})}
 											</AlertDescription>
 											<Link
@@ -108,7 +108,7 @@ export default function () {
 							<CardDescription>
 								{t('home.subtitle_1')}{' '}
 								<kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-0.5 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-									<span className="text-xs">{isMac ? '⌘' : "Ctrl"}</span>K
+									<span className="text-xs">{isMac ? '⌘' : 'Ctrl'}</span>K
 								</kbd>{' '}
 								{t('home.subtitle_2')}
 							</CardDescription>

@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/select'
 import { chartTimeData } from '@/lib/utils'
 import { Separator } from '@/components/ui/separator'
-import { LoaderCircleIcon, SaveIcon } from 'lucide-react'
+import { LanguagesIcon, LoaderCircleIcon, SaveIcon } from 'lucide-react'
 import { UserSettings } from '@/types'
 import { saveSettings } from './layout'
 import { useState, useEffect } from 'react'
@@ -21,8 +21,8 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 	const { t, i18n } = useTranslation()
 
 	useEffect(() => {
-		document.documentElement.lang = i18n.language;
-	}, [i18n.language]);
+		document.documentElement.lang = i18n.language
+	}, [i18n.language])
 
 	const [isLoading, setIsLoading] = useState(false)
 
@@ -47,7 +47,10 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 			<form onSubmit={handleSubmit} className="space-y-5">
 				<div className="space-y-2">
 					<div className="mb-4">
-						<h3 className="mb-1 text-lg font-medium">{t('settings.general.language.title')}</h3>
+						<h3 className="mb-1 text-lg font-medium flex items-center gap-2">
+							<LanguagesIcon className="h-4 w-4" />
+							{t('settings.general.language.title')}
+						</h3>
 						<p className="text-sm text-muted-foreground leading-relaxed">
 							{t('settings.general.language.subtitle_1')}{' '}
 							<a href="https://crowdin.com/project/beszel" className="link" target="_blank">
@@ -59,7 +62,7 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 					<Label className="block" htmlFor="lang">
 						{t('settings.general.language.preferred_language')}
 					</Label>
-					<Select defaultValue={i18n.language} onValueChange={(lang: string) => i18n.changeLanguage(lang)}>
+					<Select value={i18n.language} onValueChange={(lang: string) => i18n.changeLanguage(lang)}>
 						<SelectTrigger id="lang">
 							<SelectValue />
 						</SelectTrigger>
@@ -72,9 +75,12 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 						</SelectContent>
 					</Select>
 				</div>
+				<Separator />
 				<div className="space-y-2">
 					<div className="mb-4">
-						<h3 className="mb-1 text-lg font-medium">{t('settings.general.chart_options.title')}</h3>
+						<h3 className="mb-1 text-lg font-medium">
+							{t('settings.general.chart_options.title')}
+						</h3>
 						<p className="text-sm text-muted-foreground leading-relaxed">
 							{t('settings.general.chart_options.subtitle')}
 						</p>

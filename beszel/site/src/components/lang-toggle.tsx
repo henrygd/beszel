@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { GlobeIcon, Languages } from 'lucide-react'
+import { LanguagesIcon } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -10,19 +10,20 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useTranslation } from 'react-i18next'
 import languages from '../lib/languages.json'
+import { cn } from '@/lib/utils'
 
 export function LangToggle() {
-	const { i18n } = useTranslation();
+	const { i18n } = useTranslation()
 
 	useEffect(() => {
-		document.documentElement.lang = i18n.language;
-	}, [i18n.language]);
+		document.documentElement.lang = i18n.language
+	}, [i18n.language])
 
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Button variant={'ghost'} size="icon">
-					<GlobeIcon className="absolute h-[1.2rem] w-[1.2rem]" />
+				<Button variant={'ghost'} size="icon" className="hidden 450:flex">
+					<LanguagesIcon className="absolute h-[1.2rem] w-[1.2rem]" />
 					<span className="sr-only">Language</span>
 				</Button>
 			</DropdownMenuTrigger>
@@ -30,7 +31,7 @@ export function LangToggle() {
 				{languages.map(({ lang, label }) => (
 					<DropdownMenuItem
 						key={lang}
-						className={lang === i18n.language ? 'font-bold' : ''}
+						className={cn('pl-4', lang === i18n.language ? 'font-bold' : '')}
 						onClick={() => i18n.changeLanguage(lang)}
 					>
 						{label}
