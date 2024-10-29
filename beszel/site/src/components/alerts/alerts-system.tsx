@@ -6,6 +6,7 @@ import { lazy, Suspense, useRef, useState } from 'react'
 import { toast } from '../ui/use-toast'
 import { RecordOptions } from 'pocketbase'
 import { newQueue, Queue } from '@henrygd/queue'
+import { useTranslation } from 'react-i18next'
 
 interface AlertData {
 	checked?: boolean
@@ -157,6 +158,8 @@ export function SystemAlertGlobal({
 }
 
 function AlertContent({ data }: { data: AlertData }) {
+	const { t } = useTranslation()
+
 	const { key } = data
 
 	const hasSliders = !('single' in data.alert)
@@ -185,10 +188,10 @@ function AlertContent({ data }: { data: AlertData }) {
 			>
 				<div className="grid gap-1 select-none">
 					<p className="font-semibold flex gap-3 items-center capitalize">
-						<Icon className="h-4 w-4 opacity-85" /> {data.alert.name}
+						<Icon className="h-4 w-4 opacity-85" /> {t(data.alert.name)}
 					</p>
 					{!showSliders && (
-						<span className="block text-sm text-muted-foreground">{data.alert.desc}</span>
+						<span className="block text-sm text-muted-foreground">{t(data.alert.desc)}</span>
 					)}
 				</div>
 				<Switch
@@ -205,7 +208,7 @@ function AlertContent({ data }: { data: AlertData }) {
 					<Suspense fallback={<div className="h-10" />}>
 						<div>
 							<p id={`v${key}`} className="text-sm block h-8">
-								Average exceeds{' '}
+								{t('alerts.average_exceeds')}{' '}
 								<strong className="text-foreground">
 									{value}
 									{data.alert.unit}
@@ -224,8 +227,7 @@ function AlertContent({ data }: { data: AlertData }) {
 						</div>
 						<div>
 							<p id={`t${key}`} className="text-sm block h-8">
-								For <strong className="text-foreground">{min}</strong> minute
-								{min > 1 && 's'}
+								{t('alerts.for')} <strong className="text-foreground">{min}</strong> {min > 1 ? t('alerts.minutes') : t('alerts.minute')}
 							</p>
 							<div className="flex gap-3">
 								<Slider

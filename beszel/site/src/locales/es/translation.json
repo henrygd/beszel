@@ -1,0 +1,178 @@
+{
+    "all_systems": "Todos los sistemas",
+    "filter": "Filtrar...",
+    "copy": "Copiar",
+    "add": "Agregar",
+    "system": "Sistema",
+    "systems": "Sistemas",
+    "cancel": "Cancelar",
+    "continue": "Continuar",
+    "home": {
+        "active_alerts": "Alertas activas",
+        "active_des": "Excede el promedio de {{value}}{{unit}} en los últimos {{minutes}} minutos",
+        "subtitle_1": "Actualizado en tiempo real. Presione",
+        "subtitle_2": "para abrir la paleta de comandos."
+    },
+    "systems_table": {
+        "system": "Sistema",
+        "memory": "Memoria",
+        "cpu": "CPU",
+        "disk": "Disco",
+        "net": "Red",
+        "agent": "Agente",
+        "no_systems_found": "No se encontraron sistemas.",
+        "open_menu": "Abrir menú",
+        "resume": "Reanudar",
+        "pause": "Pausar",
+        "copy_host": "Copiar host",
+        "delete": "Eliminar",
+        "delete_confirm": "¿Estás seguro de que quieres eliminar {{name}}?",
+        "delete_confirm_des_1": "Esta acción no se puede deshacer. Esto eliminará permanentemente todos los registros actuales para",
+        "delete_confirm_des_2": "de la base de datos."
+    },
+    "alerts": {
+        "title": "Alertas",
+        "subtitle_1": "Ver",
+        "notification_settings": "configuraciones de notificación",
+        "subtitle_2": "para configurar cómo recibes las alertas.",
+        "overwrite_existing_alerts": "Sobrescribir alertas existentes",
+        "info": {
+            "status": "Estado",
+            "status_des": "Se activa cuando el estado cambia entre arriba y abajo.",
+            "cpu_usage": "Uso de CPU",
+            "cpu_usage_des": "Se activa cuando el uso de la CPU supera un umbral.",
+            "memory_usage": "Uso de memoria",
+            "memory_usage_des": "Se activa cuando el uso de la memoria supera un umbral.",
+            "disk_usage": "Uso de disco",
+            "disk_usage_des": "Se activa cuando el uso de cualquier disco supera un umbral.",
+            "bandwidth": "Ancho de banda",
+            "bandwidth_des": "Se activa cuando el combinado arriba/abajo supera un umbral.",
+            "temperature": "Temperatura",
+            "temperature_des": "Se activa cuando cualquier sensor supera un umbral."
+        },
+        "average_exceeds": "Promedio excede",
+        "for": "Por",
+        "minute": "minuto",
+        "minutes": "minutos"
+    },
+    "settings": {
+        "settings": "Configuraciones",
+        "subtitle": "Administre las preferencias de visualización y notificación.",
+        "save_settings": "Guardar configuraciones",
+        "export_configuration": "Exportar configuración",
+        "general": {
+            "title": "General",
+            "subtitle": "Cambie las opciones generales de la aplicación.",
+            "language": {
+                "title": "Idioma",
+                "subtitle_1": "¿Quiere ayudarnos a mejorar nuestras traducciones? Consulte",
+                "subtitle_2": "para más detalles.",
+                "preferred_language": "Idioma preferido"
+            },
+            "chart_options": {
+                "title": "Opciones de gráficos",
+                "subtitle": "Ajuste las opciones de visualización para los gráficos.",
+                "default_time_period": "Período de tiempo predeterminado",
+                "default_time_period_des": "Establezca el rango de tiempo predeterminado para los gráficos cuando se visualiza un sistema."
+            }
+        },
+        "notifications": {
+            "title": "Notificaciones",
+            "subtitle_1": "Configure cómo recibe las notificaciones de alerta.",
+            "subtitle_2": "¿Busca en su lugar dónde crear alertas? Haga clic en el icono de campana",
+            "subtitle_3": "en la tabla de sistemas.",
+            "email": {
+                "title": "Notificaciones por correo electrónico",
+                "please": "Por favor",
+                "configure_an_SMTP_server": "configure un servidor SMTP",
+                "to_ensure_alerts_are_delivered": "para asegurarse de que se entreguen las alertas.",
+                "to_email_s": "A correo electrónico(s)",
+                "enter_email_address": "Ingrese la dirección de correo electrónico...",
+                "des": "Guarde la dirección presionando Enter o usando una coma. Deje en blanco para desactivar las notificaciones por correo electrónico."
+            },
+            "webhook_push": {
+                "title": "Notificaciones Webhook/Push",
+                "des_1": "Beszel utiliza",
+                "des_2": "para integrarse con populares servicios de notificación.",
+                "add_url": "Agregar URL"
+            }
+        },
+        "yaml_config": {
+            "short_title": "Configuración YAML",
+            "title": "Configuración YAML",
+            "subtitle": "Exporta tu configuración actual de sistemas.",
+            "des_1": "Los sistemas pueden gestionarse en un",
+            "des_2": "archivo dentro de tu directorio de datos.",
+            "des_3": "En cada reinicio, los sistemas de la base de datos se actualizarán para coincidir con los sistemas definidos en el archivo.",
+            "alert": {
+                "title": "Advertencia - posible pérdida de datos",
+                "des_1": "Los sistemas existentes no definidos en",
+                "des_2": "serán eliminados. Por favor, haz copias de seguridad regulares."
+            }
+        },
+        "language": "Idioma"
+    },
+    "user_dm": {
+        "users": "Usuarios",
+        "logs": "Registros",
+        "backups": "Respaldos",
+        "auth_providers": "Proveedores de autenticación",
+        "log_out": "Cerrar sesión"
+    },
+    "themes": {
+        "toggle_theme": "Alternar tema",
+        "light": "Claro",
+        "dark": "Oscuro",
+        "system": "Sistema"
+    },
+    "add_system": {
+        "add_new_system": "Agregar nuevo sistema",
+        "binary": "Binario",
+        "dialog_des_1": "El agente debe estar ejecutándose en el sistema para conectarse. Copia el",
+        "dialog_des_2": "para el agente a continuación.",
+        "name": "Nombre",
+        "host_ip": "Host/IP",
+        "port": "Puerto",
+        "public_key": "Clave pública",
+        "click_to_copy": "Haz clic para copiar",
+        "command": "comando",
+        "add_system": "Agregar sistema"
+    },
+    "command": {
+        "search": "Buscar sistemas o configuraciones...",
+        "pages_settings": "Páginas/Configuraciones",
+        "dashboard": "Panel de control",
+        "documentation": "Documentación",
+        "SMTP_settings": "Configuraciones SMTP",
+        "page": "Página",
+        "admin": "Administrador"
+    },
+    "monitor": {
+        "toggle_grid": "Alternar cuadrícula",
+        "average": "Promedio",
+        "max_1_min": "Máx. 1 min ",
+        "total_cpu_usage": "Uso total de CPU",
+        "cpu_des": "Utilización de CPU de todo el sistema",
+        "docker_cpu_usage": "Uso de CPU de Docker",
+        "docker_cpu_des": "Uso promedio de CPU de los contenedores",
+        "total_memory_usage": "Uso total de memoria",
+        "memory_des": "Utilización precisa en el momento registrado",
+        "docker_memory_usage": "Uso de memoria de Docker",
+        "docker_memory_des": "Uso de memoria de los contenedores de Docker",
+        "disk_space": "Espacio en disco",
+        "disk_des": "Uso de la partición raíz",
+        "disk_io": "E/S de disco",
+        "disk_io_des": "Rendimiento de la raíz del sistema de archivos",
+        "bandwidth": "Ancho de banda",
+        "bandwidth_des": "Tráfico de red de interfaces públicas",
+        "docker_network_io": "E/S de red de Docker",
+        "docker_network_io_des": "Tráfico de red de los contenedores de Docker",
+        "swap_usage": "Uso de intercambio",
+        "swap_des": "Espacio de intercambio utilizado por el sistema",
+        "temperature": "Temperatura",
+        "temperature_des": "Temperaturas de los sensores del sistema",
+        "usage": "Uso",
+        "disk_usage_of": "Uso de disco de",
+        "throughput_of": "Rendimiento de"
+    }
+}

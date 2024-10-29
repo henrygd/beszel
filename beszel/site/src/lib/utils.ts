@@ -301,40 +301,40 @@ export const chartMargin = { top: 12 }
 
 export const alertInfo = {
 	Status: {
-		name: 'Status',
+		name: 'alerts.info.status',
 		unit: '',
 		icon: ServerIcon,
-		desc: 'Triggers when status switches between up and down.',
+		desc: 'alerts.info.status_des',
 		single: true,
 	},
 	CPU: {
-		name: 'CPU usage',
+		name: 'alerts.info.cpu_usage',
 		unit: '%',
 		icon: CpuIcon,
-		desc: 'Triggers when CPU usage exceeds a threshold.',
+		desc: 'alerts.info.cpu_usage_des',
 	},
 	Memory: {
-		name: 'memory usage',
+		name: 'alerts.info.memory_usage',
 		unit: '%',
 		icon: MemoryStickIcon,
-		desc: 'Triggers when memory usage exceeds a threshold.',
+		desc: 'alerts.info.memory_usage_des',
 	},
 	Disk: {
-		name: 'disk usage',
+		name: 'alerts.info.disk_usage',
 		unit: '%',
 		icon: HardDriveIcon,
-		desc: 'Triggers when usage of any disk exceeds a threshold.',
+		desc: 'alerts.info.disk_usage_des',
 	},
 	Bandwidth: {
-		name: 'bandwidth',
+		name: 'alerts.info.bandwidth',
 		unit: ' MB/s',
 		icon: EthernetIcon,
-		desc: 'Triggers when combined up/down exceeds a threshold.',
+		desc: 'alerts.info.bandwidth_des',
 	},
 	Temperature: {
-		name: 'temperature',
+		name: 'alerts.info.temperature',
 		unit: '°C',
 		icon: ThermometerIcon,
-		desc: 'Triggers when any sensor exceeds a threshold.',
+		desc: 'alerts.info.temperature_des',
 	},
 }

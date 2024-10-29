@@ -10,8 +10,11 @@ import { useState } from 'react'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from '@/components/ui/use-toast'
 import clsx from 'clsx'
+import { useTranslation } from 'react-i18next'
 
 export default function ConfigYaml() {
+	const { t } = useTranslation()
+
 	const [configContent, setConfigContent] = useState<string>('')
 	const [isLoading, setIsLoading] = useState(false)
 
@@ -40,30 +43,27 @@ export default function ConfigYaml() {
 	return (
 		<div>
 			<div>
-				<h3 className="text-xl font-medium mb-2">YAML Configuration</h3>
+				<h3 className="text-xl font-medium mb-2">{t('settings.yaml_config.title')}</h3>
 				<p className="text-sm text-muted-foreground leading-relaxed">
-					Export your current systems configuration.
+					{t('settings.yaml_config.subtitle')}
 				</p>
 			</div>
 			<Separator className="my-4" />
 			<div className="space-y-2">
 				<div className="mb-4">
 					<p className="text-sm text-muted-foreground leading-relaxed my-1">
-						Systems may be managed in a{' '}
-						<code className="bg-muted rounded-sm px-1 text-primary">config.yml</code> file inside
-						your data directory.
+						{t('settings.yaml_config.des_1')}{' '}
+						<code className="bg-muted rounded-sm px-1 text-primary">config.yml</code> {t('settings.yaml_config.des_2')}
 					</p>
 					<p className="text-sm text-muted-foreground leading-relaxed">
-						On each restart, systems in the database will be updated to match the systems defined in
-						the file.
+						{t('settings.yaml_config.des_3')}
 					</p>
 					<Alert className="my-4 border-destructive text-destructive w-auto table md:pr-6">
 						<AlertCircleIcon className="h-4 w-4 stroke-destructive" />
-						<AlertTitle>Caution - potential data loss</AlertTitle>
+						<AlertTitle>{t('settings.yaml_config.alert.title')}</AlertTitle>
 						<AlertDescription>
 							<p>
-								Existing systems not defined in <code>config.yml</code> will be deleted. Please make
-								regular backups.
+								{t('settings.yaml_config.alert.des_1')} <code>config.yml</code> {t('settings.yaml_config.alert.des_2')}
 							</p>
 						</AlertDescription>
 					</Alert>
@@ -86,7 +86,7 @@ export default function ConfigYaml() {
 				disabled={isLoading}
 			>
 				<ButtonIcon className={clsx('h-4 w-4 mr-0.5', isLoading && 'animate-spin')} />
-				Export configuration
+				{t('settings.export_configuration')}
 			</Button>
 		</div>
 	)

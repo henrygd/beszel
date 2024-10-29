@@ -13,27 +13,7 @@ import General from './general.tsx'
 import Notifications from './notifications.tsx'
 import ConfigYaml from './config-yaml.tsx'
 import { isAdmin } from '@/lib/utils.ts'
-
-const sidebarNavItems = [
-	{
-		title: 'General',
-		href: '/settings/general',
-		icon: SettingsIcon,
-	},
-	{
-		title: 'Notifications',
-		href: '/settings/notifications',
-		icon: BellIcon,
-	},
-]
-
-if (isAdmin()) {
-	sidebarNavItems.push({
-		title: 'YAML Config',
-		href: '/settings/config',
-		icon: FileSlidersIcon,
-	})
-}
+import { useTranslation } from 'react-i18next'
 
 export async function saveSettings(newSettings: Partial<UserSettings>) {
 	try {
@@ -64,6 +44,29 @@ export async function saveSettings(newSettings: Partial<UserSettings>) {
 }
 
 export default function SettingsLayout() {
+	const { t } = useTranslation()
+
+	const sidebarNavItems = [
+		{
+			title: t('settings.general.title'),
+			href: '/settings/general',
+			icon: SettingsIcon,
+		},
+		{
+			title: t('settings.notifications.title'),
+			href: '/settings/notifications',
+			icon: BellIcon,
+		},
+	]
+
+	if (isAdmin()) {
+		sidebarNavItems.push({
+			title: t('settings.yaml_config.short_title'),
+			href: '/settings/config',
+			icon: FileSlidersIcon,
+		})
+	}
+
 	const page = useStore($router)
 
 	useEffect(() => {
@@ -77,8 +80,8 @@ export default function SettingsLayout() {
 	return (
 		<Card className="pt-5 px-4 pb-8 sm:pt-6 sm:px-7">
 			<CardHeader className="p-0">
-				<CardTitle className="mb-1">Settings</CardTitle>
-				<CardDescription>Manage display and notification preferences.</CardDescription>
+				<CardTitle className="mb-1">{t('settings.settings')}</CardTitle>
+				<CardDescription>{t('settings.subtitle')}</CardDescription>
 			</CardHeader>
 			<CardContent className="p-0">
 				<Separator className="hidden md:block my-5" />

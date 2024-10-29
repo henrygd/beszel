@@ -11,6 +11,7 @@ import {
 	$hubVersion,
 	$copyContent,
 } from './lib/stores.ts'
+import { LangToggle } from './components/lang-toggle.tsx'
 import { ModeToggle } from './components/mode-toggle.tsx'
 import {
 	cn,
@@ -47,6 +48,9 @@ import {
 import { $router, Link } from './components/router.tsx'
 import SystemDetail from './components/routes/system.tsx'
 import { AddSystemButton } from './components/add-system.tsx'
+
+import './lib/i18n.ts'
+import { useTranslation } from 'react-i18next'
 
 // const ServerDetail = lazy(() => import('./components/routes/system.tsx'))
 const CommandPalette = lazy(() => import('./components/command-palette.tsx'))
@@ -111,6 +115,8 @@ const App = () => {
 }
 
 const Layout = () => {
+	const { t } = useTranslation()
+
 	const authenticated = useStore($authenticated)
 	const copyContent = useStore($copyContent)
 
@@ -131,6 +137,7 @@ const Layout = () => {
 					</Link>
 
 					<div className={'flex ml-auto items-center'}>
+						<LangToggle />
 						<ModeToggle />
 						<Link
 							href="/settings/general"
@@ -157,31 +164,31 @@ const Layout = () => {
 											<DropdownMenuItem asChild>
 												<a href="/_/" target="_blank">
 													<UsersIcon className="mr-2.5 h-4 w-4" />
-													<span>Users</span>
+													<span>{t('user_dm.users')}</span>
 												</a>
 											</DropdownMenuItem>
 											<DropdownMenuItem asChild>
 												<a href="/_/#/collections?collectionId=2hz5ncl8tizk5nx" target="_blank">
 													<ServerIcon className="mr-2.5 h-4 w-4" />
-													<span>Systems</span>
+													<span>{t('systems')}</span>
 												</a>
 											</DropdownMenuItem>
 											<DropdownMenuItem asChild>
 												<a href="/_/#/logs" target="_blank">
 													<LogsIcon className="mr-2.5 h-4 w-4" />
-													<span>Logs</span>
+													<span>{t('user_dm.logs')}</span>
 												</a>
 											</DropdownMenuItem>
 											<DropdownMenuItem asChild>
 												<a href="/_/#/settings/backups" target="_blank">
 													<DatabaseBackupIcon className="mr-2.5 h-4 w-4" />
-													<span>Backups</span>
+													<span>{t('user_dm.backups')}</span>
 												</a>
 											</DropdownMenuItem>
 											<DropdownMenuItem asChild>
 												<a href="/_/#/settings/auth-providers" target="_blank">
 													<LockKeyholeIcon className="mr-2.5 h-4 w-4" />
-													<span>Auth providers</span>
+													<span>{t('user_dm.auth_providers')}</span>
 												</a>
 											</DropdownMenuItem>
 											<DropdownMenuSeparator />
@@ -190,7 +197,7 @@ const Layout = () => {
 								</DropdownMenuGroup>
 								<DropdownMenuItem onSelect={() => pb.authStore.clear()}>
 									<LogOutIcon className="mr-2.5 h-4 w-4" />
-									<span>Log out</span>
+									<span>{t('user_dm.log_out')}</span>
 								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
