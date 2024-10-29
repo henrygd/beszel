@@ -17,6 +17,7 @@ import { Link } from '../router'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Checkbox } from '../ui/checkbox'
 import { SystemAlert, SystemAlertGlobal } from './alerts-system'
+import { useTranslation } from 'react-i18next'
 
 export default memo(function AlertsButton({ system }: { system: SystemRecord }) {
 	const alerts = useStore($alerts)
@@ -54,6 +55,8 @@ function TheContent({
 }: {
 	data: { system: SystemRecord; alerts: AlertRecord[]; systemAlerts: AlertRecord[] }
 }) {
+	const { t } = useTranslation()
+
 	const [overwriteExisting, setOverwriteExisting] = useState<boolean | 'indeterminate'>(false)
 	const systems = $systems.get()
 
@@ -69,13 +72,13 @@ function TheContent({
 	return (
 		<>
 			<DialogHeader>
-				<DialogTitle className="text-xl">Alerts</DialogTitle>
+				<DialogTitle className="text-xl">{t('alerts.title')}</DialogTitle>
 				<DialogDescription>
-					See{' '}
+					{t('alerts.subtitle_1')}{' '}
 					<Link href="/settings/notifications" className="link">
-						notification settings
+						{t('alerts.notification_settings')}
 					</Link>{' '}
-					to configure how you receive alerts.
+					{t('alerts.subtitle_2')}
 				</DialogDescription>
 			</DialogHeader>
 			<Tabs defaultValue="system">
@@ -86,7 +89,7 @@ function TheContent({
 					</TabsTrigger>
 					<TabsTrigger value="global">
 						<GlobeIcon className="mr-1.5 h-3.5 w-3.5" />
-						All systems
+						{t('all_systems')}
 					</TabsTrigger>
 				</TabsList>
 				<TabsContent value="system">
@@ -107,7 +110,7 @@ function TheContent({
 							checked={overwriteExisting}
 							onCheckedChange={setOverwriteExisting}
 						/>
-						Overwrite existing alerts
+						{t('alerts.overwrite_existing_alerts')}
 					</label>
 					<div className="grid gap-3">
 						{data.map((d) => (

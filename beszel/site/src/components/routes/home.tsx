@@ -9,10 +9,15 @@ import { AlertRecord, SystemRecord } from '@/types'
 import { Input } from '../ui/input'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Link } from '../router'
+import { useTranslation } from 'react-i18next'
 
 const SystemsTable = lazy(() => import('../systems-table/systems-table'))
 
+const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0
+
 export default function () {
+	const { t } = useTranslation()
+
 	const hubVersion = useStore($hubVersion)
 	const [filter, setFilter] = useState<string>()
 	const alerts = useStore($alerts)
@@ -58,7 +63,7 @@ export default function () {
 				<Card className="mb-4">
 					<CardHeader className="pb-4 px-2 sm:px-6 max-sm:pt-5 max-sm:pb-1">
 						<div className="px-2 sm:px-1">
-							<CardTitle>Active Alerts</CardTitle>
+							<CardTitle>{t('home.active_alerts')}</CardTitle>
 						</div>
 					</CardHeader>
 					<CardContent className="max-sm:p-2">
@@ -73,11 +78,14 @@ export default function () {
 										>
 											<info.icon className="h-4 w-4" />
 											<AlertTitle>
-												{alert.sysname} {info.name}
+												{alert.sysname} {t(info.name)}
 											</AlertTitle>
 											<AlertDescription>
-												Exceeds {alert.value}
-												{info.unit} average in last {alert.min} min
+												{t('home.active_des', {
+													value: alert.value,
+													unit: info.unit,
+													minutes: alert.min,
+												})}
 											</AlertDescription>
 											<Link
 												href={`/system/${encodeURIComponent(alert.sysname!)}`}
@@ -96,17 +104,17 @@ export default function () {
 				<CardHeader className="pb-5 px-2 sm:px-6 max-sm:pt-5 max-sm:pb-1">
 					<div className="grid md:flex gap-3 w-full items-end">
 						<div className="px-2 sm:px-1">
-							<CardTitle className="mb-2.5">All Systems</CardTitle>
+							<CardTitle className="mb-2.5">{t('all_systems')}</CardTitle>
 							<CardDescription>
-								Updated in real time. Press{' '}
+								{t('home.subtitle_1')}{' '}
 								<kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-0.5 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-									<span className="text-xs">⌘</span>K
+									<span className="text-xs">{isMac ? '⌘' : 'Ctrl'}</span>K
 								</kbd>{' '}
-								to open the command palette.
+								{t('home.subtitle_2')}
 							</CardDescription>
 						</div>
 						<Input
-							placeholder="Filter..."
+							placeholder={t('filter')}
 							onChange={(e) => setFilter(e.target.value)}
 							className="w-full md:w-56 lg:w-80 ml-auto px-4"
 						/>

@@ -24,6 +24,7 @@ module.exports = {
 			},
 			screens: {
 				xs: '425px',
+				450: '450px',
 			},
 			colors: {
 				green: {
