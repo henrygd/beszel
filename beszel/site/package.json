@@ -58,5 +58,8 @@
 		"@nanostores/router": {
 			"nanostores": "^0.11.3"
 		}
+	},
+	"optionalDependencies": {
+		"@esbuild/linux-arm64": "^0.21.5"
 	}
 }
