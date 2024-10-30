@@ -10,7 +10,7 @@
     "home": {
         "active_alerts": "Active Alerts",
         "active_des": "Exceeds {{value}}{{unit}} average in last {{minutes}} minutes",
-        "subtitle_1": "Updated in real time. Click on a system to view information.",
+        "subtitle_1": "Updated in real time. Click on a system to view information."
     },
     "systems_table": {
         "system": "System",
