@@ -10,6 +10,7 @@ import { useState, useEffect } from "react"
 // import { Input } from '@/components/ui/input'
 import { useTranslation } from "react-i18next"
 import languages from "../../../lib/languages.json"
+import { setLang } from "@/lib/i18n"
 
 export default function SettingsProfilePage({ userSettings }: { userSettings: UserSettings }) {
 	const { t, i18n } = useTranslation()
@@ -54,7 +55,7 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 					<Label className="block" htmlFor="lang">
 						{t("settings.general.language.preferred_language")}
 					</Label>
-					<Select value={i18n.language} onValueChange={(lang: string) => i18n.changeLanguage(lang)}>
+					<Select value={i18n.language} onValueChange={(lang: string) => setLang(lang)}>
 						<SelectTrigger id="lang">
 							<SelectValue />
 						</SelectTrigger>

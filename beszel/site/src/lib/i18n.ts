@@ -1,37 +1,24 @@
 import i18n from "i18next"
 import { initReactI18next } from "react-i18next"
 
-import en from "../locales/en/translation.json"
-import es from "../locales/es/translation.json"
-import fr from "../locales/fr/translation.json"
-import de from "../locales/de/translation.json"
-import ru from "../locales/ru/translation.json"
-import zhHans from "../locales/zh-CN/translation.json"
-import zhHant from "../locales/zh-HK/translation.json"
-
 // Custom language detector to use localStorage
 const languageDetector: any = {
 	type: "languageDetector",
 	async: true,
 	detect: (callback: (lng: string) => void) => {
 		const savedLanguage = localStorage.getItem("i18nextLng")
-		const fallbackLanguage = (() => {
-			switch (navigator.language) {
-				case "zh-CN":
-				case "zh-SG":
-				case "zh-MY":
-				case "zh":
-				case "zh-Hans":
-					return "zh-CN"
-				case "zh-HK":
-				case "zh-TW":
-				case "zh-MO":
-				case "zh-Hant":
-					return "zh-HK"
-				default:
-					return navigator.language
-			}
-		})()
+		const zhVariantMap: Record<string, string> = {
+			"zh-CN": "zh-CN",
+			"zh-SG": "zh-CN",
+			"zh-MY": "zh-CN",
+			zh: "zh-CN",
+			"zh-Hans": "zh-CN",
+			"zh-HK": "zh-HK",
+			"zh-TW": "zh-HK",
+			"zh-MO": "zh-HK",
+			"zh-Hant": "zh-HK",
+		}
+		const fallbackLanguage = zhVariantMap[navigator.language] || navigator.language
 		callback(savedLanguage || fallbackLanguage)
 	},
 	init: () => {},
@@ -40,25 +27,39 @@ const languageDetector: any = {
 	},
 }
 
+// Function to dynamically load translation files
+async function loadMessages(locale: string) {
+	try {
+		const translation = await import(`../locales/${locale}/translation.json`)
+		return translation.default
+	} catch (error) {
+		console.error(`Error loading ${locale}`, error)
+		// Fallback to English if translation fails to load
+		const enTranslation = await import(`../locales/en/translation.json`)
+		return enTranslation.default
+	}
+}
+
 i18n
 	.use(languageDetector)
 	.use(initReactI18next)
 	.init({
-		resources: {
-			en: { translation: en },
-			es: { translation: es },
-			fr: { translation: fr },
-			de: { translation: de },
-			ru: { translation: ru },
-			// Chinese (Simplified)
-			"zh-CN": { translation: zhHans },
-			// Chinese (Traditional)
-			"zh-HK": { translation: zhHant },
-		},
+		resources: {}, // Start with empty resources
 		fallbackLng: "en",
 		interpolation: {
 			escapeValue: false,
 		},
 	})
+
+// Function to dynamically activate a language
+export async function setLang(locale: string) {
+	const messages = await loadMessages(locale)
+	i18n.addResourceBundle(locale, "translation", messages)
+	await i18n.changeLanguage(locale)
+}
+
+// Initialize with detected/saved language
+const initialLanguage = localStorage.getItem("i18nextLng") || navigator.language
+setLang(initialLanguage)
 
 export { i18n }

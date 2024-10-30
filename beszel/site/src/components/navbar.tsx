@@ -29,7 +29,7 @@ import {
 import { AddSystemButton } from "./add-system"
 import { useTranslation } from "react-i18next"
 
-const CommandPalette = lazy(() => import("./command-palette.tsx"))
+const CommandPalette = lazy(() => import("./command-palette"))
 
 const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0
 
@@ -38,7 +38,7 @@ export default function Navbar() {
 	return (
 		<div className="flex items-center h-14 md:h-16 bg-card px-4 pr-3 sm:px-6 border bt-0 rounded-md my-4">
 			<Link href="/" aria-label="Home" className={"p-2 pl-0"}>
-				<Logo className="h-[1.3em] fill-foreground" />
+				<Logo className="h-[1.15rem] md:h-[1.3em] fill-foreground" />
 			</Link>
 
 			<SearchButton />

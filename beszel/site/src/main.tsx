@@ -1,5 +1,6 @@
 import "./index.css"
-import { Suspense, lazy, useEffect, StrictMode } from "react"
+// import { Suspense, lazy, useEffect, StrictMode } from "react"
+import { Suspense, lazy, useEffect } from "react"
 import ReactDOM from "react-dom/client"
 import Home from "./components/routes/home.tsx"
 import { ThemeProvider } from "./components/theme-provider.tsx"
@@ -87,7 +88,9 @@ const Layout = () => {
 
 	return (
 		<>
-			<div className="container">{Navbar()}</div>
+			<div className="container">
+				<Navbar />
+			</div>
 			<div className="container mb-14 relative">
 				<App />
 				{copyContent && (

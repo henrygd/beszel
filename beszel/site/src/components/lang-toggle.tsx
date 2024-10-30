@@ -6,6 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useTranslation } from "react-i18next"
 import languages from "../lib/languages.json"
 import { cn } from "@/lib/utils"
+import { setLang } from "@/lib/i18n"
 
 export function LangToggle() {
 	const { i18n } = useTranslation()
@@ -27,7 +28,7 @@ export function LangToggle() {
 					<DropdownMenuItem
 						key={lang}
 						className={cn("pl-4", lang === i18n.language ? "font-bold" : "")}
-						onClick={() => i18n.changeLanguage(lang)}
+						onClick={() => setLang(lang)}
 					>
 						{label}
 					</DropdownMenuItem>
