@@ -27,7 +27,7 @@ export function LangToggle() {
 				{languages.map(({ lang, label }) => (
 					<DropdownMenuItem
 						key={lang}
-						className={cn("pl-4", lang === i18n.language ? "font-bold" : "")}
+						className={cn("pl-4 tracking-wide", lang === i18n.language ? "font-bold" : "")}
 						onClick={() => setLang(lang)}
 					>
 						{label}

@@ -1,5 +1,9 @@
 [
 	{
+		"lang": "de",
+		"label": "Deutsch"
+	},
+	{
 		"lang": "en",
 		"label": "English"
 	},
@@ -12,12 +16,24 @@
 		"label": "Français"
 	},
 	{
-		"lang": "de",
-		"label": "Deutsch"
+		"lang": "ja",
+		"label": "日本語"
+	},
+	{
+		"lang": "ko",
+		"label": "한국어"
+	},
+	{
+		"lang": "pt",
+		"label": "Português"
 	},
 	{
 		"lang": "ru",
 		"label": "Русский"
+	},
+	{
+		"lang": "vi",
+		"label": "Tiếng Việt"
 	},
 	{
 		"lang": "zh-CN",

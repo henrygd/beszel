@@ -133,7 +133,7 @@
 		"name": "名稱",
 		"host_ip": "主機/IP",
 		"port": "端口",
-		"public_key": "公鑰",
+		"key": "公鑰",
 		"click_to_copy": "點擊複製",
 		"command": "指令",
 		"add_system": "新增伺服器"

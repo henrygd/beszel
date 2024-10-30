@@ -46,8 +46,8 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 						</h3>
 						<p className="text-sm text-muted-foreground leading-relaxed">
 							{t("settings.general.language.subtitle_1")}{" "}
-							<a href="https://crowdin.com/project/beszel" className="link" target="_blank">
-								Crowdin
+							<a href="https://hosted.weblate.org/projects/beszel" className="link" target="_blank">
+								Weblate
 							</a>{" "}
 							{t("settings.general.language.subtitle_2")}
 						</p>

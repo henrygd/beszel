@@ -1,0 +1,199 @@
+{
+	"all_systems": "모든 시스템",
+	"filter": "필터...",
+	"copy": "복사",
+	"add": "추가",
+	"search": "검색",
+	"system": "시스템",
+	"systems": "시스템",
+	"cancel": "취소",
+	"continue": "계속",
+	"home": {
+		"active_alerts": "활성 경고",
+		"active_des": "지난 {{minutes}}분 동안 평균 {{value}}{{unit}} 초과",
+		"subtitle": "실시간으로 업데이트됩니다. 시스템을 클릭하여 정보를 확인하세요."
+	},
+	"systems_table": {
+		"system": "시스템",
+		"memory": "메모리",
+		"cpu": "CPU",
+		"disk": "디스크",
+		"net": "넷",
+		"agent": "에이젠",
+		"no_systems_found": "시스템을 찾을 수 없습니다.",
+		"open_menu": "메뉴 열기",
+		"resume": "재개",
+		"pause": "일시정지",
+		"copy_host": "호스트 복사",
+		"delete": "삭제",
+		"delete_confirm": "{{name}}을(를) 삭제하시겠습니까?",
+		"delete_confirm_des_1": "이 작업은 취소할 수 없습니다. 다음에 대한 모든 현재 기록이 영구적으로 삭제됩니다",
+		"delete_confirm_des_2": "데이터베이스에서."
+	},
+	"alerts": {
+		"title": "경고",
+		"subtitle_1": "참조",
+		"notification_settings": "알림 설정",
+		"subtitle_2": "경고를 받는 방법을 구성하세요.",
+		"overwrite_existing_alerts": "기존 경고 덮어쓰기",
+		"info": {
+			"status": "상태",
+			"status_des": "상태가 작동/중단 사이에서 전환될 때 트리거됩니다.",
+			"cpu_usage": "CPU 사용량",
+			"cpu_usage_des": "CPU 사용량이 임계값을 초과할 때 트리거됩니다.",
+			"memory_usage": "메모리 사용량",
+			"memory_usage_des": "메모리 사용량이 임계값을 초과할 때 트리거됩니다.",
+			"disk_usage": "디스크 사용량",
+			"disk_usage_des": "디스크 사용량이 임계값을 초과할 때 트리거됩니다.",
+			"bandwidth": "대역폭",
+			"bandwidth_des": "업로드/다운로드 합계가 임계값을 초과할 때 트리거됩니다.",
+			"temperature": "온도",
+			"temperature_des": "센서가 임계값을 초과할 때 트리거됩니다."
+		},
+		"average_exceeds": "평균 초과",
+		"for": "동안",
+		"minute": "분",
+		"minutes": "분"
+	},
+	"settings": {
+		"settings": "설정",
+		"subtitle": "디스플레이 및 알림 기본 설정을 관리합니다.",
+		"save_settings": "설정 저장",
+		"export_configuration": "구성 내보내기",
+		"general": {
+			"title": "일반",
+			"subtitle": "일반 애플리케이션 옵션을 변경합니다.",
+			"language": {
+				"title": "언어",
+				"subtitle_1": "번역 개선에 도움을 주고 싶으신가요? 확인해 보세요",
+				"subtitle_2": "자세한 내용을 확인하세요.",
+				"preferred_language": "선호하는 언어"
+			},
+			"chart_options": {
+				"title": "차트 옵션",
+				"subtitle": "차트 표시 옵션을 조정합니다.",
+				"default_time_period": "기본 시간 기간",
+				"default_time_period_des": "시스템을 볼 때 차트의 기본 시간 범위를 설정합니다."
+			}
+		},
+		"notifications": {
+			"title": "알림",
+			"subtitle_1": "경고 알림을 받는 방법을 구성합니다.",
+			"subtitle_2": "경고를 생성하는 위치를 찾고 계신가요? 벨 아이콘을 클릭하세요",
+			"subtitle_3": "시스템 테이블에서.",
+			"email": {
+				"title": "이메일 알림",
+				"please": "다음을 수행하세요",
+				"configure_an_SMTP_server": "SMTP 서버 구성",
+				"to_ensure_alerts_are_delivered": "경고가 전달되도록 하기 위해.",
+				"to_email_s": "받는 이메일",
+				"enter_email_address": "이메일 주소 입력...",
+				"des": "엔터 키나 쉼표를 사용하여 주소를 저장하세요. 이메일 알림을 비활성화하려면 비워두세요."
+			},
+			"webhook_push": {
+				"title": "웹훅 / 푸시 알림",
+				"des_1": "Beszel은",
+				"des_2": "를 사용하여 인기 있는 알림 서비스와 통합합니다.",
+				"add_url": "URL 추가"
+			}
+		},
+		"yaml_config": {
+			"short_title": "YAML 구성",
+			"title": "YAML 구성",
+			"subtitle": "현재 시스템 구성을 내보냅니다.",
+			"des_1": "시스템은",
+			"des_2": "파일에서 데이터 디렉토리 내에서 관리될 수 있습니다.",
+			"des_3": "재시작할 때마다 데이터베이스의 시스템이 파일에 정의된 시스템과 일치하도록 업데이트됩니다.",
+			"alert": {
+				"title": "주의 - 데이터 손실 가능성",
+				"des_1": "에 정의되지 않은 기존 시스템",
+				"des_2": "은(는) 삭제됩니다. 정기적으로 백업을 수행하세요."
+			}
+		},
+		"language": "언어"
+	},
+	"user_dm": {
+		"users": "사용자",
+		"logs": "로그",
+		"backups": "백업",
+		"auth_providers": "인증 제공자",
+		"log_out": "로그아웃"
+	},
+	"themes": {
+		"toggle_theme": "테마 전환",
+		"light": "라이트",
+		"dark": "다크",
+		"system": "시스템"
+	},
+	"add_system": {
+		"add_new_system": "새 시스템 추가",
+		"binary": "바이너리",
+		"dialog_des_1": "연결하려면 시스템에서 에이전트가 실행 중이어야 합니다. 아래의",
+		"dialog_des_2": "에이전트용을 복사하세요.",
+		"name": "이름",
+		"host_ip": "호스트 / IP",
+		"port": "포트",
+		"key": "공개 키",
+		"click_to_copy": "클릭하여 복사",
+		"command": "명령어",
+		"add_system": "시스템 추가"
+	},
+	"command": {
+		"search": "시스템 또는 설정 검색...",
+		"pages_settings": "페이지 / 설정",
+		"dashboard": "대시보드",
+		"documentation": "문서",
+		"SMTP_settings": "SMTP 설정",
+		"page": "페이지",
+		"admin": "관리자"
+	},
+	"monitor": {
+		"toggle_grid": "그리드 전환",
+		"average": "평균",
+		"max_1_min": "1분 최대",
+		"total_cpu_usage": "전체 CPU 사용량",
+		"cpu_des": "시스템 전체 CPU 사용률",
+		"docker_cpu_usage": "Docker CPU 사용량",
+		"docker_cpu_des": "컨테이너의 평균 CPU 사용률",
+		"total_memory_usage": "전체 메모리 사용량",
+		"memory_des": "기록된 시간의 정확한 사용률",
+		"docker_memory_usage": "Docker 메모리 사용량",
+		"docker_memory_des": "Docker 컨테이너의 메모리 사용량",
+		"disk_space": "디스크 공간",
+		"disk_des": "루트 파티션 사용량",
+		"disk_io": "디스크 I/O",
+		"disk_io_des": "루트 파일시스템의 처리량",
+		"bandwidth": "대역폭",
+		"bandwidth_des": "공용 인터페이스의 네트워크 트래픽",
+		"docker_network_io": "Docker 네트워크 I/O",
+		"docker_network_io_des": "Docker 컨테이너의 네트워크 트래픽",
+		"swap_usage": "스왑 사용량",
+		"swap_des": "시스템이 사용하는 스왑 공간",
+		"temperature": "온도",
+		"temperature_des": "시스템 센서의 온도",
+		"usage": "사용량",
+		"disk_usage_of": "디스크 사용량",
+		"throughput_of": "처리량",
+		"waiting_for": "표시할 충분한 기록을 기다리는 중"
+	},
+	"auth": {
+		"login": "계정에 로그인하세요",
+		"reset": "비밀번호 재설정을 위해 이메일 주소를 입력하세요",
+		"create": "관리자 계정을 생성하세요",
+		"create_account": "계정 생성",
+		"sign_in": "로그인",
+		"openid_des": "Beszel은 OpenID Connect와 많은 OAuth2 인증 제공자를 지원합니다.",
+		"please_view_the": "다음을 확인하세요",
+		"for_instructions": "지침을 확인하세요.",
+		"forgot_password": "비밀번호를 잊으셨나요?",
+		"reset_password": "비밀번호 재설정",
+		"command_line_instructions": "명령줄 지침",
+		"command_1": "관리자 계정의 비밀번호를 잃어버린 경우 다음 명령을 사용하여 재설정할 수 있습니다.",
+		"command_2": "그런 다음 백엔드에 로그인하여 사용자 테이블에서 사용자 계정 비밀번호를 재설정하세요."
+	},
+	"clipboard": {
+		"copied": "클립보드에 복사됨",
+		"title": "텍스트 복사",
+		"des": "자동 복사에는 보안 컨텍스트가 필요합니다."
+	}
+}

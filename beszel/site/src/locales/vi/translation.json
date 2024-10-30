@@ -133,7 +133,7 @@
 		"name": "Tên",
 		"host_ip": "Host / IP",
 		"port": "Cổng",
-		"public_key": "Khóa công khai",
+		"key": "Khóa",
 		"click_to_copy": "Nhấp để sao chép",
 		"command": "lệnh",
 		"add_system": "Thêm hệ thống"

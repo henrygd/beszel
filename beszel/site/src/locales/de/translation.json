@@ -18,7 +18,7 @@
 		"memory": "Speicher",
 		"cpu": "CPU",
 		"disk": "Festplatte",
-		"net": "Netzwerk",
+		"net": "Net",
 		"agent": "Agent",
 		"no_systems_found": "Keine Systeme gefunden.",
 		"open_menu": "Menü öffnen",
@@ -133,7 +133,7 @@
 		"name": "Name",
 		"host_ip": "Host / IP",
 		"port": "Port",
-		"public_key": "Öffentlicher Schlüssel",
+		"key": "Schlüssel",
 		"click_to_copy": "Zum Kopieren klicken",
 		"command": "Befehl",
 		"add_system": "System hinzufügen"

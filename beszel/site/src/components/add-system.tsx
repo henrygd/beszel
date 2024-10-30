@@ -123,7 +123,7 @@ export function AddSystemButton({ className }: { className?: string }) {
 							</div>
 							<div className="grid grid-cols-4 items-center gap-4 relative">
 								<Label htmlFor="pkey" className="text-right whitespace-pre">
-									{t("add_system.public_key")}
+									{t("add_system.key")}
 								</Label>
 								<Input readOnly id="pkey" value={publicKey} className="col-span-3" required></Input>
 								<div

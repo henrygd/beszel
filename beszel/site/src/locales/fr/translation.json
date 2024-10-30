@@ -135,7 +135,7 @@
 		"name": "Nom",
 		"host_ip": "Hôte / IP",
 		"port": "Port",
-		"public_key": "Clé publique",
+		"key": "Clé publique",
 		"click_to_copy": "Cliquez pour copier",
 		"command": "commande",
 		"add_system": "Ajouter un système"

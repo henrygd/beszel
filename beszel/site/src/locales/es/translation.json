@@ -133,7 +133,7 @@
 		"name": "Nombre",
 		"host_ip": "Host/IP",
 		"port": "Puerto",
-		"public_key": "Clave pública",
+		"key": "Clave pública",
 		"click_to_copy": "Haz clic para copiar",
 		"command": "comando",
 		"add_system": "Agregar sistema"

@@ -133,7 +133,7 @@
 		"name": "名称",
 		"host_ip": "主机/IP",
 		"port": "端口",
-		"public_key": "公钥",
+		"key": "公钥",
 		"click_to_copy": "点击复制",
 		"command": "命令",
 		"add_system": "添加服务器"

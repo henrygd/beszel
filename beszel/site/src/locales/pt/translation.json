@@ -1,0 +1,199 @@
+{
+	"all_systems": "Todos os Sistemas",
+	"filter": "Filtrar...",
+	"copy": "Copiar",
+	"add": "Adicionar",
+	"search": "Pesquisar",
+	"system": "Sistema",
+	"systems": "Sistemas",
+	"cancel": "Cancelar",
+	"continue": "Continuar",
+	"home": {
+		"active_alerts": "Alertas Ativos",
+		"active_des": "Excede {{value}}{{unit}} em média nos últimos {{minutes}} minutos",
+		"subtitle": "Atualizado em tempo real. Clique em um sistema para ver informações."
+	},
+	"systems_table": {
+		"system": "Sistema",
+		"memory": "Memória",
+		"cpu": "CPU",
+		"disk": "Disco",
+		"net": "Rede",
+		"agent": "Agente",
+		"no_systems_found": "Nenhum sistema encontrado.",
+		"open_menu": "Abrir menu",
+		"resume": "Retomar",
+		"pause": "Pausar",
+		"copy_host": "Copiar host",
+		"delete": "Excluir",
+		"delete_confirm": "Tem certeza que deseja excluir {{name}}?",
+		"delete_confirm_des_1": "Esta ação não pode ser desfeita. Isso excluirá permanentemente todos os registros atuais para",
+		"delete_confirm_des_2": "do banco de dados."
+	},
+	"alerts": {
+		"title": "Alertas",
+		"subtitle_1": "Veja",
+		"notification_settings": "configurações de notificação",
+		"subtitle_2": "para configurar como você recebe alertas.",
+		"overwrite_existing_alerts": "Sobrescrever alertas existentes",
+		"info": {
+			"status": "Status",
+			"status_des": "Dispara quando o status alterna entre ativo e inativo.",
+			"cpu_usage": "Uso de CPU",
+			"cpu_usage_des": "Dispara quando o uso de CPU excede um limite.",
+			"memory_usage": "Uso de Memória",
+			"memory_usage_des": "Dispara quando o uso de memória excede um limite.",
+			"disk_usage": "Uso de Disco",
+			"disk_usage_des": "Dispara quando o uso de qualquer disco excede um limite.",
+			"bandwidth": "Largura de Banda",
+			"bandwidth_des": "Dispara quando o total de upload/download excede um limite.",
+			"temperature": "Temperatura",
+			"temperature_des": "Dispara quando qualquer sensor excede um limite."
+		},
+		"average_exceeds": "Média excede",
+		"for": "Por",
+		"minute": "minuto",
+		"minutes": "minutos"
+	},
+	"settings": {
+		"settings": "Configurações",
+		"subtitle": "Gerenciar preferências de exibição e notificação.",
+		"save_settings": "Salvar Configurações",
+		"export_configuration": "Exportar configuração",
+		"general": {
+			"title": "Geral",
+			"subtitle": "Alterar opções gerais da aplicação.",
+			"language": {
+				"title": "Idioma",
+				"subtitle_1": "Quer nos ajudar a melhorar nossas traduções? Confira",
+				"subtitle_2": "para mais detalhes.",
+				"preferred_language": "Idioma Preferido"
+			},
+			"chart_options": {
+				"title": "Opções de gráfico",
+				"subtitle": "Ajustar opções de exibição para gráficos.",
+				"default_time_period": "Período padrão",
+				"default_time_period_des": "Define o intervalo de tempo padrão para gráficos quando um sistema é visualizado."
+			}
+		},
+		"notifications": {
+			"title": "Notificações",
+			"subtitle_1": "Configure como você recebe notificações de alerta.",
+			"subtitle_2": "Procurando onde criar alertas? Clique no sino",
+			"subtitle_3": "na tabela de sistemas.",
+			"email": {
+				"title": "Notificações por e-mail",
+				"please": "Por favor",
+				"configure_an_SMTP_server": "configure um servidor SMTP",
+				"to_ensure_alerts_are_delivered": "para garantir que os alertas sejam entregues.",
+				"to_email_s": "Para e-mail(s)",
+				"enter_email_address": "Digite o endereço de e-mail...",
+				"des": "Salve o endereço usando a tecla enter ou vírgula. Deixe em branco para desativar notificações por e-mail."
+			},
+			"webhook_push": {
+				"title": "Notificações Webhook / Push",
+				"des_1": "Beszel usa",
+				"des_2": "para integrar com serviços populares de notificação.",
+				"add_url": "Adicionar URL"
+			}
+		},
+		"yaml_config": {
+			"short_title": "Config YAML",
+			"title": "Configuração YAML",
+			"subtitle": "Exporte sua configuração atual de sistemas.",
+			"des_1": "Os sistemas podem ser gerenciados em um",
+			"des_2": "arquivo dentro do seu diretório de dados.",
+			"des_3": "A cada reinicialização, os sistemas no banco de dados serão atualizados para corresponder aos sistemas definidos no arquivo.",
+			"alert": {
+				"title": "Cuidado - possível perda de dados",
+				"des_1": "Sistemas existentes não definidos em",
+				"des_2": "serão excluídos. Faça backups regulares."
+			}
+		},
+		"language": "Idioma"
+	},
+	"user_dm": {
+		"users": "Usuários",
+		"logs": "Registros",
+		"backups": "Backups",
+		"auth_providers": "Provedores de Autenticação",
+		"log_out": "Sair"
+	},
+	"themes": {
+		"toggle_theme": "Alternar tema",
+		"light": "Claro",
+		"dark": "Escuro",
+		"system": "Sistema"
+	},
+	"add_system": {
+		"add_new_system": "Adicionar Novo Sistema",
+		"binary": "Binário",
+		"dialog_des_1": "O agente deve estar em execução no sistema para conectar. Copie o",
+		"dialog_des_2": "para o agente abaixo.",
+		"name": "Nome",
+		"host_ip": "Host / IP",
+		"port": "Porta",
+		"key": "Chave Pública",
+		"click_to_copy": "Clique para copiar",
+		"command": "comando",
+		"add_system": "Adicionar sistema"
+	},
+	"command": {
+		"search": "Pesquisar sistemas ou configurações...",
+		"pages_settings": "Páginas / Configurações",
+		"dashboard": "Painel",
+		"documentation": "Documentação",
+		"SMTP_settings": "Configurações SMTP",
+		"page": "Página",
+		"admin": "Admin"
+	},
+	"monitor": {
+		"toggle_grid": "Alternar grade",
+		"average": "Média",
+		"max_1_min": "Máx 1 min",
+		"total_cpu_usage": "Uso Total de CPU",
+		"cpu_des": "utilização de CPU em todo o sistema",
+		"docker_cpu_usage": "Uso de CPU do Docker",
+		"docker_cpu_des": "Utilização média de CPU dos contêineres",
+		"total_memory_usage": "Uso Total de Memória",
+		"memory_des": "Utilização precisa no momento registrado",
+		"docker_memory_usage": "Uso de Memória do Docker",
+		"docker_memory_des": "Uso de memória dos contêineres Docker",
+		"disk_space": "Espaço em Disco",
+		"disk_des": "Uso da partição raiz",
+		"disk_io": "E/S de Disco",
+		"disk_io_des": "Taxa de transferência do sistema de arquivos raiz",
+		"bandwidth": "Largura de Banda",
+		"bandwidth_des": "Tráfego de rede das interfaces públicas",
+		"docker_network_io": "E/S de Rede do Docker",
+		"docker_network_io_des": "Tráfego de rede dos contêineres Docker",
+		"swap_usage": "Uso de Swap",
+		"swap_des": "Espaço de swap usado pelo sistema",
+		"temperature": "Temperatura",
+		"temperature_des": "Temperaturas dos sensores do sistema",
+		"usage": "Uso",
+		"disk_usage_of": "Uso de disco de",
+		"throughput_of": "Taxa de transferência de",
+		"waiting_for": "Aguardando registros suficientes para exibir"
+	},
+	"auth": {
+		"login": "Por favor, faça login em sua conta",
+		"reset": "Digite o endereço de e-mail para redefinir a senha",
+		"create": "Por favor, crie uma conta de administrador",
+		"create_account": "Criar conta",
+		"sign_in": "Entrar",
+		"openid_des": "Beszel suporta OpenID Connect e vários provedores de autenticação OAuth2.",
+		"please_view_the": "Por favor, veja a",
+		"for_instructions": "para instruções.",
+		"forgot_password": "Esqueceu a senha?",
+		"reset_password": "Redefinir Senha",
+		"command_line_instructions": "Instruções de linha de comando",
+		"command_1": "Se você perdeu a senha da sua conta de administrador, você pode redefini-la usando o seguinte comando.",
+		"command_2": "Em seguida, faça login no backend e redefina a senha da sua conta de usuário na tabela de usuários."
+	},
+	"clipboard": {
+		"copied": "Copiado para a área de transferência",
+		"title": "Copiar texto",
+		"des": "A cópia automática requer um contexto seguro."
+	}
+}
