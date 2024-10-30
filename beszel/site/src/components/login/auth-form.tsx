@@ -16,6 +16,7 @@ import {
 import { useCallback, useState } from 'react'
 import { AuthMethodsList, OAuth2AuthConfig } from 'pocketbase'
 import { Link } from '../router'
+import { useTranslation } from 'react-i18next'
 
 const honeypot = v.literal('')
 const emailSchema = v.pipe(v.string(), v.email('Invalid email address.'))
@@ -63,6 +64,8 @@ export function UserAuthForm({
 	isFirstRun: boolean
 	authMethods: AuthMethodsList
 }) {
+	const { t } = useTranslation()
+
 	const [isLoading, setIsLoading] = useState<boolean>(false)
 	const [isOauthLoading, setIsOauthLoading] = useState<boolean>(false)
 	const [errors, setErrors] = useState<Record<string, string | undefined>>({})
@@ -224,7 +227,7 @@ export function UserAuthForm({
 								) : (
 									<LogInIcon className="mr-2 h-4 w-4" />
 								)}
-								{isFirstRun ? 'Create account' : 'Sign in'}
+								{isFirstRun ? t('auth.create_account') : t('auth.sign_in')}
 							</button>
 						</div>
 					</form>
@@ -317,16 +320,16 @@ export function UserAuthForm({
 							<DialogTitle>OAuth 2 / OIDC support</DialogTitle>
 						</DialogHeader>
 						<div className="text-primary/70 text-[0.95em] contents">
-							<p>Beszel supports OpenID Connect and many OAuth2 authentication providers.</p>
+							<p>{t('auth.openid_des')}</p>
 							<p>
-								Please view the{' '}
+								{t('please_view_the')}{' '}
 								<a
 									href="https://github.com/henrygd/beszel/blob/main/readme.md#oauth--oidc-integration"
 									className={cn(buttonVariants({ variant: 'link' }), 'p-0 h-auto')}
 								>
 									GitHub README
 								</a>{' '}
-								for instructions.
+								{t('for_instructions')}
 							</p>
 						</div>
 					</DialogContent>
@@ -338,7 +341,7 @@ export function UserAuthForm({
 					href="/forgot-password"
 					className="text-sm mx-auto hover:text-brand underline underline-offset-4 opacity-70 hover:opacity-100 transition-opacity"
 				>
-					Forgot password?
+					{t('auth.forgot_password')}
 				</Link>
 			)}
 		</div>

@@ -173,6 +173,22 @@
         "temperature_des": "系统传感器的温度",
         "usage": "使用率",
         "disk_usage_of": "的磁盘使用率",
-        "throughput_of": "的吞吐量"
+        "throughput_of": "的吞吐量",
+        "waiting_for": "等待足够的记录以显示"
+    },
+    "auth": {
+        "login": "请登入你的账户",
+        "reset": "输入邮箱来重设密码",
+        "create": "请创建管理员账户",
+        "create_account": "创建账户",
+        "sign_in": "登入",
+        "openid_des": "Beszel 支持 OpenID Connect 和许多 OAuth2 认证提供商。",
+        "please_view_the": "请检视",
+        "for_instructions": "以获取更多信息。",
+        "forgot_password": "忘记密码?",
+        "reset_password": "重设密码",
+        "command_line_instructions": "了解命令行指令",
+        "command_1": "如果您忘记了管理员账户的密码，可以使用以下命令重置。",
+        "command_2": "然后登录到后台，在用户表中重置您的用户账户密码。"
     }
 }

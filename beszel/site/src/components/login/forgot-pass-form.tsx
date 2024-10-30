@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils'
 import { pb } from '@/lib/stores'
 import { Dialog, DialogHeader } from '../ui/dialog'
 import { DialogContent, DialogTrigger, DialogTitle } from '../ui/dialog'
+import { useTranslation } from 'react-i18next'
 
 const showLoginFaliedToast = () => {
 	toast({
@@ -18,6 +19,7 @@ const showLoginFaliedToast = () => {
 }
 
 export default function ForgotPassword() {
+	const { t } = useTranslation()
 	const [isLoading, setIsLoading] = useState<boolean>(false)
 	const [email, setEmail] = useState('')
 
@@ -72,26 +74,25 @@ export default function ForgotPassword() {
 						) : (
 							<SendHorizonalIcon className="mr-2 h-4 w-4" />
 						)}
-						Reset password
+						{t('auth.reset_password')}
 					</button>
 				</div>
 			</form>
 			<Dialog>
 				<DialogTrigger asChild>
 					<button className="text-sm mx-auto hover:text-brand underline underline-offset-4 opacity-70 hover:opacity-100 transition-opacity">
-						Command line instructions
+						{t('auth.command_line_instructions')}
 					</button>
 				</DialogTrigger>
 				<DialogContent className="max-w-[33em]">
 					<DialogHeader>
-						<DialogTitle>Command line instructions</DialogTitle>
+						<DialogTitle>{t('auth.command_line_instructions')}</DialogTitle>
 					</DialogHeader>
 					<p className="text-primary/70 text-[0.95em] leading-relaxed">
-						If you've lost the password to your admin account, you may reset it using the following
-						command.
+						{t('auth.command_1')}
 					</p>
 					<p className="text-primary/70 text-[0.95em] leading-relaxed">
-						Then log into the backend and reset your user account password in the users table.
+						{t('auth.command_2')}
 					</p>
 					<code className="bg-muted rounded-sm py-0.5 px-2.5 mr-auto text-sm">
 						beszel admin update youremail@example.com newpassword

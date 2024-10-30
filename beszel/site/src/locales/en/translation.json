@@ -9,7 +9,7 @@
     "continue": "Continue",
     "home": {
         "active_alerts": "Active Alerts",
-        "active_des": "Exceeds {{value}}{{unit}} average in last {{minutes}} min",
+        "active_des": "Exceeds {{value}}{{unit}} average in last {{minutes}} minutes",
         "subtitle_1": "Updated in real time. Press",
         "subtitle_2": "to open the command palette."
     },
@@ -173,6 +173,22 @@
         "temperature_des": "Temperatures of system sensors",
         "usage": "Usage",
         "disk_usage_of": "Disk usage of",
-        "throughput_of": "Throughput of"
+        "throughput_of": "Throughput of",
+        "waiting_for": "Waiting for enough records to display"
+    },
+    "auth": {
+        "login": "Please sign in to your account",
+        "reset": "Enter email address to reset password",
+        "create": "Please create an admin account",
+        "create_account": "Create account",
+        "sign_in": "Sign in",
+        "openid_des": "Beszel supports OpenID Connect and many OAuth2 authentication providers.",
+        "please_view_the": "Please view the",
+        "for_instructions": "for instructions.",
+        "forgot_password": "Forgot password?",
+        "reset_password": "Reset Password",
+        "command_line_instructions": "Command line instructions",
+        "command_1": "If you've lost the password to your admin account, you may reset it using the following command.",
+        "command_2": "Then log into the backend and reset your user account password in the users table."
     }
 }

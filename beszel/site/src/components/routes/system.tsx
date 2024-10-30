@@ -112,6 +112,7 @@ export default function SystemDetail({ name }: { name: string }) {
 	const netCardRef = useRef<HTMLDivElement>(null)
 	const [containerFilterBar, setContainerFilterBar] = useState(null as null | JSX.Element)
 	const [bottomSpacing, setBottomSpacing] = useState(0)
+	const [chartLoading, setChartLoading] = useState(false)
 	const isLongerChart = chartTime !== '1h'
 
 	useEffect(() => {
@@ -178,10 +179,15 @@ export default function SystemDetail({ name }: { name: string }) {
 		if (!system.id || !chartTime) {
 			return
 		}
+		// loading: true
+		setChartLoading(true)
 		Promise.allSettled([
 			getStats<SystemStatsRecord>('system_stats', system, chartTime),
 			getStats<ContainerStatsRecord>('container_stats', system, chartTime),
 		]).then(([systemStats, containerStats]) => {
+			// loading: false
+			setChartLoading(false)
+
 			const { expectedInterval } = chartTimeData[chartTime]
 			// make new system stats
 			const ss_cache_key = `${system.id}_${chartTime}_system_stats`
@@ -291,6 +297,9 @@ export default function SystemDetail({ name }: { name: string }) {
 		return null
 	}
 
+	// if no data, show empty state
+	const dataEmpty = !chartLoading && chartData.systemStats.length === 0;
+
 	return (
 		<>
 			<div id="chartwrap" className="grid gap-4 mb-10 overflow-x-clip">
@@ -375,6 +384,7 @@ export default function SystemDetail({ name }: { name: string }) {
 				{/* main charts */}
 				<div className="grid lg:grid-cols-2 gap-4">
 					<ChartCard
+						empty={dataEmpty}
 						grid={grid}
 						title={t('monitor.total_cpu_usage')}
 						description={`${cpuMaxStore[0] && isLongerChart ? t('monitor.max_1_min') : t('monitor.average') } ${t('monitor.cpu_des')}`}
@@ -390,6 +400,7 @@ export default function SystemDetail({ name }: { name: string }) {
 
 					{containerFilterBar && (
 						<ChartCard
+							empty={dataEmpty}
 							grid={grid}
 							title={t('monitor.docker_cpu_usage')}
 							description={t('monitor.docker_cpu_des')}
@@ -400,6 +411,7 @@ export default function SystemDetail({ name }: { name: string }) {
 					)}
 
 					<ChartCard
+						empty={dataEmpty}
 						grid={grid}
 						title={t('monitor.total_memory_usage')}
 						description={t('monitor.memory_des')}
@@ -409,6 +421,7 @@ export default function SystemDetail({ name }: { name: string }) {
 
 					{containerFilterBar && (
 						<ChartCard
+							empty={dataEmpty}
 							grid={grid}
 							title={t('monitor.docker_memory_usage')}
 							description={t('monitor.docker_memory_des')}
@@ -418,7 +431,7 @@ export default function SystemDetail({ name }: { name: string }) {
 						</ChartCard>
 					)}
 
-					<ChartCard grid={grid} title={t('monitor.disk_space')} description={t('monitor.disk_des')}>
+					<ChartCard empty={dataEmpty} grid={grid} title={t('monitor.disk_space')} description={t('monitor.disk_des')}>
 						<DiskChart
 							chartData={chartData}
 							dataKey="stats.du"
@@ -427,6 +440,7 @@ export default function SystemDetail({ name }: { name: string }) {
 					</ChartCard>
 
 					<ChartCard
+						empty={dataEmpty}
 						grid={grid}
 						title={t('monitor.disk_io')}
 						description={t('monitor.disk_io_des')}
@@ -440,6 +454,7 @@ export default function SystemDetail({ name }: { name: string }) {
 					</ChartCard>
 
 					<ChartCard
+						empty={dataEmpty}
 						grid={grid}
 						title={t('monitor.bandwidth')}
 						cornerEl={isLongerChart ? <SelectAvgMax store={bandwidthMaxStore} /> : null}
@@ -460,6 +475,7 @@ export default function SystemDetail({ name }: { name: string }) {
 							})}
 						>
 							<ChartCard
+								empty={dataEmpty}
 								title={t('monitor.docker_network_io')}
 								description={t('monitor.docker_network_io_des')}
 								cornerEl={containerFilterBar}
@@ -471,13 +487,13 @@ export default function SystemDetail({ name }: { name: string }) {
 					)}
 
 					{(systemStats.at(-1)?.stats.su ?? 0) > 0 && (
-						<ChartCard grid={grid} title={t('monitor.swap_usage')} description={t('monitor.swap_des')}>
+						<ChartCard empty={dataEmpty} grid={grid} title={t('monitor.swap_usage')} description={t('monitor.swap_des')}>
 							<SwapChart chartData={chartData} />
 						</ChartCard>
 					)}
 
 					{systemStats.at(-1)?.stats.t && (
-						<ChartCard grid={grid} title={t('monitor.temperature')} description={t('monitor.temperature_des')}>
+						<ChartCard empty={dataEmpty} grid={grid} title={t('monitor.temperature')} description={t('monitor.temperature_des')}>
 							<TemperatureChart chartData={chartData} />
 						</ChartCard>
 					)}
@@ -490,6 +506,7 @@ export default function SystemDetail({ name }: { name: string }) {
 							return (
 								<div key={extraFsName} className="contents">
 									<ChartCard
+										empty={dataEmpty}
 										grid={grid}
 										title={`${extraFsName} ${t('monitor.usage')}`}
 										description={`${t('monitor.disk_usage_of')} ${extraFsName}`}
@@ -501,6 +518,7 @@ export default function SystemDetail({ name }: { name: string }) {
 										/>
 									</ChartCard>
 									<ChartCard
+										empty={dataEmpty}
 										grid={grid}
 										title={`${extraFsName} I/O`}
 										description={`${t('monitor.throughput_of')} ${extraFsName}`}
@@ -591,12 +609,14 @@ function ChartCard({
 	description,
 	children,
 	grid,
+	empty,
 	cornerEl,
 }: {
 	title: string
 	description: string
 	children: React.ReactNode
 	grid?: boolean
+	empty?: boolean,
 	cornerEl?: JSX.Element | null
 }) {
 	const { isIntersecting, ref } = useIntersectionObserver()
@@ -616,7 +636,7 @@ function ChartCard({
 				)}
 			</CardHeader>
 			<div className="pl-0 w-[calc(100%-1.6em)] h-52 relative">
-				{<Spinner />}
+				{<Spinner empty={empty} />}
 				{isIntersecting && children}
 			</div>
 		</Card>
