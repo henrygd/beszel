@@ -6,8 +6,11 @@ import { useStore } from '@nanostores/react'
 import ForgotPassword from './forgot-pass-form'
 import { $router } from '../router'
 import { AuthMethodsList } from 'pocketbase'
+import { useTranslation } from 'react-i18next'
 
 export default function () {
+	const { t } = useTranslation()
+
 	const page = useStore($router)
 	const [isFirstRun, setFirstRun] = useState(false)
 	const [authMethods, setAuthMethods] = useState<AuthMethodsList>()
@@ -30,11 +33,11 @@ export default function () {
 
 	const subtitle = useMemo(() => {
 		if (isFirstRun) {
-			return 'Please create an admin account'
+			return t('auth.create')
 		} else if (page?.path === '/forgot-password') {
-			return 'Enter email address to reset password'
+			return t('auth.reset')
 		} else {
-			return 'Please sign in to your account'
+			return t('auth.login')
 		}
 	}, [isFirstRun, page])
 

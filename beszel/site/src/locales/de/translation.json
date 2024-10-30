@@ -173,6 +173,22 @@
         "temperature_des": "Temperaturen der System-Sensoren",
         "usage": "Nutzung",
         "disk_usage_of": "Festplattennutzung von",
-        "throughput_of": "Durchsatz von"
+        "throughput_of": "Durchsatz von",
+        "waiting_for": "Warten auf genügend Datensätze zur Anzeige"
+    },
+    "auth": {
+        "login": "Bitte melden Sie sich bei Ihrem Konto an",
+        "reset": "E-Mail-Adresse eingeben, um das Passwort zurückzusetzen",
+        "create": "Bitte erstellen Sie ein Administratorkonto",
+        "create_account": "Konto erstellen",
+        "sign_in": "Anmelden",
+        "openid_des": "Beszel unterstützt OpenID Connect und viele OAuth2-Authentifizierungsanbieter.",
+        "please_view_the": "Bitte sehen Sie sich die",
+        "for_instructions": "für Anweisungen an.",
+        "forgot_password": "Passwort vergessen?",
+        "reset_password": "Passwort zurücksetzen",
+        "command_line_instructions": "Befehlszeilenanweisungen",
+        "command_1": "Wenn Sie das Passwort für Ihr Administratorkonto verloren haben, können Sie es mit dem folgenden Befehl zurücksetzen.",
+        "command_2": "Melden Sie sich dann im Backend an und setzen Sie das Passwort Ihres Benutzerkontos in der Benutzertabelle zurück."
     }
 }

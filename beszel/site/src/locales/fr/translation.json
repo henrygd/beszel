@@ -173,6 +173,22 @@
         "temperature_des": "Températures des capteurs du système",
         "usage": "Utilisation",
         "disk_usage_of": "Utilisation du disque de",
-        "throughput_of": "Débit de"
+        "throughput_of": "Débit de",
+        "waiting_for": "En attente de suffisamment d'enregistrements pour afficher"
+    },
+    "auth": {
+        "login": "Veuillez vous connecter à votre compte",
+        "reset": "Entrez l'adresse e-mail pour réinitialiser le mot de passe",
+        "create": "Veuillez créer un compte administrateur",
+        "create_account": "Créer un compte",
+        "sign_in": "Se connecter",
+        "openid_des": "Beszel prend en charge OpenID Connect et de nombreux fournisseurs d'authentification OAuth2.",
+        "please_view_the": "Veuillez consulter le",
+        "for_instructions": "pour les instructions.",
+        "forgot_password": "Mot de passe oublié ?",
+        "reset_password": "Réinitialiser le mot de passe",
+        "command_line_instructions": "Instructions en ligne de commande",
+        "command_1": "Si vous avez perdu le mot de passe de votre compte administrateur, vous pouvez le réinitialiser en utilisant la commande suivante.",
+        "command_2": "Ensuite, connectez-vous au backend et réinitialisez le mot de passe de votre compte utilisateur dans la table des utilisateurs."
     }
 }
