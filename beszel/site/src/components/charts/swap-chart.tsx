@@ -15,6 +15,10 @@ import { memo } from "react"
 export default memo(function SwapChart({ chartData }: { chartData: ChartData }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
+	if (chartData.systemStats.length === 0) {
+		return null
+	}
+
 	return (
 		<div>
 			<ChartContainer

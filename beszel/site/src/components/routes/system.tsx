@@ -100,7 +100,7 @@ export default function SystemDetail({ name }: { name: string }) {
 	const netCardRef = useRef<HTMLDivElement>(null)
 	const [containerFilterBar, setContainerFilterBar] = useState(null as null | JSX.Element)
 	const [bottomSpacing, setBottomSpacing] = useState(0)
-	const [chartLoading, setChartLoading] = useState(false)
+	const [chartLoading, setChartLoading] = useState(true)
 	const isLongerChart = chartTime !== "1h"
 
 	useEffect(() => {
@@ -281,7 +281,7 @@ export default function SystemDetail({ name }: { name: string }) {
 		return null
 	}
 
-	// if no data, show empty state
+	// if no data, show empty message
 	const dataEmpty = !chartLoading && chartData.systemStats.length === 0
 
 	return (
@@ -594,6 +594,7 @@ function ChartCard({
 	cornerEl?: JSX.Element | null
 }) {
 	const { isIntersecting, ref } = useIntersectionObserver()
+	const { t } = useTranslation()
 
 	return (
 		<Card className={cn("pb-2 sm:pb-4 odd:last-of-type:col-span-full", { "col-span-full": !grid })} ref={ref}>
@@ -603,7 +604,7 @@ function ChartCard({
 				{cornerEl && <div className="relative py-1 block sm:w-44 sm:absolute sm:top-2.5 sm:right-3.5">{cornerEl}</div>}
 			</CardHeader>
 			<div className="pl-0 w-[calc(100%-1.6em)] h-52 relative">
-				{<Spinner empty={empty} />}
+				{<Spinner msg={empty ? t("monitor.waiting_for") : undefined} />}
 				{isIntersecting && children}
 			</div>
 		</Card>

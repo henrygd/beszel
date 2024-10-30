@@ -1,12 +1,13 @@
 import { LoaderCircleIcon } from "lucide-react"
-import { useTranslation } from "react-i18next"
 
-export default function (props: { empty?: boolean }) {
-	const { t } = useTranslation()
+export default function ({ msg }: { msg?: string }) {
 	return (
 		<div className="flex flex-col items-center justify-center h-full absolute inset-0">
-			<LoaderCircleIcon className="animate-spin h-10 w-10 opacity-60" />
-			{props.empty && <p className={"opacity-60 mt-2"}>{t("monitor.waiting_for")}</p>}
+			{msg ? (
+				<p className={"opacity-60 mb-2 text-center px-4"}>{msg}</p>
+			) : (
+				<LoaderCircleIcon className="animate-spin h-10 w-10 opacity-60" />
+			)}
 		</div>
 	)
 }

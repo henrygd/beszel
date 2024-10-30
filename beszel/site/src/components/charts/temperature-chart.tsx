@@ -22,6 +22,10 @@ import { memo, useMemo } from "react"
 export default memo(function TemperatureChart({ chartData }: { chartData: ChartData }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
+	if (chartData.systemStats.length === 0) {
+		return null
+	}
+
 	/** Format temperature data for chart and assign colors */
 	const newChartData = useMemo(() => {
 		const newChartData = { data: [], colors: {} } as {

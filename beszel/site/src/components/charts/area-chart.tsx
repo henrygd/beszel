@@ -68,6 +68,10 @@ export default memo(function AreaChartDefault({
 
 	// console.log('Rendered at', new Date())
 
+	if (chartData.systemStats.length === 0) {
+		return null
+	}
+
 	return (
 		<div>
 			<ChartContainer

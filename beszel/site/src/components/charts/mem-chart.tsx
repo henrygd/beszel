@@ -12,6 +12,10 @@ export default memo(function MemChart({ chartData }: { chartData: ChartData }) {
 
 	// console.log('rendered at', new Date())
 
+	if (chartData.systemStats.length === 0) {
+		return null
+	}
+
 	return (
 		<div>
 			{/* {!yAxisSet && <Spinner />} */}

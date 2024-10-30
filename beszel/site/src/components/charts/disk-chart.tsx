@@ -24,6 +24,10 @@ export default memo(function DiskChart({
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
+	if (chartData.systemStats.length === 0) {
+		return null
+	}
+
 	return (
 		<div>
 			<ChartContainer

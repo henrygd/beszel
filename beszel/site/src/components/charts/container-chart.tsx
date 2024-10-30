@@ -125,6 +125,10 @@ export default memo(function ContainerChart({
 
 	// console.log('rendered at', new Date())
 
+	if (containerData.length === 0) {
+		return null
+	}
+
 	return (
 		<div>
 			<ChartContainer
