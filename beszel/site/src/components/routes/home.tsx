@@ -13,8 +13,6 @@ import { useTranslation } from 'react-i18next'
 
 const SystemsTable = lazy(() => import('../systems-table/systems-table'))
 
-const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0
-
 export default function () {
 	const { t } = useTranslation()
 
@@ -105,18 +103,12 @@ export default function () {
 					<div className="grid md:flex gap-3 w-full items-end">
 						<div className="px-2 sm:px-1">
 							<CardTitle className="mb-2.5">{t('all_systems')}</CardTitle>
-							<CardDescription>
-								{t('home.subtitle_1')}{' '}
-								<kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-0.5 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-									<span className="text-xs">{isMac ? '⌘' : 'Ctrl'}</span>K
-								</kbd>{' '}
-								{t('home.subtitle_2')}
-							</CardDescription>
+							<CardDescription>{t('home.subtitle_1')}</CardDescription>
 						</div>
 						<Input
 							placeholder={t('filter')}
 							onChange={(e) => setFilter(e.target.value)}
-							className="w-full md:w-56 lg:w-80 ml-auto px-4"
+							className="w-full md:w-56 lg:w-72 ml-auto px-4"
 						/>
 					</div>
 				</CardHeader>
