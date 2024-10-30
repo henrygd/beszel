@@ -8,9 +8,15 @@
 	"systems": "伺服器",
 	"cancel": "取消",
 	"continue": "繼續",
+	"minutes_one": "{{count}} 分鐘",
+	"minutes_other": "{{count}} 分鐘",
+	"hours_one": "{{count}} 小時",
+	"hours_other": "{{count}} 小時",
+	"days_other": "{{count}} 天",
+	"weeks_one": "{{count}} 週",
 	"home": {
 		"active_alerts": "活動警報",
-		"active_des": "在過去 {{minutes}} 分鐘內超過 {{value}}{{unit}} 平均值",
+		"active_des": "超過 {{value}}{{unit}} 在過去 ",
 		"subtitle": "即時更新。點擊系統以查看資訊。"
 	},
 	"systems_table": {
@@ -51,9 +57,7 @@
 			"temperature_des": "當任何感應器超過閾值時觸發。"
 		},
 		"average_exceeds": "平均值超過",
-		"for": "持續",
-		"minute": "分鐘",
-		"minutes": "分鐘"
+		"for": "持續"
 	},
 	"settings": {
 		"settings": "設定",

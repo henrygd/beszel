@@ -8,9 +8,17 @@
 	"systems": "Системы",
 	"cancel": "Отмена",
 	"continue": "Продолжить",
+	"minutes_one": "{{count}} минута",
+	"minutes_other": "{{count}} минут",
+	"hours_one": "{{count}} час",
+	"hours_few": "{{count}} часа",
+	"hours_many": "{{count}} часов",
+	"hours_other": "{{count}} часов",
+	"days_other": "{{count}} дней",
+	"weeks_one": "{{count}} неделя",
 	"home": {
 		"active_alerts": "Активные предупреждения",
-		"active_des": "Превышает {{value}}{{unit}} в среднем за последние {{minutes}} минут",
+		"active_des": "Превышает {{value}}{{unit}} за последние ",
 		"subtitle": "Обновляется в реальном времени. Нажмите на систему для просмотра информации."
 	},
 	"systems_table": {
@@ -51,9 +59,7 @@
 			"temperature_des": "Срабатывает, когда любой датчик превышает порог."
 		},
 		"average_exceeds": "Среднее превышает",
-		"for": "За",
-		"minute": "минуту",
-		"minutes": "минут"
+		"for": "За"
 	},
 	"settings": {
 		"settings": "Настройки",

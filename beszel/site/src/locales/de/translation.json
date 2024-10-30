@@ -8,9 +8,15 @@
 	"systems": "Systeme",
 	"cancel": "Abbrechen",
 	"continue": "Fortsetzen",
+	"minutes_one": "{{count}} Minute",
+	"minutes_other": "{{count}} Minuten",
+	"hours_one": "{{count}} Stunde",
+	"hours_other": "{{count}} Stunden",
+	"days_other": "{{count}} Tage",
+	"weeks_one": "{{count}} Woche",
 	"home": {
 		"active_alerts": "Aktive Warnungen",
-		"active_des": "Überschreitet {{value}}{{unit}} Durchschnitt in den letzten {{minutes}} Minuten",
+		"active_des": "Überschreitet {{value}}{{unit}} in den letzten ",
 		"subtitle": "Wird in Echtzeit aktualisiert. Klicken Sie auf ein System, um Informationen anzuzeigen."
 	},
 	"systems_table": {
@@ -51,9 +57,7 @@
 			"temperature_des": "Löst aus, wenn ein Sensor einen Schwellenwert überschreitet."
 		},
 		"average_exceeds": "Durchschnitt überschreitet",
-		"for": "Für",
-		"minute": "Minute",
-		"minutes": "Minuten"
+		"for": "Für"
 	},
 	"settings": {
 		"settings": "Einstellungen",

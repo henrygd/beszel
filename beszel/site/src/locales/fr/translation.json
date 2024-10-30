@@ -8,9 +8,15 @@
 	"systems": "Systèmes",
 	"cancel": "Annuler",
 	"continue": "Continuer",
+	"minutes_one": "{{count}} minute",
+	"minutes_other": "{{count}} minutes",
+	"hours_one": "{{count}} heure",
+	"hours_other": "{{count}} heures",
+	"days_other": "{{count}} jours",
+	"weeks_one": "{{count}} semaine",
 	"home": {
 		"active_alerts": "Alertes actives",
-		"active_des": "Dépasse {{value}}{{unit}} en moyenne au cours des {{minutes}} dernières minutes",
+		"active_des": "Dépasse {{value}}{{unit}} dans les derniers ",
 		"subtitle": "Mis à jour en temps réel. Cliquez sur un système pour voir les informations.",
 		"subtitle_1": "Mis à jour en temps réel. Appuyez sur",
 		"subtitle_2": "pour ouvrir la palette de commandes."
@@ -53,9 +59,7 @@
 			"temperature_des": "Déclenchement lorsque n'importe quel capteur dépasse un seuil."
 		},
 		"average_exceeds": "La moyenne dépasse",
-		"for": "Pour",
-		"minute": "minute",
-		"minutes": "minutes"
+		"for": "Pour"
 	},
 	"settings": {
 		"settings": "Paramètres",

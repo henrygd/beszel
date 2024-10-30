@@ -8,9 +8,16 @@
 	"systems": "服务器",
 	"cancel": "取消",
 	"continue": "继续",
+	"minutes_one": "{{count}} 分钟",
+	"minutes_other": "{{count}} 分钟",
+	"hours_one": "{{count}} 小时",
+	"hours_other": "{{count}} 小时",
+	"days_other": "{{count}} 天",
+	"weeks_one": "{{count}} 周",
+	"weeks_other": "{{count}} 周",
 	"home": {
 		"active_alerts": "活动警报",
-		"active_des": "在过去 {{minutes}} 分钟内超过 {{value}}{{unit}} 平均值",
+		"active_des": "超过 {{value}}{{unit}} 在过去 ",
 		"subtitle": "实时更新。点击系统以查看信息。"
 	},
 	"systems_table": {
@@ -51,9 +58,7 @@
 			"temperature_des": "当任何传感器超过阈值时触发。"
 		},
 		"average_exceeds": "平均值超过",
-		"for": "持续",
-		"minute": "分钟",
-		"minutes": "分钟"
+		"for": "持续"
 	},
 	"settings": {
 		"settings": "设置",

@@ -8,9 +8,15 @@
 	"systems": "الأنظمة",
 	"cancel": "إلغاء",
 	"continue": "متابعة",
+	"minutes_one": "{{count}} دقيقة",
+	"minutes_other": "{{count}} دقائق",
+	"hours_one": "{{count}} ساعة",
+	"hours_other": "{{count}} ساعات",
+	"days_other": "{{count}} أيام",
+	"weeks_one": "{{count}} أسبوع",
 	"home": {
 		"active_alerts": "التنبيهات النشطة",
-		"active_des": "يتجاوز متوسط {{value}}{{unit}} في آخر {{minutes}} دقيقة",
+		"active_des": "يتجاوز {{value}}{{unit}} في آخر ",
 		"subtitle": "يتم التحديث في الوقت الفعلي. انقر على نظام لعرض المعلومات."
 	},
 	"systems_table": {
@@ -49,9 +55,7 @@
 			"bandwidth_des": "يتم التشغيل عندما يتجاوز استخدام الشبكة الحد."
 		},
 		"average_exceeds": "المتوسط يتجاوز",
-		"for": "لمدة",
-		"minute": "دقيقة",
-		"minutes": "دقائق"
+		"for": "لمدة"
 	},
 	"settings": {
 		"settings": "الإعدادات",
@@ -86,7 +90,7 @@
 				"to_ensure_alerts_are_delivered": "لضمان تسليم التنبيهات.",
 				"to_email_s": "إلى البريد الإلكتروني",
 				"enter_email_address": "أدخل عنوان البريد الإلكتروني...",
-				"des": "احفظ العنوان باستخدام مفتاح الإدخال أو الفاصلة. اتركه فارغاً لتعطيل إشعارات البريد الإلكتروني."
+				"des": "احفظ العنوان باستخدام مفتاح الإدخال أو الفاصلة. اتركه فا��غاً لتعطيل إشعارات البريد الإلكتروني."
 			},
 			"webhook_push": {
 				"title": "إشعارات Webhook / Push",

@@ -8,9 +8,15 @@
 	"systems": "Sistemas",
 	"cancel": "Cancelar",
 	"continue": "Continuar",
+	"minutes_one": "{{count}} minuto",
+	"minutes_other": "{{count}} minutos",
+	"hours_one": "{{count}} hora",
+	"hours_other": "{{count}} horas",
+	"days_other": "{{count}} dias",
+	"weeks_one": "{{count}} semana",
 	"home": {
 		"active_alerts": "Alertas Ativos",
-		"active_des": "Excede {{value}}{{unit}} em média nos últimos {{minutes}} minutos",
+		"active_des": "Excede {{value}}{{unit}} nos últimos ",
 		"subtitle": "Atualizado em tempo real. Clique em um sistema para ver informações."
 	},
 	"systems_table": {
@@ -51,9 +57,7 @@
 			"temperature_des": "Dispara quando qualquer sensor excede um limite."
 		},
 		"average_exceeds": "Média excede",
-		"for": "Por",
-		"minute": "minuto",
-		"minutes": "minutos"
+		"for": "Por"
 	},
 	"settings": {
 		"settings": "Configurações",

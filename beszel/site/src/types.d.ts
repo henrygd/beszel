@@ -138,7 +138,7 @@ export interface ChartTimeData {
 	[key: string]: {
 		type: "1m" | "10m" | "20m" | "120m" | "480m"
 		expectedInterval: number
-		label: string
+		label: () => string
 		ticks?: number
 		format: (timestamp: string) => string
 		getOffset: (endTime: Date) => Date

@@ -82,7 +82,9 @@ export default function () {
 												{t("home.active_des", {
 													value: alert.value,
 													unit: info.unit,
-													minutes: alert.min,
+												})}
+												{t("minutes", {
+													count: alert.min,
 												})}
 											</AlertDescription>
 											<Link

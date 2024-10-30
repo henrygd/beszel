@@ -8,9 +8,16 @@
 	"systems": "システム一覧",
 	"cancel": "キャンセル",
 	"continue": "続行",
+	"minutes_one": "{{count}}分",
+	"minutes_other": "{{count}}分",
+	"hours_one": "{{count}}時間",
+	"hours_other": "{{count}}時間",
+	"days_other": "{{count}}日",
+	"weeks_one": "{{count}}週間",
+	"weeks_other": "{{count}}週間",
 	"home": {
 		"active_alerts": "アクティブなアラート",
-		"active_des": "過去{{minutes}}分間の平均が{{value}}{{unit}}を超過",
+		"active_des": "過去{{value}}{{unit}}を超過",
 		"subtitle": "リアルタイムで更新されます。システムをクリックして情報を表示します。"
 	},
 	"systems_table": {
@@ -51,9 +58,7 @@
 			"temperature_des": "いずれかのセンサーが閾値を超えた時にトリガー。"
 		},
 		"average_exceeds": "平均値が超過",
-		"for": "期間",
-		"minute": "分",
-		"minutes": "分"
+		"for": "期間"
 	},
 	"settings": {
 		"settings": "設定",

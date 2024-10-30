@@ -8,9 +8,16 @@
 	"systems": "시스템",
 	"cancel": "취소",
 	"continue": "계속",
+	"minutes_one": "{{count}}분",
+	"minutes_other": "{{count}}분",
+	"hours_one": "{{count}}시간",
+	"hours_other": "{{count}}시간",
+	"days_other": "{{count}}일",
+	"weeks_one": "{{count}}주",
+	"weeks_other": "{{count}}주",
 	"home": {
 		"active_alerts": "활성 경고",
-		"active_des": "지난 {{minutes}}분 동안 평균 {{value}}{{unit}} 초과",
+		"active_des": "{{value}}{{unit}} 초과 지난",
 		"subtitle": "실시간으로 업데이트됩니다. 시스템을 클릭하여 정보를 확인하세요."
 	},
 	"systems_table": {
@@ -51,9 +58,7 @@
 			"temperature_des": "센서가 임계값을 초과할 때 트리거됩니다."
 		},
 		"average_exceeds": "평균 초과",
-		"for": "동안",
-		"minute": "분",
-		"minutes": "분"
+		"for": "동안"
 	},
 	"settings": {
 		"settings": "설정",

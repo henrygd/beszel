@@ -184,7 +184,7 @@ function AlertContent({ data }: { data: AlertData }) {
 				})}
 			>
 				<div className="grid gap-1 select-none">
-					<p className="font-semibold flex gap-3 items-center capitalize">
+					<p className="font-semibold flex gap-3 items-center">
 						<Icon className="h-4 w-4 opacity-85" /> {t(data.alert.name)}
 					</p>
 					{!showSliders && <span className="block text-sm text-muted-foreground">{t(data.alert.desc)}</span>}
@@ -223,7 +223,9 @@ function AlertContent({ data }: { data: AlertData }) {
 						<div>
 							<p id={`t${key}`} className="text-sm block h-8">
 								{t("alerts.for")} <strong className="text-foreground">{min}</strong>{" "}
-								{min > 1 ? t("alerts.minutes") : t("alerts.minute")}
+								{t("minutes", {
+									count: min,
+								}).replace(String(min), "")}
 							</p>
 							<div className="flex gap-3">
 								<Slider

@@ -8,9 +8,15 @@
 	"systems": "Systems",
 	"cancel": "Cancel",
 	"continue": "Continue",
+	"minutes_one": "{{count}} minute",
+	"minutes_other": "{{count}} minutes",
+	"hours_one": "{{count}} hour",
+	"hours_other": "{{count}} hours",
+	"days_other": "{{count}} days",
+	"weeks_one": "{{count}} week",
 	"home": {
 		"active_alerts": "Active Alerts",
-		"active_des": "Exceeds {{value}}{{unit}} average in last {{minutes}} min",
+		"active_des": "Exceeds {{value}}{{unit}} in last ",
 		"subtitle": "Updated in real time. Click on a system to view information."
 	},
 	"systems_table": {
@@ -51,9 +57,7 @@
 			"temperature_des": "Triggers when any sensor exceeds a threshold."
 		},
 		"average_exceeds": "Average exceeds",
-		"for": "For",
-		"minute": "minute",
-		"minutes": "minutes"
+		"for": "For"
 	},
 	"settings": {
 		"settings": "Settings",

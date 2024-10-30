@@ -85,8 +85,8 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 						</SelectTrigger>
 						<SelectContent>
 							{Object.entries(chartTimeData).map(([value, { label }]) => (
-								<SelectItem key={label} value={value}>
-									{label}
+								<SelectItem key={value} value={value}>
+									{label()}
 								</SelectItem>
 							))}
 						</SelectContent>
