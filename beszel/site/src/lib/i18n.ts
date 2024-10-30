@@ -1,5 +1,6 @@
 import i18n from "i18next"
 import { initReactI18next } from "react-i18next"
+import enTranslations from "../locales/en/translation.json"
 
 // Custom language detector to use localStorage
 const languageDetector: any = {
@@ -30,13 +31,14 @@ const languageDetector: any = {
 // Function to dynamically load translation files
 async function loadMessages(locale: string) {
 	try {
+		if (locale === "en") {
+			return enTranslations
+		}
 		const translation = await import(`../locales/${locale}/translation.json`)
 		return translation.default
 	} catch (error) {
 		console.error(`Error loading ${locale}`, error)
-		// Fallback to English if translation fails to load
-		const enTranslation = await import(`../locales/en/translation.json`)
-		return enTranslation.default
+		return enTranslations
 	}
 }
 
@@ -44,7 +46,11 @@ i18n
 	.use(languageDetector)
 	.use(initReactI18next)
 	.init({
-		resources: {}, // Start with empty resources
+		resources: {
+			en: {
+				translation: enTranslations,
+			},
+		},
 		fallbackLng: "en",
 		interpolation: {
 			escapeValue: false,
