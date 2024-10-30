@@ -5,6 +5,10 @@ A lightweight server resource monitoring hub with historical data, docker stats,
 [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/henrygd/beszel-agent/0.1.0?logo=docker&label=agent%20image%20size)](https://hub.docker.com/r/henrygd/beszel-agent)
 [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/henrygd/beszel/0.1.0?logo=docker&label=hub%20image%20size)](https://hub.docker.com/r/henrygd/beszel)
 
+<!-- <a href="https://hosted.weblate.org/engage/beszel/">
+<img src="https://hosted.weblate.org/widget/beszel/svg-badge.svg" alt="Translation status" />
+</a> -->
+
 ![Screenshot of the hub](https://henrygd-assets.b-cdn.net/beszel/screenshot.png)
 
 ## Features
@@ -55,9 +59,7 @@ You can install the hub and agent as single binaries or using Docker.
 
 The agent uses host network mode to access network interface stats, which automatically exposes the port. Change the port using an environment variable if needed.
 
-If you don't require network stats, remove that line from the compose file and map the port manually.
-
-> **Note**: If disk I/O stats are missing or incorrect, try using the `FILESYSTEM` environment variable ([instructions here](#finding-the-correct-filesystem)). Check agent logs to see the current device being used.
+If you don't need network stats, remove that line from the compose file and map the port manually.
 
 ### Binary
 
@@ -317,6 +319,14 @@ GOOS=freebsd GOARCH=arm64 CGO_ENABLED=0 go build -ldflags "-w -s" .
 ```
 
 See a list of valid options by running `go tool dist list`.
+
+## Contributing
+
+Contributions are welcome, but it's a good idea to check with us first in a discussion / issue if you plan on doing anything significant.
+
+We use [Weblate](https://hosted.weblate.org/engage/beszel/) to manage translations. New languages or improvements to existing translations are appreciated!
+
+We'll have more helpful information about contributing to Beszel in the near future.
 
 ## License
 

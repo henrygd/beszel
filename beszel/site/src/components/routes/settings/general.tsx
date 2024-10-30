@@ -46,7 +46,12 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 						</h3>
 						<p className="text-sm text-muted-foreground leading-relaxed">
 							{t("settings.general.language.subtitle_1")}{" "}
-							<a href="https://hosted.weblate.org/projects/beszel" className="link" target="_blank">
+							<a
+								href="https://hosted.weblate.org/engage/beszel/"
+								className="link"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
 								Weblate
 							</a>{" "}
 							{t("settings.general.language.subtitle_2")}
