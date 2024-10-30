@@ -1,0 +1,177 @@
+{
+	"all_systems": "Tất cả hệ thống",
+	"filter": "Lọc...",
+	"copy": "Sao chép",
+	"add": "Thêm",
+	"system": "Hệ thống",
+	"systems": "Các hệ thống",
+	"cancel": "Hủy",
+	"continue": "Tiếp tục",
+	"home": {
+		"active_alerts": "Cảnh báo đang hoạt động",
+		"active_des": "Vượt quá {{value}}{{unit}} trung bình trong {{minutes}} phút cuối",
+		"subtitle_1": "Cập nhật theo thời gian thực. Nhấp vào hệ thống để xem thông tin."
+	},
+	"systems_table": {
+		"system": "Hệ thống",
+		"memory": "Bộ nhớ",
+		"cpu": "CPU",
+		"disk": "Ổ đĩa",
+		"net": "Mạng",
+		"agent": "Agent",
+		"no_systems_found": "Không tìm thấy hệ thống nào.",
+		"open_menu": "Mở menu",
+		"resume": "Tiếp tục",
+		"pause": "Tạm dừng",
+		"copy_host": "Sao chép host",
+		"delete": "Xóa",
+		"delete_confirm": "Bạn có chắc chắn muốn xóa {{name}}?",
+		"delete_confirm_des_1": "Hành động này không thể hoàn tác. Điều này sẽ xóa vĩnh viễn tất cả bản ghi hiện tại cho",
+		"delete_confirm_des_2": "khỏi cơ sở dữ liệu."
+	},
+	"alerts": {
+		"title": "Cảnh báo",
+		"subtitle_1": "Xem",
+		"notification_settings": "cài đặt thông báo",
+		"subtitle_2": "để cấu hình cách bạn nhận cảnh báo.",
+		"overwrite_existing_alerts": "Ghi đè lên cảnh báo hiện có",
+		"info": {
+			"status": "Trạng thái",
+			"status_des": "Kích hoạt khi trạng thái chuyển đổi giữa hoạt động và ngừng hoạt động.",
+			"cpu_usage": "Sử dụng CPU",
+			"cpu_usage_des": "Kích hoạt khi mức sử dụng CPU vượt quá ngưỡng.",
+			"memory_usage": "Sử dụng bộ nhớ",
+			"memory_usage_des": "Kích hoạt khi mức sử dụng bộ nhớ vượt quá ngưỡng.",
+			"disk_usage": "Sử dụng ổ đĩa",
+			"disk_usage_des": "Kích hoạt khi mức sử dụng của bất kỳ ổ đĩa nào vượt quá ngưỡng.",
+			"bandwidth": "Băng thông",
+			"bandwidth_des": "Kích hoạt khi tổng lưu lượng up/down vượt quá ngưỡng.",
+			"temperature": "Nhiệt độ",
+			"temperature_des": "Kích hoạt khi bất kỳ cảm biến nào vượt quá ngưỡng."
+		},
+		"average_exceeds": "Trung bình vượt quá",
+		"for": "Trong",
+		"minute": "phút",
+		"minutes": "phút"
+	},
+	"settings": {
+		"settings": "Cài đặt",
+		"subtitle": "Quản lý tùy chọn hiển thị và thông báo.",
+		"save_settings": "Lưu cài đặt",
+		"export_configuration": "Xuất cấu hình",
+		"general": {
+			"title": "Chung",
+			"subtitle": "Thay đổi tùy chọn ứng dụng chung.",
+			"language": {
+				"title": "Ngôn ngữ",
+				"subtitle_1": "Bạn muốn giúp chúng tôi cải thiện bản dịch? Hãy xem",
+				"subtitle_2": "để biết thêm chi tiết.",
+				"preferred_language": "Ngôn ngữ ưa thích"
+			},
+			"chart_options": {
+				"title": "Tùy chọn biểu đồ",
+				"subtitle": "Điều chỉnh tùy chọn hiển thị cho biểu đồ.",
+				"default_time_period": "Khoảng thời gian mặc định",
+				"default_time_period_des": "Đặt phạm vi thời gian mặc định cho biểu đồ khi xem hệ thống."
+			}
+		},
+		"notifications": {
+			"title": "Thông báo",
+			"subtitle_1": "Cấu hình cách bạn nhận thông báo cảnh báo.",
+			"subtitle_2": "Bạn đang tìm nơi tạo cảnh báo? Nhấp vào biểu tượng chuông",
+			"subtitle_3": "trong bảng hệ thống.",
+			"email": {
+				"title": "Thông báo qua email",
+				"please": "Vui lòng",
+				"configure_an_SMTP_server": "cấu hình máy chủ SMTP",
+				"to_ensure_alerts_are_delivered": "để đảm bảo cảnh báo được gửi đi.",
+				"to_email_s": "Đến email",
+				"enter_email_address": "Nhập địa chỉ email...",
+				"des": "Lưu địa chỉ bằng phím enter hoặc dấu phẩy. Để trống để tắt thông báo qua email."
+			},
+			"webhook_push": {
+				"title": "Thông báo Webhook / Push",
+				"des_1": "Beszel sử dụng",
+				"des_2": "để tích hợp với các dịch vụ thông báo phổ biến.",
+				"add_url": "Thêm URL"
+			}
+		},
+		"yaml_config": {
+			"short_title": "Cấu hình YAML",
+			"title": "Cấu hình YAML",
+			"subtitle": "Xuất cấu hình hệ thống hiện tại của bạn.",
+			"des_1": "Các hệ thống có thể được quản lý trong tệp",
+			"des_2": "bên trong thư mục dữ liệu của bạn.",
+			"des_3": "Mỗi lần khởi động lại, các hệ thống trong cơ sở dữ liệu sẽ được cập nhật để khớp với các hệ thống được định nghĩa trong tệp.",
+			"alert": {
+				"title": "Cảnh báo - có thể mất dữ liệu",
+				"des_1": "Các hệ thống hiện có không được định nghĩa trong",
+				"des_2": "sẽ bị xóa. Vui lòng sao lưu thường xuyên."
+			}
+		},
+		"language": "Ngôn ngữ"
+	},
+	"user_dm": {
+		"users": "Người dùng",
+		"logs": "Nhật ký",
+		"backups": "Sao lưu",
+		"auth_providers": "Nhà cung cấp xác thực",
+		"log_out": "Đăng xuất"
+	},
+	"themes": {
+		"toggle_theme": "Chuyển đổi giao diện",
+		"light": "Sáng",
+		"dark": "Tối",
+		"system": "Hệ thống"
+	},
+	"add_system": {
+		"add_new_system": "Thêm hệ thống mới",
+		"binary": "Tệp nhị phân",
+		"dialog_des_1": "Agent phải đang chạy trên hệ thống để kết nối. Sao chép",
+		"dialog_des_2": "cho agent bên dưới.",
+		"name": "Tên",
+		"host_ip": "Host / IP",
+		"port": "Cổng",
+		"public_key": "Khóa công khai",
+		"click_to_copy": "Nhấp để sao chép",
+		"command": "lệnh",
+		"add_system": "Thêm hệ thống"
+	},
+	"command": {
+		"search": "Tìm kiếm hệ thống hoặc cài đặt...",
+		"pages_settings": "Trang / Cài đặt",
+		"dashboard": "Bảng điều khiển",
+		"documentation": "Tài liệu",
+		"SMTP_settings": "Cài đặt SMTP",
+		"page": "Trang",
+		"admin": "Quản trị"
+	},
+	"monitor": {
+		"toggle_grid": "Bật/tắt lưới",
+		"average": "Trung bình",
+		"max_1_min": "Tối đa 1 phút",
+		"total_cpu_usage": "Tổng sử dụng CPU",
+		"cpu_des": "mức sử dụng CPU toàn hệ thống",
+		"docker_cpu_usage": "Sử dụng CPU Docker",
+		"docker_cpu_des": "Mức sử dụng CPU trung bình của các container",
+		"total_memory_usage": "Tổng sử dụng bộ nhớ",
+		"memory_des": "Mức sử dụng chính xác tại thời điểm ghi",
+		"docker_memory_usage": "Sử dụng bộ nhớ Docker",
+		"docker_memory_des": "Mức sử dụng bộ nhớ của các container docker",
+		"disk_space": "Dung lượng ổ đĩa",
+		"disk_des": "Mức sử dụng phân vùng gốc",
+		"disk_io": "I/O ổ đĩa",
+		"disk_io_des": "Thông lượng của hệ thống tệp gốc",
+		"bandwidth": "Băng thông",
+		"bandwidth_des": "Lưu lượng mạng của các giao diện công khai",
+		"docker_network_io": "I/O mạng Docker",
+		"docker_network_io_des": "Lưu lượng mạng của các container docker",
+		"swap_usage": "Sử dụng Swap",
+		"swap_des": "Không gian swap được sử dụng bởi hệ thống",
+		"temperature": "Nhiệt độ",
+		"temperature_des": "Nhiệt độ của các cảm biến hệ thống",
+		"usage": "Sử dụng",
+		"disk_usage_of": "Mức sử dụng ổ đĩa của",
+		"throughput_of": "Thông lượng của"
+	}
+}
