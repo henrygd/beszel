@@ -20,30 +20,34 @@ import {
 	CommandSeparator,
 	CommandShortcut,
 } from '@/components/ui/command'
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useStore } from '@nanostores/react'
 import { $systems } from '@/lib/stores'
 import { isAdmin } from '@/lib/utils'
 import { navigate } from './router'
 import { useTranslation } from 'react-i18next'
 
-export default function CommandPalette() {
+export default function CommandPalette({
+	open,
+	setOpen,
+}: {
+	open: boolean
+	setOpen: (open: boolean) => void
+}) {
 	const { t } = useTranslation()
-
-	const [open, setOpen] = useState(false)
 	const systems = useStore($systems)
 
 	useEffect(() => {
 		const down = (e: KeyboardEvent) => {
 			if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
 				e.preventDefault()
-				setOpen((open) => !open)
+				setOpen(!open)
 			}
 		}
 
 		document.addEventListener('keydown', down)
 		return () => document.removeEventListener('keydown', down)
-	}, [])
+	}, [open, setOpen])
 
 	return (
 		<CommandDialog open={open} onOpenChange={setOpen}>
@@ -75,7 +79,7 @@ export default function CommandPalette() {
 						keywords={['home']}
 						onSelect={() => {
 							navigate('/')
-							setOpen((open) => !open)
+							setOpen(false)
 						}}
 					>
 						<LayoutDashboard className="mr-2 h-4 w-4" />
@@ -85,7 +89,7 @@ export default function CommandPalette() {
 					<CommandItem
 						onSelect={() => {
 							navigate('/settings/general')
-							setOpen((open) => !open)
+							setOpen(false)
 						}}
 					>
 						<SettingsIcon className="mr-2 h-4 w-4" />
@@ -96,7 +100,7 @@ export default function CommandPalette() {
 						keywords={['alerts']}
 						onSelect={() => {
 							navigate('/settings/notifications')
-							setOpen((open) => !open)
+							setOpen(false)
 						}}
 					>
 						<MailIcon className="mr-2 h-4 w-4" />
@@ -117,7 +121,7 @@ export default function CommandPalette() {
 				{isAdmin() && (
 					<>
 						<CommandSeparator className="mb-1.5" />
-						<CommandGroup heading={t("command.admin")}>
+						<CommandGroup heading={t('command.admin')}>
 							<CommandItem
 								keywords={['pocketbase']}
 								onSelect={() => {
@@ -127,7 +131,7 @@ export default function CommandPalette() {
 							>
 								<UsersIcon className="mr-2 h-4 w-4" />
 								<span>{t('user_dm.users')}</span>
-								<CommandShortcut>{t("command.admin")}</CommandShortcut>
+								<CommandShortcut>{t('command.admin')}</CommandShortcut>
 							</CommandItem>
 							<CommandItem
 								onSelect={() => {
@@ -137,7 +141,7 @@ export default function CommandPalette() {
 							>
 								<LogsIcon className="mr-2 h-4 w-4" />
 								<span>{t('user_dm.logs')}</span>
-								<CommandShortcut>{t("command.admin")}</CommandShortcut>
+								<CommandShortcut>{t('command.admin')}</CommandShortcut>
 							</CommandItem>
 							<CommandItem
 								onSelect={() => {
@@ -147,7 +151,7 @@ export default function CommandPalette() {
 							>
 								<DatabaseBackupIcon className="mr-2 h-4 w-4" />
 								<span>{t('user_dm.backups')}</span>
-								<CommandShortcut>{t("command.admin")}</CommandShortcut>
+								<CommandShortcut>{t('command.admin')}</CommandShortcut>
 							</CommandItem>
 							<CommandItem
 								keywords={['oauth', 'oicd']}
@@ -158,7 +162,7 @@ export default function CommandPalette() {
 							>
 								<LockKeyholeIcon className="mr-2 h-4 w-4" />
 								<span>{t('user_dm.auth_providers')}</span>
-								<CommandShortcut>{t("command.admin")}</CommandShortcut>
+								<CommandShortcut>{t('command.admin')}</CommandShortcut>
 							</CommandItem>
 							<CommandItem
 								keywords={['email']}
@@ -169,7 +173,7 @@ export default function CommandPalette() {
 							>
 								<MailIcon className="mr-2 h-4 w-4" />
 								<span>{t('command.SMTP_settings')}</span>
-								<CommandShortcut>{t("command.admin")}</CommandShortcut>
+								<CommandShortcut>{t('command.admin')}</CommandShortcut>
 							</CommandItem>
 						</CommandGroup>
 					</>
