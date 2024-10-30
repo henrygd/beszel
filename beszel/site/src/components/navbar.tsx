@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { AddSystemButton } from "./add-system"
 import { useTranslation } from "react-i18next"
+import { TFunction } from "i18next"
 
 const CommandPalette = lazy(() => import("./command-palette"))
 
@@ -38,10 +39,10 @@ export default function Navbar() {
 	return (
 		<div className="flex items-center h-14 md:h-16 bg-card px-4 pr-3 sm:px-6 border bt-0 rounded-md my-4">
 			<Link href="/" aria-label="Home" className={"p-2 pl-0"}>
-				<Logo className="h-[1.15rem] md:h-[1.3em] fill-foreground" />
+				<Logo className="h-[1.15rem] md:h-[1.25em] fill-foreground" />
 			</Link>
 
-			<SearchButton />
+			<SearchButton t={t} />
 
 			<div className={"flex ml-auto items-center"}>
 				<LangToggle />
@@ -111,7 +112,7 @@ export default function Navbar() {
 	)
 }
 
-function SearchButton() {
+function SearchButton({ t }: { t: TFunction<"translation", undefined> }) {
 	const [open, setOpen] = useState(false)
 
 	const Kbd = ({ children }: { children: React.ReactNode }) => (
@@ -129,8 +130,8 @@ function SearchButton() {
 			>
 				<span className="flex items-center">
 					<SearchIcon className="mr-1.5 h-4 w-4" />
-					Search
-					<span className="sr-only">Search</span>
+					{t("search")}
+					<span className="sr-only">{t("search")}</span>
 					<span className="flex items-center ml-3.5">
 						<Kbd>{isMac ? "⌘" : "Ctrl"}</Kbd>
 						<Kbd>K</Kbd>

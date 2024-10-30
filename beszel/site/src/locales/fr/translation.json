@@ -3,6 +3,7 @@
 	"filter": "Filtrer...",
 	"copy": "Copier",
 	"add": "Ajouter",
+	"search": "Rechercher",
 	"system": "Système",
 	"systems": "Systèmes",
 	"cancel": "Annuler",
@@ -10,6 +11,7 @@
 	"home": {
 		"active_alerts": "Alertes actives",
 		"active_des": "Dépasse {{value}}{{unit}} en moyenne au cours des {{minutes}} dernières minutes",
+		"subtitle": "Mis à jour en temps réel. Cliquez sur un système pour voir les informations.",
 		"subtitle_1": "Mis à jour en temps réel. Appuyez sur",
 		"subtitle_2": "pour ouvrir la palette de commandes."
 	},
@@ -190,5 +192,10 @@
 		"command_line_instructions": "Instructions en ligne de commande",
 		"command_1": "Si vous avez perdu le mot de passe de votre compte administrateur, vous pouvez le réinitialiser en utilisant la commande suivante.",
 		"command_2": "Ensuite, connectez-vous au backend et réinitialisez le mot de passe de votre compte utilisateur dans la table des utilisateurs."
+	},
+	"clipboard": {
+		"copied": "Copié dans le presse-papiers",
+		"title": "Copier le texte",
+		"des": "La copie automatique nécessite un contexte sécurisé."
 	}
 }

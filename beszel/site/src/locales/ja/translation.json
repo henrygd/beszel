@@ -3,6 +3,7 @@
 	"filter": "フィルター...",
 	"copy": "コピー",
 	"add": "追加",
+	"search": "検索",
 	"system": "システム",
 	"systems": "システム一覧",
 	"cancel": "キャンセル",
@@ -10,7 +11,7 @@
 	"home": {
 		"active_alerts": "アクティブなアラート",
 		"active_des": "過去{{minutes}}分間の平均が{{value}}{{unit}}を超過",
-		"subtitle_1": "リアルタイムで更新されます。システムをクリックして詳細を表示。"
+		"subtitle": "リアルタイムで更新されます。システムをクリックして情報を表示します。"
 	},
 	"systems_table": {
 		"system": "システム",
@@ -165,7 +166,7 @@
 		"bandwidth": "帯域幅",
 		"bandwidth_des": "パブリックインターフェースのネットワークトラフィック",
 		"docker_network_io": "Dockerネットワークl/O",
-		"docker_network_io_des": "Dockerコンテナのネットワークトラフ��ック",
+		"docker_network_io_des": "Dockerコンテナのネットワークトラフック",
 		"swap_usage": "スワップ使用率",
 		"swap_des": "システムが使用するスワップ領域",
 		"temperature": "温度",
@@ -173,5 +174,10 @@
 		"usage": "使用率",
 		"disk_usage_of": "のディスク使用率",
 		"throughput_of": "のスループット"
+	},
+	"clipboard": {
+		"copied": "クリップボードにコピーしました",
+		"title": "テキストをコピー",
+		"des": "自動コピーには安全なコンテキストが必要です。"
 	}
 }

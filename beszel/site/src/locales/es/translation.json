@@ -3,6 +3,7 @@
 	"filter": "Filtrar...",
 	"copy": "Copiar",
 	"add": "Agregar",
+	"search": "Buscar",
 	"system": "Sistema",
 	"systems": "Sistemas",
 	"cancel": "Cancelar",
@@ -10,8 +11,7 @@
 	"home": {
 		"active_alerts": "Alertas activas",
 		"active_des": "Excede el promedio de {{value}}{{unit}} en los últimos {{minutes}} minutos",
-		"subtitle_1": "Actualizado en tiempo real. Presione",
-		"subtitle_2": "para abrir la paleta de comandos."
+		"subtitle": "Actualizado en tiempo real. Haga clic en un sistema para ver información."
 	},
 	"systems_table": {
 		"system": "Sistema",
@@ -190,5 +190,10 @@
 		"command_line_instructions": "Instrucciones de línea de comandos",
 		"command_1": "Si ha perdido la contraseña de su cuenta de administrador, puede restablecerla usando el siguiente comando.",
 		"command_2": "Luego inicie sesión en el backend y restablezca la contraseña de su cuenta de usuario en la tabla de usuarios."
+	},
+	"clipboard": {
+		"copied": "Copiado al portapapeles",
+		"title": "Copiar texto",
+		"des": "La copia automática requiere un contexto seguro."
 	}
 }

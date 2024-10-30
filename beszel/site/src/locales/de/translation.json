@@ -3,6 +3,7 @@
 	"filter": "Filtern...",
 	"copy": "Kopieren",
 	"add": "Hinzufügen",
+	"search": "Suchen",
 	"system": "System",
 	"systems": "Systeme",
 	"cancel": "Abbrechen",
@@ -10,8 +11,7 @@
 	"home": {
 		"active_alerts": "Aktive Warnungen",
 		"active_des": "Überschreitet {{value}}{{unit}} Durchschnitt in den letzten {{minutes}} Minuten",
-		"subtitle_1": "In Echtzeit aktualisiert. Drücken Sie",
-		"subtitle_2": "um die Befehlsübersicht zu öffnen."
+		"subtitle": "Wird in Echtzeit aktualisiert. Klicken Sie auf ein System, um Informationen anzuzeigen."
 	},
 	"systems_table": {
 		"system": "System",
@@ -190,5 +190,10 @@
 		"command_line_instructions": "Befehlszeilenanweisungen",
 		"command_1": "Wenn Sie das Passwort für Ihr Administratorkonto verloren haben, können Sie es mit dem folgenden Befehl zurücksetzen.",
 		"command_2": "Melden Sie sich dann im Backend an und setzen Sie das Passwort Ihres Benutzerkontos in der Benutzertabelle zurück."
+	},
+	"clipboard": {
+		"copied": "In die Zwischenablage kopiert",
+		"title": "Text kopieren",
+		"des": "Automatisches Kopieren erfordert einen sicheren Kontext."
 	}
 }

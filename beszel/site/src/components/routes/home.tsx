@@ -100,10 +100,10 @@ export default function () {
 			)}
 			<Card>
 				<CardHeader className="pb-5 px-2 sm:px-6 max-sm:pt-5 max-sm:pb-1">
-					<div className="grid md:flex gap-3 w-full items-end">
+					<div className="grid md:flex gap-5 w-full items-end">
 						<div className="px-2 sm:px-1">
 							<CardTitle className="mb-2.5">{t("all_systems")}</CardTitle>
-							<CardDescription>{t("home.subtitle_1")}</CardDescription>
+							<CardDescription>{t("home.subtitle")}</CardDescription>
 						</div>
 						<Input
 							placeholder={t("filter")}

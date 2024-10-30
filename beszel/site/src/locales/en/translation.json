@@ -3,6 +3,7 @@
 	"filter": "Filter...",
 	"copy": "Copy",
 	"add": "Add",
+	"search": "Search",
 	"system": "System",
 	"systems": "Systems",
 	"cancel": "Cancel",
@@ -10,7 +11,7 @@
 	"home": {
 		"active_alerts": "Active Alerts",
 		"active_des": "Exceeds {{value}}{{unit}} average in last {{minutes}} minutes",
-		"subtitle_1": "Updated in real time. Click on a system to view information."
+		"subtitle": "Updated in real time. Click on a system to view information."
 	},
 	"systems_table": {
 		"system": "System",
@@ -189,5 +190,10 @@
 		"command_line_instructions": "Command line instructions",
 		"command_1": "If you've lost the password to your admin account, you may reset it using the following command.",
 		"command_2": "Then log into the backend and reset your user account password in the users table."
+	},
+	"clipboard": {
+		"copied": "Copied to clipboard",
+		"title": "Copy text",
+		"des": "Automatic copy requires a secure context."
 	}
 }

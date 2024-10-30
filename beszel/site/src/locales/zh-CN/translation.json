@@ -3,6 +3,7 @@
 	"filter": "筛选...",
 	"copy": "复制",
 	"add": "添加",
+	"search": "搜索",
 	"system": "服务器",
 	"systems": "服务器",
 	"cancel": "取消",
@@ -10,8 +11,7 @@
 	"home": {
 		"active_alerts": "活动警报",
 		"active_des": "在过去 {{minutes}} 分钟内超过 {{value}}{{unit}} 平均值",
-		"subtitle_1": "实时更新。按",
-		"subtitle_2": "打开命令面板。"
+		"subtitle": "实时更新。点击系统以查看信息。"
 	},
 	"systems_table": {
 		"system": "服务器",
@@ -190,5 +190,10 @@
 		"command_line_instructions": "了解命令行指令",
 		"command_1": "如果您忘记了管理员账户的密码，可以使用以下命令重置。",
 		"command_2": "然后登录到后台，在用户表中重置您的用户账户密码。"
+	},
+	"clipboard": {
+		"copied": "已复制到剪贴板",
+		"title": "复制文本",
+		"des": "自动复制需要安全上下文。"
 	}
 }

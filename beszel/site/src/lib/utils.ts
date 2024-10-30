@@ -9,7 +9,7 @@ import { timeDay, timeHour } from "d3-time"
 import { useEffect, useState } from "react"
 import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from "lucide-react"
 import { EthernetIcon, ThermometerIcon } from "@/components/ui/icons"
-
+import { t } from "i18next"
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
 }
@@ -21,7 +21,7 @@ export async function copyToClipboard(content: string) {
 		await navigator.clipboard.writeText(content)
 		toast({
 			duration,
-			description: "Copied to clipboard",
+			description: t("clipboard.copied"),
 		})
 	} catch (e: any) {
 		$copyContent.set(content)

@@ -3,6 +3,7 @@
 	"filter": "Lọc...",
 	"copy": "Sao chép",
 	"add": "Thêm",
+	"search": "Tìm kiếm",
 	"system": "Hệ thống",
 	"systems": "Các hệ thống",
 	"cancel": "Hủy",
@@ -10,7 +11,7 @@
 	"home": {
 		"active_alerts": "Cảnh báo đang hoạt động",
 		"active_des": "Vượt quá {{value}}{{unit}} trung bình trong {{minutes}} phút cuối",
-		"subtitle_1": "Cập nhật theo thời gian thực. Nhấp vào hệ thống để xem thông tin."
+		"subtitle": "Cập nhật theo thời gian thực. Nhấp vào hệ thống để xem thông tin."
 	},
 	"systems_table": {
 		"system": "Hệ thống",
@@ -43,7 +44,7 @@
 			"memory_usage": "Sử dụng bộ nhớ",
 			"memory_usage_des": "Kích hoạt khi mức sử dụng bộ nhớ vượt quá ngưỡng.",
 			"disk_usage": "Sử dụng ổ đĩa",
-			"disk_usage_des": "Kích hoạt khi mức sử dụng của bất kỳ ổ đĩa nào vượt quá ngưỡng.",
+			"disk_usage_des": "Kích hoạt khi m��c sử dụng của bất kỳ ổ đĩa nào vượt quá ngưỡng.",
 			"bandwidth": "Băng thông",
 			"bandwidth_des": "Kích hoạt khi tổng lưu lượng up/down vượt quá ngưỡng.",
 			"temperature": "Nhiệt độ",
@@ -173,5 +174,10 @@
 		"usage": "Sử dụng",
 		"disk_usage_of": "Mức sử dụng ổ đĩa của",
 		"throughput_of": "Thông lượng của"
+	},
+	"clipboard": {
+		"copied": "Đã sao chép vào clipboard",
+		"title": "Sao chép văn bản",
+		"des": "Sao chép tự động yêu cầu ngữ cảnh bảo mật."
 	}
 }

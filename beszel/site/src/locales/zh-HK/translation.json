@@ -3,6 +3,7 @@
 	"filter": "篩選...",
 	"copy": "複製",
 	"add": "新增",
+	"search": "搜尋",
 	"system": "伺服器",
 	"systems": "伺服器",
 	"cancel": "取消",
@@ -10,8 +11,7 @@
 	"home": {
 		"active_alerts": "活動警報",
 		"active_des": "在過去 {{minutes}} 分鐘內超過 {{value}}{{unit}} 平均值",
-		"subtitle_1": "即時更新。按",
-		"subtitle_2": "打開指令面板。"
+		"subtitle": "即時更新。點擊系統以查看資訊。"
 	},
 	"systems_table": {
 		"system": "伺服器",
@@ -190,5 +190,10 @@
 		"command_line_instructions": "了解命令行指令",
 		"command_1": "如果您忘記了管理員賬戶的密碼，可以使用以下命令重置。",
 		"command_2": "然後登入到後台，在用戶表中重置您的用戶賬戶密碼。"
+	},
+	"clipboard": {
+		"copied": "已複製到剪貼簿",
+		"title": "複製文字",
+		"des": "自動複製需要安全上下文。"
 	}
 }
