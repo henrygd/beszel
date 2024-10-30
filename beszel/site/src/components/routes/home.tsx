@@ -1,17 +1,17 @@
-import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card'
-import { $alerts, $hubVersion, $systems, pb } from '@/lib/stores'
-import { useStore } from '@nanostores/react'
-import { GithubIcon } from 'lucide-react'
-import { Separator } from '../ui/separator'
-import { alertInfo, updateRecordList, updateSystemList } from '@/lib/utils'
-import { AlertRecord, SystemRecord } from '@/types'
-import { Input } from '../ui/input'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Link } from '../router'
-import { useTranslation } from 'react-i18next'
+import { Suspense, lazy, useEffect, useMemo, useState } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
+import { $alerts, $hubVersion, $systems, pb } from "@/lib/stores"
+import { useStore } from "@nanostores/react"
+import { GithubIcon } from "lucide-react"
+import { Separator } from "../ui/separator"
+import { alertInfo, updateRecordList, updateSystemList } from "@/lib/utils"
+import { AlertRecord, SystemRecord } from "@/types"
+import { Input } from "../ui/input"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Link } from "../router"
+import { useTranslation } from "react-i18next"
 
-const SystemsTable = lazy(() => import('../systems-table/systems-table'))
+const SystemsTable = lazy(() => import("../systems-table/systems-table"))
 
 export default function () {
 	const { t } = useTranslation()
@@ -35,21 +35,21 @@ export default function () {
 	}, [alerts])
 
 	useEffect(() => {
-		document.title = 'Dashboard / Beszel'
+		document.title = "Dashboard / Beszel"
 
 		// make sure we have the latest list of systems
 		updateSystemList()
 
 		// subscribe to real time updates for systems / alerts
-		pb.collection<SystemRecord>('systems').subscribe('*', (e) => {
+		pb.collection<SystemRecord>("systems").subscribe("*", (e) => {
 			updateRecordList(e, $systems)
 		})
 		// todo: add toast if new triggered alert comes in
-		pb.collection<AlertRecord>('alerts').subscribe('*', (e) => {
+		pb.collection<AlertRecord>("alerts").subscribe("*", (e) => {
 			updateRecordList(e, $alerts)
 		})
 		return () => {
-			pb.collection('systems').unsubscribe('*')
+			pb.collection("systems").unsubscribe("*")
 			// pb.collection('alerts').unsubscribe('*')
 		}
 	}, [])
@@ -61,7 +61,7 @@ export default function () {
 				<Card className="mb-4">
 					<CardHeader className="pb-4 px-2 sm:px-6 max-sm:pt-5 max-sm:pb-1">
 						<div className="px-2 sm:px-1">
-							<CardTitle>{t('home.active_alerts')}</CardTitle>
+							<CardTitle>{t("home.active_alerts")}</CardTitle>
 						</div>
 					</CardHeader>
 					<CardContent className="max-sm:p-2">
@@ -79,7 +79,7 @@ export default function () {
 												{alert.sysname} {t(info.name)}
 											</AlertTitle>
 											<AlertDescription>
-												{t('home.active_des', {
+												{t("home.active_des", {
 													value: alert.value,
 													unit: info.unit,
 													minutes: alert.min,
@@ -102,11 +102,11 @@ export default function () {
 				<CardHeader className="pb-5 px-2 sm:px-6 max-sm:pt-5 max-sm:pb-1">
 					<div className="grid md:flex gap-3 w-full items-end">
 						<div className="px-2 sm:px-1">
-							<CardTitle className="mb-2.5">{t('all_systems')}</CardTitle>
-							<CardDescription>{t('home.subtitle_1')}</CardDescription>
+							<CardTitle className="mb-2.5">{t("all_systems")}</CardTitle>
+							<CardDescription>{t("home.subtitle_1")}</CardDescription>
 						</div>
 						<Input
-							placeholder={t('filter')}
+							placeholder={t("filter")}
 							onChange={(e) => setFilter(e.target.value)}
 							className="w-full md:w-56 lg:w-72 ml-auto px-4"
 						/>

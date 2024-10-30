@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from "react"
 
 // adapted from usehooks-ts/use-intersection-observer
 
@@ -72,7 +72,7 @@ type IntersectionReturn = {
 export function useIntersectionObserver({
 	threshold = 0,
 	root = null,
-	rootMargin = '0%',
+	rootMargin = "0%",
 	freeze = true,
 	initialIsIntersecting = false,
 	onChange,
@@ -84,7 +84,7 @@ export function useIntersectionObserver({
 		entry: undefined,
 	}))
 
-	const callbackRef = useRef<UseIntersectionObserverOptions['onChange']>()
+	const callbackRef = useRef<UseIntersectionObserverOptions["onChange"]>()
 
 	callbackRef.current = onChange
 
@@ -95,7 +95,7 @@ export function useIntersectionObserver({
 		if (!ref) return
 
 		// Ensure the browser supports the Intersection Observer API
-		if (!('IntersectionObserver' in window)) return
+		if (!("IntersectionObserver" in window)) return
 
 		// Skip if frozen
 		if (frozen) return
@@ -104,14 +104,11 @@ export function useIntersectionObserver({
 
 		const observer = new IntersectionObserver(
 			(entries: IntersectionObserverEntry[]): void => {
-				const thresholds = Array.isArray(observer.thresholds)
-					? observer.thresholds
-					: [observer.thresholds]
+				const thresholds = Array.isArray(observer.thresholds) ? observer.thresholds : [observer.thresholds]
 
 				entries.forEach((entry) => {
 					const isIntersecting =
-						entry.isIntersecting &&
-						thresholds.some((threshold) => entry.intersectionRatio >= threshold)
+						entry.isIntersecting && thresholds.some((threshold) => entry.intersectionRatio >= threshold)
 
 					setState({ isIntersecting, entry })
 
@@ -149,13 +146,7 @@ export function useIntersectionObserver({
 	const prevRef = useRef<Element | null>(null)
 
 	useEffect(() => {
-		if (
-			!ref &&
-			state.entry?.target &&
-			!freeze &&
-			!frozen &&
-			prevRef.current !== state.entry.target
-		) {
+		if (!ref && state.entry?.target && !freeze && !frozen && prevRef.current !== state.entry.target) {
 			prevRef.current = state.entry.target
 			setState({ isIntersecting: initialIsIntersecting, entry: undefined })
 		}

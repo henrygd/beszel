@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef } from 'react'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog'
-import { Textarea } from './ui/textarea'
-import { $copyContent } from '@/lib/stores'
+import { useEffect, useMemo, useRef } from "react"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog"
+import { Textarea } from "./ui/textarea"
+import { $copyContent } from "@/lib/stores"
 
 export default function CopyToClipboard({ content }: { content: string }) {
 	return (
@@ -24,7 +24,7 @@ function CopyTextarea({ content }: { content: string }) {
 	const textareaRef = useRef<HTMLTextAreaElement>(null)
 
 	const rows = useMemo(() => {
-		return content.split('\n').length
+		return content.split("\n").length
 	}, [content])
 
 	useEffect(() => {
@@ -34,7 +34,7 @@ function CopyTextarea({ content }: { content: string }) {
 	}, [textareaRef])
 
 	useEffect(() => {
-		return () => $copyContent.set('')
+		return () => $copyContent.set("")
 	}, [])
 
 	return (

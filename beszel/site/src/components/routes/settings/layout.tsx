@@ -1,28 +1,28 @@
-import { useEffect } from 'react'
-import { Separator } from '../../ui/separator'
-import { SidebarNav } from './sidebar-nav.tsx'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card.tsx'
-import { useStore } from '@nanostores/react'
-import { $router } from '@/components/router.tsx'
-import { redirectPage } from '@nanostores/router'
-import { BellIcon, FileSlidersIcon, SettingsIcon } from 'lucide-react'
-import { $userSettings, pb } from '@/lib/stores.ts'
-import { toast } from '@/components/ui/use-toast.ts'
-import { UserSettings } from '@/types.js'
-import General from './general.tsx'
-import Notifications from './notifications.tsx'
-import ConfigYaml from './config-yaml.tsx'
-import { isAdmin } from '@/lib/utils.ts'
-import { useTranslation } from 'react-i18next'
+import { useEffect } from "react"
+import { Separator } from "../../ui/separator"
+import { SidebarNav } from "./sidebar-nav.tsx"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx"
+import { useStore } from "@nanostores/react"
+import { $router } from "@/components/router.tsx"
+import { redirectPage } from "@nanostores/router"
+import { BellIcon, FileSlidersIcon, SettingsIcon } from "lucide-react"
+import { $userSettings, pb } from "@/lib/stores.ts"
+import { toast } from "@/components/ui/use-toast.ts"
+import { UserSettings } from "@/types.js"
+import General from "./general.tsx"
+import Notifications from "./notifications.tsx"
+import ConfigYaml from "./config-yaml.tsx"
+import { isAdmin } from "@/lib/utils.ts"
+import { useTranslation } from "react-i18next"
 
 export async function saveSettings(newSettings: Partial<UserSettings>) {
 	try {
 		// get fresh copy of settings
-		const req = await pb.collection('user_settings').getFirstListItem('', {
-			fields: 'id,settings',
+		const req = await pb.collection("user_settings").getFirstListItem("", {
+			fields: "id,settings",
 		})
 		// update user settings
-		const updatedSettings = await pb.collection('user_settings').update(req.id, {
+		const updatedSettings = await pb.collection("user_settings").update(req.id, {
 			settings: {
 				...req.settings,
 				...newSettings,
@@ -30,15 +30,15 @@ export async function saveSettings(newSettings: Partial<UserSettings>) {
 		})
 		$userSettings.set(updatedSettings.settings)
 		toast({
-			title: 'Settings saved',
-			description: 'Your user settings have been updated.',
+			title: "Settings saved",
+			description: "Your user settings have been updated.",
 		})
 	} catch (e) {
 		// console.error('update settings', e)
 		toast({
-			title: 'Failed to save settings',
-			description: 'Check logs for more details.',
-			variant: 'destructive',
+			title: "Failed to save settings",
+			description: "Check logs for more details.",
+			variant: "destructive",
 		})
 	}
 }
@@ -48,21 +48,21 @@ export default function SettingsLayout() {
 
 	const sidebarNavItems = [
 		{
-			title: t('settings.general.title'),
-			href: '/settings/general',
+			title: t("settings.general.title"),
+			href: "/settings/general",
 			icon: SettingsIcon,
 		},
 		{
-			title: t('settings.notifications.title'),
-			href: '/settings/notifications',
+			title: t("settings.notifications.title"),
+			href: "/settings/notifications",
 			icon: BellIcon,
 		},
 	]
 
 	if (isAdmin()) {
 		sidebarNavItems.push({
-			title: t('settings.yaml_config.short_title'),
-			href: '/settings/config',
+			title: t("settings.yaml_config.short_title"),
+			href: "/settings/config",
 			icon: FileSlidersIcon,
 		})
 	}
@@ -70,18 +70,18 @@ export default function SettingsLayout() {
 	const page = useStore($router)
 
 	useEffect(() => {
-		document.title = 'Settings / Beszel'
+		document.title = "Settings / Beszel"
 		// redirect to account page if no page is specified
-		if (page?.path === '/settings') {
-			redirectPage($router, 'settings', { name: 'general' })
+		if (page?.path === "/settings") {
+			redirectPage($router, "settings", { name: "general" })
 		}
 	}, [])
 
 	return (
 		<Card className="pt-5 px-4 pb-8 sm:pt-6 sm:px-7">
 			<CardHeader className="p-0">
-				<CardTitle className="mb-1">{t('settings.settings')}</CardTitle>
-				<CardDescription>{t('settings.subtitle')}</CardDescription>
+				<CardTitle className="mb-1">{t("settings.settings")}</CardTitle>
+				<CardDescription>{t("settings.subtitle")}</CardDescription>
 			</CardHeader>
 			<CardContent className="p-0">
 				<Separator className="hidden md:block my-5" />
@@ -91,7 +91,7 @@ export default function SettingsLayout() {
 					</aside>
 					<div className="flex-1">
 						{/* @ts-ignore */}
-						<SettingsContent name={page?.params?.name ?? 'general'} />
+						<SettingsContent name={page?.params?.name ?? "general"} />
 					</div>
 				</div>
 			</CardContent>
@@ -103,11 +103,11 @@ function SettingsContent({ name }: { name: string }) {
 	const userSettings = useStore($userSettings)
 
 	switch (name) {
-		case 'general':
+		case "general":
 			return <General userSettings={userSettings} />
-		case 'notifications':
+		case "notifications":
 			return <Notifications userSettings={userSettings} />
-		case 'config':
+		case "config":
 			return <ConfigYaml />
 	}
 }

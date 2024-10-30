@@ -1,5 +1,5 @@
-import { useState, lazy, Suspense } from 'react'
-import { Button, buttonVariants } from '@/components/ui/button'
+import { useState, lazy, Suspense } from "react"
+import { Button, buttonVariants } from "@/components/ui/button"
 import {
 	DatabaseBackupIcon,
 	LockKeyholeIcon,
@@ -10,14 +10,13 @@ import {
 	SettingsIcon,
 	UserIcon,
 	UsersIcon,
-} from 'lucide-react'
-import { TFunction } from 'i18next'
-import { Link } from './router'
-import { LangToggle } from './lang-toggle'
-import { ModeToggle } from './mode-toggle'
-import { Logo } from './logo'
-import { pb } from '@/lib/stores'
-import { cn, isReadOnlyUser, isAdmin } from '@/lib/utils'
+} from "lucide-react"
+import { Link } from "./router"
+import { LangToggle } from "./lang-toggle"
+import { ModeToggle } from "./mode-toggle"
+import { Logo } from "./logo"
+import { pb } from "@/lib/stores"
+import { cn, isReadOnlyUser, isAdmin } from "@/lib/utils"
 import {
 	DropdownMenu,
 	DropdownMenuTrigger,
@@ -26,42 +25,41 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuGroup,
 	DropdownMenuItem,
-} from '@/components/ui/dropdown-menu'
-import { AddSystemButton } from './add-system'
+} from "@/components/ui/dropdown-menu"
+import { AddSystemButton } from "./add-system"
+import { useTranslation } from "react-i18next"
 
-const CommandPalette = lazy(() => import('./command-palette.tsx'))
+const CommandPalette = lazy(() => import("./command-palette.tsx"))
 
-const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0
+const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0
 
-export default function Navbar(t: TFunction<'translation', undefined>) {
+export default function Navbar() {
+	const { t } = useTranslation()
 	return (
 		<div className="flex items-center h-14 md:h-16 bg-card px-4 pr-3 sm:px-6 border bt-0 rounded-md my-4">
-			<Link href="/" aria-label="Home" className={'p-2 pl-0'}>
+			<Link href="/" aria-label="Home" className={"p-2 pl-0"}>
 				<Logo className="h-[1.3em] fill-foreground" />
 			</Link>
 
 			<SearchButton />
 
-			<div className={'flex ml-auto items-center'}>
+			<div className={"flex ml-auto items-center"}>
 				<LangToggle />
 				<ModeToggle />
 				<Link
 					href="/settings/general"
 					aria-label="Settings"
-					className={cn('', buttonVariants({ variant: 'ghost', size: 'icon' }))}
+					className={cn("", buttonVariants({ variant: "ghost", size: "icon" }))}
 				>
 					<SettingsIcon className="h-[1.2rem] w-[1.2rem]" />
 				</Link>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<button
-							aria-label="User Actions"
-							className={cn('', buttonVariants({ variant: 'ghost', size: 'icon' }))}
-						>
+						<button aria-label="User Actions" className={cn("", buttonVariants({ variant: "ghost", size: "icon" }))}>
 							<UserIcon className="h-[1.2rem] w-[1.2rem]" />
 						</button>
 					</DropdownMenuTrigger>
-					<DropdownMenuContent align={isReadOnlyUser() ? 'end' : 'center'} className="min-w-44">
+					<DropdownMenuContent align={isReadOnlyUser() ? "end" : "center"} className="min-w-44">
 						<DropdownMenuLabel>{pb.authStore.model?.email}</DropdownMenuLabel>
 						<DropdownMenuSeparator />
 						<DropdownMenuGroup>
@@ -70,31 +68,31 @@ export default function Navbar(t: TFunction<'translation', undefined>) {
 									<DropdownMenuItem asChild>
 										<a href="/_/" target="_blank">
 											<UsersIcon className="mr-2.5 h-4 w-4" />
-											<span>{t('user_dm.users')}</span>
+											<span>{t("user_dm.users")}</span>
 										</a>
 									</DropdownMenuItem>
 									<DropdownMenuItem asChild>
 										<a href="/_/#/collections?collectionId=2hz5ncl8tizk5nx" target="_blank">
 											<ServerIcon className="mr-2.5 h-4 w-4" />
-											<span>{t('systems')}</span>
+											<span>{t("systems")}</span>
 										</a>
 									</DropdownMenuItem>
 									<DropdownMenuItem asChild>
 										<a href="/_/#/logs" target="_blank">
 											<LogsIcon className="mr-2.5 h-4 w-4" />
-											<span>{t('user_dm.logs')}</span>
+											<span>{t("user_dm.logs")}</span>
 										</a>
 									</DropdownMenuItem>
 									<DropdownMenuItem asChild>
 										<a href="/_/#/settings/backups" target="_blank">
 											<DatabaseBackupIcon className="mr-2.5 h-4 w-4" />
-											<span>{t('user_dm.backups')}</span>
+											<span>{t("user_dm.backups")}</span>
 										</a>
 									</DropdownMenuItem>
 									<DropdownMenuItem asChild>
 										<a href="/_/#/settings/auth-providers" target="_blank">
 											<LockKeyholeIcon className="mr-2.5 h-4 w-4" />
-											<span>{t('user_dm.auth_providers')}</span>
+											<span>{t("user_dm.auth_providers")}</span>
 										</a>
 									</DropdownMenuItem>
 									<DropdownMenuSeparator />
@@ -103,7 +101,7 @@ export default function Navbar(t: TFunction<'translation', undefined>) {
 						</DropdownMenuGroup>
 						<DropdownMenuItem onSelect={() => pb.authStore.clear()}>
 							<LogOutIcon className="mr-2.5 h-4 w-4" />
-							<span>{t('user_dm.log_out')}</span>
+							<span>{t("user_dm.log_out")}</span>
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
@@ -134,7 +132,7 @@ function SearchButton() {
 					Search
 					<span className="sr-only">Search</span>
 					<span className="flex items-center ml-3.5">
-						<Kbd>{isMac ? '⌘' : 'Ctrl'}</Kbd>
+						<Kbd>{isMac ? "⌘" : "Ctrl"}</Kbd>
 						<Kbd>K</Kbd>
 					</span>
 				</span>

@@ -1,6 +1,6 @@
-import { Area, AreaChart, CartesianGrid, YAxis } from 'recharts'
+import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 
-import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from '@/components/ui/chart'
+import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
 import {
 	useYAxisWidth,
 	cn,
@@ -8,10 +8,10 @@ import {
 	toFixedWithoutTrailingZeros,
 	decimalString,
 	chartMargin,
-} from '@/lib/utils'
+} from "@/lib/utils"
 // import Spinner from '../spinner'
-import { ChartData } from '@/types'
-import { memo, useMemo } from 'react'
+import { ChartData } from "@/types"
+import { memo, useMemo } from "react"
 
 /** [label, key, color, opacity] */
 type DataKeys = [string, string, number, number]
@@ -21,14 +21,14 @@ const getNestedValue = (path: string, max = false, data: any): number | null => 
 	// a max value which doesn't exist, or the value was zero and omitted from the stats object.
 	// so we check if cpum is present. if so, return 0 to make sure the zero value is displayed.
 	// if not, return null - there is no max data so do not display anything.
-	return `stats.${path}${max ? 'm' : ''}`
-		.split('.')
+	return `stats.${path}${max ? "m" : ""}`
+		.split(".")
 		.reduce((acc: any, key: string) => acc?.[key] ?? (data.stats?.cpum ? 0 : null), data)
 }
 
 export default memo(function AreaChartDefault({
 	maxToggled = false,
-	unit = ' MB/s',
+	unit = " MB/s",
 	chartName,
 	chartData,
 }: {
@@ -41,26 +41,26 @@ export default memo(function AreaChartDefault({
 
 	const { chartTime } = chartData
 
-	const showMax = chartTime !== '1h' && maxToggled
+	const showMax = chartTime !== "1h" && maxToggled
 
 	const dataKeys: DataKeys[] = useMemo(() => {
 		// [label, key, color, opacity]
-		if (chartName === 'CPU Usage') {
-			return [[chartName, 'cpu', 1, 0.4]]
-		} else if (chartName === 'dio') {
+		if (chartName === "CPU Usage") {
+			return [[chartName, "cpu", 1, 0.4]]
+		} else if (chartName === "dio") {
 			return [
-				['Write', 'dw', 3, 0.3],
-				['Read', 'dr', 1, 0.3],
+				["Write", "dw", 3, 0.3],
+				["Read", "dr", 1, 0.3],
 			]
-		} else if (chartName === 'bw') {
+		} else if (chartName === "bw") {
 			return [
-				['Sent', 'ns', 5, 0.2],
-				['Received', 'nr', 2, 0.2],
+				["Sent", "ns", 5, 0.2],
+				["Received", "nr", 2, 0.2],
 			]
-		} else if (chartName.startsWith('efs')) {
+		} else if (chartName.startsWith("efs")) {
 			return [
-				['Write', `${chartName}.w`, 3, 0.3],
-				['Read', `${chartName}.r`, 1, 0.3],
+				["Write", `${chartName}.w`, 3, 0.3],
+				["Read", `${chartName}.r`, 1, 0.3],
 			]
 		}
 		return []
@@ -71,8 +71,8 @@ export default memo(function AreaChartDefault({
 	return (
 		<div>
 			<ChartContainer
-				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
-					'opacity-100': yAxisWidth,
+				className={cn("h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity", {
+					"opacity-100": yAxisWidth,
 				})}
 			>
 				<AreaChart accessibilityLayer data={chartData.systemStats} margin={chartMargin}>

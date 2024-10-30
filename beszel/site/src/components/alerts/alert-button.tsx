@@ -1,6 +1,6 @@
-import { memo, useState } from 'react'
-import { useStore } from '@nanostores/react'
-import { $alerts, $systems } from '@/lib/stores'
+import { memo, useState } from "react"
+import { useStore } from "@nanostores/react"
+import { $alerts, $systems } from "@/lib/stores"
 import {
 	Dialog,
 	DialogTrigger,
@@ -8,16 +8,16 @@ import {
 	DialogDescription,
 	DialogHeader,
 	DialogTitle,
-} from '@/components/ui/dialog'
-import { BellIcon, GlobeIcon, ServerIcon } from 'lucide-react'
-import { alertInfo, cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { AlertRecord, SystemRecord } from '@/types'
-import { Link } from '../router'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Checkbox } from '../ui/checkbox'
-import { SystemAlert, SystemAlertGlobal } from './alerts-system'
-import { useTranslation } from 'react-i18next'
+} from "@/components/ui/dialog"
+import { BellIcon, GlobeIcon, ServerIcon } from "lucide-react"
+import { alertInfo, cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { AlertRecord, SystemRecord } from "@/types"
+import { Link } from "../router"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Checkbox } from "../ui/checkbox"
+import { SystemAlert, SystemAlertGlobal } from "./alerts-system"
+import { useTranslation } from "react-i18next"
 
 export default memo(function AlertsButton({ system }: { system: SystemRecord }) {
 	const alerts = useStore($alerts)
@@ -29,16 +29,10 @@ export default memo(function AlertsButton({ system }: { system: SystemRecord }) 
 	return (
 		<Dialog>
 			<DialogTrigger asChild>
-				<Button
-					variant="ghost"
-					size="icon"
-					aria-label="Alerts"
-					data-nolink
-					onClick={() => setOpened(true)}
-				>
+				<Button variant="ghost" size="icon" aria-label="Alerts" data-nolink onClick={() => setOpened(true)}>
 					<BellIcon
-						className={cn('h-[1.2em] w-[1.2em] pointer-events-none', {
-							'fill-primary': active,
+						className={cn("h-[1.2em] w-[1.2em] pointer-events-none", {
+							"fill-primary": active,
 						})}
 					/>
 				</Button>
@@ -57,7 +51,7 @@ function TheContent({
 }) {
 	const { t } = useTranslation()
 
-	const [overwriteExisting, setOverwriteExisting] = useState<boolean | 'indeterminate'>(false)
+	const [overwriteExisting, setOverwriteExisting] = useState<boolean | "indeterminate">(false)
 	const systems = $systems.get()
 
 	const data = Object.keys(alertInfo).map((key) => {
@@ -72,13 +66,13 @@ function TheContent({
 	return (
 		<>
 			<DialogHeader>
-				<DialogTitle className="text-xl">{t('alerts.title')}</DialogTitle>
+				<DialogTitle className="text-xl">{t("alerts.title")}</DialogTitle>
 				<DialogDescription>
-					{t('alerts.subtitle_1')}{' '}
+					{t("alerts.subtitle_1")}{" "}
 					<Link href="/settings/notifications" className="link">
-						{t('alerts.notification_settings')}
-					</Link>{' '}
-					{t('alerts.subtitle_2')}
+						{t("alerts.notification_settings")}
+					</Link>{" "}
+					{t("alerts.subtitle_2")}
 				</DialogDescription>
 			</DialogHeader>
 			<Tabs defaultValue="system">
@@ -89,7 +83,7 @@ function TheContent({
 					</TabsTrigger>
 					<TabsTrigger value="global">
 						<GlobeIcon className="mr-1.5 h-3.5 w-3.5" />
-						{t('all_systems')}
+						{t("all_systems")}
 					</TabsTrigger>
 				</TabsList>
 				<TabsContent value="system">
@@ -110,17 +104,11 @@ function TheContent({
 							checked={overwriteExisting}
 							onCheckedChange={setOverwriteExisting}
 						/>
-						{t('alerts.overwrite_existing_alerts')}
+						{t("alerts.overwrite_existing_alerts")}
 					</label>
 					<div className="grid gap-3">
 						{data.map((d) => (
-							<SystemAlertGlobal
-								key={d.key}
-								data={d}
-								overwrite={overwriteExisting}
-								alerts={alerts}
-								systems={systems}
-							/>
+							<SystemAlertGlobal key={d.key} data={d} overwrite={overwriteExisting} alerts={alerts} systems={systems} />
 						))}
 					</div>
 				</TabsContent>

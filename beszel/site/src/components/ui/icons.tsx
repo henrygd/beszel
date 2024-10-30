@@ -1,4 +1,4 @@
-import { SVGProps } from 'react'
+import { SVGProps } from "react"
 
 // linux-logo-bold from https://github.com/phosphor-icons/core (MIT license)
 export function TuxIcon(props: SVGProps<SVGSVGElement>) {
@@ -49,14 +49,7 @@ export function ChartMax(props: SVGProps<SVGSVGElement>) {
 // Lucide https://github.com/lucide-icons/lucide (not in package for some reason)
 export function EthernetIcon(props: SVGProps<SVGSVGElement>) {
 	return (
-		<svg
-			fill="none"
-			stroke="currentColor"
-			strokeLinecap="round"
-			strokeWidth="2"
-			viewBox="0 0 24 24"
-			{...props}
-		>
+		<svg fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" viewBox="0 0 24 24" {...props}>
 			<path d="m15 20 3-3h2a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h2l3 3zM6 8v1m4-1v1m4-1v1m4-1v1" />
 		</svg>
 	)

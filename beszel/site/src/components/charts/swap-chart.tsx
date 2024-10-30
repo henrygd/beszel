@@ -1,6 +1,6 @@
-import { Area, AreaChart, CartesianGrid, YAxis } from 'recharts'
+import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 
-import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from '@/components/ui/chart'
+import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
 import {
 	useYAxisWidth,
 	cn,
@@ -8,9 +8,9 @@ import {
 	toFixedWithoutTrailingZeros,
 	decimalString,
 	chartMargin,
-} from '@/lib/utils'
-import { ChartData } from '@/types'
-import { memo } from 'react'
+} from "@/lib/utils"
+import { ChartData } from "@/types"
+import { memo } from "react"
 
 export default memo(function SwapChart({ chartData }: { chartData: ChartData }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
@@ -18,22 +18,19 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 	return (
 		<div>
 			<ChartContainer
-				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
-					'opacity-100': yAxisWidth,
+				className={cn("h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity", {
+					"opacity-100": yAxisWidth,
 				})}
 			>
 				<AreaChart accessibilityLayer data={chartData.systemStats} margin={chartMargin}>
 					<CartesianGrid vertical={false} />
 					<YAxis
 						className="tracking-tighter"
-						domain={[
-							0,
-							() => toFixedWithoutTrailingZeros(chartData.systemStats.at(-1)?.stats.s ?? 0.04, 2),
-						]}
+						domain={[0, () => toFixedWithoutTrailingZeros(chartData.systemStats.at(-1)?.stats.s ?? 0.04, 2)]}
 						width={yAxisWidth}
 						tickLine={false}
 						axisLine={false}
-						tickFormatter={(value) => updateYAxisWidth(value + ' GB')}
+						tickFormatter={(value) => updateYAxisWidth(value + " GB")}
 					/>
 					{xAxis(chartData)}
 					<ChartTooltip
@@ -42,7 +39,7 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 						content={
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
-								contentFormatter={(item) => decimalString(item.value) + ' GB'}
+								contentFormatter={(item) => decimalString(item.value) + " GB"}
 								// indicator="line"
 							/>
 						}

@@ -1,18 +1,18 @@
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { pb } from '@/lib/stores'
-import { Separator } from '@/components/ui/separator'
-import { Card } from '@/components/ui/card'
-import { BellIcon, LoaderCircleIcon, PlusIcon, SaveIcon, Trash2Icon } from 'lucide-react'
-import { ChangeEventHandler, useEffect, useState } from 'react'
-import { toast } from '@/components/ui/use-toast'
-import { InputTags } from '@/components/ui/input-tags'
-import { UserSettings } from '@/types'
-import { saveSettings } from './layout'
-import * as v from 'valibot'
-import { isAdmin } from '@/lib/utils'
-import { useTranslation } from 'react-i18next'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { pb } from "@/lib/stores"
+import { Separator } from "@/components/ui/separator"
+import { Card } from "@/components/ui/card"
+import { BellIcon, LoaderCircleIcon, PlusIcon, SaveIcon, Trash2Icon } from "lucide-react"
+import { ChangeEventHandler, useEffect, useState } from "react"
+import { toast } from "@/components/ui/use-toast"
+import { InputTags } from "@/components/ui/input-tags"
+import { UserSettings } from "@/types"
+import { saveSettings } from "./layout"
+import * as v from "valibot"
+import { isAdmin } from "@/lib/utils"
+import { useTranslation } from "react-i18next"
 
 interface ShoutrrrUrlCardProps {
 	url: string
@@ -39,10 +39,10 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 	}, [userSettings])
 
 	function addWebhook() {
-		setWebhooks([...webhooks, ''])
+		setWebhooks([...webhooks, ""])
 		// focus on the new input
 		queueMicrotask(() => {
-			const inputs = document.querySelectorAll('#webhooks input') as NodeListOf<HTMLInputElement>
+			const inputs = document.querySelectorAll("#webhooks input") as NodeListOf<HTMLInputElement>
 			inputs[inputs.length - 1]?.focus()
 		})
 	}
@@ -61,9 +61,9 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 			await saveSettings(parsedData)
 		} catch (e: any) {
 			toast({
-				title: 'Failed to save settings',
+				title: "Failed to save settings",
 				description: e.message,
-				variant: 'destructive',
+				variant: "destructive",
 			})
 		}
 		setIsLoading(false)
@@ -72,63 +72,51 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 	return (
 		<div>
 			<div>
-				<h3 className="text-xl font-medium mb-2">{t('settings.notifications.title')}</h3>
-				<p className="text-sm text-muted-foreground leading-relaxed">
-					{t('settings.notifications.subtitle_1')}
-				</p>
+				<h3 className="text-xl font-medium mb-2">{t("settings.notifications.title")}</h3>
+				<p className="text-sm text-muted-foreground leading-relaxed">{t("settings.notifications.subtitle_1")}</p>
 				<p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
-					{t('settings.notifications.subtitle_2')}{' '}
-					<BellIcon className="inline h-4 w-4" /> {t('settings.notifications.subtitle_3')}
+					{t("settings.notifications.subtitle_2")} <BellIcon className="inline h-4 w-4" />{" "}
+					{t("settings.notifications.subtitle_3")}
 				</p>
 			</div>
 			<Separator className="my-4" />
 			<div className="space-y-5">
 				<div className="space-y-2">
 					<div className="mb-4">
-						<h3 className="mb-1 text-lg font-medium">
-							{t('settings.notifications.email.title')}
-						</h3>
+						<h3 className="mb-1 text-lg font-medium">{t("settings.notifications.email.title")}</h3>
 						{isAdmin() && (
 							<p className="text-sm text-muted-foreground leading-relaxed">
-								{t('settings.notifications.email.please')}{' '}
+								{t("settings.notifications.email.please")}{" "}
 								<a href="/_/#/settings/mail" className="link" target="_blank">
-									{t('settings.notifications.email.configure_an_SMTP_server')}
-								</a>{' '}
-								{t('settings.notifications.email.to_ensure_alerts_are_delivered')}{' '}
+									{t("settings.notifications.email.configure_an_SMTP_server")}
+								</a>{" "}
+								{t("settings.notifications.email.to_ensure_alerts_are_delivered")}{" "}
 							</p>
 						)}
 					</div>
 					<Label className="block" htmlFor="email">
-						{t('settings.notifications.email.to_email_s')}
+						{t("settings.notifications.email.to_email_s")}
 					</Label>
 					<InputTags
 						value={emails}
 						onChange={setEmails}
-						placeholder={t('settings.notifications.email.enter_email_address')}
+						placeholder={t("settings.notifications.email.enter_email_address")}
 						className="w-full"
 						type="email"
 						id="email"
 					/>
-					<p className="text-[0.8rem] text-muted-foreground">
-						{t('settings.notifications.email.des')}
-					</p>
+					<p className="text-[0.8rem] text-muted-foreground">{t("settings.notifications.email.des")}</p>
 				</div>
 				<Separator />
 				<div className="space-y-3">
 					<div>
-						<h3 className="mb-1 text-lg font-medium">
-							{t('settings.notifications.webhook_push.title')}
-						</h3>
+						<h3 className="mb-1 text-lg font-medium">{t("settings.notifications.webhook_push.title")}</h3>
 						<p className="text-sm text-muted-foreground leading-relaxed">
-							{t('settings.notifications.webhook_push.des_1')}{' '}
-							<a
-								href="https://containrrr.dev/shoutrrr/services/overview/"
-								target="_blank"
-								className="link"
-							>
+							{t("settings.notifications.webhook_push.des_1")}{" "}
+							<a href="https://containrrr.dev/shoutrrr/services/overview/" target="_blank" className="link">
 								Shoutrrr
-							</a>{' '}
-							{t('settings.notifications.webhook_push.des_2')}
+							</a>{" "}
+							{t("settings.notifications.webhook_push.des_2")}
 						</p>
 					</div>
 					{webhooks.length > 0 && (
@@ -137,9 +125,7 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 								<ShoutrrrUrlCard
 									key={index}
 									url={webhook}
-									onUrlChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-										updateWebhook(index, e.target.value)
-									}
+									onUrlChange={(e: React.ChangeEvent<HTMLInputElement>) => updateWebhook(index, e.target.value)}
 									onRemove={() => removeWebhook(index)}
 								/>
 							))}
@@ -153,7 +139,7 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 						onClick={addWebhook}
 					>
 						<PlusIcon className="h-4 w-4 -ml-0.5" />
-						{t('settings.notifications.webhook_push.add_url')}
+						{t("settings.notifications.webhook_push.add_url")}
 					</Button>
 				</div>
 				<Separator />
@@ -163,12 +149,8 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 					onClick={updateSettings}
 					disabled={isLoading}
 				>
-					{isLoading ? (
-						<LoaderCircleIcon className="h-4 w-4 animate-spin" />
-					) : (
-						<SaveIcon className="h-4 w-4" />
-					)}
-					{t('settings.save_settings')}
+					{isLoading ? <LoaderCircleIcon className="h-4 w-4 animate-spin" /> : <SaveIcon className="h-4 w-4" />}
+					{t("settings.save_settings")}
 				</Button>
 			</div>
 		</div>
@@ -180,17 +162,17 @@ const ShoutrrrUrlCard = ({ url, onUrlChange, onRemove }: ShoutrrrUrlCardProps) =
 
 	const sendTestNotification = async () => {
 		setIsLoading(true)
-		const res = await pb.send('/api/beszel/send-test-notification', { url })
-		if ('err' in res && !res.err) {
+		const res = await pb.send("/api/beszel/send-test-notification", { url })
+		if ("err" in res && !res.err) {
 			toast({
-				title: 'Test notification sent',
-				description: 'Check your notification service',
+				title: "Test notification sent",
+				description: "Check your notification service",
 			})
 		} else {
 			toast({
-				title: 'Error',
-				description: res.err ?? 'Failed to send test notification',
-				variant: 'destructive',
+				title: "Error",
+				description: res.err ?? "Failed to send test notification",
+				variant: "destructive",
 			})
 		}
 		setIsLoading(false)
@@ -211,7 +193,7 @@ const ShoutrrrUrlCard = ({ url, onUrlChange, onRemove }: ShoutrrrUrlCardProps) =
 					type="button"
 					variant="outline"
 					className="w-20 md:w-28"
-					disabled={isLoading || url === ''}
+					disabled={isLoading || url === ""}
 					onClick={sendTestNotification}
 				>
 					{isLoading ? (
@@ -222,14 +204,7 @@ const ShoutrrrUrlCard = ({ url, onUrlChange, onRemove }: ShoutrrrUrlCardProps) =
 						</span>
 					)}
 				</Button>
-				<Button
-					type="button"
-					variant="outline"
-					size="icon"
-					className="shrink-0"
-					aria-label="Delete"
-					onClick={onRemove}
-				>
+				<Button type="button" variant="outline" size="icon" className="shrink-0" aria-label="Delete" onClick={onRemove}>
 					<Trash2Icon className="h-4 w-4" />
 				</Button>
 			</div>

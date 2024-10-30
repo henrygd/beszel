@@ -1,29 +1,20 @@
-import { cn } from '@/lib/utils'
-import { buttonVariants } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { LoaderCircle, LockIcon, LogInIcon, MailIcon, UserIcon } from 'lucide-react'
-import { $authenticated, pb } from '@/lib/stores'
-import * as v from 'valibot'
-import { toast } from '../ui/use-toast'
-import {
-	Dialog,
-	DialogContent,
-	DialogTrigger,
-	DialogHeader,
-	DialogTitle,
-} from '@/components/ui/dialog'
-import { useCallback, useState } from 'react'
-import { AuthMethodsList, OAuth2AuthConfig } from 'pocketbase'
-import { Link } from '../router'
-import { useTranslation } from 'react-i18next'
+import { cn } from "@/lib/utils"
+import { buttonVariants } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { LoaderCircle, LockIcon, LogInIcon, MailIcon, UserIcon } from "lucide-react"
+import { $authenticated, pb } from "@/lib/stores"
+import * as v from "valibot"
+import { toast } from "../ui/use-toast"
+import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { useCallback, useState } from "react"
+import { AuthMethodsList, OAuth2AuthConfig } from "pocketbase"
+import { Link } from "../router"
+import { useTranslation } from "react-i18next"
 
-const honeypot = v.literal('')
-const emailSchema = v.pipe(v.string(), v.email('Invalid email address.'))
-const passwordSchema = v.pipe(
-	v.string(),
-	v.minLength(10, 'Password must be at least 10 characters.')
-)
+const honeypot = v.literal("")
+const emailSchema = v.pipe(v.string(), v.email("Invalid email address."))
+const passwordSchema = v.pipe(v.string(), v.minLength(10, "Password must be at least 10 characters."))
 
 const LoginSchema = v.looseObject({
 	name: honeypot,
@@ -37,9 +28,9 @@ const RegisterSchema = v.looseObject({
 		v.string(),
 		v.regex(
 			/^(?=.*[a-zA-Z])[a-zA-Z0-9_-]+$/,
-			'Invalid username. You may use alphanumeric characters, underscores, and hyphens.'
+			"Invalid username. You may use alphanumeric characters, underscores, and hyphens."
 		),
-		v.minLength(3, 'Username must be at least 3 characters long.')
+		v.minLength(3, "Username must be at least 3 characters long.")
 	),
 	email: emailSchema,
 	password: passwordSchema,
@@ -48,9 +39,9 @@ const RegisterSchema = v.looseObject({
 
 const showLoginFaliedToast = () => {
 	toast({
-		title: 'Login attempt failed',
-		description: 'Please check your credentials and try again',
-		variant: 'destructive',
+		title: "Login attempt failed",
+		description: "Please check your credentials and try again",
+		variant: "destructive",
 	})
 }
 
@@ -93,7 +84,7 @@ export function UserAuthForm({
 				if (isFirstRun) {
 					// check that passwords match
 					if (password !== passwordConfirm) {
-						let msg = 'Passwords do not match'
+						let msg = "Passwords do not match"
 						setErrors({ passwordConfirm: msg })
 						return
 					}
@@ -103,17 +94,17 @@ export function UserAuthForm({
 						passwordConfirm: password,
 					})
 					await pb.admins.authWithPassword(email, password)
-					await pb.collection('users').create({
+					await pb.collection("users").create({
 						username,
 						email,
 						password,
 						passwordConfirm: password,
-						role: 'admin',
+						role: "admin",
 						verified: true,
 					})
-					await pb.collection('users').authWithPassword(email, password)
+					await pb.collection("users").authWithPassword(email, password)
 				} else {
-					await pb.collection('users').authWithPassword(email, password)
+					await pb.collection("users").authWithPassword(email, password)
 				}
 				$authenticated.set(true)
 			} catch (e) {
@@ -130,7 +121,7 @@ export function UserAuthForm({
 	}
 
 	return (
-		<div className={cn('grid gap-6', className)} {...props}>
+		<div className={cn("grid gap-6", className)} {...props}>
 			{authMethods.emailPassword && (
 				<>
 					<form onSubmit={handleSubmit} onChange={() => setErrors({})}>
@@ -154,9 +145,7 @@ export function UserAuthForm({
 										disabled={isLoading || isOauthLoading}
 										className="pl-9"
 									/>
-									{errors?.username && (
-										<p className="px-1 text-xs text-red-600">{errors.username}</p>
-									)}
+									{errors?.username && <p className="px-1 text-xs text-red-600">{errors.username}</p>}
 								</div>
 							)}
 							<div className="grid gap-1 relative">
@@ -168,7 +157,7 @@ export function UserAuthForm({
 									id="email"
 									name="email"
 									required
-									placeholder={isFirstRun ? 'email' : 'name@example.com'}
+									placeholder={isFirstRun ? "email" : "name@example.com"}
 									type="email"
 									autoCapitalize="none"
 									autoComplete="email"
@@ -211,9 +200,7 @@ export function UserAuthForm({
 										disabled={isLoading || isOauthLoading}
 										className="pl-9"
 									/>
-									{errors?.passwordConfirm && (
-										<p className="px-1 text-xs text-red-600">{errors.passwordConfirm}</p>
-									)}
+									{errors?.passwordConfirm && <p className="px-1 text-xs text-red-600">{errors.passwordConfirm}</p>}
 								</div>
 							)}
 							<div className="sr-only">
@@ -227,7 +214,7 @@ export function UserAuthForm({
 								) : (
 									<LogInIcon className="mr-2 h-4 w-4" />
 								)}
-								{isFirstRun ? t('auth.create_account') : t('auth.sign_in')}
+								{isFirstRun ? t("auth.create_account") : t("auth.sign_in")}
 							</button>
 						</div>
 					</form>
@@ -251,9 +238,9 @@ export function UserAuthForm({
 						<button
 							key={provider.name}
 							type="button"
-							className={cn(buttonVariants({ variant: 'outline' }), {
-								'justify-self-center': !authMethods.emailPassword,
-								'px-5': !authMethods.emailPassword,
+							className={cn(buttonVariants({ variant: "outline" }), {
+								"justify-self-center": !authMethods.emailPassword,
+								"px-5": !authMethods.emailPassword,
 							})}
 							onClick={() => {
 								setIsOauthLoading(true)
@@ -266,9 +253,9 @@ export function UserAuthForm({
 									if (!authWindow) {
 										setIsOauthLoading(false)
 										toast({
-											title: 'Error',
-											description: 'Please enable pop-ups for this site',
-											variant: 'destructive',
+											title: "Error",
+											description: "Please enable pop-ups for this site",
+											variant: "destructive",
 										})
 										return
 									}
@@ -276,7 +263,7 @@ export function UserAuthForm({
 										authWindow.location.href = url
 									}
 								}
-								pb.collection('users')
+								pb.collection("users")
 									.authWithOAuth2(oAuthOpts)
 									.then(() => {
 										$authenticated.set(pb.authStore.isValid)
@@ -296,7 +283,7 @@ export function UserAuthForm({
 									src={`/static/${provider.name}.svg`}
 									alt=""
 									onError={(e) => {
-										e.currentTarget.src = '/static/lock.svg'
+										e.currentTarget.src = "/static/lock.svg"
 									}}
 								/>
 							)}
@@ -310,26 +297,26 @@ export function UserAuthForm({
 				// only show GitHub button / dialog during onboarding
 				<Dialog>
 					<DialogTrigger asChild>
-						<button type="button" className={cn(buttonVariants({ variant: 'outline' }))}>
+						<button type="button" className={cn(buttonVariants({ variant: "outline" }))}>
 							<img className="mr-2 h-4 w-4 dark:invert" src="/static/github.svg" alt="" />
 							<span className="translate-y-[1px]">GitHub</span>
 						</button>
 					</DialogTrigger>
-					<DialogContent style={{ maxWidth: 440, width: '90%' }}>
+					<DialogContent style={{ maxWidth: 440, width: "90%" }}>
 						<DialogHeader>
 							<DialogTitle>OAuth 2 / OIDC support</DialogTitle>
 						</DialogHeader>
 						<div className="text-primary/70 text-[0.95em] contents">
-							<p>{t('auth.openid_des')}</p>
+							<p>{t("auth.openid_des")}</p>
 							<p>
-								{t('please_view_the')}{' '}
+								{t("please_view_the")}{" "}
 								<a
 									href="https://github.com/henrygd/beszel/blob/main/readme.md#oauth--oidc-integration"
-									className={cn(buttonVariants({ variant: 'link' }), 'p-0 h-auto')}
+									className={cn(buttonVariants({ variant: "link" }), "p-0 h-auto")}
 								>
 									GitHub README
-								</a>{' '}
-								{t('for_instructions')}
+								</a>{" "}
+								{t("for_instructions")}
 							</p>
 						</div>
 					</DialogContent>
@@ -341,7 +328,7 @@ export function UserAuthForm({
 					href="/forgot-password"
 					className="text-sm mx-auto hover:text-brand underline underline-offset-4 opacity-70 hover:opacity-100 transition-opacity"
 				>
-					{t('auth.forgot_password')}
+					{t("auth.forgot_password")}
 				</Link>
 			)}
 		</div>

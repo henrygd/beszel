@@ -1,12 +1,12 @@
-import { pb } from '@/lib/stores'
-import { alertInfo, cn } from '@/lib/utils'
-import { Switch } from '@/components/ui/switch'
-import { AlertRecord, SystemRecord } from '@/types'
-import { lazy, Suspense, useRef, useState } from 'react'
-import { toast } from '../ui/use-toast'
-import { RecordOptions } from 'pocketbase'
-import { newQueue, Queue } from '@henrygd/queue'
-import { useTranslation } from 'react-i18next'
+import { pb } from "@/lib/stores"
+import { alertInfo, cn } from "@/lib/utils"
+import { Switch } from "@/components/ui/switch"
+import { AlertRecord, SystemRecord } from "@/types"
+import { lazy, Suspense, useRef, useState } from "react"
+import { toast } from "../ui/use-toast"
+import { RecordOptions } from "pocketbase"
+import { newQueue, Queue } from "@henrygd/queue"
+import { useTranslation } from "react-i18next"
 
 interface AlertData {
 	checked?: boolean
@@ -18,15 +18,15 @@ interface AlertData {
 	system: SystemRecord
 }
 
-const Slider = lazy(() => import('@/components/ui/slider'))
+const Slider = lazy(() => import("@/components/ui/slider"))
 
 let queue: Queue
 
 const failedUpdateToast = () =>
 	toast({
-		title: 'Failed to update alert',
-		description: 'Please check logs for more details.',
-		variant: 'destructive',
+		title: "Failed to update alert",
+		description: "Please check logs for more details.",
+		variant: "destructive",
 	})
 
 export function SystemAlert({
@@ -43,11 +43,11 @@ export function SystemAlert({
 	data.updateAlert = async (checked: boolean, value: number, min: number) => {
 		try {
 			if (alert && !checked) {
-				await pb.collection('alerts').delete(alert.id)
+				await pb.collection("alerts").delete(alert.id)
 			} else if (alert && checked) {
-				await pb.collection('alerts').update(alert.id, { value, min, triggered: false })
+				await pb.collection("alerts").update(alert.id, { value, min, triggered: false })
 			} else if (checked) {
-				pb.collection('alerts').create({
+				pb.collection("alerts").create({
 					system: system.id,
 					user: pb.authStore.model!.id,
 					name: data.key,
@@ -76,7 +76,7 @@ export function SystemAlertGlobal({
 	systems,
 }: {
 	data: AlertData
-	overwrite: boolean | 'indeterminate'
+	overwrite: boolean | "indeterminate"
 	alerts: AlertRecord[]
 	systems: SystemRecord[]
 }) {
@@ -111,9 +111,7 @@ export function SystemAlertGlobal({
 				continue
 			}
 			// find matching existing alert
-			const existingAlert = alerts.find(
-				(alert) => alert.system === system.id && data.key === alert.name
-			)
+			const existingAlert = alerts.find((alert) => alert.system === system.id && data.key === alert.name)
 			// if first run, add system to set (alert already existed when global panel was opened)
 			if (existingAlert && !populatedSet && !overwrite) {
 				set.add(system.id)
@@ -128,13 +126,13 @@ export function SystemAlertGlobal({
 				if (existingAlert) {
 					// console.log('updating', system.name)
 					queue
-						.add(() => pb.collection('alerts').update(existingAlert.id, recordData, requestOptions))
+						.add(() => pb.collection("alerts").update(existingAlert.id, recordData, requestOptions))
 						.catch(failedUpdateToast)
 				} else {
 					// console.log('creating', system.name)
 					queue
 						.add(() =>
-							pb.collection('alerts').create(
+							pb.collection("alerts").create(
 								{
 									system: system.id,
 									user: pb.authStore.model!.id,
@@ -148,7 +146,7 @@ export function SystemAlertGlobal({
 				}
 			} else if (existingAlert) {
 				// console.log('deleting', system.name)
-				queue.add(() => pb.collection('alerts').delete(existingAlert.id)).catch(failedUpdateToast)
+				queue.add(() => pb.collection("alerts").delete(existingAlert.id)).catch(failedUpdateToast)
 			}
 		}
 		systemsWithExistingAlerts.current.populatedSet = true
@@ -162,7 +160,7 @@ function AlertContent({ data }: { data: AlertData }) {
 
 	const { key } = data
 
-	const hasSliders = !('single' in data.alert)
+	const hasSliders = !("single" in data.alert)
 
 	const [checked, setChecked] = useState(data.checked || false)
 	const [min, setMin] = useState(data.min || (hasSliders ? 10 : 0))
@@ -175,24 +173,21 @@ function AlertContent({ data }: { data: AlertData }) {
 
 	const Icon = alertInfo[key].icon
 
-	const updateAlert = (c?: boolean) =>
-		data.updateAlert?.(c ?? checked, newValue.current, newMin.current)
+	const updateAlert = (c?: boolean) => data.updateAlert?.(c ?? checked, newValue.current, newMin.current)
 
 	return (
 		<div className="rounded-lg border border-muted-foreground/15 hover:border-muted-foreground/20 transition-colors duration-100 group">
 			<label
 				htmlFor={`s${key}`}
-				className={cn('flex flex-row items-center justify-between gap-4 cursor-pointer p-4', {
-					'pb-0': showSliders,
+				className={cn("flex flex-row items-center justify-between gap-4 cursor-pointer p-4", {
+					"pb-0": showSliders,
 				})}
 			>
 				<div className="grid gap-1 select-none">
 					<p className="font-semibold flex gap-3 items-center capitalize">
 						<Icon className="h-4 w-4 opacity-85" /> {t(data.alert.name)}
 					</p>
-					{!showSliders && (
-						<span className="block text-sm text-muted-foreground">{t(data.alert.desc)}</span>
-					)}
+					{!showSliders && <span className="block text-sm text-muted-foreground">{t(data.alert.desc)}</span>}
 				</div>
 				<Switch
 					id={`s${key}`}
@@ -208,7 +203,7 @@ function AlertContent({ data }: { data: AlertData }) {
 					<Suspense fallback={<div className="h-10" />}>
 						<div>
 							<p id={`v${key}`} className="text-sm block h-8">
-								{t('alerts.average_exceeds')}{' '}
+								{t("alerts.average_exceeds")}{" "}
 								<strong className="text-foreground">
 									{value}
 									{data.alert.unit}
@@ -227,7 +222,8 @@ function AlertContent({ data }: { data: AlertData }) {
 						</div>
 						<div>
 							<p id={`t${key}`} className="text-sm block h-8">
-								{t('alerts.for')} <strong className="text-foreground">{min}</strong> {min > 1 ? t('alerts.minutes') : t('alerts.minute')}
+								{t("alerts.for")} <strong className="text-foreground">{min}</strong>{" "}
+								{min > 1 ? t("alerts.minutes") : t("alerts.minute")}
 							</p>
 							<div className="flex gap-3">
 								<Slider

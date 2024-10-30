@@ -1,16 +1,9 @@
-import { Area, AreaChart, CartesianGrid, YAxis } from 'recharts'
+import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 
-import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from '@/components/ui/chart'
-import {
-	useYAxisWidth,
-	cn,
-	toFixedFloat,
-	decimalString,
-	formatShortDate,
-	chartMargin,
-} from '@/lib/utils'
-import { memo } from 'react'
-import { ChartData } from '@/types'
+import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
+import { useYAxisWidth, cn, toFixedFloat, decimalString, formatShortDate, chartMargin } from "@/lib/utils"
+import { memo } from "react"
+import { ChartData } from "@/types"
 
 export default memo(function MemChart({ chartData }: { chartData: ChartData }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
@@ -23,8 +16,8 @@ export default memo(function MemChart({ chartData }: { chartData: ChartData }) {
 		<div>
 			{/* {!yAxisSet && <Spinner />} */}
 			<ChartContainer
-				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
-					'opacity-100': yAxisWidth,
+				className={cn("h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity", {
+					"opacity-100": yAxisWidth,
 				})}
 			>
 				<AreaChart accessibilityLayer data={chartData.systemStats} margin={chartMargin}>
@@ -40,7 +33,7 @@ export default memo(function MemChart({ chartData }: { chartData: ChartData }) {
 							axisLine={false}
 							tickFormatter={(value) => {
 								const val = toFixedFloat(value, 1)
-								return updateYAxisWidth(val + ' GB')
+								return updateYAxisWidth(val + " GB")
 							}}
 						/>
 					)}
@@ -54,7 +47,7 @@ export default memo(function MemChart({ chartData }: { chartData: ChartData }) {
 								// @ts-ignore
 								itemSorter={(a, b) => a.order - b.order}
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
-								contentFormatter={(item) => decimalString(item.value) + ' GB'}
+								contentFormatter={(item) => decimalString(item.value) + " GB"}
 								// indicator="line"
 							/>
 						}

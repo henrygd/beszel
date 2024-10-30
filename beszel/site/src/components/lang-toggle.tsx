@@ -1,16 +1,11 @@
-import { useEffect } from 'react'
-import { LanguagesIcon } from 'lucide-react'
+import { useEffect } from "react"
+import { LanguagesIcon } from "lucide-react"
 
-import { Button } from '@/components/ui/button'
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { useTranslation } from 'react-i18next'
-import languages from '../lib/languages.json'
-import { cn } from '@/lib/utils'
+import { Button } from "@/components/ui/button"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useTranslation } from "react-i18next"
+import languages from "../lib/languages.json"
+import { cn } from "@/lib/utils"
 
 export function LangToggle() {
 	const { i18n } = useTranslation()
@@ -22,7 +17,7 @@ export function LangToggle() {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Button variant={'ghost'} size="icon" className="hidden 450:flex">
+				<Button variant={"ghost"} size="icon" className="hidden 450:flex">
 					<LanguagesIcon className="absolute h-[1.2rem] w-[1.2rem] light:opacity-85" />
 					<span className="sr-only">Language</span>
 				</Button>
@@ -31,7 +26,7 @@ export function LangToggle() {
 				{languages.map(({ lang, label }) => (
 					<DropdownMenuItem
 						key={lang}
-						className={cn('pl-4', lang === i18n.language ? 'font-bold' : '')}
+						className={cn("pl-4", lang === i18n.language ? "font-bold" : "")}
 						onClick={() => i18n.changeLanguage(lang)}
 					>
 						{label}

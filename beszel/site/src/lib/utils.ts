@@ -1,14 +1,14 @@
-import { toast } from '@/components/ui/use-toast'
-import { type ClassValue, clsx } from 'clsx'
-import { twMerge } from 'tailwind-merge'
-import { $alerts, $copyContent, $systems, $userSettings, pb } from './stores'
-import { AlertRecord, ChartTimeData, ChartTimes, SystemRecord } from '@/types'
-import { RecordModel, RecordSubscription } from 'pocketbase'
-import { WritableAtom } from 'nanostores'
-import { timeDay, timeHour } from 'd3-time'
-import { useEffect, useState } from 'react'
-import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from 'lucide-react'
-import { EthernetIcon, ThermometerIcon } from '@/components/ui/icons'
+import { toast } from "@/components/ui/use-toast"
+import { type ClassValue, clsx } from "clsx"
+import { twMerge } from "tailwind-merge"
+import { $alerts, $copyContent, $systems, $userSettings, pb } from "./stores"
+import { AlertRecord, ChartTimeData, ChartTimes, SystemRecord } from "@/types"
+import { RecordModel, RecordSubscription } from "pocketbase"
+import { WritableAtom } from "nanostores"
+import { timeDay, timeHour } from "d3-time"
+import { useEffect, useState } from "react"
+import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from "lucide-react"
+import { EthernetIcon, ThermometerIcon } from "@/components/ui/icons"
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -21,7 +21,7 @@ export async function copyToClipboard(content: string) {
 		await navigator.clipboard.writeText(content)
 		toast({
 			duration,
-			description: 'Copied to clipboard',
+			description: "Copied to clipboard",
 		})
 	} catch (e: any) {
 		$copyContent.set(content)
@@ -29,22 +29,22 @@ export async function copyToClipboard(content: string) {
 }
 
 const verifyAuth = () => {
-	pb.collection('users')
+	pb.collection("users")
 		.authRefresh()
 		.catch(() => {
 			pb.authStore.clear()
 			toast({
-				title: 'Failed to authenticate',
-				description: 'Please log in again',
-				variant: 'destructive',
+				title: "Failed to authenticate",
+				description: "Please log in again",
+				variant: "destructive",
 			})
 		})
 }
 
 export const updateSystemList = async () => {
 	const records = await pb
-		.collection<SystemRecord>('systems')
-		.getFullList({ sort: '+name', fields: 'id,name,host,info,status' })
+		.collection<SystemRecord>("systems")
+		.getFullList({ sort: "+name", fields: "id,name,host,info,status" })
 	if (records.length) {
 		$systems.set(records)
 	} else {
@@ -53,26 +53,26 @@ export const updateSystemList = async () => {
 }
 
 export const updateAlerts = () => {
-	pb.collection('alerts')
-		.getFullList<AlertRecord>({ fields: 'id,name,system,value,min,triggered', sort: 'updated' })
+	pb.collection("alerts")
+		.getFullList<AlertRecord>({ fields: "id,name,system,value,min,triggered", sort: "updated" })
 		.then((records) => {
 			$alerts.set(records)
 		})
 }
 
 const hourWithMinutesFormatter = new Intl.DateTimeFormat(undefined, {
-	hour: 'numeric',
-	minute: 'numeric',
+	hour: "numeric",
+	minute: "numeric",
 })
 export const hourWithMinutes = (timestamp: string) => {
 	return hourWithMinutesFormatter.format(new Date(timestamp))
 }
 
 const shortDateFormatter = new Intl.DateTimeFormat(undefined, {
-	day: 'numeric',
-	month: 'short',
-	hour: 'numeric',
-	minute: 'numeric',
+	day: "numeric",
+	month: "short",
+	hour: "numeric",
+	minute: "numeric",
 })
 export const formatShortDate = (timestamp: string) => {
 	// console.log('ts', timestamp)
@@ -93,8 +93,8 @@ export const formatShortDate = (timestamp: string) => {
 // }
 
 const dayFormatter = new Intl.DateTimeFormat(undefined, {
-	day: 'numeric',
-	month: 'short',
+	day: "numeric",
+	month: "short",
 	// dateStyle: 'medium',
 })
 export const formatDay = (timestamp: string) => {
@@ -106,19 +106,16 @@ export const updateFavicon = (newIcon: string) => {
 	;(document.querySelector("link[rel='icon']") as HTMLLinkElement).href = `/static/${newIcon}`
 }
 
-export const isAdmin = () => pb.authStore.model?.role === 'admin'
-export const isReadOnlyUser = () => pb.authStore.model?.role === 'readonly'
+export const isAdmin = () => pb.authStore.model?.role === "admin"
+export const isReadOnlyUser = () => pb.authStore.model?.role === "readonly"
 // export const isDefaultUser = () => pb.authStore.model?.role === 'user'
 
 /** Update systems / alerts list when records change  */
-export function updateRecordList<T extends RecordModel>(
-	e: RecordSubscription<T>,
-	$store: WritableAtom<T[]>
-) {
+export function updateRecordList<T extends RecordModel>(e: RecordSubscription<T>, $store: WritableAtom<T[]>) {
 	const curRecords = $store.get()
 	const newRecords = []
 	// console.log('e', e)
-	if (e.action === 'delete') {
+	if (e.action === "delete") {
 		for (const server of curRecords) {
 			if (server.id !== e.record.id) {
 				newRecords.push(server)
@@ -143,51 +140,51 @@ export function updateRecordList<T extends RecordModel>(
 export function getPbTimestamp(timeString: ChartTimes, d?: Date) {
 	d ||= chartTimeData[timeString].getOffset(new Date())
 	const year = d.getUTCFullYear()
-	const month = String(d.getUTCMonth() + 1).padStart(2, '0')
-	const day = String(d.getUTCDate()).padStart(2, '0')
-	const hours = String(d.getUTCHours()).padStart(2, '0')
-	const minutes = String(d.getUTCMinutes()).padStart(2, '0')
-	const seconds = String(d.getUTCSeconds()).padStart(2, '0')
+	const month = String(d.getUTCMonth() + 1).padStart(2, "0")
+	const day = String(d.getUTCDate()).padStart(2, "0")
+	const hours = String(d.getUTCHours()).padStart(2, "0")
+	const minutes = String(d.getUTCMinutes()).padStart(2, "0")
+	const seconds = String(d.getUTCSeconds()).padStart(2, "0")
 
 	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
 export const chartTimeData: ChartTimeData = {
-	'1h': {
-		type: '1m',
+	"1h": {
+		type: "1m",
 		expectedInterval: 60_000,
-		label: '1 hour',
+		label: "1 hour",
 		// ticks: 12,
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -1),
 	},
-	'12h': {
-		type: '10m',
+	"12h": {
+		type: "10m",
 		expectedInterval: 60_000 * 10,
-		label: '12 hours',
+		label: "12 hours",
 		ticks: 12,
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -12),
 	},
-	'24h': {
-		type: '20m',
+	"24h": {
+		type: "20m",
 		expectedInterval: 60_000 * 20,
-		label: '24 hours',
+		label: "24 hours",
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -24),
 	},
-	'1w': {
-		type: '120m',
+	"1w": {
+		type: "120m",
 		expectedInterval: 60_000 * 120,
-		label: '1 week',
+		label: "1 week",
 		ticks: 7,
 		format: (timestamp: string) => formatDay(timestamp),
 		getOffset: (endTime: Date) => timeDay.offset(endTime, -7),
 	},
-	'30d': {
-		type: '480m',
+	"30d": {
+		type: "480m",
 		expectedInterval: 60_000 * 480,
-		label: '30 days',
+		label: "30 days",
 		ticks: 30,
 		format: (timestamp: string) => formatDay(timestamp),
 		getOffset: (endTime: Date) => timeDay.offset(endTime, -30),
@@ -202,8 +199,8 @@ export function useYAxisWidth() {
 	function updateYAxisWidth(str: string) {
 		if (str.length > maxChars) {
 			maxChars = str.length
-			const div = document.createElement('div')
-			div.className = 'text-xs tabular-nums tracking-tighter table sr-only'
+			const div = document.createElement("div")
+			div.className = "text-xs tabular-nums tracking-tighter table sr-only"
 			div.innerHTML = str
 			clearTimeout(timeout)
 			timeout = setTimeout(() => {
@@ -263,20 +260,18 @@ export const useLocalStorage = (key: string, defaultValue: any) => {
 
 export async function updateUserSettings() {
 	try {
-		const req = await pb.collection('user_settings').getFirstListItem('', { fields: 'settings' })
+		const req = await pb.collection("user_settings").getFirstListItem("", { fields: "settings" })
 		$userSettings.set(req.settings)
 		return
 	} catch (e) {
-		console.log('get settings', e)
+		console.log("get settings", e)
 	}
 	// create user settings if error fetching existing
 	try {
-		const createdSettings = await pb
-			.collection('user_settings')
-			.create({ user: pb.authStore.model!.id })
+		const createdSettings = await pb.collection("user_settings").create({ user: pb.authStore.model!.id })
 		$userSettings.set(createdSettings.settings)
 	} catch (e) {
-		console.log('create settings', e)
+		console.log("create settings", e)
 	}
 }
 
@@ -290,51 +285,51 @@ export const getSizeAndUnit = (n: number, isGigabytes = true) => {
 	const sizeInGB = isGigabytes ? n : n / 1_000
 
 	if (sizeInGB >= 1_000) {
-		return { v: sizeInGB / 1_000, u: ' TB' }
+		return { v: sizeInGB / 1_000, u: " TB" }
 	} else if (sizeInGB >= 1) {
-		return { v: sizeInGB, u: ' GB' }
+		return { v: sizeInGB, u: " GB" }
 	}
-	return { v: n, u: ' MB' }
+	return { v: n, u: " MB" }
 }
 
 export const chartMargin = { top: 12 }
 
 export const alertInfo = {
 	Status: {
-		name: 'alerts.info.status',
-		unit: '',
+		name: "alerts.info.status",
+		unit: "",
 		icon: ServerIcon,
-		desc: 'alerts.info.status_des',
+		desc: "alerts.info.status_des",
 		single: true,
 	},
 	CPU: {
-		name: 'alerts.info.cpu_usage',
-		unit: '%',
+		name: "alerts.info.cpu_usage",
+		unit: "%",
 		icon: CpuIcon,
-		desc: 'alerts.info.cpu_usage_des',
+		desc: "alerts.info.cpu_usage_des",
 	},
 	Memory: {
-		name: 'alerts.info.memory_usage',
-		unit: '%',
+		name: "alerts.info.memory_usage",
+		unit: "%",
 		icon: MemoryStickIcon,
-		desc: 'alerts.info.memory_usage_des',
+		desc: "alerts.info.memory_usage_des",
 	},
 	Disk: {
-		name: 'alerts.info.disk_usage',
-		unit: '%',
+		name: "alerts.info.disk_usage",
+		unit: "%",
 		icon: HardDriveIcon,
-		desc: 'alerts.info.disk_usage_des',
+		desc: "alerts.info.disk_usage_des",
 	},
 	Bandwidth: {
-		name: 'alerts.info.bandwidth',
-		unit: ' MB/s',
+		name: "alerts.info.bandwidth",
+		unit: " MB/s",
 		icon: EthernetIcon,
-		desc: 'alerts.info.bandwidth_des',
+		desc: "alerts.info.bandwidth_des",
 	},
 	Temperature: {
-		name: 'alerts.info.temperature',
-		unit: '°C',
+		name: "alerts.info.temperature",
+		unit: "°C",
 		icon: ThermometerIcon,
-		desc: 'alerts.info.temperature_des',
+		desc: "alerts.info.temperature_des",
 	},
 }

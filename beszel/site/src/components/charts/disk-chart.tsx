@@ -1,6 +1,6 @@
-import { Area, AreaChart, CartesianGrid, YAxis } from 'recharts'
+import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 
-import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from '@/components/ui/chart'
+import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
 import {
 	useYAxisWidth,
 	cn,
@@ -9,9 +9,9 @@ import {
 	toFixedFloat,
 	chartMargin,
 	getSizeAndUnit,
-} from '@/lib/utils'
-import { ChartData } from '@/types'
-import { memo } from 'react'
+} from "@/lib/utils"
+import { ChartData } from "@/types"
+import { memo } from "react"
 
 export default memo(function DiskChart({
 	dataKey,
@@ -27,8 +27,8 @@ export default memo(function DiskChart({
 	return (
 		<div>
 			<ChartContainer
-				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
-					'opacity-100': yAxisWidth,
+				className={cn("h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity", {
+					"opacity-100": yAxisWidth,
 				})}
 			>
 				<AreaChart accessibilityLayer data={chartData.systemStats} margin={chartMargin}>

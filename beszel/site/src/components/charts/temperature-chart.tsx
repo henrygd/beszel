@@ -1,4 +1,4 @@
-import { CartesianGrid, Line, LineChart, YAxis } from 'recharts'
+import { CartesianGrid, Line, LineChart, YAxis } from "recharts"
 
 import {
 	ChartContainer,
@@ -7,7 +7,7 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 	xAxis,
-} from '@/components/ui/chart'
+} from "@/components/ui/chart"
 import {
 	useYAxisWidth,
 	cn,
@@ -15,9 +15,9 @@ import {
 	toFixedWithoutTrailingZeros,
 	decimalString,
 	chartMargin,
-} from '@/lib/utils'
-import { ChartData } from '@/types'
-import { memo, useMemo } from 'react'
+} from "@/lib/utils"
+import { ChartData } from "@/types"
+import { memo, useMemo } from "react"
 
 export default memo(function TemperatureChart({ chartData }: { chartData: ChartData }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
@@ -53,19 +53,19 @@ export default memo(function TemperatureChart({ chartData }: { chartData: ChartD
 	return (
 		<div>
 			<ChartContainer
-				className={cn('h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity', {
-					'opacity-100': yAxisWidth,
+				className={cn("h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity", {
+					"opacity-100": yAxisWidth,
 				})}
 			>
 				<LineChart accessibilityLayer data={newChartData.data} margin={chartMargin}>
 					<CartesianGrid vertical={false} />
 					<YAxis
 						className="tracking-tighter"
-						domain={[0, 'auto']}
+						domain={[0, "auto"]}
 						width={yAxisWidth}
 						tickFormatter={(value) => {
 							const val = toFixedWithoutTrailingZeros(value, 2)
-							return updateYAxisWidth(val + ' °C')
+							return updateYAxisWidth(val + " °C")
 						}}
 						tickLine={false}
 						axisLine={false}
@@ -79,7 +79,7 @@ export default memo(function TemperatureChart({ chartData }: { chartData: ChartD
 						content={
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
-								contentFormatter={(item) => decimalString(item.value) + ' °C'}
+								contentFormatter={(item) => decimalString(item.value) + " °C"}
 								// indicator="line"
 							/>
 						}

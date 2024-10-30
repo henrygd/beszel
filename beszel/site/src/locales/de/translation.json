@@ -1,194 +1,194 @@
 {
-    "all_systems": "Alle Systeme",
-    "filter": "Filtern...",
-    "copy": "Kopieren",
-    "add": "Hinzufügen",
-    "system": "System",
-    "systems": "Systeme",
-    "cancel": "Abbrechen",
-    "continue": "Fortsetzen",
-    "home": {
-        "active_alerts": "Aktive Warnungen",
-        "active_des": "Überschreitet {{value}}{{unit}} Durchschnitt in den letzten {{minutes}} Minuten",
-        "subtitle_1": "In Echtzeit aktualisiert. Drücken Sie",
-        "subtitle_2": "um die Befehlsübersicht zu öffnen."
-    },
-    "systems_table": {
-        "system": "System",
-        "memory": "Speicher",
-        "cpu": "CPU",
-        "disk": "Festplatte",
-        "net": "Netzwerk",
-        "agent": "Agent",
-        "no_systems_found": "Keine Systeme gefunden.",
-        "open_menu": "Menü öffnen",
-        "resume": "Fortsetzen",
-        "pause": "Pause",
-        "copy_host": "Host kopieren",
-        "delete": "Löschen",
-        "delete_confirm": "Sind Sie sicher, dass Sie {{name}} löschen möchten?",
-        "delete_confirm_des_1": "Diese Aktion kann nicht rückgängig gemacht werden. Dies wird alle aktuellen Aufzeichnungen für",
-        "delete_confirm_des_2": "dauerhaft aus der Datenbank löschen."
-    },
-    "alerts": {
-        "title": "Warnungen",
-        "subtitle_1": "Siehe",
-        "notification_settings": "Benachrichtigungseinstellungen",
-        "subtitle_2": "um zu konfigurieren, wie Sie Warnungen erhalten.",
-        "overwrite_existing_alerts": "Bestehende Warnungen überschreiben",
-        "info": {
-            "status": "Status",
-            "status_des": "Löst aus, wenn der Status zwischen oben und unten wechselt.",
-            "cpu_usage": "CPU-Auslastung",
-            "cpu_usage_des": "Löst aus, wenn die CPU-Auslastung einen Schwellenwert überschreitet.",
-            "memory_usage": "Speicherauslastung",
-            "memory_usage_des": "Löst aus, wenn die Speicherauslastung einen Schwellenwert überschreitet.",
-            "disk_usage": "Festplattennutzung",
-            "disk_usage_des": "Löst aus, wenn die Nutzung einer Festplatte einen Schwellenwert überschreitet.",
-            "bandwidth": "Bandbreite",
-            "bandwidth_des": "Löst aus, wenn die kombinierte Auf-/Abwärtsbandbreite einen Schwellenwert überschreitet.",
-            "temperature": "Temperatur",
-            "temperature_des": "Löst aus, wenn ein Sensor einen Schwellenwert überschreitet."
-        },
-        "average_exceeds": "Durchschnitt überschreitet",
-        "for": "Für",
-        "minute": "Minute",
-        "minutes": "Minuten"
-    },
-    "settings": {
-        "settings": "Einstellungen",
-        "subtitle": "Anzeige- und Benachrichtigungseinstellungen verwalten.",
-        "save_settings": "Einstellungen speichern",
-        "export_configuration": "Konfiguration exportieren",
-        "general": {
-            "title": "Allgemein",
-            "subtitle": "Allgemeine Anwendungsoptionen ändern.",
-            "language": {
-                "title": "Sprache",
-                "subtitle_1": "Möchten Sie uns helfen, unsere Übersetzungen noch besser zu machen? Schauen Sie sich",
-                "subtitle_2": "für weitere Details an.",
-                "preferred_language": "Bevorzugte Sprache"
-            },
-            "chart_options": {
-                "title": "Diagrammoptionen",
-                "subtitle": "Anzeigeoptionen für Diagramme anpassen.",
-                "default_time_period": "Standardzeitraum",
-                "default_time_period_des": "Legt den Standardzeitraum für Diagramme fest, wenn ein System angezeigt wird."
-            }
-        },
-        "notifications": {
-            "title": "Benachrichtigungen",
-            "subtitle_1": "Konfigurieren Sie, wie Sie Warnbenachrichtigungen erhalten.",
-            "subtitle_2": "Suchen Sie stattdessen nach dem Ort, an dem Sie Warnungen erstellen können? Klicken Sie auf die Glocke",
-            "subtitle_3": "Symbole in der Systemtabelle.",
-            "email": {
-                "title": "E-Mail-Benachrichtigungen",
-                "please": "Bitte",
-                "configure_an_SMTP_server": "konfigurieren Sie einen SMTP-Server",
-                "to_ensure_alerts_are_delivered": "um sicherzustellen, dass Warnungen zugestellt werden.",
-                "to_email_s": "An E-Mail(s)",
-                "enter_email_address": "E-Mail-Adresse eingeben...",
-                "des": "Adresse mit der Eingabetaste oder dem Komma speichern. Leer lassen, um E-Mail-Benachrichtigungen zu deaktivieren."
-            },
-            "webhook_push": {
-                "title": "Webhook / Push-Benachrichtigungen",
-                "des_1": "Beszel verwendet",
-                "des_2": "um sich mit beliebten Benachrichtigungsdiensten zu integrieren.",
-                "add_url": "URL hinzufügen"
-            }
-        },
-        "yaml_config": {
-            "short_title": "YAML-Konfig",
-            "title": "YAML-Konfiguration",
-            "subtitle": "Aktuelle Systemkonfiguration exportieren.",
-            "des_1": "Systeme können in einer",
-            "des_2": "Datei im Datenverzeichnis verwaltet werden.",
-            "des_3": "Bei jedem Neustart werden die Systeme in der Datenbank aktualisiert, um den in der Datei definierten Systemen zu entsprechen.",
-            "alert": {
-                "title": "Achtung - potenzieller Datenverlust",
-                "des_1": "Bestehende Systeme, die nicht in",
-                "des_2": "definiert sind, werden gelöscht. Bitte machen Sie regelmäßige Backups."
-            }
-        },
-        "language": "Sprache"
-    },
-    "user_dm": {
-        "users": "Benutzer",
-        "logs": "Protokolle",
-        "backups": "Backups",
-        "auth_providers": "Authentifizierungsanbieter",
-        "log_out": "Abmelden"
-    },
-    "themes": {
-        "toggle_theme": "Thema wechseln",
-        "light": "Hell",
-        "dark": "Dunkel",
-        "system": "System"
-    },
-    "add_system": {
-        "add_new_system": "Neues System hinzufügen",
-        "binary": "Binär",
-        "dialog_des_1": "Der Agent muss auf dem System laufen, um eine Verbindung herzustellen. Kopieren Sie den",
-        "dialog_des_2": "für den Agenten unten.",
-        "name": "Name",
-        "host_ip": "Host / IP",
-        "port": "Port",
-        "public_key": "Öffentlicher Schlüssel",
-        "click_to_copy": "Zum Kopieren klicken",
-        "command": "Befehl",
-        "add_system": "System hinzufügen"
-    },
-    "command": {
-        "search": "Nach Systemen oder Einstellungen suchen...",
-        "pages_settings": "Seiten / Einstellungen",
-        "dashboard": "Dashboard",
-        "documentation": "Dokumentation",
-        "SMTP_settings": "SMTP-Einstellungen",
-        "page": "Seite",
-        "admin": "Admin"
-    },
-    "monitor": {
-        "toggle_grid": "Raster umschalten",
-        "average": "Durchschnitt",
-        "max_1_min": "Max 1 Min",
-        "total_cpu_usage": "Gesamte CPU-Auslastung",
-        "cpu_des": "Systemweite CPU-Auslastung",
-        "docker_cpu_usage": "Docker-CPU-Auslastung",
-        "docker_cpu_des": "Durchschnittliche CPU-Auslastung der Container",
-        "total_memory_usage": "Gesamte Speicherauslastung",
-        "memory_des": "Genaue Nutzung zum aufgezeichneten Zeitpunkt",
-        "docker_memory_usage": "Docker-Speicherauslastung",
-        "docker_memory_des": "Speichernutzung der Docker-Container",
-        "disk_space": "Festplattenspeicher",
-        "disk_des": "Nutzung der Root-Partition",
-        "disk_io": "Festplatten-I/O",
-        "disk_io_des": "Durchsatz des Root-Dateisystems",
-        "bandwidth": "Bandbreite",
-        "bandwidth_des": "Netzwerkverkehr der öffentlichen Schnittstellen",
-        "docker_network_io": "Docker-Netzwerk-I/O",
-        "docker_network_io_des": "Netzwerkverkehr der Docker-Container",
-        "swap_usage": "Swap-Nutzung",
-        "swap_des": "Vom System genutzter Swap-Speicher",
-        "temperature": "Temperatur",
-        "temperature_des": "Temperaturen der System-Sensoren",
-        "usage": "Nutzung",
-        "disk_usage_of": "Festplattennutzung von",
-        "throughput_of": "Durchsatz von",
-        "waiting_for": "Warten auf genügend Datensätze zur Anzeige"
-    },
-    "auth": {
-        "login": "Bitte melden Sie sich bei Ihrem Konto an",
-        "reset": "E-Mail-Adresse eingeben, um das Passwort zurückzusetzen",
-        "create": "Bitte erstellen Sie ein Administratorkonto",
-        "create_account": "Konto erstellen",
-        "sign_in": "Anmelden",
-        "openid_des": "Beszel unterstützt OpenID Connect und viele OAuth2-Authentifizierungsanbieter.",
-        "please_view_the": "Bitte sehen Sie sich die",
-        "for_instructions": "für Anweisungen an.",
-        "forgot_password": "Passwort vergessen?",
-        "reset_password": "Passwort zurücksetzen",
-        "command_line_instructions": "Befehlszeilenanweisungen",
-        "command_1": "Wenn Sie das Passwort für Ihr Administratorkonto verloren haben, können Sie es mit dem folgenden Befehl zurücksetzen.",
-        "command_2": "Melden Sie sich dann im Backend an und setzen Sie das Passwort Ihres Benutzerkontos in der Benutzertabelle zurück."
-    }
+	"all_systems": "Alle Systeme",
+	"filter": "Filtern...",
+	"copy": "Kopieren",
+	"add": "Hinzufügen",
+	"system": "System",
+	"systems": "Systeme",
+	"cancel": "Abbrechen",
+	"continue": "Fortsetzen",
+	"home": {
+		"active_alerts": "Aktive Warnungen",
+		"active_des": "Überschreitet {{value}}{{unit}} Durchschnitt in den letzten {{minutes}} Minuten",
+		"subtitle_1": "In Echtzeit aktualisiert. Drücken Sie",
+		"subtitle_2": "um die Befehlsübersicht zu öffnen."
+	},
+	"systems_table": {
+		"system": "System",
+		"memory": "Speicher",
+		"cpu": "CPU",
+		"disk": "Festplatte",
+		"net": "Netzwerk",
+		"agent": "Agent",
+		"no_systems_found": "Keine Systeme gefunden.",
+		"open_menu": "Menü öffnen",
+		"resume": "Fortsetzen",
+		"pause": "Pause",
+		"copy_host": "Host kopieren",
+		"delete": "Löschen",
+		"delete_confirm": "Sind Sie sicher, dass Sie {{name}} löschen möchten?",
+		"delete_confirm_des_1": "Diese Aktion kann nicht rückgängig gemacht werden. Dies wird alle aktuellen Aufzeichnungen für",
+		"delete_confirm_des_2": "dauerhaft aus der Datenbank löschen."
+	},
+	"alerts": {
+		"title": "Warnungen",
+		"subtitle_1": "Siehe",
+		"notification_settings": "Benachrichtigungseinstellungen",
+		"subtitle_2": "um zu konfigurieren, wie Sie Warnungen erhalten.",
+		"overwrite_existing_alerts": "Bestehende Warnungen überschreiben",
+		"info": {
+			"status": "Status",
+			"status_des": "Löst aus, wenn der Status zwischen oben und unten wechselt.",
+			"cpu_usage": "CPU-Auslastung",
+			"cpu_usage_des": "Löst aus, wenn die CPU-Auslastung einen Schwellenwert überschreitet.",
+			"memory_usage": "Speicherauslastung",
+			"memory_usage_des": "Löst aus, wenn die Speicherauslastung einen Schwellenwert überschreitet.",
+			"disk_usage": "Festplattennutzung",
+			"disk_usage_des": "Löst aus, wenn die Nutzung einer Festplatte einen Schwellenwert überschreitet.",
+			"bandwidth": "Bandbreite",
+			"bandwidth_des": "Löst aus, wenn die kombinierte Auf-/Abwärtsbandbreite einen Schwellenwert überschreitet.",
+			"temperature": "Temperatur",
+			"temperature_des": "Löst aus, wenn ein Sensor einen Schwellenwert überschreitet."
+		},
+		"average_exceeds": "Durchschnitt überschreitet",
+		"for": "Für",
+		"minute": "Minute",
+		"minutes": "Minuten"
+	},
+	"settings": {
+		"settings": "Einstellungen",
+		"subtitle": "Anzeige- und Benachrichtigungseinstellungen verwalten.",
+		"save_settings": "Einstellungen speichern",
+		"export_configuration": "Konfiguration exportieren",
+		"general": {
+			"title": "Allgemein",
+			"subtitle": "Allgemeine Anwendungsoptionen ändern.",
+			"language": {
+				"title": "Sprache",
+				"subtitle_1": "Möchten Sie uns helfen, unsere Übersetzungen noch besser zu machen? Schauen Sie sich",
+				"subtitle_2": "für weitere Details an.",
+				"preferred_language": "Bevorzugte Sprache"
+			},
+			"chart_options": {
+				"title": "Diagrammoptionen",
+				"subtitle": "Anzeigeoptionen für Diagramme anpassen.",
+				"default_time_period": "Standardzeitraum",
+				"default_time_period_des": "Legt den Standardzeitraum für Diagramme fest, wenn ein System angezeigt wird."
+			}
+		},
+		"notifications": {
+			"title": "Benachrichtigungen",
+			"subtitle_1": "Konfigurieren Sie, wie Sie Warnbenachrichtigungen erhalten.",
+			"subtitle_2": "Suchen Sie stattdessen nach dem Ort, an dem Sie Warnungen erstellen können? Klicken Sie auf die Glocke",
+			"subtitle_3": "Symbole in der Systemtabelle.",
+			"email": {
+				"title": "E-Mail-Benachrichtigungen",
+				"please": "Bitte",
+				"configure_an_SMTP_server": "konfigurieren Sie einen SMTP-Server",
+				"to_ensure_alerts_are_delivered": "um sicherzustellen, dass Warnungen zugestellt werden.",
+				"to_email_s": "An E-Mail(s)",
+				"enter_email_address": "E-Mail-Adresse eingeben...",
+				"des": "Adresse mit der Eingabetaste oder dem Komma speichern. Leer lassen, um E-Mail-Benachrichtigungen zu deaktivieren."
+			},
+			"webhook_push": {
+				"title": "Webhook / Push-Benachrichtigungen",
+				"des_1": "Beszel verwendet",
+				"des_2": "um sich mit beliebten Benachrichtigungsdiensten zu integrieren.",
+				"add_url": "URL hinzufügen"
+			}
+		},
+		"yaml_config": {
+			"short_title": "YAML-Konfig",
+			"title": "YAML-Konfiguration",
+			"subtitle": "Aktuelle Systemkonfiguration exportieren.",
+			"des_1": "Systeme können in einer",
+			"des_2": "Datei im Datenverzeichnis verwaltet werden.",
+			"des_3": "Bei jedem Neustart werden die Systeme in der Datenbank aktualisiert, um den in der Datei definierten Systemen zu entsprechen.",
+			"alert": {
+				"title": "Achtung - potenzieller Datenverlust",
+				"des_1": "Bestehende Systeme, die nicht in",
+				"des_2": "definiert sind, werden gelöscht. Bitte machen Sie regelmäßige Backups."
+			}
+		},
+		"language": "Sprache"
+	},
+	"user_dm": {
+		"users": "Benutzer",
+		"logs": "Protokolle",
+		"backups": "Backups",
+		"auth_providers": "Authentifizierungsanbieter",
+		"log_out": "Abmelden"
+	},
+	"themes": {
+		"toggle_theme": "Thema wechseln",
+		"light": "Hell",
+		"dark": "Dunkel",
+		"system": "System"
+	},
+	"add_system": {
+		"add_new_system": "Neues System hinzufügen",
+		"binary": "Binär",
+		"dialog_des_1": "Der Agent muss auf dem System laufen, um eine Verbindung herzustellen. Kopieren Sie den",
+		"dialog_des_2": "für den Agenten unten.",
+		"name": "Name",
+		"host_ip": "Host / IP",
+		"port": "Port",
+		"public_key": "Öffentlicher Schlüssel",
+		"click_to_copy": "Zum Kopieren klicken",
+		"command": "Befehl",
+		"add_system": "System hinzufügen"
+	},
+	"command": {
+		"search": "Nach Systemen oder Einstellungen suchen...",
+		"pages_settings": "Seiten / Einstellungen",
+		"dashboard": "Dashboard",
+		"documentation": "Dokumentation",
+		"SMTP_settings": "SMTP-Einstellungen",
+		"page": "Seite",
+		"admin": "Admin"
+	},
+	"monitor": {
+		"toggle_grid": "Raster umschalten",
+		"average": "Durchschnitt",
+		"max_1_min": "Max 1 Min",
+		"total_cpu_usage": "Gesamte CPU-Auslastung",
+		"cpu_des": "Systemweite CPU-Auslastung",
+		"docker_cpu_usage": "Docker-CPU-Auslastung",
+		"docker_cpu_des": "Durchschnittliche CPU-Auslastung der Container",
+		"total_memory_usage": "Gesamte Speicherauslastung",
+		"memory_des": "Genaue Nutzung zum aufgezeichneten Zeitpunkt",
+		"docker_memory_usage": "Docker-Speicherauslastung",
+		"docker_memory_des": "Speichernutzung der Docker-Container",
+		"disk_space": "Festplattenspeicher",
+		"disk_des": "Nutzung der Root-Partition",
+		"disk_io": "Festplatten-I/O",
+		"disk_io_des": "Durchsatz des Root-Dateisystems",
+		"bandwidth": "Bandbreite",
+		"bandwidth_des": "Netzwerkverkehr der öffentlichen Schnittstellen",
+		"docker_network_io": "Docker-Netzwerk-I/O",
+		"docker_network_io_des": "Netzwerkverkehr der Docker-Container",
+		"swap_usage": "Swap-Nutzung",
+		"swap_des": "Vom System genutzter Swap-Speicher",
+		"temperature": "Temperatur",
+		"temperature_des": "Temperaturen der System-Sensoren",
+		"usage": "Nutzung",
+		"disk_usage_of": "Festplattennutzung von",
+		"throughput_of": "Durchsatz von",
+		"waiting_for": "Warten auf genügend Datensätze zur Anzeige"
+	},
+	"auth": {
+		"login": "Bitte melden Sie sich bei Ihrem Konto an",
+		"reset": "E-Mail-Adresse eingeben, um das Passwort zurückzusetzen",
+		"create": "Bitte erstellen Sie ein Administratorkonto",
+		"create_account": "Konto erstellen",
+		"sign_in": "Anmelden",
+		"openid_des": "Beszel unterstützt OpenID Connect und viele OAuth2-Authentifizierungsanbieter.",
+		"please_view_the": "Bitte sehen Sie sich die",
+		"for_instructions": "für Anweisungen an.",
+		"forgot_password": "Passwort vergessen?",
+		"reset_password": "Passwort zurücksetzen",
+		"command_line_instructions": "Befehlszeilenanweisungen",
+		"command_1": "Wenn Sie das Passwort für Ihr Administratorkonto verloren haben, können Sie es mit dem folgenden Befehl zurücksetzen.",
+		"command_2": "Melden Sie sich dann im Backend an und setzen Sie das Passwort Ihres Benutzerkontos in der Benutzertabelle zurück."
+	}
 }
