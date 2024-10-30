@@ -179,7 +179,13 @@
 		"usage": "사용량",
 		"disk_usage_of": "디스크 사용량",
 		"throughput_of": "처리량",
-		"waiting_for": "표시할 충분한 기록을 기다리는 중"
+		"waiting_for": "표시할 충분한 기록을 기다리는 중",
+		"cache_buffers": "캐시/버퍼",
+		"read": "읽기",
+		"write": "쓰기",
+		"sent": "전송됨",
+		"received": "수신됨",
+		"used": "사용됨"
 	},
 	"auth": {
 		"login": "계정에 로그인하세요",

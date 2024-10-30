@@ -179,7 +179,13 @@
 		"usage": "使用率",
 		"disk_usage_of": "のディスク使用率",
 		"throughput_of": "のスループット",
-		"waiting_for": "表示に必要な記録を待機中"
+		"waiting_for": "表示に必要な記録を待機中",
+		"cache_buffers": "キャッシュ/バッファ",
+		"read": "読み込み",
+		"write": "書き込み",
+		"sent": "送信",
+		"received": "受信",
+		"used": "使用済み"
 	},
 	"auth": {
 		"login": "アカウントにサインインしてください",

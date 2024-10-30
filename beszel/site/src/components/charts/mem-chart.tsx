@@ -4,8 +4,10 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/comp
 import { useYAxisWidth, cn, toFixedFloat, decimalString, formatShortDate, chartMargin } from "@/lib/utils"
 import { memo } from "react"
 import { ChartData } from "@/types"
+import { useTranslation } from "react-i18next"
 
 export default memo(function MemChart({ chartData }: { chartData: ChartData }) {
+	const { t } = useTranslation()
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
 	const totalMem = toFixedFloat(chartData.systemStats.at(-1)?.stats.m ?? 0, 1)
@@ -57,7 +59,7 @@ export default memo(function MemChart({ chartData }: { chartData: ChartData }) {
 						}
 					/>
 					<Area
-						name="Used"
+						name={t("monitor.used")}
 						order={3}
 						dataKey="stats.mu"
 						type="monotoneX"
@@ -81,7 +83,7 @@ export default memo(function MemChart({ chartData }: { chartData: ChartData }) {
 						/>
 					)}
 					<Area
-						name="Cache / Buffers"
+						name={t("monitor.cache_buffers")}
 						order={1}
 						dataKey="stats.mb"
 						type="monotoneX"

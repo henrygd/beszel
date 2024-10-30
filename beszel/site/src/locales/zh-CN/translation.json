@@ -179,7 +179,13 @@
 		"usage": "使用率",
 		"disk_usage_of": "的磁盘使用率",
 		"throughput_of": "的吞吐量",
-		"waiting_for": "等待足够的记录以显示"
+		"waiting_for": "等待足够的记录以显示",
+		"cache_buffers": "缓存/缓冲区",
+		"read": "读取",
+		"write": "写入",
+		"sent": "已发送",
+		"received": "已接收",
+		"used": "已使用"
 	},
 	"auth": {
 		"login": "请登入你的账户",

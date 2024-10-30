@@ -179,7 +179,13 @@
 		"usage": "Sử dụng",
 		"disk_usage_of": "Sử dụng ổ đĩa của",
 		"throughput_of": "Thông lượng của",
-		"waiting_for": "Đang chờ đủ bản ghi để hiển thị"
+		"waiting_for": "Đang chờ đủ bản ghi để hiển thị",
+		"cache_buffers": "Bộ nhớ đệm/Buffer",
+		"read": "Đọc",
+		"write": "Ghi",
+		"sent": "Đã gửi",
+		"received": "Đã nhận",
+		"used": "Đã sử dụng"
 	},
 	"auth": {
 		"login": "Vui lòng đăng nhập vào tài khoản của bạn",

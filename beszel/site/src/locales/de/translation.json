@@ -178,7 +178,13 @@
 		"usage": "Nutzung",
 		"disk_usage_of": "Festplattennutzung von",
 		"throughput_of": "Durchsatz von",
-		"waiting_for": "Warten auf genügend Datensätze zur Anzeige"
+		"waiting_for": "Warten auf genügend Datensätze zur Anzeige",
+		"cache_buffers": "Cache/Puffer",
+		"read": "Lesen",
+		"write": "Schreiben",
+		"sent": "Gesendet",
+		"received": "Empfangen",
+		"used": "Verwendet"
 	},
 	"auth": {
 		"login": "Bitte melden Sie sich bei Ihrem Konto an",

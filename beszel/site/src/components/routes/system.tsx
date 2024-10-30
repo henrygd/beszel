@@ -235,9 +235,9 @@ export default function SystemDetail({ name }: { name: string }) {
 		let uptime: number | string = system.info.u
 		if (system.info.u < 172800) {
 			const hours = Math.trunc(uptime / 3600)
-			uptime = `${hours} hour${hours == 1 ? "" : "s"}`
+			uptime = t("hours", { count: hours })
 		} else {
-			uptime = `${Math.trunc(system.info?.u / 86400)} days`
+			uptime = t("days", { count: Math.trunc(system.info?.u / 86400) })
 		}
 		return [
 			{ value: system.host, Icon: GlobeIcon },
@@ -261,7 +261,7 @@ export default function SystemDetail({ name }: { name: string }) {
 			Icon: any
 			hide?: boolean
 		}[]
-	}, [system.info])
+	}, [system.info, t])
 
 	/** Space for tooltip if more than 12 containers */
 	useEffect(() => {
@@ -376,7 +376,12 @@ export default function SystemDetail({ name }: { name: string }) {
 						)}`}
 						cornerEl={isLongerChart ? <SelectAvgMax store={cpuMaxStore} /> : null}
 					>
-						<AreaChartDefault chartData={chartData} chartName="CPU Usage" maxToggled={cpuMaxStore[0]} unit="%" />
+						<AreaChartDefault
+							chartData={chartData}
+							chartName={t("alerts.info.cpu_usage")}
+							maxToggled={cpuMaxStore[0]}
+							unit="%"
+						/>
 					</ChartCard>
 
 					{containerFilterBar && (

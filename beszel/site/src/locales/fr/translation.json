@@ -180,7 +180,13 @@
 		"usage": "Utilisation",
 		"disk_usage_of": "Utilisation du disque de",
 		"throughput_of": "Débit de",
-		"waiting_for": "En attente de suffisamment d'enregistrements pour afficher"
+		"waiting_for": "En attente de suffisamment d'enregistrements pour afficher",
+		"cache_buffers": "Cache/Tampons",
+		"read": "Lecture",
+		"write": "Écriture",
+		"sent": "Envoyé",
+		"received": "Reçu",
+		"used": "Utilisé"
 	},
 	"auth": {
 		"login": "Veuillez vous connecter à votre compte",

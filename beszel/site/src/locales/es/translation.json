@@ -178,7 +178,13 @@
 		"usage": "Uso",
 		"disk_usage_of": "Uso de disco de",
 		"throughput_of": "Rendimiento de",
-		"waiting_for": "Esperando suficientes registros para mostrar"
+		"waiting_for": "Esperando suficientes registros para mostrar",
+		"cache_buffers": "Caché/Búferes",
+		"read": "Lectura",
+		"write": "Escritura",
+		"sent": "Enviado",
+		"received": "Recibido",
+		"used": "Usado"
 	},
 	"auth": {
 		"login": "Por favor, inicie sesión en su cuenta",

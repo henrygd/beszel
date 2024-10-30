@@ -12,6 +12,7 @@ import {
 // import Spinner from '../spinner'
 import { ChartData } from "@/types"
 import { memo, useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 /** [label, key, color, opacity] */
 type DataKeys = [string, string, number, number]
@@ -38,6 +39,7 @@ export default memo(function AreaChartDefault({
 	chartData: ChartData
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
+	const { t } = useTranslation()
 
 	const { chartTime } = chartData
 
@@ -45,26 +47,26 @@ export default memo(function AreaChartDefault({
 
 	const dataKeys: DataKeys[] = useMemo(() => {
 		// [label, key, color, opacity]
-		if (chartName === "CPU Usage") {
+		if (chartName === t("alerts.info.cpu_usage")) {
 			return [[chartName, "cpu", 1, 0.4]]
 		} else if (chartName === "dio") {
 			return [
-				["Write", "dw", 3, 0.3],
-				["Read", "dr", 1, 0.3],
+				[t("monitor.write"), "dw", 3, 0.3],
+				[t("monitor.read"), "dr", 1, 0.3],
 			]
 		} else if (chartName === "bw") {
 			return [
-				["Sent", "ns", 5, 0.2],
-				["Received", "nr", 2, 0.2],
+				[t("monitor.sent"), "ns", 5, 0.2],
+				[t("monitor.received"), "nr", 2, 0.2],
 			]
 		} else if (chartName.startsWith("efs")) {
 			return [
-				["Write", `${chartName}.w`, 3, 0.3],
-				["Read", `${chartName}.r`, 1, 0.3],
+				[t("monitor.write"), `${chartName}.w`, 3, 0.3],
+				[t("monitor.read"), `${chartName}.r`, 1, 0.3],
 			]
 		}
 		return []
-	}, [])
+	}, [t])
 
 	// console.log('Rendered at', new Date())
 
