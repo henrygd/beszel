@@ -41,8 +41,7 @@ export function AddSystemButton({ className }: { className?: string }) {
       # - /mnt/disk1/.beszel:/extra-filesystems/disk1:ro
     environment:
       PORT: ${port}
-      KEY: "${publicKey}"
-      # FILESYSTEM: /dev/sda1 # override the root partition / device for disk I/O stats`)
+      KEY: "${publicKey}"`)
 	}
 
 	function copyInstallCommand(port: string) {
@@ -73,7 +72,7 @@ export function AddSystemButton({ className }: { className?: string }) {
 					variant="outline"
 					className={cn("flex gap-1 max-xs:h-[2.4rem]", className, isReadOnlyUser() && "hidden")}
 				>
-					<PlusIcon className="h-4 w-4 -ml-1" />
+					<PlusIcon className="h-4 w-4 -ms-1" />
 					{t("add")}
 					<span className="hidden sm:inline">{t("system")}</span>
 				</Button>
@@ -104,31 +103,31 @@ export function AddSystemButton({ className }: { className?: string }) {
 					<form onSubmit={handleSubmit as any}>
 						<div className="grid gap-3 mt-1 mb-4">
 							<div className="grid grid-cols-4 items-center gap-4">
-								<Label htmlFor="name" className="text-right">
+								<Label htmlFor="name" className="text-end">
 									{t("add_system.name")}
 								</Label>
 								<Input id="name" name="name" className="col-span-3" required />
 							</div>
 							<div className="grid grid-cols-4 items-center gap-4">
-								<Label htmlFor="host" className="text-right">
+								<Label htmlFor="host" className="text-end">
 									{t("add_system.host_ip")}
 								</Label>
 								<Input id="host" name="host" className="col-span-3" required />
 							</div>
 							<div className="grid grid-cols-4 items-center gap-4">
-								<Label htmlFor="port" className="text-right">
+								<Label htmlFor="port" className="text-end">
 									{t("add_system.port")}
 								</Label>
 								<Input ref={port} name="port" id="port" defaultValue="45876" className="col-span-3" required />
 							</div>
 							<div className="grid grid-cols-4 items-center gap-4 relative">
-								<Label htmlFor="pkey" className="text-right whitespace-pre">
+								<Label htmlFor="pkey" className="text-end whitespace-pre">
 									{t("add_system.key")}
 								</Label>
 								<Input readOnly id="pkey" value={publicKey} className="col-span-3" required></Input>
 								<div
 									className={
-										"h-6 w-24 bg-gradient-to-r from-transparent to-background to-65% absolute right-1 pointer-events-none"
+										"h-6 w-24 bg-gradient-to-r rtl:bg-gradient-to-l from-transparent to-background to-65% absolute end-1 pointer-events-none"
 									}
 								></div>
 								<TooltipProvider delayDuration={100}>
@@ -137,7 +136,7 @@ export function AddSystemButton({ className }: { className?: string }) {
 											<Button
 												type="button"
 												variant={"link"}
-												className="absolute right-0"
+												className="absolute end-0"
 												onClick={() => copyToClipboard(publicKey)}
 											>
 												<Copy className="h-4 w-4 " />
@@ -152,7 +151,7 @@ export function AddSystemButton({ className }: { className?: string }) {
 						</div>
 						{/* Docker */}
 						<TabsContent value="docker">
-							<DialogFooter className="flex justify-end gap-2 sm:w-[calc(100%+20px)] sm:-ml-[20px]">
+							<DialogFooter className="flex justify-end gap-2 sm:w-[calc(100%+20px)] sm:-ms-[20px]">
 								<Button type="button" variant={"ghost"} onClick={() => copyDockerCompose(port.current.value)}>
 									{t("copy")} docker compose
 								</Button>
@@ -161,7 +160,7 @@ export function AddSystemButton({ className }: { className?: string }) {
 						</TabsContent>
 						{/* Binary */}
 						<TabsContent value="binary">
-							<DialogFooter className="flex justify-end gap-2 sm:w-[calc(100%+20px)] sm:-ml-[20px]">
+							<DialogFooter className="flex justify-end gap-2 sm:w-[calc(100%+20px)] sm:-ms-[20px]">
 								<Button type="button" variant={"ghost"} onClick={() => copyInstallCommand(port.current.value)}>
 									{t("copy")} linux {t("add_system.command")}
 								</Button>

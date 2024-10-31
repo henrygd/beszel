@@ -1,6 +1,7 @@
 import i18n from "i18next"
 import { initReactI18next } from "react-i18next"
 import enTranslations from "../locales/en/translation.json"
+import { $direction } from "./stores"
 
 // Custom language detector to use localStorage
 const languageDetector: any = {
@@ -62,6 +63,9 @@ export async function setLang(locale: string) {
 	const messages = await loadMessages(locale)
 	i18n.addResourceBundle(locale, "translation", messages)
 	await i18n.changeLanguage(locale)
+	const dir = i18n.dir(locale)
+	document.dir = dir
+	$direction.set(dir)
 }
 
 // Initialize with detected/saved language

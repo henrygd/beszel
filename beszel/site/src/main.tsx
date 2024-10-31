@@ -4,7 +4,8 @@ import { Suspense, lazy, useEffect } from "react"
 import ReactDOM from "react-dom/client"
 import Home from "./components/routes/home.tsx"
 import { ThemeProvider } from "./components/theme-provider.tsx"
-import { $authenticated, $systems, pb, $publicKey, $hubVersion, $copyContent } from "./lib/stores.ts"
+import { DirectionProvider } from "@radix-ui/react-direction"
+import { $authenticated, $systems, pb, $publicKey, $hubVersion, $copyContent, $direction } from "./lib/stores.ts"
 import { updateUserSettings, updateAlerts, updateFavicon, updateSystemList } from "./lib/utils.ts"
 import { useStore } from "@nanostores/react"
 import { Toaster } from "./components/ui/toaster.tsx"
@@ -77,29 +78,30 @@ const App = () => {
 const Layout = () => {
 	const authenticated = useStore($authenticated)
 	const copyContent = useStore($copyContent)
-
-	if (!authenticated) {
-		return (
-			<Suspense>
-				<LoginPage />
-			</Suspense>
-		)
-	}
+	const direction = useStore($direction)
 
 	return (
-		<>
-			<div className="container">
-				<Navbar />
-			</div>
-			<div className="container mb-14 relative">
-				<App />
-				{copyContent && (
-					<Suspense>
-						<CopyToClipboardDialog content={copyContent} />
-					</Suspense>
-				)}
-			</div>
-		</>
+		<DirectionProvider dir={direction}>
+			{!authenticated ? (
+				<Suspense>
+					<LoginPage />
+				</Suspense>
+			) : (
+				<>
+					<div className="container">
+						<Navbar />
+					</div>
+					<div className="container mb-14 relative">
+						<App />
+						{copyContent && (
+							<Suspense>
+								<CopyToClipboardDialog content={copyContent} />
+							</Suspense>
+						)}
+					</div>
+				</>
+			)}
+		</DirectionProvider>
 	)
 }
 

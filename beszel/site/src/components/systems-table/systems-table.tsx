@@ -78,8 +78,12 @@ function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 
 function sortableHeader(column: Column<SystemRecord, unknown>, name: string, Icon: any, hideSortIcon = false) {
 	return (
-		<Button variant="ghost" className="h-9 px-3" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-			<Icon className="mr-2 h-4 w-4" />
+		<Button
+			variant="ghost"
+			className="h-9 px-3 rtl:ml-auto flex"
+			onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+		>
+			<Icon className="me-2 h-4 w-4" />
 			{name}
 			{!hideSortIcon && <ArrowUpDownIcon className="ml-2 h-4 w-4" />}
 		</Button>
@@ -110,7 +114,7 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 				cell: (info) => {
 					const { status } = info.row.original
 					return (
-						<span className="flex gap-0.5 items-center text-base md:pr-5">
+						<span className="flex gap-0.5 items-center text-base md:pe-5">
 							<span
 								className={cn("w-2 h-2 left-0 rounded-full", {
 									"bg-green-500": status === "up",
@@ -176,7 +180,7 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 						return null
 					}
 					return (
-						<span className="flex gap-2 items-center md:pr-5 tabular-nums pl-1">
+						<span className="flex gap-2 items-center md:pe-5 tabular-nums ps-1">
 							<span
 								className={cn("w-2 h-2 left-0 rounded-full", version === hubVersion ? "bg-green-500" : "bg-yellow-500")}
 								style={{ marginBottom: "-1px" }}

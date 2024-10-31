@@ -66,6 +66,7 @@ export default function ConfigYaml() {
 				</div>
 				{configContent && (
 					<Textarea
+						dir="ltr"
 						autoFocus
 						defaultValue={configContent}
 						spellCheck="false"

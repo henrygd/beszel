@@ -110,7 +110,7 @@ export default function () {
 						<Input
 							placeholder={t("filter")}
 							onChange={(e) => setFilter(e.target.value)}
-							className="w-full md:w-56 lg:w-72 ml-auto px-4"
+							className="w-full md:w-56 lg:w-72 ms-auto px-4"
 						/>
 					</div>
 				</CardHeader>
@@ -122,7 +122,7 @@ export default function () {
 			</Card>
 
 			{hubVersion && (
-				<div className="flex gap-1.5 justify-end items-center pr-3 sm:pr-6 mt-3.5 text-xs opacity-80">
+				<div className="flex gap-1.5 justify-end items-center pe-3 sm:pe-6 mt-3.5 text-xs opacity-80">
 					<a
 						href="https://github.com/henrygd/beszel"
 						target="_blank"

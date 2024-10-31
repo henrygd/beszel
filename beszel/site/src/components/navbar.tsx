@@ -38,13 +38,12 @@ export default function Navbar() {
 	const { t } = useTranslation()
 	return (
 		<div className="flex items-center h-14 md:h-16 bg-card px-4 pr-3 sm:px-6 border bt-0 rounded-md my-4">
-			<Link href="/" aria-label="Home" className={"p-2 pl-0"}>
-				<Logo className="h-[1.15rem] md:h-[1.25em] fill-foreground" />
+			<Link href="/" aria-label="Home" className="p-2 pl-0 me-3">
+				<Logo className="h-[1.1rem] md:h-5 fill-foreground" />
 			</Link>
-
 			<SearchButton t={t} />
 
-			<div className={"flex ml-auto items-center"}>
+			<div className="flex items-center ms-auto">
 				<LangToggle />
 				<ModeToggle />
 				<Link
@@ -106,7 +105,7 @@ export default function Navbar() {
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
-				<AddSystemButton className="ml-2" />
+				<AddSystemButton className="ms-2" />
 			</div>
 		</div>
 	)
@@ -125,14 +124,14 @@ function SearchButton({ t }: { t: TFunction<"translation", undefined> }) {
 		<>
 			<Button
 				variant="outline"
-				className="hidden md:block text-sm text-muted-foreground px-4 mx-3"
+				className="hidden md:block text-sm text-muted-foreground px-4"
 				onClick={() => setOpen(true)}
 			>
 				<span className="flex items-center">
-					<SearchIcon className="mr-1.5 h-4 w-4" />
+					<SearchIcon className="me-1.5 h-4 w-4" />
 					{t("search")}
 					<span className="sr-only">{t("search")}</span>
-					<span className="flex items-center ml-3.5">
+					<span className="flex items-center ms-3.5">
 						<Kbd>{isMac ? "⌘" : "Ctrl"}</Kbd>
 						<Kbd>K</Kbd>
 					</span>

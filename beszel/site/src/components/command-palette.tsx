@@ -59,7 +59,7 @@ export default function CommandPalette({ open, setOpen }: { open: boolean; setOp
 										setOpen(false)
 									}}
 								>
-									<Server className="mr-2 h-4 w-4" />
+									<Server className="me-2 h-4 w-4" />
 									<span>{system.name}</span>
 									<CommandShortcut>{system.host}</CommandShortcut>
 								</CommandItem>
@@ -76,7 +76,7 @@ export default function CommandPalette({ open, setOpen }: { open: boolean; setOp
 							setOpen(false)
 						}}
 					>
-						<LayoutDashboard className="mr-2 h-4 w-4" />
+						<LayoutDashboard className="me-2 h-4 w-4" />
 						<span>{t("command.dashboard")}</span>
 						<CommandShortcut>{t("command.page")}</CommandShortcut>
 					</CommandItem>
@@ -86,7 +86,7 @@ export default function CommandPalette({ open, setOpen }: { open: boolean; setOp
 							setOpen(false)
 						}}
 					>
-						<SettingsIcon className="mr-2 h-4 w-4" />
+						<SettingsIcon className="me-2 h-4 w-4" />
 						<span>{t("settings.settings")}</span>
 						<CommandShortcut>{t("settings.settings")}</CommandShortcut>
 					</CommandItem>
@@ -97,7 +97,7 @@ export default function CommandPalette({ open, setOpen }: { open: boolean; setOp
 							setOpen(false)
 						}}
 					>
-						<MailIcon className="mr-2 h-4 w-4" />
+						<MailIcon className="me-2 h-4 w-4" />
 						<span>{t("settings.notifications.title")}</span>
 						<CommandShortcut>{t("settings.settings")}</CommandShortcut>
 					</CommandItem>
@@ -107,7 +107,7 @@ export default function CommandPalette({ open, setOpen }: { open: boolean; setOp
 							window.location.href = "https://github.com/henrygd/beszel/blob/main/readme.md"
 						}}
 					>
-						<Github className="mr-2 h-4 w-4" />
+						<Github className="me-2 h-4 w-4" />
 						<span>{t("command.documentation")}</span>
 						<CommandShortcut>GitHub</CommandShortcut>
 					</CommandItem>
@@ -123,7 +123,7 @@ export default function CommandPalette({ open, setOpen }: { open: boolean; setOp
 									window.open("/_/", "_blank")
 								}}
 							>
-								<UsersIcon className="mr-2 h-4 w-4" />
+								<UsersIcon className="me-2 h-4 w-4" />
 								<span>{t("user_dm.users")}</span>
 								<CommandShortcut>{t("command.admin")}</CommandShortcut>
 							</CommandItem>
@@ -133,7 +133,7 @@ export default function CommandPalette({ open, setOpen }: { open: boolean; setOp
 									window.open("/_/#/logs", "_blank")
 								}}
 							>
-								<LogsIcon className="mr-2 h-4 w-4" />
+								<LogsIcon className="me-2 h-4 w-4" />
 								<span>{t("user_dm.logs")}</span>
 								<CommandShortcut>{t("command.admin")}</CommandShortcut>
 							</CommandItem>
@@ -143,7 +143,7 @@ export default function CommandPalette({ open, setOpen }: { open: boolean; setOp
 									window.open("/_/#/settings/backups", "_blank")
 								}}
 							>
-								<DatabaseBackupIcon className="mr-2 h-4 w-4" />
+								<DatabaseBackupIcon className="me-2 h-4 w-4" />
 								<span>{t("user_dm.backups")}</span>
 								<CommandShortcut>{t("command.admin")}</CommandShortcut>
 							</CommandItem>
@@ -154,7 +154,7 @@ export default function CommandPalette({ open, setOpen }: { open: boolean; setOp
 									window.open("/_/#/settings/auth-providers", "_blank")
 								}}
 							>
-								<LockKeyholeIcon className="mr-2 h-4 w-4" />
+								<LockKeyholeIcon className="me-2 h-4 w-4" />
 								<span>{t("user_dm.auth_providers")}</span>
 								<CommandShortcut>{t("command.admin")}</CommandShortcut>
 							</CommandItem>
@@ -165,7 +165,7 @@ export default function CommandPalette({ open, setOpen }: { open: boolean; setOp
 									window.open("/_/#/settings/mail", "_blank")
 								}}
 							>
-								<MailIcon className="mr-2 h-4 w-4" />
+								<MailIcon className="me-2 h-4 w-4" />
 								<span>{t("command.SMTP_settings")}</span>
 								<CommandShortcut>{t("command.admin")}</CommandShortcut>
 							</CommandItem>

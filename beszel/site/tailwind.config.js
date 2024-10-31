@@ -92,6 +92,7 @@ module.exports = {
 	},
 	plugins: [
 		require("tailwindcss-animate"),
+		require("tailwindcss-rtl"),
 		function ({ addVariant }) {
 			addVariant("light", ".light &")
 		},

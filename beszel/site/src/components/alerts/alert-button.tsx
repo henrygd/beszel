@@ -78,11 +78,11 @@ function TheContent({
 			<Tabs defaultValue="system">
 				<TabsList className="mb-1 -mt-0.5">
 					<TabsTrigger value="system">
-						<ServerIcon className="mr-2 h-3.5 w-3.5" />
+						<ServerIcon className="me-2 h-3.5 w-3.5" />
 						{system.name}
 					</TabsTrigger>
 					<TabsTrigger value="global">
-						<GlobeIcon className="mr-1.5 h-3.5 w-3.5" />
+						<GlobeIcon className="me-1.5 h-3.5 w-3.5" />
 						{t("all_systems")}
 					</TabsTrigger>
 				</TabsList>

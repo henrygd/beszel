@@ -39,3 +39,6 @@ export const $containerFilter = atom("")
 
 /** Fallback copy to clipboard dialog content */
 export const $copyContent = atom("")
+
+/** Direction for localization */
+export const $direction = atom<"ltr" | "rtl">("ltr")
