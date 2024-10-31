@@ -80,12 +80,12 @@ function sortableHeader(column: Column<SystemRecord, unknown>, name: string, Ico
 	return (
 		<Button
 			variant="ghost"
-			className="h-9 px-3 rtl:ml-auto flex"
+			className="h-9 px-3 flex"
 			onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
 		>
 			<Icon className="me-2 h-4 w-4" />
 			{name}
-			{!hideSortIcon && <ArrowUpDownIcon className="ml-2 h-4 w-4" />}
+			{!hideSortIcon && <ArrowUpDownIcon className="ms-2 h-4 w-4" />}
 		</Button>
 	)
 }
@@ -218,24 +218,24 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 										>
 											{status === "paused" ? (
 												<>
-													<PlayCircleIcon className="mr-2.5 h-4 w-4" />
+													<PlayCircleIcon className="me-2.5 h-4 w-4" />
 													{t("systems_table.resume")}
 												</>
 											) : (
 												<>
-													<PauseCircleIcon className="mr-2.5 h-4 w-4" />
+													<PauseCircleIcon className="me-2.5 h-4 w-4" />
 													{t("systems_table.pause")}
 												</>
 											)}
 										</DropdownMenuItem>
 										<DropdownMenuItem onClick={() => copyToClipboard(host)}>
-											<CopyIcon className="mr-2.5 h-4 w-4" />
+											<CopyIcon className="me-2.5 h-4 w-4" />
 											{t("systems_table.copy_host")}
 										</DropdownMenuItem>
 										<DropdownMenuSeparator className={cn(isReadOnlyUser() && "hidden")} />
 										<AlertDialogTrigger asChild>
 											<DropdownMenuItem className={cn(isReadOnlyUser() && "hidden")}>
-												<Trash2Icon className="mr-2.5 h-4 w-4" />
+												<Trash2Icon className="me-2.5 h-4 w-4" />
 												{t("systems_table.delete")}
 											</DropdownMenuItem>
 										</AlertDialogTrigger>

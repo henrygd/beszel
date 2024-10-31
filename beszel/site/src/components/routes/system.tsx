@@ -85,8 +85,7 @@ async function getStats<T>(collection: string, system: SystemRecord, chartTime: 
 }
 
 export default function SystemDetail({ name }: { name: string }) {
-	const { t } = useTranslation()
-
+	const { t, i18n } = useTranslation()
 	const systems = useStore($systems)
 	const chartTime = useStore($chartTime)
 	/** Max CPU toggle value */
@@ -158,9 +157,10 @@ export default function SystemDetail({ name }: { name: string }) {
 			systemStats,
 			containerData,
 			chartTime,
+			orientation: i18n.dir() == "rtl" ? "right" : "left",
 			...getTimeData(chartTime, lastCreated),
 		}
-	}, [systemStats, containerData])
+	}, [systemStats, containerData, t])
 
 	// get stats
 	useEffect(() => {
@@ -339,7 +339,7 @@ export default function SystemDetail({ name }: { name: string }) {
 								})}
 							</div>
 						</div>
-						<div className="lg:ml-auto flex items-center gap-2 max-sm:-mb-1">
+						<div className="lg:ms-auto flex items-center gap-2 max-sm:-mb-1">
 							<ChartTimeSelect className="w-full lg:w-40" />
 							<TooltipProvider delayDuration={100}>
 								<Tooltip>
@@ -542,7 +542,7 @@ function ContainerFilterBar() {
 
 	return (
 		<>
-			<Input placeholder={t("filter")} className="pl-4 pr-8" value={containerFilter} onChange={handleChange} />
+			<Input placeholder={t("filter")} className="ps-4 pe-8" value={containerFilter} onChange={handleChange} />
 			{containerFilter && (
 				<Button
 					type="button"
@@ -567,8 +567,8 @@ function SelectAvgMax({ store }: { store: [boolean, React.Dispatch<React.SetStat
 
 	return (
 		<Select value={max ? "max" : "avg"} onValueChange={(e) => setMax(e === "max")}>
-			<SelectTrigger className="relative pl-10 pr-5">
-				<Icon className="h-4 w-4 absolute left-4 top-1/2 -translate-y-1/2 opacity-85" />
+			<SelectTrigger className="relative ps-10 pe-5">
+				<Icon className="h-4 w-4 absolute start-4 top-1/2 -translate-y-1/2 opacity-85" />
 				<SelectValue />
 			</SelectTrigger>
 			<SelectContent>
@@ -606,9 +606,9 @@ function ChartCard({
 			<CardHeader className="pb-5 pt-4 relative space-y-1 max-sm:py-3 max-sm:px-4">
 				<CardTitle className="text-xl sm:text-2xl">{title}</CardTitle>
 				<CardDescription>{description}</CardDescription>
-				{cornerEl && <div className="relative py-1 block sm:w-44 sm:absolute sm:top-2.5 sm:right-3.5">{cornerEl}</div>}
+				{cornerEl && <div className="relative py-1 block sm:w-44 sm:absolute sm:top-2.5 sm:end-3.5">{cornerEl}</div>}
 			</CardHeader>
-			<div className="pl-0 w-[calc(100%-1.6em)] h-52 relative">
+			<div className="ps-0 w-[calc(100%-1.6em)] h-52 relative">
 				{<Spinner msg={empty ? t("monitor.waiting_for") : undefined} />}
 				{isIntersecting && children}
 			</div>

@@ -31,6 +31,8 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 				<AreaChart accessibilityLayer data={chartData.systemStats} margin={chartMargin}>
 					<CartesianGrid vertical={false} />
 					<YAxis
+						direction="ltr"
+						orientation={chartData.orientation}
 						className="tracking-tighter"
 						domain={[0, () => toFixedWithoutTrailingZeros(chartData.systemStats.at(-1)?.stats.s ?? 0.04, 2)]}
 						width={yAxisWidth}

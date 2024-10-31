@@ -64,6 +64,8 @@ export default memo(function TemperatureChart({ chartData }: { chartData: ChartD
 				<LineChart accessibilityLayer data={newChartData.data} margin={chartMargin}>
 					<CartesianGrid vertical={false} />
 					<YAxis
+						direction="ltr"
+						orientation={chartData.orientation}
 						className="tracking-tighter"
 						domain={[0, "auto"]}
 						width={yAxisWidth}

@@ -30,6 +30,8 @@ export default memo(function MemChart({ chartData }: { chartData: ChartData }) {
 					<CartesianGrid vertical={false} />
 					{totalMem && (
 						<YAxis
+							direction="ltr"
+							orientation={chartData.orientation}
 							// use "ticks" instead of domain / tickcount if need more control
 							domain={[0, totalMem]}
 							tickCount={9}

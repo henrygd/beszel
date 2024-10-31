@@ -101,10 +101,10 @@ export default memo(function ContainerChart({
 					return (
 						<span className="flex">
 							{decimalString(received)} MB/s
-							<span className="opacity-70 ml-0.5"> rx </span>
+							<span className="opacity-70 ms-0.5"> rx </span>
 							<Separator orientation="vertical" className="h-3 mx-1.5 bg-primary/40" />
 							{decimalString(sent)} MB/s
-							<span className="opacity-70 ml-0.5"> tx</span>
+							<span className="opacity-70 ms-0.5"> tx</span>
 						</span>
 					)
 				} catch (e) {
@@ -145,6 +145,8 @@ export default memo(function ContainerChart({
 				>
 					<CartesianGrid vertical={false} />
 					<YAxis
+						direction="ltr"
+						orientation={chartData.orientation}
 						className="tracking-tighter"
 						width={yAxisWidth}
 						tickFormatter={tickFormatter}

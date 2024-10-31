@@ -40,6 +40,8 @@ export default memo(function DiskChart({
 				<AreaChart accessibilityLayer data={chartData.systemStats} margin={chartMargin}>
 					<CartesianGrid vertical={false} />
 					<YAxis
+						direction="ltr"
+						orientation={chartData.orientation}
 						className="tracking-tighter"
 						width={yAxisWidth}
 						domain={[0, diskSize]}
