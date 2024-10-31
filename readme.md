@@ -4,13 +4,6 @@ A lightweight server resource monitoring hub with historical data, docker stats,
 
 [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/henrygd/beszel-agent/0.1.0?logo=docker&label=agent%20image%20size)](https://hub.docker.com/r/henrygd/beszel-agent)
 [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/henrygd/beszel/0.1.0?logo=docker&label=hub%20image%20size)](https://hub.docker.com/r/henrygd/beszel)
-<a href="https://hosted.weblate.org/engage/beszel/">
-<img src="https://hosted.weblate.org/widget/beszel/svg-badge.svg" alt="Translation status" />
-</a>
-
-<!-- <a href="https://hosted.weblate.org/engage/beszel/">
-<img src="https://hosted.weblate.org/widget/beszel/svg-badge.svg" alt="Translation status" />
-</a> -->
 
 ![Screenshot of the hub](https://henrygd-assets.b-cdn.net/beszel/screenshot.png)
 
