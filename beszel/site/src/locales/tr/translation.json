@@ -1,0 +1,209 @@
+{
+	"add": "Ekle",
+	"add_system": {
+		"add_new_system": "Yeni Sistem Ekle",
+		"add_system": "Sistem ekle",
+		"binary": "İkili",
+		"click_to_copy": "Kopyalamak için tıklayın",
+		"command": "komut",
+		"dialog_des_1": "Bağlanmak için ajan sistemde çalışıyor olmalıdır. Aşağıdaki ajan için",
+		"dialog_des_2": "kopyalayın.",
+		"host_ip": "Host / IP",
+		"key": "Genel Anahtar",
+		"name": "Ad",
+		"port": "Port"
+	},
+	"alerts": {
+		"average_exceeds": "Ortalama aşıyor",
+		"for": "İçin",
+		"info": {
+			"bandwidth": "Bant Genişliği",
+			"bandwidth_des": "Yukarı/aşağı birleşik değer bir eşiği aştığında tetiklenir.",
+			"cpu_usage": "CPU Kullanımı",
+			"cpu_usage_des": "CPU kullanımı bir eşiği aştığında tetiklenir.",
+			"disk_usage": "Disk Kullanımı",
+			"disk_usage_des": "Herhangi bir diskin kullanımı bir eşiği aştığında tetiklenir.",
+			"memory_usage": "Bellek Kullanımı",
+			"memory_usage_des": "Bellek kullanımı bir eşiği aştığında tetiklenir.",
+			"status": "Durum",
+			"status_des": "Durum yukarı ve aşağı arasında değiştiğinde tetiklenir.",
+			"temperature": "Sıcaklık",
+			"temperature_des": "Herhangi bir sensör bir eşiği aştığında tetiklenir."
+		},
+		"notification_settings": "bildirim ayarları",
+		"overwrite_existing_alerts": "Mevcut uyarıları üzerine yaz",
+		"subtitle_1": "Nasıl uyarı alacağınızı yapılandırmak için",
+		"subtitle_2": "görün.",
+		"title": "Uyarılar"
+	},
+	"all_systems": "Tüm Sistemler",
+	"auth": {
+		"command_1": "Yönetici hesabınızın şifresini kaybettiyseniz, aşağıdaki komutu kullanarak sıfırlayabilirsiniz.",
+		"command_2": "Ardından arka uca giriş yapın ve kullanıcı hesabı şifrenizi kullanıcılar tablosunda sıfırlayın.",
+		"command_line_instructions": "Komut satırı talimatları",
+		"create": "Lütfen bir yönetici hesabı oluşturun",
+		"create_account": "Hesap oluştur",
+		"for_instructions": "talimatlar için.",
+		"forgot_password": "Şifrenizi mi unuttunuz?",
+		"login": "Hesabınıza giriş yapın",
+		"openid_des": "Beszel, OpenID Connect ve birçok OAuth2 kimlik doğrulama sağlayıcısını destekler.",
+		"please_view_the": "Lütfen",
+		"reset": "Şifreyi sıfırlamak için e-posta adresini girin",
+		"reset_password": "Şifreyi Sıfırla",
+		"sign_in": "Giriş yap"
+	},
+	"cancel": "İptal",
+	"clipboard": {
+		"copied": "Panoya kopyalandı",
+		"des": "Otomatik kopyalama güvenli bir bağlam gerektirir.",
+		"title": "Metni kopyala"
+	},
+	"command": {
+		"SMTP_settings": "SMTP ayarları",
+		"admin": "Yönetici",
+		"dashboard": "Gösterge Paneli",
+		"documentation": "Dokümantasyon",
+		"page": "Sayfa",
+		"pages_settings": "Sayfalar / Ayarlar",
+		"search": "Sistemler veya ayarlar için ara..."
+	},
+	"continue": "Devam et",
+	"copy": "Kopyala",
+	"days_other": "{{count}} gün",
+	"filter": "Filtrele...",
+	"home": {
+		"active_alerts": "Aktif Uyarılar",
+		"active_des": "Son {{value}}{{unit}} içinde aşıldı",
+		"subtitle": "Gerçek zamanlı olarak güncellenir. Bilgi görüntülemek için bir sisteme tıklayın."
+	},
+	"hours_one": "{{count}} saat",
+	"hours_other": "{{count}} saat",
+	"minutes_one": "{{count}} dakika",
+	"minutes_other": "{{count}} dakika",
+	"monitor": {
+		"average": "Ortalama",
+		"bandwidth": "Bant Genişliği",
+		"bandwidth_des": "Genel arayüzlerin ağ trafiği",
+		"cache_buffers": "Önbellek / Tamponlar",
+		"cpu_des": "sistem genelinde CPU kullanımı",
+		"disk_des": "Kök bölümün kullanımı",
+		"disk_io": "Disk G/Ç",
+		"disk_io_des": "Kök dosya sisteminin verimi",
+		"disk_space": "Disk Alanı",
+		"disk_usage_of": "Disk kullanımı",
+		"docker_cpu_des": "Konteynerlerin ortalama CPU kullanımı",
+		"docker_cpu_usage": "Docker CPU Kullanımı",
+		"docker_memory_des": "Docker konteynerlerinin bellek kullanımı",
+		"docker_memory_usage": "Docker Bellek Kullanımı",
+		"docker_network_io": "Docker Ağ G/Ç",
+		"docker_network_io_des": "Docker konteynerlerinin ağ trafiği",
+		"max_1_min": "Maks 1 dk",
+		"memory_des": "Kaydedilen zamandaki kesin kullanım",
+		"read": "Oku",
+		"received": "Alındı",
+		"sent": "Gönderildi",
+		"swap_des": "Sistem tarafından kullanılan takas alanı",
+		"swap_usage": "Takas Kullanımı",
+		"temperature": "Sıcaklık",
+		"temperature_des": "Sistem sensörlerinin sıcaklıkları",
+		"throughput_of": "Verimi",
+		"toggle_grid": "Izgarayı değiştir",
+		"total_cpu_usage": "Toplam CPU Kullanımı",
+		"total_memory_usage": "Toplam Bellek Kullanımı",
+		"usage": "Kullanım",
+		"used": "Kullanıldı",
+		"waiting_for": "Görüntülemek için yeterli kayıt bekleniyor",
+		"write": "Yaz"
+	},
+	"search": "Ara",
+	"settings": {
+		"export_configuration": "Yapılandırmayı dışa aktar",
+		"general": {
+			"chart_options": {
+				"default_time_period": "Varsayılan zaman aralığı",
+				"default_time_period_des": "Bir sistem görüntülendiğinde grafikler için varsayılan zaman aralığını ayarlar.",
+				"subtitle": "Grafikler için görüntüleme seçeneklerini ayarlayın.",
+				"title": "Grafik seçenekleri"
+			},
+			"language": {
+				"preferred_language": "Tercih Edilen Dil",
+				"subtitle_1": "Çevirilerimizi daha iyi hale getirmemize yardımcı olmak ister misiniz? Daha fazla bilgi için",
+				"subtitle_2": "göz atın.",
+				"title": "Dil"
+			},
+			"subtitle": "Genel uygulama seçeneklerini değiştirin.",
+			"title": "Genel"
+		},
+		"language": "Dil",
+		"notifications": {
+			"email": {
+				"configure_an_SMTP_server": "bir SMTP sunucusu yapılandırın",
+				"des": "Adresleri enter tuşu veya virgül ile kaydedin. E-posta bildirimlerini devre dışı bırakmak için boş bırakın.",
+				"enter_email_address": "E-posta adresi girin...",
+				"please": "Lütfen",
+				"title": "E-posta bildirimleri",
+				"to_email_s": "E-posta(lar)a",
+				"to_ensure_alerts_are_delivered": "uyarıların teslim edilmesini sağlamak için."
+			},
+			"subtitle_1": "Uyarı bildirimlerini nasıl alacağınızı yapılandırın.",
+			"subtitle_2": "Uyarı oluşturma yerini mi arıyorsunuz? Çan simgelerine tıklayın",
+			"subtitle_3": "sistemler tablosunda.",
+			"title": "Bildirimler",
+			"webhook_push": {
+				"add_url": "URL Ekle",
+				"des_1": "Beszel, popüler bildirim hizmetleriyle entegre olmak için",
+				"des_2": "kullanır.",
+				"title": "Webhook / Push bildirimleri"
+			}
+		},
+		"save_settings": "Ayarları Kaydet",
+		"settings": "Ayarlar",
+		"subtitle": "Görüntüleme ve bildirim tercihlerini yönetin.",
+		"yaml_config": {
+			"alert": {
+				"des_1": "İçinde tanımlanmayan mevcut sistemler",
+				"des_2": "silinecektir. Lütfen düzenli yedeklemeler yapın.",
+				"title": "Dikkat - potansiyel veri kaybı"
+			},
+			"des_1": "Sistemler, veri dizininizdeki bir",
+			"des_2": "dosyasında yönetilebilir.",
+			"des_3": "Her yeniden başlatmada, veritabanındaki sistemler dosyada tanımlanan sistemlerle eşleşecek şekilde güncellenir.",
+			"short_title": "YAML Yapılandırması",
+			"subtitle": "Mevcut sistem yapılandırmanızı dışa aktarın.",
+			"title": "YAML Yapılandırması"
+		}
+	},
+	"system": "Sistem",
+	"systems": "Sistemler",
+	"systems_table": {
+		"agent": "Ajan",
+		"copy_host": "Host'u kopyala",
+		"cpu": "CPU",
+		"delete": "Sil",
+		"delete_confirm": "{{name}} silmek istediğinizden emin misiniz?",
+		"delete_confirm_des_1": "Bu işlem geri alınamaz. Bu, tüm mevcut kayıtları kalıcı olarak silecektir",
+		"delete_confirm_des_2": "veritabanından.",
+		"disk": "Disk",
+		"memory": "Bellek",
+		"net": "Ağ",
+		"no_systems_found": "Sistem bulunamadı.",
+		"open_menu": "Menüyü aç",
+		"pause": "Duraklat",
+		"resume": "Devam et",
+		"system": "Sistem"
+	},
+	"themes": {
+		"dark": "Koyu",
+		"light": "Açık",
+		"system": "Sistem",
+		"toggle_theme": "Temayı değiştir"
+	},
+	"user_dm": {
+		"auth_providers": "Kimlik Sağlayıcılar",
+		"backups": "Yedekler",
+		"log_out": "Çıkış Yap",
+		"logs": "Kayıtlar",
+		"users": "Kullanıcılar"
+	},
+	"weeks_one": "{{count}} hafta"
+}

@@ -24,13 +24,13 @@ export function LangToggle() {
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent>
-				{languages.map(({ lang, label }) => (
+				{languages.map(({ lang, label, e }) => (
 					<DropdownMenuItem
 						key={lang}
-						className={cn("pl-4 tracking-wide", lang === i18n.language ? "font-bold" : "")}
+						className={cn("ps-2.5 pe-4 flex gap-2.5", lang === i18n.language ? "font-bold" : "")}
 						onClick={() => setLang(lang)}
 					>
-						{label}
+						<span>{e}</span> {label}
 					</DropdownMenuItem>
 				))}
 			</DropdownMenuContent>

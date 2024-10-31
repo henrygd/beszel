@@ -67,31 +67,31 @@ export default function Navbar() {
 								<>
 									<DropdownMenuItem asChild>
 										<a href="/_/" target="_blank">
-											<UsersIcon className="mr-2.5 h-4 w-4" />
+											<UsersIcon className="me-2.5 h-4 w-4" />
 											<span>{t("user_dm.users")}</span>
 										</a>
 									</DropdownMenuItem>
 									<DropdownMenuItem asChild>
 										<a href="/_/#/collections?collectionId=2hz5ncl8tizk5nx" target="_blank">
-											<ServerIcon className="mr-2.5 h-4 w-4" />
+											<ServerIcon className="me-2.5 h-4 w-4" />
 											<span>{t("systems")}</span>
 										</a>
 									</DropdownMenuItem>
 									<DropdownMenuItem asChild>
 										<a href="/_/#/logs" target="_blank">
-											<LogsIcon className="mr-2.5 h-4 w-4" />
+											<LogsIcon className="me-2.5 h-4 w-4" />
 											<span>{t("user_dm.logs")}</span>
 										</a>
 									</DropdownMenuItem>
 									<DropdownMenuItem asChild>
 										<a href="/_/#/settings/backups" target="_blank">
-											<DatabaseBackupIcon className="mr-2.5 h-4 w-4" />
+											<DatabaseBackupIcon className="me-2.5 h-4 w-4" />
 											<span>{t("user_dm.backups")}</span>
 										</a>
 									</DropdownMenuItem>
 									<DropdownMenuItem asChild>
 										<a href="/_/#/settings/auth-providers" target="_blank">
-											<LockKeyholeIcon className="mr-2.5 h-4 w-4" />
+											<LockKeyholeIcon className="me-2.5 h-4 w-4" />
 											<span>{t("user_dm.auth_providers")}</span>
 										</a>
 									</DropdownMenuItem>
@@ -100,7 +100,7 @@ export default function Navbar() {
 							)}
 						</DropdownMenuGroup>
 						<DropdownMenuItem onSelect={() => pb.authStore.clear()}>
-							<LogOutIcon className="mr-2.5 h-4 w-4" />
+							<LogOutIcon className="me-2.5 h-4 w-4" />
 							<span>{t("user_dm.log_out")}</span>
 						</DropdownMenuItem>
 					</DropdownMenuContent>

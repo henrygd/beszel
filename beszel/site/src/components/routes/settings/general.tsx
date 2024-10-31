@@ -67,6 +67,7 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 						<SelectContent>
 							{languages.map((lang) => (
 								<SelectItem key={lang.lang} value={lang.lang}>
+									<span className="me-2.5">{lang.e}</span>
 									{lang.label}
 								</SelectItem>
 							))}
