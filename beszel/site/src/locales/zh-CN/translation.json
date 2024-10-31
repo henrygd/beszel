@@ -1,210 +1,207 @@
 {
-	"all_systems": "所有服务器",
-	"filter": "筛选...",
-	"copy": "复制",
-	"add": "添加",
-	"search": "搜索",
-	"system": "服务器",
-	"systems": "服务器",
-	"cancel": "取消",
-	"continue": "继续",
-	"minutes_one": "{{count}} 分钟",
-	"minutes_other": "{{count}} 分钟",
-	"hours_one": "{{count}} 小时",
-	"hours_other": "{{count}} 小时",
-	"days_other": "{{count}} 天",
-	"weeks_one": "{{count}} 周",
-	"weeks_other": "{{count}} 周",
-	"home": {
-		"active_alerts": "活动警报",
-		"active_des": "超过 {{value}}{{unit}} 在过去 ",
-		"subtitle": "实时更新。点击系统以查看信息。"
-	},
-	"systems_table": {
-		"system": "服务器",
-		"memory": "内存",
-		"cpu": "CPU",
-		"disk": "磁盘",
-		"net": "网络",
-		"agent": "客户端",
-		"no_systems_found": "未找到服务器。",
-		"open_menu": "打开菜单",
-		"resume": "恢复",
-		"pause": "暂停",
-		"copy_host": "复制主机",
-		"delete": "删除",
-		"delete_confirm": "您确定要删除 {{name}} 吗？",
-		"delete_confirm_des_1": "此操作无法撤消。这将永久从数据库中删除",
-		"delete_confirm_des_2": "的所有记录。"
-	},
-	"alerts": {
-		"title": "警报",
-		"subtitle_1": "查看",
-		"notification_settings": "通知设置",
-		"subtitle_2": "配置如何接收警报。",
-		"overwrite_existing_alerts": "覆盖现有警报",
-		"info": {
-			"status": "状态",
-			"status_des": "状态在 在线/离线 之间切换时触发。",
-			"cpu_usage": "CPU 使用率",
-			"cpu_usage_des": "当 CPU 使用率超过阈值时触发。",
-			"memory_usage": "内存使用率",
-			"memory_usage_des": "当内存使用率超过阈值时触发。",
-			"disk_usage": "磁盘使用率",
-			"disk_usage_des": "当任何磁盘的使用率超过阈值时触发。",
-			"bandwidth": "带宽",
-			"bandwidth_des": "当组合的 上行/下行 流量超过阈值时触发。",
-			"temperature": "温度",
-			"temperature_des": "当任何传感器超过阈值时触发。"
-		},
-		"average_exceeds": "平均值超过",
-		"for": "持续"
-	},
-	"settings": {
-		"settings": "设置",
-		"subtitle": "管理显示和通知偏好。",
-		"save_settings": "保存设置",
-		"export_configuration": "导出配置",
-		"general": {
-			"title": "常规",
-			"subtitle": "更改通用应用程序选项。",
-			"language": {
-				"title": "语言",
-				"subtitle_1": "想帮助我们改进翻译吗？查看",
-				"subtitle_2": "了解更多详情。",
-				"preferred_language": "首选语言"
-			},
-			"chart_options": {
-				"title": "图表选项",
-				"subtitle": "调整图表的显示选项。",
-				"default_time_period": "默认时间段",
-				"default_time_period_des": "设置查看服务器时图表的默认时间范围。"
-			}
-		},
-		"notifications": {
-			"title": "通知",
-			"subtitle_1": "设置如何接收警报通知。",
-			"subtitle_2": "正在寻找创建警报的位置？点击服务器列表中的",
-			"subtitle_3": "图标。",
-			"email": {
-				"title": "电子邮件通知",
-				"please": "配置",
-				"configure_an_SMTP_server": "SMTP 服务器",
-				"to_ensure_alerts_are_delivered": "以确保邮件可以成功发送。",
-				"to_email_s": "收件人邮箱",
-				"enter_email_address": "输入邮箱地址...",
-				"des": "使用 Enter 键或逗号保存地址。留空以禁用电子邮件通知。"
-			},
-			"webhook_push": {
-				"title": "Webhook / 推送通知",
-				"des_1": "Beszel 使用",
-				"des_2": "与流行的通知服务集成。",
-				"add_url": "添加 URL"
-			}
-		},
-		"yaml_config": {
-			"short_title": "YAML 配置",
-			"title": "YAML 配置",
-			"subtitle": "导出当前系统配置。",
-			"des_1": "系统使用",
-			"des_2": "配置文件储存管理数据",
-			"des_3": "每次重启时，数据库中的系统将更新以匹配文件中定义的系统。",
-			"alert": {
-				"title": "警告 - 潜在数据丢失",
-				"des_1": "未在",
-				"des_2": "中定义的现有系统将被删除。请定期备份。"
-			}
-		},
-		"language": "语言"
-	},
-	"user_dm": {
-		"users": "用户",
-		"logs": "日志",
-		"backups": "备份",
-		"auth_providers": "身份验证提供者",
-		"log_out": "登出"
-	},
-	"themes": {
-		"toggle_theme": "切换主题",
-		"light": "浅色",
-		"dark": "深色",
-		"system": "系统"
-	},
-	"add_system": {
-		"add_new_system": "添加新服务器",
-		"binary": "二进制文件",
-		"dialog_des_1": "客户端必须在服务器上运行才能连接。复制",
-		"dialog_des_2": "到目标服务器以安装。",
-		"name": "名称",
-		"host_ip": "主机/IP",
-		"port": "端口",
-		"key": "公钥",
-		"click_to_copy": "点击复制",
-		"command": "命令",
-		"add_system": "添加服务器"
-	},
-	"command": {
-		"search": "在设置或系统中搜索...",
-		"pages_settings": "页面 / 设置",
-		"dashboard": "仪表盘",
-		"documentation": "文档",
-		"SMTP_settings": "SMTP 设置",
-		"page": "页面",
-		"admin": "管理员"
-	},
-	"monitor": {
-		"toggle_grid": "切换布局",
-		"average": "平均值",
-		"max_1_min": "1 分钟最大",
-		"total_cpu_usage": "总 CPU 使用率",
-		"cpu_des": "系统范围的 CPU 利用率",
-		"docker_cpu_usage": "Docker CPU 使用率",
-		"docker_cpu_des": "Docker 的平均 CPU 利用率",
-		"total_memory_usage": "总内存使用率",
-		"memory_des": "记录时间点的精确利用率",
-		"docker_memory_usage": "Docker 内存使用率",
-		"docker_memory_des": "Docker 容器的内存使用率",
-		"disk_space": "磁盘空间",
-		"disk_des": "根分区的使用情况",
-		"disk_io": "磁盘 I/O",
-		"disk_io_des": "根文件系统的吞吐量",
-		"bandwidth": "带宽",
-		"bandwidth_des": "公共接口的网络流量",
-		"docker_network_io": "Docker 网络 I/O",
-		"docker_network_io_des": "Docker 容器的网络流量",
-		"swap_usage": "交换空间使用率",
-		"swap_des": "系统使用的交换空间",
-		"temperature": "温度",
-		"temperature_des": "系统传感器的温度",
-		"usage": "使用率",
-		"disk_usage_of": "的磁盘使用率",
-		"throughput_of": "的吞吐量",
-		"waiting_for": "等待足够的记录以显示",
-		"cache_buffers": "缓存/缓冲区",
-		"read": "读取",
-		"write": "写入",
-		"sent": "已发送",
-		"received": "已接收",
-		"used": "已使用"
-	},
-	"auth": {
-		"login": "请登入你的账户",
-		"reset": "输入邮箱来重设密码",
-		"create": "请创建管理员账户",
-		"create_account": "创建账户",
-		"sign_in": "登入",
-		"openid_des": "Beszel 支持 OpenID Connect 和许多 OAuth2 认证提供商。",
-		"please_view_the": "请检视",
-		"for_instructions": "以获取更多信息。",
-		"forgot_password": "忘记密码?",
-		"reset_password": "重设密码",
-		"command_line_instructions": "了解命令行指令",
-		"command_1": "如果您忘记了管理员账户的密码，可以使用以下命令重置。",
-		"command_2": "然后登录到后台，在用户表中重置您的用户账户密码。"
-	},
-	"clipboard": {
-		"copied": "已复制到剪贴板",
-		"title": "复制文本",
-		"des": "自动复制需要安全上下文。"
-	}
+    "all_systems": "所有服务器",
+    "filter": "筛选...",
+    "copy": "复制",
+    "add": "添加",
+    "search": "搜索",
+    "system": "服务器",
+    "systems": "服务器",
+    "cancel": "取消",
+    "continue": "继续",
+    "minutes_other": "{{count}} 分钟",
+    "hours_other": "{{count}} 小时",
+    "days_other": "{{count}} 天",
+    "weeks_other": "{{count}} 周",
+    "home": {
+        "active_alerts": "活动警报",
+        "active_des": "超过 {{value}}{{unit}} 在过去 ",
+        "subtitle": "实时更新。点击系统以查看信息。"
+    },
+    "systems_table": {
+        "system": "服务器",
+        "memory": "内存",
+        "cpu": "CPU",
+        "disk": "磁盘",
+        "net": "网络",
+        "agent": "客户端",
+        "no_systems_found": "未找到服务器。",
+        "open_menu": "打开菜单",
+        "resume": "恢复",
+        "pause": "暂停",
+        "copy_host": "复制主机",
+        "delete": "删除",
+        "delete_confirm": "您确定要删除 {{name}} 吗？",
+        "delete_confirm_des_1": "此操作无法撤消。这将永久从数据库中删除",
+        "delete_confirm_des_2": "的所有记录。"
+    },
+    "alerts": {
+        "title": "警报",
+        "subtitle_1": "查看",
+        "notification_settings": "通知设置",
+        "subtitle_2": "配置如何接收警报。",
+        "overwrite_existing_alerts": "覆盖现有警报",
+        "info": {
+            "status": "状态",
+            "status_des": "状态在 在线/离线 之间切换时触发。",
+            "cpu_usage": "CPU 使用率",
+            "cpu_usage_des": "当 CPU 使用率超过阈值时触发。",
+            "memory_usage": "内存使用率",
+            "memory_usage_des": "当内存使用率超过阈值时触发。",
+            "disk_usage": "磁盘使用率",
+            "disk_usage_des": "当任何磁盘的使用率超过阈值时触发。",
+            "bandwidth": "带宽",
+            "bandwidth_des": "当组合的 上行/下行 流量超过阈值时触发。",
+            "temperature": "温度",
+            "temperature_des": "当任何传感器超过阈值时触发。"
+        },
+        "average_exceeds": "平均值超过",
+        "for": "持续"
+    },
+    "settings": {
+        "settings": "设置",
+        "subtitle": "管理显示和通知偏好。",
+        "save_settings": "保存设置",
+        "export_configuration": "导出配置",
+        "general": {
+            "title": "常规",
+            "subtitle": "更改通用应用程序选项。",
+            "language": {
+                "title": "语言",
+                "subtitle_1": "想帮助我们改进翻译吗？查看",
+                "subtitle_2": "了解更多详情。",
+                "preferred_language": "首选语言"
+            },
+            "chart_options": {
+                "title": "图表选项",
+                "subtitle": "调整图表的显示选项。",
+                "default_time_period": "默认时间段",
+                "default_time_period_des": "设置查看服务器时图表的默认时间范围。"
+            }
+        },
+        "notifications": {
+            "title": "通知",
+            "subtitle_1": "设置如何接收警报通知。",
+            "subtitle_2": "正在寻找创建警报的位置？点击服务器列表中的",
+            "subtitle_3": "图标。",
+            "email": {
+                "title": "电子邮件通知",
+                "please": "配置",
+                "configure_an_SMTP_server": "SMTP 服务器",
+                "to_ensure_alerts_are_delivered": "以确保邮件可以成功发送。",
+                "to_email_s": "收件人邮箱",
+                "enter_email_address": "输入邮箱地址...",
+                "des": "使用 Enter 键或逗号保存地址。留空以禁用电子邮件通知。"
+            },
+            "webhook_push": {
+                "title": "Webhook / 推送通知",
+                "des_1": "Beszel 使用",
+                "des_2": "与流行的通知服务集成。",
+                "add_url": "添加 URL"
+            }
+        },
+        "yaml_config": {
+            "short_title": "YAML 配置",
+            "title": "YAML 配置",
+            "subtitle": "导出当前系统配置。",
+            "des_1": "系统使用",
+            "des_2": "配置文件储存管理数据",
+            "des_3": "每次重启时，数据库中的系统将更新以匹配文件中定义的系统。",
+            "alert": {
+                "title": "警告 - 潜在数据丢失",
+                "des_1": "未在",
+                "des_2": "中定义的现有系统将被删除。请定期备份。"
+            }
+        },
+        "language": "语言"
+    },
+    "user_dm": {
+        "users": "用户",
+        "logs": "日志",
+        "backups": "备份",
+        "auth_providers": "身份验证提供者",
+        "log_out": "登出"
+    },
+    "themes": {
+        "toggle_theme": "切换主题",
+        "light": "浅色",
+        "dark": "深色",
+        "system": "系统"
+    },
+    "add_system": {
+        "add_new_system": "添加新服务器",
+        "binary": "二进制文件",
+        "dialog_des_1": "客户端必须在服务器上运行才能连接。复制",
+        "dialog_des_2": "到目标服务器以安装。",
+        "name": "名称",
+        "host_ip": "主机/IP",
+        "port": "端口",
+        "key": "公钥",
+        "click_to_copy": "点击复制",
+        "command": "命令",
+        "add_system": "添加服务器"
+    },
+    "command": {
+        "search": "在设置或系统中搜索...",
+        "pages_settings": "页面 / 设置",
+        "dashboard": "仪表盘",
+        "documentation": "文档",
+        "SMTP_settings": "SMTP 设置",
+        "page": "页面",
+        "admin": "管理员"
+    },
+    "monitor": {
+        "toggle_grid": "切换布局",
+        "average": "平均值",
+        "max_1_min": "1 分钟最大",
+        "total_cpu_usage": "总 CPU 使用率",
+        "cpu_des": "系统范围的 CPU 利用率",
+        "docker_cpu_usage": "Docker CPU 使用率",
+        "docker_cpu_des": "Docker 的平均 CPU 利用率",
+        "total_memory_usage": "总内存使用率",
+        "memory_des": "记录时间点的精确利用率",
+        "docker_memory_usage": "Docker 内存使用率",
+        "docker_memory_des": "Docker 容器的内存使用率",
+        "disk_space": "磁盘空间",
+        "disk_des": "根分区的使用情况",
+        "disk_io": "磁盘 I/O",
+        "disk_io_des": "根文件系统的吞吐量",
+        "bandwidth": "带宽",
+        "bandwidth_des": "公共接口的网络流量",
+        "docker_network_io": "Docker 网络 I/O",
+        "docker_network_io_des": "Docker 容器的网络流量",
+        "swap_usage": "交换空间使用率",
+        "swap_des": "系统使用的交换空间",
+        "temperature": "温度",
+        "temperature_des": "系统传感器的温度",
+        "usage": "使用率",
+        "disk_usage_of": "的磁盘使用率",
+        "throughput_of": "的吞吐量",
+        "waiting_for": "等待足够的记录以显示",
+        "cache_buffers": "缓存/缓冲区",
+        "read": "读取",
+        "write": "写入",
+        "sent": "已发送",
+        "received": "已接收",
+        "used": "已使用"
+    },
+    "auth": {
+        "login": "请登入你的账户",
+        "reset": "输入邮箱来重设密码",
+        "create": "请创建管理员账户",
+        "create_account": "创建账户",
+        "sign_in": "登入",
+        "openid_des": "Beszel 支持 OpenID Connect 和许多 OAuth2 认证提供商。",
+        "please_view_the": "请检视",
+        "for_instructions": "以获取更多信息。",
+        "forgot_password": "忘记密码?",
+        "reset_password": "重设密码",
+        "command_line_instructions": "了解命令行指令",
+        "command_1": "如果您忘记了管理员账户的密码，可以使用以下命令重置。",
+        "command_2": "然后登录到后台，在用户表中重置您的用户账户密码。"
+    },
+    "clipboard": {
+        "copied": "已复制到剪贴板",
+        "title": "复制文本",
+        "des": "自动复制需要安全上下文。"
+    }
 }
