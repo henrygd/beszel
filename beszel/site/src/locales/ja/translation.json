@@ -1,210 +1,207 @@
 {
-	"all_systems": "すべてのシステム",
-	"filter": "フィルター...",
-	"copy": "コピー",
-	"add": "追加",
-	"search": "検索",
-	"system": "システム",
-	"systems": "システム一覧",
-	"cancel": "キャンセル",
-	"continue": "続行",
-	"minutes_one": "{{count}}分",
-	"minutes_other": "{{count}}分",
-	"hours_one": "{{count}}時間",
-	"hours_other": "{{count}}時間",
-	"days_other": "{{count}}日",
-	"weeks_one": "{{count}}週間",
-	"weeks_other": "{{count}}週間",
-	"home": {
-		"active_alerts": "アクティブなアラート",
-		"active_des": "過去{{value}}{{unit}}を超過",
-		"subtitle": "リアルタイムで更新されます。システムをクリックして情報を表示します。"
-	},
-	"systems_table": {
-		"system": "システム",
-		"memory": "メモリ",
-		"cpu": "CPU",
-		"disk": "ディスク",
-		"net": "帯域",
-		"agent": "エージ",
-		"no_systems_found": "システムが見つかりません。",
-		"open_menu": "メニューを開く",
-		"resume": "再開",
-		"pause": "一時停止",
-		"copy_host": "ホストをコピー",
-		"delete": "削除",
-		"delete_confirm": "{{name}}を削除してもよろしいですか？",
-		"delete_confirm_des_1": "この操作は取り消せません。現在の全ての記録が完全に削除されます：",
-		"delete_confirm_des_2": "がデータベースから削除されます。"
-	},
-	"alerts": {
-		"title": "アラート",
-		"subtitle_1": "確認",
-		"notification_settings": "通知設定",
-		"subtitle_2": "でアラートの受信方法を設定できます。",
-		"overwrite_existing_alerts": "既存のアラートを上書き",
-		"info": {
-			"status": "ステータス",
-			"status_des": "稼働状態と停止状態の切り替わり時にトリガー。",
-			"cpu_usage": "CPU使用率",
-			"cpu_usage_des": "CPU使用率が閾値を超えた時にトリガー。",
-			"memory_usage": "メモリ使用率",
-			"memory_usage_des": "メモリ使用率が閾値を超えた時にトリガー。",
-			"disk_usage": "ディスク使用率",
-			"disk_usage_des": "いずれかのディスク使用率が閾値を超えた時にトリガー。",
-			"bandwidth": "帯域幅",
-			"bandwidth_des": "上り/下りの合計が閾値を超えた時にトリガー。",
-			"temperature": "温度",
-			"temperature_des": "いずれかのセンサーが閾値を超えた時にトリガー。"
-		},
-		"average_exceeds": "平均値が超過",
-		"for": "期間"
-	},
-	"settings": {
-		"settings": "設定",
-		"subtitle": "表示設定と通知設定の管理。",
-		"save_settings": "設定を保存",
-		"export_configuration": "設定をエクスポート",
-		"general": {
-			"title": "一般",
-			"subtitle": "一般的なアプリケーション設定を変更。",
-			"language": {
-				"title": "言語",
-				"subtitle_1": "翻訳の改善にご協力いただけますか？詳細は",
-				"subtitle_2": "をご確認ください。",
-				"preferred_language": "優先言語"
-			},
-			"chart_options": {
-				"title": "グラフオプション",
-				"subtitle": "グラフの表示オプションを調整。",
-				"default_time_period": "デフォルト期間",
-				"default_time_period_des": "システム表示時のグラフのデフォルト時間範囲を設定。"
-			}
-		},
-		"notifications": {
-			"title": "通知",
-			"subtitle_1": "アラート通知の受信方法を設定。",
-			"subtitle_2": "アラートの作成場所をお探しですか？ベルアイコン",
-			"subtitle_3": "をシステムテーブルでクリックしてください。",
-			"email": {
-				"title": "メール通知",
-				"please": "アラートの配信を確実にするため、",
-				"configure_an_SMTP_server": "SMTPサーバーを設定",
-				"to_ensure_alerts_are_delivered": "してください。",
-				"to_email_s": "送信先メールアドレス",
-				"enter_email_address": "メールアドレスを入力...",
-				"des": "Enterキーまたはカンマで保存。空白にするとメール通知が無効になります。"
-			},
-			"webhook_push": {
-				"title": "Webhook / プッシュ通知",
-				"des_1": "Beszelは",
-				"des_2": "を使用して一般的な通知サービスと連携します。",
-				"add_url": "URLを追加"
-			}
-		},
-		"yaml_config": {
-			"short_title": "YAML設定",
-			"title": "YAML設定",
-			"subtitle": "現在のシステム設定をエクスポート。",
-			"des_1": "システムはデータディレクトリ内の",
-			"des_2": "ファイルで管理できます。",
-			"des_3": "再起動時、データベース内のシステムはファイルで定義されたシステムと一致するように更新されます。",
-			"alert": {
-				"title": "注意 - データ損失の可能性",
-				"des_1": "ファイルで定義されていない既存のシステムは",
-				"des_2": "削除されます。定期的なバックアップを行ってください。"
-			}
-		},
-		"language": "言語"
-	},
-	"user_dm": {
-		"users": "ユーザー",
-		"logs": "ログ",
-		"backups": "バックアップ",
-		"auth_providers": "認証プロバイダー",
-		"log_out": "ログアウト"
-	},
-	"themes": {
-		"toggle_theme": "テーマ切替",
-		"light": "ライト",
-		"dark": "ダーク",
-		"system": "システム"
-	},
-	"add_system": {
-		"add_new_system": "新規システム追加",
-		"binary": "バイナリ",
-		"dialog_des_1": "接続するにはシステム上でエージェントが実行されている必要があります。以下の",
-		"dialog_des_2": "をエージェント用にコピーしてください。",
-		"name": "名前",
-		"host_ip": "ホスト / IP",
-		"port": "ポート",
-		"key": "公開鍵",
-		"click_to_copy": "クリックでコピー",
-		"command": "コマンド",
-		"add_system": "システムを追加"
-	},
-	"command": {
-		"search": "システムまたは設定を検索...",
-		"pages_settings": "ページ / 設定",
-		"dashboard": "ダッシュボード",
-		"documentation": "ドキュメント",
-		"SMTP_settings": "SMTP設定",
-		"page": "ページ",
-		"admin": "管理者"
-	},
-	"monitor": {
-		"toggle_grid": "グリッド切り替え",
-		"average": "平均",
-		"max_1_min": "1分間の最大値",
-		"total_cpu_usage": "CPU使用率合計",
-		"cpu_des": "システム全体のCPU使用率",
-		"docker_cpu_usage": "Docker CPU使用率",
-		"docker_cpu_des": "コンテナの平均CPU使用率",
-		"total_memory_usage": "メモリ使用率合計",
-		"memory_des": "記録時点での正確な使用率",
-		"docker_memory_usage": "Dockerメモリ使用率",
-		"docker_memory_des": "Dockerコンテナのメモリ使用量",
-		"disk_space": "ディスク容量",
-		"disk_des": "ルートパーティションの使用率",
-		"disk_io": "ディスクI/O",
-		"disk_io_des": "ルートファイルシステムのスループット",
-		"bandwidth": "帯域幅",
-		"bandwidth_des": "パブリックインターフェースのネットワークトラフィック",
-		"docker_network_io": "Dockerネットワークの入出力",
-		"docker_network_io_des": "Dockerコンテナのネットワークトラフィック",
-		"swap_usage": "スワップ使用率",
-		"swap_des": "システムが使用するスワップ領域",
-		"temperature": "温度",
-		"temperature_des": "システムセンサーの温度",
-		"usage": "使用率",
-		"disk_usage_of": "のディスク使用率",
-		"throughput_of": "のスループット",
-		"waiting_for": "表示に必要な記録を待機中",
-		"cache_buffers": "キャッシュ/バッファ",
-		"read": "読み込み",
-		"write": "書き込み",
-		"sent": "送信",
-		"received": "受信",
-		"used": "使用済み"
-	},
-	"auth": {
-		"login": "アカウントにサインインしてください",
-		"reset": "パスワードをリセットするメールアドレスを入力",
-		"create": "管理者アカウントを作成してください",
-		"create_account": "アカウント作成",
-		"sign_in": "サインイン",
-		"openid_des": "BeszelはOpenID ConnectとさまざまなOAuth2認証プロバイダーをサポートしています。",
-		"please_view_the": "詳細については",
-		"for_instructions": "をご確認ください。",
-		"forgot_password": "パスワードをお忘れですか？",
-		"reset_password": "パスワードリセット",
-		"command_line_instructions": "コマンドライン手順",
-		"command_1": "管理者アカウントのパスワードを紛失した場合、以下のコマンドでリセットできます。",
-		"command_2": "その後、バックエンドにログインしてユーザーテーブルでアカウントパスワードをリセットしてください。"
-	},
-	"clipboard": {
-		"copied": "クリップボードにコピーしました",
-		"title": "テキストをコピー",
-		"des": "自動コピーには安全なコンテキストが必要です。"
-	}
+    "all_systems": "すべてのシステム",
+    "filter": "フィルター...",
+    "copy": "コピー",
+    "add": "追加",
+    "search": "検索",
+    "system": "システム",
+    "systems": "システム一覧",
+    "cancel": "キャンセル",
+    "continue": "続行",
+    "minutes_other": "{{count}}分",
+    "hours_other": "{{count}}時間",
+    "days_other": "{{count}}日",
+    "weeks_other": "{{count}}週間",
+    "home": {
+        "active_alerts": "アクティブなアラート",
+        "active_des": "過去{{value}}{{unit}}を超過",
+        "subtitle": "リアルタイムで更新されます。システムをクリックして情報を表示します。"
+    },
+    "systems_table": {
+        "system": "システム",
+        "memory": "メモリ",
+        "cpu": "CPU",
+        "disk": "ディスク",
+        "net": "帯域",
+        "agent": "エージ",
+        "no_systems_found": "システムが見つかりません。",
+        "open_menu": "メニューを開く",
+        "resume": "再開",
+        "pause": "一時停止",
+        "copy_host": "ホストをコピー",
+        "delete": "削除",
+        "delete_confirm": "{{name}}を削除してもよろしいですか？",
+        "delete_confirm_des_1": "この操作は取り消せません。現在の全ての記録が完全に削除されます：",
+        "delete_confirm_des_2": "がデータベースから削除されます。"
+    },
+    "alerts": {
+        "title": "アラート",
+        "subtitle_1": "確認",
+        "notification_settings": "通知設定",
+        "subtitle_2": "でアラートの受信方法を設定できます。",
+        "overwrite_existing_alerts": "既存のアラートを上書き",
+        "info": {
+            "status": "ステータス",
+            "status_des": "稼働状態と停止状態の切り替わり時にトリガー。",
+            "cpu_usage": "CPU使用率",
+            "cpu_usage_des": "CPU使用率が閾値を超えた時にトリガー。",
+            "memory_usage": "メモリ使用率",
+            "memory_usage_des": "メモリ使用率が閾値を超えた時にトリガー。",
+            "disk_usage": "ディスク使用率",
+            "disk_usage_des": "いずれかのディスク使用率が閾値を超えた時にトリガー。",
+            "bandwidth": "帯域幅",
+            "bandwidth_des": "上り/下りの合計が閾値を超えた時にトリガー。",
+            "temperature": "温度",
+            "temperature_des": "いずれかのセンサーが閾値を超えた時にトリガー。"
+        },
+        "average_exceeds": "平均値が超過",
+        "for": "期間"
+    },
+    "settings": {
+        "settings": "設定",
+        "subtitle": "表示設定と通知設定の管理。",
+        "save_settings": "設定を保存",
+        "export_configuration": "設定をエクスポート",
+        "general": {
+            "title": "一般",
+            "subtitle": "一般的なアプリケーション設定を変更。",
+            "language": {
+                "title": "言語",
+                "subtitle_1": "翻訳の改善にご協力いただけますか？詳細は",
+                "subtitle_2": "をご確認ください。",
+                "preferred_language": "優先言語"
+            },
+            "chart_options": {
+                "title": "グラフオプション",
+                "subtitle": "グラフの表示オプションを調整。",
+                "default_time_period": "デフォルト期間",
+                "default_time_period_des": "システム表示時のグラフのデフォルト時間範囲を設定。"
+            }
+        },
+        "notifications": {
+            "title": "通知",
+            "subtitle_1": "アラート通知の受信方法を設定。",
+            "subtitle_2": "アラートの作成場所をお探しですか？ベルアイコン",
+            "subtitle_3": "をシステムテーブルでクリックしてください。",
+            "email": {
+                "title": "メール通知",
+                "please": "アラートの配信を確実にするため、",
+                "configure_an_SMTP_server": "SMTPサーバーを設定",
+                "to_ensure_alerts_are_delivered": "してください。",
+                "to_email_s": "送信先メールアドレス",
+                "enter_email_address": "メールアドレスを入力...",
+                "des": "Enterキーまたはカンマで保存。空白にするとメール通知が無効になります。"
+            },
+            "webhook_push": {
+                "title": "Webhook / プッシュ通知",
+                "des_1": "Beszelは",
+                "des_2": "を使用して一般的な通知サービスと連携します。",
+                "add_url": "URLを追加"
+            }
+        },
+        "yaml_config": {
+            "short_title": "YAML設定",
+            "title": "YAML設定",
+            "subtitle": "現在のシステム設定をエクスポート。",
+            "des_1": "システムはデータディレクトリ内の",
+            "des_2": "ファイルで管理できます。",
+            "des_3": "再起動時、データベース内のシステムはファイルで定義されたシステムと一致するように更新されます。",
+            "alert": {
+                "title": "注意 - データ損失の可能性",
+                "des_1": "ファイルで定義されていない既存のシステムは",
+                "des_2": "削除されます。定期的なバックアップを行ってください。"
+            }
+        },
+        "language": "言語"
+    },
+    "user_dm": {
+        "users": "ユーザー",
+        "logs": "ログ",
+        "backups": "バックアップ",
+        "auth_providers": "認証プロバイダー",
+        "log_out": "ログアウト"
+    },
+    "themes": {
+        "toggle_theme": "テーマ切替",
+        "light": "ライト",
+        "dark": "ダーク",
+        "system": "システム"
+    },
+    "add_system": {
+        "add_new_system": "新規システム追加",
+        "binary": "バイナリ",
+        "dialog_des_1": "接続するにはシステム上でエージェントが実行されている必要があります。以下の",
+        "dialog_des_2": "をエージェント用にコピーしてください。",
+        "name": "名前",
+        "host_ip": "ホスト / IP",
+        "port": "ポート",
+        "key": "公開鍵",
+        "click_to_copy": "クリックでコピー",
+        "command": "コマンド",
+        "add_system": "システムを追加"
+    },
+    "command": {
+        "search": "システムまたは設定を検索...",
+        "pages_settings": "ページ / 設定",
+        "dashboard": "ダッシュボード",
+        "documentation": "ドキュメント",
+        "SMTP_settings": "SMTP設定",
+        "page": "ページ",
+        "admin": "管理者"
+    },
+    "monitor": {
+        "toggle_grid": "グリッド切り替え",
+        "average": "平均",
+        "max_1_min": "1分間の最大値",
+        "total_cpu_usage": "CPU使用率合計",
+        "cpu_des": "システム全体のCPU使用率",
+        "docker_cpu_usage": "Docker CPU使用率",
+        "docker_cpu_des": "コンテナの平均CPU使用率",
+        "total_memory_usage": "メモリ使用率合計",
+        "memory_des": "記録時点での正確な使用率",
+        "docker_memory_usage": "Dockerメモリ使用率",
+        "docker_memory_des": "Dockerコンテナのメモリ使用量",
+        "disk_space": "ディスク容量",
+        "disk_des": "ルートパーティションの使用率",
+        "disk_io": "ディスクI/O",
+        "disk_io_des": "ルートファイルシステムのスループット",
+        "bandwidth": "帯域幅",
+        "bandwidth_des": "パブリックインターフェースのネットワークトラフィック",
+        "docker_network_io": "Dockerネットワークの入出力",
+        "docker_network_io_des": "Dockerコンテナのネットワークトラフィック",
+        "swap_usage": "スワップ使用率",
+        "swap_des": "システムが使用するスワップ領域",
+        "temperature": "温度",
+        "temperature_des": "システムセンサーの温度",
+        "usage": "使用率",
+        "disk_usage_of": "のディスク使用率",
+        "throughput_of": "のスループット",
+        "waiting_for": "表示に必要な記録を待機中",
+        "cache_buffers": "キャッシュ/バッファ",
+        "read": "読み込み",
+        "write": "書き込み",
+        "sent": "送信",
+        "received": "受信",
+        "used": "使用済み"
+    },
+    "auth": {
+        "login": "アカウントにサインインしてください",
+        "reset": "パスワードをリセットするメールアドレスを入力",
+        "create": "管理者アカウントを作成してください",
+        "create_account": "アカウント作成",
+        "sign_in": "サインイン",
+        "openid_des": "BeszelはOpenID ConnectとさまざまなOAuth2認証プロバイダーをサポートしています。",
+        "please_view_the": "詳細については",
+        "for_instructions": "をご確認ください。",
+        "forgot_password": "パスワードをお忘れですか？",
+        "reset_password": "パスワードリセット",
+        "command_line_instructions": "コマンドライン手順",
+        "command_1": "管理者アカウントのパスワードを紛失した場合、以下のコマンドでリセットできます。",
+        "command_2": "その後、バックエンドにログインしてユーザーテーブルでアカウントパスワードをリセットしてください。"
+    },
+    "clipboard": {
+        "copied": "クリップボードにコピーしました",
+        "title": "テキストをコピー",
+        "des": "自動コピーには安全なコンテキストが必要です。"
+    }
 }
