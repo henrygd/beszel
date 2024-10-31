@@ -1,207 +1,207 @@
 {
-    "all_systems": "Tất cả hệ thống",
-    "filter": "Lọc...",
-    "copy": "Sao chép",
-    "add": "Thêm",
-    "search": "Tìm kiếm",
-    "system": "Hệ thống",
-    "systems": "Các hệ thống",
-    "cancel": "Hủy",
-    "continue": "Tiếp tục",
-    "minutes_other": "{{count}} phút",
-    "hours_other": "{{count}} giờ",
-    "days_other": "{{count}} ngày",
-    "weeks_other": "{{count}} tuần",
-    "home": {
-        "active_alerts": "Cảnh báo đang hoạt động",
-        "active_des": "Vượt quá {{value}}{{unit}} trong ",
-        "subtitle": "Cập nhật theo thời gian thực. Nhấp vào hệ thống để xem thông tin."
-    },
-    "systems_table": {
-        "system": "Hệ thống",
-        "memory": "Bộ nhớ",
-        "cpu": "CPU",
-        "disk": "Ổ đĩa",
-        "net": "Mạng",
-        "agent": "Agent",
-        "no_systems_found": "Không tìm thấy hệ thống nào.",
-        "open_menu": "Mở menu",
-        "resume": "Tiếp tục",
-        "pause": "Tạm dừng",
-        "copy_host": "Sao chép host",
-        "delete": "Xóa",
-        "delete_confirm": "Bạn có chắc chắn muốn xóa {{name}}?",
-        "delete_confirm_des_1": "Hành động này không thể hoàn tác. Điều này sẽ xóa vĩnh viễn tất cả bản ghi hiện tại cho",
-        "delete_confirm_des_2": "khỏi cơ sở dữ liệu."
-    },
-    "alerts": {
-        "title": "Cảnh báo",
-        "subtitle_1": "Xem",
-        "notification_settings": "cài đặt thông báo",
-        "subtitle_2": "để cấu hình cách bạn nhận cảnh báo.",
-        "overwrite_existing_alerts": "Ghi đè lên cảnh báo hiện có",
-        "info": {
-            "status": "Trạng thái",
-            "status_des": "Kích hoạt khi trạng thái chuyển đổi giữa hoạt động và ngừng hoạt động.",
-            "cpu_usage": "Sử dụng CPU",
-            "cpu_usage_des": "Kích hoạt khi mức sử dụng CPU vượt quá ngưỡng.",
-            "memory_usage": "Sử dụng bộ nhớ",
-            "memory_usage_des": "Kích hoạt khi mức sử dụng bộ nhớ vượt quá ngưỡng.",
-            "disk_usage": "Sử dụng ổ đĩa",
-            "disk_usage_des": "Kích hoạt khi mức sử dụng của bất kỳ ổ đĩa nào vượt quá ngưỡng.",
-            "bandwidth": "Băng thông",
-            "bandwidth_des": "Kích hoạt khi tổng lưu lượng up/down vượt quá ngưỡng.",
-            "temperature": "Nhiệt độ",
-            "temperature_des": "Kích hoạt khi bất kỳ cảm biến nào vượt quá ngưỡng."
-        },
-        "average_exceeds": "Trung bình vượt quá",
-        "for": "Trong"
-    },
-    "settings": {
-        "settings": "Cài đặt",
-        "subtitle": "Quản lý tùy chọn hiển thị và thông báo.",
-        "save_settings": "Lưu cài đặt",
-        "export_configuration": "Xuất cấu hình",
-        "general": {
-            "title": "Chung",
-            "subtitle": "Thay đổi tùy chọn ứng dụng chung.",
-            "language": {
-                "title": "Ngôn ngữ",
-                "subtitle_1": "Bạn muốn giúp chúng tôi cải thiện bản dịch? Hãy xem",
-                "subtitle_2": "để biết thêm chi tiết.",
-                "preferred_language": "Ngôn ngữ ưa thích"
-            },
-            "chart_options": {
-                "title": "Tùy chọn biểu đồ",
-                "subtitle": "Điều chỉnh tùy chọn hiển thị cho biểu đồ.",
-                "default_time_period": "Khoảng thời gian mặc định",
-                "default_time_period_des": "Đặt phạm vi thời gian mặc định cho biểu đồ khi xem hệ thống."
-            }
-        },
-        "notifications": {
-            "title": "Thông báo",
-            "subtitle_1": "Cấu hình cách bạn nhận thông báo cảnh báo.",
-            "subtitle_2": "Bạn đang tìm nơi tạo cảnh báo? Nhấp vào biểu tượng chuông",
-            "subtitle_3": "trong bảng hệ thống.",
-            "email": {
-                "title": "Thông báo qua email",
-                "please": "Vui lòng",
-                "configure_an_SMTP_server": "cấu hình máy chủ SMTP",
-                "to_ensure_alerts_are_delivered": "để đảm bảo cảnh báo được gửi đi.",
-                "to_email_s": "Đến email",
-                "enter_email_address": "Nhập địa chỉ email...",
-                "des": "Lưu địa chỉ bằng phím enter hoặc dấu phẩy. Để trống để tắt thông báo qua email."
-            },
-            "webhook_push": {
-                "title": "Thông báo Webhook / Push",
-                "des_1": "Beszel sử dụng",
-                "des_2": "để tích hợp với các dịch vụ thông báo phổ biến.",
-                "add_url": "Thêm URL"
-            }
-        },
-        "yaml_config": {
-            "short_title": "Cấu hình YAML",
-            "title": "Cấu hình YAML",
-            "subtitle": "Xuất cấu hình hệ thống hiện tại của bạn.",
-            "des_1": "Các hệ thống có thể được quản lý trong một",
-            "des_2": "tệp trong thư mục dữ liệu của bạn.",
-            "des_3": "Mỗi lần khởi động lại, các hệ thống trong cơ sở dữ liệu sẽ được cập nhật để khớp với các hệ thống được định nghĩa trong tệp.",
-            "alert": {
-                "title": "Cảnh báo - có thể mất dữ liệu",
-                "des_1": "Các hệ thống hiện có không được định nghĩa trong",
-                "des_2": "sẽ bị xóa. Vui lòng sao lưu thường xuyên."
-            }
-        },
-        "language": "Ngôn ngữ"
-    },
-    "user_dm": {
-        "users": "Người dùng",
-        "logs": "Nhật ký",
-        "backups": "Sao lưu",
-        "auth_providers": "Nhà cung cấp xác thực",
-        "log_out": "Đăng xuất"
-    },
-    "themes": {
-        "toggle_theme": "Chuyển đổi giao diện",
-        "light": "Sáng",
-        "dark": "Tối",
-        "system": "Hệ thống"
-    },
-    "add_system": {
-        "add_new_system": "Thêm hệ thống mới",
-        "binary": "Tệp nhị phân",
-        "dialog_des_1": "Agent phải đang chạy trên hệ thống để kết nối. Sao chép",
-        "dialog_des_2": "cho agent bên dưới.",
-        "name": "Tên",
-        "host_ip": "Host / IP",
-        "port": "Cổng",
-        "key": "Khóa",
-        "click_to_copy": "Nhấp để sao chép",
-        "command": "lệnh",
-        "add_system": "Thêm hệ thống"
-    },
-    "command": {
-        "search": "Tìm kiếm hệ thống hoặc cài đặt...",
-        "pages_settings": "Trang / Cài đặt",
-        "dashboard": "Bảng điều khiển",
-        "documentation": "Tài liệu",
-        "SMTP_settings": "Cài đặt SMTP",
-        "page": "Trang",
-        "admin": "Quản trị"
-    },
-    "monitor": {
-        "toggle_grid": "Bật/tắt lưới",
-        "average": "Trung bình",
-        "max_1_min": "Tối đa 1 phút",
-        "total_cpu_usage": "Tổng sử dụng CPU",
-        "cpu_des": "sử dụng CPU toàn hệ thống",
-        "docker_cpu_usage": "Sử dụng CPU Docker",
-        "docker_cpu_des": "Mức sử dụng CPU trung bình của các container",
-        "total_memory_usage": "Tổng sử dụng bộ nhớ",
-        "memory_des": "Mức sử dụng chính xác tại thời điểm ghi",
-        "docker_memory_usage": "Sử dụng bộ nhớ Docker",
-        "docker_memory_des": "Sử dụng bộ nhớ của các container docker",
-        "disk_space": "Không gian ổ đĩa",
-        "disk_des": "Sử dụng phân vùng gốc",
-        "disk_io": "I/O ổ đĩa",
-        "disk_io_des": "Thông lượng của hệ thống tệp gốc",
-        "bandwidth": "Băng thông",
-        "bandwidth_des": "Lưu lượng mạng của các giao diện công cộng",
-        "docker_network_io": "I/O mạng Docker",
-        "docker_network_io_des": "Lưu lượng mạng của các container docker",
-        "swap_usage": "Sử dụng Swap",
-        "swap_des": "Không gian swap được sử dụng bởi hệ thống",
-        "temperature": "Nhiệt độ",
-        "temperature_des": "Nhiệt độ của các cảm biến hệ thống",
-        "usage": "Sử dụng",
-        "disk_usage_of": "Sử dụng ổ đĩa của",
-        "throughput_of": "Thông lượng của",
-        "waiting_for": "Đang chờ đủ bản ghi để hiển thị",
-        "cache_buffers": "Bộ nhớ đệm/Buffer",
-        "read": "Đọc",
-        "write": "Ghi",
-        "sent": "Đã gửi",
-        "received": "Đã nhận",
-        "used": "Đã sử dụng"
-    },
-    "auth": {
-        "login": "Vui lòng đăng nhập vào tài khoản của bạn",
-        "reset": "Nhập địa chỉ email để đặt lại mật khẩu",
-        "create": "Vui lòng tạo tài khoản quản trị",
-        "create_account": "Tạo tài khoản",
-        "sign_in": "Đăng nhập",
-        "openid_des": "Beszel hỗ trợ OpenID Connect và nhiều nhà cung cấp xác thực OAuth2.",
-        "please_view_the": "Vui lòng xem",
-        "for_instructions": "để được hướng dẫn.",
-        "forgot_password": "Quên mật khẩu?",
-        "reset_password": "Đặt lại mật khẩu",
-        "command_line_instructions": "Hướng dẫn dòng lệnh",
-        "command_1": "Nếu bạn đã mất mật khẩu tài khoản quản trị, bạn có thể đặt lại nó bằng lệnh sau.",
-        "command_2": "Sau đó đăng nhập vào backend và đặt lại mật khẩu tài khoản người dùng của bạn trong bảng users."
-    },
-    "clipboard": {
-        "copied": "Đã sao chép vào clipboard",
-        "title": "Sao chép văn bản",
-        "des": "Sao chép tự động yêu cầu một ngữ cảnh bảo mật."
-    }
+	"add": "Thêm",
+	"add_system": {
+		"add_new_system": "Thêm hệ thống mới",
+		"add_system": "Thêm hệ thống",
+		"binary": "Tệp nhị phân",
+		"click_to_copy": "Nhấp để sao chép",
+		"command": "lệnh",
+		"dialog_des_1": "Agent phải đang chạy trên hệ thống để kết nối. Sao chép",
+		"dialog_des_2": "cho agent bên dưới.",
+		"host_ip": "Host / IP",
+		"key": "Khóa",
+		"name": "Tên",
+		"port": "Cổng"
+	},
+	"alerts": {
+		"average_exceeds": "Trung bình vượt quá",
+		"for": "Trong",
+		"info": {
+			"bandwidth": "Băng thông",
+			"bandwidth_des": "Kích hoạt khi tổng lưu lượng up/down vượt quá ngưỡng.",
+			"cpu_usage": "Sử dụng CPU",
+			"cpu_usage_des": "Kích hoạt khi mức sử dụng CPU vượt quá ngưỡng.",
+			"disk_usage": "Sử dụng ổ đĩa",
+			"disk_usage_des": "Kích hoạt khi mức sử dụng của bất kỳ ổ đĩa nào vượt quá ngưỡng.",
+			"memory_usage": "Sử dụng bộ nhớ",
+			"memory_usage_des": "Kích hoạt khi mức sử dụng bộ nhớ vượt quá ngưỡng.",
+			"status": "Trạng thái",
+			"status_des": "Kích hoạt khi trạng thái chuyển đổi giữa hoạt động và ngừng hoạt động.",
+			"temperature": "Nhiệt độ",
+			"temperature_des": "Kích hoạt khi bất kỳ cảm biến nào vượt quá ngưỡng."
+		},
+		"notification_settings": "cài đặt thông báo",
+		"overwrite_existing_alerts": "Ghi đè lên cảnh báo hiện có",
+		"subtitle_1": "Xem",
+		"subtitle_2": "để cấu hình cách bạn nhận cảnh báo.",
+		"title": "Cảnh báo"
+	},
+	"all_systems": "Tất cả hệ thống",
+	"auth": {
+		"command_1": "Nếu bạn đã mất mật khẩu tài khoản quản trị, bạn có thể đặt lại nó bằng lệnh sau.",
+		"command_2": "Sau đó đăng nhập vào backend và đặt lại mật khẩu tài khoản người dùng của bạn trong bảng users.",
+		"command_line_instructions": "Hướng dẫn dòng lệnh",
+		"create": "Vui lòng tạo tài khoản quản trị",
+		"create_account": "Tạo tài khoản",
+		"for_instructions": "để được hướng dẫn.",
+		"forgot_password": "Quên mật khẩu?",
+		"login": "Vui lòng đăng nhập vào tài khoản của bạn",
+		"openid_des": "Beszel hỗ trợ OpenID Connect và nhiều nhà cung cấp xác thực OAuth2.",
+		"please_view_the": "Vui lòng xem",
+		"reset": "Nhập địa chỉ email để đặt lại mật khẩu",
+		"reset_password": "Đặt lại mật khẩu",
+		"sign_in": "Đăng nhập"
+	},
+	"cancel": "Hủy",
+	"clipboard": {
+		"copied": "Đã sao chép vào clipboard",
+		"des": "Sao chép tự động yêu cầu một ngữ cảnh bảo mật.",
+		"title": "Sao chép văn bản"
+	},
+	"command": {
+		"SMTP_settings": "Cài đặt SMTP",
+		"admin": "Quản trị",
+		"dashboard": "Bảng điều khiển",
+		"documentation": "Tài liệu",
+		"page": "Trang",
+		"pages_settings": "Trang / Cài đặt",
+		"search": "Tìm kiếm hệ thống hoặc cài đặt..."
+	},
+	"continue": "Tiếp tục",
+	"copy": "Sao chép",
+	"days_other": "{{count}} ngày",
+	"filter": "Lọc...",
+	"home": {
+		"active_alerts": "Cảnh báo đang hoạt động",
+		"active_des": "Vượt quá {{value}}{{unit}} trong ",
+		"subtitle": "Cập nhật theo thời gian thực. Nhấp vào hệ thống để xem thông tin."
+	},
+	"hours_other": "{{count}} giờ",
+	"minutes_other": "{{count}} phút",
+	"monitor": {
+		"average": "Trung bình",
+		"bandwidth": "Băng thông",
+		"bandwidth_des": "Lưu lượng mạng của các giao diện công cộng",
+		"cache_buffers": "Bộ nhớ đệm/Buffer",
+		"cpu_des": "sử dụng CPU toàn hệ thống",
+		"disk_des": "Sử dụng phân vùng gốc",
+		"disk_io": "I/O ổ đĩa",
+		"disk_io_des": "Thông lượng của hệ thống tệp gốc",
+		"disk_space": "Không gian ổ đĩa",
+		"disk_usage_of": "Sử dụng ổ đĩa của",
+		"docker_cpu_des": "Mức sử dụng CPU trung bình của các container",
+		"docker_cpu_usage": "Sử dụng CPU Docker",
+		"docker_memory_des": "Sử dụng bộ nhớ của các container docker",
+		"docker_memory_usage": "Sử dụng bộ nhớ Docker",
+		"docker_network_io": "I/O mạng Docker",
+		"docker_network_io_des": "Lưu lượng mạng của các container docker",
+		"max_1_min": "Tối đa 1 phút",
+		"memory_des": "Mức sử dụng chính xác tại thời điểm ghi",
+		"read": "Đọc",
+		"received": "Đã nhận",
+		"sent": "Đã gửi",
+		"swap_des": "Không gian swap được sử dụng bởi hệ thống",
+		"swap_usage": "Sử dụng Swap",
+		"temperature": "Nhiệt độ",
+		"temperature_des": "Nhiệt độ của các cảm biến hệ thống",
+		"throughput_of": "Thông lượng của",
+		"toggle_grid": "Bật/tắt lưới",
+		"total_cpu_usage": "Tổng sử dụng CPU",
+		"total_memory_usage": "Tổng sử dụng bộ nhớ",
+		"usage": "Sử dụng",
+		"used": "Đã sử dụng",
+		"waiting_for": "Đang chờ đủ bản ghi để hiển thị",
+		"write": "Ghi"
+	},
+	"search": "Tìm kiếm",
+	"settings": {
+		"export_configuration": "Xuất cấu hình",
+		"general": {
+			"chart_options": {
+				"default_time_period": "Khoảng thời gian mặc định",
+				"default_time_period_des": "Đặt phạm vi thời gian mặc định cho biểu đồ khi xem hệ thống.",
+				"subtitle": "Điều chỉnh tùy chọn hiển thị cho biểu đồ.",
+				"title": "Tùy chọn biểu đồ"
+			},
+			"language": {
+				"preferred_language": "Ngôn ngữ ưa thích",
+				"subtitle_1": "Bạn muốn giúp chúng tôi cải thiện bản dịch? Hãy xem",
+				"subtitle_2": "để biết thêm chi tiết.",
+				"title": "Ngôn ngữ"
+			},
+			"subtitle": "Thay đổi tùy chọn ứng dụng chung.",
+			"title": "Chung"
+		},
+		"language": "Ngôn ngữ",
+		"notifications": {
+			"email": {
+				"configure_an_SMTP_server": "cấu hình máy chủ SMTP",
+				"des": "Lưu địa chỉ bằng phím enter hoặc dấu phẩy. Để trống để tắt thông báo qua email.",
+				"enter_email_address": "Nhập địa chỉ email...",
+				"please": "Vui lòng",
+				"title": "Thông báo qua email",
+				"to_email_s": "Đến email",
+				"to_ensure_alerts_are_delivered": "để đảm bảo cảnh báo được gửi đi."
+			},
+			"subtitle_1": "Cấu hình cách bạn nhận thông báo cảnh báo.",
+			"subtitle_2": "Bạn đang tìm nơi tạo cảnh báo? Nhấp vào biểu tượng chuông",
+			"subtitle_3": "trong bảng hệ thống.",
+			"title": "Thông báo",
+			"webhook_push": {
+				"add_url": "Thêm URL",
+				"des_1": "Beszel sử dụng",
+				"des_2": "để tích hợp với các dịch vụ thông báo phổ biến.",
+				"title": "Thông báo Webhook / Push"
+			}
+		},
+		"save_settings": "Lưu cài đặt",
+		"settings": "Cài đặt",
+		"subtitle": "Quản lý tùy chọn hiển thị và thông báo.",
+		"yaml_config": {
+			"alert": {
+				"des_1": "Các hệ thống hiện có không được định nghĩa trong",
+				"des_2": "sẽ bị xóa. Vui lòng sao lưu thường xuyên.",
+				"title": "Cảnh báo - có thể mất dữ liệu"
+			},
+			"des_1": "Các hệ thống có thể được quản lý trong một",
+			"des_2": "tệp trong thư mục dữ liệu của bạn.",
+			"des_3": "Mỗi lần khởi động lại, các hệ thống trong cơ sở dữ liệu sẽ được cập nhật để khớp với các hệ thống được định nghĩa trong tệp.",
+			"short_title": "Cấu hình YAML",
+			"subtitle": "Xuất cấu hình hệ thống hiện tại của bạn.",
+			"title": "Cấu hình YAML"
+		}
+	},
+	"system": "Hệ thống",
+	"systems": "Các hệ thống",
+	"systems_table": {
+		"agent": "Agent",
+		"copy_host": "Sao chép host",
+		"cpu": "CPU",
+		"delete": "Xóa",
+		"delete_confirm": "Bạn có chắc chắn muốn xóa {{name}}?",
+		"delete_confirm_des_1": "Hành động này không thể hoàn tác. Điều này sẽ xóa vĩnh viễn tất cả bản ghi hiện tại cho",
+		"delete_confirm_des_2": "khỏi cơ sở dữ liệu.",
+		"disk": "Ổ đĩa",
+		"memory": "Bộ nhớ",
+		"net": "Mạng",
+		"no_systems_found": "Không tìm thấy hệ thống nào.",
+		"open_menu": "Mở menu",
+		"pause": "Tạm dừng",
+		"resume": "Tiếp tục",
+		"system": "Hệ thống"
+	},
+	"themes": {
+		"dark": "Tối",
+		"light": "Sáng",
+		"system": "Hệ thống",
+		"toggle_theme": "Chuyển đổi giao diện"
+	},
+	"user_dm": {
+		"auth_providers": "Nhà cung cấp xác thực",
+		"backups": "Sao lưu",
+		"log_out": "Đăng xuất",
+		"logs": "Nhật ký",
+		"users": "Người dùng"
+	},
+	"weeks_other": "{{count}} tuần"
 }

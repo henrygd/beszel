@@ -1,215 +1,215 @@
 {
-				"add": "Agregar",
-				"add_system": {
-								"add_new_system": "Agregar nuevo sistema",
-								"add_system": "Agregar sistema",
-								"binary": "Binario",
-								"click_to_copy": "Haz clic para copiar",
-								"command": "comando",
-								"dialog_des_1": "El agente debe estar ejecutándose en el sistema para conectarse. Copia el",
-								"dialog_des_2": "para el agente a continuación.",
-								"host_ip": "Host/IP",
-								"key": "Clave pública",
-								"name": "Nombre",
-								"port": "Puerto"
-				},
-				"alerts": {
-								"average_exceeds": "Promedio excede",
-								"for": "Por",
-								"info": {
-												"bandwidth": "Ancho de banda",
-												"bandwidth_des": "Se activa cuando el combinado arriba/abajo supera un umbral.",
-												"cpu_usage": "Uso de CPU",
-												"cpu_usage_des": "Se activa cuando el uso de la CPU supera un umbral.",
-												"disk_usage": "Uso de disco",
-												"disk_usage_des": "Se activa cuando el uso de cualquier disco supera un umbral.",
-												"memory_usage": "Uso de memoria",
-												"memory_usage_des": "Se activa cuando el uso de la memoria supera un umbral.",
-												"status": "Estado",
-												"status_des": "Se activa cuando el estado cambia entre arriba y abajo.",
-												"temperature": "Temperatura",
-												"temperature_des": "Se activa cuando cualquier sensor supera un umbral."
-								},
-								"notification_settings": "configuraciones de notificación",
-								"overwrite_existing_alerts": "Sobrescribir alertas existentes",
-								"subtitle_1": "Ver",
-								"subtitle_2": "para configurar cómo recibes las alertas.",
-								"title": "Alertas"
-				},
-				"all_systems": "Todos los sistemas",
-				"auth": {
-								"command_1": "Si ha perdido la contraseña de su cuenta de administrador, puede restablecerla usando el siguiente comando.",
-								"command_2": "Luego inicie sesión en el backend y restablezca la contraseña de su cuenta de usuario en la tabla de usuarios.",
-								"command_line_instructions": "Instrucciones de línea de comandos",
-								"create": "Por favor, cree una cuenta de administrador",
-								"create_account": "Crear cuenta",
-								"for_instructions": "para obtener instrucciones.",
-								"forgot_password": "¿Olvidó su contraseña?",
-								"login": "Por favor, inicie sesión en su cuenta",
-								"openid_des": "Beszel admite OpenID Connect y muchos proveedores de autenticación OAuth2.",
-								"please_view_the": "Por favor, consulte el",
-								"reset": "Ingrese la dirección de correo electrónico para restablecer la contraseña",
-								"reset_password": "Restablecer contraseña",
-								"sign_in": "Iniciar sesión"
-				},
-				"cancel": "Cancelar",
-				"clipboard": {
-								"copied": "Copiado al portapapeles",
-								"des": "La copia automática requiere un contexto seguro.",
-								"title": "Copiar texto"
-				},
-				"command": {
-								"SMTP_settings": "Configuraciones SMTP",
-								"admin": "Administrador",
-								"dashboard": "Panel de control",
-								"documentation": "Documentación",
-								"page": "Página",
-								"pages_settings": "Páginas/Configuraciones",
-								"search": "Buscar sistemas o configuraciones..."
-				},
-				"continue": "Continuar",
-				"copy": "Copiar",
-				"days_many": "{{count}} días",
-				"days_one": "{{count}} día",
-				"days_other": "{{count}} días",
-				"filter": "Filtrar...",
-				"home": {
-								"active_alerts": "Alertas activas",
-								"active_des": "Excede {{value}}{{unit}} en los últimos ",
-								"subtitle": "Actualizado en tiempo real. Haga clic en un sistema para ver información."
-				},
-				"hours_many": "",
-				"hours_one": "{{count}} hora",
-				"hours_other": "{{count}} horas",
-				"minutes_many": "",
-				"minutes_one": "{{count}} minuto",
-				"minutes_other": "{{count}} minutos",
-				"monitor": {
-								"average": "Promedio",
-								"bandwidth": "Ancho de banda",
-								"bandwidth_des": "Tráfico de red de interfaces públicas",
-								"cache_buffers": "Caché/Búferes",
-								"cpu_des": "Utilización de CPU de todo el sistema",
-								"disk_des": "Uso de la partición raíz",
-								"disk_io": "E/S de disco",
-								"disk_io_des": "Rendimiento de la raíz del sistema de archivos",
-								"disk_space": "Espacio en disco",
-								"disk_usage_of": "Uso de disco de",
-								"docker_cpu_des": "Uso promedio de CPU de los contenedores",
-								"docker_cpu_usage": "Uso de CPU de Docker",
-								"docker_memory_des": "Uso de memoria de los contenedores de Docker",
-								"docker_memory_usage": "Uso de memoria de Docker",
-								"docker_network_io": "E/S de red de Docker",
-								"docker_network_io_des": "Tráfico de red de los contenedores de Docker",
-								"max_1_min": "Máx. 1 min ",
-								"memory_des": "Utilización precisa en el momento registrado",
-								"read": "Lectura",
-								"received": "Recibido",
-								"sent": "Enviado",
-								"swap_des": "Espacio de intercambio utilizado por el sistema",
-								"swap_usage": "Uso de intercambio",
-								"temperature": "Temperatura",
-								"temperature_des": "Temperaturas de los sensores del sistema",
-								"throughput_of": "Rendimiento de",
-								"toggle_grid": "Alternar cuadrícula",
-								"total_cpu_usage": "Uso total de CPU",
-								"total_memory_usage": "Uso total de memoria",
-								"usage": "Uso",
-								"used": "Usado",
-								"waiting_for": "Esperando suficientes registros para mostrar",
-								"write": "Escritura"
-				},
-				"search": "Buscar",
-				"settings": {
-								"export_configuration": "Exportar configuración",
-								"general": {
-												"chart_options": {
-																"default_time_period": "Período de tiempo predeterminado",
-																"default_time_period_des": "Establezca el rango de tiempo predeterminado para los gráficos cuando se visualiza un sistema.",
-																"subtitle": "Ajuste las opciones de visualización para los gráficos.",
-																"title": "Opciones de gráficos"
-												},
-												"language": {
-																"preferred_language": "Idioma preferido",
-																"subtitle_1": "¿Quiere ayudarnos a mejorar nuestras traducciones? Consulte",
-																"subtitle_2": "para más detalles.",
-																"title": "Idioma"
-												},
-												"subtitle": "Cambie las opciones generales de la aplicación.",
-												"title": "General"
-								},
-								"language": "Idioma",
-								"notifications": {
-												"email": {
-																"configure_an_SMTP_server": "configure un servidor SMTP",
-																"des": "Guarde la dirección presionando Enter o usando una coma. Deje en blanco para desactivar las notificaciones por correo electrónico.",
-																"enter_email_address": "Ingrese la dirección de correo electrónico...",
-																"please": "Por favor",
-																"title": "Notificaciones por correo electrónico",
-																"to_email_s": "A correo electrónico(s)",
-																"to_ensure_alerts_are_delivered": "para asegurarse de que se entreguen las alertas."
-												},
-												"subtitle_1": "Configure cómo recibe las notificaciones de alerta.",
-												"subtitle_2": "¿Busca en su lugar dónde crear alertas? Haga clic en el icono de campana",
-												"subtitle_3": "en la tabla de sistemas.",
-												"title": "Notificaciones",
-												"webhook_push": {
-																"add_url": "Agregar URL",
-																"des_1": "Beszel utiliza",
-																"des_2": "para integrarse con populares servicios de notificación.",
-																"title": "Notificaciones Webhook/Push"
-												}
-								},
-								"save_settings": "Guardar configuraciones",
-								"settings": "Configuraciones",
-								"subtitle": "Administre las preferencias de visualización y notificación.",
-								"yaml_config": {
-												"alert": {
-																"des_1": "Los sistemas existentes no definidos en",
-																"des_2": "serán eliminados. Por favor, haz copias de seguridad regulares.",
-																"title": "Advertencia - posible pérdida de datos"
-												},
-												"des_1": "Los sistemas pueden gestionarse en un",
-												"des_2": "archivo dentro de tu directorio de datos.",
-												"des_3": "En cada reinicio, los sistemas de la base de datos se actualizarán para coincidir con los sistemas definidos en el archivo.",
-												"short_title": "Configuración YAML",
-												"subtitle": "Exporta tu configuración actual de sistemas.",
-												"title": "Configuración YAML"
-								}
-				},
-				"system": "Sistema",
-				"systems": "Sistemas",
-				"systems_table": {
-								"agent": "Agente",
-								"copy_host": "Copiar host",
-								"cpu": "CPU",
-								"delete": "Eliminar",
-								"delete_confirm": "¿Estás seguro de que quieres eliminar {{name}}?",
-								"delete_confirm_des_1": "Esta acción no se puede deshacer. Esto eliminará permanentemente todos los registros actuales para",
-								"delete_confirm_des_2": "de la base de datos.",
-								"disk": "Disco",
-								"memory": "Memoria",
-								"net": "Red",
-								"no_systems_found": "No se encontraron sistemas.",
-								"open_menu": "Abrir menú",
-								"pause": "Pausar",
-								"resume": "Reanudar",
-								"system": "Sistema"
-				},
-				"themes": {
-								"dark": "Oscuro",
-								"light": "Claro",
-								"system": "Sistema",
-								"toggle_theme": "Alternar tema"
-				},
-				"user_dm": {
-								"auth_providers": "Proveedores de autenticación",
-								"backups": "Respaldos",
-								"log_out": "Cerrar sesión",
-								"logs": "Registros",
-								"users": "Usuarios"
-				},
-				"weeks_many": "",
-				"weeks_one": "{{count}} semana",
-				"weeks_other": ""
+	"add": "Agregar",
+	"add_system": {
+		"add_new_system": "Agregar nuevo sistema",
+		"add_system": "Agregar sistema",
+		"binary": "Binario",
+		"click_to_copy": "Haz clic para copiar",
+		"command": "comando",
+		"dialog_des_1": "El agente debe estar ejecutándose en el sistema para conectarse. Copia el",
+		"dialog_des_2": "para el agente a continuación.",
+		"host_ip": "Host/IP",
+		"key": "Clave pública",
+		"name": "Nombre",
+		"port": "Puerto"
+	},
+	"alerts": {
+		"average_exceeds": "Promedio excede",
+		"for": "Por",
+		"info": {
+			"bandwidth": "Ancho de banda",
+			"bandwidth_des": "Se activa cuando el combinado arriba/abajo supera un umbral.",
+			"cpu_usage": "Uso de CPU",
+			"cpu_usage_des": "Se activa cuando el uso de la CPU supera un umbral.",
+			"disk_usage": "Uso de disco",
+			"disk_usage_des": "Se activa cuando el uso de cualquier disco supera un umbral.",
+			"memory_usage": "Uso de memoria",
+			"memory_usage_des": "Se activa cuando el uso de la memoria supera un umbral.",
+			"status": "Estado",
+			"status_des": "Se activa cuando el estado cambia entre arriba y abajo.",
+			"temperature": "Temperatura",
+			"temperature_des": "Se activa cuando cualquier sensor supera un umbral."
+		},
+		"notification_settings": "configuraciones de notificación",
+		"overwrite_existing_alerts": "Sobrescribir alertas existentes",
+		"subtitle_1": "Ver",
+		"subtitle_2": "para configurar cómo recibes las alertas.",
+		"title": "Alertas"
+	},
+	"all_systems": "Todos los sistemas",
+	"auth": {
+		"command_1": "Si ha perdido la contraseña de su cuenta de administrador, puede restablecerla usando el siguiente comando.",
+		"command_2": "Luego inicie sesión en el backend y restablezca la contraseña de su cuenta de usuario en la tabla de usuarios.",
+		"command_line_instructions": "Instrucciones de línea de comandos",
+		"create": "Por favor, cree una cuenta de administrador",
+		"create_account": "Crear cuenta",
+		"for_instructions": "para obtener instrucciones.",
+		"forgot_password": "¿Olvidó su contraseña?",
+		"login": "Por favor, inicie sesión en su cuenta",
+		"openid_des": "Beszel admite OpenID Connect y muchos proveedores de autenticación OAuth2.",
+		"please_view_the": "Por favor, consulte el",
+		"reset": "Ingrese la dirección de correo electrónico para restablecer la contraseña",
+		"reset_password": "Restablecer contraseña",
+		"sign_in": "Iniciar sesión"
+	},
+	"cancel": "Cancelar",
+	"clipboard": {
+		"copied": "Copiado al portapapeles",
+		"des": "La copia automática requiere un contexto seguro.",
+		"title": "Copiar texto"
+	},
+	"command": {
+		"SMTP_settings": "Configuraciones SMTP",
+		"admin": "Administrador",
+		"dashboard": "Panel de control",
+		"documentation": "Documentación",
+		"page": "Página",
+		"pages_settings": "Páginas/Configuraciones",
+		"search": "Buscar sistemas o configuraciones..."
+	},
+	"continue": "Continuar",
+	"copy": "Copiar",
+	"days_many": "{{count}} días",
+	"days_one": "{{count}} día",
+	"days_other": "{{count}} días",
+	"filter": "Filtrar...",
+	"home": {
+		"active_alerts": "Alertas activas",
+		"active_des": "Excede {{value}}{{unit}} en los últimos ",
+		"subtitle": "Actualizado en tiempo real. Haga clic en un sistema para ver información."
+	},
+	"hours_many": "",
+	"hours_one": "{{count}} hora",
+	"hours_other": "{{count}} horas",
+	"minutes_many": "",
+	"minutes_one": "{{count}} minuto",
+	"minutes_other": "{{count}} minutos",
+	"monitor": {
+		"average": "Promedio",
+		"bandwidth": "Ancho de banda",
+		"bandwidth_des": "Tráfico de red de interfaces públicas",
+		"cache_buffers": "Caché/Búferes",
+		"cpu_des": "Utilización de CPU de todo el sistema",
+		"disk_des": "Uso de la partición raíz",
+		"disk_io": "E/S de disco",
+		"disk_io_des": "Rendimiento de la raíz del sistema de archivos",
+		"disk_space": "Espacio en disco",
+		"disk_usage_of": "Uso de disco de",
+		"docker_cpu_des": "Uso promedio de CPU de los contenedores",
+		"docker_cpu_usage": "Uso de CPU de Docker",
+		"docker_memory_des": "Uso de memoria de los contenedores de Docker",
+		"docker_memory_usage": "Uso de memoria de Docker",
+		"docker_network_io": "E/S de red de Docker",
+		"docker_network_io_des": "Tráfico de red de los contenedores de Docker",
+		"max_1_min": "Máx. 1 min ",
+		"memory_des": "Utilización precisa en el momento registrado",
+		"read": "Lectura",
+		"received": "Recibido",
+		"sent": "Enviado",
+		"swap_des": "Espacio de intercambio utilizado por el sistema",
+		"swap_usage": "Uso de intercambio",
+		"temperature": "Temperatura",
+		"temperature_des": "Temperaturas de los sensores del sistema",
+		"throughput_of": "Rendimiento de",
+		"toggle_grid": "Alternar cuadrícula",
+		"total_cpu_usage": "Uso total de CPU",
+		"total_memory_usage": "Uso total de memoria",
+		"usage": "Uso",
+		"used": "Usado",
+		"waiting_for": "Esperando suficientes registros para mostrar",
+		"write": "Escritura"
+	},
+	"search": "Buscar",
+	"settings": {
+		"export_configuration": "Exportar configuración",
+		"general": {
+			"chart_options": {
+				"default_time_period": "Período de tiempo predeterminado",
+				"default_time_period_des": "Establezca el rango de tiempo predeterminado para los gráficos cuando se visualiza un sistema.",
+				"subtitle": "Ajuste las opciones de visualización para los gráficos.",
+				"title": "Opciones de gráficos"
+			},
+			"language": {
+				"preferred_language": "Idioma preferido",
+				"subtitle_1": "¿Quiere ayudarnos a mejorar nuestras traducciones? Consulte",
+				"subtitle_2": "para más detalles.",
+				"title": "Idioma"
+			},
+			"subtitle": "Cambie las opciones generales de la aplicación.",
+			"title": "General"
+		},
+		"language": "Idioma",
+		"notifications": {
+			"email": {
+				"configure_an_SMTP_server": "configure un servidor SMTP",
+				"des": "Guarde la dirección presionando Enter o usando una coma. Deje en blanco para desactivar las notificaciones por correo electrónico.",
+				"enter_email_address": "Ingrese la dirección de correo electrónico...",
+				"please": "Por favor",
+				"title": "Notificaciones por correo electrónico",
+				"to_email_s": "A correo electrónico(s)",
+				"to_ensure_alerts_are_delivered": "para asegurarse de que se entreguen las alertas."
+			},
+			"subtitle_1": "Configure cómo recibe las notificaciones de alerta.",
+			"subtitle_2": "¿Busca en su lugar dónde crear alertas? Haga clic en el icono de campana",
+			"subtitle_3": "en la tabla de sistemas.",
+			"title": "Notificaciones",
+			"webhook_push": {
+				"add_url": "Agregar URL",
+				"des_1": "Beszel utiliza",
+				"des_2": "para integrarse con populares servicios de notificación.",
+				"title": "Notificaciones Webhook/Push"
+			}
+		},
+		"save_settings": "Guardar configuraciones",
+		"settings": "Configuraciones",
+		"subtitle": "Administre las preferencias de visualización y notificación.",
+		"yaml_config": {
+			"alert": {
+				"des_1": "Los sistemas existentes no definidos en",
+				"des_2": "serán eliminados. Por favor, haz copias de seguridad regulares.",
+				"title": "Advertencia - posible pérdida de datos"
+			},
+			"des_1": "Los sistemas pueden gestionarse en un",
+			"des_2": "archivo dentro de tu directorio de datos.",
+			"des_3": "En cada reinicio, los sistemas de la base de datos se actualizarán para coincidir con los sistemas definidos en el archivo.",
+			"short_title": "Configuración YAML",
+			"subtitle": "Exporta tu configuración actual de sistemas.",
+			"title": "Configuración YAML"
+		}
+	},
+	"system": "Sistema",
+	"systems": "Sistemas",
+	"systems_table": {
+		"agent": "Agente",
+		"copy_host": "Copiar host",
+		"cpu": "CPU",
+		"delete": "Eliminar",
+		"delete_confirm": "¿Estás seguro de que quieres eliminar {{name}}?",
+		"delete_confirm_des_1": "Esta acción no se puede deshacer. Esto eliminará permanentemente todos los registros actuales para",
+		"delete_confirm_des_2": "de la base de datos.",
+		"disk": "Disco",
+		"memory": "Memoria",
+		"net": "Red",
+		"no_systems_found": "No se encontraron sistemas.",
+		"open_menu": "Abrir menú",
+		"pause": "Pausar",
+		"resume": "Reanudar",
+		"system": "Sistema"
+	},
+	"themes": {
+		"dark": "Oscuro",
+		"light": "Claro",
+		"system": "Sistema",
+		"toggle_theme": "Alternar tema"
+	},
+	"user_dm": {
+		"auth_providers": "Proveedores de autenticación",
+		"backups": "Respaldos",
+		"log_out": "Cerrar sesión",
+		"logs": "Registros",
+		"users": "Usuarios"
+	},
+	"weeks_many": "",
+	"weeks_one": "{{count}} semana",
+	"weeks_other": ""
 }
