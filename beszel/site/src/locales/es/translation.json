@@ -72,16 +72,17 @@
 	"days_many": "{{count}} días",
 	"days_one": "{{count}} día",
 	"days_other": "{{count}} días",
+	"error": "Error",
 	"filter": "Filtrar...",
 	"home": {
 		"active_alerts": "Alertas activas",
 		"active_des": "Excede {{value}}{{unit}} en los últimos ",
 		"subtitle": "Actualizado en tiempo real. Haga clic en un sistema para ver información."
 	},
-	"hours_many": "",
+	"hours_many": "{{count}} horas",
 	"hours_one": "{{count}} hora",
 	"hours_other": "{{count}} horas",
-	"minutes_many": "",
+	"minutes_many": "{{count}} minutos",
 	"minutes_one": "{{count}} minuto",
 	"minutes_other": "{{count}} minutos",
 	"monitor": {
@@ -121,7 +122,9 @@
 	},
 	"search": "Buscar",
 	"settings": {
+		"check_logs": "Consulte los registros para más detalles.",
 		"export_configuration": "Exportar configuración",
+		"failed_to_save": "Error al guardar la configuración",
 		"general": {
 			"chart_options": {
 				"default_time_period": "Período de tiempo predeterminado",
@@ -146,21 +149,26 @@
 				"enter_email_address": "Ingrese la dirección de correo electrónico...",
 				"please": "Por favor",
 				"title": "Notificaciones por correo electrónico",
-				"to_email_s": "A correo electrónico(s)",
+				"to_emails": "A correo electrónico(s)",
 				"to_ensure_alerts_are_delivered": "para asegurarse de que se entreguen las alertas."
 			},
 			"subtitle_1": "Configure cómo recibe las notificaciones de alerta.",
 			"subtitle_2": "¿Busca en su lugar dónde crear alertas? Haga clic en el icono de campana",
 			"subtitle_3": "en la tabla de sistemas.",
 			"title": "Notificaciones",
-			"webhook_push": {
-				"add_url": "Agregar URL",
+			"webhook": {
+				"add": "Agregar",
 				"des_1": "Beszel utiliza",
 				"des_2": "para integrarse con populares servicios de notificación.",
+				"test": "Probar",
+				"test_sent": "Notificación de prueba enviada",
+				"test_sent_des": "Verifica tu servicio de notificación",
 				"title": "Notificaciones Webhook/Push"
 			}
 		},
 		"save_settings": "Guardar configuraciones",
+		"saved": "Configuración guardada",
+		"saved_des": "Tu configuración de usuario ha sido actualizada.",
 		"settings": "Configuraciones",
 		"subtitle": "Administre las preferencias de visualización y notificación.",
 		"yaml_config": {
@@ -209,7 +217,7 @@
 		"logs": "Registros",
 		"users": "Usuarios"
 	},
-	"weeks_many": "",
+	"weeks_many": "{{count}} semanas",
 	"weeks_one": "{{count}} semana",
-	"weeks_other": ""
+	"weeks_other": "{{count}} semanas"
 }

@@ -160,7 +160,7 @@ export default function SystemDetail({ name }: { name: string }) {
 			orientation: i18n.dir() == "rtl" ? "right" : "left",
 			...getTimeData(chartTime, lastCreated),
 		}
-	}, [systemStats, containerData, t])
+	}, [systemStats, containerData, i18n.dir()])
 
 	// get stats
 	useEffect(() => {

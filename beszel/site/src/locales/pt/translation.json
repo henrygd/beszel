@@ -72,6 +72,7 @@
 	"days_many": "",
 	"days_one": "",
 	"days_other": "{{count}} dias",
+	"error": "Erro",
 	"filter": "Filtrar...",
 	"home": {
 		"active_alerts": "Alertas Ativos",
@@ -121,7 +122,9 @@
 	},
 	"search": "Pesquisar",
 	"settings": {
+		"check_logs": "Verifique os logs para mais detalhes",
 		"export_configuration": "Exportar configuração",
+		"failed_to_save": "Falha ao salvar configurações",
 		"general": {
 			"chart_options": {
 				"default_time_period": "Período padrão",
@@ -146,21 +149,26 @@
 				"enter_email_address": "Digite o endereço de e-mail...",
 				"please": "Por favor",
 				"title": "Notificações por e-mail",
-				"to_email_s": "Para e-mail(s)",
+				"to_emails": "Para e-mail(s)",
 				"to_ensure_alerts_are_delivered": "para garantir que os alertas sejam entregues."
 			},
 			"subtitle_1": "Configure como você recebe notificações de alerta.",
 			"subtitle_2": "Procurando onde criar alertas? Clique no sino",
 			"subtitle_3": "na tabela de sistemas.",
 			"title": "Notificações",
-			"webhook_push": {
-				"add_url": "Adicionar URL",
+			"webhook": {
+				"add": "Adicionar",
 				"des_1": "Beszel usa",
-				"des_2": "para integrar com serviços populares de notificação.",
+				"des_2": "para integrar com serviços populares de notificação",
+				"test": "Testar",
+				"test_sent": "Notificação de teste enviada",
+				"test_sent_des": "Verifique seu serviço de notificação",
 				"title": "Notificações Webhook / Push"
 			}
 		},
 		"save_settings": "Salvar Configurações",
+		"saved": "Configurações salvas",
+		"saved_des": "Suas configurações de usuário foram atualizadas",
 		"settings": "Configurações",
 		"subtitle": "Gerenciar preferências de exibição e notificação.",
 		"yaml_config": {

@@ -70,6 +70,7 @@
 	"continue": "Tiếp tục",
 	"copy": "Sao chép",
 	"days_other": "{{count}} ngày",
+	"error": "Lỗi",
 	"filter": "Lọc...",
 	"home": {
 		"active_alerts": "Cảnh báo đang hoạt động",
@@ -115,7 +116,9 @@
 	},
 	"search": "Tìm kiếm",
 	"settings": {
+		"check_logs": "Kiểm tra nhật ký để biết thêm chi tiết",
 		"export_configuration": "Xuất cấu hình",
+		"failed_to_save": "Không thể lưu cài đặt",
 		"general": {
 			"chart_options": {
 				"default_time_period": "Khoảng thời gian mặc định",
@@ -140,21 +143,26 @@
 				"enter_email_address": "Nhập địa chỉ email...",
 				"please": "Vui lòng",
 				"title": "Thông báo qua email",
-				"to_email_s": "Đến email",
+				"to_emails": "Đến email",
 				"to_ensure_alerts_are_delivered": "để đảm bảo cảnh báo được gửi đi."
 			},
 			"subtitle_1": "Cấu hình cách bạn nhận thông báo cảnh báo.",
 			"subtitle_2": "Bạn đang tìm nơi tạo cảnh báo? Nhấp vào biểu tượng chuông",
 			"subtitle_3": "trong bảng hệ thống.",
 			"title": "Thông báo",
-			"webhook_push": {
-				"add_url": "Thêm URL",
+			"webhook": {
+				"add": "Thêm",
 				"des_1": "Beszel sử dụng",
-				"des_2": "để tích hợp với các dịch vụ thông báo phổ biến.",
+				"des_2": "để tích hợp với các dịch vụ thông báo phổ biến",
+				"test": "Kiểm tra",
+				"test_sent": "Đã gửi thông báo kiểm tra",
+				"test_sent_des": "Kiểm tra dịch vụ thông báo của bạn",
 				"title": "Thông báo Webhook / Push"
 			}
 		},
 		"save_settings": "Lưu cài đặt",
+		"saved": "Đã lưu cài đặt",
+		"saved_des": "Cài đặt người dùng của bạn đã được cập nhật",
 		"settings": "Cài đặt",
 		"subtitle": "Quản lý tùy chọn hiển thị và thông báo.",
 		"yaml_config": {

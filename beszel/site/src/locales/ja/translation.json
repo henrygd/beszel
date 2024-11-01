@@ -70,6 +70,7 @@
 	"continue": "続行",
 	"copy": "コピー",
 	"days_other": "{{count}}日",
+	"error": "エラー",
 	"filter": "フィルター...",
 	"home": {
 		"active_alerts": "アクティブなアラート",
@@ -96,7 +97,7 @@
 		"docker_network_io": "Dockerネットワークの入出力",
 		"docker_network_io_des": "Dockerコンテナのネットワークトラフィック",
 		"max_1_min": "1分間の最大値",
-		"memory_des": "記録時点での正確な使用率",
+		"memory_des": "��録時点での正確な使用率",
 		"read": "読み込み",
 		"received": "受信",
 		"sent": "送信",
@@ -115,7 +116,9 @@
 	},
 	"search": "検索",
 	"settings": {
+		"check_logs": "詳細はログを確認してください",
 		"export_configuration": "設定をエクスポート",
+		"failed_to_save": "設定の保存に失敗しました",
 		"general": {
 			"chart_options": {
 				"default_time_period": "デフォルト期間",
@@ -140,21 +143,26 @@
 				"enter_email_address": "メールアドレスを入力...",
 				"please": "アラートの配信を確実にするため、",
 				"title": "メール通知",
-				"to_email_s": "送信先メールアドレス",
+				"to_emails": "送信先メールアドレス",
 				"to_ensure_alerts_are_delivered": "してください。"
 			},
 			"subtitle_1": "アラート通知の受信方法を設定。",
 			"subtitle_2": "アラートの作成場所をお探しですか？ベルアイコン",
 			"subtitle_3": "をシステムテーブルでクリックしてください。",
 			"title": "通知",
-			"webhook_push": {
-				"add_url": "URLを追加",
+			"webhook": {
+				"add": "追加",
 				"des_1": "Beszelは",
-				"des_2": "を使用して一般的な通知サービスと連携します。",
+				"des_2": "を使用して一般的な通知サービスと連携します",
+				"test": "テスト",
+				"test_sent": "テスト通知を送信しました",
+				"test_sent_des": "通知サービスを確認してください",
 				"title": "Webhook / プッシュ通知"
 			}
 		},
 		"save_settings": "設定を保存",
+		"saved": "設定を保存しました",
+		"saved_des": "ユーザー設定が更新されました",
 		"settings": "設定",
 		"subtitle": "表示設定と通知設定の管理。",
 		"yaml_config": {

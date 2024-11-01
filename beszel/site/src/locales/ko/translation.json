@@ -70,6 +70,7 @@
 	"continue": "계속",
 	"copy": "복사",
 	"days_other": "{{count}}일",
+	"error": "오류",
 	"filter": "필터...",
 	"home": {
 		"active_alerts": "활성 경고",
@@ -115,7 +116,9 @@
 	},
 	"search": "검색",
 	"settings": {
+		"check_logs": "자세한 내용은 로그를 확인하세요",
 		"export_configuration": "구성 내보내기",
+		"failed_to_save": "설정 저장 실패",
 		"general": {
 			"chart_options": {
 				"default_time_period": "기본 시간 기간",
@@ -140,21 +143,26 @@
 				"enter_email_address": "이메일 주소 입력...",
 				"please": "다음을 수행하세요",
 				"title": "이메일 알림",
-				"to_email_s": "받는 이메일",
+				"to_emails": "받는 이메일",
 				"to_ensure_alerts_are_delivered": "경고가 전달되도록 하기 위해."
 			},
 			"subtitle_1": "경고 알림을 받는 방법을 구성합니다.",
 			"subtitle_2": "경고를 생성하는 위치를 찾고 계신가요? 벨 아이콘을 클릭하세요",
 			"subtitle_3": "시스템 테이블에서.",
 			"title": "알림",
-			"webhook_push": {
-				"add_url": "URL 추가",
+			"webhook": {
+				"add": "추가",
 				"des_1": "Beszel은",
-				"des_2": "를 사용하여 인기 있는 알림 서비스와 통합합니다.",
+				"des_2": "를 사용하여 인기 있는 알림 서비스와 통합합니다",
+				"test": "테스트",
+				"test_sent": "테스트 알림 전송됨",
+				"test_sent_des": "알림 서비스를 확인하세요",
 				"title": "웹훅 / 푸시 알림"
 			}
 		},
 		"save_settings": "설정 저장",
+		"saved": "설정이 저장됨",
+		"saved_des": "사용자 설정이 업데이트되었습니다",
 		"settings": "설정",
 		"subtitle": "디스플레이 및 알림 기본 설정을 관리합니다.",
 		"yaml_config": {

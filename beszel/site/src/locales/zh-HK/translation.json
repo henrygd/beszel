@@ -70,6 +70,7 @@
 	"continue": "繼續",
 	"copy": "複製",
 	"days_other": "{{count}} 天",
+	"error": "錯誤",
 	"filter": "篩選...",
 	"home": {
 		"active_alerts": "活動警報",
@@ -115,7 +116,9 @@
 	},
 	"search": "搜尋",
 	"settings": {
+		"check_logs": "查看日志以获取更多详细信息",
 		"export_configuration": "匯出配置",
+		"failed_to_save": "保存设置失败",
 		"general": {
 			"chart_options": {
 				"default_time_period": "預設時間段",
@@ -140,21 +143,26 @@
 				"enter_email_address": "輸入電郵地址...",
 				"please": "配置",
 				"title": "電郵通知",
-				"to_email_s": "收件人電郵",
+				"to_emails": "收件人電郵",
 				"to_ensure_alerts_are_delivered": "以確保郵件可以成功發送。"
 			},
 			"subtitle_1": "設定如何接收警報通知。",
 			"subtitle_2": "正在尋找建立警報的位置？點擊伺服器列表中的",
 			"subtitle_3": "圖示。",
 			"title": "通知",
-			"webhook_push": {
-				"add_url": "新增 URL",
+			"webhook": {
+				"add": "新增",
 				"des_1": "Beszel 使用",
-				"des_2": "與流行的通知服務整合。",
+				"des_2": "與流行的通知服務整合",
+				"test": "測試",
+				"test_sent": "測試通知已發送",
+				"test_sent_des": "請檢查您的通知服務",
 				"title": "Webhook / 推送通知"
 			}
 		},
 		"save_settings": "儲存設定",
+		"saved": "设置已保存",
+		"saved_des": "您的用户设置已更新",
 		"settings": "設定",
 		"subtitle": "管理顯示和通知偏好。",
 		"yaml_config": {

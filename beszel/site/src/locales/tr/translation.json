@@ -70,6 +70,7 @@
 	"continue": "Devam et",
 	"copy": "Kopyala",
 	"days_other": "{{count}} gün",
+	"error": "Hata",
 	"filter": "Filtrele...",
 	"home": {
 		"active_alerts": "Aktif Uyarılar",
@@ -117,7 +118,9 @@
 	},
 	"search": "Ara",
 	"settings": {
+		"check_logs": "Daha fazla ayrıntı için kayıtları kontrol edin",
 		"export_configuration": "Yapılandırmayı dışa aktar",
+		"failed_to_save": "Ayarlar kaydedilemedi",
 		"general": {
 			"chart_options": {
 				"default_time_period": "Varsayılan zaman aralığı",
@@ -142,21 +145,26 @@
 				"enter_email_address": "E-posta adresi girin...",
 				"please": "Lütfen",
 				"title": "E-posta bildirimleri",
-				"to_email_s": "E-posta(lar)a",
+				"to_emails": "E-posta(lar)a",
 				"to_ensure_alerts_are_delivered": "uyarıların teslim edilmesini sağlamak için."
 			},
 			"subtitle_1": "Uyarı bildirimlerini nasıl alacağınızı yapılandırın.",
 			"subtitle_2": "Uyarı oluşturma yerini mi arıyorsunuz? Çan simgelerine tıklayın",
 			"subtitle_3": "sistemler tablosunda.",
 			"title": "Bildirimler",
-			"webhook_push": {
-				"add_url": "URL Ekle",
-				"des_1": "Beszel, popüler bildirim hizmetleriyle entegre olmak için",
-				"des_2": "kullanır.",
+			"webhook": {
+				"add": "Ekle",
+				"des_1": "Beszel",
+				"des_2": "popüler bildirim hizmetleriyle entegre olmak için kullanır",
+				"test": "Test et",
+				"test_sent": "Test bildirimi gönderildi",
+				"test_sent_des": "Bildirim hizmetinizi kontrol edin",
 				"title": "Webhook / Push bildirimleri"
 			}
 		},
 		"save_settings": "Ayarları Kaydet",
+		"saved": "Ayarlar kaydedildi",
+		"saved_des": "Kullanıcı ayarlarınız güncellendi",
 		"settings": "Ayarlar",
 		"subtitle": "Görüntüleme ve bildirim tercihlerini yönetin.",
 		"yaml_config": {

@@ -13,6 +13,7 @@ import { saveSettings } from "./layout"
 import * as v from "valibot"
 import { isAdmin } from "@/lib/utils"
 import { useTranslation } from "react-i18next"
+import { t } from "i18next"
 
 interface ShoutrrrUrlCardProps {
 	url: string
@@ -61,7 +62,7 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 			await saveSettings(parsedData)
 		} catch (e: any) {
 			toast({
-				title: "Failed to save settings",
+				title: t("settings.failed_to_save"),
 				description: e.message,
 				variant: "destructive",
 			})
@@ -95,7 +96,7 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 						)}
 					</div>
 					<Label className="block" htmlFor="email">
-						{t("settings.notifications.email.to_email_s")}
+						{t("settings.notifications.email.to_emails")}
 					</Label>
 					<InputTags
 						value={emails}
@@ -110,13 +111,13 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 				<Separator />
 				<div className="space-y-3">
 					<div>
-						<h3 className="mb-1 text-lg font-medium">{t("settings.notifications.webhook_push.title")}</h3>
+						<h3 className="mb-1 text-lg font-medium">{t("settings.notifications.webhook.title")}</h3>
 						<p className="text-sm text-muted-foreground leading-relaxed">
-							{t("settings.notifications.webhook_push.des_1")}{" "}
+							{t("settings.notifications.webhook.des_1")}{" "}
 							<a href="https://containrrr.dev/shoutrrr/services/overview/" target="_blank" className="link">
 								Shoutrrr
 							</a>{" "}
-							{t("settings.notifications.webhook_push.des_2")}
+							{t("settings.notifications.webhook.des_2")}
 						</p>
 					</div>
 					{webhooks.length > 0 && (
@@ -138,8 +139,8 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 						className="mt-2 flex items-center gap-1"
 						onClick={addWebhook}
 					>
-						<PlusIcon className="h-4 w-4 -ml-0.5" />
-						{t("settings.notifications.webhook_push.add_url")}
+						<PlusIcon className="h-4 w-4 -ms-0.5" />
+						{t("settings.notifications.webhook.add")} URL
 					</Button>
 				</div>
 				<Separator />
@@ -165,12 +166,12 @@ const ShoutrrrUrlCard = ({ url, onUrlChange, onRemove }: ShoutrrrUrlCardProps) =
 		const res = await pb.send("/api/beszel/send-test-notification", { url })
 		if ("err" in res && !res.err) {
 			toast({
-				title: "Test notification sent",
-				description: "Check your notification service",
+				title: t("settings.notifications.webhook.test_sent"),
+				description: t("settings.notifications.webhook.test_sent_des"),
 			})
 		} else {
 			toast({
-				title: "Error",
+				title: t("error"),
 				description: res.err ?? "Failed to send test notification",
 				variant: "destructive",
 			})
@@ -189,18 +190,12 @@ const ShoutrrrUrlCard = ({ url, onUrlChange, onRemove }: ShoutrrrUrlCardProps) =
 					value={url}
 					onChange={onUrlChange}
 				/>
-				<Button
-					type="button"
-					variant="outline"
-					className="w-20 md:w-28"
-					disabled={isLoading || url === ""}
-					onClick={sendTestNotification}
-				>
+				<Button type="button" variant="outline" disabled={isLoading || url === ""} onClick={sendTestNotification}>
 					{isLoading ? (
 						<LoaderCircleIcon className="h-4 w-4 animate-spin" />
 					) : (
 						<span>
-							Test <span className="hidden md:inline">URL</span>
+							{t("settings.notifications.webhook.test")} <span className="hidden sm:inline">URL</span>
 						</span>
 					)}
 				</Button>

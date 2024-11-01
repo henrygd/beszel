@@ -70,7 +70,6 @@
 	"continue": "Continue",
 	"copy": "Copy",
 	"days_other": "{{count}} days",
-	"error": "Error",
 	"filter": "Filter...",
 	"home": {
 		"active_alerts": "Active Alerts",
@@ -118,9 +117,7 @@
 	},
 	"search": "Search",
 	"settings": {
-		"check_logs": "Check logs for more details.",
 		"export_configuration": "Export configuration",
-		"failed_to_save": "Failed to save settings",
 		"general": {
 			"chart_options": {
 				"default_time_period": "Default time period",
@@ -145,26 +142,21 @@
 				"enter_email_address": "Enter email address...",
 				"please": "Please",
 				"title": "Email notifications",
-				"to_emails": "To email(s)",
+				"to_email_s": "To email(s)",
 				"to_ensure_alerts_are_delivered": "to ensure alerts are delivered."
 			},
 			"subtitle_1": "Configure how you receive alert notifications.",
 			"subtitle_2": "Looking instead for where to create alerts? Click the bell",
 			"subtitle_3": "icons in the systems table.",
 			"title": "Notifications",
-			"webhook": {
-				"add": "Add",
+			"webhook_push": {
+				"add_url": "Add URL",
 				"des_1": "Beszel uses",
 				"des_2": "to integrate with popular notification services.",
-				"test": "Test",
-				"test_sent": "Test notification sent",
-				"test_sent_des": "Check your notification service",
 				"title": "Webhook / Push notifications"
 			}
 		},
 		"save_settings": "Save Settings",
-		"saved": "Settings saved",
-		"saved_des": "Your user settings have been updated.",
 		"settings": "Settings",
 		"subtitle": "Manage display and notification preferences.",
 		"yaml_config": {

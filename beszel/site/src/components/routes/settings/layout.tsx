@@ -14,6 +14,7 @@ import Notifications from "./notifications.tsx"
 import ConfigYaml from "./config-yaml.tsx"
 import { isAdmin } from "@/lib/utils.ts"
 import { useTranslation } from "react-i18next"
+import { t } from "i18next"
 
 export async function saveSettings(newSettings: Partial<UserSettings>) {
 	try {
@@ -30,14 +31,14 @@ export async function saveSettings(newSettings: Partial<UserSettings>) {
 		})
 		$userSettings.set(updatedSettings.settings)
 		toast({
-			title: "Settings saved",
-			description: "Your user settings have been updated.",
+			title: t("settings.saved"),
+			description: t("settings.saved_des"),
 		})
 	} catch (e) {
 		// console.error('update settings', e)
 		toast({
-			title: "Failed to save settings",
-			description: "Check logs for more details.",
+			title: t("settings.failed_to_save"),
+			description: t("settings.check_logs"),
 			variant: "destructive",
 		})
 	}

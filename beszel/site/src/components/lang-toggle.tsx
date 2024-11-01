@@ -23,11 +23,11 @@ export function LangToggle() {
 					<span className="sr-only">Language</span>
 				</Button>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent>
+			<DropdownMenuContent className="grid grid-cols-2">
 				{languages.map(({ lang, label, e }) => (
 					<DropdownMenuItem
 						key={lang}
-						className={cn("ps-2.5 pe-4 flex gap-2.5", lang === i18n.language ? "font-bold" : "")}
+						className={cn("px-3 flex gap-2.5", lang === i18n.language ? "font-bold" : "")}
 						onClick={() => setLang(lang)}
 					>
 						<span>{e}</span> {label}

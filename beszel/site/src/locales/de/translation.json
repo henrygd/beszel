@@ -71,6 +71,7 @@
 	"copy": "Kopieren",
 	"days_one": "",
 	"days_other": "{{count}} Tage",
+	"error": "Fehler",
 	"filter": "Filtern...",
 	"home": {
 		"active_alerts": "Aktive Warnungen",
@@ -118,7 +119,9 @@
 	},
 	"search": "Suchen",
 	"settings": {
+		"check_logs": "Überprüfen Sie die Protokolle für weitere Details",
 		"export_configuration": "Konfiguration exportieren",
+		"failed_to_save": "Fehler beim Speichern der Einstellungen",
 		"general": {
 			"chart_options": {
 				"default_time_period": "Standardzeitraum",
@@ -143,21 +146,26 @@
 				"enter_email_address": "E-Mail-Adresse eingeben...",
 				"please": "Bitte",
 				"title": "E-Mail-Benachrichtigungen",
-				"to_email_s": "An E-Mail(s)",
+				"to_emails": "An E-Mail(s)",
 				"to_ensure_alerts_are_delivered": "um sicherzustellen, dass Warnungen zugestellt werden."
 			},
 			"subtitle_1": "Konfigurieren Sie, wie Sie Warnbenachrichtigungen erhalten.",
 			"subtitle_2": "Suchen Sie stattdessen nach dem Ort, an dem Sie Warnungen erstellen können? Klicken Sie auf die Glocke",
 			"subtitle_3": "Symbole in der Systemtabelle.",
 			"title": "Benachrichtigungen",
-			"webhook_push": {
-				"add_url": "URL hinzufügen",
+			"webhook": {
+				"add": "Hinzufügen",
 				"des_1": "Beszel verwendet",
-				"des_2": "um sich mit beliebten Benachrichtigungsdiensten zu integrieren.",
+				"des_2": "um sich mit beliebten Benachrichtigungsdiensten zu integrieren",
+				"test": "Testen",
+				"test_sent": "Testbenachrichtigung gesendet",
+				"test_sent_des": "Überprüfen Sie Ihren Benachrichtigungsdienst",
 				"title": "Webhook / Push-Benachrichtigungen"
 			}
 		},
 		"save_settings": "Einstellungen speichern",
+		"saved": "Einstellungen gespeichert",
+		"saved_des": "Ihre Benutzereinstellungen wurden aktualisiert",
 		"settings": "Einstellungen",
 		"subtitle": "Anzeige- und Benachrichtigungseinstellungen verwalten.",
 		"yaml_config": {
