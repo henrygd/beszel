@@ -69,7 +69,7 @@
 	},
 	"continue": "続行",
 	"copy": "コピー",
-	"days_other": "{{count}}日",
+	"days_other": "{{count}}日間",
 	"error": "エラー",
 	"filter": "フィルター...",
 	"home": {
