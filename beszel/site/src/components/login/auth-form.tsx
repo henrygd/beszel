@@ -143,7 +143,7 @@ export function UserAuthForm({
 										autoComplete="username"
 										autoCorrect="off"
 										disabled={isLoading || isOauthLoading}
-										className="pl-9"
+										className="ps-9"
 									/>
 									{errors?.username && <p className="px-1 text-xs text-red-600">{errors.username}</p>}
 								</div>
@@ -163,7 +163,7 @@ export function UserAuthForm({
 									autoComplete="email"
 									autoCorrect="off"
 									disabled={isLoading || isOauthLoading}
-									className="pl-9"
+									className="ps-9"
 								/>
 								{errors?.email && <p className="px-1 text-xs text-red-600">{errors.email}</p>}
 							</div>
@@ -180,7 +180,7 @@ export function UserAuthForm({
 									type="password"
 									autoComplete="current-password"
 									disabled={isLoading || isOauthLoading}
-									className="pl-9"
+									className="ps-9"
 								/>
 								{errors?.password && <p className="px-1 text-xs text-red-600">{errors.password}</p>}
 							</div>
@@ -198,7 +198,7 @@ export function UserAuthForm({
 										type="password"
 										autoComplete="current-password"
 										disabled={isLoading || isOauthLoading}
-										className="pl-9"
+										className="ps-9"
 									/>
 									{errors?.passwordConfirm && <p className="px-1 text-xs text-red-600">{errors.passwordConfirm}</p>}
 								</div>
@@ -210,9 +210,9 @@ export function UserAuthForm({
 							</div>
 							<button className={cn(buttonVariants())} disabled={isLoading}>
 								{isLoading ? (
-									<LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+									<LoaderCircle className="me-2 h-4 w-4 animate-spin" />
 								) : (
-									<LogInIcon className="mr-2 h-4 w-4" />
+									<LogInIcon className="me-2 h-4 w-4" />
 								)}
 								{isFirstRun ? t("auth.create_account") : t("auth.sign_in")}
 							</button>
@@ -276,10 +276,10 @@ export function UserAuthForm({
 							disabled={isLoading || isOauthLoading}
 						>
 							{isOauthLoading ? (
-								<LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+								<LoaderCircle className="me-2 h-4 w-4 animate-spin" />
 							) : (
 								<img
-									className="mr-2 h-4 w-4 dark:invert"
+									className="me-2 h-4 w-4 dark:invert"
 									src={`/static/${provider.name}.svg`}
 									alt=""
 									onError={(e) => {
@@ -298,7 +298,7 @@ export function UserAuthForm({
 				<Dialog>
 					<DialogTrigger asChild>
 						<button type="button" className={cn(buttonVariants({ variant: "outline" }))}>
-							<img className="mr-2 h-4 w-4 dark:invert" src="/static/github.svg" alt="" />
+							<img className="me-2 h-4 w-4 dark:invert" src="/static/github.svg" alt="" />
 							<span className="translate-y-[1px]">GitHub</span>
 						</button>
 					</DialogTrigger>

@@ -54,7 +54,7 @@ export default function ConfigYaml() {
 						{t("settings.yaml_config.des_2")}
 					</p>
 					<p className="text-sm text-muted-foreground leading-relaxed">{t("settings.yaml_config.des_3")}</p>
-					<Alert className="my-4 border-destructive text-destructive w-auto table md:pr-6">
+					<Alert className="my-4 border-destructive text-destructive w-auto table md:pe-6">
 						<AlertCircleIcon className="h-4 w-4 stroke-destructive" />
 						<AlertTitle>{t("settings.yaml_config.alert.title")}</AlertTitle>
 						<AlertDescription>
@@ -77,7 +77,7 @@ export default function ConfigYaml() {
 			</div>
 			<Separator className="my-5" />
 			<Button type="button" className="mt-2 flex items-center gap-1" onClick={fetchConfig} disabled={isLoading}>
-				<ButtonIcon className={clsx("h-4 w-4 mr-0.5", isLoading && "animate-spin")} />
+				<ButtonIcon className={clsx("h-4 w-4 me-0.5", isLoading && "animate-spin")} />
 				{t("settings.export_configuration")}
 			</Button>
 		</div>

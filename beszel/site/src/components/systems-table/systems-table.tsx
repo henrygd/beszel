@@ -165,7 +165,7 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 				cell: (info) => {
 					const val = info.getValue() as number
 					return (
-						<span className="tabular-nums whitespace-nowrap pl-1">{decimalString(val, val >= 100 ? 1 : 2)} MB/s</span>
+						<span className="tabular-nums whitespace-nowrap ps-1">{decimalString(val, val >= 100 ? 1 : 2)} MB/s</span>
 					)
 				},
 			},

@@ -65,14 +65,14 @@ export default function ForgotPassword() {
 							autoComplete="email"
 							autoCorrect="off"
 							disabled={isLoading}
-							className="pl-9"
+							className="ps-9"
 						/>
 					</div>
 					<button className={cn(buttonVariants())} disabled={isLoading}>
 						{isLoading ? (
-							<LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+							<LoaderCircle className="me-2 h-4 w-4 animate-spin" />
 						) : (
-							<SendHorizonalIcon className="mr-2 h-4 w-4" />
+							<SendHorizonalIcon className="me-2 h-4 w-4" />
 						)}
 						{t("auth.reset_password")}
 					</button>
@@ -90,7 +90,7 @@ export default function ForgotPassword() {
 					</DialogHeader>
 					<p className="text-primary/70 text-[0.95em] leading-relaxed">{t("auth.command_1")}</p>
 					<p className="text-primary/70 text-[0.95em] leading-relaxed">{t("auth.command_2")}</p>
-					<code className="bg-muted rounded-sm py-0.5 px-2.5 mr-auto text-sm">
+					<code className="bg-muted rounded-sm py-0.5 px-2.5 me-auto text-sm">
 						beszel admin update youremail@example.com newpassword
 					</code>
 				</DialogContent>

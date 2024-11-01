@@ -43,7 +43,7 @@ const InputTags = React.forwardRef<HTMLInputElement, InputTagsProps>(
 						<Button
 							variant="ghost"
 							size="icon"
-							className="ml-2 h-3 w-3"
+							className="ms-2 h-3 w-3"
 							onClick={() => {
 								onChange(value.filter((i) => i !== item))
 							}}
