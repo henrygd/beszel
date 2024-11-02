@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-11-02 01:41\n"
+"PO-Revision-Date: 2024-11-02 01:45\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -78,11 +78,11 @@ msgstr "Điều chỉnh tùy chọn hiển thị cho biểu đồ."
 #: src/components/command-palette.tsx:189
 #: src/components/command-palette.tsx:204
 msgid "Admin"
-msgstr "Quản trị viên"
+msgstr "Admin"
 
 #: src/components/systems-table/systems-table.tsx:174
 msgid "Agent"
-msgstr "Tác nhân"
+msgstr "Agent"
 
 #: src/components/alerts/alert-button.tsx:32
 #: src/components/alerts/alert-button.tsx:68
@@ -221,7 +221,7 @@ msgstr "Sao chép văn bản"
 
 #: src/components/systems-table/systems-table.tsx:143
 msgid "CPU"
-msgstr "ЦП"
+msgstr "CPU"
 
 #: src/components/charts/area-chart.tsx:52
 #: src/components/routes/system.tsx:375
@@ -283,16 +283,16 @@ msgstr "Mạng I/O Docker"
 
 #: src/components/command-palette.tsx:125
 msgid "Documentation"
-msgstr "Tài liệu"
+msgstr "Documentation"
 
 #: src/components/login/auth-form.tsx:158
 msgid "email"
-msgstr "електронна пошта"
+msgstr "email"
 
 #: src/components/login/auth-form.tsx:152
 #: src/components/login/forgot-pass-form.tsx:53
 msgid "Email"
-msgstr "Електронна пошта"
+msgstr "Email"
 
 #: src/components/routes/settings/notifications.tsx:91
 msgid "Email notifications"
@@ -419,7 +419,7 @@ msgstr "Quản lý tùy chọn hiển thị và thông báo."
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx:570
 msgid "Max 1 min"
-msgstr "Tối đa 1 phút"
+msgstr "Max 1 min"
 
 #: src/components/systems-table/systems-table.tsx:149
 msgid "Memory"
@@ -466,7 +466,7 @@ msgstr "Không tìm thấy hệ thống."
 #: src/components/routes/settings/layout.tsx:56
 #: src/components/routes/settings/notifications.tsx:74
 msgid "Notifications"
-msgstr "Thông báo"
+msgstr "Notifications"
 
 #: src/components/login/auth-form.tsx:308
 msgid "OAuth 2 / OIDC support"
@@ -490,7 +490,7 @@ msgstr "Ghi đè các cảnh báo hiện có"
 
 #: src/components/command-palette.tsx:85
 msgid "Page"
-msgstr "Trang"
+msgstr "Page"
 
 #: src/components/command-palette.tsx:72
 msgid "Pages / Settings"
@@ -511,7 +511,7 @@ msgstr "Yêu cầu đặt lại mật khẩu đã được nhận"
 
 #: src/components/systems-table/systems-table.tsx:227
 msgid "Pause"
-msgstr "Tạm dừng"
+msgstr "Pause"
 
 #: src/components/routes/settings/notifications.tsx:95
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -548,7 +548,7 @@ msgstr "Vui lòng đăng nhập vào tài khoản của bạn"
 
 #: src/components/add-system.tsx:125
 msgid "Port"
-msgstr "Cổng"
+msgstr "Port"
 
 #: src/components/routes/settings/general.tsx:58
 msgid "Preferred Language"
