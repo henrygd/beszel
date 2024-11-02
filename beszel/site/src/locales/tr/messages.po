@@ -8,7 +8,7 @@ msgstr ""
 "Language: tr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-11-02 01:41\n"
+"PO-Revision-Date: 2024-11-02 01:45\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -221,7 +221,7 @@ msgstr "Копіювати текст"
 
 #: src/components/systems-table/systems-table.tsx:143
 msgid "CPU"
-msgstr "ЦП"
+msgstr "CPU"
 
 #: src/components/charts/area-chart.tsx:52
 #: src/components/routes/system.tsx:375
@@ -253,7 +253,7 @@ msgstr "Видалити"
 
 #: src/components/systems-table/systems-table.tsx:155
 msgid "Disk"
-msgstr "Диск"
+msgstr "Disk"
 
 #: src/components/routes/system.tsx:426
 msgid "Disk I/O"
@@ -548,7 +548,7 @@ msgstr "Будь ласка, увійдіть у свій обліковий з�
 
 #: src/components/add-system.tsx:125
 msgid "Port"
-msgstr "Порт"
+msgstr "Port"
 
 #: src/components/routes/settings/general.tsx:58
 msgid "Preferred Language"
@@ -665,7 +665,7 @@ msgstr "Температури датчиків системи"
 
 #: src/components/routes/settings/notifications.tsx:211
 msgid "Test <0>URL</0>"
-msgstr "Тест <0>URL</0>"
+msgstr "Test <0>URL</0>"
 
 #: src/components/routes/settings/notifications.tsx:182
 msgid "Test notification sent"
