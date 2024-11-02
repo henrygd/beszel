@@ -8,7 +8,7 @@ msgstr ""
 "Language: pt\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-11-02 01:41\n"
+"PO-Revision-Date: 2024-11-02 01:45\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -78,7 +78,7 @@ msgstr "Điều chỉnh tùy chọn hiển thị cho biểu đồ."
 #: src/components/command-palette.tsx:189
 #: src/components/command-palette.tsx:204
 msgid "Admin"
-msgstr "Quản trị viên"
+msgstr "Admin"
 
 #: src/components/systems-table/systems-table.tsx:174
 msgid "Agent"
@@ -126,7 +126,7 @@ msgstr "Sử dụng CPU trung bình toàn hệ thống"
 #: src/components/command-palette.tsx:171
 #: src/components/navbar.tsx:94
 msgid "Backups"
-msgstr "Sao lưu"
+msgstr "Backups"
 
 #: src/components/routes/system.tsx:436
 #: src/lib/utils.ts:307
@@ -147,7 +147,7 @@ msgstr "Nhị phân"
 
 #: src/components/charts/mem-chart.tsx:89
 msgid "Cache / Buffers"
-msgstr "Bộ nhớ đệm / Bộ đệm"
+msgstr "Cache / Buffers"
 
 #: src/components/systems-table/systems-table.tsx:258
 msgid "Cancel"
@@ -221,7 +221,7 @@ msgstr "Sao chép văn bản"
 
 #: src/components/systems-table/systems-table.tsx:143
 msgid "CPU"
-msgstr "ЦП"
+msgstr "CPU"
 
 #: src/components/charts/area-chart.tsx:52
 #: src/components/routes/system.tsx:375
@@ -287,12 +287,12 @@ msgstr "Tài liệu"
 
 #: src/components/login/auth-form.tsx:158
 msgid "email"
-msgstr "електронна пошта"
+msgstr "email"
 
 #: src/components/login/auth-form.tsx:152
 #: src/components/login/forgot-pass-form.tsx:53
 msgid "Email"
-msgstr "Електронна пошта"
+msgstr "Email"
 
 #: src/components/routes/settings/notifications.tsx:91
 msgid "Email notifications"
@@ -366,7 +366,7 @@ msgstr "Chung"
 
 #: src/components/add-system.tsx:119
 msgid "Host / IP"
-msgstr "Máy chủ / IP"
+msgstr "Host / IP"
 
 #: src/components/login/forgot-pass-form.tsx:93
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
@@ -379,7 +379,7 @@ msgstr "Địa chỉ email không hợp lệ."
 #. Linux kernel
 #: src/components/routes/system.tsx:254
 msgid "Kernel"
-msgstr "Nhân"
+msgstr "Kernel"
 
 #: src/components/routes/settings/general.tsx:45
 msgid "Language"
@@ -406,7 +406,7 @@ msgstr "Nỗ lực đăng nhập thất bại"
 #: src/components/command-palette.tsx:157
 #: src/components/navbar.tsx:86
 msgid "Logs"
-msgstr "Nhật ký"
+msgstr "Logs"
 
 #: src/components/routes/settings/notifications.tsx:80
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
@@ -630,7 +630,7 @@ msgstr "Cài đặt SMTP"
 
 #: src/lib/utils.ts:282
 msgid "Status"
-msgstr "Trạng thái"
+msgstr "Status"
 
 #: src/components/routes/system.tsx:467
 msgid "Swap space used by the system"
