@@ -4,8 +4,7 @@ A lightweight server resource monitoring hub with historical data, docker stats,
 
 [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/henrygd/beszel-agent/0.1.0?logo=docker&label=agent%20image%20size)](https://hub.docker.com/r/henrygd/beszel-agent)
 [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/henrygd/beszel/0.1.0?logo=docker&label=hub%20image%20size)](https://hub.docker.com/r/henrygd/beszel)
-
-<!-- [![Crowdin](https://badges.crowdin.net/beszel/localized.svg)](https://crowdin.com/project/beszel) -->
+[![Crowdin](https://badges.crowdin.net/beszel/localized.svg)](https://crowdin.com/project/beszel)
 
 ![Screenshot of the hub](https://henrygd-assets.b-cdn.net/beszel/screenshot.png)
 
@@ -322,7 +321,7 @@ See a list of valid options by running `go tool dist list`.
 
 Contributions are welcome, but it's a good idea to check with us first in a discussion / issue if you plan on doing anything significant.
 
-<!-- We use [Crowdin](https://crowdin.com/project/beszel) to manage translations. New languages or improvements to existing translations are appreciated! -->
+We use [Crowdin](https://crowdin.com/project/beszel) to manage translations. New languages or improvements to existing translations are appreciated!
 
 We'll have more helpful information about contributing to Beszel in the near future.
 
