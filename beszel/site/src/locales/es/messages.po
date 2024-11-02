@@ -8,7 +8,7 @@ msgstr ""
 "Language: es\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-11-02 01:41\n"
+"PO-Revision-Date: 2024-11-02 01:45\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -221,7 +221,7 @@ msgstr "Sao chép văn bản"
 
 #: src/components/systems-table/systems-table.tsx:143
 msgid "CPU"
-msgstr "ЦП"
+msgstr "CPU"
 
 #: src/components/charts/area-chart.tsx:52
 #: src/components/routes/system.tsx:375
@@ -310,7 +310,7 @@ msgstr "Nhập địa chỉ email..."
 #: src/components/routes/settings/config-yaml.tsx:28
 #: src/components/routes/settings/notifications.tsx:187
 msgid "Error"
-msgstr "Lỗi"
+msgstr "Error"
 
 #: src/components/routes/home.tsx:84
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
@@ -362,11 +362,11 @@ msgstr "Quên mật khẩu?"
 #: src/components/routes/settings/general.tsx:33
 #: src/components/routes/settings/layout.tsx:51
 msgid "General"
-msgstr "Chung"
+msgstr "General"
 
 #: src/components/add-system.tsx:119
 msgid "Host / IP"
-msgstr "Máy chủ / IP"
+msgstr "Host / IP"
 
 #: src/components/login/forgot-pass-form.tsx:93
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
@@ -379,7 +379,7 @@ msgstr "Địa chỉ email không hợp lệ."
 #. Linux kernel
 #: src/components/routes/system.tsx:254
 msgid "Kernel"
-msgstr "Nhân"
+msgstr "Kernel"
 
 #: src/components/routes/settings/general.tsx:45
 msgid "Language"
