@@ -84,22 +84,18 @@ func (a *Agent) Run(pubKey []byte, addr string) {
 
 func (a *Agent) gatherStats() system.CombinedData {
 	slog.Debug("Getting stats")
-	// systemData := system.CombinedData{
-	// 	Stats: a.getSystemStats(),
-	// 	Info:  a.systemInfo,
-	// }
-	systemData := system.CombinedData{}
-	// add docker stats (testing doing this first for docker 24)
+	systemData := system.CombinedData{
+		Stats: a.getSystemStats(),
+		Info:  a.systemInfo,
+	}
+	slog.Debug("System stats", "data", systemData)
+	// add docker stats
 	if containerStats, err := a.dockerManager.getDockerStats(); err == nil {
 		systemData.Containers = containerStats
 		slog.Debug("Docker stats", "data", systemData.Containers)
 	} else {
 		slog.Debug("Error getting docker stats", "err", err)
 	}
-	systemData.Stats = a.getSystemStats()
-	systemData.Info = a.systemInfo
-	slog.Debug("System stats", "data", systemData)
-
 	// add extra filesystems
 	systemData.Stats.ExtraFs = make(map[string]*system.FsStats)
 	for name, stats := range a.fsStats {

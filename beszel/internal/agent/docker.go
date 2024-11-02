@@ -25,23 +25,18 @@ type dockerManager struct {
 	apiContainerList    *[]container.ApiInfo        // List of containers from Docker API
 	containerStatsMap   map[string]*container.Stats // Keeps track of container stats
 	validIds            map[string]struct{}         // Map of valid container ids, used to prune invalid containers from containerStatsMap
-	goodDockerVersion   bool                        // Whether docker version is at least 25.0.0 (one-shot works correctly)
 }
 
 // Add goroutine to the queue
 func (d *dockerManager) queue() {
+	d.sem <- struct{}{}
 	d.wg.Add(1)
-	if d.goodDockerVersion {
-		d.sem <- struct{}{}
-	}
 }
 
 // Remove goroutine from the queue
 func (d *dockerManager) dequeue() {
+	<-d.sem
 	d.wg.Done()
-	if d.goodDockerVersion {
-		<-d.sem
-	}
 }
 
 // Returns stats for all running containers
@@ -51,11 +46,6 @@ func (dm *dockerManager) getDockerStats() ([]*container.Stats, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-
-	// test sleeping for 1 second if docker 24
-	if !dm.goodDockerVersion {
-		time.Sleep(time.Millisecond * 1100)
-	}
 
 	if err := json.NewDecoder(resp.Body).Decode(&dm.apiContainerList); err != nil {
 		return nil, err
@@ -99,11 +89,11 @@ func (dm *dockerManager) getDockerStats() ([]*container.Stats, error) {
 	// retry failed containers separately so we can run them in parallel (docker 24 bug)
 	if len(failedContainters) > 0 {
 		slog.Debug("Retrying failed containers", "count", len(failedContainters))
-		time.Sleep(time.Millisecond * 1100) // this is a test for docker 24 bug
+		// time.Sleep(time.Millisecond * 1100)
 		for _, ctr := range failedContainters {
-			dm.queue()
+			dm.wg.Add(1)
 			go func() {
-				defer dm.dequeue()
+				defer dm.wg.Done()
 				err = dm.updateContainerStats(ctr)
 				if err != nil {
 					slog.Error("Error getting container stats", "err", err)
@@ -261,8 +251,11 @@ func newDockerManager() *dockerManager {
 			Transport: transport,
 		},
 		containerStatsMap: make(map[string]*container.Stats),
-		sem:               make(chan struct{}, 5),
 	}
+
+	// Make sure sem is initialized
+	concurrency := 200
+	defer func() { dockerClient.sem = make(chan struct{}, concurrency) }()
 
 	// Check docker version
 	// (versions before 25.0.0 have a bug with one-shot which requires all requests to be made in one batch)
@@ -280,10 +273,9 @@ func newDockerManager() *dockerManager {
 
 	// if version > 24, one-shot works correctly and we can limit concurrent operations
 	if dockerVersion, err := semver.Parse(versionInfo.Version); err == nil && dockerVersion.Major > 24 {
-		dockerClient.goodDockerVersion = true
-	} else {
-		slog.Info(fmt.Sprintf("Docker %s is outdated. Upgrade if possible. See https://github.com/henrygd/beszel/issues/58", versionInfo.Version))
+		concurrency = 5
 	}
+	slog.Debug("Docker", "version", versionInfo.Version, "concurrency", concurrency)
 
 	return dockerClient
 }
