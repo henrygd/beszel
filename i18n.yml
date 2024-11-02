@@ -2,3 +2,4 @@ files:
   - source: /beszel/site/src/locales/en/messages.po
     translation: /beszel/site/src/locales/%two_letters_code%/%original_file_name%
     multilingual: 1
+
