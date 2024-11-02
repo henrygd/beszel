@@ -166,3 +166,12 @@ export interface ChartData {
 	domain: number[]
 	chartTime: ChartTimes
 }
+
+interface AlertInfo {
+	name: () => string
+	unit: string
+	icon: any
+	desc: () => string
+	single?: boolean
+	max?: number
+}

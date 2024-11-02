@@ -2,7 +2,7 @@ import { toast } from "@/components/ui/use-toast"
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { $alerts, $copyContent, $systems, $userSettings, pb } from "./stores"
-import { AlertRecord, ChartTimeData, ChartTimes, SystemRecord } from "@/types"
+import { AlertInfo, AlertRecord, ChartTimeData, ChartTimes, SystemRecord } from "@/types"
 import { RecordModel, RecordSubscription } from "pocketbase"
 import { WritableAtom } from "nanostores"
 import { timeDay, timeHour } from "d3-time"
@@ -229,7 +229,7 @@ function getStorageValue(key: string, defaultValue: any) {
 }
 
 /** Hook to sync value in local storage */
-export const useLocalStorage = (key: string, defaultValue: any) => {
+export function useLocalStorage<T>(key: string, defaultValue: T) {
 	key = `besz-${key}`
 	const [value, setValue] = useState(() => {
 		return getStorageValue(key, defaultValue)
@@ -277,7 +277,7 @@ export const getSizeAndUnit = (n: number, isGigabytes = true) => {
 
 export const chartMargin = { top: 12 }
 
-export const alertInfo = {
+export const alertInfo: Record<string, AlertInfo> = {
 	Status: {
 		name: () => t`Status`,
 		unit: "",
@@ -308,6 +308,7 @@ export const alertInfo = {
 		unit: " MB/s",
 		icon: EthernetIcon,
 		desc: () => t`Triggers when combined up/down exceeds a threshold`,
+		max: 125,
 	},
 	Temperature: {
 		name: () => t`Temperature`,

@@ -1,7 +1,7 @@
 import { pb } from "@/lib/stores"
 import { alertInfo, cn } from "@/lib/utils"
 import { Switch } from "@/components/ui/switch"
-import { AlertRecord, SystemRecord } from "@/types"
+import { AlertInfo, AlertRecord, SystemRecord } from "@/types"
 import { lazy, Suspense, useRef, useState } from "react"
 import { toast } from "../ui/use-toast"
 import { RecordOptions } from "pocketbase"
@@ -14,7 +14,7 @@ interface AlertData {
 	min?: number
 	updateAlert?: (checked: boolean, value: number, min: number) => void
 	key: keyof typeof alertInfo
-	alert: (typeof alertInfo)[keyof typeof alertInfo]
+	alert: AlertInfo
 	system: SystemRecord
 }
 
@@ -216,7 +216,7 @@ function AlertContent({ data }: { data: AlertData }) {
 									onValueCommit={(val) => (newValue.current = val[0]) && updateAlert()}
 									onValueChange={(val) => setValue(val[0])}
 									min={1}
-									max={99}
+									max={alertInfo[key].max ?? 99}
 								/>
 							</div>
 						</div>
