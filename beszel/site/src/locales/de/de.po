@@ -1,11 +1,11 @@
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2024-11-01 18:55-0400\n"
+"POT-Creation-Date: 2024-11-01 20:30-0400\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
-"Language: ar\n"
+"Language: de\n"
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "PO-Revision-Date: \n"
@@ -15,56 +15,56 @@ msgstr ""
 
 #: src/components/routes/system.tsx:242
 msgid "{0, plural, one {# day} other {# days}}"
-msgstr "{0, plural, one {# يوم} other {# أيام}}"
+msgstr "{0, plural, one {# Tag} other {# Tage}}"
 
 #: src/components/routes/system.tsx:240
 msgid "{hours, plural, one {# hour} other {# hours}}"
-msgstr "{hours, plural, one {# ساعة} other {# ساعات}}"
+msgstr "{hours, plural, one {# Stunde} other {# Stunden}}"
 
 #: src/lib/utils.ts:139
 msgid "1 hour"
-msgstr "1 ساعة"
+msgstr "1 Stunde"
 
 #: src/lib/utils.ts:162
 msgid "1 week"
-msgstr "1 أسبوع"
+msgstr "1 Woche"
 
 #: src/lib/utils.ts:147
 msgid "12 hours"
-msgstr "12 ساعة"
+msgstr "12 Stunden"
 
 #: src/lib/utils.ts:155
 msgid "24 hours"
-msgstr "24 ساعة"
+msgstr "24 Stunden"
 
 #: src/lib/utils.ts:170
 msgid "30 days"
-msgstr "30 يومًا"
+msgstr "30 Tage"
 
 #: src/components/routes/home.tsx:65
 msgid "Active Alerts"
-msgstr "التنبيهات النشطة"
+msgstr "Aktive Warnungen"
 
 #: src/components/add-system.tsx:74
 msgid "Add <0>System</0>"
-msgstr "إضافة <0>نظام</0>"
+msgstr "<0>System</0> hinzufügen"
 
 #: src/components/add-system.tsx:83
 msgid "Add New System"
-msgstr "إضافة نظام جديد"
+msgstr "Neues System hinzufügen"
 
 #: src/components/add-system.tsx:167
 #: src/components/add-system.tsx:178
 msgid "Add system"
-msgstr "إضافة نظام"
+msgstr "System hinzufügen"
 
 #: src/components/routes/settings/notifications.tsx:156
 msgid "Add URL"
-msgstr "إضافة عنوان URL"
+msgstr "URL hinzufügen"
 
 #: src/components/routes/settings/general.tsx:81
 msgid "Adjust display options for charts."
-msgstr "تعديل خيارات العرض للرسوم البيانية."
+msgstr "Anzeigeoptionen für Diagramme anpassen."
 
 #: src/components/command-palette.tsx:133
 #: src/components/command-palette.tsx:146
@@ -73,535 +73,531 @@ msgstr "تعديل خيارات العرض للرسوم البيانية."
 #: src/components/command-palette.tsx:189
 #: src/components/command-palette.tsx:204
 msgid "Admin"
-msgstr "مسؤول"
+msgstr "Admin"
 
 #: src/components/systems-table/systems-table.tsx:174
 msgid "Agent"
-msgstr "وكيل"
+msgstr "Agent"
 
 #: src/components/alerts/alert-button.tsx:32
 #: src/components/alerts/alert-button.tsx:68
 msgid "Alerts"
-msgstr "التنبيهات"
+msgstr "Warnungen"
 
 #: src/components/alerts/alert-button.tsx:88
 #: src/components/routes/home.tsx:107
 msgid "All Systems"
-msgstr "جميع الأنظمة"
+msgstr "Alle Systeme"
 
 #: src/components/systems-table/systems-table.tsx:247
 msgid "Are you sure you want to delete {name}?"
-msgstr "هل أنت متأكد أنك تريد حذف {name}؟"
+msgstr "Möchten Sie {name} wirklich löschen?"
 
 #: src/components/command-palette.tsx:186
 #: src/components/navbar.tsx:102
 msgid "Auth Providers"
-msgstr "مزودو المصادقة"
+msgstr "Authentifizierungsanbieter"
 
 #: src/components/copy-to-clipboard.tsx:16
 msgid "Automatic copy requires a secure context."
-msgstr "النسخ التلقائي يتطلب سياقًا آمنًا."
+msgstr "Automatisches Kopieren erfordert einen sicheren Kontext."
 
 #: src/components/routes/system.tsx:567
 msgid "Average"
-msgstr "متوسط"
+msgstr "Durchschnitt"
 
 #: src/components/routes/system.tsx:387
 msgid "Average CPU utilization of containers"
-msgstr "متوسط استخدام وحدة المعالجة المركزية للحاويات"
+msgstr "Durchschnittliche CPU-Auslastung der Container"
 
 #: src/components/alerts/alerts-system.tsx:204
 msgid "Average exceeds <0>{value}{0}</0>"
-msgstr "المتوسط يتجاوز <0>{value}{0}</0>"
+msgstr "Durchschnitt überschreitet <0>{value}{0}</0>"
 
 #: src/components/routes/system.tsx:376
 msgid "Average system-wide CPU utilization"
-msgstr "متوسط استخدام وحدة المعالجة المركزية على مستوى النظام"
+msgstr "Durchschnittliche systemweite CPU-Auslastung"
 
 #: src/components/command-palette.tsx:171
 #: src/components/navbar.tsx:94
 msgid "Backups"
-msgstr "النسخ الاحتياطية"
+msgstr "Backups"
 
 #: src/components/routes/system.tsx:436
 #: src/lib/utils.ts:307
 msgid "Bandwidth"
-msgstr "عرض النطاق الترددي"
+msgstr "Bandbreite"
 
 #: src/components/login/auth-form.tsx:313
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
-msgstr "يدعم Beszel OpenID Connect والعديد من مزودي المصادقة OAuth2."
+msgstr "Beszel unterstützt OpenID Connect und viele OAuth2-Authentifizierungsanbieter."
 
 #: src/components/routes/settings/notifications.tsx:127
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
-msgstr "يستخدم Beszel <0>Shoutrrr</0> للتكامل مع خدمات الإشعارات الشهيرة."
+msgstr "Beszel verwendet <0>Shoutrrr</0>, um sich mit beliebten Benachrichtigungsdiensten zu integrieren."
 
 #: src/components/add-system.tsx:88
 msgid "Binary"
-msgstr "ثنائي"
+msgstr "Binär"
 
 #: src/components/charts/mem-chart.tsx:89
 msgid "Cache / Buffers"
-msgstr "ذاكرة التخزين المؤقت / المخازن المؤقتة"
+msgstr "Cache / Puffer"
 
 #: src/components/systems-table/systems-table.tsx:258
 msgid "Cancel"
-msgstr "إلغاء"
+msgstr "Abbrechen"
 
 #: src/components/routes/settings/config-yaml.tsx:68
 msgid "Caution - potential data loss"
-msgstr "تحذير - فقدان محتمل للبيانات"
+msgstr "Vorsicht - potenzieller Datenverlust"
 
 #: src/components/routes/settings/general.tsx:36
 msgid "Change general application options."
-msgstr "تغيير خيارات التطبيق العامة."
+msgstr "Allgemeine Anwendungsoptionen ändern."
 
 #: src/components/routes/settings/general.tsx:78
 msgid "Chart options"
-msgstr "خيارات الرسم البياني"
+msgstr "Diagrammoptionen"
 
 #: src/components/login/forgot-pass-form.tsx:34
 msgid "Check {email} for a reset link."
-msgstr "تحقق من {email} للحصول على رابط إعادة التعيين."
+msgstr "Überprüfen Sie {email} auf einen Rücksetzlink."
 
 #: src/components/routes/settings/layout.tsx:40
 msgid "Check logs for more details."
-msgstr "تحقق من السجلات لمزيد من التفاصيل."
+msgstr "Überprüfen Sie die Protokolle für weitere Details."
 
 #: src/components/routes/settings/notifications.tsx:183
 msgid "Check your notification service"
-msgstr "تحقق من خدمة الإشعارات الخاصة بك"
+msgstr "Überprüfen Sie Ihren Benachrichtigungsdienst"
 
 #: src/components/add-system.tsx:153
 msgid "Click to copy"
-msgstr "انقر للنسخ"
+msgstr "Zum Kopieren klicken"
 
 #: src/components/login/forgot-pass-form.tsx:83
 #: src/components/login/forgot-pass-form.tsx:89
 msgid "Command line instructions"
-msgstr "تعليمات سطر الأوامر"
+msgstr "Befehlszeilenanweisungen"
 
 #: src/components/routes/settings/notifications.tsx:77
 msgid "Configure how you receive alert notifications."
-msgstr "قم بتكوين كيفية تلقي إشعارات التنبيه."
+msgstr "Konfigurieren Sie, wie Sie Warnbenachrichtigungen erhalten."
 
 #: src/components/login/auth-form.tsx:189
 #: src/components/login/auth-form.tsx:194
 msgid "Confirm password"
-msgstr "تأكيد كلمة المرور"
+msgstr "Passwort bestätigen"
 
 #: src/components/systems-table/systems-table.tsx:264
 msgid "Continue"
-msgstr "متابعة"
+msgstr "Fortfahren"
 
 #: src/lib/utils.ts:25
 msgid "Copied to clipboard"
-msgstr "تم النسخ إلى الحافظة"
+msgstr "In die Zwischenablage kopiert"
 
 #: src/components/add-system.tsx:164
 msgid "Copy"
-msgstr "نسخ"
+msgstr "Kopieren"
 
 #: src/components/systems-table/systems-table.tsx:233
 msgid "Copy host"
-msgstr "نسخ المضيف"
+msgstr "Host kopieren"
 
 #: src/components/add-system.tsx:175
 msgid "Copy Linux command"
-msgstr "نسخ أمر لينكس"
+msgstr "Linux-Befehl kopieren"
 
 #: src/components/copy-to-clipboard.tsx:13
 msgid "Copy text"
-msgstr "نسخ النص"
+msgstr "Text kopieren"
 
 #: src/components/systems-table/systems-table.tsx:143
 msgid "CPU"
-msgstr "وحدة المعالجة المركزية"
+msgstr "CPU"
 
 #: src/components/charts/area-chart.tsx:52
 #: src/components/routes/system.tsx:375
 #: src/lib/utils.ts:289
 msgid "CPU Usage"
-msgstr "استخدام وحدة المعالجة المركزية"
+msgstr "CPU-Auslastung"
 
 #: src/components/login/auth-form.tsx:215
 msgid "Create account"
-msgstr "إنشاء حساب"
+msgstr "Konto erstellen"
 
 #. Dark theme
 #: src/components/mode-toggle.tsx:21
 msgid "Dark"
-msgstr "داكن"
+msgstr "Dunkel"
 
 #: src/components/command-palette.tsx:82
 #: src/components/routes/home.tsx:38
 msgid "Dashboard"
-msgstr "لوحة التحكم"
+msgstr "Dashboard"
 
 #: src/components/routes/settings/general.tsx:85
 msgid "Default time period"
-msgstr "الفترة الزمنية الافتراضية"
+msgstr "Standardzeitraum"
 
 #: src/components/systems-table/systems-table.tsx:239
 msgid "Delete"
-msgstr "حذف"
+msgstr "Löschen"
 
 #: src/components/systems-table/systems-table.tsx:155
 msgid "Disk"
-msgstr "القرص"
+msgstr "Festplatte"
 
 #: src/components/routes/system.tsx:426
 msgid "Disk I/O"
-msgstr "إدخال/إخراج القرص"
+msgstr "Festplatten-I/O"
 
 #: src/components/charts/disk-chart.tsx:74
 #: src/components/routes/system.tsx:415
 #: src/lib/utils.ts:301
 msgid "Disk Usage"
-msgstr "استخدام القرص"
+msgstr "Festplattennutzung"
 
 #: src/components/routes/system.tsx:495
 msgid "Disk usage of {extraFsName}"
-msgstr "استخدام القرص لـ {extraFsName}"
+msgstr "Festplattennutzung von {extraFsName}"
 
 #: src/components/routes/system.tsx:386
 msgid "Docker CPU Usage"
-msgstr "استخدام وحدة المعالجة المركزية لـ Docker"
+msgstr "Docker-CPU-Auslastung"
 
 #: src/components/routes/system.tsx:407
 msgid "Docker Memory Usage"
-msgstr "استخدام الذاكرة لـ Docker"
+msgstr "Docker-Speichernutzung"
 
 #: src/components/routes/system.tsx:452
 msgid "Docker Network I/O"
-msgstr "إدخال/إخراج الشبكة لـ Docker"
+msgstr "Docker-Netzwerk-I/O"
 
 #: src/components/command-palette.tsx:125
 msgid "Documentation"
-msgstr "التوثيق"
+msgstr "Dokumentation"
 
 #: src/components/login/auth-form.tsx:158
 msgid "email"
-msgstr "البريد الإلكتروني"
+msgstr "E-Mail"
 
 #: src/components/login/auth-form.tsx:152
 #: src/components/login/forgot-pass-form.tsx:53
 msgid "Email"
-msgstr "البريد الإلكتروني"
+msgstr "E-Mail"
 
 #: src/components/routes/settings/notifications.tsx:91
 msgid "Email notifications"
-msgstr "إشعارات البريد الإلكتروني"
+msgstr "E-Mail-Benachrichtigungen"
 
 #: src/components/login/login.tsx:36
 msgid "Enter email address to reset password"
-msgstr "أدخل عنوان البريد الإلكتروني لإعادة تعيين كلمة المرور"
+msgstr "E-Mail-Adresse eingeben, um das Passwort zurückzusetzen"
 
 #: src/components/routes/settings/notifications.tsx:111
 msgid "Enter email address..."
-msgstr "أدخل عنوان البريد الإلكتروني..."
+msgstr "E-Mail-Adresse eingeben..."
 
 #: src/components/login/auth-form.tsx:256
 #: src/components/routes/settings/config-yaml.tsx:28
 #: src/components/routes/settings/notifications.tsx:187
 msgid "Error"
-msgstr "خطأ"
+msgstr "Fehler"
 
 #: src/components/routes/home.tsx:84
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
-msgstr "يتجاوز {0}{1} في آخر {2, plural, one {# دقيقة} other {# دقائق}}"
+msgstr "Überschreitet {0}{1} in den letzten {2, plural, one {# Minute} other {# Minuten}}"
 
 #: src/components/routes/settings/config-yaml.tsx:72
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
-msgstr "سيتم حذف الأنظمة الحالية غير المعرفة في <0>config.yml</0>. يرجى عمل نسخ احتياطية بانتظام."
+msgstr "Bestehende Systeme, die nicht in <0>config.yml</0> definiert sind, werden gelöscht. Bitte machen Sie regelmäßige Backups."
 
 #: src/components/routes/settings/config-yaml.tsx:93
 msgid "Export configuration"
-msgstr "تصدير التكوين"
+msgstr "Konfiguration exportieren"
 
 #: src/components/routes/settings/config-yaml.tsx:48
 msgid "Export your current systems configuration."
-msgstr "تصدير تكوين الأنظمة الحالية الخاصة بك."
+msgstr "Exportieren Sie Ihre aktuelle Systemkonfiguration."
 
 #: src/lib/utils.ts:38
 msgid "Failed to authenticate"
-msgstr "فشل في المصادقة"
+msgstr "Authentifizierung fehlgeschlagen"
 
 #: src/components/routes/settings/layout.tsx:39
 #: src/components/routes/settings/notifications.tsx:62
 msgid "Failed to save settings"
-msgstr "فشل في حفظ الإعدادات"
+msgstr "Einstellungen konnten nicht gespeichert werden"
 
 #: src/components/routes/settings/notifications.tsx:188
 msgid "Failed to send test notification"
-msgstr "فشل في إرسال إشعار الاختبار"
+msgstr "Testbenachrichtigung konnte nicht gesendet werden"
 
 #: src/components/alerts/alerts-system.tsx:27
 msgid "Failed to update alert"
-msgstr "فشل في تحديث التنبيه"
+msgstr "Warnung konnte nicht aktualisiert werden"
 
 #: src/components/routes/home.tsx:114
 #: src/components/routes/system.tsx:538
 msgid "Filter..."
-msgstr "تصفية..."
+msgstr "Filter..."
 
 #: src/components/alerts/alerts-system.tsx:225
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
-msgstr "لمدة <0>{min}</0> {min, plural, one {دقيقة} other {دقائق}}"
+msgstr "Für <0>{min}</0> {min, plural, one {Minute} other {Minuten}}"
 
 #: src/components/login/auth-form.tsx:337
 msgid "Forgot password?"
-msgstr "هل نسيت كلمة المرور؟"
+msgstr "Passwort vergessen?"
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx:33
 #: src/components/routes/settings/layout.tsx:51
 msgid "General"
-msgstr "عام"
+msgstr "Allgemein"
 
 #: src/components/add-system.tsx:119
 msgid "Host / IP"
-msgstr "المضيف / عنوان IP"
+msgstr "Host / IP"
 
 #: src/components/login/forgot-pass-form.tsx:93
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
-msgstr "إذا فقدت كلمة المرور لحساب المسؤول الخاص بك، يمكنك إعادة تعيينها باستخدام الأمر التالي."
+msgstr "Wenn Sie das Passwort für Ihr Administratorkonto verloren haben, können Sie es mit dem folgenden Befehl zurücksetzen."
 
 #: src/components/login/auth-form.tsx:16
 msgid "Invalid email address."
-msgstr "عنوان البريد الإلكتروني غير صالح."
+msgstr "Ungültige E-Mail-Adresse."
 
 #. Linux kernel
 #: src/components/routes/system.tsx:254
 msgid "Kernel"
-msgstr "كيرنل"
+msgstr "Kernel"
 
 #: src/components/routes/settings/general.tsx:45
 msgid "Language"
-msgstr "اللغة"
+msgstr "Sprache"
 
 #. Light theme
 #: src/components/mode-toggle.tsx:16
 msgid "Light"
-msgstr "فاتح"
+msgstr "Hell"
 
 #: src/components/navbar.tsx:113
 msgid "Log Out"
-msgstr "تسجيل الخروج"
+msgstr "Abmelden"
 
 #: src/components/login/login.tsx:17
 msgid "Login"
-msgstr "تسجيل الدخول"
+msgstr "Anmelden"
 
 #: src/components/login/auth-form.tsx:42
 #: src/components/login/forgot-pass-form.tsx:15
 msgid "Login attempt failed"
-msgstr "فشل محاولة تسجيل الدخول"
+msgstr "Anmeldeversuch fehlgeschlagen"
 
 #: src/components/command-palette.tsx:157
 #: src/components/navbar.tsx:86
 msgid "Logs"
-msgstr "السجلات"
+msgstr "Protokolle"
 
 #: src/components/routes/settings/notifications.tsx:80
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
-msgstr "هل تبحث عن مكان لإنشاء التنبيهات؟ انقر على أيقونات الجرس <0/> في جدول الأنظمة."
+msgstr "Suchen Sie stattdessen nach der Erstellung von Warnungen? Klicken Sie auf die Glocken-<0/>-Symbole in der Systemtabelle."
 
 #: src/components/routes/settings/layout.tsx:85
 msgid "Manage display and notification preferences."
-msgstr "إدارة تفضيلات العرض والإشعارات."
+msgstr "Anzeige- und Benachrichtigungseinstellungen verwalten."
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx:570
 msgid "Max 1 min"
-msgstr "الحد الأقصى 1 دقيقة"
+msgstr "Max 1 Min"
 
 #: src/components/systems-table/systems-table.tsx:149
 msgid "Memory"
-msgstr "الذاكرة"
+msgstr "Speicher"
 
 #: src/components/routes/system.tsx:397
 #: src/lib/utils.ts:295
 msgid "Memory Usage"
-msgstr "استخدام الذاكرة"
+msgstr "Speichernutzung"
 
 #: src/components/routes/system.tsx:408
 msgid "Memory usage of docker containers"
-msgstr "استخدام الذاكرة لحاويات Docker"
+msgstr "Speichernutzung der Docker-Container"
 
 #: src/components/add-system.tsx:113
 msgid "Name"
-msgstr "الاسم"
-
-#: src/components/login/auth-form.tsx:158
-msgid "name@example.com"
-msgstr "name@example.com"
+msgstr "Name"
 
 #: src/components/systems-table/systems-table.tsx:162
 msgid "Net"
-msgstr "الشبكة"
+msgstr "Netz"
 
 #: src/components/routes/system.tsx:453
 msgid "Network traffic of docker containers"
-msgstr "حركة مرور الشبكة لحاويات Docker"
+msgstr "Netzwerkverkehr der Docker-Container"
 
 #: src/components/routes/system.tsx:438
 msgid "Network traffic of public interfaces"
-msgstr "حركة مرور الشبكة للواجهات العامة"
+msgstr "Netzwerkverkehr der öffentlichen Schnittstellen"
 
 #: src/components/command-palette.tsx:50
 msgid "No results found."
-msgstr "لم يتم العثور على نتائج."
+msgstr "Keine Ergebnisse gefunden."
 
 #: src/components/systems-table/systems-table.tsx:343
 msgid "No systems found."
-msgstr "لم يتم العثور على أنظمة."
+msgstr "Keine Systeme gefunden."
 
 #: src/components/command-palette.tsx:111
 #: src/components/routes/settings/layout.tsx:56
 #: src/components/routes/settings/notifications.tsx:74
 msgid "Notifications"
-msgstr "الإشعارات"
+msgstr "Benachrichtigungen"
 
 #: src/components/login/auth-form.tsx:308
 msgid "OAuth 2 / OIDC support"
-msgstr "دعم OAuth 2 / OIDC"
+msgstr "OAuth 2 / OIDC-Unterstützung"
 
 #: src/components/routes/settings/config-yaml.tsx:61
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
-msgstr "في كل إعادة تشغيل، سيتم تحديث الأنظمة في قاعدة البيانات لتتطابق مع الأنظمة المعرفة في الملف."
+msgstr "Bei jedem Neustart werden die Systeme in der Datenbank aktualisiert, um den im Datei definierten Systemen zu entsprechen."
 
 #: src/components/systems-table/systems-table.tsx:205
 msgid "Open menu"
-msgstr "فتح القائمة"
+msgstr "Menü öffnen"
 
 #: src/components/login/auth-form.tsx:227
 msgid "Or continue with"
-msgstr "أو المتابعة باستخدام"
+msgstr "Oder fortfahren mit"
 
 #: src/components/alerts/alert-button.tsx:109
 msgid "Overwrite existing alerts"
-msgstr "الكتابة فوق التنبيهات الحالية"
+msgstr "Bestehende Warnungen überschreiben"
 
 #: src/components/command-palette.tsx:85
 msgid "Page"
-msgstr "صفحة"
+msgstr "Seite"
 
 #: src/components/command-palette.tsx:72
 msgid "Pages / Settings"
-msgstr "الصفحات / الإعدادات"
+msgstr "Seiten / Einstellungen"
 
 #: src/components/login/auth-form.tsx:171
 #: src/components/login/auth-form.tsx:176
 msgid "Password"
-msgstr "كلمة المرور"
+msgstr "Passwort"
 
 #: src/components/login/auth-form.tsx:17
 msgid "Password must be at least 10 characters."
-msgstr "يجب أن تكون كلمة الم��ور مكونة من 10 أحرف على الأقل."
+msgstr "Das Passwort muss mindestens 10 Zeichen lang sein."
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
-msgstr "تم استلام طلب إعادة تعيين كلمة المرور"
+msgstr "Anfrage zum Zurücksetzen des Passworts erhalten"
 
 #: src/components/systems-table/systems-table.tsx:227
 msgid "Pause"
-msgstr "إيقاف مؤقت"
+msgstr "Pause"
 
 #: src/components/routes/settings/notifications.tsx:95
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
-msgstr "يرجى <0>تكوين خادم SMTP</0> لضمان تسليم التنبيهات."
+msgstr "Bitte <0>konfigurieren Sie einen SMTP-Server</0>, um sicherzustellen, dass Warnungen zugestellt werden."
 
 #: src/components/alerts/alerts-system.tsx:28
 msgid "Please check logs for more details."
-msgstr "يرجى التحقق من السجلات لمزيد من التفاصيل."
+msgstr "Bitte überprüfen Sie die Protokolle für weitere Details."
 
 #: src/components/login/auth-form.tsx:43
 #: src/components/login/forgot-pass-form.tsx:16
 msgid "Please check your credentials and try again"
-msgstr "يرجى التحقق من بيانات الاعتماد الخاصة بك والمحاولة مرة أخرى"
+msgstr "Bitte überprüfen Sie Ihre Anmeldedaten und versuchen Sie es erneut"
 
 #: src/components/login/login.tsx:34
 msgid "Please create an admin account"
-msgstr "يرجى إنشاء حساب مسؤول"
+msgstr "Bitte erstellen Sie ein Administratorkonto"
 
 #: src/components/login/auth-form.tsx:257
 msgid "Please enable pop-ups for this site"
-msgstr "يرجى تمكين النوافذ المنبثقة لهذا الموقع"
+msgstr "Bitte aktivieren Sie Pop-ups für diese Seite"
 
 #: src/lib/utils.ts:39
 msgid "Please log in again"
-msgstr "يرجى تسجيل الدخول مرة أخرى"
+msgstr "Bitte melden Sie sich erneut an"
 
 #: src/components/login/auth-form.tsx:316
 msgid "Please see <0>the documentation</0> for instructions."
-msgstr "يرجى الاطلاع على <0>التوثيق</0> للحصول على التعليمات."
+msgstr "Bitte sehen Sie sich <0>die Dokumentation</0> für Anweisungen an."
 
 #: src/components/login/login.tsx:38
 msgid "Please sign in to your account"
-msgstr "يرجى تسجيل الدخول إلى حسابك"
+msgstr "Bitte melden Sie sich bei Ihrem Konto an"
 
 #: src/components/add-system.tsx:125
 msgid "Port"
-msgstr "المنفذ"
+msgstr "Port"
 
 #: src/components/routes/settings/general.tsx:58
 msgid "Preferred Language"
-msgstr "اللغة المفضلة"
+msgstr "Bevorzugte Sprache"
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx:131
 msgid "Public Key"
-msgstr "المفتاح العام"
+msgstr "Schlüssel"
 
 #. Context is disk read
 #: src/components/charts/area-chart.tsx:56
 #: src/components/charts/area-chart.tsx:65
 msgid "Read"
-msgstr "قراءة"
+msgstr "Lesen"
 
 #. Context is network bytes received (download)
 #: src/components/charts/area-chart.tsx:61
 msgid "Received"
-msgstr "تم الاستلام"
+msgstr "Empfangen"
 
 #: src/components/login/forgot-pass-form.tsx:76
 msgid "Reset Password"
-msgstr "إعادة تعيين كلمة المرور"
+msgstr "Passwort zurücksetzen"
 
 #: src/components/systems-table/systems-table.tsx:222
 msgid "Resume"
-msgstr "استئناف"
+msgstr "Fortsetzen"
 
 #: src/components/routes/settings/notifications.tsx:117
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
-msgstr "احفظ العنوان باستخدام مفتاح الإدخال أو الفاصلة. اتركه فارغًا لتعطيل إشعارات البريد الإلكتروني."
+msgstr "Adresse mit der Eingabetaste oder Komma speichern. Leer lassen, um E-Mail-Benachrichtigungen zu deaktivieren."
 
 #: src/components/routes/settings/general.tsx:106
 #: src/components/routes/settings/notifications.tsx:167
 msgid "Save Settings"
-msgstr "حفظ الإعدادات"
+msgstr "Einstellungen speichern"
 
 #: src/components/navbar.tsx:142
 msgid "Search"
-msgstr "بحث"
+msgstr "Suche"
 
 #: src/components/command-palette.tsx:47
 msgid "Search for systems or settings..."
-msgstr "البحث عن الأنظمة أو الإعدادات..."
+msgstr "Nach Systemen oder Einstellungen suchen..."
 
 #: src/components/alerts/alert-button.tsx:71
 msgid "See <0>notification settings</0> to configure how you receive alerts."
-msgstr "راجع <0>إعدادات الإشعارات</0> لتكوين كيفية تلقي التنبيهات."
+msgstr "Siehe <0>Benachrichtigungseinstellungen</0>, um zu konfigurieren, wie Sie Warnungen erhalten."
 
 #. Context is network bytes sent (upload)
 #: src/components/charts/area-chart.tsx:60
 msgid "Sent"
-msgstr "تم الإرسال"
+msgstr "Gesendet"
 
 #: src/components/routes/settings/general.tsx:100
 msgid "Sets the default time range for charts when a system is viewed."
-msgstr "يحدد النطاق الزمني الافتراضي للرسوم البيانية عند عرض النظام."
+msgstr "Legt den Standardzeitraum für Diagramme fest, wenn ein System angezeigt wird."
 
 #: src/components/command-palette.tsx:96
 #: src/components/command-palette.tsx:99
@@ -609,188 +605,188 @@ msgstr "يحدد النطاق الزمني الافتراضي للرسوم ال�
 #: src/components/routes/settings/layout.tsx:71
 #: src/components/routes/settings/layout.tsx:82
 msgid "Settings"
-msgstr "الإعدادات"
+msgstr "Einstellungen"
 
 #: src/components/routes/settings/layout.tsx:33
 msgid "Settings saved"
-msgstr "تم حفظ الإعدادات"
+msgstr "Einstellungen gespeichert"
 
 #: src/components/login/auth-form.tsx:215
 msgid "Sign in"
-msgstr "تسجيل الدخول"
+msgstr "Anmelden"
 
 #: src/components/command-palette.tsx:201
 msgid "SMTP settings"
-msgstr "إعدادات SMTP"
+msgstr "SMTP-Einstellungen"
 
 #: src/lib/utils.ts:282
 msgid "Status"
-msgstr "الحالة"
+msgstr "Status"
 
 #: src/components/routes/system.tsx:467
 msgid "Swap space used by the system"
-msgstr "مساحة التبديل المستخدمة من قبل النظام"
+msgstr "Vom System genutzter Swap-Speicher"
 
 #: src/components/routes/system.tsx:466
 msgid "Swap Usage"
-msgstr "استخدام التبديل"
+msgstr "Swap-Nutzung"
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
 #: src/components/systems-table/systems-table.tsx:137
 msgid "System"
-msgstr "النظام"
+msgstr "System"
 
 #: src/components/navbar.tsx:78
 msgid "Systems"
-msgstr "الأنظمة"
+msgstr "Systeme"
 
 #: src/components/routes/settings/config-yaml.tsx:55
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
-msgstr "يمكن إدارة الأنظمة في ملف <0>config.yml</0> داخل دليل البيانات الخاص بك."
+msgstr "Systeme können in einer <0>config.yml</0>-Datei in Ihrem Datenverzeichnis verwaltet werden."
 
 #: src/components/routes/system.tsx:477
 #: src/lib/utils.ts:313
 msgid "Temperature"
-msgstr "درجة الحرارة"
+msgstr "Temperatur"
 
 #: src/components/routes/system.tsx:478
 msgid "Temperatures of system sensors"
-msgstr "درجات حرارة مستشعرات النظام"
+msgstr "Temperaturen der Systemsensoren"
 
 #: src/components/routes/settings/notifications.tsx:211
 msgid "Test <0>URL</0>"
-msgstr "اختبار <0>URL</0>"
+msgstr "Test-<0>URL</0>"
 
 #: src/components/routes/settings/notifications.tsx:182
 msgid "Test notification sent"
-msgstr "تم إرسال إشعار الاختبار"
+msgstr "Testbenachrichtigung gesendet"
 
 #: src/components/add-system.tsx:104
 msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
-msgstr "يجب أن يكون الوكيل قيد التشغيل على النظام للاتصال. انسخ أمر التثبيت للوكيل أدناه."
+msgstr "Der Agent muss auf dem System laufen, um eine Verbindung herzustellen. Kopieren Sie den Installationsbefehl für den Agenten unten."
 
 #: src/components/add-system.tsx:95
 msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
-msgstr "يجب أن يكون الوكيل قيد التشغيل على النظام للاتصال. انسخ <0>docker-compose.yml</0> للوكيل أدناه."
+msgstr "Der Agent muss auf dem System laufen, um eine Verbindung herzustellen. Kopieren Sie die <0>docker-compose.yml</0> für den Agenten unten."
 
 #: src/components/login/forgot-pass-form.tsx:98
 msgid "Then log into the backend and reset your user account password in the users table."
-msgstr "ثم قم بتسجيل الدخول إلى الواجهة الخلفية وأعد تعيين كلمة مرور حساب المستخدم الخاص بك في جدول المستخدمين."
+msgstr "Melden Sie sich dann im Backend an und setzen Sie Ihr Benutzerkontopasswort in der Benutzertabelle zurück."
 
 #: src/components/systems-table/systems-table.tsx:250
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
-msgstr "لا يمكن التراجع عن هذا الإجراء. سيؤدي ذلك إلى حذف جميع السجلات الحالية لـ {name} من قاعدة البيانات بشكل دائم."
+msgstr "Diese Aktion kann nicht rückgängig gemacht werden. Dadurch werden alle aktuellen Datensätze für {name} dauerhaft aus der Datenbank gelöscht."
 
 #: src/components/routes/system.tsx:507
 msgid "Throughput of {extraFsName}"
-msgstr "معدل نقل {extraFsName}"
+msgstr "Durchsatz von {extraFsName}"
 
 #: src/components/routes/system.tsx:427
 msgid "Throughput of root filesystem"
-msgstr "معدل نقل نظام الملفات الجذر"
+msgstr "Durchsatz des Root-Dateisystems"
 
 #: src/components/routes/settings/notifications.tsx:106
 msgid "To email(s)"
-msgstr "إلى البريد الإلكتروني"
+msgstr "An E-Mail(s)"
 
 #: src/components/routes/system.tsx:350
 #: src/components/routes/system.tsx:363
 msgid "Toggle grid"
-msgstr "تبديل الشبكة"
+msgstr "Raster umschalten"
 
 #: src/components/mode-toggle.tsx:33
 msgid "Toggle theme"
-msgstr "تبديل السمة"
+msgstr "Thema umschalten"
 
 #: src/lib/utils.ts:316
 msgid "Triggers when any sensor exceeds a threshold"
-msgstr "يتم التفعيل عندما يتجاوز أي مستشعر عتبة معينة"
+msgstr "Löst aus, wenn ein Sensor einen Schwellenwert überschreitet"
 
 #: src/lib/utils.ts:310
 msgid "Triggers when combined up/down exceeds a threshold"
-msgstr "يتم التفعيل عندما يتجاوز الجمع بين الصعود/الهبوط عتبة معينة"
+msgstr "Löst aus, wenn die kombinierte Auf-/Abwärtsbewegung einen Schwellenwert überschreitet"
 
 #: src/lib/utils.ts:292
 msgid "Triggers when CPU usage exceeds a threshold"
-msgstr "يتم التفعيل عندما يتجاوز استخدام وحدة المعالجة المركزية عتبة معينة"
+msgstr "Löst aus, wenn die CPU-Auslastung einen Schwellenwert überschreitet"
 
 #: src/lib/utils.ts:298
 msgid "Triggers when memory usage exceeds a threshold"
-msgstr "يتم التفعيل عندما يتجاوز استخدام الذاكرة عتبة معينة"
+msgstr "Löst aus, wenn die Speichernutzung einen Schwellenwert überschreitet"
 
 #: src/components/routes/system.tsx:398
 msgid "Triggers when memory usage exceeds a threshold."
-msgstr "يتم التفعيل عندما يتجاوز استخدام الذاكرة عتبة معينة."
+msgstr "Löst aus, wenn die Speichernutzung einen Schwellenwert überschreitet."
 
 #: src/lib/utils.ts:285
 msgid "Triggers when status switches between up and down"
-msgstr "يتم التفعيل عندما يتغير الحالة بين التشغيل والإيقاف"
+msgstr "Löst aus, wenn der Status zwischen oben und unten wechselt"
 
 #: src/lib/utils.ts:304
 msgid "Triggers when usage of any disk exceeds a threshold"
-msgstr "يتم التفعيل عندما يتجاوز استخدام أي قرص عتبة معينة"
+msgstr "Löst aus, wenn die Nutzung einer Festplatte einen Schwellenwert überschreitet"
 
 #: src/components/routes/home.tsx:110
 msgid "Updated in real time. Click on a system to view information."
-msgstr "محدث في الوقت الحقيقي. انقر على نظام لعرض المعلومات."
+msgstr "In Echtzeit aktualisiert. Klicken Sie auf ein System, um Informationen anzuzeigen."
 
 #: src/components/routes/system.tsx:253
 msgid "Uptime"
-msgstr "مدة التشغيل"
+msgstr "Betriebszeit"
 
 #: src/components/routes/system.tsx:494
 msgid "Usage"
-msgstr "الاستخدام"
+msgstr "Nutzung"
 
 #: src/components/routes/system.tsx:415
 msgid "Usage of root partition"
-msgstr "استخدام القسم الجذر"
+msgstr "Nutzung der Root-Partition"
 
 #: src/components/charts/mem-chart.tsx:65
 #: src/components/charts/swap-chart.tsx:56
 msgid "Used"
-msgstr "مستخدم"
+msgstr "Verwendet"
 
 #: src/components/login/auth-form.tsx:138
 msgid "username"
-msgstr "اسم المستخدم"
+msgstr "Benutzername"
 
 #: src/components/login/auth-form.tsx:131
 msgid "Username"
-msgstr "اسم المستخدم"
+msgstr "Benutzername"
 
 #: src/components/command-palette.tsx:143
 #: src/components/navbar.tsx:70
 msgid "Users"
-msgstr "المستخدمون"
+msgstr "Benutzer"
 
 #: src/components/routes/system.tsx:602
 msgid "Waiting for enough records to display"
-msgstr "في انتظار وجود سجلات كافية للعرض"
+msgstr "Warten auf genügend Datensätze zur Anzeige"
 
 #: src/components/routes/settings/general.tsx:48
 msgid "Want to help us make our translations even better? Check out <0>Crowdin</0> for more details."
-msgstr "هل تريد مساعدتنا في تحسين ترجماتنا؟ تحقق من <0>Crowdin</0> لمزيد من التفاصيل."
+msgstr "Möchten Sie uns helfen, unsere Übersetzungen noch besser zu machen? Schauen Sie sich <0>Crowdin</0> für weitere Details an."
 
 #: src/components/routes/settings/notifications.tsx:124
 msgid "Webhook / Push notifications"
-msgstr "إشعارات Webhook / Push"
+msgstr "Webhook / Push-Benachrichtigungen"
 
 #. Context is disk write
 #: src/components/charts/area-chart.tsx:55
 #: src/components/charts/area-chart.tsx:66
 msgid "Write"
-msgstr "كتابة"
+msgstr "Schreiben"
 
 #: src/components/routes/settings/layout.tsx:61
 msgid "YAML Config"
-msgstr "تكوين YAML"
+msgstr "YAML-Konfiguration"
 
 #: src/components/routes/settings/config-yaml.tsx:45
 msgid "YAML Configuration"
-msgstr "تكوين YAML"
+msgstr "YAML-Konfiguration"
 
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
-msgstr "تم تحديث إعدادات المستخدم الخاصة بك."
+msgstr "Ihre Benutzereinstellungen wurden aktualisiert."

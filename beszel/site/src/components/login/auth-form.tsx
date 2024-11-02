@@ -155,7 +155,7 @@ export function UserAuthForm({
 									id="email"
 									name="email"
 									required
-									placeholder={isFirstRun ? t`email` : t`name@example.com`}
+									placeholder={isFirstRun ? t`email` : "name@example.com"}
 									type="email"
 									autoCapitalize="none"
 									autoComplete="email"

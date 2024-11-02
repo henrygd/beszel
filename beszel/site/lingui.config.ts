@@ -6,7 +6,7 @@ const config: LinguiConfig = {
 	compileNamespace: "ts",
 	catalogs: [
 		{
-			path: "<rootDir>/src/locales/{locale}/messages",
+			path: "<rootDir>/src/locales/{locale}/{locale}",
 			include: ["src"],
 		},
 	],

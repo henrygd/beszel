@@ -5,7 +5,7 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
-"Language: uk\n"
+"Language: ja\n"
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "PO-Revision-Date: \n"
@@ -15,56 +15,56 @@ msgstr ""
 
 #: src/components/routes/system.tsx:242
 msgid "{0, plural, one {# day} other {# days}}"
-msgstr "{0, plural, one {# день} other {# днів}}"
+msgstr "{0, plural, one {# 日} other {# 日}}"
 
 #: src/components/routes/system.tsx:240
 msgid "{hours, plural, one {# hour} other {# hours}}"
-msgstr "{hours, plural, one {# година} other {# годин}}"
+msgstr "{hours, plural, one {# 時間} other {# 時間}}"
 
 #: src/lib/utils.ts:139
 msgid "1 hour"
-msgstr "1 година"
+msgstr "1時間"
 
 #: src/lib/utils.ts:162
 msgid "1 week"
-msgstr "1 тиждень"
+msgstr "1週間"
 
 #: src/lib/utils.ts:147
 msgid "12 hours"
-msgstr "12 годин"
+msgstr "12時間"
 
 #: src/lib/utils.ts:155
 msgid "24 hours"
-msgstr "24 години"
+msgstr "24時間"
 
 #: src/lib/utils.ts:170
 msgid "30 days"
-msgstr "30 днів"
+msgstr "30日"
 
 #: src/components/routes/home.tsx:65
 msgid "Active Alerts"
-msgstr "Активні сповіщення"
+msgstr "アクティブなアラート"
 
 #: src/components/add-system.tsx:74
 msgid "Add <0>System</0>"
-msgstr "Додати <0>Систему</0>"
+msgstr "<0>システム</0>を追加"
 
 #: src/components/add-system.tsx:83
 msgid "Add New System"
-msgstr "Додати нову систему"
+msgstr "新しいシステムを追加"
 
 #: src/components/add-system.tsx:167
 #: src/components/add-system.tsx:178
 msgid "Add system"
-msgstr "Додати систему"
+msgstr "システムを追加"
 
 #: src/components/routes/settings/notifications.tsx:156
 msgid "Add URL"
-msgstr "Додати URL"
+msgstr "URLを追加"
 
 #: src/components/routes/settings/general.tsx:81
 msgid "Adjust display options for charts."
-msgstr "Налаштуйте параметри відображення для графіків."
+msgstr "チャートの表示オプションを調整します。"
 
 #: src/components/command-palette.tsx:133
 #: src/components/command-palette.tsx:146
@@ -73,535 +73,531 @@ msgstr "Налаштуйте параметри відображення для 
 #: src/components/command-palette.tsx:189
 #: src/components/command-palette.tsx:204
 msgid "Admin"
-msgstr "Адміністратор"
+msgstr "管理者"
 
 #: src/components/systems-table/systems-table.tsx:174
 msgid "Agent"
-msgstr "Агент"
+msgstr "エージェント"
 
 #: src/components/alerts/alert-button.tsx:32
 #: src/components/alerts/alert-button.tsx:68
 msgid "Alerts"
-msgstr "Сповіщення"
+msgstr "アラート"
 
 #: src/components/alerts/alert-button.tsx:88
 #: src/components/routes/home.tsx:107
 msgid "All Systems"
-msgstr "Всі системи"
+msgstr "すべてのシステム"
 
 #: src/components/systems-table/systems-table.tsx:247
 msgid "Are you sure you want to delete {name}?"
-msgstr "Ви впевнені, що хочете видалити {name}?"
+msgstr "{name}を削除してもよろしいですか？"
 
 #: src/components/command-palette.tsx:186
 #: src/components/navbar.tsx:102
 msgid "Auth Providers"
-msgstr "Постачальники автентифікації"
+msgstr "認証プロバイダー"
 
 #: src/components/copy-to-clipboard.tsx:16
 msgid "Automatic copy requires a secure context."
-msgstr "Автоматичне копіювання вимагає безпечного контексту."
+msgstr "自動コピーには安全なコンテキストが必要です。"
 
 #: src/components/routes/system.tsx:567
 msgid "Average"
-msgstr "Середнє"
+msgstr "平均"
 
 #: src/components/routes/system.tsx:387
 msgid "Average CPU utilization of containers"
-msgstr "Середнє використання CPU контейнерами"
+msgstr "コンテナの平均CPU使用率"
 
 #: src/components/alerts/alerts-system.tsx:204
 msgid "Average exceeds <0>{value}{0}</0>"
-msgstr "Середнє перевищує <0>{value}{0}</0>"
+msgstr "平均が<0>{value}{0}</0>を超えています"
 
 #: src/components/routes/system.tsx:376
 msgid "Average system-wide CPU utilization"
-msgstr "Середнє використання CPU по всій системі"
+msgstr "システム全体の平均CPU使用率"
 
 #: src/components/command-palette.tsx:171
 #: src/components/navbar.tsx:94
 msgid "Backups"
-msgstr "Резервні копії"
+msgstr "バックアップ"
 
 #: src/components/routes/system.tsx:436
 #: src/lib/utils.ts:307
 msgid "Bandwidth"
-msgstr "Пропускна здатність"
+msgstr "帯域幅"
 
 #: src/components/login/auth-form.tsx:313
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
-msgstr "Beszel підтримує OpenID Connect та багато постачальників автентифікації OAuth2."
+msgstr "BeszelはOpenID Connectと多くのOAuth2認証プロバイダーをサポートしています。"
 
 #: src/components/routes/settings/notifications.tsx:127
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
-msgstr "Beszel використовує <0>Shoutrrr</0> для інтеграції з популярними сервісами сповіщень."
+msgstr "Beszelは<0>Shoutrrr</0>を使用して、人気のある通知サービスと統合します。"
 
 #: src/components/add-system.tsx:88
 msgid "Binary"
-msgstr "Двійковий"
+msgstr "バイナリ"
 
 #: src/components/charts/mem-chart.tsx:89
 msgid "Cache / Buffers"
-msgstr "Кеш / Буфери"
+msgstr "キャッシュ / バッファ"
 
 #: src/components/systems-table/systems-table.tsx:258
 msgid "Cancel"
-msgstr "Скасувати"
+msgstr "キャンセル"
 
 #: src/components/routes/settings/config-yaml.tsx:68
 msgid "Caution - potential data loss"
-msgstr "Увага - можливе втрата даних"
+msgstr "注意 - データ損失の可能性"
 
 #: src/components/routes/settings/general.tsx:36
 msgid "Change general application options."
-msgstr "Змінити загальні параметри програми."
+msgstr "一般的なアプリケーションオプションを変更します。"
 
 #: src/components/routes/settings/general.tsx:78
 msgid "Chart options"
-msgstr "Параметри графіків"
+msgstr "チャートオプション"
 
 #: src/components/login/forgot-pass-form.tsx:34
 msgid "Check {email} for a reset link."
-msgstr "Перевірте {email} для отримання посилання на скидання."
+msgstr "{email}を確認してリセットリンクを探してください。"
 
 #: src/components/routes/settings/layout.tsx:40
 msgid "Check logs for more details."
-msgstr "Перевірте журнали для отримання додаткової інформації."
+msgstr "詳細についてはログを確認してください。"
 
 #: src/components/routes/settings/notifications.tsx:183
 msgid "Check your notification service"
-msgstr "Перевірте свій сервіс сповіщень"
+msgstr "通知サービスを確認してください"
 
 #: src/components/add-system.tsx:153
 msgid "Click to copy"
-msgstr "Натисніть, щоб скопіювати"
+msgstr "クリックしてコピー"
 
 #: src/components/login/forgot-pass-form.tsx:83
 #: src/components/login/forgot-pass-form.tsx:89
 msgid "Command line instructions"
-msgstr "Інструкції командного рядка"
+msgstr "コマンドラインの指示"
 
 #: src/components/routes/settings/notifications.tsx:77
 msgid "Configure how you receive alert notifications."
-msgstr "Налаштуйте, як ви отримуєте сповіщення про тривоги."
+msgstr "アラート通知の受信方法を設定します。"
 
 #: src/components/login/auth-form.tsx:189
 #: src/components/login/auth-form.tsx:194
 msgid "Confirm password"
-msgstr "Підтвердьте пароль"
+msgstr "パスワードを確認"
 
 #: src/components/systems-table/systems-table.tsx:264
 msgid "Continue"
-msgstr "Продовжити"
+msgstr "続行"
 
 #: src/lib/utils.ts:25
 msgid "Copied to clipboard"
-msgstr "Скопійовано в буфер обміну"
+msgstr "クリップボードにコピーされました"
 
 #: src/components/add-system.tsx:164
 msgid "Copy"
-msgstr "Копіювати"
+msgstr "コピー"
 
 #: src/components/systems-table/systems-table.tsx:233
 msgid "Copy host"
-msgstr "Копіювати хост"
+msgstr "ホストをコピー"
 
 #: src/components/add-system.tsx:175
 msgid "Copy Linux command"
-msgstr "Копіювати команду Linux"
+msgstr "Linuxコマンドをコピー"
 
 #: src/components/copy-to-clipboard.tsx:13
 msgid "Copy text"
-msgstr "Копіювати текст"
+msgstr "テキストをコピー"
 
 #: src/components/systems-table/systems-table.tsx:143
 msgid "CPU"
-msgstr "ЦП"
+msgstr "CPU"
 
 #: src/components/charts/area-chart.tsx:52
 #: src/components/routes/system.tsx:375
 #: src/lib/utils.ts:289
 msgid "CPU Usage"
-msgstr "Використання ЦП"
+msgstr "CPU使用率"
 
 #: src/components/login/auth-form.tsx:215
 msgid "Create account"
-msgstr "Створити обліковий запис"
+msgstr "アカウントを作成"
 
 #. Dark theme
 #: src/components/mode-toggle.tsx:21
 msgid "Dark"
-msgstr "Темний"
+msgstr "ダーク"
 
 #: src/components/command-palette.tsx:82
 #: src/components/routes/home.tsx:38
 msgid "Dashboard"
-msgstr "Панель управління"
+msgstr "ダッシュボード"
 
 #: src/components/routes/settings/general.tsx:85
 msgid "Default time period"
-msgstr "Стандартний період часу"
+msgstr "デフォルトの期間"
 
 #: src/components/systems-table/systems-table.tsx:239
 msgid "Delete"
-msgstr "Видалити"
+msgstr "削除"
 
 #: src/components/systems-table/systems-table.tsx:155
 msgid "Disk"
-msgstr "Диск"
+msgstr "ディスク"
 
 #: src/components/routes/system.tsx:426
 msgid "Disk I/O"
-msgstr "Дисковий ввід/вивід"
+msgstr "ディスクI/O"
 
 #: src/components/charts/disk-chart.tsx:74
 #: src/components/routes/system.tsx:415
 #: src/lib/utils.ts:301
 msgid "Disk Usage"
-msgstr "Використання диска"
+msgstr "ディスク使用率"
 
 #: src/components/routes/system.tsx:495
 msgid "Disk usage of {extraFsName}"
-msgstr "Використання диска {extraFsName}"
+msgstr "{extraFsName}のディスク使用率"
 
 #: src/components/routes/system.tsx:386
 msgid "Docker CPU Usage"
-msgstr "Використання ЦП Docker"
+msgstr "Docker CPU使用率"
 
 #: src/components/routes/system.tsx:407
 msgid "Docker Memory Usage"
-msgstr "Використання пам'яті Docker"
+msgstr "Dockerメモリ使用率"
 
 #: src/components/routes/system.tsx:452
 msgid "Docker Network I/O"
-msgstr "Мережевий ввід/вивід Docker"
+msgstr "DockerネットワークI/O"
 
 #: src/components/command-palette.tsx:125
 msgid "Documentation"
-msgstr "Документація"
+msgstr "ドキュメント"
 
 #: src/components/login/auth-form.tsx:158
 msgid "email"
-msgstr "електронна пошта"
+msgstr "メール"
 
 #: src/components/login/auth-form.tsx:152
 #: src/components/login/forgot-pass-form.tsx:53
 msgid "Email"
-msgstr "Електронна пошта"
+msgstr "メール"
 
 #: src/components/routes/settings/notifications.tsx:91
 msgid "Email notifications"
-msgstr "Сповіщення електронною поштою"
+msgstr "メール通知"
 
 #: src/components/login/login.tsx:36
 msgid "Enter email address to reset password"
-msgstr "Введіть адресу електронної пошти для скидання пароля"
+msgstr "パスワードをリセットするためにメールアドレスを入力してください"
 
 #: src/components/routes/settings/notifications.tsx:111
 msgid "Enter email address..."
-msgstr "Введіть адресу електронної пошти..."
+msgstr "メールアドレスを入力..."
 
 #: src/components/login/auth-form.tsx:256
 #: src/components/routes/settings/config-yaml.tsx:28
 #: src/components/routes/settings/notifications.tsx:187
 msgid "Error"
-msgstr "Помилка"
+msgstr "エラー"
 
 #: src/components/routes/home.tsx:84
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
-msgstr "Перевищує {0}{1} за останні {2, plural, one {# хвилину} other {# хвилин}}"
+msgstr "過去{2, plural, one {# 分} other {# 分}}で{0}{1}を超えています"
 
 #: src/components/routes/settings/config-yaml.tsx:72
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
-msgstr "Існуючі системи, не визначені в <0>config.yml</0>, будуть видалені. Будь ласка, робіть регулярні резервні копії."
+msgstr "<0>config.yml</0>に定義されていない既存のシステムは削除されます。定期的にバックアップを作成してください。"
 
 #: src/components/routes/settings/config-yaml.tsx:93
 msgid "Export configuration"
-msgstr "Експорт конфігурації"
+msgstr "設定をエクスポート"
 
 #: src/components/routes/settings/config-yaml.tsx:48
 msgid "Export your current systems configuration."
-msgstr "Експортуйте поточну конфігурацію систем."
+msgstr "現在のシステム設定をエクスポートします。"
 
 #: src/lib/utils.ts:38
 msgid "Failed to authenticate"
-msgstr "Не вдалося автентифікувати"
+msgstr "認証に失敗しました"
 
 #: src/components/routes/settings/layout.tsx:39
 #: src/components/routes/settings/notifications.tsx:62
 msgid "Failed to save settings"
-msgstr "Не вдалося зберегти налаштування"
+msgstr "設定の保存に失敗しました"
 
 #: src/components/routes/settings/notifications.tsx:188
 msgid "Failed to send test notification"
-msgstr "Не вдалося надіслати тестове сповіщення"
+msgstr "テスト通知の送信に失敗しました"
 
 #: src/components/alerts/alerts-system.tsx:27
 msgid "Failed to update alert"
-msgstr "Не вдалося оновити сповіщення"
+msgstr "アラートの更新に失敗しました"
 
 #: src/components/routes/home.tsx:114
 #: src/components/routes/system.tsx:538
 msgid "Filter..."
-msgstr "Фільтр..."
+msgstr "フィルター..."
 
 #: src/components/alerts/alerts-system.tsx:225
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
-msgstr "Протягом <0>{min}</0> {min, plural, one {хвилини} other {хвилин}}"
+msgstr "<0>{min}</0> {min, plural, one {分} other {分}}の間"
 
 #: src/components/login/auth-form.tsx:337
 msgid "Forgot password?"
-msgstr "Забули пароль?"
+msgstr "パスワードをお忘れですか？"
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx:33
 #: src/components/routes/settings/layout.tsx:51
 msgid "General"
-msgstr "Загальні"
+msgstr "一般"
 
 #: src/components/add-system.tsx:119
 msgid "Host / IP"
-msgstr "Хост / IP"
+msgstr "ホスト / IP"
 
 #: src/components/login/forgot-pass-form.tsx:93
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
-msgstr "Якщо ви втратили пароль до свого адміністративного облікового запису, ви можете скинути його за допомогою наступної команди."
+msgstr "管理者アカウントのパスワードを忘れた場合は、次のコマンドを使用してリセットできます。"
 
 #: src/components/login/auth-form.tsx:16
 msgid "Invalid email address."
-msgstr "Неправильна адреса електронної пошти."
+msgstr "無効なメールアドレスです。"
 
 #. Linux kernel
 #: src/components/routes/system.tsx:254
 msgid "Kernel"
-msgstr "Ядро"
+msgstr "カーネル"
 
 #: src/components/routes/settings/general.tsx:45
 msgid "Language"
-msgstr "Мова"
+msgstr "言語"
 
 #. Light theme
 #: src/components/mode-toggle.tsx:16
 msgid "Light"
-msgstr "Світлий"
+msgstr "ライト"
 
 #: src/components/navbar.tsx:113
 msgid "Log Out"
-msgstr "Вийти"
+msgstr "ログアウト"
 
 #: src/components/login/login.tsx:17
 msgid "Login"
-msgstr "Увійти"
+msgstr "ログイン"
 
 #: src/components/login/auth-form.tsx:42
 #: src/components/login/forgot-pass-form.tsx:15
 msgid "Login attempt failed"
-msgstr "Спроба входу не вдалася"
+msgstr "ログイン試行に失敗しました"
 
 #: src/components/command-palette.tsx:157
 #: src/components/navbar.tsx:86
 msgid "Logs"
-msgstr "Журнали"
+msgstr "ログ"
 
 #: src/components/routes/settings/notifications.tsx:80
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
-msgstr "Шукаєте, де створити сповіщення? Натисніть на іконки дзвінка <0/> в таблиці систем."
+msgstr "アラートを作成する場所を探していますか？システムテーブルのベル<0/>アイコンをクリックしてください。"
 
 #: src/components/routes/settings/layout.tsx:85
 msgid "Manage display and notification preferences."
-msgstr "Керуйте параметрами відображення та сповіщень."
+msgstr "表示と通知の設定を管理します。"
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx:570
 msgid "Max 1 min"
-msgstr "Макс 1 хв"
+msgstr "最大1分"
 
 #: src/components/systems-table/systems-table.tsx:149
 msgid "Memory"
-msgstr "Пам'ять"
+msgstr "メモリ"
 
 #: src/components/routes/system.tsx:397
 #: src/lib/utils.ts:295
 msgid "Memory Usage"
-msgstr "Використання пам'яті"
+msgstr "メモリ使用率"
 
 #: src/components/routes/system.tsx:408
 msgid "Memory usage of docker containers"
-msgstr "Використання пам'яті контейнерами Docker"
+msgstr "Dockerコンテナのメモリ使用率"
 
 #: src/components/add-system.tsx:113
 msgid "Name"
-msgstr "Ім'я"
-
-#: src/components/login/auth-form.tsx:158
-msgid "name@example.com"
-msgstr "name@example.com"
+msgstr "名前"
 
 #: src/components/systems-table/systems-table.tsx:162
 msgid "Net"
-msgstr "Мережа"
+msgstr "帯域"
 
 #: src/components/routes/system.tsx:453
 msgid "Network traffic of docker containers"
-msgstr "Мережевий трафік контейнерів Docker"
+msgstr "Dockerコンテナのネットワークトラフィック"
 
 #: src/components/routes/system.tsx:438
 msgid "Network traffic of public interfaces"
-msgstr "Мережевий трафік публічних інтерфейсів"
+msgstr "パブリックインターフェースのネットワークトラフィック"
 
 #: src/components/command-palette.tsx:50
 msgid "No results found."
-msgstr "Результатів не знайдено."
+msgstr "結果が見つかりませんでした。"
 
 #: src/components/systems-table/systems-table.tsx:343
 msgid "No systems found."
-msgstr "Систем не знайдено."
+msgstr "システムが見つかりませんでした。"
 
 #: src/components/command-palette.tsx:111
 #: src/components/routes/settings/layout.tsx:56
 #: src/components/routes/settings/notifications.tsx:74
 msgid "Notifications"
-msgstr "Сповіщення"
+msgstr "通知"
 
 #: src/components/login/auth-form.tsx:308
 msgid "OAuth 2 / OIDC support"
-msgstr "Підтримка OAuth 2 / OIDC"
+msgstr "OAuth 2 / OIDCサポート"
 
 #: src/components/routes/settings/config-yaml.tsx:61
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
-msgstr "При кожному перезапуску системи в базі даних будуть оновлені, щоб відповідати системам, визначеним у файлі."
+msgstr "再起動のたびに、データベース内のシステムはファイルに定義されたシステムに一致するように更新されます。"
 
 #: src/components/systems-table/systems-table.tsx:205
 msgid "Open menu"
-msgstr "Відкрити меню"
+msgstr "メニューを開く"
 
 #: src/components/login/auth-form.tsx:227
 msgid "Or continue with"
-msgstr "Або продовжити з"
+msgstr "または続行"
 
 #: src/components/alerts/alert-button.tsx:109
 msgid "Overwrite existing alerts"
-msgstr "Перезаписати існуючі сповіщення"
+msgstr "既存のアラートを上書き"
 
 #: src/components/command-palette.tsx:85
 msgid "Page"
-msgstr "Сторінка"
+msgstr "ページ"
 
 #: src/components/command-palette.tsx:72
 msgid "Pages / Settings"
-msgstr "Сторінки / Налаштування"
+msgstr "ページ / 設定"
 
 #: src/components/login/auth-form.tsx:171
 #: src/components/login/auth-form.tsx:176
 msgid "Password"
-msgstr "Пароль"
+msgstr "パスワード"
 
 #: src/components/login/auth-form.tsx:17
 msgid "Password must be at least 10 characters."
-msgstr "Пароль повинен містити щонайменше 10 символів."
+msgstr "パスワードは10文字以上でなければなりません。"
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
-msgstr "Запит на скидання пароля отримано"
+msgstr "パスワードリセットのリクエストを受け取りました"
 
 #: src/components/systems-table/systems-table.tsx:227
 msgid "Pause"
-msgstr "Пауза"
+msgstr "一時停止"
 
 #: src/components/routes/settings/notifications.tsx:95
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
-msgstr "Будь ласка, <0>налаштуйте SMTP сервер</0>, щоб забезпечити доставку сповіщень."
+msgstr "アラートが配信されるように<0>SMTPサーバーを設定</0>してください。"
 
 #: src/components/alerts/alerts-system.tsx:28
 msgid "Please check logs for more details."
-msgstr "Будь ласка, перевірте журнали для отримання додаткової інформації."
+msgstr "詳細についてはログを確認してください。"
 
 #: src/components/login/auth-form.tsx:43
 #: src/components/login/forgot-pass-form.tsx:16
 msgid "Please check your credentials and try again"
-msgstr "Будь ласка, перевірте свої облікові дані та спробуйте ще раз"
+msgstr "資格情報を確認して再試行してください"
 
 #: src/components/login/login.tsx:34
 msgid "Please create an admin account"
-msgstr "Будь ласка, створіть адміністративний обліковий запис"
+msgstr "管理者アカウントを作成してください"
 
 #: src/components/login/auth-form.tsx:257
 msgid "Please enable pop-ups for this site"
-msgstr "Будь ласка, увімкніть спливаючі вікна для цього сайту"
+msgstr "このサイトのポップアップを有効にしてください"
 
 #: src/lib/utils.ts:39
 msgid "Please log in again"
-msgstr "Будь ласка, увійдіть знову"
+msgstr "再度ログインしてください"
 
 #: src/components/login/auth-form.tsx:316
 msgid "Please see <0>the documentation</0> for instructions."
-msgstr "Будь ласка, перегляньте <0>документацію</0> для отримання інструкцій."
+msgstr "手順については<0>ドキュメント</0>を参照してください。"
 
 #: src/components/login/login.tsx:38
 msgid "Please sign in to your account"
-msgstr "Будь ласка, увійдіть у свій обліковий запис"
+msgstr "アカウントにサインインしてください"
 
 #: src/components/add-system.tsx:125
 msgid "Port"
-msgstr "Порт"
+msgstr "ポート"
 
 #: src/components/routes/settings/general.tsx:58
 msgid "Preferred Language"
-msgstr "Бажана мова"
+msgstr "優先言語"
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx:131
 msgid "Public Key"
-msgstr "Ключ"
+msgstr "公開鍵"
 
 #. Context is disk read
 #: src/components/charts/area-chart.tsx:56
 #: src/components/charts/area-chart.tsx:65
 msgid "Read"
-msgstr "Читання"
+msgstr "読み取り"
 
 #. Context is network bytes received (download)
 #: src/components/charts/area-chart.tsx:61
 msgid "Received"
-msgstr "Отримано"
+msgstr "受信"
 
 #: src/components/login/forgot-pass-form.tsx:76
 msgid "Reset Password"
-msgstr "Скинути пароль"
+msgstr "パスワードをリセット"
 
 #: src/components/systems-table/systems-table.tsx:222
 msgid "Resume"
-msgstr "Продовжити"
+msgstr "再開"
 
 #: src/components/routes/settings/notifications.tsx:117
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
-msgstr "Збережіть адресу, використовуючи клавішу Enter або кому. Залиште порожнім, щоб вимкнути сповіщення електронною поштою."
+msgstr "Enterキーまたはカンマを使用してアドレスを保存します。空白のままにするとメール通知が無効になります。"
 
 #: src/components/routes/settings/general.tsx:106
 #: src/components/routes/settings/notifications.tsx:167
 msgid "Save Settings"
-msgstr "Зберегти налаштування"
+msgstr "設定を保存"
 
 #: src/components/navbar.tsx:142
 msgid "Search"
-msgstr "Пошук"
+msgstr "検索"
 
 #: src/components/command-palette.tsx:47
 msgid "Search for systems or settings..."
-msgstr "Шукати системи або налаштування..."
+msgstr "システムまたは設定を検索..."
 
 #: src/components/alerts/alert-button.tsx:71
 msgid "See <0>notification settings</0> to configure how you receive alerts."
-msgstr "Перегляньте <0>налаштування сповіщень</0>, щоб налаштувати, як ви отримуєте сповіщення."
+msgstr "アラートの受信方法を設定するには<0>通知設定</0>を参照してください。"
 
 #. Context is network bytes sent (upload)
 #: src/components/charts/area-chart.tsx:60
 msgid "Sent"
-msgstr "Відправлено"
+msgstr "送信"
 
 #: src/components/routes/settings/general.tsx:100
 msgid "Sets the default time range for charts when a system is viewed."
-msgstr "Встановлює стандартний діапазон часу для графіків при перегляді системи."
+msgstr "システムを表示する際のチャートのデフォルトの時間範囲を設定します。"
 
 #: src/components/command-palette.tsx:96
 #: src/components/command-palette.tsx:99
@@ -609,188 +605,188 @@ msgstr "Встановлює стандартний діапазон часу д
 #: src/components/routes/settings/layout.tsx:71
 #: src/components/routes/settings/layout.tsx:82
 msgid "Settings"
-msgstr "Налаштування"
+msgstr "設定"
 
 #: src/components/routes/settings/layout.tsx:33
 msgid "Settings saved"
-msgstr "Налаштування збережено"
+msgstr "設定が保存されました"
 
 #: src/components/login/auth-form.tsx:215
 msgid "Sign in"
-msgstr "Увійти"
+msgstr "サインイン"
 
 #: src/components/command-palette.tsx:201
 msgid "SMTP settings"
-msgstr "Налаштування SMTP"
+msgstr "SMTP設定"
 
 #: src/lib/utils.ts:282
 msgid "Status"
-msgstr "Статус"
+msgstr "ステータス"
 
 #: src/components/routes/system.tsx:467
 msgid "Swap space used by the system"
-msgstr "Область підкачки, використана системою"
+msgstr "システムが使用するスワップ領域"
 
 #: src/components/routes/system.tsx:466
 msgid "Swap Usage"
-msgstr "Використання підкачки"
+msgstr "スワップ使用量"
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
 #: src/components/systems-table/systems-table.tsx:137
 msgid "System"
-msgstr "Система"
+msgstr "システム"
 
 #: src/components/navbar.tsx:78
 msgid "Systems"
-msgstr "Системи"
+msgstr "システム"
 
 #: src/components/routes/settings/config-yaml.tsx:55
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
-msgstr "Системи можуть керуватися у файлі <0>config.yml</0> у вашій директорії даних."
+msgstr "システムはデータディレクトリ内の<0>config.yml</0>ファイルで管理できます。"
 
 #: src/components/routes/system.tsx:477
 #: src/lib/utils.ts:313
 msgid "Temperature"
-msgstr "Температура"
+msgstr "温度"
 
 #: src/components/routes/system.tsx:478
 msgid "Temperatures of system sensors"
-msgstr "Температури датчиків системи"
+msgstr "システムセンサーの温度"
 
 #: src/components/routes/settings/notifications.tsx:211
 msgid "Test <0>URL</0>"
-msgstr "Тест <0>URL</0>"
+msgstr "テスト<0>URL</0>"
 
 #: src/components/routes/settings/notifications.tsx:182
 msgid "Test notification sent"
-msgstr "Тестове сповіщення надіслано"
+msgstr "テスト通知が送信されました"
 
 #: src/components/add-system.tsx:104
 msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
-msgstr "Агент повинен працювати на системі для підключення. Скопіюйте команду встановлення для агента нижче."
+msgstr "接続するにはエージェントがシステム上で実行されている必要があります。以下のエージェントのインストールコマンドをコピーしてください。"
 
 #: src/components/add-system.tsx:95
 msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
-msgstr "Агент повинен працювати на системі для підключення. Скопіюйте <0>docker-compose.yml</0> для агента нижче."
+msgstr "接続するにはエージェントがシステム上で実行されている必要があります。以下のエージェント用<0>docker-compose.yml</0>をコピーしてください。"
 
 #: src/components/login/forgot-pass-form.tsx:98
 msgid "Then log into the backend and reset your user account password in the users table."
-msgstr "Потім увійдіть у бекенд і скиньте пароль вашого облікового запису користувача в таблиці користувачів."
+msgstr "その後、バックエンドにログインして、ユーザーテーブルでユーザーアカウントのパスワードをリセットしてください。"
 
 #: src/components/systems-table/systems-table.tsx:250
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
-msgstr "Цю дію не можна скасувати. Це назавжди видалить всі поточні записи для {name} з бази даних."
+msgstr "この操作は元に戻せません。これにより、データベースから{name}のすべての現在のレコードが永久に削除されます。"
 
 #: src/components/routes/system.tsx:507
 msgid "Throughput of {extraFsName}"
-msgstr "Пропускна здатність {extraFsName}"
+msgstr "{extraFsName}のスループット"
 
 #: src/components/routes/system.tsx:427
 msgid "Throughput of root filesystem"
-msgstr "Пропускна здатність кореневої файлової системи"
+msgstr "ルートファイルシステムのスループット"
 
 #: src/components/routes/settings/notifications.tsx:106
 msgid "To email(s)"
-msgstr "На електронну пошту"
+msgstr "メール宛"
 
 #: src/components/routes/system.tsx:350
 #: src/components/routes/system.tsx:363
 msgid "Toggle grid"
-msgstr "Перемкнути сітку"
+msgstr "グリッドを切り替え"
 
 #: src/components/mode-toggle.tsx:33
 msgid "Toggle theme"
-msgstr "Перемкнути тему"
+msgstr "テーマを切り替え"
 
 #: src/lib/utils.ts:316
 msgid "Triggers when any sensor exceeds a threshold"
-msgstr "Спрацьовує, коли будь-який датчик перевищує поріг"
+msgstr "センサーがしきい値を超えたときにトリガーされます"
 
 #: src/lib/utils.ts:310
 msgid "Triggers when combined up/down exceeds a threshold"
-msgstr "Спрацьовує, коли комбіноване підняття/опускання перевищує поріг"
+msgstr "上り/下りの合計がしきい値を超えたときにトリガーされます"
 
 #: src/lib/utils.ts:292
 msgid "Triggers when CPU usage exceeds a threshold"
-msgstr "Спрацьовує, коли використання ЦП перевищує поріг"
+msgstr "CPU使用率がしきい値を超えたときにトリガーされます"
 
 #: src/lib/utils.ts:298
 msgid "Triggers when memory usage exceeds a threshold"
-msgstr "Спрацьовує, коли використання пам'яті перевищує поріг"
+msgstr "メモリ使用率がしきい値を超えたときにトリガーされます"
 
 #: src/components/routes/system.tsx:398
 msgid "Triggers when memory usage exceeds a threshold."
-msgstr "Спрацьовує, коли використання пам'яті перевищує поріг."
+msgstr "メモリ使用率がしきい値を超えたときにトリガーされます。"
 
 #: src/lib/utils.ts:285
 msgid "Triggers when status switches between up and down"
-msgstr "Спрацьовує, коли статус переключається між підняттям і опусканням"
+msgstr "ステータスが上から下に切り替わるときにトリガーされます"
 
 #: src/lib/utils.ts:304
 msgid "Triggers when usage of any disk exceeds a threshold"
-msgstr "Спрацьовує, коли використання будь-якого диска перевищує поріг"
+msgstr "ディスクの使用量がしきい値を超えたときにトリガーされます"
 
 #: src/components/routes/home.tsx:110
 msgid "Updated in real time. Click on a system to view information."
-msgstr "Оновлюється в реальному часі. Натисніть на систему, щоб переглянути інформацію."
+msgstr "リアルタイムで更新されます。システムをクリックして情報を表示します。"
 
 #: src/components/routes/system.tsx:253
 msgid "Uptime"
-msgstr "Час роботи"
+msgstr "稼働時間"
 
 #: src/components/routes/system.tsx:494
 msgid "Usage"
-msgstr "Використання"
+msgstr "使用量"
 
 #: src/components/routes/system.tsx:415
 msgid "Usage of root partition"
-msgstr "Використання кореневого розділу"
+msgstr "ルートパーティションの使用量"
 
 #: src/components/charts/mem-chart.tsx:65
 #: src/components/charts/swap-chart.tsx:56
 msgid "Used"
-msgstr "Використано"
+msgstr "使用済み"
 
 #: src/components/login/auth-form.tsx:138
 msgid "username"
-msgstr "ім'я користувача"
+msgstr "ユーザー名"
 
 #: src/components/login/auth-form.tsx:131
 msgid "Username"
-msgstr "Ім'я користувача"
+msgstr "ユーザー名"
 
 #: src/components/command-palette.tsx:143
 #: src/components/navbar.tsx:70
 msgid "Users"
-msgstr "Користувачі"
+msgstr "ユーザー"
 
 #: src/components/routes/system.tsx:602
 msgid "Waiting for enough records to display"
-msgstr "Очікування достатньої кількості записів для відображення"
+msgstr "表示するのに十分なレコードを待っています"
 
 #: src/components/routes/settings/general.tsx:48
 msgid "Want to help us make our translations even better? Check out <0>Crowdin</0> for more details."
-msgstr "Хочете допомогти нам зробити наші переклади ще кращими? Перегляньте <0>Crowdin</0> для отримання додаткової інформації."
+msgstr "翻訳をさらに良くするためにご協力いただけますか？詳細については<0>Crowdin</0>をご覧ください。"
 
 #: src/components/routes/settings/notifications.tsx:124
 msgid "Webhook / Push notifications"
-msgstr "Webhook / Push сповіщення"
+msgstr "Webhook / プッシュ通知"
 
 #. Context is disk write
 #: src/components/charts/area-chart.tsx:55
 #: src/components/charts/area-chart.tsx:66
 msgid "Write"
-msgstr "Запис"
+msgstr "書き込み"
 
 #: src/components/routes/settings/layout.tsx:61
 msgid "YAML Config"
-msgstr "Конфігурація YAML"
+msgstr "YAML設定"
 
 #: src/components/routes/settings/config-yaml.tsx:45
 msgid "YAML Configuration"
-msgstr "Конфігурація YAML"
+msgstr "YAML設定"
 
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
-msgstr "Ваші налаштування користувача були оновлені."
+msgstr "ユーザー設定が更新されました。"

@@ -1,7 +1,7 @@
 import { $direction } from "./stores"
 import { i18n } from "@lingui/core"
 import { detect, fromUrl, fromStorage, fromNavigator } from "@lingui/detect-locale"
-import { messages as enMessages } from "../locales/en/messages.ts"
+import { messages as enMessages } from "../locales/en/en.ts"
 
 // const locale = detect(fromUrl("lang"), fromStorage("lang"), fromNavigator(), "en")
 const locale = detect(fromStorage("lang"), fromNavigator(), "en")
@@ -13,7 +13,7 @@ if (import.meta.env.DEV) {
 
 export async function dynamicActivate(locale: string) {
 	try {
-		const { messages } = await import(`../locales/${locale}/messages.ts`)
+		const { messages } = await import(`../locales/${locale}/${locale}.ts`)
 		i18n.load(locale, messages)
 		i18n.activate(locale)
 		document.documentElement.lang = locale

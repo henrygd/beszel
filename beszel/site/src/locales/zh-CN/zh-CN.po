@@ -433,10 +433,6 @@ msgstr "Docker容器的内存使用"
 msgid "Name"
 msgstr "名称"
 
-#: src/components/login/auth-form.tsx:158
-msgid "name@example.com"
-msgstr "name@example.com"
-
 #: src/components/systems-table/systems-table.tsx:162
 msgid "Net"
 msgstr "网络"
