@@ -1,0 +1,3 @@
+files:
+  - source: /beszel/site/src/locales/en/messages.po
+    translation: /folder/%two_letters_code%/%original_file_name%
