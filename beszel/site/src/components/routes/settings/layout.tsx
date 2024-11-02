@@ -12,9 +12,8 @@ import { UserSettings } from "@/types.js"
 import General from "./general.tsx"
 import Notifications from "./notifications.tsx"
 import ConfigYaml from "./config-yaml.tsx"
-import { isAdmin } from "@/lib/utils.ts"
-import { useTranslation } from "react-i18next"
-import { t } from "i18next"
+import { Trans, t } from "@lingui/macro"
+import { useLingui } from "@lingui/react"
 
 export async function saveSettings(newSettings: Partial<UserSettings>) {
 	try {
@@ -31,47 +30,45 @@ export async function saveSettings(newSettings: Partial<UserSettings>) {
 		})
 		$userSettings.set(updatedSettings.settings)
 		toast({
-			title: t("settings.saved"),
-			description: t("settings.saved_des"),
+			title: t`Settings saved`,
+			description: t`Your user settings have been updated.`,
 		})
 	} catch (e) {
 		// console.error('update settings', e)
 		toast({
-			title: t("settings.failed_to_save"),
-			description: t("settings.check_logs"),
+			title: t`Failed to save settings`,
+			description: t`Check logs for more details.`,
 			variant: "destructive",
 		})
 	}
 }
 
 export default function SettingsLayout() {
-	const { t } = useTranslation()
+	const { _ } = useLingui()
 
 	const sidebarNavItems = [
 		{
-			title: t("settings.general.title"),
+			title: _(t({ message: `General`, comment: "Context: General settings" })),
 			href: "/settings/general",
 			icon: SettingsIcon,
 		},
 		{
-			title: t("settings.notifications.title"),
+			title: t`Notifications`,
 			href: "/settings/notifications",
 			icon: BellIcon,
 		},
-	]
-
-	if (isAdmin()) {
-		sidebarNavItems.push({
-			title: t("settings.yaml_config.short_title"),
+		{
+			title: t`YAML Config`,
 			href: "/settings/config",
 			icon: FileSlidersIcon,
-		})
-	}
+			admin: true,
+		},
+	]
 
 	const page = useStore($router)
 
 	useEffect(() => {
-		document.title = "Settings / Beszel"
+		document.title = t`Settings` + " / Beszel"
 		// redirect to account page if no page is specified
 		if (page?.path === "/settings") {
 			redirectPage($router, "settings", { name: "general" })
@@ -81,8 +78,12 @@ export default function SettingsLayout() {
 	return (
 		<Card className="pt-5 px-4 pb-8 sm:pt-6 sm:px-7">
 			<CardHeader className="p-0">
-				<CardTitle className="mb-1">{t("settings.settings")}</CardTitle>
-				<CardDescription>{t("settings.subtitle")}</CardDescription>
+				<CardTitle className="mb-1">
+					<Trans>Settings</Trans>
+				</CardTitle>
+				<CardDescription>
+					<Trans>Manage display and notification preferences.</Trans>
+				</CardDescription>
 			</CardHeader>
 			<CardContent className="p-0">
 				<Separator className="hidden md:block my-5" />

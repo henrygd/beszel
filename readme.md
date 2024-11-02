@@ -320,7 +320,7 @@ See a list of valid options by running `go tool dist list`.
 
 Contributions are welcome, but it's a good idea to check with us first in a discussion / issue if you plan on doing anything significant.
 
-We use [Weblate](https://hosted.weblate.org/engage/beszel/) to manage translations. New languages or improvements to existing translations are appreciated!
+<!-- We use [Crowdin](https://crowdin.com/project/beszel) to manage translations. New languages or improvements to existing translations are appreciated! -->
 
 We'll have more helpful information about contributing to Beszel in the near future.
 

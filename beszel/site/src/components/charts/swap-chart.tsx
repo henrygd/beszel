@@ -11,11 +11,10 @@ import {
 } from "@/lib/utils"
 import { ChartData } from "@/types"
 import { memo } from "react"
-import { useTranslation } from "react-i18next"
+import { t } from "@lingui/macro"
 
 export default memo(function SwapChart({ chartData }: { chartData: ChartData }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
-	const { t } = useTranslation()
 
 	if (chartData.systemStats.length === 0) {
 		return null
@@ -54,7 +53,7 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 					/>
 					<Area
 						dataKey="stats.su"
-						name={t("monitor.used")}
+						name={t`Used`}
 						type="monotoneX"
 						fill="hsl(var(--chart-2))"
 						fillOpacity={0.4}

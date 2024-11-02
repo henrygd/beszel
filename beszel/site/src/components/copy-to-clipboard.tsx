@@ -2,17 +2,19 @@ import { useEffect, useMemo, useRef } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog"
 import { Textarea } from "./ui/textarea"
 import { $copyContent } from "@/lib/stores"
-import { useTranslation } from "react-i18next"
+import { Trans } from "@lingui/macro"
 
 export default function CopyToClipboard({ content }: { content: string }) {
-	const { t } = useTranslation()
-
 	return (
 		<Dialog defaultOpen={true}>
 			<DialogContent className="w-[90%] rounded-lg md:pt-4" style={{ maxWidth: 530 }}>
 				<DialogHeader>
-					<DialogTitle>{t("clipboard.title")}</DialogTitle>
-					<DialogDescription className="hidden xs:block">{t("clipboard.des")}</DialogDescription>
+					<DialogTitle>
+						<Trans>Copy text</Trans>
+					</DialogTitle>
+					<DialogDescription className="hidden xs:block">
+						<Trans>Automatic copy requires a secure context.</Trans>
+					</DialogDescription>
 				</DialogHeader>
 				<CopyTextarea content={content} />
 			</DialogContent>

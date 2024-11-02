@@ -27,21 +27,19 @@ import {
 	DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
 import { AddSystemButton } from "./add-system"
-import { useTranslation } from "react-i18next"
-import { TFunction } from "i18next"
+import { Trans } from "@lingui/macro"
 
 const CommandPalette = lazy(() => import("./command-palette"))
 
 const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0
 
 export default function Navbar() {
-	const { t } = useTranslation()
 	return (
 		<div className="flex items-center h-14 md:h-16 bg-card px-4 pe-3 sm:px-6 border bt-0 rounded-md my-4">
 			<Link href="/" aria-label="Home" className="p-2 ps-0 me-3">
 				<Logo className="h-[1.1rem] md:h-5 fill-foreground" />
 			</Link>
-			<SearchButton t={t} />
+			<SearchButton />
 
 			<div className="flex items-center ms-auto">
 				<LangToggle />
@@ -68,31 +66,41 @@ export default function Navbar() {
 									<DropdownMenuItem asChild>
 										<a href="/_/" target="_blank">
 											<UsersIcon className="me-2.5 h-4 w-4" />
-											<span>{t("user_dm.users")}</span>
+											<span>
+												<Trans>Users</Trans>
+											</span>
 										</a>
 									</DropdownMenuItem>
 									<DropdownMenuItem asChild>
 										<a href="/_/#/collections?collectionId=2hz5ncl8tizk5nx" target="_blank">
 											<ServerIcon className="me-2.5 h-4 w-4" />
-											<span>{t("systems")}</span>
+											<span>
+												<Trans>Systems</Trans>
+											</span>
 										</a>
 									</DropdownMenuItem>
 									<DropdownMenuItem asChild>
 										<a href="/_/#/logs" target="_blank">
 											<LogsIcon className="me-2.5 h-4 w-4" />
-											<span>{t("user_dm.logs")}</span>
+											<span>
+												<Trans>Logs</Trans>
+											</span>
 										</a>
 									</DropdownMenuItem>
 									<DropdownMenuItem asChild>
 										<a href="/_/#/settings/backups" target="_blank">
 											<DatabaseBackupIcon className="me-2.5 h-4 w-4" />
-											<span>{t("user_dm.backups")}</span>
+											<span>
+												<Trans>Backups</Trans>
+											</span>
 										</a>
 									</DropdownMenuItem>
 									<DropdownMenuItem asChild>
 										<a href="/_/#/settings/auth-providers" target="_blank">
 											<LockKeyholeIcon className="me-2.5 h-4 w-4" />
-											<span>{t("user_dm.auth_providers")}</span>
+											<span>
+												<Trans>Auth Providers</Trans>
+											</span>
 										</a>
 									</DropdownMenuItem>
 									<DropdownMenuSeparator />
@@ -101,7 +109,9 @@ export default function Navbar() {
 						</DropdownMenuGroup>
 						<DropdownMenuItem onSelect={() => pb.authStore.clear()}>
 							<LogOutIcon className="me-2.5 h-4 w-4" />
-							<span>{t("user_dm.log_out")}</span>
+							<span>
+								<Trans>Log Out</Trans>
+							</span>
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
@@ -111,7 +121,7 @@ export default function Navbar() {
 	)
 }
 
-function SearchButton({ t }: { t: TFunction<"translation", undefined> }) {
+function SearchButton() {
 	const [open, setOpen] = useState(false)
 
 	const Kbd = ({ children }: { children: React.ReactNode }) => (
@@ -129,8 +139,7 @@ function SearchButton({ t }: { t: TFunction<"translation", undefined> }) {
 			>
 				<span className="flex items-center">
 					<SearchIcon className="me-1.5 h-4 w-4" />
-					{t("search")}
-					<span className="sr-only">{t("search")}</span>
+					<Trans>Search</Trans>
 					<span className="flex items-center ms-3.5">
 						<Kbd>{isMac ? "⌘" : "Ctrl"}</Kbd>
 						<Kbd>K</Kbd>

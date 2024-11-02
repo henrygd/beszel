@@ -10,11 +10,9 @@ import { useState } from "react"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "@/components/ui/use-toast"
 import clsx from "clsx"
-import { useTranslation } from "react-i18next"
+import { Trans, t } from "@lingui/macro"
 
 export default function ConfigYaml() {
-	const { t } = useTranslation()
-
 	const [configContent, setConfigContent] = useState<string>("")
 	const [isLoading, setIsLoading] = useState(false)
 
@@ -27,7 +25,7 @@ export default function ConfigYaml() {
 			setConfigContent(config)
 		} catch (error: any) {
 			toast({
-				title: "Error",
+				title: t`Error`,
 				description: error.message,
 				variant: "destructive",
 			})
@@ -43,23 +41,37 @@ export default function ConfigYaml() {
 	return (
 		<div>
 			<div>
-				<h3 className="text-xl font-medium mb-2">{t("settings.yaml_config.title")}</h3>
-				<p className="text-sm text-muted-foreground leading-relaxed">{t("settings.yaml_config.subtitle")}</p>
+				<h3 className="text-xl font-medium mb-2">
+					<Trans>YAML Configuration</Trans>
+				</h3>
+				<p className="text-sm text-muted-foreground leading-relaxed">
+					<Trans>Export your current systems configuration.</Trans>
+				</p>
 			</div>
 			<Separator className="my-4" />
 			<div className="space-y-2">
 				<div className="mb-4">
 					<p className="text-sm text-muted-foreground leading-relaxed my-1">
-						{t("settings.yaml_config.des_1")} <code className="bg-muted rounded-sm px-1 text-primary">config.yml</code>{" "}
-						{t("settings.yaml_config.des_2")}
+						<Trans>
+							Systems may be managed in a <code className="bg-muted rounded-sm px-1 text-primary">config.yml</code> file
+							inside your data directory.
+						</Trans>
 					</p>
-					<p className="text-sm text-muted-foreground leading-relaxed">{t("settings.yaml_config.des_3")}</p>
+					<p className="text-sm text-muted-foreground leading-relaxed">
+						<Trans>
+							On each restart, systems in the database will be updated to match the systems defined in the file.
+						</Trans>
+					</p>
 					<Alert className="my-4 border-destructive text-destructive w-auto table md:pe-6">
 						<AlertCircleIcon className="h-4 w-4 stroke-destructive" />
-						<AlertTitle>{t("settings.yaml_config.alert.title")}</AlertTitle>
+						<AlertTitle>
+							<Trans>Caution - potential data loss</Trans>
+						</AlertTitle>
 						<AlertDescription>
 							<p>
-								{t("settings.yaml_config.alert.des_1")} <code>config.yml</code> {t("settings.yaml_config.alert.des_2")}
+								<Trans>
+									Existing systems not defined in <code>config.yml</code> will be deleted. Please make regular backups.
+								</Trans>
 							</p>
 						</AlertDescription>
 					</Alert>
@@ -78,7 +90,7 @@ export default function ConfigYaml() {
 			<Separator className="my-5" />
 			<Button type="button" className="mt-2 flex items-center gap-1" onClick={fetchConfig} disabled={isLoading}>
 				<ButtonIcon className={clsx("h-4 w-4 me-0.5", isLoading && "animate-spin")} />
-				{t("settings.export_configuration")}
+				<Trans>Export configuration</Trans>
 			</Button>
 		</div>
 	)

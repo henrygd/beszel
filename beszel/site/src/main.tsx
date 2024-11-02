@@ -12,7 +12,8 @@ import { Toaster } from "./components/ui/toaster.tsx"
 import { $router } from "./components/router.tsx"
 import SystemDetail from "./components/routes/system.tsx"
 import Navbar from "./components/navbar.tsx"
-import "./lib/i18n.ts"
+import { I18nProvider } from "@lingui/react"
+import { i18n } from "@lingui/core"
 
 // const ServerDetail = lazy(() => import('./components/routes/system.tsx'))
 const LoginPage = lazy(() => import("./components/login/login.tsx"))
@@ -80,6 +81,10 @@ const Layout = () => {
 	const copyContent = useStore($copyContent)
 	const direction = useStore($direction)
 
+	useEffect(() => {
+		document.documentElement.dir = direction
+	}, [direction])
+
 	return (
 		<DirectionProvider dir={direction}>
 			{!authenticated ? (
@@ -109,9 +114,11 @@ ReactDOM.createRoot(document.getElementById("app")!).render(
 	// strict mode in dev mounts / unmounts components twice
 	// and breaks the clipboard dialog
 	//<StrictMode>
-	<ThemeProvider>
-		<Layout />
-		<Toaster />
-	</ThemeProvider>
+	<I18nProvider i18n={i18n}>
+		<ThemeProvider>
+			<Layout />
+			<Toaster />
+		</ThemeProvider>
+	</I18nProvider>
 	//</StrictMode>
 )

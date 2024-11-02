@@ -1,4 +1,4 @@
-import { $systems, pb, $chartTime, $containerFilter, $userSettings } from "@/lib/stores"
+import { $systems, pb, $chartTime, $containerFilter, $userSettings, $direction } from "@/lib/stores"
 import { ChartData, ChartTimes, ContainerStatsRecord, SystemRecord, SystemStatsRecord } from "@/types"
 import React, { lazy, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Card, CardHeader, CardTitle, CardDescription } from "../ui/card"
@@ -15,7 +15,8 @@ import { ChartAverage, ChartMax, Rows, TuxIcon } from "../ui/icons"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { timeTicks } from "d3-time"
-import { useTranslation } from "react-i18next"
+import { Plural, Trans, t } from "@lingui/macro"
+import { useLingui } from "@lingui/react"
 
 const AreaChartDefault = lazy(() => import("../charts/area-chart"))
 const ContainerChart = lazy(() => import("../charts/container-chart"))
@@ -85,7 +86,8 @@ async function getStats<T>(collection: string, system: SystemRecord, chartTime: 
 }
 
 export default function SystemDetail({ name }: { name: string }) {
-	const { t, i18n } = useTranslation()
+	const direction = useStore($direction)
+	const { _ } = useLingui()
 	const systems = useStore($systems)
 	const chartTime = useStore($chartTime)
 	/** Max CPU toggle value */
@@ -157,10 +159,10 @@ export default function SystemDetail({ name }: { name: string }) {
 			systemStats,
 			containerData,
 			chartTime,
-			orientation: i18n.dir() == "rtl" ? "right" : "left",
+			orientation: direction === "rtl" ? "right" : "left",
 			...getTimeData(chartTime, lastCreated),
 		}
-	}, [systemStats, containerData, i18n.dir()])
+	}, [systemStats, containerData, direction])
 
 	// get stats
 	useEffect(() => {
@@ -232,12 +234,12 @@ export default function SystemDetail({ name }: { name: string }) {
 		if (!system.info) {
 			return []
 		}
-		let uptime: number | string = system.info.u
+		let uptime: React.ReactNode
 		if (system.info.u < 172800) {
-			const hours = Math.trunc(uptime / 3600)
-			uptime = t("hours", { count: hours })
+			const hours = Math.trunc(system.info.u / 3600)
+			uptime = <Plural value={hours} one="# hour" other="# hours" />
 		} else {
-			uptime = t("days", { count: Math.trunc(system.info?.u / 86400) })
+			uptime = <Plural value={Math.trunc(system.info?.u / 86400)} one="# day" other="# days" />
 		}
 		return [
 			{ value: system.host, Icon: GlobeIcon },
@@ -248,8 +250,8 @@ export default function SystemDetail({ name }: { name: string }) {
 				// hide if hostname is same as host or name
 				hide: system.info.h === system.host || system.info.h === system.name,
 			},
-			{ value: uptime, Icon: ClockArrowUp, label: "Uptime" },
-			{ value: system.info.k, Icon: TuxIcon, label: "Kernel" },
+			{ value: uptime, Icon: ClockArrowUp, label: t`Uptime` },
+			{ value: system.info.k, Icon: TuxIcon, label: t({ comment: "Linux kernel", message: "Kernel" }) },
 			{
 				value: `${system.info.m} (${system.info.c}c${system.info.t ? `/${system.info.t}t` : ""})`,
 				Icon: CpuIcon,
@@ -261,7 +263,7 @@ export default function SystemDetail({ name }: { name: string }) {
 			Icon: any
 			hide?: boolean
 		}[]
-	}, [system.info, t])
+	}, [system.info])
 
 	/** Space for tooltip if more than 12 containers */
 	useEffect(() => {
@@ -345,7 +347,7 @@ export default function SystemDetail({ name }: { name: string }) {
 								<Tooltip>
 									<TooltipTrigger asChild>
 										<Button
-											aria-label={t("monitor.toggle_grid")}
+											aria-label={t`Toggle grid`}
 											variant="outline"
 											size="icon"
 											className="hidden lg:flex p-0 text-primary"
@@ -358,7 +360,7 @@ export default function SystemDetail({ name }: { name: string }) {
 											)}
 										</Button>
 									</TooltipTrigger>
-									<TooltipContent>{t("monitor.toggle_grid")}</TooltipContent>
+									<TooltipContent>{t`Toggle grid`}</TooltipContent>
 								</Tooltip>
 							</TooltipProvider>
 						</div>
@@ -370,26 +372,19 @@ export default function SystemDetail({ name }: { name: string }) {
 					<ChartCard
 						empty={dataEmpty}
 						grid={grid}
-						title={t("monitor.total_cpu_usage")}
-						description={`${cpuMaxStore[0] && isLongerChart ? t("monitor.max_1_min") : t("monitor.average")} ${t(
-							"monitor.cpu_des"
-						)}`}
+						title={_(t`CPU Usage`)}
+						description={t`Average system-wide CPU utilization`}
 						cornerEl={isLongerChart ? <SelectAvgMax store={cpuMaxStore} /> : null}
 					>
-						<AreaChartDefault
-							chartData={chartData}
-							chartName={t("alerts.info.cpu_usage")}
-							maxToggled={cpuMaxStore[0]}
-							unit="%"
-						/>
+						<AreaChartDefault chartData={chartData} chartName="CPU Usage" maxToggled={cpuMaxStore[0]} unit="%" />
 					</ChartCard>
 
 					{containerFilterBar && (
 						<ChartCard
 							empty={dataEmpty}
 							grid={grid}
-							title={t("monitor.docker_cpu_usage")}
-							description={t("monitor.docker_cpu_des")}
+							title={t`Docker CPU Usage`}
+							description={t`Average CPU utilization of containers`}
 							cornerEl={containerFilterBar}
 						>
 							<ContainerChart chartData={chartData} dataKey="c" chartName="cpu" />
@@ -399,8 +394,8 @@ export default function SystemDetail({ name }: { name: string }) {
 					<ChartCard
 						empty={dataEmpty}
 						grid={grid}
-						title={t("monitor.total_memory_usage")}
-						description={t("monitor.memory_des")}
+						title={t`Memory Usage`}
+						description={t`Triggers when memory usage exceeds a threshold.`}
 					>
 						<MemChart chartData={chartData} />
 					</ChartCard>
@@ -409,15 +404,15 @@ export default function SystemDetail({ name }: { name: string }) {
 						<ChartCard
 							empty={dataEmpty}
 							grid={grid}
-							title={t("monitor.docker_memory_usage")}
-							description={t("monitor.docker_memory_des")}
+							title={t`Docker Memory Usage`}
+							description={t`Memory usage of docker containers`}
 							cornerEl={containerFilterBar}
 						>
 							<ContainerChart chartData={chartData} chartName="mem" dataKey="m" unit=" MB" />
 						</ChartCard>
 					)}
 
-					<ChartCard empty={dataEmpty} grid={grid} title={t("monitor.disk_space")} description={t("monitor.disk_des")}>
+					<ChartCard empty={dataEmpty} grid={grid} title={t`Disk Usage`} description={t`Usage of root partition`}>
 						<DiskChart
 							chartData={chartData}
 							dataKey="stats.du"
@@ -428,8 +423,8 @@ export default function SystemDetail({ name }: { name: string }) {
 					<ChartCard
 						empty={dataEmpty}
 						grid={grid}
-						title={t("monitor.disk_io")}
-						description={t("monitor.disk_io_des")}
+						title={t`Disk I/O`}
+						description={t`Throughput of root filesystem`}
 						cornerEl={isLongerChart ? <SelectAvgMax store={diskIoMaxStore} /> : null}
 					>
 						<AreaChartDefault chartData={chartData} maxToggled={diskIoMaxStore[0]} chartName="dio" />
@@ -438,9 +433,9 @@ export default function SystemDetail({ name }: { name: string }) {
 					<ChartCard
 						empty={dataEmpty}
 						grid={grid}
-						title={t("monitor.bandwidth")}
+						title={t`Bandwidth`}
 						cornerEl={isLongerChart ? <SelectAvgMax store={bandwidthMaxStore} /> : null}
-						description={t("monitor.bandwidth_des")}
+						description={t`Network traffic of public interfaces`}
 					>
 						<AreaChartDefault chartData={chartData} maxToggled={bandwidthMaxStore[0]} chartName="bw" />
 					</ChartCard>
@@ -454,8 +449,8 @@ export default function SystemDetail({ name }: { name: string }) {
 						>
 							<ChartCard
 								empty={dataEmpty}
-								title={t("monitor.docker_network_io")}
-								description={t("monitor.docker_network_io_des")}
+								title={t`Docker Network I/O`}
+								description={t`Network traffic of docker containers`}
 								cornerEl={containerFilterBar}
 							>
 								{/* @ts-ignore */}
@@ -468,8 +463,8 @@ export default function SystemDetail({ name }: { name: string }) {
 						<ChartCard
 							empty={dataEmpty}
 							grid={grid}
-							title={t("monitor.swap_usage")}
-							description={t("monitor.swap_des")}
+							title={t`Swap Usage`}
+							description={t`Swap space used by the system`}
 						>
 							<SwapChart chartData={chartData} />
 						</ChartCard>
@@ -479,8 +474,8 @@ export default function SystemDetail({ name }: { name: string }) {
 						<ChartCard
 							empty={dataEmpty}
 							grid={grid}
-							title={t("monitor.temperature")}
-							description={t("monitor.temperature_des")}
+							title={t`Temperature`}
+							description={t`Temperatures of system sensors`}
 						>
 							<TemperatureChart chartData={chartData} />
 						</ChartCard>
@@ -496,8 +491,8 @@ export default function SystemDetail({ name }: { name: string }) {
 									<ChartCard
 										empty={dataEmpty}
 										grid={grid}
-										title={`${extraFsName} ${t("monitor.usage")}`}
-										description={`${t("monitor.disk_usage_of")} ${extraFsName}`}
+										title={`${extraFsName} ${t`Usage`}`}
+										description={t`Disk usage of ${extraFsName}`}
 									>
 										<DiskChart
 											chartData={chartData}
@@ -509,7 +504,7 @@ export default function SystemDetail({ name }: { name: string }) {
 										empty={dataEmpty}
 										grid={grid}
 										title={`${extraFsName} I/O`}
-										description={`${t("monitor.throughput_of")} ${extraFsName}`}
+										description={t`Throughput of ${extraFsName}`}
 										cornerEl={isLongerChart ? <SelectAvgMax store={diskIoMaxStore} /> : null}
 									>
 										<AreaChartDefault
@@ -532,8 +527,6 @@ export default function SystemDetail({ name }: { name: string }) {
 }
 
 function ContainerFilterBar() {
-	const { t } = useTranslation()
-
 	const containerFilter = useStore($containerFilter)
 
 	const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -542,7 +535,7 @@ function ContainerFilterBar() {
 
 	return (
 		<>
-			<Input placeholder={t("filter")} className="ps-4 pe-8" value={containerFilter} onChange={handleChange} />
+			<Input placeholder={t`Filter...`} className="ps-4 pe-8" value={containerFilter} onChange={handleChange} />
 			{containerFilter && (
 				<Button
 					type="button"
@@ -560,8 +553,6 @@ function ContainerFilterBar() {
 }
 
 function SelectAvgMax({ store }: { store: [boolean, React.Dispatch<React.SetStateAction<boolean>>] }) {
-	const { t } = useTranslation()
-
 	const [max, setMax] = store
 	const Icon = max ? ChartMax : ChartAverage
 
@@ -573,10 +564,10 @@ function SelectAvgMax({ store }: { store: [boolean, React.Dispatch<React.SetStat
 			</SelectTrigger>
 			<SelectContent>
 				<SelectItem key="avg" value="avg">
-					{t("monitor.average")}
+					<Trans>Average</Trans>
 				</SelectItem>
 				<SelectItem key="max" value="max">
-					{t("monitor.max_1_min")}
+					<Trans comment="Chart select field. Please try to keep this short.">Max 1 min</Trans>
 				</SelectItem>
 			</SelectContent>
 		</Select>
@@ -599,7 +590,6 @@ function ChartCard({
 	cornerEl?: JSX.Element | null
 }) {
 	const { isIntersecting, ref } = useIntersectionObserver()
-	const { t } = useTranslation()
 
 	return (
 		<Card className={cn("pb-2 sm:pb-4 odd:last-of-type:col-span-full", { "col-span-full": !grid })} ref={ref}>
@@ -609,7 +599,7 @@ function ChartCard({
 				{cornerEl && <div className="relative py-1 block sm:w-44 sm:absolute sm:top-2.5 sm:end-3.5">{cornerEl}</div>}
 			</CardHeader>
 			<div className="ps-0 w-[calc(100%-1.6em)] h-52 relative">
-				{<Spinner msg={empty ? t("monitor.waiting_for") : undefined} />}
+				{<Spinner msg={empty ? t`Waiting for enough records to display` : undefined} />}
 				{isIntersecting && children}
 			</div>
 		</Card>

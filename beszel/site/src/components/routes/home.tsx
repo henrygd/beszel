@@ -9,17 +9,17 @@ import { AlertRecord, SystemRecord } from "@/types"
 import { Input } from "../ui/input"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Link } from "../router"
-import { useTranslation } from "react-i18next"
+import { Plural, t, Trans } from "@lingui/macro"
+import { useLingui } from "@lingui/react"
 
 const SystemsTable = lazy(() => import("../systems-table/systems-table"))
 
-export default function () {
-	const { t } = useTranslation()
-
+export default function Home() {
 	const hubVersion = useStore($hubVersion)
 	const [filter, setFilter] = useState<string>()
 	const alerts = useStore($alerts)
 	const systems = useStore($systems)
+	const { _ } = useLingui()
 
 	// todo: maybe remove active alert if changed
 	const activeAlerts = useMemo(() => {
@@ -35,7 +35,7 @@ export default function () {
 	}, [alerts])
 
 	useEffect(() => {
-		document.title = "Dashboard / Beszel"
+		document.title = t`Dashboard` + " / Beszel"
 
 		// make sure we have the latest list of systems
 		updateSystemList()
@@ -61,7 +61,9 @@ export default function () {
 				<Card className="mb-4">
 					<CardHeader className="pb-4 px-2 sm:px-6 max-sm:pt-5 max-sm:pb-1">
 						<div className="px-2 sm:px-1">
-							<CardTitle>{t("home.active_alerts")}</CardTitle>
+							<CardTitle>
+								<Trans>Active Alerts</Trans>
+							</CardTitle>
 						</div>
 					</CardHeader>
 					<CardContent className="max-sm:p-2">
@@ -76,16 +78,13 @@ export default function () {
 										>
 											<info.icon className="h-4 w-4" />
 											<AlertTitle>
-												{alert.sysname} {t(info.name)}
+												{alert.sysname} {info.name().toLowerCase().replace("cpu", "CPU")}
 											</AlertTitle>
 											<AlertDescription>
-												{t("home.active_des", {
-													value: alert.value,
-													unit: info.unit,
-												})}
-												{t("minutes", {
-													count: alert.min,
-												})}
+												<Trans>
+													Exceeds {alert.value}
+													{info.unit} in last <Plural value={alert.min} one="# minute" other="# minutes" />
+												</Trans>
 											</AlertDescription>
 											<Link
 												href={`/system/${encodeURIComponent(alert.sysname!)}`}
@@ -104,11 +103,15 @@ export default function () {
 				<CardHeader className="pb-5 px-2 sm:px-6 max-sm:pt-5 max-sm:pb-1">
 					<div className="grid md:flex gap-5 w-full items-end">
 						<div className="px-2 sm:px-1">
-							<CardTitle className="mb-2.5">{t("all_systems")}</CardTitle>
-							<CardDescription>{t("home.subtitle")}</CardDescription>
+							<CardTitle className="mb-2.5">
+								<Trans>All Systems</Trans>
+							</CardTitle>
+							<CardDescription>
+								<Trans>Updated in real time. Click on a system to view information.</Trans>
+							</CardDescription>
 						</div>
 						<Input
-							placeholder={t("filter")}
+							placeholder={_(t`Filter...`)}
 							onChange={(e) => setFilter(e.target.value)}
 							className="w-full md:w-56 lg:w-72 ms-auto px-4"
 						/>

@@ -6,17 +6,15 @@ import { useStore } from "@nanostores/react"
 import ForgotPassword from "./forgot-pass-form"
 import { $router } from "../router"
 import { AuthMethodsList } from "pocketbase"
-import { useTranslation } from "react-i18next"
+import { t } from "@lingui/macro"
 
 export default function () {
-	const { t } = useTranslation()
-
 	const page = useStore($router)
 	const [isFirstRun, setFirstRun] = useState(false)
 	const [authMethods, setAuthMethods] = useState<AuthMethodsList>()
 
 	useEffect(() => {
-		document.title = "Login / Beszel"
+		document.title = t`Login` + " / Beszel"
 
 		pb.send("/api/beszel/first-run", {}).then(({ firstRun }) => {
 			setFirstRun(firstRun)
@@ -33,11 +31,11 @@ export default function () {
 
 	const subtitle = useMemo(() => {
 		if (isFirstRun) {
-			return t("auth.create")
+			return t`Please create an admin account`
 		} else if (page?.path === "/forgot-password") {
-			return t("auth.reset")
+			return t`Enter email address to reset password`
 		} else {
-			return t("auth.login")
+			return t`Please sign in to your account`
 		}
 	}, [isFirstRun, page])
 

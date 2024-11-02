@@ -12,7 +12,8 @@ import {
 // import Spinner from '../spinner'
 import { ChartData } from "@/types"
 import { memo, useMemo } from "react"
-import { useTranslation } from "react-i18next"
+import { t } from "@lingui/macro"
+import { useLingui } from "@lingui/react"
 
 /** [label, key, color, opacity] */
 type DataKeys = [string, string, number, number]
@@ -39,7 +40,7 @@ export default memo(function AreaChartDefault({
 	chartData: ChartData
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
-	const { t } = useTranslation()
+	const { i18n } = useLingui()
 
 	const { chartTime } = chartData
 
@@ -47,26 +48,26 @@ export default memo(function AreaChartDefault({
 
 	const dataKeys: DataKeys[] = useMemo(() => {
 		// [label, key, color, opacity]
-		if (chartName === t("alerts.info.cpu_usage")) {
-			return [[chartName, "cpu", 1, 0.4]]
+		if (chartName === "CPU Usage") {
+			return [[t`CPU Usage`, "cpu", 1, 0.4]]
 		} else if (chartName === "dio") {
 			return [
-				[t("monitor.write"), "dw", 3, 0.3],
-				[t("monitor.read"), "dr", 1, 0.3],
+				[t({ message: "Write", comment: "Context is disk write" }), "dw", 3, 0.3],
+				[t({ message: "Read", comment: "Context is disk read" }), "dr", 1, 0.3],
 			]
 		} else if (chartName === "bw") {
 			return [
-				[t("monitor.sent"), "ns", 5, 0.2],
-				[t("monitor.received"), "nr", 2, 0.2],
+				[t({ message: "Sent", comment: "Context is network bytes sent (upload)" }), "ns", 5, 0.2],
+				[t({ message: "Received", comment: "Context is network bytes received (download)" }), "nr", 2, 0.2],
 			]
 		} else if (chartName.startsWith("efs")) {
 			return [
-				[t("monitor.write"), `${chartName}.w`, 3, 0.3],
-				[t("monitor.read"), `${chartName}.r`, 1, 0.3],
+				[t`Read`, `${chartName}.w`, 3, 0.3],
+				[t`Write`, `${chartName}.r`, 1, 0.3],
 			]
 		}
 		return []
-	}, [t])
+	}, [chartName, i18n.locale])
 
 	// console.log('Rendered at', new Date())
 

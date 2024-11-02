@@ -9,7 +9,7 @@ import { timeDay, timeHour } from "d3-time"
 import { useEffect, useState } from "react"
 import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from "lucide-react"
 import { EthernetIcon, ThermometerIcon } from "@/components/ui/icons"
-import { t } from "i18next"
+import { t } from "@lingui/macro"
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -22,7 +22,7 @@ export async function copyToClipboard(content: string) {
 		await navigator.clipboard.writeText(content)
 		toast({
 			duration,
-			description: t("clipboard.copied"),
+			description: t`Copied to clipboard`,
 		})
 	} catch (e: any) {
 		$copyContent.set(content)
@@ -35,8 +35,8 @@ const verifyAuth = () => {
 		.catch(() => {
 			pb.authStore.clear()
 			toast({
-				title: "Failed to authenticate",
-				description: "Please log in again",
+				title: t`Failed to authenticate`,
+				description: t`Please log in again`,
 				variant: "destructive",
 			})
 		})
@@ -76,30 +76,14 @@ const shortDateFormatter = new Intl.DateTimeFormat(undefined, {
 	minute: "numeric",
 })
 export const formatShortDate = (timestamp: string) => {
-	// console.log('ts', timestamp)
 	return shortDateFormatter.format(new Date(timestamp))
 }
-
-// const dayTimeFormatter = new Intl.DateTimeFormat(undefined, {
-// 	// day: 'numeric',
-// 	// month: 'short',
-// 	hour: 'numeric',
-// 	weekday: 'short',
-// 	minute: 'numeric',
-// 	// dateStyle: 'short',
-// })
-// export const formatDayTime = (timestamp: string) => {
-// 	// console.log('ts', timestamp)
-// 	return dayTimeFormatter.format(new Date(timestamp))
-// }
 
 const dayFormatter = new Intl.DateTimeFormat(undefined, {
 	day: "numeric",
 	month: "short",
-	// dateStyle: 'medium',
 })
 export const formatDay = (timestamp: string) => {
-	// console.log('ts', timestamp)
 	return dayFormatter.format(new Date(timestamp))
 }
 
@@ -109,13 +93,11 @@ export const updateFavicon = (newIcon: string) => {
 
 export const isAdmin = () => pb.authStore.model?.role === "admin"
 export const isReadOnlyUser = () => pb.authStore.model?.role === "readonly"
-// export const isDefaultUser = () => pb.authStore.model?.role === 'user'
 
 /** Update systems / alerts list when records change  */
 export function updateRecordList<T extends RecordModel>(e: RecordSubscription<T>, $store: WritableAtom<T[]>) {
 	const curRecords = $store.get()
 	const newRecords = []
-	// console.log('e', e)
 	if (e.action === "delete") {
 		for (const server of curRecords) {
 			if (server.id !== e.record.id) {
@@ -154,7 +136,7 @@ export const chartTimeData: ChartTimeData = {
 	"1h": {
 		type: "1m",
 		expectedInterval: 60_000,
-		label: () => t("hours", { count: 1 }),
+		label: () => t`1 hour`,
 		// ticks: 12,
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -1),
@@ -162,7 +144,7 @@ export const chartTimeData: ChartTimeData = {
 	"12h": {
 		type: "10m",
 		expectedInterval: 60_000 * 10,
-		label: () => t("hours", { count: 12 }),
+		label: () => t`12 hours`,
 		ticks: 12,
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -12),
@@ -170,14 +152,14 @@ export const chartTimeData: ChartTimeData = {
 	"24h": {
 		type: "20m",
 		expectedInterval: 60_000 * 20,
-		label: () => t("hours", { count: 24 }),
+		label: () => t`24 hours`,
 		format: (timestamp: string) => hourWithMinutes(timestamp),
 		getOffset: (endTime: Date) => timeHour.offset(endTime, -24),
 	},
 	"1w": {
 		type: "120m",
 		expectedInterval: 60_000 * 120,
-		label: () => t("weeks", { count: 1 }),
+		label: () => t`1 week`,
 		ticks: 7,
 		format: (timestamp: string) => formatDay(timestamp),
 		getOffset: (endTime: Date) => timeDay.offset(endTime, -7),
@@ -185,7 +167,7 @@ export const chartTimeData: ChartTimeData = {
 	"30d": {
 		type: "480m",
 		expectedInterval: 60_000 * 480,
-		label: () => t("days_other", { count: 30 }),
+		label: () => t`30 days`,
 		ticks: 30,
 		format: (timestamp: string) => formatDay(timestamp),
 		getOffset: (endTime: Date) => timeDay.offset(endTime, -30),
@@ -297,40 +279,40 @@ export const chartMargin = { top: 12 }
 
 export const alertInfo = {
 	Status: {
-		name: "alerts.info.status",
+		name: () => t`Status`,
 		unit: "",
 		icon: ServerIcon,
-		desc: "alerts.info.status_des",
+		desc: () => t`Triggers when status switches between up and down`,
 		single: true,
 	},
 	CPU: {
-		name: "alerts.info.cpu_usage",
+		name: () => t`CPU Usage`,
 		unit: "%",
 		icon: CpuIcon,
-		desc: "alerts.info.cpu_usage_des",
+		desc: () => t`Triggers when CPU usage exceeds a threshold`,
 	},
 	Memory: {
-		name: "alerts.info.memory_usage",
+		name: () => t`Memory Usage`,
 		unit: "%",
 		icon: MemoryStickIcon,
-		desc: "alerts.info.memory_usage_des",
+		desc: () => t`Triggers when memory usage exceeds a threshold`,
 	},
 	Disk: {
-		name: "alerts.info.disk_usage",
+		name: () => t`Disk Usage`,
 		unit: "%",
 		icon: HardDriveIcon,
-		desc: "alerts.info.disk_usage_des",
+		desc: () => t`Triggers when usage of any disk exceeds a threshold`,
 	},
 	Bandwidth: {
-		name: "alerts.info.bandwidth",
+		name: () => t`Bandwidth`,
 		unit: " MB/s",
 		icon: EthernetIcon,
-		desc: "alerts.info.bandwidth_des",
+		desc: () => t`Triggers when combined up/down exceeds a threshold`,
 	},
 	Temperature: {
-		name: "alerts.info.temperature",
+		name: () => t`Temperature`,
 		unit: "°C",
 		icon: ThermometerIcon,
-		desc: "alerts.info.temperature_des",
+		desc: () => t`Triggers when any sensor exceeds a threshold`,
 	},
 }

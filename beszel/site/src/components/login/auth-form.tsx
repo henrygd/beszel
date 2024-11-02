@@ -10,11 +10,11 @@ import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle } from 
 import { useCallback, useState } from "react"
 import { AuthMethodsList, OAuth2AuthConfig } from "pocketbase"
 import { Link } from "../router"
-import { useTranslation } from "react-i18next"
+import { Trans, t } from "@lingui/macro"
 
 const honeypot = v.literal("")
-const emailSchema = v.pipe(v.string(), v.email("Invalid email address."))
-const passwordSchema = v.pipe(v.string(), v.minLength(10, "Password must be at least 10 characters."))
+const emailSchema = v.pipe(v.string(), v.email(t`Invalid email address.`))
+const passwordSchema = v.pipe(v.string(), v.minLength(10, t`Password must be at least 10 characters.`))
 
 const LoginSchema = v.looseObject({
 	name: honeypot,
@@ -39,8 +39,8 @@ const RegisterSchema = v.looseObject({
 
 const showLoginFaliedToast = () => {
 	toast({
-		title: "Login attempt failed",
-		description: "Please check your credentials and try again",
+		title: t`Login attempt failed`,
+		description: t`Please check your credentials and try again`,
 		variant: "destructive",
 	})
 }
@@ -55,8 +55,6 @@ export function UserAuthForm({
 	isFirstRun: boolean
 	authMethods: AuthMethodsList
 }) {
-	const { t } = useTranslation()
-
 	const [isLoading, setIsLoading] = useState<boolean>(false)
 	const [isOauthLoading, setIsOauthLoading] = useState<boolean>(false)
 	const [errors, setErrors] = useState<Record<string, string | undefined>>({})
@@ -130,14 +128,14 @@ export function UserAuthForm({
 								<div className="grid gap-1 relative">
 									<UserIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 									<Label className="sr-only" htmlFor="username">
-										Username
+										<Trans>Username</Trans>
 									</Label>
 									<Input
 										autoFocus={true}
 										id="username"
 										name="username"
 										required
-										placeholder="username"
+										placeholder={t`username`}
 										type="username"
 										autoCapitalize="none"
 										autoComplete="username"
@@ -151,13 +149,13 @@ export function UserAuthForm({
 							<div className="grid gap-1 relative">
 								<MailIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 								<Label className="sr-only" htmlFor="email">
-									Email
+									<Trans>Email</Trans>
 								</Label>
 								<Input
 									id="email"
 									name="email"
 									required
-									placeholder={isFirstRun ? "email" : "name@example.com"}
+									placeholder={isFirstRun ? t`email` : t`name@example.com`}
 									type="email"
 									autoCapitalize="none"
 									autoComplete="email"
@@ -170,17 +168,17 @@ export function UserAuthForm({
 							<div className="grid gap-1 relative">
 								<LockIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 								<Label className="sr-only" htmlFor="pass">
-									Password
+									<Trans>Password</Trans>
 								</Label>
 								<Input
 									id="pass"
 									name="password"
-									placeholder="password"
+									placeholder={t`Password`}
 									required
 									type="password"
 									autoComplete="current-password"
 									disabled={isLoading || isOauthLoading}
-									className="ps-9"
+									className="ps-9 lowercase"
 								/>
 								{errors?.password && <p className="px-1 text-xs text-red-600">{errors.password}</p>}
 							</div>
@@ -188,17 +186,17 @@ export function UserAuthForm({
 								<div className="grid gap-1 relative">
 									<LockIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 									<Label className="sr-only" htmlFor="pass2">
-										Confirm password
+										<Trans>Confirm password</Trans>
 									</Label>
 									<Input
 										id="pass2"
 										name="passwordConfirm"
-										placeholder="confirm password"
+										placeholder={t`Confirm password`}
 										required
 										type="password"
 										autoComplete="current-password"
 										disabled={isLoading || isOauthLoading}
-										className="ps-9"
+										className="ps-9 lowercase"
 									/>
 									{errors?.passwordConfirm && <p className="px-1 text-xs text-red-600">{errors.passwordConfirm}</p>}
 								</div>
@@ -214,7 +212,7 @@ export function UserAuthForm({
 								) : (
 									<LogInIcon className="me-2 h-4 w-4" />
 								)}
-								{isFirstRun ? t("auth.create_account") : t("auth.sign_in")}
+								{isFirstRun ? t`Create account` : t`Sign in`}
 							</button>
 						</div>
 					</form>
@@ -225,7 +223,9 @@ export function UserAuthForm({
 								<span className="w-full border-t" />
 							</div>
 							<div className="relative flex justify-center text-xs uppercase">
-								<span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+								<span className="bg-background px-2 text-muted-foreground">
+									<Trans>Or continue with</Trans>
+								</span>
 							</div>
 						</div>
 					)}
@@ -253,8 +253,8 @@ export function UserAuthForm({
 									if (!authWindow) {
 										setIsOauthLoading(false)
 										toast({
-											title: "Error",
-											description: "Please enable pop-ups for this site",
+											title: t`Error`,
+											description: t`Please enable pop-ups for this site`,
 											variant: "destructive",
 										})
 										return
@@ -304,19 +304,25 @@ export function UserAuthForm({
 					</DialogTrigger>
 					<DialogContent style={{ maxWidth: 440, width: "90%" }}>
 						<DialogHeader>
-							<DialogTitle>OAuth 2 / OIDC support</DialogTitle>
+							<DialogTitle>
+								<Trans>OAuth 2 / OIDC support</Trans>
+							</DialogTitle>
 						</DialogHeader>
 						<div className="text-primary/70 text-[0.95em] contents">
-							<p>{t("auth.openid_des")}</p>
 							<p>
-								{t("please_view_the")}{" "}
-								<a
-									href="https://github.com/henrygd/beszel/blob/main/readme.md#oauth--oidc-integration"
-									className={cn(buttonVariants({ variant: "link" }), "p-0 h-auto")}
-								>
-									GitHub README
-								</a>{" "}
-								{t("for_instructions")}
+								<Trans>Beszel supports OpenID Connect and many OAuth2 authentication providers.</Trans>
+							</p>
+							<p>
+								<Trans>
+									Please see{" "}
+									<a
+										href="https://github.com/henrygd/beszel/blob/main/readme.md#oauth--oidc-integration"
+										className={cn(buttonVariants({ variant: "link" }), "p-0 h-auto")}
+									>
+										the documentation
+									</a>{" "}
+									for instructions.
+								</Trans>
 							</p>
 						</div>
 					</DialogContent>
@@ -328,7 +334,7 @@ export function UserAuthForm({
 					href="/forgot-password"
 					className="text-sm mx-auto hover:text-brand underline underline-offset-4 opacity-70 hover:opacity-100 transition-opacity"
 				>
-					{t("auth.forgot_password")}
+					<Trans>Forgot password?</Trans>
 				</Link>
 			)}
 		</div>

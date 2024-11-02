@@ -1,75 +1,46 @@
-import i18n from "i18next"
-import { initReactI18next } from "react-i18next"
-import enTranslations from "../locales/en/translation.json"
 import { $direction } from "./stores"
+import { i18n } from "@lingui/core"
+import { detect, fromUrl, fromStorage, fromNavigator } from "@lingui/detect-locale"
+import { messages as enMessages } from "../locales/en/messages.ts"
 
-// Custom language detector to use localStorage
-const languageDetector: any = {
-	type: "languageDetector",
-	async: true,
-	detect: (callback: (lng: string) => void) => {
-		const savedLanguage = localStorage.getItem("i18nextLng")
-		const zhVariantMap: Record<string, string> = {
-			"zh-CN": "zh-CN",
-			"zh-SG": "zh-CN",
-			"zh-MY": "zh-CN",
-			zh: "zh-CN",
-			"zh-Hans": "zh-CN",
-			"zh-HK": "zh-HK",
-			"zh-TW": "zh-HK",
-			"zh-MO": "zh-HK",
-			"zh-Hant": "zh-HK",
-		}
-		const fallbackLanguage = zhVariantMap[navigator.language] || navigator.language
-		callback(savedLanguage || fallbackLanguage)
-	},
-	init: () => {},
-	cacheUserLanguage: (lng: string) => {
-		localStorage.setItem("i18nextLng", lng)
-	},
+// const locale = detect(fromUrl("lang"), fromStorage("lang"), fromNavigator(), "en")
+const locale = detect(fromStorage("lang"), fromNavigator(), "en")
+
+// log if dev
+if (import.meta.env.DEV) {
+	console.log("detected locale", locale)
 }
 
-// Function to dynamically load translation files
-async function loadMessages(locale: string) {
+export async function dynamicActivate(locale: string) {
 	try {
-		if (locale === "en") {
-			return enTranslations
-		}
-		const translation = await import(`../locales/${locale}/translation.json`)
-		return translation.default
+		const { messages } = await import(`../locales/${locale}/messages.ts`)
+		i18n.load(locale, messages)
+		i18n.activate(locale)
+		document.documentElement.lang = locale
+		$direction.set(locale.startsWith("ar") ? "rtl" : "ltr")
+		localStorage.setItem("lang", locale)
 	} catch (error) {
 		console.error(`Error loading ${locale}`, error)
-		return enTranslations
 	}
 }
 
-i18n
-	.use(languageDetector)
-	.use(initReactI18next)
-	.init({
-		resources: {
-			en: {
-				translation: enTranslations,
-			},
-		},
-		fallbackLng: "en",
-		interpolation: {
-			escapeValue: false,
-		},
-	})
-
-// Function to dynamically activate a language
-export async function setLang(locale: string) {
-	const messages = await loadMessages(locale)
-	i18n.addResourceBundle(locale, "translation", messages)
-	await i18n.changeLanguage(locale)
-	const dir = i18n.dir(locale)
-	document.dir = dir
-	$direction.set(dir)
+if (locale?.startsWith("zh-")) {
+	// map zh variants to zh-CN
+	const zhVariantMap: Record<string, string> = {
+		"zh-CN": "zh-CN",
+		"zh-SG": "zh-CN",
+		"zh-MY": "zh-CN",
+		zh: "zh-CN",
+		"zh-Hans": "zh-CN",
+		"zh-HK": "zh-HK",
+		"zh-TW": "zh-HK",
+		"zh-MO": "zh-HK",
+		"zh-Hant": "zh-HK",
+	}
+	dynamicActivate(zhVariantMap[locale] || "zh-CN")
+} else if (locale && !locale.startsWith("en")) {
+	dynamicActivate(locale.split("-")[0])
+} else {
+	i18n.load("en", enMessages)
+	i18n.activate("en")
 }
-
-// Initialize with detected/saved language
-const initialLanguage = localStorage.getItem("i18nextLng") || navigator.language
-setLang(initialLanguage)
-
-export { i18n }

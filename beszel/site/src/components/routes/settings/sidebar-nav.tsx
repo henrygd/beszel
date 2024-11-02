@@ -1,5 +1,5 @@
 import React from "react"
-import { cn } from "@/lib/utils"
+import { cn, isAdmin } from "@/lib/utils"
 import { buttonVariants } from "../../ui/button"
 import { $router, Link, navigate } from "../../router"
 import { useStore } from "@nanostores/react"
@@ -11,6 +11,7 @@ interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
 		href: string
 		title: string
 		icon?: React.FC<React.SVGProps<SVGSVGElement>>
+		admin?: boolean
 	}[]
 }
 
@@ -23,17 +24,20 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
 			<div className="md:hidden">
 				<Select onValueChange={(value: string) => navigate(value)} value={page?.path}>
 					<SelectTrigger className="w-full my-3.5">
-						<SelectValue placeholder="Select a page" />
+						<SelectValue placeholder="Select page" />
 					</SelectTrigger>
 					<SelectContent>
-						{items.map((item) => (
-							<SelectItem key={item.href} value={item.href}>
-								<span className="flex items-center gap-2">
-									{item.icon && <item.icon className="h-4 w-4" />}
-									{item.title}
-								</span>
-							</SelectItem>
-						))}
+						{items.map((item) => {
+							if (item.admin && !isAdmin()) return null
+							return (
+								<SelectItem key={item.href} value={item.href}>
+									<span className="flex items-center gap-2">
+										{item.icon && <item.icon className="h-4 w-4" />}
+										{item.title}
+									</span>
+								</SelectItem>
+							)
+						})}
 					</SelectContent>
 				</Select>
 				<Separator />

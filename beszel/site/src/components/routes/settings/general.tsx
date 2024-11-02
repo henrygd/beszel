@@ -6,20 +6,16 @@ import { Separator } from "@/components/ui/separator"
 import { LanguagesIcon, LoaderCircleIcon, SaveIcon } from "lucide-react"
 import { UserSettings } from "@/types"
 import { saveSettings } from "./layout"
-import { useState, useEffect } from "react"
-// import { Input } from '@/components/ui/input'
-import { useTranslation } from "react-i18next"
+import { useState } from "react"
+import { Trans } from "@lingui/macro"
 import languages from "../../../lib/languages.json"
-import { setLang } from "@/lib/i18n"
+import { dynamicActivate } from "@/lib/i18n"
+import { useLingui } from "@lingui/react"
+// import { setLang } from "@/lib/i18n"
 
 export default function SettingsProfilePage({ userSettings }: { userSettings: UserSettings }) {
-	const { t, i18n } = useTranslation()
-
-	useEffect(() => {
-		document.documentElement.lang = i18n.language
-	}, [i18n.language])
-
 	const [isLoading, setIsLoading] = useState(false)
+	const { i18n } = useLingui()
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault()
@@ -33,8 +29,12 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 	return (
 		<div>
 			<div>
-				<h3 className="text-xl font-medium mb-2">{t("settings.general.title")}</h3>
-				<p className="text-sm text-muted-foreground leading-relaxed">{t("settings.general.subtitle")}</p>
+				<h3 className="text-xl font-medium mb-2">
+					<Trans>General</Trans>
+				</h3>
+				<p className="text-sm text-muted-foreground leading-relaxed">
+					<Trans>Change general application options.</Trans>
+				</p>
 			</div>
 			<Separator className="my-4" />
 			<form onSubmit={handleSubmit} className="space-y-5">
@@ -42,25 +42,22 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 					<div className="mb-4">
 						<h3 className="mb-1 text-lg font-medium flex items-center gap-2">
 							<LanguagesIcon className="h-4 w-4" />
-							{t("settings.general.language.title")}
+							<Trans>Language</Trans>
 						</h3>
 						<p className="text-sm text-muted-foreground leading-relaxed">
-							{t("settings.general.language.subtitle_1")}{" "}
-							<a
-								href="https://hosted.weblate.org/engage/beszel/"
-								className="link"
-								target="_blank"
-								rel="noopener noreferrer"
-							>
-								Weblate
-							</a>{" "}
-							{t("settings.general.language.subtitle_2")}
+							<Trans>
+								Want to help us make our translations even better? Check out{" "}
+								<a href="https://crowdin.com/project/beszel" className="link" target="_blank" rel="noopener noreferrer">
+									Crowdin
+								</a>{" "}
+								for more details.
+							</Trans>
 						</p>
 					</div>
 					<Label className="block" htmlFor="lang">
-						{t("settings.general.language.preferred_language")}
+						<Trans>Preferred Language</Trans>
 					</Label>
-					<Select value={i18n.language} onValueChange={(lang: string) => setLang(lang)}>
+					<Select value={i18n.locale} onValueChange={(lang: string) => dynamicActivate(lang)}>
 						<SelectTrigger id="lang">
 							<SelectValue />
 						</SelectTrigger>
@@ -77,13 +74,15 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 				<Separator />
 				<div className="space-y-2">
 					<div className="mb-4">
-						<h3 className="mb-1 text-lg font-medium">{t("settings.general.chart_options.title")}</h3>
+						<h3 className="mb-1 text-lg font-medium">
+							<Trans>Chart options</Trans>
+						</h3>
 						<p className="text-sm text-muted-foreground leading-relaxed">
-							{t("settings.general.chart_options.subtitle")}
+							<Trans>Adjust display options for charts.</Trans>
 						</p>
 					</div>
 					<Label className="block" htmlFor="chartTime">
-						{t("settings.general.chart_options.default_time_period")}
+						<Trans>Default time period</Trans>
 					</Label>
 					<Select name="chartTime" key={userSettings.chartTime} defaultValue={userSettings.chartTime}>
 						<SelectTrigger id="chartTime">
@@ -98,13 +97,13 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 						</SelectContent>
 					</Select>
 					<p className="text-[0.8rem] text-muted-foreground">
-						{t("settings.general.chart_options.default_time_period_des")}
+						<Trans>Sets the default time range for charts when a system is viewed.</Trans>
 					</p>
 				</div>
 				<Separator />
 				<Button type="submit" className="flex items-center gap-1.5 disabled:opacity-100" disabled={isLoading}>
 					{isLoading ? <LoaderCircleIcon className="h-4 w-4 animate-spin" /> : <SaveIcon className="h-4 w-4" />}
-					{t("settings.save_settings")}
+					<Trans>Save Settings</Trans>
 				</Button>
 			</form>
 		</div>

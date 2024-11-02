@@ -17,7 +17,7 @@ import { Link } from "../router"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "../ui/checkbox"
 import { SystemAlert, SystemAlertGlobal } from "./alerts-system"
-import { useTranslation } from "react-i18next"
+import { Trans, t } from "@lingui/macro"
 
 export default memo(function AlertsButton({ system }: { system: SystemRecord }) {
 	const alerts = useStore($alerts)
@@ -29,7 +29,7 @@ export default memo(function AlertsButton({ system }: { system: SystemRecord }) 
 	return (
 		<Dialog>
 			<DialogTrigger asChild>
-				<Button variant="ghost" size="icon" aria-label="Alerts" data-nolink onClick={() => setOpened(true)}>
+				<Button variant="ghost" size="icon" aria-label={t`Alerts`} data-nolink onClick={() => setOpened(true)}>
 					<BellIcon
 						className={cn("h-[1.2em] w-[1.2em] pointer-events-none", {
 							"fill-primary": active,
@@ -49,8 +49,6 @@ function TheContent({
 }: {
 	data: { system: SystemRecord; alerts: AlertRecord[]; systemAlerts: AlertRecord[] }
 }) {
-	const { t } = useTranslation()
-
 	const [overwriteExisting, setOverwriteExisting] = useState<boolean | "indeterminate">(false)
 	const systems = $systems.get()
 
@@ -66,13 +64,17 @@ function TheContent({
 	return (
 		<>
 			<DialogHeader>
-				<DialogTitle className="text-xl">{t("alerts.title")}</DialogTitle>
+				<DialogTitle className="text-xl">
+					<Trans>Alerts</Trans>
+				</DialogTitle>
 				<DialogDescription>
-					{t("alerts.subtitle_1")}{" "}
-					<Link href="/settings/notifications" className="link">
-						{t("alerts.notification_settings")}
-					</Link>{" "}
-					{t("alerts.subtitle_2")}
+					<Trans>
+						See{" "}
+						<Link href="/settings/notifications" className="link">
+							notification settings
+						</Link>{" "}
+						to configure how you receive alerts.
+					</Trans>
 				</DialogDescription>
 			</DialogHeader>
 			<Tabs defaultValue="system">
@@ -83,7 +85,7 @@ function TheContent({
 					</TabsTrigger>
 					<TabsTrigger value="global">
 						<GlobeIcon className="me-1.5 h-3.5 w-3.5" />
-						{t("all_systems")}
+						<Trans>All Systems</Trans>
 					</TabsTrigger>
 				</TabsList>
 				<TabsContent value="system">
@@ -104,7 +106,7 @@ function TheContent({
 							checked={overwriteExisting}
 							onCheckedChange={setOverwriteExisting}
 						/>
-						{t("alerts.overwrite_existing_alerts")}
+						<Trans>Overwrite existing alerts</Trans>
 					</label>
 					<div className="grid gap-3">
 						{data.map((d) => (

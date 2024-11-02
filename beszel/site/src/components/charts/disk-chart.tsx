@@ -12,7 +12,8 @@ import {
 } from "@/lib/utils"
 import { ChartData } from "@/types"
 import { memo } from "react"
-import { useTranslation } from "react-i18next"
+import { t } from "@lingui/macro"
+import { useLingui } from "@lingui/react"
 
 export default memo(function DiskChart({
 	dataKey,
@@ -24,7 +25,7 @@ export default memo(function DiskChart({
 	chartData: ChartData
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
-	const { t } = useTranslation()
+	const { _ } = useLingui()
 
 	if (chartData.systemStats.length === 0) {
 		return null
@@ -70,7 +71,7 @@ export default memo(function DiskChart({
 					/>
 					<Area
 						dataKey={dataKey}
-						name={t("alerts.info.disk_usage")}
+						name={_(t`Disk Usage`)}
 						type="monotoneX"
 						fill="hsl(var(--chart-4))"
 						fillOpacity={0.4}

@@ -12,8 +12,7 @@ import { UserSettings } from "@/types"
 import { saveSettings } from "./layout"
 import * as v from "valibot"
 import { isAdmin } from "@/lib/utils"
-import { useTranslation } from "react-i18next"
-import { t } from "i18next"
+import { Trans, t } from "@lingui/macro"
 
 interface ShoutrrrUrlCardProps {
 	url: string
@@ -27,8 +26,6 @@ const NotificationSchema = v.object({
 })
 
 const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSettings }) => {
-	const { t } = useTranslation()
-
 	const [webhooks, setWebhooks] = useState(userSettings.webhooks ?? [])
 	const [emails, setEmails] = useState<string[]>(userSettings.emails ?? [])
 	const [isLoading, setIsLoading] = useState(false)
@@ -62,7 +59,7 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 			await saveSettings(parsedData)
 		} catch (e: any) {
 			toast({
-				title: t("settings.failed_to_save"),
+				title: t`Failed to save settings`,
 				description: e.message,
 				variant: "destructive",
 			})
@@ -73,51 +70,67 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 	return (
 		<div>
 			<div>
-				<h3 className="text-xl font-medium mb-2">{t("settings.notifications.title")}</h3>
-				<p className="text-sm text-muted-foreground leading-relaxed">{t("settings.notifications.subtitle_1")}</p>
+				<h3 className="text-xl font-medium mb-2">
+					<Trans>Notifications</Trans>
+				</h3>
+				<p className="text-sm text-muted-foreground leading-relaxed">
+					<Trans>Configure how you receive alert notifications.</Trans>
+				</p>
 				<p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
-					{t("settings.notifications.subtitle_2")} <BellIcon className="inline h-4 w-4" />{" "}
-					{t("settings.notifications.subtitle_3")}
+					<Trans>
+						Looking instead for where to create alerts? Click the bell <BellIcon className="inline h-4 w-4" /> icons in
+						the systems table.
+					</Trans>
 				</p>
 			</div>
 			<Separator className="my-4" />
 			<div className="space-y-5">
 				<div className="space-y-2">
 					<div className="mb-4">
-						<h3 className="mb-1 text-lg font-medium">{t("settings.notifications.email.title")}</h3>
+						<h3 className="mb-1 text-lg font-medium">
+							<Trans>Email notifications</Trans>
+						</h3>
 						{isAdmin() && (
 							<p className="text-sm text-muted-foreground leading-relaxed">
-								{t("settings.notifications.email.please")}{" "}
-								<a href="/_/#/settings/mail" className="link" target="_blank">
-									{t("settings.notifications.email.configure_an_SMTP_server")}
-								</a>{" "}
-								{t("settings.notifications.email.to_ensure_alerts_are_delivered")}{" "}
+								<Trans>
+									Please{" "}
+									<a href="/_/#/settings/mail" className="link" target="_blank">
+										configure an SMTP server
+									</a>{" "}
+									to ensure alerts are delivered.
+								</Trans>
 							</p>
 						)}
 					</div>
 					<Label className="block" htmlFor="email">
-						{t("settings.notifications.email.to_emails")}
+						<Trans>To email(s)</Trans>
 					</Label>
 					<InputTags
 						value={emails}
 						onChange={setEmails}
-						placeholder={t("settings.notifications.email.enter_email_address")}
+						placeholder={t`Enter email address...`}
 						className="w-full"
 						type="email"
 						id="email"
 					/>
-					<p className="text-[0.8rem] text-muted-foreground">{t("settings.notifications.email.des")}</p>
+					<p className="text-[0.8rem] text-muted-foreground">
+						<Trans>Save address using enter key or comma. Leave blank to disable email notifications.</Trans>
+					</p>
 				</div>
 				<Separator />
 				<div className="space-y-3">
 					<div>
-						<h3 className="mb-1 text-lg font-medium">{t("settings.notifications.webhook.title")}</h3>
+						<h3 className="mb-1 text-lg font-medium">
+							<Trans>Webhook / Push notifications</Trans>
+						</h3>
 						<p className="text-sm text-muted-foreground leading-relaxed">
-							{t("settings.notifications.webhook.des_1")}{" "}
-							<a href="https://containrrr.dev/shoutrrr/services/overview/" target="_blank" className="link">
-								Shoutrrr
-							</a>{" "}
-							{t("settings.notifications.webhook.des_2")}
+							<Trans>
+								Beszel uses{" "}
+								<a href="https://containrrr.dev/shoutrrr/services/overview/" target="_blank" className="link">
+									Shoutrrr
+								</a>{" "}
+								to integrate with popular notification services.
+							</Trans>
 						</p>
 					</div>
 					{webhooks.length > 0 && (
@@ -140,7 +153,7 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 						onClick={addWebhook}
 					>
 						<PlusIcon className="h-4 w-4 -ms-0.5" />
-						{t("settings.notifications.webhook.add")} URL
+						<Trans>Add URL</Trans>
 					</Button>
 				</div>
 				<Separator />
@@ -151,7 +164,7 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 					disabled={isLoading}
 				>
 					{isLoading ? <LoaderCircleIcon className="h-4 w-4 animate-spin" /> : <SaveIcon className="h-4 w-4" />}
-					{t("settings.save_settings")}
+					<Trans>Save Settings</Trans>
 				</Button>
 			</div>
 		</div>
@@ -166,13 +179,13 @@ const ShoutrrrUrlCard = ({ url, onUrlChange, onRemove }: ShoutrrrUrlCardProps) =
 		const res = await pb.send("/api/beszel/send-test-notification", { url })
 		if ("err" in res && !res.err) {
 			toast({
-				title: t("settings.notifications.webhook.test_sent"),
-				description: t("settings.notifications.webhook.test_sent_des"),
+				title: t`Test notification sent`,
+				description: t`Check your notification service`,
 			})
 		} else {
 			toast({
-				title: t("error"),
-				description: res.err ?? "Failed to send test notification",
+				title: t`Error`,
+				description: res.err ?? t`Failed to send test notification`,
 				variant: "destructive",
 			})
 		}
@@ -195,7 +208,9 @@ const ShoutrrrUrlCard = ({ url, onUrlChange, onRemove }: ShoutrrrUrlCardProps) =
 						<LoaderCircleIcon className="h-4 w-4 animate-spin" />
 					) : (
 						<span>
-							{t("settings.notifications.webhook.test")} <span className="hidden sm:inline">URL</span>
+							<Trans>
+								Test <span className="hidden sm:inline">URL</span>
+							</Trans>
 						</span>
 					)}
 				</Button>

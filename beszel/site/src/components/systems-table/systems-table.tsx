@@ -56,7 +56,7 @@ import { cn, copyToClipboard, decimalString, isReadOnlyUser } from "@/lib/utils"
 import AlertsButton from "../alerts/alert-button"
 import { navigate } from "../router"
 import { EthernetIcon } from "../ui/icons"
-import { useTranslation } from "react-i18next"
+import { Trans, t } from "@lingui/macro"
 
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	const val = info.getValue() as number
@@ -76,7 +76,7 @@ function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	)
 }
 
-function sortableHeader(column: Column<SystemRecord, unknown>, name: string, Icon: any, hideSortIcon = false) {
+function sortableHeader(column: Column<SystemRecord, unknown>, name: React.ReactNode, Icon: any, hideSortIcon = false) {
 	return (
 		<Button
 			variant="ghost"
@@ -91,8 +91,6 @@ function sortableHeader(column: Column<SystemRecord, unknown>, name: string, Ico
 }
 
 export default function SystemsTable({ filter }: { filter?: string }) {
-	const { t } = useTranslation()
-
 	const data = useStore($systems)
 	const hubVersion = useStore($hubVersion)
 	const [sorting, setSorting] = useState<SortingState>([])
@@ -136,32 +134,32 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 						</span>
 					)
 				},
-				header: ({ column }) => sortableHeader(column, t("systems_table.system"), ServerIcon),
+				header: ({ column }) => sortableHeader(column, t`System`, ServerIcon),
 			},
 			{
 				accessorKey: "info.cpu",
 				invertSorting: true,
 				cell: CellFormatter,
-				header: ({ column }) => sortableHeader(column, t("systems_table.cpu"), CpuIcon),
+				header: ({ column }) => sortableHeader(column, t`CPU`, CpuIcon),
 			},
 			{
 				accessorKey: "info.mp",
 				invertSorting: true,
 				cell: CellFormatter,
-				header: ({ column }) => sortableHeader(column, t("systems_table.memory"), MemoryStickIcon),
+				header: ({ column }) => sortableHeader(column, t`Memory`, MemoryStickIcon),
 			},
 			{
 				accessorKey: "info.dp",
 				invertSorting: true,
 				cell: CellFormatter,
-				header: ({ column }) => sortableHeader(column, t("systems_table.disk"), HardDriveIcon),
+				header: ({ column }) => sortableHeader(column, t`Disk`, HardDriveIcon),
 			},
 			{
 				accessorFn: (originalRow) => originalRow.info.b || 0,
 				id: "n",
 				invertSorting: true,
 				size: 115,
-				header: ({ column }) => sortableHeader(column, t("systems_table.net"), EthernetIcon),
+				header: ({ column }) => sortableHeader(column, t`Net`, EthernetIcon),
 				cell: (info) => {
 					const val = info.getValue() as number
 					return (
@@ -173,7 +171,7 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 				accessorKey: "info.v",
 				invertSorting: true,
 				size: 50,
-				header: ({ column }) => sortableHeader(column, t("systems_table.agent"), WifiIcon, true),
+				header: ({ column }) => sortableHeader(column, t`Agent`, WifiIcon, true),
 				cell: (info) => {
 					const version = info.getValue() as string
 					if (!version || !hubVersion) {
@@ -203,7 +201,9 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 								<DropdownMenu>
 									<DropdownMenuTrigger asChild>
 										<Button variant="ghost" size={"icon"} data-nolink>
-											<span className="sr-only">{t("systems_table.open_menu")}</span>
+											<span className="sr-only">
+												<Trans>Open menu</Trans>
+											</span>
 											<MoreHorizontalIcon className="w-5" />
 										</Button>
 									</DropdownMenuTrigger>
@@ -219,43 +219,49 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 											{status === "paused" ? (
 												<>
 													<PlayCircleIcon className="me-2.5 h-4 w-4" />
-													{t("systems_table.resume")}
+													<Trans>Resume</Trans>
 												</>
 											) : (
 												<>
 													<PauseCircleIcon className="me-2.5 h-4 w-4" />
-													{t("systems_table.pause")}
+													<Trans>Pause</Trans>
 												</>
 											)}
 										</DropdownMenuItem>
 										<DropdownMenuItem onClick={() => copyToClipboard(host)}>
 											<CopyIcon className="me-2.5 h-4 w-4" />
-											{t("systems_table.copy_host")}
+											<Trans>Copy host</Trans>
 										</DropdownMenuItem>
 										<DropdownMenuSeparator className={cn(isReadOnlyUser() && "hidden")} />
 										<AlertDialogTrigger asChild>
 											<DropdownMenuItem className={cn(isReadOnlyUser() && "hidden")}>
 												<Trash2Icon className="me-2.5 h-4 w-4" />
-												{t("systems_table.delete")}
+												<Trans>Delete</Trans>
 											</DropdownMenuItem>
 										</AlertDialogTrigger>
 									</DropdownMenuContent>
 								</DropdownMenu>
 								<AlertDialogContent>
 									<AlertDialogHeader>
-										<AlertDialogTitle>{t("systems_table.delete_confirm", { name })}</AlertDialogTitle>
+										<AlertDialogTitle>
+											<Trans>Are you sure you want to delete {name}?</Trans>
+										</AlertDialogTitle>
 										<AlertDialogDescription>
-											{t("systems_table.delete_confirm_des_1")} <code className="bg-muted rounded-sm px-1">{name}</code>{" "}
-											{t("systems_table.delete_confirm_des_2")}
+											<Trans>
+												This action cannot be undone. This will permanently delete all current records for {name} from
+												the database.
+											</Trans>
 										</AlertDialogDescription>
 									</AlertDialogHeader>
 									<AlertDialogFooter>
-										<AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+										<AlertDialogCancel>
+											<Trans>Cancel</Trans>
+										</AlertDialogCancel>
 										<AlertDialogAction
 											className={cn(buttonVariants({ variant: "destructive" }))}
 											onClick={() => pb.collection("systems").delete(id)}
 										>
-											{t("continue")}
+											<Trans>Continue</Trans>
 										</AlertDialogAction>
 									</AlertDialogFooter>
 								</AlertDialogContent>
@@ -334,7 +340,7 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 					) : (
 						<TableRow>
 							<TableCell colSpan={columns.length} className="h-24 text-center">
-								{t("systems_table.no_systems_found")}
+								<Trans>No systems found.</Trans>
 							</TableCell>
 						</TableRow>
 					)}

@@ -6,7 +6,7 @@ import { lazy, Suspense, useRef, useState } from "react"
 import { toast } from "../ui/use-toast"
 import { RecordOptions } from "pocketbase"
 import { newQueue, Queue } from "@henrygd/queue"
-import { useTranslation } from "react-i18next"
+import { Trans, t, Plural } from "@lingui/macro"
 
 interface AlertData {
 	checked?: boolean
@@ -24,8 +24,8 @@ let queue: Queue
 
 const failedUpdateToast = () =>
 	toast({
-		title: "Failed to update alert",
-		description: "Please check logs for more details.",
+		title: t`Failed to update alert`,
+		description: t`Please check logs for more details.`,
 		variant: "destructive",
 	})
 
@@ -156,8 +156,6 @@ export function SystemAlertGlobal({
 }
 
 function AlertContent({ data }: { data: AlertData }) {
-	const { t } = useTranslation()
-
 	const { key } = data
 
 	const hasSliders = !("single" in data.alert)
@@ -185,9 +183,9 @@ function AlertContent({ data }: { data: AlertData }) {
 			>
 				<div className="grid gap-1 select-none">
 					<p className="font-semibold flex gap-3 items-center">
-						<Icon className="h-4 w-4 opacity-85" /> {t(data.alert.name)}
+						<Icon className="h-4 w-4 opacity-85" /> {data.alert.name()}
 					</p>
-					{!showSliders && <span className="block text-sm text-muted-foreground">{t(data.alert.desc)}</span>}
+					{!showSliders && <span className="block text-sm text-muted-foreground">{data.alert.desc()}</span>}
 				</div>
 				<Switch
 					id={`s${key}`}
@@ -203,11 +201,13 @@ function AlertContent({ data }: { data: AlertData }) {
 					<Suspense fallback={<div className="h-10" />}>
 						<div>
 							<p id={`v${key}`} className="text-sm block h-8">
-								{t("alerts.average_exceeds")}{" "}
-								<strong className="text-foreground">
-									{value}
-									{data.alert.unit}
-								</strong>
+								<Trans>
+									Average exceeds{" "}
+									<strong className="text-foreground">
+										{value}
+										{data.alert.unit}
+									</strong>
+								</Trans>
 							</p>
 							<div className="flex gap-3">
 								<Slider
@@ -222,10 +222,10 @@ function AlertContent({ data }: { data: AlertData }) {
 						</div>
 						<div>
 							<p id={`t${key}`} className="text-sm block h-8">
-								{t("alerts.for")} <strong className="text-foreground">{min}</strong>{" "}
-								{t("minutes", {
-									count: min,
-								}).replace(String(min), "")}
+								<Trans>
+									For <strong className="text-foreground">{min}</strong>{" "}
+									<Plural value={min} one=" minute" other=" minutes" />
+								</Trans>
 							</p>
 							<div className="flex gap-3">
 								<Slider

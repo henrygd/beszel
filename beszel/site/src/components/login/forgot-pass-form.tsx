@@ -8,18 +8,17 @@ import { cn } from "@/lib/utils"
 import { pb } from "@/lib/stores"
 import { Dialog, DialogHeader } from "../ui/dialog"
 import { DialogContent, DialogTrigger, DialogTitle } from "../ui/dialog"
-import { useTranslation } from "react-i18next"
+import { t, Trans } from "@lingui/macro"
 
 const showLoginFaliedToast = () => {
 	toast({
-		title: "Login attempt failed",
-		description: "Please check your credentials and try again",
+		title: t`Login attempt failed`,
+		description: t`Please check your credentials and try again`,
 		variant: "destructive",
 	})
 }
 
 export default function ForgotPassword() {
-	const { t } = useTranslation()
 	const [isLoading, setIsLoading] = useState<boolean>(false)
 	const [email, setEmail] = useState("")
 
@@ -31,8 +30,8 @@ export default function ForgotPassword() {
 				// console.log(email)
 				await pb.collection("users").requestPasswordReset(email)
 				toast({
-					title: "Password reset request received",
-					description: `Check ${email} for a reset link.`,
+					title: t`Password reset request received`,
+					description: t`Check ${email} for a reset link.`,
 				})
 			} catch (e) {
 				showLoginFaliedToast()
@@ -51,7 +50,7 @@ export default function ForgotPassword() {
 					<div className="grid gap-1 relative">
 						<MailIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 						<Label className="sr-only" htmlFor="email">
-							Email
+							<Trans>Email</Trans>
 						</Label>
 						<Input
 							value={email}
@@ -74,22 +73,30 @@ export default function ForgotPassword() {
 						) : (
 							<SendHorizonalIcon className="me-2 h-4 w-4" />
 						)}
-						{t("auth.reset_password")}
+						<Trans>Reset Password</Trans>
 					</button>
 				</div>
 			</form>
 			<Dialog>
 				<DialogTrigger asChild>
 					<button className="text-sm mx-auto hover:text-brand underline underline-offset-4 opacity-70 hover:opacity-100 transition-opacity">
-						{t("auth.command_line_instructions")}
+						<Trans>Command line instructions</Trans>
 					</button>
 				</DialogTrigger>
 				<DialogContent className="max-w-[33em]">
 					<DialogHeader>
-						<DialogTitle>{t("auth.command_line_instructions")}</DialogTitle>
+						<DialogTitle>
+							<Trans>Command line instructions</Trans>
+						</DialogTitle>
 					</DialogHeader>
-					<p className="text-primary/70 text-[0.95em] leading-relaxed">{t("auth.command_1")}</p>
-					<p className="text-primary/70 text-[0.95em] leading-relaxed">{t("auth.command_2")}</p>
+					<p className="text-primary/70 text-[0.95em] leading-relaxed">
+						<Trans>
+							If you've lost the password to your admin account, you may reset it using the following command.
+						</Trans>
+					</p>
+					<p className="text-primary/70 text-[0.95em] leading-relaxed">
+						<Trans>Then log into the backend and reset your user account password in the users table.</Trans>
+					</p>
 					<code className="bg-muted rounded-sm py-0.5 px-2.5 me-auto text-sm">
 						beszel admin update youremail@example.com newpassword
 					</code>
