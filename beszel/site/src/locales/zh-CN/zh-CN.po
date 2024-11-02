@@ -46,7 +46,12 @@ msgstr "24小时"
 msgid "30 days"
 msgstr "30天"
 
-#: src/components/routes/home.tsx:65
+#. Table column
+#: src/components/systems-table/systems-table.tsx:207
+msgid "Actions"
+msgstr "操作"
+
+#: src/components/routes/home.tsx:62
 msgid "Active Alerts"
 msgstr "活动警报"
 
@@ -80,7 +85,7 @@ msgstr "调整图表的显示选项。"
 msgid "Admin"
 msgstr "管理员"
 
-#: src/components/systems-table/systems-table.tsx:174
+#: src/components/systems-table/systems-table.tsx:186
 msgid "Agent"
 msgstr "代理"
 
@@ -90,11 +95,11 @@ msgid "Alerts"
 msgstr "警报"
 
 #: src/components/alerts/alert-button.tsx:88
-#: src/components/routes/home.tsx:107
+#: src/components/systems-table/systems-table.tsx:317
 msgid "All Systems"
 msgstr "所有系统"
 
-#: src/components/systems-table/systems-table.tsx:247
+#: src/components/systems-table/systems-table.tsx:261
 msgid "Are you sure you want to delete {name}?"
 msgstr "您确定要删除{name}吗？"
 
@@ -107,7 +112,7 @@ msgstr "认证提供者"
 msgid "Automatic copy requires a secure context."
 msgstr "自动复制需要安全的上下文。"
 
-#: src/components/routes/system.tsx:567
+#: src/components/routes/system.tsx:568
 msgid "Average"
 msgstr "平均"
 
@@ -149,7 +154,7 @@ msgstr "二进制"
 msgid "Cache / Buffers"
 msgstr "缓存/缓冲区"
 
-#: src/components/systems-table/systems-table.tsx:258
+#: src/components/systems-table/systems-table.tsx:272
 msgid "Cancel"
 msgstr "取消"
 
@@ -181,6 +186,11 @@ msgstr "检查您的通知服务"
 msgid "Click to copy"
 msgstr "点击复制"
 
+#. Context: table columns
+#: src/components/systems-table/systems-table.tsx:328
+msgid "Columns"
+msgstr "列"
+
 #: src/components/login/forgot-pass-form.tsx:83
 #: src/components/login/forgot-pass-form.tsx:89
 msgid "Command line instructions"
@@ -195,7 +205,7 @@ msgstr "配置您接收警报通知的方式。"
 msgid "Confirm password"
 msgstr "确认密码"
 
-#: src/components/systems-table/systems-table.tsx:264
+#: src/components/systems-table/systems-table.tsx:278
 msgid "Continue"
 msgstr "继续"
 
@@ -207,7 +217,7 @@ msgstr "已复制到剪贴板"
 msgid "Copy"
 msgstr "复制"
 
-#: src/components/systems-table/systems-table.tsx:233
+#: src/components/systems-table/systems-table.tsx:247
 msgid "Copy host"
 msgstr "复制主机"
 
@@ -219,7 +229,7 @@ msgstr "复制Linux命令"
 msgid "Copy text"
 msgstr "复制文本"
 
-#: src/components/systems-table/systems-table.tsx:143
+#: src/components/systems-table/systems-table.tsx:152
 msgid "CPU"
 msgstr "CPU"
 
@@ -239,7 +249,7 @@ msgid "Dark"
 msgstr "深色"
 
 #: src/components/command-palette.tsx:82
-#: src/components/routes/home.tsx:38
+#: src/components/routes/home.tsx:35
 msgid "Dashboard"
 msgstr "仪表板"
 
@@ -247,11 +257,11 @@ msgstr "仪表板"
 msgid "Default time period"
 msgstr "默认时间段"
 
-#: src/components/systems-table/systems-table.tsx:239
+#: src/components/systems-table/systems-table.tsx:253
 msgid "Delete"
 msgstr "删除"
 
-#: src/components/systems-table/systems-table.tsx:155
+#: src/components/systems-table/systems-table.tsx:166
 msgid "Disk"
 msgstr "磁盘"
 
@@ -312,7 +322,7 @@ msgstr "输入电子邮件地址..."
 msgid "Error"
 msgstr "错误"
 
-#: src/components/routes/home.tsx:84
+#: src/components/routes/home.tsx:81
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "在过去的{2, plural, one {# 分钟} other {# 分钟}}中超过{0}{1}"
 
@@ -345,8 +355,8 @@ msgstr "发送测试通知失败"
 msgid "Failed to update alert"
 msgstr "更新警报失败"
 
-#: src/components/routes/home.tsx:114
-#: src/components/routes/system.tsx:538
+#: src/components/routes/system.tsx:539
+#: src/components/systems-table/systems-table.tsx:324
 msgid "Filter..."
 msgstr "过滤..."
 
@@ -417,11 +427,11 @@ msgid "Manage display and notification preferences."
 msgstr "管理显示和通知偏好。"
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:570
+#: src/components/routes/system.tsx:571
 msgid "Max 1 min"
 msgstr "最大1分钟"
 
-#: src/components/systems-table/systems-table.tsx:149
+#: src/components/systems-table/systems-table.tsx:159
 msgid "Memory"
 msgstr "内存"
 
@@ -438,7 +448,7 @@ msgstr "Docker容器的内存使用"
 msgid "Name"
 msgstr "名称"
 
-#: src/components/systems-table/systems-table.tsx:162
+#: src/components/systems-table/systems-table.tsx:173
 msgid "Net"
 msgstr "网络"
 
@@ -454,7 +464,7 @@ msgstr "公共接口的网络流量"
 msgid "No results found."
 msgstr "未找到结果。"
 
-#: src/components/systems-table/systems-table.tsx:343
+#: src/components/systems-table/systems-table.tsx:400
 msgid "No systems found."
 msgstr "未找到系统。"
 
@@ -472,7 +482,7 @@ msgstr "支持OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "每次重启时，数据库中的系统将更新以匹配文件中定义的系统。"
 
-#: src/components/systems-table/systems-table.tsx:205
+#: src/components/systems-table/systems-table.tsx:219
 msgid "Open menu"
 msgstr "打开菜单"
 
@@ -505,7 +515,7 @@ msgstr "密码必须至少10个字符。"
 msgid "Password reset request received"
 msgstr "已收到密码重置请求"
 
-#: src/components/systems-table/systems-table.tsx:227
+#: src/components/systems-table/systems-table.tsx:241
 msgid "Pause"
 msgstr "暂停"
 
@@ -570,7 +580,7 @@ msgstr "接收"
 msgid "Reset Password"
 msgstr "重置密码"
 
-#: src/components/systems-table/systems-table.tsx:222
+#: src/components/systems-table/systems-table.tsx:236
 msgid "Resume"
 msgstr "恢复"
 
@@ -638,7 +648,8 @@ msgstr "交换使用"
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
-#: src/components/systems-table/systems-table.tsx:137
+#: src/components/systems-table/systems-table.tsx:110
+#: src/components/systems-table/systems-table.tsx:121
 msgid "System"
 msgstr "系统"
 
@@ -651,7 +662,7 @@ msgid "Systems may be managed in a <0>config.yml</0> file inside your data direc
 msgstr "系统可以在数据目录中的<0>config.yml</0>文件中管理。"
 
 #: src/components/routes/system.tsx:477
-#: src/lib/utils.ts:313
+#: src/lib/utils.ts:314
 msgid "Temperature"
 msgstr "温度"
 
@@ -679,7 +690,7 @@ msgstr "代理必须在系统上运行才能连接。复制下面的<0>docker-co
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "然后登录到后台并在用户表中重置您的用户账户密码。"
 
-#: src/components/systems-table/systems-table.tsx:250
+#: src/components/systems-table/systems-table.tsx:264
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "此操作无法撤销。这将永久删除数据库中{name}的所有当前记录。"
 
@@ -704,7 +715,7 @@ msgstr "切换网格"
 msgid "Toggle theme"
 msgstr "切换主题"
 
-#: src/lib/utils.ts:316
+#: src/lib/utils.ts:317
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "当任何传感器超过阈值时触发"
 
@@ -732,7 +743,7 @@ msgstr "当状态在上和下之间切换时触发"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "当任何磁盘的使用超过阈值时触发"
 
-#: src/components/routes/home.tsx:110
+#: src/components/systems-table/systems-table.tsx:320
 msgid "Updated in real time. Click on a system to view information."
 msgstr "实时更新。点击系统查看信息。"
 
@@ -766,7 +777,7 @@ msgstr "用户名"
 msgid "Users"
 msgstr "用户"
 
-#: src/components/routes/system.tsx:602
+#: src/components/routes/system.tsx:603
 msgid "Waiting for enough records to display"
 msgstr "等待足够的记录以显示"
 
@@ -795,4 +806,3 @@ msgstr "YAML配置"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "您的用户设置已更新。"
-

@@ -46,7 +46,12 @@ msgstr "24 giờ"
 msgid "30 days"
 msgstr "30 ngày"
 
-#: src/components/routes/home.tsx:65
+#. Table column
+#: src/components/systems-table/systems-table.tsx:207
+msgid "Actions"
+msgstr "Hành động"
+
+#: src/components/routes/home.tsx:62
 msgid "Active Alerts"
 msgstr "Cảnh báo hoạt động"
 
@@ -80,7 +85,7 @@ msgstr "Điều chỉnh tùy chọn hiển thị cho biểu đồ."
 msgid "Admin"
 msgstr "Quản trị viên"
 
-#: src/components/systems-table/systems-table.tsx:174
+#: src/components/systems-table/systems-table.tsx:186
 msgid "Agent"
 msgstr "Tác nhân"
 
@@ -90,11 +95,11 @@ msgid "Alerts"
 msgstr "Cảnh báo"
 
 #: src/components/alerts/alert-button.tsx:88
-#: src/components/routes/home.tsx:107
+#: src/components/systems-table/systems-table.tsx:317
 msgid "All Systems"
 msgstr "Tất cả Hệ thống"
 
-#: src/components/systems-table/systems-table.tsx:247
+#: src/components/systems-table/systems-table.tsx:261
 msgid "Are you sure you want to delete {name}?"
 msgstr "Bạn có chắc chắn muốn xóa {name} không?"
 
@@ -107,7 +112,7 @@ msgstr "Nhà cung cấp Xác thực"
 msgid "Automatic copy requires a secure context."
 msgstr "Sao chép tự động yêu cầu một ngữ cảnh an toàn."
 
-#: src/components/routes/system.tsx:567
+#: src/components/routes/system.tsx:568
 msgid "Average"
 msgstr "Trung bình"
 
@@ -149,7 +154,7 @@ msgstr "Nhị phân"
 msgid "Cache / Buffers"
 msgstr "Bộ nhớ đệm / Bộ đệm"
 
-#: src/components/systems-table/systems-table.tsx:258
+#: src/components/systems-table/systems-table.tsx:272
 msgid "Cancel"
 msgstr "Hủy bỏ"
 
@@ -181,6 +186,11 @@ msgstr "Kiểm tra dịch vụ thông báo của bạn"
 msgid "Click to copy"
 msgstr "Nhấp để sao chép"
 
+#. Context: table columns
+#: src/components/systems-table/systems-table.tsx:328
+msgid "Columns"
+msgstr "Cột"
+
 #: src/components/login/forgot-pass-form.tsx:83
 #: src/components/login/forgot-pass-form.tsx:89
 msgid "Command line instructions"
@@ -195,7 +205,7 @@ msgstr "Cấu hình cách bạn nhận thông báo cảnh báo."
 msgid "Confirm password"
 msgstr "Xác nhận mật khẩu"
 
-#: src/components/systems-table/systems-table.tsx:264
+#: src/components/systems-table/systems-table.tsx:278
 msgid "Continue"
 msgstr "Tiếp tục"
 
@@ -207,7 +217,7 @@ msgstr "Đã sao chép vào clipboard"
 msgid "Copy"
 msgstr "Sao chép"
 
-#: src/components/systems-table/systems-table.tsx:233
+#: src/components/systems-table/systems-table.tsx:247
 msgid "Copy host"
 msgstr "Sao chép máy chủ"
 
@@ -219,7 +229,7 @@ msgstr "Sao chép lệnh Linux"
 msgid "Copy text"
 msgstr "Sao chép văn bản"
 
-#: src/components/systems-table/systems-table.tsx:143
+#: src/components/systems-table/systems-table.tsx:152
 msgid "CPU"
 msgstr "CPU"
 
@@ -239,7 +249,7 @@ msgid "Dark"
 msgstr "Tối"
 
 #: src/components/command-palette.tsx:82
-#: src/components/routes/home.tsx:38
+#: src/components/routes/home.tsx:35
 msgid "Dashboard"
 msgstr "Bảng điều khiển"
 
@@ -247,11 +257,11 @@ msgstr "Bảng điều khiển"
 msgid "Default time period"
 msgstr "Thời gian mặc định"
 
-#: src/components/systems-table/systems-table.tsx:239
+#: src/components/systems-table/systems-table.tsx:253
 msgid "Delete"
 msgstr "Xóa"
 
-#: src/components/systems-table/systems-table.tsx:155
+#: src/components/systems-table/systems-table.tsx:166
 msgid "Disk"
 msgstr "Đĩa"
 
@@ -312,7 +322,7 @@ msgstr "Nhập địa chỉ email..."
 msgid "Error"
 msgstr "Lỗi"
 
-#: src/components/routes/home.tsx:84
+#: src/components/routes/home.tsx:81
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Vượt quá {0}{1} trong {2, plural, one {# phút} other {# phút}} qua"
 
@@ -345,8 +355,8 @@ msgstr "Gửi thông báo thử nghiệm thất bại"
 msgid "Failed to update alert"
 msgstr "Cập nhật cảnh báo thất bại"
 
-#: src/components/routes/home.tsx:114
-#: src/components/routes/system.tsx:538
+#: src/components/routes/system.tsx:539
+#: src/components/systems-table/systems-table.tsx:324
 msgid "Filter..."
 msgstr "Lọc..."
 
@@ -417,11 +427,11 @@ msgid "Manage display and notification preferences."
 msgstr "Quản lý tùy chọn hiển thị và thông báo."
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:570
+#: src/components/routes/system.tsx:571
 msgid "Max 1 min"
 msgstr "Tối đa 1 phút"
 
-#: src/components/systems-table/systems-table.tsx:149
+#: src/components/systems-table/systems-table.tsx:159
 msgid "Memory"
 msgstr "Bộ nhớ"
 
@@ -438,7 +448,7 @@ msgstr "Sử dụng bộ nhớ của các container Docker"
 msgid "Name"
 msgstr "Tên"
 
-#: src/components/systems-table/systems-table.tsx:162
+#: src/components/systems-table/systems-table.tsx:173
 msgid "Net"
 msgstr "Mạng"
 
@@ -454,7 +464,7 @@ msgstr "Lưu lượng mạng của các giao diện công cộng"
 msgid "No results found."
 msgstr "Không tìm thấy kết quả."
 
-#: src/components/systems-table/systems-table.tsx:343
+#: src/components/systems-table/systems-table.tsx:400
 msgid "No systems found."
 msgstr "Không tìm thấy hệ thống."
 
@@ -472,7 +482,7 @@ msgstr "Hỗ trợ OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Mỗi khi khởi động lại, các hệ thống trong cơ sở dữ liệu sẽ được cập nhật để khớp với các hệ thống được định nghĩa trong tệp."
 
-#: src/components/systems-table/systems-table.tsx:205
+#: src/components/systems-table/systems-table.tsx:219
 msgid "Open menu"
 msgstr "Mở menu"
 
@@ -505,7 +515,7 @@ msgstr "Mật khẩu phải có ít nhất 10 ký tự."
 msgid "Password reset request received"
 msgstr "Yêu cầu đặt lại mật khẩu đã được nhận"
 
-#: src/components/systems-table/systems-table.tsx:227
+#: src/components/systems-table/systems-table.tsx:241
 msgid "Pause"
 msgstr "Tạm dừng"
 
@@ -570,7 +580,7 @@ msgstr "Đã nhận"
 msgid "Reset Password"
 msgstr "Đặt lại Mật khẩu"
 
-#: src/components/systems-table/systems-table.tsx:222
+#: src/components/systems-table/systems-table.tsx:236
 msgid "Resume"
 msgstr "Tiếp tục"
 
@@ -638,7 +648,8 @@ msgstr "Sử dụng Hoán đổi"
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
-#: src/components/systems-table/systems-table.tsx:137
+#: src/components/systems-table/systems-table.tsx:110
+#: src/components/systems-table/systems-table.tsx:121
 msgid "System"
 msgstr "Hệ thống"
 
@@ -651,7 +662,7 @@ msgid "Systems may be managed in a <0>config.yml</0> file inside your data direc
 msgstr "Các hệ thống có thể được quản lý trong tệp <0>config.yml</0> bên trong thư mục dữ liệu của bạn."
 
 #: src/components/routes/system.tsx:477
-#: src/lib/utils.ts:313
+#: src/lib/utils.ts:314
 msgid "Temperature"
 msgstr "Nhiệt độ"
 
@@ -679,7 +690,7 @@ msgstr "Tác nhân phải đang chạy trên hệ thống để kết nối. Sao
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Sau đó đăng nhập vào backend và đặt lại mật khẩu tài khoản người dùng của bạn trong bảng người dùng."
 
-#: src/components/systems-table/systems-table.tsx:250
+#: src/components/systems-table/systems-table.tsx:264
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Hành động này không thể hoàn tác. Điều này sẽ xóa vĩnh viễn tất cả các bản ghi hiện tại cho {name} khỏi cơ sở dữ liệu."
 
@@ -704,7 +715,7 @@ msgstr "Chuyển đổi lưới"
 msgid "Toggle theme"
 msgstr "Chuyển đổi chủ đề"
 
-#: src/lib/utils.ts:316
+#: src/lib/utils.ts:317
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Kích hoạt khi bất kỳ cảm biến nào vượt quá ngưỡng"
 
@@ -732,7 +743,7 @@ msgstr "Kích hoạt khi trạng thái chuyển đổi giữa lên và xuống"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Kích hoạt khi sử dụng bất kỳ đĩa nào vượt quá ngưỡng"
 
-#: src/components/routes/home.tsx:110
+#: src/components/systems-table/systems-table.tsx:320
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Cập nhật theo thời gian thực. Nhấp vào một hệ thống để xem thông tin."
 
@@ -766,7 +777,7 @@ msgstr "Tên người dùng"
 msgid "Users"
 msgstr "Người dùng"
 
-#: src/components/routes/system.tsx:602
+#: src/components/routes/system.tsx:603
 msgid "Waiting for enough records to display"
 msgstr "Đang chờ đủ bản ghi để hiển thị"
 
@@ -795,4 +806,3 @@ msgstr "Cấu hình YAML"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "Cài đặt người dùng của bạn đã được cập nhật."
-

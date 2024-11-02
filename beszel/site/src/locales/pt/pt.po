@@ -46,7 +46,12 @@ msgstr "24 horas"
 msgid "30 days"
 msgstr "30 dias"
 
-#: src/components/routes/home.tsx:65
+#. Table column
+#: src/components/systems-table/systems-table.tsx:207
+msgid "Actions"
+msgstr "Ações"
+
+#: src/components/routes/home.tsx:62
 msgid "Active Alerts"
 msgstr "Alertas Ativos"
 
@@ -80,7 +85,7 @@ msgstr "Ajustar opções de exibição para gráficos."
 msgid "Admin"
 msgstr "Admin"
 
-#: src/components/systems-table/systems-table.tsx:174
+#: src/components/systems-table/systems-table.tsx:186
 msgid "Agent"
 msgstr "Agente"
 
@@ -90,11 +95,11 @@ msgid "Alerts"
 msgstr "Alertas"
 
 #: src/components/alerts/alert-button.tsx:88
-#: src/components/routes/home.tsx:107
+#: src/components/systems-table/systems-table.tsx:317
 msgid "All Systems"
 msgstr "Todos os Sistemas"
 
-#: src/components/systems-table/systems-table.tsx:247
+#: src/components/systems-table/systems-table.tsx:261
 msgid "Are you sure you want to delete {name}?"
 msgstr "Tem certeza de que deseja excluir {name}?"
 
@@ -107,7 +112,7 @@ msgstr "Provedores de Autenticação"
 msgid "Automatic copy requires a secure context."
 msgstr "A cópia automática requer um contexto seguro."
 
-#: src/components/routes/system.tsx:567
+#: src/components/routes/system.tsx:568
 msgid "Average"
 msgstr "Média"
 
@@ -149,7 +154,7 @@ msgstr "Binário"
 msgid "Cache / Buffers"
 msgstr "Cache / Buffers"
 
-#: src/components/systems-table/systems-table.tsx:258
+#: src/components/systems-table/systems-table.tsx:272
 msgid "Cancel"
 msgstr "Cancelar"
 
@@ -181,6 +186,11 @@ msgstr "Verifique seu serviço de notificação"
 msgid "Click to copy"
 msgstr "Clique para copiar"
 
+#. Context: table columns
+#: src/components/systems-table/systems-table.tsx:328
+msgid "Columns"
+msgstr "Colunas"
+
 #: src/components/login/forgot-pass-form.tsx:83
 #: src/components/login/forgot-pass-form.tsx:89
 msgid "Command line instructions"
@@ -195,7 +205,7 @@ msgstr "Configure como você recebe notificações de alerta."
 msgid "Confirm password"
 msgstr "Confirmar senha"
 
-#: src/components/systems-table/systems-table.tsx:264
+#: src/components/systems-table/systems-table.tsx:278
 msgid "Continue"
 msgstr "Continuar"
 
@@ -207,7 +217,7 @@ msgstr "Copiado para a área de transferência"
 msgid "Copy"
 msgstr "Copiar"
 
-#: src/components/systems-table/systems-table.tsx:233
+#: src/components/systems-table/systems-table.tsx:247
 msgid "Copy host"
 msgstr "Copiar host"
 
@@ -219,7 +229,7 @@ msgstr "Copiar comando Linux"
 msgid "Copy text"
 msgstr "Copiar texto"
 
-#: src/components/systems-table/systems-table.tsx:143
+#: src/components/systems-table/systems-table.tsx:152
 msgid "CPU"
 msgstr "CPU"
 
@@ -239,7 +249,7 @@ msgid "Dark"
 msgstr "Escuro"
 
 #: src/components/command-palette.tsx:82
-#: src/components/routes/home.tsx:38
+#: src/components/routes/home.tsx:35
 msgid "Dashboard"
 msgstr "Painel"
 
@@ -247,11 +257,11 @@ msgstr "Painel"
 msgid "Default time period"
 msgstr "Período de tempo padrão"
 
-#: src/components/systems-table/systems-table.tsx:239
+#: src/components/systems-table/systems-table.tsx:253
 msgid "Delete"
 msgstr "Excluir"
 
-#: src/components/systems-table/systems-table.tsx:155
+#: src/components/systems-table/systems-table.tsx:166
 msgid "Disk"
 msgstr "Disco"
 
@@ -312,7 +322,7 @@ msgstr "Digite o endereço de email..."
 msgid "Error"
 msgstr "Erro"
 
-#: src/components/routes/home.tsx:84
+#: src/components/routes/home.tsx:81
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Excede {0}{1} no último {2, plural, one {# minuto} other {# minutos}}"
 
@@ -345,8 +355,8 @@ msgstr "Falha ao enviar notificação de teste"
 msgid "Failed to update alert"
 msgstr "Falha ao atualizar alerta"
 
-#: src/components/routes/home.tsx:114
-#: src/components/routes/system.tsx:538
+#: src/components/routes/system.tsx:539
+#: src/components/systems-table/systems-table.tsx:324
 msgid "Filter..."
 msgstr "Filtrar..."
 
@@ -417,11 +427,11 @@ msgid "Manage display and notification preferences."
 msgstr "Gerenciar preferências de exibição e notificação."
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:570
+#: src/components/routes/system.tsx:571
 msgid "Max 1 min"
 msgstr "Máx 1 min"
 
-#: src/components/systems-table/systems-table.tsx:149
+#: src/components/systems-table/systems-table.tsx:159
 msgid "Memory"
 msgstr "Memória"
 
@@ -438,7 +448,7 @@ msgstr "Uso de memória dos contêineres Docker"
 msgid "Name"
 msgstr "Nome"
 
-#: src/components/systems-table/systems-table.tsx:162
+#: src/components/systems-table/systems-table.tsx:173
 msgid "Net"
 msgstr "Rede"
 
@@ -454,7 +464,7 @@ msgstr "Tráfego de rede das interfaces públicas"
 msgid "No results found."
 msgstr "Nenhum resultado encontrado."
 
-#: src/components/systems-table/systems-table.tsx:343
+#: src/components/systems-table/systems-table.tsx:400
 msgid "No systems found."
 msgstr "Nenhum sistema encontrado."
 
@@ -472,7 +482,7 @@ msgstr "Suporte a OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "A cada reinício, os sistemas no banco de dados serão atualizados para corresponder aos sistemas definidos no arquivo."
 
-#: src/components/systems-table/systems-table.tsx:205
+#: src/components/systems-table/systems-table.tsx:219
 msgid "Open menu"
 msgstr "Abrir menu"
 
@@ -505,7 +515,7 @@ msgstr "A senha deve ter pelo menos 10 caracteres."
 msgid "Password reset request received"
 msgstr "Solicitação de redefinição de senha recebida"
 
-#: src/components/systems-table/systems-table.tsx:227
+#: src/components/systems-table/systems-table.tsx:241
 msgid "Pause"
 msgstr "Pausar"
 
@@ -570,7 +580,7 @@ msgstr "Recebido"
 msgid "Reset Password"
 msgstr "Redefinir Senha"
 
-#: src/components/systems-table/systems-table.tsx:222
+#: src/components/systems-table/systems-table.tsx:236
 msgid "Resume"
 msgstr "Retomar"
 
@@ -638,7 +648,8 @@ msgstr "Uso de Swap"
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
-#: src/components/systems-table/systems-table.tsx:137
+#: src/components/systems-table/systems-table.tsx:110
+#: src/components/systems-table/systems-table.tsx:121
 msgid "System"
 msgstr "Sistema"
 
@@ -651,7 +662,7 @@ msgid "Systems may be managed in a <0>config.yml</0> file inside your data direc
 msgstr "Os sistemas podem ser gerenciados em um arquivo <0>config.yml</0> dentro do seu diretório de dados."
 
 #: src/components/routes/system.tsx:477
-#: src/lib/utils.ts:313
+#: src/lib/utils.ts:314
 msgid "Temperature"
 msgstr "Temperatura"
 
@@ -679,7 +690,7 @@ msgstr "O agente deve estar em execução no sistema para conectar. Copie o <0>d
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Em seguida, faça login no backend e redefina a senha da sua conta de usuário na tabela de usuários."
 
-#: src/components/systems-table/systems-table.tsx:250
+#: src/components/systems-table/systems-table.tsx:264
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Esta ação não pode ser desfeita. Isso excluirá permanentemente todos os registros atuais de {name} do banco de dados."
 
@@ -704,7 +715,7 @@ msgstr "Alternar grade"
 msgid "Toggle theme"
 msgstr "Alternar tema"
 
-#: src/lib/utils.ts:316
+#: src/lib/utils.ts:317
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Dispara quando qualquer sensor excede um limite"
 
@@ -732,7 +743,7 @@ msgstr "Dispara quando o status alterna entre ativo e inativo"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Dispara quando o uso de qualquer disco excede um limite"
 
-#: src/components/routes/home.tsx:110
+#: src/components/systems-table/systems-table.tsx:320
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Atualizado em tempo real. Clique em um sistema para ver informações."
 
@@ -766,7 +777,7 @@ msgstr "Nome de usuário"
 msgid "Users"
 msgstr "Usuários"
 
-#: src/components/routes/system.tsx:602
+#: src/components/routes/system.tsx:603
 msgid "Waiting for enough records to display"
 msgstr "Aguardando registros suficientes para exibir"
 
@@ -795,4 +806,3 @@ msgstr "Configuração YAML"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "As configurações do seu usuário foram atualizadas."
-

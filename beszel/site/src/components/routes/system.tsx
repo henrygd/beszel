@@ -368,7 +368,7 @@ export default function SystemDetail({ name }: { name: string }) {
 				</Card>
 
 				{/* main charts */}
-				<div className="grid lg:grid-cols-2 gap-4">
+				<div className="grid xl:grid-cols-2 gap-4">
 					<ChartCard
 						empty={dataEmpty}
 						grid={grid}
@@ -528,6 +528,7 @@ export default function SystemDetail({ name }: { name: string }) {
 
 function ContainerFilterBar() {
 	const containerFilter = useStore($containerFilter)
+	const { _ } = useLingui()
 
 	const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
 		$containerFilter.set(e.target.value)
@@ -535,7 +536,7 @@ function ContainerFilterBar() {
 
 	return (
 		<>
-			<Input placeholder={t`Filter...`} className="ps-4 pe-8" value={containerFilter} onChange={handleChange} />
+			<Input placeholder={_(t`Filter...`)} className="ps-4 pe-8" value={containerFilter} onChange={handleChange} />
 			{containerFilter && (
 				<Button
 					type="button"
