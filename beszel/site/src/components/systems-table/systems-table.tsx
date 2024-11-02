@@ -6,6 +6,7 @@ import {
 	SortingState,
 	getSortedRowModel,
 	flexRender,
+	VisibilityState,
 	getCoreRowModel,
 	useReactTable,
 	Column,
@@ -17,6 +18,7 @@ import { Button, buttonVariants } from "@/components/ui/button"
 
 import {
 	DropdownMenu,
+	DropdownMenuCheckboxItem,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuSeparator,
@@ -48,15 +50,19 @@ import {
 	HardDriveIcon,
 	ServerIcon,
 	CpuIcon,
+	ChevronDownIcon,
 } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { $hubVersion, $systems, pb } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
-import { cn, copyToClipboard, decimalString, isReadOnlyUser } from "@/lib/utils"
+import { cn, copyToClipboard, decimalString, isReadOnlyUser, useLocalStorage } from "@/lib/utils"
 import AlertsButton from "../alerts/alert-button"
 import { navigate } from "../router"
 import { EthernetIcon } from "../ui/icons"
 import { Trans, t } from "@lingui/macro"
+import { useLingui } from "@lingui/react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
+import { Input } from "../ui/input"
 
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	const val = info.getValue() as number
@@ -76,7 +82,7 @@ function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	)
 }
 
-function sortableHeader(column: Column<SystemRecord, unknown>, name: React.ReactNode, Icon: any, hideSortIcon = false) {
+function sortableHeader(column: Column<SystemRecord, unknown>, Icon: any, hideSortIcon = false) {
 	return (
 		<Button
 			variant="ghost"
@@ -84,21 +90,24 @@ function sortableHeader(column: Column<SystemRecord, unknown>, name: React.React
 			onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
 		>
 			<Icon className="me-2 h-4 w-4" />
-			{name}
+			{column.id}
 			{!hideSortIcon && <ArrowUpDownIcon className="ms-2 h-4 w-4" />}
 		</Button>
 	)
 }
 
-export default function SystemsTable({ filter }: { filter?: string }) {
+export default function SystemsTable() {
 	const data = useStore($systems)
 	const hubVersion = useStore($hubVersion)
+	const [filter, setFilter] = useState<string>()
 	const [sorting, setSorting] = useState<SortingState>([])
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+	const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>("cols", {})
+	const { i18n } = useLingui()
 
 	useEffect(() => {
 		if (filter !== undefined) {
-			table.getColumn("name")?.setFilterValue(filter)
+			table.getColumn(t`System`)?.setFilterValue(filter)
 		}
 	}, [filter])
 
@@ -109,6 +118,8 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 				size: 200,
 				minSize: 0,
 				accessorKey: "name",
+				id: t`System`,
+				enableHiding: false,
 				cell: (info) => {
 					const { status } = info.row.original
 					return (
@@ -134,32 +145,35 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 						</span>
 					)
 				},
-				header: ({ column }) => sortableHeader(column, t`System`, ServerIcon),
+				header: ({ column }) => sortableHeader(column, ServerIcon),
 			},
 			{
 				accessorKey: "info.cpu",
+				id: t`CPU`,
 				invertSorting: true,
 				cell: CellFormatter,
-				header: ({ column }) => sortableHeader(column, t`CPU`, CpuIcon),
+				header: ({ column }) => sortableHeader(column, CpuIcon),
 			},
 			{
 				accessorKey: "info.mp",
+				id: t`Memory`,
 				invertSorting: true,
 				cell: CellFormatter,
-				header: ({ column }) => sortableHeader(column, t`Memory`, MemoryStickIcon),
+				header: ({ column }) => sortableHeader(column, MemoryStickIcon),
 			},
 			{
 				accessorKey: "info.dp",
+				id: t`Disk`,
 				invertSorting: true,
 				cell: CellFormatter,
-				header: ({ column }) => sortableHeader(column, t`Disk`, HardDriveIcon),
+				header: ({ column }) => sortableHeader(column, HardDriveIcon),
 			},
 			{
 				accessorFn: (originalRow) => originalRow.info.b || 0,
-				id: "n",
+				id: t`Net`,
 				invertSorting: true,
 				size: 115,
-				header: ({ column }) => sortableHeader(column, t`Net`, EthernetIcon),
+				header: ({ column }) => sortableHeader(column, EthernetIcon),
 				cell: (info) => {
 					const val = info.getValue() as number
 					return (
@@ -169,9 +183,10 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 			},
 			{
 				accessorKey: "info.v",
+				id: t`Agent`,
 				invertSorting: true,
 				size: 50,
-				header: ({ column }) => sortableHeader(column, t`Agent`, WifiIcon, true),
+				header: ({ column }) => sortableHeader(column, WifiIcon, true),
 				cell: (info) => {
 					const version = info.getValue() as string
 					if (!version || !hubVersion) {
@@ -189,9 +204,8 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 				},
 			},
 			{
-				id: "actions",
+				id: t({ message: "Actions", comment: "Table column" }),
 				size: 120,
-				// minSize: 0,
 				cell: ({ row }) => {
 					const { id, name, status, host } = row.original
 					return (
@@ -271,7 +285,7 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 				},
 			},
 		] as ColumnDef<SystemRecord>[]
-	}, [hubVersion])
+	}, [hubVersion, i18n.locale])
 
 	const table = useReactTable({
 		data,
@@ -281,9 +295,11 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 		getSortedRowModel: getSortedRowModel(),
 		onColumnFiltersChange: setColumnFilters,
 		getFilteredRowModel: getFilteredRowModel(),
+		onColumnVisibilityChange: setColumnVisibility,
 		state: {
 			sorting,
 			columnFilters,
+			columnVisibility,
 		},
 		defaultColumn: {
 			minSize: 0,
@@ -293,59 +309,102 @@ export default function SystemsTable({ filter }: { filter?: string }) {
 	})
 
 	return (
-		<div className="rounded-md border overflow-hidden">
-			<Table>
-				<TableHeader className="bg-muted/40">
-					{table.getHeaderGroups().map((headerGroup) => (
-						<TableRow key={headerGroup.id}>
-							{headerGroup.headers.map((header) => {
-								return (
-									<TableHead className="px-2" key={header.id}>
-										{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-									</TableHead>
-								)
-							})}
-						</TableRow>
-					))}
-				</TableHeader>
-				<TableBody>
-					{table.getRowModel().rows?.length ? (
-						table.getRowModel().rows.map((row) => (
-							<TableRow
-								key={row.original.id}
-								data-state={row.getIsSelected() && "selected"}
-								className={cn("cursor-pointer transition-opacity", {
-									"opacity-50": row.original.status === "paused",
-								})}
-								onClick={(e) => {
-									const target = e.target as HTMLElement
-									if (!target.closest("[data-nolink]") && e.currentTarget.contains(target)) {
-										navigate(`/system/${encodeURIComponent(row.original.name)}`)
-									}
-								}}
-							>
-								{row.getVisibleCells().map((cell) => (
-									<TableCell
-										key={cell.id}
-										style={{
-											width: cell.column.getSize() === Number.MAX_SAFE_INTEGER ? "auto" : cell.column.getSize(),
+		<Card>
+			<CardHeader className="pb-5 px-2 sm:px-6 max-sm:pt-5 max-sm:pb-1">
+				<div className="grid md:flex gap-5 w-full items-end">
+					<div className="px-2 sm:px-1">
+						<CardTitle className="mb-2.5">
+							<Trans>All Systems</Trans>
+						</CardTitle>
+						<CardDescription>
+							<Trans>Updated in real time. Click on a system to view information.</Trans>
+						</CardDescription>
+					</div>
+					<div className="flex gap-2 ms-auto w-full md:w-80">
+						<Input placeholder={t`Filter...`} onChange={(e) => setFilter(e.target.value)} className="px-4" />
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant="outline">
+									<Trans comment="Context: table columns">Columns</Trans>{" "}
+									<ChevronDownIcon className="ms-1.5 h-4 w-4 opacity-90" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end">
+								{table
+									.getAllColumns()
+									.filter((column) => column.getCanHide())
+									.map((column) => {
+										return (
+											<DropdownMenuCheckboxItem
+												key={column.id}
+												checked={column.getIsVisible()}
+												onCheckedChange={(value) => column.toggleVisibility(!!value)}
+											>
+												{column.id}
+											</DropdownMenuCheckboxItem>
+										)
+									})}
+							</DropdownMenuContent>
+						</DropdownMenu>
+					</div>
+				</div>
+			</CardHeader>
+			<CardContent className="max-sm:p-2">
+				<div className="rounded-md border overflow-hidden">
+					<Table>
+						<TableHeader className="bg-muted/40">
+							{table.getHeaderGroups().map((headerGroup) => (
+								<TableRow key={headerGroup.id}>
+									{headerGroup.headers.map((header) => {
+										return (
+											<TableHead className="px-2" key={header.id}>
+												{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+											</TableHead>
+										)
+									})}
+								</TableRow>
+							))}
+						</TableHeader>
+						<TableBody>
+							{table.getRowModel().rows?.length ? (
+								table.getRowModel().rows.map((row) => (
+									<TableRow
+										key={row.original.id}
+										data-state={row.getIsSelected() && "selected"}
+										className={cn("cursor-pointer transition-opacity", {
+											"opacity-50": row.original.status === "paused",
+										})}
+										onClick={(e) => {
+											const target = e.target as HTMLElement
+											if (!target.closest("[data-nolink]") && e.currentTarget.contains(target)) {
+												navigate(`/system/${encodeURIComponent(row.original.name)}`)
+											}
 										}}
-										className={cn("overflow-hidden relative", data.length > 10 ? "py-2" : "py-2.5")}
 									>
-										{flexRender(cell.column.columnDef.cell, cell.getContext())}
+										{row.getVisibleCells().map((cell) => (
+											<TableCell
+												key={cell.id}
+												style={{
+													width: cell.column.getSize() === Number.MAX_SAFE_INTEGER ? "auto" : cell.column.getSize(),
+												}}
+												className={cn("overflow-hidden relative", data.length > 10 ? "py-2" : "py-2.5")}
+											>
+												{flexRender(cell.column.columnDef.cell, cell.getContext())}
+											</TableCell>
+										))}
+									</TableRow>
+								))
+							) : (
+								<TableRow>
+									<TableCell colSpan={columns.length} className="h-24 text-center">
+										<Trans>No systems found.</Trans>
 									</TableCell>
-								))}
-							</TableRow>
-						))
-					) : (
-						<TableRow>
-							<TableCell colSpan={columns.length} className="h-24 text-center">
-								<Trans>No systems found.</Trans>
-							</TableCell>
-						</TableRow>
-					)}
-				</TableBody>
-			</Table>
-		</div>
+								</TableRow>
+							)}
+						</TableBody>
+					</Table>
+				</div>
+			</CardContent>
+		</Card>
 	)
 }

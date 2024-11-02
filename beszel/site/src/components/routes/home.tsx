@@ -1,25 +1,22 @@
-import { Suspense, lazy, useEffect, useMemo, useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
+import { Suspense, lazy, useEffect, useMemo } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
 import { $alerts, $hubVersion, $systems, pb } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { GithubIcon } from "lucide-react"
 import { Separator } from "../ui/separator"
 import { alertInfo, updateRecordList, updateSystemList } from "@/lib/utils"
 import { AlertRecord, SystemRecord } from "@/types"
-import { Input } from "../ui/input"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Link } from "../router"
 import { Plural, t, Trans } from "@lingui/macro"
-import { useLingui } from "@lingui/react"
 
 const SystemsTable = lazy(() => import("../systems-table/systems-table"))
 
 export default function Home() {
 	const hubVersion = useStore($hubVersion)
-	const [filter, setFilter] = useState<string>()
+
 	const alerts = useStore($alerts)
 	const systems = useStore($systems)
-	const { _ } = useLingui()
 
 	// todo: maybe remove active alert if changed
 	const activeAlerts = useMemo(() => {
@@ -99,30 +96,9 @@ export default function Home() {
 					</CardContent>
 				</Card>
 			)}
-			<Card>
-				<CardHeader className="pb-5 px-2 sm:px-6 max-sm:pt-5 max-sm:pb-1">
-					<div className="grid md:flex gap-5 w-full items-end">
-						<div className="px-2 sm:px-1">
-							<CardTitle className="mb-2.5">
-								<Trans>All Systems</Trans>
-							</CardTitle>
-							<CardDescription>
-								<Trans>Updated in real time. Click on a system to view information.</Trans>
-							</CardDescription>
-						</div>
-						<Input
-							placeholder={_(t`Filter...`)}
-							onChange={(e) => setFilter(e.target.value)}
-							className="w-full md:w-56 lg:w-72 ms-auto px-4"
-						/>
-					</div>
-				</CardHeader>
-				<CardContent className="max-sm:p-2">
-					<Suspense>
-						<SystemsTable filter={filter} />
-					</Suspense>
-				</CardContent>
-			</Card>
+			<Suspense>
+				<SystemsTable />
+			</Suspense>
 
 			{hubVersion && (
 				<div className="flex gap-1.5 justify-end items-center pe-3 sm:pe-6 mt-3.5 text-xs opacity-80">
