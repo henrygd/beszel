@@ -8,7 +8,7 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-11-02 01:41\n"
+"PO-Revision-Date: 2024-11-02 01:45\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -221,7 +221,7 @@ msgstr "Sao chép văn bản"
 
 #: src/components/systems-table/systems-table.tsx:143
 msgid "CPU"
-msgstr "ЦП"
+msgstr "CPU"
 
 #: src/components/charts/area-chart.tsx:52
 #: src/components/routes/system.tsx:375
@@ -440,7 +440,7 @@ msgstr "Tên"
 
 #: src/components/login/auth-form.tsx:158
 msgid "name@example.com"
-msgstr "ten@vidu.com"
+msgstr "name@example.com"
 
 #: src/components/systems-table/systems-table.tsx:162
 msgid "Net"
