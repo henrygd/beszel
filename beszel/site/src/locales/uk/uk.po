@@ -8,7 +8,7 @@ msgstr ""
 "Language: uk\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-11-02 19:37\n"
+"PO-Revision-Date: 2024-11-03 12:31\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -450,7 +450,7 @@ msgstr "Ім'я"
 
 #: src/components/systems-table/systems-table.tsx:173
 msgid "Net"
-msgstr "Мереж"
+msgstr "Мережа"
 
 #: src/components/routes/system.tsx:453
 msgid "Network traffic of docker containers"
@@ -721,7 +721,7 @@ msgstr "Спрацьовує, коли будь-який датчик перев
 
 #: src/lib/utils.ts:310
 msgid "Triggers when combined up/down exceeds a threshold"
-msgstr "Спрацьовує, коли комбіноване підняття/опускання перевищує поріг"
+msgstr "Спрацьовує, коли комбіноване підняття/падіння перевищує поріг"
 
 #: src/lib/utils.ts:292
 msgid "Triggers when CPU usage exceeds a threshold"
@@ -737,7 +737,7 @@ msgstr "Спрацьовує, коли використання пам'яті п
 
 #: src/lib/utils.ts:285
 msgid "Triggers when status switches between up and down"
-msgstr "Спрацьовує, коли статус переключається між підняттям і опусканням"
+msgstr "Спрацьовує, коли статус перемикається між підняттям і падінням"
 
 #: src/lib/utils.ts:304
 msgid "Triggers when usage of any disk exceeds a threshold"
