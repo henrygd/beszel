@@ -556,6 +556,10 @@ msgstr "Bitte melden Sie sich bei Ihrem Konto an"
 msgid "Port"
 msgstr "Port"
 
+#: src/components/routes/system.tsx:398
+msgid "Precise utilization at the recorded time"
+msgstr "Genaue Nutzung zum aufgezeichneten Zeitpunkt"
+
 #: src/components/routes/settings/general.tsx:58
 msgid "Preferred Language"
 msgstr "Bevorzugte Sprache"
@@ -731,10 +735,6 @@ msgstr "Löst aus, wenn die CPU-Auslastung einen Schwellenwert überschreitet"
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Löst aus, wenn die Speichernutzung einen Schwellenwert überschreitet"
 
-#: src/components/routes/system.tsx:398
-msgid "Triggers when memory usage exceeds a threshold."
-msgstr "Löst aus, wenn die Speichernutzung einen Schwellenwert überschreitet."
-
 #: src/lib/utils.ts:285
 msgid "Triggers when status switches between up and down"
 msgstr "Löst aus, wenn der Status zwischen oben und unten wechselt"
@@ -806,4 +806,3 @@ msgstr "YAML-Konfiguration"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "Ihre Benutzereinstellungen wurden aktualisiert."
-

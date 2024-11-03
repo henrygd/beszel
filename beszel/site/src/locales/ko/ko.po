@@ -556,6 +556,10 @@ msgstr "계정에 로그인하세요."
 msgid "Port"
 msgstr "포트"
 
+#: src/components/routes/system.tsx:398
+msgid "Precise utilization at the recorded time"
+msgstr "기록된 시간의 정확한 사용량"
+
 #: src/components/routes/settings/general.tsx:58
 msgid "Preferred Language"
 msgstr "선호 언어"
@@ -731,10 +735,6 @@ msgstr "CPU 사용량이 임계값을 초과할 때 트리거됩니다."
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "메모리 사용량이 임계값을 초과할 때 트리거됩니다."
 
-#: src/components/routes/system.tsx:398
-msgid "Triggers when memory usage exceeds a threshold."
-msgstr "메모리 사용량이 임계값을 초과할 때 트리거됩니다."
-
 #: src/lib/utils.ts:285
 msgid "Triggers when status switches between up and down"
 msgstr "상태가 상승과 하강 사이에서 전환될 때 트리거됩니다."
@@ -806,4 +806,3 @@ msgstr "YAML 구성"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "사용자 설정이 업데이트되었습니다."
-

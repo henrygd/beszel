@@ -556,6 +556,10 @@ msgstr "Пожалуйста, войдите в свою учетную запи
 msgid "Port"
 msgstr "Порт"
 
+#: src/components/routes/system.tsx:398
+msgid "Precise utilization at the recorded time"
+msgstr "Точное использование в записанное время"
+
 #: src/components/routes/settings/general.tsx:58
 msgid "Preferred Language"
 msgstr "Предпочтительный язык"
@@ -731,10 +735,6 @@ msgstr "Срабатывает, когда использование CPU пре
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Срабатывает, когда использование памяти превышает порог"
 
-#: src/components/routes/system.tsx:398
-msgid "Triggers when memory usage exceeds a threshold."
-msgstr "Срабатывает, когда использование памяти превышает порог."
-
 #: src/lib/utils.ts:285
 msgid "Triggers when status switches between up and down"
 msgstr "Срабатывает, когда статус переключается между включено и выключено"
@@ -806,4 +806,3 @@ msgstr "YAML конфигурация"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "Ваши настройки пользователя были обновлены."
-

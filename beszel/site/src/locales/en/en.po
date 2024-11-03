@@ -551,6 +551,10 @@ msgstr "Please sign in to your account"
 msgid "Port"
 msgstr "Port"
 
+#: src/components/routes/system.tsx:398
+msgid "Precise utilization at the recorded time"
+msgstr "Precise utilization at the recorded time"
+
 #: src/components/routes/settings/general.tsx:58
 msgid "Preferred Language"
 msgstr "Preferred Language"
@@ -725,10 +729,6 @@ msgstr "Triggers when CPU usage exceeds a threshold"
 #: src/lib/utils.ts:298
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Triggers when memory usage exceeds a threshold"
-
-#: src/components/routes/system.tsx:398
-msgid "Triggers when memory usage exceeds a threshold."
-msgstr "Triggers when memory usage exceeds a threshold."
 
 #: src/lib/utils.ts:285
 msgid "Triggers when status switches between up and down"

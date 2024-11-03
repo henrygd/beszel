@@ -556,6 +556,10 @@ msgstr "Por favor, inicie sesión en su cuenta"
 msgid "Port"
 msgstr "Puerto"
 
+#: src/components/routes/system.tsx:398
+msgid "Precise utilization at the recorded time"
+msgstr "Utilización precisa en el momento registrado"
+
 #: src/components/routes/settings/general.tsx:58
 msgid "Preferred Language"
 msgstr "Idioma Preferido"
@@ -731,10 +735,6 @@ msgstr "Se activa cuando el uso de CPU supera un umbral"
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Se activa cuando el uso de memoria supera un umbral"
 
-#: src/components/routes/system.tsx:398
-msgid "Triggers when memory usage exceeds a threshold."
-msgstr "Se activa cuando el uso de memoria supera un umbral."
-
 #: src/lib/utils.ts:285
 msgid "Triggers when status switches between up and down"
 msgstr "Se activa cuando el estado cambia entre activo e inactivo"
@@ -806,4 +806,3 @@ msgstr "Configuración YAML"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "Su configuración de usuario ha sido actualizada."
-

@@ -395,7 +395,7 @@ export default function SystemDetail({ name }: { name: string }) {
 						empty={dataEmpty}
 						grid={grid}
 						title={t`Memory Usage`}
-						description={t`Triggers when memory usage exceeds a threshold.`}
+						description={t`Precise utilization at the recorded time`}
 					>
 						<MemChart chartData={chartData} />
 					</ChartCard>
