@@ -14,3 +14,4 @@ node_modules
 beszel/build
 *timestamp*
 .swc
+beszel/site/src/locales/**/*.ts
