@@ -566,7 +566,7 @@ msgstr "Public Key"
 
 #. Context is disk read
 #: src/components/charts/area-chart.tsx:56
-#: src/components/charts/area-chart.tsx:65
+#: src/components/charts/area-chart.tsx:66
 msgid "Read"
 msgstr "Read"
 
@@ -786,7 +786,7 @@ msgstr "Webhook / Push notifications"
 
 #. Context is disk write
 #: src/components/charts/area-chart.tsx:55
-#: src/components/charts/area-chart.tsx:66
+#: src/components/charts/area-chart.tsx:65
 msgid "Write"
 msgstr "Write"
 

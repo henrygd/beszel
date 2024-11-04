@@ -2,7 +2,7 @@ import { LanguagesIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import languages from "../lib/languages.json"
+import languages from "@/lib/languages"
 import { cn } from "@/lib/utils"
 import { useLingui } from "@lingui/react"
 import { dynamicActivate } from "@/lib/i18n"

@@ -1,11 +1,9 @@
 import { $direction } from "./stores"
 import { i18n } from "@lingui/core"
 import type { Messages } from "@lingui/core"
-import languages from "@/lib/languages.json"
+import languages from "@/lib/languages"
 import { detect, fromUrl, fromStorage, fromNavigator } from "@lingui/detect-locale"
 import { messages as enMessages } from "../locales/en/en.ts"
-
-console.log(languages)
 
 // let locale = detect(fromUrl("lang"), fromStorage("lang"), fromNavigator(), "en")
 let locale = detect(fromStorage("lang"), fromNavigator(), "en")
@@ -25,13 +23,17 @@ function activateLocale(locale: string, messages: Messages = enMessages) {
 
 // dynamically loads translations for the given locale
 export async function dynamicActivate(locale: string) {
-	try {
-		const { messages }: { messages: Messages } = await import(`../locales/${locale}/${locale}.ts`)
-		activateLocale(locale, messages)
-		localStorage.setItem("lang", locale)
-	} catch (error) {
-		console.error(`Error loading ${locale}`, error)
-		activateLocale("en")
+	if (locale == "en") {
+		activateLocale(locale)
+	} else {
+		try {
+			const { messages }: { messages: Messages } = await import(`../locales/${locale}/${locale}.ts`)
+			activateLocale(locale, messages)
+			localStorage.setItem("lang", locale)
+		} catch (error) {
+			console.error(`Error loading ${locale}`, error)
+			activateLocale("en")
+		}
 	}
 }
 
@@ -56,11 +58,5 @@ if (locale?.startsWith("zh-")) {
 	if (!languages.some((l) => l.lang === locale)) {
 		locale = "en"
 	}
-	// handle non-english locales
-	if (locale !== "en") {
-		dynamicActivate(locale)
-	} else {
-		// fallback to en
-		activateLocale("en")
-	}
+	dynamicActivate(locale)
 }
