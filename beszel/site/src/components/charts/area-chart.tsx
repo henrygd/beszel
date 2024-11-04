@@ -62,8 +62,8 @@ export default memo(function AreaChartDefault({
 			]
 		} else if (chartName.startsWith("efs")) {
 			return [
-				[t`Read`, `${chartName}.w`, 3, 0.3],
-				[t`Write`, `${chartName}.r`, 1, 0.3],
+				[t`Write`, `${chartName}.w`, 3, 0.3],
+				[t`Read`, `${chartName}.r`, 1, 0.3],
 			]
 		}
 		return []
