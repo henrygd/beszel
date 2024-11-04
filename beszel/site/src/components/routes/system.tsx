@@ -291,7 +291,7 @@ export default function SystemDetail({ name }: { name: string }) {
 			<div id="chartwrap" className="grid gap-4 mb-10 overflow-x-clip">
 				{/* system info */}
 				<Card>
-					<div className="grid lg:flex gap-4 px-4 sm:px-6 pt-3 sm:pt-4 pb-5">
+					<div className="grid xl:flex gap-4 px-4 sm:px-6 pt-3 sm:pt-4 pb-5">
 						<div>
 							<h1 className="text-[1.6rem] font-semibold mb-1.5">{system.name}</h1>
 							<div className="flex flex-wrap items-center gap-3 gap-y-2 text-sm opacity-90">
@@ -341,8 +341,8 @@ export default function SystemDetail({ name }: { name: string }) {
 								})}
 							</div>
 						</div>
-						<div className="lg:ms-auto flex items-center gap-2 max-sm:-mb-1">
-							<ChartTimeSelect className="w-full lg:w-40" />
+						<div className="xl:ms-auto flex items-center gap-2 max-sm:-mb-1">
+							<ChartTimeSelect className="w-full xl:w-40" />
 							<TooltipProvider delayDuration={100}>
 								<Tooltip>
 									<TooltipTrigger asChild>
@@ -350,7 +350,7 @@ export default function SystemDetail({ name }: { name: string }) {
 											aria-label={t`Toggle grid`}
 											variant="outline"
 											size="icon"
-											className="hidden lg:flex p-0 text-primary"
+											className="hidden xl:flex p-0 text-primary"
 											onClick={() => setGrid(!grid)}
 										>
 											{grid ? (
@@ -484,7 +484,7 @@ export default function SystemDetail({ name }: { name: string }) {
 
 				{/* extra filesystem charts */}
 				{Object.keys(systemStats.at(-1)?.stats.efs ?? {}).length > 0 && (
-					<div className="grid lg:grid-cols-2 gap-4">
+					<div className="grid xl:grid-cols-2 gap-4">
 						{Object.keys(systemStats.at(-1)?.stats.efs ?? {}).map((extraFsName) => {
 							return (
 								<div key={extraFsName} className="contents">
