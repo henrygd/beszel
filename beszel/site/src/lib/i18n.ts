@@ -18,6 +18,7 @@ function activateLocale(locale: string, messages: Messages = enMessages) {
 	i18n.load(locale, messages)
 	i18n.activate(locale)
 	document.documentElement.lang = locale
+	localStorage.setItem("lang", locale)
 	$direction.set(locale.startsWith("ar") ? "rtl" : "ltr")
 }
 
@@ -29,7 +30,6 @@ export async function dynamicActivate(locale: string) {
 		try {
 			const { messages }: { messages: Messages } = await import(`../locales/${locale}/${locale}.ts`)
 			activateLocale(locale, messages)
-			localStorage.setItem("lang", locale)
 		} catch (error) {
 			console.error(`Error loading ${locale}`, error)
 			activateLocale("en")
