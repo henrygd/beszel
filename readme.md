@@ -61,7 +61,7 @@ If you don't need network stats, remove that line from the compose file and map 
 ### Binary
 
 > [!TIP]
-> If using Linux, see [guides/systemd.md](/supplemental/guides/systemd.md) for a script to install the hub or agent as a system service. The agent installer will be built into the web UI in the future.
+> If using Linux, see [guides/systemd.md](/supplemental/guides/systemd.md) for a script to install the hub or agent as a system service. This is also built into the web UI.
 
 Download and run the latest binaries from the [releases page](https://github.com/henrygd/beszel/releases) or use the commands below.
 
@@ -168,8 +168,8 @@ Mount a folder from the target filesystem in the container's `/extra-filesystems
 
 ```yaml
 volumes:
-  - /mnt/disk1/.beszel:/extra-filesystems/disk1:ro
-  - /dev/mmcblk0/.beszel:/extra-filesystems/sd-card:ro
+  - /mnt/disk1/.beszel:/extra-filesystems/sdb1:ro
+  - /dev/mmcblk0/.beszel:/extra-filesystems/mmcblk0:ro
 ```
 
 ### Binary

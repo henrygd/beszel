@@ -41,11 +41,20 @@ func (a *Agent) initializeDiskInfo() {
 		if _, exists := a.fsStats[key]; !exists {
 			if root {
 				slog.Info("Detected root device", "name", key)
-				// check if root device is in /proc/diskstats, use fallback if not
+				// Check if root device is in /proc/diskstats, use fallback if not
 				if _, exists := diskIoCounters[key]; !exists {
-					slog.Warn("Device not found in diskstats", "name", key)
 					key = findFallbackIoDevice(filesystem, diskIoCounters, a.fsStats)
-					slog.Info("Using I/O fallback", "name", key)
+					slog.Info("Using I/O fallback", "device", device, "mountpoint", mountpoint, "fallback", key)
+				}
+			} else {
+				// Check if non-root has diskstats and fall back to folder name if not
+				// Scenario: device is encrypted and named luks-2bcb02be-999d-4417-8d18-5c61e660fb6e - not in /proc/diskstats.
+				// However, the device can be specified by mounting folder from luks device at /extra-filesystems/sda1
+				if _, exists := diskIoCounters[key]; !exists {
+					efBase := filepath.Base(mountpoint)
+					if _, exists := diskIoCounters[efBase]; exists {
+						key = efBase
+					}
 				}
 			}
 			a.fsStats[key] = &system.FsStats{Root: root, Mountpoint: mountpoint}
@@ -114,7 +123,7 @@ func (a *Agent) initializeDiskInfo() {
 				mountpoint := filepath.Join(efPath, folder.Name())
 				slog.Debug("/extra-filesystems", "mountpoint", mountpoint)
 				if !existingMountpoints[mountpoint] {
-					a.fsStats[folder.Name()] = &system.FsStats{Mountpoint: mountpoint}
+					addFsStat(folder.Name(), mountpoint, false)
 				}
 			}
 		}
