@@ -8,7 +8,7 @@ msgstr ""
 "Language: pl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-11-04 21:51\n"
+"PO-Revision-Date: 2024-11-05 07:56\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
@@ -20,61 +20,61 @@ msgstr ""
 
 #: src/components/routes/system.tsx:242
 msgid "{0, plural, one {# day} other {# days}}"
-msgstr ""
+msgstr "{0, plural, one {# dzień} few {# dni} many {# dni} other {# dni}}"
 
 #: src/components/routes/system.tsx:240
 msgid "{hours, plural, one {# hour} other {# hours}}"
-msgstr ""
+msgstr "{hours, plural, one {godzinę} few {# godziny} many {# godzin} other {# godziny}}"
 
 #: src/lib/utils.ts:139
 msgid "1 hour"
-msgstr ""
+msgstr "1 godzina"
 
 #: src/lib/utils.ts:162
 msgid "1 week"
-msgstr ""
+msgstr "1 tydzień"
 
 #: src/lib/utils.ts:147
 msgid "12 hours"
-msgstr ""
+msgstr "12 godzin"
 
 #: src/lib/utils.ts:155
 msgid "24 hours"
-msgstr ""
+msgstr "24 godziny"
 
 #: src/lib/utils.ts:170
 msgid "30 days"
-msgstr ""
+msgstr "30 dni"
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx:207
 msgid "Actions"
-msgstr ""
+msgstr "Akcje"
 
 #: src/components/routes/home.tsx:62
 msgid "Active Alerts"
-msgstr ""
+msgstr "Aktywne alerty"
 
 #: src/components/add-system.tsx:74
 msgid "Add <0>System</0>"
-msgstr ""
+msgstr "Dodaj <0>system</0>"
 
 #: src/components/add-system.tsx:83
 msgid "Add New System"
-msgstr ""
+msgstr "Dodaj nowy system"
 
 #: src/components/add-system.tsx:167
 #: src/components/add-system.tsx:178
 msgid "Add system"
-msgstr ""
+msgstr "Dodaj system"
 
 #: src/components/routes/settings/notifications.tsx:156
 msgid "Add URL"
-msgstr ""
+msgstr "Dodaj URL"
 
 #: src/components/routes/settings/general.tsx:81
 msgid "Adjust display options for charts."
-msgstr ""
+msgstr "Dostosuj opcje wyświetlania wykresów."
 
 #: src/components/command-palette.tsx:133
 #: src/components/command-palette.tsx:146
@@ -83,131 +83,131 @@ msgstr ""
 #: src/components/command-palette.tsx:189
 #: src/components/command-palette.tsx:204
 msgid "Admin"
-msgstr ""
+msgstr "Admin"
 
 #: src/components/systems-table/systems-table.tsx:186
 msgid "Agent"
-msgstr ""
+msgstr "Agent"
 
 #: src/components/alerts/alert-button.tsx:32
 #: src/components/alerts/alert-button.tsx:68
 msgid "Alerts"
-msgstr ""
+msgstr "Alerty"
 
 #: src/components/alerts/alert-button.tsx:88
 #: src/components/systems-table/systems-table.tsx:317
 msgid "All Systems"
-msgstr ""
+msgstr "Wszystkie systemy"
 
 #: src/components/systems-table/systems-table.tsx:261
 msgid "Are you sure you want to delete {name}?"
-msgstr ""
+msgstr "Czy na pewno chcesz usunąć {name}?"
 
 #: src/components/command-palette.tsx:186
 #: src/components/navbar.tsx:102
 msgid "Auth Providers"
-msgstr ""
+msgstr "Dostawcy uwierzytelniania"
 
 #: src/components/copy-to-clipboard.tsx:16
 msgid "Automatic copy requires a secure context."
-msgstr ""
+msgstr "Automatyczne kopiowanie wymaga bezpiecznego kontekstu."
 
 #: src/components/routes/system.tsx:568
 msgid "Average"
-msgstr ""
+msgstr "Średnia"
 
 #: src/components/routes/system.tsx:387
 msgid "Average CPU utilization of containers"
-msgstr ""
+msgstr "Średnie wykorzystanie procesora przez kontenery"
 
 #: src/components/alerts/alerts-system.tsx:204
 msgid "Average exceeds <0>{value}{0}</0>"
-msgstr ""
+msgstr "Średnia przekracza <0>{value}{0}</0>"
 
 #: src/components/routes/system.tsx:376
 msgid "Average system-wide CPU utilization"
-msgstr ""
+msgstr "Średnie wykorzystanie procesora w całym systemie"
 
 #: src/components/command-palette.tsx:171
 #: src/components/navbar.tsx:94
 msgid "Backups"
-msgstr ""
+msgstr "Kopie"
 
 #: src/components/routes/system.tsx:436
 #: src/lib/utils.ts:307
 msgid "Bandwidth"
-msgstr ""
+msgstr "Przepustowość"
 
 #: src/components/login/auth-form.tsx:313
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
-msgstr ""
+msgstr "Beszel obsługuje OpenID Connect i wielu dostawców uwierzytelniania OAuth2."
 
 #: src/components/routes/settings/notifications.tsx:127
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
-msgstr ""
+msgstr "Beszel używa <0>Shoutrrr</0> do integracji z popularnych serwisami powiadomień."
 
 #: src/components/add-system.tsx:88
 msgid "Binary"
-msgstr ""
+msgstr "Binarny"
 
 #: src/components/charts/mem-chart.tsx:89
 msgid "Cache / Buffers"
-msgstr ""
+msgstr "Pamięć podręczna / Bufory"
 
 #: src/components/systems-table/systems-table.tsx:272
 msgid "Cancel"
-msgstr ""
+msgstr "Anuluj"
 
 #: src/components/routes/settings/config-yaml.tsx:68
 msgid "Caution - potential data loss"
-msgstr ""
+msgstr "Uwaga- potencjalna utrata danych."
 
 #: src/components/routes/settings/general.tsx:36
 msgid "Change general application options."
-msgstr ""
+msgstr "Zmiana ogólnych ustawień aplikacji."
 
 #: src/components/routes/settings/general.tsx:78
 msgid "Chart options"
-msgstr ""
+msgstr "Opcje wykresu"
 
 #: src/components/login/forgot-pass-form.tsx:34
 msgid "Check {email} for a reset link."
-msgstr ""
+msgstr "Sprawdź {email}, aby uzyskać link do resetowania."
 
 #: src/components/routes/settings/layout.tsx:40
 msgid "Check logs for more details."
-msgstr ""
+msgstr "Sprawdź logi, aby uzyskać więcej informacji."
 
 #: src/components/routes/settings/notifications.tsx:183
 msgid "Check your notification service"
-msgstr ""
+msgstr "Sprawdź swój serwis powiadomień"
 
 #: src/components/add-system.tsx:153
 msgid "Click to copy"
-msgstr ""
+msgstr "Kliknij, aby skopiować"
 
 #. Context: table columns
 #: src/components/systems-table/systems-table.tsx:328
 msgid "Columns"
-msgstr ""
+msgstr "Kolumny"
 
 #: src/components/login/forgot-pass-form.tsx:83
 #: src/components/login/forgot-pass-form.tsx:89
 msgid "Command line instructions"
-msgstr ""
+msgstr "Instrukcje wiersza poleceń"
 
 #: src/components/routes/settings/notifications.tsx:77
 msgid "Configure how you receive alert notifications."
-msgstr ""
+msgstr "Skonfiguruj sposób otrzymywania powiadomień."
 
 #: src/components/login/auth-form.tsx:189
 #: src/components/login/auth-form.tsx:194
 msgid "Confirm password"
-msgstr ""
+msgstr "Potwierdź hasło"
 
 #: src/components/systems-table/systems-table.tsx:278
 msgid "Continue"
-msgstr ""
+msgstr "Kontynuuj"
 
 #: src/lib/utils.ts:25
 msgid "Copied to clipboard"
@@ -231,7 +231,7 @@ msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:152
 msgid "CPU"
-msgstr ""
+msgstr "Procesor"
 
 #: src/components/charts/area-chart.tsx:52
 #: src/components/routes/system.tsx:375
@@ -251,7 +251,7 @@ msgstr ""
 #: src/components/command-palette.tsx:82
 #: src/components/routes/home.tsx:35
 msgid "Dashboard"
-msgstr ""
+msgstr "Panel kontrolny"
 
 #: src/components/routes/settings/general.tsx:85
 msgid "Default time period"
@@ -263,7 +263,7 @@ msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:166
 msgid "Disk"
-msgstr ""
+msgstr "Dysk"
 
 #: src/components/routes/system.tsx:426
 msgid "Disk I/O"
@@ -277,15 +277,15 @@ msgstr ""
 
 #: src/components/routes/system.tsx:495
 msgid "Disk usage of {extraFsName}"
-msgstr ""
+msgstr "Wykorzystanie dysku {extraFsName}"
 
 #: src/components/routes/system.tsx:386
 msgid "Docker CPU Usage"
-msgstr ""
+msgstr "Wykorzystanie procesora przez Dockera"
 
 #: src/components/routes/system.tsx:407
 msgid "Docker Memory Usage"
-msgstr ""
+msgstr "Wykorzystanie pamięci przez Dockera"
 
 #: src/components/routes/system.tsx:452
 msgid "Docker Network I/O"
