@@ -8,7 +8,7 @@ msgstr ""
 "Language: pl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-11-05 09:39\n"
+"PO-Revision-Date: 2024-11-05 12:19\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
@@ -57,11 +57,11 @@ msgstr "Aktywne alerty"
 
 #: src/components/add-system.tsx:74
 msgid "Add <0>System</0>"
-msgstr "Dodaj <0>system</0>"
+msgstr "Dodaj <0>System</0>"
 
 #: src/components/add-system.tsx:83
 msgid "Add New System"
-msgstr "Dodaj nowy system"
+msgstr "Dodaj Nowy System"
 
 #: src/components/add-system.tsx:167
 #: src/components/add-system.tsx:178
@@ -97,7 +97,7 @@ msgstr "Alerty"
 #: src/components/alerts/alert-button.tsx:88
 #: src/components/systems-table/systems-table.tsx:317
 msgid "All Systems"
-msgstr "Wszystkie systemy"
+msgstr "Wszystkie Systemy"
 
 #: src/components/systems-table/systems-table.tsx:261
 msgid "Are you sure you want to delete {name}?"
@@ -106,7 +106,7 @@ msgstr "Czy na pewno chcesz usunąć {name}?"
 #: src/components/command-palette.tsx:186
 #: src/components/navbar.tsx:102
 msgid "Auth Providers"
-msgstr "Dostawcy Auth"
+msgstr "Dostawcy Autoryzacji"
 
 #: src/components/copy-to-clipboard.tsx:16
 msgid "Automatic copy requires a secure context."
@@ -131,7 +131,7 @@ msgstr "Średnie wykorzystanie procesora w całym systemie"
 #: src/components/command-palette.tsx:171
 #: src/components/navbar.tsx:94
 msgid "Backups"
-msgstr "Kopie"
+msgstr "Kopie zapasowe"
 
 #: src/components/routes/system.tsx:436
 #: src/lib/utils.ts:307
@@ -160,7 +160,7 @@ msgstr "Anuluj"
 
 #: src/components/routes/settings/config-yaml.tsx:68
 msgid "Caution - potential data loss"
-msgstr "Uwaga- potencjalna utrata danych."
+msgstr "Uwaga — potencjalna utrata danych"
 
 #: src/components/routes/settings/general.tsx:36
 msgid "Change general application options."
@@ -223,7 +223,7 @@ msgstr "Kopiuj host"
 
 #: src/components/add-system.tsx:175
 msgid "Copy Linux command"
-msgstr "Kopiuj polecenie Linux"
+msgstr "Kopiuj polecenie Linux "
 
 #: src/components/copy-to-clipboard.tsx:13
 msgid "Copy text"
@@ -281,11 +281,11 @@ msgstr "Wykorzystanie dysku {extraFsName}"
 
 #: src/components/routes/system.tsx:386
 msgid "Docker CPU Usage"
-msgstr "Wykorzystanie procesora przez Dockera"
+msgstr "Wykorzystanie procesora przez Docker"
 
 #: src/components/routes/system.tsx:407
 msgid "Docker Memory Usage"
-msgstr "Wykorzystanie pamięci przez Dockera"
+msgstr "Wykorzystanie pamięci przez Docker"
 
 #: src/components/routes/system.tsx:452
 msgid "Docker Network I/O"
@@ -442,7 +442,7 @@ msgstr "Wykorzystanie pamięci"
 
 #: src/components/routes/system.tsx:408
 msgid "Memory usage of docker containers"
-msgstr "Użycie pamięci przez kontenery Dockera."
+msgstr "Użycie pamięci przez kontenery Docker"
 
 #: src/components/add-system.tsx:113
 msgid "Name"
@@ -454,7 +454,7 @@ msgstr "Sieć"
 
 #: src/components/routes/system.tsx:453
 msgid "Network traffic of docker containers"
-msgstr "Ruch sieciowy kontenerów Dockera."
+msgstr "Ruch sieciowy kontenerów Docker"
 
 #: src/components/routes/system.tsx:438
 msgid "Network traffic of public interfaces"
@@ -672,7 +672,7 @@ msgstr "Temperatura"
 
 #: src/components/routes/system.tsx:478
 msgid "Temperatures of system sensors"
-msgstr "Temperatury czujników systemowych."
+msgstr "Temperatury czujników systemowych"
 
 #: src/components/routes/settings/notifications.tsx:211
 msgid "Test <0>URL</0>"
@@ -680,7 +680,7 @@ msgstr "Test <0>URL</0>"
 
 #: src/components/routes/settings/notifications.tsx:182
 msgid "Test notification sent"
-msgstr "Testowe powiadomienie wysłane."
+msgstr "Testowe powiadomienie wysłane"
 
 #: src/components/add-system.tsx:104
 msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
@@ -696,7 +696,7 @@ msgstr "Następnie zaloguj się do panelu administracyjnego i  zresetuj hasło d
 
 #: src/components/systems-table/systems-table.tsx:264
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
-msgstr "Tej akcji nie można cofnąć. Spowoduje to trwałe usunięcie wszystkich bieżących rekordów dla {nazwa} z bazy danych."
+msgstr "Tej akcji nie można cofnąć. Spowoduje to trwałe usunięcie wszystkich bieżących rekordów dla {name} z bazy danych."
 
 #: src/components/routes/system.tsx:507
 msgid "Throughput of {extraFsName}"
@@ -708,7 +708,7 @@ msgstr "Przepustowość głównego systemu plików"
 
 #: src/components/routes/settings/notifications.tsx:106
 msgid "To email(s)"
-msgstr "Do e-mail(ów)"
+msgstr "Do e-mail(i)"
 
 #: src/components/routes/system.tsx:350
 #: src/components/routes/system.tsx:363
@@ -721,7 +721,7 @@ msgstr "Zmień motyw"
 
 #: src/lib/utils.ts:317
 msgid "Triggers when any sensor exceeds a threshold"
-msgstr "Wyzwalane, gdy jakikolwiek czujnik przekroczy ustalony próg."
+msgstr "Wyzwalane, gdy jakikolwiek czujnik przekroczy ustalony próg"
 
 #: src/lib/utils.ts:310
 msgid "Triggers when combined up/down exceeds a threshold"
@@ -733,7 +733,7 @@ msgstr "Wyzwalane, gdy użycie procesora przekracza próg"
 
 #: src/lib/utils.ts:298
 msgid "Triggers when memory usage exceeds a threshold"
-msgstr "Wyzwalane, wykorzystanie pamięci przekroczy ustalony próg."
+msgstr "Wyzwalane, wykorzystanie pamięci przekroczy ustalony próg"
 
 #: src/lib/utils.ts:285
 msgid "Triggers when status switches between up and down"
@@ -797,7 +797,7 @@ msgstr "Napisz"
 
 #: src/components/routes/settings/layout.tsx:61
 msgid "YAML Config"
-msgstr "Konf. YAML"
+msgstr "Konfig. YAML"
 
 #: src/components/routes/settings/config-yaml.tsx:45
 msgid "YAML Configuration"
