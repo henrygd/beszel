@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-11-06 19:11\n"
+"PO-Revision-Date: 2024-11-06 20:36\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -324,7 +324,7 @@ msgstr "Erreur"
 
 #: src/components/routes/home.tsx:81
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
-msgstr "Dépasse {0}{1} dans la dernière {2, plural, one {# minute} other {# minutes}}"
+msgstr "Dépasse {0}{1} dans {2, plural, one {la dernière # minute} other {les dernières # minutes}}"
 
 #: src/components/routes/settings/config-yaml.tsx:72
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
@@ -644,11 +644,11 @@ msgstr "Statut"
 
 #: src/components/routes/system.tsx:467
 msgid "Swap space used by the system"
-msgstr "Espace d'échange utilisé par le système"
+msgstr "Espace Swap utilisé par le système"
 
 #: src/components/routes/system.tsx:466
 msgid "Swap Usage"
-msgstr "Utilisation de l'échange"
+msgstr "Utilisation du swap"
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
@@ -717,7 +717,7 @@ msgstr "Basculer la grille"
 
 #: src/components/mode-toggle.tsx:33
 msgid "Toggle theme"
-msgstr "Basculer le thème"
+msgstr "Changer le thème"
 
 #: src/lib/utils.ts:317
 msgid "Triggers when any sensor exceeds a threshold"
@@ -725,7 +725,7 @@ msgstr "Déclenchement lorsque tout capteur dépasse un seuil"
 
 #: src/lib/utils.ts:310
 msgid "Triggers when combined up/down exceeds a threshold"
-msgstr "Déclenchement lorsque la montée/descente combinée dépasse un seuil"
+msgstr "Déclenchement lorsque le montant/descendant combinée dépasse un seuil"
 
 #: src/lib/utils.ts:292
 msgid "Triggers when CPU usage exceeds a threshold"
@@ -737,7 +737,7 @@ msgstr "Déclenchement lorsque l'utilisation de la mémoire dépasse un seuil"
 
 #: src/lib/utils.ts:285
 msgid "Triggers when status switches between up and down"
-msgstr "Déclenchement lorsque le statut passe de haut en bas"
+msgstr "Déclenchement lorsque le statut passe d'opérationnel à indisponible"
 
 #: src/lib/utils.ts:304
 msgid "Triggers when usage of any disk exceeds a threshold"
