@@ -413,11 +413,7 @@ export default function SystemDetail({ name }: { name: string }) {
 					)}
 
 					<ChartCard empty={dataEmpty} grid={grid} title={t`Disk Usage`} description={t`Usage of root partition`}>
-						<DiskChart
-							chartData={chartData}
-							dataKey="stats.du"
-							diskSize={Math.round(systemStats.at(-1)?.stats.d ?? NaN)}
-						/>
+						<DiskChart chartData={chartData} dataKey="stats.du" diskSize={systemStats.at(-1)?.stats.d ?? NaN} />
 					</ChartCard>
 
 					<ChartCard
@@ -497,7 +493,7 @@ export default function SystemDetail({ name }: { name: string }) {
 										<DiskChart
 											chartData={chartData}
 											dataKey={`stats.efs.${extraFsName}.du`}
-											diskSize={Math.round(systemStats.at(-1)?.stats.efs?.[extraFsName].d ?? NaN)}
+											diskSize={systemStats.at(-1)?.stats.efs?.[extraFsName].d ?? NaN}
 										/>
 									</ChartCard>
 									<ChartCard

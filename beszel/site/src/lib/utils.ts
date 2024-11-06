@@ -272,7 +272,7 @@ export const getSizeAndUnit = (n: number, isGigabytes = true) => {
 	} else if (sizeInGB >= 1) {
 		return { v: sizeInGB, u: " GB" }
 	}
-	return { v: n, u: " MB" }
+	return { v: isGigabytes ? sizeInGB * 1_000 : n, u: " MB" }
 }
 
 export const chartMargin = { top: 12 }

@@ -27,6 +27,11 @@ export default memo(function DiskChart({
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { _ } = useLingui()
 
+	// round to nearest GB
+	if (diskSize >= 100) {
+		diskSize = Math.round(diskSize)
+	}
+
 	if (chartData.systemStats.length === 0) {
 		return null
 	}
