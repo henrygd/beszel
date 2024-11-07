@@ -22,7 +22,7 @@ export function LangToggle() {
 				{languages.map(({ lang, label, e }) => (
 					<DropdownMenuItem
 						key={lang}
-						className={cn("px-3 flex gap-2.5", lang === i18n.locale && "font-semibold")}
+						className={cn("px-2.5 flex gap-2.5", lang === i18n.locale && "font-semibold")}
 						onClick={() => dynamicActivate(lang)}
 					>
 						<span>{e}</span> {label}

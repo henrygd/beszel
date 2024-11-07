@@ -25,6 +25,11 @@ export default [
 		e: "🇫🇷",
 	},
 	{
+		lang: "hr",
+		label: "Hrvatski",
+		e: "🇭🇷",
+	},
+	{
 		lang: "it",
 		label: "Italiano",
 		e: "🇮🇹",
@@ -38,6 +43,11 @@ export default [
 		lang: "ko",
 		label: "한국어",
 		e: "🇰🇷",
+	},
+	{
+		lang: "pl",
+		label: "Polski",
+		e: "🇵🇱",
 	},
 	{
 		lang: "pt",

@@ -36,7 +36,7 @@ export function AddSystemButton({ className }: { className?: string }) {
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       # monitor other disks / partitions by mounting a folder in /extra-filesystems
-      # - /mnt/disk1/.beszel:/extra-filesystems/disk1:ro
+      # - /mnt/disk/.beszel:/extra-filesystems/sda1:ro
     environment:
       PORT: ${port}
       KEY: "${publicKey}"`)
@@ -107,33 +107,27 @@ export function AddSystemButton({ className }: { className?: string }) {
 						</DialogDescription>
 					</TabsContent>
 					<form onSubmit={handleSubmit as any}>
-						<div className="grid gap-3 mt-1 mb-4">
-							<div className="grid grid-cols-4 items-center gap-4">
-								<Label htmlFor="name" className="text-end">
-									<Trans>Name</Trans>
-								</Label>
-								<Input id="name" name="name" className="col-span-3" required />
-							</div>
-							<div className="grid grid-cols-4 items-center gap-4">
-								<Label htmlFor="host" className="text-end">
-									<Trans>Host / IP</Trans>
-								</Label>
-								<Input id="host" name="host" className="col-span-3" required />
-							</div>
-							<div className="grid grid-cols-4 items-center gap-4">
-								<Label htmlFor="port" className="text-end">
-									<Trans>Port</Trans>
-								</Label>
-								<Input ref={port} name="port" id="port" defaultValue="45876" className="col-span-3" required />
-							</div>
-							<div className="grid grid-cols-4 items-center gap-4 relative">
-								<Label htmlFor="pkey" className="text-end whitespace-pre">
-									<Trans comment="Use 'Key' if your language requires many more characters">Public Key</Trans>
-								</Label>
-								<Input readOnly id="pkey" value={publicKey} className="col-span-3" required></Input>
+						<div className="grid xs:grid-cols-[auto_1fr] gap-y-3 gap-x-4 items-center mt-1 mb-4">
+							<Label htmlFor="name" className="xs:text-end">
+								<Trans>Name</Trans>
+							</Label>
+							<Input id="name" name="name" className="" required />
+							<Label htmlFor="host" className="xs:text-end">
+								<Trans>Host / IP</Trans>
+							</Label>
+							<Input id="host" name="host" className="" required />
+							<Label htmlFor="port" className="xs:text-end">
+								<Trans>Port</Trans>
+							</Label>
+							<Input ref={port} name="port" id="port" defaultValue="45876" className="" required />
+							<Label htmlFor="pkey" className="xs:text-end whitespace-pre">
+								<Trans comment="Use 'Key' if your language requires many more characters">Public Key</Trans>
+							</Label>
+							<div className="relative">
+								<Input readOnly id="pkey" value={publicKey} className="" required></Input>
 								<div
 									className={
-										"h-6 w-24 bg-gradient-to-r rtl:bg-gradient-to-l from-transparent to-background to-65% absolute end-1 pointer-events-none"
+										"h-6 w-24 bg-gradient-to-r rtl:bg-gradient-to-l from-transparent to-background to-65% absolute top-2 end-1 pointer-events-none"
 									}
 								></div>
 								<TooltipProvider delayDuration={100}>
@@ -142,7 +136,7 @@ export function AddSystemButton({ className }: { className?: string }) {
 											<Button
 												type="button"
 												variant={"link"}
-												className="absolute end-0"
+												className="absolute end-0 top-0"
 												onClick={() => copyToClipboard(publicKey)}
 											>
 												<Copy className="h-4 w-4 " />
