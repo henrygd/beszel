@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-11-04 20:46\n"
+"PO-Revision-Date: 2024-11-07 17:34\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -53,20 +53,20 @@ msgstr "操作"
 
 #: src/components/routes/home.tsx:62
 msgid "Active Alerts"
-msgstr "活动警报"
+msgstr "启用的警报"
 
 #: src/components/add-system.tsx:74
 msgid "Add <0>System</0>"
-msgstr "添加<0>系统</0>"
+msgstr "添加<0>客户端</0>"
 
 #: src/components/add-system.tsx:83
 msgid "Add New System"
-msgstr "添加新系统"
+msgstr "添加新客户端"
 
 #: src/components/add-system.tsx:167
 #: src/components/add-system.tsx:178
 msgid "Add system"
-msgstr "添加系统"
+msgstr "添加客户端"
 
 #: src/components/routes/settings/notifications.tsx:156
 msgid "Add URL"
@@ -87,7 +87,7 @@ msgstr "管理员"
 
 #: src/components/systems-table/systems-table.tsx:186
 msgid "Agent"
-msgstr "代理"
+msgstr "客户端"
 
 #: src/components/alerts/alert-button.tsx:32
 #: src/components/alerts/alert-button.tsx:68
@@ -97,7 +97,7 @@ msgstr "警报"
 #: src/components/alerts/alert-button.tsx:88
 #: src/components/systems-table/systems-table.tsx:317
 msgid "All Systems"
-msgstr "所有系统"
+msgstr "所有客户端"
 
 #: src/components/systems-table/systems-table.tsx:261
 msgid "Are you sure you want to delete {name}?"
@@ -106,11 +106,11 @@ msgstr "您确定要删除{name}吗？"
 #: src/components/command-palette.tsx:186
 #: src/components/navbar.tsx:102
 msgid "Auth Providers"
-msgstr "认证提供者"
+msgstr "第三方认证供应商"
 
 #: src/components/copy-to-clipboard.tsx:16
 msgid "Automatic copy requires a secure context."
-msgstr "自动复制需要安全的上下文。"
+msgstr "自动复制所需的安全上下文。"
 
 #: src/components/routes/system.tsx:568
 msgid "Average"
@@ -140,11 +140,11 @@ msgstr "带宽"
 
 #: src/components/login/auth-form.tsx:313
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
-msgstr "Beszel支持OpenID Connect和许多OAuth2认证提供者。"
+msgstr "Beszel支持OpenID Connect和其他OAuth2认证方式。"
 
 #: src/components/routes/settings/notifications.tsx:127
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
-msgstr "Beszel使用<0>Shoutrrr</0>与流行的通知服务集成。"
+msgstr "Beszel使用<0>Shoutrrr</0>以实现与常见的通知服务集成。"
 
 #: src/components/add-system.tsx:88
 msgid "Binary"
@@ -160,11 +160,11 @@ msgstr "取消"
 
 #: src/components/routes/settings/config-yaml.tsx:68
 msgid "Caution - potential data loss"
-msgstr "注意 - 可能的数据丢失"
+msgstr "注意 - 数据可能已经丢失"
 
 #: src/components/routes/settings/general.tsx:36
 msgid "Change general application options."
-msgstr "更改一般应用程序选项。"
+msgstr "更改常规应用程序选项。"
 
 #: src/components/routes/settings/general.tsx:78
 msgid "Chart options"
@@ -189,7 +189,7 @@ msgstr "点击复制"
 #. Context: table columns
 #: src/components/systems-table/systems-table.tsx:328
 msgid "Columns"
-msgstr "列"
+msgstr "过滤列"
 
 #: src/components/login/forgot-pass-form.tsx:83
 #: src/components/login/forgot-pass-form.tsx:89
@@ -219,7 +219,7 @@ msgstr "复制"
 
 #: src/components/systems-table/systems-table.tsx:247
 msgid "Copy host"
-msgstr "复制主机"
+msgstr "复制主机名"
 
 #: src/components/add-system.tsx:175
 msgid "Copy Linux command"
@@ -246,7 +246,7 @@ msgstr "创建账户"
 #. Dark theme
 #: src/components/mode-toggle.tsx:21
 msgid "Dark"
-msgstr "深色"
+msgstr "深色模式"
 
 #: src/components/command-palette.tsx:82
 #: src/components/routes/home.tsx:35
@@ -398,7 +398,7 @@ msgstr "语言"
 #. Light theme
 #: src/components/mode-toggle.tsx:16
 msgid "Light"
-msgstr "浅色"
+msgstr "浅色模式"
 
 #: src/components/navbar.tsx:113
 msgid "Log Out"
@@ -429,7 +429,7 @@ msgstr "管理显示和通知偏好。"
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx:571
 msgid "Max 1 min"
-msgstr "最大1分钟"
+msgstr "1分钟内最大值"
 
 #: src/components/systems-table/systems-table.tsx:159
 msgid "Memory"
@@ -454,7 +454,7 @@ msgstr "网络"
 
 #: src/components/routes/system.tsx:453
 msgid "Network traffic of docker containers"
-msgstr "Docker容器的网络流量"
+msgstr "1分钟内最大值"
 
 #: src/components/routes/system.tsx:438
 msgid "Network traffic of public interfaces"
@@ -488,7 +488,7 @@ msgstr "打开菜单"
 
 #: src/components/login/auth-form.tsx:227
 msgid "Or continue with"
-msgstr "或继续使用"
+msgstr "或使用以下方式登录"
 
 #: src/components/alerts/alert-button.tsx:109
 msgid "Overwrite existing alerts"
@@ -644,11 +644,11 @@ msgstr "状态"
 
 #: src/components/routes/system.tsx:467
 msgid "Swap space used by the system"
-msgstr "系统使用的交换空间"
+msgstr "系统使用的SWAP空间"
 
 #: src/components/routes/system.tsx:466
 msgid "Swap Usage"
-msgstr "交换使用"
+msgstr "SWAP使用"
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
@@ -684,11 +684,11 @@ msgstr "测试通知已发送"
 
 #: src/components/add-system.tsx:104
 msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
-msgstr "代理必须在系统上运行才能连接。复制下面的代理安装命令。"
+msgstr "必须在系统上运行客户端之后才能连接。复制下面的代理安装命令。"
 
 #: src/components/add-system.tsx:95
 msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
-msgstr "代理必须在系统上运行才能连接。复制下面的<0>docker-compose.yml</0>。"
+msgstr "必须在系统上运行客户端之后才能连接。复制下面的<0>docker-compose.yml</0>。"
 
 #: src/components/login/forgot-pass-form.tsx:98
 msgid "Then log into the backend and reset your user account password in the users table."
@@ -725,7 +725,7 @@ msgstr "当任何传感器超过阈值时触发"
 
 #: src/lib/utils.ts:310
 msgid "Triggers when combined up/down exceeds a threshold"
-msgstr "当组合的上/下超过阈值时触发"
+msgstr "当网络的上/下行速度超过阈值时触发"
 
 #: src/lib/utils.ts:292
 msgid "Triggers when CPU usage exceeds a threshold"
@@ -737,11 +737,11 @@ msgstr "当内存使用率超过阈值时触发"
 
 #: src/lib/utils.ts:285
 msgid "Triggers when status switches between up and down"
-msgstr "当状态在上和下之间切换时触发"
+msgstr "当状态在上线与掉线之间切换时触发"
 
 #: src/lib/utils.ts:304
 msgid "Triggers when usage of any disk exceeds a threshold"
-msgstr "当任何磁盘的使用超过阈值时触发"
+msgstr "当任何磁盘的使用率超过阈值时触发"
 
 #: src/components/systems-table/systems-table.tsx:320
 msgid "Updated in real time. Click on a system to view information."
@@ -806,3 +806,4 @@ msgstr "YAML配置"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "您的用户设置已更新。"
+
