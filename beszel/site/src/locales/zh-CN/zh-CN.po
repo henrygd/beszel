@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-11-07 17:34\n"
+"PO-Revision-Date: 2024-11-07 18:49\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -454,7 +454,7 @@ msgstr "网络"
 
 #: src/components/routes/system.tsx:453
 msgid "Network traffic of docker containers"
-msgstr "1分钟内最大值"
+msgstr "Docker容器的网络流量"
 
 #: src/components/routes/system.tsx:438
 msgid "Network traffic of public interfaces"
