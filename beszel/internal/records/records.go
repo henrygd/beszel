@@ -149,11 +149,7 @@ func (rm *RecordManager) CreateLongerRecords(collections []*models.Collection) {
 
 // Calculate the average stats of a list of system_stats records without reflect
 func (rm *RecordManager) AverageSystemStats(records RecordStats) system.Stats {
-	sum := system.Stats{
-		Temperatures: make(map[string]float64),
-		ExtraFs:      make(map[string]*system.FsStats),
-	}
-
+	sum := system.Stats{}
 	count := float64(len(records))
 	// use different counter for temps in case some records don't have them
 	tempCount := float64(0)
@@ -184,6 +180,9 @@ func (rm *RecordManager) AverageSystemStats(records RecordStats) system.Stats {
 		sum.MaxDiskWritePs = max(sum.MaxDiskWritePs, stats.MaxDiskWritePs, stats.DiskWritePs)
 		// add temps to sum
 		if stats.Temperatures != nil {
+			if sum.Temperatures == nil {
+				sum.Temperatures = make(map[string]float64, len(stats.Temperatures))
+			}
 			tempCount++
 			for key, value := range stats.Temperatures {
 				if _, ok := sum.Temperatures[key]; !ok {
@@ -194,6 +193,9 @@ func (rm *RecordManager) AverageSystemStats(records RecordStats) system.Stats {
 		}
 		// add extra fs to sum
 		if stats.ExtraFs != nil {
+			if sum.ExtraFs == nil {
+				sum.ExtraFs = make(map[string]*system.FsStats, len(stats.ExtraFs))
+			}
 			for key, value := range stats.ExtraFs {
 				if _, ok := sum.ExtraFs[key]; !ok {
 					sum.ExtraFs[key] = &system.FsStats{}
@@ -205,6 +207,25 @@ func (rm *RecordManager) AverageSystemStats(records RecordStats) system.Stats {
 				// peak values
 				sum.ExtraFs[key].MaxDiskReadPS = max(sum.ExtraFs[key].MaxDiskReadPS, value.MaxDiskReadPS, value.DiskReadPs)
 				sum.ExtraFs[key].MaxDiskWritePS = max(sum.ExtraFs[key].MaxDiskWritePS, value.MaxDiskWritePS, value.DiskWritePs)
+			}
+		}
+		// add GPU data
+		if stats.GPUData != nil {
+			if sum.GPUData == nil {
+				sum.GPUData = make(map[string]system.GPUData, len(stats.GPUData))
+			}
+			for id, value := range stats.GPUData {
+				if _, ok := sum.GPUData[id]; !ok {
+					sum.GPUData[id] = system.GPUData{Name: value.Name}
+				}
+				gpu := sum.GPUData[id]
+				gpu.Temperature += value.Temperature
+				gpu.MemoryUsed += value.MemoryUsed
+				gpu.MemoryTotal += value.MemoryTotal
+				gpu.Usage += value.Usage
+				gpu.Power += value.Power
+				gpu.Count += value.Count
+				sum.GPUData[id] = gpu
 			}
 		}
 	}
@@ -232,14 +253,14 @@ func (rm *RecordManager) AverageSystemStats(records RecordStats) system.Stats {
 		MaxNetworkRecv: sum.MaxNetworkRecv,
 	}
 
-	if len(sum.Temperatures) != 0 {
+	if sum.Temperatures != nil {
 		stats.Temperatures = make(map[string]float64, len(sum.Temperatures))
 		for key, value := range sum.Temperatures {
 			stats.Temperatures[key] = twoDecimals(value / tempCount)
 		}
 	}
 
-	if len(sum.ExtraFs) != 0 {
+	if sum.ExtraFs != nil {
 		stats.ExtraFs = make(map[string]*system.FsStats, len(sum.ExtraFs))
 		for key, value := range sum.ExtraFs {
 			stats.ExtraFs[key] = &system.FsStats{
@@ -249,6 +270,21 @@ func (rm *RecordManager) AverageSystemStats(records RecordStats) system.Stats {
 				DiskReadPs:     twoDecimals(value.DiskReadPs / count),
 				MaxDiskReadPS:  value.MaxDiskReadPS,
 				MaxDiskWritePS: value.MaxDiskWritePS,
+			}
+		}
+	}
+
+	if sum.GPUData != nil {
+		stats.GPUData = make(map[string]system.GPUData, len(sum.GPUData))
+		for id, value := range sum.GPUData {
+			stats.GPUData[id] = system.GPUData{
+				Name:        value.Name,
+				Temperature: twoDecimals(value.Temperature / count),
+				MemoryUsed:  twoDecimals(value.MemoryUsed / count),
+				MemoryTotal: twoDecimals(value.MemoryTotal / count),
+				Usage:       twoDecimals(value.Usage / count),
+				Power:       twoDecimals(value.Power / count),
+				Count:       twoDecimals(value.Count / count),
 			}
 		}
 	}

@@ -28,6 +28,17 @@ type Stats struct {
 	MaxNetworkRecv float64             `json:"nrm,omitempty"`
 	Temperatures   map[string]float64  `json:"t,omitempty"`
 	ExtraFs        map[string]*FsStats `json:"efs,omitempty"`
+	GPUData        map[string]GPUData  `json:"g,omitempty"`
+}
+
+type GPUData struct {
+	Name        string  `json:"n"`
+	Temperature float64 `json:"-"`
+	MemoryUsed  float64 `json:"mu,omitempty"`
+	MemoryTotal float64 `json:"mt,omitempty"`
+	Usage       float64 `json:"u"`
+	Power       float64 `json:"p,omitempty"`
+	Count       float64 `json:"-"`
 }
 
 type FsStats struct {

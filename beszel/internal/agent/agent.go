@@ -24,6 +24,7 @@ type Agent struct {
 	sensorsContext   context.Context            // Sensors context to override sys location
 	sensorsWhitelist map[string]struct{}        // List of sensors to monitor
 	systemInfo       system.Info                // Host system info
+	gpuManager       *GPUManager                // Manages GPU data
 }
 
 func NewAgent() *Agent {
@@ -73,6 +74,13 @@ func (a *Agent) Run(pubKey []byte, addr string) {
 	a.initializeDiskInfo()
 	a.initializeNetIoStats()
 	a.dockerManager = newDockerManager()
+
+	// initialize GPU manager
+	if gm, err := NewGPUManager(); err != nil {
+		slog.Error("GPU manager", "err", err)
+	} else {
+		a.gpuManager = gm
+	}
 
 	// if debugging, print stats
 	if a.debug {

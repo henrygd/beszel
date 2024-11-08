@@ -206,6 +206,22 @@ func (a *Agent) getSystemStats() system.Stats {
 		}
 	}
 
+	// GPU data
+	if a.gpuManager != nil {
+		if gpuData := a.gpuManager.GetCurrentData(); len(gpuData) > 0 {
+			systemStats.GPUData = gpuData
+			// add temperatures
+			if systemStats.Temperatures == nil {
+				systemStats.Temperatures = make(map[string]float64, len(gpuData))
+			}
+			for _, gpu := range gpuData {
+				if gpu.Temperature > 0 {
+					systemStats.Temperatures[gpu.Name] = gpu.Temperature
+				}
+			}
+		}
+	}
+
 	// update base system info
 	a.systemInfo.Cpu = systemStats.Cpu
 	a.systemInfo.MemPct = systemStats.MemPct

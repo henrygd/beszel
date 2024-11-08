@@ -345,6 +345,7 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 	}
 }
 
+// todo: allow x minutes downtime before sending alert
 func (am *AlertManager) HandleStatusAlerts(newStatus string, oldSystemRecord *models.Record) error {
 	var alertStatus string
 	switch newStatus {
