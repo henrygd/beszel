@@ -7,8 +7,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       # monitor other disks / partitions by mounting a folder in /extra-filesystems
-      # - /mnt/disk1/.beszel:/extra-filesystems/disk1:ro
+      # - /mnt/disk/.beszel:/extra-filesystems/sda1:ro
     environment:
       PORT: 45876
       KEY: 'ssh-ed25519 YOUR_PUBLIC_KEY'
-      # FILESYSTEM: /dev/sda1 # override the root partition / device for disk I/O stats

@@ -81,6 +81,21 @@ export interface SystemStats {
 	t?: Record<string, number>
 	/** extra filesystems */
 	efs?: Record<string, ExtraFsStats>
+	/** GPU data */
+	g?: Record<string, GPUData>
+}
+
+export interface GPUData {
+	/** name */
+	n: string
+	/** memory used (mb) */
+	mu?: number
+	/** memory total (mb) */
+	mt?: number
+	/** usage (%) */
+	u: number
+	/** power (w) */
+	p?: number
 }
 
 export interface ExtraFsStats {

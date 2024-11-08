@@ -1,12 +1,12 @@
 import { $systems, pb, $chartTime, $containerFilter, $userSettings, $direction } from "@/lib/stores"
-import { ChartData, ChartTimes, ContainerStatsRecord, SystemRecord, SystemStatsRecord } from "@/types"
+import { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord } from "@/types"
 import React, { lazy, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Card, CardHeader, CardTitle, CardDescription } from "../ui/card"
 import { useStore } from "@nanostores/react"
 import Spinner from "../spinner"
 import { ClockArrowUp, CpuIcon, GlobeIcon, LayoutGridIcon, MonitorIcon, XIcon } from "lucide-react"
 import ChartTimeSelect from "../charts/chart-time-select"
-import { chartTimeData, cn, getPbTimestamp, useLocalStorage } from "@/lib/utils"
+import { chartTimeData, cn, getPbTimestamp, getSizeAndUnit, toFixedFloat, useLocalStorage } from "@/lib/utils"
 import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import { Button } from "../ui/button"
@@ -477,6 +477,44 @@ export default function SystemDetail({ name }: { name: string }) {
 						</ChartCard>
 					)}
 				</div>
+
+				{/* GPU charts */}
+				{Object.keys(systemStats.at(-1)?.stats.g ?? {}).length > 0 && (
+					<div className="grid xl:grid-cols-2 gap-4">
+						{Object.keys(systemStats.at(-1)?.stats.g ?? {}).map((id) => {
+							const gpu = systemStats.at(-1)?.stats.g?.[id] as GPUData
+							return (
+								<div key={id} className="contents">
+									<ChartCard
+										empty={dataEmpty}
+										grid={grid}
+										title={`${gpu.n} ${t`Usage`}`}
+										description={t`Total utilization of ${gpu.n}`}
+									>
+										<AreaChartDefault chartData={chartData} chartName={`g.${id}.u`} unit="%" />
+									</ChartCard>
+									<ChartCard
+										empty={dataEmpty}
+										grid={grid}
+										title={`${gpu.n} VRAM`}
+										description={t`VRAM usage of ${gpu.n}`}
+									>
+										<AreaChartDefault
+											chartData={chartData}
+											chartName={`g.${id}.mu`}
+											unit=" MB"
+											max={gpu.mt}
+											tickFormatter={(value) => {
+												const { v, u } = getSizeAndUnit(value, false)
+												return toFixedFloat(v, 1) + u
+											}}
+										/>
+									</ChartCard>
+								</div>
+							)
+						})}
+					</div>
+				)}
 
 				{/* extra filesystem charts */}
 				{Object.keys(systemStats.at(-1)?.stats.efs ?? {}).length > 0 && (

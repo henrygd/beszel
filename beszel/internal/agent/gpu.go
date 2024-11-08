@@ -94,8 +94,8 @@ func (gm *GPUManager) parseNvidiaData(output []byte) {
 				// update gpu data
 				gpu := gm.GpuDataMap[id]
 				gpu.Temperature += temp
-				gpu.MemoryUsed += memoryUsage
-				gpu.MemoryTotal += totalMemory
+				gpu.MemoryUsed += memoryUsage / 1.024
+				gpu.MemoryTotal += totalMemory / 1.024
 				gpu.Usage += usage
 				gpu.Power += power
 				gpu.Count++

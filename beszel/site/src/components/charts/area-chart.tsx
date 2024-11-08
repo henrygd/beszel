@@ -33,11 +33,15 @@ export default memo(function AreaChartDefault({
 	unit = " MB/s",
 	chartName,
 	chartData,
+	max,
+	tickFormatter,
 }: {
 	maxToggled?: boolean
 	unit?: string
 	chartName: string
 	chartData: ChartData
+	max?: number
+	tickFormatter?: (value: number) => string
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { i18n } = useLingui()
@@ -52,19 +56,21 @@ export default memo(function AreaChartDefault({
 			return [[t`CPU Usage`, "cpu", 1, 0.4]]
 		} else if (chartName === "dio") {
 			return [
-				[t({ message: "Write", comment: "Context is disk write" }), "dw", 3, 0.3],
-				[t({ message: "Read", comment: "Context is disk read" }), "dr", 1, 0.3],
+				[t({ message: "Write", comment: "Disk write" }), "dw", 3, 0.3],
+				[t({ message: "Read", comment: "Disk read" }), "dr", 1, 0.3],
 			]
 		} else if (chartName === "bw") {
 			return [
-				[t({ message: "Sent", comment: "Context is network bytes sent (upload)" }), "ns", 5, 0.2],
-				[t({ message: "Received", comment: "Context is network bytes received (download)" }), "nr", 2, 0.2],
+				[t({ message: "Sent", comment: "Network bytes sent (upload)" }), "ns", 5, 0.2],
+				[t({ message: "Received", comment: "Network bytes received (download)" }), "nr", 2, 0.2],
 			]
 		} else if (chartName.startsWith("efs")) {
 			return [
 				[t`Write`, `${chartName}.w`, 3, 0.3],
 				[t`Read`, `${chartName}.r`, 1, 0.3],
 			]
+		} else if (chartName.startsWith("g.")) {
+			return [chartName.includes("mu") ? [t`Used`, chartName, 2, 0.25] : [t`Usage`, chartName, 1, 0.4]]
 		}
 		return []
 	}, [chartName, i18n.locale])
@@ -89,8 +95,14 @@ export default memo(function AreaChartDefault({
 						orientation={chartData.orientation}
 						className="tracking-tighter"
 						width={yAxisWidth}
+						domain={[0, max ?? "auto"]}
 						tickFormatter={(value) => {
-							const val = toFixedWithoutTrailingZeros(value, 2) + unit
+							let val: string
+							if (tickFormatter) {
+								val = tickFormatter(value)
+							} else {
+								val = toFixedWithoutTrailingZeros(value, 2) + unit
+							}
 							return updateYAxisWidth(val)
 						}}
 						tickLine={false}
