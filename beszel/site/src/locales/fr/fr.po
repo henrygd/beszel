@@ -18,11 +18,11 @@ msgstr ""
 "X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 16\n"
 
-#: src/components/routes/system.tsx:242
+#: src/components/routes/system.tsx:243
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# jour} other {# jours}}"
 
-#: src/components/routes/system.tsx:240
+#: src/components/routes/system.tsx:241
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# heure} other {# heures}}"
 
@@ -63,8 +63,8 @@ msgstr "Ajouter <0>Système</0>"
 msgid "Add New System"
 msgstr "Ajouter un nouveau système"
 
-#: src/components/add-system.tsx:167
-#: src/components/add-system.tsx:178
+#: src/components/add-system.tsx:161
+#: src/components/add-system.tsx:172
 msgid "Add system"
 msgstr "Ajouter un système"
 
@@ -112,11 +112,11 @@ msgstr "Fournisseurs d'authentification"
 msgid "Automatic copy requires a secure context."
 msgstr "La copie automatique nécessite un contexte sécurisé."
 
-#: src/components/routes/system.tsx:568
+#: src/components/routes/system.tsx:618
 msgid "Average"
 msgstr "Moyenne"
 
-#: src/components/routes/system.tsx:387
+#: src/components/routes/system.tsx:389
 msgid "Average CPU utilization of containers"
 msgstr "Utilisation moyenne du CPU des conteneurs"
 
@@ -124,7 +124,7 @@ msgstr "Utilisation moyenne du CPU des conteneurs"
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "La moyenne dépasse <0>{value}{0}</0>"
 
-#: src/components/routes/system.tsx:376
+#: src/components/routes/system.tsx:378
 msgid "Average system-wide CPU utilization"
 msgstr "Utilisation moyenne du CPU à l'échelle du système"
 
@@ -133,7 +133,7 @@ msgstr "Utilisation moyenne du CPU à l'échelle du système"
 msgid "Backups"
 msgstr "Sauvegardes"
 
-#: src/components/routes/system.tsx:436
+#: src/components/routes/system.tsx:434
 #: src/lib/utils.ts:307
 msgid "Bandwidth"
 msgstr "Bande passante"
@@ -182,7 +182,7 @@ msgstr "Vérifiez les journaux pour plus de détails."
 msgid "Check your notification service"
 msgstr "Vérifiez votre service de notification"
 
-#: src/components/add-system.tsx:153
+#: src/components/add-system.tsx:147
 msgid "Click to copy"
 msgstr "Cliquez pour copier"
 
@@ -213,7 +213,7 @@ msgstr "Continuer"
 msgid "Copied to clipboard"
 msgstr "Copié dans le presse-papiers"
 
-#: src/components/add-system.tsx:164
+#: src/components/add-system.tsx:158
 msgid "Copy"
 msgstr "Copier"
 
@@ -221,7 +221,7 @@ msgstr "Copier"
 msgid "Copy host"
 msgstr "Copier l'hôte"
 
-#: src/components/add-system.tsx:175
+#: src/components/add-system.tsx:169
 msgid "Copy Linux command"
 msgstr "Copier la commande Linux"
 
@@ -233,8 +233,8 @@ msgstr "Copier le texte"
 msgid "CPU"
 msgstr "CPU"
 
-#: src/components/charts/area-chart.tsx:52
-#: src/components/routes/system.tsx:375
+#: src/components/charts/area-chart.tsx:56
+#: src/components/routes/system.tsx:377
 #: src/lib/utils.ts:289
 msgid "CPU Usage"
 msgstr "Utilisation du CPU"
@@ -265,29 +265,29 @@ msgstr "Supprimer"
 msgid "Disk"
 msgstr "Disque"
 
-#: src/components/routes/system.tsx:426
+#: src/components/routes/system.tsx:424
 msgid "Disk I/O"
 msgstr "Entrée/Sortie disque"
 
-#: src/components/charts/disk-chart.tsx:74
-#: src/components/routes/system.tsx:415
+#: src/components/charts/disk-chart.tsx:79
+#: src/components/routes/system.tsx:417
 #: src/lib/utils.ts:301
 msgid "Disk Usage"
 msgstr "Utilisation du disque"
 
-#: src/components/routes/system.tsx:495
+#: src/components/routes/system.tsx:545
 msgid "Disk usage of {extraFsName}"
 msgstr "Utilisation du disque de {extraFsName}"
 
-#: src/components/routes/system.tsx:386
+#: src/components/routes/system.tsx:388
 msgid "Docker CPU Usage"
 msgstr "Utilisation du CPU Docker"
 
-#: src/components/routes/system.tsx:407
+#: src/components/routes/system.tsx:409
 msgid "Docker Memory Usage"
 msgstr "Utilisation de la mémoire Docker"
 
-#: src/components/routes/system.tsx:452
+#: src/components/routes/system.tsx:450
 msgid "Docker Network I/O"
 msgstr "Entrée/Sortie réseau Docker"
 
@@ -355,7 +355,7 @@ msgstr "Échec de l'envoi de la notification de test"
 msgid "Failed to update alert"
 msgstr "Échec de la mise à jour de l'alerte"
 
-#: src/components/routes/system.tsx:539
+#: src/components/routes/system.tsx:589
 #: src/components/systems-table/systems-table.tsx:324
 msgid "Filter..."
 msgstr "Filtrer..."
@@ -374,7 +374,7 @@ msgstr "Mot de passe oublié ?"
 msgid "General"
 msgstr "Général"
 
-#: src/components/add-system.tsx:119
+#: src/components/add-system.tsx:116
 msgid "Host / IP"
 msgstr "Hôte / IP"
 
@@ -387,7 +387,7 @@ msgid "Invalid email address."
 msgstr "Adresse email invalide."
 
 #. Linux kernel
-#: src/components/routes/system.tsx:254
+#: src/components/routes/system.tsx:255
 msgid "Kernel"
 msgstr "Noyau"
 
@@ -427,7 +427,7 @@ msgid "Manage display and notification preferences."
 msgstr "Gérer les préférences d'affichage et de notification."
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:571
+#: src/components/routes/system.tsx:621
 msgid "Max 1 min"
 msgstr "Max 1 min"
 
@@ -435,16 +435,16 @@ msgstr "Max 1 min"
 msgid "Memory"
 msgstr "Mémoire"
 
-#: src/components/routes/system.tsx:397
+#: src/components/routes/system.tsx:399
 #: src/lib/utils.ts:295
 msgid "Memory Usage"
 msgstr "Utilisation de la mémoire"
 
-#: src/components/routes/system.tsx:408
+#: src/components/routes/system.tsx:410
 msgid "Memory usage of docker containers"
 msgstr "Utilisation de la mémoire des conteneurs Docker"
 
-#: src/components/add-system.tsx:113
+#: src/components/add-system.tsx:112
 msgid "Name"
 msgstr "Nom"
 
@@ -452,11 +452,11 @@ msgstr "Nom"
 msgid "Net"
 msgstr "Net"
 
-#: src/components/routes/system.tsx:453
+#: src/components/routes/system.tsx:451
 msgid "Network traffic of docker containers"
 msgstr "Trafic réseau des conteneurs Docker"
 
-#: src/components/routes/system.tsx:438
+#: src/components/routes/system.tsx:436
 msgid "Network traffic of public interfaces"
 msgstr "Trafic réseau des interfaces publiques"
 
@@ -552,11 +552,11 @@ msgstr "Veuillez consulter <0>la documentation</0> pour les instructions."
 msgid "Please sign in to your account"
 msgstr "Veuillez vous connecter à votre compte"
 
-#: src/components/add-system.tsx:125
+#: src/components/add-system.tsx:120
 msgid "Port"
 msgstr "Port"
 
-#: src/components/routes/system.tsx:398
+#: src/components/routes/system.tsx:400
 msgid "Precise utilization at the recorded time"
 msgstr "Utilisation précise au moment enregistré"
 
@@ -565,18 +565,18 @@ msgid "Preferred Language"
 msgstr "Langue préférée"
 
 #. Use 'Key' if your language requires many more characters
-#: src/components/add-system.tsx:131
+#: src/components/add-system.tsx:124
 msgid "Public Key"
 msgstr "Clé publique"
 
-#. Context is disk read
-#: src/components/charts/area-chart.tsx:56
-#: src/components/charts/area-chart.tsx:66
+#. Disk read
+#: src/components/charts/area-chart.tsx:60
+#: src/components/charts/area-chart.tsx:70
 msgid "Read"
 msgstr "Lecture"
 
-#. Context is network bytes received (download)
-#: src/components/charts/area-chart.tsx:61
+#. Network bytes received (download)
+#: src/components/charts/area-chart.tsx:65
 msgid "Received"
 msgstr "Reçu"
 
@@ -609,8 +609,8 @@ msgstr "Rechercher des systèmes ou des paramètres..."
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Voir les <0>paramètres de notification</0> pour configurer comment vous recevez les alertes."
 
-#. Context is network bytes sent (upload)
-#: src/components/charts/area-chart.tsx:60
+#. Network bytes sent (upload)
+#: src/components/charts/area-chart.tsx:64
 msgid "Sent"
 msgstr "Envoyé"
 
@@ -642,11 +642,11 @@ msgstr "Paramètres SMTP"
 msgid "Status"
 msgstr "Statut"
 
-#: src/components/routes/system.tsx:467
+#: src/components/routes/system.tsx:466
 msgid "Swap space used by the system"
 msgstr "Espace Swap utilisé par le système"
 
-#: src/components/routes/system.tsx:466
+#: src/components/routes/system.tsx:465
 msgid "Swap Usage"
 msgstr "Utilisation du swap"
 
@@ -698,11 +698,11 @@ msgstr "Ensuite, connectez-vous au backend et réinitialisez le mot de passe de 
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Cette action ne peut pas être annulée. Cela supprimera définitivement tous les enregistrements actuels pour {name} de la base de données."
 
-#: src/components/routes/system.tsx:507
+#: src/components/routes/system.tsx:557
 msgid "Throughput of {extraFsName}"
 msgstr "Débit de {extraFsName}"
 
-#: src/components/routes/system.tsx:427
+#: src/components/routes/system.tsx:425
 msgid "Throughput of root filesystem"
 msgstr "Débit du système de fichiers racine"
 
@@ -710,8 +710,8 @@ msgstr "Débit du système de fichiers racine"
 msgid "To email(s)"
 msgstr "Aux email(s)"
 
-#: src/components/routes/system.tsx:350
-#: src/components/routes/system.tsx:363
+#: src/components/routes/system.tsx:352
+#: src/components/routes/system.tsx:365
 msgid "Toggle grid"
 msgstr "Basculer la grille"
 
@@ -747,18 +747,21 @@ msgstr "Déclenchement lorsque l'utilisation de tout disque dépasse un seuil"
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Mis à jour en temps réel. Cliquez sur un système pour voir les informations."
 
-#: src/components/routes/system.tsx:253
+#: src/components/routes/system.tsx:254
 msgid "Uptime"
 msgstr "Temps de fonctionnement"
 
-#: src/components/routes/system.tsx:494
+#: src/components/charts/area-chart.tsx:73
+#: src/components/routes/system.tsx:507
+#: src/components/routes/system.tsx:544
 msgid "Usage"
 msgstr "Utilisation"
 
-#: src/components/routes/system.tsx:415
+#: src/components/routes/system.tsx:417
 msgid "Usage of root partition"
 msgstr "Utilisation de la partition racine"
 
+#: src/components/charts/area-chart.tsx:73
 #: src/components/charts/mem-chart.tsx:65
 #: src/components/charts/swap-chart.tsx:56
 msgid "Used"
@@ -777,7 +780,7 @@ msgstr "Nom d'utilisateur"
 msgid "Users"
 msgstr "Utilisateurs"
 
-#: src/components/routes/system.tsx:603
+#: src/components/routes/system.tsx:653
 msgid "Waiting for enough records to display"
 msgstr "En attente de suffisamment d'enregistrements à afficher"
 
@@ -789,9 +792,9 @@ msgstr "Vous voulez nous aider à améliorer nos traductions ? Consultez <0>Crow
 msgid "Webhook / Push notifications"
 msgstr "Notifications Webhook / Push"
 
-#. Context is disk write
-#: src/components/charts/area-chart.tsx:55
-#: src/components/charts/area-chart.tsx:65
+#. Disk write
+#: src/components/charts/area-chart.tsx:59
+#: src/components/charts/area-chart.tsx:69
 msgid "Write"
 msgstr "Écriture"
 
@@ -806,4 +809,3 @@ msgstr "Configuration YAML"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "Vos paramètres utilisateur ont été mis à jour."
-

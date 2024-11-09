@@ -45,6 +45,11 @@ export default [
 		e: "🇰🇷",
 	},
 	{
+		lang: "nl",
+		label: "Nederlands",
+		e: "🇳🇱",
+	},
+	{
 		lang: "pl",
 		label: "Polski",
 		e: "🇵🇱",

@@ -18,11 +18,11 @@ msgstr ""
 "X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 16\n"
 
-#: src/components/routes/system.tsx:242
+#: src/components/routes/system.tsx:243
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# 日} other {# 日}}"
 
-#: src/components/routes/system.tsx:240
+#: src/components/routes/system.tsx:241
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# 時間} other {# 時間}}"
 
@@ -63,8 +63,8 @@ msgstr "<0>システム</0>を追加"
 msgid "Add New System"
 msgstr "新しいシステムを追加"
 
-#: src/components/add-system.tsx:167
-#: src/components/add-system.tsx:178
+#: src/components/add-system.tsx:161
+#: src/components/add-system.tsx:172
 msgid "Add system"
 msgstr "システムを追加"
 
@@ -112,11 +112,11 @@ msgstr "認証プロバイダー"
 msgid "Automatic copy requires a secure context."
 msgstr "自動コピーには安全なコンテキストが必要です。"
 
-#: src/components/routes/system.tsx:568
+#: src/components/routes/system.tsx:618
 msgid "Average"
 msgstr "平均"
 
-#: src/components/routes/system.tsx:387
+#: src/components/routes/system.tsx:389
 msgid "Average CPU utilization of containers"
 msgstr "コンテナの平均CPU使用率"
 
@@ -124,7 +124,7 @@ msgstr "コンテナの平均CPU使用率"
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "平均が<0>{value}{0}</0>を超えています"
 
-#: src/components/routes/system.tsx:376
+#: src/components/routes/system.tsx:378
 msgid "Average system-wide CPU utilization"
 msgstr "システム全体の平均CPU使用率"
 
@@ -133,7 +133,7 @@ msgstr "システム全体の平均CPU使用率"
 msgid "Backups"
 msgstr "バックアップ"
 
-#: src/components/routes/system.tsx:436
+#: src/components/routes/system.tsx:434
 #: src/lib/utils.ts:307
 msgid "Bandwidth"
 msgstr "帯域幅"
@@ -182,7 +182,7 @@ msgstr "詳細についてはログを確認してください。"
 msgid "Check your notification service"
 msgstr "通知サービスを確認してください"
 
-#: src/components/add-system.tsx:153
+#: src/components/add-system.tsx:147
 msgid "Click to copy"
 msgstr "クリックしてコピー"
 
@@ -213,7 +213,7 @@ msgstr "続行"
 msgid "Copied to clipboard"
 msgstr "クリップボードにコピーされました"
 
-#: src/components/add-system.tsx:164
+#: src/components/add-system.tsx:158
 msgid "Copy"
 msgstr "コピー"
 
@@ -221,7 +221,7 @@ msgstr "コピー"
 msgid "Copy host"
 msgstr "ホストをコピー"
 
-#: src/components/add-system.tsx:175
+#: src/components/add-system.tsx:169
 msgid "Copy Linux command"
 msgstr "Linuxコマンドをコピー"
 
@@ -233,8 +233,8 @@ msgstr "テキストをコピー"
 msgid "CPU"
 msgstr "CPU"
 
-#: src/components/charts/area-chart.tsx:52
-#: src/components/routes/system.tsx:375
+#: src/components/charts/area-chart.tsx:56
+#: src/components/routes/system.tsx:377
 #: src/lib/utils.ts:289
 msgid "CPU Usage"
 msgstr "CPU使用率"
@@ -265,29 +265,29 @@ msgstr "削除"
 msgid "Disk"
 msgstr "ディスク"
 
-#: src/components/routes/system.tsx:426
+#: src/components/routes/system.tsx:424
 msgid "Disk I/O"
 msgstr "ディスクI/O"
 
-#: src/components/charts/disk-chart.tsx:74
-#: src/components/routes/system.tsx:415
+#: src/components/charts/disk-chart.tsx:79
+#: src/components/routes/system.tsx:417
 #: src/lib/utils.ts:301
 msgid "Disk Usage"
 msgstr "ディスク使用率"
 
-#: src/components/routes/system.tsx:495
+#: src/components/routes/system.tsx:545
 msgid "Disk usage of {extraFsName}"
 msgstr "{extraFsName}のディスク使用率"
 
-#: src/components/routes/system.tsx:386
+#: src/components/routes/system.tsx:388
 msgid "Docker CPU Usage"
 msgstr "Docker CPU使用率"
 
-#: src/components/routes/system.tsx:407
+#: src/components/routes/system.tsx:409
 msgid "Docker Memory Usage"
 msgstr "Dockerメモリ使用率"
 
-#: src/components/routes/system.tsx:452
+#: src/components/routes/system.tsx:450
 msgid "Docker Network I/O"
 msgstr "DockerネットワークI/O"
 
@@ -355,7 +355,7 @@ msgstr "テスト通知の送信に失敗しました"
 msgid "Failed to update alert"
 msgstr "アラートの更新に失敗しました"
 
-#: src/components/routes/system.tsx:539
+#: src/components/routes/system.tsx:589
 #: src/components/systems-table/systems-table.tsx:324
 msgid "Filter..."
 msgstr "フィルター..."
@@ -374,7 +374,7 @@ msgstr "パスワードをお忘れですか？"
 msgid "General"
 msgstr "一般"
 
-#: src/components/add-system.tsx:119
+#: src/components/add-system.tsx:116
 msgid "Host / IP"
 msgstr "ホスト / IP"
 
@@ -387,7 +387,7 @@ msgid "Invalid email address."
 msgstr "無効なメールアドレスです。"
 
 #. Linux kernel
-#: src/components/routes/system.tsx:254
+#: src/components/routes/system.tsx:255
 msgid "Kernel"
 msgstr "カーネル"
 
@@ -427,7 +427,7 @@ msgid "Manage display and notification preferences."
 msgstr "表示と通知の設定を管理します。"
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:571
+#: src/components/routes/system.tsx:621
 msgid "Max 1 min"
 msgstr "最大1分"
 
@@ -435,16 +435,16 @@ msgstr "最大1分"
 msgid "Memory"
 msgstr "メモリ"
 
-#: src/components/routes/system.tsx:397
+#: src/components/routes/system.tsx:399
 #: src/lib/utils.ts:295
 msgid "Memory Usage"
 msgstr "メモリ使用率"
 
-#: src/components/routes/system.tsx:408
+#: src/components/routes/system.tsx:410
 msgid "Memory usage of docker containers"
 msgstr "Dockerコンテナのメモリ使用率"
 
-#: src/components/add-system.tsx:113
+#: src/components/add-system.tsx:112
 msgid "Name"
 msgstr "名前"
 
@@ -452,11 +452,11 @@ msgstr "名前"
 msgid "Net"
 msgstr "帯域"
 
-#: src/components/routes/system.tsx:453
+#: src/components/routes/system.tsx:451
 msgid "Network traffic of docker containers"
 msgstr "Dockerコンテナのネットワークトラフィック"
 
-#: src/components/routes/system.tsx:438
+#: src/components/routes/system.tsx:436
 msgid "Network traffic of public interfaces"
 msgstr "パブリックインターフェースのネットワークトラフィック"
 
@@ -552,11 +552,11 @@ msgstr "手順については<0>ドキュメント</0>を参照してくださ�
 msgid "Please sign in to your account"
 msgstr "アカウントにサインインしてください"
 
-#: src/components/add-system.tsx:125
+#: src/components/add-system.tsx:120
 msgid "Port"
 msgstr "ポート"
 
-#: src/components/routes/system.tsx:398
+#: src/components/routes/system.tsx:400
 msgid "Precise utilization at the recorded time"
 msgstr "記録された時点での正確な利用"
 
@@ -565,18 +565,18 @@ msgid "Preferred Language"
 msgstr "優先言語"
 
 #. Use 'Key' if your language requires many more characters
-#: src/components/add-system.tsx:131
+#: src/components/add-system.tsx:124
 msgid "Public Key"
 msgstr "公開鍵"
 
-#. Context is disk read
-#: src/components/charts/area-chart.tsx:56
-#: src/components/charts/area-chart.tsx:66
+#. Disk read
+#: src/components/charts/area-chart.tsx:60
+#: src/components/charts/area-chart.tsx:70
 msgid "Read"
 msgstr "読み取り"
 
-#. Context is network bytes received (download)
-#: src/components/charts/area-chart.tsx:61
+#. Network bytes received (download)
+#: src/components/charts/area-chart.tsx:65
 msgid "Received"
 msgstr "受信"
 
@@ -609,8 +609,8 @@ msgstr "システムまたは設定を検索..."
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "アラートの受信方法を設定するには<0>通知設定</0>を参照してください。"
 
-#. Context is network bytes sent (upload)
-#: src/components/charts/area-chart.tsx:60
+#. Network bytes sent (upload)
+#: src/components/charts/area-chart.tsx:64
 msgid "Sent"
 msgstr "送信"
 
@@ -642,11 +642,11 @@ msgstr "SMTP設定"
 msgid "Status"
 msgstr "ステータス"
 
-#: src/components/routes/system.tsx:467
+#: src/components/routes/system.tsx:466
 msgid "Swap space used by the system"
 msgstr "システムが使用するスワップ領域"
 
-#: src/components/routes/system.tsx:466
+#: src/components/routes/system.tsx:465
 msgid "Swap Usage"
 msgstr "スワップ使用量"
 
@@ -698,11 +698,11 @@ msgstr "その後、バックエンドにログインして、ユーザーテー
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "この操作は元に戻せません。これにより、データベースから{name}のすべての現在のレコードが永久に削除されます。"
 
-#: src/components/routes/system.tsx:507
+#: src/components/routes/system.tsx:557
 msgid "Throughput of {extraFsName}"
 msgstr "{extraFsName}のスループット"
 
-#: src/components/routes/system.tsx:427
+#: src/components/routes/system.tsx:425
 msgid "Throughput of root filesystem"
 msgstr "ルートファイルシステムのスループット"
 
@@ -710,8 +710,8 @@ msgstr "ルートファイルシステムのスループット"
 msgid "To email(s)"
 msgstr "メール宛"
 
-#: src/components/routes/system.tsx:350
-#: src/components/routes/system.tsx:363
+#: src/components/routes/system.tsx:352
+#: src/components/routes/system.tsx:365
 msgid "Toggle grid"
 msgstr "グリッドを切り替え"
 
@@ -747,18 +747,21 @@ msgstr "ディスクの使用量がしきい値を超えたときにトリガー
 msgid "Updated in real time. Click on a system to view information."
 msgstr "リアルタイムで更新されます。システムをクリックして情報を表示します。"
 
-#: src/components/routes/system.tsx:253
+#: src/components/routes/system.tsx:254
 msgid "Uptime"
 msgstr "稼働時間"
 
-#: src/components/routes/system.tsx:494
+#: src/components/charts/area-chart.tsx:73
+#: src/components/routes/system.tsx:507
+#: src/components/routes/system.tsx:544
 msgid "Usage"
 msgstr "使用量"
 
-#: src/components/routes/system.tsx:415
+#: src/components/routes/system.tsx:417
 msgid "Usage of root partition"
 msgstr "ルートパーティションの使用量"
 
+#: src/components/charts/area-chart.tsx:73
 #: src/components/charts/mem-chart.tsx:65
 #: src/components/charts/swap-chart.tsx:56
 msgid "Used"
@@ -777,7 +780,7 @@ msgstr "ユーザー名"
 msgid "Users"
 msgstr "ユーザー"
 
-#: src/components/routes/system.tsx:603
+#: src/components/routes/system.tsx:653
 msgid "Waiting for enough records to display"
 msgstr "表示するのに十分なレコードを待っています"
 
@@ -789,9 +792,9 @@ msgstr "翻訳をさらに良くするためにご協力いただけますか？
 msgid "Webhook / Push notifications"
 msgstr "Webhook / プッシュ通知"
 
-#. Context is disk write
-#: src/components/charts/area-chart.tsx:55
-#: src/components/charts/area-chart.tsx:65
+#. Disk write
+#: src/components/charts/area-chart.tsx:59
+#: src/components/charts/area-chart.tsx:69
 msgid "Write"
 msgstr "書き込み"
 

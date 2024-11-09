@@ -18,11 +18,11 @@ msgstr ""
 "X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 16\n"
 
-#: src/components/routes/system.tsx:242
+#: src/components/routes/system.tsx:243
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# день} other {# дней}}"
 
-#: src/components/routes/system.tsx:240
+#: src/components/routes/system.tsx:241
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# час} other {# часов}}"
 
@@ -63,8 +63,8 @@ msgstr "Добавить <0>Систему</0>"
 msgid "Add New System"
 msgstr "Добавить новую систему"
 
-#: src/components/add-system.tsx:167
-#: src/components/add-system.tsx:178
+#: src/components/add-system.tsx:161
+#: src/components/add-system.tsx:172
 msgid "Add system"
 msgstr "Добавить систему"
 
@@ -112,11 +112,11 @@ msgstr "Поставщики аутентификации"
 msgid "Automatic copy requires a secure context."
 msgstr "Автоматическое копирование требует безопасного контекста."
 
-#: src/components/routes/system.tsx:568
+#: src/components/routes/system.tsx:618
 msgid "Average"
 msgstr "Среднее"
 
-#: src/components/routes/system.tsx:387
+#: src/components/routes/system.tsx:389
 msgid "Average CPU utilization of containers"
 msgstr "Среднее использование CPU контейнерами"
 
@@ -124,7 +124,7 @@ msgstr "Среднее использование CPU контейнерами"
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Среднее превышает <0>{value}{0}</0>"
 
-#: src/components/routes/system.tsx:376
+#: src/components/routes/system.tsx:378
 msgid "Average system-wide CPU utilization"
 msgstr "Среднее использование CPU по всей системе"
 
@@ -133,7 +133,7 @@ msgstr "Среднее использование CPU по всей систем
 msgid "Backups"
 msgstr "Резервные копии"
 
-#: src/components/routes/system.tsx:436
+#: src/components/routes/system.tsx:434
 #: src/lib/utils.ts:307
 msgid "Bandwidth"
 msgstr "Пропускная способность"
@@ -182,7 +182,7 @@ msgstr "Проверьте журналы для получения более �
 msgid "Check your notification service"
 msgstr "Проверьте ваш сервис уведомлений"
 
-#: src/components/add-system.tsx:153
+#: src/components/add-system.tsx:147
 msgid "Click to copy"
 msgstr "Нажмите, чтобы скопировать"
 
@@ -213,7 +213,7 @@ msgstr "Продолжить"
 msgid "Copied to clipboard"
 msgstr "Скопировано в буфер обмена"
 
-#: src/components/add-system.tsx:164
+#: src/components/add-system.tsx:158
 msgid "Copy"
 msgstr "Копировать"
 
@@ -221,7 +221,7 @@ msgstr "Копировать"
 msgid "Copy host"
 msgstr "Копировать хост"
 
-#: src/components/add-system.tsx:175
+#: src/components/add-system.tsx:169
 msgid "Copy Linux command"
 msgstr "Копировать команду Linux"
 
@@ -233,8 +233,8 @@ msgstr "Копировать текст"
 msgid "CPU"
 msgstr "CPU"
 
-#: src/components/charts/area-chart.tsx:52
-#: src/components/routes/system.tsx:375
+#: src/components/charts/area-chart.tsx:56
+#: src/components/routes/system.tsx:377
 #: src/lib/utils.ts:289
 msgid "CPU Usage"
 msgstr "Использование CPU"
@@ -265,29 +265,29 @@ msgstr "Удалить"
 msgid "Disk"
 msgstr "Диск"
 
-#: src/components/routes/system.tsx:426
+#: src/components/routes/system.tsx:424
 msgid "Disk I/O"
 msgstr "Дисковый ввод/вывод"
 
-#: src/components/charts/disk-chart.tsx:74
-#: src/components/routes/system.tsx:415
+#: src/components/charts/disk-chart.tsx:79
+#: src/components/routes/system.tsx:417
 #: src/lib/utils.ts:301
 msgid "Disk Usage"
 msgstr "Использование диска"
 
-#: src/components/routes/system.tsx:495
+#: src/components/routes/system.tsx:545
 msgid "Disk usage of {extraFsName}"
 msgstr "Использование диска {extraFsName}"
 
-#: src/components/routes/system.tsx:386
+#: src/components/routes/system.tsx:388
 msgid "Docker CPU Usage"
 msgstr "Использование CPU Docker"
 
-#: src/components/routes/system.tsx:407
+#: src/components/routes/system.tsx:409
 msgid "Docker Memory Usage"
 msgstr "Использование памяти Docker"
 
-#: src/components/routes/system.tsx:452
+#: src/components/routes/system.tsx:450
 msgid "Docker Network I/O"
 msgstr "Сетевой ввод/вывод Docker"
 
@@ -355,7 +355,7 @@ msgstr "Не удалось отправить тестовое уведомле
 msgid "Failed to update alert"
 msgstr "Не удалось обновить оповещение"
 
-#: src/components/routes/system.tsx:539
+#: src/components/routes/system.tsx:589
 #: src/components/systems-table/systems-table.tsx:324
 msgid "Filter..."
 msgstr "Фильтр..."
@@ -374,7 +374,7 @@ msgstr "Забыли пароль?"
 msgid "General"
 msgstr "Общие"
 
-#: src/components/add-system.tsx:119
+#: src/components/add-system.tsx:116
 msgid "Host / IP"
 msgstr "Хост / IP"
 
@@ -387,7 +387,7 @@ msgid "Invalid email address."
 msgstr "Неверный адрес электронной почты."
 
 #. Linux kernel
-#: src/components/routes/system.tsx:254
+#: src/components/routes/system.tsx:255
 msgid "Kernel"
 msgstr "Ядро"
 
@@ -427,7 +427,7 @@ msgid "Manage display and notification preferences."
 msgstr "Управляйте предпочтениями отображения и уведомлений."
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:571
+#: src/components/routes/system.tsx:621
 msgid "Max 1 min"
 msgstr "Макс 1 мин"
 
@@ -435,16 +435,16 @@ msgstr "Макс 1 мин"
 msgid "Memory"
 msgstr "Память"
 
-#: src/components/routes/system.tsx:397
+#: src/components/routes/system.tsx:399
 #: src/lib/utils.ts:295
 msgid "Memory Usage"
 msgstr "Использование памяти"
 
-#: src/components/routes/system.tsx:408
+#: src/components/routes/system.tsx:410
 msgid "Memory usage of docker containers"
 msgstr "Использование памяти контейнерами Docker"
 
-#: src/components/add-system.tsx:113
+#: src/components/add-system.tsx:112
 msgid "Name"
 msgstr "Имя"
 
@@ -452,11 +452,11 @@ msgstr "Имя"
 msgid "Net"
 msgstr "Сеть"
 
-#: src/components/routes/system.tsx:453
+#: src/components/routes/system.tsx:451
 msgid "Network traffic of docker containers"
 msgstr "Сетевой трафик контейнеров Docker"
 
-#: src/components/routes/system.tsx:438
+#: src/components/routes/system.tsx:436
 msgid "Network traffic of public interfaces"
 msgstr "Сетевой трафик публичных интерфейсов"
 
@@ -552,11 +552,11 @@ msgstr "Пожалуйста, смотрите <0>документацию</0> �
 msgid "Please sign in to your account"
 msgstr "Пожалуйста, войдите в свою учетную запись"
 
-#: src/components/add-system.tsx:125
+#: src/components/add-system.tsx:120
 msgid "Port"
 msgstr "Порт"
 
-#: src/components/routes/system.tsx:398
+#: src/components/routes/system.tsx:400
 msgid "Precise utilization at the recorded time"
 msgstr "Точное использование в записанное время"
 
@@ -565,18 +565,18 @@ msgid "Preferred Language"
 msgstr "Предпочтительный язык"
 
 #. Use 'Key' if your language requires many more characters
-#: src/components/add-system.tsx:131
+#: src/components/add-system.tsx:124
 msgid "Public Key"
 msgstr "Ключ"
 
-#. Context is disk read
-#: src/components/charts/area-chart.tsx:56
-#: src/components/charts/area-chart.tsx:66
+#. Disk read
+#: src/components/charts/area-chart.tsx:60
+#: src/components/charts/area-chart.tsx:70
 msgid "Read"
 msgstr "Чтение"
 
-#. Context is network bytes received (download)
-#: src/components/charts/area-chart.tsx:61
+#. Network bytes received (download)
+#: src/components/charts/area-chart.tsx:65
 msgid "Received"
 msgstr "Получено"
 
@@ -609,8 +609,8 @@ msgstr "Поиск систем или настроек..."
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Смотрите <0>настройки уведомлений</0>, чтобы настроить, как вы получаете оповещения."
 
-#. Context is network bytes sent (upload)
-#: src/components/charts/area-chart.tsx:60
+#. Network bytes sent (upload)
+#: src/components/charts/area-chart.tsx:64
 msgid "Sent"
 msgstr "Отправлено"
 
@@ -642,11 +642,11 @@ msgstr "Настройки SMTP"
 msgid "Status"
 msgstr "Статус"
 
-#: src/components/routes/system.tsx:467
+#: src/components/routes/system.tsx:466
 msgid "Swap space used by the system"
 msgstr "Используемое системой пространство подкачки"
 
-#: src/components/routes/system.tsx:466
+#: src/components/routes/system.tsx:465
 msgid "Swap Usage"
 msgstr "Использование подкачки"
 
@@ -698,11 +698,11 @@ msgstr "Затем войдите в бэкенд и сбросьте парол
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Это действие не может быть отменено. Это навсегда удалит все текущие записи для {name} из базы данных."
 
-#: src/components/routes/system.tsx:507
+#: src/components/routes/system.tsx:557
 msgid "Throughput of {extraFsName}"
 msgstr "Пропускная способность {extraFsName}"
 
-#: src/components/routes/system.tsx:427
+#: src/components/routes/system.tsx:425
 msgid "Throughput of root filesystem"
 msgstr "Пропускная способность корневой файловой системы"
 
@@ -710,8 +710,8 @@ msgstr "Пропускная способность корневой файло�
 msgid "To email(s)"
 msgstr "На электронную почту"
 
-#: src/components/routes/system.tsx:350
-#: src/components/routes/system.tsx:363
+#: src/components/routes/system.tsx:352
+#: src/components/routes/system.tsx:365
 msgid "Toggle grid"
 msgstr "Переключить сетку"
 
@@ -747,18 +747,21 @@ msgstr "Срабатывает, когда использование любог
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Обновляется в реальном времени. Нажмите на систему, чтобы просмотреть информацию."
 
-#: src/components/routes/system.tsx:253
+#: src/components/routes/system.tsx:254
 msgid "Uptime"
 msgstr "Время работы"
 
-#: src/components/routes/system.tsx:494
+#: src/components/charts/area-chart.tsx:73
+#: src/components/routes/system.tsx:507
+#: src/components/routes/system.tsx:544
 msgid "Usage"
 msgstr "Использование"
 
-#: src/components/routes/system.tsx:415
+#: src/components/routes/system.tsx:417
 msgid "Usage of root partition"
 msgstr "Использование корневого раздела"
 
+#: src/components/charts/area-chart.tsx:73
 #: src/components/charts/mem-chart.tsx:65
 #: src/components/charts/swap-chart.tsx:56
 msgid "Used"
@@ -777,7 +780,7 @@ msgstr "Имя пользователя"
 msgid "Users"
 msgstr "Пользователи"
 
-#: src/components/routes/system.tsx:603
+#: src/components/routes/system.tsx:653
 msgid "Waiting for enough records to display"
 msgstr "Ожидание достаточного количества записей для отображения"
 
@@ -789,9 +792,9 @@ msgstr "Хотите помочь нам улучшить наши перево�
 msgid "Webhook / Push notifications"
 msgstr "Webhook / Push уведомления"
 
-#. Context is disk write
-#: src/components/charts/area-chart.tsx:55
-#: src/components/charts/area-chart.tsx:65
+#. Disk write
+#: src/components/charts/area-chart.tsx:59
+#: src/components/charts/area-chart.tsx:69
 msgid "Write"
 msgstr "Запись"
 
