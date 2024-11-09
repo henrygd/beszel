@@ -557,6 +557,7 @@ msgid "Port"
 msgstr "端口"
 
 #: src/components/routes/system.tsx:400
+#: src/components/routes/system.tsx:516
 msgid "Precise utilization at the recorded time"
 msgstr "记录时间的精确使用率"
 

@@ -557,6 +557,7 @@ msgid "Port"
 msgstr "ポート"
 
 #: src/components/routes/system.tsx:400
+#: src/components/routes/system.tsx:516
 msgid "Precise utilization at the recorded time"
 msgstr "記録された時点での正確な利用"
 

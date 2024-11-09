@@ -557,6 +557,7 @@ msgid "Port"
 msgstr "Porta"
 
 #: src/components/routes/system.tsx:400
+#: src/components/routes/system.tsx:516
 msgid "Precise utilization at the recorded time"
 msgstr "Utilização precisa no momento registrado"
 

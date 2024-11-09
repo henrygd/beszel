@@ -557,6 +557,7 @@ msgid "Port"
 msgstr "포트"
 
 #: src/components/routes/system.tsx:400
+#: src/components/routes/system.tsx:516
 msgid "Precise utilization at the recorded time"
 msgstr "기록된 시간의 정확한 사용량"
 

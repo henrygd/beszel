@@ -557,6 +557,7 @@ msgid "Port"
 msgstr "Cổng"
 
 #: src/components/routes/system.tsx:400
+#: src/components/routes/system.tsx:516
 msgid "Precise utilization at the recorded time"
 msgstr "Sử dụng chính xác tại thời điểm ghi nhận"
 
