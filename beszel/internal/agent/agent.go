@@ -78,7 +78,7 @@ func (a *Agent) Run(pubKey []byte, addr string) {
 	// initialize GPU manager
 	if os.Getenv("GPU") == "true" {
 		if gm, err := NewGPUManager(); err != nil {
-			slog.Error("GPU manager", "err", err)
+			slog.Warn("GPU", "err", err)
 		} else {
 			a.gpuManager = gm
 		}

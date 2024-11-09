@@ -24,6 +24,7 @@ const MemChart = lazy(() => import("../charts/mem-chart"))
 const DiskChart = lazy(() => import("../charts/disk-chart"))
 const SwapChart = lazy(() => import("../charts/swap-chart"))
 const TemperatureChart = lazy(() => import("../charts/temperature-chart"))
+const GpuPowerChart = lazy(() => import("../charts/gpu-power-chart"))
 
 const cache = new Map<string, any>()
 
@@ -285,6 +286,7 @@ export default function SystemDetail({ name }: { name: string }) {
 
 	// if no data, show empty message
 	const dataEmpty = !chartLoading && chartData.systemStats.length === 0
+	const hasGpuData = Object.keys(systemStats.at(-1)?.stats.g ?? {}).length > 0
 
 	return (
 		<>
@@ -455,6 +457,7 @@ export default function SystemDetail({ name }: { name: string }) {
 						</div>
 					)}
 
+					{/* Swap chart */}
 					{(systemStats.at(-1)?.stats.su ?? 0) > 0 && (
 						<ChartCard
 							empty={dataEmpty}
@@ -466,6 +469,7 @@ export default function SystemDetail({ name }: { name: string }) {
 						</ChartCard>
 					)}
 
+					{/* Temperature chart */}
 					{systemStats.at(-1)?.stats.t && (
 						<ChartCard
 							empty={dataEmpty}
@@ -476,10 +480,22 @@ export default function SystemDetail({ name }: { name: string }) {
 							<TemperatureChart chartData={chartData} />
 						</ChartCard>
 					)}
+
+					{/* GPU power draw chart */}
+					{hasGpuData && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title="GPU Power Draw"
+							description="Average power consumption of GPUs"
+						>
+							<GpuPowerChart chartData={chartData} />
+						</ChartCard>
+					)}
 				</div>
 
 				{/* GPU charts */}
-				{Object.keys(systemStats.at(-1)?.stats.g ?? {}).length > 0 && (
+				{hasGpuData && (
 					<div className="grid xl:grid-cols-2 gap-4">
 						{Object.keys(systemStats.at(-1)?.stats.g ?? {}).map((id) => {
 							const gpu = systemStats.at(-1)?.stats.g?.[id] as GPUData
@@ -489,7 +505,7 @@ export default function SystemDetail({ name }: { name: string }) {
 										empty={dataEmpty}
 										grid={grid}
 										title={`${gpu.n} ${t`Usage`}`}
-										description={t`Total utilization of ${gpu.n}`}
+										description={`Average utilization of ${gpu.n}`}
 									>
 										<AreaChartDefault chartData={chartData} chartName={`g.${id}.u`} unit="%" />
 									</ChartCard>
@@ -497,7 +513,7 @@ export default function SystemDetail({ name }: { name: string }) {
 										empty={dataEmpty}
 										grid={grid}
 										title={`${gpu.n} VRAM`}
-										description={t`VRAM usage of ${gpu.n}`}
+										description={t`Precise utilization at the recorded time`}
 									>
 										<AreaChartDefault
 											chartData={chartData}

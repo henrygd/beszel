@@ -93,9 +93,9 @@ func (gm *GPUManager) parseNvidiaData(output []byte) {
 				}
 				// update gpu data
 				gpu := gm.GpuDataMap[id]
-				gpu.Temperature += temp
-				gpu.MemoryUsed += memoryUsage / 1.024
-				gpu.MemoryTotal += totalMemory / 1.024
+				gpu.Temperature = temp
+				gpu.MemoryUsed = memoryUsage / 1.024
+				gpu.MemoryTotal = totalMemory / 1.024
 				gpu.Usage += usage
 				gpu.Power += power
 				gpu.Count++
@@ -120,7 +120,7 @@ func (gm *GPUManager) startAmdCollector() {
 
 // collectAmdStats runs rocm-smi in a loop and passes the output to parseAmdData
 func (gm *GPUManager) collectAmdStats() error {
-	cmd := exec.Command("/bin/sh", "-c", "while true; do rocm-smi --showid --showtemp --showuse --showpower --showproductname --showmeminfo vram --json; sleep 4.7; done")
+	cmd := exec.Command("/bin/sh", "-c", "while true; do rocm-smi --showid --showtemp --showuse --showpower --showproductname --showmeminfo vram --json; sleep 3.7; done")
 	// Set up a pipe to capture stdout
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -168,9 +168,9 @@ func (gm *GPUManager) parseAmdData(rocmSmiInfo *map[string]RocmSmiJson) {
 			gm.GpuDataMap[v.ID] = &system.GPUData{Name: v.Name}
 		}
 		gpu := gm.GpuDataMap[v.ID]
-		gpu.Temperature += temp
-		gpu.MemoryUsed += memoryUsage
-		gpu.MemoryTotal += totalMemory
+		gpu.Temperature = temp
+		gpu.MemoryUsed = memoryUsage
+		gpu.MemoryTotal = totalMemory
 		gpu.Usage += usage
 		gpu.Power += power
 		gpu.Count++
@@ -185,19 +185,14 @@ func (gm *GPUManager) GetCurrentData() map[string]system.GPUData {
 	gpuData := make(map[string]system.GPUData, len(gm.GpuDataMap))
 	for id, gpu := range gm.GpuDataMap {
 		// sum the data
-		gpu.Temperature = twoDecimals(gpu.Temperature / gpu.Count)
-		gpu.MemoryUsed = twoDecimals(gpu.MemoryUsed / gpu.Count)
-		gpu.MemoryTotal = twoDecimals(gpu.MemoryTotal / gpu.Count)
+		gpu.Temperature = twoDecimals(gpu.Temperature)
+		gpu.MemoryUsed = twoDecimals(gpu.MemoryUsed)
+		gpu.MemoryTotal = twoDecimals(gpu.MemoryTotal)
 		gpu.Usage = twoDecimals(gpu.Usage / gpu.Count)
 		gpu.Power = twoDecimals(gpu.Power / gpu.Count)
 		gpuData[id] = *gpu
-		// reset the data
-		gpu.Temperature = 0
-		gpu.MemoryUsed = 0
-		gpu.MemoryTotal = 0
-		gpu.Usage = 0
-		gpu.Power = 0
-		gpu.Count = 0
+		// reset the count
+		gpu.Count = 1
 	}
 	return gpuData
 }
