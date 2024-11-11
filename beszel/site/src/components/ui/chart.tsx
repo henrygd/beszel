@@ -334,7 +334,7 @@ const xAxis = function ({ domain, ticks, chartTime }: ChartData) {
 			allowDataOverflow
 			type="number"
 			scale="time"
-			minTickGap={15}
+			minTickGap={12}
 			tickMargin={8}
 			axisLine={false}
 			tickFormatter={chartTimeData[chartTime].format}

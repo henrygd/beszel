@@ -35,7 +35,7 @@ const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0
 
 export default function Navbar() {
 	return (
-		<div className="flex items-center h-14 md:h-16 bg-card px-4 pe-3 sm:px-6 border bt-0 rounded-md my-4">
+		<div className="flex items-center h-14 md:h-16 bg-card px-4 pe-3 sm:px-6 border border-border/60 bt-0 rounded-md my-4">
 			<Link href="/" aria-label="Home" className="p-2 ps-0 me-3">
 				<Logo className="h-[1.1rem] md:h-5 fill-foreground" />
 			</Link>
