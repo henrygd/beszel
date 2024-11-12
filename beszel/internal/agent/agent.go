@@ -73,7 +73,7 @@ func (a *Agent) Run(pubKey []byte, addr string) {
 	a.initializeSystemInfo()
 	a.initializeDiskInfo()
 	a.initializeNetIoStats()
-	a.dockerManager = newDockerManager()
+	a.dockerManager = newDockerManager(a)
 
 	// initialize GPU manager
 	if os.Getenv("GPU") == "true" {

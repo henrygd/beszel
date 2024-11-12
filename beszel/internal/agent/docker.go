@@ -25,18 +25,23 @@ type dockerManager struct {
 	apiContainerList    *[]container.ApiInfo        // List of containers from Docker API
 	containerStatsMap   map[string]*container.Stats // Keeps track of container stats
 	validIds            map[string]struct{}         // Map of valid container ids, used to prune invalid containers from containerStatsMap
+	goodDockerVersion   bool                        // Whether docker version is at least 25.0.0 (one-shot works correctly)
 }
 
 // Add goroutine to the queue
 func (d *dockerManager) queue() {
-	d.sem <- struct{}{}
 	d.wg.Add(1)
+	if d.goodDockerVersion {
+		d.sem <- struct{}{}
+	}
 }
 
 // Remove goroutine from the queue
 func (d *dockerManager) dequeue() {
-	<-d.sem
 	d.wg.Done()
+	if d.goodDockerVersion {
+		<-d.sem
+	}
 }
 
 // Returns stats for all running containers
@@ -75,6 +80,7 @@ func (dm *dockerManager) getDockerStats() ([]*container.Stats, error) {
 		go func() {
 			defer dm.dequeue()
 			err := dm.updateContainerStats(ctr)
+			// if error, delete from map and add to failed list to retry
 			if err != nil {
 				dm.containerStatsMutex.Lock()
 				delete(dm.containerStatsMap, ctr.IdShort)
@@ -89,11 +95,10 @@ func (dm *dockerManager) getDockerStats() ([]*container.Stats, error) {
 	// retry failed containers separately so we can run them in parallel (docker 24 bug)
 	if len(failedContainters) > 0 {
 		slog.Debug("Retrying failed containers", "count", len(failedContainters))
-		// time.Sleep(time.Millisecond * 1100)
 		for _, ctr := range failedContainters {
-			dm.wg.Add(1)
+			dm.queue()
 			go func() {
-				defer dm.wg.Done()
+				defer dm.dequeue()
 				err = dm.updateContainerStats(ctr)
 				if err != nil {
 					slog.Error("Error getting container stats", "err", err)
@@ -201,12 +206,13 @@ func (dm *dockerManager) deleteContainerStatsSync(id string) {
 	delete(dm.containerStatsMap, id)
 }
 
-// Creates a new http client for Docker API
-func newDockerManager() *dockerManager {
-	dockerHost := "unix:///var/run/docker.sock"
-	if dockerHostEnv, exists := os.LookupEnv("DOCKER_HOST"); exists {
-		slog.Info("DOCKER_HOST", "host", dockerHostEnv)
-		dockerHost = dockerHostEnv
+// Creates a new http client for Docker or Podman API
+func newDockerManager(a *Agent) *dockerManager {
+	dockerHost, exists := os.LookupEnv("DOCKER_HOST")
+	if exists {
+		slog.Info("DOCKER_HOST", "host", dockerHost)
+	} else {
+		dockerHost = getDockerHost()
 	}
 
 	parsedURL, err := url.Parse(dockerHost)
@@ -251,11 +257,15 @@ func newDockerManager() *dockerManager {
 			Transport: transport,
 		},
 		containerStatsMap: make(map[string]*container.Stats),
+		sem:               make(chan struct{}, 5),
 	}
 
-	// Make sure sem is initialized
-	concurrency := 200
-	defer func() { dockerClient.sem = make(chan struct{}, concurrency) }()
+	// If using podman, return client
+	if strings.Contains(dockerHost, "podman") {
+		a.systemInfo.Podman = true
+		dockerClient.goodDockerVersion = true
+		return dockerClient
+	}
 
 	// Check docker version
 	// (versions before 25.0.0 have a bug with one-shot which requires all requests to be made in one batch)
@@ -273,9 +283,22 @@ func newDockerManager() *dockerManager {
 
 	// if version > 24, one-shot works correctly and we can limit concurrent operations
 	if dockerVersion, err := semver.Parse(versionInfo.Version); err == nil && dockerVersion.Major > 24 {
-		concurrency = 5
+		dockerClient.goodDockerVersion = true
+	} else {
+		slog.Info(fmt.Sprintf("Docker %s is outdated. Upgrade if possible. See https://github.com/henrygd/beszel/issues/58", versionInfo.Version))
 	}
-	slog.Debug("Docker", "version", versionInfo.Version, "concurrency", concurrency)
 
 	return dockerClient
+}
+
+// Test docker / podman sockets and return if one exists
+func getDockerHost() string {
+	scheme := "unix://"
+	socks := []string{"/var/run/docker.sock", "/run/user/1000/podman/podman.sock", "/run/podman/podman.sock"}
+	for _, sock := range socks {
+		if _, err := os.Stat(sock); err == nil {
+			return scheme + sock
+		}
+	}
+	return scheme + socks[0]
 }

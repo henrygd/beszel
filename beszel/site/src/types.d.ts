@@ -34,6 +34,8 @@ export interface SystemInfo {
 	b: number
 	/** agent version */
 	v: string
+	/** system is using podman */
+	p?: boolean
 }
 
 export interface SystemStats {

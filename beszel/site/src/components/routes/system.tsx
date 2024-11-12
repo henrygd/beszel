@@ -86,6 +86,13 @@ async function getStats<T>(collection: string, system: SystemRecord, chartTime: 
 	})
 }
 
+function dockerOrPodman(str: string, system: SystemRecord) {
+	if (system.info.p) {
+		str = str.replace("docker", "podman").replace("Docker", "Podman")
+	}
+	return str
+}
+
 export default function SystemDetail({ name }: { name: string }) {
 	const direction = useStore($direction)
 	const { _ } = useLingui()
@@ -385,7 +392,7 @@ export default function SystemDetail({ name }: { name: string }) {
 						<ChartCard
 							empty={dataEmpty}
 							grid={grid}
-							title={t`Docker CPU Usage`}
+							title={dockerOrPodman(t`Docker CPU Usage`, system)}
 							description={t`Average CPU utilization of containers`}
 							cornerEl={containerFilterBar}
 						>
@@ -406,8 +413,8 @@ export default function SystemDetail({ name }: { name: string }) {
 						<ChartCard
 							empty={dataEmpty}
 							grid={grid}
-							title={t`Docker Memory Usage`}
-							description={t`Memory usage of docker containers`}
+							title={dockerOrPodman(t`Docker Memory Usage`, system)}
+							description={dockerOrPodman(t`Memory usage of docker containers`, system)}
 							cornerEl={containerFilterBar}
 						>
 							<ContainerChart chartData={chartData} chartName="mem" dataKey="m" unit=" MB" />
@@ -447,8 +454,8 @@ export default function SystemDetail({ name }: { name: string }) {
 						>
 							<ChartCard
 								empty={dataEmpty}
-								title={t`Docker Network I/O`}
-								description={t`Network traffic of docker containers`}
+								title={dockerOrPodman(t`Docker Network I/O`, system)}
+								description={dockerOrPodman(t`Network traffic of docker containers`, system)}
 								cornerEl={containerFilterBar}
 							>
 								{/* @ts-ignore */}
@@ -649,7 +656,7 @@ function ChartCard({
 				<CardDescription>{description}</CardDescription>
 				{cornerEl && <div className="relative py-1 block sm:w-44 sm:absolute sm:top-2.5 sm:end-3.5">{cornerEl}</div>}
 			</CardHeader>
-			<div className="ps-0 w-[calc(100%-1.6em)] h-52 relative">
+			<div className="ps-0 w-[calc(100%-1.5em)] h-52 relative">
 				{<Spinner msg={empty ? t`Waiting for enough records to display` : undefined} />}
 				{isIntersecting && children}
 			</div>

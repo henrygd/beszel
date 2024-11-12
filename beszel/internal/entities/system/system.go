@@ -74,6 +74,7 @@ type Info struct {
 	DiskPct       float64 `json:"dp"`
 	Bandwidth     float64 `json:"b"`
 	AgentVersion  string  `json:"v"`
+	Podman        bool    `json:"p,omitempty"`
 }
 
 // Final data structure to return to the hub
