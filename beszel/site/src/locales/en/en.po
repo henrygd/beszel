@@ -127,6 +127,10 @@ msgstr "Average power consumption of GPUs"
 msgid "Average system-wide CPU utilization"
 msgstr "Average system-wide CPU utilization"
 
+#: src/components/routes/system.tsx:515
+msgid "Average utilization of {0}"
+msgstr "Average utilization of {0}"
+
 #: src/components/command-palette.tsx:171
 #: src/components/navbar.tsx:94
 msgid "Backups"

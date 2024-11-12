@@ -132,6 +132,10 @@ msgstr ""
 msgid "Average system-wide CPU utilization"
 msgstr "Среднее использование CPU по всей системе"
 
+#: src/components/routes/system.tsx:515
+msgid "Average utilization of {0}"
+msgstr ""
+
 #: src/components/command-palette.tsx:171
 #: src/components/navbar.tsx:94
 msgid "Backups"

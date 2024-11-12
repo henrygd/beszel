@@ -512,7 +512,7 @@ export default function SystemDetail({ name }: { name: string }) {
 										empty={dataEmpty}
 										grid={grid}
 										title={`${gpu.n} ${t`Usage`}`}
-										description={`Average utilization of ${gpu.n}`}
+										description={t`Average utilization of ${gpu.n}`}
 									>
 										<AreaChartDefault chartData={chartData} chartName={`g.${id}.u`} unit="%" />
 									</ChartCard>
