@@ -294,7 +294,7 @@ func newDockerManager(a *Agent) *dockerManager {
 // Test docker / podman sockets and return if one exists
 func getDockerHost() string {
 	scheme := "unix://"
-	socks := []string{"/var/run/docker.sock", "/run/user/1000/podman/podman.sock", "/run/podman/podman.sock"}
+	socks := []string{"/var/run/docker.sock", fmt.Sprintf("/run/user/%v/podman/podman.sock", os.Getuid())}
 	for _, sock := range socks {
 		if _, err := os.Stat(sock); err == nil {
 			return scheme + sock
