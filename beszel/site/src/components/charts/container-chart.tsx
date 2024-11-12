@@ -116,7 +116,7 @@ export default memo(function ContainerChart({
 		}
 		// data function
 		if (isNetChart) {
-			obj.dataFunction = (key: string, data: any) => (data[key]?.nr ?? null) + (data[key]?.ns ?? null)
+			obj.dataFunction = (key: string, data: any) => (data[key] ? data[key].nr + data[key].ns : null)
 		} else {
 			obj.dataFunction = (key: string, data: any) => data[key]?.[dataKey] ?? null
 		}
