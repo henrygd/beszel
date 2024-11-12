@@ -18,11 +18,11 @@ msgstr ""
 "X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 16\n"
 
-#: src/components/routes/system.tsx:243
+#: src/components/routes/system.tsx:250
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# 日} other {# 日}}"
 
-#: src/components/routes/system.tsx:241
+#: src/components/routes/system.tsx:248
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# 時間} other {# 時間}}"
 
@@ -112,11 +112,11 @@ msgstr "認証プロバイダー"
 msgid "Automatic copy requires a secure context."
 msgstr "自動コピーには安全なコンテキストが必要です。"
 
-#: src/components/routes/system.tsx:618
+#: src/components/routes/system.tsx:625
 msgid "Average"
 msgstr "平均"
 
-#: src/components/routes/system.tsx:389
+#: src/components/routes/system.tsx:396
 msgid "Average CPU utilization of containers"
 msgstr "コンテナの平均CPU使用率"
 
@@ -124,7 +124,11 @@ msgstr "コンテナの平均CPU使用率"
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "平均が<0>{value}{0}</0>を超えています"
 
-#: src/components/routes/system.tsx:378
+#: src/components/routes/system.tsx:497
+msgid "Average power consumption of GPUs"
+msgstr ""
+
+#: src/components/routes/system.tsx:385
 msgid "Average system-wide CPU utilization"
 msgstr "システム全体の平均CPU使用率"
 
@@ -133,7 +137,7 @@ msgstr "システム全体の平均CPU使用率"
 msgid "Backups"
 msgstr "バックアップ"
 
-#: src/components/routes/system.tsx:434
+#: src/components/routes/system.tsx:441
 #: src/lib/utils.ts:307
 msgid "Bandwidth"
 msgstr "帯域幅"
@@ -234,7 +238,7 @@ msgid "CPU"
 msgstr "CPU"
 
 #: src/components/charts/area-chart.tsx:56
-#: src/components/routes/system.tsx:377
+#: src/components/routes/system.tsx:384
 #: src/lib/utils.ts:289
 msgid "CPU Usage"
 msgstr "CPU使用率"
@@ -265,29 +269,29 @@ msgstr "削除"
 msgid "Disk"
 msgstr "ディスク"
 
-#: src/components/routes/system.tsx:424
+#: src/components/routes/system.tsx:431
 msgid "Disk I/O"
 msgstr "ディスクI/O"
 
 #: src/components/charts/disk-chart.tsx:79
-#: src/components/routes/system.tsx:417
+#: src/components/routes/system.tsx:424
 #: src/lib/utils.ts:301
 msgid "Disk Usage"
 msgstr "ディスク使用率"
 
-#: src/components/routes/system.tsx:545
+#: src/components/routes/system.tsx:552
 msgid "Disk usage of {extraFsName}"
 msgstr "{extraFsName}のディスク使用率"
 
-#: src/components/routes/system.tsx:388
+#: src/components/routes/system.tsx:395
 msgid "Docker CPU Usage"
 msgstr "Docker CPU使用率"
 
-#: src/components/routes/system.tsx:409
+#: src/components/routes/system.tsx:416
 msgid "Docker Memory Usage"
 msgstr "Dockerメモリ使用率"
 
-#: src/components/routes/system.tsx:450
+#: src/components/routes/system.tsx:457
 msgid "Docker Network I/O"
 msgstr "DockerネットワークI/O"
 
@@ -308,7 +312,7 @@ msgstr "メール"
 msgid "Email notifications"
 msgstr "メール通知"
 
-#: src/components/login/login.tsx:36
+#: src/components/login/login.tsx:38
 msgid "Enter email address to reset password"
 msgstr "パスワードをリセットするためにメールアドレスを入力してください"
 
@@ -355,7 +359,7 @@ msgstr "テスト通知の送信に失敗しました"
 msgid "Failed to update alert"
 msgstr "アラートの更新に失敗しました"
 
-#: src/components/routes/system.tsx:589
+#: src/components/routes/system.tsx:596
 #: src/components/systems-table/systems-table.tsx:324
 msgid "Filter..."
 msgstr "フィルター..."
@@ -374,6 +378,10 @@ msgstr "パスワードをお忘れですか？"
 msgid "General"
 msgstr "一般"
 
+#: src/components/routes/system.tsx:496
+msgid "GPU Power Draw"
+msgstr ""
+
 #: src/components/add-system.tsx:116
 msgid "Host / IP"
 msgstr "ホスト / IP"
@@ -387,7 +395,7 @@ msgid "Invalid email address."
 msgstr "無効なメールアドレスです。"
 
 #. Linux kernel
-#: src/components/routes/system.tsx:255
+#: src/components/routes/system.tsx:262
 msgid "Kernel"
 msgstr "カーネル"
 
@@ -404,7 +412,7 @@ msgstr "ライト"
 msgid "Log Out"
 msgstr "ログアウト"
 
-#: src/components/login/login.tsx:17
+#: src/components/login/login.tsx:19
 msgid "Login"
 msgstr "ログイン"
 
@@ -427,7 +435,7 @@ msgid "Manage display and notification preferences."
 msgstr "表示と通知の設定を管理します。"
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:621
+#: src/components/routes/system.tsx:628
 msgid "Max 1 min"
 msgstr "最大1分"
 
@@ -435,12 +443,12 @@ msgstr "最大1分"
 msgid "Memory"
 msgstr "メモリ"
 
-#: src/components/routes/system.tsx:399
+#: src/components/routes/system.tsx:406
 #: src/lib/utils.ts:295
 msgid "Memory Usage"
 msgstr "メモリ使用率"
 
-#: src/components/routes/system.tsx:410
+#: src/components/routes/system.tsx:417
 msgid "Memory usage of docker containers"
 msgstr "Dockerコンテナのメモリ使用率"
 
@@ -452,11 +460,11 @@ msgstr "名前"
 msgid "Net"
 msgstr "帯域"
 
-#: src/components/routes/system.tsx:451
+#: src/components/routes/system.tsx:458
 msgid "Network traffic of docker containers"
 msgstr "Dockerコンテナのネットワークトラフィック"
 
-#: src/components/routes/system.tsx:436
+#: src/components/routes/system.tsx:443
 msgid "Network traffic of public interfaces"
 msgstr "パブリックインターフェースのネットワークトラフィック"
 
@@ -532,7 +540,7 @@ msgstr "詳細についてはログを確認してください。"
 msgid "Please check your credentials and try again"
 msgstr "資格情報を確認して再試行してください"
 
-#: src/components/login/login.tsx:34
+#: src/components/login/login.tsx:36
 msgid "Please create an admin account"
 msgstr "管理者アカウントを作成してください"
 
@@ -548,7 +556,7 @@ msgstr "再度ログインしてください"
 msgid "Please see <0>the documentation</0> for instructions."
 msgstr "手順については<0>ドキュメント</0>を参照してください。"
 
-#: src/components/login/login.tsx:38
+#: src/components/login/login.tsx:40
 msgid "Please sign in to your account"
 msgstr "アカウントにサインインしてください"
 
@@ -556,8 +564,8 @@ msgstr "アカウントにサインインしてください"
 msgid "Port"
 msgstr "ポート"
 
-#: src/components/routes/system.tsx:400
-#: src/components/routes/system.tsx:516
+#: src/components/routes/system.tsx:407
+#: src/components/routes/system.tsx:523
 msgid "Precise utilization at the recorded time"
 msgstr "記録された時点での正確な利用"
 
@@ -643,11 +651,11 @@ msgstr "SMTP設定"
 msgid "Status"
 msgstr "ステータス"
 
-#: src/components/routes/system.tsx:466
+#: src/components/routes/system.tsx:473
 msgid "Swap space used by the system"
 msgstr "システムが使用するスワップ領域"
 
-#: src/components/routes/system.tsx:465
+#: src/components/routes/system.tsx:472
 msgid "Swap Usage"
 msgstr "スワップ使用量"
 
@@ -666,12 +674,12 @@ msgstr "システム"
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "システムはデータディレクトリ内の<0>config.yml</0>ファイルで管理できます。"
 
-#: src/components/routes/system.tsx:477
+#: src/components/routes/system.tsx:484
 #: src/lib/utils.ts:314
 msgid "Temperature"
 msgstr "温度"
 
-#: src/components/routes/system.tsx:478
+#: src/components/routes/system.tsx:485
 msgid "Temperatures of system sensors"
 msgstr "システムセンサーの温度"
 
@@ -699,11 +707,11 @@ msgstr "その後、バックエンドにログインして、ユーザーテー
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "この操作は元に戻せません。これにより、データベースから{name}のすべての現在のレコードが永久に削除されます。"
 
-#: src/components/routes/system.tsx:557
+#: src/components/routes/system.tsx:564
 msgid "Throughput of {extraFsName}"
 msgstr "{extraFsName}のスループット"
 
-#: src/components/routes/system.tsx:425
+#: src/components/routes/system.tsx:432
 msgid "Throughput of root filesystem"
 msgstr "ルートファイルシステムのスループット"
 
@@ -711,8 +719,8 @@ msgstr "ルートファイルシステムのスループット"
 msgid "To email(s)"
 msgstr "メール宛"
 
-#: src/components/routes/system.tsx:352
-#: src/components/routes/system.tsx:365
+#: src/components/routes/system.tsx:359
+#: src/components/routes/system.tsx:372
 msgid "Toggle grid"
 msgstr "グリッドを切り替え"
 
@@ -748,17 +756,17 @@ msgstr "ディスクの使用量がしきい値を超えたときにトリガー
 msgid "Updated in real time. Click on a system to view information."
 msgstr "リアルタイムで更新されます。システムをクリックして情報を表示します。"
 
-#: src/components/routes/system.tsx:254
+#: src/components/routes/system.tsx:261
 msgid "Uptime"
 msgstr "稼働時間"
 
 #: src/components/charts/area-chart.tsx:73
-#: src/components/routes/system.tsx:507
-#: src/components/routes/system.tsx:544
+#: src/components/routes/system.tsx:514
+#: src/components/routes/system.tsx:551
 msgid "Usage"
 msgstr "使用量"
 
-#: src/components/routes/system.tsx:417
+#: src/components/routes/system.tsx:424
 msgid "Usage of root partition"
 msgstr "ルートパーティションの使用量"
 
@@ -781,7 +789,7 @@ msgstr "ユーザー名"
 msgid "Users"
 msgstr "ユーザー"
 
-#: src/components/routes/system.tsx:653
+#: src/components/routes/system.tsx:662
 msgid "Waiting for enough records to display"
 msgstr "表示するのに十分なレコードを待っています"
 

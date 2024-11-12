@@ -18,11 +18,11 @@ msgstr ""
 "X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 16\n"
 
-#: src/components/routes/system.tsx:243
+#: src/components/routes/system.tsx:250
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# dzień} few {# dni} many {# dni} other {# dni}}"
 
-#: src/components/routes/system.tsx:241
+#: src/components/routes/system.tsx:248
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {godzinę} few {# godziny} many {# godzin} other {# godziny}}"
 
@@ -112,11 +112,11 @@ msgstr "Dostawcy Autoryzacji"
 msgid "Automatic copy requires a secure context."
 msgstr "Automatyczne kopiowanie wymaga bezpiecznego kontekstu."
 
-#: src/components/routes/system.tsx:618
+#: src/components/routes/system.tsx:625
 msgid "Average"
 msgstr "Średnia"
 
-#: src/components/routes/system.tsx:389
+#: src/components/routes/system.tsx:396
 msgid "Average CPU utilization of containers"
 msgstr "Średnie wykorzystanie procesora przez kontenery"
 
@@ -124,7 +124,11 @@ msgstr "Średnie wykorzystanie procesora przez kontenery"
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Średnia przekracza <0>{value}{0}</0>"
 
-#: src/components/routes/system.tsx:378
+#: src/components/routes/system.tsx:497
+msgid "Average power consumption of GPUs"
+msgstr ""
+
+#: src/components/routes/system.tsx:385
 msgid "Average system-wide CPU utilization"
 msgstr "Średnie wykorzystanie procesora w całym systemie"
 
@@ -133,7 +137,7 @@ msgstr "Średnie wykorzystanie procesora w całym systemie"
 msgid "Backups"
 msgstr "Kopie"
 
-#: src/components/routes/system.tsx:434
+#: src/components/routes/system.tsx:441
 #: src/lib/utils.ts:307
 msgid "Bandwidth"
 msgstr "Przepustowość"
@@ -234,7 +238,7 @@ msgid "CPU"
 msgstr "Procesor"
 
 #: src/components/charts/area-chart.tsx:56
-#: src/components/routes/system.tsx:377
+#: src/components/routes/system.tsx:384
 #: src/lib/utils.ts:289
 msgid "CPU Usage"
 msgstr "Użycie procesora"
@@ -265,29 +269,29 @@ msgstr "Usuń"
 msgid "Disk"
 msgstr "Dysk"
 
-#: src/components/routes/system.tsx:424
+#: src/components/routes/system.tsx:431
 msgid "Disk I/O"
 msgstr "Dysk I/O"
 
 #: src/components/charts/disk-chart.tsx:79
-#: src/components/routes/system.tsx:417
+#: src/components/routes/system.tsx:424
 #: src/lib/utils.ts:301
 msgid "Disk Usage"
 msgstr "Użycie dysku"
 
-#: src/components/routes/system.tsx:545
+#: src/components/routes/system.tsx:552
 msgid "Disk usage of {extraFsName}"
 msgstr "Wykorzystanie dysku {extraFsName}"
 
-#: src/components/routes/system.tsx:388
+#: src/components/routes/system.tsx:395
 msgid "Docker CPU Usage"
 msgstr "Wykorzystanie procesora przez Docker"
 
-#: src/components/routes/system.tsx:409
+#: src/components/routes/system.tsx:416
 msgid "Docker Memory Usage"
 msgstr "Wykorzystanie pamięci przez Docker"
 
-#: src/components/routes/system.tsx:450
+#: src/components/routes/system.tsx:457
 msgid "Docker Network I/O"
 msgstr "Sieć Docker I/O"
 
@@ -308,7 +312,7 @@ msgstr "E-mail"
 msgid "Email notifications"
 msgstr "Powiadomienia e-mail"
 
-#: src/components/login/login.tsx:36
+#: src/components/login/login.tsx:38
 msgid "Enter email address to reset password"
 msgstr "Wprowadź adres e-mail, aby zresetować hasło"
 
@@ -355,7 +359,7 @@ msgstr "Nie udało się wysłać testowego powiadomienia"
 msgid "Failed to update alert"
 msgstr "Nie udało się zaktualizować powiadomienia"
 
-#: src/components/routes/system.tsx:589
+#: src/components/routes/system.tsx:596
 #: src/components/systems-table/systems-table.tsx:324
 msgid "Filter..."
 msgstr "Filtruj..."
@@ -374,6 +378,10 @@ msgstr "Zapomniałeś hasła?"
 msgid "General"
 msgstr "Ogólne"
 
+#: src/components/routes/system.tsx:496
+msgid "GPU Power Draw"
+msgstr ""
+
 #: src/components/add-system.tsx:116
 msgid "Host / IP"
 msgstr "Host / adres IP"
@@ -387,7 +395,7 @@ msgid "Invalid email address."
 msgstr "Nieprawidłowy adres e-mail."
 
 #. Linux kernel
-#: src/components/routes/system.tsx:255
+#: src/components/routes/system.tsx:262
 msgid "Kernel"
 msgstr "Jądro"
 
@@ -404,7 +412,7 @@ msgstr "Jasny"
 msgid "Log Out"
 msgstr "Wyloguj"
 
-#: src/components/login/login.tsx:17
+#: src/components/login/login.tsx:19
 msgid "Login"
 msgstr "Logowanie"
 
@@ -427,7 +435,7 @@ msgid "Manage display and notification preferences."
 msgstr "Zarządzaj preferencjami wyświetlania i powiadomień."
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:621
+#: src/components/routes/system.tsx:628
 msgid "Max 1 min"
 msgstr "Maks. 1 min"
 
@@ -435,12 +443,12 @@ msgstr "Maks. 1 min"
 msgid "Memory"
 msgstr "Pamięć"
 
-#: src/components/routes/system.tsx:399
+#: src/components/routes/system.tsx:406
 #: src/lib/utils.ts:295
 msgid "Memory Usage"
 msgstr "Wykorzystanie pamięci"
 
-#: src/components/routes/system.tsx:410
+#: src/components/routes/system.tsx:417
 msgid "Memory usage of docker containers"
 msgstr "Użycie pamięci przez kontenery Docker."
 
@@ -452,11 +460,11 @@ msgstr "Nazwa"
 msgid "Net"
 msgstr "Sieć"
 
-#: src/components/routes/system.tsx:451
+#: src/components/routes/system.tsx:458
 msgid "Network traffic of docker containers"
 msgstr "Ruch sieciowy kontenerów Docker."
 
-#: src/components/routes/system.tsx:436
+#: src/components/routes/system.tsx:443
 msgid "Network traffic of public interfaces"
 msgstr "Ruch sieciowy interfejsów publicznych"
 
@@ -532,7 +540,7 @@ msgstr "Sprawdź logi, aby uzyskać więcej informacji."
 msgid "Please check your credentials and try again"
 msgstr "Sprawdź swoje poświadczenia i spróbuj ponownie"
 
-#: src/components/login/login.tsx:34
+#: src/components/login/login.tsx:36
 msgid "Please create an admin account"
 msgstr "Utwórz konto administratora"
 
@@ -548,7 +556,7 @@ msgstr "Zaloguj się ponownie"
 msgid "Please see <0>the documentation</0> for instructions."
 msgstr "Proszę zapoznać się z <0>dokumentacją</0>."
 
-#: src/components/login/login.tsx:38
+#: src/components/login/login.tsx:40
 msgid "Please sign in to your account"
 msgstr "Zaloguj się na swoje konto"
 
@@ -556,8 +564,8 @@ msgstr "Zaloguj się na swoje konto"
 msgid "Port"
 msgstr "Port"
 
-#: src/components/routes/system.tsx:400
-#: src/components/routes/system.tsx:516
+#: src/components/routes/system.tsx:407
+#: src/components/routes/system.tsx:523
 msgid "Precise utilization at the recorded time"
 msgstr "Dokładne wykorzystanie w zarejestrowanym czasie"
 
@@ -643,11 +651,11 @@ msgstr "Ustawienia SMTP"
 msgid "Status"
 msgstr "Status"
 
-#: src/components/routes/system.tsx:466
+#: src/components/routes/system.tsx:473
 msgid "Swap space used by the system"
 msgstr "Pamięć wymiany używana przez system"
 
-#: src/components/routes/system.tsx:465
+#: src/components/routes/system.tsx:472
 msgid "Swap Usage"
 msgstr "Użycie pamięci wymiany"
 
@@ -666,12 +674,12 @@ msgstr "Systemy"
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "Systemy mogą być zarządzane w pliku <0>config.yml</0> znajdującym się w Twoim katalogu danych."
 
-#: src/components/routes/system.tsx:477
+#: src/components/routes/system.tsx:484
 #: src/lib/utils.ts:314
 msgid "Temperature"
 msgstr "Temperatura"
 
-#: src/components/routes/system.tsx:478
+#: src/components/routes/system.tsx:485
 msgid "Temperatures of system sensors"
 msgstr "Temperatury czujników systemowych."
 
@@ -699,11 +707,11 @@ msgstr "Następnie zaloguj się do panelu administracyjnego i  zresetuj hasło d
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Tej akcji nie można cofnąć. Spowoduje to trwałe usunięcie wszystkich bieżących rekordów dla {name} z bazy danych."
 
-#: src/components/routes/system.tsx:557
+#: src/components/routes/system.tsx:564
 msgid "Throughput of {extraFsName}"
 msgstr "Przepustowość {extraFsName}"
 
-#: src/components/routes/system.tsx:425
+#: src/components/routes/system.tsx:432
 msgid "Throughput of root filesystem"
 msgstr "Przepustowość głównego systemu plików"
 
@@ -711,8 +719,8 @@ msgstr "Przepustowość głównego systemu plików"
 msgid "To email(s)"
 msgstr "Do e-mail(ów)"
 
-#: src/components/routes/system.tsx:352
-#: src/components/routes/system.tsx:365
+#: src/components/routes/system.tsx:359
+#: src/components/routes/system.tsx:372
 msgid "Toggle grid"
 msgstr "Przełącz siatkę"
 
@@ -748,17 +756,17 @@ msgstr "Wyzwalane, gdy wykorzystanie któregokolwiek dysku przekroczy ustalony p
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Aktualizowane w czasie rzeczywistym. Kliknij system, aby zobaczyć informacje."
 
-#: src/components/routes/system.tsx:254
+#: src/components/routes/system.tsx:261
 msgid "Uptime"
 msgstr "Czas pracy"
 
 #: src/components/charts/area-chart.tsx:73
-#: src/components/routes/system.tsx:507
-#: src/components/routes/system.tsx:544
+#: src/components/routes/system.tsx:514
+#: src/components/routes/system.tsx:551
 msgid "Usage"
 msgstr "Wykorzystanie"
 
-#: src/components/routes/system.tsx:417
+#: src/components/routes/system.tsx:424
 msgid "Usage of root partition"
 msgstr "Użycie partycji głównej"
 
@@ -781,7 +789,7 @@ msgstr "Nazwa użytkownika"
 msgid "Users"
 msgstr "Użytkownicy"
 
-#: src/components/routes/system.tsx:653
+#: src/components/routes/system.tsx:662
 msgid "Waiting for enough records to display"
 msgstr "Oczekiwanie na wystarczającą liczbę rekordów do wyświetlenia"
 

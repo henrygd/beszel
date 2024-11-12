@@ -18,11 +18,11 @@ msgstr ""
 "X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 16\n"
 
-#: src/components/routes/system.tsx:243
+#: src/components/routes/system.tsx:250
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# dag} other {# dagen}}"
 
-#: src/components/routes/system.tsx:241
+#: src/components/routes/system.tsx:248
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# uur} other {# uren}}"
 
@@ -112,11 +112,11 @@ msgstr "Authenticatie aanbieders"
 msgid "Automatic copy requires a secure context."
 msgstr "Automatisch kopiëren vereist een veilige context."
 
-#: src/components/routes/system.tsx:618
+#: src/components/routes/system.tsx:625
 msgid "Average"
 msgstr "Gemiddelde"
 
-#: src/components/routes/system.tsx:389
+#: src/components/routes/system.tsx:396
 msgid "Average CPU utilization of containers"
 msgstr "Gemiddeld CPU-gebruik van containers"
 
@@ -124,7 +124,11 @@ msgstr "Gemiddeld CPU-gebruik van containers"
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Gemiddelde overschrijdt <0>{value}{0}</0>"
 
-#: src/components/routes/system.tsx:378
+#: src/components/routes/system.tsx:497
+msgid "Average power consumption of GPUs"
+msgstr ""
+
+#: src/components/routes/system.tsx:385
 msgid "Average system-wide CPU utilization"
 msgstr "Gemiddeld systeembrede CPU-gebruik"
 
@@ -133,7 +137,7 @@ msgstr "Gemiddeld systeembrede CPU-gebruik"
 msgid "Backups"
 msgstr "Back-ups"
 
-#: src/components/routes/system.tsx:434
+#: src/components/routes/system.tsx:441
 #: src/lib/utils.ts:307
 msgid "Bandwidth"
 msgstr "Bandbreedte"
@@ -234,7 +238,7 @@ msgid "CPU"
 msgstr "CPU"
 
 #: src/components/charts/area-chart.tsx:56
-#: src/components/routes/system.tsx:377
+#: src/components/routes/system.tsx:384
 #: src/lib/utils.ts:289
 msgid "CPU Usage"
 msgstr "Processorgebruik"
@@ -265,29 +269,29 @@ msgstr "Verwijderen"
 msgid "Disk"
 msgstr "Schijf"
 
-#: src/components/routes/system.tsx:424
+#: src/components/routes/system.tsx:431
 msgid "Disk I/O"
 msgstr "Schijf I/O"
 
 #: src/components/charts/disk-chart.tsx:79
-#: src/components/routes/system.tsx:417
+#: src/components/routes/system.tsx:424
 #: src/lib/utils.ts:301
 msgid "Disk Usage"
 msgstr "Schijfgebruik"
 
-#: src/components/routes/system.tsx:545
+#: src/components/routes/system.tsx:552
 msgid "Disk usage of {extraFsName}"
 msgstr "Schijfgebruik van {extraFsName}"
 
-#: src/components/routes/system.tsx:388
+#: src/components/routes/system.tsx:395
 msgid "Docker CPU Usage"
 msgstr "Docker CPU-gebruik"
 
-#: src/components/routes/system.tsx:409
+#: src/components/routes/system.tsx:416
 msgid "Docker Memory Usage"
 msgstr "Docker geheugengebruik"
 
-#: src/components/routes/system.tsx:450
+#: src/components/routes/system.tsx:457
 msgid "Docker Network I/O"
 msgstr "Docker netwerk I/O"
 
@@ -308,7 +312,7 @@ msgstr "E-mail"
 msgid "Email notifications"
 msgstr "E-mailnotificaties"
 
-#: src/components/login/login.tsx:36
+#: src/components/login/login.tsx:38
 msgid "Enter email address to reset password"
 msgstr "Voer een e-mailadres in om het wachtwoord opnieuw in te stellen"
 
@@ -355,7 +359,7 @@ msgstr "Versturen test notificatie mislukt"
 msgid "Failed to update alert"
 msgstr "Bijwerken waarschuwing mislukt"
 
-#: src/components/routes/system.tsx:589
+#: src/components/routes/system.tsx:596
 #: src/components/systems-table/systems-table.tsx:324
 msgid "Filter..."
 msgstr "Filter..."
@@ -374,6 +378,10 @@ msgstr "Wachtwoord vergeten?"
 msgid "General"
 msgstr "Algemeen"
 
+#: src/components/routes/system.tsx:496
+msgid "GPU Power Draw"
+msgstr ""
+
 #: src/components/add-system.tsx:116
 msgid "Host / IP"
 msgstr "Host / IP-adres"
@@ -387,7 +395,7 @@ msgid "Invalid email address."
 msgstr "Ongeldig e-mailadres."
 
 #. Linux kernel
-#: src/components/routes/system.tsx:255
+#: src/components/routes/system.tsx:262
 msgid "Kernel"
 msgstr "Kernel"
 
@@ -404,7 +412,7 @@ msgstr "Licht"
 msgid "Log Out"
 msgstr "Afmelden"
 
-#: src/components/login/login.tsx:17
+#: src/components/login/login.tsx:19
 msgid "Login"
 msgstr "Aanmelden"
 
@@ -427,7 +435,7 @@ msgid "Manage display and notification preferences."
 msgstr "Weergave- en notificatievoorkeuren beheren."
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:621
+#: src/components/routes/system.tsx:628
 msgid "Max 1 min"
 msgstr "Max 1 min"
 
@@ -435,12 +443,12 @@ msgstr "Max 1 min"
 msgid "Memory"
 msgstr "Geheugen"
 
-#: src/components/routes/system.tsx:399
+#: src/components/routes/system.tsx:406
 #: src/lib/utils.ts:295
 msgid "Memory Usage"
 msgstr "Geheugengebruik"
 
-#: src/components/routes/system.tsx:410
+#: src/components/routes/system.tsx:417
 msgid "Memory usage of docker containers"
 msgstr "Geheugengebruik van docker containers"
 
@@ -452,11 +460,11 @@ msgstr "Naam"
 msgid "Net"
 msgstr "Net"
 
-#: src/components/routes/system.tsx:451
+#: src/components/routes/system.tsx:458
 msgid "Network traffic of docker containers"
 msgstr "Netwerkverkeer van docker containers"
 
-#: src/components/routes/system.tsx:436
+#: src/components/routes/system.tsx:443
 msgid "Network traffic of public interfaces"
 msgstr "Netwerkverkeer van publieke interfaces"
 
@@ -532,7 +540,7 @@ msgstr "Controleer de logs voor meer details."
 msgid "Please check your credentials and try again"
 msgstr "Controleer je aanmeldgegevens en probeer het opnieuw"
 
-#: src/components/login/login.tsx:34
+#: src/components/login/login.tsx:36
 msgid "Please create an admin account"
 msgstr "Maak een beheerdersaccount aan"
 
@@ -548,7 +556,7 @@ msgstr "Meld je opnieuw aan"
 msgid "Please see <0>the documentation</0> for instructions."
 msgstr "Bekijk <0>de documentatie</0> voor instructies."
 
-#: src/components/login/login.tsx:38
+#: src/components/login/login.tsx:40
 msgid "Please sign in to your account"
 msgstr "Meld je aan bij je account"
 
@@ -556,8 +564,8 @@ msgstr "Meld je aan bij je account"
 msgid "Port"
 msgstr "Poort"
 
-#: src/components/routes/system.tsx:400
-#: src/components/routes/system.tsx:516
+#: src/components/routes/system.tsx:407
+#: src/components/routes/system.tsx:523
 msgid "Precise utilization at the recorded time"
 msgstr "Nauwkeurig gebruik op de opgenomen tijd"
 
@@ -643,11 +651,11 @@ msgstr "SMTP-instellingen"
 msgid "Status"
 msgstr "Status"
 
-#: src/components/routes/system.tsx:466
+#: src/components/routes/system.tsx:473
 msgid "Swap space used by the system"
 msgstr "Swap ruimte gebruikt door het systeem"
 
-#: src/components/routes/system.tsx:465
+#: src/components/routes/system.tsx:472
 msgid "Swap Usage"
 msgstr "Swap gebruik"
 
@@ -666,12 +674,12 @@ msgstr "Systemen"
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "Systemen kunnen worden beheerd in een <0>config.yml</0> bestand in je data map."
 
-#: src/components/routes/system.tsx:477
+#: src/components/routes/system.tsx:484
 #: src/lib/utils.ts:314
 msgid "Temperature"
 msgstr "Temperatuur"
 
-#: src/components/routes/system.tsx:478
+#: src/components/routes/system.tsx:485
 msgid "Temperatures of system sensors"
 msgstr "Temperatuur van systeem sensoren"
 
@@ -699,11 +707,11 @@ msgstr "Log vervolgens in op de backend en reset het wachtwoord van je gebruiker
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Deze actie kan niet ongedaan worden gemaakt. Dit zal alle huidige records voor {name} permanent verwijderen uit de database."
 
-#: src/components/routes/system.tsx:557
+#: src/components/routes/system.tsx:564
 msgid "Throughput of {extraFsName}"
 msgstr "Doorvoer van {extraFsName}"
 
-#: src/components/routes/system.tsx:425
+#: src/components/routes/system.tsx:432
 msgid "Throughput of root filesystem"
 msgstr "Doorvoer van het root bestandssysteem"
 
@@ -711,8 +719,8 @@ msgstr "Doorvoer van het root bestandssysteem"
 msgid "To email(s)"
 msgstr "Naar e-mail(s)"
 
-#: src/components/routes/system.tsx:352
-#: src/components/routes/system.tsx:365
+#: src/components/routes/system.tsx:359
+#: src/components/routes/system.tsx:372
 msgid "Toggle grid"
 msgstr "Schakel raster"
 
@@ -748,17 +756,17 @@ msgstr "Triggert wanneer het gebruik van een schijf een drempelwaarde overschrij
 msgid "Updated in real time. Click on a system to view information."
 msgstr "In realtime bijgewerkt. Klik op een systeem om informatie te bekijken."
 
-#: src/components/routes/system.tsx:254
+#: src/components/routes/system.tsx:261
 msgid "Uptime"
 msgstr "Actief"
 
 #: src/components/charts/area-chart.tsx:73
-#: src/components/routes/system.tsx:507
-#: src/components/routes/system.tsx:544
+#: src/components/routes/system.tsx:514
+#: src/components/routes/system.tsx:551
 msgid "Usage"
 msgstr "Gebruik"
 
-#: src/components/routes/system.tsx:417
+#: src/components/routes/system.tsx:424
 msgid "Usage of root partition"
 msgstr "Gebruik van root-partitie"
 
@@ -781,7 +789,7 @@ msgstr "Gebruikersnaam"
 msgid "Users"
 msgstr "Gebruikers"
 
-#: src/components/routes/system.tsx:653
+#: src/components/routes/system.tsx:662
 msgid "Waiting for enough records to display"
 msgstr "Wachtend op genoeg records om weer te geven"
 

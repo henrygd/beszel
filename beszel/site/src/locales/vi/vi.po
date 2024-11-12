@@ -18,11 +18,11 @@ msgstr ""
 "X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 16\n"
 
-#: src/components/routes/system.tsx:243
+#: src/components/routes/system.tsx:250
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# ngày} other {# ngày}}"
 
-#: src/components/routes/system.tsx:241
+#: src/components/routes/system.tsx:248
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# giờ} other {# giờ}}"
 
@@ -112,11 +112,11 @@ msgstr "Nhà cung cấp Xác thực"
 msgid "Automatic copy requires a secure context."
 msgstr "Sao chép tự động yêu cầu một ngữ cảnh an toàn."
 
-#: src/components/routes/system.tsx:618
+#: src/components/routes/system.tsx:625
 msgid "Average"
 msgstr "Trung bình"
 
-#: src/components/routes/system.tsx:389
+#: src/components/routes/system.tsx:396
 msgid "Average CPU utilization of containers"
 msgstr "Sử dụng CPU trung bình của các container"
 
@@ -124,7 +124,11 @@ msgstr "Sử dụng CPU trung bình của các container"
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Trung bình vượt quá <0>{value}{0}</0>"
 
-#: src/components/routes/system.tsx:378
+#: src/components/routes/system.tsx:497
+msgid "Average power consumption of GPUs"
+msgstr ""
+
+#: src/components/routes/system.tsx:385
 msgid "Average system-wide CPU utilization"
 msgstr "Sử dụng CPU trung bình toàn hệ thống"
 
@@ -133,7 +137,7 @@ msgstr "Sử dụng CPU trung bình toàn hệ thống"
 msgid "Backups"
 msgstr "Sao lưu"
 
-#: src/components/routes/system.tsx:434
+#: src/components/routes/system.tsx:441
 #: src/lib/utils.ts:307
 msgid "Bandwidth"
 msgstr "Băng thông"
@@ -234,7 +238,7 @@ msgid "CPU"
 msgstr "CPU"
 
 #: src/components/charts/area-chart.tsx:56
-#: src/components/routes/system.tsx:377
+#: src/components/routes/system.tsx:384
 #: src/lib/utils.ts:289
 msgid "CPU Usage"
 msgstr "Sử dụng CPU"
@@ -265,29 +269,29 @@ msgstr "Xóa"
 msgid "Disk"
 msgstr "Đĩa"
 
-#: src/components/routes/system.tsx:424
+#: src/components/routes/system.tsx:431
 msgid "Disk I/O"
 msgstr "Đĩa I/O"
 
 #: src/components/charts/disk-chart.tsx:79
-#: src/components/routes/system.tsx:417
+#: src/components/routes/system.tsx:424
 #: src/lib/utils.ts:301
 msgid "Disk Usage"
 msgstr "Sử dụng Đĩa"
 
-#: src/components/routes/system.tsx:545
+#: src/components/routes/system.tsx:552
 msgid "Disk usage of {extraFsName}"
 msgstr "Sử dụng đĩa của {extraFsName}"
 
-#: src/components/routes/system.tsx:388
+#: src/components/routes/system.tsx:395
 msgid "Docker CPU Usage"
 msgstr "Sử dụng CPU Docker"
 
-#: src/components/routes/system.tsx:409
+#: src/components/routes/system.tsx:416
 msgid "Docker Memory Usage"
 msgstr "Sử dụng Bộ nhớ Docker"
 
-#: src/components/routes/system.tsx:450
+#: src/components/routes/system.tsx:457
 msgid "Docker Network I/O"
 msgstr "Mạng I/O Docker"
 
@@ -308,7 +312,7 @@ msgstr "Email"
 msgid "Email notifications"
 msgstr "Thông báo email"
 
-#: src/components/login/login.tsx:36
+#: src/components/login/login.tsx:38
 msgid "Enter email address to reset password"
 msgstr "Nhập địa chỉ email để đặt lại mật khẩu"
 
@@ -355,7 +359,7 @@ msgstr "Gửi thông báo thử nghiệm thất bại"
 msgid "Failed to update alert"
 msgstr "Cập nhật cảnh báo thất bại"
 
-#: src/components/routes/system.tsx:589
+#: src/components/routes/system.tsx:596
 #: src/components/systems-table/systems-table.tsx:324
 msgid "Filter..."
 msgstr "Lọc..."
@@ -374,6 +378,10 @@ msgstr "Quên mật khẩu?"
 msgid "General"
 msgstr "Chung"
 
+#: src/components/routes/system.tsx:496
+msgid "GPU Power Draw"
+msgstr ""
+
 #: src/components/add-system.tsx:116
 msgid "Host / IP"
 msgstr "Máy chủ / IP"
@@ -387,7 +395,7 @@ msgid "Invalid email address."
 msgstr "Địa chỉ email không hợp lệ."
 
 #. Linux kernel
-#: src/components/routes/system.tsx:255
+#: src/components/routes/system.tsx:262
 msgid "Kernel"
 msgstr "Nhân"
 
@@ -404,7 +412,7 @@ msgstr "Sáng"
 msgid "Log Out"
 msgstr "Đăng xuất"
 
-#: src/components/login/login.tsx:17
+#: src/components/login/login.tsx:19
 msgid "Login"
 msgstr "Đăng nhập"
 
@@ -427,7 +435,7 @@ msgid "Manage display and notification preferences."
 msgstr "Quản lý tùy chọn hiển thị và thông báo."
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:621
+#: src/components/routes/system.tsx:628
 msgid "Max 1 min"
 msgstr "Tối đa 1 phút"
 
@@ -435,12 +443,12 @@ msgstr "Tối đa 1 phút"
 msgid "Memory"
 msgstr "Bộ nhớ"
 
-#: src/components/routes/system.tsx:399
+#: src/components/routes/system.tsx:406
 #: src/lib/utils.ts:295
 msgid "Memory Usage"
 msgstr "Sử dụng Bộ nhớ"
 
-#: src/components/routes/system.tsx:410
+#: src/components/routes/system.tsx:417
 msgid "Memory usage of docker containers"
 msgstr "Sử dụng bộ nhớ của các container Docker"
 
@@ -452,11 +460,11 @@ msgstr "Tên"
 msgid "Net"
 msgstr "Mạng"
 
-#: src/components/routes/system.tsx:451
+#: src/components/routes/system.tsx:458
 msgid "Network traffic of docker containers"
 msgstr "Lưu lượng mạng của các container Docker"
 
-#: src/components/routes/system.tsx:436
+#: src/components/routes/system.tsx:443
 msgid "Network traffic of public interfaces"
 msgstr "Lưu lượng mạng của các giao diện công cộng"
 
@@ -532,7 +540,7 @@ msgstr "Vui lòng kiểm tra nhật ký để biết thêm chi tiết."
 msgid "Please check your credentials and try again"
 msgstr "Vui lòng kiểm tra thông tin đăng nhập của bạn và thử lại"
 
-#: src/components/login/login.tsx:34
+#: src/components/login/login.tsx:36
 msgid "Please create an admin account"
 msgstr "Vui lòng tạo một tài khoản quản trị viên"
 
@@ -548,7 +556,7 @@ msgstr "Vui lòng đăng nhập lại"
 msgid "Please see <0>the documentation</0> for instructions."
 msgstr "Vui lòng xem <0>tài liệu</0> để biết hướng dẫn."
 
-#: src/components/login/login.tsx:38
+#: src/components/login/login.tsx:40
 msgid "Please sign in to your account"
 msgstr "Vui lòng đăng nhập vào tài khoản của bạn"
 
@@ -556,8 +564,8 @@ msgstr "Vui lòng đăng nhập vào tài khoản của bạn"
 msgid "Port"
 msgstr "Cổng"
 
-#: src/components/routes/system.tsx:400
-#: src/components/routes/system.tsx:516
+#: src/components/routes/system.tsx:407
+#: src/components/routes/system.tsx:523
 msgid "Precise utilization at the recorded time"
 msgstr "Sử dụng chính xác tại thời điểm ghi nhận"
 
@@ -643,11 +651,11 @@ msgstr "Cài đặt SMTP"
 msgid "Status"
 msgstr "Trạng thái"
 
-#: src/components/routes/system.tsx:466
+#: src/components/routes/system.tsx:473
 msgid "Swap space used by the system"
 msgstr "Không gian hoán đổi được sử dụng bởi hệ thống"
 
-#: src/components/routes/system.tsx:465
+#: src/components/routes/system.tsx:472
 msgid "Swap Usage"
 msgstr "Sử dụng Hoán đổi"
 
@@ -666,12 +674,12 @@ msgstr "Các hệ thống"
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "Các hệ thống có thể được quản lý trong tệp <0>config.yml</0> bên trong thư mục dữ liệu của bạn."
 
-#: src/components/routes/system.tsx:477
+#: src/components/routes/system.tsx:484
 #: src/lib/utils.ts:314
 msgid "Temperature"
 msgstr "Nhiệt độ"
 
-#: src/components/routes/system.tsx:478
+#: src/components/routes/system.tsx:485
 msgid "Temperatures of system sensors"
 msgstr "Nhiệt độ của các cảm biến hệ thống"
 
@@ -699,11 +707,11 @@ msgstr "Sau đó đăng nhập vào backend và đặt lại mật khẩu tài k
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Hành động này không thể hoàn tác. Điều này sẽ xóa vĩnh viễn tất cả các bản ghi hiện tại cho {name} khỏi cơ sở dữ liệu."
 
-#: src/components/routes/system.tsx:557
+#: src/components/routes/system.tsx:564
 msgid "Throughput of {extraFsName}"
 msgstr "Thông lượng của {extraFsName}"
 
-#: src/components/routes/system.tsx:425
+#: src/components/routes/system.tsx:432
 msgid "Throughput of root filesystem"
 msgstr "Thông lượng của hệ thống tệp gốc"
 
@@ -711,8 +719,8 @@ msgstr "Thông lượng của hệ thống tệp gốc"
 msgid "To email(s)"
 msgstr "Đến email(s)"
 
-#: src/components/routes/system.tsx:352
-#: src/components/routes/system.tsx:365
+#: src/components/routes/system.tsx:359
+#: src/components/routes/system.tsx:372
 msgid "Toggle grid"
 msgstr "Chuyển đổi lưới"
 
@@ -748,17 +756,17 @@ msgstr "Kích hoạt khi sử dụng bất kỳ đĩa nào vượt quá ngưỡn
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Cập nhật theo thời gian thực. Nhấp vào một hệ thống để xem thông tin."
 
-#: src/components/routes/system.tsx:254
+#: src/components/routes/system.tsx:261
 msgid "Uptime"
 msgstr "Thời gian hoạt động"
 
 #: src/components/charts/area-chart.tsx:73
-#: src/components/routes/system.tsx:507
-#: src/components/routes/system.tsx:544
+#: src/components/routes/system.tsx:514
+#: src/components/routes/system.tsx:551
 msgid "Usage"
 msgstr "Sử dụng"
 
-#: src/components/routes/system.tsx:417
+#: src/components/routes/system.tsx:424
 msgid "Usage of root partition"
 msgstr "Sử dụng phân vùng gốc"
 
@@ -781,7 +789,7 @@ msgstr "Tên người dùng"
 msgid "Users"
 msgstr "Người dùng"
 
-#: src/components/routes/system.tsx:653
+#: src/components/routes/system.tsx:662
 msgid "Waiting for enough records to display"
 msgstr "Đang chờ đủ bản ghi để hiển thị"
 

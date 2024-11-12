@@ -493,8 +493,8 @@ export default function SystemDetail({ name }: { name: string }) {
 						<ChartCard
 							empty={dataEmpty}
 							grid={grid}
-							title="GPU Power Draw"
-							description="Average power consumption of GPUs"
+							title={t`GPU Power Draw`}
+							description={t`Average power consumption of GPUs`}
 						>
 							<GpuPowerChart chartData={chartData} />
 						</ChartCard>
