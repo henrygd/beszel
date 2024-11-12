@@ -38,21 +38,24 @@ func (a *Agent) initializeDiskInfo() {
 	// Helper function to add a filesystem to fsStats if it doesn't exist
 	addFsStat := func(device, mountpoint string, root bool) {
 		key := filepath.Base(device)
+		var ioMatch bool
 		if _, exists := a.fsStats[key]; !exists {
 			if root {
 				slog.Info("Detected root device", "name", key)
 				// Check if root device is in /proc/diskstats, use fallback if not
-				if _, exists := diskIoCounters[key]; !exists {
-					key = findFallbackIoDevice(filesystem, diskIoCounters, a.fsStats)
-					slog.Info("Using I/O fallback", "device", device, "mountpoint", mountpoint, "fallback", key)
+				if _, ioMatch = diskIoCounters[key]; !ioMatch {
+					key, ioMatch = findIoDevice(filesystem, diskIoCounters, a.fsStats)
+					if !ioMatch {
+						slog.Info("Using I/O fallback", "device", device, "mountpoint", mountpoint, "fallback", key)
+					}
 				}
 			} else {
 				// Check if non-root has diskstats and fall back to folder name if not
 				// Scenario: device is encrypted and named luks-2bcb02be-999d-4417-8d18-5c61e660fb6e - not in /proc/diskstats.
 				// However, the device can be specified by mounting folder from luks device at /extra-filesystems/sda1
-				if _, exists := diskIoCounters[key]; !exists {
+				if _, ioMatch = diskIoCounters[key]; !ioMatch {
 					efBase := filepath.Base(mountpoint)
-					if _, exists := diskIoCounters[efBase]; exists {
+					if _, ioMatch = diskIoCounters[efBase]; ioMatch {
 						key = efBase
 					}
 				}
@@ -101,9 +104,12 @@ func (a *Agent) initializeDiskInfo() {
 	for _, p := range partitions {
 		// fmt.Println(p.Device, p.Mountpoint)
 		// Binary root fallback or docker root fallback
-		if !hasRoot && (p.Mountpoint == "/" || (p.Mountpoint == "/etc/hosts" && strings.HasPrefix(p.Device, "/dev") && !strings.Contains(p.Device, "mapper"))) {
-			addFsStat(p.Device, "/", true)
-			hasRoot = true
+		if !hasRoot && (p.Mountpoint == "/" || (p.Mountpoint == "/etc/hosts" && strings.HasPrefix(p.Device, "/dev"))) {
+			fs, match := findIoDevice(filepath.Base(p.Device), diskIoCounters, a.fsStats)
+			if match {
+				addFsStat(fs, p.Mountpoint, true)
+				hasRoot = true
+			}
 		}
 
 		// Check if device is in /extra-filesystems
@@ -131,7 +137,7 @@ func (a *Agent) initializeDiskInfo() {
 
 	// If no root filesystem set, use fallback
 	if !hasRoot {
-		rootDevice := findFallbackIoDevice(filepath.Base(filesystem), diskIoCounters, a.fsStats)
+		rootDevice, _ := findIoDevice(filepath.Base(filesystem), diskIoCounters, a.fsStats)
 		slog.Info("Root disk", "mountpoint", "/", "io", rootDevice)
 		a.fsStats[rootDevice] = &system.FsStats{Root: true, Mountpoint: "/"}
 	}
@@ -139,14 +145,15 @@ func (a *Agent) initializeDiskInfo() {
 	a.initializeDiskIoStats(diskIoCounters)
 }
 
-// Returns the device with the most reads in /proc/diskstats,
-// or the device specified by the filesystem argument if it exists
-func findFallbackIoDevice(filesystem string, diskIoCounters map[string]disk.IOCountersStat, fsStats map[string]*system.FsStats) string {
+// Returns matching device from /proc/diskstats,
+// or the device with the most reads if no match is found.
+// bool is true if a match was found.
+func findIoDevice(filesystem string, diskIoCounters map[string]disk.IOCountersStat, fsStats map[string]*system.FsStats) (string, bool) {
 	var maxReadBytes uint64
 	maxReadDevice := "/"
 	for _, d := range diskIoCounters {
-		if d.Name == filesystem {
-			return d.Name
+		if d.Name == filesystem || (d.Label != "" && d.Label == filesystem) {
+			return d.Name, true
 		}
 		if d.ReadBytes > maxReadBytes {
 			// don't use if device already exists in fsStats
@@ -156,7 +163,7 @@ func findFallbackIoDevice(filesystem string, diskIoCounters map[string]disk.IOCo
 			}
 		}
 	}
-	return maxReadDevice
+	return maxReadDevice, false
 }
 
 // Sets start values for disk I/O stats.
