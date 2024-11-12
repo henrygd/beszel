@@ -656,7 +656,7 @@ function ChartCard({
 				<CardDescription>{description}</CardDescription>
 				{cornerEl && <div className="relative py-1 block sm:w-44 sm:absolute sm:top-2.5 sm:end-3.5">{cornerEl}</div>}
 			</CardHeader>
-			<div className="ps-0 w-[calc(100%-1.5em)] h-52 relative">
+			<div className="ps-0 w-[calc(100%-1.5em)] h-48 md:h-52 relative">
 				{<Spinner msg={empty ? t`Waiting for enough records to display` : undefined} />}
 				{isIntersecting && children}
 			</div>

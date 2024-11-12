@@ -7,11 +7,13 @@ import ForgotPassword from "./forgot-pass-form"
 import { $router } from "../router"
 import { AuthMethodsList } from "pocketbase"
 import { t } from "@lingui/macro"
+import { useTheme } from "../theme-provider"
 
 export default function () {
 	const page = useStore($router)
 	const [isFirstRun, setFirstRun] = useState(false)
 	const [authMethods, setAuthMethods] = useState<AuthMethodsList>()
+	const { theme } = useTheme()
 
 	useEffect(() => {
 		document.title = t`Login` + " / Beszel"
@@ -45,7 +47,11 @@ export default function () {
 
 	return (
 		<div className="min-h-svh grid items-center py-12">
-			<div className="grid gap-5 w-full px-4 mx-auto" style={{ maxWidth: "22em" }}>
+			<div
+				className="grid gap-5 w-full px-4 mx-auto"
+				// @ts-ignore
+				style={{ maxWidth: "22em", "--border": theme == "light" ? "30 8% 80%" : "220 3% 20%" }}
+			>
 				<div className="text-center">
 					<h1 className="mb-3">
 						<Logo className="h-7 fill-foreground mx-auto" />

@@ -45,21 +45,26 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
 
 			{/* Desktop View */}
 			<nav className={cn("hidden md:grid gap-1", className)} {...props}>
-				{items.map((item) => (
-					<Link
-						key={item.href}
-						href={item.href}
-						className={cn(
-							buttonVariants({ variant: "ghost" }),
-							"flex items-center gap-3",
-							page?.path === item.href ? "bg-muted hover:bg-muted" : "hover:bg-muted/50",
-							"justify-start"
-						)}
-					>
-						{item.icon && <item.icon className="h-4 w-4" />}
-						{item.title}
-					</Link>
-				))}
+				{items.map((item) => {
+					if (item.admin && !isAdmin()) {
+						return null
+					}
+					return (
+						<Link
+							key={item.href}
+							href={item.href}
+							className={cn(
+								buttonVariants({ variant: "ghost" }),
+								"flex items-center gap-3",
+								page?.path === item.href ? "bg-muted hover:bg-muted" : "hover:bg-muted/50",
+								"justify-start"
+							)}
+						>
+							{item.icon && <item.icon className="h-4 w-4" />}
+							{item.title}
+						</Link>
+					)
+				})}
 			</nav>
 		</>
 	)

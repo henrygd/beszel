@@ -104,7 +104,7 @@ export default memo(function GpuPowerChart({ chartData }: { chartData: ChartData
 							isAnimationActive={false}
 						/>
 					))}
-					{colors.length < 12 && <ChartLegend content={<ChartLegendContent />} />}
+					{colors.length > 1 && <ChartLegend content={<ChartLegendContent />} />}
 				</LineChart>
 			</ChartContainer>
 		</div>

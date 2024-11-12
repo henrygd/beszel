@@ -352,7 +352,7 @@ export default function SystemsTable() {
 			<CardContent className="max-sm:p-2">
 				<div className="rounded-md border overflow-hidden">
 					<Table>
-						<TableHeader className="bg-muted/40">
+						<TableHeader>
 							{table.getHeaderGroups().map((headerGroup) => (
 								<TableRow key={headerGroup.id}>
 									{headerGroup.headers.map((header) => {
