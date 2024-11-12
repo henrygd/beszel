@@ -57,7 +57,7 @@ func (gm *GPUManager) collectNvidiaStats() error {
 	}
 	// Use a scanner to read each line of output
 	scanner := bufio.NewScanner(stdout)
-	buf := make([]byte, 0, 64*1024) // 64KB buffer
+	buf := make([]byte, 0, 8*1024) // 8KB buffer
 	scanner.Buffer(buf, bufio.MaxScanTokenSize)
 	for scanner.Scan() {
 		line := scanner.Bytes()
@@ -120,7 +120,7 @@ func (gm *GPUManager) startAmdCollector() {
 
 // collectAmdStats runs rocm-smi in a loop and passes the output to parseAmdData
 func (gm *GPUManager) collectAmdStats() error {
-	cmd := exec.Command("/bin/sh", "-c", "while true; do rocm-smi --showid --showtemp --showuse --showpower --showproductname --showmeminfo vram --json; sleep 3.7; done")
+	cmd := exec.Command("/bin/sh", "-c", "while true; do rocm-smi --showid --showtemp --showuse --showpower --showproductname --showmeminfo vram --json; sleep 4.3; done")
 	// Set up a pipe to capture stdout
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -132,7 +132,7 @@ func (gm *GPUManager) collectAmdStats() error {
 	}
 	// Use a scanner to read each line of output
 	scanner := bufio.NewScanner(stdout)
-	buf := make([]byte, 0, 64*1024) // 64KB buffer
+	buf := make([]byte, 0, 8*1024) // 8KB buffer
 	scanner.Buffer(buf, bufio.MaxScanTokenSize)
 	for scanner.Scan() {
 		var rocmSmiInfo map[string]RocmSmiJson

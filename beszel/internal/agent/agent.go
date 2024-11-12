@@ -76,12 +76,10 @@ func (a *Agent) Run(pubKey []byte, addr string) {
 	a.dockerManager = newDockerManager(a)
 
 	// initialize GPU manager
-	if os.Getenv("GPU") == "true" {
-		if gm, err := NewGPUManager(); err != nil {
-			slog.Warn("GPU", "err", err)
-		} else {
-			a.gpuManager = gm
-		}
+	if gm, err := NewGPUManager(); err != nil {
+		slog.Debug("GPU", "err", err)
+	} else {
+		a.gpuManager = gm
 	}
 
 	// if debugging, print stats
