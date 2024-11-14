@@ -8,7 +8,7 @@ msgstr ""
 "Language: uk\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-11-12 23:39\n"
+"PO-Revision-Date: 2024-11-14 09:38\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -126,7 +126,7 @@ msgstr "Середнє перевищує <0>{value}{0}</0>"
 
 #: src/components/routes/system.tsx:497
 msgid "Average power consumption of GPUs"
-msgstr ""
+msgstr "Середнє енергоспоживання GPUs"
 
 #: src/components/routes/system.tsx:385
 msgid "Average system-wide CPU utilization"
@@ -134,7 +134,7 @@ msgstr "Середнє використання CPU по всій системі
 
 #: src/components/routes/system.tsx:515
 msgid "Average utilization of {0}"
-msgstr ""
+msgstr "Середнє використання {0}"
 
 #: src/components/command-palette.tsx:171
 #: src/components/navbar.tsx:94
@@ -384,7 +384,7 @@ msgstr "Загальні"
 
 #: src/components/routes/system.tsx:496
 msgid "GPU Power Draw"
-msgstr ""
+msgstr "Енергоспоживання GPU"
 
 #: src/components/add-system.tsx:116
 msgid "Host / IP"

@@ -8,7 +8,7 @@ msgstr ""
 "Language: de\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-11-12 23:39\n"
+"PO-Revision-Date: 2024-11-14 16:21\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -126,7 +126,7 @@ msgstr "Durchschnitt überschreitet <0>{value}{0}</0>"
 
 #: src/components/routes/system.tsx:497
 msgid "Average power consumption of GPUs"
-msgstr ""
+msgstr "Durchschnittlicher Stromverbrauch der GPUs"
 
 #: src/components/routes/system.tsx:385
 msgid "Average system-wide CPU utilization"
@@ -134,7 +134,7 @@ msgstr "Durchschnittliche systemweite CPU-Auslastung"
 
 #: src/components/routes/system.tsx:515
 msgid "Average utilization of {0}"
-msgstr ""
+msgstr "Durchschnittliche Auslastung von {0}"
 
 #: src/components/command-palette.tsx:171
 #: src/components/navbar.tsx:94
@@ -384,7 +384,7 @@ msgstr "Allgemein"
 
 #: src/components/routes/system.tsx:496
 msgid "GPU Power Draw"
-msgstr ""
+msgstr "GPU-Leistungsaufnahme"
 
 #: src/components/add-system.tsx:116
 msgid "Host / IP"
