@@ -35,8 +35,7 @@ import (
 
 type Hub struct {
 	app               *pocketbase.PocketBase
-	connectionLock    *sync.Mutex
-	systemConnections map[string]*ssh.Client
+	systemConnections sync.Map
 	sshClientConfig   *ssh.ClientConfig
 	pubKey            string
 	am                *alerts.AlertManager
@@ -48,12 +47,10 @@ type Hub struct {
 
 func NewHub(app *pocketbase.PocketBase) *Hub {
 	return &Hub{
-		app:               app,
-		connectionLock:    &sync.Mutex{},
-		systemConnections: make(map[string]*ssh.Client),
-		am:                alerts.NewAlertManager(app),
-		um:                users.NewUserManager(app),
-		rm:                records.NewRecordManager(app),
+		app: app,
+		am:  alerts.NewAlertManager(app),
+		um:  users.NewUserManager(app),
+		rm:  records.NewRecordManager(app),
 	}
 }
 
@@ -262,9 +259,9 @@ func (h *Hub) updateSystem(record *models.Record) {
 	var client *ssh.Client
 	var err error
 
-	// check if system connection data exists
-	if _, ok := h.systemConnections[record.Id]; ok {
-		client = h.systemConnections[record.Id]
+	// check if system connection exists
+	if existingClient, ok := h.systemConnections.Load(record.Id); ok {
+		client = existingClient.(*ssh.Client)
 	} else {
 		// create system connection
 		client, err = h.createSystemConnection(record)
@@ -275,9 +272,7 @@ func (h *Hub) updateSystem(record *models.Record) {
 			}
 			return
 		}
-		h.connectionLock.Lock()
-		h.systemConnections[record.Id] = client
-		h.connectionLock.Unlock()
+		h.systemConnections.Store(record.Id, client)
 	}
 	// get system stats from agent
 	var systemData system.CombinedData
@@ -286,6 +281,7 @@ func (h *Hub) updateSystem(record *models.Record) {
 			// if previous connection was closed, try again
 			h.app.Logger().Error("Existing SSH connection closed. Retrying...", "host", record.GetString("host"), "port", record.GetString("port"))
 			h.deleteSystemConnection(record)
+			time.Sleep(time.Millisecond * 100)
 			h.updateSystem(record)
 			return
 		}
@@ -359,14 +355,13 @@ func (h *Hub) updateSystemStatus(record *models.Record, status string) {
 	}
 }
 
+// delete system connection from map and close connection
 func (h *Hub) deleteSystemConnection(record *models.Record) {
-	if _, ok := h.systemConnections[record.Id]; ok {
-		if h.systemConnections[record.Id] != nil {
-			h.systemConnections[record.Id].Close()
+	if client, ok := h.systemConnections.Load(record.Id); ok {
+		if sshClient := client.(*ssh.Client); sshClient != nil {
+			sshClient.Close()
 		}
-		h.connectionLock.Lock()
-		defer h.connectionLock.Unlock()
-		delete(h.systemConnections, record.Id)
+		h.systemConnections.Delete(record.Id)
 	}
 }
 
