@@ -392,14 +392,14 @@ func (h *Hub) createSSHClientConfig() error {
 			ssh.PublicKeys(signer),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		Timeout:         5 * time.Second,
+		Timeout:         4 * time.Second,
 	}
 	return nil
 }
 
 // Fetches system stats from the agent and decodes the json data into the provided struct
 func (h *Hub) requestJsonFromAgent(client *ssh.Client, systemData *system.CombinedData) error {
-	session, err := newSessionWithTimeout(client, 5*time.Second)
+	session, err := newSessionWithTimeout(client, 4*time.Second)
 	if err != nil {
 		return fmt.Errorf("bad client")
 	}
