@@ -14,6 +14,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -371,11 +372,11 @@ func (h *Hub) deleteSystemConnection(record *models.Record) {
 }
 
 func (h *Hub) createSystemConnection(record *models.Record) (*ssh.Client, error) {
-	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%s", record.GetString("host"), record.GetString("port")), h.sshClientConfig)
-	if err != nil {
-		return nil, err
-	}
-	return client, nil
+        client, err := ssh.Dial("tcp", net.JoinHostPort(record.GetString("host"), record.GetString("port")), h.sshClientConfig)
+        if err != nil {
+                return nil, err
+        }
+        return client, nil
 }
 
 func (h *Hub) createSSHClientConfig() error {
