@@ -9,27 +9,57 @@ GITHUB_URL="https://github.com"
 GITHUB_API_URL="https://api.github.com"
 
 # Read command line options
-while getopts "k:p:uhc" opt; do
-  case $opt in
-  k) KEY="$OPTARG" ;;
-  p) PORT="$OPTARG" ;;
-  u) UNINSTALL=true ;;
-  c) CHINA_MAINLAND=true ;;
-  h)
-    printf "Beszel Agent installation script\n\n"
-    printf "Usage: ./install-agent.sh [options]\n\n"
-    printf "Options: \n"
-    printf "  -k  : SSH key (required, or interactive if not provided)\n"
-    printf "  -p  : Port (default: $PORT)\n"
-    printf "  -u  : Uninstall Beszel Agent\n"
-    printf "  -c  : Using GitHub mirror sources to resolve network timeout issues in mainland China\n"
-    printf "  -h  : Display this help message\n"
-    exit 0
-    ;;
-  ?)
-    echo "Invalid option: -$OPTARG"
-    exit 1
-    ;;
+TEMP=$(getopt -o 'k:p:uh' --long 'china-mirrors,help' -n 'install-agent.sh' -- "$@")
+
+if [ $? -ne 0 ]; then
+  echo 'Failed to parse command line arguments' >&2
+  exit 1
+fi
+
+eval set -- "$TEMP"
+unset TEMP
+
+while true; do
+  case "$1" in
+    '-k')
+      KEY="$2"
+      shift 2
+      continue
+      ;;
+    '-p')
+      PORT="$2"
+      shift 2
+      continue
+      ;;
+    '-u')
+      UNINSTALL=true
+      shift
+      continue
+      ;;
+    '--china-mirrors')
+      CHINA_MAINLAND=true
+      shift
+      continue
+      ;;
+    '-h'|'--help')
+      printf "Beszel Agent installation script\n\n"
+      printf "Usage: ./install-agent.sh [options]\n\n"
+      printf "Options: \n"
+      printf "  -k                : SSH key (required, or interactive if not provided)\n"
+      printf "  -p                : Port (default: $PORT)\n"
+      printf "  -u                : Uninstall Beszel Agent\n"
+      printf "  --china-mirrors   : Using GitHub mirror sources to resolve network timeout issues in mainland China\n"
+      printf "  -h, --help        : Display this help message\n"
+      exit 0
+      ;;
+    '--')
+      shift
+      break
+      ;;
+    *)
+      echo "Invalid option: $1" >&2
+      exit 1
+      ;;
   esac
 done
 
