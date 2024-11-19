@@ -20,6 +20,7 @@ import { useStore } from "@nanostores/react"
 import { cn, copyToClipboard, isReadOnlyUser } from "@/lib/utils"
 import { navigate } from "./router"
 import { Trans } from "@lingui/macro"
+import { i18n } from "@lingui/core"
 
 export function AddSystemButton({ className }: { className?: string }) {
 	const [open, setOpen] = useState(false)
@@ -43,9 +44,12 @@ export function AddSystemButton({ className }: { className?: string }) {
 	}
 
 	function copyInstallCommand(port: string) {
-		copyToClipboard(
-			`curl -sL https://raw.githubusercontent.com/henrygd/beszel/main/supplemental/scripts/install-agent.sh -o install-agent.sh && chmod +x install-agent.sh && ./install-agent.sh -p ${port} -k "${publicKey}"`
-		)
+		let cmd = `curl -sL https://raw.githubusercontent.com/henrygd/beszel/main/supplemental/scripts/install-agent.sh -o install-agent.sh && chmod +x install-agent.sh && ./install-agent.sh -p ${port} -k "${publicKey}"`
+		// add china mirrors flag if zh-CN
+		if ((i18n.locale + navigator.language).includes("zh-CN")) {
+			cmd += ` --china-mirrors`
+		}
+		copyToClipboard(cmd)
 	}
 
 	async function handleSubmit(e: SubmitEvent) {
