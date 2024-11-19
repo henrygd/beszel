@@ -7,73 +7,73 @@ UNINSTALL=false
 CHINA_MAINLAND=false
 GITHUB_URL="https://github.com"
 GITHUB_API_URL="https://api.github.com"
+KEY=""
 
-# Read command line options
-TEMP=$(getopt -o 'k:p:uh' --long 'china-mirrors,help' -n 'install-agent.sh' -- "$@")
+# Check for help flag first
+case "$1" in
+-h | --help)
+  printf "Beszel Agent installation script\n\n"
+  printf "Usage: ./install-agent.sh [options]\n\n"
+  printf "Options: \n"
+  printf "  -k                : SSH key (required, or interactive if not provided)\n"
+  printf "  -p                : Port (default: $PORT)\n"
+  printf "  -u                : Uninstall Beszel Agent\n"
+  printf "  --china-mirrors   : Using GitHub mirror sources to resolve network timeout issues in mainland China\n"
+  printf "  -h, --help        : Display this help message\n"
+  exit 0
+  ;;
+esac
 
-if [ $? -ne 0 ]; then
-  echo 'Failed to parse command line arguments' >&2
-  exit 1
-fi
-
-eval set -- "$TEMP"
-unset TEMP
-
-while true; do
-  case "$1" in
-    '-k')
-      KEY="$2"
-      shift 2
-      continue
-      ;;
-    '-p')
-      PORT="$2"
-      shift 2
-      continue
-      ;;
-    '-u')
-      UNINSTALL=true
-      shift
-      continue
-      ;;
-    '--china-mirrors')
-      CHINA_MAINLAND=true
-      shift
-      continue
-      ;;
-    '-h'|'--help')
-      printf "Beszel Agent installation script\n\n"
-      printf "Usage: ./install-agent.sh [options]\n\n"
-      printf "Options: \n"
-      printf "  -k                : SSH key (required, or interactive if not provided)\n"
-      printf "  -p                : Port (default: $PORT)\n"
-      printf "  -u                : Uninstall Beszel Agent\n"
-      printf "  --china-mirrors   : Using GitHub mirror sources to resolve network timeout issues in mainland China\n"
-      printf "  -h, --help        : Display this help message\n"
-      exit 0
-      ;;
-    '--')
-      shift
-      break
-      ;;
-    *)
-      echo "Invalid option: $1" >&2
-      exit 1
-      ;;
-  esac
-done
-
-# Check if running as root
-if [ "$(id -u)" != "0" ]; then
-    if command -v sudo >/dev/null 2>&1; then
-        exec sudo "$0" "$@"
-    else
-        echo "This script must be run as root. Please either:"
-        echo "1. Run this script as root (su root)"
-        echo "2. Install sudo and run with sudo"
-        exit 1
+# Build sudo args by properly quoting everything
+build_sudo_args() {
+  QUOTED_ARGS=""
+  while [ $# -gt 0 ]; do
+    if [ -n "$QUOTED_ARGS" ]; then
+      QUOTED_ARGS="$QUOTED_ARGS "
     fi
+    QUOTED_ARGS="$QUOTED_ARGS'$(echo "$1" | sed "s/'/'\\\\''/g")'"
+    shift
+  done
+  echo "$QUOTED_ARGS"
+}
+
+# Check if running as root and re-execute with sudo if needed
+if [ "$(id -u)" != "0" ]; then
+  if command -v sudo >/dev/null 2>&1; then
+    SUDO_ARGS=$(build_sudo_args "$@")
+    eval "exec sudo $0 $SUDO_ARGS"
+  else
+    echo "This script must be run as root. Please either:"
+    echo "1. Run this script as root (su root)"
+    echo "2. Install sudo and run with sudo"
+    exit 1
+  fi
 fi
+
+# Parse arguments
+while [ $# -gt 0 ]; do
+  case "$1" in
+  -k)
+    shift
+    KEY="$1"
+    ;;
+  -p)
+    shift
+    PORT="$1"
+    ;;
+  -u)
+    UNINSTALL=true
+    ;;
+  --china-mirrors)
+    CHINA_MAINLAND=true
+    ;;
+  *)
+    echo "Invalid option: $1" >&2
+    exit 1
+    ;;
+  esac
+  shift
+done
 
 # Uninstall process
 if [ "$UNINSTALL" = true ]; then
@@ -158,7 +158,7 @@ else
 fi
 
 # Create a dedicated user for the service if it doesn't exist
-if ! id -u beszel > /dev/null 2>&1; then
+if ! id -u beszel >/dev/null 2>&1; then
   echo "Creating a dedicated user for the Beszel Agent service..."
   useradd -M -s /bin/false beszel
 fi
@@ -223,7 +223,7 @@ rm -rf "$TEMP_DIR"
 
 # Create the systemd service
 echo "Creating the systemd service for the agent..."
-cat > /etc/systemd/system/beszel-agent.service << EOF
+cat >/etc/systemd/system/beszel-agent.service <<EOF
 [Unit]
 Description=Beszel Agent Service
 After=network.target
@@ -250,11 +250,11 @@ systemctl start beszel-agent.service
 printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
 read AUTO_UPDATE
 case "$AUTO_UPDATE" in
-  [Yy]*)
-    echo "Setting up daily automatic updates for beszel-agent..."
+[Yy]*)
+  echo "Setting up daily automatic updates for beszel-agent..."
 
-    # Create systemd service for the daily update
-    cat > /etc/systemd/system/beszel-agent-update.service << EOF
+  # Create systemd service for the daily update
+  cat >/etc/systemd/system/beszel-agent-update.service <<EOF
 [Unit]
 Description=Update beszel-agent if needed
 Wants=beszel-agent.service
@@ -264,8 +264,8 @@ Type=oneshot
 ExecStart=/bin/sh -c '/opt/beszel-agent/beszel-agent update | grep -q "Successfully updated" && systemctl restart beszel-agent'
 EOF
 
-    # Create systemd timer for the daily update
-    cat > /etc/systemd/system/beszel-agent-update.timer << EOF
+  # Create systemd timer for the daily update
+  cat >/etc/systemd/system/beszel-agent-update.timer <<EOF
 [Unit]
 Description=Run beszel-agent update daily
 
@@ -278,11 +278,11 @@ RandomizedDelaySec=4h
 WantedBy=timers.target
 EOF
 
-    systemctl daemon-reload
-    systemctl enable --now beszel-agent-update.timer
+  systemctl daemon-reload
+  systemctl enable --now beszel-agent-update.timer
 
-    printf "\nAutomatic daily updates have been enabled.\n"
-    ;;
+  printf "\nAutomatic daily updates have been enabled.\n"
+  ;;
 esac
 
 # Wait for the service to start or fail
