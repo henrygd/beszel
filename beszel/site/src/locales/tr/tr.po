@@ -8,7 +8,7 @@ msgstr ""
 "Language: tr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-11-12 23:39\n"
+"PO-Revision-Date: 2024-11-19 12:08\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -126,7 +126,7 @@ msgstr "Ortalama <0>{value}{0}</0> aşıyor"
 
 #: src/components/routes/system.tsx:497
 msgid "Average power consumption of GPUs"
-msgstr ""
+msgstr "GPU ların ortalama güç tüketimi"
 
 #: src/components/routes/system.tsx:385
 msgid "Average system-wide CPU utilization"
@@ -384,7 +384,7 @@ msgstr "Genel"
 
 #: src/components/routes/system.tsx:496
 msgid "GPU Power Draw"
-msgstr ""
+msgstr "GPU Güç Çekimi"
 
 #: src/components/add-system.tsx:116
 msgid "Host / IP"
