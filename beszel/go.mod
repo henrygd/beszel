@@ -9,7 +9,6 @@ require (
 	github.com/containrrr/shoutrrr v0.8.0
 	github.com/gliderlabs/ssh v0.3.7
 	github.com/goccy/go-json v0.10.3
-	github.com/labstack/echo/v5 v5.0.0-20230722203903-ec5b858dab61
 	github.com/pocketbase/dbx v1.10.1
 	github.com/pocketbase/pocketbase v0.23.0
 	github.com/rhysd/go-github-selfupdate v1.2.3

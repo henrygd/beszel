@@ -3,11 +3,11 @@ package site
 
 import (
 	"embed"
-
-	"github.com/labstack/echo/v5"
+	"io/fs"
 )
 
 //go:embed all:dist
-var assets embed.FS
+var distDir embed.FS
 
-var Dist = echo.MustSubFS(assets, "dist")
+// DistDirFS contains the embedded dist directory files (without the "dist" prefix)
+var DistDirFS, _ = fs.Sub(distDir, "dist")

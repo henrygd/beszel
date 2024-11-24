@@ -102,13 +102,13 @@ func (h *Hub) Run() {
 			})
 		default:
 			csp, cspExists := os.LookupEnv("CSP")
-			se.Router.Any("/", func(e *core.RequestEvent) error {
+			se.Router.Any("/{path...}", func(e *core.RequestEvent) error {
 				if cspExists {
 					e.Response.Header().Del("X-Frame-Options")
 					e.Response.Header().Set("Content-Security-Policy", csp)
 				}
 				indexFallback := !strings.HasPrefix(e.Request.URL.Path, "/static/")
-				return apis.Static(site.Dist, indexFallback)(e)
+				return apis.Static(site.DistDirFS, indexFallback)(e)
 			})
 		}
 		return se.Next()
