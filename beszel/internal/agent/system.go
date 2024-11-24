@@ -116,11 +116,17 @@ func (a *Agent) getSystemStats() system.Stats {
 				continue
 			}
 			secondsElapsed := time.Since(stats.Time).Seconds()
-			readPerSecond := float64(d.ReadBytes-stats.TotalRead) / secondsElapsed
-			writePerSecond := float64(d.WriteBytes-stats.TotalWrite) / secondsElapsed
+			readPerSecond := bytesToMegabytes(float64(d.ReadBytes-stats.TotalRead) / secondsElapsed)
+			writePerSecond := bytesToMegabytes(float64(d.WriteBytes-stats.TotalWrite) / secondsElapsed)
+			// check for invalid values and reset stats if so
+			if readPerSecond < 0 || writePerSecond < 0 || readPerSecond > 50_000 || writePerSecond > 50_000 {
+				slog.Warn("Invalid disk I/O. Resetting.", "name", d.Name, "read", readPerSecond, "write", writePerSecond)
+				a.initializeDiskIoStats(ioCounters)
+				break
+			}
 			stats.Time = time.Now()
-			stats.DiskReadPs = bytesToMegabytes(readPerSecond)
-			stats.DiskWritePs = bytesToMegabytes(writePerSecond)
+			stats.DiskReadPs = readPerSecond
+			stats.DiskWritePs = writePerSecond
 			stats.TotalRead = d.ReadBytes
 			stats.TotalWrite = d.WriteBytes
 			// if root filesystem, update system stats
@@ -153,7 +159,7 @@ func (a *Agent) getSystemStats() system.Stats {
 		networkRecvPs := bytesToMegabytes(recvPerSecond)
 		// add check for issue (#150) where sent is a massive number
 		if networkSentPs > 10_000 || networkRecvPs > 10_000 {
-			slog.Warn("Invalid network stats. Resetting.", "sent", networkSentPs, "recv", networkRecvPs)
+			slog.Warn("Invalid net stats. Resetting.", "sent", networkSentPs, "recv", networkRecvPs)
 			for _, v := range netIO {
 				if _, exists := a.netInterfaces[v.Name]; !exists {
 					continue
