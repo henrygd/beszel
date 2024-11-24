@@ -6,7 +6,6 @@ import (
 
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/models"
 )
 
 type UserManager struct {
@@ -26,16 +25,17 @@ func NewUserManager(app *pocketbase.PocketBase) *UserManager {
 	}
 }
 
-func (um *UserManager) InitializeUserRole(e *core.ModelEvent) error {
-	user := e.Model.(*models.Record)
-	if user.GetString("role") == "" {
-		user.Set("role", "user")
+// todo: test
+func (um *UserManager) InitializeUserRole(e *core.RecordEvent) error {
+	if e.Record.GetString("role") == "" {
+		e.Record.Set("role", "user")
 	}
-	return nil
+	return e.Next()
 }
 
-func (um *UserManager) InitializeUserSettings(e *core.ModelEvent) error {
-	record := e.Model.(*models.Record)
+// todo: test
+func (um *UserManager) InitializeUserSettings(e *core.RecordEvent) error {
+	record := e.Record
 	// intialize settings with defaults
 	settings := UserSettings{
 		// Language:             "en",
@@ -46,7 +46,7 @@ func (um *UserManager) InitializeUserSettings(e *core.ModelEvent) error {
 	record.UnmarshalJSONField("settings", &settings)
 	if len(settings.NotificationEmails) == 0 {
 		// get user email from auth record
-		if errs := um.app.Dao().ExpandRecord(record, []string{"user"}, nil); len(errs) == 0 {
+		if errs := um.app.ExpandRecord(record, []string{"user"}, nil); len(errs) == 0 {
 			// app.Logger().Error("failed to expand user relation", "errs", errs)
 			if user := record.ExpandedOne("user"); user != nil {
 				settings.NotificationEmails = []string{user.GetString("email")}
@@ -61,5 +61,5 @@ func (um *UserManager) InitializeUserSettings(e *core.ModelEvent) error {
 	// 	settings.NotificationWebhooks = []string{""}
 	// }
 	record.Set("settings", settings)
-	return nil
+	return e.Next()
 }

@@ -8,10 +8,9 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/apis"
-	"github.com/pocketbase/pocketbase/models"
+	"github.com/pocketbase/pocketbase/core"
 	"github.com/spf13/cast"
 	"gopkg.in/yaml.v3"
 )
@@ -46,11 +45,11 @@ func (h *Hub) syncSystemsWithConfig() error {
 		return nil
 	}
 
-	var firstUser *models.Record
+	var firstUser *core.Record
 
 	// Create a map of email to user ID
 	userEmailToID := make(map[string]string)
-	users, err := h.app.Dao().FindRecordsByExpr("users", dbx.NewExp("id != ''"))
+	users, err := h.app.FindAllRecords("users", dbx.NewExp("id != ''"))
 	if err != nil {
 		return err
 	}
@@ -85,13 +84,13 @@ func (h *Hub) syncSystemsWithConfig() error {
 	}
 
 	// Get existing systems
-	existingSystems, err := h.app.Dao().FindRecordsByExpr("systems", dbx.NewExp("id != ''"))
+	existingSystems, err := h.app.FindAllRecords("systems", dbx.NewExp("id != ''"))
 	if err != nil {
 		return err
 	}
 
 	// Create a map of existing systems for easy lookup
-	existingSystemsMap := make(map[string]*models.Record)
+	existingSystemsMap := make(map[string]*core.Record)
 	for _, system := range existingSystems {
 		key := system.GetString("host") + ":" + system.GetString("port")
 		existingSystemsMap[key] = system
@@ -105,24 +104,24 @@ func (h *Hub) syncSystemsWithConfig() error {
 			existingSystem.Set("name", sysConfig.Name)
 			existingSystem.Set("users", sysConfig.Users)
 			existingSystem.Set("port", sysConfig.Port)
-			if err := h.app.Dao().SaveRecord(existingSystem); err != nil {
+			if err := h.app.Save(existingSystem); err != nil {
 				return err
 			}
 			delete(existingSystemsMap, key)
 		} else {
 			// Create new system
-			systemsCollection, err := h.app.Dao().FindCollectionByNameOrId("systems")
+			systemsCollection, err := h.app.FindCollectionByNameOrId("systems")
 			if err != nil {
 				return fmt.Errorf("failed to find systems collection: %v", err)
 			}
-			newSystem := models.NewRecord(systemsCollection)
+			newSystem := core.NewRecord(systemsCollection)
 			newSystem.Set("name", sysConfig.Name)
 			newSystem.Set("host", sysConfig.Host)
 			newSystem.Set("port", sysConfig.Port)
 			newSystem.Set("users", sysConfig.Users)
 			newSystem.Set("info", system.Info{})
 			newSystem.Set("status", "pending")
-			if err := h.app.Dao().SaveRecord(newSystem); err != nil {
+			if err := h.app.Save(newSystem); err != nil {
 				return fmt.Errorf("failed to create new system: %v", err)
 			}
 		}
@@ -130,7 +129,7 @@ func (h *Hub) syncSystemsWithConfig() error {
 
 	// Delete systems not in config
 	for _, system := range existingSystemsMap {
-		if err := h.app.Dao().DeleteRecord(system); err != nil {
+		if err := h.app.Delete(system); err != nil {
 			return err
 		}
 	}
@@ -142,7 +141,7 @@ func (h *Hub) syncSystemsWithConfig() error {
 // Generates content for the config.yml file as a YAML string
 func (h *Hub) generateConfigYAML() (string, error) {
 	// Fetch all systems from the database
-	systems, err := h.app.Dao().FindRecordsByFilter("systems", "id != ''", "name", -1, 0)
+	systems, err := h.app.FindRecordsByFilter("systems", "id != ''", "name", -1, 0)
 	if err != nil {
 		return "", err
 	}
@@ -195,7 +194,7 @@ func (h *Hub) generateConfigYAML() (string, error) {
 
 // New helper function to get a map of user IDs to emails
 func (h *Hub) getUserEmailMap(userIDs []string) (map[string]string, error) {
-	users, err := h.app.Dao().FindRecordsByIds("users", userIDs)
+	users, err := h.app.FindRecordsByIds("users", userIDs)
 	if err != nil {
 		return nil, err
 	}
@@ -209,14 +208,15 @@ func (h *Hub) getUserEmailMap(userIDs []string) (map[string]string, error) {
 }
 
 // Returns the current config.yml file as a JSON object
-func (h *Hub) getYamlConfig(c echo.Context) error {
-	requestData := apis.RequestInfo(c)
-	if requestData.AuthRecord == nil || requestData.AuthRecord.GetString("role") != "admin" {
+func (h *Hub) getYamlConfig(e *core.RequestEvent) error {
+	info, _ := e.RequestInfo()
+	// todo: test
+	if info.Auth == nil || info.Auth.GetString("role") != "admin" {
 		return apis.NewForbiddenError("Forbidden", nil)
 	}
 	configContent, err := h.generateConfigYAML()
 	if err != nil {
 		return err
 	}
-	return c.JSON(200, map[string]string{"config": configContent})
+	return e.JSON(200, map[string]string{"config": configContent})
 }

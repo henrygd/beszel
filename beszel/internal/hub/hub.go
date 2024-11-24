@@ -24,13 +24,10 @@ import (
 	"time"
 
 	"github.com/goccy/go-json"
-	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"
-	"github.com/pocketbase/pocketbase/tools/cron"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -42,8 +39,8 @@ type Hub struct {
 	am                *alerts.AlertManager
 	um                *users.UserManager
 	rm                *records.RecordManager
-	systemStats       *models.Collection
-	containerStats    *models.Collection
+	systemStats       *core.Collection
+	containerStats    *core.Collection
 }
 
 func NewHub(app *pocketbase.PocketBase) *Hub {
@@ -67,128 +64,127 @@ func (h *Hub) Run() {
 	})
 
 	// initial setup
-	h.app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+	h.app.OnServe().BindFunc(func(se *core.ServeEvent) error {
 		// create ssh client config
 		err := h.createSSHClientConfig()
 		if err != nil {
 			log.Fatal(err)
 		}
 		// set auth settings
-		usersCollection, err := h.app.Dao().FindCollectionByNameOrId("users")
+		usersCollection, err := h.app.FindCollectionByNameOrId("users")
 		if err != nil {
 			return err
 		}
-		usersAuthOptions := usersCollection.AuthOptions()
-		usersAuthOptions.AllowUsernameAuth = false
+		// disable email auth if DISABLE_PASSWORD_AUTH env var is set
+		// todo: test email login and DISABLE_PASSWORD_AUTH env var (do we need to save usersCollection?)
 		if os.Getenv("DISABLE_PASSWORD_AUTH") == "true" {
-			usersAuthOptions.AllowEmailAuth = false
+			usersCollection.PasswordAuth.Enabled = false
 		} else {
-			usersAuthOptions.AllowEmailAuth = true
-		}
-		usersCollection.SetOptions(usersAuthOptions)
-		if err := h.app.Dao().SaveCollection(usersCollection); err != nil {
-			return err
+			usersCollection.PasswordAuth.Enabled = true
+			usersCollection.PasswordAuth.IdentityFields = []string{"email"}
 		}
 		// sync systems with config
-		return h.syncSystemsWithConfig()
+		h.syncSystemsWithConfig()
+		return se.Next()
 	})
 
 	// serve web ui
-	h.app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+	h.app.OnServe().BindFunc(func(se *core.ServeEvent) error {
 		switch isGoRun {
 		case true:
 			proxy := httputil.NewSingleHostReverseProxy(&url.URL{
 				Scheme: "http",
 				Host:   "localhost:5173",
 			})
-			e.Router.Any("/*", echo.WrapHandler(proxy))
+			se.Router.Any("/", func(e *core.RequestEvent) error {
+				proxy.ServeHTTP(e.Response, e.Request)
+				return nil
+			})
 		default:
 			csp, cspExists := os.LookupEnv("CSP")
-			e.Router.Any("/*", func(c echo.Context) error {
+			se.Router.Any("/", func(e *core.RequestEvent) error {
 				if cspExists {
-					c.Response().Header().Del("X-Frame-Options")
-					c.Response().Header().Set("Content-Security-Policy", csp)
+					e.Response.Header().Del("X-Frame-Options")
+					e.Response.Header().Set("Content-Security-Policy", csp)
 				}
-				indexFallback := !strings.HasPrefix(c.Request().URL.Path, "/static/")
-				return apis.StaticDirectoryHandler(site.Dist, indexFallback)(c)
+				indexFallback := !strings.HasPrefix(e.Request.URL.Path, "/static/")
+				return apis.Static(site.Dist, indexFallback)(e)
 			})
 		}
-		return nil
+		return se.Next()
 	})
 
 	// set up scheduled jobs / ticker for system updates
-	h.app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+	h.app.OnServe().BindFunc(func(se *core.ServeEvent) error {
 		// 15 second ticker for system updates
 		go h.startSystemUpdateTicker()
 		// set up cron jobs
-		scheduler := cron.New()
 		// delete old records once every hour
-		scheduler.MustAdd("delete old records", "8 * * * *", h.rm.DeleteOldRecords)
+		h.app.Cron().MustAdd("delete old records", "8 * * * *", h.rm.DeleteOldRecords)
 		// create longer records every 10 minutes
-		scheduler.MustAdd("create longer records", "*/10 * * * *", func() {
+		h.app.Cron().MustAdd("create longer records", "*/10 * * * *", func() {
 			if systemStats, containerStats, err := h.getCollections(); err == nil {
-				h.rm.CreateLongerRecords([]*models.Collection{systemStats, containerStats})
+				h.rm.CreateLongerRecords([]*core.Collection{systemStats, containerStats})
 			}
 		})
-		scheduler.Start()
-		return nil
+		return se.Next()
 	})
 
 	// custom api routes
-	h.app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+	h.app.OnServe().BindFunc(func(se *core.ServeEvent) error {
 		// returns public key
-		e.Router.GET("/api/beszel/getkey", func(c echo.Context) error {
-			requestData := apis.RequestInfo(c)
-			if requestData.AuthRecord == nil {
+		se.Router.GET("/api/beszel/getkey", func(e *core.RequestEvent) error {
+			info, _ := e.RequestInfo()
+			if info.Auth == nil {
 				return apis.NewForbiddenError("Forbidden", nil)
 			}
-			return c.JSON(http.StatusOK, map[string]string{"key": h.pubKey, "v": beszel.Version})
+			return e.JSON(http.StatusOK, map[string]string{"key": h.pubKey, "v": beszel.Version})
 		})
 		// check if first time setup on login page
-		e.Router.GET("/api/beszel/first-run", func(c echo.Context) error {
-			adminNum, err := h.app.Dao().TotalAdmins()
+		se.Router.GET("/api/beszel/first-run", func(e *core.RequestEvent) error {
+			// todo: test that adminNum is correct
+			adminNum, err := h.app.CountRecords(core.CollectionNameSuperusers)
 			if err != nil {
 				return err
 			}
-			return c.JSON(http.StatusOK, map[string]bool{"firstRun": adminNum == 0})
+			return e.JSON(http.StatusOK, map[string]bool{"firstRun": adminNum == 0})
 		})
 		// send test notification
-		e.Router.GET("/api/beszel/send-test-notification", h.am.SendTestNotification)
+		se.Router.GET("/api/beszel/send-test-notification", h.am.SendTestNotification)
 		// API endpoint to get config.yml content
-		e.Router.GET("/api/beszel/config-yaml", h.getYamlConfig)
-		return nil
+		se.Router.GET("/api/beszel/config-yaml", h.getYamlConfig)
+		return se.Next()
 	})
 
 	// system creation defaults
-	h.app.OnModelBeforeCreate("systems").Add(func(e *core.ModelEvent) error {
-		record := e.Model.(*models.Record)
-		record.Set("info", system.Info{})
-		record.Set("status", "pending")
-		return nil
+	h.app.OnRecordCreate("systems").BindFunc(func(e *core.RecordEvent) error {
+		e.Record.Set("info", system.Info{})
+		e.Record.Set("status", "pending")
+		return e.Next()
 	})
 
 	// immediately create connection for new systems
-	h.app.OnModelAfterCreate("systems").Add(func(e *core.ModelEvent) error {
-		go h.updateSystem(e.Model.(*models.Record))
-		return nil
+	h.app.OnRecordAfterCreateSuccess("systems").BindFunc(func(e *core.RecordEvent) error {
+		go h.updateSystem(e.Record)
+		return e.Next()
 	})
 
 	// handle default values for user / user_settings creation
-	h.app.OnModelBeforeCreate("users").Add(h.um.InitializeUserRole)
-	h.app.OnModelBeforeCreate("user_settings").Add(h.um.InitializeUserSettings)
+	h.app.OnRecordCreate("users").BindFunc(h.um.InitializeUserRole)
+	h.app.OnRecordCreate("user_settings").BindFunc(h.um.InitializeUserSettings)
 
 	// empty info for systems that are paused
-	h.app.OnModelBeforeUpdate("systems").Add(func(e *core.ModelEvent) error {
-		if e.Model.(*models.Record).GetString("status") == "paused" {
-			e.Model.(*models.Record).Set("info", system.Info{})
+	h.app.OnRecordUpdate("systems").BindFunc(func(e *core.RecordEvent) error {
+		if e.Record.GetString("status") == "paused" {
+			e.Record.Set("info", system.Info{})
 		}
-		return nil
+		return e.Next()
 	})
 
 	// do things after a systems record is updated
-	h.app.OnModelAfterUpdate("systems").Add(func(e *core.ModelEvent) error {
-		newRecord := e.Model.(*models.Record)
-		oldRecord := newRecord.OriginalCopy()
+	h.app.OnRecordAfterUpdateSuccess("systems").BindFunc(func(e *core.RecordEvent) error {
+		newRecord := e.Record.Fresh()
+		oldRecord := newRecord.Original()
 		newStatus := newRecord.GetString("status")
 
 		// if system is disconnected and connection exists, remove it
@@ -203,15 +199,13 @@ func (h *Hub) Run() {
 			h.am.HandleStatusAlerts(newStatus, oldRecord)
 
 		}
-
-		return nil
+		return e.Next()
 	})
 
-	// do things after a systems record is deleted
-	h.app.OnModelAfterDelete("systems").Add(func(e *core.ModelEvent) error {
-		// if system connection exists, close it
-		h.deleteSystemConnection(e.Model.(*models.Record))
-		return nil
+	// if system is deleted, close connection
+	h.app.OnRecordAfterDeleteSuccess("systems").BindFunc(func(e *core.RecordEvent) error {
+		h.deleteSystemConnection(e.Record)
+		return e.Next()
 	})
 
 	if err := h.app.Start(); err != nil {
@@ -227,7 +221,7 @@ func (h *Hub) startSystemUpdateTicker() {
 }
 
 func (h *Hub) updateSystems() {
-	records, err := h.app.Dao().FindRecordsByFilter(
+	records, err := h.app.FindRecordsByFilter(
 		"2hz5ncl8tizk5nx",    // systems collection
 		"status != 'paused'", // filter
 		"updated",            // sort
@@ -256,7 +250,7 @@ func (h *Hub) updateSystems() {
 	}
 }
 
-func (h *Hub) updateSystem(record *models.Record) {
+func (h *Hub) updateSystem(record *core.Record) {
 	var client *ssh.Client
 	var err error
 
@@ -291,10 +285,9 @@ func (h *Hub) updateSystem(record *models.Record) {
 		return
 	}
 	// update system record
-	dao := h.app.Dao()
 	record.Set("status", "up")
 	record.Set("info", systemData.Info)
-	if err := dao.SaveRecord(record); err != nil {
+	if err := h.app.SaveNoValidate(record); err != nil {
 		h.app.Logger().Error("Failed to update record: ", "err", err.Error())
 	}
 	// add system_stats and container_stats records
@@ -302,20 +295,20 @@ func (h *Hub) updateSystem(record *models.Record) {
 		h.app.Logger().Error("Failed to get collections: ", "err", err.Error())
 	} else {
 		// add new system_stats record
-		systemStatsRecord := models.NewRecord(systemStats)
+		systemStatsRecord := core.NewRecord(systemStats)
 		systemStatsRecord.Set("system", record.Id)
 		systemStatsRecord.Set("stats", systemData.Stats)
 		systemStatsRecord.Set("type", "1m")
-		if err := dao.SaveRecord(systemStatsRecord); err != nil {
+		if err := h.app.SaveNoValidate(systemStatsRecord); err != nil {
 			h.app.Logger().Error("Failed to save record: ", "err", err.Error())
 		}
 		// add new container_stats record
 		if len(systemData.Containers) > 0 {
-			containerStatsRecord := models.NewRecord(containerStats)
+			containerStatsRecord := core.NewRecord(containerStats)
 			containerStatsRecord.Set("system", record.Id)
 			containerStatsRecord.Set("stats", systemData.Containers)
 			containerStatsRecord.Set("type", "1m")
-			if err := dao.SaveRecord(containerStatsRecord); err != nil {
+			if err := h.app.SaveNoValidate(containerStatsRecord); err != nil {
 				h.app.Logger().Error("Failed to save record: ", "err", err.Error())
 			}
 		}
@@ -328,16 +321,16 @@ func (h *Hub) updateSystem(record *models.Record) {
 }
 
 // return system_stats and container_stats collections
-func (h *Hub) getCollections() (*models.Collection, *models.Collection, error) {
+func (h *Hub) getCollections() (*core.Collection, *core.Collection, error) {
 	if h.systemStats == nil {
-		systemStats, err := h.app.Dao().FindCollectionByNameOrId("system_stats")
+		systemStats, err := h.app.FindCollectionByNameOrId("system_stats")
 		if err != nil {
 			return nil, nil, err
 		}
 		h.systemStats = systemStats
 	}
 	if h.containerStats == nil {
-		containerStats, err := h.app.Dao().FindCollectionByNameOrId("container_stats")
+		containerStats, err := h.app.FindCollectionByNameOrId("container_stats")
 		if err != nil {
 			return nil, nil, err
 		}
@@ -347,17 +340,17 @@ func (h *Hub) getCollections() (*models.Collection, *models.Collection, error) {
 }
 
 // set system to specified status and save record
-func (h *Hub) updateSystemStatus(record *models.Record, status string) {
-	if record.GetString("status") != status {
+func (h *Hub) updateSystemStatus(record *core.Record, status string) {
+	if record.Fresh().GetString("status") != status {
 		record.Set("status", status)
-		if err := h.app.Dao().SaveRecord(record); err != nil {
+		if err := h.app.SaveNoValidate(record); err != nil {
 			h.app.Logger().Error("Failed to update record: ", "err", err.Error())
 		}
 	}
 }
 
 // delete system connection from map and close connection
-func (h *Hub) deleteSystemConnection(record *models.Record) {
+func (h *Hub) deleteSystemConnection(record *core.Record) {
 	if client, ok := h.systemConnections.Load(record.Id); ok {
 		if sshClient := client.(*ssh.Client); sshClient != nil {
 			sshClient.Close()
@@ -366,12 +359,12 @@ func (h *Hub) deleteSystemConnection(record *models.Record) {
 	}
 }
 
-func (h *Hub) createSystemConnection(record *models.Record) (*ssh.Client, error) {
-        client, err := ssh.Dial("tcp", net.JoinHostPort(record.GetString("host"), record.GetString("port")), h.sshClientConfig)
-        if err != nil {
-                return nil, err
-        }
-        return client, nil
+func (h *Hub) createSystemConnection(record *core.Record) (*ssh.Client, error) {
+	client, err := ssh.Dial("tcp", net.JoinHostPort(record.GetString("host"), record.GetString("port")), h.sshClientConfig)
+	if err != nil {
+		return nil, err
+	}
+	return client, nil
 }
 
 func (h *Hub) createSSHClientConfig() error {

@@ -11,11 +11,10 @@ import (
 
 	"github.com/containrrr/shoutrrr"
 	"github.com/goccy/go-json"
-	"github.com/labstack/echo/v5"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
-	"github.com/pocketbase/pocketbase/models"
+	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/mailer"
 	"github.com/pocketbase/pocketbase/tools/types"
 	"github.com/spf13/cast"
@@ -48,8 +47,8 @@ type SystemAlertStats struct {
 }
 
 type SystemAlertData struct {
-	systemRecord *models.Record
-	alertRecord  *models.Record
+	systemRecord *core.Record
+	alertRecord  *core.Record
 	name         string
 	unit         string
 	val          float64
@@ -68,12 +67,12 @@ func NewAlertManager(app *pocketbase.PocketBase) *AlertManager {
 	}
 }
 
-func (am *AlertManager) HandleSystemAlerts(systemRecord *models.Record, systemInfo system.Info, temperatures map[string]float64, extraFs map[string]*system.FsStats) error {
+func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, systemInfo system.Info, temperatures map[string]float64, extraFs map[string]*system.FsStats) error {
 	// start := time.Now()
 	// defer func() {
 	// 	log.Println("alert stats took", time.Since(start))
 	// }()
-	alertRecords, err := am.app.Dao().FindRecordsByExpr("alerts",
+	alertRecords, err := am.app.FindAllRecords("alerts",
 		dbx.NewExp("system={:system}", dbx.Params{"system": systemRecord.Id}),
 	)
 	if err != nil || len(alertRecords) == 0 {
@@ -82,7 +81,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *models.Record, systemIn
 	}
 
 	var validAlerts []SystemAlertData
-	now := systemRecord.Updated.Time().UTC()
+	now := systemRecord.GetDateTime("updated").Time().UTC()
 	oldestTime := now
 
 	for _, alertRecord := range alertRecords {
@@ -155,7 +154,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *models.Record, systemIn
 		Created types.DateTime `db:"created"`
 	}{}
 
-	err = am.app.Dao().DB().
+	err = am.app.DB().
 		Select("stats", "created").
 		From("system_stats").
 		Where(dbx.NewExp(
@@ -325,28 +324,28 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 	body := fmt.Sprintf("%s averaged %.2f%s for the previous %v %s.", alert.descriptor, alert.val, alert.unit, alert.min, minutesLabel)
 
 	alert.alertRecord.Set("triggered", alert.triggered)
-	if err := am.app.Dao().SaveRecord(alert.alertRecord); err != nil {
+	if err := am.app.Save(alert.alertRecord); err != nil {
 		// app.Logger().Error("failed to save alert record", "err", err.Error())
 		return
 	}
 	// expand the user relation and send the alert
-	if errs := am.app.Dao().ExpandRecord(alert.alertRecord, []string{"user"}, nil); len(errs) > 0 {
+	if errs := am.app.ExpandRecord(alert.alertRecord, []string{"user"}, nil); len(errs) > 0 {
 		// app.Logger().Error("failed to expand user relation", "errs", errs)
 		return
 	}
 	if user := alert.alertRecord.ExpandedOne("user"); user != nil {
 		am.sendAlert(AlertMessageData{
-			UserID:   user.GetId(),
+			UserID:   user.Id,
 			Title:    subject,
 			Message:  body,
-			Link:     am.app.Settings().Meta.AppUrl + "/system/" + url.PathEscape(systemName),
+			Link:     am.app.Settings().Meta.AppURL + "/system/" + url.PathEscape(systemName),
 			LinkText: "View " + systemName,
 		})
 	}
 }
 
 // todo: allow x minutes downtime before sending alert
-func (am *AlertManager) HandleStatusAlerts(newStatus string, oldSystemRecord *models.Record) error {
+func (am *AlertManager) HandleStatusAlerts(newStatus string, oldSystemRecord *core.Record) error {
 	var alertStatus string
 	switch newStatus {
 	case "up":
@@ -362,9 +361,9 @@ func (am *AlertManager) HandleStatusAlerts(newStatus string, oldSystemRecord *mo
 		return nil
 	}
 	// check if use
-	alertRecords, err := am.app.Dao().FindRecordsByExpr("alerts",
+	alertRecords, err := am.app.FindAllRecords("alerts",
 		dbx.HashExp{
-			"system": oldSystemRecord.GetId(),
+			"system": oldSystemRecord.Id,
 			"name":   "Status",
 		},
 	)
@@ -374,7 +373,7 @@ func (am *AlertManager) HandleStatusAlerts(newStatus string, oldSystemRecord *mo
 	}
 	for _, alertRecord := range alertRecords {
 		// expand the user relation
-		if errs := am.app.Dao().ExpandRecord(alertRecord, []string{"user"}, nil); len(errs) > 0 {
+		if errs := am.app.ExpandRecord(alertRecord, []string{"user"}, nil); len(errs) > 0 {
 			return fmt.Errorf("failed to expand: %v", errs)
 		}
 		user := alertRecord.ExpandedOne("user")
@@ -388,10 +387,10 @@ func (am *AlertManager) HandleStatusAlerts(newStatus string, oldSystemRecord *mo
 		// send alert
 		systemName := oldSystemRecord.GetString("name")
 		am.sendAlert(AlertMessageData{
-			UserID:   user.GetId(),
+			UserID:   user.Id,
 			Title:    fmt.Sprintf("Connection to %s is %s %v", systemName, alertStatus, emoji),
 			Message:  fmt.Sprintf("Connection to %s is %s", systemName, alertStatus),
-			Link:     am.app.Settings().Meta.AppUrl + "/system/" + url.PathEscape(systemName),
+			Link:     am.app.Settings().Meta.AppURL + "/system/" + url.PathEscape(systemName),
 			LinkText: "View " + systemName,
 		})
 	}
@@ -400,7 +399,7 @@ func (am *AlertManager) HandleStatusAlerts(newStatus string, oldSystemRecord *mo
 
 func (am *AlertManager) sendAlert(data AlertMessageData) {
 	// get user settings
-	record, err := am.app.Dao().FindFirstRecordByFilter(
+	record, err := am.app.FindFirstRecordByFilter(
 		"user_settings", "user={:user}",
 		dbx.Params{"user": data.UserID},
 	)
@@ -512,19 +511,20 @@ func sliceContains(slice []string, item string) bool {
 	return false
 }
 
-func (am *AlertManager) SendTestNotification(c echo.Context) error {
-	requestData := apis.RequestInfo(c)
-	if requestData.AuthRecord == nil {
+// todo: test
+func (am *AlertManager) SendTestNotification(e *core.RequestEvent) error {
+	info, _ := e.RequestInfo()
+	if info.Auth == nil {
 		return apis.NewForbiddenError("Forbidden", nil)
 	}
-	url := c.QueryParam("url")
+	url := e.Request.URL.Query().Get("url")
 	// log.Println("url", url)
 	if url == "" {
-		return c.JSON(200, map[string]string{"err": "URL is required"})
+		return e.JSON(200, map[string]string{"err": "URL is required"})
 	}
-	err := am.SendShoutrrrAlert(url, "Test Alert", "This is a notification from Beszel.", am.app.Settings().Meta.AppUrl, "View Beszel")
+	err := am.SendShoutrrrAlert(url, "Test Alert", "This is a notification from Beszel.", am.app.Settings().Meta.AppURL, "View Beszel")
 	if err != nil {
-		return c.JSON(200, map[string]string{"err": err.Error()})
+		return e.JSON(200, map[string]string{"err": err.Error()})
 	}
-	return c.JSON(200, map[string]bool{"err": false})
+	return e.JSON(200, map[string]bool{"err": false})
 }

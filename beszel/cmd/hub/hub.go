@@ -3,6 +3,7 @@ package main
 import (
 	"beszel"
 	"beszel/internal/hub"
+
 	_ "beszel/migrations"
 
 	"github.com/pocketbase/pocketbase"

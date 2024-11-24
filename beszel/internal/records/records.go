@@ -11,8 +11,7 @@ import (
 	"github.com/goccy/go-json"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
-	"github.com/pocketbase/pocketbase/daos"
-	"github.com/pocketbase/pocketbase/models"
+	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/types"
 )
 
@@ -41,7 +40,7 @@ func NewRecordManager(app *pocketbase.PocketBase) *RecordManager {
 }
 
 // Create longer records by averaging shorter records
-func (rm *RecordManager) CreateLongerRecords(collections []*models.Collection) {
+func (rm *RecordManager) CreateLongerRecords(collections []*core.Collection) {
 	// start := time.Now()
 	longerRecordData := []LongerRecordData{
 		{
@@ -71,8 +70,8 @@ func (rm *RecordManager) CreateLongerRecords(collections []*models.Collection) {
 		},
 	}
 	// wrap the operations in a transaction
-	rm.app.Dao().RunInTransaction(func(txDao *daos.Dao) error {
-		activeSystems, err := txDao.FindRecordsByExpr("systems", dbx.NewExp("status = 'up'"))
+	rm.app.RunInTransaction(func(txApp core.App) error {
+		activeSystems, err := txApp.FindAllRecords("systems", dbx.NewExp("status = 'up'"))
 		if err != nil {
 			log.Println("failed to get active systems", "err", err.Error())
 			return err
@@ -92,7 +91,7 @@ func (rm *RecordManager) CreateLongerRecords(collections []*models.Collection) {
 				for _, collection := range collections {
 					// check creation time of last longer record if not 10m, since 10m is created every run
 					if recordData.longerType != "10m" {
-						lastLongerRecord, err := txDao.FindFirstRecordByFilter(
+						lastLongerRecord, err := txApp.FindFirstRecordByFilter(
 							collection.Id,
 							"type = {:type} && system = {:system} && created > {:created}",
 							dbx.Params{"type": recordData.longerType, "system": system.Id, "created": longerRecordPeriod},
@@ -106,7 +105,7 @@ func (rm *RecordManager) CreateLongerRecords(collections []*models.Collection) {
 					// get shorter records from the past x minutes
 					var stats RecordStats
 
-					err := txDao.DB().
+					err := txApp.DB().
 						Select("stats").
 						From(collection.Name).
 						AndWhere(dbx.NewExp(
@@ -125,7 +124,7 @@ func (rm *RecordManager) CreateLongerRecords(collections []*models.Collection) {
 						continue
 					}
 					// average the shorter records and create longer record
-					longerRecord := models.NewRecord(collection)
+					longerRecord := core.NewRecord(collection)
 					longerRecord.Set("system", system.Id)
 					longerRecord.Set("type", recordData.longerType)
 					switch collection.Name {
@@ -134,7 +133,7 @@ func (rm *RecordManager) CreateLongerRecords(collections []*models.Collection) {
 					case "container_stats":
 						longerRecord.Set("stats", rm.AverageContainerStats(stats))
 					}
-					if err := txDao.SaveRecord(longerRecord); err != nil {
+					if err := txApp.SaveNoValidate(longerRecord); err != nil {
 						log.Println("failed to save longer record", "err", err.Error())
 					}
 				}
@@ -354,7 +353,7 @@ func (rm *RecordManager) DeleteOldRecords() {
 			retention:  30 * 24 * time.Hour,
 		},
 	}
-	db := rm.app.Dao().NonconcurrentDB()
+	db := rm.app.NonconcurrentDB()
 	for _, recordData := range recordData {
 		for _, collectionSlug := range collections {
 			formattedDate := time.Now().UTC().Add(-recordData.retention).Format(types.DefaultDateLayout)
