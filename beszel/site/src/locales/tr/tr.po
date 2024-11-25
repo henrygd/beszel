@@ -8,7 +8,7 @@ msgstr ""
 "Language: tr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-11-19 12:08\n"
+"PO-Revision-Date: 2024-11-25 02:31\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -134,7 +134,7 @@ msgstr "Sistem genelinde ortalama CPU kullanımı"
 
 #: src/components/routes/system.tsx:515
 msgid "Average utilization of {0}"
-msgstr ""
+msgstr "{0} ortalama kullanımı"
 
 #: src/components/command-palette.tsx:171
 #: src/components/navbar.tsx:94
