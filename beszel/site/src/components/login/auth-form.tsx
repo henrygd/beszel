@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { LoaderCircle, LockIcon, LogInIcon, MailIcon, UserIcon } from "lucide-react"
+import { LoaderCircle, LockIcon, LogInIcon, MailIcon } from "lucide-react"
 import { $authenticated, pb } from "@/lib/stores"
 import * as v from "valibot"
 import { toast } from "../ui/use-toast"
@@ -14,7 +14,7 @@ import { Trans, t } from "@lingui/macro"
 
 const honeypot = v.literal("")
 const emailSchema = v.pipe(v.string(), v.email(t`Invalid email address.`))
-const passwordSchema = v.pipe(v.string(), v.minLength(10, t`Password must be at least 10 characters.`))
+const passwordSchema = v.pipe(v.string(), v.minLength(8, t`Password must be at least 8 characters.`))
 
 const LoginSchema = v.looseObject({
 	name: honeypot,
@@ -24,14 +24,6 @@ const LoginSchema = v.looseObject({
 
 const RegisterSchema = v.looseObject({
 	name: honeypot,
-	username: v.pipe(
-		v.string(),
-		v.regex(
-			/^(?=.*[a-zA-Z])[a-zA-Z0-9_-]+$/,
-			"Invalid username. You may use alphanumeric characters, underscores, and hyphens."
-		),
-		v.minLength(3, "Username must be at least 3 characters long.")
-	),
 	email: emailSchema,
 	password: passwordSchema,
 	passwordConfirm: passwordSchema,
@@ -63,6 +55,8 @@ export function UserAuthForm({
 		async (e: React.FormEvent<HTMLFormElement>) => {
 			e.preventDefault()
 			setIsLoading(true)
+			// store email for later use if mfa is enabled
+			let email = ""
 			try {
 				const formData = new FormData(e.target as HTMLFormElement)
 				const data = Object.fromEntries(formData) as Record<string, any>
@@ -78,7 +72,8 @@ export function UserAuthForm({
 					setErrors(errors)
 					return
 				}
-				const { email, password, passwordConfirm, username } = result.output
+				const { password, passwordConfirm } = result.output
+				email = result.output.email
 				if (isFirstRun) {
 					// check that passwords match
 					if (password !== passwordConfirm) {
@@ -86,27 +81,27 @@ export function UserAuthForm({
 						setErrors({ passwordConfirm: msg })
 						return
 					}
-					await pb.admins.create({
-						email,
-						password,
-						passwordConfirm: password,
-					})
-					await pb.admins.authWithPassword(email, password)
-					await pb.collection("users").create({
-						username,
-						email,
-						password,
-						passwordConfirm: password,
-						role: "admin",
-						verified: true,
+					await pb.send("/api/beszel/create-user", {
+						method: "POST",
+						body: JSON.stringify({ email, password }),
 					})
 					await pb.collection("users").authWithPassword(email, password)
 				} else {
 					await pb.collection("users").authWithPassword(email, password)
 				}
 				$authenticated.set(true)
-			} catch (e) {
+			} catch (err: any) {
 				showLoginFaliedToast()
+				// todo: implement MFA
+				// const mfaId = err.response?.mfaId
+				// if (!mfaId) {
+				// 	showLoginFaliedToast()
+				// 	throw err
+				// }
+				// the user needs to authenticate again with another auth method, for example OTP
+				// const result = await pb.collection("users").requestOTP(email)
+				// ... show a modal for users to check their email and to enter the received code ...
+				// await pb.collection("users").authWithOTP(result.otpId, "EMAIL_CODE", { mfaId: mfaId })
 			} finally {
 				setIsLoading(false)
 			}
@@ -118,34 +113,15 @@ export function UserAuthForm({
 		return null
 	}
 
+	const oauthEnabled = authMethods.oauth2.enabled && authMethods.oauth2.providers.length > 0
+	const passwordEnabled = authMethods.password.enabled
+
 	return (
 		<div className={cn("grid gap-6", className)} {...props}>
-			{authMethods.emailPassword && (
+			{passwordEnabled && (
 				<>
 					<form onSubmit={handleSubmit} onChange={() => setErrors({})}>
 						<div className="grid gap-2.5">
-							{isFirstRun && (
-								<div className="grid gap-1 relative">
-									<UserIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-									<Label className="sr-only" htmlFor="username">
-										<Trans>Username</Trans>
-									</Label>
-									<Input
-										autoFocus={true}
-										id="username"
-										name="username"
-										required
-										placeholder={t`username`}
-										type="username"
-										autoCapitalize="none"
-										autoComplete="username"
-										autoCorrect="off"
-										disabled={isLoading || isOauthLoading}
-										className="ps-9"
-									/>
-									{errors?.username && <p className="px-1 text-xs text-red-600">{errors.username}</p>}
-								</div>
-							)}
 							<div className="grid gap-1 relative">
 								<MailIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
 								<Label className="sr-only" htmlFor="email">
@@ -216,7 +192,7 @@ export function UserAuthForm({
 							</button>
 						</div>
 					</form>
-					{(isFirstRun || authMethods.authProviders.length > 0) && (
+					{(isFirstRun || oauthEnabled) && (
 						// only show 'continue with' during onboarding or if we have auth providers
 						<div className="relative">
 							<div className="absolute inset-0 flex items-center">
@@ -232,15 +208,15 @@ export function UserAuthForm({
 				</>
 			)}
 
-			{authMethods.authProviders.length > 0 && (
+			{oauthEnabled && (
 				<div className="grid gap-2 -mt-1">
-					{authMethods.authProviders.map((provider) => (
+					{authMethods.oauth2.providers.map((provider) => (
 						<button
 							key={provider.name}
 							type="button"
 							className={cn(buttonVariants({ variant: "outline" }), {
-								"justify-self-center": !authMethods.emailPassword,
-								"px-5": !authMethods.emailPassword,
+								"justify-self-center": !passwordEnabled,
+								"px-5": !passwordEnabled,
 							})}
 							onClick={() => {
 								setIsOauthLoading(true)
@@ -293,7 +269,7 @@ export function UserAuthForm({
 				</div>
 			)}
 
-			{!authMethods.authProviders.length && isFirstRun && (
+			{!oauthEnabled && isFirstRun && (
 				// only show GitHub button / dialog during onboarding
 				<Dialog>
 					<DialogTrigger asChild>
@@ -329,7 +305,7 @@ export function UserAuthForm({
 				</Dialog>
 			)}
 
-			{authMethods.emailPassword && !isFirstRun && (
+			{passwordEnabled && !isFirstRun && (
 				<Link
 					href="/forgot-password"
 					className="text-sm mx-auto hover:text-brand underline underline-offset-4 opacity-70 hover:opacity-100 transition-opacity"

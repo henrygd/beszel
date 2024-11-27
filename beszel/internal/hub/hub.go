@@ -142,17 +142,17 @@ func (h *Hub) Run() {
 		})
 		// check if first time setup on login page
 		se.Router.GET("/api/beszel/first-run", func(e *core.RequestEvent) error {
-			// todo: test that adminNum is correct
-			adminNum, err := h.app.CountRecords(core.CollectionNameSuperusers)
-			if err != nil {
-				return err
-			}
-			return e.JSON(http.StatusOK, map[string]bool{"firstRun": adminNum == 0})
+			total, err := h.app.CountRecords("users")
+			return e.JSON(http.StatusOK, map[string]bool{"firstRun": err == nil && total == 0})
 		})
 		// send test notification
 		se.Router.GET("/api/beszel/send-test-notification", h.am.SendTestNotification)
 		// API endpoint to get config.yml content
 		se.Router.GET("/api/beszel/config-yaml", h.getYamlConfig)
+		// create first user endpoint only needed if no users exist
+		if totalUsers, _ := h.app.CountRecords("users"); totalUsers == 0 {
+			se.Router.POST("/api/beszel/create-user", h.um.CreateFirstUser)
+		}
 		return se.Next()
 	})
 
