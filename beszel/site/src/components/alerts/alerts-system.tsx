@@ -5,7 +5,6 @@ import { AlertInfo, AlertRecord, SystemRecord } from "@/types"
 import { lazy, Suspense, useRef, useState } from "react"
 import { toast } from "../ui/use-toast"
 import { RecordOptions } from "pocketbase"
-import { newQueue, Queue } from "@henrygd/queue"
 import { Trans, t, Plural } from "@lingui/macro"
 
 interface AlertData {
@@ -19,8 +18,6 @@ interface AlertData {
 }
 
 const Slider = lazy(() => import("@/components/ui/slider"))
-
-let queue: Queue
 
 const failedUpdateToast = () =>
 	toast({
@@ -49,7 +46,7 @@ export function SystemAlert({
 			} else if (checked) {
 				pb.collection("alerts").create({
 					system: system.id,
-					user: pb.authStore.model!.id,
+					user: pb.authStore.record!.id,
 					name: data.key,
 					value: value,
 					min: min,
@@ -88,11 +85,7 @@ export function SystemAlertGlobal({
 	data.checked = false
 	data.val = data.min = 0
 
-	data.updateAlert = (checked: boolean, value: number, min: number) => {
-		if (!queue) {
-			queue = newQueue(5)
-		}
-
+	data.updateAlert = async (checked: boolean, value: number, min: number) => {
 		const { set, populatedSet } = systemsWithExistingAlerts.current
 
 		// if overwrite checked, make sure all alerts will be overwritten
@@ -105,48 +98,57 @@ export function SystemAlertGlobal({
 			min,
 			triggered: false,
 		}
-		for (let system of systems) {
-			// if overwrite is false and system is in set (alert existed), skip
-			if (!overwrite && set.has(system.id)) {
-				continue
-			}
-			// find matching existing alert
-			const existingAlert = alerts.find((alert) => alert.system === system.id && data.key === alert.name)
-			// if first run, add system to set (alert already existed when global panel was opened)
-			if (existingAlert && !populatedSet && !overwrite) {
-				set.add(system.id)
-				continue
-			}
-			const requestOptions: RecordOptions = {
-				requestKey: system.id,
-			}
 
-			// checked - make sure alert is created or updated
-			if (checked) {
-				if (existingAlert) {
-					// console.log('updating', system.name)
-					queue
-						.add(() => pb.collection("alerts").update(existingAlert.id, recordData, requestOptions))
-						.catch(failedUpdateToast)
-				} else {
-					// console.log('creating', system.name)
-					queue
-						.add(() =>
-							pb.collection("alerts").create(
-								{
-									system: system.id,
-									user: pb.authStore.model!.id,
-									name: data.key,
-									...recordData,
-								},
-								requestOptions
-							)
-						)
-						.catch(failedUpdateToast)
+		// we can only send 50 in one batch
+		let done = 0
+
+		while (done < systems.length) {
+			const batch = pb.createBatch()
+			let batchSize = 0
+
+			for (let i = done; i < Math.min(done + 50, systems.length); i++) {
+				const system = systems[i]
+				// if overwrite is false and system is in set (alert existed), skip
+				if (!overwrite && set.has(system.id)) {
+					continue
 				}
-			} else if (existingAlert) {
-				// console.log('deleting', system.name)
-				queue.add(() => pb.collection("alerts").delete(existingAlert.id)).catch(failedUpdateToast)
+				// find matching existing alert
+				const existingAlert = alerts.find((alert) => alert.system === system.id && data.key === alert.name)
+				// if first run, add system to set (alert already existed when global panel was opened)
+				if (existingAlert && !populatedSet && !overwrite) {
+					set.add(system.id)
+					continue
+				}
+				batchSize++
+				const requestOptions: RecordOptions = {
+					requestKey: system.id,
+				}
+
+				// checked - make sure alert is created or updated
+				if (checked) {
+					if (existingAlert) {
+						batch.collection("alerts").update(existingAlert.id, recordData, requestOptions)
+					} else {
+						batch.collection("alerts").create(
+							{
+								system: system.id,
+								user: pb.authStore.record!.id,
+								name: data.key,
+								...recordData,
+							},
+							requestOptions
+						)
+					}
+				} else if (existingAlert) {
+					batch.collection("alerts").delete(existingAlert.id)
+				}
+			}
+			try {
+				batchSize && batch.send()
+			} catch (e) {
+				failedUpdateToast()
+			} finally {
+				done += 50
 			}
 		}
 		systemsWithExistingAlerts.current.populatedSet = true

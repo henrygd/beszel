@@ -70,6 +70,10 @@ func (h *Hub) Run() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		// set general settings
+		settings := h.app.Settings()
+		// batch requests (for global alerts)
+		settings.Batch.Enabled = true
 		// set auth settings
 		usersCollection, err := h.app.FindCollectionByNameOrId("users")
 		if err != nil {
