@@ -8,7 +8,7 @@ msgstr ""
 "Language: cs\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-11-28 18:50\n"
+"PO-Revision-Date: 2024-11-28 19:57\n"
 "Last-Translator: \n"
 "Language-Team: Czech\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 3;\n"
@@ -297,38 +297,38 @@ msgstr "Využití paměti Dockeru"
 
 #: src/components/routes/system.tsx:457
 msgid "Docker Network I/O"
-msgstr ""
+msgstr "Síťové I/O Dockeru"
 
 #: src/components/command-palette.tsx:125
 msgid "Documentation"
-msgstr ""
+msgstr "Dokumentace"
 
 #: src/components/login/auth-form.tsx:158
 msgid "email"
-msgstr ""
+msgstr "email"
 
 #: src/components/login/auth-form.tsx:152
 #: src/components/login/forgot-pass-form.tsx:53
 msgid "Email"
-msgstr ""
+msgstr "Email"
 
 #: src/components/routes/settings/notifications.tsx:91
 msgid "Email notifications"
-msgstr ""
+msgstr "Emailová upozornění"
 
 #: src/components/login/login.tsx:38
 msgid "Enter email address to reset password"
-msgstr ""
+msgstr "Zadejte e-mailovou adresu pro obnovu hesla"
 
 #: src/components/routes/settings/notifications.tsx:111
 msgid "Enter email address..."
-msgstr ""
+msgstr "Zadejte e-mailovou adresu..."
 
 #: src/components/login/auth-form.tsx:256
 #: src/components/routes/settings/config-yaml.tsx:28
 #: src/components/routes/settings/notifications.tsx:187
 msgid "Error"
-msgstr ""
+msgstr "Chyba"
 
 #: src/components/routes/home.tsx:81
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
@@ -336,37 +336,37 @@ msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx:72
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
-msgstr ""
+msgstr "Stávající systémy, které nejsou definovány v <0>config.yml</0>, budou odstraněny. Provádějte pravidelné zálohování."
 
 #: src/components/routes/settings/config-yaml.tsx:93
 msgid "Export configuration"
-msgstr ""
+msgstr "Exportovat konfiguraci"
 
 #: src/components/routes/settings/config-yaml.tsx:48
 msgid "Export your current systems configuration."
-msgstr ""
+msgstr "Exportovat aktuální konfiguraci systémů."
 
 #: src/lib/utils.ts:38
 msgid "Failed to authenticate"
-msgstr ""
+msgstr "Ověření se nezdařilo"
 
 #: src/components/routes/settings/layout.tsx:39
 #: src/components/routes/settings/notifications.tsx:62
 msgid "Failed to save settings"
-msgstr ""
+msgstr "Nepodařilo se uložit nastavení"
 
 #: src/components/routes/settings/notifications.tsx:188
 msgid "Failed to send test notification"
-msgstr ""
+msgstr "Nepodařilo se odeslat testovací oznámení"
 
 #: src/components/alerts/alerts-system.tsx:27
 msgid "Failed to update alert"
-msgstr ""
+msgstr "Nepodařilo se aktualizovat upozornění"
 
 #: src/components/routes/system.tsx:596
 #: src/components/systems-table/systems-table.tsx:324
 msgid "Filter..."
-msgstr ""
+msgstr "Filtr..."
 
 #: src/components/alerts/alerts-system.tsx:225
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -374,13 +374,13 @@ msgstr ""
 
 #: src/components/login/auth-form.tsx:337
 msgid "Forgot password?"
-msgstr ""
+msgstr "Zapomněli jste heslo?"
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx:33
 #: src/components/routes/settings/layout.tsx:51
 msgid "General"
-msgstr ""
+msgstr "Obecné"
 
 #: src/components/routes/system.tsx:496
 msgid "GPU Power Draw"
@@ -388,55 +388,55 @@ msgstr ""
 
 #: src/components/add-system.tsx:116
 msgid "Host / IP"
-msgstr ""
+msgstr "Hostitel / IP"
 
 #: src/components/login/forgot-pass-form.tsx:93
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
-msgstr ""
+msgstr "Pokud jste ztratili heslo k vašemu účtu správce, můžete jej obnovit pomocí následujícího příkazu."
 
 #: src/components/login/auth-form.tsx:16
 msgid "Invalid email address."
-msgstr ""
+msgstr "Neplatná e-mailová adresa."
 
 #. Linux kernel
 #: src/components/routes/system.tsx:262
 msgid "Kernel"
-msgstr ""
+msgstr "Kernel"
 
 #: src/components/routes/settings/general.tsx:45
 msgid "Language"
-msgstr ""
+msgstr "Jazyk"
 
 #. Light theme
 #: src/components/mode-toggle.tsx:16
 msgid "Light"
-msgstr ""
+msgstr "Světlý"
 
 #: src/components/navbar.tsx:113
 msgid "Log Out"
-msgstr ""
+msgstr "Odhlásit"
 
 #: src/components/login/login.tsx:19
 msgid "Login"
-msgstr ""
+msgstr "Přihlásit"
 
 #: src/components/login/auth-form.tsx:42
 #: src/components/login/forgot-pass-form.tsx:15
 msgid "Login attempt failed"
-msgstr ""
+msgstr "Pokus o přihlášení selhal"
 
 #: src/components/command-palette.tsx:157
 #: src/components/navbar.tsx:86
 msgid "Logs"
-msgstr ""
+msgstr "Logy"
 
 #: src/components/routes/settings/notifications.tsx:80
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
-msgstr ""
+msgstr "Hledáte místo kde vytvářet upozornění? Klikněte na ikonu zvonku <0/> v systémové tabulce."
 
 #: src/components/routes/settings/layout.tsx:85
 msgid "Manage display and notification preferences."
-msgstr ""
+msgstr "Správa nastavení zobrazení a oznámení."
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx:628
@@ -668,11 +668,11 @@ msgstr ""
 #: src/components/systems-table/systems-table.tsx:110
 #: src/components/systems-table/systems-table.tsx:121
 msgid "System"
-msgstr ""
+msgstr "Systém"
 
 #: src/components/navbar.tsx:78
 msgid "Systems"
-msgstr ""
+msgstr "Systémy"
 
 #: src/components/routes/settings/config-yaml.tsx:55
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
@@ -681,19 +681,19 @@ msgstr ""
 #: src/components/routes/system.tsx:484
 #: src/lib/utils.ts:314
 msgid "Temperature"
-msgstr ""
+msgstr "Teplota"
 
 #: src/components/routes/system.tsx:485
 msgid "Temperatures of system sensors"
-msgstr ""
+msgstr "Teploty systémových senzorů"
 
 #: src/components/routes/settings/notifications.tsx:211
 msgid "Test <0>URL</0>"
-msgstr ""
+msgstr "Test <0>URL</0>"
 
 #: src/components/routes/settings/notifications.tsx:182
 msgid "Test notification sent"
-msgstr ""
+msgstr "Testovací oznámení odesláno"
 
 #: src/components/add-system.tsx:104
 msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
@@ -721,16 +721,16 @@ msgstr ""
 
 #: src/components/routes/settings/notifications.tsx:106
 msgid "To email(s)"
-msgstr ""
+msgstr "Na email(y)"
 
 #: src/components/routes/system.tsx:359
 #: src/components/routes/system.tsx:372
 msgid "Toggle grid"
-msgstr ""
+msgstr "Přepnout mřížku"
 
 #: src/components/mode-toggle.tsx:33
 msgid "Toggle theme"
-msgstr ""
+msgstr "Přepnout motiv"
 
 #: src/lib/utils.ts:317
 msgid "Triggers when any sensor exceeds a threshold"
@@ -762,36 +762,36 @@ msgstr ""
 
 #: src/components/routes/system.tsx:261
 msgid "Uptime"
-msgstr ""
+msgstr "Doba provozu"
 
 #: src/components/charts/area-chart.tsx:73
 #: src/components/routes/system.tsx:514
 #: src/components/routes/system.tsx:551
 msgid "Usage"
-msgstr ""
+msgstr "Využití"
 
 #: src/components/routes/system.tsx:424
 msgid "Usage of root partition"
-msgstr ""
+msgstr "Využití kořenového oddílu"
 
 #: src/components/charts/area-chart.tsx:73
 #: src/components/charts/mem-chart.tsx:65
 #: src/components/charts/swap-chart.tsx:56
 msgid "Used"
-msgstr ""
+msgstr "Využito"
 
 #: src/components/login/auth-form.tsx:138
 msgid "username"
-msgstr ""
+msgstr "uživatelské jméno"
 
 #: src/components/login/auth-form.tsx:131
 msgid "Username"
-msgstr ""
+msgstr "Uživatelské jméno"
 
 #: src/components/command-palette.tsx:143
 #: src/components/navbar.tsx:70
 msgid "Users"
-msgstr ""
+msgstr "Uživatelé"
 
 #: src/components/routes/system.tsx:662
 msgid "Waiting for enough records to display"
@@ -809,17 +809,17 @@ msgstr ""
 #: src/components/charts/area-chart.tsx:59
 #: src/components/charts/area-chart.tsx:69
 msgid "Write"
-msgstr ""
+msgstr "Psát"
 
 #: src/components/routes/settings/layout.tsx:61
 msgid "YAML Config"
-msgstr ""
+msgstr "YAML konfigurace"
 
 #: src/components/routes/settings/config-yaml.tsx:45
 msgid "YAML Configuration"
-msgstr ""
+msgstr "YAML konfigurace"
 
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
-msgstr ""
+msgstr "Vaše uživatelská nastavení byla aktualizována."
 
