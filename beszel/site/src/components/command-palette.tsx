@@ -2,7 +2,6 @@ import {
 	DatabaseBackupIcon,
 	Github,
 	LayoutDashboard,
-	LockKeyholeIcon,
 	LogsIcon,
 	MailIcon,
 	Server,
@@ -115,7 +114,7 @@ export default function CommandPalette({ open, setOpen }: { open: boolean; setOp
 						</CommandShortcut>
 					</CommandItem>
 					<CommandItem
-						keywords={["github"]}
+						keywords={["github", "oauth", "oidc"]}
 						onSelect={() => {
 							window.location.href = "https://github.com/henrygd/beszel/blob/main/readme.md"
 						}}
@@ -169,21 +168,6 @@ export default function CommandPalette({ open, setOpen }: { open: boolean; setOp
 								<DatabaseBackupIcon className="me-2 h-4 w-4" />
 								<span>
 									<Trans>Backups</Trans>
-								</span>
-								<CommandShortcut>
-									<Trans>Admin</Trans>
-								</CommandShortcut>
-							</CommandItem>
-							<CommandItem
-								keywords={["oauth", "oicd"]}
-								onSelect={() => {
-									setOpen(false)
-									window.open("/_/#/settings/auth-providers", "_blank")
-								}}
-							>
-								<LockKeyholeIcon className="me-2 h-4 w-4" />
-								<span>
-									<Trans>Auth Providers</Trans>
 								</span>
 								<CommandShortcut>
 									<Trans>Admin</Trans>
