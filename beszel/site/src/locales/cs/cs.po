@@ -8,7 +8,7 @@ msgstr ""
 "Language: cs\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-11-28 19:57\n"
+"PO-Revision-Date: 2024-11-29 23:28\n"
 "Last-Translator: \n"
 "Language-Team: Czech\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 3;\n"
@@ -713,11 +713,11 @@ msgstr ""
 
 #: src/components/routes/system.tsx:564
 msgid "Throughput of {extraFsName}"
-msgstr ""
+msgstr "Objemy {extraFsName}"
 
 #: src/components/routes/system.tsx:432
 msgid "Throughput of root filesystem"
-msgstr ""
+msgstr "Propustnost kořenového souborového systému"
 
 #: src/components/routes/settings/notifications.tsx:106
 msgid "To email(s)"
@@ -799,11 +799,11 @@ msgstr ""
 
 #: src/components/routes/settings/general.tsx:48
 msgid "Want to help us make our translations even better? Check out <0>Crowdin</0> for more details."
-msgstr ""
+msgstr "Chcete nám pomoci s našimi překlady ještě lépe? Podívejte se na <0>Crowdin</0> pro více informací."
 
 #: src/components/routes/settings/notifications.tsx:124
 msgid "Webhook / Push notifications"
-msgstr ""
+msgstr "Webhook / Push oznámení"
 
 #. Disk write
 #: src/components/charts/area-chart.tsx:59
