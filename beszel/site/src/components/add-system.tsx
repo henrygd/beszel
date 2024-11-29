@@ -56,7 +56,7 @@ export function AddSystemButton({ className }: { className?: string }) {
 		e.preventDefault()
 		const formData = new FormData(e.target as HTMLFormElement)
 		const data = Object.fromEntries(formData) as Record<string, any>
-		data.users = pb.authStore.model!.id
+		data.users = pb.authStore.record!.id
 		try {
 			setOpen(false)
 			await pb.collection("systems").create(data)

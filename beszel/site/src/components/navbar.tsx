@@ -58,7 +58,7 @@ export default function Navbar() {
 						</button>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent align={isReadOnlyUser() ? "end" : "center"} className="min-w-44">
-						<DropdownMenuLabel>{pb.authStore.model?.email}</DropdownMenuLabel>
+						<DropdownMenuLabel>{pb.authStore.record?.email}</DropdownMenuLabel>
 						<DropdownMenuSeparator />
 						<DropdownMenuGroup>
 							{isAdmin() && (

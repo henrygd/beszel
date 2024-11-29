@@ -91,8 +91,8 @@ export const updateFavicon = (newIcon: string) => {
 	;(document.querySelector("link[rel='icon']") as HTMLLinkElement).href = `/static/${newIcon}`
 }
 
-export const isAdmin = () => pb.authStore.model?.role === "admin"
-export const isReadOnlyUser = () => pb.authStore.model?.role === "readonly"
+export const isAdmin = () => pb.authStore.record?.role === "admin"
+export const isReadOnlyUser = () => pb.authStore.record?.role === "readonly"
 
 /** Update systems / alerts list when records change  */
 export function updateRecordList<T extends RecordModel>(e: RecordSubscription<T>, $store: WritableAtom<T[]>) {
@@ -251,7 +251,7 @@ export async function updateUserSettings() {
 	}
 	// create user settings if error fetching existing
 	try {
-		const createdSettings = await pb.collection("user_settings").create({ user: pb.authStore.model!.id })
+		const createdSettings = await pb.collection("user_settings").create({ user: pb.authStore.record!.id })
 		$userSettings.set(createdSettings.settings)
 	} catch (e) {
 		console.log("create settings", e)

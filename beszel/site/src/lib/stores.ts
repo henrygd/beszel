@@ -26,7 +26,7 @@ export const $chartTime = atom("1h") as WritableAtom<ChartTimes>
 /** User settings */
 export const $userSettings = map<UserSettings>({
 	chartTime: "1h",
-	emails: [pb.authStore.model?.email || ""],
+	emails: [pb.authStore.record?.email || ""],
 })
 // update local storage on change
 $userSettings.subscribe((value) => {
