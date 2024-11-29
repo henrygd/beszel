@@ -255,8 +255,8 @@ export function UserAuthForm({
 								<LoaderCircle className="me-2 h-4 w-4 animate-spin" />
 							) : (
 								<img
-									className="me-2 h-4 w-4 dark:invert"
-									src={`/static/${provider.name}.svg`}
+									className="me-2 h-4 w-4 dark:brightness-0 dark:invert"
+									src={`/_/images/oauth2/${provider.name}.svg`}
 									alt=""
 									onError={(e) => {
 										e.currentTarget.src = "/static/lock.svg"
