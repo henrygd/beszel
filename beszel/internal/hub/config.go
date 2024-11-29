@@ -210,7 +210,6 @@ func (h *Hub) getUserEmailMap(userIDs []string) (map[string]string, error) {
 // Returns the current config.yml file as a JSON object
 func (h *Hub) getYamlConfig(e *core.RequestEvent) error {
 	info, _ := e.RequestInfo()
-	// todo: test
 	if info.Auth == nil || info.Auth.GetString("role") != "admin" {
 		return apis.NewForbiddenError("Forbidden", nil)
 	}

@@ -27,7 +27,7 @@ func NewUserManager(app *pocketbase.PocketBase) *UserManager {
 	}
 }
 
-// todo: test
+// Initialize user role if not set
 func (um *UserManager) InitializeUserRole(e *core.RecordEvent) error {
 	if e.Record.GetString("role") == "" {
 		e.Record.Set("role", "user")
@@ -35,7 +35,7 @@ func (um *UserManager) InitializeUserRole(e *core.RecordEvent) error {
 	return e.Next()
 }
 
-// todo: test
+// Initialize user settings with defaults if not set
 func (um *UserManager) InitializeUserSettings(e *core.RecordEvent) error {
 	record := e.Record
 	// intialize settings with defaults

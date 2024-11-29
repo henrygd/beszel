@@ -80,12 +80,14 @@ func (h *Hub) Run() {
 			return err
 		}
 		// disable email auth if DISABLE_PASSWORD_AUTH env var is set
-		// todo: test email login and DISABLE_PASSWORD_AUTH env var (do we need to save usersCollection?)
 		if os.Getenv("DISABLE_PASSWORD_AUTH") == "true" {
 			usersCollection.PasswordAuth.Enabled = false
 		} else {
 			usersCollection.PasswordAuth.Enabled = true
 			usersCollection.PasswordAuth.IdentityFields = []string{"email"}
+		}
+		if err := h.app.Save(usersCollection); err != nil {
+			return err
 		}
 		// sync systems with config
 		h.syncSystemsWithConfig()
@@ -318,7 +320,7 @@ func (h *Hub) updateSystem(record *core.Record) {
 		}
 	}
 
-	// system info alerts (todo: extra fs alerts)
+	// system info alerts
 	if err := h.am.HandleSystemAlerts(record, systemData.Info, systemData.Stats.Temperatures, systemData.Stats.ExtraFs); err != nil {
 		h.app.Logger().Error("System alerts error", "err", err.Error())
 	}

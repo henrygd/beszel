@@ -511,7 +511,6 @@ func sliceContains(slice []string, item string) bool {
 	return false
 }
 
-// todo: test
 func (am *AlertManager) SendTestNotification(e *core.RequestEvent) error {
 	info, _ := e.RequestInfo()
 	if info.Auth == nil {

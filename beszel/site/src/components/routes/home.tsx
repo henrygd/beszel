@@ -18,7 +18,6 @@ export default function Home() {
 	const alerts = useStore($alerts)
 	const systems = useStore($systems)
 
-	// todo: maybe remove active alert if changed
 	const activeAlerts = useMemo(() => {
 		const activeAlerts = alerts.filter((alert) => {
 			const active = alert.triggered && alert.name in alertInfo
