@@ -8,7 +8,7 @@ msgstr ""
 "Language: cs\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-11-29 23:28\n"
+"PO-Revision-Date: 2024-11-30 00:33\n"
 "Last-Translator: \n"
 "Language-Team: Czech\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 3;\n"
@@ -20,11 +20,11 @@ msgstr ""
 
 #: src/components/routes/system.tsx:250
 msgid "{0, plural, one {# day} other {# days}}"
-msgstr ""
+msgstr "{0, plural, one {# den} few {# dny} other {# dní}}"
 
 #: src/components/routes/system.tsx:248
 msgid "{hours, plural, one {# hour} other {# hours}}"
-msgstr ""
+msgstr "{hours, plural, one {# Hodina} few {# Hodiny} many {# Hodin} other {# Hodin}}"
 
 #: src/lib/utils.ts:139
 msgid "1 hour"
@@ -332,7 +332,7 @@ msgstr "Chyba"
 
 #: src/components/routes/home.tsx:81
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
-msgstr ""
+msgstr "Překračuje {0}{1} za {2, plural, one {poslední # minutu} few {poslední # minuty} other {posledních # minut}}"
 
 #: src/components/routes/settings/config-yaml.tsx:72
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
@@ -370,7 +370,7 @@ msgstr "Filtr..."
 
 #: src/components/alerts/alerts-system.tsx:225
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
-msgstr ""
+msgstr "Za <0>{min}</0> {min, plural, one {minutu} few {minuty} other {minut}}"
 
 #: src/components/login/auth-form.tsx:337
 msgid "Forgot password?"
@@ -384,7 +384,7 @@ msgstr "Obecné"
 
 #: src/components/routes/system.tsx:496
 msgid "GPU Power Draw"
-msgstr ""
+msgstr "Spotřeba energie GPU"
 
 #: src/components/add-system.tsx:116
 msgid "Host / IP"
@@ -657,11 +657,11 @@ msgstr "Stav"
 
 #: src/components/routes/system.tsx:473
 msgid "Swap space used by the system"
-msgstr ""
+msgstr "Swap prostor využívaný systémem"
 
 #: src/components/routes/system.tsx:472
 msgid "Swap Usage"
-msgstr ""
+msgstr "Swap využití"
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
@@ -676,7 +676,7 @@ msgstr "Systémy"
 
 #: src/components/routes/settings/config-yaml.tsx:55
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
-msgstr ""
+msgstr "Systémy lze spravovat v souboru <0>config.yml</0> uvnitř datového adresáře."
 
 #: src/components/routes/system.tsx:484
 #: src/lib/utils.ts:314
@@ -697,23 +697,23 @@ msgstr "Testovací oznámení odesláno"
 
 #: src/components/add-system.tsx:104
 msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
-msgstr ""
+msgstr "Agent musí být v systému spuštěn, aby se mohl připojit. Zkopírujte níže uvedený instalační příkaz pro agenta."
 
 #: src/components/add-system.tsx:95
 msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
-msgstr ""
+msgstr "Agent musí být v systému spuštěn, aby se mohl připojit. Zkopírujte níže uvedený soubor<0>docker-compose.yml</0> pro agenta."
 
 #: src/components/login/forgot-pass-form.tsx:98
 msgid "Then log into the backend and reset your user account password in the users table."
-msgstr ""
+msgstr "Poté se přihlaste do backendu a obnovte heslo k uživatelskému účtu v tabulce uživatelů."
 
 #: src/components/systems-table/systems-table.tsx:264
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
-msgstr ""
+msgstr "Tuto akci nelze vzít zpět. Tím se z databáze trvale odstraní všechny aktuální záznamy pro {name}."
 
 #: src/components/routes/system.tsx:564
 msgid "Throughput of {extraFsName}"
-msgstr "Objemy {extraFsName}"
+msgstr "Propustnost {extraFsName}"
 
 #: src/components/routes/system.tsx:432
 msgid "Throughput of root filesystem"
@@ -734,31 +734,31 @@ msgstr "Přepnout motiv"
 
 #: src/lib/utils.ts:317
 msgid "Triggers when any sensor exceeds a threshold"
-msgstr ""
+msgstr "Spustí se, když některý senzor překročí prahovou hodnotu"
 
 #: src/lib/utils.ts:310
 msgid "Triggers when combined up/down exceeds a threshold"
-msgstr ""
+msgstr "Spustí se, když kombinace up/down překročí prahovou hodnotu"
 
 #: src/lib/utils.ts:292
 msgid "Triggers when CPU usage exceeds a threshold"
-msgstr ""
+msgstr "Spustí se, když využití procesoru překročí prahovou hodnotu"
 
 #: src/lib/utils.ts:298
 msgid "Triggers when memory usage exceeds a threshold"
-msgstr ""
+msgstr "Spustí se, když využití paměti překročí prahovou hodnotu"
 
 #: src/lib/utils.ts:285
 msgid "Triggers when status switches between up and down"
-msgstr ""
+msgstr "Spouští se, když se změní dostupnost"
 
 #: src/lib/utils.ts:304
 msgid "Triggers when usage of any disk exceeds a threshold"
-msgstr ""
+msgstr "Spustí se, když využití disku překročí prahovou hodnotu"
 
 #: src/components/systems-table/systems-table.tsx:320
 msgid "Updated in real time. Click on a system to view information."
-msgstr ""
+msgstr "Aktualizováno v reálném čase. Klepnutím na systém zobrazíte informace."
 
 #: src/components/routes/system.tsx:261
 msgid "Uptime"
@@ -795,7 +795,7 @@ msgstr "Uživatelé"
 
 #: src/components/routes/system.tsx:662
 msgid "Waiting for enough records to display"
-msgstr ""
+msgstr "Čeká se na dostatek záznamů k zobrazení"
 
 #: src/components/routes/settings/general.tsx:48
 msgid "Want to help us make our translations even better? Check out <0>Crowdin</0> for more details."
