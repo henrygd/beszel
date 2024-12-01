@@ -8,7 +8,7 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-11-12 23:39\n"
+"PO-Revision-Date: 2024-12-01 23:39\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -808,3 +808,4 @@ msgstr "YAML 구성"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "사용자 설정이 업데이트되었습니다."
+
