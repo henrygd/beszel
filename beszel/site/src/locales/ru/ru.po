@@ -51,20 +51,20 @@ msgstr "30 дней"
 msgid "Actions"
 msgstr "Действия"
 
-#: src/components/routes/home.tsx:62
+#: src/components/routes/home.tsx:61
 msgid "Active Alerts"
 msgstr "Активные оповещения"
 
-#: src/components/add-system.tsx:74
+#: src/components/add-system.tsx:78
 msgid "Add <0>System</0>"
 msgstr "Добавить <0>Систему</0>"
 
-#: src/components/add-system.tsx:83
+#: src/components/add-system.tsx:87
 msgid "Add New System"
 msgstr "Добавить новую систему"
 
-#: src/components/add-system.tsx:161
-#: src/components/add-system.tsx:172
+#: src/components/add-system.tsx:165
+#: src/components/add-system.tsx:176
 msgid "Add system"
 msgstr "Добавить систему"
 
@@ -76,12 +76,11 @@ msgstr "Добавить URL"
 msgid "Adjust display options for charts."
 msgstr "Настроить параметры отображения для графиков."
 
-#: src/components/command-palette.tsx:133
-#: src/components/command-palette.tsx:146
-#: src/components/command-palette.tsx:160
-#: src/components/command-palette.tsx:174
-#: src/components/command-palette.tsx:189
-#: src/components/command-palette.tsx:204
+#: src/components/command-palette.tsx:132
+#: src/components/command-palette.tsx:145
+#: src/components/command-palette.tsx:159
+#: src/components/command-palette.tsx:173
+#: src/components/command-palette.tsx:188
 msgid "Admin"
 msgstr "Администратор"
 
@@ -103,11 +102,6 @@ msgstr "Все системы"
 msgid "Are you sure you want to delete {name}?"
 msgstr "Вы уверены, что хотите удалить {name}?"
 
-#: src/components/command-palette.tsx:186
-#: src/components/navbar.tsx:102
-msgid "Auth Providers"
-msgstr "Поставщики аутентификации"
-
 #: src/components/copy-to-clipboard.tsx:16
 msgid "Automatic copy requires a secure context."
 msgstr "Автоматическое копирование требует безопасного контекста."
@@ -120,7 +114,7 @@ msgstr "Среднее"
 msgid "Average CPU utilization of containers"
 msgstr "Среднее использование CPU контейнерами"
 
-#: src/components/alerts/alerts-system.tsx:204
+#: src/components/alerts/alerts-system.tsx:206
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Среднее превышает <0>{value}{0}</0>"
 
@@ -136,8 +130,8 @@ msgstr "Среднее использование CPU по всей систем
 msgid "Average utilization of {0}"
 msgstr "Среднее использование {0}"
 
-#: src/components/command-palette.tsx:171
-#: src/components/navbar.tsx:94
+#: src/components/command-palette.tsx:170
+#: src/components/navbar.tsx:93
 msgid "Backups"
 msgstr "Резервные копии"
 
@@ -146,7 +140,7 @@ msgstr "Резервные копии"
 msgid "Bandwidth"
 msgstr "Пропускная способность"
 
-#: src/components/login/auth-form.tsx:313
+#: src/components/login/auth-form.tsx:289
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
 msgstr "Beszel поддерживает OpenID Connect и многих поставщиков аутентификации OAuth2."
 
@@ -154,7 +148,7 @@ msgstr "Beszel поддерживает OpenID Connect и многих пост�
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
 msgstr "Beszel использует <0>Shoutrrr</0> для интеграции с популярными сервисами уведомлений."
 
-#: src/components/add-system.tsx:88
+#: src/components/add-system.tsx:92
 msgid "Binary"
 msgstr "Двоичный"
 
@@ -190,7 +184,7 @@ msgstr "Проверьте журналы для получения более �
 msgid "Check your notification service"
 msgstr "Проверьте ваш сервис уведомлений"
 
-#: src/components/add-system.tsx:147
+#: src/components/add-system.tsx:151
 msgid "Click to copy"
 msgstr "Нажмите, чтобы скопировать"
 
@@ -208,8 +202,8 @@ msgstr "Инструкции командной строки"
 msgid "Configure how you receive alert notifications."
 msgstr "Настройте, как вы получаете уведомления об оповещениях."
 
-#: src/components/login/auth-form.tsx:189
-#: src/components/login/auth-form.tsx:194
+#: src/components/login/auth-form.tsx:165
+#: src/components/login/auth-form.tsx:170
 msgid "Confirm password"
 msgstr "Подтвердите пароль"
 
@@ -221,7 +215,7 @@ msgstr "Продолжить"
 msgid "Copied to clipboard"
 msgstr "Скопировано в буфер обмена"
 
-#: src/components/add-system.tsx:158
+#: src/components/add-system.tsx:162
 msgid "Copy"
 msgstr "Копировать"
 
@@ -229,7 +223,7 @@ msgstr "Копировать"
 msgid "Copy host"
 msgstr "Копировать хост"
 
-#: src/components/add-system.tsx:169
+#: src/components/add-system.tsx:173
 msgid "Copy Linux command"
 msgstr "Копировать команду Linux"
 
@@ -247,7 +241,7 @@ msgstr "CPU"
 msgid "CPU Usage"
 msgstr "Использование CPU"
 
-#: src/components/login/auth-form.tsx:215
+#: src/components/login/auth-form.tsx:191
 msgid "Create account"
 msgstr "Создать аккаунт"
 
@@ -256,8 +250,8 @@ msgstr "Создать аккаунт"
 msgid "Dark"
 msgstr "Темная"
 
-#: src/components/command-palette.tsx:82
-#: src/components/routes/home.tsx:35
+#: src/components/command-palette.tsx:81
+#: src/components/routes/home.tsx:34
 msgid "Dashboard"
 msgstr "Панель управления"
 
@@ -299,15 +293,15 @@ msgstr "Использование памяти Docker"
 msgid "Docker Network I/O"
 msgstr "Сетевой ввод/вывод Docker"
 
-#: src/components/command-palette.tsx:125
+#: src/components/command-palette.tsx:124
 msgid "Documentation"
 msgstr "Документация"
 
-#: src/components/login/auth-form.tsx:158
+#: src/components/login/auth-form.tsx:134
 msgid "email"
 msgstr "электронная почта"
 
-#: src/components/login/auth-form.tsx:152
+#: src/components/login/auth-form.tsx:128
 #: src/components/login/forgot-pass-form.tsx:53
 msgid "Email"
 msgstr "Электронная почта"
@@ -324,13 +318,13 @@ msgstr "Введите адрес электронной почты для сб�
 msgid "Enter email address..."
 msgstr "Введите адрес электронной почты..."
 
-#: src/components/login/auth-form.tsx:256
+#: src/components/login/auth-form.tsx:232
 #: src/components/routes/settings/config-yaml.tsx:28
 #: src/components/routes/settings/notifications.tsx:187
 msgid "Error"
 msgstr "Ошибка"
 
-#: src/components/routes/home.tsx:81
+#: src/components/routes/home.tsx:80
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Превышает {0}{1} за последние {2, plural, one {# минуту} other {# минут}}"
 
@@ -359,7 +353,7 @@ msgstr "Не удалось сохранить настройки"
 msgid "Failed to send test notification"
 msgstr "Не удалось отправить тестовое уведомление"
 
-#: src/components/alerts/alerts-system.tsx:27
+#: src/components/alerts/alerts-system.tsx:24
 msgid "Failed to update alert"
 msgstr "Не удалось обновить оповещение"
 
@@ -368,11 +362,11 @@ msgstr "Не удалось обновить оповещение"
 msgid "Filter..."
 msgstr "Фильтр..."
 
-#: src/components/alerts/alerts-system.tsx:225
+#: src/components/alerts/alerts-system.tsx:227
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "На <0>{min}</0> {min, plural, one {минуту} other {минут}}"
 
-#: src/components/login/auth-form.tsx:337
+#: src/components/login/auth-form.tsx:313
 msgid "Forgot password?"
 msgstr "Забыли пароль?"
 
@@ -386,7 +380,7 @@ msgstr "Общие"
 msgid "GPU Power Draw"
 msgstr "Потребляемая мощность GPU"
 
-#: src/components/add-system.tsx:116
+#: src/components/add-system.tsx:120
 msgid "Host / IP"
 msgstr "Хост / IP"
 
@@ -412,7 +406,7 @@ msgstr "Язык"
 msgid "Light"
 msgstr "Светлая"
 
-#: src/components/navbar.tsx:113
+#: src/components/navbar.tsx:104
 msgid "Log Out"
 msgstr "Выйти"
 
@@ -420,13 +414,13 @@ msgstr "Выйти"
 msgid "Login"
 msgstr "Вход"
 
-#: src/components/login/auth-form.tsx:42
+#: src/components/login/auth-form.tsx:34
 #: src/components/login/forgot-pass-form.tsx:15
 msgid "Login attempt failed"
 msgstr "Попытка входа не удалась"
 
-#: src/components/command-palette.tsx:157
-#: src/components/navbar.tsx:86
+#: src/components/command-palette.tsx:156
+#: src/components/navbar.tsx:85
 msgid "Logs"
 msgstr "Журналы"
 
@@ -456,7 +450,7 @@ msgstr "Использование памяти"
 msgid "Memory usage of docker containers"
 msgstr "Использование памяти контейнерами Docker"
 
-#: src/components/add-system.tsx:112
+#: src/components/add-system.tsx:116
 msgid "Name"
 msgstr "Имя"
 
@@ -472,7 +466,7 @@ msgstr "Сетевой трафик контейнеров Docker"
 msgid "Network traffic of public interfaces"
 msgstr "Сетевой трафик публичных интерфейсов"
 
-#: src/components/command-palette.tsx:50
+#: src/components/command-palette.tsx:49
 msgid "No results found."
 msgstr "Результаты не найдены."
 
@@ -480,13 +474,13 @@ msgstr "Результаты не найдены."
 msgid "No systems found."
 msgstr "Системы не найдены."
 
-#: src/components/command-palette.tsx:111
+#: src/components/command-palette.tsx:110
 #: src/components/routes/settings/layout.tsx:56
 #: src/components/routes/settings/notifications.tsx:74
 msgid "Notifications"
 msgstr "Уведомления"
 
-#: src/components/login/auth-form.tsx:308
+#: src/components/login/auth-form.tsx:284
 msgid "OAuth 2 / OIDC support"
 msgstr "Поддержка OAuth 2 / OIDC"
 
@@ -498,7 +492,7 @@ msgstr "При каждом перезапуске системы в базе д
 msgid "Open menu"
 msgstr "Открыть меню"
 
-#: src/components/login/auth-form.tsx:227
+#: src/components/login/auth-form.tsx:203
 msgid "Or continue with"
 msgstr "Или продолжить с"
 
@@ -506,22 +500,22 @@ msgstr "Или продолжить с"
 msgid "Overwrite existing alerts"
 msgstr "Перезаписать существующие оповещения"
 
-#: src/components/command-palette.tsx:85
+#: src/components/command-palette.tsx:84
 msgid "Page"
 msgstr "Страница"
 
-#: src/components/command-palette.tsx:72
+#: src/components/command-palette.tsx:71
 msgid "Pages / Settings"
 msgstr "Страницы / Настройки"
 
-#: src/components/login/auth-form.tsx:171
-#: src/components/login/auth-form.tsx:176
+#: src/components/login/auth-form.tsx:147
+#: src/components/login/auth-form.tsx:152
 msgid "Password"
 msgstr "Пароль"
 
 #: src/components/login/auth-form.tsx:17
-msgid "Password must be at least 10 characters."
-msgstr "Пароль должен содержать не менее 10 символов."
+msgid "Password must be at least 8 characters."
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
@@ -535,11 +529,11 @@ msgstr "Пауза"
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "Пожалуйста, <0>настройте SMTP-сервер</0>, чтобы гарантировать доставку оповещений."
 
-#: src/components/alerts/alerts-system.tsx:28
+#: src/components/alerts/alerts-system.tsx:25
 msgid "Please check logs for more details."
 msgstr "Пожалуйста, проверьте журналы для получения более подробной информации."
 
-#: src/components/login/auth-form.tsx:43
+#: src/components/login/auth-form.tsx:35
 #: src/components/login/forgot-pass-form.tsx:16
 msgid "Please check your credentials and try again"
 msgstr "Пожалуйста, проверьте свои учетные данные и попробуйте снова"
@@ -548,7 +542,7 @@ msgstr "Пожалуйста, проверьте свои учетные дан�
 msgid "Please create an admin account"
 msgstr "Пожалуйста, создайте учетную запись администратора"
 
-#: src/components/login/auth-form.tsx:257
+#: src/components/login/auth-form.tsx:233
 msgid "Please enable pop-ups for this site"
 msgstr "Пожалуйста, включите всплывающие окна для этого сайта"
 
@@ -556,7 +550,7 @@ msgstr "Пожалуйста, включите всплывающие окна �
 msgid "Please log in again"
 msgstr "Пожалуйста, войдите снова"
 
-#: src/components/login/auth-form.tsx:316
+#: src/components/login/auth-form.tsx:292
 msgid "Please see <0>the documentation</0> for instructions."
 msgstr "Пожалуйста, смотрите <0>документацию</0> для получения инструкций."
 
@@ -564,7 +558,7 @@ msgstr "Пожалуйста, смотрите <0>документацию</0> �
 msgid "Please sign in to your account"
 msgstr "Пожалуйста, войдите в свою учетную запись"
 
-#: src/components/add-system.tsx:120
+#: src/components/add-system.tsx:124
 msgid "Port"
 msgstr "Порт"
 
@@ -578,7 +572,7 @@ msgid "Preferred Language"
 msgstr "Предпочтительный язык"
 
 #. Use 'Key' if your language requires many more characters
-#: src/components/add-system.tsx:124
+#: src/components/add-system.tsx:128
 msgid "Public Key"
 msgstr "Ключ"
 
@@ -610,11 +604,11 @@ msgstr "Сохраните адрес, используя клавишу вво�
 msgid "Save Settings"
 msgstr "Сохранить настройки"
 
-#: src/components/navbar.tsx:142
+#: src/components/navbar.tsx:133
 msgid "Search"
 msgstr "Поиск"
 
-#: src/components/command-palette.tsx:47
+#: src/components/command-palette.tsx:46
 msgid "Search for systems or settings..."
 msgstr "Поиск систем или настроек..."
 
@@ -631,9 +625,9 @@ msgstr "Отправлено"
 msgid "Sets the default time range for charts when a system is viewed."
 msgstr "Устанавливает диапазон времени по умолчанию для графиков при просмотре системы."
 
-#: src/components/command-palette.tsx:96
-#: src/components/command-palette.tsx:99
-#: src/components/command-palette.tsx:114
+#: src/components/command-palette.tsx:95
+#: src/components/command-palette.tsx:98
+#: src/components/command-palette.tsx:113
 #: src/components/routes/settings/layout.tsx:71
 #: src/components/routes/settings/layout.tsx:82
 msgid "Settings"
@@ -643,11 +637,11 @@ msgstr "Настройки"
 msgid "Settings saved"
 msgstr "Настройки сохранены"
 
-#: src/components/login/auth-form.tsx:215
+#: src/components/login/auth-form.tsx:191
 msgid "Sign in"
 msgstr "Войти"
 
-#: src/components/command-palette.tsx:201
+#: src/components/command-palette.tsx:185
 msgid "SMTP settings"
 msgstr "Настройки SMTP"
 
@@ -670,7 +664,7 @@ msgstr "Использование подкачки"
 msgid "System"
 msgstr "Система"
 
-#: src/components/navbar.tsx:78
+#: src/components/navbar.tsx:77
 msgid "Systems"
 msgstr "Системы"
 
@@ -695,11 +689,11 @@ msgstr "Тест <0>URL</0>"
 msgid "Test notification sent"
 msgstr "Тестовое уведомление отправлено"
 
-#: src/components/add-system.tsx:104
+#: src/components/add-system.tsx:108
 msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
 msgstr "Агент должен работать на системе для подключения. Скопируйте команду установки агента ниже."
 
-#: src/components/add-system.tsx:95
+#: src/components/add-system.tsx:99
 msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
 msgstr "Агент должен работать на системе для подключения. Скопируйте <0>docker-compose.yml</0> для агента ниже."
 
@@ -780,16 +774,8 @@ msgstr "Использование корневого раздела"
 msgid "Used"
 msgstr "Использовано"
 
-#: src/components/login/auth-form.tsx:138
-msgid "username"
-msgstr "имя пользователя"
-
-#: src/components/login/auth-form.tsx:131
-msgid "Username"
-msgstr "Имя пользователя"
-
-#: src/components/command-palette.tsx:143
-#: src/components/navbar.tsx:70
+#: src/components/command-palette.tsx:142
+#: src/components/navbar.tsx:69
 msgid "Users"
 msgstr "Пользователи"
 
@@ -822,4 +808,3 @@ msgstr "YAML конфигурация"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "Ваши настройки пользователя были обновлены."
-

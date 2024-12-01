@@ -274,7 +274,7 @@ export function UserAuthForm({
 				<Dialog>
 					<DialogTrigger asChild>
 						<button type="button" className={cn(buttonVariants({ variant: "outline" }))}>
-							<img className="me-2 h-4 w-4 dark:invert" src="/static/github.svg" alt="" />
+							<img className="me-2 h-4 w-4 dark:invert" src="/_/images/oauth2/github.svg" alt="" />
 							<span className="translate-y-[1px]">GitHub</span>
 						</button>
 					</DialogTrigger>
@@ -292,7 +292,7 @@ export function UserAuthForm({
 								<Trans>
 									Please see{" "}
 									<a
-										href="https://github.com/henrygd/beszel/blob/main/readme.md#oauth--oidc-integration"
+										href="https://beszel.dev/guide/oauth"
 										className={cn(buttonVariants({ variant: "link" }), "p-0 h-auto")}
 									>
 										the documentation

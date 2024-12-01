@@ -4,6 +4,7 @@ const config: LinguiConfig = {
 	locales: [
 		"en",
 		"ar",
+		"cs",
 		"de",
 		"es",
 		"fr",

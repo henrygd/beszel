@@ -51,20 +51,20 @@ msgstr "30 يومًا"
 msgid "Actions"
 msgstr "إجراءات"
 
-#: src/components/routes/home.tsx:62
+#: src/components/routes/home.tsx:61
 msgid "Active Alerts"
 msgstr "التنبيهات النشطة"
 
-#: src/components/add-system.tsx:74
+#: src/components/add-system.tsx:78
 msgid "Add <0>System</0>"
 msgstr "إضافة <0>نظام</0>"
 
-#: src/components/add-system.tsx:83
+#: src/components/add-system.tsx:87
 msgid "Add New System"
 msgstr "إضافة نظام جديد"
 
-#: src/components/add-system.tsx:161
-#: src/components/add-system.tsx:172
+#: src/components/add-system.tsx:165
+#: src/components/add-system.tsx:176
 msgid "Add system"
 msgstr "إضافة نظام"
 
@@ -76,12 +76,11 @@ msgstr "إضافة عنوان URL"
 msgid "Adjust display options for charts."
 msgstr "تعديل خيارات العرض للرسوم البيانية."
 
-#: src/components/command-palette.tsx:133
-#: src/components/command-palette.tsx:146
-#: src/components/command-palette.tsx:160
-#: src/components/command-palette.tsx:174
-#: src/components/command-palette.tsx:189
-#: src/components/command-palette.tsx:204
+#: src/components/command-palette.tsx:132
+#: src/components/command-palette.tsx:145
+#: src/components/command-palette.tsx:159
+#: src/components/command-palette.tsx:173
+#: src/components/command-palette.tsx:188
 msgid "Admin"
 msgstr "مسؤول"
 
@@ -103,11 +102,6 @@ msgstr "جميع الأنظمة"
 msgid "Are you sure you want to delete {name}?"
 msgstr "هل أنت متأكد أنك تريد حذف {name}؟"
 
-#: src/components/command-palette.tsx:186
-#: src/components/navbar.tsx:102
-msgid "Auth Providers"
-msgstr "مزودو المصادقة"
-
 #: src/components/copy-to-clipboard.tsx:16
 msgid "Automatic copy requires a secure context."
 msgstr "النسخ التلقائي يتطلب سياقًا آمنًا."
@@ -120,7 +114,7 @@ msgstr "متوسط"
 msgid "Average CPU utilization of containers"
 msgstr "متوسط استخدام وحدة المعالجة المركزية للحاويات"
 
-#: src/components/alerts/alerts-system.tsx:204
+#: src/components/alerts/alerts-system.tsx:206
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "المتوسط يتجاوز <0>{value}{0}</0>"
 
@@ -136,8 +130,8 @@ msgstr "متوسط استخدام وحدة المعالجة المركزية ع�
 msgid "Average utilization of {0}"
 msgstr ""
 
-#: src/components/command-palette.tsx:171
-#: src/components/navbar.tsx:94
+#: src/components/command-palette.tsx:170
+#: src/components/navbar.tsx:93
 msgid "Backups"
 msgstr "النسخ الاحتياطية"
 
@@ -146,7 +140,7 @@ msgstr "النسخ الاحتياطية"
 msgid "Bandwidth"
 msgstr "عرض النطاق الترددي"
 
-#: src/components/login/auth-form.tsx:313
+#: src/components/login/auth-form.tsx:289
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
 msgstr "يدعم Beszel OpenID Connect والعديد من مزودي المصادقة OAuth2."
 
@@ -154,7 +148,7 @@ msgstr "يدعم Beszel OpenID Connect والعديد من مزودي المصا
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
 msgstr "يستخدم Beszel <0>Shoutrrr</0> للتكامل مع خدمات الإشعارات الشهيرة."
 
-#: src/components/add-system.tsx:88
+#: src/components/add-system.tsx:92
 msgid "Binary"
 msgstr "ثنائي"
 
@@ -190,7 +184,7 @@ msgstr "تحقق من السجلات لمزيد من التفاصيل."
 msgid "Check your notification service"
 msgstr "تحقق من خدمة الإشعارات الخاصة بك"
 
-#: src/components/add-system.tsx:147
+#: src/components/add-system.tsx:151
 msgid "Click to copy"
 msgstr "انقر للنسخ"
 
@@ -208,8 +202,8 @@ msgstr "تعليمات سطر الأوامر"
 msgid "Configure how you receive alert notifications."
 msgstr "قم بتكوين كيفية تلقي إشعارات التنبيه."
 
-#: src/components/login/auth-form.tsx:189
-#: src/components/login/auth-form.tsx:194
+#: src/components/login/auth-form.tsx:165
+#: src/components/login/auth-form.tsx:170
 msgid "Confirm password"
 msgstr "تأكيد كلمة المرور"
 
@@ -221,7 +215,7 @@ msgstr "متابعة"
 msgid "Copied to clipboard"
 msgstr "تم النسخ إلى الحافظة"
 
-#: src/components/add-system.tsx:158
+#: src/components/add-system.tsx:162
 msgid "Copy"
 msgstr "نسخ"
 
@@ -229,7 +223,7 @@ msgstr "نسخ"
 msgid "Copy host"
 msgstr "نسخ المضيف"
 
-#: src/components/add-system.tsx:169
+#: src/components/add-system.tsx:173
 msgid "Copy Linux command"
 msgstr "نسخ أمر لينكس"
 
@@ -247,7 +241,7 @@ msgstr "المعالج"
 msgid "CPU Usage"
 msgstr "استخدام وحدة المعالجة المركزية"
 
-#: src/components/login/auth-form.tsx:215
+#: src/components/login/auth-form.tsx:191
 msgid "Create account"
 msgstr "إنشاء حساب"
 
@@ -256,8 +250,8 @@ msgstr "إنشاء حساب"
 msgid "Dark"
 msgstr "داكن"
 
-#: src/components/command-palette.tsx:82
-#: src/components/routes/home.tsx:35
+#: src/components/command-palette.tsx:81
+#: src/components/routes/home.tsx:34
 msgid "Dashboard"
 msgstr "لوحة التحكم"
 
@@ -299,15 +293,15 @@ msgstr "استخدام الذاكرة لـ Docker"
 msgid "Docker Network I/O"
 msgstr "إدخال/إخراج الشبكة لـ Docker"
 
-#: src/components/command-palette.tsx:125
+#: src/components/command-palette.tsx:124
 msgid "Documentation"
 msgstr "التوثيق"
 
-#: src/components/login/auth-form.tsx:158
+#: src/components/login/auth-form.tsx:134
 msgid "email"
 msgstr "البريد الإلكتروني"
 
-#: src/components/login/auth-form.tsx:152
+#: src/components/login/auth-form.tsx:128
 #: src/components/login/forgot-pass-form.tsx:53
 msgid "Email"
 msgstr "البريد الإلكتروني"
@@ -324,13 +318,13 @@ msgstr "أدخل عنوان البريد الإلكتروني لإعادة تع�
 msgid "Enter email address..."
 msgstr "أدخل عنوان البريد الإلكتروني..."
 
-#: src/components/login/auth-form.tsx:256
+#: src/components/login/auth-form.tsx:232
 #: src/components/routes/settings/config-yaml.tsx:28
 #: src/components/routes/settings/notifications.tsx:187
 msgid "Error"
 msgstr "خطأ"
 
-#: src/components/routes/home.tsx:81
+#: src/components/routes/home.tsx:80
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "يتجاوز {0}{1} في آخر {2, plural, one {# دقيقة} other {# دقائق}}"
 
@@ -359,7 +353,7 @@ msgstr "فشل في حفظ الإعدادات"
 msgid "Failed to send test notification"
 msgstr "فشل في إرسال إشعار الاختبار"
 
-#: src/components/alerts/alerts-system.tsx:27
+#: src/components/alerts/alerts-system.tsx:24
 msgid "Failed to update alert"
 msgstr "فشل في تحديث التنبيه"
 
@@ -368,11 +362,11 @@ msgstr "فشل في تحديث التنبيه"
 msgid "Filter..."
 msgstr "تصفية..."
 
-#: src/components/alerts/alerts-system.tsx:225
+#: src/components/alerts/alerts-system.tsx:227
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "لمدة <0>{min}</0> {min, plural, one {دقيقة} other {دقائق}}"
 
-#: src/components/login/auth-form.tsx:337
+#: src/components/login/auth-form.tsx:313
 msgid "Forgot password?"
 msgstr "هل نسيت كلمة المرور؟"
 
@@ -386,7 +380,7 @@ msgstr "عام"
 msgid "GPU Power Draw"
 msgstr ""
 
-#: src/components/add-system.tsx:116
+#: src/components/add-system.tsx:120
 msgid "Host / IP"
 msgstr "مضيف / IP"
 
@@ -412,7 +406,7 @@ msgstr "اللغة"
 msgid "Light"
 msgstr "فاتح"
 
-#: src/components/navbar.tsx:113
+#: src/components/navbar.tsx:104
 msgid "Log Out"
 msgstr "تسجيل الخروج"
 
@@ -420,13 +414,13 @@ msgstr "تسجيل الخروج"
 msgid "Login"
 msgstr "تسجيل الدخول"
 
-#: src/components/login/auth-form.tsx:42
+#: src/components/login/auth-form.tsx:34
 #: src/components/login/forgot-pass-form.tsx:15
 msgid "Login attempt failed"
 msgstr "فشل محاولة تسجيل الدخول"
 
-#: src/components/command-palette.tsx:157
-#: src/components/navbar.tsx:86
+#: src/components/command-palette.tsx:156
+#: src/components/navbar.tsx:85
 msgid "Logs"
 msgstr "السجلات"
 
@@ -456,7 +450,7 @@ msgstr "استخدام الذاكرة"
 msgid "Memory usage of docker containers"
 msgstr "استخدام الذاكرة لحاويات Docker"
 
-#: src/components/add-system.tsx:112
+#: src/components/add-system.tsx:116
 msgid "Name"
 msgstr "الاسم"
 
@@ -472,7 +466,7 @@ msgstr "حركة مرور الشبكة لحاويات Docker"
 msgid "Network traffic of public interfaces"
 msgstr "حركة مرور الشبكة للواجهات العامة"
 
-#: src/components/command-palette.tsx:50
+#: src/components/command-palette.tsx:49
 msgid "No results found."
 msgstr "لم يتم العثور على نتائج."
 
@@ -480,13 +474,13 @@ msgstr "لم يتم العثور على نتائج."
 msgid "No systems found."
 msgstr "لم يتم العثور على أنظمة."
 
-#: src/components/command-palette.tsx:111
+#: src/components/command-palette.tsx:110
 #: src/components/routes/settings/layout.tsx:56
 #: src/components/routes/settings/notifications.tsx:74
 msgid "Notifications"
 msgstr "الإشعارات"
 
-#: src/components/login/auth-form.tsx:308
+#: src/components/login/auth-form.tsx:284
 msgid "OAuth 2 / OIDC support"
 msgstr "دعم OAuth 2 / OIDC"
 
@@ -498,7 +492,7 @@ msgstr "في كل إعادة تشغيل، سيتم تحديث الأنظمة ف�
 msgid "Open menu"
 msgstr "فتح القائمة"
 
-#: src/components/login/auth-form.tsx:227
+#: src/components/login/auth-form.tsx:203
 msgid "Or continue with"
 msgstr "أو المتابعة باستخدام"
 
@@ -506,22 +500,22 @@ msgstr "أو المتابعة باستخدام"
 msgid "Overwrite existing alerts"
 msgstr "الكتابة فوق التنبيهات الحالية"
 
-#: src/components/command-palette.tsx:85
+#: src/components/command-palette.tsx:84
 msgid "Page"
 msgstr "صفحة"
 
-#: src/components/command-palette.tsx:72
+#: src/components/command-palette.tsx:71
 msgid "Pages / Settings"
 msgstr "الصفحات / الإعدادات"
 
-#: src/components/login/auth-form.tsx:171
-#: src/components/login/auth-form.tsx:176
+#: src/components/login/auth-form.tsx:147
+#: src/components/login/auth-form.tsx:152
 msgid "Password"
 msgstr "كلمة المرور"
 
 #: src/components/login/auth-form.tsx:17
-msgid "Password must be at least 10 characters."
-msgstr "يجب أن تكون كلمة المرور مكونة من 10 أحرف على الأقل."
+msgid "Password must be at least 8 characters."
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
@@ -535,11 +529,11 @@ msgstr "إيقاف مؤقت"
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "يرجى <0>تكوين خادم SMTP</0> لضمان تسليم التنبيهات."
 
-#: src/components/alerts/alerts-system.tsx:28
+#: src/components/alerts/alerts-system.tsx:25
 msgid "Please check logs for more details."
 msgstr "يرجى التحقق من السجلات لمزيد من التفاصيل."
 
-#: src/components/login/auth-form.tsx:43
+#: src/components/login/auth-form.tsx:35
 #: src/components/login/forgot-pass-form.tsx:16
 msgid "Please check your credentials and try again"
 msgstr "يرجى التحقق من بيانات الاعتماد الخاصة بك والمحاولة مرة أخرى"
@@ -548,7 +542,7 @@ msgstr "يرجى التحقق من بيانات الاعتماد الخاصة ب
 msgid "Please create an admin account"
 msgstr "يرجى إنشاء حساب مسؤول"
 
-#: src/components/login/auth-form.tsx:257
+#: src/components/login/auth-form.tsx:233
 msgid "Please enable pop-ups for this site"
 msgstr "يرجى تمكين النوافذ المنبثقة لهذا الموقع"
 
@@ -556,7 +550,7 @@ msgstr "يرجى تمكين النوافذ المنبثقة لهذا الموق�
 msgid "Please log in again"
 msgstr "يرجى تسجيل الدخول مرة أخرى"
 
-#: src/components/login/auth-form.tsx:316
+#: src/components/login/auth-form.tsx:292
 msgid "Please see <0>the documentation</0> for instructions."
 msgstr "يرجى الاطلاع على <0>التوثيق</0> للحصول على التعليمات."
 
@@ -564,7 +558,7 @@ msgstr "يرجى الاطلاع على <0>التوثيق</0> للحصول على
 msgid "Please sign in to your account"
 msgstr "يرجى تسجيل الدخول إلى حسابك"
 
-#: src/components/add-system.tsx:120
+#: src/components/add-system.tsx:124
 msgid "Port"
 msgstr "المنفذ"
 
@@ -578,7 +572,7 @@ msgid "Preferred Language"
 msgstr "اللغة المفضلة"
 
 #. Use 'Key' if your language requires many more characters
-#: src/components/add-system.tsx:124
+#: src/components/add-system.tsx:128
 msgid "Public Key"
 msgstr "المفتاح العام"
 
@@ -610,11 +604,11 @@ msgstr "احفظ العنوان باستخدام مفتاح الإدخال أو 
 msgid "Save Settings"
 msgstr "حفظ الإعدادات"
 
-#: src/components/navbar.tsx:142
+#: src/components/navbar.tsx:133
 msgid "Search"
 msgstr "بحث"
 
-#: src/components/command-palette.tsx:47
+#: src/components/command-palette.tsx:46
 msgid "Search for systems or settings..."
 msgstr "البحث عن الأنظمة أو الإعدادات..."
 
@@ -631,9 +625,9 @@ msgstr "تم الإرسال"
 msgid "Sets the default time range for charts when a system is viewed."
 msgstr "يحدد النطاق الزمني الافتراضي للرسوم البيانية عند عرض النظام."
 
-#: src/components/command-palette.tsx:96
-#: src/components/command-palette.tsx:99
-#: src/components/command-palette.tsx:114
+#: src/components/command-palette.tsx:95
+#: src/components/command-palette.tsx:98
+#: src/components/command-palette.tsx:113
 #: src/components/routes/settings/layout.tsx:71
 #: src/components/routes/settings/layout.tsx:82
 msgid "Settings"
@@ -643,11 +637,11 @@ msgstr "الإعدادات"
 msgid "Settings saved"
 msgstr "تم حفظ الإعدادات"
 
-#: src/components/login/auth-form.tsx:215
+#: src/components/login/auth-form.tsx:191
 msgid "Sign in"
 msgstr "تسجيل الدخول"
 
-#: src/components/command-palette.tsx:201
+#: src/components/command-palette.tsx:185
 msgid "SMTP settings"
 msgstr "إعدادات SMTP"
 
@@ -670,7 +664,7 @@ msgstr "استخدام التبديل"
 msgid "System"
 msgstr "النظام"
 
-#: src/components/navbar.tsx:78
+#: src/components/navbar.tsx:77
 msgid "Systems"
 msgstr "الأنظمة"
 
@@ -695,11 +689,11 @@ msgstr "اختبار <0>URL</0>"
 msgid "Test notification sent"
 msgstr "تم إرسال إشعار الاختبار"
 
-#: src/components/add-system.tsx:104
+#: src/components/add-system.tsx:108
 msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
 msgstr "يجب أن يكون الوكيل قيد التشغيل على النظام للاتصال. انسخ أمر التثبيت للوكيل أدناه."
 
-#: src/components/add-system.tsx:95
+#: src/components/add-system.tsx:99
 msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
 msgstr "يجب أن يكون الوكيل قيد التشغيل على النظام للاتصال. انسخ <0>docker-compose.yml</0> للوكيل أدناه."
 
@@ -780,16 +774,8 @@ msgstr "استخدام القسم الجذر"
 msgid "Used"
 msgstr "مستخدم"
 
-#: src/components/login/auth-form.tsx:138
-msgid "username"
-msgstr "اسم المستخدم"
-
-#: src/components/login/auth-form.tsx:131
-msgid "Username"
-msgstr "اسم المستخدم"
-
-#: src/components/command-palette.tsx:143
-#: src/components/navbar.tsx:70
+#: src/components/command-palette.tsx:142
+#: src/components/navbar.tsx:69
 msgid "Users"
 msgstr "المستخدمون"
 
@@ -822,4 +808,3 @@ msgstr "تكوين YAML"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "تم تحديث إعدادات المستخدم الخاصة بك."
-

@@ -51,20 +51,20 @@ msgstr "30天"
 msgid "Actions"
 msgstr "操作"
 
-#: src/components/routes/home.tsx:62
+#: src/components/routes/home.tsx:61
 msgid "Active Alerts"
 msgstr "启用的警报"
 
-#: src/components/add-system.tsx:74
+#: src/components/add-system.tsx:78
 msgid "Add <0>System</0>"
 msgstr "添加<0>客户端</0>"
 
-#: src/components/add-system.tsx:83
+#: src/components/add-system.tsx:87
 msgid "Add New System"
 msgstr "添加新客户端"
 
-#: src/components/add-system.tsx:161
-#: src/components/add-system.tsx:172
+#: src/components/add-system.tsx:165
+#: src/components/add-system.tsx:176
 msgid "Add system"
 msgstr "添加客户端"
 
@@ -76,12 +76,11 @@ msgstr "添加URL"
 msgid "Adjust display options for charts."
 msgstr "调整图表的显示选项。"
 
-#: src/components/command-palette.tsx:133
-#: src/components/command-palette.tsx:146
-#: src/components/command-palette.tsx:160
-#: src/components/command-palette.tsx:174
-#: src/components/command-palette.tsx:189
-#: src/components/command-palette.tsx:204
+#: src/components/command-palette.tsx:132
+#: src/components/command-palette.tsx:145
+#: src/components/command-palette.tsx:159
+#: src/components/command-palette.tsx:173
+#: src/components/command-palette.tsx:188
 msgid "Admin"
 msgstr "管理员"
 
@@ -103,11 +102,6 @@ msgstr "所有客户端"
 msgid "Are you sure you want to delete {name}?"
 msgstr "您确定要删除{name}吗？"
 
-#: src/components/command-palette.tsx:186
-#: src/components/navbar.tsx:102
-msgid "Auth Providers"
-msgstr "第三方认证供应商"
-
 #: src/components/copy-to-clipboard.tsx:16
 msgid "Automatic copy requires a secure context."
 msgstr "自动复制所需的安全上下文。"
@@ -120,7 +114,7 @@ msgstr "平均"
 msgid "Average CPU utilization of containers"
 msgstr "容器的平均CPU使用率"
 
-#: src/components/alerts/alerts-system.tsx:204
+#: src/components/alerts/alerts-system.tsx:206
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "平均值超过<0>{value}{0}</0>"
 
@@ -136,8 +130,8 @@ msgstr "系统范围内的平均CPU使用率"
 msgid "Average utilization of {0}"
 msgstr "{0} 平均利用率"
 
-#: src/components/command-palette.tsx:171
-#: src/components/navbar.tsx:94
+#: src/components/command-palette.tsx:170
+#: src/components/navbar.tsx:93
 msgid "Backups"
 msgstr "备份"
 
@@ -146,7 +140,7 @@ msgstr "备份"
 msgid "Bandwidth"
 msgstr "带宽"
 
-#: src/components/login/auth-form.tsx:313
+#: src/components/login/auth-form.tsx:289
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
 msgstr "Beszel支持OpenID Connect和其他OAuth2认证方式。"
 
@@ -154,7 +148,7 @@ msgstr "Beszel支持OpenID Connect和其他OAuth2认证方式。"
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
 msgstr "Beszel使用<0>Shoutrrr</0>以实现与常见的通知服务集成。"
 
-#: src/components/add-system.tsx:88
+#: src/components/add-system.tsx:92
 msgid "Binary"
 msgstr "二进制"
 
@@ -190,7 +184,7 @@ msgstr "检查日志以获取更多详细信息。"
 msgid "Check your notification service"
 msgstr "检查您的通知服务"
 
-#: src/components/add-system.tsx:147
+#: src/components/add-system.tsx:151
 msgid "Click to copy"
 msgstr "点击复制"
 
@@ -208,8 +202,8 @@ msgstr "命令行说明"
 msgid "Configure how you receive alert notifications."
 msgstr "配置您接收警报通知的方式。"
 
-#: src/components/login/auth-form.tsx:189
-#: src/components/login/auth-form.tsx:194
+#: src/components/login/auth-form.tsx:165
+#: src/components/login/auth-form.tsx:170
 msgid "Confirm password"
 msgstr "确认密码"
 
@@ -221,7 +215,7 @@ msgstr "继续"
 msgid "Copied to clipboard"
 msgstr "已复制到剪贴板"
 
-#: src/components/add-system.tsx:158
+#: src/components/add-system.tsx:162
 msgid "Copy"
 msgstr "复制"
 
@@ -229,7 +223,7 @@ msgstr "复制"
 msgid "Copy host"
 msgstr "复制主机名"
 
-#: src/components/add-system.tsx:169
+#: src/components/add-system.tsx:173
 msgid "Copy Linux command"
 msgstr "复制Linux安装命令"
 
@@ -247,7 +241,7 @@ msgstr "CPU"
 msgid "CPU Usage"
 msgstr "CPU使用率"
 
-#: src/components/login/auth-form.tsx:215
+#: src/components/login/auth-form.tsx:191
 msgid "Create account"
 msgstr "创建账户"
 
@@ -256,8 +250,8 @@ msgstr "创建账户"
 msgid "Dark"
 msgstr "深色模式"
 
-#: src/components/command-palette.tsx:82
-#: src/components/routes/home.tsx:35
+#: src/components/command-palette.tsx:81
+#: src/components/routes/home.tsx:34
 msgid "Dashboard"
 msgstr "仪表板"
 
@@ -299,15 +293,15 @@ msgstr "Docker内存使用"
 msgid "Docker Network I/O"
 msgstr "Docker网络I/O"
 
-#: src/components/command-palette.tsx:125
+#: src/components/command-palette.tsx:124
 msgid "Documentation"
 msgstr "文档"
 
-#: src/components/login/auth-form.tsx:158
+#: src/components/login/auth-form.tsx:134
 msgid "email"
 msgstr "电子邮件"
 
-#: src/components/login/auth-form.tsx:152
+#: src/components/login/auth-form.tsx:128
 #: src/components/login/forgot-pass-form.tsx:53
 msgid "Email"
 msgstr "电子邮件"
@@ -324,13 +318,13 @@ msgstr "输入电子邮件地址以重置密码"
 msgid "Enter email address..."
 msgstr "输入电子邮件地址..."
 
-#: src/components/login/auth-form.tsx:256
+#: src/components/login/auth-form.tsx:232
 #: src/components/routes/settings/config-yaml.tsx:28
 #: src/components/routes/settings/notifications.tsx:187
 msgid "Error"
 msgstr "错误"
 
-#: src/components/routes/home.tsx:81
+#: src/components/routes/home.tsx:80
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "在过去的{2, plural, one {# 分钟} other {# 分钟}}中超过{0}{1}"
 
@@ -359,7 +353,7 @@ msgstr "保存设置失败"
 msgid "Failed to send test notification"
 msgstr "发送测试通知失败"
 
-#: src/components/alerts/alerts-system.tsx:27
+#: src/components/alerts/alerts-system.tsx:24
 msgid "Failed to update alert"
 msgstr "更新警报失败"
 
@@ -368,11 +362,11 @@ msgstr "更新警报失败"
 msgid "Filter..."
 msgstr "过滤..."
 
-#: src/components/alerts/alerts-system.tsx:225
+#: src/components/alerts/alerts-system.tsx:227
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "持续<0>{min}</0> {min, plural, one {分钟} other {分钟}}"
 
-#: src/components/login/auth-form.tsx:337
+#: src/components/login/auth-form.tsx:313
 msgid "Forgot password?"
 msgstr "忘记密码？"
 
@@ -386,7 +380,7 @@ msgstr "常规"
 msgid "GPU Power Draw"
 msgstr "GPU 功耗"
 
-#: src/components/add-system.tsx:116
+#: src/components/add-system.tsx:120
 msgid "Host / IP"
 msgstr "主机/IP"
 
@@ -412,7 +406,7 @@ msgstr "语言"
 msgid "Light"
 msgstr "浅色模式"
 
-#: src/components/navbar.tsx:113
+#: src/components/navbar.tsx:104
 msgid "Log Out"
 msgstr "登出"
 
@@ -420,13 +414,13 @@ msgstr "登出"
 msgid "Login"
 msgstr "登录"
 
-#: src/components/login/auth-form.tsx:42
+#: src/components/login/auth-form.tsx:34
 #: src/components/login/forgot-pass-form.tsx:15
 msgid "Login attempt failed"
 msgstr "登录尝试失败"
 
-#: src/components/command-palette.tsx:157
-#: src/components/navbar.tsx:86
+#: src/components/command-palette.tsx:156
+#: src/components/navbar.tsx:85
 msgid "Logs"
 msgstr "日志"
 
@@ -456,7 +450,7 @@ msgstr "内存使用"
 msgid "Memory usage of docker containers"
 msgstr "Docker容器的内存使用"
 
-#: src/components/add-system.tsx:112
+#: src/components/add-system.tsx:116
 msgid "Name"
 msgstr "名称"
 
@@ -472,7 +466,7 @@ msgstr "Docker容器的网络流量"
 msgid "Network traffic of public interfaces"
 msgstr "公共接口的网络流量"
 
-#: src/components/command-palette.tsx:50
+#: src/components/command-palette.tsx:49
 msgid "No results found."
 msgstr "未找到结果。"
 
@@ -480,13 +474,13 @@ msgstr "未找到结果。"
 msgid "No systems found."
 msgstr "未找到系统。"
 
-#: src/components/command-palette.tsx:111
+#: src/components/command-palette.tsx:110
 #: src/components/routes/settings/layout.tsx:56
 #: src/components/routes/settings/notifications.tsx:74
 msgid "Notifications"
 msgstr "通知"
 
-#: src/components/login/auth-form.tsx:308
+#: src/components/login/auth-form.tsx:284
 msgid "OAuth 2 / OIDC support"
 msgstr "支持OAuth 2 / OIDC"
 
@@ -498,7 +492,7 @@ msgstr "每次重启时，数据库中的系统将更新以匹配文件中定义
 msgid "Open menu"
 msgstr "打开菜单"
 
-#: src/components/login/auth-form.tsx:227
+#: src/components/login/auth-form.tsx:203
 msgid "Or continue with"
 msgstr "或使用以下方式登录"
 
@@ -506,22 +500,22 @@ msgstr "或使用以下方式登录"
 msgid "Overwrite existing alerts"
 msgstr "覆盖现有警报"
 
-#: src/components/command-palette.tsx:85
+#: src/components/command-palette.tsx:84
 msgid "Page"
 msgstr "页面"
 
-#: src/components/command-palette.tsx:72
+#: src/components/command-palette.tsx:71
 msgid "Pages / Settings"
 msgstr "页面/设置"
 
-#: src/components/login/auth-form.tsx:171
-#: src/components/login/auth-form.tsx:176
+#: src/components/login/auth-form.tsx:147
+#: src/components/login/auth-form.tsx:152
 msgid "Password"
 msgstr "密码"
 
 #: src/components/login/auth-form.tsx:17
-msgid "Password must be at least 10 characters."
-msgstr "密码必须至少10个字符。"
+msgid "Password must be at least 8 characters."
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
@@ -535,11 +529,11 @@ msgstr "暂停"
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "请<0>配置SMTP服务器</0>以确保警报被传递。"
 
-#: src/components/alerts/alerts-system.tsx:28
+#: src/components/alerts/alerts-system.tsx:25
 msgid "Please check logs for more details."
 msgstr "请检查日志以获取更多详细信息。"
 
-#: src/components/login/auth-form.tsx:43
+#: src/components/login/auth-form.tsx:35
 #: src/components/login/forgot-pass-form.tsx:16
 msgid "Please check your credentials and try again"
 msgstr "请检查您的凭据并重试"
@@ -548,7 +542,7 @@ msgstr "请检查您的凭据并重试"
 msgid "Please create an admin account"
 msgstr "请创建一个管理员账户"
 
-#: src/components/login/auth-form.tsx:257
+#: src/components/login/auth-form.tsx:233
 msgid "Please enable pop-ups for this site"
 msgstr "请为此网站启用弹出窗口"
 
@@ -556,7 +550,7 @@ msgstr "请为此网站启用弹出窗口"
 msgid "Please log in again"
 msgstr "请重新登录"
 
-#: src/components/login/auth-form.tsx:316
+#: src/components/login/auth-form.tsx:292
 msgid "Please see <0>the documentation</0> for instructions."
 msgstr "请参阅<0>文档</0>以获取说明。"
 
@@ -564,7 +558,7 @@ msgstr "请参阅<0>文档</0>以获取说明。"
 msgid "Please sign in to your account"
 msgstr "请登录您的账户"
 
-#: src/components/add-system.tsx:120
+#: src/components/add-system.tsx:124
 msgid "Port"
 msgstr "端口"
 
@@ -578,7 +572,7 @@ msgid "Preferred Language"
 msgstr "首选语言"
 
 #. Use 'Key' if your language requires many more characters
-#: src/components/add-system.tsx:124
+#: src/components/add-system.tsx:128
 msgid "Public Key"
 msgstr "公钥"
 
@@ -610,11 +604,11 @@ msgstr "使用回车键或逗号保存地址。留空以禁用电子邮件通知
 msgid "Save Settings"
 msgstr "保存设置"
 
-#: src/components/navbar.tsx:142
+#: src/components/navbar.tsx:133
 msgid "Search"
 msgstr "搜索"
 
-#: src/components/command-palette.tsx:47
+#: src/components/command-palette.tsx:46
 msgid "Search for systems or settings..."
 msgstr "搜索系统或设置..."
 
@@ -631,9 +625,9 @@ msgstr "发送"
 msgid "Sets the default time range for charts when a system is viewed."
 msgstr "设置查看系统时图表的默认时间范围。"
 
-#: src/components/command-palette.tsx:96
-#: src/components/command-palette.tsx:99
-#: src/components/command-palette.tsx:114
+#: src/components/command-palette.tsx:95
+#: src/components/command-palette.tsx:98
+#: src/components/command-palette.tsx:113
 #: src/components/routes/settings/layout.tsx:71
 #: src/components/routes/settings/layout.tsx:82
 msgid "Settings"
@@ -643,11 +637,11 @@ msgstr "设置"
 msgid "Settings saved"
 msgstr "设置已保存"
 
-#: src/components/login/auth-form.tsx:215
+#: src/components/login/auth-form.tsx:191
 msgid "Sign in"
 msgstr "登录"
 
-#: src/components/command-palette.tsx:201
+#: src/components/command-palette.tsx:185
 msgid "SMTP settings"
 msgstr "SMTP设置"
 
@@ -670,7 +664,7 @@ msgstr "SWAP使用"
 msgid "System"
 msgstr "系统"
 
-#: src/components/navbar.tsx:78
+#: src/components/navbar.tsx:77
 msgid "Systems"
 msgstr "系统"
 
@@ -695,11 +689,11 @@ msgstr "测试<0>URL</0>"
 msgid "Test notification sent"
 msgstr "测试通知已发送"
 
-#: src/components/add-system.tsx:104
+#: src/components/add-system.tsx:108
 msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
 msgstr "必须在系统上运行客户端之后才能连接。复制下面的客户端安装命令。"
 
-#: src/components/add-system.tsx:95
+#: src/components/add-system.tsx:99
 msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
 msgstr "必须在系统上运行客户端之后才能连接。复制下面的<0>docker-compose.yml</0>。"
 
@@ -780,16 +774,8 @@ msgstr "根分区的使用"
 msgid "Used"
 msgstr "已用"
 
-#: src/components/login/auth-form.tsx:138
-msgid "username"
-msgstr "用户名"
-
-#: src/components/login/auth-form.tsx:131
-msgid "Username"
-msgstr "用户名"
-
-#: src/components/command-palette.tsx:143
-#: src/components/navbar.tsx:70
+#: src/components/command-palette.tsx:142
+#: src/components/navbar.tsx:69
 msgid "Users"
 msgstr "用户"
 
@@ -822,4 +808,3 @@ msgstr "YAML配置"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "您的用户设置已更新。"
-
