@@ -105,6 +105,7 @@ ExecStart=/opt/beszel/beszel serve --http "0.0.0.0:$PORT"
 WorkingDirectory=/opt/beszel
 User=beszel
 Restart=always
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target

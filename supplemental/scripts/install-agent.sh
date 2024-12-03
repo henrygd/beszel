@@ -235,6 +235,7 @@ Environment="KEY=$KEY"
 ExecStart=/opt/beszel-agent/beszel-agent
 User=beszel
 Restart=always
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
