@@ -80,11 +80,18 @@ func (h *Hub) Run() {
 			return err
 		}
 		// disable email auth if DISABLE_PASSWORD_AUTH env var is set
-		if os.Getenv("DISABLE_PASSWORD_AUTH") == "true" {
-			usersCollection.PasswordAuth.Enabled = false
+		usersCollection.PasswordAuth.Enabled = os.Getenv("DISABLE_PASSWORD_AUTH") != "true"
+		usersCollection.PasswordAuth.IdentityFields = []string{"email"}
+		// disable oauth if no providers are configured (todo: remove this in post 0.9.0 release)
+		if usersCollection.OAuth2.Enabled {
+			usersCollection.OAuth2.Enabled = len(usersCollection.OAuth2.Providers) > 0
+		}
+		// allow oauth user creation if USER_CREATION is set
+		if os.Getenv("USER_CREATION") == "true" {
+			cr := "@request.context = 'oauth2'"
+			usersCollection.CreateRule = &cr
 		} else {
-			usersCollection.PasswordAuth.Enabled = true
-			usersCollection.PasswordAuth.IdentityFields = []string{"email"}
+			usersCollection.CreateRule = nil
 		}
 		if err := h.app.Save(usersCollection); err != nil {
 			return err

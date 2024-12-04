@@ -317,19 +317,11 @@ func init() {
 			},
 			{
 				"authAlert": {
-					"emailTemplate": {
-						"body": "<p>Hello,</p>\n<p>We noticed a login to your {APP_NAME} account from a new location.</p>\n<p>If this was you, you may disregard this email.</p>\n<p><strong>If this wasn't you, you should immediately change your {APP_NAME} account password to revoke access from all other locations.</strong></p>\n<p>\n  Thanks,<br/>\n  {APP_NAME} team\n</p>",
-						"subject": "Login from a new location"
-					},
 					"enabled": true
 				},
 				"authRule": "verified=true",
 				"authToken": {
 					"duration": 1209600
-				},
-				"confirmEmailChangeTemplate": {
-					"body": "<p>Hello,</p>\n<p>Click on the button below to confirm your new email address.</p>\n<p>\n  <a class=\"btn\" href=\"{APP_URL}/_/#/auth/confirm-email-change/{TOKEN}\" target=\"_blank\" rel=\"noopener\">Confirm new email</a>\n</p>\n<p><i>If you didn't ask to change your email address, you can ignore this email.</i></p>\n<p>\n  Thanks,<br/>\n  {APP_NAME} team\n</p>",
-					"subject": "Confirm your {APP_NAME} new email address"
 				},
 				"createRule": null,
 				"deleteRule": null,
@@ -494,24 +486,6 @@ func init() {
 					"rule": ""
 				},
 				"name": "users",
-				"oauth2": {
-					"enabled": true,
-					"mappedFields": {
-						"avatarURL": "",
-						"id": "",
-						"name": "",
-						"username": "username"
-					}
-				},
-				"otp": {
-					"duration": 180,
-					"emailTemplate": {
-						"body": "<p>Hello,</p>\n<p>Your one-time password is: <strong>{OTP}</strong></p>\n<p><i>If you didn't ask for the one-time password, you can ignore this email.</i></p>\n<p>\n  Thanks,<br/>\n  {APP_NAME} team\n</p>",
-						"subject": "OTP for {APP_NAME}"
-					},
-					"enabled": false,
-					"length": 8
-				},
 				"passwordAuth": {
 					"enabled": true,
 					"identityFields": [
@@ -521,17 +495,9 @@ func init() {
 				"passwordResetToken": {
 					"duration": 1800
 				},
-				"resetPasswordTemplate": {
-					"body": "<p>Hello,</p>\n<p>Click on the button below to reset your password.</p>\n<p>\n  <a class=\"btn\" href=\"{APP_URL}/_/#/auth/confirm-password-reset/{TOKEN}\" target=\"_blank\" rel=\"noopener\">Reset password</a>\n</p>\n<p><i>If you didn't ask to reset your password, you can ignore this email.</i></p>\n<p>\n  Thanks,<br/>\n  {APP_NAME} team\n</p>",
-					"subject": "Reset your {APP_NAME} password"
-				},
 				"system": false,
 				"type": "auth",
 				"updateRule": null,
-				"verificationTemplate": {
-					"body": "<p>Hello,</p>\n<p>Thank you for joining us at {APP_NAME}.</p>\n<p>Click on the button below to verify your email address.</p>\n<p>\n  <a class=\"btn\" href=\"{APP_URL}/_/#/auth/confirm-verification/{TOKEN}\" target=\"_blank\" rel=\"noopener\">Verify</a>\n</p>\n<p>\n  Thanks,<br/>\n  {APP_NAME} team\n</p>",
-					"subject": "Verify your {APP_NAME} email"
-				},
 				"verificationToken": {
 					"duration": 604800
 				},
@@ -737,19 +703,11 @@ func init() {
 			},
 			{
 				"authAlert": {
-					"emailTemplate": {
-						"body": "<p>Hello,</p>\n<p>We noticed a login to your {APP_NAME} account from a new location.</p>\n<p>If this was you, you may disregard this email.</p>\n<p><strong>If this wasn't you, you should immediately change your {APP_NAME} account password to revoke access from all other locations.</strong></p>\n<p>\n  Thanks,<br/>\n  {APP_NAME} team\n</p>",
-						"subject": "Login from a new location"
-					},
 					"enabled": true
 				},
 				"authRule": "",
 				"authToken": {
 					"duration": 1209600
-				},
-				"confirmEmailChangeTemplate": {
-					"body": "<p>Hello,</p>\n<p>Click on the button below to confirm your new email address.</p>\n<p>\n  <a class=\"btn\" href=\"{APP_URL}/_/#/auth/confirm-email-change/{TOKEN}\" target=\"_blank\" rel=\"noopener\">Confirm new email</a>\n</p>\n<p><i>If you didn't ask to change your email address, you can ignore this email.</i></p>\n<p>\n  Thanks,<br/>\n  {APP_NAME} team\n</p>",
-					"subject": "Confirm your {APP_NAME} new email address"
 				},
 				"createRule": null,
 				"deleteRule": null,
@@ -875,10 +833,6 @@ func init() {
 				},
 				"otp": {
 					"duration": 180,
-					"emailTemplate": {
-						"body": "<p>Hello,</p>\n<p>Your one-time password is: <strong>{OTP}</strong></p>\n<p><i>If you didn't ask for the one-time password, you can ignore this email.</i></p>\n<p>\n  Thanks,<br/>\n  {APP_NAME} team\n</p>",
-						"subject": "OTP for {APP_NAME}"
-					},
 					"enabled": false,
 					"length": 8
 				},
@@ -891,17 +845,9 @@ func init() {
 				"passwordResetToken": {
 					"duration": 1800
 				},
-				"resetPasswordTemplate": {
-					"body": "<p>Hello,</p>\n<p>Click on the button below to reset your password.</p>\n<p>\n  <a class=\"btn\" href=\"{APP_URL}/_/#/auth/confirm-password-reset/{TOKEN}\" target=\"_blank\" rel=\"noopener\">Reset password</a>\n</p>\n<p><i>If you didn't ask to reset your password, you can ignore this email.</i></p>\n<p>\n  Thanks,<br/>\n  {APP_NAME} team\n</p>",
-					"subject": "Reset your {APP_NAME} password"
-				},
 				"system": true,
 				"type": "auth",
 				"updateRule": null,
-				"verificationTemplate": {
-					"body": "<p>Hello,</p>\n<p>Thank you for joining us at {APP_NAME}.</p>\n<p>Click on the button below to verify your email address.</p>\n<p>\n  <a class=\"btn\" href=\"{APP_URL}/_/#/auth/confirm-verification/{TOKEN}\" target=\"_blank\" rel=\"noopener\">Verify</a>\n</p>\n<p>\n  Thanks,<br/>\n  {APP_NAME} team\n</p>",
-					"subject": "Verify your {APP_NAME} email"
-				},
 				"verificationToken": {
 					"duration": 259200
 				},
