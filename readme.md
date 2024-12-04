@@ -6,7 +6,7 @@ A lightweight server resource monitoring hub with historical data, docker stats,
 [![Docker Image Size (tag)](https://img.shields.io/docker/image-size/henrygd/beszel/0.1.0?logo=docker&label=hub%20image%20size)](https://hub.docker.com/r/henrygd/beszel)
 [![Crowdin](https://badges.crowdin.net/beszel/localized.svg)](https://crowdin.com/project/beszel)
 
-![Screenshot of the hub](https://henrygd-assets.b-cdn.net/beszel/screenshot.png)
+![Screenshot of the hub](https://henrygd-assets.b-cdn.net/beszel/screenshot-new.png)
 
 ## Features
 
