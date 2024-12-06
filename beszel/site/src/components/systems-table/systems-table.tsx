@@ -51,6 +51,8 @@ import {
 	ServerIcon,
 	CpuIcon,
 	ChevronDownIcon,
+	LayoutGridIcon,
+	LayoutListIcon,
 } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { $hubVersion, $systems, pb } from "@/lib/stores"
@@ -64,18 +66,23 @@ import { useLingui } from "@lingui/react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Input } from "../ui/input"
 
+type ViewMode = 'table' | 'grid'
+
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	const val = info.getValue() as number
 	return (
-		<div className="flex gap-1 items-center tabular-nums tracking-tight">
+		<div className="flex gap-3 items-center tabular-nums tracking-tight">
 			<span className="min-w-[3.5em]">{decimalString(val, 1)}%</span>
 			<span className="grow min-w-10 block bg-muted h-[1em] relative rounded-sm overflow-hidden">
 				<span
 					className={cn(
-						"absolute inset-0 w-full h-full origin-left",
+						"absolute inset-0 w-full h-full origin-left transition-all duration-500",
 						(val < 65 && "bg-green-500") || (val < 90 && "bg-yellow-500") || "bg-red-600"
 					)}
-					style={{ transform: `scalex(${val}%)` }}
+					style={{
+						transform: `scalex(${val / 100})`,
+						transition: "transform 500ms, background-color 500ms"
+					}}
 				></span>
 			</span>
 		</div>
@@ -103,6 +110,7 @@ export default function SystemsTable() {
 	const [sorting, setSorting] = useState<SortingState>([])
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>("cols", {})
+	const [viewMode, setViewMode] = useLocalStorage<ViewMode>('viewMode', 'table')
 	const { i18n } = useLingui()
 
 	useEffect(() => {
@@ -131,7 +139,7 @@ export default function SystemsTable() {
 									"bg-primary/40": status === "paused",
 									"bg-yellow-500": status === "pending",
 								})}
-								style={{ marginBottom: "-1px" }}
+								style={{ marginBottom: "-2px" }}
 							></span>
 							<Button
 								data-nolink
@@ -177,7 +185,9 @@ export default function SystemsTable() {
 				cell: (info) => {
 					const val = info.getValue() as number
 					return (
-						<span className="tabular-nums whitespace-nowrap ps-1">{decimalString(val, val >= 100 ? 1 : 2)} MB/s</span>
+						<span className={cn("tabular-nums whitespace-nowrap", {
+							"ps-1": viewMode === 'table',
+						})}>{decimalString(val, val >= 100 ? 1 : 2)} MB/s</span>
 					)
 				},
 			},
@@ -193,7 +203,9 @@ export default function SystemsTable() {
 						return null
 					}
 					return (
-						<span className="flex gap-2 items-center md:pe-5 tabular-nums ps-1">
+						<span className={cn("flex gap-2 items-center md:pe-5 tabular-nums", {
+							"ps-1": viewMode === 'table',
+						})}>
 							<span
 								className={cn("w-2 h-2 left-0 rounded-full", version === hubVersion ? "bg-green-500" : "bg-yellow-500")}
 								style={{ marginBottom: "-1px" }}
@@ -320,13 +332,70 @@ export default function SystemsTable() {
 							<Trans>Updated in real time. Click on a system to view information.</Trans>
 						</CardDescription>
 					</div>
-					<div className="flex gap-2 ms-auto w-full md:w-80">
+					<div className="flex gap-2 ms-auto w-full md:w-[500px]">
 						<Input placeholder={t`Filter...`} onChange={(e) => setFilter(e.target.value)} className="px-4" />
+						<Button
+							variant="outline"
+							onClick={() => setViewMode(viewMode === 'table' ? 'grid' : 'table')}
+							title={viewMode === 'table' ? t`Switch to grid view` : t`Switch to table view`}
+						>
+							{viewMode === 'table' ? (
+								<LayoutGridIcon className="h-[1.2rem] w-[1.2rem]" />
+							) : (
+								<LayoutListIcon className="h-[1.2rem] w-[1.2rem]" />
+							)}
+						</Button>
+						{viewMode === 'grid' && (
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button variant="outline">
+										<Trans>Sort</Trans> <ChevronDownIcon className="ms-1.5 h-4 w-4 opacity-90" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent align="end">
+									{table.getAllColumns().map((column) => {
+										if (column.id === t`Actions` || !column.getCanSort()) return null
+
+										const isCurrentSort = sorting[0]?.id === column.id
+										const sortDirection = sorting[0]?.desc ? '↓' : '↑'
+
+										return (
+											<DropdownMenuItem
+												key={column.id}
+												onClick={() => {
+													const isDesc = sorting[0]?.id === column.id && !sorting[0]?.desc
+													setSorting([{ id: column.id, desc: isDesc }])
+												}}
+											>
+												{column.id} {isCurrentSort && sortDirection}
+											</DropdownMenuItem>
+										)
+									})}
+									{sorting.length > 0 && (
+										<>
+											<DropdownMenuSeparator />
+											<DropdownMenuItem onClick={() => setSorting([])}>
+												<Trans>Clear Sort</Trans>
+											</DropdownMenuItem>
+										</>
+									)}
+								</DropdownMenuContent>
+							</DropdownMenu>
+						)}
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="outline">
-									<Trans comment="Context: table columns">Columns</Trans>{" "}
-									<ChevronDownIcon className="ms-1.5 h-4 w-4 opacity-90" />
+									{viewMode === 'table' ? (
+										<>
+											<Trans comment="Context: table columns">Columns</Trans>
+											<ChevronDownIcon className="ms-1.5 h-4 w-4 opacity-90" />
+										</>
+									) : (
+										<>
+											<Trans>Fields</Trans>
+											<ChevronDownIcon className="ms-1.5 h-4 w-4 opacity-90" />
+										</>
+									)}
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end">
@@ -349,62 +418,210 @@ export default function SystemsTable() {
 					</div>
 				</div>
 			</CardHeader>
-			<CardContent className="max-sm:p-2">
-				<div className="rounded-md border overflow-hidden">
-					<Table>
-						<TableHeader>
-							{table.getHeaderGroups().map((headerGroup) => (
-								<TableRow key={headerGroup.id}>
-									{headerGroup.headers.map((header) => {
-										return (
-											<TableHead className="px-2" key={header.id}>
-												{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-											</TableHead>
-										)
-									})}
-								</TableRow>
-							))}
-						</TableHeader>
-						<TableBody>
-							{table.getRowModel().rows?.length ? (
-								table.getRowModel().rows.map((row) => (
-									<TableRow
-										key={row.original.id}
-										data-state={row.getIsSelected() && "selected"}
-										className={cn("cursor-pointer transition-opacity", {
-											"opacity-50": row.original.status === "paused",
+			<div className="pb-5 px-2 sm:px-6 max-sm:pt-5 max-sm:pb-1">
+				{viewMode === 'table' ? (
+					<div className="rounded-md border overflow-hidden">
+						<Table>
+							<TableHeader>
+								{table.getHeaderGroups().map((headerGroup) => (
+									<TableRow key={headerGroup.id}>
+										{headerGroup.headers.map((header) => {
+											return (
+												<TableHead className="px-2" key={header.id}>
+													{header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+												</TableHead>
+											)
 										})}
-										onClick={(e) => {
-											const target = e.target as HTMLElement
-											if (!target.closest("[data-nolink]") && e.currentTarget.contains(target)) {
-												navigate(`/system/${encodeURIComponent(row.original.name)}`)
-											}
-										}}
-									>
-										{row.getVisibleCells().map((cell) => (
-											<TableCell
-												key={cell.id}
-												style={{
-													width: cell.column.getSize() === Number.MAX_SAFE_INTEGER ? "auto" : cell.column.getSize(),
-												}}
-												className={cn("overflow-hidden relative", data.length > 10 ? "py-2" : "py-2.5")}
-											>
-												{flexRender(cell.column.columnDef.cell, cell.getContext())}
-											</TableCell>
-										))}
 									</TableRow>
-								))
-							) : (
-								<TableRow>
-									<TableCell colSpan={columns.length} className="h-24 text-center">
-										<Trans>No systems found.</Trans>
-									</TableCell>
-								</TableRow>
-							)}
-						</TableBody>
-					</Table>
-				</div>
-			</CardContent>
+								))}
+							</TableHeader>
+							<TableBody>
+								{table.getRowModel().rows?.length ? (
+									table.getRowModel().rows.map((row) => (
+										<TableRow
+											key={row.original.id}
+											data-state={row.getIsSelected() && "selected"}
+											className={cn("cursor-pointer transition-opacity", {
+												"opacity-50": row.original.status === "paused",
+											})}
+											onClick={(e) => {
+												const target = e.target as HTMLElement
+												if (!target.closest("[data-nolink]") && e.currentTarget.contains(target)) {
+													navigate(`/system/${encodeURIComponent(row.original.name)}`)
+												}
+											}}
+										>
+											{row.getVisibleCells().map((cell) => (
+												<TableCell
+													key={cell.id}
+													style={{
+														width: cell.column.getSize() === Number.MAX_SAFE_INTEGER ? "auto" : cell.column.getSize(),
+													}}
+													className={cn("overflow-hidden relative", data.length > 10 ? "py-2" : "py-2.5")}
+												>
+													{flexRender(cell.column.columnDef.cell, cell.getContext())}
+												</TableCell>
+											))}
+										</TableRow>
+									))
+								) : (
+									<TableRow>
+										<TableCell colSpan={columns.length} className="h-24 text-center">
+											<Trans>No systems found.</Trans>
+										</TableCell>
+									</TableRow>
+								)}
+							</TableBody>
+						</Table>
+					</div>
+				) : (
+					<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+						{table.getRowModel().rows?.length ? (
+							table.getRowModel().rows.map((row) => (
+								<Card
+									key={row.original.id}
+									className={cn("cursor-pointer hover:shadow-md transition-all w-full", {
+										"opacity-50": row.original.status === "paused",
+									})}
+									onClick={(e) => {
+										const target = e.target as HTMLElement
+										if (!target.closest("[data-nolink]") && e.currentTarget.contains(target)) {
+											navigate(`/system/${encodeURIComponent(row.original.name)}`)
+										}
+									}}
+								>
+									<CardHeader className="pt-4 pb-2">
+										<div className="flex items-center justify-between gap-2">
+											<div className="flex items-center gap-2 min-w-0">
+												<span
+													className={cn("flex-shrink-0 w-2 h-2 rounded-full", {
+														"bg-green-500": row.original.status === "up",
+														"bg-red-500": row.original.status === "down",
+														"bg-primary/40": row.original.status === "paused",
+														"bg-yellow-500": row.original.status === "pending",
+													})}
+													style={{ marginBottom: "-1px" }}
+												/>
+												<CardTitle className="text-base truncate">
+													{row.original.name}
+												</CardTitle>
+											</div>
+											{table.getColumn(t`Actions`)?.getIsVisible() && (
+												<div className="flex gap-1 flex-shrink-0">
+													<AlertsButton system={row.original} />
+													<AlertDialog>
+														<DropdownMenu>
+															<DropdownMenuTrigger asChild>
+																<Button variant="ghost" size={"icon"} data-nolink>
+																	<span className="sr-only">
+																		<Trans>Open menu</Trans>
+																	</span>
+																	<MoreHorizontalIcon className="w-5" />
+																</Button>
+															</DropdownMenuTrigger>
+															<DropdownMenuContent align="end">
+																<DropdownMenuItem
+																	className={cn(isReadOnlyUser() && "hidden")}
+																	onClick={() => {
+																		pb.collection("systems").update(row.original.id, {
+																			status: row.original.status === "paused" ? "pending" : "paused",
+																		})
+																	}}
+																>
+																	{row.original.status === "paused" ? (
+																		<>
+																			<PlayCircleIcon className="me-2.5 h-4 w-4" />
+																			<Trans>Resume</Trans>
+																		</>
+																	) : (
+																		<>
+																			<PauseCircleIcon className="me-2.5 h-4 w-4" />
+																			<Trans>Pause</Trans>
+																		</>
+																	)}
+																</DropdownMenuItem>
+																<DropdownMenuItem onClick={() => copyToClipboard(row.original.host)}>
+																	<CopyIcon className="me-2.5 h-4 w-4" />
+																	<Trans>Copy host</Trans>
+																</DropdownMenuItem>
+																<DropdownMenuSeparator className={cn(isReadOnlyUser() && "hidden")} />
+																<AlertDialogTrigger asChild>
+																	<DropdownMenuItem className={cn(isReadOnlyUser() && "hidden")}>
+																		<Trash2Icon className="me-2.5 h-4 w-4" />
+																		<Trans>Delete</Trans>
+																	</DropdownMenuItem>
+																</AlertDialogTrigger>
+															</DropdownMenuContent>
+														</DropdownMenu>
+														<AlertDialogContent>
+															<AlertDialogHeader>
+																<AlertDialogTitle>
+																	<Trans>Are you sure you want to delete {row.original.name}?</Trans>
+																</AlertDialogTitle>
+																<AlertDialogDescription>
+																	<Trans>
+																		This action cannot be undone. This will permanently delete all current records for {row.original.name} from
+																		the database.
+																	</Trans>
+																</AlertDialogDescription>
+															</AlertDialogHeader>
+															<AlertDialogFooter>
+																<AlertDialogCancel>
+																	<Trans>Cancel</Trans>
+																</AlertDialogCancel>
+																<AlertDialogAction
+																	className={cn(buttonVariants({ variant: "destructive" }))}
+																	onClick={() => pb.collection("systems").delete(row.original.id)}
+																>
+																	<Trans>Continue</Trans>
+																</AlertDialogAction>
+															</AlertDialogFooter>
+														</AlertDialogContent>
+													</AlertDialog>
+												</div>
+											)}
+										</div>
+									</CardHeader>
+									<CardContent className="space-y-2.5 text-sm">
+										{table.getAllColumns().map((column) => {
+											if (!column.getIsVisible() || column.id === t`System` || column.id === t`Actions`) return null
+											const cell = row.getAllCells().find(cell => cell.column.id === column.id)
+											if (!cell) return null
+
+											const icon = (() => {
+												switch (column.id) {
+													case t`CPU`: return <CpuIcon className="h-4 w-4 text-muted-foreground" />
+													case t`Memory`: return <MemoryStickIcon className="h-4 w-4 text-muted-foreground" />
+													case t`Disk`: return <HardDriveIcon className="h-4 w-4 text-muted-foreground" />
+													case t`Net`: return <EthernetIcon className="h-4 w-4 text-muted-foreground" />
+													case t`Agent`: return <WifiIcon className="h-4 w-4 text-muted-foreground" />
+													default: return null
+												}
+											})()
+
+											return (
+												<div key={column.id} className="flex items-center gap-3">
+													{icon}
+													<div className="flex items-center gap-3 flex-1">
+														<span className="text-muted-foreground w-14">{column.id}:</span>
+														<div className="flex-1">
+															{flexRender(cell.column.columnDef.cell, cell.getContext())}
+														</div>
+													</div>
+												</div>
+											)
+										})}
+									</CardContent>
+								</Card>
+							))
+						) : (
+							<div className="col-span-full text-center py-8">
+								<Trans>No systems found.</Trans>
+							</div>
+						)}
+					</div>
+				)}
+			</div>
 		</Card>
 	)
 }
