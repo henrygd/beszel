@@ -53,6 +53,9 @@ import {
 	ChevronDownIcon,
 	LayoutGridIcon,
 	LayoutListIcon,
+	XCircle,
+	ArrowDownIcon,
+	ArrowUpIcon,
 } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { $hubVersion, $systems, pb } from "@/lib/stores"
@@ -334,85 +337,88 @@ export default function SystemsTable() {
 					</div>
 					<div className="flex gap-2 ms-auto w-full md:w-[500px]">
 						<Input placeholder={t`Filter...`} onChange={(e) => setFilter(e.target.value)} className="px-4" />
-						<Button
-							variant="outline"
-							onClick={() => setViewMode(viewMode === 'table' ? 'grid' : 'table')}
-							title={viewMode === 'table' ? t`Switch to grid view` : t`Switch to table view`}
-						>
-							{viewMode === 'table' ? (
-								<LayoutGridIcon className="h-[1.2rem] w-[1.2rem]" />
-							) : (
-								<LayoutListIcon className="h-[1.2rem] w-[1.2rem]" />
-							)}
-						</Button>
-						{viewMode === 'grid' && (
-							<DropdownMenu>
-								<DropdownMenuTrigger asChild>
-									<Button variant="outline">
-										<Trans>Sort</Trans> <ChevronDownIcon className="ms-1.5 h-4 w-4 opacity-90" />
-									</Button>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent align="end">
-									{table.getAllColumns().map((column) => {
-										if (column.id === t`Actions` || !column.getCanSort()) return null
-
-										const isCurrentSort = sorting[0]?.id === column.id
-										const sortDirection = sorting[0]?.desc ? '↓' : '↑'
-
-										return (
-											<DropdownMenuItem
-												key={column.id}
-												onClick={() => {
-													const isDesc = sorting[0]?.id === column.id && !sorting[0]?.desc
-													setSorting([{ id: column.id, desc: isDesc }])
-												}}
-											>
-												{column.id} {isCurrentSort && sortDirection}
-											</DropdownMenuItem>
-										)
-									})}
-									{sorting.length > 0 && (
-										<>
-											<DropdownMenuSeparator />
-											<DropdownMenuItem onClick={() => setSorting([])}>
-												<Trans>Clear Sort</Trans>
-											</DropdownMenuItem>
-										</>
-									)}
-								</DropdownMenuContent>
-							</DropdownMenu>
-						)}
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="outline">
-									{viewMode === 'table' ? (
-										<>
-											<Trans comment="Context: table columns">Columns</Trans>
-											<ChevronDownIcon className="ms-1.5 h-4 w-4 opacity-90" />
-										</>
-									) : (
-										<>
-											<Trans>Fields</Trans>
-											<ChevronDownIcon className="ms-1.5 h-4 w-4 opacity-90" />
-										</>
-									)}
+									<Trans>Options</Trans>
+									<ChevronDownIcon className="ms-1.5 h-4 w-4 opacity-90" />
 								</Button>
 							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end">
-								{table
-									.getAllColumns()
-									.filter((column) => column.getCanHide())
-									.map((column) => {
-										return (
-											<DropdownMenuCheckboxItem
-												key={column.id}
-												checked={column.getIsVisible()}
-												onCheckedChange={(value) => column.toggleVisibility(!!value)}
-											>
-												{column.id}
-											</DropdownMenuCheckboxItem>
-										)
-									})}
+							<DropdownMenuContent align="end" className="w-[600px]">
+								<div className="grid grid-cols-3 divide-x">
+									<div className="p-2">
+										<DropdownMenuItem className="font-medium" disabled>
+											<Trans>View Type</Trans>
+										</DropdownMenuItem>
+										<DropdownMenuCheckboxItem 
+											checked={viewMode === 'table'}
+											onCheckedChange={() => setViewMode('table')}
+											className="gap-2"
+										>
+											<LayoutListIcon className="h-4 w-4" />
+											<span>Table</span>
+										</DropdownMenuCheckboxItem>
+										<DropdownMenuCheckboxItem 
+											checked={viewMode === 'grid'}
+											onCheckedChange={() => setViewMode('grid')}
+											className="gap-2"
+										>
+											<LayoutGridIcon className="h-4 w-4" />
+											<span>Grid</span>
+										</DropdownMenuCheckboxItem>
+									</div>
+
+									<div className="p-2">
+										<DropdownMenuItem className="font-medium" disabled>
+											<Trans>Sort by</Trans>
+										</DropdownMenuItem>
+										{table.getAllColumns().map((column) => {
+											if (column.id === t`Actions` || !column.getCanSort()) return null
+
+											const isCurrentSort = sorting[0]?.id === column.id
+											const sortDirection = sorting[0]?.desc ? <ArrowDownIcon className="me-2.5 h-4 w-4" /> : <ArrowUpIcon className="me-2.5 h-4 w-4" />
+
+											return (
+												<DropdownMenuItem
+													key={column.id}
+													onClick={() => {
+														const isDesc = sorting[0]?.id === column.id && !sorting[0]?.desc
+														setSorting([{ id: column.id, desc: isDesc }])
+													}}
+												>
+													{isCurrentSort && sortDirection}
+													{column.id}
+												</DropdownMenuItem>
+											)
+										})}
+										{sorting.length > 0 && (
+											<DropdownMenuItem onClick={() => setSorting([])}>
+												<XCircle className="me-2.5 h-4 w-4" />
+												<Trans>Clear Sort</Trans>
+											</DropdownMenuItem>
+										)}
+									</div>
+
+									<div className="p-2">
+										<DropdownMenuItem className="font-medium" disabled>
+											<Trans>Visible Fields</Trans>
+										</DropdownMenuItem>
+										{table
+											.getAllColumns()
+											.filter((column) => column.getCanHide())
+											.map((column) => {
+												return (
+													<DropdownMenuCheckboxItem
+														key={column.id}
+														checked={column.getIsVisible()}
+														onCheckedChange={(value) => column.toggleVisibility(!!value)}
+													>
+														{column.id}
+													</DropdownMenuCheckboxItem>
+												)
+											})}
+									</div>
+								</div>
 							</DropdownMenuContent>
 						</DropdownMenu>
 					</div>
