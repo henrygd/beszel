@@ -295,10 +295,6 @@ msgstr "Mạng I/O Docker"
 msgid "Documentation"
 msgstr "Tài liệu"
 
-#: src/components/login/auth-form.tsx:134
-msgid "email"
-msgstr "email"
-
 #: src/components/login/auth-form.tsx:128
 #: src/components/login/forgot-pass-form.tsx:53
 msgid "Email"

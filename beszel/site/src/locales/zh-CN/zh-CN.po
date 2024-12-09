@@ -295,10 +295,6 @@ msgstr "Docker网络I/O"
 msgid "Documentation"
 msgstr "文档"
 
-#: src/components/login/auth-form.tsx:134
-msgid "email"
-msgstr "电子邮件"
-
 #: src/components/login/auth-form.tsx:128
 #: src/components/login/forgot-pass-form.tsx:53
 msgid "Email"

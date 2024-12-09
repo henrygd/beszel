@@ -295,10 +295,6 @@ msgstr "Docker-Netzwerk-I/O"
 msgid "Documentation"
 msgstr "Dokumentation"
 
-#: src/components/login/auth-form.tsx:134
-msgid "email"
-msgstr "E-Mail"
-
 #: src/components/login/auth-form.tsx:128
 #: src/components/login/forgot-pass-form.tsx:53
 msgid "Email"

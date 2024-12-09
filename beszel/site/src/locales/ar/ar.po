@@ -295,10 +295,6 @@ msgstr "إدخال/إخراج الشبكة لـ Docker"
 msgid "Documentation"
 msgstr "التوثيق"
 
-#: src/components/login/auth-form.tsx:134
-msgid "email"
-msgstr "البريد الإلكتروني"
-
 #: src/components/login/auth-form.tsx:128
 #: src/components/login/forgot-pass-form.tsx:53
 msgid "Email"

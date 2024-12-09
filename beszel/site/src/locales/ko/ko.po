@@ -295,10 +295,6 @@ msgstr "도커 네트워크 I/O"
 msgid "Documentation"
 msgstr "문서"
 
-#: src/components/login/auth-form.tsx:134
-msgid "email"
-msgstr "이메일"
-
 #: src/components/login/auth-form.tsx:128
 #: src/components/login/forgot-pass-form.tsx:53
 msgid "Email"

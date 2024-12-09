@@ -295,10 +295,6 @@ msgstr "Docker Ağ G/Ç"
 msgid "Documentation"
 msgstr "Dokümantasyon"
 
-#: src/components/login/auth-form.tsx:134
-msgid "email"
-msgstr "e-posta"
-
 #: src/components/login/auth-form.tsx:128
 #: src/components/login/forgot-pass-form.tsx:53
 msgid "Email"
