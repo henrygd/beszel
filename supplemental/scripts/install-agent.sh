@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# Move is_alpine function to the top of the file
+is_alpine() {
+  [ -f /etc/alpine-release ]
+}
+
 version=0.0.1
 # Define default values
 PORT=45876
@@ -124,7 +129,12 @@ package_installed() {
 }
 
 # Check for package manager and install necessary packages if not installed
-if package_installed apt-get; then
+if is_alpine; then
+  if ! package_installed tar || ! package_installed curl || ! package_installed coreutils; then
+    apk update
+    apk add tar curl coreutils shadow
+  fi
+elif package_installed apt-get; then
   if ! package_installed tar || ! package_installed curl || ! package_installed sha256sum; then
     apt-get update
     apt-get install -y tar curl coreutils
@@ -158,12 +168,21 @@ else
 fi
 
 # Create a dedicated user for the service if it doesn't exist
-if ! id -u beszel >/dev/null 2>&1; then
-  echo "Creating a dedicated user for the Beszel Agent service..."
-  useradd -M -s /bin/false beszel
+if is_alpine; then
+  if ! id -u beszel >/dev/null 2>&1; then
+    echo "Creating a dedicated user for the Beszel Agent service..."
+    adduser -D -H -s /sbin/nologin beszel
+  fi
+  # Add the user to the docker group to allow access to the Docker socket
+  addgroup beszel docker
+else
+  if ! id -u beszel >/dev/null 2>&1; then
+    echo "Creating a dedicated user for the Beszel Agent service..."
+    useradd -M -s /bin/false beszel
+  fi
+  # Add the user to the docker group to allow access to the Docker socket
+  usermod -aG docker beszel
 fi
-# Add the user to the docker group to allow access to the Docker socket
-usermod -aG docker beszel
 
 # Create the directory for the Beszel Agent
 if [ ! -d "/opt/beszel-agent" ]; then
@@ -220,11 +239,6 @@ chmod 755 /opt/beszel-agent/beszel-agent
 
 # Cleanup
 rm -rf "$TEMP_DIR"
-
-# Add function to detect Alpine at the beginning of file
-is_alpine() {
-  [ -f /etc/alpine-release ]
-}
 
 # Modify service installation part, add Alpine check before systemd service creation
 if is_alpine; then
