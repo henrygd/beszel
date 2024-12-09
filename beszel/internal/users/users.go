@@ -5,6 +5,7 @@ import (
 	"beszel/migrations"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/core"
@@ -97,6 +98,9 @@ func (um *UserManager) CreateFirstUser(e *core.RequestEvent) error {
 	user.SetPassword(data.Password)
 	user.Set("role", "admin")
 	user.Set("verified", true)
+	if username := strings.Split(data.Email, "@")[0]; len(username) > 2 {
+		user.Set("username", username)
+	}
 	if err := um.app.Save(user); err != nil {
 		return e.JSON(http.StatusInternalServerError, map[string]string{"err": err.Error()})
 	}
