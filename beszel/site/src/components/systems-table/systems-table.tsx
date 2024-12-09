@@ -278,7 +278,7 @@ export default function SystemsTable() {
 									<Trans>View</Trans>
 								</Button>
 							</DropdownMenuTrigger>
-							<DropdownMenuContent align="end" className="w-[260px] md:w-[32em] h-72 md:h-auto overflow-y-auto">
+							<DropdownMenuContent align="end" className="h-72 md:h-auto min-w-48 md:min-w-auto overflow-y-auto">
 								<div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-s md:divide-y-0">
 									<div>
 										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
@@ -293,11 +293,11 @@ export default function SystemsTable() {
 										>
 											<DropdownMenuRadioItem value="table" onSelect={(e) => e.preventDefault()} className="gap-2">
 												<LayoutListIcon className="size-4" />
-												<span>Table</span>
+												<Trans>Table</Trans>
 											</DropdownMenuRadioItem>
 											<DropdownMenuRadioItem value="grid" onSelect={(e) => e.preventDefault()} className="gap-2">
 												<LayoutGridIcon className="size-4" />
-												<span>Grid</span>
+												<Trans>Grid</Trans>
 											</DropdownMenuRadioItem>
 										</DropdownMenuRadioGroup>
 									</div>
@@ -315,9 +315,9 @@ export default function SystemsTable() {
 												// if current sort column, show sort direction
 												if (sorting[0]?.id === column.id) {
 													if (sorting[0]?.desc) {
-														Icon = <ArrowDownIcon className="me-2 size-4" />
-													} else {
 														Icon = <ArrowUpIcon className="me-2 size-4" />
+													} else {
+														Icon = <ArrowDownIcon className="me-2 size-4" />
 													}
 												}
 												return (

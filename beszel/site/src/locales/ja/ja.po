@@ -47,7 +47,10 @@ msgid "30 days"
 msgstr "30日間"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx:207
+#: src/components/systems-table/systems-table.tsx:227
+#: src/components/systems-table/systems-table.tsx:313
+#: src/components/systems-table/systems-table.tsx:455
+#: src/components/systems-table/systems-table.tsx:465
 msgid "Actions"
 msgstr "アクション"
 
@@ -84,7 +87,7 @@ msgstr "チャートの表示オプションを調整します。"
 msgid "Admin"
 msgstr "管理者"
 
-#: src/components/systems-table/systems-table.tsx:186
+#: src/components/systems-table/systems-table.tsx:201
 msgid "Agent"
 msgstr "代理"
 
@@ -94,11 +97,11 @@ msgid "Alerts"
 msgstr "アラート"
 
 #: src/components/alerts/alert-button.tsx:88
-#: src/components/systems-table/systems-table.tsx:317
+#: src/components/systems-table/systems-table.tsx:266
 msgid "All Systems"
 msgstr "すべてのシステム"
 
-#: src/components/systems-table/systems-table.tsx:261
+#: src/components/systems-table/systems-table.tsx:570
 msgid "Are you sure you want to delete {name}?"
 msgstr "{name}を削除してもよろしいですか？"
 
@@ -156,7 +159,7 @@ msgstr "バイナリ"
 msgid "Cache / Buffers"
 msgstr "キャッシュ / バッファ"
 
-#: src/components/systems-table/systems-table.tsx:272
+#: src/components/systems-table/systems-table.tsx:581
 msgid "Cancel"
 msgstr "キャンセル"
 
@@ -188,11 +191,6 @@ msgstr "通知サービスを確認してください"
 msgid "Click to copy"
 msgstr "クリックしてコピー"
 
-#. Context: table columns
-#: src/components/systems-table/systems-table.tsx:328
-msgid "Columns"
-msgstr "列"
-
 #: src/components/login/forgot-pass-form.tsx:83
 #: src/components/login/forgot-pass-form.tsx:89
 msgid "Command line instructions"
@@ -207,7 +205,7 @@ msgstr "アラート通知の受信方法を設定します。"
 msgid "Confirm password"
 msgstr "パスワードを確認"
 
-#: src/components/systems-table/systems-table.tsx:278
+#: src/components/systems-table/systems-table.tsx:587
 msgid "Continue"
 msgstr "続行"
 
@@ -219,7 +217,7 @@ msgstr "クリップボードにコピーされました"
 msgid "Copy"
 msgstr "コピー"
 
-#: src/components/systems-table/systems-table.tsx:247
+#: src/components/systems-table/systems-table.tsx:556
 msgid "Copy host"
 msgstr "ホストをコピー"
 
@@ -231,7 +229,7 @@ msgstr "Linuxコマンドをコピー"
 msgid "Copy text"
 msgstr "テキストをコピー"
 
-#: src/components/systems-table/systems-table.tsx:152
+#: src/components/systems-table/systems-table.tsx:157
 msgid "CPU"
 msgstr "CPU"
 
@@ -259,11 +257,11 @@ msgstr "ダッシュボード"
 msgid "Default time period"
 msgstr "デフォルトの期間"
 
-#: src/components/systems-table/systems-table.tsx:253
+#: src/components/systems-table/systems-table.tsx:562
 msgid "Delete"
 msgstr "削除"
 
-#: src/components/systems-table/systems-table.tsx:166
+#: src/components/systems-table/systems-table.tsx:173
 msgid "Disk"
 msgstr "ディスク"
 
@@ -358,7 +356,7 @@ msgid "Failed to update alert"
 msgstr "アラートの更新に失敗しました"
 
 #: src/components/routes/system.tsx:596
-#: src/components/systems-table/systems-table.tsx:324
+#: src/components/systems-table/systems-table.tsx:273
 msgid "Filter..."
 msgstr "フィルター..."
 
@@ -380,6 +378,10 @@ msgstr "一般"
 msgid "GPU Power Draw"
 msgstr ""
 
+#: src/components/systems-table/systems-table.tsx:300
+msgid "Grid"
+msgstr "グリッド"
+
 #: src/components/add-system.tsx:120
 msgid "Host / IP"
 msgstr "ホスト / IP"
@@ -400,6 +402,10 @@ msgstr "カーネル"
 #: src/components/routes/settings/general.tsx:45
 msgid "Language"
 msgstr "言語"
+
+#: src/components/systems-table/systems-table.tsx:286
+msgid "Layout"
+msgstr "レイアウト"
 
 #. Light theme
 #: src/components/mode-toggle.tsx:16
@@ -437,7 +443,7 @@ msgstr "表示と通知の設定を管理します。"
 msgid "Max 1 min"
 msgstr "最大1分"
 
-#: src/components/systems-table/systems-table.tsx:159
+#: src/components/systems-table/systems-table.tsx:165
 msgid "Memory"
 msgstr "メモリ"
 
@@ -454,7 +460,7 @@ msgstr "Dockerコンテナのメモリ使用率"
 msgid "Name"
 msgstr "名前"
 
-#: src/components/systems-table/systems-table.tsx:173
+#: src/components/systems-table/systems-table.tsx:181
 msgid "Net"
 msgstr "帯域"
 
@@ -470,7 +476,8 @@ msgstr "パブリックインターフェースのネットワークトラフィ
 msgid "No results found."
 msgstr "結果が見つかりませんでした。"
 
-#: src/components/systems-table/systems-table.tsx:400
+#: src/components/systems-table/systems-table.tsx:421
+#: src/components/systems-table/systems-table.tsx:494
 msgid "No systems found."
 msgstr "システムが見つかりませんでした。"
 
@@ -488,7 +495,7 @@ msgstr "OAuth 2 / OIDCサポート"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "再起動のたびに、データベース内のシステムはファイルに定義されたシステムに一致するように更新されます。"
 
-#: src/components/systems-table/systems-table.tsx:219
+#: src/components/systems-table/systems-table.tsx:528
 msgid "Open menu"
 msgstr "メニューを開く"
 
@@ -515,13 +522,13 @@ msgstr "パスワード"
 
 #: src/components/login/auth-form.tsx:17
 msgid "Password must be at least 8 characters."
-msgstr ""
+msgstr "パスワードは8文字以上である必要があります。"
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
 msgstr "パスワードリセットのリクエストを受け取りました"
 
-#: src/components/systems-table/systems-table.tsx:241
+#: src/components/systems-table/systems-table.tsx:550
 msgid "Pause"
 msgstr "一時停止"
 
@@ -591,7 +598,7 @@ msgstr "受信"
 msgid "Reset Password"
 msgstr "パスワードをリセット"
 
-#: src/components/systems-table/systems-table.tsx:236
+#: src/components/systems-table/systems-table.tsx:545
 msgid "Resume"
 msgstr "再開"
 
@@ -645,6 +652,10 @@ msgstr "サインイン"
 msgid "SMTP settings"
 msgstr "SMTP設定"
 
+#: src/components/systems-table/systems-table.tsx:308
+msgid "Sort By"
+msgstr "並び替え基準"
+
 #: src/lib/utils.ts:282
 msgid "Status"
 msgstr "ステータス"
@@ -659,8 +670,10 @@ msgstr "スワップ使用量"
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
-#: src/components/systems-table/systems-table.tsx:110
-#: src/components/systems-table/systems-table.tsx:121
+#: src/components/systems-table/systems-table.tsx:117
+#: src/components/systems-table/systems-table.tsx:125
+#: src/components/systems-table/systems-table.tsx:136
+#: src/components/systems-table/systems-table.tsx:465
 msgid "System"
 msgstr "システム"
 
@@ -671,6 +684,10 @@ msgstr "システム"
 #: src/components/routes/settings/config-yaml.tsx:55
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "システムはデータディレクトリ内の<0>config.yml</0>ファイルで管理できます。"
+
+#: src/components/systems-table/systems-table.tsx:296
+msgid "Table"
+msgstr "テーブル"
 
 #: src/components/routes/system.tsx:484
 #: src/lib/utils.ts:314
@@ -701,7 +718,7 @@ msgstr "接続するにはエージェントがシステム上で実行されて
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "その後、バックエンドにログインして、ユーザーテーブルでユーザーアカウントのパスワードをリセットしてください。"
 
-#: src/components/systems-table/systems-table.tsx:264
+#: src/components/systems-table/systems-table.tsx:573
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "この操作は元に戻せません。これにより、データベースから{name}のすべての現在のレコードが永久に削除されます。"
 
@@ -750,7 +767,7 @@ msgstr "ステータスが上から下に切り替わるときにトリガーさ
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "ディスクの使用量がしきい値を超えたときにトリガーされます"
 
-#: src/components/systems-table/systems-table.tsx:320
+#: src/components/systems-table/systems-table.tsx:269
 msgid "Updated in real time. Click on a system to view information."
 msgstr "リアルタイムで更新されます。システムをクリックして情報を表示します。"
 
@@ -778,6 +795,14 @@ msgstr "使用済み"
 #: src/components/navbar.tsx:69
 msgid "Users"
 msgstr "ユーザー"
+
+#: src/components/systems-table/systems-table.tsx:278
+msgid "View"
+msgstr "表示"
+
+#: src/components/systems-table/systems-table.tsx:342
+msgid "Visible Fields"
+msgstr "表示列"
 
 #: src/components/routes/system.tsx:662
 msgid "Waiting for enough records to display"
@@ -808,4 +833,3 @@ msgstr "YAML設定"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "ユーザー設定が更新されました。"
-

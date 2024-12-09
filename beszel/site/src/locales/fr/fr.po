@@ -47,7 +47,10 @@ msgid "30 days"
 msgstr "30 jours"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx:207
+#: src/components/systems-table/systems-table.tsx:227
+#: src/components/systems-table/systems-table.tsx:313
+#: src/components/systems-table/systems-table.tsx:455
+#: src/components/systems-table/systems-table.tsx:465
 msgid "Actions"
 msgstr "Actions"
 
@@ -84,7 +87,7 @@ msgstr "Ajuster les options d'affichage pour les graphiques."
 msgid "Admin"
 msgstr "Admin"
 
-#: src/components/systems-table/systems-table.tsx:186
+#: src/components/systems-table/systems-table.tsx:201
 msgid "Agent"
 msgstr "Agent"
 
@@ -94,11 +97,11 @@ msgid "Alerts"
 msgstr "Alertes"
 
 #: src/components/alerts/alert-button.tsx:88
-#: src/components/systems-table/systems-table.tsx:317
+#: src/components/systems-table/systems-table.tsx:266
 msgid "All Systems"
 msgstr "Tous les systèmes"
 
-#: src/components/systems-table/systems-table.tsx:261
+#: src/components/systems-table/systems-table.tsx:570
 msgid "Are you sure you want to delete {name}?"
 msgstr "Êtes-vous sûr de vouloir supprimer {name} ?"
 
@@ -156,7 +159,7 @@ msgstr "Binaire"
 msgid "Cache / Buffers"
 msgstr "Cache / Tampons"
 
-#: src/components/systems-table/systems-table.tsx:272
+#: src/components/systems-table/systems-table.tsx:581
 msgid "Cancel"
 msgstr "Annuler"
 
@@ -188,11 +191,6 @@ msgstr "Vérifiez votre service de notification"
 msgid "Click to copy"
 msgstr "Cliquez pour copier"
 
-#. Context: table columns
-#: src/components/systems-table/systems-table.tsx:328
-msgid "Columns"
-msgstr "Colonnes"
-
 #: src/components/login/forgot-pass-form.tsx:83
 #: src/components/login/forgot-pass-form.tsx:89
 msgid "Command line instructions"
@@ -207,7 +205,7 @@ msgstr "Configurez comment vous recevez les notifications d'alerte."
 msgid "Confirm password"
 msgstr "Confirmer le mot de passe"
 
-#: src/components/systems-table/systems-table.tsx:278
+#: src/components/systems-table/systems-table.tsx:587
 msgid "Continue"
 msgstr "Continuer"
 
@@ -219,7 +217,7 @@ msgstr "Copié dans le presse-papiers"
 msgid "Copy"
 msgstr "Copier"
 
-#: src/components/systems-table/systems-table.tsx:247
+#: src/components/systems-table/systems-table.tsx:556
 msgid "Copy host"
 msgstr "Copier l'hôte"
 
@@ -231,7 +229,7 @@ msgstr "Copier la commande Linux"
 msgid "Copy text"
 msgstr "Copier le texte"
 
-#: src/components/systems-table/systems-table.tsx:152
+#: src/components/systems-table/systems-table.tsx:157
 msgid "CPU"
 msgstr "CPU"
 
@@ -259,11 +257,11 @@ msgstr "Tableau de bord"
 msgid "Default time period"
 msgstr "Période par défaut"
 
-#: src/components/systems-table/systems-table.tsx:253
+#: src/components/systems-table/systems-table.tsx:562
 msgid "Delete"
 msgstr "Supprimer"
 
-#: src/components/systems-table/systems-table.tsx:166
+#: src/components/systems-table/systems-table.tsx:173
 msgid "Disk"
 msgstr "Disque"
 
@@ -358,7 +356,7 @@ msgid "Failed to update alert"
 msgstr "Échec de la mise à jour de l'alerte"
 
 #: src/components/routes/system.tsx:596
-#: src/components/systems-table/systems-table.tsx:324
+#: src/components/systems-table/systems-table.tsx:273
 msgid "Filter..."
 msgstr "Filtrer..."
 
@@ -380,6 +378,10 @@ msgstr "Général"
 msgid "GPU Power Draw"
 msgstr ""
 
+#: src/components/systems-table/systems-table.tsx:300
+msgid "Grid"
+msgstr "Grille"
+
 #: src/components/add-system.tsx:120
 msgid "Host / IP"
 msgstr "Hôte / IP"
@@ -400,6 +402,10 @@ msgstr "Noyau"
 #: src/components/routes/settings/general.tsx:45
 msgid "Language"
 msgstr "Langue"
+
+#: src/components/systems-table/systems-table.tsx:286
+msgid "Layout"
+msgstr "Disposition"
 
 #. Light theme
 #: src/components/mode-toggle.tsx:16
@@ -437,7 +443,7 @@ msgstr "Gérer les préférences d'affichage et de notification."
 msgid "Max 1 min"
 msgstr "Max 1 min"
 
-#: src/components/systems-table/systems-table.tsx:159
+#: src/components/systems-table/systems-table.tsx:165
 msgid "Memory"
 msgstr "Mémoire"
 
@@ -454,7 +460,7 @@ msgstr "Utilisation de la mémoire des conteneurs Docker"
 msgid "Name"
 msgstr "Nom"
 
-#: src/components/systems-table/systems-table.tsx:173
+#: src/components/systems-table/systems-table.tsx:181
 msgid "Net"
 msgstr "Net"
 
@@ -470,7 +476,8 @@ msgstr "Trafic réseau des interfaces publiques"
 msgid "No results found."
 msgstr "Aucun résultat trouvé."
 
-#: src/components/systems-table/systems-table.tsx:400
+#: src/components/systems-table/systems-table.tsx:421
+#: src/components/systems-table/systems-table.tsx:494
 msgid "No systems found."
 msgstr "Aucun système trouvé."
 
@@ -488,7 +495,7 @@ msgstr "Support OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "À chaque redémarrage, les systèmes dans la base de données seront mis à jour pour correspondre aux systèmes définis dans le fichier."
 
-#: src/components/systems-table/systems-table.tsx:219
+#: src/components/systems-table/systems-table.tsx:528
 msgid "Open menu"
 msgstr "Ouvrir le menu"
 
@@ -515,13 +522,13 @@ msgstr "Mot de passe"
 
 #: src/components/login/auth-form.tsx:17
 msgid "Password must be at least 8 characters."
-msgstr ""
+msgstr "Le mot de passe doit contenir au moins 8 caractères."
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
 msgstr "Demande de réinitialisation du mot de passe reçue"
 
-#: src/components/systems-table/systems-table.tsx:241
+#: src/components/systems-table/systems-table.tsx:550
 msgid "Pause"
 msgstr "Pause"
 
@@ -591,7 +598,7 @@ msgstr "Reçu"
 msgid "Reset Password"
 msgstr "Réinitialiser le mot de passe"
 
-#: src/components/systems-table/systems-table.tsx:236
+#: src/components/systems-table/systems-table.tsx:545
 msgid "Resume"
 msgstr "Reprendre"
 
@@ -645,6 +652,10 @@ msgstr "Se connecter"
 msgid "SMTP settings"
 msgstr "Paramètres SMTP"
 
+#: src/components/systems-table/systems-table.tsx:308
+msgid "Sort By"
+msgstr "Trier par"
+
 #: src/lib/utils.ts:282
 msgid "Status"
 msgstr "Statut"
@@ -659,8 +670,10 @@ msgstr "Utilisation du swap"
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
-#: src/components/systems-table/systems-table.tsx:110
-#: src/components/systems-table/systems-table.tsx:121
+#: src/components/systems-table/systems-table.tsx:117
+#: src/components/systems-table/systems-table.tsx:125
+#: src/components/systems-table/systems-table.tsx:136
+#: src/components/systems-table/systems-table.tsx:465
 msgid "System"
 msgstr "Système"
 
@@ -671,6 +684,10 @@ msgstr "Systèmes"
 #: src/components/routes/settings/config-yaml.tsx:55
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "Les systèmes peuvent être gérés dans un fichier <0>config.yml</0> à l'intérieur de votre répertoire de données."
+
+#: src/components/systems-table/systems-table.tsx:296
+msgid "Table"
+msgstr "Tableau"
 
 #: src/components/routes/system.tsx:484
 #: src/lib/utils.ts:314
@@ -701,7 +718,7 @@ msgstr "L'agent doit être en cours d'exécution sur le système pour se connect
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Ensuite, connectez-vous au backend et réinitialisez le mot de passe de votre compte utilisateur dans la table des utilisateurs."
 
-#: src/components/systems-table/systems-table.tsx:264
+#: src/components/systems-table/systems-table.tsx:573
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Cette action ne peut pas être annulée. Cela supprimera définitivement tous les enregistrements actuels pour {name} de la base de données."
 
@@ -750,7 +767,7 @@ msgstr "Déclenchement lorsque le statut passe d'opérationnel à indisponible"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Déclenchement lorsque l'utilisation de tout disque dépasse un seuil"
 
-#: src/components/systems-table/systems-table.tsx:320
+#: src/components/systems-table/systems-table.tsx:269
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Mis à jour en temps réel. Cliquez sur un système pour voir les informations."
 
@@ -778,6 +795,14 @@ msgstr "Utilisé"
 #: src/components/navbar.tsx:69
 msgid "Users"
 msgstr "Utilisateurs"
+
+#: src/components/systems-table/systems-table.tsx:278
+msgid "View"
+msgstr "Vue"
+
+#: src/components/systems-table/systems-table.tsx:342
+msgid "Visible Fields"
+msgstr "Colonnes visibles"
 
 #: src/components/routes/system.tsx:662
 msgid "Waiting for enough records to display"
@@ -808,4 +833,3 @@ msgstr "Configuration YAML"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "Vos paramètres utilisateur ont été mis à jour."
-

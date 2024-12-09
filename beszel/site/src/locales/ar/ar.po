@@ -47,7 +47,10 @@ msgid "30 days"
 msgstr "30 يومًا"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx:207
+#: src/components/systems-table/systems-table.tsx:227
+#: src/components/systems-table/systems-table.tsx:313
+#: src/components/systems-table/systems-table.tsx:455
+#: src/components/systems-table/systems-table.tsx:465
 msgid "Actions"
 msgstr "إجراءات"
 
@@ -84,7 +87,7 @@ msgstr "تعديل خيارات العرض للرسوم البيانية."
 msgid "Admin"
 msgstr "مسؤول"
 
-#: src/components/systems-table/systems-table.tsx:186
+#: src/components/systems-table/systems-table.tsx:201
 msgid "Agent"
 msgstr "وكيل"
 
@@ -94,11 +97,11 @@ msgid "Alerts"
 msgstr "التنبيهات"
 
 #: src/components/alerts/alert-button.tsx:88
-#: src/components/systems-table/systems-table.tsx:317
+#: src/components/systems-table/systems-table.tsx:266
 msgid "All Systems"
 msgstr "جميع الأنظمة"
 
-#: src/components/systems-table/systems-table.tsx:261
+#: src/components/systems-table/systems-table.tsx:570
 msgid "Are you sure you want to delete {name}?"
 msgstr "هل أنت متأكد أنك تريد حذف {name}؟"
 
@@ -156,7 +159,7 @@ msgstr "ثنائي"
 msgid "Cache / Buffers"
 msgstr "ذاكرة التخزين المؤقت / المخازن المؤقتة"
 
-#: src/components/systems-table/systems-table.tsx:272
+#: src/components/systems-table/systems-table.tsx:581
 msgid "Cancel"
 msgstr "إلغاء"
 
@@ -188,11 +191,6 @@ msgstr "تحقق من خدمة الإشعارات الخاصة بك"
 msgid "Click to copy"
 msgstr "انقر للنسخ"
 
-#. Context: table columns
-#: src/components/systems-table/systems-table.tsx:328
-msgid "Columns"
-msgstr "أعمدة"
-
 #: src/components/login/forgot-pass-form.tsx:83
 #: src/components/login/forgot-pass-form.tsx:89
 msgid "Command line instructions"
@@ -207,7 +205,7 @@ msgstr "قم بتكوين كيفية تلقي إشعارات التنبيه."
 msgid "Confirm password"
 msgstr "تأكيد كلمة المرور"
 
-#: src/components/systems-table/systems-table.tsx:278
+#: src/components/systems-table/systems-table.tsx:587
 msgid "Continue"
 msgstr "متابعة"
 
@@ -219,7 +217,7 @@ msgstr "تم النسخ إلى الحافظة"
 msgid "Copy"
 msgstr "نسخ"
 
-#: src/components/systems-table/systems-table.tsx:247
+#: src/components/systems-table/systems-table.tsx:556
 msgid "Copy host"
 msgstr "نسخ المضيف"
 
@@ -231,7 +229,7 @@ msgstr "نسخ أمر لينكس"
 msgid "Copy text"
 msgstr "نسخ النص"
 
-#: src/components/systems-table/systems-table.tsx:152
+#: src/components/systems-table/systems-table.tsx:157
 msgid "CPU"
 msgstr "المعالج"
 
@@ -259,11 +257,11 @@ msgstr "لوحة التحكم"
 msgid "Default time period"
 msgstr "الفترة الزمنية الافتراضية"
 
-#: src/components/systems-table/systems-table.tsx:253
+#: src/components/systems-table/systems-table.tsx:562
 msgid "Delete"
 msgstr "حذف"
 
-#: src/components/systems-table/systems-table.tsx:166
+#: src/components/systems-table/systems-table.tsx:173
 msgid "Disk"
 msgstr "القرص"
 
@@ -358,7 +356,7 @@ msgid "Failed to update alert"
 msgstr "فشل في تحديث التنبيه"
 
 #: src/components/routes/system.tsx:596
-#: src/components/systems-table/systems-table.tsx:324
+#: src/components/systems-table/systems-table.tsx:273
 msgid "Filter..."
 msgstr "تصفية..."
 
@@ -380,6 +378,10 @@ msgstr "عام"
 msgid "GPU Power Draw"
 msgstr "استهلاك طاقة GPU"
 
+#: src/components/systems-table/systems-table.tsx:300
+msgid "Grid"
+msgstr "شبكة"
+
 #: src/components/add-system.tsx:120
 msgid "Host / IP"
 msgstr "مضيف / IP"
@@ -400,6 +402,10 @@ msgstr "كيرنل"
 #: src/components/routes/settings/general.tsx:45
 msgid "Language"
 msgstr "اللغة"
+
+#: src/components/systems-table/systems-table.tsx:286
+msgid "Layout"
+msgstr "التخطيط"
 
 #. Light theme
 #: src/components/mode-toggle.tsx:16
@@ -437,7 +443,7 @@ msgstr "إدارة تفضيلات العرض والإشعارات."
 msgid "Max 1 min"
 msgstr "1 دقيقة كحد"
 
-#: src/components/systems-table/systems-table.tsx:159
+#: src/components/systems-table/systems-table.tsx:165
 msgid "Memory"
 msgstr "الذاكرة"
 
@@ -454,7 +460,7 @@ msgstr "استخدام الذاكرة لحاويات Docker"
 msgid "Name"
 msgstr "الاسم"
 
-#: src/components/systems-table/systems-table.tsx:173
+#: src/components/systems-table/systems-table.tsx:181
 msgid "Net"
 msgstr "الشبكة"
 
@@ -470,7 +476,8 @@ msgstr "حركة مرور الشبكة للواجهات العامة"
 msgid "No results found."
 msgstr "لم يتم العثور على نتائج."
 
-#: src/components/systems-table/systems-table.tsx:400
+#: src/components/systems-table/systems-table.tsx:421
+#: src/components/systems-table/systems-table.tsx:494
 msgid "No systems found."
 msgstr "لم يتم العثور على أنظمة."
 
@@ -488,7 +495,7 @@ msgstr "دعم OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "في كل إعادة تشغيل، سيتم تحديث الأنظمة في قاعدة البيانات لتتطابق مع الأنظمة المعرفة في الملف."
 
-#: src/components/systems-table/systems-table.tsx:219
+#: src/components/systems-table/systems-table.tsx:528
 msgid "Open menu"
 msgstr "فتح القائمة"
 
@@ -521,7 +528,7 @@ msgstr "كلمة المرور يجب أن تتكون من 8 أحرف على ال
 msgid "Password reset request received"
 msgstr "تم استلام طلب إعادة تعيين كلمة المرور"
 
-#: src/components/systems-table/systems-table.tsx:241
+#: src/components/systems-table/systems-table.tsx:550
 msgid "Pause"
 msgstr "إيقاف مؤقت"
 
@@ -591,7 +598,7 @@ msgstr "تم الاستلام"
 msgid "Reset Password"
 msgstr "إعادة تعيين كلمة المرور"
 
-#: src/components/systems-table/systems-table.tsx:236
+#: src/components/systems-table/systems-table.tsx:545
 msgid "Resume"
 msgstr "استئناف"
 
@@ -645,6 +652,10 @@ msgstr "تسجيل الدخول"
 msgid "SMTP settings"
 msgstr "إعدادات SMTP"
 
+#: src/components/systems-table/systems-table.tsx:308
+msgid "Sort By"
+msgstr "الترتيب حسب"
+
 #: src/lib/utils.ts:282
 msgid "Status"
 msgstr "الحالة"
@@ -659,8 +670,10 @@ msgstr "استخدام التبديل"
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
-#: src/components/systems-table/systems-table.tsx:110
-#: src/components/systems-table/systems-table.tsx:121
+#: src/components/systems-table/systems-table.tsx:117
+#: src/components/systems-table/systems-table.tsx:125
+#: src/components/systems-table/systems-table.tsx:136
+#: src/components/systems-table/systems-table.tsx:465
 msgid "System"
 msgstr "النظام"
 
@@ -671,6 +684,10 @@ msgstr "الأنظمة"
 #: src/components/routes/settings/config-yaml.tsx:55
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "يمكن إدارة الأنظمة في ملف <0>config.yml</0> داخل دليل البيانات الخاص بك."
+
+#: src/components/systems-table/systems-table.tsx:296
+msgid "Table"
+msgstr "جدول"
 
 #: src/components/routes/system.tsx:484
 #: src/lib/utils.ts:314
@@ -701,7 +718,7 @@ msgstr "يجب أن يكون الوكيل قيد التشغيل على النظ�
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "ثم قم بتسجيل الدخول إلى الواجهة الخلفية وأعد تعيين كلمة مرور حساب المستخدم الخاص بك في جدول المستخدمين."
 
-#: src/components/systems-table/systems-table.tsx:264
+#: src/components/systems-table/systems-table.tsx:573
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "لا يمكن التراجع عن هذا الإجراء. سيؤدي ذلك إلى حذف جميع السجلات الحالية لـ {name} من قاعدة البيانات بشكل دائم."
 
@@ -750,7 +767,7 @@ msgstr "يتم التفعيل عندما يتغير الحالة بين التش
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز استخدام أي قرص عتبة معينة"
 
-#: src/components/systems-table/systems-table.tsx:320
+#: src/components/systems-table/systems-table.tsx:269
 msgid "Updated in real time. Click on a system to view information."
 msgstr "محدث في الوقت الحقيقي. انقر على نظام لعرض المعلومات."
 
@@ -778,6 +795,14 @@ msgstr "مستخدم"
 #: src/components/navbar.tsx:69
 msgid "Users"
 msgstr "المستخدمون"
+
+#: src/components/systems-table/systems-table.tsx:278
+msgid "View"
+msgstr "عرض"
+
+#: src/components/systems-table/systems-table.tsx:342
+msgid "Visible Fields"
+msgstr "الأعمدة الظاهرة"
 
 #: src/components/routes/system.tsx:662
 msgid "Waiting for enough records to display"
@@ -808,4 +833,3 @@ msgstr "تكوين YAML"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "تم تحديث إعدادات المستخدم الخاصة بك."
-

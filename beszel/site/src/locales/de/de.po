@@ -47,7 +47,10 @@ msgid "30 days"
 msgstr "30 Tage"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx:207
+#: src/components/systems-table/systems-table.tsx:227
+#: src/components/systems-table/systems-table.tsx:313
+#: src/components/systems-table/systems-table.tsx:455
+#: src/components/systems-table/systems-table.tsx:465
 msgid "Actions"
 msgstr "Aktionen"
 
@@ -84,7 +87,7 @@ msgstr "Anzeigeoptionen für Diagramme anpassen."
 msgid "Admin"
 msgstr "Admin"
 
-#: src/components/systems-table/systems-table.tsx:186
+#: src/components/systems-table/systems-table.tsx:201
 msgid "Agent"
 msgstr "Agent"
 
@@ -94,11 +97,11 @@ msgid "Alerts"
 msgstr "Warnungen"
 
 #: src/components/alerts/alert-button.tsx:88
-#: src/components/systems-table/systems-table.tsx:317
+#: src/components/systems-table/systems-table.tsx:266
 msgid "All Systems"
 msgstr "Alle Systeme"
 
-#: src/components/systems-table/systems-table.tsx:261
+#: src/components/systems-table/systems-table.tsx:570
 msgid "Are you sure you want to delete {name}?"
 msgstr "Möchten Sie {name} wirklich löschen?"
 
@@ -156,7 +159,7 @@ msgstr "Binär"
 msgid "Cache / Buffers"
 msgstr "Cache / Puffer"
 
-#: src/components/systems-table/systems-table.tsx:272
+#: src/components/systems-table/systems-table.tsx:581
 msgid "Cancel"
 msgstr "Abbrechen"
 
@@ -188,11 +191,6 @@ msgstr "Überprüfen Sie Ihren Benachrichtigungsdienst"
 msgid "Click to copy"
 msgstr "Zum Kopieren klicken"
 
-#. Context: table columns
-#: src/components/systems-table/systems-table.tsx:328
-msgid "Columns"
-msgstr "Spalten"
-
 #: src/components/login/forgot-pass-form.tsx:83
 #: src/components/login/forgot-pass-form.tsx:89
 msgid "Command line instructions"
@@ -207,7 +205,7 @@ msgstr "Konfigurieren Sie, wie Sie Warnbenachrichtigungen erhalten."
 msgid "Confirm password"
 msgstr "Passwort bestätigen"
 
-#: src/components/systems-table/systems-table.tsx:278
+#: src/components/systems-table/systems-table.tsx:587
 msgid "Continue"
 msgstr "Fortfahren"
 
@@ -219,7 +217,7 @@ msgstr "In die Zwischenablage kopiert"
 msgid "Copy"
 msgstr "Kopieren"
 
-#: src/components/systems-table/systems-table.tsx:247
+#: src/components/systems-table/systems-table.tsx:556
 msgid "Copy host"
 msgstr "Host kopieren"
 
@@ -231,7 +229,7 @@ msgstr "Linux-Befehl kopieren"
 msgid "Copy text"
 msgstr "Text kopieren"
 
-#: src/components/systems-table/systems-table.tsx:152
+#: src/components/systems-table/systems-table.tsx:157
 msgid "CPU"
 msgstr "CPU"
 
@@ -259,11 +257,11 @@ msgstr "Dashboard"
 msgid "Default time period"
 msgstr "Standardzeitraum"
 
-#: src/components/systems-table/systems-table.tsx:253
+#: src/components/systems-table/systems-table.tsx:562
 msgid "Delete"
 msgstr "Löschen"
 
-#: src/components/systems-table/systems-table.tsx:166
+#: src/components/systems-table/systems-table.tsx:173
 msgid "Disk"
 msgstr "Festplatte"
 
@@ -358,7 +356,7 @@ msgid "Failed to update alert"
 msgstr "Warnung konnte nicht aktualisiert werden"
 
 #: src/components/routes/system.tsx:596
-#: src/components/systems-table/systems-table.tsx:324
+#: src/components/systems-table/systems-table.tsx:273
 msgid "Filter..."
 msgstr "Filter..."
 
@@ -380,6 +378,10 @@ msgstr "Allgemein"
 msgid "GPU Power Draw"
 msgstr "GPU-Leistungsaufnahme"
 
+#: src/components/systems-table/systems-table.tsx:300
+msgid "Grid"
+msgstr "Raster"
+
 #: src/components/add-system.tsx:120
 msgid "Host / IP"
 msgstr "Host / IP"
@@ -400,6 +402,10 @@ msgstr "Kernel"
 #: src/components/routes/settings/general.tsx:45
 msgid "Language"
 msgstr "Sprache"
+
+#: src/components/systems-table/systems-table.tsx:286
+msgid "Layout"
+msgstr "Layout"
 
 #. Light theme
 #: src/components/mode-toggle.tsx:16
@@ -437,7 +443,7 @@ msgstr "Anzeige- und Benachrichtigungseinstellungen verwalten."
 msgid "Max 1 min"
 msgstr "Max 1 Min"
 
-#: src/components/systems-table/systems-table.tsx:159
+#: src/components/systems-table/systems-table.tsx:165
 msgid "Memory"
 msgstr "Speicher"
 
@@ -454,7 +460,7 @@ msgstr "Speichernutzung der Docker-Container"
 msgid "Name"
 msgstr "Name"
 
-#: src/components/systems-table/systems-table.tsx:173
+#: src/components/systems-table/systems-table.tsx:181
 msgid "Net"
 msgstr "Netz"
 
@@ -470,7 +476,8 @@ msgstr "Netzwerkverkehr der öffentlichen Schnittstellen"
 msgid "No results found."
 msgstr "Keine Ergebnisse gefunden."
 
-#: src/components/systems-table/systems-table.tsx:400
+#: src/components/systems-table/systems-table.tsx:421
+#: src/components/systems-table/systems-table.tsx:494
 msgid "No systems found."
 msgstr "Keine Systeme gefunden."
 
@@ -488,7 +495,7 @@ msgstr "OAuth 2 / OIDC-Unterstützung"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Bei jedem Neustart werden die Systeme in der Datenbank aktualisiert, um den im Datei definierten Systemen zu entsprechen."
 
-#: src/components/systems-table/systems-table.tsx:219
+#: src/components/systems-table/systems-table.tsx:528
 msgid "Open menu"
 msgstr "Menü öffnen"
 
@@ -521,7 +528,7 @@ msgstr "Das Passwort muss mindestens 8 Zeichen haben."
 msgid "Password reset request received"
 msgstr "Anfrage zum Zurücksetzen des Passworts erhalten"
 
-#: src/components/systems-table/systems-table.tsx:241
+#: src/components/systems-table/systems-table.tsx:550
 msgid "Pause"
 msgstr "Pause"
 
@@ -591,7 +598,7 @@ msgstr "Empfangen"
 msgid "Reset Password"
 msgstr "Passwort zurücksetzen"
 
-#: src/components/systems-table/systems-table.tsx:236
+#: src/components/systems-table/systems-table.tsx:545
 msgid "Resume"
 msgstr "Fortsetzen"
 
@@ -645,6 +652,10 @@ msgstr "Anmelden"
 msgid "SMTP settings"
 msgstr "SMTP-Einstellungen"
 
+#: src/components/systems-table/systems-table.tsx:308
+msgid "Sort By"
+msgstr "Sortieren nach"
+
 #: src/lib/utils.ts:282
 msgid "Status"
 msgstr "Status"
@@ -659,8 +670,10 @@ msgstr "Swap-Nutzung"
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
-#: src/components/systems-table/systems-table.tsx:110
-#: src/components/systems-table/systems-table.tsx:121
+#: src/components/systems-table/systems-table.tsx:117
+#: src/components/systems-table/systems-table.tsx:125
+#: src/components/systems-table/systems-table.tsx:136
+#: src/components/systems-table/systems-table.tsx:465
 msgid "System"
 msgstr "System"
 
@@ -671,6 +684,10 @@ msgstr "Systeme"
 #: src/components/routes/settings/config-yaml.tsx:55
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "Systeme können in einer <0>config.yml</0>-Datei in Ihrem Datenverzeichnis verwaltet werden."
+
+#: src/components/systems-table/systems-table.tsx:296
+msgid "Table"
+msgstr "Tabelle"
 
 #: src/components/routes/system.tsx:484
 #: src/lib/utils.ts:314
@@ -701,7 +718,7 @@ msgstr "Der Agent muss auf dem System laufen, um eine Verbindung herzustellen. K
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Melden Sie sich dann im Backend an und setzen Sie Ihr Benutzerkontopasswort in der Benutzertabelle zurück."
 
-#: src/components/systems-table/systems-table.tsx:264
+#: src/components/systems-table/systems-table.tsx:573
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Diese Aktion kann nicht rückgängig gemacht werden. Dadurch werden alle aktuellen Datensätze für {name} dauerhaft aus der Datenbank gelöscht."
 
@@ -750,7 +767,7 @@ msgstr "Löst aus, wenn der Status zwischen oben und unten wechselt"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Löst aus, wenn die Nutzung einer Festplatte einen Schwellenwert überschreitet"
 
-#: src/components/systems-table/systems-table.tsx:320
+#: src/components/systems-table/systems-table.tsx:269
 msgid "Updated in real time. Click on a system to view information."
 msgstr "In Echtzeit aktualisiert. Klicken Sie auf ein System, um Informationen anzuzeigen."
 
@@ -778,6 +795,14 @@ msgstr "Verwendet"
 #: src/components/navbar.tsx:69
 msgid "Users"
 msgstr "Benutzer"
+
+#: src/components/systems-table/systems-table.tsx:278
+msgid "View"
+msgstr "Ansicht"
+
+#: src/components/systems-table/systems-table.tsx:342
+msgid "Visible Fields"
+msgstr "Sichtbare Spalten"
 
 #: src/components/routes/system.tsx:662
 msgid "Waiting for enough records to display"
@@ -808,4 +833,3 @@ msgstr "YAML-Konfiguration"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "Ihre Benutzereinstellungen wurden aktualisiert."
-

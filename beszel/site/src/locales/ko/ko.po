@@ -47,7 +47,10 @@ msgid "30 days"
 msgstr "30일"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx:207
+#: src/components/systems-table/systems-table.tsx:227
+#: src/components/systems-table/systems-table.tsx:313
+#: src/components/systems-table/systems-table.tsx:455
+#: src/components/systems-table/systems-table.tsx:465
 msgid "Actions"
 msgstr "작업"
 
@@ -84,7 +87,7 @@ msgstr "차트의 표시 옵션 조정."
 msgid "Admin"
 msgstr "관리자"
 
-#: src/components/systems-table/systems-table.tsx:186
+#: src/components/systems-table/systems-table.tsx:201
 msgid "Agent"
 msgstr "에이젠"
 
@@ -94,11 +97,11 @@ msgid "Alerts"
 msgstr "경고"
 
 #: src/components/alerts/alert-button.tsx:88
-#: src/components/systems-table/systems-table.tsx:317
+#: src/components/systems-table/systems-table.tsx:266
 msgid "All Systems"
 msgstr "모든 시스템"
 
-#: src/components/systems-table/systems-table.tsx:261
+#: src/components/systems-table/systems-table.tsx:570
 msgid "Are you sure you want to delete {name}?"
 msgstr "{name}을(를) 삭제하시겠습니까?"
 
@@ -156,7 +159,7 @@ msgstr "이진"
 msgid "Cache / Buffers"
 msgstr "캐시 / 버퍼"
 
-#: src/components/systems-table/systems-table.tsx:272
+#: src/components/systems-table/systems-table.tsx:581
 msgid "Cancel"
 msgstr "취소"
 
@@ -188,11 +191,6 @@ msgstr "알림 서비스를 확인하세요."
 msgid "Click to copy"
 msgstr "클릭하여 복사"
 
-#. Context: table columns
-#: src/components/systems-table/systems-table.tsx:328
-msgid "Columns"
-msgstr "열"
-
 #: src/components/login/forgot-pass-form.tsx:83
 #: src/components/login/forgot-pass-form.tsx:89
 msgid "Command line instructions"
@@ -207,7 +205,7 @@ msgstr "경고 알림을 받는 방법을 구성하세요."
 msgid "Confirm password"
 msgstr "비밀번호 확인"
 
-#: src/components/systems-table/systems-table.tsx:278
+#: src/components/systems-table/systems-table.tsx:587
 msgid "Continue"
 msgstr "계속"
 
@@ -219,7 +217,7 @@ msgstr "클립보드에 복사됨"
 msgid "Copy"
 msgstr "복사"
 
-#: src/components/systems-table/systems-table.tsx:247
+#: src/components/systems-table/systems-table.tsx:556
 msgid "Copy host"
 msgstr "호스트 복사"
 
@@ -231,7 +229,7 @@ msgstr "리눅스 명령 복사"
 msgid "Copy text"
 msgstr "텍스트 복사"
 
-#: src/components/systems-table/systems-table.tsx:152
+#: src/components/systems-table/systems-table.tsx:157
 msgid "CPU"
 msgstr "CPU"
 
@@ -259,11 +257,11 @@ msgstr "대시보드"
 msgid "Default time period"
 msgstr "기본 시간 기간"
 
-#: src/components/systems-table/systems-table.tsx:253
+#: src/components/systems-table/systems-table.tsx:562
 msgid "Delete"
 msgstr "삭제"
 
-#: src/components/systems-table/systems-table.tsx:166
+#: src/components/systems-table/systems-table.tsx:173
 msgid "Disk"
 msgstr "디스크"
 
@@ -358,7 +356,7 @@ msgid "Failed to update alert"
 msgstr "경고 업데이트 실패"
 
 #: src/components/routes/system.tsx:596
-#: src/components/systems-table/systems-table.tsx:324
+#: src/components/systems-table/systems-table.tsx:273
 msgid "Filter..."
 msgstr "필터..."
 
@@ -380,6 +378,10 @@ msgstr "일반"
 msgid "GPU Power Draw"
 msgstr ""
 
+#: src/components/systems-table/systems-table.tsx:300
+msgid "Grid"
+msgstr "그리드"
+
 #: src/components/add-system.tsx:120
 msgid "Host / IP"
 msgstr "호스트 / IP"
@@ -400,6 +402,10 @@ msgstr "커널"
 #: src/components/routes/settings/general.tsx:45
 msgid "Language"
 msgstr "언어"
+
+#: src/components/systems-table/systems-table.tsx:286
+msgid "Layout"
+msgstr "레이아웃"
 
 #. Light theme
 #: src/components/mode-toggle.tsx:16
@@ -437,7 +443,7 @@ msgstr "디스플레이 및 알림 환경설정을 관리하세요."
 msgid "Max 1 min"
 msgstr "최대 1분"
 
-#: src/components/systems-table/systems-table.tsx:159
+#: src/components/systems-table/systems-table.tsx:165
 msgid "Memory"
 msgstr "메모리"
 
@@ -454,7 +460,7 @@ msgstr "도커 컨테이너의 메모리 사용량"
 msgid "Name"
 msgstr "이름"
 
-#: src/components/systems-table/systems-table.tsx:173
+#: src/components/systems-table/systems-table.tsx:181
 msgid "Net"
 msgstr "네트"
 
@@ -470,7 +476,8 @@ msgstr "공용 인터페이스의 네트워크 트래픽"
 msgid "No results found."
 msgstr "결과가 없습니다."
 
-#: src/components/systems-table/systems-table.tsx:400
+#: src/components/systems-table/systems-table.tsx:421
+#: src/components/systems-table/systems-table.tsx:494
 msgid "No systems found."
 msgstr "시스템을 찾을 수 없습니다."
 
@@ -488,7 +495,7 @@ msgstr "OAuth 2 / OIDC 지원"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "각 재시작 시, 데이터베이스의 시스템이 파일에 정의된 시스템과 일치하도록 업데이트됩니다."
 
-#: src/components/systems-table/systems-table.tsx:219
+#: src/components/systems-table/systems-table.tsx:528
 msgid "Open menu"
 msgstr "메뉴 열기"
 
@@ -515,13 +522,13 @@ msgstr "비밀번호"
 
 #: src/components/login/auth-form.tsx:17
 msgid "Password must be at least 8 characters."
-msgstr ""
+msgstr "비밀번호는 최소 8자 이상이어야 합니다."
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
 msgstr "비밀번호 재설정 요청이 접수되었습니다"
 
-#: src/components/systems-table/systems-table.tsx:241
+#: src/components/systems-table/systems-table.tsx:550
 msgid "Pause"
 msgstr "일시 중지"
 
@@ -591,7 +598,7 @@ msgstr "수신됨"
 msgid "Reset Password"
 msgstr "비밀번호 재설정"
 
-#: src/components/systems-table/systems-table.tsx:236
+#: src/components/systems-table/systems-table.tsx:545
 msgid "Resume"
 msgstr "재개"
 
@@ -645,6 +652,10 @@ msgstr "로그인"
 msgid "SMTP settings"
 msgstr "SMTP 설정"
 
+#: src/components/systems-table/systems-table.tsx:308
+msgid "Sort By"
+msgstr "정렬 기준"
+
 #: src/lib/utils.ts:282
 msgid "Status"
 msgstr "상태"
@@ -659,8 +670,10 @@ msgstr "스왑 사용량"
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
-#: src/components/systems-table/systems-table.tsx:110
-#: src/components/systems-table/systems-table.tsx:121
+#: src/components/systems-table/systems-table.tsx:117
+#: src/components/systems-table/systems-table.tsx:125
+#: src/components/systems-table/systems-table.tsx:136
+#: src/components/systems-table/systems-table.tsx:465
 msgid "System"
 msgstr "시스템"
 
@@ -671,6 +684,10 @@ msgstr "시스템"
 #: src/components/routes/settings/config-yaml.tsx:55
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "시스템은 데이터 디렉토리 내의 <0>config.yml</0> 파일에서 관리할 수 있습니다."
+
+#: src/components/systems-table/systems-table.tsx:296
+msgid "Table"
+msgstr "테이블"
 
 #: src/components/routes/system.tsx:484
 #: src/lib/utils.ts:314
@@ -701,7 +718,7 @@ msgstr "에이전트가 시스템에서 실행 중이어야 연결할 수 있습
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "그런 다음 백엔드에 로그인하여 사용자 테이블에서 사용자 계정 비밀번호를 재설정하세요."
 
-#: src/components/systems-table/systems-table.tsx:264
+#: src/components/systems-table/systems-table.tsx:573
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "이 작업은 되돌릴 수 없습니다. 데이터베이스에서 {name}에 대한 모든 현재 기록이 영구적으로 삭제됩니다."
 
@@ -750,7 +767,7 @@ msgstr "상태가 상승과 하강 사이에서 전환될 때 트리거됩니다
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "디스크 사용량이 임계값을 초과할 때 트리거됩니다."
 
-#: src/components/systems-table/systems-table.tsx:320
+#: src/components/systems-table/systems-table.tsx:269
 msgid "Updated in real time. Click on a system to view information."
 msgstr "실시간으로 업데이트됩니다. 시스템을 클릭하여 정보를 확인하세요."
 
@@ -778,6 +795,14 @@ msgstr "사용됨"
 #: src/components/navbar.tsx:69
 msgid "Users"
 msgstr "사용자"
+
+#: src/components/systems-table/systems-table.tsx:278
+msgid "View"
+msgstr "보기"
+
+#: src/components/systems-table/systems-table.tsx:342
+msgid "Visible Fields"
+msgstr "표시 열"
 
 #: src/components/routes/system.tsx:662
 msgid "Waiting for enough records to display"
@@ -808,4 +833,3 @@ msgstr "YAML 구성"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "사용자 설정이 업데이트되었습니다."
-
