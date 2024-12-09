@@ -8,7 +8,7 @@ msgstr ""
 "Language: nl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-12-01 23:39\n"
+"PO-Revision-Date: 2024-12-09 00:41\n"
 "Last-Translator: \n"
 "Language-Team: Dutch\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -515,7 +515,7 @@ msgstr "Wachtwoord"
 
 #: src/components/login/auth-form.tsx:17
 msgid "Password must be at least 8 characters."
-msgstr ""
+msgstr "Het wachtwoord moet minimaal 8 tekens bevatten."
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
