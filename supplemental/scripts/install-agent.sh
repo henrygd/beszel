@@ -82,28 +82,52 @@ done
 
 # Uninstall process
 if [ "$UNINSTALL" = true ]; then
-  echo "Stopping and disabling the agent service..."
-  systemctl stop beszel-agent.service
-  systemctl disable beszel-agent.service
+  if is_alpine; then
+    echo "Stopping and disabling the agent service..."
+    rc-service beszel-agent stop
+    rc-update del beszel-agent default
 
-  echo "Removing the systemd service file..."
-  rm /etc/systemd/system/beszel-agent.service
+    echo "Removing the OpenRC service files..."
+    rm -f /etc/init.d/beszel-agent
 
-  # Remove the update timer and service if they exist
-  echo "Removing the daily update service and timer..."
-  systemctl stop beszel-agent-update.timer 2>/dev/null
-  systemctl disable beszel-agent-update.timer 2>/dev/null
-  rm -f /etc/systemd/system/beszel-agent-update.service
-  rm -f /etc/systemd/system/beszel-agent-update.timer
+    # Remove the update service if it exists
+    echo "Removing the daily update service..."
+    rc-service beszel-agent-update stop 2>/dev/null
+    rc-update del beszel-agent-update default 2>/dev/null
+    rm -f /etc/init.d/beszel-agent-update
 
-  systemctl daemon-reload
+    # Remove log files
+    echo "Removing log files..."
+    rm -f /var/log/beszel-agent.log /var/log/beszel-agent.err
+
+  else
+    echo "Stopping and disabling the agent service..."
+    systemctl stop beszel-agent.service
+    systemctl disable beszel-agent.service
+
+    echo "Removing the systemd service file..."
+    rm /etc/systemd/system/beszel-agent.service
+
+    # Remove the update timer and service if they exist
+    echo "Removing the daily update service and timer..."
+    systemctl stop beszel-agent-update.timer 2>/dev/null
+    systemctl disable beszel-agent-update.timer 2>/dev/null
+    rm -f /etc/systemd/system/beszel-agent-update.service
+    rm -f /etc/systemd/system/beszel-agent-update.timer
+
+    systemctl daemon-reload
+  fi
 
   echo "Removing the Beszel Agent directory..."
   rm -rf /opt/beszel-agent
 
   echo "Removing the dedicated user for the agent service..."
-  killall beszel-agent
-  userdel beszel
+  killall beszel-agent 2>/dev/null
+  if is_alpine; then
+    deluser beszel 2>/dev/null
+  else
+    userdel beszel 2>/dev/null
+  fi
 
   echo "Beszel Agent has been uninstalled successfully!"
   exit 0
@@ -250,9 +274,14 @@ name="beszel-agent"
 description="Beszel Agent Service"
 command="/opt/beszel-agent/beszel-agent"
 command_user="beszel"
-supervisor="supervise-daemon"
+command_background="yes"
+pidfile="/run/\${RC_SVCNAME}.pid"
 output_log="/var/log/beszel-agent.log"
 error_log="/var/log/beszel-agent.err"
+
+start_pre() {
+    checkpath -f -m 0644 -o beszel:beszel "\$output_log" "\$error_log"
+}
 
 export PORT="$PORT"
 export KEY="$KEY"
@@ -265,7 +294,21 @@ EOF
 
   chmod +x /etc/init.d/beszel-agent
   rc-update add beszel-agent default
-  rc-service beszel-agent start
+  
+  # Create log files with proper permissions
+  touch /var/log/beszel-agent.log /var/log/beszel-agent.err
+  chown beszel:beszel /var/log/beszel-agent.log /var/log/beszel-agent.err
+  
+  # Start the service
+  rc-service beszel-agent restart
+
+  # Check if service started successfully
+  sleep 2
+  if ! rc-service beszel-agent status | grep -q "started"; then
+    echo "Error: The Beszel Agent service failed to start. Checking logs..."
+    tail -n 20 /var/log/beszel-agent.err
+    exit 1
+  fi
 
   # Auto-update service for Alpine
   printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
