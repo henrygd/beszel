@@ -8,7 +8,7 @@ msgstr ""
 "Language: ar\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-12-01 23:39\n"
+"PO-Revision-Date: 2024-12-09 00:41\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
@@ -120,7 +120,7 @@ msgstr "المتوسط يتجاوز <0>{value}{0}</0>"
 
 #: src/components/routes/system.tsx:497
 msgid "Average power consumption of GPUs"
-msgstr ""
+msgstr "متوسط ​​استهلاك طاقة GPUs"
 
 #: src/components/routes/system.tsx:385
 msgid "Average system-wide CPU utilization"
@@ -128,7 +128,7 @@ msgstr "متوسط استخدام وحدة المعالجة المركزية ع�
 
 #: src/components/routes/system.tsx:515
 msgid "Average utilization of {0}"
-msgstr ""
+msgstr "متوسط ​​استخدام {0}"
 
 #: src/components/command-palette.tsx:170
 #: src/components/navbar.tsx:93
@@ -378,7 +378,7 @@ msgstr "عام"
 
 #: src/components/routes/system.tsx:496
 msgid "GPU Power Draw"
-msgstr ""
+msgstr "استهلاك طاقة GPU"
 
 #: src/components/add-system.tsx:120
 msgid "Host / IP"
@@ -515,7 +515,7 @@ msgstr "كلمة المرور"
 
 #: src/components/login/auth-form.tsx:17
 msgid "Password must be at least 8 characters."
-msgstr ""
+msgstr "كلمة المرور يجب أن تتكون من 8 أحرف على الأقل."
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
