@@ -4,7 +4,7 @@ ARCH ?= $(shell go env GOARCH)
 # Skip building the web UI if true
 SKIP_WEB ?= false
 
-.PHONY: tidy build-agent build-hub build clean lint dev-server dev-agent dev-hub dev
+.PHONY: tidy build-agent build-hub build clean lint dev-server dev-agent dev-hub dev generate-locales
 .DEFAULT_GOAL := build
 
 clean:
@@ -34,15 +34,22 @@ build-hub: tidy $(if $(filter false,$(SKIP_WEB)),build-web-ui)
 
 build: build-agent build-hub
 
-dev-server:
+generate-locales:
+	@if [ ! -f ./site/src/locales/en/en.ts ]; then \
+		echo "Generating locales..."; \
+		command -v bun >/dev/null 2>&1 && cd ./site && bun install && bun run sync || cd ./site && npm install && npm run sync; \
+	fi
+
+dev-server: generate-locales
 	cd ./site
 	@if command -v bun >/dev/null 2>&1; then \
-		cd ./site && bun install && bun run dev; \
+		cd ./site && bun run dev; \
 	else \
-		cd ./site && npm install && npm run dev; \
+		cd ./site && npm run dev; \
 	fi
 
 dev-hub:
+	mkdir -p ./site/dist && touch ./site/dist/index.html
 	@if command -v entr >/dev/null 2>&1; then \
 		find ./cmd/hub/*.go ./internal/{alerts,hub,records,users}/*.go | entr -r -s "cd ./cmd/hub && go run . serve"; \
 	else \
