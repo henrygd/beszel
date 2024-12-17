@@ -25,6 +25,11 @@ export default [
 		e: "🇲🇽",
 	},
 	{
+		lang: "fa",
+		label: "فارسی",
+		e: "🇮🇷",
+	},
+	{
 		lang: "fr",
 		label: "Français",
 		e: "🇫🇷",
@@ -73,6 +78,11 @@ export default [
 		lang: "ru",
 		label: "Русский",
 		e: "🇷🇺",
+	},
+	{
+		lang: "se",
+		label: "Svenska",
+		e: "🇸🇪",
 	},
 	{
 		lang: "uk",

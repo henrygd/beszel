@@ -829,4 +829,3 @@ msgstr "Configuração YAML"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "As configurações do seu usuário foram atualizadas."
-

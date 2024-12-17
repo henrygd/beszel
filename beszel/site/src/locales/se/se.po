@@ -1,50 +1,45 @@
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2024-11-01 11:30-0400\n"
+"POT-Creation-Date: 2024-12-17 14:47-0500\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
-"Language: cs\n"
-"Project-Id-Version: beszel\n"
+"Language: se\n"
+"Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-12-09 22:36\n"
+"PO-Revision-Date: \n"
 "Last-Translator: \n"
-"Language-Team: Czech\n"
-"Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 3;\n"
-"X-Crowdin-Project: beszel\n"
-"X-Crowdin-Project-ID: 733311\n"
-"X-Crowdin-Language: cs\n"
-"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 16\n"
+"Language-Team: \n"
+"Plural-Forms: \n"
 
 #: src/components/routes/system.tsx:250
 msgid "{0, plural, one {# day} other {# days}}"
-msgstr "{0, plural, one {# den} few {# dny} other {# dní}}"
+msgstr "{0, plural, one {# dag} other {# dagar}}"
 
 #: src/components/routes/system.tsx:248
 msgid "{hours, plural, one {# hour} other {# hours}}"
-msgstr "{hours, plural, one {# Hodina} few {# Hodiny} many {# Hodin} other {# Hodin}}"
+msgstr "{hours, plural, one {# timme} other {# timmar}}"
 
 #: src/lib/utils.ts:139
 msgid "1 hour"
-msgstr "1 hodina"
+msgstr "1 timme"
 
 #: src/lib/utils.ts:162
 msgid "1 week"
-msgstr "1 týden"
+msgstr "1 vecka"
 
 #: src/lib/utils.ts:147
 msgid "12 hours"
-msgstr "12 hodin"
+msgstr "12 timmar"
 
 #: src/lib/utils.ts:155
 msgid "24 hours"
-msgstr "24 hodin"
+msgstr "24 timmar"
 
 #: src/lib/utils.ts:170
 msgid "30 days"
-msgstr "30 dní"
+msgstr "30 dagar"
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx:227
@@ -52,32 +47,32 @@ msgstr "30 dní"
 #: src/components/systems-table/systems-table.tsx:455
 #: src/components/systems-table/systems-table.tsx:465
 msgid "Actions"
-msgstr "Akce"
+msgstr "Åtgärder"
 
 #: src/components/routes/home.tsx:61
 msgid "Active Alerts"
-msgstr "Aktivní výstrahy"
+msgstr "Aktiva larm"
 
 #: src/components/add-system.tsx:78
 msgid "Add <0>System</0>"
-msgstr "Přidat <0>Systém</0>"
+msgstr "Lägg till <0>System</0>"
 
 #: src/components/add-system.tsx:87
 msgid "Add New System"
-msgstr "Přidat nový systém"
+msgstr "Lägg till nytt system"
 
 #: src/components/add-system.tsx:165
 #: src/components/add-system.tsx:176
 msgid "Add system"
-msgstr "Přidat systém"
+msgstr "Lägg till system"
 
 #: src/components/routes/settings/notifications.tsx:156
 msgid "Add URL"
-msgstr "Přidat URL"
+msgstr "Lägg till URL"
 
 #: src/components/routes/settings/general.tsx:81
 msgid "Adjust display options for charts."
-msgstr "Upravit možnosti zobrazení pro grafy."
+msgstr "Justera visningsalternativ för diagram."
 
 #: src/components/command-palette.tsx:132
 #: src/components/command-palette.tsx:145
@@ -94,172 +89,172 @@ msgstr "Agent"
 #: src/components/alerts/alert-button.tsx:32
 #: src/components/alerts/alert-button.tsx:68
 msgid "Alerts"
-msgstr "Výstrahy"
+msgstr "Larm"
 
 #: src/components/alerts/alert-button.tsx:88
 #: src/components/systems-table/systems-table.tsx:266
 msgid "All Systems"
-msgstr "Všechny systémy"
+msgstr "Alla system"
 
 #: src/components/systems-table/systems-table.tsx:570
 msgid "Are you sure you want to delete {name}?"
-msgstr "Opravdu chcete odstranit {name}?"
+msgstr "Är du säker på att du vill ta bort {name}?"
 
 #: src/components/copy-to-clipboard.tsx:16
 msgid "Automatic copy requires a secure context."
-msgstr "Automatická kopie vyžaduje zabezpečený kontext."
+msgstr "Automatisk kopiering kräver en säker kontext."
 
 #: src/components/routes/system.tsx:625
 msgid "Average"
-msgstr "Průměr"
+msgstr "Genomsnitt"
 
 #: src/components/routes/system.tsx:396
 msgid "Average CPU utilization of containers"
-msgstr "Průměrné využití CPU kontejnerů"
+msgstr "Genomsnittlig CPU-användning för containrar"
 
 #: src/components/alerts/alerts-system.tsx:206
 msgid "Average exceeds <0>{value}{0}</0>"
-msgstr "Průměr je vyšší než <0>{value}{0}</0>"
+msgstr "Genomsnittet överskrider <0>{value}{0}</0>"
 
 #: src/components/routes/system.tsx:497
 msgid "Average power consumption of GPUs"
-msgstr "Průměrná spotřeba energie GPU"
+msgstr "Genomsnittlig strömförbrukning för GPU:er"
 
 #: src/components/routes/system.tsx:385
 msgid "Average system-wide CPU utilization"
-msgstr "Průměrné využití CPU v celém systému"
+msgstr "Genomsnittlig systemomfattande CPU-användning"
 
 #: src/components/routes/system.tsx:515
 msgid "Average utilization of {0}"
-msgstr "Průměrné využití {0}"
+msgstr "Genomsnittlig användning av {0}"
 
 #: src/components/command-palette.tsx:170
 #: src/components/navbar.tsx:93
 msgid "Backups"
-msgstr "Zálohy"
+msgstr "Säkerhetskopior"
 
 #: src/components/routes/system.tsx:441
 #: src/lib/utils.ts:307
 msgid "Bandwidth"
-msgstr "Přenos"
+msgstr "Bandbredd"
 
 #: src/components/login/auth-form.tsx:289
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
-msgstr "Beszel podporuje OpenID Connect a mnoho poskytovatelů OAuth2 ověřování."
+msgstr "Beszel stöder OpenID Connect och många OAuth2-autentiseringsleverantörer."
 
 #: src/components/routes/settings/notifications.tsx:127
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
-msgstr "Beszel používá <0>Shoutrrr</0> k integraci s populárními notifikačními službami."
+msgstr "Beszel använder <0>Shoutrrr</0> för att integrera med populära aviseringstjänster."
 
 #: src/components/add-system.tsx:92
 msgid "Binary"
-msgstr "Binary"
+msgstr "Binär"
 
 #: src/components/charts/mem-chart.tsx:89
 msgid "Cache / Buffers"
-msgstr "Cache / vyrovnávací paměť"
+msgstr "Cache / Buffertar"
 
 #: src/components/systems-table/systems-table.tsx:581
 msgid "Cancel"
-msgstr "Zrušit"
+msgstr "Avbryt"
 
 #: src/components/routes/settings/config-yaml.tsx:68
 msgid "Caution - potential data loss"
-msgstr "Upozornění - možná ztráta dat"
+msgstr "Varning - potentiell dataförlust"
 
 #: src/components/routes/settings/general.tsx:36
 msgid "Change general application options."
-msgstr "Změnit obecné nastavení aplikace."
+msgstr "Ändra allmänna programalternativ."
 
 #: src/components/routes/settings/general.tsx:78
 msgid "Chart options"
-msgstr "Možnosti grafu"
+msgstr "Diagramalternativ"
 
 #: src/components/login/forgot-pass-form.tsx:34
 msgid "Check {email} for a reset link."
-msgstr "Zkontrolujte {email} pro odkaz na obnovení."
+msgstr "Kontrollera {email} för en återställningslänk."
 
 #: src/components/routes/settings/layout.tsx:40
 msgid "Check logs for more details."
-msgstr "Pro více informací zkontrolujte logy."
+msgstr "Kontrollera loggarna för mer information."
 
 #: src/components/routes/settings/notifications.tsx:183
 msgid "Check your notification service"
-msgstr "Zkontrolujte službu upozornění"
+msgstr "Kontrollera din aviseringstjänst"
 
 #: src/components/add-system.tsx:151
 msgid "Click to copy"
-msgstr "Klikněte pro zkopírování"
+msgstr "Klicka för att kopiera"
 
 #: src/components/login/forgot-pass-form.tsx:83
 #: src/components/login/forgot-pass-form.tsx:89
 msgid "Command line instructions"
-msgstr "Instrukce příkazového řádku"
+msgstr "Instruktioner för kommandoraden"
 
 #: src/components/routes/settings/notifications.tsx:77
 msgid "Configure how you receive alert notifications."
-msgstr "Konfigurace způsobu přijímání upozornění."
+msgstr "Konfigurera hur du tar emot larmaviseringar."
 
 #: src/components/login/auth-form.tsx:165
 #: src/components/login/auth-form.tsx:170
 msgid "Confirm password"
-msgstr "Potvrdit heslo"
+msgstr "Bekräfta lösenord"
 
 #: src/components/systems-table/systems-table.tsx:587
 msgid "Continue"
-msgstr "Pokračovat"
+msgstr "Fortsätt"
 
 #: src/lib/utils.ts:25
 msgid "Copied to clipboard"
-msgstr "Zkopírováno do schránky"
+msgstr "Kopierat till Urklipp"
 
 #: src/components/add-system.tsx:162
 msgid "Copy"
-msgstr "Kopírovat"
+msgstr "Kopiera"
 
 #: src/components/systems-table/systems-table.tsx:556
 msgid "Copy host"
-msgstr "Kopírovat hostitele"
+msgstr "Kopiera värd"
 
 #: src/components/add-system.tsx:173
 msgid "Copy Linux command"
-msgstr "Kopírovat příkaz Linux"
+msgstr "Kopiera Linux-kommando"
 
 #: src/components/copy-to-clipboard.tsx:13
 msgid "Copy text"
-msgstr "Kopírovat text"
+msgstr "Kopiera text"
 
 #: src/components/systems-table/systems-table.tsx:157
 msgid "CPU"
-msgstr "Procesor"
+msgstr "CPU"
 
 #: src/components/charts/area-chart.tsx:56
 #: src/components/routes/system.tsx:384
 #: src/lib/utils.ts:289
 msgid "CPU Usage"
-msgstr "Využití procesoru"
+msgstr "CPU-användning"
 
 #: src/components/login/auth-form.tsx:191
 msgid "Create account"
-msgstr "Vytvořit účet"
+msgstr "Skapa konto"
 
 #. Dark theme
 #: src/components/mode-toggle.tsx:21
 msgid "Dark"
-msgstr "Tmavý"
+msgstr "Mörkt"
 
 #: src/components/command-palette.tsx:81
 #: src/components/routes/home.tsx:34
 msgid "Dashboard"
-msgstr "Přehled"
+msgstr "Dashboard"
 
 #: src/components/routes/settings/general.tsx:85
 msgid "Default time period"
-msgstr "Výchozí doba"
+msgstr "Standardtidsperiod"
 
 #: src/components/systems-table/systems-table.tsx:562
 msgid "Delete"
-msgstr "Odstranit"
+msgstr "Ta bort"
 
 #: src/components/systems-table/systems-table.tsx:173
 msgid "Disk"
@@ -273,293 +268,293 @@ msgstr "Disk I/O"
 #: src/components/routes/system.tsx:424
 #: src/lib/utils.ts:301
 msgid "Disk Usage"
-msgstr "Využití disku"
+msgstr "Diskanvändning"
 
 #: src/components/routes/system.tsx:552
 msgid "Disk usage of {extraFsName}"
-msgstr "Využití disku {extraFsName}"
+msgstr "Diskanvändning av {extraFsName}"
 
 #: src/components/routes/system.tsx:395
 msgid "Docker CPU Usage"
-msgstr "Využití CPU Dockeru"
+msgstr "Docker CPU-användning"
 
 #: src/components/routes/system.tsx:416
 msgid "Docker Memory Usage"
-msgstr "Využití paměti Dockeru"
+msgstr "Docker Minnesanvändning"
 
 #: src/components/routes/system.tsx:457
 msgid "Docker Network I/O"
-msgstr "Síťové I/O Dockeru"
+msgstr "Docker Nätverks-I/O"
 
 #: src/components/command-palette.tsx:124
 msgid "Documentation"
-msgstr "Dokumentace"
+msgstr "Dokumentation"
 
 #: src/components/login/auth-form.tsx:128
 #: src/components/login/forgot-pass-form.tsx:53
 msgid "Email"
-msgstr "Email"
+msgstr "E-post"
 
 #: src/components/routes/settings/notifications.tsx:91
 msgid "Email notifications"
-msgstr "Emailová upozornění"
+msgstr "E-postaviseringar"
 
 #: src/components/login/login.tsx:38
 msgid "Enter email address to reset password"
-msgstr "Zadejte e-mailovou adresu pro obnovu hesla"
+msgstr "Ange e-postadress för att återställa lösenord"
 
 #: src/components/routes/settings/notifications.tsx:111
 msgid "Enter email address..."
-msgstr "Zadejte e-mailovou adresu..."
+msgstr "Ange e-postadress..."
 
 #: src/components/login/auth-form.tsx:232
 #: src/components/routes/settings/config-yaml.tsx:28
 #: src/components/routes/settings/notifications.tsx:187
 msgid "Error"
-msgstr "Chyba"
+msgstr "Fel"
 
 #: src/components/routes/home.tsx:80
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
-msgstr "Překračuje {0}{1} za {2, plural, one {poslední # minutu} few {poslední # minuty} other {posledních # minut}}"
+msgstr "Överskrider {0}{1} under de senaste {2, plural, one {# minuten} other {# minuterna}}"
 
 #: src/components/routes/settings/config-yaml.tsx:72
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
-msgstr "Stávající systémy, které nejsou definovány v <0>config.yml</0>, budou odstraněny. Provádějte pravidelné zálohování."
+msgstr "Befintliga system som inte definieras i <0>config.yml</0> kommer att tas bort. Gör regelbundna säkerhetskopior."
 
 #: src/components/routes/settings/config-yaml.tsx:93
 msgid "Export configuration"
-msgstr "Exportovat konfiguraci"
+msgstr "Exportera konfiguration"
 
 #: src/components/routes/settings/config-yaml.tsx:48
 msgid "Export your current systems configuration."
-msgstr "Exportovat aktuální konfiguraci systémů."
+msgstr "Exportera din nuvarande systemkonfiguration."
 
 #: src/lib/utils.ts:38
 msgid "Failed to authenticate"
-msgstr "Ověření se nezdařilo"
+msgstr "Autentisering misslyckades"
 
 #: src/components/routes/settings/layout.tsx:39
 #: src/components/routes/settings/notifications.tsx:62
 msgid "Failed to save settings"
-msgstr "Nepodařilo se uložit nastavení"
+msgstr "Kunde inte spara inställningar"
 
 #: src/components/routes/settings/notifications.tsx:188
 msgid "Failed to send test notification"
-msgstr "Nepodařilo se odeslat testovací oznámení"
+msgstr "Kunde inte skicka testavisering"
 
 #: src/components/alerts/alerts-system.tsx:24
 msgid "Failed to update alert"
-msgstr "Nepodařilo se aktualizovat upozornění"
+msgstr "Kunde inte uppdatera larm"
 
 #: src/components/routes/system.tsx:596
 #: src/components/systems-table/systems-table.tsx:273
 msgid "Filter..."
-msgstr "Filtr..."
+msgstr "Filtrera..."
 
 #: src/components/alerts/alerts-system.tsx:227
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
-msgstr "Za <0>{min}</0> {min, plural, one {minutu} few {minuty} other {minut}}"
+msgstr "Under <0>{min}</0> {min, plural, one {minut} other {minuter}}"
 
 #: src/components/login/auth-form.tsx:313
 msgid "Forgot password?"
-msgstr "Zapomněli jste heslo?"
+msgstr "Glömt lösenordet?"
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx:33
 #: src/components/routes/settings/layout.tsx:51
 msgid "General"
-msgstr "Obecné"
+msgstr "Allmänt"
 
 #: src/components/routes/system.tsx:496
 msgid "GPU Power Draw"
-msgstr "Spotřeba energie GPU"
+msgstr "GPU-strömförbrukning"
 
 #: src/components/systems-table/systems-table.tsx:300
 msgid "Grid"
-msgstr "Mřížka"
+msgstr "Rutnät"
 
 #: src/components/add-system.tsx:120
 msgid "Host / IP"
-msgstr "Hostitel / IP"
+msgstr "Värd / IP"
 
 #: src/components/login/forgot-pass-form.tsx:93
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
-msgstr "Pokud jste ztratili heslo k vašemu účtu správce, můžete jej obnovit pomocí následujícího příkazu."
+msgstr "Om du har glömt lösenordet till ditt administratörskonto kan du återställa det med följande kommando."
 
 #: src/components/login/auth-form.tsx:16
 msgid "Invalid email address."
-msgstr "Neplatná e-mailová adresa."
+msgstr "Ogiltig e-postadress."
 
 #. Linux kernel
 #: src/components/routes/system.tsx:262
 msgid "Kernel"
-msgstr "Kernel"
+msgstr "Kärna"
 
 #: src/components/routes/settings/general.tsx:45
 msgid "Language"
-msgstr "Jazyk"
+msgstr "Språk"
 
 #: src/components/systems-table/systems-table.tsx:286
 msgid "Layout"
-msgstr "Rozvržení"
+msgstr "Layout"
 
 #. Light theme
 #: src/components/mode-toggle.tsx:16
 msgid "Light"
-msgstr "Světlý"
+msgstr "Ljust"
 
 #: src/components/navbar.tsx:104
 msgid "Log Out"
-msgstr "Odhlásit"
+msgstr "Logga ut"
 
 #: src/components/login/login.tsx:19
 msgid "Login"
-msgstr "Přihlásit"
+msgstr "Logga in"
 
 #: src/components/login/auth-form.tsx:34
 #: src/components/login/forgot-pass-form.tsx:15
 msgid "Login attempt failed"
-msgstr "Pokus o přihlášení selhal"
+msgstr "Inloggningsförsök misslyckades"
 
 #: src/components/command-palette.tsx:156
 #: src/components/navbar.tsx:85
 msgid "Logs"
-msgstr "Logy"
+msgstr "Loggar"
 
 #: src/components/routes/settings/notifications.tsx:80
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
-msgstr "Hledáte místo kde vytvářet upozornění? Klikněte na ikonu zvonku <0/> v systémové tabulce."
+msgstr "Letar du istället efter var du skapar larm? Klicka på klockikonerna <0/> i systemtabellen."
 
 #: src/components/routes/settings/layout.tsx:85
 msgid "Manage display and notification preferences."
-msgstr "Správa nastavení zobrazení a oznámení."
+msgstr "Hantera visnings- och aviseringsinställningar."
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx:628
 msgid "Max 1 min"
-msgstr "Max. 1 min"
+msgstr "Max 1 min"
 
 #: src/components/systems-table/systems-table.tsx:165
 msgid "Memory"
-msgstr "Paměť"
+msgstr "Minne"
 
 #: src/components/routes/system.tsx:406
 #: src/lib/utils.ts:295
 msgid "Memory Usage"
-msgstr "Využití paměti"
+msgstr "Minnesanvändning"
 
 #: src/components/routes/system.tsx:417
 msgid "Memory usage of docker containers"
-msgstr "Využití paměti docker kontejnerů"
+msgstr "Minnesanvändning för dockercontainrar"
 
 #: src/components/add-system.tsx:116
 msgid "Name"
-msgstr "Název"
+msgstr "Namn"
 
 #: src/components/systems-table/systems-table.tsx:181
 msgid "Net"
-msgstr "Síť"
+msgstr "Nät"
 
 #: src/components/routes/system.tsx:458
 msgid "Network traffic of docker containers"
-msgstr "Síťový provoz kontejnerů docker"
+msgstr "Nätverkstrafik för dockercontainrar"
 
 #: src/components/routes/system.tsx:443
 msgid "Network traffic of public interfaces"
-msgstr "Síťový provoz veřejných rozhraní"
+msgstr "Nätverkstrafik för publika gränssnitt"
 
 #: src/components/command-palette.tsx:49
 msgid "No results found."
-msgstr "Nenalezeny žádné výskyty."
+msgstr "Inga resultat hittades."
 
 #: src/components/systems-table/systems-table.tsx:421
 #: src/components/systems-table/systems-table.tsx:494
 msgid "No systems found."
-msgstr "Nenalezeny žádné systémy."
+msgstr "Inga system hittades."
 
 #: src/components/command-palette.tsx:110
 #: src/components/routes/settings/layout.tsx:56
 #: src/components/routes/settings/notifications.tsx:74
 msgid "Notifications"
-msgstr "Upozornění"
+msgstr "Aviseringar"
 
 #: src/components/login/auth-form.tsx:284
 msgid "OAuth 2 / OIDC support"
-msgstr "Podpora OAuth 2 / OIDC"
+msgstr "Stöd för OAuth 2 / OIDC"
 
 #: src/components/routes/settings/config-yaml.tsx:61
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
-msgstr "Při každém restartu budou systémy v databázi aktualizovány tak, aby odpovídaly systémům definovaným v souboru."
+msgstr "Vid varje omstart kommer systemen i databasen att uppdateras för att matcha systemen som definieras i filen."
 
 #: src/components/systems-table/systems-table.tsx:528
 msgid "Open menu"
-msgstr "Otevřít menu"
+msgstr "Öppna menyn"
 
 #: src/components/login/auth-form.tsx:203
 msgid "Or continue with"
-msgstr "Nebo pokračujte s"
+msgstr "Eller fortsätt med"
 
 #: src/components/alerts/alert-button.tsx:109
 msgid "Overwrite existing alerts"
-msgstr "Přepsat existující upozornění"
+msgstr "Skriv över befintliga larm"
 
 #: src/components/command-palette.tsx:84
 msgid "Page"
-msgstr "Stránka"
+msgstr "Sida"
 
 #: src/components/command-palette.tsx:71
 msgid "Pages / Settings"
-msgstr "Stránky / Nastavení"
+msgstr "Sidor / Inställningar"
 
 #: src/components/login/auth-form.tsx:147
 #: src/components/login/auth-form.tsx:152
 msgid "Password"
-msgstr "Heslo"
+msgstr "Lösenord"
 
 #: src/components/login/auth-form.tsx:17
 msgid "Password must be at least 8 characters."
-msgstr "Heslo musí obsahovat alespoň 8 znaků."
+msgstr "Lösenordet måste vara minst 8 tecken."
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
-msgstr "Žádost o obnovu hesla byla přijata"
+msgstr "Begäran om återställning av lösenord mottagen"
 
 #: src/components/systems-table/systems-table.tsx:550
 msgid "Pause"
-msgstr "Pozastavit"
+msgstr "Paus"
 
 #: src/components/routes/settings/notifications.tsx:95
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
-msgstr "<0>nakonfigurujte SMTP server</0> pro zajištění toho, aby byla upozornění doručena."
+msgstr "Vänligen <0>konfigurera en SMTP-server</0> för att säkerställa att larm levereras."
 
 #: src/components/alerts/alerts-system.tsx:25
 msgid "Please check logs for more details."
-msgstr "Pro více informací zkontrolujte logy."
+msgstr "Vänligen kontrollera loggarna för mer information."
 
 #: src/components/login/auth-form.tsx:35
 #: src/components/login/forgot-pass-form.tsx:16
 msgid "Please check your credentials and try again"
-msgstr "Zkontrolujte prosím Vaše přihlašovací údaje a zkuste to znovu"
+msgstr "Vänligen kontrollera dina inloggningsuppgifter och försök igen"
 
 #: src/components/login/login.tsx:36
 msgid "Please create an admin account"
-msgstr "Vytvořte si prosím účet administrátora"
+msgstr "Vänligen skapa ett administratörskonto"
 
 #: src/components/login/auth-form.tsx:233
 msgid "Please enable pop-ups for this site"
-msgstr "Prosím povolte vyskakovací okna pro tento web"
+msgstr "Vänligen aktivera popup-fönster för den här webbplatsen"
 
 #: src/lib/utils.ts:39
 msgid "Please log in again"
-msgstr "Přihlaste se prosím znovu"
+msgstr "Vänligen logga in igen"
 
 #: src/components/login/auth-form.tsx:292
 msgid "Please see <0>the documentation</0> for instructions."
-msgstr "Instrukce naleznete v <0>dokumentaci</0>."
+msgstr "Vänligen se <0>dokumentationen</0> för instruktioner."
 
 #: src/components/login/login.tsx:40
 msgid "Please sign in to your account"
-msgstr "Přihlaste se prosím k vašemu účtu"
+msgstr "Vänligen logga in på ditt konto"
 
 #: src/components/add-system.tsx:124
 msgid "Port"
@@ -568,65 +563,65 @@ msgstr "Port"
 #: src/components/routes/system.tsx:407
 #: src/components/routes/system.tsx:523
 msgid "Precise utilization at the recorded time"
-msgstr "Přesné využití v zaznamenaném čase"
+msgstr "Exakt användning vid den registrerade tidpunkten"
 
 #: src/components/routes/settings/general.tsx:58
 msgid "Preferred Language"
-msgstr "Upřednostňovaný jazyk"
+msgstr "Föredraget språk"
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx:128
 msgid "Public Key"
-msgstr "Veřejný klíč"
+msgstr "Offentlig nyckel"
 
 #. Disk read
 #: src/components/charts/area-chart.tsx:60
 #: src/components/charts/area-chart.tsx:70
 msgid "Read"
-msgstr "Číst"
+msgstr "Läs"
 
 #. Network bytes received (download)
 #: src/components/charts/area-chart.tsx:65
 msgid "Received"
-msgstr "Přijato"
+msgstr "Mottaget"
 
 #: src/components/login/forgot-pass-form.tsx:76
 msgid "Reset Password"
-msgstr "Obnovit heslo"
+msgstr "Återställ lösenord"
 
 #: src/components/systems-table/systems-table.tsx:545
 msgid "Resume"
-msgstr "Pokračovat"
+msgstr "Återuppta"
 
 #: src/components/routes/settings/notifications.tsx:117
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
-msgstr "Adresu uložte pomocí klávesy enter nebo čárky. Pro deaktivaci e-mailových oznámení ponechte prázdné pole."
+msgstr "Spara adressen med Enter-tangenten eller komma. Lämna tomt för att inaktivera e-postaviseringar."
 
 #: src/components/routes/settings/general.tsx:106
 #: src/components/routes/settings/notifications.tsx:167
 msgid "Save Settings"
-msgstr "Uložit nastavení"
+msgstr "Spara inställningar"
 
 #: src/components/navbar.tsx:133
 msgid "Search"
-msgstr "Hledat"
+msgstr "Sök"
 
 #: src/components/command-palette.tsx:46
 msgid "Search for systems or settings..."
-msgstr "Hledat systémy nebo nastavení..."
+msgstr "Sök efter system eller inställningar..."
 
 #: src/components/alerts/alert-button.tsx:71
 msgid "See <0>notification settings</0> to configure how you receive alerts."
-msgstr "Podívejte se na <0>nastavení upozornění</0> pro nastavení toho, jak přijímáte upozornění."
+msgstr "Se <0>aviseringsinställningar</0> för att konfigurera hur du tar emot larm."
 
 #. Network bytes sent (upload)
 #: src/components/charts/area-chart.tsx:64
 msgid "Sent"
-msgstr "Odeslat"
+msgstr "Skickat"
 
 #: src/components/routes/settings/general.tsx:100
 msgid "Sets the default time range for charts when a system is viewed."
-msgstr "Nastaví výchozí časový rozsah grafů, když je systém zobrazen."
+msgstr "Anger standardtidsintervallet för diagram när ett system visas."
 
 #: src/components/command-palette.tsx:95
 #: src/components/command-palette.tsx:98
@@ -634,35 +629,35 @@ msgstr "Nastaví výchozí časový rozsah grafů, když je systém zobrazen."
 #: src/components/routes/settings/layout.tsx:71
 #: src/components/routes/settings/layout.tsx:82
 msgid "Settings"
-msgstr "Nastavení"
+msgstr "Inställningar"
 
 #: src/components/routes/settings/layout.tsx:33
 msgid "Settings saved"
-msgstr "Nastavení uloženo"
+msgstr "Inställningar sparade"
 
 #: src/components/login/auth-form.tsx:191
 msgid "Sign in"
-msgstr "Přihlásit se"
+msgstr "Logga in"
 
 #: src/components/command-palette.tsx:185
 msgid "SMTP settings"
-msgstr "Nastavení SMTP"
+msgstr "SMTP-inställningar"
 
 #: src/components/systems-table/systems-table.tsx:308
 msgid "Sort By"
-msgstr "Seřadit podle"
+msgstr "Sortera efter"
 
 #: src/lib/utils.ts:282
 msgid "Status"
-msgstr "Stav"
+msgstr "Status"
 
 #: src/components/routes/system.tsx:473
 msgid "Swap space used by the system"
-msgstr "Swap prostor využívaný systémem"
+msgstr "Swap-utrymme som används av systemet"
 
 #: src/components/routes/system.tsx:472
 msgid "Swap Usage"
-msgstr "Swap využití"
+msgstr "Swap-användning"
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
@@ -671,161 +666,161 @@ msgstr "Swap využití"
 #: src/components/systems-table/systems-table.tsx:136
 #: src/components/systems-table/systems-table.tsx:465
 msgid "System"
-msgstr "Systém"
+msgstr "System"
 
 #: src/components/navbar.tsx:77
 msgid "Systems"
-msgstr "Systémy"
+msgstr "System"
 
 #: src/components/routes/settings/config-yaml.tsx:55
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
-msgstr "Systémy lze spravovat v souboru <0>config.yml</0> uvnitř datového adresáře."
+msgstr "System kan hanteras i en <0>config.yml</0>-fil i din datakatalog."
 
 #: src/components/systems-table/systems-table.tsx:296
 msgid "Table"
-msgstr "Tabulka"
+msgstr "Tabell"
 
 #: src/components/routes/system.tsx:484
 #: src/lib/utils.ts:314
 msgid "Temperature"
-msgstr "Teplota"
+msgstr "Temperatur"
 
 #: src/components/routes/system.tsx:485
 msgid "Temperatures of system sensors"
-msgstr "Teploty systémových senzorů"
+msgstr "Temperaturer för systemsensorer"
 
 #: src/components/routes/settings/notifications.tsx:211
 msgid "Test <0>URL</0>"
-msgstr "Test <0>URL</0>"
+msgstr "Testa <0>URL</0>"
 
 #: src/components/routes/settings/notifications.tsx:182
 msgid "Test notification sent"
-msgstr "Testovací oznámení odesláno"
+msgstr "Testavisering skickad"
 
 #: src/components/add-system.tsx:108
 msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
-msgstr "Agent musí být v systému spuštěn, aby se mohl připojit. Zkopírujte níže uvedený instalační příkaz pro agenta."
+msgstr "Agenten måste köras på systemet för att ansluta. Kopiera installationskommandot för agenten nedan."
 
 #: src/components/add-system.tsx:99
 msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
-msgstr "Agent musí být v systému spuštěn, aby se mohl připojit. Zkopírujte níže uvedený soubor<0>docker-compose.yml</0> pro agenta."
+msgstr "Agenten måste köras på systemet för att ansluta. Kopiera <0>docker-compose.yml</0> för agenten nedan."
 
 #: src/components/login/forgot-pass-form.tsx:98
 msgid "Then log into the backend and reset your user account password in the users table."
-msgstr "Poté se přihlaste do backendu a obnovte heslo k uživatelskému účtu v tabulce uživatelů."
+msgstr "Logga sedan in på backend och återställ ditt användarkontos lösenord i användartabellen."
 
 #: src/components/systems-table/systems-table.tsx:573
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
-msgstr "Tuto akci nelze vzít zpět. Tím se z databáze trvale odstraní všechny aktuální záznamy pro {name}."
+msgstr "Den här åtgärden kan inte ångras. Detta kommer permanent att ta bort alla aktuella poster för {name} från databasen."
 
 #: src/components/routes/system.tsx:564
 msgid "Throughput of {extraFsName}"
-msgstr "Propustnost {extraFsName}"
+msgstr "Genomströmning av {extraFsName}"
 
 #: src/components/routes/system.tsx:432
 msgid "Throughput of root filesystem"
-msgstr "Propustnost kořenového souborového systému"
+msgstr "Genomströmning av rotfilsystemet"
 
 #: src/components/routes/settings/notifications.tsx:106
 msgid "To email(s)"
-msgstr "Na email(y)"
+msgstr "Till e-postadress(er)"
 
 #: src/components/routes/system.tsx:359
 #: src/components/routes/system.tsx:372
 msgid "Toggle grid"
-msgstr "Přepnout mřížku"
+msgstr "Växla rutnät"
 
 #: src/components/mode-toggle.tsx:33
 msgid "Toggle theme"
-msgstr "Přepnout motiv"
+msgstr "Växla tema"
 
 #: src/lib/utils.ts:317
 msgid "Triggers when any sensor exceeds a threshold"
-msgstr "Spustí se, když některý senzor překročí prahovou hodnotu"
+msgstr "Utlöses när någon sensor överskrider ett tröskelvärde"
 
 #: src/lib/utils.ts:310
 msgid "Triggers when combined up/down exceeds a threshold"
-msgstr "Spustí se, když kombinace up/down překročí prahovou hodnotu"
+msgstr "Utlöses när kombinerad upp/ner överskrider ett tröskelvärde"
 
 #: src/lib/utils.ts:292
 msgid "Triggers when CPU usage exceeds a threshold"
-msgstr "Spustí se, když využití procesoru překročí prahovou hodnotu"
+msgstr "Utlöses när CPU-användningen överskrider ett tröskelvärde"
 
 #: src/lib/utils.ts:298
 msgid "Triggers when memory usage exceeds a threshold"
-msgstr "Spustí se, když využití paměti překročí prahovou hodnotu"
+msgstr "Utlöses när minnesanvändningen överskrider ett tröskelvärde"
 
 #: src/lib/utils.ts:285
 msgid "Triggers when status switches between up and down"
-msgstr "Spouští se, když se změní dostupnost"
+msgstr "Utlöses när status växlar mellan upp och ner"
 
 #: src/lib/utils.ts:304
 msgid "Triggers when usage of any disk exceeds a threshold"
-msgstr "Spustí se, když využití disku překročí prahovou hodnotu"
+msgstr "Utlöses när användningen av någon disk överskrider ett tröskelvärde"
 
 #: src/components/systems-table/systems-table.tsx:269
 msgid "Updated in real time. Click on a system to view information."
-msgstr "Aktualizováno v reálném čase. Klepnutím na systém zobrazíte informace."
+msgstr "Uppdateras i realtid. Klicka på ett system för att visa information."
 
 #: src/components/routes/system.tsx:261
 msgid "Uptime"
-msgstr "Doba provozu"
+msgstr "Drifttid"
 
 #: src/components/charts/area-chart.tsx:73
 #: src/components/routes/system.tsx:514
 #: src/components/routes/system.tsx:551
 msgid "Usage"
-msgstr "Využití"
+msgstr "Användning"
 
 #: src/components/routes/system.tsx:424
 msgid "Usage of root partition"
-msgstr "Využití kořenového oddílu"
+msgstr "Användning av rotpartitionen"
 
 #: src/components/charts/area-chart.tsx:73
 #: src/components/charts/mem-chart.tsx:65
 #: src/components/charts/swap-chart.tsx:56
 msgid "Used"
-msgstr "Využito"
+msgstr "Använt"
 
 #: src/components/command-palette.tsx:142
 #: src/components/navbar.tsx:69
 msgid "Users"
-msgstr "Uživatelé"
+msgstr "Användare"
 
 #: src/components/systems-table/systems-table.tsx:278
 msgid "View"
-msgstr "Zobrazení"
+msgstr "Visa"
 
 #: src/components/systems-table/systems-table.tsx:342
 msgid "Visible Fields"
-msgstr "Viditelné sloupce"
+msgstr "Synliga fält"
 
 #: src/components/routes/system.tsx:662
 msgid "Waiting for enough records to display"
-msgstr "Čeká se na dostatek záznamů k zobrazení"
+msgstr "Väntar på tillräckligt med poster att visa"
 
 #: src/components/routes/settings/general.tsx:48
 msgid "Want to help us make our translations even better? Check out <0>Crowdin</0> for more details."
-msgstr "Chcete nám pomoci s našimi překlady ještě lépe? Podívejte se na <0>Crowdin</0> pro více informací."
+msgstr "Vill du hjälpa oss att göra våra översättningar ännu bättre? Kolla in <0>Crowdin</0> för mer information."
 
 #: src/components/routes/settings/notifications.tsx:124
 msgid "Webhook / Push notifications"
-msgstr "Webhook / Push oznámení"
+msgstr "Webhook / Push-aviseringar"
 
 #. Disk write
 #: src/components/charts/area-chart.tsx:59
 #: src/components/charts/area-chart.tsx:69
 msgid "Write"
-msgstr "Psát"
+msgstr "Skriv"
 
 #: src/components/routes/settings/layout.tsx:61
 msgid "YAML Config"
-msgstr "YAML konfigurace"
+msgstr "YAML-konfiguration"
 
 #: src/components/routes/settings/config-yaml.tsx:45
 msgid "YAML Configuration"
-msgstr "YAML konfigurace"
+msgstr "YAML-konfiguration"
 
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
-msgstr "Vaše uživatelská nastavení byla aktualizována."
+msgstr "Dina användarinställningar har uppdaterats."

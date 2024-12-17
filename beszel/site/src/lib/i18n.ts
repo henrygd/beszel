@@ -3,7 +3,7 @@ import { i18n } from "@lingui/core"
 import type { Messages } from "@lingui/core"
 import languages from "@/lib/languages"
 import { detect, fromUrl, fromStorage, fromNavigator } from "@lingui/detect-locale"
-import { messages as enMessages } from "../locales/en/en.ts"
+import { messages as enMessages } from "@/locales/en/en.ts"
 
 // let locale = detect(fromUrl("lang"), fromStorage("lang"), fromNavigator(), "en")
 let locale = detect(fromStorage("lang"), fromNavigator(), "en")
@@ -19,7 +19,7 @@ function activateLocale(locale: string, messages: Messages = enMessages) {
 	i18n.activate(locale)
 	document.documentElement.lang = locale
 	localStorage.setItem("lang", locale)
-	$direction.set(locale.startsWith("ar") ? "rtl" : "ltr")
+	$direction.set(locale.startsWith("ar") || locale.startsWith("fa") ? "rtl" : "ltr")
 }
 
 // dynamically loads translations for the given locale
