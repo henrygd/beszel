@@ -34,11 +34,11 @@
 
 	.dark {
 		color-scheme: dark;
-		--background: 220 5.5% 9.5%;
+		--background: 220 5.5% 9%;
 		--foreground: 220 2% 97%;
-		--card: 220 5.5% 11%;
+		--card: 220 5.5% 10.5%;
 		--card-foreground: 220 2% 97%;
-		--popover: 220 5.5% 9.5%;
+		--popover: 220 5.5% 9%;
 		--popover-foreground: 220 2% 97%;
 		--primary: 220 2% 96%;
 		--primary-foreground: 220 4% 10%;

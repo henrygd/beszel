@@ -193,7 +193,7 @@ const ShoutrrrUrlCard = ({ url, onUrlChange, onRemove }: ShoutrrrUrlCardProps) =
 	}
 
 	return (
-		<Card className="bg-muted/70 p-2 md:p-3">
+		<Card className="bg-muted/40 p-2 md:p-3">
 			<div className="flex items-center gap-1">
 				<Input
 					type="url"
