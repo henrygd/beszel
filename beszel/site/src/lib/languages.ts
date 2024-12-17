@@ -80,7 +80,7 @@ export default [
 		e: "🇷🇺",
 	},
 	{
-		lang: "se",
+		lang: "sv",
 		label: "Svenska",
 		e: "🇸🇪",
 	},

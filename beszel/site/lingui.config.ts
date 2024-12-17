@@ -18,7 +18,7 @@ const config: LinguiConfig = {
 		"pt",
 		"tr",
 		"ru",
-		"se",
+		"sv",
 		"uk",
 		"vi",
 		"zh-CN",
