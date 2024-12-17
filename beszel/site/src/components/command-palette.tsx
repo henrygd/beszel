@@ -1,6 +1,6 @@
 import {
+	BookIcon,
 	DatabaseBackupIcon,
-	Github,
 	LayoutDashboard,
 	LogsIcon,
 	MailIcon,
@@ -114,16 +114,16 @@ export default function CommandPalette({ open, setOpen }: { open: boolean; setOp
 						</CommandShortcut>
 					</CommandItem>
 					<CommandItem
-						keywords={["github", "oauth", "oidc"]}
+						keywords={["help", "oauth", "oidc"]}
 						onSelect={() => {
-							window.location.href = "https://github.com/henrygd/beszel/blob/main/readme.md"
+							window.location.href = "https://beszel.dev/guide/what-is-beszel"
 						}}
 					>
-						<Github className="me-2 h-4 w-4" />
+						<BookIcon className="me-2 h-4 w-4" />
 						<span>
 							<Trans>Documentation</Trans>
 						</span>
-						<CommandShortcut>GitHub</CommandShortcut>
+						<CommandShortcut>beszel.dev</CommandShortcut>
 					</CommandItem>
 				</CommandGroup>
 				{isAdmin() && (
