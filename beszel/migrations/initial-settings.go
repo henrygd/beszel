@@ -1,8 +1,6 @@
 package migrations
 
 import (
-	"log"
-
 	"github.com/pocketbase/pocketbase/core"
 	m "github.com/pocketbase/pocketbase/migrations"
 	"github.com/pocketbase/pocketbase/tools/security"
@@ -19,7 +17,6 @@ func init() {
 		settings.Meta.AppName = "Beszel"
 		settings.Meta.HideControls = true
 		if err := app.Save(settings); err != nil {
-			log.Println("failed to save settings", err)
 			return err
 		}
 		// create superuser
