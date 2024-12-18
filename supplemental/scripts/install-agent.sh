@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# Move is_alpine function to the top of the file
+is_alpine() {
+  [ -f /etc/alpine-release ]
+}
+
 version=0.0.1
 # Define default values
 PORT=45876
@@ -77,28 +82,52 @@ done
 
 # Uninstall process
 if [ "$UNINSTALL" = true ]; then
-  echo "Stopping and disabling the agent service..."
-  systemctl stop beszel-agent.service
-  systemctl disable beszel-agent.service
+  if is_alpine; then
+    echo "Stopping and disabling the agent service..."
+    rc-service beszel-agent stop
+    rc-update del beszel-agent default
 
-  echo "Removing the systemd service file..."
-  rm /etc/systemd/system/beszel-agent.service
+    echo "Removing the OpenRC service files..."
+    rm -f /etc/init.d/beszel-agent
 
-  # Remove the update timer and service if they exist
-  echo "Removing the daily update service and timer..."
-  systemctl stop beszel-agent-update.timer 2>/dev/null
-  systemctl disable beszel-agent-update.timer 2>/dev/null
-  rm -f /etc/systemd/system/beszel-agent-update.service
-  rm -f /etc/systemd/system/beszel-agent-update.timer
+    # Remove the update service if it exists
+    echo "Removing the daily update service..."
+    rc-service beszel-agent-update stop 2>/dev/null
+    rc-update del beszel-agent-update default 2>/dev/null
+    rm -f /etc/init.d/beszel-agent-update
 
-  systemctl daemon-reload
+    # Remove log files
+    echo "Removing log files..."
+    rm -f /var/log/beszel-agent.log /var/log/beszel-agent.err
+
+  else
+    echo "Stopping and disabling the agent service..."
+    systemctl stop beszel-agent.service
+    systemctl disable beszel-agent.service
+
+    echo "Removing the systemd service file..."
+    rm /etc/systemd/system/beszel-agent.service
+
+    # Remove the update timer and service if they exist
+    echo "Removing the daily update service and timer..."
+    systemctl stop beszel-agent-update.timer 2>/dev/null
+    systemctl disable beszel-agent-update.timer 2>/dev/null
+    rm -f /etc/systemd/system/beszel-agent-update.service
+    rm -f /etc/systemd/system/beszel-agent-update.timer
+
+    systemctl daemon-reload
+  fi
 
   echo "Removing the Beszel Agent directory..."
   rm -rf /opt/beszel-agent
 
   echo "Removing the dedicated user for the agent service..."
-  killall beszel-agent
-  userdel beszel
+  killall beszel-agent 2>/dev/null
+  if is_alpine; then
+    deluser beszel 2>/dev/null
+  else
+    userdel beszel 2>/dev/null
+  fi
 
   echo "Beszel Agent has been uninstalled successfully!"
   exit 0
@@ -124,7 +153,12 @@ package_installed() {
 }
 
 # Check for package manager and install necessary packages if not installed
-if package_installed apt-get; then
+if is_alpine; then
+  if ! package_installed tar || ! package_installed curl || ! package_installed coreutils; then
+    apk update
+    apk add tar curl coreutils shadow
+  fi
+elif package_installed apt-get; then
   if ! package_installed tar || ! package_installed curl || ! package_installed sha256sum; then
     apt-get update
     apt-get install -y tar curl coreutils
@@ -158,12 +192,21 @@ else
 fi
 
 # Create a dedicated user for the service if it doesn't exist
-if ! id -u beszel >/dev/null 2>&1; then
-  echo "Creating a dedicated user for the Beszel Agent service..."
-  useradd -M -s /bin/false beszel
+if is_alpine; then
+  if ! id -u beszel >/dev/null 2>&1; then
+    echo "Creating a dedicated user for the Beszel Agent service..."
+    adduser -D -H -s /sbin/nologin beszel
+  fi
+  # Add the user to the docker group to allow access to the Docker socket
+  addgroup beszel docker
+else
+  if ! id -u beszel >/dev/null 2>&1; then
+    echo "Creating a dedicated user for the Beszel Agent service..."
+    useradd -M -s /bin/false beszel
+  fi
+  # Add the user to the docker group to allow access to the Docker socket
+  usermod -aG docker beszel
 fi
-# Add the user to the docker group to allow access to the Docker socket
-usermod -aG docker beszel
 
 # Create the directory for the Beszel Agent
 if [ ! -d "/opt/beszel-agent" ]; then
@@ -221,9 +264,97 @@ chmod 755 /opt/beszel-agent/beszel-agent
 # Cleanup
 rm -rf "$TEMP_DIR"
 
-# Create the systemd service
-echo "Creating the systemd service for the agent..."
-cat >/etc/systemd/system/beszel-agent.service <<EOF
+# Modify service installation part, add Alpine check before systemd service creation
+if is_alpine; then
+  echo "Creating OpenRC service for Alpine Linux..."
+  cat > /etc/init.d/beszel-agent <<EOF
+#!/sbin/openrc-run
+
+name="beszel-agent"
+description="Beszel Agent Service"
+command="/opt/beszel-agent/beszel-agent"
+command_user="beszel"
+command_background="yes"
+pidfile="/run/\${RC_SVCNAME}.pid"
+output_log="/var/log/beszel-agent.log"
+error_log="/var/log/beszel-agent.err"
+
+start_pre() {
+    checkpath -f -m 0644 -o beszel:beszel "\$output_log" "\$error_log"
+}
+
+export PORT="$PORT"
+export KEY="$KEY"
+
+depend() {
+    need net
+    after firewall
+}
+EOF
+
+  chmod +x /etc/init.d/beszel-agent
+  rc-update add beszel-agent default
+  
+  # Create log files with proper permissions
+  touch /var/log/beszel-agent.log /var/log/beszel-agent.err
+  chown beszel:beszel /var/log/beszel-agent.log /var/log/beszel-agent.err
+  
+  # Start the service
+  rc-service beszel-agent restart
+
+  # Check if service started successfully
+  sleep 2
+  if ! rc-service beszel-agent status | grep -q "started"; then
+    echo "Error: The Beszel Agent service failed to start. Checking logs..."
+    tail -n 20 /var/log/beszel-agent.err
+    exit 1
+  fi
+
+  # Auto-update service for Alpine
+  printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
+  read AUTO_UPDATE
+  case "$AUTO_UPDATE" in
+  [Yy]*)
+    echo "Setting up daily automatic updates for beszel-agent..."
+    
+    cat > /etc/init.d/beszel-agent-update <<EOF
+#!/sbin/openrc-run
+
+name="beszel-agent-update"
+description="Update beszel-agent if needed"
+
+depend() {
+    need beszel-agent
+}
+
+start() {
+    ebegin "Checking for beszel-agent updates"
+    if /opt/beszel-agent/beszel-agent update | grep -q "Successfully updated"; then
+        rc-service beszel-agent restart
+    fi
+    eend $?
+}
+EOF
+
+    chmod +x /etc/init.d/beszel-agent-update
+    rc-update add beszel-agent-update default
+    rc-service beszel-agent-update start
+
+    printf "\nAutomatic daily updates have been enabled.\n"
+    ;;
+  esac
+
+  # Check service status
+  if ! rc-service beszel-agent status >/dev/null 2>&1; then
+    echo "Error: The Beszel Agent service is not running."
+    rc-service beszel-agent status
+    exit 1
+  fi
+
+else
+  # Original systemd service installation code
+  echo "Creating the systemd service for the agent..."
+  cat >/etc/systemd/system/beszel-agent.service <<EOF
 [Unit]
 Description=Beszel Agent Service
 After=network.target
@@ -241,21 +372,21 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
-# Load and start the service
-printf "\nLoading and starting the agent service...\n"
-systemctl daemon-reload
-systemctl enable beszel-agent.service
-systemctl start beszel-agent.service
+  # Load and start the service
+  printf "\nLoading and starting the agent service...\n"
+  systemctl daemon-reload
+  systemctl enable beszel-agent.service
+  systemctl start beszel-agent.service
 
-# Prompt for auto-update setup
-printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
-read AUTO_UPDATE
-case "$AUTO_UPDATE" in
-[Yy]*)
-  echo "Setting up daily automatic updates for beszel-agent..."
+  # Prompt for auto-update setup
+  printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
+  read AUTO_UPDATE
+  case "$AUTO_UPDATE" in
+  [Yy]*)
+    echo "Setting up daily automatic updates for beszel-agent..."
 
-  # Create systemd service for the daily update
-  cat >/etc/systemd/system/beszel-agent-update.service <<EOF
+    # Create systemd service for the daily update
+    cat >/etc/systemd/system/beszel-agent-update.service <<EOF
 [Unit]
 Description=Update beszel-agent if needed
 Wants=beszel-agent.service
@@ -265,8 +396,8 @@ Type=oneshot
 ExecStart=/bin/sh -c '/opt/beszel-agent/beszel-agent update | grep -q "Successfully updated" && systemctl restart beszel-agent'
 EOF
 
-  # Create systemd timer for the daily update
-  cat >/etc/systemd/system/beszel-agent-update.timer <<EOF
+    # Create systemd timer for the daily update
+    cat >/etc/systemd/system/beszel-agent-update.timer <<EOF
 [Unit]
 Description=Run beszel-agent update daily
 
@@ -279,18 +410,19 @@ RandomizedDelaySec=4h
 WantedBy=timers.target
 EOF
 
-  systemctl daemon-reload
-  systemctl enable --now beszel-agent-update.timer
+    systemctl daemon-reload
+    systemctl enable --now beszel-agent-update.timer
 
-  printf "\nAutomatic daily updates have been enabled.\n"
-  ;;
-esac
+    printf "\nAutomatic daily updates have been enabled.\n"
+    ;;
+  esac
 
-# Wait for the service to start or fail
-if [ "$(systemctl is-active beszel-agent.service)" != "active" ]; then
-  echo "Error: The Beszel Agent service is not running."
-  echo "$(systemctl status beszel-agent.service)"
-  exit 1
+  # Wait for the service to start or fail
+  if [ "$(systemctl is-active beszel-agent.service)" != "active" ]; then
+    echo "Error: The Beszel Agent service is not running."
+    echo "$(systemctl status beszel-agent.service)"
+    exit 1
+  fi
 fi
 
 printf "\n\033[32mBeszel Agent has been installed successfully! It is now running on port $PORT.\033[0m\n"
