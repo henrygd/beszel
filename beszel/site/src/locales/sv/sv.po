@@ -8,7 +8,7 @@ msgstr ""
 "Language: sv\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-12-17 22:58\n"
+"PO-Revision-Date: 2024-12-20 18:13\n"
 "Last-Translator: \n"
 "Language-Team: Swedish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -211,7 +211,7 @@ msgstr "Fortsätt"
 
 #: src/lib/utils.ts:25
 msgid "Copied to clipboard"
-msgstr "Kopierat till Urklipp"
+msgstr "Kopierat till urklipp"
 
 #: src/components/add-system.tsx:162
 msgid "Copy"
