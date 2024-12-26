@@ -8,7 +8,7 @@ msgstr ""
 "Language: sl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-12-26 16:25\n"
+"PO-Revision-Date: 2024-12-26 17:38\n"
 "Last-Translator: \n"
 "Language-Team: Slovenian\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
@@ -20,11 +20,11 @@ msgstr ""
 
 #: src/components/routes/system.tsx:250
 msgid "{0, plural, one {# day} other {# days}}"
-msgstr ""
+msgstr "{0, plural, one {# dan} two {# dneva} few {# dni} other {# dni}}"
 
 #: src/components/routes/system.tsx:248
 msgid "{hours, plural, one {# hour} other {# hours}}"
-msgstr ""
+msgstr "{hours, plural, one {# ura} two {# uri} few {# ur} other {# ur}}"
 
 #: src/lib/utils.ts:139
 msgid "1 hour"
@@ -77,7 +77,7 @@ msgstr "Dodaj URL"
 
 #: src/components/routes/settings/general.tsx:81
 msgid "Adjust display options for charts."
-msgstr ""
+msgstr "Prilagodi možnosti prikaza za grafikone."
 
 #: src/components/command-palette.tsx:132
 #: src/components/command-palette.tsx:145
@@ -85,25 +85,25 @@ msgstr ""
 #: src/components/command-palette.tsx:173
 #: src/components/command-palette.tsx:188
 msgid "Admin"
-msgstr ""
+msgstr "Administrator"
 
 #: src/components/systems-table/systems-table.tsx:201
 msgid "Agent"
-msgstr ""
+msgstr "Agent"
 
 #: src/components/alerts/alert-button.tsx:32
 #: src/components/alerts/alert-button.tsx:68
 msgid "Alerts"
-msgstr ""
+msgstr "Opozorila"
 
 #: src/components/alerts/alert-button.tsx:88
 #: src/components/systems-table/systems-table.tsx:266
 msgid "All Systems"
-msgstr ""
+msgstr "Vsi sistemi"
 
 #: src/components/systems-table/systems-table.tsx:570
 msgid "Are you sure you want to delete {name}?"
-msgstr ""
+msgstr "Ali ste prepričani, da želite izbrisati {name}?"
 
 #: src/components/copy-to-clipboard.tsx:16
 msgid "Automatic copy requires a secure context."
