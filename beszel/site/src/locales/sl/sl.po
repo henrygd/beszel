@@ -8,7 +8,7 @@ msgstr ""
 "Language: sl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-12-26 15:28\n"
+"PO-Revision-Date: 2024-12-26 16:25\n"
 "Last-Translator: \n"
 "Language-Team: Slovenian\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
@@ -28,23 +28,23 @@ msgstr ""
 
 #: src/lib/utils.ts:139
 msgid "1 hour"
-msgstr ""
+msgstr "1 ura"
 
 #: src/lib/utils.ts:162
 msgid "1 week"
-msgstr ""
+msgstr "1 teden"
 
 #: src/lib/utils.ts:147
 msgid "12 hours"
-msgstr ""
+msgstr "12 ur"
 
 #: src/lib/utils.ts:155
 msgid "24 hours"
-msgstr ""
+msgstr "24 ur"
 
 #: src/lib/utils.ts:170
 msgid "30 days"
-msgstr ""
+msgstr "30 dni"
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx:227
@@ -52,28 +52,28 @@ msgstr ""
 #: src/components/systems-table/systems-table.tsx:455
 #: src/components/systems-table/systems-table.tsx:465
 msgid "Actions"
-msgstr ""
+msgstr "Dejanja"
 
 #: src/components/routes/home.tsx:61
 msgid "Active Alerts"
-msgstr ""
+msgstr "Aktivna opozorila"
 
 #: src/components/add-system.tsx:78
 msgid "Add <0>System</0>"
-msgstr ""
+msgstr "Dodaj <0>sistem</0>"
 
 #: src/components/add-system.tsx:87
 msgid "Add New System"
-msgstr ""
+msgstr "Dodaj nov sistem"
 
 #: src/components/add-system.tsx:165
 #: src/components/add-system.tsx:176
 msgid "Add system"
-msgstr ""
+msgstr "Dodaj sistem"
 
 #: src/components/routes/settings/notifications.tsx:156
 msgid "Add URL"
-msgstr ""
+msgstr "Dodaj URL"
 
 #: src/components/routes/settings/general.tsx:81
 msgid "Adjust display options for charts."
