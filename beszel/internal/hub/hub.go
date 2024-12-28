@@ -227,8 +227,8 @@ func (h *Hub) Run() {
 }
 
 func (h *Hub) startSystemUpdateTicker() {
-	ticker := time.NewTicker(15 * time.Second)
-	for range ticker.C {
+	c := time.Tick(15 * time.Second)
+	for range c {
 		h.updateSystems()
 	}
 }
