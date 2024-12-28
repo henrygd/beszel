@@ -155,6 +155,7 @@ func (rm *RecordManager) AverageSystemStats(records RecordStats) system.Stats {
 
 	var stats system.Stats
 	for i := range records {
+		stats = system.Stats{} // Zero the struct before unmarshalling
 		json.Unmarshal(records[i].Stats, &stats)
 		sum.Cpu += stats.Cpu
 		sum.Mem += stats.Mem
