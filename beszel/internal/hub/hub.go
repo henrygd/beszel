@@ -235,7 +235,7 @@ func (h *Hub) startSystemUpdateTicker() {
 
 func (h *Hub) updateSystems() {
 	records, err := h.app.FindRecordsByFilter(
-		"2hz5ncl8tizk5nx",    // systems collection
+		"systems",            // systems collection
 		"status != 'paused'", // filter
 		"updated",            // sort
 		-1,                   // limit
