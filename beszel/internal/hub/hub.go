@@ -8,13 +8,13 @@ import (
 	"beszel/internal/records"
 	"beszel/internal/users"
 	"beszel/site"
+	"net"
 
 	"context"
 	"crypto/ed25519"
 	"encoding/pem"
 	"fmt"
 	"log"
-	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -34,13 +34,13 @@ import (
 type Hub struct {
 	app               *pocketbase.PocketBase
 	systemConnections sync.Map
-	sshClientConfig   *ssh.ClientConfig
-	pubKey            string
-	am                *alerts.AlertManager
-	um                *users.UserManager
-	rm                *records.RecordManager
-	systemStats       *core.Collection
-	containerStats    *core.Collection
+
+	pubKey         string
+	am             *alerts.AlertManager
+	um             *users.UserManager
+	rm             *records.RecordManager
+	systemStats    *core.Collection
+	containerStats *core.Collection
 }
 
 func NewHub(app *pocketbase.PocketBase) *Hub {
@@ -65,11 +65,6 @@ func (h *Hub) Run() {
 
 	// initial setup
 	h.app.OnServe().BindFunc(func(se *core.ServeEvent) error {
-		// create ssh client config
-		err := h.createSSHClientConfig()
-		if err != nil {
-			log.Fatal(err)
-		}
 		// set general settings
 		settings := h.app.Settings()
 		// batch requests (for global alerts)
@@ -173,6 +168,18 @@ func (h *Hub) Run() {
 	h.app.OnRecordCreate("systems").BindFunc(func(e *core.RecordEvent) error {
 		e.Record.Set("info", system.Info{})
 		e.Record.Set("status", "pending")
+		if privKey := e.Record.GetString("ssh_priv_key"); privKey == "" {
+			privKey, pubKey, err := h.getSSHKey()
+			if err != nil {
+				return err
+			}
+			e.Record.Set("ssh_priv_key", privKey)
+			e.Record.Set("ssh_pub_key", pubKey)
+
+			// log.Println("Generating new keys for record:", e.Record.Id)
+		} else {
+			// log.Println("RECORD:", e.Record.Id, " already has SSH KEYS!")
+		}
 		return e.Next()
 	})
 
@@ -373,35 +380,22 @@ func (h *Hub) deleteSystemConnection(record *core.Record) {
 }
 
 func (h *Hub) createSystemConnection(record *core.Record) (*ssh.Client, error) {
-	client, err := ssh.Dial("tcp", net.JoinHostPort(record.GetString("host"), record.GetString("port")), h.sshClientConfig)
+	signer, err := ssh.ParsePrivateKey([]byte(record.GetString("ssh_priv_key")))
 	if err != nil {
 		return nil, err
 	}
-	return client, nil
-}
-
-func (h *Hub) createSSHClientConfig() error {
-	key, err := h.getSSHKey()
-	if err != nil {
-		h.app.Logger().Error("Failed to get SSH key: ", "err", err.Error())
-		return err
-	}
-
-	// Create the Signer for this private key.
-	signer, err := ssh.ParsePrivateKey(key)
-	if err != nil {
-		return err
-	}
-
-	h.sshClientConfig = &ssh.ClientConfig{
+	client, err := ssh.Dial("tcp", net.JoinHostPort(record.GetString("host"), record.GetString("port")), &ssh.ClientConfig{
 		User: "u",
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(signer),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         4 * time.Second,
+	})
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	return client, nil
 }
 
 // Fetches system stats from the agent and decodes the json data into the provided struct
@@ -459,72 +453,30 @@ func newSessionWithTimeout(client *ssh.Client, timeout time.Duration) (*ssh.Sess
 	}
 }
 
-func (h *Hub) getSSHKey() ([]byte, error) {
-	dataDir := h.app.DataDir()
-	// check if the key pair already exists
-	existingKey, err := os.ReadFile(dataDir + "/id_ed25519")
-	if err == nil {
-		if pubKey, err := os.ReadFile(h.app.DataDir() + "/id_ed25519.pub"); err == nil {
-			h.pubKey = strings.TrimSuffix(string(pubKey), "\n")
-		}
-		// return existing private key
-		return existingKey, nil
-	}
-
+func (h *Hub) getSSHKey() ([]byte, []byte, error) {
 	// Generate the Ed25519 key pair
 	pubKey, privKey, err := ed25519.GenerateKey(nil)
 	if err != nil {
 		// h.app.Logger().Error("Error generating key pair:", "err", err.Error())
-		return nil, err
+		return nil, nil, err
 	}
 
 	// Get the private key in OpenSSH format
 	privKeyBytes, err := ssh.MarshalPrivateKey(privKey, "")
 	if err != nil {
 		// h.app.Logger().Error("Error marshaling private key:", "err", err.Error())
-		return nil, err
+		return nil, nil, err
 	}
 
-	// Save the private key to a file
-	privateFile, err := os.Create(dataDir + "/id_ed25519")
-	if err != nil {
-		// h.app.Logger().Error("Error creating private key file:", "err", err.Error())
-		return nil, err
-	}
-	defer privateFile.Close()
-
-	if err := pem.Encode(privateFile, privKeyBytes); err != nil {
-		// h.app.Logger().Error("Error writing private key to file:", "err", err.Error())
-		return nil, err
-	}
+	privateKey := pem.EncodeToMemory(privKeyBytes)
 
 	// Generate the public key in OpenSSH format
 	publicKey, err := ssh.NewPublicKey(pubKey)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	pubKeyBytes := ssh.MarshalAuthorizedKey(publicKey)
-	h.pubKey = strings.TrimSuffix(string(pubKeyBytes), "\n")
 
-	// Save the public key to a file
-	publicFile, err := os.Create(dataDir + "/id_ed25519.pub")
-	if err != nil {
-		return nil, err
-	}
-	defer publicFile.Close()
-
-	if _, err := publicFile.Write(pubKeyBytes); err != nil {
-		return nil, err
-	}
-
-	h.app.Logger().Info("ed25519 SSH key pair generated successfully.")
-	h.app.Logger().Info("Private key saved to: " + dataDir + "/id_ed25519")
-	h.app.Logger().Info("Public key saved to: " + dataDir + "/id_ed25519.pub")
-
-	existingKey, err = os.ReadFile(dataDir + "/id_ed25519")
-	if err == nil {
-		return existingKey, nil
-	}
-	return nil, err
+	return privateKey, pubKeyBytes, nil
 }
