@@ -8,7 +8,7 @@ msgstr ""
 "Language: es\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-12-17 21:36\n"
+"PO-Revision-Date: 2025-01-02 04:46\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -123,7 +123,7 @@ msgstr "El promedio excede <0>{value}{0}</0>"
 
 #: src/components/routes/system.tsx:497
 msgid "Average power consumption of GPUs"
-msgstr ""
+msgstr "Consumo de energía promedio de GPUs"
 
 #: src/components/routes/system.tsx:385
 msgid "Average system-wide CPU utilization"
@@ -131,7 +131,7 @@ msgstr "Utilización promedio de CPU del sistema"
 
 #: src/components/routes/system.tsx:515
 msgid "Average utilization of {0}"
-msgstr ""
+msgstr "Uso promedio de {0}"
 
 #: src/components/command-palette.tsx:170
 #: src/components/navbar.tsx:93
