@@ -12,7 +12,7 @@ require (
 	github.com/pocketbase/dbx v1.11.0
 	github.com/pocketbase/pocketbase v0.23.9
 	github.com/rhysd/go-github-selfupdate v1.2.3
-	github.com/shirou/gopsutil/v4 v4.24.11
+	github.com/shirou/gopsutil/v4 v4.24.12
 	github.com/spf13/cast v1.7.0
 	github.com/spf13/cobra v1.8.1
 	golang.org/x/crypto v0.31.0
