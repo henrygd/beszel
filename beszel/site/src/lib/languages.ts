@@ -10,6 +10,11 @@ export default [
 		e: "🇨🇿",
 	},
 	{
+		lang: "da",
+		label: "Dansk",
+		e: "🇩🇰",
+	},
+	{
 		lang: "de",
 		label: "Deutsch",
 		e: "🇩🇪",
@@ -78,6 +83,11 @@ export default [
 		lang: "ru",
 		label: "Русский",
 		e: "🇷🇺",
+	},
+	{
+		lang: "sl",
+		label: "Slovenščina",
+		e: "🇸🇮",
 	},
 	{
 		lang: "sv",
