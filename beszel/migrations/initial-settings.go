@@ -3,7 +3,6 @@ package migrations
 import (
 	"github.com/pocketbase/pocketbase/core"
 	m "github.com/pocketbase/pocketbase/migrations"
-	"github.com/pocketbase/pocketbase/tools/security"
 )
 
 var (
@@ -16,6 +15,7 @@ func init() {
 		settings := app.Settings()
 		settings.Meta.AppName = "Beszel"
 		settings.Meta.HideControls = true
+		settings.Logs.MinLevel = 4
 		if err := app.Save(settings); err != nil {
 			return err
 		}
@@ -23,7 +23,7 @@ func init() {
 		collection, _ := app.FindCollectionByNameOrId(core.CollectionNameSuperusers)
 		user := core.NewRecord(collection)
 		user.SetEmail(TempAdminEmail)
-		user.SetPassword(security.RandomString(12))
+		user.SetRandomPassword()
 		return app.Save(user)
 	}, nil)
 }
