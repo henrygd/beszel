@@ -27,10 +27,10 @@ build-web-ui:
 	fi
 
 build-agent: tidy
-	CGO_ENABLED=0 GOOS=$(OS) GOARCH=$(ARCH) go build -o ./build/beszel-agent_$(OS)_$(ARCH) -ldflags "-w -s" beszel/cmd/agent
+	GOOS=$(OS) GOARCH=$(ARCH) go build -o ./build/beszel-agent_$(OS)_$(ARCH) -ldflags "-w -s" beszel/cmd/agent
 
 build-hub: tidy $(if $(filter false,$(SKIP_WEB)),build-web-ui)
-	CGO_ENABLED=0 GOOS=$(OS) GOARCH=$(ARCH) go build -o ./build/beszel_$(OS)_$(ARCH) -ldflags "-w -s" beszel/cmd/hub
+	GOOS=$(OS) GOARCH=$(ARCH) go build -o ./build/beszel_$(OS)_$(ARCH) -ldflags "-w -s" beszel/cmd/hub
 
 build: build-agent build-hub
 
