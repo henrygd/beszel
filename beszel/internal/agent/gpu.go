@@ -24,7 +24,7 @@ type GPUManager struct {
 
 // RocmSmiJson represents the JSON structure of rocm-smi output
 type RocmSmiJson struct {
-	ID          string `json:"Device ID"`
+	ID          string `json:"GUID"`
 	Name        string `json:"Card series"`
 	Temperature string `json:"Temperature (Sensor edge) (C)"`
 	MemoryUsed  string `json:"VRAM Total Used Memory (B)"`
@@ -162,6 +162,13 @@ func (gm *GPUManager) parseAmdData(output []byte) bool {
 func (gm *GPUManager) GetCurrentData() map[string]system.GPUData {
 	gm.mutex.Lock()
 	defer gm.mutex.Unlock()
+
+	// check for GPUs with the same name
+	nameCounts := make(map[string]int)
+	for _, gpu := range gm.GpuDataMap {
+		nameCounts[gpu.Name]++
+	}
+
 	// copy / reset the data
 	gpuData := make(map[string]system.GPUData, len(gm.GpuDataMap))
 	for id, gpu := range gm.GpuDataMap {
@@ -171,9 +178,15 @@ func (gm *GPUManager) GetCurrentData() map[string]system.GPUData {
 		gpu.MemoryTotal = twoDecimals(gpu.MemoryTotal)
 		gpu.Usage = twoDecimals(gpu.Usage / gpu.Count)
 		gpu.Power = twoDecimals(gpu.Power / gpu.Count)
-		gpuData[id] = *gpu
 		// reset the count
 		gpu.Count = 1
+		// dereference to avoid overwriting anything else
+		gpuCopy := *gpu
+		// append id to the name if there are multiple GPUs with the same name
+		if nameCounts[gpu.Name] > 1 {
+			gpuCopy.Name = fmt.Sprintf("%s %s", gpu.Name, id)
+		}
+		gpuData[id] = gpuCopy
 	}
 	return gpuData
 }
