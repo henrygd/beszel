@@ -8,7 +8,7 @@ msgstr ""
 "Language: de\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-12-17 21:36\n"
+"PO-Revision-Date: 2025-01-06 13:35\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -401,7 +401,7 @@ msgstr "Sprache"
 
 #: src/components/systems-table/systems-table.tsx:286
 msgid "Layout"
-msgstr ""
+msgstr "Anordnung"
 
 #. Light theme
 #: src/components/mode-toggle.tsx:16
@@ -829,3 +829,4 @@ msgstr "YAML-Konfiguration"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "Ihre Benutzereinstellungen wurden aktualisiert."
+
