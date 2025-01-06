@@ -84,7 +84,10 @@ function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 				<span
 					className={cn(
 						"absolute inset-0 w-full h-full origin-left",
-						(val < 65 && "bg-green-500") || (val < 90 && "bg-yellow-500") || "bg-red-600"
+						(info.row.original.status !== "up" && "bg-primary/30") ||
+							(val < 65 && "bg-green-500") ||
+							(val < 90 && "bg-yellow-500") ||
+							"bg-red-600"
 					)}
 					style={{
 						transform: `scalex(${val / 100})`,
@@ -208,6 +211,7 @@ export default function SystemsTable() {
 					if (!version || !hubVersion) {
 						return null
 					}
+					const system = info.row.original
 					return (
 						<span
 							className={cn("flex gap-2 items-center md:pe-5 tabular-nums", {
@@ -215,8 +219,12 @@ export default function SystemsTable() {
 							})}
 						>
 							<IndicatorDot
-								system={info.row.original}
-								className={version === hubVersion ? "bg-green-500" : "bg-yellow-500"}
+								system={system}
+								className={
+									(system.status !== "up" && "bg-primary/30") ||
+									(version === hubVersion && "bg-green-500") ||
+									"bg-yellow-500"
+								}
 							/>
 							<span>{info.getValue() as string}</span>
 						</span>
