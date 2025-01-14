@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-01-14 13:07\n"
+"PO-Revision-Date: 2025-01-14 14:04\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -470,12 +470,12 @@ msgstr "公開介面的網路流量"
 
 #: src/components/command-palette.tsx:49
 msgid "No results found."
-msgstr "未找到結果。"
+msgstr "找不到結果。"
 
 #: src/components/systems-table/systems-table.tsx:429
 #: src/components/systems-table/systems-table.tsx:502
 msgid "No systems found."
-msgstr "未找到系統。"
+msgstr "找不到任何系統。"
 
 #: src/components/command-palette.tsx:110
 #: src/components/routes/settings/layout.tsx:56
@@ -572,7 +572,7 @@ msgstr "紀錄時間內的精確使用量"
 
 #: src/components/routes/settings/general.tsx:58
 msgid "Preferred Language"
-msgstr "預設語言"
+msgstr "首選語言"
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx:128
