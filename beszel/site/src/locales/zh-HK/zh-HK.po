@@ -47,10 +47,10 @@ msgid "30 days"
 msgstr "30天"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx:227
-#: src/components/systems-table/systems-table.tsx:313
-#: src/components/systems-table/systems-table.tsx:455
-#: src/components/systems-table/systems-table.tsx:465
+#: src/components/systems-table/systems-table.tsx:235
+#: src/components/systems-table/systems-table.tsx:321
+#: src/components/systems-table/systems-table.tsx:463
+#: src/components/systems-table/systems-table.tsx:473
 msgid "Actions"
 msgstr "操作"
 
@@ -87,7 +87,7 @@ msgstr "調整圖表的顯示選項。"
 msgid "Admin"
 msgstr "管理員"
 
-#: src/components/systems-table/systems-table.tsx:201
+#: src/components/systems-table/systems-table.tsx:204
 msgid "Agent"
 msgstr "代理"
 
@@ -97,11 +97,11 @@ msgid "Alerts"
 msgstr "警報"
 
 #: src/components/alerts/alert-button.tsx:88
-#: src/components/systems-table/systems-table.tsx:266
+#: src/components/systems-table/systems-table.tsx:274
 msgid "All Systems"
 msgstr "所有系統"
 
-#: src/components/systems-table/systems-table.tsx:570
+#: src/components/systems-table/systems-table.tsx:578
 msgid "Are you sure you want to delete {name}?"
 msgstr "您確定要刪除{name}嗎？"
 
@@ -159,7 +159,7 @@ msgstr "二進制"
 msgid "Cache / Buffers"
 msgstr "緩存/緩衝區"
 
-#: src/components/systems-table/systems-table.tsx:581
+#: src/components/systems-table/systems-table.tsx:589
 msgid "Cancel"
 msgstr "取消"
 
@@ -205,7 +205,7 @@ msgstr "配置您接收警報通知的方式。"
 msgid "Confirm password"
 msgstr "確認密碼"
 
-#: src/components/systems-table/systems-table.tsx:587
+#: src/components/systems-table/systems-table.tsx:595
 msgid "Continue"
 msgstr "繼續"
 
@@ -217,7 +217,7 @@ msgstr "已複製到剪貼板"
 msgid "Copy"
 msgstr "複製"
 
-#: src/components/systems-table/systems-table.tsx:556
+#: src/components/systems-table/systems-table.tsx:564
 msgid "Copy host"
 msgstr "複製主機"
 
@@ -229,7 +229,7 @@ msgstr "複製Linux命令"
 msgid "Copy text"
 msgstr "複製文本"
 
-#: src/components/systems-table/systems-table.tsx:157
+#: src/components/systems-table/systems-table.tsx:160
 msgid "CPU"
 msgstr "CPU"
 
@@ -257,11 +257,11 @@ msgstr "儀表板"
 msgid "Default time period"
 msgstr "默認時間段"
 
-#: src/components/systems-table/systems-table.tsx:562
+#: src/components/systems-table/systems-table.tsx:570
 msgid "Delete"
 msgstr "刪除"
 
-#: src/components/systems-table/systems-table.tsx:173
+#: src/components/systems-table/systems-table.tsx:176
 msgid "Disk"
 msgstr "磁碟"
 
@@ -352,7 +352,7 @@ msgid "Failed to update alert"
 msgstr "更新警報失敗"
 
 #: src/components/routes/system.tsx:596
-#: src/components/systems-table/systems-table.tsx:273
+#: src/components/systems-table/systems-table.tsx:281
 msgid "Filter..."
 msgstr "篩選..."
 
@@ -374,7 +374,7 @@ msgstr "一般"
 msgid "GPU Power Draw"
 msgstr ""
 
-#: src/components/systems-table/systems-table.tsx:300
+#: src/components/systems-table/systems-table.tsx:308
 msgid "Grid"
 msgstr "網格"
 
@@ -399,7 +399,7 @@ msgstr "內核"
 msgid "Language"
 msgstr "語言"
 
-#: src/components/systems-table/systems-table.tsx:286
+#: src/components/systems-table/systems-table.tsx:294
 msgid "Layout"
 msgstr "版面配置"
 
@@ -439,7 +439,7 @@ msgstr "管理顯示和通知偏好。"
 msgid "Max 1 min"
 msgstr "最大1分鐘"
 
-#: src/components/systems-table/systems-table.tsx:165
+#: src/components/systems-table/systems-table.tsx:168
 msgid "Memory"
 msgstr "記憶體"
 
@@ -456,7 +456,7 @@ msgstr "Docker容器的記憶體使用"
 msgid "Name"
 msgstr "名稱"
 
-#: src/components/systems-table/systems-table.tsx:181
+#: src/components/systems-table/systems-table.tsx:184
 msgid "Net"
 msgstr "網絡"
 
@@ -472,8 +472,8 @@ msgstr "公共接口的網絡流量"
 msgid "No results found."
 msgstr "未找到結果。"
 
-#: src/components/systems-table/systems-table.tsx:421
-#: src/components/systems-table/systems-table.tsx:494
+#: src/components/systems-table/systems-table.tsx:429
+#: src/components/systems-table/systems-table.tsx:502
 msgid "No systems found."
 msgstr "未找到系統。"
 
@@ -491,7 +491,7 @@ msgstr "支持OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "每次重啟時，數據庫中的系統將更新以匹配文件中定義的系統。"
 
-#: src/components/systems-table/systems-table.tsx:528
+#: src/components/systems-table/systems-table.tsx:536
 msgid "Open menu"
 msgstr "打開菜單"
 
@@ -524,7 +524,7 @@ msgstr "密碼必須至少包含 8 個字元。"
 msgid "Password reset request received"
 msgstr "已收到密碼重置請求"
 
-#: src/components/systems-table/systems-table.tsx:550
+#: src/components/systems-table/systems-table.tsx:558
 msgid "Pause"
 msgstr "暫停"
 
@@ -594,7 +594,7 @@ msgstr "接收"
 msgid "Reset Password"
 msgstr "重置密碼"
 
-#: src/components/systems-table/systems-table.tsx:545
+#: src/components/systems-table/systems-table.tsx:553
 msgid "Resume"
 msgstr "恢復"
 
@@ -648,7 +648,7 @@ msgstr "登錄"
 msgid "SMTP settings"
 msgstr "SMTP設置"
 
-#: src/components/systems-table/systems-table.tsx:308
+#: src/components/systems-table/systems-table.tsx:316
 msgid "Sort By"
 msgstr "排序依據"
 
@@ -666,10 +666,10 @@ msgstr "交換使用"
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
-#: src/components/systems-table/systems-table.tsx:117
-#: src/components/systems-table/systems-table.tsx:125
-#: src/components/systems-table/systems-table.tsx:136
-#: src/components/systems-table/systems-table.tsx:465
+#: src/components/systems-table/systems-table.tsx:120
+#: src/components/systems-table/systems-table.tsx:128
+#: src/components/systems-table/systems-table.tsx:139
+#: src/components/systems-table/systems-table.tsx:473
 msgid "System"
 msgstr "系統"
 
@@ -681,7 +681,7 @@ msgstr "系統"
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "系統可以在您的數據目錄中的<0>config.yml</0>文件中管理。"
 
-#: src/components/systems-table/systems-table.tsx:296
+#: src/components/systems-table/systems-table.tsx:304
 msgid "Table"
 msgstr "表格"
 
@@ -714,7 +714,7 @@ msgstr "代理必須在系統上運行才能連接。複製下面的<0>docker-co
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "然後登錄到後端並在用戶表中重置您的用戶帳戶密碼。"
 
-#: src/components/systems-table/systems-table.tsx:573
+#: src/components/systems-table/systems-table.tsx:581
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "此操作無法撤銷。這將永久刪除數據庫中{name}的所有當前記錄。"
 
@@ -763,7 +763,7 @@ msgstr "當狀態在上和下之間切換時觸發"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "當任何磁碟的使用超過閾值時觸發"
 
-#: src/components/systems-table/systems-table.tsx:269
+#: src/components/systems-table/systems-table.tsx:277
 msgid "Updated in real time. Click on a system to view information."
 msgstr "實時更新。點擊系統查看信息。"
 
@@ -792,11 +792,11 @@ msgstr "已用"
 msgid "Users"
 msgstr "用戶"
 
-#: src/components/systems-table/systems-table.tsx:278
+#: src/components/systems-table/systems-table.tsx:286
 msgid "View"
 msgstr "檢視"
 
-#: src/components/systems-table/systems-table.tsx:342
+#: src/components/systems-table/systems-table.tsx:350
 msgid "Visible Fields"
 msgstr "可見欄位"
 

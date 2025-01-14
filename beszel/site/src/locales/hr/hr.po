@@ -47,10 +47,10 @@ msgid "30 days"
 msgstr "30 dana"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx:227
-#: src/components/systems-table/systems-table.tsx:313
-#: src/components/systems-table/systems-table.tsx:455
-#: src/components/systems-table/systems-table.tsx:465
+#: src/components/systems-table/systems-table.tsx:235
+#: src/components/systems-table/systems-table.tsx:321
+#: src/components/systems-table/systems-table.tsx:463
+#: src/components/systems-table/systems-table.tsx:473
 msgid "Actions"
 msgstr "Akcije"
 
@@ -87,7 +87,7 @@ msgstr "Podesite opcije prikaza za grafikone."
 msgid "Admin"
 msgstr "Admin"
 
-#: src/components/systems-table/systems-table.tsx:201
+#: src/components/systems-table/systems-table.tsx:204
 msgid "Agent"
 msgstr "Agent"
 
@@ -97,11 +97,11 @@ msgid "Alerts"
 msgstr "Upozorenja"
 
 #: src/components/alerts/alert-button.tsx:88
-#: src/components/systems-table/systems-table.tsx:266
+#: src/components/systems-table/systems-table.tsx:274
 msgid "All Systems"
 msgstr "Svi Sistemi"
 
-#: src/components/systems-table/systems-table.tsx:570
+#: src/components/systems-table/systems-table.tsx:578
 msgid "Are you sure you want to delete {name}?"
 msgstr "Jeste li sigurni da želite izbrisati {name}?"
 
@@ -159,7 +159,7 @@ msgstr "Binarni"
 msgid "Cache / Buffers"
 msgstr "Predmemorija / Međuspremnici"
 
-#: src/components/systems-table/systems-table.tsx:581
+#: src/components/systems-table/systems-table.tsx:589
 msgid "Cancel"
 msgstr "Otkaži"
 
@@ -205,7 +205,7 @@ msgstr "Konfigurirajte način primanja obavijesti upozorenja."
 msgid "Confirm password"
 msgstr "Potvrdite lozinku"
 
-#: src/components/systems-table/systems-table.tsx:587
+#: src/components/systems-table/systems-table.tsx:595
 msgid "Continue"
 msgstr "Nastavite"
 
@@ -217,7 +217,7 @@ msgstr "Kopirano u međuspremnik"
 msgid "Copy"
 msgstr "Kopiraj"
 
-#: src/components/systems-table/systems-table.tsx:556
+#: src/components/systems-table/systems-table.tsx:564
 msgid "Copy host"
 msgstr "Kopiraj hosta"
 
@@ -229,7 +229,7 @@ msgstr "Kopiraj Linux komandu"
 msgid "Copy text"
 msgstr "Kopiraj tekst"
 
-#: src/components/systems-table/systems-table.tsx:157
+#: src/components/systems-table/systems-table.tsx:160
 msgid "CPU"
 msgstr "Procesor"
 
@@ -257,11 +257,11 @@ msgstr "Nadzorna ploča"
 msgid "Default time period"
 msgstr "Zadano vremensko razdoblje"
 
-#: src/components/systems-table/systems-table.tsx:562
+#: src/components/systems-table/systems-table.tsx:570
 msgid "Delete"
 msgstr "Izbriši"
 
-#: src/components/systems-table/systems-table.tsx:173
+#: src/components/systems-table/systems-table.tsx:176
 msgid "Disk"
 msgstr "Disk"
 
@@ -352,7 +352,7 @@ msgid "Failed to update alert"
 msgstr "Ažuriranje upozorenja nije uspjelo"
 
 #: src/components/routes/system.tsx:596
-#: src/components/systems-table/systems-table.tsx:273
+#: src/components/systems-table/systems-table.tsx:281
 msgid "Filter..."
 msgstr "Filter..."
 
@@ -374,7 +374,7 @@ msgstr "Općenito"
 msgid "GPU Power Draw"
 msgstr ""
 
-#: src/components/systems-table/systems-table.tsx:300
+#: src/components/systems-table/systems-table.tsx:308
 msgid "Grid"
 msgstr "Mreža"
 
@@ -399,7 +399,7 @@ msgstr "Kernel"
 msgid "Language"
 msgstr "Jezik"
 
-#: src/components/systems-table/systems-table.tsx:286
+#: src/components/systems-table/systems-table.tsx:294
 msgid "Layout"
 msgstr "Izgled"
 
@@ -439,7 +439,7 @@ msgstr "Upravljajte postavkama prikaza i obavijesti."
 msgid "Max 1 min"
 msgstr "Maksimalno 1 minuta"
 
-#: src/components/systems-table/systems-table.tsx:165
+#: src/components/systems-table/systems-table.tsx:168
 msgid "Memory"
 msgstr "Memorija"
 
@@ -456,7 +456,7 @@ msgstr "Upotreba memorije Docker spremnika"
 msgid "Name"
 msgstr "Ime"
 
-#: src/components/systems-table/systems-table.tsx:181
+#: src/components/systems-table/systems-table.tsx:184
 msgid "Net"
 msgstr "Mreža"
 
@@ -472,8 +472,8 @@ msgstr "Mrežni promet javnih sučelja"
 msgid "No results found."
 msgstr "Nema rezultata."
 
-#: src/components/systems-table/systems-table.tsx:421
-#: src/components/systems-table/systems-table.tsx:494
+#: src/components/systems-table/systems-table.tsx:429
+#: src/components/systems-table/systems-table.tsx:502
 msgid "No systems found."
 msgstr "Nije pronađen nijedan sustav."
 
@@ -491,7 +491,7 @@ msgstr "Podrška za OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Prilikom svakog ponovnog pokretanja, sustavi u bazi podataka biti će ažurirani kako bi odgovarali sustavima definiranim u datoteci."
 
-#: src/components/systems-table/systems-table.tsx:528
+#: src/components/systems-table/systems-table.tsx:536
 msgid "Open menu"
 msgstr "Otvori menu"
 
@@ -524,7 +524,7 @@ msgstr "Lozinka mora imati najmanje 8 znakova."
 msgid "Password reset request received"
 msgstr "Zahtjev za ponovno postavljanje lozinke primljen"
 
-#: src/components/systems-table/systems-table.tsx:550
+#: src/components/systems-table/systems-table.tsx:558
 msgid "Pause"
 msgstr "Pauza"
 
@@ -594,7 +594,7 @@ msgstr "Primljeno"
 msgid "Reset Password"
 msgstr "Resetiraj Lozinku"
 
-#: src/components/systems-table/systems-table.tsx:545
+#: src/components/systems-table/systems-table.tsx:553
 msgid "Resume"
 msgstr "Nastavi"
 
@@ -648,7 +648,7 @@ msgstr "Prijava"
 msgid "SMTP settings"
 msgstr "SMTP postavke"
 
-#: src/components/systems-table/systems-table.tsx:308
+#: src/components/systems-table/systems-table.tsx:316
 msgid "Sort By"
 msgstr "Sortiraj po"
 
@@ -666,10 +666,10 @@ msgstr "Swap Iskorištenost"
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
-#: src/components/systems-table/systems-table.tsx:117
-#: src/components/systems-table/systems-table.tsx:125
-#: src/components/systems-table/systems-table.tsx:136
-#: src/components/systems-table/systems-table.tsx:465
+#: src/components/systems-table/systems-table.tsx:120
+#: src/components/systems-table/systems-table.tsx:128
+#: src/components/systems-table/systems-table.tsx:139
+#: src/components/systems-table/systems-table.tsx:473
 msgid "System"
 msgstr "Sistem"
 
@@ -681,7 +681,7 @@ msgstr "Sistemi"
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "Sistemima se može upravljati u <0>config.yml</0> datoteci unutar data direktorija."
 
-#: src/components/systems-table/systems-table.tsx:296
+#: src/components/systems-table/systems-table.tsx:304
 msgid "Table"
 msgstr "Tablica"
 
@@ -714,7 +714,7 @@ msgstr "Agent mora biti pokrenut na sistemu da bi se spojio. Kopirajte <0>docker
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Zatim se prijavite u backend i resetirajte lozinku korisničkog računa u tablici korisnika."
 
-#: src/components/systems-table/systems-table.tsx:573
+#: src/components/systems-table/systems-table.tsx:581
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Ova radnja se ne može poništiti. Ovo će trajno izbrisati sve trenutne zapise za {name} iz baze podataka."
 
@@ -763,7 +763,7 @@ msgstr "Pokreće se kada se status sistema promijeni"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Pokreće se kada iskorištenost bilo kojeg diska premaši prag"
 
-#: src/components/systems-table/systems-table.tsx:269
+#: src/components/systems-table/systems-table.tsx:277
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Ažurirano odmah. Kliknite na sistem za više informacija."
 
@@ -792,11 +792,11 @@ msgstr "Iskorišteno"
 msgid "Users"
 msgstr "Korisnici"
 
-#: src/components/systems-table/systems-table.tsx:278
+#: src/components/systems-table/systems-table.tsx:286
 msgid "View"
 msgstr "Prikaz"
 
-#: src/components/systems-table/systems-table.tsx:342
+#: src/components/systems-table/systems-table.tsx:350
 msgid "Visible Fields"
 msgstr "Vidljiva polja"
 

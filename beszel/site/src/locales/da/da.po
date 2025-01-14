@@ -47,10 +47,10 @@ msgid "30 days"
 msgstr "30 dage"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx:227
-#: src/components/systems-table/systems-table.tsx:313
-#: src/components/systems-table/systems-table.tsx:455
-#: src/components/systems-table/systems-table.tsx:465
+#: src/components/systems-table/systems-table.tsx:235
+#: src/components/systems-table/systems-table.tsx:321
+#: src/components/systems-table/systems-table.tsx:463
+#: src/components/systems-table/systems-table.tsx:473
 msgid "Actions"
 msgstr "Handlinger"
 
@@ -87,7 +87,7 @@ msgstr "Juster visningsindstillinger for diagrammer."
 msgid "Admin"
 msgstr "Admin"
 
-#: src/components/systems-table/systems-table.tsx:201
+#: src/components/systems-table/systems-table.tsx:204
 msgid "Agent"
 msgstr "Agent"
 
@@ -97,11 +97,11 @@ msgid "Alerts"
 msgstr "Alarmer"
 
 #: src/components/alerts/alert-button.tsx:88
-#: src/components/systems-table/systems-table.tsx:266
+#: src/components/systems-table/systems-table.tsx:274
 msgid "All Systems"
 msgstr "Alle systemer"
 
-#: src/components/systems-table/systems-table.tsx:570
+#: src/components/systems-table/systems-table.tsx:578
 msgid "Are you sure you want to delete {name}?"
 msgstr "Er du sikker på, at du vil slette {name}?"
 
@@ -159,7 +159,7 @@ msgstr "Binær"
 msgid "Cache / Buffers"
 msgstr "Cache / Buffere"
 
-#: src/components/systems-table/systems-table.tsx:581
+#: src/components/systems-table/systems-table.tsx:589
 msgid "Cancel"
 msgstr "Fortryd"
 
@@ -205,7 +205,7 @@ msgstr "Konfigurer hvordan du modtager advarselsmeddelelser."
 msgid "Confirm password"
 msgstr "Bekræft adgangskode"
 
-#: src/components/systems-table/systems-table.tsx:587
+#: src/components/systems-table/systems-table.tsx:595
 msgid "Continue"
 msgstr "Forsæt"
 
@@ -217,7 +217,7 @@ msgstr "Kopieret til udklipsholder"
 msgid "Copy"
 msgstr "Kopier"
 
-#: src/components/systems-table/systems-table.tsx:556
+#: src/components/systems-table/systems-table.tsx:564
 msgid "Copy host"
 msgstr "Kopier host"
 
@@ -229,7 +229,7 @@ msgstr "Kopier Linux kommando"
 msgid "Copy text"
 msgstr "Kopier tekst"
 
-#: src/components/systems-table/systems-table.tsx:157
+#: src/components/systems-table/systems-table.tsx:160
 msgid "CPU"
 msgstr "CPU"
 
@@ -257,11 +257,11 @@ msgstr "Oversigtspanel"
 msgid "Default time period"
 msgstr "Standard tidsperiode"
 
-#: src/components/systems-table/systems-table.tsx:562
+#: src/components/systems-table/systems-table.tsx:570
 msgid "Delete"
 msgstr "Slet"
 
-#: src/components/systems-table/systems-table.tsx:173
+#: src/components/systems-table/systems-table.tsx:176
 msgid "Disk"
 msgstr "Disk"
 
@@ -352,7 +352,7 @@ msgid "Failed to update alert"
 msgstr "Kunne ikke opdatere alarm"
 
 #: src/components/routes/system.tsx:596
-#: src/components/systems-table/systems-table.tsx:273
+#: src/components/systems-table/systems-table.tsx:281
 msgid "Filter..."
 msgstr "Filter..."
 
@@ -374,7 +374,7 @@ msgstr "Generelt"
 msgid "GPU Power Draw"
 msgstr "Gpu Strøm Træk"
 
-#: src/components/systems-table/systems-table.tsx:300
+#: src/components/systems-table/systems-table.tsx:308
 msgid "Grid"
 msgstr "Gitter"
 
@@ -399,7 +399,7 @@ msgstr "Kernel"
 msgid "Language"
 msgstr "Sprog"
 
-#: src/components/systems-table/systems-table.tsx:286
+#: src/components/systems-table/systems-table.tsx:294
 msgid "Layout"
 msgstr "Layout"
 
@@ -439,7 +439,7 @@ msgstr "Administrer display og notifikationsindstillinger."
 msgid "Max 1 min"
 msgstr "Maks. 1 min"
 
-#: src/components/systems-table/systems-table.tsx:165
+#: src/components/systems-table/systems-table.tsx:168
 msgid "Memory"
 msgstr "Hukommelse"
 
@@ -456,7 +456,7 @@ msgstr "Hukommelsesforbrug af dockercontainere"
 msgid "Name"
 msgstr "Navn"
 
-#: src/components/systems-table/systems-table.tsx:181
+#: src/components/systems-table/systems-table.tsx:184
 msgid "Net"
 msgstr "Net"
 
@@ -472,8 +472,8 @@ msgstr "Netværkstrafik af offentlige grænseflader"
 msgid "No results found."
 msgstr "Ingen resultater fundet."
 
-#: src/components/systems-table/systems-table.tsx:421
-#: src/components/systems-table/systems-table.tsx:494
+#: src/components/systems-table/systems-table.tsx:429
+#: src/components/systems-table/systems-table.tsx:502
 msgid "No systems found."
 msgstr "Ingen systemer fundet."
 
@@ -491,7 +491,7 @@ msgstr "OAuth 2 / OIDC understøttelse"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Ved hver genstart vil systemer i databasen blive opdateret til at matche de systemer, der er defineret i filen."
 
-#: src/components/systems-table/systems-table.tsx:528
+#: src/components/systems-table/systems-table.tsx:536
 msgid "Open menu"
 msgstr "Åbn menu"
 
@@ -524,7 +524,7 @@ msgstr "Adgangskoden skal være på mindst 8 tegn."
 msgid "Password reset request received"
 msgstr "Anmodning om nulstilling af adgangskode modtaget"
 
-#: src/components/systems-table/systems-table.tsx:550
+#: src/components/systems-table/systems-table.tsx:558
 msgid "Pause"
 msgstr "Pause"
 
@@ -594,7 +594,7 @@ msgstr "Modtaget"
 msgid "Reset Password"
 msgstr "Nulstil adgangskode"
 
-#: src/components/systems-table/systems-table.tsx:545
+#: src/components/systems-table/systems-table.tsx:553
 msgid "Resume"
 msgstr "Genoptag"
 
@@ -648,7 +648,7 @@ msgstr "Log ind"
 msgid "SMTP settings"
 msgstr "SMTP-indstillinger"
 
-#: src/components/systems-table/systems-table.tsx:308
+#: src/components/systems-table/systems-table.tsx:316
 msgid "Sort By"
 msgstr "Sorter efter"
 
@@ -666,10 +666,10 @@ msgstr "Swap forbrug"
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
-#: src/components/systems-table/systems-table.tsx:117
-#: src/components/systems-table/systems-table.tsx:125
-#: src/components/systems-table/systems-table.tsx:136
-#: src/components/systems-table/systems-table.tsx:465
+#: src/components/systems-table/systems-table.tsx:120
+#: src/components/systems-table/systems-table.tsx:128
+#: src/components/systems-table/systems-table.tsx:139
+#: src/components/systems-table/systems-table.tsx:473
 msgid "System"
 msgstr "System"
 
@@ -681,7 +681,7 @@ msgstr "Systemer"
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "Systemer kan være administreres i filen <0>config.yml</0> i din datamappe."
 
-#: src/components/systems-table/systems-table.tsx:296
+#: src/components/systems-table/systems-table.tsx:304
 msgid "Table"
 msgstr "Tabel"
 
@@ -714,7 +714,7 @@ msgstr "Agenten skal køre på systemet for at forbinde. Kopier <0>docker-compos
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Log derefter ind på backend og nulstil adgangskoden til din brugerkonto i tabellen brugere."
 
-#: src/components/systems-table/systems-table.tsx:573
+#: src/components/systems-table/systems-table.tsx:581
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Denne handling kan ikke fortrydes. Dette vil permanent slette alle aktuelle elementer for {name} fra databasen."
 
@@ -763,7 +763,7 @@ msgstr "Udløser når status skifter mellem op og ned"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Udløser når brugen af en disk overstiger en tærskel"
 
-#: src/components/systems-table/systems-table.tsx:269
+#: src/components/systems-table/systems-table.tsx:277
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Opdateret i realtid. Klik på et system for at se information."
 
@@ -792,11 +792,11 @@ msgstr "Brugt"
 msgid "Users"
 msgstr "Brugere"
 
-#: src/components/systems-table/systems-table.tsx:278
+#: src/components/systems-table/systems-table.tsx:286
 msgid "View"
 msgstr "Vis"
 
-#: src/components/systems-table/systems-table.tsx:342
+#: src/components/systems-table/systems-table.tsx:350
 msgid "Visible Fields"
 msgstr "Synlige felter"
 

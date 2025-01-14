@@ -47,10 +47,10 @@ msgid "30 days"
 msgstr "30 дни"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx:227
-#: src/components/systems-table/systems-table.tsx:313
-#: src/components/systems-table/systems-table.tsx:455
-#: src/components/systems-table/systems-table.tsx:465
+#: src/components/systems-table/systems-table.tsx:235
+#: src/components/systems-table/systems-table.tsx:321
+#: src/components/systems-table/systems-table.tsx:463
+#: src/components/systems-table/systems-table.tsx:473
 msgid "Actions"
 msgstr "Действия"
 
@@ -87,7 +87,7 @@ msgstr "Настрой опциите за показване на диагра�
 msgid "Admin"
 msgstr "Администратор"
 
-#: src/components/systems-table/systems-table.tsx:201
+#: src/components/systems-table/systems-table.tsx:204
 msgid "Agent"
 msgstr "Агент"
 
@@ -97,11 +97,11 @@ msgid "Alerts"
 msgstr "Тревоги"
 
 #: src/components/alerts/alert-button.tsx:88
-#: src/components/systems-table/systems-table.tsx:266
+#: src/components/systems-table/systems-table.tsx:274
 msgid "All Systems"
 msgstr "Всички системи"
 
-#: src/components/systems-table/systems-table.tsx:570
+#: src/components/systems-table/systems-table.tsx:578
 msgid "Are you sure you want to delete {name}?"
 msgstr "Сигурен ли си, че искаш да изтриеш {name}?"
 
@@ -159,7 +159,7 @@ msgstr "Двоичен код"
 msgid "Cache / Buffers"
 msgstr "Кеш / Буфери"
 
-#: src/components/systems-table/systems-table.tsx:581
+#: src/components/systems-table/systems-table.tsx:589
 msgid "Cancel"
 msgstr "Откажи"
 
@@ -205,7 +205,7 @@ msgstr "Настрои как получаваш нотификации за т�
 msgid "Confirm password"
 msgstr "Потвърди парола"
 
-#: src/components/systems-table/systems-table.tsx:587
+#: src/components/systems-table/systems-table.tsx:595
 msgid "Continue"
 msgstr "Продължи"
 
@@ -217,7 +217,7 @@ msgstr "Записано в клипборда"
 msgid "Copy"
 msgstr "Копирай"
 
-#: src/components/systems-table/systems-table.tsx:556
+#: src/components/systems-table/systems-table.tsx:564
 msgid "Copy host"
 msgstr "Копирай хоста"
 
@@ -229,7 +229,7 @@ msgstr "Копирай linux командата"
 msgid "Copy text"
 msgstr "Копирай текста"
 
-#: src/components/systems-table/systems-table.tsx:157
+#: src/components/systems-table/systems-table.tsx:160
 msgid "CPU"
 msgstr "Процесор"
 
@@ -257,11 +257,11 @@ msgstr "Табло"
 msgid "Default time period"
 msgstr "Времеви диапазон по подразбиране"
 
-#: src/components/systems-table/systems-table.tsx:562
+#: src/components/systems-table/systems-table.tsx:570
 msgid "Delete"
 msgstr "Изтрий"
 
-#: src/components/systems-table/systems-table.tsx:173
+#: src/components/systems-table/systems-table.tsx:176
 msgid "Disk"
 msgstr "Диск"
 
@@ -352,7 +352,7 @@ msgid "Failed to update alert"
 msgstr "Неуспешно обнови тревога"
 
 #: src/components/routes/system.tsx:596
-#: src/components/systems-table/systems-table.tsx:273
+#: src/components/systems-table/systems-table.tsx:281
 msgid "Filter..."
 msgstr "Филтрирай..."
 
@@ -374,7 +374,7 @@ msgstr "Общо"
 msgid "GPU Power Draw"
 msgstr "Консумация на ток от графична карта"
 
-#: src/components/systems-table/systems-table.tsx:300
+#: src/components/systems-table/systems-table.tsx:308
 msgid "Grid"
 msgstr "Мрежово"
 
@@ -399,7 +399,7 @@ msgstr "Linux Kernel"
 msgid "Language"
 msgstr "Език"
 
-#: src/components/systems-table/systems-table.tsx:286
+#: src/components/systems-table/systems-table.tsx:294
 msgid "Layout"
 msgstr "Подреждане"
 
@@ -439,7 +439,7 @@ msgstr "Управление на предпочитанията за показ
 msgid "Max 1 min"
 msgstr "Максимум 1 минута"
 
-#: src/components/systems-table/systems-table.tsx:165
+#: src/components/systems-table/systems-table.tsx:168
 msgid "Memory"
 msgstr "Памет"
 
@@ -456,7 +456,7 @@ msgstr "Използването на памет от docker контейнер�
 msgid "Name"
 msgstr "Име"
 
-#: src/components/systems-table/systems-table.tsx:181
+#: src/components/systems-table/systems-table.tsx:184
 msgid "Net"
 msgstr "Мрежа"
 
@@ -472,8 +472,8 @@ msgstr "Мрежов трафик на публични интерфейси"
 msgid "No results found."
 msgstr "Няма намерени резултати."
 
-#: src/components/systems-table/systems-table.tsx:421
-#: src/components/systems-table/systems-table.tsx:494
+#: src/components/systems-table/systems-table.tsx:429
+#: src/components/systems-table/systems-table.tsx:502
 msgid "No systems found."
 msgstr "Няма намерени системи."
 
@@ -491,7 +491,7 @@ msgstr "Поддръжка на OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "На всеки рестарт, системите в датабазата ще бъдат обновени да съвпадат със системите зададени във файла."
 
-#: src/components/systems-table/systems-table.tsx:528
+#: src/components/systems-table/systems-table.tsx:536
 msgid "Open menu"
 msgstr "Отвори менюто"
 
@@ -524,7 +524,7 @@ msgstr "Паролата трябва да е поне 8 символа."
 msgid "Password reset request received"
 msgstr "Получено е искането за нулиране на паролата"
 
-#: src/components/systems-table/systems-table.tsx:550
+#: src/components/systems-table/systems-table.tsx:558
 msgid "Pause"
 msgstr "Пауза"
 
@@ -594,7 +594,7 @@ msgstr "Получени"
 msgid "Reset Password"
 msgstr "Нулиране на парола"
 
-#: src/components/systems-table/systems-table.tsx:545
+#: src/components/systems-table/systems-table.tsx:553
 msgid "Resume"
 msgstr "Възобнови"
 
@@ -648,7 +648,7 @@ msgstr "Влез"
 msgid "SMTP settings"
 msgstr "Настройки за SMTP"
 
-#: src/components/systems-table/systems-table.tsx:308
+#: src/components/systems-table/systems-table.tsx:316
 msgid "Sort By"
 msgstr "Сортиране по"
 
@@ -666,10 +666,10 @@ msgstr "Използване на swap"
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
-#: src/components/systems-table/systems-table.tsx:117
-#: src/components/systems-table/systems-table.tsx:125
-#: src/components/systems-table/systems-table.tsx:136
-#: src/components/systems-table/systems-table.tsx:465
+#: src/components/systems-table/systems-table.tsx:120
+#: src/components/systems-table/systems-table.tsx:128
+#: src/components/systems-table/systems-table.tsx:139
+#: src/components/systems-table/systems-table.tsx:473
 msgid "System"
 msgstr "Система"
 
@@ -681,7 +681,7 @@ msgstr "Системи"
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "Системите могат да бъдат управлявани в <0>config.yml</0> файл намиращ се в директорията с данни."
 
-#: src/components/systems-table/systems-table.tsx:296
+#: src/components/systems-table/systems-table.tsx:304
 msgid "Table"
 msgstr "Таблица"
 
@@ -714,7 +714,7 @@ msgstr "Агемта трябва да работи на системата за
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "След това влез в backend-а и нулирай паролата за потребителския акаунт в таблицата за потребители."
 
-#: src/components/systems-table/systems-table.tsx:573
+#: src/components/systems-table/systems-table.tsx:581
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Това действие не може да бъде отменено. Това ще изтрие всички записи за {name} от датабазата."
 
@@ -763,7 +763,7 @@ msgstr "Задейства се, когато статуса превключв�
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Задейства се, когато употребата на някой диск надивши зададен праг"
 
-#: src/components/systems-table/systems-table.tsx:269
+#: src/components/systems-table/systems-table.tsx:277
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Актуализира се в реално време. Натисни на система за да видиш информация."
 
@@ -792,11 +792,11 @@ msgstr "Използвани"
 msgid "Users"
 msgstr "Потребители"
 
-#: src/components/systems-table/systems-table.tsx:278
+#: src/components/systems-table/systems-table.tsx:286
 msgid "View"
 msgstr "Изглед"
 
-#: src/components/systems-table/systems-table.tsx:342
+#: src/components/systems-table/systems-table.tsx:350
 msgid "Visible Fields"
 msgstr "Видими полета"
 
@@ -829,4 +829,3 @@ msgstr "YAML конфигурация"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "Настройките за потребителя ти са обновени."
-

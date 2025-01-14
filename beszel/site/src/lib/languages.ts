@@ -5,6 +5,11 @@ export default [
 		e: "🇵🇸",
 	},
 	{
+		lang: "bg",
+		label: "Български",
+		e: "🇧🇬",
+	},
+	{
 		lang: "cs",
 		label: "Čeština",
 		e: "🇨🇿",

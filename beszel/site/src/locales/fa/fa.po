@@ -47,10 +47,10 @@ msgid "30 days"
 msgstr "۳۰ روز"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx:227
-#: src/components/systems-table/systems-table.tsx:313
-#: src/components/systems-table/systems-table.tsx:455
-#: src/components/systems-table/systems-table.tsx:465
+#: src/components/systems-table/systems-table.tsx:235
+#: src/components/systems-table/systems-table.tsx:321
+#: src/components/systems-table/systems-table.tsx:463
+#: src/components/systems-table/systems-table.tsx:473
 msgid "Actions"
 msgstr "عملیات"
 
@@ -87,7 +87,7 @@ msgstr "تنظیم گزینه‌های نمایش برای نمودارها."
 msgid "Admin"
 msgstr "مدیر"
 
-#: src/components/systems-table/systems-table.tsx:201
+#: src/components/systems-table/systems-table.tsx:204
 msgid "Agent"
 msgstr "عامل"
 
@@ -97,11 +97,11 @@ msgid "Alerts"
 msgstr "هشدارها"
 
 #: src/components/alerts/alert-button.tsx:88
-#: src/components/systems-table/systems-table.tsx:266
+#: src/components/systems-table/systems-table.tsx:274
 msgid "All Systems"
 msgstr "همه سیستم‌ها"
 
-#: src/components/systems-table/systems-table.tsx:570
+#: src/components/systems-table/systems-table.tsx:578
 msgid "Are you sure you want to delete {name}?"
 msgstr "آیا مطمئن هستید که می‌خواهید {name} را حذف کنید؟"
 
@@ -159,7 +159,7 @@ msgstr "دودویی"
 msgid "Cache / Buffers"
 msgstr "حافظه پنهان / بافرها"
 
-#: src/components/systems-table/systems-table.tsx:581
+#: src/components/systems-table/systems-table.tsx:589
 msgid "Cancel"
 msgstr "لغو"
 
@@ -205,7 +205,7 @@ msgstr "نحوه دریافت هشدارهای اطلاع‌رسانی را پی
 msgid "Confirm password"
 msgstr "تأیید رمز عبور"
 
-#: src/components/systems-table/systems-table.tsx:587
+#: src/components/systems-table/systems-table.tsx:595
 msgid "Continue"
 msgstr "ادامه"
 
@@ -217,7 +217,7 @@ msgstr "در کلیپ‌بورد کپی شد"
 msgid "Copy"
 msgstr "کپی"
 
-#: src/components/systems-table/systems-table.tsx:556
+#: src/components/systems-table/systems-table.tsx:564
 msgid "Copy host"
 msgstr "کپی میزبان"
 
@@ -229,7 +229,7 @@ msgstr "کپی دستور لینوکس"
 msgid "Copy text"
 msgstr "کپی متن"
 
-#: src/components/systems-table/systems-table.tsx:157
+#: src/components/systems-table/systems-table.tsx:160
 msgid "CPU"
 msgstr "پردازنده"
 
@@ -257,11 +257,11 @@ msgstr "داشبورد"
 msgid "Default time period"
 msgstr "بازه زمانی پیش‌فرض"
 
-#: src/components/systems-table/systems-table.tsx:562
+#: src/components/systems-table/systems-table.tsx:570
 msgid "Delete"
 msgstr "حذف"
 
-#: src/components/systems-table/systems-table.tsx:173
+#: src/components/systems-table/systems-table.tsx:176
 msgid "Disk"
 msgstr "دیسک"
 
@@ -352,7 +352,7 @@ msgid "Failed to update alert"
 msgstr "به‌روزرسانی هشدار ناموفق بود"
 
 #: src/components/routes/system.tsx:596
-#: src/components/systems-table/systems-table.tsx:273
+#: src/components/systems-table/systems-table.tsx:281
 msgid "Filter..."
 msgstr "فیلتر..."
 
@@ -374,7 +374,7 @@ msgstr "عمومی"
 msgid "GPU Power Draw"
 msgstr "مصرف برق پردازنده گرافیکی"
 
-#: src/components/systems-table/systems-table.tsx:300
+#: src/components/systems-table/systems-table.tsx:308
 msgid "Grid"
 msgstr "جدول"
 
@@ -399,7 +399,7 @@ msgstr "هسته"
 msgid "Language"
 msgstr "زبان"
 
-#: src/components/systems-table/systems-table.tsx:286
+#: src/components/systems-table/systems-table.tsx:294
 msgid "Layout"
 msgstr "طرح‌بندی"
 
@@ -439,7 +439,7 @@ msgstr "مدیریت تنظیمات نمایش و اعلان‌ها."
 msgid "Max 1 min"
 msgstr "حداکثر ۱ دقیقه"
 
-#: src/components/systems-table/systems-table.tsx:165
+#: src/components/systems-table/systems-table.tsx:168
 msgid "Memory"
 msgstr "حافظه"
 
@@ -456,7 +456,7 @@ msgstr "میزان استفاده از حافظه کانتینرهای داکر"
 msgid "Name"
 msgstr "نام"
 
-#: src/components/systems-table/systems-table.tsx:181
+#: src/components/systems-table/systems-table.tsx:184
 msgid "Net"
 msgstr "شبکه"
 
@@ -472,8 +472,8 @@ msgstr "ترافیک شبکه رابط‌های عمومی"
 msgid "No results found."
 msgstr "هیچ نتیجه‌ای یافت نشد."
 
-#: src/components/systems-table/systems-table.tsx:421
-#: src/components/systems-table/systems-table.tsx:494
+#: src/components/systems-table/systems-table.tsx:429
+#: src/components/systems-table/systems-table.tsx:502
 msgid "No systems found."
 msgstr "هیچ سیستمی یافت نشد."
 
@@ -491,7 +491,7 @@ msgstr "پشتیبانی از OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "در هر بار راه‌اندازی مجدد، سیستم‌های موجود در پایگاه داده با سیستم‌های تعریف شده در فایل مطابقت داده می‌شوند."
 
-#: src/components/systems-table/systems-table.tsx:528
+#: src/components/systems-table/systems-table.tsx:536
 msgid "Open menu"
 msgstr "باز کردن منو"
 
@@ -524,7 +524,7 @@ msgstr "رمز عبور باید حداقل ۸ کاراکتر باشد."
 msgid "Password reset request received"
 msgstr "درخواست بازنشانی رمز عبور دریافت شد"
 
-#: src/components/systems-table/systems-table.tsx:550
+#: src/components/systems-table/systems-table.tsx:558
 msgid "Pause"
 msgstr "توقف"
 
@@ -594,7 +594,7 @@ msgstr "دریافت شد"
 msgid "Reset Password"
 msgstr "بازنشانی رمز عبور"
 
-#: src/components/systems-table/systems-table.tsx:545
+#: src/components/systems-table/systems-table.tsx:553
 msgid "Resume"
 msgstr "ادامه"
 
@@ -648,7 +648,7 @@ msgstr "ورود"
 msgid "SMTP settings"
 msgstr "تنظیمات SMTP"
 
-#: src/components/systems-table/systems-table.tsx:308
+#: src/components/systems-table/systems-table.tsx:316
 msgid "Sort By"
 msgstr "مرتب‌سازی بر اساس"
 
@@ -666,10 +666,10 @@ msgstr "میزان استفاده از Swap"
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
-#: src/components/systems-table/systems-table.tsx:117
-#: src/components/systems-table/systems-table.tsx:125
-#: src/components/systems-table/systems-table.tsx:136
-#: src/components/systems-table/systems-table.tsx:465
+#: src/components/systems-table/systems-table.tsx:120
+#: src/components/systems-table/systems-table.tsx:128
+#: src/components/systems-table/systems-table.tsx:139
+#: src/components/systems-table/systems-table.tsx:473
 msgid "System"
 msgstr "سیستم"
 
@@ -681,7 +681,7 @@ msgstr "سیستم‌ها"
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "سیستم‌ها ممکن است در یک فایل <0>config.yml</0> درون دایرکتوری داده شما مدیریت شوند."
 
-#: src/components/systems-table/systems-table.tsx:296
+#: src/components/systems-table/systems-table.tsx:304
 msgid "Table"
 msgstr "جدول"
 
@@ -714,7 +714,7 @@ msgstr "برای اتصال، عامل باید روی سیستم در حال ا
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "سپس وارد بخش پشتیبان شوید و رمز عبور حساب کاربری خود را در جدول کاربران بازنشانی کنید."
 
-#: src/components/systems-table/systems-table.tsx:573
+#: src/components/systems-table/systems-table.tsx:581
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "این عمل قابل برگشت نیست. این کار تمام رکوردهای فعلی {name} را برای همیشه از پایگاه داده حذف خواهد کرد."
 
@@ -763,7 +763,7 @@ msgstr "هنگامی که وضعیت بین بالا و پایین تغییر م
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "هنگامی که استفاده از هر دیسکی از یک آستانه فراتر رود، فعال می‌شود"
 
-#: src/components/systems-table/systems-table.tsx:269
+#: src/components/systems-table/systems-table.tsx:277
 msgid "Updated in real time. Click on a system to view information."
 msgstr "به صورت لحظه‌ای به‌روزرسانی می‌شود. برای مشاهده اطلاعات، روی یک سیستم کلیک کنید."
 
@@ -792,11 +792,11 @@ msgstr "استفاده شده"
 msgid "Users"
 msgstr "کاربران"
 
-#: src/components/systems-table/systems-table.tsx:278
+#: src/components/systems-table/systems-table.tsx:286
 msgid "View"
 msgstr "مشاهده"
 
-#: src/components/systems-table/systems-table.tsx:342
+#: src/components/systems-table/systems-table.tsx:350
 msgid "Visible Fields"
 msgstr "فیلدهای قابل مشاهده"
 

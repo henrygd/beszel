@@ -47,10 +47,10 @@ msgid "30 days"
 msgstr "30 ngày"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx:227
-#: src/components/systems-table/systems-table.tsx:313
-#: src/components/systems-table/systems-table.tsx:455
-#: src/components/systems-table/systems-table.tsx:465
+#: src/components/systems-table/systems-table.tsx:235
+#: src/components/systems-table/systems-table.tsx:321
+#: src/components/systems-table/systems-table.tsx:463
+#: src/components/systems-table/systems-table.tsx:473
 msgid "Actions"
 msgstr "Hành động"
 
@@ -87,7 +87,7 @@ msgstr "Điều chỉnh tùy chọn hiển thị cho biểu đồ."
 msgid "Admin"
 msgstr "Quản trị viên"
 
-#: src/components/systems-table/systems-table.tsx:201
+#: src/components/systems-table/systems-table.tsx:204
 msgid "Agent"
 msgstr "Tác nhân"
 
@@ -97,11 +97,11 @@ msgid "Alerts"
 msgstr "Cảnh báo"
 
 #: src/components/alerts/alert-button.tsx:88
-#: src/components/systems-table/systems-table.tsx:266
+#: src/components/systems-table/systems-table.tsx:274
 msgid "All Systems"
 msgstr "Tất cả Hệ thống"
 
-#: src/components/systems-table/systems-table.tsx:570
+#: src/components/systems-table/systems-table.tsx:578
 msgid "Are you sure you want to delete {name}?"
 msgstr "Bạn có chắc chắn muốn xóa {name} không?"
 
@@ -159,7 +159,7 @@ msgstr "Nhị phân"
 msgid "Cache / Buffers"
 msgstr "Bộ nhớ đệm / Bộ đệm"
 
-#: src/components/systems-table/systems-table.tsx:581
+#: src/components/systems-table/systems-table.tsx:589
 msgid "Cancel"
 msgstr "Hủy bỏ"
 
@@ -205,7 +205,7 @@ msgstr "Cấu hình cách bạn nhận thông báo cảnh báo."
 msgid "Confirm password"
 msgstr "Xác nhận mật khẩu"
 
-#: src/components/systems-table/systems-table.tsx:587
+#: src/components/systems-table/systems-table.tsx:595
 msgid "Continue"
 msgstr "Tiếp tục"
 
@@ -217,7 +217,7 @@ msgstr "Đã sao chép vào clipboard"
 msgid "Copy"
 msgstr "Sao chép"
 
-#: src/components/systems-table/systems-table.tsx:556
+#: src/components/systems-table/systems-table.tsx:564
 msgid "Copy host"
 msgstr "Sao chép máy chủ"
 
@@ -229,7 +229,7 @@ msgstr "Sao chép lệnh Linux"
 msgid "Copy text"
 msgstr "Sao chép văn bản"
 
-#: src/components/systems-table/systems-table.tsx:157
+#: src/components/systems-table/systems-table.tsx:160
 msgid "CPU"
 msgstr "CPU"
 
@@ -257,11 +257,11 @@ msgstr "Bảng điều khiển"
 msgid "Default time period"
 msgstr "Thời gian mặc định"
 
-#: src/components/systems-table/systems-table.tsx:562
+#: src/components/systems-table/systems-table.tsx:570
 msgid "Delete"
 msgstr "Xóa"
 
-#: src/components/systems-table/systems-table.tsx:173
+#: src/components/systems-table/systems-table.tsx:176
 msgid "Disk"
 msgstr "Đĩa"
 
@@ -352,7 +352,7 @@ msgid "Failed to update alert"
 msgstr "Cập nhật cảnh báo thất bại"
 
 #: src/components/routes/system.tsx:596
-#: src/components/systems-table/systems-table.tsx:273
+#: src/components/systems-table/systems-table.tsx:281
 msgid "Filter..."
 msgstr "Lọc..."
 
@@ -374,7 +374,7 @@ msgstr "Chung"
 msgid "GPU Power Draw"
 msgstr ""
 
-#: src/components/systems-table/systems-table.tsx:300
+#: src/components/systems-table/systems-table.tsx:308
 msgid "Grid"
 msgstr "Lưới"
 
@@ -399,7 +399,7 @@ msgstr "Nhân"
 msgid "Language"
 msgstr "Ngôn ngữ"
 
-#: src/components/systems-table/systems-table.tsx:286
+#: src/components/systems-table/systems-table.tsx:294
 msgid "Layout"
 msgstr "Bố cục"
 
@@ -439,7 +439,7 @@ msgstr "Quản lý tùy chọn hiển thị và thông báo."
 msgid "Max 1 min"
 msgstr "Tối đa 1 phút"
 
-#: src/components/systems-table/systems-table.tsx:165
+#: src/components/systems-table/systems-table.tsx:168
 msgid "Memory"
 msgstr "Bộ nhớ"
 
@@ -456,7 +456,7 @@ msgstr "Sử dụng bộ nhớ của các container Docker"
 msgid "Name"
 msgstr "Tên"
 
-#: src/components/systems-table/systems-table.tsx:181
+#: src/components/systems-table/systems-table.tsx:184
 msgid "Net"
 msgstr "Mạng"
 
@@ -472,8 +472,8 @@ msgstr "Lưu lượng mạng của các giao diện công cộng"
 msgid "No results found."
 msgstr "Không tìm thấy kết quả."
 
-#: src/components/systems-table/systems-table.tsx:421
-#: src/components/systems-table/systems-table.tsx:494
+#: src/components/systems-table/systems-table.tsx:429
+#: src/components/systems-table/systems-table.tsx:502
 msgid "No systems found."
 msgstr "Không tìm thấy hệ thống."
 
@@ -491,7 +491,7 @@ msgstr "Hỗ trợ OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Mỗi khi khởi động lại, các hệ thống trong cơ sở dữ liệu sẽ được cập nhật để khớp với các hệ thống được định nghĩa trong tệp."
 
-#: src/components/systems-table/systems-table.tsx:528
+#: src/components/systems-table/systems-table.tsx:536
 msgid "Open menu"
 msgstr "Mở menu"
 
@@ -524,7 +524,7 @@ msgstr "Mật khẩu phải có ít nhất 8 ký tự."
 msgid "Password reset request received"
 msgstr "Yêu cầu đặt lại mật khẩu đã được nhận"
 
-#: src/components/systems-table/systems-table.tsx:550
+#: src/components/systems-table/systems-table.tsx:558
 msgid "Pause"
 msgstr "Tạm dừng"
 
@@ -594,7 +594,7 @@ msgstr "Đã nhận"
 msgid "Reset Password"
 msgstr "Đặt lại Mật khẩu"
 
-#: src/components/systems-table/systems-table.tsx:545
+#: src/components/systems-table/systems-table.tsx:553
 msgid "Resume"
 msgstr "Tiếp tục"
 
@@ -648,7 +648,7 @@ msgstr "Đăng nhập"
 msgid "SMTP settings"
 msgstr "Cài đặt SMTP"
 
-#: src/components/systems-table/systems-table.tsx:308
+#: src/components/systems-table/systems-table.tsx:316
 msgid "Sort By"
 msgstr "Sắp xếp theo"
 
@@ -666,10 +666,10 @@ msgstr "Sử dụng Hoán đổi"
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
-#: src/components/systems-table/systems-table.tsx:117
-#: src/components/systems-table/systems-table.tsx:125
-#: src/components/systems-table/systems-table.tsx:136
-#: src/components/systems-table/systems-table.tsx:465
+#: src/components/systems-table/systems-table.tsx:120
+#: src/components/systems-table/systems-table.tsx:128
+#: src/components/systems-table/systems-table.tsx:139
+#: src/components/systems-table/systems-table.tsx:473
 msgid "System"
 msgstr "Hệ thống"
 
@@ -681,7 +681,7 @@ msgstr "Các hệ thống"
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "Các hệ thống có thể được quản lý trong tệp <0>config.yml</0> bên trong thư mục dữ liệu của bạn."
 
-#: src/components/systems-table/systems-table.tsx:296
+#: src/components/systems-table/systems-table.tsx:304
 msgid "Table"
 msgstr "Bảng"
 
@@ -714,7 +714,7 @@ msgstr "Tác nhân phải đang chạy trên hệ thống để kết nối. Sao
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Sau đó đăng nhập vào backend và đặt lại mật khẩu tài khoản người dùng của bạn trong bảng người dùng."
 
-#: src/components/systems-table/systems-table.tsx:573
+#: src/components/systems-table/systems-table.tsx:581
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Hành động này không thể hoàn tác. Điều này sẽ xóa vĩnh viễn tất cả các bản ghi hiện tại cho {name} khỏi cơ sở dữ liệu."
 
@@ -763,7 +763,7 @@ msgstr "Kích hoạt khi trạng thái chuyển đổi giữa lên và xuống"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Kích hoạt khi sử dụng bất kỳ đĩa nào vượt quá ngưỡng"
 
-#: src/components/systems-table/systems-table.tsx:269
+#: src/components/systems-table/systems-table.tsx:277
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Cập nhật theo thời gian thực. Nhấp vào một hệ thống để xem thông tin."
 
@@ -792,11 +792,11 @@ msgstr "Đã sử dụng"
 msgid "Users"
 msgstr "Người dùng"
 
-#: src/components/systems-table/systems-table.tsx:278
+#: src/components/systems-table/systems-table.tsx:286
 msgid "View"
 msgstr "Xem"
 
-#: src/components/systems-table/systems-table.tsx:342
+#: src/components/systems-table/systems-table.tsx:350
 msgid "Visible Fields"
 msgstr "Các cột hiển thị"
 

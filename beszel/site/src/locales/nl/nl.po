@@ -47,10 +47,10 @@ msgid "30 days"
 msgstr "30 dagen"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx:227
-#: src/components/systems-table/systems-table.tsx:313
-#: src/components/systems-table/systems-table.tsx:455
-#: src/components/systems-table/systems-table.tsx:465
+#: src/components/systems-table/systems-table.tsx:235
+#: src/components/systems-table/systems-table.tsx:321
+#: src/components/systems-table/systems-table.tsx:463
+#: src/components/systems-table/systems-table.tsx:473
 msgid "Actions"
 msgstr "Acties"
 
@@ -87,7 +87,7 @@ msgstr "Weergaveopties voor grafieken aanpassen."
 msgid "Admin"
 msgstr "Admin"
 
-#: src/components/systems-table/systems-table.tsx:201
+#: src/components/systems-table/systems-table.tsx:204
 msgid "Agent"
 msgstr "Agent"
 
@@ -97,11 +97,11 @@ msgid "Alerts"
 msgstr "Waarschuwingen"
 
 #: src/components/alerts/alert-button.tsx:88
-#: src/components/systems-table/systems-table.tsx:266
+#: src/components/systems-table/systems-table.tsx:274
 msgid "All Systems"
 msgstr "Alle systemen"
 
-#: src/components/systems-table/systems-table.tsx:570
+#: src/components/systems-table/systems-table.tsx:578
 msgid "Are you sure you want to delete {name}?"
 msgstr "Weet je zeker dat je {name} wilt verwijderen?"
 
@@ -159,7 +159,7 @@ msgstr "Binair"
 msgid "Cache / Buffers"
 msgstr "Cache / Buffers"
 
-#: src/components/systems-table/systems-table.tsx:581
+#: src/components/systems-table/systems-table.tsx:589
 msgid "Cancel"
 msgstr "Annuleren"
 
@@ -205,7 +205,7 @@ msgstr "Configureer hoe je waarschuwingsmeldingen ontvangt."
 msgid "Confirm password"
 msgstr "Bevestig wachtwoord"
 
-#: src/components/systems-table/systems-table.tsx:587
+#: src/components/systems-table/systems-table.tsx:595
 msgid "Continue"
 msgstr "Volgende"
 
@@ -217,7 +217,7 @@ msgstr "Gekopieerd naar het klembord"
 msgid "Copy"
 msgstr "Kopieer"
 
-#: src/components/systems-table/systems-table.tsx:556
+#: src/components/systems-table/systems-table.tsx:564
 msgid "Copy host"
 msgstr "Kopieer host"
 
@@ -229,7 +229,7 @@ msgstr "Kopieer Linux-opdracht"
 msgid "Copy text"
 msgstr "Kopieer tekst"
 
-#: src/components/systems-table/systems-table.tsx:157
+#: src/components/systems-table/systems-table.tsx:160
 msgid "CPU"
 msgstr "CPU"
 
@@ -257,11 +257,11 @@ msgstr "Dashboard"
 msgid "Default time period"
 msgstr "Standaard tijdsduur"
 
-#: src/components/systems-table/systems-table.tsx:562
+#: src/components/systems-table/systems-table.tsx:570
 msgid "Delete"
 msgstr "Verwijderen"
 
-#: src/components/systems-table/systems-table.tsx:173
+#: src/components/systems-table/systems-table.tsx:176
 msgid "Disk"
 msgstr "Schijf"
 
@@ -352,7 +352,7 @@ msgid "Failed to update alert"
 msgstr "Bijwerken waarschuwing mislukt"
 
 #: src/components/routes/system.tsx:596
-#: src/components/systems-table/systems-table.tsx:273
+#: src/components/systems-table/systems-table.tsx:281
 msgid "Filter..."
 msgstr "Filter..."
 
@@ -374,7 +374,7 @@ msgstr "Algemeen"
 msgid "GPU Power Draw"
 msgstr "GPU stroomverbruik"
 
-#: src/components/systems-table/systems-table.tsx:300
+#: src/components/systems-table/systems-table.tsx:308
 msgid "Grid"
 msgstr "Raster"
 
@@ -399,7 +399,7 @@ msgstr "Kernel"
 msgid "Language"
 msgstr "Taal"
 
-#: src/components/systems-table/systems-table.tsx:286
+#: src/components/systems-table/systems-table.tsx:294
 msgid "Layout"
 msgstr "Indeling"
 
@@ -439,7 +439,7 @@ msgstr "Weergave- en notificatievoorkeuren beheren."
 msgid "Max 1 min"
 msgstr "Max 1 min"
 
-#: src/components/systems-table/systems-table.tsx:165
+#: src/components/systems-table/systems-table.tsx:168
 msgid "Memory"
 msgstr "Geheugen"
 
@@ -456,7 +456,7 @@ msgstr "Geheugengebruik van docker containers"
 msgid "Name"
 msgstr "Naam"
 
-#: src/components/systems-table/systems-table.tsx:181
+#: src/components/systems-table/systems-table.tsx:184
 msgid "Net"
 msgstr "Net"
 
@@ -472,8 +472,8 @@ msgstr "Netwerkverkeer van publieke interfaces"
 msgid "No results found."
 msgstr "Geen resultaten gevonden."
 
-#: src/components/systems-table/systems-table.tsx:421
-#: src/components/systems-table/systems-table.tsx:494
+#: src/components/systems-table/systems-table.tsx:429
+#: src/components/systems-table/systems-table.tsx:502
 msgid "No systems found."
 msgstr "Geen systemen gevonden."
 
@@ -491,7 +491,7 @@ msgstr "OAuth 2 / OIDC ondersteuning"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Bij elke herstart zullen systemen in de database worden bijgewerkt om overeen te komen met de systemen die in het bestand zijn gedefinieerd."
 
-#: src/components/systems-table/systems-table.tsx:528
+#: src/components/systems-table/systems-table.tsx:536
 msgid "Open menu"
 msgstr "Open menu"
 
@@ -524,7 +524,7 @@ msgstr "Het wachtwoord moet minimaal 8 tekens bevatten."
 msgid "Password reset request received"
 msgstr "Wachtwoord reset aanvraag ontvangen"
 
-#: src/components/systems-table/systems-table.tsx:550
+#: src/components/systems-table/systems-table.tsx:558
 msgid "Pause"
 msgstr "Pauze"
 
@@ -594,7 +594,7 @@ msgstr "Ontvangen"
 msgid "Reset Password"
 msgstr "Wachtwoord resetten"
 
-#: src/components/systems-table/systems-table.tsx:545
+#: src/components/systems-table/systems-table.tsx:553
 msgid "Resume"
 msgstr "Hervatten"
 
@@ -648,7 +648,7 @@ msgstr "Aanmelden"
 msgid "SMTP settings"
 msgstr "SMTP-instellingen"
 
-#: src/components/systems-table/systems-table.tsx:308
+#: src/components/systems-table/systems-table.tsx:316
 msgid "Sort By"
 msgstr "Sorteren op"
 
@@ -666,10 +666,10 @@ msgstr "Swap gebruik"
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
-#: src/components/systems-table/systems-table.tsx:117
-#: src/components/systems-table/systems-table.tsx:125
-#: src/components/systems-table/systems-table.tsx:136
-#: src/components/systems-table/systems-table.tsx:465
+#: src/components/systems-table/systems-table.tsx:120
+#: src/components/systems-table/systems-table.tsx:128
+#: src/components/systems-table/systems-table.tsx:139
+#: src/components/systems-table/systems-table.tsx:473
 msgid "System"
 msgstr "Systeem"
 
@@ -681,7 +681,7 @@ msgstr "Systemen"
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "Systemen kunnen worden beheerd in een <0>config.yml</0> bestand in je data map."
 
-#: src/components/systems-table/systems-table.tsx:296
+#: src/components/systems-table/systems-table.tsx:304
 msgid "Table"
 msgstr "Tabel"
 
@@ -714,7 +714,7 @@ msgstr "De agent moet op het systeem draaien om te verbinden. Kopieer de<0>docke
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Log vervolgens in op de backend en reset het wachtwoord van je gebruikersaccount in het gebruikersoverzicht."
 
-#: src/components/systems-table/systems-table.tsx:573
+#: src/components/systems-table/systems-table.tsx:581
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Deze actie kan niet ongedaan worden gemaakt. Dit zal alle huidige records voor {name} permanent verwijderen uit de database."
 
@@ -763,7 +763,7 @@ msgstr "Triggert wanneer de status schakelt tussen up en down"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Triggert wanneer het gebruik van een schijf een drempelwaarde overschrijdt"
 
-#: src/components/systems-table/systems-table.tsx:269
+#: src/components/systems-table/systems-table.tsx:277
 msgid "Updated in real time. Click on a system to view information."
 msgstr "In realtime bijgewerkt. Klik op een systeem om informatie te bekijken."
 
@@ -792,11 +792,11 @@ msgstr "Gebruikt"
 msgid "Users"
 msgstr "Gebruikers"
 
-#: src/components/systems-table/systems-table.tsx:278
+#: src/components/systems-table/systems-table.tsx:286
 msgid "View"
 msgstr "Weergave"
 
-#: src/components/systems-table/systems-table.tsx:342
+#: src/components/systems-table/systems-table.tsx:350
 msgid "Visible Fields"
 msgstr "Zichtbare kolommen"
 
