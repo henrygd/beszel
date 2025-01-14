@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-01-14 11:53\n"
+"PO-Revision-Date: 2025-01-14 13:07\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -107,7 +107,7 @@ msgstr "您確定要刪除 {name} 嗎？"
 
 #: src/components/copy-to-clipboard.tsx:16
 msgid "Automatic copy requires a secure context."
-msgstr "自動複製需要一個安全的上下文。"
+msgstr "只有在受保護的環境才能自動複製。"
 
 #: src/components/routes/system.tsx:625
 msgid "Average"
@@ -141,7 +141,7 @@ msgstr "備份"
 #: src/components/routes/system.tsx:441
 #: src/lib/utils.ts:307
 msgid "Bandwidth"
-msgstr "網路"
+msgstr "網路流量"
 
 #: src/components/login/auth-form.tsx:289
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -181,7 +181,7 @@ msgstr "檢查{email}以取得重設連結。"
 
 #: src/components/routes/settings/layout.tsx:40
 msgid "Check logs for more details."
-msgstr "檢查Logs以取得更多資訊。"
+msgstr "檢查系統記錄以取得更多資訊。"
 
 #: src/components/routes/settings/notifications.tsx:183
 msgid "Check your notification service"
@@ -255,7 +255,7 @@ msgstr "控制面板"
 
 #: src/components/routes/settings/general.tsx:85
 msgid "Default time period"
-msgstr "預設的時間段"
+msgstr "預設時間段"
 
 #: src/components/systems-table/systems-table.tsx:570
 msgid "Delete"
@@ -267,7 +267,7 @@ msgstr "磁碟"
 
 #: src/components/routes/system.tsx:431
 msgid "Disk I/O"
-msgstr "磁碟I/O"
+msgstr "磁碟 I/O"
 
 #: src/components/charts/disk-chart.tsx:79
 #: src/components/routes/system.tsx:424
@@ -277,7 +277,7 @@ msgstr "磁碟使用量"
 
 #: src/components/routes/system.tsx:552
 msgid "Disk usage of {extraFsName}"
-msgstr "{extraFsName}磁碟使用量"
+msgstr "{extraFsName}的磁碟使用量"
 
 #: src/components/routes/system.tsx:395
 msgid "Docker CPU Usage"
@@ -285,7 +285,7 @@ msgstr "Docker CPU使用率"
 
 #: src/components/routes/system.tsx:416
 msgid "Docker Memory Usage"
-msgstr "Docker記憶體使用率"
+msgstr "Docker 記憶體使用率"
 
 #: src/components/routes/system.tsx:457
 msgid "Docker Network I/O"
@@ -372,7 +372,7 @@ msgstr "一般"
 
 #: src/components/routes/system.tsx:496
 msgid "GPU Power Draw"
-msgstr "GPU功耗"
+msgstr "GPU 功耗"
 
 #: src/components/systems-table/systems-table.tsx:308
 msgid "Grid"
@@ -428,7 +428,7 @@ msgstr "系統記錄"
 
 #: src/components/routes/settings/notifications.tsx:80
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
-msgstr "在尋找從哪裡建立警報嗎？點擊系統表中的小鈴鐺<0/>。"
+msgstr "在尋找從哪裡建立警報嗎？點擊系統列表中的小鈴鐺<0/>。"
 
 #: src/components/routes/settings/layout.tsx:85
 msgid "Manage display and notification preferences."
