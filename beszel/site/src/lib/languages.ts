@@ -119,4 +119,9 @@ export default [
 		label: "繁體中文",
 		e: "🇭🇰",
 	},
+	{
+		lang: "zh",
+		label: "繁體中文",
+		e: "🇹🇼",
+	},
 ] as const

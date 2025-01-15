@@ -24,6 +24,7 @@ const config: LinguiConfig = {
 		"sv",
 		"uk",
 		"vi",
+		"zh",
 		"zh-CN",
 		"zh-HK",
 	],
