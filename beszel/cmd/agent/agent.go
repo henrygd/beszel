@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"strings"
-	"io/ioutil"
 )
 
 func main() {
@@ -22,19 +21,19 @@ func main() {
 		os.Exit(0)
 	}
 
-	var pubKey []byte
-	if pubKeyEnv, exists := os.LookupEnv("KEY"); exists {
-		pubKey = []byte(pubKeyEnv)
-	} else {
-		keyFile := os.Getenv("KEY_FILE")
-		if keyFile != "" {
-			if keyData, err := ioutil.ReadFile(keyFile); err == nil {
-				pubKey = keyData
-			} else {
-				log.Fatalf("Failed to read key from file '%s': %v", keyFile, err)
-			}
-		} else {
-			log.Fatal("KEY environment variable is not set, and KEY_FILE environment variable is not set")
+	// Try to get the key from the KEY environment variable.
+	pubKey := []byte(os.Getenv("KEY"))
+
+	// If KEY is not set, try to read the key from the file specified by KEY_FILE.
+	if len(pubKey) == 0 {
+		keyFile, exists := os.LookupEnv("KEY_FILE")
+		if !exists {
+			log.Fatal("Must set KEY or KEY_FILE environment variable")
+		}
+		var err error
+		pubKey, err = os.ReadFile(keyFile)
+		if err != nil {
+			log.Fatal(err)
 		}
 	}
 
