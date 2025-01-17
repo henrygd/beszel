@@ -8,7 +8,7 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-01-17 11:38\n"
+"PO-Revision-Date: 2025-01-17 19:53\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -56,7 +56,7 @@ msgstr "작업"
 
 #: src/components/routes/home.tsx:61
 msgid "Active Alerts"
-msgstr "활성 경고"
+msgstr "활성화된 알림들"
 
 #: src/components/add-system.tsx:78
 msgid "Add <0>System</0>"
@@ -89,12 +89,12 @@ msgstr "관리자"
 
 #: src/components/systems-table/systems-table.tsx:204
 msgid "Agent"
-msgstr "에이젠"
+msgstr "에이전트"
 
 #: src/components/alerts/alert-button.tsx:32
 #: src/components/alerts/alert-button.tsx:68
 msgid "Alerts"
-msgstr "경고"
+msgstr "알림"
 
 #: src/components/alerts/alert-button.tsx:88
 #: src/components/systems-table/systems-table.tsx:274
@@ -119,7 +119,7 @@ msgstr "컨테이너의 평균 CPU 사용량"
 
 #: src/components/alerts/alerts-system.tsx:206
 msgid "Average exceeds <0>{value}{0}</0>"
-msgstr "평균이 <0>{value}{0}</0>을 초과합니다"
+msgstr "평균이 <0>{value}{0}</0>을(를) 초과합니다"
 
 #: src/components/routes/system.tsx:497
 msgid "Average power consumption of GPUs"
@@ -149,11 +149,11 @@ msgstr "Beszel은 OpenID Connect 및 많은 OAuth2 인증 제공자를 지원합
 
 #: src/components/routes/settings/notifications.tsx:127
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
-msgstr "Beszel은 <0>Shoutrrr</0>을 사용하여 인기 있는 알림 서비스와 통합합니다."
+msgstr "Beszel은 여러 인기 있는 알림 서비스와 연동하기 위해 <0>Shoutrrr</0>을 이용합니다."
 
 #: src/components/add-system.tsx:92
 msgid "Binary"
-msgstr "이진"
+msgstr "실행 파일"
 
 #: src/components/charts/mem-chart.tsx:89
 msgid "Cache / Buffers"
@@ -194,11 +194,11 @@ msgstr "클릭하여 복사"
 #: src/components/login/forgot-pass-form.tsx:83
 #: src/components/login/forgot-pass-form.tsx:89
 msgid "Command line instructions"
-msgstr "명령줄 지침"
+msgstr "명령어 사용 지침"
 
 #: src/components/routes/settings/notifications.tsx:77
 msgid "Configure how you receive alert notifications."
-msgstr "경고 알림을 받는 방법을 구성하세요."
+msgstr "알림 받을 방법을 설정하세요."
 
 #: src/components/login/auth-form.tsx:165
 #: src/components/login/auth-form.tsx:170
@@ -223,7 +223,7 @@ msgstr "호스트 복사"
 
 #: src/components/add-system.tsx:173
 msgid "Copy Linux command"
-msgstr "리눅스 명령 복사"
+msgstr "리눅스 명령어 복사"
 
 #: src/components/copy-to-clipboard.tsx:13
 msgid "Copy text"
@@ -246,7 +246,7 @@ msgstr "계정 생성"
 #. Dark theme
 #: src/components/mode-toggle.tsx:21
 msgid "Dark"
-msgstr "어두운"
+msgstr "어둡게"
 
 #: src/components/command-palette.tsx:81
 #: src/components/routes/home.tsx:34
@@ -255,7 +255,7 @@ msgstr "대시보드"
 
 #: src/components/routes/settings/general.tsx:85
 msgid "Default time period"
-msgstr "기본 시간 기간"
+msgstr "기본 기간"
 
 #: src/components/systems-table/systems-table.tsx:570
 msgid "Delete"
