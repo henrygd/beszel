@@ -154,7 +154,7 @@ export function UserAuthForm({
 									type="password"
 									autoComplete="current-password"
 									disabled={isLoading || isOauthLoading}
-									className="ps-9 placeholder:lowercase"
+									className="ps-9 placeholder"
 								/>
 								{errors?.password && <p className="px-1 text-xs text-red-600">{errors.password}</p>}
 							</div>
@@ -172,7 +172,7 @@ export function UserAuthForm({
 										type="password"
 										autoComplete="current-password"
 										disabled={isLoading || isOauthLoading}
-										className="ps-9 placeholder:lowercase"
+										className="ps-9 placeholder"
 									/>
 									{errors?.passwordConfirm && <p className="px-1 text-xs text-red-600">{errors.passwordConfirm}</p>}
 								</div>
