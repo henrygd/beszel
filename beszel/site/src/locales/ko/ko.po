@@ -8,7 +8,7 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-01-17 19:53\n"
+"PO-Revision-Date: 2025-01-17 21:02\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -281,15 +281,15 @@ msgstr "{extraFsName}의 디스크 사용량"
 
 #: src/components/routes/system.tsx:395
 msgid "Docker CPU Usage"
-msgstr "도커 CPU 사용량"
+msgstr "Docker CPU 사용량"
 
 #: src/components/routes/system.tsx:416
 msgid "Docker Memory Usage"
-msgstr "도커 메모리 사용량"
+msgstr "Docker 메모리 사용량"
 
 #: src/components/routes/system.tsx:457
 msgid "Docker Network I/O"
-msgstr "도커 네트워크 I/O"
+msgstr "Docker 네트워크 I/O"
 
 #: src/components/command-palette.tsx:124
 msgid "Documentation"
@@ -349,7 +349,7 @@ msgstr "테스트 알림 전송 실패"
 
 #: src/components/alerts/alerts-system.tsx:24
 msgid "Failed to update alert"
-msgstr "경고 업데이트 실패"
+msgstr "알림 수정 실패"
 
 #: src/components/routes/system.tsx:596
 #: src/components/systems-table/systems-table.tsx:281
@@ -384,7 +384,7 @@ msgstr "호스트 / IP"
 
 #: src/components/login/forgot-pass-form.tsx:93
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
-msgstr "관리자 계정의 비밀번호를 잃어버린 경우, 다음 명령을 사용하여 재설정할 수 있습니다."
+msgstr "관리자 계정의 비밀번호를 잃어버린 경우, 다음 명령어를 사용하여 재설정할 수 있습니다."
 
 #: src/components/login/auth-form.tsx:16
 msgid "Invalid email address."
@@ -406,7 +406,7 @@ msgstr "레이아웃"
 #. Light theme
 #: src/components/mode-toggle.tsx:16
 msgid "Light"
-msgstr "밝은"
+msgstr "밝게"
 
 #: src/components/navbar.tsx:104
 msgid "Log Out"
@@ -419,7 +419,7 @@ msgstr "로그인"
 #: src/components/login/auth-form.tsx:34
 #: src/components/login/forgot-pass-form.tsx:15
 msgid "Login attempt failed"
-msgstr "로그인 시도 실패"
+msgstr "로그인 실패"
 
 #: src/components/command-palette.tsx:156
 #: src/components/navbar.tsx:85
@@ -428,16 +428,16 @@ msgstr "로그"
 
 #: src/components/routes/settings/notifications.tsx:80
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
-msgstr "경고를 생성할 위치를 찾고 계신가요? 시스템 테이블의 종 <0/> 아이콘을 클릭하세요."
+msgstr "알림을 생성하려 하시나요? 시스템 테이블의 종 <0/> 아이콘을 클릭하세요."
 
 #: src/components/routes/settings/layout.tsx:85
 msgid "Manage display and notification preferences."
-msgstr "디스플레이 및 알림 환경설정을 관리하세요."
+msgstr "디스플레이 및 알림 설정"
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx:628
 msgid "Max 1 min"
-msgstr "최대 1분"
+msgstr "1분간 최댓값"
 
 #: src/components/systems-table/systems-table.tsx:168
 msgid "Memory"
@@ -450,7 +450,7 @@ msgstr "메모리 사용량"
 
 #: src/components/routes/system.tsx:417
 msgid "Memory usage of docker containers"
-msgstr "도커 컨테이너의 메모리 사용량"
+msgstr "Docker 컨테이너의 메모리 사용량"
 
 #: src/components/add-system.tsx:116
 msgid "Name"
@@ -458,11 +458,11 @@ msgstr "이름"
 
 #: src/components/systems-table/systems-table.tsx:184
 msgid "Net"
-msgstr "네트"
+msgstr "네트워크"
 
 #: src/components/routes/system.tsx:458
 msgid "Network traffic of docker containers"
-msgstr "도커 컨테이너의 네트워크 트래픽"
+msgstr "Docker 컨테이너의 네트워크 트래픽"
 
 #: src/components/routes/system.tsx:443
 msgid "Network traffic of public interfaces"
@@ -489,7 +489,7 @@ msgstr "OAuth 2 / OIDC 지원"
 
 #: src/components/routes/settings/config-yaml.tsx:61
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
-msgstr "각 재시작 시, 데이터베이스의 시스템이 파일에 정의된 시스템과 일치하도록 업데이트됩니다."
+msgstr "매 시작 시, 데이터베이스가 파일에 정의된 시스템과 일치하도록 업데이트됩니다."
 
 #: src/components/systems-table/systems-table.tsx:536
 msgid "Open menu"
@@ -501,7 +501,7 @@ msgstr "또는 계속하기"
 
 #: src/components/alerts/alert-button.tsx:109
 msgid "Overwrite existing alerts"
-msgstr "기존 경고 덮어쓰기"
+msgstr "기존 알림 덮어쓰기"
 
 #: src/components/command-palette.tsx:84
 msgid "Page"
@@ -530,7 +530,7 @@ msgstr "일시 중지"
 
 #: src/components/routes/settings/notifications.tsx:95
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
-msgstr "경고가 전달되도록 <0>SMTP 서버를 구성</0>하세요."
+msgstr "알림이 전달되도록 <0>SMTP 서버를 구성</0>하세요."
 
 #: src/components/alerts/alerts-system.tsx:25
 msgid "Please check logs for more details."
@@ -547,7 +547,7 @@ msgstr "관리자 계정을 생성하세요."
 
 #: src/components/login/auth-form.tsx:233
 msgid "Please enable pop-ups for this site"
-msgstr "이 사이트에 대한 팝업을 활성화하세요."
+msgstr "이 사이트에 대해 팝업을 활성화하세요."
 
 #: src/lib/utils.ts:39
 msgid "Please log in again"
@@ -555,7 +555,7 @@ msgstr "다시 로그인하세요."
 
 #: src/components/login/auth-form.tsx:292
 msgid "Please see <0>the documentation</0> for instructions."
-msgstr "지침은 <0>문서</0>를 참조하세요."
+msgstr "사용법은 <0>문서</0>를 참조하세요."
 
 #: src/components/login/login.tsx:40
 msgid "Please sign in to your account"
@@ -617,7 +617,7 @@ msgstr "시스템 또는 설정 검색..."
 
 #: src/components/alerts/alert-button.tsx:71
 msgid "See <0>notification settings</0> to configure how you receive alerts."
-msgstr "경고를 받는 방법을 구성하려면 <0>알림 설정</0>을 참조하세요."
+msgstr "알림을 받는 방법을 구성하려면 <0>알림 설정</0>을 참조하세요."
 
 #. Network bytes sent (upload)
 #: src/components/charts/area-chart.tsx:64
@@ -683,7 +683,7 @@ msgstr "시스템은 데이터 디렉토리 내의 <0>config.yml</0> 파일에�
 
 #: src/components/systems-table/systems-table.tsx:304
 msgid "Table"
-msgstr "테이블"
+msgstr "표"
 
 #: src/components/routes/system.tsx:484
 #: src/lib/utils.ts:314
@@ -728,7 +728,7 @@ msgstr "루트 파일 시스템의 처리량"
 
 #: src/components/routes/settings/notifications.tsx:106
 msgid "To email(s)"
-msgstr "이메일로"
+msgstr "받는사람(들)"
 
 #: src/components/routes/system.tsx:359
 #: src/components/routes/system.tsx:372
@@ -745,7 +745,7 @@ msgstr "센서가 임계값을 초과할 때 트리거됩니다."
 
 #: src/lib/utils.ts:310
 msgid "Triggers when combined up/down exceeds a threshold"
-msgstr "상승/하강이 결합되어 임계값을 초과할 때 트리거됩니다."
+msgstr "임계값을 초과하여 상승/하강할 때 트리거됩니다."
 
 #: src/lib/utils.ts:292
 msgid "Triggers when CPU usage exceeds a threshold"
@@ -757,7 +757,7 @@ msgstr "메모리 사용량이 임계값을 초과할 때 트리거됩니다."
 
 #: src/lib/utils.ts:285
 msgid "Triggers when status switches between up and down"
-msgstr "상태가 상승과 하강 사이에서 전환될 때 트리거됩니다."
+msgstr "값의 증가 또는 감소가 감지될 때 트리거됩니다."
 
 #: src/lib/utils.ts:304
 msgid "Triggers when usage of any disk exceeds a threshold"
@@ -798,7 +798,7 @@ msgstr "보기"
 
 #: src/components/systems-table/systems-table.tsx:350
 msgid "Visible Fields"
-msgstr "표시 열"
+msgstr "표시할 열"
 
 #: src/components/routes/system.tsx:662
 msgid "Waiting for enough records to display"
