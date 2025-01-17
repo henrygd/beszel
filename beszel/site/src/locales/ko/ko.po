@@ -8,7 +8,7 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-12-17 21:36\n"
+"PO-Revision-Date: 2025-01-17 11:38\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -123,7 +123,7 @@ msgstr "평균이 <0>{value}{0}</0>을 초과합니다"
 
 #: src/components/routes/system.tsx:497
 msgid "Average power consumption of GPUs"
-msgstr ""
+msgstr "평균 GPU들의 전원 사용량"
 
 #: src/components/routes/system.tsx:385
 msgid "Average system-wide CPU utilization"
@@ -131,7 +131,7 @@ msgstr "시스템 전체의 평균 CPU 사용량"
 
 #: src/components/routes/system.tsx:515
 msgid "Average utilization of {0}"
-msgstr ""
+msgstr "평균 {0} 사용량"
 
 #: src/components/command-palette.tsx:170
 #: src/components/navbar.tsx:93
@@ -372,7 +372,7 @@ msgstr "일반"
 
 #: src/components/routes/system.tsx:496
 msgid "GPU Power Draw"
-msgstr ""
+msgstr "GPU 전원 사용량"
 
 #: src/components/systems-table/systems-table.tsx:308
 msgid "Grid"
@@ -829,3 +829,4 @@ msgstr "YAML 구성"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "사용자 설정이 업데이트되었습니다."
+
