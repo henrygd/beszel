@@ -5,6 +5,10 @@ is_alpine() {
   [ -f /etc/alpine-release ]
 }
 
+is_openwrt() {
+  cat /etc/os-release | grep -q "OpenWrt"
+}
+
 version=0.0.1
 # Define default values
 PORT=45876
@@ -99,6 +103,17 @@ if [ "$UNINSTALL" = true ]; then
     # Remove log files
     echo "Removing log files..."
     rm -f /var/log/beszel-agent.log /var/log/beszel-agent.err
+  elif is_openwrt; then
+    echo "Stopping and disabling the agent service..."
+    service beszel-agent stop
+    service beszel-agent disable
+
+    echo "Removing the OpenWRT service files..."
+    rm -f /etc/init.d/beszel-agent
+
+    # Remove the update service if it exists
+    echo "Removing the daily update service..."
+    rm -f /etc/crontabs/beszel
 
   else
     echo "Stopping and disabling the agent service..."
@@ -118,12 +133,12 @@ if [ "$UNINSTALL" = true ]; then
     systemctl daemon-reload
   fi
 
-  echo "Removing the Beszel Agent directory..."
-  rm -rf /opt/beszel-agent
+echo "Removing the Beszel Agent directory..."
+rm -rf /opt/beszel-agent
 
-  echo "Removing the dedicated user for the agent service..."
-  killall beszel-agent 2>/dev/null
-  if is_alpine; then
+echo "Removing the dedicated user for the agent service..."
+killall beszel-agent 2>/dev/null
+if is_alpine || is_openwrt; then
     deluser beszel 2>/dev/null
   else
     userdel beszel 2>/dev/null
@@ -158,6 +173,11 @@ if is_alpine; then
     apk update
     apk add tar curl coreutils shadow
   fi
+elif is_openwrt; then
+    if ! package_installed tar || ! package_installed curl || ! package_installed coreutils; then
+        opkg update
+        opkg install tar curl coreutils
+    fi
 elif package_installed apt-get; then
   if ! package_installed tar || ! package_installed curl || ! package_installed sha256sum; then
     apt-get update
@@ -219,7 +239,7 @@ fi
 # Download and install the Beszel Agent
 echo "Downloading and installing the agent..."
 
-OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+OS=$(uname -s | sed -e 'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/')
 ARCH=$(uname -m | sed -e 's/x86_64/amd64/' -e 's/armv6l/arm/' -e 's/armv7l/arm/' -e 's/aarch64/arm64/')
 FILE_NAME="beszel-agent_${OS}_${ARCH}.tar.gz"
 LATEST_VERSION=$(curl -s "$GITHUB_API_URL""/repos/henrygd/beszel/releases/latest" | grep -o '"tag_name": "v[^"]*"' | cut -d'"' -f4 | tr -d 'v')
@@ -350,6 +370,73 @@ EOF
     rc-service beszel-agent status
     exit 1
   fi
+
+elif is_openwrt; then
+  echo "Creating procd init script service for OpenWRT..."
+  cat >/etc/init.d/beszel-agent <<EOF
+#!/bin/sh /etc/rc.common
+
+USE_PROCD=1
+START=99
+
+start_service() {
+    procd_open_instance
+    procd_set_param command /opt/beszel-agent/beszel-agent
+    procd_set_param user beszel
+    procd_set_param pidfile /var/run/beszel-agent.pid
+    procd_set_param env PORT="$PORT"
+    procd_set_param env KEY="$KEY"
+    procd_set_param stdout 1
+    procd_set_param stdout 1
+    procd_close_instance
+}
+
+stop_service() {
+    killall beszel-agent
+}
+
+# Extra command to trigger agent update
+EXTRA_COMMANDS="update"
+EXTRA_HELP="        update          Update the Beszel agent"
+
+update() {
+    if /opt/beszel-agent/beszel-agent update | grep -q "Successfully updated"; then
+        start_service
+    fi
+}
+
+EOF
+
+    # Enable the service
+    chmod +x /etc/init.d/beszel-agent
+    service beszel-agent enable
+
+    # Start the service
+    service beszel-agent restart
+
+    # Auto-update service for OpenWRT using a crontab job
+    printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
+    read AUTO_UPDATE
+    case "$AUTO_UPDATE" in
+    [Yy]*)
+        echo "Setting up daily automatic updates for beszel-agent..."
+
+        cat >/etc/crontabs/beszel <<EOF
+0 0 * * * /etc/init.d/beszel-agent update
+EOF
+
+        /etc/init.d/cron restart
+
+        printf "\nAutomatic daily updates have been enabled.\n"
+        ;;
+    esac
+
+    # Check service status
+    if ! service beszel-agent running >/dev/null 2>&1; then
+        echo "Error: The Beszel Agent service is not running."
+        service beszel-agent status
+        exit 1
+    fi
 
 else
   # Original systemd service installation code
