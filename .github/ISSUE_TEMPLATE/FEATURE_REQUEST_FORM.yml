@@ -1,7 +1,7 @@
 name: Feature Request
 description: Use this template for requesting a new feature or change.
 title: "[Feature]: "
-labels: ["enhancement", "needs-review"]
+labels: ["enhancement"]
 body:
   - type: markdown
     attributes:
