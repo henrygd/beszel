@@ -62,7 +62,14 @@ body:
       label: What browser(s) are you seeing the problem on?
       placeholder: Chrome, Firefox, Safari, etc.
     validations:
-      required: true
+      required: false
+  - type: input
+    id: operating-system
+    attributes:
+      label: What Operation System are you seeing the problem on?
+      placeholder: Ubuntu, Rocky Linux, Windows, MacOs, etc.
+    validations:
+      required: false
   - type: textarea
     id: logs
     attributes:
