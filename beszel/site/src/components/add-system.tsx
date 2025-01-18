@@ -33,14 +33,28 @@ export function AddSystemButton({ className }: { className?: string }) {
     image: "henrygd/beszel-agent"
     container_name: "beszel-agent"
     restart: unless-stopped
-    network_mode: host
+    ports:
+      - 45876:45876
     volumes:
+      - procnet:/dev/shm/fakenet
       - /var/run/docker.sock:/var/run/docker.sock:ro
       # monitor other disks / partitions by mounting a folder in /extra-filesystems
       # - /mnt/disk/.beszel:/extra-filesystems/sda1:ro
     environment:
       PORT: ${port}
-      KEY: "${publicKey}"`)
+      KEY: "${publicKey}"
+
+  beszel-fakenet:
+    image: henrygd/beszel-fakenet
+    container_name: fakenet
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - procnet:/dev/shm/fakenet
+
+volumes:
+  procnet: {}
+`)
 	}
 
 	function copyInstallCommand(port: string) {
