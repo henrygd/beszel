@@ -18,6 +18,9 @@ jobs:
           - image: henrygd/beszel-agent
             context: ./beszel
             dockerfile: ./beszel/dockerfile_Agent
+          - image: henrygd/beszel-agent-fakenet
+            context: ./beszel
+            dockerfile: ./beszel/dockerfile_Fakenet
     permissions:
       contents: read
       packages: write
