@@ -1,6 +1,5 @@
 #!/bin/sh
 
-# Move is_alpine function to the top of the file
 is_alpine() {
   [ -f /etc/alpine-release ]
 }
@@ -9,7 +8,6 @@ is_openwrt() {
   cat /etc/os-release | grep -q "OpenWrt"
 }
 
-version=0.0.1
 # Define default values
 PORT=45876
 UNINSTALL=false
@@ -133,12 +131,12 @@ if [ "$UNINSTALL" = true ]; then
     systemctl daemon-reload
   fi
 
-echo "Removing the Beszel Agent directory..."
-rm -rf /opt/beszel-agent
+  echo "Removing the Beszel Agent directory..."
+  rm -rf /opt/beszel-agent
 
-echo "Removing the dedicated user for the agent service..."
-killall beszel-agent 2>/dev/null
-if is_alpine || is_openwrt; then
+  echo "Removing the dedicated user for the agent service..."
+  killall beszel-agent 2>/dev/null
+  if is_alpine || is_openwrt; then
     deluser beszel 2>/dev/null
   else
     userdel beszel 2>/dev/null
@@ -174,10 +172,10 @@ if is_alpine; then
     apk add tar curl coreutils shadow
   fi
 elif is_openwrt; then
-    if ! package_installed tar || ! package_installed curl || ! package_installed coreutils; then
-        opkg update
-        opkg install tar curl coreutils
-    fi
+  if ! package_installed tar || ! package_installed curl || ! package_installed coreutils; then
+    opkg update
+    opkg install tar curl coreutils
+  fi
 elif package_installed apt-get; then
   if ! package_installed tar || ! package_installed curl || ! package_installed sha256sum; then
     apt-get update
@@ -407,36 +405,36 @@ update() {
 
 EOF
 
-    # Enable the service
-    chmod +x /etc/init.d/beszel-agent
-    service beszel-agent enable
+  # Enable the service
+  chmod +x /etc/init.d/beszel-agent
+  service beszel-agent enable
 
-    # Start the service
-    service beszel-agent restart
+  # Start the service
+  service beszel-agent restart
 
-    # Auto-update service for OpenWRT using a crontab job
-    printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
-    read AUTO_UPDATE
-    case "$AUTO_UPDATE" in
-    [Yy]*)
-        echo "Setting up daily automatic updates for beszel-agent..."
+  # Auto-update service for OpenWRT using a crontab job
+  printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
+  read AUTO_UPDATE
+  case "$AUTO_UPDATE" in
+  [Yy]*)
+    echo "Setting up daily automatic updates for beszel-agent..."
 
-        cat >/etc/crontabs/beszel <<EOF
+    cat >/etc/crontabs/beszel <<EOF
 0 0 * * * /etc/init.d/beszel-agent update
 EOF
 
-        /etc/init.d/cron restart
+    /etc/init.d/cron restart
 
-        printf "\nAutomatic daily updates have been enabled.\n"
-        ;;
-    esac
+    printf "\nAutomatic daily updates have been enabled.\n"
+    ;;
+  esac
 
-    # Check service status
-    if ! service beszel-agent running >/dev/null 2>&1; then
-        echo "Error: The Beszel Agent service is not running."
-        service beszel-agent status
-        exit 1
-    fi
+  # Check service status
+  if ! service beszel-agent running >/dev/null 2>&1; then
+    echo "Error: The Beszel Agent service is not running."
+    service beszel-agent status
+    exit 1
+  fi
 
 else
   # Original systemd service installation code
