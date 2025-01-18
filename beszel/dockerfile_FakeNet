@@ -1,0 +1,10 @@
+FROM alpine:latest
+
+RUN \
+    apk add bash && \
+    mkdir -p /hostproc/net
+
+COPY fakenet.sh /usr/local/bin/fakenet.sh
+RUN chmod +x /usr/local/bin/fakenet.sh
+
+ENTRYPOINT ["/usr/local/bin/fakenet.sh"]
