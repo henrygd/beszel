@@ -1,0 +1,71 @@
+name: Bug Report
+description: Use this template to report a bug or issue.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! You should only use this form for issues, to request a change or feature use the [feature request form](https://github.com/henrygd/beszel).
+  - type: checkboxes
+    attributes:
+      label: Pre-work
+      description: |
+        Before opening an issue make sure you've checked the resources below first, any issues that could have been solved by reading the docs or existing issues will be closed.
+      options:
+      - label: I have read the [docs](https://beszel.dev/guide/what-is-beszel).
+        required: true
+      - label: I have searched open and closed issues.
+        required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Explain the issue you experienced, please be clear and concise.
+      placeholder: I went to the coffee pot and it was empty.
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: In a perfect world, what should have happened?
+      placeholder: When I got to the coffee pot, it should have been full.
+    validations:
+      required: true
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Describe how to reproduce the issue in repeatable steps.
+      placeholder: |
+        1. Go to the coffee pot.
+        2. Make more coffee.
+        3. Pour it into a cup.
+    validations:
+      required: true
+  - type: dropdown
+    id: deployment-environment
+    attributes:
+      label: Deployment Environment
+      description: How did you deploy the application?
+      options:
+        - Docker Compose
+        - Docker Run
+        - Binary
+      default: 0
+    validations:
+      required: true
+  - type: input
+    id: browsers
+    attributes:
+      label: What browser(s) are you seeing the problem on?
+      placeholder: Chrome, Firefox, Safari, etc.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+      render: shell
