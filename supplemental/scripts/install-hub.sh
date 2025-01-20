@@ -19,8 +19,11 @@ GITHUB_PROXY_URL="https://ghfast.top/" # Default proxy URL
 
 # Function to ensure the proxy URL ends with a /
 ensure_trailing_slash() {
-  if [ -n "$1" ] && [ "${1: -1}" != "/" ]; then
-    echo "$1/"
+  if [ -n "$1" ]; then
+    case "$1" in
+    */) echo "$1" ;;
+    *) echo "$1/" ;;
+    esac
   else
     echo "$1"
   fi

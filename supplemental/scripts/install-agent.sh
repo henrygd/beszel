@@ -10,8 +10,11 @@ is_openwrt() {
 
 # Function to ensure the proxy URL ends with a /
 ensure_trailing_slash() {
-  if [ -n "$1" ] && [ "${1: -1}" != "/" ]; then
-    echo "$1/"
+  if [ -n "$1" ]; then
+    case "$1" in
+    */) echo "$1" ;;
+    *) echo "$1/" ;;
+    esac
   else
     echo "$1"
   fi
@@ -23,7 +26,7 @@ UNINSTALL=false
 CHINA_MAINLAND=false
 GITHUB_URL="https://github.com"
 GITHUB_API_URL="https://api.github.com"
-GITHUB_PROXY_URL="https://ghfast.top/"  # Default proxy URL
+GITHUB_PROXY_URL="https://ghfast.top/" # Default proxy URL
 KEY=""
 
 # Check for help flag first
