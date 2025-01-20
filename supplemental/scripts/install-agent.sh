@@ -8,12 +8,22 @@ is_openwrt() {
   cat /etc/os-release | grep -q "OpenWrt"
 }
 
+# Function to ensure the proxy URL ends with a /
+ensure_trailing_slash() {
+  if [ -n "$1" ] && [ "${1: -1}" != "/" ]; then
+    echo "$1/"
+  else
+    echo "$1"
+  fi
+}
+
 # Define default values
 PORT=45876
 UNINSTALL=false
 CHINA_MAINLAND=false
 GITHUB_URL="https://github.com"
 GITHUB_API_URL="https://api.github.com"
+GITHUB_PROXY_URL="https://ghfast.top/"  # Default proxy URL
 KEY=""
 
 # Check for help flag first
@@ -25,7 +35,8 @@ case "$1" in
   printf "  -k                : SSH key (required, or interactive if not provided)\n"
   printf "  -p                : Port (default: $PORT)\n"
   printf "  -u                : Uninstall Beszel Agent\n"
-  printf "  --china-mirrors   : Using GitHub mirror sources to resolve network timeout issues in mainland China\n"
+  printf "  --china-mirrors [URL] : Using GitHub mirror sources to resolve network timeout issues in mainland China\n"
+  printf "                         (optional: specify a custom proxy URL, e.g., https://ghfast.top/)\n"
   printf "  -h, --help        : Display this help message\n"
   exit 0
   ;;
@@ -73,6 +84,10 @@ while [ $# -gt 0 ]; do
     ;;
   --china-mirrors)
     CHINA_MAINLAND=true
+    if [ "$2" != "" ] && ! echo "$2" | grep -q '^-'; then
+      GITHUB_PROXY_URL=$(ensure_trailing_slash "$2")
+      shift
+    fi
     ;;
   *)
     echo "Invalid option: $1" >&2
@@ -147,14 +162,12 @@ if [ "$UNINSTALL" = true ]; then
 fi
 
 if [ "$CHINA_MAINLAND" = true ]; then
-  printf "\nConfirmed to use GitHub mirrors (ghp.ci) for download beszel-agent?\nThis helps to install Agent properly in mainland China. (Y/n): "
+  printf "\nConfirmed to use GitHub mirrors (%s) for download beszel-agent?\nThis helps to install Agent properly in mainland China. (Y/n): " "$GITHUB_PROXY_URL"
   read USE_MIRROR
   USE_MIRROR=${USE_MIRROR:-Y}
   if [ "$USE_MIRROR" = "Y" ] || [ "$USE_MIRROR" = "y" ]; then
-    GITHUB_URL="https://ghp.ci/https://github.com"
-    # In China, only github.com is blocked, while api.github.com is not (for now).
-    # GITHUB_API_URL="https://api.github.com"
-    echo "Using GitHub Mirror for downloads..."
+    GITHUB_URL="${GITHUB_PROXY_URL}https://github.com"
+    echo "Using GitHub Mirror ($GITHUB_PROXY_URL) for downloads..."
   else
     echo "GitHub mirrors will not be used for installation."
   fi
@@ -385,7 +398,7 @@ start_service() {
     procd_set_param env PORT="$PORT"
     procd_set_param env KEY="$KEY"
     procd_set_param stdout 1
-    procd_set_param stdout 1
+    procd_set_param stderr 1
     procd_close_instance
 }
 
