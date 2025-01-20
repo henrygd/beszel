@@ -6,6 +6,3 @@ contact_links:
   - name: ℹ️ View the Common Issues page
     url: https://beszel.dev/guide/common-issues
     about: Find information about commonly encountered problems.
-  - name: 🔐 Report a security vulnerability
-    url: https://github.com/henrygd/beszel/security/advisories/new
-    about: You can open an issue if the vulnerability is low severity.
