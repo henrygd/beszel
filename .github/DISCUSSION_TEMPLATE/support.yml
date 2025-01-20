@@ -1,0 +1,61 @@
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Before opening a discussion:
+
+        - Check the [common issues guide](https://beszel.dev/guide/common-issues).
+        - Search existing [issues](https://github.com/henrygd/beszel/issues) and [discussions](https://github.com/henrygd/beszel/discussions) (including closed).
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear and concise description of the issue or question. If applicable, add screenshots to help explain your problem.
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: OS / Architecture
+      placeholder: linux/amd64 (agent), freebsd/arm64 (hub)
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Beszel version
+      placeholder: 0.9.1
+    validations:
+      required: true
+  - type: dropdown
+    id: install-method
+    attributes:
+      label: Installation method
+      options:
+        - Docker
+        - Binary
+        - Nix
+        - Unraid
+        - Coolify
+        - Other (please describe above)
+    validations:
+      required: true
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration
+      description: Please provide any relevant service configuration
+      render: yaml
+  - type: textarea
+    id: hub-logs
+    attributes:
+      label: Hub Logs
+      description: Check the logs page in PocketBase (`/_/#/logs`) for relevant errors (copy JSON).
+      render: json
+  - type: textarea
+    id: agent-logs
+    attributes:
+      label: Agent Logs
+      description: Please provide any logs from the agent, if relevant. Use `LOG_LEVEL=debug` for more info.
+      render: shell

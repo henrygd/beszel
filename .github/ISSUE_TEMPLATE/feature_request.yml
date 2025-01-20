@@ -1,0 +1,23 @@
+name: 🚀 Feature request
+description: Request a new feature or change.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: Before submitting, please search existing [issues](https://github.com/henrygd/beszel/issues) and [discussions](https://github.com/henrygd/beszel/discussions) (including closed).
+  - type: textarea
+    attributes:
+      label: Describe the feature you would like to see
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Describe how you would like to see this feature implemented
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Describe any alternatives you've considered
+    validations:
+      required: false

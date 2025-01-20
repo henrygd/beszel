@@ -1,0 +1,90 @@
+name: 🐛 Bug report
+description: Report a new bug or issue.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Thanks for taking the time to fill out this bug report!
+
+        - For more general support, please [start a support thread](https://github.com/henrygd/beszel/discussions/new?category=support).
+        - To request a change or feature, use the [feature request form](https://github.com/henrygd/beszel/issues/new?template=feature_request.yml).
+
+        ### Before submitting a bug report:
+
+        - Check the [common issues guide](https://beszel.dev/guide/common-issues).
+        - Search existing [issues](https://github.com/henrygd/beszel/issues) and [discussions](https://github.com/henrygd/beszel/discussions) (including closed).
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Explain the issue you experienced clearly and concisely.
+      placeholder: I went to the coffee pot and it was empty.
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: In a perfect world, what should have happened?
+      placeholder: When I got to the coffee pot, it should have been full.
+    validations:
+      required: true
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Describe how to reproduce the issue in repeatable steps.
+      placeholder: |
+        1. Go to the coffee pot.
+        2. Make more coffee.
+        3. Pour it into a cup.
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: OS / Architecture
+      placeholder: linux/amd64 (agent), freebsd/arm64 (hub)
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Beszel version
+      placeholder: 0.9.1
+    validations:
+      required: true
+  - type: dropdown
+    id: install-method
+    attributes:
+      label: Installation method
+      default: 0
+      options:
+        - Docker
+        - Binary
+        - Nix
+        - Unraid
+        - Coolify
+        - Other (please describe above)
+    validations:
+      required: true
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration
+      description: Please provide any relevant service configuration
+      render: yaml
+  - type: textarea
+    id: hub-logs
+    attributes:
+      label: Hub Logs
+      description: Check the logs page in PocketBase (`/_/#/logs`) for relevant errors (copy JSON).
+      render: json
+  - type: textarea
+    id: agent-logs
+    attributes:
+      label: Agent Logs
+      description: Please provide any logs from the agent, if relevant. Use `LOG_LEVEL=debug` for more info.
+      render: shell
