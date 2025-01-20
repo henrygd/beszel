@@ -15,9 +15,4 @@ body:
     attributes:
       label: Describe how you would like to see this feature implemented
     validations:
-      required: false
-  - type: textarea
-    attributes:
-      label: Describe any alternatives you've considered
-    validations:
-      required: false
+      required: true
