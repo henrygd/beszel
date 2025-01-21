@@ -2,32 +2,56 @@
 
 # Check if running as root
 if [ "$(id -u)" != "0" ]; then
-    if command -v sudo >/dev/null 2>&1; then
-        exec sudo "$0" "$@"
-    else
-        echo "This script must be run as root. Please either:"
-        echo "1. Run this script as root (su root)"
-        echo "2. Install sudo and run with sudo"
-        exit 1
-    fi
+  if command -v sudo >/dev/null 2>&1; then
+    exec sudo "$0" "$@"
+  else
+    echo "This script must be run as root. Please either:"
+    echo "1. Run this script as root (su root)"
+    echo "2. Install sudo and run with sudo"
+    exit 1
+  fi
 fi
 
+# Define default values
 version=0.0.1
-PORT=8090 # Default port
+PORT=8090                              # Default port
+GITHUB_PROXY_URL="https://ghfast.top/" # Default proxy URL
+
+# Function to ensure the proxy URL ends with a /
+ensure_trailing_slash() {
+  if [ -n "$1" ]; then
+    case "$1" in
+    */) echo "$1" ;;
+    *) echo "$1/" ;;
+    esac
+  else
+    echo "$1"
+  fi
+}
+
+# Ensure the proxy URL ends with a /
+GITHUB_PROXY_URL=$(ensure_trailing_slash "$GITHUB_PROXY_URL")
 
 # Read command line options
-while getopts ":uhp:" opt; do
+while getopts ":uhp:c:" opt; do
   case $opt in
-    u) UNINSTALL="true";;
-    h) printf "Beszel Hub installation script\n\n";
-       printf "Usage: ./install-hub.sh [options]\n\n";
-       printf "Options: \n"
-       printf "  -u  : Uninstall the Beszel Hub\n";
-       printf "  -p <port> : Specify a port number (default: 8090)\n";
-       echo "  -h  : Display this help message";
-       exit 0;;
-    p) PORT=$OPTARG;;
-    \?) echo "Invalid option: -$OPTARG"; exit 1;;
+  u) UNINSTALL="true" ;;
+  h)
+    printf "Beszel Hub installation script\n\n"
+    printf "Usage: ./install-hub.sh [options]\n\n"
+    printf "Options: \n"
+    printf "  -u  : Uninstall the Beszel Hub\n"
+    printf "  -p <port> : Specify a port number (default: 8090)\n"
+    printf "  -c <url>  : Use a custom GitHub mirror URL (e.g., https://ghfast.top/)\n"
+    echo "  -h  : Display this help message"
+    exit 0
+    ;;
+  p) PORT=$OPTARG ;;
+  c) GITHUB_PROXY_URL=$(ensure_trailing_slash "$OPTARG") ;;
+  \?)
+    echo "Invalid option: -$OPTARG"
+    exit 1
+    ;;
   esac
 done
 
@@ -81,14 +105,14 @@ else
 fi
 
 # Create a dedicated user for the service if it doesn't exist
-if ! id -u beszel > /dev/null 2>&1; then
+if ! id -u beszel >/dev/null 2>&1; then
   echo "Creating a dedicated user for the Beszel Hub service..."
   useradd -M -s /bin/false beszel
 fi
 
 # Download and install the Beszel Hub
 echo "Downloading and installing the Beszel Hub..."
-curl -sL "https://github.com/henrygd/beszel/releases/latest/download/beszel_$(uname -s)_$(uname -m | sed 's/x86_64/amd64/' | sed 's/armv7l/arm/' | sed 's/aarch64/arm64/').tar.gz" | tar -xz -O beszel | tee ./beszel >/dev/null && chmod +x beszel
+curl -sL "${GITHUB_PROXY_URL}https://github.com/henrygd/beszel/releases/latest/download/beszel_$(uname -s)_$(uname -m | sed 's/x86_64/amd64/' | sed 's/armv7l/arm/' | sed 's/aarch64/arm64/').tar.gz" | tar -xz -O beszel | tee ./beszel >/dev/null && chmod +x beszel
 mkdir -p /opt/beszel/beszel_data
 mv ./beszel /opt/beszel/beszel
 chown -R beszel:beszel /opt/beszel
