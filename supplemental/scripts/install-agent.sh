@@ -8,6 +8,10 @@ is_openwrt() {
   cat /etc/os-release | grep -q "OpenWrt"
 }
 
+is_macos() {
+  [ "$(uname -s)" = "Darwin" ]
+}
+
 # Define default values
 PORT=45876
 UNINSTALL=false
@@ -84,7 +88,20 @@ done
 
 # Uninstall process
 if [ "$UNINSTALL" = true ]; then
-  if is_alpine; then
+  if is_macos; then
+    echo "Stopping and unloading the agent service..."
+    launchctl unload /Library/LaunchDaemons/com.beszel.agent.plist 2>/dev/null
+    rm -f /Library/LaunchDaemons/com.beszel.agent.plist
+    
+    # Remove the update service if it exists
+    echo "Removing the daily update service..."
+    launchctl unload /Library/LaunchDaemons/com.beszel.agent.update.plist 2>/dev/null
+    rm -f /Library/LaunchDaemons/com.beszel.agent.update.plist
+    
+    # Remove log files
+    echo "Removing log files..."
+    rm -f /var/log/beszel-agent.log /var/log/beszel-agent.err
+  elif is_alpine; then
     echo "Stopping and disabling the agent service..."
     rc-service beszel-agent stop
     rc-update del beszel-agent default
@@ -136,7 +153,10 @@ if [ "$UNINSTALL" = true ]; then
 
   echo "Removing the dedicated user for the agent service..."
   killall beszel-agent 2>/dev/null
-  if is_alpine || is_openwrt; then
+  if is_macos; then
+    dscl . -delete /Users/beszel 2>/dev/null
+    dscl . -delete /Groups/beszel 2>/dev/null
+  elif is_alpine || is_openwrt; then
     deluser beszel 2>/dev/null
   else
     userdel beszel 2>/dev/null
@@ -166,7 +186,15 @@ package_installed() {
 }
 
 # Check for package manager and install necessary packages if not installed
-if is_alpine; then
+if is_macos; then
+  if ! command -v brew >/dev/null 2>&1; then
+    echo "Warning: Homebrew is not installed. Please ensure 'tar' and 'curl' are available."
+  else
+    if ! package_installed tar || ! package_installed curl; then
+      brew install tar curl
+    fi
+  fi
+elif is_alpine; then
   if ! package_installed tar || ! package_installed curl || ! package_installed coreutils; then
     apk update
     apk add tar curl coreutils shadow
@@ -210,7 +238,26 @@ else
 fi
 
 # Create a dedicated user for the service if it doesn't exist
-if is_alpine; then
+if is_macos; then
+  if ! dscl . -read /Users/beszel >/dev/null 2>&1; then
+    echo "Creating a dedicated user for the Beszel Agent service..."
+    # Generate a unique UID/GID
+    MAXID=$(dscl . -list /Users UniqueID | awk '{print $2}' | sort -ug | tail -1)
+    NEWID=$((MAXID+1))
+    
+    # Create group
+    dscl . -create /Groups/beszel
+    dscl . -create /Groups/beszel PrimaryGroupID $NEWID
+    
+    # Create user
+    dscl . -create /Users/beszel
+    dscl . -create /Users/beszel UserShell /usr/bin/false
+    dscl . -create /Users/beszel RealName "Beszel Agent"
+    dscl . -create /Users/beszel UniqueID $NEWID
+    dscl . -create /Users/beszel PrimaryGroupID $NEWID
+    dscl . -create /Users/beszel NFSHomeDirectory /var/empty
+  fi
+elif is_alpine; then
   if ! id -u beszel >/dev/null 2>&1; then
     echo "Creating a dedicated user for the Beszel Agent service..."
     adduser -D -H -s /sbin/nologin beszel
@@ -282,8 +329,91 @@ chmod 755 /opt/beszel-agent/beszel-agent
 # Cleanup
 rm -rf "$TEMP_DIR"
 
-# Modify service installation part, add Alpine check before systemd service creation
-if is_alpine; then
+# Service installation
+if is_macos; then
+  echo "Creating launchd service for macOS..."
+  cat >/Library/LaunchDaemons/com.beszel.agent.plist <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.beszel.agent</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/opt/beszel-agent/beszel-agent</string>
+    </array>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PORT</key>
+        <string>$PORT</string>
+        <key>KEY</key>
+        <string>$KEY</string>
+    </dict>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/var/log/beszel-agent.log</string>
+    <key>StandardErrorPath</key>
+    <string>/var/log/beszel-agent.err</string>
+    <key>UserName</key>
+    <string>beszel</string>
+</dict>
+</plist>
+EOF
+
+  chmod 644 /Library/LaunchDaemons/com.beszel.agent.plist
+  launchctl load /Library/LaunchDaemons/com.beszel.agent.plist
+
+  # Prompt for auto-update setup
+  printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
+  read AUTO_UPDATE
+  case "$AUTO_UPDATE" in
+  [Yy]*)
+    echo "Setting up daily automatic updates for beszel-agent..."
+    
+    cat >/Library/LaunchDaemons/com.beszel.agent.update.plist <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.beszel.agent.update</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/sh</string>
+        <string>-c</string>
+        <string>if /opt/beszel-agent/beszel-agent update | grep -q "Successfully updated"; then launchctl unload /Library/LaunchDaemons/com.beszel.agent.plist && launchctl load /Library/LaunchDaemons/com.beszel.agent.plist; fi</string>
+    </array>
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>0</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+    <key>UserName</key>
+    <string>root</string>
+</dict>
+</plist>
+EOF
+
+    chmod 644 /Library/LaunchDaemons/com.beszel.agent.update.plist
+    launchctl load /Library/LaunchDaemons/com.beszel.agent.update.plist
+    
+    printf "\nAutomatic daily updates have been enabled.\n"
+    ;;
+  esac
+
+  # Check if service is running
+  if ! launchctl list | grep -q "com.beszel.agent"; then
+    echo "Error: The Beszel Agent service failed to start."
+    exit 1
+  fi
+
+elif is_alpine; then
   echo "Creating OpenRC service for Alpine Linux..."
   cat >/etc/init.d/beszel-agent <<EOF
 #!/sbin/openrc-run
