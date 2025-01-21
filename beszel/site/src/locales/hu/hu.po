@@ -8,7 +8,7 @@ msgstr ""
 "Language: hu\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-01-21 11:00\n"
+"PO-Revision-Date: 2025-01-21 12:06\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -123,115 +123,115 @@ msgstr "Az átlag meghaladja a <0>{value}{0}</0> értéket"
 
 #: src/components/routes/system.tsx:497
 msgid "Average power consumption of GPUs"
-msgstr ""
+msgstr "GPU-k átlagos energiafogyasztása"
 
 #: src/components/routes/system.tsx:385
 msgid "Average system-wide CPU utilization"
-msgstr ""
+msgstr "Rendszerszintű CPU átlagos kihasználtság"
 
 #: src/components/routes/system.tsx:515
 msgid "Average utilization of {0}"
-msgstr ""
+msgstr "{0} átlagos kihasználtsága"
 
 #: src/components/command-palette.tsx:170
 #: src/components/navbar.tsx:93
 msgid "Backups"
-msgstr ""
+msgstr "Biztonsági mentések"
 
 #: src/components/routes/system.tsx:441
 #: src/lib/utils.ts:307
 msgid "Bandwidth"
-msgstr ""
+msgstr "Sávszélesség"
 
 #: src/components/login/auth-form.tsx:289
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
-msgstr ""
+msgstr "A Beszel támogatja az OpenID Connect-et és számos OAuth2 hitelesítési szolgáltatót."
 
 #: src/components/routes/settings/notifications.tsx:127
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
-msgstr ""
+msgstr "A Beszel a <0>Shoutrrr</0>-t használja a népszerű értesítési szolgáltatások integrálására."
 
 #: src/components/add-system.tsx:92
 msgid "Binary"
-msgstr ""
+msgstr "Bináris"
 
 #: src/components/charts/mem-chart.tsx:89
 msgid "Cache / Buffers"
-msgstr ""
+msgstr "Gyorsítótár / Pufferelések"
 
 #: src/components/systems-table/systems-table.tsx:589
 msgid "Cancel"
-msgstr ""
+msgstr "Mégsem"
 
 #: src/components/routes/settings/config-yaml.tsx:68
 msgid "Caution - potential data loss"
-msgstr ""
+msgstr "Figyelem - potenciális adatvesztés"
 
 #: src/components/routes/settings/general.tsx:36
 msgid "Change general application options."
-msgstr ""
+msgstr "Általános alkalmazásbeállítások módosítása."
 
 #: src/components/routes/settings/general.tsx:78
 msgid "Chart options"
-msgstr ""
+msgstr "Diagram beállítások"
 
 #: src/components/login/forgot-pass-form.tsx:34
 msgid "Check {email} for a reset link."
-msgstr ""
+msgstr "Ellenőrizd a {email} címet a visszaállító linkért."
 
 #: src/components/routes/settings/layout.tsx:40
 msgid "Check logs for more details."
-msgstr ""
+msgstr "Ellenőrizd a naplót a további részletekért."
 
 #: src/components/routes/settings/notifications.tsx:183
 msgid "Check your notification service"
-msgstr ""
+msgstr "Ellenőrizd az értesítési szolgáltatásodat"
 
 #: src/components/add-system.tsx:151
 msgid "Click to copy"
-msgstr ""
+msgstr "Kattints a másoláshoz"
 
 #: src/components/login/forgot-pass-form.tsx:83
 #: src/components/login/forgot-pass-form.tsx:89
 msgid "Command line instructions"
-msgstr ""
+msgstr "Parancssori utasítások"
 
 #: src/components/routes/settings/notifications.tsx:77
 msgid "Configure how you receive alert notifications."
-msgstr ""
+msgstr "Konfiguráld, hogyan kapod az értesítéseket."
 
 #: src/components/login/auth-form.tsx:165
 #: src/components/login/auth-form.tsx:170
 msgid "Confirm password"
-msgstr ""
+msgstr "Jelszó megerősítése"
 
 #: src/components/systems-table/systems-table.tsx:595
 msgid "Continue"
-msgstr ""
+msgstr "Tovább"
 
 #: src/lib/utils.ts:25
 msgid "Copied to clipboard"
-msgstr ""
+msgstr "Vágólapra másolva"
 
 #: src/components/add-system.tsx:162
 msgid "Copy"
-msgstr ""
+msgstr "Másolás"
 
 #: src/components/systems-table/systems-table.tsx:564
 msgid "Copy host"
-msgstr ""
+msgstr "Hoszt másolása"
 
 #: src/components/add-system.tsx:173
 msgid "Copy Linux command"
-msgstr ""
+msgstr "Linux parancs másolása"
 
 #: src/components/copy-to-clipboard.tsx:13
 msgid "Copy text"
-msgstr ""
+msgstr "Szöveg másolása"
 
 #: src/components/systems-table/systems-table.tsx:160
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: src/components/charts/area-chart.tsx:56
 #: src/components/routes/system.tsx:384
@@ -454,179 +454,179 @@ msgstr ""
 
 #: src/components/add-system.tsx:116
 msgid "Name"
-msgstr ""
+msgstr "Név"
 
 #: src/components/systems-table/systems-table.tsx:184
 msgid "Net"
-msgstr ""
+msgstr "Hálózat"
 
 #: src/components/routes/system.tsx:458
 msgid "Network traffic of docker containers"
-msgstr ""
+msgstr "Docker konténerek hálózati forgalma"
 
 #: src/components/routes/system.tsx:443
 msgid "Network traffic of public interfaces"
-msgstr ""
+msgstr "Nyilvános interfészek hálózati forgalma"
 
 #: src/components/command-palette.tsx:49
 msgid "No results found."
-msgstr ""
+msgstr "Nincs találat."
 
 #: src/components/systems-table/systems-table.tsx:429
 #: src/components/systems-table/systems-table.tsx:502
 msgid "No systems found."
-msgstr ""
+msgstr "Nem található rendszer."
 
 #: src/components/command-palette.tsx:110
 #: src/components/routes/settings/layout.tsx:56
 #: src/components/routes/settings/notifications.tsx:74
 msgid "Notifications"
-msgstr ""
+msgstr "Értesítések"
 
 #: src/components/login/auth-form.tsx:284
 msgid "OAuth 2 / OIDC support"
-msgstr ""
+msgstr "OAuth 2 / OIDC támogatás"
 
 #: src/components/routes/settings/config-yaml.tsx:61
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
-msgstr ""
+msgstr "Minden újraindításkor az adatbázisban lévő rendszerek frissítésre kerülnek, hogy megfeleljenek a fájlban meghatározott rendszereknek."
 
 #: src/components/systems-table/systems-table.tsx:536
 msgid "Open menu"
-msgstr ""
+msgstr "Menü megnyitása"
 
 #: src/components/login/auth-form.tsx:203
 msgid "Or continue with"
-msgstr ""
+msgstr "Vagy folytasd ezzel"
 
 #: src/components/alerts/alert-button.tsx:109
 msgid "Overwrite existing alerts"
-msgstr ""
+msgstr "Felülírja a meglévő riasztásokat"
 
 #: src/components/command-palette.tsx:84
 msgid "Page"
-msgstr ""
+msgstr "Oldal"
 
 #: src/components/command-palette.tsx:71
 msgid "Pages / Settings"
-msgstr ""
+msgstr "Oldalak / Beállítások"
 
 #: src/components/login/auth-form.tsx:147
 #: src/components/login/auth-form.tsx:152
 msgid "Password"
-msgstr ""
+msgstr "Jelszó"
 
 #: src/components/login/auth-form.tsx:17
 msgid "Password must be at least 8 characters."
-msgstr ""
+msgstr "A jelszónak legalább 8 karakternek kell lennie."
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
-msgstr ""
+msgstr "Jelszó-visszaállítási kérelmet kaptunk"
 
 #: src/components/systems-table/systems-table.tsx:558
 msgid "Pause"
-msgstr ""
+msgstr "Szüneteltetés"
 
 #: src/components/routes/settings/notifications.tsx:95
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
-msgstr ""
+msgstr "Kérjük, <0>konfigurálj egy SMTP szervert</0> az értesítések kézbesítésének biztosítása érdekében."
 
 #: src/components/alerts/alerts-system.tsx:25
 msgid "Please check logs for more details."
-msgstr ""
+msgstr "Kérjük, ellenőrizd a naplókat a további részletekért."
 
 #: src/components/login/auth-form.tsx:35
 #: src/components/login/forgot-pass-form.tsx:16
 msgid "Please check your credentials and try again"
-msgstr ""
+msgstr "Kérjük, ellenőrizze a hitelesítő adatait, és próbálja újra"
 
 #: src/components/login/login.tsx:36
 msgid "Please create an admin account"
-msgstr ""
+msgstr "Kérjük, hozzon létre egy admin fiókot"
 
 #: src/components/login/auth-form.tsx:233
 msgid "Please enable pop-ups for this site"
-msgstr ""
+msgstr "Kérjük, engedélyezze a felugró ablakokat ezen az oldalon"
 
 #: src/lib/utils.ts:39
 msgid "Please log in again"
-msgstr ""
+msgstr "Kérjük jelentkezz be újra"
 
 #: src/components/login/auth-form.tsx:292
 msgid "Please see <0>the documentation</0> for instructions."
-msgstr ""
+msgstr "Kérjük, nézze meg <0>a dokumentációt</0> az utasításokért."
 
 #: src/components/login/login.tsx:40
 msgid "Please sign in to your account"
-msgstr ""
+msgstr "Kérjük, jelentkezzen be a fiókjába"
 
 #: src/components/add-system.tsx:124
 msgid "Port"
-msgstr ""
+msgstr "Port"
 
 #: src/components/routes/system.tsx:407
 #: src/components/routes/system.tsx:523
 msgid "Precise utilization at the recorded time"
-msgstr ""
+msgstr "Pontos kihasználás a rögzített időpontban"
 
 #: src/components/routes/settings/general.tsx:58
 msgid "Preferred Language"
-msgstr ""
+msgstr "Preferált nyelv"
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx:128
 msgid "Public Key"
-msgstr ""
+msgstr "Nyilvános kulcs"
 
 #. Disk read
 #: src/components/charts/area-chart.tsx:60
 #: src/components/charts/area-chart.tsx:70
 msgid "Read"
-msgstr ""
+msgstr "Olvasás"
 
 #. Network bytes received (download)
 #: src/components/charts/area-chart.tsx:65
 msgid "Received"
-msgstr ""
+msgstr "Fogadott"
 
 #: src/components/login/forgot-pass-form.tsx:76
 msgid "Reset Password"
-msgstr ""
+msgstr "Jelszó visszaállítása"
 
 #: src/components/systems-table/systems-table.tsx:553
 msgid "Resume"
-msgstr ""
+msgstr "Folytatás"
 
 #: src/components/routes/settings/notifications.tsx:117
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
-msgstr ""
+msgstr "Mentse el a címet az Enter billentyű vagy a vessző használatával. Hagyja üresen az e-mail értesítések letiltásához."
 
 #: src/components/routes/settings/general.tsx:106
 #: src/components/routes/settings/notifications.tsx:167
 msgid "Save Settings"
-msgstr ""
+msgstr "Beállítások mentése"
 
 #: src/components/navbar.tsx:133
 msgid "Search"
-msgstr ""
+msgstr "Keresés"
 
 #: src/components/command-palette.tsx:46
 msgid "Search for systems or settings..."
-msgstr ""
+msgstr "Keresés rendszerek vagy beállítások után..."
 
 #: src/components/alerts/alert-button.tsx:71
 msgid "See <0>notification settings</0> to configure how you receive alerts."
-msgstr ""
+msgstr "Lásd <0>az értesítési beállításokat</0>, hogy konfigurálja, hogyan kap értesítéseket."
 
 #. Network bytes sent (upload)
 #: src/components/charts/area-chart.tsx:64
 msgid "Sent"
-msgstr ""
+msgstr "Elküldve"
 
 #: src/components/routes/settings/general.tsx:100
 msgid "Sets the default time range for charts when a system is viewed."
-msgstr ""
+msgstr "Beállítja az alapértelmezett időtartamot a diagramokhoz, amikor egy rendszert néznek."
 
 #: src/components/command-palette.tsx:95
 #: src/components/command-palette.tsx:98
@@ -634,35 +634,35 @@ msgstr ""
 #: src/components/routes/settings/layout.tsx:71
 #: src/components/routes/settings/layout.tsx:82
 msgid "Settings"
-msgstr ""
+msgstr "Beállítások"
 
 #: src/components/routes/settings/layout.tsx:33
 msgid "Settings saved"
-msgstr ""
+msgstr "Beállítások elmentve"
 
 #: src/components/login/auth-form.tsx:191
 msgid "Sign in"
-msgstr ""
+msgstr "Bejelentkezés"
 
 #: src/components/command-palette.tsx:185
 msgid "SMTP settings"
-msgstr ""
+msgstr "SMTP beállítások"
 
 #: src/components/systems-table/systems-table.tsx:316
 msgid "Sort By"
-msgstr ""
+msgstr "Rendezés"
 
 #: src/lib/utils.ts:282
 msgid "Status"
-msgstr ""
+msgstr "Állapot"
 
 #: src/components/routes/system.tsx:473
 msgid "Swap space used by the system"
-msgstr ""
+msgstr "Rendszer által használt swap terület"
 
 #: src/components/routes/system.tsx:472
 msgid "Swap Usage"
-msgstr ""
+msgstr "Swap használat"
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
@@ -671,7 +671,7 @@ msgstr ""
 #: src/components/systems-table/systems-table.tsx:139
 #: src/components/systems-table/systems-table.tsx:473
 msgid "System"
-msgstr ""
+msgstr "Rendszer"
 
 #: src/components/navbar.tsx:77
 msgid "Systems"
