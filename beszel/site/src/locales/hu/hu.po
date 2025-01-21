@@ -8,7 +8,7 @@ msgstr ""
 "Language: hu\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-01-20 19:11\n"
+"PO-Revision-Date: 2025-01-21 11:00\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -20,31 +20,31 @@ msgstr ""
 
 #: src/components/routes/system.tsx:250
 msgid "{0, plural, one {# day} other {# days}}"
-msgstr ""
+msgstr "{0, plural, one {# nap} other {# nap}}"
 
 #: src/components/routes/system.tsx:248
 msgid "{hours, plural, one {# hour} other {# hours}}"
-msgstr ""
+msgstr "{hours, plural, one {# óra} other {# óra}}"
 
 #: src/lib/utils.ts:139
 msgid "1 hour"
-msgstr ""
+msgstr "1 óra"
 
 #: src/lib/utils.ts:162
 msgid "1 week"
-msgstr ""
+msgstr "1 hét"
 
 #: src/lib/utils.ts:147
 msgid "12 hours"
-msgstr ""
+msgstr "12 óra"
 
 #: src/lib/utils.ts:155
 msgid "24 hours"
-msgstr ""
+msgstr "24 óra"
 
 #: src/lib/utils.ts:170
 msgid "30 days"
-msgstr ""
+msgstr "30 nap"
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx:235
@@ -52,32 +52,32 @@ msgstr ""
 #: src/components/systems-table/systems-table.tsx:463
 #: src/components/systems-table/systems-table.tsx:473
 msgid "Actions"
-msgstr ""
+msgstr "Műveletek"
 
 #: src/components/routes/home.tsx:61
 msgid "Active Alerts"
-msgstr ""
+msgstr "Aktív riasztások"
 
 #: src/components/add-system.tsx:78
 msgid "Add <0>System</0>"
-msgstr ""
+msgstr "Hozzáadás <0>System</0>"
 
 #: src/components/add-system.tsx:87
 msgid "Add New System"
-msgstr ""
+msgstr "Új rendszer hozzáadása"
 
 #: src/components/add-system.tsx:165
 #: src/components/add-system.tsx:176
 msgid "Add system"
-msgstr ""
+msgstr "Rendszer hozzáadása"
 
 #: src/components/routes/settings/notifications.tsx:156
 msgid "Add URL"
-msgstr ""
+msgstr "URL hozzáadása"
 
 #: src/components/routes/settings/general.tsx:81
 msgid "Adjust display options for charts."
-msgstr ""
+msgstr "Állítsa be a diagram megjelenítését."
 
 #: src/components/command-palette.tsx:132
 #: src/components/command-palette.tsx:145
@@ -85,41 +85,41 @@ msgstr ""
 #: src/components/command-palette.tsx:173
 #: src/components/command-palette.tsx:188
 msgid "Admin"
-msgstr ""
+msgstr "Admin"
 
 #: src/components/systems-table/systems-table.tsx:204
 msgid "Agent"
-msgstr ""
+msgstr "Ügynök"
 
 #: src/components/alerts/alert-button.tsx:32
 #: src/components/alerts/alert-button.tsx:68
 msgid "Alerts"
-msgstr ""
+msgstr "Riasztások"
 
 #: src/components/alerts/alert-button.tsx:88
 #: src/components/systems-table/systems-table.tsx:274
 msgid "All Systems"
-msgstr ""
+msgstr "Minden rendszer"
 
 #: src/components/systems-table/systems-table.tsx:578
 msgid "Are you sure you want to delete {name}?"
-msgstr ""
+msgstr "Biztosan törölni szeretnéd {name}-t?"
 
 #: src/components/copy-to-clipboard.tsx:16
 msgid "Automatic copy requires a secure context."
-msgstr ""
+msgstr "Az automatikus másolás biztonságos környezetet igényel."
 
 #: src/components/routes/system.tsx:625
 msgid "Average"
-msgstr ""
+msgstr "Átlag"
 
 #: src/components/routes/system.tsx:396
 msgid "Average CPU utilization of containers"
-msgstr ""
+msgstr "Konténerek átlagos CPU kihasználtsága"
 
 #: src/components/alerts/alerts-system.tsx:206
 msgid "Average exceeds <0>{value}{0}</0>"
-msgstr ""
+msgstr "Az átlag meghaladja a <0>{value}{0}</0> értéket"
 
 #: src/components/routes/system.tsx:497
 msgid "Average power consumption of GPUs"
