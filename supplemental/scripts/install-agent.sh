@@ -23,24 +23,23 @@ ensure_trailing_slash() {
 # Define default values
 PORT=45876
 UNINSTALL=false
-CHINA_MAINLAND=false
 GITHUB_URL="https://github.com"
-GITHUB_API_URL="https://api.github.com"
-GITHUB_PROXY_URL="https://ghfast.top/" # Default proxy URL
+GITHUB_API_URL="https://api.github.com" # not blocked in China currently
+GITHUB_PROXY_URL=""
 KEY=""
 
-# Check for help flag first
+# Check for help flag
 case "$1" in
 -h | --help)
   printf "Beszel Agent installation script\n\n"
   printf "Usage: ./install-agent.sh [options]\n\n"
   printf "Options: \n"
-  printf "  -k                : SSH key (required, or interactive if not provided)\n"
-  printf "  -p                : Port (default: $PORT)\n"
-  printf "  -u                : Uninstall Beszel Agent\n"
-  printf "  --china-mirrors [URL] : Using GitHub mirror sources to resolve network timeout issues in mainland China\n"
-  printf "                         (optional: specify a custom proxy URL, e.g., https://ghfast.top/)\n"
-  printf "  -h, --help        : Display this help message\n"
+  printf "  -k                    : SSH key (required, or interactive if not provided)\n"
+  printf "  -p                    : Port (default: $PORT)\n"
+  printf "  -u                    : Uninstall Beszel Agent\n"
+  printf "  --china-mirrors [URL] : Use GitHub proxy (gh.beszel.dev) to resolve network timeout issues in mainland China\n"
+  printf "                          optional: specify a custom proxy URL, e.g., \"https://ghfast.top\"\n"
+  printf "  -h, --help            : Display this help message\n"
   exit 0
   ;;
 esac
@@ -86,10 +85,14 @@ while [ $# -gt 0 ]; do
     UNINSTALL=true
     ;;
   --china-mirrors)
-    CHINA_MAINLAND=true
     if [ "$2" != "" ] && ! echo "$2" | grep -q '^-'; then
-      GITHUB_PROXY_URL=$(ensure_trailing_slash "$2")
+      # use cstom proxy URL if provided
+      GITHUB_PROXY_URL="$2"
+      GITHUB_URL="$(ensure_trailing_slash "$2")https://github.com"
       shift
+    else
+      GITHUB_PROXY_URL="https://gh.beszel.dev"
+      GITHUB_URL="$GITHUB_PROXY_URL"
     fi
     ;;
   *)
@@ -164,15 +167,15 @@ if [ "$UNINSTALL" = true ]; then
   exit 0
 fi
 
-if [ "$CHINA_MAINLAND" = true ]; then
-  printf "\nConfirmed to use GitHub mirrors (%s) for download beszel-agent?\nThis helps to install Agent properly in mainland China. (Y/n): " "$GITHUB_PROXY_URL"
+# Confirm the use of GitHub mirrors for downloads
+if [ -n "$GITHUB_PROXY_URL" ]; then
+  printf "\nConfirm use of GitHub mirror (%s) for downloading beszel-agent?\nThis helps to install properly in mainland China. (Y/n): " "$GITHUB_PROXY_URL"
   read USE_MIRROR
   USE_MIRROR=${USE_MIRROR:-Y}
   if [ "$USE_MIRROR" = "Y" ] || [ "$USE_MIRROR" = "y" ]; then
-    GITHUB_URL="${GITHUB_PROXY_URL}https://github.com"
     echo "Using GitHub Mirror ($GITHUB_PROXY_URL) for downloads..."
   else
-    echo "GitHub mirrors will not be used for installation."
+    GITHUB_URL="https://github.com"
   fi
 fi
 
