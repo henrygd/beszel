@@ -461,7 +461,8 @@ else
   cat >/etc/systemd/system/beszel-agent.service <<EOF
 [Unit]
 Description=Beszel Agent Service
-After=network.target
+Wants=network-online.target
+After=network-online.target
 
 [Service]
 Environment="PORT=$PORT"
