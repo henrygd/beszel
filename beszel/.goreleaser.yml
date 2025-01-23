@@ -29,6 +29,7 @@ builds:
       - linux
       - darwin
       - freebsd
+      - windows
     goarch:
       - amd64
       - arm64
@@ -36,6 +37,8 @@ builds:
       - mips64
     ignore:
       - goos: freebsd
+        goarch: arm
+      - goos: windows
         goarch: arm
 
 archives:
@@ -47,6 +50,10 @@ archives:
       {{ .Binary }}_
       {{- .Os }}_
       {{- .Arch }}
+    format_overrides:
+      - goos: windows
+        format: zip
+
   - id: beszel-agent
     format: tar.gz
     builds:
@@ -55,10 +62,6 @@ archives:
       {{ .Binary }}_
       {{- .Os }}_
       {{- .Arch }}
-    # use zip for windows archives
-    # format_overrides:
-    #   - goos: windows
-    #     format: zip
 
 release:
   draft: true

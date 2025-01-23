@@ -71,7 +71,7 @@ export default function Navbar() {
 										</a>
 									</DropdownMenuItem>
 									<DropdownMenuItem asChild>
-										<a href="/_/#/collections?collectionId=2hz5ncl8tizk5nx" target="_blank">
+										<a href="/_/#/collections?collection=systems" target="_blank">
 											<ServerIcon className="me-2.5 h-4 w-4" />
 											<span>
 												<Trans>Systems</Trans>

@@ -10,27 +10,39 @@ is_openwrt() {
 
 is_macos() {
   [ "$(uname -s)" = "Darwin" ]
+
+# Function to ensure the proxy URL ends with a /
+ensure_trailing_slash() {
+  if [ -n "$1" ]; then
+    case "$1" in
+    */) echo "$1" ;;
+    *) echo "$1/" ;;
+    esac
+  else
+    echo "$1"
+  fi
 }
 
 # Define default values
 PORT=45876
 UNINSTALL=false
-CHINA_MAINLAND=false
 GITHUB_URL="https://github.com"
-GITHUB_API_URL="https://api.github.com"
+GITHUB_API_URL="https://api.github.com" # not blocked in China currently
+GITHUB_PROXY_URL=""
 KEY=""
 
-# Check for help flag first
+# Check for help flag
 case "$1" in
 -h | --help)
   printf "Beszel Agent installation script\n\n"
   printf "Usage: ./install-agent.sh [options]\n\n"
   printf "Options: \n"
-  printf "  -k                : SSH key (required, or interactive if not provided)\n"
-  printf "  -p                : Port (default: $PORT)\n"
-  printf "  -u                : Uninstall Beszel Agent\n"
-  printf "  --china-mirrors   : Using GitHub mirror sources to resolve network timeout issues in mainland China\n"
-  printf "  -h, --help        : Display this help message\n"
+  printf "  -k                    : SSH key (required, or interactive if not provided)\n"
+  printf "  -p                    : Port (default: $PORT)\n"
+  printf "  -u                    : Uninstall Beszel Agent\n"
+  printf "  --china-mirrors [URL] : Use GitHub proxy (gh.beszel.dev) to resolve network timeout issues in mainland China\n"
+  printf "                          optional: specify a custom proxy URL, e.g., \"https://ghfast.top\"\n"
+  printf "  -h, --help            : Display this help message\n"
   exit 0
   ;;
 esac
@@ -76,7 +88,15 @@ while [ $# -gt 0 ]; do
     UNINSTALL=true
     ;;
   --china-mirrors)
-    CHINA_MAINLAND=true
+    if [ "$2" != "" ] && ! echo "$2" | grep -q '^-'; then
+      # use cstom proxy URL if provided
+      GITHUB_PROXY_URL="$2"
+      GITHUB_URL="$(ensure_trailing_slash "$2")https://github.com"
+      shift
+    else
+      GITHUB_PROXY_URL="https://gh.beszel.dev"
+      GITHUB_URL="$GITHUB_PROXY_URL"
+    fi
     ;;
   *)
     echo "Invalid option: $1" >&2
@@ -166,17 +186,15 @@ if [ "$UNINSTALL" = true ]; then
   exit 0
 fi
 
-if [ "$CHINA_MAINLAND" = true ]; then
-  printf "\nConfirmed to use GitHub mirrors (ghp.ci) for download beszel-agent?\nThis helps to install Agent properly in mainland China. (Y/n): "
+# Confirm the use of GitHub mirrors for downloads
+if [ -n "$GITHUB_PROXY_URL" ]; then
+  printf "\nConfirm use of GitHub mirror (%s) for downloading beszel-agent?\nThis helps to install properly in mainland China. (Y/n): " "$GITHUB_PROXY_URL"
   read USE_MIRROR
   USE_MIRROR=${USE_MIRROR:-Y}
   if [ "$USE_MIRROR" = "Y" ] || [ "$USE_MIRROR" = "y" ]; then
-    GITHUB_URL="https://ghp.ci/https://github.com"
-    # In China, only github.com is blocked, while api.github.com is not (for now).
-    # GITHUB_API_URL="https://api.github.com"
-    echo "Using GitHub Mirror for downloads..."
+    echo "Using GitHub Mirror ($GITHUB_PROXY_URL) for downloads..."
   else
-    echo "GitHub mirrors will not be used for installation."
+    GITHUB_URL="https://github.com"
   fi
 fi
 
@@ -515,7 +533,7 @@ start_service() {
     procd_set_param env PORT="$PORT"
     procd_set_param env KEY="$KEY"
     procd_set_param stdout 1
-    procd_set_param stdout 1
+    procd_set_param stderr 1
     procd_close_instance
 }
 
@@ -572,7 +590,8 @@ else
   cat >/etc/systemd/system/beszel-agent.service <<EOF
 [Unit]
 Description=Beszel Agent Service
-After=network.target
+Wants=network-online.target
+After=network-online.target
 
 [Service]
 Environment="PORT=$PORT"
