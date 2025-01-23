@@ -35,11 +35,16 @@ builds:
       - arm64
       - arm
       - mips64
+      - riscv64
     ignore:
       - goos: freebsd
         goarch: arm
       - goos: windows
         goarch: arm
+      - goos: darwin
+        goarch: riscv64
+      - goos: windows
+        goarch: riscv64
 
 archives:
   - id: beszel
