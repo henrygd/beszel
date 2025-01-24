@@ -29,6 +29,7 @@ type Stats struct {
 	Temperatures   map[string]float64  `json:"t,omitempty"`
 	ExtraFs        map[string]*FsStats `json:"efs,omitempty"`
 	GPUData        map[string]GPUData  `json:"g,omitempty"`
+	GPUnum         int                 `json:"gn"`
 }
 
 type GPUData struct {
