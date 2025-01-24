@@ -33,13 +33,14 @@ type Stats struct {
 }
 
 type GPUData struct {
-	Name        string  `json:"n"`
-	Temperature float64 `json:"-"`
-	MemoryUsed  float64 `json:"mu,omitempty"`
-	MemoryTotal float64 `json:"mt,omitempty"`
-	Usage       float64 `json:"u"`
-	Power       float64 `json:"p,omitempty"`
-	Count       float64 `json:"-"`
+	Name          string  `json:"n"`
+	Temperature   float64 `json:"-"`
+	MemoryUsed    float64 `json:"mu,omitempty"`
+	MemoryTotal   float64 `json:"mt,omitempty"`
+	MemoryPercent float64 `json:"mp,omitempty"`
+	Usage         float64 `json:"u"`
+	Power         float64 `json:"p,omitempty"`
+	Count         float64 `json:"-"`
 }
 
 type FsStats struct {
@@ -76,6 +77,7 @@ type Info struct {
 	Bandwidth     float64 `json:"b"`
 	AgentVersion  string  `json:"v"`
 	Podman        bool    `json:"p,omitempty"`
+	Stats         Stats   `json:"stats"`
 }
 
 // Final data structure to return to the hub
