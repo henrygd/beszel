@@ -8,7 +8,7 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-01-17 21:02\n"
+"PO-Revision-Date: 2025-01-20 19:11\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -77,7 +77,7 @@ msgstr "URL 추가"
 
 #: src/components/routes/settings/general.tsx:81
 msgid "Adjust display options for charts."
-msgstr "차트의 표시 옵션 조정."
+msgstr "차트 표시 옵션 변경."
 
 #: src/components/command-palette.tsx:132
 #: src/components/command-palette.tsx:145
@@ -123,7 +123,7 @@ msgstr "평균이 <0>{value}{0}</0>을(를) 초과합니다"
 
 #: src/components/routes/system.tsx:497
 msgid "Average power consumption of GPUs"
-msgstr "평균 GPU들의 전원 사용량"
+msgstr "GPU들의 평균 전원 사용량"
 
 #: src/components/routes/system.tsx:385
 msgid "Average system-wide CPU utilization"
@@ -198,7 +198,7 @@ msgstr "명령어 사용 지침"
 
 #: src/components/routes/settings/notifications.tsx:77
 msgid "Configure how you receive alert notifications."
-msgstr "알림 받을 방법을 설정하세요."
+msgstr "알림을 수신할 방법을 설정하세요."
 
 #: src/components/login/auth-form.tsx:165
 #: src/components/login/auth-form.tsx:170
@@ -497,7 +497,7 @@ msgstr "메뉴 열기"
 
 #: src/components/login/auth-form.tsx:203
 msgid "Or continue with"
-msgstr "또는 계속하기"
+msgstr "또는 아래 항목으로 진행하기"
 
 #: src/components/alerts/alert-button.tsx:109
 msgid "Overwrite existing alerts"
@@ -745,7 +745,7 @@ msgstr "센서가 임계값을 초과할 때 트리거됩니다."
 
 #: src/lib/utils.ts:310
 msgid "Triggers when combined up/down exceeds a threshold"
-msgstr "임계값을 초과하여 상승/하강할 때 트리거됩니다."
+msgstr "업로드와 다운로드 대역폭의 합이 임계값을 초과할 때 트리거됩니다."
 
 #: src/lib/utils.ts:292
 msgid "Triggers when CPU usage exceeds a threshold"
@@ -757,7 +757,7 @@ msgstr "메모리 사용량이 임계값을 초과할 때 트리거됩니다."
 
 #: src/lib/utils.ts:285
 msgid "Triggers when status switches between up and down"
-msgstr "값의 증가 또는 감소가 감지될 때 트리거됩니다."
+msgstr "시스템의 전원이 켜지거나 꺼질때 트리거됩니다."
 
 #: src/lib/utils.ts:304
 msgid "Triggers when usage of any disk exceeds a threshold"
