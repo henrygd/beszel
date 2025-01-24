@@ -172,6 +172,109 @@ export default function SystemsTable() {
 				header: ({ column }) => sortableHeader(column),
 			},
 			{
+				accessorKey: "info.stats.g",
+				id: t`GPU Utilisation`,
+				invertSorting: true,
+				cell(info) {
+					const gpuCount = info.row.original.info.stats.gn; // Number of GPUs
+			
+					if (gpuCount === 0) {
+						return <span>No GPU</span>;
+					}
+
+					const gpuStats = info.row.original.info.stats.g!; // GPU stats object // If the Gpu count is greater than 0, then the g object must exist
+		
+					return (
+						<div className="flex items-center gap-3">
+							<div className="flex flex-col gap-1">
+								{Array.from({ length: gpuCount }).map((_, i) => {
+
+									const utilisation = gpuStats[i]?.u || 0;
+
+									return (
+										<div key={i} className="flex items-center gap-2">
+											<span>{i+1}</span>
+											<div
+												className="relative bg-muted w-full h-3 rounded-sm overflow-hidden"
+												title={`GPU ${i + 1}: ${utilisation}%`}
+												style={{ maxWidth: "250px", minWidth:'100px' }}
+											>
+												
+												<div
+													className={cn(
+														"absolute inset-0 h-full",
+														(utilisation < 65 && "bg-green-500") ||
+															(utilisation < 90 && "bg-yellow-500") ||
+															"bg-red-500"
+													)}
+													style={{
+														width: `${utilisation}%`,
+													}}
+												></div>
+											</div>
+											<span className="text-sm tabular-nums" style={{maxWidth:"50px", minWidth:"30px"}}>{Math.round(utilisation)}%</span>
+										</div>
+									);
+								})}
+							</div>
+						</div>
+					);
+				},
+				icon: CpuIcon,
+				header: ({ column }) => sortableHeader(column),
+			},
+			{
+				accessorKey: "info.stats.g",
+				id: t`GPU Memory`,
+				invertSorting: true,
+				cell(info) {
+					const gpuCount = info.row.original.info.stats.gn; // Number of GPUs
+			
+					if (gpuCount === 0) {
+						return <span>No GPU</span>;
+					}
+		
+					const gpuStats = info.row.original.info.stats.g!; // GPU stats object // If the Gpu count is greater than 0, then the g object must exist
+
+					return (
+						<div className="flex items-center gap-3">
+							<div className="flex flex-col gap-1">
+								{Array.from({ length: gpuCount }).map((_, i) => {
+									const memoryPercent = gpuStats![i]?.mp || 0; 
+									const memoryUsed = gpuStats![i]?.mu || 0; 
+									const memoryTotal = gpuStats![i]?.mt || 0;
+									return (
+										<div key={i} className="flex items-center gap-2">
+											<span>{i+1}</span>
+											<div
+												className="relative bg-muted w-full h-3 rounded-sm overflow-hidden"
+												title={`GPU ${i + 1}: ${memoryUsed}MB / ${memoryTotal}MB`}
+												style={{ maxWidth: "250px", minWidth:'100px' }}
+											>
+												<div
+													className={cn(
+														"absolute inset-0 h-full",
+														(memoryPercent < 0.65 && "bg-green-500") ||
+															(memoryPercent < 0.90 && "bg-yellow-500") ||
+															"bg-red-500"
+													)}
+													style={{
+														width: `${memoryPercent*100}%`,
+													}}
+												></div>
+											</div>
+											<span className="text-sm tabular-nums" style={{maxWidth:"50px", minWidth:"30px"}}>{Math.round(memoryPercent *100)}%</span>
+										</div>
+									);
+								})}
+							</div>
+						</div>
+					);
+				},
+				icon: CpuIcon,
+				header: ({ column }) => sortableHeader(column),
+			},
+			{
 				accessorKey: "info.dp",
 				id: t`Disk`,
 				invertSorting: true,
@@ -195,7 +298,7 @@ export default function SystemsTable() {
 							})}
 						>
 							{decimalString(val, val >= 100 ? 1 : 2)} MB/s
-						</span>
+							</span>
 					)
 				},
 			},

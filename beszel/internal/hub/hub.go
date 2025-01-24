@@ -19,6 +19,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -297,6 +298,30 @@ func (h *Hub) updateSystem(record *core.Record) {
 		h.updateSystemStatus(record, "down")
 		return
 	}
+
+	// check how many GPU's there are
+	systemData.Stats.GPUnum = 0
+
+	if systemData.Stats.GPUData != nil {
+		systemData.Stats.GPUnum = len(systemData.Stats.GPUData)
+
+		// update the MemoryPercentage for the GPU's (If the MemoryTotal value is not 0)
+		for i := 0; i < systemData.Stats.GPUnum; i++ {
+			key := strconv.Itoa(i)
+
+			gpu := systemData.Stats.GPUData[key]
+
+			if gpu.MemoryTotal != 0 {
+				gpu.MemoryPercent = gpu.MemoryUsed / gpu.MemoryTotal
+			}
+
+			systemData.Stats.GPUData[key] = gpu
+		}
+	}
+
+	// add the stats object to the systemData.Info
+	systemData.Info.Stats = systemData.Stats
+
 	// update system record
 	record.Set("status", "up")
 	record.Set("info", systemData.Info)
