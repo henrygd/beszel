@@ -36,6 +36,8 @@ export interface SystemInfo {
 	v: string
 	/** system is using podman */
 	p?: boolean
+	/** copy of the latest SystemStats */
+	stats:SystemStats
 }
 
 export interface SystemStats {
@@ -85,6 +87,8 @@ export interface SystemStats {
 	efs?: Record<string, ExtraFsStats>
 	/** GPU data */
 	g?: Record<string, GPUData>
+	/** Number of GPUs */
+	gn: number
 }
 
 export interface GPUData {
@@ -98,6 +102,8 @@ export interface GPUData {
 	u: number
 	/** power (w) */
 	p?: number
+	/** Memory percentage (%) */
+	mp?: number
 }
 
 export interface ExtraFsStats {
