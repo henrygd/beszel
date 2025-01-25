@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -18,6 +19,7 @@ import (
 type GPUManager struct {
 	nvidiaSmi  bool
 	rocmSmi    bool
+	tegrastats bool
 	GpuDataMap map[string]*system.GPUData
 	mutex      sync.Mutex
 }
@@ -72,21 +74,63 @@ func (c *gpuCollector) collect() error {
 	buf := make([]byte, 0, 8*1024)
 	scanner.Buffer(buf, bufio.MaxScanTokenSize)
 
-	hasValidData := false
 	for scanner.Scan() {
-		if c.parse(scanner.Bytes()) {
-			hasValidData = true
+		hasValidData := c.parse(scanner.Bytes())
+		if !hasValidData {
+			return errNoValidData
 		}
-	}
-
-	if !hasValidData {
-		return errNoValidData
 	}
 
 	if err := scanner.Err(); err != nil {
 		return fmt.Errorf("scanner error: %w", err)
 	}
 	return c.cmd.Wait()
+}
+
+// getJetsonParser returns a function to parse the output of tegrastats and update the GPUData map
+func (gm *GPUManager) getJetsonParser() func(output []byte) bool {
+	// use closure to avoid recompiling the regex
+	ramPattern := regexp.MustCompile(`RAM (\d+)/(\d+)MB`)
+	gr3dPattern := regexp.MustCompile(`GR3D_FREQ (\d+)%`)
+	tempPattern := regexp.MustCompile(`tj@(\d+\.?\d*)C`)
+	// Orin Nano / NX do not have GPU specific power monitor
+	// TODO: Maybe use VDD_IN for Nano / NX and add a total system power chart
+	powerPattern := regexp.MustCompile(`(GPU_SOC|CPU_GPU_CV) (\d+)mW`)
+
+	return func(output []byte) bool {
+		gm.mutex.Lock()
+		defer gm.mutex.Unlock()
+		// we get gpu name from the intitial run of nvidia-smi, so return if it hasn't been initialized
+		gpuData, ok := gm.GpuDataMap["0"]
+		if !ok {
+			return true
+		}
+		data := string(output)
+		// Parse RAM usage
+		ramMatches := ramPattern.FindStringSubmatch(data)
+		if ramMatches != nil {
+			gpuData.MemoryUsed, _ = strconv.ParseFloat(ramMatches[1], 64)
+			gpuData.MemoryTotal, _ = strconv.ParseFloat(ramMatches[2], 64)
+		}
+		// Parse GR3D (GPU) usage
+		gr3dMatches := gr3dPattern.FindStringSubmatch(data)
+		if gr3dMatches != nil {
+			gpuData.Usage, _ = strconv.ParseFloat(gr3dMatches[1], 64)
+		}
+		// Parse temperature
+		tempMatches := tempPattern.FindStringSubmatch(data)
+		if tempMatches != nil {
+			gpuData.Temperature, _ = strconv.ParseFloat(tempMatches[1], 64)
+		}
+		// Parse power usage
+		powerMatches := powerPattern.FindStringSubmatch(data)
+		if powerMatches != nil {
+			power, _ := strconv.ParseFloat(powerMatches[1], 64)
+			gpuData.Power = power / 1000
+		}
+		gpuData.Count++
+		return true
+	}
 }
 
 // parseNvidiaData parses the output of nvidia-smi and updates the GPUData map
@@ -112,6 +156,12 @@ func (gm *GPUManager) parseNvidiaData(output []byte) bool {
 				if _, ok := gm.GpuDataMap[id]; !ok {
 					name := strings.TrimPrefix(fields[1], "NVIDIA ")
 					gm.GpuDataMap[id] = &system.GPUData{Name: strings.TrimSuffix(name, " Laptop GPU")}
+					// check if tegrastats is active - if so we will only use nvidia-smi to get gpu name
+					// - nvidia-smi does not provide metrics for tegra / jetson devices
+					// this will end the nvidia-smi collector
+					if gm.tegrastats {
+						return false
+					}
 				}
 				// update gpu data
 				gpu := gm.GpuDataMap[id]
@@ -191,19 +241,24 @@ func (gm *GPUManager) GetCurrentData() map[string]system.GPUData {
 	return gpuData
 }
 
-// detectGPUs returns the GPU brand (nvidia or amd) or an error if none is found
-// todo: make sure there's actually a GPU, not just if the command exists
+// detectGPUs checks for the presence of GPU management tools (nvidia-smi, rocm-smi, tegrastats)
+// in the system path. It sets the corresponding flags in the GPUManager struct if any of these
+// tools are found. If none of the tools are found, it returns an error indicating that no GPU
+// management tools are available.
 func (gm *GPUManager) detectGPUs() error {
-	if err := exec.Command("nvidia-smi").Run(); err == nil {
+	if _, err := exec.LookPath("nvidia-smi"); err == nil {
 		gm.nvidiaSmi = true
 	}
-	if err := exec.Command("rocm-smi").Run(); err == nil {
+	if _, err := exec.LookPath("rocm-smi"); err == nil {
 		gm.rocmSmi = true
 	}
-	if gm.nvidiaSmi || gm.rocmSmi {
+	if _, err := exec.LookPath("tegrastats"); err == nil {
+		gm.tegrastats = true
+	}
+	if gm.nvidiaSmi || gm.rocmSmi || gm.tegrastats {
 		return nil
 	}
-	return fmt.Errorf("no GPU found - install nvidia-smi or rocm-smi")
+	return fmt.Errorf("no GPU found - install nvidia-smi, rocm-smi, or tegrastats")
 }
 
 // startCollector starts the appropriate GPU data collector based on the command
@@ -226,6 +281,13 @@ func (gm *GPUManager) startCollector(command string) {
 			parse: gm.parseAmdData,
 		}
 		go amdCollector.start()
+	case "tegrastats":
+		jetsonCollector := gpuCollector{
+			name:  "tegrastats",
+			cmd:   exec.Command("tegrastats", "--interval", "3000"),
+			parse: gm.getJetsonParser(),
+		}
+		go jetsonCollector.start()
 	}
 }
 
@@ -242,6 +304,9 @@ func NewGPUManager() (*GPUManager, error) {
 	}
 	if gm.rocmSmi {
 		gm.startCollector("rocm-smi")
+	}
+	if gm.tegrastats {
+		gm.startCollector("tegrastats")
 	}
 
 	return &gm, nil
