@@ -74,15 +74,11 @@ func (c *gpuCollector) collect() error {
 	buf := make([]byte, 0, 8*1024)
 	scanner.Buffer(buf, bufio.MaxScanTokenSize)
 
-	hasValidData := false
 	for scanner.Scan() {
-		if c.parse(scanner.Bytes()) {
-			hasValidData = true
+		hasValidData := c.parse(scanner.Bytes())
+		if !hasValidData {
+			return errNoValidData
 		}
-	}
-
-	if !hasValidData {
-		return errNoValidData
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -104,8 +100,12 @@ func (gm *GPUManager) getJetsonParser() func(output []byte) bool {
 	return func(output []byte) bool {
 		gm.mutex.Lock()
 		defer gm.mutex.Unlock()
+		// we get gpu name from the intitial run of nvidia-smi, so return if it hasn't been initialized
+		gpuData, ok := gm.GpuDataMap["0"]
+		if !ok {
+			return true
+		}
 		data := string(output)
-		gpuData := gm.GpuDataMap["0"]
 		// Parse RAM usage
 		ramMatches := ramPattern.FindStringSubmatch(data)
 		if ramMatches != nil {
@@ -156,6 +156,12 @@ func (gm *GPUManager) parseNvidiaData(output []byte) bool {
 				if _, ok := gm.GpuDataMap[id]; !ok {
 					name := strings.TrimPrefix(fields[1], "NVIDIA ")
 					gm.GpuDataMap[id] = &system.GPUData{Name: strings.TrimSuffix(name, " Laptop GPU")}
+					// check if tegrastats is active - if so we will only use nvidia-smi to get gpu name
+					// - nvidia-smi does not provide metrics for tegra / jetson devices
+					// this will end the nvidia-smi collector
+					if gm.tegrastats {
+						return false
+					}
 				}
 				// update gpu data
 				gpu := gm.GpuDataMap[id]
@@ -235,17 +241,18 @@ func (gm *GPUManager) GetCurrentData() map[string]system.GPUData {
 	return gpuData
 }
 
-// detectGPUs returns the GPU brand (nvidia or amd) or an error if none is found
-// todo: make sure there's actually a GPU, not just if the command exists
+// detectGPUs checks for the presence of GPU management tools (nvidia-smi, rocm-smi, tegrastats)
+// in the system path. It sets the corresponding flags in the GPUManager struct if any of these
+// tools are found. If none of the tools are found, it returns an error indicating that no GPU
+// management tools are available.
 func (gm *GPUManager) detectGPUs() error {
-	if err := exec.Command("nvidia-smi").Run(); err == nil {
+	if _, err := exec.LookPath("nvidia-smi"); err == nil {
 		gm.nvidiaSmi = true
 	}
-	if err := exec.Command("rocm-smi").Run(); err == nil {
+	if _, err := exec.LookPath("rocm-smi"); err == nil {
 		gm.rocmSmi = true
 	}
-	_, err := exec.LookPath("tegrastats")
-	if err == nil {
+	if _, err := exec.LookPath("tegrastats"); err == nil {
 		gm.tegrastats = true
 	}
 	if gm.nvidiaSmi || gm.rocmSmi || gm.tegrastats {
