@@ -91,45 +91,46 @@ func (c *gpuCollector) collect() error {
 	return c.cmd.Wait()
 }
 
-// parseJetsonData parses the output of rtegrastats and updates the GPUData map
-func (gm *GPUManager) parseJetsonData(output []byte) bool {
-	data := string(output)
+// getJetsonParser returns a function to parse the output of tegrastats and update the GPUData map
+func (gm *GPUManager) getJetsonParser() func(output []byte) bool {
+	// use closure to avoid recompiling the regex
 	ramPattern := regexp.MustCompile(`RAM (\d+)/(\d+)MB`)
 	gr3dPattern := regexp.MustCompile(`GR3D_FREQ (\d+)%`)
-	tempPattern := regexp.MustCompile(`([a-z0-9_]+)@(\d+\.?\d*)C`)
-	powerPattern := regexp.MustCompile(`VDD_GPU_SOC (\d+)mW`)
-	gm.mutex.Lock()
-	defer gm.mutex.Unlock()
-	gpuData := gm.GpuDataMap["0"]
-	// Parse RAM usage
-	ramMatches := ramPattern.FindStringSubmatch(data)
-	if ramMatches != nil {
-		gpuData.MemoryUsed, _ = strconv.ParseFloat(ramMatches[1], 64)
-		gpuData.MemoryTotal, _ = strconv.ParseFloat(ramMatches[2], 64)
-	}
-	// Parse GR3D (GPU) usage
-	gr3dMatches := gr3dPattern.FindStringSubmatch(data)
-	if gr3dMatches != nil {
-		usage, _ := strconv.ParseFloat(gr3dMatches[1], 64)
-		gpuData.Usage = usage / 100
-	}
+	tempPattern := regexp.MustCompile(`tj@(\d+\.?\d*)C`)
+	// Orin Nano / NX do not have GPU specific power monitor
+	// TODO: Maybe use VDD_IN for Nano / NX and add a total system power chart
+	powerPattern := regexp.MustCompile(`(GPU_SOC|CPU_GPU_CV) (\d+)mW`)
 
-	tempMatches := tempPattern.FindAllStringSubmatch(data, -1)
-	for _, match := range tempMatches {
-		if match[1] == "cpu" {
-			gpuData.Temperature, _ = strconv.ParseFloat(match[2], 64)
-			break
+	return func(output []byte) bool {
+		gm.mutex.Lock()
+		defer gm.mutex.Unlock()
+		data := string(output)
+		gpuData := gm.GpuDataMap["0"]
+		// Parse RAM usage
+		ramMatches := ramPattern.FindStringSubmatch(data)
+		if ramMatches != nil {
+			gpuData.MemoryUsed, _ = strconv.ParseFloat(ramMatches[1], 64)
+			gpuData.MemoryTotal, _ = strconv.ParseFloat(ramMatches[2], 64)
 		}
+		// Parse GR3D (GPU) usage
+		gr3dMatches := gr3dPattern.FindStringSubmatch(data)
+		if gr3dMatches != nil {
+			gpuData.Usage, _ = strconv.ParseFloat(gr3dMatches[1], 64)
+		}
+		// Parse temperature
+		tempMatches := tempPattern.FindStringSubmatch(data)
+		if tempMatches != nil {
+			gpuData.Temperature, _ = strconv.ParseFloat(tempMatches[1], 64)
+		}
+		// Parse power usage
+		powerMatches := powerPattern.FindStringSubmatch(data)
+		if powerMatches != nil {
+			power, _ := strconv.ParseFloat(powerMatches[1], 64)
+			gpuData.Power = power / 1000
+		}
+		gpuData.Count++
+		return true
 	}
-
-	// Parse power usage
-	powerMatches := powerPattern.FindStringSubmatch(data)
-	if powerMatches != nil {
-		power, _ := strconv.ParseFloat(powerMatches[1], 64)
-		gpuData.Power = power / 1000
-	}
-	gpuData.Count++
-	return true
 }
 
 // parseNvidiaData parses the output of nvidia-smi and updates the GPUData map
@@ -250,7 +251,7 @@ func (gm *GPUManager) detectGPUs() error {
 	if gm.nvidiaSmi || gm.rocmSmi || gm.tegrastats {
 		return nil
 	}
-	return fmt.Errorf("no GPU found - install nvidia-smi or rocm-smi or tegrastats")
+	return fmt.Errorf("no GPU found - install nvidia-smi, rocm-smi, or tegrastats")
 }
 
 // startCollector starts the appropriate GPU data collector based on the command
@@ -276,12 +277,11 @@ func (gm *GPUManager) startCollector(command string) {
 	case "tegrastats":
 		jetsonCollector := gpuCollector{
 			name:  "tegrastats",
-			cmd:   exec.Command("tegrastats"),
-			parse: gm.parseJetsonData,
+			cmd:   exec.Command("tegrastats", "--interval", "3000"),
+			parse: gm.getJetsonParser(),
 		}
 		go jetsonCollector.start()
 	}
-
 }
 
 // NewGPUManager creates and initializes a new GPUManager
