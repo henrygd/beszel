@@ -68,6 +68,30 @@ archives:
       {{- .Os }}_
       {{- .Arch }}
 
+nfpms:
+  - id: beszel-agent
+    package_name: beszel-agent
+    maintainer: henrygd
+    builds:
+      - beszel-agent
+    formats:
+      - deb
+    contents:
+     - src: ../supplemental/debian/copyright
+       dst: usr/share/doc/beszel-agent/copyright
+       packager: deb
+     - src: ../supplemental/debian/beszel-agent.service
+       dst: lib/systemd/system/beszel-agent.service
+       packager: deb
+    scripts:
+      postinstall: ../supplemental/debian/postinstall.sh
+    deb:
+      scripts:
+        templates: ../supplemental/debian/templates
+        # Currently broken due to a bug in goreleaser
+        # https://github.com/goreleaser/goreleaser/issues/5487
+        #config: ../supplemental/debian/config.sh
+
 release:
   draft: true
 
