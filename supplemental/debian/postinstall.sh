@@ -27,6 +27,7 @@ if ! getent passwd "$SERVICE_USER" >/dev/null; then
 	adduser --quiet --system "$SERVICE_USER" \
 		--ingroup "$SERVICE_USER" \
 		--no-create-home \
+		--home /nonexistent \
 		--gecos "System user for $SERVICE"
 fi
 
