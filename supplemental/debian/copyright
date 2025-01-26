@@ -1,0 +1,8 @@
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Beszel
+Upstream-Contact: henrygd <hank@henrygd.me>
+Source: https://beszel.dev/
+
+Files: *
+Copyright: 2024 henrygd
+License: MIT

@@ -1,0 +1,11 @@
+# No changelog in the repo at the moment. This would be good to fix
+beszel-agent: no-changelog
+# Current unable to fix these due to Goreleaser bug
+# https://github.com/goreleaser/goreleaser/issues/5487
+beszel-agent: no-debconf-config
+beszel-agent: postinst-uses-db-input
+# Needs to be fixed in Beszel build
+beszel-agent: hardening-no-pie
+beszel-agent: hardening-no-relro
+# Maybe one day
+beszel-agent: no-manual-page

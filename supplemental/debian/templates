@@ -1,0 +1,5 @@
+Template: beszel-agent/key
+Type: string
+Description: SSH public key provided by beszel hub:
+ If you leave this blank, you will need to configure it in 
+ /etc/beszel-agent.conf before starting Beszel.
