@@ -98,7 +98,10 @@ export default function ForgotPassword() {
 						<Trans>Then log into the backend and reset your user account password in the users table.</Trans>
 					</p>
 					<code className="bg-muted rounded-sm py-0.5 px-2.5 me-auto text-sm">
-						beszel admin update youremail@example.com newpassword
+						./beszel superuser upsert user@example.com password
+					</code>
+					<code className="whitespace-nowrap w-full overflow-auto bg-muted rounded-sm py-0.5 px-2.5 me-auto text-sm">
+						docker run --rm -v ./beszel_data:/beszel_data henrygd/beszel superuser upsert user@example.com password
 					</code>
 				</DialogContent>
 			</Dialog>
