@@ -208,7 +208,7 @@ func (dm *dockerManager) deleteContainerStatsSync(id string) {
 
 // Creates a new http client for Docker or Podman API
 func newDockerManager(a *Agent) *dockerManager {
-	dockerHost, exists := os.LookupEnv("DOCKER_HOST")
+	dockerHost, exists := GetEnv("DOCKER_HOST")
 	if exists {
 		slog.Info("DOCKER_HOST", "host", dockerHost)
 	} else {
@@ -242,7 +242,7 @@ func newDockerManager(a *Agent) *dockerManager {
 
 	// configurable timeout
 	timeout := time.Millisecond * 2100
-	if t, set := os.LookupEnv("DOCKER_TIMEOUT"); set {
+	if t, set := GetEnv("DOCKER_TIMEOUT"); set {
 		timeout, err = time.ParseDuration(t)
 		if err != nil {
 			slog.Error(err.Error())

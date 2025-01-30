@@ -3,18 +3,17 @@ package agent
 import (
 	"beszel/internal/entities/system"
 	"log/slog"
-	"time"
-
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/shirou/gopsutil/v4/disk"
 )
 
 // Sets up the filesystems to monitor for disk usage and I/O.
 func (a *Agent) initializeDiskInfo() {
-	filesystem := os.Getenv("FILESYSTEM")
+	filesystem, _ := GetEnv("FILESYSTEM")
 	efPath := "/extra-filesystems"
 	hasRoot := false
 
@@ -79,7 +78,7 @@ func (a *Agent) initializeDiskInfo() {
 	}
 
 	// Add EXTRA_FILESYSTEMS env var values to fsStats
-	if extraFilesystems, exists := os.LookupEnv("EXTRA_FILESYSTEMS"); exists {
+	if extraFilesystems, exists := GetEnv("EXTRA_FILESYSTEMS"); exists {
 		for _, fs := range strings.Split(extraFilesystems, ",") {
 			found := false
 			for _, p := range partitions {

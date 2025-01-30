@@ -22,11 +22,12 @@ func main() {
 	}
 
 	// Try to get the key from the KEY environment variable.
-	pubKey := []byte(os.Getenv("KEY"))
+	key, _ := agent.GetEnv("KEY")
+	pubKey := []byte(key)
 
 	// If KEY is not set, try to read the key from the file specified by KEY_FILE.
 	if len(pubKey) == 0 {
-		keyFile, exists := os.LookupEnv("KEY_FILE")
+		keyFile, exists := agent.GetEnv("KEY_FILE")
 		if !exists {
 			log.Fatal("Must set KEY or KEY_FILE environment variable")
 		}
@@ -38,7 +39,8 @@ func main() {
 	}
 
 	addr := ":45876"
-	if portEnvVar, exists := os.LookupEnv("PORT"); exists {
+	// TODO: change env var to ADDR
+	if portEnvVar, exists := agent.GetEnv("PORT"); exists {
 		// allow passing an address in the form of "127.0.0.1:45876"
 		if !strings.Contains(portEnvVar, ":") {
 			portEnvVar = ":" + portEnvVar

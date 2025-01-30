@@ -2,7 +2,6 @@ package agent
 
 import (
 	"log/slog"
-	"os"
 	"strings"
 	"time"
 
@@ -15,7 +14,7 @@ func (a *Agent) initializeNetIoStats() {
 
 	// map of network interface names passed in via NICS env var
 	var nicsMap map[string]struct{}
-	nics, nicsEnvExists := os.LookupEnv("NICS")
+	nics, nicsEnvExists := GetEnv("NICS")
 	if nicsEnvExists {
 		nicsMap = make(map[string]struct{}, 0)
 		for _, nic := range strings.Split(nics, ",") {
