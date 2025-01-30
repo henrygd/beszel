@@ -8,7 +8,6 @@ import (
 	"beszel/internal/records"
 	"beszel/internal/users"
 	"beszel/site"
-
 	"context"
 	"crypto/ed25519"
 	"encoding/pem"
@@ -52,6 +51,15 @@ func NewHub(app *pocketbase.PocketBase) *Hub {
 	}
 }
 
+// GetEnv retrieves an environment variable with a "BESZEL_HUB_" prefix, or falls back to the unprefixed key.
+func GetEnv(key string) (value string, exists bool) {
+	if value, exists = os.LookupEnv("BESZEL_HUB_" + key); exists {
+		return value, exists
+	}
+	// Fallback to the old unprefixed key
+	return os.LookupEnv(key)
+}
+
 func (h *Hub) Run() {
 	// loosely check if it was executed using "go run"
 	isGoRun := strings.HasPrefix(os.Args[0], os.TempDir())
@@ -80,14 +88,15 @@ func (h *Hub) Run() {
 			return err
 		}
 		// disable email auth if DISABLE_PASSWORD_AUTH env var is set
-		usersCollection.PasswordAuth.Enabled = os.Getenv("DISABLE_PASSWORD_AUTH") != "true"
+		disablePasswordAuth, _ := GetEnv("DISABLE_PASSWORD_AUTH")
+		usersCollection.PasswordAuth.Enabled = disablePasswordAuth != "true"
 		usersCollection.PasswordAuth.IdentityFields = []string{"email"}
 		// disable oauth if no providers are configured (todo: remove this in post 0.9.0 release)
 		if usersCollection.OAuth2.Enabled {
 			usersCollection.OAuth2.Enabled = len(usersCollection.OAuth2.Providers) > 0
 		}
 		// allow oauth user creation if USER_CREATION is set
-		if os.Getenv("USER_CREATION") == "true" {
+		if userCreation, _ := GetEnv("USER_CREATION"); userCreation == "true" {
 			cr := "@request.context = 'oauth2'"
 			usersCollection.CreateRule = &cr
 		} else {
@@ -114,14 +123,14 @@ func (h *Hub) Run() {
 				return nil
 			})
 		default:
-			csp, cspExists := os.LookupEnv("CSP")
+			csp, cspExists := GetEnv("CSP")
+			s := apis.Static(site.DistDirFS, true)
 			se.Router.Any("/{path...}", func(e *core.RequestEvent) error {
 				if cspExists {
 					e.Response.Header().Del("X-Frame-Options")
 					e.Response.Header().Set("Content-Security-Policy", csp)
 				}
-				indexFallback := !strings.HasPrefix(e.Request.URL.Path, "/static/")
-				return apis.Static(site.DistDirFS, indexFallback)(e)
+				return s(e)
 			})
 		}
 		return se.Next()
@@ -210,7 +219,6 @@ func (h *Hub) Run() {
 			go h.updateSystem(newRecord)
 		} else {
 			h.am.HandleStatusAlerts(newStatus, oldRecord)
-
 		}
 		return e.Next()
 	})
