@@ -293,7 +293,9 @@ export default function SystemDetail({ name }: { name: string }) {
 
 	// if no data, show empty message
 	const dataEmpty = !chartLoading && chartData.systemStats.length === 0
-	const hasGpuData = Object.keys(systemStats.at(-1)?.stats.g ?? {}).length > 0
+	const lastGpuVals = Object.values(systemStats.at(-1)?.stats.g ?? {})
+	const hasGpuData = lastGpuVals.length > 0
+	const hasGpuPowerData = lastGpuVals.some((gpu) => gpu.p !== undefined)
 
 	return (
 		<>
@@ -489,7 +491,7 @@ export default function SystemDetail({ name }: { name: string }) {
 					)}
 
 					{/* GPU power draw chart */}
-					{hasGpuData && (
+					{hasGpuPowerData && (
 						<ChartCard
 							empty={dataEmpty}
 							grid={grid}
