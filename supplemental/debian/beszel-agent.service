@@ -1,0 +1,20 @@
+[Unit]
+Description=Beszel Agent Service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Environment="PORT=45876"
+EnvironmentFile=/etc/beszel-agent.conf
+ExecStart=/usr/bin/beszel-agent
+User=beszel
+Restart=on-failure
+# TODO: See if we can apply more security hardening here
+# TODO: Audit using `systemd-analyze security beszel-agent.service`
+ProtectSystem=yes
+ProtectHome=yes
+NoNewPrivileges=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target
