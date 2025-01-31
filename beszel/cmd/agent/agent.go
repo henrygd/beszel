@@ -1,14 +1,14 @@
 package main
 
 import (
-	"beszel"
-	"beszel/internal/agent"
-	"beszel/internal/agent/health"
 	"fmt"
 	"log"
 	"os"
 	"strings"
 
+	"github.com/henrygd/beszel"
+	"github.com/henrygd/beszel/internal/agent"
+	"github.com/henrygd/beszel/internal/agent/health"
 	"github.com/spf13/pflag"
 	"golang.org/x/crypto/ssh"
 )

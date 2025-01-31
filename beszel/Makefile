@@ -84,9 +84,9 @@ dev-hub:
 
 dev-agent:
 	@if command -v entr >/dev/null 2>&1; then \
-		find ./cmd/agent/*.go ./internal/agent/*.go | entr -r go run beszel/cmd/agent; \
+		find ./cmd/agent/*.go ./internal/agent/*.go | entr -r go run github.com/henrygd/beszel/cmd/agent; \
 	else \
-		go run beszel/cmd/agent; \
+		go run github.com/henrygd/beszel/cmd/agent; \
 	fi
 	
 build-dotnet:

@@ -1,7 +1,6 @@
 package agent
 
 import (
-	"beszel/internal/entities/system"
 	"bufio"
 	"bytes"
 	"encoding/json"
@@ -12,6 +11,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/henrygd/beszel/internal/entities/system"
 
 	"golang.org/x/exp/slog"
 )

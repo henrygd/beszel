@@ -1,13 +1,14 @@
 package agent
 
 import (
-	"beszel/internal/ghupdate"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
 	"runtime"
 	"strings"
+
+	"github.com/henrygd/beszel/internal/ghupdate"
 )
 
 // restarter knows how to restart the beszel-agent service.

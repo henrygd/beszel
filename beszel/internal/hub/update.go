@@ -1,12 +1,12 @@
 package hub
 
 import (
-	"beszel/internal/ghupdate"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
 
+	"github.com/henrygd/beszel/internal/ghupdate"
 	"github.com/spf13/cobra"
 )
 

@@ -1,14 +1,15 @@
 package main
 
 import (
-	"beszel"
-	"beszel/internal/hub"
-	_ "beszel/migrations"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/henrygd/beszel"
+	"github.com/henrygd/beszel/internal/hub"
+	_ "github.com/henrygd/beszel/migrations"
 
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"

@@ -3,8 +3,9 @@ package system
 // TODO: this is confusing, make common package with common/types common/helpers etc
 
 import (
-	"beszel/internal/entities/container"
 	"time"
+
+	"github.com/henrygd/beszel/internal/entities/container"
 )
 
 type Stats struct {

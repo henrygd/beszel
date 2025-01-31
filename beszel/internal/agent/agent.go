@@ -2,8 +2,6 @@
 package agent
 
 import (
-	"beszel"
-	"beszel/internal/entities/system"
 	"crypto/sha256"
 	"encoding/hex"
 	"log/slog"
@@ -14,6 +12,8 @@ import (
 	"time"
 
 	"github.com/gliderlabs/ssh"
+	"github.com/henrygd/beszel"
+	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/shirou/gopsutil/v4/host"
 	gossh "golang.org/x/crypto/ssh"
 )

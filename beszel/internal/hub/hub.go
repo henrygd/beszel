@@ -2,12 +2,6 @@
 package hub
 
 import (
-	"beszel"
-	"beszel/internal/alerts"
-	"beszel/internal/hub/config"
-	"beszel/internal/hub/systems"
-	"beszel/internal/records"
-	"beszel/internal/users"
 	"crypto/ed25519"
 	"encoding/pem"
 	"fmt"
@@ -17,6 +11,11 @@ import (
 	"path"
 	"strings"
 	"time"
+
+	"github.com/henrygd/beszel"
+	"github.com/henrygd/beszel/internal/alerts"
+	"github.com/henrygd/beszel/internal/records"
+	"github.com/henrygd/beszel/internal/users"
 
 	"github.com/google/uuid"
 	"github.com/pocketbase/pocketbase"

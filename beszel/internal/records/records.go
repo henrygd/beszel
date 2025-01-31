@@ -2,14 +2,15 @@
 package records
 
 import (
-	"beszel/internal/entities/container"
-	"beszel/internal/entities/system"
 	"encoding/json"
 	"fmt"
 	"log"
 	"math"
 	"strings"
 	"time"
+
+	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
@@ -39,12 +40,14 @@ type StatsRecord struct {
 }
 
 // global variables for reusing allocations
-var statsRecord StatsRecord
-var containerStats []container.Stats
-var sumStats system.Stats
-var tempStats system.Stats
-var queryParams = make(dbx.Params, 1)
-var containerSums = make(map[string]*container.Stats)
+var (
+	statsRecord    StatsRecord
+	containerStats []container.Stats
+	sumStats       system.Stats
+	tempStats      system.Stats
+	queryParams    = make(dbx.Params, 1)
+	containerSums  = make(map[string]*container.Stats)
+)
 
 // Create longer records by averaging shorter records
 func (rm *RecordManager) CreateLongerRecords() {
