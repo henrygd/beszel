@@ -83,7 +83,7 @@ export default function ForgotPassword() {
 						<Trans>Command line instructions</Trans>
 					</button>
 				</DialogTrigger>
-				<DialogContent className="max-w-[33em]">
+				<DialogContent className="max-w-[41em]">
 					<DialogHeader>
 						<DialogTitle>
 							<Trans>Command line instructions</Trans>
@@ -100,8 +100,8 @@ export default function ForgotPassword() {
 					<code className="bg-muted rounded-sm py-0.5 px-2.5 me-auto text-sm">
 						./beszel superuser upsert user@example.com password
 					</code>
-					<code className="whitespace-nowrap w-full overflow-auto bg-muted rounded-sm py-0.5 px-2.5 me-auto text-sm">
-						docker run --rm -v ./beszel_data:/beszel_data henrygd/beszel superuser upsert user@example.com password
+					<code className="bg-muted rounded-sm py-0.5 px-2.5 me-auto text-sm">
+						docker exec beszel /beszel superuser upsert name@example.com password
 					</code>
 				</DialogContent>
 			</Dialog>
