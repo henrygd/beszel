@@ -1,12 +1,13 @@
 package main
 
 import (
-	"beszel"
-	"beszel/internal/agent"
 	"fmt"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/henrygd/beszel"
+	"github.com/henrygd/beszel/internal/agent"
 )
 
 func main() {

@@ -1,8 +1,9 @@
 package system
 
 import (
-	"beszel/internal/entities/container"
 	"time"
+
+	"github.com/henrygd/beszel/internal/entities/container"
 )
 
 type Stats struct {

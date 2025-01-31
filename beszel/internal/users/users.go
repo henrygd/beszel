@@ -2,9 +2,10 @@
 package users
 
 import (
-	"beszel/migrations"
 	"log"
 	"net/http"
+
+	"github.com/henrygd/beszel/migrations"
 
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/core"

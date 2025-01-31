@@ -27,10 +27,10 @@ build-web-ui:
 	fi
 
 build-agent: tidy
-	GOOS=$(OS) GOARCH=$(ARCH) go build -o ./build/beszel-agent_$(OS)_$(ARCH) -ldflags "-w -s" beszel/cmd/agent
+	GOOS=$(OS) GOARCH=$(ARCH) go build -o ./build/beszel-agent_$(OS)_$(ARCH) -ldflags "-w -s" github.com/henrygd/beszel/cmd/agent
 
 build-hub: tidy $(if $(filter false,$(SKIP_WEB)),build-web-ui)
-	GOOS=$(OS) GOARCH=$(ARCH) go build -o ./build/beszel_$(OS)_$(ARCH) -ldflags "-w -s" beszel/cmd/hub
+	GOOS=$(OS) GOARCH=$(ARCH) go build -o ./build/beszel_$(OS)_$(ARCH) -ldflags "-w -s" github.com/henrygd/beszel/cmd/hub
 
 build: build-agent build-hub
 
@@ -58,9 +58,9 @@ dev-hub:
 
 dev-agent:
 	@if command -v entr >/dev/null 2>&1; then \
-		find ./cmd/agent/*.go ./internal/agent/*.go | entr -r go run beszel/cmd/agent; \
+		find ./cmd/agent/*.go ./internal/agent/*.go | entr -r go run github.com/henrygd/beszel/cmd/agent; \
 	else \
-		go run beszel/cmd/agent; \
+		go run github.com/henrygd/beszel/cmd/agent; \
 	fi
 
 # KEY="..." make -j dev

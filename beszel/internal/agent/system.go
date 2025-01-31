@@ -1,8 +1,6 @@
 package agent
 
 import (
-	"beszel"
-	"beszel/internal/entities/system"
 	"bufio"
 	"fmt"
 	"log/slog"
@@ -10,6 +8,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/henrygd/beszel"
+	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/shirou/gopsutil/v4/cpu"
 	"github.com/shirou/gopsutil/v4/disk"

@@ -1,10 +1,11 @@
 package hub
 
 import (
-	"beszel"
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/henrygd/beszel"
 
 	"github.com/blang/semver"
 	"github.com/rhysd/go-github-selfupdate/selfupdate"
