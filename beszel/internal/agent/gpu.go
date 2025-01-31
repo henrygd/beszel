@@ -26,13 +26,14 @@ type GPUManager struct {
 
 // RocmSmiJson represents the JSON structure of rocm-smi output
 type RocmSmiJson struct {
-	ID          string `json:"GUID"`
-	Name        string `json:"Card series"`
-	Temperature string `json:"Temperature (Sensor edge) (C)"`
-	MemoryUsed  string `json:"VRAM Total Used Memory (B)"`
-	MemoryTotal string `json:"VRAM Total Memory (B)"`
-	Usage       string `json:"GPU use (%)"`
-	Power       string `json:"Current Socket Graphics Package Power (W)"`
+	ID           string `json:"GUID"`
+	Name         string `json:"Card series"`
+	Temperature  string `json:"Temperature (Sensor edge) (C)"`
+	MemoryUsed   string `json:"VRAM Total Used Memory (B)"`
+	MemoryTotal  string `json:"VRAM Total Memory (B)"`
+	Usage        string `json:"GPU use (%)"`
+	PowerPackage string `json:"Average Graphics Package Power (W)"`
+	PowerSocket  string `json:"Current Socket Graphics Package Power (W)"`
 }
 
 // gpuCollector defines a collector for a specific GPU management utility (nvidia-smi or rocm-smi)
@@ -186,21 +187,23 @@ func (gm *GPUManager) parseAmdData(output []byte) bool {
 	gm.mutex.Lock()
 	defer gm.mutex.Unlock()
 	for _, v := range rocmSmiInfo {
-		temp, _ := strconv.ParseFloat(v.Temperature, 64)
+		var power float64
+		if v.PowerPackage != "" {
+			power, _ = strconv.ParseFloat(v.PowerPackage, 64)
+		} else {
+			power, _ = strconv.ParseFloat(v.PowerSocket, 64)
+		}
 		memoryUsage, _ := strconv.ParseFloat(v.MemoryUsed, 64)
 		totalMemory, _ := strconv.ParseFloat(v.MemoryTotal, 64)
 		usage, _ := strconv.ParseFloat(v.Usage, 64)
-		power, _ := strconv.ParseFloat(v.Power, 64)
-		memoryUsage = bytesToMegabytes(memoryUsage)
-		totalMemory = bytesToMegabytes(totalMemory)
 
 		if _, ok := gm.GpuDataMap[v.ID]; !ok {
 			gm.GpuDataMap[v.ID] = &system.GPUData{Name: v.Name}
 		}
 		gpu := gm.GpuDataMap[v.ID]
-		gpu.Temperature = temp
-		gpu.MemoryUsed = memoryUsage
-		gpu.MemoryTotal = totalMemory
+		gpu.Temperature, _ = strconv.ParseFloat(v.Temperature, 64)
+		gpu.MemoryUsed = bytesToMegabytes(memoryUsage)
+		gpu.MemoryTotal = bytesToMegabytes(totalMemory)
 		gpu.Usage += usage
 		gpu.Power += power
 		gpu.Count++
