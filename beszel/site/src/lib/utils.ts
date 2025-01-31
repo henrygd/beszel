@@ -43,13 +43,20 @@ const verifyAuth = () => {
 }
 
 export const updateSystemList = async () => {
-	const records = await pb
-		.collection<SystemRecord>("systems")
-		.getFullList({ sort: "+name", fields: "id,name,host,info,status" })
-	if (records.length) {
-		$systems.set(records)
-	} else {
-		verifyAuth()
+	try {
+		const records = await pb
+			.collection<SystemRecord>("systems")
+			.getFullList({ sort: "+name", fields: "id,name,host,info,status" })
+		if (records.length) {
+			$systems.set(records)
+		} else {
+			verifyAuth()
+		}
+	} catch (err) {
+		// @ts-ignore supress pocketbase auto cancellation error
+		if (err.isAbort) {
+			return
+		}
 	}
 }
 
