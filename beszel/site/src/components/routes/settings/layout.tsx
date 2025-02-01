@@ -3,7 +3,7 @@ import { Separator } from "../../ui/separator"
 import { SidebarNav } from "./sidebar-nav.tsx"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx"
 import { useStore } from "@nanostores/react"
-import { $router } from "@/components/router.tsx"
+import { $router, baseURL } from "@/components/router.tsx"
 import { redirectPage } from "@nanostores/router"
 import { BellIcon, FileSlidersIcon, SettingsIcon } from "lucide-react"
 import { $userSettings, pb } from "@/lib/stores.ts"
@@ -49,17 +49,17 @@ export default function SettingsLayout() {
 	const sidebarNavItems = [
 		{
 			title: _(t({ message: `General`, comment: "Context: General settings" })),
-			href: "/settings/general",
+			href: baseURL + "settings/general",
 			icon: SettingsIcon,
 		},
 		{
 			title: t`Notifications`,
-			href: "/settings/notifications",
+			href: baseURL + "settings/notifications",
 			icon: BellIcon,
 		},
 		{
 			title: t`YAML Config`,
-			href: "/settings/config",
+			href: baseURL + "settings/config",
 			icon: FileSlidersIcon,
 			admin: true,
 		},

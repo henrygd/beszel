@@ -10,6 +10,7 @@ import { useEffect, useState } from "react"
 import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from "lucide-react"
 import { EthernetIcon, ThermometerIcon } from "@/components/ui/icons"
 import { t } from "@lingui/macro"
+import { baseURL } from "@/components/router"
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -95,7 +96,7 @@ export const formatDay = (timestamp: string) => {
 }
 
 export const updateFavicon = (newIcon: string) => {
-	;(document.querySelector("link[rel='icon']") as HTMLLinkElement).href = `/static/${newIcon}`
+	;(document.querySelector("link[rel='icon']") as HTMLLinkElement).href = `${baseURL}static/${newIcon}`
 }
 
 export const isAdmin = () => pb.authStore.record?.role === "admin"

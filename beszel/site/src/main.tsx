@@ -9,7 +9,7 @@ import { $authenticated, $systems, pb, $publicKey, $hubVersion, $copyContent, $d
 import { updateUserSettings, updateAlerts, updateFavicon, updateSystemList } from "./lib/utils.ts"
 import { useStore } from "@nanostores/react"
 import { Toaster } from "./components/ui/toaster.tsx"
-import { $router } from "./components/router.tsx"
+import { $router, baseURL } from "./components/router.tsx"
 import SystemDetail from "./components/routes/system.tsx"
 import Navbar from "./components/navbar.tsx"
 import { I18nProvider } from "@lingui/react"
@@ -31,7 +31,7 @@ const App = () => {
 			$authenticated.set(pb.authStore.isValid)
 		})
 		// get version / public key
-		pb.send("/api/beszel/getkey", {}).then((data) => {
+		pb.send(baseURL + "api/beszel/getkey", {}).then((data) => {
 			$publicKey.set(data.key)
 			$hubVersion.set(data.v)
 		})
@@ -63,7 +63,7 @@ const App = () => {
 
 	if (!page) {
 		return <h1 className="text-3xl text-center my-14">404</h1>
-	} else if (page.path === "/") {
+	} else if (page.route === "home") {
 		return <Home />
 	} else if (page.route === "server") {
 		return <SystemDetail name={page.params.name} />

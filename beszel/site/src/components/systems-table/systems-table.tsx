@@ -65,7 +65,7 @@ import { $hubVersion, $systems, pb } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { cn, copyToClipboard, decimalString, isReadOnlyUser, useLocalStorage } from "@/lib/utils"
 import AlertsButton from "../alerts/alert-button"
-import { Link, navigate } from "../router"
+import { baseURL, Link, navigate } from "../router"
 import { EthernetIcon } from "../ui/icons"
 import { Trans, t } from "@lingui/macro"
 import { useLingui } from "@lingui/react"
@@ -406,7 +406,7 @@ export default function SystemsTable() {
 											onClick={(e) => {
 												const target = e.target as HTMLElement
 												if (!target.closest("[data-nolink]") && e.currentTarget.contains(target)) {
-													navigate(`/system/${encodeURIComponent(row.original.name)}`)
+													navigate(`${baseURL}system/${encodeURIComponent(row.original.name)}`)
 												}
 											}}
 										>
@@ -489,7 +489,7 @@ export default function SystemsTable() {
 											})}
 										</CardContent>
 										<Link
-											href={`/system/${encodeURIComponent(row.original.name)}`}
+											href={`${baseURL}system/${encodeURIComponent(row.original.name)}`}
 											className="inset-0 absolute w-full h-full"
 										>
 											<span className="sr-only">{row.original.name}</span>

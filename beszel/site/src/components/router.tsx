@@ -1,11 +1,12 @@
 import { createRouter } from "@nanostores/router"
 
+export const baseURL = import.meta.env.BASE_URL // TODO ensure it is /.*/ ?
 export const $router = createRouter(
 	{
-		home: "/",
-		server: "/system/:name",
-		settings: "/settings/:name?",
-		forgot_password: "/forgot-password",
+		home: baseURL,
+		server: baseURL + "system/:name",
+		settings: baseURL + "settings/:name?",
+		forgot_password: baseURL + "forgot-password",
 	},
 	{ links: false }
 )

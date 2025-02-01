@@ -10,7 +10,7 @@ import {
 	UserIcon,
 	UsersIcon,
 } from "lucide-react"
-import { Link } from "./router"
+import { baseURL, Link } from "./router"
 import { LangToggle } from "./lang-toggle"
 import { ModeToggle } from "./mode-toggle"
 import { Logo } from "./logo"
@@ -35,7 +35,7 @@ const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0
 export default function Navbar() {
 	return (
 		<div className="flex items-center h-14 md:h-16 bg-card px-4 pe-3 sm:px-6 border border-border/60 bt-0 rounded-md my-4">
-			<Link href="/" aria-label="Home" className="p-2 ps-0 me-3">
+			<Link href={baseURL} aria-label="Home" className="p-2 ps-0 me-3">
 				<Logo className="h-[1.1rem] md:h-5 fill-foreground" />
 			</Link>
 			<SearchButton />
@@ -44,7 +44,7 @@ export default function Navbar() {
 				<LangToggle />
 				<ModeToggle />
 				<Link
-					href="/settings/general"
+					href={baseURL + "settings/general"}
 					aria-label="Settings"
 					className={cn("", buttonVariants({ variant: "ghost", size: "icon" }))}
 				>
@@ -63,7 +63,7 @@ export default function Navbar() {
 							{isAdmin() && (
 								<>
 									<DropdownMenuItem asChild>
-										<a href="/_/" target="_blank">
+										<a href={baseURL + "_/"} target="_blank">
 											<UsersIcon className="me-2.5 h-4 w-4" />
 											<span>
 												<Trans>Users</Trans>
@@ -71,7 +71,7 @@ export default function Navbar() {
 										</a>
 									</DropdownMenuItem>
 									<DropdownMenuItem asChild>
-										<a href="/_/#/collections?collection=systems" target="_blank">
+										<a href={baseURL + "_/#/collections?collection=systems"} target="_blank">
 											<ServerIcon className="me-2.5 h-4 w-4" />
 											<span>
 												<Trans>Systems</Trans>
@@ -79,7 +79,7 @@ export default function Navbar() {
 										</a>
 									</DropdownMenuItem>
 									<DropdownMenuItem asChild>
-										<a href="/_/#/logs" target="_blank">
+										<a href={baseURL + "_/#/logs"} target="_blank">
 											<LogsIcon className="me-2.5 h-4 w-4" />
 											<span>
 												<Trans>Logs</Trans>
@@ -87,7 +87,7 @@ export default function Navbar() {
 										</a>
 									</DropdownMenuItem>
 									<DropdownMenuItem asChild>
-										<a href="/_/#/settings/backups" target="_blank">
+										<a href={baseURL + "_/#/settings/backups"} target="_blank">
 											<DatabaseBackupIcon className="me-2.5 h-4 w-4" />
 											<span>
 												<Trans>Backups</Trans>

@@ -23,7 +23,7 @@ import { useEffect } from "react"
 import { useStore } from "@nanostores/react"
 import { $systems } from "@/lib/stores"
 import { isAdmin } from "@/lib/utils"
-import { navigate } from "./router"
+import { baseURL, navigate } from "./router"
 import { Trans, t } from "@lingui/macro"
 
 export default function CommandPalette({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) {
@@ -55,7 +55,7 @@ export default function CommandPalette({ open, setOpen }: { open: boolean; setOp
 								<CommandItem
 									key={system.id}
 									onSelect={() => {
-										navigate(`/system/${encodeURIComponent(system.name)}`)
+										navigate(`${baseURL}system/${encodeURIComponent(system.name)}`)
 										setOpen(false)
 									}}
 								>
@@ -72,7 +72,7 @@ export default function CommandPalette({ open, setOpen }: { open: boolean; setOp
 					<CommandItem
 						keywords={["home"]}
 						onSelect={() => {
-							navigate("/")
+							navigate(baseURL)
 							setOpen(false)
 						}}
 					>
@@ -86,7 +86,7 @@ export default function CommandPalette({ open, setOpen }: { open: boolean; setOp
 					</CommandItem>
 					<CommandItem
 						onSelect={() => {
-							navigate("/settings/general")
+							navigate(baseURL + "settings/general")
 							setOpen(false)
 						}}
 					>
@@ -101,7 +101,7 @@ export default function CommandPalette({ open, setOpen }: { open: boolean; setOp
 					<CommandItem
 						keywords={["alerts"]}
 						onSelect={() => {
-							navigate("/settings/notifications")
+							navigate(baseURL + "settings/notifications")
 							setOpen(false)
 						}}
 					>
@@ -134,7 +134,7 @@ export default function CommandPalette({ open, setOpen }: { open: boolean; setOp
 								keywords={["pocketbase"]}
 								onSelect={() => {
 									setOpen(false)
-									window.open("/_/", "_blank")
+									window.open(baseURL + "_/", "_blank")
 								}}
 							>
 								<UsersIcon className="me-2 h-4 w-4" />
@@ -148,7 +148,7 @@ export default function CommandPalette({ open, setOpen }: { open: boolean; setOp
 							<CommandItem
 								onSelect={() => {
 									setOpen(false)
-									window.open("/_/#/logs", "_blank")
+									window.open(baseURL + "_/#/logs", "_blank")
 								}}
 							>
 								<LogsIcon className="me-2 h-4 w-4" />
@@ -162,7 +162,7 @@ export default function CommandPalette({ open, setOpen }: { open: boolean; setOp
 							<CommandItem
 								onSelect={() => {
 									setOpen(false)
-									window.open("/_/#/settings/backups", "_blank")
+									window.open(baseURL + "_/#/settings/backups", "_blank")
 								}}
 							>
 								<DatabaseBackupIcon className="me-2 h-4 w-4" />
@@ -177,7 +177,7 @@ export default function CommandPalette({ open, setOpen }: { open: boolean; setOp
 								keywords={["email"]}
 								onSelect={() => {
 									setOpen(false)
-									window.open("/_/#/settings/mail", "_blank")
+									window.open(baseURL + "_/#/settings/mail", "_blank")
 								}}
 							>
 								<MailIcon className="me-2 h-4 w-4" />
