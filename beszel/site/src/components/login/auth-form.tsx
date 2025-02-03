@@ -14,7 +14,7 @@ import { Trans, t } from "@lingui/macro"
 
 const honeypot = v.literal("")
 const emailSchema = v.pipe(v.string(), v.email(t`Invalid email address.`))
-const passwordSchema = v.pipe(v.string(), v.minLength(8, t`Password must be at least 8 characters.`))
+const passwordSchema = v.pipe(v.string(), v.minLength(8, t`Password must be at least 8 characters.`), v.maxLength(72, t`Password must not exceed 72 characters.`))
 
 const LoginSchema = v.looseObject({
 	name: honeypot,
