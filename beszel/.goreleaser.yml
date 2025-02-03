@@ -98,6 +98,7 @@ nfpms:
         packager: deb
     scripts:
       postinstall: ../supplemental/debian/postinstall.sh
+      preremove: ../supplemental/debian/prerm.sh
       postremove: ../supplemental/debian/postrm.sh
     deb:
       predepends:

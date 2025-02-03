@@ -45,4 +45,5 @@ if ! grep -q "^KEY=" "$CONFIG_FILE"; then
 fi;
 
 deb-systemd-helper enable "$SERVICE".service
+systemctl daemon-reload
 deb-systemd-invoke start "$SERVICE".service || echo "could not start $SERVICE.service!"

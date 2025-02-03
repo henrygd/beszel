@@ -5,16 +5,28 @@ After=network-online.target
 
 [Service]
 Environment="PORT=45876"
+# Port number can be overridden in beszel-agent.conf if needed
 EnvironmentFile=/etc/beszel-agent.conf
 ExecStart=/usr/bin/beszel-agent
 User=beszel
 Restart=on-failure
-# TODO: See if we can apply more security hardening here
-# TODO: Audit using `systemd-analyze security beszel-agent.service`
-ProtectSystem=yes
-ProtectHome=yes
+StateDirectory=beszel-agent
+
+# Security/sandboxing settings
+KeyringMode=private
+LockPersonality=yes
 NoNewPrivileges=yes
 PrivateTmp=yes
+ProtectClock=yes
+ProtectHome=read-only
+ProtectHostname=yes
+ProtectKernel=yes
+ProtectKernelLogs=yes
+ProtectKernelTunables=yes
+ProtectSystem=strict
+RemoveIPC=yes
+RestrictSUIDSGID=true
+SystemCallArchitectures=native
 
 [Install]
 WantedBy=multi-user.target
