@@ -14,7 +14,11 @@ import { Trans, t } from "@lingui/macro"
 
 const honeypot = v.literal("")
 const emailSchema = v.pipe(v.string(), v.email(t`Invalid email address.`))
-const passwordSchema = v.pipe(v.string(), v.minLength(8, t`Password must be at least 8 characters.`), v.maxLength(72, t`Password must not exceed 72 characters.`))
+const passwordSchema = v.pipe(
+	v.string(),
+	v.minLength(8, t`Password must be at least 8 characters.`),
+	v.maxBytes(72, t`Password must be less than 72 bytes.`)
+)
 
 const LoginSchema = v.looseObject({
 	name: honeypot,
@@ -132,12 +136,12 @@ export function UserAuthForm({
 									name="email"
 									required
 									placeholder="name@example.com"
-									type="email"
+									type="text"
 									autoCapitalize="none"
 									autoComplete="email"
 									autoCorrect="off"
 									disabled={isLoading || isOauthLoading}
-									className="ps-9"
+									className={cn("ps-9", errors?.email && "border-red-500")}
 								/>
 								{errors?.email && <p className="px-1 text-xs text-red-600">{errors.email}</p>}
 							</div>
@@ -154,7 +158,7 @@ export function UserAuthForm({
 									type="password"
 									autoComplete="current-password"
 									disabled={isLoading || isOauthLoading}
-									className="ps-9"
+									className={cn("ps-9", errors?.password && "border-red-500")}
 								/>
 								{errors?.password && <p className="px-1 text-xs text-red-600">{errors.password}</p>}
 							</div>
@@ -172,7 +176,7 @@ export function UserAuthForm({
 										type="password"
 										autoComplete="current-password"
 										disabled={isLoading || isOauthLoading}
-										className="ps-9"
+										className={cn("ps-9", errors?.password && "border-red-500")}
 									/>
 									{errors?.passwordConfirm && <p className="px-1 text-xs text-red-600">{errors.passwordConfirm}</p>}
 								</div>
