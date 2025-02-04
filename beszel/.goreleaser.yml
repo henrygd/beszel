@@ -68,6 +68,48 @@ archives:
       {{- .Os }}_
       {{- .Arch }}
 
+nfpms:
+  - id: beszel-agent
+    package_name: beszel-agent
+    description: |-
+      Agent for Beszel
+      Beszel is a lightweight server monitoring platform that includes Docker
+      statistics, historical data, and alert functions. It has a friendly web
+      interface, simple configuration, and is ready to use out of the box.
+      It supports automatic backup, multi-user, OAuth authentication, and
+      API access.
+    maintainer: henrygd <hank@henrygd.me>
+    section: net
+    builds:
+      - beszel-agent
+    formats:
+      - deb
+    dependencies:
+      - libc6
+    contents:
+      - src: ../supplemental/debian/beszel-agent.service
+        dst: lib/systemd/system/beszel-agent.service
+        packager: deb
+      - src: ../supplemental/debian/copyright
+        dst: usr/share/doc/beszel-agent/copyright
+        packager: deb
+      - src: ../supplemental/debian/lintian-overrides
+        dst: usr/share/lintian/overrides/beszel-agent
+        packager: deb
+    scripts:
+      postinstall: ../supplemental/debian/postinstall.sh
+      preremove: ../supplemental/debian/prerm.sh
+      postremove: ../supplemental/debian/postrm.sh
+    deb:
+      predepends:
+        - adduser
+        - debconf
+      scripts:
+        templates: ../supplemental/debian/templates
+        # Currently broken due to a bug in goreleaser
+        # https://github.com/goreleaser/goreleaser/issues/5487
+        #config: ../supplemental/debian/config.sh
+
 release:
   draft: true
 
