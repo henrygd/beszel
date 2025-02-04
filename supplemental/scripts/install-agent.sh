@@ -470,8 +470,24 @@ Environment="KEY=$KEY"
 # Environment="EXTRA_FILESYSTEMS=sdb"
 ExecStart=/opt/beszel-agent/beszel-agent
 User=beszel
-Restart=always
+Restart=on-failure
 RestartSec=5
+StateDirectory=beszel-agent
+
+# Security/sandboxing settings
+KeyringMode=private
+LockPersonality=yes
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectClock=yes
+ProtectHome=read-only
+ProtectHostname=yes
+ProtectKernelLogs=yes
+ProtectKernelTunables=yes
+ProtectSystem=strict
+RemoveIPC=yes
+RestrictSUIDSGID=true
+SystemCallArchitectures=native
 
 [Install]
 WantedBy=multi-user.target
