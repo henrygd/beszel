@@ -20,7 +20,6 @@ PrivateTmp=yes
 ProtectClock=yes
 ProtectHome=read-only
 ProtectHostname=yes
-ProtectKernel=yes
 ProtectKernelLogs=yes
 ProtectKernelTunables=yes
 ProtectSystem=strict
