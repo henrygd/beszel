@@ -18,7 +18,7 @@ import { Copy, PlusIcon } from "lucide-react"
 import { useState, useRef, MutableRefObject } from "react"
 import { useStore } from "@nanostores/react"
 import { cn, copyToClipboard, isReadOnlyUser } from "@/lib/utils"
-import { navigate } from "./router"
+import { basePath, navigate } from "./router"
 import { Trans } from "@lingui/macro"
 import { i18n } from "@lingui/core"
 
@@ -60,7 +60,7 @@ export function AddSystemButton({ className }: { className?: string }) {
 		try {
 			setOpen(false)
 			await pb.collection("systems").create(data)
-			navigate("/")
+			navigate(basePath)
 			// console.log(record)
 		} catch (e) {
 			console.log(e)

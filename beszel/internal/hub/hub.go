@@ -12,6 +12,7 @@ import (
 	"crypto/ed25519"
 	"encoding/pem"
 	"fmt"
+	"io/fs"
 	"log"
 	"net"
 	"net/http"
@@ -40,15 +41,18 @@ type Hub struct {
 	rm                *records.RecordManager
 	systemStats       *core.Collection
 	containerStats    *core.Collection
+	appURL            string
 }
 
 func NewHub(app *pocketbase.PocketBase) *Hub {
-	return &Hub{
+	hub := &Hub{
 		app: app,
 		am:  alerts.NewAlertManager(app),
 		um:  users.NewUserManager(app),
 		rm:  records.NewRecordManager(app),
 	}
+	hub.appURL, _ = GetEnv("APP_URL")
+	return hub
 }
 
 // GetEnv retrieves an environment variable with a "BESZEL_HUB_" prefix, or falls back to the unprefixed key.
@@ -82,6 +86,10 @@ func (h *Hub) Run() {
 		settings := h.app.Settings()
 		// batch requests (for global alerts)
 		settings.Batch.Enabled = true
+		// set URL if BASE_URL env is set
+		if h.appURL != "" {
+			settings.Meta.AppURL = h.appURL
+		}
 		// set auth settings
 		usersCollection, err := h.app.FindCollectionByNameOrId("users")
 		if err != nil {
@@ -118,19 +126,39 @@ func (h *Hub) Run() {
 				Scheme: "http",
 				Host:   "localhost:5173",
 			})
-			se.Router.Any("/", func(e *core.RequestEvent) error {
+			se.Router.Any("/{path...}", func(e *core.RequestEvent) error {
 				proxy.ServeHTTP(e.Response, e.Request)
 				return nil
 			})
 		default:
+			// parse app url
+			parsedURL, err := url.Parse(h.appURL)
+			if err != nil {
+				return err
+			}
+			// fix base paths in html if using subpath
+			basePath := strings.TrimSuffix(parsedURL.Path, "/") + "/"
+			indexFile, _ := fs.ReadFile(site.DistDirFS, "index.html")
+			indexContent := strings.ReplaceAll(string(indexFile), "./", basePath)
+			// set up static asset serving
+			staticPaths := [2]string{"/static/", "/assets/"}
+			serveStatic := apis.Static(site.DistDirFS, false)
+			// get CSP configuration
 			csp, cspExists := GetEnv("CSP")
-			s := apis.Static(site.DistDirFS, true)
+			// add route
 			se.Router.Any("/{path...}", func(e *core.RequestEvent) error {
+				// serve static assets if path is in staticPaths
+				for i := range staticPaths {
+					if strings.Contains(e.Request.URL.Path, staticPaths[i]) {
+						e.Response.Header().Set("Cache-Control", "public, max-age=2592000")
+						return serveStatic(e)
+					}
+				}
 				if cspExists {
 					e.Response.Header().Del("X-Frame-Options")
 					e.Response.Header().Set("Content-Security-Policy", csp)
 				}
-				return s(e)
+				return e.HTML(http.StatusOK, indexContent)
 			})
 		}
 		return se.Next()

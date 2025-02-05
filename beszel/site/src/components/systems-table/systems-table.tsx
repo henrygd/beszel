@@ -65,13 +65,14 @@ import { $hubVersion, $systems, pb } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { cn, copyToClipboard, decimalString, isReadOnlyUser, useLocalStorage } from "@/lib/utils"
 import AlertsButton from "../alerts/alert-button"
-import { Link, navigate } from "../router"
+import { $router, Link, navigate } from "../router"
 import { EthernetIcon } from "../ui/icons"
 import { Trans, t } from "@lingui/macro"
 import { useLingui } from "@lingui/react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Input } from "../ui/input"
 import { ClassValue } from "clsx"
+import { getPagePath } from "@nanostores/router"
 
 type ViewMode = "table" | "grid"
 
@@ -406,7 +407,7 @@ export default function SystemsTable() {
 											onClick={(e) => {
 												const target = e.target as HTMLElement
 												if (!target.closest("[data-nolink]") && e.currentTarget.contains(target)) {
-													navigate(`/system/${encodeURIComponent(row.original.name)}`)
+													navigate(getPagePath($router, "system", { name: row.original.name }))
 												}
 											}}
 										>
@@ -489,7 +490,7 @@ export default function SystemsTable() {
 											})}
 										</CardContent>
 										<Link
-											href={`/system/${encodeURIComponent(row.original.name)}`}
+											href={getPagePath($router, "system", { name: row.original.name })}
 											className="inset-0 absolute w-full h-full"
 										>
 											<span className="sr-only">{row.original.name}</span>

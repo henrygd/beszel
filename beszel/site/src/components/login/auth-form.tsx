@@ -9,8 +9,9 @@ import { toast } from "../ui/use-toast"
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useCallback, useState } from "react"
 import { AuthMethodsList, OAuth2AuthConfig } from "pocketbase"
-import { Link } from "../router"
+import { $router, Link, prependBasePath } from "../router"
 import { Trans, t } from "@lingui/macro"
+import { getPagePath } from "@nanostores/router"
 
 const honeypot = v.literal("")
 const emailSchema = v.pipe(v.string(), v.email(t`Invalid email address.`))
@@ -260,11 +261,11 @@ export function UserAuthForm({
 							) : (
 								<img
 									className="me-2 h-4 w-4 dark:brightness-0 dark:invert"
-									src={`/_/images/oauth2/${provider.name}.svg`}
+									src={prependBasePath(`/_/images/oauth2/${provider.name}.svg`)}
 									alt=""
-									onError={(e) => {
-										e.currentTarget.src = "/static/lock.svg"
-									}}
+									// onError={(e) => {
+									// 	e.currentTarget.src = "/static/lock.svg"
+									// }}
 								/>
 							)}
 							<span className="translate-y-[1px]">{provider.displayName}</span>
@@ -278,7 +279,7 @@ export function UserAuthForm({
 				<Dialog>
 					<DialogTrigger asChild>
 						<button type="button" className={cn(buttonVariants({ variant: "outline" }))}>
-							<img className="me-2 h-4 w-4 dark:invert" src="/_/images/oauth2/github.svg" alt="" />
+							<img className="me-2 h-4 w-4 dark:invert" src={prependBasePath("/_/images/oauth2/github.svg")} alt="" />
 							<span className="translate-y-[1px]">GitHub</span>
 						</button>
 					</DialogTrigger>
@@ -311,7 +312,7 @@ export function UserAuthForm({
 
 			{passwordEnabled && !isFirstRun && (
 				<Link
-					href="/forgot-password"
+					href={getPagePath($router, "forgot_password")}
 					className="text-sm mx-auto hover:text-brand underline underline-offset-4 opacity-70 hover:opacity-100 transition-opacity"
 				>
 					<Trans>Forgot password?</Trans>

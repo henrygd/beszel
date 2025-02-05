@@ -34,7 +34,7 @@ export default function () {
 	const subtitle = useMemo(() => {
 		if (isFirstRun) {
 			return t`Please create an admin account`
-		} else if (page?.path === "/forgot-password") {
+		} else if (page?.route === "forgot_password") {
 			return t`Enter email address to reset password`
 		} else {
 			return t`Please sign in to your account`
@@ -59,7 +59,7 @@ export default function () {
 					</h1>
 					<p className="text-sm text-muted-foreground">{subtitle}</p>
 				</div>
-				{page?.path === "/forgot-password" ? (
+				{page?.route === "forgot_password" ? (
 					<ForgotPassword />
 				) : (
 					<UserAuthForm isFirstRun={isFirstRun} authMethods={authMethods} />

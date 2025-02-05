@@ -7,8 +7,9 @@ import { Separator } from "../ui/separator"
 import { alertInfo, updateRecordList, updateSystemList } from "@/lib/utils"
 import { AlertRecord, SystemRecord } from "@/types"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { Link } from "../router"
+import { $router, Link } from "../router"
 import { Plural, t, Trans } from "@lingui/macro"
+import { getPagePath } from "@nanostores/router"
 
 const SystemsTable = lazy(() => import("../systems-table/systems-table"))
 
@@ -83,7 +84,7 @@ export default function Home() {
 												</Trans>
 											</AlertDescription>
 											<Link
-												href={`/system/${encodeURIComponent(alert.sysname!)}`}
+												href={getPagePath($router, "system", { name: alert.sysname! })}
 												className="absolute inset-0 w-full h-full"
 												aria-label="View system"
 											></Link>

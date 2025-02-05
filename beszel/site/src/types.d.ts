@@ -1,5 +1,12 @@
 import { RecordModel } from "pocketbase"
 
+// global window properties
+declare global {
+	interface Window {
+		BASE_PATH: string
+	}
+}
+
 export interface SystemRecord extends RecordModel {
 	name: string
 	host: string

@@ -13,6 +13,7 @@ import { saveSettings } from "./layout"
 import * as v from "valibot"
 import { isAdmin } from "@/lib/utils"
 import { Trans, t } from "@lingui/macro"
+import { prependBasePath } from "@/components/router"
 
 interface ShoutrrrUrlCardProps {
 	url: string
@@ -94,7 +95,7 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 							<p className="text-sm text-muted-foreground leading-relaxed">
 								<Trans>
 									Please{" "}
-									<a href="/_/#/settings/mail" className="link" target="_blank">
+									<a href={prependBasePath("/_/#/settings/mail")} className="link" target="_blank">
 										configure an SMTP server
 									</a>{" "}
 									to ensure alerts are delivered.

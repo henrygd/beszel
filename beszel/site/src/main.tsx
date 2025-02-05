@@ -63,9 +63,9 @@ const App = () => {
 
 	if (!page) {
 		return <h1 className="text-3xl text-center my-14">404</h1>
-	} else if (page.path === "/") {
+	} else if (page.route === "home") {
 		return <Home />
-	} else if (page.route === "server") {
+	} else if (page.route === "system") {
 		return <SystemDetail name={page.params.name} />
 	} else if (page.route === "settings") {
 		return (

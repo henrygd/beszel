@@ -4,7 +4,7 @@ import { SidebarNav } from "./sidebar-nav.tsx"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx"
 import { useStore } from "@nanostores/react"
 import { $router } from "@/components/router.tsx"
-import { redirectPage } from "@nanostores/router"
+import { getPagePath, redirectPage } from "@nanostores/router"
 import { BellIcon, FileSlidersIcon, SettingsIcon } from "lucide-react"
 import { $userSettings, pb } from "@/lib/stores.ts"
 import { toast } from "@/components/ui/use-toast.ts"
@@ -49,17 +49,17 @@ export default function SettingsLayout() {
 	const sidebarNavItems = [
 		{
 			title: _(t({ message: `General`, comment: "Context: General settings" })),
-			href: "/settings/general",
+			href: getPagePath($router, "settings", { name: "general" }),
 			icon: SettingsIcon,
 		},
 		{
 			title: t`Notifications`,
-			href: "/settings/notifications",
+			href: getPagePath($router, "settings", { name: "notifications" }),
 			icon: BellIcon,
 		},
 		{
 			title: t`YAML Config`,
-			href: "/settings/config",
+			href: getPagePath($router, "settings", { name: "config" }),
 			icon: FileSlidersIcon,
 			admin: true,
 		},
@@ -69,8 +69,8 @@ export default function SettingsLayout() {
 
 	useEffect(() => {
 		document.title = t`Settings` + " / Beszel"
-		// redirect to account page if no page is specified
-		if (page?.path === "/settings") {
+		// @ts-ignore redirect to account page if no page is specified
+		if (!page?.params?.name) {
 			redirectPage($router, "settings", { name: "general" })
 		}
 	}, [])

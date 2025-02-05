@@ -22,7 +22,7 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
 		<>
 			{/* Mobile View */}
 			<div className="md:hidden">
-				<Select onValueChange={(value: string) => navigate(value)} value={page?.path}>
+				<Select onValueChange={navigate} value={page?.path}>
 					<SelectTrigger className="w-full my-3.5">
 						<SelectValue placeholder="Select page" />
 					</SelectTrigger>

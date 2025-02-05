@@ -1,9 +1,10 @@
 import PocketBase from "pocketbase"
 import { atom, map, WritableAtom } from "nanostores"
 import { AlertRecord, ChartTimes, SystemRecord, UserSettings } from "@/types"
+import { basePath } from "@/components/router"
 
 /** PocketBase JS Client */
-export const pb = new PocketBase("/")
+export const pb = new PocketBase(basePath)
 
 /** Store if user is authenticated */
 export const $authenticated = atom(pb.authStore.isValid)
