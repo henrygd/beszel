@@ -42,23 +42,34 @@ const verifyAuth = () => {
 		})
 }
 
+let isFetchingSystems = false;
+
 export const updateSystemList = async () => {
-	try {
-		const records = await pb
-			.collection<SystemRecord>("systems")
-			.getFullList({ sort: "+name", fields: "id,name,host,info,status" })
-		if (records.length) {
-			$systems.set(records)
-		} else {
-			verifyAuth()
-		}
-	} catch (err) {
-		// @ts-ignore supress pocketbase auto cancellation error
-		if (err.isAbort) {
-			return
-		}
+
+	if (isFetchingSystems) return;
+	isFetchingSystems = true
+
+    try {
+        const records = await pb
+            .collection<SystemRecord>("systems")
+            .getFullList({ sort: "+name", fields: "id,name,host,info,status" });
+
+        if (records.length) {
+            $systems.set(records);
+        } else {
+            verifyAuth();
+        }
+    } catch (e: any) {
+        // Suppressing pocketbase auto-cancellation error
+
+        if (e.isAbort || e.status === 0) { 
+            return;
+        }
+    } finally {
+		isFetchingSystems = false
 	}
-}
+};
+
 
 export const updateAlerts = () => {
 	pb.collection("alerts")
