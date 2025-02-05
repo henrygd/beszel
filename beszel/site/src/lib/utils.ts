@@ -66,7 +66,7 @@ export const updateSystemList = async () => {
             return;
         }
     } finally {
-		isFetchingSystems
+		isFetchingSystems = false
 	}
 };
 
