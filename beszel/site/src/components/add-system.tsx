@@ -1,26 +1,27 @@
 import { Button } from "@/components/ui/button"
 import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog"
-import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { $publicKey, pb } from "@/lib/stores"
-import { Copy, PlusIcon } from "lucide-react"
-import { useState, useRef, MutableRefObject } from "react"
-import { useStore } from "@nanostores/react"
 import { cn, copyToClipboard, isReadOnlyUser } from "@/lib/utils"
-import { basePath, navigate } from "./router"
-import { Trans } from "@lingui/macro"
 import { i18n } from "@lingui/core"
+import { Trans } from "@lingui/macro"
+import { useStore } from "@nanostores/react"
+import { ChevronDownIcon, Copy, PlusIcon } from "lucide-react"
+import { MutableRefObject, useRef, useState } from "react"
+import { basePath, navigate } from "./router"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
 
 export function AddSystemButton({ className }: { className?: string }) {
 	const [open, setOpen] = useState(false)
@@ -41,6 +42,16 @@ export function AddSystemButton({ className }: { className?: string }) {
     environment:
       PORT: ${port}
       KEY: "${publicKey}"`)
+	}
+	function copyDockerRun(port: string) {
+		copyToClipboard(`docker run -d \
+  --name beszel-agent \
+  --network host \
+  --restart unless-stopped \
+  -v /var/run/docker.sock:/var/run/docker.sock:ro \
+  -e KEY="${publicKey}" \
+  -e PORT=${port} \
+  henrygd/beszel-agent:latest`)
 	}
 
 	function copyInstallCommand(port: string) {
@@ -158,9 +169,24 @@ export function AddSystemButton({ className }: { className?: string }) {
 						{/* Docker */}
 						<TabsContent value="docker">
 							<DialogFooter className="flex justify-end gap-2 sm:w-[calc(100%+20px)] sm:-ms-[20px]">
-								<Button type="button" variant={"ghost"} onClick={() => copyDockerCompose(port.current.value)}>
-									<Trans>Copy</Trans> docker compose
-								</Button>
+								<div className="flex gap-1">
+									<Button type="button" variant={"ghost"} onClick={() => copyDockerCompose(port.current.value)}>
+										<Trans>Copy</Trans> docker compose
+									</Button>
+
+									<DropdownMenu>
+										<DropdownMenuTrigger asChild>
+											<Button variant="outline" className={"px-2"}>
+												<ChevronDownIcon />
+											</Button>
+										</DropdownMenuTrigger>
+										<DropdownMenuContent>
+											<DropdownMenuItem onClick={() => copyDockerRun(port.current.value)}>
+												<Trans>Copy</Trans> docker run
+											</DropdownMenuItem>
+										</DropdownMenuContent>
+									</DropdownMenu>
+								</div>
 								<Button>
 									<Trans>Add system</Trans>
 								</Button>
