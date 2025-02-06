@@ -15,7 +15,7 @@ import { LangToggle } from "./lang-toggle"
 import { ModeToggle } from "./mode-toggle"
 import { Logo } from "./logo"
 import { pb } from "@/lib/stores"
-import { cn, isReadOnlyUser, isAdmin } from "@/lib/utils"
+import { cn, isReadOnlyUser, isAdmin, logOut } from "@/lib/utils"
 import {
 	DropdownMenu,
 	DropdownMenuTrigger,
@@ -99,7 +99,7 @@ export default function Navbar() {
 								</>
 							)}
 						</DropdownMenuGroup>
-						<DropdownMenuItem onSelect={() => pb.authStore.clear()}>
+						<DropdownMenuItem onSelect={logOut}>
 							<LogOutIcon className="me-2.5 h-4 w-4" />
 							<span>
 								<Trans>Log Out</Trans>

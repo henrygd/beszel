@@ -33,7 +33,7 @@ const verifyAuth = () => {
 	pb.collection("users")
 		.authRefresh()
 		.catch(() => {
-			pb.authStore.clear()
+			logOut()
 			toast({
 				title: t`Failed to authenticate`,
 				description: t`Please log in again`,
@@ -65,6 +65,11 @@ export const updateSystemList = (() => {
 	}
 })()
 
+/** Logs the user out by clearing the auth store and unsubscribing from realtime updates. */
+export async function logOut() {
+	pb.authStore.clear()
+	pb.realtime.unsubscribe()
+}
 
 export const updateAlerts = () => {
 	pb.collection("alerts")
