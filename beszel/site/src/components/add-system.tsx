@@ -169,14 +169,19 @@ export function AddSystemButton({ className }: { className?: string }) {
 						{/* Docker */}
 						<TabsContent value="docker">
 							<DialogFooter className="flex justify-end gap-2 sm:w-[calc(100%+20px)] sm:-ms-[20px]">
-								<div className="flex gap-1">
-									<Button type="button" variant={"ghost"} onClick={() => copyDockerCompose(port.current.value)}>
+								<div className="flex gap-0 border border-muted rounded-lg">
+									<Button
+										type="button"
+										variant={"ghost"}
+										onClick={() => copyDockerCompose(port.current.value)}
+										className="rounded-r-none border-r-0"
+									>
 										<Trans>Copy</Trans> docker compose
 									</Button>
-
+									<div className="w-px h-full bg-muted"></div>
 									<DropdownMenu>
 										<DropdownMenuTrigger asChild>
-											<Button variant="outline" className={"px-2"}>
+											<Button variant="ghost" className={"px-2 rounded-l-none border-l-0"}>
 												<ChevronDownIcon />
 											</Button>
 										</DropdownMenuTrigger>
