@@ -7,17 +7,191 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/shirou/gopsutil/v4/cpu"
-	"github.com/shirou/gopsutil/v4/disk"
 	"github.com/shirou/gopsutil/v4/host"
 	"github.com/shirou/gopsutil/v4/mem"
-	psutilNet "github.com/shirou/gopsutil/v4/net"
-	"github.com/shirou/gopsutil/v4/sensors"
 )
+
+// cgroupInfo stores cgroup-related information
+type cgroupInfo struct {
+	memoryPath   string
+	cpuPath      string
+	cpusetPath   string
+	assignedCPUs string
+	numCPUs      int
+	prevCPUUsage uint64
+	prevCPUTime  time.Time
+}
+
+// getCgroupPath returns the cgroup path for a given subsystem
+func getCgroupPath(subsystem string) (string, error) {
+	pid := os.Getpid()
+	cgroupFile := fmt.Sprintf("/proc/%d/cgroup", pid)
+	
+	file, err := os.Open(cgroupFile)
+	if err != nil {
+		return "", fmt.Errorf("failed to open cgroup file: %v", err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		fields := strings.Split(scanner.Text(), ":")
+		if len(fields) == 3 {
+			controllerFields := strings.Split(fields[1], ",")
+			for _, controller := range controllerFields {
+				if controller == subsystem {
+					return fields[2], nil
+				}
+			}
+		}
+	}
+
+	return "", fmt.Errorf("no cgroup path found for subsystem: %s", subsystem)
+}
+
+// readCgroupFile reads and returns the contents of a cgroup file
+func readCgroupFile(path string) (string, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		slog.Debug("Failed to read cgroup file", "path", path, "error", err)
+		return "", err
+	}
+	return strings.TrimSpace(string(data)), nil
+}
+
+// initializeCgroupInfo initializes cgroup monitoring
+func (a *Agent) initializeCgroupInfo() error {
+	a.cgroup = &cgroupInfo{}
+
+	// Get memory cgroup path
+	memPath, err := getCgroupPath("memory")
+	if err != nil {
+		return fmt.Errorf("failed to get memory cgroup path: %v", err)
+	}
+	a.cgroup.memoryPath = memPath
+
+	// Get CPU cgroup path
+	cpuPath, err := getCgroupPath("cpuacct")
+	if err != nil {
+		return fmt.Errorf("failed to get CPU cgroup path: %v", err)
+	}
+	a.cgroup.cpuPath = cpuPath
+
+	// Get CPU assignment
+	cpusetPath, err := getCgroupPath("cpuset")
+	if err == nil {
+		a.cgroup.cpusetPath = cpusetPath
+		if cpus, err := a.getCPUAssignment(); err == nil {
+			a.cgroup.assignedCPUs = cpus
+			a.cgroup.numCPUs = countCPUsFromRange(cpus)
+			slog.Info("Cgroup CPU assignment", "cpus", cpus, "count", a.cgroup.numCPUs)
+		}
+	}
+
+	return nil
+}
+
+// getCPUAssignment gets the assigned CPUs from cgroup
+func (a *Agent) getCPUAssignment() (string, error) {
+	cpusPath := filepath.Join("/sys/fs/cgroup/cpuset", a.cgroup.cpusetPath, "cpuset.cpus")
+	return readCgroupFile(cpusPath)
+}
+
+// countCPUsFromRange counts the number of CPUs from a range string
+func countCPUsFromRange(cpuRange string) int {
+	count := 0
+	ranges := strings.Split(cpuRange, ",")
+	for _, r := range ranges {
+		bounds := strings.Split(r, "-")
+		if len(bounds) == 1 {
+			count++
+		} else if len(bounds) == 2 {
+			start, err1 := strconv.Atoi(bounds[0])
+			end, err2 := strconv.Atoi(bounds[1])
+			if err1 == nil && err2 == nil {
+				count += end - start + 1
+			}
+		}
+	}
+	return count
+}
+
+// getMemoryFromCgroup gets memory usage from cgroup
+func (a *Agent) getMemoryFromCgroup() (uint64, uint64, error) {
+	// Get step path (remove task_0 if present)
+	stepPath := strings.TrimSuffix(a.cgroup.memoryPath, "/task_0")
+	
+	// Read memory limit from step level
+	stepBasePath := filepath.Join("/sys/fs/cgroup/memory", stepPath)
+	limitPath := filepath.Join(stepBasePath, "memory.limit_in_bytes")
+	limitStr, err := readCgroupFile(limitPath)
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed to read memory limit: %v", err)
+	}
+
+	memLimit, err := strconv.ParseUint(limitStr, 10, 64)
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed to parse memory limit: %v", err)
+	}
+
+	// Read memory usage from task level
+	taskBasePath := filepath.Join("/sys/fs/cgroup/memory", a.cgroup.memoryPath)
+	usagePath := filepath.Join(taskBasePath, "memory.usage_in_bytes")
+	usageStr, err := readCgroupFile(usagePath)
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed to read memory usage: %v", err)
+	}
+
+	memUsage, err := strconv.ParseUint(usageStr, 10, 64)
+	if err != nil {
+		return 0, 0, fmt.Errorf("failed to parse memory usage: %v", err)
+	}
+
+	// Validate memory limit
+	if memLimit < 1024 || memLimit == ^uint64(0) {
+		return 0, 0, fmt.Errorf("invalid memory limit: %d", memLimit)
+	}
+
+	return memUsage, memLimit, nil
+}
+
+// getCPUFromCgroup gets CPU usage from cgroup
+func (a *Agent) getCPUFromCgroup() (float64, error) {
+	cpuPath := filepath.Join("/sys/fs/cgroup/cpu,cpuacct", a.cgroup.cpuPath, "cpuacct.usage")
+	usageStr, err := readCgroupFile(cpuPath)
+	if err != nil {
+		return 0, fmt.Errorf("failed to read CPU usage: %v", err)
+	}
+
+	usageNano, err := strconv.ParseUint(usageStr, 10, 64)
+	if err != nil {
+		return 0, fmt.Errorf("failed to parse CPU usage: %v", err)
+	}
+
+	currentTime := time.Now()
+	cpuPerc := 0.0
+
+	if !a.cgroup.prevCPUTime.IsZero() {
+		timeDelta := currentTime.Sub(a.cgroup.prevCPUTime).Seconds()
+		if timeDelta > 0 {
+			cpuDelta := float64(usageNano - a.cgroup.prevCPUUsage)
+			if a.cgroup.numCPUs > 0 {
+				cpuPerc = (cpuDelta / timeDelta) / (1000000000.0 * float64(a.cgroup.numCPUs)) * 100.0
+			}
+		}
+	}
+
+	a.cgroup.prevCPUUsage = usageNano
+	a.cgroup.prevCPUTime = currentTime
+
+	return cpuPerc, nil
+}
 
 // Sets initial / non-changing values about the host system
 func (a *Agent) initializeSystemInfo() {
@@ -25,18 +199,29 @@ func (a *Agent) initializeSystemInfo() {
 	a.systemInfo.Hostname, _ = os.Hostname()
 	a.systemInfo.KernelVersion, _ = host.KernelVersion()
 
+	// Initialize cgroup monitoring
+	if err := a.initializeCgroupInfo(); err != nil {
+		slog.Warn("Failed to initialize cgroup monitoring", "error", err)
+	}
+
 	// cpu model
 	if info, err := cpu.Info(); err == nil && len(info) > 0 {
 		a.systemInfo.CpuModel = info[0].ModelName
 	}
-	// cores / threads
-	a.systemInfo.Cores, _ = cpu.Counts(false)
-	if threads, err := cpu.Counts(true); err == nil {
-		if threads > 0 && threads < a.systemInfo.Cores {
-			// in lxc logical cores reflects container limits, so use that as cores if lower
-			a.systemInfo.Cores = threads
-		} else {
-			a.systemInfo.Threads = threads
+	
+	// If we have cgroup info, use that for cores/threads
+	if a.cgroup != nil && a.cgroup.numCPUs > 0 {
+		a.systemInfo.Cores = a.cgroup.numCPUs
+		a.systemInfo.Threads = a.cgroup.numCPUs
+	} else {
+		// Fallback to system-wide CPU counts
+		a.systemInfo.Cores, _ = cpu.Counts(false)
+		if threads, err := cpu.Counts(true); err == nil {
+			if threads > 0 && threads < a.systemInfo.Cores {
+				a.systemInfo.Cores = threads
+			} else {
+				a.systemInfo.Threads = threads
+			}
 		}
 	}
 
@@ -52,189 +237,44 @@ func (a *Agent) initializeSystemInfo() {
 func (a *Agent) getSystemStats() system.Stats {
 	systemStats := system.Stats{}
 
-	// cpu percent
-	cpuPct, err := cpu.Percent(0, false)
-	if err != nil {
-		slog.Error("Error getting cpu percent", "err", err)
-	} else if len(cpuPct) > 0 {
-		systemStats.Cpu = twoDecimals(cpuPct[0])
-	}
-
-	// memory
-	if v, err := mem.VirtualMemory(); err == nil {
-		// swap
-		systemStats.Swap = bytesToGigabytes(v.SwapTotal)
-		systemStats.SwapUsed = bytesToGigabytes(v.SwapTotal - v.SwapFree - v.SwapCached)
-		// cache + buffers value for default mem calculation
-		cacheBuff := v.Total - v.Free - v.Used
-		// htop memory calculation overrides
-		if a.memCalc == "htop" {
-			// note: gopsutil automatically adds SReclaimable to v.Cached
-			cacheBuff = v.Cached + v.Buffers - v.Shared
-			v.Used = v.Total - (v.Free + cacheBuff)
-			v.UsedPercent = float64(v.Used) / float64(v.Total) * 100.0
-		}
-		// subtract ZFS ARC size from used memory and add as its own category
-		if a.zfs {
-			if arcSize, _ := getARCSize(); arcSize > 0 && arcSize < v.Used {
-				v.Used = v.Used - arcSize
-				v.UsedPercent = float64(v.Used) / float64(v.Total) * 100.0
-				systemStats.MemZfsArc = bytesToGigabytes(arcSize)
-			}
-		}
-		systemStats.Mem = bytesToGigabytes(v.Total)
-		systemStats.MemBuffCache = bytesToGigabytes(cacheBuff)
-		systemStats.MemUsed = bytesToGigabytes(v.Used)
-		systemStats.MemPct = twoDecimals(v.UsedPercent)
-	}
-
-	// disk usage
-	for _, stats := range a.fsStats {
-		if d, err := disk.Usage(stats.Mountpoint); err == nil {
-			stats.DiskTotal = bytesToGigabytes(d.Total)
-			stats.DiskUsed = bytesToGigabytes(d.Used)
-			if stats.Root {
-				systemStats.DiskTotal = bytesToGigabytes(d.Total)
-				systemStats.DiskUsed = bytesToGigabytes(d.Used)
-				systemStats.DiskPct = twoDecimals(d.UsedPercent)
-			}
+	// Try to get CPU and memory stats from cgroup first
+	if a.cgroup != nil {
+		// Get CPU percent from cgroup
+		if cpuPct, err := a.getCPUFromCgroup(); err == nil {
+			systemStats.Cpu = twoDecimals(cpuPct)
 		} else {
-			// reset stats if error (likely unmounted)
-			slog.Error("Error getting disk stats", "name", stats.Mountpoint, "err", err)
-			stats.DiskTotal = 0
-			stats.DiskUsed = 0
-			stats.TotalRead = 0
-			stats.TotalWrite = 0
+			slog.Debug("Failed to get CPU stats from cgroup", "error", err)
+			// Fallback to system CPU stats
+			if cpuPct, err := cpu.Percent(0, false); err == nil && len(cpuPct) > 0 {
+				systemStats.Cpu = twoDecimals(cpuPct[0])
+			}
 		}
-	}
 
-	// disk i/o
-	if ioCounters, err := disk.IOCounters(a.fsNames...); err == nil {
-		for _, d := range ioCounters {
-			stats := a.fsStats[d.Name]
-			if stats == nil {
-				continue
-			}
-			secondsElapsed := time.Since(stats.Time).Seconds()
-			readPerSecond := bytesToMegabytes(float64(d.ReadBytes-stats.TotalRead) / secondsElapsed)
-			writePerSecond := bytesToMegabytes(float64(d.WriteBytes-stats.TotalWrite) / secondsElapsed)
-			// check for invalid values and reset stats if so
-			if readPerSecond < 0 || writePerSecond < 0 || readPerSecond > 50_000 || writePerSecond > 50_000 {
-				slog.Warn("Invalid disk I/O. Resetting.", "name", d.Name, "read", readPerSecond, "write", writePerSecond)
-				a.initializeDiskIoStats(ioCounters)
-				break
-			}
-			stats.Time = time.Now()
-			stats.DiskReadPs = readPerSecond
-			stats.DiskWritePs = writePerSecond
-			stats.TotalRead = d.ReadBytes
-			stats.TotalWrite = d.WriteBytes
-			// if root filesystem, update system stats
-			if stats.Root {
-				systemStats.DiskReadPs = stats.DiskReadPs
-				systemStats.DiskWritePs = stats.DiskWritePs
-			}
-		}
-	}
-
-	// network stats
-	if netIO, err := psutilNet.IOCounters(true); err == nil {
-		secondsElapsed := time.Since(a.netIoStats.Time).Seconds()
-		a.netIoStats.Time = time.Now()
-		bytesSent := uint64(0)
-		bytesRecv := uint64(0)
-		// sum all bytes sent and received
-		for _, v := range netIO {
-			// skip if not in valid network interfaces list
-			if _, exists := a.netInterfaces[v.Name]; !exists {
-				continue
-			}
-			bytesSent += v.BytesSent
-			bytesRecv += v.BytesRecv
-		}
-		// add to systemStats
-		sentPerSecond := float64(bytesSent-a.netIoStats.BytesSent) / secondsElapsed
-		recvPerSecond := float64(bytesRecv-a.netIoStats.BytesRecv) / secondsElapsed
-		networkSentPs := bytesToMegabytes(sentPerSecond)
-		networkRecvPs := bytesToMegabytes(recvPerSecond)
-		// add check for issue (#150) where sent is a massive number
-		if networkSentPs > 10_000 || networkRecvPs > 10_000 {
-			slog.Warn("Invalid net stats. Resetting.", "sent", networkSentPs, "recv", networkRecvPs)
-			for _, v := range netIO {
-				if _, exists := a.netInterfaces[v.Name]; !exists {
-					continue
-				}
-				slog.Info(v.Name, "recv", v.BytesRecv, "sent", v.BytesSent)
-			}
-			// reset network I/O stats
-			a.initializeNetIoStats()
+		// Get memory stats from cgroup
+		if memUsage, memLimit, err := a.getMemoryFromCgroup(); err == nil {
+			systemStats.Mem = bytesToGigabytes(memLimit)
+			systemStats.MemUsed = bytesToGigabytes(memUsage)
+			systemStats.MemPct = twoDecimals(float64(memUsage) / float64(memLimit) * 100)
 		} else {
-			systemStats.NetworkSent = networkSentPs
-			systemStats.NetworkRecv = networkRecvPs
-			// update netIoStats
-			a.netIoStats.BytesSent = bytesSent
-			a.netIoStats.BytesRecv = bytesRecv
+			slog.Debug("Failed to get memory stats from cgroup", "error", err)
+			// Fallback to system memory stats
+			if v, err := mem.VirtualMemory(); err == nil {
+				systemStats.Mem = bytesToGigabytes(v.Total)
+				systemStats.MemUsed = bytesToGigabytes(v.Used)
+				systemStats.MemPct = twoDecimals(v.UsedPercent)
+			}
 		}
-	}
-
-	// temperatures (skip if sensors whitelist is set to empty string)
-	if a.sensorsWhitelist != nil && len(a.sensorsWhitelist) == 0 {
-		slog.Debug("Skipping temperature collection")
 	} else {
-		temps, err := sensors.TemperaturesWithContext(a.sensorsContext)
-		if err != nil {
-			slog.Debug("Sensor error", "err", err)
+		// Use system-wide stats if no cgroup info
+		if cpuPct, err := cpu.Percent(0, false); err == nil && len(cpuPct) > 0 {
+			systemStats.Cpu = twoDecimals(cpuPct[0])
 		}
-		slog.Debug("Temperature", "sensors", temps)
-		if len(temps) > 0 {
-			systemStats.Temperatures = make(map[string]float64, len(temps))
-			for i, sensor := range temps {
-				// skip if temperature is 0
-				if sensor.Temperature <= 0 || sensor.Temperature >= 200 {
-					continue
-				}
-				if _, ok := systemStats.Temperatures[sensor.SensorKey]; ok {
-					// if key already exists, append int to key
-					systemStats.Temperatures[sensor.SensorKey+"_"+strconv.Itoa(i)] = twoDecimals(sensor.Temperature)
-				} else {
-					systemStats.Temperatures[sensor.SensorKey] = twoDecimals(sensor.Temperature)
-				}
-			}
-			// remove sensors from systemStats if whitelist exists and sensor is not in whitelist
-			// (do this here instead of in initial loop so we have correct keys if int was appended)
-			if a.sensorsWhitelist != nil {
-				for key := range systemStats.Temperatures {
-					if _, nameInWhitelist := a.sensorsWhitelist[key]; !nameInWhitelist {
-						delete(systemStats.Temperatures, key)
-					}
-				}
-			}
+		if v, err := mem.VirtualMemory(); err == nil {
+			systemStats.Mem = bytesToGigabytes(v.Total)
+			systemStats.MemUsed = bytesToGigabytes(v.Used)
+			systemStats.MemPct = twoDecimals(v.UsedPercent)
 		}
 	}
-
-	// GPU data
-	if a.gpuManager != nil {
-		if gpuData := a.gpuManager.GetCurrentData(); len(gpuData) > 0 {
-			systemStats.GPUData = gpuData
-			// add temperatures
-			if systemStats.Temperatures == nil {
-				systemStats.Temperatures = make(map[string]float64, len(gpuData))
-			}
-			for _, gpu := range gpuData {
-				if gpu.Temperature > 0 {
-					systemStats.Temperatures[gpu.Name] = gpu.Temperature
-				}
-			}
-		}
-	}
-
-	// update base system info
-	a.systemInfo.Cpu = systemStats.Cpu
-	a.systemInfo.MemPct = systemStats.MemPct
-	a.systemInfo.DiskPct = systemStats.DiskPct
-	a.systemInfo.Uptime, _ = host.Uptime()
-	a.systemInfo.Bandwidth = twoDecimals(systemStats.NetworkSent + systemStats.NetworkRecv)
-	slog.Debug("sysinfo", "data", a.systemInfo)
 
 	return systemStats
 }
