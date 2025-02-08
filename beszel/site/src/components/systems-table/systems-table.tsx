@@ -66,7 +66,7 @@ import { useStore } from "@nanostores/react"
 import { cn, copyToClipboard, decimalString, isReadOnlyUser, useLocalStorage } from "@/lib/utils"
 import AlertsButton from "../alerts/alert-button"
 import { $router, Link, navigate } from "../router"
-import { EthernetIcon } from "../ui/icons"
+import { EthernetIcon, ThermometerIcon } from "../ui/icons"
 import { Trans, t } from "@lingui/macro"
 import { useLingui } from "@lingui/react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
@@ -179,6 +179,30 @@ export default function SystemsTable() {
 				cell: CellFormatter,
 				icon: HardDriveIcon,
 				header: ({ column }) => sortableHeader(column),
+			},
+			{
+				accessorKey: "info.ht",
+				id: t`Temp`,
+				invertSorting: true,
+				sortUndefined: 0,
+				size: 50,
+				icon: ThermometerIcon,
+				header: ({ column }) => sortableHeader(column),
+				cell(info) {
+					const val = info.getValue() as number
+					if (!val) {
+						return null
+					}
+					return (
+						<span
+							className={cn("tabular-nums whitespace-nowrap", {
+								"ps-1": viewMode === "table",
+							})}
+						>
+							{decimalString(val)} °C
+						</span>
+					)
+				},
 			},
 			{
 				accessorFn: (originalRow) => originalRow.info.b || 0,

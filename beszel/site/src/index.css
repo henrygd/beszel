@@ -78,8 +78,18 @@
 	body {
 		@apply bg-background text-foreground;
 	}
+}
+
+@layer utilities {
 	.link {
 		@apply text-primary font-medium underline-offset-4 hover:underline;
+	}
+	/* New system dialog width */
+	.ns-dialog {
+		min-width: 30.3rem;
+	}
+	:where(:lang(zh), :lang(zh-CN), :lang(ko)) .ns-dialog {
+		min-width: 27.9rem;
 	}
 }
 

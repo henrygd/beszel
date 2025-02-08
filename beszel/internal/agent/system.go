@@ -178,38 +178,9 @@ func (a *Agent) getSystemStats() system.Stats {
 	}
 
 	// temperatures (skip if sensors whitelist is set to empty string)
-	if a.sensorsWhitelist != nil && len(a.sensorsWhitelist) == 0 {
-		slog.Debug("Skipping temperature collection")
-	} else {
-		temps, err := sensors.TemperaturesWithContext(a.sensorsContext)
-		if err != nil {
-			slog.Debug("Sensor error", "err", err)
-		}
-		slog.Debug("Temperature", "sensors", temps)
-		if len(temps) > 0 {
-			systemStats.Temperatures = make(map[string]float64, len(temps))
-			for i, sensor := range temps {
-				// skip if temperature is 0
-				if sensor.Temperature <= 0 || sensor.Temperature >= 200 {
-					continue
-				}
-				if _, ok := systemStats.Temperatures[sensor.SensorKey]; ok {
-					// if key already exists, append int to key
-					systemStats.Temperatures[sensor.SensorKey+"_"+strconv.Itoa(i)] = twoDecimals(sensor.Temperature)
-				} else {
-					systemStats.Temperatures[sensor.SensorKey] = twoDecimals(sensor.Temperature)
-				}
-			}
-			// remove sensors from systemStats if whitelist exists and sensor is not in whitelist
-			// (do this here instead of in initial loop so we have correct keys if int was appended)
-			if a.sensorsWhitelist != nil {
-				for key := range systemStats.Temperatures {
-					if _, nameInWhitelist := a.sensorsWhitelist[key]; !nameInWhitelist {
-						delete(systemStats.Temperatures, key)
-					}
-				}
-			}
-		}
+	err = a.updateTemperatures(&systemStats)
+	if err != nil {
+		slog.Error("Error getting temperatures", "err", err)
 	}
 
 	// GPU data
@@ -237,6 +208,54 @@ func (a *Agent) getSystemStats() system.Stats {
 	slog.Debug("sysinfo", "data", a.systemInfo)
 
 	return systemStats
+}
+
+func (a *Agent) updateTemperatures(systemStats *system.Stats) error {
+	// skip if sensors whitelist is set to empty string
+	if a.sensorsWhitelist != nil && len(a.sensorsWhitelist) == 0 {
+		slog.Debug("Skipping temperature collection")
+		return nil
+	}
+
+	// reset high temp
+	a.systemInfo.HighTemp = 0
+
+	// get sensor data
+	temps, err := sensors.TemperaturesWithContext(a.sensorsContext)
+	if err != nil {
+		return err
+	}
+	slog.Debug("Temperature", "sensors", temps)
+
+	// return if no sensors
+	if len(temps) == 0 {
+		return nil
+	}
+
+	systemStats.Temperatures = make(map[string]float64, len(temps))
+	for i, sensor := range temps {
+		// skip if temperature is unreasonable
+		if sensor.Temperature <= 0 || sensor.Temperature >= 200 {
+			continue
+		}
+		sensorName := sensor.SensorKey
+		if _, ok := systemStats.Temperatures[sensorName]; ok {
+			// if key already exists, append int to key
+			sensorName = sensorName + "_" + strconv.Itoa(i)
+		}
+		// skip if not in whitelist
+		if a.sensorsWhitelist != nil {
+			if _, nameInWhitelist := a.sensorsWhitelist[sensorName]; !nameInWhitelist {
+				continue
+			}
+		}
+		// assign high temperature if sensor temp is higher than a.systemInfo.HighTemp
+		if sensor.Temperature > a.systemInfo.HighTemp {
+			a.systemInfo.HighTemp = sensor.Temperature
+		}
+		systemStats.Temperatures[sensorName] = twoDecimals(sensor.Temperature)
+	}
+	return nil
 }
 
 // Returns the size of the ZFS ARC memory cache in bytes

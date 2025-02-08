@@ -43,6 +43,10 @@ export interface SystemInfo {
 	v: string
 	/** system is using podman */
 	p?: boolean
+	/** highest gpu utilization */
+	g?: number
+	/** highest temperature */
+	ht?: number
 }
 
 export interface SystemStats {

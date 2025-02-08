@@ -10,6 +10,7 @@ import { useEffect, useState } from "react"
 import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from "lucide-react"
 import { EthernetIcon, ThermometerIcon } from "@/components/ui/icons"
 import { t } from "@lingui/macro"
+import { prependBasePath } from "@/components/router"
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -33,7 +34,7 @@ const verifyAuth = () => {
 	pb.collection("users")
 		.authRefresh()
 		.catch(() => {
-			pb.authStore.clear()
+			logOut()
 			toast({
 				title: t`Failed to authenticate`,
 				description: t`Please log in again`,
@@ -42,22 +43,33 @@ const verifyAuth = () => {
 		})
 }
 
-export const updateSystemList = async () => {
-	try {
-		const records = await pb
-			.collection<SystemRecord>("systems")
-			.getFullList({ sort: "+name", fields: "id,name,host,info,status" })
-		if (records.length) {
-			$systems.set(records)
-		} else {
-			verifyAuth()
-		}
-	} catch (err) {
-		// @ts-ignore supress pocketbase auto cancellation error
-		if (err.isAbort) {
+export const updateSystemList = (() => {
+	let isFetchingSystems = false
+	return async () => {
+		if (isFetchingSystems) {
 			return
 		}
+		isFetchingSystems = true
+		try {
+			const records = await pb
+				.collection<SystemRecord>("systems")
+				.getFullList({ sort: "+name", fields: "id,name,host,info,status" })
+
+			if (records.length) {
+				$systems.set(records)
+			} else {
+				verifyAuth()
+			}
+		} finally {
+			isFetchingSystems = false
+		}
 	}
+})()
+
+/** Logs the user out by clearing the auth store and unsubscribing from realtime updates. */
+export async function logOut() {
+	pb.authStore.clear()
+	pb.realtime.unsubscribe()
 }
 
 export const updateAlerts = () => {
@@ -95,7 +107,7 @@ export const formatDay = (timestamp: string) => {
 }
 
 export const updateFavicon = (newIcon: string) => {
-	;(document.querySelector("link[rel='icon']") as HTMLLinkElement).href = `/static/${newIcon}`
+	;(document.querySelector("link[rel='icon']") as HTMLLinkElement).href = prependBasePath( `/static/${newIcon}` )
 }
 
 export const isAdmin = () => pb.authStore.record?.role === "admin"
