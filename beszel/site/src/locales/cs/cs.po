@@ -18,11 +18,11 @@ msgstr ""
 "X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 16\n"
 
-#: src/components/routes/system.tsx:250
+#: src/components/routes/system.tsx:294
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# den} few {# dny} other {# dní}}"
 
-#: src/components/routes/system.tsx:248
+#: src/components/routes/system.tsx:292
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# Hodina} few {# Hodiny} many {# Hodin} other {# Hodin}}"
 
@@ -109,11 +109,12 @@ msgstr "Opravdu chcete odstranit {name}?"
 msgid "Automatic copy requires a secure context."
 msgstr "Automatická kopie vyžaduje zabezpečený kontext."
 
-#: src/components/routes/system.tsx:627
+#: src/components/routes/system.tsx:716
 msgid "Average"
 msgstr "Průměr"
 
-#: src/components/routes/system.tsx:398
+#: src/components/routes/system.tsx:444
+#: src/components/routes/system.tsx:456
 msgid "Average CPU utilization of containers"
 msgstr "Průměrné využití CPU kontejnerů"
 
@@ -121,15 +122,15 @@ msgstr "Průměrné využití CPU kontejnerů"
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Průměr je vyšší než <0>{value}{0}</0>"
 
-#: src/components/routes/system.tsx:499
+#: src/components/routes/system.tsx:588
 msgid "Average power consumption of GPUs"
 msgstr "Průměrná spotřeba energie GPU"
 
-#: src/components/routes/system.tsx:387
+#: src/components/routes/system.tsx:433
 msgid "Average system-wide CPU utilization"
 msgstr "Průměrné využití CPU v celém systému"
 
-#: src/components/routes/system.tsx:517
+#: src/components/routes/system.tsx:606
 msgid "Average utilization of {0}"
 msgstr "Průměrné využití {0}"
 
@@ -138,7 +139,7 @@ msgstr "Průměrné využití {0}"
 msgid "Backups"
 msgstr "Zálohy"
 
-#: src/components/routes/system.tsx:443
+#: src/components/routes/system.tsx:513
 #: src/lib/utils.ts:314
 msgid "Bandwidth"
 msgstr "Přenos"
@@ -234,7 +235,7 @@ msgid "CPU"
 msgstr "Procesor"
 
 #: src/components/charts/area-chart.tsx:56
-#: src/components/routes/system.tsx:386
+#: src/components/routes/system.tsx:432
 #: src/lib/utils.ts:296
 msgid "CPU Usage"
 msgstr "Využití procesoru"
@@ -265,29 +266,29 @@ msgstr "Odstranit"
 msgid "Disk"
 msgstr "Disk"
 
-#: src/components/routes/system.tsx:433
+#: src/components/routes/system.tsx:503
 msgid "Disk I/O"
 msgstr "Disk I/O"
 
 #: src/components/charts/disk-chart.tsx:79
-#: src/components/routes/system.tsx:426
+#: src/components/routes/system.tsx:496
 #: src/lib/utils.ts:308
 msgid "Disk Usage"
 msgstr "Využití disku"
 
-#: src/components/routes/system.tsx:554
+#: src/components/routes/system.tsx:643
 msgid "Disk usage of {extraFsName}"
 msgstr "Využití disku {extraFsName}"
 
-#: src/components/routes/system.tsx:397
+#: src/components/routes/system.tsx:443
 msgid "Docker CPU Usage"
 msgstr "Využití CPU Dockeru"
 
-#: src/components/routes/system.tsx:418
+#: src/components/routes/system.tsx:476
 msgid "Docker Memory Usage"
 msgstr "Využití paměti Dockeru"
 
-#: src/components/routes/system.tsx:459
+#: src/components/routes/system.tsx:529
 msgid "Docker Network I/O"
 msgstr "Síťové I/O Dockeru"
 
@@ -351,7 +352,7 @@ msgstr "Nepodařilo se odeslat testovací oznámení"
 msgid "Failed to update alert"
 msgstr "Nepodařilo se aktualizovat upozornění"
 
-#: src/components/routes/system.tsx:598
+#: src/components/routes/system.tsx:687
 #: src/components/systems-table/systems-table.tsx:282
 msgid "Filter..."
 msgstr "Filtr..."
@@ -370,7 +371,7 @@ msgstr "Zapomněli jste heslo?"
 msgid "General"
 msgstr "Obecné"
 
-#: src/components/routes/system.tsx:498
+#: src/components/routes/system.tsx:587
 msgid "GPU Power Draw"
 msgstr "Spotřeba energie GPU"
 
@@ -391,7 +392,7 @@ msgid "Invalid email address."
 msgstr "Neplatná e-mailová adresa."
 
 #. Linux kernel
-#: src/components/routes/system.tsx:262
+#: src/components/routes/system.tsx:306
 msgid "Kernel"
 msgstr "Kernel"
 
@@ -435,7 +436,7 @@ msgid "Manage display and notification preferences."
 msgstr "Správa nastavení zobrazení a oznámení."
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:630
+#: src/components/routes/system.tsx:719
 msgid "Max 1 min"
 msgstr "Max. 1 min"
 
@@ -443,14 +444,22 @@ msgstr "Max. 1 min"
 msgid "Memory"
 msgstr "Paměť"
 
-#: src/components/routes/system.tsx:408
+#: src/components/routes/system.tsx:466
 #: src/lib/utils.ts:302
 msgid "Memory Usage"
 msgstr "Využití paměti"
 
-#: src/components/routes/system.tsx:419
+#: src/components/routes/system.tsx:489
+msgid "Memory usage of containers"
+msgstr ""
+
+#: src/components/routes/system.tsx:477
 msgid "Memory usage of docker containers"
 msgstr "Využití paměti docker kontejnerů"
+
+#: src/components/routes/system.tsx:489
+#~ msgid "Memory usage of proxmox containers"
+#~ msgstr ""
 
 #: src/components/add-system.tsx:116
 msgid "Name"
@@ -460,11 +469,15 @@ msgstr "Název"
 msgid "Net"
 msgstr "Síť"
 
-#: src/components/routes/system.tsx:460
+#: src/components/routes/system.tsx:530
 msgid "Network traffic of docker containers"
 msgstr "Síťový provoz kontejnerů docker"
 
-#: src/components/routes/system.tsx:445
+#: src/components/routes/system.tsx:549
+msgid "Network traffic of proxmox containers"
+msgstr ""
+
+#: src/components/routes/system.tsx:515
 msgid "Network traffic of public interfaces"
 msgstr "Síťový provoz veřejných rozhraní"
 
@@ -569,14 +582,26 @@ msgstr "Přihlaste se prosím k vašemu účtu"
 msgid "Port"
 msgstr "Port"
 
-#: src/components/routes/system.tsx:409
-#: src/components/routes/system.tsx:525
+#: src/components/routes/system.tsx:467
+#: src/components/routes/system.tsx:614
 msgid "Precise utilization at the recorded time"
 msgstr "Přesné využití v zaznamenaném čase"
 
 #: src/components/routes/settings/general.tsx:58
 msgid "Preferred Language"
 msgstr "Upřednostňovaný jazyk"
+
+#: src/components/routes/system.tsx:455
+msgid "Proxmox CPU Usage"
+msgstr ""
+
+#: src/components/routes/system.tsx:488
+msgid "Proxmox Memory Usage"
+msgstr ""
+
+#: src/components/routes/system.tsx:548
+msgid "Proxmox Network I/O"
+msgstr ""
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx:128
@@ -660,11 +685,11 @@ msgstr "Seřadit podle"
 msgid "Status"
 msgstr "Stav"
 
-#: src/components/routes/system.tsx:475
+#: src/components/routes/system.tsx:564
 msgid "Swap space used by the system"
 msgstr "Swap prostor využívaný systémem"
 
-#: src/components/routes/system.tsx:474
+#: src/components/routes/system.tsx:563
 msgid "Swap Usage"
 msgstr "Swap využití"
 
@@ -689,12 +714,12 @@ msgstr "Systémy lze spravovat v souboru <0>config.yml</0> uvnitř datového adr
 msgid "Table"
 msgstr "Tabulka"
 
-#: src/components/routes/system.tsx:486
+#: src/components/routes/system.tsx:575
 #: src/lib/utils.ts:321
 msgid "Temperature"
 msgstr "Teplota"
 
-#: src/components/routes/system.tsx:487
+#: src/components/routes/system.tsx:576
 msgid "Temperatures of system sensors"
 msgstr "Teploty systémových senzorů"
 
@@ -722,11 +747,11 @@ msgstr "Poté se přihlaste do backendu a obnovte heslo k uživatelskému účtu
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Tuto akci nelze vzít zpět. Tím se z databáze trvale odstraní všechny aktuální záznamy pro {name}."
 
-#: src/components/routes/system.tsx:566
+#: src/components/routes/system.tsx:655
 msgid "Throughput of {extraFsName}"
 msgstr "Propustnost {extraFsName}"
 
-#: src/components/routes/system.tsx:434
+#: src/components/routes/system.tsx:504
 msgid "Throughput of root filesystem"
 msgstr "Propustnost kořenového souborového systému"
 
@@ -734,8 +759,8 @@ msgstr "Propustnost kořenového souborového systému"
 msgid "To email(s)"
 msgstr "Na email(y)"
 
-#: src/components/routes/system.tsx:361
-#: src/components/routes/system.tsx:374
+#: src/components/routes/system.tsx:407
+#: src/components/routes/system.tsx:420
 msgid "Toggle grid"
 msgstr "Přepnout mřížku"
 
@@ -771,17 +796,17 @@ msgstr "Spustí se, když využití disku překročí prahovou hodnotu"
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Aktualizováno v reálném čase. Klepnutím na systém zobrazíte informace."
 
-#: src/components/routes/system.tsx:261
+#: src/components/routes/system.tsx:305
 msgid "Uptime"
 msgstr "Doba provozu"
 
 #: src/components/charts/area-chart.tsx:73
-#: src/components/routes/system.tsx:516
-#: src/components/routes/system.tsx:553
+#: src/components/routes/system.tsx:605
+#: src/components/routes/system.tsx:642
 msgid "Usage"
 msgstr "Využití"
 
-#: src/components/routes/system.tsx:426
+#: src/components/routes/system.tsx:496
 msgid "Usage of root partition"
 msgstr "Využití kořenového oddílu"
 
@@ -804,7 +829,7 @@ msgstr "Zobrazení"
 msgid "Visible Fields"
 msgstr "Viditelné sloupce"
 
-#: src/components/routes/system.tsx:664
+#: src/components/routes/system.tsx:753
 msgid "Waiting for enough records to display"
 msgstr "Čeká se na dostatek záznamů k zobrazení"
 

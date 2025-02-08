@@ -486,7 +486,7 @@ export default function SystemDetail({ name }: { name: string }) {
 							empty={dataEmpty}
 							grid={grid}
 							title={t`Proxmox Memory Usage`}
-							description={t`Memory usage of proxmox containers`}
+							description={t`Memory usage of containers`}
 							cornerEl={pveContainerFilterBar}
 						>
 							<ContainerChart chartData={chartData} containerData={chartData.pveContainerData} chartName="mem" dataKey="m" unit=" MB" />
