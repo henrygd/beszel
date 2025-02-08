@@ -75,6 +75,8 @@ type Info struct {
 	Bandwidth     float64 `json:"b"`
 	AgentVersion  string  `json:"v"`
 	Podman        bool    `json:"p,omitempty"`
+	Gpu           float64 `json:"g,omitempty"`
+	HighTemp      float64 `json:"ht,omitempty"`
 }
 
 // Final data structure to return to the hub
