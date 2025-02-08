@@ -7,13 +7,10 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"slices"
 	"time"
 
 	"github.com/luthermonson/go-proxmox"
 )
-
-var containerResourceTypes = []string{"lxc", "qemu"}
 
 type pveManager struct {
 	client            *proxmox.Client             // Client to query PVE API
@@ -29,7 +26,7 @@ func (pm *pveManager) getPVEStats() ([]*container.Stats, error) {
 	if err != nil {
 		return nil, err
 	}
-	resources, err := cluster.Resources(context.Background())
+	resources, err := cluster.Resources(context.Background(), "vm")
 	if err != nil {
 		return nil, err
 	}
@@ -40,9 +37,7 @@ func (pm *pveManager) getPVEStats() ([]*container.Stats, error) {
 
 	// remove invalid container stats
 	for _, resource := range resources {
-		if slices.Contains(containerResourceTypes, resource.Type) {
-			containerIds[resource.ID] = struct{}{}
-		}
+		containerIds[resource.ID] = struct{}{}
 	}
 	for id := range pm.containerStatsMap {
 		if _, exists := containerIds[id]; !exists {
@@ -53,9 +48,6 @@ func (pm *pveManager) getPVEStats() ([]*container.Stats, error) {
 	// populate stats
 	stats := make([]*container.Stats, 0, containersLength)
 	for _, resource := range resources {
-		if !slices.Contains(containerResourceTypes, resource.Type) {
-			continue
-		}
 		resourceStats, initialized := pm.containerStatsMap[resource.ID]
 		if !initialized {
 			resourceStats = &container.Stats{}
