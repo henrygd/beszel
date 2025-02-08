@@ -8,7 +8,7 @@ msgstr ""
 "Language: is\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-08 19:01\n"
+"PO-Revision-Date: 2025-02-08 20:14\n"
 "Last-Translator: \n"
 "Language-Team: Icelandic\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -20,31 +20,31 @@ msgstr ""
 
 #: src/components/routes/system.tsx:250
 msgid "{0, plural, one {# day} other {# days}}"
-msgstr ""
+msgstr "{0, plural, one {# dagur} other {# dagar}}"
 
 #: src/components/routes/system.tsx:248
 msgid "{hours, plural, one {# hour} other {# hours}}"
-msgstr ""
+msgstr "{hours, plural, one {# klukkustund} other {# klukkustundir}}"
 
 #: src/lib/utils.ts:139
 msgid "1 hour"
-msgstr ""
+msgstr "1 klukkustund"
 
 #: src/lib/utils.ts:162
 msgid "1 week"
-msgstr ""
+msgstr "1 vika"
 
 #: src/lib/utils.ts:147
 msgid "12 hours"
-msgstr ""
+msgstr "12 klukkustundir"
 
 #: src/lib/utils.ts:155
 msgid "24 hours"
-msgstr ""
+msgstr "24 klukkustundir"
 
 #: src/lib/utils.ts:170
 msgid "30 days"
-msgstr ""
+msgstr "30 dagar"
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx:235
@@ -56,24 +56,24 @@ msgstr ""
 
 #: src/components/routes/home.tsx:61
 msgid "Active Alerts"
-msgstr ""
+msgstr "Virkar tilkynningar"
 
 #: src/components/add-system.tsx:78
 msgid "Add <0>System</0>"
-msgstr ""
+msgstr "Bæta við <0>Kerfi</0>"
 
 #: src/components/add-system.tsx:87
 msgid "Add New System"
-msgstr ""
+msgstr "Bæta við nýju kerfi"
 
 #: src/components/add-system.tsx:165
 #: src/components/add-system.tsx:176
 msgid "Add system"
-msgstr ""
+msgstr "Bæta við kerfi"
 
 #: src/components/routes/settings/notifications.tsx:156
 msgid "Add URL"
-msgstr ""
+msgstr "Bæta við léni"
 
 #: src/components/routes/settings/general.tsx:81
 msgid "Adjust display options for charts."
@@ -85,7 +85,7 @@ msgstr ""
 #: src/components/command-palette.tsx:173
 #: src/components/command-palette.tsx:188
 msgid "Admin"
-msgstr ""
+msgstr "Admin"
 
 #: src/components/systems-table/systems-table.tsx:204
 msgid "Agent"
@@ -94,16 +94,16 @@ msgstr ""
 #: src/components/alerts/alert-button.tsx:32
 #: src/components/alerts/alert-button.tsx:68
 msgid "Alerts"
-msgstr ""
+msgstr "Tilkynningar"
 
 #: src/components/alerts/alert-button.tsx:88
 #: src/components/systems-table/systems-table.tsx:274
 msgid "All Systems"
-msgstr ""
+msgstr "Öll kerfi"
 
 #: src/components/systems-table/systems-table.tsx:578
 msgid "Are you sure you want to delete {name}?"
-msgstr ""
+msgstr "Ertu viss um að þú viljir eyða {name}?"
 
 #: src/components/copy-to-clipboard.tsx:16
 msgid "Automatic copy requires a secure context."
@@ -111,11 +111,11 @@ msgstr ""
 
 #: src/components/routes/system.tsx:625
 msgid "Average"
-msgstr ""
+msgstr "Meðal"
 
 #: src/components/routes/system.tsx:396
 msgid "Average CPU utilization of containers"
-msgstr ""
+msgstr "Meðal örgjörva notkun container-a."
 
 #: src/components/alerts/alerts-system.tsx:206
 msgid "Average exceeds <0>{value}{0}</0>"
@@ -123,25 +123,25 @@ msgstr ""
 
 #: src/components/routes/system.tsx:497
 msgid "Average power consumption of GPUs"
-msgstr ""
+msgstr "Meðal orkunotkun skjákorta"
 
 #: src/components/routes/system.tsx:385
 msgid "Average system-wide CPU utilization"
-msgstr ""
+msgstr "Meðal nýting örgjörva yfir allt kerfið"
 
 #: src/components/routes/system.tsx:515
 msgid "Average utilization of {0}"
-msgstr ""
+msgstr "Meðal notkun af {0}"
 
 #: src/components/command-palette.tsx:170
 #: src/components/navbar.tsx:93
 msgid "Backups"
-msgstr ""
+msgstr "Öryggisafrit"
 
 #: src/components/routes/system.tsx:441
 #: src/lib/utils.ts:307
 msgid "Bandwidth"
-msgstr ""
+msgstr "Gangnaflutningsgeta"
 
 #: src/components/login/auth-form.tsx:289
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -161,11 +161,11 @@ msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:589
 msgid "Cancel"
-msgstr ""
+msgstr "Hætta við"
 
 #: src/components/routes/settings/config-yaml.tsx:68
 msgid "Caution - potential data loss"
-msgstr ""
+msgstr "Aðvörun - möguleiki á gagnatapi"
 
 #: src/components/routes/settings/general.tsx:36
 msgid "Change general application options."
@@ -173,15 +173,15 @@ msgstr ""
 
 #: src/components/routes/settings/general.tsx:78
 msgid "Chart options"
-msgstr ""
+msgstr "Valkostir fyrir línurit"
 
 #: src/components/login/forgot-pass-form.tsx:34
 msgid "Check {email} for a reset link."
-msgstr ""
+msgstr "Skoðaðu {email} fyrir endurstillingar lén."
 
 #: src/components/routes/settings/layout.tsx:40
 msgid "Check logs for more details."
-msgstr ""
+msgstr "Skoðaðu logga til að sjá meiri upplýsingar."
 
 #: src/components/routes/settings/notifications.tsx:183
 msgid "Check your notification service"
@@ -189,7 +189,7 @@ msgstr ""
 
 #: src/components/add-system.tsx:151
 msgid "Click to copy"
-msgstr ""
+msgstr "Smelltu til að afrita"
 
 #: src/components/login/forgot-pass-form.tsx:83
 #: src/components/login/forgot-pass-form.tsx:89
@@ -198,55 +198,55 @@ msgstr ""
 
 #: src/components/routes/settings/notifications.tsx:77
 msgid "Configure how you receive alert notifications."
-msgstr ""
+msgstr "Stilltu hvernig þú vilt fá tilkynningar."
 
 #: src/components/login/auth-form.tsx:165
 #: src/components/login/auth-form.tsx:170
 msgid "Confirm password"
-msgstr ""
+msgstr "Staðfestu lykilorð"
 
 #: src/components/systems-table/systems-table.tsx:595
 msgid "Continue"
-msgstr ""
+msgstr "Halda áfram"
 
 #: src/lib/utils.ts:25
 msgid "Copied to clipboard"
-msgstr ""
+msgstr "Afritað í klippiborð"
 
 #: src/components/add-system.tsx:162
 msgid "Copy"
-msgstr ""
+msgstr "Afrita"
 
 #: src/components/systems-table/systems-table.tsx:564
 msgid "Copy host"
-msgstr ""
+msgstr "Afrita host"
 
 #: src/components/add-system.tsx:173
 msgid "Copy Linux command"
-msgstr ""
+msgstr "Afrita Linux aðgerð"
 
 #: src/components/copy-to-clipboard.tsx:13
 msgid "Copy text"
-msgstr ""
+msgstr "Afrita texta"
 
 #: src/components/systems-table/systems-table.tsx:160
 msgid "CPU"
-msgstr ""
+msgstr "Örgjörvi"
 
 #: src/components/charts/area-chart.tsx:56
 #: src/components/routes/system.tsx:384
 #: src/lib/utils.ts:289
 msgid "CPU Usage"
-msgstr ""
+msgstr "Örgjörva notkun"
 
 #: src/components/login/auth-form.tsx:191
 msgid "Create account"
-msgstr ""
+msgstr "Búa til aðgang"
 
 #. Dark theme
 #: src/components/mode-toggle.tsx:21
 msgid "Dark"
-msgstr ""
+msgstr "Dökkt"
 
 #: src/components/command-palette.tsx:81
 #: src/components/routes/home.tsx:34
@@ -259,11 +259,11 @@ msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:570
 msgid "Delete"
-msgstr ""
+msgstr "Eyða"
 
 #: src/components/systems-table/systems-table.tsx:176
 msgid "Disk"
-msgstr ""
+msgstr "Diskur"
 
 #: src/components/routes/system.tsx:431
 msgid "Disk I/O"
@@ -273,15 +273,15 @@ msgstr ""
 #: src/components/routes/system.tsx:424
 #: src/lib/utils.ts:301
 msgid "Disk Usage"
-msgstr ""
+msgstr "Diskanotkun"
 
 #: src/components/routes/system.tsx:552
 msgid "Disk usage of {extraFsName}"
-msgstr ""
+msgstr "Diska notkun af {extraFsName}"
 
 #: src/components/routes/system.tsx:395
 msgid "Docker CPU Usage"
-msgstr ""
+msgstr "Docker CPU notkun"
 
 #: src/components/routes/system.tsx:416
 msgid "Docker Memory Usage"
@@ -293,30 +293,30 @@ msgstr ""
 
 #: src/components/command-palette.tsx:124
 msgid "Documentation"
-msgstr ""
+msgstr "Skjal"
 
 #: src/components/login/auth-form.tsx:128
 #: src/components/login/forgot-pass-form.tsx:53
 msgid "Email"
-msgstr ""
+msgstr "Netfang"
 
 #: src/components/routes/settings/notifications.tsx:91
 msgid "Email notifications"
-msgstr ""
+msgstr "Tilkynningar í tölvupósti"
 
 #: src/components/login/login.tsx:38
 msgid "Enter email address to reset password"
-msgstr ""
+msgstr "Settu netfang til að endursetja lykilorð"
 
 #: src/components/routes/settings/notifications.tsx:111
 msgid "Enter email address..."
-msgstr ""
+msgstr "Settu inn Netfang..."
 
 #: src/components/login/auth-form.tsx:232
 #: src/components/routes/settings/config-yaml.tsx:28
 #: src/components/routes/settings/notifications.tsx:187
 msgid "Error"
-msgstr ""
+msgstr "Villa"
 
 #: src/components/routes/home.tsx:80
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
@@ -336,16 +336,16 @@ msgstr ""
 
 #: src/lib/utils.ts:38
 msgid "Failed to authenticate"
-msgstr ""
+msgstr "Villa í auðkenningu"
 
 #: src/components/routes/settings/layout.tsx:39
 #: src/components/routes/settings/notifications.tsx:62
 msgid "Failed to save settings"
-msgstr ""
+msgstr "Villa við að vista stillingar"
 
 #: src/components/routes/settings/notifications.tsx:188
 msgid "Failed to send test notification"
-msgstr ""
+msgstr "Villa í sendingu prufu skilaboða"
 
 #: src/components/alerts/alerts-system.tsx:24
 msgid "Failed to update alert"
@@ -354,7 +354,7 @@ msgstr ""
 #: src/components/routes/system.tsx:596
 #: src/components/systems-table/systems-table.tsx:281
 msgid "Filter..."
-msgstr ""
+msgstr "Sía..."
 
 #: src/components/alerts/alerts-system.tsx:227
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -362,17 +362,17 @@ msgstr ""
 
 #: src/components/login/auth-form.tsx:313
 msgid "Forgot password?"
-msgstr ""
+msgstr "Gleymt lykilorð?"
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx:33
 #: src/components/routes/settings/layout.tsx:51
 msgid "General"
-msgstr ""
+msgstr "Almennt"
 
 #: src/components/routes/system.tsx:496
 msgid "GPU Power Draw"
-msgstr ""
+msgstr "Skjákorts rafmagnsnotkun"
 
 #: src/components/systems-table/systems-table.tsx:308
 msgid "Grid"
@@ -388,7 +388,7 @@ msgstr ""
 
 #: src/components/login/auth-form.tsx:16
 msgid "Invalid email address."
-msgstr ""
+msgstr "Ógilt netfang."
 
 #. Linux kernel
 #: src/components/routes/system.tsx:262
@@ -397,7 +397,7 @@ msgstr ""
 
 #: src/components/routes/settings/general.tsx:45
 msgid "Language"
-msgstr ""
+msgstr "Tungumál"
 
 #: src/components/systems-table/systems-table.tsx:294
 msgid "Layout"
@@ -406,20 +406,20 @@ msgstr ""
 #. Light theme
 #: src/components/mode-toggle.tsx:16
 msgid "Light"
-msgstr ""
+msgstr "Ljóst"
 
 #: src/components/navbar.tsx:104
 msgid "Log Out"
-msgstr ""
+msgstr "Útskrá"
 
 #: src/components/login/login.tsx:19
 msgid "Login"
-msgstr ""
+msgstr "Innskrá"
 
 #: src/components/login/auth-form.tsx:34
 #: src/components/login/forgot-pass-form.tsx:15
 msgid "Login attempt failed"
-msgstr ""
+msgstr "Innskránings tilraun misheppnaðist"
 
 #: src/components/command-palette.tsx:156
 #: src/components/navbar.tsx:85
@@ -437,24 +437,24 @@ msgstr ""
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx:628
 msgid "Max 1 min"
-msgstr ""
+msgstr "Mest 1 mínúta"
 
 #: src/components/systems-table/systems-table.tsx:168
 msgid "Memory"
-msgstr ""
+msgstr "Minni"
 
 #: src/components/routes/system.tsx:406
 #: src/lib/utils.ts:295
 msgid "Memory Usage"
-msgstr ""
+msgstr "Minnisnotkun"
 
 #: src/components/routes/system.tsx:417
 msgid "Memory usage of docker containers"
-msgstr ""
+msgstr "Minnisnotkun docker kerfa"
 
 #: src/components/add-system.tsx:116
 msgid "Name"
-msgstr ""
+msgstr "Nafn"
 
 #: src/components/systems-table/systems-table.tsx:184
 msgid "Net"
@@ -475,13 +475,13 @@ msgstr ""
 #: src/components/systems-table/systems-table.tsx:429
 #: src/components/systems-table/systems-table.tsx:502
 msgid "No systems found."
-msgstr ""
+msgstr "Engin kerfi fundust."
 
 #: src/components/command-palette.tsx:110
 #: src/components/routes/settings/layout.tsx:56
 #: src/components/routes/settings/notifications.tsx:74
 msgid "Notifications"
-msgstr ""
+msgstr "Tilkynningar"
 
 #: src/components/login/auth-form.tsx:284
 msgid "OAuth 2 / OIDC support"
@@ -505,20 +505,20 @@ msgstr ""
 
 #: src/components/command-palette.tsx:84
 msgid "Page"
-msgstr ""
+msgstr "Síða"
 
 #: src/components/command-palette.tsx:71
 msgid "Pages / Settings"
-msgstr ""
+msgstr "Síða / Stillingar"
 
 #: src/components/login/auth-form.tsx:147
 #: src/components/login/auth-form.tsx:152
 msgid "Password"
-msgstr ""
+msgstr "Lykilorð"
 
 #: src/components/login/auth-form.tsx:17
 msgid "Password must be at least 8 characters."
-msgstr ""
+msgstr "Lykilorðið verður að vera minnst 8 stafir."
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
@@ -526,7 +526,7 @@ msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:558
 msgid "Pause"
-msgstr ""
+msgstr "Pása"
 
 #: src/components/routes/settings/notifications.tsx:95
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -583,7 +583,7 @@ msgstr ""
 #: src/components/charts/area-chart.tsx:60
 #: src/components/charts/area-chart.tsx:70
 msgid "Read"
-msgstr ""
+msgstr "Lesa"
 
 #. Network bytes received (download)
 #: src/components/charts/area-chart.tsx:65
@@ -596,7 +596,7 @@ msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:553
 msgid "Resume"
-msgstr ""
+msgstr "Halda áfram"
 
 #: src/components/routes/settings/notifications.tsx:117
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -605,11 +605,11 @@ msgstr ""
 #: src/components/routes/settings/general.tsx:106
 #: src/components/routes/settings/notifications.tsx:167
 msgid "Save Settings"
-msgstr ""
+msgstr "Vista stillingar"
 
 #: src/components/navbar.tsx:133
 msgid "Search"
-msgstr ""
+msgstr "Leita"
 
 #: src/components/command-palette.tsx:46
 msgid "Search for systems or settings..."
@@ -622,7 +622,7 @@ msgstr ""
 #. Network bytes sent (upload)
 #: src/components/charts/area-chart.tsx:64
 msgid "Sent"
-msgstr ""
+msgstr "Sent"
 
 #: src/components/routes/settings/general.tsx:100
 msgid "Sets the default time range for charts when a system is viewed."
@@ -634,7 +634,7 @@ msgstr ""
 #: src/components/routes/settings/layout.tsx:71
 #: src/components/routes/settings/layout.tsx:82
 msgid "Settings"
-msgstr ""
+msgstr "Stillingar"
 
 #: src/components/routes/settings/layout.tsx:33
 msgid "Settings saved"
@@ -642,7 +642,7 @@ msgstr ""
 
 #: src/components/login/auth-form.tsx:191
 msgid "Sign in"
-msgstr ""
+msgstr "Innskrá"
 
 #: src/components/command-palette.tsx:185
 msgid "SMTP settings"
@@ -671,7 +671,7 @@ msgstr ""
 #: src/components/systems-table/systems-table.tsx:139
 #: src/components/systems-table/systems-table.tsx:473
 msgid "System"
-msgstr ""
+msgstr "Kerfi"
 
 #: src/components/navbar.tsx:77
 msgid "Systems"
@@ -696,11 +696,11 @@ msgstr ""
 
 #: src/components/routes/settings/notifications.tsx:211
 msgid "Test <0>URL</0>"
-msgstr ""
+msgstr "Prufa <0>URL</0>"
 
 #: src/components/routes/settings/notifications.tsx:182
 msgid "Test notification sent"
-msgstr ""
+msgstr "Prufu tilkynning send"
 
 #: src/components/add-system.tsx:108
 msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
