@@ -1,0 +1,832 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2024-11-01 11:30-0400\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: he\n"
+"Project-Id-Version: beszel\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2025-02-08 19:01\n"
+"Last-Translator: \n"
+"Language-Team: Hebrew\n"
+"Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
+"X-Crowdin-Project: beszel\n"
+"X-Crowdin-Project-ID: 733311\n"
+"X-Crowdin-Language: he\n"
+"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 16\n"
+
+#: src/components/routes/system.tsx:250
+msgid "{0, plural, one {# day} other {# days}}"
+msgstr ""
+
+#: src/components/routes/system.tsx:248
+msgid "{hours, plural, one {# hour} other {# hours}}"
+msgstr ""
+
+#: src/lib/utils.ts:139
+msgid "1 hour"
+msgstr ""
+
+#: src/lib/utils.ts:162
+msgid "1 week"
+msgstr ""
+
+#: src/lib/utils.ts:147
+msgid "12 hours"
+msgstr ""
+
+#: src/lib/utils.ts:155
+msgid "24 hours"
+msgstr ""
+
+#: src/lib/utils.ts:170
+msgid "30 days"
+msgstr ""
+
+#. Table column
+#: src/components/systems-table/systems-table.tsx:235
+#: src/components/systems-table/systems-table.tsx:321
+#: src/components/systems-table/systems-table.tsx:463
+#: src/components/systems-table/systems-table.tsx:473
+msgid "Actions"
+msgstr ""
+
+#: src/components/routes/home.tsx:61
+msgid "Active Alerts"
+msgstr ""
+
+#: src/components/add-system.tsx:78
+msgid "Add <0>System</0>"
+msgstr ""
+
+#: src/components/add-system.tsx:87
+msgid "Add New System"
+msgstr ""
+
+#: src/components/add-system.tsx:165
+#: src/components/add-system.tsx:176
+msgid "Add system"
+msgstr ""
+
+#: src/components/routes/settings/notifications.tsx:156
+msgid "Add URL"
+msgstr ""
+
+#: src/components/routes/settings/general.tsx:81
+msgid "Adjust display options for charts."
+msgstr ""
+
+#: src/components/command-palette.tsx:132
+#: src/components/command-palette.tsx:145
+#: src/components/command-palette.tsx:159
+#: src/components/command-palette.tsx:173
+#: src/components/command-palette.tsx:188
+msgid "Admin"
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx:204
+msgid "Agent"
+msgstr ""
+
+#: src/components/alerts/alert-button.tsx:32
+#: src/components/alerts/alert-button.tsx:68
+msgid "Alerts"
+msgstr ""
+
+#: src/components/alerts/alert-button.tsx:88
+#: src/components/systems-table/systems-table.tsx:274
+msgid "All Systems"
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx:578
+msgid "Are you sure you want to delete {name}?"
+msgstr ""
+
+#: src/components/copy-to-clipboard.tsx:16
+msgid "Automatic copy requires a secure context."
+msgstr ""
+
+#: src/components/routes/system.tsx:625
+msgid "Average"
+msgstr ""
+
+#: src/components/routes/system.tsx:396
+msgid "Average CPU utilization of containers"
+msgstr ""
+
+#: src/components/alerts/alerts-system.tsx:206
+msgid "Average exceeds <0>{value}{0}</0>"
+msgstr ""
+
+#: src/components/routes/system.tsx:497
+msgid "Average power consumption of GPUs"
+msgstr ""
+
+#: src/components/routes/system.tsx:385
+msgid "Average system-wide CPU utilization"
+msgstr ""
+
+#: src/components/routes/system.tsx:515
+msgid "Average utilization of {0}"
+msgstr ""
+
+#: src/components/command-palette.tsx:170
+#: src/components/navbar.tsx:93
+msgid "Backups"
+msgstr ""
+
+#: src/components/routes/system.tsx:441
+#: src/lib/utils.ts:307
+msgid "Bandwidth"
+msgstr ""
+
+#: src/components/login/auth-form.tsx:289
+msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
+msgstr ""
+
+#: src/components/routes/settings/notifications.tsx:127
+msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
+msgstr ""
+
+#: src/components/add-system.tsx:92
+msgid "Binary"
+msgstr ""
+
+#: src/components/charts/mem-chart.tsx:89
+msgid "Cache / Buffers"
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx:589
+msgid "Cancel"
+msgstr ""
+
+#: src/components/routes/settings/config-yaml.tsx:68
+msgid "Caution - potential data loss"
+msgstr ""
+
+#: src/components/routes/settings/general.tsx:36
+msgid "Change general application options."
+msgstr ""
+
+#: src/components/routes/settings/general.tsx:78
+msgid "Chart options"
+msgstr ""
+
+#: src/components/login/forgot-pass-form.tsx:34
+msgid "Check {email} for a reset link."
+msgstr ""
+
+#: src/components/routes/settings/layout.tsx:40
+msgid "Check logs for more details."
+msgstr ""
+
+#: src/components/routes/settings/notifications.tsx:183
+msgid "Check your notification service"
+msgstr ""
+
+#: src/components/add-system.tsx:151
+msgid "Click to copy"
+msgstr ""
+
+#: src/components/login/forgot-pass-form.tsx:83
+#: src/components/login/forgot-pass-form.tsx:89
+msgid "Command line instructions"
+msgstr ""
+
+#: src/components/routes/settings/notifications.tsx:77
+msgid "Configure how you receive alert notifications."
+msgstr ""
+
+#: src/components/login/auth-form.tsx:165
+#: src/components/login/auth-form.tsx:170
+msgid "Confirm password"
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx:595
+msgid "Continue"
+msgstr ""
+
+#: src/lib/utils.ts:25
+msgid "Copied to clipboard"
+msgstr ""
+
+#: src/components/add-system.tsx:162
+msgid "Copy"
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx:564
+msgid "Copy host"
+msgstr ""
+
+#: src/components/add-system.tsx:173
+msgid "Copy Linux command"
+msgstr ""
+
+#: src/components/copy-to-clipboard.tsx:13
+msgid "Copy text"
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx:160
+msgid "CPU"
+msgstr ""
+
+#: src/components/charts/area-chart.tsx:56
+#: src/components/routes/system.tsx:384
+#: src/lib/utils.ts:289
+msgid "CPU Usage"
+msgstr ""
+
+#: src/components/login/auth-form.tsx:191
+msgid "Create account"
+msgstr ""
+
+#. Dark theme
+#: src/components/mode-toggle.tsx:21
+msgid "Dark"
+msgstr ""
+
+#: src/components/command-palette.tsx:81
+#: src/components/routes/home.tsx:34
+msgid "Dashboard"
+msgstr ""
+
+#: src/components/routes/settings/general.tsx:85
+msgid "Default time period"
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx:570
+msgid "Delete"
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx:176
+msgid "Disk"
+msgstr ""
+
+#: src/components/routes/system.tsx:431
+msgid "Disk I/O"
+msgstr ""
+
+#: src/components/charts/disk-chart.tsx:79
+#: src/components/routes/system.tsx:424
+#: src/lib/utils.ts:301
+msgid "Disk Usage"
+msgstr ""
+
+#: src/components/routes/system.tsx:552
+msgid "Disk usage of {extraFsName}"
+msgstr ""
+
+#: src/components/routes/system.tsx:395
+msgid "Docker CPU Usage"
+msgstr ""
+
+#: src/components/routes/system.tsx:416
+msgid "Docker Memory Usage"
+msgstr ""
+
+#: src/components/routes/system.tsx:457
+msgid "Docker Network I/O"
+msgstr ""
+
+#: src/components/command-palette.tsx:124
+msgid "Documentation"
+msgstr ""
+
+#: src/components/login/auth-form.tsx:128
+#: src/components/login/forgot-pass-form.tsx:53
+msgid "Email"
+msgstr ""
+
+#: src/components/routes/settings/notifications.tsx:91
+msgid "Email notifications"
+msgstr ""
+
+#: src/components/login/login.tsx:38
+msgid "Enter email address to reset password"
+msgstr ""
+
+#: src/components/routes/settings/notifications.tsx:111
+msgid "Enter email address..."
+msgstr ""
+
+#: src/components/login/auth-form.tsx:232
+#: src/components/routes/settings/config-yaml.tsx:28
+#: src/components/routes/settings/notifications.tsx:187
+msgid "Error"
+msgstr ""
+
+#: src/components/routes/home.tsx:80
+msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
+msgstr ""
+
+#: src/components/routes/settings/config-yaml.tsx:72
+msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
+msgstr ""
+
+#: src/components/routes/settings/config-yaml.tsx:93
+msgid "Export configuration"
+msgstr ""
+
+#: src/components/routes/settings/config-yaml.tsx:48
+msgid "Export your current systems configuration."
+msgstr ""
+
+#: src/lib/utils.ts:38
+msgid "Failed to authenticate"
+msgstr ""
+
+#: src/components/routes/settings/layout.tsx:39
+#: src/components/routes/settings/notifications.tsx:62
+msgid "Failed to save settings"
+msgstr ""
+
+#: src/components/routes/settings/notifications.tsx:188
+msgid "Failed to send test notification"
+msgstr ""
+
+#: src/components/alerts/alerts-system.tsx:24
+msgid "Failed to update alert"
+msgstr ""
+
+#: src/components/routes/system.tsx:596
+#: src/components/systems-table/systems-table.tsx:281
+msgid "Filter..."
+msgstr ""
+
+#: src/components/alerts/alerts-system.tsx:227
+msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
+msgstr ""
+
+#: src/components/login/auth-form.tsx:313
+msgid "Forgot password?"
+msgstr ""
+
+#. Context: General settings
+#: src/components/routes/settings/general.tsx:33
+#: src/components/routes/settings/layout.tsx:51
+msgid "General"
+msgstr ""
+
+#: src/components/routes/system.tsx:496
+msgid "GPU Power Draw"
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx:308
+msgid "Grid"
+msgstr ""
+
+#: src/components/add-system.tsx:120
+msgid "Host / IP"
+msgstr ""
+
+#: src/components/login/forgot-pass-form.tsx:93
+msgid "If you've lost the password to your admin account, you may reset it using the following command."
+msgstr ""
+
+#: src/components/login/auth-form.tsx:16
+msgid "Invalid email address."
+msgstr ""
+
+#. Linux kernel
+#: src/components/routes/system.tsx:262
+msgid "Kernel"
+msgstr ""
+
+#: src/components/routes/settings/general.tsx:45
+msgid "Language"
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx:294
+msgid "Layout"
+msgstr ""
+
+#. Light theme
+#: src/components/mode-toggle.tsx:16
+msgid "Light"
+msgstr ""
+
+#: src/components/navbar.tsx:104
+msgid "Log Out"
+msgstr ""
+
+#: src/components/login/login.tsx:19
+msgid "Login"
+msgstr ""
+
+#: src/components/login/auth-form.tsx:34
+#: src/components/login/forgot-pass-form.tsx:15
+msgid "Login attempt failed"
+msgstr ""
+
+#: src/components/command-palette.tsx:156
+#: src/components/navbar.tsx:85
+msgid "Logs"
+msgstr ""
+
+#: src/components/routes/settings/notifications.tsx:80
+msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
+msgstr ""
+
+#: src/components/routes/settings/layout.tsx:85
+msgid "Manage display and notification preferences."
+msgstr ""
+
+#. Chart select field. Please try to keep this short.
+#: src/components/routes/system.tsx:628
+msgid "Max 1 min"
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx:168
+msgid "Memory"
+msgstr ""
+
+#: src/components/routes/system.tsx:406
+#: src/lib/utils.ts:295
+msgid "Memory Usage"
+msgstr ""
+
+#: src/components/routes/system.tsx:417
+msgid "Memory usage of docker containers"
+msgstr ""
+
+#: src/components/add-system.tsx:116
+msgid "Name"
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx:184
+msgid "Net"
+msgstr ""
+
+#: src/components/routes/system.tsx:458
+msgid "Network traffic of docker containers"
+msgstr ""
+
+#: src/components/routes/system.tsx:443
+msgid "Network traffic of public interfaces"
+msgstr ""
+
+#: src/components/command-palette.tsx:49
+msgid "No results found."
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx:429
+#: src/components/systems-table/systems-table.tsx:502
+msgid "No systems found."
+msgstr ""
+
+#: src/components/command-palette.tsx:110
+#: src/components/routes/settings/layout.tsx:56
+#: src/components/routes/settings/notifications.tsx:74
+msgid "Notifications"
+msgstr ""
+
+#: src/components/login/auth-form.tsx:284
+msgid "OAuth 2 / OIDC support"
+msgstr ""
+
+#: src/components/routes/settings/config-yaml.tsx:61
+msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx:536
+msgid "Open menu"
+msgstr ""
+
+#: src/components/login/auth-form.tsx:203
+msgid "Or continue with"
+msgstr ""
+
+#: src/components/alerts/alert-button.tsx:109
+msgid "Overwrite existing alerts"
+msgstr ""
+
+#: src/components/command-palette.tsx:84
+msgid "Page"
+msgstr ""
+
+#: src/components/command-palette.tsx:71
+msgid "Pages / Settings"
+msgstr ""
+
+#: src/components/login/auth-form.tsx:147
+#: src/components/login/auth-form.tsx:152
+msgid "Password"
+msgstr ""
+
+#: src/components/login/auth-form.tsx:17
+msgid "Password must be at least 8 characters."
+msgstr ""
+
+#: src/components/login/forgot-pass-form.tsx:33
+msgid "Password reset request received"
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx:558
+msgid "Pause"
+msgstr ""
+
+#: src/components/routes/settings/notifications.tsx:95
+msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
+msgstr ""
+
+#: src/components/alerts/alerts-system.tsx:25
+msgid "Please check logs for more details."
+msgstr ""
+
+#: src/components/login/auth-form.tsx:35
+#: src/components/login/forgot-pass-form.tsx:16
+msgid "Please check your credentials and try again"
+msgstr ""
+
+#: src/components/login/login.tsx:36
+msgid "Please create an admin account"
+msgstr ""
+
+#: src/components/login/auth-form.tsx:233
+msgid "Please enable pop-ups for this site"
+msgstr ""
+
+#: src/lib/utils.ts:39
+msgid "Please log in again"
+msgstr ""
+
+#: src/components/login/auth-form.tsx:292
+msgid "Please see <0>the documentation</0> for instructions."
+msgstr ""
+
+#: src/components/login/login.tsx:40
+msgid "Please sign in to your account"
+msgstr ""
+
+#: src/components/add-system.tsx:124
+msgid "Port"
+msgstr ""
+
+#: src/components/routes/system.tsx:407
+#: src/components/routes/system.tsx:523
+msgid "Precise utilization at the recorded time"
+msgstr ""
+
+#: src/components/routes/settings/general.tsx:58
+msgid "Preferred Language"
+msgstr ""
+
+#. Use 'Key' if your language requires many more characters
+#: src/components/add-system.tsx:128
+msgid "Public Key"
+msgstr ""
+
+#. Disk read
+#: src/components/charts/area-chart.tsx:60
+#: src/components/charts/area-chart.tsx:70
+msgid "Read"
+msgstr ""
+
+#. Network bytes received (download)
+#: src/components/charts/area-chart.tsx:65
+msgid "Received"
+msgstr ""
+
+#: src/components/login/forgot-pass-form.tsx:76
+msgid "Reset Password"
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx:553
+msgid "Resume"
+msgstr ""
+
+#: src/components/routes/settings/notifications.tsx:117
+msgid "Save address using enter key or comma. Leave blank to disable email notifications."
+msgstr ""
+
+#: src/components/routes/settings/general.tsx:106
+#: src/components/routes/settings/notifications.tsx:167
+msgid "Save Settings"
+msgstr ""
+
+#: src/components/navbar.tsx:133
+msgid "Search"
+msgstr ""
+
+#: src/components/command-palette.tsx:46
+msgid "Search for systems or settings..."
+msgstr ""
+
+#: src/components/alerts/alert-button.tsx:71
+msgid "See <0>notification settings</0> to configure how you receive alerts."
+msgstr ""
+
+#. Network bytes sent (upload)
+#: src/components/charts/area-chart.tsx:64
+msgid "Sent"
+msgstr ""
+
+#: src/components/routes/settings/general.tsx:100
+msgid "Sets the default time range for charts when a system is viewed."
+msgstr ""
+
+#: src/components/command-palette.tsx:95
+#: src/components/command-palette.tsx:98
+#: src/components/command-palette.tsx:113
+#: src/components/routes/settings/layout.tsx:71
+#: src/components/routes/settings/layout.tsx:82
+msgid "Settings"
+msgstr ""
+
+#: src/components/routes/settings/layout.tsx:33
+msgid "Settings saved"
+msgstr ""
+
+#: src/components/login/auth-form.tsx:191
+msgid "Sign in"
+msgstr ""
+
+#: src/components/command-palette.tsx:185
+msgid "SMTP settings"
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx:316
+msgid "Sort By"
+msgstr ""
+
+#: src/lib/utils.ts:282
+msgid "Status"
+msgstr ""
+
+#: src/components/routes/system.tsx:473
+msgid "Swap space used by the system"
+msgstr ""
+
+#: src/components/routes/system.tsx:472
+msgid "Swap Usage"
+msgstr ""
+
+#. System theme
+#: src/components/mode-toggle.tsx:26
+#: src/components/systems-table/systems-table.tsx:120
+#: src/components/systems-table/systems-table.tsx:128
+#: src/components/systems-table/systems-table.tsx:139
+#: src/components/systems-table/systems-table.tsx:473
+msgid "System"
+msgstr ""
+
+#: src/components/navbar.tsx:77
+msgid "Systems"
+msgstr ""
+
+#: src/components/routes/settings/config-yaml.tsx:55
+msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx:304
+msgid "Table"
+msgstr ""
+
+#: src/components/routes/system.tsx:484
+#: src/lib/utils.ts:314
+msgid "Temperature"
+msgstr ""
+
+#: src/components/routes/system.tsx:485
+msgid "Temperatures of system sensors"
+msgstr ""
+
+#: src/components/routes/settings/notifications.tsx:211
+msgid "Test <0>URL</0>"
+msgstr ""
+
+#: src/components/routes/settings/notifications.tsx:182
+msgid "Test notification sent"
+msgstr ""
+
+#: src/components/add-system.tsx:108
+msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
+msgstr ""
+
+#: src/components/add-system.tsx:99
+msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
+msgstr ""
+
+#: src/components/login/forgot-pass-form.tsx:98
+msgid "Then log into the backend and reset your user account password in the users table."
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx:581
+msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
+msgstr ""
+
+#: src/components/routes/system.tsx:564
+msgid "Throughput of {extraFsName}"
+msgstr ""
+
+#: src/components/routes/system.tsx:432
+msgid "Throughput of root filesystem"
+msgstr ""
+
+#: src/components/routes/settings/notifications.tsx:106
+msgid "To email(s)"
+msgstr ""
+
+#: src/components/routes/system.tsx:359
+#: src/components/routes/system.tsx:372
+msgid "Toggle grid"
+msgstr ""
+
+#: src/components/mode-toggle.tsx:33
+msgid "Toggle theme"
+msgstr ""
+
+#: src/lib/utils.ts:317
+msgid "Triggers when any sensor exceeds a threshold"
+msgstr ""
+
+#: src/lib/utils.ts:310
+msgid "Triggers when combined up/down exceeds a threshold"
+msgstr ""
+
+#: src/lib/utils.ts:292
+msgid "Triggers when CPU usage exceeds a threshold"
+msgstr ""
+
+#: src/lib/utils.ts:298
+msgid "Triggers when memory usage exceeds a threshold"
+msgstr ""
+
+#: src/lib/utils.ts:285
+msgid "Triggers when status switches between up and down"
+msgstr ""
+
+#: src/lib/utils.ts:304
+msgid "Triggers when usage of any disk exceeds a threshold"
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx:277
+msgid "Updated in real time. Click on a system to view information."
+msgstr ""
+
+#: src/components/routes/system.tsx:261
+msgid "Uptime"
+msgstr ""
+
+#: src/components/charts/area-chart.tsx:73
+#: src/components/routes/system.tsx:514
+#: src/components/routes/system.tsx:551
+msgid "Usage"
+msgstr ""
+
+#: src/components/routes/system.tsx:424
+msgid "Usage of root partition"
+msgstr ""
+
+#: src/components/charts/area-chart.tsx:73
+#: src/components/charts/mem-chart.tsx:65
+#: src/components/charts/swap-chart.tsx:56
+msgid "Used"
+msgstr ""
+
+#: src/components/command-palette.tsx:142
+#: src/components/navbar.tsx:69
+msgid "Users"
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx:286
+msgid "View"
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx:350
+msgid "Visible Fields"
+msgstr ""
+
+#: src/components/routes/system.tsx:662
+msgid "Waiting for enough records to display"
+msgstr ""
+
+#: src/components/routes/settings/general.tsx:48
+msgid "Want to help us make our translations even better? Check out <0>Crowdin</0> for more details."
+msgstr ""
+
+#: src/components/routes/settings/notifications.tsx:124
+msgid "Webhook / Push notifications"
+msgstr ""
+
+#. Disk write
+#: src/components/charts/area-chart.tsx:59
+#: src/components/charts/area-chart.tsx:69
+msgid "Write"
+msgstr ""
+
+#: src/components/routes/settings/layout.tsx:61
+msgid "YAML Config"
+msgstr ""
+
+#: src/components/routes/settings/config-yaml.tsx:45
+msgid "YAML Configuration"
+msgstr ""
+
+#: src/components/routes/settings/layout.tsx:34
+msgid "Your user settings have been updated."
+msgstr ""
+
