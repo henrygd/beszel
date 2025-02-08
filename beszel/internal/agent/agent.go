@@ -25,6 +25,7 @@ type Agent struct {
 	sensorsWhitelist map[string]struct{}        // List of sensors to monitor
 	systemInfo       system.Info                // Host system info
 	gpuManager       *GPUManager                // Manages GPU data
+	pveManager       *pveManager
 }
 
 func NewAgent() *Agent {
@@ -84,6 +85,7 @@ func (a *Agent) Run(pubKey []byte, addr string) {
 	a.initializeDiskInfo()
 	a.initializeNetIoStats()
 	a.dockerManager = newDockerManager(a)
+	a.pveManager = newPVEManager(a)
 
 	// initialize GPU manager
 	if gm, err := NewGPUManager(); err != nil {
@@ -113,6 +115,12 @@ func (a *Agent) gatherStats() system.CombinedData {
 		slog.Debug("Docker stats", "data", systemData.Containers)
 	} else {
 		slog.Debug("Error getting docker stats", "err", err)
+	}
+	// add pve stats
+	if pveStats, err := a.pveManager.getPVEStats(); err == nil {
+		systemData.PveContainers = pveStats
+	} else {
+		slog.Error("Error getting pve stats", "err", err)
 	}
 	// add extra filesystems
 	systemData.Stats.ExtraFs = make(map[string]*system.FsStats)
