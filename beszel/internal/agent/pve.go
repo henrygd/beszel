@@ -3,8 +3,10 @@ package agent
 import (
 	"beszel/internal/entities/container"
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
+	"net/http"
 	"slices"
 	"time"
 
@@ -99,7 +101,15 @@ func newPVEManager(_ *Agent) *pveManager {
 	secret, secretExists := GetEnv("PROXMOX_SECRET")
 	var client *proxmox.Client
 	if tokenIDExists && secretExists {
+		insecureHTTPClient := http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
+				},
+			},
+		}
 		client = proxmox.NewClient(url,
+			proxmox.WithHTTPClient(&insecureHTTPClient),
 			proxmox.WithAPIToken(tokenID, secret),
 		)
 	} else {
