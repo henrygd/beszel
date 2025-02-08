@@ -106,8 +106,10 @@ export default function SystemDetail({ name }: { name: string }) {
 	const [system, setSystem] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
 	const [containerData, setContainerData] = useState([] as ChartData["containerData"])
+	const [pveContainerData, setPveContainerData] = useState([] as ChartData["pveContainerData"])
 	const netCardRef = useRef<HTMLDivElement>(null)
 	const [containerFilterBar, setContainerFilterBar] = useState(null as null | JSX.Element)
+	const [pveContainerFilterBar, setPveContainerFilterBar] = useState(null as null | JSX.Element)
 	const [bottomSpacing, setBottomSpacing] = useState(0)
 	const [chartLoading, setChartLoading] = useState(true)
 	const isLongerChart = chartTime !== "1h"
@@ -120,6 +122,8 @@ export default function SystemDetail({ name }: { name: string }) {
 			setSystemStats([])
 			setContainerData([])
 			setContainerFilterBar(null)
+			setPveContainerData([])
+			setPveContainerFilterBar(null)
 			$containerFilter.set("")
 			cpuMaxStore[1](false)
 			bandwidthMaxStore[1](false)
@@ -161,16 +165,18 @@ export default function SystemDetail({ name }: { name: string }) {
 	const chartData: ChartData = useMemo(() => {
 		const lastCreated = Math.max(
 			(systemStats.at(-1)?.created as number) ?? 0,
-			(containerData.at(-1)?.created as number) ?? 0
+			(containerData.at(-1)?.created as number) ?? 0,
+			(pveContainerData.at(-1)?.created as number) ?? 0
 		)
 		return {
 			systemStats,
 			containerData,
+			pveContainerData,
 			chartTime,
 			orientation: direction === "rtl" ? "right" : "left",
 			...getTimeData(chartTime, lastCreated),
 		}
-	}, [systemStats, containerData, direction])
+	}, [systemStats, containerData, pveContainerData, direction])
 
 	// get stats
 	useEffect(() => {
@@ -182,7 +188,8 @@ export default function SystemDetail({ name }: { name: string }) {
 		Promise.allSettled([
 			getStats<SystemStatsRecord>("system_stats", system, chartTime),
 			getStats<ContainerStatsRecord>("container_stats", system, chartTime),
-		]).then(([systemStats, containerStats]) => {
+			getStats<ContainerStatsRecord>("pve_container_stats", system, chartTime)
+		]).then(([systemStats, containerStats, pveContainerStats]) => {
 			// loading: false
 			setChartLoading(false)
 
@@ -214,6 +221,23 @@ export default function SystemDetail({ name }: { name: string }) {
 				setContainerFilterBar(null)
 			}
 			makeContainerData(containerData)
+
+			// make new pve container stats
+			const pve_cs_cache_key = `${system.id}_${chartTime}_pve_container_stats`
+			let pveContainerData = (cache.get(pve_cs_cache_key) || []) as ContainerStatsRecord[]
+			if (pveContainerStats.status === "fulfilled" && pveContainerStats.value.length) {
+				pveContainerData = pveContainerData.concat(addEmptyValues(pveContainerData, pveContainerStats.value, expectedInterval))
+				if (pveContainerData.length > 120) {
+					pveContainerData = pveContainerData.slice(-100)
+				}
+				cache.set(pve_cs_cache_key, pveContainerData)
+			}
+			if (pveContainerData.length) {
+				!pveContainerFilterBar && setPveContainerFilterBar(<ContainerFilterBar />)
+			} else if (containerFilterBar) {
+				setPveContainerFilterBar(null)
+			}
+			makePveContainerData(pveContainerData)
 		})
 	}, [system, chartTime])
 
@@ -235,6 +259,26 @@ export default function SystemDetail({ name }: { name: string }) {
 			containerData.push(containerStats)
 		}
 		setContainerData(containerData)
+	}, [])
+
+	// make pve container stats for charts
+	const makePveContainerData = useCallback((containers: ContainerStatsRecord[]) => {
+		const containerData = [] as ChartData["pveContainerData"]
+		for (let { created, stats } of containers) {
+			if (!created) {
+				// @ts-ignore add null value for gaps
+				containerData.push({ created: null })
+				continue
+			}
+			created = new Date(created).getTime()
+			// @ts-ignore not dealing with this rn
+			let containerStats: ChartData["containerData"][0] = { created }
+			for (let container of stats) {
+				containerStats[container.n] = container
+			}
+			containerData.push(containerStats)
+		}
+		setPveContainerData(containerData)
 	}, [])
 
 	// values for system info bar
@@ -275,17 +319,19 @@ export default function SystemDetail({ name }: { name: string }) {
 
 	/** Space for tooltip if more than 12 containers */
 	useEffect(() => {
-		if (!netCardRef.current || !containerData.length) {
+		if (!netCardRef.current || !(containerData.length || pveContainerData.length)) {
 			setBottomSpacing(0)
 			return
 		}
-		const tooltipHeight = (Object.keys(containerData[0]).length - 11) * 17.8 - 40
+		var containerDataKeysLength = containerData.length ? Object.keys(containerData[0]).length : 0
+		var pveContainerKeysLength = pveContainerData.length ? Object.keys(pveContainerData[0]).length : 0
+		const tooltipHeight = (Math.max(containerDataKeysLength, pveContainerKeysLength) - 11) * 17.8 - 40
 		const wrapperEl = document.getElementById("chartwrap") as HTMLDivElement
 		const wrapperRect = wrapperEl.getBoundingClientRect()
 		const chartRect = netCardRef.current.getBoundingClientRect()
 		const distanceToBottom = wrapperRect.bottom - chartRect.bottom
 		setBottomSpacing(tooltipHeight - distanceToBottom)
-	}, [netCardRef, containerData])
+	}, [netCardRef, containerData, pveContainerData])
 
 	if (!system.id) {
 		return null
@@ -398,7 +444,19 @@ export default function SystemDetail({ name }: { name: string }) {
 							description={t`Average CPU utilization of containers`}
 							cornerEl={containerFilterBar}
 						>
-							<ContainerChart chartData={chartData} dataKey="c" chartName="cpu" />
+							<ContainerChart chartData={chartData} containerData={chartData.containerData} dataKey="c" chartName="cpu" />
+						</ChartCard>
+					)}
+
+					{pveContainerFilterBar && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Proxmox CPU Usage`}
+							description={t`Average CPU utilization of containers`}
+							cornerEl={pveContainerFilterBar}
+						>
+							<ContainerChart chartData={chartData} containerData={chartData.pveContainerData} dataKey="c" chartName="cpu" />
 						</ChartCard>
 					)}
 
@@ -419,7 +477,19 @@ export default function SystemDetail({ name }: { name: string }) {
 							description={dockerOrPodman(t`Memory usage of docker containers`, system)}
 							cornerEl={containerFilterBar}
 						>
-							<ContainerChart chartData={chartData} chartName="mem" dataKey="m" unit=" MB" />
+							<ContainerChart chartData={chartData} containerData={chartData.containerData} chartName="mem" dataKey="m" unit=" MB" />
+						</ChartCard>
+					)}
+
+					{pveContainerFilterBar && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Proxmox Memory Usage`}
+							description={t`Memory usage of proxmox containers`}
+							cornerEl={pveContainerFilterBar}
+						>
+							<ContainerChart chartData={chartData} containerData={chartData.pveContainerData} chartName="mem" dataKey="m" unit=" MB" />
 						</ChartCard>
 					)}
 
@@ -461,7 +531,26 @@ export default function SystemDetail({ name }: { name: string }) {
 								cornerEl={containerFilterBar}
 							>
 								{/* @ts-ignore */}
-								<ContainerChart chartData={chartData} chartName="net" dataKey="n" />
+								<ContainerChart chartData={chartData} containerData={chartData.containerData} chartName="net" dataKey="n" />
+							</ChartCard>
+						</div>
+					)}
+
+					{pveContainerFilterBar && pveContainerData.length > 0 && (
+						<div
+							ref={netCardRef}
+							className={cn({
+								"col-span-full": !grid,
+							})}
+						>
+							<ChartCard
+								empty={dataEmpty}
+								title={t`Proxmox Network I/O`}
+								description={t`Network traffic of proxmox containers`}
+								cornerEl={pveContainerFilterBar}
+							>
+								{/* @ts-ignore */}
+								<ContainerChart chartData={chartData} containerData={chartData.pveContainerData} chartName="net" dataKey="n" />
 							</ChartCard>
 						</div>
 					)}

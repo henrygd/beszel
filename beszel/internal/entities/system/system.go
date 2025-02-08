@@ -79,7 +79,8 @@ type Info struct {
 
 // Final data structure to return to the hub
 type CombinedData struct {
-	Stats      Stats              `json:"stats"`
-	Info       Info               `json:"info"`
-	Containers []*container.Stats `json:"container"`
+	Stats         Stats              `json:"stats"`
+	Info          Info               `json:"info"`
+	Containers    []*container.Stats `json:"container"`
+	PveContainers []*container.Stats `json:"pve_container"`
 }

@@ -26,35 +26,35 @@ msgstr "{0, plural, one {# dan} two {# dneva} few {# dni} other {# dni}}"
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# ura} two {# uri} few {# ur} other {# ur}}"
 
-#: src/lib/utils.ts:139
+#: src/lib/utils.ts:146
 msgid "1 hour"
 msgstr "1 ura"
 
-#: src/lib/utils.ts:162
+#: src/lib/utils.ts:169
 msgid "1 week"
 msgstr "1 teden"
 
-#: src/lib/utils.ts:147
+#: src/lib/utils.ts:154
 msgid "12 hours"
 msgstr "12 ur"
 
-#: src/lib/utils.ts:155
+#: src/lib/utils.ts:162
 msgid "24 hours"
 msgstr "24 ur"
 
-#: src/lib/utils.ts:170
+#: src/lib/utils.ts:177
 msgid "30 days"
 msgstr "30 dni"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx:235
-#: src/components/systems-table/systems-table.tsx:321
-#: src/components/systems-table/systems-table.tsx:463
-#: src/components/systems-table/systems-table.tsx:473
+#: src/components/systems-table/systems-table.tsx:236
+#: src/components/systems-table/systems-table.tsx:322
+#: src/components/systems-table/systems-table.tsx:464
+#: src/components/systems-table/systems-table.tsx:474
 msgid "Actions"
 msgstr "Dejanja"
 
-#: src/components/routes/home.tsx:61
+#: src/components/routes/home.tsx:62
 msgid "Active Alerts"
 msgstr "Aktivna opozorila"
 
@@ -71,7 +71,7 @@ msgstr "Dodaj nov sistem"
 msgid "Add system"
 msgstr "Dodaj sistem"
 
-#: src/components/routes/settings/notifications.tsx:156
+#: src/components/routes/settings/notifications.tsx:157
 msgid "Add URL"
 msgstr "Dodaj URL"
 
@@ -79,15 +79,15 @@ msgstr "Dodaj URL"
 msgid "Adjust display options for charts."
 msgstr "Prilagodi možnosti prikaza za grafikone."
 
-#: src/components/command-palette.tsx:132
-#: src/components/command-palette.tsx:145
-#: src/components/command-palette.tsx:159
-#: src/components/command-palette.tsx:173
-#: src/components/command-palette.tsx:188
+#: src/components/command-palette.tsx:133
+#: src/components/command-palette.tsx:146
+#: src/components/command-palette.tsx:160
+#: src/components/command-palette.tsx:174
+#: src/components/command-palette.tsx:189
 msgid "Admin"
 msgstr "Administrator"
 
-#: src/components/systems-table/systems-table.tsx:204
+#: src/components/systems-table/systems-table.tsx:205
 msgid "Agent"
 msgstr "Agent"
 
@@ -97,11 +97,11 @@ msgid "Alerts"
 msgstr "Opozorila"
 
 #: src/components/alerts/alert-button.tsx:88
-#: src/components/systems-table/systems-table.tsx:274
+#: src/components/systems-table/systems-table.tsx:275
 msgid "All Systems"
 msgstr "Vsi sistemi"
 
-#: src/components/systems-table/systems-table.tsx:578
+#: src/components/systems-table/systems-table.tsx:579
 msgid "Are you sure you want to delete {name}?"
 msgstr "Ali ste prepričani, da želite izbrisati {name}?"
 
@@ -109,11 +109,11 @@ msgstr "Ali ste prepričani, da želite izbrisati {name}?"
 msgid "Automatic copy requires a secure context."
 msgstr "Za samodejno kopiranje je potreben varen kontekst."
 
-#: src/components/routes/system.tsx:625
+#: src/components/routes/system.tsx:627
 msgid "Average"
 msgstr "Povprečno"
 
-#: src/components/routes/system.tsx:396
+#: src/components/routes/system.tsx:398
 msgid "Average CPU utilization of containers"
 msgstr "Povprečna izkoriščenost procesorja kontejnerjev"
 
@@ -121,33 +121,33 @@ msgstr "Povprečna izkoriščenost procesorja kontejnerjev"
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Povprečje presega <0>{value}{0}</0>"
 
-#: src/components/routes/system.tsx:497
+#: src/components/routes/system.tsx:499
 msgid "Average power consumption of GPUs"
 msgstr "Povprečna poraba energije GPU"
 
-#: src/components/routes/system.tsx:385
+#: src/components/routes/system.tsx:387
 msgid "Average system-wide CPU utilization"
 msgstr "Povprečna CPU izkoriščenost v celotnem sistemu"
 
-#: src/components/routes/system.tsx:515
+#: src/components/routes/system.tsx:517
 msgid "Average utilization of {0}"
 msgstr "Povprečna poraba {0}"
 
-#: src/components/command-palette.tsx:170
-#: src/components/navbar.tsx:93
+#: src/components/command-palette.tsx:171
+#: src/components/navbar.tsx:94
 msgid "Backups"
 msgstr "Varnostne kopije"
 
-#: src/components/routes/system.tsx:441
-#: src/lib/utils.ts:307
+#: src/components/routes/system.tsx:443
+#: src/lib/utils.ts:314
 msgid "Bandwidth"
 msgstr "Pasovna širina"
 
-#: src/components/login/auth-form.tsx:289
+#: src/components/login/auth-form.tsx:294
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
 msgstr "Beszel podpira OpenID Connect in številne ponudnike preverjanja pristnosti OAuth2."
 
-#: src/components/routes/settings/notifications.tsx:127
+#: src/components/routes/settings/notifications.tsx:128
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
 msgstr "Beszel uporablja <0>Shoutrrr</0> za integracijo s priljubljenimi storitvami obveščanja."
 
@@ -159,7 +159,7 @@ msgstr "Binarno"
 msgid "Cache / Buffers"
 msgstr "Predpomnilnik / medpomnilniki"
 
-#: src/components/systems-table/systems-table.tsx:589
+#: src/components/systems-table/systems-table.tsx:590
 msgid "Cancel"
 msgstr "Prekliči"
 
@@ -183,7 +183,7 @@ msgstr "Preverite {email} za povezavo za ponastavitev."
 msgid "Check logs for more details."
 msgstr "Za več podrobnosti preverite dnevnike."
 
-#: src/components/routes/settings/notifications.tsx:183
+#: src/components/routes/settings/notifications.tsx:184
 msgid "Check your notification service"
 msgstr "Preverite storitev obveščanja"
 
@@ -196,16 +196,16 @@ msgstr "Klikni za kopiranje"
 msgid "Command line instructions"
 msgstr "Navodila za ukazno vrstico"
 
-#: src/components/routes/settings/notifications.tsx:77
+#: src/components/routes/settings/notifications.tsx:78
 msgid "Configure how you receive alert notifications."
 msgstr "Nastavi način prejemanja opozorilnih obvestil."
 
-#: src/components/login/auth-form.tsx:165
 #: src/components/login/auth-form.tsx:170
+#: src/components/login/auth-form.tsx:175
 msgid "Confirm password"
 msgstr "Potrdite geslo"
 
-#: src/components/systems-table/systems-table.tsx:595
+#: src/components/systems-table/systems-table.tsx:596
 msgid "Continue"
 msgstr "Nadaljuj"
 
@@ -217,7 +217,7 @@ msgstr "Kopirano v odložišče"
 msgid "Copy"
 msgstr "Kopiraj"
 
-#: src/components/systems-table/systems-table.tsx:564
+#: src/components/systems-table/systems-table.tsx:565
 msgid "Copy host"
 msgstr "Kopiraj gostitelja"
 
@@ -229,17 +229,17 @@ msgstr "Kopiraj Linux ukaz"
 msgid "Copy text"
 msgstr "Kopiraj besedilo"
 
-#: src/components/systems-table/systems-table.tsx:160
+#: src/components/systems-table/systems-table.tsx:161
 msgid "CPU"
 msgstr "CPU"
 
 #: src/components/charts/area-chart.tsx:56
-#: src/components/routes/system.tsx:384
-#: src/lib/utils.ts:289
+#: src/components/routes/system.tsx:386
+#: src/lib/utils.ts:296
 msgid "CPU Usage"
 msgstr "CPU poraba"
 
-#: src/components/login/auth-form.tsx:191
+#: src/components/login/auth-form.tsx:196
 msgid "Create account"
 msgstr "Ustvari račun"
 
@@ -248,8 +248,8 @@ msgstr "Ustvari račun"
 msgid "Dark"
 msgstr "Temno"
 
-#: src/components/command-palette.tsx:81
-#: src/components/routes/home.tsx:34
+#: src/components/command-palette.tsx:82
+#: src/components/routes/home.tsx:35
 msgid "Dashboard"
 msgstr "Nadzorna plošča"
 
@@ -257,50 +257,50 @@ msgstr "Nadzorna plošča"
 msgid "Default time period"
 msgstr "Privzeto časovno obdobje"
 
-#: src/components/systems-table/systems-table.tsx:570
+#: src/components/systems-table/systems-table.tsx:571
 msgid "Delete"
 msgstr "Izbriši"
 
-#: src/components/systems-table/systems-table.tsx:176
+#: src/components/systems-table/systems-table.tsx:177
 msgid "Disk"
 msgstr "Disk"
 
-#: src/components/routes/system.tsx:431
+#: src/components/routes/system.tsx:433
 msgid "Disk I/O"
 msgstr "Disk I/O"
 
 #: src/components/charts/disk-chart.tsx:79
-#: src/components/routes/system.tsx:424
-#: src/lib/utils.ts:301
+#: src/components/routes/system.tsx:426
+#: src/lib/utils.ts:308
 msgid "Disk Usage"
 msgstr "Poraba diska"
 
-#: src/components/routes/system.tsx:552
+#: src/components/routes/system.tsx:554
 msgid "Disk usage of {extraFsName}"
 msgstr "Poraba diska za {extraFsName}"
 
-#: src/components/routes/system.tsx:395
+#: src/components/routes/system.tsx:397
 msgid "Docker CPU Usage"
 msgstr "Docker CPU poraba"
 
-#: src/components/routes/system.tsx:416
+#: src/components/routes/system.tsx:418
 msgid "Docker Memory Usage"
 msgstr "Docker poraba spomina"
 
-#: src/components/routes/system.tsx:457
+#: src/components/routes/system.tsx:459
 msgid "Docker Network I/O"
 msgstr "Docker I/O mreže"
 
-#: src/components/command-palette.tsx:124
+#: src/components/command-palette.tsx:125
 msgid "Documentation"
 msgstr "Dokumentacija"
 
-#: src/components/login/auth-form.tsx:128
+#: src/components/login/auth-form.tsx:133
 #: src/components/login/forgot-pass-form.tsx:53
 msgid "Email"
 msgstr "E-pošta"
 
-#: src/components/routes/settings/notifications.tsx:91
+#: src/components/routes/settings/notifications.tsx:92
 msgid "Email notifications"
 msgstr "E-poštna obvestila"
 
@@ -308,17 +308,17 @@ msgstr "E-poštna obvestila"
 msgid "Enter email address to reset password"
 msgstr "Vnesite e-poštni naslov za ponastavitev gesla"
 
-#: src/components/routes/settings/notifications.tsx:111
+#: src/components/routes/settings/notifications.tsx:112
 msgid "Enter email address..."
 msgstr "Vnesite e-poštni naslov..."
 
-#: src/components/login/auth-form.tsx:232
+#: src/components/login/auth-form.tsx:237
 #: src/components/routes/settings/config-yaml.tsx:28
-#: src/components/routes/settings/notifications.tsx:187
+#: src/components/routes/settings/notifications.tsx:188
 msgid "Error"
 msgstr "Napaka"
 
-#: src/components/routes/home.tsx:80
+#: src/components/routes/home.tsx:81
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Preseženo {0}{1} v zadnjih {2, plural, one {# minuti} other {# minutah}}"
 
@@ -339,11 +339,11 @@ msgid "Failed to authenticate"
 msgstr "Preverjanje pristnosti ni uspelo"
 
 #: src/components/routes/settings/layout.tsx:39
-#: src/components/routes/settings/notifications.tsx:62
+#: src/components/routes/settings/notifications.tsx:63
 msgid "Failed to save settings"
 msgstr "Shranjevanje nastavitev ni uspelo"
 
-#: src/components/routes/settings/notifications.tsx:188
+#: src/components/routes/settings/notifications.tsx:189
 msgid "Failed to send test notification"
 msgstr "Pošiljanje testnega obvestila ni uspelo"
 
@@ -351,8 +351,8 @@ msgstr "Pošiljanje testnega obvestila ni uspelo"
 msgid "Failed to update alert"
 msgstr "Opozorila ni bilo mogoče posodobiti"
 
-#: src/components/routes/system.tsx:596
-#: src/components/systems-table/systems-table.tsx:281
+#: src/components/routes/system.tsx:598
+#: src/components/systems-table/systems-table.tsx:282
 msgid "Filter..."
 msgstr "Filter..."
 
@@ -360,7 +360,7 @@ msgstr "Filter..."
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "Za <0>{min}</0> {min, plural, one {minuto} other {minut}}"
 
-#: src/components/login/auth-form.tsx:313
+#: src/components/login/auth-form.tsx:318
 msgid "Forgot password?"
 msgstr "Pozabljeno geslo?"
 
@@ -370,11 +370,11 @@ msgstr "Pozabljeno geslo?"
 msgid "General"
 msgstr "Splošno"
 
-#: src/components/routes/system.tsx:496
+#: src/components/routes/system.tsx:498
 msgid "GPU Power Draw"
 msgstr "GPU poraba moči"
 
-#: src/components/systems-table/systems-table.tsx:308
+#: src/components/systems-table/systems-table.tsx:309
 msgid "Grid"
 msgstr "Mreža"
 
@@ -386,7 +386,7 @@ msgstr "Gostitelj / IP"
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Če ste izgubili geslo za svoj skrbniški račun, ga lahko ponastavite z naslednjim ukazom."
 
-#: src/components/login/auth-form.tsx:16
+#: src/components/login/auth-form.tsx:17
 msgid "Invalid email address."
 msgstr "Napačen e-poštni naslov."
 
@@ -399,7 +399,7 @@ msgstr "Jedro"
 msgid "Language"
 msgstr "Jezik"
 
-#: src/components/systems-table/systems-table.tsx:294
+#: src/components/systems-table/systems-table.tsx:295
 msgid "Layout"
 msgstr "Postavitev"
 
@@ -408,7 +408,7 @@ msgstr "Postavitev"
 msgid "Light"
 msgstr "Svetlo"
 
-#: src/components/navbar.tsx:104
+#: src/components/navbar.tsx:105
 msgid "Log Out"
 msgstr "Odjava"
 
@@ -416,17 +416,17 @@ msgstr "Odjava"
 msgid "Login"
 msgstr "Prijava"
 
-#: src/components/login/auth-form.tsx:34
+#: src/components/login/auth-form.tsx:39
 #: src/components/login/forgot-pass-form.tsx:15
 msgid "Login attempt failed"
 msgstr "Poskus prijave ni uspel"
 
-#: src/components/command-palette.tsx:156
-#: src/components/navbar.tsx:85
+#: src/components/command-palette.tsx:157
+#: src/components/navbar.tsx:86
 msgid "Logs"
 msgstr "Dnevniki"
 
-#: src/components/routes/settings/notifications.tsx:80
+#: src/components/routes/settings/notifications.tsx:81
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
 msgstr "Namesto tega iščete, kje ustvariti opozorila? Kliknite ikone zvonca <0/> v sistemski tabeli."
 
@@ -435,20 +435,20 @@ msgid "Manage display and notification preferences."
 msgstr "Upravljajte nastavitve prikaza in obvestil."
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:628
+#: src/components/routes/system.tsx:630
 msgid "Max 1 min"
 msgstr "Največ 1 min"
 
-#: src/components/systems-table/systems-table.tsx:168
+#: src/components/systems-table/systems-table.tsx:169
 msgid "Memory"
 msgstr "Pomnilnik"
 
-#: src/components/routes/system.tsx:406
-#: src/lib/utils.ts:295
+#: src/components/routes/system.tsx:408
+#: src/lib/utils.ts:302
 msgid "Memory Usage"
 msgstr "Poraba pomnilnika"
 
-#: src/components/routes/system.tsx:417
+#: src/components/routes/system.tsx:419
 msgid "Memory usage of docker containers"
 msgstr "Poraba pomnilnika docker kontejnerjev"
 
@@ -456,34 +456,34 @@ msgstr "Poraba pomnilnika docker kontejnerjev"
 msgid "Name"
 msgstr "Naziv"
 
-#: src/components/systems-table/systems-table.tsx:184
+#: src/components/systems-table/systems-table.tsx:185
 msgid "Net"
 msgstr "Mreža"
 
-#: src/components/routes/system.tsx:458
+#: src/components/routes/system.tsx:460
 msgid "Network traffic of docker containers"
 msgstr "Omrežni promet docker kontejnerjev"
 
-#: src/components/routes/system.tsx:443
+#: src/components/routes/system.tsx:445
 msgid "Network traffic of public interfaces"
 msgstr "Omrežni promet javnih vmesnikov"
 
-#: src/components/command-palette.tsx:49
+#: src/components/command-palette.tsx:50
 msgid "No results found."
 msgstr "Ni rezultatov."
 
-#: src/components/systems-table/systems-table.tsx:429
-#: src/components/systems-table/systems-table.tsx:502
+#: src/components/systems-table/systems-table.tsx:430
+#: src/components/systems-table/systems-table.tsx:503
 msgid "No systems found."
 msgstr "Ne najdem sistema."
 
-#: src/components/command-palette.tsx:110
+#: src/components/command-palette.tsx:111
 #: src/components/routes/settings/layout.tsx:56
-#: src/components/routes/settings/notifications.tsx:74
+#: src/components/routes/settings/notifications.tsx:75
 msgid "Notifications"
 msgstr "Obvestila"
 
-#: src/components/login/auth-form.tsx:284
+#: src/components/login/auth-form.tsx:289
 msgid "OAuth 2 / OIDC support"
 msgstr "Podpora za OAuth 2 / OIDC"
 
@@ -491,11 +491,11 @@ msgstr "Podpora za OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Ob vsakem ponovnem zagonu bodo sistemi v zbirki podatkov posodobljeni, da se bodo ujemali s sistemi, definiranimi v datoteki."
 
-#: src/components/systems-table/systems-table.tsx:536
+#: src/components/systems-table/systems-table.tsx:537
 msgid "Open menu"
 msgstr "Odpri menu"
 
-#: src/components/login/auth-form.tsx:203
+#: src/components/login/auth-form.tsx:208
 msgid "Or continue with"
 msgstr "Ali nadaljuj z"
 
@@ -503,32 +503,36 @@ msgstr "Ali nadaljuj z"
 msgid "Overwrite existing alerts"
 msgstr "Prepiši obstoječe alarme"
 
-#: src/components/command-palette.tsx:84
+#: src/components/command-palette.tsx:85
 msgid "Page"
 msgstr "Stran"
 
-#: src/components/command-palette.tsx:71
+#: src/components/command-palette.tsx:72
 msgid "Pages / Settings"
 msgstr "Strani / Nastavitve"
 
-#: src/components/login/auth-form.tsx:147
 #: src/components/login/auth-form.tsx:152
+#: src/components/login/auth-form.tsx:157
 msgid "Password"
 msgstr "Geslo"
 
-#: src/components/login/auth-form.tsx:17
+#: src/components/login/auth-form.tsx:20
 msgid "Password must be at least 8 characters."
 msgstr "Geslo mora imeti vsaj 8 znakov."
+
+#: src/components/login/auth-form.tsx:21
+msgid "Password must be less than 72 bytes."
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
 msgstr "Prejeta zahteva za ponastavitev gesla"
 
-#: src/components/systems-table/systems-table.tsx:558
+#: src/components/systems-table/systems-table.tsx:559
 msgid "Pause"
 msgstr "Premor"
 
-#: src/components/routes/settings/notifications.tsx:95
+#: src/components/routes/settings/notifications.tsx:96
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "<0>Nastavite strežnik SMTP</0>, da zagotovite dostavo opozoril."
 
@@ -536,7 +540,7 @@ msgstr "<0>Nastavite strežnik SMTP</0>, da zagotovite dostavo opozoril."
 msgid "Please check logs for more details."
 msgstr "Za več podrobnosti preverite dnevnike."
 
-#: src/components/login/auth-form.tsx:35
+#: src/components/login/auth-form.tsx:40
 #: src/components/login/forgot-pass-form.tsx:16
 msgid "Please check your credentials and try again"
 msgstr "Preverite svoje poverilnice in poskusite znova"
@@ -545,7 +549,7 @@ msgstr "Preverite svoje poverilnice in poskusite znova"
 msgid "Please create an admin account"
 msgstr "Ustvarite skrbniški račun"
 
-#: src/components/login/auth-form.tsx:233
+#: src/components/login/auth-form.tsx:238
 msgid "Please enable pop-ups for this site"
 msgstr "Omogočite pojavna okna za to spletno mesto"
 
@@ -553,7 +557,7 @@ msgstr "Omogočite pojavna okna za to spletno mesto"
 msgid "Please log in again"
 msgstr "Prosimo, prijavite se znova"
 
-#: src/components/login/auth-form.tsx:292
+#: src/components/login/auth-form.tsx:297
 msgid "Please see <0>the documentation</0> for instructions."
 msgstr "Za navodila glejte <0>dokumentacijo</0>."
 
@@ -565,8 +569,8 @@ msgstr "Prijavite se v svoj račun"
 msgid "Port"
 msgstr "Vrata"
 
-#: src/components/routes/system.tsx:407
-#: src/components/routes/system.tsx:523
+#: src/components/routes/system.tsx:409
+#: src/components/routes/system.tsx:525
 msgid "Precise utilization at the recorded time"
 msgstr "Natančna poraba v zabeleženem času"
 
@@ -594,24 +598,24 @@ msgstr "Prejeto"
 msgid "Reset Password"
 msgstr "Ponastavi geslo"
 
-#: src/components/systems-table/systems-table.tsx:553
+#: src/components/systems-table/systems-table.tsx:554
 msgid "Resume"
 msgstr "Nadaljuj"
 
-#: src/components/routes/settings/notifications.tsx:117
+#: src/components/routes/settings/notifications.tsx:118
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Shranite naslov s tipko enter ali vejico. Pustite prazno, da onemogočite e-poštna obvestila."
 
 #: src/components/routes/settings/general.tsx:106
-#: src/components/routes/settings/notifications.tsx:167
+#: src/components/routes/settings/notifications.tsx:168
 msgid "Save Settings"
 msgstr "Shrani nastavitve"
 
-#: src/components/navbar.tsx:133
+#: src/components/navbar.tsx:134
 msgid "Search"
 msgstr "Iskanje"
 
-#: src/components/command-palette.tsx:46
+#: src/components/command-palette.tsx:47
 msgid "Search for systems or settings..."
 msgstr "Iskanje sistemov ali nastavitev..."
 
@@ -628,9 +632,9 @@ msgstr "Poslano"
 msgid "Sets the default time range for charts when a system is viewed."
 msgstr "Nastavi privzeti časovni obseg za grafikone, ko si ogledujete sistem."
 
-#: src/components/command-palette.tsx:95
-#: src/components/command-palette.tsx:98
-#: src/components/command-palette.tsx:113
+#: src/components/command-palette.tsx:96
+#: src/components/command-palette.tsx:99
+#: src/components/command-palette.tsx:114
 #: src/components/routes/settings/layout.tsx:71
 #: src/components/routes/settings/layout.tsx:82
 msgid "Settings"
@@ -640,40 +644,40 @@ msgstr "Nastavitve"
 msgid "Settings saved"
 msgstr "Nastavitve so shranjene"
 
-#: src/components/login/auth-form.tsx:191
+#: src/components/login/auth-form.tsx:196
 msgid "Sign in"
 msgstr "Prijavite se"
 
-#: src/components/command-palette.tsx:185
+#: src/components/command-palette.tsx:186
 msgid "SMTP settings"
 msgstr "SMTP nastavitve"
 
-#: src/components/systems-table/systems-table.tsx:316
+#: src/components/systems-table/systems-table.tsx:317
 msgid "Sort By"
 msgstr "Razvrsti po"
 
-#: src/lib/utils.ts:282
+#: src/lib/utils.ts:289
 msgid "Status"
 msgstr "Status"
 
-#: src/components/routes/system.tsx:473
+#: src/components/routes/system.tsx:475
 msgid "Swap space used by the system"
 msgstr "Swap prostor, ki ga uporablja sistem"
 
-#: src/components/routes/system.tsx:472
+#: src/components/routes/system.tsx:474
 msgid "Swap Usage"
 msgstr "Swap uporaba"
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
-#: src/components/systems-table/systems-table.tsx:120
-#: src/components/systems-table/systems-table.tsx:128
-#: src/components/systems-table/systems-table.tsx:139
-#: src/components/systems-table/systems-table.tsx:473
+#: src/components/systems-table/systems-table.tsx:121
+#: src/components/systems-table/systems-table.tsx:129
+#: src/components/systems-table/systems-table.tsx:140
+#: src/components/systems-table/systems-table.tsx:474
 msgid "System"
 msgstr "Sistemsko"
 
-#: src/components/navbar.tsx:77
+#: src/components/navbar.tsx:78
 msgid "Systems"
 msgstr "Sistemi"
 
@@ -681,24 +685,24 @@ msgstr "Sistemi"
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "Sisteme lahko upravljate v datoteki <0>config.yml</0> v vašem podatkovnem imeniku."
 
-#: src/components/systems-table/systems-table.tsx:304
+#: src/components/systems-table/systems-table.tsx:305
 msgid "Table"
 msgstr "Tabela"
 
-#: src/components/routes/system.tsx:484
-#: src/lib/utils.ts:314
+#: src/components/routes/system.tsx:486
+#: src/lib/utils.ts:321
 msgid "Temperature"
 msgstr "Temperatura"
 
-#: src/components/routes/system.tsx:485
+#: src/components/routes/system.tsx:487
 msgid "Temperatures of system sensors"
 msgstr "Temperature sistemskih senzorjev"
 
-#: src/components/routes/settings/notifications.tsx:211
+#: src/components/routes/settings/notifications.tsx:212
 msgid "Test <0>URL</0>"
 msgstr "Preveri <0>URL</0>"
 
-#: src/components/routes/settings/notifications.tsx:182
+#: src/components/routes/settings/notifications.tsx:183
 msgid "Test notification sent"
 msgstr "Testno obvestilo je poslano"
 
@@ -714,24 +718,24 @@ msgstr "Za vzpostavitev povezave mora biti agent zagnan v sistemu. Kopirajte <0>
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Nato se prijavite v zaledni sistem in ponastavite geslo svojega uporabniškega računa v tabeli uporabnikov."
 
-#: src/components/systems-table/systems-table.tsx:581
+#: src/components/systems-table/systems-table.tsx:582
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Tega dejanja ni mogoče razveljaviti. To bo trajno izbrisalo vse trenutne zapise za {name} iz zbirke podatkov."
 
-#: src/components/routes/system.tsx:564
+#: src/components/routes/system.tsx:566
 msgid "Throughput of {extraFsName}"
 msgstr "Prepustnost {extraFsName}"
 
-#: src/components/routes/system.tsx:432
+#: src/components/routes/system.tsx:434
 msgid "Throughput of root filesystem"
 msgstr "Prepustnost korenskega datotečnega sistema"
 
-#: src/components/routes/settings/notifications.tsx:106
+#: src/components/routes/settings/notifications.tsx:107
 msgid "To email(s)"
 msgstr "E-pošta za"
 
-#: src/components/routes/system.tsx:359
-#: src/components/routes/system.tsx:372
+#: src/components/routes/system.tsx:361
+#: src/components/routes/system.tsx:374
 msgid "Toggle grid"
 msgstr "Preklopi način mreže"
 
@@ -739,31 +743,31 @@ msgstr "Preklopi način mreže"
 msgid "Toggle theme"
 msgstr "Obrni temo"
 
-#: src/lib/utils.ts:317
+#: src/lib/utils.ts:324
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Sproži se, ko kateri koli senzor preseže prag"
 
-#: src/lib/utils.ts:310
+#: src/lib/utils.ts:317
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Sproži, ko kombinacija gor/dol preseže prag"
 
-#: src/lib/utils.ts:292
+#: src/lib/utils.ts:299
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Sproži se, ko poraba procesorja preseže prag"
 
-#: src/lib/utils.ts:298
+#: src/lib/utils.ts:305
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Sproži se, ko uporaba pomnilnika preseže prag"
 
-#: src/lib/utils.ts:285
+#: src/lib/utils.ts:292
 msgid "Triggers when status switches between up and down"
 msgstr "Sproži se, ko se stanje preklaplja med gor in dol"
 
-#: src/lib/utils.ts:304
+#: src/lib/utils.ts:311
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Sproži se, ko uporaba katerega koli diska preseže prag"
 
-#: src/components/systems-table/systems-table.tsx:277
+#: src/components/systems-table/systems-table.tsx:278
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Posodobljeno v realnem času. Za ogled informacij kliknite na sistem."
 
@@ -772,12 +776,12 @@ msgid "Uptime"
 msgstr "Čas delovanja"
 
 #: src/components/charts/area-chart.tsx:73
-#: src/components/routes/system.tsx:514
-#: src/components/routes/system.tsx:551
+#: src/components/routes/system.tsx:516
+#: src/components/routes/system.tsx:553
 msgid "Usage"
 msgstr "Uporaba"
 
-#: src/components/routes/system.tsx:424
+#: src/components/routes/system.tsx:426
 msgid "Usage of root partition"
 msgstr "Uporaba korenske particije"
 
@@ -787,20 +791,20 @@ msgstr "Uporaba korenske particije"
 msgid "Used"
 msgstr "Uporabljeno"
 
-#: src/components/command-palette.tsx:142
-#: src/components/navbar.tsx:69
+#: src/components/command-palette.tsx:143
+#: src/components/navbar.tsx:70
 msgid "Users"
 msgstr "Uporabniki"
 
-#: src/components/systems-table/systems-table.tsx:286
+#: src/components/systems-table/systems-table.tsx:287
 msgid "View"
 msgstr "Pogled"
 
-#: src/components/systems-table/systems-table.tsx:350
+#: src/components/systems-table/systems-table.tsx:351
 msgid "Visible Fields"
 msgstr "Vidna polja"
 
-#: src/components/routes/system.tsx:662
+#: src/components/routes/system.tsx:664
 msgid "Waiting for enough records to display"
 msgstr "Čakam na dovolj zapisov za prikaz"
 
@@ -808,7 +812,7 @@ msgstr "Čakam na dovolj zapisov za prikaz"
 msgid "Want to help us make our translations even better? Check out <0>Crowdin</0> for more details."
 msgstr "Ali nam želite pomagati, da bomo naše prevode še izboljšali? Za več podrobnosti si oglejte <0>Crowdin</0>."
 
-#: src/components/routes/settings/notifications.tsx:124
+#: src/components/routes/settings/notifications.tsx:125
 msgid "Webhook / Push notifications"
 msgstr "Webhook / potisna obvestila"
 
