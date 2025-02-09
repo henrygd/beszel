@@ -14,6 +14,7 @@ import (
 
 type pveManager struct {
 	client            *proxmox.Client             // Client to query PVE API
+	nodeName          string                      // Cluster node name
 	containerStatsMap map[string]*container.Stats // Keeps track of container stats
 }
 
@@ -35,10 +36,13 @@ func (pm *pveManager) getPVEStats() ([]*container.Stats, error) {
 
 	var containerIds = make(map[string]struct{}, containersLength)
 
-	// remove invalid container stats
+	// only include vms and lxcs on selected node
 	for _, resource := range resources {
-		containerIds[resource.ID] = struct{}{}
+		if resource.Node == pm.nodeName {
+			containerIds[resource.ID] = struct{}{}
+		}
 	}
+	// remove invalid container stats
 	for id := range pm.containerStatsMap {
 		if _, exists := containerIds[id]; !exists {
 			delete(pm.containerStatsMap, id)
@@ -46,8 +50,11 @@ func (pm *pveManager) getPVEStats() ([]*container.Stats, error) {
 	}
 
 	// populate stats
-	stats := make([]*container.Stats, 0, containersLength)
+	stats := make([]*container.Stats, 0, len(containerIds))
 	for _, resource := range resources {
+		if _, exists := containerIds[resource.ID]; !exists {
+			continue
+		}
 		resourceStats, initialized := pm.containerStatsMap[resource.ID]
 		if !initialized {
 			resourceStats = &container.Stats{}
@@ -89,10 +96,11 @@ func newPVEManager(_ *Agent) *pveManager {
 	if !exists {
 		url = "https://localhost:8006/api2/json"
 	}
+	nodeName, nodeNameExists := GetEnv("PROXMOX_NODE")
 	tokenID, tokenIDExists := GetEnv("PROXMOX_TOKENID")
 	secret, secretExists := GetEnv("PROXMOX_SECRET")
 	var client *proxmox.Client
-	if tokenIDExists && secretExists {
+	if nodeNameExists && tokenIDExists && secretExists {
 		insecureHTTPClient := http.Client{
 			Transport: &http.Transport{
 				TLSClientConfig: &tls.Config{
@@ -110,6 +118,7 @@ func newPVEManager(_ *Agent) *pveManager {
 
 	pveManager := &pveManager{
 		client:            client,
+		nodeName:          nodeName,
 		containerStatsMap: make(map[string]*container.Stats),
 	}
 	return pveManager
