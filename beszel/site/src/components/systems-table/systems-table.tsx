@@ -182,7 +182,7 @@ export default function SystemsTable() {
 				header: sortableHeader,
 			},
 			{
-				accessorKey: "info.g",
+				accessorFn: (originalRow) => originalRow.info.g,
 				id: "GPU",
 				invertSorting: true,
 				sortUndefined: -1,
@@ -191,7 +191,7 @@ export default function SystemsTable() {
 				header: sortableHeader,
 			},
 			{
-				accessorKey: "info.ht",
+				accessorFn: (originalRow) => originalRow.info.ht,
 				id: t`Temp`,
 				invertSorting: true,
 				sortUndefined: -1,
