@@ -457,10 +457,6 @@ msgstr ""
 msgid "Memory usage of docker containers"
 msgstr "Využití paměti docker kontejnerů"
 
-#: src/components/routes/system.tsx:489
-#~ msgid "Memory usage of proxmox containers"
-#~ msgstr ""
-
 #: src/components/add-system.tsx:116
 msgid "Name"
 msgstr "Název"
