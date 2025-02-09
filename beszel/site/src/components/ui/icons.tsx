@@ -63,3 +63,13 @@ export function ThermometerIcon(props: SVGProps<SVGSVGElement>) {
 		</svg>
 	)
 }
+
+// Huge icons (MIT)
+export function GpuIcon(props: SVGProps<SVGSVGElement>) {
+	return (
+		<svg viewBox="0 0 24 24" {...props} stroke="currentColor" fill="none" strokeWidth="2">
+			<path d="M4 21V4.1a1.5 1.5 0 0 0-1.1-1L2 3m2 2h13c2.4 0 3.5 0 4.3.7s.7 2 .7 4.3v4.5c0 2.4 0 3.5-.7 4.3-.8.7-2 .7-4.3.7h-4.9a1.8 1.8 0 0 1-1.6-1c-.3-.6-1-1-1.6-1H4" />
+			<path d="M19 11.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0m-11.5-3h2m-2 3h2m-2 3h2" />
+		</svg>
+	)
+}

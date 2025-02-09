@@ -185,8 +185,12 @@ func (a *Agent) getSystemStats() system.Stats {
 
 	// GPU data
 	if a.gpuManager != nil {
+		// reset high gpu percent
+		a.systemInfo.GpuPct = 0
+		// get current GPU data
 		if gpuData := a.gpuManager.GetCurrentData(); len(gpuData) > 0 {
 			systemStats.GPUData = gpuData
+
 			// add temperatures
 			if systemStats.Temperatures == nil {
 				systemStats.Temperatures = make(map[string]float64, len(gpuData))
@@ -195,6 +199,8 @@ func (a *Agent) getSystemStats() system.Stats {
 				if gpu.Temperature > 0 {
 					systemStats.Temperatures[gpu.Name] = gpu.Temperature
 				}
+				// update high gpu percent for dashboard
+				a.systemInfo.GpuPct = max(a.systemInfo.GpuPct, gpu.Usage)
 			}
 		}
 	}
@@ -249,10 +255,7 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) error {
 				continue
 			}
 		}
-		// assign high temperature if sensor temp is higher than a.systemInfo.HighTemp
-		if sensor.Temperature > a.systemInfo.HighTemp {
-			a.systemInfo.HighTemp = sensor.Temperature
-		}
+		a.systemInfo.HighTemp = max(a.systemInfo.HighTemp, sensor.Temperature)
 		systemStats.Temperatures[sensorName] = twoDecimals(sensor.Temperature)
 	}
 	return nil
