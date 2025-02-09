@@ -15,6 +15,7 @@ import (
 type pveManager struct {
 	client            *proxmox.Client             // Client to query PVE API
 	nodeName          string                      // Cluster node name
+	cpuCount          int                         // CPU count on node
 	containerStatsMap map[string]*container.Stats // Keeps track of container stats
 }
 
@@ -79,7 +80,7 @@ func (pm *pveManager) getPVEStats() ([]*container.Stats, error) {
 		resourceStats.PrevNet.Recv = total_recv
 		resourceStats.PrevNet.Time = time.Now()
 
-		resourceStats.Cpu = twoDecimals(100.0 * resource.CPU)
+		resourceStats.Cpu = twoDecimals(100.0 * resource.CPU * float64(resource.MaxCPU) / float64(pm.cpuCount))
 		resourceStats.Mem = bytesToMegabytes(float64(resource.Mem))
 		resourceStats.NetworkSent = bytesToMegabytes(sent_delta)
 		resourceStats.NetworkRecv = bytesToMegabytes(recv_delta)
@@ -121,5 +122,15 @@ func newPVEManager(_ *Agent) *pveManager {
 		nodeName:          nodeName,
 		containerStatsMap: make(map[string]*container.Stats),
 	}
+	// Retrieve node cpu count
+	if client != nil {
+		node, err := client.Node(context.Background(), nodeName)
+		if err != nil {
+			pveManager.client = nil
+		} else {
+			pveManager.cpuCount = node.CPUInfo.CPUs
+		}
+	}
+
 	return pveManager
 }
