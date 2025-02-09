@@ -8,7 +8,7 @@ msgstr ""
 "Language: is\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-08 20:14\n"
+"PO-Revision-Date: 2025-02-09 11:32\n"
 "Last-Translator: \n"
 "Language-Team: Icelandic\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -52,7 +52,7 @@ msgstr "30 dagar"
 #: src/components/systems-table/systems-table.tsx:463
 #: src/components/systems-table/systems-table.tsx:473
 msgid "Actions"
-msgstr ""
+msgstr "Aðgerðir"
 
 #: src/components/routes/home.tsx:61
 msgid "Active Alerts"
@@ -119,7 +119,7 @@ msgstr "Meðal örgjörva notkun container-a."
 
 #: src/components/alerts/alerts-system.tsx:206
 msgid "Average exceeds <0>{value}{0}</0>"
-msgstr ""
+msgstr "Meðaltal er yfir <0>{value}{0}</0>"
 
 #: src/components/routes/system.tsx:497
 msgid "Average power consumption of GPUs"
@@ -145,11 +145,11 @@ msgstr "Gangnaflutningsgeta"
 
 #: src/components/login/auth-form.tsx:289
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
-msgstr ""
+msgstr "Beszel styður OpenID Connect og margar OAuth2 auðkenningarveitendur."
 
 #: src/components/routes/settings/notifications.tsx:127
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
-msgstr ""
+msgstr "Beszel notar <0>Shoutrrr</0> til að tengjast vinsælum tilkynningaþjónustum."
 
 #: src/components/add-system.tsx:92
 msgid "Binary"
