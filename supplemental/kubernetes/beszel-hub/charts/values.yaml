@@ -30,13 +30,13 @@ securityContext: {}
 
 service:
   enabled: true
-  type: NodePort
-  loadBalancerIP: ""
+  type: LoadBalancer
+  loadBalancerIP: "10.0.10.251"
   port: 8090
 # -- Annotations for the DHCP service
-  annotations: {}
-    # metallb.universe.tf/address-pool: network-services
-    # metallb.universe.tf/allow-shared-ip: bezsel-hub-svc
+  annotations:
+    metallb.universe.tf/address-pool: pool
+    metallb.universe.tf/allow-shared-ip: beszel-hub-web
   # -- Labels for the DHCP service
 
 ingress:
@@ -85,7 +85,7 @@ autoscaling:
 # -- `spec.PersitentVolumeClaim` configuration
 persistentVolumeClaim:
   # -- set to true to use pvc
-  enabled: false
+  enabled: true
 
   # -- specify an existing `PersistentVolumeClaim` to use
   # existingClaim: ""
@@ -96,7 +96,7 @@ persistentVolumeClaim:
   accessModes:
     - ReadWriteOnce
 
-  storageClass: ""
+  storageClass: "retain-local-path"
 
   # -- volume claim size
   size: "500Mi"
