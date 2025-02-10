@@ -8,7 +8,7 @@ msgstr ""
 "Language: pt\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-12-17 21:36\n"
+"PO-Revision-Date: 2025-02-10 11:09\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -123,7 +123,7 @@ msgstr "A média excede <0>{value}{0}</0>"
 
 #: src/components/routes/system.tsx:497
 msgid "Average power consumption of GPUs"
-msgstr ""
+msgstr "Consumo médio de energia pelas GPU's"
 
 #: src/components/routes/system.tsx:385
 msgid "Average system-wide CPU utilization"
@@ -131,7 +131,7 @@ msgstr "Utilização média de CPU em todo o sistema"
 
 #: src/components/routes/system.tsx:515
 msgid "Average utilization of {0}"
-msgstr ""
+msgstr "Utilização média de {0}"
 
 #: src/components/command-palette.tsx:170
 #: src/components/navbar.tsx:93
@@ -372,7 +372,7 @@ msgstr "Geral"
 
 #: src/components/routes/system.tsx:496
 msgid "GPU Power Draw"
-msgstr ""
+msgstr "Consumo de Energia da GPU"
 
 #: src/components/systems-table/systems-table.tsx:308
 msgid "Grid"
@@ -401,7 +401,7 @@ msgstr "Idioma"
 
 #: src/components/systems-table/systems-table.tsx:294
 msgid "Layout"
-msgstr ""
+msgstr "Aspeto"
 
 #. Light theme
 #: src/components/mode-toggle.tsx:16
@@ -829,3 +829,4 @@ msgstr "Configuração YAML"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "As configurações do seu usuário foram atualizadas."
+
