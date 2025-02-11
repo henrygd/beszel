@@ -193,7 +193,7 @@ export default function SystemsTable() {
 				header: sortableHeader,
 			},
 			{
-				accessorFn: (originalRow) => originalRow.info.ht,
+				accessorFn: (originalRow) => originalRow.info.dt,
 				id: t`Temp`,
 				invertSorting: true,
 				sortUndefined: -1,

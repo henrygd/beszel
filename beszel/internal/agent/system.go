@@ -223,8 +223,10 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) error {
 		return nil
 	}
 
+	primarySensor, primarySensorIsDefined := GetEnv("PRIMARY_SENSOR")
+
 	// reset high temp
-	a.systemInfo.HighTemp = 0
+	a.systemInfo.DashboardTemp = 0
 
 	// get sensor data
 	temps, err := sensors.TemperaturesWithContext(a.sensorsContext)
@@ -255,7 +257,14 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) error {
 				continue
 			}
 		}
-		a.systemInfo.HighTemp = max(a.systemInfo.HighTemp, sensor.Temperature)
+		// set dashboard temperature
+		if primarySensorIsDefined {
+			if sensorName == primarySensor {
+				a.systemInfo.DashboardTemp = sensor.Temperature
+			}
+		} else {
+			a.systemInfo.DashboardTemp = max(a.systemInfo.DashboardTemp, sensor.Temperature)
+		}
 		systemStats.Temperatures[sensorName] = twoDecimals(sensor.Temperature)
 	}
 	return nil
