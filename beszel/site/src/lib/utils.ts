@@ -53,7 +53,7 @@ export const updateSystemList = (() => {
 		try {
 			const records = await pb
 				.collection<SystemRecord>("systems")
-				.getFullList({ sort: "+name", fields: "id,name,host,info,status" })
+				.getFullList({ sort: "+name", fields: "id,name,host,port,info,status" })
 
 			if (records.length) {
 				$systems.set(records)
@@ -107,7 +107,7 @@ export const formatDay = (timestamp: string) => {
 }
 
 export const updateFavicon = (newIcon: string) => {
-	;(document.querySelector("link[rel='icon']") as HTMLLinkElement).href = prependBasePath( `/static/${newIcon}` )
+	;(document.querySelector("link[rel='icon']") as HTMLLinkElement).href = prependBasePath(`/static/${newIcon}`)
 }
 
 export const isAdmin = () => pb.authStore.record?.role === "admin"

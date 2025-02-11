@@ -237,8 +237,8 @@ func (h *Hub) Run() {
 		oldRecord := newRecord.Original()
 		newStatus := newRecord.GetString("status")
 
-		// if system is disconnected and connection exists, remove it
-		if newStatus == "down" || newStatus == "paused" {
+		// if system is not up and connection exists, remove it
+		if newStatus != "up" {
 			h.deleteSystemConnection(newRecord)
 		}
 
