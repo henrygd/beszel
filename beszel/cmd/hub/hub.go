@@ -1,10 +1,10 @@
 package main
 
 import (
-	"beszel"
-	"beszel/internal/hub"
+	"github.com/henrygd/beszel"
+	"github.com/henrygd/beszel/internal/hub"
 
-	_ "beszel/migrations"
+	_ "github.com/henrygd/beszel/migrations"
 
 	"github.com/pocketbase/pocketbase"
 	"github.com/spf13/cobra"

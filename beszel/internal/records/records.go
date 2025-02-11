@@ -2,11 +2,12 @@
 package records
 
 import (
-	"beszel/internal/entities/container"
-	"beszel/internal/entities/system"
 	"log"
 	"math"
 	"time"
+
+	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/goccy/go-json"
 	"github.com/pocketbase/dbx"

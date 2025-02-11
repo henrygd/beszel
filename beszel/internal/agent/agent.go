@@ -2,12 +2,13 @@
 package agent
 
 import (
-	"beszel"
-	"beszel/internal/entities/system"
 	"context"
 	"log/slog"
 	"os"
 	"strings"
+
+	"github.com/henrygd/beszel"
+	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/shirou/gopsutil/v4/common"
 )

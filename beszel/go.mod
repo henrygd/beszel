@@ -1,4 +1,4 @@
-module beszel
+module github.com/henrygd/beszel
 
 go 1.23
 

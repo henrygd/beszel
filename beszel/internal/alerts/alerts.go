@@ -2,12 +2,13 @@
 package alerts
 
 import (
-	"beszel/internal/entities/system"
 	"fmt"
 	"net/mail"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/containrrr/shoutrrr"
 	"github.com/goccy/go-json"

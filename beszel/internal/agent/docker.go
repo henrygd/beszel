@@ -1,7 +1,6 @@
 package agent
 
 import (
-	"beszel/internal/entities/container"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -13,6 +12,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/henrygd/beszel/internal/entities/container"
 
 	"github.com/blang/semver"
 )

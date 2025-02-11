@@ -1,12 +1,13 @@
 package hub
 
 import (
-	"beszel/internal/entities/system"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 	"strconv"
+
+	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/apis"
