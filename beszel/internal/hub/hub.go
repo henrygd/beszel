@@ -41,6 +41,7 @@ type Hub struct {
 	rm                *records.RecordManager
 	systemStats       *core.Collection
 	containerStats    *core.Collection
+	pveContainerStats *core.Collection
 	appURL            string
 }
 
@@ -173,8 +174,8 @@ func (h *Hub) Run() {
 		h.app.Cron().MustAdd("delete old records", "8 * * * *", h.rm.DeleteOldRecords)
 		// create longer records every 10 minutes
 		h.app.Cron().MustAdd("create longer records", "*/10 * * * *", func() {
-			if systemStats, containerStats, err := h.getCollections(); err == nil {
-				h.rm.CreateLongerRecords([]*core.Collection{systemStats, containerStats})
+			if systemStats, containerStats, pveContainerStats, err := h.getCollections(); err == nil {
+				h.rm.CreateLongerRecords([]*core.Collection{systemStats, containerStats, pveContainerStats})
 			}
 		})
 		return se.Next()
@@ -339,8 +340,8 @@ func (h *Hub) updateSystem(record *core.Record) {
 	if err := h.app.SaveNoValidate(record); err != nil {
 		h.app.Logger().Error("Failed to update record: ", "err", err.Error())
 	}
-	// add system_stats and container_stats records
-	if systemStats, containerStats, err := h.getCollections(); err != nil {
+	// add system_stats, container_stats and pve_container_stats records
+	if systemStats, containerStats, pveContainerStats, err := h.getCollections(); err != nil {
 		h.app.Logger().Error("Failed to get collections: ", "err", err.Error())
 	} else {
 		// add new system_stats record
@@ -361,6 +362,16 @@ func (h *Hub) updateSystem(record *core.Record) {
 				h.app.Logger().Error("Failed to save record: ", "err", err.Error())
 			}
 		}
+		// add new pve_container_stats record
+		if len(systemData.PveContainers) > 0 {
+			containerStatsRecord := core.NewRecord(pveContainerStats)
+			containerStatsRecord.Set("system", record.Id)
+			containerStatsRecord.Set("stats", systemData.PveContainers)
+			containerStatsRecord.Set("type", "1m")
+			if err := h.app.SaveNoValidate(containerStatsRecord); err != nil {
+				h.app.Logger().Error("Failed to save record: ", "err", err.Error())
+			}
+		}
 	}
 
 	// system info alerts
@@ -370,22 +381,29 @@ func (h *Hub) updateSystem(record *core.Record) {
 }
 
 // return system_stats and container_stats collections
-func (h *Hub) getCollections() (*core.Collection, *core.Collection, error) {
+func (h *Hub) getCollections() (*core.Collection, *core.Collection, *core.Collection, error) {
 	if h.systemStats == nil {
 		systemStats, err := h.app.FindCollectionByNameOrId("system_stats")
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, nil, err
 		}
 		h.systemStats = systemStats
 	}
 	if h.containerStats == nil {
 		containerStats, err := h.app.FindCollectionByNameOrId("container_stats")
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, nil, err
 		}
 		h.containerStats = containerStats
 	}
-	return h.systemStats, h.containerStats, nil
+	if h.pveContainerStats == nil {
+		pveContainerStats, err := h.app.FindCollectionByNameOrId("pve_container_stats")
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		h.pveContainerStats = pveContainerStats
+	}
+	return h.systemStats, h.containerStats, h.pveContainerStats, nil
 }
 
 // set system to specified status and save record

@@ -14,24 +14,24 @@ import {
 // import Spinner from '../spinner'
 import { useStore } from "@nanostores/react"
 import { $containerFilter } from "@/lib/stores"
-import { ChartData } from "@/types"
+import { ChartData, ChartDataContainer } from "@/types"
 import { Separator } from "../ui/separator"
 
 export default memo(function ContainerChart({
 	dataKey,
 	chartData,
+	containerData,
 	chartName,
 	unit = "%",
 }: {
 	dataKey: string
 	chartData: ChartData
+	containerData: ChartDataContainer[]
 	chartName: string
 	unit?: string
 }) {
 	const filter = useStore($containerFilter)
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
-
-	const { containerData } = chartData
 
 	const isNetChart = chartName === "net"
 
