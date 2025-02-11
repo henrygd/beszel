@@ -126,7 +126,7 @@ func (h *Hub) Run() {
 				Scheme: "http",
 				Host:   "localhost:5173",
 			})
-			se.Router.Any("/{path...}", func(e *core.RequestEvent) error {
+			se.Router.GET("/{path...}", func(e *core.RequestEvent) error {
 				proxy.ServeHTTP(e.Response, e.Request)
 				return nil
 			})
@@ -146,7 +146,7 @@ func (h *Hub) Run() {
 			// get CSP configuration
 			csp, cspExists := GetEnv("CSP")
 			// add route
-			se.Router.Any("/{path...}", func(e *core.RequestEvent) error {
+			se.Router.GET("/{path...}", func(e *core.RequestEvent) error {
 				// serve static assets if path is in staticPaths
 				for i := range staticPaths {
 					if strings.Contains(e.Request.URL.Path, staticPaths[i]) {
