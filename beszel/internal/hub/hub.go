@@ -20,7 +20,6 @@ import (
 	"net/url"
 	"os"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/goccy/go-json"
@@ -32,16 +31,15 @@ import (
 )
 
 type Hub struct {
-	app               *pocketbase.PocketBase
-	systemConnections sync.Map
-	sshClientConfig   *ssh.ClientConfig
-	pubKey            string
-	am                *alerts.AlertManager
-	um                *users.UserManager
-	rm                *records.RecordManager
-	systemStats       *core.Collection
-	containerStats    *core.Collection
-	appURL            string
+	app             *pocketbase.PocketBase
+	sshClientConfig *ssh.ClientConfig
+	pubKey          string
+	am              *alerts.AlertManager
+	um              *users.UserManager
+	rm              *records.RecordManager
+	systemStats     *core.Collection
+	containerStats  *core.Collection
+	appURL          string
 }
 
 func NewHub(app *pocketbase.PocketBase) *Hub {
@@ -304,7 +302,7 @@ func (h *Hub) updateSystem(record *core.Record) {
 	var err error
 
 	// check if system connection exists
-	if existingClient, ok := h.systemConnections.Load(record.Id); ok {
+	if existingClient, ok := h.app.Store().GetOk(record.Id); ok {
 		client = existingClient.(*ssh.Client)
 	} else {
 		// create system connection
@@ -316,7 +314,7 @@ func (h *Hub) updateSystem(record *core.Record) {
 			}
 			return
 		}
-		h.systemConnections.Store(record.Id, client)
+		h.app.Store().Set(record.Id, client)
 	}
 	// get system stats from agent
 	var systemData system.CombinedData
@@ -400,11 +398,11 @@ func (h *Hub) updateSystemStatus(record *core.Record, status string) {
 
 // delete system connection from map and close connection
 func (h *Hub) deleteSystemConnection(record *core.Record) {
-	if client, ok := h.systemConnections.Load(record.Id); ok {
+	if client, ok := h.app.Store().GetOk(record.Id); ok {
 		if sshClient := client.(*ssh.Client); sshClient != nil {
 			sshClient.Close()
 		}
-		h.systemConnections.Delete(record.Id)
+		h.app.Store().Remove(record.Id)
 	}
 }
 
