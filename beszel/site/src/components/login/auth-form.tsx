@@ -7,8 +7,8 @@ import { $authenticated, pb } from "@/lib/stores"
 import * as v from "valibot"
 import { toast } from "../ui/use-toast"
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useCallback, useState } from "react"
-import { AuthMethodsList, OAuth2AuthConfig } from "pocketbase"
+import { useCallback, useEffect, useState } from "react"
+import { AuthMethodsList, AuthProviderInfo, OAuth2AuthConfig } from "pocketbase"
 import { $router, Link, prependBasePath } from "../router"
 import { Trans, t } from "@lingui/macro"
 import { getPagePath } from "@nanostores/router"
@@ -118,8 +118,48 @@ export function UserAuthForm({
 		return null
 	}
 
-	const oauthEnabled = authMethods.oauth2.enabled && authMethods.oauth2.providers.length > 0
+	const authProviders = authMethods.oauth2.providers ?? []
+	const oauthEnabled = authMethods.oauth2.enabled && authProviders.length > 0
 	const passwordEnabled = authMethods.password.enabled
+
+	function loginWithOauth(provider: AuthProviderInfo, forcePopup = false) {
+		setIsOauthLoading(true)
+		const oAuthOpts: OAuth2AuthConfig = {
+			provider: provider.name,
+		}
+		// https://github.com/pocketbase/pocketbase/discussions/2429#discussioncomment-5943061
+		if (forcePopup || navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
+			const authWindow = window.open()
+			if (!authWindow) {
+				setIsOauthLoading(false)
+				toast({
+					title: t`Error`,
+					description: t`Please enable pop-ups for this site`,
+					variant: "destructive",
+				})
+				return
+			}
+			oAuthOpts.urlCallback = (url) => {
+				authWindow.location.href = url
+			}
+		}
+		pb.collection("users")
+			.authWithOAuth2(oAuthOpts)
+			.then(() => {
+				$authenticated.set(pb.authStore.isValid)
+			})
+			.catch(showLoginFaliedToast)
+			.finally(() => {
+				setIsOauthLoading(false)
+			})
+	}
+
+	useEffect(() => {
+		// auto login if password disabled and only one auth provider
+		if (!passwordEnabled && authProviders.length === 1) {
+			loginWithOauth(authProviders[0], true)
+		}
+	}, [])
 
 	return (
 		<div className={cn("grid gap-6", className)} {...props}>
@@ -223,37 +263,7 @@ export function UserAuthForm({
 								"justify-self-center": !passwordEnabled,
 								"px-5": !passwordEnabled,
 							})}
-							onClick={() => {
-								setIsOauthLoading(true)
-								const oAuthOpts: OAuth2AuthConfig = {
-									provider: provider.name,
-								}
-								// https://github.com/pocketbase/pocketbase/discussions/2429#discussioncomment-5943061
-								if (navigator.userAgent.match(/iPhone|iPad|iPod/i)) {
-									const authWindow = window.open()
-									if (!authWindow) {
-										setIsOauthLoading(false)
-										toast({
-											title: t`Error`,
-											description: t`Please enable pop-ups for this site`,
-											variant: "destructive",
-										})
-										return
-									}
-									oAuthOpts.urlCallback = (url) => {
-										authWindow.location.href = url
-									}
-								}
-								pb.collection("users")
-									.authWithOAuth2(oAuthOpts)
-									.then(() => {
-										$authenticated.set(pb.authStore.isValid)
-									})
-									.catch(showLoginFaliedToast)
-									.finally(() => {
-										setIsOauthLoading(false)
-									})
-							}}
+							onClick={() => loginWithOauth(provider)}
 							disabled={isLoading || isOauthLoading}
 						>
 							{isOauthLoading ? (
