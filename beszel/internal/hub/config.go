@@ -28,7 +28,7 @@ type SystemConfig struct {
 
 // Syncs systems with the config.yml file
 func (h *Hub) syncSystemsWithConfig() error {
-	configPath := filepath.Join(h.app.DataDir(), "config.yml")
+	configPath := filepath.Join(h.DataDir(), "config.yml")
 	configData, err := os.ReadFile(configPath)
 	if err != nil {
 		return nil
@@ -49,7 +49,7 @@ func (h *Hub) syncSystemsWithConfig() error {
 
 	// Create a map of email to user ID
 	userEmailToID := make(map[string]string)
-	users, err := h.app.FindAllRecords("users", dbx.NewExp("id != ''"))
+	users, err := h.FindAllRecords("users", dbx.NewExp("id != ''"))
 	if err != nil {
 		return err
 	}
@@ -84,7 +84,7 @@ func (h *Hub) syncSystemsWithConfig() error {
 	}
 
 	// Get existing systems
-	existingSystems, err := h.app.FindAllRecords("systems", dbx.NewExp("id != ''"))
+	existingSystems, err := h.FindAllRecords("systems", dbx.NewExp("id != ''"))
 	if err != nil {
 		return err
 	}
@@ -104,13 +104,13 @@ func (h *Hub) syncSystemsWithConfig() error {
 			existingSystem.Set("name", sysConfig.Name)
 			existingSystem.Set("users", sysConfig.Users)
 			existingSystem.Set("port", sysConfig.Port)
-			if err := h.app.Save(existingSystem); err != nil {
+			if err := h.Save(existingSystem); err != nil {
 				return err
 			}
 			delete(existingSystemsMap, key)
 		} else {
 			// Create new system
-			systemsCollection, err := h.app.FindCollectionByNameOrId("systems")
+			systemsCollection, err := h.FindCollectionByNameOrId("systems")
 			if err != nil {
 				return fmt.Errorf("failed to find systems collection: %v", err)
 			}
@@ -121,7 +121,7 @@ func (h *Hub) syncSystemsWithConfig() error {
 			newSystem.Set("users", sysConfig.Users)
 			newSystem.Set("info", system.Info{})
 			newSystem.Set("status", "pending")
-			if err := h.app.Save(newSystem); err != nil {
+			if err := h.Save(newSystem); err != nil {
 				return fmt.Errorf("failed to create new system: %v", err)
 			}
 		}
@@ -129,7 +129,7 @@ func (h *Hub) syncSystemsWithConfig() error {
 
 	// Delete systems not in config
 	for _, system := range existingSystemsMap {
-		if err := h.app.Delete(system); err != nil {
+		if err := h.Delete(system); err != nil {
 			return err
 		}
 	}
@@ -141,7 +141,7 @@ func (h *Hub) syncSystemsWithConfig() error {
 // Generates content for the config.yml file as a YAML string
 func (h *Hub) generateConfigYAML() (string, error) {
 	// Fetch all systems from the database
-	systems, err := h.app.FindRecordsByFilter("systems", "id != ''", "name", -1, 0)
+	systems, err := h.FindRecordsByFilter("systems", "id != ''", "name", -1, 0)
 	if err != nil {
 		return "", err
 	}
@@ -194,7 +194,7 @@ func (h *Hub) generateConfigYAML() (string, error) {
 
 // New helper function to get a map of user IDs to emails
 func (h *Hub) getUserEmailMap(userIDs []string) (map[string]string, error) {
-	users, err := h.app.FindRecordsByIds("users", userIDs)
+	users, err := h.FindRecordsByIds("users", userIDs)
 	if err != nil {
 		return nil, err
 	}

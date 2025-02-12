@@ -12,7 +12,6 @@ import (
 	"github.com/containrrr/shoutrrr"
 	"github.com/goccy/go-json"
 	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/mailer"
@@ -21,7 +20,7 @@ import (
 )
 
 type AlertManager struct {
-	app *pocketbase.PocketBase
+	app core.App
 }
 
 type AlertMessageData struct {
@@ -61,7 +60,7 @@ type SystemAlertData struct {
 	descriptor   string // override descriptor in notification body (for temp sensor, disk partition, etc)
 }
 
-func NewAlertManager(app *pocketbase.PocketBase) *AlertManager {
+func NewAlertManager(app core.App) *AlertManager {
 	return &AlertManager{
 		app: app,
 	}
@@ -167,7 +166,6 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, systemInfo
 		)).
 		OrderBy("created").
 		All(&systemStats)
-
 	if err != nil {
 		return err
 	}

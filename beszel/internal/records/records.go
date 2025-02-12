@@ -10,13 +10,12 @@ import (
 
 	"github.com/goccy/go-json"
 	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/types"
 )
 
 type RecordManager struct {
-	app *pocketbase.PocketBase
+	app core.App
 }
 
 type LongerRecordData struct {
@@ -35,7 +34,7 @@ type RecordStats []struct {
 	Stats []byte `db:"stats"`
 }
 
-func NewRecordManager(app *pocketbase.PocketBase) *RecordManager {
+func NewRecordManager(app core.App) *RecordManager {
 	return &RecordManager{app}
 }
 
