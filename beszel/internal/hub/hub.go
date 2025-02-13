@@ -19,6 +19,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"path"
 	"strings"
 	"time"
 
@@ -41,6 +42,7 @@ type Hub struct {
 	systemStats     *core.Collection
 	containerStats  *core.Collection
 	appURL          string
+	sshListenAddr   string
 }
 
 // NewHub creates a new Hub instance with default configuration
@@ -49,6 +51,8 @@ func NewHub() *Hub {
 	hub.PocketBase = pocketbase.NewWithConfig(pocketbase.Config{
 		DefaultDataDir: beszel.AppName + "_data",
 	})
+
+	hub.RootCmd.PersistentFlags().StringVarP(&hub.sshListenAddr, "sshd", "sshd", "0.0.0.0:45876", "defines where beszel will start an ssh server to listen for client connections")
 
 	hub.RootCmd.Version = beszel.Version
 	hub.RootCmd.Use = beszel.AppName
@@ -269,6 +273,11 @@ func (h *Hub) Run() {
 		return e.Next()
 	})
 
+	err := h.startSSHServer(h.sshListenAddr)
+	if err != nil {
+		log.Fatal("failed to start ssh server for incoming client connections", err)
+	}
+
 	if err := h.Start(); err != nil {
 		log.Fatal(err)
 	}
@@ -429,22 +438,16 @@ func (h *Hub) createSystemConnection(record *core.Record) (*ssh.Client, error) {
 }
 
 func (h *Hub) createSSHClientConfig() error {
-	key, err := h.getSSHKey()
+	privateKey, err := h.getSSHKey()
 	if err != nil {
 		h.Logger().Error("Failed to get SSH key: ", "err", err.Error())
-		return err
-	}
-
-	// Create the Signer for this private key.
-	signer, err := ssh.ParsePrivateKey(key)
-	if err != nil {
 		return err
 	}
 
 	h.sshClientConfig = &ssh.ClientConfig{
 		User: "u",
 		Auth: []ssh.AuthMethod{
-			ssh.PublicKeys(signer),
+			ssh.PublicKeys(privateKey),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         4 * time.Second,
@@ -456,7 +459,7 @@ func (h *Hub) createSSHClientConfig() error {
 func (h *Hub) requestJsonFromAgent(client *ssh.Client, systemData *system.CombinedData) error {
 	session, err := newSessionWithTimeout(client, 4*time.Second)
 	if err != nil {
-		return fmt.Errorf("bad client")
+		return fmt.Errorf("bad client: %w", err)
 	}
 	defer session.Close()
 
@@ -507,72 +510,46 @@ func newSessionWithTimeout(client *ssh.Client, timeout time.Duration) (*ssh.Sess
 	}
 }
 
-func (h *Hub) getSSHKey() ([]byte, error) {
-	dataDir := h.DataDir()
+func (h *Hub) getSSHKey() (ssh.Signer, error) {
+	privateKeyPath := path.Join(h.DataDir(), "id_ed25519")
+
 	// check if the key pair already exists
-	existingKey, err := os.ReadFile(dataDir + "/id_ed25519")
+	existingKey, err := os.ReadFile(privateKeyPath)
 	if err == nil {
-		if pubKey, err := os.ReadFile(h.DataDir() + "/id_ed25519.pub"); err == nil {
-			h.pubKey = strings.TrimSuffix(string(pubKey), "\n")
+
+		private, err := ssh.ParsePrivateKey(existingKey)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse private key: %s", err)
 		}
-		// return existing private key
-		return existingKey, nil
+
+		return private, nil
 	}
 
 	// Generate the Ed25519 key pair
 	pubKey, privKey, err := ed25519.GenerateKey(nil)
 	if err != nil {
-		// h.Logger().Error("Error generating key pair:", "err", err.Error())
 		return nil, err
 	}
 
 	// Get the private key in OpenSSH format
-	privKeyBytes, err := ssh.MarshalPrivateKey(privKey, "")
-	if err != nil {
-		// h.Logger().Error("Error marshaling private key:", "err", err.Error())
-		return nil, err
-	}
-
-	// Save the private key to a file
-	privateFile, err := os.Create(dataDir + "/id_ed25519")
-	if err != nil {
-		// h.Logger().Error("Error creating private key file:", "err", err.Error())
-		return nil, err
-	}
-	defer privateFile.Close()
-
-	if err := pem.Encode(privateFile, privKeyBytes); err != nil {
-		// h.Logger().Error("Error writing private key to file:", "err", err.Error())
-		return nil, err
-	}
-
-	// Generate the public key in OpenSSH format
-	publicKey, err := ssh.NewPublicKey(pubKey)
+	privKeyPem, err := ssh.MarshalPrivateKey(privKey, "")
 	if err != nil {
 		return nil, err
 	}
 
-	pubKeyBytes := ssh.MarshalAuthorizedKey(publicKey)
+	if err := os.WriteFile(privateKeyPath, pem.EncodeToMemory(privKeyPem), 0600); err != nil {
+		return nil, err
+	}
+
+	// These are fine to ignore the errors on, as we've literally just created a crypto.PublicKey | crypto.Signer
+	sshPubKey, _ := ssh.NewPublicKey(pubKey)
+	sshPrivate, _ := ssh.NewSignerFromSigner(privKey)
+
+	pubKeyBytes := ssh.MarshalAuthorizedKey(sshPubKey)
 	h.pubKey = strings.TrimSuffix(string(pubKeyBytes), "\n")
 
-	// Save the public key to a file
-	publicFile, err := os.Create(dataDir + "/id_ed25519.pub")
-	if err != nil {
-		return nil, err
-	}
-	defer publicFile.Close()
-
-	if _, err := publicFile.Write(pubKeyBytes); err != nil {
-		return nil, err
-	}
-
 	h.Logger().Info("ed25519 SSH key pair generated successfully.")
-	h.Logger().Info("Private key saved to: " + dataDir + "/id_ed25519")
-	h.Logger().Info("Public key saved to: " + dataDir + "/id_ed25519.pub")
+	h.Logger().Info("Saved to: " + privateKeyPath)
 
-	existingKey, err = os.ReadFile(dataDir + "/id_ed25519")
-	if err == nil {
-		return existingKey, nil
-	}
-	return nil, err
+	return sshPrivate, err
 }

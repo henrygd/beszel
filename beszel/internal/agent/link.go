@@ -74,7 +74,7 @@ func (a *Agent) startClient(pubKey []byte, addr string) {
 			ssh.PublicKeys(signer),
 		},
 		HostKeyCallback: ssh.FixedHostKey(allowed),
-		ClientVersion:   beszel.AppName + "-" + beszel.Version,
+		ClientVersion:   "SSH-" + beszel.AppName + "-" + beszel.Version,
 		Timeout:         10 * time.Second,
 	}
 
@@ -149,7 +149,7 @@ func (a *Agent) discardChannels(chans <-chan ssh.NewChannel) {
 }
 
 func (a *Agent) randomSleep(min, max int) {
-	variance := insecureRandom.Intn(min)
+	variance := insecureRandom.Intn(max)
 	time.Sleep(time.Duration(variance)*time.Second + time.Duration(min))
 }
 
