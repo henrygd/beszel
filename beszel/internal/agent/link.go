@@ -15,6 +15,7 @@ import (
 	"os"
 	"time"
 
+	// We are using this for random stats collection timing
 	insecureRandom "math/rand"
 
 	sshServer "github.com/gliderlabs/ssh"
