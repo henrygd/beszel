@@ -60,6 +60,8 @@ func (a *Agent) startClient(pubKey []byte, addr string) {
 		os.Exit(1)
 	}
 
+	slog.Info("Public Key: ", "fingerprint", ssh.FingerprintSHA256(signer.PublicKey()))
+
 	allowed, _, _, _, err := sshServer.ParseAuthorizedKey(pubKey)
 	if err != nil {
 		slog.Error("Failed to parse server public key: ", "err", err)
