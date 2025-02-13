@@ -62,8 +62,13 @@ func main() {
 		// allow passing an address in the form of "127.0.0.1:45876"
 		if !strings.Contains(envAddr, ":") {
 			envAddr = ":" + envAddr
+		} else if isClient {
+			// set the default port if non is specified for clients
+			envAddr = envAddr + ":45876"
 		}
+
 		addr = envAddr
+
 	} else if isClient {
 		log.Fatal("No address specified for client to connect to (use ADDR env)")
 	}
