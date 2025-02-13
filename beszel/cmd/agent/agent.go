@@ -11,12 +11,15 @@ import (
 
 func main() {
 	// handle flags / subcommands
+	isClient := false
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
 		case "-v":
 			fmt.Println(beszel.AppName+"-agent", beszel.Version)
 		case "update":
 			agent.Update()
+		case "client":
+			isClient = true
 		}
 		os.Exit(0)
 	}
@@ -39,14 +42,31 @@ func main() {
 	}
 
 	addr := ":45876"
-	// TODO: change env var to ADDR
-	if portEnvVar, exists := agent.GetEnv("PORT"); exists {
-		// allow passing an address in the form of "127.0.0.1:45876"
-		if !strings.Contains(portEnvVar, ":") {
-			portEnvVar = ":" + portEnvVar
-		}
-		addr = portEnvVar
+
+	envAddr := ""
+	addrEnvVar, specifiedByAddr := agent.GetEnv("ADDR")
+	// Legacy from when PORT was used
+	portEnvVar, specifiedByPort := agent.GetEnv("PORT")
+
+	if specifiedByAddr {
+		envAddr = addrEnvVar
+	} else if specifiedByPort {
+		envAddr = portEnvVar
 	}
 
-	agent.NewAgent().Run(pubKey, addr)
+	if specifiedByAddr || specifiedByPort {
+		if len(envAddr) == 0 && isClient {
+			log.Fatal("No address specified for client to connect to, ADDR was empty")
+		}
+
+		// allow passing an address in the form of "127.0.0.1:45876"
+		if !strings.Contains(envAddr, ":") {
+			envAddr = ":" + envAddr
+		}
+		addr = envAddr
+	} else if isClient {
+		log.Fatal("No address specified for client to connect to (use ADDR env)")
+	}
+
+	agent.NewAgent(isClient).Run(pubKey, addr)
 }
