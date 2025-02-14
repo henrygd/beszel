@@ -73,29 +73,6 @@ import { Dialog } from "../ui/dialog"
 
 type ViewMode = "table" | "grid"
 
-function CellFormatter(info: CellContext<SystemRecord, unknown>) {
-	const val = (info.getValue() as number) || 0
-	return (
-		<div className="flex gap-2 items-center tabular-nums tracking-tight">
-			<span className="min-w-[3.3em]">{decimalString(val, 1)}%</span>
-			<span className="grow min-w-10 block bg-muted h-[1em] relative rounded-sm overflow-hidden">
-				<span
-					className={cn(
-						"absolute inset-0 w-full h-full origin-left",
-						(info.row.original.status !== "up" && "bg-primary/30") ||
-						(val < 65 && "bg-green-500") ||
-						(val < 90 && "bg-yellow-500") ||
-						"bg-red-600"
-					)}
-					style={{
-						transform: `scalex(${val / 100})`,
-					}}
-				></span>
-			</span>
-		</div>
-	)
-}
-
 function sortableHeader(context: HeaderContext<SystemRecord, unknown>, hideSortIcon = false) {
 	const { column } = context
 	return (
@@ -132,19 +109,22 @@ export default function SystemsTable() {
 		return [
 			{
 				size: 200,
-				minSize: 0,
 				accessorKey: "hostname",
 				id: t`Hostname`,
 				enableHiding: false,
 				icon: ServerIcon,
-				cell: CellFormatter,
+				cell: (host) => {
+					return host.getValue() as string
+				},
 				header: sortableHeader,
 			},
 			{
 				accessorKey: "address",
 				id: t`Address`,
 				invertSorting: true,
-				cell: CellFormatter,
+				cell: (addr) => {
+					return addr.getValue() as string
+				},
 				icon: NetworkIcon,
 				header: sortableHeader,
 			},

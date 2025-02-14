@@ -1,8 +1,8 @@
 import { toast } from "@/components/ui/use-toast"
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { $alerts, $copyContent, $systems, $userSettings, pb } from "./stores"
-import { AlertInfo, AlertRecord, ChartTimeData, ChartTimes, SystemRecord } from "@/types"
+import { $alerts, $copyContent, $newSystems, $systems, $userSettings, pb } from "./stores"
+import { AddSystemRecord, AlertInfo, AlertRecord, ChartTimeData, ChartTimes, SystemRecord } from "@/types"
 import { RecordModel, RecordSubscription } from "pocketbase"
 import { WritableAtom } from "nanostores"
 import { timeDay, timeHour } from "d3-time"
@@ -75,11 +75,11 @@ export const updateNewSystemsList = (() => {
 		isFetchingSystems = true
 		try {
 			const records = await pb
-				.collection<SystemRecord>("new_systems")
+				.collection<AddSystemRecord>("new_systems")
 				.getFullList({ sort: "+hostname", fields: "id,hostname,fingerprint,address" })
 
 			if (records.length) {
-				$systems.set(records)
+				$newSystems.set(records)
 			} else {
 				verifyAuth()
 			}

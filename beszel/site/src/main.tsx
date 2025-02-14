@@ -7,8 +7,8 @@ import AddSystems from "./components/routes/add_systems.tsx"
 
 import { ThemeProvider } from "./components/theme-provider.tsx"
 import { DirectionProvider } from "@radix-ui/react-direction"
-import { $authenticated, $systems, pb, $publicKey, $hubVersion, $copyContent, $direction } from "./lib/stores.ts"
-import { updateUserSettings, updateAlerts, updateFavicon, updateSystemList } from "./lib/utils.ts"
+import { $authenticated, $systems, pb, $publicKey, $hubVersion, $copyContent, $direction, $newSystems } from "./lib/stores.ts"
+import { updateUserSettings, updateAlerts, updateFavicon, updateSystemList, updateNewSystemsList } from "./lib/utils.ts"
 import { useStore } from "@nanostores/react"
 import { Toaster } from "./components/ui/toaster.tsx"
 import { $router } from "./components/router.tsx"
@@ -26,6 +26,8 @@ const App = () => {
 	const page = useStore($router)
 	const authenticated = useStore($authenticated)
 	const systems = useStore($systems)
+	const newSystems = useStore($newSystems)
+
 
 	useEffect(() => {
 		// change auth store on auth change
@@ -41,6 +43,10 @@ const App = () => {
 		updateUserSettings()
 		// get alerts after system list is loaded
 		updateSystemList().then(updateAlerts)
+
+
+		// Update any new systems so we can show an alert for that
+		updateNewSystemsList()
 
 		return () => updateFavicon("favicon.svg")
 	}, [])
