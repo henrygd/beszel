@@ -1,7 +1,7 @@
 name: 🐛 Bug report
 description: Report a new bug or issue.
-title: "[Bug]: "
-labels: ["bug"]
+title: '[Bug]: '
+labels: ['bug']
 body:
   - type: markdown
     attributes:
@@ -10,6 +10,7 @@ body:
 
         - For more general support, please [start a support thread](https://github.com/henrygd/beszel/discussions/new?category=support).
         - To request a change or feature, use the [feature request form](https://github.com/henrygd/beszel/issues/new?template=feature_request.yml).
+        - Please do not submit bugs that are specific to ZFS. We plan to add integration with ZFS utilities in the near future.
 
         ### Before submitting a bug report:
 
