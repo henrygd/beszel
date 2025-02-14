@@ -62,7 +62,8 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 	go ssh.DiscardRequests(reqs)
 
 	fingerprint := sshConn.Permissions.Extensions["fingerprint"]
-	_, err = h.FindFirstRecordByFilter("2hz5ncl8tizk5nx", // systems collection
+	_, err = h.FindFirstRecordByFilter(
+		"2hz5ncl8tizk5nx", // systems collection
 		"status!='paused' && fingerprint={:fingerprint}",
 		dbx.Params{"fingerprint": fingerprint},
 	)
@@ -70,22 +71,36 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 		if err == sql.ErrNoRows {
 			h.Logger().Info("Unknown client tried to connect", "fingerprint", fingerprint, "address", c.RemoteAddr())
 
-			collection, err := h.FindCollectionByNameOrId("new_systems")
+			_, err = h.FindFirstRecordByFilter(
+				"new_systems",
+				"fingerprint={:fingerprint}",
+				dbx.Params{"fingerprint": fingerprint},
+			)
+
 			if err != nil {
-				h.Logger().Error("failed to get new_systems collection", "err", err)
-				return
+				if err == sql.ErrNoRows {
+					collection, err := h.FindCollectionByNameOrId("new_systems")
+					if err != nil {
+						h.Logger().Error("failed to get new_systems collection", "err", err)
+						return
+					}
+
+					newSystemRecord := core.NewRecord(collection)
+					newSystemRecord.Set("hostname", sshConn.User())
+					newSystemRecord.Set("fingerprint", fingerprint)
+					newSystemRecord.Set("address", c.RemoteAddr())
+
+					err = h.Save(newSystemRecord)
+					if err != nil {
+						h.Logger().Error("failed to save pending system record", "err", err)
+						return
+					}
+				} else {
+					h.Logger().Error("failed to get pending system records", "err", err)
+					return
+				}
 			}
 
-			newSystemRecord := core.NewRecord(collection)
-			newSystemRecord.Set("hostname", sshConn.User())
-			newSystemRecord.Set("fingerprint", fingerprint)
-			newSystemRecord.Set("address", c.RemoteAddr())
-
-			err = h.Save(newSystemRecord)
-			if err != nil {
-				h.Logger().Error("failed to save pending system record", "err", err)
-				return
-			}
 			return
 		}
 		h.Logger().Error("Failed to fetch client record", "err", err)
