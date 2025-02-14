@@ -52,7 +52,7 @@ func NewHub() *Hub {
 		DefaultDataDir: beszel.AppName + "_data",
 	})
 
-	hub.RootCmd.PersistentFlags().StringVarP(&hub.sshListenAddr, "sshd", "sshd", "0.0.0.0:45876", "defines where beszel will start an ssh server to listen for client connections")
+	hub.RootCmd.PersistentFlags().StringVarP(&hub.sshListenAddr, "sshd", "s", "0.0.0.0:45877", "defines where beszel will start an ssh server to listen for client connections")
 
 	hub.RootCmd.Version = beszel.Version
 	hub.RootCmd.Use = beszel.AppName
@@ -180,6 +180,15 @@ func (h *Hub) Run() {
 		return se.Next()
 	})
 
+	h.OnServe().BindFunc(func(se *core.ServeEvent) error {
+		err := h.startSSHServer(h.sshListenAddr)
+		if err != nil {
+			return fmt.Errorf("ssh server failed to listen: %w", err)
+		}
+		return se.Next()
+	})
+
+	// TODO cleanup old records in registration
 	// set up scheduled jobs / ticker for system updates
 	h.OnServe().BindFunc(func(se *core.ServeEvent) error {
 		// 15 second ticker for system updates
@@ -272,11 +281,6 @@ func (h *Hub) Run() {
 		h.deleteSystemConnection(e.Record)
 		return e.Next()
 	})
-
-	err := h.startSSHServer(h.sshListenAddr)
-	if err != nil {
-		log.Fatal("failed to start ssh server for incoming client connections", err)
-	}
 
 	if err := h.Start(); err != nil {
 		log.Fatal(err)
@@ -538,7 +542,7 @@ func (h *Hub) getSSHKey() (ssh.Signer, error) {
 	}
 
 	if err := os.WriteFile(privateKeyPath, pem.EncodeToMemory(privKeyPem), 0600); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to write private key to %q: err: %w", privateKeyPath, err)
 	}
 
 	// These are fine to ignore the errors on, as we've literally just created a crypto.PublicKey | crypto.Signer

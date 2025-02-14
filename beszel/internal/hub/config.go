@@ -104,6 +104,7 @@ func (h *Hub) syncSystemsWithConfig() error {
 			existingSystem.Set("name", sysConfig.Name)
 			existingSystem.Set("users", sysConfig.Users)
 			existingSystem.Set("port", sysConfig.Port)
+
 			if err := h.Save(existingSystem); err != nil {
 				return err
 			}

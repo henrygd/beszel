@@ -68,13 +68,19 @@ func (a *Agent) startClient(pubKey []byte, addr string) {
 		os.Exit(1)
 	}
 
+	hostname, err := os.Hostname()
+	if err != nil {
+		slog.Warn("failed to get host hostname", "err", err)
+		hostname = "unknown_hostname"
+	}
+
 	c := &ssh.ClientConfig{
-		User: "u",
+		User: hostname,
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(signer),
 		},
 		HostKeyCallback: ssh.FixedHostKey(allowed),
-		ClientVersion:   "SSH-" + beszel.AppName + "-" + beszel.Version,
+		ClientVersion:   "SSH-2.0-" + beszel.AppName + "-" + beszel.Version,
 		Timeout:         10 * time.Second,
 	}
 
@@ -108,7 +114,7 @@ func (a *Agent) startClient(pubKey []byte, addr string) {
 
 		for {
 
-			dataChan, req, err := clientConn.OpenChannel(beszel.AppName+"-"+beszel.Version+"-stats", nil)
+			dataChan, req, err := clientConn.OpenChannel("stats", nil)
 			if err != nil {
 				slog.Warn("failed to send statistics, server did not allow opening of stats channel", "err", err)
 				a.randomSleep(15, 30)
