@@ -66,6 +66,29 @@ export const updateSystemList = (() => {
 	}
 })()
 
+export const updateNewSystemsList = (() => {
+	let isFetchingSystems = false
+	return async () => {
+		if (isFetchingSystems) {
+			return
+		}
+		isFetchingSystems = true
+		try {
+			const records = await pb
+				.collection<SystemRecord>("new_systems")
+				.getFullList({ sort: "+hostname", fields: "id,hostname,fingerprint,address" })
+
+			if (records.length) {
+				$systems.set(records)
+			} else {
+				verifyAuth()
+			}
+		} finally {
+			isFetchingSystems = false
+		}
+	}
+})()
+
 /** Logs the user out by clearing the auth store and unsubscribing from realtime updates. */
 export async function logOut() {
 	pb.authStore.clear()

@@ -18,6 +18,13 @@ export interface SystemRecord extends RecordModel {
 	v: string
 }
 
+export interface AddSystemRecord extends RecordModel {
+	hostname: string
+	fingerprint: string
+	address: string
+}
+
+
 export interface SystemInfo {
 	/** hostname */
 	h: string

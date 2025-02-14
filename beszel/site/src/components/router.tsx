@@ -2,6 +2,7 @@ import { createRouter } from "@nanostores/router"
 
 const routes = {
 	home: "/",
+	add_system: `/system/add`,
 	system: `/system/:name`,
 	settings: `/settings/:name?`,
 	forgot_password: `/forgot-password`,

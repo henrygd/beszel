@@ -61,6 +61,8 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 	defer sshConn.Close()
 	go ssh.DiscardRequests(reqs)
 
+	// TODO on valid api key associate to user and automatically allow
+
 	fingerprint := sshConn.Permissions.Extensions["fingerprint"]
 	_, err = h.FindFirstRecordByFilter(
 		"2hz5ncl8tizk5nx", // systems collection
@@ -113,8 +115,6 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 			h.Logger().Warn("client tried to open an invalid channel", "type", channel.ChannelType(), "address", c.RemoteAddr())
 			return
 		}
-
-		// TODO on valid api key associate to user and automatically allow
 
 	}
 }

@@ -3,6 +3,8 @@ import "./index.css"
 import { Suspense, lazy, useEffect } from "react"
 import ReactDOM from "react-dom/client"
 import Home from "./components/routes/home.tsx"
+import AddSystems from "./components/routes/add_systems.tsx"
+
 import { ThemeProvider } from "./components/theme-provider.tsx"
 import { DirectionProvider } from "@radix-ui/react-direction"
 import { $authenticated, $systems, pb, $publicKey, $hubVersion, $copyContent, $direction } from "./lib/stores.ts"
@@ -67,6 +69,8 @@ const App = () => {
 		return <Home />
 	} else if (page.route === "system") {
 		return <SystemDetail name={page.params.name} />
+	} else if (page.route === "add_system") {
+		return <AddSystems />
 	} else if (page.route === "settings") {
 		return (
 			<Suspense>

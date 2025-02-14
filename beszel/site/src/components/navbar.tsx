@@ -25,7 +25,7 @@ import {
 	DropdownMenuGroup,
 	DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
-import { AddSystemButton } from "./add-system"
+import { PlusIcon } from "lucide-react"
 import { Trans } from "@lingui/macro"
 import { getPagePath } from "@nanostores/router"
 
@@ -107,7 +107,21 @@ export default function Navbar() {
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
-				<AddSystemButton className="ms-2" />
+				<Link
+				    className="ms-2"
+					href={getPagePath($router, "add_system")}
+					aria-label="Add System"
+				>
+					<Button
+						variant="outline"
+						className={cn("flex gap-1 max-xs:h-[2.4rem]", isReadOnlyUser() && "hidden")}
+					>
+						<PlusIcon className="h-4 w-4 -ms-1" />
+						<Trans>
+							Add <span className="hidden sm:inline">System</span>
+						</Trans>
+					</Button>
+				</Link>
 			</div>
 		</div>
 	)
