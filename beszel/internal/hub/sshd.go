@@ -139,47 +139,49 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 				return
 			}
 			// If it has no entry already, determine what to do with it
+
+			switch withApiAction {
+			case "accept":
+				r, err := h.acceptSystem(user, hostname, c.RemoteAddr().String(), fingerprint)
+				if err != nil {
+					h.Logger().Error("failed to accept new connection", "err", err)
+					return
+				}
+
+				record = r
+				// accept the system and allow it to drop through to start recording details immediately
+			case "deny":
+				// do not add entry to new_systems collection when denying
+				return
+			default:
+
+				collection, err := h.FindCollectionByNameOrId("new_systems")
+				if err != nil {
+					h.Logger().Error("failed to get new_systems collection", "err", err)
+					return
+				}
+
+				address, _, err := net.SplitHostPort(c.RemoteAddr().String())
+				if err != nil {
+					h.Logger().Debug("Could not split remote address host and port", "address", c.RemoteAddr().String(), "err", err)
+					address = c.RemoteAddr().String()
+				}
+
+				newSystemRecord := core.NewRecord(collection)
+				newSystemRecord.Set("hostname", hostname)
+				newSystemRecord.Set("fingerprint", fingerprint)
+				newSystemRecord.Set("address", address)
+
+				err = h.Save(newSystemRecord)
+				if err != nil {
+					h.Logger().Error("failed to save pending system record", "err", err)
+					return
+				}
+
+				return
+			}
 		}
-
-		switch withApiAction {
-		case "accept":
-			r, err := h.acceptSystem(user, hostname, c.RemoteAddr().String(), fingerprint)
-			if err != nil {
-				h.Logger().Error("failed to accept new connection", "err", err)
-				return
-			}
-
-			record = r
-			// accept the system and allow it to drop through to start recording details immediately
-		case "deny":
-			// do not add entry to new_systems collection when denying
-			return
-		default:
-			collection, err := h.FindCollectionByNameOrId("new_systems")
-			if err != nil {
-				h.Logger().Error("failed to get new_systems collection", "err", err)
-				return
-			}
-
-			address, _, err := net.SplitHostPort(c.RemoteAddr().String())
-			if err != nil {
-				h.Logger().Debug("Could not split remote address host and port", "address", c.RemoteAddr().String(), "err", err)
-				address = c.RemoteAddr().String()
-			}
-
-			newSystemRecord := core.NewRecord(collection)
-			newSystemRecord.Set("hostname", hostname)
-			newSystemRecord.Set("fingerprint", fingerprint)
-			newSystemRecord.Set("address", address)
-
-			err = h.Save(newSystemRecord)
-			if err != nil {
-				h.Logger().Error("failed to save pending system record", "err", err)
-				return
-			}
-
-			return
-		}
+		// intentional fallthrough
 	}
 
 	if _, ok := h.Store().GetOk(record.Id); ok {
