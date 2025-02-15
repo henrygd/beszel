@@ -64,6 +64,15 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 	// TODO on valid api key associate to user and automatically allow
 
 	fingerprint := sshConn.Permissions.Extensions["fingerprint"]
+
+	_, err = h.FindFirstRecordByData("blocked_systems", "fingerprint", fingerprint)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			h.Logger().Warn("Could not read blocked_systems table", "err", err, "fingerprint", fingerprint)
+			return
+		}
+	}
+
 	record, err := h.FindFirstRecordByFilter(
 		"2hz5ncl8tizk5nx", // systems collection
 		"status!='paused' && fingerprint={:fingerprint}",
