@@ -66,11 +66,19 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 	fingerprint := sshConn.Permissions.Extensions["fingerprint"]
 
 	_, err = h.FindFirstRecordByData("blocked_systems", "fingerprint", fingerprint)
-	if err != nil {
+	// If we could find a record for this sytem in the blocked_systems table, then early quit
+	if err == nil {
+		h.Logger().Debug("Blocked system attempted to connect", "fingerprint", fingerprint, "address", c.RemoteAddr())
+		return
+	} else {
+
 		if err != sql.ErrNoRows {
 			h.Logger().Warn("Could not read blocked_systems table", "err", err, "fingerprint", fingerprint)
 			return
 		}
+
+		// If the error was that there were no matching rows then pass it
+		h.Logger().Info("System is not blocked!", "fingerprint", fingerprint)
 	}
 
 	record, err := h.FindFirstRecordByFilter(
