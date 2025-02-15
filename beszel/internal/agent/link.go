@@ -130,7 +130,7 @@ func (a *Agent) startClient(pubKey []byte, addr string) {
 
 			dataChan, req, err := clientConn.OpenChannel("stats", nil)
 			if err != nil {
-				slog.Warn("failed to send statistics, server did not allow opening of stats channel", "err", err)
+				slog.Debug("failed to send statistics, server did not allow opening of stats channel", "err", err)
 				a.randomSleep(15, 30)
 				break Inner
 			}
