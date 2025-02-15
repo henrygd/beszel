@@ -177,11 +177,11 @@ export function getPbTimestamp(timeString: ChartTimes, d?: Date) {
 export const connectionActionsData: ConnectionSettingsActionsData = {
 	"accept": {
 		type: "accept",
-		label: () => t`Accept system`,
+		label: () => t`Be Accepted`,
 	}, 
 	"deny": {
 		type: "deny",
-		label: () => t`Deny system`,
+		label: () => t`Be Denied`,
 	},
 	"display": {
 		type: "display",

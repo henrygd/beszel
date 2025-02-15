@@ -96,27 +96,20 @@ export default function Connections() {
 			<div>
 				<h3 className="text-xl font-medium mb-2">
 					<Trans>Connections</Trans>
+					<p className="text-sm text-muted-foreground leading-relaxed">
+							<Trans>
+								Define how beszel should react when a new client connection occurs.
+							</Trans>
+						</p>
 				</h3>
 
 			</div>
 			<Separator className="my-4" />
 			<form onSubmit={handleSubmit} className="space-y-5">
 				<div className="space-y-2">
-					<div className="mb-4">
-						<h3 className="mb-1 text-lg font-medium flex items-center gap-2">
-							<PickaxeIcon className="h-4 w-4" />
-							<Trans>Actions</Trans>
-						</h3>
-						<p className="text-sm text-muted-foreground leading-relaxed">
-							<Trans>
-								Define how beszel should react when a new client connection occurs.
-							</Trans>
-						</p>
-					</div>
-
 
 					<Label className="block" htmlFor="withAPI">
-						<Trans>With API Key</Trans>
+						<Trans>New clients should</Trans>
 					</Label>
 					<Select name="withAPIKey" value={configContent?.withAPIKey} onValueChange={handleWithAPIChange}>
 						<SelectTrigger id="withAPI">
