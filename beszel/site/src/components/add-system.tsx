@@ -18,13 +18,13 @@ import { cn, copyToClipboard, isReadOnlyUser } from "@/lib/utils"
 import { i18n } from "@lingui/core"
 import { t, Trans } from "@lingui/macro"
 import { useStore } from "@nanostores/react"
-import { ChevronDownIcon, Copy, PlusIcon } from "lucide-react"
+import { CableIcon, ChevronDownIcon, Copy } from "lucide-react"
 import { memo, MutableRefObject, useRef, useState } from "react"
 import { basePath, navigate } from "./router"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import { SystemRecord } from "@/types"
 
-export function AddSystemButton({ className }: { className?: string }) {
+export function ConnectToSystemButton({ className }: { className?: string }) {
 	const [open, setOpen] = useState(false)
 	let opened = useRef(false)
 	if (open) {
@@ -38,9 +38,9 @@ export function AddSystemButton({ className }: { className?: string }) {
 					variant="outline"
 					className={cn("flex gap-1 max-xs:h-[2.4rem]", className, isReadOnlyUser() && "hidden")}
 				>
-					<PlusIcon className="h-4 w-4 -ms-1" />
+					<CableIcon className="h-4 w-4 -ms-1" />
 					<Trans>
-						Add <span className="hidden sm:inline">System</span>
+						CableIcon <span className="hidden sm:inline">System</span>
 					</Trans>
 				</Button>
 			</DialogTrigger>
@@ -94,7 +94,9 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 		e.preventDefault()
 		const formData = new FormData(e.target as HTMLFormElement)
 		const data = Object.fromEntries(formData) as Record<string, any>
+		
 		data.users = pb.authStore.record!.id
+		data.type = "server"
 		try {
 			setOpen(false)
 			if (system) {

@@ -89,7 +89,9 @@ func (a *Agent) startClient(pubKey []byte, addr string) {
 		currentBackoff := 2 * time.Second * time.Duration(lastBackoff)
 		slog.Info("Waiting to reconnect: ", "backoff", currentBackoff)
 		time.Sleep(currentBackoff)
-		lastBackoff++
+		if lastBackoff < 10 {
+			lastBackoff++
+		}
 	}
 
 	for {
@@ -108,6 +110,9 @@ func (a *Agent) startClient(pubKey []byte, addr string) {
 			backoff()
 			continue
 		}
+
+		// Reset backoff on first solid connection
+		lastBackoff = 1
 
 		go ssh.DiscardRequests(reqs)
 		go a.discardChannels(chans)

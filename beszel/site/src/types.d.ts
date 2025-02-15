@@ -24,6 +24,11 @@ export interface AddSystemRecord extends RecordModel {
 	address: string
 }
 
+export interface BlockedSystemRecord extends RecordModel {
+	fingerprint: string
+}
+
+
 
 export interface SystemInfo {
 	/** hostname */

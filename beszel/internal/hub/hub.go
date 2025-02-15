@@ -240,7 +240,46 @@ func (h *Hub) Run() {
 
 	// immediately create connection for new systems
 	h.OnRecordAfterCreateSuccess("systems").BindFunc(func(e *core.RecordEvent) error {
-		go h.updateSystem(e.Record)
+		clientType := e.Record.GetString("type")
+		switch clientType {
+
+		// empty string is for backwards compatiablity
+		case "server", "":
+			go h.pollSystem(e.Record)
+		case "client":
+			// After a client has been accepted by the user (or auto accepted) it will be added to the systems table and should be removed from the new_systems table.
+			record, err := h.FindFirstRecordByData("new_systems", "fingerprint", e.Record.GetString("fingerprint"))
+			if err != nil {
+				return err
+			}
+
+			err = h.Delete(record)
+			if err != nil {
+				return err
+			}
+
+		default:
+			h.Logger().Debug("Beszel had a system with unknown type", "type", clientType)
+			return fmt.Errorf("unknown client system record type %q", clientType)
+		}
+
+		return e.Next()
+	})
+
+	// once a system has been added to blocked systems delete it from new_systems
+	h.OnRecordAfterCreateSuccess("blocked_systems").BindFunc(func(e *core.RecordEvent) error {
+
+		// After a client has been accepted by the user (or auto accepted) it will be added to the systems table and should be removed from the new_systems table.
+		record, err := h.FindFirstRecordByData("new_systems", "fingerprint", e.Record.GetString("fingerprint"))
+		if err != nil {
+			return err
+		}
+
+		err = h.Delete(record)
+		if err != nil {
+			return err
+		}
+
 		return e.Next()
 	})
 
@@ -269,10 +308,14 @@ func (h *Hub) Run() {
 
 		// if system is set to pending (unpause), try to connect immediately
 		if newStatus == "pending" {
-			go h.updateSystem(newRecord)
+			if newRecord.GetString("type") == "server" {
+				go h.pollSystem(newRecord)
+			}
+			// We do not have to do anything with our client type beszel connections, they will send data every 15+/-5 seconds
 		} else {
 			h.am.HandleStatusAlerts(newStatus, oldRecord)
 		}
+
 		return e.Next()
 	})
 
@@ -290,17 +333,17 @@ func (h *Hub) Run() {
 func (h *Hub) startSystemUpdateTicker() {
 	c := time.Tick(15 * time.Second)
 	for range c {
-		h.updateSystems()
+		h.pollServerSystems()
 	}
 }
 
-func (h *Hub) updateSystems() {
+func (h *Hub) pollServerSystems() {
 	records, err := h.FindRecordsByFilter(
-		"2hz5ncl8tizk5nx",    // systems collection
-		"status != 'paused'", // filter
-		"updated",            // sort
-		-1,                   // limit
-		0,                    // offset
+		"2hz5ncl8tizk5nx",                        // systems collection
+		"status != 'paused' && type == 'server'", // filter
+		"updated",                                // sort
+		-1,                                       // limit
+		0,                                        // offset
 	)
 	// log.Println("records", len(records))
 	if err != nil || len(records) == 0 {
@@ -320,11 +363,17 @@ func (h *Hub) updateSystems() {
 		if record.GetString("status") != "down" {
 			done++
 		}
-		go h.updateSystem(record)
+		go h.pollSystem(record)
 	}
 }
 
-func (h *Hub) updateSystem(record *core.Record) {
+// pollSystem connects to a server type beszel client on a specified port and prompts it for a record
+func (h *Hub) pollSystem(record *core.Record) {
+	if record.GetString("type") != "server" {
+		h.Logger().Debug("Beszel attempted to poll a non-server system")
+		return
+	}
+
 	var client *ssh.Client
 	var err error
 
@@ -351,7 +400,7 @@ func (h *Hub) updateSystem(record *core.Record) {
 			h.Logger().Error("Existing SSH connection closed. Retrying...", "host", record.GetString("host"), "port", record.GetString("port"))
 			h.deleteSystemConnection(record)
 			time.Sleep(time.Millisecond * 100)
-			h.updateSystem(record)
+			h.pollSystem(record)
 			return
 		}
 		h.Logger().Error("Failed to get system stats: ", "err", err.Error())
@@ -426,9 +475,12 @@ func (h *Hub) updateSystemStatus(record *core.Record, status string) {
 // delete system connection from map and close connection
 func (h *Hub) deleteSystemConnection(record *core.Record) {
 	if client, ok := h.Store().GetOk(record.Id); ok {
-		if sshClient := client.(*ssh.Client); sshClient != nil {
+		if sshClient, ok := client.(*ssh.Client); ok && sshClient != nil {
+			sshClient.Close()
+		} else if sshClient, ok := client.(*ssh.ServerConn); ok && sshClient != nil {
 			sshClient.Close()
 		}
+
 		h.Store().Remove(record.Id)
 	}
 }

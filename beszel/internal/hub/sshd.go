@@ -64,7 +64,7 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 	// TODO on valid api key associate to user and automatically allow
 
 	fingerprint := sshConn.Permissions.Extensions["fingerprint"]
-	_, err = h.FindFirstRecordByFilter(
+	record, err := h.FindFirstRecordByFilter(
 		"2hz5ncl8tizk5nx", // systems collection
 		"status!='paused' && fingerprint={:fingerprint}",
 		dbx.Params{"fingerprint": fingerprint},
@@ -87,10 +87,16 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 						return
 					}
 
+					address, _, err := net.SplitHostPort(c.RemoteAddr().String())
+					if err != nil {
+						h.Logger().Debug("Could not split remote address host and port", "address", c.RemoteAddr().String(), "err", err)
+						address = c.RemoteAddr().String()
+					}
+
 					newSystemRecord := core.NewRecord(collection)
 					newSystemRecord.Set("hostname", sshConn.User())
 					newSystemRecord.Set("fingerprint", fingerprint)
-					newSystemRecord.Set("address", c.RemoteAddr())
+					newSystemRecord.Set("address", address)
 
 					err = h.Save(newSystemRecord)
 					if err != nil {
@@ -108,6 +114,17 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 		h.Logger().Error("Failed to fetch client record", "err", err)
 		return
 	}
+
+	if _, ok := h.Store().GetOk(record.Id); ok {
+		h.Logger().Warn("Client with same fingerprint attempted to connect", "fingerprint", fingerprint, "address", c.RemoteAddr())
+		return
+	}
+	h.Store().Set(record.Id, sshConn)
+
+	defer func() {
+		// When channel := range chans finishes this indicates the client has disconnected so remove the client connection lock
+		h.Store().Remove(record.Id)
+	}()
 
 	for channel := range chans {
 		if channel.ChannelType() != "stats" {

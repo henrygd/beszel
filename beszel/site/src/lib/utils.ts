@@ -10,7 +10,7 @@ import { useEffect, useState } from "react"
 import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from "lucide-react"
 import { EthernetIcon, ThermometerIcon } from "@/components/ui/icons"
 import { t } from "@lingui/macro"
-import { prependBasePath } from "@/components/router"
+import { navigate, prependBasePath } from "@/components/router"
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -53,7 +53,7 @@ export const updateSystemList = (() => {
 		try {
 			const records = await pb
 				.collection<SystemRecord>("systems")
-				.getFullList({ sort: "+name", fields: "id,name,host,port,info,status" })
+				.getFullList({ sort: "+name", fields: "id,name,host,port,info,status,type"})
 
 			if (records.length) {
 				$systems.set(records)
@@ -80,9 +80,9 @@ export const updateNewSystemsList = (() => {
 
 			if (records.length) {
 				$newSystems.set(records)
-			} else {
-				verifyAuth()
 			}
+
+			// do not verify auth twice, otherwise auto cancellation happens which causes a load loop
 		} finally {
 			isFetchingSystems = false
 		}

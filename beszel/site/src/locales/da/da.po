@@ -1,82 +1,88 @@
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2024-11-01 11:30-0400\n"
+"POT-Creation-Date: 2025-02-15 13:24+1300\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
 "Language: da\n"
-"Project-Id-Version: beszel\n"
-"Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-01-05 19:49\n"
-"Last-Translator: \n"
-"Language-Team: Danish\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Crowdin-Project: beszel\n"
-"X-Crowdin-Project-ID: 733311\n"
-"X-Crowdin-Language: da\n"
-"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 16\n"
 
 #: src/components/routes/system.tsx:250
 msgid "{0, plural, one {# day} other {# days}}"
-msgstr "{0, plural, one {# day} other {# days}}"
+msgstr ""
 
 #: src/components/routes/system.tsx:248
 msgid "{hours, plural, one {# hour} other {# hours}}"
-msgstr "{hours, plural, one {# hour} other {# hours}}"
+msgstr ""
 
-#: src/lib/utils.ts:158
+#: src/lib/utils.ts:183
 msgid "1 hour"
-msgstr "1 time"
+msgstr ""
 
-#: src/lib/utils.ts:181
+#: src/lib/utils.ts:206
 msgid "1 week"
-msgstr "1 uge"
+msgstr ""
 
-#: src/lib/utils.ts:166
+#: src/lib/utils.ts:191
 msgid "12 hours"
-msgstr "12 timer"
+msgstr ""
 
-#: src/lib/utils.ts:174
+#: src/lib/utils.ts:199
 msgid "24 hours"
-msgstr "24 timer"
+msgstr ""
 
-#: src/lib/utils.ts:189
+#: src/lib/utils.ts:214
 msgid "30 days"
-msgstr "30 dage"
+msgstr ""
+
+#: src/components/systems-table/new-systems-table.tsx:449
+msgid "Accept System"
+msgstr ""
 
 #. Table column
+#. Table column
+#: src/components/systems-table/new-systems-table.tsx:150
+#: src/components/systems-table/new-systems-table.tsx:235
+#: src/components/systems-table/new-systems-table.tsx:378
+#: src/components/systems-table/new-systems-table.tsx:388
 #: src/components/systems-table/systems-table.tsx:272
 #: src/components/systems-table/systems-table.tsx:358
 #: src/components/systems-table/systems-table.tsx:500
 #: src/components/systems-table/systems-table.tsx:510
 msgid "Actions"
-msgstr "Handlinger"
+msgstr ""
 
 #: src/components/routes/home.tsx:62
 msgid "Active Alerts"
-msgstr "Aktive Alarmer"
+msgstr ""
 
-#: src/components/add-system.tsx:42
+#: src/components/navbar.tsx:120
 msgid "Add <0>System</0>"
-msgstr "Tilføj <0>System</0>"
+msgstr ""
 
-#: src/components/add-system.tsx:117
+#: src/components/add-system.tsx:119
 msgid "Add New System"
-msgstr "Tilføj nyt system"
+msgstr ""
 
-#: src/components/add-system.tsx:222
+#: src/components/add-system.tsx:224
 msgid "Add system"
-msgstr "Tilføj system"
+msgstr ""
+
+#: src/components/routes/add_systems.tsx:18
+msgid "Add System"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx:157
 msgid "Add URL"
-msgstr "Tilføj URL"
+msgstr ""
+
+#: src/components/systems-table/new-systems-table.tsx:121
+msgid "Address"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx:81
 msgid "Adjust display options for charts."
-msgstr "Juster visningsindstillinger for diagrammer."
+msgstr ""
 
 #: src/components/command-palette.tsx:133
 #: src/components/command-palette.tsx:146
@@ -84,218 +90,243 @@ msgstr "Juster visningsindstillinger for diagrammer."
 #: src/components/command-palette.tsx:174
 #: src/components/command-palette.tsx:189
 msgid "Admin"
-msgstr "Admin"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:241
 msgid "Agent"
-msgstr "Agent"
+msgstr ""
 
 #: src/components/alerts/alert-button.tsx:32
 #: src/components/alerts/alert-button.tsx:68
 msgid "Alerts"
-msgstr "Alarmer"
+msgstr ""
 
 #: src/components/alerts/alert-button.tsx:88
 #: src/components/systems-table/systems-table.tsx:311
 msgid "All Systems"
-msgstr "Alle systemer"
+msgstr ""
+
+#: src/components/systems-table/new-systems-table.tsx:191
+msgid "Allow or deny new systems for monitoring."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:634
 msgid "Are you sure you want to delete {name}?"
-msgstr "Er du sikker på, at du vil slette {name}?"
+msgstr ""
+
+#: src/components/systems-table/new-systems-table.tsx:482
+msgid "Are you sure you want to permanently block this host?"
+msgstr ""
 
 #: src/components/copy-to-clipboard.tsx:16
 msgid "Automatic copy requires a secure context."
-msgstr "Automatisk kopiering kræver en sikker kontekst."
+msgstr ""
 
 #: src/components/routes/system.tsx:627
 msgid "Average"
-msgstr "Gennemsnitlig"
+msgstr ""
 
 #: src/components/routes/system.tsx:398
 msgid "Average CPU utilization of containers"
-msgstr "Gennemsnitlig CPU udnyttelse af containere"
+msgstr ""
 
 #: src/components/alerts/alerts-system.tsx:206
 msgid "Average exceeds <0>{value}{0}</0>"
-msgstr "Gennemsnit overstiger <0>{value}{0}</0>"
+msgstr ""
 
 #: src/components/routes/system.tsx:499
 msgid "Average power consumption of GPUs"
-msgstr "Gennemsnitligt strømforbrug for GPU'er"
+msgstr ""
 
 #: src/components/routes/system.tsx:387
 msgid "Average system-wide CPU utilization"
-msgstr "Gennemsnitlig systembaseret CPU-udnyttelse"
+msgstr ""
 
 #: src/components/routes/system.tsx:517
 msgid "Average utilization of {0}"
-msgstr "Gennemsnitlig udnyttelse af {0}"
+msgstr ""
 
 #: src/components/command-palette.tsx:171
 #: src/components/navbar.tsx:94
 msgid "Backups"
-msgstr "Sikkerhedskopier"
+msgstr ""
 
 #: src/components/routes/system.tsx:443
-#: src/lib/utils.ts:326
+#: src/lib/utils.ts:351
 msgid "Bandwidth"
-msgstr "Båndbredde"
+msgstr ""
 
 #: src/components/login/auth-form.tsx:304
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
-msgstr "Beszel understøtter OpenID Connect og mange OAuth2 godkendelsesudbydere."
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx:128
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
-msgstr "Beszel bruger <0>Shoutrrr</0> til at integrere med populære notifikationstjenester."
+msgstr ""
 
-#: src/components/add-system.tsx:122
+#: src/components/add-system.tsx:124
 msgid "Binary"
-msgstr "Binær"
+msgstr ""
+
+#: src/components/systems-table/new-systems-table.tsx:502
+msgid "Block"
+msgstr ""
+
+#: src/components/systems-table/new-systems-table.tsx:470
+msgid "Block New System"
+msgstr ""
+
+#: src/components/add-system.tsx:42
+msgid "CableIcon <0>System</0>"
+msgstr ""
 
 #: src/components/charts/mem-chart.tsx:89
 msgid "Cache / Buffers"
-msgstr "Cache / Buffere"
+msgstr ""
 
+#: src/components/systems-table/new-systems-table.tsx:492
 #: src/components/systems-table/systems-table.tsx:645
 msgid "Cancel"
-msgstr "Fortryd"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx:68
 msgid "Caution - potential data loss"
-msgstr "Forsigtig - muligt tab af data"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx:36
 msgid "Change general application options."
-msgstr "Skift generelle applikationsindstillinger."
+msgstr ""
 
 #: src/components/routes/settings/general.tsx:78
 msgid "Chart options"
-msgstr "Diagrammuligheder"
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx:34
 msgid "Check {email} for a reset link."
-msgstr "Tjek {email} for et nulstillingslink."
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx:40
 msgid "Check logs for more details."
-msgstr "Tjek logfiler for flere detaljer."
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx:184
 msgid "Check your notification service"
-msgstr "Tjek din notifikationstjeneste"
+msgstr ""
 
-#: src/components/add-system.tsx:181
+#: src/components/add-system.tsx:183
 msgid "Click to copy"
-msgstr "Klik for at kopiere"
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx:83
 #: src/components/login/forgot-pass-form.tsx:89
 msgid "Command line instructions"
-msgstr "Instruktioner for kommandolinje"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx:78
 msgid "Configure how you receive alert notifications."
-msgstr "Konfigurer hvordan du modtager advarselsmeddelelser."
+msgstr ""
 
 #: src/components/login/auth-form.tsx:210
 #: src/components/login/auth-form.tsx:215
 msgid "Confirm password"
-msgstr "Bekræft adgangskode"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:651
 msgid "Continue"
-msgstr "Forsæt"
+msgstr ""
 
 #: src/lib/utils.ts:26
 msgid "Copied to clipboard"
-msgstr "Kopieret til udklipsholder"
+msgstr ""
 
-#: src/components/add-system.tsx:198
-#: src/components/add-system.tsx:209
+#: src/components/add-system.tsx:200
+#: src/components/add-system.tsx:211
 msgid "Copy"
-msgstr "Kopier"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:616
 msgid "Copy host"
-msgstr "Kopier host"
+msgstr ""
 
-#: src/components/add-system.tsx:218
+#: src/components/add-system.tsx:220
 msgid "Copy Linux command"
-msgstr "Kopier Linux kommando"
+msgstr ""
 
 #: src/components/copy-to-clipboard.tsx:13
 msgid "Copy text"
-msgstr "Kopier tekst"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:164
 msgid "CPU"
-msgstr "CPU"
+msgstr ""
 
 #: src/components/charts/area-chart.tsx:56
 #: src/components/routes/system.tsx:386
-#: src/lib/utils.ts:308
+#: src/lib/utils.ts:333
 msgid "CPU Usage"
-msgstr "CPU forbrug"
+msgstr ""
 
 #: src/components/login/auth-form.tsx:236
 msgid "Create account"
-msgstr "Opret konto"
+msgstr ""
 
 #. Dark theme
 #: src/components/mode-toggle.tsx:21
 msgid "Dark"
-msgstr "Mørk"
+msgstr ""
 
 #: src/components/command-palette.tsx:82
 #: src/components/routes/home.tsx:35
 msgid "Dashboard"
-msgstr "Oversigtspanel"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx:85
 msgid "Default time period"
-msgstr "Standard tidsperiode"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:621
 msgid "Delete"
-msgstr "Slet"
+msgstr ""
+
+#: src/components/systems-table/new-systems-table.tsx:460
+msgid "Deny System"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:180
 msgid "Disk"
-msgstr "Disk"
+msgstr ""
 
 #: src/components/routes/system.tsx:433
 msgid "Disk I/O"
-msgstr "Disk I/O"
+msgstr ""
 
 #: src/components/charts/disk-chart.tsx:79
 #: src/components/routes/system.tsx:426
-#: src/lib/utils.ts:320
+#: src/lib/utils.ts:345
 msgid "Disk Usage"
-msgstr "Diskforbrug"
+msgstr ""
 
 #: src/components/routes/system.tsx:554
 msgid "Disk usage of {extraFsName}"
-msgstr "Diskforbrug af {extraFsName}"
+msgstr ""
 
 #: src/components/routes/system.tsx:397
 msgid "Docker CPU Usage"
-msgstr "Docker CPU forbrug"
+msgstr ""
 
 #: src/components/routes/system.tsx:418
 msgid "Docker Memory Usage"
-msgstr "Docker Hukommelsesforbrug"
+msgstr ""
 
 #: src/components/routes/system.tsx:459
 msgid "Docker Network I/O"
-msgstr "Docker Netværk I/O"
+msgstr ""
 
 #: src/components/command-palette.tsx:125
 msgid "Documentation"
-msgstr "Dokumentation"
+msgstr ""
 
-#: src/components/add-system.tsx:117
+#: src/components/add-system.tsx:119
 #: src/components/systems-table/systems-table.tsx:591
 msgid "Edit"
 msgstr ""
@@ -303,227 +334,249 @@ msgstr ""
 #: src/components/login/auth-form.tsx:173
 #: src/components/login/forgot-pass-form.tsx:53
 msgid "Email"
-msgstr "E-mail"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx:92
 msgid "Email notifications"
-msgstr "Email-notifikationer"
+msgstr ""
 
 #: src/components/login/login.tsx:38
 msgid "Enter email address to reset password"
-msgstr "Indtast e-mailadresse for at nulstille adgangskoden"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx:112
 msgid "Enter email address..."
-msgstr "Indtast e-mailadresse..."
+msgstr ""
 
 #: src/components/login/auth-form.tsx:136
 #: src/components/routes/settings/config-yaml.tsx:28
 #: src/components/routes/settings/notifications.tsx:188
 msgid "Error"
-msgstr "Fejl"
+msgstr ""
 
 #: src/components/routes/home.tsx:81
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
-msgstr "Overskrider {0}{1} i sidste {2, plural, one {# minut} other {# minutter}}"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx:72
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
-msgstr "Eksisterende systemer ikke defineret i <0>config.yml</0> vil blive slettet. Opret venligst regelmæssige sikkerhedskopier."
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx:93
 msgid "Export configuration"
-msgstr "Eksporter konfiguration"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx:48
 msgid "Export your current systems configuration."
-msgstr "Eksporter din nuværende systemkonfiguration."
+msgstr ""
 
-#: src/lib/utils.ts:39
+#: src/lib/utils.ts:40
 msgid "Failed to authenticate"
-msgstr "Kunne ikke godkende"
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx:39
 #: src/components/routes/settings/notifications.tsx:63
 msgid "Failed to save settings"
-msgstr "Kunne ikke gemme indstillinger"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx:189
 msgid "Failed to send test notification"
-msgstr "Afsendelse af testnotifikation mislykkedes"
+msgstr ""
 
 #: src/components/alerts/alerts-system.tsx:24
 msgid "Failed to update alert"
-msgstr "Kunne ikke opdatere alarm"
+msgstr ""
 
 #: src/components/routes/system.tsx:598
+#: src/components/systems-table/new-systems-table.tsx:195
 #: src/components/systems-table/systems-table.tsx:318
 msgid "Filter..."
-msgstr "Filter..."
+msgstr ""
+
+#: src/components/systems-table/new-systems-table.tsx:131
+msgid "Fingerprint"
+msgstr ""
 
 #: src/components/alerts/alerts-system.tsx:227
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
-msgstr "For <0>{min}</0> {min, plural, one {minut} other {minutter}}"
+msgstr ""
 
 #: src/components/login/auth-form.tsx:328
 msgid "Forgot password?"
-msgstr "Glemt adgangskode?"
+msgstr ""
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx:33
 #: src/components/routes/settings/layout.tsx:51
 msgid "General"
-msgstr "Generelt"
+msgstr ""
 
 #: src/components/routes/system.tsx:498
 msgid "GPU Power Draw"
-msgstr "Gpu Strøm Træk"
+msgstr ""
 
+#: src/components/systems-table/new-systems-table.tsx:222
 #: src/components/systems-table/systems-table.tsx:345
 msgid "Grid"
-msgstr "Gitter"
+msgstr ""
 
-#: src/components/add-system.tsx:150
+#: src/components/add-system.tsx:152
 msgid "Host / IP"
-msgstr "Vært / IP"
+msgstr ""
+
+#: src/components/systems-table/new-systems-table.tsx:94
+#: src/components/systems-table/new-systems-table.tsx:102
+#: src/components/systems-table/new-systems-table.tsx:111
+msgid "Hostname"
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx:93
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
-msgstr "Hvis du har mistet adgangskoden til din administratorkonto, kan du nulstille den ved hjælp af følgende kommando."
+msgstr ""
 
 #: src/components/login/auth-form.tsx:17
 msgid "Invalid email address."
-msgstr "Ugyldig email adresse."
+msgstr ""
 
 #. Linux kernel
 #: src/components/routes/system.tsx:262
 msgid "Kernel"
-msgstr "Kernel"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx:45
 msgid "Language"
-msgstr "Sprog"
+msgstr ""
 
+#: src/components/systems-table/new-systems-table.tsx:208
 #: src/components/systems-table/systems-table.tsx:331
 msgid "Layout"
-msgstr "Layout"
+msgstr ""
 
 #. Light theme
 #: src/components/mode-toggle.tsx:16
 msgid "Light"
-msgstr "Lys"
+msgstr ""
 
 #: src/components/navbar.tsx:105
 msgid "Log Out"
-msgstr "Log ud"
+msgstr ""
 
 #: src/components/login/login.tsx:19
 msgid "Login"
-msgstr "Log ind"
+msgstr ""
 
 #: src/components/login/auth-form.tsx:39
 #: src/components/login/forgot-pass-form.tsx:15
 msgid "Login attempt failed"
-msgstr "Loginforsøg mislykkedes"
+msgstr ""
 
 #: src/components/command-palette.tsx:157
 #: src/components/navbar.tsx:86
 msgid "Logs"
-msgstr "Logs"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx:81
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
-msgstr "Leder du i stedet for efter hvor du kan oprette alarmer? Klik på klokken <0/> ikoner i system tabellen."
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx:85
 msgid "Manage display and notification preferences."
-msgstr "Administrer display og notifikationsindstillinger."
+msgstr ""
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx:630
 msgid "Max 1 min"
-msgstr "Maks. 1 min"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:172
 msgid "Memory"
-msgstr "Hukommelse"
+msgstr ""
 
 #: src/components/routes/system.tsx:408
-#: src/lib/utils.ts:314
+#: src/lib/utils.ts:339
 msgid "Memory Usage"
-msgstr "Hukommelsesforbrug"
+msgstr ""
 
 #: src/components/routes/system.tsx:419
 msgid "Memory usage of docker containers"
-msgstr "Hukommelsesforbrug af dockercontainere"
+msgstr ""
 
-#: src/components/add-system.tsx:146
+#: src/components/add-system.tsx:148
 msgid "Name"
-msgstr "Navn"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:221
 msgid "Net"
-msgstr "Net"
+msgstr ""
 
 #: src/components/routes/system.tsx:460
 msgid "Network traffic of docker containers"
-msgstr "Netværkstrafik af dockercontainere"
+msgstr ""
 
 #: src/components/routes/system.tsx:445
 msgid "Network traffic of public interfaces"
-msgstr "Netværkstrafik af offentlige grænseflader"
+msgstr ""
+
+#: src/components/systems-table/new-systems-table.tsx:188
+msgid "New Systems"
+msgstr ""
+
+#: src/components/systems-table/new-systems-table.tsx:417
+msgid "No new systems found."
+msgstr ""
 
 #: src/components/command-palette.tsx:50
 msgid "No results found."
-msgstr "Ingen resultater fundet."
+msgstr ""
 
+#: src/components/systems-table/new-systems-table.tsx:345
 #: src/components/systems-table/systems-table.tsx:466
 #: src/components/systems-table/systems-table.tsx:539
 msgid "No systems found."
-msgstr "Ingen systemer fundet."
+msgstr ""
 
 #: src/components/command-palette.tsx:111
 #: src/components/routes/settings/layout.tsx:56
 #: src/components/routes/settings/notifications.tsx:75
 msgid "Notifications"
-msgstr "Notifikationer"
+msgstr ""
 
 #: src/components/login/auth-form.tsx:299
 msgid "OAuth 2 / OIDC support"
-msgstr "OAuth 2 / OIDC understøttelse"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx:61
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
-msgstr "Ved hver genstart vil systemer i databasen blive opdateret til at matche de systemer, der er defineret i filen."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:577
 msgid "Open menu"
-msgstr "Åbn menu"
+msgstr ""
 
 #: src/components/login/auth-form.tsx:248
 msgid "Or continue with"
-msgstr "Eller fortsæt med"
+msgstr ""
 
 #: src/components/alerts/alert-button.tsx:109
 msgid "Overwrite existing alerts"
-msgstr "Overskriv eksisterende alarmer"
+msgstr ""
 
 #: src/components/command-palette.tsx:85
 msgid "Page"
-msgstr "Side"
+msgstr ""
 
 #: src/components/command-palette.tsx:72
 msgid "Pages / Settings"
-msgstr "Sider / Indstillinger"
+msgstr ""
 
 #: src/components/login/auth-form.tsx:192
 #: src/components/login/auth-form.tsx:197
 msgid "Password"
-msgstr "Adgangskode"
+msgstr ""
 
 #: src/components/login/auth-form.tsx:20
 msgid "Password must be at least 8 characters."
-msgstr "Adgangskoden skal være på mindst 8 tegn."
+msgstr ""
 
 #: src/components/login/auth-form.tsx:21
 msgid "Password must be less than 72 bytes."
@@ -531,115 +584,115 @@ msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
-msgstr "Anmodning om nulstilling af adgangskode modtaget"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:610
 msgid "Pause"
-msgstr "Pause"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx:96
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
-msgstr "Konfigurer <0>en SMTP server</0> for at sikre at alarmer bliver leveret."
+msgstr ""
 
 #: src/components/alerts/alerts-system.tsx:25
 msgid "Please check logs for more details."
-msgstr "Tjek logfiler for flere detaljer."
+msgstr ""
 
 #: src/components/login/auth-form.tsx:40
 #: src/components/login/forgot-pass-form.tsx:16
 msgid "Please check your credentials and try again"
-msgstr "Tjek dine legitimationsoplysninger og prøv igen"
+msgstr ""
 
 #: src/components/login/login.tsx:36
 msgid "Please create an admin account"
-msgstr "Opret venligst en administratorkonto"
+msgstr ""
 
 #: src/components/login/auth-form.tsx:137
 msgid "Please enable pop-ups for this site"
-msgstr "Aktiver pop-ups for dette websted"
+msgstr ""
 
-#: src/lib/utils.ts:40
+#: src/lib/utils.ts:41
 msgid "Please log in again"
-msgstr "Log venligst ind igen"
+msgstr ""
 
 #: src/components/login/auth-form.tsx:307
 msgid "Please see <0>the documentation</0> for instructions."
-msgstr "Se <0>dokumentationen</0> for instruktioner."
+msgstr ""
 
 #: src/components/login/login.tsx:40
 msgid "Please sign in to your account"
-msgstr "Log venligst ind på din konto"
+msgstr ""
 
-#: src/components/add-system.tsx:154
+#: src/components/add-system.tsx:156
 msgid "Port"
-msgstr "Port"
+msgstr ""
 
 #: src/components/routes/system.tsx:409
 #: src/components/routes/system.tsx:525
 msgid "Precise utilization at the recorded time"
-msgstr "Præcis udnyttelse på det registrerede tidspunkt"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx:58
 msgid "Preferred Language"
-msgstr "Foretrukket sprog"
+msgstr ""
 
 #. Use 'Key' if your language requires many more characters
-#: src/components/add-system.tsx:158
+#: src/components/add-system.tsx:160
 msgid "Public Key"
-msgstr "Offentlig nøgle"
+msgstr ""
 
 #. Disk read
 #: src/components/charts/area-chart.tsx:60
 #: src/components/charts/area-chart.tsx:70
 msgid "Read"
-msgstr "Læs"
+msgstr ""
 
 #. Network bytes received (download)
 #: src/components/charts/area-chart.tsx:65
 msgid "Received"
-msgstr "Modtaget"
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx:76
 msgid "Reset Password"
-msgstr "Nulstil adgangskode"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:605
 msgid "Resume"
-msgstr "Genoptag"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx:118
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
-msgstr "Gem adresse ved hjælp af enter eller komma. Lad feltet stå tomt for at deaktivere e-mail-meddelelser."
+msgstr ""
 
 #: src/components/routes/settings/general.tsx:106
 #: src/components/routes/settings/notifications.tsx:168
 msgid "Save Settings"
-msgstr "Gem indstillinger"
+msgstr ""
 
-#: src/components/add-system.tsx:222
+#: src/components/add-system.tsx:224
 msgid "Save system"
 msgstr ""
 
-#: src/components/navbar.tsx:134
+#: src/components/navbar.tsx:148
 msgid "Search"
-msgstr "Søg"
+msgstr ""
 
 #: src/components/command-palette.tsx:47
 msgid "Search for systems or settings..."
-msgstr "Søg efter systemer eller indstillinger..."
+msgstr ""
 
 #: src/components/alerts/alert-button.tsx:71
 msgid "See <0>notification settings</0> to configure how you receive alerts."
-msgstr "Se <0>meddelelsesindstillinger</0> for at konfigurere, hvordan du modtager alarmer."
+msgstr ""
 
 #. Network bytes sent (upload)
 #: src/components/charts/area-chart.tsx:64
 msgid "Sent"
-msgstr "Sendt"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx:100
 msgid "Sets the default time range for charts when a system is viewed."
-msgstr "Sætter standardtidsintervallet for diagrammer når et system vises."
+msgstr ""
 
 #: src/components/command-palette.tsx:96
 #: src/components/command-palette.tsx:99
@@ -647,202 +700,215 @@ msgstr "Sætter standardtidsintervallet for diagrammer når et system vises."
 #: src/components/routes/settings/layout.tsx:71
 #: src/components/routes/settings/layout.tsx:82
 msgid "Settings"
-msgstr "Indstillinger"
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx:33
 msgid "Settings saved"
-msgstr "Indstillinger gemt"
+msgstr ""
 
 #: src/components/login/auth-form.tsx:236
 msgid "Sign in"
-msgstr "Log ind"
+msgstr ""
 
 #: src/components/command-palette.tsx:186
 msgid "SMTP settings"
-msgstr "SMTP-indstillinger"
+msgstr ""
 
+#: src/components/systems-table/new-systems-table.tsx:230
 #: src/components/systems-table/systems-table.tsx:353
 msgid "Sort By"
-msgstr "Sorter efter"
+msgstr ""
 
-#: src/lib/utils.ts:301
+#: src/lib/utils.ts:326
 msgid "Status"
-msgstr "Status"
+msgstr ""
 
 #: src/components/routes/system.tsx:475
 msgid "Swap space used by the system"
-msgstr "Swap plads brugt af systemet"
+msgstr ""
 
 #: src/components/routes/system.tsx:474
 msgid "Swap Usage"
-msgstr "Swap forbrug"
+msgstr ""
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
+#: src/components/systems-table/new-systems-table.tsx:388
 #: src/components/systems-table/systems-table.tsx:124
 #: src/components/systems-table/systems-table.tsx:132
 #: src/components/systems-table/systems-table.tsx:143
 #: src/components/systems-table/systems-table.tsx:510
 msgid "System"
-msgstr "System"
+msgstr ""
 
 #: src/components/navbar.tsx:78
 msgid "Systems"
-msgstr "Systemer"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx:55
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
-msgstr "Systemer kan være administreres i filen <0>config.yml</0> i din datamappe."
+msgstr ""
 
+#: src/components/systems-table/new-systems-table.tsx:218
 #: src/components/systems-table/systems-table.tsx:341
 msgid "Table"
-msgstr "Tabel"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:197
 msgid "Temp"
 msgstr ""
 
 #: src/components/routes/system.tsx:486
-#: src/lib/utils.ts:333
+#: src/lib/utils.ts:358
 msgid "Temperature"
-msgstr "Temperatur"
+msgstr ""
 
 #: src/components/routes/system.tsx:487
 msgid "Temperatures of system sensors"
-msgstr "Temperaturer i systemsensorer"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx:212
 msgid "Test <0>URL</0>"
-msgstr "Test <0>URL</0>"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx:183
 msgid "Test notification sent"
-msgstr "Test notifikation sendt"
+msgstr ""
 
-#: src/components/add-system.tsx:138
+#: src/components/add-system.tsx:140
 msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
-msgstr "Agenten skal køre på systemet for at forbinde. Kopier installationskommandoen for agenten nedenfor."
+msgstr ""
 
-#: src/components/add-system.tsx:129
+#: src/components/add-system.tsx:131
 msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
-msgstr "Agenten skal køre på systemet for at forbinde. Kopier <0>docker-compose.yml</0> for agenten nedenfor."
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx:98
 msgid "Then log into the backend and reset your user account password in the users table."
-msgstr "Log derefter ind på backend og nulstil adgangskoden til din brugerkonto i tabellen brugere."
+msgstr ""
+
+#: src/components/systems-table/new-systems-table.tsx:485
+msgid "This action cannot be undone."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:637
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
-msgstr "Denne handling kan ikke fortrydes. Dette vil permanent slette alle aktuelle elementer for {name} fra databasen."
+msgstr ""
+
+#: src/components/systems-table/new-systems-table.tsx:487
+msgid "This will permanently block {hostname}@{address} with fingerprint {fingerprint} from joining the beszel server."
+msgstr ""
 
 #: src/components/routes/system.tsx:566
 msgid "Throughput of {extraFsName}"
-msgstr "Gennemløb af {extraFsName}"
+msgstr ""
 
 #: src/components/routes/system.tsx:434
 msgid "Throughput of root filesystem"
-msgstr "Gennemløb af rodfilsystemet"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx:107
 msgid "To email(s)"
-msgstr "Til email(s)"
+msgstr ""
 
 #: src/components/routes/system.tsx:361
 #: src/components/routes/system.tsx:374
 msgid "Toggle grid"
-msgstr "Slå gitter til/fra"
+msgstr ""
 
 #: src/components/mode-toggle.tsx:33
 msgid "Toggle theme"
-msgstr "Skift tema"
+msgstr ""
+
+#: src/lib/utils.ts:361
+msgid "Triggers when any sensor exceeds a threshold"
+msgstr ""
+
+#: src/lib/utils.ts:354
+msgid "Triggers when combined up/down exceeds a threshold"
+msgstr ""
 
 #: src/lib/utils.ts:336
-msgid "Triggers when any sensor exceeds a threshold"
-msgstr "Udløser når en sensor overstiger en tærskel"
+msgid "Triggers when CPU usage exceeds a threshold"
+msgstr ""
+
+#: src/lib/utils.ts:342
+msgid "Triggers when memory usage exceeds a threshold"
+msgstr ""
 
 #: src/lib/utils.ts:329
-msgid "Triggers when combined up/down exceeds a threshold"
-msgstr "Udløses når de kombinerede op/ned overstiger en tærskel"
-
-#: src/lib/utils.ts:311
-msgid "Triggers when CPU usage exceeds a threshold"
-msgstr "Udløser når CPU-forbrug overstiger en tærskel"
-
-#: src/lib/utils.ts:317
-msgid "Triggers when memory usage exceeds a threshold"
-msgstr "Udløser når hukommelsesforbruget overstiger en tærskel"
-
-#: src/lib/utils.ts:304
 msgid "Triggers when status switches between up and down"
-msgstr "Udløser når status skifter mellem op og ned"
+msgstr ""
 
-#: src/lib/utils.ts:323
+#: src/lib/utils.ts:348
 msgid "Triggers when usage of any disk exceeds a threshold"
-msgstr "Udløser når brugen af en disk overstiger en tærskel"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:314
 msgid "Updated in real time. Click on a system to view information."
-msgstr "Opdateret i realtid. Klik på et system for at se information."
+msgstr ""
 
 #: src/components/routes/system.tsx:261
 msgid "Uptime"
-msgstr "Oppetid"
+msgstr ""
 
 #: src/components/charts/area-chart.tsx:73
 #: src/components/routes/system.tsx:516
 #: src/components/routes/system.tsx:553
 msgid "Usage"
-msgstr "Forbrug"
+msgstr ""
 
 #: src/components/routes/system.tsx:426
 msgid "Usage of root partition"
-msgstr "Brug af rodpartition"
+msgstr ""
 
 #: src/components/charts/area-chart.tsx:73
 #: src/components/charts/mem-chart.tsx:65
 #: src/components/charts/swap-chart.tsx:56
 msgid "Used"
-msgstr "Brugt"
+msgstr ""
 
 #: src/components/command-palette.tsx:143
 #: src/components/navbar.tsx:70
 msgid "Users"
-msgstr "Brugere"
+msgstr ""
 
+#: src/components/systems-table/new-systems-table.tsx:200
 #: src/components/systems-table/systems-table.tsx:323
 msgid "View"
-msgstr "Vis"
+msgstr ""
 
+#: src/components/systems-table/new-systems-table.tsx:264
 #: src/components/systems-table/systems-table.tsx:387
 msgid "Visible Fields"
-msgstr "Synlige felter"
+msgstr ""
 
 #: src/components/routes/system.tsx:664
 msgid "Waiting for enough records to display"
-msgstr "Venter på nok posteringer til at vise"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx:48
 msgid "Want to help us make our translations even better? Check out <0>Crowdin</0> for more details."
-msgstr "Vil du hjælpe os med at gøre vores oversættelser endnu bedre? Tjek <0>Crowdin</0> for flere detaljer."
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx:125
 msgid "Webhook / Push notifications"
-msgstr "Webhook / Push notifikationer"
+msgstr ""
 
 #. Disk write
 #: src/components/charts/area-chart.tsx:59
 #: src/components/charts/area-chart.tsx:69
 msgid "Write"
-msgstr "Skriv"
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx:61
 msgid "YAML Config"
-msgstr "YAML Konfiguration"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx:45
 msgid "YAML Configuration"
-msgstr "YAML Konfiguration"
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
-msgstr "Dine brugerindstillinger er opdateret."
+msgstr ""

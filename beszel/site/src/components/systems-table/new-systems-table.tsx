@@ -1,5 +1,4 @@
 import {
-	CellContext,
 	ColumnDef,
 	ColumnFiltersState,
 	getFilteredRowModel,
@@ -41,13 +40,9 @@ import {
 
 import { AddSystemRecord, SystemRecord } from "@/types"
 import {
-	MoreHorizontalIcon,
 	ArrowUpDownIcon,
 	NetworkIcon,
 	CopyIcon,
-	PauseCircleIcon,
-	PlayCircleIcon,
-	Trash2Icon,
 	ServerIcon,
 	FingerprintIcon,
 	LayoutGridIcon,
@@ -56,20 +51,23 @@ import {
 	ArrowUpIcon,
 	Settings2Icon,
 	EyeIcon,
-	PenBoxIcon,
+	BanIcon,
+	CheckIcon,
+	XIcon,
+	BluetoothConnectedIcon,
+	CableIcon,
 } from "lucide-react"
-import { memo, useEffect, useMemo, useRef, useState } from "react"
+import { memo, useEffect, useMemo, useState } from "react"
 import { $hubVersion, $newSystems, pb } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
-import { cn, copyToClipboard, decimalString, isReadOnlyUser, useLocalStorage } from "@/lib/utils"
+import { cn, copyToClipboard, isReadOnlyUser, useLocalStorage } from "@/lib/utils"
 import { $router, Link, navigate } from "../router"
 import { Trans, t } from "@lingui/macro"
 import { useLingui } from "@lingui/react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Input } from "../ui/input"
 import { getPagePath } from "@nanostores/router"
-import { SystemDialog } from "../add-system"
-import { Dialog } from "../ui/dialog"
+import { ConnectToSystemButton } from "../add-system"
 
 type ViewMode = "table" | "grid"
 
@@ -153,8 +151,7 @@ export default function SystemsTable() {
 				size: 120,
 				cell: ({ row }) => (
 					<div className="flex justify-end items-center gap-1">
-						test
-						{/* <!-<ActionsButton system={row.original} />-> */}
+						<ActionsButtons newSystem={row.original} />
 					</div>
 				),
 			},
@@ -194,8 +191,8 @@ export default function SystemsTable() {
 							<Trans>Allow or deny new systems for monitoring.</Trans>
 						</CardDescription>
 					</div>
-					<div className="flex gap-2 ms-auto w-full md:w-80">
-						<Input placeholder={t`Filter...`} onChange={(e) => setFilter(e.target.value)} className="px-4" />
+					<div className="flex gap-2 ms-auto md:w-180">
+						<Input placeholder={t`Filter...`} onChange={(e) => setFilter(e.target.value)} className="px-4 " />
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="outline">
@@ -288,7 +285,9 @@ export default function SystemsTable() {
 								</div>
 							</DropdownMenuContent>
 						</DropdownMenu>
+						<ConnectToSystemButton className="ms-2" />
 					</div>
+				
 				</div>
 			</CardHeader>
 			<div className="p-6 pt-0 max-sm:py-3 max-sm:px-2">
@@ -425,83 +424,67 @@ export default function SystemsTable() {
 	)
 }
 
-const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
-	const [deleteOpen, setDeleteOpen] = useState(false)
-	const [editOpen, setEditOpen] = useState(false)
-	let editOpened = useRef(false)
+const ActionsButtons = memo(({ newSystem }: { newSystem: AddSystemRecord }) => {
+	// denying or accepting is a no-confirm operation
+	const [blockOption, setBlockOpen] = useState(false)
 
-	const { id, status, host, name } = system
+	const { id, hostname, address, fingerprint } = newSystem
 
 	return (
 		<>
-			<DropdownMenu>
-				<DropdownMenuTrigger asChild>
-					<Button variant="ghost" size={"icon"} data-nolink>
-						<span className="sr-only">
-							<Trans>Open menu</Trans>
-						</span>
-						<MoreHorizontalIcon className="w-5" />
-					</Button>
-				</DropdownMenuTrigger>
-				<DropdownMenuContent align="end">
-					{!isReadOnlyUser() && (
-						<DropdownMenuItem
-							onSelect={() => {
-								editOpened.current = true
-								setEditOpen(true)
-							}}
-						>
-							<PenBoxIcon className="me-2.5 size-4" />
-							<Trans>Edit</Trans>
-						</DropdownMenuItem>
-					)}
-					<DropdownMenuItem
-						className={cn(isReadOnlyUser() && "hidden")}
-						onClick={() => {
-							pb.collection("systems").update(id, {
-								status: status === "paused" ? "pending" : "paused",
-							})
-						}}
-					>
-						{status === "paused" ? (
-							<>
-								<PlayCircleIcon className="me-2.5 size-4" />
-								<Trans>Resume</Trans>
-							</>
-						) : (
-							<>
-								<PauseCircleIcon className="me-2.5 size-4" />
-								<Trans>Pause</Trans>
-							</>
-						)}
-					</DropdownMenuItem>
-					<DropdownMenuItem onClick={() => copyToClipboard(host)}>
-						<CopyIcon className="me-2.5 size-4" />
-						<Trans>Copy host</Trans>
-					</DropdownMenuItem>
-					<DropdownMenuSeparator className={cn(isReadOnlyUser() && "hidden")} />
-					<DropdownMenuItem className={cn(isReadOnlyUser() && "hidden")} onSelect={() => setDeleteOpen(true)}>
-						<Trash2Icon className="me-2.5 size-4" />
-						<Trans>Delete</Trans>
-					</DropdownMenuItem>
-				</DropdownMenuContent>
-			</DropdownMenu>
-			{/* edit dialog */}
-			<Dialog open={editOpen} onOpenChange={setEditOpen}>
-				{editOpened.current && <SystemDialog system={system} setOpen={setEditOpen} />}
-			</Dialog>
-			{/* deletion dialog */}
-			<AlertDialog open={deleteOpen} onOpenChange={(open) => setDeleteOpen(open)}>
+
+			{!isReadOnlyUser() && (
+				<Button variant="ghost" size={"icon"} data-nolink onClick={() => {
+					pb.collection("systems").create({
+						status: "pending",
+						name: hostname,
+						host: address,
+						port: "N/A",
+						type: "client",
+						users: pb.authStore.record!.id,
+						fingerprint: fingerprint,
+					})
+				}}>
+					<span className="sr-only">
+						<Trans>Accept System</Trans>
+					</span>
+					<CheckIcon className="w-5" color="#2ec27e" />
+				</Button>
+			)}
+
+			{!isReadOnlyUser() && (
+				<Button variant="ghost" size={"icon"} data-nolink onClick={() => {
+					pb.collection("new_systems").delete(id)
+				}}>
+					<span className="sr-only">
+						<Trans>Deny System</Trans>
+					</span>
+					<XIcon className="w-5" color="#e66100" />
+				</Button>
+			)}
+			{!isReadOnlyUser() && (
+				<Button variant="ghost" size={"icon"} data-nolink onClick={() => {
+					setBlockOpen(true)
+				}}>
+					<span className="sr-only">
+						<Trans>Block New System</Trans>
+					</span>
+					<BanIcon className="w-5" color="#c01c28" />
+				</Button>
+			)}
+
+
+			{/* block dialog */}
+			<AlertDialog open={blockOption} onOpenChange={(open) => setBlockOpen(open)}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
 						<AlertDialogTitle>
-							<Trans>Are you sure you want to delete {name}?</Trans>
+							<Trans>Are you sure you want to permanently block this host?</Trans>
 						</AlertDialogTitle>
 						<AlertDialogDescription>
-							<Trans>
-								This action cannot be undone. This will permanently delete all current records for {name} from the
-								database.
-							</Trans>
+							<Trans>This action cannot be undone.</Trans>
+							<br></br>
+							<Trans>This will permanently block {hostname}@{address} with fingerprint {fingerprint} from joining the beszel server.</Trans>
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
@@ -510,9 +493,13 @@ const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 						</AlertDialogCancel>
 						<AlertDialogAction
 							className={cn(buttonVariants({ variant: "destructive" }))}
-							onClick={() => pb.collection("systems").delete(id)}
+							onClick={() => {
+								pb.collection("blocked_systems").create({
+									fingerprint: fingerprint
+								})
+							}}
 						>
-							<Trans>Continue</Trans>
+							<Trans>Block</Trans>
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>
