@@ -579,6 +579,10 @@ func (h *Hub) getSSHKey() (ssh.Signer, error) {
 			return nil, fmt.Errorf("failed to parse private key: %s", err)
 		}
 
+		pubKeyBytes := ssh.MarshalAuthorizedKey(private.PublicKey())
+
+		h.pubKey = strings.TrimSuffix(string(pubKeyBytes), "\n")
+
 		return private, nil
 	}
 

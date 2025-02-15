@@ -211,6 +211,9 @@ func (h *Hub) acceptSystem(fingerprint string) error {
 }
 
 func (h *Hub) checkAPIKey(key string) bool {
+	if key == "" {
+		return false
+	}
 	// get user settings
 	record, err := h.FindFirstRecordByFilter(
 		"user_settings", "api_key={:key}",
