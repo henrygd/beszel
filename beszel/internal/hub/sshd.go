@@ -4,6 +4,8 @@ import (
 	"beszel"
 	"beszel/internal/entities/system"
 	"database/sql"
+	"errors"
+	"fmt"
 	"net"
 	"strings"
 
@@ -64,50 +66,11 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 	defer sshConn.Close()
 	go ssh.DiscardRequests(reqs)
 
-	parts := strings.Split(sshConn.User(), "@")
-	if len(parts) < 2 {
-		h.Logger().Debug("new system did not supply valid user string")
-		return
-	}
-
-	hostname := strings.Join(parts[:len(parts)-1], "@")
-	connectionKey := parts[len(parts)-1]
-
-	if connectionKey == "" {
-		h.Logger().Debug("new system did not supply an connection key")
-		return
-	}
-
-	validKey, user := h.checkConnectionKey(connectionKey)
-	if !validKey {
-		h.Logger().Info("new system did not supply valid connection key")
-		return
-	}
-
-	settings, err := h.FindFirstRecordByFilter("connection_settings", "")
-	if err != nil {
-		h.Logger().Error("Unable to get connection settings", "err", err)
-		return
-	}
-
-	withApiAction := settings.GetString("withAPIKey")
-
 	fingerprint := sshConn.Permissions.Extensions["fingerprint"]
 
-	_, err = h.FindFirstRecordByData("blocked_systems", "fingerprint", fingerprint)
-	// If we could find a record for this sytem in the blocked_systems table, then early quit
-	if err == nil {
-		h.Logger().Debug("Blocked system attempted to connect", "fingerprint", fingerprint, "address", c.RemoteAddr())
+	isBlocked, err := h.isNewSystemBlocked(fingerprint)
+	if err != nil || isBlocked {
 		return
-	} else {
-
-		if err != sql.ErrNoRows {
-			h.Logger().Warn("Could not read blocked_systems table", "err", err, "fingerprint", fingerprint)
-			return
-		}
-
-		// If the error was that there were no matching rows then pass it
-		h.Logger().Info("System is not blocked!", "fingerprint", fingerprint)
 	}
 
 	record, err := h.FindFirstRecordByFilter(
@@ -115,75 +78,79 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 		"status!='paused' && fingerprint={:fingerprint}",
 		dbx.Params{"fingerprint": fingerprint},
 	)
-	if err != nil {
-		if err != sql.ErrNoRows {
-			h.Logger().Error("Failed to fetch client record", "err", err)
-			return
-		}
+	// if we encounter some other error in trying to check if the client exists in our db already
+	if err != nil && err != sql.ErrNoRows {
+		h.Logger().Error("Failed to fetch client record", "err", err)
+		return
 	}
 
 	// If this client doesnt already exist in the systems collection
-	if err == sql.ErrNoRows {
+	if err != nil && err == sql.ErrNoRows {
 		h.Logger().Info("Unknown client tried to connect", "fingerprint", fingerprint, "address", c.RemoteAddr())
 
+		user, hostname, err := h.checkConnectionKey(sshConn.User())
+		if err != nil {
+			h.Logger().Info("new system did not supply valid connection key", "err", err)
+			return
+		}
+
+		settings, err := h.FindFirstRecordByFilter("connection_settings", "")
+		if err != nil {
+			h.Logger().Error("Unable to get connection settings", "err", err)
+			return
+		}
+
 		// check to see if it already has a new_systems entry to display it
-		_, err = h.FindFirstRecordByFilter(
+		newSystemRecord, err := h.FindFirstRecordByFilter(
 			"new_systems",
 			"fingerprint={:fingerprint}",
 			dbx.Params{"fingerprint": fingerprint},
 		)
 
-		if err != nil {
-			if err != sql.ErrNoRows {
-				h.Logger().Error("failed to get pending system records", "err", err)
-				return
-			}
-			// If it has no entry already, determine what to do with it
-
-			switch withApiAction {
-			case "accept":
-				r, err := h.acceptSystem(user, hostname, c.RemoteAddr().String(), fingerprint)
-				if err != nil {
-					h.Logger().Error("failed to accept new connection", "err", err)
-					return
-				}
-
-				record = r
-				// accept the system and allow it to drop through to start recording details immediately
-			case "deny":
-				// do not add entry to new_systems collection when denying
-				return
-			default:
-
-				collection, err := h.FindCollectionByNameOrId("new_systems")
-				if err != nil {
-					h.Logger().Error("failed to get new_systems collection", "err", err)
-					return
-				}
-
-				address, _, err := net.SplitHostPort(c.RemoteAddr().String())
-				if err != nil {
-					h.Logger().Debug("Could not split remote address host and port", "address", c.RemoteAddr().String(), "err", err)
-					address = c.RemoteAddr().String()
-				}
-
-				newSystemRecord := core.NewRecord(collection)
-				newSystemRecord.Set("hostname", hostname)
-				newSystemRecord.Set("fingerprint", fingerprint)
-				newSystemRecord.Set("address", address)
-
-				err = h.Save(newSystemRecord)
-				if err != nil {
-					h.Logger().Error("failed to save pending system record", "err", err)
-					return
-				}
-
-				return
-			}
+		if err != nil && err != sql.ErrNoRows {
+			h.Logger().Error("failed to get pending system records", "err", err)
+			return
 		}
-		// intentional fallthrough
+
+		isPending := err != sql.ErrNoRows
+
+		// If it has no entry already, determine what to do with it
+		withApiAction := settings.GetString("withAPIKey")
+		switch withApiAction {
+		case "accept":
+			r, err := h.acceptSystem(user, hostname, c.RemoteAddr().String(), fingerprint)
+			if err != nil {
+				h.Logger().Error("failed to accept new connection", "err", err)
+				return
+			}
+
+			record = r
+			// accept the system and allow it to drop through to start recording details immediately
+		case "deny":
+			if isPending {
+				err = h.Delete(newSystemRecord)
+				if err != nil {
+					h.Logger().Error("failed to delete pending new system based on withApiKey action", "action", withApiAction, "err", err)
+					return
+				}
+			}
+
+			return
+		case "display":
+			if !isPending {
+				err = h.addPendingSystem(hostname, fingerprint, c.RemoteAddr())
+				if err != nil {
+					h.Logger().Error("failed to add pending system", "err", err)
+					return
+				}
+			}
+			return
+		}
+
 	}
 
+	// effectively err == nil or err == sql.ErrNoRows + withApiAction == "accept"
+	//   (is an existing system)  or (is a new system and action is accept new systems)
 	if _, ok := h.Store().GetOk(record.Id); ok {
 		h.Logger().Warn("Client with same fingerprint attempted to connect", "fingerprint", fingerprint, "address", c.RemoteAddr())
 
@@ -251,19 +218,84 @@ func (h *Hub) acceptSystem(user any, name, address, fingerprint string) (*core.R
 	return newSystemRecord, nil
 }
 
-func (h *Hub) checkConnectionKey(key string) (bool, any) {
-	if key == "" {
-		return false, nil
+func (h *Hub) isNewSystemBlocked(fingerprint string) (bool, error) {
+	_, err := h.FindFirstRecordByData("blocked_systems", "fingerprint", fingerprint)
+	// If we could find a record for this sytem in the blocked_systems table, then early quit
+	if err == nil {
+		h.Logger().Debug("Blocked system attempted to connect", "fingerprint", fingerprint)
+		return true, nil
+	} else {
+		if err != sql.ErrNoRows {
+			h.Logger().Warn("Could not read blocked_systems table", "err", err, "fingerprint", fingerprint)
+			return false, err
+		}
+
+		// If the error was that there were no matching rows then pass it
+		h.Logger().Info("System is not blocked!", "fingerprint", fingerprint)
 	}
+	return false, nil
+}
+
+func (h *Hub) addPendingSystem(hostname, fingerprint string, address net.Addr) error {
+	collection, err := h.FindCollectionByNameOrId("new_systems")
+	if err != nil {
+		h.Logger().Error("failed to get new_systems collection", "err", err)
+		return err
+	}
+
+	addr, _, err := net.SplitHostPort(address.String())
+	if err != nil {
+		h.Logger().Debug("Could not split remote address host and port", "address", address.String(), "err", err)
+		addr = address.String()
+	}
+
+	newSystemRecord := core.NewRecord(collection)
+	newSystemRecord.Set("hostname", hostname)
+	newSystemRecord.Set("fingerprint", fingerprint)
+	newSystemRecord.Set("address", addr)
+
+	err = h.Save(newSystemRecord)
+	if err != nil {
+		h.Logger().Error("failed to save pending system record", "err", err)
+		return err
+	}
+
+	return nil
+}
+
+func (h *Hub) checkConnectionKey(connectionString string) (any, string, error) {
+	if connectionString == "" {
+		return nil, "", errors.New("connection string was empty")
+	}
+
+	// Check if the client has a registration connection key
+	parts := strings.Split(connectionString, "@")
+	if len(parts) < 2 {
+		h.Logger().Debug("new system did not supply valid user string")
+		return nil, "", fmt.Errorf("an invalid connection string was supplied: %q", connectionString)
+	}
+
+	hostname := strings.Join(parts[:len(parts)-1], "@")
+	connectionKey := parts[len(parts)-1]
+
+	if connectionKey == "" {
+		h.Logger().Debug("new system did not supply an connection key")
+		return nil, "", errors.New("connection key was empty")
+	}
+
 	// get user settings
 	record, err := h.FindFirstRecordByFilter(
 		"user_settings", "connection_key={:key}",
-		dbx.Params{"key": key},
+		dbx.Params{"key": connectionKey},
 	)
 	if err != nil {
 		h.Logger().Error("Failed to get user settings", "err", err.Error())
-		return false, nil
+		return nil, "", errors.New("connection_key not found in database")
 	}
 
-	return record.GetString("connection_key") == key, record.Get("user")
+	if record.GetString("connection_key") != connectionKey {
+		return nil, "", errors.New("connection key did not match any expected connection key")
+	}
+
+	return record.Get("user"), hostname, nil
 }

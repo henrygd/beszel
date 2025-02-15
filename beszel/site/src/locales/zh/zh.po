@@ -6,6 +6,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
 "Language: zh\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
 
 #: src/components/routes/system.tsx:250
 msgid "{0, plural, one {# day} other {# days}}"
@@ -15,36 +21,36 @@ msgstr ""
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr ""
 
-#: src/lib/utils.ts:183
+#: src/lib/utils.ts:196
 msgid "1 hour"
 msgstr ""
 
-#: src/lib/utils.ts:206
+#: src/lib/utils.ts:219
 msgid "1 week"
 msgstr ""
 
-#: src/lib/utils.ts:191
+#: src/lib/utils.ts:204
 msgid "12 hours"
 msgstr ""
 
-#: src/lib/utils.ts:199
+#: src/lib/utils.ts:212
 msgid "24 hours"
 msgstr ""
 
-#: src/lib/utils.ts:214
+#: src/lib/utils.ts:227
 msgid "30 days"
 msgstr ""
 
-#: src/components/systems-table/new-systems-table.tsx:449
+#: src/components/systems-table/new-systems-table.tsx:453
 msgid "Accept System"
 msgstr ""
 
 #. Table column
 #. Table column
-#: src/components/systems-table/new-systems-table.tsx:150
-#: src/components/systems-table/new-systems-table.tsx:235
-#: src/components/systems-table/new-systems-table.tsx:378
-#: src/components/systems-table/new-systems-table.tsx:388
+#: src/components/systems-table/new-systems-table.tsx:149
+#: src/components/systems-table/new-systems-table.tsx:234
+#: src/components/systems-table/new-systems-table.tsx:377
+#: src/components/systems-table/new-systems-table.tsx:387
 #: src/components/systems-table/systems-table.tsx:272
 #: src/components/systems-table/systems-table.tsx:358
 #: src/components/systems-table/systems-table.tsx:500
@@ -60,15 +66,15 @@ msgstr ""
 msgid "Add <0>System</0>"
 msgstr ""
 
-#: src/components/add-system.tsx:119
+#: src/components/add-system.tsx:120
 msgid "Add New System"
 msgstr ""
 
-#: src/components/add-system.tsx:224
+#: src/components/add-system.tsx:225
 msgid "Add system"
 msgstr ""
 
-#: src/components/routes/add_systems.tsx:18
+#: src/components/routes/add_systems.tsx:16
 msgid "Add System"
 msgstr ""
 
@@ -76,11 +82,11 @@ msgstr ""
 msgid "Add URL"
 msgstr ""
 
-#: src/components/systems-table/new-systems-table.tsx:121
+#: src/components/systems-table/new-systems-table.tsx:120
 msgid "Address"
 msgstr ""
 
-#: src/components/routes/settings/general.tsx:81
+#: src/components/routes/settings/general.tsx:117
 msgid "Adjust display options for charts."
 msgstr ""
 
@@ -106,7 +112,7 @@ msgstr ""
 msgid "All Systems"
 msgstr ""
 
-#: src/components/systems-table/new-systems-table.tsx:191
+#: src/components/systems-table/new-systems-table.tsx:190
 msgid "Allow or deny new systems for monitoring."
 msgstr ""
 
@@ -114,7 +120,7 @@ msgstr ""
 msgid "Are you sure you want to delete {name}?"
 msgstr ""
 
-#: src/components/systems-table/new-systems-table.tsx:482
+#: src/components/systems-table/new-systems-table.tsx:496
 msgid "Are you sure you want to permanently block this host?"
 msgstr ""
 
@@ -146,14 +152,26 @@ msgstr ""
 msgid "Average utilization of {0}"
 msgstr ""
 
+#: src/lib/utils.ts:188
+msgid "Await confirmation"
+msgstr ""
+
 #: src/components/command-palette.tsx:171
 #: src/components/navbar.tsx:94
 msgid "Backups"
 msgstr ""
 
 #: src/components/routes/system.tsx:443
-#: src/lib/utils.ts:351
+#: src/lib/utils.ts:366
 msgid "Bandwidth"
+msgstr ""
+
+#: src/lib/utils.ts:180
+msgid "Be Accepted"
+msgstr ""
+
+#: src/lib/utils.ts:184
+msgid "Be Denied"
 msgstr ""
 
 #: src/components/login/auth-form.tsx:304
@@ -164,27 +182,27 @@ msgstr ""
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
 msgstr ""
 
-#: src/components/add-system.tsx:124
+#: src/components/add-system.tsx:125
 msgid "Binary"
 msgstr ""
 
-#: src/components/systems-table/new-systems-table.tsx:502
+#: src/components/systems-table/new-systems-table.tsx:516
 msgid "Block"
 msgstr ""
 
-#: src/components/systems-table/new-systems-table.tsx:470
+#: src/components/systems-table/new-systems-table.tsx:484
 msgid "Block New System"
 msgstr ""
 
 #: src/components/add-system.tsx:42
-msgid "CableIcon <0>System</0>"
-msgstr ""
+#~ msgid "CableIcon <0>System</0>"
+#~ msgstr ""
 
 #: src/components/charts/mem-chart.tsx:89
 msgid "Cache / Buffers"
 msgstr ""
 
-#: src/components/systems-table/new-systems-table.tsx:492
+#: src/components/systems-table/new-systems-table.tsx:506
 #: src/components/systems-table/systems-table.tsx:645
 msgid "Cancel"
 msgstr ""
@@ -193,11 +211,11 @@ msgstr ""
 msgid "Caution - potential data loss"
 msgstr ""
 
-#: src/components/routes/settings/general.tsx:36
+#: src/components/routes/settings/general.tsx:39
 msgid "Change general application options."
 msgstr ""
 
-#: src/components/routes/settings/general.tsx:78
+#: src/components/routes/settings/general.tsx:114
 msgid "Chart options"
 msgstr ""
 
@@ -205,7 +223,8 @@ msgstr ""
 msgid "Check {email} for a reset link."
 msgstr ""
 
-#: src/components/routes/settings/layout.tsx:40
+#: src/components/routes/settings/connections.tsx:36
+#: src/components/routes/settings/layout.tsx:41
 msgid "Check logs for more details."
 msgstr ""
 
@@ -213,7 +232,8 @@ msgstr ""
 msgid "Check your notification service"
 msgstr ""
 
-#: src/components/add-system.tsx:183
+#: src/components/add-system.tsx:184
+#: src/components/routes/settings/general.tsx:69
 msgid "Click to copy"
 msgstr ""
 
@@ -231,6 +251,27 @@ msgstr ""
 msgid "Confirm password"
 msgstr ""
 
+#: src/components/add-system.tsx:42
+msgid "Connect To"
+msgstr ""
+
+#: src/components/routes/settings/general.tsx:48
+msgid "Connection Key"
+msgstr ""
+
+#: src/components/routes/settings/connections.tsx:31
+msgid "Connection settings have been updated."
+msgstr ""
+
+#: src/components/routes/settings/connections.tsx:30
+msgid "Connection settings saved"
+msgstr ""
+
+#: src/components/routes/settings/connections.tsx:95
+#: src/components/routes/settings/layout.tsx:68
+msgid "Connections"
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx:651
 msgid "Continue"
 msgstr ""
@@ -239,8 +280,8 @@ msgstr ""
 msgid "Copied to clipboard"
 msgstr ""
 
-#: src/components/add-system.tsx:200
-#: src/components/add-system.tsx:211
+#: src/components/add-system.tsx:201
+#: src/components/add-system.tsx:212
 msgid "Copy"
 msgstr ""
 
@@ -248,7 +289,7 @@ msgstr ""
 msgid "Copy host"
 msgstr ""
 
-#: src/components/add-system.tsx:220
+#: src/components/add-system.tsx:221
 msgid "Copy Linux command"
 msgstr ""
 
@@ -262,7 +303,7 @@ msgstr ""
 
 #: src/components/charts/area-chart.tsx:56
 #: src/components/routes/system.tsx:386
-#: src/lib/utils.ts:333
+#: src/lib/utils.ts:348
 msgid "CPU Usage"
 msgstr ""
 
@@ -280,15 +321,19 @@ msgstr ""
 msgid "Dashboard"
 msgstr ""
 
-#: src/components/routes/settings/general.tsx:85
+#: src/components/routes/settings/general.tsx:121
 msgid "Default time period"
+msgstr ""
+
+#: src/components/routes/settings/connections.tsx:97
+msgid "Define how beszel should react when a new client connection occurs."
 msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:621
 msgid "Delete"
 msgstr ""
 
-#: src/components/systems-table/new-systems-table.tsx:460
+#: src/components/systems-table/new-systems-table.tsx:469
 msgid "Deny System"
 msgstr ""
 
@@ -302,7 +347,7 @@ msgstr ""
 
 #: src/components/charts/disk-chart.tsx:79
 #: src/components/routes/system.tsx:426
-#: src/lib/utils.ts:345
+#: src/lib/utils.ts:360
 msgid "Disk Usage"
 msgstr ""
 
@@ -326,7 +371,7 @@ msgstr ""
 msgid "Documentation"
 msgstr ""
 
-#: src/components/add-system.tsx:119
+#: src/components/add-system.tsx:120
 #: src/components/systems-table/systems-table.tsx:591
 msgid "Edit"
 msgstr ""
@@ -370,11 +415,16 @@ msgstr ""
 msgid "Export your current systems configuration."
 msgstr ""
 
-#: src/lib/utils.ts:40
+#: src/components/routes/settings/connections.tsx:131
+msgid "External address"
+msgstr ""
+
+#: src/lib/utils.ts:39
 msgid "Failed to authenticate"
 msgstr ""
 
-#: src/components/routes/settings/layout.tsx:39
+#: src/components/routes/settings/connections.tsx:35
+#: src/components/routes/settings/layout.tsx:40
 #: src/components/routes/settings/notifications.tsx:63
 msgid "Failed to save settings"
 msgstr ""
@@ -388,12 +438,12 @@ msgid "Failed to update alert"
 msgstr ""
 
 #: src/components/routes/system.tsx:598
-#: src/components/systems-table/new-systems-table.tsx:195
+#: src/components/systems-table/new-systems-table.tsx:194
 #: src/components/systems-table/systems-table.tsx:318
 msgid "Filter..."
 msgstr ""
 
-#: src/components/systems-table/new-systems-table.tsx:131
+#: src/components/systems-table/new-systems-table.tsx:130
 msgid "Fingerprint"
 msgstr ""
 
@@ -406,8 +456,8 @@ msgid "Forgot password?"
 msgstr ""
 
 #. Context: General settings
-#: src/components/routes/settings/general.tsx:33
-#: src/components/routes/settings/layout.tsx:51
+#: src/components/routes/settings/general.tsx:36
+#: src/components/routes/settings/layout.tsx:52
 msgid "General"
 msgstr ""
 
@@ -415,18 +465,18 @@ msgstr ""
 msgid "GPU Power Draw"
 msgstr ""
 
-#: src/components/systems-table/new-systems-table.tsx:222
+#: src/components/systems-table/new-systems-table.tsx:221
 #: src/components/systems-table/systems-table.tsx:345
 msgid "Grid"
 msgstr ""
 
-#: src/components/add-system.tsx:152
+#: src/components/add-system.tsx:153
 msgid "Host / IP"
 msgstr ""
 
-#: src/components/systems-table/new-systems-table.tsx:94
-#: src/components/systems-table/new-systems-table.tsx:102
-#: src/components/systems-table/new-systems-table.tsx:111
+#: src/components/systems-table/new-systems-table.tsx:93
+#: src/components/systems-table/new-systems-table.tsx:101
+#: src/components/systems-table/new-systems-table.tsx:110
 msgid "Hostname"
 msgstr ""
 
@@ -443,11 +493,11 @@ msgstr ""
 msgid "Kernel"
 msgstr ""
 
-#: src/components/routes/settings/general.tsx:45
+#: src/components/routes/settings/general.tsx:81
 msgid "Language"
 msgstr ""
 
-#: src/components/systems-table/new-systems-table.tsx:208
+#: src/components/systems-table/new-systems-table.tsx:207
 #: src/components/systems-table/systems-table.tsx:331
 msgid "Layout"
 msgstr ""
@@ -479,7 +529,7 @@ msgstr ""
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
 msgstr ""
 
-#: src/components/routes/settings/layout.tsx:85
+#: src/components/routes/settings/layout.tsx:92
 msgid "Manage display and notification preferences."
 msgstr ""
 
@@ -488,12 +538,16 @@ msgstr ""
 msgid "Max 1 min"
 msgstr ""
 
+#: src/components/routes/settings/connections.tsx:125
+msgid "Max number of waiting connections"
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx:172
 msgid "Memory"
 msgstr ""
 
 #: src/components/routes/system.tsx:408
-#: src/lib/utils.ts:339
+#: src/lib/utils.ts:354
 msgid "Memory Usage"
 msgstr ""
 
@@ -501,7 +555,7 @@ msgstr ""
 msgid "Memory usage of docker containers"
 msgstr ""
 
-#: src/components/add-system.tsx:148
+#: src/components/add-system.tsx:149
 msgid "Name"
 msgstr ""
 
@@ -517,11 +571,15 @@ msgstr ""
 msgid "Network traffic of public interfaces"
 msgstr ""
 
-#: src/components/systems-table/new-systems-table.tsx:188
+#: src/components/routes/settings/connections.tsx:109
+msgid "New clients should"
+msgstr ""
+
+#: src/components/systems-table/new-systems-table.tsx:187
 msgid "New Systems"
 msgstr ""
 
-#: src/components/systems-table/new-systems-table.tsx:417
+#: src/components/systems-table/new-systems-table.tsx:416
 msgid "No new systems found."
 msgstr ""
 
@@ -529,14 +587,14 @@ msgstr ""
 msgid "No results found."
 msgstr ""
 
-#: src/components/systems-table/new-systems-table.tsx:345
+#: src/components/systems-table/new-systems-table.tsx:344
 #: src/components/systems-table/systems-table.tsx:466
 #: src/components/systems-table/systems-table.tsx:539
 msgid "No systems found."
 msgstr ""
 
 #: src/components/command-palette.tsx:111
-#: src/components/routes/settings/layout.tsx:56
+#: src/components/routes/settings/layout.tsx:57
 #: src/components/routes/settings/notifications.tsx:75
 msgid "Notifications"
 msgstr ""
@@ -611,7 +669,7 @@ msgstr ""
 msgid "Please enable pop-ups for this site"
 msgstr ""
 
-#: src/lib/utils.ts:41
+#: src/lib/utils.ts:40
 msgid "Please log in again"
 msgstr ""
 
@@ -623,7 +681,7 @@ msgstr ""
 msgid "Please sign in to your account"
 msgstr ""
 
-#: src/components/add-system.tsx:156
+#: src/components/add-system.tsx:157
 msgid "Port"
 msgstr ""
 
@@ -632,12 +690,12 @@ msgstr ""
 msgid "Precise utilization at the recorded time"
 msgstr ""
 
-#: src/components/routes/settings/general.tsx:58
+#: src/components/routes/settings/general.tsx:94
 msgid "Preferred Language"
 msgstr ""
 
 #. Use 'Key' if your language requires many more characters
-#: src/components/add-system.tsx:160
+#: src/components/add-system.tsx:161
 msgid "Public Key"
 msgstr ""
 
@@ -664,12 +722,13 @@ msgstr ""
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr ""
 
-#: src/components/routes/settings/general.tsx:106
+#: src/components/routes/settings/connections.tsx:139
+#: src/components/routes/settings/general.tsx:142
 #: src/components/routes/settings/notifications.tsx:168
 msgid "Save Settings"
 msgstr ""
 
-#: src/components/add-system.tsx:224
+#: src/components/add-system.tsx:225
 msgid "Save system"
 msgstr ""
 
@@ -690,19 +749,19 @@ msgstr ""
 msgid "Sent"
 msgstr ""
 
-#: src/components/routes/settings/general.tsx:100
+#: src/components/routes/settings/general.tsx:136
 msgid "Sets the default time range for charts when a system is viewed."
 msgstr ""
 
 #: src/components/command-palette.tsx:96
 #: src/components/command-palette.tsx:99
 #: src/components/command-palette.tsx:114
-#: src/components/routes/settings/layout.tsx:71
-#: src/components/routes/settings/layout.tsx:82
+#: src/components/routes/settings/layout.tsx:78
+#: src/components/routes/settings/layout.tsx:89
 msgid "Settings"
 msgstr ""
 
-#: src/components/routes/settings/layout.tsx:33
+#: src/components/routes/settings/layout.tsx:34
 msgid "Settings saved"
 msgstr ""
 
@@ -714,13 +773,19 @@ msgstr ""
 msgid "SMTP settings"
 msgstr ""
 
-#: src/components/systems-table/new-systems-table.tsx:230
+#: src/components/systems-table/new-systems-table.tsx:229
 #: src/components/systems-table/systems-table.tsx:353
 msgid "Sort By"
 msgstr ""
 
-#: src/lib/utils.ts:326
+#: src/lib/utils.ts:341
 msgid "Status"
+msgstr ""
+
+#: src/components/systems-table/new-systems-table.tsx:447
+#: src/components/systems-table/new-systems-table.tsx:463
+#: src/components/systems-table/new-systems-table.tsx:478
+msgid "Success"
 msgstr ""
 
 #: src/components/routes/system.tsx:475
@@ -733,7 +798,7 @@ msgstr ""
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
-#: src/components/systems-table/new-systems-table.tsx:388
+#: src/components/systems-table/new-systems-table.tsx:387
 #: src/components/systems-table/systems-table.tsx:124
 #: src/components/systems-table/systems-table.tsx:132
 #: src/components/systems-table/systems-table.tsx:143
@@ -749,7 +814,7 @@ msgstr ""
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr ""
 
-#: src/components/systems-table/new-systems-table.tsx:218
+#: src/components/systems-table/new-systems-table.tsx:217
 #: src/components/systems-table/systems-table.tsx:341
 msgid "Table"
 msgstr ""
@@ -759,7 +824,7 @@ msgid "Temp"
 msgstr ""
 
 #: src/components/routes/system.tsx:486
-#: src/lib/utils.ts:358
+#: src/lib/utils.ts:373
 msgid "Temperature"
 msgstr ""
 
@@ -775,11 +840,11 @@ msgstr ""
 msgid "Test notification sent"
 msgstr ""
 
-#: src/components/add-system.tsx:140
+#: src/components/add-system.tsx:141
 msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
 msgstr ""
 
-#: src/components/add-system.tsx:131
+#: src/components/add-system.tsx:132
 msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
 msgstr ""
 
@@ -787,7 +852,7 @@ msgstr ""
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr ""
 
-#: src/components/systems-table/new-systems-table.tsx:485
+#: src/components/systems-table/new-systems-table.tsx:499
 msgid "This action cannot be undone."
 msgstr ""
 
@@ -795,7 +860,7 @@ msgstr ""
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr ""
 
-#: src/components/systems-table/new-systems-table.tsx:487
+#: src/components/systems-table/new-systems-table.tsx:501
 msgid "This will permanently block {hostname}@{address} with fingerprint {fingerprint} from joining the beszel server."
 msgstr ""
 
@@ -820,27 +885,27 @@ msgstr ""
 msgid "Toggle theme"
 msgstr ""
 
-#: src/lib/utils.ts:361
+#: src/lib/utils.ts:376
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr ""
 
-#: src/lib/utils.ts:354
+#: src/lib/utils.ts:369
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr ""
 
-#: src/lib/utils.ts:336
+#: src/lib/utils.ts:351
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr ""
 
-#: src/lib/utils.ts:342
+#: src/lib/utils.ts:357
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr ""
 
-#: src/lib/utils.ts:329
+#: src/lib/utils.ts:344
 msgid "Triggers when status switches between up and down"
 msgstr ""
 
-#: src/lib/utils.ts:348
+#: src/lib/utils.ts:363
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr ""
 
@@ -873,12 +938,12 @@ msgstr ""
 msgid "Users"
 msgstr ""
 
-#: src/components/systems-table/new-systems-table.tsx:200
+#: src/components/systems-table/new-systems-table.tsx:199
 #: src/components/systems-table/systems-table.tsx:323
 msgid "View"
 msgstr ""
 
-#: src/components/systems-table/new-systems-table.tsx:264
+#: src/components/systems-table/new-systems-table.tsx:263
 #: src/components/systems-table/systems-table.tsx:387
 msgid "Visible Fields"
 msgstr ""
@@ -887,7 +952,7 @@ msgstr ""
 msgid "Waiting for enough records to display"
 msgstr ""
 
-#: src/components/routes/settings/general.tsx:48
+#: src/components/routes/settings/general.tsx:84
 msgid "Want to help us make our translations even better? Check out <0>Crowdin</0> for more details."
 msgstr ""
 
@@ -901,7 +966,7 @@ msgstr ""
 msgid "Write"
 msgstr ""
 
-#: src/components/routes/settings/layout.tsx:61
+#: src/components/routes/settings/layout.tsx:62
 msgid "YAML Config"
 msgstr ""
 
@@ -909,6 +974,6 @@ msgstr ""
 msgid "YAML Configuration"
 msgstr ""
 
-#: src/components/routes/settings/layout.tsx:34
+#: src/components/routes/settings/layout.tsx:35
 msgid "Your user settings have been updated."
 msgstr ""
