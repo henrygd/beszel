@@ -8,7 +8,7 @@ msgstr ""
 "Language: ja\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-12 02:53\n"
+"PO-Revision-Date: 2025-02-15 01:46\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -89,7 +89,7 @@ msgstr "管理者"
 
 #: src/components/systems-table/systems-table.tsx:204
 msgid "Agent"
-msgstr "代理"
+msgstr "エージェント"
 
 #: src/components/alerts/alert-button.tsx:32
 #: src/components/alerts/alert-button.tsx:68
