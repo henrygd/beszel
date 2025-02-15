@@ -70,15 +70,16 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 		return
 	}
 
-	Hostname := strings.Join(parts[:len(parts)-1], "@")
-	ApiKey := parts[len(parts)-1]
+	hostname := strings.Join(parts[:len(parts)-1], "@")
+	connectionKey := parts[len(parts)-1]
 
-	if ApiKey == "" {
+	if connectionKey == "" {
 		h.Logger().Debug("new system did not supply an connection key")
 		return
 	}
 
-	if !h.checkAPIKey(ApiKey) {
+	validKey, user := h.checkConnectionKey(connectionKey)
+	if !validKey {
 		h.Logger().Info("new system did not supply valid connection key")
 		return
 	}
@@ -115,65 +116,75 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 		dbx.Params{"fingerprint": fingerprint},
 	)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			h.Logger().Info("Unknown client tried to connect", "fingerprint", fingerprint, "address", c.RemoteAddr())
+		if err != sql.ErrNoRows {
+			h.Logger().Error("Failed to fetch client record", "err", err)
+			return
+		}
+	}
 
-			_, err = h.FindFirstRecordByFilter(
-				"new_systems",
-				"fingerprint={:fingerprint}",
-				dbx.Params{"fingerprint": fingerprint},
-			)
+	// If this client doesnt already exist in the systems collection
+	if err == sql.ErrNoRows {
+		h.Logger().Info("Unknown client tried to connect", "fingerprint", fingerprint, "address", c.RemoteAddr())
 
+		// check to see if it already has a new_systems entry to display it
+		_, err = h.FindFirstRecordByFilter(
+			"new_systems",
+			"fingerprint={:fingerprint}",
+			dbx.Params{"fingerprint": fingerprint},
+		)
+
+		if err != nil {
+			if err != sql.ErrNoRows {
+				h.Logger().Error("failed to get pending system records", "err", err)
+				return
+			}
+			// If it has no entry already, determine what to do with it
+		}
+
+		switch withApiAction {
+		case "accept":
+			r, err := h.acceptSystem(user, hostname, c.RemoteAddr().String(), fingerprint)
 			if err != nil {
-				if err == sql.ErrNoRows {
+				h.Logger().Error("failed to accept new connection", "err", err)
+				return
+			}
 
-					switch withApiAction {
-					case "accept":
-						h.acceptSystem(fingerprint)
-						return
-					case "deny":
-						// do not add entry to new_systems collection when denying
-						return
-					default:
-						// intentional fallthrough for "display"
-					}
+			record = r
+			// accept the system and allow it to drop through to start recording details immediately
+		case "deny":
+			// do not add entry to new_systems collection when denying
+			return
+		default:
+			collection, err := h.FindCollectionByNameOrId("new_systems")
+			if err != nil {
+				h.Logger().Error("failed to get new_systems collection", "err", err)
+				return
+			}
 
-					collection, err := h.FindCollectionByNameOrId("new_systems")
-					if err != nil {
-						h.Logger().Error("failed to get new_systems collection", "err", err)
-						return
-					}
+			address, _, err := net.SplitHostPort(c.RemoteAddr().String())
+			if err != nil {
+				h.Logger().Debug("Could not split remote address host and port", "address", c.RemoteAddr().String(), "err", err)
+				address = c.RemoteAddr().String()
+			}
 
-					address, _, err := net.SplitHostPort(c.RemoteAddr().String())
-					if err != nil {
-						h.Logger().Debug("Could not split remote address host and port", "address", c.RemoteAddr().String(), "err", err)
-						address = c.RemoteAddr().String()
-					}
+			newSystemRecord := core.NewRecord(collection)
+			newSystemRecord.Set("hostname", hostname)
+			newSystemRecord.Set("fingerprint", fingerprint)
+			newSystemRecord.Set("address", address)
 
-					newSystemRecord := core.NewRecord(collection)
-					newSystemRecord.Set("hostname", Hostname)
-					newSystemRecord.Set("fingerprint", fingerprint)
-					newSystemRecord.Set("address", address)
-
-					err = h.Save(newSystemRecord)
-					if err != nil {
-						h.Logger().Error("failed to save pending system record", "err", err)
-						return
-					}
-				} else {
-					h.Logger().Error("failed to get pending system records", "err", err)
-					return
-				}
+			err = h.Save(newSystemRecord)
+			if err != nil {
+				h.Logger().Error("failed to save pending system record", "err", err)
+				return
 			}
 
 			return
 		}
-		h.Logger().Error("Failed to fetch client record", "err", err)
-		return
 	}
 
 	if _, ok := h.Store().GetOk(record.Id); ok {
 		h.Logger().Warn("Client with same fingerprint attempted to connect", "fingerprint", fingerprint, "address", c.RemoteAddr())
+
 		return
 	}
 	h.Store().Set(record.Id, sshConn)
@@ -213,28 +224,34 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 	}
 }
 
-func (h *Hub) acceptSystem(fingerprint string) error {
+func (h *Hub) acceptSystem(user any, name, address, fingerprint string) (*core.Record, error) {
 
-	collection, err := h.FindCollectionByNameOrId("blocked_systems")
+	collection, err := h.FindCollectionByNameOrId("systems")
 	if err != nil {
-		h.Logger().Error("failed to get blocked_systems collection", "err", err)
-		return err
+		h.Logger().Error("failed to get systems collection", "err", err)
+		return nil, err
 	}
 
-	newSystemBlockedRecord := core.NewRecord(collection)
-	newSystemBlockedRecord.Set("fingerprint", fingerprint)
+	newSystemRecord := core.NewRecord(collection)
+	newSystemRecord.Set("status", "pending")
+	newSystemRecord.Set("name", name)
+	newSystemRecord.Set("host", address)
+	newSystemRecord.Set("port", "N/A")
+	newSystemRecord.Set("type", "client")
+	newSystemRecord.Set("fingerprint", fingerprint)
+	newSystemRecord.Set("users", user)
 
-	err = h.Save(newSystemBlockedRecord)
+	err = h.Save(newSystemRecord)
 	if err != nil {
 		h.Logger().Error("failed to save pending system record", "err", err)
-		return err
+		return nil, err
 	}
-	return nil
+	return newSystemRecord, nil
 }
 
-func (h *Hub) checkAPIKey(key string) bool {
+func (h *Hub) checkConnectionKey(key string) (bool, any) {
 	if key == "" {
-		return false
+		return false, nil
 	}
 	// get user settings
 	record, err := h.FindFirstRecordByFilter(
@@ -243,8 +260,8 @@ func (h *Hub) checkAPIKey(key string) bool {
 	)
 	if err != nil {
 		h.Logger().Error("Failed to get user settings", "err", err.Error())
-		return false
+		return false, nil
 	}
 
-	return record.GetString("connection_key") == key
+	return record.GetString("connection_key") == key, record.Get("user")
 }
