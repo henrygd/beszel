@@ -6,6 +6,17 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
 "Language: ja\n"
+"Project-Id-Version: beszel\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2025-02-12 02:53\n"
+"Last-Translator: \n"
+"Language-Team: Japanese\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Crowdin-Project: beszel\n"
+"X-Crowdin-Project-ID: 733311\n"
+"X-Crowdin-Language: ja\n"
+"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 16\n"
 
 #: src/components/routes/system.tsx:250
 msgid "{0, plural, one {# day} other {# days}}"
@@ -136,7 +147,7 @@ msgstr ""
 
 #: src/components/routes/system.tsx:499
 msgid "Average power consumption of GPUs"
-msgstr ""
+msgstr "GPUの平均消費電力"
 
 #: src/components/routes/system.tsx:387
 msgid "Average system-wide CPU utilization"
@@ -144,7 +155,7 @@ msgstr ""
 
 #: src/components/routes/system.tsx:517
 msgid "Average utilization of {0}"
-msgstr ""
+msgstr "{0}の平均使用率"
 
 #: src/components/command-palette.tsx:171
 #: src/components/navbar.tsx:94
@@ -413,7 +424,7 @@ msgstr ""
 
 #: src/components/routes/system.tsx:498
 msgid "GPU Power Draw"
-msgstr ""
+msgstr "GPUの消費電力"
 
 #: src/components/systems-table/new-systems-table.tsx:222
 #: src/components/systems-table/systems-table.tsx:345
@@ -911,4 +922,9 @@ msgstr ""
 
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
+<<<<<<< HEAD
 msgstr ""
+=======
+msgstr "ユーザー設定が更新されました。"
+
+>>>>>>> 646b899851fa8e28f024d3ff824687090a90a34d

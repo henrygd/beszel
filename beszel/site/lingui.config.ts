@@ -12,6 +12,7 @@ const config: LinguiConfig = {
 		"fa",
 		"fr",
 		"hr",
+		"hu",
 		"it",
 		"ja",
 		"ko",

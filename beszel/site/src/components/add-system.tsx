@@ -61,6 +61,7 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 
 	function copyDockerCompose(port: string) {
 		copyToClipboard(`services:
+  version: "3"
   beszel-agent:
     image: "henrygd/beszel-agent"
     container_name: "beszel-agent"
