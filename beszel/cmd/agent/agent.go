@@ -74,9 +74,9 @@ func main() {
 	}
 
 	if isClient {
-		_, exists := agent.GetEnv("API_KEY")
+		_, exists := agent.GetEnv("CONNECTION_KEY")
 		if !exists {
-			log.Fatal("Started in client mode without API_KEY specified")
+			log.Fatal("Started in client mode without CONNECTION_KEY specified")
 		}
 	}
 

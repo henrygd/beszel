@@ -32,11 +32,15 @@ export const $userSettings = map<UserSettings>({
 	chartTime: "1h",
 	emails: [pb.authStore.record?.email || ""],
 })
+
 // update local storage on change
 $userSettings.subscribe((value) => {
 	// console.log('user settings changed', value)
 	$chartTime.set(value.chartTime)
 })
+
+/** User api key */
+export const $userConnectionKey = atom("N/A")
 
 /** Container chart filter */
 export const $containerFilter = atom("")

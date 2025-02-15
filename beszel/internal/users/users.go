@@ -62,8 +62,8 @@ func (um *UserManager) InitializeUserSettings(e *core.RecordEvent) error {
 		}
 	}
 
-	if record.GetString("api_key") == "" {
-		record.Set("api_key", um.generateApiKey())
+	if record.GetString("connection_key") == "" {
+		record.Set("connection_key", um.generateApiKey())
 	}
 
 	record.Set("settings", settings)

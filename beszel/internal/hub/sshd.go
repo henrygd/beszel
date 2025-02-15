@@ -216,7 +216,7 @@ func (h *Hub) checkAPIKey(key string) bool {
 	}
 	// get user settings
 	record, err := h.FindFirstRecordByFilter(
-		"user_settings", "api_key={:key}",
+		"user_settings", "connection_key={:key}",
 		dbx.Params{"key": key},
 	)
 	if err != nil {
@@ -224,5 +224,5 @@ func (h *Hub) checkAPIKey(key string) bool {
 		return false
 	}
 
-	return record.GetString("api_key") != key
+	return record.GetString("connection_key") != key
 }

@@ -1,7 +1,7 @@
 import { toast } from "@/components/ui/use-toast"
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { $alerts, $copyContent, $newSystems, $systems, $userSettings, pb } from "./stores"
+import { $alerts, $copyContent, $newSystems, $systems, $userConnectionKey, $userSettings, pb } from "./stores"
 import { AddSystemRecord, AlertInfo, AlertRecord, ChartTimeData, ChartTimes, ConnectionSettingsActionsData, SystemRecord } from "@/types"
 import { RecordModel, RecordSubscription } from "pocketbase"
 import { WritableAtom } from "nanostores"
@@ -300,8 +300,10 @@ export function useLocalStorage<T>(key: string, defaultValue: T) {
 
 export async function updateUserSettings() {
 	try {
-		const req = await pb.collection("user_settings").getFirstListItem("", { fields: "settings" })
+		const req = await pb.collection("user_settings").getFirstListItem("", { fields: "settings,connection_key" })
+		console.log(req)
 		$userSettings.set(req.settings)
+		$userConnectionKey.set(req.connection_key)
 		return
 	} catch (e) {
 		console.log("get settings", e)

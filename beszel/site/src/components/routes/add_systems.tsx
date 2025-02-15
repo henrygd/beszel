@@ -12,8 +12,6 @@ const NewSystemsTable = lazy(() => import("../systems-table/new-systems-table"))
 export default function AddSystems() {
 	const hubVersion = useStore($hubVersion)
 
-	const newSystems = useStore($newSystems)
-
 	useEffect(() => {
 		document.title = t`Add System` + " / Beszel"
 

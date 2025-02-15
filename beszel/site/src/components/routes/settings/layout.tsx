@@ -6,7 +6,7 @@ import { useStore } from "@nanostores/react"
 import { $router } from "@/components/router.tsx"
 import { getPagePath, redirectPage } from "@nanostores/router"
 import { BellIcon, CableIcon, FileSlidersIcon, SettingsIcon } from "lucide-react"
-import { $userSettings, pb } from "@/lib/stores.ts"
+import { $userConnectionKey, $userSettings, pb } from "@/lib/stores.ts"
 import { toast } from "@/components/ui/use-toast.ts"
 import { UserSettings } from "@/types.js"
 import General from "./general.tsx"
@@ -110,10 +110,12 @@ export default function SettingsLayout() {
 
 function SettingsContent({ name }: { name: string }) {
 	const userSettings = useStore($userSettings)
+	const apiKey = useStore($userConnectionKey)
 
+	console.log(apiKey)
 	switch (name) {
 		case "general":
-			return <General userSettings={userSettings} />
+			return <General apiKey={apiKey} userSettings={userSettings} />
 		case "notifications":
 			return <Notifications userSettings={userSettings} />
 		case "config":
