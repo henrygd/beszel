@@ -2,7 +2,7 @@ import { toast } from "@/components/ui/use-toast"
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { $alerts, $copyContent, $newSystems, $systems, $userSettings, pb } from "./stores"
-import { AddSystemRecord, AlertInfo, AlertRecord, ChartTimeData, ChartTimes, SystemRecord } from "@/types"
+import { AddSystemRecord, AlertInfo, AlertRecord, ChartTimeData, ChartTimes, ConnectionSettingsActionsData, SystemRecord } from "@/types"
 import { RecordModel, RecordSubscription } from "pocketbase"
 import { WritableAtom } from "nanostores"
 import { timeDay, timeHour } from "d3-time"
@@ -10,7 +10,7 @@ import { useEffect, useState } from "react"
 import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from "lucide-react"
 import { EthernetIcon, ThermometerIcon } from "@/components/ui/icons"
 import { t } from "@lingui/macro"
-import { navigate, prependBasePath } from "@/components/router"
+import {  prependBasePath } from "@/components/router"
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -172,6 +172,25 @@ export function getPbTimestamp(timeString: ChartTimes, d?: Date) {
 	const seconds = String(d.getUTCSeconds()).padStart(2, "0")
 
 	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+}
+
+export const connectionActionsData: ConnectionSettingsActionsData = {
+	"accept": {
+		type: "accept",
+		label: () => t`Accept system`,
+	}, 
+	"deny": {
+		type: "deny",
+		label: () => t`Deny system`,
+	},
+	"block": {
+		type: "block",
+		label: () => t`Block system`,
+	}, 
+	"display": {
+		type: "display",
+		label: () => t`Await confirmation`,
+	}
 }
 
 export const chartTimeData: ChartTimeData = {

@@ -7,7 +7,7 @@ import AddSystems from "./components/routes/add_systems.tsx"
 
 import { ThemeProvider } from "./components/theme-provider.tsx"
 import { DirectionProvider } from "@radix-ui/react-direction"
-import { $authenticated, $systems, pb, $publicKey, $hubVersion, $copyContent, $direction, $newSystems } from "./lib/stores.ts"
+import { $authenticated, $systems, pb, $publicKey, $hubVersion, $copyContent, $direction } from "./lib/stores.ts"
 import { updateUserSettings, updateAlerts, updateFavicon, updateSystemList, updateNewSystemsList } from "./lib/utils.ts"
 import { useStore } from "@nanostores/react"
 import { Toaster } from "./components/ui/toaster.tsx"
@@ -26,7 +26,6 @@ const App = () => {
 	const page = useStore($router)
 	const authenticated = useStore($authenticated)
 	const systems = useStore($systems)
-	const newSystems = useStore($newSystems)
 
 
 	useEffect(() => {

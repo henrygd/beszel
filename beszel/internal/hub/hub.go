@@ -106,6 +106,7 @@ func (h *Hub) Run() {
 		if h.appURL != "" {
 			settings.Meta.AppURL = h.appURL
 		}
+
 		// set auth settings
 		usersCollection, err := h.FindCollectionByNameOrId("users")
 		if err != nil {

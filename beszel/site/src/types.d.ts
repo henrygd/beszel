@@ -194,6 +194,22 @@ export type UserSettings = {
 	webhooks?: string[]
 }
 
+
+export type ConnectionSettingsActions = "accept" | "deny" | "block" | "display"
+
+export interface ConnectionSettingsActionsData {
+	[key: string]: {
+		type: ConnectionSettingsActions
+		label: () => string
+	}
+}
+
+export type ConnectionSettings = {
+	withoutAPIKey: ConnectionSettingsActions
+	withAPIKey: ConnectionSettingsActions
+}
+
+
 type ChartDataContainer = {
 	created: number | null
 } & {

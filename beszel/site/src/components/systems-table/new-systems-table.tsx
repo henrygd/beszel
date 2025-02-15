@@ -54,7 +54,6 @@ import {
 	BanIcon,
 	CheckIcon,
 	XIcon,
-	CableIcon,
 } from "lucide-react"
 import { memo, useEffect, useMemo, useState } from "react"
 import { $hubVersion, $newSystems, pb } from "@/lib/stores"
@@ -67,6 +66,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui
 import { Input } from "../ui/input"
 import { getPagePath } from "@nanostores/router"
 import { ConnectToSystemButton } from "../add-system"
+import { toast } from "../ui/use-toast"
 
 type ViewMode = "table" | "grid"
 
@@ -443,6 +443,11 @@ const ActionsButtons = memo(({ newSystem }: { newSystem: AddSystemRecord }) => {
 						users: pb.authStore.record!.id,
 						fingerprint: fingerprint,
 					})
+					toast({
+						title: t`Success`,
+						description: "Accepted system",
+						variant: "default",
+					})
 				}}>
 					<span className="sr-only">
 						<Trans>Accept System</Trans>
@@ -454,6 +459,11 @@ const ActionsButtons = memo(({ newSystem }: { newSystem: AddSystemRecord }) => {
 			{!isReadOnlyUser() && (
 				<Button variant="ghost" size={"icon"} data-nolink onClick={() => {
 					pb.collection("new_systems").delete(id)
+					toast({
+						title: t`Success`,
+						description: "Denied system",
+						variant: "default",
+					})
 				}}>
 					<span className="sr-only">
 						<Trans>Deny System</Trans>
@@ -464,6 +474,11 @@ const ActionsButtons = memo(({ newSystem }: { newSystem: AddSystemRecord }) => {
 			{!isReadOnlyUser() && (
 				<Button variant="ghost" size={"icon"} data-nolink onClick={() => {
 					setBlockOpen(true)
+					toast({
+						title: t`Success`,
+						description: "Blocked system",
+						variant: "default",
+					})
 				}}>
 					<span className="sr-only">
 						<Trans>Block New System</Trans>
