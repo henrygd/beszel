@@ -14,6 +14,7 @@ import { redirectPage } from "@nanostores/router"
 import { $router } from "@/components/router"
 import { pb } from "@/lib/stores"
 import { toast } from "@/components/ui/use-toast"
+import { Input } from "@/components/ui/input"
 
 
 
@@ -43,7 +44,6 @@ export async function saveConnectionSettings(newSettings: Partial<ConnectionSett
 
 export default function Connections() {
 	const [isLoading, setIsLoading] = useState(false)
-	const { i18n } = useLingui()
 
 	const [configContent, setConfigContent] = useState<ConnectionSettings>()
 
@@ -52,7 +52,7 @@ export default function Connections() {
 			setIsLoading(true)
 			const record = await pb.collection("connection_settings").getFirstListItem('')
 			let c: ConnectionSettings = {
-				withoutAPIKey: record.withoutAPIKey,
+				max_awaiting_size: record.max_awaiting_size,
 				withAPIKey: record.withAPIKey
 			}
 			setConfigContent(c)
@@ -81,11 +81,11 @@ export default function Connections() {
 		}
 	}
 
-	const handleWithoutAPIChange = (value: ConnectionSettingsActions) => {
+	const handleMaxQueueChange = (value: number) => {
 		if (configContent) {
 			setConfigContent({
 				...configContent,
-				withoutAPIKey: value
+				max_awaiting_size: value
 			})
 		}
 	}
@@ -139,21 +139,12 @@ export default function Connections() {
 						</SelectContent>
 					</Select>
 
-					<Label className="block" htmlFor="withoutAPI">
-						<Trans>Without API Key</Trans>
+					<Label className="block" htmlFor="withAPI">
+						<Trans>Max number of waiting connections</Trans>
 					</Label>
-					<Select name="withoutAPIKey" value={configContent?.withoutAPIKey} onValueChange={handleWithoutAPIChange}>
-						<SelectTrigger id="withoutAPI">
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							{Object.entries(connectionActionsData).map(([value, { label }]) => (
-								<SelectItem key={value} value={value}>
-									{label()}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
+					{/* TODO make this changeable in beszel UI */}
+					<Input value={configContent?.max_awaiting_size} readOnly={true}></Input>
+
 				</div>
 				<Button type="submit" className="flex items-center gap-1.5 disabled:opacity-100" disabled={isLoading}>
 					{isLoading ? <LoaderCircleIcon className="h-4 w-4 animate-spin" /> : <SaveIcon className="h-4 w-4" />}

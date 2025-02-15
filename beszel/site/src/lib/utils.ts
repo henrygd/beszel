@@ -183,10 +183,6 @@ export const connectionActionsData: ConnectionSettingsActionsData = {
 		type: "deny",
 		label: () => t`Deny system`,
 	},
-	"block": {
-		type: "block",
-		label: () => t`Block system`,
-	}, 
 	"display": {
 		type: "display",
 		label: () => t`Await confirmation`,

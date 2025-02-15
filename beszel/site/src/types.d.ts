@@ -195,7 +195,7 @@ export type UserSettings = {
 }
 
 
-export type ConnectionSettingsActions = "accept" | "deny" | "block" | "display"
+export type ConnectionSettingsActions = "accept" | "deny" | "display"
 
 export interface ConnectionSettingsActionsData {
 	[key: string]: {
@@ -205,7 +205,7 @@ export interface ConnectionSettingsActionsData {
 }
 
 export type ConnectionSettings = {
-	withoutAPIKey: ConnectionSettingsActions
+	max_awaiting_size: number
 	withAPIKey: ConnectionSettingsActions
 }
 

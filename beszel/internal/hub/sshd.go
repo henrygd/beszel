@@ -61,6 +61,15 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 	defer sshConn.Close()
 	go ssh.DiscardRequests(reqs)
 
+	settings, err := h.FindFirstRecordByFilter("connection_settings", "")
+	if err != nil {
+		h.Logger().Error("Unable to get connection settings", "err", err)
+		return
+	}
+
+	//withApiAction := settings.GetString("withAPIKey")
+	withoutApiAction := settings.GetString("withoutAPIKey")
+
 	// TODO on valid api key associate to user and automatically allow
 
 	fingerprint := sshConn.Permissions.Extensions["fingerprint"]
@@ -98,6 +107,21 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 
 			if err != nil {
 				if err == sql.ErrNoRows {
+
+					switch withoutApiAction {
+					case "accept":
+
+					case "deny":
+						// do not add entry to new_systems collection when denying
+						return
+					case "block":
+						h.blockSystem(fingerprint)
+						return
+
+					default:
+						// intentional fallthrough
+					}
+
 					collection, err := h.FindCollectionByNameOrId("new_systems")
 					if err != nil {
 						h.Logger().Error("failed to get new_systems collection", "err", err)
@@ -151,4 +175,41 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 		}
 
 	}
+}
+
+func (h *Hub) blockSystem(fingerprint string) error {
+	collection, err := h.FindCollectionByNameOrId("blocked_systems")
+	if err != nil {
+		h.Logger().Error("failed to get blocked_systems collection", "err", err)
+		return err
+	}
+
+	newSystemBlockedRecord := core.NewRecord(collection)
+	newSystemBlockedRecord.Set("fingerprint", fingerprint)
+
+	err = h.Save(newSystemBlockedRecord)
+	if err != nil {
+		h.Logger().Error("failed to save pending system record", "err", err)
+		return err
+	}
+	return nil
+}
+
+func (h *Hub) addSystem(fingerprint string) error {
+
+	collection, err := h.FindCollectionByNameOrId("blocked_systems")
+	if err != nil {
+		h.Logger().Error("failed to get blocked_systems collection", "err", err)
+		return err
+	}
+
+	newSystemBlockedRecord := core.NewRecord(collection)
+	newSystemBlockedRecord.Set("fingerprint", fingerprint)
+
+	err = h.Save(newSystemBlockedRecord)
+	if err != nil {
+		h.Logger().Error("failed to save pending system record", "err", err)
+		return err
+	}
+	return nil
 }
