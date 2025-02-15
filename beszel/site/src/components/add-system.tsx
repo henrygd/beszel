@@ -40,7 +40,7 @@ export function ConnectToSystemButton({ className }: { className?: string }) {
 				>
 					<CableIcon className="h-4 w-4 -ms-1" />
 					<Trans>
-						CableIcon <span className="hidden sm:inline">System</span>
+						Direct Connection
 					</Trans>
 				</Button>
 			</DialogTrigger>

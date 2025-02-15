@@ -54,7 +54,6 @@ import {
 	BanIcon,
 	CheckIcon,
 	XIcon,
-	BluetoothConnectedIcon,
 	CableIcon,
 } from "lucide-react"
 import { memo, useEffect, useMemo, useState } from "react"
