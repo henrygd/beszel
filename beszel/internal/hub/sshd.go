@@ -2,10 +2,12 @@ package hub
 
 import (
 	"beszel"
+	"beszel/internal/entities/system"
 	"database/sql"
 	"net"
 	"strings"
 
+	"github.com/goccy/go-json"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 	"golang.org/x/crypto/ssh"
@@ -72,12 +74,12 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 	ApiKey := parts[len(parts)-1]
 
 	if ApiKey == "" {
-		h.Logger().Debug("new system did not supply an api key")
+		h.Logger().Debug("new system did not supply an connection key")
 		return
 	}
 
 	if !h.checkAPIKey(ApiKey) {
-		h.Logger().Debug("new system did not supply valid api key")
+		h.Logger().Info("new system did not supply valid connection key")
 		return
 	}
 
@@ -179,6 +181,7 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 	defer func() {
 		// When channel := range chans finishes this indicates the client has disconnected so remove the client connection lock
 		h.Store().Remove(record.Id)
+		h.updateSystemStatus(record, "down")
 	}()
 
 	for channel := range chans {
@@ -188,6 +191,25 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 			return
 		}
 
+		if record.GetString("status") == "paused" {
+			return
+		}
+
+		channel, reqs, err := channel.Accept()
+		if err != nil {
+			h.Logger().Warn("failed to accept client channe", "err", err)
+			return
+		}
+		go ssh.DiscardRequests(reqs)
+
+		var systemData system.CombinedData
+		if err := json.NewDecoder(channel).Decode(&systemData); err != nil {
+			h.updateSystemStatus(record, "down")
+			return
+		}
+
+		h.updateSystemRecord(record, systemData)
+		channel.Close()
 	}
 }
 
@@ -224,5 +246,5 @@ func (h *Hub) checkAPIKey(key string) bool {
 		return false
 	}
 
-	return record.GetString("connection_key") != key
+	return record.GetString("connection_key") == key
 }

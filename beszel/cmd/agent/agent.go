@@ -16,12 +16,14 @@ func main() {
 		switch os.Args[1] {
 		case "-v":
 			fmt.Println(beszel.AppName+"-agent", beszel.Version)
+			os.Exit(0)
 		case "update":
 			agent.Update()
+			os.Exit(0)
 		case "client":
 			isClient = true
 		}
-		os.Exit(0)
+
 	}
 
 	// Try to get the key from the KEY environment variable.
@@ -60,7 +62,7 @@ func main() {
 		}
 
 		// allow passing an address in the form of "127.0.0.1:45877"
-		if !strings.Contains(envAddr, ":") {
+		if !strings.Contains(envAddr, ":") && !isClient {
 			envAddr = ":" + envAddr
 		} else if isClient {
 			// set the default port if non is specified for clients

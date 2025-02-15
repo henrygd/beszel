@@ -53,7 +53,6 @@ func (a *Agent) startServer(pubKey []byte, addr string) {
 
 func (a *Agent) startClient(pubKey []byte, addr string) {
 
-	slog.Info("Connecting to beszel SSH server", "address", addr)
 	signer, err := createOrLoadKey("id_ed25519")
 	if err != nil {
 		slog.Error("Failed to load private key: ", "err", err)
@@ -96,7 +95,13 @@ func (a *Agent) startClient(pubKey []byte, addr string) {
 		}
 	}
 
+	var currentConn ssh.Conn
+
 	for {
+		if currentConn != nil {
+			currentConn.Close()
+		}
+		slog.Info("Connecting to beszel SSH server", "address", addr)
 
 		conn, err := net.DialTimeout("tcp", addr, c.Timeout)
 		if err != nil {
@@ -112,6 +117,7 @@ func (a *Agent) startClient(pubKey []byte, addr string) {
 			backoff()
 			continue
 		}
+		currentConn = clientConn
 
 		// Reset backoff on first solid connection
 		lastBackoff = 1
@@ -119,13 +125,14 @@ func (a *Agent) startClient(pubKey []byte, addr string) {
 		go ssh.DiscardRequests(reqs)
 		go a.discardChannels(chans)
 
+	Inner:
 		for {
 
 			dataChan, req, err := clientConn.OpenChannel("stats", nil)
 			if err != nil {
 				slog.Warn("failed to send statistics, server did not allow opening of stats channel", "err", err)
 				a.randomSleep(15, 30)
-				continue
+				break Inner
 			}
 
 			go ssh.DiscardRequests(req)
@@ -133,7 +140,7 @@ func (a *Agent) startClient(pubKey []byte, addr string) {
 			if stats, err := a.writeStats(dataChan); err != nil {
 				slog.Error("Error writing stats", "err", err, "stats", stats)
 				a.exit(dataChan, 1)
-				return
+				break Inner
 			}
 
 			a.exit(dataChan, 0)

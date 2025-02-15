@@ -368,6 +368,43 @@ func (h *Hub) pollServerSystems() {
 	}
 }
 
+func (h *Hub) updateSystemRecord(record *core.Record, systemData system.CombinedData) {
+	// update system record
+	record.Set("status", "up")
+	record.Set("info", systemData.Info)
+	if err := h.SaveNoValidate(record); err != nil {
+		h.Logger().Error("Failed to update record: ", "err", err.Error())
+	}
+	// add system_stats and container_stats records
+	if systemStats, containerStats, err := h.getCollections(); err != nil {
+		h.Logger().Error("Failed to get collections: ", "err", err.Error())
+	} else {
+		// add new system_stats record
+		systemStatsRecord := core.NewRecord(systemStats)
+		systemStatsRecord.Set("system", record.Id)
+		systemStatsRecord.Set("stats", systemData.Stats)
+		systemStatsRecord.Set("type", "1m")
+		if err := h.SaveNoValidate(systemStatsRecord); err != nil {
+			h.Logger().Error("Failed to save record: ", "err", err.Error())
+		}
+		// add new container_stats record
+		if len(systemData.Containers) > 0 {
+			containerStatsRecord := core.NewRecord(containerStats)
+			containerStatsRecord.Set("system", record.Id)
+			containerStatsRecord.Set("stats", systemData.Containers)
+			containerStatsRecord.Set("type", "1m")
+			if err := h.SaveNoValidate(containerStatsRecord); err != nil {
+				h.Logger().Error("Failed to save record: ", "err", err.Error())
+			}
+		}
+	}
+
+	// system info alerts
+	if err := h.am.HandleSystemAlerts(record, systemData.Info, systemData.Stats.Temperatures, systemData.Stats.ExtraFs); err != nil {
+		h.Logger().Error("System alerts error", "err", err.Error())
+	}
+}
+
 // pollSystem connects to a server type beszel client on a specified port and prompts it for a record
 func (h *Hub) pollSystem(record *core.Record) {
 	if record.GetString("type") != "server" {
@@ -408,40 +445,8 @@ func (h *Hub) pollSystem(record *core.Record) {
 		h.updateSystemStatus(record, "down")
 		return
 	}
-	// update system record
-	record.Set("status", "up")
-	record.Set("info", systemData.Info)
-	if err := h.SaveNoValidate(record); err != nil {
-		h.Logger().Error("Failed to update record: ", "err", err.Error())
-	}
-	// add system_stats and container_stats records
-	if systemStats, containerStats, err := h.getCollections(); err != nil {
-		h.Logger().Error("Failed to get collections: ", "err", err.Error())
-	} else {
-		// add new system_stats record
-		systemStatsRecord := core.NewRecord(systemStats)
-		systemStatsRecord.Set("system", record.Id)
-		systemStatsRecord.Set("stats", systemData.Stats)
-		systemStatsRecord.Set("type", "1m")
-		if err := h.SaveNoValidate(systemStatsRecord); err != nil {
-			h.Logger().Error("Failed to save record: ", "err", err.Error())
-		}
-		// add new container_stats record
-		if len(systemData.Containers) > 0 {
-			containerStatsRecord := core.NewRecord(containerStats)
-			containerStatsRecord.Set("system", record.Id)
-			containerStatsRecord.Set("stats", systemData.Containers)
-			containerStatsRecord.Set("type", "1m")
-			if err := h.SaveNoValidate(containerStatsRecord); err != nil {
-				h.Logger().Error("Failed to save record: ", "err", err.Error())
-			}
-		}
-	}
 
-	// system info alerts
-	if err := h.am.HandleSystemAlerts(record, systemData.Info, systemData.Stats.Temperatures, systemData.Stats.ExtraFs); err != nil {
-		h.Logger().Error("System alerts error", "err", err.Error())
-	}
+	h.updateSystemRecord(record, systemData)
 }
 
 // return system_stats and container_stats collections
