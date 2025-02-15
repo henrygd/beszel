@@ -53,7 +53,8 @@ export default function Connections() {
 			const record = await pb.collection("connection_settings").getFirstListItem('')
 			let c: ConnectionSettings = {
 				max_awaiting_size: record.max_awaiting_size,
-				withAPIKey: record.withAPIKey
+				withAPIKey: record.withAPIKey,
+				external_address: record.external_address
 			}
 			setConfigContent(c)
 		} catch (error: any) {
@@ -77,15 +78,6 @@ export default function Connections() {
 			setConfigContent({
 				...configContent,
 				withAPIKey: value
-			})
-		}
-	}
-
-	const handleMaxQueueChange = (value: number) => {
-		if (configContent) {
-			setConfigContent({
-				...configContent,
-				max_awaiting_size: value
 			})
 		}
 	}
@@ -144,6 +136,12 @@ export default function Connections() {
 					</Label>
 					{/* TODO make this changeable in beszel UI */}
 					<Input value={configContent?.max_awaiting_size} readOnly={true}></Input>
+
+					<Label className="block" htmlFor="withAPI">
+						<Trans>External address</Trans>
+					</Label>
+					{/* TODO make this changeable in beszel UI */}
+					<Input value={configContent?.external_address} readOnly={true}></Input>
 
 				</div>
 				<Button type="submit" className="flex items-center gap-1.5 disabled:opacity-100" disabled={isLoading}>

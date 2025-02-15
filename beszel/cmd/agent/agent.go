@@ -73,5 +73,12 @@ func main() {
 		log.Fatal("No address specified for client to connect to (use ADDR env)")
 	}
 
+	if isClient {
+		_, exists := agent.GetEnv("API_KEY")
+		if !exists {
+			log.Fatal("Started in client mode without API_KEY specified")
+		}
+	}
+
 	agent.NewAgent(isClient).Run(pubKey, addr)
 }

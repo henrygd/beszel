@@ -206,6 +206,7 @@ export interface ConnectionSettingsActionsData {
 
 export type ConnectionSettings = {
 	max_awaiting_size: number
+	external_address: string
 	withAPIKey: ConnectionSettingsActions
 }
 

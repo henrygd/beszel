@@ -3,6 +3,8 @@ package users
 
 import (
 	"beszel/migrations"
+	"crypto/rand"
+	"encoding/hex"
 	"log"
 	"net/http"
 
@@ -37,6 +39,7 @@ func (um *UserManager) InitializeUserRole(e *core.RecordEvent) error {
 // Initialize user settings with defaults if not set
 func (um *UserManager) InitializeUserSettings(e *core.RecordEvent) error {
 	record := e.Record
+
 	// intialize settings with defaults
 	settings := UserSettings{
 		// Language:             "en",
@@ -58,11 +61,25 @@ func (um *UserManager) InitializeUserSettings(e *core.RecordEvent) error {
 			log.Println("failed to expand user relation", "errs", errs)
 		}
 	}
-	// if len(settings.NotificationWebhooks) == 0 {
-	// 	settings.NotificationWebhooks = []string{""}
-	// }
+
+	if record.GetString("api_key") == "" {
+		record.Set("api_key", um.generateApiKey())
+	}
+
 	record.Set("settings", settings)
 	return e.Next()
+}
+
+func (um *UserManager) generateApiKey() string {
+	// will generate a string of size 32
+	b := make([]byte, 16)
+	_, err := rand.Read(b)
+	if err != nil {
+		um.app.Logger().Error("could not generate api key", "err", err)
+		return ""
+	}
+
+	return hex.EncodeToString(b)
 }
 
 // Custom API endpoint to create the first user.

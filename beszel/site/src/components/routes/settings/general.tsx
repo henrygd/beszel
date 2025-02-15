@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { chartTimeData } from "@/lib/utils"
 import { Separator } from "@/components/ui/separator"
-import { LanguagesIcon, LoaderCircleIcon, SaveIcon } from "lucide-react"
+import { KeyIcon, LanguagesIcon, LoaderCircleIcon, SaveIcon } from "lucide-react"
 import { UserSettings } from "@/types"
 import { saveSettings } from "./layout"
 import { useState } from "react"
@@ -11,6 +11,7 @@ import { Trans } from "@lingui/macro"
 import languages from "@/lib/languages"
 import { dynamicActivate } from "@/lib/i18n"
 import { useLingui } from "@lingui/react"
+import { Input } from "@/components/ui/input"
 // import { setLang } from "@/lib/i18n"
 
 export default function SettingsProfilePage({ userSettings }: { userSettings: UserSettings }) {
@@ -38,6 +39,16 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 			</div>
 			<Separator className="my-4" />
 			<form onSubmit={handleSubmit} className="space-y-5">
+				<div className="space-y-2">
+					<div className="mb-4">
+						<h3 className="mb-1 text-lg font-medium flex items-center gap-2">
+							<KeyIcon className="h-4 w-4" />
+							<Trans>API Key</Trans>
+						</h3>
+					</div>
+					<Input readOnly={true} value={userSettings.chartTime}></Input>
+				</div>
+				<Separator />
 				<div className="space-y-2">
 					<div className="mb-4">
 						<h3 className="mb-1 text-lg font-medium flex items-center gap-2">

@@ -4,6 +4,7 @@ import (
 	"beszel"
 	"database/sql"
 	"net"
+	"strings"
 
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
@@ -61,16 +62,32 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 	defer sshConn.Close()
 	go ssh.DiscardRequests(reqs)
 
+	parts := strings.Split(sshConn.User(), "@")
+	if len(parts) < 2 {
+		h.Logger().Debug("new system did not supply valid user string")
+		return
+	}
+
+	Hostname := strings.Join(parts[:len(parts)-1], "@")
+	ApiKey := parts[len(parts)-1]
+
+	if ApiKey == "" {
+		h.Logger().Debug("new system did not supply an api key")
+		return
+	}
+
+	if !h.checkAPIKey(ApiKey) {
+		h.Logger().Debug("new system did not supply valid api key")
+		return
+	}
+
 	settings, err := h.FindFirstRecordByFilter("connection_settings", "")
 	if err != nil {
 		h.Logger().Error("Unable to get connection settings", "err", err)
 		return
 	}
 
-	//withApiAction := settings.GetString("withAPIKey")
-	withoutApiAction := settings.GetString("withoutAPIKey")
-
-	// TODO on valid api key associate to user and automatically allow
+	withApiAction := settings.GetString("withAPIKey")
 
 	fingerprint := sshConn.Permissions.Extensions["fingerprint"]
 
@@ -108,18 +125,15 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 			if err != nil {
 				if err == sql.ErrNoRows {
 
-					switch withoutApiAction {
+					switch withApiAction {
 					case "accept":
-
+						h.acceptSystem(fingerprint)
+						return
 					case "deny":
 						// do not add entry to new_systems collection when denying
 						return
-					case "block":
-						h.blockSystem(fingerprint)
-						return
-
 					default:
-						// intentional fallthrough
+						// intentional fallthrough for "display"
 					}
 
 					collection, err := h.FindCollectionByNameOrId("new_systems")
@@ -135,7 +149,7 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 					}
 
 					newSystemRecord := core.NewRecord(collection)
-					newSystemRecord.Set("hostname", sshConn.User())
+					newSystemRecord.Set("hostname", Hostname)
 					newSystemRecord.Set("fingerprint", fingerprint)
 					newSystemRecord.Set("address", address)
 
@@ -177,7 +191,8 @@ func (h *Hub) acceptConn(c net.Conn, config *ssh.ServerConfig) {
 	}
 }
 
-func (h *Hub) blockSystem(fingerprint string) error {
+func (h *Hub) acceptSystem(fingerprint string) error {
+
 	collection, err := h.FindCollectionByNameOrId("blocked_systems")
 	if err != nil {
 		h.Logger().Error("failed to get blocked_systems collection", "err", err)
@@ -195,21 +210,16 @@ func (h *Hub) blockSystem(fingerprint string) error {
 	return nil
 }
 
-func (h *Hub) addSystem(fingerprint string) error {
-
-	collection, err := h.FindCollectionByNameOrId("blocked_systems")
+func (h *Hub) checkAPIKey(key string) bool {
+	// get user settings
+	record, err := h.FindFirstRecordByFilter(
+		"user_settings", "api_key={:key}",
+		dbx.Params{"key": key},
+	)
 	if err != nil {
-		h.Logger().Error("failed to get blocked_systems collection", "err", err)
-		return err
+		h.Logger().Error("Failed to get user settings", "err", err.Error())
+		return false
 	}
 
-	newSystemBlockedRecord := core.NewRecord(collection)
-	newSystemBlockedRecord.Set("fingerprint", fingerprint)
-
-	err = h.Save(newSystemBlockedRecord)
-	if err != nil {
-		h.Logger().Error("failed to save pending system record", "err", err)
-		return err
-	}
-	return nil
+	return record.GetString("api_key") != key
 }

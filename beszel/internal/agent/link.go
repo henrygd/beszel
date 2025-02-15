@@ -74,8 +74,10 @@ func (a *Agent) startClient(pubKey []byte, addr string) {
 		hostname = "unknown_hostname"
 	}
 
+	apiKey, _ := GetEnv("API_KEY")
+
 	c := &ssh.ClientConfig{
-		User: hostname,
+		User: fmt.Sprintf("%s@%s", hostname, apiKey),
 		Auth: []ssh.AuthMethod{
 			ssh.PublicKeys(signer),
 		},
