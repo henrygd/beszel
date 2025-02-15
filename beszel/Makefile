@@ -63,5 +63,13 @@ dev-agent:
 		go run beszel/cmd/agent; \
 	fi
 
+dev-agent-connect-back:
+	@if command -v entr >/dev/null 2>&1; then \
+		find ./cmd/agent/*.go ./internal/agent/*.go | entr -r go run beszel/cmd/agent client; \
+	else \
+		go run beszel/cmd/agent client; \
+	fi
+
+
 # KEY="..." make -j dev
 dev: dev-server dev-hub dev-agent

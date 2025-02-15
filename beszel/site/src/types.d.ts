@@ -13,8 +13,22 @@ export interface SystemRecord extends RecordModel {
 	status: "up" | "down" | "paused" | "pending"
 	port: string
 	info: SystemInfo
+	type: string
+	fingerprint: string
 	v: string
 }
+
+export interface AddSystemRecord extends RecordModel {
+	hostname: string
+	fingerprint: string
+	address: string
+}
+
+export interface BlockedSystemRecord extends RecordModel {
+	fingerprint: string
+}
+
+
 
 export interface SystemInfo {
 	/** hostname */
@@ -179,6 +193,23 @@ export type UserSettings = {
 	emails?: string[]
 	webhooks?: string[]
 }
+
+
+export type ConnectionSettingsActions = "accept" | "deny" | "display"
+
+export interface ConnectionSettingsActionsData {
+	[key: string]: {
+		type: ConnectionSettingsActions
+		label: () => string
+	}
+}
+
+export type ConnectionSettings = {
+	max_awaiting_size: number
+	external_address: string
+	withAPIKey: ConnectionSettingsActions
+}
+
 
 type ChartDataContainer = {
 	created: number | null

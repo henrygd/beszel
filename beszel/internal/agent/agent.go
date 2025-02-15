@@ -25,12 +25,14 @@ type Agent struct {
 	sensorsWhitelist map[string]struct{}        // List of sensors to monitor
 	systemInfo       system.Info                // Host system info
 	gpuManager       *GPUManager                // Manages GPU data
+	client           bool                       // Connect to server rather than open port
 }
 
-func NewAgent() *Agent {
+func NewAgent(client bool) *Agent {
 	newAgent := &Agent{
 		sensorsContext: context.Background(),
 		fsStats:        make(map[string]*system.FsStats),
+		client:         client,
 	}
 	newAgent.memCalc, _ = GetEnv("MEM_CALC")
 	return newAgent
@@ -97,7 +99,11 @@ func (a *Agent) Run(pubKey []byte, addr string) {
 		slog.Debug("Stats", "data", a.gatherStats())
 	}
 
-	a.startServer(pubKey, addr)
+	if a.client {
+		a.startClient(pubKey, addr)
+	} else {
+		a.startServer(pubKey, addr)
+	}
 }
 
 func (a *Agent) gatherStats() system.CombinedData {

@@ -5,8 +5,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useStore } from "@nanostores/react"
 import { $router } from "@/components/router.tsx"
 import { getPagePath, redirectPage } from "@nanostores/router"
-import { BellIcon, FileSlidersIcon, SettingsIcon } from "lucide-react"
-import { $userSettings, pb } from "@/lib/stores.ts"
+import { BellIcon, CableIcon, FileSlidersIcon, SettingsIcon } from "lucide-react"
+import { $userConnectionKey, $userSettings, pb } from "@/lib/stores.ts"
 import { toast } from "@/components/ui/use-toast.ts"
 import { UserSettings } from "@/types.js"
 import General from "./general.tsx"
@@ -14,6 +14,7 @@ import Notifications from "./notifications.tsx"
 import ConfigYaml from "./config-yaml.tsx"
 import { Trans, t } from "@lingui/macro"
 import { useLingui } from "@lingui/react"
+import Connections from "./connections.tsx"
 
 export async function saveSettings(newSettings: Partial<UserSettings>) {
 	try {
@@ -63,6 +64,12 @@ export default function SettingsLayout() {
 			icon: FileSlidersIcon,
 			admin: true,
 		},
+		{
+			title: t`Connections`,
+			href: getPagePath($router, "settings", { name: "connections" }),
+			icon: CableIcon,
+			admin: true,
+		},
 	]
 
 	const page = useStore($router)
@@ -103,13 +110,17 @@ export default function SettingsLayout() {
 
 function SettingsContent({ name }: { name: string }) {
 	const userSettings = useStore($userSettings)
+	const apiKey = useStore($userConnectionKey)
 
+	console.log(apiKey)
 	switch (name) {
 		case "general":
-			return <General userSettings={userSettings} />
+			return <General apiKey={apiKey} userSettings={userSettings} />
 		case "notifications":
 			return <Notifications userSettings={userSettings} />
 		case "config":
 			return <ConfigYaml />
+		case "connections":
+			return <Connections />
 	}
 }

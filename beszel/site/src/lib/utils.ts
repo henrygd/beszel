@@ -1,8 +1,8 @@
 import { toast } from "@/components/ui/use-toast"
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { $alerts, $copyContent, $systems, $userSettings, pb } from "./stores"
-import { AlertInfo, AlertRecord, ChartTimeData, ChartTimes, SystemRecord } from "@/types"
+import { $alerts, $copyContent, $newSystems, $systems, $userConnectionKey, $userSettings, pb } from "./stores"
+import { AddSystemRecord, AlertInfo, AlertRecord, ChartTimeData, ChartTimes, ConnectionSettingsActionsData, SystemRecord } from "@/types"
 import { RecordModel, RecordSubscription } from "pocketbase"
 import { WritableAtom } from "nanostores"
 import { timeDay, timeHour } from "d3-time"
@@ -10,7 +10,7 @@ import { useEffect, useState } from "react"
 import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from "lucide-react"
 import { EthernetIcon, ThermometerIcon } from "@/components/ui/icons"
 import { t } from "@lingui/macro"
-import { prependBasePath } from "@/components/router"
+import {  prependBasePath } from "@/components/router"
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -53,13 +53,36 @@ export const updateSystemList = (() => {
 		try {
 			const records = await pb
 				.collection<SystemRecord>("systems")
-				.getFullList({ sort: "+name", fields: "id,name,host,port,info,status" })
+				.getFullList({ sort: "+name", fields: "id,name,host,port,info,status,type"})
 
 			if (records.length) {
 				$systems.set(records)
 			} else {
 				verifyAuth()
 			}
+		} finally {
+			isFetchingSystems = false
+		}
+	}
+})()
+
+export const updateNewSystemsList = (() => {
+	let isFetchingSystems = false
+	return async () => {
+		if (isFetchingSystems) {
+			return
+		}
+		isFetchingSystems = true
+		try {
+			const records = await pb
+				.collection<AddSystemRecord>("new_systems")
+				.getFullList({ sort: "+hostname", fields: "id,hostname,fingerprint,address" })
+
+			if (records.length) {
+				$newSystems.set(records)
+			}
+
+			// do not verify auth twice, otherwise auto cancellation happens which causes a load loop
 		} finally {
 			isFetchingSystems = false
 		}
@@ -149,6 +172,21 @@ export function getPbTimestamp(timeString: ChartTimes, d?: Date) {
 	const seconds = String(d.getUTCSeconds()).padStart(2, "0")
 
 	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+}
+
+export const connectionActionsData: ConnectionSettingsActionsData = {
+	"accept": {
+		type: "accept",
+		label: () => t`Be Accepted`,
+	}, 
+	"deny": {
+		type: "deny",
+		label: () => t`Be Denied`,
+	},
+	"display": {
+		type: "display",
+		label: () => t`Await confirmation`,
+	}
 }
 
 export const chartTimeData: ChartTimeData = {
@@ -262,8 +300,10 @@ export function useLocalStorage<T>(key: string, defaultValue: T) {
 
 export async function updateUserSettings() {
 	try {
-		const req = await pb.collection("user_settings").getFirstListItem("", { fields: "settings" })
+		const req = await pb.collection("user_settings").getFirstListItem("", { fields: "settings,connection_key" })
+		console.log(req)
 		$userSettings.set(req.settings)
+		$userConnectionKey.set(req.connection_key)
 		return
 	} catch (e) {
 		console.log("get settings", e)

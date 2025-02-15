@@ -1,6 +1,6 @@
 import PocketBase from "pocketbase"
 import { atom, map, WritableAtom } from "nanostores"
-import { AlertRecord, ChartTimes, SystemRecord, UserSettings } from "@/types"
+import { AddSystemRecord, AlertRecord, ChartTimes, SystemRecord, UserSettings } from "@/types"
 import { basePath } from "@/components/router"
 
 /** PocketBase JS Client */
@@ -11,6 +11,9 @@ export const $authenticated = atom(pb.authStore.isValid)
 
 /** List of system records */
 export const $systems = atom([] as SystemRecord[])
+
+/** List of new systems */
+export const $newSystems = atom([] as AddSystemRecord[])
 
 /** List of alert records */
 export const $alerts = atom([] as AlertRecord[])
@@ -29,11 +32,15 @@ export const $userSettings = map<UserSettings>({
 	chartTime: "1h",
 	emails: [pb.authStore.record?.email || ""],
 })
+
 // update local storage on change
 $userSettings.subscribe((value) => {
 	// console.log('user settings changed', value)
 	$chartTime.set(value.chartTime)
 })
+
+/** User api key */
+export const $userConnectionKey = atom("N/A")
 
 /** Container chart filter */
 export const $containerFilter = atom("")
