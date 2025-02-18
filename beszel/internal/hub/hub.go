@@ -33,14 +33,15 @@ import (
 
 type Hub struct {
 	*pocketbase.PocketBase
-	sshClientConfig *ssh.ClientConfig
-	pubKey          string
-	am              *alerts.AlertManager
-	um              *users.UserManager
-	rm              *records.RecordManager
-	systemStats     *core.Collection
-	containerStats  *core.Collection
-	appURL          string
+	sshClientConfig   *ssh.ClientConfig
+	pubKey            string
+	am                *alerts.AlertManager
+	um                *users.UserManager
+	rm                *records.RecordManager
+	systemStats       *core.Collection
+	containerStats    *core.Collection
+	pveContainerStats *core.Collection
+	appURL            string
 }
 
 // NewHub creates a new Hub instance with default configuration
@@ -185,8 +186,8 @@ func (h *Hub) Run() {
 		h.Cron().MustAdd("delete old records", "8 * * * *", h.rm.DeleteOldRecords)
 		// create longer records every 10 minutes
 		h.Cron().MustAdd("create longer records", "*/10 * * * *", func() {
-			if systemStats, containerStats, err := h.getCollections(); err == nil {
-				h.rm.CreateLongerRecords([]*core.Collection{systemStats, containerStats})
+			if systemStats, containerStats, pveContainerStats, err := h.getCollections(); err == nil {
+				h.rm.CreateLongerRecords([]*core.Collection{systemStats, containerStats, pveContainerStats})
 			}
 		})
 		return se.Next()
@@ -352,7 +353,7 @@ func (h *Hub) updateSystem(record *core.Record) {
 		h.Logger().Error("Failed to update record: ", "err", err.Error())
 	}
 	// add system_stats and container_stats records
-	if systemStats, containerStats, err := h.getCollections(); err != nil {
+	if systemStats, containerStats, pveContainerStats, err := h.getCollections(); err != nil {
 		h.Logger().Error("Failed to get collections: ", "err", err.Error())
 	} else {
 		// add new system_stats record
@@ -373,6 +374,16 @@ func (h *Hub) updateSystem(record *core.Record) {
 				h.Logger().Error("Failed to save record: ", "err", err.Error())
 			}
 		}
+		// add new pve_container_stats record
+		if len(systemData.PveContainers) > 0 {
+			containerStatsRecord := core.NewRecord(pveContainerStats)
+			containerStatsRecord.Set("system", record.Id)
+			containerStatsRecord.Set("stats", systemData.PveContainers)
+			containerStatsRecord.Set("type", "1m")
+			if err := h.SaveNoValidate(containerStatsRecord); err != nil {
+				h.Logger().Error("Failed to save record: ", "err", err.Error())
+			}
+		}
 	}
 
 	// system info alerts
@@ -382,22 +393,29 @@ func (h *Hub) updateSystem(record *core.Record) {
 }
 
 // return system_stats and container_stats collections
-func (h *Hub) getCollections() (*core.Collection, *core.Collection, error) {
+func (h *Hub) getCollections() (*core.Collection, *core.Collection, *core.Collection, error) {
 	if h.systemStats == nil {
 		systemStats, err := h.FindCollectionByNameOrId("system_stats")
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, nil, err
 		}
 		h.systemStats = systemStats
 	}
 	if h.containerStats == nil {
 		containerStats, err := h.FindCollectionByNameOrId("container_stats")
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, nil, err
 		}
 		h.containerStats = containerStats
 	}
-	return h.systemStats, h.containerStats, nil
+	if h.pveContainerStats == nil {
+		pveContainerStats, err := h.FindCollectionByNameOrId("pve_container_stats")
+		if err != nil {
+			return nil, nil, nil, err
+		}
+		h.pveContainerStats = pveContainerStats
+	}
+	return h.systemStats, h.containerStats, h.pveContainerStats, nil
 }
 
 // set system to specified status and save record

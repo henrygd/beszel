@@ -48,6 +48,7 @@ The [quick start guide](https://beszel.dev/guide/getting-started) and other docu
 - **Network usage** - Host system and containers.
 - **Temperature** - Host system sensors.
 - **GPU usage / temperature / power draw** - Nvidia and AMD only. Must use binary agent.
+- **Proxmox** - Proxmox VMs and LXCs CPU, memory and network usage.
 
 ## License
 
