@@ -45,8 +45,8 @@ export interface SystemInfo {
 	p?: boolean
 	/** highest gpu utilization */
 	g?: number
-	/** highest temperature */
-	ht?: number
+	/** dashboard display temperature */
+	dt?: number
 }
 
 export interface SystemStats {

@@ -6,12 +6,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/core"
 )
 
 type UserManager struct {
-	app *pocketbase.PocketBase
+	app core.App
 }
 
 type UserSettings struct {
@@ -21,7 +20,7 @@ type UserSettings struct {
 	// Language             string   `json:"lang"`
 }
 
-func NewUserManager(app *pocketbase.PocketBase) *UserManager {
+func NewUserManager(app core.App) *UserManager {
 	return &UserManager{
 		app: app,
 	}

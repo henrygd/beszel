@@ -8,7 +8,7 @@ msgstr ""
 "Language: ja\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2024-12-17 21:36\n"
+"PO-Revision-Date: 2025-02-12 02:53\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -124,7 +124,7 @@ msgstr "平均が<0>{value}{0}</0>を超えています"
 
 #: src/components/routes/system.tsx:588
 msgid "Average power consumption of GPUs"
-msgstr ""
+msgstr "GPUの平均消費電力"
 
 #: src/components/routes/system.tsx:433
 msgid "Average system-wide CPU utilization"
@@ -132,7 +132,7 @@ msgstr "システム全体の平均CPU使用率"
 
 #: src/components/routes/system.tsx:606
 msgid "Average utilization of {0}"
-msgstr ""
+msgstr "{0}の平均使用率"
 
 #: src/components/command-palette.tsx:171
 #: src/components/navbar.tsx:94
@@ -373,7 +373,7 @@ msgstr "一般"
 
 #: src/components/routes/system.tsx:587
 msgid "GPU Power Draw"
-msgstr ""
+msgstr "GPUの消費電力"
 
 #: src/components/systems-table/systems-table.tsx:309
 msgid "Grid"
@@ -854,3 +854,4 @@ msgstr "YAML設定"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "ユーザー設定が更新されました。"
+

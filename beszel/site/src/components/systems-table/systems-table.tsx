@@ -9,7 +9,7 @@ import {
 	VisibilityState,
 	getCoreRowModel,
 	useReactTable,
-	Column,
+	HeaderContext,
 } from "@tanstack/react-table"
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -37,7 +37,6 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
-	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
 import { SystemRecord } from "@/types"
@@ -59,28 +58,31 @@ import {
 	ArrowUpIcon,
 	Settings2Icon,
 	EyeIcon,
+	PenBoxIcon,
 } from "lucide-react"
-import { useEffect, useMemo, useState } from "react"
+import { memo, useEffect, useMemo, useRef, useState } from "react"
 import { $hubVersion, $systems, pb } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { cn, copyToClipboard, decimalString, isReadOnlyUser, useLocalStorage } from "@/lib/utils"
 import AlertsButton from "../alerts/alert-button"
 import { $router, Link, navigate } from "../router"
-import { EthernetIcon, ThermometerIcon } from "../ui/icons"
+import { EthernetIcon, GpuIcon, ThermometerIcon } from "../ui/icons"
 import { Trans, t } from "@lingui/macro"
 import { useLingui } from "@lingui/react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Input } from "../ui/input"
 import { ClassValue } from "clsx"
 import { getPagePath } from "@nanostores/router"
+import { SystemDialog } from "../add-system"
+import { Dialog } from "../ui/dialog"
 
 type ViewMode = "table" | "grid"
 
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
-	const val = info.getValue() as number
+	const val = (info.getValue() as number) || 0
 	return (
 		<div className="flex gap-2 items-center tabular-nums tracking-tight">
-			<span className="min-w-[3.5em]">{decimalString(val, 1)}%</span>
+			<span className="min-w-[3.3em]">{decimalString(val, 1)}%</span>
 			<span className="grow min-w-10 block bg-muted h-[1em] relative rounded-sm overflow-hidden">
 				<span
 					className={cn(
@@ -99,7 +101,8 @@ function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	)
 }
 
-function sortableHeader(column: Column<SystemRecord, unknown>, hideSortIcon = false) {
+function sortableHeader(context: HeaderContext<SystemRecord, unknown>, hideSortIcon = false) {
+	const { column } = context
 	return (
 		<Button
 			variant="ghost"
@@ -154,7 +157,7 @@ export default function SystemsTable() {
 						</Button>
 					</span>
 				),
-				header: ({ column }) => sortableHeader(column),
+				header: sortableHeader,
 			},
 			{
 				accessorKey: "info.cpu",
@@ -162,7 +165,7 @@ export default function SystemsTable() {
 				invertSorting: true,
 				cell: CellFormatter,
 				icon: CpuIcon,
-				header: ({ column }) => sortableHeader(column),
+				header: sortableHeader,
 			},
 			{
 				accessorKey: "info.mp",
@@ -170,7 +173,7 @@ export default function SystemsTable() {
 				invertSorting: true,
 				cell: CellFormatter,
 				icon: MemoryStickIcon,
-				header: ({ column }) => sortableHeader(column),
+				header: sortableHeader,
 			},
 			{
 				accessorKey: "info.dp",
@@ -178,16 +181,25 @@ export default function SystemsTable() {
 				invertSorting: true,
 				cell: CellFormatter,
 				icon: HardDriveIcon,
-				header: ({ column }) => sortableHeader(column),
+				header: sortableHeader,
 			},
 			{
-				accessorKey: "info.ht",
+				accessorFn: (originalRow) => originalRow.info.g,
+				id: "GPU",
+				invertSorting: true,
+				sortUndefined: -1,
+				cell: CellFormatter,
+				icon: GpuIcon,
+				header: sortableHeader,
+			},
+			{
+				accessorFn: (originalRow) => originalRow.info.dt,
 				id: t`Temp`,
 				invertSorting: true,
-				sortUndefined: 0,
+				sortUndefined: -1,
 				size: 50,
 				icon: ThermometerIcon,
-				header: ({ column }) => sortableHeader(column),
+				header: sortableHeader,
 				cell(info) {
 					const val = info.getValue() as number
 					if (!val) {
@@ -208,9 +220,9 @@ export default function SystemsTable() {
 				accessorFn: (originalRow) => originalRow.info.b || 0,
 				id: t`Net`,
 				invertSorting: true,
-				size: 115,
+				size: 100,
 				icon: EthernetIcon,
-				header: ({ column }) => sortableHeader(column),
+				header: sortableHeader,
 				cell(info) {
 					const val = info.getValue() as number
 					return (
@@ -230,7 +242,7 @@ export default function SystemsTable() {
 				invertSorting: true,
 				size: 50,
 				icon: WifiIcon,
-				header: ({ column }) => sortableHeader(column, true),
+				header: sortableHeader,
 				cell(info) {
 					const version = info.getValue() as string
 					if (!version || !hubVersion) {
@@ -549,11 +561,15 @@ function IndicatorDot({ system, className }: { system: SystemRecord; className?:
 	)
 }
 
-function ActionsButton({ system }: { system: SystemRecord }) {
-	// const [opened, setOpened] = useState(false)
+const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
+	const [deleteOpen, setDeleteOpen] = useState(false)
+	const [editOpen, setEditOpen] = useState(false)
+	let editOpened = useRef(false)
+
 	const { id, status, host, name } = system
+
 	return (
-		<AlertDialog>
+		<>
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Button variant="ghost" size={"icon"} data-nolink>
@@ -564,6 +580,17 @@ function ActionsButton({ system }: { system: SystemRecord }) {
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end">
+					{!isReadOnlyUser() && (
+						<DropdownMenuItem
+							onSelect={() => {
+								editOpened.current = true
+								setEditOpen(true)
+							}}
+						>
+							<PenBoxIcon className="me-2.5 size-4" />
+							<Trans>Edit</Trans>
+						</DropdownMenuItem>
+					)}
 					<DropdownMenuItem
 						className={cn(isReadOnlyUser() && "hidden")}
 						onClick={() => {
@@ -589,38 +616,43 @@ function ActionsButton({ system }: { system: SystemRecord }) {
 						<Trans>Copy host</Trans>
 					</DropdownMenuItem>
 					<DropdownMenuSeparator className={cn(isReadOnlyUser() && "hidden")} />
-					<AlertDialogTrigger asChild>
-						<DropdownMenuItem className={cn(isReadOnlyUser() && "hidden")}>
-							<Trash2Icon className="me-2.5 size-4" />
-							<Trans>Delete</Trans>
-						</DropdownMenuItem>
-					</AlertDialogTrigger>
+					<DropdownMenuItem className={cn(isReadOnlyUser() && "hidden")} onSelect={() => setDeleteOpen(true)}>
+						<Trash2Icon className="me-2.5 size-4" />
+						<Trans>Delete</Trans>
+					</DropdownMenuItem>
 				</DropdownMenuContent>
 			</DropdownMenu>
-			<AlertDialogContent>
-				<AlertDialogHeader>
-					<AlertDialogTitle>
-						<Trans>Are you sure you want to delete {name}?</Trans>
-					</AlertDialogTitle>
-					<AlertDialogDescription>
-						<Trans>
-							This action cannot be undone. This will permanently delete all current records for {name} from the
-							database.
-						</Trans>
-					</AlertDialogDescription>
-				</AlertDialogHeader>
-				<AlertDialogFooter>
-					<AlertDialogCancel>
-						<Trans>Cancel</Trans>
-					</AlertDialogCancel>
-					<AlertDialogAction
-						className={cn(buttonVariants({ variant: "destructive" }))}
-						onClick={() => pb.collection("systems").delete(id)}
-					>
-						<Trans>Continue</Trans>
-					</AlertDialogAction>
-				</AlertDialogFooter>
-			</AlertDialogContent>
-		</AlertDialog>
+			{/* edit dialog */}
+			<Dialog open={editOpen} onOpenChange={setEditOpen}>
+				{editOpened.current && <SystemDialog system={system} setOpen={setEditOpen} />}
+			</Dialog>
+			{/* deletion dialog */}
+			<AlertDialog open={deleteOpen} onOpenChange={(open) => setDeleteOpen(open)}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							<Trans>Are you sure you want to delete {name}?</Trans>
+						</AlertDialogTitle>
+						<AlertDialogDescription>
+							<Trans>
+								This action cannot be undone. This will permanently delete all current records for {name} from the
+								database.
+							</Trans>
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>
+							<Trans>Cancel</Trans>
+						</AlertDialogCancel>
+						<AlertDialogAction
+							className={cn(buttonVariants({ variant: "destructive" }))}
+							onClick={() => pb.collection("systems").delete(id)}
+						>
+							<Trans>Continue</Trans>
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+		</>
 	)
-}
+})

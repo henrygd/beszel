@@ -1,0 +1,27 @@
+{{- if .Values.persistentVolumeClaim.enabled -}}
+{{- if not .Values.persistentVolumeClaim.existingClaim -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+{{- if .Values.persistentVolumeClaim.annotations }}
+  annotations:
+{{ toYaml .Values.persistentVolumeClaim.annotations | indent 4 }}
+{{- end }}
+  labels:
+    {{- include "beszel.labels" . | nindent 4 }}
+  name: {{ template "beszel.fullname" . }}
+spec:
+  accessModes:
+{{ toYaml .Values.persistentVolumeClaim.accessModes | indent 4 }}
+{{- if .Values.persistentVolumeClaim.storageClass }}
+  {{- if (eq "-" .Values.persistentVolumeClaim.storageClass) }}
+  storageClassName: ""
+  {{- else }}
+  storageClassName: {{ .Values.persistentVolumeClaim.storageClass | quote }}
+  {{- end }}
+{{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.persistentVolumeClaim.size | quote }}
+{{- end -}}
+{{- end -}}
