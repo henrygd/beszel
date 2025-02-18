@@ -25,7 +25,7 @@ type Agent struct {
 	sensorsWhitelist map[string]struct{}        // List of sensors to monitor
 	systemInfo       system.Info                // Host system info
 	gpuManager       *GPUManager                // Manages GPU data
-	pveManager       *pveManager
+	pveManager       *pveManager                // Manages Proxmox API requests
 }
 
 func NewAgent() *Agent {
