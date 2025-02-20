@@ -8,7 +8,7 @@ msgstr ""
 "Language: no\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-20 08:36\n"
+"PO-Revision-Date: 2025-02-20 10:13\n"
 "Last-Translator: \n"
 "Language-Team: Norwegian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -527,7 +527,7 @@ msgstr "Passord må bestå av minst 8 tegn."
 
 #: src/components/login/auth-form.tsx:21
 msgid "Password must be less than 72 bytes."
-msgstr "Passordet må være mindre enn 72 byte."
+msgstr "Passord må være mindre enn 72 byte."
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
