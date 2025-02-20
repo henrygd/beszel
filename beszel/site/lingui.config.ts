@@ -17,6 +17,7 @@ const config: LinguiConfig = {
 		"ja",
 		"ko",
 		"nl",
+		"no",
 		"pl",
 		"pt",
 		"tr",
