@@ -421,7 +421,14 @@ func (h *Hub) deleteSystemConnection(record *core.Record) {
 }
 
 func (h *Hub) createSystemConnection(record *core.Record) (*ssh.Client, error) {
-	client, err := ssh.Dial("tcp", net.JoinHostPort(record.GetString("host"), record.GetString("port")), h.sshClientConfig)
+	network := "tcp"
+	host := record.GetString("host")
+	if strings.HasPrefix(host, "/") {
+		network = "unix"
+	} else {
+		host = net.JoinHostPort(host, record.GetString("port"))
+	}
+	client, err := ssh.Dial(network, host, h.sshClientConfig)
 	if err != nil {
 		return nil, err
 	}
