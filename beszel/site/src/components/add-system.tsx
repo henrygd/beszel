@@ -19,7 +19,7 @@ import { i18n } from "@lingui/core"
 import { t, Trans } from "@lingui/macro"
 import { useStore } from "@nanostores/react"
 import { ChevronDownIcon, Copy, PlusIcon } from "lucide-react"
-import { memo, MutableRefObject, useRef, useState } from "react"
+import { memo, useRef, useState } from "react"
 import { basePath, navigate } from "./router"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import { SystemRecord } from "@/types"
@@ -49,19 +49,8 @@ export function AddSystemButton({ className }: { className?: string }) {
 	)
 }
 
-/**
- * SystemDialog component for adding or editing a system.
- * @param {Object} props - The component props.
- * @param {function} props.setOpen - Function to set the open state of the dialog.
- * @param {SystemRecord} [props.system] - Optional system record for editing an existing system.
- */
-export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean) => void; system?: SystemRecord }) => {
-	const port = useRef() as MutableRefObject<HTMLInputElement>
-	const publicKey = useStore($publicKey)
-
-	function copyDockerCompose(port: string) {
+	function copyDockerCompose(port = "45876", publicKey: string) {
 		copyToClipboard(`services:
-  version: "3"
   beszel-agent:
     image: "henrygd/beszel-agent"
     container_name: "beszel-agent"
@@ -76,13 +65,13 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
       KEY: "${publicKey}"`)
 	}
 
-	function copyDockerRun(port: string) {
+	function copyDockerRun(port = "45876", publicKey: string) {
 		copyToClipboard(
 			`docker run -d --name beszel-agent --network host --restart unless-stopped -v /var/run/docker.sock:/var/run/docker.sock:ro -e KEY="${publicKey}" -e PORT=${port} henrygd/beszel-agent:latest`
 		)
 	}
 
-	function copyInstallCommand(port: string) {
+	function copyInstallCommand(port = "45876", publicKey: string) {
 		let cmd = `curl -sL https://raw.githubusercontent.com/henrygd/beszel/main/supplemental/scripts/install-agent.sh -o install-agent.sh && chmod +x install-agent.sh && ./install-agent.sh -p ${port} -k "${publicKey}"`
 		// add china mirrors flag if zh-CN
 		if ((i18n.locale + navigator.language).includes("zh-CN")) {
@@ -90,6 +79,18 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 		}
 		copyToClipboard(cmd)
 	}
+
+/**
+ * SystemDialog component for adding or editing a system.
+ * @param {Object} props - The component props.
+ * @param {function} props.setOpen - Function to set the open state of the dialog.
+ * @param {SystemRecord} [props.system] - Optional system record for editing an existing system.
+ */
+export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean) => void; system?: SystemRecord }) => {
+	const publicKey = useStore($publicKey)
+	const port = useRef<HTMLInputElement>(null)
+	const [hostValue, setHostValue] = useState(system?.host ?? "")
+	const isUnixSocket = hostValue.startsWith("/")
 
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault()
@@ -111,7 +112,9 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 	}
 
 	return (
-		<DialogContent className="w-[90%] sm:w-auto sm:ns-dialog max-w-full rounded-lg">
+		<DialogContent className="w-[90%] sm:w-auto sm:ns-dialog max-w-full rounded-lg" onCloseAutoFocus={() => {
+			setHostValue(system?.host ?? "")
+		}}>
 			<Tabs defaultValue="docker">
 				<DialogHeader>
 					<DialogTitle className="mb-2">
@@ -150,11 +153,26 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 						<Label htmlFor="host" className="xs:text-end">
 							<Trans>Host / IP</Trans>
 						</Label>
-						<Input id="host" name="host" defaultValue={system?.host} required />
-						<Label htmlFor="port" className="xs:text-end">
+						<Input
+							id="host"
+							name="host"
+							value={hostValue}
+							required
+							onChange={(e) => {
+								setHostValue(e.target.value)
+							}}
+						/>
+						<Label htmlFor="port" className={cn("xs:text-end", isUnixSocket && "hidden")}>
 							<Trans>Port</Trans>
 						</Label>
-						<Input ref={port} name="port" id="port" defaultValue={system?.port || "45876"} required />
+						<Input
+							ref={port}
+							name="port"
+							id="port"
+							defaultValue={system?.port || "45876"}
+							required={!isUnixSocket}
+							className={cn(isUnixSocket && "hidden")}
+						/>
 						<Label htmlFor="pkey" className="xs:text-end whitespace-pre">
 							<Trans comment="Use 'Key' if your language requires many more characters">Public Key</Trans>
 						</Label>
@@ -193,7 +211,7 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 								<Button
 									type="button"
 									variant="outline"
-									onClick={() => copyDockerCompose(port.current.value)}
+									onClick={() => copyDockerCompose(isUnixSocket ? hostValue : port.current?.value, publicKey )}
 									className="rounded-e-none dark:border-e-0 grow"
 								>
 									<Trans>Copy</Trans> docker compose
@@ -206,7 +224,7 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 										</Button>
 									</DropdownMenuTrigger>
 									<DropdownMenuContent align="end">
-										<DropdownMenuItem onClick={() => copyDockerRun(port.current.value)}>
+										<DropdownMenuItem onClick={() => copyDockerRun(isUnixSocket ? hostValue : port.current?.value, publicKey)}>
 											<Trans>Copy</Trans> docker run
 										</DropdownMenuItem>
 									</DropdownMenuContent>
@@ -215,7 +233,7 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 						</TabsContent>
 						{/* Binary */}
 						<TabsContent value="binary" className="contents">
-							<Button type="button" variant="outline" onClick={() => copyInstallCommand(port.current.value)}>
+							<Button type="button" variant="outline" onClick={() => copyInstallCommand(isUnixSocket ? hostValue : port.current?.value, publicKey)}>
 								<Trans>Copy Linux command</Trans>
 							</Button>
 						</TabsContent>
