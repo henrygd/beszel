@@ -35,7 +35,7 @@ func TestStartServer(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		config      ServerConfig
+		config      ServerOptions
 		wantErr     bool
 		errContains string
 		setup       func() error
@@ -43,7 +43,7 @@ func TestStartServer(t *testing.T) {
 	}{
 		{
 			name: "tcp port only",
-			config: ServerConfig{
+			config: ServerOptions{
 				Network: "tcp",
 				Addr:    "45987",
 				Keys:    []ssh.PublicKey{sshPubKey},
@@ -51,7 +51,7 @@ func TestStartServer(t *testing.T) {
 		},
 		{
 			name: "tcp with ipv4",
-			config: ServerConfig{
+			config: ServerOptions{
 				Network: "tcp4",
 				Addr:    "127.0.0.1:45988",
 				Keys:    []ssh.PublicKey{sshPubKey},
@@ -59,7 +59,7 @@ func TestStartServer(t *testing.T) {
 		},
 		{
 			name: "tcp with ipv6",
-			config: ServerConfig{
+			config: ServerOptions{
 				Network: "tcp6",
 				Addr:    "[::1]:45989",
 				Keys:    []ssh.PublicKey{sshPubKey},
@@ -67,7 +67,7 @@ func TestStartServer(t *testing.T) {
 		},
 		{
 			name: "unix socket",
-			config: ServerConfig{
+			config: ServerOptions{
 				Network: "unix",
 				Addr:    socketFile,
 				Keys:    []ssh.PublicKey{sshPubKey},
@@ -86,13 +86,21 @@ func TestStartServer(t *testing.T) {
 		},
 		{
 			name: "bad key should fail",
-			config: ServerConfig{
+			config: ServerOptions{
 				Network: "tcp",
 				Addr:    "45987",
 				Keys:    []ssh.PublicKey{sshBadPubKey},
 			},
 			wantErr:     true,
 			errContains: "ssh: handshake failed",
+		},
+		{
+			name: "good key still good",
+			config: ServerOptions{
+				Network: "tcp",
+				Addr:    "45987",
+				Keys:    []ssh.PublicKey{sshPubKey},
+			},
 		},
 	}
 

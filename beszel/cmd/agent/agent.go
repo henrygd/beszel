@@ -12,15 +12,16 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-type cmdConfig struct {
+// cli options
+type cmdOptions struct {
 	key  string // key is the public key(s) for SSH authentication.
 	addr string // addr is the address or port to listen on.
 }
 
 // parseFlags parses the command line flags and populates the config struct.
-func parseFlags(cfg *cmdConfig) {
-	flag.StringVar(&cfg.key, "key", "", "Public key(s) for SSH authentication")
-	flag.StringVar(&cfg.addr, "addr", "", "Address or port to listen on")
+func (opts *cmdOptions) parseFlags() {
+	flag.StringVar(&opts.key, "key", "", "Public key(s) for SSH authentication")
+	flag.StringVar(&opts.addr, "addr", "", "Address or port to listen on")
 
 	flag.Usage = func() {
 		fmt.Printf("Usage: %s [options] [subcommand]\n", os.Args[0])
@@ -54,10 +55,10 @@ func handleSubcommand() bool {
 }
 
 // loadPublicKeys loads the public keys from the command line flag, environment variable, or key file.
-func loadPublicKeys(cfg cmdConfig) ([]ssh.PublicKey, error) {
+func (opts *cmdOptions) loadPublicKeys() ([]ssh.PublicKey, error) {
 	// Try command line flag first
-	if cfg.key != "" {
-		return agent.ParseKeys(cfg.key)
+	if opts.key != "" {
+		return agent.ParseKeys(opts.key)
 	}
 
 	// Try environment variable
@@ -68,7 +69,7 @@ func loadPublicKeys(cfg cmdConfig) ([]ssh.PublicKey, error) {
 	// Try key file
 	keyFile, ok := agent.GetEnv("KEY_FILE")
 	if !ok {
-		return nil, fmt.Errorf("no key provided: must set -key flag, KEY env var, or KEY_FILE env var. ")
+		return nil, fmt.Errorf("no key provided: must set -key flag, KEY env var, or KEY_FILE env var. Use 'beszel-agent help' for usage")
 	}
 
 	pubKey, err := os.ReadFile(keyFile)
@@ -79,10 +80,10 @@ func loadPublicKeys(cfg cmdConfig) ([]ssh.PublicKey, error) {
 }
 
 // getAddress gets the address to listen on from the command line flag, environment variable, or default value.
-func getAddress(addr string) string {
+func (opts *cmdOptions) getAddress() string {
 	// Try command line flag first
-	if addr != "" {
-		return addr
+	if opts.addr != "" {
+		return opts.addr
 	}
 	// Try environment variables
 	if addr, ok := agent.GetEnv("ADDR"); ok && addr != "" {
@@ -96,19 +97,19 @@ func getAddress(addr string) string {
 }
 
 // getNetwork returns the network type to use for the server.
-func getNetwork(addr string) string {
+func (opts *cmdOptions) getNetwork() string {
 	if network, _ := agent.GetEnv("NETWORK"); network != "" {
 		return network
 	}
-	if strings.HasPrefix(addr, "/") {
+	if strings.HasPrefix(opts.addr, "/") {
 		return "unix"
 	}
 	return "tcp"
 }
 
 func main() {
-	var cfg cmdConfig
-	parseFlags(&cfg)
+	var opts cmdOptions
+	opts.parseFlags()
 
 	if handleSubcommand() {
 		return
@@ -116,15 +117,15 @@ func main() {
 
 	flag.Parse()
 
-	var serverConfig agent.ServerConfig
+	var serverConfig agent.ServerOptions
 	var err error
-	serverConfig.Keys, err = loadPublicKeys(cfg)
+	serverConfig.Keys, err = opts.loadPublicKeys()
 	if err != nil {
 		log.Fatal("Failed to load public keys:", err)
 	}
 
-	serverConfig.Addr = getAddress(cfg.addr)
-	serverConfig.Network = getNetwork(cfg.addr)
+	serverConfig.Addr = opts.getAddress()
+	serverConfig.Network = opts.getNetwork()
 
 	agent := agent.NewAgent()
 	if err := agent.StartServer(serverConfig); err != nil {

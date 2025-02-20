@@ -15,32 +15,32 @@ import (
 func TestGetAddress(t *testing.T) {
 	tests := []struct {
 		name     string
-		cfg      cmdConfig
+		opts     cmdOptions
 		envVars  map[string]string
 		expected string
 	}{
 		{
 			name:     "default port when no config",
-			cfg:      cmdConfig{},
+			opts:     cmdOptions{},
 			expected: ":45876",
 		},
 		{
 			name: "use address from flag",
-			cfg: cmdConfig{
+			opts: cmdOptions{
 				addr: "8080",
 			},
 			expected: "8080",
 		},
 		{
 			name: "use unix socket from flag",
-			cfg: cmdConfig{
+			opts: cmdOptions{
 				addr: "/tmp/beszel.sock",
 			},
 			expected: "/tmp/beszel.sock",
 		},
 		{
 			name: "use ADDR env var",
-			cfg:  cmdConfig{},
+			opts: cmdOptions{},
 			envVars: map[string]string{
 				"ADDR": "1.2.3.4:9090",
 			},
@@ -48,7 +48,7 @@ func TestGetAddress(t *testing.T) {
 		},
 		{
 			name: "use legacy PORT env var",
-			cfg:  cmdConfig{},
+			opts: cmdOptions{},
 			envVars: map[string]string{
 				"PORT": "7070",
 			},
@@ -56,7 +56,7 @@ func TestGetAddress(t *testing.T) {
 		},
 		{
 			name: "flag takes precedence over env vars",
-			cfg: cmdConfig{
+			opts: cmdOptions{
 				addr: ":8080",
 			},
 			envVars: map[string]string{
@@ -74,7 +74,7 @@ func TestGetAddress(t *testing.T) {
 				t.Setenv(k, v)
 			}
 
-			addr := getAddress(tt.cfg.addr)
+			addr := tt.opts.getAddress()
 			assert.Equal(t, tt.expected, addr)
 		})
 	}
@@ -90,7 +90,7 @@ func TestLoadPublicKeys(t *testing.T) {
 
 	tests := []struct {
 		name        string
-		cfg         cmdConfig
+		opts        cmdOptions
 		envVars     map[string]string
 		setupFiles  map[string][]byte
 		wantErr     bool
@@ -98,7 +98,7 @@ func TestLoadPublicKeys(t *testing.T) {
 	}{
 		{
 			name: "load key from flag",
-			cfg: cmdConfig{
+			opts: cmdOptions{
 				key: string(pubKey),
 			},
 		},
@@ -132,7 +132,7 @@ func TestLoadPublicKeys(t *testing.T) {
 		},
 		{
 			name: "error on invalid key data",
-			cfg: cmdConfig{
+			opts: cmdOptions{
 				key: "invalid-key-data",
 			},
 			wantErr: true,
@@ -159,7 +159,7 @@ func TestLoadPublicKeys(t *testing.T) {
 				t.Setenv(k, v)
 			}
 
-			keys, err := loadPublicKeys(tt.cfg)
+			keys, err := tt.opts.loadPublicKeys()
 			if tt.wantErr {
 				assert.Error(t, err)
 				if tt.errContains != "" {
@@ -178,33 +178,40 @@ func TestLoadPublicKeys(t *testing.T) {
 func TestGetNetwork(t *testing.T) {
 	tests := []struct {
 		name     string
-		addr     string
+		opts     cmdOptions
 		envVars  map[string]string
 		expected string
 	}{
 		{
+			name: "NETWORK env var",
+			envVars: map[string]string{
+				"NETWORK": "tcp4",
+			},
+			expected: "tcp4",
+		},
+		{
 			name:     "only port",
-			addr:     "8080",
+			opts:     cmdOptions{addr: "8080"},
 			expected: "tcp",
 		},
 		{
 			name:     "ipv4 address",
-			addr:     "1.2.3.4:8080",
+			opts:     cmdOptions{addr: "1.2.3.4:8080"},
 			expected: "tcp",
 		},
 		{
 			name:     "ipv6 address",
-			addr:     "[2001:db8::1]:8080",
+			opts:     cmdOptions{addr: "[2001:db8::1]:8080"},
 			expected: "tcp",
 		},
 		{
 			name:     "unix network",
-			addr:     "/tmp/beszel.sock",
+			opts:     cmdOptions{addr: "/tmp/beszel.sock"},
 			expected: "unix",
 		},
 		{
 			name:     "env var network",
-			addr:     ":8080",
+			opts:     cmdOptions{addr: ":8080"},
 			envVars:  map[string]string{"NETWORK": "tcp4"},
 			expected: "tcp4",
 		},
@@ -216,7 +223,7 @@ func TestGetNetwork(t *testing.T) {
 			for k, v := range tt.envVars {
 				t.Setenv(k, v)
 			}
-			network := getNetwork(tt.addr)
+			network := tt.opts.getNetwork()
 			assert.Equal(t, tt.expected, network)
 		})
 	}
@@ -233,12 +240,12 @@ func TestParseFlags(t *testing.T) {
 	tests := []struct {
 		name     string
 		args     []string
-		expected cmdConfig
+		expected cmdOptions
 	}{
 		{
 			name: "no flags",
 			args: []string{"cmd"},
-			expected: cmdConfig{
+			expected: cmdOptions{
 				key:  "",
 				addr: "",
 			},
@@ -246,7 +253,7 @@ func TestParseFlags(t *testing.T) {
 		{
 			name: "key flag only",
 			args: []string{"cmd", "-key", "testkey"},
-			expected: cmdConfig{
+			expected: cmdOptions{
 				key:  "testkey",
 				addr: "",
 			},
@@ -254,7 +261,7 @@ func TestParseFlags(t *testing.T) {
 		{
 			name: "addr flag only",
 			args: []string{"cmd", "-addr", ":8080"},
-			expected: cmdConfig{
+			expected: cmdOptions{
 				key:  "",
 				addr: ":8080",
 			},
@@ -262,7 +269,7 @@ func TestParseFlags(t *testing.T) {
 		{
 			name: "both flags",
 			args: []string{"cmd", "-key", "testkey", "-addr", ":8080"},
-			expected: cmdConfig{
+			expected: cmdOptions{
 				key:  "testkey",
 				addr: ":8080",
 			},
@@ -275,11 +282,11 @@ func TestParseFlags(t *testing.T) {
 			flag.CommandLine = flag.NewFlagSet(tt.args[0], flag.ExitOnError)
 			os.Args = tt.args
 
-			var cfg cmdConfig
-			parseFlags(&cfg)
+			var opts cmdOptions
+			opts.parseFlags()
 			flag.Parse()
 
-			assert.Equal(t, tt.expected, cfg)
+			assert.Equal(t, tt.expected, opts)
 		})
 	}
 }

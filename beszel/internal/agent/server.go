@@ -12,41 +12,41 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-type ServerConfig struct {
+type ServerOptions struct {
 	Addr    string
 	Network string
 	Keys    []ssh.PublicKey
 }
 
-func (a *Agent) StartServer(cfg ServerConfig) error {
+func (a *Agent) StartServer(opts ServerOptions) error {
 	sshServer.Handle(a.handleSession)
 
-	slog.Info("Starting SSH server", "addr", cfg.Addr, "network", cfg.Network)
+	slog.Info("Starting SSH server", "addr", opts.Addr, "network", opts.Network)
 
-	switch cfg.Network {
+	switch opts.Network {
 	case "unix":
 		// remove existing socket file if it exists
-		if err := os.Remove(cfg.Addr); err != nil && !os.IsNotExist(err) {
+		if err := os.Remove(opts.Addr); err != nil && !os.IsNotExist(err) {
 			return err
 		}
 	default:
 		// prefix with : if only port was provided
-		if !strings.Contains(cfg.Addr, ":") {
-			cfg.Addr = ":" + cfg.Addr
+		if !strings.Contains(opts.Addr, ":") {
+			opts.Addr = ":" + opts.Addr
 		}
 	}
 
 	// Listen on the address
-	ln, err := net.Listen(cfg.Network, cfg.Addr)
+	ln, err := net.Listen(opts.Network, opts.Addr)
 	if err != nil {
 		return err
 	}
 	defer ln.Close()
 
-	// Start server on the listener
+	// Start SSH server on the listener
 	err = sshServer.Serve(ln, nil, sshServer.NoPty(),
 		sshServer.PublicKeyAuth(func(ctx sshServer.Context, key sshServer.PublicKey) bool {
-			for _, pubKey := range cfg.Keys {
+			for _, pubKey := range opts.Keys {
 				if sshServer.KeysEqual(key, pubKey) {
 					return true
 				}
