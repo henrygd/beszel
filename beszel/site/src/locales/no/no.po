@@ -8,7 +8,7 @@ msgstr ""
 "Language: no\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-20 03:43\n"
+"PO-Revision-Date: 2025-02-20 08:36\n"
 "Last-Translator: \n"
 "Language-Team: Norwegian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -298,7 +298,7 @@ msgstr "Dokumentasjon"
 #: src/components/add-system.tsx:121
 #: src/components/systems-table/systems-table.tsx:599
 msgid "Edit"
-msgstr ""
+msgstr "Rediger"
 
 #: src/components/login/auth-form.tsx:173
 #: src/components/login/forgot-pass-form.tsx:53
@@ -527,7 +527,7 @@ msgstr "Passord må bestå av minst 8 tegn."
 
 #: src/components/login/auth-form.tsx:21
 msgid "Password must be less than 72 bytes."
-msgstr ""
+msgstr "Passordet må være mindre enn 72 byte."
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
@@ -618,7 +618,7 @@ msgstr "Lagre Innstillinger"
 
 #: src/components/add-system.tsx:241
 msgid "Save system"
-msgstr ""
+msgstr "Lagre system"
 
 #: src/components/navbar.tsx:134
 msgid "Search"
@@ -701,7 +701,7 @@ msgstr "Tabell"
 #. Temperature label in systems table
 #: src/components/systems-table/systems-table.tsx:218
 msgid "Temp"
-msgstr ""
+msgstr "Temp"
 
 #: src/components/routes/system.tsx:486
 #: src/lib/utils.ts:333
