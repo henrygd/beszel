@@ -8,11 +8,13 @@ import (
 	"log/slog"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/shirou/gopsutil/v4/common"
 )
 
 type Agent struct {
+	sync.Mutex                                  // Used to lock agent while collecting data
 	debug            bool                       // true if LOG_LEVEL is set to debug
 	zfs              bool                       // true if system has arcstats
 	memCalc          string                     // Memory calculation formula
@@ -99,6 +101,8 @@ func GetEnv(key string) (value string, exists bool) {
 }
 
 func (a *Agent) gatherStats() system.CombinedData {
+	a.Lock()
+	defer a.Unlock()
 	slog.Debug("Getting stats")
 	systemData := system.CombinedData{
 		Stats: a.getSystemStats(),
