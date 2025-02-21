@@ -117,6 +117,8 @@ func main() {
 
 	flag.Parse()
 
+	opts.addr = opts.getAddress()
+
 	var serverConfig agent.ServerOptions
 	var err error
 	serverConfig.Keys, err = opts.loadPublicKeys()
@@ -124,7 +126,7 @@ func main() {
 		log.Fatal("Failed to load public keys:", err)
 	}
 
-	serverConfig.Addr = opts.getAddress()
+	serverConfig.Addr = opts.addr
 	serverConfig.Network = opts.getNetwork()
 
 	agent := agent.NewAgent()

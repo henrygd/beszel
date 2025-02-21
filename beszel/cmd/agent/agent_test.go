@@ -55,6 +55,16 @@ func TestGetAddress(t *testing.T) {
 			expected: "7070",
 		},
 		{
+			name: "use unix socket from env var",
+			opts: cmdOptions{
+				addr: "",
+			},
+			envVars: map[string]string{
+				"ADDR": "/tmp/beszel.sock",
+			},
+			expected: "/tmp/beszel.sock",
+		},
+		{
 			name: "flag takes precedence over env vars",
 			opts: cmdOptions{
 				addr: ":8080",
