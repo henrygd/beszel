@@ -8,7 +8,7 @@ msgstr ""
 "Language: id\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-20 02:40\n"
+"PO-Revision-Date: 2025-02-21 05:53\n"
 "Last-Translator: \n"
 "Language-Team: Indonesian\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -215,7 +215,7 @@ msgstr ""
 #: src/components/add-system.tsx:217
 #: src/components/add-system.tsx:228
 msgid "Copy"
-msgstr ""
+msgstr "Salin"
 
 #: src/components/systems-table/systems-table.tsx:624
 msgid "Copy host"
