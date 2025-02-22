@@ -1,6 +1,6 @@
-import { $systems, pb, $chartTime, $containerFilter, $userSettings, $direction } from "@/lib/stores"
+import { $systems, pb, $chartTime, $containerFilter, $userSettings, $direction, $maxValues } from "@/lib/stores"
 import { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord } from "@/types"
-import React, { lazy, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import React, { lazy, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Card, CardHeader, CardTitle, CardDescription } from "../ui/card"
 import { useStore } from "@nanostores/react"
 import Spinner from "../spinner"
@@ -98,10 +98,7 @@ export default function SystemDetail({ name }: { name: string }) {
 	const { _ } = useLingui()
 	const systems = useStore($systems)
 	const chartTime = useStore($chartTime)
-	/** Max CPU toggle value */
-	const cpuMaxStore = useState(false)
-	const bandwidthMaxStore = useState(false)
-	const diskIoMaxStore = useState(false)
+	const maxValues = useStore($maxValues)
 	const [grid, setGrid] = useLocalStorage("grid", true)
 	const [system, setSystem] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
@@ -121,9 +118,6 @@ export default function SystemDetail({ name }: { name: string }) {
 			setContainerData([])
 			setContainerFilterBar(null)
 			$containerFilter.set("")
-			cpuMaxStore[1](false)
-			bandwidthMaxStore[1](false)
-			diskIoMaxStore[1](false)
 		}
 	}, [name])
 
@@ -291,6 +285,9 @@ export default function SystemDetail({ name }: { name: string }) {
 		return null
 	}
 
+	// select field for switching between avg and max values
+	const maxValSelect = isLongerChart ? <SelectAvgMax max={maxValues} /> : null
+
 	// if no data, show empty message
 	const dataEmpty = !chartLoading && chartData.systemStats.length === 0
 	const lastGpuVals = Object.values(systemStats.at(-1)?.stats.g ?? {})
@@ -385,9 +382,9 @@ export default function SystemDetail({ name }: { name: string }) {
 						grid={grid}
 						title={_(t`CPU Usage`)}
 						description={t`Average system-wide CPU utilization`}
-						cornerEl={isLongerChart ? <SelectAvgMax store={cpuMaxStore} /> : null}
+						cornerEl={maxValSelect}
 					>
-						<AreaChartDefault chartData={chartData} chartName="CPU Usage" maxToggled={cpuMaxStore[0]} unit="%" />
+						<AreaChartDefault chartData={chartData} chartName="CPU Usage" maxToggled={maxValues} unit="%" />
 					</ChartCard>
 
 					{containerFilterBar && (
@@ -432,19 +429,19 @@ export default function SystemDetail({ name }: { name: string }) {
 						grid={grid}
 						title={t`Disk I/O`}
 						description={t`Throughput of root filesystem`}
-						cornerEl={isLongerChart ? <SelectAvgMax store={diskIoMaxStore} /> : null}
+						cornerEl={maxValSelect}
 					>
-						<AreaChartDefault chartData={chartData} maxToggled={diskIoMaxStore[0]} chartName="dio" />
+						<AreaChartDefault chartData={chartData} chartName="dio" maxToggled={maxValues} />
 					</ChartCard>
 
 					<ChartCard
 						empty={dataEmpty}
 						grid={grid}
 						title={t`Bandwidth`}
-						cornerEl={isLongerChart ? <SelectAvgMax store={bandwidthMaxStore} /> : null}
+						cornerEl={maxValSelect}
 						description={t`Network traffic of public interfaces`}
 					>
-						<AreaChartDefault chartData={chartData} maxToggled={bandwidthMaxStore[0]} chartName="bw" />
+						<AreaChartDefault chartData={chartData} chartName="bw" maxToggled={maxValues} />
 					</ChartCard>
 
 					{containerFilterBar && containerData.length > 0 && (
@@ -564,13 +561,9 @@ export default function SystemDetail({ name }: { name: string }) {
 										grid={grid}
 										title={`${extraFsName} I/O`}
 										description={t`Throughput of ${extraFsName}`}
-										cornerEl={isLongerChart ? <SelectAvgMax store={diskIoMaxStore} /> : null}
+										cornerEl={maxValSelect}
 									>
-										<AreaChartDefault
-											chartData={chartData}
-											maxToggled={diskIoMaxStore[0]}
-											chartName={`efs.${extraFsName}`}
-										/>
+										<AreaChartDefault chartData={chartData} chartName={`efs.${extraFsName}`} maxToggled={maxValues} />
 									</ChartCard>
 								</div>
 							)
@@ -612,12 +605,10 @@ function ContainerFilterBar() {
 	)
 }
 
-function SelectAvgMax({ store }: { store: [boolean, React.Dispatch<React.SetStateAction<boolean>>] }) {
-	const [max, setMax] = store
+const SelectAvgMax = memo(({ max }: { max: boolean }) => {
 	const Icon = max ? ChartMax : ChartAverage
-
 	return (
-		<Select value={max ? "max" : "avg"} onValueChange={(e) => setMax(e === "max")}>
+		<Select value={max ? "max" : "avg"} onValueChange={(e) => $maxValues.set(e === "max")}>
 			<SelectTrigger className="relative ps-10 pe-5">
 				<Icon className="h-4 w-4 absolute start-4 top-1/2 -translate-y-1/2 opacity-85" />
 				<SelectValue />
@@ -632,7 +623,7 @@ function SelectAvgMax({ store }: { store: [boolean, React.Dispatch<React.SetStat
 			</SelectContent>
 		</Select>
 	)
-}
+})
 
 function ChartCard({
 	title,
