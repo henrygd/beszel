@@ -8,7 +8,7 @@ msgstr ""
 "Language: pt\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-20 02:40\n"
+"PO-Revision-Date: 2025-02-22 15:32\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -298,7 +298,7 @@ msgstr "Documentação"
 #: src/components/add-system.tsx:121
 #: src/components/systems-table/systems-table.tsx:599
 msgid "Edit"
-msgstr ""
+msgstr "Editar"
 
 #: src/components/login/auth-form.tsx:173
 #: src/components/login/forgot-pass-form.tsx:53
@@ -527,7 +527,7 @@ msgstr "A senha deve ter pelo menos 8 caracteres."
 
 #: src/components/login/auth-form.tsx:21
 msgid "Password must be less than 72 bytes."
-msgstr ""
+msgstr "A password tem que ter menos de 72 bytes."
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
@@ -618,7 +618,7 @@ msgstr "Salvar Configurações"
 
 #: src/components/add-system.tsx:241
 msgid "Save system"
-msgstr ""
+msgstr "Guardar Sistema"
 
 #: src/components/navbar.tsx:134
 msgid "Search"
@@ -701,7 +701,7 @@ msgstr "Tabela"
 #. Temperature label in systems table
 #: src/components/systems-table/systems-table.tsx:218
 msgid "Temp"
-msgstr ""
+msgstr "Temp"
 
 #: src/components/routes/system.tsx:486
 #: src/lib/utils.ts:333
