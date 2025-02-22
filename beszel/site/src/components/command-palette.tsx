@@ -22,7 +22,7 @@ import {
 import { useEffect } from "react"
 import { useStore } from "@nanostores/react"
 import { $systems } from "@/lib/stores"
-import { isAdmin } from "@/lib/utils"
+import { getHostDisplayValue, isAdmin } from "@/lib/utils"
 import { $router, basePath, navigate } from "./router"
 import { Trans, t } from "@lingui/macro"
 import { getPagePath } from "@nanostores/router"
@@ -62,7 +62,7 @@ export default function CommandPalette({ open, setOpen }: { open: boolean; setOp
 								>
 									<Server className="me-2 h-4 w-4" />
 									<span>{system.name}</span>
-									<CommandShortcut>{system.host}</CommandShortcut>
+									<CommandShortcut>{getHostDisplayValue(system)}</CommandShortcut>
 								</CommandItem>
 							))}
 						</CommandGroup>

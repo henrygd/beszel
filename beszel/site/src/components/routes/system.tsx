@@ -6,7 +6,15 @@ import { useStore } from "@nanostores/react"
 import Spinner from "../spinner"
 import { ClockArrowUp, CpuIcon, GlobeIcon, LayoutGridIcon, MonitorIcon, XIcon } from "lucide-react"
 import ChartTimeSelect from "../charts/chart-time-select"
-import { chartTimeData, cn, getPbTimestamp, getSizeAndUnit, toFixedFloat, useLocalStorage } from "@/lib/utils"
+import {
+	chartTimeData,
+	cn,
+	getHostDisplayValue,
+	getPbTimestamp,
+	getSizeAndUnit,
+	toFixedFloat,
+	useLocalStorage,
+} from "@/lib/utils"
 import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import { Button } from "../ui/button"
@@ -244,7 +252,7 @@ export default function SystemDetail({ name }: { name: string }) {
 			uptime = <Plural value={Math.trunc(system.info?.u / 86400)} one="# day" other="# days" />
 		}
 		return [
-			{ value: system.host, Icon: GlobeIcon },
+			{ value: getHostDisplayValue(system), Icon: GlobeIcon },
 			{
 				value: system.info.h,
 				Icon: MonitorIcon,
