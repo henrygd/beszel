@@ -116,6 +116,56 @@ func TestParseAmdData(t *testing.T) {
 			wantValid: true,
 		},
 		{
+			name: "valid multi gpu data",
+			input: `{
+				"card0": {
+					"GUID": "34756",
+					"Temperature (Sensor edge) (C)": "47.0",
+					"Current Socket Graphics Package Power (W)": "9.215",
+					"GPU use (%)": "0",
+					"VRAM Total Memory (B)": "536870912",
+					"VRAM Total Used Memory (B)": "482263040",
+					"Card Series": "Rembrandt [Radeon 680M]"
+				},
+				"card1": {
+					"GUID": "38294",
+					"Temperature (Sensor edge) (C)": "49.0",
+					"Temperature (Sensor junction) (C)": "49.0",
+					"Temperature (Sensor memory) (C)": "62.0",
+					"Average Graphics Package Power (W)": "19.0",
+					"GPU use (%)": "20.3",
+					"VRAM Total Memory (B)": "25753026560",
+					"VRAM Total Used Memory (B)": "794341376",
+					"Card Series": "Navi 31 [Radeon RX 7900 XT]"
+				}
+			}`,
+			wantData: map[string]system.GPUData{
+				"34756": {
+					Name:        "Rembrandt [Radeon 680M]",
+					Temperature: 47.0,
+					MemoryUsed:  482263040.0 / (1024 * 1024),
+					MemoryTotal: 536870912.0 / (1024 * 1024),
+					Usage:       0.0,
+					Power:       9.215,
+					Count:       1,
+				},
+				"38294": {
+					Name:        "Navi 31 [Radeon RX 7900 XT]",
+					Temperature: 49.0,
+					MemoryUsed:  794341376.0 / (1024 * 1024),
+					MemoryTotal: 25753026560.0 / (1024 * 1024),
+					Usage:       20.3,
+					Power:       19.0,
+					Count:       1,
+				},
+			},
+			wantValid: true,
+		},
+		{
+			name:  "invalid json",
+			input: "{bad json",
+		},
+		{
 			name:      "invalid json",
 			input:     "{bad json",
 			wantData:  map[string]system.GPUData{},
@@ -348,7 +398,6 @@ echo "test"`
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			if err := tt.setupCommands(); err != nil {
 				t.Fatal(err)
 			}
