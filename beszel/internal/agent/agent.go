@@ -25,6 +25,7 @@ type Agent struct {
 	systemInfo    system.Info                // Host system info
 	gpuManager    *GPUManager                // Manages GPU data
 	cache         *SessionCache              // Cache for system stats based on primary session ID
+	smartManager     *SmartManager              // Manages SMART data
 }
 
 func NewAgent() *Agent {
@@ -60,6 +61,12 @@ func NewAgent() *Agent {
 		slog.Debug("GPU", "err", err)
 	} else {
 		agent.gpuManager = gm
+	}
+
+	if sm, err := NewSmartManager(); err != nil {
+		slog.Debug("SMART", "err", err)
+	} else {
+		agent.smartManager = sm
 	}
 
 	// if debugging, print stats

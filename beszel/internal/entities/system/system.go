@@ -8,29 +8,30 @@ import (
 )
 
 type Stats struct {
-	Cpu            float64             `json:"cpu"`
-	MaxCpu         float64             `json:"cpum,omitempty"`
-	Mem            float64             `json:"m"`
-	MemUsed        float64             `json:"mu"`
-	MemPct         float64             `json:"mp"`
-	MemBuffCache   float64             `json:"mb"`
-	MemZfsArc      float64             `json:"mz,omitempty"` // ZFS ARC memory
-	Swap           float64             `json:"s,omitempty"`
-	SwapUsed       float64             `json:"su,omitempty"`
-	DiskTotal      float64             `json:"d"`
-	DiskUsed       float64             `json:"du"`
-	DiskPct        float64             `json:"dp"`
-	DiskReadPs     float64             `json:"dr"`
-	DiskWritePs    float64             `json:"dw"`
-	MaxDiskReadPs  float64             `json:"drm,omitempty"`
-	MaxDiskWritePs float64             `json:"dwm,omitempty"`
-	NetworkSent    float64             `json:"ns"`
-	NetworkRecv    float64             `json:"nr"`
-	MaxNetworkSent float64             `json:"nsm,omitempty"`
-	MaxNetworkRecv float64             `json:"nrm,omitempty"`
-	Temperatures   map[string]float64  `json:"t,omitempty"`
-	ExtraFs        map[string]*FsStats `json:"efs,omitempty"`
-	GPUData        map[string]GPUData  `json:"g,omitempty"`
+	Cpu            float64              `json:"cpu"`
+	MaxCpu         float64              `json:"cpum,omitempty"`
+	Mem            float64              `json:"m"`
+	MemUsed        float64              `json:"mu"`
+	MemPct         float64              `json:"mp"`
+	MemBuffCache   float64              `json:"mb"`
+	MemZfsArc      float64              `json:"mz,omitempty"` // ZFS ARC memory
+	Swap           float64              `json:"s,omitempty"`
+	SwapUsed       float64              `json:"su,omitempty"`
+	DiskTotal      float64              `json:"d"`
+	DiskUsed       float64              `json:"du"`
+	DiskPct        float64              `json:"dp"`
+	DiskReadPs     float64              `json:"dr"`
+	DiskWritePs    float64              `json:"dw"`
+	MaxDiskReadPs  float64              `json:"drm,omitempty"`
+	MaxDiskWritePs float64              `json:"dwm,omitempty"`
+	NetworkSent    float64              `json:"ns"`
+	NetworkRecv    float64              `json:"nr"`
+	MaxNetworkSent float64              `json:"nsm,omitempty"`
+	MaxNetworkRecv float64              `json:"nrm,omitempty"`
+	Temperatures   map[string]float64   `json:"t,omitempty"`
+	ExtraFs        map[string]*FsStats  `json:"efs,omitempty"`
+	GPUData        map[string]GPUData   `json:"g,omitempty"`
+	SmartData      map[string]SmartData `json:"sm,omitempty"`
 }
 
 type GPUData struct {
@@ -72,6 +73,31 @@ const (
 	Windows
 	Freebsd
 )
+
+type SmartData struct {
+	ModelFamily     string            `json:"smf,omitempty"`
+	ModelName       string            `json:"smn,omitempty"`
+	SerialNumber    string            `json:"ssn,omitempty"`
+	FirmwareVersion string            `json:"sfv,omitempty"`
+	Capacity        uint64            `json:"sc,omitempty"`
+	SmartStatus     string            `json:"ss,omitempty"`
+	DiskName        string            `json:"sdn,omitempty"` // something like /dev/sda
+	DiskType        string            `json:"sdt,omitempty"`
+	Temperature	    int               `json:"st,omitempty"`
+	Attributes      []*SmartAttribute `json:"sa,omitempty"`
+}
+
+type SmartAttribute struct {
+	Id         int    `json:"id,omitempty"`
+	Name       string `json:"n"`
+	Value      int    `json:"v"`
+	Worst      int    `json:"w,omitempty"`
+	Threshold  int    `json:"t,omitempty"`
+	RawValue   int    `json:"rv,omitempty"`
+	RawString  string `json:"rs,omitempty"`
+	Flags      string `json:"f,omitempty"`
+	WhenFailed string `json:"wf,omitempty"`
+}
 
 type Info struct {
 	Hostname      string  `json:"h"`
