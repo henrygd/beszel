@@ -8,7 +8,7 @@ msgstr ""
 "Language: ja\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-23 02:09\n"
+"PO-Revision-Date: 2025-02-23 04:50\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -88,7 +88,7 @@ msgstr "管理者"
 
 #: src/components/systems-table/systems-table.tsx:246
 msgid "Agent"
-msgstr "代理"
+msgstr "エージェント"
 
 #: src/components/alerts/alert-button.tsx:32
 #: src/components/alerts/alert-button.tsx:68
@@ -502,7 +502,7 @@ msgstr "メニューを開く"
 
 #: src/components/login/auth-form.tsx:248
 msgid "Or continue with"
-msgstr "または続行"
+msgstr "または、以下の方法でログイン"
 
 #: src/components/alerts/alert-button.tsx:109
 msgid "Overwrite existing alerts"
@@ -746,7 +746,7 @@ msgstr "ルートファイルシステムのスループット"
 
 #: src/components/routes/settings/notifications.tsx:107
 msgid "To email(s)"
-msgstr "メール宛"
+msgstr "宛先メールアドレス"
 
 #: src/components/routes/system.tsx:361
 #: src/components/routes/system.tsx:374
@@ -803,7 +803,7 @@ msgstr "ルートパーティションの使用量"
 #: src/components/charts/mem-chart.tsx:65
 #: src/components/charts/swap-chart.tsx:56
 msgid "Used"
-msgstr "使用済み"
+msgstr "使用中"
 
 #: src/components/command-palette.tsx:143
 #: src/components/navbar.tsx:70
