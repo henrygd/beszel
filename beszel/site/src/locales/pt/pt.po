@@ -8,7 +8,7 @@ msgstr ""
 "Language: pt\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-22 15:32\n"
+"PO-Revision-Date: 2025-02-23 04:50\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -346,7 +346,7 @@ msgstr "Falha na autenticação"
 #: src/components/routes/settings/layout.tsx:39
 #: src/components/routes/settings/notifications.tsx:63
 msgid "Failed to save settings"
-msgstr "Falha ao salvar configurações"
+msgstr "Falha ao guardar as definições"
 
 #: src/components/routes/settings/notifications.tsx:189
 msgid "Failed to send test notification"
@@ -614,7 +614,7 @@ msgstr "Salve o endereço usando a tecla enter ou vírgula. Deixe em branco para
 #: src/components/routes/settings/general.tsx:106
 #: src/components/routes/settings/notifications.tsx:168
 msgid "Save Settings"
-msgstr "Salvar Configurações"
+msgstr "Guardar Definições"
 
 #: src/components/add-system.tsx:241
 msgid "Save system"
@@ -651,7 +651,7 @@ msgstr "Configurações"
 
 #: src/components/routes/settings/layout.tsx:33
 msgid "Settings saved"
-msgstr "Configurações salvas"
+msgstr "Definições guardadas"
 
 #: src/components/login/auth-form.tsx:236
 msgid "Sign in"
