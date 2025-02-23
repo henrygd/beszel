@@ -8,7 +8,7 @@ msgstr ""
 "Language: ru\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-20 02:40\n"
+"PO-Revision-Date: 2025-02-23 04:50\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -144,7 +144,7 @@ msgstr "Пропускная способность"
 
 #: src/components/login/auth-form.tsx:304
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
-msgstr "Beszel поддерживает OpenID Connect и многих поставщиков аутентификации OAuth2."
+msgstr "Beszel поддерживает OpenID Connect и множество поставщиков аутентификации OAuth2."
 
 #: src/components/routes/settings/notifications.tsx:128
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
