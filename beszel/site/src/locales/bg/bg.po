@@ -8,7 +8,7 @@ msgstr ""
 "Language: bg\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-20 02:40\n"
+"PO-Revision-Date: 2025-02-23 04:50\n"
 "Last-Translator: \n"
 "Language-Team: Bulgarian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -197,7 +197,7 @@ msgstr "Инструкции за командната линия"
 
 #: src/components/routes/settings/notifications.tsx:78
 msgid "Configure how you receive alert notifications."
-msgstr "Настрои как получаваш нотификации за тревоги."
+msgstr "Настрой как получаваш нотификации за тревоги."
 
 #: src/components/login/auth-form.tsx:210
 #: src/components/login/auth-form.tsx:215
