@@ -18,11 +18,11 @@ msgstr ""
 "X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 16\n"
 
-#: src/components/routes/system.tsx:250
+#: src/components/routes/system.tsx:252
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# روز} other {# روز}}"
 
-#: src/components/routes/system.tsx:248
+#: src/components/routes/system.tsx:250
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# ساعت} other {# ساعت}}"
 
@@ -62,11 +62,11 @@ msgstr " هشدارهای فعال"
 msgid "Add <0>System</0>"
 msgstr "افزودن <0>سیستم</0>"
 
-#: src/components/add-system.tsx:121
+#: src/components/add-system.tsx:124
 msgid "Add New System"
 msgstr "افزودن سیستم جدید"
 
-#: src/components/add-system.tsx:241
+#: src/components/add-system.tsx:230
 msgid "Add system"
 msgstr "افزودن سیستم"
 
@@ -108,11 +108,11 @@ msgstr "آیا مطمئن هستید که می‌خواهید {name} را حذف
 msgid "Automatic copy requires a secure context."
 msgstr "کپی خودکار نیاز به یک زمینه امن دارد."
 
-#: src/components/routes/system.tsx:627
+#: src/components/routes/system.tsx:626
 msgid "Average"
 msgstr "میانگین"
 
-#: src/components/routes/system.tsx:398
+#: src/components/routes/system.tsx:403
 msgid "Average CPU utilization of containers"
 msgstr "میانگین استفاده از CPU کانتینرها"
 
@@ -120,15 +120,15 @@ msgstr "میانگین استفاده از CPU کانتینرها"
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr ""
 
-#: src/components/routes/system.tsx:499
+#: src/components/routes/system.tsx:504
 msgid "Average power consumption of GPUs"
 msgstr "میانگین مصرف برق پردازنده‌های گرافیکی"
 
-#: src/components/routes/system.tsx:387
+#: src/components/routes/system.tsx:392
 msgid "Average system-wide CPU utilization"
 msgstr "میانگین استفاده از CPU در کل سیستم"
 
-#: src/components/routes/system.tsx:517
+#: src/components/routes/system.tsx:522
 msgid "Average utilization of {0}"
 msgstr "میانگین استفاده از {0}"
 
@@ -137,7 +137,7 @@ msgstr "میانگین استفاده از {0}"
 msgid "Backups"
 msgstr "پشتیبان‌گیری‌ها"
 
-#: src/components/routes/system.tsx:443
+#: src/components/routes/system.tsx:448
 #: src/lib/utils.ts:326
 msgid "Bandwidth"
 msgstr "پهنای باند"
@@ -150,7 +150,7 @@ msgstr "بِزل از OpenID Connect و بسیاری از ارائه‌دهند�
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
 msgstr "بِزل از <0>Shoutrrr</0> برای ادغام با سرویس‌های اطلاع‌رسانی محبوب استفاده می‌کند."
 
-#: src/components/add-system.tsx:126
+#: src/components/add-system.tsx:129
 msgid "Binary"
 msgstr "دودویی"
 
@@ -186,7 +186,7 @@ msgstr "برای جزئیات بیشتر، لاگ‌ها را بررسی کنی�
 msgid "Check your notification service"
 msgstr "سرویس اطلاع‌رسانی خود را بررسی کنید"
 
-#: src/components/add-system.tsx:200
+#: src/components/add-system.tsx:203
 msgid "Click to copy"
 msgstr "برای کپی کردن کلیک کنید"
 
@@ -212,8 +212,8 @@ msgstr "ادامه"
 msgid "Copied to clipboard"
 msgstr "در کلیپ‌بورد کپی شد"
 
-#: src/components/add-system.tsx:217
-#: src/components/add-system.tsx:228
+#: src/components/add-system.tsx:214
+#: src/components/add-system.tsx:216
 msgid "Copy"
 msgstr "کپی"
 
@@ -221,7 +221,7 @@ msgstr "کپی"
 msgid "Copy host"
 msgstr "کپی میزبان"
 
-#: src/components/add-system.tsx:237
+#: src/components/add-system.tsx:223
 msgid "Copy Linux command"
 msgstr "کپی دستور لینوکس"
 
@@ -234,7 +234,7 @@ msgid "CPU"
 msgstr "پردازنده"
 
 #: src/components/charts/area-chart.tsx:56
-#: src/components/routes/system.tsx:386
+#: src/components/routes/system.tsx:391
 #: src/lib/utils.ts:308
 msgid "CPU Usage"
 msgstr "میزان استفاده از پردازنده"
@@ -265,29 +265,29 @@ msgstr "حذف"
 msgid "Disk"
 msgstr "دیسک"
 
-#: src/components/routes/system.tsx:433
+#: src/components/routes/system.tsx:438
 msgid "Disk I/O"
 msgstr "ورودی/خروجی دیسک"
 
 #: src/components/charts/disk-chart.tsx:79
-#: src/components/routes/system.tsx:426
+#: src/components/routes/system.tsx:431
 #: src/lib/utils.ts:320
 msgid "Disk Usage"
 msgstr "میزان استفاده از دیسک"
 
-#: src/components/routes/system.tsx:554
+#: src/components/routes/system.tsx:559
 msgid "Disk usage of {extraFsName}"
 msgstr "میزان استفاده از دیسک {extraFsName}"
 
-#: src/components/routes/system.tsx:397
+#: src/components/routes/system.tsx:402
 msgid "Docker CPU Usage"
 msgstr "میزان استفاده از CPU داکر"
 
-#: src/components/routes/system.tsx:418
+#: src/components/routes/system.tsx:423
 msgid "Docker Memory Usage"
 msgstr "میزان استفاده از حافظه داکر"
 
-#: src/components/routes/system.tsx:459
+#: src/components/routes/system.tsx:464
 msgid "Docker Network I/O"
 msgstr "ورودی/خروجی شبکه داکر"
 
@@ -295,7 +295,7 @@ msgstr "ورودی/خروجی شبکه داکر"
 msgid "Documentation"
 msgstr "مستندات"
 
-#: src/components/add-system.tsx:121
+#: src/components/add-system.tsx:124
 #: src/components/systems-table/systems-table.tsx:599
 msgid "Edit"
 msgstr ""
@@ -356,7 +356,7 @@ msgstr "ارسال اعلان آزمایشی ناموفق بود"
 msgid "Failed to update alert"
 msgstr "به‌روزرسانی هشدار ناموفق بود"
 
-#: src/components/routes/system.tsx:598
+#: src/components/routes/system.tsx:599
 #: src/components/systems-table/systems-table.tsx:326
 msgid "Filter..."
 msgstr "فیلتر..."
@@ -375,7 +375,7 @@ msgstr "رمز عبور را فراموش کرده‌اید؟"
 msgid "General"
 msgstr "عمومی"
 
-#: src/components/routes/system.tsx:498
+#: src/components/routes/system.tsx:503
 msgid "GPU Power Draw"
 msgstr "مصرف برق پردازنده گرافیکی"
 
@@ -383,7 +383,7 @@ msgstr "مصرف برق پردازنده گرافیکی"
 msgid "Grid"
 msgstr "جدول"
 
-#: src/components/add-system.tsx:154
+#: src/components/add-system.tsx:157
 msgid "Host / IP"
 msgstr "میزبان / IP"
 
@@ -396,7 +396,7 @@ msgid "Invalid email address."
 msgstr "آدرس ایمیل نامعتبر است."
 
 #. Linux kernel
-#: src/components/routes/system.tsx:262
+#: src/components/routes/system.tsx:264
 msgid "Kernel"
 msgstr "هسته"
 
@@ -439,8 +439,12 @@ msgstr "به دنبال جایی برای ایجاد هشدار هستید؟ ر�
 msgid "Manage display and notification preferences."
 msgstr "مدیریت تنظیمات نمایش و اعلان‌ها."
 
+#: src/components/add-system.tsx:225
+msgid "Manual setup instructions"
+msgstr ""
+
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:630
+#: src/components/routes/system.tsx:629
 msgid "Max 1 min"
 msgstr "حداکثر ۱ دقیقه"
 
@@ -448,16 +452,16 @@ msgstr "حداکثر ۱ دقیقه"
 msgid "Memory"
 msgstr "حافظه"
 
-#: src/components/routes/system.tsx:408
+#: src/components/routes/system.tsx:413
 #: src/lib/utils.ts:314
 msgid "Memory Usage"
 msgstr "میزان استفاده از حافظه"
 
-#: src/components/routes/system.tsx:419
+#: src/components/routes/system.tsx:424
 msgid "Memory usage of docker containers"
 msgstr "میزان استفاده از حافظه کانتینرهای داکر"
 
-#: src/components/add-system.tsx:150
+#: src/components/add-system.tsx:153
 msgid "Name"
 msgstr "نام"
 
@@ -465,11 +469,11 @@ msgstr "نام"
 msgid "Net"
 msgstr "شبکه"
 
-#: src/components/routes/system.tsx:460
+#: src/components/routes/system.tsx:465
 msgid "Network traffic of docker containers"
 msgstr "ترافیک شبکه کانتینرهای داکر"
 
-#: src/components/routes/system.tsx:445
+#: src/components/routes/system.tsx:450
 msgid "Network traffic of public interfaces"
 msgstr "ترافیک شبکه رابط‌های عمومی"
 
@@ -570,12 +574,12 @@ msgstr "لطفاً برای دستورالعمل‌ها به <0>مستندات</
 msgid "Please sign in to your account"
 msgstr "لطفاً به حساب کاربری خود وارد شوید"
 
-#: src/components/add-system.tsx:166
+#: src/components/add-system.tsx:169
 msgid "Port"
 msgstr "پورت"
 
-#: src/components/routes/system.tsx:409
-#: src/components/routes/system.tsx:525
+#: src/components/routes/system.tsx:414
+#: src/components/routes/system.tsx:530
 msgid "Precise utilization at the recorded time"
 msgstr "میزان دقیق استفاده در زمان ثبت شده"
 
@@ -584,7 +588,7 @@ msgid "Preferred Language"
 msgstr "زبان ترجیحی"
 
 #. Use 'Key' if your language requires many more characters
-#: src/components/add-system.tsx:177
+#: src/components/add-system.tsx:180
 msgid "Public Key"
 msgstr "کلید عمومی"
 
@@ -616,7 +620,7 @@ msgstr "آدرس را با استفاده از کلید Enter یا کاما ذخ
 msgid "Save Settings"
 msgstr "ذخیره تنظیمات"
 
-#: src/components/add-system.tsx:241
+#: src/components/add-system.tsx:230
 msgid "Save system"
 msgstr ""
 
@@ -669,11 +673,11 @@ msgstr "مرتب‌سازی بر اساس"
 msgid "Status"
 msgstr "وضعیت"
 
-#: src/components/routes/system.tsx:475
+#: src/components/routes/system.tsx:480
 msgid "Swap space used by the system"
 msgstr "فضای Swap استفاده شده توسط سیستم"
 
-#: src/components/routes/system.tsx:474
+#: src/components/routes/system.tsx:479
 msgid "Swap Usage"
 msgstr "میزان استفاده از Swap"
 
@@ -703,12 +707,12 @@ msgstr "جدول"
 msgid "Temp"
 msgstr ""
 
-#: src/components/routes/system.tsx:486
+#: src/components/routes/system.tsx:491
 #: src/lib/utils.ts:333
 msgid "Temperature"
 msgstr "دما"
 
-#: src/components/routes/system.tsx:487
+#: src/components/routes/system.tsx:492
 msgid "Temperatures of system sensors"
 msgstr "دمای حسگرهای سیستم"
 
@@ -720,11 +724,11 @@ msgstr "تست <0>آدرس اینترنتی</0>"
 msgid "Test notification sent"
 msgstr "اعلان آزمایشی ارسال شد"
 
-#: src/components/add-system.tsx:142
+#: src/components/add-system.tsx:145
 msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
 msgstr "برای اتصال، عامل باید روی سیستم در حال اجرا باشد. دستور نصب عامل را از زیر کپی کنید."
 
-#: src/components/add-system.tsx:133
+#: src/components/add-system.tsx:136
 msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
 msgstr "برای اتصال، عامل باید روی سیستم در حال اجرا باشد. <0>docker-compose.yml</0> مربوط به عامل را از زیر کپی کنید."
 
@@ -736,11 +740,11 @@ msgstr "سپس وارد بخش پشتیبان شوید و رمز عبور حسا
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "این عمل قابل برگشت نیست. این کار تمام رکوردهای فعلی {name} را برای همیشه از پایگاه داده حذف خواهد کرد."
 
-#: src/components/routes/system.tsx:566
+#: src/components/routes/system.tsx:571
 msgid "Throughput of {extraFsName}"
 msgstr "توان عملیاتی {extraFsName}"
 
-#: src/components/routes/system.tsx:434
+#: src/components/routes/system.tsx:439
 msgid "Throughput of root filesystem"
 msgstr "توان عملیاتی سیستم فایل ریشه"
 
@@ -748,8 +752,8 @@ msgstr "توان عملیاتی سیستم فایل ریشه"
 msgid "To email(s)"
 msgstr "به ایمیل(ها)"
 
-#: src/components/routes/system.tsx:361
-#: src/components/routes/system.tsx:374
+#: src/components/routes/system.tsx:366
+#: src/components/routes/system.tsx:379
 msgid "Toggle grid"
 msgstr "تغییر نمایش جدول"
 
@@ -785,17 +789,17 @@ msgstr "هنگامی که استفاده از هر دیسکی از یک آستا
 msgid "Updated in real time. Click on a system to view information."
 msgstr "به صورت لحظه‌ای به‌روزرسانی می‌شود. برای مشاهده اطلاعات، روی یک سیستم کلیک کنید."
 
-#: src/components/routes/system.tsx:261
+#: src/components/routes/system.tsx:263
 msgid "Uptime"
 msgstr "آپتایم"
 
 #: src/components/charts/area-chart.tsx:73
-#: src/components/routes/system.tsx:516
-#: src/components/routes/system.tsx:553
+#: src/components/routes/system.tsx:521
+#: src/components/routes/system.tsx:558
 msgid "Usage"
 msgstr "میزان استفاده"
 
-#: src/components/routes/system.tsx:426
+#: src/components/routes/system.tsx:431
 msgid "Usage of root partition"
 msgstr "میزان استفاده از پارتیشن ریشه"
 
@@ -818,7 +822,7 @@ msgstr "مشاهده"
 msgid "Visible Fields"
 msgstr "فیلدهای قابل مشاهده"
 
-#: src/components/routes/system.tsx:664
+#: src/components/routes/system.tsx:663
 msgid "Waiting for enough records to display"
 msgstr "در انتظار رکوردهای کافی برای نمایش"
 
@@ -847,4 +851,3 @@ msgstr "پیکربندی YAML"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "تنظیمات کاربری شما به‌روزرسانی شد."
-

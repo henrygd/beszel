@@ -18,11 +18,11 @@ msgstr ""
 "X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 16\n"
 
-#: src/components/routes/system.tsx:250
+#: src/components/routes/system.tsx:252
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# dag} other {# dager}}"
 
-#: src/components/routes/system.tsx:248
+#: src/components/routes/system.tsx:250
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# time} other {# timer}}"
 
@@ -62,11 +62,11 @@ msgstr "Aktive Alarmer"
 msgid "Add <0>System</0>"
 msgstr "Legg til <0>System</0>"
 
-#: src/components/add-system.tsx:121
+#: src/components/add-system.tsx:124
 msgid "Add New System"
 msgstr "Legg Til Nytt System"
 
-#: src/components/add-system.tsx:241
+#: src/components/add-system.tsx:230
 msgid "Add system"
 msgstr "Legg til system"
 
@@ -108,11 +108,11 @@ msgstr "Er du sikker på at du vil slette {name}?"
 msgid "Automatic copy requires a secure context."
 msgstr "Automatisk kopiering krever en sikker kontekst."
 
-#: src/components/routes/system.tsx:627
+#: src/components/routes/system.tsx:626
 msgid "Average"
 msgstr "Gjennomsnitt"
 
-#: src/components/routes/system.tsx:398
+#: src/components/routes/system.tsx:403
 msgid "Average CPU utilization of containers"
 msgstr "Gjennomsnittlig CPU-utnyttelse av konteinere"
 
@@ -120,15 +120,15 @@ msgstr "Gjennomsnittlig CPU-utnyttelse av konteinere"
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Gjennomsnittet overstiger <0>{value}{0}</0>"
 
-#: src/components/routes/system.tsx:499
+#: src/components/routes/system.tsx:504
 msgid "Average power consumption of GPUs"
 msgstr "Gjennomsnittlig strømforbruk for GPU-er"
 
-#: src/components/routes/system.tsx:387
+#: src/components/routes/system.tsx:392
 msgid "Average system-wide CPU utilization"
 msgstr "Gjennomsnittlig CPU-utnyttelse for hele systemet"
 
-#: src/components/routes/system.tsx:517
+#: src/components/routes/system.tsx:522
 msgid "Average utilization of {0}"
 msgstr "Gjennomsnittlig utnyttelse av {0}"
 
@@ -137,7 +137,7 @@ msgstr "Gjennomsnittlig utnyttelse av {0}"
 msgid "Backups"
 msgstr "Sikkerhetskopier"
 
-#: src/components/routes/system.tsx:443
+#: src/components/routes/system.tsx:448
 #: src/lib/utils.ts:326
 msgid "Bandwidth"
 msgstr "Båndbredde"
@@ -150,7 +150,7 @@ msgstr "Beszel støtter OpenID Connect og mange OAuth2 autentiserings-tilbydere.
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
 msgstr "Beszel bruker <0>Shoutrrr</0> for integrering mot populære meldingstjenester."
 
-#: src/components/add-system.tsx:126
+#: src/components/add-system.tsx:129
 msgid "Binary"
 msgstr "Binær"
 
@@ -186,7 +186,7 @@ msgstr "Sjekk loggene for flere detaljer."
 msgid "Check your notification service"
 msgstr "Sjekk din meldingstjeneste"
 
-#: src/components/add-system.tsx:200
+#: src/components/add-system.tsx:203
 msgid "Click to copy"
 msgstr "Klikk for å kopiere"
 
@@ -212,8 +212,8 @@ msgstr "Fortsett"
 msgid "Copied to clipboard"
 msgstr "Kopiert til utklippstavlen"
 
-#: src/components/add-system.tsx:217
-#: src/components/add-system.tsx:228
+#: src/components/add-system.tsx:214
+#: src/components/add-system.tsx:216
 msgid "Copy"
 msgstr "Kopier"
 
@@ -221,7 +221,7 @@ msgstr "Kopier"
 msgid "Copy host"
 msgstr "Kopier vert"
 
-#: src/components/add-system.tsx:237
+#: src/components/add-system.tsx:223
 msgid "Copy Linux command"
 msgstr "Kopier Linux-kommando"
 
@@ -234,7 +234,7 @@ msgid "CPU"
 msgstr "CPU"
 
 #: src/components/charts/area-chart.tsx:56
-#: src/components/routes/system.tsx:386
+#: src/components/routes/system.tsx:391
 #: src/lib/utils.ts:308
 msgid "CPU Usage"
 msgstr "CPU-bruk"
@@ -265,29 +265,29 @@ msgstr "Slett"
 msgid "Disk"
 msgstr "Disk"
 
-#: src/components/routes/system.tsx:433
+#: src/components/routes/system.tsx:438
 msgid "Disk I/O"
 msgstr "Disk I/O"
 
 #: src/components/charts/disk-chart.tsx:79
-#: src/components/routes/system.tsx:426
+#: src/components/routes/system.tsx:431
 #: src/lib/utils.ts:320
 msgid "Disk Usage"
 msgstr "Diskbruk"
 
-#: src/components/routes/system.tsx:554
+#: src/components/routes/system.tsx:559
 msgid "Disk usage of {extraFsName}"
 msgstr "Diskbruk av {extraFsName}"
 
-#: src/components/routes/system.tsx:397
+#: src/components/routes/system.tsx:402
 msgid "Docker CPU Usage"
 msgstr "Docker CPU-bruk"
 
-#: src/components/routes/system.tsx:418
+#: src/components/routes/system.tsx:423
 msgid "Docker Memory Usage"
 msgstr "Docker Minnebruk"
 
-#: src/components/routes/system.tsx:459
+#: src/components/routes/system.tsx:464
 msgid "Docker Network I/O"
 msgstr "Docker Nettverks-I/O"
 
@@ -295,7 +295,7 @@ msgstr "Docker Nettverks-I/O"
 msgid "Documentation"
 msgstr "Dokumentasjon"
 
-#: src/components/add-system.tsx:121
+#: src/components/add-system.tsx:124
 #: src/components/systems-table/systems-table.tsx:599
 msgid "Edit"
 msgstr "Rediger"
@@ -356,7 +356,7 @@ msgstr "Kunne ikke sende test-varsling"
 msgid "Failed to update alert"
 msgstr "Kunne ikke oppdatere alarm"
 
-#: src/components/routes/system.tsx:598
+#: src/components/routes/system.tsx:599
 #: src/components/systems-table/systems-table.tsx:326
 msgid "Filter..."
 msgstr "Filter..."
@@ -375,7 +375,7 @@ msgstr "Glemt passord?"
 msgid "General"
 msgstr "Generelt"
 
-#: src/components/routes/system.tsx:498
+#: src/components/routes/system.tsx:503
 msgid "GPU Power Draw"
 msgstr "GPU Effektforbruk"
 
@@ -383,7 +383,7 @@ msgstr "GPU Effektforbruk"
 msgid "Grid"
 msgstr "Rutenett"
 
-#: src/components/add-system.tsx:154
+#: src/components/add-system.tsx:157
 msgid "Host / IP"
 msgstr "Vert / IP"
 
@@ -396,7 +396,7 @@ msgid "Invalid email address."
 msgstr "Ugyldig e-postadresse."
 
 #. Linux kernel
-#: src/components/routes/system.tsx:262
+#: src/components/routes/system.tsx:264
 msgid "Kernel"
 msgstr "Kjerne"
 
@@ -439,8 +439,12 @@ msgstr "Ser du etter hvor du kan opprette alarmer? Klikk på bjelle-ikonene <0/>
 msgid "Manage display and notification preferences."
 msgstr "Endre visnings- og varslingsinnstillinger."
 
+#: src/components/add-system.tsx:225
+msgid "Manual setup instructions"
+msgstr ""
+
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:630
+#: src/components/routes/system.tsx:629
 msgid "Max 1 min"
 msgstr "Maks 1 min"
 
@@ -448,16 +452,16 @@ msgstr "Maks 1 min"
 msgid "Memory"
 msgstr "Minne"
 
-#: src/components/routes/system.tsx:408
+#: src/components/routes/system.tsx:413
 #: src/lib/utils.ts:314
 msgid "Memory Usage"
 msgstr "Minnebruk"
 
-#: src/components/routes/system.tsx:419
+#: src/components/routes/system.tsx:424
 msgid "Memory usage of docker containers"
 msgstr "Minnebruk av docker-konteinere"
 
-#: src/components/add-system.tsx:150
+#: src/components/add-system.tsx:153
 msgid "Name"
 msgstr "Navn"
 
@@ -465,11 +469,11 @@ msgstr "Navn"
 msgid "Net"
 msgstr "Nett"
 
-#: src/components/routes/system.tsx:460
+#: src/components/routes/system.tsx:465
 msgid "Network traffic of docker containers"
 msgstr "Nettverkstrafikk av docker-konteinere"
 
-#: src/components/routes/system.tsx:445
+#: src/components/routes/system.tsx:450
 msgid "Network traffic of public interfaces"
 msgstr "Nettverkstrafikk av eksterne nettverksgrensesnitt"
 
@@ -570,12 +574,12 @@ msgstr "Vennligst se <0>dokumentasjonen</0> for instrukser."
 msgid "Please sign in to your account"
 msgstr "Vennligst logg inn på kontoen din"
 
-#: src/components/add-system.tsx:166
+#: src/components/add-system.tsx:169
 msgid "Port"
 msgstr "Port"
 
-#: src/components/routes/system.tsx:409
-#: src/components/routes/system.tsx:525
+#: src/components/routes/system.tsx:414
+#: src/components/routes/system.tsx:530
 msgid "Precise utilization at the recorded time"
 msgstr "Nøyaktig utnyttelse på registrert tidspunkt"
 
@@ -584,7 +588,7 @@ msgid "Preferred Language"
 msgstr "Foretrukket Språk"
 
 #. Use 'Key' if your language requires many more characters
-#: src/components/add-system.tsx:177
+#: src/components/add-system.tsx:180
 msgid "Public Key"
 msgstr "Offentlig Nøkkel"
 
@@ -616,7 +620,7 @@ msgstr "Lagre adressen med Enter-tasten eller komma. La feltet være tomt for å
 msgid "Save Settings"
 msgstr "Lagre Innstillinger"
 
-#: src/components/add-system.tsx:241
+#: src/components/add-system.tsx:230
 msgid "Save system"
 msgstr "Lagre system"
 
@@ -669,11 +673,11 @@ msgstr "Sorter Etter"
 msgid "Status"
 msgstr "Status"
 
-#: src/components/routes/system.tsx:475
+#: src/components/routes/system.tsx:480
 msgid "Swap space used by the system"
 msgstr "Swap-plass i bruk av systemet"
 
-#: src/components/routes/system.tsx:474
+#: src/components/routes/system.tsx:479
 msgid "Swap Usage"
 msgstr "Swap-bruk"
 
@@ -703,12 +707,12 @@ msgstr "Tabell"
 msgid "Temp"
 msgstr "Temp"
 
-#: src/components/routes/system.tsx:486
+#: src/components/routes/system.tsx:491
 #: src/lib/utils.ts:333
 msgid "Temperature"
 msgstr "Temperatur"
 
-#: src/components/routes/system.tsx:487
+#: src/components/routes/system.tsx:492
 msgid "Temperatures of system sensors"
 msgstr "Temperaturer på system-sensorer"
 
@@ -720,11 +724,11 @@ msgstr "Test <0>URL</0>"
 msgid "Test notification sent"
 msgstr "Test-varsling sendt"
 
-#: src/components/add-system.tsx:142
+#: src/components/add-system.tsx:145
 msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
 msgstr "Agenten må kjøre på systemet du vil koble til. Kopier installasjons-kommandoen for agenten under."
 
-#: src/components/add-system.tsx:133
+#: src/components/add-system.tsx:136
 msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
 msgstr "Agenten må kjøre på systemet du vil koble til. Kopier <0>docker-compose.yml</0> for agenten under."
 
@@ -736,11 +740,11 @@ msgstr "Logg deretter inn i backend og nullstill passordet på din konto i users
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Denne handlingen kan ikke omgjøres. Dette vil slette alle poster for {name} permanent fra databasen."
 
-#: src/components/routes/system.tsx:566
+#: src/components/routes/system.tsx:571
 msgid "Throughput of {extraFsName}"
 msgstr "Gjennomstrømning av {extraFsName}"
 
-#: src/components/routes/system.tsx:434
+#: src/components/routes/system.tsx:439
 msgid "Throughput of root filesystem"
 msgstr "Gjennomstrømning av rot-filsystemet"
 
@@ -748,8 +752,8 @@ msgstr "Gjennomstrømning av rot-filsystemet"
 msgid "To email(s)"
 msgstr "Til e-postadresse(r)"
 
-#: src/components/routes/system.tsx:361
-#: src/components/routes/system.tsx:374
+#: src/components/routes/system.tsx:366
+#: src/components/routes/system.tsx:379
 msgid "Toggle grid"
 msgstr "Rutenett av/på"
 
@@ -785,17 +789,17 @@ msgstr "Slår inn når forbruk av hvilken som helst disk overstiger en grensever
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Oppdatert i sanntid. Klikk på et system for å se mer informasjon."
 
-#: src/components/routes/system.tsx:261
+#: src/components/routes/system.tsx:263
 msgid "Uptime"
 msgstr "Oppetid"
 
 #: src/components/charts/area-chart.tsx:73
-#: src/components/routes/system.tsx:516
-#: src/components/routes/system.tsx:553
+#: src/components/routes/system.tsx:521
+#: src/components/routes/system.tsx:558
 msgid "Usage"
 msgstr "Forbruk"
 
-#: src/components/routes/system.tsx:426
+#: src/components/routes/system.tsx:431
 msgid "Usage of root partition"
 msgstr "Forbruk av rot-partisjon"
 
@@ -818,7 +822,7 @@ msgstr "Visning"
 msgid "Visible Fields"
 msgstr "Synlige Felter"
 
-#: src/components/routes/system.tsx:664
+#: src/components/routes/system.tsx:663
 msgid "Waiting for enough records to display"
 msgstr "Venter på nok registreringer til å vise"
 
@@ -847,4 +851,3 @@ msgstr "YAML Konfigurasjon"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "Dine brukerinnstillinger har blitt oppdatert."
-

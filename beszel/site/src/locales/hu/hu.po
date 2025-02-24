@@ -18,11 +18,11 @@ msgstr ""
 "X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 16\n"
 
-#: src/components/routes/system.tsx:250
+#: src/components/routes/system.tsx:252
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# nap} other {# nap}}"
 
-#: src/components/routes/system.tsx:248
+#: src/components/routes/system.tsx:250
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# óra} other {# óra}}"
 
@@ -62,11 +62,11 @@ msgstr "Aktív riasztások"
 msgid "Add <0>System</0>"
 msgstr "Hozzáadás <0>System</0>"
 
-#: src/components/add-system.tsx:121
+#: src/components/add-system.tsx:124
 msgid "Add New System"
 msgstr "Új rendszer hozzáadása"
 
-#: src/components/add-system.tsx:241
+#: src/components/add-system.tsx:230
 msgid "Add system"
 msgstr "Rendszer hozzáadása"
 
@@ -108,11 +108,11 @@ msgstr "Biztosan törölni szeretnéd {name}-t?"
 msgid "Automatic copy requires a secure context."
 msgstr "Az automatikus másolás biztonságos környezetet igényel."
 
-#: src/components/routes/system.tsx:627
+#: src/components/routes/system.tsx:626
 msgid "Average"
 msgstr "Átlag"
 
-#: src/components/routes/system.tsx:398
+#: src/components/routes/system.tsx:403
 msgid "Average CPU utilization of containers"
 msgstr "Konténerek átlagos CPU kihasználtsága"
 
@@ -120,15 +120,15 @@ msgstr "Konténerek átlagos CPU kihasználtsága"
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Az átlag meghaladja a <0>{value}{0}</0> értéket"
 
-#: src/components/routes/system.tsx:499
+#: src/components/routes/system.tsx:504
 msgid "Average power consumption of GPUs"
 msgstr "GPU-k átlagos energiafogyasztása"
 
-#: src/components/routes/system.tsx:387
+#: src/components/routes/system.tsx:392
 msgid "Average system-wide CPU utilization"
 msgstr "Rendszerszintű CPU átlagos kihasználtság"
 
-#: src/components/routes/system.tsx:517
+#: src/components/routes/system.tsx:522
 msgid "Average utilization of {0}"
 msgstr "{0} átlagos kihasználtsága"
 
@@ -137,7 +137,7 @@ msgstr "{0} átlagos kihasználtsága"
 msgid "Backups"
 msgstr "Biztonsági mentések"
 
-#: src/components/routes/system.tsx:443
+#: src/components/routes/system.tsx:448
 #: src/lib/utils.ts:326
 msgid "Bandwidth"
 msgstr "Sávszélesség"
@@ -150,7 +150,7 @@ msgstr "A Beszel támogatja az OpenID Connect-et és számos OAuth2 hitelesíté
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
 msgstr "A Beszel a <0>Shoutrrr</0>-t használja a népszerű értesítési szolgáltatások integrálására."
 
-#: src/components/add-system.tsx:126
+#: src/components/add-system.tsx:129
 msgid "Binary"
 msgstr "Bináris"
 
@@ -186,7 +186,7 @@ msgstr "Ellenőrizd a naplót a további részletekért."
 msgid "Check your notification service"
 msgstr "Ellenőrizd az értesítési szolgáltatásodat"
 
-#: src/components/add-system.tsx:200
+#: src/components/add-system.tsx:203
 msgid "Click to copy"
 msgstr "Kattints a másoláshoz"
 
@@ -212,8 +212,8 @@ msgstr "Tovább"
 msgid "Copied to clipboard"
 msgstr "Vágólapra másolva"
 
-#: src/components/add-system.tsx:217
-#: src/components/add-system.tsx:228
+#: src/components/add-system.tsx:214
+#: src/components/add-system.tsx:216
 msgid "Copy"
 msgstr "Másolás"
 
@@ -221,7 +221,7 @@ msgstr "Másolás"
 msgid "Copy host"
 msgstr "Hoszt másolása"
 
-#: src/components/add-system.tsx:237
+#: src/components/add-system.tsx:223
 msgid "Copy Linux command"
 msgstr "Linux parancs másolása"
 
@@ -234,7 +234,7 @@ msgid "CPU"
 msgstr "CPU"
 
 #: src/components/charts/area-chart.tsx:56
-#: src/components/routes/system.tsx:386
+#: src/components/routes/system.tsx:391
 #: src/lib/utils.ts:308
 msgid "CPU Usage"
 msgstr "CPU használat"
@@ -265,29 +265,29 @@ msgstr "Törlés"
 msgid "Disk"
 msgstr "Lemez"
 
-#: src/components/routes/system.tsx:433
+#: src/components/routes/system.tsx:438
 msgid "Disk I/O"
 msgstr "Lemez I/O"
 
 #: src/components/charts/disk-chart.tsx:79
-#: src/components/routes/system.tsx:426
+#: src/components/routes/system.tsx:431
 #: src/lib/utils.ts:320
 msgid "Disk Usage"
 msgstr "Lemezhasználat"
 
-#: src/components/routes/system.tsx:554
+#: src/components/routes/system.tsx:559
 msgid "Disk usage of {extraFsName}"
 msgstr "Lemezhasználat a {extraFsName}"
 
-#: src/components/routes/system.tsx:397
+#: src/components/routes/system.tsx:402
 msgid "Docker CPU Usage"
 msgstr "Docker CPU használat"
 
-#: src/components/routes/system.tsx:418
+#: src/components/routes/system.tsx:423
 msgid "Docker Memory Usage"
 msgstr "Docker memória használat"
 
-#: src/components/routes/system.tsx:459
+#: src/components/routes/system.tsx:464
 msgid "Docker Network I/O"
 msgstr "Docker hálózat I/O"
 
@@ -295,7 +295,7 @@ msgstr "Docker hálózat I/O"
 msgid "Documentation"
 msgstr "Dokumentáció"
 
-#: src/components/add-system.tsx:121
+#: src/components/add-system.tsx:124
 #: src/components/systems-table/systems-table.tsx:599
 msgid "Edit"
 msgstr ""
@@ -356,7 +356,7 @@ msgstr "Teszt értesítés elküldése sikertelen"
 msgid "Failed to update alert"
 msgstr "Nem sikerült frissíteni a riasztást"
 
-#: src/components/routes/system.tsx:598
+#: src/components/routes/system.tsx:599
 #: src/components/systems-table/systems-table.tsx:326
 msgid "Filter..."
 msgstr "Szűrő..."
@@ -375,7 +375,7 @@ msgstr "Elfelejtette a jelszavát?"
 msgid "General"
 msgstr "Általános"
 
-#: src/components/routes/system.tsx:498
+#: src/components/routes/system.tsx:503
 msgid "GPU Power Draw"
 msgstr "GPU áramfelvétele"
 
@@ -383,7 +383,7 @@ msgstr "GPU áramfelvétele"
 msgid "Grid"
 msgstr "Rács"
 
-#: src/components/add-system.tsx:154
+#: src/components/add-system.tsx:157
 msgid "Host / IP"
 msgstr "Állomás / IP"
 
@@ -396,7 +396,7 @@ msgid "Invalid email address."
 msgstr "Érvénytelen e-mail cím."
 
 #. Linux kernel
-#: src/components/routes/system.tsx:262
+#: src/components/routes/system.tsx:264
 msgid "Kernel"
 msgstr "Kernel"
 
@@ -439,8 +439,12 @@ msgstr "Inkább azt keresi, hogy hol hozhat létre riasztásokat? Kattintson a c
 msgid "Manage display and notification preferences."
 msgstr "A megjelenítési és értesítési beállítások kezelése."
 
+#: src/components/add-system.tsx:225
+msgid "Manual setup instructions"
+msgstr ""
+
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:630
+#: src/components/routes/system.tsx:629
 msgid "Max 1 min"
 msgstr "Maximum 1 perc"
 
@@ -448,16 +452,16 @@ msgstr "Maximum 1 perc"
 msgid "Memory"
 msgstr "RAM"
 
-#: src/components/routes/system.tsx:408
+#: src/components/routes/system.tsx:413
 #: src/lib/utils.ts:314
 msgid "Memory Usage"
 msgstr "Memóriahasználat"
 
-#: src/components/routes/system.tsx:419
+#: src/components/routes/system.tsx:424
 msgid "Memory usage of docker containers"
 msgstr "Docker konténerek memória használata"
 
-#: src/components/add-system.tsx:150
+#: src/components/add-system.tsx:153
 msgid "Name"
 msgstr "Név"
 
@@ -465,11 +469,11 @@ msgstr "Név"
 msgid "Net"
 msgstr "Hálózat"
 
-#: src/components/routes/system.tsx:460
+#: src/components/routes/system.tsx:465
 msgid "Network traffic of docker containers"
 msgstr "Docker konténerek hálózati forgalma"
 
-#: src/components/routes/system.tsx:445
+#: src/components/routes/system.tsx:450
 msgid "Network traffic of public interfaces"
 msgstr "Nyilvános interfészek hálózati forgalma"
 
@@ -570,12 +574,12 @@ msgstr "Kérjük, nézze meg <0>a dokumentációt</0> az utasításokért."
 msgid "Please sign in to your account"
 msgstr "Kérjük, jelentkezzen be a fiókjába"
 
-#: src/components/add-system.tsx:166
+#: src/components/add-system.tsx:169
 msgid "Port"
 msgstr "Port"
 
-#: src/components/routes/system.tsx:409
-#: src/components/routes/system.tsx:525
+#: src/components/routes/system.tsx:414
+#: src/components/routes/system.tsx:530
 msgid "Precise utilization at the recorded time"
 msgstr "Pontos kihasználás a rögzített időpontban"
 
@@ -584,7 +588,7 @@ msgid "Preferred Language"
 msgstr "Preferált nyelv"
 
 #. Use 'Key' if your language requires many more characters
-#: src/components/add-system.tsx:177
+#: src/components/add-system.tsx:180
 msgid "Public Key"
 msgstr "Nyilvános kulcs"
 
@@ -616,7 +620,7 @@ msgstr "Mentse el a címet az Enter billentyű vagy a vessző használatával. H
 msgid "Save Settings"
 msgstr "Beállítások mentése"
 
-#: src/components/add-system.tsx:241
+#: src/components/add-system.tsx:230
 msgid "Save system"
 msgstr ""
 
@@ -669,11 +673,11 @@ msgstr "Rendezés"
 msgid "Status"
 msgstr "Állapot"
 
-#: src/components/routes/system.tsx:475
+#: src/components/routes/system.tsx:480
 msgid "Swap space used by the system"
 msgstr "Rendszer által használt swap terület"
 
-#: src/components/routes/system.tsx:474
+#: src/components/routes/system.tsx:479
 msgid "Swap Usage"
 msgstr "Swap használat"
 
@@ -703,12 +707,12 @@ msgstr "Tábla"
 msgid "Temp"
 msgstr ""
 
-#: src/components/routes/system.tsx:486
+#: src/components/routes/system.tsx:491
 #: src/lib/utils.ts:333
 msgid "Temperature"
 msgstr "Hőmérséklet"
 
-#: src/components/routes/system.tsx:487
+#: src/components/routes/system.tsx:492
 msgid "Temperatures of system sensors"
 msgstr "A rendszer érzékelőinek hőmérséklete"
 
@@ -720,11 +724,11 @@ msgstr "Teszt <0>URL</0>"
 msgid "Test notification sent"
 msgstr "Teszt értesítés elküldve"
 
-#: src/components/add-system.tsx:142
+#: src/components/add-system.tsx:145
 msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
 msgstr "A csatlakozáshoz az ügynöknek futnia kell a rendszerben. Másolja ki az alábbi telepítési parancsot az ügynök telepítéséhez."
 
-#: src/components/add-system.tsx:133
+#: src/components/add-system.tsx:136
 msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
 msgstr "A csatlakozáshoz az ügynöknek futnia kell a rendszerben. Másolja az<0>docker-compose.yml</0> fájlt az ügynök futtatásához."
 
@@ -736,11 +740,11 @@ msgstr "Ezután jelentkezzen be a backendbe, és állítsa vissza a felhasznál�
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Ezt a műveletet nem lehet visszavonni! Véglegesen törli a {name} összes jelenlegi rekordját az adatbázisból!"
 
-#: src/components/routes/system.tsx:566
+#: src/components/routes/system.tsx:571
 msgid "Throughput of {extraFsName}"
 msgstr "A {extraFsName} átviteli teljesítménye"
 
-#: src/components/routes/system.tsx:434
+#: src/components/routes/system.tsx:439
 msgid "Throughput of root filesystem"
 msgstr "A gyökér fájlrendszer átviteli teljesítménye"
 
@@ -748,8 +752,8 @@ msgstr "A gyökér fájlrendszer átviteli teljesítménye"
 msgid "To email(s)"
 msgstr "E-mailben"
 
-#: src/components/routes/system.tsx:361
-#: src/components/routes/system.tsx:374
+#: src/components/routes/system.tsx:366
+#: src/components/routes/system.tsx:379
 msgid "Toggle grid"
 msgstr "Rács ki- és bekapcsolása"
 
@@ -785,17 +789,17 @@ msgstr "Bekapcsol, ha a lemez érzékelő túllép egy küszöbértéket"
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Valós időben frissítve. Kattintson egy rendszerre az információk megtekintéséhez."
 
-#: src/components/routes/system.tsx:261
+#: src/components/routes/system.tsx:263
 msgid "Uptime"
 msgstr "Üzemidő"
 
 #: src/components/charts/area-chart.tsx:73
-#: src/components/routes/system.tsx:516
-#: src/components/routes/system.tsx:553
+#: src/components/routes/system.tsx:521
+#: src/components/routes/system.tsx:558
 msgid "Usage"
 msgstr "Használat"
 
-#: src/components/routes/system.tsx:426
+#: src/components/routes/system.tsx:431
 msgid "Usage of root partition"
 msgstr "Root partíció kihasználtsága"
 
@@ -818,7 +822,7 @@ msgstr "Nézet"
 msgid "Visible Fields"
 msgstr "Látható mezők"
 
-#: src/components/routes/system.tsx:664
+#: src/components/routes/system.tsx:663
 msgid "Waiting for enough records to display"
 msgstr "Elegendő rekordra várva a megjelenítéshez"
 

@@ -18,11 +18,11 @@ msgstr ""
 "X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 16\n"
 
-#: src/components/routes/system.tsx:250
+#: src/components/routes/system.tsx:252
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# dan} other {# dani}}"
 
-#: src/components/routes/system.tsx:248
+#: src/components/routes/system.tsx:250
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# sat} other {# sati}}"
 
@@ -62,11 +62,11 @@ msgstr "Aktivna upozorenja"
 msgid "Add <0>System</0>"
 msgstr "Dodaj <0>Sistem</0>"
 
-#: src/components/add-system.tsx:121
+#: src/components/add-system.tsx:124
 msgid "Add New System"
 msgstr "Dodaj Novi Sistem"
 
-#: src/components/add-system.tsx:241
+#: src/components/add-system.tsx:230
 msgid "Add system"
 msgstr "Dodaj sistem"
 
@@ -108,11 +108,11 @@ msgstr "Jeste li sigurni da želite izbrisati {name}?"
 msgid "Automatic copy requires a secure context."
 msgstr "Automatsko kopiranje zahtijeva siguran kontekst."
 
-#: src/components/routes/system.tsx:627
+#: src/components/routes/system.tsx:626
 msgid "Average"
 msgstr "Prosjek"
 
-#: src/components/routes/system.tsx:398
+#: src/components/routes/system.tsx:403
 msgid "Average CPU utilization of containers"
 msgstr "Prosječna iskorištenost procesora u spremnicima"
 
@@ -120,15 +120,15 @@ msgstr "Prosječna iskorištenost procesora u spremnicima"
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Prosjek premašuje <0>{value}{0}</0>"
 
-#: src/components/routes/system.tsx:499
+#: src/components/routes/system.tsx:504
 msgid "Average power consumption of GPUs"
 msgstr ""
 
-#: src/components/routes/system.tsx:387
+#: src/components/routes/system.tsx:392
 msgid "Average system-wide CPU utilization"
 msgstr "Prosječna iskorištenost procesora na cijelom sustavu"
 
-#: src/components/routes/system.tsx:517
+#: src/components/routes/system.tsx:522
 msgid "Average utilization of {0}"
 msgstr ""
 
@@ -137,7 +137,7 @@ msgstr ""
 msgid "Backups"
 msgstr "Sigurnosne kopije"
 
-#: src/components/routes/system.tsx:443
+#: src/components/routes/system.tsx:448
 #: src/lib/utils.ts:326
 msgid "Bandwidth"
 msgstr "Propusnost"
@@ -150,7 +150,7 @@ msgstr "Beszel podržava OpenID Connect i mnoge druge OAuth2 davatalje autentifi
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
 msgstr "Beszel koristi <0>Shoutrrr</0> za integraciju sa popularnim servisima za notifikacije."
 
-#: src/components/add-system.tsx:126
+#: src/components/add-system.tsx:129
 msgid "Binary"
 msgstr "Binarni"
 
@@ -186,7 +186,7 @@ msgstr "Provjerite logove za više detalja."
 msgid "Check your notification service"
 msgstr "Provjerite Vaš servis notifikacija"
 
-#: src/components/add-system.tsx:200
+#: src/components/add-system.tsx:203
 msgid "Click to copy"
 msgstr "Pritisnite za kopiranje"
 
@@ -212,8 +212,8 @@ msgstr "Nastavite"
 msgid "Copied to clipboard"
 msgstr "Kopirano u međuspremnik"
 
-#: src/components/add-system.tsx:217
-#: src/components/add-system.tsx:228
+#: src/components/add-system.tsx:214
+#: src/components/add-system.tsx:216
 msgid "Copy"
 msgstr "Kopiraj"
 
@@ -221,7 +221,7 @@ msgstr "Kopiraj"
 msgid "Copy host"
 msgstr "Kopiraj hosta"
 
-#: src/components/add-system.tsx:237
+#: src/components/add-system.tsx:223
 msgid "Copy Linux command"
 msgstr "Kopiraj Linux komandu"
 
@@ -234,7 +234,7 @@ msgid "CPU"
 msgstr "Procesor"
 
 #: src/components/charts/area-chart.tsx:56
-#: src/components/routes/system.tsx:386
+#: src/components/routes/system.tsx:391
 #: src/lib/utils.ts:308
 msgid "CPU Usage"
 msgstr "Iskorištenost procesora"
@@ -265,29 +265,29 @@ msgstr "Izbriši"
 msgid "Disk"
 msgstr "Disk"
 
-#: src/components/routes/system.tsx:433
+#: src/components/routes/system.tsx:438
 msgid "Disk I/O"
 msgstr "Disk I/O"
 
 #: src/components/charts/disk-chart.tsx:79
-#: src/components/routes/system.tsx:426
+#: src/components/routes/system.tsx:431
 #: src/lib/utils.ts:320
 msgid "Disk Usage"
 msgstr "Iskorištenost Diska"
 
-#: src/components/routes/system.tsx:554
+#: src/components/routes/system.tsx:559
 msgid "Disk usage of {extraFsName}"
 msgstr "Iskorištenost diska od {extraFsName}"
 
-#: src/components/routes/system.tsx:397
+#: src/components/routes/system.tsx:402
 msgid "Docker CPU Usage"
 msgstr "Iskorištenost Docker Procesora"
 
-#: src/components/routes/system.tsx:418
+#: src/components/routes/system.tsx:423
 msgid "Docker Memory Usage"
 msgstr "Iskorištenost Docker Memorije"
 
-#: src/components/routes/system.tsx:459
+#: src/components/routes/system.tsx:464
 msgid "Docker Network I/O"
 msgstr "Docker Mrežni I/O"
 
@@ -295,7 +295,7 @@ msgstr "Docker Mrežni I/O"
 msgid "Documentation"
 msgstr "Dokumentacija"
 
-#: src/components/add-system.tsx:121
+#: src/components/add-system.tsx:124
 #: src/components/systems-table/systems-table.tsx:599
 msgid "Edit"
 msgstr ""
@@ -356,7 +356,7 @@ msgstr "Neuspješno slanje testne notifikacije"
 msgid "Failed to update alert"
 msgstr "Ažuriranje upozorenja nije uspjelo"
 
-#: src/components/routes/system.tsx:598
+#: src/components/routes/system.tsx:599
 #: src/components/systems-table/systems-table.tsx:326
 msgid "Filter..."
 msgstr "Filter..."
@@ -375,7 +375,7 @@ msgstr "Zaboravljena lozinka?"
 msgid "General"
 msgstr "Općenito"
 
-#: src/components/routes/system.tsx:498
+#: src/components/routes/system.tsx:503
 msgid "GPU Power Draw"
 msgstr ""
 
@@ -383,7 +383,7 @@ msgstr ""
 msgid "Grid"
 msgstr "Mreža"
 
-#: src/components/add-system.tsx:154
+#: src/components/add-system.tsx:157
 msgid "Host / IP"
 msgstr "Host / IP"
 
@@ -396,7 +396,7 @@ msgid "Invalid email address."
 msgstr "Nevažeća adresa e-pošte."
 
 #. Linux kernel
-#: src/components/routes/system.tsx:262
+#: src/components/routes/system.tsx:264
 msgid "Kernel"
 msgstr "Kernel"
 
@@ -439,8 +439,12 @@ msgstr "Tražite gdje stvoriti upozorenja? Kliknite ikonu zvona <0/> u tablici s
 msgid "Manage display and notification preferences."
 msgstr "Upravljajte postavkama prikaza i obavijesti."
 
+#: src/components/add-system.tsx:225
+msgid "Manual setup instructions"
+msgstr ""
+
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:630
+#: src/components/routes/system.tsx:629
 msgid "Max 1 min"
 msgstr "Maksimalno 1 minuta"
 
@@ -448,16 +452,16 @@ msgstr "Maksimalno 1 minuta"
 msgid "Memory"
 msgstr "Memorija"
 
-#: src/components/routes/system.tsx:408
+#: src/components/routes/system.tsx:413
 #: src/lib/utils.ts:314
 msgid "Memory Usage"
 msgstr "Upotreba memorije"
 
-#: src/components/routes/system.tsx:419
+#: src/components/routes/system.tsx:424
 msgid "Memory usage of docker containers"
 msgstr "Upotreba memorije Docker spremnika"
 
-#: src/components/add-system.tsx:150
+#: src/components/add-system.tsx:153
 msgid "Name"
 msgstr "Ime"
 
@@ -465,11 +469,11 @@ msgstr "Ime"
 msgid "Net"
 msgstr "Mreža"
 
-#: src/components/routes/system.tsx:460
+#: src/components/routes/system.tsx:465
 msgid "Network traffic of docker containers"
 msgstr "Mrežni promet Docker spremnika"
 
-#: src/components/routes/system.tsx:445
+#: src/components/routes/system.tsx:450
 msgid "Network traffic of public interfaces"
 msgstr "Mrežni promet javnih sučelja"
 
@@ -570,12 +574,12 @@ msgstr "Molimo pogledajte <0>dokumentaciju</0> za instrukcije."
 msgid "Please sign in to your account"
 msgstr "Molimo prijavite se u svoj račun"
 
-#: src/components/add-system.tsx:166
+#: src/components/add-system.tsx:169
 msgid "Port"
 msgstr "Port"
 
-#: src/components/routes/system.tsx:409
-#: src/components/routes/system.tsx:525
+#: src/components/routes/system.tsx:414
+#: src/components/routes/system.tsx:530
 msgid "Precise utilization at the recorded time"
 msgstr "Precizno iskorištenje u zabilježenom vremenu"
 
@@ -584,7 +588,7 @@ msgid "Preferred Language"
 msgstr "Preferirani jezik"
 
 #. Use 'Key' if your language requires many more characters
-#: src/components/add-system.tsx:177
+#: src/components/add-system.tsx:180
 msgid "Public Key"
 msgstr "Javni Ključ"
 
@@ -616,7 +620,7 @@ msgstr "Spremite adresu pomoću tipke enter ili zareza. Ostavite prazno kako bis
 msgid "Save Settings"
 msgstr "Spremi Postavke"
 
-#: src/components/add-system.tsx:241
+#: src/components/add-system.tsx:230
 msgid "Save system"
 msgstr ""
 
@@ -669,11 +673,11 @@ msgstr "Sortiraj po"
 msgid "Status"
 msgstr "Status"
 
-#: src/components/routes/system.tsx:475
+#: src/components/routes/system.tsx:480
 msgid "Swap space used by the system"
 msgstr "Swap prostor uzet od strane sistema"
 
-#: src/components/routes/system.tsx:474
+#: src/components/routes/system.tsx:479
 msgid "Swap Usage"
 msgstr "Swap Iskorištenost"
 
@@ -703,12 +707,12 @@ msgstr "Tablica"
 msgid "Temp"
 msgstr ""
 
-#: src/components/routes/system.tsx:486
+#: src/components/routes/system.tsx:491
 #: src/lib/utils.ts:333
 msgid "Temperature"
 msgstr "Temperatura"
 
-#: src/components/routes/system.tsx:487
+#: src/components/routes/system.tsx:492
 msgid "Temperatures of system sensors"
 msgstr "Temperature sistemskih senzora"
 
@@ -720,11 +724,11 @@ msgstr "Testni <0>URL</0>"
 msgid "Test notification sent"
 msgstr "Testna obavijest poslana"
 
-#: src/components/add-system.tsx:142
+#: src/components/add-system.tsx:145
 msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
 msgstr "Agent mora biti pokrenut na sistemu da bi se spojio. Kopirajte instalacijske komande za agenta ispod."
 
-#: src/components/add-system.tsx:133
+#: src/components/add-system.tsx:136
 msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
 msgstr "Agent mora biti pokrenut na sistemu da bi se spojio. Kopirajte <0>docker-compose.yml</0> za agenta ispod."
 
@@ -736,11 +740,11 @@ msgstr "Zatim se prijavite u backend i resetirajte lozinku korisničkog računa 
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Ova radnja se ne može poništiti. Ovo će trajno izbrisati sve trenutne zapise za {name} iz baze podataka."
 
-#: src/components/routes/system.tsx:566
+#: src/components/routes/system.tsx:571
 msgid "Throughput of {extraFsName}"
 msgstr "Protok {extraFsName}"
 
-#: src/components/routes/system.tsx:434
+#: src/components/routes/system.tsx:439
 msgid "Throughput of root filesystem"
 msgstr "Protok root datotečnog sustava"
 
@@ -748,8 +752,8 @@ msgstr "Protok root datotečnog sustava"
 msgid "To email(s)"
 msgstr "Primaoci e-pošte"
 
-#: src/components/routes/system.tsx:361
-#: src/components/routes/system.tsx:374
+#: src/components/routes/system.tsx:366
+#: src/components/routes/system.tsx:379
 msgid "Toggle grid"
 msgstr "Uključi/isključi rešetku"
 
@@ -785,17 +789,17 @@ msgstr "Pokreće se kada iskorištenost bilo kojeg diska premaši prag"
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Ažurirano odmah. Kliknite na sistem za više informacija."
 
-#: src/components/routes/system.tsx:261
+#: src/components/routes/system.tsx:263
 msgid "Uptime"
 msgstr "Vrijeme rada"
 
 #: src/components/charts/area-chart.tsx:73
-#: src/components/routes/system.tsx:516
-#: src/components/routes/system.tsx:553
+#: src/components/routes/system.tsx:521
+#: src/components/routes/system.tsx:558
 msgid "Usage"
 msgstr "Iskorištenost"
 
-#: src/components/routes/system.tsx:426
+#: src/components/routes/system.tsx:431
 msgid "Usage of root partition"
 msgstr "Iskorištenost root datotečnog sustava"
 
@@ -818,7 +822,7 @@ msgstr "Prikaz"
 msgid "Visible Fields"
 msgstr "Vidljiva polja"
 
-#: src/components/routes/system.tsx:664
+#: src/components/routes/system.tsx:663
 msgid "Waiting for enough records to display"
 msgstr "Čeka se na više podataka prije prikaza"
 
@@ -847,4 +851,3 @@ msgstr "YAML Konfiguracija"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "Vaše korisničke postavke su ažurirane."
-

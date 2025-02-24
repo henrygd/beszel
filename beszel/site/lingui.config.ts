@@ -14,6 +14,7 @@ const config: LinguiConfig = {
 		"hr",
 		"hu",
 		"it",
+		"is",
 		"ja",
 		"ko",
 		"nl",
