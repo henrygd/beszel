@@ -8,7 +8,7 @@ msgstr ""
 "Language: ja\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-12 02:53\n"
+"PO-Revision-Date: 2025-02-23 04:50\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -88,7 +88,7 @@ msgstr "管理者"
 
 #: src/components/systems-table/systems-table.tsx:246
 msgid "Agent"
-msgstr "代理"
+msgstr "エージェント"
 
 #: src/components/alerts/alert-button.tsx:32
 #: src/components/alerts/alert-button.tsx:68
@@ -298,7 +298,7 @@ msgstr "ドキュメント"
 #: src/components/add-system.tsx:121
 #: src/components/systems-table/systems-table.tsx:599
 msgid "Edit"
-msgstr ""
+msgstr "編集"
 
 #: src/components/login/auth-form.tsx:173
 #: src/components/login/forgot-pass-form.tsx:53
@@ -502,7 +502,7 @@ msgstr "メニューを開く"
 
 #: src/components/login/auth-form.tsx:248
 msgid "Or continue with"
-msgstr "または続行"
+msgstr "または、以下の方法でログイン"
 
 #: src/components/alerts/alert-button.tsx:109
 msgid "Overwrite existing alerts"
@@ -527,7 +527,7 @@ msgstr "パスワードは8文字以上である必要があります。"
 
 #: src/components/login/auth-form.tsx:21
 msgid "Password must be less than 72 bytes."
-msgstr ""
+msgstr "パスワードは72バイト未満でなければなりません。"
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
@@ -618,7 +618,7 @@ msgstr "設定を保存"
 
 #: src/components/add-system.tsx:241
 msgid "Save system"
-msgstr ""
+msgstr "システムを保存"
 
 #: src/components/navbar.tsx:134
 msgid "Search"
@@ -701,7 +701,7 @@ msgstr "テーブル"
 #. Temperature label in systems table
 #: src/components/systems-table/systems-table.tsx:218
 msgid "Temp"
-msgstr ""
+msgstr "温度"
 
 #: src/components/routes/system.tsx:486
 #: src/lib/utils.ts:333
@@ -746,7 +746,7 @@ msgstr "ルートファイルシステムのスループット"
 
 #: src/components/routes/settings/notifications.tsx:107
 msgid "To email(s)"
-msgstr "メール宛"
+msgstr "宛先メールアドレス"
 
 #: src/components/routes/system.tsx:361
 #: src/components/routes/system.tsx:374
@@ -803,7 +803,7 @@ msgstr "ルートパーティションの使用量"
 #: src/components/charts/mem-chart.tsx:65
 #: src/components/charts/swap-chart.tsx:56
 msgid "Used"
-msgstr "使用済み"
+msgstr "使用中"
 
 #: src/components/command-palette.tsx:143
 #: src/components/navbar.tsx:70
