@@ -27,6 +27,7 @@ type Agent struct {
 	sensorsWhitelist map[string]struct{}        // List of sensors to monitor
 	systemInfo       system.Info                // Host system info
 	gpuManager       *GPUManager                // Manages GPU data
+	smartManager     *SmartManager              // Manages SMART data
 }
 
 func NewAgent() *Agent {
@@ -81,6 +82,12 @@ func NewAgent() *Agent {
 		slog.Debug("GPU", "err", err)
 	} else {
 		agent.gpuManager = gm
+	}
+
+	if sm, err := NewSmartManager(); err != nil {
+		slog.Debug("SMART", "err", err)
+	} else {
+		agent.smartManager = sm
 	}
 
 	// if debugging, print stats
