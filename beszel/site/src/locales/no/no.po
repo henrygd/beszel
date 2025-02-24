@@ -8,14 +8,15 @@ msgstr ""
 "Language: no\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-20 02:55+0100\n"
+"PO-Revision-Date: 2025-02-23 04:50\n"
 "Last-Translator: \n"
 "Language-Team: Norwegian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
-"X-Crowdin-Language: nb-NO\n"
-"X-Crowdin-File: /main/beszel/site/src/locales/no/no.po\n"
+"X-Crowdin-Language: no\n"
+"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 16\n"
 
 #: src/components/routes/system.tsx:250
 msgid "{0, plural, one {# day} other {# days}}"
@@ -97,7 +98,7 @@ msgstr "Alarmer"
 #: src/components/alerts/alert-button.tsx:88
 #: src/components/systems-table/systems-table.tsx:319
 msgid "All Systems"
-msgstr "Alle System"
+msgstr "Alle Systemer"
 
 #: src/components/systems-table/systems-table.tsx:642
 msgid "Are you sure you want to delete {name}?"
@@ -113,7 +114,7 @@ msgstr "Gjennomsnitt"
 
 #: src/components/routes/system.tsx:398
 msgid "Average CPU utilization of containers"
-msgstr "Gjennomsnittlig CPU-utnyttelse av kontainere"
+msgstr "Gjennomsnittlig CPU-utnyttelse av konteinere"
 
 #: src/components/alerts/alerts-system.tsx:206
 msgid "Average exceeds <0>{value}{0}</0>"
@@ -218,7 +219,7 @@ msgstr "Kopier"
 
 #: src/components/systems-table/systems-table.tsx:624
 msgid "Copy host"
-msgstr "Copier vert"
+msgstr "Kopier vert"
 
 #: src/components/add-system.tsx:237
 msgid "Copy Linux command"
@@ -245,7 +246,7 @@ msgstr "Opprett konto"
 #. Dark theme
 #: src/components/mode-toggle.tsx:21
 msgid "Dark"
-msgstr "Mørk"
+msgstr "Mørkt"
 
 #: src/components/command-palette.tsx:82
 #: src/components/routes/home.tsx:35
@@ -297,7 +298,7 @@ msgstr "Dokumentasjon"
 #: src/components/add-system.tsx:121
 #: src/components/systems-table/systems-table.tsx:599
 msgid "Edit"
-msgstr ""
+msgstr "Rediger"
 
 #: src/components/login/auth-form.tsx:173
 #: src/components/login/forgot-pass-form.tsx:53
@@ -324,7 +325,7 @@ msgstr "Feil"
 
 #: src/components/routes/home.tsx:81
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
-msgstr "Overstiger {0}{1} de siste {2, plural, one {# minuttet} other {# minutter}}"
+msgstr "Overstiger {0}{1} {2, plural, one {det siste minuttet} other {de siste # minuttene}}"
 
 #: src/components/routes/settings/config-yaml.tsx:72
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
@@ -454,7 +455,7 @@ msgstr "Minnebruk"
 
 #: src/components/routes/system.tsx:419
 msgid "Memory usage of docker containers"
-msgstr "Minnebruk av docker-kontainere"
+msgstr "Minnebruk av docker-konteinere"
 
 #: src/components/add-system.tsx:150
 msgid "Name"
@@ -466,11 +467,11 @@ msgstr "Nett"
 
 #: src/components/routes/system.tsx:460
 msgid "Network traffic of docker containers"
-msgstr "Nettverkstrafikk av docker-kontainere"
+msgstr "Nettverkstrafikk av docker-konteinere"
 
 #: src/components/routes/system.tsx:445
 msgid "Network traffic of public interfaces"
-msgstr "Nettverkstrafikk av eksterne mettverksgrensesnitt"
+msgstr "Nettverkstrafikk av eksterne nettverksgrensesnitt"
 
 #: src/components/command-palette.tsx:50
 msgid "No results found."
@@ -526,7 +527,7 @@ msgstr "Passord må bestå av minst 8 tegn."
 
 #: src/components/login/auth-form.tsx:21
 msgid "Password must be less than 72 bytes."
-msgstr ""
+msgstr "Passord må være mindre enn 72 byte."
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
@@ -591,7 +592,7 @@ msgstr "Offentlig Nøkkel"
 #: src/components/charts/area-chart.tsx:60
 #: src/components/charts/area-chart.tsx:70
 msgid "Read"
-msgstr "Les"
+msgstr "Lesing"
 
 #. Network bytes received (download)
 #: src/components/charts/area-chart.tsx:65
@@ -617,7 +618,7 @@ msgstr "Lagre Innstillinger"
 
 #: src/components/add-system.tsx:241
 msgid "Save system"
-msgstr ""
+msgstr "Lagre system"
 
 #: src/components/navbar.tsx:134
 msgid "Search"
@@ -687,11 +688,11 @@ msgstr "System"
 
 #: src/components/navbar.tsx:78
 msgid "Systems"
-msgstr "System"
+msgstr "Systemer"
 
 #: src/components/routes/settings/config-yaml.tsx:55
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
-msgstr "System kan håndteres i en <0>config.yml</0>-fil i din data-katalog."
+msgstr "Systemer kan håndteres i en <0>config.yml</0>-fil i din data-katalog."
 
 #: src/components/systems-table/systems-table.tsx:349
 msgid "Table"
@@ -700,7 +701,7 @@ msgstr "Tabell"
 #. Temperature label in systems table
 #: src/components/systems-table/systems-table.tsx:218
 msgid "Temp"
-msgstr ""
+msgstr "Temp"
 
 #: src/components/routes/system.tsx:486
 #: src/lib/utils.ts:333
@@ -792,11 +793,11 @@ msgstr "Oppetid"
 #: src/components/routes/system.tsx:516
 #: src/components/routes/system.tsx:553
 msgid "Usage"
-msgstr "Bruk"
+msgstr "Forbruk"
 
 #: src/components/routes/system.tsx:426
 msgid "Usage of root partition"
-msgstr "Bruk av rot-partisjon"
+msgstr "Forbruk av rot-partisjon"
 
 #: src/components/charts/area-chart.tsx:73
 #: src/components/charts/mem-chart.tsx:65
@@ -833,7 +834,7 @@ msgstr "Webhook / Push-varslinger"
 #: src/components/charts/area-chart.tsx:59
 #: src/components/charts/area-chart.tsx:69
 msgid "Write"
-msgstr "Skriv"
+msgstr "Skriving"
 
 #: src/components/routes/settings/layout.tsx:61
 msgid "YAML Config"
@@ -846,3 +847,4 @@ msgstr "YAML Konfigurasjon"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "Dine brukerinnstillinger har blitt oppdatert."
+
