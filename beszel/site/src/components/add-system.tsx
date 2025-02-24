@@ -49,8 +49,8 @@ export function AddSystemButton({ className }: { className?: string }) {
 	)
 }
 
-	function copyDockerCompose(port = "45876", publicKey: string) {
-		copyToClipboard(`services:
+function copyDockerCompose(port = "45876", publicKey: string) {
+	copyToClipboard(`services:
   beszel-agent:
     image: "henrygd/beszel-agent"
     container_name: "beszel-agent"
@@ -63,22 +63,22 @@ export function AddSystemButton({ className }: { className?: string }) {
     environment:
       PORT: ${port}
       KEY: "${publicKey}"`)
-	}
+}
 
-	function copyDockerRun(port = "45876", publicKey: string) {
-		copyToClipboard(
-			`docker run -d --name beszel-agent --network host --restart unless-stopped -v /var/run/docker.sock:/var/run/docker.sock:ro -e KEY="${publicKey}" -e PORT=${port} henrygd/beszel-agent:latest`
-		)
-	}
+function copyDockerRun(port = "45876", publicKey: string) {
+	copyToClipboard(
+		`docker run -d --name beszel-agent --network host --restart unless-stopped -v /var/run/docker.sock:/var/run/docker.sock:ro -e KEY="${publicKey}" -e PORT=${port} henrygd/beszel-agent:latest`
+	)
+}
 
-	function copyInstallCommand(port = "45876", publicKey: string) {
-		let cmd = `curl -sL https://raw.githubusercontent.com/henrygd/beszel/main/supplemental/scripts/install-agent.sh -o install-agent.sh && chmod +x install-agent.sh && ./install-agent.sh -p ${port} -k "${publicKey}"`
-		// add china mirrors flag if zh-CN
-		if ((i18n.locale + navigator.language).includes("zh-CN")) {
-			cmd += ` --china-mirrors`
-		}
-		copyToClipboard(cmd)
+function copyInstallCommand(port = "45876", publicKey: string) {
+	let cmd = `curl -sL https://raw.githubusercontent.com/henrygd/beszel/main/supplemental/scripts/install-agent.sh -o install-agent.sh && chmod +x install-agent.sh && ./install-agent.sh -p ${port} -k "${publicKey}"`
+	// add china mirrors flag if zh-CN
+	if ((i18n.locale + navigator.language).includes("zh-CN")) {
+		cmd += ` --china-mirrors`
 	}
+	copyToClipboard(cmd)
+}
 
 /**
  * SystemDialog component for adding or editing a system.
@@ -112,9 +112,12 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 	}
 
 	return (
-		<DialogContent className="w-[90%] sm:w-auto sm:ns-dialog max-w-full rounded-lg" onCloseAutoFocus={() => {
-			setHostValue(system?.host ?? "")
-		}}>
+		<DialogContent
+			className="w-[90%] sm:w-auto sm:ns-dialog max-w-full rounded-lg"
+			onCloseAutoFocus={() => {
+				setHostValue(system?.host ?? "")
+			}}
+		>
 			<Tabs defaultValue="docker">
 				<DialogHeader>
 					<DialogTitle className="mb-2">
@@ -207,35 +210,21 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 					<DialogFooter className="flex justify-end gap-x-2 gap-y-3 flex-col mt-5">
 						{/* Docker */}
 						<TabsContent value="docker" className="contents">
-							<div className="flex gap-0 rounded-lg">
-								<Button
-									type="button"
-									variant="outline"
-									onClick={() => copyDockerCompose(isUnixSocket ? hostValue : port.current?.value, publicKey )}
-									className="rounded-e-none dark:border-e-0 grow"
-								>
-									<Trans>Copy</Trans> docker compose
-								</Button>
-								<div className="w-px h-full bg-muted"></div>
-								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
-										<Button variant="outline" className={"px-2 rounded-s-none border-s-0"}>
-											<ChevronDownIcon />
-										</Button>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent align="end">
-										<DropdownMenuItem onClick={() => copyDockerRun(isUnixSocket ? hostValue : port.current?.value, publicKey)}>
-											<Trans>Copy</Trans> docker run
-										</DropdownMenuItem>
-									</DropdownMenuContent>
-								</DropdownMenu>
-							</div>
+							<CopyButton
+								text={t`Copy` + " docker compose"}
+								onClick={() => copyDockerCompose(isUnixSocket ? hostValue : port.current?.value, publicKey)}
+								dropdownText={t`Copy` + " docker run"}
+								dropdownOnClick={() => copyDockerRun(isUnixSocket ? hostValue : port.current?.value, publicKey)}
+							/>
 						</TabsContent>
 						{/* Binary */}
 						<TabsContent value="binary" className="contents">
-							<Button type="button" variant="outline" onClick={() => copyInstallCommand(isUnixSocket ? hostValue : port.current?.value, publicKey)}>
-								<Trans>Copy Linux command</Trans>
-							</Button>
+							<CopyButton
+								text={t`Copy Linux command`}
+								onClick={() => copyInstallCommand(isUnixSocket ? hostValue : port.current?.value, publicKey)}
+								dropdownText={t`Manual setup instructions`}
+								dropdownUrl="https://beszel.dev/guide/agent-installation#binary"
+							/>
 						</TabsContent>
 						{/* Save */}
 						<Button>{system ? <Trans>Save system</Trans> : <Trans>Add system</Trans>}</Button>
@@ -243,5 +232,42 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 				</form>
 			</Tabs>
 		</DialogContent>
+	)
+})
+
+interface CopyButtonProps {
+	text: string
+	onClick: () => void
+	dropdownText: string
+	dropdownOnClick?: () => void
+	dropdownUrl?: string
+}
+
+const CopyButton = memo((props: CopyButtonProps) => {
+	return (
+		<div className="flex gap-0 rounded-lg">
+			<Button type="button" variant="outline" onClick={props.onClick} className="rounded-e-none dark:border-e-0 grow">
+				{props.text}
+			</Button>
+			<div className="w-px h-full bg-muted"></div>
+			<DropdownMenu>
+				<DropdownMenuTrigger asChild>
+					<Button variant="outline" className={"px-2 rounded-s-none border-s-0"}>
+						<ChevronDownIcon />
+					</Button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent align="end">
+					{props.dropdownUrl ? (
+						<DropdownMenuItem asChild>
+							<a href={props.dropdownUrl} target="_blank" rel="noopener noreferrer">
+								{props.dropdownText}
+							</a>
+						</DropdownMenuItem>
+					) : (
+						<DropdownMenuItem onClick={props.dropdownOnClick}>{props.dropdownText}</DropdownMenuItem>
+					)}
+				</DropdownMenuContent>
+			</DropdownMenu>
+		</div>
 	)
 })
