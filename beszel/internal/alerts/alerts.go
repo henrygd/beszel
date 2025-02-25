@@ -60,6 +60,24 @@ type SystemAlertData struct {
 	descriptor   string // override descriptor in notification body (for temp sensor, disk partition, etc)
 }
 
+// notification services that support title param
+var supportsTitle = map[string]struct{}{
+	"bark":       {},
+	"discord":    {},
+	"gotify":     {},
+	"ifttt":      {},
+	"join":       {},
+	"matrix":     {},
+	"ntfy":       {},
+	"opsgenie":   {},
+	"pushbullet": {},
+	"pushover":   {},
+	"slack":      {},
+	"teams":      {},
+	"telegram":   {},
+	"zulip":      {},
+}
+
 func NewAlertManager(app core.App) *AlertManager {
 	return &AlertManager{
 		app: app,
@@ -446,9 +464,6 @@ func (am *AlertManager) sendAlert(data AlertMessageData) {
 
 // SendShoutrrrAlert sends an alert via a Shoutrrr URL
 func (am *AlertManager) SendShoutrrrAlert(notificationUrl, title, message, link, linkText string) error {
-	// services that support title param
-	supportsTitle := []string{"bark", "discord", "gotify", "ifttt", "join", "matrix", "ntfy", "opsgenie", "pushbullet", "pushover", "slack", "teams", "telegram", "zulip"}
-
 	// Parse the URL
 	parsedURL, err := url.Parse(notificationUrl)
 	if err != nil {
@@ -458,7 +473,7 @@ func (am *AlertManager) SendShoutrrrAlert(notificationUrl, title, message, link,
 	queryParams := parsedURL.Query()
 
 	// Add title
-	if sliceContains(supportsTitle, scheme) {
+	if _, ok := supportsTitle[scheme]; ok {
 		queryParams.Add("title", title)
 	} else if scheme == "mattermost" {
 		// use markdown title for mattermost
