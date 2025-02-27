@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-24 07:35\n"
+"PO-Revision-Date: 2025-02-27 05:46\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional, Hong Kong\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -60,19 +60,19 @@ msgstr "活動警報"
 
 #: src/components/add-system.tsx:42
 msgid "Add <0>System</0>"
-msgstr "添加<0>系統</0>"
+msgstr "新增<0>系統</0>"
 
 #: src/components/add-system.tsx:124
 msgid "Add New System"
-msgstr "添加新系統"
+msgstr "新增新系統"
 
 #: src/components/add-system.tsx:230
 msgid "Add system"
-msgstr "添加系統"
+msgstr "新增系統"
 
 #: src/components/routes/settings/notifications.tsx:157
 msgid "Add URL"
-msgstr "添加URL"
+msgstr "添加 URL"
 
 #: src/components/routes/settings/general.tsx:81
 msgid "Adjust display options for charts."
@@ -88,7 +88,7 @@ msgstr "管理員"
 
 #: src/components/systems-table/systems-table.tsx:246
 msgid "Agent"
-msgstr "代理"
+msgstr "客户端"
 
 #: src/components/alerts/alert-button.tsx:32
 #: src/components/alerts/alert-button.tsx:68
@@ -102,7 +102,7 @@ msgstr "所有系統"
 
 #: src/components/systems-table/systems-table.tsx:642
 msgid "Are you sure you want to delete {name}?"
-msgstr "您確定要刪除{name}嗎？"
+msgstr "您確定要刪除 {name} 嗎？"
 
 #: src/components/copy-to-clipboard.tsx:16
 msgid "Automatic copy requires a secure context."
@@ -114,11 +114,11 @@ msgstr "平均"
 
 #: src/components/routes/system.tsx:403
 msgid "Average CPU utilization of containers"
-msgstr "容器的平均CPU使用率"
+msgstr "容器的平均 CPU 使用率"
 
 #: src/components/alerts/alerts-system.tsx:206
 msgid "Average exceeds <0>{value}{0}</0>"
-msgstr "平均值超過<0>{value}{0}</0>"
+msgstr "平均值超過 <0>{value}{0}</0>"
 
 #: src/components/routes/system.tsx:504
 msgid "Average power consumption of GPUs"
@@ -126,7 +126,7 @@ msgstr "GPU 的平均功耗"
 
 #: src/components/routes/system.tsx:392
 msgid "Average system-wide CPU utilization"
-msgstr "系統範圍內的平均CPU使用率"
+msgstr "系統的平均 CPU 使用率"
 
 #: src/components/routes/system.tsx:522
 msgid "Average utilization of {0}"
@@ -148,15 +148,15 @@ msgstr "Beszel支持OpenID Connect和許多OAuth2認證提供者。"
 
 #: src/components/routes/settings/notifications.tsx:128
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
-msgstr "Beszel使用<0>Shoutrrr</0>與流行的通知服務集成。"
+msgstr "Beszel 使用 <0>Shoutrrr</0> 與流行的通知服務集成。"
 
 #: src/components/add-system.tsx:129
 msgid "Binary"
-msgstr "二進制"
+msgstr "執行檔"
 
 #: src/components/charts/mem-chart.tsx:89
 msgid "Cache / Buffers"
-msgstr "緩存/緩衝區"
+msgstr "快取 / 緩衝區"
 
 #: src/components/systems-table/systems-table.tsx:653
 msgid "Cancel"
@@ -164,7 +164,7 @@ msgstr "取消"
 
 #: src/components/routes/settings/config-yaml.tsx:68
 msgid "Caution - potential data loss"
-msgstr "注意 - 可能的數據丟失"
+msgstr "注意 - 可能遺失資料"
 
 #: src/components/routes/settings/general.tsx:36
 msgid "Change general application options."
@@ -176,11 +176,11 @@ msgstr "圖表選項"
 
 #: src/components/login/forgot-pass-form.tsx:34
 msgid "Check {email} for a reset link."
-msgstr "檢查{email}以獲取重置鏈接。"
+msgstr "檢查 {email} 以獲取重置鏈接。"
 
 #: src/components/routes/settings/layout.tsx:40
 msgid "Check logs for more details."
-msgstr "檢查日誌以獲取更多詳細信息。"
+msgstr "檢查日誌以取得更多資訊。"
 
 #: src/components/routes/settings/notifications.tsx:184
 msgid "Check your notification service"
@@ -223,7 +223,7 @@ msgstr "複製主機"
 
 #: src/components/add-system.tsx:223
 msgid "Copy Linux command"
-msgstr "複製Linux命令"
+msgstr "複製 Linux 指令"
 
 #: src/components/copy-to-clipboard.tsx:13
 msgid "Copy text"
@@ -237,7 +237,7 @@ msgstr "CPU"
 #: src/components/routes/system.tsx:391
 #: src/lib/utils.ts:308
 msgid "CPU Usage"
-msgstr "CPU使用率"
+msgstr "CPU 使用率"
 
 #: src/components/login/auth-form.tsx:236
 msgid "Create account"
@@ -251,11 +251,11 @@ msgstr "深色"
 #: src/components/command-palette.tsx:82
 #: src/components/routes/home.tsx:35
 msgid "Dashboard"
-msgstr "儀表板"
+msgstr "控制面板"
 
 #: src/components/routes/settings/general.tsx:85
 msgid "Default time period"
-msgstr "默認時間段"
+msgstr "預設時間段"
 
 #: src/components/systems-table/systems-table.tsx:629
 msgid "Delete"
@@ -267,7 +267,7 @@ msgstr "磁碟"
 
 #: src/components/routes/system.tsx:438
 msgid "Disk I/O"
-msgstr "磁碟I/O"
+msgstr "磁碟 I/O"
 
 #: src/components/charts/disk-chart.tsx:79
 #: src/components/routes/system.tsx:431
@@ -277,23 +277,23 @@ msgstr "磁碟使用"
 
 #: src/components/routes/system.tsx:559
 msgid "Disk usage of {extraFsName}"
-msgstr "{extraFsName}的磁碟使用"
+msgstr "{extraFsName} 的磁碟使用量"
 
 #: src/components/routes/system.tsx:402
 msgid "Docker CPU Usage"
-msgstr "Docker CPU使用"
+msgstr "Docker CPU 使用率"
 
 #: src/components/routes/system.tsx:423
 msgid "Docker Memory Usage"
-msgstr "Docker記憶體使用"
+msgstr "Docker 記憶體使用率"
 
 #: src/components/routes/system.tsx:464
 msgid "Docker Network I/O"
-msgstr "Docker網絡I/O"
+msgstr "Docker 網絡 I/O"
 
 #: src/components/command-palette.tsx:125
 msgid "Documentation"
-msgstr "文檔"
+msgstr "文件"
 
 #: src/components/add-system.tsx:124
 #: src/components/systems-table/systems-table.tsx:599
@@ -333,11 +333,11 @@ msgstr "未在<0>config.yml</0>中定義的現有系統將被刪除。請定期�
 
 #: src/components/routes/settings/config-yaml.tsx:93
 msgid "Export configuration"
-msgstr "導出配置"
+msgstr "匯出設定"
 
 #: src/components/routes/settings/config-yaml.tsx:48
 msgid "Export your current systems configuration."
-msgstr "導出您當前的系統配置。"
+msgstr "匯出您現在的系統設定。"
 
 #: src/lib/utils.ts:39
 msgid "Failed to authenticate"
@@ -346,7 +346,7 @@ msgstr "認證失敗"
 #: src/components/routes/settings/layout.tsx:39
 #: src/components/routes/settings/notifications.tsx:63
 msgid "Failed to save settings"
-msgstr "保存設置失敗"
+msgstr "儲存設定失敗"
 
 #: src/components/routes/settings/notifications.tsx:189
 msgid "Failed to send test notification"
@@ -389,7 +389,7 @@ msgstr "主機 / IP"
 
 #: src/components/login/forgot-pass-form.tsx:93
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
-msgstr "如果您丟失了管理員帳戶的密碼，可以使用以下命令重置。"
+msgstr "如果您遺失了管理員帳號密碼，可以使用以下指令重設。"
 
 #: src/components/login/auth-form.tsx:17
 msgid "Invalid email address."
@@ -398,7 +398,7 @@ msgstr "無效的電子郵件地址。"
 #. Linux kernel
 #: src/components/routes/system.tsx:264
 msgid "Kernel"
-msgstr "內核"
+msgstr "Kernel"
 
 #: src/components/routes/settings/general.tsx:45
 msgid "Language"
@@ -419,12 +419,12 @@ msgstr "登出"
 
 #: src/components/login/login.tsx:19
 msgid "Login"
-msgstr "登錄"
+msgstr "登入"
 
 #: src/components/login/auth-form.tsx:39
 #: src/components/login/forgot-pass-form.tsx:15
 msgid "Login attempt failed"
-msgstr "登錄嘗試失敗"
+msgstr "登入嘗試失敗"
 
 #: src/components/command-palette.tsx:157
 #: src/components/navbar.tsx:86
@@ -433,7 +433,7 @@ msgstr "日誌"
 
 #: src/components/routes/settings/notifications.tsx:81
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
-msgstr "在尋找創建警報的位置嗎？點擊系統表中的鈴鐺<0/>圖標。"
+msgstr "在尋找創建警報的位置嗎？點擊系統表中的鈴鐺<0/>。"
 
 #: src/components/routes/settings/layout.tsx:85
 msgid "Manage display and notification preferences."
@@ -446,7 +446,7 @@ msgstr "手動設定說明"
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx:629
 msgid "Max 1 min"
-msgstr "最大1分鐘"
+msgstr "一分鐘內最大值"
 
 #: src/components/systems-table/systems-table.tsx:173
 msgid "Memory"
@@ -459,7 +459,7 @@ msgstr "記憶體使用"
 
 #: src/components/routes/system.tsx:424
 msgid "Memory usage of docker containers"
-msgstr "Docker容器的記憶體使用"
+msgstr "Docker 容器的記憶體使用量"
 
 #: src/components/add-system.tsx:153
 msgid "Name"
@@ -471,7 +471,7 @@ msgstr "網絡"
 
 #: src/components/routes/system.tsx:465
 msgid "Network traffic of docker containers"
-msgstr "Docker容器的網絡流量"
+msgstr "Docker 容器的網絡流量"
 
 #: src/components/routes/system.tsx:450
 msgid "Network traffic of public interfaces"
@@ -494,15 +494,15 @@ msgstr "通知"
 
 #: src/components/login/auth-form.tsx:299
 msgid "OAuth 2 / OIDC support"
-msgstr "支持OAuth 2 / OIDC"
+msgstr "支援 OAuth 2 / OIDC"
 
 #: src/components/routes/settings/config-yaml.tsx:61
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
-msgstr "每次重啟時，數據庫中的系統將更新以匹配文件中定義的系統。"
+msgstr "每次重新啟動時，將會以檔案中的系統定義更新資料庫。"
 
 #: src/components/systems-table/systems-table.tsx:585
 msgid "Open menu"
-msgstr "打開菜單"
+msgstr "開啟選單"
 
 #: src/components/login/auth-form.tsx:248
 msgid "Or continue with"
@@ -518,7 +518,7 @@ msgstr "頁面"
 
 #: src/components/command-palette.tsx:72
 msgid "Pages / Settings"
-msgstr "頁面 / 設置"
+msgstr "頁面 / 設定"
 
 #: src/components/login/auth-form.tsx:192
 #: src/components/login/auth-form.tsx:197
@@ -527,7 +527,7 @@ msgstr "密碼"
 
 #: src/components/login/auth-form.tsx:20
 msgid "Password must be at least 8 characters."
-msgstr "密碼必須至少包含 8 個字元。"
+msgstr "密碼必須至少包含 8 個字符。"
 
 #: src/components/login/auth-form.tsx:21
 msgid "Password must be less than 72 bytes."
@@ -535,7 +535,7 @@ msgstr "密碼必須少於 72 個字節。"
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
-msgstr "已收到密碼重置請求"
+msgstr "已收到密碼重設請求"
 
 #: src/components/systems-table/systems-table.tsx:618
 msgid "Pause"
@@ -543,11 +543,11 @@ msgstr "暫停"
 
 #: src/components/routes/settings/notifications.tsx:96
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
-msgstr "請<0>配置SMTP服務器</0>以確保警報被傳送。"
+msgstr "請<0>配置SMTP伺服器</0>以確保警報被傳送。"
 
 #: src/components/alerts/alerts-system.tsx:25
 msgid "Please check logs for more details."
-msgstr "請檢查日誌以獲取更多詳細信息。"
+msgstr "請檢查日誌以獲取更多資訊。"
 
 #: src/components/login/auth-form.tsx:40
 #: src/components/login/forgot-pass-form.tsx:16
@@ -556,7 +556,7 @@ msgstr "請檢查您的憑證並重試"
 
 #: src/components/login/login.tsx:36
 msgid "Please create an admin account"
-msgstr "請創建一個管理員帳戶"
+msgstr "請建立一個管理員帳號"
 
 #: src/components/login/auth-form.tsx:137
 msgid "Please enable pop-ups for this site"
@@ -564,15 +564,15 @@ msgstr "請為此網站啟用彈出窗口"
 
 #: src/lib/utils.ts:40
 msgid "Please log in again"
-msgstr "請重新登錄"
+msgstr "請重新登入"
 
 #: src/components/login/auth-form.tsx:307
 msgid "Please see <0>the documentation</0> for instructions."
-msgstr "請參閱<0>文檔</0>以獲取說明。"
+msgstr "請參閱<0>文件</0>以取得說明。"
 
 #: src/components/login/login.tsx:40
 msgid "Please sign in to your account"
-msgstr "請登錄到您的帳戶"
+msgstr "請登入您的帳號"
 
 #: src/components/add-system.tsx:169
 msgid "Port"
@@ -605,7 +605,7 @@ msgstr "接收"
 
 #: src/components/login/forgot-pass-form.tsx:76
 msgid "Reset Password"
-msgstr "重置密碼"
+msgstr "重設密碼"
 
 #: src/components/systems-table/systems-table.tsx:613
 msgid "Resume"
@@ -618,7 +618,7 @@ msgstr "使用回車鍵或逗號保存地址。留空以禁用電子郵件通知
 #: src/components/routes/settings/general.tsx:106
 #: src/components/routes/settings/notifications.tsx:168
 msgid "Save Settings"
-msgstr "保存設置"
+msgstr "儲存設定"
 
 #: src/components/add-system.tsx:230
 msgid "Save system"
