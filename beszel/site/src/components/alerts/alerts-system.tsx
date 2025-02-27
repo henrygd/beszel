@@ -160,13 +160,11 @@ export function SystemAlertGlobal({
 function AlertContent({ data }: { data: AlertData }) {
 	const { key } = data
 
-	const hasSliders = !("single" in data.alert)
+	const singleDescription = data.alert?.singleDesc
 
 	const [checked, setChecked] = useState(data.checked || false)
-	const [min, setMin] = useState(data.min || (hasSliders ? 10 : 0))
-	const [value, setValue] = useState(data.val || (hasSliders ? 80 : 0))
-
-	const showSliders = checked && hasSliders
+	const [min, setMin] = useState(data.min || 10)
+	const [value, setValue] = useState(data.val || (singleDescription ? 0 : 80))
 
 	const newMin = useRef(min)
 	const newValue = useRef(value)
@@ -180,14 +178,14 @@ function AlertContent({ data }: { data: AlertData }) {
 			<label
 				htmlFor={`s${key}`}
 				className={cn("flex flex-row items-center justify-between gap-4 cursor-pointer p-4", {
-					"pb-0": showSliders,
+					"pb-0": checked,
 				})}
 			>
 				<div className="grid gap-1 select-none">
 					<p className="font-semibold flex gap-3 items-center">
 						<Icon className="h-4 w-4 opacity-85" /> {data.alert.name()}
 					</p>
-					{!showSliders && <span className="block text-sm text-muted-foreground">{data.alert.desc()}</span>}
+					{!checked && <span className="block text-sm text-muted-foreground">{data.alert.desc()}</span>}
 				</div>
 				<Switch
 					id={`s${key}`}
@@ -198,9 +196,10 @@ function AlertContent({ data }: { data: AlertData }) {
 					}}
 				/>
 			</label>
-			{showSliders && (
+			{checked && (
 				<div className="grid sm:grid-cols-2 mt-1.5 gap-5 px-4 pb-5 tabular-nums text-muted-foreground">
 					<Suspense fallback={<div className="h-10" />}>
+					{!singleDescription && (
 						<div>
 							<p id={`v${key}`} className="text-sm block h-8">
 								<Trans>
@@ -222,8 +221,12 @@ function AlertContent({ data }: { data: AlertData }) {
 								/>
 							</div>
 						</div>
-						<div>
-							<p id={`t${key}`} className="text-sm block h-8">
+					)}
+						<div className={cn(singleDescription && "col-span-full lowercase")}>
+							<p id={`t${key}`} className="text-sm block h-8 first-letter:uppercase">
+								{singleDescription && (
+									<>{singleDescription}{` `}</>
+								)}
 								<Trans>
 									For <strong className="text-foreground">{min}</strong>{" "}
 									<Plural value={min} one=" minute" other=" minutes" />

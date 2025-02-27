@@ -302,7 +302,8 @@ export const alertInfo: Record<string, AlertInfo> = {
 		unit: "",
 		icon: ServerIcon,
 		desc: () => t`Triggers when status switches between up and down`,
-		single: true,
+		/** "for x minutes" is appended to desc when only one value */
+		singleDesc: t`System` + " " + t`Down`,
 	},
 	CPU: {
 		name: () => t`CPU Usage`,

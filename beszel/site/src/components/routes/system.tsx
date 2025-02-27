@@ -302,6 +302,13 @@ export default function SystemDetail({ name }: { name: string }) {
 	const hasGpuData = lastGpuVals.length > 0
 	const hasGpuPowerData = lastGpuVals.some((gpu) => gpu.p !== undefined)
 
+	let translatedStatus: string = system.status
+	if (system.status === "up") {
+		translatedStatus = t({ message: "Up", comment: "Context: System is up" })
+	} else if (system.status === "down") {
+		translatedStatus = t({ message: "Down", comment: "Context: System is down" })
+	}
+
 	return (
 		<>
 			<div id="chartwrap" className="grid gap-4 mb-10 overflow-x-clip">
@@ -328,7 +335,7 @@ export default function SystemDetail({ name }: { name: string }) {
 											})}
 										></span>
 									</span>
-									{system.status}
+									{translatedStatus}
 								</div>
 								{systemInfo.map(({ value, label, Icon, hide }, i) => {
 									if (hide || !value) {
