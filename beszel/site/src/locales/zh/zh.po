@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-20 02:40\n"
+"PO-Revision-Date: 2025-02-27 05:46\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -148,7 +148,7 @@ msgstr "Beszel支援OpenID Connect和許多OAuth2認證提供者。"
 
 #: src/components/routes/settings/notifications.tsx:128
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
-msgstr "Beszel以<0>Shoutrrr</0>整合常用的通知服務。"
+msgstr "Beszel 以 <0>Shoutrrr</0> 整合常用的通知服務。"
 
 #: src/components/add-system.tsx:129
 msgid "Binary"
@@ -223,7 +223,7 @@ msgstr "複製主機"
 
 #: src/components/add-system.tsx:223
 msgid "Copy Linux command"
-msgstr "複製Linux指令"
+msgstr "複製 Linux 指令"
 
 #: src/components/copy-to-clipboard.tsx:13
 msgid "Copy text"
@@ -237,7 +237,7 @@ msgstr "CPU"
 #: src/components/routes/system.tsx:391
 #: src/lib/utils.ts:308
 msgid "CPU Usage"
-msgstr "CPU使用率"
+msgstr "CPU 使用率"
 
 #: src/components/login/auth-form.tsx:236
 msgid "Create account"
@@ -281,7 +281,7 @@ msgstr "{extraFsName}的磁碟使用量"
 
 #: src/components/routes/system.tsx:402
 msgid "Docker CPU Usage"
-msgstr "Docker CPU使用率"
+msgstr "Docker CPU 使用率"
 
 #: src/components/routes/system.tsx:423
 msgid "Docker Memory Usage"
@@ -298,7 +298,7 @@ msgstr "文件"
 #: src/components/add-system.tsx:124
 #: src/components/systems-table/systems-table.tsx:599
 msgid "Edit"
-msgstr ""
+msgstr "編輯"
 
 #: src/components/login/auth-form.tsx:173
 #: src/components/login/forgot-pass-form.tsx:53
@@ -329,7 +329,7 @@ msgstr "在過去的{2, plural, one {# 分鐘} other {# 分鐘}}中超過{0}{1}"
 
 #: src/components/routes/settings/config-yaml.tsx:72
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
-msgstr "未在<0>config.yml</0>中定義的現有系統將會被刪除。請定期備份。"
+msgstr "未在 <0>config.yml</0> 中定義的現有系統將會被刪除。請定期備份。"
 
 #: src/components/routes/settings/config-yaml.tsx:93
 msgid "Export configuration"
@@ -441,7 +441,7 @@ msgstr "管理顯示和通知偏好。"
 
 #: src/components/add-system.tsx:225
 msgid "Manual setup instructions"
-msgstr ""
+msgstr "手動設定說明"
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx:629
@@ -531,7 +531,7 @@ msgstr "密碼需要至少8個字元"
 
 #: src/components/login/auth-form.tsx:21
 msgid "Password must be less than 72 bytes."
-msgstr ""
+msgstr "密碼必須少於 72 個位元組。"
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
@@ -622,7 +622,7 @@ msgstr "儲存設定"
 
 #: src/components/add-system.tsx:230
 msgid "Save system"
-msgstr ""
+msgstr "儲存系統"
 
 #: src/components/navbar.tsx:134
 msgid "Search"
@@ -663,7 +663,7 @@ msgstr "登入"
 
 #: src/components/command-palette.tsx:186
 msgid "SMTP settings"
-msgstr "SMTP設定"
+msgstr "SMTP 設定"
 
 #: src/components/systems-table/systems-table.tsx:361
 msgid "Sort By"
@@ -705,7 +705,7 @@ msgstr "列表"
 #. Temperature label in systems table
 #: src/components/systems-table/systems-table.tsx:218
 msgid "Temp"
-msgstr ""
+msgstr "溫度"
 
 #: src/components/routes/system.tsx:491
 #: src/lib/utils.ts:333
@@ -851,3 +851,4 @@ msgstr "YAML 設定檔"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "已更新您的使用者設定"
+

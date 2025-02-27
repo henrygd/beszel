@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-20 02:40\n"
+"PO-Revision-Date: 2025-02-27 05:46\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -114,7 +114,7 @@ msgstr "平均"
 
 #: src/components/routes/system.tsx:403
 msgid "Average CPU utilization of containers"
-msgstr "容器的平均CPU使用率"
+msgstr "容器的平均 CPU 使用率"
 
 #: src/components/alerts/alerts-system.tsx:206
 msgid "Average exceeds <0>{value}{0}</0>"
@@ -126,7 +126,7 @@ msgstr "GPU 平均能耗"
 
 #: src/components/routes/system.tsx:392
 msgid "Average system-wide CPU utilization"
-msgstr "系统范围内的平均CPU使用率"
+msgstr "系统范围内的平均 CPU 使用率"
 
 #: src/components/routes/system.tsx:522
 msgid "Average utilization of {0}"
@@ -176,7 +176,7 @@ msgstr "图表选项"
 
 #: src/components/login/forgot-pass-form.tsx:34
 msgid "Check {email} for a reset link."
-msgstr "检查{email}以获取重置链接。"
+msgstr "检查 {email} 以获取重置链接。"
 
 #: src/components/routes/settings/layout.tsx:40
 msgid "Check logs for more details."
@@ -223,7 +223,7 @@ msgstr "复制主机名"
 
 #: src/components/add-system.tsx:223
 msgid "Copy Linux command"
-msgstr "复制Linux安装命令"
+msgstr "复制 Linux 安装命令"
 
 #: src/components/copy-to-clipboard.tsx:13
 msgid "Copy text"
@@ -298,7 +298,7 @@ msgstr "文档"
 #: src/components/add-system.tsx:124
 #: src/components/systems-table/systems-table.tsx:599
 msgid "Edit"
-msgstr ""
+msgstr "编辑"
 
 #: src/components/login/auth-form.tsx:173
 #: src/components/login/forgot-pass-form.tsx:53
@@ -441,7 +441,7 @@ msgstr "管理显示和通知偏好。"
 
 #: src/components/add-system.tsx:225
 msgid "Manual setup instructions"
-msgstr ""
+msgstr "手动设置说明"
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx:629
@@ -459,7 +459,7 @@ msgstr "内存使用"
 
 #: src/components/routes/system.tsx:424
 msgid "Memory usage of docker containers"
-msgstr "Docker容器的内存使用"
+msgstr "Docker 容器的内存使用"
 
 #: src/components/add-system.tsx:153
 msgid "Name"
@@ -471,7 +471,7 @@ msgstr "网络"
 
 #: src/components/routes/system.tsx:465
 msgid "Network traffic of docker containers"
-msgstr "Docker容器的网络流量"
+msgstr "Docker 容器的网络流量"
 
 #: src/components/routes/system.tsx:450
 msgid "Network traffic of public interfaces"
@@ -494,7 +494,7 @@ msgstr "通知"
 
 #: src/components/login/auth-form.tsx:299
 msgid "OAuth 2 / OIDC support"
-msgstr "支持OAuth 2 / OIDC"
+msgstr "支持 OAuth 2 / OIDC"
 
 #: src/components/routes/settings/config-yaml.tsx:61
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
@@ -531,7 +531,7 @@ msgstr "密码必须至少包含 8 个字符。"
 
 #: src/components/login/auth-form.tsx:21
 msgid "Password must be less than 72 bytes."
-msgstr ""
+msgstr "密码必须小于 72 字节。"
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
@@ -622,7 +622,7 @@ msgstr "保存设置"
 
 #: src/components/add-system.tsx:230
 msgid "Save system"
-msgstr ""
+msgstr "保存系统"
 
 #: src/components/navbar.tsx:134
 msgid "Search"
@@ -675,11 +675,11 @@ msgstr "状态"
 
 #: src/components/routes/system.tsx:480
 msgid "Swap space used by the system"
-msgstr "系统使用的SWAP空间"
+msgstr "系统使用的 SWAP 空间"
 
 #: src/components/routes/system.tsx:479
 msgid "Swap Usage"
-msgstr "SWAP使用"
+msgstr "SWAP 使用"
 
 #. System theme
 #: src/components/mode-toggle.tsx:26
@@ -705,7 +705,7 @@ msgstr "表格"
 #. Temperature label in systems table
 #: src/components/systems-table/systems-table.tsx:218
 msgid "Temp"
-msgstr ""
+msgstr "温度"
 
 #: src/components/routes/system.tsx:491
 #: src/lib/utils.ts:333
@@ -851,3 +851,4 @@ msgstr "YAML配置"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "您的用户设置已更新。"
+
