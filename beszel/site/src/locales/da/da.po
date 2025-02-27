@@ -8,7 +8,7 @@ msgstr ""
 "Language: da\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-20 02:40\n"
+"PO-Revision-Date: 2025-02-24 02:49\n"
 "Last-Translator: \n"
 "Language-Team: Danish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -108,27 +108,27 @@ msgstr "Er du sikker på, at du vil slette {name}?"
 msgid "Automatic copy requires a secure context."
 msgstr "Automatisk kopiering kræver en sikker kontekst."
 
-#: src/components/routes/system.tsx:626
+#: src/components/routes/system.tsx:633
 msgid "Average"
 msgstr "Gennemsnitlig"
 
-#: src/components/routes/system.tsx:403
+#: src/components/routes/system.tsx:410
 msgid "Average CPU utilization of containers"
 msgstr "Gennemsnitlig CPU udnyttelse af containere"
 
-#: src/components/alerts/alerts-system.tsx:206
+#: src/components/alerts/alerts-system.tsx:205
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Gennemsnit overstiger <0>{value}{0}</0>"
 
-#: src/components/routes/system.tsx:504
+#: src/components/routes/system.tsx:511
 msgid "Average power consumption of GPUs"
 msgstr "Gennemsnitligt strømforbrug for GPU'er"
 
-#: src/components/routes/system.tsx:392
+#: src/components/routes/system.tsx:399
 msgid "Average system-wide CPU utilization"
 msgstr "Gennemsnitlig systembaseret CPU-udnyttelse"
 
-#: src/components/routes/system.tsx:522
+#: src/components/routes/system.tsx:529
 msgid "Average utilization of {0}"
 msgstr "Gennemsnitlig udnyttelse af {0}"
 
@@ -137,8 +137,8 @@ msgstr "Gennemsnitlig udnyttelse af {0}"
 msgid "Backups"
 msgstr "Sikkerhedskopier"
 
-#: src/components/routes/system.tsx:448
-#: src/lib/utils.ts:326
+#: src/components/routes/system.tsx:455
+#: src/lib/utils.ts:327
 msgid "Bandwidth"
 msgstr "Båndbredde"
 
@@ -234,8 +234,8 @@ msgid "CPU"
 msgstr "CPU"
 
 #: src/components/charts/area-chart.tsx:56
-#: src/components/routes/system.tsx:391
-#: src/lib/utils.ts:308
+#: src/components/routes/system.tsx:398
+#: src/lib/utils.ts:309
 msgid "CPU Usage"
 msgstr "CPU forbrug"
 
@@ -265,35 +265,41 @@ msgstr "Slet"
 msgid "Disk"
 msgstr "Disk"
 
-#: src/components/routes/system.tsx:438
+#: src/components/routes/system.tsx:445
 msgid "Disk I/O"
 msgstr "Disk I/O"
 
 #: src/components/charts/disk-chart.tsx:79
-#: src/components/routes/system.tsx:431
-#: src/lib/utils.ts:320
+#: src/components/routes/system.tsx:438
+#: src/lib/utils.ts:321
 msgid "Disk Usage"
 msgstr "Diskforbrug"
 
-#: src/components/routes/system.tsx:559
+#: src/components/routes/system.tsx:566
 msgid "Disk usage of {extraFsName}"
 msgstr "Diskforbrug af {extraFsName}"
 
-#: src/components/routes/system.tsx:402
+#: src/components/routes/system.tsx:409
 msgid "Docker CPU Usage"
 msgstr "Docker CPU forbrug"
 
-#: src/components/routes/system.tsx:423
+#: src/components/routes/system.tsx:430
 msgid "Docker Memory Usage"
 msgstr "Docker Hukommelsesforbrug"
 
-#: src/components/routes/system.tsx:464
+#: src/components/routes/system.tsx:471
 msgid "Docker Network I/O"
 msgstr "Docker Netværk I/O"
 
 #: src/components/command-palette.tsx:125
 msgid "Documentation"
 msgstr "Dokumentation"
+
+#. Context: System is down
+#: src/components/routes/system.tsx:309
+#: src/lib/utils.ts:306
+msgid "Down"
+msgstr ""
 
 #: src/components/add-system.tsx:124
 #: src/components/systems-table/systems-table.tsx:599
@@ -356,12 +362,12 @@ msgstr "Afsendelse af testnotifikation mislykkedes"
 msgid "Failed to update alert"
 msgstr "Kunne ikke opdatere alarm"
 
-#: src/components/routes/system.tsx:599
+#: src/components/routes/system.tsx:606
 #: src/components/systems-table/systems-table.tsx:326
 msgid "Filter..."
 msgstr "Filter..."
 
-#: src/components/alerts/alerts-system.tsx:227
+#: src/components/alerts/alerts-system.tsx:230
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "For <0>{min}</0> {min, plural, one {minut} other {minutter}}"
 
@@ -375,7 +381,7 @@ msgstr "Glemt adgangskode?"
 msgid "General"
 msgstr "Generelt"
 
-#: src/components/routes/system.tsx:503
+#: src/components/routes/system.tsx:510
 msgid "GPU Power Draw"
 msgstr "Gpu Strøm Træk"
 
@@ -444,7 +450,7 @@ msgid "Manual setup instructions"
 msgstr ""
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:629
+#: src/components/routes/system.tsx:636
 msgid "Max 1 min"
 msgstr "Maks. 1 min"
 
@@ -452,12 +458,12 @@ msgstr "Maks. 1 min"
 msgid "Memory"
 msgstr "Hukommelse"
 
-#: src/components/routes/system.tsx:413
-#: src/lib/utils.ts:314
+#: src/components/routes/system.tsx:420
+#: src/lib/utils.ts:315
 msgid "Memory Usage"
 msgstr "Hukommelsesforbrug"
 
-#: src/components/routes/system.tsx:424
+#: src/components/routes/system.tsx:431
 msgid "Memory usage of docker containers"
 msgstr "Hukommelsesforbrug af dockercontainere"
 
@@ -469,11 +475,11 @@ msgstr "Navn"
 msgid "Net"
 msgstr "Net"
 
-#: src/components/routes/system.tsx:465
+#: src/components/routes/system.tsx:472
 msgid "Network traffic of docker containers"
 msgstr "Netværkstrafik af dockercontainere"
 
-#: src/components/routes/system.tsx:450
+#: src/components/routes/system.tsx:457
 msgid "Network traffic of public interfaces"
 msgstr "Netværkstrafik af offentlige grænseflader"
 
@@ -578,8 +584,8 @@ msgstr "Log venligst ind på din konto"
 msgid "Port"
 msgstr "Port"
 
-#: src/components/routes/system.tsx:414
-#: src/components/routes/system.tsx:530
+#: src/components/routes/system.tsx:421
+#: src/components/routes/system.tsx:537
 msgid "Precise utilization at the recorded time"
 msgstr "Præcis udnyttelse på det registrerede tidspunkt"
 
@@ -673,11 +679,11 @@ msgstr "Sorter efter"
 msgid "Status"
 msgstr "Status"
 
-#: src/components/routes/system.tsx:480
+#: src/components/routes/system.tsx:487
 msgid "Swap space used by the system"
 msgstr "Swap plads brugt af systemet"
 
-#: src/components/routes/system.tsx:479
+#: src/components/routes/system.tsx:486
 msgid "Swap Usage"
 msgstr "Swap forbrug"
 
@@ -687,6 +693,7 @@ msgstr "Swap forbrug"
 #: src/components/systems-table/systems-table.tsx:133
 #: src/components/systems-table/systems-table.tsx:144
 #: src/components/systems-table/systems-table.tsx:518
+#: src/lib/utils.ts:306
 msgid "System"
 msgstr "System"
 
@@ -707,12 +714,12 @@ msgstr "Tabel"
 msgid "Temp"
 msgstr ""
 
-#: src/components/routes/system.tsx:491
-#: src/lib/utils.ts:333
+#: src/components/routes/system.tsx:498
+#: src/lib/utils.ts:334
 msgid "Temperature"
 msgstr "Temperatur"
 
-#: src/components/routes/system.tsx:492
+#: src/components/routes/system.tsx:499
 msgid "Temperatures of system sensors"
 msgstr "Temperaturer i systemsensorer"
 
@@ -740,11 +747,11 @@ msgstr "Log derefter ind på backend og nulstil adgangskoden til din brugerkonto
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Denne handling kan ikke fortrydes. Dette vil permanent slette alle aktuelle elementer for {name} fra databasen."
 
-#: src/components/routes/system.tsx:571
+#: src/components/routes/system.tsx:578
 msgid "Throughput of {extraFsName}"
 msgstr "Gennemløb af {extraFsName}"
 
-#: src/components/routes/system.tsx:439
+#: src/components/routes/system.tsx:446
 msgid "Throughput of root filesystem"
 msgstr "Gennemløb af rodfilsystemet"
 
@@ -752,8 +759,8 @@ msgstr "Gennemløb af rodfilsystemet"
 msgid "To email(s)"
 msgstr "Til email(s)"
 
-#: src/components/routes/system.tsx:366
-#: src/components/routes/system.tsx:379
+#: src/components/routes/system.tsx:373
+#: src/components/routes/system.tsx:386
 msgid "Toggle grid"
 msgstr "Slå gitter til/fra"
 
@@ -761,19 +768,19 @@ msgstr "Slå gitter til/fra"
 msgid "Toggle theme"
 msgstr "Skift tema"
 
-#: src/lib/utils.ts:336
+#: src/lib/utils.ts:337
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Udløser når en sensor overstiger en tærskel"
 
-#: src/lib/utils.ts:329
+#: src/lib/utils.ts:330
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Udløses når de kombinerede op/ned overstiger en tærskel"
 
-#: src/lib/utils.ts:311
+#: src/lib/utils.ts:312
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Udløser når CPU-forbrug overstiger en tærskel"
 
-#: src/lib/utils.ts:317
+#: src/lib/utils.ts:318
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Udløser når hukommelsesforbruget overstiger en tærskel"
 
@@ -781,9 +788,14 @@ msgstr "Udløser når hukommelsesforbruget overstiger en tærskel"
 msgid "Triggers when status switches between up and down"
 msgstr "Udløser når status skifter mellem op og ned"
 
-#: src/lib/utils.ts:323
+#: src/lib/utils.ts:324
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Udløser når brugen af en disk overstiger en tærskel"
+
+#. Context: System is up
+#: src/components/routes/system.tsx:307
+msgid "Up"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:322
 msgid "Updated in real time. Click on a system to view information."
@@ -794,12 +806,12 @@ msgid "Uptime"
 msgstr "Oppetid"
 
 #: src/components/charts/area-chart.tsx:73
-#: src/components/routes/system.tsx:521
-#: src/components/routes/system.tsx:558
+#: src/components/routes/system.tsx:528
+#: src/components/routes/system.tsx:565
 msgid "Usage"
 msgstr "Forbrug"
 
-#: src/components/routes/system.tsx:431
+#: src/components/routes/system.tsx:438
 msgid "Usage of root partition"
 msgstr "Brug af rodpartition"
 
@@ -822,7 +834,7 @@ msgstr "Vis"
 msgid "Visible Fields"
 msgstr "Synlige felter"
 
-#: src/components/routes/system.tsx:663
+#: src/components/routes/system.tsx:670
 msgid "Waiting for enough records to display"
 msgstr "Venter på nok posteringer til at vise"
 

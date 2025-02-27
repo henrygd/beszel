@@ -8,7 +8,7 @@ msgstr ""
 "Language: pt\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-23 04:50\n"
+"PO-Revision-Date: 2025-02-24 02:49\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -108,27 +108,27 @@ msgstr "Tem certeza de que deseja excluir {name}?"
 msgid "Automatic copy requires a secure context."
 msgstr "A cópia automática requer um contexto seguro."
 
-#: src/components/routes/system.tsx:626
+#: src/components/routes/system.tsx:633
 msgid "Average"
 msgstr "Média"
 
-#: src/components/routes/system.tsx:403
+#: src/components/routes/system.tsx:410
 msgid "Average CPU utilization of containers"
 msgstr "Utilização média de CPU dos contêineres"
 
-#: src/components/alerts/alerts-system.tsx:206
+#: src/components/alerts/alerts-system.tsx:205
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "A média excede <0>{value}{0}</0>"
 
-#: src/components/routes/system.tsx:504
+#: src/components/routes/system.tsx:511
 msgid "Average power consumption of GPUs"
 msgstr "Consumo médio de energia pelas GPU's"
 
-#: src/components/routes/system.tsx:392
+#: src/components/routes/system.tsx:399
 msgid "Average system-wide CPU utilization"
 msgstr "Utilização média de CPU em todo o sistema"
 
-#: src/components/routes/system.tsx:522
+#: src/components/routes/system.tsx:529
 msgid "Average utilization of {0}"
 msgstr "Utilização média de {0}"
 
@@ -137,8 +137,8 @@ msgstr "Utilização média de {0}"
 msgid "Backups"
 msgstr "Backups"
 
-#: src/components/routes/system.tsx:448
-#: src/lib/utils.ts:326
+#: src/components/routes/system.tsx:455
+#: src/lib/utils.ts:327
 msgid "Bandwidth"
 msgstr "Largura de Banda"
 
@@ -234,8 +234,8 @@ msgid "CPU"
 msgstr "CPU"
 
 #: src/components/charts/area-chart.tsx:56
-#: src/components/routes/system.tsx:391
-#: src/lib/utils.ts:308
+#: src/components/routes/system.tsx:398
+#: src/lib/utils.ts:309
 msgid "CPU Usage"
 msgstr "Uso de CPU"
 
@@ -265,35 +265,41 @@ msgstr "Excluir"
 msgid "Disk"
 msgstr "Disco"
 
-#: src/components/routes/system.tsx:438
+#: src/components/routes/system.tsx:445
 msgid "Disk I/O"
 msgstr "E/S de Disco"
 
 #: src/components/charts/disk-chart.tsx:79
-#: src/components/routes/system.tsx:431
-#: src/lib/utils.ts:320
+#: src/components/routes/system.tsx:438
+#: src/lib/utils.ts:321
 msgid "Disk Usage"
 msgstr "Uso de Disco"
 
-#: src/components/routes/system.tsx:559
+#: src/components/routes/system.tsx:566
 msgid "Disk usage of {extraFsName}"
 msgstr "Uso de disco de {extraFsName}"
 
-#: src/components/routes/system.tsx:402
+#: src/components/routes/system.tsx:409
 msgid "Docker CPU Usage"
 msgstr "Uso de CPU do Docker"
 
-#: src/components/routes/system.tsx:423
+#: src/components/routes/system.tsx:430
 msgid "Docker Memory Usage"
 msgstr "Uso de Memória do Docker"
 
-#: src/components/routes/system.tsx:464
+#: src/components/routes/system.tsx:471
 msgid "Docker Network I/O"
 msgstr "E/S de Rede do Docker"
 
 #: src/components/command-palette.tsx:125
 msgid "Documentation"
 msgstr "Documentação"
+
+#. Context: System is down
+#: src/components/routes/system.tsx:309
+#: src/lib/utils.ts:306
+msgid "Down"
+msgstr ""
 
 #: src/components/add-system.tsx:124
 #: src/components/systems-table/systems-table.tsx:599
@@ -356,12 +362,12 @@ msgstr "Falha ao enviar notificação de teste"
 msgid "Failed to update alert"
 msgstr "Falha ao atualizar alerta"
 
-#: src/components/routes/system.tsx:599
+#: src/components/routes/system.tsx:606
 #: src/components/systems-table/systems-table.tsx:326
 msgid "Filter..."
 msgstr "Filtrar..."
 
-#: src/components/alerts/alerts-system.tsx:227
+#: src/components/alerts/alerts-system.tsx:230
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "Por <0>{min}</0> {min, plural, one {minuto} other {minutos}}"
 
@@ -375,7 +381,7 @@ msgstr "Esqueceu a senha?"
 msgid "General"
 msgstr "Geral"
 
-#: src/components/routes/system.tsx:503
+#: src/components/routes/system.tsx:510
 msgid "GPU Power Draw"
 msgstr "Consumo de Energia da GPU"
 
@@ -444,7 +450,7 @@ msgid "Manual setup instructions"
 msgstr ""
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:629
+#: src/components/routes/system.tsx:636
 msgid "Max 1 min"
 msgstr "Máx 1 min"
 
@@ -452,12 +458,12 @@ msgstr "Máx 1 min"
 msgid "Memory"
 msgstr "Memória"
 
-#: src/components/routes/system.tsx:413
-#: src/lib/utils.ts:314
+#: src/components/routes/system.tsx:420
+#: src/lib/utils.ts:315
 msgid "Memory Usage"
 msgstr "Uso de Memória"
 
-#: src/components/routes/system.tsx:424
+#: src/components/routes/system.tsx:431
 msgid "Memory usage of docker containers"
 msgstr "Uso de memória dos contêineres Docker"
 
@@ -469,11 +475,11 @@ msgstr "Nome"
 msgid "Net"
 msgstr "Rede"
 
-#: src/components/routes/system.tsx:465
+#: src/components/routes/system.tsx:472
 msgid "Network traffic of docker containers"
 msgstr "Tráfego de rede dos contêineres Docker"
 
-#: src/components/routes/system.tsx:450
+#: src/components/routes/system.tsx:457
 msgid "Network traffic of public interfaces"
 msgstr "Tráfego de rede das interfaces públicas"
 
@@ -578,8 +584,8 @@ msgstr "Por favor, entre na sua conta"
 msgid "Port"
 msgstr "Porta"
 
-#: src/components/routes/system.tsx:414
-#: src/components/routes/system.tsx:530
+#: src/components/routes/system.tsx:421
+#: src/components/routes/system.tsx:537
 msgid "Precise utilization at the recorded time"
 msgstr "Utilização precisa no momento registrado"
 
@@ -673,11 +679,11 @@ msgstr "Ordenar Por"
 msgid "Status"
 msgstr "Status"
 
-#: src/components/routes/system.tsx:480
+#: src/components/routes/system.tsx:487
 msgid "Swap space used by the system"
 msgstr "Espaço de swap usado pelo sistema"
 
-#: src/components/routes/system.tsx:479
+#: src/components/routes/system.tsx:486
 msgid "Swap Usage"
 msgstr "Uso de Swap"
 
@@ -687,6 +693,7 @@ msgstr "Uso de Swap"
 #: src/components/systems-table/systems-table.tsx:133
 #: src/components/systems-table/systems-table.tsx:144
 #: src/components/systems-table/systems-table.tsx:518
+#: src/lib/utils.ts:306
 msgid "System"
 msgstr "Sistema"
 
@@ -707,12 +714,12 @@ msgstr "Tabela"
 msgid "Temp"
 msgstr "Temp"
 
-#: src/components/routes/system.tsx:491
-#: src/lib/utils.ts:333
+#: src/components/routes/system.tsx:498
+#: src/lib/utils.ts:334
 msgid "Temperature"
 msgstr "Temperatura"
 
-#: src/components/routes/system.tsx:492
+#: src/components/routes/system.tsx:499
 msgid "Temperatures of system sensors"
 msgstr "Temperaturas dos sensores do sistema"
 
@@ -740,11 +747,11 @@ msgstr "Em seguida, faça login no backend e redefina a senha da sua conta de us
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Esta ação não pode ser desfeita. Isso excluirá permanentemente todos os registros atuais de {name} do banco de dados."
 
-#: src/components/routes/system.tsx:571
+#: src/components/routes/system.tsx:578
 msgid "Throughput of {extraFsName}"
 msgstr "Taxa de transferência de {extraFsName}"
 
-#: src/components/routes/system.tsx:439
+#: src/components/routes/system.tsx:446
 msgid "Throughput of root filesystem"
 msgstr "Taxa de transferência do sistema de arquivos raiz"
 
@@ -752,8 +759,8 @@ msgstr "Taxa de transferência do sistema de arquivos raiz"
 msgid "To email(s)"
 msgstr "Para email(s)"
 
-#: src/components/routes/system.tsx:366
-#: src/components/routes/system.tsx:379
+#: src/components/routes/system.tsx:373
+#: src/components/routes/system.tsx:386
 msgid "Toggle grid"
 msgstr "Alternar grade"
 
@@ -761,19 +768,19 @@ msgstr "Alternar grade"
 msgid "Toggle theme"
 msgstr "Alternar tema"
 
-#: src/lib/utils.ts:336
+#: src/lib/utils.ts:337
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Dispara quando qualquer sensor excede um limite"
 
-#: src/lib/utils.ts:329
+#: src/lib/utils.ts:330
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Dispara quando a soma de subida/descida excede um limite"
 
-#: src/lib/utils.ts:311
+#: src/lib/utils.ts:312
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Dispara quando o uso de CPU excede um limite"
 
-#: src/lib/utils.ts:317
+#: src/lib/utils.ts:318
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Dispara quando o uso de memória excede um limite"
 
@@ -781,9 +788,14 @@ msgstr "Dispara quando o uso de memória excede um limite"
 msgid "Triggers when status switches between up and down"
 msgstr "Dispara quando o status alterna entre ativo e inativo"
 
-#: src/lib/utils.ts:323
+#: src/lib/utils.ts:324
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Dispara quando o uso de qualquer disco excede um limite"
+
+#. Context: System is up
+#: src/components/routes/system.tsx:307
+msgid "Up"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:322
 msgid "Updated in real time. Click on a system to view information."
@@ -794,12 +806,12 @@ msgid "Uptime"
 msgstr "Tempo de Atividade"
 
 #: src/components/charts/area-chart.tsx:73
-#: src/components/routes/system.tsx:521
-#: src/components/routes/system.tsx:558
+#: src/components/routes/system.tsx:528
+#: src/components/routes/system.tsx:565
 msgid "Usage"
 msgstr "Uso"
 
-#: src/components/routes/system.tsx:431
+#: src/components/routes/system.tsx:438
 msgid "Usage of root partition"
 msgstr "Uso da partição raiz"
 
@@ -822,7 +834,7 @@ msgstr "Visual"
 msgid "Visible Fields"
 msgstr "Campos Visíveis"
 
-#: src/components/routes/system.tsx:663
+#: src/components/routes/system.tsx:670
 msgid "Waiting for enough records to display"
 msgstr "Aguardando registros suficientes para exibir"
 

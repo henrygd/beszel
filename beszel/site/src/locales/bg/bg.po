@@ -8,7 +8,7 @@ msgstr ""
 "Language: bg\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-23 04:50\n"
+"PO-Revision-Date: 2025-02-24 02:49\n"
 "Last-Translator: \n"
 "Language-Team: Bulgarian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -108,27 +108,27 @@ msgstr "Сигурен ли си, че искаш да изтриеш {name}?"
 msgid "Automatic copy requires a secure context."
 msgstr "Автоматичното копиране изисква защитен контескт."
 
-#: src/components/routes/system.tsx:626
+#: src/components/routes/system.tsx:633
 msgid "Average"
 msgstr "Средно"
 
-#: src/components/routes/system.tsx:403
+#: src/components/routes/system.tsx:410
 msgid "Average CPU utilization of containers"
 msgstr "Средно използване на процесора на контейнерите"
 
-#: src/components/alerts/alerts-system.tsx:206
+#: src/components/alerts/alerts-system.tsx:205
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Средната стойност надхвърля <0>{value}{0}</0>"
 
-#: src/components/routes/system.tsx:504
+#: src/components/routes/system.tsx:511
 msgid "Average power consumption of GPUs"
 msgstr "Средна консумация на ток от графични карти"
 
-#: src/components/routes/system.tsx:392
+#: src/components/routes/system.tsx:399
 msgid "Average system-wide CPU utilization"
 msgstr "Средно използване на процесора на цялата система"
 
-#: src/components/routes/system.tsx:522
+#: src/components/routes/system.tsx:529
 msgid "Average utilization of {0}"
 msgstr "Средно използване на {0}"
 
@@ -137,8 +137,8 @@ msgstr "Средно използване на {0}"
 msgid "Backups"
 msgstr "Архиви"
 
-#: src/components/routes/system.tsx:448
-#: src/lib/utils.ts:326
+#: src/components/routes/system.tsx:455
+#: src/lib/utils.ts:327
 msgid "Bandwidth"
 msgstr "Bandwidth на мрежата"
 
@@ -234,8 +234,8 @@ msgid "CPU"
 msgstr "Процесор"
 
 #: src/components/charts/area-chart.tsx:56
-#: src/components/routes/system.tsx:391
-#: src/lib/utils.ts:308
+#: src/components/routes/system.tsx:398
+#: src/lib/utils.ts:309
 msgid "CPU Usage"
 msgstr "Употреба на процесор"
 
@@ -265,35 +265,41 @@ msgstr "Изтрий"
 msgid "Disk"
 msgstr "Диск"
 
-#: src/components/routes/system.tsx:438
+#: src/components/routes/system.tsx:445
 msgid "Disk I/O"
 msgstr "Диск I/O"
 
 #: src/components/charts/disk-chart.tsx:79
-#: src/components/routes/system.tsx:431
-#: src/lib/utils.ts:320
+#: src/components/routes/system.tsx:438
+#: src/lib/utils.ts:321
 msgid "Disk Usage"
 msgstr "Използване на диск"
 
-#: src/components/routes/system.tsx:559
+#: src/components/routes/system.tsx:566
 msgid "Disk usage of {extraFsName}"
 msgstr "Изполване на диск от {extraFsName}"
 
-#: src/components/routes/system.tsx:402
+#: src/components/routes/system.tsx:409
 msgid "Docker CPU Usage"
 msgstr "Използване на процесор от docker"
 
-#: src/components/routes/system.tsx:423
+#: src/components/routes/system.tsx:430
 msgid "Docker Memory Usage"
 msgstr "Изполване на памет от docker"
 
-#: src/components/routes/system.tsx:464
+#: src/components/routes/system.tsx:471
 msgid "Docker Network I/O"
 msgstr "Мрежов I/O използван от docker"
 
 #: src/components/command-palette.tsx:125
 msgid "Documentation"
 msgstr "Документация"
+
+#. Context: System is down
+#: src/components/routes/system.tsx:309
+#: src/lib/utils.ts:306
+msgid "Down"
+msgstr ""
 
 #: src/components/add-system.tsx:124
 #: src/components/systems-table/systems-table.tsx:599
@@ -356,12 +362,12 @@ msgstr "Неуспешно изпрати тестова нотификация"
 msgid "Failed to update alert"
 msgstr "Неуспешно обнови тревога"
 
-#: src/components/routes/system.tsx:599
+#: src/components/routes/system.tsx:606
 #: src/components/systems-table/systems-table.tsx:326
 msgid "Filter..."
 msgstr "Филтрирай..."
 
-#: src/components/alerts/alerts-system.tsx:227
+#: src/components/alerts/alerts-system.tsx:230
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "За <0>{min}</0> {min, plural, one {минута} other {минути}}"
 
@@ -375,7 +381,7 @@ msgstr "Забравена парола?"
 msgid "General"
 msgstr "Общо"
 
-#: src/components/routes/system.tsx:503
+#: src/components/routes/system.tsx:510
 msgid "GPU Power Draw"
 msgstr "Консумация на ток от графична карта"
 
@@ -444,7 +450,7 @@ msgid "Manual setup instructions"
 msgstr ""
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:629
+#: src/components/routes/system.tsx:636
 msgid "Max 1 min"
 msgstr "Максимум 1 минута"
 
@@ -452,12 +458,12 @@ msgstr "Максимум 1 минута"
 msgid "Memory"
 msgstr "Памет"
 
-#: src/components/routes/system.tsx:413
-#: src/lib/utils.ts:314
+#: src/components/routes/system.tsx:420
+#: src/lib/utils.ts:315
 msgid "Memory Usage"
 msgstr "Употреба на паметта"
 
-#: src/components/routes/system.tsx:424
+#: src/components/routes/system.tsx:431
 msgid "Memory usage of docker containers"
 msgstr "Използването на памет от docker контейнерите"
 
@@ -469,11 +475,11 @@ msgstr "Име"
 msgid "Net"
 msgstr "Мрежа"
 
-#: src/components/routes/system.tsx:465
+#: src/components/routes/system.tsx:472
 msgid "Network traffic of docker containers"
 msgstr "Мрежов трафик на docker контейнери"
 
-#: src/components/routes/system.tsx:450
+#: src/components/routes/system.tsx:457
 msgid "Network traffic of public interfaces"
 msgstr "Мрежов трафик на публични интерфейси"
 
@@ -578,8 +584,8 @@ msgstr "Моля влез в акаунта ти"
 msgid "Port"
 msgstr "Порт"
 
-#: src/components/routes/system.tsx:414
-#: src/components/routes/system.tsx:530
+#: src/components/routes/system.tsx:421
+#: src/components/routes/system.tsx:537
 msgid "Precise utilization at the recorded time"
 msgstr "Точно използване в записаното време"
 
@@ -673,11 +679,11 @@ msgstr "Сортиране по"
 msgid "Status"
 msgstr "Статус"
 
-#: src/components/routes/system.tsx:480
+#: src/components/routes/system.tsx:487
 msgid "Swap space used by the system"
 msgstr "Изполван swap от системата"
 
-#: src/components/routes/system.tsx:479
+#: src/components/routes/system.tsx:486
 msgid "Swap Usage"
 msgstr "Използване на swap"
 
@@ -687,6 +693,7 @@ msgstr "Използване на swap"
 #: src/components/systems-table/systems-table.tsx:133
 #: src/components/systems-table/systems-table.tsx:144
 #: src/components/systems-table/systems-table.tsx:518
+#: src/lib/utils.ts:306
 msgid "System"
 msgstr "Система"
 
@@ -707,12 +714,12 @@ msgstr "Таблица"
 msgid "Temp"
 msgstr ""
 
-#: src/components/routes/system.tsx:491
-#: src/lib/utils.ts:333
+#: src/components/routes/system.tsx:498
+#: src/lib/utils.ts:334
 msgid "Temperature"
 msgstr "Температура"
 
-#: src/components/routes/system.tsx:492
+#: src/components/routes/system.tsx:499
 msgid "Temperatures of system sensors"
 msgstr "Температири на системни сензори"
 
@@ -740,11 +747,11 @@ msgstr "След това влез в backend-а и нулирай парола�
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Това действие не може да бъде отменено. Това ще изтрие всички записи за {name} от датабазата."
 
-#: src/components/routes/system.tsx:571
+#: src/components/routes/system.tsx:578
 msgid "Throughput of {extraFsName}"
 msgstr "Пропускателна способност на {extraFsName}"
 
-#: src/components/routes/system.tsx:439
+#: src/components/routes/system.tsx:446
 msgid "Throughput of root filesystem"
 msgstr "Пропускателна способност на root файловата система"
 
@@ -752,8 +759,8 @@ msgstr "Пропускателна способност на root файлова
 msgid "To email(s)"
 msgstr "До имейл(ите)"
 
-#: src/components/routes/system.tsx:366
-#: src/components/routes/system.tsx:379
+#: src/components/routes/system.tsx:373
+#: src/components/routes/system.tsx:386
 msgid "Toggle grid"
 msgstr "Превключване на мрежа"
 
@@ -761,19 +768,19 @@ msgstr "Превключване на мрежа"
 msgid "Toggle theme"
 msgstr "Включи тема"
 
-#: src/lib/utils.ts:336
+#: src/lib/utils.ts:337
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Задейства се, когато някой даден сензор надвиши зададен праг"
 
-#: src/lib/utils.ts:329
+#: src/lib/utils.ts:330
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Задейства се, когато комбинираното качване/сваляне надвиши зададен праг"
 
-#: src/lib/utils.ts:311
+#: src/lib/utils.ts:312
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Задейства се, когато употребата на процесора надвиши зададен праг"
 
-#: src/lib/utils.ts:317
+#: src/lib/utils.ts:318
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Задейства се, когато употребата на паметта надвиши зададен праг"
 
@@ -781,9 +788,14 @@ msgstr "Задейства се, когато употребата на паме
 msgid "Triggers when status switches between up and down"
 msgstr "Задейства се, когато статуса превключва между долу и горе"
 
-#: src/lib/utils.ts:323
+#: src/lib/utils.ts:324
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Задейства се, когато употребата на някой диск надивши зададен праг"
+
+#. Context: System is up
+#: src/components/routes/system.tsx:307
+msgid "Up"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx:322
 msgid "Updated in real time. Click on a system to view information."
@@ -794,12 +806,12 @@ msgid "Uptime"
 msgstr "Време на работа"
 
 #: src/components/charts/area-chart.tsx:73
-#: src/components/routes/system.tsx:521
-#: src/components/routes/system.tsx:558
+#: src/components/routes/system.tsx:528
+#: src/components/routes/system.tsx:565
 msgid "Usage"
 msgstr "Употреба"
 
-#: src/components/routes/system.tsx:431
+#: src/components/routes/system.tsx:438
 msgid "Usage of root partition"
 msgstr "Употреба на root partition-а"
 
@@ -822,7 +834,7 @@ msgstr "Изглед"
 msgid "Visible Fields"
 msgstr "Видими полета"
 
-#: src/components/routes/system.tsx:663
+#: src/components/routes/system.tsx:670
 msgid "Waiting for enough records to display"
 msgstr "Изчаква се за достатъчно записи за показване"
 
