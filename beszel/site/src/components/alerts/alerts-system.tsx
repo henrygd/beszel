@@ -160,7 +160,7 @@ export function SystemAlertGlobal({
 function AlertContent({ data }: { data: AlertData }) {
 	const { key } = data
 
-	const singleDescription = data.alert?.singleDesc
+	const singleDescription = data.alert.singleDesc?.()
 
 	const [checked, setChecked] = useState(data.checked || false)
 	const [min, setMin] = useState(data.min || 10)

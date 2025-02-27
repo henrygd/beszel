@@ -202,5 +202,5 @@ interface AlertInfo {
 	desc: () => string
 	max?: number
 	/** Single value description (when there's only one value, like status) */
-	singleDesc?: string
+	singleDesc?: () => string
 }
