@@ -8,7 +8,7 @@ msgstr ""
 "Language: uk\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-20 02:40\n"
+"PO-Revision-Date: 2025-02-24 16:20\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -298,7 +298,7 @@ msgstr "Документація"
 #: src/components/add-system.tsx:124
 #: src/components/systems-table/systems-table.tsx:599
 msgid "Edit"
-msgstr ""
+msgstr "Редагувати"
 
 #: src/components/login/auth-form.tsx:173
 #: src/components/login/forgot-pass-form.tsx:53
@@ -441,7 +441,7 @@ msgstr "Керуйте параметрами відображення та сп
 
 #: src/components/add-system.tsx:225
 msgid "Manual setup instructions"
-msgstr ""
+msgstr "Інструкції з ручного налаштування"
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx:629
@@ -531,7 +531,7 @@ msgstr "Пароль має містити щонайменше 8 символі
 
 #: src/components/login/auth-form.tsx:21
 msgid "Password must be less than 72 bytes."
-msgstr ""
+msgstr "Пароль не повинен перевищувати 72 байти."
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
@@ -622,7 +622,7 @@ msgstr "Зберегти налаштування"
 
 #: src/components/add-system.tsx:230
 msgid "Save system"
-msgstr ""
+msgstr "Зберегти систему"
 
 #: src/components/navbar.tsx:134
 msgid "Search"
@@ -705,7 +705,7 @@ msgstr "Таблиця"
 #. Temperature label in systems table
 #: src/components/systems-table/systems-table.tsx:218
 msgid "Temp"
-msgstr ""
+msgstr "Температура"
 
 #: src/components/routes/system.tsx:491
 #: src/lib/utils.ts:333
@@ -851,3 +851,4 @@ msgstr "Конфігурація YAML"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "Ваші налаштування користувача були оновлені."
+
