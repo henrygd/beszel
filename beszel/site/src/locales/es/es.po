@@ -8,7 +8,7 @@ msgstr ""
 "Language: es\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-28 16:07\n"
+"PO-Revision-Date: 2025-02-28 17:20\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -304,7 +304,7 @@ msgstr "Abajo"
 #: src/components/add-system.tsx:124
 #: src/components/systems-table/systems-table.tsx:599
 msgid "Edit"
-msgstr ""
+msgstr "Editar"
 
 #: src/components/login/auth-form.tsx:173
 #: src/components/login/forgot-pass-form.tsx:53
@@ -383,7 +383,7 @@ msgstr "General"
 
 #: src/components/routes/system.tsx:510
 msgid "GPU Power Draw"
-msgstr ""
+msgstr "Consumo de energía de la GPU"
 
 #: src/components/systems-table/systems-table.tsx:353
 msgid "Grid"
