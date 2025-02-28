@@ -39,7 +39,7 @@ func NewRecordManager(app core.App) *RecordManager {
 }
 
 // Create longer records by averaging shorter records
-func (rm *RecordManager) CreateLongerRecords(collections []*core.Collection) {
+func (rm *RecordManager) CreateLongerRecords() {
 	// start := time.Now()
 	longerRecordData := []LongerRecordData{
 		{
@@ -70,14 +70,29 @@ func (rm *RecordManager) CreateLongerRecords(collections []*core.Collection) {
 	}
 	// wrap the operations in a transaction
 	rm.app.RunInTransaction(func(txApp core.App) error {
-		activeSystems, err := txApp.FindAllRecords("systems", dbx.NewExp("status = 'up'"))
+		var err error
+		collections := [2]*core.Collection{}
+		collections[0], err = txApp.FindCachedCollectionByNameOrId("system_stats")
 		if err != nil {
-			log.Println("failed to get active systems", "err", err.Error())
 			return err
 		}
+		collections[1], err = txApp.FindCachedCollectionByNameOrId("container_stats")
+		if err != nil {
+			return err
+		}
+		// activeSystems, err := txApp.FindAllRecords("systems", dbx.NewExp("status = 'up'"))
+		// var systems []string
+		// activeSystems, err := txApp.FindAllRecords("systems", dbx.NewExp("status = 'up'"))
+		// var systems []string
+		var systems []struct {
+			Id string `db:"id"`
+		}
+
+		txApp.DB().NewQuery("SELECT id FROM systems WHERE status='up'").All(&systems)
+		log.Println("found", len(systems), "active systems", systems)
 
 		// loop through all active systems, time periods, and collections
-		for _, system := range activeSystems {
+		for _, system := range systems {
 			// log.Println("processing system", system.GetString("name"))
 			for i := range longerRecordData {
 				recordData := longerRecordData[i]
@@ -97,7 +112,7 @@ func (rm *RecordManager) CreateLongerRecords(collections []*core.Collection) {
 						)
 						// continue if longer record exists
 						if err == nil || lastLongerRecord != nil {
-							// log.Println("longer record found. continuing")
+							log.Println("longer record found. continuing")
 							continue
 						}
 					}
@@ -119,7 +134,7 @@ func (rm *RecordManager) CreateLongerRecords(collections []*core.Collection) {
 
 					// continue if not enough shorter records
 					if err != nil || len(stats) < recordData.minShorterRecords {
-						// log.Println("not enough shorter records. continue.", len(allShorterRecords), recordData.expectedShorterRecords)
+						log.Println("not enough shorter records. continue.", len(stats), recordData.minShorterRecords)
 						continue
 					}
 					// average the shorter records and create longer record
@@ -152,10 +167,11 @@ func (rm *RecordManager) AverageSystemStats(records RecordStats) system.Stats {
 	// use different counter for temps in case some records don't have them
 	tempCount := float64(0)
 
-	var stats system.Stats
+	// var stats system.Stats
+	stats := &system.Stats{}
 	for i := range records {
-		stats = system.Stats{} // Zero the struct before unmarshalling
-		json.Unmarshal(records[i].Stats, &stats)
+		*stats = system.Stats{} // Zero the struct before unmarshalling
+		json.Unmarshal(records[i].Stats, stats)
 		sum.Cpu += stats.Cpu
 		sum.Mem += stats.Mem
 		sum.MemUsed += stats.MemUsed
@@ -229,7 +245,7 @@ func (rm *RecordManager) AverageSystemStats(records RecordStats) system.Stats {
 		}
 	}
 
-	stats = system.Stats{
+	*stats = system.Stats{
 		Cpu:            twoDecimals(sum.Cpu / count),
 		Mem:            twoDecimals(sum.Mem / count),
 		MemUsed:        twoDecimals(sum.MemUsed / count),
@@ -288,15 +304,15 @@ func (rm *RecordManager) AverageSystemStats(records RecordStats) system.Stats {
 		}
 	}
 
-	return stats
+	return *stats
 }
 
 // Calculate the average stats of a list of container_stats records
 func (rm *RecordManager) AverageContainerStats(records RecordStats) []container.Stats {
 	sums := make(map[string]*container.Stats)
 	count := float64(len(records))
-
-	var containerStats []container.Stats
+	// preallocate to avoid growing
+	containerStats := make([]container.Stats, 0, 50)
 	for i := range records {
 		// Reset the slice length to 0, but keep the capacity
 		containerStats = containerStats[:0]

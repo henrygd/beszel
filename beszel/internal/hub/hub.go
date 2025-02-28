@@ -14,7 +14,6 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
-	"net"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -22,7 +21,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/goccy/go-json"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
@@ -33,19 +31,18 @@ import (
 
 type Hub struct {
 	*pocketbase.PocketBase
-	sshClientConfig *ssh.ClientConfig
-	pubKey          string
-	am              *alerts.AlertManager
-	um              *users.UserManager
-	rm              *records.RecordManager
-	systemStats     *core.Collection
-	containerStats  *core.Collection
-	appURL          string
+	// sshClientConfig *ssh.ClientConfig
+	pubKey string
+	am     *alerts.AlertManager
+	um     *users.UserManager
+	rm     *records.RecordManager
+	sm     *SystemManager
+	appURL string
 }
 
 // NewHub creates a new Hub instance with default configuration
 func NewHub() *Hub {
-	var hub Hub
+	hub := &Hub{}
 	hub.PocketBase = pocketbase.NewWithConfig(pocketbase.Config{
 		DefaultDataDir: beszel.AppName + "_data",
 	})
@@ -63,8 +60,9 @@ func NewHub() *Hub {
 	hub.am = alerts.NewAlertManager(hub)
 	hub.um = users.NewUserManager(hub)
 	hub.rm = records.NewRecordManager(hub)
+	hub.sm = NewSystemManager(hub)
 	hub.appURL, _ = GetEnv("APP_URL")
-	return &hub
+	return hub
 }
 
 // GetEnv retrieves an environment variable with a "BESZEL_HUB_" prefix, or falls back to the unprefixed key.
@@ -88,11 +86,6 @@ func (h *Hub) Run() {
 
 	// initial setup
 	h.OnServe().BindFunc(func(se *core.ServeEvent) error {
-		// create ssh client config
-		err := h.createSSHClientConfig()
-		if err != nil {
-			log.Fatal(err)
-		}
 		// set general settings
 		settings := h.Settings()
 		// batch requests (for global alerts)
@@ -126,6 +119,8 @@ func (h *Hub) Run() {
 		}
 		// sync systems with config
 		h.syncSystemsWithConfig()
+		// start system updates
+		h.sm.Initialize()
 		return se.Next()
 	})
 
@@ -175,19 +170,13 @@ func (h *Hub) Run() {
 		return se.Next()
 	})
 
-	// set up scheduled jobs / ticker for system updates
+	// set up scheduled jobs
 	h.OnServe().BindFunc(func(se *core.ServeEvent) error {
-		// 15 second ticker for system updates
-		go h.startSystemUpdateTicker()
 		// set up cron jobs
 		// delete old records once every hour
 		h.Cron().MustAdd("delete old records", "8 * * * *", h.rm.DeleteOldRecords)
 		// create longer records every 10 minutes
-		h.Cron().MustAdd("create longer records", "*/10 * * * *", func() {
-			if systemStats, containerStats, err := h.getCollections(); err == nil {
-				h.rm.CreateLongerRecords([]*core.Collection{systemStats, containerStats})
-			}
-		})
+		h.Cron().MustAdd("create longer records", "*/10 * * * *", h.rm.CreateLongerRecords)
 		return se.Next()
 	})
 
@@ -221,14 +210,16 @@ func (h *Hub) Run() {
 	h.OnRecordCreate("systems").BindFunc(func(e *core.RecordEvent) error {
 		e.Record.Set("info", system.Info{})
 		e.Record.Set("status", "pending")
+		// add to update manager
+
 		return e.Next()
 	})
 
 	// immediately create connection for new systems
-	h.OnRecordAfterCreateSuccess("systems").BindFunc(func(e *core.RecordEvent) error {
-		go h.updateSystem(e.Record)
-		return e.Next()
-	})
+	// h.OnRecordAfterCreateSuccess("systems").BindFunc(func(e *core.RecordEvent) error {
+	// 	go h.updateSystem(e.Record)
+	// 	return e.Next()
+	// })
 
 	// handle default values for user / user_settings creation
 	h.OnRecordCreate("users").BindFunc(h.um.InitializeUserRole)
@@ -236,35 +227,42 @@ func (h *Hub) Run() {
 
 	// empty info for systems that are paused
 	h.OnRecordUpdate("systems").BindFunc(func(e *core.RecordEvent) error {
-		if e.Record.GetString("status") == "paused" {
+		status := e.Record.GetString("status")
+		if status == "paused" {
 			e.Record.Set("info", system.Info{})
+			h.sm.PauseSystem(e.Record.Id)
+		} else if status == "pending" {
+			// remove from update manager
+			// add to update manager
+			// or maybe add method to refresh ssh client (above should be fine i think)
+			h.sm.Upsert(e.Record)
 		}
 		return e.Next()
 	})
 
 	// do things after a systems record is updated
-	h.OnRecordAfterUpdateSuccess("systems").BindFunc(func(e *core.RecordEvent) error {
-		newRecord := e.Record.Fresh()
-		oldRecord := newRecord.Original()
-		newStatus := newRecord.GetString("status")
+	// h.OnRecordAfterUpdateSuccess("systems").BindFunc(func(e *core.RecordEvent) error {
+	// 	newRecord := e.Record.Fresh()
+	// 	oldRecord := newRecord.Original()
+	// 	newStatus := newRecord.GetString("status")
 
-		// if system is not up and connection exists, remove it
-		if newStatus != "up" {
-			h.deleteSystemConnection(newRecord)
-		}
+	// 	// if system is not up and connection exists, remove it
+	// 	if newStatus != "up" {
+	// 		// h.deleteSystemConnection(newRecord)
+	// 	}
 
-		// if system is set to pending (unpause), try to connect immediately
-		if newStatus == "pending" {
-			go h.updateSystem(newRecord)
-		} else {
-			h.am.HandleStatusAlerts(newStatus, oldRecord)
-		}
-		return e.Next()
-	})
+	// 	// if system is set to pending (unpause), try to connect immediately
+	// 	if newStatus == "pending" {
+	// 		// go h.updateSystem(newRecord)
+	// 	} else {
+	// 		h.am.HandleStatusAlerts(newStatus, oldRecord)
+	// 	}
+	// 	return e.Next()
+	// })
 
 	// if system is deleted, close connection
 	h.OnRecordAfterDeleteSuccess("systems").BindFunc(func(e *core.RecordEvent) error {
-		h.deleteSystemConnection(e.Record)
+		// h.deleteSystemConnection(e.Record)
 		return e.Next()
 	})
 
@@ -273,44 +271,44 @@ func (h *Hub) Run() {
 	}
 }
 
-func (h *Hub) startSystemUpdateTicker() {
-	c := time.Tick(15 * time.Second)
-	for range c {
-		h.updateSystems()
-	}
-}
+// func (h *Hub) startSystemUpdateTicker() {
+// 	c := time.Tick(15 * time.Second)
+// 	for range c {
+// 		h.updateSystems()
+// 	}
+// }
 
-func (h *Hub) updateSystems() {
-	records, err := h.FindRecordsByFilter(
-		"2hz5ncl8tizk5nx",    // systems collection
-		"status != 'paused'", // filter
-		"updated",            // sort
-		-1,                   // limit
-		0,                    // offset
-	)
-	// log.Println("records", len(records))
-	if err != nil || len(records) == 0 {
-		// h.Logger().Error("Failed to query systems")
-		return
-	}
-	fiftySecondsAgo := time.Now().UTC().Add(-50 * time.Second)
-	batchSize := len(records)/4 + 1
-	done := 0
-	for _, record := range records {
-		// break if batch size reached or if the system was updated less than 50 seconds ago
-		if done >= batchSize || record.GetDateTime("updated").Time().After(fiftySecondsAgo) {
-			break
-		}
-		// don't increment for down systems to avoid them jamming the queue
-		// because they're always first when sorted by least recently updated
-		if record.GetString("status") != "down" {
-			done++
-		}
-		go h.updateSystem(record)
-	}
-}
+// func (h *Hub) updateSystems() {
+// 	records, err := h.FindRecordsByFilter(
+// 		"2hz5ncl8tizk5nx",    // systems collection
+// 		"status != 'paused'", // filter
+// 		"updated",            // sort
+// 		-1,                   // limit
+// 		0,                    // offset
+// 	)
+// 	// log.Println("records", len(records))
+// 	if err != nil || len(records) == 0 {
+// 		// h.Logger().Error("Failed to query systems")
+// 		return
+// 	}
+// 	fiftySecondsAgo := time.Now().UTC().Add(-50 * time.Second)
+// 	batchSize := len(records)/4 + 1
+// 	done := 0
+// 	for _, record := range records {
+// 		// break if batch size reached or if the system was updated less than 50 seconds ago
+// 		if done >= batchSize || record.GetDateTime("updated").Time().After(fiftySecondsAgo) {
+// 			break
+// 		}
+// 		// don't increment for down systems to avoid them jamming the queue
+// 		// because they're always first when sorted by least recently updated
+// 		if record.GetString("status") != "down" {
+// 			done++
+// 		}
+// 		go h.updateSystem(record)
+// 	}
+// }
 
-func (h *Hub) updateSystem(record *core.Record) {
+/* func (h *Hub) updateSystem(record *core.Record) {
 	var client *ssh.Client
 	var err error
 
@@ -351,141 +349,128 @@ func (h *Hub) updateSystem(record *core.Record) {
 		h.Logger().Error("Failed to update record: ", "err", err.Error())
 	}
 	// add system_stats and container_stats records
-	if systemStats, containerStats, err := h.getCollections(); err != nil {
-		h.Logger().Error("Failed to get collections: ", "err", err.Error())
-	} else {
-		// add new system_stats record
-		systemStatsRecord := core.NewRecord(systemStats)
-		systemStatsRecord.Set("system", record.Id)
-		systemStatsRecord.Set("stats", systemData.Stats)
-		systemStatsRecord.Set("type", "1m")
-		if err := h.SaveNoValidate(systemStatsRecord); err != nil {
+	systemStats, err := h.FindCachedCollectionByNameOrId("system_stats")
+	if err != nil {
+		h.Logger().Error("Failed to get collection", "err", err.Error())
+	}
+	systemStatsRecord := core.NewRecord(systemStats)
+	systemStatsRecord.Set("system", record.Id)
+	systemStatsRecord.Set("stats", systemData.Stats)
+	systemStatsRecord.Set("type", "1m")
+	if err := h.SaveNoValidate(systemStatsRecord); err != nil {
+		h.Logger().Error("Failed to save record: ", "err", err.Error())
+	}
+	// add new container_stats record
+	if len(systemData.Containers) > 0 {
+		containerStats, err := h.FindCachedCollectionByNameOrId("container_stats")
+		if err != nil {
+			h.Logger().Error("Failed to get collection", "err", err.Error())
+		}
+		containerStatsRecord := core.NewRecord(containerStats)
+		containerStatsRecord.Set("system", record.Id)
+		containerStatsRecord.Set("stats", systemData.Containers)
+		containerStatsRecord.Set("type", "1m")
+		if err := h.SaveNoValidate(containerStatsRecord); err != nil {
 			h.Logger().Error("Failed to save record: ", "err", err.Error())
 		}
-		// add new container_stats record
-		if len(systemData.Containers) > 0 {
-			containerStatsRecord := core.NewRecord(containerStats)
-			containerStatsRecord.Set("system", record.Id)
-			containerStatsRecord.Set("stats", systemData.Containers)
-			containerStatsRecord.Set("type", "1m")
-			if err := h.SaveNoValidate(containerStatsRecord); err != nil {
-				h.Logger().Error("Failed to save record: ", "err", err.Error())
-			}
-		}
+		// }
 	}
 
 	// system info alerts
 	if err := h.am.HandleSystemAlerts(record, systemData.Info, systemData.Stats.Temperatures, systemData.Stats.ExtraFs); err != nil {
 		h.Logger().Error("System alerts error", "err", err.Error())
 	}
-}
+} */
 
 // return system_stats and container_stats collections
-func (h *Hub) getCollections() (*core.Collection, *core.Collection, error) {
-	if h.systemStats == nil {
-		systemStats, err := h.FindCollectionByNameOrId("system_stats")
-		if err != nil {
-			return nil, nil, err
-		}
-		h.systemStats = systemStats
-	}
-	if h.containerStats == nil {
-		containerStats, err := h.FindCollectionByNameOrId("container_stats")
-		if err != nil {
-			return nil, nil, err
-		}
-		h.containerStats = containerStats
-	}
-	return h.systemStats, h.containerStats, nil
-}
 
 // set system to specified status and save record
-func (h *Hub) updateSystemStatus(record *core.Record, status string) {
-	if record.Fresh().GetString("status") != status {
-		record.Set("status", status)
-		if err := h.SaveNoValidate(record); err != nil {
-			h.Logger().Error("Failed to update record: ", "err", err.Error())
-		}
-	}
-}
+// func (h *Hub) updateSystemStatus(record *core.Record, status string) {
+// 	if record.Fresh().GetString("status") != status {
+// 		record.Set("status", status)
+// 		if err := h.SaveNoValidate(record); err != nil {
+// 			h.Logger().Error("Failed to update record: ", "err", err.Error())
+// 		}
+// 	}
+// }
 
 // delete system connection from map and close connection
-func (h *Hub) deleteSystemConnection(record *core.Record) {
-	if client, ok := h.Store().GetOk(record.Id); ok {
-		if sshClient := client.(*ssh.Client); sshClient != nil {
-			sshClient.Close()
-		}
-		h.Store().Remove(record.Id)
-	}
-}
+// func (h *Hub) deleteSystemConnection(record *core.Record) {
+// 	if client, ok := h.Store().GetOk(record.Id); ok {
+// 		if sshClient := client.(*ssh.Client); sshClient != nil {
+// 			sshClient.Close()
+// 		}
+// 		h.Store().Remove(record.Id)
+// 	}
+// }
 
-func (h *Hub) createSystemConnection(record *core.Record) (*ssh.Client, error) {
-	network := "tcp"
-	host := record.GetString("host")
-	if strings.HasPrefix(host, "/") {
-		network = "unix"
-	} else {
-		host = net.JoinHostPort(host, record.GetString("port"))
-	}
-	client, err := ssh.Dial(network, host, h.sshClientConfig)
-	if err != nil {
-		return nil, err
-	}
-	return client, nil
-}
+// func (h *Hub) createSystemConnection(record *core.Record) (*ssh.Client, error) {
+// 	network := "tcp"
+// 	host := record.GetString("host")
+// 	if strings.HasPrefix(host, "/") {
+// 		network = "unix"
+// 	} else {
+// 		host = net.JoinHostPort(host, record.GetString("port"))
+// 	}
+// 	client, err := ssh.Dial(network, host, h.sshClientConfig)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	return client, nil
+// }
 
-func (h *Hub) createSSHClientConfig() error {
-	key, err := h.getSSHKey()
-	if err != nil {
-		h.Logger().Error("Failed to get SSH key: ", "err", err.Error())
-		return err
-	}
+// func (h *Hub) createSSHClientConfig() error {
+// 	key, err := h.GetSSHKey()
+// 	if err != nil {
+// 		h.Logger().Error("Failed to get SSH key: ", "err", err.Error())
+// 		return err
+// 	}
 
-	// Create the Signer for this private key.
-	signer, err := ssh.ParsePrivateKey(key)
-	if err != nil {
-		return err
-	}
+// 	// Create the Signer for this private key.
+// 	signer, err := ssh.ParsePrivateKey(key)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	h.sshClientConfig = &ssh.ClientConfig{
-		User: "u",
-		Auth: []ssh.AuthMethod{
-			ssh.PublicKeys(signer),
-		},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
-		Timeout:         4 * time.Second,
-	}
-	return nil
-}
+// 	h.sshClientConfig = &ssh.ClientConfig{
+// 		User: "u",
+// 		Auth: []ssh.AuthMethod{
+// 			ssh.PublicKeys(signer),
+// 		},
+// 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
+// 		Timeout:         4 * time.Second,
+// 	}
+// 	return nil
+// }
 
-// Fetches system stats from the agent and decodes the json data into the provided struct
-func (h *Hub) requestJsonFromAgent(client *ssh.Client, systemData *system.CombinedData) error {
-	session, err := newSessionWithTimeout(client, 4*time.Second)
-	if err != nil {
-		return fmt.Errorf("bad client")
-	}
-	defer session.Close()
+// // Fetches system stats from the agent and decodes the json data into the provided struct
+// func (h *Hub) requestJsonFromAgent(client *ssh.Client, systemData *system.CombinedData) error {
+// 	session, err := newSessionWithTimeout(client, 4*time.Second)
+// 	if err != nil {
+// 		return fmt.Errorf("bad client")
+// 	}
+// 	defer session.Close()
 
-	stdout, err := session.StdoutPipe()
-	if err != nil {
-		return err
-	}
+// 	stdout, err := session.StdoutPipe()
+// 	if err != nil {
+// 		return err
+// 	}
 
-	if err := session.Shell(); err != nil {
-		return err
-	}
+// 	if err := session.Shell(); err != nil {
+// 		return err
+// 	}
 
-	if err := json.NewDecoder(stdout).Decode(systemData); err != nil {
-		return err
-	}
+// 	if err := json.NewDecoder(stdout).Decode(systemData); err != nil {
+// 		return err
+// 	}
 
-	// wait for the session to complete
-	if err := session.Wait(); err != nil {
-		return err
-	}
+// 	// wait for the session to complete
+// 	if err := session.Wait(); err != nil {
+// 		return err
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 // Adds timeout to SSH session creation to avoid hanging in case of network issues
 func newSessionWithTimeout(client *ssh.Client, timeout time.Duration) (*ssh.Session, error) {
@@ -513,7 +498,7 @@ func newSessionWithTimeout(client *ssh.Client, timeout time.Duration) (*ssh.Sess
 	}
 }
 
-func (h *Hub) getSSHKey() ([]byte, error) {
+func (h *Hub) GetSSHKey() ([]byte, error) {
 	dataDir := h.DataDir()
 	// check if the key pair already exists
 	existingKey, err := os.ReadFile(dataDir + "/id_ed25519")
