@@ -15,9 +15,27 @@ jobs:
           - image: henrygd/beszel
             context: ./beszel
             dockerfile: ./beszel/dockerfile_Hub
+            registry: docker.io
+            username_secret: DOCKERHUB_USERNAME
+            password_secret: DOCKERHUB_TOKEN
           - image: henrygd/beszel-agent
             context: ./beszel
             dockerfile: ./beszel/dockerfile_Agent
+            registry: docker.io
+            username_secret: DOCKERHUB_USERNAME
+            password_secret: DOCKERHUB_TOKEN
+          - image: ghcr.io/${{ github.repository }}/beszel
+            context: ./beszel
+            dockerfile: ./beszel/dockerfile_Hub
+            registry: ghcr.io
+            username: ${{ github.actor }}
+            password_secret: GITHUB_TOKEN
+          - image: ghcr.io/${{ github.repository }}/beszel-agent
+            context: ./beszel
+            dockerfile: ./beszel/dockerfile_Agent
+            registry: ghcr.io
+            username: ${{ github.actor }}
+            password_secret: GITHUB_TOKEN
     permissions:
       contents: read
       packages: write
@@ -57,8 +75,9 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ matrix.username || secrets[matrix.username_secret] }}
+          password: ${{ secrets[matrix.password_secret] }}
+          registry: ${{ matrix.registry }}
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action

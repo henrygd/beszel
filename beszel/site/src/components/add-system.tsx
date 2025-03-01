@@ -19,7 +19,7 @@ import { i18n } from "@lingui/core"
 import { t, Trans } from "@lingui/macro"
 import { useStore } from "@nanostores/react"
 import { ChevronDownIcon, Copy, PlusIcon } from "lucide-react"
-import { memo, MutableRefObject, useRef, useState } from "react"
+import { memo, useRef, useState } from "react"
 import { basePath, navigate } from "./router"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import { SystemRecord } from "@/types"
@@ -49,19 +49,8 @@ export function AddSystemButton({ className }: { className?: string }) {
 	)
 }
 
-/**
- * SystemDialog component for adding or editing a system.
- * @param {Object} props - The component props.
- * @param {function} props.setOpen - Function to set the open state of the dialog.
- * @param {SystemRecord} [props.system] - Optional system record for editing an existing system.
- */
-export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean) => void; system?: SystemRecord }) => {
-	const port = useRef() as MutableRefObject<HTMLInputElement>
-	const publicKey = useStore($publicKey)
-
-	function copyDockerCompose(port: string) {
-		copyToClipboard(`services:
-  version: "3"
+function copyDockerCompose(port = "45876", publicKey: string) {
+	copyToClipboard(`services:
   beszel-agent:
     image: "henrygd/beszel-agent"
     container_name: "beszel-agent"
@@ -74,22 +63,34 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
     environment:
       PORT: ${port}
       KEY: "${publicKey}"`)
-	}
+}
 
-	function copyDockerRun(port: string) {
-		copyToClipboard(
-			`docker run -d --name beszel-agent --network host --restart unless-stopped -v /var/run/docker.sock:/var/run/docker.sock:ro -e KEY="${publicKey}" -e PORT=${port} henrygd/beszel-agent:latest`
-		)
-	}
+function copyDockerRun(port = "45876", publicKey: string) {
+	copyToClipboard(
+		`docker run -d --name beszel-agent --network host --restart unless-stopped -v /var/run/docker.sock:/var/run/docker.sock:ro -e KEY="${publicKey}" -e PORT=${port} henrygd/beszel-agent:latest`
+	)
+}
 
-	function copyInstallCommand(port: string) {
-		let cmd = `curl -sL https://raw.githubusercontent.com/henrygd/beszel/main/supplemental/scripts/install-agent.sh -o install-agent.sh && chmod +x install-agent.sh && ./install-agent.sh -p ${port} -k "${publicKey}"`
-		// add china mirrors flag if zh-CN
-		if ((i18n.locale + navigator.language).includes("zh-CN")) {
-			cmd += ` --china-mirrors`
-		}
-		copyToClipboard(cmd)
+function copyInstallCommand(port = "45876", publicKey: string) {
+	let cmd = `curl -sL https://raw.githubusercontent.com/henrygd/beszel/main/supplemental/scripts/install-agent.sh -o install-agent.sh && chmod +x install-agent.sh && ./install-agent.sh -p ${port} -k "${publicKey}"`
+	// add china mirrors flag if zh-CN
+	if ((i18n.locale + navigator.language).includes("zh-CN")) {
+		cmd += ` --china-mirrors`
 	}
+	copyToClipboard(cmd)
+}
+
+/**
+ * SystemDialog component for adding or editing a system.
+ * @param {Object} props - The component props.
+ * @param {function} props.setOpen - Function to set the open state of the dialog.
+ * @param {SystemRecord} [props.system] - Optional system record for editing an existing system.
+ */
+export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean) => void; system?: SystemRecord }) => {
+	const publicKey = useStore($publicKey)
+	const port = useRef<HTMLInputElement>(null)
+	const [hostValue, setHostValue] = useState(system?.host ?? "")
+	const isUnixSocket = hostValue.startsWith("/")
 
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault()
@@ -111,7 +112,12 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 	}
 
 	return (
-		<DialogContent className="w-[90%] sm:w-auto sm:ns-dialog max-w-full rounded-lg">
+		<DialogContent
+			className="w-[90%] sm:w-auto sm:ns-dialog max-w-full rounded-lg"
+			onCloseAutoFocus={() => {
+				setHostValue(system?.host ?? "")
+			}}
+		>
 			<Tabs defaultValue="docker">
 				<DialogHeader>
 					<DialogTitle className="mb-2">
@@ -150,11 +156,26 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 						<Label htmlFor="host" className="xs:text-end">
 							<Trans>Host / IP</Trans>
 						</Label>
-						<Input id="host" name="host" defaultValue={system?.host} required />
-						<Label htmlFor="port" className="xs:text-end">
+						<Input
+							id="host"
+							name="host"
+							value={hostValue}
+							required
+							onChange={(e) => {
+								setHostValue(e.target.value)
+							}}
+						/>
+						<Label htmlFor="port" className={cn("xs:text-end", isUnixSocket && "hidden")}>
 							<Trans>Port</Trans>
 						</Label>
-						<Input ref={port} name="port" id="port" defaultValue={system?.port || "45876"} required />
+						<Input
+							ref={port}
+							name="port"
+							id="port"
+							defaultValue={system?.port || "45876"}
+							required={!isUnixSocket}
+							className={cn(isUnixSocket && "hidden")}
+						/>
 						<Label htmlFor="pkey" className="xs:text-end whitespace-pre">
 							<Trans comment="Use 'Key' if your language requires many more characters">Public Key</Trans>
 						</Label>
@@ -189,35 +210,21 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 					<DialogFooter className="flex justify-end gap-x-2 gap-y-3 flex-col mt-5">
 						{/* Docker */}
 						<TabsContent value="docker" className="contents">
-							<div className="flex gap-0 rounded-lg">
-								<Button
-									type="button"
-									variant="outline"
-									onClick={() => copyDockerCompose(port.current.value)}
-									className="rounded-e-none dark:border-e-0 grow"
-								>
-									<Trans>Copy</Trans> docker compose
-								</Button>
-								<div className="w-px h-full bg-muted"></div>
-								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
-										<Button variant="outline" className={"px-2 rounded-s-none border-s-0"}>
-											<ChevronDownIcon />
-										</Button>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent align="end">
-										<DropdownMenuItem onClick={() => copyDockerRun(port.current.value)}>
-											<Trans>Copy</Trans> docker run
-										</DropdownMenuItem>
-									</DropdownMenuContent>
-								</DropdownMenu>
-							</div>
+							<CopyButton
+								text={t`Copy` + " docker compose"}
+								onClick={() => copyDockerCompose(isUnixSocket ? hostValue : port.current?.value, publicKey)}
+								dropdownText={t`Copy` + " docker run"}
+								dropdownOnClick={() => copyDockerRun(isUnixSocket ? hostValue : port.current?.value, publicKey)}
+							/>
 						</TabsContent>
 						{/* Binary */}
 						<TabsContent value="binary" className="contents">
-							<Button type="button" variant="outline" onClick={() => copyInstallCommand(port.current.value)}>
-								<Trans>Copy Linux command</Trans>
-							</Button>
+							<CopyButton
+								text={t`Copy Linux command`}
+								onClick={() => copyInstallCommand(isUnixSocket ? hostValue : port.current?.value, publicKey)}
+								dropdownText={t`Manual setup instructions`}
+								dropdownUrl="https://beszel.dev/guide/agent-installation#binary"
+							/>
 						</TabsContent>
 						{/* Save */}
 						<Button>{system ? <Trans>Save system</Trans> : <Trans>Add system</Trans>}</Button>
@@ -225,5 +232,42 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 				</form>
 			</Tabs>
 		</DialogContent>
+	)
+})
+
+interface CopyButtonProps {
+	text: string
+	onClick: () => void
+	dropdownText: string
+	dropdownOnClick?: () => void
+	dropdownUrl?: string
+}
+
+const CopyButton = memo((props: CopyButtonProps) => {
+	return (
+		<div className="flex gap-0 rounded-lg">
+			<Button type="button" variant="outline" onClick={props.onClick} className="rounded-e-none dark:border-e-0 grow">
+				{props.text}
+			</Button>
+			<div className="w-px h-full bg-muted"></div>
+			<DropdownMenu>
+				<DropdownMenuTrigger asChild>
+					<Button variant="outline" className={"px-2 rounded-s-none border-s-0"}>
+						<ChevronDownIcon />
+					</Button>
+				</DropdownMenuTrigger>
+				<DropdownMenuContent align="end">
+					{props.dropdownUrl ? (
+						<DropdownMenuItem asChild>
+							<a href={props.dropdownUrl} target="_blank" rel="noopener noreferrer">
+								{props.dropdownText}
+							</a>
+						</DropdownMenuItem>
+					) : (
+						<DropdownMenuItem onClick={props.dropdownOnClick}>{props.dropdownText}</DropdownMenuItem>
+					)}
+				</DropdownMenuContent>
+			</DropdownMenu>
+		</div>
 	)
 })

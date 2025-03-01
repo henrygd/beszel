@@ -483,7 +483,6 @@ ProtectClock=yes
 ProtectHome=read-only
 ProtectHostname=yes
 ProtectKernelLogs=yes
-ProtectKernelTunables=yes
 ProtectSystem=strict
 RemoveIPC=yes
 RestrictSUIDSGID=true

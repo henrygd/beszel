@@ -138,6 +138,13 @@ func (a *Agent) getSystemStats() system.Stats {
 	}
 
 	// network stats
+	if len(a.netInterfaces) == 0 {
+		// if no network interfaces, initialize again
+		// this is a fix if agent started before network is online (#466)
+		// maybe refactor this in the future to not cache interface names at all so we
+		// don't miss an interface that's been added after agent started in any circumstance
+		a.initializeNetIoStats()
+	}
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
 		secondsElapsed := time.Since(a.netIoStats.Time).Seconds()
 		a.netIoStats.Time = time.Now()

@@ -78,13 +78,12 @@ func GetEnv(key string) (value string, exists bool) {
 }
 
 func (h *Hub) Run() {
-	// loosely check if it was executed using "go run"
-	isGoRun := strings.HasPrefix(os.Args[0], os.TempDir())
+	isDev := os.Getenv("ENV") == "dev"
 
 	// enable auto creation of migration files when making collection changes in the Admin UI
 	migratecmd.MustRegister(h, h.RootCmd, migratecmd.Config{
-		// (the isGoRun check is to enable it only during development)
-		Automigrate: isGoRun,
+		// (the isDev check is to enable it only during development)
+		Automigrate: isDev,
 		Dir:         "../../migrations",
 	})
 
@@ -133,7 +132,7 @@ func (h *Hub) Run() {
 
 	// serve web ui
 	h.OnServe().BindFunc(func(se *core.ServeEvent) error {
-		switch isGoRun {
+		switch isDev {
 		case true:
 			proxy := httputil.NewSingleHostReverseProxy(&url.URL{
 				Scheme: "http",
@@ -439,7 +438,14 @@ func (h *Hub) deleteSystemConnection(record *core.Record) {
 }
 
 func (h *Hub) createSystemConnection(record *core.Record) (*ssh.Client, error) {
-	client, err := ssh.Dial("tcp", net.JoinHostPort(record.GetString("host"), record.GetString("port")), h.sshClientConfig)
+	network := "tcp"
+	host := record.GetString("host")
+	if strings.HasPrefix(host, "/") {
+		network = "unix"
+	} else {
+		host = net.JoinHostPort(host, record.GetString("port"))
+	}
+	client, err := ssh.Dial(network, host, h.sshClientConfig)
 	if err != nil {
 		return nil, err
 	}

@@ -302,7 +302,8 @@ export const alertInfo: Record<string, AlertInfo> = {
 		unit: "",
 		icon: ServerIcon,
 		desc: () => t`Triggers when status switches between up and down`,
-		single: true,
+		/** "for x minutes" is appended to desc when only one value */
+		singleDesc: () => t`System` + " " + t`Down`,
 	},
 	CPU: {
 		name: () => t`CPU Usage`,
@@ -336,3 +337,11 @@ export const alertInfo: Record<string, AlertInfo> = {
 		desc: () => t`Triggers when any sensor exceeds a threshold`,
 	},
 }
+
+/**
+ * Retuns value of system host, truncating full path if socket.
+ * @example
+ * // Assuming system.host is "/var/run/beszel.sock"
+ * const hostname = getHostDisplayValue(system) // hostname will be "beszel.sock"
+ */
+export const getHostDisplayValue = (system: SystemRecord): string => system.host.slice(system.host.lastIndexOf("/") + 1)

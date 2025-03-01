@@ -101,7 +101,7 @@ function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	)
 }
 
-function sortableHeader(context: HeaderContext<SystemRecord, unknown>, hideSortIcon = false) {
+function sortableHeader(context: HeaderContext<SystemRecord, unknown>) {
 	const { column } = context
 	return (
 		<Button
@@ -110,9 +110,10 @@ function sortableHeader(context: HeaderContext<SystemRecord, unknown>, hideSortI
 			onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
 		>
 			{/* @ts-ignore */}
-			{column.columnDef?.icon && <column.columnDef.icon className="me-2 size-4" />}
+			{column.columnDef.icon && <column.columnDef.icon className="me-2 size-4" />}
 			{column.id}
-			{!hideSortIcon && <ArrowUpDownIcon className="ms-2 size-4" />}
+			{/* @ts-ignore */}
+			{column.columnDef.hideSort || <ArrowUpDownIcon className="ms-2 size-4" />}
 		</Button>
 	)
 }
@@ -193,34 +194,10 @@ export default function SystemsTable() {
 				header: sortableHeader,
 			},
 			{
-				accessorFn: (originalRow) => originalRow.info.dt,
-				id: t`Temp`,
-				invertSorting: true,
-				sortUndefined: -1,
-				size: 50,
-				icon: ThermometerIcon,
-				header: sortableHeader,
-				cell(info) {
-					const val = info.getValue() as number
-					if (!val) {
-						return null
-					}
-					return (
-						<span
-							className={cn("tabular-nums whitespace-nowrap", {
-								"ps-1": viewMode === "table",
-							})}
-						>
-							{decimalString(val)} °C
-						</span>
-					)
-				},
-			},
-			{
 				accessorFn: (originalRow) => originalRow.info.b || 0,
 				id: t`Net`,
 				invertSorting: true,
-				size: 100,
+				size: 50,
 				icon: EthernetIcon,
 				header: sortableHeader,
 				cell(info) {
@@ -237,11 +214,40 @@ export default function SystemsTable() {
 				},
 			},
 			{
+				accessorFn: (originalRow) => originalRow.info.dt,
+				id: t({
+					message: "Temp",
+					comment: "Temperature label in systems table",
+				}),
+				invertSorting: true,
+				sortUndefined: -1,
+				size: 50,
+				hideSort: true,
+				icon: ThermometerIcon,
+				header: sortableHeader,
+				cell(info) {
+					const val = info.getValue() as number
+					if (!val) {
+						return null
+					}
+					return (
+						<span
+							className={cn("tabular-nums whitespace-nowrap", {
+								"ps-1.5": viewMode === "table",
+							})}
+						>
+							{decimalString(val)} °C
+						</span>
+					)
+				},
+			},
+			{
 				accessorKey: "info.v",
 				id: t`Agent`,
 				invertSorting: true,
 				size: 50,
 				icon: WifiIcon,
+				hideSort: true,
 				header: sortableHeader,
 				cell(info) {
 					const version = info.getValue() as string
@@ -270,7 +276,7 @@ export default function SystemsTable() {
 			},
 			{
 				id: t({ message: "Actions", comment: "Table column" }),
-				size: 120,
+				size: 50,
 				cell: ({ row }) => (
 					<div className="flex justify-end items-center gap-1">
 						<AlertsButton system={row.original} />
@@ -301,6 +307,8 @@ export default function SystemsTable() {
 			maxSize: Number.MAX_SAFE_INTEGER,
 		},
 	})
+
+	const rows = table.getRowModel().rows
 
 	return (
 		<Card>
@@ -432,7 +440,7 @@ export default function SystemsTable() {
 								))}
 							</TableHeader>
 							<TableBody>
-								{table.getRowModel().rows?.length ? (
+								{rows.length ? (
 									table.getRowModel().rows.map((row) => (
 										<TableRow
 											key={row.original.id}

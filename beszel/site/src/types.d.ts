@@ -201,6 +201,7 @@ interface AlertInfo {
 	unit: string
 	icon: any
 	desc: () => string
-	single?: boolean
 	max?: number
+	/** Single value description (when there's only one value, like status) */
+	singleDesc?: () => string
 }

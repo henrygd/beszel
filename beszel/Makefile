@@ -48,6 +48,7 @@ dev-server: generate-locales
 		cd ./site && npm run dev; \
 	fi
 
+dev-hub: export ENV=dev
 dev-hub:
 	mkdir -p ./site/dist && touch ./site/dist/index.html
 	@if command -v entr >/dev/null 2>&1; then \
