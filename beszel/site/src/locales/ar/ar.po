@@ -18,11 +18,11 @@ msgstr ""
 "X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 16\n"
 
-#: src/components/routes/system.tsx:252
+#: src/components/routes/system.tsx:296
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# يوم} other {# أيام}}"
 
-#: src/components/routes/system.tsx:250
+#: src/components/routes/system.tsx:294
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# ساعة} other {# ساعات}}"
 
@@ -108,11 +108,12 @@ msgstr "هل أنت متأكد أنك تريد حذف {name}؟"
 msgid "Automatic copy requires a secure context."
 msgstr "النسخ التلقائي يتطلب سياقًا آمنًا."
 
-#: src/components/routes/system.tsx:633
+#: src/components/routes/system.tsx:722
 msgid "Average"
 msgstr "متوسط"
 
-#: src/components/routes/system.tsx:410
+#: src/components/routes/system.tsx:456
+#: src/components/routes/system.tsx:468
 msgid "Average CPU utilization of containers"
 msgstr "متوسط استخدام وحدة المعالجة المركزية للحاويات"
 
@@ -120,15 +121,15 @@ msgstr "متوسط استخدام وحدة المعالجة المركزية ل�
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "المتوسط يتجاوز <0>{value}{0}</0>"
 
-#: src/components/routes/system.tsx:511
+#: src/components/routes/system.tsx:600
 msgid "Average power consumption of GPUs"
 msgstr "متوسط ​​استهلاك طاقة GPUs"
 
-#: src/components/routes/system.tsx:399
+#: src/components/routes/system.tsx:445
 msgid "Average system-wide CPU utilization"
 msgstr "متوسط استخدام وحدة المعالجة المركزية على مستوى النظام"
 
-#: src/components/routes/system.tsx:529
+#: src/components/routes/system.tsx:618
 msgid "Average utilization of {0}"
 msgstr "متوسط ​​استخدام {0}"
 
@@ -137,7 +138,7 @@ msgstr "متوسط ​​استخدام {0}"
 msgid "Backups"
 msgstr "النسخ الاحتياطية"
 
-#: src/components/routes/system.tsx:455
+#: src/components/routes/system.tsx:525
 #: src/lib/utils.ts:327
 msgid "Bandwidth"
 msgstr "عرض النطاق الترددي"
@@ -234,7 +235,7 @@ msgid "CPU"
 msgstr "المعالج"
 
 #: src/components/charts/area-chart.tsx:56
-#: src/components/routes/system.tsx:398
+#: src/components/routes/system.tsx:444
 #: src/lib/utils.ts:309
 msgid "CPU Usage"
 msgstr "استخدام وحدة المعالجة المركزية"
@@ -265,29 +266,29 @@ msgstr "حذف"
 msgid "Disk"
 msgstr "القرص"
 
-#: src/components/routes/system.tsx:445
+#: src/components/routes/system.tsx:515
 msgid "Disk I/O"
 msgstr "إدخال/إخراج القرص"
 
 #: src/components/charts/disk-chart.tsx:79
-#: src/components/routes/system.tsx:438
+#: src/components/routes/system.tsx:508
 #: src/lib/utils.ts:321
 msgid "Disk Usage"
 msgstr "استخدام القرص"
 
-#: src/components/routes/system.tsx:566
+#: src/components/routes/system.tsx:655
 msgid "Disk usage of {extraFsName}"
 msgstr "استخدام القرص لـ {extraFsName}"
 
-#: src/components/routes/system.tsx:409
+#: src/components/routes/system.tsx:455
 msgid "Docker CPU Usage"
 msgstr "استخدام CPU لـ Docker"
 
-#: src/components/routes/system.tsx:430
+#: src/components/routes/system.tsx:488
 msgid "Docker Memory Usage"
 msgstr "استخدام الذاكرة لـ Docker"
 
-#: src/components/routes/system.tsx:471
+#: src/components/routes/system.tsx:541
 msgid "Docker Network I/O"
 msgstr "إدخال/إخراج الشبكة لـ Docker"
 
@@ -296,7 +297,7 @@ msgid "Documentation"
 msgstr "التوثيق"
 
 #. Context: System is down
-#: src/components/routes/system.tsx:309
+#: src/components/routes/system.tsx:355
 #: src/lib/utils.ts:306
 msgid "Down"
 msgstr ""
@@ -362,7 +363,7 @@ msgstr "فشل في إرسال إشعار الاختبار"
 msgid "Failed to update alert"
 msgstr "فشل في تحديث التنبيه"
 
-#: src/components/routes/system.tsx:606
+#: src/components/routes/system.tsx:695
 #: src/components/systems-table/systems-table.tsx:326
 msgid "Filter..."
 msgstr "تصفية..."
@@ -381,7 +382,7 @@ msgstr "هل نسيت كلمة المرور؟"
 msgid "General"
 msgstr "عام"
 
-#: src/components/routes/system.tsx:510
+#: src/components/routes/system.tsx:599
 msgid "GPU Power Draw"
 msgstr "استهلاك طاقة GPU"
 
@@ -402,7 +403,7 @@ msgid "Invalid email address."
 msgstr "عنوان البريد الإلكتروني غير صالح."
 
 #. Linux kernel
-#: src/components/routes/system.tsx:264
+#: src/components/routes/system.tsx:308
 msgid "Kernel"
 msgstr "كيرنل"
 
@@ -450,7 +451,7 @@ msgid "Manual setup instructions"
 msgstr ""
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:636
+#: src/components/routes/system.tsx:725
 msgid "Max 1 min"
 msgstr "1 دقيقة كحد"
 
@@ -458,12 +459,16 @@ msgstr "1 دقيقة كحد"
 msgid "Memory"
 msgstr "الذاكرة"
 
-#: src/components/routes/system.tsx:420
+#: src/components/routes/system.tsx:478
 #: src/lib/utils.ts:315
 msgid "Memory Usage"
 msgstr "استخدام الذاكرة"
 
-#: src/components/routes/system.tsx:431
+#: src/components/routes/system.tsx:501
+msgid "Memory usage of containers"
+msgstr ""
+
+#: src/components/routes/system.tsx:489
 msgid "Memory usage of docker containers"
 msgstr "استخدام الذاكرة لحاويات Docker"
 
@@ -475,11 +480,15 @@ msgstr "الاسم"
 msgid "Net"
 msgstr "الشبكة"
 
-#: src/components/routes/system.tsx:472
+#: src/components/routes/system.tsx:542
 msgid "Network traffic of docker containers"
 msgstr "حركة مرور الشبكة لحاويات Docker"
 
-#: src/components/routes/system.tsx:457
+#: src/components/routes/system.tsx:561
+msgid "Network traffic of proxmox containers"
+msgstr ""
+
+#: src/components/routes/system.tsx:527
 msgid "Network traffic of public interfaces"
 msgstr "حركة مرور الشبكة للواجهات العامة"
 
@@ -584,14 +593,26 @@ msgstr "يرجى تسجيل الدخول إلى حسابك"
 msgid "Port"
 msgstr "المنفذ"
 
-#: src/components/routes/system.tsx:421
-#: src/components/routes/system.tsx:537
+#: src/components/routes/system.tsx:479
+#: src/components/routes/system.tsx:626
 msgid "Precise utilization at the recorded time"
 msgstr "الاستخدام الدقيق في الوقت المسجل"
 
 #: src/components/routes/settings/general.tsx:58
 msgid "Preferred Language"
 msgstr "اللغة المفضلة"
+
+#: src/components/routes/system.tsx:467
+msgid "Proxmox CPU Usage"
+msgstr ""
+
+#: src/components/routes/system.tsx:500
+msgid "Proxmox Memory Usage"
+msgstr ""
+
+#: src/components/routes/system.tsx:560
+msgid "Proxmox Network I/O"
+msgstr ""
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx:180
@@ -679,11 +700,11 @@ msgstr "الترتيب حسب"
 msgid "Status"
 msgstr "الحالة"
 
-#: src/components/routes/system.tsx:487
+#: src/components/routes/system.tsx:576
 msgid "Swap space used by the system"
 msgstr "مساحة التبديل المستخدمة من قبل النظام"
 
-#: src/components/routes/system.tsx:486
+#: src/components/routes/system.tsx:575
 msgid "Swap Usage"
 msgstr "استخدام التبديل"
 
@@ -714,12 +735,12 @@ msgstr "جدول"
 msgid "Temp"
 msgstr ""
 
-#: src/components/routes/system.tsx:498
+#: src/components/routes/system.tsx:587
 #: src/lib/utils.ts:334
 msgid "Temperature"
 msgstr "درجة الحرارة"
 
-#: src/components/routes/system.tsx:499
+#: src/components/routes/system.tsx:588
 msgid "Temperatures of system sensors"
 msgstr "درجات حرارة مستشعرات النظام"
 
@@ -747,11 +768,11 @@ msgstr "ثم قم بتسجيل الدخول إلى الواجهة الخلفية
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "لا يمكن التراجع عن هذا الإجراء. سيؤدي ذلك إلى حذف جميع السجلات الحالية لـ {name} من قاعدة البيانات بشكل دائم."
 
-#: src/components/routes/system.tsx:578
+#: src/components/routes/system.tsx:667
 msgid "Throughput of {extraFsName}"
 msgstr "معدل نقل {extraFsName}"
 
-#: src/components/routes/system.tsx:446
+#: src/components/routes/system.tsx:516
 msgid "Throughput of root filesystem"
 msgstr "معدل نقل نظام الملفات الجذر"
 
@@ -759,8 +780,8 @@ msgstr "معدل نقل نظام الملفات الجذر"
 msgid "To email(s)"
 msgstr "إلى البريد الإلكتروني"
 
-#: src/components/routes/system.tsx:373
-#: src/components/routes/system.tsx:386
+#: src/components/routes/system.tsx:419
+#: src/components/routes/system.tsx:432
 msgid "Toggle grid"
 msgstr "تبديل الشبكة"
 
@@ -793,7 +814,7 @@ msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز استخدام أي قرص عتبة معينة"
 
 #. Context: System is up
-#: src/components/routes/system.tsx:307
+#: src/components/routes/system.tsx:353
 msgid "Up"
 msgstr ""
 
@@ -801,17 +822,17 @@ msgstr ""
 msgid "Updated in real time. Click on a system to view information."
 msgstr "محدث في الوقت الحقيقي. انقر على نظام لعرض المعلومات."
 
-#: src/components/routes/system.tsx:263
+#: src/components/routes/system.tsx:307
 msgid "Uptime"
 msgstr "مدة التشغيل"
 
 #: src/components/charts/area-chart.tsx:73
-#: src/components/routes/system.tsx:528
-#: src/components/routes/system.tsx:565
+#: src/components/routes/system.tsx:617
+#: src/components/routes/system.tsx:654
 msgid "Usage"
 msgstr "الاستخدام"
 
-#: src/components/routes/system.tsx:438
+#: src/components/routes/system.tsx:508
 msgid "Usage of root partition"
 msgstr "استخدام القسم الجذر"
 
@@ -834,7 +855,7 @@ msgstr "عرض"
 msgid "Visible Fields"
 msgstr "الأعمدة الظاهرة"
 
-#: src/components/routes/system.tsx:670
+#: src/components/routes/system.tsx:759
 msgid "Waiting for enough records to display"
 msgstr "في انتظار وجود سجلات كافية للعرض"
 

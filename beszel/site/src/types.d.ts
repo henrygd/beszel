@@ -189,6 +189,7 @@ type ChartDataContainer = {
 export interface ChartData {
 	systemStats: SystemStatsRecord[]
 	containerData: ChartDataContainer[]
+	pveContainerData: ChartDataContainer[]
 	orientation: "right" | "left"
 	ticks: number[]
 	domain: number[]

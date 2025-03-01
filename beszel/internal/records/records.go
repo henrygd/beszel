@@ -131,6 +131,8 @@ func (rm *RecordManager) CreateLongerRecords(collections []*core.Collection) {
 						longerRecord.Set("stats", rm.AverageSystemStats(stats))
 					case "container_stats":
 						longerRecord.Set("stats", rm.AverageContainerStats(stats))
+					case "pve_container_stats":
+						longerRecord.Set("stats", rm.AverageContainerStats(stats))
 					}
 					if err := txApp.SaveNoValidate(longerRecord); err != nil {
 						log.Println("failed to save longer record", "err", err.Error())
@@ -330,7 +332,7 @@ func (rm *RecordManager) AverageContainerStats(records RecordStats) []container.
 
 // Deletes records older than what is displayed in the UI
 func (rm *RecordManager) DeleteOldRecords() {
-	collections := []string{"system_stats", "container_stats"}
+	collections := []string{"system_stats", "container_stats", "pve_container_stats"}
 	recordData := []RecordDeletionData{
 		{
 			recordType: "1m",
