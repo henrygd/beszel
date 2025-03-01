@@ -7,6 +7,7 @@ require (
 	github.com/containrrr/shoutrrr v0.8.0
 	github.com/gliderlabs/ssh v0.3.8
 	github.com/goccy/go-json v0.10.5
+	github.com/luthermonson/go-proxmox v0.2.1
 	github.com/pocketbase/dbx v1.11.0
 	github.com/pocketbase/pocketbase v0.25.0
 	github.com/rhysd/go-github-selfupdate v1.2.3
@@ -64,7 +65,6 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jinzhu/copier v0.3.4 // indirect
 	github.com/lufia/plan9stats v0.0.0-20240909124753-873cd0166683 // indirect
-	github.com/luthermonson/go-proxmox v0.2.1 // indirect
 	github.com/magefile/mage v1.14.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
