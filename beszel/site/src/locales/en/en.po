@@ -13,11 +13,11 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
-#: src/components/routes/system.tsx:252
+#: src/components/routes/system.tsx:296
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# day} other {# days}}"
 
-#: src/components/routes/system.tsx:250
+#: src/components/routes/system.tsx:294
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# hour} other {# hours}}"
 
@@ -103,11 +103,12 @@ msgstr "Are you sure you want to delete {name}?"
 msgid "Automatic copy requires a secure context."
 msgstr "Automatic copy requires a secure context."
 
-#: src/components/routes/system.tsx:633
+#: src/components/routes/system.tsx:722
 msgid "Average"
 msgstr "Average"
 
-#: src/components/routes/system.tsx:410
+#: src/components/routes/system.tsx:456
+#: src/components/routes/system.tsx:468
 msgid "Average CPU utilization of containers"
 msgstr "Average CPU utilization of containers"
 
@@ -115,15 +116,15 @@ msgstr "Average CPU utilization of containers"
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Average exceeds <0>{value}{0}</0>"
 
-#: src/components/routes/system.tsx:511
+#: src/components/routes/system.tsx:600
 msgid "Average power consumption of GPUs"
 msgstr "Average power consumption of GPUs"
 
-#: src/components/routes/system.tsx:399
+#: src/components/routes/system.tsx:445
 msgid "Average system-wide CPU utilization"
 msgstr "Average system-wide CPU utilization"
 
-#: src/components/routes/system.tsx:529
+#: src/components/routes/system.tsx:618
 msgid "Average utilization of {0}"
 msgstr "Average utilization of {0}"
 
@@ -132,7 +133,7 @@ msgstr "Average utilization of {0}"
 msgid "Backups"
 msgstr "Backups"
 
-#: src/components/routes/system.tsx:455
+#: src/components/routes/system.tsx:525
 #: src/lib/utils.ts:327
 msgid "Bandwidth"
 msgstr "Bandwidth"
@@ -229,7 +230,7 @@ msgid "CPU"
 msgstr "CPU"
 
 #: src/components/charts/area-chart.tsx:56
-#: src/components/routes/system.tsx:398
+#: src/components/routes/system.tsx:444
 #: src/lib/utils.ts:309
 msgid "CPU Usage"
 msgstr "CPU Usage"
@@ -260,29 +261,29 @@ msgstr "Delete"
 msgid "Disk"
 msgstr "Disk"
 
-#: src/components/routes/system.tsx:445
+#: src/components/routes/system.tsx:515
 msgid "Disk I/O"
 msgstr "Disk I/O"
 
 #: src/components/charts/disk-chart.tsx:79
-#: src/components/routes/system.tsx:438
+#: src/components/routes/system.tsx:508
 #: src/lib/utils.ts:321
 msgid "Disk Usage"
 msgstr "Disk Usage"
 
-#: src/components/routes/system.tsx:566
+#: src/components/routes/system.tsx:655
 msgid "Disk usage of {extraFsName}"
 msgstr "Disk usage of {extraFsName}"
 
-#: src/components/routes/system.tsx:409
+#: src/components/routes/system.tsx:455
 msgid "Docker CPU Usage"
 msgstr "Docker CPU Usage"
 
-#: src/components/routes/system.tsx:430
+#: src/components/routes/system.tsx:488
 msgid "Docker Memory Usage"
 msgstr "Docker Memory Usage"
 
-#: src/components/routes/system.tsx:471
+#: src/components/routes/system.tsx:541
 msgid "Docker Network I/O"
 msgstr "Docker Network I/O"
 
@@ -291,7 +292,7 @@ msgid "Documentation"
 msgstr "Documentation"
 
 #. Context: System is down
-#: src/components/routes/system.tsx:309
+#: src/components/routes/system.tsx:355
 #: src/lib/utils.ts:306
 msgid "Down"
 msgstr "Down"
@@ -357,7 +358,7 @@ msgstr "Failed to send test notification"
 msgid "Failed to update alert"
 msgstr "Failed to update alert"
 
-#: src/components/routes/system.tsx:606
+#: src/components/routes/system.tsx:695
 #: src/components/systems-table/systems-table.tsx:326
 msgid "Filter..."
 msgstr "Filter..."
@@ -376,7 +377,7 @@ msgstr "Forgot password?"
 msgid "General"
 msgstr "General"
 
-#: src/components/routes/system.tsx:510
+#: src/components/routes/system.tsx:599
 msgid "GPU Power Draw"
 msgstr "GPU Power Draw"
 
@@ -397,7 +398,7 @@ msgid "Invalid email address."
 msgstr "Invalid email address."
 
 #. Linux kernel
-#: src/components/routes/system.tsx:264
+#: src/components/routes/system.tsx:308
 msgid "Kernel"
 msgstr "Kernel"
 
@@ -445,7 +446,7 @@ msgid "Manual setup instructions"
 msgstr "Manual setup instructions"
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:636
+#: src/components/routes/system.tsx:725
 msgid "Max 1 min"
 msgstr "Max 1 min"
 
@@ -453,12 +454,16 @@ msgstr "Max 1 min"
 msgid "Memory"
 msgstr "Memory"
 
-#: src/components/routes/system.tsx:420
+#: src/components/routes/system.tsx:478
 #: src/lib/utils.ts:315
 msgid "Memory Usage"
 msgstr "Memory Usage"
 
-#: src/components/routes/system.tsx:431
+#: src/components/routes/system.tsx:501
+msgid "Memory usage of containers"
+msgstr "Memory usage of containers"
+
+#: src/components/routes/system.tsx:489
 msgid "Memory usage of docker containers"
 msgstr "Memory usage of docker containers"
 
@@ -470,11 +475,15 @@ msgstr "Name"
 msgid "Net"
 msgstr "Net"
 
-#: src/components/routes/system.tsx:472
+#: src/components/routes/system.tsx:542
 msgid "Network traffic of docker containers"
 msgstr "Network traffic of docker containers"
 
-#: src/components/routes/system.tsx:457
+#: src/components/routes/system.tsx:561
+msgid "Network traffic of proxmox containers"
+msgstr "Network traffic of proxmox containers"
+
+#: src/components/routes/system.tsx:527
 msgid "Network traffic of public interfaces"
 msgstr "Network traffic of public interfaces"
 
@@ -579,14 +588,26 @@ msgstr "Please sign in to your account"
 msgid "Port"
 msgstr "Port"
 
-#: src/components/routes/system.tsx:421
-#: src/components/routes/system.tsx:537
+#: src/components/routes/system.tsx:479
+#: src/components/routes/system.tsx:626
 msgid "Precise utilization at the recorded time"
 msgstr "Precise utilization at the recorded time"
 
 #: src/components/routes/settings/general.tsx:58
 msgid "Preferred Language"
 msgstr "Preferred Language"
+
+#: src/components/routes/system.tsx:467
+msgid "Proxmox CPU Usage"
+msgstr "Proxmox CPU Usage"
+
+#: src/components/routes/system.tsx:500
+msgid "Proxmox Memory Usage"
+msgstr "Proxmox Memory Usage"
+
+#: src/components/routes/system.tsx:560
+msgid "Proxmox Network I/O"
+msgstr "Proxmox Network I/O"
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx:180
@@ -674,11 +695,11 @@ msgstr "Sort By"
 msgid "Status"
 msgstr "Status"
 
-#: src/components/routes/system.tsx:487
+#: src/components/routes/system.tsx:576
 msgid "Swap space used by the system"
 msgstr "Swap space used by the system"
 
-#: src/components/routes/system.tsx:486
+#: src/components/routes/system.tsx:575
 msgid "Swap Usage"
 msgstr "Swap Usage"
 
@@ -709,12 +730,12 @@ msgstr "Table"
 msgid "Temp"
 msgstr "Temp"
 
-#: src/components/routes/system.tsx:498
+#: src/components/routes/system.tsx:587
 #: src/lib/utils.ts:334
 msgid "Temperature"
 msgstr "Temperature"
 
-#: src/components/routes/system.tsx:499
+#: src/components/routes/system.tsx:588
 msgid "Temperatures of system sensors"
 msgstr "Temperatures of system sensors"
 
@@ -742,11 +763,11 @@ msgstr "Then log into the backend and reset your user account password in the us
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 
-#: src/components/routes/system.tsx:578
+#: src/components/routes/system.tsx:667
 msgid "Throughput of {extraFsName}"
 msgstr "Throughput of {extraFsName}"
 
-#: src/components/routes/system.tsx:446
+#: src/components/routes/system.tsx:516
 msgid "Throughput of root filesystem"
 msgstr "Throughput of root filesystem"
 
@@ -754,8 +775,8 @@ msgstr "Throughput of root filesystem"
 msgid "To email(s)"
 msgstr "To email(s)"
 
-#: src/components/routes/system.tsx:373
-#: src/components/routes/system.tsx:386
+#: src/components/routes/system.tsx:419
+#: src/components/routes/system.tsx:432
 msgid "Toggle grid"
 msgstr "Toggle grid"
 
@@ -788,7 +809,7 @@ msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Triggers when usage of any disk exceeds a threshold"
 
 #. Context: System is up
-#: src/components/routes/system.tsx:307
+#: src/components/routes/system.tsx:353
 msgid "Up"
 msgstr "Up"
 
@@ -796,17 +817,17 @@ msgstr "Up"
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Updated in real time. Click on a system to view information."
 
-#: src/components/routes/system.tsx:263
+#: src/components/routes/system.tsx:307
 msgid "Uptime"
 msgstr "Uptime"
 
 #: src/components/charts/area-chart.tsx:73
-#: src/components/routes/system.tsx:528
-#: src/components/routes/system.tsx:565
+#: src/components/routes/system.tsx:617
+#: src/components/routes/system.tsx:654
 msgid "Usage"
 msgstr "Usage"
 
-#: src/components/routes/system.tsx:438
+#: src/components/routes/system.tsx:508
 msgid "Usage of root partition"
 msgstr "Usage of root partition"
 
@@ -829,7 +850,7 @@ msgstr "View"
 msgid "Visible Fields"
 msgstr "Visible Fields"
 
-#: src/components/routes/system.tsx:670
+#: src/components/routes/system.tsx:759
 msgid "Waiting for enough records to display"
 msgstr "Waiting for enough records to display"
 
