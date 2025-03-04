@@ -15,7 +15,7 @@ import (
 	"github.com/spf13/cast"
 )
 
-func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, systemInfo system.Info, temperatures map[string]float64, extraFs map[string]*system.FsStats) error {
+func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error {
 	alertRecords, err := am.app.FindAllRecords("alerts",
 		dbx.NewExp("system={:system}", dbx.Params{"system": systemRecord.Id}),
 	)
@@ -35,15 +35,15 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, systemInfo
 
 		switch name {
 		case "CPU":
-			val = systemInfo.Cpu
+			val = data.Info.Cpu
 		case "Memory":
-			val = systemInfo.MemPct
+			val = data.Info.MemPct
 		case "Bandwidth":
-			val = systemInfo.Bandwidth
+			val = data.Info.Bandwidth
 			unit = " MB/s"
 		case "Disk":
-			maxUsedPct := systemInfo.DiskPct
-			for _, fs := range extraFs {
+			maxUsedPct := data.Info.DiskPct
+			for _, fs := range data.Stats.ExtraFs {
 				usedPct := fs.DiskUsed / fs.DiskTotal * 100
 				if usedPct > maxUsedPct {
 					maxUsedPct = usedPct
@@ -51,10 +51,10 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, systemInfo
 			}
 			val = maxUsedPct
 		case "Temperature":
-			if temperatures == nil {
+			if data.Stats.Temperatures == nil {
 				continue
 			}
-			for _, temp := range temperatures {
+			for _, temp := range data.Stats.Temperatures {
 				if temp > val {
 					val = temp
 				}
@@ -111,7 +111,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, systemInfo
 		)).
 		OrderBy("created").
 		All(&systemStats)
-	if err != nil {
+	if err != nil || len(systemStats) == 0 {
 		return err
 	}
 
@@ -163,7 +163,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, systemInfo
 				alert.val += stats.NetSent + stats.NetRecv
 			case "Disk":
 				if alert.mapSums == nil {
-					alert.mapSums = make(map[string]float32, len(extraFs)+1)
+					alert.mapSums = make(map[string]float32, len(data.Stats.ExtraFs)+1)
 				}
 				// add root disk
 				if _, ok := alert.mapSums["root"]; !ok {
@@ -171,7 +171,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, systemInfo
 				}
 				alert.mapSums["root"] += float32(stats.Disk)
 				// add extra disks
-				for key, fs := range extraFs {
+				for key, fs := range data.Stats.ExtraFs {
 					if _, ok := alert.mapSums[key]; !ok {
 						alert.mapSums[key] = 0.0
 					}

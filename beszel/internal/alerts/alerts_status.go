@@ -26,8 +26,7 @@ type alertInfo struct {
 // startWorker is a long-running goroutine that processes alert tasks
 // every x seconds. It must be running to process status alerts.
 func (am *AlertManager) startWorker() {
-	// no special reason for 13 seconds
-	tick := time.Tick(13 * time.Second)
+	tick := time.Tick(15 * time.Second)
 	for {
 		select {
 		case <-am.stopChan:
@@ -64,21 +63,12 @@ func (am *AlertManager) StopWorker() {
 }
 
 // HandleStatusAlerts manages the logic when system status changes.
-func (am *AlertManager) HandleStatusAlerts(newStatus string, oldSystemRecord *core.Record) error {
-	switch newStatus {
-	case "up":
-		if oldSystemRecord.GetString("status") != "down" {
-			return nil
-		}
-	case "down":
-		if oldSystemRecord.GetString("status") != "up" {
-			return nil
-		}
-	default:
+func (am *AlertManager) HandleStatusAlerts(newStatus string, systemRecord *core.Record) error {
+	if newStatus != "up" && newStatus != "down" {
 		return nil
 	}
 
-	alertRecords, err := am.getSystemStatusAlerts(oldSystemRecord.Id)
+	alertRecords, err := am.getSystemStatusAlerts(systemRecord.Id)
 	if err != nil {
 		return err
 	}
@@ -86,7 +76,7 @@ func (am *AlertManager) HandleStatusAlerts(newStatus string, oldSystemRecord *co
 		return nil
 	}
 
-	systemName := oldSystemRecord.GetString("name")
+	systemName := systemRecord.GetString("name")
 	if newStatus == "down" {
 		am.handleSystemDown(systemName, alertRecords)
 	} else {
