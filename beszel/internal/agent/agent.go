@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/shirou/gopsutil/v4/common"
 )
@@ -27,11 +28,13 @@ type Agent struct {
 	sensorsWhitelist map[string]struct{}        // List of sensors to monitor
 	systemInfo       system.Info                // Host system info
 	gpuManager       *GPUManager                // Manages GPU data
+	cache            *SessionCache              // Cache for system stats based on primary session ID
 }
 
 func NewAgent() *Agent {
 	agent := &Agent{
 		fsStats: make(map[string]*system.FsStats),
+		cache:   NewSessionCache(69 * time.Second),
 	}
 	agent.memCalc, _ = GetEnv("MEM_CALC")
 
@@ -63,7 +66,7 @@ func NewAgent() *Agent {
 	// Set sensors whitelist
 	if sensors, exists := GetEnv("SENSORS"); exists {
 		agent.sensorsWhitelist = make(map[string]struct{})
-		for _, sensor := range strings.Split(sensors, ",") {
+		for sensor := range strings.SplitSeq(sensors, ",") {
 			if sensor != "" {
 				agent.sensorsWhitelist[sensor] = struct{}{}
 			}
@@ -85,7 +88,7 @@ func NewAgent() *Agent {
 
 	// if debugging, print stats
 	if agent.debug {
-		slog.Debug("Stats", "data", agent.gatherStats())
+		slog.Debug("Stats", "data", agent.gatherStats(""))
 	}
 
 	return agent
@@ -100,29 +103,37 @@ func GetEnv(key string) (value string, exists bool) {
 	return os.LookupEnv(key)
 }
 
-func (a *Agent) gatherStats() system.CombinedData {
+func (a *Agent) gatherStats(sessionID string) *system.CombinedData {
 	a.Lock()
 	defer a.Unlock()
-	slog.Debug("Getting stats")
-	systemData := system.CombinedData{
+
+	cachedData, ok := a.cache.Get(sessionID)
+	if ok {
+		slog.Debug("Cached stats", "session", sessionID)
+		return cachedData
+	}
+
+	*cachedData = system.CombinedData{
 		Stats: a.getSystemStats(),
 		Info:  a.systemInfo,
 	}
-	slog.Debug("System stats", "data", systemData)
-	// add docker stats
+	slog.Debug("System stats", "data", cachedData)
+
 	if containerStats, err := a.dockerManager.getDockerStats(); err == nil {
-		systemData.Containers = containerStats
-		slog.Debug("Docker stats", "data", systemData.Containers)
+		cachedData.Containers = containerStats
+		slog.Debug("Docker stats", "data", cachedData.Containers)
 	} else {
-		slog.Debug("Error getting docker stats", "err", err)
+		slog.Debug("Docker stats", "err", err)
 	}
-	// add extra filesystems
-	systemData.Stats.ExtraFs = make(map[string]*system.FsStats)
+
+	cachedData.Stats.ExtraFs = make(map[string]*system.FsStats)
 	for name, stats := range a.fsStats {
 		if !stats.Root && stats.DiskTotal > 0 {
-			systemData.Stats.ExtraFs[name] = stats
+			cachedData.Stats.ExtraFs[name] = stats
 		}
 	}
-	slog.Debug("Extra filesystems", "data", systemData.Stats.ExtraFs)
-	return systemData
+	slog.Debug("Extra filesystems", "data", cachedData.Stats.ExtraFs)
+
+	a.cache.Set(sessionID, cachedData)
+	return cachedData
 }

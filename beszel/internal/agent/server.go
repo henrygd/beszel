@@ -61,8 +61,8 @@ func (a *Agent) StartServer(opts ServerOptions) error {
 }
 
 func (a *Agent) handleSession(s sshServer.Session) {
-	// slog.Debug("connection", "remoteaddr", s.RemoteAddr(), "user", s.User())
-	stats := a.gatherStats()
+	slog.Debug("New session", "client", s.RemoteAddr())
+	stats := a.gatherStats(s.Context().SessionID())
 	if err := json.NewEncoder(s).Encode(stats); err != nil {
 		slog.Error("Error encoding stats", "err", err, "stats", stats)
 		s.Exit(1)
@@ -74,24 +74,18 @@ func (a *Agent) handleSession(s sshServer.Session) {
 // It returns a slice of ssh.PublicKey and an error if any key fails to parse.
 func ParseKeys(input string) ([]ssh.PublicKey, error) {
 	var parsedKeys []ssh.PublicKey
-
 	for line := range strings.Lines(input) {
 		line = strings.TrimSpace(line)
-
 		// Skip empty lines or comments
 		if len(line) == 0 || strings.HasPrefix(line, "#") {
 			continue
 		}
-
 		// Parse the key
 		parsedKey, _, _, _, err := ssh.ParseAuthorizedKey([]byte(line))
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse key: %s, error: %w", line, err)
 		}
-
-		// Append the parsed key to the list
 		parsedKeys = append(parsedKeys, parsedKey)
 	}
-
 	return parsedKeys, nil
 }
