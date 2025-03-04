@@ -22,7 +22,7 @@ type Config struct {
 type SystemConfig struct {
 	Name  string   `yaml:"name"`
 	Host  string   `yaml:"host"`
-	Port  uint16   `yaml:"port"`
+	Port  uint16   `yaml:"port,omitempty"`
 	Users []string `yaml:"users"`
 }
 
