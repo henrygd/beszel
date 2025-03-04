@@ -28,6 +28,18 @@ type dockerManager struct {
 	goodDockerVersion   bool                        // Whether docker version is at least 25.0.0 (one-shot works correctly)
 }
 
+// userAgentRoundTripper is a custom http.RoundTripper that adds a User-Agent header to all requests
+type userAgentRoundTripper struct {
+	rt        http.RoundTripper
+	userAgent string
+}
+
+// RoundTrip implements the http.RoundTripper interface
+func (u *userAgentRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Set("User-Agent", u.userAgent)
+	return u.rt.RoundTrip(req)
+}
+
 // Add goroutine to the queue
 func (d *dockerManager) queue() {
 	d.wg.Add(1)
@@ -251,10 +263,16 @@ func newDockerManager(a *Agent) *dockerManager {
 		slog.Info("DOCKER_TIMEOUT", "timeout", timeout)
 	}
 
+	// Custom user-agent to avoid docker bug: https://github.com/docker/for-mac/issues/7575
+	userAgentTransport := &userAgentRoundTripper{
+		rt:        transport,
+		userAgent: "Docker-Client/",
+	}
+
 	dockerClient := &dockerManager{
 		client: &http.Client{
 			Timeout:   timeout,
-			Transport: transport,
+			Transport: userAgentTransport,
 		},
 		containerStatsMap: make(map[string]*container.Stats),
 		sem:               make(chan struct{}, 5),
@@ -276,6 +294,7 @@ func newDockerManager(a *Agent) *dockerManager {
 	if err != nil {
 		return dockerClient
 	}
+	defer resp.Body.Close()
 
 	if err := json.NewDecoder(resp.Body).Decode(&versionInfo); err != nil {
 		return dockerClient
