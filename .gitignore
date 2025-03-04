@@ -16,3 +16,4 @@ beszel/build
 .swc
 beszel/site/src/locales/**/*.ts
 *.bak
+__debug_*
