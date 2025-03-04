@@ -77,7 +77,7 @@ func (dm *dockerManager) getDockerStats() ([]*container.Stats, error) {
 		clear(dm.validIds)
 	}
 
-	var failedContainters []container.ApiInfo
+	var failedContainers []container.ApiInfo
 
 	for _, ctr := range *dm.apiContainerList {
 		ctr.IdShort = ctr.Id[:12]
@@ -96,7 +96,7 @@ func (dm *dockerManager) getDockerStats() ([]*container.Stats, error) {
 			if err != nil {
 				dm.containerStatsMutex.Lock()
 				delete(dm.containerStatsMap, ctr.IdShort)
-				failedContainters = append(failedContainters, ctr)
+				failedContainers = append(failedContainers, ctr)
 				dm.containerStatsMutex.Unlock()
 			}
 		}()
@@ -105,9 +105,9 @@ func (dm *dockerManager) getDockerStats() ([]*container.Stats, error) {
 	dm.wg.Wait()
 
 	// retry failed containers separately so we can run them in parallel (docker 24 bug)
-	if len(failedContainters) > 0 {
-		slog.Debug("Retrying failed containers", "count", len(failedContainters))
-		for _, ctr := range failedContainters {
+	if len(failedContainers) > 0 {
+		slog.Debug("Retrying failed containers", "count", len(failedContainers))
+		for _, ctr := range failedContainers {
 			dm.queue()
 			go func() {
 				defer dm.dequeue()
