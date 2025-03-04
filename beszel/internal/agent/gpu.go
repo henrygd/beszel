@@ -3,6 +3,7 @@ package agent
 import (
 	"beszel/internal/entities/system"
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os/exec"
@@ -75,7 +76,7 @@ func (c *gpuCollector) collect() error {
 
 	scanner := bufio.NewScanner(stdout)
 	if c.buf == nil {
-		c.buf = make([]byte, 0, 4*1024)
+		c.buf = make([]byte, 0, 10*1024)
 	}
 	scanner.Buffer(c.buf, bufio.MaxScanTokenSize)
 
@@ -110,27 +111,26 @@ func (gm *GPUManager) getJetsonParser() func(output []byte) bool {
 		if !ok {
 			return true
 		}
-		data := string(output)
 		// Parse RAM usage
-		ramMatches := ramPattern.FindStringSubmatch(data)
+		ramMatches := ramPattern.FindSubmatch(output)
 		if ramMatches != nil {
-			gpuData.MemoryUsed, _ = strconv.ParseFloat(ramMatches[1], 64)
-			gpuData.MemoryTotal, _ = strconv.ParseFloat(ramMatches[2], 64)
+			gpuData.MemoryUsed, _ = strconv.ParseFloat(string(ramMatches[1]), 64)
+			gpuData.MemoryTotal, _ = strconv.ParseFloat(string(ramMatches[2]), 64)
 		}
 		// Parse GR3D (GPU) usage
-		gr3dMatches := gr3dPattern.FindStringSubmatch(data)
+		gr3dMatches := gr3dPattern.FindSubmatch(output)
 		if gr3dMatches != nil {
-			gpuData.Usage, _ = strconv.ParseFloat(gr3dMatches[1], 64)
+			gpuData.Usage, _ = strconv.ParseFloat(string(gr3dMatches[1]), 64)
 		}
 		// Parse temperature
-		tempMatches := tempPattern.FindStringSubmatch(data)
+		tempMatches := tempPattern.FindSubmatch(output)
 		if tempMatches != nil {
-			gpuData.Temperature, _ = strconv.ParseFloat(tempMatches[1], 64)
+			gpuData.Temperature, _ = strconv.ParseFloat(string(tempMatches[1]), 64)
 		}
 		// Parse power usage
-		powerMatches := powerPattern.FindStringSubmatch(data)
+		powerMatches := powerPattern.FindSubmatch(output)
 		if powerMatches != nil {
-			power, _ := strconv.ParseFloat(powerMatches[2], 64)
+			power, _ := strconv.ParseFloat(string(powerMatches[2]), 64)
 			gpuData.Power = power / 1000
 		}
 		gpuData.Count++
@@ -142,8 +142,10 @@ func (gm *GPUManager) getJetsonParser() func(output []byte) bool {
 func (gm *GPUManager) parseNvidiaData(output []byte) bool {
 	gm.Lock()
 	defer gm.Unlock()
+	scanner := bufio.NewScanner(bytes.NewReader(output))
 	var valid bool
-	for line := range strings.Lines(string(output)) {
+	for scanner.Scan() {
+		line := scanner.Text() // Or use scanner.Bytes() for []byte
 		fields := strings.Split(strings.TrimSpace(line), ", ")
 		if len(fields) < 7 {
 			continue
