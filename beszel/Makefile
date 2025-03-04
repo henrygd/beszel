@@ -14,6 +14,9 @@ clean:
 lint:
 	golangci-lint run
 
+test:
+	go test -tags=testing ./...
+
 tidy:
 	go mod tidy
 
