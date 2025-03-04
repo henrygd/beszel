@@ -14,7 +14,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { $publicKey, pb } from "@/lib/stores"
-import { cn, copyToClipboard, isReadOnlyUser } from "@/lib/utils"
+import { cn, copyToClipboard, isReadOnlyUser, useLocalStorage } from "@/lib/utils"
 import { i18n } from "@lingui/core"
 import { t, Trans } from "@lingui/macro"
 import { useStore } from "@nanostores/react"
@@ -91,6 +91,7 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 	const port = useRef<HTMLInputElement>(null)
 	const [hostValue, setHostValue] = useState(system?.host ?? "")
 	const isUnixSocket = hostValue.startsWith("/")
+	const [tab, setTab] = useLocalStorage("as-tab", "docker")
 
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault()
@@ -118,7 +119,7 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 				setHostValue(system?.host ?? "")
 			}}
 		>
-			<Tabs defaultValue="docker">
+			<Tabs defaultValue={tab} onValueChange={setTab}>
 				<DialogHeader>
 					<DialogTitle className="mb-2">
 						{system ? `${t`Edit`} ${system?.name}` : <Trans>Add New System</Trans>}
@@ -140,7 +141,7 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 					</DialogDescription>
 				</TabsContent>
 				{/* Binary */}
-				<TabsContent value="binary">
+				<TabsContent value="binary" tabIndex={-1}>
 					<DialogDescription className="mb-4 leading-normal w-0 min-w-full">
 						<Trans>
 							The agent must be running on the system to connect. Copy the installation command for the agent below.
@@ -259,7 +260,7 @@ const CopyButton = memo((props: CopyButtonProps) => {
 				<DropdownMenuContent align="end">
 					{props.dropdownUrl ? (
 						<DropdownMenuItem asChild>
-							<a href={props.dropdownUrl} target="_blank" rel="noopener noreferrer">
+							<a href={props.dropdownUrl} className="cursor-pointer" target="_blank" rel="noopener noreferrer">
 								{props.dropdownText}
 							</a>
 						</DropdownMenuItem>
