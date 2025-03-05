@@ -8,7 +8,7 @@ msgstr ""
 "Language: ru\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-24 02:49\n"
+"PO-Revision-Date: 2025-03-01 18:24\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -447,7 +447,7 @@ msgstr "Управляйте предпочтениями отображения
 
 #: src/components/add-system.tsx:225
 msgid "Manual setup instructions"
-msgstr ""
+msgstr "Инструкции по ручной настройке"
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx:636
@@ -537,7 +537,7 @@ msgstr "Пароль должен содержать не менее 8 симв�
 
 #: src/components/login/auth-form.tsx:21
 msgid "Password must be less than 72 bytes."
-msgstr ""
+msgstr "Пароль должен быть меньше 72 символов."
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
@@ -863,3 +863,4 @@ msgstr "YAML конфигурация"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "Ваши настройки пользователя были обновлены."
+
