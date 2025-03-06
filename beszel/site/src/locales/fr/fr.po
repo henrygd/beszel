@@ -18,39 +18,40 @@ msgstr ""
 "X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 16\n"
 
-#: src/components/routes/system.tsx:252
+#. placeholder {0}: Math.trunc(system.info?.u / 86400)
+#: src/components/routes/system.tsx:255
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# jour} other {# jours}}"
 
-#: src/components/routes/system.tsx:250
+#: src/components/routes/system.tsx:253
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# heure} other {# heures}}"
 
-#: src/lib/utils.ts:158
+#: src/lib/utils.ts:168
 msgid "1 hour"
 msgstr "1 heure"
 
-#: src/lib/utils.ts:181
+#: src/lib/utils.ts:191
 msgid "1 week"
 msgstr "1 semaine"
 
-#: src/lib/utils.ts:166
+#: src/lib/utils.ts:176
 msgid "12 hours"
 msgstr "12 heures"
 
-#: src/lib/utils.ts:174
+#: src/lib/utils.ts:184
 msgid "24 hours"
 msgstr "24 heures"
 
-#: src/lib/utils.ts:189
+#: src/lib/utils.ts:199
 msgid "30 days"
 msgstr "30 jours"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx:278
-#: src/components/systems-table/systems-table.tsx:366
-#: src/components/systems-table/systems-table.tsx:508
-#: src/components/systems-table/systems-table.tsx:518
+#: src/components/systems-table/systems-table.tsx:293
+#: src/components/systems-table/systems-table.tsx:381
+#: src/components/systems-table/systems-table.tsx:523
+#: src/components/systems-table/systems-table.tsx:533
 msgid "Actions"
 msgstr "Actions"
 
@@ -62,11 +63,11 @@ msgstr "Alertes actives"
 msgid "Add <0>System</0>"
 msgstr "Ajouter <0>Système</0>"
 
-#: src/components/add-system.tsx:124
+#: src/components/add-system.tsx:125
 msgid "Add New System"
 msgstr "Ajouter un nouveau système"
 
-#: src/components/add-system.tsx:230
+#: src/components/add-system.tsx:231
 msgid "Add system"
 msgstr "Ajouter un système"
 
@@ -78,15 +79,15 @@ msgstr "Ajouter URL"
 msgid "Adjust display options for charts."
 msgstr "Ajuster les options d'affichage pour les graphiques."
 
-#: src/components/command-palette.tsx:133
-#: src/components/command-palette.tsx:146
-#: src/components/command-palette.tsx:160
-#: src/components/command-palette.tsx:174
-#: src/components/command-palette.tsx:189
+#: src/components/command-palette.tsx:131
+#: src/components/command-palette.tsx:144
+#: src/components/command-palette.tsx:158
+#: src/components/command-palette.tsx:172
+#: src/components/command-palette.tsx:187
 msgid "Admin"
 msgstr "Admin"
 
-#: src/components/systems-table/systems-table.tsx:246
+#: src/components/systems-table/systems-table.tsx:261
 msgid "Agent"
 msgstr "Agent"
 
@@ -95,12 +96,12 @@ msgstr "Agent"
 msgid "Alerts"
 msgstr "Alertes"
 
+#: src/components/systems-table/systems-table.tsx:334
 #: src/components/alerts/alert-button.tsx:88
-#: src/components/systems-table/systems-table.tsx:319
 msgid "All Systems"
 msgstr "Tous les systèmes"
 
-#: src/components/systems-table/systems-table.tsx:642
+#: src/components/systems-table/systems-table.tsx:657
 msgid "Are you sure you want to delete {name}?"
 msgstr "Êtes-vous sûr de vouloir supprimer {name} ?"
 
@@ -108,41 +109,43 @@ msgstr "Êtes-vous sûr de vouloir supprimer {name} ?"
 msgid "Automatic copy requires a secure context."
 msgstr "La copie automatique nécessite un contexte sécurisé."
 
-#: src/components/routes/system.tsx:633
+#: src/components/routes/system.tsx:660
 msgid "Average"
 msgstr "Moyenne"
 
-#: src/components/routes/system.tsx:410
+#: src/components/routes/system.tsx:437
 msgid "Average CPU utilization of containers"
 msgstr "Utilisation moyenne du CPU des conteneurs"
 
+#. placeholder {0}: data.alert.unit
 #: src/components/alerts/alerts-system.tsx:205
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "La moyenne dépasse <0>{value}{0}</0>"
 
-#: src/components/routes/system.tsx:511
+#: src/components/routes/system.tsx:538
 msgid "Average power consumption of GPUs"
 msgstr "Consommation d'énergie moyenne des GPUs"
 
-#: src/components/routes/system.tsx:399
+#: src/components/routes/system.tsx:426
 msgid "Average system-wide CPU utilization"
 msgstr "Utilisation moyenne du CPU à l'échelle du système"
 
-#: src/components/routes/system.tsx:529
+#. placeholder {0}: gpu.n
+#: src/components/routes/system.tsx:556
 msgid "Average utilization of {0}"
 msgstr "Utilisation moyenne de {0}"
 
-#: src/components/command-palette.tsx:171
 #: src/components/navbar.tsx:94
+#: src/components/command-palette.tsx:169
 msgid "Backups"
 msgstr "Sauvegardes"
 
-#: src/components/routes/system.tsx:455
-#: src/lib/utils.ts:327
+#: src/lib/utils.ts:337
+#: src/components/routes/system.tsx:482
 msgid "Bandwidth"
 msgstr "Bande passante"
 
-#: src/components/login/auth-form.tsx:304
+#: src/components/login/auth-form.tsx:306
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
 msgstr "Beszel prend en charge OpenID Connect et de nombreux fournisseurs d'authentification OAuth2."
 
@@ -150,7 +153,7 @@ msgstr "Beszel prend en charge OpenID Connect et de nombreux fournisseurs d'auth
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
 msgstr "Beszel utilise <0>Shoutrrr</0> pour s'intégrer aux services de notification populaires."
 
-#: src/components/add-system.tsx:129
+#: src/components/add-system.tsx:130
 msgid "Binary"
 msgstr "Binaire"
 
@@ -158,7 +161,7 @@ msgstr "Binaire"
 msgid "Cache / Buffers"
 msgstr "Cache / Tampons"
 
-#: src/components/systems-table/systems-table.tsx:653
+#: src/components/systems-table/systems-table.tsx:668
 msgid "Cancel"
 msgstr "Annuler"
 
@@ -186,7 +189,7 @@ msgstr "Vérifiez les journaux pour plus de détails."
 msgid "Check your notification service"
 msgstr "Vérifiez votre service de notification"
 
-#: src/components/add-system.tsx:203
+#: src/components/add-system.tsx:204
 msgid "Click to copy"
 msgstr "Cliquez pour copier"
 
@@ -199,29 +202,29 @@ msgstr "Instructions en ligne de commande"
 msgid "Configure how you receive alert notifications."
 msgstr "Configurez comment vous recevez les notifications d'alerte."
 
-#: src/components/login/auth-form.tsx:210
-#: src/components/login/auth-form.tsx:215
+#: src/components/login/auth-form.tsx:212
+#: src/components/login/auth-form.tsx:217
 msgid "Confirm password"
 msgstr "Confirmer le mot de passe"
 
-#: src/components/systems-table/systems-table.tsx:659
+#: src/components/systems-table/systems-table.tsx:674
 msgid "Continue"
 msgstr "Continuer"
 
-#: src/lib/utils.ts:26
+#: src/lib/utils.ts:35
 msgid "Copied to clipboard"
 msgstr "Copié dans le presse-papiers"
 
-#: src/components/add-system.tsx:214
-#: src/components/add-system.tsx:216
+#: src/components/add-system.tsx:215
+#: src/components/add-system.tsx:217
 msgid "Copy"
 msgstr "Copier"
 
-#: src/components/systems-table/systems-table.tsx:624
+#: src/components/systems-table/systems-table.tsx:639
 msgid "Copy host"
 msgstr "Copier l'hôte"
 
-#: src/components/add-system.tsx:223
+#: src/components/add-system.tsx:224
 msgid "Copy Linux command"
 msgstr "Copier la commande Linux"
 
@@ -229,17 +232,17 @@ msgstr "Copier la commande Linux"
 msgid "Copy text"
 msgstr "Copier le texte"
 
-#: src/components/systems-table/systems-table.tsx:165
+#: src/components/systems-table/systems-table.tsx:180
 msgid "CPU"
 msgstr "CPU"
 
+#: src/lib/utils.ts:319
+#: src/components/routes/system.tsx:425
 #: src/components/charts/area-chart.tsx:56
-#: src/components/routes/system.tsx:398
-#: src/lib/utils.ts:309
 msgid "CPU Usage"
 msgstr "Utilisation du CPU"
 
-#: src/components/login/auth-form.tsx:236
+#: src/components/login/auth-form.tsx:238
 msgid "Create account"
 msgstr "Créer un compte"
 
@@ -248,7 +251,7 @@ msgstr "Créer un compte"
 msgid "Dark"
 msgstr "Sombre"
 
-#: src/components/command-palette.tsx:82
+#: src/components/command-palette.tsx:80
 #: src/components/routes/home.tsx:35
 msgid "Dashboard"
 msgstr "Tableau de bord"
@@ -257,57 +260,58 @@ msgstr "Tableau de bord"
 msgid "Default time period"
 msgstr "Période par défaut"
 
-#: src/components/systems-table/systems-table.tsx:629
+#: src/components/systems-table/systems-table.tsx:644
 msgid "Delete"
 msgstr "Supprimer"
 
-#: src/components/systems-table/systems-table.tsx:181
+#: src/components/systems-table/systems-table.tsx:196
 msgid "Disk"
 msgstr "Disque"
 
-#: src/components/routes/system.tsx:445
+#: src/components/routes/system.tsx:472
 msgid "Disk I/O"
 msgstr "Entrée/Sortie disque"
 
+#: src/lib/utils.ts:331
+#: src/components/routes/system.tsx:465
 #: src/components/charts/disk-chart.tsx:79
-#: src/components/routes/system.tsx:438
-#: src/lib/utils.ts:321
 msgid "Disk Usage"
 msgstr "Utilisation du disque"
 
-#: src/components/routes/system.tsx:566
+#: src/components/routes/system.tsx:593
 msgid "Disk usage of {extraFsName}"
 msgstr "Utilisation du disque de {extraFsName}"
 
-#: src/components/routes/system.tsx:409
+#: src/components/routes/system.tsx:436
 msgid "Docker CPU Usage"
 msgstr "Utilisation du CPU Docker"
 
-#: src/components/routes/system.tsx:430
+#: src/components/routes/system.tsx:457
 msgid "Docker Memory Usage"
 msgstr "Utilisation de la mémoire Docker"
 
-#: src/components/routes/system.tsx:471
+#: src/components/routes/system.tsx:498
 msgid "Docker Network I/O"
 msgstr "Entrée/Sortie réseau Docker"
 
-#: src/components/command-palette.tsx:125
+#: src/components/command-palette.tsx:123
 msgid "Documentation"
 msgstr "Documentation"
 
 #. Context: System is down
-#: src/components/routes/system.tsx:309
-#: src/lib/utils.ts:306
+#: src/lib/utils.ts:316
+#: src/components/systems-table/systems-table.tsx:141
+#: src/components/routes/system.tsx:336
 msgid "Down"
 msgstr ""
 
-#: src/components/add-system.tsx:124
-#: src/components/systems-table/systems-table.tsx:599
+#: src/components/add-system.tsx:125
+#: src/components/systems-table/systems-table.tsx:614
 msgid "Edit"
 msgstr ""
 
-#: src/components/login/auth-form.tsx:173
 #: src/components/login/forgot-pass-form.tsx:53
+#: src/components/login/auth-form.tsx:175
 msgid "Email"
 msgstr "Email"
 
@@ -323,12 +327,15 @@ msgstr "Entrez l'adresse email pour réinitialiser le mot de passe"
 msgid "Enter email address..."
 msgstr "Entrez l'adresse email..."
 
-#: src/components/login/auth-form.tsx:136
-#: src/components/routes/settings/config-yaml.tsx:28
 #: src/components/routes/settings/notifications.tsx:188
+#: src/components/routes/settings/config-yaml.tsx:28
+#: src/components/login/auth-form.tsx:136
 msgid "Error"
 msgstr "Erreur"
 
+#. placeholder {0}: alert.value
+#. placeholder {1}: info.unit
+#. placeholder {2}: alert.min
 #: src/components/routes/home.tsx:81
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Dépasse {0}{1} dans {2, plural, one {la dernière # minute} other {les dernières # minutes}}"
@@ -345,12 +352,12 @@ msgstr "Exporter la configuration"
 msgid "Export your current systems configuration."
 msgstr "Exportez la configuration actuelle de vos systèmes."
 
-#: src/lib/utils.ts:39
+#: src/lib/utils.ts:48
 msgid "Failed to authenticate"
 msgstr "Échec de l'authentification"
 
-#: src/components/routes/settings/layout.tsx:39
 #: src/components/routes/settings/notifications.tsx:63
+#: src/components/routes/settings/layout.tsx:39
 msgid "Failed to save settings"
 msgstr "Échec de l'enregistrement des paramètres"
 
@@ -362,8 +369,8 @@ msgstr "Échec de l'envoi de la notification de test"
 msgid "Failed to update alert"
 msgstr "Échec de la mise à jour de l'alerte"
 
-#: src/components/routes/system.tsx:606
-#: src/components/systems-table/systems-table.tsx:326
+#: src/components/systems-table/systems-table.tsx:341
+#: src/components/routes/system.tsx:633
 msgid "Filter..."
 msgstr "Filtrer..."
 
@@ -371,25 +378,25 @@ msgstr "Filtrer..."
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "Pour <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 
-#: src/components/login/auth-form.tsx:328
+#: src/components/login/auth-form.tsx:330
 msgid "Forgot password?"
 msgstr "Mot de passe oublié ?"
 
 #. Context: General settings
-#: src/components/routes/settings/general.tsx:33
 #: src/components/routes/settings/layout.tsx:51
+#: src/components/routes/settings/general.tsx:33
 msgid "General"
 msgstr "Général"
 
-#: src/components/routes/system.tsx:510
+#: src/components/routes/system.tsx:537
 msgid "GPU Power Draw"
 msgstr "Consommation du GPU"
 
-#: src/components/systems-table/systems-table.tsx:353
+#: src/components/systems-table/systems-table.tsx:368
 msgid "Grid"
 msgstr "Grille"
 
-#: src/components/add-system.tsx:157
+#: src/components/add-system.tsx:158
 msgid "Host / IP"
 msgstr "Hôte / IP"
 
@@ -402,7 +409,7 @@ msgid "Invalid email address."
 msgstr "Adresse email invalide."
 
 #. Linux kernel
-#: src/components/routes/system.tsx:264
+#: src/components/routes/system.tsx:267
 msgid "Kernel"
 msgstr "Noyau"
 
@@ -410,7 +417,7 @@ msgstr "Noyau"
 msgid "Language"
 msgstr "Langue"
 
-#: src/components/systems-table/systems-table.tsx:339
+#: src/components/systems-table/systems-table.tsx:354
 msgid "Layout"
 msgstr "Disposition"
 
@@ -427,13 +434,13 @@ msgstr "Déconnexion"
 msgid "Login"
 msgstr "Connexion"
 
-#: src/components/login/auth-form.tsx:39
 #: src/components/login/forgot-pass-form.tsx:15
+#: src/components/login/auth-form.tsx:39
 msgid "Login attempt failed"
 msgstr "Échec de la tentative de connexion"
 
-#: src/components/command-palette.tsx:157
 #: src/components/navbar.tsx:86
+#: src/components/command-palette.tsx:155
 msgid "Logs"
 msgstr "Journaux"
 
@@ -445,60 +452,60 @@ msgstr "Vous cherchez plutôt où créer des alertes ? Cliquez sur les icônes d
 msgid "Manage display and notification preferences."
 msgstr "Gérer les préférences d'affichage et de notification."
 
-#: src/components/add-system.tsx:225
+#: src/components/add-system.tsx:226
 msgid "Manual setup instructions"
 msgstr ""
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:636
+#: src/components/routes/system.tsx:663
 msgid "Max 1 min"
 msgstr "Max 1 min"
 
-#: src/components/systems-table/systems-table.tsx:173
+#: src/components/systems-table/systems-table.tsx:188
 msgid "Memory"
 msgstr "Mémoire"
 
-#: src/components/routes/system.tsx:420
-#: src/lib/utils.ts:315
+#: src/lib/utils.ts:325
+#: src/components/routes/system.tsx:447
 msgid "Memory Usage"
 msgstr "Utilisation de la mémoire"
 
-#: src/components/routes/system.tsx:431
+#: src/components/routes/system.tsx:458
 msgid "Memory usage of docker containers"
 msgstr "Utilisation de la mémoire des conteneurs Docker"
 
-#: src/components/add-system.tsx:153
+#: src/components/add-system.tsx:154
 msgid "Name"
 msgstr "Nom"
 
-#: src/components/systems-table/systems-table.tsx:198
+#: src/components/systems-table/systems-table.tsx:213
 msgid "Net"
 msgstr "Net"
 
-#: src/components/routes/system.tsx:472
+#: src/components/routes/system.tsx:499
 msgid "Network traffic of docker containers"
 msgstr "Trafic réseau des conteneurs Docker"
 
-#: src/components/routes/system.tsx:457
+#: src/components/routes/system.tsx:484
 msgid "Network traffic of public interfaces"
 msgstr "Trafic réseau des interfaces publiques"
 
-#: src/components/command-palette.tsx:50
+#: src/components/command-palette.tsx:48
 msgid "No results found."
 msgstr "Aucun résultat trouvé."
 
-#: src/components/systems-table/systems-table.tsx:474
-#: src/components/systems-table/systems-table.tsx:547
+#: src/components/systems-table/systems-table.tsx:489
+#: src/components/systems-table/systems-table.tsx:562
 msgid "No systems found."
 msgstr "Aucun système trouvé."
 
-#: src/components/command-palette.tsx:111
-#: src/components/routes/settings/layout.tsx:56
+#: src/components/command-palette.tsx:109
 #: src/components/routes/settings/notifications.tsx:75
+#: src/components/routes/settings/layout.tsx:56
 msgid "Notifications"
 msgstr "Notifications"
 
-#: src/components/login/auth-form.tsx:299
+#: src/components/login/auth-form.tsx:301
 msgid "OAuth 2 / OIDC support"
 msgstr "Support OAuth 2 / OIDC"
 
@@ -506,11 +513,11 @@ msgstr "Support OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "À chaque redémarrage, les systèmes dans la base de données seront mis à jour pour correspondre aux systèmes définis dans le fichier."
 
-#: src/components/systems-table/systems-table.tsx:585
+#: src/components/systems-table/systems-table.tsx:600
 msgid "Open menu"
 msgstr "Ouvrir le menu"
 
-#: src/components/login/auth-form.tsx:248
+#: src/components/login/auth-form.tsx:250
 msgid "Or continue with"
 msgstr "Ou continuer avec"
 
@@ -518,16 +525,16 @@ msgstr "Ou continuer avec"
 msgid "Overwrite existing alerts"
 msgstr "Écraser les alertes existantes"
 
-#: src/components/command-palette.tsx:85
+#: src/components/command-palette.tsx:83
 msgid "Page"
 msgstr "Page"
 
-#: src/components/command-palette.tsx:72
+#: src/components/command-palette.tsx:70
 msgid "Pages / Settings"
 msgstr "Pages / Paramètres"
 
-#: src/components/login/auth-form.tsx:192
-#: src/components/login/auth-form.tsx:197
+#: src/components/login/auth-form.tsx:194
+#: src/components/login/auth-form.tsx:199
 msgid "Password"
 msgstr "Mot de passe"
 
@@ -543,9 +550,13 @@ msgstr ""
 msgid "Password reset request received"
 msgstr "Demande de réinitialisation du mot de passe reçue"
 
-#: src/components/systems-table/systems-table.tsx:618
+#: src/components/systems-table/systems-table.tsx:633
 msgid "Pause"
 msgstr "Pause"
+
+#: src/components/systems-table/systems-table.tsx:142
+msgid "Paused"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx:96
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -555,8 +566,8 @@ msgstr "Veuillez <0>configurer un serveur SMTP</0> pour garantir la livraison de
 msgid "Please check logs for more details."
 msgstr "Veuillez vérifier les journaux pour plus de détails."
 
-#: src/components/login/auth-form.tsx:40
 #: src/components/login/forgot-pass-form.tsx:16
+#: src/components/login/auth-form.tsx:40
 msgid "Please check your credentials and try again"
 msgstr "Veuillez vérifier vos identifiants et réessayer"
 
@@ -568,11 +579,11 @@ msgstr "Veuillez créer un compte administrateur"
 msgid "Please enable pop-ups for this site"
 msgstr "Veuillez activer les pop-ups pour ce site"
 
-#: src/lib/utils.ts:40
+#: src/lib/utils.ts:49
 msgid "Please log in again"
 msgstr "Veuillez vous reconnecter"
 
-#: src/components/login/auth-form.tsx:307
+#: src/components/login/auth-form.tsx:309
 msgid "Please see <0>the documentation</0> for instructions."
 msgstr "Veuillez consulter <0>la documentation</0> pour les instructions."
 
@@ -580,12 +591,12 @@ msgstr "Veuillez consulter <0>la documentation</0> pour les instructions."
 msgid "Please sign in to your account"
 msgstr "Veuillez vous connecter à votre compte"
 
-#: src/components/add-system.tsx:169
+#: src/components/add-system.tsx:170
 msgid "Port"
 msgstr "Port"
 
-#: src/components/routes/system.tsx:421
-#: src/components/routes/system.tsx:537
+#: src/components/routes/system.tsx:448
+#: src/components/routes/system.tsx:564
 msgid "Precise utilization at the recorded time"
 msgstr "Utilisation précise au moment enregistré"
 
@@ -594,7 +605,7 @@ msgid "Preferred Language"
 msgstr "Langue préférée"
 
 #. Use 'Key' if your language requires many more characters
-#: src/components/add-system.tsx:180
+#: src/components/add-system.tsx:181
 msgid "Public Key"
 msgstr "Clé publique"
 
@@ -613,7 +624,7 @@ msgstr "Reçu"
 msgid "Reset Password"
 msgstr "Réinitialiser le mot de passe"
 
-#: src/components/systems-table/systems-table.tsx:613
+#: src/components/systems-table/systems-table.tsx:628
 msgid "Resume"
 msgstr "Reprendre"
 
@@ -621,12 +632,12 @@ msgstr "Reprendre"
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Enregistrez l'adresse en utilisant la touche Entrée ou la virgule. Laissez vide pour désactiver les notifications par email."
 
-#: src/components/routes/settings/general.tsx:106
 #: src/components/routes/settings/notifications.tsx:168
+#: src/components/routes/settings/general.tsx:106
 msgid "Save Settings"
 msgstr "Enregistrer les paramètres"
 
-#: src/components/add-system.tsx:230
+#: src/components/add-system.tsx:231
 msgid "Save system"
 msgstr ""
 
@@ -634,7 +645,7 @@ msgstr ""
 msgid "Search"
 msgstr "Recherche"
 
-#: src/components/command-palette.tsx:47
+#: src/components/command-palette.tsx:45
 msgid "Search for systems or settings..."
 msgstr "Rechercher des systèmes ou des paramètres..."
 
@@ -651,9 +662,9 @@ msgstr "Envoyé"
 msgid "Sets the default time range for charts when a system is viewed."
 msgstr "Définit la plage de temps par défaut pour les graphiques lorsqu'un système est consulté."
 
-#: src/components/command-palette.tsx:96
-#: src/components/command-palette.tsx:99
-#: src/components/command-palette.tsx:114
+#: src/components/command-palette.tsx:94
+#: src/components/command-palette.tsx:97
+#: src/components/command-palette.tsx:112
 #: src/components/routes/settings/layout.tsx:71
 #: src/components/routes/settings/layout.tsx:82
 msgid "Settings"
@@ -663,37 +674,37 @@ msgstr "Paramètres"
 msgid "Settings saved"
 msgstr "Paramètres enregistrés"
 
-#: src/components/login/auth-form.tsx:236
+#: src/components/login/auth-form.tsx:238
 msgid "Sign in"
 msgstr "Se connecter"
 
-#: src/components/command-palette.tsx:186
+#: src/components/command-palette.tsx:184
 msgid "SMTP settings"
 msgstr "Paramètres SMTP"
 
-#: src/components/systems-table/systems-table.tsx:361
+#: src/components/systems-table/systems-table.tsx:376
 msgid "Sort By"
 msgstr "Trier par"
 
-#: src/lib/utils.ts:301
+#: src/lib/utils.ts:311
 msgid "Status"
 msgstr "Statut"
 
-#: src/components/routes/system.tsx:487
+#: src/components/routes/system.tsx:514
 msgid "Swap space used by the system"
 msgstr "Espace Swap utilisé par le système"
 
-#: src/components/routes/system.tsx:486
+#: src/components/routes/system.tsx:513
 msgid "Swap Usage"
 msgstr "Utilisation du swap"
 
 #. System theme
+#: src/lib/utils.ts:316
 #: src/components/mode-toggle.tsx:26
 #: src/components/systems-table/systems-table.tsx:125
 #: src/components/systems-table/systems-table.tsx:133
-#: src/components/systems-table/systems-table.tsx:144
-#: src/components/systems-table/systems-table.tsx:518
-#: src/lib/utils.ts:306
+#: src/components/systems-table/systems-table.tsx:150
+#: src/components/systems-table/systems-table.tsx:533
 msgid "System"
 msgstr "Système"
 
@@ -705,21 +716,21 @@ msgstr "Systèmes"
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "Les systèmes peuvent être gérés dans un fichier <0>config.yml</0> à l'intérieur de votre répertoire de données."
 
-#: src/components/systems-table/systems-table.tsx:349
+#: src/components/systems-table/systems-table.tsx:364
 msgid "Table"
 msgstr "Tableau"
 
 #. Temperature label in systems table
-#: src/components/systems-table/systems-table.tsx:218
+#: src/components/systems-table/systems-table.tsx:233
 msgid "Temp"
 msgstr ""
 
-#: src/components/routes/system.tsx:498
-#: src/lib/utils.ts:334
+#: src/lib/utils.ts:344
+#: src/components/routes/system.tsx:525
 msgid "Temperature"
 msgstr "Température"
 
-#: src/components/routes/system.tsx:499
+#: src/components/routes/system.tsx:526
 msgid "Temperatures of system sensors"
 msgstr "Températures des capteurs du système"
 
@@ -731,11 +742,11 @@ msgstr "Tester <0>URL</0>"
 msgid "Test notification sent"
 msgstr "Notification de test envoyée"
 
-#: src/components/add-system.tsx:145
+#: src/components/add-system.tsx:146
 msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
 msgstr "L'agent doit être en cours d'exécution sur le système pour se connecter. Copiez la commande d'installation pour l'agent ci-dessous."
 
-#: src/components/add-system.tsx:136
+#: src/components/add-system.tsx:137
 msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
 msgstr "L'agent doit être en cours d'exécution sur le système pour se connecter. Copiez le <0>docker-compose.yml</0> pour l'agent ci-dessous."
 
@@ -743,15 +754,15 @@ msgstr "L'agent doit être en cours d'exécution sur le système pour se connect
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Ensuite, connectez-vous au backend et réinitialisez le mot de passe de votre compte utilisateur dans la table des utilisateurs."
 
-#: src/components/systems-table/systems-table.tsx:645
+#: src/components/systems-table/systems-table.tsx:660
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Cette action ne peut pas être annulée. Cela supprimera définitivement tous les enregistrements actuels pour {name} de la base de données."
 
-#: src/components/routes/system.tsx:578
+#: src/components/routes/system.tsx:605
 msgid "Throughput of {extraFsName}"
 msgstr "Débit de {extraFsName}"
 
-#: src/components/routes/system.tsx:446
+#: src/components/routes/system.tsx:473
 msgid "Throughput of root filesystem"
 msgstr "Débit du système de fichiers racine"
 
@@ -759,8 +770,8 @@ msgstr "Débit du système de fichiers racine"
 msgid "To email(s)"
 msgstr "Aux email(s)"
 
-#: src/components/routes/system.tsx:373
-#: src/components/routes/system.tsx:386
+#: src/components/routes/system.tsx:400
+#: src/components/routes/system.tsx:413
 msgid "Toggle grid"
 msgstr "Basculer la grille"
 
@@ -768,73 +779,74 @@ msgstr "Basculer la grille"
 msgid "Toggle theme"
 msgstr "Changer le thème"
 
-#: src/lib/utils.ts:337
+#: src/lib/utils.ts:347
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Déclenchement lorsque tout capteur dépasse un seuil"
 
-#: src/lib/utils.ts:330
+#: src/lib/utils.ts:340
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Déclenchement lorsque le montant/descendant combinée dépasse un seuil"
 
-#: src/lib/utils.ts:312
+#: src/lib/utils.ts:322
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Déclenchement lorsque l'utilisation du CPU dépasse un seuil"
 
-#: src/lib/utils.ts:318
+#: src/lib/utils.ts:328
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Déclenchement lorsque l'utilisation de la mémoire dépasse un seuil"
 
-#: src/lib/utils.ts:304
+#: src/lib/utils.ts:314
 msgid "Triggers when status switches between up and down"
 msgstr "Déclenchement lorsque le statut passe d'opérationnel à indisponible"
 
-#: src/lib/utils.ts:324
+#: src/lib/utils.ts:334
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Déclenchement lorsque l'utilisation de tout disque dépasse un seuil"
 
 #. Context: System is up
-#: src/components/routes/system.tsx:307
+#: src/components/systems-table/systems-table.tsx:140
+#: src/components/routes/system.tsx:334
 msgid "Up"
 msgstr ""
 
-#: src/components/systems-table/systems-table.tsx:322
+#: src/components/systems-table/systems-table.tsx:337
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Mis à jour en temps réel. Cliquez sur un système pour voir les informations."
 
-#: src/components/routes/system.tsx:263
+#: src/components/routes/system.tsx:266
 msgid "Uptime"
 msgstr "Temps de fonctionnement"
 
+#: src/components/routes/system.tsx:555
+#: src/components/routes/system.tsx:592
 #: src/components/charts/area-chart.tsx:73
-#: src/components/routes/system.tsx:528
-#: src/components/routes/system.tsx:565
 msgid "Usage"
 msgstr "Utilisation"
 
-#: src/components/routes/system.tsx:438
+#: src/components/routes/system.tsx:465
 msgid "Usage of root partition"
 msgstr "Utilisation de la partition racine"
 
-#: src/components/charts/area-chart.tsx:73
-#: src/components/charts/mem-chart.tsx:65
 #: src/components/charts/swap-chart.tsx:56
+#: src/components/charts/mem-chart.tsx:65
+#: src/components/charts/area-chart.tsx:73
 msgid "Used"
 msgstr "Utilisé"
 
-#: src/components/command-palette.tsx:143
 #: src/components/navbar.tsx:70
+#: src/components/command-palette.tsx:141
 msgid "Users"
 msgstr "Utilisateurs"
 
-#: src/components/systems-table/systems-table.tsx:331
+#: src/components/systems-table/systems-table.tsx:346
 msgid "View"
 msgstr "Vue"
 
-#: src/components/systems-table/systems-table.tsx:395
+#: src/components/systems-table/systems-table.tsx:410
 msgid "Visible Fields"
 msgstr "Colonnes visibles"
 
-#: src/components/routes/system.tsx:670
+#: src/components/routes/system.tsx:697
 msgid "Waiting for enough records to display"
 msgstr "En attente de suffisamment d'enregistrements à afficher"
 

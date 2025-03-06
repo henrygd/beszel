@@ -135,6 +135,12 @@ export default function SystemsTable() {
 	}, [filter])
 
 	const columns = useMemo(() => {
+		// Create status translations for filtering
+		const statusTranslations = {
+			"up": t`Up`.toLowerCase(),
+			"down": t`Down`.toLowerCase(),
+			"paused": t`Paused`.toLowerCase()
+		};
 		return [
 			{
 				// size: 200,
@@ -143,10 +149,13 @@ export default function SystemsTable() {
 				accessorKey: "name",
 				id: t`System`,
 				filterFn: (row, _, filterVal) => {
-					// allow filtering by name or status via input field
-					const { name, status } = row.original
-					filterVal = filterVal.toLowerCase()
-					return name.toLowerCase().includes(filterVal) || t`${status}`.toLowerCase().includes(filterVal)
+					const filterLower = filterVal.toLowerCase();
+					const { name, status } = row.original;
+					// Check if the filter matches the name or status for this row
+					if (name.toLowerCase().includes(filterLower) || statusTranslations[status as keyof typeof statusTranslations]?.includes(filterLower)) {
+						return true;
+					}
+					return false;
 				},
 				enableHiding: false,
 				icon: ServerIcon,

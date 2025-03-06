@@ -229,7 +229,7 @@ function AlertContent({ data }: { data: AlertData }) {
 								)}
 								<Trans>
 									For <strong className="text-foreground">{min}</strong>{" "}
-									<Plural value={min} one=" minute" other=" minutes" />
+									<Plural value={min} one="minute" other="minutes" />
 								</Trans>
 							</p>
 							<div className="flex gap-3">
