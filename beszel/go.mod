@@ -8,7 +8,7 @@ require (
 	github.com/gliderlabs/ssh v0.3.8
 	github.com/goccy/go-json v0.10.5
 	github.com/pocketbase/dbx v1.11.0
-	github.com/pocketbase/pocketbase v0.25.8
+	github.com/pocketbase/pocketbase v0.25.9
 	github.com/rhysd/go-github-selfupdate v1.2.3
 	github.com/shirou/gopsutil/v4 v4.25.2
 	github.com/spf13/cast v1.7.1
