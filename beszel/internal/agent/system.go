@@ -187,7 +187,7 @@ func (a *Agent) getSystemStats() system.Stats {
 	// temperatures (skip if sensors whitelist is set to empty string)
 	err = a.updateTemperatures(&systemStats)
 	if err != nil {
-		slog.Error("Error getting temperatures", "err", err)
+		slog.Error("Error getting temperatures", "err", fmt.Sprintf("%+v", err))
 	}
 
 	// GPU data
@@ -238,6 +238,7 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) error {
 	// get sensor data
 	temps, err := sensors.TemperaturesWithContext(a.sensorsContext)
 	if err != nil {
+		slog.Error("Error getting temperatures", "err", fmt.Sprintf("%+v", err))
 		return err
 	}
 	slog.Debug("Temperature", "sensors", temps)
