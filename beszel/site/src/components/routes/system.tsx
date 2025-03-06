@@ -115,6 +115,7 @@ export default function SystemDetail({ name }: { name: string }) {
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
 	const [containerData, setContainerData] = useState([] as ChartData["containerData"])
 	const netCardRef = useRef<HTMLDivElement>(null)
+	const persistChartTime = useRef(false)
 	const [containerFilterBar, setContainerFilterBar] = useState(null as null | JSX.Element)
 	const [bottomSpacing, setBottomSpacing] = useState(0)
 	const [chartLoading, setChartLoading] = useState(true)
@@ -123,8 +124,10 @@ export default function SystemDetail({ name }: { name: string }) {
 	useEffect(() => {
 		document.title = `${name} / Beszel`
 		return () => {
+			if (!persistChartTime.current) {
 			$chartTime.set($userSettings.get().chartTime)
-			// resetCharts()
+			}
+			persistChartTime.current = false
 			setSystemStats([])
 			setContainerData([])
 			setContainerFilterBar(null)
@@ -263,7 +266,7 @@ export default function SystemDetail({ name }: { name: string }) {
 				// hide if hostname is same as host or name
 				hide: system.info.h === system.host || system.info.h === system.name,
 			},
-			{ value: uptime, Icon: ClockArrowUp, label: t`Uptime` },
+			{ value: uptime, Icon: ClockArrowUp, label: t`Uptime`, hide: !system.info.u },
 			{ value: system.info.k, Icon: TuxIcon, label: t({ comment: "Linux kernel", message: "Kernel" }) },
 			{
 				value: `${system.info.m} (${system.info.c}c${system.info.t ? `/${system.info.t}t` : ""})`,
@@ -294,6 +297,9 @@ export default function SystemDetail({ name }: { name: string }) {
 	
 	// keyboard navigation between systems
 	useEffect(() => {
+		if (!systems.length) {
+			return
+		}
 		const handleKeyUp = (e: KeyboardEvent) => {
 			if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
 				return
@@ -306,15 +312,17 @@ export default function SystemDetail({ name }: { name: string }) {
 				case "ArrowLeft":
 				case "h":
 					const prevIndex = (currentIndex - 1 + systems.length) % systems.length
-					return navigate(getPagePath($router, "system", { name: systems[prevIndex].name }))
+					persistChartTime.current = true
+					return navigate(getPagePath($router, "system", { name: systems[prevIndex].name}))
 				case "ArrowRight":
 				case "l":
 					const nextIndex = (currentIndex + 1) % systems.length
-					return navigate(getPagePath($router, "system", { name: systems[nextIndex].name }))
+					persistChartTime.current = true
+					return navigate(getPagePath($router, "system", { name: systems[nextIndex].name}))
 			}
 		}
 		return listen(document, "keyup", handleKeyUp)
-	}, [name])
+	}, [name, systems])
 
 	if (!system.id) {
 		return null
