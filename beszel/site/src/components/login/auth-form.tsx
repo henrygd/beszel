@@ -135,7 +135,6 @@ export function UserAuthForm({
 				toast({
 					title: t`Error`,
 					description: t`Please enable pop-ups for this site`,
-					variant: "destructive",
 				})
 				return
 			}
@@ -156,8 +155,11 @@ export function UserAuthForm({
 
 	useEffect(() => {
 		// auto login if password disabled and only one auth provider
-		if (!passwordEnabled && authProviders.length === 1) {
-			loginWithOauth(authProviders[0], true)
+		if (!passwordEnabled && authProviders.length === 1 && !sessionStorage.getItem("lo")) {
+			// Add a small timeout to ensure browser is ready to handle popups
+			setTimeout(() => {
+				loginWithOauth(authProviders[0], true)
+			}, 300)
 		}
 	}, [])
 

@@ -77,6 +77,7 @@ export const updateSystemList = (() => {
 
 /** Logs the user out by clearing the auth store and unsubscribing from realtime updates. */
 export async function logOut() {
+	sessionStorage.setItem("lo", "t")
 	pb.authStore.clear()
 	pb.realtime.unsubscribe()
 }
