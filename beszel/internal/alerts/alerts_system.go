@@ -4,7 +4,6 @@ import (
 	"beszel/internal/entities/system"
 	"fmt"
 	"net/url"
-	"slices"
 	"strings"
 	"time"
 
@@ -51,14 +50,10 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			}
 			val = maxUsedPct
 		case "Temperature":
-			if data.Stats.Temperatures == nil {
+			if data.Info.DashboardTemp < 1 {
 				continue
 			}
-			for _, temp := range data.Stats.Temperatures {
-				if temp > val {
-					val = temp
-				}
-			}
+			val = data.Info.DashboardTemp
 			unit = "°C"
 		}
 
@@ -74,13 +69,8 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		}
 
 		min := max(1, cast.ToUint8(alertRecord.Get("min")))
-		// add time to alert time to make sure it's slighty after record creation
-		time := now.Add(-time.Duration(min) * time.Minute)
-		if time.Before(oldestTime) {
-			oldestTime = time
-		}
 
-		validAlerts = append(validAlerts, SystemAlertData{
+		alert := SystemAlertData{
 			systemRecord: systemRecord,
 			alertRecord:  alertRecord,
 			name:         name,
@@ -88,9 +78,22 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			val:          val,
 			threshold:    threshold,
 			triggered:    triggered,
-			time:         time,
 			min:          min,
-		})
+		}
+
+		// send alert immediately if min is 1 - no need to sum up values.
+		if min == 1 {
+			alert.triggered = val > threshold
+			go am.sendSystemAlert(alert)
+			continue
+		}
+
+		alert.time = now.Add(-time.Duration(min) * time.Minute)
+		if alert.time.Before(oldestTime) {
+			oldestTime = alert.time
+		}
+
+		validAlerts = append(validAlerts, alert)
 	}
 
 	systemStats := []struct {
@@ -119,13 +122,14 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 	oldestRecordTime := systemStats[0].Created.Time()
 	// log.Println("oldestRecordTime", oldestRecordTime.String())
 
-	// delete from validAlerts if time is older than oldestRecord
-	for i := range validAlerts {
-		if validAlerts[i].time.Before(oldestRecordTime) {
-			// log.Println("deleting alert - time is older than oldestRecord", validAlerts[i].name, oldestRecordTime, validAlerts[i].time)
-			validAlerts = slices.Delete(validAlerts, i, i+1)
+	// Filter validAlerts to keep only those with time newer than oldestRecord
+	filteredAlerts := make([]SystemAlertData, 0, len(validAlerts))
+	for _, alert := range validAlerts {
+		if alert.time.After(oldestRecordTime) {
+			filteredAlerts = append(filteredAlerts, alert)
 		}
 	}
+	validAlerts = filteredAlerts
 
 	if len(validAlerts) == 0 {
 		// log.Println("no valid alerts found")

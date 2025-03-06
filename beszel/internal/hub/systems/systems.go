@@ -106,7 +106,7 @@ func (sm *SystemManager) onRecordCreate(e *core.RecordEvent) error {
 // Runs after the record is committed to the database
 func (sm *SystemManager) onRecordAfterCreateSuccess(e *core.RecordEvent) error {
 	if err := sm.AddRecord(e.Record); err != nil {
-		sm.hub.Logger().Error("Error adding record", "err", err)
+		e.App.Logger().Error("Error adding record", "err", err)
 	}
 	return e.Next()
 }
@@ -128,7 +128,7 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 		return e.Next()
 	case pending:
 		if err := sm.AddRecord(e.Record); err != nil {
-			sm.hub.Logger().Error("Error adding record", "err", err)
+			e.App.Logger().Error("Error adding record", "err", err)
 		}
 		return e.Next()
 	}
@@ -141,12 +141,12 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 	// system alerts if system is up
 	if system.Status == up {
 		if err := sm.hub.HandleSystemAlerts(e.Record, system.data); err != nil {
-			sm.hub.Logger().Error("Error handling system alerts", "err", err)
+			e.App.Logger().Error("Error handling system alerts", "err", err)
 		}
 	}
 	if (system.Status == down && prevStatus == up) || (system.Status == up && prevStatus == down) {
 		if err := sm.hub.HandleStatusAlerts(system.Status, e.Record); err != nil {
-			sm.hub.Logger().Error("Error handling status alerts", "err", err)
+			e.App.Logger().Error("Error handling status alerts", "err", err)
 		}
 	}
 	return e.Next()
@@ -248,11 +248,6 @@ func (sys *System) createRecords() (*core.Record, error) {
 		return nil, err
 	}
 	hub := sys.manager.hub
-	systemRecord.Set("status", up)
-	systemRecord.Set("info", sys.data.Info)
-	if err := hub.SaveNoValidate(systemRecord); err != nil {
-		return nil, err
-	}
 	// add system_stats and container_stats records
 	systemStats, err := hub.FindCachedCollectionByNameOrId("system_stats")
 	if err != nil {
@@ -278,6 +273,12 @@ func (sys *System) createRecords() (*core.Record, error) {
 		if err := hub.SaveNoValidate(containerStatsRecord); err != nil {
 			return nil, err
 		}
+	}
+	// update system record (do this last because it triggers alerts and we need above records to be inserted first)
+	systemRecord.Set("status", up)
+	systemRecord.Set("info", sys.data.Info)
+	if err := hub.SaveNoValidate(systemRecord); err != nil {
+		return nil, err
 	}
 	return systemRecord, nil
 }
