@@ -8,7 +8,7 @@ msgstr ""
 "Language: es\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-24 02:49\n"
+"PO-Revision-Date: 2025-02-28 17:20\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -299,12 +299,12 @@ msgstr "Documentación"
 #: src/components/routes/system.tsx:309
 #: src/lib/utils.ts:306
 msgid "Down"
-msgstr ""
+msgstr "Abajo"
 
 #: src/components/add-system.tsx:124
 #: src/components/systems-table/systems-table.tsx:599
 msgid "Edit"
-msgstr ""
+msgstr "Editar"
 
 #: src/components/login/auth-form.tsx:173
 #: src/components/login/forgot-pass-form.tsx:53
@@ -383,7 +383,7 @@ msgstr "General"
 
 #: src/components/routes/system.tsx:510
 msgid "GPU Power Draw"
-msgstr ""
+msgstr "Consumo de energía de la GPU"
 
 #: src/components/systems-table/systems-table.tsx:353
 msgid "Grid"
@@ -447,7 +447,7 @@ msgstr "Administrar preferencias de visualización y notificaciones."
 
 #: src/components/add-system.tsx:225
 msgid "Manual setup instructions"
-msgstr ""
+msgstr "Instrucciones manuales de configuración"
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx:636
@@ -537,7 +537,7 @@ msgstr "La contraseña debe tener al menos 8 caracteres."
 
 #: src/components/login/auth-form.tsx:21
 msgid "Password must be less than 72 bytes."
-msgstr ""
+msgstr "La contraseña debe ser menor de 72 bytes."
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
@@ -628,7 +628,7 @@ msgstr "Guardar Configuración"
 
 #: src/components/add-system.tsx:230
 msgid "Save system"
-msgstr ""
+msgstr "Guardar Sistema"
 
 #: src/components/navbar.tsx:134
 msgid "Search"
@@ -712,7 +712,7 @@ msgstr "Tabla"
 #. Temperature label in systems table
 #: src/components/systems-table/systems-table.tsx:218
 msgid "Temp"
-msgstr ""
+msgstr "Temperatura"
 
 #: src/components/routes/system.tsx:498
 #: src/lib/utils.ts:334
@@ -795,7 +795,7 @@ msgstr "Se activa cuando el uso de cualquier disco supera un umbral"
 #. Context: System is up
 #: src/components/routes/system.tsx:307
 msgid "Up"
-msgstr ""
+msgstr "Activo"
 
 #: src/components/systems-table/systems-table.tsx:322
 msgid "Updated in real time. Click on a system to view information."
@@ -863,3 +863,4 @@ msgstr "Configuración YAML"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "Su configuración de usuario ha sido actualizada."
+
