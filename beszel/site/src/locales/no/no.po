@@ -8,7 +8,7 @@ msgstr ""
 "Language: no\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-24 02:49\n"
+"PO-Revision-Date: 2025-03-05 20:49\n"
 "Last-Translator: \n"
 "Language-Team: Norwegian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -299,7 +299,7 @@ msgstr "Dokumentasjon"
 #: src/components/routes/system.tsx:309
 #: src/lib/utils.ts:306
 msgid "Down"
-msgstr ""
+msgstr "Nede"
 
 #: src/components/add-system.tsx:124
 #: src/components/systems-table/systems-table.tsx:599
@@ -447,7 +447,7 @@ msgstr "Endre visnings- og varslingsinnstillinger."
 
 #: src/components/add-system.tsx:225
 msgid "Manual setup instructions"
-msgstr ""
+msgstr "Instruks for Manuell Installasjon"
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx:636
@@ -795,7 +795,7 @@ msgstr "Slår inn når forbruk av hvilken som helst disk overstiger en grensever
 #. Context: System is up
 #: src/components/routes/system.tsx:307
 msgid "Up"
-msgstr ""
+msgstr "Oppe"
 
 #: src/components/systems-table/systems-table.tsx:322
 msgid "Updated in real time. Click on a system to view information."
@@ -863,3 +863,4 @@ msgstr "YAML Konfigurasjon"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "Dine brukerinnstillinger har blitt oppdatert."
+
