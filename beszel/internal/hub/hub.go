@@ -64,11 +64,6 @@ func (h *Hub) BootstrapHub() (*Hub, error) {
 		}
 	}
 
-	// initial setup
-	if err := h.initialize(); err != nil {
-		return nil, err
-	}
-
 	// serve web ui
 	h.OnServe().BindFunc(h.startServer)
 	// set up scheduled jobs
@@ -84,6 +79,11 @@ func (h *Hub) BootstrapHub() (*Hub, error) {
 	h.syncSystemsWithConfig()
 	// start system updates
 	h.sm.Initialize()
+
+	// initial setup
+	if err := h.initialize(); err != nil {
+		return nil, err
+	}
 
 	return h, nil
 }
@@ -145,7 +145,6 @@ func (h *Hub) initialize() error {
 
 // Start starts the hub application / server
 func (h *Hub) Start() error {
-	// Use type assertion to access the Start method
 	if pb, ok := h.App.(*pocketbase.PocketBase); ok {
 		return pb.Start()
 	}
