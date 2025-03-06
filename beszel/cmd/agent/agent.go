@@ -14,14 +14,14 @@ import (
 
 // cli options
 type cmdOptions struct {
-	key  string // key is the public key(s) for SSH authentication.
-	addr string // addr is the address or port to listen on.
+	key    string // key is the public key(s) for SSH authentication.
+	listen string // listen is the address or port to listen on.
 }
 
 // parseFlags parses the command line flags and populates the config struct.
 func (opts *cmdOptions) parseFlags() {
 	flag.StringVar(&opts.key, "key", "", "Public key(s) for SSH authentication")
-	flag.StringVar(&opts.addr, "addr", "", "Address or port to listen on")
+	flag.StringVar(&opts.listen, "listen", "", "Address or port to listen on")
 
 	flag.Usage = func() {
 		fmt.Printf("Usage: %s [options] [subcommand]\n", os.Args[0])
@@ -82,11 +82,11 @@ func (opts *cmdOptions) loadPublicKeys() ([]ssh.PublicKey, error) {
 // getAddress gets the address to listen on from the command line flag, environment variable, or default value.
 func (opts *cmdOptions) getAddress() string {
 	// Try command line flag first
-	if opts.addr != "" {
-		return opts.addr
+	if opts.listen != "" {
+		return opts.listen
 	}
 	// Try environment variables
-	if addr, ok := agent.GetEnv("ADDR"); ok && addr != "" {
+	if addr, ok := agent.GetEnv("LISTEN"); ok && addr != "" {
 		return addr
 	}
 	// Legacy PORT environment variable support
@@ -101,7 +101,7 @@ func (opts *cmdOptions) getNetwork() string {
 	if network, _ := agent.GetEnv("NETWORK"); network != "" {
 		return network
 	}
-	if strings.HasPrefix(opts.addr, "/") {
+	if strings.HasPrefix(opts.listen, "/") {
 		return "unix"
 	}
 	return "tcp"
@@ -117,7 +117,7 @@ func main() {
 
 	flag.Parse()
 
-	opts.addr = opts.getAddress()
+	opts.listen = opts.getAddress()
 
 	var serverConfig agent.ServerOptions
 	var err error
@@ -126,7 +126,7 @@ func main() {
 		log.Fatal("Failed to load public keys:", err)
 	}
 
-	serverConfig.Addr = opts.addr
+	serverConfig.Addr = opts.listen
 	serverConfig.Network = opts.getNetwork()
 
 	agent := agent.NewAgent()

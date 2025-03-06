@@ -61,13 +61,13 @@ function copyDockerCompose(port = "45876", publicKey: string) {
       # monitor other disks / partitions by mounting a folder in /extra-filesystems
       # - /mnt/disk/.beszel:/extra-filesystems/sda1:ro
     environment:
-      PORT: ${port}
+      LISTEN: ${port}
       KEY: "${publicKey}"`)
 }
 
 function copyDockerRun(port = "45876", publicKey: string) {
 	copyToClipboard(
-		`docker run -d --name beszel-agent --network host --restart unless-stopped -v /var/run/docker.sock:/var/run/docker.sock:ro -e KEY="${publicKey}" -e PORT=${port} henrygd/beszel-agent:latest`
+		`docker run -d --name beszel-agent --network host --restart unless-stopped -v /var/run/docker.sock:/var/run/docker.sock:ro -e KEY="${publicKey}" -e LISTEN=${port} henrygd/beszel-agent:latest`
 	)
 }
 
@@ -265,7 +265,7 @@ const CopyButton = memo((props: CopyButtonProps) => {
 							</a>
 						</DropdownMenuItem>
 					) : (
-						<DropdownMenuItem onClick={props.dropdownOnClick}>{props.dropdownText}</DropdownMenuItem>
+						<DropdownMenuItem onClick={props.dropdownOnClick} className="cursor-pointer">{props.dropdownText}</DropdownMenuItem>
 					)}
 				</DropdownMenuContent>
 			</DropdownMenu>
