@@ -19,11 +19,11 @@ msgstr ""
 "X-Crowdin-File-ID: 16\n"
 
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
-#: src/components/routes/system.tsx:255
+#: src/components/routes/system.tsx:258
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# dan} two {# dneva} few {# dni} other {# dni}}"
 
-#: src/components/routes/system.tsx:253
+#: src/components/routes/system.tsx:256
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# ura} two {# uri} few {# ur} other {# ur}}"
 
@@ -109,11 +109,11 @@ msgstr "Ali ste prepričani, da želite izbrisati {name}?"
 msgid "Automatic copy requires a secure context."
 msgstr "Za samodejno kopiranje je potreben varen kontekst."
 
-#: src/components/routes/system.tsx:660
+#: src/components/routes/system.tsx:668
 msgid "Average"
 msgstr "Povprečno"
 
-#: src/components/routes/system.tsx:437
+#: src/components/routes/system.tsx:445
 msgid "Average CPU utilization of containers"
 msgstr "Povprečna izkoriščenost procesorja kontejnerjev"
 
@@ -122,16 +122,16 @@ msgstr "Povprečna izkoriščenost procesorja kontejnerjev"
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Povprečje presega <0>{value}{0}</0>"
 
-#: src/components/routes/system.tsx:538
+#: src/components/routes/system.tsx:546
 msgid "Average power consumption of GPUs"
 msgstr "Povprečna poraba energije GPU"
 
-#: src/components/routes/system.tsx:426
+#: src/components/routes/system.tsx:434
 msgid "Average system-wide CPU utilization"
 msgstr "Povprečna CPU izkoriščenost v celotnem sistemu"
 
 #. placeholder {0}: gpu.n
-#: src/components/routes/system.tsx:556
+#: src/components/routes/system.tsx:564
 msgid "Average utilization of {0}"
 msgstr "Povprečna poraba {0}"
 
@@ -141,7 +141,7 @@ msgid "Backups"
 msgstr "Varnostne kopije"
 
 #: src/lib/utils.ts:337
-#: src/components/routes/system.tsx:482
+#: src/components/routes/system.tsx:490
 msgid "Bandwidth"
 msgstr "Pasovna širina"
 
@@ -237,7 +237,7 @@ msgid "CPU"
 msgstr "CPU"
 
 #: src/lib/utils.ts:319
-#: src/components/routes/system.tsx:425
+#: src/components/routes/system.tsx:433
 #: src/components/charts/area-chart.tsx:56
 msgid "CPU Usage"
 msgstr "CPU poraba"
@@ -268,29 +268,29 @@ msgstr "Izbriši"
 msgid "Disk"
 msgstr "Disk"
 
-#: src/components/routes/system.tsx:472
+#: src/components/routes/system.tsx:480
 msgid "Disk I/O"
 msgstr "Disk I/O"
 
 #: src/lib/utils.ts:331
-#: src/components/routes/system.tsx:465
+#: src/components/routes/system.tsx:473
 #: src/components/charts/disk-chart.tsx:79
 msgid "Disk Usage"
 msgstr "Poraba diska"
 
-#: src/components/routes/system.tsx:593
+#: src/components/routes/system.tsx:601
 msgid "Disk usage of {extraFsName}"
 msgstr "Poraba diska za {extraFsName}"
 
-#: src/components/routes/system.tsx:436
+#: src/components/routes/system.tsx:444
 msgid "Docker CPU Usage"
 msgstr "Docker CPU poraba"
 
-#: src/components/routes/system.tsx:457
+#: src/components/routes/system.tsx:465
 msgid "Docker Memory Usage"
 msgstr "Docker poraba spomina"
 
-#: src/components/routes/system.tsx:498
+#: src/components/routes/system.tsx:506
 msgid "Docker Network I/O"
 msgstr "Docker I/O mreže"
 
@@ -301,7 +301,7 @@ msgstr "Dokumentacija"
 #. Context: System is down
 #: src/lib/utils.ts:316
 #: src/components/systems-table/systems-table.tsx:141
-#: src/components/routes/system.tsx:336
+#: src/components/routes/system.tsx:344
 msgid "Down"
 msgstr ""
 
@@ -370,7 +370,7 @@ msgid "Failed to update alert"
 msgstr "Opozorila ni bilo mogoče posodobiti"
 
 #: src/components/systems-table/systems-table.tsx:341
-#: src/components/routes/system.tsx:633
+#: src/components/routes/system.tsx:641
 msgid "Filter..."
 msgstr "Filter..."
 
@@ -388,7 +388,7 @@ msgstr "Pozabljeno geslo?"
 msgid "General"
 msgstr "Splošno"
 
-#: src/components/routes/system.tsx:537
+#: src/components/routes/system.tsx:545
 msgid "GPU Power Draw"
 msgstr "GPU poraba moči"
 
@@ -409,7 +409,7 @@ msgid "Invalid email address."
 msgstr "Napačen e-poštni naslov."
 
 #. Linux kernel
-#: src/components/routes/system.tsx:267
+#: src/components/routes/system.tsx:270
 msgid "Kernel"
 msgstr "Jedro"
 
@@ -457,7 +457,7 @@ msgid "Manual setup instructions"
 msgstr ""
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:663
+#: src/components/routes/system.tsx:671
 msgid "Max 1 min"
 msgstr "Največ 1 min"
 
@@ -466,11 +466,11 @@ msgid "Memory"
 msgstr "Pomnilnik"
 
 #: src/lib/utils.ts:325
-#: src/components/routes/system.tsx:447
+#: src/components/routes/system.tsx:455
 msgid "Memory Usage"
 msgstr "Poraba pomnilnika"
 
-#: src/components/routes/system.tsx:458
+#: src/components/routes/system.tsx:466
 msgid "Memory usage of docker containers"
 msgstr "Poraba pomnilnika docker kontejnerjev"
 
@@ -482,11 +482,11 @@ msgstr "Naziv"
 msgid "Net"
 msgstr "Mreža"
 
-#: src/components/routes/system.tsx:499
+#: src/components/routes/system.tsx:507
 msgid "Network traffic of docker containers"
 msgstr "Omrežni promet docker kontejnerjev"
 
-#: src/components/routes/system.tsx:484
+#: src/components/routes/system.tsx:492
 msgid "Network traffic of public interfaces"
 msgstr "Omrežni promet javnih vmesnikov"
 
@@ -595,8 +595,8 @@ msgstr "Prijavite se v svoj račun"
 msgid "Port"
 msgstr "Vrata"
 
-#: src/components/routes/system.tsx:448
-#: src/components/routes/system.tsx:564
+#: src/components/routes/system.tsx:456
+#: src/components/routes/system.tsx:572
 msgid "Precise utilization at the recorded time"
 msgstr "Natančna poraba v zabeleženem času"
 
@@ -690,11 +690,11 @@ msgstr "Razvrsti po"
 msgid "Status"
 msgstr "Status"
 
-#: src/components/routes/system.tsx:514
+#: src/components/routes/system.tsx:522
 msgid "Swap space used by the system"
 msgstr "Swap prostor, ki ga uporablja sistem"
 
-#: src/components/routes/system.tsx:513
+#: src/components/routes/system.tsx:521
 msgid "Swap Usage"
 msgstr "Swap uporaba"
 
@@ -726,11 +726,11 @@ msgid "Temp"
 msgstr ""
 
 #: src/lib/utils.ts:344
-#: src/components/routes/system.tsx:525
+#: src/components/routes/system.tsx:533
 msgid "Temperature"
 msgstr "Temperatura"
 
-#: src/components/routes/system.tsx:526
+#: src/components/routes/system.tsx:534
 msgid "Temperatures of system sensors"
 msgstr "Temperature sistemskih senzorjev"
 
@@ -758,11 +758,11 @@ msgstr "Nato se prijavite v zaledni sistem in ponastavite geslo svojega uporabni
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Tega dejanja ni mogoče razveljaviti. To bo trajno izbrisalo vse trenutne zapise za {name} iz zbirke podatkov."
 
-#: src/components/routes/system.tsx:605
+#: src/components/routes/system.tsx:613
 msgid "Throughput of {extraFsName}"
 msgstr "Prepustnost {extraFsName}"
 
-#: src/components/routes/system.tsx:473
+#: src/components/routes/system.tsx:481
 msgid "Throughput of root filesystem"
 msgstr "Prepustnost korenskega datotečnega sistema"
 
@@ -770,8 +770,8 @@ msgstr "Prepustnost korenskega datotečnega sistema"
 msgid "To email(s)"
 msgstr "E-pošta za"
 
-#: src/components/routes/system.tsx:400
-#: src/components/routes/system.tsx:413
+#: src/components/routes/system.tsx:408
+#: src/components/routes/system.tsx:421
 msgid "Toggle grid"
 msgstr "Preklopi način mreže"
 
@@ -805,7 +805,7 @@ msgstr "Sproži se, ko uporaba katerega koli diska preseže prag"
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx:140
-#: src/components/routes/system.tsx:334
+#: src/components/routes/system.tsx:342
 msgid "Up"
 msgstr ""
 
@@ -813,17 +813,17 @@ msgstr ""
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Posodobljeno v realnem času. Za ogled informacij kliknite na sistem."
 
-#: src/components/routes/system.tsx:266
+#: src/components/routes/system.tsx:269
 msgid "Uptime"
 msgstr "Čas delovanja"
 
-#: src/components/routes/system.tsx:555
-#: src/components/routes/system.tsx:592
+#: src/components/routes/system.tsx:563
+#: src/components/routes/system.tsx:600
 #: src/components/charts/area-chart.tsx:73
 msgid "Usage"
 msgstr "Uporaba"
 
-#: src/components/routes/system.tsx:465
+#: src/components/routes/system.tsx:473
 msgid "Usage of root partition"
 msgstr "Uporaba korenske particije"
 
@@ -846,7 +846,7 @@ msgstr "Pogled"
 msgid "Visible Fields"
 msgstr "Vidna polja"
 
-#: src/components/routes/system.tsx:697
+#: src/components/routes/system.tsx:705
 msgid "Waiting for enough records to display"
 msgstr "Čakam na dovolj zapisov za prikaz"
 

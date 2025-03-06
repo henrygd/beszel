@@ -19,11 +19,11 @@ msgstr ""
 "X-Crowdin-File-ID: 16\n"
 
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
-#: src/components/routes/system.tsx:255
+#: src/components/routes/system.tsx:258
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# 일} other {# 일}}"
 
-#: src/components/routes/system.tsx:253
+#: src/components/routes/system.tsx:256
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# 시간} other {# 시간}}"
 
@@ -109,11 +109,11 @@ msgstr "{name}을(를) 삭제하시겠습니까?"
 msgid "Automatic copy requires a secure context."
 msgstr "자동 복사는 안전한 컨텍스트가 필요합니다."
 
-#: src/components/routes/system.tsx:660
+#: src/components/routes/system.tsx:668
 msgid "Average"
 msgstr "평균"
 
-#: src/components/routes/system.tsx:437
+#: src/components/routes/system.tsx:445
 msgid "Average CPU utilization of containers"
 msgstr "컨테이너의 평균 CPU 사용량"
 
@@ -122,16 +122,16 @@ msgstr "컨테이너의 평균 CPU 사용량"
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "평균이 <0>{value}{0}</0>을(를) 초과합니다"
 
-#: src/components/routes/system.tsx:538
+#: src/components/routes/system.tsx:546
 msgid "Average power consumption of GPUs"
 msgstr "GPU들의 평균 전원 사용량"
 
-#: src/components/routes/system.tsx:426
+#: src/components/routes/system.tsx:434
 msgid "Average system-wide CPU utilization"
 msgstr "시스템 전체의 평균 CPU 사용량"
 
 #. placeholder {0}: gpu.n
-#: src/components/routes/system.tsx:556
+#: src/components/routes/system.tsx:564
 msgid "Average utilization of {0}"
 msgstr "평균 {0} 사용량"
 
@@ -141,7 +141,7 @@ msgid "Backups"
 msgstr "백업"
 
 #: src/lib/utils.ts:337
-#: src/components/routes/system.tsx:482
+#: src/components/routes/system.tsx:490
 msgid "Bandwidth"
 msgstr "대역폭"
 
@@ -237,7 +237,7 @@ msgid "CPU"
 msgstr "CPU"
 
 #: src/lib/utils.ts:319
-#: src/components/routes/system.tsx:425
+#: src/components/routes/system.tsx:433
 #: src/components/charts/area-chart.tsx:56
 msgid "CPU Usage"
 msgstr "CPU 사용량"
@@ -268,29 +268,29 @@ msgstr "삭제"
 msgid "Disk"
 msgstr "디스크"
 
-#: src/components/routes/system.tsx:472
+#: src/components/routes/system.tsx:480
 msgid "Disk I/O"
 msgstr "디스크 I/O"
 
 #: src/lib/utils.ts:331
-#: src/components/routes/system.tsx:465
+#: src/components/routes/system.tsx:473
 #: src/components/charts/disk-chart.tsx:79
 msgid "Disk Usage"
 msgstr "디스크 사용량"
 
-#: src/components/routes/system.tsx:593
+#: src/components/routes/system.tsx:601
 msgid "Disk usage of {extraFsName}"
 msgstr "{extraFsName}의 디스크 사용량"
 
-#: src/components/routes/system.tsx:436
+#: src/components/routes/system.tsx:444
 msgid "Docker CPU Usage"
 msgstr "Docker CPU 사용량"
 
-#: src/components/routes/system.tsx:457
+#: src/components/routes/system.tsx:465
 msgid "Docker Memory Usage"
 msgstr "Docker 메모리 사용량"
 
-#: src/components/routes/system.tsx:498
+#: src/components/routes/system.tsx:506
 msgid "Docker Network I/O"
 msgstr "Docker 네트워크 I/O"
 
@@ -301,7 +301,7 @@ msgstr "문서"
 #. Context: System is down
 #: src/lib/utils.ts:316
 #: src/components/systems-table/systems-table.tsx:141
-#: src/components/routes/system.tsx:336
+#: src/components/routes/system.tsx:344
 msgid "Down"
 msgstr ""
 
@@ -370,7 +370,7 @@ msgid "Failed to update alert"
 msgstr "알림 수정 실패"
 
 #: src/components/systems-table/systems-table.tsx:341
-#: src/components/routes/system.tsx:633
+#: src/components/routes/system.tsx:641
 msgid "Filter..."
 msgstr "필터..."
 
@@ -388,7 +388,7 @@ msgstr "비밀번호를 잊으셨나요?"
 msgid "General"
 msgstr "일반"
 
-#: src/components/routes/system.tsx:537
+#: src/components/routes/system.tsx:545
 msgid "GPU Power Draw"
 msgstr "GPU 전원 사용량"
 
@@ -409,7 +409,7 @@ msgid "Invalid email address."
 msgstr "잘못된 이메일 주소입니다."
 
 #. Linux kernel
-#: src/components/routes/system.tsx:267
+#: src/components/routes/system.tsx:270
 msgid "Kernel"
 msgstr "커널"
 
@@ -457,7 +457,7 @@ msgid "Manual setup instructions"
 msgstr ""
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:663
+#: src/components/routes/system.tsx:671
 msgid "Max 1 min"
 msgstr "1분간 최댓값"
 
@@ -466,11 +466,11 @@ msgid "Memory"
 msgstr "메모리"
 
 #: src/lib/utils.ts:325
-#: src/components/routes/system.tsx:447
+#: src/components/routes/system.tsx:455
 msgid "Memory Usage"
 msgstr "메모리 사용량"
 
-#: src/components/routes/system.tsx:458
+#: src/components/routes/system.tsx:466
 msgid "Memory usage of docker containers"
 msgstr "Docker 컨테이너의 메모리 사용량"
 
@@ -482,11 +482,11 @@ msgstr "이름"
 msgid "Net"
 msgstr "네트워크"
 
-#: src/components/routes/system.tsx:499
+#: src/components/routes/system.tsx:507
 msgid "Network traffic of docker containers"
 msgstr "Docker 컨테이너의 네트워크 트래픽"
 
-#: src/components/routes/system.tsx:484
+#: src/components/routes/system.tsx:492
 msgid "Network traffic of public interfaces"
 msgstr "공용 인터페이스의 네트워크 트래픽"
 
@@ -595,8 +595,8 @@ msgstr "계정에 로그인하세요."
 msgid "Port"
 msgstr "포트"
 
-#: src/components/routes/system.tsx:448
-#: src/components/routes/system.tsx:564
+#: src/components/routes/system.tsx:456
+#: src/components/routes/system.tsx:572
 msgid "Precise utilization at the recorded time"
 msgstr "기록된 시간의 정확한 사용량"
 
@@ -690,11 +690,11 @@ msgstr "정렬 기준"
 msgid "Status"
 msgstr "상태"
 
-#: src/components/routes/system.tsx:514
+#: src/components/routes/system.tsx:522
 msgid "Swap space used by the system"
 msgstr "시스템에서 사용된 스왑 공간"
 
-#: src/components/routes/system.tsx:513
+#: src/components/routes/system.tsx:521
 msgid "Swap Usage"
 msgstr "스왑 사용량"
 
@@ -726,11 +726,11 @@ msgid "Temp"
 msgstr ""
 
 #: src/lib/utils.ts:344
-#: src/components/routes/system.tsx:525
+#: src/components/routes/system.tsx:533
 msgid "Temperature"
 msgstr "온도"
 
-#: src/components/routes/system.tsx:526
+#: src/components/routes/system.tsx:534
 msgid "Temperatures of system sensors"
 msgstr "시스템 센서의 온도"
 
@@ -758,11 +758,11 @@ msgstr "그런 다음 백엔드에 로그인하여 사용자 테이블에서 사
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "이 작업은 되돌릴 수 없습니다. 데이터베이스에서 {name}에 대한 모든 현재 기록이 영구적으로 삭제됩니다."
 
-#: src/components/routes/system.tsx:605
+#: src/components/routes/system.tsx:613
 msgid "Throughput of {extraFsName}"
 msgstr "{extraFsName}의 처리량"
 
-#: src/components/routes/system.tsx:473
+#: src/components/routes/system.tsx:481
 msgid "Throughput of root filesystem"
 msgstr "루트 파일 시스템의 처리량"
 
@@ -770,8 +770,8 @@ msgstr "루트 파일 시스템의 처리량"
 msgid "To email(s)"
 msgstr "받는사람(들)"
 
-#: src/components/routes/system.tsx:400
-#: src/components/routes/system.tsx:413
+#: src/components/routes/system.tsx:408
+#: src/components/routes/system.tsx:421
 msgid "Toggle grid"
 msgstr "그리드 전환"
 
@@ -805,7 +805,7 @@ msgstr "디스크 사용량이 임계값을 초과할 때 트리거됩니다."
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx:140
-#: src/components/routes/system.tsx:334
+#: src/components/routes/system.tsx:342
 msgid "Up"
 msgstr ""
 
@@ -813,17 +813,17 @@ msgstr ""
 msgid "Updated in real time. Click on a system to view information."
 msgstr "실시간으로 업데이트됩니다. 시스템을 클릭하여 정보를 확인하세요."
 
-#: src/components/routes/system.tsx:266
+#: src/components/routes/system.tsx:269
 msgid "Uptime"
 msgstr "가동 시간"
 
-#: src/components/routes/system.tsx:555
-#: src/components/routes/system.tsx:592
+#: src/components/routes/system.tsx:563
+#: src/components/routes/system.tsx:600
 #: src/components/charts/area-chart.tsx:73
 msgid "Usage"
 msgstr "사용량"
 
-#: src/components/routes/system.tsx:465
+#: src/components/routes/system.tsx:473
 msgid "Usage of root partition"
 msgstr "루트 파티션의 사용량"
 
@@ -846,7 +846,7 @@ msgstr "보기"
 msgid "Visible Fields"
 msgstr "표시할 열"
 
-#: src/components/routes/system.tsx:697
+#: src/components/routes/system.tsx:705
 msgid "Waiting for enough records to display"
 msgstr "표시할 충분한 기록을 기다리는 중"
 
