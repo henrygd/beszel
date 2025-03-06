@@ -121,6 +121,25 @@ func (h *Hub) initialize() error {
 	if err := h.Save(usersCollection); err != nil {
 		return err
 	}
+	// allow all users to access systems if SHARE_ALL_SYSTEMS is set
+	systemsCollection, err := h.FindCachedCollectionByNameOrId("systems")
+	if err != nil {
+		return err
+	}
+	shareAllSystems, _ := GetEnv("SHARE_ALL_SYSTEMS")
+	systemsReadRule := "@request.auth.id != \"\""
+	if shareAllSystems != "true" {
+		// default is to only show systems that the user id is assigned to
+		systemsReadRule += " && users.id ?= @request.auth.id"
+	}
+	updateDeleteRule := systemsReadRule + " && @request.auth.role != \"readonly\""
+	systemsCollection.ListRule = &systemsReadRule
+	systemsCollection.ViewRule = &systemsReadRule
+	systemsCollection.UpdateRule = &updateDeleteRule
+	systemsCollection.DeleteRule = &updateDeleteRule
+	if err := h.Save(systemsCollection); err != nil {
+		return err
+	}
 	return nil
 }
 
