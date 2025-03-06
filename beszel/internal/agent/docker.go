@@ -22,7 +22,7 @@ type dockerManager struct {
 	wg                  sync.WaitGroup              // WaitGroup to wait for all goroutines to finish
 	sem                 chan struct{}               // Semaphore to limit concurrent container requests
 	containerStatsMutex sync.RWMutex                // Mutex to prevent concurrent access to containerStatsMap
-	apiContainerList    *[]container.ApiInfo        // List of containers from Docker API
+	apiContainerList    []*container.ApiInfo        // List of containers from Docker API (no pointer)
 	containerStatsMap   map[string]*container.Stats // Keeps track of container stats
 	validIds            map[string]struct{}         // Map of valid container ids, used to prune invalid containers from containerStatsMap
 	goodDockerVersion   bool                        // Whether docker version is at least 25.0.0 (one-shot works correctly)
@@ -64,11 +64,12 @@ func (dm *dockerManager) getDockerStats() ([]*container.Stats, error) {
 	}
 	defer resp.Body.Close()
 
+	dm.apiContainerList = dm.apiContainerList[:0]
 	if err := json.NewDecoder(resp.Body).Decode(&dm.apiContainerList); err != nil {
 		return nil, err
 	}
 
-	containersLength := len(*dm.apiContainerList)
+	containersLength := len(dm.apiContainerList)
 
 	// store valid ids to clean up old container ids from map
 	if dm.validIds == nil {
@@ -77,9 +78,10 @@ func (dm *dockerManager) getDockerStats() ([]*container.Stats, error) {
 		clear(dm.validIds)
 	}
 
-	var failedContainers []container.ApiInfo
+	var failedContainers []*container.ApiInfo
 
-	for _, ctr := range *dm.apiContainerList {
+	for i := range dm.apiContainerList {
+		ctr := dm.apiContainerList[i]
 		ctr.IdShort = ctr.Id[:12]
 		dm.validIds[ctr.IdShort] = struct{}{}
 		// check if container is less than 1 minute old (possible restart)
@@ -134,7 +136,7 @@ func (dm *dockerManager) getDockerStats() ([]*container.Stats, error) {
 }
 
 // Updates stats for individual container
-func (dm *dockerManager) updateContainerStats(ctr container.ApiInfo) error {
+func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo) error {
 	name := ctr.Names[0][1:]
 
 	resp, err := dm.client.Get("http://localhost/containers/" + ctr.IdShort + "/stats?stream=0&one-shot=1")
@@ -269,20 +271,21 @@ func newDockerManager(a *Agent) *dockerManager {
 		userAgent: "Docker-Client/",
 	}
 
-	dockerClient := &dockerManager{
+	manager := &dockerManager{
 		client: &http.Client{
 			Timeout:   timeout,
 			Transport: userAgentTransport,
 		},
 		containerStatsMap: make(map[string]*container.Stats),
 		sem:               make(chan struct{}, 5),
+		apiContainerList:  []*container.ApiInfo{},
 	}
 
 	// If using podman, return client
 	if strings.Contains(dockerHost, "podman") {
 		a.systemInfo.Podman = true
-		dockerClient.goodDockerVersion = true
-		return dockerClient
+		manager.goodDockerVersion = true
+		return manager
 	}
 
 	// Check docker version
@@ -290,24 +293,24 @@ func newDockerManager(a *Agent) *dockerManager {
 	var versionInfo struct {
 		Version string `json:"Version"`
 	}
-	resp, err := dockerClient.client.Get("http://localhost/version")
+	resp, err := manager.client.Get("http://localhost/version")
 	if err != nil {
-		return dockerClient
+		return manager
 	}
 	defer resp.Body.Close()
 
 	if err := json.NewDecoder(resp.Body).Decode(&versionInfo); err != nil {
-		return dockerClient
+		return manager
 	}
 
 	// if version > 24, one-shot works correctly and we can limit concurrent operations
 	if dockerVersion, err := semver.Parse(versionInfo.Version); err == nil && dockerVersion.Major > 24 {
-		dockerClient.goodDockerVersion = true
+		manager.goodDockerVersion = true
 	} else {
 		slog.Info(fmt.Sprintf("Docker %s is outdated. Upgrade if possible. See https://github.com/henrygd/beszel/issues/58", versionInfo.Version))
 	}
 
-	return dockerClient
+	return manager
 }
 
 // Test docker / podman sockets and return if one exists
