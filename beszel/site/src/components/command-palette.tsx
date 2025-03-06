@@ -22,7 +22,7 @@ import {
 import { useEffect } from "react"
 import { useStore } from "@nanostores/react"
 import { $systems } from "@/lib/stores"
-import { getHostDisplayValue, isAdmin } from "@/lib/utils"
+import { getHostDisplayValue, isAdmin, listen } from "@/lib/utils"
 import { $router, basePath, navigate } from "./router"
 import { Trans, t } from "@lingui/macro"
 import { getPagePath } from "@nanostores/router"
@@ -37,9 +37,7 @@ export default function CommandPalette({ open, setOpen }: { open: boolean; setOp
 				setOpen(!open)
 			}
 		}
-
-		document.addEventListener("keydown", down)
-		return () => document.removeEventListener("keydown", down)
+		return listen(document, "keydown", down)
 	}, [open, setOpen])
 
 	return (

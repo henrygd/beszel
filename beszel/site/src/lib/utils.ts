@@ -15,7 +15,16 @@ import { prependBasePath } from "@/components/router"
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
 }
-// export const cn = clsx
+
+/** Adds event listener to node and returns function that removes the listener */
+export function listen<T extends Event = Event>(
+  node: Node, 
+  event: string, 
+  handler: (event: T) => void
+) {
+  node.addEventListener(event, handler as EventListener)
+  return () => node.removeEventListener(event, handler as EventListener)
+}
 
 export async function copyToClipboard(content: string) {
 	const duration = 1500

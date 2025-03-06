@@ -12,6 +12,7 @@ import {
 	getHostDisplayValue,
 	getPbTimestamp,
 	getSizeAndUnit,
+	listen,
 	toFixedFloat,
 	useLocalStorage,
 } from "@/lib/utils"
@@ -25,6 +26,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { timeTicks } from "d3-time"
 import { Plural, Trans, t } from "@lingui/macro"
 import { useLingui } from "@lingui/react"
+import { $router, navigate } from "../router"
+import { getPagePath } from "@nanostores/router"
 
 const AreaChartDefault = lazy(() => import("../charts/area-chart"))
 const ContainerChart = lazy(() => import("../charts/container-chart"))
@@ -288,6 +291,30 @@ export default function SystemDetail({ name }: { name: string }) {
 		const distanceToBottom = wrapperRect.bottom - chartRect.bottom
 		setBottomSpacing(tooltipHeight - distanceToBottom)
 	}, [netCardRef, containerData])
+	
+	// keyboard navigation between systems
+	useEffect(() => {
+		const handleKeyUp = (e: KeyboardEvent) => {
+			if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+				return
+			}
+			const currentIndex = systems.findIndex(s => s.name === name)
+			if (currentIndex === -1 || systems.length <= 1) { 
+				return
+			}
+			switch (e.key) {
+				case "ArrowLeft":
+				case "h":
+					const prevIndex = (currentIndex - 1 + systems.length) % systems.length
+					return navigate(getPagePath($router, "system", { name: systems[prevIndex].name }))
+				case "ArrowRight":
+				case "l":
+					const nextIndex = (currentIndex + 1) % systems.length
+					return navigate(getPagePath($router, "system", { name: systems[nextIndex].name }))
+			}
+		}
+		return listen(document, "keyup", handleKeyUp)
+	}, [name])
 
 	if (!system.id) {
 		return null
