@@ -33,8 +33,9 @@ type Agent struct {
 
 func NewAgent() *Agent {
 	agent := &Agent{
-		fsStats: make(map[string]*system.FsStats),
-		cache:   NewSessionCache(69 * time.Second),
+		sensorsContext: context.Background(),
+		fsStats:        make(map[string]*system.FsStats),
+		cache:          NewSessionCache(69 * time.Second),
 	}
 	agent.memCalc, _ = GetEnv("MEM_CALC")
 
@@ -59,8 +60,6 @@ func NewAgent() *Agent {
 		agent.sensorsContext = context.WithValue(agent.sensorsContext,
 			common.EnvKey, common.EnvMap{common.HostSysEnvKey: sysSensors},
 		)
-	} else {
-		agent.sensorsContext = context.Background()
 	}
 
 	// Set sensors whitelist
