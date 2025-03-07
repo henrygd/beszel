@@ -14,8 +14,12 @@ import (
 	"sync"
 	"time"
 
+	"regexp"
+
 	"github.com/blang/semver"
 )
+
+var headerRegexp = regexp.MustCompile(`\ADocker/.+\s\((.+)\)\z`)
 
 type dockerManager struct {
 	client              *http.Client                // Client to query Docker API
@@ -167,22 +171,31 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo) error {
 		return err
 	}
 
-	// check if container has valid data, otherwise may be in restart loop (#103)
-	if res.MemoryStats.Usage == 0 {
-		return fmt.Errorf("%s - no memory stats - see https://github.com/henrygd/beszel/issues/144", name)
+	var usedMemory uint64
+	var cpuPct float64
+
+	if getDockerOS(resp.Header.Get("Server")) == "windows" {
+
+		usedMemory = res.MemoryStats.PrivateWorkingSet
+		cpuPct = calculateCPUPercentWindows(res, stats.PrevCpu[0], stats.PrevRead)
+		stats.PrevRead = res.Read
+
+	} else {
+		// check if container has valid data, otherwise may be in restart loop (#103)
+		if res.MemoryStats.Usage == 0 {
+			return fmt.Errorf("%s - no memory stats - see https://github.com/henrygd/beszel/issues/144", name)
+		}
+		memCache := res.MemoryStats.Stats.InactiveFile
+		if memCache == 0 {
+			memCache = res.MemoryStats.Stats.Cache
+		}
+		usedMemory = res.MemoryStats.Usage - memCache
+
+		cpuDelta := res.CPUStats.CPUUsage.TotalUsage - stats.PrevCpu[0]
+		systemDelta := res.CPUStats.SystemUsage - stats.PrevCpu[1]
+		cpuPct = float64(cpuDelta) / float64(systemDelta) * 100
 	}
 
-	// memory (https://docs.docker.com/reference/cli/docker/container/stats/)
-	memCache := res.MemoryStats.Stats.InactiveFile
-	if memCache == 0 {
-		memCache = res.MemoryStats.Stats.Cache
-	}
-	usedMemory := res.MemoryStats.Usage - memCache
-
-	// cpu
-	cpuDelta := res.CPUStats.CPUUsage.TotalUsage - stats.PrevCpu[0]
-	systemDelta := res.CPUStats.SystemUsage - stats.PrevCpu[1]
-	cpuPct := float64(cpuDelta) / float64(systemDelta) * 100
 	if cpuPct > 100 {
 		return fmt.Errorf("%s cpu pct greater than 100: %+v", name, cpuPct)
 	}
@@ -323,4 +336,32 @@ func getDockerHost() string {
 		}
 	}
 	return scheme + socks[0]
+}
+
+// getDockerOS returns the operating system based on the server header from the daemon.
+// from: https://github.com/docker/cli/blob/master/vendor/github.com/docker/docker/client/utils.go#L34
+func getDockerOS(serverHeader string) string {
+	var osType string
+	matches := headerRegexp.FindStringSubmatch(serverHeader)
+	if len(matches) > 0 {
+		osType = matches[1]
+	}
+	return osType
+}
+
+// from: https://github.com/docker/cli/blob/master/cli/command/container/stats_helpers.go#L185
+func calculateCPUPercentWindows(v container.ApiStats, prevCPUSsage uint64, prevRead time.Time) float64 {
+	// Max number of 100ns intervals between the previous time read and now
+	possIntervals := uint64(v.Read.Sub(prevRead).Nanoseconds())
+	possIntervals /= 100                // Convert to number of 100ns intervals
+	possIntervals *= uint64(v.NumProcs) // Multiple by the number of processors
+
+	// Intervals used
+	intervalsUsed := v.CPUStats.CPUUsage.TotalUsage - prevCPUSsage
+
+	// Percentage avoiding divide-by-zero
+	if possIntervals > 0 {
+		return float64(intervalsUsed) / float64(possIntervals) * 100.0
+	}
+	return 0.00
 }
