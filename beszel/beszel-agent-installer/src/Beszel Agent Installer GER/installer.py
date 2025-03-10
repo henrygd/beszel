@@ -1,6 +1,8 @@
 import os
 import subprocess
 import shutil
+import requests
+import zipfile
 import time
 import tkinter as tk
 from tkinter import messagebox, scrolledtext, ttk
@@ -8,19 +10,19 @@ from tkinter import messagebox, scrolledtext, ttk
 class InstallerApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Beszel Agent Installer")
+        self.root.title("Beszel Agent Installationsprogramm")
         self.root.geometry("500x400")
-        self.root.iconbitmap("beszelagent.ico")
 
         self.current_page = 0
         self.pages = [
             self.page_welcome, 
             self.page_license, 
-            self.page_choice, 
-            self.page_firewall, 
+            self.page_choice,
+            self.page_firewall,
             self.page_key, 
             self.page_overview,
             self.page_installation,
+            self.page_update,
             self.page_summary
         ]
 
@@ -40,7 +42,7 @@ class InstallerApp:
         self.cancel_button.pack(side=tk.RIGHT, padx=10, pady=10)
 
         self.user_choice = tk.StringVar(value="install")
-        self.firewall_choice = tk.StringVar(value="no")
+        self.firewall_choice = tk.StringVar(value="yes")
         self.user_key = tk.StringVar()
         self.license_var = tk.BooleanVar()
         
@@ -48,6 +50,8 @@ class InstallerApp:
             os.environ.get("ProgramW6432", os.environ.get("ProgramFiles", "C:\\Program Files")),
             "beszel-agent"
         ) if os.path.exists(os.environ.get("ProgramW6432", os.environ.get("ProgramFiles", "C:\\Program Files"))) else os.path.join("C:\\Programme", "beszel-agent")
+
+        self.downloads_folder = os.path.join(os.environ["USERPROFILE"], "Downloads")
 
         self.log_file = os.path.join(self.install_path, "install.log")
 
@@ -68,20 +72,17 @@ class InstallerApp:
 
     def next_page(self):
         if self.current_page == 1 and not self.license_var.get():
-            messagebox.showwarning("Lizenzvereinbarung", "Bitte akzeptieren Sie die Lizenzbedingungen.")
+            messagebox.showwarning("Lizenzvereinbarung", "Ich habe die Lizenzvereinbarung gelesen und akzeptiere sie.")
             return
 
         if self.current_page == 2:
-            if self.user_choice.get() == "install":
-                self.current_page += 1
-            else:
-                self.page_uninstall()
-                return
+            self.process_choice()
+            return
 
         if self.current_page == 4 and self.user_choice.get() == "install":
             key = self.user_key.get().strip()
             if not key:
-                messagebox.showwarning("Fehlender Key", "Bitte geben Sie einen Public Key ein.")
+                messagebox.showwarning("Fehlender Schlüssel", "Bitte geben Sie einen gültigen öffentlichen Schlüssel ein")
                 return
 
         if self.current_page < len(self.pages) - 1:
@@ -317,11 +318,10 @@ The hypothetical commands `show w’ and `show c’ should show the appropriate 
 You should also get your employer (if you work as a programmer) or school, if any, to sign a “copyright disclaimer” for the program, if necessary. For more information on this, and how to apply and follow the GNU GPL, see <http://www.gnu.org/licenses/>.
 
 The GNU General Public License does not permit incorporating your program into proprietary programs. If your program is a subroutine library, you may consider it more useful to permit linking proprietary applications with the library. If this is what you want to do, use the GNU Lesser General Public License instead of this License. But first, please read <http://www.gnu.org/philosophy/why-not-lgpl.html>""")
-
         license_text.config(state=tk.DISABLED)
         license_text.pack()
 
-        tk.Checkbutton(self.frame, text="Ich akzeptiere die Bedingungen", variable=self.license_var, command=self.check_license).pack()
+        tk.Checkbutton(self.frame, text="Ich habe die Lizenzvereinbarung gelesen und akzeptiere sie", variable=self.license_var, command=self.check_license).pack()
         self.next_button.config(state=tk.DISABLED)
     
     def check_license(self):
@@ -329,21 +329,34 @@ The GNU General Public License does not permit incorporating your program into p
 
     def page_choice(self):
         self.clear_frame()
-        tk.Label(self.frame, text="Möchten Sie den Beszel Agent installieren oder deinstallieren?", font=("Arial", 12, "bold")).pack()
+        tk.Label(self.frame, text="Was möchten Sie tun?", font=("Arial", 12, "bold")).pack(pady=10)
+        self.user_choice = tk.StringVar(value="install")
         tk.Radiobutton(self.frame, text="Installieren", variable=self.user_choice, value="install").pack(anchor='w')
         tk.Radiobutton(self.frame, text="Deinstallieren", variable=self.user_choice, value="uninstall").pack(anchor='w')
-        self.next_button.config(state=tk.NORMAL)
+        tk.Radiobutton(self.frame, text="Update", variable=self.user_choice, value="update").pack(anchor='w')
+
+    def process_choice(self):
+        
+        choice = self.user_choice.get()
+
+        if choice == "install":
+            self.page_key()
+        elif choice == "uninstall":
+            self.page_uninstall()
+        elif choice == "update":
+            self.page_update()
+
 
     def page_firewall(self):
         self.clear_frame()
-        tk.Label(self.frame, text="Firewall-Regel für Port 45876 erstellen?", font=("Arial", 12, "bold")).pack()
-        tk.Radiobutton(self.frame, text="Ja (Empfohlen)", variable=self.firewall_choice, value="yes").pack(anchor='w')
-        tk.Radiobutton(self.frame, text="Nein", variable=self.firewall_choice, value="no").pack(anchor='w')
+        tk.Label(self.frame, text="Would you like to create a firewall rule for port 45876?", font=("Arial", 12, "bold")).pack()
+        tk.Radiobutton(self.frame, text="Yes (recommended)", variable=self.firewall_choice, value="yes").pack(anchor='w')
+        tk.Radiobutton(self.frame, text="No", variable=self.firewall_choice, value="no").pack(anchor='w')
         self.next_button.config(state=tk.NORMAL)
 
     def page_key(self):
         self.clear_frame()
-        tk.Label(self.frame, text="Bitte geben Sie Ihren Benutzer-Schlüssel ein:").pack()
+        tk.Label(self.frame, text="Bitte geben Sie Ihren öffentlichen Schlüssel ein:").pack()
 
         self.user_key_entry = tk.Entry(self.frame, textvariable=self.user_key)
         self.user_key_entry.pack()
@@ -351,22 +364,26 @@ The GNU General Public License does not permit incorporating your program into p
         self.confirm_button = tk.Button(self.frame, text="Bestätigen", command=self.confirm_key)
         self.confirm_button.pack()
 
-        self.next_button.config(state=tk.DISABLED)
+        self.next_button.pack_forget()
 
     def confirm_key(self):
         key = self.user_key.get().strip()
         if key:
-            self.log(f"Benutzer-Key gespeichert: {key}")
-            self.next_button.config(state=tk.NORMAL)
+            self.log(f"Öffentlicher Schlüssel gespeichert: {key}")
+            self.page_overview()
         else:
-            messagebox.showwarning("Fehlender Key", "Bitte geben Sie einen gültigen Benutzer-Schlüssel ein.")
+            messagebox.showwarning("Öffentlicher Schlüssel fehlt", "Bitte geben Sie einen gültigen öffentlichen Schlüssel ein")
 
     def page_overview(self):
         self.clear_frame()
-        tk.Label(self.frame, text="Übersicht der gewählten Einstellungen", font=("Arial", 12, "bold")).pack()
+        tk.Label(self.frame, text="Übersicht der Einstellungen", font=("Arial", 12, "bold")).pack()
         tk.Label(self.frame, text=f"Installation: {'Ja' if self.user_choice.get() == 'install' else 'Nein'}").pack()
-        tk.Label(self.frame, text=f"Firewall-Regel: {'Ja' if self.firewall_choice.get() == 'yes' else 'Nein'}").pack()
-        tk.Label(self.frame, text=f"Benutzer-Schlüssel: {self.user_key.get()}").pack()
+        tk.Label(self.frame, text=f"Öffentlicher Schlüssel: {self.user_key.get()}").pack()
+
+        self.back_button.pack_forget()
+        self.next_button.pack_forget()
+        self.cancel_button.pack_forget()
+
         tk.Button(self.frame, text="Bestätigen & Installieren", command=self.page_installation).pack()
 
     def check_and_install_choco(self):
@@ -374,7 +391,7 @@ The GNU General Public License does not permit incorporating your program into p
         result = subprocess.run("choco -v", shell=True, capture_output=True, text=True)
 
         if "not recognized" in result.stderr or result.returncode != 0:
-            self.log("Chocolatey ist nicht installiert. Installiere jetzt...")
+            self.log("Chocolatey ist nicht installiert. Starte Installation...")
             install_command = (
                 "Set-ExecutionPolicy Bypass -Scope Process -Force; "
                 "[System.Net.ServicePointManager]::SecurityProtocol = "
@@ -386,16 +403,14 @@ The GNU General Public License does not permit incorporating your program into p
 
             if result.returncode != 0:
                 self.log("Fehler: Chocolatey konnte nicht installiert werden!")
-                messagebox.showerror("Fehler", "Chocolatey konnte nicht installiert werden. Bitte manuell ausführen.")
+                messagebox.showerror("Fehler", "Chocolatey konnte nicht installiert werden. Bitte manuell installieren und erneut versuchen.")
                 return False
 
-            # Warten, damit die Installation vollständig abgeschlossen ist
-            self.log("Warte 5 Sekunden, damit Chocolatey korrekt eingerichtet wird...")
+            self.log("Warte 5 Sekunden, bis Chocolatey initialisiert ist...")
             self.root.after(5000)
 
-            # Setze Chocolatey in den aktuellen PATH
             os.environ["PATH"] += os.pathsep + r"C:\ProgramData\chocolatey\bin"
-            self.log("Chocolatey wurde erfolgreich installiert und zum PATH hinzugefügt.")
+            self.log("Chocolatey wurde dem PATH hinzugefügt")
 
         else:
             self.log("Chocolatey ist bereits installiert.")
@@ -404,113 +419,353 @@ The GNU General Public License does not permit incorporating your program into p
 
     def page_installation(self):
         self.clear_frame()
-        tk.Label(self.frame, text="Installation läuft...", font=("Arial", 12, "bold")).pack()
+        tk.Label(self.frame, text="Installation läuft...", font=("Arial", 12, "bold")).pack(pady=10)
 
         self.progress = ttk.Progressbar(self.frame, orient="horizontal", length=300, mode="determinate")
         self.progress.pack(pady=20)
 
-        cancel_button = tk.Button(self.frame, text="Abbrechen", command=self.root.quit)
-        cancel_button.pack(pady=10)
+        self.install_log_text = scrolledtext.ScrolledText(self.frame, wrap=tk.WORD, height=10, width=50, state=tk.DISABLED)
+        self.install_log_text.pack(pady=10)
 
-        self.root.after(100, self.install_agent)
+        self.back_button.pack_forget()
+        self.next_button.pack_forget()
+        self.cancel_button.pack_forget()
+
+        self.progress["value"] = 100
+
+        self.root.after(500, self.install_agent)
+
+    def get_latest_beszel_agent_url(self):
+        api_url = "https://api.github.com/repos/henrygd/beszel/releases/latest"
+        response = requests.get(api_url)
+        if response.status_code == 200:
+            data = response.json()
+            for asset in data["assets"]:
+                if "beszel-agent_windows_amd64.zip" in asset["name"]:
+                    return asset["browser_download_url"]
+        self.log("Neueste Version gefunden.")
+        return None
+
+    def download_file(self, url, dest):
+        self.log(f"Lade {url} nach {dest} herunter...")
+        response = requests.get(url, stream=True)
+        if response.status_code == 200:
+            with open(dest, "wb") as file:
+                for chunk in response.iter_content(chunk_size=8192):
+                    file.write(chunk)
+            self.log("Download abgeschlossen.")
+        else:
+            self.log(f"Fehler beim Herunterladen der Datei: HTTP {response.status_code}")
+            messagebox.showerror("Fehler", f"Fehler beim Herunterladen der Datei: HTTP {response.status_code}")
+            return False
+        return True
+
+    def extract_zip(self, zip_path, extract_to):
+        self.log(f"Überprüfe ZIP-Datei: {zip_path}")
+
+        if not os.path.exists(zip_path) or os.path.getsize(zip_path) == 0:
+            self.log("Fehler: ZIP-Datei fehlt oder ist leer!")
+            messagebox.showerror("Fehler", "Die ZIP-Datei fehlt oder ist leer. Installation wird abgebrochen.")
+            return False
+
+        try:
+            with zipfile.ZipFile(zip_path, "r") as zip_ref:
+                self.log("ZIP-Datei ist gültig. Starte Extraktion...")
+                zip_contents = zip_ref.namelist()
+                self.log(f"ZIP enthält: {zip_contents}")
+
+                if not zip_contents:
+                    self.log("Fehler: ZIP-Datei ist leer nach Überprüfung des Inhalts!")
+                    messagebox.showerror("Fehler", "ZIP-Datei ist leer. Installation wird abgebrochen.")
+                    return False
+
+                os.makedirs(extract_to, exist_ok=True)
+                zip_ref.extractall(extract_to)
+                self.log("ZIP-Extraktion erfolgreich abgeschlossen.")
+
+            os.remove(zip_path)
+            self.log("ZIP-Datei nach der Extraktion gelöscht.")
+            return True
+
+        except zipfile.BadZipFile:
+            self.log("Fehler: ZIP-Datei ist beschädigt!")
+            messagebox.showerror("Fehler", "Die heruntergeladene ZIP-Datei ist beschädigt. Bitte versuchen Sie es erneut.")
+            return False
+
+        except PermissionError:
+            self.log("Fehler: Keine Berechtigung zum Extrahieren der ZIP-Datei!")
+            messagebox.showerror("Fehler", "Keine Berechtigung beim Extrahieren. Versuchen Sie, als Administrator auszuführen.")
+            return False
 
     def install_agent(self):
-        self.progress.step(10)
+        self.progress["value"] = 10
         if not self.check_and_install_choco():
             return
 
-        self.log("Starte Installation...")
-        os.makedirs(self.install_path, exist_ok=True)
-        shutil.copy("agent.exe", os.path.join(self.install_path, "agent.exe"))
-        self.log("Datei kopiert.")
+        self.log_install("Installation wird gestartet...")
+        self.log("Installation wird gestartet...")
 
+        latest_url = self.get_latest_beszel_agent_url()
+        if not latest_url:
+            self.log("Fehler: Neueste Beszel Agent-Version konnte nicht abgerufen werden.")
+            messagebox.showerror("Fehler", "Neueste Beszel Agent-Version konnte nicht abgerufen werden. Installation wird abgebrochen.")
+            return
+
+        zip_path = os.path.join(self.downloads_folder, "beszel-agent.zip")
+
+        if not self.download_file(latest_url, zip_path):
+            return
+        
+        self.log_install("Lade neueste Beszel Agent-Version herunter...")
+        self.log("Lade neueste Beszel Agent-Version herunter...")
+        if not self.download_file(latest_url, zip_path):
+            return
+        self.log_install("Agent heruntergeladen.")
+        self.log("Agent heruntergeladen.")
+
+        extract_path = os.path.join(self.downloads_folder, "beszel-agent-extracted") 
+        os.makedirs(self.install_path, exist_ok=True)
+
+        self.log_install("Extrahiere den Agenten...")
+        self.log("Extrahiere den Agenten...")
+        with zipfile.ZipFile(zip_path, "r") as zObject:
+            zObject.extractall(extract_path)
+
+        agent_exe_path = None
+        for file in os.listdir(extract_path):
+            if file.startswith("beszel-agent") and file.endswith(".exe"):
+                agent_exe_path = os.path.join(extract_path, file)
+                break
+
+        if not agent_exe_path:
+            self.log("Fehler: Extrahierte Agenten-Datei nicht gefunden!")
+            messagebox.showerror("Fehler", "Extrahierte Agenten-Datei nicht gefunden. Installation wird abgebrochen.")
+            return
+
+        os.makedirs(self.install_path, exist_ok=True)
+        final_agent_path = os.path.join(self.install_path, "beszel-agent.exe")
+        shutil.copy(agent_exe_path, final_agent_path)
+        self.log_install(f"Agent kopiert nach {final_agent_path}")
+        self.log(f"Agent kopiert nach {final_agent_path}")
+
+        self.log_install("Installiere NSSM...")
         self.log("Installiere NSSM...")
         result = subprocess.run("choco install nssm -y", shell=True, capture_output=True, text=True)
         self.log(result.stdout + result.stderr)
 
-        nssm_path = r"C:\\ProgramData\\chocolatey\\bin\\nssm.exe"
+        self.progress["value"] = 30
+
+        nssm_path = r"C:\ProgramData\chocolatey\bin\nssm.exe"
         if not os.path.exists(nssm_path):
             self.log("Fehler: NSSM wurde nicht gefunden!")
-            messagebox.showerror("Fehler", "NSSM konnte nicht installiert werden. Breche Installation ab.")
+            messagebox.showerror("Fehler", "NSSM konnte nicht installiert werden. Installation wird abgebrochen.")
             return
 
-        self.progress.step(30)
+        self.progress["value"] = 50
 
+        self.log_install("Erstelle NSSM-Dienst...")
         self.log("Erstelle NSSM-Dienst...")
-        subprocess.run([nssm_path, "install", "beszelagent", os.path.join(self.install_path, "agent.exe")], capture_output=True, text=True)
+        subprocess.run([nssm_path, "install", "beszelagent", final_agent_path], capture_output=True, text=True)
         
         if self.user_key.get():
             subprocess.run([nssm_path, "set", "beszelagent", "AppEnvironmentExtra", f"KEY={self.user_key.get()}"])
-            self.log("KEY gesetzt.")
+            self.log_install("SCHLÜSSEL gesetzt.")
+            self.log("SCHLÜSSEL gesetzt.")
 
         subprocess.run([nssm_path, "start", "beszelagent"])
-        self.log("Warte 5 Sekunden, bevor der Dienststatus überprüft wird...")
-        time.sleep(5)
-        self.log("Dienst gestartet.")
-        self.progress.step(30)
+        self.log_install("Dienst wurde gestartet.")
+        self.log("Dienst wurde gestartet.")
+        self.log("Warte 2 Sekunden...")
+        time.sleep(2)
 
+        self.progress["value"] = 70
+
+        self.log_install("Überprüfe, ob der Dienst läuft...")
         self.log("Überprüfe, ob der Dienst läuft...")
         result = subprocess.run(["sc", "query", "beszelagent"], capture_output=True, text=True)
         if "RUNNING" in result.stdout or "Wird ausgeführt" in result.stdout:
-            self.log("Dienst läuft erfolgreich.")
+            self.log("Dienst läuft.")
         else:
             self.log("Fehler: Der Dienst konnte nicht gestartet werden.")
+            self.log_install("Fehler: Der Dienst konnte nicht gestartet werden.")
             messagebox.showerror("Fehler", "Der Dienst konnte nicht gestartet werden.")
-            return
 
-        if self.firewall_choice.get() == "yes":
-            self.create_firewall_rule()
+        rule_name = "Beszel Agent"
+        self.log_install(f"Prüfe, ob Firewall-Regel '{rule_name}' bereits existiert...")
+        self.log(f"Prüfe, ob Firewall-Regel '{rule_name}' bereits existiert...")
 
-        self.progress.step(20)
-        self.root.after(1000, self.page_summary)
+        check_rule_command = [
+        "powershell",
+        "-Command",
+        f"Get-NetFirewallRule -DisplayName '{rule_name}' | Out-String"
+        ]
+        check_result = subprocess.run(check_rule_command, capture_output=True, text=True, shell=False)
 
-    def create_firewall_rule(self):
-        self.log("Erstelle Firewall-Regel für Port 45876...")
-        firewall_command = (
-            'netsh advfirewall firewall add rule name="Beszel Agent" '
-            'dir=in action=allow protocol=TCP localport=45876'
-        )
-        subprocess.run(firewall_command, shell=True)
-        self.log("Firewall-Regel wurde erfolgreich erstellt.")
+        if check_result.stdout and rule_name in check_result.stdout:
+            self.log_install("Firewall-Regel existiert bereits.")
+            self.log("Firewall-Regel existiert bereits.")
+        else:
+            self.log_install("Erstelle Firewall-Regel...")
+            self.log("Erstelle Firewall-Regel...")
+
+            result = subprocess.run([
+                "powershell", "-Command",
+                "New-NetFirewallRule -DisplayName 'Beszel Agent' -Direction Inbound -LocalPort 45876 -Protocol TCP -Action Allow"
+            ], shell=False, capture_output=True, text=True)
+
+            if result.returncode == 0:
+                self.log(f"Firewall-Regel '{rule_name}' erfolgreich erstellt.")
+            else:
+                self.log(f"Fehler beim Erstellen der Firewall-Regel '{rule_name}': "
+                    f"{result.stdout}\n{result.stderr}")
+
+        self.progress["value"] = 100
+
+        self.root.after(2500, self.page_summary)
 
     def page_uninstall(self):
         self.clear_frame()
-        tk.Label(self.frame, text="Deinstallation läuft...", font=("Arial", 12, "bold")).pack()
+        tk.Label(self.frame, text="Deinstallation...", font=("Arial", 12, "bold")).pack()
 
         self.progress = ttk.Progressbar(self.frame, orient="horizontal", length=300, mode="determinate")
         self.progress.pack(pady=20)
 
-        cancel_button = tk.Button(self.frame, text="Abbrechen", command=self.root.quit)
-        cancel_button.pack(pady=10)
+        self.uninstall_log_text = scrolledtext.ScrolledText(self.frame, wrap=tk.WORD, height=10, width=50, state=tk.DISABLED)
+        self.uninstall_log_text.pack(pady=10)
 
-        self.root.after(100, self.uninstall_agent)
+        self.back_button.pack_forget()
+        self.next_button.pack_forget()
+        self.cancel_button.pack_forget()
+
+        self.progress["value"] = 100
+
+        self.root.after(200, self.uninstall_agent)
 
     def uninstall_agent(self):
+        self.log_uninstall("Starte Deinstallation...")
+        self.progress["value"] = 30
+
+        nssm_path = r"C:\ProgramData\chocolatey\bin\nssm.exe"
+        service_name = "beszelagent"
+
+        self.log_uninstall("Beende Dienst...")
+        stop_result = subprocess.run([nssm_path, "stop", service_name], capture_output=True, text=True, stdin=subprocess.DEVNULL)
+        self.log_uninstall(f"Stop: {stop_result.stdout or ''}{stop_result.stderr or ''}")
+
+        self.log_uninstall("Entferne Dienst...")
+        remove_result = subprocess.run([nssm_path, "remove", service_name, "confirm"], capture_output=True, text=True, stdin=subprocess.DEVNULL)
+        self.log_uninstall(f"Remove: {remove_result.stdout or ''}{remove_result.stderr or ''}")
+
+        self.progress["value"] = 50
+
+
+
+        self.progress["value"] = 70
+
+        self.log_uninstall("Deinstallation erfolgreich abgeschlossen!")
+        self.installation_status = "Deinstallation erfolgreich!"
+        self.progress["value"] = 100
+
+        self.root.after(2500, self.page_summary)
+
+    def update_agent(self):
+
+        self.log_to_gui("Starte Update des Beszel Agents...")
+
+        self.progress["value"] = 10
+
+        agent_path = os.path.join(self.install_path, "beszel-agent.exe")
+
+        if not os.path.exists(agent_path):
+            self.log_to_gui("Fehler: Beszel Agent nicht gefunden! Update abgebrochen.")
+            messagebox.showerror("Update Fehler", "Beszel Agent nicht gefunden. Kann nicht aktualisiert werden.")
+            self.root.after(1000, self.page_summary)
+            return
+
+        update_command = f'powershell -Command "& {{Set-Location -Path \'{self.install_path}\'; ./beszel-agent update }}"'
+
         self.progress.step(30)
-        self.log("Beende und entferne den Dienst...")
-        nssm_path = r"C:\\ProgramData\\chocolatey\\bin\\nssm.exe"
-        
-        subprocess.run([nssm_path, "stop", "beszelagent"], capture_output=True, text=True)
-        subprocess.run([nssm_path, "remove", "beszelagent", "confirm"], capture_output=True, text=True)
-        
-        self.progress.step(30)
-        if os.path.exists(self.install_path):
-            shutil.rmtree(self.install_path)
-            self.log("Verzeichnis gelöscht.")
-        
-        self.progress.step(40)
-        self.installation_status = "Deinstallation abgeschlossen!"
-        self.root.after(1000, self.page_summary)
+
+        try:
+            result = subprocess.run(update_command, shell=True, capture_output=True, text=True)
+
+            self.log_to_gui(result.stdout + result.stderr)
+
+            if result.returncode == 0:
+                self.log_to_gui("Update erfolgreich abgeschlossen!")
+            else:
+                self.log_to_gui(f"Fehler beim Update: {result.returncode}")
+                messagebox.showerror("Update Fehler", f"Beszel Agent Update fehlgeschlagen. Code: {result.returncode}")
+
+        except Exception as e:
+            self.log_to_gui(f"Fehler beim Update: {e}")
+            messagebox.showerror("Update Fehler", f"Fehler beim Update: {e}")
+
+        self.progress["value"] = 100
+
+        close_button = tk.Button(self.frame, text="Schließen", command=self.root.quit)
+        close_button.pack(side=tk.RIGHT, padx=10, pady=10)
+
+    def page_update(self):
+ 
+        self.clear_frame()
+
+        tk.Label(self.frame, text="Beszel Agent wird aktualisiert...", font=("Arial", 12, "bold")).pack(pady=10)
+
+        self.progress = ttk.Progressbar(self.frame, orient="horizontal", length=300, mode="determinate")
+        self.progress.pack(pady=10)
+
+        self.log_text = scrolledtext.ScrolledText(self.frame, wrap=tk.WORD, height=10, width=50, state=tk.DISABLED)
+        self.log_text.pack(pady=10)
+
+        self.back_button.pack_forget()
+        self.next_button.pack_forget()
+        self.cancel_button.pack_forget()
+
+        self.root.after(500, self.update_agent)
 
     def page_summary(self):
         self.clear_frame()
-        if not self.installation_status:
-            self.installation_status = "Installation abgeschlossen!"
-        tk.Label(self.frame, text=self.installation_status, fg="green").pack()
-        tk.Button(self.frame, text="Beenden", command=self.root.quit).pack()
+        tk.Label(self.frame, text="Installation abgeschlossen!", fg="green", font=("Arial", 12, "bold")).pack(pady=10)
+
+        self.back_button.pack_forget()
+        self.next_button.pack_forget()
+        self.cancel_button.pack_forget()
+
+        tk.Button(self.frame, text="Beenden", command=self.root.quit).pack(pady=20)
+
+    def log_to_gui(self, message):
+
+        self.log(message)
+
+        self.log_text.config(state=tk.NORMAL)
+        self.log_text.insert(tk.END, message + "\n")
+        self.log_text.config(state=tk.DISABLED)
+        self.log_text.yview(tk.END)
+
+    def log_uninstall(self, message):
+
+        self.log(message)
+
+        self.uninstall_log_text.config(state=tk.NORMAL)
+        self.uninstall_log_text.insert(tk.END, message + "\n")
+        self.uninstall_log_text.config(state=tk.DISABLED)
+        self.uninstall_log_text.yview(tk.END)
+
+        self.root.update_idletasks()
+
+    def log_install(self, message):
+
+        self.log(message)
+
+        self.install_log_text.config(state=tk.NORMAL)
+        self.install_log_text.insert(tk.END, message + "\n")
+        self.install_log_text.config(state=tk.DISABLED)
+        self.install_log_text.yview(tk.END)
+
+        self.root.update_idletasks()
 
 if __name__ == "__main__":
     root = tk.Tk()
     app = InstallerApp(root)
     root.mainloop()
-
