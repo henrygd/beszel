@@ -6,7 +6,12 @@
 		<link rel="icon" type="image/svg+xml" href="./static/favicon.svg" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Beszel</title>
-		<script>window.BASE_PATH = "%BASE_URL%"</script>
+		<script>
+			globalThis.BESZEL = {
+				BASE_PATH: "%BASE_URL%",
+				HUB_VERSION: "{{V}}"
+			}
+		</script>
 	</head>
 	<body>
 		<div id="app"></div>

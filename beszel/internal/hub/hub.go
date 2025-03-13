@@ -172,6 +172,7 @@ func (h *Hub) startServer(se *core.ServeEvent) error {
 		basePath := strings.TrimSuffix(parsedURL.Path, "/") + "/"
 		indexFile, _ := fs.ReadFile(site.DistDirFS, "index.html")
 		indexContent := strings.ReplaceAll(string(indexFile), "./", basePath)
+		indexContent = strings.Replace(indexContent, "{{V}}", beszel.Version, 1)
 		// set up static asset serving
 		staticPaths := [2]string{"/static/", "/assets/"}
 		serveStatic := apis.Static(site.DistDirFS, false)

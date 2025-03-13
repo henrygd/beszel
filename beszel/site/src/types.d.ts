@@ -2,8 +2,9 @@ import { RecordModel } from "pocketbase"
 
 // global window properties
 declare global {
-	interface Window {
+	var BESZEL: {
 		BASE_PATH: string
+		HUB_VERSION: string
 	}
 }
 
