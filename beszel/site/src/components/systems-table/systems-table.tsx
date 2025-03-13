@@ -10,6 +10,8 @@ import {
 	getCoreRowModel,
 	useReactTable,
 	HeaderContext,
+	Row,
+	Table as TableType,
 } from "@tanstack/react-table"
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -61,14 +63,13 @@ import {
 	PenBoxIcon,
 } from "lucide-react"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
-import { $hubVersion, $systems, pb } from "@/lib/stores"
+import { $systems, pb } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { cn, copyToClipboard, decimalString, isReadOnlyUser, useLocalStorage } from "@/lib/utils"
 import AlertsButton from "../alerts/alert-button"
 import { $router, Link, navigate } from "../router"
 import { EthernetIcon, GpuIcon, ThermometerIcon } from "../ui/icons"
-import { Trans, t } from "@lingui/macro"
-import { useLingui } from "@lingui/react"
+import { useLingui, Trans } from "@lingui/react/macro"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Input } from "../ui/input"
 import { ClassValue } from "clsx"
@@ -103,62 +104,66 @@ function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 
 function sortableHeader(context: HeaderContext<SystemRecord, unknown>) {
 	const { column } = context
+	// @ts-ignore
+	const { Icon, hideSort, name }: { Icon: React.ElementType; name: () => string; hideSort: boolean } = column.columnDef
 	return (
 		<Button
 			variant="ghost"
 			className="h-9 px-3 flex"
 			onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
 		>
-			{/* @ts-ignore */}
-			{column.columnDef.icon && <column.columnDef.icon className="me-2 size-4" />}
-			{column.id}
-			{/* @ts-ignore */}
-			{column.columnDef.hideSort || <ArrowUpDownIcon className="ms-2 size-4" />}
+			{Icon && <Icon className="me-2 size-4" />}
+			{name()}
+			{hideSort || <ArrowUpDownIcon className="ms-2 size-4" />}
 		</Button>
 	)
 }
 
 export default function SystemsTable() {
 	const data = useStore($systems)
-	const hubVersion = useStore($hubVersion)
+	const { i18n, t } = useLingui()
 	const [filter, setFilter] = useState<string>()
-	const [sorting, setSorting] = useState<SortingState>([{ id: t`System`, desc: false }])
+	const [sorting, setSorting] = useState<SortingState>([{ id: "system", desc: false }])
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>("cols", {})
 	const [viewMode, setViewMode] = useLocalStorage<ViewMode>("viewMode", window.innerWidth > 1024 ? "table" : "grid")
-	const { i18n } = useLingui()
+
+	const locale = i18n.locale
 
 	useEffect(() => {
 		if (filter !== undefined) {
-			table.getColumn(t`System`)?.setFilterValue(filter)
+			table.getColumn("system")?.setFilterValue(filter)
 		}
 	}, [filter])
 
-	const columns = useMemo(() => {
-		// Create status translations for filtering
+	const columnDefs = useMemo(() => {
 		const statusTranslations = {
-			"up": t`Up`.toLowerCase(),
-			"down": t`Down`.toLowerCase(),
-			"paused": t`Paused`.toLowerCase()
-		};
+			up: () => t`Up`.toLowerCase(),
+			down: () => t`Down`.toLowerCase(),
+			paused: () => t`Paused`.toLowerCase(),
+		}
 		return [
 			{
 				// size: 200,
 				size: 200,
 				minSize: 0,
 				accessorKey: "name",
-				id: t`System`,
+				id: "system",
+				name: () => t`System`,
 				filterFn: (row, _, filterVal) => {
-					const filterLower = filterVal.toLowerCase();
-					const { name, status } = row.original;
+					const filterLower = filterVal.toLowerCase()
+					const { name, status } = row.original
 					// Check if the filter matches the name or status for this row
-					if (name.toLowerCase().includes(filterLower) || statusTranslations[status as keyof typeof statusTranslations]?.includes(filterLower)) {
-						return true;
+					if (
+						name.toLowerCase().includes(filterLower) ||
+						statusTranslations[status as keyof typeof statusTranslations]?.().includes(filterLower)
+					) {
+						return true
 					}
-					return false;
+					return false
 				},
 				enableHiding: false,
-				icon: ServerIcon,
+				Icon: ServerIcon,
 				cell: (info) => (
 					<span className="flex gap-0.5 items-center text-base md:pe-5">
 						<IndicatorDot system={info.row.original} />
@@ -177,43 +182,48 @@ export default function SystemsTable() {
 			},
 			{
 				accessorKey: "info.cpu",
-				id: t`CPU`,
+				id: "cpu",
+				name: () => t`CPU`,
 				invertSorting: true,
 				cell: CellFormatter,
-				icon: CpuIcon,
+				Icon: CpuIcon,
 				header: sortableHeader,
 			},
 			{
 				accessorKey: "info.mp",
-				id: t`Memory`,
+				id: "memory",
+				name: () => t`Memory`,
 				invertSorting: true,
 				cell: CellFormatter,
-				icon: MemoryStickIcon,
+				Icon: MemoryStickIcon,
 				header: sortableHeader,
 			},
 			{
 				accessorKey: "info.dp",
-				id: t`Disk`,
+				id: "disk",
+				name: () => t`Disk`,
 				invertSorting: true,
 				cell: CellFormatter,
-				icon: HardDriveIcon,
+				Icon: HardDriveIcon,
 				header: sortableHeader,
 			},
 			{
 				accessorFn: (originalRow) => originalRow.info.g,
-				id: "GPU",
+				id: "gpu",
+				name: () => t`GPU`,
 				invertSorting: true,
 				sortUndefined: -1,
 				cell: CellFormatter,
-				icon: GpuIcon,
+				Icon: GpuIcon,
 				header: sortableHeader,
 			},
 			{
 				accessorFn: (originalRow) => originalRow.info.b || 0,
-				id: t`Net`,
+				id: "net",
+				name: () => t`Net`,
 				invertSorting: true,
 				size: 50,
-				icon: EthernetIcon,
+				Icon: EthernetIcon,
 				header: sortableHeader,
 				cell(info) {
 					const val = info.getValue() as number
@@ -230,15 +240,13 @@ export default function SystemsTable() {
 			},
 			{
 				accessorFn: (originalRow) => originalRow.info.dt,
-				id: t({
-					message: "Temp",
-					comment: "Temperature label in systems table",
-				}),
+				id: "temp",
+				name: () => t({ message: "Temp", comment: "Temperature label in systems table" }),
 				invertSorting: true,
 				sortUndefined: -1,
 				size: 50,
 				hideSort: true,
-				icon: ThermometerIcon,
+				Icon: ThermometerIcon,
 				header: sortableHeader,
 				cell(info) {
 					const val = info.getValue() as number
@@ -258,15 +266,16 @@ export default function SystemsTable() {
 			},
 			{
 				accessorKey: "info.v",
-				id: t`Agent`,
+				id: "agent",
+				name: () => t`Agent`,
 				invertSorting: true,
 				size: 50,
-				icon: WifiIcon,
+				Icon: WifiIcon,
 				hideSort: true,
 				header: sortableHeader,
 				cell(info) {
 					const version = info.getValue() as string
-					if (!version || !hubVersion) {
+					if (!version) {
 						return null
 					}
 					const system = info.row.original
@@ -280,7 +289,7 @@ export default function SystemsTable() {
 								system={system}
 								className={
 									(system.status !== "up" && "bg-primary/30") ||
-									(version === hubVersion && "bg-green-500") ||
+									(version === globalThis.BESZEL.HUB_VERSION && "bg-green-500") ||
 									"bg-yellow-500"
 								}
 							/>
@@ -290,7 +299,9 @@ export default function SystemsTable() {
 				},
 			},
 			{
-				id: t({ message: "Actions", comment: "Table column" }),
+				id: "actions",
+				// @ts-ignore
+				name: () => t({ message: "Actions", comment: "Table column" }),
 				size: 50,
 				cell: ({ row }) => (
 					<div className="flex justify-end items-center gap-1">
@@ -300,11 +311,11 @@ export default function SystemsTable() {
 				),
 			},
 		] as ColumnDef<SystemRecord>[]
-	}, [hubVersion, i18n.locale])
+	}, [])
 
 	const table = useReactTable({
 		data,
-		columns,
+		columns: columnDefs,
 		getCoreRowModel: getCoreRowModel(),
 		onSortingChange: setSorting,
 		getSortedRowModel: getSortedRowModel(),
@@ -318,15 +329,17 @@ export default function SystemsTable() {
 		},
 		defaultColumn: {
 			minSize: 0,
-			size: Number.MAX_SAFE_INTEGER,
-			maxSize: Number.MAX_SAFE_INTEGER,
+			size: 900,
+			maxSize: 900,
 		},
 	})
 
 	const rows = table.getRowModel().rows
-
-	return (
-		<Card>
+	const columns = table.getAllColumns()
+	const visibleColumns = table.getVisibleLeafColumns()
+	// TODO: hiding temp then gpu messes up table headers
+	const CardHead = useMemo(() => {
+		return (
 			<CardHeader className="pb-5 px-2 sm:px-6 max-sm:pt-5 max-sm:pb-1">
 				<div className="grid md:flex gap-5 w-full items-end">
 					<div className="px-2 sm:px-1">
@@ -377,8 +390,8 @@ export default function SystemsTable() {
 										</DropdownMenuLabel>
 										<DropdownMenuSeparator />
 										<div className="px-1 pb-1">
-											{table.getAllColumns().map((column) => {
-												if (column.id === t`Actions` || !column.getCanSort()) return null
+											{columns.map((column) => {
+												if (!column.getCanSort()) return null
 												let Icon = <span className="w-6"></span>
 												// if current sort column, show sort direction
 												if (sorting[0]?.id === column.id) {
@@ -397,7 +410,8 @@ export default function SystemsTable() {
 														key={column.id}
 													>
 														{Icon}
-														{column.id}
+														{/* @ts-ignore */}
+														{column.columnDef.name()}
 													</DropdownMenuItem>
 												)
 											})}
@@ -411,8 +425,7 @@ export default function SystemsTable() {
 										</DropdownMenuLabel>
 										<DropdownMenuSeparator />
 										<div className="px-1.5 pb-1">
-											{table
-												.getAllColumns()
+											{columns
 												.filter((column) => column.getCanHide())
 												.map((column) => {
 													return (
@@ -422,7 +435,8 @@ export default function SystemsTable() {
 															checked={column.getIsVisible()}
 															onCheckedChange={(value) => column.toggleVisibility(!!value)}
 														>
-															{column.id}
+															{/* @ts-ignore */}
+															{column.columnDef.name()}
 														</DropdownMenuCheckboxItem>
 													)
 												})}
@@ -434,128 +448,24 @@ export default function SystemsTable() {
 					</div>
 				</div>
 			</CardHeader>
+		)
+	}, [visibleColumns.length, sorting, viewMode, locale])
+
+	return (
+		<Card>
+			{CardHead}
 			<div className="p-6 pt-0 max-sm:py-3 max-sm:px-2">
 				{viewMode === "table" ? (
 					// table layout
 					<div className="rounded-md border overflow-hidden">
-						<Table>
-							<TableHeader>
-								{table.getHeaderGroups().map((headerGroup) => (
-									<TableRow key={headerGroup.id}>
-										{headerGroup.headers.map((header) => {
-											return (
-												<TableHead className="px-2" key={header.id}>
-													{header.isPlaceholder
-														? null
-														: flexRender(header.column.columnDef.header, header.getContext())}
-												</TableHead>
-											)
-										})}
-									</TableRow>
-								))}
-							</TableHeader>
-							<TableBody>
-								{rows.length ? (
-									table.getRowModel().rows.map((row) => (
-										<TableRow
-											key={row.original.id}
-											data-state={row.getIsSelected() && "selected"}
-											className={cn("cursor-pointer transition-opacity", {
-												"opacity-50": row.original.status === "paused",
-											})}
-											onClick={(e) => {
-												const target = e.target as HTMLElement
-												if (!target.closest("[data-nolink]") && e.currentTarget.contains(target)) {
-													navigate(getPagePath($router, "system", { name: row.original.name }))
-												}
-											}}
-										>
-											{row.getVisibleCells().map((cell) => (
-												<TableCell
-													key={cell.id}
-													style={{
-														width: cell.column.getSize() === Number.MAX_SAFE_INTEGER ? "auto" : cell.column.getSize(),
-													}}
-													className={cn("overflow-hidden relative", data.length > 10 ? "py-2" : "py-2.5")}
-												>
-													{flexRender(cell.column.columnDef.cell, cell.getContext())}
-												</TableCell>
-											))}
-										</TableRow>
-									))
-								) : (
-									<TableRow>
-										<TableCell colSpan={columns.length} className="h-24 text-center">
-											<Trans>No systems found.</Trans>
-										</TableCell>
-									</TableRow>
-								)}
-							</TableBody>
-						</Table>
+						<AllSystemsTable table={table} rows={rows} colLength={visibleColumns.length} />
 					</div>
 				) : (
 					// grid layout
 					<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-						{table.getRowModel().rows?.length ? (
-							table.getRowModel().rows.map((row) => {
-								const system = row.original
-								const { status } = system
-								return (
-									<Card
-										key={system.id}
-										className={cn(
-											"cursor-pointer hover:shadow-md transition-all bg-transparent w-full dark:border-border duration-200 relative",
-											{
-												"opacity-50": status === "paused",
-											}
-										)}
-									>
-										<CardHeader className="py-1 ps-5 pe-3 bg-muted/30 border-b border-border/60">
-											<div className="flex items-center justify-between gap-2">
-												<CardTitle className="text-base tracking-normal shrink-1 text-primary/90 flex items-center min-h-10 gap-2.5 min-w-0">
-													<div className="flex items-center gap-2.5 min-w-0">
-														<IndicatorDot system={system} />
-														<CardTitle className="text-[.95em]/normal tracking-normal truncate text-primary/90">
-															{system.name}
-														</CardTitle>
-													</div>
-												</CardTitle>
-												{table.getColumn(t`Actions`)?.getIsVisible() && (
-													<div className="flex gap-1 flex-shrink-0 relative z-10">
-														<AlertsButton system={system} />
-														<ActionsButton system={system} />
-													</div>
-												)}
-											</div>
-										</CardHeader>
-										<CardContent className="space-y-2.5 text-sm px-5 pt-3.5 pb-4">
-											{table.getAllColumns().map((column) => {
-												if (!column.getIsVisible() || column.id === t`System` || column.id === t`Actions`) return null
-												const cell = row.getAllCells().find((cell) => cell.column.id === column.id)
-												if (!cell) return null
-												return (
-													<div key={column.id} className="flex items-center gap-3">
-														{/* @ts-ignore */}
-														{column.columnDef?.icon && (
-															// @ts-ignore
-															<column.columnDef.icon className="size-4 text-muted-foreground" />
-														)}
-														<div className="flex items-center gap-3 flex-1">
-															<span className="text-muted-foreground min-w-16">{column.id}:</span>
-															<div className="flex-1">{flexRender(cell.column.columnDef.cell, cell.getContext())}</div>
-														</div>
-													</div>
-												)
-											})}
-										</CardContent>
-										<Link
-											href={getPagePath($router, "system", { name: row.original.name })}
-											className="inset-0 absolute w-full h-full"
-										>
-											<span className="sr-only">{row.original.name}</span>
-										</Link>
-									</Card>
-								)
+						{rows?.length ? (
+							rows.map((row) => {
+								return <SystemCard key={row.original.id} row={row} table={table} colLength={visibleColumns.length} />
 							})
 						) : (
 							<div className="col-span-full text-center py-8">
@@ -568,6 +478,247 @@ export default function SystemsTable() {
 		</Card>
 	)
 }
+
+const AllSystemsTable = memo(
+	({ table, rows, colLength }: { table: TableType<SystemRecord>; rows: Row<SystemRecord>[]; colLength: number }) => {
+		return (
+			<Table>
+				<SystemsTableHead table={table} colLength={colLength} />
+				<TableBody>
+					{rows.length ? (
+						rows.map((row) => (
+							<SystemTableRow key={row.original.id} row={row} length={rows.length} colLength={colLength} />
+						))
+					) : (
+						<TableRow>
+							<TableCell colSpan={colLength} className="h-24 text-center">
+								<Trans>No systems found.</Trans>
+							</TableCell>
+						</TableRow>
+					)}
+				</TableBody>
+			</Table>
+		)
+	}
+)
+
+function SystemsTableHead({ table, colLength }: { table: TableType<SystemRecord>; colLength: number }) {
+	const { i18n } = useLingui()
+	return useMemo(() => {
+		return (
+			<TableHeader>
+				{table.getHeaderGroups().map((headerGroup) => (
+					<TableRow key={headerGroup.id}>
+						{headerGroup.headers.map((header) => {
+							return (
+								<TableHead className="px-2" key={header.id}>
+									{flexRender(header.column.columnDef.header, header.getContext())}
+								</TableHead>
+							)
+						})}
+					</TableRow>
+				))}
+			</TableHeader>
+		)
+	}, [i18n.locale, colLength])
+}
+
+const SystemTableRow = memo(
+	({ row, length, colLength }: { row: Row<SystemRecord>; length: number; colLength: number }) => {
+		const system = row.original
+		const { t } = useLingui()
+		return useMemo(() => {
+			return (
+				<TableRow
+					// data-state={row.getIsSelected() && "selected"}
+					className={cn("cursor-pointer transition-opacity", {
+						"opacity-50": system.status === "paused",
+					})}
+					onClick={(e) => {
+						const target = e.target as HTMLElement
+						if (!target.closest("[data-nolink]") && e.currentTarget.contains(target)) {
+							navigate(getPagePath($router, "system", { name: system.name }))
+						}
+					}}
+				>
+					{row.getVisibleCells().map((cell) => (
+						<TableCell
+							key={cell.id}
+							style={{
+								width: cell.column.getSize(),
+							}}
+							className={cn("overflow-hidden relative", length > 10 ? "py-2" : "py-2.5")}
+						>
+							{flexRender(cell.column.columnDef.cell, cell.getContext())}
+						</TableCell>
+					))}
+				</TableRow>
+			)
+		}, [system, colLength, t])
+	}
+)
+
+const SystemCard = memo(
+	({ row, table, colLength }: { row: Row<SystemRecord>; table: TableType<SystemRecord>; colLength: number }) => {
+		const system = row.original
+		const { t } = useLingui()
+
+		return useMemo(() => {
+			return (
+				<Card
+					key={system.id}
+					className={cn(
+						"cursor-pointer hover:shadow-md transition-all bg-transparent w-full dark:border-border duration-200 relative",
+						{
+							"opacity-50": system.status === "paused",
+						}
+					)}
+				>
+					<CardHeader className="py-1 ps-5 pe-3 bg-muted/30 border-b border-border/60">
+						<div className="flex items-center justify-between gap-2">
+							<CardTitle className="text-base tracking-normal shrink-1 text-primary/90 flex items-center min-h-10 gap-2.5 min-w-0">
+								<div className="flex items-center gap-2.5 min-w-0">
+									<IndicatorDot system={system} />
+									<CardTitle className="text-[.95em]/normal tracking-normal truncate text-primary/90">
+										{system.name}
+									</CardTitle>
+								</div>
+							</CardTitle>
+							{table.getColumn("actions")?.getIsVisible() && (
+								<div className="flex gap-1 flex-shrink-0 relative z-10">
+									<AlertsButton system={system} />
+									<ActionsButton system={system} />
+								</div>
+							)}
+						</div>
+					</CardHeader>
+					<CardContent className="space-y-2.5 text-sm px-5 pt-3.5 pb-4">
+						{table.getAllColumns().map((column) => {
+							if (!column.getIsVisible() || column.id === "system" || column.id === "actions") return null
+							const cell = row.getAllCells().find((cell) => cell.column.id === column.id)
+							if (!cell) return null
+							// @ts-ignore
+							const { Icon, name } = column.columnDef as ColumnDef<SystemRecord, unknown>
+							return (
+								<div key={column.id} className="flex items-center gap-3">
+									{Icon && <Icon className="size-4 text-muted-foreground" />}
+									<div className="flex items-center gap-3 flex-1">
+										<span className="text-muted-foreground min-w-16">{name()}:</span>
+										<div className="flex-1">{flexRender(cell.column.columnDef.cell, cell.getContext())}</div>
+									</div>
+								</div>
+							)
+						})}
+					</CardContent>
+					<Link
+						href={getPagePath($router, "system", { name: row.original.name })}
+						className="inset-0 absolute w-full h-full"
+					>
+						<span className="sr-only">{row.original.name}</span>
+					</Link>
+				</Card>
+			)
+		}, [system, colLength, t])
+	}
+)
+
+const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
+	const [deleteOpen, setDeleteOpen] = useState(false)
+	const [editOpen, setEditOpen] = useState(false)
+	let editOpened = useRef(false)
+	const { t } = useLingui()
+
+	return useMemo(() => {
+		const { id, status, host, name } = system
+		return (
+			<>
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<Button variant="ghost" size={"icon"} data-nolink>
+							<span className="sr-only">
+								<Trans>Open menu</Trans>
+							</span>
+							<MoreHorizontalIcon className="w-5" />
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent align="end">
+						{!isReadOnlyUser() && (
+							<DropdownMenuItem
+								onSelect={() => {
+									editOpened.current = true
+									setEditOpen(true)
+								}}
+							>
+								<PenBoxIcon className="me-2.5 size-4" />
+								<Trans>Edit</Trans>
+							</DropdownMenuItem>
+						)}
+						<DropdownMenuItem
+							className={cn(isReadOnlyUser() && "hidden")}
+							onClick={() => {
+								pb.collection("systems").update(id, {
+									status: status === "paused" ? "pending" : "paused",
+								})
+							}}
+						>
+							{status === "paused" ? (
+								<>
+									<PlayCircleIcon className="me-2.5 size-4" />
+									<Trans>Resume</Trans>
+								</>
+							) : (
+								<>
+									<PauseCircleIcon className="me-2.5 size-4" />
+									<Trans>Pause</Trans>
+								</>
+							)}
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={() => copyToClipboard(host)}>
+							<CopyIcon className="me-2.5 size-4" />
+							<Trans>Copy host</Trans>
+						</DropdownMenuItem>
+						<DropdownMenuSeparator className={cn(isReadOnlyUser() && "hidden")} />
+						<DropdownMenuItem className={cn(isReadOnlyUser() && "hidden")} onSelect={() => setDeleteOpen(true)}>
+							<Trash2Icon className="me-2.5 size-4" />
+							<Trans>Delete</Trans>
+						</DropdownMenuItem>
+					</DropdownMenuContent>
+				</DropdownMenu>
+				{/* edit dialog */}
+				<Dialog open={editOpen} onOpenChange={setEditOpen}>
+					{editOpened.current && <SystemDialog system={system} setOpen={setEditOpen} />}
+				</Dialog>
+				{/* deletion dialog */}
+				<AlertDialog open={deleteOpen} onOpenChange={(open) => setDeleteOpen(open)}>
+					<AlertDialogContent>
+						<AlertDialogHeader>
+							<AlertDialogTitle>
+								<Trans>Are you sure you want to delete {name}?</Trans>
+							</AlertDialogTitle>
+							<AlertDialogDescription>
+								<Trans>
+									This action cannot be undone. This will permanently delete all current records for {name} from the
+									database.
+								</Trans>
+							</AlertDialogDescription>
+						</AlertDialogHeader>
+						<AlertDialogFooter>
+							<AlertDialogCancel>
+								<Trans>Cancel</Trans>
+							</AlertDialogCancel>
+							<AlertDialogAction
+								className={cn(buttonVariants({ variant: "destructive" }))}
+								onClick={() => pb.collection("systems").delete(id)}
+							>
+								<Trans>Continue</Trans>
+							</AlertDialogAction>
+						</AlertDialogFooter>
+					</AlertDialogContent>
+				</AlertDialog>
+			</>
+		)
+	}, [system.id, t, deleteOpen, editOpen])
+})
 
 function IndicatorDot({ system, className }: { system: SystemRecord; className?: ClassValue }) {
 	className ||= {
@@ -583,99 +734,3 @@ function IndicatorDot({ system, className }: { system: SystemRecord; className?:
 		/>
 	)
 }
-
-const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
-	const [deleteOpen, setDeleteOpen] = useState(false)
-	const [editOpen, setEditOpen] = useState(false)
-	let editOpened = useRef(false)
-
-	const { id, status, host, name } = system
-
-	return (
-		<>
-			<DropdownMenu>
-				<DropdownMenuTrigger asChild>
-					<Button variant="ghost" size={"icon"} data-nolink>
-						<span className="sr-only">
-							<Trans>Open menu</Trans>
-						</span>
-						<MoreHorizontalIcon className="w-5" />
-					</Button>
-				</DropdownMenuTrigger>
-				<DropdownMenuContent align="end">
-					{!isReadOnlyUser() && (
-						<DropdownMenuItem
-							onSelect={() => {
-								editOpened.current = true
-								setEditOpen(true)
-							}}
-						>
-							<PenBoxIcon className="me-2.5 size-4" />
-							<Trans>Edit</Trans>
-						</DropdownMenuItem>
-					)}
-					<DropdownMenuItem
-						className={cn(isReadOnlyUser() && "hidden")}
-						onClick={() => {
-							pb.collection("systems").update(id, {
-								status: status === "paused" ? "pending" : "paused",
-							})
-						}}
-					>
-						{status === "paused" ? (
-							<>
-								<PlayCircleIcon className="me-2.5 size-4" />
-								<Trans>Resume</Trans>
-							</>
-						) : (
-							<>
-								<PauseCircleIcon className="me-2.5 size-4" />
-								<Trans>Pause</Trans>
-							</>
-						)}
-					</DropdownMenuItem>
-					<DropdownMenuItem onClick={() => copyToClipboard(host)}>
-						<CopyIcon className="me-2.5 size-4" />
-						<Trans>Copy host</Trans>
-					</DropdownMenuItem>
-					<DropdownMenuSeparator className={cn(isReadOnlyUser() && "hidden")} />
-					<DropdownMenuItem className={cn(isReadOnlyUser() && "hidden")} onSelect={() => setDeleteOpen(true)}>
-						<Trash2Icon className="me-2.5 size-4" />
-						<Trans>Delete</Trans>
-					</DropdownMenuItem>
-				</DropdownMenuContent>
-			</DropdownMenu>
-			{/* edit dialog */}
-			<Dialog open={editOpen} onOpenChange={setEditOpen}>
-				{editOpened.current && <SystemDialog system={system} setOpen={setEditOpen} />}
-			</Dialog>
-			{/* deletion dialog */}
-			<AlertDialog open={deleteOpen} onOpenChange={(open) => setDeleteOpen(open)}>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>
-							<Trans>Are you sure you want to delete {name}?</Trans>
-						</AlertDialogTitle>
-						<AlertDialogDescription>
-							<Trans>
-								This action cannot be undone. This will permanently delete all current records for {name} from the
-								database.
-							</Trans>
-						</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter>
-						<AlertDialogCancel>
-							<Trans>Cancel</Trans>
-						</AlertDialogCancel>
-						<AlertDialogAction
-							className={cn(buttonVariants({ variant: "destructive" }))}
-							onClick={() => pb.collection("systems").delete(id)}
-						>
-							<Trans>Continue</Trans>
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
-		</>
-	)
-})

@@ -1,11 +1,11 @@
 import "./index.css"
 // import { Suspense, lazy, useEffect, StrictMode } from "react"
-import { Suspense, lazy, useEffect } from "react"
+import { Suspense, lazy, memo, useEffect } from "react"
 import ReactDOM from "react-dom/client"
-import Home from "./components/routes/home.tsx"
+import { Home } from "./components/routes/home.tsx"
 import { ThemeProvider } from "./components/theme-provider.tsx"
 import { DirectionProvider } from "@radix-ui/react-direction"
-import { $authenticated, $systems, pb, $publicKey, $hubVersion, $copyContent, $direction } from "./lib/stores.ts"
+import { $authenticated, $systems, pb, $publicKey, $copyContent, $direction } from "./lib/stores.ts"
 import { updateUserSettings, updateAlerts, updateFavicon, updateSystemList } from "./lib/utils.ts"
 import { useStore } from "@nanostores/react"
 import { Toaster } from "./components/ui/toaster.tsx"
@@ -14,13 +14,14 @@ import SystemDetail from "./components/routes/system.tsx"
 import Navbar from "./components/navbar.tsx"
 import { I18nProvider } from "@lingui/react"
 import { i18n } from "@lingui/core"
+import "@/lib/i18n.ts"
 
 // const ServerDetail = lazy(() => import('./components/routes/system.tsx'))
 const LoginPage = lazy(() => import("./components/login/login.tsx"))
 const CopyToClipboardDialog = lazy(() => import("./components/copy-to-clipboard.tsx"))
 const Settings = lazy(() => import("./components/routes/settings/layout.tsx"))
 
-const App = () => {
+const App = memo(() => {
 	const page = useStore($router)
 	const authenticated = useStore($authenticated)
 	const systems = useStore($systems)
@@ -33,7 +34,6 @@ const App = () => {
 		// get version / public key
 		pb.send("/api/beszel/getkey", {}).then((data) => {
 			$publicKey.set(data.key)
-			$hubVersion.set(data.v)
 		})
 		// get servers / alerts / settings
 		updateUserSettings()
@@ -74,7 +74,7 @@ const App = () => {
 			</Suspense>
 		)
 	}
-}
+})
 
 const Layout = () => {
 	const authenticated = useStore($authenticated)

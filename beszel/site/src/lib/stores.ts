@@ -18,9 +18,6 @@ export const $alerts = atom([] as AlertRecord[])
 /** SSH public key */
 export const $publicKey = atom("")
 
-/** Beszel hub version */
-export const $hubVersion = atom("")
-
 /** Chart time period */
 export const $chartTime = atom("1h") as PreinitializedWritableAtom<ChartTimes>
 

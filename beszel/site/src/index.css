@@ -74,6 +74,7 @@
 @layer base {
 	* {
 		@apply border-border;
+		overflow-anchor: none;
 	}
 	body {
 		@apply bg-background text-foreground;
