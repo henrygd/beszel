@@ -1,18 +1,19 @@
-import { pb } from "@/lib/stores"
+import { $alerts, $systems, pb } from "@/lib/stores"
 import { alertInfo, cn } from "@/lib/utils"
 import { Switch } from "@/components/ui/switch"
 import { AlertInfo, AlertRecord, SystemRecord } from "@/types"
-import { lazy, Suspense, useRef, useState } from "react"
+import { lazy, Suspense, useMemo, useState } from "react"
 import { toast } from "../ui/use-toast"
-import { RecordOptions } from "pocketbase"
+import { BatchService } from "pocketbase"
 import { Trans, t, Plural } from "@lingui/macro"
+import { getSemaphore } from "@henrygd/semaphore"
 
 interface AlertData {
 	checked?: boolean
 	val?: number
 	min?: number
 	updateAlert?: (checked: boolean, value: number, min: number) => void
-	key: keyof typeof alertInfo
+	name: keyof typeof alertInfo
 	alert: AlertInfo
 	system: SystemRecord
 }
@@ -35,7 +36,7 @@ export function SystemAlert({
 	systemAlerts: AlertRecord[]
 	data: AlertData
 }) {
-	const alert = systemAlerts.find((alert) => alert.name === data.key)
+	const alert = systemAlerts.find((alert) => alert.name === data.name)
 
 	data.updateAlert = async (checked: boolean, value: number, min: number) => {
 		try {
@@ -47,7 +48,7 @@ export function SystemAlert({
 				pb.collection("alerts").create({
 					system: system.id,
 					user: pb.authStore.record!.id,
-					name: data.key,
+					name: data.name,
 					value: value,
 					min: min,
 				})
@@ -66,99 +67,150 @@ export function SystemAlert({
 	return <AlertContent data={data} />
 }
 
-export function SystemAlertGlobal({
-	data,
-	overwrite,
-	alerts,
-	systems,
-}: {
-	data: AlertData
-	overwrite: boolean | "indeterminate"
-	alerts: AlertRecord[]
-	systems: SystemRecord[]
-}) {
-	const systemsWithExistingAlerts = useRef<{ set: Set<string>; populatedSet: boolean }>({
-		set: new Set(),
-		populatedSet: false,
-	})
-
+export const SystemAlertGlobal = ({ data, overwrite }: { data: AlertData; overwrite: boolean | "indeterminate" }) => {
 	data.checked = false
 	data.val = data.min = 0
 
+	// set of system ids that have an alert for this name when the component is mounted
+	const existingAlertsSystems = useMemo(() => {
+		const map = new Set<string>()
+		const alerts = $alerts.get()
+		for (const alert of alerts) {
+			if (alert.name === data.name) {
+				map.add(alert.system)
+			}
+		}
+		return map
+	}, [])
+
 	data.updateAlert = async (checked: boolean, value: number, min: number) => {
-		const { set, populatedSet } = systemsWithExistingAlerts.current
+		const sem = getSemaphore("alerts")
+		await sem.acquire()
+		try {
+			// if another update is waiting behind, don't start this one
+			if (sem.size() > 1) {
+				return
+			}
 
-		// if overwrite checked, make sure all alerts will be overwritten
-		if (overwrite) {
-			set.clear()
-		}
+			const recordData: Partial<AlertRecord> = {
+				value,
+				min,
+				triggered: false,
+			}
 
-		const recordData: Partial<AlertRecord> = {
-			value,
-			min,
-			triggered: false,
-		}
+			const batch = batchWrapper("alerts", 25)
+			const systems = $systems.get()
+			const currentAlerts = $alerts.get()
 
-		// we can only send 50 in one batch
-		let done = 0
-
-		while (done < systems.length) {
-			const batch = pb.createBatch()
-			let batchSize = 0
-
-			for (let i = done; i < Math.min(done + 50, systems.length); i++) {
-				const system = systems[i]
-				// if overwrite is false and system is in set (alert existed), skip
-				if (!overwrite && set.has(system.id)) {
-					continue
+			// map of current alerts with this name right now by system id
+			const currentAlertsSystems = new Map<string, AlertRecord>()
+			for (const alert of currentAlerts) {
+				if (alert.name === data.name) {
+					currentAlertsSystems.set(alert.system, alert)
 				}
-				// find matching existing alert
-				const existingAlert = alerts.find((alert) => alert.system === system.id && data.key === alert.name)
-				// if first run, add system to set (alert already existed when global panel was opened)
-				if (existingAlert && !populatedSet && !overwrite) {
-					set.add(system.id)
-					continue
-				}
-				batchSize++
-				const requestOptions: RecordOptions = {
-					requestKey: system.id,
+			}
+
+			if (overwrite) {
+				existingAlertsSystems.clear()
+			}
+
+			const processSystem = async (system: SystemRecord): Promise<void> => {
+				const existingAlert = existingAlertsSystems.has(system.id)
+
+				if (!overwrite && existingAlert) {
+					return
 				}
 
-				// checked - make sure alert is created or updated
+				const currentAlert = currentAlertsSystems.get(system.id)
+
+				// delete existing alert if unchecked
+				if (!checked && currentAlert) {
+					return batch.remove(currentAlert.id)
+				}
+				if (checked && currentAlert) {
+					// update existing alert if checked
+					return batch.update(currentAlert.id, recordData)
+				}
 				if (checked) {
-					if (existingAlert) {
-						batch.collection("alerts").update(existingAlert.id, recordData, requestOptions)
-					} else {
-						batch.collection("alerts").create(
-							{
-								system: system.id,
-								user: pb.authStore.record!.id,
-								name: data.key,
-								...recordData,
-							},
-							requestOptions
-						)
-					}
-				} else if (existingAlert) {
-					batch.collection("alerts").delete(existingAlert.id)
+					// create new alert if checked and not existing
+					return batch.create({
+						system: system.id,
+						user: pb.authStore.record!.id,
+						name: data.name,
+						...recordData,
+					})
 				}
 			}
-			try {
-				batchSize && batch.send()
-			} catch (e) {
-				failedUpdateToast()
-			} finally {
-				done += 50
+
+			// make sure current system is updated in the first batch
+			await processSystem(data.system)
+			for (const system of systems) {
+				if (system.id === data.system.id) {
+					continue
+				}
+				if (sem.size() > 1) {
+					return
+				}
+				await processSystem(system)
 			}
+			await batch.send()
+		} finally {
+			sem.release()
 		}
-		systemsWithExistingAlerts.current.populatedSet = true
 	}
 
 	return <AlertContent data={data} />
 }
 
+/**
+ * Creates a wrapper for performing batch operations on a specified collection.
+ */
+function batchWrapper(collection: string, batchSize: number) {
+	let batch: BatchService | undefined
+	let count = 0
+
+	const create = async <T extends Record<string, any>>(options: T) => {
+		batch ||= pb.createBatch()
+		batch.collection(collection).create(options)
+		if (++count >= batchSize) {
+			await send()
+		}
+	}
+
+	const update = async <T extends Record<string, any>>(id: string, data: T) => {
+		batch ||= pb.createBatch()
+		batch.collection(collection).update(id, data)
+		if (++count >= batchSize) {
+			await send()
+		}
+	}
+
+	const remove = async (id: string) => {
+		batch ||= pb.createBatch()
+		batch.collection(collection).delete(id)
+		if (++count >= batchSize) {
+			await send()
+		}
+	}
+
+	const send = async () => {
+		if (count) {
+			await batch?.send({ requestKey: null })
+			batch = undefined
+			count = 0
+		}
+	}
+
+	return {
+		update,
+		remove,
+		send,
+		create,
+	}
+}
+
 function AlertContent({ data }: { data: AlertData }) {
-	const { key } = data
+	const { name } = data
 
 	const singleDescription = data.alert.singleDesc?.()
 
@@ -166,17 +218,12 @@ function AlertContent({ data }: { data: AlertData }) {
 	const [min, setMin] = useState(data.min || 10)
 	const [value, setValue] = useState(data.val || (singleDescription ? 0 : 80))
 
-	const newMin = useRef(min)
-	const newValue = useRef(value)
-
-	const Icon = alertInfo[key].icon
-
-	const updateAlert = (c?: boolean) => data.updateAlert?.(c ?? checked, newValue.current, newMin.current)
+	const Icon = alertInfo[name].icon
 
 	return (
 		<div className="rounded-lg border border-muted-foreground/15 hover:border-muted-foreground/20 transition-colors duration-100 group">
 			<label
-				htmlFor={`s${key}`}
+				htmlFor={`s${name}`}
 				className={cn("flex flex-row items-center justify-between gap-4 cursor-pointer p-4", {
 					"pb-0": checked,
 				})}
@@ -188,44 +235,51 @@ function AlertContent({ data }: { data: AlertData }) {
 					{!checked && <span className="block text-sm text-muted-foreground">{data.alert.desc()}</span>}
 				</div>
 				<Switch
-					id={`s${key}`}
+					id={`s${name}`}
 					checked={checked}
-					onCheckedChange={(checked) => {
-						setChecked(checked)
-						updateAlert(checked)
+					onCheckedChange={(newChecked) => {
+						setChecked(newChecked)
+						data.updateAlert?.(newChecked, value, min)
 					}}
 				/>
 			</label>
 			{checked && (
 				<div className="grid sm:grid-cols-2 mt-1.5 gap-5 px-4 pb-5 tabular-nums text-muted-foreground">
 					<Suspense fallback={<div className="h-10" />}>
-					{!singleDescription && (
-						<div>
-							<p id={`v${key}`} className="text-sm block h-8">
-								<Trans>
-									Average exceeds{" "}
-									<strong className="text-foreground">
-										{value}
-										{data.alert.unit}
-									</strong>
-								</Trans>
-							</p>
-							<div className="flex gap-3">
-								<Slider
-									aria-labelledby={`v${key}`}
-									defaultValue={[value]}
-									onValueCommit={(val) => (newValue.current = val[0]) && updateAlert()}
-									onValueChange={(val) => setValue(val[0])}
-									min={1}
-									max={alertInfo[key].max ?? 99}
-								/>
+						{!singleDescription && (
+							<div>
+								<p id={`v${name}`} className="text-sm block h-8">
+									<Trans>
+										Average exceeds{" "}
+										<strong className="text-foreground">
+											{value}
+											{data.alert.unit}
+										</strong>
+									</Trans>
+								</p>
+								<div className="flex gap-3">
+									<Slider
+										aria-labelledby={`v${name}`}
+										defaultValue={[value]}
+										onValueCommit={(val) => {
+											data.updateAlert?.(true, val[0], min)
+										}}
+										onValueChange={(val) => {
+											setValue(val[0])
+										}}
+										min={1}
+										max={alertInfo[name].max ?? 99}
+									/>
+								</div>
 							</div>
-						</div>
-					)}
+						)}
 						<div className={cn(singleDescription && "col-span-full lowercase")}>
-							<p id={`t${key}`} className="text-sm block h-8 first-letter:uppercase">
+							<p id={`t${name}`} className="text-sm block h-8 first-letter:uppercase">
 								{singleDescription && (
-									<>{singleDescription}{` `}</>
+									<>
+										{singleDescription}
+										{` `}
+									</>
 								)}
 								<Trans>
 									For <strong className="text-foreground">{min}</strong>{" "}
@@ -234,10 +288,14 @@ function AlertContent({ data }: { data: AlertData }) {
 							</p>
 							<div className="flex gap-3">
 								<Slider
-									aria-labelledby={`v${key}`}
+									aria-labelledby={`v${name}`}
 									defaultValue={[min]}
-									onValueCommit={(val) => (newMin.current = val[0]) && updateAlert()}
-									onValueChange={(val) => setMin(val[0])}
+									onValueCommit={(min) => {
+										data.updateAlert?.(true, value, min[0])
+									}}
+									onValueChange={(val) => {
+										setMin(val[0])
+									}}
 									min={1}
 									max={60}
 								/>
