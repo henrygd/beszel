@@ -16,6 +16,28 @@ import (
 	"golang.org/x/exp/slog"
 )
 
+const (
+	// Commands
+	nvidiaSmiCmd  = "nvidia-smi"
+	rocmSmiCmd    = "rocm-smi"
+	tegraStatsCmd = "tegrastats"
+
+	// Polling intervals
+	nvidiaSmiInterval  = "4"    // in seconds
+	tegraStatsInterval = "3700" // in milliseconds
+	rocmSmiInterval    = 4300 * time.Millisecond
+
+	// Command retry and timeout constants
+	retryWaitTime     = 5 * time.Second
+	maxFailureRetries = 5
+
+	cmdBufferSize = 10 * 1024
+
+	// Unit Conversions
+	mebibytesInAMegabyte = 1.024  // nvidia-smi reports memory in MiB
+	milliwattsInAWatt    = 1000.0 // tegrastats reports power in mW
+)
+
 // GPUManager manages data collection for GPUs (either Nvidia or AMD)
 type GPUManager struct {
 	sync.Mutex
@@ -57,7 +79,7 @@ func (c *gpuCollector) start() {
 				break
 			}
 			slog.Warn(c.name+" failed, restarting", "err", err)
-			time.Sleep(time.Second * 5)
+			time.Sleep(retryWaitTime)
 			continue
 		}
 	}
@@ -76,7 +98,7 @@ func (c *gpuCollector) collect() error {
 
 	scanner := bufio.NewScanner(stdout)
 	if c.buf == nil {
-		c.buf = make([]byte, 0, 10*1024)
+		c.buf = make([]byte, 0, cmdBufferSize)
 	}
 	scanner.Buffer(c.buf, bufio.MaxScanTokenSize)
 
@@ -120,7 +142,8 @@ func (gm *GPUManager) getJetsonParser() func(output []byte) bool {
 		// Parse GR3D (GPU) usage
 		gr3dMatches := gr3dPattern.FindSubmatch(output)
 		if gr3dMatches != nil {
-			gpuData.Usage, _ = strconv.ParseFloat(string(gr3dMatches[1]), 64)
+			gr3dUsage, _ := strconv.ParseFloat(string(gr3dMatches[1]), 64)
+			gpuData.Usage += gr3dUsage
 		}
 		// Parse temperature
 		tempMatches := tempPattern.FindSubmatch(output)
@@ -131,7 +154,7 @@ func (gm *GPUManager) getJetsonParser() func(output []byte) bool {
 		powerMatches := powerPattern.FindSubmatch(output)
 		if powerMatches != nil {
 			power, _ := strconv.ParseFloat(string(powerMatches[2]), 64)
-			gpuData.Power = power / 1000
+			gpuData.Power += power / milliwattsInAWatt
 		}
 		gpuData.Count++
 		return true
@@ -171,8 +194,8 @@ func (gm *GPUManager) parseNvidiaData(output []byte) bool {
 		// update gpu data
 		gpu := gm.GpuDataMap[id]
 		gpu.Temperature = temp
-		gpu.MemoryUsed = memoryUsage / 1.024
-		gpu.MemoryTotal = totalMemory / 1.024
+		gpu.MemoryUsed = memoryUsage / mebibytesInAMegabyte
+		gpu.MemoryTotal = totalMemory / mebibytesInAMegabyte
 		gpu.Usage += usage
 		gpu.Power += power
 		gpu.Count++
@@ -243,6 +266,7 @@ func (gm *GPUManager) GetCurrentData() map[string]system.GPUData {
 		}
 		gpuData[id] = gpuCopy
 	}
+	slog.Debug("GPU", "data", gpuData)
 	return gpuData
 }
 
@@ -251,13 +275,13 @@ func (gm *GPUManager) GetCurrentData() map[string]system.GPUData {
 // tools are found. If none of the tools are found, it returns an error indicating that no GPU
 // management tools are available.
 func (gm *GPUManager) detectGPUs() error {
-	if _, err := exec.LookPath("nvidia-smi"); err == nil {
+	if _, err := exec.LookPath(nvidiaSmiCmd); err == nil {
 		gm.nvidiaSmi = true
 	}
-	if _, err := exec.LookPath("rocm-smi"); err == nil {
+	if _, err := exec.LookPath(rocmSmiCmd); err == nil {
 		gm.rocmSmi = true
 	}
-	if _, err := exec.LookPath("tegrastats"); err == nil {
+	if _, err := exec.LookPath(tegraStatsCmd); err == nil {
 		gm.tegrastats = true
 	}
 	if gm.nvidiaSmi || gm.rocmSmi || gm.tegrastats {
@@ -272,17 +296,17 @@ func (gm *GPUManager) startCollector(command string) {
 		name: command,
 	}
 	switch command {
-	case "nvidia-smi":
-		collector.cmdArgs = []string{"-l", "4",
+	case nvidiaSmiCmd:
+		collector.cmdArgs = []string{"-l", nvidiaSmiInterval,
 			"--query-gpu=index,name,temperature.gpu,memory.used,memory.total,utilization.gpu,power.draw",
 			"--format=csv,noheader,nounits"}
 		collector.parse = gm.parseNvidiaData
 		go collector.start()
-	case "tegrastats":
-		collector.cmdArgs = []string{"--interval", "3000"}
+	case tegraStatsCmd:
+		collector.cmdArgs = []string{"--interval", tegraStatsInterval}
 		collector.parse = gm.getJetsonParser()
 		go collector.start()
-	case "rocm-smi":
+	case rocmSmiCmd:
 		collector.cmdArgs = []string{"--showid", "--showtemp", "--showuse", "--showpower", "--showproductname", "--showmeminfo", "vram", "--json"}
 		collector.parse = gm.parseAmdData
 		go func() {
@@ -290,12 +314,12 @@ func (gm *GPUManager) startCollector(command string) {
 			for {
 				if err := collector.collect(); err != nil {
 					failures++
-					if failures > 5 {
+					if failures > maxFailureRetries {
 						break
 					}
 					slog.Warn("Error collecting AMD GPU data", "err", err)
 				}
-				time.Sleep(4300 * time.Millisecond)
+				time.Sleep(rocmSmiInterval)
 			}
 		}()
 	}
@@ -310,13 +334,13 @@ func NewGPUManager() (*GPUManager, error) {
 	gm.GpuDataMap = make(map[string]*system.GPUData)
 
 	if gm.nvidiaSmi {
-		gm.startCollector("nvidia-smi")
+		gm.startCollector(nvidiaSmiCmd)
 	}
 	if gm.rocmSmi {
-		gm.startCollector("rocm-smi")
+		gm.startCollector(rocmSmiCmd)
 	}
 	if gm.tegrastats {
-		gm.startCollector("tegrastats")
+		gm.startCollector(tegraStatsCmd)
 	}
 
 	return &gm, nil
