@@ -35,6 +35,7 @@ export default memo(function AreaChartDefault({
 	chartData,
 	max,
 	tickFormatter,
+	contentFormatter,
 }: {
 	maxToggled?: boolean
 	unit?: string
@@ -42,6 +43,7 @@ export default memo(function AreaChartDefault({
 	chartData: ChartData
 	max?: number
 	tickFormatter?: (value: number) => string
+	contentFormatter?: (value: number) => string
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { i18n } = useLingui()
@@ -115,7 +117,12 @@ export default memo(function AreaChartDefault({
 						content={
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
-								contentFormatter={(item) => decimalString(item.value) + unit}
+								contentFormatter={({ value }) => {
+									if (contentFormatter) {
+										return contentFormatter(value)
+									}
+									return decimalString(value) + unit
+								}}
 								// indicator="line"
 							/>
 						}

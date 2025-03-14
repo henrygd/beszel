@@ -554,7 +554,7 @@ const SystemTableRow = memo(
 					))}
 				</TableRow>
 			)
-		}, [system, colLength, t])
+		}, [system, system.status, colLength, t])
 	}
 )
 
@@ -627,9 +627,9 @@ const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 	const [editOpen, setEditOpen] = useState(false)
 	let editOpened = useRef(false)
 	const { t } = useLingui()
+	const { id, status, host, name } = system
 
 	return useMemo(() => {
-		const { id, status, host, name } = system
 		return (
 			<>
 				<DropdownMenu>
@@ -717,7 +717,7 @@ const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 				</AlertDialog>
 			</>
 		)
-	}, [system.id, t, deleteOpen, editOpen])
+	}, [id, status, host, name, t, deleteOpen, editOpen])
 })
 
 function IndicatorDot({ system, className }: { system: SystemRecord; className?: ClassValue }) {

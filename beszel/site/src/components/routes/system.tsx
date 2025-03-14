@@ -125,7 +125,7 @@ export default function SystemDetail({ name }: { name: string }) {
 		document.title = `${name} / Beszel`
 		return () => {
 			if (!persistChartTime.current) {
-			$chartTime.set($userSettings.get().chartTime)
+				$chartTime.set($userSettings.get().chartTime)
 			}
 			persistChartTime.current = false
 			setSystemStats([])
@@ -294,7 +294,7 @@ export default function SystemDetail({ name }: { name: string }) {
 		const distanceToBottom = wrapperRect.bottom - chartRect.bottom
 		setBottomSpacing(tooltipHeight - distanceToBottom)
 	}, [netCardRef, containerData])
-	
+
 	// keyboard navigation between systems
 	useEffect(() => {
 		if (!systems.length) {
@@ -304,8 +304,8 @@ export default function SystemDetail({ name }: { name: string }) {
 			if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
 				return
 			}
-			const currentIndex = systems.findIndex(s => s.name === name)
-			if (currentIndex === -1 || systems.length <= 1) { 
+			const currentIndex = systems.findIndex((s) => s.name === name)
+			if (currentIndex === -1 || systems.length <= 1) {
 				return
 			}
 			switch (e.key) {
@@ -313,12 +313,12 @@ export default function SystemDetail({ name }: { name: string }) {
 				case "h":
 					const prevIndex = (currentIndex - 1 + systems.length) % systems.length
 					persistChartTime.current = true
-					return navigate(getPagePath($router, "system", { name: systems[prevIndex].name}))
+					return navigate(getPagePath($router, "system", { name: systems[prevIndex].name }))
 				case "ArrowRight":
 				case "l":
 					const nextIndex = (currentIndex + 1) % systems.length
 					persistChartTime.current = true
-					return navigate(getPagePath($router, "system", { name: systems[nextIndex].name}))
+					return navigate(getPagePath($router, "system", { name: systems[nextIndex].name }))
 			}
 		}
 		return listen(document, "keyup", handleKeyUp)
@@ -555,6 +555,10 @@ export default function SystemDetail({ name }: { name: string }) {
 					<div className="grid xl:grid-cols-2 gap-4">
 						{Object.keys(systemStats.at(-1)?.stats.g ?? {}).map((id) => {
 							const gpu = systemStats.at(-1)?.stats.g?.[id] as GPUData
+							const sizeFormatter = (value: number, decimals?: number) => {
+								const { v, u } = getSizeAndUnit(value, false)
+								return toFixedFloat(v, decimals || 1) + u
+							}
 							return (
 								<div key={id} className="contents">
 									<ChartCard
@@ -574,12 +578,9 @@ export default function SystemDetail({ name }: { name: string }) {
 										<AreaChartDefault
 											chartData={chartData}
 											chartName={`g.${id}.mu`}
-											unit=" MB"
 											max={gpu.mt}
-											tickFormatter={(value) => {
-												const { v, u } = getSizeAndUnit(value, false)
-												return toFixedFloat(v, 1) + u
-											}}
+											tickFormatter={sizeFormatter}
+											contentFormatter={(value) => sizeFormatter(value, 2)}
 										/>
 									</ChartCard>
 								</div>
