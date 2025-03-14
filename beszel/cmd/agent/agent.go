@@ -6,8 +6,8 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
-	"strings"
 
 	"golang.org/x/crypto/ssh"
 )
@@ -18,39 +18,50 @@ type cmdOptions struct {
 	listen string // listen is the address or port to listen on.
 }
 
-// parseFlags parses the command line flags and populates the config struct.
-func (opts *cmdOptions) parseFlags() {
+// parse parses the command line flags and populates the config struct.
+// It returns true if a subcommand was handled and the program should exit.
+func (opts *cmdOptions) parse() bool {
 	flag.StringVar(&opts.key, "key", "", "Public key(s) for SSH authentication")
 	flag.StringVar(&opts.listen, "listen", "", "Address or port to listen on")
 
 	flag.Usage = func() {
-		fmt.Printf("Usage: %s [options] [subcommand]\n", os.Args[0])
-		fmt.Println("\nOptions:")
+		fmt.Printf("Usage: %s [command] [flags]\n", os.Args[0])
+		fmt.Println("\nCommands:")
+		fmt.Println("  health    Check if the agent is running")
+		fmt.Println("  help      Display this help message")
+		fmt.Println("  update    Update to the latest version")
+		fmt.Println("  version   Display the version")
+		fmt.Println("\nFlags:")
 		flag.PrintDefaults()
-		fmt.Println("\nSubcommands:")
-		fmt.Println("  version      Display the version")
-		fmt.Println("  help         Display this help message")
-		fmt.Println("  update       Update the agent to the latest version")
 	}
-}
 
-// handleSubcommand handles subcommands such as version, help, and update.
-// It returns true if a subcommand was handled, false otherwise.
-func handleSubcommand() bool {
-	if len(os.Args) <= 1 {
-		return false
+	subcommand := ""
+	if len(os.Args) > 1 {
+		subcommand = os.Args[1]
 	}
-	switch os.Args[1] {
-	case "version", "-v":
+
+	switch subcommand {
+	case "-v", "version":
 		fmt.Println(beszel.AppName+"-agent", beszel.Version)
-		os.Exit(0)
+		return true
 	case "help":
 		flag.Usage()
-		os.Exit(0)
+		return true
 	case "update":
 		agent.Update()
-		os.Exit(0)
+		return true
+	case "health":
+		// for health, we need to parse flags first to get the listen address
+		args := append(os.Args[2:], subcommand)
+		flag.CommandLine.Parse(args)
+		addr := opts.getAddress()
+		network := agent.GetNetwork(addr)
+		exitCode, err := agent.Health(addr, network)
+		slog.Info("Health", "code", exitCode, "err", err)
+		os.Exit(exitCode)
 	}
+
+	flag.Parse()
 	return false
 }
 
@@ -79,45 +90,17 @@ func (opts *cmdOptions) loadPublicKeys() ([]ssh.PublicKey, error) {
 	return agent.ParseKeys(string(pubKey))
 }
 
-// getAddress gets the address to listen on from the command line flag, environment variable, or default value.
 func (opts *cmdOptions) getAddress() string {
-	// Try command line flag first
-	if opts.listen != "" {
-		return opts.listen
-	}
-	// Try environment variables
-	if addr, ok := agent.GetEnv("LISTEN"); ok && addr != "" {
-		return addr
-	}
-	// Legacy PORT environment variable support
-	if port, ok := agent.GetEnv("PORT"); ok && port != "" {
-		return port
-	}
-	return ":45876"
-}
-
-// getNetwork returns the network type to use for the server.
-func (opts *cmdOptions) getNetwork() string {
-	if network, _ := agent.GetEnv("NETWORK"); network != "" {
-		return network
-	}
-	if strings.HasPrefix(opts.listen, "/") {
-		return "unix"
-	}
-	return "tcp"
+	return agent.GetAddress(opts.listen)
 }
 
 func main() {
 	var opts cmdOptions
-	opts.parseFlags()
+	subcommandHandled := opts.parse()
 
-	if handleSubcommand() {
+	if subcommandHandled {
 		return
 	}
-
-	flag.Parse()
-
-	opts.listen = opts.getAddress()
 
 	var serverConfig agent.ServerOptions
 	var err error
@@ -126,8 +109,9 @@ func main() {
 		log.Fatal("Failed to load public keys:", err)
 	}
 
-	serverConfig.Addr = opts.listen
-	serverConfig.Network = opts.getNetwork()
+	addr := opts.getAddress()
+	serverConfig.Addr = addr
+	serverConfig.Network = agent.GetNetwork(addr)
 
 	agent := agent.NewAgent()
 	if err := agent.StartServer(serverConfig); err != nil {

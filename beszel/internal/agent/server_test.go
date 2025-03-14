@@ -45,7 +45,7 @@ func TestStartServer(t *testing.T) {
 			name: "tcp port only",
 			config: ServerOptions{
 				Network: "tcp",
-				Addr:    "45987",
+				Addr:    ":45987",
 				Keys:    []ssh.PublicKey{sshPubKey},
 			},
 		},
@@ -88,7 +88,7 @@ func TestStartServer(t *testing.T) {
 			name: "bad key should fail",
 			config: ServerOptions{
 				Network: "tcp",
-				Addr:    "45987",
+				Addr:    ":45987",
 				Keys:    []ssh.PublicKey{sshBadPubKey},
 			},
 			wantErr:     true,
@@ -98,7 +98,7 @@ func TestStartServer(t *testing.T) {
 			name: "good key still good",
 			config: ServerOptions{
 				Network: "tcp",
-				Addr:    "45987",
+				Addr:    ":45987",
 				Keys:    []ssh.PublicKey{sshPubKey},
 			},
 		},

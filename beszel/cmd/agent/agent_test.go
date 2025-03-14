@@ -1,6 +1,7 @@
 package main
 
 import (
+	"beszel/internal/agent"
 	"crypto/ed25519"
 	"flag"
 	"os"
@@ -29,7 +30,7 @@ func TestGetAddress(t *testing.T) {
 			opts: cmdOptions{
 				listen: "8080",
 			},
-			expected: "8080",
+			expected: ":8080",
 		},
 		{
 			name: "use unix socket from flag",
@@ -52,7 +53,7 @@ func TestGetAddress(t *testing.T) {
 			envVars: map[string]string{
 				"PORT": "7070",
 			},
-			expected: "7070",
+			expected: ":7070",
 		},
 		{
 			name: "use unix socket from env var",
@@ -233,7 +234,7 @@ func TestGetNetwork(t *testing.T) {
 			for k, v := range tt.envVars {
 				t.Setenv(k, v)
 			}
-			network := tt.opts.getNetwork()
+			network := agent.GetNetwork(tt.opts.listen)
 			assert.Equal(t, tt.expected, network)
 		})
 	}
@@ -293,7 +294,7 @@ func TestParseFlags(t *testing.T) {
 			os.Args = tt.args
 
 			var opts cmdOptions
-			opts.parseFlags()
+			opts.parse()
 			flag.Parse()
 
 			assert.Equal(t, tt.expected, opts)
