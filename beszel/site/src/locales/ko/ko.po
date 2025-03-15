@@ -48,14 +48,11 @@ msgid "30 days"
 msgstr "30일"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx:293
-#: src/components/systems-table/systems-table.tsx:381
-#: src/components/systems-table/systems-table.tsx:523
-#: src/components/systems-table/systems-table.tsx:533
+#: src/components/systems-table/systems-table.tsx:304
 msgid "Actions"
 msgstr "작업"
 
-#: src/components/routes/home.tsx:62
+#: src/components/routes/home.tsx:94
 msgid "Active Alerts"
 msgstr "활성화된 알림들"
 
@@ -87,21 +84,21 @@ msgstr "차트 표시 옵션 변경."
 msgid "Admin"
 msgstr "관리자"
 
-#: src/components/systems-table/systems-table.tsx:261
+#: src/components/systems-table/systems-table.tsx:270
 msgid "Agent"
 msgstr "에이전트"
 
 #: src/components/alerts/alert-button.tsx:32
-#: src/components/alerts/alert-button.tsx:68
+#: src/components/alerts/alert-button.tsx:78
 msgid "Alerts"
 msgstr "알림"
 
-#: src/components/systems-table/systems-table.tsx:334
-#: src/components/alerts/alert-button.tsx:88
+#: src/components/systems-table/systems-table.tsx:347
+#: src/components/alerts/alert-button.tsx:98
 msgid "All Systems"
 msgstr "모든 시스템"
 
-#: src/components/systems-table/systems-table.tsx:657
+#: src/components/systems-table/systems-table.tsx:696
 msgid "Are you sure you want to delete {name}?"
 msgstr "{name}을(를) 삭제하시겠습니까?"
 
@@ -109,7 +106,7 @@ msgstr "{name}을(를) 삭제하시겠습니까?"
 msgid "Automatic copy requires a secure context."
 msgstr "자동 복사는 안전한 컨텍스트가 필요합니다."
 
-#: src/components/routes/system.tsx:668
+#: src/components/routes/system.tsx:669
 msgid "Average"
 msgstr "평균"
 
@@ -118,7 +115,7 @@ msgid "Average CPU utilization of containers"
 msgstr "컨테이너의 평균 CPU 사용량"
 
 #. placeholder {0}: data.alert.unit
-#: src/components/alerts/alerts-system.tsx:205
+#: src/components/alerts/alerts-system.tsx:252
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "평균이 <0>{value}{0}</0>을(를) 초과합니다"
 
@@ -131,7 +128,7 @@ msgid "Average system-wide CPU utilization"
 msgstr "시스템 전체의 평균 CPU 사용량"
 
 #. placeholder {0}: gpu.n
-#: src/components/routes/system.tsx:564
+#: src/components/routes/system.tsx:568
 msgid "Average utilization of {0}"
 msgstr "평균 {0} 사용량"
 
@@ -161,7 +158,7 @@ msgstr "실행 파일"
 msgid "Cache / Buffers"
 msgstr "캐시 / 버퍼"
 
-#: src/components/systems-table/systems-table.tsx:668
+#: src/components/systems-table/systems-table.tsx:707
 msgid "Cancel"
 msgstr "취소"
 
@@ -207,7 +204,7 @@ msgstr "알림을 수신할 방법을 설정하세요."
 msgid "Confirm password"
 msgstr "비밀번호 확인"
 
-#: src/components/systems-table/systems-table.tsx:674
+#: src/components/systems-table/systems-table.tsx:713
 msgid "Continue"
 msgstr "계속"
 
@@ -220,7 +217,7 @@ msgstr "클립보드에 복사됨"
 msgid "Copy"
 msgstr "복사"
 
-#: src/components/systems-table/systems-table.tsx:639
+#: src/components/systems-table/systems-table.tsx:678
 msgid "Copy host"
 msgstr "호스트 복사"
 
@@ -232,13 +229,13 @@ msgstr "리눅스 명령어 복사"
 msgid "Copy text"
 msgstr "텍스트 복사"
 
-#: src/components/systems-table/systems-table.tsx:180
+#: src/components/systems-table/systems-table.tsx:186
 msgid "CPU"
 msgstr "CPU"
 
 #: src/lib/utils.ts:319
 #: src/components/routes/system.tsx:433
-#: src/components/charts/area-chart.tsx:56
+#: src/components/charts/area-chart.tsx:58
 msgid "CPU Usage"
 msgstr "CPU 사용량"
 
@@ -252,7 +249,7 @@ msgid "Dark"
 msgstr "어둡게"
 
 #: src/components/command-palette.tsx:80
-#: src/components/routes/home.tsx:35
+#: src/components/routes/home.tsx:36
 msgid "Dashboard"
 msgstr "대시보드"
 
@@ -260,11 +257,11 @@ msgstr "대시보드"
 msgid "Default time period"
 msgstr "기본 기간"
 
-#: src/components/systems-table/systems-table.tsx:644
+#: src/components/systems-table/systems-table.tsx:683
 msgid "Delete"
 msgstr "삭제"
 
-#: src/components/systems-table/systems-table.tsx:196
+#: src/components/systems-table/systems-table.tsx:204
 msgid "Disk"
 msgstr "디스크"
 
@@ -278,7 +275,7 @@ msgstr "디스크 I/O"
 msgid "Disk Usage"
 msgstr "디스크 사용량"
 
-#: src/components/routes/system.tsx:601
+#: src/components/routes/system.tsx:602
 msgid "Disk usage of {extraFsName}"
 msgstr "{extraFsName}의 디스크 사용량"
 
@@ -300,13 +297,13 @@ msgstr "문서"
 
 #. Context: System is down
 #: src/lib/utils.ts:316
-#: src/components/systems-table/systems-table.tsx:141
+#: src/components/systems-table/systems-table.tsx:142
 #: src/components/routes/system.tsx:344
 msgid "Down"
 msgstr "오프라인"
 
 #: src/components/add-system.tsx:125
-#: src/components/systems-table/systems-table.tsx:614
+#: src/components/systems-table/systems-table.tsx:653
 msgid "Edit"
 msgstr "수정"
 
@@ -336,7 +333,7 @@ msgstr "오류"
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
-#: src/components/routes/home.tsx:81
+#: src/components/routes/home.tsx:113
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "마지막 {2, plural, one {# 분} other {# 분}} 동안 {0}{1} 초과"
 
@@ -365,16 +362,16 @@ msgstr "설정 저장 실패"
 msgid "Failed to send test notification"
 msgstr "테스트 알림 전송 실패"
 
-#: src/components/alerts/alerts-system.tsx:24
+#: src/components/alerts/alerts-system.tsx:25
 msgid "Failed to update alert"
 msgstr "알림 수정 실패"
 
-#: src/components/systems-table/systems-table.tsx:341
-#: src/components/routes/system.tsx:641
+#: src/components/systems-table/systems-table.tsx:354
+#: src/components/routes/system.tsx:642
 msgid "Filter..."
 msgstr "필터..."
 
-#: src/components/alerts/alerts-system.tsx:230
+#: src/components/alerts/alerts-system.tsx:284
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "<0>{min}</0> {min, plural, one {분} other {분}} 동안"
 
@@ -392,7 +389,7 @@ msgstr "일반"
 msgid "GPU Power Draw"
 msgstr "GPU 전원 사용량"
 
-#: src/components/systems-table/systems-table.tsx:368
+#: src/components/systems-table/systems-table.tsx:381
 msgid "Grid"
 msgstr "그리드"
 
@@ -417,7 +414,7 @@ msgstr "커널"
 msgid "Language"
 msgstr "언어"
 
-#: src/components/systems-table/systems-table.tsx:354
+#: src/components/systems-table/systems-table.tsx:367
 msgid "Layout"
 msgstr "레이아웃"
 
@@ -457,11 +454,11 @@ msgid "Manual setup instructions"
 msgstr "수동 설정 방법"
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:671
+#: src/components/routes/system.tsx:672
 msgid "Max 1 min"
 msgstr "1분간 최댓값"
 
-#: src/components/systems-table/systems-table.tsx:188
+#: src/components/systems-table/systems-table.tsx:195
 msgid "Memory"
 msgstr "메모리"
 
@@ -478,7 +475,7 @@ msgstr "Docker 컨테이너의 메모리 사용량"
 msgid "Name"
 msgstr "이름"
 
-#: src/components/systems-table/systems-table.tsx:213
+#: src/components/systems-table/systems-table.tsx:223
 msgid "Net"
 msgstr "네트워크"
 
@@ -494,8 +491,8 @@ msgstr "공용 인터페이스의 네트워크 트래픽"
 msgid "No results found."
 msgstr "결과가 없습니다."
 
-#: src/components/systems-table/systems-table.tsx:489
-#: src/components/systems-table/systems-table.tsx:562
+#: src/components/systems-table/systems-table.tsx:472
+#: src/components/systems-table/systems-table.tsx:495
 msgid "No systems found."
 msgstr "시스템을 찾을 수 없습니다."
 
@@ -513,7 +510,7 @@ msgstr "OAuth 2 / OIDC 지원"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "매 시작 시, 데이터베이스가 파일에 정의된 시스템과 일치하도록 업데이트됩니다."
 
-#: src/components/systems-table/systems-table.tsx:600
+#: src/components/systems-table/systems-table.tsx:639
 msgid "Open menu"
 msgstr "메뉴 열기"
 
@@ -521,7 +518,7 @@ msgstr "메뉴 열기"
 msgid "Or continue with"
 msgstr "또는 아래 항목으로 진행하기"
 
-#: src/components/alerts/alert-button.tsx:109
+#: src/components/alerts/alert-button.tsx:119
 msgid "Overwrite existing alerts"
 msgstr "기존 알림 덮어쓰기"
 
@@ -550,11 +547,11 @@ msgstr "비밀번호는 72 바이트 이하여야 합니다."
 msgid "Password reset request received"
 msgstr "비밀번호 재설정 요청이 접수되었습니다"
 
-#: src/components/systems-table/systems-table.tsx:633
+#: src/components/systems-table/systems-table.tsx:672
 msgid "Pause"
 msgstr "일시 중지"
 
-#: src/components/systems-table/systems-table.tsx:142
+#: src/components/systems-table/systems-table.tsx:143
 msgid "Paused"
 msgstr "일시 정지됨"
 
@@ -562,7 +559,7 @@ msgstr "일시 정지됨"
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "알림이 전달되도록 <0>SMTP 서버를 구성</0>하세요."
 
-#: src/components/alerts/alerts-system.tsx:25
+#: src/components/alerts/alerts-system.tsx:26
 msgid "Please check logs for more details."
 msgstr "자세한 내용은 로그를 확인하세요."
 
@@ -596,7 +593,7 @@ msgid "Port"
 msgstr "포트"
 
 #: src/components/routes/system.tsx:456
-#: src/components/routes/system.tsx:572
+#: src/components/routes/system.tsx:576
 msgid "Precise utilization at the recorded time"
 msgstr "기록된 시간의 정확한 사용량"
 
@@ -610,13 +607,13 @@ msgid "Public Key"
 msgstr "공개 키"
 
 #. Disk read
-#: src/components/charts/area-chart.tsx:60
-#: src/components/charts/area-chart.tsx:70
+#: src/components/charts/area-chart.tsx:62
+#: src/components/charts/area-chart.tsx:72
 msgid "Read"
 msgstr "읽기"
 
 #. Network bytes received (download)
-#: src/components/charts/area-chart.tsx:65
+#: src/components/charts/area-chart.tsx:67
 msgid "Received"
 msgstr "수신됨"
 
@@ -624,7 +621,7 @@ msgstr "수신됨"
 msgid "Reset Password"
 msgstr "비밀번호 재설정"
 
-#: src/components/systems-table/systems-table.tsx:628
+#: src/components/systems-table/systems-table.tsx:667
 msgid "Resume"
 msgstr "재개"
 
@@ -649,12 +646,12 @@ msgstr "검색"
 msgid "Search for systems or settings..."
 msgstr "시스템 또는 설정 검색..."
 
-#: src/components/alerts/alert-button.tsx:71
+#: src/components/alerts/alert-button.tsx:81
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "알림을 받는 방법을 구성하려면 <0>알림 설정</0>을 참조하세요."
 
 #. Network bytes sent (upload)
-#: src/components/charts/area-chart.tsx:64
+#: src/components/charts/area-chart.tsx:66
 msgid "Sent"
 msgstr "보냄"
 
@@ -682,7 +679,7 @@ msgstr "로그인"
 msgid "SMTP settings"
 msgstr "SMTP 설정"
 
-#: src/components/systems-table/systems-table.tsx:376
+#: src/components/systems-table/systems-table.tsx:389
 msgid "Sort By"
 msgstr "정렬 기준"
 
@@ -701,10 +698,7 @@ msgstr "스왑 사용량"
 #. System theme
 #: src/lib/utils.ts:316
 #: src/components/mode-toggle.tsx:26
-#: src/components/systems-table/systems-table.tsx:125
-#: src/components/systems-table/systems-table.tsx:133
-#: src/components/systems-table/systems-table.tsx:150
-#: src/components/systems-table/systems-table.tsx:533
+#: src/components/systems-table/systems-table.tsx:152
 msgid "System"
 msgstr "시스템"
 
@@ -716,12 +710,12 @@ msgstr "시스템"
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "시스템은 데이터 디렉토리 내의 <0>config.yml</0> 파일에서 관리할 수 있습니다."
 
-#: src/components/systems-table/systems-table.tsx:364
+#: src/components/systems-table/systems-table.tsx:377
 msgid "Table"
 msgstr "표"
 
 #. Temperature label in systems table
-#: src/components/systems-table/systems-table.tsx:233
+#: src/components/systems-table/systems-table.tsx:244
 msgid "Temp"
 msgstr "온도"
 
@@ -754,11 +748,11 @@ msgstr "에이전트가 시스템에서 실행 중이어야 연결할 수 있습
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "그런 다음 백엔드에 로그인하여 사용자 테이블에서 사용자 계정 비밀번호를 재설정하세요."
 
-#: src/components/systems-table/systems-table.tsx:660
+#: src/components/systems-table/systems-table.tsx:699
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "이 작업은 되돌릴 수 없습니다. 데이터베이스에서 {name}에 대한 모든 현재 기록이 영구적으로 삭제됩니다."
 
-#: src/components/routes/system.tsx:613
+#: src/components/routes/system.tsx:614
 msgid "Throughput of {extraFsName}"
 msgstr "{extraFsName}의 처리량"
 
@@ -804,12 +798,12 @@ msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "디스크 사용량이 임계값을 초과할 때 트리거됩니다."
 
 #. Context: System is up
-#: src/components/systems-table/systems-table.tsx:140
+#: src/components/systems-table/systems-table.tsx:141
 #: src/components/routes/system.tsx:342
 msgid "Up"
 msgstr "온라인"
 
-#: src/components/systems-table/systems-table.tsx:337
+#: src/components/systems-table/systems-table.tsx:350
 msgid "Updated in real time. Click on a system to view information."
 msgstr "실시간으로 업데이트됩니다. 시스템을 클릭하여 정보를 확인하세요."
 
@@ -817,9 +811,9 @@ msgstr "실시간으로 업데이트됩니다. 시스템을 클릭하여 정보�
 msgid "Uptime"
 msgstr "가동 시간"
 
-#: src/components/routes/system.tsx:563
-#: src/components/routes/system.tsx:600
-#: src/components/charts/area-chart.tsx:73
+#: src/components/routes/system.tsx:567
+#: src/components/routes/system.tsx:601
+#: src/components/charts/area-chart.tsx:75
 msgid "Usage"
 msgstr "사용량"
 
@@ -829,7 +823,7 @@ msgstr "루트 파티션의 사용량"
 
 #: src/components/charts/swap-chart.tsx:56
 #: src/components/charts/mem-chart.tsx:65
-#: src/components/charts/area-chart.tsx:73
+#: src/components/charts/area-chart.tsx:75
 msgid "Used"
 msgstr "사용됨"
 
@@ -838,15 +832,15 @@ msgstr "사용됨"
 msgid "Users"
 msgstr "사용자"
 
-#: src/components/systems-table/systems-table.tsx:346
+#: src/components/systems-table/systems-table.tsx:359
 msgid "View"
 msgstr "보기"
 
-#: src/components/systems-table/systems-table.tsx:410
+#: src/components/systems-table/systems-table.tsx:424
 msgid "Visible Fields"
 msgstr "표시할 열"
 
-#: src/components/routes/system.tsx:705
+#: src/components/routes/system.tsx:706
 msgid "Waiting for enough records to display"
 msgstr "표시할 충분한 기록을 기다리는 중"
 
@@ -859,8 +853,8 @@ msgid "Webhook / Push notifications"
 msgstr "Webhook / 푸시 알림"
 
 #. Disk write
-#: src/components/charts/area-chart.tsx:59
-#: src/components/charts/area-chart.tsx:69
+#: src/components/charts/area-chart.tsx:61
+#: src/components/charts/area-chart.tsx:71
 msgid "Write"
 msgstr "쓰기"
 
@@ -875,4 +869,3 @@ msgstr "YAML 구성"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "사용자 설정이 업데이트되었습니다."
-

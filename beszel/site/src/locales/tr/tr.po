@@ -8,7 +8,7 @@ msgstr ""
 "Language: tr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-24 02:49\n"
+"PO-Revision-Date: 2025-03-06 07:27\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -48,14 +48,11 @@ msgid "30 days"
 msgstr "30 gün"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx:293
-#: src/components/systems-table/systems-table.tsx:381
-#: src/components/systems-table/systems-table.tsx:523
-#: src/components/systems-table/systems-table.tsx:533
+#: src/components/systems-table/systems-table.tsx:304
 msgid "Actions"
 msgstr "Eylemler"
 
-#: src/components/routes/home.tsx:62
+#: src/components/routes/home.tsx:94
 msgid "Active Alerts"
 msgstr "Aktif Uyarılar"
 
@@ -87,21 +84,21 @@ msgstr "Grafikler için görüntüleme seçeneklerini ayarlayın."
 msgid "Admin"
 msgstr "Yönetici"
 
-#: src/components/systems-table/systems-table.tsx:261
+#: src/components/systems-table/systems-table.tsx:270
 msgid "Agent"
 msgstr "Aracı"
 
 #: src/components/alerts/alert-button.tsx:32
-#: src/components/alerts/alert-button.tsx:68
+#: src/components/alerts/alert-button.tsx:78
 msgid "Alerts"
 msgstr "Uyarılar"
 
-#: src/components/systems-table/systems-table.tsx:334
-#: src/components/alerts/alert-button.tsx:88
+#: src/components/systems-table/systems-table.tsx:347
+#: src/components/alerts/alert-button.tsx:98
 msgid "All Systems"
 msgstr "Tüm Sistemler"
 
-#: src/components/systems-table/systems-table.tsx:657
+#: src/components/systems-table/systems-table.tsx:696
 msgid "Are you sure you want to delete {name}?"
 msgstr "{name} silmek istediğinizden emin misiniz?"
 
@@ -109,7 +106,7 @@ msgstr "{name} silmek istediğinizden emin misiniz?"
 msgid "Automatic copy requires a secure context."
 msgstr "Otomatik kopyalama güvenli bir bağlam gerektirir."
 
-#: src/components/routes/system.tsx:668
+#: src/components/routes/system.tsx:669
 msgid "Average"
 msgstr "Ortalama"
 
@@ -118,7 +115,7 @@ msgid "Average CPU utilization of containers"
 msgstr "Konteynerlerin ortalama CPU kullanımı"
 
 #. placeholder {0}: data.alert.unit
-#: src/components/alerts/alerts-system.tsx:205
+#: src/components/alerts/alerts-system.tsx:252
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Ortalama <0>{value}{0}</0> aşıyor"
 
@@ -131,7 +128,7 @@ msgid "Average system-wide CPU utilization"
 msgstr "Sistem genelinde ortalama CPU kullanımı"
 
 #. placeholder {0}: gpu.n
-#: src/components/routes/system.tsx:564
+#: src/components/routes/system.tsx:568
 msgid "Average utilization of {0}"
 msgstr "{0} ortalama kullanımı"
 
@@ -161,7 +158,7 @@ msgstr "İkili"
 msgid "Cache / Buffers"
 msgstr "Önbellek / Tamponlar"
 
-#: src/components/systems-table/systems-table.tsx:668
+#: src/components/systems-table/systems-table.tsx:707
 msgid "Cancel"
 msgstr "İptal"
 
@@ -207,7 +204,7 @@ msgstr "Uyarı bildirimlerini nasıl alacağınızı yapılandırın."
 msgid "Confirm password"
 msgstr "Şifreyi onayla"
 
-#: src/components/systems-table/systems-table.tsx:674
+#: src/components/systems-table/systems-table.tsx:713
 msgid "Continue"
 msgstr "Devam et"
 
@@ -220,7 +217,7 @@ msgstr "Panoya kopyalandı"
 msgid "Copy"
 msgstr "Kopyala"
 
-#: src/components/systems-table/systems-table.tsx:639
+#: src/components/systems-table/systems-table.tsx:678
 msgid "Copy host"
 msgstr "Ana bilgisayarı kopyala"
 
@@ -232,13 +229,13 @@ msgstr "Linux komutunu kopyala"
 msgid "Copy text"
 msgstr "Metni kopyala"
 
-#: src/components/systems-table/systems-table.tsx:180
+#: src/components/systems-table/systems-table.tsx:186
 msgid "CPU"
 msgstr "CPU"
 
 #: src/lib/utils.ts:319
 #: src/components/routes/system.tsx:433
-#: src/components/charts/area-chart.tsx:56
+#: src/components/charts/area-chart.tsx:58
 msgid "CPU Usage"
 msgstr "CPU Kullanımı"
 
@@ -252,7 +249,7 @@ msgid "Dark"
 msgstr "Koyu"
 
 #: src/components/command-palette.tsx:80
-#: src/components/routes/home.tsx:35
+#: src/components/routes/home.tsx:36
 msgid "Dashboard"
 msgstr "Gösterge Paneli"
 
@@ -260,11 +257,11 @@ msgstr "Gösterge Paneli"
 msgid "Default time period"
 msgstr "Varsayılan zaman dilimi"
 
-#: src/components/systems-table/systems-table.tsx:644
+#: src/components/systems-table/systems-table.tsx:683
 msgid "Delete"
 msgstr "Sil"
 
-#: src/components/systems-table/systems-table.tsx:196
+#: src/components/systems-table/systems-table.tsx:204
 msgid "Disk"
 msgstr "Disk"
 
@@ -278,7 +275,7 @@ msgstr "Disk G/Ç"
 msgid "Disk Usage"
 msgstr "Disk Kullanımı"
 
-#: src/components/routes/system.tsx:601
+#: src/components/routes/system.tsx:602
 msgid "Disk usage of {extraFsName}"
 msgstr "{extraFsName} disk kullanımı"
 
@@ -300,13 +297,13 @@ msgstr "Dokümantasyon"
 
 #. Context: System is down
 #: src/lib/utils.ts:316
-#: src/components/systems-table/systems-table.tsx:141
+#: src/components/systems-table/systems-table.tsx:142
 #: src/components/routes/system.tsx:344
 msgid "Down"
 msgstr ""
 
 #: src/components/add-system.tsx:125
-#: src/components/systems-table/systems-table.tsx:614
+#: src/components/systems-table/systems-table.tsx:653
 msgid "Edit"
 msgstr ""
 
@@ -336,7 +333,7 @@ msgstr "Hata"
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
-#: src/components/routes/home.tsx:81
+#: src/components/routes/home.tsx:113
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Son {2, plural, one {# dakika} other {# dakika}} içinde {0}{1} aşıyor"
 
@@ -365,16 +362,16 @@ msgstr "Ayarlar kaydedilemedi"
 msgid "Failed to send test notification"
 msgstr "Test bildirimi gönderilemedi"
 
-#: src/components/alerts/alerts-system.tsx:24
+#: src/components/alerts/alerts-system.tsx:25
 msgid "Failed to update alert"
 msgstr "Uyarı güncellenemedi"
 
-#: src/components/systems-table/systems-table.tsx:341
-#: src/components/routes/system.tsx:641
+#: src/components/systems-table/systems-table.tsx:354
+#: src/components/routes/system.tsx:642
 msgid "Filter..."
 msgstr "Filtrele..."
 
-#: src/components/alerts/alerts-system.tsx:230
+#: src/components/alerts/alerts-system.tsx:284
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "<0>{min}</0> {min, plural, one {dakika} other {dakika}} için"
 
@@ -392,7 +389,7 @@ msgstr "Genel"
 msgid "GPU Power Draw"
 msgstr "GPU Güç Çekimi"
 
-#: src/components/systems-table/systems-table.tsx:368
+#: src/components/systems-table/systems-table.tsx:381
 msgid "Grid"
 msgstr "Izgara"
 
@@ -417,7 +414,7 @@ msgstr "Çekirdek"
 msgid "Language"
 msgstr "Dil"
 
-#: src/components/systems-table/systems-table.tsx:354
+#: src/components/systems-table/systems-table.tsx:367
 msgid "Layout"
 msgstr "Düzen"
 
@@ -457,11 +454,11 @@ msgid "Manual setup instructions"
 msgstr ""
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:671
+#: src/components/routes/system.tsx:672
 msgid "Max 1 min"
 msgstr "Maks 1 dk"
 
-#: src/components/systems-table/systems-table.tsx:188
+#: src/components/systems-table/systems-table.tsx:195
 msgid "Memory"
 msgstr "Bellek"
 
@@ -478,7 +475,7 @@ msgstr "Docker konteynerlerinin bellek kullanımı"
 msgid "Name"
 msgstr "Ad"
 
-#: src/components/systems-table/systems-table.tsx:213
+#: src/components/systems-table/systems-table.tsx:223
 msgid "Net"
 msgstr "Ağ"
 
@@ -494,8 +491,8 @@ msgstr "Genel arayüzlerin ağ trafiği"
 msgid "No results found."
 msgstr "Sonuç bulunamadı."
 
-#: src/components/systems-table/systems-table.tsx:489
-#: src/components/systems-table/systems-table.tsx:562
+#: src/components/systems-table/systems-table.tsx:472
+#: src/components/systems-table/systems-table.tsx:495
 msgid "No systems found."
 msgstr "Sistem bulunamadı."
 
@@ -513,7 +510,7 @@ msgstr "OAuth 2 / OIDC desteği"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Her yeniden başlatmada, veritabanındaki sistemler dosyada tanımlanan sistemlerle eşleşecek şekilde güncellenecektir."
 
-#: src/components/systems-table/systems-table.tsx:600
+#: src/components/systems-table/systems-table.tsx:639
 msgid "Open menu"
 msgstr "Menüyü aç"
 
@@ -521,7 +518,7 @@ msgstr "Menüyü aç"
 msgid "Or continue with"
 msgstr "Veya devam et"
 
-#: src/components/alerts/alert-button.tsx:109
+#: src/components/alerts/alert-button.tsx:119
 msgid "Overwrite existing alerts"
 msgstr "Mevcut uyarıların üzerine yaz"
 
@@ -550,11 +547,11 @@ msgstr ""
 msgid "Password reset request received"
 msgstr "Şifre sıfırlama isteği alındı"
 
-#: src/components/systems-table/systems-table.tsx:633
+#: src/components/systems-table/systems-table.tsx:672
 msgid "Pause"
 msgstr "Duraklat"
 
-#: src/components/systems-table/systems-table.tsx:142
+#: src/components/systems-table/systems-table.tsx:143
 msgid "Paused"
 msgstr ""
 
@@ -562,7 +559,7 @@ msgstr ""
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "Uyarıların teslim edilmesini sağlamak için lütfen bir SMTP sunucusu <0>yapılandırın</0>."
 
-#: src/components/alerts/alerts-system.tsx:25
+#: src/components/alerts/alerts-system.tsx:26
 msgid "Please check logs for more details."
 msgstr "Daha fazla ayrıntı için lütfen günlükleri kontrol edin."
 
@@ -596,7 +593,7 @@ msgid "Port"
 msgstr "Port"
 
 #: src/components/routes/system.tsx:456
-#: src/components/routes/system.tsx:572
+#: src/components/routes/system.tsx:576
 msgid "Precise utilization at the recorded time"
 msgstr "Kayıtlı zamanda kesin kullanım"
 
@@ -610,13 +607,13 @@ msgid "Public Key"
 msgstr "Genel Anahtar"
 
 #. Disk read
-#: src/components/charts/area-chart.tsx:60
-#: src/components/charts/area-chart.tsx:70
+#: src/components/charts/area-chart.tsx:62
+#: src/components/charts/area-chart.tsx:72
 msgid "Read"
 msgstr "Oku"
 
 #. Network bytes received (download)
-#: src/components/charts/area-chart.tsx:65
+#: src/components/charts/area-chart.tsx:67
 msgid "Received"
 msgstr "Alındı"
 
@@ -624,7 +621,7 @@ msgstr "Alındı"
 msgid "Reset Password"
 msgstr "Şifreyi Sıfırla"
 
-#: src/components/systems-table/systems-table.tsx:628
+#: src/components/systems-table/systems-table.tsx:667
 msgid "Resume"
 msgstr "Devam et"
 
@@ -649,12 +646,12 @@ msgstr "Ara"
 msgid "Search for systems or settings..."
 msgstr "Sistemler veya ayarlar için ara..."
 
-#: src/components/alerts/alert-button.tsx:71
+#: src/components/alerts/alert-button.tsx:81
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Uyarıları nasıl alacağınızı yapılandırmak için <0>bildirim ayarlarını</0> inceleyin."
 
 #. Network bytes sent (upload)
-#: src/components/charts/area-chart.tsx:64
+#: src/components/charts/area-chart.tsx:66
 msgid "Sent"
 msgstr "Gönderildi"
 
@@ -682,7 +679,7 @@ msgstr "Giriş yap"
 msgid "SMTP settings"
 msgstr "SMTP ayarları"
 
-#: src/components/systems-table/systems-table.tsx:376
+#: src/components/systems-table/systems-table.tsx:389
 msgid "Sort By"
 msgstr "Sıralama Ölçütü"
 
@@ -701,10 +698,7 @@ msgstr "Takas Kullanımı"
 #. System theme
 #: src/lib/utils.ts:316
 #: src/components/mode-toggle.tsx:26
-#: src/components/systems-table/systems-table.tsx:125
-#: src/components/systems-table/systems-table.tsx:133
-#: src/components/systems-table/systems-table.tsx:150
-#: src/components/systems-table/systems-table.tsx:533
+#: src/components/systems-table/systems-table.tsx:152
 msgid "System"
 msgstr "Sistem"
 
@@ -716,12 +710,12 @@ msgstr "Sistemler"
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "Sistemler, veri dizininizdeki bir <0>config.yml</0> dosyasında yönetilebilir."
 
-#: src/components/systems-table/systems-table.tsx:364
+#: src/components/systems-table/systems-table.tsx:377
 msgid "Table"
 msgstr "Tablo"
 
 #. Temperature label in systems table
-#: src/components/systems-table/systems-table.tsx:233
+#: src/components/systems-table/systems-table.tsx:244
 msgid "Temp"
 msgstr ""
 
@@ -754,11 +748,11 @@ msgstr "Bağlanmak için aracının sistemde çalışıyor olması gerekir. Aşa
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Ardından arka uca giriş yapın ve kullanıcılar tablosunda kullanıcı hesabı şifrenizi sıfırlayın."
 
-#: src/components/systems-table/systems-table.tsx:660
+#: src/components/systems-table/systems-table.tsx:699
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Bu işlem geri alınamaz. Bu, veritabanından {name} için tüm mevcut kayıtları kalıcı olarak silecektir."
 
-#: src/components/routes/system.tsx:613
+#: src/components/routes/system.tsx:614
 msgid "Throughput of {extraFsName}"
 msgstr "{extraFsName} verimliliği"
 
@@ -804,12 +798,12 @@ msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Herhangi bir diskin kullanımı bir eşiği aştığında tetiklenir"
 
 #. Context: System is up
-#: src/components/systems-table/systems-table.tsx:140
+#: src/components/systems-table/systems-table.tsx:141
 #: src/components/routes/system.tsx:342
 msgid "Up"
 msgstr ""
 
-#: src/components/systems-table/systems-table.tsx:337
+#: src/components/systems-table/systems-table.tsx:350
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Gerçek zamanlı olarak güncellenir. Bilgileri görüntülemek için bir sisteme tıklayın."
 
@@ -817,9 +811,9 @@ msgstr "Gerçek zamanlı olarak güncellenir. Bilgileri görüntülemek için bi
 msgid "Uptime"
 msgstr "Çalışma Süresi"
 
-#: src/components/routes/system.tsx:563
-#: src/components/routes/system.tsx:600
-#: src/components/charts/area-chart.tsx:73
+#: src/components/routes/system.tsx:567
+#: src/components/routes/system.tsx:601
+#: src/components/charts/area-chart.tsx:75
 msgid "Usage"
 msgstr "Kullanım"
 
@@ -829,7 +823,7 @@ msgstr "Kök bölümün kullanımı"
 
 #: src/components/charts/swap-chart.tsx:56
 #: src/components/charts/mem-chart.tsx:65
-#: src/components/charts/area-chart.tsx:73
+#: src/components/charts/area-chart.tsx:75
 msgid "Used"
 msgstr "Kullanıldı"
 
@@ -838,15 +832,15 @@ msgstr "Kullanıldı"
 msgid "Users"
 msgstr "Kullanıcılar"
 
-#: src/components/systems-table/systems-table.tsx:346
+#: src/components/systems-table/systems-table.tsx:359
 msgid "View"
 msgstr "Görüntüle"
 
-#: src/components/systems-table/systems-table.tsx:410
+#: src/components/systems-table/systems-table.tsx:424
 msgid "Visible Fields"
 msgstr "Görünür Alanlar"
 
-#: src/components/routes/system.tsx:705
+#: src/components/routes/system.tsx:706
 msgid "Waiting for enough records to display"
 msgstr "Görüntülemek için yeterli kayıt bekleniyor"
 
@@ -859,8 +853,8 @@ msgid "Webhook / Push notifications"
 msgstr "Webhook / Anlık bildirimler"
 
 #. Disk write
-#: src/components/charts/area-chart.tsx:59
-#: src/components/charts/area-chart.tsx:69
+#: src/components/charts/area-chart.tsx:61
+#: src/components/charts/area-chart.tsx:71
 msgid "Write"
 msgstr "Yaz"
 

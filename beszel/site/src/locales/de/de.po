@@ -8,7 +8,7 @@ msgstr ""
 "Language: de\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-24 02:49\n"
+"PO-Revision-Date: 2025-03-06 07:27\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -48,14 +48,11 @@ msgid "30 days"
 msgstr "30 Tage"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx:293
-#: src/components/systems-table/systems-table.tsx:381
-#: src/components/systems-table/systems-table.tsx:523
-#: src/components/systems-table/systems-table.tsx:533
+#: src/components/systems-table/systems-table.tsx:304
 msgid "Actions"
 msgstr "Aktionen"
 
-#: src/components/routes/home.tsx:62
+#: src/components/routes/home.tsx:94
 msgid "Active Alerts"
 msgstr "Aktive Warnungen"
 
@@ -87,21 +84,21 @@ msgstr "Anzeigeoptionen für Diagramme anpassen."
 msgid "Admin"
 msgstr "Admin"
 
-#: src/components/systems-table/systems-table.tsx:261
+#: src/components/systems-table/systems-table.tsx:270
 msgid "Agent"
 msgstr "Agent"
 
 #: src/components/alerts/alert-button.tsx:32
-#: src/components/alerts/alert-button.tsx:68
+#: src/components/alerts/alert-button.tsx:78
 msgid "Alerts"
 msgstr "Warnungen"
 
-#: src/components/systems-table/systems-table.tsx:334
-#: src/components/alerts/alert-button.tsx:88
+#: src/components/systems-table/systems-table.tsx:347
+#: src/components/alerts/alert-button.tsx:98
 msgid "All Systems"
 msgstr "Alle Systeme"
 
-#: src/components/systems-table/systems-table.tsx:657
+#: src/components/systems-table/systems-table.tsx:696
 msgid "Are you sure you want to delete {name}?"
 msgstr "Möchtest du {name} wirklich löschen?"
 
@@ -109,7 +106,7 @@ msgstr "Möchtest du {name} wirklich löschen?"
 msgid "Automatic copy requires a secure context."
 msgstr "Automatisches Kopieren erfordert einen sicheren Kontext."
 
-#: src/components/routes/system.tsx:668
+#: src/components/routes/system.tsx:669
 msgid "Average"
 msgstr "Durchschnitt"
 
@@ -118,7 +115,7 @@ msgid "Average CPU utilization of containers"
 msgstr "Durchschnittliche CPU-Auslastung der Container"
 
 #. placeholder {0}: data.alert.unit
-#: src/components/alerts/alerts-system.tsx:205
+#: src/components/alerts/alerts-system.tsx:252
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Durchschnitt überschreitet <0>{value}{0}</0>"
 
@@ -131,7 +128,7 @@ msgid "Average system-wide CPU utilization"
 msgstr "Durchschnittliche systemweite CPU-Auslastung"
 
 #. placeholder {0}: gpu.n
-#: src/components/routes/system.tsx:564
+#: src/components/routes/system.tsx:568
 msgid "Average utilization of {0}"
 msgstr "Durchschnittliche Auslastung von {0}"
 
@@ -161,7 +158,7 @@ msgstr "Binär"
 msgid "Cache / Buffers"
 msgstr "Cache / Puffer"
 
-#: src/components/systems-table/systems-table.tsx:668
+#: src/components/systems-table/systems-table.tsx:707
 msgid "Cancel"
 msgstr "Abbrechen"
 
@@ -207,7 +204,7 @@ msgstr "Konfiguriere, wie du Warnbenachrichtigungen erhältst."
 msgid "Confirm password"
 msgstr "Passwort bestätigen"
 
-#: src/components/systems-table/systems-table.tsx:674
+#: src/components/systems-table/systems-table.tsx:713
 msgid "Continue"
 msgstr "Fortfahren"
 
@@ -220,7 +217,7 @@ msgstr "In die Zwischenablage kopiert"
 msgid "Copy"
 msgstr "Kopieren"
 
-#: src/components/systems-table/systems-table.tsx:639
+#: src/components/systems-table/systems-table.tsx:678
 msgid "Copy host"
 msgstr "Host kopieren"
 
@@ -232,13 +229,13 @@ msgstr "Linux-Befehl kopieren"
 msgid "Copy text"
 msgstr "Text kopieren"
 
-#: src/components/systems-table/systems-table.tsx:180
+#: src/components/systems-table/systems-table.tsx:186
 msgid "CPU"
 msgstr "CPU"
 
 #: src/lib/utils.ts:319
 #: src/components/routes/system.tsx:433
-#: src/components/charts/area-chart.tsx:56
+#: src/components/charts/area-chart.tsx:58
 msgid "CPU Usage"
 msgstr "CPU-Auslastung"
 
@@ -252,7 +249,7 @@ msgid "Dark"
 msgstr "Dunkel"
 
 #: src/components/command-palette.tsx:80
-#: src/components/routes/home.tsx:35
+#: src/components/routes/home.tsx:36
 msgid "Dashboard"
 msgstr "Dashboard"
 
@@ -260,11 +257,11 @@ msgstr "Dashboard"
 msgid "Default time period"
 msgstr "Standardzeitraum"
 
-#: src/components/systems-table/systems-table.tsx:644
+#: src/components/systems-table/systems-table.tsx:683
 msgid "Delete"
 msgstr "Löschen"
 
-#: src/components/systems-table/systems-table.tsx:196
+#: src/components/systems-table/systems-table.tsx:204
 msgid "Disk"
 msgstr "Festplatte"
 
@@ -278,7 +275,7 @@ msgstr "Festplatten-I/O"
 msgid "Disk Usage"
 msgstr "Festplattennutzung"
 
-#: src/components/routes/system.tsx:601
+#: src/components/routes/system.tsx:602
 msgid "Disk usage of {extraFsName}"
 msgstr "Festplattennutzung von {extraFsName}"
 
@@ -300,13 +297,13 @@ msgstr "Dokumentation"
 
 #. Context: System is down
 #: src/lib/utils.ts:316
-#: src/components/systems-table/systems-table.tsx:141
+#: src/components/systems-table/systems-table.tsx:142
 #: src/components/routes/system.tsx:344
 msgid "Down"
 msgstr ""
 
 #: src/components/add-system.tsx:125
-#: src/components/systems-table/systems-table.tsx:614
+#: src/components/systems-table/systems-table.tsx:653
 msgid "Edit"
 msgstr "Bearbeiten"
 
@@ -336,7 +333,7 @@ msgstr "Fehler"
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
-#: src/components/routes/home.tsx:81
+#: src/components/routes/home.tsx:113
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Überschreitet {0}{1} in den letzten {2, plural, one {# Minute} other {# Minuten}}"
 
@@ -365,16 +362,16 @@ msgstr "Einstellungen konnten nicht gespeichert werden"
 msgid "Failed to send test notification"
 msgstr "Testbenachrichtigung konnte nicht gesendet werden"
 
-#: src/components/alerts/alerts-system.tsx:24
+#: src/components/alerts/alerts-system.tsx:25
 msgid "Failed to update alert"
 msgstr "Warnung konnte nicht aktualisiert werden"
 
-#: src/components/systems-table/systems-table.tsx:341
-#: src/components/routes/system.tsx:641
+#: src/components/systems-table/systems-table.tsx:354
+#: src/components/routes/system.tsx:642
 msgid "Filter..."
 msgstr "Filter..."
 
-#: src/components/alerts/alerts-system.tsx:230
+#: src/components/alerts/alerts-system.tsx:284
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "Für <0>{min}</0> {min, plural, one {Minute} other {Minuten}}"
 
@@ -392,7 +389,7 @@ msgstr "Allgemein"
 msgid "GPU Power Draw"
 msgstr "GPU-Leistungsaufnahme"
 
-#: src/components/systems-table/systems-table.tsx:368
+#: src/components/systems-table/systems-table.tsx:381
 msgid "Grid"
 msgstr "Raster"
 
@@ -417,7 +414,7 @@ msgstr "Kernel"
 msgid "Language"
 msgstr "Sprache"
 
-#: src/components/systems-table/systems-table.tsx:354
+#: src/components/systems-table/systems-table.tsx:367
 msgid "Layout"
 msgstr "Anordnung"
 
@@ -457,11 +454,11 @@ msgid "Manual setup instructions"
 msgstr ""
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:671
+#: src/components/routes/system.tsx:672
 msgid "Max 1 min"
 msgstr "Max 1 Min"
 
-#: src/components/systems-table/systems-table.tsx:188
+#: src/components/systems-table/systems-table.tsx:195
 msgid "Memory"
 msgstr "Arbeitsspeicher"
 
@@ -478,7 +475,7 @@ msgstr "Arbeitsspeichernutzung der Docker-Container"
 msgid "Name"
 msgstr "Name"
 
-#: src/components/systems-table/systems-table.tsx:213
+#: src/components/systems-table/systems-table.tsx:223
 msgid "Net"
 msgstr "Netz"
 
@@ -494,8 +491,8 @@ msgstr "Netzwerkverkehr der öffentlichen Schnittstellen"
 msgid "No results found."
 msgstr "Keine Ergebnisse gefunden."
 
-#: src/components/systems-table/systems-table.tsx:489
-#: src/components/systems-table/systems-table.tsx:562
+#: src/components/systems-table/systems-table.tsx:472
+#: src/components/systems-table/systems-table.tsx:495
 msgid "No systems found."
 msgstr "Keine Systeme gefunden."
 
@@ -513,7 +510,7 @@ msgstr "OAuth 2 / OIDC-Unterstützung"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Bei jedem Neustart werden die Systeme in der Datenbank aktualisiert, um den in der Datei definierten Systemen zu entsprechen."
 
-#: src/components/systems-table/systems-table.tsx:600
+#: src/components/systems-table/systems-table.tsx:639
 msgid "Open menu"
 msgstr "Menü öffnen"
 
@@ -521,7 +518,7 @@ msgstr "Menü öffnen"
 msgid "Or continue with"
 msgstr "Oder fortfahren mit"
 
-#: src/components/alerts/alert-button.tsx:109
+#: src/components/alerts/alert-button.tsx:119
 msgid "Overwrite existing alerts"
 msgstr "Bestehende Warnungen überschreiben"
 
@@ -550,11 +547,11 @@ msgstr "Das Passwort muss weniger als 72 Bytes lang sein."
 msgid "Password reset request received"
 msgstr "Anfrage zum Zurücksetzen des Passworts erhalten"
 
-#: src/components/systems-table/systems-table.tsx:633
+#: src/components/systems-table/systems-table.tsx:672
 msgid "Pause"
 msgstr "Pause"
 
-#: src/components/systems-table/systems-table.tsx:142
+#: src/components/systems-table/systems-table.tsx:143
 msgid "Paused"
 msgstr ""
 
@@ -562,7 +559,7 @@ msgstr ""
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "Bitte <0>konfiguriere einen SMTP-Server</0>, um sicherzustellen, dass Warnungen zugestellt werden."
 
-#: src/components/alerts/alerts-system.tsx:25
+#: src/components/alerts/alerts-system.tsx:26
 msgid "Please check logs for more details."
 msgstr "Bitte überprüfe die Protokolle für weitere Details."
 
@@ -596,7 +593,7 @@ msgid "Port"
 msgstr "Port"
 
 #: src/components/routes/system.tsx:456
-#: src/components/routes/system.tsx:572
+#: src/components/routes/system.tsx:576
 msgid "Precise utilization at the recorded time"
 msgstr "Genaue Nutzung zum aufgezeichneten Zeitpunkt"
 
@@ -610,13 +607,13 @@ msgid "Public Key"
 msgstr "Schlüssel"
 
 #. Disk read
-#: src/components/charts/area-chart.tsx:60
-#: src/components/charts/area-chart.tsx:70
+#: src/components/charts/area-chart.tsx:62
+#: src/components/charts/area-chart.tsx:72
 msgid "Read"
 msgstr "Lesen"
 
 #. Network bytes received (download)
-#: src/components/charts/area-chart.tsx:65
+#: src/components/charts/area-chart.tsx:67
 msgid "Received"
 msgstr "Empfangen"
 
@@ -624,7 +621,7 @@ msgstr "Empfangen"
 msgid "Reset Password"
 msgstr "Passwort zurücksetzen"
 
-#: src/components/systems-table/systems-table.tsx:628
+#: src/components/systems-table/systems-table.tsx:667
 msgid "Resume"
 msgstr "Fortsetzen"
 
@@ -649,12 +646,12 @@ msgstr "Suche"
 msgid "Search for systems or settings..."
 msgstr "Nach Systemen oder Einstellungen suchen..."
 
-#: src/components/alerts/alert-button.tsx:71
+#: src/components/alerts/alert-button.tsx:81
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Siehe <0>Benachrichtigungseinstellungen</0>, um zu konfigurieren, wie du Warnungen erhältst."
 
 #. Network bytes sent (upload)
-#: src/components/charts/area-chart.tsx:64
+#: src/components/charts/area-chart.tsx:66
 msgid "Sent"
 msgstr "Gesendet"
 
@@ -682,7 +679,7 @@ msgstr "Anmelden"
 msgid "SMTP settings"
 msgstr "SMTP-Einstellungen"
 
-#: src/components/systems-table/systems-table.tsx:376
+#: src/components/systems-table/systems-table.tsx:389
 msgid "Sort By"
 msgstr "Sortieren nach"
 
@@ -701,10 +698,7 @@ msgstr "Swap-Nutzung"
 #. System theme
 #: src/lib/utils.ts:316
 #: src/components/mode-toggle.tsx:26
-#: src/components/systems-table/systems-table.tsx:125
-#: src/components/systems-table/systems-table.tsx:133
-#: src/components/systems-table/systems-table.tsx:150
-#: src/components/systems-table/systems-table.tsx:533
+#: src/components/systems-table/systems-table.tsx:152
 msgid "System"
 msgstr "System"
 
@@ -716,12 +710,12 @@ msgstr "Systeme"
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "Systeme können in einer <0>config.yml</0>-Datei im Datenverzeichnis verwaltet werden."
 
-#: src/components/systems-table/systems-table.tsx:364
+#: src/components/systems-table/systems-table.tsx:377
 msgid "Table"
 msgstr "Tabelle"
 
 #. Temperature label in systems table
-#: src/components/systems-table/systems-table.tsx:233
+#: src/components/systems-table/systems-table.tsx:244
 msgid "Temp"
 msgstr ""
 
@@ -754,11 +748,11 @@ msgstr "Der Agent muss auf dem System laufen, um eine Verbindung herzustellen. K
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Melde dich dann im Backend an und setze dein Benutzerkontopasswort in der Benutzertabelle zurück."
 
-#: src/components/systems-table/systems-table.tsx:660
+#: src/components/systems-table/systems-table.tsx:699
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Diese Aktion kann nicht rückgängig gemacht werden. Dadurch werden alle aktuellen Datensätze für {name} dauerhaft aus der Datenbank gelöscht."
 
-#: src/components/routes/system.tsx:613
+#: src/components/routes/system.tsx:614
 msgid "Throughput of {extraFsName}"
 msgstr "Durchsatz von {extraFsName}"
 
@@ -804,12 +798,12 @@ msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Löst aus, wenn die Nutzung einer Festplatte einen Schwellenwert überschreitet"
 
 #. Context: System is up
-#: src/components/systems-table/systems-table.tsx:140
+#: src/components/systems-table/systems-table.tsx:141
 #: src/components/routes/system.tsx:342
 msgid "Up"
 msgstr ""
 
-#: src/components/systems-table/systems-table.tsx:337
+#: src/components/systems-table/systems-table.tsx:350
 msgid "Updated in real time. Click on a system to view information."
 msgstr "In Echtzeit aktualisiert. Klicke auf ein System, um Informationen anzuzeigen."
 
@@ -817,9 +811,9 @@ msgstr "In Echtzeit aktualisiert. Klicke auf ein System, um Informationen anzuze
 msgid "Uptime"
 msgstr "Betriebszeit"
 
-#: src/components/routes/system.tsx:563
-#: src/components/routes/system.tsx:600
-#: src/components/charts/area-chart.tsx:73
+#: src/components/routes/system.tsx:567
+#: src/components/routes/system.tsx:601
+#: src/components/charts/area-chart.tsx:75
 msgid "Usage"
 msgstr "Nutzung"
 
@@ -829,7 +823,7 @@ msgstr "Nutzung der Root-Partition"
 
 #: src/components/charts/swap-chart.tsx:56
 #: src/components/charts/mem-chart.tsx:65
-#: src/components/charts/area-chart.tsx:73
+#: src/components/charts/area-chart.tsx:75
 msgid "Used"
 msgstr "Verwendet"
 
@@ -838,15 +832,15 @@ msgstr "Verwendet"
 msgid "Users"
 msgstr "Benutzer"
 
-#: src/components/systems-table/systems-table.tsx:346
+#: src/components/systems-table/systems-table.tsx:359
 msgid "View"
 msgstr "Ansicht"
 
-#: src/components/systems-table/systems-table.tsx:410
+#: src/components/systems-table/systems-table.tsx:424
 msgid "Visible Fields"
 msgstr "Sichtbare Spalten"
 
-#: src/components/routes/system.tsx:705
+#: src/components/routes/system.tsx:706
 msgid "Waiting for enough records to display"
 msgstr "Warten auf genügend Datensätze zur Anzeige"
 
@@ -859,8 +853,8 @@ msgid "Webhook / Push notifications"
 msgstr "Webhook / Push-Benachrichtigungen"
 
 #. Disk write
-#: src/components/charts/area-chart.tsx:59
-#: src/components/charts/area-chart.tsx:69
+#: src/components/charts/area-chart.tsx:61
+#: src/components/charts/area-chart.tsx:71
 msgid "Write"
 msgstr "Schreiben"
 

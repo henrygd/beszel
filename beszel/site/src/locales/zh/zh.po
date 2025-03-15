@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-27 05:46\n"
+"PO-Revision-Date: 2025-03-06 07:27\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -48,14 +48,11 @@ msgid "30 days"
 msgstr "30天"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx:293
-#: src/components/systems-table/systems-table.tsx:381
-#: src/components/systems-table/systems-table.tsx:523
-#: src/components/systems-table/systems-table.tsx:533
+#: src/components/systems-table/systems-table.tsx:304
 msgid "Actions"
 msgstr "操作"
 
-#: src/components/routes/home.tsx:62
+#: src/components/routes/home.tsx:94
 msgid "Active Alerts"
 msgstr "活動警報"
 
@@ -87,21 +84,21 @@ msgstr "調整圖表的顯示選項。"
 msgid "Admin"
 msgstr "管理員"
 
-#: src/components/systems-table/systems-table.tsx:261
+#: src/components/systems-table/systems-table.tsx:270
 msgid "Agent"
 msgstr "代理"
 
 #: src/components/alerts/alert-button.tsx:32
-#: src/components/alerts/alert-button.tsx:68
+#: src/components/alerts/alert-button.tsx:78
 msgid "Alerts"
 msgstr "警報"
 
-#: src/components/systems-table/systems-table.tsx:334
-#: src/components/alerts/alert-button.tsx:88
+#: src/components/systems-table/systems-table.tsx:347
+#: src/components/alerts/alert-button.tsx:98
 msgid "All Systems"
 msgstr "所有系統"
 
-#: src/components/systems-table/systems-table.tsx:657
+#: src/components/systems-table/systems-table.tsx:696
 msgid "Are you sure you want to delete {name}?"
 msgstr "您確定要刪除 {name} 嗎？"
 
@@ -109,7 +106,7 @@ msgstr "您確定要刪除 {name} 嗎？"
 msgid "Automatic copy requires a secure context."
 msgstr "只有在受保護的環境才能自動複製。"
 
-#: src/components/routes/system.tsx:668
+#: src/components/routes/system.tsx:669
 msgid "Average"
 msgstr "平均"
 
@@ -118,7 +115,7 @@ msgid "Average CPU utilization of containers"
 msgstr "容器的平均 CPU 使用率"
 
 #. placeholder {0}: data.alert.unit
-#: src/components/alerts/alerts-system.tsx:205
+#: src/components/alerts/alerts-system.tsx:252
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "平均值超過<0>{value}{0}</0>"
 
@@ -131,7 +128,7 @@ msgid "Average system-wide CPU utilization"
 msgstr "系統的平均 CPU 使用率"
 
 #. placeholder {0}: gpu.n
-#: src/components/routes/system.tsx:564
+#: src/components/routes/system.tsx:568
 msgid "Average utilization of {0}"
 msgstr "{0} 的平均使用率"
 
@@ -161,7 +158,7 @@ msgstr "執行檔"
 msgid "Cache / Buffers"
 msgstr "快取/緩衝"
 
-#: src/components/systems-table/systems-table.tsx:668
+#: src/components/systems-table/systems-table.tsx:707
 msgid "Cancel"
 msgstr "取消"
 
@@ -207,7 +204,7 @@ msgstr "設定您要如何接收警報通知"
 msgid "Confirm password"
 msgstr "確認密碼"
 
-#: src/components/systems-table/systems-table.tsx:674
+#: src/components/systems-table/systems-table.tsx:713
 msgid "Continue"
 msgstr "繼續"
 
@@ -220,7 +217,7 @@ msgstr "已複製到剪貼簿"
 msgid "Copy"
 msgstr "複製"
 
-#: src/components/systems-table/systems-table.tsx:639
+#: src/components/systems-table/systems-table.tsx:678
 msgid "Copy host"
 msgstr "複製主機"
 
@@ -232,13 +229,13 @@ msgstr "複製 Linux 指令"
 msgid "Copy text"
 msgstr "複製文字"
 
-#: src/components/systems-table/systems-table.tsx:180
+#: src/components/systems-table/systems-table.tsx:186
 msgid "CPU"
 msgstr "CPU"
 
 #: src/lib/utils.ts:319
 #: src/components/routes/system.tsx:433
-#: src/components/charts/area-chart.tsx:56
+#: src/components/charts/area-chart.tsx:58
 msgid "CPU Usage"
 msgstr "CPU 使用率"
 
@@ -252,7 +249,7 @@ msgid "Dark"
 msgstr "深色"
 
 #: src/components/command-palette.tsx:80
-#: src/components/routes/home.tsx:35
+#: src/components/routes/home.tsx:36
 msgid "Dashboard"
 msgstr "控制面板"
 
@@ -260,11 +257,11 @@ msgstr "控制面板"
 msgid "Default time period"
 msgstr "預設時間段"
 
-#: src/components/systems-table/systems-table.tsx:644
+#: src/components/systems-table/systems-table.tsx:683
 msgid "Delete"
 msgstr "刪除"
 
-#: src/components/systems-table/systems-table.tsx:196
+#: src/components/systems-table/systems-table.tsx:204
 msgid "Disk"
 msgstr "磁碟"
 
@@ -278,7 +275,7 @@ msgstr "磁碟 I/O"
 msgid "Disk Usage"
 msgstr "磁碟使用量"
 
-#: src/components/routes/system.tsx:601
+#: src/components/routes/system.tsx:602
 msgid "Disk usage of {extraFsName}"
 msgstr "{extraFsName}的磁碟使用量"
 
@@ -300,13 +297,13 @@ msgstr "文件"
 
 #. Context: System is down
 #: src/lib/utils.ts:316
-#: src/components/systems-table/systems-table.tsx:141
+#: src/components/systems-table/systems-table.tsx:142
 #: src/components/routes/system.tsx:344
 msgid "Down"
 msgstr ""
 
 #: src/components/add-system.tsx:125
-#: src/components/systems-table/systems-table.tsx:614
+#: src/components/systems-table/systems-table.tsx:653
 msgid "Edit"
 msgstr "編輯"
 
@@ -336,7 +333,7 @@ msgstr "錯誤"
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
-#: src/components/routes/home.tsx:81
+#: src/components/routes/home.tsx:113
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "在過去的{2, plural, one {# 分鐘} other {# 分鐘}}中超過{0}{1}"
 
@@ -365,16 +362,16 @@ msgstr "儲存設定失敗"
 msgid "Failed to send test notification"
 msgstr "發送測試通知失敗"
 
-#: src/components/alerts/alerts-system.tsx:24
+#: src/components/alerts/alerts-system.tsx:25
 msgid "Failed to update alert"
 msgstr "更新警報失敗"
 
-#: src/components/systems-table/systems-table.tsx:341
-#: src/components/routes/system.tsx:641
+#: src/components/systems-table/systems-table.tsx:354
+#: src/components/routes/system.tsx:642
 msgid "Filter..."
 msgstr "篩選..."
 
-#: src/components/alerts/alerts-system.tsx:230
+#: src/components/alerts/alerts-system.tsx:284
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "持續<0>{min}</0> {min, plural, one {分鐘} other {分鐘}}"
 
@@ -392,7 +389,7 @@ msgstr "一般"
 msgid "GPU Power Draw"
 msgstr "GPU 功耗"
 
-#: src/components/systems-table/systems-table.tsx:368
+#: src/components/systems-table/systems-table.tsx:381
 msgid "Grid"
 msgstr "網格"
 
@@ -417,7 +414,7 @@ msgstr "Kernel"
 msgid "Language"
 msgstr "語言"
 
-#: src/components/systems-table/systems-table.tsx:354
+#: src/components/systems-table/systems-table.tsx:367
 msgid "Layout"
 msgstr "版面配置"
 
@@ -457,11 +454,11 @@ msgid "Manual setup instructions"
 msgstr "手動設定說明"
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:671
+#: src/components/routes/system.tsx:672
 msgid "Max 1 min"
 msgstr "最多1分鐘"
 
-#: src/components/systems-table/systems-table.tsx:188
+#: src/components/systems-table/systems-table.tsx:195
 msgid "Memory"
 msgstr "記憶體"
 
@@ -478,7 +475,7 @@ msgstr "Docker 容器的記憶體使用量"
 msgid "Name"
 msgstr "名稱"
 
-#: src/components/systems-table/systems-table.tsx:213
+#: src/components/systems-table/systems-table.tsx:223
 msgid "Net"
 msgstr "網路"
 
@@ -494,8 +491,8 @@ msgstr "公開介面的網路流量"
 msgid "No results found."
 msgstr "找不到結果。"
 
-#: src/components/systems-table/systems-table.tsx:489
-#: src/components/systems-table/systems-table.tsx:562
+#: src/components/systems-table/systems-table.tsx:472
+#: src/components/systems-table/systems-table.tsx:495
 msgid "No systems found."
 msgstr "找不到任何系統。"
 
@@ -513,7 +510,7 @@ msgstr "支援 OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "每次重新啟動時，將會以檔案中的系統定義更新資料庫。"
 
-#: src/components/systems-table/systems-table.tsx:600
+#: src/components/systems-table/systems-table.tsx:639
 msgid "Open menu"
 msgstr "開啟選單"
 
@@ -521,7 +518,7 @@ msgstr "開啟選單"
 msgid "Or continue with"
 msgstr "或繼續使用"
 
-#: src/components/alerts/alert-button.tsx:109
+#: src/components/alerts/alert-button.tsx:119
 msgid "Overwrite existing alerts"
 msgstr "覆蓋現有警報"
 
@@ -550,11 +547,11 @@ msgstr "密碼必須少於 72 個位元組。"
 msgid "Password reset request received"
 msgstr "已收到密碼重設請求"
 
-#: src/components/systems-table/systems-table.tsx:633
+#: src/components/systems-table/systems-table.tsx:672
 msgid "Pause"
 msgstr "暫停"
 
-#: src/components/systems-table/systems-table.tsx:142
+#: src/components/systems-table/systems-table.tsx:143
 msgid "Paused"
 msgstr ""
 
@@ -562,7 +559,7 @@ msgstr ""
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "請<0>設定一個SMTP 伺服器</0>以確保能傳送警報。"
 
-#: src/components/alerts/alerts-system.tsx:25
+#: src/components/alerts/alerts-system.tsx:26
 msgid "Please check logs for more details."
 msgstr "請檢查系統記錄以取得更多資訊。"
 
@@ -596,7 +593,7 @@ msgid "Port"
 msgstr "Port"
 
 #: src/components/routes/system.tsx:456
-#: src/components/routes/system.tsx:572
+#: src/components/routes/system.tsx:576
 msgid "Precise utilization at the recorded time"
 msgstr "紀錄時間內的精確使用量"
 
@@ -610,13 +607,13 @@ msgid "Public Key"
 msgstr "公鑰"
 
 #. Disk read
-#: src/components/charts/area-chart.tsx:60
-#: src/components/charts/area-chart.tsx:70
+#: src/components/charts/area-chart.tsx:62
+#: src/components/charts/area-chart.tsx:72
 msgid "Read"
 msgstr "讀取"
 
 #. Network bytes received (download)
-#: src/components/charts/area-chart.tsx:65
+#: src/components/charts/area-chart.tsx:67
 msgid "Received"
 msgstr "接收"
 
@@ -624,7 +621,7 @@ msgstr "接收"
 msgid "Reset Password"
 msgstr "重設密碼"
 
-#: src/components/systems-table/systems-table.tsx:628
+#: src/components/systems-table/systems-table.tsx:667
 msgid "Resume"
 msgstr "繼續"
 
@@ -649,12 +646,12 @@ msgstr "搜尋"
 msgid "Search for systems or settings..."
 msgstr "在設定或系統中搜尋..."
 
-#: src/components/alerts/alert-button.tsx:71
+#: src/components/alerts/alert-button.tsx:81
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "查看<0>通知設定</0>以設定您如何接收警報。"
 
 #. Network bytes sent (upload)
-#: src/components/charts/area-chart.tsx:64
+#: src/components/charts/area-chart.tsx:66
 msgid "Sent"
 msgstr "傳送"
 
@@ -682,7 +679,7 @@ msgstr "登入"
 msgid "SMTP settings"
 msgstr "SMTP 設定"
 
-#: src/components/systems-table/systems-table.tsx:376
+#: src/components/systems-table/systems-table.tsx:389
 msgid "Sort By"
 msgstr "排序"
 
@@ -701,10 +698,7 @@ msgstr "虛擬記憶體使用量"
 #. System theme
 #: src/lib/utils.ts:316
 #: src/components/mode-toggle.tsx:26
-#: src/components/systems-table/systems-table.tsx:125
-#: src/components/systems-table/systems-table.tsx:133
-#: src/components/systems-table/systems-table.tsx:150
-#: src/components/systems-table/systems-table.tsx:533
+#: src/components/systems-table/systems-table.tsx:152
 msgid "System"
 msgstr "系統"
 
@@ -716,12 +710,12 @@ msgstr "系統"
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "可以用您Data資料夾中的<0>config.yml</0>來管理系統。"
 
-#: src/components/systems-table/systems-table.tsx:364
+#: src/components/systems-table/systems-table.tsx:377
 msgid "Table"
 msgstr "列表"
 
 #. Temperature label in systems table
-#: src/components/systems-table/systems-table.tsx:233
+#: src/components/systems-table/systems-table.tsx:244
 msgid "Temp"
 msgstr "溫度"
 
@@ -754,11 +748,11 @@ msgstr "必須在系統上執行代理程式才能連線，複製以下代理程
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "然後登入後台並在使用者列表中重設您的帳號密碼。"
 
-#: src/components/systems-table/systems-table.tsx:660
+#: src/components/systems-table/systems-table.tsx:699
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "此操作無法復原。這將永久刪除資料庫中{name}的所有當前記錄。"
 
-#: src/components/routes/system.tsx:613
+#: src/components/routes/system.tsx:614
 msgid "Throughput of {extraFsName}"
 msgstr "{extraFsName}的傳輸速率"
 
@@ -804,12 +798,12 @@ msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "當任何磁碟使用率超過閾值時觸發"
 
 #. Context: System is up
-#: src/components/systems-table/systems-table.tsx:140
+#: src/components/systems-table/systems-table.tsx:141
 #: src/components/routes/system.tsx:342
 msgid "Up"
 msgstr ""
 
-#: src/components/systems-table/systems-table.tsx:337
+#: src/components/systems-table/systems-table.tsx:350
 msgid "Updated in real time. Click on a system to view information."
 msgstr "實時更新。點擊系統顯示資訊。"
 
@@ -817,9 +811,9 @@ msgstr "實時更新。點擊系統顯示資訊。"
 msgid "Uptime"
 msgstr "運行時間"
 
-#: src/components/routes/system.tsx:563
-#: src/components/routes/system.tsx:600
-#: src/components/charts/area-chart.tsx:73
+#: src/components/routes/system.tsx:567
+#: src/components/routes/system.tsx:601
+#: src/components/charts/area-chart.tsx:75
 msgid "Usage"
 msgstr "使用量"
 
@@ -829,7 +823,7 @@ msgstr "Root 分區的使用量"
 
 #: src/components/charts/swap-chart.tsx:56
 #: src/components/charts/mem-chart.tsx:65
-#: src/components/charts/area-chart.tsx:73
+#: src/components/charts/area-chart.tsx:75
 msgid "Used"
 msgstr "已使用"
 
@@ -838,15 +832,15 @@ msgstr "已使用"
 msgid "Users"
 msgstr "使用者"
 
-#: src/components/systems-table/systems-table.tsx:346
+#: src/components/systems-table/systems-table.tsx:359
 msgid "View"
 msgstr "檢視"
 
-#: src/components/systems-table/systems-table.tsx:410
+#: src/components/systems-table/systems-table.tsx:424
 msgid "Visible Fields"
 msgstr "顯示欄位"
 
-#: src/components/routes/system.tsx:705
+#: src/components/routes/system.tsx:706
 msgid "Waiting for enough records to display"
 msgstr "等待足夠的記錄以顯示"
 
@@ -859,8 +853,8 @@ msgid "Webhook / Push notifications"
 msgstr "Webhook / 推送通知"
 
 #. Disk write
-#: src/components/charts/area-chart.tsx:59
-#: src/components/charts/area-chart.tsx:69
+#: src/components/charts/area-chart.tsx:61
+#: src/components/charts/area-chart.tsx:71
 msgid "Write"
 msgstr "寫入"
 
