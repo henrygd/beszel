@@ -8,7 +8,7 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-24 02:49\n"
+"PO-Revision-Date: 2025-03-07 10:06\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -303,12 +303,12 @@ msgstr "문서"
 #: src/components/systems-table/systems-table.tsx:141
 #: src/components/routes/system.tsx:344
 msgid "Down"
-msgstr ""
+msgstr "오프라인"
 
 #: src/components/add-system.tsx:125
 #: src/components/systems-table/systems-table.tsx:614
 msgid "Edit"
-msgstr ""
+msgstr "수정"
 
 #: src/components/login/forgot-pass-form.tsx:53
 #: src/components/login/auth-form.tsx:175
@@ -454,7 +454,7 @@ msgstr "디스플레이 및 알림 설정"
 
 #: src/components/add-system.tsx:226
 msgid "Manual setup instructions"
-msgstr ""
+msgstr "수동 설정 방법"
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx:671
@@ -544,7 +544,7 @@ msgstr "비밀번호는 최소 8자 이상이어야 합니다."
 
 #: src/components/login/auth-form.tsx:21
 msgid "Password must be less than 72 bytes."
-msgstr ""
+msgstr "비밀번호는 72 바이트 이하여야 합니다."
 
 #: src/components/login/forgot-pass-form.tsx:33
 msgid "Password reset request received"
@@ -556,7 +556,7 @@ msgstr "일시 중지"
 
 #: src/components/systems-table/systems-table.tsx:142
 msgid "Paused"
-msgstr ""
+msgstr "일시 정지됨"
 
 #: src/components/routes/settings/notifications.tsx:96
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -639,7 +639,7 @@ msgstr "설정 저장"
 
 #: src/components/add-system.tsx:231
 msgid "Save system"
-msgstr ""
+msgstr "시스템 저장"
 
 #: src/components/navbar.tsx:134
 msgid "Search"
@@ -723,7 +723,7 @@ msgstr "표"
 #. Temperature label in systems table
 #: src/components/systems-table/systems-table.tsx:233
 msgid "Temp"
-msgstr ""
+msgstr "온도"
 
 #: src/lib/utils.ts:344
 #: src/components/routes/system.tsx:533
@@ -807,7 +807,7 @@ msgstr "디스크 사용량이 임계값을 초과할 때 트리거됩니다."
 #: src/components/systems-table/systems-table.tsx:140
 #: src/components/routes/system.tsx:342
 msgid "Up"
-msgstr ""
+msgstr "온라인"
 
 #: src/components/systems-table/systems-table.tsx:337
 msgid "Updated in real time. Click on a system to view information."
@@ -875,3 +875,4 @@ msgstr "YAML 구성"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "사용자 설정이 업데이트되었습니다."
+
