@@ -1,3 +1,5 @@
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 import { LoaderCircle, MailIcon, SendHorizonalIcon } from "lucide-react"
 import { Input } from "../ui/input"
 import { Label } from "../ui/label"
@@ -8,7 +10,6 @@ import { cn } from "@/lib/utils"
 import { pb } from "@/lib/stores"
 import { Dialog, DialogHeader } from "../ui/dialog"
 import { DialogContent, DialogTrigger, DialogTitle } from "../ui/dialog"
-import { t, Trans } from "@lingui/macro"
 
 const showLoginFaliedToast = () => {
 	toast({

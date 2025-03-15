@@ -1,3 +1,5 @@
+import { t } from "@lingui/core/macro"
+import { Trans } from "@lingui/react/macro"
 import { useEffect } from "react"
 import { Separator } from "../../ui/separator"
 import { SidebarNav } from "./sidebar-nav.tsx"
@@ -12,8 +14,7 @@ import { UserSettings } from "@/types.js"
 import General from "./general.tsx"
 import Notifications from "./notifications.tsx"
 import ConfigYaml from "./config-yaml.tsx"
-import { Trans, t } from "@lingui/macro"
-import { useLingui } from "@lingui/react"
+import { useLingui } from "@lingui/react/macro"
 
 export async function saveSettings(newSettings: Partial<UserSettings>) {
 	try {
@@ -44,11 +45,11 @@ export async function saveSettings(newSettings: Partial<UserSettings>) {
 }
 
 export default function SettingsLayout() {
-	const { _ } = useLingui()
+	const { t } = useLingui()
 
 	const sidebarNavItems = [
 		{
-			title: _(t({ message: `General`, comment: "Context: General settings" })),
+			title: t({ message: `General`, comment: "Context: General settings" }),
 			href: getPagePath($router, "settings", { name: "general" }),
 			icon: SettingsIcon,
 		},

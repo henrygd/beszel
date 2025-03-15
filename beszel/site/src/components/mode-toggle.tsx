@@ -1,10 +1,11 @@
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 import { LaptopIcon, MoonStarIcon, SunIcon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useTheme } from "@/components/theme-provider"
 import { cn } from "@/lib/utils"
-import { t, Trans } from "@lingui/macro"
 
 export function ModeToggle() {
 	const { theme, setTheme } = useTheme()

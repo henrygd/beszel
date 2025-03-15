@@ -14,7 +14,7 @@ import SystemDetail from "./components/routes/system.tsx"
 import Navbar from "./components/navbar.tsx"
 import { I18nProvider } from "@lingui/react"
 import { i18n } from "@lingui/core"
-import "@/lib/i18n.ts"
+import { getLocale, dynamicActivate } from "./lib/i18n.ts"
 
 // const ServerDetail = lazy(() => import('./components/routes/system.tsx'))
 const LoginPage = lazy(() => import("./components/login/login.tsx"))
@@ -110,15 +110,25 @@ const Layout = () => {
 	)
 }
 
+const I18nApp = () => {
+	useEffect(() => {
+		dynamicActivate(getLocale())
+	}, [])
+
+	return (
+		<I18nProvider i18n={i18n}>
+			<ThemeProvider>
+				<Layout />
+				<Toaster />
+			</ThemeProvider>
+		</I18nProvider>
+	)
+}
+
 ReactDOM.createRoot(document.getElementById("app")!).render(
 	// strict mode in dev mounts / unmounts components twice
 	// and breaks the clipboard dialog
 	//<StrictMode>
-	<I18nProvider i18n={i18n}>
-		<ThemeProvider>
-			<Layout />
-			<Toaster />
-		</ThemeProvider>
-	</I18nProvider>
+	<I18nApp />
 	//</StrictMode>
 )

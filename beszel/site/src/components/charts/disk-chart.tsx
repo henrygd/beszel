@@ -1,5 +1,4 @@
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
-
 import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
 import {
 	useYAxisWidth,
@@ -12,8 +11,7 @@ import {
 } from "@/lib/utils"
 import { ChartData } from "@/types"
 import { memo } from "react"
-import { t } from "@lingui/macro"
-import { useLingui } from "@lingui/react"
+import { useLingui } from "@lingui/react/macro"
 
 export default memo(function DiskChart({
 	dataKey,
@@ -25,7 +23,7 @@ export default memo(function DiskChart({
 	chartData: ChartData
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
-	const { _ } = useLingui()
+	const { t } = useLingui()
 
 	// round to nearest GB
 	if (diskSize >= 100) {
@@ -76,7 +74,7 @@ export default memo(function DiskChart({
 					/>
 					<Area
 						dataKey={dataKey}
-						name={_(t`Disk Usage`)}
+						name={t`Disk Usage`}
 						type="monotoneX"
 						fill="hsl(var(--chart-4))"
 						fillOpacity={0.4}

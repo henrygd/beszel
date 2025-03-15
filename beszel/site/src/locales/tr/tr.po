@@ -19,11 +19,11 @@ msgstr ""
 "X-Crowdin-File-ID: 16\n"
 
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
-#: src/components/routes/system.tsx:258
+#: src/components/routes/system.tsx:259
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# gün} other {# gün}}"
 
-#: src/components/routes/system.tsx:256
+#: src/components/routes/system.tsx:257
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# saat} other {# saat}}"
 
@@ -56,19 +56,19 @@ msgstr "Eylemler"
 msgid "Active Alerts"
 msgstr "Aktif Uyarılar"
 
-#: src/components/add-system.tsx:42
+#: src/components/add-system.tsx:43
 msgid "Add <0>System</0>"
 msgstr "<0>Sistem</0> Ekle"
 
-#: src/components/add-system.tsx:125
+#: src/components/add-system.tsx:126
 msgid "Add New System"
 msgstr "Yeni Sistem Ekle"
 
-#: src/components/add-system.tsx:231
+#: src/components/add-system.tsx:232
 msgid "Add system"
 msgstr "Sistem ekle"
 
-#: src/components/routes/settings/notifications.tsx:157
+#: src/components/routes/settings/notifications.tsx:158
 msgid "Add URL"
 msgstr "URL Ekle"
 
@@ -88,13 +88,13 @@ msgstr "Yönetici"
 msgid "Agent"
 msgstr "Aracı"
 
-#: src/components/alerts/alert-button.tsx:32
-#: src/components/alerts/alert-button.tsx:78
+#: src/components/alerts/alert-button.tsx:33
+#: src/components/alerts/alert-button.tsx:79
 msgid "Alerts"
 msgstr "Uyarılar"
 
 #: src/components/systems-table/systems-table.tsx:347
-#: src/components/alerts/alert-button.tsx:98
+#: src/components/alerts/alert-button.tsx:99
 msgid "All Systems"
 msgstr "Tüm Sistemler"
 
@@ -106,29 +106,29 @@ msgstr "{name} silmek istediğinizden emin misiniz?"
 msgid "Automatic copy requires a secure context."
 msgstr "Otomatik kopyalama güvenli bir bağlam gerektirir."
 
-#: src/components/routes/system.tsx:669
+#: src/components/routes/system.tsx:670
 msgid "Average"
 msgstr "Ortalama"
 
-#: src/components/routes/system.tsx:445
+#: src/components/routes/system.tsx:446
 msgid "Average CPU utilization of containers"
 msgstr "Konteynerlerin ortalama CPU kullanımı"
 
 #. placeholder {0}: data.alert.unit
-#: src/components/alerts/alerts-system.tsx:252
+#: src/components/alerts/alerts-system.tsx:253
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Ortalama <0>{value}{0}</0> aşıyor"
 
-#: src/components/routes/system.tsx:546
+#: src/components/routes/system.tsx:547
 msgid "Average power consumption of GPUs"
 msgstr "GPU ların ortalama güç tüketimi"
 
-#: src/components/routes/system.tsx:434
+#: src/components/routes/system.tsx:435
 msgid "Average system-wide CPU utilization"
 msgstr "Sistem genelinde ortalama CPU kullanımı"
 
 #. placeholder {0}: gpu.n
-#: src/components/routes/system.tsx:568
+#: src/components/routes/system.tsx:569
 msgid "Average utilization of {0}"
 msgstr "{0} ortalama kullanımı"
 
@@ -138,23 +138,23 @@ msgid "Backups"
 msgstr "Yedekler"
 
 #: src/lib/utils.ts:337
-#: src/components/routes/system.tsx:490
+#: src/components/routes/system.tsx:491
 msgid "Bandwidth"
 msgstr "Bant Genişliği"
 
-#: src/components/login/auth-form.tsx:306
+#: src/components/login/auth-form.tsx:305
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
 msgstr "Beszel, OpenID Connect ve birçok OAuth2 kimlik doğrulama sağlayıcısını destekler."
 
-#: src/components/routes/settings/notifications.tsx:128
+#: src/components/routes/settings/notifications.tsx:129
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
 msgstr "Beszel, popüler bildirim hizmetleriyle entegre olmak için <0>Shoutrrr</0> kullanır."
 
-#: src/components/add-system.tsx:130
+#: src/components/add-system.tsx:131
 msgid "Binary"
 msgstr "İkili"
 
-#: src/components/charts/mem-chart.tsx:89
+#: src/components/charts/mem-chart.tsx:87
 msgid "Cache / Buffers"
 msgstr "Önbellek / Tamponlar"
 
@@ -162,7 +162,7 @@ msgstr "Önbellek / Tamponlar"
 msgid "Cancel"
 msgstr "İptal"
 
-#: src/components/routes/settings/config-yaml.tsx:68
+#: src/components/routes/settings/config-yaml.tsx:69
 msgid "Caution - potential data loss"
 msgstr "Dikkat - potansiyel veri kaybı"
 
@@ -174,33 +174,33 @@ msgstr "Genel uygulama seçeneklerini değiştirin."
 msgid "Chart options"
 msgstr "Grafik seçenekleri"
 
-#: src/components/login/forgot-pass-form.tsx:34
+#: src/components/login/forgot-pass-form.tsx:35
 msgid "Check {email} for a reset link."
 msgstr "Sıfırlama bağlantısı için {email} kontrol edin."
 
-#: src/components/routes/settings/layout.tsx:40
+#: src/components/routes/settings/layout.tsx:41
 msgid "Check logs for more details."
 msgstr "Daha fazla ayrıntı için günlükleri kontrol edin."
 
-#: src/components/routes/settings/notifications.tsx:184
+#: src/components/routes/settings/notifications.tsx:185
 msgid "Check your notification service"
 msgstr "Bildirim hizmetinizi kontrol edin"
 
-#: src/components/add-system.tsx:204
+#: src/components/add-system.tsx:205
 msgid "Click to copy"
 msgstr "Kopyalamak için tıklayın"
 
-#: src/components/login/forgot-pass-form.tsx:83
-#: src/components/login/forgot-pass-form.tsx:89
+#: src/components/login/forgot-pass-form.tsx:84
+#: src/components/login/forgot-pass-form.tsx:90
 msgid "Command line instructions"
 msgstr "Komut satırı talimatları"
 
-#: src/components/routes/settings/notifications.tsx:78
+#: src/components/routes/settings/notifications.tsx:79
 msgid "Configure how you receive alert notifications."
 msgstr "Uyarı bildirimlerini nasıl alacağınızı yapılandırın."
 
-#: src/components/login/auth-form.tsx:212
-#: src/components/login/auth-form.tsx:217
+#: src/components/login/auth-form.tsx:213
+#: src/components/login/auth-form.tsx:218
 msgid "Confirm password"
 msgstr "Şifreyi onayla"
 
@@ -212,8 +212,8 @@ msgstr "Devam et"
 msgid "Copied to clipboard"
 msgstr "Panoya kopyalandı"
 
-#: src/components/add-system.tsx:215
-#: src/components/add-system.tsx:217
+#: src/components/add-system.tsx:216
+#: src/components/add-system.tsx:218
 msgid "Copy"
 msgstr "Kopyala"
 
@@ -221,7 +221,7 @@ msgstr "Kopyala"
 msgid "Copy host"
 msgstr "Ana bilgisayarı kopyala"
 
-#: src/components/add-system.tsx:224
+#: src/components/add-system.tsx:225
 msgid "Copy Linux command"
 msgstr "Linux komutunu kopyala"
 
@@ -234,17 +234,17 @@ msgid "CPU"
 msgstr "CPU"
 
 #: src/lib/utils.ts:319
-#: src/components/routes/system.tsx:433
+#: src/components/routes/system.tsx:434
 #: src/components/charts/area-chart.tsx:58
 msgid "CPU Usage"
 msgstr "CPU Kullanımı"
 
-#: src/components/login/auth-form.tsx:238
+#: src/components/login/auth-form.tsx:239
 msgid "Create account"
 msgstr "Hesap oluştur"
 
 #. Dark theme
-#: src/components/mode-toggle.tsx:21
+#: src/components/mode-toggle.tsx:22
 msgid "Dark"
 msgstr "Koyu"
 
@@ -265,29 +265,29 @@ msgstr "Sil"
 msgid "Disk"
 msgstr "Disk"
 
-#: src/components/routes/system.tsx:480
+#: src/components/routes/system.tsx:481
 msgid "Disk I/O"
 msgstr "Disk G/Ç"
 
 #: src/lib/utils.ts:331
-#: src/components/routes/system.tsx:473
-#: src/components/charts/disk-chart.tsx:79
+#: src/components/routes/system.tsx:474
+#: src/components/charts/disk-chart.tsx:77
 msgid "Disk Usage"
 msgstr "Disk Kullanımı"
 
-#: src/components/routes/system.tsx:602
+#: src/components/routes/system.tsx:603
 msgid "Disk usage of {extraFsName}"
 msgstr "{extraFsName} disk kullanımı"
 
-#: src/components/routes/system.tsx:444
+#: src/components/routes/system.tsx:445
 msgid "Docker CPU Usage"
 msgstr "Docker CPU Kullanımı"
 
-#: src/components/routes/system.tsx:465
+#: src/components/routes/system.tsx:466
 msgid "Docker Memory Usage"
 msgstr "Docker Bellek Kullanımı"
 
-#: src/components/routes/system.tsx:506
+#: src/components/routes/system.tsx:507
 msgid "Docker Network I/O"
 msgstr "Docker Ağ G/Ç"
 
@@ -298,21 +298,21 @@ msgstr "Dokümantasyon"
 #. Context: System is down
 #: src/lib/utils.ts:316
 #: src/components/systems-table/systems-table.tsx:142
-#: src/components/routes/system.tsx:344
+#: src/components/routes/system.tsx:345
 msgid "Down"
 msgstr ""
 
-#: src/components/add-system.tsx:125
+#: src/components/add-system.tsx:126
 #: src/components/systems-table/systems-table.tsx:653
 msgid "Edit"
 msgstr ""
 
-#: src/components/login/forgot-pass-form.tsx:53
-#: src/components/login/auth-form.tsx:175
+#: src/components/login/forgot-pass-form.tsx:54
+#: src/components/login/auth-form.tsx:176
 msgid "Email"
 msgstr "E-posta"
 
-#: src/components/routes/settings/notifications.tsx:92
+#: src/components/routes/settings/notifications.tsx:93
 msgid "Email notifications"
 msgstr "E-posta bildirimleri"
 
@@ -320,13 +320,13 @@ msgstr "E-posta bildirimleri"
 msgid "Enter email address to reset password"
 msgstr "Şifreyi sıfırlamak için e-posta adresini girin"
 
-#: src/components/routes/settings/notifications.tsx:112
+#: src/components/routes/settings/notifications.tsx:113
 msgid "Enter email address..."
 msgstr "E-posta adresini girin..."
 
-#: src/components/routes/settings/notifications.tsx:188
-#: src/components/routes/settings/config-yaml.tsx:28
-#: src/components/login/auth-form.tsx:136
+#: src/components/routes/settings/notifications.tsx:189
+#: src/components/routes/settings/config-yaml.tsx:29
+#: src/components/login/auth-form.tsx:137
 msgid "Error"
 msgstr "Hata"
 
@@ -337,15 +337,15 @@ msgstr "Hata"
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Son {2, plural, one {# dakika} other {# dakika}} içinde {0}{1} aşıyor"
 
-#: src/components/routes/settings/config-yaml.tsx:72
+#: src/components/routes/settings/config-yaml.tsx:73
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr "<0>config.yml</0> içinde tanımlanmayan mevcut sistemler silinecektir. Lütfen düzenli yedekler alın."
 
-#: src/components/routes/settings/config-yaml.tsx:93
+#: src/components/routes/settings/config-yaml.tsx:94
 msgid "Export configuration"
 msgstr "Yapılandırmayı dışa aktar"
 
-#: src/components/routes/settings/config-yaml.tsx:48
+#: src/components/routes/settings/config-yaml.tsx:49
 msgid "Export your current systems configuration."
 msgstr "Mevcut sistem yapılandırmanızı dışa aktarın."
 
@@ -353,39 +353,39 @@ msgstr "Mevcut sistem yapılandırmanızı dışa aktarın."
 msgid "Failed to authenticate"
 msgstr "Kimlik doğrulama başarısız"
 
-#: src/components/routes/settings/notifications.tsx:63
-#: src/components/routes/settings/layout.tsx:39
+#: src/components/routes/settings/notifications.tsx:64
+#: src/components/routes/settings/layout.tsx:40
 msgid "Failed to save settings"
 msgstr "Ayarlar kaydedilemedi"
 
-#: src/components/routes/settings/notifications.tsx:189
+#: src/components/routes/settings/notifications.tsx:190
 msgid "Failed to send test notification"
 msgstr "Test bildirimi gönderilemedi"
 
-#: src/components/alerts/alerts-system.tsx:25
+#: src/components/alerts/alerts-system.tsx:26
 msgid "Failed to update alert"
 msgstr "Uyarı güncellenemedi"
 
 #: src/components/systems-table/systems-table.tsx:354
-#: src/components/routes/system.tsx:642
+#: src/components/routes/system.tsx:643
 msgid "Filter..."
 msgstr "Filtrele..."
 
-#: src/components/alerts/alerts-system.tsx:284
+#: src/components/alerts/alerts-system.tsx:285
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "<0>{min}</0> {min, plural, one {dakika} other {dakika}} için"
 
-#: src/components/login/auth-form.tsx:330
+#: src/components/login/auth-form.tsx:328
 msgid "Forgot password?"
 msgstr "Şifrenizi mi unuttunuz?"
 
 #. Context: General settings
-#: src/components/routes/settings/layout.tsx:51
+#: src/components/routes/settings/layout.tsx:52
 #: src/components/routes/settings/general.tsx:33
 msgid "General"
 msgstr "Genel"
 
-#: src/components/routes/system.tsx:545
+#: src/components/routes/system.tsx:546
 msgid "GPU Power Draw"
 msgstr "GPU Güç Çekimi"
 
@@ -393,20 +393,20 @@ msgstr "GPU Güç Çekimi"
 msgid "Grid"
 msgstr "Izgara"
 
-#: src/components/add-system.tsx:158
+#: src/components/add-system.tsx:159
 msgid "Host / IP"
 msgstr "Host / IP"
 
-#: src/components/login/forgot-pass-form.tsx:93
+#: src/components/login/forgot-pass-form.tsx:94
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Yönetici hesabınızın şifresini kaybettiyseniz, aşağıdaki komutu kullanarak sıfırlayabilirsiniz."
 
-#: src/components/login/auth-form.tsx:17
+#: src/components/login/auth-form.tsx:18
 msgid "Invalid email address."
 msgstr "Geçersiz e-posta adresi."
 
 #. Linux kernel
-#: src/components/routes/system.tsx:270
+#: src/components/routes/system.tsx:271
 msgid "Kernel"
 msgstr "Çekirdek"
 
@@ -419,7 +419,7 @@ msgid "Layout"
 msgstr "Düzen"
 
 #. Light theme
-#: src/components/mode-toggle.tsx:16
+#: src/components/mode-toggle.tsx:17
 msgid "Light"
 msgstr "Açık"
 
@@ -431,8 +431,8 @@ msgstr "Çıkış Yap"
 msgid "Login"
 msgstr "Giriş Yap"
 
-#: src/components/login/forgot-pass-form.tsx:15
-#: src/components/login/auth-form.tsx:39
+#: src/components/login/forgot-pass-form.tsx:16
+#: src/components/login/auth-form.tsx:40
 msgid "Login attempt failed"
 msgstr "Giriş denemesi başarısız"
 
@@ -441,20 +441,20 @@ msgstr "Giriş denemesi başarısız"
 msgid "Logs"
 msgstr "Günlükler"
 
-#: src/components/routes/settings/notifications.tsx:81
+#: src/components/routes/settings/notifications.tsx:82
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
 msgstr "Uyarı oluşturma yerini mi arıyorsunuz? Sistemler tablosundaki zil <0/> simgelerine tıklayın."
 
-#: src/components/routes/settings/layout.tsx:85
+#: src/components/routes/settings/layout.tsx:86
 msgid "Manage display and notification preferences."
 msgstr "Görüntüleme ve bildirim tercihlerini yönetin."
 
-#: src/components/add-system.tsx:226
+#: src/components/add-system.tsx:227
 msgid "Manual setup instructions"
 msgstr ""
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:672
+#: src/components/routes/system.tsx:673
 msgid "Max 1 min"
 msgstr "Maks 1 dk"
 
@@ -463,15 +463,15 @@ msgid "Memory"
 msgstr "Bellek"
 
 #: src/lib/utils.ts:325
-#: src/components/routes/system.tsx:455
+#: src/components/routes/system.tsx:456
 msgid "Memory Usage"
 msgstr "Bellek Kullanımı"
 
-#: src/components/routes/system.tsx:466
+#: src/components/routes/system.tsx:467
 msgid "Memory usage of docker containers"
 msgstr "Docker konteynerlerinin bellek kullanımı"
 
-#: src/components/add-system.tsx:154
+#: src/components/add-system.tsx:155
 msgid "Name"
 msgstr "Ad"
 
@@ -479,11 +479,11 @@ msgstr "Ad"
 msgid "Net"
 msgstr "Ağ"
 
-#: src/components/routes/system.tsx:507
+#: src/components/routes/system.tsx:508
 msgid "Network traffic of docker containers"
 msgstr "Docker konteynerlerinin ağ trafiği"
 
-#: src/components/routes/system.tsx:492
+#: src/components/routes/system.tsx:493
 msgid "Network traffic of public interfaces"
 msgstr "Genel arayüzlerin ağ trafiği"
 
@@ -497,16 +497,16 @@ msgid "No systems found."
 msgstr "Sistem bulunamadı."
 
 #: src/components/command-palette.tsx:109
-#: src/components/routes/settings/notifications.tsx:75
-#: src/components/routes/settings/layout.tsx:56
+#: src/components/routes/settings/notifications.tsx:76
+#: src/components/routes/settings/layout.tsx:57
 msgid "Notifications"
 msgstr "Bildirimler"
 
-#: src/components/login/auth-form.tsx:301
+#: src/components/login/auth-form.tsx:300
 msgid "OAuth 2 / OIDC support"
 msgstr "OAuth 2 / OIDC desteği"
 
-#: src/components/routes/settings/config-yaml.tsx:61
+#: src/components/routes/settings/config-yaml.tsx:62
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Her yeniden başlatmada, veritabanındaki sistemler dosyada tanımlanan sistemlerle eşleşecek şekilde güncellenecektir."
 
@@ -514,11 +514,11 @@ msgstr "Her yeniden başlatmada, veritabanındaki sistemler dosyada tanımlanan 
 msgid "Open menu"
 msgstr "Menüyü aç"
 
-#: src/components/login/auth-form.tsx:250
+#: src/components/login/auth-form.tsx:251
 msgid "Or continue with"
 msgstr "Veya devam et"
 
-#: src/components/alerts/alert-button.tsx:119
+#: src/components/alerts/alert-button.tsx:120
 msgid "Overwrite existing alerts"
 msgstr "Mevcut uyarıların üzerine yaz"
 
@@ -530,20 +530,20 @@ msgstr "Sayfa"
 msgid "Pages / Settings"
 msgstr "Sayfalar / Ayarlar"
 
-#: src/components/login/auth-form.tsx:194
-#: src/components/login/auth-form.tsx:199
+#: src/components/login/auth-form.tsx:195
+#: src/components/login/auth-form.tsx:200
 msgid "Password"
 msgstr "Şifre"
 
-#: src/components/login/auth-form.tsx:20
+#: src/components/login/auth-form.tsx:21
 msgid "Password must be at least 8 characters."
 msgstr "Şifre en az 8 karakter olmalıdır."
 
-#: src/components/login/auth-form.tsx:21
+#: src/components/login/auth-form.tsx:22
 msgid "Password must be less than 72 bytes."
 msgstr ""
 
-#: src/components/login/forgot-pass-form.tsx:33
+#: src/components/login/forgot-pass-form.tsx:34
 msgid "Password reset request received"
 msgstr "Şifre sıfırlama isteği alındı"
 
@@ -555,16 +555,16 @@ msgstr "Duraklat"
 msgid "Paused"
 msgstr ""
 
-#: src/components/routes/settings/notifications.tsx:96
+#: src/components/routes/settings/notifications.tsx:97
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "Uyarıların teslim edilmesini sağlamak için lütfen bir SMTP sunucusu <0>yapılandırın</0>."
 
-#: src/components/alerts/alerts-system.tsx:26
+#: src/components/alerts/alerts-system.tsx:27
 msgid "Please check logs for more details."
 msgstr "Daha fazla ayrıntı için lütfen günlükleri kontrol edin."
 
-#: src/components/login/forgot-pass-form.tsx:16
-#: src/components/login/auth-form.tsx:40
+#: src/components/login/forgot-pass-form.tsx:17
+#: src/components/login/auth-form.tsx:41
 msgid "Please check your credentials and try again"
 msgstr "Lütfen kimlik bilgilerinizi kontrol edin ve tekrar deneyin"
 
@@ -572,7 +572,7 @@ msgstr "Lütfen kimlik bilgilerinizi kontrol edin ve tekrar deneyin"
 msgid "Please create an admin account"
 msgstr "Lütfen bir yönetici hesabı oluşturun"
 
-#: src/components/login/auth-form.tsx:137
+#: src/components/login/auth-form.tsx:138
 msgid "Please enable pop-ups for this site"
 msgstr "Lütfen bu site için açılır pencereleri etkinleştirin"
 
@@ -580,7 +580,7 @@ msgstr "Lütfen bu site için açılır pencereleri etkinleştirin"
 msgid "Please log in again"
 msgstr "Lütfen tekrar giriş yapın"
 
-#: src/components/login/auth-form.tsx:309
+#: src/components/login/auth-form.tsx:308
 msgid "Please see <0>the documentation</0> for instructions."
 msgstr "Talimatlar için lütfen <0>dokümantasyonu</0> inceleyin."
 
@@ -588,12 +588,12 @@ msgstr "Talimatlar için lütfen <0>dokümantasyonu</0> inceleyin."
 msgid "Please sign in to your account"
 msgstr "Lütfen hesabınıza giriş yapın"
 
-#: src/components/add-system.tsx:170
+#: src/components/add-system.tsx:171
 msgid "Port"
 msgstr "Port"
 
-#: src/components/routes/system.tsx:456
-#: src/components/routes/system.tsx:576
+#: src/components/routes/system.tsx:457
+#: src/components/routes/system.tsx:577
 msgid "Precise utilization at the recorded time"
 msgstr "Kayıtlı zamanda kesin kullanım"
 
@@ -602,7 +602,7 @@ msgid "Preferred Language"
 msgstr "Tercih Edilen Dil"
 
 #. Use 'Key' if your language requires many more characters
-#: src/components/add-system.tsx:181
+#: src/components/add-system.tsx:182
 msgid "Public Key"
 msgstr "Genel Anahtar"
 
@@ -617,7 +617,7 @@ msgstr "Oku"
 msgid "Received"
 msgstr "Alındı"
 
-#: src/components/login/forgot-pass-form.tsx:76
+#: src/components/login/forgot-pass-form.tsx:77
 msgid "Reset Password"
 msgstr "Şifreyi Sıfırla"
 
@@ -625,16 +625,16 @@ msgstr "Şifreyi Sıfırla"
 msgid "Resume"
 msgstr "Devam et"
 
-#: src/components/routes/settings/notifications.tsx:118
+#: src/components/routes/settings/notifications.tsx:119
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Adresleri enter tuşu veya virgül ile kaydedin. E-posta bildirimlerini devre dışı bırakmak için boş bırakın."
 
-#: src/components/routes/settings/notifications.tsx:168
+#: src/components/routes/settings/notifications.tsx:169
 #: src/components/routes/settings/general.tsx:106
 msgid "Save Settings"
 msgstr "Ayarları Kaydet"
 
-#: src/components/add-system.tsx:231
+#: src/components/add-system.tsx:232
 msgid "Save system"
 msgstr ""
 
@@ -646,7 +646,7 @@ msgstr "Ara"
 msgid "Search for systems or settings..."
 msgstr "Sistemler veya ayarlar için ara..."
 
-#: src/components/alerts/alert-button.tsx:81
+#: src/components/alerts/alert-button.tsx:82
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Uyarıları nasıl alacağınızı yapılandırmak için <0>bildirim ayarlarını</0> inceleyin."
 
@@ -662,16 +662,16 @@ msgstr "Bir sistem görüntülendiğinde grafikler için varsayılan zaman aral�
 #: src/components/command-palette.tsx:94
 #: src/components/command-palette.tsx:97
 #: src/components/command-palette.tsx:112
-#: src/components/routes/settings/layout.tsx:71
-#: src/components/routes/settings/layout.tsx:82
+#: src/components/routes/settings/layout.tsx:72
+#: src/components/routes/settings/layout.tsx:83
 msgid "Settings"
 msgstr "Ayarlar"
 
-#: src/components/routes/settings/layout.tsx:33
+#: src/components/routes/settings/layout.tsx:34
 msgid "Settings saved"
 msgstr "Ayarlar kaydedildi"
 
-#: src/components/login/auth-form.tsx:238
+#: src/components/login/auth-form.tsx:239
 msgid "Sign in"
 msgstr "Giriş yap"
 
@@ -687,17 +687,17 @@ msgstr "Sıralama Ölçütü"
 msgid "Status"
 msgstr "Durum"
 
-#: src/components/routes/system.tsx:522
+#: src/components/routes/system.tsx:523
 msgid "Swap space used by the system"
 msgstr "Sistem tarafından kullanılan takas alanı"
 
-#: src/components/routes/system.tsx:521
+#: src/components/routes/system.tsx:522
 msgid "Swap Usage"
 msgstr "Takas Kullanımı"
 
 #. System theme
 #: src/lib/utils.ts:316
-#: src/components/mode-toggle.tsx:26
+#: src/components/mode-toggle.tsx:27
 #: src/components/systems-table/systems-table.tsx:152
 msgid "System"
 msgstr "Sistem"
@@ -706,7 +706,7 @@ msgstr "Sistem"
 msgid "Systems"
 msgstr "Sistemler"
 
-#: src/components/routes/settings/config-yaml.tsx:55
+#: src/components/routes/settings/config-yaml.tsx:56
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "Sistemler, veri dizininizdeki bir <0>config.yml</0> dosyasında yönetilebilir."
 
@@ -720,31 +720,31 @@ msgid "Temp"
 msgstr ""
 
 #: src/lib/utils.ts:344
-#: src/components/routes/system.tsx:533
+#: src/components/routes/system.tsx:534
 msgid "Temperature"
 msgstr "Sıcaklık"
 
-#: src/components/routes/system.tsx:534
+#: src/components/routes/system.tsx:535
 msgid "Temperatures of system sensors"
 msgstr "Sistem sensörlerinin sıcaklıkları"
 
-#: src/components/routes/settings/notifications.tsx:212
+#: src/components/routes/settings/notifications.tsx:213
 msgid "Test <0>URL</0>"
 msgstr "Test <0>URL</0>"
 
-#: src/components/routes/settings/notifications.tsx:183
+#: src/components/routes/settings/notifications.tsx:184
 msgid "Test notification sent"
 msgstr "Test bildirimi gönderildi"
 
-#: src/components/add-system.tsx:146
+#: src/components/add-system.tsx:147
 msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
 msgstr "Bağlanmak için aracının sistemde çalışıyor olması gerekir. Aşağıdaki aracı kurulum komutunu kopyalayın."
 
-#: src/components/add-system.tsx:137
+#: src/components/add-system.tsx:138
 msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
 msgstr "Bağlanmak için aracının sistemde çalışıyor olması gerekir. Aşağıdaki <0>docker-compose.yml</0> dosyasını kopyalayın."
 
-#: src/components/login/forgot-pass-form.tsx:98
+#: src/components/login/forgot-pass-form.tsx:99
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Ardından arka uca giriş yapın ve kullanıcılar tablosunda kullanıcı hesabı şifrenizi sıfırlayın."
 
@@ -752,24 +752,24 @@ msgstr "Ardından arka uca giriş yapın ve kullanıcılar tablosunda kullanıc�
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Bu işlem geri alınamaz. Bu, veritabanından {name} için tüm mevcut kayıtları kalıcı olarak silecektir."
 
-#: src/components/routes/system.tsx:614
+#: src/components/routes/system.tsx:615
 msgid "Throughput of {extraFsName}"
 msgstr "{extraFsName} verimliliği"
 
-#: src/components/routes/system.tsx:481
+#: src/components/routes/system.tsx:482
 msgid "Throughput of root filesystem"
 msgstr "Kök dosya sisteminin verimliliği"
 
-#: src/components/routes/settings/notifications.tsx:107
+#: src/components/routes/settings/notifications.tsx:108
 msgid "To email(s)"
 msgstr "E-posta(lar)a"
 
-#: src/components/routes/system.tsx:408
-#: src/components/routes/system.tsx:421
+#: src/components/routes/system.tsx:409
+#: src/components/routes/system.tsx:422
 msgid "Toggle grid"
 msgstr "Izgarayı değiştir"
 
-#: src/components/mode-toggle.tsx:33
+#: src/components/mode-toggle.tsx:34
 msgid "Toggle theme"
 msgstr "Temayı değiştir"
 
@@ -799,7 +799,7 @@ msgstr "Herhangi bir diskin kullanımı bir eşiği aştığında tetiklenir"
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx:141
-#: src/components/routes/system.tsx:342
+#: src/components/routes/system.tsx:343
 msgid "Up"
 msgstr ""
 
@@ -807,22 +807,22 @@ msgstr ""
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Gerçek zamanlı olarak güncellenir. Bilgileri görüntülemek için bir sisteme tıklayın."
 
-#: src/components/routes/system.tsx:269
+#: src/components/routes/system.tsx:270
 msgid "Uptime"
 msgstr "Çalışma Süresi"
 
-#: src/components/routes/system.tsx:567
-#: src/components/routes/system.tsx:601
+#: src/components/routes/system.tsx:568
+#: src/components/routes/system.tsx:602
 #: src/components/charts/area-chart.tsx:75
 msgid "Usage"
 msgstr "Kullanım"
 
-#: src/components/routes/system.tsx:473
+#: src/components/routes/system.tsx:474
 msgid "Usage of root partition"
 msgstr "Kök bölümün kullanımı"
 
 #: src/components/charts/swap-chart.tsx:56
-#: src/components/charts/mem-chart.tsx:65
+#: src/components/charts/mem-chart.tsx:63
 #: src/components/charts/area-chart.tsx:75
 msgid "Used"
 msgstr "Kullanıldı"
@@ -840,7 +840,7 @@ msgstr "Görüntüle"
 msgid "Visible Fields"
 msgstr "Görünür Alanlar"
 
-#: src/components/routes/system.tsx:706
+#: src/components/routes/system.tsx:707
 msgid "Waiting for enough records to display"
 msgstr "Görüntülemek için yeterli kayıt bekleniyor"
 
@@ -848,7 +848,7 @@ msgstr "Görüntülemek için yeterli kayıt bekleniyor"
 msgid "Want to help us make our translations even better? Check out <0>Crowdin</0> for more details."
 msgstr "Çevirilerimizi daha iyi hale getirmemize yardımcı olmak ister misiniz? Daha fazla bilgi için <0>Crowdin</0> inceleyin."
 
-#: src/components/routes/settings/notifications.tsx:125
+#: src/components/routes/settings/notifications.tsx:126
 msgid "Webhook / Push notifications"
 msgstr "Webhook / Anlık bildirimler"
 
@@ -858,14 +858,14 @@ msgstr "Webhook / Anlık bildirimler"
 msgid "Write"
 msgstr "Yaz"
 
-#: src/components/routes/settings/layout.tsx:61
+#: src/components/routes/settings/layout.tsx:62
 msgid "YAML Config"
 msgstr "YAML Yapılandırması"
 
-#: src/components/routes/settings/config-yaml.tsx:45
+#: src/components/routes/settings/config-yaml.tsx:46
 msgid "YAML Configuration"
 msgstr "YAML Yapılandırması"
 
-#: src/components/routes/settings/layout.tsx:34
+#: src/components/routes/settings/layout.tsx:35
 msgid "Your user settings have been updated."
 msgstr "Kullanıcı ayarlarınız güncellendi."

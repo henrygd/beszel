@@ -1,3 +1,5 @@
+import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro";
 import { Button } from "@/components/ui/button"
 import {
 	Dialog,
@@ -16,7 +18,6 @@ import { Label } from "@/components/ui/label"
 import { $publicKey, pb } from "@/lib/stores"
 import { cn, copyToClipboard, isReadOnlyUser, useLocalStorage } from "@/lib/utils"
 import { i18n } from "@lingui/core"
-import { t, Trans } from "@lingui/macro"
 import { useStore } from "@nanostores/react"
 import { ChevronDownIcon, Copy, PlusIcon } from "lucide-react"
 import { memo, useRef, useState } from "react"

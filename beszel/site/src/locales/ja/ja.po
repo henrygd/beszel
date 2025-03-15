@@ -19,11 +19,11 @@ msgstr ""
 "X-Crowdin-File-ID: 16\n"
 
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
-#: src/components/routes/system.tsx:258
+#: src/components/routes/system.tsx:259
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# 日} other {# 日}}"
 
-#: src/components/routes/system.tsx:256
+#: src/components/routes/system.tsx:257
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# 時間} other {# 時間}}"
 
@@ -56,19 +56,19 @@ msgstr "アクション"
 msgid "Active Alerts"
 msgstr "アクティブなアラート"
 
-#: src/components/add-system.tsx:42
+#: src/components/add-system.tsx:43
 msgid "Add <0>System</0>"
 msgstr "<0>システム</0>を追加"
 
-#: src/components/add-system.tsx:125
+#: src/components/add-system.tsx:126
 msgid "Add New System"
 msgstr "新しいシステムを追加"
 
-#: src/components/add-system.tsx:231
+#: src/components/add-system.tsx:232
 msgid "Add system"
 msgstr "システムを追加"
 
-#: src/components/routes/settings/notifications.tsx:157
+#: src/components/routes/settings/notifications.tsx:158
 msgid "Add URL"
 msgstr "URLを追加"
 
@@ -88,13 +88,13 @@ msgstr "管理者"
 msgid "Agent"
 msgstr "エージェント"
 
-#: src/components/alerts/alert-button.tsx:32
-#: src/components/alerts/alert-button.tsx:78
+#: src/components/alerts/alert-button.tsx:33
+#: src/components/alerts/alert-button.tsx:79
 msgid "Alerts"
 msgstr "アラート"
 
 #: src/components/systems-table/systems-table.tsx:347
-#: src/components/alerts/alert-button.tsx:98
+#: src/components/alerts/alert-button.tsx:99
 msgid "All Systems"
 msgstr "すべてのシステム"
 
@@ -106,29 +106,29 @@ msgstr "{name}を削除してもよろしいですか？"
 msgid "Automatic copy requires a secure context."
 msgstr "自動コピーには安全なコンテキストが必要です。"
 
-#: src/components/routes/system.tsx:669
+#: src/components/routes/system.tsx:670
 msgid "Average"
 msgstr "平均"
 
-#: src/components/routes/system.tsx:445
+#: src/components/routes/system.tsx:446
 msgid "Average CPU utilization of containers"
 msgstr "コンテナの平均CPU使用率"
 
 #. placeholder {0}: data.alert.unit
-#: src/components/alerts/alerts-system.tsx:252
+#: src/components/alerts/alerts-system.tsx:253
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "平均が<0>{value}{0}</0>を超えています"
 
-#: src/components/routes/system.tsx:546
+#: src/components/routes/system.tsx:547
 msgid "Average power consumption of GPUs"
 msgstr "GPUの平均消費電力"
 
-#: src/components/routes/system.tsx:434
+#: src/components/routes/system.tsx:435
 msgid "Average system-wide CPU utilization"
 msgstr "システム全体の平均CPU使用率"
 
 #. placeholder {0}: gpu.n
-#: src/components/routes/system.tsx:568
+#: src/components/routes/system.tsx:569
 msgid "Average utilization of {0}"
 msgstr "{0}の平均使用率"
 
@@ -138,23 +138,23 @@ msgid "Backups"
 msgstr "バックアップ"
 
 #: src/lib/utils.ts:337
-#: src/components/routes/system.tsx:490
+#: src/components/routes/system.tsx:491
 msgid "Bandwidth"
 msgstr "帯域幅"
 
-#: src/components/login/auth-form.tsx:306
+#: src/components/login/auth-form.tsx:305
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
 msgstr "BeszelはOpenID Connectと多くのOAuth2認証プロバイダーをサポートしています。"
 
-#: src/components/routes/settings/notifications.tsx:128
+#: src/components/routes/settings/notifications.tsx:129
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
 msgstr "Beszelは<0>Shoutrrr</0>を使用して、人気のある通知サービスと統合します。"
 
-#: src/components/add-system.tsx:130
+#: src/components/add-system.tsx:131
 msgid "Binary"
 msgstr "バイナリ"
 
-#: src/components/charts/mem-chart.tsx:89
+#: src/components/charts/mem-chart.tsx:87
 msgid "Cache / Buffers"
 msgstr "キャッシュ / バッファ"
 
@@ -162,7 +162,7 @@ msgstr "キャッシュ / バッファ"
 msgid "Cancel"
 msgstr "キャンセル"
 
-#: src/components/routes/settings/config-yaml.tsx:68
+#: src/components/routes/settings/config-yaml.tsx:69
 msgid "Caution - potential data loss"
 msgstr "注意 - データ損失の可能性"
 
@@ -174,33 +174,33 @@ msgstr "一般的なアプリケーションオプションを変更します。
 msgid "Chart options"
 msgstr "チャートオプション"
 
-#: src/components/login/forgot-pass-form.tsx:34
+#: src/components/login/forgot-pass-form.tsx:35
 msgid "Check {email} for a reset link."
 msgstr "{email}を確認してリセットリンクを探してください。"
 
-#: src/components/routes/settings/layout.tsx:40
+#: src/components/routes/settings/layout.tsx:41
 msgid "Check logs for more details."
 msgstr "詳細についてはログを確認してください。"
 
-#: src/components/routes/settings/notifications.tsx:184
+#: src/components/routes/settings/notifications.tsx:185
 msgid "Check your notification service"
 msgstr "通知サービスを確認してください"
 
-#: src/components/add-system.tsx:204
+#: src/components/add-system.tsx:205
 msgid "Click to copy"
 msgstr "クリックしてコピー"
 
-#: src/components/login/forgot-pass-form.tsx:83
-#: src/components/login/forgot-pass-form.tsx:89
+#: src/components/login/forgot-pass-form.tsx:84
+#: src/components/login/forgot-pass-form.tsx:90
 msgid "Command line instructions"
 msgstr "コマンドラインの指示"
 
-#: src/components/routes/settings/notifications.tsx:78
+#: src/components/routes/settings/notifications.tsx:79
 msgid "Configure how you receive alert notifications."
 msgstr "アラート通知の受信方法を設定します。"
 
-#: src/components/login/auth-form.tsx:212
-#: src/components/login/auth-form.tsx:217
+#: src/components/login/auth-form.tsx:213
+#: src/components/login/auth-form.tsx:218
 msgid "Confirm password"
 msgstr "パスワードを確認"
 
@@ -212,8 +212,8 @@ msgstr "続行"
 msgid "Copied to clipboard"
 msgstr "クリップボードにコピーされました"
 
-#: src/components/add-system.tsx:215
-#: src/components/add-system.tsx:217
+#: src/components/add-system.tsx:216
+#: src/components/add-system.tsx:218
 msgid "Copy"
 msgstr "コピー"
 
@@ -221,7 +221,7 @@ msgstr "コピー"
 msgid "Copy host"
 msgstr "ホストをコピー"
 
-#: src/components/add-system.tsx:224
+#: src/components/add-system.tsx:225
 msgid "Copy Linux command"
 msgstr "Linuxコマンドをコピー"
 
@@ -234,17 +234,17 @@ msgid "CPU"
 msgstr "CPU"
 
 #: src/lib/utils.ts:319
-#: src/components/routes/system.tsx:433
+#: src/components/routes/system.tsx:434
 #: src/components/charts/area-chart.tsx:58
 msgid "CPU Usage"
 msgstr "CPU使用率"
 
-#: src/components/login/auth-form.tsx:238
+#: src/components/login/auth-form.tsx:239
 msgid "Create account"
 msgstr "アカウントを作成"
 
 #. Dark theme
-#: src/components/mode-toggle.tsx:21
+#: src/components/mode-toggle.tsx:22
 msgid "Dark"
 msgstr "ダーク"
 
@@ -265,29 +265,29 @@ msgstr "削除"
 msgid "Disk"
 msgstr "ディスク"
 
-#: src/components/routes/system.tsx:480
+#: src/components/routes/system.tsx:481
 msgid "Disk I/O"
 msgstr "ディスクI/O"
 
 #: src/lib/utils.ts:331
-#: src/components/routes/system.tsx:473
-#: src/components/charts/disk-chart.tsx:79
+#: src/components/routes/system.tsx:474
+#: src/components/charts/disk-chart.tsx:77
 msgid "Disk Usage"
 msgstr "ディスク使用率"
 
-#: src/components/routes/system.tsx:602
+#: src/components/routes/system.tsx:603
 msgid "Disk usage of {extraFsName}"
 msgstr "{extraFsName}のディスク使用率"
 
-#: src/components/routes/system.tsx:444
+#: src/components/routes/system.tsx:445
 msgid "Docker CPU Usage"
 msgstr "Docker CPU使用率"
 
-#: src/components/routes/system.tsx:465
+#: src/components/routes/system.tsx:466
 msgid "Docker Memory Usage"
 msgstr "Dockerメモリ使用率"
 
-#: src/components/routes/system.tsx:506
+#: src/components/routes/system.tsx:507
 msgid "Docker Network I/O"
 msgstr "DockerネットワークI/O"
 
@@ -298,21 +298,21 @@ msgstr "ドキュメント"
 #. Context: System is down
 #: src/lib/utils.ts:316
 #: src/components/systems-table/systems-table.tsx:142
-#: src/components/routes/system.tsx:344
+#: src/components/routes/system.tsx:345
 msgid "Down"
 msgstr "停止"
 
-#: src/components/add-system.tsx:125
+#: src/components/add-system.tsx:126
 #: src/components/systems-table/systems-table.tsx:653
 msgid "Edit"
 msgstr "編集"
 
-#: src/components/login/forgot-pass-form.tsx:53
-#: src/components/login/auth-form.tsx:175
+#: src/components/login/forgot-pass-form.tsx:54
+#: src/components/login/auth-form.tsx:176
 msgid "Email"
 msgstr "メール"
 
-#: src/components/routes/settings/notifications.tsx:92
+#: src/components/routes/settings/notifications.tsx:93
 msgid "Email notifications"
 msgstr "メール通知"
 
@@ -320,13 +320,13 @@ msgstr "メール通知"
 msgid "Enter email address to reset password"
 msgstr "パスワードをリセットするためにメールアドレスを入力してください"
 
-#: src/components/routes/settings/notifications.tsx:112
+#: src/components/routes/settings/notifications.tsx:113
 msgid "Enter email address..."
 msgstr "メールアドレスを入力..."
 
-#: src/components/routes/settings/notifications.tsx:188
-#: src/components/routes/settings/config-yaml.tsx:28
-#: src/components/login/auth-form.tsx:136
+#: src/components/routes/settings/notifications.tsx:189
+#: src/components/routes/settings/config-yaml.tsx:29
+#: src/components/login/auth-form.tsx:137
 msgid "Error"
 msgstr "エラー"
 
@@ -337,15 +337,15 @@ msgstr "エラー"
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "過去{2, plural, one {# 分} other {# 分}}で{0}{1}を超えています"
 
-#: src/components/routes/settings/config-yaml.tsx:72
+#: src/components/routes/settings/config-yaml.tsx:73
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr "<0>config.yml</0>に定義されていない既存のシステムは削除されます。定期的にバックアップを作成してください。"
 
-#: src/components/routes/settings/config-yaml.tsx:93
+#: src/components/routes/settings/config-yaml.tsx:94
 msgid "Export configuration"
 msgstr "設定をエクスポート"
 
-#: src/components/routes/settings/config-yaml.tsx:48
+#: src/components/routes/settings/config-yaml.tsx:49
 msgid "Export your current systems configuration."
 msgstr "現在のシステム設定をエクスポートします。"
 
@@ -353,39 +353,39 @@ msgstr "現在のシステム設定をエクスポートします。"
 msgid "Failed to authenticate"
 msgstr "認証に失敗しました"
 
-#: src/components/routes/settings/notifications.tsx:63
-#: src/components/routes/settings/layout.tsx:39
+#: src/components/routes/settings/notifications.tsx:64
+#: src/components/routes/settings/layout.tsx:40
 msgid "Failed to save settings"
 msgstr "設定の保存に失敗しました"
 
-#: src/components/routes/settings/notifications.tsx:189
+#: src/components/routes/settings/notifications.tsx:190
 msgid "Failed to send test notification"
 msgstr "テスト通知の送信に失敗しました"
 
-#: src/components/alerts/alerts-system.tsx:25
+#: src/components/alerts/alerts-system.tsx:26
 msgid "Failed to update alert"
 msgstr "アラートの更新に失敗しました"
 
 #: src/components/systems-table/systems-table.tsx:354
-#: src/components/routes/system.tsx:642
+#: src/components/routes/system.tsx:643
 msgid "Filter..."
 msgstr "フィルター..."
 
-#: src/components/alerts/alerts-system.tsx:284
+#: src/components/alerts/alerts-system.tsx:285
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "<0>{min}</0> {min, plural, one {分} other {分}}の間"
 
-#: src/components/login/auth-form.tsx:330
+#: src/components/login/auth-form.tsx:328
 msgid "Forgot password?"
 msgstr "パスワードをお忘れですか？"
 
 #. Context: General settings
-#: src/components/routes/settings/layout.tsx:51
+#: src/components/routes/settings/layout.tsx:52
 #: src/components/routes/settings/general.tsx:33
 msgid "General"
 msgstr "一般"
 
-#: src/components/routes/system.tsx:545
+#: src/components/routes/system.tsx:546
 msgid "GPU Power Draw"
 msgstr "GPUの消費電力"
 
@@ -393,20 +393,20 @@ msgstr "GPUの消費電力"
 msgid "Grid"
 msgstr "グリッド"
 
-#: src/components/add-system.tsx:158
+#: src/components/add-system.tsx:159
 msgid "Host / IP"
 msgstr "ホスト / IP"
 
-#: src/components/login/forgot-pass-form.tsx:93
+#: src/components/login/forgot-pass-form.tsx:94
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "管理者アカウントのパスワードを忘れた場合は、次のコマンドを使用してリセットできます。"
 
-#: src/components/login/auth-form.tsx:17
+#: src/components/login/auth-form.tsx:18
 msgid "Invalid email address."
 msgstr "無効なメールアドレスです。"
 
 #. Linux kernel
-#: src/components/routes/system.tsx:270
+#: src/components/routes/system.tsx:271
 msgid "Kernel"
 msgstr "カーネル"
 
@@ -419,7 +419,7 @@ msgid "Layout"
 msgstr "レイアウト"
 
 #. Light theme
-#: src/components/mode-toggle.tsx:16
+#: src/components/mode-toggle.tsx:17
 msgid "Light"
 msgstr "ライト"
 
@@ -431,8 +431,8 @@ msgstr "ログアウト"
 msgid "Login"
 msgstr "ログイン"
 
-#: src/components/login/forgot-pass-form.tsx:15
-#: src/components/login/auth-form.tsx:39
+#: src/components/login/forgot-pass-form.tsx:16
+#: src/components/login/auth-form.tsx:40
 msgid "Login attempt failed"
 msgstr "ログイン試行に失敗しました"
 
@@ -441,20 +441,20 @@ msgstr "ログイン試行に失敗しました"
 msgid "Logs"
 msgstr "ログ"
 
-#: src/components/routes/settings/notifications.tsx:81
+#: src/components/routes/settings/notifications.tsx:82
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
 msgstr "アラートを作成する場所を探していますか？システムテーブルのベル<0/>アイコンをクリックしてください。"
 
-#: src/components/routes/settings/layout.tsx:85
+#: src/components/routes/settings/layout.tsx:86
 msgid "Manage display and notification preferences."
 msgstr "表示と通知の設定を管理します。"
 
-#: src/components/add-system.tsx:226
+#: src/components/add-system.tsx:227
 msgid "Manual setup instructions"
 msgstr "手動セットアップの手順"
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:672
+#: src/components/routes/system.tsx:673
 msgid "Max 1 min"
 msgstr "最大1分"
 
@@ -463,15 +463,15 @@ msgid "Memory"
 msgstr "メモリ"
 
 #: src/lib/utils.ts:325
-#: src/components/routes/system.tsx:455
+#: src/components/routes/system.tsx:456
 msgid "Memory Usage"
 msgstr "メモリ使用率"
 
-#: src/components/routes/system.tsx:466
+#: src/components/routes/system.tsx:467
 msgid "Memory usage of docker containers"
 msgstr "Dockerコンテナのメモリ使用率"
 
-#: src/components/add-system.tsx:154
+#: src/components/add-system.tsx:155
 msgid "Name"
 msgstr "名前"
 
@@ -479,11 +479,11 @@ msgstr "名前"
 msgid "Net"
 msgstr "帯域"
 
-#: src/components/routes/system.tsx:507
+#: src/components/routes/system.tsx:508
 msgid "Network traffic of docker containers"
 msgstr "Dockerコンテナのネットワークトラフィック"
 
-#: src/components/routes/system.tsx:492
+#: src/components/routes/system.tsx:493
 msgid "Network traffic of public interfaces"
 msgstr "パブリックインターフェースのネットワークトラフィック"
 
@@ -497,16 +497,16 @@ msgid "No systems found."
 msgstr "システムが見つかりませんでした。"
 
 #: src/components/command-palette.tsx:109
-#: src/components/routes/settings/notifications.tsx:75
-#: src/components/routes/settings/layout.tsx:56
+#: src/components/routes/settings/notifications.tsx:76
+#: src/components/routes/settings/layout.tsx:57
 msgid "Notifications"
 msgstr "通知"
 
-#: src/components/login/auth-form.tsx:301
+#: src/components/login/auth-form.tsx:300
 msgid "OAuth 2 / OIDC support"
 msgstr "OAuth 2 / OIDCサポート"
 
-#: src/components/routes/settings/config-yaml.tsx:61
+#: src/components/routes/settings/config-yaml.tsx:62
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "再起動のたびに、データベース内のシステムはファイルに定義されたシステムに一致するように更新されます。"
 
@@ -514,11 +514,11 @@ msgstr "再起動のたびに、データベース内のシステムはファイ
 msgid "Open menu"
 msgstr "メニューを開く"
 
-#: src/components/login/auth-form.tsx:250
+#: src/components/login/auth-form.tsx:251
 msgid "Or continue with"
 msgstr "または、以下の方法でログイン"
 
-#: src/components/alerts/alert-button.tsx:119
+#: src/components/alerts/alert-button.tsx:120
 msgid "Overwrite existing alerts"
 msgstr "既存のアラートを上書き"
 
@@ -530,20 +530,20 @@ msgstr "ページ"
 msgid "Pages / Settings"
 msgstr "ページ / 設定"
 
-#: src/components/login/auth-form.tsx:194
-#: src/components/login/auth-form.tsx:199
+#: src/components/login/auth-form.tsx:195
+#: src/components/login/auth-form.tsx:200
 msgid "Password"
 msgstr "パスワード"
 
-#: src/components/login/auth-form.tsx:20
+#: src/components/login/auth-form.tsx:21
 msgid "Password must be at least 8 characters."
 msgstr "パスワードは8文字以上である必要があります。"
 
-#: src/components/login/auth-form.tsx:21
+#: src/components/login/auth-form.tsx:22
 msgid "Password must be less than 72 bytes."
 msgstr "パスワードは72バイト未満でなければなりません。"
 
-#: src/components/login/forgot-pass-form.tsx:33
+#: src/components/login/forgot-pass-form.tsx:34
 msgid "Password reset request received"
 msgstr "パスワードリセットのリクエストを受け取りました"
 
@@ -555,16 +555,16 @@ msgstr "一時停止"
 msgid "Paused"
 msgstr "一時停止中"
 
-#: src/components/routes/settings/notifications.tsx:96
+#: src/components/routes/settings/notifications.tsx:97
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "アラートが配信されるように<0>SMTPサーバーを設定</0>してください。"
 
-#: src/components/alerts/alerts-system.tsx:26
+#: src/components/alerts/alerts-system.tsx:27
 msgid "Please check logs for more details."
 msgstr "詳細についてはログを確認してください。"
 
-#: src/components/login/forgot-pass-form.tsx:16
-#: src/components/login/auth-form.tsx:40
+#: src/components/login/forgot-pass-form.tsx:17
+#: src/components/login/auth-form.tsx:41
 msgid "Please check your credentials and try again"
 msgstr "資格情報を確認して再試行してください"
 
@@ -572,7 +572,7 @@ msgstr "資格情報を確認して再試行してください"
 msgid "Please create an admin account"
 msgstr "管理者アカウントを作成してください"
 
-#: src/components/login/auth-form.tsx:137
+#: src/components/login/auth-form.tsx:138
 msgid "Please enable pop-ups for this site"
 msgstr "このサイトのポップアップを有効にしてください"
 
@@ -580,7 +580,7 @@ msgstr "このサイトのポップアップを有効にしてください"
 msgid "Please log in again"
 msgstr "再度ログインしてください"
 
-#: src/components/login/auth-form.tsx:309
+#: src/components/login/auth-form.tsx:308
 msgid "Please see <0>the documentation</0> for instructions."
 msgstr "手順については<0>ドキュメント</0>を参照してください。"
 
@@ -588,12 +588,12 @@ msgstr "手順については<0>ドキュメント</0>を参照してくださ�
 msgid "Please sign in to your account"
 msgstr "アカウントにサインインしてください"
 
-#: src/components/add-system.tsx:170
+#: src/components/add-system.tsx:171
 msgid "Port"
 msgstr "ポート"
 
-#: src/components/routes/system.tsx:456
-#: src/components/routes/system.tsx:576
+#: src/components/routes/system.tsx:457
+#: src/components/routes/system.tsx:577
 msgid "Precise utilization at the recorded time"
 msgstr "記録された時点での正確な利用"
 
@@ -602,7 +602,7 @@ msgid "Preferred Language"
 msgstr "優先言語"
 
 #. Use 'Key' if your language requires many more characters
-#: src/components/add-system.tsx:181
+#: src/components/add-system.tsx:182
 msgid "Public Key"
 msgstr "公開鍵"
 
@@ -617,7 +617,7 @@ msgstr "読み取り"
 msgid "Received"
 msgstr "受信"
 
-#: src/components/login/forgot-pass-form.tsx:76
+#: src/components/login/forgot-pass-form.tsx:77
 msgid "Reset Password"
 msgstr "パスワードをリセット"
 
@@ -625,16 +625,16 @@ msgstr "パスワードをリセット"
 msgid "Resume"
 msgstr "再開"
 
-#: src/components/routes/settings/notifications.tsx:118
+#: src/components/routes/settings/notifications.tsx:119
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Enterキーまたはカンマを使用してアドレスを保存します。空白のままにするとメール通知が無効になります。"
 
-#: src/components/routes/settings/notifications.tsx:168
+#: src/components/routes/settings/notifications.tsx:169
 #: src/components/routes/settings/general.tsx:106
 msgid "Save Settings"
 msgstr "設定を保存"
 
-#: src/components/add-system.tsx:231
+#: src/components/add-system.tsx:232
 msgid "Save system"
 msgstr "システムを保存"
 
@@ -646,7 +646,7 @@ msgstr "検索"
 msgid "Search for systems or settings..."
 msgstr "システムまたは設定を検索..."
 
-#: src/components/alerts/alert-button.tsx:81
+#: src/components/alerts/alert-button.tsx:82
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "アラートの受信方法を設定するには<0>通知設定</0>を参照してください。"
 
@@ -662,16 +662,16 @@ msgstr "システムを表示する際のチャートのデフォルトの時間
 #: src/components/command-palette.tsx:94
 #: src/components/command-palette.tsx:97
 #: src/components/command-palette.tsx:112
-#: src/components/routes/settings/layout.tsx:71
-#: src/components/routes/settings/layout.tsx:82
+#: src/components/routes/settings/layout.tsx:72
+#: src/components/routes/settings/layout.tsx:83
 msgid "Settings"
 msgstr "設定"
 
-#: src/components/routes/settings/layout.tsx:33
+#: src/components/routes/settings/layout.tsx:34
 msgid "Settings saved"
 msgstr "設定が保存されました"
 
-#: src/components/login/auth-form.tsx:238
+#: src/components/login/auth-form.tsx:239
 msgid "Sign in"
 msgstr "サインイン"
 
@@ -687,17 +687,17 @@ msgstr "並び替え基準"
 msgid "Status"
 msgstr "ステータス"
 
-#: src/components/routes/system.tsx:522
+#: src/components/routes/system.tsx:523
 msgid "Swap space used by the system"
 msgstr "システムが使用するスワップ領域"
 
-#: src/components/routes/system.tsx:521
+#: src/components/routes/system.tsx:522
 msgid "Swap Usage"
 msgstr "スワップ使用量"
 
 #. System theme
 #: src/lib/utils.ts:316
-#: src/components/mode-toggle.tsx:26
+#: src/components/mode-toggle.tsx:27
 #: src/components/systems-table/systems-table.tsx:152
 msgid "System"
 msgstr "システム"
@@ -706,7 +706,7 @@ msgstr "システム"
 msgid "Systems"
 msgstr "システム"
 
-#: src/components/routes/settings/config-yaml.tsx:55
+#: src/components/routes/settings/config-yaml.tsx:56
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "システムはデータディレクトリ内の<0>config.yml</0>ファイルで管理できます。"
 
@@ -720,31 +720,31 @@ msgid "Temp"
 msgstr "温度"
 
 #: src/lib/utils.ts:344
-#: src/components/routes/system.tsx:533
+#: src/components/routes/system.tsx:534
 msgid "Temperature"
 msgstr "温度"
 
-#: src/components/routes/system.tsx:534
+#: src/components/routes/system.tsx:535
 msgid "Temperatures of system sensors"
 msgstr "システムセンサーの温度"
 
-#: src/components/routes/settings/notifications.tsx:212
+#: src/components/routes/settings/notifications.tsx:213
 msgid "Test <0>URL</0>"
 msgstr "テスト<0>URL</0>"
 
-#: src/components/routes/settings/notifications.tsx:183
+#: src/components/routes/settings/notifications.tsx:184
 msgid "Test notification sent"
 msgstr "テスト通知が送信されました"
 
-#: src/components/add-system.tsx:146
+#: src/components/add-system.tsx:147
 msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
 msgstr "接続するにはエージェントがシステム上で実行されている必要があります。以下のエージェントのインストールコマンドをコピーしてください。"
 
-#: src/components/add-system.tsx:137
+#: src/components/add-system.tsx:138
 msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
 msgstr "接続するにはエージェントがシステム上で実行されている必要があります。以下のエージェント用<0>docker-compose.yml</0>をコピーしてください。"
 
-#: src/components/login/forgot-pass-form.tsx:98
+#: src/components/login/forgot-pass-form.tsx:99
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "その後、バックエンドにログインして、ユーザーテーブルでユーザーアカウントのパスワードをリセットしてください。"
 
@@ -752,24 +752,24 @@ msgstr "その後、バックエンドにログインして、ユーザーテー
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "この操作は元に戻せません。これにより、データベースから{name}のすべての現在のレコードが永久に削除されます。"
 
-#: src/components/routes/system.tsx:614
+#: src/components/routes/system.tsx:615
 msgid "Throughput of {extraFsName}"
 msgstr "{extraFsName}のスループット"
 
-#: src/components/routes/system.tsx:481
+#: src/components/routes/system.tsx:482
 msgid "Throughput of root filesystem"
 msgstr "ルートファイルシステムのスループット"
 
-#: src/components/routes/settings/notifications.tsx:107
+#: src/components/routes/settings/notifications.tsx:108
 msgid "To email(s)"
 msgstr "宛先メールアドレス"
 
-#: src/components/routes/system.tsx:408
-#: src/components/routes/system.tsx:421
+#: src/components/routes/system.tsx:409
+#: src/components/routes/system.tsx:422
 msgid "Toggle grid"
 msgstr "グリッドを切り替え"
 
-#: src/components/mode-toggle.tsx:33
+#: src/components/mode-toggle.tsx:34
 msgid "Toggle theme"
 msgstr "テーマを切り替え"
 
@@ -799,7 +799,7 @@ msgstr "ディスクの使用量がしきい値を超えたときにトリガー
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx:141
-#: src/components/routes/system.tsx:342
+#: src/components/routes/system.tsx:343
 msgid "Up"
 msgstr "正常"
 
@@ -807,22 +807,22 @@ msgstr "正常"
 msgid "Updated in real time. Click on a system to view information."
 msgstr "リアルタイムで更新されます。システムをクリックして情報を表示します。"
 
-#: src/components/routes/system.tsx:269
+#: src/components/routes/system.tsx:270
 msgid "Uptime"
 msgstr "稼働時間"
 
-#: src/components/routes/system.tsx:567
-#: src/components/routes/system.tsx:601
+#: src/components/routes/system.tsx:568
+#: src/components/routes/system.tsx:602
 #: src/components/charts/area-chart.tsx:75
 msgid "Usage"
 msgstr "使用量"
 
-#: src/components/routes/system.tsx:473
+#: src/components/routes/system.tsx:474
 msgid "Usage of root partition"
 msgstr "ルートパーティションの使用量"
 
 #: src/components/charts/swap-chart.tsx:56
-#: src/components/charts/mem-chart.tsx:65
+#: src/components/charts/mem-chart.tsx:63
 #: src/components/charts/area-chart.tsx:75
 msgid "Used"
 msgstr "使用中"
@@ -840,7 +840,7 @@ msgstr "表示"
 msgid "Visible Fields"
 msgstr "表示列"
 
-#: src/components/routes/system.tsx:706
+#: src/components/routes/system.tsx:707
 msgid "Waiting for enough records to display"
 msgstr "表示するのに十分なレコードを待っています"
 
@@ -848,7 +848,7 @@ msgstr "表示するのに十分なレコードを待っています"
 msgid "Want to help us make our translations even better? Check out <0>Crowdin</0> for more details."
 msgstr "翻訳をさらに良くするためにご協力いただけますか？詳細については<0>Crowdin</0>をご覧ください。"
 
-#: src/components/routes/settings/notifications.tsx:125
+#: src/components/routes/settings/notifications.tsx:126
 msgid "Webhook / Push notifications"
 msgstr "Webhook / プッシュ通知"
 
@@ -858,14 +858,14 @@ msgstr "Webhook / プッシュ通知"
 msgid "Write"
 msgstr "書き込み"
 
-#: src/components/routes/settings/layout.tsx:61
+#: src/components/routes/settings/layout.tsx:62
 msgid "YAML Config"
 msgstr "YAML設定"
 
-#: src/components/routes/settings/config-yaml.tsx:45
+#: src/components/routes/settings/config-yaml.tsx:46
 msgid "YAML Configuration"
 msgstr "YAML設定"
 
-#: src/components/routes/settings/layout.tsx:34
+#: src/components/routes/settings/layout.tsx:35
 msgid "Your user settings have been updated."
 msgstr "ユーザー設定が更新されました。"

@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -7,10 +8,9 @@ import { LanguagesIcon, LoaderCircleIcon, SaveIcon } from "lucide-react"
 import { UserSettings } from "@/types"
 import { saveSettings } from "./layout"
 import { useState } from "react"
-import { Trans } from "@lingui/macro"
 import languages from "@/lib/languages"
 import { dynamicActivate } from "@/lib/i18n"
-import { useLingui } from "@lingui/react"
+import { useLingui } from "@lingui/react/macro"
 // import { setLang } from "@/lib/i18n"
 
 export default function SettingsProfilePage({ userSettings }: { userSettings: UserSettings }) {

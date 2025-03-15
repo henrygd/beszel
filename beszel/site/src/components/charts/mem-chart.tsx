@@ -1,15 +1,13 @@
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
-
 import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
 import { useYAxisWidth, cn, toFixedFloat, decimalString, formatShortDate, chartMargin } from "@/lib/utils"
 import { memo } from "react"
 import { ChartData } from "@/types"
-import { t } from "@lingui/macro"
-import { useLingui } from "@lingui/react"
+import { useLingui } from "@lingui/react/macro"
 
 export default memo(function MemChart({ chartData }: { chartData: ChartData }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
-	const { _ } = useLingui()
+	const { t } = useLingui()
 
 	const totalMem = toFixedFloat(chartData.systemStats.at(-1)?.stats.m ?? 0, 1)
 
@@ -62,7 +60,7 @@ export default memo(function MemChart({ chartData }: { chartData: ChartData }) {
 						}
 					/>
 					<Area
-						name={_(t`Used`)}
+						name={t`Used`}
 						order={3}
 						dataKey="stats.mu"
 						type="monotoneX"
@@ -86,7 +84,7 @@ export default memo(function MemChart({ chartData }: { chartData: ChartData }) {
 						/>
 					)}
 					<Area
-						name={_(t`Cache / Buffers`)}
+						name={t`Cache / Buffers`}
 						order={1}
 						dataKey="stats.mb"
 						type="monotoneX"

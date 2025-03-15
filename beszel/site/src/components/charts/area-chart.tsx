@@ -1,5 +1,6 @@
-import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
+import { t } from "@lingui/core/macro"
 
+import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
 import {
 	useYAxisWidth,
@@ -12,8 +13,7 @@ import {
 // import Spinner from '../spinner'
 import { ChartData } from "@/types"
 import { memo, useMemo } from "react"
-import { t } from "@lingui/macro"
-import { useLingui } from "@lingui/react"
+import { useLingui } from "@lingui/react/macro"
 
 /** [label, key, color, opacity] */
 type DataKeys = [string, string, number, number]

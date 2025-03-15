@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro";
 import { UserAuthForm } from "@/components/login/auth-form"
 import { Logo } from "../logo"
 import { useEffect, useMemo, useState } from "react"
@@ -6,7 +7,6 @@ import { useStore } from "@nanostores/react"
 import ForgotPassword from "./forgot-pass-form"
 import { $router } from "../router"
 import { AuthMethodsList } from "pocketbase"
-import { t } from "@lingui/macro"
 import { useTheme } from "../theme-provider"
 
 export default function () {

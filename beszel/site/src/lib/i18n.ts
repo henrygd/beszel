@@ -3,15 +3,7 @@ import { i18n } from "@lingui/core"
 import type { Messages } from "@lingui/core"
 import languages from "@/lib/languages"
 import { detect, fromStorage, fromNavigator } from "@lingui/detect-locale"
-import { messages as enMessages } from "@/locales/en/en.ts"
-
-// let locale = detect(fromUrl("lang"), fromStorage("lang"), fromNavigator(), "en")
-let locale = detect(fromStorage("lang"), fromNavigator(), "en")
-
-// log if dev
-if (import.meta.env.DEV) {
-	console.log("detected locale", locale)
-}
+import { messages as enMessages } from "@/locales/en/en"
 
 // activates locale
 function activateLocale(locale: string, messages: Messages = enMessages) {
@@ -37,21 +29,28 @@ export async function dynamicActivate(locale: string) {
 	}
 }
 
-// handle zh variants
-if (locale?.startsWith("zh-")) {
-	// map zh variants to zh-CN
-	const zhVariantMap: Record<string, string> = {
-		"zh-HK": "zh-HK",
-		"zh-TW": "zh",
-		"zh-MO": "zh",
-		"zh-Hant": "zh",
+export function getLocale() {
+	// let locale = detect(fromUrl("lang"), fromStorage("lang"), fromNavigator(), "en")
+	let locale = detect(fromStorage("lang"), fromNavigator(), "en")
+	// log if dev
+	if (import.meta.env.DEV) {
+		console.log("detected locale", locale)
 	}
-	dynamicActivate(zhVariantMap[locale] || "zh-CN")
-} else {
+	// handle zh variants
+	if (locale?.startsWith("zh-")) {
+		// map zh variants to zh-CN
+		const zhVariantMap: Record<string, string> = {
+			"zh-HK": "zh-HK",
+			"zh-TW": "zh",
+			"zh-MO": "zh",
+			"zh-Hant": "zh",
+		}
+		return zhVariantMap[locale] || "zh-CN"
+	}
 	locale = (locale || "en").split("-")[0]
 	// use en if locale is not in languages
 	if (!languages.some((l) => l.lang === locale)) {
 		locale = "en"
 	}
-	dynamicActivate(locale)
+	return locale
 }

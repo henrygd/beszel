@@ -1,3 +1,5 @@
+import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,7 +12,6 @@ import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle } from 
 import { useCallback, useEffect, useState } from "react"
 import { AuthMethodsList, AuthProviderInfo, OAuth2AuthConfig } from "pocketbase"
 import { $router, Link, prependBasePath } from "../router"
-import { Trans, t } from "@lingui/macro"
 import { getPagePath } from "@nanostores/router"
 
 const honeypot = v.literal("")
@@ -164,8 +165,8 @@ export function UserAuthForm({
 	}, [])
 
 	return (
-		<div className={cn("grid gap-6", className)} {...props}>
-			{passwordEnabled && (
+        <div className={cn("grid gap-6", className)} {...props}>
+            {passwordEnabled && (
 				<>
 					<form onSubmit={handleSubmit} onChange={() => setErrors({})}>
 						<div className="grid gap-2.5">
@@ -241,21 +242,20 @@ export function UserAuthForm({
 					</form>
 					{(isFirstRun || oauthEnabled) && (
 						// only show 'continue with' during onboarding or if we have auth providers
-						<div className="relative">
-							<div className="absolute inset-0 flex items-center">
+						(<div className="relative">
+                            <div className="absolute inset-0 flex items-center">
 								<span className="w-full border-t" />
 							</div>
-							<div className="relative flex justify-center text-xs uppercase">
+                            <div className="relative flex justify-center text-xs uppercase">
 								<span className="bg-background px-2 text-muted-foreground">
 									<Trans>Or continue with</Trans>
 								</span>
 							</div>
-						</div>
+                        </div>)
 					)}
 				</>
 			)}
-
-			{oauthEnabled && (
+            {oauthEnabled && (
 				<div className="grid gap-2 -mt-1">
 					{authMethods.oauth2.providers.map((provider) => (
 						<button
@@ -285,17 +285,16 @@ export function UserAuthForm({
 					))}
 				</div>
 			)}
-
-			{!oauthEnabled && isFirstRun && (
+            {!oauthEnabled && isFirstRun && (
 				// only show GitHub button / dialog during onboarding
-				<Dialog>
-					<DialogTrigger asChild>
+				(<Dialog>
+                    <DialogTrigger asChild>
 						<button type="button" className={cn(buttonVariants({ variant: "outline" }))}>
 							<img className="me-2 h-4 w-4 dark:invert" src={prependBasePath("/_/images/oauth2/github.svg")} alt="" />
 							<span className="translate-y-[1px]">GitHub</span>
 						</button>
 					</DialogTrigger>
-					<DialogContent style={{ maxWidth: 440, width: "90%" }}>
+                    <DialogContent style={{ maxWidth: 440, width: "90%" }}>
 						<DialogHeader>
 							<DialogTitle>
 								<Trans>OAuth 2 / OIDC support</Trans>
@@ -319,10 +318,9 @@ export function UserAuthForm({
 							</p>
 						</div>
 					</DialogContent>
-				</Dialog>
+                </Dialog>)
 			)}
-
-			{passwordEnabled && !isFirstRun && (
+            {passwordEnabled && !isFirstRun && (
 				<Link
 					href={getPagePath($router, "forgot_password")}
 					className="text-sm mx-auto hover:text-brand underline underline-offset-4 opacity-70 hover:opacity-100 transition-opacity"
@@ -330,6 +328,6 @@ export function UserAuthForm({
 					<Trans>Forgot password?</Trans>
 				</Link>
 			)}
-		</div>
-	)
+        </div>
+    );
 }

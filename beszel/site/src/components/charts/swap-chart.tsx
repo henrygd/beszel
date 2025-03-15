@@ -1,5 +1,6 @@
-import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
+import { t } from "@lingui/core/macro";
 
+import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
 import {
 	useYAxisWidth,
@@ -11,7 +12,6 @@ import {
 } from "@/lib/utils"
 import { ChartData } from "@/types"
 import { memo } from "react"
-import { t } from "@lingui/macro"
 
 export default memo(function SwapChart({ chartData }: { chartData: ChartData }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()

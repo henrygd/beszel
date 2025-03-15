@@ -1,3 +1,5 @@
+import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,7 +14,6 @@ import { UserSettings } from "@/types"
 import { saveSettings } from "./layout"
 import * as v from "valibot"
 import { isAdmin } from "@/lib/utils"
-import { Trans, t } from "@lingui/macro"
 import { prependBasePath } from "@/components/router"
 
 interface ShoutrrrUrlCardProps {

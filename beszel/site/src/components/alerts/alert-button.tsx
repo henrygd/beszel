@@ -1,3 +1,5 @@
+import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 import { memo, useMemo, useState } from "react"
 import { useStore } from "@nanostores/react"
 import { $alerts } from "@/lib/stores"
@@ -17,7 +19,6 @@ import { Link } from "../router"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "../ui/checkbox"
 import { SystemAlert, SystemAlertGlobal } from "./alerts-system"
-import { Trans, t } from "@lingui/macro"
 
 export default memo(function AlertsButton({ system }: { system: SystemRecord }) {
 	const alerts = useStore($alerts)

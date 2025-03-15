@@ -1,3 +1,5 @@
+import { t } from "@lingui/core/macro"
+import { Plural, Trans } from "@lingui/react/macro"
 import { $systems, pb, $chartTime, $containerFilter, $userSettings, $direction, $maxValues } from "@/lib/stores"
 import { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord } from "@/types"
 import React, { lazy, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -24,8 +26,7 @@ import { ChartAverage, ChartMax, Rows, TuxIcon } from "../ui/icons"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { timeTicks } from "d3-time"
-import { Plural, Trans, t } from "@lingui/macro"
-import { useLingui } from "@lingui/react"
+import { useLingui } from "@lingui/react/macro"
 import { $router, navigate } from "../router"
 import { getPagePath } from "@nanostores/router"
 
@@ -106,7 +107,7 @@ function dockerOrPodman(str: string, system: SystemRecord) {
 
 export default function SystemDetail({ name }: { name: string }) {
 	const direction = useStore($direction)
-	const { _ } = useLingui()
+	const { t } = useLingui()
 	const systems = useStore($systems)
 	const chartTime = useStore($chartTime)
 	const maxValues = useStore($maxValues)
@@ -430,7 +431,7 @@ export default function SystemDetail({ name }: { name: string }) {
 					<ChartCard
 						empty={dataEmpty}
 						grid={grid}
-						title={_(t`CPU Usage`)}
+						title={t`CPU Usage`}
 						description={t`Average system-wide CPU utilization`}
 						cornerEl={maxValSelect}
 					>
@@ -631,7 +632,7 @@ export default function SystemDetail({ name }: { name: string }) {
 
 function ContainerFilterBar() {
 	const containerFilter = useStore($containerFilter)
-	const { _ } = useLingui()
+	const { t } = useLingui()
 
 	const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
 		$containerFilter.set(e.target.value)
@@ -639,7 +640,7 @@ function ContainerFilterBar() {
 
 	return (
 		<>
-			<Input placeholder={_(t`Filter...`)} className="ps-4 pe-8" value={containerFilter} onChange={handleChange} />
+			<Input placeholder={t`Filter...`} className="ps-4 pe-8" value={containerFilter} onChange={handleChange} />
 			{containerFilter && (
 				<Button
 					type="button"

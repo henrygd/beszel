@@ -1,3 +1,4 @@
+import { Trans } from "@lingui/react/macro";
 import { useState, lazy, Suspense } from "react"
 import { Button, buttonVariants } from "@/components/ui/button"
 import {
@@ -26,7 +27,6 @@ import {
 	DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
 import { AddSystemButton } from "./add-system"
-import { Trans } from "@lingui/macro"
 import { getPagePath } from "@nanostores/router"
 
 const CommandPalette = lazy(() => import("./command-palette"))

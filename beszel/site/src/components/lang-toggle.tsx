@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import languages from "@/lib/languages"
 import { cn } from "@/lib/utils"
-import { useLingui } from "@lingui/react"
+import { useLingui } from "@lingui/react/macro"
 import { dynamicActivate } from "@/lib/i18n"
 
 export function LangToggle() {

@@ -1,3 +1,4 @@
+import { t } from "@lingui/core/macro";
 import { toast } from "@/components/ui/use-toast"
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
@@ -9,7 +10,6 @@ import { timeDay, timeHour } from "d3-time"
 import { useEffect, useState } from "react"
 import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from "lucide-react"
 import { EthernetIcon, ThermometerIcon } from "@/components/ui/icons"
-import { t } from "@lingui/macro"
 import { prependBasePath } from "@/components/router"
 
 export function cn(...inputs: ClassValue[]) {

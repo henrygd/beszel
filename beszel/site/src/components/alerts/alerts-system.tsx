@@ -1,3 +1,5 @@
+import { t } from "@lingui/core/macro"
+import { Trans, Plural } from "@lingui/react/macro"
 import { $alerts, $systems, pb } from "@/lib/stores"
 import { alertInfo, cn } from "@/lib/utils"
 import { Switch } from "@/components/ui/switch"
@@ -5,7 +7,6 @@ import { AlertInfo, AlertRecord, SystemRecord } from "@/types"
 import { lazy, Suspense, useMemo, useState } from "react"
 import { toast } from "../ui/use-toast"
 import { BatchService } from "pocketbase"
-import { Trans, t, Plural } from "@lingui/macro"
 import { getSemaphore } from "@henrygd/semaphore"
 
 interface AlertData {

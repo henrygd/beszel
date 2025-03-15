@@ -1,3 +1,5 @@
+import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro";
 import { isAdmin } from "@/lib/utils"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
@@ -10,7 +12,6 @@ import { useState } from "react"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "@/components/ui/use-toast"
 import clsx from "clsx"
-import { Trans, t } from "@lingui/macro"
 
 export default function ConfigYaml() {
 	const [configContent, setConfigContent] = useState<string>("")
