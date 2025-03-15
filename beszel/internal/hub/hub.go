@@ -10,7 +10,6 @@ import (
 	"beszel/site"
 	"crypto/ed25519"
 	"encoding/pem"
-	"fmt"
 	"io/fs"
 	"net/http"
 	"net/http/httputil"
@@ -56,42 +55,56 @@ func GetEnv(key string) (value string, exists bool) {
 	return os.LookupEnv(key)
 }
 
-func (h *Hub) BootstrapHub() (*Hub, error) {
-	if !h.App.IsBootstrapped() {
-		err := h.App.Bootstrap()
+func (h *Hub) StartHub() error {
+
+	h.App.OnServe().BindFunc(func(e *core.ServeEvent) error {
+		// initialize settings / collections
+		if err := h.initialize(e); err != nil {
+			return err
+		}
+		// sync systems with config
+		if err := syncSystemsWithConfig(e); err != nil {
+			return err
+		}
+		// register api routes
+		if err := h.registerApiRoutes(e); err != nil {
+			return err
+		}
+		// register cron jobs
+		if err := h.registerCronJobs(e); err != nil {
+			return err
+		}
+		// start server
+		if err := h.startServer(e); err != nil {
+			return err
+		}
+		// start system updates
+		if err := h.sm.Initialize(); err != nil {
+			return err
+		}
+		return e.Next()
+	})
+
+	// TODO: move to users package
+	// handle default values for user / user_settings creation
+	h.App.OnRecordCreate("users").BindFunc(h.um.InitializeUserRole)
+	h.App.OnRecordCreate("user_settings").BindFunc(h.um.InitializeUserSettings)
+
+	if pb, ok := h.App.(*pocketbase.PocketBase); ok {
+		// log.Println("Starting pocketbase")
+		err := pb.Start()
 		if err != nil {
-			return nil, err
+			return err
 		}
 	}
 
-	// serve web ui
-	h.OnServe().BindFunc(h.startServer)
-	// set up scheduled jobs
-	h.OnServe().BindFunc(h.registerCronJobs)
-	// custom api routes
-	h.OnServe().BindFunc(h.registerApiRoutes)
-	// TODO: move to users package
-	// handle default values for user / user_settings creation
-	h.OnRecordCreate("users").BindFunc(h.um.InitializeUserRole)
-	h.OnRecordCreate("user_settings").BindFunc(h.um.InitializeUserSettings)
-
-	// sync systems with config
-	h.syncSystemsWithConfig()
-	// start system updates
-	h.sm.Initialize()
-
-	// initial setup
-	if err := h.initialize(); err != nil {
-		return nil, err
-	}
-
-	return h, nil
+	return nil
 }
 
 // initialize sets up initial configuration (collections, settings, etc.)
-func (h *Hub) initialize() error {
+func (h *Hub) initialize(e *core.ServeEvent) error {
 	// set general settings
-	settings := h.Settings()
+	settings := e.App.Settings()
 	// batch requests (for global alerts)
 	settings.Batch.Enabled = true
 	// set URL if BASE_URL env is set
@@ -99,7 +112,7 @@ func (h *Hub) initialize() error {
 		settings.Meta.AppURL = h.appURL
 	}
 	// set auth settings
-	usersCollection, err := h.FindCollectionByNameOrId("users")
+	usersCollection, err := e.App.FindCollectionByNameOrId("users")
 	if err != nil {
 		return err
 	}
@@ -118,11 +131,11 @@ func (h *Hub) initialize() error {
 	} else {
 		usersCollection.CreateRule = nil
 	}
-	if err := h.Save(usersCollection); err != nil {
+	if err := e.App.Save(usersCollection); err != nil {
 		return err
 	}
 	// allow all users to access systems if SHARE_ALL_SYSTEMS is set
-	systemsCollection, err := h.FindCachedCollectionByNameOrId("systems")
+	systemsCollection, err := e.App.FindCachedCollectionByNameOrId("systems")
 	if err != nil {
 		return err
 	}
@@ -137,21 +150,15 @@ func (h *Hub) initialize() error {
 	systemsCollection.ViewRule = &systemsReadRule
 	systemsCollection.UpdateRule = &updateDeleteRule
 	systemsCollection.DeleteRule = &updateDeleteRule
-	if err := h.Save(systemsCollection); err != nil {
+	if err := e.App.Save(systemsCollection); err != nil {
 		return err
 	}
 	return nil
 }
 
-// Start starts the hub application / server
-func (h *Hub) Start() error {
-	if pb, ok := h.App.(*pocketbase.PocketBase); ok {
-		return pb.Start()
-	}
-	return fmt.Errorf("unable to start: App is not *pocketbase.PocketBase")
-}
-
+// startServer starts the server for the Beszel (not PocketBase)
 func (h *Hub) startServer(se *core.ServeEvent) error {
+	// TODO: exclude dev server from production binary
 	switch h.IsDev() {
 	case true:
 		proxy := httputil.NewSingleHostReverseProxy(&url.URL{
@@ -194,16 +201,16 @@ func (h *Hub) startServer(se *core.ServeEvent) error {
 			return e.HTML(http.StatusOK, indexContent)
 		})
 	}
-	return se.Next()
+	return nil
 }
 
-// registerCronJobs sets up all scheduled tasks
-func (h *Hub) registerCronJobs(se *core.ServeEvent) error {
+// registerCronJobs sets up scheduled tasks
+func (h *Hub) registerCronJobs(_ *core.ServeEvent) error {
 	// delete old records once every hour
 	h.Cron().MustAdd("delete old records", "8 * * * *", h.rm.DeleteOldRecords)
 	// create longer records every 10 minutes
 	h.Cron().MustAdd("create longer records", "*/10 * * * *", h.rm.CreateLongerRecords)
-	return se.Next()
+	return nil
 }
 
 // custom api routes
@@ -229,7 +236,7 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	if totalUsers, _ := h.CountRecords("users"); totalUsers == 0 {
 		se.Router.POST("/api/beszel/create-user", h.um.CreateFirstUser)
 	}
-	return se.Next()
+	return nil
 }
 
 // generates key pair if it doesn't exist and returns private key bytes

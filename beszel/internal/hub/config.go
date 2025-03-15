@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strconv"
 
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/apis"
@@ -27,7 +26,8 @@ type SystemConfig struct {
 }
 
 // Syncs systems with the config.yml file
-func (h *Hub) syncSystemsWithConfig() error {
+func syncSystemsWithConfig(e *core.ServeEvent) error {
+	h := e.App
 	configPath := filepath.Join(h.DataDir(), "config.yml")
 	configData, err := os.ReadFile(configPath)
 	if err != nil {
@@ -89,16 +89,16 @@ func (h *Hub) syncSystemsWithConfig() error {
 		return err
 	}
 
-	// Create a map of existing systems for easy lookup
+	// Create a map of existing systems
 	existingSystemsMap := make(map[string]*core.Record)
 	for _, system := range existingSystems {
-		key := system.GetString("host") + ":" + system.GetString("port")
+		key := system.GetString("name") + system.GetString("host") + system.GetString("port")
 		existingSystemsMap[key] = system
 	}
 
 	// Process systems from config
 	for _, sysConfig := range config.Systems {
-		key := sysConfig.Host + ":" + strconv.Itoa(int(sysConfig.Port))
+		key := sysConfig.Name + sysConfig.Host + cast.ToString(sysConfig.Port)
 		if existingSystem, ok := existingSystemsMap[key]; ok {
 			// Update existing system
 			existingSystem.Set("name", sysConfig.Name)

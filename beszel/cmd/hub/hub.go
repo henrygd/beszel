@@ -5,6 +5,7 @@ import (
 	"beszel/internal/hub"
 	_ "beszel/migrations"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -27,8 +28,9 @@ func main() {
 
 	baseApp := getBaseApp()
 	h := hub.NewHub(baseApp)
-	h.BootstrapHub()
-	h.Start()
+	if err := h.StartHub(); err != nil {
+		log.Fatal(err)
+	}
 }
 
 // getBaseApp creates a new PocketBase app with the default config
