@@ -8,7 +8,7 @@ msgstr ""
 "Language: ja\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-02-24 02:49\n"
+"PO-Revision-Date: 2025-03-13 10:13\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -303,7 +303,7 @@ msgstr "ドキュメント"
 #: src/components/systems-table/systems-table.tsx:141
 #: src/components/routes/system.tsx:344
 msgid "Down"
-msgstr ""
+msgstr "停止"
 
 #: src/components/add-system.tsx:125
 #: src/components/systems-table/systems-table.tsx:614
@@ -454,7 +454,7 @@ msgstr "表示と通知の設定を管理します。"
 
 #: src/components/add-system.tsx:226
 msgid "Manual setup instructions"
-msgstr ""
+msgstr "手動セットアップの手順"
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx:671
@@ -556,7 +556,7 @@ msgstr "一時停止"
 
 #: src/components/systems-table/systems-table.tsx:142
 msgid "Paused"
-msgstr ""
+msgstr "一時停止中"
 
 #: src/components/routes/settings/notifications.tsx:96
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -807,7 +807,7 @@ msgstr "ディスクの使用量がしきい値を超えたときにトリガー
 #: src/components/systems-table/systems-table.tsx:140
 #: src/components/routes/system.tsx:342
 msgid "Up"
-msgstr ""
+msgstr "正常"
 
 #: src/components/systems-table/systems-table.tsx:337
 msgid "Updated in real time. Click on a system to view information."
@@ -875,3 +875,4 @@ msgstr "YAML設定"
 #: src/components/routes/settings/layout.tsx:34
 msgid "Your user settings have been updated."
 msgstr "ユーザー設定が更新されました。"
+
