@@ -210,7 +210,7 @@ export default function SystemsTable() {
 			{
 				accessorFn: (originalRow) => originalRow.info.g,
 				id: "gpu",
-				name: "GPU",
+				name: () => "GPU",
 				invertSorting: true,
 				sortUndefined: -1,
 				cell: CellFormatter,
