@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"log"
-	"log/slog"
 	"os"
 
 	"golang.org/x/crypto/ssh"
@@ -56,9 +55,12 @@ func (opts *cmdOptions) parse() bool {
 		flag.CommandLine.Parse(args)
 		addr := opts.getAddress()
 		network := agent.GetNetwork(addr)
-		exitCode, err := agent.Health(addr, network)
-		slog.Info("Health", "code", exitCode, "err", err)
-		os.Exit(exitCode)
+		err := agent.Health(addr, network)
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Print("ok")
+		return true
 	}
 
 	flag.Parse()

@@ -9,7 +9,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"beszel/internal/agent"
@@ -77,11 +76,8 @@ func TestHealth(t *testing.T) {
 		defer cleanup()
 
 		// Run the health check with explicit parameters
-		result, err := agent.Health(sockFile, "unix")
+		err := agent.Health(sockFile, "unix")
 		require.NoError(t, err, "Failed to check health")
-
-		// Verify the result
-		assert.Equal(t, 0, result, "Health check should return 0 when server is running")
 	})
 
 	t.Run("server is running (tcp address)", func(t *testing.T) {
@@ -90,11 +86,8 @@ func TestHealth(t *testing.T) {
 		defer cleanup()
 
 		// Run the health check with explicit parameters
-		result, err := agent.Health(addr, "tcp")
+		err := agent.Health(addr, "tcp")
 		require.NoError(t, err, "Failed to check health")
-
-		// Verify the result
-		assert.Equal(t, 0, result, "Health check should return 0 when server is running")
 	})
 
 	t.Run("server is not running", func(t *testing.T) {
@@ -102,18 +95,14 @@ func TestHealth(t *testing.T) {
 		addr := "127.0.0.1:65535"
 
 		// Run the health check with explicit parameters
-		result, err := agent.Health(addr, "tcp")
+		err := agent.Health(addr, "tcp")
 		require.Error(t, err, "Health check should return an error when server is not running")
-
-		// Verify the result
-		assert.Equal(t, 1, result, "Health check should return 1 when server is not running")
 	})
 
 	t.Run("invalid network", func(t *testing.T) {
 		// Use an invalid network type
-		result, err := agent.Health("127.0.0.1:8080", "invalid_network")
+		err := agent.Health("127.0.0.1:8080", "invalid_network")
 		require.Error(t, err, "Health check should return an error with invalid network")
-		assert.Equal(t, 1, result, "Health check should return 1 when network is invalid")
 	})
 
 	t.Run("unix socket not found", func(t *testing.T) {
@@ -123,8 +112,7 @@ func TestHealth(t *testing.T) {
 		// Make sure it really doesn't exist
 		os.Remove(nonExistentSocket)
 
-		result, err := agent.Health(nonExistentSocket, "unix")
+		err := agent.Health(nonExistentSocket, "unix")
 		require.Error(t, err, "Health check should return an error when socket doesn't exist")
-		assert.Equal(t, 1, result, "Health check should return 1 when socket doesn't exist")
 	})
 }
