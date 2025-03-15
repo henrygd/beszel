@@ -7,6 +7,17 @@ import (
 
 func init() {
 	m.Register(func(app core.App) error {
+		// delete duplicate alerts
+		app.DB().NewQuery(`
+		DELETE FROM alerts
+		WHERE rowid NOT IN (
+				SELECT MAX(rowid)
+				FROM alerts
+				GROUP BY user, system, name
+		);
+	`).Execute()
+
+		// import collections
 		jsonData := `[
 	{
 		"id": "elngm8x1l60zi2v",
