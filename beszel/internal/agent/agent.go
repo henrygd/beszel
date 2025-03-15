@@ -26,6 +26,7 @@ type Agent struct {
 	dockerManager    *dockerManager             // Manages Docker API requests
 	sensorsContext   context.Context            // Sensors context to override sys location
 	sensorsWhitelist map[string]struct{}        // List of sensors to monitor
+	primarySensor    string                     // Value of PRIMARY_SENSOR env var
 	systemInfo       system.Info                // Host system info
 	gpuManager       *GPUManager                // Manages GPU data
 	cache            *SessionCache              // Cache for system stats based on primary session ID
@@ -38,7 +39,7 @@ func NewAgent() *Agent {
 		cache:          NewSessionCache(69 * time.Second),
 	}
 	agent.memCalc, _ = GetEnv("MEM_CALC")
-
+	agent.primarySensor, _ = GetEnv("PRIMARY_SENSOR")
 	// Set up slog with a log level determined by the LOG_LEVEL env var
 	if logLevelStr, exists := GetEnv("LOG_LEVEL"); exists {
 		switch strings.ToLower(logLevelStr) {

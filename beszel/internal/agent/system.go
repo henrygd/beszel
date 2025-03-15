@@ -184,11 +184,9 @@ func (a *Agent) getSystemStats() system.Stats {
 		}
 	}
 
-	// temperatures (skip if sensors whitelist is set to empty string)
-	err = a.updateTemperatures(&systemStats)
-	if err != nil {
-		slog.Error("Error getting temperatures", "err", fmt.Sprintf("%+v", err))
-	}
+	// temperatures
+	// TODO: maybe refactor to methods on systemStats
+	a.updateTemperatures(&systemStats)
 
 	// GPU data
 	if a.gpuManager != nil {
@@ -205,6 +203,9 @@ func (a *Agent) getSystemStats() system.Stats {
 			for _, gpu := range gpuData {
 				if gpu.Temperature > 0 {
 					systemStats.Temperatures[gpu.Name] = gpu.Temperature
+					if a.primarySensor == gpu.Name {
+						a.systemInfo.DashboardTemp = gpu.Temperature
+					}
 				}
 				// update high gpu percent for dashboard
 				a.systemInfo.GpuPct = max(a.systemInfo.GpuPct, gpu.Usage)
@@ -223,29 +224,23 @@ func (a *Agent) getSystemStats() system.Stats {
 	return systemStats
 }
 
-func (a *Agent) updateTemperatures(systemStats *system.Stats) error {
+func (a *Agent) updateTemperatures(systemStats *system.Stats) {
 	// skip if sensors whitelist is set to empty string
 	if a.sensorsWhitelist != nil && len(a.sensorsWhitelist) == 0 {
 		slog.Debug("Skipping temperature collection")
-		return nil
+		return
 	}
-
-	primarySensor, primarySensorIsDefined := GetEnv("PRIMARY_SENSOR")
 
 	// reset high temp
 	a.systemInfo.DashboardTemp = 0
 
 	// get sensor data
-	temps, err := sensors.TemperaturesWithContext(a.sensorsContext)
-	if err != nil {
-		slog.Error("Error getting temperatures", "err", fmt.Sprintf("%+v", err))
-		return err
-	}
+	temps, _ := sensors.TemperaturesWithContext(a.sensorsContext)
 	slog.Debug("Temperature", "sensors", temps)
 
 	// return if no sensors
 	if len(temps) == 0 {
-		return nil
+		return
 	}
 
 	systemStats.Temperatures = make(map[string]float64, len(temps))
@@ -266,16 +261,13 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) error {
 			}
 		}
 		// set dashboard temperature
-		if primarySensorIsDefined {
-			if sensorName == primarySensor {
-				a.systemInfo.DashboardTemp = sensor.Temperature
-			}
-		} else {
+		if a.primarySensor == "" {
 			a.systemInfo.DashboardTemp = max(a.systemInfo.DashboardTemp, sensor.Temperature)
+		} else if a.primarySensor == sensorName {
+			a.systemInfo.DashboardTemp = sensor.Temperature
 		}
 		systemStats.Temperatures[sensorName] = twoDecimals(sensor.Temperature)
 	}
-	return nil
 }
 
 // Returns the size of the ZFS ARC memory cache in bytes
