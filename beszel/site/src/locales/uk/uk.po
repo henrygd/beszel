@@ -8,7 +8,7 @@ msgstr ""
 "Language: uk\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-03-06 12:37\n"
+"PO-Revision-Date: 2025-03-15 04:14\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -552,7 +552,7 @@ msgstr "Запит на скидання пароля отримано"
 
 #: src/components/systems-table/systems-table.tsx:633
 msgid "Pause"
-msgstr "Пауза"
+msgstr "Призупинити"
 
 #: src/components/systems-table/systems-table.tsx:142
 msgid "Paused"
@@ -626,7 +626,7 @@ msgstr "Скинути пароль"
 
 #: src/components/systems-table/systems-table.tsx:628
 msgid "Resume"
-msgstr "Продовжити"
+msgstr "Відновити"
 
 #: src/components/routes/settings/notifications.tsx:118
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
