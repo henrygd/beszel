@@ -27,6 +27,7 @@ GITHUB_URL="https://github.com"
 GITHUB_API_URL="https://api.github.com" # not blocked in China currently
 GITHUB_PROXY_URL=""
 KEY=""
+AUTO_UPDATE_FLAG="false" # default to not auto-enable updates
 
 # Check for help flag
 case "$1" in
@@ -39,6 +40,7 @@ case "$1" in
   printf "  -u                    : Uninstall Beszel Agent\n"
   printf "  --china-mirrors [URL] : Use GitHub proxy (gh.beszel.dev) to resolve network timeout issues in mainland China\n"
   printf "                          optional: specify a custom proxy URL, e.g., \"https://ghfast.top\"\n"
+  printf "  --auto-update         : Enable automatic daily updates for the Beszel Agent\n"
   printf "  -h, --help            : Display this help message\n"
   exit 0
   ;;
@@ -94,6 +96,9 @@ while [ $# -gt 0 ]; do
       GITHUB_PROXY_URL="https://gh.beszel.dev"
       GITHUB_URL="$GITHUB_PROXY_URL"
     fi
+    ;;
+  --auto-update)
+    AUTO_UPDATE_FLAG="true"
     ;;
   *)
     echo "Invalid option: $1" >&2
@@ -348,8 +353,12 @@ EOF
   fi
 
   # Auto-update service for Alpine
-  printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
-  read AUTO_UPDATE
+  if [ "$AUTO_UPDATE_FLAG" = "true" ]; then
+    AUTO_UPDATE="y"
+  else
+    printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
+    read AUTO_UPDATE
+  fi
   case "$AUTO_UPDATE" in
   [Yy]*)
     echo "Setting up daily automatic updates for beszel-agent..."
@@ -432,8 +441,12 @@ EOF
   service beszel-agent restart
 
   # Auto-update service for OpenWRT using a crontab job
-  printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
-  read AUTO_UPDATE
+  if [ "$AUTO_UPDATE_FLAG" = "true" ]; then
+    AUTO_UPDATE="y"
+  else
+    printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
+    read AUTO_UPDATE
+  fi
   case "$AUTO_UPDATE" in
   [Yy]*)
     echo "Setting up daily automatic updates for beszel-agent..."
@@ -499,8 +512,12 @@ EOF
   systemctl start beszel-agent.service
 
   # Prompt for auto-update setup
-  printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
-  read AUTO_UPDATE
+  if [ "$AUTO_UPDATE_FLAG" = "true" ]; then
+    AUTO_UPDATE="y"
+  else
+    printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
+    read AUTO_UPDATE
+  fi
   case "$AUTO_UPDATE" in
   [Yy]*)
     echo "Setting up daily automatic updates for beszel-agent..."
