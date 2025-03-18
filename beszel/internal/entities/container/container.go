@@ -28,7 +28,7 @@ type ApiInfo struct {
 // Docker container resources from /containers/{id}/stats
 type ApiStats struct {
 	// Common stats
-	// Read    time.Time `json:"read"`
+	Read time.Time `json:"read"`
 	// PreRead time.Time `json:"preread"`
 
 	// Linux specific stats, not populated on Windows.
@@ -36,7 +36,7 @@ type ApiStats struct {
 	// BlkioStats BlkioStats `json:"blkio_stats,omitempty"`
 
 	// Windows specific stats, not populated on Linux.
-	// NumProcs uint32 `json:"num_procs"`
+	NumProcs uint32 `json:"num_procs"`
 	// StorageStats StorageStats `json:"storage_stats,omitempty"`
 	// Networks request version >=1.21
 	Networks map[string]NetworkStats
@@ -101,7 +101,7 @@ type MemoryStats struct {
 	// // peak committed bytes
 	// CommitPeak uint64 `json:"commitpeakbytes,omitempty"`
 	// // private working set
-	// PrivateWorkingSet uint64 `json:"privateworkingset,omitempty"`
+	PrivateWorkingSet uint64 `json:"privateworkingset,omitempty"`
 }
 
 type MemoryStatsStats struct {
@@ -131,4 +131,5 @@ type Stats struct {
 	NetworkRecv float64      `json:"nr"`
 	PrevCpu     [2]uint64    `json:"-"`
 	PrevNet     prevNetStats `json:"-"`
+	PrevRead    time.Time    `json:"-"`
 }
