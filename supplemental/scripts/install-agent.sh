@@ -27,7 +27,7 @@ GITHUB_URL="https://github.com"
 GITHUB_API_URL="https://api.github.com" # not blocked in China currently
 GITHUB_PROXY_URL=""
 KEY=""
-AUTO_UPDATE_FLAG="false" # default to not auto-enable updates
+AUTO_UPDATE_FLAG="" # empty string means prompt, "true" means auto-enable, "false" means skip
 
 # Check for help flag
 case "$1" in
@@ -38,9 +38,10 @@ case "$1" in
   printf "  -k                    : SSH key (required, or interactive if not provided)\n"
   printf "  -p                    : Port (default: $PORT)\n"
   printf "  -u                    : Uninstall Beszel Agent\n"
-  printf "  --china-mirrors [URL] : Use GitHub proxy (gh.beszel.dev) to resolve network timeout issues in mainland China\n"
-  printf "                          optional: specify a custom proxy URL, e.g., \"https://ghfast.top\"\n"
-  printf "  --auto-update         : Enable automatic daily updates for the Beszel Agent\n"
+  printf "  --auto-update [VALUE] : Control automatic daily updates\n"
+  printf "                          VALUE can be true (enable) or false (disable). If not specified, will prompt.\n"
+  printf "  --china-mirrors [URL] : Use GitHub proxy to resolve network timeout issues in mainland China\n"
+  printf "                          URL: optional custom proxy URL (default: https://gh.beszel.dev)\n"
   printf "  -h, --help            : Display this help message\n"
   exit 0
   ;;
@@ -86,19 +87,49 @@ while [ $# -gt 0 ]; do
   -u)
     UNINSTALL=true
     ;;
-  --china-mirrors)
-    if [ "$2" != "" ] && ! echo "$2" | grep -q '^-'; then
-      # use cstom proxy URL if provided
+  --china-mirrors*)
+    # Check if there's a value after the = sign
+    if echo "$1" | grep -q "="; then
+      # Extract the value after =
+      CUSTOM_PROXY=$(echo "$1" | cut -d'=' -f2)
+      if [ -n "$CUSTOM_PROXY" ]; then
+        GITHUB_PROXY_URL="$CUSTOM_PROXY"
+        GITHUB_URL="$(ensure_trailing_slash "$CUSTOM_PROXY")https://github.com"
+      else
+        GITHUB_PROXY_URL="https://gh.beszel.dev"
+        GITHUB_URL="$GITHUB_PROXY_URL"
+      fi
+    elif [ "$2" != "" ] && ! echo "$2" | grep -q '^-'; then
+      # use custom proxy URL provided as next argument
       GITHUB_PROXY_URL="$2"
       GITHUB_URL="$(ensure_trailing_slash "$2")https://github.com"
       shift
     else
+      # No value specified, use default
       GITHUB_PROXY_URL="https://gh.beszel.dev"
       GITHUB_URL="$GITHUB_PROXY_URL"
     fi
     ;;
-  --auto-update)
-    AUTO_UPDATE_FLAG="true"
+  --auto-update*)
+    # Check if there's a value after the = sign
+    if echo "$1" | grep -q "="; then
+      # Extract the value after =
+      AUTO_UPDATE_VALUE=$(echo "$1" | cut -d'=' -f2)
+      if [ "$AUTO_UPDATE_VALUE" = "true" ]; then
+        AUTO_UPDATE_FLAG="true"
+      elif [ "$AUTO_UPDATE_VALUE" = "false" ]; then
+        AUTO_UPDATE_FLAG="false"
+      else
+        echo "Invalid value for --auto-update flag: $AUTO_UPDATE_VALUE. Using default (prompt)."
+      fi
+    elif [ "$2" = "true" ] || [ "$2" = "false" ]; then
+      # Value provided as next argument
+      AUTO_UPDATE_FLAG="$2"
+      shift
+    else
+      # No value specified, use true
+      AUTO_UPDATE_FLAG="true"
+    fi
     ;;
   *)
     echo "Invalid option: $1" >&2
@@ -355,6 +386,8 @@ EOF
   # Auto-update service for Alpine
   if [ "$AUTO_UPDATE_FLAG" = "true" ]; then
     AUTO_UPDATE="y"
+  elif [ "$AUTO_UPDATE_FLAG" = "false" ]; then
+    AUTO_UPDATE="n"
   else
     printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
     read AUTO_UPDATE
@@ -443,6 +476,10 @@ EOF
   # Auto-update service for OpenWRT using a crontab job
   if [ "$AUTO_UPDATE_FLAG" = "true" ]; then
     AUTO_UPDATE="y"
+    sleep 1 # give time for the service to start
+  elif [ "$AUTO_UPDATE_FLAG" = "false" ]; then
+    AUTO_UPDATE="n"
+    sleep 1 # give time for the service to start
   else
     printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
     read AUTO_UPDATE
@@ -514,6 +551,10 @@ EOF
   # Prompt for auto-update setup
   if [ "$AUTO_UPDATE_FLAG" = "true" ]; then
     AUTO_UPDATE="y"
+    sleep 1 # give time for the service to start
+  elif [ "$AUTO_UPDATE_FLAG" = "false" ]; then
+    AUTO_UPDATE="n"
+    sleep 1 # give time for the service to start
   else
     printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
     read AUTO_UPDATE
