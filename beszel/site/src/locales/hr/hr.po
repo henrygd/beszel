@@ -27,25 +27,33 @@ msgstr "{0, plural, one {# dan} other {# dani}}"
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# sat} other {# sati}}"
 
-#: src/lib/utils.ts:168
+#: src/lib/utils.ts:164
 msgid "1 hour"
 msgstr "1 sat"
 
-#: src/lib/utils.ts:191
+#: src/lib/utils.ts:201
 msgid "1 week"
 msgstr "1 tjedan"
 
-#: src/lib/utils.ts:176
+#: src/lib/utils.ts:186
 msgid "12 hours"
 msgstr "12 sati"
 
-#: src/lib/utils.ts:184
+#: src/lib/utils.ts:194
 msgid "24 hours"
 msgstr "24 sati"
 
-#: src/lib/utils.ts:199
+#: src/lib/utils.ts:172
+msgid "3 hours"
+msgstr ""
+
+#: src/lib/utils.ts:209
 msgid "30 days"
 msgstr "30 dana"
+
+#: src/lib/utils.ts:179
+msgid "6 hours"
+msgstr ""
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx:304
@@ -137,7 +145,7 @@ msgstr ""
 msgid "Backups"
 msgstr "Sigurnosne kopije"
 
-#: src/lib/utils.ts:337
+#: src/lib/utils.ts:347
 #: src/components/routes/system.tsx:491
 msgid "Bandwidth"
 msgstr "Propusnost"
@@ -208,7 +216,7 @@ msgstr "Potvrdite lozinku"
 msgid "Continue"
 msgstr "Nastavite"
 
-#: src/lib/utils.ts:35
+#: src/lib/utils.ts:31
 msgid "Copied to clipboard"
 msgstr "Kopirano u međuspremnik"
 
@@ -233,7 +241,7 @@ msgstr "Kopiraj tekst"
 msgid "CPU"
 msgstr "Procesor"
 
-#: src/lib/utils.ts:319
+#: src/lib/utils.ts:329
 #: src/components/routes/system.tsx:434
 #: src/components/charts/area-chart.tsx:58
 msgid "CPU Usage"
@@ -269,7 +277,7 @@ msgstr "Disk"
 msgid "Disk I/O"
 msgstr "Disk I/O"
 
-#: src/lib/utils.ts:331
+#: src/lib/utils.ts:341
 #: src/components/routes/system.tsx:474
 #: src/components/charts/disk-chart.tsx:77
 msgid "Disk Usage"
@@ -296,7 +304,7 @@ msgid "Documentation"
 msgstr "Dokumentacija"
 
 #. Context: System is down
-#: src/lib/utils.ts:316
+#: src/lib/utils.ts:326
 #: src/components/systems-table/systems-table.tsx:142
 #: src/components/routes/system.tsx:345
 msgid "Down"
@@ -349,7 +357,7 @@ msgstr "Izvoz konfiguracije"
 msgid "Export your current systems configuration."
 msgstr "Izvoz trenutne sistemske konfiguracije."
 
-#: src/lib/utils.ts:48
+#: src/lib/utils.ts:44
 msgid "Failed to authenticate"
 msgstr "Provjera autentičnosti nije uspjela"
 
@@ -462,7 +470,7 @@ msgstr "Maksimalno 1 minuta"
 msgid "Memory"
 msgstr "Memorija"
 
-#: src/lib/utils.ts:325
+#: src/lib/utils.ts:335
 #: src/components/routes/system.tsx:456
 msgid "Memory Usage"
 msgstr "Upotreba memorije"
@@ -576,7 +584,7 @@ msgstr "Molimo kreirajte administratorski račun"
 msgid "Please enable pop-ups for this site"
 msgstr "Omogućite skočne prozore za ovu stranicu"
 
-#: src/lib/utils.ts:49
+#: src/lib/utils.ts:45
 msgid "Please log in again"
 msgstr "Molimo prijavite se ponovno"
 
@@ -683,7 +691,7 @@ msgstr "SMTP postavke"
 msgid "Sort By"
 msgstr "Sortiraj po"
 
-#: src/lib/utils.ts:311
+#: src/lib/utils.ts:321
 msgid "Status"
 msgstr "Status"
 
@@ -696,7 +704,7 @@ msgid "Swap Usage"
 msgstr "Swap Iskorištenost"
 
 #. System theme
-#: src/lib/utils.ts:316
+#: src/lib/utils.ts:326
 #: src/components/mode-toggle.tsx:27
 #: src/components/systems-table/systems-table.tsx:152
 msgid "System"
@@ -719,7 +727,7 @@ msgstr "Tablica"
 msgid "Temp"
 msgstr ""
 
-#: src/lib/utils.ts:344
+#: src/lib/utils.ts:354
 #: src/components/routes/system.tsx:534
 msgid "Temperature"
 msgstr "Temperatura"
@@ -773,27 +781,27 @@ msgstr "Uključi/isključi rešetku"
 msgid "Toggle theme"
 msgstr "Uključi/isključi temu"
 
-#: src/lib/utils.ts:347
+#: src/lib/utils.ts:357
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Pokreće se kada bilo koji senzor prijeđe prag"
 
-#: src/lib/utils.ts:340
+#: src/lib/utils.ts:350
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Pokreće se kada kombinacija gore/dolje premaši prag"
 
-#: src/lib/utils.ts:322
+#: src/lib/utils.ts:332
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Pokreće se kada iskorištenost procesora premaši prag"
 
-#: src/lib/utils.ts:328
+#: src/lib/utils.ts:338
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Pokreće se kada iskorištenost memorije premaši prag"
 
-#: src/lib/utils.ts:314
+#: src/lib/utils.ts:324
 msgid "Triggers when status switches between up and down"
 msgstr "Pokreće se kada se status sistema promijeni"
 
-#: src/lib/utils.ts:334
+#: src/lib/utils.ts:344
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Pokreće se kada iskorištenost bilo kojeg diska premaši prag"
 

@@ -27,25 +27,33 @@ msgstr "{0, plural, one {# 日} other {# 日}}"
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# 時間} other {# 時間}}"
 
-#: src/lib/utils.ts:168
+#: src/lib/utils.ts:164
 msgid "1 hour"
 msgstr "1時間"
 
-#: src/lib/utils.ts:191
+#: src/lib/utils.ts:201
 msgid "1 week"
 msgstr "1週間"
 
-#: src/lib/utils.ts:176
+#: src/lib/utils.ts:186
 msgid "12 hours"
 msgstr "12時間"
 
-#: src/lib/utils.ts:184
+#: src/lib/utils.ts:194
 msgid "24 hours"
 msgstr "24時間"
 
-#: src/lib/utils.ts:199
+#: src/lib/utils.ts:172
+msgid "3 hours"
+msgstr ""
+
+#: src/lib/utils.ts:209
 msgid "30 days"
 msgstr "30日間"
+
+#: src/lib/utils.ts:179
+msgid "6 hours"
+msgstr ""
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx:304
@@ -137,7 +145,7 @@ msgstr "{0}の平均使用率"
 msgid "Backups"
 msgstr "バックアップ"
 
-#: src/lib/utils.ts:337
+#: src/lib/utils.ts:347
 #: src/components/routes/system.tsx:491
 msgid "Bandwidth"
 msgstr "帯域幅"
@@ -208,7 +216,7 @@ msgstr "パスワードを確認"
 msgid "Continue"
 msgstr "続行"
 
-#: src/lib/utils.ts:35
+#: src/lib/utils.ts:31
 msgid "Copied to clipboard"
 msgstr "クリップボードにコピーされました"
 
@@ -233,7 +241,7 @@ msgstr "テキストをコピー"
 msgid "CPU"
 msgstr "CPU"
 
-#: src/lib/utils.ts:319
+#: src/lib/utils.ts:329
 #: src/components/routes/system.tsx:434
 #: src/components/charts/area-chart.tsx:58
 msgid "CPU Usage"
@@ -269,7 +277,7 @@ msgstr "ディスク"
 msgid "Disk I/O"
 msgstr "ディスクI/O"
 
-#: src/lib/utils.ts:331
+#: src/lib/utils.ts:341
 #: src/components/routes/system.tsx:474
 #: src/components/charts/disk-chart.tsx:77
 msgid "Disk Usage"
@@ -296,7 +304,7 @@ msgid "Documentation"
 msgstr "ドキュメント"
 
 #. Context: System is down
-#: src/lib/utils.ts:316
+#: src/lib/utils.ts:326
 #: src/components/systems-table/systems-table.tsx:142
 #: src/components/routes/system.tsx:345
 msgid "Down"
@@ -349,7 +357,7 @@ msgstr "設定をエクスポート"
 msgid "Export your current systems configuration."
 msgstr "現在のシステム設定をエクスポートします。"
 
-#: src/lib/utils.ts:48
+#: src/lib/utils.ts:44
 msgid "Failed to authenticate"
 msgstr "認証に失敗しました"
 
@@ -462,7 +470,7 @@ msgstr "最大1分"
 msgid "Memory"
 msgstr "メモリ"
 
-#: src/lib/utils.ts:325
+#: src/lib/utils.ts:335
 #: src/components/routes/system.tsx:456
 msgid "Memory Usage"
 msgstr "メモリ使用率"
@@ -576,7 +584,7 @@ msgstr "管理者アカウントを作成してください"
 msgid "Please enable pop-ups for this site"
 msgstr "このサイトのポップアップを有効にしてください"
 
-#: src/lib/utils.ts:49
+#: src/lib/utils.ts:45
 msgid "Please log in again"
 msgstr "再度ログインしてください"
 
@@ -683,7 +691,7 @@ msgstr "SMTP設定"
 msgid "Sort By"
 msgstr "並び替え基準"
 
-#: src/lib/utils.ts:311
+#: src/lib/utils.ts:321
 msgid "Status"
 msgstr "ステータス"
 
@@ -696,7 +704,7 @@ msgid "Swap Usage"
 msgstr "スワップ使用量"
 
 #. System theme
-#: src/lib/utils.ts:316
+#: src/lib/utils.ts:326
 #: src/components/mode-toggle.tsx:27
 #: src/components/systems-table/systems-table.tsx:152
 msgid "System"
@@ -719,7 +727,7 @@ msgstr "テーブル"
 msgid "Temp"
 msgstr "温度"
 
-#: src/lib/utils.ts:344
+#: src/lib/utils.ts:354
 #: src/components/routes/system.tsx:534
 msgid "Temperature"
 msgstr "温度"
@@ -773,27 +781,27 @@ msgstr "グリッドを切り替え"
 msgid "Toggle theme"
 msgstr "テーマを切り替え"
 
-#: src/lib/utils.ts:347
+#: src/lib/utils.ts:357
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "センサーがしきい値を超えたときにトリガーされます"
 
-#: src/lib/utils.ts:340
+#: src/lib/utils.ts:350
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "上り/下りの合計がしきい値を超えたときにトリガーされます"
 
-#: src/lib/utils.ts:322
+#: src/lib/utils.ts:332
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "CPU使用率がしきい値を超えたときにトリガーされます"
 
-#: src/lib/utils.ts:328
+#: src/lib/utils.ts:338
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "メモリ使用率がしきい値を超えたときにトリガーされます"
 
-#: src/lib/utils.ts:314
+#: src/lib/utils.ts:324
 msgid "Triggers when status switches between up and down"
 msgstr "ステータスが上から下に切り替わるときにトリガーされます"
 
-#: src/lib/utils.ts:334
+#: src/lib/utils.ts:344
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "ディスクの使用量がしきい値を超えたときにトリガーされます"
 

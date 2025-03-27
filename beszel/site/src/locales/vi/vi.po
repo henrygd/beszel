@@ -27,25 +27,33 @@ msgstr "{0, plural, one {# ngày} other {# ngày}}"
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# giờ} other {# giờ}}"
 
-#: src/lib/utils.ts:168
+#: src/lib/utils.ts:164
 msgid "1 hour"
 msgstr "1 giờ"
 
-#: src/lib/utils.ts:191
+#: src/lib/utils.ts:201
 msgid "1 week"
 msgstr "1 tuần"
 
-#: src/lib/utils.ts:176
+#: src/lib/utils.ts:186
 msgid "12 hours"
 msgstr "12 giờ"
 
-#: src/lib/utils.ts:184
+#: src/lib/utils.ts:194
 msgid "24 hours"
 msgstr "24 giờ"
 
-#: src/lib/utils.ts:199
+#: src/lib/utils.ts:172
+msgid "3 hours"
+msgstr ""
+
+#: src/lib/utils.ts:209
 msgid "30 days"
 msgstr "30 ngày"
+
+#: src/lib/utils.ts:179
+msgid "6 hours"
+msgstr ""
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx:304
@@ -137,7 +145,7 @@ msgstr ""
 msgid "Backups"
 msgstr "Sao lưu"
 
-#: src/lib/utils.ts:337
+#: src/lib/utils.ts:347
 #: src/components/routes/system.tsx:491
 msgid "Bandwidth"
 msgstr "Băng thông"
@@ -208,7 +216,7 @@ msgstr "Xác nhận mật khẩu"
 msgid "Continue"
 msgstr "Tiếp tục"
 
-#: src/lib/utils.ts:35
+#: src/lib/utils.ts:31
 msgid "Copied to clipboard"
 msgstr "Đã sao chép vào clipboard"
 
@@ -233,7 +241,7 @@ msgstr "Sao chép văn bản"
 msgid "CPU"
 msgstr "CPU"
 
-#: src/lib/utils.ts:319
+#: src/lib/utils.ts:329
 #: src/components/routes/system.tsx:434
 #: src/components/charts/area-chart.tsx:58
 msgid "CPU Usage"
@@ -269,7 +277,7 @@ msgstr "Đĩa"
 msgid "Disk I/O"
 msgstr "Đĩa I/O"
 
-#: src/lib/utils.ts:331
+#: src/lib/utils.ts:341
 #: src/components/routes/system.tsx:474
 #: src/components/charts/disk-chart.tsx:77
 msgid "Disk Usage"
@@ -296,7 +304,7 @@ msgid "Documentation"
 msgstr "Tài liệu"
 
 #. Context: System is down
-#: src/lib/utils.ts:316
+#: src/lib/utils.ts:326
 #: src/components/systems-table/systems-table.tsx:142
 #: src/components/routes/system.tsx:345
 msgid "Down"
@@ -349,7 +357,7 @@ msgstr "Xuất cấu hình"
 msgid "Export your current systems configuration."
 msgstr "Xuất cấu hình hệ thống hiện tại của bạn."
 
-#: src/lib/utils.ts:48
+#: src/lib/utils.ts:44
 msgid "Failed to authenticate"
 msgstr "Xác thực thất bại"
 
@@ -462,7 +470,7 @@ msgstr "Tối đa 1 phút"
 msgid "Memory"
 msgstr "Bộ nhớ"
 
-#: src/lib/utils.ts:325
+#: src/lib/utils.ts:335
 #: src/components/routes/system.tsx:456
 msgid "Memory Usage"
 msgstr "Sử dụng Bộ nhớ"
@@ -576,7 +584,7 @@ msgstr "Vui lòng tạo một tài khoản quản trị viên"
 msgid "Please enable pop-ups for this site"
 msgstr "Vui lòng bật cửa sổ bật lên cho trang web này"
 
-#: src/lib/utils.ts:49
+#: src/lib/utils.ts:45
 msgid "Please log in again"
 msgstr "Vui lòng đăng nhập lại"
 
@@ -683,7 +691,7 @@ msgstr "Cài đặt SMTP"
 msgid "Sort By"
 msgstr "Sắp xếp theo"
 
-#: src/lib/utils.ts:311
+#: src/lib/utils.ts:321
 msgid "Status"
 msgstr "Trạng thái"
 
@@ -696,7 +704,7 @@ msgid "Swap Usage"
 msgstr "Sử dụng Hoán đổi"
 
 #. System theme
-#: src/lib/utils.ts:316
+#: src/lib/utils.ts:326
 #: src/components/mode-toggle.tsx:27
 #: src/components/systems-table/systems-table.tsx:152
 msgid "System"
@@ -719,7 +727,7 @@ msgstr "Bảng"
 msgid "Temp"
 msgstr ""
 
-#: src/lib/utils.ts:344
+#: src/lib/utils.ts:354
 #: src/components/routes/system.tsx:534
 msgid "Temperature"
 msgstr "Nhiệt độ"
@@ -773,27 +781,27 @@ msgstr "Chuyển đổi lưới"
 msgid "Toggle theme"
 msgstr "Chuyển đổi chủ đề"
 
-#: src/lib/utils.ts:347
+#: src/lib/utils.ts:357
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Kích hoạt khi bất kỳ cảm biến nào vượt quá ngưỡng"
 
-#: src/lib/utils.ts:340
+#: src/lib/utils.ts:350
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Kích hoạt khi kết hợp lên/xuống vượt quá ngưỡng"
 
-#: src/lib/utils.ts:322
+#: src/lib/utils.ts:332
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Kích hoạt khi sử dụng CPU vượt quá ngưỡng"
 
-#: src/lib/utils.ts:328
+#: src/lib/utils.ts:338
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Kích hoạt khi sử dụng bộ nhớ vượt quá ngưỡng"
 
-#: src/lib/utils.ts:314
+#: src/lib/utils.ts:324
 msgid "Triggers when status switches between up and down"
 msgstr "Kích hoạt khi trạng thái chuyển đổi giữa lên và xuống"
 
-#: src/lib/utils.ts:334
+#: src/lib/utils.ts:344
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Kích hoạt khi sử dụng bất kỳ đĩa nào vượt quá ngưỡng"
 

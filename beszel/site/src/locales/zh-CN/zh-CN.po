@@ -27,25 +27,33 @@ msgstr "{0, plural, one {# 天} other {# 天}}"
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# 小时} other {# 小时}}"
 
-#: src/lib/utils.ts:168
+#: src/lib/utils.ts:164
 msgid "1 hour"
 msgstr "1小时"
 
-#: src/lib/utils.ts:191
+#: src/lib/utils.ts:201
 msgid "1 week"
 msgstr "1周"
 
-#: src/lib/utils.ts:176
+#: src/lib/utils.ts:186
 msgid "12 hours"
 msgstr "12小时"
 
-#: src/lib/utils.ts:184
+#: src/lib/utils.ts:194
 msgid "24 hours"
 msgstr "24小时"
 
-#: src/lib/utils.ts:199
+#: src/lib/utils.ts:172
+msgid "3 hours"
+msgstr ""
+
+#: src/lib/utils.ts:209
 msgid "30 days"
 msgstr "30天"
+
+#: src/lib/utils.ts:179
+msgid "6 hours"
+msgstr ""
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx:304
@@ -137,7 +145,7 @@ msgstr "{0} 平均利用率"
 msgid "Backups"
 msgstr "备份"
 
-#: src/lib/utils.ts:337
+#: src/lib/utils.ts:347
 #: src/components/routes/system.tsx:491
 msgid "Bandwidth"
 msgstr "带宽"
@@ -208,7 +216,7 @@ msgstr "确认密码"
 msgid "Continue"
 msgstr "继续"
 
-#: src/lib/utils.ts:35
+#: src/lib/utils.ts:31
 msgid "Copied to clipboard"
 msgstr "已复制到剪贴板"
 
@@ -233,7 +241,7 @@ msgstr "复制文本"
 msgid "CPU"
 msgstr "CPU"
 
-#: src/lib/utils.ts:319
+#: src/lib/utils.ts:329
 #: src/components/routes/system.tsx:434
 #: src/components/charts/area-chart.tsx:58
 msgid "CPU Usage"
@@ -269,7 +277,7 @@ msgstr "磁盘"
 msgid "Disk I/O"
 msgstr "磁盘I/O"
 
-#: src/lib/utils.ts:331
+#: src/lib/utils.ts:341
 #: src/components/routes/system.tsx:474
 #: src/components/charts/disk-chart.tsx:77
 msgid "Disk Usage"
@@ -296,7 +304,7 @@ msgid "Documentation"
 msgstr "文档"
 
 #. Context: System is down
-#: src/lib/utils.ts:316
+#: src/lib/utils.ts:326
 #: src/components/systems-table/systems-table.tsx:142
 #: src/components/routes/system.tsx:345
 msgid "Down"
@@ -349,7 +357,7 @@ msgstr "导出配置"
 msgid "Export your current systems configuration."
 msgstr "导出您当前的系统配置。"
 
-#: src/lib/utils.ts:48
+#: src/lib/utils.ts:44
 msgid "Failed to authenticate"
 msgstr "认证失败"
 
@@ -462,7 +470,7 @@ msgstr "1分钟内最大值"
 msgid "Memory"
 msgstr "内存"
 
-#: src/lib/utils.ts:325
+#: src/lib/utils.ts:335
 #: src/components/routes/system.tsx:456
 msgid "Memory Usage"
 msgstr "内存使用"
@@ -576,7 +584,7 @@ msgstr "请创建一个管理员账户"
 msgid "Please enable pop-ups for this site"
 msgstr "请为此网站启用弹出窗口"
 
-#: src/lib/utils.ts:49
+#: src/lib/utils.ts:45
 msgid "Please log in again"
 msgstr "请重新登录"
 
@@ -683,7 +691,7 @@ msgstr "SMTP设置"
 msgid "Sort By"
 msgstr "排序依据"
 
-#: src/lib/utils.ts:311
+#: src/lib/utils.ts:321
 msgid "Status"
 msgstr "状态"
 
@@ -696,7 +704,7 @@ msgid "Swap Usage"
 msgstr "SWAP 使用"
 
 #. System theme
-#: src/lib/utils.ts:316
+#: src/lib/utils.ts:326
 #: src/components/mode-toggle.tsx:27
 #: src/components/systems-table/systems-table.tsx:152
 msgid "System"
@@ -719,7 +727,7 @@ msgstr "表格"
 msgid "Temp"
 msgstr "温度"
 
-#: src/lib/utils.ts:344
+#: src/lib/utils.ts:354
 #: src/components/routes/system.tsx:534
 msgid "Temperature"
 msgstr "温度"
@@ -773,27 +781,27 @@ msgstr "切换网格"
 msgid "Toggle theme"
 msgstr "切换主题"
 
-#: src/lib/utils.ts:347
+#: src/lib/utils.ts:357
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "当任何传感器超过阈值时触发"
 
-#: src/lib/utils.ts:340
+#: src/lib/utils.ts:350
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "当网络的上/下行速度超过阈值时触发"
 
-#: src/lib/utils.ts:322
+#: src/lib/utils.ts:332
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "当CPU使用率超过阈值时触发"
 
-#: src/lib/utils.ts:328
+#: src/lib/utils.ts:338
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "当内存使用率超过阈值时触发"
 
-#: src/lib/utils.ts:314
+#: src/lib/utils.ts:324
 msgid "Triggers when status switches between up and down"
 msgstr "当状态在上线与掉线之间切换时触发"
 
-#: src/lib/utils.ts:334
+#: src/lib/utils.ts:344
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "当任何磁盘的使用率超过阈值时触发"
 

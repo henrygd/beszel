@@ -27,25 +27,33 @@ msgstr "{0, plural, one {# nap} other {# nap}}"
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# óra} other {# óra}}"
 
-#: src/lib/utils.ts:168
+#: src/lib/utils.ts:164
 msgid "1 hour"
 msgstr "1 óra"
 
-#: src/lib/utils.ts:191
+#: src/lib/utils.ts:201
 msgid "1 week"
 msgstr "1 hét"
 
-#: src/lib/utils.ts:176
+#: src/lib/utils.ts:186
 msgid "12 hours"
 msgstr "12 óra"
 
-#: src/lib/utils.ts:184
+#: src/lib/utils.ts:194
 msgid "24 hours"
 msgstr "24 óra"
 
-#: src/lib/utils.ts:199
+#: src/lib/utils.ts:172
+msgid "3 hours"
+msgstr ""
+
+#: src/lib/utils.ts:209
 msgid "30 days"
 msgstr "30 nap"
+
+#: src/lib/utils.ts:179
+msgid "6 hours"
+msgstr ""
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx:304
@@ -137,7 +145,7 @@ msgstr "{0} átlagos kihasználtsága"
 msgid "Backups"
 msgstr "Biztonsági mentések"
 
-#: src/lib/utils.ts:337
+#: src/lib/utils.ts:347
 #: src/components/routes/system.tsx:491
 msgid "Bandwidth"
 msgstr "Sávszélesség"
@@ -208,7 +216,7 @@ msgstr "Jelszó megerősítése"
 msgid "Continue"
 msgstr "Tovább"
 
-#: src/lib/utils.ts:35
+#: src/lib/utils.ts:31
 msgid "Copied to clipboard"
 msgstr "Vágólapra másolva"
 
@@ -233,7 +241,7 @@ msgstr "Szöveg másolása"
 msgid "CPU"
 msgstr "CPU"
 
-#: src/lib/utils.ts:319
+#: src/lib/utils.ts:329
 #: src/components/routes/system.tsx:434
 #: src/components/charts/area-chart.tsx:58
 msgid "CPU Usage"
@@ -269,7 +277,7 @@ msgstr "Lemez"
 msgid "Disk I/O"
 msgstr "Lemez I/O"
 
-#: src/lib/utils.ts:331
+#: src/lib/utils.ts:341
 #: src/components/routes/system.tsx:474
 #: src/components/charts/disk-chart.tsx:77
 msgid "Disk Usage"
@@ -296,7 +304,7 @@ msgid "Documentation"
 msgstr "Dokumentáció"
 
 #. Context: System is down
-#: src/lib/utils.ts:316
+#: src/lib/utils.ts:326
 #: src/components/systems-table/systems-table.tsx:142
 #: src/components/routes/system.tsx:345
 msgid "Down"
@@ -349,7 +357,7 @@ msgstr "Konfiguráció exportálása"
 msgid "Export your current systems configuration."
 msgstr "Exportálja a jelenlegi rendszerkonfigurációt."
 
-#: src/lib/utils.ts:48
+#: src/lib/utils.ts:44
 msgid "Failed to authenticate"
 msgstr "Hitelesítés sikertelen"
 
@@ -462,7 +470,7 @@ msgstr "Maximum 1 perc"
 msgid "Memory"
 msgstr "RAM"
 
-#: src/lib/utils.ts:325
+#: src/lib/utils.ts:335
 #: src/components/routes/system.tsx:456
 msgid "Memory Usage"
 msgstr "Memóriahasználat"
@@ -576,7 +584,7 @@ msgstr "Kérjük, hozzon létre egy admin fiókot"
 msgid "Please enable pop-ups for this site"
 msgstr "Kérjük, engedélyezze a felugró ablakokat ezen az oldalon"
 
-#: src/lib/utils.ts:49
+#: src/lib/utils.ts:45
 msgid "Please log in again"
 msgstr "Kérjük jelentkezz be újra"
 
@@ -683,7 +691,7 @@ msgstr "SMTP beállítások"
 msgid "Sort By"
 msgstr "Rendezés"
 
-#: src/lib/utils.ts:311
+#: src/lib/utils.ts:321
 msgid "Status"
 msgstr "Állapot"
 
@@ -696,7 +704,7 @@ msgid "Swap Usage"
 msgstr "Swap használat"
 
 #. System theme
-#: src/lib/utils.ts:316
+#: src/lib/utils.ts:326
 #: src/components/mode-toggle.tsx:27
 #: src/components/systems-table/systems-table.tsx:152
 msgid "System"
@@ -719,7 +727,7 @@ msgstr "Tábla"
 msgid "Temp"
 msgstr ""
 
-#: src/lib/utils.ts:344
+#: src/lib/utils.ts:354
 #: src/components/routes/system.tsx:534
 msgid "Temperature"
 msgstr "Hőmérséklet"
@@ -773,27 +781,27 @@ msgstr "Rács ki- és bekapcsolása"
 msgid "Toggle theme"
 msgstr "Téma váltása"
 
-#: src/lib/utils.ts:347
+#: src/lib/utils.ts:357
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Bekapcsol, ha bármelyik érzékelő túllép egy küszöbértéket"
 
-#: src/lib/utils.ts:340
+#: src/lib/utils.ts:350
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Bekapcsol, ha bármelyik érzékelő túllép egy küszöbértéket"
 
-#: src/lib/utils.ts:322
+#: src/lib/utils.ts:332
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Bekapcsol, ha a CPU érzékelő túllép egy küszöbértéket"
 
-#: src/lib/utils.ts:328
+#: src/lib/utils.ts:338
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Bekapcsol, ha a Ram érzékelő túllép egy küszöbértéket"
 
-#: src/lib/utils.ts:314
+#: src/lib/utils.ts:324
 msgid "Triggers when status switches between up and down"
 msgstr "Bekapcsol, amikor az állapot fel és le között változik"
 
-#: src/lib/utils.ts:334
+#: src/lib/utils.ts:344
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Bekapcsol, ha a lemez érzékelő túllép egy küszöbértéket"
 
