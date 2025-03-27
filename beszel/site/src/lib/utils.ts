@@ -175,7 +175,7 @@ export const chartTimeData: ChartTimeData = {
 		expectedInterval: 60_000 * 10,
 		label: () => t`3 hours`,
 		format: (timestamp: string) => hourWithMinutes(timestamp),
-		getOffset: (endTime: Date) => timeHour.offset(endTime, -13),
+		getOffset: (endTime: Date) => timeHour.offset(endTime, -3),
 	},
 	"6h": {
 		type: "10m",
