@@ -27,33 +27,25 @@ msgstr "{0, plural, one {# день} other {# дней}}"
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# час} other {# часов}}"
 
-#: src/lib/utils.ts:164
+#: src/lib/utils.ts:168
 msgid "1 hour"
 msgstr "1 час"
 
-#: src/lib/utils.ts:201
+#: src/lib/utils.ts:191
 msgid "1 week"
 msgstr "1 неделя"
 
-#: src/lib/utils.ts:186
+#: src/lib/utils.ts:176
 msgid "12 hours"
 msgstr "12 часов"
 
-#: src/lib/utils.ts:194
+#: src/lib/utils.ts:184
 msgid "24 hours"
 msgstr "24 часа"
 
-#: src/lib/utils.ts:172
-msgid "3 hours"
-msgstr ""
-
-#: src/lib/utils.ts:209
+#: src/lib/utils.ts:199
 msgid "30 days"
 msgstr "30 дней"
-
-#: src/lib/utils.ts:179
-msgid "6 hours"
-msgstr ""
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx:304
@@ -145,7 +137,7 @@ msgstr "Среднее использование {0}"
 msgid "Backups"
 msgstr "Резервные копии"
 
-#: src/lib/utils.ts:347
+#: src/lib/utils.ts:337
 #: src/components/routes/system.tsx:491
 msgid "Bandwidth"
 msgstr "Пропускная способность"
@@ -216,7 +208,7 @@ msgstr "Подтвердите пароль"
 msgid "Continue"
 msgstr "Продолжить"
 
-#: src/lib/utils.ts:31
+#: src/lib/utils.ts:35
 msgid "Copied to clipboard"
 msgstr "Скопировано в буфер обмена"
 
@@ -241,7 +233,7 @@ msgstr "Копировать текст"
 msgid "CPU"
 msgstr "CPU"
 
-#: src/lib/utils.ts:329
+#: src/lib/utils.ts:319
 #: src/components/routes/system.tsx:434
 #: src/components/charts/area-chart.tsx:58
 msgid "CPU Usage"
@@ -277,7 +269,7 @@ msgstr "Диск"
 msgid "Disk I/O"
 msgstr "Дисковый ввод/вывод"
 
-#: src/lib/utils.ts:341
+#: src/lib/utils.ts:331
 #: src/components/routes/system.tsx:474
 #: src/components/charts/disk-chart.tsx:77
 msgid "Disk Usage"
@@ -304,7 +296,7 @@ msgid "Documentation"
 msgstr "Документация"
 
 #. Context: System is down
-#: src/lib/utils.ts:326
+#: src/lib/utils.ts:316
 #: src/components/systems-table/systems-table.tsx:142
 #: src/components/routes/system.tsx:345
 msgid "Down"
@@ -357,7 +349,7 @@ msgstr "Экспорт конфигурации"
 msgid "Export your current systems configuration."
 msgstr "Экспортируйте текущую конфигурацию систем."
 
-#: src/lib/utils.ts:44
+#: src/lib/utils.ts:48
 msgid "Failed to authenticate"
 msgstr "Не удалось аутентифицировать"
 
@@ -470,7 +462,7 @@ msgstr "Макс 1 мин"
 msgid "Memory"
 msgstr "Память"
 
-#: src/lib/utils.ts:335
+#: src/lib/utils.ts:325
 #: src/components/routes/system.tsx:456
 msgid "Memory Usage"
 msgstr "Использование памяти"
@@ -584,7 +576,7 @@ msgstr "Пожалуйста, создайте учетную запись ад�
 msgid "Please enable pop-ups for this site"
 msgstr "Пожалуйста, включите всплывающие окна для этого сайта"
 
-#: src/lib/utils.ts:45
+#: src/lib/utils.ts:49
 msgid "Please log in again"
 msgstr "Пожалуйста, войдите снова"
 
@@ -691,7 +683,7 @@ msgstr "Настройки SMTP"
 msgid "Sort By"
 msgstr "Сортировать по"
 
-#: src/lib/utils.ts:321
+#: src/lib/utils.ts:311
 msgid "Status"
 msgstr "Статус"
 
@@ -704,7 +696,7 @@ msgid "Swap Usage"
 msgstr "Использование подкачки"
 
 #. System theme
-#: src/lib/utils.ts:326
+#: src/lib/utils.ts:316
 #: src/components/mode-toggle.tsx:27
 #: src/components/systems-table/systems-table.tsx:152
 msgid "System"
@@ -727,7 +719,7 @@ msgstr "Таблица"
 msgid "Temp"
 msgstr ""
 
-#: src/lib/utils.ts:354
+#: src/lib/utils.ts:344
 #: src/components/routes/system.tsx:534
 msgid "Temperature"
 msgstr "Температура"
@@ -781,27 +773,27 @@ msgstr "Переключить сетку"
 msgid "Toggle theme"
 msgstr "Переключить тему"
 
-#: src/lib/utils.ts:357
+#: src/lib/utils.ts:347
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Срабатывает, когда любой датчик превышает порог"
 
-#: src/lib/utils.ts:350
+#: src/lib/utils.ts:340
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Срабатывает, когда комбинированный вход/выход превышает порог"
 
-#: src/lib/utils.ts:332
+#: src/lib/utils.ts:322
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Срабатывает, когда использование CPU превышает порог"
 
-#: src/lib/utils.ts:338
+#: src/lib/utils.ts:328
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Срабатывает, когда использование памяти превышает порог"
 
-#: src/lib/utils.ts:324
+#: src/lib/utils.ts:314
 msgid "Triggers when status switches between up and down"
 msgstr "Срабатывает, когда статус переключается между включено и выключено"
 
-#: src/lib/utils.ts:344
+#: src/lib/utils.ts:334
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Срабатывает, когда использование любого диска превышает порог"
 

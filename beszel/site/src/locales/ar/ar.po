@@ -27,33 +27,25 @@ msgstr "{0, plural, one {# يوم} other {# أيام}}"
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# ساعة} other {# ساعات}}"
 
-#: src/lib/utils.ts:164
+#: src/lib/utils.ts:168
 msgid "1 hour"
 msgstr "1 ساعة"
 
-#: src/lib/utils.ts:201
+#: src/lib/utils.ts:191
 msgid "1 week"
 msgstr "1 أسبوع"
 
-#: src/lib/utils.ts:186
+#: src/lib/utils.ts:176
 msgid "12 hours"
 msgstr "12 ساعة"
 
-#: src/lib/utils.ts:194
+#: src/lib/utils.ts:184
 msgid "24 hours"
 msgstr "24 ساعة"
 
-#: src/lib/utils.ts:172
-msgid "3 hours"
-msgstr ""
-
-#: src/lib/utils.ts:209
+#: src/lib/utils.ts:199
 msgid "30 days"
 msgstr "30 يومًا"
-
-#: src/lib/utils.ts:179
-msgid "6 hours"
-msgstr ""
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx:304
@@ -145,7 +137,7 @@ msgstr "متوسط ​​استخدام {0}"
 msgid "Backups"
 msgstr "النسخ الاحتياطية"
 
-#: src/lib/utils.ts:347
+#: src/lib/utils.ts:337
 #: src/components/routes/system.tsx:491
 msgid "Bandwidth"
 msgstr "عرض النطاق الترددي"
@@ -216,7 +208,7 @@ msgstr "تأكيد كلمة المرور"
 msgid "Continue"
 msgstr "متابعة"
 
-#: src/lib/utils.ts:31
+#: src/lib/utils.ts:35
 msgid "Copied to clipboard"
 msgstr "تم النسخ إلى الحافظة"
 
@@ -241,7 +233,7 @@ msgstr "نسخ النص"
 msgid "CPU"
 msgstr "المعالج"
 
-#: src/lib/utils.ts:329
+#: src/lib/utils.ts:319
 #: src/components/routes/system.tsx:434
 #: src/components/charts/area-chart.tsx:58
 msgid "CPU Usage"
@@ -277,7 +269,7 @@ msgstr "القرص"
 msgid "Disk I/O"
 msgstr "إدخال/إخراج القرص"
 
-#: src/lib/utils.ts:341
+#: src/lib/utils.ts:331
 #: src/components/routes/system.tsx:474
 #: src/components/charts/disk-chart.tsx:77
 msgid "Disk Usage"
@@ -304,7 +296,7 @@ msgid "Documentation"
 msgstr "التوثيق"
 
 #. Context: System is down
-#: src/lib/utils.ts:326
+#: src/lib/utils.ts:316
 #: src/components/systems-table/systems-table.tsx:142
 #: src/components/routes/system.tsx:345
 msgid "Down"
@@ -357,7 +349,7 @@ msgstr "تصدير التكوين"
 msgid "Export your current systems configuration."
 msgstr "تصدير تكوين الأنظمة الحالية الخاصة بك."
 
-#: src/lib/utils.ts:44
+#: src/lib/utils.ts:48
 msgid "Failed to authenticate"
 msgstr "فشل في المصادقة"
 
@@ -470,7 +462,7 @@ msgstr "1 دقيقة كحد"
 msgid "Memory"
 msgstr "الذاكرة"
 
-#: src/lib/utils.ts:335
+#: src/lib/utils.ts:325
 #: src/components/routes/system.tsx:456
 msgid "Memory Usage"
 msgstr "استخدام الذاكرة"
@@ -584,7 +576,7 @@ msgstr "يرجى إنشاء حساب مسؤول"
 msgid "Please enable pop-ups for this site"
 msgstr "يرجى تمكين النوافذ المنبثقة لهذا الموقع"
 
-#: src/lib/utils.ts:45
+#: src/lib/utils.ts:49
 msgid "Please log in again"
 msgstr "يرجى تسجيل الدخول مرة أخرى"
 
@@ -691,7 +683,7 @@ msgstr "إعدادات SMTP"
 msgid "Sort By"
 msgstr "الترتيب حسب"
 
-#: src/lib/utils.ts:321
+#: src/lib/utils.ts:311
 msgid "Status"
 msgstr "الحالة"
 
@@ -704,7 +696,7 @@ msgid "Swap Usage"
 msgstr "استخدام التبديل"
 
 #. System theme
-#: src/lib/utils.ts:326
+#: src/lib/utils.ts:316
 #: src/components/mode-toggle.tsx:27
 #: src/components/systems-table/systems-table.tsx:152
 msgid "System"
@@ -727,7 +719,7 @@ msgstr "جدول"
 msgid "Temp"
 msgstr ""
 
-#: src/lib/utils.ts:354
+#: src/lib/utils.ts:344
 #: src/components/routes/system.tsx:534
 msgid "Temperature"
 msgstr "درجة الحرارة"
@@ -781,27 +773,27 @@ msgstr "تبديل الشبكة"
 msgid "Toggle theme"
 msgstr "تبديل السمة"
 
-#: src/lib/utils.ts:357
+#: src/lib/utils.ts:347
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "يتم التفعيل عندما ��تجاوز أي مستشعر عتبة معينة"
 
-#: src/lib/utils.ts:350
+#: src/lib/utils.ts:340
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز الجمع بين الصعود/الهبوط عتبة معينة"
 
-#: src/lib/utils.ts:332
+#: src/lib/utils.ts:322
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز استخدام وحدة المعالجة المركزية عتبة معينة"
 
-#: src/lib/utils.ts:338
+#: src/lib/utils.ts:328
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز استخدام الذاكرة عتبة معينة"
 
-#: src/lib/utils.ts:324
+#: src/lib/utils.ts:314
 msgid "Triggers when status switches between up and down"
 msgstr "يتم التفعيل عندما يتغير الحالة بين التشغيل والإيقاف"
 
-#: src/lib/utils.ts:344
+#: src/lib/utils.ts:334
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز استخدام أي قرص عتبة معينة"
 

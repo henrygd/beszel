@@ -27,33 +27,25 @@ msgstr "{0, plural, one {# den} few {# dny} other {# dní}}"
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# Hodina} few {# Hodiny} many {# Hodin} other {# Hodin}}"
 
-#: src/lib/utils.ts:164
+#: src/lib/utils.ts:168
 msgid "1 hour"
 msgstr "1 hodina"
 
-#: src/lib/utils.ts:201
+#: src/lib/utils.ts:191
 msgid "1 week"
 msgstr "1 týden"
 
-#: src/lib/utils.ts:186
+#: src/lib/utils.ts:176
 msgid "12 hours"
 msgstr "12 hodin"
 
-#: src/lib/utils.ts:194
+#: src/lib/utils.ts:184
 msgid "24 hours"
 msgstr "24 hodin"
 
-#: src/lib/utils.ts:172
-msgid "3 hours"
-msgstr ""
-
-#: src/lib/utils.ts:209
+#: src/lib/utils.ts:199
 msgid "30 days"
 msgstr "30 dní"
-
-#: src/lib/utils.ts:179
-msgid "6 hours"
-msgstr ""
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx:304
@@ -145,7 +137,7 @@ msgstr "Průměrné využití {0}"
 msgid "Backups"
 msgstr "Zálohy"
 
-#: src/lib/utils.ts:347
+#: src/lib/utils.ts:337
 #: src/components/routes/system.tsx:491
 msgid "Bandwidth"
 msgstr "Přenos"
@@ -216,7 +208,7 @@ msgstr "Potvrdit heslo"
 msgid "Continue"
 msgstr "Pokračovat"
 
-#: src/lib/utils.ts:31
+#: src/lib/utils.ts:35
 msgid "Copied to clipboard"
 msgstr "Zkopírováno do schránky"
 
@@ -241,7 +233,7 @@ msgstr "Kopírovat text"
 msgid "CPU"
 msgstr "Procesor"
 
-#: src/lib/utils.ts:329
+#: src/lib/utils.ts:319
 #: src/components/routes/system.tsx:434
 #: src/components/charts/area-chart.tsx:58
 msgid "CPU Usage"
@@ -277,7 +269,7 @@ msgstr "Disk"
 msgid "Disk I/O"
 msgstr "Disk I/O"
 
-#: src/lib/utils.ts:341
+#: src/lib/utils.ts:331
 #: src/components/routes/system.tsx:474
 #: src/components/charts/disk-chart.tsx:77
 msgid "Disk Usage"
@@ -304,7 +296,7 @@ msgid "Documentation"
 msgstr "Dokumentace"
 
 #. Context: System is down
-#: src/lib/utils.ts:326
+#: src/lib/utils.ts:316
 #: src/components/systems-table/systems-table.tsx:142
 #: src/components/routes/system.tsx:345
 msgid "Down"
@@ -357,7 +349,7 @@ msgstr "Exportovat konfiguraci"
 msgid "Export your current systems configuration."
 msgstr "Exportovat aktuální konfiguraci systémů."
 
-#: src/lib/utils.ts:44
+#: src/lib/utils.ts:48
 msgid "Failed to authenticate"
 msgstr "Ověření se nezdařilo"
 
@@ -470,7 +462,7 @@ msgstr "Max. 1 min"
 msgid "Memory"
 msgstr "Paměť"
 
-#: src/lib/utils.ts:335
+#: src/lib/utils.ts:325
 #: src/components/routes/system.tsx:456
 msgid "Memory Usage"
 msgstr "Využití paměti"
@@ -584,7 +576,7 @@ msgstr "Vytvořte si prosím účet administrátora"
 msgid "Please enable pop-ups for this site"
 msgstr "Prosím povolte vyskakovací okna pro tento web"
 
-#: src/lib/utils.ts:45
+#: src/lib/utils.ts:49
 msgid "Please log in again"
 msgstr "Přihlaste se prosím znovu"
 
@@ -691,7 +683,7 @@ msgstr "Nastavení SMTP"
 msgid "Sort By"
 msgstr "Seřadit podle"
 
-#: src/lib/utils.ts:321
+#: src/lib/utils.ts:311
 msgid "Status"
 msgstr "Stav"
 
@@ -704,7 +696,7 @@ msgid "Swap Usage"
 msgstr "Swap využití"
 
 #. System theme
-#: src/lib/utils.ts:326
+#: src/lib/utils.ts:316
 #: src/components/mode-toggle.tsx:27
 #: src/components/systems-table/systems-table.tsx:152
 msgid "System"
@@ -727,7 +719,7 @@ msgstr "Tabulka"
 msgid "Temp"
 msgstr "Teplota"
 
-#: src/lib/utils.ts:354
+#: src/lib/utils.ts:344
 #: src/components/routes/system.tsx:534
 msgid "Temperature"
 msgstr "Teplota"
@@ -781,27 +773,27 @@ msgstr "Přepnout mřížku"
 msgid "Toggle theme"
 msgstr "Přepnout motiv"
 
-#: src/lib/utils.ts:357
+#: src/lib/utils.ts:347
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Spustí se, když některý senzor překročí prahovou hodnotu"
 
-#: src/lib/utils.ts:350
+#: src/lib/utils.ts:340
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Spustí se, když kombinace up/down překročí prahovou hodnotu"
 
-#: src/lib/utils.ts:332
+#: src/lib/utils.ts:322
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Spustí se, když využití procesoru překročí prahovou hodnotu"
 
-#: src/lib/utils.ts:338
+#: src/lib/utils.ts:328
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Spustí se, když využití paměti překročí prahovou hodnotu"
 
-#: src/lib/utils.ts:324
+#: src/lib/utils.ts:314
 msgid "Triggers when status switches between up and down"
 msgstr "Spouští se, když se změní dostupnost"
 
-#: src/lib/utils.ts:344
+#: src/lib/utils.ts:334
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Spustí se, když využití disku překročí prahovou hodnotu"
 

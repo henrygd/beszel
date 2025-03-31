@@ -27,33 +27,25 @@ msgstr "{0, plural, one {# dia} other {# dias}}"
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# hora} other {# horas}}"
 
-#: src/lib/utils.ts:164
+#: src/lib/utils.ts:168
 msgid "1 hour"
 msgstr "1 hora"
 
-#: src/lib/utils.ts:201
+#: src/lib/utils.ts:191
 msgid "1 week"
 msgstr "1 semana"
 
-#: src/lib/utils.ts:186
+#: src/lib/utils.ts:176
 msgid "12 hours"
 msgstr "12 horas"
 
-#: src/lib/utils.ts:194
+#: src/lib/utils.ts:184
 msgid "24 hours"
 msgstr "24 horas"
 
-#: src/lib/utils.ts:172
-msgid "3 hours"
-msgstr ""
-
-#: src/lib/utils.ts:209
+#: src/lib/utils.ts:199
 msgid "30 days"
 msgstr "30 dias"
-
-#: src/lib/utils.ts:179
-msgid "6 hours"
-msgstr ""
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx:304
@@ -145,7 +137,7 @@ msgstr "Utilização média de {0}"
 msgid "Backups"
 msgstr "Backups"
 
-#: src/lib/utils.ts:347
+#: src/lib/utils.ts:337
 #: src/components/routes/system.tsx:491
 msgid "Bandwidth"
 msgstr "Largura de Banda"
@@ -216,7 +208,7 @@ msgstr "Confirmar senha"
 msgid "Continue"
 msgstr "Continuar"
 
-#: src/lib/utils.ts:31
+#: src/lib/utils.ts:35
 msgid "Copied to clipboard"
 msgstr "Copiado para a área de transferência"
 
@@ -241,7 +233,7 @@ msgstr "Copiar texto"
 msgid "CPU"
 msgstr "CPU"
 
-#: src/lib/utils.ts:329
+#: src/lib/utils.ts:319
 #: src/components/routes/system.tsx:434
 #: src/components/charts/area-chart.tsx:58
 msgid "CPU Usage"
@@ -277,7 +269,7 @@ msgstr "Disco"
 msgid "Disk I/O"
 msgstr "E/S de Disco"
 
-#: src/lib/utils.ts:341
+#: src/lib/utils.ts:331
 #: src/components/routes/system.tsx:474
 #: src/components/charts/disk-chart.tsx:77
 msgid "Disk Usage"
@@ -304,7 +296,7 @@ msgid "Documentation"
 msgstr "Documentação"
 
 #. Context: System is down
-#: src/lib/utils.ts:326
+#: src/lib/utils.ts:316
 #: src/components/systems-table/systems-table.tsx:142
 #: src/components/routes/system.tsx:345
 msgid "Down"
@@ -357,7 +349,7 @@ msgstr "Exportar configuração"
 msgid "Export your current systems configuration."
 msgstr "Exporte a configuração atual dos seus sistemas."
 
-#: src/lib/utils.ts:44
+#: src/lib/utils.ts:48
 msgid "Failed to authenticate"
 msgstr "Falha na autenticação"
 
@@ -470,7 +462,7 @@ msgstr "Máx 1 min"
 msgid "Memory"
 msgstr "Memória"
 
-#: src/lib/utils.ts:335
+#: src/lib/utils.ts:325
 #: src/components/routes/system.tsx:456
 msgid "Memory Usage"
 msgstr "Uso de Memória"
@@ -584,7 +576,7 @@ msgstr "Por favor, crie uma conta de administrador"
 msgid "Please enable pop-ups for this site"
 msgstr "Por favor, habilite pop-ups para este site"
 
-#: src/lib/utils.ts:45
+#: src/lib/utils.ts:49
 msgid "Please log in again"
 msgstr "Por favor, faça login novamente"
 
@@ -691,7 +683,7 @@ msgstr "Configurações SMTP"
 msgid "Sort By"
 msgstr "Ordenar Por"
 
-#: src/lib/utils.ts:321
+#: src/lib/utils.ts:311
 msgid "Status"
 msgstr "Status"
 
@@ -704,7 +696,7 @@ msgid "Swap Usage"
 msgstr "Uso de Swap"
 
 #. System theme
-#: src/lib/utils.ts:326
+#: src/lib/utils.ts:316
 #: src/components/mode-toggle.tsx:27
 #: src/components/systems-table/systems-table.tsx:152
 msgid "System"
@@ -727,7 +719,7 @@ msgstr "Tabela"
 msgid "Temp"
 msgstr "Temp"
 
-#: src/lib/utils.ts:354
+#: src/lib/utils.ts:344
 #: src/components/routes/system.tsx:534
 msgid "Temperature"
 msgstr "Temperatura"
@@ -781,27 +773,27 @@ msgstr "Alternar grade"
 msgid "Toggle theme"
 msgstr "Alternar tema"
 
-#: src/lib/utils.ts:357
+#: src/lib/utils.ts:347
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Dispara quando qualquer sensor excede um limite"
 
-#: src/lib/utils.ts:350
+#: src/lib/utils.ts:340
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Dispara quando a soma de subida/descida excede um limite"
 
-#: src/lib/utils.ts:332
+#: src/lib/utils.ts:322
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Dispara quando o uso de CPU excede um limite"
 
-#: src/lib/utils.ts:338
+#: src/lib/utils.ts:328
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Dispara quando o uso de memória excede um limite"
 
-#: src/lib/utils.ts:324
+#: src/lib/utils.ts:314
 msgid "Triggers when status switches between up and down"
 msgstr "Dispara quando o status alterna entre ativo e inativo"
 
-#: src/lib/utils.ts:344
+#: src/lib/utils.ts:334
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Dispara quando o uso de qualquer disco excede um limite"
 
