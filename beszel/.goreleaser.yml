@@ -29,6 +29,7 @@ builds:
       - linux
       - darwin
       - freebsd
+      - openbsd
       - windows
     goarch:
       - amd64
@@ -38,6 +39,8 @@ builds:
       - riscv64
     ignore:
       - goos: freebsd
+        goarch: arm
+      - goos: openbsd
         goarch: arm
       - goos: windows
         goarch: arm
