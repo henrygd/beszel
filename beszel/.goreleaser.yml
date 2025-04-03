@@ -50,7 +50,7 @@ builds:
         goarch: riscv64
 
 archives:
-  - id: beszel
+  - id: beszel-agent
     format: tar.gz
     builds:
       - beszel-agent
@@ -62,7 +62,7 @@ archives:
       - goos: windows
         format: zip
 
-  - id: beszel-agent
+  - id: beszel
     format: tar.gz
     builds:
       - beszel
@@ -113,6 +113,20 @@ nfpms:
         # Currently broken due to a bug in goreleaser
         # https://github.com/goreleaser/goreleaser/issues/5487
         #config: ../supplemental/debian/config.sh
+
+scoops:
+  - ids: [beszel-agent]
+    name: beszel-agent
+    repository:
+      owner: henrygd
+      name: beszel-scoops
+    homepage: 'https://beszel.dev'
+    description: 'Lightweight server monitoring hub with historical data, docker stats, and alerts.'
+    license: MIT
+    # pre_install:
+    #   - TODO: make sure nssm is installed
+    # post_install:
+    #   - TODO: add commands to automatically set up w/ nssm
 
 release:
   draft: true
