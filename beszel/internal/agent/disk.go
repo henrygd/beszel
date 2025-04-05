@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -36,7 +37,12 @@ func (a *Agent) initializeDiskInfo() {
 
 	// Helper function to add a filesystem to fsStats if it doesn't exist
 	addFsStat := func(device, mountpoint string, root bool) {
-		key := filepath.Base(device)
+		var key string
+		if runtime.GOOS == "windows" {
+			key = device
+		} else {
+			key = filepath.Base(device)
+		}
 		var ioMatch bool
 		if _, exists := a.fsStats[key]; !exists {
 			if root {
