@@ -22,7 +22,7 @@ import {
 import { memo, useEffect, useMemo } from "react"
 import { $systems } from "@/lib/stores"
 import { getHostDisplayValue, isAdmin, listen } from "@/lib/utils"
-import { $router, basePath, navigate } from "./router"
+import { $router, basePath, navigate, prependBasePath } from "./router"
 import { Trans } from "@lingui/react/macro"
 import { t } from "@lingui/core/macro"
 import { getPagePath } from "@nanostores/router"
@@ -133,7 +133,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 									keywords={["pocketbase"]}
 									onSelect={() => {
 										setOpen(false)
-										window.open("/_/", "_blank")
+										window.open(prependBasePath("/_/"), "_blank")
 									}}
 								>
 									<UsersIcon className="me-2 h-4 w-4" />
@@ -147,7 +147,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 								<CommandItem
 									onSelect={() => {
 										setOpen(false)
-										window.open("/_/#/logs", "_blank")
+										window.open(prependBasePath("/_/#/logs"), "_blank")
 									}}
 								>
 									<LogsIcon className="me-2 h-4 w-4" />
@@ -161,7 +161,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 								<CommandItem
 									onSelect={() => {
 										setOpen(false)
-										window.open("/_/#/settings/backups", "_blank")
+										window.open(prependBasePath("/_/#/settings/backups"), "_blank")
 									}}
 								>
 									<DatabaseBackupIcon className="me-2 h-4 w-4" />
@@ -176,7 +176,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 									keywords={["email"]}
 									onSelect={() => {
 										setOpen(false)
-										window.open("/_/#/settings/mail", "_blank")
+										window.open(prependBasePath("/_/#/settings/mail"), "_blank")
 									}}
 								>
 									<MailIcon className="me-2 h-4 w-4" />
