@@ -22,7 +22,7 @@ import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
-import { ChartAverage, ChartMax, Rows, TuxIcon } from "../ui/icons"
+import { ChartAverage, ChartMax, Rows, TuxIcon, WindowsIcon } from "../ui/icons"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { timeTicks } from "d3-time"
@@ -251,6 +251,12 @@ export default function SystemDetail({ name }: { name: string }) {
 		if (!system.info) {
 			return []
 		}
+		let version = system.info.k ?? ""
+		const buildIndex = version.indexOf(" Build")
+		const isWindows = buildIndex !== -1
+		if (isWindows) {
+			version = version.substring(0, buildIndex)
+		}
 		let uptime: React.ReactNode
 		if (system.info.u < 172800) {
 			const hours = Math.trunc(system.info.u / 3600)
@@ -268,7 +274,11 @@ export default function SystemDetail({ name }: { name: string }) {
 				hide: system.info.h === system.host || system.info.h === system.name,
 			},
 			{ value: uptime, Icon: ClockArrowUp, label: t`Uptime`, hide: !system.info.u },
-			{ value: system.info.k, Icon: TuxIcon, label: t({ comment: "Linux kernel", message: "Kernel" }) },
+			{
+				value: version,
+				Icon: isWindows ? WindowsIcon : TuxIcon,
+				label: isWindows ? t`Windows build` : t({ comment: "Linux kernel", message: "Kernel" }),
+			},
 			{
 				value: `${system.info.m} (${system.info.c}c${system.info.t ? `/${system.info.t}t` : ""})`,
 				Icon: CpuIcon,

@@ -12,6 +12,21 @@ export function TuxIcon(props: SVGProps<SVGSVGElement>) {
 	)
 }
 
+// meteor icons (MIT) https://github.com/zkreations/icons/blob/main/LICENSE
+export function WindowsIcon(props: SVGProps<SVGSVGElement>) {
+	return (
+		<svg viewBox="0 0 24 24" {...props}>
+			<path
+				fill="none"
+				stroke="currentColor"
+				strokeLinejoin="round"
+				strokeWidth="2"
+				d="M2 12h20m-11.3 8.3V3.7M2 5l20-3v20L2 19Z"
+			/>
+		</svg>
+	)
+}
+
 // MingCute Apache License 2.0 https://github.com/Richard9394/MingCute
 export function Rows(props: SVGProps<SVGSVGElement>) {
 	return (
