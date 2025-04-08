@@ -251,14 +251,13 @@ func TestParseJetsonData(t *testing.T) {
 	tests := []struct {
 		name        string
 		input       string
-		gm          *GPUManager
 		wantMetrics *system.GPUData
 	}{
 		{
 			name:  "valid data",
 			input: "11-14-2024 22:54:33 RAM 4300/30698MB GR3D_FREQ 45% tj@52.468C VDD_GPU_SOC 2171mW",
 			wantMetrics: &system.GPUData{
-				Name:        "Jetson",
+				Name:        "GPU",
 				MemoryUsed:  4300.0,
 				MemoryTotal: 30698.0,
 				Usage:       45.0,
@@ -271,7 +270,7 @@ func TestParseJetsonData(t *testing.T) {
 			name:  "more valid data",
 			input: "11-15-2024 08:38:09 RAM 6185/7620MB (lfb 8x2MB) SWAP 851/3810MB (cached 1MB) CPU [15%@729,11%@729,14%@729,13%@729,11%@729,8%@729] EMC_FREQ 43%@2133 GR3D_FREQ 63%@[621] NVDEC off NVJPG off NVJPG1 off VIC off OFA off APE 200 cpu@53.968C soc2@52.437C soc0@50.75C gpu@53.343C tj@53.968C soc1@51.656C VDD_IN 12479mW/12479mW VDD_CPU_GPU_CV 4667mW/4667mW VDD_SOC 2817mW/2817mW",
 			wantMetrics: &system.GPUData{
-				Name:        "Jetson",
+				Name:        "GPU",
 				MemoryUsed:  6185.0,
 				MemoryTotal: 7620.0,
 				Usage:       63.0,
@@ -284,7 +283,7 @@ func TestParseJetsonData(t *testing.T) {
 			name:  "missing temperature",
 			input: "11-14-2024 22:54:33 RAM 4300/30698MB GR3D_FREQ 45% VDD_GPU_SOC 2171mW",
 			wantMetrics: &system.GPUData{
-				Name:        "Jetson",
+				Name:        "GPU",
 				MemoryUsed:  4300.0,
 				MemoryTotal: 30698.0,
 				Usage:       45.0,
@@ -292,32 +291,18 @@ func TestParseJetsonData(t *testing.T) {
 				Count:       1,
 			},
 		},
-		{
-			name:  "no gpu defined by nvidia-smi",
-			input: "11-14-2024 22:54:33 RAM 4300/30698MB GR3D_FREQ 45% VDD_GPU_SOC 2171mW",
-			gm: &GPUManager{
-				GpuDataMap: map[string]*system.GPUData{},
-			},
-		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if tt.gm != nil {
-				// should return if no gpu set by nvidia-smi
-				assert.Empty(t, tt.gm.GpuDataMap)
-				return
+			gm := &GPUManager{
+				GpuDataMap: make(map[string]*system.GPUData),
 			}
-			tt.gm = &GPUManager{
-				GpuDataMap: map[string]*system.GPUData{
-					"0": {Name: "Jetson"},
-				},
-			}
-			parser := tt.gm.getJetsonParser()
+			parser := gm.getJetsonParser()
 			valid := parser([]byte(tt.input))
 			assert.Equal(t, true, valid)
 
-			got := tt.gm.GpuDataMap["0"]
+			got := gm.GpuDataMap["0"]
 			require.NotNil(t, got)
 			assert.Equal(t, tt.wantMetrics.Name, got.Name)
 			assert.InDelta(t, tt.wantMetrics.MemoryUsed, got.MemoryUsed, 0.01)
@@ -443,7 +428,7 @@ echo "test"`
 				}
 				return nil
 			},
-			wantNvidiaSmi:  true,
+			wantNvidiaSmi:  false,
 			wantRocmSmi:    true,
 			wantTegrastats: true,
 			wantErr:        false,

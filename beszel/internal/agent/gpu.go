@@ -125,14 +125,13 @@ func (gm *GPUManager) getJetsonParser() func(output []byte) bool {
 	// TODO: Maybe use VDD_IN for Nano / NX and add a total system power chart
 	powerPattern := regexp.MustCompile(`(GPU_SOC|CPU_GPU_CV) (\d+)mW`)
 
+	// jetson devices have only one gpu so we'll just initialize here
+	gpuData := &system.GPUData{Name: "GPU"}
+	gm.GpuDataMap["0"] = gpuData
+
 	return func(output []byte) bool {
 		gm.Lock()
 		defer gm.Unlock()
-		// we get gpu name from the intitial run of nvidia-smi, so return if it hasn't been initialized
-		gpuData, ok := gm.GpuDataMap["0"]
-		if !ok {
-			return true
-		}
 		// Parse RAM usage
 		ramMatches := ramPattern.FindSubmatch(output)
 		if ramMatches != nil {
@@ -184,12 +183,6 @@ func (gm *GPUManager) parseNvidiaData(output []byte) bool {
 		if _, ok := gm.GpuDataMap[id]; !ok {
 			name := strings.TrimPrefix(fields[1], "NVIDIA ")
 			gm.GpuDataMap[id] = &system.GPUData{Name: strings.TrimSuffix(name, " Laptop GPU")}
-			// check if tegrastats is active - if so we will only use nvidia-smi to get gpu name
-			// - nvidia-smi does not provide metrics for tegra / jetson devices
-			// this will end the nvidia-smi collector
-			if gm.tegrastats {
-				return false
-			}
 		}
 		// update gpu data
 		gpu := gm.GpuDataMap[id]
@@ -283,6 +276,7 @@ func (gm *GPUManager) detectGPUs() error {
 	}
 	if _, err := exec.LookPath(tegraStatsCmd); err == nil {
 		gm.tegrastats = true
+		gm.nvidiaSmi = false
 	}
 	if gm.nvidiaSmi || gm.rocmSmi || gm.tegrastats {
 		return nil
@@ -297,9 +291,11 @@ func (gm *GPUManager) startCollector(command string) {
 	}
 	switch command {
 	case nvidiaSmiCmd:
-		collector.cmdArgs = []string{"-l", nvidiaSmiInterval,
+		collector.cmdArgs = []string{
+			"-l", nvidiaSmiInterval,
 			"--query-gpu=index,name,temperature.gpu,memory.used,memory.total,utilization.gpu,power.draw",
-			"--format=csv,noheader,nounits"}
+			"--format=csv,noheader,nounits",
+		}
 		collector.parse = gm.parseNvidiaData
 		go collector.start()
 	case tegraStatsCmd:
