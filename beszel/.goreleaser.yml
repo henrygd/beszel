@@ -123,10 +123,32 @@ scoops:
     homepage: 'https://beszel.dev'
     description: 'Lightweight server monitoring hub with historical data, docker stats, and alerts.'
     license: MIT
-    # pre_install:
-    #   - TODO: make sure nssm is installed
-    # post_install:
-    #   - TODO: add commands to automatically set up w/ nssm
+
+brews:
+  - ids: [beszel-agent]
+    name: beszel-agent
+    repository:
+      owner: henrygd
+      name: homebrew-beszel
+    homepage: 'https://beszel.dev'
+    description: 'Lightweight server monitoring hub with historical data, docker stats, and alerts.'
+    license: MIT
+    extra_install: |
+      (bin/"beszel-agent-launcher").write <<~EOS
+        #!/bin/bash
+        set -a
+        if [ -f "$HOME/.config/beszel/beszel-agent.env" ]; then
+          source "$HOME/.config/beszel/beszel-agent.env"
+        fi
+        set +a
+        exec #{bin}/beszel-agent "$@"
+      EOS
+      (bin/"beszel-agent-launcher").chmod 0755
+    service: |
+      run ["#{bin}/beszel-agent-launcher"]
+      log_path "#{Dir.home}/.cache/beszel/beszel-agent.log"
+      error_log_path "#{Dir.home}/.cache/beszel/beszel-agent.log"
+      keep_alive true
 
 release:
   draft: true
