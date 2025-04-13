@@ -28,7 +28,6 @@ if (-not $Elevated) {
             Write-Host "Scoop is already installed."
         } else {
             Write-Host "Installing Scoop..."
-            Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
             Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
             
             if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
@@ -93,7 +92,7 @@ if (-not $Elevated) {
 
 # Admin tasks - service installation and firewall rules
 try {
-    $agentPath = (Get-Command beszel-agent -ErrorAction SilentlyContinue).Path
+    $agentPath = Join-Path -Path $(scoop prefix beszel-agent) -ChildPath "beszel-agent.exe"
     if (-not $agentPath) {
         throw "Could not find beszel-agent executable. Make sure it was properly installed."
     }
@@ -127,8 +126,9 @@ try {
     if (-not (Test-Path $logDir)) {
         New-Item -ItemType Directory -Path $logDir -Force | Out-Null
     }
-    nssm set beszel-agent AppStdout "$logDir\stdout.log"
-    nssm set beszel-agent AppStderr "$logDir\stderr.log"
+    $logFile = "$logDir\beszel-agent.log"
+    nssm set beszel-agent AppStdout $logFile
+    nssm set beszel-agent AppStderr $logFile
     
     # Create a firewall rule if it doesn't exist
     $ruleName = "Allow beszel-agent"
@@ -162,6 +162,7 @@ try {
     }
     
     Write-Host "Checking beszel-agent service status..."
+    Start-Sleep -Seconds 5 # Allow time to start before checking status
     $serviceStatus = nssm status beszel-agent
     
     if ($serviceStatus -eq "SERVICE_RUNNING") {
