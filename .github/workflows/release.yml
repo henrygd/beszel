@@ -3,7 +3,7 @@ name: Make release and binaries
 on:
   push:
     tags:
-      - '*'
+      - 'v*'
 
 permissions:
   contents: write

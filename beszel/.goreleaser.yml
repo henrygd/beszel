@@ -121,8 +121,31 @@ scoops:
       owner: henrygd
       name: beszel-scoops
     homepage: 'https://beszel.dev'
-    description: 'Lightweight server monitoring hub with historical data, docker stats, and alerts.'
+    description: 'Agent for Beszel, a lightweight server monitoring platform.'
     license: MIT
+
+# # Needs choco installed, so doesn't build on linux / default gh workflow :(
+# chocolateys:
+#   - title: Beszel Agent
+#     ids: [beszel-agent]
+#     package_source_url: https://github.com/henrygd/beszel-chocolatey
+#     owners: henrygd
+#     authors: henrygd
+#     summary: 'Agent for Beszel, a lightweight server monitoring platform.'
+#     description: |
+#       Beszel is a lightweight server monitoring platform that includes Docker statistics, historical data, and alert functions.
+
+#       It has a friendly web interface, simple configuration, and is ready to use out of the box. It supports automatic backup, multi-user, OAuth authentication, and API access.
+#     license_url: https://github.com/henrygd/beszel/blob/main/LICENSE
+#     project_url: https://beszel.dev
+#     project_source_url: https://github.com/henrygd/beszel
+#     docs_url: https://beszel.dev/guide/getting-started
+#     icon_url: https://cdn.jsdelivr.net/gh/selfhst/icons/png/beszel.png
+#     bug_tracker_url: https://github.com/henrygd/beszel/issues
+#     copyright: 2025 henrygd
+#     tags: foss cross-platform admin monitoring
+#     require_license_acceptance: false
+#     release_notes: 'https://github.com/henrygd/beszel/releases/tag/v{{ .Version }}'
 
 brews:
   - ids: [beszel-agent]
@@ -131,7 +154,7 @@ brews:
       owner: henrygd
       name: homebrew-beszel
     homepage: 'https://beszel.dev'
-    description: 'Lightweight server monitoring hub with historical data, docker stats, and alerts.'
+    description: 'Agent for Beszel, a lightweight server monitoring platform.'
     license: MIT
     extra_install: |
       (bin/"beszel-agent-launcher").write <<~EOS
