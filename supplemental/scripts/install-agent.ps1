@@ -148,7 +148,7 @@ try {
     # Create new rule with current settings
     Write-Host "Creating firewall rule for beszel-agent on port $Port..."
     try {
-        New-NetFirewallRule -DisplayName $ruleName -Direction Inbound -Program $agentPath -Action Allow -Protocol TCP -LocalPort $Port
+        New-NetFirewallRule -DisplayName $ruleName -Direction Inbound -Action Allow -Protocol TCP -LocalPort $Port
         Write-Host "Firewall rule created successfully."
     } catch {
         Write-Host "Warning: Failed to create firewall rule: $($_.Exception.Message)" -ForegroundColor Yellow
