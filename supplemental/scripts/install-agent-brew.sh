@@ -41,10 +41,23 @@ while getopts "k:p:h" opt; do
   esac
 done
 
-# Exit if brew is not installed
+# Check if brew is installed, prompt to install if not
 if ! command -v brew &>/dev/null; then
-  echo "Homebrew is not installed. Please install Homebrew and try again."
-  exit 1
+  read -p "Homebrew is not installed. Would you like to install it now? (y/n): " install_brew
+  if [[ $install_brew =~ ^[Yy]$ ]]; then
+    echo "Installing Homebrew..."
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+    # Verify installation was successful
+    if ! command -v brew &>/dev/null; then
+      echo "Homebrew installation failed. Please install manually and try again."
+      exit 1
+    fi
+    echo "Homebrew installed successfully."
+  else
+    echo "Homebrew is required. Please install Homebrew and try again."
+    exit 1
+  fi
 fi
 
 if [ -z "$KEY" ]; then
@@ -67,4 +80,4 @@ echo "Restart: brew services restart beszel-agent"
 echo "Upgrade: brew upgrade beszel-agent"
 echo "Uninstall: brew uninstall beszel-agent"
 echo "View logs in ~/.cache/beszel/beszel-agent.log"
-echo "Change environment variables in ~/.config/beszel/beszel-agent.env"
+printf "Change environment variables in ~/.config/beszel/beszel-agent.env\n"
