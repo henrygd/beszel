@@ -4,6 +4,7 @@ import (
 	"beszel/internal/entities/system"
 	"bufio"
 	"bytes"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
 	"os/exec"
@@ -18,14 +19,16 @@ import (
 
 const (
 	// Commands
-	nvidiaSmiCmd  = "nvidia-smi"
-	rocmSmiCmd    = "rocm-smi"
-	tegraStatsCmd = "tegrastats"
+	nvidiaSmiCmd   = "nvidia-smi"
+	rocmSmiCmd     = "rocm-smi"
+	tegraStatsCmd  = "tegrastats"
+	intelGpuTopCmd = "intel_gpu_top"
 
 	// Polling intervals
-	nvidiaSmiInterval  = "4"    // in seconds
-	tegraStatsInterval = "3700" // in milliseconds
-	rocmSmiInterval    = 4300 * time.Millisecond
+	nvidiaSmiInterval   = "4"    // in seconds
+	tegraStatsInterval  = "3700" // in milliseconds
+	rocmSmiInterval     = 4300 * time.Millisecond
+	intelGpuTopInterval = 4 * time.Second
 
 	// Command retry and timeout constants
 	retryWaitTime     = 5 * time.Second
@@ -44,6 +47,7 @@ type GPUManager struct {
 	nvidiaSmi  bool
 	rocmSmi    bool
 	tegrastats bool
+	intelStats bool
 	GpuDataMap map[string]*system.GPUData
 }
 
@@ -158,6 +162,48 @@ func (gm *GPUManager) getJetsonParser() func(output []byte) bool {
 		gpuData.Count++
 		return true
 	}
+}
+
+func (gm *GPUManager) parseIntelData(output []byte) bool {
+	gm.Lock()
+	defer gm.Unlock()
+	reader := csv.NewReader(bytes.NewReader(output))
+	records, err := reader.ReadAll()
+	if err != nil {
+		slog.Warn("Failed to parse Intel GPU data", "err", err)
+		return false
+	}
+	header := []string{"Freq MHz req", "Freq MHz act", "IRQ /s", "RC6 %", "RCS %", "RCS se", "RCS wa", "BCS %", "BCS se", "BCS wa", "VCS %", "VCS se", "VCS wa", "VECS %", "VECS se", "VECS wa", "CCS %", "CCS se", "CCS wa"}
+
+	gpuData := &system.GPUData{Name: "GPU"}
+	gm.GpuDataMap["0"] = gpuData
+
+	for _, record := range records {
+		if strings.Join(record, ",") == strings.Join(header, ",") {
+			fmt.Println("Skipping header")
+			continue
+		}
+
+		for i, field := range header {
+			value, err := strconv.ParseFloat(record[i], 64)
+			if err != nil {
+				slog.Warn("Failed to parse field", "field", field, "value", record[i], "err", err)
+				continue
+			}
+
+			switch field {
+			case "RCS %", "BCS %", "VCS %", "VECS %", "CCS %":
+				gpuData.Usage += value
+			}
+		}
+	}
+	gpuData.Count++
+	gpuData.Temperature++
+	gpuData.MemoryUsed++
+	gpuData.MemoryTotal = 4000
+	gpuData.Power++
+
+	return true
 }
 
 // parseNvidiaData parses the output of nvidia-smi and updates the GPUData map
@@ -278,10 +324,14 @@ func (gm *GPUManager) detectGPUs() error {
 		gm.tegrastats = true
 		gm.nvidiaSmi = false
 	}
-	if gm.nvidiaSmi || gm.rocmSmi || gm.tegrastats {
+	fmt.Println("Looking for gpus")
+	if _, err := exec.LookPath(intelGpuTopCmd); err == nil {
+		gm.intelStats = true
+	}
+	if gm.nvidiaSmi || gm.rocmSmi || gm.tegrastats || gm.intelStats {
 		return nil
 	}
-	return fmt.Errorf("no GPU found - install nvidia-smi, rocm-smi, or tegrastats")
+	return fmt.Errorf("no GPU found - install nvidia-smi, rocm-smi, intel_gpu_top, or tegrastats")
 }
 
 // startCollector starts the appropriate GPU data collector based on the command
@@ -318,6 +368,10 @@ func (gm *GPUManager) startCollector(command string) {
 				time.Sleep(rocmSmiInterval)
 			}
 		}()
+	case intelGpuTopCmd:
+		collector.cmdArgs = []string{"-c", "-s", intelGpuTopInterval.String()}
+		collector.parse = gm.parseIntelData
+		go collector.start()
 	}
 }
 
@@ -337,6 +391,9 @@ func NewGPUManager() (*GPUManager, error) {
 	}
 	if gm.tegrastats {
 		gm.startCollector(tegraStatsCmd)
+	}
+	if gm.intelStats {
+		gm.startCollector(intelGpuTopCmd)
 	}
 
 	return &gm, nil
