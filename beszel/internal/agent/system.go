@@ -199,15 +199,23 @@ func (a *Agent) getSystemStats() system.Stats {
 			if systemStats.Temperatures == nil {
 				systemStats.Temperatures = make(map[string]float64, len(gpuData))
 			}
+			highestTemp := 0.0
 			for _, gpu := range gpuData {
 				if gpu.Temperature > 0 {
 					systemStats.Temperatures[gpu.Name] = gpu.Temperature
 					if a.sensorConfig.primarySensor == gpu.Name {
 						a.systemInfo.DashboardTemp = gpu.Temperature
 					}
+					if gpu.Temperature > highestTemp {
+						highestTemp = gpu.Temperature
+					}
 				}
 				// update high gpu percent for dashboard
 				a.systemInfo.GpuPct = max(a.systemInfo.GpuPct, gpu.Usage)
+			}
+			// use highest temp for dashboard temp if dashboard temp is unset
+			if a.systemInfo.DashboardTemp == 0 {
+				a.systemInfo.DashboardTemp = highestTemp
 			}
 		}
 	}
