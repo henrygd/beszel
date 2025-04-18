@@ -67,7 +67,7 @@ fi
 mkdir -p ~/.config/beszel ~/.cache/beszel
 
 echo "KEY=\"$KEY\"" >~/.config/beszel/beszel-agent.env
-echo "PORT=$PORT" >>~/.config/beszel/beszel-agent.env
+echo "LISTEN=$PORT" >>~/.config/beszel/beszel-agent.env
 
 brew tap henrygd/beszel
 brew install beszel-agent
