@@ -4,42 +4,36 @@ package agent
 import (
 	"beszel"
 	"beszel/internal/entities/system"
-	"context"
 	"log/slog"
 	"os"
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/shirou/gopsutil/v4/common"
 )
 
 type Agent struct {
-	sync.Mutex                                  // Used to lock agent while collecting data
-	debug            bool                       // true if LOG_LEVEL is set to debug
-	zfs              bool                       // true if system has arcstats
-	memCalc          string                     // Memory calculation formula
-	fsNames          []string                   // List of filesystem device names being monitored
-	fsStats          map[string]*system.FsStats // Keeps track of disk stats for each filesystem
-	netInterfaces    map[string]struct{}        // Stores all valid network interfaces
-	netIoStats       system.NetIoStats          // Keeps track of bandwidth usage
-	dockerManager    *dockerManager             // Manages Docker API requests
-	sensorsContext   context.Context            // Sensors context to override sys location
-	sensorsWhitelist map[string]struct{}        // List of sensors to monitor
-	primarySensor    string                     // Value of PRIMARY_SENSOR env var
-	systemInfo       system.Info                // Host system info
-	gpuManager       *GPUManager                // Manages GPU data
-	cache            *SessionCache              // Cache for system stats based on primary session ID
+	sync.Mutex                               // Used to lock agent while collecting data
+	debug         bool                       // true if LOG_LEVEL is set to debug
+	zfs           bool                       // true if system has arcstats
+	memCalc       string                     // Memory calculation formula
+	fsNames       []string                   // List of filesystem device names being monitored
+	fsStats       map[string]*system.FsStats // Keeps track of disk stats for each filesystem
+	netInterfaces map[string]struct{}        // Stores all valid network interfaces
+	netIoStats    system.NetIoStats          // Keeps track of bandwidth usage
+	dockerManager *dockerManager             // Manages Docker API requests
+	sensorConfig  *SensorConfig              // Sensors config
+	systemInfo    system.Info                // Host system info
+	gpuManager    *GPUManager                // Manages GPU data
+	cache         *SessionCache              // Cache for system stats based on primary session ID
 }
 
 func NewAgent() *Agent {
 	agent := &Agent{
-		sensorsContext: context.Background(),
-		fsStats:        make(map[string]*system.FsStats),
-		cache:          NewSessionCache(69 * time.Second),
+		fsStats: make(map[string]*system.FsStats),
+		cache:   NewSessionCache(69 * time.Second),
 	}
 	agent.memCalc, _ = GetEnv("MEM_CALC")
-	agent.primarySensor, _ = GetEnv("PRIMARY_SENSOR")
+	agent.sensorConfig = agent.newSensorConfig()
 	// Set up slog with a log level determined by the LOG_LEVEL env var
 	if logLevelStr, exists := GetEnv("LOG_LEVEL"); exists {
 		switch strings.ToLower(logLevelStr) {
@@ -54,24 +48,6 @@ func NewAgent() *Agent {
 	}
 
 	slog.Debug(beszel.Version)
-
-	// Set sensors context (allows overriding sys location for sensors)
-	if sysSensors, exists := GetEnv("SYS_SENSORS"); exists {
-		slog.Info("SYS_SENSORS", "path", sysSensors)
-		agent.sensorsContext = context.WithValue(agent.sensorsContext,
-			common.EnvKey, common.EnvMap{common.HostSysEnvKey: sysSensors},
-		)
-	}
-
-	// Set sensors whitelist
-	if sensors, exists := GetEnv("SENSORS"); exists {
-		agent.sensorsWhitelist = make(map[string]struct{})
-		for sensor := range strings.SplitSeq(sensors, ",") {
-			if sensor != "" {
-				agent.sensorsWhitelist[sensor] = struct{}{}
-			}
-		}
-	}
 
 	// initialize system info / docker manager
 	agent.initializeSystemInfo()
