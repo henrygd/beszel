@@ -13,26 +13,31 @@ import (
 )
 
 type SensorConfig struct {
-	context       context.Context
-	sensors       map[string]struct{}
-	primarySensor string
-	isBlacklist   bool
-	hasWildcards  bool
+	context        context.Context
+	sensors        map[string]struct{}
+	primarySensor  string
+	isBlacklist    bool
+	hasWildcards   bool
+	skipCollection bool
 }
 
 func (a *Agent) newSensorConfig() *SensorConfig {
 	primarySensor, _ := GetEnv("PRIMARY_SENSOR")
 	sysSensors, _ := GetEnv("SYS_SENSORS")
-	sensors, _ := GetEnv("SENSORS")
+	sensorsEnvVal, sensorsSet := GetEnv("SENSORS")
+	skipCollection := sensorsSet && sensorsEnvVal == ""
 
-	return a.newSensorConfigWithEnv(primarySensor, sysSensors, sensors)
+	return a.newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal, skipCollection)
 }
 
 // newSensorConfigWithEnv creates a SensorConfig with the provided environment variables
-func (a *Agent) newSensorConfigWithEnv(primarySensor, sysSensors, sensors string) *SensorConfig {
+// sensorsSet indicates if the SENSORS environment variable was explicitly set (even to empty string)
+func (a *Agent) newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal string, skipCollection bool) *SensorConfig {
 	config := &SensorConfig{
-		context:       context.Background(),
-		primarySensor: primarySensor,
+		context:        context.Background(),
+		primarySensor:  primarySensor,
+		skipCollection: skipCollection,
+		sensors:        make(map[string]struct{}),
 	}
 
 	// Set sensors context (allows overriding sys location for sensors)
@@ -43,22 +48,18 @@ func (a *Agent) newSensorConfigWithEnv(primarySensor, sysSensors, sensors string
 		)
 	}
 
-	// Set sensors whitelist
-	if sensors != "" {
-		// handle blacklist
-		if strings.HasPrefix(sensors, "-") {
-			config.isBlacklist = true
-			sensors = sensors[1:]
-		}
+	// handle blacklist
+	if strings.HasPrefix(sensorsEnvVal, "-") {
+		config.isBlacklist = true
+		sensorsEnvVal = sensorsEnvVal[1:]
+	}
 
-		config.sensors = make(map[string]struct{})
-		for sensor := range strings.SplitSeq(sensors, ",") {
-			sensor = strings.TrimSpace(sensor)
-			if sensor != "" {
-				config.sensors[sensor] = struct{}{}
-				if strings.Contains(sensor, "*") {
-					config.hasWildcards = true
-				}
+	for sensor := range strings.SplitSeq(sensorsEnvVal, ",") {
+		sensor = strings.TrimSpace(sensor)
+		if sensor != "" {
+			config.sensors[sensor] = struct{}{}
+			if strings.Contains(sensor, "*") {
+				config.hasWildcards = true
 			}
 		}
 	}
@@ -69,7 +70,7 @@ func (a *Agent) newSensorConfigWithEnv(primarySensor, sysSensors, sensors string
 // updateTemperatures updates the agent with the latest sensor temperatures
 func (a *Agent) updateTemperatures(systemStats *system.Stats) {
 	// skip if sensors whitelist is set to empty string
-	if a.sensorConfig.sensors != nil && len(a.sensorConfig.sensors) == 0 {
+	if a.sensorConfig.skipCollection {
 		slog.Debug("Skipping temperature collection")
 		return
 	}
@@ -113,8 +114,8 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) {
 
 // isValidSensor checks if a sensor is valid based on the sensor name and the sensor config
 func isValidSensor(sensorName string, config *SensorConfig) bool {
-	// If no sensors configuration, everything is valid
-	if config.sensors == nil {
+	// if no sensors configured, everything is valid
+	if len(config.sensors) == 0 {
 		return true
 	}
 
@@ -123,7 +124,7 @@ func isValidSensor(sensorName string, config *SensorConfig) bool {
 		return !config.isBlacklist
 	}
 
-	// If no wildcards, return false if blacklist, true if whitelist
+	// If no wildcards, return true if blacklist, false if whitelist
 	if !config.hasWildcards {
 		return config.isBlacklist
 	}

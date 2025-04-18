@@ -97,10 +97,13 @@ func TestIsValidSensor(t *testing.T) {
 			expectedValid: true,
 		},
 		{
-			name:       "Nil sensor config",
+			name:       "No sensors configured",
 			sensorName: "any_temp",
 			config: &SensorConfig{
-				sensors: nil,
+				sensors:        map[string]struct{}{},
+				isBlacklist:    false,
+				hasWildcards:   false,
+				skipCollection: false,
 			},
 			expectedValid: true,
 		},
@@ -162,6 +165,7 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 		primarySensor  string
 		sysSensors     string
 		sensors        string
+		skipCollection bool
 		expectedConfig *SensorConfig
 	}{
 		{
@@ -170,22 +174,38 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 			sysSensors:    "",
 			sensors:       "",
 			expectedConfig: &SensorConfig{
-				context:       context.Background(),
-				primarySensor: "",
-				sensors:       nil,
-				isBlacklist:   false,
-				hasWildcards:  false,
+				context:        context.Background(),
+				primarySensor:  "",
+				sensors:        map[string]struct{}{},
+				isBlacklist:    false,
+				hasWildcards:   false,
+				skipCollection: false,
 			},
 		},
 		{
-			name:          "Primary sensor only",
+			name:           "Explicitly set to empty string",
+			primarySensor:  "",
+			sysSensors:     "",
+			sensors:        "",
+			skipCollection: true,
+			expectedConfig: &SensorConfig{
+				context:        context.Background(),
+				primarySensor:  "",
+				sensors:        map[string]struct{}{},
+				isBlacklist:    false,
+				hasWildcards:   false,
+				skipCollection: true,
+			},
+		},
+		{
+			name:          "Primary sensor only - should create sensor map",
 			primarySensor: "cpu_temp",
 			sysSensors:    "",
 			sensors:       "",
 			expectedConfig: &SensorConfig{
 				context:       context.Background(),
 				primarySensor: "cpu_temp",
-				sensors:       nil,
+				sensors:       map[string]struct{}{},
 				isBlacklist:   false,
 				hasWildcards:  false,
 			},
@@ -239,6 +259,22 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 			},
 		},
 		{
+			name:          "Sensors with whitespace",
+			primarySensor: "cpu_temp",
+			sysSensors:    "",
+			sensors:       "cpu_*, gpu_temp",
+			expectedConfig: &SensorConfig{
+				context:       context.Background(),
+				primarySensor: "cpu_temp",
+				sensors: map[string]struct{}{
+					"cpu_*":    {},
+					"gpu_temp": {},
+				},
+				isBlacklist:  false,
+				hasWildcards: true,
+			},
+		},
+		{
 			name:          "With SYS_SENSORS path",
 			primarySensor: "cpu_temp",
 			sysSensors:    "/custom/path",
@@ -256,7 +292,7 @@ func TestNewSensorConfigWithEnv(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := agent.newSensorConfigWithEnv(tt.primarySensor, tt.sysSensors, tt.sensors)
+			result := agent.newSensorConfigWithEnv(tt.primarySensor, tt.sysSensors, tt.sensors, tt.skipCollection)
 
 			// Check primary sensor
 			assert.Equal(t, tt.expectedConfig.primarySensor, result.primarySensor)
