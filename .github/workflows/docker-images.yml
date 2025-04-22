@@ -12,13 +12,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - image: henrygd/beszel
+          - image: nguyendkn/cmonitor
             context: ./beszel
             dockerfile: ./beszel/dockerfile_Hub
             registry: docker.io
             username_secret: DOCKERHUB_USERNAME
             password_secret: DOCKERHUB_TOKEN
-          - image: henrygd/beszel-agent
+          - image: nguyendkn/cmonitor-agent
             context: ./beszel
             dockerfile: ./beszel/dockerfile_Agent
             registry: docker.io
