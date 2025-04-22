@@ -24,13 +24,13 @@ jobs:
             registry: docker.io
             username_secret: DOCKERHUB_USERNAME
             password_secret: DOCKERHUB_TOKEN
-          - image: ghcr.io/${{ github.repository }}/beszel
+          - image: ghcr.io/${{ github.repository }}/cmonitor
             context: ./beszel
             dockerfile: ./beszel/dockerfile_Hub
             registry: ghcr.io
             username: ${{ github.actor }}
             password_secret: GITHUB_TOKEN
-          - image: ghcr.io/${{ github.repository }}/beszel-agent
+          - image: ghcr.io/${{ github.repository }}/cmonitor-agent
             context: ./beszel
             dockerfile: ./beszel/dockerfile_Agent
             registry: ghcr.io
