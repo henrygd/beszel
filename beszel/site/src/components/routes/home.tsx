@@ -65,7 +65,7 @@ export const Home = memo(() => {
 				<div className="flex gap-1.5 justify-end items-center pe-3 sm:pe-6 mt-3.5 text-xs opacity-80">
 					<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 					<p className="text-muted-foreground hover:text-foreground duration-75">
-						CMonitor {globalThis.BESZEL.HUB_VERSION}
+						CMonitor {globalThis.CMONITOR.HUB_VERSION}
 					</p>
 				</div>
 			</>

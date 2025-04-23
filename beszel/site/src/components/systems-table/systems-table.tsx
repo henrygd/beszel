@@ -289,7 +289,7 @@ export default function SystemsTable() {
 								system={system}
 								className={
 									(system.status !== "up" && "bg-primary/30") ||
-									(version === globalThis.BESZEL.HUB_VERSION && "bg-green-500") ||
+									(version === globalThis.CMONITOR.HUB_VERSION && "bg-green-500") ||
 									"bg-yellow-500"
 								}
 							/>
