@@ -6,7 +6,7 @@
 replicaCount: 1
 
 image:
-  repository: henrygd/beszel
+  repository: nguyendkn/cmonitor
   pullPolicy: IfNotPresent
   tag: ""
 

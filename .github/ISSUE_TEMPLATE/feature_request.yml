@@ -5,7 +5,7 @@ labels: ["enhancement"]
 body:
   - type: markdown
     attributes:
-      value: Before submitting, please search existing [issues](https://github.com/henrygd/beszel/issues) and [discussions](https://github.com/henrygd/beszel/discussions) (including closed).
+      value: Before submitting, please search existing [issues](https://github.com/nguyendkn/cmonitor/issues) and [discussions](https://github.com/nguyendkn/cmonitor/discussions) (including closed).
   - type: textarea
     attributes:
       label: Describe the feature you would like to see

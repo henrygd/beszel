@@ -5,7 +5,7 @@ body:
         ### Before opening a discussion:
 
         - Check the [common issues guide](https://beszel.dev/guide/common-issues).
-        - Search existing [issues](https://github.com/henrygd/beszel/issues) and [discussions](https://github.com/henrygd/beszel/discussions) (including closed).
+        - Search existing [issues](https://github.com/nguyendkn/cmonitor/issues) and [discussions](https://github.com/nguyendkn/cmonitor/discussions) (including closed).
 
   - type: textarea
     id: description

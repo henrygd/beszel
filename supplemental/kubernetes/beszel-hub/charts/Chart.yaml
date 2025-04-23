@@ -8,7 +8,7 @@ version: 0.1.0
 sources:
   - https://github.com/dnikoloski/beszel-kubernetes/tree/main/charts/beszel-hub
   - https://www.beszel.dev/
-  - https://github.com/henrygd/beszel
+  - https://github.com/nguyendkn/cmonitor
 icon: https://repository-images.githubusercontent.com/825470378/2710c6db-f934-4a8b-a2c4-7a0abbcd2ad6
 maintainers:
   - name: dnikoloski

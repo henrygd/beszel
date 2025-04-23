@@ -1,14 +1,16 @@
 #!/bin/sh
 
+# Kiểm tra xem hệ thống có phải là Alpine Linux không
 is_alpine() {
   [ -f /etc/alpine-release ]
 }
 
+# Kiểm tra xem hệ thống có phải là OpenWrt không
 is_openwrt() {
   cat /etc/os-release | grep -q "OpenWrt"
 }
 
-# Function to ensure the proxy URL ends with a /
+# Đảm bảo URL proxy kết thúc bằng dấu /
 ensure_trailing_slash() {
   if [ -n "$1" ]; then
     case "$1" in
@@ -20,34 +22,35 @@ ensure_trailing_slash() {
   fi
 }
 
-# Define default values
+# Khai báo các giá trị mặc định
 PORT=45876
 UNINSTALL=false
 GITHUB_URL="https://github.com"
-GITHUB_API_URL="https://api.github.com" # not blocked in China currently
+GITHUB_API_URL="https://api.github.com"
 GITHUB_PROXY_URL=""
 KEY=""
-AUTO_UPDATE_FLAG="" # empty string means prompt, "true" means auto-enable, "false" means skip
+AUTO_UPDATE_FLAG=""
+USER_NAME="cmonitor-agent"
 
-# Check for help flag
+# Kiểm tra cờ trợ giúp (-h hoặc --help)
 case "$1" in
 -h | --help)
-  printf "Beszel Agent installation script\n\n"
+  printf "CMonitor Agent installation script\n\n"
   printf "Usage: ./install-agent.sh [options]\n\n"
   printf "Options: \n"
   printf "  -k                    : SSH key (required, or interactive if not provided)\n"
   printf "  -p                    : Port (default: $PORT)\n"
-  printf "  -u                    : Uninstall Beszel Agent\n"
+  printf "  -u                    : Uninstall CMonitor Agent\n"
   printf "  --auto-update [VALUE] : Control automatic daily updates\n"
   printf "                          VALUE can be true (enable) or false (disable). If not specified, will prompt.\n"
   printf "  --china-mirrors [URL] : Use GitHub proxy to resolve network timeout issues in mainland China\n"
-  printf "                          URL: optional custom proxy URL (default: https://gh.beszel.dev)\n"
+  printf "                          URL: optional custom proxy URL (default: https://gh.cmonitor.dev)\n"
   printf "  -h, --help            : Display this help message\n"
   exit 0
   ;;
 esac
 
-# Build sudo args by properly quoting everything
+# Hàm xây dựng các đối số cho sudo với việc trích dẫn đúng
 build_sudo_args() {
   QUOTED_ARGS=""
   while [ $# -gt 0 ]; do
@@ -60,7 +63,7 @@ build_sudo_args() {
   echo "$QUOTED_ARGS"
 }
 
-# Check if running as root and re-execute with sudo if needed
+# Kiểm tra xem script có chạy với quyền root không, nếu không thì chạy lại với sudo
 if [ "$(id -u)" != "0" ]; then
   if command -v sudo >/dev/null 2>&1; then
     SUDO_ARGS=$(build_sudo_args "$@")
@@ -73,47 +76,33 @@ if [ "$(id -u)" != "0" ]; then
   fi
 fi
 
-# Parse arguments
+# Phân tích các tham số dòng lệnh
 while [ $# -gt 0 ]; do
   case "$1" in
-  -k)
-    shift
-    KEY="$1"
-    ;;
-  -p)
-    shift
-    PORT="$1"
-    ;;
-  -u)
-    UNINSTALL=true
-    ;;
+  -k) shift; KEY="$1" ;;
+  -p) shift; PORT="$1" ;;
+  -u) UNINSTALL=true ;;
   --china-mirrors*)
-    # Check if there's a value after the = sign
     if echo "$1" | grep -q "="; then
-      # Extract the value after =
       CUSTOM_PROXY=$(echo "$1" | cut -d'=' -f2)
       if [ -n "$CUSTOM_PROXY" ]; then
         GITHUB_PROXY_URL="$CUSTOM_PROXY"
         GITHUB_URL="$(ensure_trailing_slash "$CUSTOM_PROXY")https://github.com"
       else
-        GITHUB_PROXY_URL="https://gh.beszel.dev"
+        GITHUB_PROXY_URL="https://gh.nguyendkn.dev"
         GITHUB_URL="$GITHUB_PROXY_URL"
       fi
     elif [ "$2" != "" ] && ! echo "$2" | grep -q '^-'; then
-      # use custom proxy URL provided as next argument
       GITHUB_PROXY_URL="$2"
       GITHUB_URL="$(ensure_trailing_slash "$2")https://github.com"
       shift
     else
-      # No value specified, use default
-      GITHUB_PROXY_URL="https://gh.beszel.dev"
+      GITHUB_PROXY_URL="https://gh.nguyendkn.dev"
       GITHUB_URL="$GITHUB_PROXY_URL"
     fi
     ;;
   --auto-update*)
-    # Check if there's a value after the = sign
     if echo "$1" | grep -q "="; then
-      # Extract the value after =
       AUTO_UPDATE_VALUE=$(echo "$1" | cut -d'=' -f2)
       if [ "$AUTO_UPDATE_VALUE" = "true" ]; then
         AUTO_UPDATE_FLAG="true"
@@ -123,11 +112,9 @@ while [ $# -gt 0 ]; do
         echo "Invalid value for --auto-update flag: $AUTO_UPDATE_VALUE. Using default (prompt)."
       fi
     elif [ "$2" = "true" ] || [ "$2" = "false" ]; then
-      # Value provided as next argument
       AUTO_UPDATE_FLAG="$2"
       shift
     else
-      # No value specified, use true
       AUTO_UPDATE_FLAG="true"
     fi
     ;;
@@ -139,73 +126,68 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-# Uninstall process
+# Quá trình gỡ cài đặt
 if [ "$UNINSTALL" = true ]; then
   if is_alpine; then
     echo "Stopping and disabling the agent service..."
-    rc-service beszel-agent stop
-    rc-update del beszel-agent default
-
+    rc-service cmonitor-agent stop 2>/dev/null || true
+    rc-update del cmonitor-agent default 2>/dev/null || true
     echo "Removing the OpenRC service files..."
-    rm -f /etc/init.d/beszel-agent
-
-    # Remove the update service if it exists
+    rm -f /etc/init.d/cmonitor-agentAssertions
     echo "Removing the daily update service..."
-    rc-service beszel-agent-update stop 2>/dev/null
-    rc-update del beszel-agent-update default 2>/dev/null
-    rm -f /etc/init.d/beszel-agent-update
-
-    # Remove log files
+    rc-service cmonitor-agent-update stop 2>/dev/null || true
+    rc-update del cmonitor-agent-update default 2>/dev/null || true
+    rm -f /etc/init.d/cmonitor-agent-update
     echo "Removing log files..."
-    rm -f /var/log/beszel-agent.log /var/log/beszel-agent.err
+    rm -f /var/log/cmonitor-agent.log /var/log/cmonitor-agent.err
   elif is_openwrt; then
     echo "Stopping and disabling the agent service..."
-    service beszel-agent stop
-    service beszel-agent disable
-
+    service cmonitor-agent stop 2>/dev/null || true
+    service cmonitor-agent disable 2>/dev/null || true
     echo "Removing the OpenWRT service files..."
-    rm -f /etc/init.d/beszel-agent
-
-    # Remove the update service if it exists
+    rm -f /etc/init.d/cmonitor-agent
     echo "Removing the daily update service..."
-    rm -f /etc/crontabs/beszel
-
+    rm -f /etc/crontabs/cmonitor-agent
   else
     echo "Stopping and disabling the agent service..."
-    systemctl stop beszel-agent.service
-    systemctl disable beszel-agent.service
-
+    systemctl stop cmonitor-agent.service 2>/dev/null || true
+    systemctl disable cmonitor-agent.service 2>/dev/null || true
     echo "Removing the systemd service file..."
-    rm /etc/systemd/system/beszel-agent.service
-
-    # Remove the update timer and service if they exist
+    rm -f /etc/systemd/system/cmonitor-agent.service
     echo "Removing the daily update service and timer..."
-    systemctl stop beszel-agent-update.timer 2>/dev/null
-    systemctl disable beszel-agent-update.timer 2>/dev/null
-    rm -f /etc/systemd/system/beszel-agent-update.service
-    rm -f /etc/systemd/system/beszel-agent-update.timer
-
+    systemctl stop cmonitor-agent-update.timer 2>/dev/null || true
+    systemctl disable cmonitor-agent-update.timer 2>/dev/null || true
+    rm -f /etc/systemd/system/cmonitor-agent-update.service
+    rm -f /etc/systemd/system/cmonitor-agent-update.timer
     systemctl daemon-reload
   fi
 
-  echo "Removing the Beszel Agent directory..."
-  rm -rf /opt/beszel-agent
+  echo "Removing the CMonitor Agent directory..."
+  rm -rf /opt/cmonitor-agent
 
   echo "Removing the dedicated user for the agent service..."
-  killall beszel-agent 2>/dev/null
-  if is_alpine || is_openwrt; then
-    deluser beszel 2>/dev/null
+  pkill -u "$USER_NAME" 2>/dev/null || true
+  if is_alpine; then
+    if id -u "$USER_NAME" >/dev/null 2>&1; then
+      deluser "$USER_NAME" 2>/dev/null || true
+    fi
+  elif is_openwrt; then
+    if id -u "$USER_NAME" >/dev/null 2>&1; then
+      deluser "$USER_NAME" 2>/dev/null || true
+    fi
   else
-    userdel beszel 2>/dev/null
+    if id -u "$USER_NAME" >/dev/null 2>&1; then
+      userdel "$USER_NAME" 2>/dev/null || true
+    fi
   fi
 
-  echo "Beszel Agent has been uninstalled successfully!"
+  echo "CMonitor Agent has been uninstalled successfully!"
   exit 0
 fi
 
-# Confirm the use of GitHub mirrors for downloads
+# Xác nhận sử dụng proxy GitHub để tải xuống
 if [ -n "$GITHUB_PROXY_URL" ]; then
-  printf "\nConfirm use of GitHub mirror (%s) for downloading beszel-agent?\nThis helps to install properly in mainland China. (Y/n): " "$GITHUB_PROXY_URL"
+  printf "\nConfirm use of GitHub mirror (%s) for downloading cmonitor-agent?\nThis helps to install properly in mainland China. (Y/n): " "$GITHUB_PROXY_URL"
   read USE_MIRROR
   USE_MIRROR=${USE_MIRROR:-Y}
   if [ "$USE_MIRROR" = "Y" ] || [ "$USE_MIRROR" = "y" ]; then
@@ -215,12 +197,12 @@ if [ -n "$GITHUB_PROXY_URL" ]; then
   fi
 fi
 
-# Function to check if a package is installed
+# Hàm kiểm tra xem một gói đã được cài đặt chưa
 package_installed() {
   command -v "$1" >/dev/null 2>&1
 }
 
-# Check for package manager and install necessary packages if not installed
+# Kiểm tra trình quản lý gói và cài đặt các gói cần thiết nếu chưa có
 if is_alpine; then
   if ! package_installed tar || ! package_installed curl || ! package_installed coreutils; then
     apk update
@@ -248,13 +230,13 @@ else
   echo "Warning: Please ensure 'tar' and 'curl' and 'sha256sum (coreutils)' are installed."
 fi
 
-# If no SSH key is provided, ask for the SSH key interactively
+# Nếu không cung cấp khóa SSH, yêu cầu người dùng nhập
 if [ -z "$KEY" ]; then
   printf "Enter your SSH key: "
   read KEY
 fi
 
-# Verify checksum
+# Xác minh công cụ checksum
 if command -v sha256sum >/dev/null; then
   CHECK_CMD="sha256sum"
 elif command -v md5 >/dev/null; then
@@ -264,267 +246,210 @@ else
   exit 1
 fi
 
-# Create a dedicated user for the service if it doesn't exist
+# Tạo người dùng dành riêng cho dịch vụ nếu chưa tồn tại
 if is_alpine; then
-  if ! id -u beszel >/dev/null 2>&1; then
-    echo "Creating a dedicated user for the Beszel Agent service..."
-    adduser -D -H -s /sbin/nologin beszel
+  if ! id -u "$USER_NAME" >/dev/null 2>&1; then
+    echo "Creating a dedicated user for the CMonitor Agent service..."
+    adduser -D -H -s /sbin/nologin "$USER_NAME"
   fi
-  # Add the user to the docker group to allow access to the Docker socket
-  addgroup beszel docker
+  addgroup "$USER_NAME" docker 2>/dev/null || true
 else
-  if ! id -u beszel >/dev/null 2>&1; then
-    echo "Creating a dedicated user for the Beszel Agent service..."
-    useradd -M -s /bin/false beszel
+  if ! id -u "$USER_NAME" >/dev/null 2>&1; then
+    echo "Creating a dedicated user for the CMonitor Agent service..."
+    useradd -M -s /bin/false "$USER_NAME"
   fi
-  # Add the user to the docker group to allow access to the Docker socket
-  usermod -aG docker beszel
+  usermod -aG docker "$USER_NAME" 2>/dev/null || true
 fi
 
-# Create the directory for the Beszel Agent
-if [ ! -d "/opt/beszel-agent" ]; then
-  echo "Creating the directory for the Beszel Agent..."
-  mkdir -p /opt/beszel-agent
-  chown beszel:beszel /opt/beszel-agent
-  chmod 755 /opt/beszel-agent
+# Tạo thư mục cho CMonitor Agent
+if [ ! -d "/opt/cmonitor-agent" ]; then
+  echo "Creating the directory for the CMonitor Agent..."
+  mkdir -p /opt/cmonitor-agent
+  chown "$USER_NAME:$USER_NAME" /opt/cmonitor-agent
+  chmod 755 /opt/cmonitor-agent
 fi
 
-# Download and install the Beszel Agent
+# Tải xuống và cài đặt CMonitor Agent
 echo "Downloading and installing the agent..."
-
 OS=$(uname -s | sed -e 'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/')
 ARCH=$(uname -m | sed -e 's/x86_64/amd64/' -e 's/armv6l/arm/' -e 's/armv7l/arm/' -e 's/aarch64/arm64/')
-FILE_NAME="beszel-agent_${OS}_${ARCH}.tar.gz"
-LATEST_VERSION=$(curl -s "$GITHUB_API_URL""/repos/henrygd/beszel/releases/latest" | grep -o '"tag_name": "v[^"]*"' | cut -d'"' -f4 | tr -d 'v')
+FILE_NAME="cmonitor-agent_${OS}_${ARCH}.tar.gz"
+LATEST_VERSION=$(curl -s "$GITHUB_API_URL/repos/nguyendkn/beszel/releases/latest" | grep -o '"tag_name": "v[^"]*"' | cut -d'"' -f4 | tr -d 'v')
 if [ -z "$LATEST_VERSION" ]; then
   echo "Failed to get latest version"
   exit 1
 fi
-
 echo "Downloading and installing agent version ${LATEST_VERSION} from ${GITHUB_URL} ..."
-
-# Download checksums file
 TEMP_DIR=$(mktemp -d)
 cd "$TEMP_DIR" || exit 1
-CHECKSUM=$(curl -sL "$GITHUB_URL/henrygd/beszel/releases/download/v${LATEST_VERSION}/beszel_${LATEST_VERSION}_checksums.txt" | grep "$FILE_NAME" | cut -d' ' -f1)
+CHECKSUM=$(curl -sL "$GITHUB_URL/nguyendkn/beszel/releases/download/v${LATEST_VERSION}/beszel_${LATEST_VERSION}_checksums.txt" | grep "$FILE_NAME" | cut -d' ' -f1)
 if [ -z "$CHECKSUM" ] || ! echo "$CHECKSUM" | grep -qE "^[a-fA-F0-9]{64}$"; then
   echo "Failed to get checksum or invalid checksum format"
   exit 1
 fi
-
-if ! curl -#L "$GITHUB_URL/henrygd/beszel/releases/download/v${LATEST_VERSION}/$FILE_NAME" -o "$FILE_NAME"; then
-  echo "Failed to download the agent from ""$GITHUB_URL/henrygd/beszel/releases/download/v${LATEST_VERSION}/$FILE_NAME"
+if ! curl -#L "$GITHUB_URL/nguyendkn/beszel/releases/download/v${LATEST_VERSION}/$FILE_NAME" -o "$FILE_NAME"; then
+  echo "Failed to download the agent from $GITHUB_URL/nguyendkn/beszel/releases/download/v${LATEST_VERSION}/$FILE_NAME"
   rm -rf "$TEMP_DIR"
   exit 1
 fi
-
 if [ "$($CHECK_CMD "$FILE_NAME" | cut -d' ' -f1)" != "$CHECKSUM" ]; then
   echo "Checksum verification failed: $($CHECK_CMD "$FILE_NAME" | cut -d' ' -f1) & $CHECKSUM"
   rm -rf "$TEMP_DIR"
   exit 1
 fi
-
-if ! tar -xzf "$FILE_NAME" beszel-agent; then
+if ! tar -xzf "$FILE_NAME" cmonitor-agent; then
   echo "Failed to extract the agent"
   rm -rf "$TEMP_DIR"
   exit 1
 fi
-
-mv beszel-agent /opt/beszel-agent/beszel-agent
-chown beszel:beszel /opt/beszel-agent/beszel-agent
-chmod 755 /opt/beszel-agent/beszel-agent
-
-# Cleanup
+mv cmonitor-agent /opt/cmonitor-agent/cmonitor-agent
+chown "$USER_NAME:$USER_NAME" /opt/cmonitor-agent/cmonitor-agent
+chmod 755 /opt/cmonitor-agent/cmonitor-agent
 rm -rf "$TEMP_DIR"
 
-# Modify service installation part, add Alpine check before systemd service creation
+# Cài đặt dịch vụ
 if is_alpine; then
   echo "Creating OpenRC service for Alpine Linux..."
-  cat >/etc/init.d/beszel-agent <<EOF
+  cat >/etc/init.d/cmonitor-agent <<EOF
 #!/sbin/openrc-run
-
-name="beszel-agent"
-description="Beszel Agent Service"
-command="/opt/beszel-agent/beszel-agent"
-command_user="beszel"
+name="cmonitor-agent"
+description="CMonitor Agent Service"
+command="/opt/cmonitor-agent/cmonitor-agent"
+command_user="$USER_NAME"
 command_background="yes"
 pidfile="/run/\${RC_SVCNAME}.pid"
-output_log="/var/log/beszel-agent.log"
-error_log="/var/log/beszel-agent.err"
-
+output_log="/var/log/cmonitor-agent.log"
+error_log="/var/log/cmonitor-agent.err"
 start_pre() {
-    checkpath -f -m 0644 -o beszel:beszel "\$output_log" "\$error_log"
+    checkpath -f -m 0644 -o $USER_NAME:$USER_NAME "\$output_log" "\$error_log"
 }
-
 export PORT="$PORT"
 export KEY="$KEY"
-
 depend() {
     need net
     after firewall
 }
 EOF
-
-  chmod +x /etc/init.d/beszel-agent
-  rc-update add beszel-agent default
-
-  # Create log files with proper permissions
-  touch /var/log/beszel-agent.log /var/log/beszel-agent.err
-  chown beszel:beszel /var/log/beszel-agent.log /var/log/beszel-agent.err
-
-  # Start the service
-  rc-service beszel-agent restart
-
-  # Check if service started successfully
+  chmod +x /etc/init.d/cmonitor-agent
+  rc-update add cmonitor-agent default
+  mkdir -p /var/log
+  touch /var/log/cmonitor-agent.log /var/log/cmonitor-agent.err
+  chown "$USER_NAME:$USER_NAME" /var/log/cmonitor-agent.log /var/log/cmonitor-agent.err
+  rc-service cmonitor-agent restart
   sleep 2
-  if ! rc-service beszel-agent status | grep -q "started"; then
-    echo "Error: The Beszel Agent service failed to start. Checking logs..."
-    tail -n 20 /var/log/beszel-agent.err
+  if ! rc-service cmonitor-agent status | grep -q "started"; then
+    echo "Error: The CMonitor Agent service failed to start. Checking logs..."
+    tail -n 20 /var/log/cmonitor-agent.err
     exit 1
   fi
-
-  # Auto-update service for Alpine
   if [ "$AUTO_UPDATE_FLAG" = "true" ]; then
     AUTO_UPDATE="y"
   elif [ "$AUTO_UPDATE_FLAG" = "false" ]; then
     AUTO_UPDATE="n"
   else
-    printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
+    printf "\nWould you like to enable automatic daily updates for cmonitor-agent? (y/n): "
     read AUTO_UPDATE
   fi
   case "$AUTO_UPDATE" in
   [Yy]*)
-    echo "Setting up daily automatic updates for beszel-agent..."
-
-    cat >/etc/init.d/beszel-agent-update <<EOF
+    echo "Setting up daily automatic updates for cmonitor-agent..."
+    cat >/etc/init.d/cmonitor-agent-update <<EOF
 #!/sbin/openrc-run
-
-name="beszel-agent-update"
-description="Update beszel-agent if needed"
-
+name="cmonitor-agent-update"
+description="Update cmonitor-agent if needed"
 depend() {
-    need beszel-agent
+    need cmonitor-agent
 }
-
 start() {
-    ebegin "Checking for beszel-agent updates"
-    if /opt/beszel-agent/beszel-agent update | grep -q "Successfully updated"; then
-        rc-service beszel-agent restart
+    ebegin "Checking for cmonitor-agent updates"
+    if /opt/cmonitor-agent/cmonitor-agent update | grep -q "Successfully updated"; then
+        rc-service cmonitor-agent restart
     fi
     eend $?
 }
 EOF
-
-    chmod +x /etc/init.d/beszel-agent-update
-    rc-update add beszel-agent-update default
-    rc-service beszel-agent-update start
-
+    chmod +x /etc/init.d/cmonitor-agent-update
+    rc-update add cmonitor-agent-update default
+    rc-service cmonitor-agent-update start
     printf "\nAutomatic daily updates have been enabled.\n"
     ;;
   esac
-
-  # Check service status
-  if ! rc-service beszel-agent status >/dev/null 2>&1; then
-    echo "Error: The Beszel Agent service is not running."
-    rc-service beszel-agent status
+  if ! rc-service cmonitor-agent status >/dev/null 2>&1; then
+    echo "Error: The CMonitor Agent service is not running."
+    rc-service cmonitor-agent status
     exit 1
   fi
-
 elif is_openwrt; then
   echo "Creating procd init script service for OpenWRT..."
-  cat >/etc/init.d/beszel-agent <<EOF
+  cat >/etc/init.d/cmonitor-agent <<EOF
 #!/bin/sh /etc/rc.common
-
 USE_PROCD=1
 START=99
-
 start_service() {
     procd_open_instance
-    procd_set_param command /opt/beszel-agent/beszel-agent
-    procd_set_param user beszel
-    procd_set_param pidfile /var/run/beszel-agent.pid
+    procd_set_param command /opt/cmonitor-agent/cmonitor-agent
+    procd_set_param user $USER_NAME
+    procd_set_param pidfile /var/run/cmonitor-agent.pid
     procd_set_param env PORT="$PORT"
     procd_set_param env KEY="$KEY"
     procd_set_param stdout 1
     procd_set_param stderr 1
     procd_close_instance
 }
-
 stop_service() {
-    killall beszel-agent
+    killall cmonitor-agent
 }
-
-# Extra command to trigger agent update
 EXTRA_COMMANDS="update"
-EXTRA_HELP="        update          Update the Beszel agent"
-
+EXTRA_HELP="        update          Update the CMonitor agent"
 update() {
-    if /opt/beszel-agent/beszel-agent update | grep -q "Successfully updated"; then
+    if /opt/cmonitor-agent/cmonitor-agent update | grep -q "Successfully updated"; then
         start_service
     fi
 }
-
 EOF
-
-  # Enable the service
-  chmod +x /etc/init.d/beszel-agent
-  service beszel-agent enable
-
-  # Start the service
-  service beszel-agent restart
-
-  # Auto-update service for OpenWRT using a crontab job
+  chmod +x /etc/init.d/cmonitor-agent
+  service cmonitor-agent enable
+  service cmonitor-agent restart
   if [ "$AUTO_UPDATE_FLAG" = "true" ]; then
     AUTO_UPDATE="y"
-    sleep 1 # give time for the service to start
+    sleep 1
   elif [ "$AUTO_UPDATE_FLAG" = "false" ]; then
     AUTO_UPDATE="n"
-    sleep 1 # give time for the service to start
+    sleep 1
   else
-    printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
+    printf "\nWould you like to enable automatic daily updates for cmonitor-agent? (y/n): "
     read AUTO_UPDATE
   fi
   case "$AUTO_UPDATE" in
   [Yy]*)
-    echo "Setting up daily automatic updates for beszel-agent..."
-
-    cat >/etc/crontabs/beszel <<EOF
-0 0 * * * /etc/init.d/beszel-agent update
+    echo "Setting up daily automatic updates for cmonitor-agent..."
+    cat >/etc/crontabs/cmonitor-agent <<EOF
+0 0 * * * /etc/init.d/cmonitor-agent update
 EOF
-
     /etc/init.d/cron restart
-
     printf "\nAutomatic daily updates have been enabled.\n"
     ;;
   esac
-
-  # Check service status
-  if ! service beszel-agent running >/dev/null 2>&1; then
-    echo "Error: The Beszel Agent service is not running."
-    service beszel-agent status
+  if ! service cmonitor-agent running >/dev/null 2>&1; then
+    echo "Error: The CMonitor Agent service is not running."
+    service cmonitor-agent status
     exit 1
   fi
-
 else
-  # Original systemd service installation code
   echo "Creating the systemd service for the agent..."
-  cat >/etc/systemd/system/beszel-agent.service <<EOF
+  cat >/etc/systemd/system/cmonitor-agent.service <<EOF
 [Unit]
-Description=Beszel Agent Service
+Description=CMonitor Agent Service
 Wants=network-online.target
 After=network-online.target
-
 [Service]
 Environment="PORT=$PORT"
 Environment="KEY=$KEY"
-# Environment="EXTRA_FILESYSTEMS=sdb"
-ExecStart=/opt/beszel-agent/beszel-agent
-User=beszel
+ExecStart=/opt/cmonitor-agent/cmonitor-agent
+User=$USER_NAME
 Restart=on-failure
 RestartSec=5
-StateDirectory=beszel-agent
-
-# Security/sandboxing settings
+StateDirectory=cmonitor-agent
 KeyringMode=private
 LockPersonality=yes
 NoNewPrivileges=yes
@@ -537,70 +462,54 @@ ProtectSystem=strict
 RemoveIPC=yes
 RestrictSUIDSGID=true
 SystemCallArchitectures=native
-
 [Install]
 WantedBy=multi-user.target
 EOF
-
-  # Load and start the service
   printf "\nLoading and starting the agent service...\n"
   systemctl daemon-reload
-  systemctl enable beszel-agent.service
-  systemctl start beszel-agent.service
-
-  # Prompt for auto-update setup
+  systemctl enable cmonitor-agent.service
+  systemctl start cmonitor-agent.service
   if [ "$AUTO_UPDATE_FLAG" = "true" ]; then
     AUTO_UPDATE="y"
-    sleep 1 # give time for the service to start
+    sleep 1
   elif [ "$AUTO_UPDATE_FLAG" = "false" ]; then
     AUTO_UPDATE="n"
-    sleep 1 # give time for the service to start
+    sleep 1
   else
-    printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
+    printf "\nWould you like to enable automatic daily updates for cmonitor-agent? (y/n): "
     read AUTO_UPDATE
   fi
   case "$AUTO_UPDATE" in
   [Yy]*)
-    echo "Setting up daily automatic updates for beszel-agent..."
-
-    # Create systemd service for the daily update
-    cat >/etc/systemd/system/beszel-agent-update.service <<EOF
+    echo "Setting up daily automatic updates for cmonitor-agent..."
+    cat >/etc/systemd/system/cmonitor-agent-update.service <<EOF
 [Unit]
-Description=Update beszel-agent if needed
-Wants=beszel-agent.service
-
+Description=Update cmonitor-agent if needed
+Wants=cmonitor-agent.service
 [Service]
 Type=oneshot
-ExecStart=/bin/sh -c '/opt/beszel-agent/beszel-agent update | grep -q "Successfully updated" && (echo "Update found, restarting beszel-agent" && systemctl restart beszel-agent) || echo "No updates found"'
+ExecStart=/bin/sh -c '/opt/cmonitor-agent/cmonitor-agent update | grep -q "Successfully updated" && (echo "Update found, restarting cmonitor-agent" && systemctl restart cmonitor-agent) || echo "No updates found"'
 EOF
-
-    # Create systemd timer for the daily update
-    cat >/etc/systemd/system/beszel-agent-update.timer <<EOF
+    cat >/etc/systemd/system/cmonitor-agent-update.timer <<EOF
 [Unit]
-Description=Run beszel-agent update daily
-
+Description=Run cmonitor-agent update daily
 [Timer]
 OnCalendar=daily
 Persistent=true
 RandomizedDelaySec=4h
-
 [Install]
 WantedBy=timers.target
 EOF
-
     systemctl daemon-reload
-    systemctl enable --now beszel-agent-update.timer
-
+    systemctl enable --now cmonitor-agent-update.timer
     printf "\nAutomatic daily updates have been enabled.\n"
     ;;
   esac
-
-  # Wait for the service to start or fail
-  if [ "$(systemctl is-active beszel-agent.service)" != "active" ]; then
-    echo "Error: The Beszel Agent service is not running."
-    echo "$(systemctl status beszel-agent.service)"
+  if [ "$(systemctl is-active cmonitor-agent.service)" != "active" ]; then
+    echo "Error: The CMonitor Agent service is not running."
+    echo "$(systemctl status cmonitor-agent.service)"
     exit 1
   fi
 fi
 
-printf "\n\033[32mBeszel Agent has been installed successfully! It is now running on port $PORT.\033[0m\n"
+printf "\n\033[32mCMonitor Agent has been installed successfully! It is now running on port $PORT.\033[0m\n"

@@ -169,7 +169,7 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo) error {
 
 	// check if container has valid data, otherwise may be in restart loop (#103)
 	if res.MemoryStats.Usage == 0 {
-		return fmt.Errorf("%s - no memory stats - see https://github.com/henrygd/beszel/issues/144", name)
+		return fmt.Errorf("%s - no memory stats - see https://github.com/nguyendkn/cmonitor/issues/144", name)
 	}
 
 	// memory (https://docs.docker.com/reference/cli/docker/container/stats/)
@@ -307,7 +307,7 @@ func newDockerManager(a *Agent) *dockerManager {
 	if dockerVersion, err := semver.Parse(versionInfo.Version); err == nil && dockerVersion.Major > 24 {
 		manager.goodDockerVersion = true
 	} else {
-		slog.Info(fmt.Sprintf("Docker %s is outdated. Upgrade if possible. See https://github.com/henrygd/beszel/issues/58", versionInfo.Version))
+		slog.Info(fmt.Sprintf("Docker %s is outdated. Upgrade if possible. See https://github.com/nguyendkn/cmonitor/issues/58", versionInfo.Version))
 	}
 
 	return manager

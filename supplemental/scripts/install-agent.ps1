@@ -5,180 +5,180 @@ param (
     [int]$Port = 45876
 )
 
-# Check if key is provided or empty
+# Kiểm tra xem khóa SSH có được cung cấp và không rỗng không
 if ([string]::IsNullOrWhiteSpace($Key)) {
-    Write-Host "ERROR: SSH Key is required." -ForegroundColor Red
-    Write-Host "Usage: .\install-agent.ps1 -Key 'your-ssh-key-here' [-Port port-number]" -ForegroundColor Yellow
+    Write-Host "LỖI: Khóa SSH là bắt buộc." -ForegroundColor Red
+    Write-Host "Cách sử dụng: .\install-agent.ps1 -Key 'your-ssh-key-here' [-Port port-number]" -ForegroundColor Yellow
     exit 1
 }
 
-# Stop on first error
+# Dừng script khi gặp lỗi
 $ErrorActionPreference = "Stop"
 
-# Function to check if running as admin
+# Hàm kiểm tra xem script có đang chạy với quyền admin không
 function Test-Admin {
     return ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 }
 
-# Non-admin tasks - install Scoop and Scoop apps - Only run if we're not in elevated mode
+# Giai đoạn không yêu cầu quyền admin - Cài đặt Scoop và các ứng dụng Scoop
 if (-not $Elevated) {
     try {
-        # Check if Scoop is already installed
+        # Kiểm tra xem Scoop đã được cài đặt chưa
         if (Get-Command scoop -ErrorAction SilentlyContinue) {
-            Write-Host "Scoop is already installed."
+            Write-Host "Scoop đã được cài đặt."
         } else {
-            Write-Host "Installing Scoop..."
+            Write-Host "Đang cài đặt Scoop..."
             Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
             
             if (-not (Get-Command scoop -ErrorAction SilentlyContinue)) {
-                throw "Failed to install Scoop"
+                throw "Cài đặt Scoop thất bại"
             }
         }
 
-        # Check if git is already installed
+        # Kiểm tra xem Git đã được cài đặt chưa
         if (Get-Command git -ErrorAction SilentlyContinue) {
-            Write-Host "Git is already installed."
+            Write-Host "Git đã được cài đặt."
         } else {
-            Write-Host "Installing Git..."
+            Write-Host "Đang cài đặt Git..."
             scoop install git
             
             if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
-                throw "Failed to install Git"
+                throw "Cài đặt Git thất bại"
             }
         }
 
-        # Check if nssm is already installed
+        # Kiểm tra xem NSSM đã được cài đặt chưa
         if (Get-Command nssm -ErrorAction SilentlyContinue) {
-            Write-Host "NSSM is already installed."
+            Write-Host "NSSM đã được cài đặt."
         } else {
-            Write-Host "Installing NSSM..."
+            Write-Host "Đang cài đặt NSSM..."
             scoop install nssm
             
             if (-not (Get-Command nssm -ErrorAction SilentlyContinue)) {
-                throw "Failed to install NSSM"
+                throw "Cài đặt NSSM thất bại"
             }
         }
         
-        # Add bucket and install agent
-        Write-Host "Adding beszel bucket..."
-        scoop bucket add beszel https://github.com/henrygd/beszel-scoops
+        # Thêm bucket và cài đặt cmonitor-agent
+        Write-Host "Thêm bucket cmonitor..."
+        scoop bucket add cmonitor https://github.com/henrygd/cmonitor-scoops
         
-        Write-Host "Installing beszel-agent..."
-        scoop install beszel-agent
+        Write-Host "Đang cài đặt cmonitor-agent..."
+        scoop install cmonitor-agent
         
-        if (-not (Get-Command beszel-agent -ErrorAction SilentlyContinue)) {
-            throw "Failed to install beszel-agent"
+        if (-not (Get-Command cmonitor-agent -ErrorAction SilentlyContinue)) {
+            throw "Cài đặt cmonitor-agent thất bại"
         }
     }
     catch {
-        Write-Host "ERROR: $($_.Exception.Message)" -ForegroundColor Red
-        Write-Host "Installation failed. Please check the error message above." -ForegroundColor Red
-        Write-Host "Press any key to exit..." -ForegroundColor Red
+        Write-Host "LỖI: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "Cài đặt thất bại. Vui lòng kiểm tra thông báo lỗi ở trên." -ForegroundColor Red
+        Write-Host "Nhấn phím bất kỳ để thoát..." -ForegroundColor Red
         $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
         exit 1
     }
 
-    # Check if we need admin privileges for the NSSM part
+    # Kiểm tra xem có cần quyền admin cho phần NSSM không
     if (-not (Test-Admin)) {
-        Write-Host "Admin privileges required for NSSM. Relaunching as admin..." -ForegroundColor Yellow
-        Write-Host "Check service status with 'nssm status beszel-agent'"
-        Write-Host "Edit service configuration with 'nssm edit beszel-agent'"
+        Write-Host "Yêu cầu quyền admin cho NSSM. Đang khởi động lại với quyền admin..." -ForegroundColor Yellow
+        Write-Host "Kiểm tra trạng thái dịch vụ với 'nssm status cmonitor-agent'"
+        Write-Host "Chỉnh sửa cấu hình dịch vụ với 'nssm edit cmonitor-agent'"
         
-        # Relaunch the script with the -Elevated switch and pass parameters
+        # Khởi động lại script với cờ -Elevated và truyền tham số
         Start-Process powershell.exe -Verb RunAs -ArgumentList "-File `"$PSCommandPath`" -Elevated -Key `"$Key`" -Port $Port"
         exit
     }
 }
 
-# Admin tasks - service installation and firewall rules
+# Giai đoạn yêu cầu quyền admin - Cài đặt dịch vụ và quy tắc tường lửa
 try {
-    $agentPath = Join-Path -Path $(scoop prefix beszel-agent) -ChildPath "beszel-agent.exe"
+    $agentPath = Join-Path -Path $(scoop prefix cmonitor-agent) -ChildPath "cmonitor-agent.exe"
     if (-not $agentPath) {
-        throw "Could not find beszel-agent executable. Make sure it was properly installed."
+        throw "Không thể tìm thấy tệp thực thi cmonitor-agent. Đảm bảo nó đã được cài đặt đúng."
     }
     
-    # Install and configure the service
-    Write-Host "Installing beszel-agent service..."
+    # Cài đặt và cấu hình dịch vụ
+    Write-Host "Đang cài đặt dịch vụ cmonitor-agent..."
     
-    # Check if service already exists
-    $existingService = Get-Service -Name "beszel-agent" -ErrorAction SilentlyContinue
+    # Kiểm tra xem dịch vụ đã tồn tại chưa
+    $existingService = Get-Service -Name "cmonitor-agent" -ErrorAction SilentlyContinue
     if ($existingService) {
-        Write-Host "Service already exists. Stopping and removing existing service..."
+        Write-Host "Dịch vụ đã tồn tại. Đang dừng và xóa dịch vụ hiện có..."
         try {
-            nssm stop beszel-agent
-            nssm remove beszel-agent confirm
+            nssm stop cmonitor-agent
+            nssm remove cmonitor-agent confirm
         } catch {
-            Write-Host "Warning: Failed to remove existing service: $($_.Exception.Message)" -ForegroundColor Yellow
+            Write-Host "Cảnh báo: Không thể xóa dịch vụ hiện có: $($_.Exception.Message)" -ForegroundColor Yellow
         }
     }
     
-    nssm install beszel-agent $agentPath
+    nssm install cmonitor-agent $agentPath
     if ($LASTEXITCODE -ne 0) {
-        throw "Failed to install beszel-agent service"
+        throw "Cài đặt dịch vụ cmonitor-agent thất bại"
     }
     
-    Write-Host "Configuring service environment variables..."
-    nssm set beszel-agent AppEnvironmentExtra "+KEY=$Key"
-    nssm set beszel-agent AppEnvironmentExtra "+PORT=$Port"
+    Write-Host "Đang cấu hình biến môi trường cho dịch vụ..."
+    nssm set cmonitor-agent AppEnvironmentExtra "+KEY=$Key"
+    nssm set cmonitor-agent AppEnvironmentExtra "+PORT=$Port"
     
-    # Configure log files
-    $logDir = "$env:ProgramData\beszel-agent\logs"
+    # Cấu hình tệp log
+    $logDir = "$env:ProgramData\cmonitor-agent\logs"
     if (-not (Test-Path $logDir)) {
         New-Item -ItemType Directory -Path $logDir -Force | Out-Null
     }
-    $logFile = "$logDir\beszel-agent.log"
-    nssm set beszel-agent AppStdout $logFile
-    nssm set beszel-agent AppStderr $logFile
+    $logFile = "$logDir\cmonitor-agent.log"
+    nssm set cmonitor-agent AppStdout $logFile
+    nssm set cmonitor-agent AppStderr $logFile
     
-    # Create a firewall rule if it doesn't exist
-    $ruleName = "Allow beszel-agent"
+    # Tạo quy tắc tường lửa nếu chưa có
+    $ruleName = "Allow cmonitor-agent"
     $existingRule = Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue
     
-    # Remove existing rule if found
+    # Xóa quy tắc cũ nếu tồn tại
     if ($existingRule) {
-        Write-Host "Removing existing firewall rule..."
+        Write-Host "Đang xóa quy tắc tường lửa hiện có..."
         try {
             Remove-NetFirewallRule -DisplayName $ruleName
-            Write-Host "Existing firewall rule removed successfully."
+            Write-Host "Quy tắc tường lửa cũ đã được xóa thành công."
         } catch {
-            Write-Host "Warning: Failed to remove existing firewall rule: $($_.Exception.Message)" -ForegroundColor Yellow
+            Write-Host "Cảnh báo: Không thể xóa quy tắc tường lửa hiện có: $($_.Exception.Message)" -ForegroundColor Yellow
         }
     }
     
-    # Create new rule with current settings
-    Write-Host "Creating firewall rule for beszel-agent on port $Port..."
+    # Tạo quy tắc mới với cài đặt hiện tại
+    Write-Host "Đang tạo quy tắc tường lửa cho cmonitor-agent trên cổng $Port..."
     try {
         New-NetFirewallRule -DisplayName $ruleName -Direction Inbound -Action Allow -Protocol TCP -LocalPort $Port
-        Write-Host "Firewall rule created successfully."
+        Write-Host "Quy tắc tường lửa đã được tạo thành công."
     } catch {
-        Write-Host "Warning: Failed to create firewall rule: $($_.Exception.Message)" -ForegroundColor Yellow
-        Write-Host "You may need to manually create a firewall rule for port $Port." -ForegroundColor Yellow
+        Write-Host "Cảnh báo: Không thể tạo quy tắc tường lửa: $($_.Exception.Message)" -ForegroundColor Yellow
+        Write-Host "Bạn có thể cần tạo quy tắc tường lửa thủ công cho cổng $Port." -ForegroundColor Yellow
     }
     
-    Write-Host "Starting beszel-agent service..."
-    nssm start beszel-agent
+    Write-Host "Đang khởi động dịch vụ cmonitor-agent..."
+    nssm start cmonitor-agent
     if ($LASTEXITCODE -ne 0) {
-        throw "Failed to start beszel-agent service"
+        throw "Khởi động dịch vụ cmonitor-agent thất bại"
     }
     
-    Write-Host "Checking beszel-agent service status..."
-    Start-Sleep -Seconds 5 # Allow time to start before checking status
-    $serviceStatus = nssm status beszel-agent
+    Write-Host "Đang kiểm tra trạng thái dịch vụ cmonitor-agent..."
+    Start-Sleep -Seconds 5 # Chờ dịch vụ khởi động trước khi kiểm tra
+    $serviceStatus = nssm status cmonitor-agent
     
     if ($serviceStatus -eq "SERVICE_RUNNING") {
-        Write-Host "Success! The beszel-agent service is running properly." -ForegroundColor Green
+        Write-Host "Thành công! Dịch vụ cmonitor-agent đang chạy đúng cách." -ForegroundColor Green
     } else {
-        Write-Host "Warning: The service status is '$serviceStatus' instead of 'SERVICE_RUNNING'." -ForegroundColor Yellow
-        Write-Host "You may need to troubleshoot the service installation." -ForegroundColor Yellow
+        Write-Host "Cảnh báo: Trạng thái dịch vụ là '$serviceStatus' thay vì 'SERVICE_RUNNING'." -ForegroundColor Yellow
+        Write-Host "Bạn có thể cần khắc phục sự cố cài đặt dịch vụ." -ForegroundColor Yellow
     }
 }
 catch {
-    Write-Host "ERROR: $($_.Exception.Message)" -ForegroundColor Red
-    Write-Host "Installation failed. Please check the error message above." -ForegroundColor Red
+    Write-Host "LỖI: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "Cài đặt thất bại. Vui lòng kiểm tra thông báo lỗi ở trên." -ForegroundColor Red
 }
 
-# Pause to see results before exit if this is an elevated window
+# Tạm dừng để xem kết quả trước khi thoát nếu đây là cửa sổ admin
 if ($Elevated) {
-    Write-Host "Press any key to exit..." -ForegroundColor Cyan
+    Write-Host "Nhấn phím bất kỳ để thoát..." -ForegroundColor Cyan
     $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 }

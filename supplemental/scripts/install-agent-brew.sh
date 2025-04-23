@@ -4,7 +4,7 @@ PORT=45876
 KEY=""
 
 usage() {
-  printf "Beszel Agent homebrew installation script\n\n"
+  printf "CMonitor Agent homebrew installation script\n\n"
   printf "Usage: ./install-agent-brew.sh [options]\n\n"
   printf "Options: \n"
   printf "  -k            SSH key (required, or interactive if not provided)\n"
@@ -64,20 +64,20 @@ if [ -z "$KEY" ]; then
   read -p "Enter SSH key: " KEY
 fi
 
-mkdir -p ~/.config/beszel ~/.cache/beszel
+mkdir -p ~/.config/cmonitor ~/.cache/cmonitor
 
-echo "KEY=\"$KEY\"" >~/.config/beszel/beszel-agent.env
-echo "LISTEN=$PORT" >>~/.config/beszel/beszel-agent.env
+echo "KEY=\"$KEY\"" >~/.config/cmonitor/cmonitor-agent.env
+echo "LISTEN=$PORT" >>~/.config/cmonitor/cmonitor-agent.env
 
-brew tap henrygd/beszel
-brew install beszel-agent
-brew services start beszel-agent
+brew tap henrygd/cmonitor
+brew install cmonitor-agent
+brew services start cmonitor-agent
 
-printf "\nCheck status: brew services info beszel-agent\n"
-echo "Stop: brew services stop beszel-agent"
-echo "Start: brew services start beszel-agent"
-echo "Restart: brew services restart beszel-agent"
-echo "Upgrade: brew upgrade beszel-agent"
-echo "Uninstall: brew uninstall beszel-agent"
-echo "View logs in ~/.cache/beszel/beszel-agent.log"
-printf "Change environment variables in ~/.config/beszel/beszel-agent.env\n"
+printf "\nCheck status: brew services info cmonitor-agent\n"
+echo "Stop: brew services stop cmonitor-agent"
+echo "Start: brew services start cmonitor-agent"
+echo "Restart: brew services restart cmonitor-agent"
+echo "Upgrade: brew upgrade cmonitor-agent"
+echo "Uninstall: brew uninstall cmonitor-agent"
+echo "View logs in ~/.cache/cmonitor/cmonitor-agent.log"
+printf "Change environment variables in ~/.config/cmonitor/cmonitor-agent.env\n"

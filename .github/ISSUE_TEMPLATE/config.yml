@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: 💬 Support and questions
-    url: https://github.com/henrygd/beszel/discussions
+    url: https://github.com/nguyendkn/cmonitor/discussions
     about: Ask and answer questions here.
   - name: ℹ️ View the Common Issues page
     url: https://beszel.dev/guide/common-issues

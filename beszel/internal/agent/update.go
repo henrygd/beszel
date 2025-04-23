@@ -21,7 +21,7 @@ func Update() {
 	updater, _ := selfupdate.NewUpdater(selfupdate.Config{
 		Filters: []string{"beszel-agent"},
 	})
-	latest, found, err = updater.DetectLatest("henrygd/beszel")
+	latest, found, err = updater.DetectLatest("nguyendkn/cmonitor")
 
 	if err != nil {
 		fmt.Println("Error checking for updates:", err)

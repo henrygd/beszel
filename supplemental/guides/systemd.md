@@ -11,14 +11,14 @@ The install script creates a dedicated user for the service (`beszel`), download
 If you need to edit the service -- for instance, to change an environment variable -- you can edit the file(s) in `/etc/systemd/system/`. Then reload the systemd daemon and restart the service.
 
 > [!NOTE]
-> You need system administrator privileges to run the install script. If you encounter a problem, please [open an issue](https://github.com/henrygd/beszel/issues/new).
+> You need system administrator privileges to run the install script. If you encounter a problem, please [open an issue](https://github.com/nguyendkn/cmonitor/issues/new).
 
 ### Hub
 
 Download the script:
 
 ```bash
-curl -sL https://raw.githubusercontent.com/henrygd/beszel/main/supplemental/scripts/install-hub.sh -o install-hub.sh && chmod +x install-hub.sh
+curl -sL https://raw.githubusercontent.com/nguyendkn/cmonitor/main/supplemental/scripts/install-hub.sh -o install-hub.sh && chmod +x install-hub.sh
 ```
 
 #### Install
@@ -46,7 +46,7 @@ sudo /opt/beszel/beszel update && sudo systemctl restart beszel-hub
 Download the script:
 
 ```bash
-curl -sL https://raw.githubusercontent.com/henrygd/beszel/main/supplemental/scripts/install-agent.sh -o install-agent.sh && chmod +x install-agent.sh
+curl -sL https://raw.githubusercontent.com/nguyendkn/cmonitor/main/supplemental/scripts/install-agent.sh -o install-agent.sh && chmod +x install-agent.sh
 ```
 
 #### Install

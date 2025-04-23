@@ -1,23 +1,23 @@
 #!/bin/bash
 
-# Check if running as root
+# Kiểm tra xem script có chạy với quyền root không
 if [ "$(id -u)" != "0" ]; then
   if command -v sudo >/dev/null 2>&1; then
     exec sudo "$0" "$@"
   else
-    echo "This script must be run as root. Please either:"
-    echo "1. Run this script as root (su root)"
-    echo "2. Install sudo and run with sudo"
+    echo "Script này phải được chạy với quyền root. Vui lòng:"
+    echo "1. Chạy script này với tư cách root (su root)"
+    echo "2. Cài đặt sudo và chạy với sudo"
     exit 1
   fi
 fi
 
-# Define default values
+# Định nghĩa các giá trị mặc định
 version=0.0.1
-PORT=8090                              # Default port
-GITHUB_PROXY_URL="https://ghfast.top/" # Default proxy URL
+PORT=8090                              # Cổng mặc định
+GITHUB_PROXY_URL="https://ghfast.top/" # URL proxy mặc định
 
-# Function to ensure the proxy URL ends with a /
+# Hàm để đảm bảo URL proxy kết thúc bằng dấu /
 ensure_trailing_slash() {
   if [ -n "$1" ]; then
     case "$1" in
@@ -29,64 +29,65 @@ ensure_trailing_slash() {
   fi
 }
 
-# Ensure the proxy URL ends with a /
+# Đảm bảo URL proxy kết thúc bằng dấu /
 GITHUB_PROXY_URL=$(ensure_trailing_slash "$GITHUB_PROXY_URL")
 
-# Read command line options
+# Đọc các tùy chọn dòng lệnh
 while getopts ":uhp:c:" opt; do
   case $opt in
   u) UNINSTALL="true" ;;
   h)
-    printf "Beszel Hub installation script\n\n"
-    printf "Usage: ./install-hub.sh [options]\n\n"
-    printf "Options: \n"
-    printf "  -u  : Uninstall the Beszel Hub\n"
-    printf "  -p <port> : Specify a port number (default: 8090)\n"
-    printf "  -c <url>  : Use a custom GitHub mirror URL (e.g., https://ghfast.top/)\n"
-    echo "  -h  : Display this help message"
+    printf "Script cài đặt CMonitor Hub\n\n"
+    printf "Cách sử dụng: ./install-hub.sh [tùy chọn]\n\n"
+    printf "Tùy chọn: \n"
+    printf "  -u  : Gỡ cài đặt CMonitor Hub\n"
+    printf "  -p <port> : Chỉ định số cổng (mặc định: 8090)\n"
+    printf "  -c <url>  : Sử dụng URL mirror GitHub tùy chỉnh (ví dụ: https://ghfast.top/)\n"
+    echo "  -h  : Hiển thị thông báo trợ giúp này"
     exit 0
     ;;
   p) PORT=$OPTARG ;;
   c) GITHUB_PROXY_URL=$(ensure_trailing_slash "$OPTARG") ;;
   \?)
-    echo "Invalid option: -$OPTARG"
+    echo "Tùy chọn không hợp lệ: -$OPTARG"
     exit 1
     ;;
   esac
 done
 
+# Quá trình gỡ cài đặt nếu được yêu cầu
 if [ "$UNINSTALL" = "true" ]; then
-  # Stop and disable the Beszel Hub service
-  echo "Stopping and disabling the Beszel Hub service..."
+  # Dừng và vô hiệu hóa dịch vụ CMonitor Hub
+  echo "Dừng và vô hiệu hóa dịch vụ CMonitor Hub..."
   systemctl stop beszel-hub.service
   systemctl disable beszel-hub.service
 
-  # Remove the systemd service file
-  echo "Removing the systemd service file..."
+  # Xóa tệp dịch vụ systemd
+  echo "Xóa tệp dịch vụ systemd..."
   rm /etc/systemd/system/beszel-hub.service
 
-  # Reload the systemd daemon
-  echo "Reloading the systemd daemon..."
+  # Tải lại systemd daemon
+  echo "Tải lại systemd daemon..."
   systemctl daemon-reload
 
-  # Remove the Beszel Hub binary and data
-  echo "Removing the Beszel Hub binary and data..."
+  # Xóa binary và dữ liệu của CMonitor Hub
+  echo "Xóa binary và dữ liệu của CMonitor Hub..."
   rm -rf /opt/beszel
 
-  # Remove the dedicated user
-  echo "Removing the dedicated user..."
-  userdel beszel
+  # Xóa người dùng dành riêng
+  echo "Xóa người dùng dành riêng..."
+  userdel cmonitor-hub
 
-  echo "The Beszel Hub has been uninstalled successfully!"
+  echo "CMonitor Hub đã được gỡ cài đặt thành công!"
   exit 0
 fi
 
-# Function to check if a package is installed
+# Hàm kiểm tra xem một gói đã được cài đặt chưa
 package_installed() {
   command -v "$1" >/dev/null 2>&1
 }
 
-# Check for package manager and install necessary packages if not installed
+# Kiểm tra trình quản lý gói và cài đặt các gói cần thiết nếu chưa có
 if package_installed apt-get; then
   if ! package_installed tar || ! package_installed curl; then
     apt-get update
@@ -101,33 +102,33 @@ elif package_installed pacman; then
     pacman -Sy --noconfirm tar curl
   fi
 else
-  echo "Warning: Please ensure 'tar' and 'curl' are installed."
+  echo "Cảnh báo: Vui lòng đảm bảo 'tar' và 'curl' đã được cài đặt."
 fi
 
-# Create a dedicated user for the service if it doesn't exist
-if ! id -u beszel >/dev/null 2>&1; then
-  echo "Creating a dedicated user for the Beszel Hub service..."
-  useradd -M -s /bin/false beszel
+# Tạo người dùng dành riêng cho dịch vụ nếu chưa tồn tại
+if ! id -u cmonitor-hub >/dev/null 2>&1; then
+  echo "Tạo người dùng dành riêng cho dịch vụ CMonitor Hub..."
+  useradd -M -s /bin/false cmonitor-hub
 fi
 
-# Download and install the Beszel Hub
-echo "Downloading and installing the Beszel Hub..."
-curl -sL "${GITHUB_PROXY_URL}https://github.com/henrygd/beszel/releases/latest/download/beszel_$(uname -s)_$(uname -m | sed 's/x86_64/amd64/' | sed 's/armv7l/arm/' | sed 's/aarch64/arm64/').tar.gz" | tar -xz -O beszel | tee ./beszel >/dev/null && chmod +x beszel
-mkdir -p /opt/beszel/cmonitor_data
-mv ./beszel /opt/beszel/beszel
-chown -R beszel:beszel /opt/beszel
+# Tải xuống và cài đặt CMonitor Hub
+echo "Tải xuống và cài đặt CMonitor Hub..."
+curl -sL "${GITHUB_PROXY_URL}https://github.com/nguyendkn/cmonitor/releases/latest/download/cmonitor_$(uname -s)_$(uname -m | sed 's/x86_64/amd64/' | sed 's/armv7l/arm/' | sed 's/aarch64/arm64/').tar.gz" | tar -xz -O beszel | tee ./beszel >/dev/null && chmod +x beszel
+mkdir -p /opt/cmonitor/cmonitor_data
+mv ./cmonitor /opt/cmonitor/cmonitor
+chown -R cmonitor-hub:cmonitor-hub /opt/cmonitor
 
-# Create the systemd service
-printf "Creating the systemd service for the Beszel Hub...\n\n"
-tee /etc/systemd/system/beszel-hub.service <<EOF
+# Tạo dịch vụ systemd
+printf "Tạo dịch vụ systemd cho CMonitor Hub...\n\n"
+tee /etc/systemd/system/cmonitor-hub.service <<EOF
 [Unit]
-Description=Beszel Hub Service
+Description=CMonitor Hub Service
 After=network.target
 
 [Service]
-ExecStart=/opt/beszel/beszel serve --http "0.0.0.0:$PORT"
-WorkingDirectory=/opt/beszel
-User=beszel
+ExecStart=/opt/cmonitor/cmonitor serve --http "0.0.0.0:$PORT"
+WorkingDirectory=/opt/cmonitor
+User=cmonitor-hub
 Restart=always
 RestartSec=5
 
@@ -135,20 +136,20 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF
 
-# Load and start the service
-printf "\nLoading and starting the Beszel Hub service...\n"
+# Tải và khởi động dịch vụ
+printf "\nTải và khởi động dịch vụ CMonitor Hub...\n"
 systemctl daemon-reload
-systemctl enable beszel-hub.service
-systemctl start beszel-hub.service
+systemctl enable cmonitor-hub.service
+systemctl start cmonitor-hub.service
 
-# Wait for the service to start or fail
+# Chờ dịch vụ khởi động hoặc thất bại
 sleep 2
 
-# Check if the service is running
-if [ "$(systemctl is-active beszel-hub.service)" != "active" ]; then
-  echo "Error: The Beszel Hub service is not running."
-  echo "$(systemctl status beszel-hub.service)"
+# Kiểm tra xem dịch vụ có đang chạy không
+if [ "$(systemctl is-active cmonitor-hub.service)" != "active" ]; then
+  echo "Lỗi: Dịch vụ CMonitor Hub không chạy."
+  echo "$(systemctl status cmonitor-hub.service)"
   exit 1
 fi
 
-echo "The Beszel Hub has been installed and configured successfully! It is now accessible on port $PORT."
+echo "CMonitor Hub đã được cài đặt và cấu hình thành công! Hiện đang chạy trên cổng $PORT."
