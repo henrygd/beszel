@@ -5,7 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
-		"build": "lingui extract --overwrite && lingui compile && vite build",
+		"build": "npx lingui extract --overwrite && npx lingui compile && vite build",
 		"preview": "vite preview",
 		"sync": "lingui extract --overwrite && lingui compile",
 		"sync_and_purge": "lingui extract --overwrite --clean && lingui compile"
@@ -13,6 +13,7 @@
 	"dependencies": {
 		"@henrygd/queue": "^1.0.7",
 		"@henrygd/semaphore": "^0.0.2",
+		"@lingui/core": "^5.3.1",
 		"@lingui/detect-locale": "^5.2.0",
 		"@lingui/macro": "^5.2.0",
 		"@lingui/react": "^5.2.0",

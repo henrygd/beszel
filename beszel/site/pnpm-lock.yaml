@@ -14,6 +14,9 @@ importers:
       '@henrygd/semaphore':
         specifier: ^0.0.2
         version: 0.0.2
+      '@lingui/core':
+        specifier: ^5.3.1
+        version: 5.3.1(@lingui/babel-plugin-lingui-macro@5.3.1(babel-plugin-macros@3.1.0)(typescript@5.8.3))(babel-plugin-macros@3.1.0)
       '@lingui/detect-locale':
         specifier: ^5.2.0
         version: 5.3.1
