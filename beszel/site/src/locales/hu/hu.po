@@ -52,7 +52,7 @@ msgstr "30 nap"
 msgid "Actions"
 msgstr "Műveletek"
 
-#: src/components/routes/home.tsx:94
+#: src/components/routes/home.tsx:83
 msgid "Active Alerts"
 msgstr "Aktív riasztások"
 
@@ -333,7 +333,7 @@ msgstr "Hiba"
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
-#: src/components/routes/home.tsx:113
+#: src/components/routes/home.tsx:102
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Túllépi a {0}{1} értéket az elmúlt {2, plural, one {# percben} other {# percben}}"
 

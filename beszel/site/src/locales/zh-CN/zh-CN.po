@@ -52,7 +52,7 @@ msgstr "30天"
 msgid "Actions"
 msgstr "操作"
 
-#: src/components/routes/home.tsx:94
+#: src/components/routes/home.tsx:83
 msgid "Active Alerts"
 msgstr "启用的警报"
 
@@ -333,7 +333,7 @@ msgstr "错误"
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
-#: src/components/routes/home.tsx:113
+#: src/components/routes/home.tsx:102
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "在过去的{2, plural, one {# 分钟} other {# 分钟}}中超过{0}{1}"
 

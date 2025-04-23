@@ -52,7 +52,7 @@ msgstr "30 днів"
 msgid "Actions"
 msgstr "Дії"
 
-#: src/components/routes/home.tsx:94
+#: src/components/routes/home.tsx:83
 msgid "Active Alerts"
 msgstr "Активні сповіщення"
 
@@ -333,7 +333,7 @@ msgstr "Помилка"
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
-#: src/components/routes/home.tsx:113
+#: src/components/routes/home.tsx:102
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Перевищує {0}{1} протягом {2, plural, one {останньої # хвилини} other {останніх # хвилин}}"
 

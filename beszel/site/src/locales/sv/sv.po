@@ -52,7 +52,7 @@ msgstr "30 dagar"
 msgid "Actions"
 msgstr "Åtgärder"
 
-#: src/components/routes/home.tsx:94
+#: src/components/routes/home.tsx:83
 msgid "Active Alerts"
 msgstr "Aktiva larm"
 
@@ -333,7 +333,7 @@ msgstr "Fel"
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
-#: src/components/routes/home.tsx:113
+#: src/components/routes/home.tsx:102
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Överskrider {0}{1} under de senaste {2, plural, one {# minuten} other {# minuterna}}"
 

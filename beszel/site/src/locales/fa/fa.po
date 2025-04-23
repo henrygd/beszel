@@ -52,7 +52,7 @@ msgstr "۳۰ روز"
 msgid "Actions"
 msgstr "عملیات"
 
-#: src/components/routes/home.tsx:94
+#: src/components/routes/home.tsx:83
 msgid "Active Alerts"
 msgstr " هشدارهای فعال"
 
@@ -333,7 +333,7 @@ msgstr "خطا"
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
-#: src/components/routes/home.tsx:113
+#: src/components/routes/home.tsx:102
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "در {2, plural, one {# دقیقه} other {# دقیقه}} گذشته از {0}{1} بیشتر است"
 

@@ -52,7 +52,7 @@ msgstr "30 dagar"
 msgid "Actions"
 msgstr "Aðgerðir"
 
-#: src/components/routes/home.tsx:94
+#: src/components/routes/home.tsx:83
 msgid "Active Alerts"
 msgstr "Virkar tilkynningar"
 
@@ -333,7 +333,7 @@ msgstr "Villa"
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
-#: src/components/routes/home.tsx:113
+#: src/components/routes/home.tsx:102
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Fór yfir {0}{1} á síðustu {2, plural, one {# mínútu} other {# mínútum}}"
 
