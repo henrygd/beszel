@@ -22,7 +22,22 @@ import (
 func (a *Agent) initializeSystemInfo() {
 	a.systemInfo.AgentVersion = beszel.Version
 	a.systemInfo.Hostname, _ = os.Hostname()
-	a.systemInfo.KernelVersion, _ = host.KernelVersion()
+
+	platform, _, version, _ := host.PlatformInformation()
+
+	if platform == "darwin" {
+		a.systemInfo.KernelVersion = version
+		a.systemInfo.Os = system.Darwin
+	} else if strings.Contains(platform, "indows") {
+		a.systemInfo.KernelVersion = strings.Replace(platform, "Microsoft ", "", 1) + " " + version
+		a.systemInfo.Os = system.Windows
+	} else {
+		a.systemInfo.Os = system.Linux
+	}
+
+	if a.systemInfo.KernelVersion == "" {
+		a.systemInfo.KernelVersion, _ = host.KernelVersion()
+	}
 
 	// cpu model
 	if info, err := cpu.Info(); err == nil && len(info) > 0 {

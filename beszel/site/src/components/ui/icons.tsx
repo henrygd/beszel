@@ -12,16 +12,27 @@ export function TuxIcon(props: SVGProps<SVGSVGElement>) {
 	)
 }
 
-// meteor icons (MIT) https://github.com/zkreations/icons/blob/main/LICENSE
+// icon park (Apache 2.0) https://github.com/bytedance/IconPark/blob/master/LICENSE
 export function WindowsIcon(props: SVGProps<SVGSVGElement>) {
 	return (
-		<svg viewBox="0 0 24 24" {...props}>
+		<svg {...props} viewBox="0 0 48 48">
 			<path
 				fill="none"
 				stroke="currentColor"
-				strokeLinejoin="round"
-				strokeWidth="2"
-				d="M2 12h20m-11.3 8.3V3.7M2 5l20-3v20L2 19Z"
+				strokeWidth="3.8"
+				d="m6.8 11 12.9-1.7v12.1h-13zm18-2.2 16.4-2v14.6H25zm0 18.6 16.4.4v13.4L25 38.6zm-18-.8 12.9.3v10.9l-13-2.2z"
+			/>
+		</svg>
+	)
+}
+
+// teenyicons (MIT) https://github.com/teenyicons/teenyicons/blob/master/LICENSE
+export function AppleIcon(props: SVGProps<SVGSVGElement>) {
+	return (
+		<svg viewBox="0 0 20 20" {...props}>
+			<path
+				fill="currentColor"
+				d="M14.1 4.7a5 5 0 0 1 3.8 2c-3.3 1.9-2.8 6.7.6 8L17.2 17c-.8 1.3-2 2.9-3.5 2.9-1.2 0-1.6-.9-3.3-.8s-2.2.8-3.5.8c-1.4 0-2.5-1.5-3.4-2.7-2.3-3.6-2.5-7.9-1.1-10 1-1.7 2.6-2.6 4.1-2.6 1.6 0 2.6.8 3.8.8 1.3 0 2-.8 3.8-.8M13.7 0c.2 1.2-.3 2.4-1 3.2a4 4 0 0 1-3 1.6c-.2-1.2.3-2.3 1-3.2.7-.8 2-1.5 3-1.6"
 			/>
 		</svg>
 	)

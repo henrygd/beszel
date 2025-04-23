@@ -99,6 +99,7 @@ const ChartTooltipContent = React.forwardRef<
 			unit?: string
 			filter?: string
 			contentFormatter?: (item: any, key: string) => React.ReactNode | string
+			truncate?: boolean
 		}
 >(
 	(
@@ -119,6 +120,7 @@ const ChartTooltipContent = React.forwardRef<
 			filter,
 			itemSorter,
 			contentFormatter: content = undefined,
+			truncate = false,
 		},
 		ref
 	) => {
@@ -214,10 +216,15 @@ const ChartTooltipContent = React.forwardRef<
 												nestLabel ? "items-end" : "items-center"
 											)}
 										>
-											<div className="grid gap-1.5">
-												{nestLabel ? tooltipLabel : null}
-												<span className="text-muted-foreground">{itemConfig?.label || item.name}</span>
-											</div>
+											{nestLabel ? tooltipLabel : null}
+											<span
+												className={cn(
+													"text-muted-foreground",
+													truncate ? "max-w-40 truncate leading-normal -my-1" : ""
+												)}
+											>
+												{itemConfig?.label || item.name}
+											</span>
 											{item.value !== undefined && (
 												<span className="font-medium tabular-nums text-foreground">
 													{content && typeof content === "function"

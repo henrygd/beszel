@@ -2,6 +2,7 @@ import { t } from "@lingui/core/macro"
 import { Plural, Trans } from "@lingui/react/macro"
 import { $systems, pb, $chartTime, $containerFilter, $userSettings, $direction, $maxValues } from "@/lib/stores"
 import { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord } from "@/types"
+import { ChartType, Os } from "@/lib/enums"
 import React, { lazy, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Card, CardHeader, CardTitle, CardDescription } from "../ui/card"
 import { useStore } from "@nanostores/react"
@@ -22,7 +23,7 @@ import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
-import { ChartAverage, ChartMax, Rows, TuxIcon, WindowsIcon } from "../ui/icons"
+import { ChartAverage, ChartMax, Rows, TuxIcon, WindowsIcon, AppleIcon } from "../ui/icons"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { timeTicks } from "d3-time"
@@ -251,12 +252,23 @@ export default function SystemDetail({ name }: { name: string }) {
 		if (!system.info) {
 			return []
 		}
-		let version = system.info.k ?? ""
-		const buildIndex = version.indexOf(" Build")
-		const isWindows = buildIndex !== -1
-		if (isWindows) {
-			version = version.substring(0, buildIndex)
+
+		const osInfo = {
+			[Os.Linux]: {
+				Icon: TuxIcon,
+				value: system.info.k,
+				label: t({ comment: "Linux kernel", message: "Kernel" }),
+			},
+			[Os.Darwin]: {
+				Icon: AppleIcon,
+				value: `macOS ${system.info.k}`,
+			},
+			[Os.Windows]: {
+				Icon: WindowsIcon,
+				value: system.info.k,
+			},
 		}
+
 		let uptime: React.ReactNode
 		if (system.info.u < 172800) {
 			const hours = Math.trunc(system.info.u / 3600)
@@ -274,11 +286,7 @@ export default function SystemDetail({ name }: { name: string }) {
 				hide: system.info.h === system.host || system.info.h === system.name,
 			},
 			{ value: uptime, Icon: ClockArrowUp, label: t`Uptime`, hide: !system.info.u },
-			{
-				value: version,
-				Icon: isWindows ? WindowsIcon : TuxIcon,
-				label: isWindows ? t`Windows build` : t({ comment: "Linux kernel", message: "Kernel" }),
-			},
+			osInfo[system.info.os ?? Os.Linux],
 			{
 				value: `${system.info.m} (${system.info.c}c${system.info.t ? `/${system.info.t}t` : ""})`,
 				Icon: CpuIcon,
@@ -456,7 +464,7 @@ export default function SystemDetail({ name }: { name: string }) {
 							description={t`Average CPU utilization of containers`}
 							cornerEl={containerFilterBar}
 						>
-							<ContainerChart chartData={chartData} dataKey="c" chartName="cpu" />
+							<ContainerChart chartData={chartData} dataKey="c" chartType={ChartType.CPU} />
 						</ChartCard>
 					)}
 
@@ -477,7 +485,7 @@ export default function SystemDetail({ name }: { name: string }) {
 							description={dockerOrPodman(t`Memory usage of docker containers`, system)}
 							cornerEl={containerFilterBar}
 						>
-							<ContainerChart chartData={chartData} chartName="mem" dataKey="m" unit=" MB" />
+							<ContainerChart chartData={chartData} dataKey="m" chartType={ChartType.Memory} />
 						</ChartCard>
 					)}
 
@@ -519,7 +527,7 @@ export default function SystemDetail({ name }: { name: string }) {
 								cornerEl={containerFilterBar}
 							>
 								{/* @ts-ignore */}
-								<ContainerChart chartData={chartData} chartName="net" dataKey="n" />
+								<ContainerChart chartData={chartData} chartType={ChartType.Network} dataKey="n" />
 							</ChartCard>
 						</div>
 					)}
