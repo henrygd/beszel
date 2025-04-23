@@ -61,7 +61,7 @@ if (-not $Elevated) {
         
         # Thêm bucket và cài đặt cmonitor-agent
         Write-Host "Thêm bucket cmonitor..."
-        scoop bucket add cmonitor https://github.com/henrygd/cmonitor-scoops
+        scoop bucket add cmonitor https://github.com/henrygd/cmonitor
         
         Write-Host "Đang cài đặt cmonitor-agent..."
         scoop install cmonitor-agent

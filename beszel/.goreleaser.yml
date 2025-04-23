@@ -119,7 +119,7 @@ scoops:
     name: cmonitor-agent
     repository:
       owner: nguyendkn
-      name: cmonitor-scoops
+      name: cmonitor
     homepage: 'https://cmonitor.dev'
     description: 'Agent for CMonitor, a lightweight server monitoring platform.'
     license: MIT
