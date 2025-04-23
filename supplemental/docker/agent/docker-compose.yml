@@ -1,13 +1,13 @@
 services:
-  beszel-agent:
-    image: 'henrygd/beszel-agent'
-    container_name: 'beszel-agent'
+  cmonitor-agent:
+    image: 'cmonitor/cmonitor-agent'
+    container_name: 'cmonitor-agent'
     restart: unless-stopped
     network_mode: host
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       # monitor other disks / partitions by mounting a folder in /extra-filesystems
-      # - /mnt/disk/.beszel:/extra-filesystems/sda1:ro
+      # - /mnt/disk/.cmonitor:/extra-filesystems/sda1:ro
     environment:
       PORT: 45876
       KEY: 'ssh-ed25519 YOUR_PUBLIC_KEY'

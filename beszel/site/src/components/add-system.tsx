@@ -52,15 +52,15 @@ export function AddSystemButton({ className }: { className?: string }) {
 
 function copyDockerCompose(port = "45876", publicKey: string) {
 	copyToClipboard(`services:
-  beszel-agent:
-    image: "henrygd/beszel-agent"
-    container_name: "beszel-agent"
+  cmonitor-agent:
+    image: "nguyendkn/cmonitor-agent"
+    container_name: "cmonitor-agent"
     restart: unless-stopped
     network_mode: host
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       # monitor other disks / partitions by mounting a folder in /extra-filesystems
-      # - /mnt/disk/.beszel:/extra-filesystems/sda1:ro
+      # - /mnt/disk/.cmonitor:/extra-filesystems/sda1:ro
     environment:
       LISTEN: ${port}
       KEY: "${publicKey}"`)
@@ -68,12 +68,12 @@ function copyDockerCompose(port = "45876", publicKey: string) {
 
 function copyDockerRun(port = "45876", publicKey: string) {
 	copyToClipboard(
-		`docker run -d --name beszel-agent --network host --restart unless-stopped -v /var/run/docker.sock:/var/run/docker.sock:ro -e KEY="${publicKey}" -e LISTEN=${port} henrygd/beszel-agent:latest`
+		`docker run -d --name beszel-agent --network host --restart unless-stopped -v /var/run/docker.sock:/var/run/docker.sock:ro -e KEY="${publicKey}" -e LISTEN=${port} nguyendkn/cmonitor-agent:latest`
 	)
 }
 
 function copyInstallCommand(port = "45876", publicKey: string) {
-	let cmd = `curl -sL https://raw.githubusercontent.com/henrygd/beszel/main/supplemental/scripts/install-agent.sh -o install-agent.sh && chmod +x install-agent.sh && ./install-agent.sh -p ${port} -k "${publicKey}"`
+	let cmd = `curl -sL https://raw.githubusercontent.com/nguyendkn/beszel/main/supplemental/scripts/install-agent.sh -o install-agent.sh && chmod +x install-agent.sh && ./install-agent.sh -p ${port} -k "${publicKey}"`
 	// add china mirrors flag if zh-CN
 	if ((i18n.locale + navigator.language).includes("zh-CN")) {
 		cmd += ` --china-mirrors`

@@ -1,18 +1,18 @@
 services:
-  beszel:
-    image: 'henrygd/beszel'
-    container_name: 'beszel'
+  cmonitor-hub:
+    image: 'henrygd/cmonitor-hub'
+    container_name: 'cmonitor-hub'
     restart: unless-stopped
     ports:
       - '8090:8090'
     volumes:
-      - ./beszel_data:/beszel_data
+      - ./cmonitor_data:/cmonitor_data
     extra_hosts:
       - 'host.docker.internal:host-gateway'
 
-  beszel-agent:
-    image: 'henrygd/beszel-agent'
-    container_name: 'beszel-agent'
+  cmonitor-agent:
+    image: 'henrygd/cmonitor-agent'
+    container_name: 'cmonitor-agent'
     restart: unless-stopped
     network_mode: host
     volumes:
