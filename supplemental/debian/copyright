@@ -1,8 +1,8 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: Beszel
-Upstream-Contact: henrygd <hank@henrygd.me>
-Source: https://beszel.dev/
+Upstream-Contact: nguyendkn <nguyendkn@gmail.com>
+Source: https://cmonitor.dev/
 
 Files: *
-Copyright: 2024 henrygd
+Copyright: 2024 nguyendkn
 License: MIT

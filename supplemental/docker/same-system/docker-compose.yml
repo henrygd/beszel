@@ -1,6 +1,6 @@
 services:
   cmonitor-hub:
-    image: 'henrygd/cmonitor-hub'
+    image: 'nguyendkn/cmonitor-hub'
     container_name: 'cmonitor-hub'
     restart: unless-stopped
     ports:
@@ -11,7 +11,7 @@ services:
       - 'host.docker.internal:host-gateway'
 
   cmonitor-agent:
-    image: 'henrygd/cmonitor-agent'
+    image: 'nguyendkn/cmonitor-agent'
     container_name: 'cmonitor-agent'
     restart: unless-stopped
     network_mode: host

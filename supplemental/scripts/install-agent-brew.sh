@@ -69,7 +69,7 @@ mkdir -p ~/.config/cmonitor ~/.cache/cmonitor
 echo "KEY=\"$KEY\"" >~/.config/cmonitor/cmonitor-agent.env
 echo "LISTEN=$PORT" >>~/.config/cmonitor/cmonitor-agent.env
 
-brew tap henrygd/cmonitor
+brew tap nguyendkn/cmonitor
 brew install cmonitor-agent
 brew services start cmonitor-agent
 
