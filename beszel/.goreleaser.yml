@@ -1,14 +1,14 @@
 version: 2
 
-project_name: beszel
+project_name: cmonitor
 
 before:
   hooks:
     - go mod tidy
 
 builds:
-  - id: beszel
-    binary: beszel
+  - id: cmonitor-hub
+    binary: cmonitor-hub
     main: cmd/hub/hub.go
     env:
       - CGO_ENABLED=0
@@ -20,8 +20,8 @@ builds:
       - arm64
       - arm
 
-  - id: beszel-agent
-    binary: beszel-agent
+  - id: cmonitor-agent
+    binary: cmonitor-agent
     main: cmd/agent/agent.go
     env:
       - CGO_ENABLED=0
@@ -50,10 +50,10 @@ builds:
         goarch: riscv64
 
 archives:
-  - id: beszel-agent
+  - id: cmonitor-agent
     format: tar.gz
     builds:
-      - beszel-agent
+      - cmonitor-agent
     name_template: >-
       {{ .Binary }}_
       {{- .Os }}_
@@ -62,43 +62,43 @@ archives:
       - goos: windows
         format: zip
 
-  - id: beszel
+  - id: cmonitor-hub
     format: tar.gz
     builds:
-      - beszel
+      - cmonitor-hub
     name_template: >-
       {{ .Binary }}_
       {{- .Os }}_
       {{- .Arch }}
 
 nfpms:
-  - id: beszel-agent
-    package_name: beszel-agent
+  - id: cmonitor-agent
+    package_name: cmonitor-agent
     description: |-
-      Agent for Beszel
-      Beszel is a lightweight server monitoring platform that includes Docker
+      Agent for CMonitor
+      CMonitor is a lightweight server monitoring platform that includes Docker
       statistics, historical data, and alert functions. It has a friendly web
       interface, simple configuration, and is ready to use out of the box.
       It supports automatic backup, multi-user, OAuth authentication, and
       API access.
-    maintainer: henrygd <hank@henrygd.me>
+    maintainer: nguyendkn <dknguyen2304@gmail.com>
     section: net
     builds:
-      - beszel-agent
+      - cmonitor-agent
     formats:
       - deb
     # don't think this is needed with CGO_ENABLED=0
     # dependencies:
     #   - libc6
     contents:
-      - src: ../supplemental/debian/beszel-agent.service
-        dst: lib/systemd/system/beszel-agent.service
+      - src: ../supplemental/debian/cmonitor-agent.service
+        dst: lib/systemd/system/cmonitor-agent.service
         packager: deb
       - src: ../supplemental/debian/copyright
-        dst: usr/share/doc/beszel-agent/copyright
+        dst: usr/share/doc/cmonitor-agent/copyright
         packager: deb
       - src: ../supplemental/debian/lintian-overrides
-        dst: usr/share/lintian/overrides/beszel-agent
+        dst: usr/share/lintian/overrides/cmonitor-agent
         packager: deb
     scripts:
       postinstall: ../supplemental/debian/postinstall.sh
@@ -115,62 +115,62 @@ nfpms:
         #config: ../supplemental/debian/config.sh
 
 scoops:
-  - ids: [beszel-agent]
-    name: beszel-agent
+  - ids: [cmonitor-agent]
+    name: cmonitor-agent
     repository:
-      owner: henrygd
-      name: beszel-scoops
-    homepage: 'https://beszel.dev'
-    description: 'Agent for Beszel, a lightweight server monitoring platform.'
+      owner: nguyendkn
+      name: cmonitor-scoops
+    homepage: 'https://cmonitor.dev'
+    description: 'Agent for CMonitor, a lightweight server monitoring platform.'
     license: MIT
 
 # # Needs choco installed, so doesn't build on linux / default gh workflow :(
 # chocolateys:
-#   - title: Beszel Agent
-#     ids: [beszel-agent]
-#     package_source_url: https://github.com/henrygd/beszel-chocolatey
-#     owners: henrygd
-#     authors: henrygd
+#   - title: CMonitor Agent
+#     ids: [cmonitor-agent]
+#     package_source_url: https://github.com/nguyendkn/cmonitor-chocolatey
+#     owners: nguyendkn
+#     authors: nguyendkn
 #     summary: 'Agent for Beszel, a lightweight server monitoring platform.'
 #     description: |
 #       Beszel is a lightweight server monitoring platform that includes Docker statistics, historical data, and alert functions.
 
 #       It has a friendly web interface, simple configuration, and is ready to use out of the box. It supports automatic backup, multi-user, OAuth authentication, and API access.
-#     license_url: https://github.com/henrygd/beszel/blob/main/LICENSE
+#     license_url: https://github.com/nguyendkn/beszel/blob/main/LICENSE
 #     project_url: https://beszel.dev
-#     project_source_url: https://github.com/henrygd/beszel
+#     project_source_url: https://github.com/nguyendkn/beszel
 #     docs_url: https://beszel.dev/guide/getting-started
 #     icon_url: https://cdn.jsdelivr.net/gh/selfhst/icons/png/beszel.png
-#     bug_tracker_url: https://github.com/henrygd/beszel/issues
-#     copyright: 2025 henrygd
+#     bug_tracker_url: https://github.com/nguyendkn/beszel/issues
+#     copyright: 2025 nguyendkn
 #     tags: foss cross-platform admin monitoring
 #     require_license_acceptance: false
-#     release_notes: 'https://github.com/henrygd/beszel/releases/tag/v{{ .Version }}'
+#     release_notes: 'https://github.com/nguyendkn/beszel/releases/tag/v{{ .Version }}'
 
 brews:
-  - ids: [beszel-agent]
-    name: beszel-agent
+  - ids: [cmonitor-agent]
+    name: cmonitor-agent
     repository:
-      owner: henrygd
-      name: homebrew-beszel
-    homepage: 'https://beszel.dev'
-    description: 'Agent for Beszel, a lightweight server monitoring platform.'
+      owner: nguyendkn
+      name: homebrew-cmonitor
+    homepage: 'https://cmonitor.dev'
+    description: 'Agent for CMonitor, a lightweight server monitoring platform.'
     license: MIT
     extra_install: |
-      (bin/"beszel-agent-launcher").write <<~EOS
+      (bin/"cmonitor-agent-launcher").write <<~EOS
         #!/bin/bash
         set -a
-        if [ -f "$HOME/.config/beszel/beszel-agent.env" ]; then
-          source "$HOME/.config/beszel/beszel-agent.env"
+        if [ -f "$HOME/.config/cmonitor/cmonitor-agent.env" ]; then
+          source "$HOME/.config/cmonitor/cmonitor-agent.env"
         fi
         set +a
-        exec #{bin}/beszel-agent "$@"
+        exec #{bin}/cmonitor-agent "$@"
       EOS
-      (bin/"beszel-agent-launcher").chmod 0755
+      (bin/"cmonitor-agent-launcher").chmod 0755
     service: |
-      run ["#{bin}/beszel-agent-launcher"]
-      log_path "#{Dir.home}/.cache/beszel/beszel-agent.log"
-      error_log_path "#{Dir.home}/.cache/beszel/beszel-agent.log"
+      run ["#{bin}/cmonitor-agent-launcher"]
+      log_path "#{Dir.home}/.cache/cmonitor/cmonitor-agent.log"
+      error_log_path "#{Dir.home}/.cache/cmonitor/cmonitor-agent.log"
       keep_alive true
 
 release:
