@@ -320,7 +320,13 @@ export default function SystemDetail({ name }: { name: string }) {
 			return
 		}
 		const handleKeyUp = (e: KeyboardEvent) => {
-			if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+			if (
+				e.target instanceof HTMLInputElement ||
+				e.target instanceof HTMLTextAreaElement ||
+				e.shiftKey ||
+				e.ctrlKey ||
+				e.metaKey
+			) {
 				return
 			}
 			const currentIndex = systems.findIndex((s) => s.name === name)
