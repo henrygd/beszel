@@ -1,16 +1,16 @@
 [Unit]
-Description=Beszel Agent Service
+Description=CMonitor Agent Service
 Wants=network-online.target
 After=network-online.target
 
 [Service]
 Environment="PORT=45876"
-# Port number can be overridden in beszel-agent.conf if needed
-EnvironmentFile=/etc/beszel-agent.conf
-ExecStart=/usr/bin/beszel-agent
-User=beszel
+# Port number can be overridden in cmonitor-agent.conf if needed
+EnvironmentFile=/etc/cmonitor-agent.conf
+ExecStart=/usr/bin/cmonitor-agent
+User=cmonitor-agent
 Restart=on-failure
-StateDirectory=beszel-agent
+StateDirectory=cmonitor-agent
 
 # Security/sandboxing settings
 KeyringMode=private
