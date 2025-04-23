@@ -38,6 +38,16 @@ export function AppleIcon(props: SVGProps<SVGSVGElement>) {
 	)
 }
 
+// ion icons (MIT) https://github.com/ionic-team/ionicons/blob/main/LICENSE
+export function DockerIcon(props: SVGProps<SVGSVGElement>) {
+	return (
+		<svg {...props} viewBox="0 0 512 512" fill="currentColor">
+			<path d="M507 211c-1-1-14-11-42-11a133 133 0 0 0-21 2c-6-36-36-54-37-55l-7-4-5 7a102 102 0 0 0-13 30c-5 21-2 40 8 57-12 7-33 9-37 9H16a16 16 0 0 0-16 16 241 241 0 0 0 15 87c11 30 29 53 51 67 25 15 66 24 113 24a344 344 0 0 0 62-6 257 257 0 0 0 82-29 224 224 0 0 0 55-46c27-30 43-64 55-94h4c30 0 48-12 58-22a63 63 0 0 0 15-22l2-6Z" />
+			<path d="M47 236h45a4 4 0 0 0 4-4v-40a4 4 0 0 0-4-4H47a4 4 0 0 0-4 4v40a4 4 0 0 0 4 4m63 0h45a4 4 0 0 0 4-4v-40a4 4 0 0 0-4-4h-45a4 4 0 0 0-4 4v40a4 4 0 0 0 4 4m63 0h45a4 4 0 0 0 4-4v-40a4 4 0 0 0-4-4h-45a4 4 0 0 0-4 4v40a4 4 0 0 0 4 4m62 0h45a4 4 0 0 0 4-4v-40a4 4 0 0 0-4-4h-45a4 4 0 0 0-4 4v40a4 4 0 0 0 4 4m-125-57h45a4 4 0 0 0 4-4v-41a4 4 0 0 0-4-4h-45a4 4 0 0 0-4 4v41a4 4 0 0 0 4 4m63 0h45a4 4 0 0 0 4-4v-41a4 4 0 0 0-4-4h-45a4 4 0 0 0-4 4v41a4 4 0 0 0 4 4m62 0h45a4 4 0 0 0 4-4v-41a4 4 0 0 0-4-4h-45a4 4 0 0 0-4 4v41a4 4 0 0 0 4 4m0-58h45a4 4 0 0 0 4-4V76a4 4 0 0 0-4-4h-45a4 4 0 0 0-4 4v40a4 4 0 0 0 4 4m63 116h45a4 4 0 0 0 4-4v-40a4 4 0 0 0-4-4h-45a4 4 0 0 0-4 4v40a4 4 0 0 0 4 4" />
+		</svg>
+	)
+}
+
 // MingCute Apache License 2.0 https://github.com/Richard9394/MingCute
 export function Rows(props: SVGProps<SVGSVGElement>) {
 	return (

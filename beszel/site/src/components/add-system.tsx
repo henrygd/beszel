@@ -1,5 +1,5 @@
-import { Trans } from "@lingui/react/macro";
-import { t } from "@lingui/core/macro";
+import { Trans } from "@lingui/react/macro"
+import { t } from "@lingui/core/macro"
 import { Button } from "@/components/ui/button"
 import {
 	Dialog,
@@ -19,11 +19,12 @@ import { $publicKey, pb } from "@/lib/stores"
 import { cn, copyToClipboard, isReadOnlyUser, useLocalStorage } from "@/lib/utils"
 import { i18n } from "@lingui/core"
 import { useStore } from "@nanostores/react"
-import { ChevronDownIcon, Copy, PlusIcon } from "lucide-react"
+import { ChevronDownIcon, Copy, ExternalLinkIcon, PlusIcon } from "lucide-react"
 import { memo, useRef, useState } from "react"
 import { basePath, navigate } from "./router"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import { SystemRecord } from "@/types"
+import { AppleIcon, DockerIcon, TuxIcon, WindowsIcon } from "./ui/icons"
 
 export function AddSystemButton({ className }: { className?: string }) {
 	const [open, setOpen] = useState(false)
@@ -72,13 +73,20 @@ function copyDockerRun(port = "45876", publicKey: string) {
 	)
 }
 
-function copyInstallCommand(port = "45876", publicKey: string) {
-	let cmd = `curl -sL https://raw.githubusercontent.com/henrygd/beszel/main/supplemental/scripts/install-agent.sh -o install-agent.sh && chmod +x install-agent.sh && ./install-agent.sh -p ${port} -k "${publicKey}"`
-	// add china mirrors flag if zh-CN
+function copyLinuxCommand(port = "45876", publicKey: string, brew = false) {
+	let cmd = `curl -sL https://get.beszel.dev${
+		brew ? "/brew" : ""
+	} -o /tmp/install-agent.sh && chmod +x /tmp/install-agent.sh && /tmp/install-agent.sh -p ${port} -k "${publicKey}"`
 	if ((i18n.locale + navigator.language).includes("zh-CN")) {
 		cmd += ` --china-mirrors`
 	}
 	copyToClipboard(cmd)
+}
+
+function copyWindowsCommand(port = "45876", publicKey: string) {
+	copyToClipboard(
+		`Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser; & iwr -useb https://get.beszel.dev -OutFile "$env:TEMP\install-agent.ps1"; & "$env:TEMP\install-agent.ps1" -Key "${publicKey}" -Port ${port}`
+	)
 }
 
 /**
@@ -197,7 +205,7 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 											className="absolute end-0 top-0"
 											onClick={() => copyToClipboard(publicKey)}
 										>
-											<Copy className="h-4 w-4 " />
+											<Copy className="size-4" />
 										</Button>
 									</TooltipTrigger>
 									<TooltipContent>
@@ -215,17 +223,39 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 							<CopyButton
 								text={t`Copy` + " docker compose"}
 								onClick={() => copyDockerCompose(isUnixSocket ? hostValue : port.current?.value, publicKey)}
-								dropdownText={t`Copy` + " docker run"}
-								dropdownOnClick={() => copyDockerRun(isUnixSocket ? hostValue : port.current?.value, publicKey)}
+								icon={<DockerIcon className="size-4 -me-0.5" />}
+								dropdownItems={[
+									{
+										text: t`Copy` + " docker run",
+										onClick: () => copyDockerRun(isUnixSocket ? hostValue : port.current?.value, publicKey),
+										icons: [<DockerIcon className="size-4" />],
+									},
+								]}
 							/>
 						</TabsContent>
 						{/* Binary */}
 						<TabsContent value="binary" className="contents">
 							<CopyButton
 								text={t`Copy Linux command`}
-								onClick={() => copyInstallCommand(isUnixSocket ? hostValue : port.current?.value, publicKey)}
-								dropdownText={t`Manual setup instructions`}
-								dropdownUrl="https://beszel.dev/guide/agent-installation#binary"
+								icon={<TuxIcon className="size-4" />}
+								onClick={() => copyLinuxCommand(isUnixSocket ? hostValue : port.current?.value, publicKey)}
+								dropdownItems={[
+									{
+										text: t`Copy Homebrew command`,
+										onClick: () => copyLinuxCommand(isUnixSocket ? hostValue : port.current?.value, publicKey, true),
+										icons: [<AppleIcon className="size-4" />, <TuxIcon className="w-4 h-4" />],
+									},
+									{
+										text: t`Copy Windows command`,
+										onClick: () => copyWindowsCommand(isUnixSocket ? hostValue : port.current?.value, publicKey),
+										icons: [<WindowsIcon className="size-4" />],
+									},
+									{
+										text: t`Manual setup instructions`,
+										url: "https://beszel.dev/guide/agent-installation#binary",
+										icons: [<ExternalLinkIcon className="size-4" />],
+									},
+								]}
 							/>
 						</TabsContent>
 						{/* Save */}
@@ -237,19 +267,30 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 	)
 })
 
+interface DropdownItem {
+	text: string
+	onClick?: () => void
+	url?: string
+	icons?: React.ReactNode[]
+}
+
 interface CopyButtonProps {
 	text: string
 	onClick: () => void
-	dropdownText: string
-	dropdownOnClick?: () => void
-	dropdownUrl?: string
+	dropdownItems: DropdownItem[]
+	icon?: React.ReactNode
 }
 
 const CopyButton = memo((props: CopyButtonProps) => {
 	return (
 		<div className="flex gap-0 rounded-lg">
-			<Button type="button" variant="outline" onClick={props.onClick} className="rounded-e-none dark:border-e-0 grow">
-				{props.text}
+			<Button
+				type="button"
+				variant="outline"
+				onClick={props.onClick}
+				className="rounded-e-none dark:border-e-0 grow flex items-center gap-2"
+			>
+				{props.text} {props.icon}
 			</Button>
 			<div className="w-px h-full bg-muted"></div>
 			<DropdownMenu>
@@ -259,15 +300,24 @@ const CopyButton = memo((props: CopyButtonProps) => {
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end">
-					{props.dropdownUrl ? (
-						<DropdownMenuItem asChild>
-							<a href={props.dropdownUrl} className="cursor-pointer" target="_blank" rel="noopener noreferrer">
-								{props.dropdownText}
-							</a>
+					{props.dropdownItems.map((item, index) => (
+						<DropdownMenuItem key={index} asChild={!!item.url}>
+							{item.url ? (
+								<a
+									href={item.url}
+									className="cursor-pointer flex items-center gap-1.5"
+									target="_blank"
+									rel="noopener noreferrer"
+								>
+									{item.text} {item.icons?.map((icon) => icon)}
+								</a>
+							) : (
+								<div onClick={item.onClick} className="cursor-pointer flex items-center gap-1.5">
+									{item.text} {item.icons?.map((icon) => icon)}
+								</div>
+							)}
 						</DropdownMenuItem>
-					) : (
-						<DropdownMenuItem onClick={props.dropdownOnClick} className="cursor-pointer">{props.dropdownText}</DropdownMenuItem>
-					)}
+					))}
 				</DropdownMenuContent>
 			</DropdownMenu>
 		</div>
