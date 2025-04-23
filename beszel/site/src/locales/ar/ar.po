@@ -8,7 +8,7 @@ msgstr ""
 "Language: ar\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-04-06 01:52\n"
+"PO-Revision-Date: 2025-04-23 17:19\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
@@ -148,7 +148,7 @@ msgstr "يدعم Beszel OpenID Connect والعديد من مزودي المصا
 
 #: src/components/routes/settings/notifications.tsx:129
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
-msgstr "يستخدم Beszel <0>Shoutrrr</0> للتكامل مع خدمات الإشعارات الشهيرة."
+msgstr "يستخدم بيزيل <0>Shoutrrr</0> للتكامل مع خدمات الإشعارات الشهيرة."
 
 #: src/components/add-system.tsx:131
 msgid "Binary"
@@ -281,7 +281,7 @@ msgstr "استخدام القرص لـ {extraFsName}"
 
 #: src/components/routes/system.tsx:445
 msgid "Docker CPU Usage"
-msgstr "استخدام CPU لـ Docker"
+msgstr "استخدام المعالج لـ Docker"
 
 #: src/components/routes/system.tsx:466
 msgid "Docker Memory Usage"
@@ -310,19 +310,19 @@ msgstr "تعديل"
 #: src/components/login/forgot-pass-form.tsx:54
 #: src/components/login/auth-form.tsx:176
 msgid "Email"
-msgstr "البريد الإلكتروني"
+msgstr "البريد الإشباكي"
 
 #: src/components/routes/settings/notifications.tsx:93
 msgid "Email notifications"
-msgstr "إشعارات البريد الإلكتروني"
+msgstr "إشعارات البريد الإشباكي"
 
 #: src/components/login/login.tsx:38
 msgid "Enter email address to reset password"
-msgstr "أدخل عنوان البريد الإلكتروني لإعادة تعيين كلمة المرور"
+msgstr "أدخل عنوان البريد الإشباكي لإعادة تعيين كلمة المرور"
 
 #: src/components/routes/settings/notifications.tsx:113
 msgid "Enter email address..."
-msgstr "أدخل عنوان البريد الإلكتروني..."
+msgstr "أدخل عنوان البريد الإشباكي..."
 
 #: src/components/routes/settings/notifications.tsx:189
 #: src/components/routes/settings/config-yaml.tsx:29
@@ -403,12 +403,12 @@ msgstr "إذا فقدت كلمة المرور لحساب المسؤول الخا
 
 #: src/components/login/auth-form.tsx:18
 msgid "Invalid email address."
-msgstr "عنوان البريد الإلكتروني غير صالح."
+msgstr "عنوان البريد الإشباكي غير صالح."
 
 #. Linux kernel
 #: src/components/routes/system.tsx:271
 msgid "Kernel"
-msgstr "كيرنل"
+msgstr "النواة"
 
 #: src/components/routes/settings/general.tsx:45
 msgid "Language"
@@ -627,7 +627,7 @@ msgstr "استئناف"
 
 #: src/components/routes/settings/notifications.tsx:119
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
-msgstr "احفظ العنوان باستخدام مفتاح الإدخال أو الفاصلة. اتركه فارغًا لتعطيل إشعارات البريد الإلكتروني."
+msgstr "احفظ العنوان باستخدام مفتاح الإدخال أو الفاصلة. اتركه فارغًا لتعطيل إشعارات البريد الإشباكي."
 
 #: src/components/routes/settings/notifications.tsx:169
 #: src/components/routes/settings/general.tsx:106
@@ -762,7 +762,7 @@ msgstr "معدل نقل نظام الملفات الجذر"
 
 #: src/components/routes/settings/notifications.tsx:108
 msgid "To email(s)"
-msgstr "إلى البريد الإلكتروني"
+msgstr "إلى البريد الإشباكي"
 
 #: src/components/routes/system.tsx:409
 #: src/components/routes/system.tsx:422
