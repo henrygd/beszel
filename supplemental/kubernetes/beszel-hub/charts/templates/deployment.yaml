@@ -65,7 +65,7 @@ spec:
           {{- if .Values.persistentVolumeClaim.enabled }}
           volumeMounts:
             - name: data
-              mountPath: /beszel_data
+              mountPath: /cmonitor_data
             {{- with .Values.volumeMounts }}
               {{- toYaml . | nindent 12 }}
             {{- end }}

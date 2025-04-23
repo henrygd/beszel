@@ -113,7 +113,7 @@ fi
 # Download and install the Beszel Hub
 echo "Downloading and installing the Beszel Hub..."
 curl -sL "${GITHUB_PROXY_URL}https://github.com/henrygd/beszel/releases/latest/download/beszel_$(uname -s)_$(uname -m | sed 's/x86_64/amd64/' | sed 's/armv7l/arm/' | sed 's/aarch64/arm64/').tar.gz" | tar -xz -O beszel | tee ./beszel >/dev/null && chmod +x beszel
-mkdir -p /opt/beszel/beszel_data
+mkdir -p /opt/beszel/cmonitor_data
 mv ./beszel /opt/beszel/beszel
 chown -R beszel:beszel /opt/beszel
 

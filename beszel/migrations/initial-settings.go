@@ -13,7 +13,7 @@ func init() {
 	m.Register(func(app core.App) error {
 		// initial settings
 		settings := app.Settings()
-		settings.Meta.AppName = "Beszel"
+		settings.Meta.AppName = "CMonitor"
 		settings.Meta.HideControls = true
 		settings.Logs.MinLevel = 4
 		if err := app.Save(settings); err != nil {
