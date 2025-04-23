@@ -12,7 +12,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - image: nguyendkn/cmonitor
+          - image: nguyendkn/cmonitor-hub
             context: ./beszel
             dockerfile: ./beszel/dockerfile_Hub
             registry: docker.io
@@ -24,7 +24,7 @@ jobs:
             registry: docker.io
             username_secret: DOCKERHUB_USERNAME
             password_secret: DOCKERHUB_TOKEN
-          - image: ghcr.io/${{ github.repository }}/cmonitor
+          - image: ghcr.io/${{ github.repository }}/cmonitor-hub
             context: ./beszel
             dockerfile: ./beszel/dockerfile_Hub
             registry: ghcr.io
