@@ -152,7 +152,7 @@ brews:
     name: cmonitor-agent
     repository:
       owner: nguyendkn
-      name: homebrew-cmonitor
+      name: cmonitor
     homepage: 'https://cmonitor.dev'
     description: 'Agent for CMonitor, a lightweight server monitoring platform.'
     license: MIT
