@@ -157,6 +157,7 @@ export default memo(function ContainerChart({
 					<ChartTooltip
 						animationEasing="ease-out"
 						animationDuration={150}
+						truncate={true}
 						labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 						// @ts-ignore
 						itemSorter={(a, b) => b.value - a.value}
