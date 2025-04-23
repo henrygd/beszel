@@ -19,11 +19,11 @@ msgstr ""
 "X-Crowdin-File-ID: 16\n"
 
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
-#: src/components/routes/system.tsx:265
+#: src/components/routes/system.tsx:277
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# 天} other {# 天}}"
 
-#: src/components/routes/system.tsx:263
+#: src/components/routes/system.tsx:275
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# 小时} other {# 小时}}"
 
@@ -106,11 +106,11 @@ msgstr "您确定要删除{name}吗？"
 msgid "Automatic copy requires a secure context."
 msgstr "自动复制所需的安全上下文。"
 
-#: src/components/routes/system.tsx:680
+#: src/components/routes/system.tsx:688
 msgid "Average"
 msgstr "平均"
 
-#: src/components/routes/system.tsx:456
+#: src/components/routes/system.tsx:464
 msgid "Average CPU utilization of containers"
 msgstr "容器的平均 CPU 使用率"
 
@@ -119,16 +119,16 @@ msgstr "容器的平均 CPU 使用率"
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "平均值超过<0>{value}{0}</0>"
 
-#: src/components/routes/system.tsx:557
+#: src/components/routes/system.tsx:565
 msgid "Average power consumption of GPUs"
 msgstr "GPU 平均能耗"
 
-#: src/components/routes/system.tsx:445
+#: src/components/routes/system.tsx:453
 msgid "Average system-wide CPU utilization"
 msgstr "系统范围内的平均 CPU 使用率"
 
 #. placeholder {0}: gpu.n
-#: src/components/routes/system.tsx:579
+#: src/components/routes/system.tsx:587
 msgid "Average utilization of {0}"
 msgstr "{0} 平均利用率"
 
@@ -138,7 +138,7 @@ msgid "Backups"
 msgstr "备份"
 
 #: src/lib/utils.ts:337
-#: src/components/routes/system.tsx:501
+#: src/components/routes/system.tsx:509
 msgid "Bandwidth"
 msgstr "带宽"
 
@@ -234,7 +234,7 @@ msgid "CPU"
 msgstr "CPU"
 
 #: src/lib/utils.ts:319
-#: src/components/routes/system.tsx:444
+#: src/components/routes/system.tsx:452
 #: src/components/charts/area-chart.tsx:58
 msgid "CPU Usage"
 msgstr "CPU使用率"
@@ -265,29 +265,29 @@ msgstr "删除"
 msgid "Disk"
 msgstr "磁盘"
 
-#: src/components/routes/system.tsx:491
+#: src/components/routes/system.tsx:499
 msgid "Disk I/O"
 msgstr "磁盘I/O"
 
 #: src/lib/utils.ts:331
-#: src/components/routes/system.tsx:484
+#: src/components/routes/system.tsx:492
 #: src/components/charts/disk-chart.tsx:77
 msgid "Disk Usage"
 msgstr "磁盘使用"
 
-#: src/components/routes/system.tsx:613
+#: src/components/routes/system.tsx:621
 msgid "Disk usage of {extraFsName}"
 msgstr "{extraFsName}的磁盘使用"
 
-#: src/components/routes/system.tsx:455
+#: src/components/routes/system.tsx:463
 msgid "Docker CPU Usage"
 msgstr "Docker CPU使用"
 
-#: src/components/routes/system.tsx:476
+#: src/components/routes/system.tsx:484
 msgid "Docker Memory Usage"
 msgstr "Docker内存使用"
 
-#: src/components/routes/system.tsx:517
+#: src/components/routes/system.tsx:525
 msgid "Docker Network I/O"
 msgstr "Docker网络I/O"
 
@@ -298,7 +298,7 @@ msgstr "文档"
 #. Context: System is down
 #: src/lib/utils.ts:316
 #: src/components/systems-table/systems-table.tsx:142
-#: src/components/routes/system.tsx:355
+#: src/components/routes/system.tsx:363
 msgid "Down"
 msgstr ""
 
@@ -367,7 +367,7 @@ msgid "Failed to update alert"
 msgstr "更新警报失败"
 
 #: src/components/systems-table/systems-table.tsx:354
-#: src/components/routes/system.tsx:653
+#: src/components/routes/system.tsx:661
 msgid "Filter..."
 msgstr "过滤..."
 
@@ -385,7 +385,7 @@ msgstr "忘记密码？"
 msgid "General"
 msgstr "常规"
 
-#: src/components/routes/system.tsx:556
+#: src/components/routes/system.tsx:564
 msgid "GPU Power Draw"
 msgstr "GPU 功耗"
 
@@ -406,7 +406,7 @@ msgid "Invalid email address."
 msgstr "无效的电子邮件地址。"
 
 #. Linux kernel
-#: src/components/routes/system.tsx:280
+#: src/components/routes/system.tsx:260
 msgid "Kernel"
 msgstr "内核"
 
@@ -454,7 +454,7 @@ msgid "Manual setup instructions"
 msgstr "手动设置说明"
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:683
+#: src/components/routes/system.tsx:691
 msgid "Max 1 min"
 msgstr "1分钟内最大值"
 
@@ -463,11 +463,11 @@ msgid "Memory"
 msgstr "内存"
 
 #: src/lib/utils.ts:325
-#: src/components/routes/system.tsx:466
+#: src/components/routes/system.tsx:474
 msgid "Memory Usage"
 msgstr "内存使用"
 
-#: src/components/routes/system.tsx:477
+#: src/components/routes/system.tsx:485
 msgid "Memory usage of docker containers"
 msgstr "Docker 容器的内存使用"
 
@@ -479,11 +479,11 @@ msgstr "名称"
 msgid "Net"
 msgstr "网络"
 
-#: src/components/routes/system.tsx:518
+#: src/components/routes/system.tsx:526
 msgid "Network traffic of docker containers"
 msgstr "Docker 容器的网络流量"
 
-#: src/components/routes/system.tsx:503
+#: src/components/routes/system.tsx:511
 msgid "Network traffic of public interfaces"
 msgstr "公共接口的网络流量"
 
@@ -592,8 +592,8 @@ msgstr "请登录您的账户"
 msgid "Port"
 msgstr "端口"
 
-#: src/components/routes/system.tsx:467
-#: src/components/routes/system.tsx:587
+#: src/components/routes/system.tsx:475
+#: src/components/routes/system.tsx:595
 msgid "Precise utilization at the recorded time"
 msgstr "采集时间下的精确内存使用率"
 
@@ -687,11 +687,11 @@ msgstr "排序依据"
 msgid "Status"
 msgstr "状态"
 
-#: src/components/routes/system.tsx:533
+#: src/components/routes/system.tsx:541
 msgid "Swap space used by the system"
 msgstr "系统使用的 SWAP 空间"
 
-#: src/components/routes/system.tsx:532
+#: src/components/routes/system.tsx:540
 msgid "Swap Usage"
 msgstr "SWAP 使用"
 
@@ -720,11 +720,11 @@ msgid "Temp"
 msgstr "温度"
 
 #: src/lib/utils.ts:344
-#: src/components/routes/system.tsx:544
+#: src/components/routes/system.tsx:552
 msgid "Temperature"
 msgstr "温度"
 
-#: src/components/routes/system.tsx:545
+#: src/components/routes/system.tsx:553
 msgid "Temperatures of system sensors"
 msgstr "系统传感器的温度"
 
@@ -752,11 +752,11 @@ msgstr "然后登录到后台并在用户表中重置您的用户账户密码。
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "此操作无法撤销。这将永久删除数据库中{name}的所有当前记录。"
 
-#: src/components/routes/system.tsx:625
+#: src/components/routes/system.tsx:633
 msgid "Throughput of {extraFsName}"
 msgstr "{extraFsName}的吞吐量"
 
-#: src/components/routes/system.tsx:492
+#: src/components/routes/system.tsx:500
 msgid "Throughput of root filesystem"
 msgstr "根文件系统的吞吐量"
 
@@ -764,8 +764,8 @@ msgstr "根文件系统的吞吐量"
 msgid "To email(s)"
 msgstr "发送到电子邮件"
 
-#: src/components/routes/system.tsx:419
-#: src/components/routes/system.tsx:432
+#: src/components/routes/system.tsx:427
+#: src/components/routes/system.tsx:440
 msgid "Toggle grid"
 msgstr "切换网格"
 
@@ -799,7 +799,7 @@ msgstr "当任何磁盘的使用率超过阈值时触发"
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx:141
-#: src/components/routes/system.tsx:353
+#: src/components/routes/system.tsx:361
 msgid "Up"
 msgstr ""
 
@@ -807,17 +807,17 @@ msgstr ""
 msgid "Updated in real time. Click on a system to view information."
 msgstr "实时更新。点击系统查看信息。"
 
-#: src/components/routes/system.tsx:276
+#: src/components/routes/system.tsx:288
 msgid "Uptime"
 msgstr "正常运行时间"
 
-#: src/components/routes/system.tsx:578
-#: src/components/routes/system.tsx:612
+#: src/components/routes/system.tsx:586
+#: src/components/routes/system.tsx:620
 #: src/components/charts/area-chart.tsx:75
 msgid "Usage"
 msgstr "使用"
 
-#: src/components/routes/system.tsx:484
+#: src/components/routes/system.tsx:492
 msgid "Usage of root partition"
 msgstr "根分区的使用"
 
@@ -840,7 +840,7 @@ msgstr "视图"
 msgid "Visible Fields"
 msgstr "可见列"
 
-#: src/components/routes/system.tsx:717
+#: src/components/routes/system.tsx:725
 msgid "Waiting for enough records to display"
 msgstr "正在收集足够的数据来显示"
 
@@ -853,8 +853,8 @@ msgid "Webhook / Push notifications"
 msgstr "Webhook / 推送通知"
 
 #: src/components/routes/system.tsx:280
-msgid "Windows build"
-msgstr ""
+#~ msgid "Windows build"
+#~ msgstr ""
 
 #. Disk write
 #: src/components/charts/area-chart.tsx:61
