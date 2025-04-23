@@ -64,6 +64,14 @@ type NetIoStats struct {
 	Name      string
 }
 
+type Os uint8
+
+const (
+	Linux Os = iota
+	Darwin
+	Windows
+)
+
 type Info struct {
 	Hostname      string  `json:"h"`
 	KernelVersion string  `json:"k,omitempty"`
@@ -79,6 +87,7 @@ type Info struct {
 	Podman        bool    `json:"p,omitempty"`
 	GpuPct        float64 `json:"g,omitempty"`
 	DashboardTemp float64 `json:"dt,omitempty"`
+	Os            Os      `json:"os"`
 }
 
 // Final data structure to return to the hub

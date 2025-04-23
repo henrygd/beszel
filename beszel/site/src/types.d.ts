@@ -1,4 +1,5 @@
 import { RecordModel } from "pocketbase"
+import { Os } from "./lib/enums"
 
 // global window properties
 declare global {
@@ -48,6 +49,8 @@ export interface SystemInfo {
 	g?: number
 	/** dashboard display temperature */
 	dt?: number
+	/** operating system */
+	os?: Os
 }
 
 export interface SystemStats {

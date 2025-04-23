@@ -16,16 +16,17 @@ import { useStore } from "@nanostores/react"
 import { $containerFilter } from "@/lib/stores"
 import { ChartData } from "@/types"
 import { Separator } from "../ui/separator"
+import { ChartType } from "@/lib/enums"
 
 export default memo(function ContainerChart({
 	dataKey,
 	chartData,
-	chartName,
+	chartType,
 	unit = "%",
 }: {
 	dataKey: string
 	chartData: ChartData
-	chartName: string
+	chartType: ChartType
 	unit?: string
 }) {
 	const filter = useStore($containerFilter)
@@ -33,7 +34,7 @@ export default memo(function ContainerChart({
 
 	const { containerData } = chartData
 
-	const isNetChart = chartName === "net"
+	const isNetChart = chartType === ChartType.Network
 
 	const chartConfig = useMemo(() => {
 		let config = {} as Record<
@@ -81,7 +82,7 @@ export default memo(function ContainerChart({
 			tickFormatter: (value: any) => string
 		}
 		// tick formatter
-		if (chartName === "cpu") {
+		if (chartType === ChartType.CPU) {
 			obj.tickFormatter = (value) => {
 				const val = toFixedWithoutTrailingZeros(value, 2) + unit
 				return updateYAxisWidth(val)
@@ -110,6 +111,11 @@ export default memo(function ContainerChart({
 				} catch (e) {
 					return null
 				}
+			}
+		} else if (chartType === ChartType.Memory) {
+			obj.toolTipFormatter = (item: any) => {
+				const { v, u } = getSizeAndUnit(item.value, false)
+				return updateYAxisWidth(toFixedFloat(v, 2) + u)
 			}
 		} else {
 			obj.toolTipFormatter = (item: any) => decimalString(item.value) + unit
