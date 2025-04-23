@@ -1,0 +1,32 @@
+name: Build site and commit artifacts
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --no-save --cwd ./beszel/site
+
+      - name: Build site
+        run: bun run --cwd ./beszel/site build
+
+      - name: Commit build artifacts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add beszel/site/src/locales/*
+          git commit -m "ci: auto-commit updated locale files [skip ci]" || echo "No changes to commit"
+          git push
