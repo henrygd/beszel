@@ -131,6 +131,7 @@ export default function SystemDetail({ name }: { name: string }) {
 	const [bottomSpacing, setBottomSpacing] = useState(0)
 	const [chartLoading, setChartLoading] = useState(true)
 	const isLongerChart = chartTime !== "1h"
+	conts 
 
 	useEffect(() => {
 		document.title = `${name} / Beszel`
@@ -145,6 +146,10 @@ export default function SystemDetail({ name }: { name: string }) {
 			$containerFilter.set("")
 		}
 	}, [name])
+
+	useEffect(() => {
+
+	}, 
 
 	// function resetCharts() {
 	// 	setSystemStats([])
@@ -659,6 +664,24 @@ export default function SystemDetail({ name }: { name: string }) {
 							)
 						})}
 					</div>
+				)}
+
+				{/* extra data charts */}
+				{Object.keys(system.eDataConfigs ?? {}).length > 0 && (
+					{Object.keys(system.eDataConfigs ?? {}).map((key) => {
+						const eDataConf = system.eDataConfigs[key]
+						return (
+							<ChartCard
+								empty={dataEmpty}
+								grid={grid}
+								title={`${eDataConf.title}`}
+								description={t`${eDataConf.description}`}
+								cornerEl={maxValSelect}
+							>
+								<ExtraDataChart maxToggled={maxValues} />
+							</ChartCard>
+						)
+					})}
 				)}
 			</div>
 
