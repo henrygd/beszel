@@ -131,7 +131,6 @@ export default function SystemDetail({ name }: { name: string }) {
 	const [bottomSpacing, setBottomSpacing] = useState(0)
 	const [chartLoading, setChartLoading] = useState(true)
 	const isLongerChart = chartTime !== "1h"
-	conts 
 
 	useEffect(() => {
 		document.title = `${name} / Beszel`
@@ -146,10 +145,6 @@ export default function SystemDetail({ name }: { name: string }) {
 			$containerFilter.set("")
 		}
 	}, [name])
-
-	useEffect(() => {
-
-	}, 
 
 	// function resetCharts() {
 	// 	setSystemStats([])
