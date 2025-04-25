@@ -38,6 +38,9 @@ $userSettings.subscribe((value) => {
 /** Container chart filter */
 export const $containerFilter = atom("")
 
+/** Temperature chart filter */
+export const $temperatureFilter = atom("")
+
 /** Fallback copy to clipboard dialog content */
 export const $copyContent = atom("")
 

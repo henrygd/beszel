@@ -170,7 +170,7 @@ export default memo(function ContainerChart({
 						content={<ChartTooltipContent filter={filter} contentFormatter={toolTipFormatter} />}
 					/>
 					{Object.keys(chartConfig).map((key) => {
-						const filtered = filter && !key.includes(filter)
+						const filtered = filter && !key.toLowerCase().includes(filter.toLowerCase())
 						let fillOpacity = filtered ? 0.05 : 0.4
 						let strokeOpacity = filtered ? 0.1 : 1
 						return (

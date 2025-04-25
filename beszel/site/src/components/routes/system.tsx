@@ -1,6 +1,15 @@
 import { t } from "@lingui/core/macro"
 import { Plural, Trans } from "@lingui/react/macro"
-import { $systems, pb, $chartTime, $containerFilter, $userSettings, $direction, $maxValues } from "@/lib/stores"
+import {
+	$systems,
+	pb,
+	$chartTime,
+	$containerFilter,
+	$userSettings,
+	$direction,
+	$maxValues,
+	$temperatureFilter,
+} from "@/lib/stores"
 import { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord } from "@/types"
 import { ChartType, Os } from "@/lib/enums"
 import React, { lazy, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
@@ -219,7 +228,7 @@ export default function SystemDetail({ name }: { name: string }) {
 				cache.set(cs_cache_key, containerData)
 			}
 			if (containerData.length) {
-				!containerFilterBar && setContainerFilterBar(<ContainerFilterBar />)
+				!containerFilterBar && setContainerFilterBar(<FilterBar />)
 			} else if (containerFilterBar) {
 				setContainerFilterBar(null)
 			}
@@ -557,6 +566,7 @@ export default function SystemDetail({ name }: { name: string }) {
 							grid={grid}
 							title={t`Temperature`}
 							description={t`Temperatures of system sensors`}
+							cornerEl={<FilterBar store={$temperatureFilter} />}
 						>
 							<TemperatureChart chartData={chartData} />
 						</ChartCard>
@@ -654,12 +664,12 @@ export default function SystemDetail({ name }: { name: string }) {
 	)
 }
 
-function ContainerFilterBar() {
-	const containerFilter = useStore($containerFilter)
+function FilterBar({ store = $containerFilter }: { store?: typeof $containerFilter }) {
+	const containerFilter = useStore(store)
 	const { t } = useLingui()
 
 	const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-		$containerFilter.set(e.target.value)
+		store.set(e.target.value)
 	}, [])
 
 	return (
@@ -672,7 +682,7 @@ function ContainerFilterBar() {
 					size="icon"
 					aria-label="Clear"
 					className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-					onClick={() => $containerFilter.set("")}
+					onClick={() => store.set("")}
 				>
 					<XIcon className="h-4 w-4" />
 				</Button>
