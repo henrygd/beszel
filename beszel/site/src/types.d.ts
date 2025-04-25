@@ -182,13 +182,14 @@ export interface ChartTimeData {
 
 /** External Data Config - For using custom data */
 export type EDataConfig = {
+	name: string
 	title: string
 	description: string
+	unit: string
 	keys: Record<string, EDataKey>
 }
 
 export type EDataKey = {
-	unit: string
 	label: string
 	color: number
 	opacity: number

@@ -678,7 +678,7 @@ export default function SystemDetail({ name }: { name: string }) {
 								description={t`${eDataConf.description}`}
 								cornerEl={maxValSelect}
 							>
-								<ExtraDataChart maxToggled={maxValues} />
+								<ExtraDataChart eDataConfig={eDataConfig} chartData={chartData} maxToggled={maxValues} />
 							</ChartCard>
 						)
 					})}
