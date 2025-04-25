@@ -14,12 +14,8 @@ import (
 	"sync"
 	"time"
 
-	"regexp"
-
 	"github.com/blang/semver"
 )
-
-var headerRegexp = regexp.MustCompile(`\ADocker/.+\s\((.+)\)\z`)
 
 type dockerManager struct {
 	client              *http.Client                // Client to query Docker API
@@ -30,6 +26,7 @@ type dockerManager struct {
 	containerStatsMap   map[string]*container.Stats // Keeps track of container stats
 	validIds            map[string]struct{}         // Map of valid container ids, used to prune invalid containers from containerStatsMap
 	goodDockerVersion   bool                        // Whether docker version is at least 25.0.0 (one-shot works correctly)
+	isWindows           bool                        // Whether the Docker Engine API is running on Windows
 }
 
 // userAgentRoundTripper is a custom http.RoundTripper that adds a User-Agent header to all requests
@@ -73,6 +70,8 @@ func (dm *dockerManager) getDockerStats() ([]*container.Stats, error) {
 		return nil, err
 	}
 
+	dm.isWindows = strings.Contains(resp.Header.Get("Server"), "windows")
+
 	containersLength := len(dm.apiContainerList)
 
 	// store valid ids to clean up old container ids from map
@@ -84,8 +83,7 @@ func (dm *dockerManager) getDockerStats() ([]*container.Stats, error) {
 
 	var failedContainers []*container.ApiInfo
 
-	for i := range dm.apiContainerList {
-		ctr := dm.apiContainerList[i]
+	for _, ctr := range dm.apiContainerList {
 		ctr.IdShort = ctr.Id[:12]
 		dm.validIds[ctr.IdShort] = struct{}{}
 		// check if container is less than 1 minute old (possible restart)
@@ -171,15 +169,13 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo) error {
 		return err
 	}
 
+	// calculate cpu and memory stats
 	var usedMemory uint64
 	var cpuPct float64
 
-	if getDockerOS(resp.Header.Get("Server")) == "windows" {
-
+	if dm.isWindows {
 		usedMemory = res.MemoryStats.PrivateWorkingSet
-		cpuPct = calculateCPUPercentWindows(res, stats.PrevCpu[0], stats.PrevRead)
-		stats.PrevRead = res.Read
-
+		cpuPct = res.CalculateCpuPercentWindows(stats.PrevCpu[0], stats.PrevRead)
 	} else {
 		// check if container has valid data, otherwise may be in restart loop (#103)
 		if res.MemoryStats.Usage == 0 {
@@ -191,9 +187,7 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo) error {
 		}
 		usedMemory = res.MemoryStats.Usage - memCache
 
-		cpuDelta := res.CPUStats.CPUUsage.TotalUsage - stats.PrevCpu[0]
-		systemDelta := res.CPUStats.SystemUsage - stats.PrevCpu[1]
-		cpuPct = float64(cpuDelta) / float64(systemDelta) * 100
+		cpuPct = res.CalculateCpuPercentLinux(stats.PrevCpu)
 	}
 
 	if cpuPct > 100 {
@@ -210,18 +204,18 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo) error {
 	var sent_delta, recv_delta float64
 	// prevent first run from sending all prev sent/recv bytes
 	if initialized {
-		secondsElapsed := time.Since(stats.PrevNet.Time).Seconds()
+		secondsElapsed := time.Since(stats.PrevRead).Seconds()
 		sent_delta = float64(total_sent-stats.PrevNet.Sent) / secondsElapsed
 		recv_delta = float64(total_recv-stats.PrevNet.Recv) / secondsElapsed
 	}
 	stats.PrevNet.Sent = total_sent
 	stats.PrevNet.Recv = total_recv
-	stats.PrevNet.Time = time.Now()
 
 	stats.Cpu = twoDecimals(cpuPct)
 	stats.Mem = bytesToMegabytes(float64(usedMemory))
 	stats.NetworkSent = bytesToMegabytes(sent_delta)
 	stats.NetworkRecv = bytesToMegabytes(recv_delta)
+	stats.PrevRead = res.Read
 
 	return nil
 }
@@ -336,32 +330,4 @@ func getDockerHost() string {
 		}
 	}
 	return scheme + socks[0]
-}
-
-// getDockerOS returns the operating system based on the server header from the daemon.
-// from: https://github.com/docker/cli/blob/master/vendor/github.com/docker/docker/client/utils.go#L34
-func getDockerOS(serverHeader string) string {
-	var osType string
-	matches := headerRegexp.FindStringSubmatch(serverHeader)
-	if len(matches) > 0 {
-		osType = matches[1]
-	}
-	return osType
-}
-
-// from: https://github.com/docker/cli/blob/master/cli/command/container/stats_helpers.go#L185
-func calculateCPUPercentWindows(v container.ApiStats, prevCPUSsage uint64, prevRead time.Time) float64 {
-	// Max number of 100ns intervals between the previous time read and now
-	possIntervals := uint64(v.Read.Sub(prevRead).Nanoseconds())
-	possIntervals /= 100                // Convert to number of 100ns intervals
-	possIntervals *= uint64(v.NumProcs) // Multiple by the number of processors
-
-	// Intervals used
-	intervalsUsed := v.CPUStats.CPUUsage.TotalUsage - prevCPUSsage
-
-	// Percentage avoiding divide-by-zero
-	if possIntervals > 0 {
-		return float64(intervalsUsed) / float64(possIntervals) * 100.0
-	}
-	return 0.00
 }
