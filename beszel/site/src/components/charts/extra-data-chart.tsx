@@ -11,7 +11,7 @@ import {
 	chartMargin,
 } from "@/lib/utils"
 // import Spinner from '../spinner'
-import { ChartData, EDataConfig, EDataKey } from "@/types"
+import { ChartData, EDataConfig } from "@/types"
 import { memo, useMemo } from "react"
 import { useLingui } from "@lingui/react/macro"
 
@@ -19,12 +19,10 @@ import { useLingui } from "@lingui/react/macro"
 type DataKeys = [string, string, number, number]
 
 export default memo(function ExtraDataChart({
-	maxToggled = false,
 	eDataConfig,
 	chartData,
 	max,
 }: {
-	maxToggled?: boolean
 	eDataConfig: EDataConfig
 	chartData: ChartData
 	max?: number
@@ -32,15 +30,11 @@ export default memo(function ExtraDataChart({
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { i18n } = useLingui()
 
-	const { chartTime } = chartData
-
-	const showMax = chartTime !== "1h" && maxToggled
-
 	const dataKeys: DataKeys[] = useMemo(() => {
 		// [label, key, color, opacity]
-		const dataKeysBuilder = []
-		for (const [key, value] of eDataConfig.keys) {
-			dataKeysBuilder.push([value.label, key, value.color, value.opacity])
+		const dataKeysBuilder: DataKeys[] = []
+		for (const [key, value] of Object.entries(eDataConfig.keys)) {
+			dataKeysBuilder.push([t`${value.label}`, key, value.color, value.opacity])
 		}
 		return dataKeysBuilder
 	}, [eDataConfig.name, i18n.locale])
@@ -68,7 +62,7 @@ export default memo(function ExtraDataChart({
 						domain={[0, max ?? "auto"]}
 						tickFormatter={(value) => {
 							const val = toFixedWithoutTrailingZeros(value, 2)
-							return updateYAxisWidth(val + unit)
+							return updateYAxisWidth(val + eDataConfig.unit)
 						}}
 						tickLine={false}
 						axisLine={false}
@@ -88,7 +82,7 @@ export default memo(function ExtraDataChart({
 					{dataKeys.map((key, i) => {
 						const color = `hsl(var(--chart-${key[2]}))`
 						return (
-							<Area
+							<Line
 								key={i}
 								dataKey={key[1]}
 								name={key[0]}
