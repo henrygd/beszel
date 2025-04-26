@@ -221,12 +221,12 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 						{/* Docker */}
 						<TabsContent value="docker" className="contents">
 							<CopyButton
-								text={t`Copy` + " docker compose"}
+								text={t({ message: "Copy docker compose", context: "Button to copy docker compose file content" })}
 								onClick={() => copyDockerCompose(isUnixSocket ? hostValue : port.current?.value, publicKey)}
 								icon={<DockerIcon className="size-4 -me-0.5" />}
 								dropdownItems={[
 									{
-										text: t`Copy` + " docker run",
+										text: t({ message: "Copy docker run", context: "Button to copy docker run command" }),
 										onClick: () => copyDockerRun(isUnixSocket ? hostValue : port.current?.value, publicKey),
 										icons: [<DockerIcon className="size-4" />],
 									},
@@ -241,12 +241,12 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 								onClick={() => copyLinuxCommand(isUnixSocket ? hostValue : port.current?.value, publicKey)}
 								dropdownItems={[
 									{
-										text: t`Copy Homebrew command`,
+										text: t({ message: "Homebrew command", context: "Button to copy install command" }),
 										onClick: () => copyLinuxCommand(isUnixSocket ? hostValue : port.current?.value, publicKey, true),
 										icons: [<AppleIcon className="size-4" />, <TuxIcon className="w-4 h-4" />],
 									},
 									{
-										text: t`Copy Windows command`,
+										text: t({ message: "Windows command", context: "Button to copy install command" }),
 										onClick: () => copyWindowsCommand(isUnixSocket ? hostValue : port.current?.value, publicKey),
 										icons: [<WindowsIcon className="size-4" />],
 									},

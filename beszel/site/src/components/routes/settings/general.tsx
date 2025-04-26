@@ -46,11 +46,11 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 						</h3>
 						<p className="text-sm text-muted-foreground leading-relaxed">
 							<Trans>
-								Want to help us make our translations even better? Check out{" "}
+								Want to help improve our translations? Check{" "}
 								<a href="https://crowdin.com/project/beszel" className="link" target="_blank" rel="noopener noreferrer">
 									Crowdin
 								</a>{" "}
-								for more details.
+								for details.
 							</Trans>
 						</p>
 					</div>
