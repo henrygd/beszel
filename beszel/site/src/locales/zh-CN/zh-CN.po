@@ -300,7 +300,7 @@ msgstr "文档"
 #: src/components/systems-table/systems-table.tsx:142
 #: src/components/routes/system.tsx:345
 msgid "Down"
-msgstr ""
+msgstr "停止"
 
 #: src/components/add-system.tsx:126
 #: src/components/systems-table/systems-table.tsx:653
@@ -801,7 +801,7 @@ msgstr "当任何磁盘的使用率超过阈值时触发"
 #: src/components/systems-table/systems-table.tsx:141
 #: src/components/routes/system.tsx:343
 msgid "Up"
-msgstr ""
+msgstr "启动"
 
 #: src/components/systems-table/systems-table.tsx:350
 msgid "Updated in real time. Click on a system to view information."
@@ -869,3 +869,4 @@ msgstr "YAML配置"
 #: src/components/routes/settings/layout.tsx:35
 msgid "Your user settings have been updated."
 msgstr "您的用户设置已更新。"
+
