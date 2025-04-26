@@ -300,12 +300,12 @@ msgstr "Documentatie"
 #: src/components/systems-table/systems-table.tsx:142
 #: src/components/routes/system.tsx:345
 msgid "Down"
-msgstr ""
+msgstr "Offline"
 
 #: src/components/add-system.tsx:126
 #: src/components/systems-table/systems-table.tsx:653
 msgid "Edit"
-msgstr ""
+msgstr "Bewerken"
 
 #: src/components/login/forgot-pass-form.tsx:54
 #: src/components/login/auth-form.tsx:176
@@ -451,7 +451,7 @@ msgstr "Weergave- en notificatievoorkeuren beheren."
 
 #: src/components/add-system.tsx:227
 msgid "Manual setup instructions"
-msgstr ""
+msgstr "Handmatige installatie-instructies"
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx:673
@@ -541,7 +541,7 @@ msgstr "Het wachtwoord moet minimaal 8 tekens bevatten."
 
 #: src/components/login/auth-form.tsx:22
 msgid "Password must be less than 72 bytes."
-msgstr ""
+msgstr "Het wachtwoord moet minder zijn dat 72 bytes."
 
 #: src/components/login/forgot-pass-form.tsx:34
 msgid "Password reset request received"
@@ -636,7 +636,7 @@ msgstr "Instellingen opslaan"
 
 #: src/components/add-system.tsx:232
 msgid "Save system"
-msgstr ""
+msgstr "Systeem bewaren"
 
 #: src/components/navbar.tsx:134
 msgid "Search"
@@ -717,7 +717,7 @@ msgstr "Tabel"
 #. Temperature label in systems table
 #: src/components/systems-table/systems-table.tsx:244
 msgid "Temp"
-msgstr ""
+msgstr "Temperatuur"
 
 #: src/lib/utils.ts:344
 #: src/components/routes/system.tsx:534
@@ -801,7 +801,7 @@ msgstr "Triggert wanneer het gebruik van een schijf een drempelwaarde overschrij
 #: src/components/systems-table/systems-table.tsx:141
 #: src/components/routes/system.tsx:343
 msgid "Up"
-msgstr ""
+msgstr "Online"
 
 #: src/components/systems-table/systems-table.tsx:350
 msgid "Updated in real time. Click on a system to view information."
@@ -869,3 +869,4 @@ msgstr "YAML Configuratie"
 #: src/components/routes/settings/layout.tsx:35
 msgid "Your user settings have been updated."
 msgstr "Je gebruikersinstellingen zijn bijgewerkt."
+
