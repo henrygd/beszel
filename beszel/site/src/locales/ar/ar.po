@@ -148,7 +148,7 @@ msgstr "يدعم Beszel OpenID Connect والعديد من مزودي المصا
 
 #: src/components/routes/settings/notifications.tsx:129
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
-msgstr "يستخدم Beszel <0>Shoutrrr</0> للتكامل مع خدمات الإشعارات الشهيرة."
+msgstr "يستخدم بيزيل <0>Shoutrrr</0> للتكامل مع خدمات الإشعارات الشهيرة."
 
 #: src/components/add-system.tsx:131
 msgid "Binary"
@@ -281,7 +281,7 @@ msgstr "استخدام القرص لـ {extraFsName}"
 
 #: src/components/routes/system.tsx:445
 msgid "Docker CPU Usage"
-msgstr "استخدام CPU لـ Docker"
+msgstr "استخدام المعالج لـ Docker"
 
 #: src/components/routes/system.tsx:466
 msgid "Docker Memory Usage"
@@ -300,29 +300,29 @@ msgstr "التوثيق"
 #: src/components/systems-table/systems-table.tsx:142
 #: src/components/routes/system.tsx:345
 msgid "Down"
-msgstr ""
+msgstr "معطل"
 
 #: src/components/add-system.tsx:126
 #: src/components/systems-table/systems-table.tsx:653
 msgid "Edit"
-msgstr ""
+msgstr "تعديل"
 
 #: src/components/login/forgot-pass-form.tsx:54
 #: src/components/login/auth-form.tsx:176
 msgid "Email"
-msgstr "البريد الإلكتروني"
+msgstr "البريد الإشباكي"
 
 #: src/components/routes/settings/notifications.tsx:93
 msgid "Email notifications"
-msgstr "إشعارات البريد الإلكتروني"
+msgstr "إشعارات البريد الإشباكي"
 
 #: src/components/login/login.tsx:38
 msgid "Enter email address to reset password"
-msgstr "أدخل عنوان البريد الإلكتروني لإعادة تعيين كلمة المرور"
+msgstr "أدخل عنوان البريد الإشباكي لإعادة تعيين كلمة المرور"
 
 #: src/components/routes/settings/notifications.tsx:113
 msgid "Enter email address..."
-msgstr "أدخل عنوان البريد الإلكتروني..."
+msgstr "أدخل عنوان البريد الإشباكي..."
 
 #: src/components/routes/settings/notifications.tsx:189
 #: src/components/routes/settings/config-yaml.tsx:29
@@ -403,12 +403,12 @@ msgstr "إذا فقدت كلمة المرور لحساب المسؤول الخا
 
 #: src/components/login/auth-form.tsx:18
 msgid "Invalid email address."
-msgstr "عنوان البريد الإلكتروني غير صالح."
+msgstr "عنوان البريد الإشباكي غير صالح."
 
 #. Linux kernel
 #: src/components/routes/system.tsx:271
 msgid "Kernel"
-msgstr "كيرنل"
+msgstr "النواة"
 
 #: src/components/routes/settings/general.tsx:45
 msgid "Language"
@@ -451,7 +451,7 @@ msgstr "إدارة تفضيلات العرض والإشعارات."
 
 #: src/components/add-system.tsx:227
 msgid "Manual setup instructions"
-msgstr ""
+msgstr "تعليمات الإعداد اليدوي"
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx:673
@@ -541,7 +541,7 @@ msgstr "كلمة المرور يجب أن تتكون من 8 أحرف على ال
 
 #: src/components/login/auth-form.tsx:22
 msgid "Password must be less than 72 bytes."
-msgstr ""
+msgstr "يجب أن تكون كلمة المرور أقل من 72 بايت."
 
 #: src/components/login/forgot-pass-form.tsx:34
 msgid "Password reset request received"
@@ -627,7 +627,7 @@ msgstr "استئناف"
 
 #: src/components/routes/settings/notifications.tsx:119
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
-msgstr "احفظ العنوان باستخدام مفتاح الإدخال أو الفاصلة. اتركه فارغًا لتعطيل إشعارات البريد الإلكتروني."
+msgstr "احفظ العنوان باستخدام مفتاح الإدخال أو الفاصلة. اتركه فارغًا لتعطيل إشعارات البريد الإشباكي."
 
 #: src/components/routes/settings/notifications.tsx:169
 #: src/components/routes/settings/general.tsx:106
@@ -636,7 +636,7 @@ msgstr "حفظ الإعدادات"
 
 #: src/components/add-system.tsx:232
 msgid "Save system"
-msgstr ""
+msgstr "احفظ النظام"
 
 #: src/components/navbar.tsx:134
 msgid "Search"
@@ -717,7 +717,7 @@ msgstr "جدول"
 #. Temperature label in systems table
 #: src/components/systems-table/systems-table.tsx:244
 msgid "Temp"
-msgstr ""
+msgstr "درجة الحرارة"
 
 #: src/lib/utils.ts:344
 #: src/components/routes/system.tsx:534
@@ -762,7 +762,7 @@ msgstr "معدل نقل نظام الملفات الجذر"
 
 #: src/components/routes/settings/notifications.tsx:108
 msgid "To email(s)"
-msgstr "إلى البريد الإلكتروني"
+msgstr "إلى البريد الإشباكي"
 
 #: src/components/routes/system.tsx:409
 #: src/components/routes/system.tsx:422
@@ -801,7 +801,7 @@ msgstr "يتم التفعيل عندما يتجاوز استخدام أي قرص
 #: src/components/systems-table/systems-table.tsx:141
 #: src/components/routes/system.tsx:343
 msgid "Up"
-msgstr ""
+msgstr "قيد التشغيل"
 
 #: src/components/systems-table/systems-table.tsx:350
 msgid "Updated in real time. Click on a system to view information."
@@ -869,3 +869,4 @@ msgstr "تكوين YAML"
 #: src/components/routes/settings/layout.tsx:35
 msgid "Your user settings have been updated."
 msgstr "تم تحديث إعدادات المستخدم الخاصة بك."
+
