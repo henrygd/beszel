@@ -8,7 +8,7 @@ msgstr ""
 "Language: de\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-04-26 21:53\n"
+"PO-Revision-Date: 2025-04-27 10:25\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -305,7 +305,7 @@ msgstr "Dokumentation"
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
-msgstr ""
+msgstr "Offline"
 
 #: src/components/add-system.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -461,7 +461,7 @@ msgstr "Anzeige- und Benachrichtigungseinstellungen verwalten."
 
 #: src/components/add-system.tsx
 msgid "Manual setup instructions"
-msgstr ""
+msgstr "Anleitung zur manuellen Einrichtung"
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx
@@ -727,7 +727,7 @@ msgstr "Tabelle"
 #. Temperature label in systems table
 #: src/components/systems-table/systems-table.tsx
 msgid "Temp"
-msgstr ""
+msgstr "Temperatur"
 
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
