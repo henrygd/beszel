@@ -167,13 +167,12 @@ func (am *AlertManager) SendShoutrrrAlert(notificationUrl, title, message, link,
 
 	// Add link
 	if scheme == "ntfy" {
-		// if ntfy, add link to actions
 		queryParams.Add("Actions", fmt.Sprintf("view, %s, %s", linkText, link))
 	} else if scheme == "lark" {
-		// if lark, add link query param
 		queryParams.Add("link", link)
+	} else if scheme == "bark" {
+		queryParams.Add("url", link)
 	} else {
-		// else add link directly to the message
 		message += "\n\n" + link
 	}
 
