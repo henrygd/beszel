@@ -66,6 +66,7 @@ var supportsTitle = map[string]struct{}{
 	"gotify":     {},
 	"ifttt":      {},
 	"join":       {},
+	"lark":       {},
 	"matrix":     {},
 	"ntfy":       {},
 	"opsgenie":   {},
@@ -168,6 +169,9 @@ func (am *AlertManager) SendShoutrrrAlert(notificationUrl, title, message, link,
 	if scheme == "ntfy" {
 		// if ntfy, add link to actions
 		queryParams.Add("Actions", fmt.Sprintf("view, %s, %s", linkText, link))
+	} else if scheme == "lark" {
+		// if lark, add link query param
+		queryParams.Add("link", link)
 	} else {
 		// else add link directly to the message
 		message += "\n\n" + link
