@@ -115,7 +115,7 @@ export default memo(function ContainerChart({
 		} else if (chartType === ChartType.Memory) {
 			obj.toolTipFormatter = (item: any) => {
 				const { v, u } = getSizeAndUnit(item.value, false)
-				return updateYAxisWidth(toFixedFloat(v, 2) + u)
+				return decimalString(v, 2) + u
 			}
 		} else {
 			obj.toolTipFormatter = (item: any) => decimalString(item.value) + unit

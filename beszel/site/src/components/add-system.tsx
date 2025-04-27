@@ -77,7 +77,8 @@ function copyLinuxCommand(port = "45876", publicKey: string, brew = false) {
 	let cmd = `curl -sL https://get.beszel.dev${
 		brew ? "/brew" : ""
 	} -o /tmp/install-agent.sh && chmod +x /tmp/install-agent.sh && /tmp/install-agent.sh -p ${port} -k "${publicKey}"`
-	if ((i18n.locale + navigator.language).includes("zh-CN")) {
+	// brew script does not support --china-mirrors
+	if (!brew && (i18n.locale + navigator.language).includes("zh-CN")) {
 		cmd += ` --china-mirrors`
 	}
 	copyToClipboard(cmd)
