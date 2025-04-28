@@ -2,7 +2,7 @@ export enum Os {
 	Linux = 0,
 	Darwin,
 	Windows,
-	// FreeBSD,
+	FreeBSD,
 }
 
 export enum ChartType {

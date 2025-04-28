@@ -70,6 +70,7 @@ const (
 	Linux Os = iota
 	Darwin
 	Windows
+	Freebsd
 )
 
 type Info struct {

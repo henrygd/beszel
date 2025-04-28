@@ -32,7 +32,7 @@ import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
-import { ChartAverage, ChartMax, Rows, TuxIcon, WindowsIcon, AppleIcon } from "../ui/icons"
+import { ChartAverage, ChartMax, Rows, TuxIcon, WindowsIcon, AppleIcon, FreeBsdIcon } from "../ui/icons"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { timeTicks } from "d3-time"
@@ -274,6 +274,10 @@ export default function SystemDetail({ name }: { name: string }) {
 			},
 			[Os.Windows]: {
 				Icon: WindowsIcon,
+				value: system.info.k,
+			},
+			[Os.FreeBSD]: {
+				Icon: FreeBsdIcon,
 				value: system.info.k,
 			},
 		}

@@ -38,6 +38,18 @@ export function AppleIcon(props: SVGProps<SVGSVGElement>) {
 	)
 }
 
+// Apache 2.0 https://github.com/Templarian/MaterialDesign/blob/master/LICENSE
+export function FreeBsdIcon(props: SVGProps<SVGSVGElement>) {
+	return (
+		<svg viewBox="0 0 24 24" {...props}>
+			<path
+				fill="currentColor"
+				d="M2.7 2C3.5 2 6 3.2 6 3.2 4.8 4 3.7 5 3 6.4 2.1 4.8 1.3 2.9 2 2.2l.7-.2m18.1.1c.4 0 .8 0 1 .2 1 1.1-2 5.8-2.4 6.4-.5.5-1.8 0-2.9-1-1-1.2-1.5-2.4-1-3 .4-.4 3.6-2.4 5.3-2.6m-8.8.5c1.3 0 2.5.2 3.7.7l-1 .7c-1 1-.6 2.8 1 4.4 1 1 2.1 1.6 3 1.6a2 2 0 0 0 1.5-.6l.7-1a9.7 9.7 0 1 1-18.6 3.8A9.7 9.7 0 0 1 12 2.7"
+			/>
+		</svg>
+	)
+}
+
 // ion icons (MIT) https://github.com/ionic-team/ionicons/blob/main/LICENSE
 export function DockerIcon(props: SVGProps<SVGSVGElement>) {
 	return (
