@@ -8,7 +8,7 @@ msgstr ""
 "Language: ja\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-04-26 21:53\n"
+"PO-Revision-Date: 2025-04-28 08:23\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -856,7 +856,7 @@ msgstr "表示するのに十分なレコードを待っています"
 
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
-msgstr "翻訳をさらに良くするためにご協力いただけますか？詳細については<0>Crowdin</0>をご覧ください。"
+msgstr "翻訳をさらに良くするためにご協力をお願いします。詳細については<0>Crowdin</0>をご覧ください。"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
