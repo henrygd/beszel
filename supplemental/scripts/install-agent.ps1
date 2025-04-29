@@ -157,19 +157,44 @@ try {
     
     Write-Host "Starting beszel-agent service..."
     nssm start beszel-agent
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to start beszel-agent service"
-    }
+    $startResult = $LASTEXITCODE
     
-    Write-Host "Checking beszel-agent service status..."
-    Start-Sleep -Seconds 5 # Allow time to start before checking status
-    $serviceStatus = nssm status beszel-agent
-    
-    if ($serviceStatus -eq "SERVICE_RUNNING") {
-        Write-Host "Success! The beszel-agent service is running properly." -ForegroundColor Green
+    # Only enter the status check loop if the NSSM start command failed
+    if ($startResult -ne 0) {
+        Write-Host "NSSM start command returned error code: $startResult" -ForegroundColor Yellow
+        Write-Host "This could be due to 'SERVICE_START_PENDING' state. Checking service status..."
+        
+        # Allow up to 20 seconds for the service to start, checking every 2 seconds
+        $maxWaitTime = 20 # seconds
+        $elapsedTime = 0
+        $serviceStarted = $false
+        
+        while (-not $serviceStarted -and $elapsedTime -lt $maxWaitTime) {
+            $serviceStatus = nssm status beszel-agent
+            
+            if ($serviceStatus -eq "SERVICE_RUNNING") {
+                $serviceStarted = $true
+                Write-Host "Success! The beszel-agent service is now running properly." -ForegroundColor Green
+            }
+            elseif ($serviceStatus -like "*PENDING*") {
+                Write-Host "Service is still starting (status: $serviceStatus)... waiting" -ForegroundColor Yellow
+                Start-Sleep -Seconds 2
+                $elapsedTime += 2
+            }
+            else {
+                Write-Host "Warning: The service status is '$serviceStatus' instead of 'SERVICE_RUNNING'." -ForegroundColor Yellow
+                Write-Host "You may need to troubleshoot the service installation." -ForegroundColor Yellow
+                break
+            }
+        }
+        
+        if (-not $serviceStarted) {
+            Write-Host "Service did not reach running state within $maxWaitTime seconds." -ForegroundColor Yellow
+            Write-Host "You can check status manually with 'nssm status beszel-agent'" -ForegroundColor Yellow
+        }
     } else {
-        Write-Host "Warning: The service status is '$serviceStatus' instead of 'SERVICE_RUNNING'." -ForegroundColor Yellow
-        Write-Host "You may need to troubleshoot the service installation." -ForegroundColor Yellow
+        # NSSM start command was successful
+        Write-Host "Success! The beszel-agent service is running properly." -ForegroundColor Green
     }
 }
 catch {
