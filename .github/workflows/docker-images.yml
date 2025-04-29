@@ -3,7 +3,7 @@ name: Make docker images
 on:
   push:
     tags:
-      - 'xv*'
+      - 'v*'
 
 jobs:
   build:
