@@ -8,7 +8,7 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-04-26 21:53\n"
+"PO-Revision-Date: 2025-04-29 14:28\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -215,12 +215,12 @@ msgstr "클립보드에 복사됨"
 #: src/components/add-system.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
-msgstr "docker compose 복사"
+msgstr "docker compose 내용 복사"
 
 #: src/components/add-system.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
-msgstr "docker run 복사"
+msgstr "docker run 명령어 복사"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Copy host"
@@ -856,7 +856,7 @@ msgstr "표시할 충분한 기록을 기다리는 중"
 
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
-msgstr "번역을 더 좋게 만드는 데 도움을 주시겠습니까? 자세한 내용은 <0>Crowdin</0>을 확인하세요."
+msgstr "번역을 개선하는데 도움을 주시겠습니까? 자세한 내용은 <0>Crowdin</0>을 확인해 주세요."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
