@@ -8,7 +8,53 @@ is_openwrt() {
   cat /etc/os-release | grep -q "OpenWrt"
 }
 
-# Function to ensure the proxy URL ends with a /
+# If SELinux is enabled, set the context of the binary
+set_selinux_context() {
+  # Check if SELinux is enabled and in enforcing or permissive mode
+  if command -v getenforce >/dev/null 2>&1; then
+    SELINUX_MODE=$(getenforce)
+    if [ "$SELINUX_MODE" != "Disabled" ]; then
+      echo "SELinux is enabled (${SELINUX_MODE} mode). Setting appropriate context..."
+
+      # First try to set persistent context if semanage is available
+      if command -v semanage >/dev/null 2>&1; then
+        echo "Attempting to set persistent SELinux context..."
+        if semanage fcontext -a -t bin_t "/opt/beszel-agent/beszel-agent" >/dev/null 2>&1; then
+          restorecon -v /opt/beszel-agent/beszel-agent >/dev/null 2>&1
+        else
+          echo "Warning: Failed to set persistent context, falling back to temporary context."
+        fi
+      fi
+
+      # Fall back to chcon if semanage failed or isn't available
+      if command -v chcon >/dev/null 2>&1; then
+        # Set context for both the directory and binary
+        chcon -t bin_t /opt/beszel-agent/beszel-agent || echo "Warning: Failed to set SELinux context for binary."
+        chcon -R -t bin_t /opt/beszel-agent || echo "Warning: Failed to set SELinux context for directory."
+      else
+        if [ "$SELINUX_MODE" = "Enforcing" ]; then
+          echo "Warning: SELinux is in enforcing mode but chcon command not found. The service may fail to start."
+          echo "Consider installing the policycoreutils package or temporarily setting SELinux to permissive mode."
+        else
+          echo "Warning: SELinux is in permissive mode but chcon command not found."
+        fi
+      fi
+    fi
+  fi
+}
+
+# Clean up SELinux contexts if they were set
+cleanup_selinux_context() {
+  if command -v getenforce >/dev/null 2>&1 && [ "$(getenforce)" != "Disabled" ]; then
+    echo "Cleaning up SELinux contexts..."
+    # Remove persistent context if semanage is available
+    if command -v semanage >/dev/null 2>&1; then
+      semanage fcontext -d "/opt/beszel-agent/beszel-agent" 2>/dev/null || true
+    fi
+  fi
+}
+
+# Ensure the proxy URL ends with a /
 ensure_trailing_slash() {
   if [ -n "$1" ]; then
     case "$1" in
@@ -20,7 +66,7 @@ ensure_trailing_slash() {
   fi
 }
 
-# Define default values
+# Default values
 PORT=45876
 UNINSTALL=false
 GITHUB_URL="https://github.com"
@@ -141,6 +187,9 @@ done
 
 # Uninstall process
 if [ "$UNINSTALL" = true ]; then
+  # Clean up SELinux contexts before removing files
+  cleanup_selinux_context
+
   if is_alpine; then
     echo "Stopping and disabling the agent service..."
     rc-service beszel-agent stop
@@ -333,6 +382,9 @@ fi
 mv beszel-agent /opt/beszel-agent/beszel-agent
 chown beszel:beszel /opt/beszel-agent/beszel-agent
 chmod 755 /opt/beszel-agent/beszel-agent
+
+# Set SELinux context if needed
+set_selinux_context
 
 # Cleanup
 rm -rf "$TEMP_DIR"
@@ -548,6 +600,37 @@ EOF
   systemctl enable beszel-agent.service
   systemctl start beszel-agent.service
 
+  # Create the update script
+  echo "Creating the update script..."
+  cat >/opt/beszel-agent/run-update.sh <<'EOF'
+#!/bin/sh
+
+set -e
+
+if /opt/beszel-agent/beszel-agent update | grep -q "Successfully updated"; then
+    echo "Update found, checking SELinux context."
+    if command -v getenforce >/dev/null 2>&1 && [ "$(getenforce)" != "Disabled" ]; then
+        echo "SELinux enabled, applying context..."
+        if command -v chcon >/dev/null 2>&1; then
+            chcon -t bin_t /opt/beszel-agent/beszel-agent || echo "Warning: chcon command failed to apply context."
+        fi
+        if command -v restorecon >/dev/null 2>&1; then
+            restorecon -v /opt/beszel-agent/beszel-agent >/dev/null 2>&1 || echo "Warning: restorecon command failed to apply context."
+        fi
+    fi
+    echo "Restarting beszel-agent service..."
+    systemctl restart beszel-agent
+    echo "Update process finished."
+else
+    echo "No updates found or applied."
+fi
+
+exit 0
+EOF
+
+  chown root:root /opt/beszel-agent/run-update.sh
+  chmod +x /opt/beszel-agent/run-update.sh
+
   # Prompt for auto-update setup
   if [ "$AUTO_UPDATE_FLAG" = "true" ]; then
     AUTO_UPDATE="y"
@@ -571,7 +654,7 @@ Wants=beszel-agent.service
 
 [Service]
 Type=oneshot
-ExecStart=/bin/sh -c '/opt/beszel-agent/beszel-agent update | grep -q "Successfully updated" && (echo "Update found, restarting beszel-agent" && systemctl restart beszel-agent) || echo "No updates found"'
+ExecStart=/opt/beszel-agent/run-update.sh
 EOF
 
     # Create systemd timer for the daily update
