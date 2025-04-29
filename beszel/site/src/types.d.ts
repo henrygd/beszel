@@ -16,7 +16,6 @@ export interface SystemRecord extends RecordModel {
 	port: string
 	info: SystemInfo
 	v: string
-	eDataConfigs: Record<string, EDataConfig>
 }
 
 export interface SystemInfo {
@@ -102,7 +101,7 @@ export interface SystemStats {
 	/** GPU data */
 	g?: Record<string, GPUData>
 	/** extra data */
-	edata?: Record<string, number>
+	eData?: Record<string, number>
 }
 
 export interface GPUData {

@@ -47,6 +47,7 @@ const DiskChart = lazy(() => import("../charts/disk-chart"))
 const SwapChart = lazy(() => import("../charts/swap-chart"))
 const TemperatureChart = lazy(() => import("../charts/temperature-chart"))
 const GpuPowerChart = lazy(() => import("../charts/gpu-power-chart"))
+const ExtraDataChart = lazy(() => import("../charts/extra-data-chart"))
 
 const cache = new Map<string, any>()
 
@@ -662,22 +663,19 @@ export default function SystemDetail({ name }: { name: string }) {
 				)}
 
 				{/* extra data charts */}
-				{Object.keys(system.eDataConfigs ?? {}).length > 0 && (
-					{Object.keys(system.eDataConfigs ?? {}).map((key) => {
-						const eDataConf = system.eDataConfigs[key]
-						return (
-							<ChartCard
-								empty={dataEmpty}
-								grid={grid}
-								title={`${eDataConf.title}`}
-								description={t`${eDataConf.description}`}
-								cornerEl={maxValSelect}
-							>
-								<ExtraDataChart eDataConfig={eDataConfig} chartData={chartData} maxToggled={maxValues} />
-							</ChartCard>
-						)
-					})}
-				)}
+				<div className="grid xl:grid-cols-2 gap-4">
+					<div key={"bat"} className="contents">
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={`Battery`}
+							description={t`Battery Charge`}
+							cornerEl={maxValSelect}
+						>
+							<ExtraDataChart eDataConfig={{name:'bat', title:'Battery', description:'Battery Charge', unit:'%', keys:{bat:{label:'Charge', color:1, opacity:0.5}}}} chartData={chartData} />
+						</ChartCard>
+					</div>
+				</div>
 			</div>
 
 			{/* add space for tooltip if more than 12 containers */}

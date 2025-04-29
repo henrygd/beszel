@@ -1,6 +1,6 @@
 import { t } from "@lingui/core/macro"
 
-import { Line, LineChart, CartesianGrid, YAxis } from "recharts"
+import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
 import {
 	useYAxisWidth,
@@ -30,7 +30,7 @@ export default memo(function ExtraDataChart({
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { i18n } = useLingui()
 
-	const dataKeys: DataKeys[] = useMemo(() => {
+	const dataKeys = useMemo(() => {
 		// [label, key, color, opacity]
 		const dataKeysBuilder: DataKeys[] = []
 		for (const [key, value] of Object.entries(eDataConfig.keys)) {
@@ -39,12 +39,10 @@ export default memo(function ExtraDataChart({
 		return dataKeysBuilder
 	}, [eDataConfig.name, i18n.locale])
 
-	// console.log('Rendered at', new Date())
-
 	if (chartData.systemStats.length === 0) {
 		return null
 	}
-
+	
 	return (
 		<div>
 			<ChartContainer
@@ -52,7 +50,7 @@ export default memo(function ExtraDataChart({
 					"opacity-100": yAxisWidth,
 				})}
 			>
-				<LineChart accessibilityLayer data={chartData.systemStats} margin={chartMargin}>
+				<AreaChart accessibilityLayer data={chartData.systemStats} margin={chartMargin}>
 					<CartesianGrid vertical={false} />
 					<YAxis
 						direction="ltr"
@@ -61,8 +59,8 @@ export default memo(function ExtraDataChart({
 						width={yAxisWidth}
 						domain={[0, max ?? "auto"]}
 						tickFormatter={(value) => {
-							const val = toFixedWithoutTrailingZeros(value, 2)
-							return updateYAxisWidth(val + eDataConfig.unit)
+							const val = toFixedWithoutTrailingZeros(value, 2) + eDataConfig.unit
+							return updateYAxisWidth(val)
 						}}
 						tickLine={false}
 						axisLine={false}
@@ -74,7 +72,9 @@ export default memo(function ExtraDataChart({
 						content={
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
-								contentFormatter={(item) => decimalString(item) + eDataConfig.unit}
+								contentFormatter={({ value }) => {
+									return decimalString(value) + eDataConfig.unit
+								}}
 								// indicator="line"
 							/>
 						}
@@ -82,20 +82,20 @@ export default memo(function ExtraDataChart({
 					{dataKeys.map((key, i) => {
 						const color = `hsl(var(--chart-${key[2]}))`
 						return (
-							<Line
+							<Area
 								key={i}
-								dataKey={key[1]}
+								dataKey={`stats.eData.${key[1]}`}
 								name={key[0]}
 								type="monotoneX"
-								dot={false}
-								strokeWidth={1.5}
+								fill={color}
+								fillOpacity={key[3]}
 								stroke={color}
 								isAnimationActive={false}
 							/>
 						)
 					})}
 					{/* <ChartLegend content={<ChartLegendContent />} /> */}
-				</LineChart>
+				</AreaChart>
 			</ChartContainer>
 		</div>
 	)
