@@ -232,6 +232,10 @@ func newDockerManager(a *Agent) *dockerManager {
 	dockerHost, exists := GetEnv("DOCKER_HOST")
 	if exists {
 		slog.Info("DOCKER_HOST", "host", dockerHost)
+		// return nil if set to empty string
+		if dockerHost == "" {
+			return nil
+		}
 	} else {
 		dockerHost = getDockerHost()
 	}

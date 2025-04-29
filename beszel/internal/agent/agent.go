@@ -95,11 +95,13 @@ func (a *Agent) gatherStats(sessionID string) *system.CombinedData {
 	}
 	slog.Debug("System stats", "data", cachedData)
 
-	if containerStats, err := a.dockerManager.getDockerStats(); err == nil {
-		cachedData.Containers = containerStats
-		slog.Debug("Docker stats", "data", cachedData.Containers)
-	} else {
-		slog.Debug("Docker stats", "err", err)
+	if a.dockerManager != nil {
+		if containerStats, err := a.dockerManager.getDockerStats(); err == nil {
+			cachedData.Containers = containerStats
+			slog.Debug("Docker stats", "data", cachedData.Containers)
+		} else {
+			slog.Debug("Docker stats", "err", err)
+		}
 	}
 
 	cachedData.Stats.ExtraFs = make(map[string]*system.FsStats)
