@@ -51,7 +51,7 @@ builds:
 
 archives:
   - id: beszel-agent
-    format: tar.gz
+    formats: [tar.gz]
     builds:
       - beszel-agent
     name_template: >-
@@ -60,10 +60,10 @@ archives:
       {{- .Arch }}
     format_overrides:
       - goos: windows
-        format: zip
+        formats: [zip]
 
   - id: beszel
-    format: tar.gz
+    formats: [tar.gz]
     builds:
       - beszel
     name_template: >-
@@ -87,9 +87,6 @@ nfpms:
       - beszel-agent
     formats:
       - deb
-    # don't think this is needed with CGO_ENABLED=0
-    # dependencies:
-    #   - libc6
     contents:
       - src: ../supplemental/debian/beszel-agent.service
         dst: lib/systemd/system/beszel-agent.service
