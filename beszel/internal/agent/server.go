@@ -8,18 +8,18 @@ import (
 	"os"
 	"strings"
 
-	sshServer "github.com/gliderlabs/ssh"
-	"golang.org/x/crypto/ssh"
+	"github.com/gliderlabs/ssh"
+	gossh "golang.org/x/crypto/ssh"
 )
 
 type ServerOptions struct {
 	Addr    string
 	Network string
-	Keys    []ssh.PublicKey
+	Keys    []gossh.PublicKey
 }
 
 func (a *Agent) StartServer(opts ServerOptions) error {
-	sshServer.Handle(a.handleSession)
+	ssh.Handle(a.handleSession)
 
 	slog.Info("Starting SSH server", "addr", opts.Addr, "network", opts.Network)
 
@@ -38,10 +38,10 @@ func (a *Agent) StartServer(opts ServerOptions) error {
 	defer ln.Close()
 
 	// Start SSH server on the listener
-	return sshServer.Serve(ln, nil, sshServer.NoPty(),
-		sshServer.PublicKeyAuth(func(ctx sshServer.Context, key sshServer.PublicKey) bool {
+	return ssh.Serve(ln, nil, ssh.NoPty(),
+		ssh.PublicKeyAuth(func(ctx ssh.Context, key ssh.PublicKey) bool {
 			for _, pubKey := range opts.Keys {
-				if sshServer.KeysEqual(key, pubKey) {
+				if ssh.KeysEqual(key, pubKey) {
 					return true
 				}
 			}
@@ -50,7 +50,7 @@ func (a *Agent) StartServer(opts ServerOptions) error {
 	)
 }
 
-func (a *Agent) handleSession(s sshServer.Session) {
+func (a *Agent) handleSession(s ssh.Session) {
 	slog.Debug("New session", "client", s.RemoteAddr())
 	stats := a.gatherStats(s.Context().SessionID())
 	if err := json.NewEncoder(s).Encode(stats); err != nil {
@@ -62,8 +62,8 @@ func (a *Agent) handleSession(s sshServer.Session) {
 
 // ParseKeys parses a string containing SSH public keys in authorized_keys format.
 // It returns a slice of ssh.PublicKey and an error if any key fails to parse.
-func ParseKeys(input string) ([]ssh.PublicKey, error) {
-	var parsedKeys []ssh.PublicKey
+func ParseKeys(input string) ([]gossh.PublicKey, error) {
+	var parsedKeys []gossh.PublicKey
 	for line := range strings.Lines(input) {
 		line = strings.TrimSpace(line)
 		// Skip empty lines or comments
@@ -71,7 +71,7 @@ func ParseKeys(input string) ([]ssh.PublicKey, error) {
 			continue
 		}
 		// Parse the key
-		parsedKey, _, _, _, err := ssh.ParseAuthorizedKey([]byte(line))
+		parsedKey, _, _, _, err := gossh.ParseAuthorizedKey([]byte(line))
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse key: %s, error: %w", line, err)
 		}
