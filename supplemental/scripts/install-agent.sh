@@ -580,7 +580,6 @@ StateDirectory=beszel-agent
 KeyringMode=private
 LockPersonality=yes
 NoNewPrivileges=yes
-PrivateTmp=yes
 ProtectClock=yes
 ProtectHome=read-only
 ProtectHostname=yes
