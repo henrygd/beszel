@@ -10,7 +10,7 @@ import {
 	$maxValues,
 	$temperatureFilter,
 } from "@/lib/stores"
-import { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord } from "@/types"
+import { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord, ExtraDataConfig } from "@/types"
 import { ChartType, Os } from "@/lib/enums"
 import React, { lazy, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Card, CardHeader, CardTitle, CardDescription } from "../ui/card"
@@ -124,6 +124,7 @@ export default function SystemDetail({ name }: { name: string }) {
 	const maxValues = useStore($maxValues)
 	const [grid, setGrid] = useLocalStorage("grid", true)
 	const [system, setSystem] = useState({} as SystemRecord)
+	const [extraDataConfigs, setExtraDataConfigs] = useState([] as ExtraDataConfig[])
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
 	const [containerData, setContainerData] = useState([] as ChartData["containerData"])
 	const netCardRef = useRef<HTMLDivElement>(null)
@@ -170,6 +171,9 @@ export default function SystemDetail({ name }: { name: string }) {
 		if (!system.id) {
 			return
 		}
+		pb.collection<ExtraDataConfig>("extra_data_configs").getFullList({
+			filter: `systemId='${system.id}'`
+		}).then(configs => setExtraDataConfigs(configs))
 		pb.collection<SystemRecord>("systems").subscribe(system.id, (e) => {
 			setSystem(e.record)
 		})
@@ -663,19 +667,26 @@ export default function SystemDetail({ name }: { name: string }) {
 				)}
 
 				{/* extra data charts */}
-				<div className="grid xl:grid-cols-2 gap-4">
-					<div key={"bat"} className="contents">
-						<ChartCard
-							empty={dataEmpty}
-							grid={grid}
-							title={`Battery`}
-							description={t`Battery Charge`}
-							cornerEl={maxValSelect}
-						>
-							<ExtraDataChart eDataConfig={{name:'bat', title:'Battery', description:'Battery Charge', unit:'%', keys:{bat:{label:'Charge', color:1, opacity:0.5}}}} chartData={chartData} />
-						</ChartCard>
+				{extraDataConfigs.length > 0 && (
+					<div className="grid xl:grid-cols-2 gap-4">
+						{extraDataConfigs.map(conf => {
+
+							return (
+								<div key={conf.name} className="contents">
+									<ChartCard
+										empty={dataEmpty}
+										grid={grid}
+										title={conf.title}
+										description={t`Battery Charge`}
+										cornerEl={maxValSelect}
+									>
+										<ExtraDataChart eDataConfig={conf} chartData={chartData} />
+									</ChartCard>
+								</div>
+							)
+						})}
 					</div>
-				</div>
+				)}
 			</div>
 
 			{/* add space for tooltip if more than 12 containers */}

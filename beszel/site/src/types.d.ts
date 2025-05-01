@@ -180,15 +180,16 @@ export interface ChartTimeData {
 }
 
 /** External Data Config - For using custom data */
-export type EDataConfig = {
+export interface ExtraDataConfig extends RecordModel {
+	systemId: string
 	name: string
 	title: string
 	description: string
 	unit: string
-	keys: Record<string, EDataKey>
+	keys: Record<string, ExtraDataKey>
 }
 
-export type EDataKey = {
+export type ExtraDataKey = {
 	label: string
 	color: number
 	opacity: number
