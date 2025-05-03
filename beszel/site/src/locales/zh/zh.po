@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-04-26 21:53\n"
+"PO-Revision-Date: 2025-05-03 09:12\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -215,12 +215,12 @@ msgstr "已複製到剪貼簿"
 #: src/components/add-system.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
-msgstr "复制 docker compose"
+msgstr "複製 docker compose"
 
 #: src/components/add-system.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
-msgstr "复制 docker run"
+msgstr "複製 docker run"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Copy host"
@@ -305,7 +305,7 @@ msgstr "文件"
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
-msgstr ""
+msgstr "離線"
 
 #: src/components/add-system.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -401,7 +401,7 @@ msgstr "網格"
 #: src/components/add-system.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
-msgstr "Homebrew 命令"
+msgstr "Homebrew 指令"
 
 #: src/components/add-system.tsx
 msgid "Host / IP"
@@ -563,7 +563,7 @@ msgstr "暫停"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused"
-msgstr "已暂停"
+msgstr "已暫停"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -811,7 +811,7 @@ msgstr "當任何磁碟使用率超過閾值時觸發"
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
-msgstr ""
+msgstr "上線"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Updated in real time. Click on a system to view information."
@@ -856,7 +856,7 @@ msgstr "等待足夠的記錄以顯示"
 
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
-msgstr "想幫助我們改善翻譯嗎？查看<0>Crowdin</0>以取得更多詳細信息。"
+msgstr "想幫助我們改善翻譯嗎？查看<0>Crowdin</0>以取得更多詳細資訊。"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
@@ -865,7 +865,7 @@ msgstr "Webhook / 推送通知"
 #: src/components/add-system.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
-msgstr "Windows 命令"
+msgstr "Windows 指令"
 
 #. Disk write
 #: src/components/charts/area-chart.tsx
