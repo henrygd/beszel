@@ -8,7 +8,7 @@ msgstr ""
 "Language: ar\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-04-26 21:53\n"
+"PO-Revision-Date: 2025-05-03 00:24\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
@@ -215,12 +215,12 @@ msgstr "تم النسخ إلى الحافظة"
 #: src/components/add-system.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
-msgstr "نسخ docker compose"
+msgstr "نسخ أمر تركيب الدوكر"
 
 #: src/components/add-system.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
-msgstr "نسخ docker run"
+msgstr "نسخ أمر تشغيل الدوكر"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Copy host"
@@ -865,7 +865,7 @@ msgstr "إشعارات Webhook / Push"
 #: src/components/add-system.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
-msgstr "أمر Windows"
+msgstr "أمر ويندوز"
 
 #. Disk write
 #: src/components/charts/area-chart.tsx
