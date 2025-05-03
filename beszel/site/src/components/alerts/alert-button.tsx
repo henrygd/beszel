@@ -1,5 +1,5 @@
-import { t } from "@lingui/core/macro";
-import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro"
+import { Trans } from "@lingui/react/macro"
 import { memo, useMemo, useState } from "react"
 import { useStore } from "@nanostores/react"
 import { $alerts } from "@/lib/stores"
@@ -15,10 +15,11 @@ import { BellIcon, GlobeIcon, ServerIcon } from "lucide-react"
 import { alertInfo, cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { AlertRecord, SystemRecord } from "@/types"
-import { Link } from "../router"
+import { $router, Link } from "../router"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "../ui/checkbox"
 import { SystemAlert, SystemAlertGlobal } from "./alerts-system"
+import { getPagePath } from "@nanostores/router"
 
 export default memo(function AlertsButton({ system }: { system: SystemRecord }) {
 	const alerts = useStore($alerts)
@@ -81,7 +82,7 @@ function AlertDialogContent({ system }: { system: SystemRecord }) {
 					<DialogDescription>
 						<Trans>
 							See{" "}
-							<Link href="/settings/notifications" className="link">
+							<Link href={getPagePath($router, "settings", { name: "notifications" })} className="link">
 								notification settings
 							</Link>{" "}
 							to configure how you receive alerts.
