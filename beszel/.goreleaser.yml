@@ -171,20 +171,20 @@ brews:
       keep_alive true
 
 winget:
-  - ids: [beszel-agent]
-    name: beszel-agent
-    package_identifier: henrygd.beszel-agent
-    publisher: henrygd
+  - ids: [cmonitor-agent]
+    name: cmonitor-agent
+    package_identifier: nguyendkn.cmonitor-agent
+    publisher: nguyendkn
     license: MIT
-    license_url: 'https://github.com/henrygd/beszel/blob/main/LICENSE'
-    copyright: '2025 henrygd'
-    homepage: 'https://beszel.dev'
-    release_notes_url: 'https://github.com/henrygd/beszel/releases/tag/v{{ .Version }}'
-    publisher_support_url: 'https://github.com/henrygd/beszel/issues'
-    short_description: 'Agent for Beszel, a lightweight server monitoring platform.'
+    license_url: 'https://github.com/nguyendkn/cmonitor/blob/main/LICENSE'
+    copyright: '2025 nguyendkn'
+    homepage: 'https://cmonitor.dev'
+    release_notes_url: 'https://github.com/nguyendkn/cmonitor/releases/tag/v{{ .Version }}'
+    publisher_support_url: 'https://github.com/nguyendkn/cmonitor/issues'
+    short_description: 'Agent for CMonitor, a lightweight server monitoring platform.'
     skip_upload: auto
     description: |
-      Beszel is a lightweight server monitoring platform that includes Docker
+      CMonitor is a lightweight server monitoring platform that includes Docker
       statistics, historical data, and alert functions. It has a friendly web
       interface, simple configuration, and is ready to use out of the box.
       It supports automatic backup, multi-user, OAuth authentication, and
@@ -194,9 +194,9 @@ winget:
       - monitoring
       - self-hosted
     repository:
-      owner: henrygd
-      name: beszel-winget
-      branch: henrygd.beszel-agent-{{ .Version }}
+      owner: nguyendkn
+      name: cmonitor-winget
+      branch: nguyendkn.cmonitor-agent-{{ .Version }}
       pull_request:
         enabled: false
         draft: false
