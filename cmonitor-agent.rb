@@ -5,13 +5,13 @@
 class CmonitorAgent < Formula
   desc "Agent for CMonitor, a lightweight server monitoring platform."
   homepage "https://cmonitor.dev"
-  version "0.10.3-dev.6"
+  version "0.10.3-dev.7"
   license "MIT"
 
   on_macos do
     if Hardware::CPU.intel?
-      url "https://github.com/nguyendkn/cmonitor/releases/download/v0.10.3-dev.6/cmonitor-agent_darwin_amd64.tar.gz"
-      sha256 "f0c0c82ae0e6ffbf427f063dc448e664ca2130d5fb774bf19baee111a53784d4"
+      url "https://github.com/nguyendkn/cmonitor/releases/download/v0.10.3-dev.7/cmonitor-agent_darwin_amd64.tar.gz"
+      sha256 "d33f9f5b10e161dc582e1cd66b0e8ed4cc3b81c55d9eb1a5601641afa980531d"
 
       def install
         bin.install "cmonitor-agent"
@@ -28,8 +28,8 @@ class CmonitorAgent < Formula
       end
     end
     if Hardware::CPU.arm?
-      url "https://github.com/nguyendkn/cmonitor/releases/download/v0.10.3-dev.6/cmonitor-agent_darwin_arm64.tar.gz"
-      sha256 "89495cbbf570838ab422b161b25afe18d1a6c250bc3577069b2be33545e04432"
+      url "https://github.com/nguyendkn/cmonitor/releases/download/v0.10.3-dev.7/cmonitor-agent_darwin_arm64.tar.gz"
+      sha256 "f111058c4bd86f76225240a3dc73caa24d904ff0f80a9d0a7c61e35c664765ce"
 
       def install
         bin.install "cmonitor-agent"
@@ -48,64 +48,55 @@ class CmonitorAgent < Formula
   end
 
   on_linux do
-    if Hardware::CPU.intel?
-      if Hardware::CPU.is_64_bit?
-        url "https://github.com/nguyendkn/cmonitor/releases/download/v0.10.3-dev.6/cmonitor-agent_linux_amd64.tar.gz"
-        sha256 "0d0f77de73b8ebdc4daaad8a0d1b5c92754630fc7adb4697220d816bac7f55a1"
-
-        def install
-          bin.install "cmonitor-agent"
-          (bin/"cmonitor-agent-launcher").write <<~EOS
-            #!/bin/bash
-            set -a
-            if [ -f "$HOME/.config/cmonitor/cmonitor-agent.env" ]; then
-              source "$HOME/.config/cmonitor/cmonitor-agent.env"
-            fi
-            set +a
-            exec #{bin}/cmonitor-agent "$@"
-          EOS
-          (bin/"cmonitor-agent-launcher").chmod 0755
-        end
+    if Hardware::CPU.intel? and Hardware::CPU.is_64_bit?
+      url "https://github.com/nguyendkn/cmonitor/releases/download/v0.10.3-dev.7/cmonitor-agent_linux_amd64.tar.gz"
+      sha256 "24470377ceb5a8c0812b8e9a06938f4c46e1b553a5b85d24d5d3c0f45d095e24"
+      def install
+        bin.install "cmonitor-agent"
+        (bin/"cmonitor-agent-launcher").write <<~EOS
+          #!/bin/bash
+          set -a
+          if [ -f "$HOME/.config/cmonitor/cmonitor-agent.env" ]; then
+            source "$HOME/.config/cmonitor/cmonitor-agent.env"
+          fi
+          set +a
+          exec #{bin}/cmonitor-agent "$@"
+        EOS
+        (bin/"cmonitor-agent-launcher").chmod 0755
       end
     end
-    if Hardware::CPU.arm?
-      if !Hardware::CPU.is_64_bit?
-        url "https://github.com/nguyendkn/cmonitor/releases/download/v0.10.3-dev.6/cmonitor-agent_linux_arm.tar.gz"
-        sha256 "300bedba34a7fd2f9b3d796992626b45fbaabc37b58fc9c4b838316e0e24c6fe"
-
-        def install
-          bin.install "cmonitor-agent"
-          (bin/"cmonitor-agent-launcher").write <<~EOS
-            #!/bin/bash
-            set -a
-            if [ -f "$HOME/.config/cmonitor/cmonitor-agent.env" ]; then
-              source "$HOME/.config/cmonitor/cmonitor-agent.env"
-            fi
-            set +a
-            exec #{bin}/cmonitor-agent "$@"
-          EOS
-          (bin/"cmonitor-agent-launcher").chmod 0755
-        end
+    if Hardware::CPU.arm? and !Hardware::CPU.is_64_bit?
+      url "https://github.com/nguyendkn/cmonitor/releases/download/v0.10.3-dev.7/cmonitor-agent_linux_arm.tar.gz"
+      sha256 "4d117997114698582d7ab3aceb2b0d6c350c15bddae85f984eff371df7339635"
+      def install
+        bin.install "cmonitor-agent"
+        (bin/"cmonitor-agent-launcher").write <<~EOS
+          #!/bin/bash
+          set -a
+          if [ -f "$HOME/.config/cmonitor/cmonitor-agent.env" ]; then
+            source "$HOME/.config/cmonitor/cmonitor-agent.env"
+          fi
+          set +a
+          exec #{bin}/cmonitor-agent "$@"
+        EOS
+        (bin/"cmonitor-agent-launcher").chmod 0755
       end
     end
-    if Hardware::CPU.arm?
-      if Hardware::CPU.is_64_bit?
-        url "https://github.com/nguyendkn/cmonitor/releases/download/v0.10.3-dev.6/cmonitor-agent_linux_arm64.tar.gz"
-        sha256 "a0373034b2ad01cf1bc9347b60f4fb550ef444634fb3fb61fddda184b294f5eb"
-
-        def install
-          bin.install "cmonitor-agent"
-          (bin/"cmonitor-agent-launcher").write <<~EOS
-            #!/bin/bash
-            set -a
-            if [ -f "$HOME/.config/cmonitor/cmonitor-agent.env" ]; then
-              source "$HOME/.config/cmonitor/cmonitor-agent.env"
-            fi
-            set +a
-            exec #{bin}/cmonitor-agent "$@"
-          EOS
-          (bin/"cmonitor-agent-launcher").chmod 0755
-        end
+    if Hardware::CPU.arm? and Hardware::CPU.is_64_bit?
+      url "https://github.com/nguyendkn/cmonitor/releases/download/v0.10.3-dev.7/cmonitor-agent_linux_arm64.tar.gz"
+      sha256 "7ac9d61467bd7dbd7f4b4d1459c23f8e95f8dcc19f2dd6c9b389605512335d39"
+      def install
+        bin.install "cmonitor-agent"
+        (bin/"cmonitor-agent-launcher").write <<~EOS
+          #!/bin/bash
+          set -a
+          if [ -f "$HOME/.config/cmonitor/cmonitor-agent.env" ]; then
+            source "$HOME/.config/cmonitor/cmonitor-agent.env"
+          fi
+          set +a
+          exec #{bin}/cmonitor-agent "$@"
+        EOS
+        (bin/"cmonitor-agent-launcher").chmod 0755
       end
     end
   end
