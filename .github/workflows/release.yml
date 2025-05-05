@@ -1,4 +1,4 @@
-name: Release Go binaries
+name: Make release and binaries
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  release:
+  goreleaser:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -17,21 +17,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up bun
-        uses: oven-sh/setup-bun@v2
-
-      - name: Install dependencies
-        run: bun install --no-save --cwd ./beszel/site
-
-      - name: Build site
-        run: bun run --cwd ./beszel/site build
-
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: '^1.22.1'
 
-      - name: Run GoReleaser
+      - name: GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
           workdir: ./beszel
