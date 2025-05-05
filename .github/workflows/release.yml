@@ -26,6 +26,18 @@ jobs:
       - name: Build site
         run: bun run --cwd ./beszel/site build
 
+      - name: Auto-commit generated changes if any
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            git config --global user.name "goreleaserbot"
+            git config --global user.email "bot@goreleaser.com"
+            git add .
+            git commit -m "chore: auto-commit changes before release"
+            git push
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
