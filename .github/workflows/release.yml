@@ -26,17 +26,6 @@ jobs:
       - name: Build site
         run: bun run --cwd ./beszel/site build
 
-      - name: Commit i18n updates
-        run: |
-          git config user.name "goreleaserbot"
-          git config user.email "goreleaser@users.noreply.github.com"
-
-          if [[ -n $(git status --porcelain) ]]; then
-            git add .
-            git commit -m "chore: update i18n files before release"
-            git push origin main
-          fi
-
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
