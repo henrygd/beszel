@@ -127,8 +127,8 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 						</h3>
 						<p className="text-sm text-muted-foreground leading-relaxed">
 							<Trans>
-								Beszel uses{" "}
-								<a href="https://beszel.dev/guide/notifications" target="_blank" className="link">
+								CMonitor uses{" "}
+								<a href="https://cmonitor.dev/guide/notifications" target="_blank" className="link">
 									Shoutrrr
 								</a>{" "}
 								to integrate with popular notification services.
