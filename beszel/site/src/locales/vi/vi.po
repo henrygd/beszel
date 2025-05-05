@@ -19,11 +19,11 @@ msgstr ""
 "X-Crowdin-File-ID: 16\n"
 
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
-#: src/components/routes/system.tsx:277
+#: src/components/routes/system.tsx
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# ngày} other {# ngày}}"
 
-#: src/components/routes/system.tsx:275
+#: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# giờ} other {# giờ}}"
 
@@ -52,7 +52,7 @@ msgstr "30 ngày"
 msgid "Actions"
 msgstr "Hành động"
 
-#: src/components/routes/home.tsx:83
+#: src/components/routes/home.tsx
 msgid "Active Alerts"
 msgstr "Cảnh báo hoạt động"
 
@@ -106,11 +106,11 @@ msgstr "Bạn có chắc chắn muốn xóa {name} không?"
 msgid "Automatic copy requires a secure context."
 msgstr "Sao chép tự động yêu cầu một ngữ cảnh an toàn."
 
-#: src/components/routes/system.tsx:688
+#: src/components/routes/system.tsx
 msgid "Average"
 msgstr "Trung bình"
 
-#: src/components/routes/system.tsx:464
+#: src/components/routes/system.tsx
 msgid "Average CPU utilization of containers"
 msgstr "Sử dụng CPU trung bình của các container"
 
@@ -119,16 +119,16 @@ msgstr "Sử dụng CPU trung bình của các container"
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Trung bình vượt quá <0>{value}{0}</0>"
 
-#: src/components/routes/system.tsx:565
+#: src/components/routes/system.tsx
 msgid "Average power consumption of GPUs"
 msgstr ""
 
-#: src/components/routes/system.tsx:453
+#: src/components/routes/system.tsx
 msgid "Average system-wide CPU utilization"
 msgstr "Sử dụng CPU trung bình toàn hệ thống"
 
 #. placeholder {0}: gpu.n
-#: src/components/routes/system.tsx:587
+#: src/components/routes/system.tsx
 msgid "Average utilization of {0}"
 msgstr ""
 
@@ -137,8 +137,8 @@ msgstr ""
 msgid "Backups"
 msgstr "Sao lưu"
 
-#: src/lib/utils.ts:337
-#: src/components/routes/system.tsx:509
+#: src/lib/utils.ts
+#: src/components/routes/system.tsx
 msgid "Bandwidth"
 msgstr "Băng thông"
 
@@ -238,9 +238,9 @@ msgstr "Sao chép văn bản"
 msgid "CPU"
 msgstr "CPU"
 
-#: src/lib/utils.ts:319
-#: src/components/routes/system.tsx:452
-#: src/components/charts/area-chart.tsx:58
+#: src/lib/utils.ts
+#: src/components/routes/system.tsx
+#: src/components/charts/area-chart.tsx
 msgid "CPU Usage"
 msgstr "Sử dụng CPU"
 
@@ -270,29 +270,29 @@ msgstr "Xóa"
 msgid "Disk"
 msgstr "Đĩa"
 
-#: src/components/routes/system.tsx:499
+#: src/components/routes/system.tsx
 msgid "Disk I/O"
 msgstr "Đĩa I/O"
 
-#: src/lib/utils.ts:331
-#: src/components/routes/system.tsx:492
-#: src/components/charts/disk-chart.tsx:77
+#: src/lib/utils.ts
+#: src/components/routes/system.tsx
+#: src/components/charts/disk-chart.tsx
 msgid "Disk Usage"
 msgstr "Sử dụng Đĩa"
 
-#: src/components/routes/system.tsx:621
+#: src/components/routes/system.tsx
 msgid "Disk usage of {extraFsName}"
 msgstr "Sử dụng đĩa của {extraFsName}"
 
-#: src/components/routes/system.tsx:463
+#: src/components/routes/system.tsx
 msgid "Docker CPU Usage"
 msgstr "Sử dụng CPU Docker"
 
-#: src/components/routes/system.tsx:484
+#: src/components/routes/system.tsx
 msgid "Docker Memory Usage"
 msgstr "Sử dụng Bộ nhớ Docker"
 
-#: src/components/routes/system.tsx:525
+#: src/components/routes/system.tsx
 msgid "Docker Network I/O"
 msgstr "Mạng I/O Docker"
 
@@ -301,9 +301,9 @@ msgid "Documentation"
 msgstr "Tài liệu"
 
 #. Context: System is down
-#: src/lib/utils.ts:316
-#: src/components/systems-table/systems-table.tsx:142
-#: src/components/routes/system.tsx:363
+#: src/lib/utils.ts
+#: src/components/systems-table/systems-table.tsx
+#: src/components/routes/system.tsx
 msgid "Down"
 msgstr ""
 
@@ -338,7 +338,7 @@ msgstr "Lỗi"
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
-#: src/components/routes/home.tsx:102
+#: src/components/routes/home.tsx
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Vượt quá {0}{1} trong {2, plural, one {# phút} other {# phút}} qua"
 
@@ -371,8 +371,8 @@ msgstr "Gửi thông báo thử nghiệm thất bại"
 msgid "Failed to update alert"
 msgstr "Cập nhật cảnh báo thất bại"
 
-#: src/components/systems-table/systems-table.tsx:354
-#: src/components/routes/system.tsx:661
+#: src/components/systems-table/systems-table.tsx
+#: src/components/routes/system.tsx
 msgid "Filter..."
 msgstr "Lọc..."
 
@@ -390,7 +390,7 @@ msgstr "Quên mật khẩu?"
 msgid "General"
 msgstr "Chung"
 
-#: src/components/routes/system.tsx:564
+#: src/components/routes/system.tsx
 msgid "GPU Power Draw"
 msgstr ""
 
@@ -416,7 +416,7 @@ msgid "Invalid email address."
 msgstr "Địa chỉ email không hợp lệ."
 
 #. Linux kernel
-#: src/components/routes/system.tsx:260
+#: src/components/routes/system.tsx
 msgid "Kernel"
 msgstr "Nhân"
 
@@ -464,7 +464,7 @@ msgid "Manual setup instructions"
 msgstr ""
 
 #. Chart select field. Please try to keep this short.
-#: src/components/routes/system.tsx:691
+#: src/components/routes/system.tsx
 msgid "Max 1 min"
 msgstr "Tối đa 1 phút"
 
@@ -472,12 +472,12 @@ msgstr "Tối đa 1 phút"
 msgid "Memory"
 msgstr "Bộ nhớ"
 
-#: src/lib/utils.ts:325
-#: src/components/routes/system.tsx:474
+#: src/lib/utils.ts
+#: src/components/routes/system.tsx
 msgid "Memory Usage"
 msgstr "Sử dụng Bộ nhớ"
 
-#: src/components/routes/system.tsx:485
+#: src/components/routes/system.tsx
 msgid "Memory usage of docker containers"
 msgstr "Sử dụng bộ nhớ của các container Docker"
 
@@ -489,11 +489,11 @@ msgstr "Tên"
 msgid "Net"
 msgstr "Mạng"
 
-#: src/components/routes/system.tsx:526
+#: src/components/routes/system.tsx
 msgid "Network traffic of docker containers"
 msgstr "Lưu lượng mạng của các container Docker"
 
-#: src/components/routes/system.tsx:511
+#: src/components/routes/system.tsx
 msgid "Network traffic of public interfaces"
 msgstr "Lưu lượng mạng của các giao diện công cộng"
 
@@ -602,8 +602,8 @@ msgstr "Vui lòng đăng nhập vào tài khoản của bạn"
 msgid "Port"
 msgstr "Cổng"
 
-#: src/components/routes/system.tsx:475
-#: src/components/routes/system.tsx:595
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
 msgid "Precise utilization at the recorded time"
 msgstr "Sử dụng chính xác tại thời điểm ghi nhận"
 
@@ -697,11 +697,11 @@ msgstr "Sắp xếp theo"
 msgid "Status"
 msgstr "Trạng thái"
 
-#: src/components/routes/system.tsx:541
+#: src/components/routes/system.tsx
 msgid "Swap space used by the system"
 msgstr "Không gian hoán đổi được sử dụng bởi hệ thống"
 
-#: src/components/routes/system.tsx:540
+#: src/components/routes/system.tsx
 msgid "Swap Usage"
 msgstr "Sử dụng Hoán đổi"
 
@@ -729,12 +729,12 @@ msgstr "Bảng"
 msgid "Temp"
 msgstr ""
 
-#: src/lib/utils.ts:344
-#: src/components/routes/system.tsx:552
+#: src/lib/utils.ts
+#: src/components/routes/system.tsx
 msgid "Temperature"
 msgstr "Nhiệt độ"
 
-#: src/components/routes/system.tsx:553
+#: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
 msgstr "Nhiệt độ của các cảm biến hệ thống"
 
@@ -762,11 +762,11 @@ msgstr "Sau đó đăng nhập vào backend và đặt lại mật khẩu tài k
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Hành động này không thể hoàn tác. Điều này sẽ xóa vĩnh viễn tất cả các bản ghi hiện tại cho {name} khỏi cơ sở dữ liệu."
 
-#: src/components/routes/system.tsx:633
+#: src/components/routes/system.tsx
 msgid "Throughput of {extraFsName}"
 msgstr "Thông lượng của {extraFsName}"
 
-#: src/components/routes/system.tsx:500
+#: src/components/routes/system.tsx
 msgid "Throughput of root filesystem"
 msgstr "Thông lượng của hệ thống tệp gốc"
 
@@ -774,8 +774,8 @@ msgstr "Thông lượng của hệ thống tệp gốc"
 msgid "To email(s)"
 msgstr "Đến email(s)"
 
-#: src/components/routes/system.tsx:427
-#: src/components/routes/system.tsx:440
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
 msgid "Toggle grid"
 msgstr "Chuyển đổi lưới"
 
@@ -808,8 +808,8 @@ msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Kích hoạt khi sử dụng bất kỳ đĩa nào vượt quá ngưỡng"
 
 #. Context: System is up
-#: src/components/systems-table/systems-table.tsx:141
-#: src/components/routes/system.tsx:361
+#: src/components/systems-table/systems-table.tsx
+#: src/components/routes/system.tsx
 msgid "Up"
 msgstr ""
 
@@ -817,17 +817,17 @@ msgstr ""
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Cập nhật theo thời gian thực. Nhấp vào một hệ thống để xem thông tin."
 
-#: src/components/routes/system.tsx:288
+#: src/components/routes/system.tsx
 msgid "Uptime"
 msgstr "Thời gian hoạt động"
 
-#: src/components/routes/system.tsx:586
-#: src/components/routes/system.tsx:620
-#: src/components/charts/area-chart.tsx:75
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
+#: src/components/charts/area-chart.tsx
 msgid "Usage"
 msgstr "Sử dụng"
 
-#: src/components/routes/system.tsx:492
+#: src/components/routes/system.tsx
 msgid "Usage of root partition"
 msgstr "Sử dụng phân vùng gốc"
 
@@ -850,7 +850,7 @@ msgstr "Xem"
 msgid "Visible Fields"
 msgstr "Các cột hiển thị"
 
-#: src/components/routes/system.tsx:725
+#: src/components/routes/system.tsx
 msgid "Waiting for enough records to display"
 msgstr "Đang chờ đủ bản ghi để hiển thị"
 
@@ -862,9 +862,14 @@ msgstr "Muốn giúp chúng tôi cải thiện bản dịch của mình? Xem <0>
 msgid "Webhook / Push notifications"
 msgstr "Thông báo Webhook / Push"
 
-#: src/components/routes/system.tsx:280
+#: src/components/routes/system.tsx
 #~ msgid "Windows build"
 #~ msgstr ""
+
+#: src/components/add-system.tsx
+msgctxt "Button to copy install command"
+msgid "Windows command"
+msgstr ""
 
 #. Disk write
 #: src/components/charts/area-chart.tsx
