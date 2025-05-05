@@ -147,8 +147,8 @@ msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
 msgstr "Beszel podržava OpenID Connect i mnoge druge OAuth2 davatalje autentifikacije."
 
 #: src/components/routes/settings/notifications.tsx
-msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
-msgstr "Beszel koristi <0>Shoutrrr</0> za integraciju sa popularnim servisima za notifikacije."
+#~ msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
+#~ msgstr "Beszel koristi <0>Shoutrrr</0> za integraciju sa popularnim servisima za notifikacije."
 
 #: src/components/add-system.tsx
 msgid "Binary"
@@ -189,6 +189,10 @@ msgstr "Provjerite Vaš servis notifikacija"
 #: src/components/add-system.tsx
 msgid "Click to copy"
 msgstr "Pritisnite za kopiranje"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "CMonitor uses <0>Shoutrrr</0> to integrate with popular notification services."
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx

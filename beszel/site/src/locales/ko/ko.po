@@ -147,8 +147,8 @@ msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
 msgstr "Beszel은 OpenID Connect 및 많은 OAuth2 인증 제공자를 지원합니다."
 
 #: src/components/routes/settings/notifications.tsx
-msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
-msgstr "Beszel은 여러 인기 있는 알림 서비스와 연동하기 위해 <0>Shoutrrr</0>을 이용합니다."
+#~ msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
+#~ msgstr "Beszel은 여러 인기 있는 알림 서비스와 연동하기 위해 <0>Shoutrrr</0>을 이용합니다."
 
 #: src/components/add-system.tsx
 msgid "Binary"
@@ -189,6 +189,10 @@ msgstr "알림 서비스를 확인하세요."
 #: src/components/add-system.tsx
 msgid "Click to copy"
 msgstr "클릭하여 복사"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "CMonitor uses <0>Shoutrrr</0> to integrate with popular notification services."
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
