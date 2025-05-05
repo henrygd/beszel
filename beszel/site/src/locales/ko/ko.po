@@ -8,7 +8,7 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-04-29 14:28\n"
+"PO-Revision-Date: 2025-05-05 14:36\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -112,7 +112,7 @@ msgstr "평균"
 
 #: src/components/routes/system.tsx
 msgid "Average CPU utilization of containers"
-msgstr "컨테이너의 평균 CPU 사용량"
+msgstr "Docker 컨테이너의 평균 CPU 사용량"
 
 #. placeholder {0}: data.alert.unit
 #: src/components/alerts/alerts-system.tsx
