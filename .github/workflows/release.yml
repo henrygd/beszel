@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  goreleaser:
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -17,12 +17,18 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Download site dist
+        uses: actions/download-artifact@v4
+        with:
+          name: site-dist
+          path: ./beszel/site/dist
+
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
           go-version: '^1.22.1'
 
-      - name: GoReleaser
+      - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
           workdir: ./beszel

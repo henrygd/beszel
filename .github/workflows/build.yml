@@ -23,10 +23,8 @@ jobs:
       - name: Build site
         run: bun run --cwd ./beszel/site build
 
-      - name: Commit build artifacts
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add beszel/site/src/locales/*
-          git commit -m "ci: auto-commit updated locale files [skip ci]" || echo "No changes to commit"
-          git push
+      - name: Upload built site
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-dist
+          path: ./beszel/site/dist
