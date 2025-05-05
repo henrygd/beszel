@@ -26,17 +26,16 @@ jobs:
       - name: Build site
         run: bun run --cwd ./beszel/site build
 
-      - name: Auto-commit generated changes if any
+      - name: Commit i18n updates
         run: |
+          git config user.name "goreleaserbot"
+          git config user.email "goreleaser@users.noreply.github.com"
+          git checkout ${{ github.ref_name }}
           if [[ -n $(git status --porcelain) ]]; then
-            git config --global user.name "goreleaserbot"
-            git config --global user.email "bot@goreleaser.com"
             git add .
-            git commit -m "chore: auto-commit changes before release"
-            git push
+            git commit -m "chore: update i18n files before release"
+            git push origin HEAD
           fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Go
         uses: actions/setup-go@v5
