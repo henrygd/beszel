@@ -27,28 +27,28 @@ msgstr "{0, plural, one {# 天} other {# 天}}"
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# 小時} other {# 小時}}"
 
-#: src/lib/utils.ts:168
+#: src/lib/utils.ts
 msgid "1 hour"
 msgstr "1小時"
 
-#: src/lib/utils.ts:191
+#: src/lib/utils.ts
 msgid "1 week"
 msgstr "1週"
 
-#: src/lib/utils.ts:176
+#: src/lib/utils.ts
 msgid "12 hours"
 msgstr "12小時"
 
-#: src/lib/utils.ts:184
+#: src/lib/utils.ts
 msgid "24 hours"
 msgstr "24小時"
 
-#: src/lib/utils.ts:199
+#: src/lib/utils.ts
 msgid "30 days"
 msgstr "30天"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx:304
+#: src/components/systems-table/systems-table.tsx
 msgid "Actions"
 msgstr "操作"
 
@@ -56,53 +56,53 @@ msgstr "操作"
 msgid "Active Alerts"
 msgstr "活動警報"
 
-#: src/components/add-system.tsx:43
+#: src/components/add-system.tsx
 msgid "Add <0>System</0>"
 msgstr "新增<0>系統</0>"
 
-#: src/components/add-system.tsx:126
+#: src/components/add-system.tsx
 msgid "Add New System"
 msgstr "新增新系統"
 
-#: src/components/add-system.tsx:232
+#: src/components/add-system.tsx
 msgid "Add system"
 msgstr "新增系統"
 
-#: src/components/routes/settings/notifications.tsx:158
+#: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
 msgstr "添加 URL"
 
-#: src/components/routes/settings/general.tsx:81
+#: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
 msgstr "調整圖表的顯示選項。"
 
-#: src/components/command-palette.tsx:131
-#: src/components/command-palette.tsx:144
-#: src/components/command-palette.tsx:158
-#: src/components/command-palette.tsx:172
-#: src/components/command-palette.tsx:187
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
 msgid "Admin"
 msgstr "管理員"
 
-#: src/components/systems-table/systems-table.tsx:270
+#: src/components/systems-table/systems-table.tsx
 msgid "Agent"
 msgstr "客户端"
 
-#: src/components/alerts/alert-button.tsx:33
-#: src/components/alerts/alert-button.tsx:79
+#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alert-button.tsx
 msgid "Alerts"
 msgstr "警報"
 
-#: src/components/systems-table/systems-table.tsx:347
-#: src/components/alerts/alert-button.tsx:99
+#: src/components/systems-table/systems-table.tsx
+#: src/components/alerts/alert-button.tsx
 msgid "All Systems"
 msgstr "所有系統"
 
-#: src/components/systems-table/systems-table.tsx:696
+#: src/components/systems-table/systems-table.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "您確定要刪除 {name} 嗎？"
 
-#: src/components/copy-to-clipboard.tsx:16
+#: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "自動複製需要安全的上下文。"
 
@@ -115,7 +115,7 @@ msgid "Average CPU utilization of containers"
 msgstr "容器的平均 CPU 使用率"
 
 #. placeholder {0}: data.alert.unit
-#: src/components/alerts/alerts-system.tsx:253
+#: src/components/alerts/alerts-system.tsx
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "平均值超過 <0>{value}{0}</0>"
 
@@ -132,8 +132,8 @@ msgstr "系統的平均 CPU 使用率"
 msgid "Average utilization of {0}"
 msgstr "{0} 的平均使用率"
 
-#: src/components/navbar.tsx:94
-#: src/components/command-palette.tsx:169
+#: src/components/navbar.tsx
+#: src/components/command-palette.tsx
 msgid "Backups"
 msgstr "備份"
 
@@ -142,94 +142,99 @@ msgstr "備份"
 msgid "Bandwidth"
 msgstr "帶寬"
 
-#: src/components/login/auth-form.tsx:305
+#: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
 msgstr "Beszel支持OpenID Connect和許多OAuth2認證提供者。"
 
-#: src/components/routes/settings/notifications.tsx:129
+#: src/components/routes/settings/notifications.tsx
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
 msgstr "Beszel 使用 <0>Shoutrrr</0> 與流行的通知服務集成。"
 
-#: src/components/add-system.tsx:131
+#: src/components/add-system.tsx
 msgid "Binary"
 msgstr "執行檔"
 
-#: src/components/charts/mem-chart.tsx:87
+#: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
 msgstr "快取 / 緩衝區"
 
-#: src/components/systems-table/systems-table.tsx:707
+#: src/components/systems-table/systems-table.tsx
 msgid "Cancel"
 msgstr "取消"
 
-#: src/components/routes/settings/config-yaml.tsx:69
+#: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
 msgstr "注意 - 可能遺失資料"
 
-#: src/components/routes/settings/general.tsx:36
+#: src/components/routes/settings/general.tsx
 msgid "Change general application options."
 msgstr "更改一般應用選項。"
 
-#: src/components/routes/settings/general.tsx:78
+#: src/components/routes/settings/general.tsx
 msgid "Chart options"
 msgstr "圖表選項"
 
-#: src/components/login/forgot-pass-form.tsx:35
+#: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
 msgstr "檢查 {email} 以獲取重置鏈接。"
 
-#: src/components/routes/settings/layout.tsx:41
+#: src/components/routes/settings/layout.tsx
 msgid "Check logs for more details."
 msgstr "檢查日誌以取得更多資訊。"
 
-#: src/components/routes/settings/notifications.tsx:185
+#: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
 msgstr "檢查您的通知服務"
 
-#: src/components/add-system.tsx:205
+#: src/components/add-system.tsx
 msgid "Click to copy"
 msgstr "點擊以複製"
 
-#: src/components/login/forgot-pass-form.tsx:84
-#: src/components/login/forgot-pass-form.tsx:90
+#: src/components/login/forgot-pass-form.tsx
+#: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
 msgstr "命令行指令"
 
-#: src/components/routes/settings/notifications.tsx:79
+#: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
 msgstr "配置您接收警報通知的方式。"
 
-#: src/components/login/auth-form.tsx:213
-#: src/components/login/auth-form.tsx:218
+#: src/components/login/auth-form.tsx
+#: src/components/login/auth-form.tsx
 msgid "Confirm password"
 msgstr "確認密碼"
 
-#: src/components/systems-table/systems-table.tsx:713
+#: src/components/systems-table/systems-table.tsx
 msgid "Continue"
 msgstr "繼續"
 
-#: src/lib/utils.ts:35
+#: src/lib/utils.ts
 msgid "Copied to clipboard"
 msgstr "已複製到剪貼板"
 
-#: src/components/add-system.tsx:216
-#: src/components/add-system.tsx:218
-msgid "Copy"
-msgstr "複製"
+#: src/components/add-system.tsx
+msgctxt "Button to copy docker compose file content"
+msgid "Copy docker compose"
+msgstr "複製 docker compose"
 
-#: src/components/systems-table/systems-table.tsx:678
+#: src/components/add-system.tsx
+msgctxt "Button to copy docker run command"
+msgid "Copy docker run"
+msgstr "複製 docker run"
+
+#: src/components/systems-table/systems-table.tsx
 msgid "Copy host"
 msgstr "複製主機"
 
-#: src/components/add-system.tsx:225
+#: src/components/add-system.tsx
 msgid "Copy Linux command"
 msgstr "複製 Linux 指令"
 
-#: src/components/copy-to-clipboard.tsx:13
+#: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "複製文本"
 
-#: src/components/systems-table/systems-table.tsx:186
+#: src/components/systems-table/systems-table.tsx
 msgid "CPU"
 msgstr "CPU"
 
@@ -239,29 +244,29 @@ msgstr "CPU"
 msgid "CPU Usage"
 msgstr "CPU 使用率"
 
-#: src/components/login/auth-form.tsx:239
+#: src/components/login/auth-form.tsx
 msgid "Create account"
 msgstr "創建帳戶"
 
 #. Dark theme
-#: src/components/mode-toggle.tsx:22
+#: src/components/mode-toggle.tsx
 msgid "Dark"
 msgstr "深色"
 
-#: src/components/command-palette.tsx:80
-#: src/components/routes/home.tsx:36
+#: src/components/command-palette.tsx
+#: src/components/routes/home.tsx
 msgid "Dashboard"
 msgstr "控制面板"
 
-#: src/components/routes/settings/general.tsx:85
+#: src/components/routes/settings/general.tsx
 msgid "Default time period"
 msgstr "預設時間段"
 
-#: src/components/systems-table/systems-table.tsx:683
+#: src/components/systems-table/systems-table.tsx
 msgid "Delete"
 msgstr "刪除"
 
-#: src/components/systems-table/systems-table.tsx:204
+#: src/components/systems-table/systems-table.tsx
 msgid "Disk"
 msgstr "磁碟"
 
@@ -291,7 +296,7 @@ msgstr "Docker 記憶體使用率"
 msgid "Docker Network I/O"
 msgstr "Docker 網絡 I/O"
 
-#: src/components/command-palette.tsx:123
+#: src/components/command-palette.tsx
 msgid "Documentation"
 msgstr "文件"
 
@@ -302,31 +307,31 @@ msgstr "文件"
 msgid "Down"
 msgstr ""
 
-#: src/components/add-system.tsx:126
-#: src/components/systems-table/systems-table.tsx:653
+#: src/components/add-system.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Edit"
 msgstr "編輯"
 
-#: src/components/login/forgot-pass-form.tsx:54
-#: src/components/login/auth-form.tsx:176
+#: src/components/login/forgot-pass-form.tsx
+#: src/components/login/auth-form.tsx
 msgid "Email"
 msgstr "電子郵件"
 
-#: src/components/routes/settings/notifications.tsx:93
+#: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
 msgstr "電子郵件通知"
 
-#: src/components/login/login.tsx:38
+#: src/components/login/login.tsx
 msgid "Enter email address to reset password"
 msgstr "輸入電子郵件地址以重置密碼"
 
-#: src/components/routes/settings/notifications.tsx:113
+#: src/components/routes/settings/notifications.tsx
 msgid "Enter email address..."
 msgstr "輸入電子郵件地址..."
 
-#: src/components/routes/settings/notifications.tsx:189
-#: src/components/routes/settings/config-yaml.tsx:29
-#: src/components/login/auth-form.tsx:137
+#: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/config-yaml.tsx
+#: src/components/login/auth-form.tsx
 msgid "Error"
 msgstr "錯誤"
 
@@ -337,32 +342,32 @@ msgstr "錯誤"
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "在過去的{2, plural, one {# 分鐘} other {# 分鐘}}中超過{0}{1}"
 
-#: src/components/routes/settings/config-yaml.tsx:73
+#: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr "未在<0>config.yml</0>中定義的現有系統將被刪除。請定期備份。"
 
-#: src/components/routes/settings/config-yaml.tsx:94
+#: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
 msgstr "匯出設定"
 
-#: src/components/routes/settings/config-yaml.tsx:49
+#: src/components/routes/settings/config-yaml.tsx
 msgid "Export your current systems configuration."
 msgstr "匯出您現在的系統設定。"
 
-#: src/lib/utils.ts:48
+#: src/lib/utils.ts
 msgid "Failed to authenticate"
 msgstr "認證失敗"
 
-#: src/components/routes/settings/notifications.tsx:64
-#: src/components/routes/settings/layout.tsx:40
+#: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/layout.tsx
 msgid "Failed to save settings"
 msgstr "儲存設定失敗"
 
-#: src/components/routes/settings/notifications.tsx:190
+#: src/components/routes/settings/notifications.tsx
 msgid "Failed to send test notification"
 msgstr "發送測試通知失敗"
 
-#: src/components/alerts/alerts-system.tsx:26
+#: src/components/alerts/alerts-system.tsx
 msgid "Failed to update alert"
 msgstr "更新警報失敗"
 
@@ -371,17 +376,17 @@ msgstr "更新警報失敗"
 msgid "Filter..."
 msgstr "篩選..."
 
-#: src/components/alerts/alerts-system.tsx:285
+#: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "持續<0>{min}</0> {min, plural, one {分鐘} other {分鐘}}"
 
-#: src/components/login/auth-form.tsx:328
+#: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "忘記密碼？"
 
 #. Context: General settings
-#: src/components/routes/settings/layout.tsx:52
-#: src/components/routes/settings/general.tsx:33
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/general.tsx
 msgid "General"
 msgstr "一般"
 
@@ -389,19 +394,24 @@ msgstr "一般"
 msgid "GPU Power Draw"
 msgstr "GPU 功耗"
 
-#: src/components/systems-table/systems-table.tsx:381
+#: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "網格"
 
-#: src/components/add-system.tsx:159
+#: src/components/add-system.tsx
+msgctxt "Button to copy install command"
+msgid "Homebrew command"
+msgstr "Homebrew 指令"
+
+#: src/components/add-system.tsx
 msgid "Host / IP"
 msgstr "主機 / IP"
 
-#: src/components/login/forgot-pass-form.tsx:94
+#: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "如果您遺失了管理員帳號密碼，可以使用以下指令重設。"
 
-#: src/components/login/auth-form.tsx:18
+#: src/components/login/auth-form.tsx
 msgid "Invalid email address."
 msgstr "無效的電子郵件地址。"
 
@@ -410,46 +420,46 @@ msgstr "無效的電子郵件地址。"
 msgid "Kernel"
 msgstr "Kernel"
 
-#: src/components/routes/settings/general.tsx:45
+#: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "語言"
 
-#: src/components/systems-table/systems-table.tsx:367
+#: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "版面配置"
 
 #. Light theme
-#: src/components/mode-toggle.tsx:17
+#: src/components/mode-toggle.tsx
 msgid "Light"
 msgstr "淺色"
 
-#: src/components/navbar.tsx:105
+#: src/components/navbar.tsx
 msgid "Log Out"
 msgstr "登出"
 
-#: src/components/login/login.tsx:19
+#: src/components/login/login.tsx
 msgid "Login"
 msgstr "登入"
 
-#: src/components/login/forgot-pass-form.tsx:16
-#: src/components/login/auth-form.tsx:40
+#: src/components/login/forgot-pass-form.tsx
+#: src/components/login/auth-form.tsx
 msgid "Login attempt failed"
 msgstr "登入嘗試失敗"
 
-#: src/components/navbar.tsx:86
-#: src/components/command-palette.tsx:155
+#: src/components/navbar.tsx
+#: src/components/command-palette.tsx
 msgid "Logs"
 msgstr "日誌"
 
-#: src/components/routes/settings/notifications.tsx:82
+#: src/components/routes/settings/notifications.tsx
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
 msgstr "在尋找創建警報的位置嗎？點擊系統表中的鈴鐺<0/>。"
 
-#: src/components/routes/settings/layout.tsx:86
+#: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "管理顯示和通知偏好。"
 
-#: src/components/add-system.tsx:227
+#: src/components/add-system.tsx
 msgid "Manual setup instructions"
 msgstr "手動設定說明"
 
@@ -458,7 +468,7 @@ msgstr "手動設定說明"
 msgid "Max 1 min"
 msgstr "一分鐘內最大值"
 
-#: src/components/systems-table/systems-table.tsx:195
+#: src/components/systems-table/systems-table.tsx
 msgid "Memory"
 msgstr "記憶體"
 
@@ -471,11 +481,11 @@ msgstr "記憶體使用"
 msgid "Memory usage of docker containers"
 msgstr "Docker 容器的記憶體使用量"
 
-#: src/components/add-system.tsx:155
+#: src/components/add-system.tsx
 msgid "Name"
 msgstr "名稱"
 
-#: src/components/systems-table/systems-table.tsx:223
+#: src/components/systems-table/systems-table.tsx
 msgid "Net"
 msgstr "網絡"
 
@@ -487,108 +497,108 @@ msgstr "Docker 容器的網絡流量"
 msgid "Network traffic of public interfaces"
 msgstr "公共接口的網絡流量"
 
-#: src/components/command-palette.tsx:48
+#: src/components/command-palette.tsx
 msgid "No results found."
 msgstr "未找到結果。"
 
-#: src/components/systems-table/systems-table.tsx:472
-#: src/components/systems-table/systems-table.tsx:495
+#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "未找到系統。"
 
-#: src/components/command-palette.tsx:109
-#: src/components/routes/settings/notifications.tsx:76
-#: src/components/routes/settings/layout.tsx:57
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/layout.tsx
 msgid "Notifications"
 msgstr "通知"
 
-#: src/components/login/auth-form.tsx:300
+#: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
 msgstr "支援 OAuth 2 / OIDC"
 
-#: src/components/routes/settings/config-yaml.tsx:62
+#: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "每次重新啟動時，將會以檔案中的系統定義更新資料庫。"
 
-#: src/components/systems-table/systems-table.tsx:639
+#: src/components/systems-table/systems-table.tsx
 msgid "Open menu"
 msgstr "開啟選單"
 
-#: src/components/login/auth-form.tsx:251
+#: src/components/login/auth-form.tsx
 msgid "Or continue with"
 msgstr "或繼續使用"
 
-#: src/components/alerts/alert-button.tsx:120
+#: src/components/alerts/alert-button.tsx
 msgid "Overwrite existing alerts"
 msgstr "覆蓋現有警報"
 
-#: src/components/command-palette.tsx:83
+#: src/components/command-palette.tsx
 msgid "Page"
 msgstr "頁面"
 
-#: src/components/command-palette.tsx:70
+#: src/components/command-palette.tsx
 msgid "Pages / Settings"
 msgstr "頁面 / 設定"
 
-#: src/components/login/auth-form.tsx:195
-#: src/components/login/auth-form.tsx:200
+#: src/components/login/auth-form.tsx
+#: src/components/login/auth-form.tsx
 msgid "Password"
 msgstr "密碼"
 
-#: src/components/login/auth-form.tsx:21
+#: src/components/login/auth-form.tsx
 msgid "Password must be at least 8 characters."
 msgstr "密碼必須至少包含 8 個字符。"
 
-#: src/components/login/auth-form.tsx:22
+#: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
 msgstr "密碼必須少於 72 個字節。"
 
-#: src/components/login/forgot-pass-form.tsx:34
+#: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"
 msgstr "已收到密碼重設請求"
 
-#: src/components/systems-table/systems-table.tsx:672
+#: src/components/systems-table/systems-table.tsx
 msgid "Pause"
 msgstr "暫停"
 
-#: src/components/systems-table/systems-table.tsx:143
+#: src/components/systems-table/systems-table.tsx
 msgid "Paused"
-msgstr ""
+msgstr "已暫停"
 
-#: src/components/routes/settings/notifications.tsx:97
+#: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "請<0>配置SMTP伺服器</0>以確保警報被傳送。"
 
-#: src/components/alerts/alerts-system.tsx:27
+#: src/components/alerts/alerts-system.tsx
 msgid "Please check logs for more details."
 msgstr "請檢查日誌以獲取更多資訊。"
 
-#: src/components/login/forgot-pass-form.tsx:17
-#: src/components/login/auth-form.tsx:41
+#: src/components/login/forgot-pass-form.tsx
+#: src/components/login/auth-form.tsx
 msgid "Please check your credentials and try again"
 msgstr "請檢查您的憑證並重試"
 
-#: src/components/login/login.tsx:36
+#: src/components/login/login.tsx
 msgid "Please create an admin account"
 msgstr "請建立一個管理員帳號"
 
-#: src/components/login/auth-form.tsx:138
+#: src/components/login/auth-form.tsx
 msgid "Please enable pop-ups for this site"
 msgstr "請為此網站啟用彈出窗口"
 
-#: src/lib/utils.ts:49
+#: src/lib/utils.ts
 msgid "Please log in again"
 msgstr "請重新登入"
 
-#: src/components/login/auth-form.tsx:308
+#: src/components/login/auth-form.tsx
 msgid "Please see <0>the documentation</0> for instructions."
 msgstr "請參閱<0>文件</0>以取得說明。"
 
-#: src/components/login/login.tsx:40
+#: src/components/login/login.tsx
 msgid "Please sign in to your account"
 msgstr "請登入您的帳號"
 
-#: src/components/add-system.tsx:171
+#: src/components/add-system.tsx
 msgid "Port"
 msgstr "端口"
 
@@ -597,93 +607,93 @@ msgstr "端口"
 msgid "Precise utilization at the recorded time"
 msgstr "記錄時間的精確使用率"
 
-#: src/components/routes/settings/general.tsx:58
+#: src/components/routes/settings/general.tsx
 msgid "Preferred Language"
 msgstr "首選語言"
 
 #. Use 'Key' if your language requires many more characters
-#: src/components/add-system.tsx:182
+#: src/components/add-system.tsx
 msgid "Public Key"
 msgstr "公鑰"
 
 #. Disk read
-#: src/components/charts/area-chart.tsx:62
-#: src/components/charts/area-chart.tsx:72
+#: src/components/charts/area-chart.tsx
+#: src/components/charts/area-chart.tsx
 msgid "Read"
 msgstr "讀取"
 
 #. Network bytes received (download)
-#: src/components/charts/area-chart.tsx:67
+#: src/components/charts/area-chart.tsx
 msgid "Received"
 msgstr "接收"
 
-#: src/components/login/forgot-pass-form.tsx:77
+#: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
 msgstr "重設密碼"
 
-#: src/components/systems-table/systems-table.tsx:667
+#: src/components/systems-table/systems-table.tsx
 msgid "Resume"
 msgstr "恢復"
 
-#: src/components/routes/settings/notifications.tsx:119
+#: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "使用回車鍵或逗號保存地址。留空以禁用電子郵件通知。"
 
-#: src/components/routes/settings/notifications.tsx:169
-#: src/components/routes/settings/general.tsx:106
+#: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/general.tsx
 msgid "Save Settings"
 msgstr "儲存設定"
 
-#: src/components/add-system.tsx:232
+#: src/components/add-system.tsx
 msgid "Save system"
 msgstr "儲存系統"
 
-#: src/components/navbar.tsx:134
+#: src/components/navbar.tsx
 msgid "Search"
 msgstr "搜索"
 
-#: src/components/command-palette.tsx:45
+#: src/components/command-palette.tsx
 msgid "Search for systems or settings..."
 msgstr "搜索系統或設置..."
 
-#: src/components/alerts/alert-button.tsx:82
+#: src/components/alerts/alert-button.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "查看<0>通知設置</0>以配置您接收警報的方式。"
 
 #. Network bytes sent (upload)
-#: src/components/charts/area-chart.tsx:66
+#: src/components/charts/area-chart.tsx
 msgid "Sent"
 msgstr "發送"
 
-#: src/components/routes/settings/general.tsx:100
+#: src/components/routes/settings/general.tsx
 msgid "Sets the default time range for charts when a system is viewed."
 msgstr "設置查看系統時圖表的默認時間範圍。"
 
-#: src/components/command-palette.tsx:94
-#: src/components/command-palette.tsx:97
-#: src/components/command-palette.tsx:112
-#: src/components/routes/settings/layout.tsx:72
-#: src/components/routes/settings/layout.tsx:83
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/layout.tsx
 msgid "Settings"
 msgstr "設置"
 
-#: src/components/routes/settings/layout.tsx:34
+#: src/components/routes/settings/layout.tsx
 msgid "Settings saved"
 msgstr "設置已保存"
 
-#: src/components/login/auth-form.tsx:239
+#: src/components/login/auth-form.tsx
 msgid "Sign in"
 msgstr "登錄"
 
-#: src/components/command-palette.tsx:184
+#: src/components/command-palette.tsx
 msgid "SMTP settings"
 msgstr "SMTP設置"
 
-#: src/components/systems-table/systems-table.tsx:389
+#: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "排序依據"
 
-#: src/lib/utils.ts:311
+#: src/lib/utils.ts
 msgid "Status"
 msgstr "狀態"
 
@@ -696,26 +706,26 @@ msgid "Swap Usage"
 msgstr "交換使用"
 
 #. System theme
-#: src/lib/utils.ts:316
-#: src/components/mode-toggle.tsx:27
-#: src/components/systems-table/systems-table.tsx:152
+#: src/lib/utils.ts
+#: src/components/mode-toggle.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "System"
 msgstr "系統"
 
-#: src/components/navbar.tsx:78
+#: src/components/navbar.tsx
 msgid "Systems"
 msgstr "系統"
 
-#: src/components/routes/settings/config-yaml.tsx:56
+#: src/components/routes/settings/config-yaml.tsx
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "系統可以在您的數據目錄中的<0>config.yml</0>文件中管理。"
 
-#: src/components/systems-table/systems-table.tsx:377
+#: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "表格"
 
 #. Temperature label in systems table
-#: src/components/systems-table/systems-table.tsx:244
+#: src/components/systems-table/systems-table.tsx
 msgid "Temp"
 msgstr "溫度"
 
@@ -728,27 +738,27 @@ msgstr "溫度"
 msgid "Temperatures of system sensors"
 msgstr "系統傳感器的溫度"
 
-#: src/components/routes/settings/notifications.tsx:213
+#: src/components/routes/settings/notifications.tsx
 msgid "Test <0>URL</0>"
 msgstr "測試<0>URL</0>"
 
-#: src/components/routes/settings/notifications.tsx:184
+#: src/components/routes/settings/notifications.tsx
 msgid "Test notification sent"
 msgstr "測試通知已發送"
 
-#: src/components/add-system.tsx:147
+#: src/components/add-system.tsx
 msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
 msgstr "代理必須在系統上運行才能連接。複製下面的代理安裝命令。"
 
-#: src/components/add-system.tsx:138
+#: src/components/add-system.tsx
 msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
 msgstr "代理必須在系統上運行才能連接。複製下面的<0>docker-compose.yml</0>。"
 
-#: src/components/login/forgot-pass-form.tsx:99
+#: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "然後登錄到後端並在用戶表中重置您的用戶帳戶密碼。"
 
-#: src/components/systems-table/systems-table.tsx:699
+#: src/components/systems-table/systems-table.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "此操作無法撤銷。這將永久刪除數據庫中{name}的所有當前記錄。"
 
@@ -760,7 +770,7 @@ msgstr "{extraFsName}的吞吐量"
 msgid "Throughput of root filesystem"
 msgstr "根文件系統的吞吐量"
 
-#: src/components/routes/settings/notifications.tsx:108
+#: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "發送到電子郵件"
 
@@ -769,31 +779,31 @@ msgstr "發送到電子郵件"
 msgid "Toggle grid"
 msgstr "切換網格"
 
-#: src/components/mode-toggle.tsx:34
+#: src/components/mode-toggle.tsx
 msgid "Toggle theme"
 msgstr "切換主題"
 
-#: src/lib/utils.ts:347
+#: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "當任何傳感器超過閾值時觸發"
 
-#: src/lib/utils.ts:340
+#: src/lib/utils.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "當組合的上/下超過閾值時觸發"
 
-#: src/lib/utils.ts:322
+#: src/lib/utils.ts
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "當CPU使用率超過閾值時觸發"
 
-#: src/lib/utils.ts:328
+#: src/lib/utils.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "當記憶體使用率超過閾值時觸發"
 
-#: src/lib/utils.ts:314
+#: src/lib/utils.ts
 msgid "Triggers when status switches between up and down"
 msgstr "當狀態在上和下之間切換時觸發"
 
-#: src/lib/utils.ts:334
+#: src/lib/utils.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "當任何磁碟的使用超過閾值時觸發"
 
@@ -803,7 +813,7 @@ msgstr "當任何磁碟的使用超過閾值時觸發"
 msgid "Up"
 msgstr ""
 
-#: src/components/systems-table/systems-table.tsx:350
+#: src/components/systems-table/systems-table.tsx
 msgid "Updated in real time. Click on a system to view information."
 msgstr "實時更新。點擊系統查看信息。"
 
@@ -821,22 +831,22 @@ msgstr "使用"
 msgid "Usage of root partition"
 msgstr "根分區的使用"
 
-#: src/components/charts/swap-chart.tsx:56
-#: src/components/charts/mem-chart.tsx:63
-#: src/components/charts/area-chart.tsx:75
+#: src/components/charts/swap-chart.tsx
+#: src/components/charts/mem-chart.tsx
+#: src/components/charts/area-chart.tsx
 msgid "Used"
 msgstr "已用"
 
-#: src/components/navbar.tsx:70
-#: src/components/command-palette.tsx:141
+#: src/components/navbar.tsx
+#: src/components/command-palette.tsx
 msgid "Users"
 msgstr "用戶"
 
-#: src/components/systems-table/systems-table.tsx:359
+#: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "檢視"
 
-#: src/components/systems-table/systems-table.tsx:424
+#: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
 msgstr "可見欄位"
 
@@ -844,11 +854,11 @@ msgstr "可見欄位"
 msgid "Waiting for enough records to display"
 msgstr "等待足夠的記錄以顯示"
 
-#: src/components/routes/settings/general.tsx:48
-msgid "Want to help us make our translations even better? Check out <0>Crowdin</0> for more details."
+#: src/components/routes/settings/general.tsx
+msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "想幫助我們改進翻譯嗎？查看<0>Crowdin</0>以獲取更多詳細信息。"
 
-#: src/components/routes/settings/notifications.tsx:126
+#: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
 msgstr "Webhook / 推送通知"
 
@@ -857,19 +867,19 @@ msgstr "Webhook / 推送通知"
 #~ msgstr ""
 
 #. Disk write
-#: src/components/charts/area-chart.tsx:61
-#: src/components/charts/area-chart.tsx:71
+#: src/components/charts/area-chart.tsx
+#: src/components/charts/area-chart.tsx
 msgid "Write"
 msgstr "寫入"
 
-#: src/components/routes/settings/layout.tsx:62
+#: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
 msgstr "YAML配置"
 
-#: src/components/routes/settings/config-yaml.tsx:46
+#: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "YAML配置"
 
-#: src/components/routes/settings/layout.tsx:35
+#: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "您的用戶設置已更新。"

@@ -31,6 +31,9 @@ func (a *Agent) initializeSystemInfo() {
 	} else if strings.Contains(platform, "indows") {
 		a.systemInfo.KernelVersion = strings.Replace(platform, "Microsoft ", "", 1) + " " + version
 		a.systemInfo.Os = system.Windows
+	} else if platform == "freebsd" {
+		a.systemInfo.Os = system.Freebsd
+		a.systemInfo.KernelVersion = version
 	} else {
 		a.systemInfo.Os = system.Linux
 	}

@@ -27,28 +27,28 @@ msgstr "{0, plural, one {# ден} other {# дни}}"
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# час} other {# часа}}"
 
-#: src/lib/utils.ts:168
+#: src/lib/utils.ts
 msgid "1 hour"
 msgstr "1 час"
 
-#: src/lib/utils.ts:191
+#: src/lib/utils.ts
 msgid "1 week"
 msgstr "1 седмица"
 
-#: src/lib/utils.ts:176
+#: src/lib/utils.ts
 msgid "12 hours"
 msgstr "12 часа"
 
-#: src/lib/utils.ts:184
+#: src/lib/utils.ts
 msgid "24 hours"
 msgstr "24 часа"
 
-#: src/lib/utils.ts:199
+#: src/lib/utils.ts
 msgid "30 days"
 msgstr "30 дни"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx:304
+#: src/components/systems-table/systems-table.tsx
 msgid "Actions"
 msgstr "Действия"
 
@@ -56,53 +56,53 @@ msgstr "Действия"
 msgid "Active Alerts"
 msgstr "Активни тревоги"
 
-#: src/components/add-system.tsx:43
+#: src/components/add-system.tsx
 msgid "Add <0>System</0>"
 msgstr "Добави <0>Система</0>"
 
-#: src/components/add-system.tsx:126
+#: src/components/add-system.tsx
 msgid "Add New System"
 msgstr "Добави нова система"
 
-#: src/components/add-system.tsx:232
+#: src/components/add-system.tsx
 msgid "Add system"
 msgstr "Добави система"
 
-#: src/components/routes/settings/notifications.tsx:158
+#: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
 msgstr "Добави URL"
 
-#: src/components/routes/settings/general.tsx:81
+#: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
 msgstr "Настрой опциите за показване на диаграмите."
 
-#: src/components/command-palette.tsx:131
-#: src/components/command-palette.tsx:144
-#: src/components/command-palette.tsx:158
-#: src/components/command-palette.tsx:172
-#: src/components/command-palette.tsx:187
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
 msgid "Admin"
 msgstr "Администратор"
 
-#: src/components/systems-table/systems-table.tsx:270
+#: src/components/systems-table/systems-table.tsx
 msgid "Agent"
 msgstr "Агент"
 
-#: src/components/alerts/alert-button.tsx:33
-#: src/components/alerts/alert-button.tsx:79
+#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alert-button.tsx
 msgid "Alerts"
 msgstr "Тревоги"
 
-#: src/components/systems-table/systems-table.tsx:347
-#: src/components/alerts/alert-button.tsx:99
+#: src/components/systems-table/systems-table.tsx
+#: src/components/alerts/alert-button.tsx
 msgid "All Systems"
 msgstr "Всички системи"
 
-#: src/components/systems-table/systems-table.tsx:696
+#: src/components/systems-table/systems-table.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Сигурен ли си, че искаш да изтриеш {name}?"
 
-#: src/components/copy-to-clipboard.tsx:16
+#: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "Автоматичното копиране изисква защитен контескт."
 
@@ -115,7 +115,7 @@ msgid "Average CPU utilization of containers"
 msgstr "Средно използване на процесора на контейнерите"
 
 #. placeholder {0}: data.alert.unit
-#: src/components/alerts/alerts-system.tsx:253
+#: src/components/alerts/alerts-system.tsx
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Средната стойност надхвърля <0>{value}{0}</0>"
 
@@ -132,8 +132,8 @@ msgstr "Средно използване на процесора на цяла�
 msgid "Average utilization of {0}"
 msgstr "Средно използване на {0}"
 
-#: src/components/navbar.tsx:94
-#: src/components/command-palette.tsx:169
+#: src/components/navbar.tsx
+#: src/components/command-palette.tsx
 msgid "Backups"
 msgstr "Архиви"
 
@@ -142,94 +142,99 @@ msgstr "Архиви"
 msgid "Bandwidth"
 msgstr "Bandwidth на мрежата"
 
-#: src/components/login/auth-form.tsx:305
+#: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
 msgstr "Beszel поддържа OpenID Connect и много други OAuth2 доставчици за удостоверяване."
 
-#: src/components/routes/settings/notifications.tsx:129
+#: src/components/routes/settings/notifications.tsx
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
 msgstr "Beszel ползва <0>Shoutrrr</0> за да се интегрира с известни услуги за уведомяване."
 
-#: src/components/add-system.tsx:131
+#: src/components/add-system.tsx
 msgid "Binary"
 msgstr "Двоичен код"
 
-#: src/components/charts/mem-chart.tsx:87
+#: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
 msgstr "Кеш / Буфери"
 
-#: src/components/systems-table/systems-table.tsx:707
+#: src/components/systems-table/systems-table.tsx
 msgid "Cancel"
 msgstr "Откажи"
 
-#: src/components/routes/settings/config-yaml.tsx:69
+#: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
 msgstr "Внимание - възможност за загуба на данни"
 
-#: src/components/routes/settings/general.tsx:36
+#: src/components/routes/settings/general.tsx
 msgid "Change general application options."
 msgstr "Смени общите опции на приложението."
 
-#: src/components/routes/settings/general.tsx:78
+#: src/components/routes/settings/general.tsx
 msgid "Chart options"
 msgstr "Опции на диаграмата"
 
-#: src/components/login/forgot-pass-form.tsx:35
+#: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
 msgstr "Провери {email} за линк за нулиране."
 
-#: src/components/routes/settings/layout.tsx:41
+#: src/components/routes/settings/layout.tsx
 msgid "Check logs for more details."
 msgstr "Провери log-овете за повече информация."
 
-#: src/components/routes/settings/notifications.tsx:185
+#: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
 msgstr "Провери услугата си за удостоверяване"
 
-#: src/components/add-system.tsx:205
+#: src/components/add-system.tsx
 msgid "Click to copy"
 msgstr "Настисни за да копираш"
 
-#: src/components/login/forgot-pass-form.tsx:84
-#: src/components/login/forgot-pass-form.tsx:90
+#: src/components/login/forgot-pass-form.tsx
+#: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
 msgstr "Инструкции за командната линия"
 
-#: src/components/routes/settings/notifications.tsx:79
+#: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
 msgstr "Настрой как получаваш нотификации за тревоги."
 
-#: src/components/login/auth-form.tsx:213
-#: src/components/login/auth-form.tsx:218
+#: src/components/login/auth-form.tsx
+#: src/components/login/auth-form.tsx
 msgid "Confirm password"
 msgstr "Потвърди парола"
 
-#: src/components/systems-table/systems-table.tsx:713
+#: src/components/systems-table/systems-table.tsx
 msgid "Continue"
 msgstr "Продължи"
 
-#: src/lib/utils.ts:35
+#: src/lib/utils.ts
 msgid "Copied to clipboard"
 msgstr "Записано в клипборда"
 
-#: src/components/add-system.tsx:216
-#: src/components/add-system.tsx:218
-msgid "Copy"
-msgstr "Копирай"
+#: src/components/add-system.tsx
+msgctxt "Button to copy docker compose file content"
+msgid "Copy docker compose"
+msgstr "Копирай docker compose"
 
-#: src/components/systems-table/systems-table.tsx:678
+#: src/components/add-system.tsx
+msgctxt "Button to copy docker run command"
+msgid "Copy docker run"
+msgstr "Копирай docker run"
+
+#: src/components/systems-table/systems-table.tsx
 msgid "Copy host"
 msgstr "Копирай хоста"
 
-#: src/components/add-system.tsx:225
+#: src/components/add-system.tsx
 msgid "Copy Linux command"
 msgstr "Копирай linux командата"
 
-#: src/components/copy-to-clipboard.tsx:13
+#: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Копирай текста"
 
-#: src/components/systems-table/systems-table.tsx:186
+#: src/components/systems-table/systems-table.tsx
 msgid "CPU"
 msgstr "Процесор"
 
@@ -239,29 +244,29 @@ msgstr "Процесор"
 msgid "CPU Usage"
 msgstr "Употреба на процесор"
 
-#: src/components/login/auth-form.tsx:239
+#: src/components/login/auth-form.tsx
 msgid "Create account"
 msgstr "Създай акаунт"
 
 #. Dark theme
-#: src/components/mode-toggle.tsx:22
+#: src/components/mode-toggle.tsx
 msgid "Dark"
 msgstr "Тъмно"
 
-#: src/components/command-palette.tsx:80
-#: src/components/routes/home.tsx:36
+#: src/components/command-palette.tsx
+#: src/components/routes/home.tsx
 msgid "Dashboard"
 msgstr "Табло"
 
-#: src/components/routes/settings/general.tsx:85
+#: src/components/routes/settings/general.tsx
 msgid "Default time period"
 msgstr "Времеви диапазон по подразбиране"
 
-#: src/components/systems-table/systems-table.tsx:683
+#: src/components/systems-table/systems-table.tsx
 msgid "Delete"
 msgstr "Изтрий"
 
-#: src/components/systems-table/systems-table.tsx:204
+#: src/components/systems-table/systems-table.tsx
 msgid "Disk"
 msgstr "Диск"
 
@@ -291,7 +296,7 @@ msgstr "Изполване на памет от docker"
 msgid "Docker Network I/O"
 msgstr "Мрежов I/O използван от docker"
 
-#: src/components/command-palette.tsx:123
+#: src/components/command-palette.tsx
 msgid "Documentation"
 msgstr "Документация"
 
@@ -302,31 +307,31 @@ msgstr "Документация"
 msgid "Down"
 msgstr ""
 
-#: src/components/add-system.tsx:126
-#: src/components/systems-table/systems-table.tsx:653
+#: src/components/add-system.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Edit"
 msgstr ""
 
-#: src/components/login/forgot-pass-form.tsx:54
-#: src/components/login/auth-form.tsx:176
+#: src/components/login/forgot-pass-form.tsx
+#: src/components/login/auth-form.tsx
 msgid "Email"
 msgstr "Имейл"
 
-#: src/components/routes/settings/notifications.tsx:93
+#: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
 msgstr "Имейл нотификации"
 
-#: src/components/login/login.tsx:38
+#: src/components/login/login.tsx
 msgid "Enter email address to reset password"
 msgstr "Въведи имейл адрес за да нулираш паролата"
 
-#: src/components/routes/settings/notifications.tsx:113
+#: src/components/routes/settings/notifications.tsx
 msgid "Enter email address..."
 msgstr "Въведи имейл адрес..."
 
-#: src/components/routes/settings/notifications.tsx:189
-#: src/components/routes/settings/config-yaml.tsx:29
-#: src/components/login/auth-form.tsx:137
+#: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/config-yaml.tsx
+#: src/components/login/auth-form.tsx
 msgid "Error"
 msgstr "Грешка"
 
@@ -337,32 +342,32 @@ msgstr "Грешка"
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Надвишава {0}{1} в последните {2, plural, one {# минута} other {# минути}}"
 
-#: src/components/routes/settings/config-yaml.tsx:73
+#: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr "Съществуващи системи които не са дефинирани в <0>config.yml</0> ще бъдат изтрити. Моля прави чести архиви."
 
-#: src/components/routes/settings/config-yaml.tsx:94
+#: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
 msgstr "Експортирай конфигурация"
 
-#: src/components/routes/settings/config-yaml.tsx:49
+#: src/components/routes/settings/config-yaml.tsx
 msgid "Export your current systems configuration."
 msgstr "Експортирай конфигурацията на системите."
 
-#: src/lib/utils.ts:48
+#: src/lib/utils.ts
 msgid "Failed to authenticate"
 msgstr "Неуспешно удостоверяване"
 
-#: src/components/routes/settings/notifications.tsx:64
-#: src/components/routes/settings/layout.tsx:40
+#: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/layout.tsx
 msgid "Failed to save settings"
 msgstr "Неуспешно запазване на настройки"
 
-#: src/components/routes/settings/notifications.tsx:190
+#: src/components/routes/settings/notifications.tsx
 msgid "Failed to send test notification"
 msgstr "Неуспешно изпрати тестова нотификация"
 
-#: src/components/alerts/alerts-system.tsx:26
+#: src/components/alerts/alerts-system.tsx
 msgid "Failed to update alert"
 msgstr "Неуспешно обнови тревога"
 
@@ -371,17 +376,17 @@ msgstr "Неуспешно обнови тревога"
 msgid "Filter..."
 msgstr "Филтрирай..."
 
-#: src/components/alerts/alerts-system.tsx:285
+#: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "За <0>{min}</0> {min, plural, one {минута} other {минути}}"
 
-#: src/components/login/auth-form.tsx:328
+#: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "Забравена парола?"
 
 #. Context: General settings
-#: src/components/routes/settings/layout.tsx:52
-#: src/components/routes/settings/general.tsx:33
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/general.tsx
 msgid "General"
 msgstr "Общо"
 
@@ -389,19 +394,24 @@ msgstr "Общо"
 msgid "GPU Power Draw"
 msgstr "Консумация на ток от графична карта"
 
-#: src/components/systems-table/systems-table.tsx:381
+#: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "Мрежово"
 
-#: src/components/add-system.tsx:159
+#: src/components/add-system.tsx
+msgctxt "Button to copy install command"
+msgid "Homebrew command"
+msgstr "Команда Homebrew"
+
+#: src/components/add-system.tsx
 msgid "Host / IP"
 msgstr "Хост / IP"
 
-#: src/components/login/forgot-pass-form.tsx:94
+#: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Ако си загубил паролата до администраторския акаунт, можеш да я нулираш със следващата команда."
 
-#: src/components/login/auth-form.tsx:18
+#: src/components/login/auth-form.tsx
 msgid "Invalid email address."
 msgstr "Невалиден имейл адрес."
 
@@ -410,46 +420,46 @@ msgstr "Невалиден имейл адрес."
 msgid "Kernel"
 msgstr "Linux Kernel"
 
-#: src/components/routes/settings/general.tsx:45
+#: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Език"
 
-#: src/components/systems-table/systems-table.tsx:367
+#: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "Подреждане"
 
 #. Light theme
-#: src/components/mode-toggle.tsx:17
+#: src/components/mode-toggle.tsx
 msgid "Light"
 msgstr "Светъл"
 
-#: src/components/navbar.tsx:105
+#: src/components/navbar.tsx
 msgid "Log Out"
 msgstr "Изход"
 
-#: src/components/login/login.tsx:19
+#: src/components/login/login.tsx
 msgid "Login"
 msgstr "Вход"
 
-#: src/components/login/forgot-pass-form.tsx:16
-#: src/components/login/auth-form.tsx:40
+#: src/components/login/forgot-pass-form.tsx
+#: src/components/login/auth-form.tsx
 msgid "Login attempt failed"
 msgstr "Неуспешен опит за вход"
 
-#: src/components/navbar.tsx:86
-#: src/components/command-palette.tsx:155
+#: src/components/navbar.tsx
+#: src/components/command-palette.tsx
 msgid "Logs"
 msgstr "Логове"
 
-#: src/components/routes/settings/notifications.tsx:82
+#: src/components/routes/settings/notifications.tsx
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
 msgstr "Търсиш къде да създадеш тревоги? Натисни емотиконата за звънец <0/> в таблицата за системи."
 
-#: src/components/routes/settings/layout.tsx:86
+#: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "Управление на предпочитанията за показване и уведомяване."
 
-#: src/components/add-system.tsx:227
+#: src/components/add-system.tsx
 msgid "Manual setup instructions"
 msgstr ""
 
@@ -458,7 +468,7 @@ msgstr ""
 msgid "Max 1 min"
 msgstr "Максимум 1 минута"
 
-#: src/components/systems-table/systems-table.tsx:195
+#: src/components/systems-table/systems-table.tsx
 msgid "Memory"
 msgstr "Памет"
 
@@ -471,11 +481,11 @@ msgstr "Употреба на паметта"
 msgid "Memory usage of docker containers"
 msgstr "Използването на памет от docker контейнерите"
 
-#: src/components/add-system.tsx:155
+#: src/components/add-system.tsx
 msgid "Name"
 msgstr "Име"
 
-#: src/components/systems-table/systems-table.tsx:223
+#: src/components/systems-table/systems-table.tsx
 msgid "Net"
 msgstr "Мрежа"
 
@@ -487,108 +497,108 @@ msgstr "Мрежов трафик на docker контейнери"
 msgid "Network traffic of public interfaces"
 msgstr "Мрежов трафик на публични интерфейси"
 
-#: src/components/command-palette.tsx:48
+#: src/components/command-palette.tsx
 msgid "No results found."
 msgstr "Няма намерени резултати."
 
-#: src/components/systems-table/systems-table.tsx:472
-#: src/components/systems-table/systems-table.tsx:495
+#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "Няма намерени системи."
 
-#: src/components/command-palette.tsx:109
-#: src/components/routes/settings/notifications.tsx:76
-#: src/components/routes/settings/layout.tsx:57
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/layout.tsx
 msgid "Notifications"
 msgstr "Нотификации"
 
-#: src/components/login/auth-form.tsx:300
+#: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
 msgstr "Поддръжка на OAuth 2 / OIDC"
 
-#: src/components/routes/settings/config-yaml.tsx:62
+#: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "На всеки рестарт, системите в датабазата ще бъдат обновени да съвпадат със системите зададени във файла."
 
-#: src/components/systems-table/systems-table.tsx:639
+#: src/components/systems-table/systems-table.tsx
 msgid "Open menu"
 msgstr "Отвори менюто"
 
-#: src/components/login/auth-form.tsx:251
+#: src/components/login/auth-form.tsx
 msgid "Or continue with"
 msgstr "Или продължи с"
 
-#: src/components/alerts/alert-button.tsx:120
+#: src/components/alerts/alert-button.tsx
 msgid "Overwrite existing alerts"
 msgstr "Презапиши съществуващи тревоги"
 
-#: src/components/command-palette.tsx:83
+#: src/components/command-palette.tsx
 msgid "Page"
 msgstr "Страница"
 
-#: src/components/command-palette.tsx:70
+#: src/components/command-palette.tsx
 msgid "Pages / Settings"
 msgstr "Страници / Настройки"
 
-#: src/components/login/auth-form.tsx:195
-#: src/components/login/auth-form.tsx:200
+#: src/components/login/auth-form.tsx
+#: src/components/login/auth-form.tsx
 msgid "Password"
 msgstr "Парола"
 
-#: src/components/login/auth-form.tsx:21
+#: src/components/login/auth-form.tsx
 msgid "Password must be at least 8 characters."
 msgstr "Паролата трябва да е поне 8 символа."
 
-#: src/components/login/auth-form.tsx:22
+#: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
 msgstr ""
 
-#: src/components/login/forgot-pass-form.tsx:34
+#: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"
 msgstr "Получено е искането за нулиране на паролата"
 
-#: src/components/systems-table/systems-table.tsx:672
+#: src/components/systems-table/systems-table.tsx
 msgid "Pause"
 msgstr "Пауза"
 
-#: src/components/systems-table/systems-table.tsx:143
+#: src/components/systems-table/systems-table.tsx
 msgid "Paused"
-msgstr ""
+msgstr "На пауза"
 
-#: src/components/routes/settings/notifications.tsx:97
+#: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "Моля <0>конфигурурай SMTP сървър</0> за да се подсигуриш, че тревогите са доставени."
 
-#: src/components/alerts/alerts-system.tsx:27
+#: src/components/alerts/alerts-system.tsx
 msgid "Please check logs for more details."
 msgstr "Моля провери log-овете за повече информация."
 
-#: src/components/login/forgot-pass-form.tsx:17
-#: src/components/login/auth-form.tsx:41
+#: src/components/login/forgot-pass-form.tsx
+#: src/components/login/auth-form.tsx
 msgid "Please check your credentials and try again"
 msgstr "Моля провери дадената информация и опитай отново"
 
-#: src/components/login/login.tsx:36
+#: src/components/login/login.tsx
 msgid "Please create an admin account"
 msgstr "Моля създай администраторски акаунт"
 
-#: src/components/login/auth-form.tsx:138
+#: src/components/login/auth-form.tsx
 msgid "Please enable pop-ups for this site"
 msgstr "Моля активирай изскачащите прозорци за този сайт"
 
-#: src/lib/utils.ts:49
+#: src/lib/utils.ts
 msgid "Please log in again"
 msgstr "Моля влез отново"
 
-#: src/components/login/auth-form.tsx:308
+#: src/components/login/auth-form.tsx
 msgid "Please see <0>the documentation</0> for instructions."
 msgstr "Моля виж <0>документацията</0> за инструкции."
 
-#: src/components/login/login.tsx:40
+#: src/components/login/login.tsx
 msgid "Please sign in to your account"
 msgstr "Моля влез в акаунта ти"
 
-#: src/components/add-system.tsx:171
+#: src/components/add-system.tsx
 msgid "Port"
 msgstr "Порт"
 
@@ -597,93 +607,93 @@ msgstr "Порт"
 msgid "Precise utilization at the recorded time"
 msgstr "Точно използване в записаното време"
 
-#: src/components/routes/settings/general.tsx:58
+#: src/components/routes/settings/general.tsx
 msgid "Preferred Language"
 msgstr "Предпочитан език"
 
 #. Use 'Key' if your language requires many more characters
-#: src/components/add-system.tsx:182
+#: src/components/add-system.tsx
 msgid "Public Key"
 msgstr "Публичен ключ"
 
 #. Disk read
-#: src/components/charts/area-chart.tsx:62
-#: src/components/charts/area-chart.tsx:72
+#: src/components/charts/area-chart.tsx
+#: src/components/charts/area-chart.tsx
 msgid "Read"
 msgstr "Прочети"
 
 #. Network bytes received (download)
-#: src/components/charts/area-chart.tsx:67
+#: src/components/charts/area-chart.tsx
 msgid "Received"
 msgstr "Получени"
 
-#: src/components/login/forgot-pass-form.tsx:77
+#: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
 msgstr "Нулиране на парола"
 
-#: src/components/systems-table/systems-table.tsx:667
+#: src/components/systems-table/systems-table.tsx
 msgid "Resume"
 msgstr "Възобнови"
 
-#: src/components/routes/settings/notifications.tsx:119
+#: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Запази адреса с enter или запетая. Остави празно за да изключиш нотификациите чрез имейл."
 
-#: src/components/routes/settings/notifications.tsx:169
-#: src/components/routes/settings/general.tsx:106
+#: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/general.tsx
 msgid "Save Settings"
 msgstr "Запази настройките"
 
-#: src/components/add-system.tsx:232
+#: src/components/add-system.tsx
 msgid "Save system"
 msgstr ""
 
-#: src/components/navbar.tsx:134
+#: src/components/navbar.tsx
 msgid "Search"
 msgstr "Търси"
 
-#: src/components/command-palette.tsx:45
+#: src/components/command-palette.tsx
 msgid "Search for systems or settings..."
 msgstr "Търси за системи или настройки..."
 
-#: src/components/alerts/alert-button.tsx:82
+#: src/components/alerts/alert-button.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Виж <0>настройките за нотификациите</0> за да конфигурираш как получаваш тревоги."
 
 #. Network bytes sent (upload)
-#: src/components/charts/area-chart.tsx:66
+#: src/components/charts/area-chart.tsx
 msgid "Sent"
 msgstr "Изпратени"
 
-#: src/components/routes/settings/general.tsx:100
+#: src/components/routes/settings/general.tsx
 msgid "Sets the default time range for charts when a system is viewed."
 msgstr "Задава диапазона за време за диаграмите, когато се разглежда система."
 
-#: src/components/command-palette.tsx:94
-#: src/components/command-palette.tsx:97
-#: src/components/command-palette.tsx:112
-#: src/components/routes/settings/layout.tsx:72
-#: src/components/routes/settings/layout.tsx:83
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/layout.tsx
 msgid "Settings"
 msgstr "Настройки"
 
-#: src/components/routes/settings/layout.tsx:34
+#: src/components/routes/settings/layout.tsx
 msgid "Settings saved"
 msgstr "Настройките са запазени"
 
-#: src/components/login/auth-form.tsx:239
+#: src/components/login/auth-form.tsx
 msgid "Sign in"
 msgstr "Влез"
 
-#: src/components/command-palette.tsx:184
+#: src/components/command-palette.tsx
 msgid "SMTP settings"
 msgstr "Настройки за SMTP"
 
-#: src/components/systems-table/systems-table.tsx:389
+#: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
 msgstr "Сортиране по"
 
-#: src/lib/utils.ts:311
+#: src/lib/utils.ts
 msgid "Status"
 msgstr "Статус"
 
@@ -696,26 +706,26 @@ msgid "Swap Usage"
 msgstr "Използване на swap"
 
 #. System theme
-#: src/lib/utils.ts:316
-#: src/components/mode-toggle.tsx:27
-#: src/components/systems-table/systems-table.tsx:152
+#: src/lib/utils.ts
+#: src/components/mode-toggle.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "System"
 msgstr "Система"
 
-#: src/components/navbar.tsx:78
+#: src/components/navbar.tsx
 msgid "Systems"
 msgstr "Системи"
 
-#: src/components/routes/settings/config-yaml.tsx:56
+#: src/components/routes/settings/config-yaml.tsx
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
 msgstr "Системите могат да бъдат управлявани в <0>config.yml</0> файл намиращ се в директорията с данни."
 
-#: src/components/systems-table/systems-table.tsx:377
+#: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "Таблица"
 
 #. Temperature label in systems table
-#: src/components/systems-table/systems-table.tsx:244
+#: src/components/systems-table/systems-table.tsx
 msgid "Temp"
 msgstr ""
 
@@ -728,27 +738,27 @@ msgstr "Температура"
 msgid "Temperatures of system sensors"
 msgstr "Температири на системни сензори"
 
-#: src/components/routes/settings/notifications.tsx:213
+#: src/components/routes/settings/notifications.tsx
 msgid "Test <0>URL</0>"
 msgstr "Тествай <0>URL</0>"
 
-#: src/components/routes/settings/notifications.tsx:184
+#: src/components/routes/settings/notifications.tsx
 msgid "Test notification sent"
 msgstr "Тестова нотификация изпратена"
 
-#: src/components/add-system.tsx:147
+#: src/components/add-system.tsx
 msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
 msgstr "Агента трябва да работи на системата за да се свърже. Копирай инсталационната команда за агента долу."
 
-#: src/components/add-system.tsx:138
+#: src/components/add-system.tsx
 msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
 msgstr "Агемта трябва да работи на системата за да се свърже. Копирай <0>docker-compose.yml</0> файла за агента долу."
 
-#: src/components/login/forgot-pass-form.tsx:99
+#: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "След това влез в backend-а и нулирай паролата за потребителския акаунт в таблицата за потребители."
 
-#: src/components/systems-table/systems-table.tsx:699
+#: src/components/systems-table/systems-table.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Това действие не може да бъде отменено. Това ще изтрие всички записи за {name} от датабазата."
 
@@ -760,7 +770,7 @@ msgstr "Пропускателна способност на {extraFsName}"
 msgid "Throughput of root filesystem"
 msgstr "Пропускателна способност на root файловата система"
 
-#: src/components/routes/settings/notifications.tsx:108
+#: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "До имейл(ите)"
 
@@ -769,31 +779,31 @@ msgstr "До имейл(ите)"
 msgid "Toggle grid"
 msgstr "Превключване на мрежа"
 
-#: src/components/mode-toggle.tsx:34
+#: src/components/mode-toggle.tsx
 msgid "Toggle theme"
 msgstr "Включи тема"
 
-#: src/lib/utils.ts:347
+#: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Задейства се, когато някой даден сензор надвиши зададен праг"
 
-#: src/lib/utils.ts:340
+#: src/lib/utils.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Задейства се, когато комбинираното качване/сваляне надвиши зададен праг"
 
-#: src/lib/utils.ts:322
+#: src/lib/utils.ts
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Задейства се, когато употребата на процесора надвиши зададен праг"
 
-#: src/lib/utils.ts:328
+#: src/lib/utils.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Задейства се, когато употребата на паметта надвиши зададен праг"
 
-#: src/lib/utils.ts:314
+#: src/lib/utils.ts
 msgid "Triggers when status switches between up and down"
 msgstr "Задейства се, когато статуса превключва между долу и горе"
 
-#: src/lib/utils.ts:334
+#: src/lib/utils.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Задейства се, когато употребата на някой диск надивши зададен праг"
 
@@ -803,7 +813,7 @@ msgstr "Задейства се, когато употребата на няко
 msgid "Up"
 msgstr ""
 
-#: src/components/systems-table/systems-table.tsx:350
+#: src/components/systems-table/systems-table.tsx
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Актуализира се в реално време. Натисни на система за да видиш информация."
 
@@ -821,22 +831,22 @@ msgstr "Употреба"
 msgid "Usage of root partition"
 msgstr "Употреба на root partition-а"
 
-#: src/components/charts/swap-chart.tsx:56
-#: src/components/charts/mem-chart.tsx:63
-#: src/components/charts/area-chart.tsx:75
+#: src/components/charts/swap-chart.tsx
+#: src/components/charts/mem-chart.tsx
+#: src/components/charts/area-chart.tsx
 msgid "Used"
 msgstr "Използвани"
 
-#: src/components/navbar.tsx:70
-#: src/components/command-palette.tsx:141
+#: src/components/navbar.tsx
+#: src/components/command-palette.tsx
 msgid "Users"
 msgstr "Потребители"
 
-#: src/components/systems-table/systems-table.tsx:359
+#: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Изглед"
 
-#: src/components/systems-table/systems-table.tsx:424
+#: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
 msgstr "Видими полета"
 
@@ -844,11 +854,11 @@ msgstr "Видими полета"
 msgid "Waiting for enough records to display"
 msgstr "Изчаква се за достатъчно записи за показване"
 
-#: src/components/routes/settings/general.tsx:48
-msgid "Want to help us make our translations even better? Check out <0>Crowdin</0> for more details."
+#: src/components/routes/settings/general.tsx
+msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "Искаш да помогнеш да направиш преводите още по-добри? Провери нашия <0>Crowdin</0> за повече детайли."
 
-#: src/components/routes/settings/notifications.tsx:126
+#: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
 msgstr "Webhook / Пуш нотификации"
 
@@ -857,19 +867,19 @@ msgstr "Webhook / Пуш нотификации"
 #~ msgstr ""
 
 #. Disk write
-#: src/components/charts/area-chart.tsx:61
-#: src/components/charts/area-chart.tsx:71
+#: src/components/charts/area-chart.tsx
+#: src/components/charts/area-chart.tsx
 msgid "Write"
 msgstr "Запиши"
 
-#: src/components/routes/settings/layout.tsx:62
+#: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
 msgstr "YAML конфигурация"
 
-#: src/components/routes/settings/config-yaml.tsx:46
+#: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "YAML конфигурация"
 
-#: src/components/routes/settings/layout.tsx:35
+#: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Настройките за потребителя ти са обновени."

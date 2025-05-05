@@ -128,6 +128,9 @@ done
 
 # Quá trình gỡ cài đặt
 if [ "$UNINSTALL" = true ]; then
+  # Clean up SELinux contexts before removing files
+  cleanup_selinux_context
+
   if is_alpine; then
     echo "Stopping and disabling the agent service..."
     rc-service cmonitor-agent stop 2>/dev/null || true
@@ -453,7 +456,6 @@ StateDirectory=cmonitor-agent
 KeyringMode=private
 LockPersonality=yes
 NoNewPrivileges=yes
-PrivateTmp=yes
 ProtectClock=yes
 ProtectHome=read-only
 ProtectHostname=yes

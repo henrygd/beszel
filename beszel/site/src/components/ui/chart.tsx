@@ -129,7 +129,7 @@ const ChartTooltipContent = React.forwardRef<
 
 		React.useMemo(() => {
 			if (filter) {
-				payload = payload?.filter((item) => (item.name as string)?.includes(filter))
+				payload = payload?.filter((item) => (item.name as string)?.toLowerCase().includes(filter.toLowerCase()))
 			}
 			if (itemSorter) {
 				// @ts-ignore

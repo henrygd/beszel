@@ -33,6 +33,9 @@ export default defineConfig({
 	],
 	sourceLocale: "en",
 	compileNamespace: "ts",
+	formatOptions: {
+		lineNumbers: false,
+	},
 	catalogs: [
 		{
 			path: "<rootDir>/src/locales/{locale}/{locale}",

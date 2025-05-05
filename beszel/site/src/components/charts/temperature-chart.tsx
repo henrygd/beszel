@@ -18,8 +18,11 @@ import {
 } from "@/lib/utils"
 import { ChartData } from "@/types"
 import { memo, useMemo } from "react"
+import { $temperatureFilter } from "@/lib/stores"
+import { useStore } from "@nanostores/react"
 
 export default memo(function TemperatureChart({ chartData }: { chartData: ChartData }) {
+	const filter = useStore($temperatureFilter)
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
 	if (chartData.systemStats.length === 0) {
@@ -86,22 +89,28 @@ export default memo(function TemperatureChart({ chartData }: { chartData: ChartD
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 								contentFormatter={(item) => decimalString(item.value) + " °C"}
-								// indicator="line"
+								filter={filter}
 							/>
 						}
 					/>
-					{colors.map((key) => (
-						<Line
-							key={key}
-							dataKey={key}
-							name={key}
-							type="monotoneX"
-							dot={false}
-							strokeWidth={1.5}
-							stroke={newChartData.colors[key]}
-							isAnimationActive={false}
-						/>
-					))}
+					{colors.map((key) => {
+						const filtered = filter && !key.toLowerCase().includes(filter.toLowerCase())
+						let strokeOpacity = filtered ? 0.1 : 1
+						return (
+							<Line
+								key={key}
+								dataKey={key}
+								name={key}
+								type="monotoneX"
+								dot={false}
+								strokeWidth={1.5}
+								stroke={newChartData.colors[key]}
+								strokeOpacity={strokeOpacity}
+								activeDot={{ opacity: filtered ? 0 : 1 }}
+								isAnimationActive={false}
+							/>
+						)
+					})}
 					{colors.length < 12 && <ChartLegend content={<ChartLegendContent />} />}
 				</LineChart>
 			</ChartContainer>

@@ -1,5 +1,5 @@
-import { t } from "@lingui/core/macro";
-import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro"
+import { Trans } from "@lingui/react/macro"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -128,7 +128,7 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 						<p className="text-sm text-muted-foreground leading-relaxed">
 							<Trans>
 								Beszel uses{" "}
-								<a href="https://containrrr.dev/shoutrrr/services/overview/" target="_blank" className="link">
+								<a href="https://beszel.dev/guide/notifications" target="_blank" className="link">
 									Shoutrrr
 								</a>{" "}
 								to integrate with popular notification services.

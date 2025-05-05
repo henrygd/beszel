@@ -2,7 +2,8 @@ param (
     [switch]$Elevated,
     [Parameter(Mandatory=$true)]
     [string]$Key,
-    [int]$Port = 45876
+    [int]$Port = 45876,
+    [string]$AgentPath = ""
 )
 
 # Kiểm tra xem khóa SSH có được cung cấp và không rỗng không
@@ -77,6 +78,7 @@ if (-not $Elevated) {
         $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
         exit 1
     }
+}
 
     # Kiểm tra xem có cần quyền admin cho phần NSSM không
     if (-not (Test-Admin)) {

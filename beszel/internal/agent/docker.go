@@ -26,6 +26,7 @@ type dockerManager struct {
 	containerStatsMap   map[string]*container.Stats // Keeps track of container stats
 	validIds            map[string]struct{}         // Map of valid container ids, used to prune invalid containers from containerStatsMap
 	goodDockerVersion   bool                        // Whether docker version is at least 25.0.0 (one-shot works correctly)
+	isWindows           bool                        // Whether the Docker Engine API is running on Windows
 }
 
 // userAgentRoundTripper is a custom http.RoundTripper that adds a User-Agent header to all requests
@@ -69,6 +70,8 @@ func (dm *dockerManager) getDockerStats() ([]*container.Stats, error) {
 		return nil, err
 	}
 
+	dm.isWindows = strings.Contains(resp.Header.Get("Server"), "windows")
+
 	containersLength := len(dm.apiContainerList)
 
 	// store valid ids to clean up old container ids from map
@@ -80,8 +83,7 @@ func (dm *dockerManager) getDockerStats() ([]*container.Stats, error) {
 
 	var failedContainers []*container.ApiInfo
 
-	for i := range dm.apiContainerList {
-		ctr := dm.apiContainerList[i]
+	for _, ctr := range dm.apiContainerList {
 		ctr.IdShort = ctr.Id[:12]
 		dm.validIds[ctr.IdShort] = struct{}{}
 		// check if container is less than 1 minute old (possible restart)
@@ -167,22 +169,27 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo) error {
 		return err
 	}
 
-	// check if container has valid data, otherwise may be in restart loop (#103)
-	if res.MemoryStats.Usage == 0 {
-		return fmt.Errorf("%s - no memory stats - see https://github.com/nguyendkn/cmonitor/issues/144", name)
+	// calculate cpu and memory stats
+	var usedMemory uint64
+	var cpuPct float64
+
+	if dm.isWindows {
+		usedMemory = res.MemoryStats.PrivateWorkingSet
+		cpuPct = res.CalculateCpuPercentWindows(stats.PrevCpu[0], stats.PrevRead)
+	} else {
+		// check if container has valid data, otherwise may be in restart loop (#103)
+		if res.MemoryStats.Usage == 0 {
+			return fmt.Errorf("%s - no memory stats - see https://github.com/nguyendkn/cmonitor/issues/144", name)
+		}
+		memCache := res.MemoryStats.Stats.InactiveFile
+		if memCache == 0 {
+			memCache = res.MemoryStats.Stats.Cache
+		}
+		usedMemory = res.MemoryStats.Usage - memCache
+
+		cpuPct = res.CalculateCpuPercentLinux(stats.PrevCpu)
 	}
 
-	// memory (https://docs.docker.com/reference/cli/docker/container/stats/)
-	memCache := res.MemoryStats.Stats.InactiveFile
-	if memCache == 0 {
-		memCache = res.MemoryStats.Stats.Cache
-	}
-	usedMemory := res.MemoryStats.Usage - memCache
-
-	// cpu
-	cpuDelta := res.CPUStats.CPUUsage.TotalUsage - stats.PrevCpu[0]
-	systemDelta := res.CPUStats.SystemUsage - stats.PrevCpu[1]
-	cpuPct := float64(cpuDelta) / float64(systemDelta) * 100
 	if cpuPct > 100 {
 		return fmt.Errorf("%s cpu pct greater than 100: %+v", name, cpuPct)
 	}
@@ -197,18 +204,18 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo) error {
 	var sent_delta, recv_delta float64
 	// prevent first run from sending all prev sent/recv bytes
 	if initialized {
-		secondsElapsed := time.Since(stats.PrevNet.Time).Seconds()
+		secondsElapsed := time.Since(stats.PrevRead).Seconds()
 		sent_delta = float64(total_sent-stats.PrevNet.Sent) / secondsElapsed
 		recv_delta = float64(total_recv-stats.PrevNet.Recv) / secondsElapsed
 	}
 	stats.PrevNet.Sent = total_sent
 	stats.PrevNet.Recv = total_recv
-	stats.PrevNet.Time = time.Now()
 
 	stats.Cpu = twoDecimals(cpuPct)
 	stats.Mem = bytesToMegabytes(float64(usedMemory))
 	stats.NetworkSent = bytesToMegabytes(sent_delta)
 	stats.NetworkRecv = bytesToMegabytes(recv_delta)
+	stats.PrevRead = res.Read
 
 	return nil
 }
@@ -225,6 +232,10 @@ func newDockerManager(a *Agent) *dockerManager {
 	dockerHost, exists := GetEnv("DOCKER_HOST")
 	if exists {
 		slog.Info("DOCKER_HOST", "host", dockerHost)
+		// return nil if set to empty string
+		if dockerHost == "" {
+			return nil
+		}
 	} else {
 		dockerHost = getDockerHost()
 	}

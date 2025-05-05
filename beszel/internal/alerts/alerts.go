@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/containrrr/shoutrrr"
+	"github.com/nicholas-fedor/shoutrrr"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
@@ -66,6 +66,7 @@ var supportsTitle = map[string]struct{}{
 	"gotify":     {},
 	"ifttt":      {},
 	"join":       {},
+	"lark":       {},
 	"matrix":     {},
 	"ntfy":       {},
 	"opsgenie":   {},
@@ -166,10 +167,12 @@ func (am *AlertManager) SendShoutrrrAlert(notificationUrl, title, message, link,
 
 	// Add link
 	if scheme == "ntfy" {
-		// if ntfy, add link to actions
 		queryParams.Add("Actions", fmt.Sprintf("view, %s, %s", linkText, link))
+	} else if scheme == "lark" {
+		queryParams.Add("link", link)
+	} else if scheme == "bark" {
+		queryParams.Add("url", link)
 	} else {
-		// else add link directly to the message
 		message += "\n\n" + link
 	}
 
