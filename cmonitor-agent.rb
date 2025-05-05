@@ -5,13 +5,13 @@
 class CmonitorAgent < Formula
   desc "Agent for CMonitor, a lightweight server monitoring platform."
   homepage "https://cmonitor.dev"
-  version "0.10.3-dev.7"
+  version "0.11.1-dev.17"
   license "MIT"
 
   on_macos do
     if Hardware::CPU.intel?
-      url "https://github.com/nguyendkn/cmonitor/releases/download/v0.10.3-dev.7/cmonitor-agent_darwin_amd64.tar.gz"
-      sha256 "d33f9f5b10e161dc582e1cd66b0e8ed4cc3b81c55d9eb1a5601641afa980531d"
+      url "https://github.com/nguyendkn/cmonitor/releases/download/v0.11.1-dev.17/cmonitor-agent_darwin_amd64.tar.gz"
+      sha256 "a5cf7e8a8f3d163fe2078512776388524e683fd7db2beb95cbc2089d33585a51"
 
       def install
         bin.install "cmonitor-agent"
@@ -28,8 +28,8 @@ class CmonitorAgent < Formula
       end
     end
     if Hardware::CPU.arm?
-      url "https://github.com/nguyendkn/cmonitor/releases/download/v0.10.3-dev.7/cmonitor-agent_darwin_arm64.tar.gz"
-      sha256 "f111058c4bd86f76225240a3dc73caa24d904ff0f80a9d0a7c61e35c664765ce"
+      url "https://github.com/nguyendkn/cmonitor/releases/download/v0.11.1-dev.17/cmonitor-agent_darwin_arm64.tar.gz"
+      sha256 "dee9c9686e2966ab19885709189eb3d03871b390187acd00665f02d7b27dbe5c"
 
       def install
         bin.install "cmonitor-agent"
@@ -49,8 +49,8 @@ class CmonitorAgent < Formula
 
   on_linux do
     if Hardware::CPU.intel? and Hardware::CPU.is_64_bit?
-      url "https://github.com/nguyendkn/cmonitor/releases/download/v0.10.3-dev.7/cmonitor-agent_linux_amd64.tar.gz"
-      sha256 "24470377ceb5a8c0812b8e9a06938f4c46e1b553a5b85d24d5d3c0f45d095e24"
+      url "https://github.com/nguyendkn/cmonitor/releases/download/v0.11.1-dev.17/cmonitor-agent_linux_amd64.tar.gz"
+      sha256 "9764584f91289b7d8d3f14fbe9e0748e3cb965e5662beb898e618266b1e12f63"
       def install
         bin.install "cmonitor-agent"
         (bin/"cmonitor-agent-launcher").write <<~EOS
@@ -66,8 +66,8 @@ class CmonitorAgent < Formula
       end
     end
     if Hardware::CPU.arm? and !Hardware::CPU.is_64_bit?
-      url "https://github.com/nguyendkn/cmonitor/releases/download/v0.10.3-dev.7/cmonitor-agent_linux_arm.tar.gz"
-      sha256 "4d117997114698582d7ab3aceb2b0d6c350c15bddae85f984eff371df7339635"
+      url "https://github.com/nguyendkn/cmonitor/releases/download/v0.11.1-dev.17/cmonitor-agent_linux_arm.tar.gz"
+      sha256 "f0f03b8ad0ccad2b6ed01fcbe7ae75c4508e22043915ceb1839b7f2e41446107"
       def install
         bin.install "cmonitor-agent"
         (bin/"cmonitor-agent-launcher").write <<~EOS
@@ -83,8 +83,8 @@ class CmonitorAgent < Formula
       end
     end
     if Hardware::CPU.arm? and Hardware::CPU.is_64_bit?
-      url "https://github.com/nguyendkn/cmonitor/releases/download/v0.10.3-dev.7/cmonitor-agent_linux_arm64.tar.gz"
-      sha256 "7ac9d61467bd7dbd7f4b4d1459c23f8e95f8dcc19f2dd6c9b389605512335d39"
+      url "https://github.com/nguyendkn/cmonitor/releases/download/v0.11.1-dev.17/cmonitor-agent_linux_arm64.tar.gz"
+      sha256 "067982a98c0cf5b0e49711417c168c0fd3f905af916f00e7c4896d5fd1fc00f4"
       def install
         bin.install "cmonitor-agent"
         (bin/"cmonitor-agent-launcher").write <<~EOS
