@@ -49,6 +49,6 @@ jobs:
           workdir: ./beszel
           distribution: goreleaser
           version: latest
-          args: release --clean --skip-validate
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
