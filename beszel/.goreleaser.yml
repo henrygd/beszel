@@ -174,7 +174,7 @@ brews:
       keep_alive true
 
 release:
-  draft: true
+  draft: false
 
 changelog:
   disable: true

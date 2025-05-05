@@ -198,7 +198,7 @@ func (am *AlertManager) SendTestNotification(e *core.RequestEvent) error {
 	if url == "" {
 		return e.JSON(200, map[string]string{"err": "URL is required"})
 	}
-	err := am.SendShoutrrrAlert(url, "Test Alert", "This is a notification from Beszel.", am.app.Settings().Meta.AppURL, "View Beszel")
+	err := am.SendShoutrrrAlert(url, "Test Alert", "This is a notification from CMonitor.", am.app.Settings().Meta.AppURL, "View CMonitor")
 	if err != nil {
 		return e.JSON(200, map[string]string{"err": err.Error()})
 	}
