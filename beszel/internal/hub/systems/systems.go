@@ -20,7 +20,8 @@ const (
 	paused  string = "paused"
 	pending string = "pending"
 
-	interval int = 60_000
+	// Update interval hub connect to agent in milliseconds to 30s
+	interval int = 30_000
 
 	sessionTimeout = 4 * time.Second
 )
