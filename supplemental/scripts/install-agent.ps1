@@ -323,12 +323,21 @@ function Start-BeszelAgentService {
 
 #region Main Script Execution
 
-# Non-admin tasks - Only run if we're not in elevated mode
-if (-not $Elevated) {
-    try {
-        # Determine installation method
-        $AgentPath = ""
+# Check if we're running as admin
+$isAdmin = Test-Admin
+
+try {
+    # First: Install the agent (doesn't require admin)
+    if (-not $AgentPath) {
+        # Check for problematic case: running as admin and need Scoop
+        if ($isAdmin -and -not (Test-CommandExists "scoop") -and -not (Test-CommandExists "winget")) {
+            Write-Host "ERROR: You're running as administrator but need to install Scoop." -ForegroundColor Red
+            Write-Host "Scoop should be installed without admin privileges." -ForegroundColor Red
+            Write-Host "Please run this script again without administrator privileges." -ForegroundColor Red
+            exit 1
+        }
         
+        Write-Host "Installing beszel-agent..."
         if (Test-CommandExists "scoop") {
             Write-Host "Using Scoop for installation..."
             $AgentPath = Install-WithScoop -Key $Key -Port $Port
@@ -341,34 +350,25 @@ if (-not $Elevated) {
             Write-Host "Neither Scoop nor WinGet is installed. Installing Scoop..."
             $AgentPath = Install-WithScoop -Key $Key -Port $Port
         }
-
-        # Check if we need admin privileges for the NSSM part
-        if (-not (Test-Admin)) {
-            Write-Host "Admin privileges required for NSSM. Relaunching as admin..." -ForegroundColor Yellow
-            Write-Host "Check service status with 'nssm status beszel-agent'"
-            Write-Host "Edit service configuration with 'nssm edit beszel-agent'"
-            
-            # Relaunch the script with the -Elevated switch and pass parameters
-            Start-Process powershell.exe -Verb RunAs -ArgumentList "-File `"$PSCommandPath`" -Elevated -Key `"$Key`" -Port $Port -AgentPath `"$AgentPath`""
-            exit
-        }
     }
-    catch {
-        Write-Host "ERROR: $($_.Exception.Message)" -ForegroundColor Red
-        Write-Host "Installation failed. Please check the error message above." -ForegroundColor Red
-        Write-Host "Press any key to exit..." -ForegroundColor Red
-        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-        exit 1
-    }
-}
 
-# Admin tasks - service installation and firewall rules
-if ($Elevated) {
-    try {
-        if (-not $AgentPath) {
-            throw "Could not find beszel-agent executable. Make sure it was properly installed."
-        }
+    if (-not $AgentPath) {
+        throw "Could not find beszel-agent executable. Make sure it was properly installed."
+    }
+    
+    # Second: If we need admin rights for service installation and we don't have them, relaunch
+    if (-not $isAdmin -and -not $Elevated) {
+        Write-Host "Admin privileges required for service installation. Relaunching as admin..." -ForegroundColor Yellow
+        Write-Host "Check service status with 'nssm status beszel-agent'"
+        Write-Host "Edit service configuration with 'nssm edit beszel-agent'"
         
+        # Relaunch the script with the -Elevated switch and pass parameters
+        Start-Process powershell.exe -Verb RunAs -ArgumentList "-File `"$PSCommandPath`" -Elevated -Key `"$Key`" -Port $Port -AgentPath `"$AgentPath`""
+        exit
+    }
+    
+    # Third: If we have admin rights, install service and configure firewall
+    if ($isAdmin -or $Elevated) {
         # Install the service
         Install-NSSMService -AgentPath $AgentPath -Key $Key -Port $Port
         
@@ -377,15 +377,24 @@ if ($Elevated) {
         
         # Start the service
         Start-BeszelAgentService
+        
+        # Pause to see results if this is an elevated window
+        if ($Elevated) {
+            Write-Host "Press any key to exit..." -ForegroundColor Cyan
+            $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+        }
     }
-    catch {
-        Write-Host "ERROR: $($_.Exception.Message)" -ForegroundColor Red
-        Write-Host "Installation failed. Please check the error message above." -ForegroundColor Red
-    }
+}
+catch {
+    Write-Host "ERROR: $($_.Exception.Message)" -ForegroundColor Red
+    Write-Host "Installation failed. Please check the error message above." -ForegroundColor Red
     
-    # Pause to see results before exit if this is an elevated window
-    Write-Host "Press any key to exit..." -ForegroundColor Cyan
-    $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+    # Pause if this is likely a new window
+    if ($Elevated -or (-not $isAdmin)) {
+        Write-Host "Press any key to exit..." -ForegroundColor Red
+        $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+    }
+    exit 1
 }
 
 #endregion
