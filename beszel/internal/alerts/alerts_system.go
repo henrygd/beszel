@@ -3,7 +3,6 @@ package alerts
 import (
 	"beszel/internal/entities/system"
 	"fmt"
-	"net/url"
 	"strings"
 	"time"
 
@@ -15,7 +14,7 @@ import (
 )
 
 func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error {
-	alertRecords, err := am.app.FindAllRecords("alerts",
+	alertRecords, err := am.hub.FindAllRecords("alerts",
 		dbx.NewExp("system={:system}", dbx.Params{"system": systemRecord.Id}),
 	)
 	if err != nil || len(alertRecords) == 0 {
@@ -101,7 +100,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		Created types.DateTime `db:"created"`
 	}{}
 
-	err = am.app.DB().
+	err = am.hub.DB().
 		Select("stats", "created").
 		From("system_stats").
 		Where(dbx.NewExp(
@@ -271,12 +270,12 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 	body := fmt.Sprintf("%s averaged %.2f%s for the previous %v %s.", alert.descriptor, alert.val, alert.unit, alert.min, minutesLabel)
 
 	alert.alertRecord.Set("triggered", alert.triggered)
-	if err := am.app.Save(alert.alertRecord); err != nil {
-		// app.Logger().Error("failed to save alert record", "err", err.Error())
+	if err := am.hub.Save(alert.alertRecord); err != nil {
+		// app.Logger().Error("failed to save alert record", "err", err)
 		return
 	}
 	// expand the user relation and send the alert
-	if errs := am.app.ExpandRecord(alert.alertRecord, []string{"user"}, nil); len(errs) > 0 {
+	if errs := am.hub.ExpandRecord(alert.alertRecord, []string{"user"}, nil); len(errs) > 0 {
 		// app.Logger().Error("failed to expand user relation", "errs", errs)
 		return
 	}
@@ -285,7 +284,7 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 			UserID:   user.Id,
 			Title:    subject,
 			Message:  body,
-			Link:     am.app.Settings().Meta.AppURL + "/system/" + url.PathEscape(systemName),
+			Link:     am.hub.MakeLink("systems", systemName),
 			LinkText: "View " + systemName,
 		})
 	}

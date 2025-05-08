@@ -285,3 +285,16 @@ func (h *Hub) GetSSHKey() (ssh.Signer, error) {
 
 	return sshPrivate, err
 }
+
+// MakeLink formats a link with the app URL and path segments.
+// Only path segments should be provided.
+func (h *Hub) MakeLink(parts ...string) string {
+	base := strings.TrimSuffix(h.Settings().Meta.AppURL, "/")
+	for _, part := range parts {
+		if part == "" {
+			continue
+		}
+		base = fmt.Sprintf("%s/%s", base, url.PathEscape(part))
+	}
+	return base
+}
