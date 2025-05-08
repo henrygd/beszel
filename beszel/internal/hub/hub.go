@@ -58,7 +58,6 @@ func GetEnv(key string) (value string, exists bool) {
 }
 
 func (h *Hub) StartHub() error {
-
 	h.App.OnServe().BindFunc(func(e *core.ServeEvent) error {
 		// initialize settings / collections
 		if err := h.initialize(e); err != nil {
@@ -158,7 +157,7 @@ func (h *Hub) initialize(e *core.ServeEvent) error {
 	return nil
 }
 
-// startServer starts the server for the Beszel (not PocketBase)
+// startServer sets up the server for Beszel
 func (h *Hub) startServer(se *core.ServeEvent) error {
 	// TODO: exclude dev server from production binary
 	switch h.IsDev() {
@@ -242,8 +241,8 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 }
 
 // generates key pair if it doesn't exist and returns signer
-func (h *Hub) GetSSHKey() (ssh.Signer, error) {
-	privateKeyPath := path.Join(h.DataDir(), "id_ed25519")
+func (h *Hub) GetSSHKey(dataDir string) (ssh.Signer, error) {
+	privateKeyPath := path.Join(dataDir, "id_ed25519")
 
 	// check if the key pair already exists
 	existingKey, err := os.ReadFile(privateKeyPath)
@@ -255,6 +254,9 @@ func (h *Hub) GetSSHKey() (ssh.Signer, error) {
 		pubKeyBytes := ssh.MarshalAuthorizedKey(private.PublicKey())
 		h.pubKey = strings.TrimSuffix(string(pubKeyBytes), "\n")
 		return private, nil
+	} else if !os.IsNotExist(err) {
+		// File exists but couldn't be read for some other reason
+		return nil, fmt.Errorf("failed to read %s: %w", privateKeyPath, err)
 	}
 
 	// Generate the Ed25519 key pair

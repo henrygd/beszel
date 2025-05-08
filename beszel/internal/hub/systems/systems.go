@@ -46,7 +46,7 @@ type System struct {
 
 type hubLike interface {
 	core.App
-	GetSSHKey() (ssh.Signer, error)
+	GetSSHKey(dataDir string) (ssh.Signer, error)
 	HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error
 	HandleStatusAlerts(status string, systemRecord *core.Record) error
 }
@@ -362,7 +362,7 @@ func (sys *System) fetchDataFromAgent() (*system.CombinedData, error) {
 
 // createSSHClientConfig initializes the ssh config for the system manager
 func (sm *SystemManager) createSSHClientConfig() error {
-	privateKey, err := sm.hub.GetSSHKey()
+	privateKey, err := sm.hub.GetSSHKey(sm.hub.DataDir())
 	if err != nil {
 		return err
 	}
