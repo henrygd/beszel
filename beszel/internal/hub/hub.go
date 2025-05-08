@@ -10,11 +10,13 @@ import (
 	"beszel/site"
 	"crypto/ed25519"
 	"encoding/pem"
+	"fmt"
 	"io/fs"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"path"
 	"strings"
 
 	"github.com/pocketbase/pocketbase"
@@ -239,73 +241,47 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	return nil
 }
 
-// generates key pair if it doesn't exist and returns private key bytes
-func (h *Hub) GetSSHKey() ([]byte, error) {
-	dataDir := h.DataDir()
+// generates key pair if it doesn't exist and returns signer
+func (h *Hub) GetSSHKey() (ssh.Signer, error) {
+	privateKeyPath := path.Join(h.DataDir(), "id_ed25519")
+
 	// check if the key pair already exists
-	existingKey, err := os.ReadFile(dataDir + "/id_ed25519")
+	existingKey, err := os.ReadFile(privateKeyPath)
 	if err == nil {
-		if pubKey, err := os.ReadFile(h.DataDir() + "/id_ed25519.pub"); err == nil {
-			h.pubKey = strings.TrimSuffix(string(pubKey), "\n")
+		private, err := ssh.ParsePrivateKey(existingKey)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse private key: %s", err)
 		}
-		// return existing private key
-		return existingKey, nil
+		pubKeyBytes := ssh.MarshalAuthorizedKey(private.PublicKey())
+		h.pubKey = strings.TrimSuffix(string(pubKeyBytes), "\n")
+		return private, nil
 	}
 
 	// Generate the Ed25519 key pair
 	pubKey, privKey, err := ed25519.GenerateKey(nil)
 	if err != nil {
-		// h.Logger().Error("Error generating key pair:", "err", err.Error())
 		return nil, err
 	}
 
 	// Get the private key in OpenSSH format
-	privKeyBytes, err := ssh.MarshalPrivateKey(privKey, "")
-	if err != nil {
-		// h.Logger().Error("Error marshaling private key:", "err", err.Error())
-		return nil, err
-	}
-
-	// Save the private key to a file
-	privateFile, err := os.Create(dataDir + "/id_ed25519")
-	if err != nil {
-		// h.Logger().Error("Error creating private key file:", "err", err.Error())
-		return nil, err
-	}
-	defer privateFile.Close()
-
-	if err := pem.Encode(privateFile, privKeyBytes); err != nil {
-		// h.Logger().Error("Error writing private key to file:", "err", err.Error())
-		return nil, err
-	}
-
-	// Generate the public key in OpenSSH format
-	publicKey, err := ssh.NewPublicKey(pubKey)
+	privKeyPem, err := ssh.MarshalPrivateKey(privKey, "")
 	if err != nil {
 		return nil, err
 	}
 
-	pubKeyBytes := ssh.MarshalAuthorizedKey(publicKey)
+	if err := os.WriteFile(privateKeyPath, pem.EncodeToMemory(privKeyPem), 0600); err != nil {
+		return nil, fmt.Errorf("failed to write private key to %q: err: %w", privateKeyPath, err)
+	}
+
+	// These are fine to ignore the errors on, as we've literally just created a crypto.PublicKey | crypto.Signer
+	sshPubKey, _ := ssh.NewPublicKey(pubKey)
+	sshPrivate, _ := ssh.NewSignerFromSigner(privKey)
+
+	pubKeyBytes := ssh.MarshalAuthorizedKey(sshPubKey)
 	h.pubKey = strings.TrimSuffix(string(pubKeyBytes), "\n")
 
-	// Save the public key to a file
-	publicFile, err := os.Create(dataDir + "/id_ed25519.pub")
-	if err != nil {
-		return nil, err
-	}
-	defer publicFile.Close()
-
-	if _, err := publicFile.Write(pubKeyBytes); err != nil {
-		return nil, err
-	}
-
 	h.Logger().Info("ed25519 SSH key pair generated successfully.")
-	h.Logger().Info("Private key saved to: " + dataDir + "/id_ed25519")
-	h.Logger().Info("Public key saved to: " + dataDir + "/id_ed25519.pub")
+	h.Logger().Info("Saved to: " + privateKeyPath)
 
-	existingKey, err = os.ReadFile(dataDir + "/id_ed25519")
-	if err == nil {
-		return existingKey, nil
-	}
-	return nil, err
+	return sshPrivate, err
 }
