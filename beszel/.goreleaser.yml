@@ -37,6 +37,7 @@ builds:
       - arm
       - mips64
       - riscv64
+      - mipsle
     ignore:
       - goos: freebsd
         goarch: arm
