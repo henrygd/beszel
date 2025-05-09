@@ -122,7 +122,8 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 	newStatus := e.Record.GetString("status")
 	switch newStatus {
 	case paused:
-		sm.RemoveSystem(e.Record.Id)
+		_ = sm.RemoveSystem(e.Record.Id)
+		_ = deactivateAlerts(e.App, e.Record.Id)
 		return e.Next()
 	case pending:
 		if err := sm.AddRecord(e.Record); err != nil {
@@ -436,4 +437,21 @@ func (sys *System) resetSSHClient() {
 		sys.client.Close()
 	}
 	sys.client = nil
+}
+
+// deactivateAlerts finds all triggered alerts for a system and sets them to false
+func deactivateAlerts(app core.App, systemID string) error {
+	// we can't use an UPDATE query because it doesn't work with realtime updates
+	// _, err := e.App.DB().NewQuery(fmt.Sprintf("UPDATE alerts SET triggered = false WHERE system = '%s'", e.Record.Id)).Execute()
+	alerts, err := app.FindRecordsByFilter("alerts", fmt.Sprintf("system = '%s' && triggered = 1", systemID), "", -1, 0)
+	if err != nil {
+		return err
+	}
+	for _, alert := range alerts {
+		alert.Set("triggered", false)
+		if err := app.SaveNoValidate(alert); err != nil {
+			return err
+		}
+	}
+	return nil
 }
