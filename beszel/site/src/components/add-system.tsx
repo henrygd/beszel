@@ -301,24 +301,20 @@ const CopyButton = memo((props: CopyButtonProps) => {
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end">
-					{props.dropdownItems.map((item, index) => (
-						<DropdownMenuItem key={index} asChild={!!item.url}>
-							{item.url ? (
-								<a
-									href={item.url}
-									className="cursor-pointer flex items-center gap-1.5"
-									target="_blank"
-									rel="noopener noreferrer"
-								>
+					{props.dropdownItems.map((item, index) => {
+						const className = "cursor-pointer flex items-center gap-1.5"
+						return item.url ? (
+							<DropdownMenuItem key={index} asChild>
+								<a href={item.url} className={className} target="_blank" rel="noopener noreferrer">
 									{item.text} {item.icons?.map((icon) => icon)}
 								</a>
-							) : (
-								<div onClick={item.onClick} className="cursor-pointer flex items-center gap-1.5">
-									{item.text} {item.icons?.map((icon) => icon)}
-								</div>
-							)}
-						</DropdownMenuItem>
-					))}
+							</DropdownMenuItem>
+						) : (
+							<DropdownMenuItem key={index} onClick={item.onClick} className={className}>
+								{item.text} {item.icons?.map((icon) => icon)}
+							</DropdownMenuItem>
+						)
+					})}
 				</DropdownMenuContent>
 			</DropdownMenu>
 		</div>
