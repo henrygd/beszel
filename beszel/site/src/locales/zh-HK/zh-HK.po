@@ -114,14 +114,10 @@ msgstr "平均"
 msgid "Average CPU utilization of containers"
 msgstr "容器的平均 CPU 使用率"
 
-#. placeholder {0}: isEditingValue ? ( <input type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} onBlur={handleInputValueBlur} onKeyDown={(e) => e.key === "Enter" && handleInputValueBlur()} className="w-12 bg-transparent border-b border-primary outline-none text-center" autoFocus /> ) : ( <> {value} {data.alert.unit} </> )
+#. placeholder {0}: data.alert.unit
 #: src/components/alerts/alerts-system.tsx
-msgid "Average exceeds <0>{0}</0>"
-msgstr ""
-
-#: src/components/alerts/alerts-system.tsx
-#~ msgid "Average exceeds <0>{value}{0}</0>"
-#~ msgstr "平均值超過 <0>{value}{0}</0>"
+msgid "Average exceeds <0>{value}{0}</0>"
+msgstr "平均值超過 <0>{value}{0}</0>"
 
 #: src/components/routes/system.tsx
 msgid "Average power consumption of GPUs"
@@ -380,14 +376,9 @@ msgstr "更新警報失敗"
 msgid "Filter..."
 msgstr "篩選..."
 
-#. placeholder {0}: isEditingMin ? ( <input type="number" value={inputMin} onChange={(e) => setInputMin(e.target.value)} onBlur={handleInputMinBlur} onKeyDown={(e) => e.key === "Enter" && handleInputMinBlur()} className="w-12 bg-transparent border-b border-primary outline-none text-center" autoFocus /> ) : ( min )
 #: src/components/alerts/alerts-system.tsx
-msgid "For <0>{0}</0> {min, plural, one {minute} other {minutes}}"
-msgstr ""
-
-#: src/components/alerts/alerts-system.tsx
-#~ msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
-#~ msgstr "持續<0>{min}</0> {min, plural, one {分鐘} other {分鐘}}"
+msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
+msgstr "持續<0>{min}</0> {min, plural, one {分鐘} other {分鐘}}"
 
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
@@ -429,21 +420,6 @@ msgstr "無效的電子郵件地址。"
 msgid "Kernel"
 msgstr "Kernel"
 
-#. Load average 1 minute
-#: src/components/systems-table/systems-table.tsx
-msgid "LA 1"
-msgstr ""
-
-#. Load average 15 minutes
-#: src/components/systems-table/systems-table.tsx
-msgid "LA 15"
-msgstr ""
-
-#. Load average 5 minutes
-#: src/components/systems-table/systems-table.tsx
-msgid "LA 5"
-msgstr ""
-
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "語言"
@@ -456,22 +432,6 @@ msgstr "版面配置"
 #: src/components/mode-toggle.tsx
 msgid "Light"
 msgstr "淺色"
-
-#: src/lib/utils.ts
-msgid "Load Average 1"
-msgstr ""
-
-#: src/lib/utils.ts
-msgid "Load Average 15"
-msgstr ""
-
-#: src/lib/utils.ts
-msgid "Load Average 5"
-msgstr ""
-
-#: src/components/systems-table/systems-table.tsx
-#~ msgid "Load Avg 1"
-#~ msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -834,18 +794,6 @@ msgstr "當組合的上/下超過閾值時觸發"
 #: src/lib/utils.ts
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "當CPU使用率超過閾值時觸發"
-
-#: src/lib/utils.ts
-msgid "Triggers when load average 1 exceeds a threshold"
-msgstr ""
-
-#: src/lib/utils.ts
-msgid "Triggers when load average 15 exceeds a threshold"
-msgstr ""
-
-#: src/lib/utils.ts
-msgid "Triggers when load average 5 exceeds a threshold"
-msgstr ""
 
 #: src/lib/utils.ts
 msgid "Triggers when memory usage exceeds a threshold"
