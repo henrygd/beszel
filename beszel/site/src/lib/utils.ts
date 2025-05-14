@@ -8,7 +8,7 @@ import { RecordModel, RecordSubscription } from "pocketbase"
 import { WritableAtom } from "nanostores"
 import { timeDay, timeHour } from "d3-time"
 import { useEffect, useState } from "react"
-import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from "lucide-react"
+import { CpuIcon, FlameIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from "lucide-react"
 import { EthernetIcon, ThermometerIcon } from "@/components/ui/icons"
 import { prependBasePath } from "@/components/router"
 
@@ -345,6 +345,24 @@ export const alertInfo: Record<string, AlertInfo> = {
 		unit: "°C",
 		icon: ThermometerIcon,
 		desc: () => t`Triggers when any sensor exceeds a threshold`,
+	},
+	LoadAvg1: {
+		name: () => t`Load Average 1`,
+		unit: "",
+		icon: FlameIcon,
+		desc: () => t`Triggers when load average 1 exceeds a threshold`,
+	},
+	LoadAvg5: {
+		name: () => t`Load Average 5`,
+		unit: "",
+		icon: FlameIcon,
+		desc: () => t`Triggers when load average 5 exceeds a threshold`,
+	},
+	LoadAvg15: {
+		name: () => t`Load Average 15`,
+		unit: "",
+		icon: FlameIcon,
+		desc: () => t`Triggers when load average 15 exceeds a threshold`,
 	},
 }
 
