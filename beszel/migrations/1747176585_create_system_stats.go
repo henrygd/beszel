@@ -8,6 +8,10 @@ import (
 
 func init() {
 	m.Register(func(app core.App) error {
+		_, err := app.FindCollectionByNameOrId("system_stats")
+		if err == nil { // collection exists, thats update from non migration app version
+			return nil
+		}
 		collection := core.NewBaseCollection("system_stats")
 		collection.ListRule = types.Pointer("@request.auth.id != \"\"")
 		collection.ViewRule = nil
