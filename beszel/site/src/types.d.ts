@@ -31,6 +31,12 @@ export interface SystemInfo {
 	c: number
 	/** cpu model */
 	m: string
+	/** load average 1 minute */
+	la1?: number
+	/** load average 5 minutes */
+	la5?: number
+	/** load average 15 minutes */
+	la15?: number
 	/** operating system */
 	o?: string
 	/** uptime */
@@ -58,6 +64,12 @@ export interface SystemStats {
 	cpu: number
 	/** peak cpu */
 	cpum?: number
+	/** load average 1 minute */
+	la1?: number
+	/** load average 5 minutes */
+	la5?: number
+	/** load average 15 minutes */
+	la15?: number
 	/** total memory (gb) */
 	m: number
 	/** memory used (gb) */

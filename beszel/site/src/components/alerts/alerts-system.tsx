@@ -214,12 +214,67 @@ function AlertContent({ data }: { data: AlertData }) {
 	const { name } = data
 
 	const singleDescription = data.alert.singleDesc?.()
+	const needsFloatValues = ["LoadAvg1", "LoadAvg5", "LoadAvg15"].includes(name) // Load Average metrics should be float
 
 	const [checked, setChecked] = useState(data.checked || false)
 	const [min, setMin] = useState(data.min || 10)
-	const [value, setValue] = useState(data.val || (singleDescription ? 0 : 80))
+	const [value, setValue] = useState(data.val || (singleDescription ? 0 : needsFloatValues ? 1.0 : 80))
+	const [isEditingValue, setIsEditingValue] = useState(false)
+	const [isEditingMin, setIsEditingMin] = useState(false)
+	const [inputValue, setInputValue] = useState(value.toString())
+	const [inputMin, setInputMin] = useState(min.toString())
 
 	const Icon = alertInfo[name].icon
+
+	const handleValueChange = (newValue: number) => {
+		setValue(newValue)
+		setInputValue(needsFloatValues ? newValue.toFixed(1) : newValue.toString())
+	}
+
+	const handleMinChange = (newMin: number) => {
+		setMin(newMin)
+		setInputMin(newMin.toString())
+	}
+
+	const handleInputValueBlur = () => {
+		setIsEditingValue(false)
+		try {
+			const numValue = needsFloatValues ? parseFloat(inputValue) : parseInt(inputValue, 10)
+			if (isNaN(numValue)) {
+				setInputValue(value.toString())
+				return
+			}
+			if (numValue < 0.1) {
+				handleValueChange(0.1)
+			} else {
+				handleValueChange(numValue)
+				data.updateAlert?.(true, numValue, min)
+			}
+		} catch (e) {
+			setInputValue(value.toString())
+		}
+	}
+
+	const handleInputMinBlur = () => {
+		setIsEditingMin(false)
+		try {
+			const numValue = parseInt(inputMin, 10)
+			if (isNaN(numValue)) {
+				setInputMin(min.toString())
+				return
+			}
+			if (numValue < 1) {
+				handleMinChange(1)
+			} else if (numValue > 60) {
+				handleMinChange(60)
+			} else {
+				handleMinChange(numValue)
+				data.updateAlert?.(true, value, numValue)
+			}
+		} catch (e) {
+			setInputMin(min.toString())
+		}
+	}
 
 	return (
 		<div className="rounded-lg border border-muted-foreground/15 hover:border-muted-foreground/20 transition-colors duration-100 group">
@@ -252,9 +307,26 @@ function AlertContent({ data }: { data: AlertData }) {
 								<p id={`v${name}`} className="text-sm block h-8">
 									<Trans>
 										Average exceeds{" "}
-										<strong className="text-foreground">
-											{value}
-											{data.alert.unit}
+										<strong
+											className="text-foreground cursor-pointer hover:underline"
+											onClick={() => setIsEditingValue(true)}
+										>
+											{isEditingValue ? (
+												<input
+													type="text"
+													value={inputValue}
+													onChange={(e) => setInputValue(e.target.value)}
+													onBlur={handleInputValueBlur}
+													onKeyDown={(e) => e.key === "Enter" && handleInputValueBlur()}
+													className="w-12 bg-transparent border-b border-primary outline-none text-center"
+													autoFocus
+												/>
+											) : (
+												<>
+													{value}
+													{data.alert.unit}
+												</>
+											)}
 										</strong>
 									</Trans>
 								</p>
@@ -266,10 +338,11 @@ function AlertContent({ data }: { data: AlertData }) {
 											data.updateAlert?.(true, val[0], min)
 										}}
 										onValueChange={(val) => {
-											setValue(val[0])
+											handleValueChange(val[0])
 										}}
-										min={1}
+										min={needsFloatValues ? 0.1 : 1}
 										max={alertInfo[name].max ?? 99}
+										useFloat={needsFloatValues}
 									/>
 								</div>
 							</div>
@@ -283,7 +356,25 @@ function AlertContent({ data }: { data: AlertData }) {
 									</>
 								)}
 								<Trans>
-									For <strong className="text-foreground">{min}</strong>{" "}
+									For{" "}
+									<strong
+										className="text-foreground cursor-pointer hover:underline"
+										onClick={() => setIsEditingMin(true)}
+									>
+										{isEditingMin ? (
+											<input
+												type="number"
+												value={inputMin}
+												onChange={(e) => setInputMin(e.target.value)}
+												onBlur={handleInputMinBlur}
+												onKeyDown={(e) => e.key === "Enter" && handleInputMinBlur()}
+												className="w-12 bg-transparent border-b border-primary outline-none text-center"
+												autoFocus
+											/>
+										) : (
+											min
+										)}
+									</strong>{" "}
 									<Plural value={min} one="minute" other="minutes" />
 								</Trans>
 							</p>

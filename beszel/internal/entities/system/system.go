@@ -31,6 +31,9 @@ type Stats struct {
 	Temperatures   map[string]float64  `json:"t,omitempty"`
 	ExtraFs        map[string]*FsStats `json:"efs,omitempty"`
 	GPUData        map[string]GPUData  `json:"g,omitempty"`
+	LoadAvg1       float64             `json:"la1,omitempty"`
+	LoadAvg5       float64             `json:"la5,omitempty"`
+	LoadAvg15      float64             `json:"la15,omitempty"`
 }
 
 type GPUData struct {
@@ -88,6 +91,9 @@ type Info struct {
 	Podman        bool    `json:"p,omitempty"`
 	GpuPct        float64 `json:"g,omitempty"`
 	DashboardTemp float64 `json:"dt,omitempty"`
+	LoadAvg1      float64 `json:"la1,omitempty"`
+	LoadAvg5      float64 `json:"la5,omitempty"`
+	LoadAvg15     float64 `json:"la15,omitempty"`
 	Os            Os      `json:"os"`
 }
 

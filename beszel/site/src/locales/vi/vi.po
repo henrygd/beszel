@@ -114,10 +114,14 @@ msgstr "Trung bình"
 msgid "Average CPU utilization of containers"
 msgstr "Sử dụng CPU trung bình của các container"
 
-#. placeholder {0}: data.alert.unit
+#. placeholder {0}: isEditingValue ? ( <input type="text" value={inputValue} onChange={(e) => setInputValue(e.target.value)} onBlur={handleInputValueBlur} onKeyDown={(e) => e.key === "Enter" && handleInputValueBlur()} className="w-12 bg-transparent border-b border-primary outline-none text-center" autoFocus /> ) : ( <> {value} {data.alert.unit} </> )
 #: src/components/alerts/alerts-system.tsx
-msgid "Average exceeds <0>{value}{0}</0>"
-msgstr "Trung bình vượt quá <0>{value}{0}</0>"
+msgid "Average exceeds <0>{0}</0>"
+msgstr ""
+
+#: src/components/alerts/alerts-system.tsx
+#~ msgid "Average exceeds <0>{value}{0}</0>"
+#~ msgstr "Trung bình vượt quá <0>{value}{0}</0>"
 
 #: src/components/routes/system.tsx
 msgid "Average power consumption of GPUs"
@@ -376,9 +380,14 @@ msgstr "Cập nhật cảnh báo thất bại"
 msgid "Filter..."
 msgstr "Lọc..."
 
+#. placeholder {0}: isEditingMin ? ( <input type="number" value={inputMin} onChange={(e) => setInputMin(e.target.value)} onBlur={handleInputMinBlur} onKeyDown={(e) => e.key === "Enter" && handleInputMinBlur()} className="w-12 bg-transparent border-b border-primary outline-none text-center" autoFocus /> ) : ( min )
 #: src/components/alerts/alerts-system.tsx
-msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
-msgstr "Trong <0>{min}</0> {min, plural, one {phút} other {phút}}"
+msgid "For <0>{0}</0> {min, plural, one {minute} other {minutes}}"
+msgstr ""
+
+#: src/components/alerts/alerts-system.tsx
+#~ msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
+#~ msgstr "Trong <0>{min}</0> {min, plural, one {phút} other {phút}}"
 
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
@@ -420,6 +429,21 @@ msgstr "Địa chỉ email không hợp lệ."
 msgid "Kernel"
 msgstr "Nhân"
 
+#. Load average 1 minute
+#: src/components/systems-table/systems-table.tsx
+msgid "LA 1"
+msgstr ""
+
+#. Load average 15 minutes
+#: src/components/systems-table/systems-table.tsx
+msgid "LA 15"
+msgstr ""
+
+#. Load average 5 minutes
+#: src/components/systems-table/systems-table.tsx
+msgid "LA 5"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Ngôn ngữ"
@@ -432,6 +456,22 @@ msgstr "Bố cục"
 #: src/components/mode-toggle.tsx
 msgid "Light"
 msgstr "Sáng"
+
+#: src/lib/utils.ts
+msgid "Load Average 1"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Load Average 15"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Load Average 5"
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx
+#~ msgid "Load Avg 1"
+#~ msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -794,6 +834,18 @@ msgstr "Kích hoạt khi kết hợp lên/xuống vượt quá ngưỡng"
 #: src/lib/utils.ts
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Kích hoạt khi sử dụng CPU vượt quá ngưỡng"
+
+#: src/lib/utils.ts
+msgid "Triggers when load average 1 exceeds a threshold"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Triggers when load average 15 exceeds a threshold"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Triggers when load average 5 exceeds a threshold"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "Triggers when memory usage exceeds a threshold"
