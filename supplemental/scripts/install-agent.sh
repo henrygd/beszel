@@ -264,7 +264,7 @@ if [ -n "$GITHUB_PROXY_URL" ]; then
   fi
 fi
 
-# Function to check if a package is installed
+# Check if a package is installed
 package_installed() {
   command -v "$1" >/dev/null 2>&1
 }
@@ -388,6 +388,17 @@ set_selinux_context
 
 # Cleanup
 rm -rf "$TEMP_DIR"
+
+# Check for NVIDIA GPUs and grant device permissions for systemd service
+detect_nvidia_devices() {
+  local devices=""
+  for i in /dev/nvidia*; do
+    if [ -e "$i" ]; then
+      devices="${devices}DeviceAllow=$i rw\n"
+    fi
+  done
+  echo "$devices"
+}
 
 # Modify service installation part, add Alpine check before systemd service creation
 if is_alpine; then
@@ -560,6 +571,10 @@ EOF
 else
   # Original systemd service installation code
   echo "Creating the systemd service for the agent..."
+
+  # Detect NVIDIA devices and grant device permissions
+  NVIDIA_DEVICES=$(detect_nvidia_devices)
+
   cat >/etc/systemd/system/beszel-agent.service <<EOF
 [Unit]
 Description=Beszel Agent Service
@@ -588,6 +603,8 @@ ProtectSystem=strict
 RemoveIPC=yes
 RestrictSUIDSGID=true
 SystemCallArchitectures=native
+
+$(if [ -n "$NVIDIA_DEVICES" ]; then printf "%b" "# NVIDIA device permissions\n${NVIDIA_DEVICES}"; fi)
 
 [Install]
 WantedBy=multi-user.target
