@@ -49,6 +49,15 @@ The [quick start guide](https://beszel.dev/guide/getting-started) and other docu
 - **Temperature** - Host system sensors.
 - **GPU usage / temperature / power draw** - Nvidia and AMD only. Must use binary agent.
 
+## Discussion and reporting issues
+
+- Report issues on the [GitHub issues page](https://github.com/henrygd/beszel/issues)
+- Contact developers on [the GitHub discussions page](https://github.com/henrygd/beszel/discussions) or the community in the Matrix room **#beszel:matrix.org**
+
+## Support
+
+
+
 ## License
 
 Beszel is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
