@@ -86,7 +86,7 @@ function copyLinuxCommand(port = "45876", publicKey: string, brew = false) {
 
 function copyWindowsCommand(port = "45876", publicKey: string) {
 	copyToClipboard(
-		`Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser; & iwr -useb https://get.beszel.dev -OutFile "$env:TEMP\\install-agent.ps1"; & "$env:TEMP\\install-agent.ps1" -Key "${publicKey}" -Port ${port}`
+		`& iwr -useb https://get.beszel.dev -OutFile "$env:TEMP\\install-agent.ps1"; & Powershell -ExecutionPolicy Bypass -File "$env:TEMP\\install-agent.ps1" -Key "${publicKey}" -Port ${port}`
 	)
 }
 
