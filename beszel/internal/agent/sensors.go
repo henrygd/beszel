@@ -89,6 +89,10 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) {
 
 	systemStats.Temperatures = make(map[string]float64, len(temps))
 	for i, sensor := range temps {
+		// scale temperature
+		if sensor.Temperature != 0 && sensor.Temperature < 1 {
+			sensor.Temperature = scaleTemperature(sensor.Temperature)
+		}
 		// skip if temperature is unreasonable
 		if sensor.Temperature <= 0 || sensor.Temperature >= 200 {
 			continue
@@ -140,4 +144,20 @@ func isValidSensor(sensorName string, config *SensorConfig) bool {
 	}
 
 	return config.isBlacklist
+}
+
+// scaleTemperature scales temperatures in fractional values to reasonable Celsius values
+func scaleTemperature(temp float64) float64 {
+	if temp > 1 {
+		return temp
+	}
+	scaled100 := temp * 100
+	scaled1000 := temp * 1000
+
+	if scaled100 >= 15 && scaled100 <= 95 {
+		return scaled100
+	} else if scaled1000 >= 15 && scaled1000 <= 95 {
+		return scaled1000
+	}
+	return scaled100
 }
