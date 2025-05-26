@@ -8,7 +8,7 @@ msgstr ""
 "Language: de\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-04-27 10:25\n"
+"PO-Revision-Date: 2025-05-26 12:12\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -646,7 +646,7 @@ msgstr "Einstellungen speichern"
 
 #: src/components/add-system.tsx
 msgid "Save system"
-msgstr ""
+msgstr "System sichern"
 
 #: src/components/navbar.tsx
 msgid "Search"
@@ -811,7 +811,7 @@ msgstr "Löst aus, wenn die Nutzung einer Festplatte einen Schwellenwert übersc
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
-msgstr ""
+msgstr "aktiv"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Updated in real time. Click on a system to view information."
