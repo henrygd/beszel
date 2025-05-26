@@ -8,7 +8,7 @@ msgstr ""
 "Language: el\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-05-24 19:51\n"
+"PO-Revision-Date: 2025-05-26 21:03\n"
 "Last-Translator: \n"
 "Language-Team: Greek\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -58,7 +58,7 @@ msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Add <0>System</0>"
-msgstr "<0>"
+msgstr "Προσθήκη <0>System</0>"
 
 #: src/components/add-system.tsx
 msgid "Add New System"
