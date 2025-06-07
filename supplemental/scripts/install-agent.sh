@@ -317,14 +317,14 @@ fi
 if is_alpine; then
   if ! id -u beszel >/dev/null 2>&1; then
     echo "Creating a dedicated user for the Beszel Agent service..."
-    adduser -D -H -s /sbin/nologin beszel
+    adduser -S -D -H -s /sbin/nologin beszel
   fi
   # Add the user to the docker group to allow access to the Docker socket
   addgroup beszel docker
 else
   if ! id -u beszel >/dev/null 2>&1; then
     echo "Creating a dedicated user for the Beszel Agent service..."
-    useradd -M -s /bin/false beszel
+    useradd --system --home-dir /nonexistent --shell /bin/false beszel
   fi
   # Add the user to the docker group to allow access to the Docker socket
   usermod -aG docker beszel
