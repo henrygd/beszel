@@ -14,6 +14,7 @@ import (
 	"github.com/shirou/gopsutil/v4/cpu"
 	"github.com/shirou/gopsutil/v4/disk"
 	"github.com/shirou/gopsutil/v4/host"
+	"github.com/shirou/gopsutil/v4/load"
 	"github.com/shirou/gopsutil/v4/mem"
 	psutilNet "github.com/shirou/gopsutil/v4/net"
 )
@@ -75,6 +76,16 @@ func (a *Agent) getSystemStats() system.Stats {
 		slog.Error("Error getting cpu percent", "err", err)
 	} else if len(cpuPct) > 0 {
 		systemStats.Cpu = twoDecimals(cpuPct[0])
+	}
+
+	// load average
+	if avgstat, err := load.Avg(); err == nil {
+		systemStats.LoadAvg1 = twoDecimals(avgstat.Load1)
+		systemStats.LoadAvg5 = twoDecimals(avgstat.Load5)
+		systemStats.LoadAvg15 = twoDecimals(avgstat.Load15)
+		slog.Debug("Load average", "1m", systemStats.LoadAvg1, "5m", systemStats.LoadAvg5, "15m", systemStats.LoadAvg15)
+	} else {
+		slog.Error("Error getting load average", "err", err)
 	}
 
 	// memory
@@ -240,6 +251,9 @@ func (a *Agent) getSystemStats() system.Stats {
 
 	// update base system info
 	a.systemInfo.Cpu = systemStats.Cpu
+	a.systemInfo.LoadAvg1 = systemStats.LoadAvg1
+	a.systemInfo.LoadAvg5 = systemStats.LoadAvg5
+	a.systemInfo.LoadAvg15 = systemStats.LoadAvg15
 	a.systemInfo.MemPct = systemStats.MemPct
 	a.systemInfo.DiskPct = systemStats.DiskPct
 	a.systemInfo.Uptime, _ = host.Uptime()
