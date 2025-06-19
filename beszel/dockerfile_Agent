@@ -12,9 +12,16 @@ COPY internal ./internal
 ARG TARGETOS TARGETARCH
 RUN CGO_ENABLED=0 GOGC=75 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-w -s" -o /agent ./cmd/agent
 
-# ? -------------------------
-FROM scratch
-
+# --------------------------
+# Final image: default scratch-based agent
+# --------------------------
+FROM scratch AS default-agent
 COPY --from=builder /agent /agent
+ENTRYPOINT ["/agent"]
 
+# --------------------------
+# Final image: GPU-enabled agent with nvidia-smi
+# --------------------------
+FROM nvidia/cuda:12.9.0-base-ubuntu22.04 AS nvidia-agent
+COPY --from=builder /agent /agent
 ENTRYPOINT ["/agent"]
