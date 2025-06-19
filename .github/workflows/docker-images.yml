@@ -21,6 +21,14 @@ jobs:
           - image: henrygd/beszel-agent
             context: ./beszel
             dockerfile: ./beszel/dockerfile_Agent
+            target: default-agent
+            registry: docker.io
+            username_secret: DOCKERHUB_USERNAME
+            password_secret: DOCKERHUB_TOKEN
+          - image: henrygd/beszel-agent-nvidia
+            context: ./beszel
+            dockerfile: ./beszel/dockerfile_Agent
+            target: nvidia-agent
             registry: docker.io
             username_secret: DOCKERHUB_USERNAME
             password_secret: DOCKERHUB_TOKEN
@@ -33,6 +41,14 @@ jobs:
           - image: ghcr.io/${{ github.repository }}/beszel-agent
             context: ./beszel
             dockerfile: ./beszel/dockerfile_Agent
+            target: default-agent
+            registry: ghcr.io
+            username: ${{ github.actor }}
+            password_secret: GITHUB_TOKEN
+          - image: ghcr.io/${{ github.repository }}/beszel-agent-nvidia
+            context: ./beszel
+            dockerfile: ./beszel/dockerfile_Agent
+            target: nvidia-agent
             registry: ghcr.io
             username: ${{ github.actor }}
             password_secret: GITHUB_TOKEN
@@ -90,3 +106,4 @@ jobs:
           push: ${{ github.ref_type == 'tag' }}
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
+          target: ${{ matrix.target }}
