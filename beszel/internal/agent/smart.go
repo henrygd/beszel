@@ -178,15 +178,15 @@ func (sm *SmartManager) parseSmartForScsi(output []byte) bool {
 	defer sm.mutex.Unlock()
 
 	// get device name (e.g. /dev/sda)
-	deviceName := data.Device.Name
+	keyName := data.SerialNumber
 
 	// if device does not exist in SmartDataMap, initialize it
-	if _, ok := sm.SmartDataMap[deviceName]; !ok {
-		sm.SmartDataMap[deviceName] = &system.SmartData{}
+	if _, ok := sm.SmartDataMap[keyName]; !ok {
+		sm.SmartDataMap[keyName] = &system.SmartData{}
 	}
 
 	// update SmartData
-	smartData := sm.SmartDataMap[deviceName]
+	smartData := sm.SmartDataMap[keyName]
 	smartData.ModelFamily = data.ModelFamily
 	smartData.ModelName = data.ModelName
 	smartData.SerialNumber = data.SerialNumber
@@ -197,7 +197,7 @@ func (sm *SmartManager) parseSmartForScsi(output []byte) bool {
 	} else {
 		smartData.SmartStatus = "FAILED"
 	}
-	smartData.DiskName = deviceName
+	smartData.DiskName = data.Device.Name
 	smartData.DiskType = data.Device.Type
 
 	// update SmartAttributes
@@ -217,7 +217,7 @@ func (sm *SmartManager) parseSmartForScsi(output []byte) bool {
 		smartData.Attributes = append(smartData.Attributes, smartAttr)
 	}
 	smartData.Temperature = data.Temperature.Current
-	sm.SmartDataMap[deviceName] = smartData
+	sm.SmartDataMap[keyName] = smartData
 
 	return true
 }
@@ -234,15 +234,15 @@ func (sm *SmartManager) parseSmartForNvme(output []byte) bool {
 	defer sm.mutex.Unlock()
 
 	// get device name (e.g. /dev/nvme0)
-	deviceName := data.Device.Name
+	keyName := data.SerialNumber
 
 	// if device does not exist in SmartDataMap, initialize it
-	if _, ok := sm.SmartDataMap[deviceName]; !ok {
-		sm.SmartDataMap[deviceName] = &system.SmartData{}
+	if _, ok := sm.SmartDataMap[keyName]; !ok {
+		sm.SmartDataMap[keyName] = &system.SmartData{}
 	}
 
 	// update SmartData
-	smartData := sm.SmartDataMap[deviceName]
+	smartData := sm.SmartDataMap[keyName]
 	smartData.ModelName = data.ModelName
 	smartData.SerialNumber = data.SerialNumber
 	smartData.FirmwareVersion = data.FirmwareVersion
@@ -252,7 +252,7 @@ func (sm *SmartManager) parseSmartForNvme(output []byte) bool {
 	} else {
 		smartData.SmartStatus = "FAILED"
 	}
-	smartData.DiskName = deviceName
+	smartData.DiskName = data.Device.Name
 	smartData.DiskType = data.Device.Type
 
 	v := reflect.ValueOf(data.NVMeSmartHealthInformationLog)
@@ -278,7 +278,7 @@ func (sm *SmartManager) parseSmartForNvme(output []byte) bool {
 	}
 	smartData.Temperature = data.NVMeSmartHealthInformationLog.Temperature
 
-	sm.SmartDataMap[deviceName] = smartData
+	sm.SmartDataMap[keyName] = smartData
 
 	return true
 }
