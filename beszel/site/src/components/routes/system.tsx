@@ -35,10 +35,12 @@ import { Input } from "../ui/input"
 import { ChartAverage, ChartMax, Rows, TuxIcon, WindowsIcon, AppleIcon, FreeBsdIcon } from "../ui/icons"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
 import { timeTicks } from "d3-time"
 import { useLingui } from "@lingui/react/macro"
 import { $router, navigate } from "../router"
 import { getPagePath } from "@nanostores/router"
+import DisksTab from "../tabs/disks-tab"
 
 const AreaChartDefault = lazy(() => import("../charts/area-chart"))
 const ContainerChart = lazy(() => import("../charts/container-chart"))
@@ -463,6 +465,14 @@ export default function SystemDetail({ name }: { name: string }) {
 					</div>
 				</Card>
 
+				{/* tabs for different views */}
+				<Tabs defaultValue="systems" className="w-full">
+					<TabsList>
+						<TabsTrigger value="systems">Systems</TabsTrigger>
+						<TabsTrigger value="disks">Disks</TabsTrigger>
+					</TabsList>
+					
+					<TabsContent value="systems" className="mt-4">
 				{/* main charts */}
 				<div className="grid xl:grid-cols-2 gap-4">
 					<ChartCard
@@ -660,6 +670,12 @@ export default function SystemDetail({ name }: { name: string }) {
 						})}
 					</div>
 				)}
+					</TabsContent>
+					
+					<TabsContent value="disks" className="mt-4">
+						<DisksTab smartData={systemStats.at(-1)?.stats.sm} />
+					</TabsContent>
+				</Tabs>
 			</div>
 
 			{/* add space for tooltip if more than 12 containers */}
