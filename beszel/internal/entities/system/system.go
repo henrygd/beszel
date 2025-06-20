@@ -75,16 +75,16 @@ const (
 )
 
 type SmartData struct {
-	ModelFamily     string            `json:"smf,omitempty"`
-	ModelName       string            `json:"smn,omitempty"`
-	SerialNumber    string            `json:"ssn,omitempty"`
-	FirmwareVersion string            `json:"sfv,omitempty"`
-	Capacity        uint64            `json:"sc,omitempty"`
-	SmartStatus     string            `json:"ss,omitempty"`
-	DiskName        string            `json:"sdn,omitempty"` // something like /dev/sda
-	DiskType        string            `json:"sdt,omitempty"`
-	Temperature	    int               `json:"st,omitempty"`
-	Attributes      []*SmartAttribute `json:"sa,omitempty"`
+	ModelFamily     string            `json:"mf,omitempty"`
+	ModelName       string            `json:"mn,omitempty"`
+	SerialNumber    string            `json:"sn,omitempty"`
+	FirmwareVersion string            `json:"fv,omitempty"`
+	Capacity        uint64            `json:"c,omitempty"`
+	SmartStatus     string            `json:"s,omitempty"`
+	DiskName        string            `json:"dn,omitempty"` // something like /dev/sda
+	DiskType        string            `json:"dt,omitempty"`
+	Temperature	    int               `json:"t,omitempty"`
+	Attributes      []*SmartAttribute `json:"a,omitempty"`
 }
 
 type SmartAttribute struct {
