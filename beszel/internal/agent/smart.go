@@ -260,7 +260,7 @@ func (sm *SmartManager) parseSmartForNvme(output []byte) bool {
 	smartData.Attributes = make([]*system.SmartAttribute, 0, v.NumField())
 
 	// nvme attributes does not follow the same format as ata attributes,
-	// so we have to manually iterate over the fields abd update SmartAttributes
+	// so we have to manually iterate over the fields and update SmartAttributes
 	for i := 0; i < v.NumField(); i++ {
 		field := t.Field(i)
 		value := v.Field(i)
@@ -272,7 +272,7 @@ func (sm *SmartManager) parseSmartForNvme(output []byte) bool {
 		}
 		smartAttr := &system.SmartAttribute{
 			Name:  key,
-			Value: val.(int),
+			RawValue: val.(int),
 		}
 		smartData.Attributes = append(smartData.Attributes, smartAttr)
 	}

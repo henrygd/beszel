@@ -90,10 +90,10 @@ type SmartData struct {
 type SmartAttribute struct {
 	Id         int    `json:"id,omitempty"`
 	Name       string `json:"n"`
-	Value      int    `json:"v"`
+	Value      int    `json:"v,omitempty"`
 	Worst      int    `json:"w,omitempty"`
 	Threshold  int    `json:"t,omitempty"`
-	RawValue   int    `json:"rv,omitempty"`
+	RawValue   int    `json:"rv"`
 	RawString  string `json:"rs,omitempty"`
 	Flags      string `json:"f,omitempty"`
 	WhenFailed string `json:"wf,omitempty"`
