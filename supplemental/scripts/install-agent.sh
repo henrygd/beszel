@@ -316,18 +316,27 @@ fi
 # Create a dedicated user for the service if it doesn't exist
 if is_alpine; then
   if ! id -u beszel >/dev/null 2>&1; then
+    echo "Creating a dedicated group for the Beszel Agent service..."
+    addgroup beszel
     echo "Creating a dedicated user for the Beszel Agent service..."
-    adduser -S -D -H -s /sbin/nologin beszel
+    adduser -S -D -H -s /sbin/nologin -G beszel beszel
   fi
-  # Add the user to the docker group to allow access to the Docker socket
-  addgroup beszel docker
+  # Add the user to the docker group to allow access to the Docker socket if group docker exists
+  if getent group docker; then
+	  echo "Adding besel to docker group"
+	  usermod -aG docker beszel
+  fi
+
 else
   if ! id -u beszel >/dev/null 2>&1; then
     echo "Creating a dedicated user for the Beszel Agent service..."
     useradd --system --home-dir /nonexistent --shell /bin/false beszel
   fi
-  # Add the user to the docker group to allow access to the Docker socket
-  usermod -aG docker beszel
+# Add the user to the docker group to allow access to the Docker socket if group docker exists
+  if getent group docker; then
+	  echo "Adding besel to docker group"
+	  usermod -aG docker beszel
+  fi
 fi
 
 # Create the directory for the Beszel Agent
