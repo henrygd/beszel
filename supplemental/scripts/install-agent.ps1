@@ -182,7 +182,7 @@ function Install-BeszelAgentWithScoop {
     scoop bucket add beszel https://github.com/henrygd/beszel-scoops | Out-Null
     
     Write-Host "Installing / updating beszel-agent..."
-    scoop install beszel-agent
+    scoop install beszel-agent | Out-Null
     
     if (-not (Test-CommandExists "beszel-agent")) {
         throw "Failed to install beszel-agent"
