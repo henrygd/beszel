@@ -18,11 +18,14 @@ msgstr ""
 "X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 16\n"
 
+#. placeholder {0}: Math.trunc(uptime / 86400)
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
+#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# ngày} other {# ngày}}"
 
+#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# giờ} other {# giờ}}"
@@ -93,6 +96,7 @@ msgstr "Tác nhân"
 msgid "Alerts"
 msgstr "Cảnh báo"
 
+#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/alerts/alert-button.tsx
 msgid "All Systems"
@@ -302,6 +306,7 @@ msgstr "Tài liệu"
 
 #. Context: System is down
 #: src/lib/utils.ts
+#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
@@ -562,7 +567,12 @@ msgid "Pause"
 msgstr "Tạm dừng"
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Paused"
+msgstr ""
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Pending"
 msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
@@ -694,6 +704,7 @@ msgid "Sort By"
 msgstr "Sắp xếp theo"
 
 #: src/lib/utils.ts
+#: src/components/systems-table/systems-table.tsx
 msgid "Status"
 msgstr "Trạng thái"
 
@@ -809,6 +820,7 @@ msgstr "Kích hoạt khi sử dụng bất kỳ đĩa nào vượt quá ngưỡn
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
 msgstr ""
@@ -817,6 +829,7 @@ msgstr ""
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Cập nhật theo thời gian thực. Nhấp vào một hệ thống để xem thông tin."
 
+#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Uptime"
 msgstr "Thời gian hoạt động"

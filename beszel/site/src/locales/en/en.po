@@ -13,11 +13,14 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#. placeholder {0}: Math.trunc(uptime / 86400)
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
+#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# day} other {# days}}"
 
+#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# hour} other {# hours}}"
@@ -88,6 +91,7 @@ msgstr "Agent"
 msgid "Alerts"
 msgstr "Alerts"
 
+#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/alerts/alert-button.tsx
 msgid "All Systems"
@@ -297,6 +301,7 @@ msgstr "Documentation"
 
 #. Context: System is down
 #: src/lib/utils.ts
+#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
@@ -557,8 +562,13 @@ msgid "Pause"
 msgstr "Pause"
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Paused"
 msgstr "Paused"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Pending"
+msgstr "Pending"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -689,6 +699,7 @@ msgid "Sort By"
 msgstr "Sort By"
 
 #: src/lib/utils.ts
+#: src/components/systems-table/systems-table.tsx
 msgid "Status"
 msgstr "Status"
 
@@ -804,6 +815,7 @@ msgstr "Triggers when usage of any disk exceeds a threshold"
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
 msgstr "Up"
@@ -812,6 +824,7 @@ msgstr "Up"
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Updated in real time. Click on a system to view information."
 
+#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Uptime"
 msgstr "Uptime"

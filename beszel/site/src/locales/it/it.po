@@ -18,11 +18,14 @@ msgstr ""
 "X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 16\n"
 
+#. placeholder {0}: Math.trunc(uptime / 86400)
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
+#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# giorno} other {# giorni}}"
 
+#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# ora} other {# ore}}"
@@ -93,6 +96,7 @@ msgstr "Agente"
 msgid "Alerts"
 msgstr "Avvisi"
 
+#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/alerts/alert-button.tsx
 msgid "All Systems"
@@ -302,6 +306,7 @@ msgstr "Documentazione"
 
 #. Context: System is down
 #: src/lib/utils.ts
+#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
@@ -562,8 +567,13 @@ msgid "Pause"
 msgstr "Pausa"
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Paused"
 msgstr "In pausa"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Pending"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -694,6 +704,7 @@ msgid "Sort By"
 msgstr "Ordina per"
 
 #: src/lib/utils.ts
+#: src/components/systems-table/systems-table.tsx
 msgid "Status"
 msgstr "Stato"
 
@@ -809,6 +820,7 @@ msgstr "Attiva quando l'utilizzo di un disco supera una soglia"
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
 msgstr "Attivo"
@@ -817,6 +829,7 @@ msgstr "Attivo"
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Aggiornato in tempo reale. Clicca su un sistema per visualizzare le informazioni."
 
+#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Uptime"
 msgstr "Tempo di attività"
