@@ -269,6 +269,10 @@ msgstr "Disk"
 msgid "Disk I/O"
 msgstr "Disk I/O"
 
+#: src/components/routes/system.tsx
+msgid "Disk read and write throughput"
+msgstr "Disk read and write throughput"
+
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
 #: src/components/charts/disk-chart.tsx
@@ -485,12 +489,20 @@ msgid "Net"
 msgstr "Net"
 
 #: src/components/routes/system.tsx
+msgid "Network Interfaces"
+msgstr "Network Interfaces"
+
+#: src/components/routes/system.tsx
 msgid "Network traffic of docker containers"
 msgstr "Network traffic of docker containers"
 
 #: src/components/routes/system.tsx
 msgid "Network traffic of public interfaces"
 msgstr "Network traffic of public interfaces"
+
+#: src/components/routes/system.tsx
+msgid "Network traffic per interface"
+msgstr "Network traffic per interface"
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -762,8 +774,8 @@ msgid "Throughput of {extraFsName}"
 msgstr "Throughput of {extraFsName}"
 
 #: src/components/routes/system.tsx
-msgid "Throughput of root filesystem"
-msgstr "Throughput of root filesystem"
+#~ msgid "Throughput of root filesystem"
+#~ msgstr "Throughput of root filesystem"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"

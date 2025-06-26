@@ -274,6 +274,10 @@ msgstr "Disk"
 msgid "Disk I/O"
 msgstr "Disk I/O"
 
+#: src/components/routes/system.tsx
+msgid "Disk read and write throughput"
+msgstr ""
+
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
 #: src/components/charts/disk-chart.tsx
@@ -490,12 +494,20 @@ msgid "Net"
 msgstr "Mreža"
 
 #: src/components/routes/system.tsx
+msgid "Network Interfaces"
+msgstr ""
+
+#: src/components/routes/system.tsx
 msgid "Network traffic of docker containers"
 msgstr "Omrežni promet docker kontejnerjev"
 
 #: src/components/routes/system.tsx
 msgid "Network traffic of public interfaces"
 msgstr "Omrežni promet javnih vmesnikov"
+
+#: src/components/routes/system.tsx
+msgid "Network traffic per interface"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -767,8 +779,8 @@ msgid "Throughput of {extraFsName}"
 msgstr "Prepustnost {extraFsName}"
 
 #: src/components/routes/system.tsx
-msgid "Throughput of root filesystem"
-msgstr "Prepustnost korenskega datotečnega sistema"
+#~ msgid "Throughput of root filesystem"
+#~ msgstr "Prepustnost korenskega datotečnega sistema"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"

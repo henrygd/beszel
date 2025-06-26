@@ -163,41 +163,93 @@ func (a *Agent) getSystemStats() system.Stats {
 		a.initializeNetIoStats()
 	}
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
-		secondsElapsed := time.Since(a.netIoStats.Time).Seconds()
-		a.netIoStats.Time = time.Now()
+		now := time.Now()
 		bytesSent := uint64(0)
 		bytesRecv := uint64(0)
-		// sum all bytes sent and received
+		// initialize per-interface network stats
+		systemStats.NetworkInterfaces = make(map[string]system.NetworkInterfaceStats)
+		
+		// process each interface
 		for _, v := range netIO {
 			// skip if not in valid network interfaces list
 			if _, exists := a.netInterfaces[v.Name]; !exists {
 				continue
 			}
+			
+			// get previous stats for this interface
+			prevStats, exists := a.netIoStats[v.Name]
+			if !exists {
+				// initialize if not found
+				prevStats = system.NetIoStats{
+					BytesRecv: v.BytesRecv,
+					BytesSent: v.BytesSent,
+					Time:      now,
+					Name:      v.Name,
+				}
+			}
+			
+			// calculate per-interface stats
+			secondsElapsed := time.Since(prevStats.Time).Seconds()
+			sentPerSecond := float64(v.BytesSent-prevStats.BytesSent) / secondsElapsed
+			recvPerSecond := float64(v.BytesRecv-prevStats.BytesRecv) / secondsElapsed
+			networkSentPs := bytesToMegabytes(sentPerSecond)
+			networkRecvPs := bytesToMegabytes(recvPerSecond)
+			
+			// check for invalid values
+			if networkSentPs < 0 || networkRecvPs < 0 || networkSentPs > 10_000 || networkRecvPs > 10_000 {
+				slog.Warn("Invalid net stats for interface. Resetting.", "interface", v.Name, "sent", networkSentPs, "recv", networkRecvPs)
+				networkSentPs = 0
+				networkRecvPs = 0
+			}
+			
+			// store per-interface stats
+			systemStats.NetworkInterfaces[v.Name] = system.NetworkInterfaceStats{
+				NetworkSent: networkSentPs,
+				NetworkRecv: networkRecvPs,
+			}
+			
+			// update previous stats for this interface
+			a.netIoStats[v.Name] = system.NetIoStats{
+				BytesRecv: v.BytesRecv,
+				BytesSent: v.BytesSent,
+				Time:      now,
+				Name:      v.Name,
+			}
+			
+			// sum for legacy combined stats
 			bytesSent += v.BytesSent
 			bytesRecv += v.BytesRecv
 		}
-		// add to systemStats
-		sentPerSecond := float64(bytesSent-a.netIoStats.BytesSent) / secondsElapsed
-		recvPerSecond := float64(bytesRecv-a.netIoStats.BytesRecv) / secondsElapsed
+		
+		// calculate legacy combined stats
+		prevCombinedSent := uint64(0)
+		prevCombinedRecv := uint64(0)
+		prevCombinedTime := now
+		
+		// calculate previous combined values
+		for _, stats := range a.netIoStats {
+			prevCombinedSent += stats.BytesSent
+			prevCombinedRecv += stats.BytesRecv
+			// use the earliest time for combined calculation
+			if stats.Time.Before(prevCombinedTime) {
+				prevCombinedTime = stats.Time
+			}
+		}
+		
+		secondsElapsed := time.Since(prevCombinedTime).Seconds()
+		sentPerSecond := float64(bytesSent-prevCombinedSent) / secondsElapsed
+		recvPerSecond := float64(bytesRecv-prevCombinedRecv) / secondsElapsed
 		networkSentPs := bytesToMegabytes(sentPerSecond)
 		networkRecvPs := bytesToMegabytes(recvPerSecond)
+		
 		// add check for issue (#150) where sent is a massive number
 		if networkSentPs > 10_000 || networkRecvPs > 10_000 {
-			slog.Warn("Invalid net stats. Resetting.", "sent", networkSentPs, "recv", networkRecvPs)
-			for _, v := range netIO {
-				if _, exists := a.netInterfaces[v.Name]; !exists {
-					continue
-				}
-				slog.Info(v.Name, "recv", v.BytesRecv, "sent", v.BytesSent)
-			}
+			slog.Warn("Invalid combined net stats. Resetting.", "sent", networkSentPs, "recv", networkRecvPs)
 			// reset network I/O stats
 			a.initializeNetIoStats()
 		} else {
 			systemStats.NetworkSent = networkSentPs
 			systemStats.NetworkRecv = networkRecvPs
-			// update netIoStats
-			a.netIoStats.BytesSent = bytesSent
-			a.netIoStats.BytesRecv = bytesRecv
 		}
 	}
 

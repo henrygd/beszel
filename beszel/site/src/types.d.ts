@@ -53,6 +53,17 @@ export interface SystemInfo {
 	os?: Os
 }
 
+export interface NetworkInterfaceStats {
+	/** network sent (mb) */
+	ns: number
+	/** network received (mb) */
+	nr: number
+	/** max network sent (mb) */
+	nsm?: number
+	/** max network received (mb) */
+	nrm?: number
+}
+
 export interface SystemStats {
 	/** cpu percent */
 	cpu: number
@@ -86,14 +97,16 @@ export interface SystemStats {
 	drm?: number
 	/** max disk write (mb) */
 	dwm?: number
-	/** network sent (mb) */
+	/** network sent (mb) - legacy combined */
 	ns: number
-	/** network received (mb) */
+	/** network received (mb) - legacy combined */
 	nr: number
-	/** max network sent (mb) */
+	/** max network sent (mb) - legacy combined */
 	nsm?: number
-	/** max network received (mb) */
+	/** max network received (mb) - legacy combined */
 	nrm?: number
+	/** per-interface network stats */
+	ni?: Record<string, NetworkInterfaceStats>
 	/** temperatures */
 	t?: Record<string, number>
 	/** extra filesystems */

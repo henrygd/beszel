@@ -42,6 +42,7 @@ import { getPagePath } from "@nanostores/router"
 
 const AreaChartDefault = lazy(() => import("../charts/area-chart"))
 const ContainerChart = lazy(() => import("../charts/container-chart"))
+const NetworkInterfaceChart = lazy(() => import("../charts/network-interface-chart"))
 const MemChart = lazy(() => import("../charts/mem-chart"))
 const DiskChart = lazy(() => import("../charts/disk-chart"))
 const SwapChart = lazy(() => import("../charts/swap-chart"))
@@ -516,21 +517,43 @@ export default function SystemDetail({ name }: { name: string }) {
 						empty={dataEmpty}
 						grid={grid}
 						title={t`Disk I/O`}
-						description={t`Throughput of root filesystem`}
+						description={t`Disk read and write throughput`}
 						cornerEl={maxValSelect}
 					>
 						<AreaChartDefault chartData={chartData} chartName="dio" maxToggled={maxValues} />
 					</ChartCard>
 
-					<ChartCard
-						empty={dataEmpty}
-						grid={grid}
-						title={t`Bandwidth`}
-						cornerEl={maxValSelect}
-						description={t`Network traffic of public interfaces`}
-					>
-						<AreaChartDefault chartData={chartData} chartName="bw" maxToggled={maxValues} />
-					</ChartCard>
+					{/* Network interface charts */}
+					{Object.keys(systemStats.at(-1)?.stats.ni ?? {}).length > 0 && (
+						<div
+							className={cn({
+								"col-span-full": !grid,
+							})}
+						>
+							<ChartCard
+								empty={dataEmpty}
+								title={t`Network Interfaces`}
+								description={t`Network traffic per interface`}
+								cornerEl={maxValSelect}
+							>
+								{/* @ts-ignore */}
+								<NetworkInterfaceChart chartData={chartData} maxToggled={maxValues} />
+							</ChartCard>
+						</div>
+					)}
+
+					{/* Legacy combined bandwidth chart - only show if no per-interface data */}
+					{(!systemStats.at(-1)?.stats.ni || Object.keys(systemStats.at(-1)?.stats.ni ?? {}).length === 0) && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Bandwidth`}
+							cornerEl={maxValSelect}
+							description={t`Network traffic of public interfaces`}
+						>
+							<AreaChartDefault chartData={chartData} chartName="bw" maxToggled={maxValues} />
+						</ChartCard>
+					)}
 
 					{containerFilterBar && containerData.length > 0 && (
 						<div

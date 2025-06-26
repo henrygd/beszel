@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"beszel/internal/entities/system"
 	"log/slog"
 	"strings"
 	"time"
@@ -11,6 +12,8 @@ import (
 func (a *Agent) initializeNetIoStats() {
 	// reset valid network interfaces
 	a.netInterfaces = make(map[string]struct{}, 0)
+	// reset network I/O stats per interface
+	a.netIoStats = make(map[string]system.NetIoStats, 0)
 
 	// map of network interface names passed in via NICS env var
 	var nicsMap map[string]struct{}
@@ -22,13 +25,9 @@ func (a *Agent) initializeNetIoStats() {
 		}
 	}
 
-	// reset network I/O stats
-	a.netIoStats.BytesSent = 0
-	a.netIoStats.BytesRecv = 0
-
 	// get intial network I/O stats
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
-		a.netIoStats.Time = time.Now()
+		now := time.Now()
 		for _, v := range netIO {
 			switch {
 			// skip if nics exists and the interface is not in the list
@@ -43,10 +42,15 @@ func (a *Agent) initializeNetIoStats() {
 				}
 			}
 			slog.Info("Detected network interface", "name", v.Name, "sent", v.BytesSent, "recv", v.BytesRecv)
-			a.netIoStats.BytesSent += v.BytesSent
-			a.netIoStats.BytesRecv += v.BytesRecv
 			// store as a valid network interface
 			a.netInterfaces[v.Name] = struct{}{}
+			// initialize per-interface stats
+			a.netIoStats[v.Name] = system.NetIoStats{
+				BytesRecv: v.BytesRecv,
+				BytesSent: v.BytesSent,
+				Time:      now,
+				Name:      v.Name,
+			}
 		}
 	}
 }
