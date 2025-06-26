@@ -531,13 +531,19 @@ const SystemTableRow = memo(
 			return (
 				<TableRow
 					// data-state={row.getIsSelected() && "selected"}
+					aria-label={t`View details for ${system.name}`}
 					className={cn("cursor-pointer transition-opacity", {
 						"opacity-50": system.status === "paused",
 					})}
 					onClick={(e) => {
 						const target = e.target as HTMLElement
+						const systemPath = getPagePath($router, "system", { name: system.name })
 						if (!target.closest("[data-nolink]") && e.currentTarget.contains(target)) {
-							navigate(getPagePath($router, "system", { name: system.name }))
+							if (e.ctrlKey || e.metaKey || e.shiftKey) {
+								window.open(systemPath, "_blank")
+							} else {
+								navigate(systemPath)
+							}
 						}
 					}}
 				>
@@ -567,12 +573,24 @@ const SystemCard = memo(
 			return (
 				<Card
 					key={system.id}
+					aria-label={t`View details for ${system.name}`}
 					className={cn(
 						"cursor-pointer hover:shadow-md transition-all bg-transparent w-full dark:border-border duration-200 relative",
 						{
 							"opacity-50": system.status === "paused",
 						}
 					)}
+					onClick={(e) => {
+						const target = e.target as HTMLElement
+						if (!target.closest("[data-nolink]") && e.currentTarget.contains(target)) {
+							const systemPath = getPagePath($router, "system", { name: system.name })
+							if (e.ctrlKey || e.metaKey || e.shiftKey) {
+								window.open(systemPath, "_blank")
+							} else {
+								navigate(systemPath)
+							}
+						}
+					}}
 				>
 					<CardHeader className="py-1 ps-5 pe-3 bg-muted/30 border-b border-border/60">
 						<div className="flex items-center justify-between gap-2">
@@ -610,12 +628,6 @@ const SystemCard = memo(
 							)
 						})}
 					</CardContent>
-					<Link
-						href={getPagePath($router, "system", { name: row.original.name })}
-						className="inset-0 absolute w-full h-full"
-					>
-						<span className="sr-only">{row.original.name}</span>
-					</Link>
 				</Card>
 			)
 		}, [system, colLength, t])
