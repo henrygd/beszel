@@ -6,6 +6,8 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/comp
 import { useYAxisWidth, cn, formatShortDate, decimalString, chartMargin } from "@/lib/utils"
 import { ChartData } from "@/types"
 import { Separator } from "@/components/ui/separator"
+import { useStore } from "@nanostores/react"
+import { $networkInterfaceFilter } from "@/lib/stores"
 
 const getNestedValue = (path: string, max = false, data: any): number | null => {
 	return `stats.ni.${path}${max ? "m" : ""}`
@@ -22,6 +24,7 @@ export default memo(function NetworkInterfaceChart({
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { i18n } = useLingui()
+	const networkInterfaceFilter = useStore($networkInterfaceFilter)
 
 	const { chartTime } = chartData
 	const showMax = chartTime !== "1h" && maxToggled
@@ -30,8 +33,17 @@ export default memo(function NetworkInterfaceChart({
 	const networkInterfaces = useMemo(() => {
 		if (chartData.systemStats.length === 0) return []
 		const latestStats = chartData.systemStats[chartData.systemStats.length - 1]
-		return Object.keys(latestStats.stats.ni || {})
-	}, [chartData.systemStats])
+		const allInterfaces = Object.keys(latestStats.stats.ni || {})
+		
+		// Filter interfaces based on filter value
+		if (networkInterfaceFilter) {
+			return allInterfaces.filter(iface => 
+				iface.toLowerCase().includes(networkInterfaceFilter.toLowerCase())
+			)
+		}
+		
+		return allInterfaces
+	}, [chartData.systemStats, networkInterfaceFilter])
 
 	const dataKeys = useMemo(() => {
 		// Colors that work well in both light and dark themes (excluding black/white)

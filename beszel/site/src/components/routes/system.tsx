@@ -5,6 +5,7 @@ import {
 	pb,
 	$chartTime,
 	$containerFilter,
+	$networkInterfaceFilter,
 	$userSettings,
 	$direction,
 	$maxValues,
@@ -129,6 +130,7 @@ export default function SystemDetail({ name }: { name: string }) {
 	const netCardRef = useRef<HTMLDivElement>(null)
 	const persistChartTime = useRef(false)
 	const [containerFilterBar, setContainerFilterBar] = useState(null as null | JSX.Element)
+	const [networkInterfaceFilterBar, setNetworkInterfaceFilterBar] = useState(null as null | JSX.Element)
 	const [bottomSpacing, setBottomSpacing] = useState(0)
 	const [chartLoading, setChartLoading] = useState(true)
 	const isLongerChart = chartTime !== "1h"
@@ -143,7 +145,9 @@ export default function SystemDetail({ name }: { name: string }) {
 			setSystemStats([])
 			setContainerData([])
 			setContainerFilterBar(null)
+			setNetworkInterfaceFilterBar(null)
 			$containerFilter.set("")
+			$networkInterfaceFilter.set("")
 		}
 	}, [name])
 
@@ -236,6 +240,19 @@ export default function SystemDetail({ name }: { name: string }) {
 			makeContainerData(containerData)
 		})
 	}, [system, chartTime])
+
+	// Set up network interface filter bar
+	useEffect(() => {
+		if (systemStats.length > 0) {
+			const latestStats = systemStats[systemStats.length - 1]
+			const networkInterfaces = Object.keys(latestStats.stats.ni || {})
+			if (networkInterfaces.length > 0) {
+				!networkInterfaceFilterBar && setNetworkInterfaceFilterBar(<FilterBar store={$networkInterfaceFilter} />)
+			} else if (networkInterfaceFilterBar) {
+				setNetworkInterfaceFilterBar(null)
+			}
+		}
+	}, [systemStats, networkInterfaceFilterBar])
 
 	// make container stats for charts
 	const makeContainerData = useCallback((containers: ContainerStatsRecord[]) => {
@@ -534,7 +551,7 @@ export default function SystemDetail({ name }: { name: string }) {
 								empty={dataEmpty}
 								title={t`Network Interfaces`}
 								description={t`Network traffic per interface`}
-								cornerEl={maxValSelect}
+								cornerEl={networkInterfaceFilterBar}
 							>
 								{/* @ts-ignore */}
 								<NetworkInterfaceChart chartData={chartData} maxToggled={maxValues} />
