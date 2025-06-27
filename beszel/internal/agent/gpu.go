@@ -243,21 +243,26 @@ func (gm *GPUManager) GetCurrentData() map[string]system.GPUData {
 	// copy / reset the data
 	gpuData := make(map[string]system.GPUData, len(gm.GpuDataMap))
 	for id, gpu := range gm.GpuDataMap {
-		// sum the data
-		gpu.Temperature = twoDecimals(gpu.Temperature)
-		gpu.MemoryUsed = twoDecimals(gpu.MemoryUsed)
-		gpu.MemoryTotal = twoDecimals(gpu.MemoryTotal)
-		gpu.Usage = twoDecimals(gpu.Usage / gpu.Count)
-		gpu.Power = twoDecimals(gpu.Power / gpu.Count)
-		// reset the count
-		gpu.Count = 1
-		// dereference to avoid overwriting anything else
-		gpuCopy := *gpu
+		var gpuAvg system.GPUData
+
+		gpuAvg.Temperature = twoDecimals(gpu.Temperature)
+		gpuAvg.MemoryUsed = twoDecimals(gpu.MemoryUsed)
+		gpuAvg.MemoryTotal = twoDecimals(gpu.MemoryTotal)
+
+		// avoid division by zero
+		if gpu.Count > 0 {
+			gpuAvg.Usage = twoDecimals(gpu.Usage / gpu.Count)
+			gpuAvg.Power = twoDecimals(gpu.Power / gpu.Count)
+		}
+
+		// reset accumulators in the original
+		gpu.Usage, gpu.Power, gpu.Count = 0, 0, 0
+
 		// append id to the name if there are multiple GPUs with the same name
 		if nameCounts[gpu.Name] > 1 {
-			gpuCopy.Name = fmt.Sprintf("%s %s", gpu.Name, id)
+			gpuAvg.Name = fmt.Sprintf("%s %s", gpu.Name, id)
 		}
-		gpuData[id] = gpuCopy
+		gpuData[id] = gpuAvg
 	}
 	slog.Debug("GPU", "data", gpuData)
 	return gpuData
