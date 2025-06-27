@@ -9,6 +9,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/shirou/gopsutil/v4/cpu"
 )
 
 type Agent struct {
@@ -25,6 +27,7 @@ type Agent struct {
 	systemInfo    system.Info                // Host system info
 	gpuManager    *GPUManager                // Manages GPU data
 	cache         *SessionCache              // Cache for system stats based on primary session ID
+	prevCpuTimes  []cpu.TimesStat            // Previous CPU times for calculating detailed metrics
 }
 
 func NewAgent() *Agent {

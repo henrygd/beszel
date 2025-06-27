@@ -77,11 +77,56 @@ func (a *Agent) getSystemStats() system.Stats {
 		systemStats.Cpu = twoDecimals(cpuPct[0])
 	}
 
+	// detailed cpu times
+	if cpuTimes, err := cpu.Times(false); err == nil && len(cpuTimes) > 0 {
+		// Get the first CPU (total across all cores)
+		currentCpu := cpuTimes[0]
+		
+		if len(a.prevCpuTimes) > 0 {
+			prevCpu := a.prevCpuTimes[0]
+			
+			// Calculate deltas
+			totalDelta := currentCpu.Total() - prevCpu.Total()
+			if totalDelta > 0 {
+				userDelta := currentCpu.User - prevCpu.User
+				systemDelta := currentCpu.System - prevCpu.System
+				iowaitDelta := currentCpu.Iowait - prevCpu.Iowait
+				stealDelta := currentCpu.Steal - prevCpu.Steal
+				
+				// Calculate percentages
+				systemStats.CpuUser = twoDecimals((userDelta / totalDelta) * 100)
+				systemStats.CpuSystem = twoDecimals((systemDelta / totalDelta) * 100)
+				systemStats.CpuIowait = twoDecimals((iowaitDelta / totalDelta) * 100)
+				systemStats.CpuSteal = twoDecimals((stealDelta / totalDelta) * 100)
+			}
+		} else {
+			// First run, initialize with zeros
+			systemStats.CpuUser = 0
+			systemStats.CpuSystem = 0
+			systemStats.CpuIowait = 0
+			systemStats.CpuSteal = 0
+		}
+		
+		// Store current times for next iteration
+		a.prevCpuTimes = cpuTimes
+	} else {
+		// If we can't get CPU times, set all detailed metrics to 0
+		systemStats.CpuUser = 0
+		systemStats.CpuSystem = 0
+		systemStats.CpuIowait = 0
+		systemStats.CpuSteal = 0
+		if err != nil {
+			slog.Debug("Error getting CPU times", "err", err)
+		}
+	}
+
 	// memory
 	if v, err := mem.VirtualMemory(); err == nil {
 		// swap
 		systemStats.Swap = bytesToGigabytes(v.SwapTotal)
 		systemStats.SwapUsed = bytesToGigabytes(v.SwapTotal - v.SwapFree - v.SwapCached)
+		systemStats.SwapTotal = bytesToGigabytes(v.SwapTotal)
+		systemStats.SwapFree = bytesToGigabytes(v.SwapFree)
 		// cache + buffers value for default mem calculation
 		cacheBuff := v.Total - v.Free - v.Used
 		// htop memory calculation overrides

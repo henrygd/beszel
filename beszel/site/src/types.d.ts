@@ -58,6 +58,14 @@ export interface SystemStats {
 	cpu: number
 	/** peak cpu */
 	cpum?: number
+	/** cpu user percent */
+	cpuu?: number
+	/** cpu system percent */
+	cpus?: number
+	/** cpu iowait percent */
+	cpui?: number
+	/** cpu steal percent */
+	cpusl?: number
 	/** total memory (gb) */
 	m: number
 	/** memory used (gb) */
@@ -72,6 +80,10 @@ export interface SystemStats {
 	s: number
 	/** swap used (gb) */
 	su: number
+	/** swap total (gb) */
+	st?: number
+	/** swap free (gb) */
+	sf?: number
 	/** disk size (gb) */
 	d: number
 	/** disk used (gb) */

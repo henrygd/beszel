@@ -1,7 +1,7 @@
 import { t } from "@lingui/core/macro"
 
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
-import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
+import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
 import {
 	useYAxisWidth,
 	cn,
@@ -23,9 +23,16 @@ const getNestedValue = (path: string, max = false, data: any): number | null => 
 	// a max value which doesn't exist, or the value was zero and omitted from the stats object.
 	// so we check if cpum is present. if so, return 0 to make sure the zero value is displayed.
 	// if not, return null - there is no max data so do not display anything.
-	return `stats.${path}${max ? "m" : ""}`
+	const value = `stats.${path}${max ? "m" : ""}`
 		.split(".")
 		.reduce((acc: any, key: string) => acc?.[key] ?? (data.stats?.cpum ? 0 : null), data)
+	
+	// For CPU metrics, return 0 if the value is undefined or null
+	if (path.startsWith('cpu') && (value === null || value === undefined)) {
+		return 0
+	}
+	
+	return value
 }
 
 export default memo(function AreaChartDefault({
@@ -55,7 +62,12 @@ export default memo(function AreaChartDefault({
 	const dataKeys: DataKeys[] = useMemo(() => {
 		// [label, key, color, opacity]
 		if (chartName === "CPU Usage") {
-			return [[t`CPU Usage`, "cpu", 1, 0.4]]
+			return [
+				[t`User`, "cpuu", 1, 0.4],
+				[t`System`, "cpus", 2, 0.4],
+				[t`I/O Wait`, "cpui", 3, 0.4],
+				[t`Steal`, "cpusl", 4, 0.4],
+			]
 		} else if (chartName === "dio") {
 			return [
 				[t({ message: "Write", comment: "Disk write" }), "dw", 3, 0.3],
@@ -78,6 +90,7 @@ export default memo(function AreaChartDefault({
 	}, [chartName, i18n.locale])
 
 	// console.log('Rendered at', new Date())
+	// console.log('CPU Usage chart data:', chartName === "CPU Usage" ? chartData.systemStats : 'not CPU chart')
 
 	if (chartData.systemStats.length === 0) {
 		return null
@@ -139,10 +152,11 @@ export default memo(function AreaChartDefault({
 								fillOpacity={key[3]}
 								stroke={color}
 								isAnimationActive={false}
+								stackId={chartName === "CPU Usage" ? "a" : undefined}
 							/>
 						)
 					})}
-					{/* <ChartLegend content={<ChartLegendContent />} /> */}
+					{chartName === "CPU Usage" && <ChartLegend content={<ChartLegendContent />} />}
 				</AreaChart>
 			</ChartContainer>
 		</div>

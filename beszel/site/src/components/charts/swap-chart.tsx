@@ -1,7 +1,7 @@
 import { t } from "@lingui/core/macro";
 
-import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
-import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
+import { Area, AreaChart, CartesianGrid, Line, YAxis } from "recharts"
+import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
 import {
 	useYAxisWidth,
 	cn,
@@ -20,6 +20,17 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 		return null
 	}
 
+	const lastStats = chartData.systemStats.at(-1)?.stats
+	const swapTotal = lastStats?.st ?? lastStats?.s ?? 0.04
+
+	// Debug: log the swap data
+	console.log('Swap chart data:', {
+		swapTotal: lastStats?.st,
+		swapFree: lastStats?.sf,
+		swapUsed: lastStats?.su,
+		legacySwap: lastStats?.s
+	})
+
 	return (
 		<div>
 			<ChartContainer
@@ -33,7 +44,7 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 						direction="ltr"
 						orientation={chartData.orientation}
 						className="tracking-tighter"
-						domain={[0, () => toFixedWithoutTrailingZeros(chartData.systemStats.at(-1)?.stats.s ?? 0.04, 2)]}
+						domain={[0, () => toFixedWithoutTrailingZeros(swapTotal, 2)]}
 						width={yAxisWidth}
 						tickLine={false}
 						axisLine={false}
@@ -47,7 +58,6 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 								contentFormatter={(item) => decimalString(item.value) + " GB"}
-								// indicator="line"
 							/>
 						}
 					/>
@@ -59,7 +69,19 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 						fillOpacity={0.4}
 						stroke="hsl(var(--chart-2))"
 						isAnimationActive={false}
+						stackId="swap"
 					/>
+					<Area
+						dataKey="stats.sf"
+						name={t`Free`}
+						type="monotoneX"
+						fill="hsl(var(--chart-1))"
+						fillOpacity={0.3}
+						stroke="hsl(var(--chart-1))"
+						isAnimationActive={false}
+						stackId="swap"
+					/>
+					<ChartLegend content={<ChartLegendContent />} />
 				</AreaChart>
 			</ChartContainer>
 		</div>
