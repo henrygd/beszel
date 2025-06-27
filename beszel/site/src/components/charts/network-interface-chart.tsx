@@ -1,7 +1,7 @@
 import { t } from "@lingui/core/macro"
 import { memo, useMemo } from "react"
 import { useLingui } from "@lingui/react/macro"
-import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
+import { Line, LineChart, CartesianGrid, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
 import { useYAxisWidth, cn, formatShortDate, decimalString, chartMargin } from "@/lib/utils"
 import { ChartData } from "@/types"
@@ -46,22 +46,33 @@ export default memo(function NetworkInterfaceChart({
 	}, [chartData.systemStats, networkInterfaceFilter])
 
 	const dataKeys = useMemo(() => {
-		// Colors that work well in both light and dark themes (excluding black/white)
-		const colors = [1, 2, 3, 4, 5, 6, 7, 8] // Skip problematic colors
+		// Generate colors for each interface - each interface gets a unique hue
+		// and sent/received use different shades of that hue
+		const interfaceColors = networkInterfaces.map((iface, index) => {
+			const hue = ((index * 360) / Math.max(networkInterfaces.length, 1)) % 360
+			return {
+				interface: iface,
+				sentColor: `hsl(${hue}, 70%, 45%)`, // Darker shade for sent
+				receivedColor: `hsl(${hue}, 70%, 65%)`, // Lighter shade for received
+			}
+		})
 		
-		return networkInterfaces.map((iface, index) => [
-			`${iface} Sent`,
-			`${iface}.ns`,
-			colors[index % colors.length], // Use safe colors
-			0.2,
-		]).concat(
-			networkInterfaces.map((iface, index) => [
-				`${iface} Received`,
-				`${iface}.nr`,
-				colors[(index + 4) % colors.length], // Offset for received lines
-				0.2,
-			])
-		)
+		return interfaceColors.flatMap(({ interface: iface, sentColor, receivedColor }) => [
+			{
+				name: `${iface} Sent`,
+				dataKey: `${iface}.ns`,
+				color: sentColor,
+				type: 'sent' as const,
+				interface: iface,
+			},
+			{
+				name: `${iface} Received`,
+				dataKey: `${iface}.nr`,
+				color: receivedColor,
+				type: 'received' as const,
+				interface: iface,
+			}
+		])
 	}, [networkInterfaces, i18n.locale])
 
 	if (chartData.systemStats.length === 0 || networkInterfaces.length === 0) {
@@ -75,7 +86,7 @@ export default memo(function NetworkInterfaceChart({
 					"opacity-100": yAxisWidth,
 				})}
 			>
-				<AreaChart accessibilityLayer data={chartData.systemStats} margin={chartMargin}>
+				<LineChart accessibilityLayer data={chartData.systemStats} margin={chartMargin}>
 					<CartesianGrid vertical={false} />
 					<YAxis
 						direction="ltr"
@@ -96,47 +107,38 @@ export default memo(function NetworkInterfaceChart({
 						content={
 							<ChartTooltipContent
 								labelFormatter={(_: any, data: any) => formatShortDate(data[0].payload.created)}
-								contentFormatter={({ value, name, payload }: any) => {
-									const ifaceName = (name as string)?.replace(" Sent", "").replace(" Received", "")
+								contentFormatter={({ value, name }: any) => {
 									const isReceived = (name as string)?.includes("Received")
-									const sent = payload?.stats?.ni?.[ifaceName]?.ns ?? 0
-									const received = payload?.stats?.ni?.[ifaceName]?.nr ?? 0
-									
-									if (isReceived) {
-										return (
-											<span className="flex">
-												{decimalString(received)} MB/s
-												<span className="opacity-70 ms-0.5"> </span>
+									return (
+										<span className="flex">
+											{decimalString(value)} MB/s
+											<span className="opacity-70 ms-0.5">
+												{isReceived ? " rx" : " tx"}
 											</span>
-										)
-									} else {
-										return (
-											<span className="flex">
-												{decimalString(sent)} MB/s
-												<span className="opacity-70 ms-0.5"> </span>
-											</span>
-										)
-									}
+										</span>
+									)
 								}}
 							/>
 						}
 					/>
 					{dataKeys.map((key, i) => {
-						const color = `hsl(var(--chart-${key[2]}))`
+						const filtered = networkInterfaceFilter && !key.interface.toLowerCase().includes(networkInterfaceFilter.toLowerCase())
 						return (
-							<Area
+							<Line
 								key={i}
-								dataKey={getNestedValue.bind(null, key[1] as string, showMax)}
-								name={key[0] as string}
+								dataKey={getNestedValue.bind(null, key.dataKey, showMax)}
+								name={key.name}
 								type="monotoneX"
-								fill={color}
-								fillOpacity={key[3] as number}
-								stroke={color}
+								stroke={key.color}
+								strokeWidth={1.5}
+								dot={false}
+								activeDot={{ r: 3, strokeWidth: 1 }}
 								isAnimationActive={false}
+								strokeOpacity={filtered ? 0.3 : 1}
 							/>
 						)
 					})}
-				</AreaChart>
+				</LineChart>
 			</ChartContainer>
 		</div>
 	)
