@@ -672,7 +672,7 @@ export default function SystemDetail({ name }: { name: string }) {
 								>
 									<ChartCard
 										empty={dataEmpty}
-										title={dockerOrPodman(t`Docker Network I/O`, system)}
+										title={dockerOrPodman(t`Docker Network Usage`, system)}
 										description={dockerOrPodman(t`Network traffic of docker containers`, system)}
 										cornerEl={containerFilterBar}
 									>
