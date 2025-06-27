@@ -10,6 +10,10 @@ import (
 type Stats struct {
 	Cpu            float64             `json:"cpu"`
 	MaxCpu         float64             `json:"cpum,omitempty"`
+	CpuUser        float64             `json:"cu,omitempty"` // CPU user time
+	CpuSystem      float64             `json:"cs,omitempty"` // CPU system time
+	CpuIowait      float64             `json:"ci,omitempty"` // CPU IOWAIT time
+	CpuSteal       float64             `json:"cst,omitempty"` // CPU steal time
 	Mem            float64             `json:"m"`
 	MemUsed        float64             `json:"mu"`
 	MemPct         float64             `json:"mp"`
@@ -17,6 +21,8 @@ type Stats struct {
 	MemZfsArc      float64             `json:"mz,omitempty"` // ZFS ARC memory
 	Swap           float64             `json:"s,omitempty"`
 	SwapUsed       float64             `json:"su,omitempty"`
+	SwapFree       float64             `json:"sf,omitempty"` // Swap free space
+	SwapCached     float64             `json:"sc,omitempty"` // Swap cached
 	DiskTotal      float64             `json:"d"`
 	DiskUsed       float64             `json:"du"`
 	DiskPct        float64             `json:"dp"`

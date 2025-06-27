@@ -47,6 +47,7 @@ const DiskChart = lazy(() => import("../charts/disk-chart"))
 const SwapChart = lazy(() => import("../charts/swap-chart"))
 const TemperatureChart = lazy(() => import("../charts/temperature-chart"))
 const GpuPowerChart = lazy(() => import("../charts/gpu-power-chart"))
+const CpuDetailChart = lazy(() => import("../charts/cpu-detail-chart"))
 
 const cache = new Map<string, any>()
 
@@ -493,7 +494,7 @@ export default function SystemDetail({ name }: { name: string }) {
 						description={t`Average system-wide CPU utilization`}
 						cornerEl={maxValSelect}
 					>
-						<AreaChartDefault chartData={chartData} chartName="CPU Usage" maxToggled={maxValues} unit="%" />
+						<CpuDetailChart chartData={chartData} />
 					</ChartCard>
 
 					{containerFilterBar && (
@@ -573,7 +574,7 @@ export default function SystemDetail({ name }: { name: string }) {
 					)}
 
 					{/* Swap chart */}
-					{(systemStats.at(-1)?.stats.su ?? 0) > 0 && (
+					{(systemStats.at(-1)?.stats.s ?? 0) > 0 && (
 						<ChartCard
 							empty={dataEmpty}
 							grid={grid}

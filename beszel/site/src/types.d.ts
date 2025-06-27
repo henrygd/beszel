@@ -64,6 +64,14 @@ export interface SystemStats {
 	cpu: number
 	/** peak cpu */
 	cpum?: number
+	/** cpu user time */
+	cu?: number
+	/** cpu system time */
+	cs?: number
+	/** cpu iowait time */
+	ci?: number
+	/** cpu steal time */
+	cst?: number
 	/** total memory (gb) */
 	m: number
 	/** memory used (gb) */
@@ -78,6 +86,10 @@ export interface SystemStats {
 	s: number
 	/** swap used (gb) */
 	su: number
+	/** swap free (gb) */
+	sf?: number
+	/** swap cached (gb) */
+	sc?: number
 	/** disk size (gb) */
 	d: number
 	/** disk used (gb) */

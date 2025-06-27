@@ -74,7 +74,7 @@ func (a *Agent) StartServer(opts ServerOptions) error {
 
 func (a *Agent) handleSession(s ssh.Session) {
 	slog.Debug("New session", "client", s.RemoteAddr())
-	stats := a.gatherStats(s.Context().SessionID())
+	stats := a.GatherStats(s.Context().SessionID())
 	if err := json.NewEncoder(s).Encode(stats); err != nil {
 		slog.Error("Error encoding stats", "err", err, "stats", stats)
 		s.Exit(1)

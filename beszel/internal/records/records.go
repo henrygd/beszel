@@ -166,6 +166,10 @@ func (rm *RecordManager) AverageSystemStats(records RecordStats) *system.Stats {
 			continue
 		}
 		sum.Cpu += stats.Cpu
+		sum.CpuUser += stats.CpuUser
+		sum.CpuSystem += stats.CpuSystem
+		sum.CpuIowait += stats.CpuIowait
+		sum.CpuSteal += stats.CpuSteal
 		sum.Mem += stats.Mem
 		sum.MemUsed += stats.MemUsed
 		sum.MemPct += stats.MemPct
@@ -173,6 +177,8 @@ func (rm *RecordManager) AverageSystemStats(records RecordStats) *system.Stats {
 		sum.MemZfsArc += stats.MemZfsArc
 		sum.Swap += stats.Swap
 		sum.SwapUsed += stats.SwapUsed
+		sum.SwapFree += stats.SwapFree
+		sum.SwapCached += stats.SwapCached
 		sum.DiskTotal += stats.DiskTotal
 		sum.DiskUsed += stats.DiskUsed
 		sum.DiskPct += stats.DiskPct
@@ -241,6 +247,10 @@ func (rm *RecordManager) AverageSystemStats(records RecordStats) *system.Stats {
 	// Compute averages in place
 	if count > 0 {
 		sum.Cpu = twoDecimals(sum.Cpu / count)
+		sum.CpuUser = twoDecimals(sum.CpuUser / count)
+		sum.CpuSystem = twoDecimals(sum.CpuSystem / count)
+		sum.CpuIowait = twoDecimals(sum.CpuIowait / count)
+		sum.CpuSteal = twoDecimals(sum.CpuSteal / count)
 		sum.Mem = twoDecimals(sum.Mem / count)
 		sum.MemUsed = twoDecimals(sum.MemUsed / count)
 		sum.MemPct = twoDecimals(sum.MemPct / count)
@@ -248,6 +258,8 @@ func (rm *RecordManager) AverageSystemStats(records RecordStats) *system.Stats {
 		sum.MemZfsArc = twoDecimals(sum.MemZfsArc / count)
 		sum.Swap = twoDecimals(sum.Swap / count)
 		sum.SwapUsed = twoDecimals(sum.SwapUsed / count)
+		sum.SwapFree = twoDecimals(sum.SwapFree / count)
+		sum.SwapCached = twoDecimals(sum.SwapCached / count)
 		sum.DiskTotal = twoDecimals(sum.DiskTotal / count)
 		sum.DiskUsed = twoDecimals(sum.DiskUsed / count)
 		sum.DiskPct = twoDecimals(sum.DiskPct / count)

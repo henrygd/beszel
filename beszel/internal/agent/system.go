@@ -89,11 +89,25 @@ func (a *Agent) getSystemStats() system.Stats {
 		systemStats.Cpu = twoDecimals(cpuPct[0])
 	}
 
+	// detailed cpu times
+	if cpuTimes, err := cpu.Times(false); err == nil && len(cpuTimes) > 0 {
+		times := cpuTimes[0]
+		total := times.Total()
+		if total > 0 {
+			systemStats.CpuUser = twoDecimals(times.User / total * 100)
+			systemStats.CpuSystem = twoDecimals(times.System / total * 100)
+			systemStats.CpuIowait = twoDecimals(times.Iowait / total * 100)
+			systemStats.CpuSteal = twoDecimals(times.Steal / total * 100)
+		}
+	}
+
 	// memory
 	if v, err := mem.VirtualMemory(); err == nil {
 		// swap
 		systemStats.Swap = bytesToGigabytes(v.SwapTotal)
 		systemStats.SwapUsed = bytesToGigabytes(v.SwapTotal - v.SwapFree - v.SwapCached)
+		systemStats.SwapFree = bytesToGigabytes(v.SwapFree)
+		systemStats.SwapCached = bytesToGigabytes(v.SwapCached)
 		// cache + buffers value for default mem calculation
 		cacheBuff := v.Total - v.Free - v.Used
 		// htop memory calculation overrides

@@ -13,12 +13,27 @@ import {
 import { ChartData } from "@/types"
 import { memo } from "react"
 
-export default memo(function SwapChart({ chartData }: { chartData: ChartData }) {
+function roundUpToNext5(val: number) {
+	return Math.ceil(val / 5) * 5;
+}
+
+export default memo(function CpuDetailChart({ chartData }: { chartData: ChartData }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
-	if (chartData.systemStats.length === 0) {
+	if (!Array.isArray(chartData.systemStats) || chartData.systemStats.length === 0) {
 		return null
 	}
+
+	const maxCpu = chartData.systemStats.reduce((max, s) => {
+		if (!s.stats || typeof s.stats !== 'object') return max;
+		const cu = Number(s.stats.cu) || 0;
+		const cs = Number(s.stats.cs) || 0;
+		const ci = Number(s.stats.ci) || 0;
+		const cst = Number(s.stats.cst) || 0;
+		const sum = cu + cs + ci + cst;
+		return Math.max(max, sum);
+	}, 0);
+	const yMax = Math.max(5, roundUpToNext5(maxCpu));
 
 	return (
 		<div>
@@ -33,11 +48,12 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 						direction="ltr"
 						orientation={chartData.orientation}
 						className="tracking-tighter"
-						domain={[0, () => toFixedWithoutTrailingZeros(chartData.systemStats.at(-1)?.stats.s ?? 0.04, 2)]}
+						domain={[0, yMax]}
+						tickCount={6}
 						width={yAxisWidth}
 						tickLine={false}
 						axisLine={false}
-						tickFormatter={(value) => updateYAxisWidth(value + " GB")}
+						tickFormatter={(value) => updateYAxisWidth(value + "%")}
 					/>
 					{xAxis(chartData)}
 					<ChartTooltip
@@ -46,15 +62,15 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 						content={
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
-								contentFormatter={(item) => decimalString(item.value) + " GB"}
+								contentFormatter={(item) => decimalString(item.value) + "%"}
 								// indicator="line"
 							/>
 						}
 					/>
 					<Area
-						dataKey="stats.su"
-						name={t`Used`}
-						order={3}
+						dataKey="stats.cu"
+						name={t`User`}
+						order={4}
 						type="monotoneX"
 						fill="hsla(0 60% 45% / 0.8)"
 						fillOpacity={0.4}
@@ -63,24 +79,35 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 						isAnimationActive={false}
 					/>
 					<Area
-						dataKey="stats.sc"
-						name={t`Cached`}
-						order={2}
+						dataKey="stats.cs"
+						name={t`System`}
+						order={3}
 						type="monotoneX"
-						fill="hsla(160 60% 45% / 0.8)"
-						fillOpacity={0.5}
-						stroke="hsla(160 60% 45% / 0.8)"
+						fill="hsla(200 60% 45% / 0.8)"
+						fillOpacity={0.4}
+						stroke="hsla(200 60% 45% / 0.8)"
 						stackId="1"
 						isAnimationActive={false}
 					/>
 					<Area
-						dataKey="stats.sf"
-						name={t`Free`}
+						dataKey="stats.ci"
+						name={t`IOWait`}
+						order={2}
+						type="monotoneX"
+						fill="hsla(60 60% 45% / 0.8)"
+						fillOpacity={0.4}
+						stroke="hsla(60 60% 45% / 0.8)"
+						stackId="1"
+						isAnimationActive={false}
+					/>
+					<Area
+						dataKey="stats.cst"
+						name={t`Steal`}
 						order={1}
 						type="monotoneX"
-						fill="hsla(175 60% 45% / 0.5)"
+						fill="hsla(300 60% 45% / 0.8)"
 						fillOpacity={0.4}
-						stroke="hsla(175 60% 45% / 0.5)"
+						stroke="hsla(300 60% 45% / 0.8)"
 						stackId="1"
 						isAnimationActive={false}
 					/>
@@ -88,4 +115,4 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 			</ChartContainer>
 		</div>
 	)
-})
+}) 

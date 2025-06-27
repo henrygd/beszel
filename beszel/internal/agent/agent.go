@@ -64,7 +64,7 @@ func NewAgent() *Agent {
 
 	// if debugging, print stats
 	if agent.debug {
-		slog.Debug("Stats", "data", agent.gatherStats(""))
+		slog.Debug("Stats", "data", agent.GatherStats(""))
 	}
 
 	return agent
@@ -79,7 +79,8 @@ func GetEnv(key string) (value string, exists bool) {
 	return os.LookupEnv(key)
 }
 
-func (a *Agent) gatherStats(sessionID string) *system.CombinedData {
+// GatherStats returns the combined system stats for a given sessionID.
+func (a *Agent) GatherStats(sessionID string) *system.CombinedData {
 	a.Lock()
 	defer a.Unlock()
 
