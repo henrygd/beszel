@@ -274,10 +274,6 @@ msgstr "Đĩa"
 msgid "Disk I/O"
 msgstr "Đĩa I/O"
 
-#: src/components/routes/system.tsx
-msgid "Disk read and write throughput"
-msgstr ""
-
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
 #: src/components/charts/disk-chart.tsx
@@ -494,20 +490,12 @@ msgid "Net"
 msgstr "Mạng"
 
 #: src/components/routes/system.tsx
-msgid "Network Interfaces"
-msgstr ""
-
-#: src/components/routes/system.tsx
 msgid "Network traffic of docker containers"
 msgstr "Lưu lượng mạng của các container Docker"
 
 #: src/components/routes/system.tsx
 msgid "Network traffic of public interfaces"
 msgstr "Lưu lượng mạng của các giao diện công cộng"
-
-#: src/components/routes/system.tsx
-msgid "Network traffic per interface"
-msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -779,8 +767,8 @@ msgid "Throughput of {extraFsName}"
 msgstr "Thông lượng của {extraFsName}"
 
 #: src/components/routes/system.tsx
-#~ msgid "Throughput of root filesystem"
-#~ msgstr "Thông lượng của hệ thống tệp gốc"
+msgid "Throughput of root filesystem"
+msgstr "Thông lượng của hệ thống tệp gốc"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"

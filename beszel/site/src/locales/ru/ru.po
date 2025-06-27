@@ -274,10 +274,6 @@ msgstr "Диск"
 msgid "Disk I/O"
 msgstr "Дисковый ввод/вывод"
 
-#: src/components/routes/system.tsx
-msgid "Disk read and write throughput"
-msgstr ""
-
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
 #: src/components/charts/disk-chart.tsx
@@ -494,20 +490,12 @@ msgid "Net"
 msgstr "Сеть"
 
 #: src/components/routes/system.tsx
-msgid "Network Interfaces"
-msgstr ""
-
-#: src/components/routes/system.tsx
 msgid "Network traffic of docker containers"
 msgstr "Сетевой трафик контейнеров Docker"
 
 #: src/components/routes/system.tsx
 msgid "Network traffic of public interfaces"
 msgstr "Сетевой трафик публичных интерфейсов"
-
-#: src/components/routes/system.tsx
-msgid "Network traffic per interface"
-msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -779,8 +767,8 @@ msgid "Throughput of {extraFsName}"
 msgstr "Пропускная способность {extraFsName}"
 
 #: src/components/routes/system.tsx
-#~ msgid "Throughput of root filesystem"
-#~ msgstr "Пропускная способность корневой файловой системы"
+msgid "Throughput of root filesystem"
+msgstr "Пропускная способность корневой файловой системы"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
