@@ -51,6 +51,12 @@ export interface SystemInfo {
 	dt?: number
 	/** operating system */
 	os?: Os
+	/** OS name (e.g., "Ubuntu", "CentOS", "Windows 11") */
+	on?: string
+	/** OS version (e.g., "22.04", "10.0.19045") */
+	ov?: string
+	/** OS architecture (e.g., "x86_64", "arm64") */
+	oa?: string
 }
 
 export interface SystemStats {

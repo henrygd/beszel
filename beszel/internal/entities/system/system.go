@@ -89,6 +89,9 @@ type Info struct {
 	GpuPct        float64 `json:"g,omitempty"`
 	DashboardTemp float64 `json:"dt,omitempty"`
 	Os            Os      `json:"os"`
+	OsName        string  `json:"on,omitempty"`    // OS name (e.g., "Ubuntu", "CentOS", "Windows 11")
+	OsVersion     string  `json:"ov,omitempty"`    // OS version (e.g., "22.04", "10.0.19045")
+	OsArch        string  `json:"oa,omitempty"`    // OS architecture (e.g., "x86_64", "arm64")
 }
 
 // Final data structure to return to the hub

@@ -16,7 +16,7 @@ import React, { lazy, memo, useCallback, useEffect, useMemo, useRef, useState } 
 import { Card, CardHeader, CardTitle, CardDescription } from "../ui/card"
 import { useStore } from "@nanostores/react"
 import Spinner from "../spinner"
-import { ClockArrowUp, CpuIcon, GlobeIcon, LayoutGridIcon, MonitorIcon, XIcon } from "lucide-react"
+import { ClockArrowUp, CpuIcon, GlobeIcon, LayoutGridIcon, MonitorIcon, XIcon, ServerIcon } from "lucide-react"
 import ChartTimeSelect from "../charts/chart-time-select"
 import {
 	chartTimeData,
@@ -265,20 +265,20 @@ export default function SystemDetail({ name }: { name: string }) {
 		const osInfo = {
 			[Os.Linux]: {
 				Icon: TuxIcon,
-				value: system.info.k,
-				label: t({ comment: "Linux kernel", message: "Kernel" }),
+				value: system.info.on && system.info.ov ? `${system.info.on} ${system.info.ov}` : system.info.k,
+				label: system.info.on ? t`Distribution` : t({ comment: "Linux kernel", message: "Kernel" }),
 			},
 			[Os.Darwin]: {
 				Icon: AppleIcon,
-				value: `macOS ${system.info.k}`,
+				value: system.info.on && system.info.ov ? `${system.info.on} ${system.info.ov}` : `macOS ${system.info.k}`,
 			},
 			[Os.Windows]: {
 				Icon: WindowsIcon,
-				value: system.info.k,
+				value: system.info.on && system.info.ov ? `${system.info.on} ${system.info.ov}` : system.info.k,
 			},
 			[Os.FreeBSD]: {
 				Icon: FreeBsdIcon,
-				value: system.info.k,
+				value: system.info.on && system.info.ov ? `${system.info.on} ${system.info.ov}` : system.info.k,
 			},
 		}
 
@@ -289,7 +289,8 @@ export default function SystemDetail({ name }: { name: string }) {
 		} else {
 			uptime = <Plural value={Math.trunc(system.info?.u / 86400)} one="# day" other="# days" />
 		}
-		return [
+		
+		const infoItems = [
 			{ value: getHostDisplayValue(system), Icon: GlobeIcon },
 			{
 				value: system.info.h,
@@ -299,18 +300,38 @@ export default function SystemDetail({ name }: { name: string }) {
 				hide: system.info.h === system.host || system.info.h === system.name,
 			},
 			{ value: uptime, Icon: ClockArrowUp, label: t`Uptime`, hide: !system.info.u },
-			osInfo[system.info.os ?? Os.Linux],
 			{
 				value: `${system.info.m} (${system.info.c}c${system.info.t ? `/${system.info.t}t` : ""})`,
 				Icon: CpuIcon,
 				hide: !system.info.m,
 			},
+			osInfo[system.info.os ?? Os.Linux],
 		] as {
 			value: string | number | undefined
 			label?: string
 			Icon: any
 			hide?: boolean
 		}[]
+		
+		// Add OS architecture if available
+		if (system.info.oa) {
+			infoItems.push({
+				value: system.info.oa,
+				Icon: ServerIcon,
+				label: t`Architecture`,
+			})
+		}
+		
+		// Add kernel version as separate item if we have OS name/version
+		if (system.info.on && system.info.k && system.info.k !== system.info.on) {
+			infoItems.push({
+				value: system.info.k,
+				Icon: TuxIcon,
+				label: t({ comment: "Linux kernel", message: "Kernel" }),
+			})
+		}
+		
+		return infoItems
 	}, [system.info])
 
 	/** Space for tooltip if more than 12 containers */

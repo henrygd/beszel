@@ -22,7 +22,7 @@ type Agent struct {
 	netIoStats    system.NetIoStats          // Keeps track of bandwidth usage
 	dockerManager *dockerManager             // Manages Docker API requests
 	sensorConfig  *SensorConfig              // Sensors config
-	systemInfo    system.Info                // Host system info
+	SystemInfo    system.Info                // Host system info
 	gpuManager    *GPUManager                // Manages GPU data
 	cache         *SessionCache              // Cache for system stats based on primary session ID
 }
@@ -91,7 +91,7 @@ func (a *Agent) gatherStats(sessionID string) *system.CombinedData {
 
 	*cachedData = system.CombinedData{
 		Stats: a.getSystemStats(),
-		Info:  a.systemInfo,
+		Info:  a.SystemInfo,
 	}
 	slog.Debug("System stats", "data", cachedData)
 

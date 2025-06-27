@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/alert-dialog"
 
 import { SystemRecord } from "@/types"
+import { Os } from "@/lib/enums"
 import {
 	MoreHorizontalIcon,
 	ArrowUpDownIcon,
@@ -61,6 +62,7 @@ import {
 	Settings2Icon,
 	EyeIcon,
 	PenBoxIcon,
+	AppleIcon,
 } from "lucide-react"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
 import { $systems, pb } from "@/lib/stores"
@@ -68,7 +70,7 @@ import { useStore } from "@nanostores/react"
 import { cn, copyToClipboard, decimalString, isReadOnlyUser, useLocalStorage } from "@/lib/utils"
 import AlertsButton from "../alerts/alert-button"
 import { $router, Link, navigate } from "../router"
-import { EthernetIcon, GpuIcon, ThermometerIcon } from "../ui/icons"
+import { EthernetIcon, GpuIcon, ThermometerIcon, TuxIcon, WindowsIcon, FreeBsdIcon } from "../ui/icons"
 import { useLingui, Trans } from "@lingui/react/macro"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Input } from "../ui/input"
@@ -260,6 +262,57 @@ export default function SystemsTable() {
 							})}
 						>
 							{decimalString(val)} °C
+						</span>
+					)
+				},
+			},
+			{
+				accessorFn: (originalRow) => {
+					const info = originalRow.info
+					if (info.on && info.ov) {
+						return `${info.on} ${info.ov}`
+					}
+					return info.k || ""
+				},
+				id: "os",
+				name: () => t`OS`,
+				size: 120,
+				hideSort: true,
+				Icon: TuxIcon,
+				header: sortableHeader,
+				cell(info) {
+					const system = info.row.original
+					const osText = info.getValue() as string
+					if (!osText) {
+						return null
+					}
+					
+					// Get OS icon based on OS type
+					const getOsIcon = () => {
+						switch (system.info.os) {
+							case Os.Darwin:
+								return AppleIcon
+							case Os.Windows:
+								return WindowsIcon
+							case Os.FreeBSD:
+								return FreeBsdIcon
+							default:
+								return TuxIcon
+						}
+					}
+					
+					const OsIcon = getOsIcon()
+					
+					return (
+						<span
+							className={cn("flex gap-1.5 items-center tabular-nums", {
+								"ps-1": viewMode === "table",
+							})}
+						>
+							<OsIcon className="h-3.5 w-3.5" />
+							<span className="truncate" title={osText}>
+								{osText}
+							</span>
 						</span>
 					)
 				},
