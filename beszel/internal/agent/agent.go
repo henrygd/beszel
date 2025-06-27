@@ -22,7 +22,7 @@ type Agent struct {
 	netIoStats    system.NetIoStats          // Keeps track of bandwidth usage
 	dockerManager *dockerManager             // Manages Docker API requests
 	sensorConfig  *SensorConfig              // Sensors config
-	systemInfo    system.Info                // Host system info
+	systemInfo    system.Info                // Host system info OS, CPU Architecture, etc.
 	gpuManager    *GPUManager                // Manages GPU data
 	cache         *SessionCache              // Cache for system stats based on primary session ID
 }
