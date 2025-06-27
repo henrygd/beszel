@@ -57,6 +57,8 @@ export interface systemInfo {
 	ov?: string
 	/** OS architecture (e.g., "x86_64", "arm64") */
 	oa?: string
+	/** OS pretty name from /etc/os-release (e.g., "Debian GNU/Linux 12 (bookworm)") */
+	oc?: string
 }
 
 export interface SystemStats {

@@ -20,7 +20,7 @@ import (
 )
 
 // Sets initial / non-changing values about the host system
-func (a *Agent) initializesystemInfo() {
+func (a *Agent) initializeSystemInfo() {
 	a.systemInfo.AgentVersion = beszel.Version
 	a.systemInfo.Hostname, _ = os.Hostname()
 
@@ -45,6 +45,10 @@ func (a *Agent) initializesystemInfo() {
 		a.systemInfo.Os = system.Linux
 		a.systemInfo.OsName = family
 		a.systemInfo.OsVersion = version
+		// Read PRETTY_NAME from /etc/os-release for Linux systems
+		if prettyName := readPrettyName(); prettyName != "" {
+			a.systemInfo.OsPrettyName = prettyName
+		}
 	}
 
 	// Set OS architecture
@@ -75,6 +79,27 @@ func (a *Agent) initializesystemInfo() {
 	} else {
 		slog.Debug("Not monitoring ZFS ARC", "err", err)
 	}
+}
+
+// readPrettyName reads the PRETTY_NAME from /etc/os-release
+func readPrettyName() string {
+	file, err := os.Open("/etc/os-release")
+	if err != nil {
+		return ""
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, "PRETTY_NAME=") {
+			// Remove the prefix and any surrounding quotes
+			prettyName := strings.TrimPrefix(line, "PRETTY_NAME=")
+			prettyName = strings.Trim(prettyName, `"`)
+			return prettyName
+		}
+	}
+	return ""
 }
 
 // Returns current info, stats about the host system

@@ -50,7 +50,7 @@ func NewAgent() *Agent {
 	slog.Debug(beszel.Version)
 
 	// initialize system info / docker manager
-	agent.initializesystemInfo()
+	agent.initializeSystemInfo()
 	agent.initializeDiskInfo()
 	agent.initializeNetIoStats()
 	agent.dockerManager = newDockerManager(agent)

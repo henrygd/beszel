@@ -92,6 +92,7 @@ type Info struct {
 	OsName        string  `json:"on,omitempty"`    // OS name (e.g., "Ubuntu", "CentOS", "Windows 11")
 	OsVersion     string  `json:"ov,omitempty"`    // OS version (e.g., "22.04", "10.0.19045")
 	OsArch        string  `json:"oa,omitempty"`    // OS architecture (e.g., "x86_64", "arm64")
+	OsPrettyName  string  `json:"oc,omitempty"`    // OS pretty name from /etc/os-release (e.g., "Debian GNU/Linux 12 (bookworm)")
 }
 
 // Final data structure to return to the hub

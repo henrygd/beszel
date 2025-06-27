@@ -265,7 +265,8 @@ export default function SystemDetail({ name }: { name: string }) {
 		const osInfo = {
 			[Os.Linux]: {
 				Icon: TuxIcon,
-				value: system.info.on && system.info.ov ? `${system.info.on} ${system.info.ov}` : system.info.k,
+				value: system.info.oc ? system.info.oc : 
+					(system.info.on && system.info.ov ? `${system.info.on} ${system.info.ov}` : system.info.k),
 				label: system.info.on ? t`Distribution` : t({ comment: "Linux kernel", message: "Kernel" }),
 			},
 			[Os.Darwin]: {
