@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -19,24 +20,35 @@ import (
 )
 
 // Sets initial / non-changing values about the host system
-func (a *Agent) initializeSystemInfo() {
+func (a *Agent) initializesystemInfo() {
 	a.systemInfo.AgentVersion = beszel.Version
 	a.systemInfo.Hostname, _ = os.Hostname()
 
-	platform, _, version, _ := host.PlatformInformation()
+	platform, family, version, _ := host.PlatformInformation()
 
 	if platform == "darwin" {
 		a.systemInfo.KernelVersion = version
 		a.systemInfo.Os = system.Darwin
+		a.systemInfo.OsName = "macOS"
+		a.systemInfo.OsVersion = version
 	} else if strings.Contains(platform, "indows") {
 		a.systemInfo.KernelVersion = strings.Replace(platform, "Microsoft ", "", 1) + " " + version
 		a.systemInfo.Os = system.Windows
+		a.systemInfo.OsName = family
+		a.systemInfo.OsVersion = version
 	} else if platform == "freebsd" {
 		a.systemInfo.Os = system.Freebsd
 		a.systemInfo.KernelVersion = version
+		a.systemInfo.OsName = family
+		a.systemInfo.OsVersion = version
 	} else {
 		a.systemInfo.Os = system.Linux
+		a.systemInfo.OsName = family
+		a.systemInfo.OsVersion = version
 	}
+
+	// Set OS architecture
+	a.systemInfo.OsArch = runtime.GOARCH
 
 	if a.systemInfo.KernelVersion == "" {
 		a.systemInfo.KernelVersion, _ = host.KernelVersion()

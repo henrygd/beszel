@@ -294,7 +294,7 @@ func newDockerManager(a *Agent) *dockerManager {
 
 	// If using podman, return client
 	if strings.Contains(dockerHost, "podman") {
-		a.SystemInfo.Podman = true
+		a.systemInfo.Podman = true
 		manager.goodDockerVersion = true
 		return manager
 	}

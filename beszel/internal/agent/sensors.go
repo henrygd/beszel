@@ -80,7 +80,7 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) {
 	}
 
 	// reset high temp
-	a.SystemInfo.DashboardTemp = 0
+	a.systemInfo.DashboardTemp = 0
 
 	temps, err := a.getTempsWithPanicRecovery(sensors.TemperaturesWithContext)
 	if err != nil {
@@ -123,9 +123,9 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) {
 		// set dashboard temperature
 		switch a.sensorConfig.primarySensor {
 		case "":
-			a.SystemInfo.DashboardTemp = max(a.SystemInfo.DashboardTemp, sensor.Temperature)
+			a.systemInfo.DashboardTemp = max(a.systemInfo.DashboardTemp, sensor.Temperature)
 		case sensorName:
-			a.SystemInfo.DashboardTemp = sensor.Temperature
+			a.systemInfo.DashboardTemp = sensor.Temperature
 		}
 		systemStats.Temperatures[sensorName] = twoDecimals(sensor.Temperature)
 	}

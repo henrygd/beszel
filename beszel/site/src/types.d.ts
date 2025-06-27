@@ -14,11 +14,11 @@ export interface SystemRecord extends RecordModel {
 	host: string
 	status: "up" | "down" | "paused" | "pending"
 	port: string
-	info: SystemInfo
+	info: systemInfo
 	v: string
 }
 
-export interface SystemInfo {
+export interface systemInfo {
 	/** hostname */
 	h: string
 	/** kernel **/
