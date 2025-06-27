@@ -13,7 +13,7 @@ import {
 } from "@/lib/utils"
 // import Spinner from '../spinner'
 import { useStore } from "@nanostores/react"
-import { $containerFilter } from "@/lib/stores"
+import { $containerFilter, $containerColors } from "@/lib/stores"
 import { ChartData } from "@/types"
 import { Separator } from "../ui/separator"
 import { ChartType } from "@/lib/enums"
@@ -30,6 +30,7 @@ export default memo(function ContainerChart({
 	unit?: string
 }) {
 	const filter = useStore($containerFilter)
+	const containerColors = useStore($containerColors)
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
 	const { containerData } = chartData
@@ -44,36 +45,29 @@ export default memo(function ContainerChart({
 				color: string
 			}
 		>
-		const totalUsage = {} as Record<string, number>
+		
+		// Get all container names from the data
+		const containerNames = new Set<string>()
 		for (let stats of containerData) {
 			for (let key in stats) {
 				if (!key || key === "created") {
 					continue
 				}
-				if (!(key in totalUsage)) {
-					totalUsage[key] = 0
-				}
-				if (isNetChart) {
-					totalUsage[key] += (stats[key]?.nr ?? 0) + (stats[key]?.ns ?? 0)
-				} else {
-					// @ts-ignore
-					totalUsage[key] += stats[key]?.[dataKey] ?? 0
-				}
+				containerNames.add(key)
 			}
 		}
-		let keys = Object.keys(totalUsage)
-		keys.sort((a, b) => (totalUsage[a] > totalUsage[b] ? -1 : 1))
-		const length = keys.length
-		for (let i = 0; i < length; i++) {
-			const key = keys[i]
-			const hue = ((i * 360) / length) % 360
-			config[key] = {
-				label: key,
-				color: `hsl(${hue}, 60%, 55%)`,
+		
+		// Use consistent colors from the store, fallback to generated colors if not available
+		for (let containerName of containerNames) {
+			const color = containerColors[containerName] || `hsl(${Math.random() * 360}, 60%, 55%)`
+			config[containerName] = {
+				label: containerName,
+				color: color,
 			}
 		}
+		
 		return config satisfies ChartConfig
-	}, [chartData])
+	}, [chartData, containerColors])
 
 	const { toolTipFormatter, dataFunction, tickFormatter } = useMemo(() => {
 		const obj = {} as {

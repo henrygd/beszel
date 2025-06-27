@@ -5,6 +5,7 @@ import {
 	pb,
 	$chartTime,
 	$containerFilter,
+	$containerColors,
 	$userSettings,
 	$direction,
 	$maxValues,
@@ -27,6 +28,7 @@ import {
 	listen,
 	toFixedFloat,
 	useLocalStorage,
+	generateContainerColors,
 } from "@/lib/utils"
 import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
@@ -143,6 +145,7 @@ export default function SystemDetail({ name }: { name: string }) {
 			setContainerData([])
 			setContainerFilterBar(null)
 			$containerFilter.set("")
+			$containerColors.set({})
 		}
 	}, [name])
 
@@ -239,6 +242,21 @@ export default function SystemDetail({ name }: { name: string }) {
 	// make container stats for charts
 	const makeContainerData = useCallback((containers: ContainerStatsRecord[]) => {
 		const containerData = [] as ChartData["containerData"]
+		
+		// Extract all unique container names to generate consistent colors
+		const containerNames = new Set<string>()
+		for (let { stats } of containers) {
+			for (let container of stats) {
+				containerNames.add(container.n)
+			}
+		}
+		
+		// Generate consistent colors for all containers
+		if (containerNames.size > 0) {
+			const colorMap = generateContainerColors(Array.from(containerNames))
+			$containerColors.set(colorMap)
+		}
+		
 		for (let { created, stats } of containers) {
 			if (!created) {
 				// @ts-ignore add null value for gaps
@@ -475,18 +493,6 @@ export default function SystemDetail({ name }: { name: string }) {
 						<AreaChartDefault chartData={chartData} chartName="CPU Usage" maxToggled={maxValues} unit="%" />
 					</ChartCard>
 
-					{containerFilterBar && (
-						<ChartCard
-							empty={dataEmpty}
-							grid={grid}
-							title={dockerOrPodman(t`Docker CPU Usage`, system)}
-							description={t`Average CPU utilization of containers`}
-							cornerEl={containerFilterBar}
-						>
-							<ContainerChart chartData={chartData} dataKey="c" chartType={ChartType.CPU} />
-						</ChartCard>
-					)}
-
 					<ChartCard
 						empty={dataEmpty}
 						grid={grid}
@@ -495,18 +501,6 @@ export default function SystemDetail({ name }: { name: string }) {
 					>
 						<MemChart chartData={chartData} />
 					</ChartCard>
-
-					{containerFilterBar && (
-						<ChartCard
-							empty={dataEmpty}
-							grid={grid}
-							title={dockerOrPodman(t`Docker Memory Usage`, system)}
-							description={dockerOrPodman(t`Memory usage of docker containers`, system)}
-							cornerEl={containerFilterBar}
-						>
-							<ContainerChart chartData={chartData} dataKey="m" chartType={ChartType.Memory} />
-						</ChartCard>
-					)}
 
 					<ChartCard empty={dataEmpty} grid={grid} title={t`Disk Usage`} description={t`Usage of root partition`}>
 						<DiskChart chartData={chartData} dataKey="stats.du" diskSize={systemStats.at(-1)?.stats.d ?? NaN} />
@@ -531,25 +525,6 @@ export default function SystemDetail({ name }: { name: string }) {
 					>
 						<AreaChartDefault chartData={chartData} chartName="bw" maxToggled={maxValues} />
 					</ChartCard>
-
-					{containerFilterBar && containerData.length > 0 && (
-						<div
-							ref={netCardRef}
-							className={cn({
-								"col-span-full": !grid,
-							})}
-						>
-							<ChartCard
-								empty={dataEmpty}
-								title={dockerOrPodman(t`Docker Network I/O`, system)}
-								description={dockerOrPodman(t`Network traffic of docker containers`, system)}
-								cornerEl={containerFilterBar}
-							>
-								{/* @ts-ignore */}
-								<ContainerChart chartData={chartData} chartType={ChartType.Network} dataKey="n" />
-							</ChartCard>
-						</div>
-					)}
 
 					{/* Swap chart */}
 					{(systemStats.at(-1)?.stats.su ?? 0) > 0 && (
@@ -659,6 +634,55 @@ export default function SystemDetail({ name }: { name: string }) {
 							)
 						})}
 					</div>
+				)}
+
+				{/* Docker Container Charts */}
+				{containerFilterBar && (
+					<>
+						<div className="col-span-full">
+							<h2 className="text-xl font-semibold mb-4 mt-8">{dockerOrPodman(t`Docker Containers`, system)}</h2>
+						</div>
+						<div className="grid xl:grid-cols-2 gap-4">
+							<ChartCard
+								empty={dataEmpty}
+								grid={grid}
+								title={dockerOrPodman(t`Docker CPU Usage`, system)}
+								description={t`Average CPU utilization of containers`}
+								cornerEl={containerFilterBar}
+							>
+								<ContainerChart chartData={chartData} dataKey="c" chartType={ChartType.CPU} />
+							</ChartCard>
+
+							<ChartCard
+								empty={dataEmpty}
+								grid={grid}
+								title={dockerOrPodman(t`Docker Memory Usage`, system)}
+								description={dockerOrPodman(t`Memory usage of docker containers`, system)}
+								cornerEl={containerFilterBar}
+							>
+								<ContainerChart chartData={chartData} dataKey="m" chartType={ChartType.Memory} />
+							</ChartCard>
+
+							{containerData.length > 0 && (
+								<div
+									ref={netCardRef}
+									className={cn({
+										"col-span-full": !grid,
+									})}
+								>
+									<ChartCard
+										empty={dataEmpty}
+										title={dockerOrPodman(t`Docker Network I/O`, system)}
+										description={dockerOrPodman(t`Network traffic of docker containers`, system)}
+										cornerEl={containerFilterBar}
+									>
+										{/* @ts-ignore */}
+										<ContainerChart chartData={chartData} chartType={ChartType.Network} dataKey="n" />
+									</ChartCard>
+								</div>
+							)}
+						</div>
+					</>
 				)}
 			</div>
 

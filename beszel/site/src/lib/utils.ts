@@ -229,8 +229,9 @@ export function useYAxisWidth() {
 	return { yAxisWidth, updateYAxisWidth }
 }
 
-export function toFixedWithoutTrailingZeros(num: number, digits: number) {
-	return parseFloat(num.toFixed(digits)).toString()
+export function toFixedWithoutTrailingZeros(num: number, decimals: number): string {
+	const str = num.toFixed(decimals)
+	return str.replace(/\.?0+$/, "")
 }
 
 export function toFixedFloat(num: number, digits: number) {
@@ -355,3 +356,21 @@ export const alertInfo: Record<string, AlertInfo> = {
  * const hostname = getHostDisplayValue(system) // hostname will be "beszel.sock"
  */
 export const getHostDisplayValue = (system: SystemRecord): string => system.host.slice(system.host.lastIndexOf("/") + 1)
+
+/**
+ * Generate consistent colors for containers based on their names
+ * @param containerNames Array of container names
+ * @returns Record mapping container names to HSL colors
+ */
+export function generateContainerColors(containerNames: string[]): Record<string, string> {
+	const sortedNames = [...containerNames].sort()
+	const colorMap: Record<string, string> = {}
+	
+	for (let i = 0; i < sortedNames.length; i++) {
+		const name = sortedNames[i]
+		const hue = ((i * 360) / sortedNames.length) % 360
+		colorMap[name] = `hsl(${hue}, 60%, 55%)`
+	}
+	
+	return colorMap
+}
