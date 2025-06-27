@@ -23,6 +23,7 @@ type Stats struct {
 	SwapUsed       float64             `json:"su,omitempty"`
 	SwapTotal      float64             `json:"st,omitempty"`
 	SwapFree       float64             `json:"sf,omitempty"`
+	SwapCached     float64             `json:"sc,omitempty"`
 	DiskTotal      float64             `json:"d"`
 	DiskUsed       float64             `json:"du"`
 	DiskPct        float64             `json:"dp"`

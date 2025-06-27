@@ -112,6 +112,7 @@ export interface SystemStats {
 	efs?: Record<string, ExtraFsStats>
 	/** GPU data */
 	g?: Record<string, GPUData>
+	sc?: number // swap cached (gb)
 }
 
 export interface GPUData {

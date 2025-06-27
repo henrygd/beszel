@@ -127,6 +127,7 @@ func (a *Agent) getSystemStats() system.Stats {
 		systemStats.SwapUsed = bytesToGigabytes(v.SwapTotal - v.SwapFree - v.SwapCached)
 		systemStats.SwapTotal = bytesToGigabytes(v.SwapTotal)
 		systemStats.SwapFree = bytesToGigabytes(v.SwapFree)
+		systemStats.SwapCached = bytesToGigabytes(v.SwapCached)
 		// cache + buffers value for default mem calculation
 		cacheBuff := v.Total - v.Free - v.Used
 		// htop memory calculation overrides
