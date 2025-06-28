@@ -129,16 +129,18 @@ export default memo(function ContainerChart({
 		return null
 	}
 
+	// Only show selected containers, or all if none selected
+	const visibleKeys = Array.isArray(filter) && filter.length > 0 ? filter : Object.keys(chartConfig)
+
 	return (
-		<div>
+		<div className="w-full h-full">
 			<ChartContainer
-				className={cn("h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity", {
+				className={cn("h-full w-full absolute bg-card opacity-0 transition-opacity", {
 					"opacity-100": yAxisWidth,
 				})}
 			>
 				<AreaChart
 					accessibilityLayer
-					// syncId={'cpu'}
 					data={containerData}
 					margin={chartMargin}
 					reverseStackOrder={true}
@@ -161,10 +163,10 @@ export default memo(function ContainerChart({
 						labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 						// @ts-ignore
 						itemSorter={(a, b) => b.value - a.value}
-						content={<ChartTooltipContent filter={filter} contentFormatter={toolTipFormatter} />}
+						content={<ChartTooltipContent contentFormatter={toolTipFormatter} />}
 					/>
-					{Object.keys(chartConfig).map((key) => {
-						const filtered = filter && !key.toLowerCase().includes(filter.toLowerCase())
+					{visibleKeys.map((key) => {
+						const filtered = Array.isArray(filter) && filter.length > 0 && !filter.includes(key)
 						let fillOpacity = filtered ? 0.05 : 0.4
 						let strokeOpacity = filtered ? 0.1 : 1
 						return (

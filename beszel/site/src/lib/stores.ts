@@ -36,7 +36,7 @@ $userSettings.subscribe((value) => {
 })
 
 /** Container chart filter */
-export const $containerFilter = atom("")
+export const $containerFilter = atom<string[]>([])
 
 /** Container color mapping for consistent colors across charts */
 export const $containerColors = atom<Record<string, string>>({})
