@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -23,20 +24,35 @@ func (a *Agent) initializeSystemInfo() {
 	a.systemInfo.AgentVersion = beszel.Version
 	a.systemInfo.Hostname, _ = os.Hostname()
 
-	platform, _, version, _ := host.PlatformInformation()
+	platform, family, version, _ := host.PlatformInformation()
 
 	if platform == "darwin" {
 		a.systemInfo.KernelVersion = version
 		a.systemInfo.Os = system.Darwin
+		a.systemInfo.OsName = "macOS"
+		a.systemInfo.OsVersion = version
 	} else if strings.Contains(platform, "indows") {
 		a.systemInfo.KernelVersion = strings.Replace(platform, "Microsoft ", "", 1) + " " + version
 		a.systemInfo.Os = system.Windows
+		a.systemInfo.OsName = family
+		a.systemInfo.OsVersion = version
 	} else if platform == "freebsd" {
 		a.systemInfo.Os = system.Freebsd
 		a.systemInfo.KernelVersion = version
+		a.systemInfo.OsName = family
+		a.systemInfo.OsVersion = version
 	} else {
 		a.systemInfo.Os = system.Linux
+		a.systemInfo.OsName = family
+		a.systemInfo.OsVersion = version
+		// Read PRETTY_NAME from /etc/os-release for Linux systems
+		if prettyName := readPrettyName(); prettyName != "" {
+			a.systemInfo.OsPrettyName = prettyName
+		}
 	}
+
+	// Set OS architecture
+	a.systemInfo.OsArch = runtime.GOARCH
 
 	if a.systemInfo.KernelVersion == "" {
 		a.systemInfo.KernelVersion, _ = host.KernelVersion()
@@ -63,6 +79,27 @@ func (a *Agent) initializeSystemInfo() {
 	} else {
 		slog.Debug("Not monitoring ZFS ARC", "err", err)
 	}
+}
+
+// readPrettyName reads the PRETTY_NAME from /etc/os-release
+func readPrettyName() string {
+	file, err := os.Open("/etc/os-release")
+	if err != nil {
+		return ""
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, "PRETTY_NAME=") {
+			// Remove the prefix and any surrounding quotes
+			prettyName := strings.TrimPrefix(line, "PRETTY_NAME=")
+			prettyName = strings.Trim(prettyName, `"`)
+			return prettyName
+		}
+	}
+	return ""
 }
 
 // Returns current info, stats about the host system

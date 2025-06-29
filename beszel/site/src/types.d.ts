@@ -14,11 +14,11 @@ export interface SystemRecord extends RecordModel {
 	host: string
 	status: "up" | "down" | "paused" | "pending"
 	port: string
-	info: SystemInfo
+	info: systemInfo
 	v: string
 }
 
-export interface SystemInfo {
+export interface systemInfo {
 	/** hostname */
 	h: string
 	/** kernel **/
@@ -51,6 +51,14 @@ export interface SystemInfo {
 	dt?: number
 	/** operating system */
 	os?: Os
+	/** OS name (e.g., "Ubuntu", "CentOS", "Windows 11") */
+	on?: string
+	/** OS version (e.g., "22.04", "10.0.19045") */
+	ov?: string
+	/** OS architecture (e.g., "x86_64", "arm64") */
+	oa?: string
+	/** OS pretty name from /etc/os-release (e.g., "Debian GNU/Linux 12 (bookworm)") */
+	oc?: string
 }
 
 export interface SystemStats {
