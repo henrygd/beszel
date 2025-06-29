@@ -107,14 +107,10 @@ export default memo(function NetworkInterfaceChart({
 						content={
 							<ChartTooltipContent
 								labelFormatter={(_: any, data: any) => formatShortDate(data[0].payload.created)}
-								contentFormatter={({ value, name }: any) => {
-									const isReceived = (name as string)?.includes("Received")
+								contentFormatter={({ value }: any) => {
 									return (
 										<span className="flex">
 											{decimalString(value)} MB/s
-											<span className="opacity-70 ms-0.5">
-												{isReceived ? " rx" : " tx"}
-											</span>
 										</span>
 									)
 								}}
