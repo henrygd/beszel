@@ -243,7 +243,7 @@ func (gm *GPUManager) GetCurrentData() map[string]system.GPUData {
 	// copy / reset the data
 	gpuData := make(map[string]system.GPUData, len(gm.GpuDataMap))
 	for id, gpu := range gm.GpuDataMap {
-		var gpuAvg system.GPUData
+		gpuAvg := *gpu
 
 		gpuAvg.Temperature = twoDecimals(gpu.Temperature)
 		gpuAvg.MemoryUsed = twoDecimals(gpu.MemoryUsed)
