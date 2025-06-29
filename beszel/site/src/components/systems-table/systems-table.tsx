@@ -74,7 +74,6 @@ import { EthernetIcon, GpuIcon, ThermometerIcon } from "../ui/icons"
 import { useLingui, Trans, Plural } from "@lingui/react/macro"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ClassValue } from "clsx"
 import { getPagePath } from "@nanostores/router"
 import { SystemDialog } from "../add-system"
@@ -398,18 +397,6 @@ export default function SystemsTable() {
 						</CardDescription>
 					</div>
 					<div className="flex gap-2 ms-auto w-full md:w-auto">
-						<Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as StatusFilter)}>
-							<SelectTrigger className="w-[140px]">
-								<FilterIcon className="me-2 h-4 w-4" />
-								<SelectValue placeholder={t`Status`} />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="all">{t`All Systems`}</SelectItem>
-								<SelectItem value="up">{t`Up`}</SelectItem>
-								<SelectItem value="down">{t`Down`}</SelectItem>
-								<SelectItem value="paused">{t`Paused`}</SelectItem>
-							</SelectContent>
-						</Select>
 						<Input placeholder={t`Filter...`} onChange={(e) => setFilter(e.target.value)} className="px-4 w-full md:w-80" />
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
@@ -419,7 +406,7 @@ export default function SystemsTable() {
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end" className="h-72 md:h-auto min-w-48 md:min-w-auto overflow-y-auto">
-								<div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-s md:divide-y-0">
+								<div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-s md:divide-y-0">
 									<div>
 										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
 											<LayoutGridIcon className="size-4" />
@@ -438,6 +425,32 @@ export default function SystemsTable() {
 											<DropdownMenuRadioItem value="grid" onSelect={(e) => e.preventDefault()} className="gap-2">
 												<LayoutGridIcon className="size-4" />
 												<Trans>Grid</Trans>
+											</DropdownMenuRadioItem>
+										</DropdownMenuRadioGroup>
+									</div>
+
+									<div>
+										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
+											<FilterIcon className="size-4" />
+											<Trans>Status</Trans>
+										</DropdownMenuLabel>
+										<DropdownMenuSeparator />
+										<DropdownMenuRadioGroup
+											className="px-1 pb-1"
+											value={statusFilter}
+											onValueChange={(value) => setStatusFilter(value as StatusFilter)}
+										>
+											<DropdownMenuRadioItem value="all" onSelect={(e) => e.preventDefault()} className="gap-2">
+												<Trans>All Systems</Trans>
+											</DropdownMenuRadioItem>
+											<DropdownMenuRadioItem value="up" onSelect={(e) => e.preventDefault()} className="gap-2">
+												<Trans>Up</Trans>
+											</DropdownMenuRadioItem>
+											<DropdownMenuRadioItem value="down" onSelect={(e) => e.preventDefault()} className="gap-2">
+												<Trans>Down</Trans>
+											</DropdownMenuRadioItem>
+											<DropdownMenuRadioItem value="paused" onSelect={(e) => e.preventDefault()} className="gap-2">
+												<Trans>Paused</Trans>
 											</DropdownMenuRadioItem>
 										</DropdownMenuRadioGroup>
 									</div>
