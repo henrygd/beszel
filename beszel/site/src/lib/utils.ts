@@ -229,8 +229,9 @@ export function useYAxisWidth() {
 	return { yAxisWidth, updateYAxisWidth }
 }
 
-export function toFixedWithoutTrailingZeros(num: number, digits: number) {
-	return parseFloat(num.toFixed(digits)).toString()
+export function toFixedWithoutTrailingZeros(num: number, decimals: number): string {
+	const str = num.toFixed(decimals)
+	return str.replace(/\.?0+$/, "")
 }
 
 export function toFixedFloat(num: number, digits: number) {
@@ -355,3 +356,52 @@ export const alertInfo: Record<string, AlertInfo> = {
  * const hostname = getHostDisplayValue(system) // hostname will be "beszel.sock"
  */
 export const getHostDisplayValue = (system: SystemRecord): string => system.host.slice(system.host.lastIndexOf("/") + 1)
+
+/**
+ * Generate consistent colors for containers based on their names
+ * @param containerNames Array of container names
+ * @returns Record mapping container names to HSL colors
+ */
+export function generateContainerColors(containerNames: string[]): Record<string, string> {
+	const sortedNames = [...containerNames].sort()
+	const colorMap: Record<string, string> = {}
+	
+	for (let i = 0; i < sortedNames.length; i++) {
+		const name = sortedNames[i]
+		const hue = ((i * 360) / sortedNames.length) % 360
+		colorMap[name] = `hsl(${hue}, 60%, 55%)`
+	}
+	
+	return colorMap
+}
+
+/**
+ * Generate stack-based colors for containers
+ * @param containers Array of container stats with project information
+ * @returns Record mapping container names to HSL colors
+ */
+export function generateStackBasedColors(containers: any[]): Record<string, string> {
+	const colorMap: Record<string, string> = {}
+	const stackNames = Array.from(new Set(containers.map(c => c.p || "—"))).sort()
+	const stackCount = stackNames.length
+	const stackBaseHues = stackNames.reduce((acc, stack, i) => {
+		acc[stack] = Math.round((i * 360) / stackCount)
+		return acc
+	}, {} as Record<string, number>)
+	const stackContainerIndices = new Map<string, number>()
+
+	for (const container of containers) {
+		const name = container.n
+		const stack = container.p || "—"
+		const index = stackContainerIndices.get(stack) || 0
+		const hue = stackBaseHues[stack]
+		const saturation = 60
+		const baseLightness = 55
+		const shadeVariations = [0.8, 0.9, 1.0, 1.1, 1.2]
+		const shadeIndex = index % shadeVariations.length
+		const newLightness = Math.max(20, Math.min(80, baseLightness * shadeVariations[shadeIndex]))
+		colorMap[name] = `hsl(${hue}, ${saturation}%, ${newLightness}%)`
+		stackContainerIndices.set(stack, index + 1)
+	}
+	return colorMap
+}

@@ -97,7 +97,7 @@ const ChartTooltipContent = React.forwardRef<
 			nameKey?: string
 			labelKey?: string
 			unit?: string
-			filter?: string
+			filter?: string | string[]
 			contentFormatter?: (item: any, key: string) => React.ReactNode | string
 			truncate?: boolean
 		}
@@ -129,13 +129,19 @@ const ChartTooltipContent = React.forwardRef<
 
 		React.useMemo(() => {
 			if (filter) {
-				payload = payload?.filter((item) => (item.name as string)?.toLowerCase().includes(filter.toLowerCase()))
+				if (Array.isArray(filter)) {
+					// Array filter: only show items that are in the filter array
+					payload = payload?.filter((item) => filter.includes(item.name as string))
+				} else {
+					// String filter: show items that match the string (backward compatibility)
+					payload = payload?.filter((item) => (item.name as string)?.toLowerCase().includes(filter.toLowerCase()))
+				}
 			}
 			if (itemSorter) {
 				// @ts-ignore
 				payload?.sort(itemSorter)
 			}
-		}, [itemSorter, payload])
+		}, [itemSorter, payload, filter])
 
 		const tooltipLabel = React.useMemo(() => {
 			if (hideLabel || !payload?.length) {

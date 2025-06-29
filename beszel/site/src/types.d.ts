@@ -115,6 +115,13 @@ export interface GPUData {
 	p?: number
 }
 
+export interface VolumeData {
+	/** name */
+	n: string
+	/** size (mb) */
+	s: number
+}
+
 export interface ExtraFsStats {
 	/** disk size (gb) */
 	d: number
@@ -147,6 +154,14 @@ interface ContainerStats {
 	ns: number
 	// network received (mb)
 	nr: number
+	// volumes (volume name to size in MB)
+	v?: Record<string, number>
+	// health status
+	h?: string
+	// uptime in seconds
+	u?: number
+	// docker compose project name
+	p?: string
 }
 
 export interface SystemStatsRecord extends RecordModel {

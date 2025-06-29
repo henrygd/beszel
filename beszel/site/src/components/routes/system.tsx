@@ -5,6 +5,7 @@ import {
 	pb,
 	$chartTime,
 	$containerFilter,
+	$containerColors,
 	$userSettings,
 	$direction,
 	$maxValues,
@@ -13,10 +14,10 @@ import {
 import { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord } from "@/types"
 import { ChartType, Os } from "@/lib/enums"
 import React, { lazy, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Card, CardHeader, CardTitle, CardDescription } from "../ui/card"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "../ui/card"
 import { useStore } from "@nanostores/react"
 import Spinner from "../spinner"
-import { ClockArrowUp, CpuIcon, GlobeIcon, LayoutGridIcon, MonitorIcon, XIcon } from "lucide-react"
+import { ClockArrowUp, CpuIcon, GlobeIcon, LayoutGridIcon, MonitorIcon, XIcon, ServerIcon, ContainerIcon } from "lucide-react"
 import ChartTimeSelect from "../charts/chart-time-select"
 import {
 	chartTimeData,
@@ -27,6 +28,7 @@ import {
 	listen,
 	toFixedFloat,
 	useLocalStorage,
+	generateStackBasedColors,
 } from "@/lib/utils"
 import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
@@ -39,6 +41,7 @@ import { timeTicks } from "d3-time"
 import { useLingui } from "@lingui/react/macro"
 import { $router, navigate } from "../router"
 import { getPagePath } from "@nanostores/router"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
 
 const AreaChartDefault = lazy(() => import("../charts/area-chart"))
 const ContainerChart = lazy(() => import("../charts/container-chart"))
@@ -115,22 +118,101 @@ function dockerOrPodman(str: string, system: SystemRecord) {
 	return str
 }
 
+function ContainerLegend({ containerData, containerColors }: { containerData: ChartData["containerData"], containerColors: Record<string, string> }) {
+	const { t } = useLingui()
+	const containerFilter = useStore($containerFilter)
+
+	// Get unique container names from the data
+	const containerNames = useMemo(() => {
+		const names = new Set<string>()
+		for (let data of containerData) {
+			for (let key in data) {
+				if (key && key !== "created") {
+					names.add(key)
+				}
+			}
+		}
+		return Array.from(names).sort()
+	}, [containerData])
+
+	const hasActiveFilter = containerFilter.length > 0
+
+	const toggleContainer = (name: string) => {
+		if (containerFilter.includes(name)) {
+			$containerFilter.set(containerFilter.filter((n) => n !== name))
+		} else {
+			$containerFilter.set([...containerFilter, name])
+		}
+	}
+
+	return (
+		<Card className="mb-4">
+			<CardHeader className="pb-2 pt-2">
+				<span className="text-xs text-muted-foreground font-semibold">{t`Container Filtering`}</span>
+			</CardHeader>
+			<CardContent className="pt-0 pb-2">
+				{containerNames.length === 0 ? (
+					<span className="text-xs text-muted-foreground">{t`No containers found`}</span>
+				) : (
+					<div className="flex flex-wrap gap-2">
+						{containerNames.map((name) => {
+							const isSelected = containerFilter.includes(name)
+							const color = containerColors[name] || `hsl(${Math.random() * 360}, 60%, 55%)`
+							return (
+								<div
+									key={name}
+									className={cn(
+										"flex items-center gap-2 px-2 py-1 rounded-md border cursor-pointer transition-all hover:bg-muted/50",
+										isSelected ? "ring-2 ring-primary ring-offset-1 bg-primary/10" : "opacity-100"
+									)}
+									onClick={() => toggleContainer(name)}
+								>
+									<div
+										className="h-3 w-3 rounded-sm shrink-0"
+										style={{ backgroundColor: color }}
+									/>
+									<span className="text-xs font-medium truncate" title={name}>
+										{name}
+									</span>
+								</div>
+							)
+						})}
+					</div>
+				)}
+				{hasActiveFilter && containerNames.length > 0 && (
+					<div className="mt-2">
+						<Button
+							type="button"
+							variant="secondary"
+							size="sm"
+							onClick={() => $containerFilter.set([])}
+						>
+							{t`Show All`}
+						</Button>
+					</div>
+				)}
+			</CardContent>
+		</Card>
+	)
+}
+
 export default function SystemDetail({ name }: { name: string }) {
 	const direction = useStore($direction)
 	const { t } = useLingui()
 	const systems = useStore($systems)
 	const chartTime = useStore($chartTime)
 	const maxValues = useStore($maxValues)
+	const containerFilter = useStore($containerFilter)
 	const [grid, setGrid] = useLocalStorage("grid", true)
 	const [system, setSystem] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
 	const [containerData, setContainerData] = useState([] as ChartData["containerData"])
 	const netCardRef = useRef<HTMLDivElement>(null)
 	const persistChartTime = useRef(false)
-	const [containerFilterBar, setContainerFilterBar] = useState(null as null | JSX.Element)
 	const [bottomSpacing, setBottomSpacing] = useState(0)
 	const [chartLoading, setChartLoading] = useState(true)
 	const isLongerChart = chartTime !== "1h"
+	const containerColors = useStore($containerColors)
 
 	useEffect(() => {
 		document.title = `${name} / Beszel`
@@ -141,8 +223,8 @@ export default function SystemDetail({ name }: { name: string }) {
 			persistChartTime.current = false
 			setSystemStats([])
 			setContainerData([])
-			setContainerFilterBar(null)
-			$containerFilter.set("")
+			$containerFilter.set([])
+			$containerColors.set({})
 		}
 	}, [name])
 
@@ -227,11 +309,6 @@ export default function SystemDetail({ name }: { name: string }) {
 				}
 				cache.set(cs_cache_key, containerData)
 			}
-			if (containerData.length) {
-				!containerFilterBar && setContainerFilterBar(<FilterBar />)
-			} else if (containerFilterBar) {
-				setContainerFilterBar(null)
-			}
 			makeContainerData(containerData)
 		})
 	}, [system, chartTime])
@@ -239,6 +316,21 @@ export default function SystemDetail({ name }: { name: string }) {
 	// make container stats for charts
 	const makeContainerData = useCallback((containers: ContainerStatsRecord[]) => {
 		const containerData = [] as ChartData["containerData"]
+		
+		// Extract all unique containers with their project information
+		const allContainers = new Map<string, any>()
+		for (let { stats } of containers) {
+			for (let container of stats) {
+				allContainers.set(container.n, container)
+			}
+		}
+		
+		// Generate stack-based colors for all containers
+		if (allContainers.size > 0) {
+			const colorMap = generateStackBasedColors(Array.from(allContainers.values()))
+			$containerColors.set(colorMap)
+		}
+		
 		for (let { created, stats } of containers) {
 			if (!created) {
 				// @ts-ignore add null value for gaps
@@ -463,203 +555,267 @@ export default function SystemDetail({ name }: { name: string }) {
 					</div>
 				</Card>
 
-				{/* main charts */}
-				<div className="grid xl:grid-cols-2 gap-4">
-					<ChartCard
-						empty={dataEmpty}
-						grid={grid}
-						title={t`CPU Usage`}
-						description={t`Average system-wide CPU utilization`}
-						cornerEl={maxValSelect}
-					>
-						<AreaChartDefault chartData={chartData} chartName="CPU Usage" maxToggled={maxValues} unit="%" />
-					</ChartCard>
+				{/* Tabbed interface for system and Docker stats */}
+				<Tabs defaultValue="system" className="w-full">
+					<TabsList className="grid w-full grid-cols-2 mb-4">
+						<TabsTrigger value="system" className="flex items-center gap-2">
+							<ServerIcon className="h-4 w-4" />
+							{t`System Stats`}
+						</TabsTrigger>
+						<TabsTrigger value="docker" className="flex items-center gap-2">
+							<ContainerIcon className="h-4 w-4" />
+							{dockerOrPodman(t`Docker Stats`, system)}
+						</TabsTrigger>
+					</TabsList>
 
-					{containerFilterBar && (
-						<ChartCard
-							empty={dataEmpty}
-							grid={grid}
-							title={dockerOrPodman(t`Docker CPU Usage`, system)}
-							description={t`Average CPU utilization of containers`}
-							cornerEl={containerFilterBar}
-						>
-							<ContainerChart chartData={chartData} dataKey="c" chartType={ChartType.CPU} />
-						</ChartCard>
-					)}
-
-					<ChartCard
-						empty={dataEmpty}
-						grid={grid}
-						title={t`Memory Usage`}
-						description={t`Precise utilization at the recorded time`}
-					>
-						<MemChart chartData={chartData} />
-					</ChartCard>
-
-					{containerFilterBar && (
-						<ChartCard
-							empty={dataEmpty}
-							grid={grid}
-							title={dockerOrPodman(t`Docker Memory Usage`, system)}
-							description={dockerOrPodman(t`Memory usage of docker containers`, system)}
-							cornerEl={containerFilterBar}
-						>
-							<ContainerChart chartData={chartData} dataKey="m" chartType={ChartType.Memory} />
-						</ChartCard>
-					)}
-
-					<ChartCard empty={dataEmpty} grid={grid} title={t`Disk Usage`} description={t`Usage of root partition`}>
-						<DiskChart chartData={chartData} dataKey="stats.du" diskSize={systemStats.at(-1)?.stats.d ?? NaN} />
-					</ChartCard>
-
-					<ChartCard
-						empty={dataEmpty}
-						grid={grid}
-						title={t`Disk I/O`}
-						description={t`Throughput of root filesystem`}
-						cornerEl={maxValSelect}
-					>
-						<AreaChartDefault chartData={chartData} chartName="dio" maxToggled={maxValues} />
-					</ChartCard>
-
-					<ChartCard
-						empty={dataEmpty}
-						grid={grid}
-						title={t`Bandwidth`}
-						cornerEl={maxValSelect}
-						description={t`Network traffic of public interfaces`}
-					>
-						<AreaChartDefault chartData={chartData} chartName="bw" maxToggled={maxValues} />
-					</ChartCard>
-
-					{containerFilterBar && containerData.length > 0 && (
-						<div
-							ref={netCardRef}
-							className={cn({
-								"col-span-full": !grid,
-							})}
-						>
+					{/* System Stats Tab */}
+					<TabsContent value="system" className="space-y-4">
+						{/* main charts */}
+						<div className="grid xl:grid-cols-2 gap-4">
 							<ChartCard
 								empty={dataEmpty}
-								title={dockerOrPodman(t`Docker Network I/O`, system)}
-								description={dockerOrPodman(t`Network traffic of docker containers`, system)}
-								cornerEl={containerFilterBar}
+								grid={grid}
+								title={t`CPU Usage`}
+								description={t`Average system-wide CPU utilization`}
+								cornerEl={maxValSelect}
 							>
-								{/* @ts-ignore */}
-								<ContainerChart chartData={chartData} chartType={ChartType.Network} dataKey="n" />
+								<AreaChartDefault chartData={chartData} chartName="CPU Usage" maxToggled={maxValues} unit="%" />
 							</ChartCard>
+
+							<ChartCard
+								empty={dataEmpty}
+								grid={grid}
+								title={t`Memory Usage`}
+								description={t`Precise utilization at the recorded time`}
+							>
+								<MemChart chartData={chartData} />
+							</ChartCard>
+
+							<ChartCard empty={dataEmpty} grid={grid} title={t`Disk Usage`} description={t`Usage of root partition`}>
+								<DiskChart chartData={chartData} dataKey="stats.du" diskSize={systemStats.at(-1)?.stats.d ?? NaN} />
+							</ChartCard>
+
+							<ChartCard
+								empty={dataEmpty}
+								grid={grid}
+								title={t`Disk I/O`}
+								description={t`Throughput of root filesystem`}
+								cornerEl={maxValSelect}
+							>
+								<AreaChartDefault chartData={chartData} chartName="dio" maxToggled={maxValues} />
+							</ChartCard>
+
+							<ChartCard
+								empty={dataEmpty}
+								grid={grid}
+								title={t`Bandwidth`}
+								cornerEl={maxValSelect}
+								description={t`Network traffic of public interfaces`}
+							>
+								<AreaChartDefault chartData={chartData} chartName="bw" maxToggled={maxValues} />
+							</ChartCard>
+
+							{/* Swap chart */}
+							{(systemStats.at(-1)?.stats.su ?? 0) > 0 && (
+								<ChartCard
+									empty={dataEmpty}
+									grid={grid}
+									title={t`Swap Usage`}
+									description={t`Swap space used by the system`}
+								>
+									<SwapChart chartData={chartData} />
+								</ChartCard>
+							)}
+
+							{/* Temperature chart */}
+							{systemStats.at(-1)?.stats.t && (
+								<ChartCard
+									empty={dataEmpty}
+									grid={grid}
+									title={t`Temperature`}
+									description={t`Temperatures of system sensors`}
+									cornerEl={<FilterBar store={$temperatureFilter} />}
+								>
+									<TemperatureChart chartData={chartData} />
+								</ChartCard>
+							)}
+
+							{/* GPU power draw chart */}
+							{hasGpuPowerData && (
+								<ChartCard
+									empty={dataEmpty}
+									grid={grid}
+									title={t`GPU Power Draw`}
+									description={t`Average power consumption of GPUs`}
+								>
+									<GpuPowerChart chartData={chartData} />
+								</ChartCard>
+							)}
 						</div>
-					)}
 
-					{/* Swap chart */}
-					{(systemStats.at(-1)?.stats.su ?? 0) > 0 && (
-						<ChartCard
-							empty={dataEmpty}
-							grid={grid}
-							title={t`Swap Usage`}
-							description={t`Swap space used by the system`}
-						>
-							<SwapChart chartData={chartData} />
-						</ChartCard>
-					)}
+						{/* GPU charts */}
+						{hasGpuData && (
+							<div className="grid xl:grid-cols-2 gap-4">
+								{Object.keys(systemStats.at(-1)?.stats.g ?? {}).map((id) => {
+									const gpu = systemStats.at(-1)?.stats.g?.[id] as GPUData
+									const sizeFormatter = (value: number, decimals?: number) => {
+										const { v, u } = getSizeAndUnit(value, false)
+										return toFixedFloat(v, decimals || 1) + u
+									}
+									return (
+										<div key={id} className="contents">
+											<ChartCard
+												empty={dataEmpty}
+												grid={grid}
+												title={`${gpu.n} ${t`Usage`}`}
+												description={t`Average utilization of ${gpu.n}`}
+											>
+												<AreaChartDefault chartData={chartData} chartName={`g.${id}.u`} unit="%" />
+											</ChartCard>
+											<ChartCard
+												empty={dataEmpty}
+												grid={grid}
+												title={`${gpu.n} VRAM`}
+												description={t`Precise utilization at the recorded time`}
+											>
+												<AreaChartDefault
+													chartData={chartData}
+													chartName={`g.${id}.mu`}
+													max={gpu.mt}
+													tickFormatter={sizeFormatter}
+													contentFormatter={(value) => sizeFormatter(value, 2)}
+												/>
+											</ChartCard>
+										</div>
+									)
+								})}
+							</div>
+						)}
 
-					{/* Temperature chart */}
-					{systemStats.at(-1)?.stats.t && (
-						<ChartCard
-							empty={dataEmpty}
-							grid={grid}
-							title={t`Temperature`}
-							description={t`Temperatures of system sensors`}
-							cornerEl={<FilterBar store={$temperatureFilter} />}
-						>
-							<TemperatureChart chartData={chartData} />
-						</ChartCard>
-					)}
+						{/* extra filesystem charts */}
+						{Object.keys(systemStats.at(-1)?.stats.efs ?? {}).length > 0 && (
+							<div className="grid xl:grid-cols-2 gap-4">
+								{Object.keys(systemStats.at(-1)?.stats.efs ?? {}).map((extraFsName) => {
+									return (
+										<div key={extraFsName} className="contents">
+											<ChartCard
+												empty={dataEmpty}
+												grid={grid}
+												title={`${extraFsName} ${t`Usage`}`}
+												description={t`Disk usage of ${extraFsName}`}
+											>
+												<DiskChart
+													chartData={chartData}
+													dataKey={`stats.efs.${extraFsName}.du`}
+													diskSize={systemStats.at(-1)?.stats.efs?.[extraFsName].d ?? NaN}
+												/>
+											</ChartCard>
+											<ChartCard
+												empty={dataEmpty}
+												grid={grid}
+												title={`${extraFsName} I/O`}
+												description={t`Throughput of ${extraFsName}`}
+												cornerEl={maxValSelect}
+											>
+												<AreaChartDefault chartData={chartData} chartName={`efs.${extraFsName}`} maxToggled={maxValues} />
+											</ChartCard>
+										</div>
+									)
+								})}
+							</div>
+						)}
+					</TabsContent>
 
-					{/* GPU power draw chart */}
-					{hasGpuPowerData && (
-						<ChartCard
-							empty={dataEmpty}
-							grid={grid}
-							title={t`GPU Power Draw`}
-							description={t`Average power consumption of GPUs`}
-						>
-							<GpuPowerChart chartData={chartData} />
-						</ChartCard>
-					)}
-				</div>
-
-				{/* GPU charts */}
-				{hasGpuData && (
-					<div className="grid xl:grid-cols-2 gap-4">
-						{Object.keys(systemStats.at(-1)?.stats.g ?? {}).map((id) => {
-							const gpu = systemStats.at(-1)?.stats.g?.[id] as GPUData
-							const sizeFormatter = (value: number, decimals?: number) => {
-								const { v, u } = getSizeAndUnit(value, false)
-								return toFixedFloat(v, decimals || 1) + u
-							}
-							return (
-								<div key={id} className="contents">
+					{/* Docker Stats Tab */}
+					<TabsContent value="docker" className="space-y-4">
+						{/* Docker Container Charts */}
+						{containerData.length > 0 ? (
+							<>
+								<ContainerLegend containerData={containerData} containerColors={containerColors} />
+								<div className="grid xl:grid-cols-2 gap-4">
 									<ChartCard
 										empty={dataEmpty}
 										grid={grid}
-										title={`${gpu.n} ${t`Usage`}`}
-										description={t`Average utilization of ${gpu.n}`}
+										title={dockerOrPodman(t`Docker CPU Usage`, system)}
+										description={t`Average CPU utilization of containers`}
 									>
-										<AreaChartDefault chartData={chartData} chartName={`g.${id}.u`} unit="%" />
+										<ContainerChart chartData={chartData} dataKey="c" chartType={ChartType.CPU} />
 									</ChartCard>
 									<ChartCard
 										empty={dataEmpty}
 										grid={grid}
-										title={`${gpu.n} VRAM`}
-										description={t`Precise utilization at the recorded time`}
+										title={dockerOrPodman(t`Docker Memory Usage`, system)}
+										description={t`Average memory utilization of containers`}
 									>
-										<AreaChartDefault
-											chartData={chartData}
-											chartName={`g.${id}.mu`}
-											max={gpu.mt}
-											tickFormatter={sizeFormatter}
-											contentFormatter={(value) => sizeFormatter(value, 2)}
-										/>
+										<ContainerChart chartData={chartData} dataKey="m" chartType={ChartType.Memory} />
 									</ChartCard>
+									<ChartCard
+										empty={dataEmpty}
+										grid={grid}
+										title={dockerOrPodman(t`Docker Network Usage`, system)}
+										description={t`Average network utilization of containers`}
+									>
+										<ContainerChart chartData={chartData} dataKey="n" chartType={ChartType.Network} />
+									</ChartCard>
+									{/* Docker Volumes Chart */}
+									{(() => {
+										// Check if any containers have volume data
+										const hasVolumes = containerData.some(stats => {
+											if (!stats.created) return false
+											return Object.values(stats).some(container => 
+												container && typeof container === 'object' && 'v' in container && 
+												container.v && Object.keys(container.v).length > 0
+											)
+										})
+										
+										return hasVolumes ? (
+											<ChartCard
+												empty={dataEmpty}
+												grid={grid}
+												title={dockerOrPodman(t`Docker Volumes`, system)}
+												description={t`Storage usage of Docker volumes`}
+											>
+												<ContainerChart chartData={chartData} dataKey="v" chartType={ChartType.Volume} />
+											</ChartCard>
+										) : null
+									})()}
+									{/* Docker Health+Uptime Combined Chart */}
+									{(() => {
+										// Check if any containers have health or uptime data
+										const hasHealthUptime = containerData.some(stats => {
+											if (!stats.created) return false
+											return Object.values(stats).some(container =>
+												container && typeof container === 'object' && 
+												(('h' in container && container.h) || ('u' in container && container.u))
+											)
+										})
+										
+										return hasHealthUptime ? (
+											<ChartCard
+												empty={dataEmpty}
+												grid={grid}
+												title={dockerOrPodman(t`Docker Health & Uptime`, system)}
+												description={t`Health status and Uptime of containers`}
+											>
+												<ContainerChart chartData={chartData} dataKey="h" chartType={ChartType.HealthUptime} />
+											</ChartCard>
+										) : null
+									})()}
 								</div>
-							)
-						})}
-					</div>
-				)}
-
-				{/* extra filesystem charts */}
-				{Object.keys(systemStats.at(-1)?.stats.efs ?? {}).length > 0 && (
-					<div className="grid xl:grid-cols-2 gap-4">
-						{Object.keys(systemStats.at(-1)?.stats.efs ?? {}).map((extraFsName) => {
-							return (
-								<div key={extraFsName} className="contents">
-									<ChartCard
-										empty={dataEmpty}
-										grid={grid}
-										title={`${extraFsName} ${t`Usage`}`}
-										description={t`Disk usage of ${extraFsName}`}
-									>
-										<DiskChart
-											chartData={chartData}
-											dataKey={`stats.efs.${extraFsName}.du`}
-											diskSize={systemStats.at(-1)?.stats.efs?.[extraFsName].d ?? NaN}
-										/>
-									</ChartCard>
-									<ChartCard
-										empty={dataEmpty}
-										grid={grid}
-										title={`${extraFsName} I/O`}
-										description={t`Throughput of ${extraFsName}`}
-										cornerEl={maxValSelect}
-									>
-										<AreaChartDefault chartData={chartData} chartName={`efs.${extraFsName}`} maxToggled={maxValues} />
-									</ChartCard>
+							</>
+						) : (
+							<Card className="flex items-center justify-center h-64">
+								<div className="text-center space-y-2">
+									<ContainerIcon className="h-12 w-12 mx-auto text-muted-foreground" />
+									<h3 className="text-lg font-semibold">{t`No containers found`}</h3>
+									<p className="text-sm text-muted-foreground">
+										{t`This system doesn't have any running Docker containers.`}
+									</p>
 								</div>
-							)
-						})}
-					</div>
-				)}
+							</Card>
+						)}
+					</TabsContent>
+				</Tabs>
 			</div>
 
 			{/* add space for tooltip if more than 12 containers */}
@@ -668,25 +824,39 @@ export default function SystemDetail({ name }: { name: string }) {
 	)
 }
 
-function FilterBar({ store = $containerFilter }: { store?: typeof $containerFilter }) {
+function FilterBar({ store = $containerFilter }: { store?: any }) {
 	const containerFilter = useStore(store)
 	const { t } = useLingui()
 
 	const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-		store.set(e.target.value)
-	}, [])
+		const value = e.target.value
+		if (Array.isArray(containerFilter)) {
+			if (value) {
+				store.set([value])
+			} else {
+				store.set([])
+			}
+		} else {
+			store.set(value)
+		}
+	}, [store, containerFilter])
 
 	return (
 		<>
-			<Input placeholder={t`Filter...`} className="ps-4 pe-8" value={containerFilter} onChange={handleChange} />
-			{containerFilter && (
+			<Input
+				placeholder={t`Filter...`}
+				className="ps-4 pe-8"
+				value={Array.isArray(containerFilter) ? containerFilter.join(', ') : containerFilter}
+				onChange={handleChange}
+			/>
+			{(Array.isArray(containerFilter) ? containerFilter.length > 0 : !!containerFilter) && (
 				<Button
 					type="button"
 					variant="ghost"
 					size="icon"
 					aria-label="Clear"
 					className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-					onClick={() => store.set("")}
+					onClick={() => store.set(Array.isArray(containerFilter) ? [] : "")}
 				>
 					<XIcon className="h-4 w-4" />
 				</Button>
