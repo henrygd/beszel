@@ -18,14 +18,11 @@ msgstr ""
 "X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 16\n"
 
-#. placeholder {0}: Math.trunc(uptime / 86400)
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
-#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# 일} other {# 일}}"
 
-#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# 시간} other {# 시간}}"
@@ -96,7 +93,6 @@ msgstr "에이전트"
 msgid "Alerts"
 msgstr "알림"
 
-#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/alerts/alert-button.tsx
 msgid "All Systems"
@@ -306,7 +302,6 @@ msgstr "문서"
 
 #. Context: System is down
 #: src/lib/utils.ts
-#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
@@ -567,7 +562,6 @@ msgid "Pause"
 msgstr "일시 중지"
 
 #: src/components/systems-table/systems-table.tsx
-#: src/components/systems-table/systems-table.tsx
 msgid "Paused"
 msgstr "일시정지됨"
 
@@ -700,7 +694,6 @@ msgid "Sort By"
 msgstr "정렬 기준"
 
 #: src/lib/utils.ts
-#: src/components/systems-table/systems-table.tsx
 msgid "Status"
 msgstr "상태"
 
@@ -816,7 +809,6 @@ msgstr "디스크 사용량이 임계값을 초과할 때 트리거됩니다."
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx
-#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
 msgstr "온라인"
@@ -825,7 +817,6 @@ msgstr "온라인"
 msgid "Updated in real time. Click on a system to view information."
 msgstr "실시간으로 업데이트됩니다. 시스템을 클릭하여 정보를 확인하세요."
 
-#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Uptime"
 msgstr "가동 시간"

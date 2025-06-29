@@ -18,14 +18,11 @@ msgstr ""
 "X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 16\n"
 
-#. placeholder {0}: Math.trunc(uptime / 86400)
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
-#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# 天} other {# 天}}"
 
-#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# 小時} other {# 小時}}"
@@ -96,7 +93,6 @@ msgstr "代理"
 msgid "Alerts"
 msgstr "警報"
 
-#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/alerts/alert-button.tsx
 msgid "All Systems"
@@ -306,7 +302,6 @@ msgstr "文件"
 
 #. Context: System is down
 #: src/lib/utils.ts
-#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
@@ -567,7 +562,6 @@ msgid "Pause"
 msgstr "暫停"
 
 #: src/components/systems-table/systems-table.tsx
-#: src/components/systems-table/systems-table.tsx
 msgid "Paused"
 msgstr "已暂停"
 
@@ -700,7 +694,6 @@ msgid "Sort By"
 msgstr "排序"
 
 #: src/lib/utils.ts
-#: src/components/systems-table/systems-table.tsx
 msgid "Status"
 msgstr "狀態"
 
@@ -816,7 +809,6 @@ msgstr "當任何磁碟使用率超過閾值時觸發"
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx
-#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
 msgstr ""
@@ -825,7 +817,6 @@ msgstr ""
 msgid "Updated in real time. Click on a system to view information."
 msgstr "實時更新。點擊系統顯示資訊。"
 
-#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Uptime"
 msgstr "運行時間"

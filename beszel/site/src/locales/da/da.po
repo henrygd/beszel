@@ -18,14 +18,11 @@ msgstr ""
 "X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 16\n"
 
-#. placeholder {0}: Math.trunc(uptime / 86400)
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
-#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# day} other {# days}}"
 
-#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# hour} other {# hours}}"
@@ -96,7 +93,6 @@ msgstr "Agent"
 msgid "Alerts"
 msgstr "Alarmer"
 
-#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/alerts/alert-button.tsx
 msgid "All Systems"
@@ -306,7 +302,6 @@ msgstr "Dokumentation"
 
 #. Context: System is down
 #: src/lib/utils.ts
-#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
@@ -567,7 +562,6 @@ msgid "Pause"
 msgstr "Pause"
 
 #: src/components/systems-table/systems-table.tsx
-#: src/components/systems-table/systems-table.tsx
 msgid "Paused"
 msgstr "Sat på pause"
 
@@ -700,7 +694,6 @@ msgid "Sort By"
 msgstr "Sorter efter"
 
 #: src/lib/utils.ts
-#: src/components/systems-table/systems-table.tsx
 msgid "Status"
 msgstr "Status"
 
@@ -816,7 +809,6 @@ msgstr "Udløser når brugen af en disk overstiger en tærskel"
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx
-#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
 msgstr ""
@@ -825,7 +817,6 @@ msgstr ""
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Opdateret i realtid. Klik på et system for at se information."
 
-#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Uptime"
 msgstr "Oppetid"

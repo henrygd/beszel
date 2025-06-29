@@ -18,14 +18,11 @@ msgstr ""
 "X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 16\n"
 
-#. placeholder {0}: Math.trunc(uptime / 86400)
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
-#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# den} few {# dny} other {# dní}}"
 
-#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# Hodina} few {# Hodiny} many {# Hodin} other {# Hodin}}"
@@ -96,7 +93,6 @@ msgstr "Agent"
 msgid "Alerts"
 msgstr "Výstrahy"
 
-#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/alerts/alert-button.tsx
 msgid "All Systems"
@@ -306,7 +302,6 @@ msgstr "Dokumentace"
 
 #. Context: System is down
 #: src/lib/utils.ts
-#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
@@ -567,7 +562,6 @@ msgid "Pause"
 msgstr "Pozastavit"
 
 #: src/components/systems-table/systems-table.tsx
-#: src/components/systems-table/systems-table.tsx
 msgid "Paused"
 msgstr "Pozastaveno"
 
@@ -700,7 +694,6 @@ msgid "Sort By"
 msgstr "Seřadit podle"
 
 #: src/lib/utils.ts
-#: src/components/systems-table/systems-table.tsx
 msgid "Status"
 msgstr "Stav"
 
@@ -816,7 +809,6 @@ msgstr "Spustí se, když využití disku překročí prahovou hodnotu"
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx
-#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
 msgstr "Funkční"
@@ -825,7 +817,6 @@ msgstr "Funkční"
 msgid "Updated in real time. Click on a system to view information."
 msgstr "Aktualizováno v reálném čase. Klepnutím na systém zobrazíte informace."
 
-#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Uptime"
 msgstr "Doba provozu"

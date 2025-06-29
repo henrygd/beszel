@@ -18,14 +18,11 @@ msgstr ""
 "X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 16\n"
 
-#. placeholder {0}: Math.trunc(uptime / 86400)
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
-#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# روز} other {# روز}}"
 
-#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# ساعت} other {# ساعت}}"
@@ -96,7 +93,6 @@ msgstr "عامل"
 msgid "Alerts"
 msgstr "هشدارها"
 
-#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/alerts/alert-button.tsx
 msgid "All Systems"
@@ -306,7 +302,6 @@ msgstr "مستندات"
 
 #. Context: System is down
 #: src/lib/utils.ts
-#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
@@ -567,7 +562,6 @@ msgid "Pause"
 msgstr "توقف"
 
 #: src/components/systems-table/systems-table.tsx
-#: src/components/systems-table/systems-table.tsx
 msgid "Paused"
 msgstr "مکث شده"
 
@@ -700,7 +694,6 @@ msgid "Sort By"
 msgstr "مرتب‌سازی بر اساس"
 
 #: src/lib/utils.ts
-#: src/components/systems-table/systems-table.tsx
 msgid "Status"
 msgstr "وضعیت"
 
@@ -816,7 +809,6 @@ msgstr "هنگامی که استفاده از هر دیسکی از یک آستا
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx
-#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
 msgstr ""
@@ -825,7 +817,6 @@ msgstr ""
 msgid "Updated in real time. Click on a system to view information."
 msgstr "به صورت لحظه‌ای به‌روزرسانی می‌شود. برای مشاهده اطلاعات، روی یک سیستم کلیک کنید."
 
-#: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Uptime"
 msgstr "آپتایم"
