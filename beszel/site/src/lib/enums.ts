@@ -10,4 +10,8 @@ export enum ChartType {
 	Disk,
 	Network,
 	CPU,
+	Volume,
+	Health,
+	Uptime,
+	HealthUptime,
 }

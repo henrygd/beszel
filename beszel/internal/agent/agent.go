@@ -96,7 +96,7 @@ func (a *Agent) gatherStats(sessionID string) *system.CombinedData {
 	slog.Debug("System stats", "data", cachedData)
 
 	if a.dockerManager != nil {
-		if containerStats, err := a.dockerManager.getDockerStats(); err == nil {
+		if containerStats, _, err := a.dockerManager.getDockerStats(); err == nil {
 			cachedData.Containers = containerStats
 			slog.Debug("Docker stats", "data", cachedData.Containers)
 		} else {

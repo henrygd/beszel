@@ -57,17 +57,17 @@ func (d *dockerManager) dequeue() {
 	}
 }
 
-// Returns stats for all running containers
-func (dm *dockerManager) getDockerStats() ([]*container.Stats, error) {
-	resp, err := dm.client.Get("http://localhost/containers/json")
+// Returns stats for all running containers and volume-to-container mapping
+func (dm *dockerManager) getDockerStats() ([]*container.Stats, map[string][]string, error) {
+	resp, err := dm.client.Get("http://localhost/containers/json?all=1")
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer resp.Body.Close()
 
 	dm.apiContainerList = dm.apiContainerList[:0]
 	if err := json.NewDecoder(resp.Body).Decode(&dm.apiContainerList); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	dm.isWindows = strings.Contains(resp.Header.Get("Server"), "windows")
@@ -81,11 +81,23 @@ func (dm *dockerManager) getDockerStats() ([]*container.Stats, error) {
 		clear(dm.validIds)
 	}
 
+	// Build volume-to-container mapping
+	volumeContainers := make(map[string][]string)
+
 	var failedContainers []*container.ApiInfo
 
 	for _, ctr := range dm.apiContainerList {
 		ctr.IdShort = ctr.Id[:12]
 		dm.validIds[ctr.IdShort] = struct{}{}
+		
+		// Build volume-to-container mapping
+		containerName := ctr.Names[0][1:] // Remove leading slash
+		for _, mount := range ctr.Mounts {
+			if mount.Type == "volume" && mount.Name != "" {
+				volumeContainers[mount.Name] = append(volumeContainers[mount.Name], containerName)
+			}
+		}
+		
 		// check if container is less than 1 minute old (possible restart)
 		// note: can't use Created field because it's not updated on restart
 		if strings.Contains(ctr.Status, "second") {
@@ -124,17 +136,43 @@ func (dm *dockerManager) getDockerStats() ([]*container.Stats, error) {
 		dm.wg.Wait()
 	}
 
+	// Get volume data once and cache it
+	volumeSizes := make(map[string]float64)
+	if len(volumeContainers) > 0 {
+		if volumeData, err := dm.getAllVolumeSizes(); err == nil {
+			volumeSizes = volumeData
+		} else {
+			slog.Debug("Error getting volume data", "err", err)
+		}
+	}
+
 	// populate final stats and remove old / invalid container stats
 	stats := make([]*container.Stats, 0, containersLength)
 	for id, v := range dm.containerStatsMap {
 		if _, exists := dm.validIds[id]; !exists {
 			delete(dm.containerStatsMap, id)
 		} else {
+			// Add volume data to container stats
+			if v.Volumes == nil {
+				v.Volumes = make(map[string]float64)
+			}
+			for _, mount := range dm.apiContainerList {
+				if mount.IdShort == id {
+					for _, mountPoint := range mount.Mounts {
+						if mountPoint.Type == "volume" && mountPoint.Name != "" {
+							if size, exists := volumeSizes[mountPoint.Name]; exists {
+								v.Volumes[mountPoint.Name] = size
+							}
+						}
+					}
+					break
+				}
+			}
 			stats = append(stats, v)
 		}
 	}
 
-	return stats, nil
+	return stats, volumeContainers, nil
 }
 
 // Updates stats for individual container
@@ -162,6 +200,7 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo) error {
 	stats.Mem = 0
 	stats.NetworkSent = 0
 	stats.NetworkRecv = 0
+	stats.Volumes = make(map[string]float64)
 
 	// docker host container stats response
 	var res container.ApiStats
@@ -217,6 +256,32 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo) error {
 	stats.NetworkRecv = bytesToMegabytes(recv_delta)
 	stats.PrevRead = res.Read
 
+	// Set health status from container info
+	// Parse health status from Status field (e.g., "Up 46 hours (healthy)")
+	if strings.Contains(ctr.Status, "(healthy)") {
+		stats.Health = "healthy"
+	} else if strings.Contains(ctr.Status, "(unhealthy)") {
+		stats.Health = "unhealthy"
+	} else if strings.Contains(ctr.Status, "(starting)") {
+		stats.Health = "starting"
+	} else {
+		stats.Health = "none"
+	}
+
+	// Extract Docker Compose project name from labels
+	if ctr.Labels != nil {
+		if projectName, exists := ctr.Labels["com.docker.compose.project"]; exists {
+			stats.Project = projectName
+		}
+	}
+
+	// Calculate uptime in seconds
+	if ctr.Created > 0 {
+		createdTime := time.Unix(ctr.Created, 0)
+		uptime := time.Since(createdTime).Seconds()
+		stats.Uptime = twoDecimals(uptime)
+	}
+
 	return nil
 }
 
@@ -225,6 +290,69 @@ func (dm *dockerManager) deleteContainerStatsSync(id string) {
 	dm.containerStatsMutex.Lock()
 	defer dm.containerStatsMutex.Unlock()
 	delete(dm.containerStatsMap, id)
+}
+
+// Get size of a specific volume
+func (dm *dockerManager) getVolumeSize(volumeName string) (float64, error) {
+	// Use the system/df endpoint to get volume usage data
+	resp, err := dm.client.Get("http://localhost/system/df")
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+
+	var dfData struct {
+		Volumes []struct {
+			Name      string `json:"Name"`
+			UsageData struct {
+				Size int64 `json:"Size"`
+			} `json:"UsageData"`
+		} `json:"Volumes"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&dfData); err != nil {
+		return 0, err
+	}
+
+	// Find the specific volume
+	for _, volume := range dfData.Volumes {
+		if volume.Name == volumeName {
+			// Convert bytes to MB
+			return float64(volume.UsageData.Size) / (1024 * 1024), nil
+		}
+	}
+
+	return 0, fmt.Errorf("volume %s not found", volumeName)
+}
+
+// Get all volume sizes in a single API call
+func (dm *dockerManager) getAllVolumeSizes() (map[string]float64, error) {
+	resp, err := dm.client.Get("http://localhost/system/df")
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var dfData struct {
+		Volumes []struct {
+			Name      string `json:"Name"`
+			UsageData struct {
+				Size int64 `json:"Size"`
+			} `json:"UsageData"`
+		} `json:"Volumes"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&dfData); err != nil {
+		return nil, err
+	}
+
+	volumeSizes := make(map[string]float64)
+	for _, volume := range dfData.Volumes {
+		// Convert bytes to MB
+		volumeSizes[volume.Name] = float64(volume.UsageData.Size) / (1024 * 1024)
+	}
+
+	return volumeSizes, nil
 }
 
 // Creates a new http client for Docker or Podman API

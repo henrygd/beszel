@@ -28,7 +28,7 @@ import {
 	listen,
 	toFixedFloat,
 	useLocalStorage,
-	generateContainerColors,
+	generateStackBasedColors,
 } from "@/lib/utils"
 import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
@@ -148,7 +148,7 @@ function ContainerLegend({ containerData, containerColors }: { containerData: Ch
 	return (
 		<Card className="mb-4">
 			<CardHeader className="pb-2 pt-2">
-				<span className="text-xs text-muted-foreground font-semibold">{t`Containers`}</span>
+				<span className="text-xs text-muted-foreground font-semibold">{t`Container Filtering`}</span>
 			</CardHeader>
 			<CardContent className="pt-0 pb-2">
 				{containerNames.length === 0 ? (
@@ -202,6 +202,7 @@ export default function SystemDetail({ name }: { name: string }) {
 	const systems = useStore($systems)
 	const chartTime = useStore($chartTime)
 	const maxValues = useStore($maxValues)
+	const containerFilter = useStore($containerFilter)
 	const [grid, setGrid] = useLocalStorage("grid", true)
 	const [system, setSystem] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
@@ -316,17 +317,17 @@ export default function SystemDetail({ name }: { name: string }) {
 	const makeContainerData = useCallback((containers: ContainerStatsRecord[]) => {
 		const containerData = [] as ChartData["containerData"]
 		
-		// Extract all unique container names to generate consistent colors
-		const containerNames = new Set<string>()
+		// Extract all unique containers with their project information
+		const allContainers = new Map<string, any>()
 		for (let { stats } of containers) {
 			for (let container of stats) {
-				containerNames.add(container.n)
+				allContainers.set(container.n, container)
 			}
 		}
 		
-		// Generate consistent colors for all containers
-		if (containerNames.size > 0) {
-			const colorMap = generateContainerColors(Array.from(containerNames))
+		// Generate stack-based colors for all containers
+		if (allContainers.size > 0) {
+			const colorMap = generateStackBasedColors(Array.from(allContainers.values()))
 			$containerColors.set(colorMap)
 		}
 		
@@ -756,6 +757,50 @@ export default function SystemDetail({ name }: { name: string }) {
 									>
 										<ContainerChart chartData={chartData} dataKey="n" chartType={ChartType.Network} />
 									</ChartCard>
+									{/* Docker Volumes Chart */}
+									{(() => {
+										// Check if any containers have volume data
+										const hasVolumes = containerData.some(stats => {
+											if (!stats.created) return false
+											return Object.values(stats).some(container => 
+												container && typeof container === 'object' && 'v' in container && 
+												container.v && Object.keys(container.v).length > 0
+											)
+										})
+										
+										return hasVolumes ? (
+											<ChartCard
+												empty={dataEmpty}
+												grid={grid}
+												title={dockerOrPodman(t`Docker Volumes`, system)}
+												description={t`Storage usage of Docker volumes`}
+											>
+												<ContainerChart chartData={chartData} dataKey="v" chartType={ChartType.Volume} />
+											</ChartCard>
+										) : null
+									})()}
+									{/* Docker Health+Uptime Combined Chart */}
+									{(() => {
+										// Check if any containers have health or uptime data
+										const hasHealthUptime = containerData.some(stats => {
+											if (!stats.created) return false
+											return Object.values(stats).some(container =>
+												container && typeof container === 'object' && 
+												(('h' in container && container.h) || ('u' in container && container.u))
+											)
+										})
+										
+										return hasHealthUptime ? (
+											<ChartCard
+												empty={dataEmpty}
+												grid={grid}
+												title={dockerOrPodman(t`Docker Health & Uptime`, system)}
+												description={t`Health status and Uptime of containers`}
+											>
+												<ContainerChart chartData={chartData} dataKey="h" chartType={ChartType.HealthUptime} />
+											</ChartCard>
+										) : null
+									})()}
 								</div>
 							</>
 						) : (
@@ -779,25 +824,39 @@ export default function SystemDetail({ name }: { name: string }) {
 	)
 }
 
-function FilterBar({ store = $containerFilter }: { store?: typeof $containerFilter }) {
+function FilterBar({ store = $containerFilter }: { store?: any }) {
 	const containerFilter = useStore(store)
 	const { t } = useLingui()
 
 	const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-		store.set(e.target.value)
-	}, [])
+		const value = e.target.value
+		if (Array.isArray(containerFilter)) {
+			if (value) {
+				store.set([value])
+			} else {
+				store.set([])
+			}
+		} else {
+			store.set(value)
+		}
+	}, [store, containerFilter])
 
 	return (
 		<>
-			<Input placeholder={t`Filter...`} className="ps-4 pe-8" value={containerFilter} onChange={handleChange} />
-			{containerFilter && (
+			<Input
+				placeholder={t`Filter...`}
+				className="ps-4 pe-8"
+				value={Array.isArray(containerFilter) ? containerFilter.join(', ') : containerFilter}
+				onChange={handleChange}
+			/>
+			{(Array.isArray(containerFilter) ? containerFilter.length > 0 : !!containerFilter) && (
 				<Button
 					type="button"
 					variant="ghost"
 					size="icon"
 					aria-label="Clear"
 					className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-					onClick={() => store.set([])}
+					onClick={() => store.set(Array.isArray(containerFilter) ? [] : "")}
 				>
 					<XIcon className="h-4 w-4" />
 				</Button>

@@ -8,21 +8,22 @@ type ApiInfo struct {
 	IdShort string
 	Names   []string
 	Status  string
+	Health  string `json:"Health,omitempty"` // Container health status
+	Created int64  `json:"Created,omitempty"` // Container creation timestamp
 	// Image   string
 	// ImageID string
 	// Command string
-	// Created int64
 	// Ports      []Port
 	// SizeRw     int64 `json:",omitempty"`
 	// SizeRootFs int64 `json:",omitempty"`
-	// Labels     map[string]string
+	Labels     map[string]string
 	// State      string
 	// HostConfig struct {
 	// 	NetworkMode string            `json:",omitempty"`
 	// 	Annotations map[string]string `json:",omitempty"`
 	// }
 	// NetworkSettings *SummaryNetworkSettings
-	// Mounts          []MountPoint
+	Mounts []MountPoint
 }
 
 // Docker container resources from /containers/{id}/stats
@@ -104,7 +105,23 @@ type Stats struct {
 	Mem         float64      `json:"m"`
 	NetworkSent float64      `json:"ns"`
 	NetworkRecv float64      `json:"nr"`
+	Volumes     map[string]float64 `json:"v,omitempty"` // Volume name to size mapping
+	Health      string       `json:"h,omitempty"`       // Container health status
+	Uptime      float64      `json:"u,omitempty"`       // Container uptime in seconds
+	Project     string       `json:"p,omitempty"`       // Docker Compose project name
 	PrevCpu     [2]uint64    `json:"-"`
 	PrevNet     prevNetStats `json:"-"`
 	PrevRead    time.Time    `json:"-"`
+}
+
+// MountPoint represents a mount point in a container
+type MountPoint struct {
+	Type        string `json:"Type"`
+	Name        string `json:"Name"`
+	Source      string `json:"Source"`
+	Destination string `json:"Destination"`
+	Driver      string `json:"Driver,omitempty"`
+	Mode        string `json:"Mode"`
+	RW          bool   `json:"RW"`
+	Propagation string `json:"Propagation"`
 }
