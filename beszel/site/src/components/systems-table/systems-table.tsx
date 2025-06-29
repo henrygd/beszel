@@ -61,6 +61,8 @@ import {
 	Settings2Icon,
 	EyeIcon,
 	PenBoxIcon,
+	ClockIcon,
+	FilterIcon,
 } from "lucide-react"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
 import { $systems, pb } from "@/lib/stores"
@@ -69,15 +71,16 @@ import { cn, copyToClipboard, decimalString, isReadOnlyUser, useLocalStorage } f
 import AlertsButton from "../alerts/alert-button"
 import { $router, Link, navigate } from "../router"
 import { EthernetIcon, GpuIcon, ThermometerIcon } from "../ui/icons"
-import { useLingui, Trans } from "@lingui/react/macro"
+import { useLingui, Trans, Plural } from "@lingui/react/macro"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
-import { Input } from "../ui/input"
+import { Input } from "@/components/ui/input"
 import { ClassValue } from "clsx"
 import { getPagePath } from "@nanostores/router"
 import { SystemDialog } from "../add-system"
 import { Dialog } from "../ui/dialog"
 
 type ViewMode = "table" | "grid"
+type StatusFilter = "all" | "up" | "down" | "paused"
 
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	const val = (info.getValue() as number) || 0
@@ -123,12 +126,21 @@ export default function SystemsTable() {
 	const data = useStore($systems)
 	const { i18n, t } = useLingui()
 	const [filter, setFilter] = useState<string>()
+	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
 	const [sorting, setSorting] = useState<SortingState>([{ id: "system", desc: false }])
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>("cols", {})
 	const [viewMode, setViewMode] = useLocalStorage<ViewMode>("viewMode", window.innerWidth > 1024 ? "table" : "grid")
 
 	const locale = i18n.locale
+
+	// Filter data based on status filter
+	const filteredData = useMemo(() => {
+		if (statusFilter === "all") {
+			return data
+		}
+		return data.filter((system) => system.status === statusFilter)
+	}, [data, statusFilter])
 
 	useEffect(() => {
 		if (filter !== undefined) {
@@ -265,6 +277,40 @@ export default function SystemsTable() {
 				},
 			},
 			{
+				accessorFn: (originalRow) => originalRow.info.u,
+				id: "uptime",
+				name: () => t`Uptime`,
+				invertSorting: true,
+				sortUndefined: -1,
+				size: 60,
+				Icon: ClockIcon,
+				header: sortableHeader,
+				cell(info) {
+					const uptime = info.getValue() as number
+					if (!uptime) {
+						return null
+					}
+					
+					let uptimeDisplay: React.ReactNode
+					if (uptime < 172800) {
+						const hours = Math.trunc(uptime / 3600)
+						uptimeDisplay = <Plural value={hours} one="# hour" other="# hours" />
+					} else {
+						uptimeDisplay = <Plural value={Math.trunc(uptime / 86400)} one="# day" other="# days" />
+					}
+					
+					return (
+						<span
+							className={cn("tabular-nums whitespace-nowrap", {
+								"ps-1": viewMode === "table",
+							})}
+						>
+							{uptimeDisplay}
+						</span>
+					)
+				},
+			},
+			{
 				accessorKey: "info.v",
 				id: "agent",
 				name: () => t`Agent`,
@@ -314,7 +360,7 @@ export default function SystemsTable() {
 	}, [])
 
 	const table = useReactTable({
-		data,
+		data: filteredData,
 		columns: columnDefs,
 		getCoreRowModel: getCoreRowModel(),
 		onSortingChange: setSorting,
@@ -350,8 +396,8 @@ export default function SystemsTable() {
 							<Trans>Updated in real time. Click on a system to view information.</Trans>
 						</CardDescription>
 					</div>
-					<div className="flex gap-2 ms-auto w-full md:w-80">
-						<Input placeholder={t`Filter...`} onChange={(e) => setFilter(e.target.value)} className="px-4" />
+					<div className="flex gap-2 ms-auto w-full md:w-auto">
+						<Input placeholder={t`Filter...`} onChange={(e) => setFilter(e.target.value)} className="px-4 w-full md:w-80" />
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="outline">
@@ -360,7 +406,7 @@ export default function SystemsTable() {
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end" className="h-72 md:h-auto min-w-48 md:min-w-auto overflow-y-auto">
-								<div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-s md:divide-y-0">
+								<div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-s md:divide-y-0">
 									<div>
 										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
 											<LayoutGridIcon className="size-4" />
@@ -379,6 +425,32 @@ export default function SystemsTable() {
 											<DropdownMenuRadioItem value="grid" onSelect={(e) => e.preventDefault()} className="gap-2">
 												<LayoutGridIcon className="size-4" />
 												<Trans>Grid</Trans>
+											</DropdownMenuRadioItem>
+										</DropdownMenuRadioGroup>
+									</div>
+
+									<div>
+										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
+											<FilterIcon className="size-4" />
+											<Trans>Status</Trans>
+										</DropdownMenuLabel>
+										<DropdownMenuSeparator />
+										<DropdownMenuRadioGroup
+											className="px-1 pb-1"
+											value={statusFilter}
+											onValueChange={(value) => setStatusFilter(value as StatusFilter)}
+										>
+											<DropdownMenuRadioItem value="all" onSelect={(e) => e.preventDefault()} className="gap-2">
+												<Trans>All Systems</Trans>
+											</DropdownMenuRadioItem>
+											<DropdownMenuRadioItem value="up" onSelect={(e) => e.preventDefault()} className="gap-2">
+												<Trans>Up</Trans>
+											</DropdownMenuRadioItem>
+											<DropdownMenuRadioItem value="down" onSelect={(e) => e.preventDefault()} className="gap-2">
+												<Trans>Down</Trans>
+											</DropdownMenuRadioItem>
+											<DropdownMenuRadioItem value="paused" onSelect={(e) => e.preventDefault()} className="gap-2">
+												<Trans>Paused</Trans>
 											</DropdownMenuRadioItem>
 										</DropdownMenuRadioGroup>
 									</div>
@@ -449,7 +521,7 @@ export default function SystemsTable() {
 				</div>
 			</CardHeader>
 		)
-	}, [visibleColumns.length, sorting, viewMode, locale])
+	}, [visibleColumns.length, sorting, viewMode, locale, statusFilter])
 
 	return (
 		<Card>
