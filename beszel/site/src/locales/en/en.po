@@ -566,10 +566,6 @@ msgstr "Pause"
 msgid "Paused"
 msgstr "Paused"
 
-#: src/components/systems-table/systems-table.tsx
-msgid "Pending"
-msgstr "Pending"
-
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "Please <0>configure an SMTP server</0> to ensure alerts are delivered."

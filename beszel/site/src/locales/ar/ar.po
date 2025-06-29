@@ -571,10 +571,6 @@ msgstr "إيقاف مؤقت"
 msgid "Paused"
 msgstr "متوقف مؤقتًا"
 
-#: src/components/systems-table/systems-table.tsx
-msgid "Pending"
-msgstr ""
-
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "يرجى <0>تكوين خادم SMTP</0> لضمان تسليم التنبيهات."

@@ -571,10 +571,6 @@ msgstr "Premor"
 msgid "Paused"
 msgstr "Zaustavljeno"
 
-#: src/components/systems-table/systems-table.tsx
-msgid "Pending"
-msgstr ""
-
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "<0>Nastavite strežnik SMTP</0>, da zagotovite dostavo opozoril."
