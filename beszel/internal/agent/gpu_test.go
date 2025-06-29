@@ -352,6 +352,15 @@ func TestGetCurrentData(t *testing.T) {
 					Power:       60,
 					Count:       1,
 				},
+				"2": {
+					Name:        "GPU 2",
+					Temperature: 70,
+					MemoryUsed:  4096,
+					MemoryTotal: 8192,
+					Usage:       200,
+					Power:       400,
+					Count:       1,
+				},
 			},
 		}
 
@@ -360,6 +369,7 @@ func TestGetCurrentData(t *testing.T) {
 		// Verify name disambiguation
 		assert.Equal(t, "GPU1 0", result["0"].Name)
 		assert.Equal(t, "GPU1 1", result["1"].Name)
+		assert.Equal(t, "GPU 2", result["2"].Name)
 
 		// Check averaged values in the result
 		assert.InDelta(t, 50.0, result["0"].Usage, 0.01)
