@@ -5,6 +5,7 @@ import {
 	pb,
 	$chartTime,
 	$containerFilter,
+	$networkInterfaceFilter,
 	$userSettings,
 	$direction,
 	$maxValues,
@@ -42,6 +43,7 @@ import { getPagePath } from "@nanostores/router"
 
 const AreaChartDefault = lazy(() => import("../charts/area-chart"))
 const ContainerChart = lazy(() => import("../charts/container-chart"))
+const NetworkInterfaceChart = lazy(() => import("../charts/network-interface-chart"))
 const MemChart = lazy(() => import("../charts/mem-chart"))
 const DiskChart = lazy(() => import("../charts/disk-chart"))
 const SwapChart = lazy(() => import("../charts/swap-chart"))
@@ -128,6 +130,7 @@ export default function SystemDetail({ name }: { name: string }) {
 	const netCardRef = useRef<HTMLDivElement>(null)
 	const persistChartTime = useRef(false)
 	const [containerFilterBar, setContainerFilterBar] = useState(null as null | JSX.Element)
+	const [networkInterfaceFilterBar, setNetworkInterfaceFilterBar] = useState(null as null | JSX.Element)
 	const [bottomSpacing, setBottomSpacing] = useState(0)
 	const [chartLoading, setChartLoading] = useState(true)
 	const isLongerChart = chartTime !== "1h"
@@ -142,7 +145,9 @@ export default function SystemDetail({ name }: { name: string }) {
 			setSystemStats([])
 			setContainerData([])
 			setContainerFilterBar(null)
+			setNetworkInterfaceFilterBar(null)
 			$containerFilter.set("")
+			$networkInterfaceFilter.set("")
 		}
 	}, [name])
 
@@ -235,6 +240,19 @@ export default function SystemDetail({ name }: { name: string }) {
 			makeContainerData(containerData)
 		})
 	}, [system, chartTime])
+
+	// Set up network interface filter bar
+	useEffect(() => {
+		if (systemStats.length > 0) {
+			const latestStats = systemStats[systemStats.length - 1]
+			const networkInterfaces = Object.keys(latestStats.stats.ni || {})
+			if (networkInterfaces.length > 0) {
+				!networkInterfaceFilterBar && setNetworkInterfaceFilterBar(<FilterBar store={$networkInterfaceFilter} />)
+			} else if (networkInterfaceFilterBar) {
+				setNetworkInterfaceFilterBar(null)
+			}
+		}
+	}, [systemStats, networkInterfaceFilterBar])
 
 	// make container stats for charts
 	const makeContainerData = useCallback((containers: ContainerStatsRecord[]) => {
@@ -516,21 +534,43 @@ export default function SystemDetail({ name }: { name: string }) {
 						empty={dataEmpty}
 						grid={grid}
 						title={t`Disk I/O`}
-						description={t`Throughput of root filesystem`}
+						description={t`Disk read and write throughput`}
 						cornerEl={maxValSelect}
 					>
 						<AreaChartDefault chartData={chartData} chartName="dio" maxToggled={maxValues} />
 					</ChartCard>
 
-					<ChartCard
-						empty={dataEmpty}
-						grid={grid}
-						title={t`Bandwidth`}
-						cornerEl={maxValSelect}
-						description={t`Network traffic of public interfaces`}
-					>
-						<AreaChartDefault chartData={chartData} chartName="bw" maxToggled={maxValues} />
-					</ChartCard>
+					{/* Network interface charts */}
+					{Object.keys(systemStats.at(-1)?.stats.ni ?? {}).length > 0 && (
+						<div
+							className={cn({
+								"col-span-full": !grid,
+							})}
+						>
+							<ChartCard
+								empty={dataEmpty}
+								title={t`Network Interfaces`}
+								description={t`Network traffic per interface`}
+								cornerEl={networkInterfaceFilterBar}
+							>
+								{/* @ts-ignore */}
+								<NetworkInterfaceChart chartData={chartData} maxToggled={maxValues} />
+							</ChartCard>
+						</div>
+					)}
+
+					{/* Legacy combined bandwidth chart - only show if no per-interface data */}
+					{(!systemStats.at(-1)?.stats.ni || Object.keys(systemStats.at(-1)?.stats.ni ?? {}).length === 0) && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Bandwidth`}
+							cornerEl={maxValSelect}
+							description={t`Network traffic of public interfaces`}
+						>
+							<AreaChartDefault chartData={chartData} chartName="bw" maxToggled={maxValues} />
+						</ChartCard>
+					)}
 
 					{containerFilterBar && containerData.length > 0 && (
 						<div
