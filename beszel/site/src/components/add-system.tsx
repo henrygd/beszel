@@ -25,6 +25,7 @@ import { basePath, navigate } from "./router"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import { SystemRecord } from "@/types"
 import { AppleIcon, DockerIcon, TuxIcon, WindowsIcon } from "./ui/icons"
+import { InputTags } from "@/components/ui/input-tags"
 
 export function AddSystemButton({ className }: { className?: string }) {
 	const [open, setOpen] = useState(false)
@@ -102,12 +103,14 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 	const [hostValue, setHostValue] = useState(system?.host ?? "")
 	const isUnixSocket = hostValue.startsWith("/")
 	const [tab, setTab] = useLocalStorage("as-tab", "docker")
+	const [tags, setTags] = useState<string[]>(system?.tags ?? [])
 
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault()
 		const formData = new FormData(e.target as HTMLFormElement)
 		const data = Object.fromEntries(formData) as Record<string, any>
 		data.users = pb.authStore.record!.id
+		data.tags = tags
 		try {
 			setOpen(false)
 			if (system) {
@@ -217,6 +220,9 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 								</Tooltip>
 							</TooltipProvider>
 						</div>
+						{/* Tags field aligned in the grid */}
+						<Label htmlFor="tags" className="xs:text-end">Tags</Label>
+						<InputTags id="tags" value={tags} onChange={setTags} placeholder="Add tags..." />
 					</div>
 					<DialogFooter className="flex justify-end gap-x-2 gap-y-3 flex-col mt-5">
 						{/* Docker */}

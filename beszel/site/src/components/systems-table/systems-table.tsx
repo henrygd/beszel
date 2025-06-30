@@ -76,6 +76,7 @@ import { ClassValue } from "clsx"
 import { getPagePath } from "@nanostores/router"
 import { SystemDialog } from "../add-system"
 import { Dialog } from "../ui/dialog"
+import { Badge } from "@/components/ui/badge"
 
 type ViewMode = "table" | "grid"
 
@@ -127,6 +128,7 @@ export default function SystemsTable() {
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>("cols", {})
 	const [viewMode, setViewMode] = useLocalStorage<ViewMode>("viewMode", window.innerWidth > 1024 ? "table" : "grid")
+	const [tagFilter, setTagFilter] = useState<string>("")
 
 	const locale = i18n.locale
 
@@ -152,11 +154,12 @@ export default function SystemsTable() {
 				name: () => t`System`,
 				filterFn: (row, _, filterVal) => {
 					const filterLower = filterVal.toLowerCase()
-					const { name, status } = row.original
-					// Check if the filter matches the name or status for this row
+					const { name, status, tags = [] } = row.original
+					// Check if the filter matches the name, status, or any tag
 					if (
 						name.toLowerCase().includes(filterLower) ||
-						statusTranslations[status as keyof typeof statusTranslations]?.().includes(filterLower)
+						statusTranslations[status as keyof typeof statusTranslations]?.().includes(filterLower) ||
+						tags.some((tag: string) => tag.toLowerCase().includes(filterLower))
 					) {
 						return true
 					}
@@ -179,6 +182,24 @@ export default function SystemsTable() {
 					</span>
 				),
 				header: sortableHeader,
+			},
+			{
+				accessorKey: "tags",
+				id: "tags",
+				name: () => t`Tags`,
+				cell: (info) => {
+					const tags = info.getValue() as string[]
+					if (!tags?.length) return null
+					return (
+						<div className="flex flex-wrap gap-1">
+							{tags.map((tag) => (
+								<Badge key={tag}>{tag}</Badge>
+							))}
+						</div>
+					)
+				},
+				header: sortableHeader,
+				Icon: LayoutGridIcon,
 			},
 			{
 				accessorKey: "info.cpu",
@@ -609,6 +630,13 @@ const SystemCard = memo(
 								</div>
 							)
 						})}
+						{system.tags?.length > 0 && (
+							<div className="flex flex-wrap gap-1 mt-2">
+								{system.tags.map((tag) => (
+									<Badge key={tag}>{tag}</Badge>
+								))}
+							</div>
+						)}
 					</CardContent>
 					<Link
 						href={getPagePath($router, "system", { name: row.original.name })}

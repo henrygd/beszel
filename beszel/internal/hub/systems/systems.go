@@ -33,10 +33,11 @@ type SystemManager struct {
 }
 
 type System struct {
-	Id      string `db:"id"`
-	Host    string `db:"host"`
-	Port    string `db:"port"`
-	Status  string `db:"status"`
+	Id      string   `db:"id"`
+	Host    string   `db:"host"`
+	Port    string   `db:"port"`
+	Status  string   `db:"status"`
+	Tags    []string `db:"tags"`
 	manager *SystemManager
 	client  *ssh.Client
 	data    *system.CombinedData
@@ -200,6 +201,7 @@ func (sm *SystemManager) AddRecord(record *core.Record) (err error) {
 		Status: record.GetString("status"),
 		Host:   record.GetString("host"),
 		Port:   record.GetString("port"),
+		Tags:   record.GetStringSlice("tags"),
 	}
 	return sm.AddSystem(system)
 }
