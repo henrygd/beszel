@@ -227,13 +227,15 @@ export default function SystemsTable() {
 				header: sortableHeader,
 				cell(info) {
 					const val = info.getValue() as number
+					const userSettings = useStore($userSettings)
+					const { display } = convertNetworkSpeed(val, userSettings.networkUnit)
 					return (
 						<span
 							className={cn("tabular-nums whitespace-nowrap", {
 								"ps-1": viewMode === "table",
 							})}
 						>
-							{decimalString(val, val >= 100 ? 1 : 2)} MB/s
+							{display}
 						</span>
 					)
 				},

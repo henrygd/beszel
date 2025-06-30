@@ -183,6 +183,7 @@ export type UserSettings = {
 	emails?: string[]
 	webhooks?: string[]
 	temperatureUnit?: "celsius" | "fahrenheit"
+	networkUnit?: "mbps" | "bps"
 }
 
 type ChartDataContainer = {

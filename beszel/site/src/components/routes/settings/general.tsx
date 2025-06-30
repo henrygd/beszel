@@ -125,6 +125,21 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 								</SelectContent>
 							</Select>
 						</div>
+
+						<div className="space-y-2">
+							<Label className="block" htmlFor="networkUnit">
+								<Trans>Network unit</Trans>
+							</Label>
+							<Select name="networkUnit" key={userSettings.networkUnit} defaultValue={userSettings.networkUnit || "mbps"}>
+								<SelectTrigger id="networkUnit">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="mbps">MB/s (Megabytes per second)</SelectItem>
+									<SelectItem value="bps">bps (Bits per second)</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
 					</div>
 				</div>
 				<Separator />

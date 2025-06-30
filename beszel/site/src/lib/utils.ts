@@ -283,6 +283,50 @@ export function convertTemperature(
 	}
 }
 
+/** Convert network speed from MB/s to the specified unit  */
+export function convertNetworkSpeed(
+	mbps: number,
+	unit: "mbps" | "bps" = "mbps"
+): { value: number; symbol: string; display: string } {
+	switch (unit) {
+		case "bps": {
+			const bps = mbps * 8 * 1_000_000 // Convert MB/s to bits per second
+
+			// Format large numbers appropriately
+			if (bps >= 1_000_000_000) {
+				return {
+					value: bps / 1_000_000_000,
+					symbol: " Gbps",
+					display: `${decimalString(bps / 1_000_000_000, bps >= 10_000_000_000 ? 0 : 1)} Gbps`,
+				}
+			} else if (bps >= 1_000_000) {
+				return {
+					value: bps / 1_000_000,
+					symbol: " Mbps",
+					display: `${decimalString(bps / 1_000_000, bps >= 10_000_000 ? 0 : 1)} Mbps`,
+				}
+			} else if (bps >= 1_000) {
+				return {
+					value: bps / 1_000,
+					symbol: " Kbps",
+					display: `${decimalString(bps / 1_000, bps >= 10_000 ? 0 : 1)} Kbps`,
+				}
+			} else {
+				return {
+					value: bps,
+					symbol: " bps",
+					display: `${Math.round(bps)} bps`,
+				}
+			}
+		}
+		default:
+			return {
+				value: mbps,
+				symbol: " MB/s",
+				display: `${decimalString(mbps, mbps >= 100 ? 1 : 2)} MB/s`,
+			}
+	}
+}
 
 export async function updateUserSettings() {
 	try {

@@ -18,6 +18,7 @@ type UserSettings struct {
 	NotificationEmails   []string `json:"emails"`
 	NotificationWebhooks []string `json:"webhooks"`
 	TemperatureUnit      string   `json:"temperatureUnit"` // "celsius" or "fahrenheit"
+	NetworkUnit          string   `json:"networkUnit"`     // "mbps" (MB/s) or "bps"
 	// Language             string   `json:"lang"`
 }
 
@@ -45,6 +46,7 @@ func (um *UserManager) InitializeUserSettings(e *core.RecordEvent) error {
 		NotificationEmails:   []string{},
 		NotificationWebhooks: []string{},
 		TemperatureUnit:      "celsius",
+		NetworkUnit:          "mbps",
 	}
 	record.UnmarshalJSONField("settings", &settings)
 	if len(settings.NotificationEmails) == 0 {

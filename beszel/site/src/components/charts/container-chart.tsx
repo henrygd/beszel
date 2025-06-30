@@ -10,10 +10,11 @@ import {
 	toFixedFloat,
 	getSizeAndUnit,
 	toFixedWithoutTrailingZeros,
+	convertNetworkSpeed,
 } from "@/lib/utils"
 // import Spinner from '../spinner'
 import { useStore } from "@nanostores/react"
-import { $containerFilter } from "@/lib/stores"
+import { $containerFilter, $userSettings } from "@/lib/stores"
 import { ChartData } from "@/types"
 import { Separator } from "../ui/separator"
 import { ChartType } from "@/lib/enums"
@@ -30,6 +31,7 @@ export default memo(function ContainerChart({
 	unit?: string
 }) {
 	const filter = useStore($containerFilter)
+	const userSettings = useStore($userSettings)
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
 	const { containerData } = chartData
@@ -87,10 +89,15 @@ export default memo(function ContainerChart({
 				const val = toFixedWithoutTrailingZeros(value, 2) + unit
 				return updateYAxisWidth(val)
 			}
+		} else if (isNetChart) {
+			obj.tickFormatter = (value) => {
+				const { value: convertedValue, symbol } = convertNetworkSpeed(value, userSettings.networkUnit)
+				return updateYAxisWidth(`${toFixedFloat(convertedValue, 2)}${symbol}`)
+			}
 		} else {
 			obj.tickFormatter = (value) => {
 				const { v, u } = getSizeAndUnit(value, false)
-				return updateYAxisWidth(`${toFixedFloat(v, 2)}${u}${isNetChart ? "/s" : ""}`)
+				return updateYAxisWidth(`${toFixedFloat(v, 2)}${u}`)
 			}
 		}
 		// tooltip formatter
@@ -99,12 +106,14 @@ export default memo(function ContainerChart({
 				try {
 					const sent = item?.payload?.[key]?.ns ?? 0
 					const received = item?.payload?.[key]?.nr ?? 0
+					const { display: receivedDisplay } = convertNetworkSpeed(received, userSettings.networkUnit)
+					const { display: sentDisplay } = convertNetworkSpeed(sent, userSettings.networkUnit)
 					return (
 						<span className="flex">
-							{decimalString(received)} MB/s
+							{receivedDisplay}
 							<span className="opacity-70 ms-0.5"> rx </span>
 							<Separator orientation="vertical" className="h-3 mx-1.5 bg-primary/40" />
-							{decimalString(sent)} MB/s
+							{sentDisplay}
 							<span className="opacity-70 ms-0.5"> tx</span>
 						</span>
 					)

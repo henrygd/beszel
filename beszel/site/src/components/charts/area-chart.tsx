@@ -9,11 +9,14 @@ import {
 	toFixedWithoutTrailingZeros,
 	decimalString,
 	chartMargin,
+	convertNetworkSpeed,
 } from "@/lib/utils"
 // import Spinner from '../spinner'
 import { ChartData } from "@/types"
 import { memo, useMemo } from "react"
 import { useLingui } from "@lingui/react/macro"
+import { useStore } from "@nanostores/react"
+import { $userSettings } from "@/lib/stores"
 
 /** [label, key, color, opacity] */
 type DataKeys = [string, string, number, number]
@@ -47,10 +50,21 @@ export default memo(function AreaChartDefault({
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { i18n } = useLingui()
+	const userSettings = useStore($userSettings)
 
 	const { chartTime } = chartData
 
 	const showMax = chartTime !== "1h" && maxToggled
+
+	// Determine if this is a network chart and adjust unit accordingly
+	const isNetworkChart = chartName === "bw"
+	const displayUnit = useMemo(() => {
+		if (isNetworkChart) {
+			const { symbol } = convertNetworkSpeed(1, userSettings.networkUnit)
+			return symbol
+		}
+		return unit
+	}, [isNetworkChart, userSettings.networkUnit, unit])
 
 	const dataKeys: DataKeys[] = useMemo(() => {
 		// [label, key, color, opacity]
@@ -102,8 +116,11 @@ export default memo(function AreaChartDefault({
 							let val: string
 							if (tickFormatter) {
 								val = tickFormatter(value)
+							} else if (isNetworkChart) {
+								const { value: convertedValue, symbol } = convertNetworkSpeed(value, userSettings.networkUnit)
+								val = toFixedWithoutTrailingZeros(convertedValue, 2) + symbol
 							} else {
-								val = toFixedWithoutTrailingZeros(value, 2) + unit
+								val = toFixedWithoutTrailingZeros(value, 2) + displayUnit
 							}
 							return updateYAxisWidth(val)
 						}}
@@ -120,8 +137,11 @@ export default memo(function AreaChartDefault({
 								contentFormatter={({ value }) => {
 									if (contentFormatter) {
 										return contentFormatter(value)
+									} else if (isNetworkChart) {
+										const { display } = convertNetworkSpeed(value, userSettings.networkUnit)
+										return display
 									}
-									return decimalString(value) + unit
+									return decimalString(value) + displayUnit
 								}}
 								// indicator="line"
 							/>
