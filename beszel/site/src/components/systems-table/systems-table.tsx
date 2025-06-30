@@ -63,9 +63,9 @@ import {
 	PenBoxIcon,
 } from "lucide-react"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
-import { $systems, pb } from "@/lib/stores"
+import { $systems, $userSettings, pb } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
-import { cn, copyToClipboard, decimalString, isReadOnlyUser, useLocalStorage } from "@/lib/utils"
+import { cn, copyToClipboard, decimalString, isReadOnlyUser, useLocalStorage, convertTemperature, convertNetworkSpeed } from "@/lib/utils"
 import AlertsButton from "../alerts/alert-button"
 import { $router, Link, navigate } from "../router"
 import { EthernetIcon, GpuIcon, ThermometerIcon } from "../ui/icons"
@@ -253,13 +253,15 @@ export default function SystemsTable() {
 					if (!val) {
 						return null
 					}
+					const userSettings = useStore($userSettings)
+					const { value, symbol } = convertTemperature(val, userSettings.temperatureUnit)
 					return (
 						<span
 							className={cn("tabular-nums whitespace-nowrap", {
 								"ps-1.5": viewMode === "table",
 							})}
 						>
-							{decimalString(val)} °C
+							{decimalString(value, value >= 100 ? 1 : 2)} {symbol}
 						</span>
 					)
 				},

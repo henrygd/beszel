@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro";
+import { t } from "@lingui/core/macro"
 import { toast } from "@/components/ui/use-toast"
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
@@ -269,6 +269,20 @@ export function useLocalStorage<T>(key: string, defaultValue: T) {
 
 	return [value, setValue]
 }
+
+/** Convert temperature from Celsius to the specified unit */
+export function convertTemperature(
+	celsius: number,
+	unit: "celsius" | "fahrenheit" = "celsius"
+): { value: number; symbol: string } {
+	switch (unit) {
+		case "fahrenheit":
+			return { value: (celsius * 9) / 5 + 32, symbol: "°F" }
+		default:
+			return { value: celsius, symbol: "°C" }
+	}
+}
+
 
 export async function updateUserSettings() {
 	try {

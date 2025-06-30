@@ -182,6 +182,7 @@ export type UserSettings = {
 	chartTime: ChartTimes
 	emails?: string[]
 	webhooks?: string[]
+	temperatureUnit?: "celsius" | "fahrenheit"
 }
 
 type ChartDataContainer = {
