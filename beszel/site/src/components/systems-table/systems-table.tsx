@@ -129,8 +129,22 @@ export default function SystemsTable() {
 	const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>("cols", {})
 	const [viewMode, setViewMode] = useLocalStorage<ViewMode>("viewMode", window.innerWidth > 1024 ? "table" : "grid")
 	const [tagFilter, setTagFilter] = useState<string>("")
+	const [selectedTags, setSelectedTags] = useState<string[]>([])
 
 	const locale = i18n.locale
+
+	// Get all unique tags from systems
+	const allTags = useMemo(() => {
+		const tags = new Set<string>()
+		data.forEach((sys) => (sys.tags || []).forEach((tag) => tags.add(tag)))
+		return Array.from(tags).sort()
+	}, [data])
+
+	// Filter data by selected tags (OR logic: show systems with ANY selected tag)
+	const filteredData = useMemo(() => {
+		if (!selectedTags.length) return data
+		return data.filter((sys) => sys.tags?.some((tag) => selectedTags.includes(tag)))
+	}, [data, selectedTags])
 
 	useEffect(() => {
 		if (filter !== undefined) {
@@ -335,7 +349,7 @@ export default function SystemsTable() {
 	}, [])
 
 	const table = useReactTable({
-		data,
+		data: filteredData,
 		columns: columnDefs,
 		getCoreRowModel: getCoreRowModel(),
 		onSortingChange: setSorting,
@@ -371,8 +385,38 @@ export default function SystemsTable() {
 							<Trans>Updated in real time. Click on a system to view information.</Trans>
 						</CardDescription>
 					</div>
-					<div className="flex gap-2 ms-auto w-full md:w-80">
-						<Input placeholder={t`Filter...`} onChange={(e) => setFilter(e.target.value)} className="px-4" />
+					<div className="flex gap-2 ms-auto w-auto items-center">
+						<Input placeholder={t`Filter...`} onChange={(e) => setFilter(e.target.value)} className="px-4 min-w-0" />
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant="outline" className="flex gap-2 items-center">
+									<span>{t`Tag Filtering`}</span>
+									{selectedTags.length > 0 && (
+										<Badge variant="secondary" className="px-1.5 py-0.5 text-xs">
+											{selectedTags.length}
+										</Badge>
+									)}
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="start" className="min-w-[14rem] max-h-72 overflow-y-auto">
+								<DropdownMenuLabel>{t`Filter by tags`}</DropdownMenuLabel>
+								<DropdownMenuSeparator />
+								{allTags.length === 0 && <div className="px-3 py-2 text-muted-foreground">{t`No tags found`}</div>}
+								{allTags.map((tag) => (
+									<DropdownMenuCheckboxItem
+										key={tag}
+										checked={selectedTags.includes(tag)}
+										onCheckedChange={(checked) => {
+											setSelectedTags((prev) =>
+												checked ? [...prev, tag] : prev.filter((t) => t !== tag)
+											)
+										}}
+									>
+										{tag}
+									</DropdownMenuCheckboxItem>
+								))}
+							</DropdownMenuContent>
+						</DropdownMenu>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="outline">
@@ -403,7 +447,6 @@ export default function SystemsTable() {
 											</DropdownMenuRadioItem>
 										</DropdownMenuRadioGroup>
 									</div>
-
 									<div>
 										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
 											<ArrowUpDownIcon className="size-4" />
@@ -438,7 +481,6 @@ export default function SystemsTable() {
 											})}
 										</div>
 									</div>
-
 									<div>
 										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
 											<EyeIcon className="size-4" />
@@ -470,7 +512,7 @@ export default function SystemsTable() {
 				</div>
 			</CardHeader>
 		)
-	}, [visibleColumns.length, sorting, viewMode, locale])
+	}, [visibleColumns.length, sorting, viewMode, locale, selectedTags, allTags])
 
 	return (
 		<Card>
