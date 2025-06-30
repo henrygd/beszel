@@ -222,7 +222,11 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 						</div>
 						{/* Tags field aligned in the grid */}
 						<Label htmlFor="tags" className="xs:text-end">Tags</Label>
-						<InputTags id="tags" value={tags} onChange={setTags} placeholder="Add tags..." />
+						<div className="flex">
+							<div className="max-w-[25rem]">
+								<InputTags id="tags" value={tags} onChange={setTags} placeholder="Add tags..." />
+							</div>
+						</div>
 					</div>
 					<DialogFooter className="flex justify-end gap-x-2 gap-y-3 flex-col mt-5">
 						{/* Docker */}
