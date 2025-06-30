@@ -38,6 +38,7 @@ type System struct {
 	Port    string   `db:"port"`
 	Status  string   `db:"status"`
 	Tags    []string `db:"tags"`
+	Group   string   `db:"group"`
 	manager *SystemManager
 	client  *ssh.Client
 	data    *system.CombinedData
@@ -202,6 +203,7 @@ func (sm *SystemManager) AddRecord(record *core.Record) (err error) {
 		Host:   record.GetString("host"),
 		Port:   record.GetString("port"),
 		Tags:   record.GetStringSlice("tags"),
+		Group:  record.GetString("group"),
 	}
 	return sm.AddSystem(system)
 }
@@ -278,6 +280,8 @@ func (sys *System) createRecords() (*core.Record, error) {
 	// update system record (do this last because it triggers alerts and we need above records to be inserted first)
 	systemRecord.Set("status", up)
 	systemRecord.Set("info", sys.data.Info)
+	// Preserve the existing group value from the database record
+	// Don't overwrite it with sys.Group as that might be stale
 	if err := hub.SaveNoValidate(systemRecord); err != nil {
 		return nil, err
 	}
