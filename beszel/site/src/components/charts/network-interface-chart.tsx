@@ -1,7 +1,7 @@
 import { t } from "@lingui/core/macro"
 import { memo, useMemo } from "react"
 import { useLingui } from "@lingui/react/macro"
-import { Line, LineChart, CartesianGrid, YAxis } from "recharts"
+import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
 import { useYAxisWidth, cn, formatShortDate, decimalString, chartMargin } from "@/lib/utils"
 import { ChartData } from "@/types"
@@ -86,7 +86,7 @@ export default memo(function NetworkInterfaceChart({
 					"opacity-100": yAxisWidth,
 				})}
 			>
-				<LineChart accessibilityLayer data={chartData.systemStats} margin={chartMargin}>
+				<AreaChart accessibilityLayer data={chartData.systemStats} margin={chartMargin}>
 					<CartesianGrid vertical={false} />
 					<YAxis
 						direction="ltr"
@@ -119,22 +119,24 @@ export default memo(function NetworkInterfaceChart({
 					/>
 					{dataKeys.map((key, i) => {
 						const filtered = networkInterfaceFilter && !key.interface.toLowerCase().includes(networkInterfaceFilter.toLowerCase())
+						let fillOpacity = filtered ? 0.05 : 0.4
+						let strokeOpacity = filtered ? 0.1 : 1
 						return (
-							<Line
+							<Area
 								key={i}
 								dataKey={getNestedValue.bind(null, key.dataKey, showMax)}
 								name={key.name}
 								type="monotoneX"
+								fill={key.color}
+								fillOpacity={fillOpacity}
 								stroke={key.color}
-								strokeWidth={1.5}
-								dot={false}
-								activeDot={{ r: 3, strokeWidth: 1 }}
+								strokeOpacity={strokeOpacity}
+								activeDot={{ opacity: filtered ? 0 : 1 }}
 								isAnimationActive={false}
-								strokeOpacity={filtered ? 0.3 : 1}
 							/>
 						)
 					})}
-				</LineChart>
+				</AreaChart>
 			</ChartContainer>
 		</div>
 	)
