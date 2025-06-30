@@ -158,9 +158,11 @@ interface ContainerStats {
 	v?: Record<string, number>
 	// health status
 	h?: string
+	// status (running, stopped, etc.)
+	s?: string
 	// uptime in seconds
 	u?: number
-	// docker compose project name
+	// project name
 	p?: string
 }
 

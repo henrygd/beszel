@@ -118,7 +118,7 @@ function dockerOrPodman(str: string, system: SystemRecord) {
 	return str
 }
 
-function ContainerLegend({ containerData, containerColors }: { containerData: ChartData["containerData"], containerColors: Record<string, string> }) {
+function ContainerLegend({ containerData, containerColors, isVolumeChart = false }: { containerData: ChartData["containerData"], containerColors: Record<string, string>, isVolumeChart?: boolean }) {
 	const { t } = useLingui()
 	const containerFilter = useStore($containerFilter)
 
@@ -128,12 +128,14 @@ function ContainerLegend({ containerData, containerColors }: { containerData: Ch
 		for (let data of containerData) {
 			for (let key in data) {
 				if (key && key !== "created") {
+					// Exclude orphaned volumes for non-volume charts
+					if (!isVolumeChart && key.startsWith("(orphaned volume)")) continue
 					names.add(key)
 				}
 			}
 		}
 		return Array.from(names).sort()
-	}, [containerData])
+	}, [containerData, isVolumeChart])
 
 	const hasActiveFilter = containerFilter.length > 0
 
@@ -731,7 +733,7 @@ export default function SystemDetail({ name }: { name: string }) {
 						{/* Docker Container Charts */}
 						{containerData.length > 0 ? (
 							<>
-								<ContainerLegend containerData={containerData} containerColors={containerColors} />
+								<ContainerLegend containerData={containerData} containerColors={containerColors} isVolumeChart={false} />
 								<div className="grid xl:grid-cols-2 gap-4">
 									<ChartCard
 										empty={dataEmpty}

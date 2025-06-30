@@ -4,19 +4,21 @@ import "time"
 
 // Docker container info from /containers/json
 type ApiInfo struct {
-	Id      string
-	IdShort string
-	Names   []string
-	Status  string
-	Health  string `json:"Health,omitempty"` // Container health status
-	Created int64  `json:"Created,omitempty"` // Container creation timestamp
+	Id        string
+	IdShort   string
+	Names     []string
+	Status    string
+	Health    string `json:"Health,omitempty"`    // Container health status
+	Created   int64  `json:"Created,omitempty"`   // Container creation timestamp
+	StartedAt int64  `json:"StartedAt,omitempty"` // Container start timestamp
+	State     string `json:"State,omitempty"`     // Container state (running, stopped, etc.)
 	// Image   string
 	// ImageID string
 	// Command string
 	// Ports      []Port
 	// SizeRw     int64 `json:",omitempty"`
 	// SizeRootFs int64 `json:",omitempty"`
-	Labels     map[string]string
+	Labels map[string]string
 	// State      string
 	// HostConfig struct {
 	// 	NetworkMode string            `json:",omitempty"`
@@ -100,18 +102,19 @@ type prevNetStats struct {
 
 // Docker container stats
 type Stats struct {
-	Name        string       `json:"n"`
-	Cpu         float64      `json:"c"`
-	Mem         float64      `json:"m"`
-	NetworkSent float64      `json:"ns"`
-	NetworkRecv float64      `json:"nr"`
+	Name        string             `json:"n"`
+	Cpu         float64            `json:"c"`
+	Mem         float64            `json:"m"`
+	NetworkSent float64            `json:"ns"`
+	NetworkRecv float64            `json:"nr"`
 	Volumes     map[string]float64 `json:"v,omitempty"` // Volume name to size mapping
-	Health      string       `json:"h,omitempty"`       // Container health status
-	Uptime      float64      `json:"u,omitempty"`       // Container uptime in seconds
-	Project     string       `json:"p,omitempty"`       // Docker Compose project name
-	PrevCpu     [2]uint64    `json:"-"`
-	PrevNet     prevNetStats `json:"-"`
-	PrevRead    time.Time    `json:"-"`
+	Health      string             `json:"h,omitempty"` // Container health status
+	Status      string             `json:"s,omitempty"` // Container status (running, stopped, etc.)
+	Uptime      float64            `json:"u,omitempty"` // Container uptime in seconds
+	Project     string             `json:"p,omitempty"` // Docker Compose project name
+	PrevCpu     [2]uint64          `json:"-"`
+	PrevNet     prevNetStats       `json:"-"`
+	PrevRead    time.Time          `json:"-"`
 }
 
 // MountPoint represents a mount point in a container
