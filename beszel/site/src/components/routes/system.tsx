@@ -634,26 +634,48 @@ export default function SystemDetail({ name }: { name: string }) {
 				{Object.keys(systemStats.at(-1)?.stats.efs ?? {}).length > 0 && (
 					<div className="grid xl:grid-cols-2 gap-4">
 						{Object.keys(systemStats.at(-1)?.stats.efs ?? {}).map((extraFsName) => {
+							const fsStats = systemStats.at(-1)?.stats.efs?.[extraFsName]
+							const displayName = fsStats?.n || extraFsName
+							// Remap chartData for this extra filesystem
+							const extraFsChartData = {
+								...chartData,
+								systemStats: chartData.systemStats.map((point) => {
+									const efs = point.stats && point.stats.efs ? point.stats.efs[extraFsName] : undefined;
+									return {
+										...point,
+										stats: {
+											...point.stats,
+											du: typeof efs?.du === 'number' ? efs.du : 0,
+											d: typeof efs?.d === 'number' ? efs.d : 0,
+										},
+									}
+								}),
+							}
+							// Only render if there is at least one data point with valid data
+							const hasData = extraFsChartData.systemStats.some(
+								(point) => typeof point.stats.du === 'number' && typeof point.stats.d === 'number' && point.stats.d > 0
+							);
+							if (!hasData) return null;
 							return (
 								<div key={extraFsName} className="contents">
 									<ChartCard
 										empty={dataEmpty}
 										grid={grid}
-										title={`${extraFsName} ${t`Usage`}`}
-										description={t`Disk usage of ${extraFsName}`}
+										title={`${displayName} ${t`Usage`}`}
+										description={t`Disk usage of ${displayName}`}
 									>
 										<DiskChart
-											chartData={chartData}
-											dataKey={`stats.efs.${extraFsName}.du`}
-											diskSize={systemStats.at(-1)?.stats.efs?.[extraFsName].d ?? NaN}
+											chartData={extraFsChartData}
+											dataKey="stats.du"
+											diskSize={fsStats?.d ?? NaN}
 											showLegend={userSettings.showChartLegend !== false}
 										/>
 									</ChartCard>
 									<ChartCard
 										empty={dataEmpty}
 										grid={grid}
-										title={`${extraFsName} I/O`}
-										description={t`Throughput of ${extraFsName}`}
+										title={`${displayName} I/O`}
+										description={t`Throughput of ${displayName}`}
 										cornerEl={maxValSelect}
 									>
 										<AreaChartDefault chartData={chartData} chartName={`efs.${extraFsName}`} maxToggled={maxValues} showLegend={userSettings.showChartLegend !== false} />

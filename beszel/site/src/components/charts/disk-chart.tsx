@@ -25,8 +25,8 @@ export default memo(function DiskChart({ dataKey, diskSize, chartData, showLegen
 
 	// Compute free disk for each data point
 	const diskDataWithFree = chartData.systemStats.map((point) => {
-		const used = point.stats.du ?? 0
-		const total = point.stats.d ?? diskSize
+		const used = point.stats && typeof point.stats.du === 'number' ? point.stats.du : 0
+		const total = point.stats && typeof point.stats.d === 'number' ? point.stats.d : diskSize
 		const free = total - used
 		return {
 			...point,

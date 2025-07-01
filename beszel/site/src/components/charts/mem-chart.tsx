@@ -15,11 +15,11 @@ export default memo(function MemChart({ chartData, showLegend = true }: MemChart
 
 	// Compute free memory for each data point
 	const memDataWithFree = chartData.systemStats.map((point) => {
-		const m = point.stats.m ?? 0
-		const mu = point.stats.mu ?? 0
-		const mb = point.stats.mb ?? 0
-		const mz = point.stats.mz ?? 0
-		const free = m - mu - mb - (mz || 0)
+		const m = point.stats && typeof point.stats.m === 'number' ? point.stats.m : 0;
+		const mu = point.stats && typeof point.stats.mu === 'number' ? point.stats.mu : 0;
+		const mb = point.stats && typeof point.stats.mb === 'number' ? point.stats.mb : 0;
+		const mz = point.stats && typeof point.stats.mz === 'number' ? point.stats.mz : 0;
+		const free = m - mu - mb - (mz || 0);
 		return {
 			...point,
 			stats: {

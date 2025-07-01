@@ -54,6 +54,7 @@ type FsStats struct {
 	Time           time.Time `json:"-"`
 	Root           bool      `json:"-"`
 	Mountpoint     string    `json:"-"`
+	DisplayName    string    `json:"n"`
 	DiskTotal      float64   `json:"d"`
 	DiskUsed       float64   `json:"du"`
 	TotalRead      uint64    `json:"-"`
