@@ -131,6 +131,7 @@ export default function SystemDetail({ name }: { name: string }) {
 	const [bottomSpacing, setBottomSpacing] = useState(0)
 	const [chartLoading, setChartLoading] = useState(true)
 	const isLongerChart = chartTime !== "1h"
+	const userSettings = useStore($userSettings)
 
 	useEffect(() => {
 		document.title = `${name} / Beszel`
@@ -472,7 +473,7 @@ export default function SystemDetail({ name }: { name: string }) {
 						description={t`Average system-wide CPU utilization`}
 						cornerEl={maxValSelect}
 					>
-						<AreaChartDefault chartData={chartData} chartName="CPU Usage" maxToggled={maxValues} unit="%" />
+						<AreaChartDefault chartData={chartData} chartName="CPU Usage" maxToggled={maxValues} unit="%" showLegend={userSettings.showChartLegend !== false} />
 					</ChartCard>
 
 					{containerFilterBar && (
@@ -483,7 +484,7 @@ export default function SystemDetail({ name }: { name: string }) {
 							description={t`Average CPU utilization of containers`}
 							cornerEl={containerFilterBar}
 						>
-							<ContainerChart chartData={chartData} dataKey="c" chartType={ChartType.CPU} />
+							<ContainerChart chartData={chartData} dataKey="c" chartType={ChartType.CPU} showLegend={userSettings.showChartLegend !== false} />
 						</ChartCard>
 					)}
 
@@ -493,7 +494,7 @@ export default function SystemDetail({ name }: { name: string }) {
 						title={t`Memory Usage`}
 						description={t`Precise utilization at the recorded time`}
 					>
-						<MemChart chartData={chartData} />
+						<MemChart chartData={chartData} showLegend={userSettings.showChartLegend !== false} />
 					</ChartCard>
 
 					{containerFilterBar && (
@@ -504,12 +505,12 @@ export default function SystemDetail({ name }: { name: string }) {
 							description={dockerOrPodman(t`Memory usage of docker containers`, system)}
 							cornerEl={containerFilterBar}
 						>
-							<ContainerChart chartData={chartData} dataKey="m" chartType={ChartType.Memory} />
+							<ContainerChart chartData={chartData} dataKey="m" chartType={ChartType.Memory} showLegend={userSettings.showChartLegend !== false} />
 						</ChartCard>
 					)}
 
 					<ChartCard empty={dataEmpty} grid={grid} title={t`Disk Usage`} description={t`Usage of root partition`}>
-						<DiskChart chartData={chartData} dataKey="stats.du" diskSize={systemStats.at(-1)?.stats.d ?? NaN} />
+						<DiskChart chartData={chartData} dataKey="stats.du" diskSize={systemStats.at(-1)?.stats.d ?? NaN} showLegend={userSettings.showChartLegend !== false} />
 					</ChartCard>
 
 					<ChartCard
@@ -519,7 +520,7 @@ export default function SystemDetail({ name }: { name: string }) {
 						description={t`Throughput of root filesystem`}
 						cornerEl={maxValSelect}
 					>
-						<AreaChartDefault chartData={chartData} chartName="dio" maxToggled={maxValues} />
+						<AreaChartDefault chartData={chartData} chartName="dio" maxToggled={maxValues} showLegend={userSettings.showChartLegend !== false} />
 					</ChartCard>
 
 					<ChartCard
@@ -529,7 +530,7 @@ export default function SystemDetail({ name }: { name: string }) {
 						cornerEl={maxValSelect}
 						description={t`Network traffic of public interfaces`}
 					>
-						<AreaChartDefault chartData={chartData} chartName="bw" maxToggled={maxValues} />
+						<AreaChartDefault chartData={chartData} chartName="bw" maxToggled={maxValues} showLegend={userSettings.showChartLegend !== false} />
 					</ChartCard>
 
 					{containerFilterBar && containerData.length > 0 && (
@@ -546,7 +547,7 @@ export default function SystemDetail({ name }: { name: string }) {
 								cornerEl={containerFilterBar}
 							>
 								{/* @ts-ignore */}
-								<ContainerChart chartData={chartData} chartType={ChartType.Network} dataKey="n" />
+								<ContainerChart chartData={chartData} chartType={ChartType.Network} dataKey="n" showLegend={userSettings.showChartLegend !== false} />
 							</ChartCard>
 						</div>
 					)}
@@ -559,7 +560,7 @@ export default function SystemDetail({ name }: { name: string }) {
 							title={t`Swap Usage`}
 							description={t`Swap space used by the system`}
 						>
-							<SwapChart chartData={chartData} />
+							<SwapChart chartData={chartData} showLegend={userSettings.showChartLegend !== false} />
 						</ChartCard>
 					)}
 
@@ -572,7 +573,7 @@ export default function SystemDetail({ name }: { name: string }) {
 							description={t`Temperatures of system sensors`}
 							cornerEl={<FilterBar store={$temperatureFilter} />}
 						>
-							<TemperatureChart chartData={chartData} />
+							<TemperatureChart chartData={chartData} showLegend={userSettings.showChartLegend !== false} />
 						</ChartCard>
 					)}
 
@@ -584,7 +585,7 @@ export default function SystemDetail({ name }: { name: string }) {
 							title={t`GPU Power Draw`}
 							description={t`Average power consumption of GPUs`}
 						>
-							<GpuPowerChart chartData={chartData} />
+							<GpuPowerChart chartData={chartData} showLegend={userSettings.showChartLegend !== false} />
 						</ChartCard>
 					)}
 				</div>
@@ -606,7 +607,7 @@ export default function SystemDetail({ name }: { name: string }) {
 										title={`${gpu.n} ${t`Usage`}`}
 										description={t`Average utilization of ${gpu.n}`}
 									>
-										<AreaChartDefault chartData={chartData} chartName={`g.${id}.u`} unit="%" />
+										<AreaChartDefault chartData={chartData} chartName={`g.${id}.u`} unit="%" showLegend={userSettings.showChartLegend !== false} />
 									</ChartCard>
 									<ChartCard
 										empty={dataEmpty}
@@ -620,6 +621,7 @@ export default function SystemDetail({ name }: { name: string }) {
 											max={gpu.mt}
 											tickFormatter={sizeFormatter}
 											contentFormatter={(value) => sizeFormatter(value, 2)}
+											showLegend={userSettings.showChartLegend !== false}
 										/>
 									</ChartCard>
 								</div>
@@ -644,6 +646,7 @@ export default function SystemDetail({ name }: { name: string }) {
 											chartData={chartData}
 											dataKey={`stats.efs.${extraFsName}.du`}
 											diskSize={systemStats.at(-1)?.stats.efs?.[extraFsName].d ?? NaN}
+											showLegend={userSettings.showChartLegend !== false}
 										/>
 									</ChartCard>
 									<ChartCard
@@ -653,7 +656,7 @@ export default function SystemDetail({ name }: { name: string }) {
 										description={t`Throughput of ${extraFsName}`}
 										cornerEl={maxValSelect}
 									>
-										<AreaChartDefault chartData={chartData} chartName={`efs.${extraFsName}`} maxToggled={maxValues} />
+										<AreaChartDefault chartData={chartData} chartName={`efs.${extraFsName}`} maxToggled={maxValues} showLegend={userSettings.showChartLegend !== false} />
 									</ChartCard>
 								</div>
 							)

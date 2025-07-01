@@ -35,6 +35,17 @@ const getNestedValue = (path: string, max = false, data: any): number | null => 
 	return value
 }
 
+type AreaChartDefaultProps = {
+	maxToggled?: boolean
+	unit?: string
+	chartName: string
+	chartData: ChartData
+	max?: number
+	tickFormatter?: (value: number) => string
+	contentFormatter?: (value: number) => string
+	showLegend?: boolean
+}
+
 export default memo(function AreaChartDefault({
 	maxToggled = false,
 	unit = " MB/s",
@@ -43,15 +54,8 @@ export default memo(function AreaChartDefault({
 	max,
 	tickFormatter,
 	contentFormatter,
-}: {
-	maxToggled?: boolean
-	unit?: string
-	chartName: string
-	chartData: ChartData
-	max?: number
-	tickFormatter?: (value: number) => string
-	contentFormatter?: (value: number) => string
-}) {
+	showLegend = true,
+}: AreaChartDefaultProps) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { i18n } = useLingui()
 
@@ -156,7 +160,7 @@ export default memo(function AreaChartDefault({
 							/>
 						)
 					})}
-					{chartName === "CPU Usage" && <ChartLegend content={<ChartLegendContent />} />}
+					{showLegend && (chartName === "CPU Usage" || chartName === "dio" || chartName.startsWith("efs")) && <ChartLegend content={<ChartLegendContent />} />}
 				</AreaChart>
 			</ChartContainer>
 		</div>

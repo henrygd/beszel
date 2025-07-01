@@ -9,11 +9,13 @@ import {
 	toFixedWithoutTrailingZeros,
 	decimalString,
 	chartMargin,
+	getSizeAndUnit,
 } from "@/lib/utils"
 import { ChartData } from "@/types"
 import { memo } from "react"
 
-export default memo(function SwapChart({ chartData }: { chartData: ChartData }) {
+type SwapChartProps = { chartData: ChartData, showLegend?: boolean }
+export default memo(function SwapChart({ chartData, showLegend = true }: SwapChartProps) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
 	if (chartData.systemStats.length === 0) {
@@ -48,7 +50,10 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 						width={yAxisWidth}
 						tickLine={false}
 						axisLine={false}
-						tickFormatter={(value) => updateYAxisWidth(value + " GB")}
+						tickFormatter={(value) => {
+							const { v, u } = getSizeAndUnit(value)
+							return updateYAxisWidth(toFixedWithoutTrailingZeros(v, 2) + u)
+						}}
 					/>
 					{xAxis(chartData)}
 					<ChartTooltip
@@ -57,7 +62,10 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 						content={
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
-								contentFormatter={(item) => decimalString(item.value) + " GB"}
+								contentFormatter={(item) => {
+									const { v, u } = getSizeAndUnit(item.value)
+									return decimalString(v) + u
+								}}
 							/>
 						}
 					/>
@@ -91,7 +99,7 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 						isAnimationActive={false}
 						stackId="swap"
 					/>
-					<ChartLegend content={<ChartLegendContent />} />
+					{showLegend && <ChartLegend content={<ChartLegendContent />} />}
 				</AreaChart>
 			</ChartContainer>
 		</div>

@@ -4,17 +4,45 @@ import { useYAxisWidth, cn, toFixedFloat, decimalString, formatShortDate, chartM
 import { memo } from "react"
 import { ChartData } from "@/types"
 import { useLingui } from "@lingui/react/macro"
+import { ChartLegend, ChartLegendContent } from "@/components/ui/chart"
 
-export default memo(function MemChart({ chartData }: { chartData: ChartData }) {
+type MemChartProps = { chartData: ChartData, showLegend?: boolean }
+export default memo(function MemChart({ chartData, showLegend = true }: MemChartProps) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { t } = useLingui()
 
 	const totalMem = toFixedFloat(chartData.systemStats.at(-1)?.stats.m ?? 0, 1)
 
+	// Compute free memory for each data point
+	const memDataWithFree = chartData.systemStats.map((point) => {
+		const m = point.stats.m ?? 0
+		const mu = point.stats.mu ?? 0
+		const mb = point.stats.mb ?? 0
+		const mz = point.stats.mz ?? 0
+		const free = m - mu - mb - (mz || 0)
+		return {
+			...point,
+			stats: {
+				...point.stats,
+				mf: free > 0 ? free : 0, // mf = memory free
+			},
+		}
+	})
+
 	// console.log('rendered at', new Date())
 
 	if (chartData.systemStats.length === 0) {
 		return null
+	}
+
+	// Define memory area keys, labels, colors, and opacities
+	const dataKeys = [
+		{ label: t`Free`, key: "mf", color: 1, opacity: 0.3 },
+		{ label: t`Used`, key: "mu", color: 2, opacity: 0.4 },
+		{ label: t`Cache / Buffers`, key: "mb", color: 3, opacity: 0.4 },
+	]
+	if (chartData.systemStats.at(-1)?.stats.mz) {
+		dataKeys.splice(2, 0, { label: "ZFS ARC", key: "mz", color: 4, opacity: 0.5 })
 	}
 
 	return (
@@ -25,7 +53,7 @@ export default memo(function MemChart({ chartData }: { chartData: ChartData }) {
 					"opacity-100": yAxisWidth,
 				})}
 			>
-				<AreaChart accessibilityLayer data={chartData.systemStats} margin={chartMargin}>
+				<AreaChart accessibilityLayer data={memDataWithFree} margin={chartMargin}>
 					<CartesianGrid vertical={false} />
 					{totalMem && (
 						<YAxis
@@ -59,42 +87,21 @@ export default memo(function MemChart({ chartData }: { chartData: ChartData }) {
 							/>
 						}
 					/>
-					<Area
-						name={t`Used`}
-						order={3}
-						dataKey="stats.mu"
-						type="monotoneX"
-						fill="hsl(var(--chart-2))"
-						fillOpacity={0.4}
-						stroke="hsl(var(--chart-2))"
-						stackId="1"
-						isAnimationActive={false}
-					/>
-					{chartData.systemStats.at(-1)?.stats.mz && (
+					{dataKeys.map((item, i) => (
 						<Area
-							name="ZFS ARC"
-							order={2}
-							dataKey="stats.mz"
+							key={item.key}
+							name={item.label}
+							order={i}
+							dataKey={`stats.${item.key}`}
 							type="monotoneX"
-							fill="hsla(175 60% 45% / 0.8)"
-							fillOpacity={0.5}
-							stroke="hsla(175 60% 45% / 0.8)"
+							fill={`hsl(var(--chart-${item.color}))`}
+							fillOpacity={item.opacity}
+							stroke={`hsl(var(--chart-${item.color}))`}
 							stackId="1"
 							isAnimationActive={false}
 						/>
-					)}
-					<Area
-						name={t`Cache / Buffers`}
-						order={1}
-						dataKey="stats.mb"
-						type="monotoneX"
-						fill="hsla(160 60% 45% / 0.5)"
-						fillOpacity={0.4}
-						// strokeOpacity={1}
-						stroke="hsla(160 60% 45% / 0.5)"
-						stackId="1"
-						isAnimationActive={false}
-					/>
+					))}
+					{showLegend && <ChartLegend content={<ChartLegendContent />} wrapperStyle={{ marginTop: 16 }} />}
 				</AreaChart>
 			</ChartContainer>
 		</div>

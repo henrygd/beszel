@@ -21,7 +21,8 @@ import { memo, useMemo } from "react"
 import { $temperatureFilter } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 
-export default memo(function TemperatureChart({ chartData }: { chartData: ChartData }) {
+type TemperatureChartProps = { chartData: ChartData, showLegend?: boolean }
+export default memo(function TemperatureChart({ chartData, showLegend = true }: TemperatureChartProps) {
 	const filter = useStore($temperatureFilter)
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
@@ -111,7 +112,7 @@ export default memo(function TemperatureChart({ chartData }: { chartData: ChartD
 							/>
 						)
 					})}
-					{colors.length < 12 && <ChartLegend content={<ChartLegendContent />} />}
+					{showLegend && colors.length < 12 && <ChartLegend content={<ChartLegendContent />} />}
 				</LineChart>
 			</ChartContainer>
 		</div>

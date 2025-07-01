@@ -195,6 +195,7 @@ export type UserSettings = {
 	chartTime: ChartTimes
 	emails?: string[]
 	webhooks?: string[]
+	showChartLegend?: boolean
 }
 
 type ChartDataContainer = {
