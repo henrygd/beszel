@@ -553,7 +553,7 @@ export default function SystemDetail({ name }: { name: string }) {
 					)}
 
 					{/* Swap chart */}
-					{(systemStats.at(-1)?.stats.su ?? 0) > 0 && (
+					{(systemStats.at(-1)?.stats.st ?? systemStats.at(-1)?.stats.s ?? 0) > 0 && (
 						<ChartCard
 							empty={dataEmpty}
 							grid={grid}
