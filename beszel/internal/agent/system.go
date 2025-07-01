@@ -12,9 +12,10 @@ import (
 	"strings"
 	"time"
 
-	"encoding/json"
-	"os/exec"
-
+	"github.com/jaypipes/ghw/pkg/block"
+	ghwmem "github.com/jaypipes/ghw/pkg/memory"
+	ghwnet "github.com/jaypipes/ghw/pkg/net"
+	ghwpci "github.com/jaypipes/ghw/pkg/pci"
 	"github.com/shirou/gopsutil/v4/cpu"
 	"github.com/shirou/gopsutil/v4/disk"
 	"github.com/shirou/gopsutil/v4/host"
@@ -34,30 +35,28 @@ func (a *Agent) initializeSystemInfo() {
 		a.systemInfo.Os = system.Darwin
 		a.systemInfo.OsName = "macOS"
 		a.systemInfo.OsVersion = version
+		a.systemInfo.OsNameRaw = family
+		a.systemInfo.OsVersionId = version
 	} else if strings.Contains(platform, "indows") {
 		a.systemInfo.KernelVersion = strings.Replace(platform, "Microsoft ", "", 1) + " " + version
 		a.systemInfo.Os = system.Windows
 		a.systemInfo.OsName = family
 		a.systemInfo.OsVersion = version
+		a.systemInfo.OsNameRaw = family
+		a.systemInfo.OsVersionId = version
 	} else if platform == "freebsd" {
 		a.systemInfo.Os = system.Freebsd
 		a.systemInfo.KernelVersion = version
 		a.systemInfo.OsName = family
 		a.systemInfo.OsVersion = version
+		a.systemInfo.OsNameRaw = family
+		a.systemInfo.OsVersionId = version
 	} else {
 		a.systemInfo.Os = system.Linux
 		a.systemInfo.OsName = family
-		// Read only VERSION_CODENAME, NAME, and VERSION_ID from /etc/os-release for Linux systems
-		osRelease := readOsRelease()
-		if codename := osRelease["VERSION_CODENAME"]; codename != "" {
-			a.systemInfo.OsCodename = codename
-		}
-		if nameRaw := osRelease["NAME"]; nameRaw != "" {
-			a.systemInfo.OsNameRaw = nameRaw
-		}
-		if versionId := osRelease["VERSION_ID"]; versionId != "" {
-			a.systemInfo.OsVersionId = versionId
-		}
+		a.systemInfo.OsVersion = version
+		a.systemInfo.OsNameRaw = family
+		a.systemInfo.OsVersionId = version
 	}
 
 	// Set OS architecture
@@ -91,6 +90,12 @@ func (a *Agent) initializeSystemInfo() {
 
 	// Collect disk info (model/vendor)
 	a.systemInfo.Disks = getDiskInfo()
+
+	// Collect network interface info
+	a.systemInfo.Networks = getNetworkInfo()
+
+	// Collect memory module info
+	a.systemInfo.Memory = getMemoryInfo()
 }
 
 // readPrettyName reads the PRETTY_NAME from /etc/os-release
@@ -325,31 +330,85 @@ func getARCSize() (uint64, error) {
 }
 
 func getDiskInfo() []system.DiskInfo {
-	type lsblkOutput struct {
-		Blockdevices []struct {
-			Name   string `json:"name"`
-			Model  string `json:"model"`
-			Vendor string `json:"vendor"`
-		} `json:"blockdevices"`
-	}
-	cmd := exec.Command("lsblk", "-d", "-J", "-o", "NAME,MODEL,VENDOR")
-	out, err := cmd.Output()
+	blockInfo, err := block.New()
 	if err != nil {
+		slog.Debug("Failed to get block info with ghw", "err", err)
 		return nil
 	}
-	var parsed lsblkOutput
-	if err := json.Unmarshal(out, &parsed); err != nil {
-		return nil
-	}
+
 	var disks []system.DiskInfo
-	for _, d := range parsed.Blockdevices {
+	for _, disk := range blockInfo.Disks {
 		disks = append(disks, system.DiskInfo{
-			Name:   d.Name,
-			Model:  d.Model,
-			Vendor: d.Vendor,
+			Name:   disk.Name,
+			Model:  disk.Model,
+			Vendor: disk.Vendor,
 		})
 	}
 	return disks
+}
+
+func getNetworkInfo() []system.NetworkInfo {
+	netInfo, err := ghwnet.New()
+	if err != nil {
+		slog.Debug("Failed to get network info with ghw", "err", err)
+		return nil
+	}
+	pciInfo, err := ghwpci.New()
+	if err != nil {
+		slog.Debug("Failed to get PCI info with ghw", "err", err)
+	}
+
+	var networks []system.NetworkInfo
+	for _, nic := range netInfo.NICs {
+		if nic.IsVirtual {
+			continue
+		}
+		var vendor, model string
+		if nic.PCIAddress != nil && pciInfo != nil {
+			for _, dev := range pciInfo.Devices {
+				if dev.Address == *nic.PCIAddress {
+					if dev.Vendor != nil {
+						vendor = dev.Vendor.Name
+					}
+					if dev.Product != nil {
+						model = dev.Product.Name
+					}
+					break
+				}
+			}
+		}
+		networks = append(networks, system.NetworkInfo{
+			Name:   nic.Name,
+			Vendor: vendor,
+			Model:  model,
+			Speed:  nic.Speed,
+		})
+	}
+	return networks
+}
+
+func getMemoryInfo() []system.MemoryInfo {
+	memInfo, err := ghwmem.New()
+	if err != nil {
+		slog.Debug("Failed to get memory info with ghw", "err", err)
+		return nil
+	}
+
+	var memory []system.MemoryInfo
+	for _, module := range memInfo.Modules {
+		if module.Vendor == "" {
+			continue
+		}
+		size := ""
+		if module.SizeBytes > 0 {
+			size = fmt.Sprintf("%d GB", module.SizeBytes/(1024*1024*1024))
+		}
+		memory = append(memory, system.MemoryInfo{
+			Vendor: module.Vendor,
+			Size:   size,
+		})
+	}
+	return memory
 }
 
 func readOsRelease() map[string]string {

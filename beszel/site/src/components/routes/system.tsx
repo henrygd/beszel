@@ -32,7 +32,7 @@ import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
-import { ChartAverage, ChartMax, Rows, TuxIcon, WindowsIcon, AppleIcon, FreeBsdIcon } from "../ui/icons"
+import { ChartAverage, ChartMax, Rows, TuxIcon, WindowsIcon, AppleIcon, FreeBsdIcon, EthernetIcon } from "../ui/icons"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { timeTicks } from "d3-time"
@@ -264,7 +264,6 @@ export default function SystemDetail({ name }: { name: string }) {
 
 		const osName = system.info.onr || system.info.on
 		const osVersion = system.info.ovid || system.info.ov
-		const osCodename = system.info.ocd || system.info.oc
 		const osDisplay = osName && osVersion ? `${osName} ${osVersion}` : osName || osVersion || system.info.k || ""
 
 		const osInfo = {
@@ -272,7 +271,6 @@ export default function SystemDetail({ name }: { name: string }) {
 				Icon: TuxIcon,
 				value: osDisplay,
 				tooltip: [
-					osCodename ? `Codename: ${osCodename}` : null,
 					system.info.k ? `Kernel: ${system.info.k}` : null,
 				].filter(Boolean).join("\n"),
 			},
@@ -280,7 +278,6 @@ export default function SystemDetail({ name }: { name: string }) {
 				Icon: AppleIcon,
 				value: osDisplay,
 				tooltip: [
-					osCodename ? `Codename: ${osCodename}` : null,
 					system.info.k ? `Kernel: ${system.info.k}` : null,
 				].filter(Boolean).join("\n"),
 			},
@@ -288,7 +285,6 @@ export default function SystemDetail({ name }: { name: string }) {
 				Icon: WindowsIcon,
 				value: osDisplay,
 				tooltip: [
-					osCodename ? `Codename: ${osCodename}` : null,
 					system.info.k ? `Kernel: ${system.info.k}` : null,
 				].filter(Boolean).join("\n"),
 			},
@@ -296,7 +292,6 @@ export default function SystemDetail({ name }: { name: string }) {
 				Icon: FreeBsdIcon,
 				value: osDisplay,
 				tooltip: [
-					osCodename ? `Codename: ${osCodename}` : null,
 					system.info.k ? `Kernel: ${system.info.k}` : null,
 				].filter(Boolean).join("\n"),
 			},
@@ -322,10 +317,14 @@ export default function SystemDetail({ name }: { name: string }) {
 			{ value: uptime, Icon: ClockArrowUp, label: t`Uptime`, hide: !system.info.u },
 			{ ...osInfo[system.info.os ?? Os.Linux], isOs: true },
 			{
-				value: `${system.info.m} (${system.info.c}c${system.info.t ? `/${system.info.t}t` : ""})`,
+				value: system.info.m,
 				Icon: CpuIcon,
 				hide: !system.info.m,
 				arch: system.info.oa,
+				cpu: {
+					cores: system.info.c,
+					threads: system.info.t,
+				},
 			},
 			// Add disks info here
 			system.info.disks && system.info.disks.length > 0
@@ -333,6 +332,20 @@ export default function SystemDetail({ name }: { name: string }) {
 					value: `${system.info.disks.length} ${system.info.disks.length === 1 ? t`Disk` : t`Disks`}`,
 					Icon: HardDriveIcon,
 					disks: system.info.disks,
+				}
+				: undefined,
+			system.info.networks && system.info.networks.length > 0
+				? {
+					value: `${system.info.networks.length} ${system.info.networks.length === 1 ? t`NIC` : t`NICs`}`,
+					Icon: EthernetIcon,
+					nics: system.info.networks,
+				}
+				: undefined,
+			system.info.memory && system.info.memory.length > 0
+				? {
+					value: `${system.info.memory.length} ${system.info.memory.length === 1 ? t`Module` : t`Modules`}`,
+					Icon: MemoryStickIcon,
+					memory: system.info.memory,
 				}
 				: undefined,
 		] as {
@@ -344,6 +357,9 @@ export default function SystemDetail({ name }: { name: string }) {
 			isOs?: boolean
 			arch?: string
 			disks?: { name: string; model?: string; vendor?: string; serial?: string }[]
+			nics?: { name: string; speed?: string; vendor?: string; model?: string }[]
+			memory?: { vendor?: string; size?: string }[]
+			cpu?: { cores: number; threads?: number }
 			tooltip?: string
 		}[]
 		
@@ -447,7 +463,7 @@ export default function SystemDetail({ name }: { name: string }) {
 									</span>
 									{translatedStatus}
 								</div>
-								{systemInfo.map(({ value, label, Icon, hide, pretty, isOs, arch, disks, tooltip }, i) => {
+								{systemInfo.map(({ value, label, Icon, hide, pretty, isOs, arch, disks, nics, memory, cpu, tooltip }, i) => {
 									if (hide || !value) {
 										return null
 									}
@@ -469,7 +485,25 @@ export default function SystemDetail({ name }: { name: string }) {
 											</div>
 										)
 									}
-									// Show architecture as tooltip for CPU info
+									// Show CPU info tooltip (cores/threads and architecture)
+									if (cpu) {
+										let cpuInfo = `Core / Threads: ${cpu.cores} / ${cpu.threads || cpu.cores}`
+										if (arch) {
+											cpuInfo += `\nArchitecture: ${arch}`
+										}
+										return (
+											<div key={i} className="contents">
+												<Separator orientation="vertical" className="h-4 bg-primary/30" />
+												<TooltipProvider>
+													<Tooltip delayDuration={150}>
+														<TooltipTrigger asChild>{content}</TooltipTrigger>
+														<TooltipContent style={{ whiteSpace: 'pre-line' }}>{cpuInfo}</TooltipContent>
+													</Tooltip>
+												</TooltipProvider>
+											</div>
+										)
+									}
+									// Show architecture as tooltip for CPU info (fallback for when cpu is not available)
 									if (arch) {
 										return (
 											<div key={i} className="contents">
@@ -491,20 +525,86 @@ export default function SystemDetail({ name }: { name: string }) {
 												<TooltipProvider>
 													<Tooltip delayDuration={150}>
 														<TooltipTrigger asChild>{content}</TooltipTrigger>
-														<TooltipContent side="top">
+														<TooltipContent>
 															<div className="flex flex-col gap-1 min-w-44">
 																{disks.map((disk, idx) => {
 																	let diskText = disk.name
-																	if (disk.vendor && disk.model) {
-																		diskText += `: ${disk.vendor} ${disk.model}`
-																	} else if (disk.model) {
-																		diskText += `: ${disk.model}`
-																	} else if (disk.vendor) {
-																		diskText += `: ${disk.vendor}`
+																	const vendor = disk.vendor && disk.vendor.toLowerCase() !== 'unknown' ? disk.vendor : null
+																	const model = disk.model && disk.model.toLowerCase() !== 'unknown' ? disk.model : null
+																	
+																	if (vendor && model) {
+																		diskText += `: ${vendor} ${model}`
+																	} else if (model) {
+																		diskText += `: ${model}`
+																	} else if (vendor) {
+																		diskText += `: ${vendor}`
 																	}
 																	return (
 																		<div key={disk.name + idx} className="flex flex-col">
 																			<span className="font-medium">{diskText}</span>
+																		</div>
+																	)
+																})}
+															</div>
+														</TooltipContent>
+													</Tooltip>
+												</TooltipProvider>
+											</div>
+										)
+									}
+									// Show nics tooltip if present
+									if (nics && nics.length > 0) {
+										return (
+											<div key={i} className="contents">
+												<Separator orientation="vertical" className="h-4 bg-primary/30" />
+												<TooltipProvider>
+													<Tooltip delayDuration={150}>
+														<TooltipTrigger asChild>{content}</TooltipTrigger>
+														<TooltipContent>
+															<div className="flex flex-col gap-1 min-w-52">
+																{nics.map((nic, idx) => {
+																	let nicText = nic.name
+																	if (nic.vendor && nic.model) {
+																		nicText += `: ${nic.vendor} ${nic.model}`
+																	} else if (nic.model) {
+																		nicText += `: ${nic.model}`
+																	} else if (nic.vendor) {
+																		nicText += `: ${nic.vendor}`
+																	}
+																	if (nic.speed) {
+																		nicText += ` | ${nic.speed}`
+																	}
+																	return (
+																		<div key={nic.name + idx} className="flex flex-col">
+																			<span className="font-medium">{nicText}</span>
+																		</div>
+																	)
+																})}
+															</div>
+														</TooltipContent>
+													</Tooltip>
+												</TooltipProvider>
+											</div>
+										)
+									}
+									// Show memory tooltip if present
+									if (memory && memory.length > 0) {
+										return (
+											<div key={i} className="contents">
+												<Separator orientation="vertical" className="h-4 bg-primary/30" />
+												<TooltipProvider>
+													<Tooltip delayDuration={150}>
+														<TooltipTrigger asChild>{content}</TooltipTrigger>
+														<TooltipContent>
+															<div className="flex flex-col gap-1 min-w-52">
+																{memory.map((module, idx) => {
+																	let moduleText = module.vendor || "Unknown"
+																	if (module.size) {
+																		moduleText += ` | ${module.size}`
+																	}
+																	return (
+																		<div key={module.vendor + idx} className="flex flex-col">
+																			<span className="font-medium">{moduleText}</span>
 																		</div>
 																	)
 																})}

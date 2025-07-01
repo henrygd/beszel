@@ -79,29 +79,42 @@ type DiskInfo struct {
 	Vendor string `json:"vendor,omitempty"`
 }
 
+type NetworkInfo struct {
+	Name   string `json:"name"`
+	Vendor string `json:"vendor,omitempty"`
+	Model  string `json:"model,omitempty"`
+	Speed  string `json:"speed,omitempty"`
+}
+
+type MemoryInfo struct {
+	Vendor string `json:"vendor,omitempty"`
+	Size   string `json:"size,omitempty"`
+}
+
 type Info struct {
-	Hostname      string     `json:"h"`
-	KernelVersion string     `json:"k,omitempty"`
-	Cores         int        `json:"c"`
-	Threads       int        `json:"t,omitempty"`
-	CpuModel      string     `json:"m"`
-	Uptime        uint64     `json:"u"`
-	Cpu           float64    `json:"cpu"`
-	MemPct        float64    `json:"mp"`
-	DiskPct       float64    `json:"dp"`
-	Bandwidth     float64    `json:"b"`
-	AgentVersion  string     `json:"v"`
-	Podman        bool       `json:"p,omitempty"`
-	GpuPct        float64    `json:"g,omitempty"`
-	DashboardTemp float64    `json:"dt,omitempty"`
-	Os            Os         `json:"os"`
-	OsName        string     `json:"on,omitempty"`   // OS name (e.g., "Ubuntu", "CentOS", "Windows 11")
-	OsVersion     string     `json:"ov,omitempty"`   // OS version (e.g., "22.04", "10.0.19045")
-	OsArch        string     `json:"oa,omitempty"`   // OS architecture (e.g., "x86_64", "arm64")
-	OsCodename    string     `json:"ocd,omitempty"`  // VERSION_CODENAME
-	OsNameRaw     string     `json:"onr,omitempty"`  // NAME
-	OsVersionId   string     `json:"ovid,omitempty"` // VERSION_ID
-	Disks         []DiskInfo `json:"disks,omitempty"`
+	Hostname      string        `json:"h"`
+	KernelVersion string        `json:"k,omitempty"`
+	Cores         int           `json:"c"`
+	Threads       int           `json:"t,omitempty"`
+	CpuModel      string        `json:"m"`
+	Uptime        uint64        `json:"u"`
+	Cpu           float64       `json:"cpu"`
+	MemPct        float64       `json:"mp"`
+	DiskPct       float64       `json:"dp"`
+	Bandwidth     float64       `json:"b"`
+	AgentVersion  string        `json:"v"`
+	Podman        bool          `json:"p,omitempty"`
+	GpuPct        float64       `json:"g,omitempty"`
+	DashboardTemp float64       `json:"dt,omitempty"`
+	Os            Os            `json:"os"`
+	OsName        string        `json:"on,omitempty"`   // OS name (e.g., "Ubuntu", "CentOS", "Windows 11")
+	OsVersion     string        `json:"ov,omitempty"`   // OS version (e.g., "22.04", "10.0.19045")
+	OsArch        string        `json:"oa,omitempty"`   // OS architecture (e.g., "x86_64", "arm64")
+	OsNameRaw     string        `json:"onr,omitempty"`  // NAME
+	OsVersionId   string        `json:"ovid,omitempty"` // VERSION_ID
+	Disks         []DiskInfo    `json:"disks,omitempty"`
+	Networks      []NetworkInfo `json:"networks,omitempty"`
+	Memory        []MemoryInfo  `json:"memory,omitempty"`
 }
 
 // Final data structure to return to the hub

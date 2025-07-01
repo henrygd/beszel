@@ -79,6 +79,7 @@ import { getPagePath } from "@nanostores/router"
 import { SystemDialog } from "../add-system"
 import { Dialog } from "../ui/dialog"
 
+
 type ViewMode = "table" | "grid"
 
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
@@ -209,6 +210,7 @@ export default function SystemsTable() {
 				Icon: HardDriveIcon,
 				header: sortableHeader,
 			},
+
 			{
 				accessorFn: (originalRow) => originalRow.info.g,
 				id: "gpu",
@@ -269,14 +271,11 @@ export default function SystemsTable() {
 			{
 				accessorFn: (originalRow) => {
 					const info = originalRow.info
-					// Prefer onr ovid, then on ov, then kernel
-					if (info.onr && info.ovid) {
-						return `${info.onr} ${info.ovid}`
-					}
+					// Only use on and ov
 					if (info.on && info.ov) {
 						return `${info.on} ${info.ov}`
 					}
-					return info.k || ""
+					return info.on || info.ov || ""
 				},
 				id: "os",
 				name: () => t`OS`,
