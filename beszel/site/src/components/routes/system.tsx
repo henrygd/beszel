@@ -133,8 +133,10 @@ function MultiSelectDropdown({
 	filtered?: boolean
 }) {
 	const [isOpen, setIsOpen] = useState(false)
+	const [searchTerm, setSearchTerm] = useState("")
 	const { t } = useLingui()
 	const dropdownRef = useRef<HTMLDivElement>(null)
+	const searchInputRef = useRef<HTMLInputElement>(null)
 
 	// Close dropdown when clicking outside
 	useEffect(() => {
@@ -150,6 +152,23 @@ function MultiSelectDropdown({
 
 		return () => {
 			document.removeEventListener('mousedown', handleClickOutside)
+		}
+	}, [isOpen])
+
+	// Filter options based on search term
+	const filteredOptions = useMemo(() => {
+		if (!searchTerm) return options
+		return options.filter(option => 
+			option.label.toLowerCase().includes(searchTerm.toLowerCase())
+		)
+	}, [options, searchTerm])
+
+	// Focus search input when dropdown opens
+	useEffect(() => {
+		if (isOpen && searchInputRef.current) {
+			setTimeout(() => searchInputRef.current?.focus(), 0)
+		} else if (!isOpen) {
+			setSearchTerm("")
 		}
 	}, [isOpen])
 
@@ -180,8 +199,32 @@ function MultiSelectDropdown({
 			</button>
 			
 			{isOpen && (
-				<div className="absolute z-50 w-full mt-1 bg-popover border border-input rounded-md shadow-lg max-h-60 overflow-auto">
-					{options.map((option) => (
+				<div className="absolute z-50 w-full mt-1 bg-popover border border-input rounded-md shadow-lg max-h-48 overflow-hidden">
+					{/* Search input */}
+					<div className="p-2 border-b border-border">
+						<input
+							ref={searchInputRef}
+							type="text"
+							placeholder={t`Search...`}
+							value={searchTerm}
+							onChange={(e) => setSearchTerm(e.target.value)}
+							className="w-full px-2 py-1 text-sm bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1"
+							onKeyDown={(e) => {
+								if (e.key === 'Escape') {
+									setIsOpen(false)
+								}
+							}}
+						/>
+					</div>
+					
+					{/* Options list */}
+					<div className="max-h-36 overflow-auto">
+						{filteredOptions.length === 0 ? (
+							<div className="px-3 py-2 text-sm text-muted-foreground">
+								{t`No options found`}
+							</div>
+						) : (
+							filteredOptions.map((option) => (
 						<div
 							key={option.value}
 							onClick={() => {
@@ -217,7 +260,8 @@ function MultiSelectDropdown({
 								<span className="truncate">{option.label}</span>
 							</div>
 						</div>
-					))}
+					)))}
+					</div>
 				</div>
 			)}
 		</div>
