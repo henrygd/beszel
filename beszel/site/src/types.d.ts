@@ -59,6 +59,14 @@ export interface systemInfo {
 	oa?: string
 	/** OS pretty name from /etc/os-release (e.g., "Debian GNU/Linux 12 (bookworm)") */
 	oc?: string
+	/** disks info (array of block devices with model/vendor/serial) */
+	disks?: { name: string; model?: string; vendor?: string; serial?: string }[]
+	/** OS name (from /etc/os-release NAME) */
+	onr?: string
+	/** OS version id (from /etc/os-release VERSION_ID) */
+	ovid?: string
+	/** OS codename (from /etc/os-release VERSION_CODENAME) */
+	ocd?: string
 }
 
 export interface SystemStats {

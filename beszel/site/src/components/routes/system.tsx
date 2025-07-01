@@ -16,7 +16,7 @@ import React, { lazy, memo, useCallback, useEffect, useMemo, useRef, useState } 
 import { Card, CardHeader, CardTitle, CardDescription } from "../ui/card"
 import { useStore } from "@nanostores/react"
 import Spinner from "../spinner"
-import { ClockArrowUp, CpuIcon, GlobeIcon, LayoutGridIcon, MonitorIcon, XIcon, ServerIcon } from "lucide-react"
+import { ClockArrowUp, CpuIcon, GlobeIcon, LayoutGridIcon, MonitorIcon, XIcon, ServerIcon, HardDriveIcon } from "lucide-react"
 import ChartTimeSelect from "../charts/chart-time-select"
 import {
 	chartTimeData,
@@ -262,24 +262,43 @@ export default function SystemDetail({ name }: { name: string }) {
 			return []
 		}
 
+		const osName = system.info.onr || system.info.on
+		const osVersion = system.info.ovid || system.info.ov
+		const osCodename = system.info.ocd || system.info.oc
+		const osDisplay = osName && osVersion ? `${osName} ${osVersion}` : osName || osVersion || system.info.k || ""
+
 		const osInfo = {
 			[Os.Linux]: {
 				Icon: TuxIcon,
-				value: system.info.oc ? system.info.oc : 
-					(system.info.on && system.info.ov ? `${system.info.on} ${system.info.ov}` : system.info.k),
-				label: system.info.on ? t`Distribution` : t({ comment: "Linux kernel", message: "Kernel" }),
+				value: osDisplay,
+				tooltip: [
+					osCodename ? `Codename: ${osCodename}` : null,
+					system.info.k ? `Kernel: ${system.info.k}` : null,
+				].filter(Boolean).join("\n"),
 			},
 			[Os.Darwin]: {
 				Icon: AppleIcon,
-				value: system.info.on && system.info.ov ? `${system.info.on} ${system.info.ov}` : `macOS ${system.info.k}`,
+				value: osDisplay,
+				tooltip: [
+					osCodename ? `Codename: ${osCodename}` : null,
+					system.info.k ? `Kernel: ${system.info.k}` : null,
+				].filter(Boolean).join("\n"),
 			},
 			[Os.Windows]: {
 				Icon: WindowsIcon,
-				value: system.info.on && system.info.ov ? `${system.info.on} ${system.info.ov}` : system.info.k,
+				value: osDisplay,
+				tooltip: [
+					osCodename ? `Codename: ${osCodename}` : null,
+					system.info.k ? `Kernel: ${system.info.k}` : null,
+				].filter(Boolean).join("\n"),
 			},
 			[Os.FreeBSD]: {
 				Icon: FreeBsdIcon,
-				value: system.info.on && system.info.ov ? `${system.info.on} ${system.info.ov}` : system.info.k,
+				value: osDisplay,
+				tooltip: [
+					osCodename ? `Codename: ${osCodename}` : null,
+					system.info.k ? `Kernel: ${system.info.k}` : null,
+				].filter(Boolean).join("\n"),
 			},
 		}
 
@@ -301,38 +320,34 @@ export default function SystemDetail({ name }: { name: string }) {
 				hide: system.info.h === system.host || system.info.h === system.name,
 			},
 			{ value: uptime, Icon: ClockArrowUp, label: t`Uptime`, hide: !system.info.u },
+			{ ...osInfo[system.info.os ?? Os.Linux], isOs: true },
 			{
 				value: `${system.info.m} (${system.info.c}c${system.info.t ? `/${system.info.t}t` : ""})`,
 				Icon: CpuIcon,
 				hide: !system.info.m,
+				arch: system.info.oa,
 			},
-			osInfo[system.info.os ?? Os.Linux],
+			// Add disks info here
+			system.info.disks && system.info.disks.length > 0
+				? {
+					value: `${system.info.disks.length} ${system.info.disks.length === 1 ? t`Disk` : t`Disks`}`,
+					Icon: HardDriveIcon,
+					disks: system.info.disks,
+				}
+				: undefined,
 		] as {
 			value: string | number | undefined
 			label?: string
 			Icon: any
 			hide?: boolean
+			pretty?: string
+			isOs?: boolean
+			arch?: string
+			disks?: { name: string; model?: string; vendor?: string; serial?: string }[]
+			tooltip?: string
 		}[]
 		
-		// Add OS architecture if available
-		if (system.info.oa) {
-			infoItems.push({
-				value: system.info.oa,
-				Icon: ServerIcon,
-				label: t`Architecture`,
-			})
-		}
-		
-		// Add kernel version as separate item if we have OS name/version
-		if (system.info.on && system.info.k && system.info.k !== system.info.on) {
-			infoItems.push({
-				value: system.info.k,
-				Icon: TuxIcon,
-				label: t({ comment: "Linux kernel", message: "Kernel" }),
-			})
-		}
-		
-		return infoItems
+		return infoItems.filter(Boolean)
 	}, [system.info])
 
 	/** Space for tooltip if more than 12 containers */
@@ -432,7 +447,7 @@ export default function SystemDetail({ name }: { name: string }) {
 									</span>
 									{translatedStatus}
 								</div>
-								{systemInfo.map(({ value, label, Icon, hide }, i) => {
+								{systemInfo.map(({ value, label, Icon, hide, pretty, isOs, arch, disks, tooltip }, i) => {
 									if (hide || !value) {
 										return null
 									}
@@ -441,6 +456,65 @@ export default function SystemDetail({ name }: { name: string }) {
 											<Icon className="h-4 w-4" /> {value}
 										</div>
 									)
+									if (isOs && tooltip) {
+										return (
+											<div key={i} className="contents">
+												<Separator orientation="vertical" className="h-4 bg-primary/30" />
+												<TooltipProvider>
+													<Tooltip delayDuration={150}>
+														<TooltipTrigger asChild>{content}</TooltipTrigger>
+														<TooltipContent style={{ whiteSpace: 'pre-line' }}>{tooltip}</TooltipContent>
+													</Tooltip>
+												</TooltipProvider>
+											</div>
+										)
+									}
+									// Show architecture as tooltip for CPU info
+									if (arch) {
+										return (
+											<div key={i} className="contents">
+												<Separator orientation="vertical" className="h-4 bg-primary/30" />
+												<TooltipProvider>
+													<Tooltip delayDuration={150}>
+														<TooltipTrigger asChild>{content}</TooltipTrigger>
+														<TooltipContent>{arch}</TooltipContent>
+													</Tooltip>
+												</TooltipProvider>
+											</div>
+										)
+									}
+									// Show disks tooltip if present
+									if (disks && disks.length > 0) {
+										return (
+											<div key={i} className="contents">
+												<Separator orientation="vertical" className="h-4 bg-primary/30" />
+												<TooltipProvider>
+													<Tooltip delayDuration={150}>
+														<TooltipTrigger asChild>{content}</TooltipTrigger>
+														<TooltipContent side="top">
+															<div className="flex flex-col gap-1 min-w-44">
+																{disks.map((disk, idx) => {
+																	let diskText = disk.name
+																	if (disk.vendor && disk.model) {
+																		diskText += `: ${disk.vendor} ${disk.model}`
+																	} else if (disk.model) {
+																		diskText += `: ${disk.model}`
+																	} else if (disk.vendor) {
+																		diskText += `: ${disk.vendor}`
+																	}
+																	return (
+																		<div key={disk.name + idx} className="flex flex-col">
+																			<span className="font-medium">{diskText}</span>
+																		</div>
+																	)
+																})}
+															</div>
+														</TooltipContent>
+													</Tooltip>
+												</TooltipProvider>
+											</div>
+										)
+									}
 									return (
 										<div key={i} className="contents">
 											<Separator orientation="vertical" className="h-4 bg-primary/30" />

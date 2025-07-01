@@ -269,8 +269,9 @@ export default function SystemsTable() {
 			{
 				accessorFn: (originalRow) => {
 					const info = originalRow.info
-					if (info.oc) {
-						return info.oc
+					// Prefer onr ovid, then on ov, then kernel
+					if (info.onr && info.ovid) {
+						return `${info.onr} ${info.ovid}`
 					}
 					if (info.on && info.ov) {
 						return `${info.on} ${info.ov}`
@@ -289,7 +290,6 @@ export default function SystemsTable() {
 					if (!osText) {
 						return null
 					}
-					
 					// Get OS icon based on OS type
 					const getOsIcon = () => {
 						switch (system.info.os) {
@@ -303,9 +303,8 @@ export default function SystemsTable() {
 								return TuxIcon
 						}
 					}
-					
 					const OsIcon = getOsIcon()
-					
+					// Just show the text, no tooltip
 					return (
 						<span
 							className={cn("flex gap-1.5 items-center tabular-nums", {
@@ -313,7 +312,7 @@ export default function SystemsTable() {
 							})}
 						>
 							<OsIcon className="h-3.5 w-3.5" />
-							<span className="truncate" title={osText}>
+							<span className="truncate">
 								{osText}
 							</span>
 						</span>

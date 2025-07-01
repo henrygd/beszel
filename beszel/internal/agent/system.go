@@ -12,6 +12,9 @@ import (
 	"strings"
 	"time"
 
+	"encoding/json"
+	"os/exec"
+
 	"github.com/shirou/gopsutil/v4/cpu"
 	"github.com/shirou/gopsutil/v4/disk"
 	"github.com/shirou/gopsutil/v4/host"
@@ -44,10 +47,16 @@ func (a *Agent) initializeSystemInfo() {
 	} else {
 		a.systemInfo.Os = system.Linux
 		a.systemInfo.OsName = family
-		a.systemInfo.OsVersion = version
-		// Read PRETTY_NAME from /etc/os-release for Linux systems
-		if prettyName := readPrettyName(); prettyName != "" {
-			a.systemInfo.OsPrettyName = prettyName
+		// Read only VERSION_CODENAME, NAME, and VERSION_ID from /etc/os-release for Linux systems
+		osRelease := readOsRelease()
+		if codename := osRelease["VERSION_CODENAME"]; codename != "" {
+			a.systemInfo.OsCodename = codename
+		}
+		if nameRaw := osRelease["NAME"]; nameRaw != "" {
+			a.systemInfo.OsNameRaw = nameRaw
+		}
+		if versionId := osRelease["VERSION_ID"]; versionId != "" {
+			a.systemInfo.OsVersionId = versionId
 		}
 	}
 
@@ -79,6 +88,9 @@ func (a *Agent) initializeSystemInfo() {
 	} else {
 		slog.Debug("Not monitoring ZFS ARC", "err", err)
 	}
+
+	// Collect disk info (model/vendor)
+	a.systemInfo.Disks = getDiskInfo()
 }
 
 // readPrettyName reads the PRETTY_NAME from /etc/os-release
@@ -310,4 +322,52 @@ func getARCSize() (uint64, error) {
 	}
 
 	return 0, fmt.Errorf("failed to parse size field")
+}
+
+func getDiskInfo() []system.DiskInfo {
+	type lsblkOutput struct {
+		Blockdevices []struct {
+			Name   string `json:"name"`
+			Model  string `json:"model"`
+			Vendor string `json:"vendor"`
+		} `json:"blockdevices"`
+	}
+	cmd := exec.Command("lsblk", "-d", "-J", "-o", "NAME,MODEL,VENDOR")
+	out, err := cmd.Output()
+	if err != nil {
+		return nil
+	}
+	var parsed lsblkOutput
+	if err := json.Unmarshal(out, &parsed); err != nil {
+		return nil
+	}
+	var disks []system.DiskInfo
+	for _, d := range parsed.Blockdevices {
+		disks = append(disks, system.DiskInfo{
+			Name:   d.Name,
+			Model:  d.Model,
+			Vendor: d.Vendor,
+		})
+	}
+	return disks
+}
+
+func readOsRelease() map[string]string {
+	file, err := os.Open("/etc/os-release")
+	if err != nil {
+		return map[string]string{}
+	}
+	defer file.Close()
+
+	release := make(map[string]string)
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if i := strings.Index(line, "="); i > 0 {
+			key := line[:i]
+			val := strings.Trim(line[i+1:], `"`)
+			release[key] = val
+		}
+	}
+	return release
 }
