@@ -5,6 +5,7 @@ import {
 	pb,
 	$chartTime,
 	$containerFilter,
+	$stackFilter,
 	$containerColors,
 	$userSettings,
 	$direction,
@@ -118,81 +119,255 @@ function dockerOrPodman(str: string, system: SystemRecord) {
 	return str
 }
 
-function ContainerLegend({ containerData, containerColors, isVolumeChart = false }: { containerData: ChartData["containerData"], containerColors: Record<string, string>, isVolumeChart?: boolean }) {
+function MultiSelectDropdown({ 
+	options, 
+	selectedValues, 
+	onChange, 
+	placeholder,
+	filtered = false
+}: { 
+	options: Array<{ value: string; label: string; color?: string }>
+	selectedValues: string[]
+	onChange: (value: string) => void
+	placeholder: string
+	filtered?: boolean
+}) {
+	const [isOpen, setIsOpen] = useState(false)
+	const { t } = useLingui()
+	const dropdownRef = useRef<HTMLDivElement>(null)
+
+	// Close dropdown when clicking outside
+	useEffect(() => {
+		function handleClickOutside(event: MouseEvent) {
+			if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+				setIsOpen(false)
+			}
+		}
+
+		if (isOpen) {
+			document.addEventListener('mousedown', handleClickOutside)
+		}
+
+		return () => {
+			document.removeEventListener('mousedown', handleClickOutside)
+		}
+	}, [isOpen])
+
+	const displayText = selectedValues.includes("all") 
+		? t`All Selected`
+		: selectedValues.length === 0 
+		? (filtered ? `${placeholder} (filtered)` : placeholder)
+		: selectedValues.length === 1
+		? options.find(opt => opt.value === selectedValues[0])?.label || selectedValues[0]
+		: `${selectedValues.length} selected`
+
+	return (
+		<div className="relative" ref={dropdownRef}>
+			<button
+				type="button"
+				onClick={() => setIsOpen(!isOpen)}
+				className="flex h-10 w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
+			>
+				<span className="truncate">{displayText}</span>
+				<svg
+					className={`ml-2 h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+					fill="none"
+					stroke="currentColor"
+					viewBox="0 0 24 24"
+				>
+					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+				</svg>
+			</button>
+			
+			{isOpen && (
+				<div className="absolute z-50 w-full mt-1 bg-popover border border-input rounded-md shadow-lg max-h-60 overflow-auto">
+					{options.map((option) => (
+						<div
+							key={option.value}
+							onClick={() => {
+								onChange(option.value)
+								if (option.value === "all") {
+									setIsOpen(false)
+								}
+							}}
+							className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 ps-8 pe-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+						>
+							<span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+								{selectedValues.includes(option.value) && (
+									<svg
+										className="h-4 w-4 text-primary"
+										fill="currentColor"
+										viewBox="0 0 20 20"
+									>
+										<path
+											fillRule="evenodd"
+											d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+											clipRule="evenodd"
+										/>
+									</svg>
+								)}
+							</span>
+							<div className="flex items-center gap-2">
+								{option.color && (
+									<div
+										className="h-3 w-3 rounded-sm shrink-0"
+										style={{ backgroundColor: option.color }}
+									/>
+								)}
+								<span className="truncate">{option.label}</span>
+							</div>
+						</div>
+					))}
+				</div>
+			)}
+		</div>
+	)
+}
+
+function ContainerFilterBar({ containerData, containerColors, isVolumeChart = false }: { containerData: ChartData["containerData"], containerColors: Record<string, string>, isVolumeChart?: boolean }) {
 	const { t } = useLingui()
 	const containerFilter = useStore($containerFilter)
+	const stackFilter = useStore($stackFilter)
 
-	// Get unique container names from the data
-	const containerNames = useMemo(() => {
-		const names = new Set<string>()
+	// Get all container and stack data for filtering
+	const containerStackData = useMemo(() => {
+		const containerMap = new Map<string, { name: string; stack: string; color: string }>()
+		const stackSet = new Set<string>()
+		
 		for (let data of containerData) {
 			for (let key in data) {
 				if (key && key !== "created") {
 					// Exclude orphaned volumes for non-volume charts
 					if (!isVolumeChart && key.startsWith("(orphaned volume)")) continue
-					names.add(key)
+					
+					const container = data[key] as any
+					const stackName = container && container.p ? container.p : "—"
+					const color = containerColors[key] || `hsl(${Math.random() * 360}, 60%, 55%)`
+					
+					containerMap.set(key, {
+						name: key,
+						stack: stackName,
+						color: color
+					})
+					stackSet.add(stackName)
 				}
 			}
 		}
-		return Array.from(names).sort()
-	}, [containerData, isVolumeChart])
-
-	const hasActiveFilter = containerFilter.length > 0
-
-	const toggleContainer = (name: string) => {
-		if (containerFilter.includes(name)) {
-			$containerFilter.set(containerFilter.filter((n) => n !== name))
-		} else {
-			$containerFilter.set([...containerFilter, name])
+		
+		return {
+			containers: Array.from(containerMap.values()).sort((a, b) => a.name.localeCompare(b.name)),
+			stacks: Array.from(stackSet).sort()
 		}
+	}, [containerData, containerColors, isVolumeChart])
+
+	// Filter containers based on selected stacks
+	const filteredContainers = useMemo(() => {
+		if (stackFilter.length === 0 || stackFilter.includes("all")) {
+			return containerStackData.containers
+		}
+		return containerStackData.containers.filter(container => 
+			stackFilter.includes(container.stack)
+		)
+	}, [containerStackData.containers, stackFilter])
+
+	// Filter stacks based on selected containers
+	const filteredStacks = useMemo(() => {
+		if (containerFilter.length === 0 || containerFilter.includes("all")) {
+			return containerStackData.stacks
+		}
+		const selectedContainerStacks = new Set<string>()
+		containerStackData.containers.forEach(container => {
+			if (containerFilter.includes(container.name)) {
+				selectedContainerStacks.add(container.stack)
+			}
+		})
+		return containerStackData.stacks.filter(stack => 
+			selectedContainerStacks.has(stack)
+		)
+	}, [containerStackData.stacks, containerStackData.containers, containerFilter])
+
+	const handleContainerChange = (value: string) => {
+		if (value === "all") {
+			$containerFilter.set([])
+		} else if (containerFilter.includes(value)) {
+			// Remove if already selected
+			$containerFilter.set(containerFilter.filter(c => c !== value))
+		} else {
+			// Add to selection
+			$containerFilter.set([...containerFilter, value])
+		}
+	}
+
+	const handleStackChange = (value: string) => {
+		if (value === "all") {
+			$stackFilter.set([])
+		} else if (stackFilter.includes(value)) {
+			// Remove if already selected
+			$stackFilter.set(stackFilter.filter(s => s !== value))
+		} else {
+			// Add to selection
+			$stackFilter.set([...stackFilter, value])
+		}
+	}
+
+	const selectedContainers = containerFilter.length === 0 ? ["all"] : containerFilter
+	const selectedStacks = stackFilter.length === 0 ? ["all"] : stackFilter
+
+	// Only show if there are containers
+	if (containerStackData.containers.length === 0) {
+		return null
 	}
 
 	return (
 		<Card className="mb-4">
 			<CardHeader className="pb-2 pt-2">
-				<span className="text-xs text-muted-foreground font-semibold">{t`Container Filtering`}</span>
+				<span className="text-xs text-muted-foreground font-semibold">{t`Filtering`}</span>
 			</CardHeader>
 			<CardContent className="pt-0 pb-2">
-				{containerNames.length === 0 ? (
-					<span className="text-xs text-muted-foreground">{t`No containers found`}</span>
-				) : (
-					<div className="flex flex-wrap gap-2">
-						{containerNames.map((name) => {
-							const isSelected = containerFilter.includes(name)
-							const color = containerColors[name] || `hsl(${Math.random() * 360}, 60%, 55%)`
-							return (
-								<div
-									key={name}
-									className={cn(
-										"flex items-center gap-2 px-2 py-1 rounded-md border cursor-pointer transition-all hover:bg-muted/50",
-										isSelected ? "ring-2 ring-primary ring-offset-1 bg-primary/10" : "opacity-100"
-									)}
-									onClick={() => toggleContainer(name)}
-								>
-									<div
-										className="h-3 w-3 rounded-sm shrink-0"
-										style={{ backgroundColor: color }}
-									/>
-									<span className="text-xs font-medium truncate" title={name}>
-										{name}
-									</span>
-								</div>
-							)
-						})}
+				<div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+					<div>
+						<label className="text-xs text-muted-foreground mb-1 block">{t`Containers`}</label>
+						<MultiSelectDropdown
+							options={[
+								{ value: "all", label: t`All Containers`, color: undefined },
+								...filteredContainers.map(container => ({
+									value: container.name,
+									label: container.name,
+									color: container.color
+								}))
+							]}
+							selectedValues={containerFilter.length === 0 ? ["all"] : containerFilter}
+							onChange={handleContainerChange}
+							placeholder={t`Select containers`}
+							filtered={stackFilter.length > 0 && !stackFilter.includes("all")}
+						/>
 					</div>
-				)}
-				{hasActiveFilter && containerNames.length > 0 && (
-					<div className="mt-2">
-						<Button
-							type="button"
-							variant="secondary"
-							size="sm"
-							onClick={() => $containerFilter.set([])}
-						>
-							{t`Show All`}
-						</Button>
-					</div>
-				)}
+					
+					{containerStackData.stacks.length > 1 && (
+						<div>
+							<label className="text-xs text-muted-foreground mb-1 block">{t`Stacks`}</label>
+							<MultiSelectDropdown
+								options={[
+									{ value: "all", label: t`All Stacks`, color: undefined },
+									...filteredStacks.map(stackName => ({
+										value: stackName,
+										label: stackName,
+										color: (() => {
+											const firstContainerInStack = containerStackData.containers.find(container => 
+												container.stack === stackName
+											)
+											return firstContainerInStack ? firstContainerInStack.color : `hsl(${Math.random() * 360}, 60%, 55%)`
+										})()
+									}))
+								]}
+								selectedValues={stackFilter.length === 0 ? ["all"] : stackFilter}
+								onChange={handleStackChange}
+								placeholder={t`Select stacks`}
+								filtered={containerFilter.length > 0 && !containerFilter.includes("all")}
+							/>
+						</div>
+					)}
+				</div>
 			</CardContent>
 		</Card>
 	)
@@ -205,6 +380,7 @@ export default function SystemDetail({ name }: { name: string }) {
 	const chartTime = useStore($chartTime)
 	const maxValues = useStore($maxValues)
 	const containerFilter = useStore($containerFilter)
+	const stackFilter = useStore($stackFilter)
 	const [grid, setGrid] = useLocalStorage("grid", true)
 	const [system, setSystem] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
@@ -226,6 +402,7 @@ export default function SystemDetail({ name }: { name: string }) {
 			setSystemStats([])
 			setContainerData([])
 			$containerFilter.set([])
+			$stackFilter.set([])
 			$containerColors.set({})
 		}
 	}, [name])
@@ -733,7 +910,7 @@ export default function SystemDetail({ name }: { name: string }) {
 						{/* Docker Container Charts */}
 						{containerData.length > 0 ? (
 							<>
-								<ContainerLegend containerData={containerData} containerColors={containerColors} isVolumeChart={false} />
+								<ContainerFilterBar containerData={containerData} containerColors={containerColors} isVolumeChart={false} />
 								<div className="grid xl:grid-cols-2 gap-4">
 									<ChartCard
 										empty={dataEmpty}
@@ -760,49 +937,103 @@ export default function SystemDetail({ name }: { name: string }) {
 										<ContainerChart chartData={chartData} dataKey="n" chartType={ChartType.Network} />
 									</ChartCard>
 									{/* Docker Volumes Chart */}
-									{(() => {
-										// Check if any containers have volume data
-										const hasVolumes = containerData.some(stats => {
-											if (!stats.created) return false
-											return Object.values(stats).some(container => 
-												container && typeof container === 'object' && 'v' in container && 
-												container.v && Object.keys(container.v).length > 0
-											)
-										})
-										
-										return hasVolumes ? (
-											<ChartCard
-												empty={dataEmpty}
-												grid={grid}
-												title={dockerOrPodman(t`Docker Volumes`, system)}
-												description={t`Storage usage of Docker volumes`}
-											>
+									<ChartCard
+										empty={dataEmpty}
+										grid={grid}
+										title={dockerOrPodman(t`Docker Volumes`, system)}
+										description={t`Storage usage of Docker volumes`}
+									>
+										{(() => {
+											// Check if any containers have volume data, accounting for current filters
+											const hasVolumes = containerData.some(stats => {
+												if (!stats.created) return false
+												return Object.entries(stats).some(([containerName, container]) => {
+													if (containerName === "created") return false
+													
+													// Apply container filter
+													if (containerFilter.length > 0 && !containerFilter.includes(containerName)) {
+														return false
+													}
+													
+													// Apply stack filter
+													if (stackFilter.length > 0 && typeof container === 'object' && container) {
+														const stackName = (container as any).p || "—"
+														if (!stackFilter.includes(stackName)) {
+															return false
+														}
+													}
+													
+													return container && typeof container === 'object' && 'v' in container && 
+														container.v && Object.keys(container.v).length > 0
+												})
+											})
+											
+											return hasVolumes ? (
 												<ContainerChart chartData={chartData} dataKey="v" chartType={ChartType.Volume} />
-											</ChartCard>
-										) : null
-									})()}
-									{/* Docker Health+Uptime Combined Chart */}
-									{(() => {
-										// Check if any containers have health or uptime data
-										const hasHealthUptime = containerData.some(stats => {
-											if (!stats.created) return false
-											return Object.values(stats).some(container =>
-												container && typeof container === 'object' && 
-												(('h' in container && container.h) || ('u' in container && container.u))
+											) : (
+												<div className="flex items-center justify-center h-full opacity-100">
+													<div className="text-center space-y-2">
+														<ContainerIcon className="h-8 w-8 mx-auto text-muted-foreground" />
+														<p className="text-sm text-muted-foreground">
+															{containerFilter.length > 0 || stackFilter.length > 0 
+																? t`No volumes for the selected containers`
+																: t`No volumes found`
+															}
+														</p>
+													</div>
+												</div>
 											)
-										})
-										
-										return hasHealthUptime ? (
-											<ChartCard
-												empty={dataEmpty}
-												grid={grid}
-												title={dockerOrPodman(t`Docker Health & Uptime`, system)}
-												description={t`Health status and Uptime of containers`}
-											>
+										})()}
+									</ChartCard>
+									{/* Docker Health+Uptime Combined Chart */}
+									<ChartCard
+										empty={dataEmpty}
+										grid={grid}
+										title={dockerOrPodman(t`Docker Health & Uptime`, system)}
+										description={t`Health status and Uptime of containers`}
+									>
+										{(() => {
+											// Check if any containers have health or uptime data, accounting for current filters
+											const hasHealthUptime = containerData.some(stats => {
+												if (!stats.created) return false
+												return Object.entries(stats).some(([containerName, container]) => {
+													if (containerName === "created") return false
+													
+													// Apply container filter
+													if (containerFilter.length > 0 && !containerFilter.includes(containerName)) {
+														return false
+													}
+													
+													// Apply stack filter
+													if (stackFilter.length > 0 && typeof container === 'object' && container) {
+														const stackName = (container as any).p || "—"
+														if (!stackFilter.includes(stackName)) {
+															return false
+														}
+													}
+													
+													return container && typeof container === 'object' && 
+														(('h' in container && container.h) || ('u' in container && container.u))
+												})
+											})
+											
+											return hasHealthUptime ? (
 												<ContainerChart chartData={chartData} dataKey="h" chartType={ChartType.HealthUptime} />
-											</ChartCard>
-										) : null
-									})()}
+											) : (
+												<div className="flex items-center justify-center h-full opacity-100">
+													<div className="text-center space-y-2">
+														<ContainerIcon className="h-8 w-8 mx-auto text-muted-foreground" />
+														<p className="text-sm text-muted-foreground">
+															{containerFilter.length > 0 || stackFilter.length > 0 
+																? t`No health/uptime data for the selected containers`
+																: t`No health/uptime data found`
+															}
+														</p>
+													</div>
+												</div>
+											)
+										})()}
+									</ChartCard>
 								</div>
 							</>
 						) : (

@@ -13,7 +13,7 @@ import {
 } from "@/lib/utils"
 // import Spinner from '../spinner'
 import { useStore } from "@nanostores/react"
-import { $containerFilter, $containerColors } from "@/lib/stores"
+import { $containerFilter, $stackFilter, $containerColors } from "@/lib/stores"
 import { ChartData } from "@/types"
 import { Separator } from "../ui/separator"
 import { ChartType } from "@/lib/enums"
@@ -32,7 +32,8 @@ export default memo(function ContainerChart({
 	chartType: ChartType
 	unit?: string
 }) {
-	const filter = useStore($containerFilter)
+	const containerFilter = useStore($containerFilter)
+	const stackFilter = useStore($stackFilter)
 	const containerColors = useStore($containerColors)
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
@@ -74,6 +75,20 @@ export default memo(function ContainerChart({
 
 			for (let [containerName, containerDataObj] of Object.entries(containerStats)) {
 				if (containerName === "created") continue
+				
+				// Apply container filter
+				if (containerFilter.length > 0 && !containerFilter.includes(containerName)) {
+					continue
+				}
+				
+				// Apply stack filter
+				if (stackFilter.length > 0 && typeof containerDataObj === 'object' && containerDataObj) {
+					const stackName = (containerDataObj as any).p || "—"
+					if (!stackFilter.includes(stackName)) {
+						continue
+					}
+				}
+				
 				allContainerNames.add(containerName)
 
 				if (typeof containerDataObj === 'object' && containerDataObj) {
@@ -152,7 +167,7 @@ export default memo(function ContainerChart({
 			healthUptimeChartData,
 			chartConfig,
 		}
-	}, [containerData, containerColors])
+	}, [containerData, containerColors, containerFilter, stackFilter])
 
 	const { volumeChartData, healthChartData, uptimeChartData, healthUptimeChartData, chartConfig } = chartDatasets
 
@@ -306,7 +321,7 @@ export default memo(function ContainerChart({
 				containerData={containerData}
 				healthUptimeChartData={healthUptimeChartData}
 				containerColors={containerColors}
-				filter={filter}
+				filter={containerFilter}
 			/>
 		)
 	}
@@ -359,26 +374,21 @@ export default memo(function ContainerChart({
 								/>
 							}
 						/>
-						{colors.map((key) => {
-							const filtered = Array.isArray(filter) && filter.length > 0 && !filter.includes(key)
-							let fillOpacity = filtered ? 0.05 : 0.4
-							let strokeOpacity = filtered ? 0.1 : 1
-							return (
-								<Area
-									key={key}
-									dataKey={key}
-									name={key}
-									type="monotoneX"
-									fill={volumeChartData!.colors[key]}
-									fillOpacity={fillOpacity}
-									stroke={volumeChartData!.colors[key]}
-									strokeOpacity={strokeOpacity}
-									activeDot={{ opacity: filtered ? 0 : 1 }}
-									stackId="a"
-									isAnimationActive={false}
-								/>
-							)
-						})}
+						{colors.map((key) => (
+							<Area
+								key={key}
+								dataKey={key}
+								name={key}
+								type="monotoneX"
+								fill={volumeChartData!.colors[key]}
+								fillOpacity={0.4}
+								stroke={volumeChartData!.colors[key]}
+								strokeOpacity={1}
+								activeDot={{ opacity: 1 }}
+								stackId="a"
+								isAnimationActive={false}
+							/>
+						))}
 					</AreaChart>
 				</ChartContainer>
 			</div>
@@ -527,26 +537,21 @@ export default memo(function ContainerChart({
 						itemSorter={(a, b) => b.value - a.value}
 						content={<ChartTooltipContent contentFormatter={toolTipFormatter} />}
 					/>
-					{filterableKeys.map((key) => {
-						const filtered = Array.isArray(filter) && filter.length > 0 && !filter.includes(key)
-						let fillOpacity = filtered ? 0.05 : 0.4
-						let strokeOpacity = filtered ? 0.1 : 1
-						return (
-							<Area
-								key={key}
-								isAnimationActive={false}
-								dataKey={dataFunction.bind(null, key)}
-								name={key}
-								type="monotoneX"
-								fill={chartConfig[key].color}
-								fillOpacity={fillOpacity}
-								stroke={chartConfig[key].color}
-								strokeOpacity={strokeOpacity}
-								activeDot={{ opacity: filtered ? 0 : 1 }}
-								stackId="a"
-							/>
-						)
-					})}
+					{filterableKeys.map((key) => (
+						<Area
+							key={key}
+							isAnimationActive={false}
+							dataKey={dataFunction.bind(null, key)}
+							name={key}
+							type="monotoneX"
+							fill={chartConfig[key].color}
+							fillOpacity={0.4}
+							stroke={chartConfig[key].color}
+							strokeOpacity={1}
+							activeDot={{ opacity: 1 }}
+							stackId="a"
+						/>
+					))}
 				</AreaChart>
 			</ChartContainer>
 		</div>
@@ -565,6 +570,7 @@ const HealthUptimeTable = React.memo(function HealthUptimeTable({
 	containerColors: Record<string, string>,
 	filter: string[]
 }) {
+	const stackFilter = useStore($stackFilter)
 	// Get the latest data point for table display
 	const latestData = healthUptimeChartData.data[healthUptimeChartData.data.length - 1]
 	if (!latestData) return null
@@ -641,11 +647,20 @@ const HealthUptimeTable = React.memo(function HealthUptimeTable({
 
 	// Filtered data
 	const filteredContainerData = React.useMemo(() => {
+		let filtered = containerTableData
+		
+		// Apply container filter
 		if (Array.isArray(filter) && filter.length > 0) {
-			return containerTableData.filter(container => filter.includes(container.name))
+			filtered = filtered.filter(container => filter.includes(container.name))
 		}
-		return containerTableData
-	}, [containerTableData, filter])
+		
+		// Apply stack filter
+		if (Array.isArray(stackFilter) && stackFilter.length > 0) {
+			filtered = filtered.filter(container => stackFilter.includes(container.stack))
+		}
+		
+		return filtered
+	}, [containerTableData, filter, stackFilter])
 
 	// Sorted data
 	const sortedContainerData = React.useMemo(() => {
