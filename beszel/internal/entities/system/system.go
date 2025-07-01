@@ -82,21 +82,22 @@ const (
 )
 
 type Info struct {
-	Hostname      string  `json:"h"`
-	KernelVersion string  `json:"k,omitempty"`
-	Cores         int     `json:"c"`
-	Threads       int     `json:"t,omitempty"`
-	CpuModel      string  `json:"m"`
-	Uptime        uint64  `json:"u"`
-	Cpu           float64 `json:"cpu"`
-	MemPct        float64 `json:"mp"`
-	DiskPct       float64 `json:"dp"`
-	Bandwidth     float64 `json:"b"`
-	AgentVersion  string  `json:"v"`
-	Podman        bool    `json:"p,omitempty"`
-	GpuPct        float64 `json:"g,omitempty"`
-	DashboardTemp float64 `json:"dt,omitempty"`
-	Os            Os      `json:"os"`
+	Hostname      string              `json:"h"`
+	KernelVersion string              `json:"k,omitempty"`
+	Cores         int                 `json:"c"`
+	Threads       int                 `json:"t,omitempty"`
+	CpuModel      string              `json:"m"`
+	Uptime        uint64              `json:"u"`
+	Cpu           float64             `json:"cpu"`
+	MemPct        float64             `json:"mp"`
+	DiskPct       float64             `json:"dp"`
+	Bandwidth     float64             `json:"b"`
+	AgentVersion  string              `json:"v"`
+	Podman        bool                `json:"p,omitempty"`
+	GpuPct        float64             `json:"g,omitempty"`
+	DashboardTemp float64             `json:"dt,omitempty"`
+	Os            Os                  `json:"os"`
+	Efs           map[string]*FsStats `json:"efs,omitempty"`
 }
 
 // Final data structure to return to the hub

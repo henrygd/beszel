@@ -61,6 +61,7 @@ import {
 	Settings2Icon,
 	EyeIcon,
 	PenBoxIcon,
+	ChevronDownIcon,
 } from "lucide-react"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
 import { $systems, pb } from "@/lib/stores"
@@ -76,6 +77,7 @@ import { ClassValue } from "clsx"
 import { getPagePath } from "@nanostores/router"
 import { SystemDialog } from "../add-system"
 import { Dialog } from "../ui/dialog"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 type ViewMode = "table" | "grid"
 
@@ -136,13 +138,63 @@ export default function SystemsTable() {
 		}
 	}, [filter])
 
+	const hasAnyExtraDisks = data.some(system => system.info?.efs && Object.keys(system.info.efs).length > 0);
+
+	const extraDisksColumn = {
+		id: "extraDisks",
+		name: () => t`Extra Disks`,
+		header: sortableHeader,
+		cell(info: CellContext<SystemRecord, unknown>) {
+			const efs = info.row.original.info?.efs || {};
+			const diskNames = Object.keys(efs);
+			if (!diskNames.length) return null;
+			return (
+				<div className="flex flex-col gap-1 w-full">
+					{diskNames.map((name) => {
+						const disk = efs[name];
+						const percent = disk && disk.d ? Math.round((disk.du / disk.d) * 100) : 0;
+						return (
+							<TooltipProvider key={name}>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<div className="flex items-center w-full cursor-pointer">
+											<span className="min-w-[3.3em]">{percent}%</span>
+											<span className="grow min-w-10 block bg-muted h-[0.7em] relative rounded-sm overflow-hidden">
+												<span
+													className={cn(
+														"absolute inset-0 w-full h-full origin-left transition-transform duration-200",
+														percent < 65
+															? "bg-green-500"
+															: percent < 90
+															? "bg-yellow-500"
+															: "bg-red-600"
+													)}
+													style={{
+														transform: `scalex(${percent / 100})`,
+													}}
+												></span>
+											</span>
+										</div>
+									</TooltipTrigger>
+									<TooltipContent side="top">
+										<span className="font-medium">{disk.n || name}</span>
+									</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
+						);
+					})}
+				</div>
+			);
+		},
+	};
+
 	const columnDefs = useMemo(() => {
 		const statusTranslations = {
 			up: () => t`Up`.toLowerCase(),
 			down: () => t`Down`.toLowerCase(),
 			paused: () => t`Paused`.toLowerCase(),
 		}
-		return [
+		const baseColumns = [
 			{
 				// size: 200,
 				size: 200,
@@ -203,7 +255,30 @@ export default function SystemsTable() {
 				id: "disk",
 				name: () => t`Disk`,
 				invertSorting: true,
-				cell: CellFormatter,
+				cell(info) {
+					const system = info.row.original;
+					const percent = system.info?.dp ?? 0;
+					return (
+						<div className="flex items-center tabular-nums tracking-tight w-full">
+							<span className="min-w-[3.3em]">{decimalString(percent, 1)}%</span>
+							<span className="grow min-w-10 block bg-muted h-[1em] relative rounded-sm overflow-hidden">
+								<span
+									className={cn(
+										"absolute inset-0 w-full h-full origin-left",
+										percent < 65
+											? "bg-green-500"
+											: percent < 90
+											? "bg-yellow-500"
+											: "bg-red-600"
+									)}
+									style={{
+										transform: `scalex(${percent / 100})`,
+									}}
+								></span>
+							</span>
+						</div>
+					);
+				},
 				Icon: HardDriveIcon,
 				header: sortableHeader,
 			},
@@ -311,7 +386,13 @@ export default function SystemsTable() {
 				),
 			},
 		] as ColumnDef<SystemRecord>[]
-	}, [])
+		// Find the index of the disk column
+		const diskColIdx = baseColumns.findIndex(col => col.id === "disk");
+		if (hasAnyExtraDisks && diskColIdx !== -1) {
+			baseColumns.splice(diskColIdx + 1, 0, extraDisksColumn);
+		}
+		return baseColumns;
+	}, [hasAnyExtraDisks, /* other deps as needed */])
 
 	const table = useReactTable({
 		data,

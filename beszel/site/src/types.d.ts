@@ -51,6 +51,8 @@ export interface SystemInfo {
 	dt?: number
 	/** operating system */
 	os?: Os
+	/** extra filesystems */
+	efs?: Record<string, ExtraFsStats>
 }
 
 export interface SystemStats {
@@ -141,6 +143,8 @@ export interface ExtraFsStats {
 	rm: number
 	/** max write (mb) */
 	wm: number
+	/** display name (mountpoint or label) */
+	n?: string
 }
 
 export interface ContainerStatsRecord extends RecordModel {
