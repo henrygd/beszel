@@ -283,7 +283,9 @@ export default function SystemDetail({ name }: { name: string }) {
 		}
 
 		let uptime: React.ReactNode
-		if (system.info.u < 172800) {
+		if (system.info.u < 3600) {
+			uptime = <Plural value={Math.trunc(system.info.u / 60)} one="# minute" other="# minutes" />
+		} else if (system.info.u < 172800) {
 			const hours = Math.trunc(system.info.u / 3600)
 			uptime = <Plural value={hours} one="# hour" other="# hours" />
 		} else {

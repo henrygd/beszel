@@ -292,7 +292,9 @@ export default function SystemsTable() {
 					}
 					
 					let uptimeDisplay: React.ReactNode
-					if (uptime < 172800) {
+					if (uptime < 3600) {
+						uptimeDisplay = <Plural value={Math.trunc(uptime / 60)} one="# minute" other="# minutes" />
+					} else if (uptime < 172800) {
 						const hours = Math.trunc(uptime / 3600)
 						uptimeDisplay = <Plural value={hours} one="# hour" other="# hours" />
 					} else {
