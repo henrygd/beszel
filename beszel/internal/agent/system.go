@@ -53,7 +53,7 @@ func (a *Agent) initializeSystemInfo() {
 		// Use /etc/os-release for more accurate Linux OS info
 		osRelease := readOsRelease()
 		if pretty, ok := osRelease["PRETTY_NAME"]; ok {
-			a.systemInfo.OsName = pretty
+			a.systemInfo.OsNameRaw = pretty
 		}
 		if name, ok := osRelease["NAME"]; ok {
 			a.systemInfo.OsNameRaw = name

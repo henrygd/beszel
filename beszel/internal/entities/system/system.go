@@ -110,6 +110,7 @@ type Info struct {
 	Os            Os            `json:"os,omitempty"`
 	OsNameRaw     string        `json:"onr,omitempty"`
 	OsVersionId   string        `json:"ovid,omitempty"`
+	Podman        bool          `json:"podman,omitempty"`
 	Disks         []DiskInfo    `json:"disks,omitempty"`
 	Networks      []NetworkInfo `json:"networks,omitempty"`
 	Memory        []MemoryInfo  `json:"memory,omitempty"`
