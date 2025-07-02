@@ -1,7 +1,7 @@
 name: 🐛 Bug report
 description: Report a new bug or issue.
 title: '[Bug]: '
-labels: ['bug']
+labels: ['bug', "needs confirmation"]
 body:
   - type: markdown
     attributes:
@@ -43,6 +43,32 @@ body:
         3. Pour it into a cup.
     validations:
       required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which area is this report for?
+      options:
+        - Data Collection
+        - Charts
+        - Settings
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which component is affected?
+      options:
+        - CPU
+        - GPU
+        - Memory
+        - Docker
+        - Network
+        - Other
+    validations:
+      required: true
   - type: input
     id: system
     attributes:
@@ -61,7 +87,6 @@ body:
     id: install-method
     attributes:
       label: Installation method
-      default: 0
       options:
         - Docker
         - Binary

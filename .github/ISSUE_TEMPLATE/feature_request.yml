@@ -1,7 +1,7 @@
 name: 🚀 Feature request
 description: Request a new feature or change.
 title: "[Feature]: "
-labels: ["enhancement"]
+labels: ["enhancement", "needs review"]
 body:
   - type: markdown
     attributes:
@@ -12,7 +12,47 @@ body:
     validations:
       required: true
   - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation / Use Case
+      description: Why do you want this feature? What problem does it solve?
+    validations:
+      required: true
+  - type: textarea
     attributes:
       label: Describe how you would like to see this feature implemented
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Screenshots
+      description: Please attach any relevant screenshots, such as images from your current solution or similar implementations.
+    validations:
+      required: false
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which area is this request for?
+      options:
+        - Data Collection
+        - Settings
+        - Charts
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which component is affected?
+      options:
+        - CPU
+        - GPU
+        - Memory
+        - Docker
+        - Network
+        - Other
     validations:
       required: true
