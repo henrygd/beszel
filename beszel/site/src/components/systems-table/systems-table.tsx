@@ -269,41 +269,6 @@ export default function SystemsTable() {
 				},
 			},
 			{
-				accessorFn: (originalRow) => {
-					const os = originalRow.info.os && originalRow.info.os.length > 0 ? originalRow.info.os[0] : undefined;
-					if (!os) return "";
-					return `${os.family} ${os.version}`.trim();
-				},
-				id: "os",
-				name: () => t`OS`,
-				size: 120,
-				hideSort: true,
-				Icon: TuxIcon,
-				header: sortableHeader,
-				cell(info) {
-					const system = info.row.original;
-					const os = system.info.os && system.info.os.length > 0 ? system.info.os[0] : undefined;
-					if (!os) return null;
-					const osText = `${os.family} ${os.version}`.trim();
-					const getOsIcon = () => {
-						const family = os.family.toLowerCase();
-						if (family.includes("darwin") || family.includes("mac")) return AppleIcon;
-						if (family.includes("windows")) return WindowsIcon;
-						if (family.includes("freebsd")) return FreeBsdIcon;
-						return TuxIcon;
-					};
-					const OsIcon = getOsIcon();
-					return (
-						<span className={cn("flex gap-1.5 items-center tabular-nums", { "ps-1": viewMode === "table" })}>
-							<OsIcon className="h-3.5 w-3.5" />
-							<span className="truncate" title={os.kernel ? `Kernel: ${os.kernel}` : undefined}>
-								{osText}
-							</span>
-						</span>
-					);
-				},
-			},
-			{
 				accessorKey: "info.v",
 				id: "agent",
 				name: () => t`Agent`,
