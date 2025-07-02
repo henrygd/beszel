@@ -542,13 +542,10 @@ export default function SystemDetail({ name }: { name: string }) {
 
 					{/* Network interface charts */}
 					{Object.keys(systemStats.at(-1)?.stats.ni ?? {}).length > 0 && (
-						<div
-							className={cn({
-								"col-span-full": !grid,
-							})}
-						>
+						<>
 							<ChartCard
 								empty={dataEmpty}
+								grid={grid}
 								title={t`Network Interfaces`}
 								description={t`Network traffic per interface`}
 								cornerEl={networkInterfaceFilterBar}
@@ -556,39 +553,7 @@ export default function SystemDetail({ name }: { name: string }) {
 								{/* @ts-ignore */}
 								<NetworkInterfaceChart chartData={chartData} maxToggled={maxValues} />
 							</ChartCard>
-						</div>
-					)}
-
-					{/* Legacy combined bandwidth chart - only show if no per-interface data */}
-					{(!systemStats.at(-1)?.stats.ni || Object.keys(systemStats.at(-1)?.stats.ni ?? {}).length === 0) && (
-						<ChartCard
-							empty={dataEmpty}
-							grid={grid}
-							title={t`Bandwidth`}
-							cornerEl={maxValSelect}
-							description={t`Network traffic of public interfaces`}
-						>
-							<AreaChartDefault chartData={chartData} chartName="bw" maxToggled={maxValues} />
-						</ChartCard>
-					)}
-
-					{containerFilterBar && containerData.length > 0 && (
-						<div
-							ref={netCardRef}
-							className={cn({
-								"col-span-full": !grid,
-							})}
-						>
-							<ChartCard
-								empty={dataEmpty}
-								title={dockerOrPodman(t`Docker Network I/O`, system)}
-								description={dockerOrPodman(t`Network traffic of docker containers`, system)}
-								cornerEl={containerFilterBar}
-							>
-								{/* @ts-ignore */}
-								<ContainerChart chartData={chartData} chartType={ChartType.Network} dataKey="n" />
-							</ChartCard>
-						</div>
+						</>
 					)}
 
 					{/* Swap chart */}

@@ -2,7 +2,7 @@ import { t } from "@lingui/core/macro"
 import { memo, useMemo } from "react"
 import { useLingui } from "@lingui/react/macro"
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
-import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
+import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis, ChartLegend, ChartLegendContent } from "@/components/ui/chart"
 import { useYAxisWidth, cn, formatShortDate, decimalString, chartMargin } from "@/lib/utils"
 import { ChartData } from "@/types"
 import { Separator } from "@/components/ui/separator"
@@ -13,6 +13,18 @@ const getNestedValue = (path: string, max = false, data: any): number | null => 
 	return `stats.ni.${path}${max ? "m" : ""}`
 		.split(".")
 		.reduce((acc: any, key: string) => acc?.[key] ?? (data.stats?.cpum ? 0 : null), data)
+}
+
+// Utility to convert MB/s to kbit/s, Mbit/s, or Gbit/s
+function formatBitsPerSecond(mbPerSec: number): string {
+	const bitsPerSec = mbPerSec * 8_000_000
+	if (bitsPerSec >= 1_000_000_000) {
+		return (bitsPerSec / 1_000_000_000).toFixed(2) + ' Gbit/s'
+	} else if (bitsPerSec >= 1_000_000) {
+		return (bitsPerSec / 1_000_000).toFixed(2) + ' Mbit/s'
+	} else {
+		return (bitsPerSec / 1_000).toFixed(2) + ' kbit/s'
+	}
 }
 
 export default memo(function NetworkInterfaceChart({
@@ -75,6 +87,8 @@ export default memo(function NetworkInterfaceChart({
 		])
 	}, [networkInterfaces, i18n.locale])
 
+	const colors = dataKeys.map((key) => key.name)
+
 	if (chartData.systemStats.length === 0 || networkInterfaces.length === 0) {
 		return null
 	}
@@ -94,7 +108,7 @@ export default memo(function NetworkInterfaceChart({
 						className="tracking-tighter"
 						width={yAxisWidth}
 						tickFormatter={(value) => {
-							const val = decimalString(value, 2) + " MB/s"
+							const val = formatBitsPerSecond(value)
 							return updateYAxisWidth(val)
 						}}
 						tickLine={false}
@@ -107,13 +121,7 @@ export default memo(function NetworkInterfaceChart({
 						content={
 							<ChartTooltipContent
 								labelFormatter={(_: any, data: any) => formatShortDate(data[0].payload.created)}
-								contentFormatter={({ value }: any) => {
-									return (
-										<span className="flex">
-											{decimalString(value)} MB/s
-										</span>
-									)
-								}}
+								contentFormatter={({ value }: any) => <span className="flex">{formatBitsPerSecond(value)}</span>}
 							/>
 						}
 					/>
@@ -136,6 +144,7 @@ export default memo(function NetworkInterfaceChart({
 							/>
 						)
 					})}
+					{colors.length < 12 && <ChartLegend content={<ChartLegendContent />} />}
 				</AreaChart>
 			</ChartContainer>
 		</div>
