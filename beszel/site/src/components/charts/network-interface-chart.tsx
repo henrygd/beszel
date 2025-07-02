@@ -108,7 +108,8 @@ export default memo(function NetworkInterfaceChart({
 						className="tracking-tighter"
 						width={yAxisWidth}
 						tickFormatter={(value) => {
-							const val = formatBitsPerSecond(value)
+							const rounded = Math.ceil(value)
+							const val = formatBitsPerSecond(rounded)
 							return updateYAxisWidth(val)
 						}}
 						tickLine={false}

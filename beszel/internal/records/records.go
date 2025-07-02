@@ -284,59 +284,6 @@ func (rm *RecordManager) AverageSystemStats(records RecordStats) *system.Stats {
 		}
 	}
 
-	// Calculate PPS/PRS for each interface using consecutive records
-	if len(records) > 1 {
-		type statsWithTime struct {
-			Stats   system.Stats
-			Created time.Time
-		}
-		var statsList []statsWithTime
-		for _, rec := range records {
-			var s system.Stats
-			if err := json.Unmarshal(rec.Stats, &s); err != nil {
-				continue
-			}
-			// rec should have a Created field, but RecordStats does not currently include it
-			// You may need to adjust RecordStats to include Created (time.Time)
-			// For now, skip if not available
-			// statsList = append(statsList, statsWithTime{Stats: s, Created: rec.Created})
-		}
-		// If you update RecordStats to include Created, uncomment above and implement below
-		if len(statsList) > 1 {
-			prev := statsList[0]
-			for i := 1; i < len(statsList); i++ {
-				curr := statsList[i]
-				dt := curr.Created.Sub(prev.Created).Seconds()
-				if dt <= 0 {
-					prev = curr
-					continue
-				}
-				for iface, currNi := range curr.Stats.NetworkInterfaces {
-					prevNi, ok := prev.Stats.NetworkInterfaces[iface]
-					if !ok {
-						continue
-					}
-					pps := (currNi.PacketsSent - prevNi.PacketsSent) / dt
-					prs := (currNi.PacketsRecv - prevNi.PacketsRecv) / dt
-					if sum.NetworkInterfaces == nil {
-						sum.NetworkInterfaces = make(map[string]system.NetworkInterfaceStats)
-					}
-					ni := sum.NetworkInterfaces[iface]
-					ni.Pps += pps
-					ni.Prs += prs
-					sum.NetworkInterfaces[iface] = ni
-				}
-				prev = curr
-			}
-			intervals := float64(len(statsList) - 1)
-			for iface, ni := range sum.NetworkInterfaces {
-				ni.Pps = twoDecimals(ni.Pps / intervals)
-				ni.Prs = twoDecimals(ni.Prs / intervals)
-				sum.NetworkInterfaces[iface] = ni
-			}
-		}
-	}
-
 	return sum
 }
 
