@@ -37,11 +37,13 @@ jobs:
             }
 
             // Extract dropdown selections
+            const product = extractSectionValue('Product');
             const area = extractSectionValue('Area');
             const component = extractSectionValue('Component');
 
             // Build labels to add
             let labelsToAdd = [];
+            if (product) labelsToAdd.push(product);
             if (area) labelsToAdd.push(area);
             if (component) labelsToAdd.push(component);
 
@@ -53,25 +55,13 @@ jobs:
             });
             const existingLabelNames = existingLabels.map(l => l.name);
 
-            // Create any missing labels
-            for (const label of labelsToAdd) {
-              if (!existingLabelNames.includes(label)) {
-                await github.rest.issues.createLabel({
-                  owner,
-                  repo,
-                  name: label,
-                  color: 'ededed',
-                  description: `Auto-created label from issue form dropdown`
-                });
-              }
-            }
-
-            // Apply labels if any
-            if (labelsToAdd.length > 0) {
+            // Apply labels if any and they exist in the repo
+            const filteredLabels = labelsToAdd.filter(label => existingLabelNames.includes(label));
+            if (filteredLabels.length > 0) {
               await github.rest.issues.addLabels({
                 owner,
                 repo,
                 issue_number: issueNumber,
-                labels: labelsToAdd
+                labels: filteredLabels
               });
             } 

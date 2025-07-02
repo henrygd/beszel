@@ -3,6 +3,17 @@ description: Request a new feature or change.
 title: "[Feature]: "
 labels: ["enhancement", "needs review"]
 body:
+  - type: dropdown
+    id: product
+    attributes:
+      label: Product
+      description: Which part of Beszel is this about?
+      options:
+        - Hub
+        - Agent
+        - Hub & Agent
+    validations:
+      required: true
   - type: markdown
     attributes:
       value: Before submitting, please search existing [issues](https://github.com/henrygd/beszel/issues) and [discussions](https://github.com/henrygd/beszel/discussions) (including closed).

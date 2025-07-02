@@ -3,6 +3,17 @@ description: Report a new bug or issue.
 title: '[Bug]: '
 labels: ['bug', "needs confirmation"]
 body:
+  - type: dropdown
+    id: product
+    attributes:
+      label: Product
+      description: Which part of Beszel is this about?
+      options:
+        - Hub
+        - Agent
+        - Hub & Agent
+    validations:
+      required: true
   - type: markdown
     attributes:
       value: |
