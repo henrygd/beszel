@@ -262,8 +262,8 @@ export default function SystemDetail({ name }: { name: string }) {
 			return []
 		}
 
-		const osName = system.info.onr || system.info.on
-		const osVersion = system.info.ovid || system.info.ov
+		const osName = system.info.onr
+		const osVersion = system.info.ovid
 		const osDisplay = osName && osVersion ? `${osName} ${osVersion}` : osName || osVersion || system.info.k || ""
 
 		const osInfo = {
@@ -317,19 +317,17 @@ export default function SystemDetail({ name }: { name: string }) {
 			{ value: uptime, Icon: ClockArrowUp, label: t`Uptime`, hide: !system.info.u },
 			{ ...osInfo[system.info.os ?? Os.Linux], isOs: true },
 			{
-				value: system.info.ms || system.info.m,
+				value: system.info.m,
 				Icon: CpuIcon,
-				hide: !(system.info.ms || system.info.m),
-				arch: system.info.oa,
+				hide: !system.info.m,
+				arch: system.info.arch,
 				cpu: {
 					cores: system.info.c,
 					threads: system.info.t,
 				},
 				tooltip: [
-					system.info.m ? `Model: ${system.info.m}` : null,
-					system.info.ms && system.info.ms !== system.info.m ? `Short: ${system.info.ms}` : null,
 					(system.info.c || system.info.t) ? `Cores / Threads: ${system.info.c || '?'} / ${system.info.t || system.info.c || '?'}` : null,
-					system.info.oa ? `Arch: ${system.info.oa}` : null,
+					system.info.arch ? `Arch: ${system.info.arch}` : null,
 					system.info.mhz ? `Speed: ${system.info.mhz}` : null,
 				].filter(Boolean).join("\n"),
 			},

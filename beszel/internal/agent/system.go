@@ -33,28 +33,20 @@ func (a *Agent) initializeSystemInfo() {
 	if platform == "darwin" {
 		a.systemInfo.KernelVersion = version
 		a.systemInfo.Os = system.Darwin
-		a.systemInfo.OsName = "macOS"
-		a.systemInfo.OsVersion = version
 		a.systemInfo.OsNameRaw = family
 		a.systemInfo.OsVersionId = version
 	} else if strings.Contains(platform, "indows") {
 		a.systemInfo.KernelVersion = strings.Replace(platform, "Microsoft ", "", 1) + " " + version
 		a.systemInfo.Os = system.Windows
-		a.systemInfo.OsName = family
-		a.systemInfo.OsVersion = version
 		a.systemInfo.OsNameRaw = family
 		a.systemInfo.OsVersionId = version
 	} else if platform == "freebsd" {
 		a.systemInfo.Os = system.Freebsd
 		a.systemInfo.KernelVersion = version
-		a.systemInfo.OsName = family
-		a.systemInfo.OsVersion = version
 		a.systemInfo.OsNameRaw = family
 		a.systemInfo.OsVersionId = version
 	} else {
 		a.systemInfo.Os = system.Linux
-		a.systemInfo.OsName = family
-		a.systemInfo.OsVersion = version
 		a.systemInfo.OsNameRaw = family
 		a.systemInfo.OsVersionId = version
 
@@ -71,9 +63,6 @@ func (a *Agent) initializeSystemInfo() {
 		}
 	}
 
-	// Set OS architecture
-	a.systemInfo.OsArch = runtime.GOARCH
-
 	if a.systemInfo.KernelVersion == "" {
 		a.systemInfo.KernelVersion, _ = host.KernelVersion()
 	}
@@ -81,12 +70,11 @@ func (a *Agent) initializeSystemInfo() {
 	// cpu model
 	if info, err := cpu.Info(); err == nil && len(info) > 0 {
 		modelName := info[0].ModelName
-		a.systemInfo.CpuModel = modelName
 		// Extract short name before '@'
 		if idx := strings.Index(modelName, "@"); idx > 0 {
-			a.systemInfo.CpuModelShort = strings.TrimSpace(modelName[:idx])
+			a.systemInfo.CpuModel = strings.TrimSpace(modelName[:idx])
 		} else {
-			a.systemInfo.CpuModelShort = modelName
+			a.systemInfo.CpuModel = modelName
 		}
 		// Set speed in GHz
 		a.systemInfo.CpuSpeedGHz = fmt.Sprintf("%.2f GHz", info[0].Mhz/1000)

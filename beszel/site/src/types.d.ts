@@ -31,10 +31,10 @@ export interface systemInfo {
 	c: number
 	/** cpu model */
 	m: string
-	/** short cpu model (before @) */
-	ms?: string
 	/** cpu speed in GHz, e.g. '2.60 GHz' */
 	mhz?: string
+	/** cpu architecture (e.g., 'amd64', 'arm64') */
+	arch?: string
 	/** operating system */
 	o?: string
 	/** uptime */
@@ -55,12 +55,6 @@ export interface systemInfo {
 	dt?: number
 	/** operating system */
 	os?: Os
-	/** OS name (e.g., "Ubuntu", "CentOS", "Windows 11") */
-	on?: string
-	/** OS version (e.g., "22.04", "10.0.19045") */
-	ov?: string
-	/** OS architecture (e.g., "x86_64", "arm64") */
-	oa?: string
 	/** OS pretty name from /etc/os-release (e.g., "Debian GNU/Linux 12 (bookworm)") */
 	oc?: string
 	/** disks info (array of block devices with model/vendor/serial) */
