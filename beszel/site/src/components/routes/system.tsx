@@ -124,13 +124,15 @@ function MultiSelectDropdown({
 	selectedValues, 
 	onChange, 
 	placeholder,
-	filtered = false
+	filtered = false,
+	clearFilter,
 }: { 
 	options: Array<{ value: string; label: string; color?: string }>
 	selectedValues: string[]
 	onChange: (value: string) => void
 	placeholder: string
 	filtered?: boolean
+	clearFilter?: () => void
 }) {
 	const [isOpen, setIsOpen] = useState(false)
 	const [searchTerm, setSearchTerm] = useState("")
@@ -182,21 +184,33 @@ function MultiSelectDropdown({
 
 	return (
 		<div className="relative" ref={dropdownRef}>
-			<button
-				type="button"
-				onClick={() => setIsOpen(!isOpen)}
-				className="flex h-10 w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
-			>
-				<span className="truncate">{displayText}</span>
-				<svg
-					className={`ml-2 h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-					fill="none"
-					stroke="currentColor"
-					viewBox="0 0 24 24"
+			<div className="flex items-center gap-1">
+				<button
+					type="button"
+					onClick={() => setIsOpen(!isOpen)}
+					className="flex h-10 w-full items-center justify-between rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
 				>
-					<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-				</svg>
-			</button>
+					<span className="truncate">{displayText}</span>
+					<svg
+						className={`ml-2 h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+						fill="none"
+						stroke="currentColor"
+						viewBox="0 0 24 24"
+					>
+						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+					</svg>
+				</button>
+				{clearFilter && selectedValues.length > 0 && !selectedValues.includes("all") && (
+					<button
+						type="button"
+						onClick={clearFilter}
+						className="ml-1 text-xs text-muted-foreground hover:text-red-500 focus:outline-none"
+						title={t`Clear filter`}
+					>
+						<XIcon className="inline w-4 h-4" />
+					</button>
+				)}
+			</div>
 			
 			{isOpen && (
 				<div className="absolute z-50 w-full mt-1 bg-popover border border-input rounded-md shadow-lg max-h-48 overflow-hidden">
@@ -384,6 +398,7 @@ function ContainerFilterBar({ containerData, containerColors, isVolumeChart = fa
 							onChange={handleContainerChange}
 							placeholder={t`Select containers`}
 							filtered={stackFilter.length > 0 && !stackFilter.includes("all")}
+							clearFilter={() => $containerFilter.set([])}
 						/>
 					</div>
 					
@@ -408,6 +423,7 @@ function ContainerFilterBar({ containerData, containerColors, isVolumeChart = fa
 								onChange={handleStackChange}
 								placeholder={t`Select stacks`}
 								filtered={containerFilter.length > 0 && !containerFilter.includes("all")}
+								clearFilter={() => $stackFilter.set([])}
 							/>
 						</div>
 					)}

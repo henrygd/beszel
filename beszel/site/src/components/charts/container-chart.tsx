@@ -1,5 +1,5 @@
 import { Area, AreaChart, CartesianGrid, YAxis, Line, LineChart } from "recharts"
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
+import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
 import { memo, useMemo } from "react"
 import {
 	useYAxisWidth,
@@ -19,7 +19,7 @@ import { Separator } from "../ui/separator"
 import { ChartType } from "@/lib/enums"
 import React from "react"
 import { Badge } from "@/components/ui/badge"
-import chroma from "chroma-js"
+
 
 export default memo(function ContainerChart({
 	dataKey,
@@ -61,10 +61,10 @@ export default memo(function ContainerChart({
 		for (let containerStats of containerData) {
 			if (!containerStats.created) {
 				// For gaps in data
-				volumeChartData.data.push({ created: null })
-				healthChartData.data.push({ created: null })
-				uptimeChartData.data.push({ created: null })
-				healthUptimeChartData.data.push({ created: null })
+				volumeChartData.data.push({ created: "" })
+				healthChartData.data.push({ created: "" })
+				uptimeChartData.data.push({ created: "" })
+				healthUptimeChartData.data.push({ created: "" })
 				continue
 			}
 
@@ -331,8 +331,7 @@ export default memo(function ContainerChart({
 		? Object.keys(chartConfig)
 		: Object.keys(chartConfig).filter(
 			(key) =>
-				!(chartConfig[key] && chartConfig[key].label && chartConfig[key].label.startsWith("(orphaned volume)")) &&
-				!(chartConfig[key] && chartConfig[key].status === "volume-only")
+				!(chartConfig[key] && chartConfig[key].label && chartConfig[key].label.startsWith("(orphaned volume)"))
 		);
 
 	// Render volume chart
@@ -610,6 +609,7 @@ const HealthUptimeTable = React.memo(function HealthUptimeTable({
 			}
 			let stackName = '—'
 			let statusInfo = '—'
+			let idShort = ''
 			for (let i = containerData.length - 1; i >= 0; i--) {
 				const containerStats = containerData[i]
 				if (containerStats.created && containerStats[containerName]) {
@@ -621,12 +621,16 @@ const HealthUptimeTable = React.memo(function HealthUptimeTable({
 						if ('s' in containerDataObj) {
 							statusInfo = containerDataObj.s as string
 						}
+						if ('idShort' in containerDataObj) {
+							idShort = containerDataObj.idShort as string
+						}
 						break
 					}
 				}
 			}
 			tableData.push({
 				name: containerName,
+				idShort,
 				health: healthStatus,
 				status: statusInfo,
 				uptime: uptimeDisplay,
@@ -640,10 +644,10 @@ const HealthUptimeTable = React.memo(function HealthUptimeTable({
 	}, [containerData, latestData, containerColors])
 
 	// Sort and filter state
-	const [sortField, setSortField] = React.useState<'name' | 'stack' | 'health' | 'status' | 'uptime'>('uptime')
+	const [sortField, setSortField] = React.useState<'name' | 'idShort' | 'stack' | 'health' | 'status' | 'uptime'>('uptime')
 	const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('desc')
 	const [currentPage, setCurrentPage] = React.useState(1)
-	const containersPerPage = 5
+	const containersPerPage = 4
 
 	// Filtered data
 	const filteredContainerData = React.useMemo(() => {
@@ -669,24 +673,28 @@ const HealthUptimeTable = React.memo(function HealthUptimeTable({
 			let bValue: string | number
 			switch (sortField) {
 				case 'name':
-					aValue = a.name.toLowerCase()
-					bValue = b.name.toLowerCase()
+					aValue = a.name?.toLowerCase?.() || ''
+					bValue = b.name?.toLowerCase?.() || ''
+					break
+				case 'idShort':
+					aValue = a.idShort || ''
+					bValue = b.idShort || ''
 					break
 				case 'stack':
-					aValue = a.stack.toLowerCase()
-					bValue = b.stack.toLowerCase()
+					aValue = a.stack?.toLowerCase?.() || ''
+					bValue = b.stack?.toLowerCase?.() || ''
 					break
 				case 'health':
-					aValue = a.healthValue
-					bValue = b.healthValue
+					aValue = typeof a.healthValue === 'number' ? a.healthValue : 0
+					bValue = typeof b.healthValue === 'number' ? b.healthValue : 0
 					break
 				case 'status':
-					aValue = a.status.toLowerCase()
-					bValue = b.status.toLowerCase()
+					aValue = a.status?.toLowerCase?.() || ''
+					bValue = b.status?.toLowerCase?.() || ''
 					break
 				case 'uptime':
-					aValue = a.uptimeHours
-					bValue = b.uptimeHours
+					aValue = typeof a.uptimeHours === 'number' ? a.uptimeHours : 0
+					bValue = typeof b.uptimeHours === 'number' ? b.uptimeHours : 0
 					break
 				default:
 					return 0
@@ -704,7 +712,7 @@ const HealthUptimeTable = React.memo(function HealthUptimeTable({
 	const currentContainers = sortedContainerData.slice(startIndex, endIndex)
 
 	// Handlers
-	const handleSort = (field: 'name' | 'stack' | 'health' | 'status' | 'uptime') => {
+	const handleSort = (field: 'name' | 'idShort' | 'stack' | 'health' | 'status' | 'uptime') => {
 		if (sortField === field) {
 			setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
 		} else {
@@ -712,7 +720,7 @@ const HealthUptimeTable = React.memo(function HealthUptimeTable({
 			setSortDirection('asc')
 		}
 	}
-	const getSortIcon = (field: 'name' | 'stack' | 'health' | 'status' | 'uptime') => {
+	const getSortIcon = (field: 'name' | 'idShort' | 'stack' | 'health' | 'status' | 'uptime') => {
 		if (sortField !== field) return '↑↓'
 		return sortDirection === 'asc' ? '↑' : '↓'
 	}
@@ -728,7 +736,13 @@ const HealthUptimeTable = React.memo(function HealthUptimeTable({
 					<table className="w-full text-xs table-fixed">
 						<thead>
 							<tr className="border-b border-border">
-								<th className="text-left font-medium p-1 w-1/3 cursor-pointer hover:bg-muted/50 transition-colors select-none" onClick={() => handleSort('name')}>
+								<th className="text-left font-medium p-1 w-1/6 cursor-pointer hover:bg-muted/50 transition-colors select-none" onClick={() => handleSort('idShort')}>
+									<div className="flex items-center gap-1">
+										ID
+										<span className="text-xs opacity-60">{getSortIcon('idShort')}</span>
+									</div>
+								</th>
+								<th className="text-left font-medium p-1 w-1/4 cursor-pointer hover:bg-muted/50 transition-colors select-none" onClick={() => handleSort('name')}>
 									<div className="flex items-center gap-1">
 										Container
 										<span className="text-xs opacity-60">{getSortIcon('name')}</span>
@@ -763,7 +777,8 @@ const HealthUptimeTable = React.memo(function HealthUptimeTable({
 						<tbody>
 							{currentContainers.map((container, index) => (
 								<tr key={container.name} className="border-b border-border/30 hover:bg-muted/30">
-									<td className="p-1 w-1/3">
+									<td className="p-1 w-1/6 font-mono text-xs text-muted-foreground" title={container.idShort}>{container.idShort}</td>
+									<td className="p-1 w-1/4">
 										<div className="flex items-center gap-1.5">
 											<div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: container.color }} />
 											<span className="text-xs truncate">{container.name}</span>

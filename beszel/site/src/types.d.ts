@@ -164,6 +164,8 @@ interface ContainerStats {
 	u?: number
 	// project name
 	p?: string
+	// container short id
+	idShort?: string
 }
 
 export interface SystemStatsRecord extends RecordModel {

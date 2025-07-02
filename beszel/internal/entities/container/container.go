@@ -107,11 +107,12 @@ type Stats struct {
 	Mem         float64            `json:"m"`
 	NetworkSent float64            `json:"ns"`
 	NetworkRecv float64            `json:"nr"`
-	Volumes     map[string]float64 `json:"v,omitempty"` // Volume name to size mapping
-	Health      string             `json:"h,omitempty"` // Container health status
-	Status      string             `json:"s,omitempty"` // Container status (running, stopped, etc.)
-	Uptime      float64            `json:"u,omitempty"` // Container uptime in seconds
-	Project     string             `json:"p,omitempty"` // Docker Compose project name
+	Volumes     map[string]float64 `json:"v,omitempty"`       // Volume name to size mapping
+	Health      string             `json:"h,omitempty"`       // Container health status
+	Status      string             `json:"s,omitempty"`       // Container status (running, stopped, etc.)
+	Uptime      float64            `json:"u,omitempty"`       // Container uptime in seconds
+	Project     string             `json:"p,omitempty"`       // Docker Compose project name
+	IdShort     string             `json:"idShort,omitempty"` // Container short ID for frontend
 	PrevCpu     [2]uint64          `json:"-"`
 	PrevNet     prevNetStats       `json:"-"`
 	PrevRead    time.Time          `json:"-"`

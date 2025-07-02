@@ -122,6 +122,9 @@ func (dm *dockerManager) collectContainerStats(ctr *container.ApiInfo, volumeSiz
 	name := ctr.Names[0][1:]
 	stats := &container.Stats{Name: name}
 
+	// Set the short ID for the frontend
+	stats.IdShort = ctr.IdShort
+
 	// Always fetch /json to get canonical status and health
 	detailResp, err := dm.client.Get("http://localhost/containers/" + ctr.IdShort + "/json")
 	if err == nil {
