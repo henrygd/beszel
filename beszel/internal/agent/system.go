@@ -76,8 +76,12 @@ func (a *Agent) initializeSystemInfo() {
 			totalCores += int(cpuInfo.Cores)
 			totalThreads++
 		}
+		modelName := info[0].ModelName
+		if idx := strings.Index(modelName, "@"); idx > 0 {
+			modelName = strings.TrimSpace(modelName[:idx])
+		}
 		cpu := system.CpuInfo{
-			Model:    info[0].ModelName,
+			Model:    modelName,
 			SpeedGHz: fmt.Sprintf("%.2f GHz", info[0].Mhz/1000),
 			Arch:     arch,
 			Cores:    totalCores,
