@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/jaypipes/ghw/pkg/block"
-	ghwmem "github.com/jaypipes/ghw/pkg/memory"
 	ghwnet "github.com/jaypipes/ghw/pkg/net"
 	ghwpci "github.com/jaypipes/ghw/pkg/pci"
 	"github.com/shirou/gopsutil/v4/cpu"
@@ -103,8 +102,11 @@ func (a *Agent) initializeSystemInfo() {
 	// Collect network interface info
 	a.systemInfo.Networks = getNetworkInfo()
 
-	// Collect memory module info
-	a.systemInfo.Memory = getMemoryInfo()
+	// Collect total memory and store in systemInfo.Memory
+	if v, err := mem.VirtualMemory(); err == nil {
+		total := fmt.Sprintf("%d GB", int((float64(v.Total)/(1024*1024*1024))+0.5))
+		a.systemInfo.Memory = []system.MemoryInfo{{Total: total}}
+	}
 }
 
 // readPrettyName reads the PRETTY_NAME from /etc/os-release
@@ -438,32 +440,6 @@ func getInterfaceTypeFromName(ifaceName string) string {
 	default:
 		return ""
 	}
-}
-
-func getMemoryInfo() []system.MemoryInfo {
-	memInfo, err := ghwmem.New()
-	if err != nil {
-		slog.Debug("Failed to get memory info with ghw", "err", err)
-		return nil
-	}
-
-	slog.Debug("ghw memory modules", "modules", memInfo.Modules)
-
-	var memory []system.MemoryInfo
-	for _, module := range memInfo.Modules {
-		if module.Vendor == "" {
-			continue
-		}
-		size := ""
-		if module.SizeBytes > 0 {
-			size = fmt.Sprintf("%d GB", module.SizeBytes/(1024*1024*1024))
-		}
-		memory = append(memory, system.MemoryInfo{
-			Vendor: module.Vendor,
-			Size:   size,
-		})
-	}
-	return memory
 }
 
 func readOsRelease() map[string]string {

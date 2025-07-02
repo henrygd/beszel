@@ -274,6 +274,8 @@ export default function SystemDetail({ name }: { name: string }) {
 		
 		const cpu = system.info.cpus && system.info.cpus.length > 0 ? system.info.cpus[0] : undefined;
 
+		const memoryTotal = system.info.memory && system.info.memory.length > 0 ? system.info.memory[0].total : undefined;
+
 		const infoItems = [
 			{ value: getHostDisplayValue(system), Icon: GlobeIcon },
 			{
@@ -305,6 +307,13 @@ export default function SystemDetail({ name }: { name: string }) {
 					cpu.speed ? `Speed: ${cpu.speed}` : null,
 				].filter(Boolean).join("\n"),
 			} : undefined,
+			// Add total memory info here
+			memoryTotal ? {
+				value: memoryTotal,
+				Icon: ServerIcon,
+				label: t`Total Memory`,
+				tooltip: t`Total system memory in GB`,
+			} : undefined,
 			// Add disks info here
 			system.info.disks && system.info.disks.length > 0
 				? {
@@ -320,13 +329,6 @@ export default function SystemDetail({ name }: { name: string }) {
 					nics: system.info.networks,
 				}
 				: undefined,
-			system.info.memory && system.info.memory.length > 0
-				? {
-					value: `${system.info.memory.length} ${system.info.memory.length === 1 ? t`Module` : t`Modules`}`,
-					Icon: MemoryStickIcon,
-					memory: system.info.memory,
-				}
-				: undefined,
 		] as {
 			value: string | number | undefined
 			label?: string
@@ -337,7 +339,6 @@ export default function SystemDetail({ name }: { name: string }) {
 			arch?: string
 			disks?: { name: string; model?: string; vendor?: string; serial?: string }[]
 			nics?: { name: string; speed?: string; vendor?: string; model?: string }[]
-			memory?: { vendor?: string; size?: string }[]
 			cpu?: { cores: number; threads?: number }
 			tooltip?: string
 		}[]
@@ -442,7 +443,7 @@ export default function SystemDetail({ name }: { name: string }) {
 									</span>
 									{translatedStatus}
 								</div>
-								{systemInfo.map(({ value, label, Icon, hide, pretty, isOs, arch, disks, nics, memory, cpu, tooltip }, i) => {
+								{systemInfo.map(({ value, label, Icon, hide, pretty, isOs, arch, disks, nics, cpu, tooltip }, i) => {
 									if (hide || !value) {
 										return null
 									}
@@ -557,34 +558,6 @@ export default function SystemDetail({ name }: { name: string }) {
 																	return (
 																		<div key={nic.name + idx} className="flex flex-col">
 																			<span className="font-medium">{nicText}</span>
-																		</div>
-																	)
-																})}
-															</div>
-														</TooltipContent>
-													</Tooltip>
-												</TooltipProvider>
-											</div>
-										)
-									}
-									// Show memory tooltip if present
-									if (memory && memory.length > 0) {
-										return (
-											<div key={i} className="contents">
-												<Separator orientation="vertical" className="h-4 bg-primary/30" />
-												<TooltipProvider>
-													<Tooltip delayDuration={150}>
-														<TooltipTrigger asChild>{content}</TooltipTrigger>
-														<TooltipContent>
-															<div className="flex flex-col gap-1 min-w-52">
-																{memory.map((module, idx) => {
-																	let moduleText = module.vendor ? module.vendor : "Unknown"
-																	if (module.size) {
-																		moduleText += ` | ${module.size}`
-																	}
-																	return (
-																		<div key={(module.vendor || "unknown") + idx} className="flex flex-col">
-																			<span className="font-medium">{moduleText}</span>
 																		</div>
 																	)
 																})}

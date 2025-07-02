@@ -59,8 +59,8 @@ export interface systemInfo {
 	disks?: { name: string; model?: string; vendor?: string; serial?: string }[]
 	/** networks info (array of network interfaces with vendor/model/capabilities) */
 	networks?: { name: string; vendor?: string; model?: string; speed?: string }[]
-	/** memory info (array of memory modules with vendor/size) */
-	memory?: { vendor?: string; size?: string }[]
+	/** memory info (array with total property) */
+	memory?: { total: string }[]
 	/** OS name (from /etc/os-release NAME) */
 	onr?: string
 	/** OS version id (from /etc/os-release VERSION_ID) */

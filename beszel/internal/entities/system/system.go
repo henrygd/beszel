@@ -87,8 +87,7 @@ type NetworkInfo struct {
 }
 
 type MemoryInfo struct {
-	Vendor string `json:"vendor,omitempty"`
-	Size   string `json:"size,omitempty"`
+	Total string `json:"total,omitempty"`
 }
 
 type CpuInfo struct {
