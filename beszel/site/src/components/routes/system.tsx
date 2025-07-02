@@ -317,14 +317,21 @@ export default function SystemDetail({ name }: { name: string }) {
 			{ value: uptime, Icon: ClockArrowUp, label: t`Uptime`, hide: !system.info.u },
 			{ ...osInfo[system.info.os ?? Os.Linux], isOs: true },
 			{
-				value: system.info.m,
+				value: system.info.ms || system.info.m,
 				Icon: CpuIcon,
-				hide: !system.info.m,
+				hide: !(system.info.ms || system.info.m),
 				arch: system.info.oa,
 				cpu: {
 					cores: system.info.c,
 					threads: system.info.t,
 				},
+				tooltip: [
+					system.info.m ? `Model: ${system.info.m}` : null,
+					system.info.ms && system.info.ms !== system.info.m ? `Short: ${system.info.ms}` : null,
+					(system.info.c || system.info.t) ? `Cores / Threads: ${system.info.c || '?'} / ${system.info.t || system.info.c || '?'}` : null,
+					system.info.oa ? `Arch: ${system.info.oa}` : null,
+					system.info.mhz ? `Speed: ${system.info.mhz}` : null,
+				].filter(Boolean).join("\n"),
 			},
 			// Add disks info here
 			system.info.disks && system.info.disks.length > 0
@@ -487,10 +494,7 @@ export default function SystemDetail({ name }: { name: string }) {
 									}
 									// Show CPU info tooltip (cores/threads and architecture)
 									if (cpu) {
-										let cpuInfo = `Core / Threads: ${cpu.cores} / ${cpu.threads || cpu.cores}`
-										if (arch) {
-											cpuInfo += `\nArchitecture: ${arch}`
-										}
+										let cpuInfo = tooltip || `Core / Threads: ${cpu.cores} / ${cpu.threads || cpu.cores}`
 										return (
 											<div key={i} className="contents">
 												<Separator orientation="vertical" className="h-4 bg-primary/30" />
@@ -564,12 +568,16 @@ export default function SystemDetail({ name }: { name: string }) {
 															<div className="flex flex-col gap-1 min-w-52">
 																{nics.map((nic, idx) => {
 																	let nicText = nic.name
-																	if (nic.vendor && nic.model) {
+																	const hasVendor = !!nic.vendor && nic.vendor.trim() !== ''
+																	const hasModel = !!nic.model && nic.model.trim() !== ''
+																	if (hasVendor && hasModel) {
 																		nicText += `: ${nic.vendor} ${nic.model}`
-																	} else if (nic.model) {
+																	} else if (hasModel) {
 																		nicText += `: ${nic.model}`
-																	} else if (nic.vendor) {
+																	} else if (hasVendor) {
 																		nicText += `: ${nic.vendor}`
+																	} else {
+																		nicText += `: Unknown`
 																	}
 																	if (nic.speed) {
 																		nicText += ` | ${nic.speed}`
@@ -598,12 +606,12 @@ export default function SystemDetail({ name }: { name: string }) {
 														<TooltipContent>
 															<div className="flex flex-col gap-1 min-w-52">
 																{memory.map((module, idx) => {
-																	let moduleText = module.vendor || "Unknown"
+																	let moduleText = module.vendor ? module.vendor : "Unknown"
 																	if (module.size) {
 																		moduleText += ` | ${module.size}`
 																	}
 																	return (
-																		<div key={module.vendor + idx} className="flex flex-col">
+																		<div key={(module.vendor || "unknown") + idx} className="flex flex-col">
 																			<span className="font-medium">{moduleText}</span>
 																		</div>
 																	)

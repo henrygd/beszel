@@ -271,7 +271,12 @@ export default function SystemsTable() {
 			{
 				accessorFn: (originalRow) => {
 					const info = originalRow.info
-					// Only use on and ov
+					// Prefer short name and version for the table
+					if (info.onr && info.ovid) {
+						return `${info.onr} ${info.ovid}`
+					}
+					if (info.onr) return info.onr
+					if (info.ovid) return info.ovid
 					if (info.on && info.ov) {
 						return `${info.on} ${info.ov}`
 					}

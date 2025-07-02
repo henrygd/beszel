@@ -80,7 +80,18 @@ func (a *Agent) initializeSystemInfo() {
 
 	// cpu model
 	if info, err := cpu.Info(); err == nil && len(info) > 0 {
-		a.systemInfo.CpuModel = info[0].ModelName
+		modelName := info[0].ModelName
+		a.systemInfo.CpuModel = modelName
+		// Extract short name before '@'
+		if idx := strings.Index(modelName, "@"); idx > 0 {
+			a.systemInfo.CpuModelShort = strings.TrimSpace(modelName[:idx])
+		} else {
+			a.systemInfo.CpuModelShort = modelName
+		}
+		// Set speed in GHz
+		a.systemInfo.CpuSpeedGHz = fmt.Sprintf("%.2f GHz", info[0].Mhz/1000)
+		// Set architecture
+		a.systemInfo.CpuArch = runtime.GOARCH
 	}
 	// cores / threads
 	a.systemInfo.Cores, _ = cpu.Counts(false)

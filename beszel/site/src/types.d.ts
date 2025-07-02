@@ -31,6 +31,10 @@ export interface systemInfo {
 	c: number
 	/** cpu model */
 	m: string
+	/** short cpu model (before @) */
+	ms?: string
+	/** cpu speed in GHz, e.g. '2.60 GHz' */
+	mhz?: string
 	/** operating system */
 	o?: string
 	/** uptime */

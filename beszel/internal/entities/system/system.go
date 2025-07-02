@@ -97,6 +97,9 @@ type Info struct {
 	Cores         int           `json:"c"`
 	Threads       int           `json:"t,omitempty"`
 	CpuModel      string        `json:"m"`
+	CpuModelShort string        `json:"ms,omitempty"`
+	CpuSpeedGHz   string        `json:"mhz,omitempty"`
+	CpuArch       string        `json:"arch,omitempty"`
 	Uptime        uint64        `json:"u"`
 	Cpu           float64       `json:"cpu"`
 	MemPct        float64       `json:"mp"`
