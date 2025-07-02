@@ -57,6 +57,18 @@ func (a *Agent) initializeSystemInfo() {
 		a.systemInfo.OsVersion = version
 		a.systemInfo.OsNameRaw = family
 		a.systemInfo.OsVersionId = version
+
+		// Use /etc/os-release for more accurate Linux OS info
+		osRelease := readOsRelease()
+		if pretty, ok := osRelease["PRETTY_NAME"]; ok {
+			a.systemInfo.OsName = pretty
+		}
+		if name, ok := osRelease["NAME"]; ok {
+			a.systemInfo.OsNameRaw = name
+		}
+		if versionId, ok := osRelease["VERSION_ID"]; ok {
+			a.systemInfo.OsVersionId = versionId
+		}
 	}
 
 	// Set OS architecture
@@ -377,14 +389,65 @@ func getNetworkInfo() []system.NetworkInfo {
 				}
 			}
 		}
+
+		// Use only SupportedLinkModes, grab the last value if available
+		var capability string
+		if len(nic.SupportedLinkModes) > 0 {
+			capability = nic.SupportedLinkModes[len(nic.SupportedLinkModes)-1]
+		}
+
 		networks = append(networks, system.NetworkInfo{
 			Name:   nic.Name,
 			Vendor: vendor,
 			Model:  model,
-			Speed:  nic.Speed,
+			Speed:  capability,
 		})
 	}
 	return networks
+}
+
+// getInterfaceCapabilitiesFromGhw uses ghw library to get interface capabilities
+func getInterfaceCapabilitiesFromGhw(nic *ghwnet.NIC) string {
+	// Use the speed information from ghw if available
+	if nic.Speed != "" {
+		return nic.Speed
+	}
+
+	// If no speed info from ghw, try to get interface type from name
+	return getInterfaceTypeFromName(nic.Name)
+}
+
+// getInterfaceTypeFromName tries to determine interface type from name
+func getInterfaceTypeFromName(ifaceName string) string {
+	// Common interface naming patterns
+	switch {
+	case strings.HasPrefix(ifaceName, "eth"):
+		return "Ethernet"
+	case strings.HasPrefix(ifaceName, "en"):
+		return "Ethernet"
+	case strings.HasPrefix(ifaceName, "wlan"):
+		return "WiFi"
+	case strings.HasPrefix(ifaceName, "wl"):
+		return "WiFi"
+	case strings.HasPrefix(ifaceName, "usb"):
+		return "USB"
+	case strings.HasPrefix(ifaceName, "tun"):
+		return "Tunnel"
+	case strings.HasPrefix(ifaceName, "tap"):
+		return "TAP"
+	case strings.HasPrefix(ifaceName, "br"):
+		return "Bridge"
+	case strings.HasPrefix(ifaceName, "bond"):
+		return "Bond"
+	case strings.HasPrefix(ifaceName, "veth"):
+		return "Virtual Ethernet"
+	case strings.HasPrefix(ifaceName, "docker"):
+		return "Docker"
+	case strings.HasPrefix(ifaceName, "lo"):
+		return "Loopback"
+	default:
+		return ""
+	}
 }
 
 func getMemoryInfo() []system.MemoryInfo {

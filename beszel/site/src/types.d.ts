@@ -61,7 +61,7 @@ export interface systemInfo {
 	oc?: string
 	/** disks info (array of block devices with model/vendor/serial) */
 	disks?: { name: string; model?: string; vendor?: string; serial?: string }[]
-	/** networks info (array of network interfaces with vendor/model/speed) */
+	/** networks info (array of network interfaces with vendor/model/capabilities) */
 	networks?: { name: string; vendor?: string; model?: string; speed?: string }[]
 	/** memory info (array of memory modules with vendor/size) */
 	memory?: { vendor?: string; size?: string }[]
