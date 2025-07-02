@@ -30,66 +30,60 @@ func (a *Agent) initializeSystemInfo() {
 
 	platform, family, version, _ := host.PlatformInformation()
 
+	var osFamily, osVersion, osKernel string
 	if platform == "darwin" {
-		a.systemInfo.KernelVersion = version
-		a.systemInfo.Os = system.Darwin
-		a.systemInfo.OsNameRaw = family
-		a.systemInfo.OsVersionId = version
+		osKernel = version
+		osFamily = family
+		osVersion = version
 	} else if strings.Contains(platform, "indows") {
-		a.systemInfo.KernelVersion = strings.Replace(platform, "Microsoft ", "", 1) + " " + version
-		a.systemInfo.Os = system.Windows
-		a.systemInfo.OsNameRaw = family
-		a.systemInfo.OsVersionId = version
+		osKernel = strings.Replace(platform, "Microsoft ", "", 1) + " " + version
+		osFamily = family
+		osVersion = version
 	} else if platform == "freebsd" {
-		a.systemInfo.Os = system.Freebsd
-		a.systemInfo.KernelVersion = version
-		a.systemInfo.OsNameRaw = family
-		a.systemInfo.OsVersionId = version
+		osKernel = version
+		osFamily = family
+		osVersion = version
 	} else {
-		a.systemInfo.Os = system.Linux
-		a.systemInfo.OsNameRaw = family
-		a.systemInfo.OsVersionId = version
-
-		// Use /etc/os-release for more accurate Linux OS info
+		osFamily = family
+		osVersion = version
+		osKernel = ""
 		osRelease := readOsRelease()
 		if pretty, ok := osRelease["PRETTY_NAME"]; ok {
-			a.systemInfo.OsNameRaw = pretty
+			osFamily = pretty
 		}
 		if name, ok := osRelease["NAME"]; ok {
-			a.systemInfo.OsNameRaw = name
+			osFamily = name
 		}
 		if versionId, ok := osRelease["VERSION_ID"]; ok {
-			a.systemInfo.OsVersionId = versionId
+			osVersion = versionId
 		}
 	}
-
-	if a.systemInfo.KernelVersion == "" {
-		a.systemInfo.KernelVersion, _ = host.KernelVersion()
+	if osKernel == "" {
+		osKernel, _ = host.KernelVersion()
 	}
+	a.systemInfo.Oses = []system.OsInfo{{
+		Family:  osFamily,
+		Version: osVersion,
+		Kernel:  osKernel,
+	}}
 
 	// cpu model
 	if info, err := cpu.Info(); err == nil && len(info) > 0 {
-		modelName := info[0].ModelName
-		// Extract short name before '@'
-		if idx := strings.Index(modelName, "@"); idx > 0 {
-			a.systemInfo.CpuModel = strings.TrimSpace(modelName[:idx])
-		} else {
-			a.systemInfo.CpuModel = modelName
+		arch := runtime.GOARCH
+		totalCores := 0
+		totalThreads := 0
+		for _, cpuInfo := range info {
+			totalCores += int(cpuInfo.Cores)
+			totalThreads++
 		}
-		// Set speed in GHz
-		a.systemInfo.CpuSpeedGHz = fmt.Sprintf("%.2f GHz", info[0].Mhz/1000)
-		// Set architecture
-		a.systemInfo.CpuArch = runtime.GOARCH
-	}
-	// cores / threads
-	a.systemInfo.Cores, _ = cpu.Counts(false)
-	if threads, err := cpu.Counts(true); err == nil {
-		if threads > 0 && threads < a.systemInfo.Cores {
-			// in lxc logical cores reflects container limits, so use that as cores if lower
-			a.systemInfo.Cores = threads
-		} else {
-			a.systemInfo.Threads = threads
+		cpu := system.CpuInfo{
+			Model:    info[0].ModelName,
+			SpeedGHz: fmt.Sprintf("%.2f GHz", info[0].Mhz/1000),
+			Arch:     arch,
+			Cores:    totalCores,
+			Threads:  totalThreads,
 		}
+		a.systemInfo.Cpus = []system.CpuInfo{cpu}
 	}
 
 	// zfs

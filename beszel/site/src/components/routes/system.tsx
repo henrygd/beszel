@@ -262,40 +262,7 @@ export default function SystemDetail({ name }: { name: string }) {
 			return []
 		}
 
-		const osName = system.info.onr
-		const osVersion = system.info.ovid
-		const osDisplay = osName && osVersion ? `${osName} ${osVersion}` : osName || osVersion || system.info.k || ""
-
-		const osInfo = {
-			[Os.Linux]: {
-				Icon: TuxIcon,
-				value: osDisplay,
-				tooltip: [
-					system.info.k ? `Kernel: ${system.info.k}` : null,
-				].filter(Boolean).join("\n"),
-			},
-			[Os.Darwin]: {
-				Icon: AppleIcon,
-				value: osDisplay,
-				tooltip: [
-					system.info.k ? `Kernel: ${system.info.k}` : null,
-				].filter(Boolean).join("\n"),
-			},
-			[Os.Windows]: {
-				Icon: WindowsIcon,
-				value: osDisplay,
-				tooltip: [
-					system.info.k ? `Kernel: ${system.info.k}` : null,
-				].filter(Boolean).join("\n"),
-			},
-			[Os.FreeBSD]: {
-				Icon: FreeBsdIcon,
-				value: osDisplay,
-				tooltip: [
-					system.info.k ? `Kernel: ${system.info.k}` : null,
-				].filter(Boolean).join("\n"),
-			},
-		}
+		const os = system.info.os && system.info.os.length > 0 ? system.info.os[0] : undefined;
 
 		let uptime: React.ReactNode
 		if (system.info.u < 172800) {
@@ -305,6 +272,8 @@ export default function SystemDetail({ name }: { name: string }) {
 			uptime = <Plural value={Math.trunc(system.info?.u / 86400)} one="# day" other="# days" />
 		}
 		
+		const cpu = system.info.cpus && system.info.cpus.length > 0 ? system.info.cpus[0] : undefined;
+
 		const infoItems = [
 			{ value: getHostDisplayValue(system), Icon: GlobeIcon },
 			{
@@ -315,22 +284,27 @@ export default function SystemDetail({ name }: { name: string }) {
 				hide: system.info.h === system.host || system.info.h === system.name,
 			},
 			{ value: uptime, Icon: ClockArrowUp, label: t`Uptime`, hide: !system.info.u },
-			{ ...osInfo[system.info.os ?? Os.Linux], isOs: true },
-			{
-				value: system.info.m,
+			os ? {
+				Icon: TuxIcon, // You may want to select icon based on os.family
+				value: `${os.family} ${os.version}`.trim(),
+				isOs: true,
+				tooltip: os.kernel ? `Kernel: ${os.kernel}` : undefined,
+			} : undefined,
+			cpu ? {
+				value: cpu.model,
 				Icon: CpuIcon,
-				hide: !system.info.m,
-				arch: system.info.arch,
+				hide: !cpu.model,
+				arch: cpu.arch,
 				cpu: {
-					cores: system.info.c,
-					threads: system.info.t,
+					cores: cpu.cores,
+					threads: cpu.threads,
 				},
 				tooltip: [
-					(system.info.c || system.info.t) ? `Cores / Threads: ${system.info.c || '?'} / ${system.info.t || system.info.c || '?'}` : null,
-					system.info.arch ? `Arch: ${system.info.arch}` : null,
-					system.info.mhz ? `Speed: ${system.info.mhz}` : null,
+					(cpu.cores || cpu.threads) ? `Cores / Threads: ${cpu.cores || '?'} / ${cpu.threads || cpu.cores || '?'}` : null,
+					cpu.arch ? `Arch: ${cpu.arch}` : null,
+					cpu.speed ? `Speed: ${cpu.speed}` : null,
 				].filter(Boolean).join("\n"),
-			},
+			} : undefined,
 			// Add disks info here
 			system.info.disks && system.info.disks.length > 0
 				? {

@@ -91,14 +91,23 @@ type MemoryInfo struct {
 	Size   string `json:"size,omitempty"`
 }
 
+type CpuInfo struct {
+	Model    string `json:"model"`
+	SpeedGHz string `json:"speed"`
+	Arch     string `json:"arch"`
+	Cores    int    `json:"cores"`
+	Threads  int    `json:"threads"`
+}
+
+type OsInfo struct {
+	Family  string `json:"family"`
+	Version string `json:"version"`
+	Kernel  string `json:"kernel"`
+}
+
 type Info struct {
 	Hostname      string        `json:"h"`
 	KernelVersion string        `json:"k,omitempty"`
-	Cores         int           `json:"c"`
-	Threads       int           `json:"t,omitempty"`
-	CpuModel      string        `json:"m"`
-	CpuSpeedGHz   string        `json:"mhz,omitempty"`
-	CpuArch       string        `json:"arch,omitempty"`
 	Uptime        uint64        `json:"u"`
 	Cpu           float64       `json:"cpu"`
 	MemPct        float64       `json:"mp"`
@@ -107,13 +116,12 @@ type Info struct {
 	AgentVersion  string        `json:"v"`
 	GpuPct        float64       `json:"g,omitempty"`
 	DashboardTemp float64       `json:"dt,omitempty"`
-	Os            Os            `json:"os,omitempty"`
-	OsNameRaw     string        `json:"onr,omitempty"`
-	OsVersionId   string        `json:"ovid,omitempty"`
 	Podman        bool          `json:"podman,omitempty"`
 	Disks         []DiskInfo    `json:"disks,omitempty"`
 	Networks      []NetworkInfo `json:"networks,omitempty"`
 	Memory        []MemoryInfo  `json:"memory,omitempty"`
+	Cpus          []CpuInfo     `json:"cpus,omitempty"`
+	Oses          []OsInfo      `json:"os,omitempty"`
 }
 
 // Final data structure to return to the hub

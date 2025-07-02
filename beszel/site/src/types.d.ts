@@ -18,6 +18,20 @@ export interface SystemRecord extends RecordModel {
 	v: string
 }
 
+export interface CpuInfo {
+	model: string
+	speed: string
+	arch: string
+	cores: number
+	threads: number
+}
+
+export interface OsInfo {
+	family: string
+	version: string
+	kernel: string
+}
+
 export interface systemInfo {
 	/** hostname */
 	h: string
@@ -25,18 +39,6 @@ export interface systemInfo {
 	k?: string
 	/** cpu percent */
 	cpu: number
-	/** cpu threads */
-	t?: number
-	/** cpu cores */
-	c: number
-	/** cpu model */
-	m: string
-	/** cpu speed in GHz, e.g. '2.60 GHz' */
-	mhz?: string
-	/** cpu architecture (e.g., 'amd64', 'arm64') */
-	arch?: string
-	/** operating system */
-	o?: string
 	/** uptime */
 	u: number
 	/** memory percent */
@@ -53,10 +55,6 @@ export interface systemInfo {
 	g?: number
 	/** dashboard display temperature */
 	dt?: number
-	/** operating system */
-	os?: Os
-	/** OS pretty name from /etc/os-release (e.g., "Debian GNU/Linux 12 (bookworm)") */
-	oc?: string
 	/** disks info (array of block devices with model/vendor/serial) */
 	disks?: { name: string; model?: string; vendor?: string; serial?: string }[]
 	/** networks info (array of network interfaces with vendor/model/capabilities) */
@@ -67,6 +65,10 @@ export interface systemInfo {
 	onr?: string
 	/** OS version id (from /etc/os-release VERSION_ID) */
 	ovid?: string
+	/** cpu info (array of cpu objects) */
+	cpus?: CpuInfo[]
+	/** os info (array of os objects) */
+	os?: OsInfo[]
 }
 
 export interface SystemStats {

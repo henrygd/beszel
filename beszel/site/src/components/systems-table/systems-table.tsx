@@ -270,17 +270,9 @@ export default function SystemsTable() {
 			},
 			{
 				accessorFn: (originalRow) => {
-					const info = originalRow.info
-					// Prefer short name and version for the table
-					if (info.onr && info.ovid) {
-						return `${info.onr} ${info.ovid}`
-					}
-					if (info.onr) return info.onr
-					if (info.ovid) return info.ovid
-					if (info.on && info.ov) {
-						return `${info.on} ${info.ov}`
-					}
-					return info.on || info.ov || ""
+					const os = originalRow.info.os && originalRow.info.os.length > 0 ? originalRow.info.os[0] : undefined;
+					if (!os) return "";
+					return `${os.family} ${os.version}`.trim();
 				},
 				id: "os",
 				name: () => t`OS`,
@@ -289,38 +281,26 @@ export default function SystemsTable() {
 				Icon: TuxIcon,
 				header: sortableHeader,
 				cell(info) {
-					const system = info.row.original
-					const osText = info.getValue() as string
-					if (!osText) {
-						return null
-					}
-					// Get OS icon based on OS type
+					const system = info.row.original;
+					const os = system.info.os && system.info.os.length > 0 ? system.info.os[0] : undefined;
+					if (!os) return null;
+					const osText = `${os.family} ${os.version}`.trim();
 					const getOsIcon = () => {
-						switch (system.info.os) {
-							case Os.Darwin:
-								return AppleIcon
-							case Os.Windows:
-								return WindowsIcon
-							case Os.FreeBSD:
-								return FreeBsdIcon
-							default:
-								return TuxIcon
-						}
-					}
-					const OsIcon = getOsIcon()
-					// Just show the text, no tooltip
+						const family = os.family.toLowerCase();
+						if (family.includes("darwin") || family.includes("mac")) return AppleIcon;
+						if (family.includes("windows")) return WindowsIcon;
+						if (family.includes("freebsd")) return FreeBsdIcon;
+						return TuxIcon;
+					};
+					const OsIcon = getOsIcon();
 					return (
-						<span
-							className={cn("flex gap-1.5 items-center tabular-nums", {
-								"ps-1": viewMode === "table",
-							})}
-						>
+						<span className={cn("flex gap-1.5 items-center tabular-nums", { "ps-1": viewMode === "table" })}>
 							<OsIcon className="h-3.5 w-3.5" />
-							<span className="truncate">
+							<span className="truncate" title={os.kernel ? `Kernel: ${os.kernel}` : undefined}>
 								{osText}
 							</span>
 						</span>
-					)
+					);
 				},
 			},
 			{
