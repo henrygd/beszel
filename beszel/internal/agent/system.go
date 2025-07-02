@@ -390,17 +390,10 @@ func getNetworkInfo() []system.NetworkInfo {
 			}
 		}
 
-		// Use only SupportedLinkModes, grab the last value if available
-		var capability string
-		if len(nic.SupportedLinkModes) > 0 {
-			capability = nic.SupportedLinkModes[len(nic.SupportedLinkModes)-1]
-		}
-
 		networks = append(networks, system.NetworkInfo{
 			Name:   nic.Name,
 			Vendor: vendor,
 			Model:  model,
-			Speed:  capability,
 		})
 	}
 	return networks
