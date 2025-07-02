@@ -447,6 +447,8 @@ func getMemoryInfo() []system.MemoryInfo {
 		return nil
 	}
 
+	slog.Debug("ghw memory modules", "modules", memInfo.Modules)
+
 	var memory []system.MemoryInfo
 	for _, module := range memInfo.Modules {
 		if module.Vendor == "" {
