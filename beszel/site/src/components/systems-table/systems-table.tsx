@@ -257,7 +257,6 @@ export default function SystemsTable() {
 				invertSorting: true,
 				sortUndefined: -1,
 				size: 50,
-				hideSort: true,
 				Icon: ThermometerIcon,
 				header: sortableHeader,
 				cell(info) {
@@ -286,11 +285,11 @@ export default function SystemsTable() {
 				Icon: ClockIcon,
 				header: sortableHeader,
 				cell(info) {
+					// Always show uptime for all systems
 					const uptime = info.getValue() as number
 					if (!uptime) {
 						return null
 					}
-					
 					let uptimeDisplay: React.ReactNode
 					if (uptime < 3600) {
 						uptimeDisplay = <Plural value={Math.trunc(uptime / 60)} one="# minute" other="# minutes" />
@@ -300,7 +299,6 @@ export default function SystemsTable() {
 					} else {
 						uptimeDisplay = <Plural value={Math.trunc(uptime / 86400)} one="# day" other="# days" />
 					}
-					
 					return (
 						<span
 							className={cn("tabular-nums whitespace-nowrap", {
@@ -313,13 +311,50 @@ export default function SystemsTable() {
 				},
 			},
 			{
+				accessorFn: (originalRow) => originalRow.updated,
+				id: "lastSeen",
+				name: () => t`Last Seen`,
+				size: 120,
+				header: sortableHeader,
+				sortUndefined: -1,
+				cell(info) {
+					const system = info.row.original
+					if (!system.updated) {
+						return (
+							<span className={cn("tabular-nums whitespace-nowrap", { "ps-1": viewMode === "table" })}>-</span>
+						);
+					}
+					const now = Date.now();
+					const lastSeenTime = new Date(system.updated).getTime();
+					const diff = Math.max(0, Math.floor((now - lastSeenTime) / 1000)); // in seconds
+					let display: React.ReactNode;
+					if (diff < 60) {
+						const d = new Date(system.updated);
+						display = d.toLocaleString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+					} else if (diff < 3600) {
+						const mins = Math.trunc(diff / 60);
+						display = <Plural value={mins} one="# minute ago" other="# minutes ago" />;
+					} else if (diff < 172800) {
+						const hours = Math.trunc(diff / 3600);
+						display = <Plural value={hours} one="# hour ago" other="# hours ago" />;
+					} else {
+						const days = Math.trunc(diff / 86400);
+						display = <Plural value={days} one="# day ago" other="# days ago" />;
+					}
+					return (
+						<span className={cn("flex items-center gap-1 tabular-nums whitespace-nowrap", { "ps-1": viewMode === "table" })}>
+							{display}
+						</span>
+					);
+				},
+			},
+			{
 				accessorKey: "info.v",
 				id: "agent",
 				name: () => t`Agent`,
 				invertSorting: true,
 				size: 50,
 				Icon: WifiIcon,
-				hideSort: true,
 				header: sortableHeader,
 				cell(info) {
 					const version = info.getValue() as string
@@ -650,7 +685,7 @@ const SystemCard = memo(
 				>
 					<CardHeader className="py-1 ps-5 pe-3 bg-muted/30 border-b border-border/60">
 						<div className="flex items-center justify-between gap-2">
-							<CardTitle className="text-base tracking-normal shrink-1 text-primary/90 flex items-center min-h-10 gap-2.5 min-w-0">
+							<CardTitle className="text-base tracking-normal shrink-1 text-primary/90 flex items-center min-w-0 gap-2.5">
 								<div className="flex items-center gap-2.5 min-w-0">
 									<IndicatorDot system={system} />
 									<CardTitle className="text-[.95em]/normal tracking-normal truncate text-primary/90">
@@ -675,7 +710,9 @@ const SystemCard = memo(
 							const { Icon, name } = column.columnDef as ColumnDef<SystemRecord, unknown>
 							return (
 								<div key={column.id} className="flex items-center gap-3">
-									{Icon && <Icon className="size-4 text-muted-foreground" />}
+									{column.id === "lastSeen" ? (
+										<EyeIcon className="size-4 text-muted-foreground" />
+									) : Icon && <Icon className="size-4 text-muted-foreground" />}
 									<div className="flex items-center gap-3 flex-1">
 										<span className="text-muted-foreground min-w-16">{name()}:</span>
 										<div className="flex-1">{flexRender(cell.column.columnDef.cell, cell.getContext())}</div>
