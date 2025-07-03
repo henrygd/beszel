@@ -355,3 +355,19 @@ export const alertInfo: Record<string, AlertInfo> = {
  * const hostname = getHostDisplayValue(system) // hostname will be "beszel.sock"
  */
 export const getHostDisplayValue = (system: SystemRecord): string => system.host.slice(system.host.lastIndexOf("/") + 1)
+
+/**
+ * Formats a network speed value (in MB/s) to the most readable unit (B/s, KB/s, MB/s, GB/s, TB/s).
+ * @param valueMBps The value in MB/s
+ * @returns A string with the value and the appropriate unit
+ */
+export function formatSpeed(valueMBps: number): string {
+	const bitsPerSec = valueMBps * 8_000_000
+	if (bitsPerSec >= 1_000_000_000) {
+		return (bitsPerSec / 1_000_000_000).toFixed(2) + ' Gbit/s'
+	} else if (bitsPerSec >= 1_000_000) {
+		return (bitsPerSec / 1_000_000).toFixed(2) + ' Mbit/s'
+	} else {
+		return (bitsPerSec / 1_000).toFixed(2) + ' kbit/s'
+	}
+}

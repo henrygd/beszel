@@ -220,11 +220,6 @@ func (a *Agent) getSystemStats() system.Stats {
 				Name:        v.Name,
 			}
 		}
-		// Add combined 'all' interface
-		systemStats.NetworkInterfaces["all"] = system.NetworkInterfaceStats{
-			NetworkSent: twoDecimals(totalSent),
-			NetworkRecv: twoDecimals(totalRecv),
-		}
 	}
 
 	// temperatures
