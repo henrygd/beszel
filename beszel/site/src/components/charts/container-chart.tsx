@@ -588,7 +588,7 @@ const HealthUptimeTable = React.memo(function HealthUptimeTable({
 		for (const containerName of containerNames) {
 			const uptimeKey = containerName + '_uptime'
 			const healthKey = containerName + '_health'
-			const uptimeHours = latestData[uptimeKey] || 0
+			const uptimeHours = latestData[uptimeKey]
 			const healthValue = latestData[healthKey] || 0
 			let healthStatus = 'Unknown'
 			switch (healthValue) {
@@ -597,15 +597,17 @@ const HealthUptimeTable = React.memo(function HealthUptimeTable({
 				case 1: healthStatus = 'Unhealthy'; break
 				case 0: healthStatus = 'None'; break
 			}
-			const hours = Math.floor(uptimeHours)
-			const minutes = Math.floor((uptimeHours - hours) * 60)
-			const days = Math.floor(hours / 24)
-			const remainingHours = hours % 24
-			let uptimeDisplay = ''
-			if (days > 0) {
-				uptimeDisplay = `${days}d ${remainingHours}h ${minutes}m`
-			} else {
-				uptimeDisplay = `${hours}h ${minutes}m`
+			let uptimeDisplay = 'N/A'
+			if (typeof uptimeHours === 'number' && !isNaN(uptimeHours)) {
+				const hours = Math.floor(uptimeHours)
+				const minutes = Math.floor((uptimeHours - hours) * 60)
+				const days = Math.floor(hours / 24)
+				const remainingHours = hours % 24
+				if (days > 0) {
+					uptimeDisplay = `${days}d ${remainingHours}h ${minutes}m`
+				} else {
+					uptimeDisplay = `${hours}h ${minutes}m`
+				}
 			}
 			let stackName = '—'
 			let statusInfo = '—'

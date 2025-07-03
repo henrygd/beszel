@@ -131,9 +131,10 @@ func (dm *dockerManager) collectContainerStats(ctr *container.ApiInfo, volumeSiz
 		defer detailResp.Body.Close()
 		var detail struct {
 			State struct {
-				Status    string                  `json:"Status"`
-				StartedAt string                  `json:"StartedAt"`
-				Health    struct{ Status string } `json:"Health"`
+				Status     string                  `json:"Status"`
+				StartedAt  string                  `json:"StartedAt"`
+				FinishedAt string                  `json:"FinishedAt"`
+				Health     struct{ Status string } `json:"Health"`
 			} `json:"State"`
 		}
 		if err := json.NewDecoder(detailResp.Body).Decode(&detail); err == nil {
@@ -146,6 +147,12 @@ func (dm *dockerManager) collectContainerStats(ctr *container.ApiInfo, volumeSiz
 			if detail.State.StartedAt != "" && ctr.StartedAt == 0 {
 				if t, err := time.Parse(time.RFC3339Nano, detail.State.StartedAt); err == nil {
 					ctr.StartedAt = t.Unix()
+				}
+			}
+			// Parse FinishedAt for stopped containers
+			if detail.State.FinishedAt != "" {
+				if t, err := time.Parse(time.RFC3339Nano, detail.State.FinishedAt); err == nil {
+					ctr.FinishedAt = t.Unix()
 				}
 			}
 		}
@@ -235,7 +242,7 @@ func (dm *dockerManager) collectContainerStats(ctr *container.ApiInfo, volumeSiz
 	}
 
 	// Uptime calculation
-	if ctr.StartedAt > 0 {
+	if ctr.StartedAt > 0 && isRunning {
 		startedTime := time.Unix(ctr.StartedAt, 0)
 		stats.Uptime = twoDecimals(time.Since(startedTime).Seconds())
 	}

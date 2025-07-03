@@ -4,14 +4,15 @@ import "time"
 
 // Docker container info from /containers/json
 type ApiInfo struct {
-	Id        string
-	IdShort   string
-	Names     []string
-	Status    string
-	Health    string `json:"Health,omitempty"`    // Container health status
-	Created   int64  `json:"Created,omitempty"`   // Container creation timestamp
-	StartedAt int64  `json:"StartedAt,omitempty"` // Container start timestamp
-	State     string `json:"State,omitempty"`     // Container state (running, stopped, etc.)
+	Id         string
+	IdShort    string
+	Names      []string
+	Status     string
+	Health     string `json:"Health,omitempty"`     // Container health status
+	Created    int64  `json:"Created,omitempty"`    // Container creation timestamp
+	StartedAt  int64  `json:"StartedAt,omitempty"`  // Container start timestamp
+	FinishedAt int64  `json:"FinishedAt,omitempty"` // Container finish timestamp
+	State      string `json:"State,omitempty"`      // Container state (running, stopped, etc.)
 	// Image   string
 	// ImageID string
 	// Command string
