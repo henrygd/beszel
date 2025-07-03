@@ -551,7 +551,7 @@ export default function SystemDetail({ name }: { name: string }) {
 								cornerEl={networkInterfaceFilterBar}
 							>
 								{/* @ts-ignore */}
-								<NetworkInterfaceChart chartData={chartData} maxToggled={maxValues} />
+								<NetworkInterfaceChart chartData={chartData} />
 							</ChartCard>
 						</>
 					)}

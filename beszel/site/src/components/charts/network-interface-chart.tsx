@@ -16,9 +16,11 @@ const getNestedValue = (path: string, max = false, data: any): number | null => 
 export default memo(function NetworkInterfaceChart({
 	chartData,
 	maxToggled = false,
+	max,
 }: {
 	chartData: ChartData
 	maxToggled?: boolean
+	max?: number
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { i18n } = useLingui()
@@ -75,6 +77,45 @@ export default memo(function NetworkInterfaceChart({
 
 	const colors = dataKeys.map((key) => key.name)
 
+	// Calculate the maximum value from all network interface data and round it up
+	const calculatedMax = useMemo(() => {
+		if (chartData.systemStats.length === 0) return undefined
+		
+		let maxValue = 0
+		
+		// Find the maximum value across all network interfaces and all data points
+		for (const stats of chartData.systemStats) {
+			if (stats.stats?.ni) {
+				for (const iface of Object.values(stats.stats.ni)) {
+					const sent = showMax ? (iface.nsm ?? iface.ns ?? 0) : (iface.ns ?? 0)
+					const received = showMax ? (iface.nrm ?? iface.nr ?? 0) : (iface.nr ?? 0)
+					maxValue = Math.max(maxValue, sent, received)
+				}
+			}
+		}
+		
+		if (maxValue === 0) return undefined
+		
+		// Round up to a nice value based on magnitude
+		// Convert to bits per second for easier rounding
+		const bitsPerSec = maxValue * 8_000_000
+		
+		let roundedBitsPerSec: number
+		if (bitsPerSec >= 1_000_000_000) {
+			// For Gbit/s range, round to nearest 0.1 Gbit/s
+			roundedBitsPerSec = Math.ceil(bitsPerSec / 100_000_000) * 100_000_000
+		} else if (bitsPerSec >= 1_000_000) {
+			// For Mbit/s range, round to nearest 1 Mbit/s
+			roundedBitsPerSec = Math.ceil(bitsPerSec / 1_000_000) * 1_000_000
+		} else {
+			// For kbit/s range, round to nearest 100 kbit/s
+			roundedBitsPerSec = Math.ceil(bitsPerSec / 100_000) * 100_000
+		}
+		
+		// Convert back to MB/s for the domain
+		return roundedBitsPerSec / 8_000_000
+	}, [chartData.systemStats, showMax])
+
 	if (chartData.systemStats.length === 0 || networkInterfaces.length === 0) {
 		return null
 	}
@@ -93,11 +134,8 @@ export default memo(function NetworkInterfaceChart({
 						orientation={chartData.orientation}
 						className="tracking-tighter"
 						width={yAxisWidth}
-						tickFormatter={(value) => {
-							const rounded = Math.ceil(value)
-							const val = formatSpeed(rounded)
-							return updateYAxisWidth(val)
-						}}
+					//	domain={[0, calculatedMax ?? "auto"]}
+						tickFormatter={(value) => updateYAxisWidth((value * 8).toFixed(2) + " Mbit/s")}
 						tickLine={false}
 						axisLine={false}
 					/>
