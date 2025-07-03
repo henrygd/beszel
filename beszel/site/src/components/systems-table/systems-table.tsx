@@ -218,22 +218,31 @@ export default function SystemsTable() {
 				header: sortableHeader,
 			},
 			{
-				accessorFn: (originalRow) => originalRow.info.b || 0,
+				accessorFn: () => undefined, // not used for sorting anymore
 				id: "net",
 				name: () => t`Net`,
 				invertSorting: true,
 				size: 50,
 				Icon: EthernetIcon,
 				header: sortableHeader,
+				sortDescFirst: true,
+				sortingFn: (rowA, rowB) => {
+					const a = (rowA.original.info.ns || 0) + (rowA.original.info.nr || 0)
+					const b = (rowB.original.info.ns || 0) + (rowB.original.info.nr || 0)
+					return a - b
+				},
 				cell(info) {
-					const val = info.getValue() as number
+					const system = info.row.original
+					const sent = system.info.ns || 0
+					const received = system.info.nr || 0
 					return (
 						<span
 							className={cn("tabular-nums whitespace-nowrap", {
 								"ps-1": viewMode === "table",
 							})}
 						>
-							{decimalString(val, val >= 100 ? 1 : 2)} MB/s
+							<span className="text-green-600">↑</span> {decimalString(sent, sent >= 100 ? 1 : 2)}MB/s{" "}
+							<span className="text-blue-600">↓</span> {decimalString(received, received >= 100 ? 1 : 2)}MB/s
 						</span>
 					)
 				},

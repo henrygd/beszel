@@ -51,6 +51,10 @@ export interface SystemInfo {
 	dt?: number
 	/** operating system */
 	os?: Os
+	/** network sent (mb) */
+	ns?: number
+	/** network received (mb) */
+	nr?: number
 }
 
 export interface NetworkInterfaceStats {
@@ -175,6 +179,8 @@ export interface AlertRecord extends RecordModel {
 	triggered: boolean
 	sysname?: string
 	// user: string
+	interface?: string // network interface (e.g., 'all', 'eth0')
+	direction?: 'Upload' | 'Download' | 'Combined'
 }
 
 export type ChartTimes = "1h" | "12h" | "24h" | "1w" | "30d"

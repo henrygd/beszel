@@ -89,12 +89,13 @@ type Info struct {
 	Cpu           float64 `json:"cpu"`
 	MemPct        float64 `json:"mp"`
 	DiskPct       float64 `json:"dp"`
-	Bandwidth     float64 `json:"b"`
 	AgentVersion  string  `json:"v"`
 	Podman        bool    `json:"p,omitempty"`
 	GpuPct        float64 `json:"g,omitempty"`
 	DashboardTemp float64 `json:"dt,omitempty"`
 	Os            Os      `json:"os"`
+	NetworkSent   float64 `json:"ns,omitempty"`
+	NetworkRecv   float64 `json:"nr,omitempty"`
 }
 
 // Final data structure to return to the hub

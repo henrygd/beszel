@@ -167,6 +167,7 @@ func (a *Agent) getSystemStats() system.Stats {
 		// initialize per-interface network stats
 		systemStats.NetworkInterfaces = make(map[string]system.NetworkInterfaceStats)
 
+		var totalSent, totalRecv float64
 		// process each interface
 		for _, v := range netIO {
 			// skip if not in valid network interfaces list
@@ -205,6 +206,10 @@ func (a *Agent) getSystemStats() system.Stats {
 				NetworkRecv: networkRecvPs,
 			}
 
+			// accumulate totals
+			totalSent += networkSentPs
+			totalRecv += networkRecvPs
+
 			// update previous stats for this interface
 			a.netIoStats[v.Name] = system.NetIoStats{
 				BytesRecv:   v.BytesRecv,
@@ -214,6 +219,11 @@ func (a *Agent) getSystemStats() system.Stats {
 				Time:        now,
 				Name:        v.Name,
 			}
+		}
+		// Add combined 'all' interface
+		systemStats.NetworkInterfaces["all"] = system.NetworkInterfaceStats{
+			NetworkSent: twoDecimals(totalSent),
+			NetworkRecv: twoDecimals(totalRecv),
 		}
 	}
 
@@ -259,6 +269,16 @@ func (a *Agent) getSystemStats() system.Stats {
 	a.systemInfo.MemPct = systemStats.MemPct
 	a.systemInfo.DiskPct = systemStats.DiskPct
 	a.systemInfo.Uptime, _ = host.Uptime()
+
+	// Sum all per-interface network sent/recv and assign to systemInfo
+	var totalSent, totalRecv float64
+	for _, iface := range systemStats.NetworkInterfaces {
+		totalSent += iface.NetworkSent
+		totalRecv += iface.NetworkRecv
+	}
+	a.systemInfo.NetworkSent = twoDecimals(totalSent)
+	a.systemInfo.NetworkRecv = twoDecimals(totalRecv)
+
 	slog.Debug("sysinfo", "data", a.systemInfo)
 
 	return systemStats
