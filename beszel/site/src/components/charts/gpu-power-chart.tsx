@@ -19,7 +19,7 @@ import {
 import { ChartData } from "@/types"
 import { memo, useMemo } from "react"
 
-export default memo(function GpuPowerChart({ chartData }: { chartData: ChartData }) {
+export default memo(function GpuPowerChart({ chartData, showLegend = true }: { chartData: ChartData, showLegend?: boolean }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
 	if (chartData.systemStats.length === 0) {
@@ -104,7 +104,7 @@ export default memo(function GpuPowerChart({ chartData }: { chartData: ChartData
 							isAnimationActive={false}
 						/>
 					))}
-					{colors.length > 1 && <ChartLegend content={<ChartLegendContent />} />}
+					{showLegend && colors.length > 1 && <ChartLegend content={<ChartLegendContent />} />}
 				</LineChart>
 			</ChartContainer>
 		</div>

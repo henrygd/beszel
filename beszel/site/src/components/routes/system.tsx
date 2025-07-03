@@ -484,7 +484,7 @@ export default function SystemDetail({ name }: { name: string }) {
 							description={t`Average CPU utilization of containers`}
 							cornerEl={containerFilterBar}
 						>
-							<ContainerChart chartData={chartData} dataKey="c" chartType={ChartType.CPU} showLegend={userSettings.showChartLegend !== false} />
+							<ContainerChart chartData={chartData} dataKey="c" chartType={ChartType.CPU} />
 						</ChartCard>
 					)}
 
@@ -505,7 +505,7 @@ export default function SystemDetail({ name }: { name: string }) {
 							description={dockerOrPodman(t`Memory usage of docker containers`, system)}
 							cornerEl={containerFilterBar}
 						>
-							<ContainerChart chartData={chartData} dataKey="m" chartType={ChartType.Memory} showLegend={userSettings.showChartLegend !== false} />
+							<ContainerChart chartData={chartData} dataKey="m" chartType={ChartType.Memory} />
 						</ChartCard>
 					)}
 
