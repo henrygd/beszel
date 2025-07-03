@@ -557,7 +557,7 @@ export default function SystemDetail({ name }: { name: string }) {
 																	}
 																	return (
 																		<div key={nic.name + idx} className="flex flex-col">
-																			<span className="font-medium">{nicText}</span>
+																			<span className="font-medium max-w-40 truncate" title={nicText}>{nicText}</span>
 																		</div>
 																	)
 																})}
