@@ -9,6 +9,22 @@ declare global {
 	}
 }
 
+// Unit preference types
+export type TemperatureUnit = "celsius" | "fahrenheit"
+export type SpeedUnit = "mbps" | "bps"
+
+// Unit conversion result types
+export interface TemperatureConversion {
+	value: number
+	symbol: string
+}
+
+export interface SpeedConversion {
+	value: number
+	symbol: string
+	display: string
+}
+
 export interface SystemRecord extends RecordModel {
 	name: string
 	host: string
@@ -182,8 +198,9 @@ export type UserSettings = {
 	chartTime: ChartTimes
 	emails?: string[]
 	webhooks?: string[]
-	temperatureUnit?: "celsius" | "fahrenheit"
-	networkUnit?: "mbps" | "bps"
+	temperatureUnit?: TemperatureUnit
+	networkUnit?: SpeedUnit
+	diskUnit?: SpeedUnit
 }
 
 type ChartDataContainer = {

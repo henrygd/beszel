@@ -140,6 +140,21 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 								</SelectContent>
 							</Select>
 						</div>
+
+						<div className="space-y-2">
+							<Label className="block" htmlFor="diskUnit">
+								<Trans>Disk unit</Trans>
+							</Label>
+							<Select name="diskUnit" key={userSettings.diskUnit} defaultValue={userSettings.diskUnit || "mbps"}>
+								<SelectTrigger id="diskUnit">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="mbps">MB/s (Megabytes per second)</SelectItem>
+									<SelectItem value="bps">bps (Bits per second)</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
 					</div>
 				</div>
 				<Separator />

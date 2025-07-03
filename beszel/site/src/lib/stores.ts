@@ -30,6 +30,7 @@ export const $userSettings = map<UserSettings>({
 	emails: [pb.authStore.record?.email || ""],
 	temperatureUnit: "celsius",
 	networkUnit: "mbps",
+	diskUnit: "mbps",
 })
 // update local storage on change
 $userSettings.subscribe((value) => {

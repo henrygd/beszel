@@ -3,7 +3,7 @@ import { toast } from "@/components/ui/use-toast"
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { $alerts, $copyContent, $systems, $userSettings, pb } from "./stores"
-import { AlertInfo, AlertRecord, ChartTimeData, ChartTimes, SystemRecord } from "@/types"
+import { AlertInfo, AlertRecord, ChartTimeData, ChartTimes, SystemRecord, TemperatureUnit, TemperatureConversion, SpeedUnit, SpeedConversion } from "@/types"
 import { RecordModel, RecordSubscription } from "pocketbase"
 import { WritableAtom } from "nanostores"
 import { timeDay, timeHour } from "d3-time"
@@ -273,8 +273,8 @@ export function useLocalStorage<T>(key: string, defaultValue: T) {
 /** Convert temperature from Celsius to the specified unit */
 export function convertTemperature(
 	celsius: number,
-	unit: "celsius" | "fahrenheit" = "celsius"
-): { value: number; symbol: string } {
+	unit: TemperatureUnit = "celsius"
+): TemperatureConversion {
 	switch (unit) {
 		case "fahrenheit":
 			return { value: (celsius * 9) / 5 + 32, symbol: "°F" }
@@ -286,8 +286,53 @@ export function convertTemperature(
 /** Convert network speed from MB/s to the specified unit  */
 export function convertNetworkSpeed(
 	mbps: number,
-	unit: "mbps" | "bps" = "mbps"
-): { value: number; symbol: string; display: string } {
+	unit: SpeedUnit = "mbps"
+): SpeedConversion {
+	switch (unit) {
+		case "bps": {
+			const bps = mbps * 8 * 1_000_000 // Convert MB/s to bits per second
+
+			// Format large numbers appropriately
+			if (bps >= 1_000_000_000) {
+				return {
+					value: bps / 1_000_000_000,
+					symbol: " Gbps",
+					display: `${decimalString(bps / 1_000_000_000, bps >= 10_000_000_000 ? 0 : 1)} Gbps`,
+				}
+			} else if (bps >= 1_000_000) {
+				return {
+					value: bps / 1_000_000,
+					symbol: " Mbps",
+					display: `${decimalString(bps / 1_000_000, bps >= 10_000_000 ? 0 : 1)} Mbps`,
+				}
+			} else if (bps >= 1_000) {
+				return {
+					value: bps / 1_000,
+					symbol: " Kbps",
+					display: `${decimalString(bps / 1_000, bps >= 10_000 ? 0 : 1)} Kbps`,
+				}
+			} else {
+				return {
+					value: bps,
+					symbol: " bps",
+					display: `${Math.round(bps)} bps`,
+				}
+			}
+		}
+		default:
+			return {
+				value: mbps,
+				symbol: " MB/s",
+				display: `${decimalString(mbps, mbps >= 100 ? 1 : 2)} MB/s`,
+			}
+	}
+}
+
+/** Convert disk speed from MB/s to the specified unit  */
+export function convertDiskSpeed(
+	mbps: number,
+	unit: SpeedUnit = "mbps"
+): SpeedConversion {
 	switch (unit) {
 		case "bps": {
 			const bps = mbps * 8 * 1_000_000 // Convert MB/s to bits per second
