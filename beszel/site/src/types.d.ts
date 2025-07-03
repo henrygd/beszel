@@ -101,13 +101,13 @@ export interface SystemStats {
 	drm?: number
 	/** max disk write (mb) */
 	dwm?: number
-	/** network sent (mb) - legacy combined */
+	/** network sent (mb) */
 	ns: number
-	/** network received (mb) - legacy combined */
+	/** network received (mb) */
 	nr: number
-	/** max network sent (mb) - legacy combined */
+	/** max network sent (mb) */
 	nsm?: number
-	/** max network received (mb) - legacy combined */
+	/** max network received (mb) */
 	nrm?: number
 	/** per-interface network stats */
 	ni?: Record<string, NetworkInterfaceStats>
@@ -179,8 +179,6 @@ export interface AlertRecord extends RecordModel {
 	triggered: boolean
 	sysname?: string
 	// user: string
-	interface?: string // network interface (e.g., 'all', 'eth0')
-	direction?: 'Upload' | 'Download' | 'Combined'
 }
 
 export type ChartTimes = "1h" | "12h" | "24h" | "1w" | "30d"

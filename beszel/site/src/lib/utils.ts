@@ -337,7 +337,7 @@ export const alertInfo: Record<string, AlertInfo> = {
 		name: () => t`Bandwidth`,
 		unit: " MB/s",
 		icon: EthernetIcon,
-		desc: () => t`Trigger when upload or download bandwidth exceeds threshold.`,
+		desc: () => t`Triggers when combined up/down exceeds a threshold`,
 		max: 125,
 	},
 	Temperature: {
