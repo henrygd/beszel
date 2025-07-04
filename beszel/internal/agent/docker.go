@@ -27,6 +27,7 @@ type dockerManager struct {
 	validIds            map[string]struct{}         // Map of valid container ids, used to prune invalid containers from containerStatsMap
 	goodDockerVersion   bool                        // Whether docker version is at least 25.0.0 (one-shot works correctly)
 	isWindows           bool                        // Whether the Docker Engine API is running on Windows
+	excludePatterns     []string                    // Container name patterns to exclude from monitoring
 }
 
 // userAgentRoundTripper is a custom http.RoundTripper that adds a User-Agent header to all requests
@@ -57,6 +58,16 @@ func (d *dockerManager) dequeue() {
 	}
 }
 
+// shouldExcludeContainer checks if a container should be excluded based on name patterns
+func (dm *dockerManager) shouldExcludeContainer(name string) bool {
+	for _, pattern := range dm.excludePatterns {
+		if strings.Contains(name, pattern) {
+			return true
+		}
+	}
+	return false
+}
+
 // Returns stats for all running containers and volume-to-container mapping
 func (dm *dockerManager) getDockerStats() ([]*container.Stats, map[string][]string, error) {
 	resp, err := dm.client.Get("http://localhost/containers/json?all=1")
@@ -85,16 +96,27 @@ func (dm *dockerManager) getDockerStats() ([]*container.Stats, map[string][]stri
 		}
 	}
 
+	// Filter out excluded containers
+	filteredContainers := make([]*container.ApiInfo, 0, len(apiContainers))
+	for _, ctr := range apiContainers {
+		name := ctr.Names[0][1:]
+		if !dm.shouldExcludeContainer(name) {
+			filteredContainers = append(filteredContainers, ctr)
+		} else {
+			slog.Debug("Excluding container from monitoring", "name", name)
+		}
+	}
+
 	type result struct {
 		id    string
 		stats *container.Stats
 		err   error
 	}
-	results := make(chan result, len(apiContainers))
+	results := make(chan result, len(filteredContainers))
 	sem := make(chan struct{}, 5) // configurable concurrency
 
 	var wg sync.WaitGroup
-	for _, ctr := range apiContainers {
+	for _, ctr := range filteredContainers {
 		wg.Add(1)
 		go func(ctr *container.ApiInfo) {
 			defer wg.Done()
@@ -107,7 +129,7 @@ func (dm *dockerManager) getDockerStats() ([]*container.Stats, map[string][]stri
 	wg.Wait()
 	close(results)
 
-	statsList := make([]*container.Stats, 0, len(apiContainers))
+	statsList := make([]*container.Stats, 0, len(filteredContainers))
 	for res := range results {
 		if res.err == nil && res.stats != nil {
 			statsList = append(statsList, res.stats)
@@ -390,6 +412,20 @@ func newDockerManager(a *Agent) *dockerManager {
 		containerStatsMap: make(map[string]*container.Stats),
 		sem:               make(chan struct{}, 5),
 		apiContainerList:  []*container.ApiInfo{},
+	}
+
+	// Load container exclusion patterns from environment
+	if excludePatterns, exists := GetEnv("CONTAINER_EXCLUDE"); exists && excludePatterns != "" {
+		patterns := strings.Split(excludePatterns, ",")
+		for _, pattern := range patterns {
+			pattern = strings.TrimSpace(pattern)
+			if pattern != "" {
+				manager.excludePatterns = append(manager.excludePatterns, pattern)
+			}
+		}
+		if len(manager.excludePatterns) > 0 {
+			slog.Info("Container exclusion patterns loaded", "patterns", manager.excludePatterns)
+		}
 	}
 
 	// If using podman, return client
