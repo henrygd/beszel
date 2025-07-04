@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useStore } from "@nanostores/react"
 import { $router } from "@/components/router.tsx"
 import { getPagePath, redirectPage } from "@nanostores/router"
-import { BellIcon, FileSlidersIcon, SettingsIcon } from "lucide-react"
+import { BellIcon, FileSlidersIcon, SettingsIcon, UsersIcon } from "lucide-react"
 import { $userSettings, pb } from "@/lib/stores.ts"
 import { toast } from "@/components/ui/use-toast.ts"
 import { UserSettings } from "@/types.js"
@@ -15,6 +15,7 @@ import General from "./general.tsx"
 import Notifications from "./notifications.tsx"
 import ConfigYaml from "./config-yaml.tsx"
 import { useLingui } from "@lingui/react/macro"
+import SystemOrganization from "./system-organization"
 
 export async function saveSettings(newSettings: Partial<UserSettings>) {
 	try {
@@ -64,6 +65,11 @@ export default function SettingsLayout() {
 			icon: FileSlidersIcon,
 			admin: true,
 		},
+		{
+			title: t`System Organization`,
+			href: getPagePath($router, "settings", { name: "organization" }),
+			icon: UsersIcon,
+		},
 	]
 
 	const page = useStore($router)
@@ -112,5 +118,7 @@ function SettingsContent({ name }: { name: string }) {
 			return <Notifications userSettings={userSettings} />
 		case "config":
 			return <ConfigYaml />
+		case "organization":
+			return <SystemOrganization />
 	}
 }

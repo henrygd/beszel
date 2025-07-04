@@ -15,7 +15,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { $publicKey, pb } from "@/lib/stores"
+import { $publicKey, pb, $systems } from "@/lib/stores"
 import { cn, copyToClipboard, isReadOnlyUser, useLocalStorage } from "@/lib/utils"
 import { i18n } from "@lingui/core"
 import { useStore } from "@nanostores/react"
@@ -25,6 +25,11 @@ import { basePath, navigate } from "./router"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import { SystemRecord } from "@/types"
 import { AppleIcon, DockerIcon, TuxIcon, WindowsIcon } from "./ui/icons"
+import { InputTags } from "@/components/ui/input-tags"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "./ui/command"
+import { Badge } from "./ui/badge"
+import { XIcon } from "lucide-react"
+import { GroupInput } from "./ui/group-input"
 
 export function AddSystemButton({ className }: { className?: string }) {
 	const [open, setOpen] = useState(false)
@@ -102,12 +107,20 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 	const [hostValue, setHostValue] = useState(system?.host ?? "")
 	const isUnixSocket = hostValue.startsWith("/")
 	const [tab, setTab] = useLocalStorage("as-tab", "docker")
+	const [tags, setTags] = useState<string[]>(system?.tags ?? [])
+
+	// Derive groups from all systems
+	const systems = useStore($systems)
+	const groups = Array.from(new Set(systems.map(s => s.group).filter(Boolean))) as string[]
+	const [group, setGroup] = useState<string>(system?.group ?? "")
 
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault()
 		const formData = new FormData(e.target as HTMLFormElement)
 		const data = Object.fromEntries(formData) as Record<string, any>
 		data.users = pb.authStore.record!.id
+		data.tags = tags
+		data.group = group // Save group
 		try {
 			setOpen(false)
 			if (system) {
@@ -217,6 +230,15 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 								</Tooltip>
 							</TooltipProvider>
 						</div>
+						{/* Tags field aligned in the grid */}
+						<Label htmlFor="tags" className="xs:text-end">Tags</Label>
+						<div className="flex">
+							<div className="max-w-[25rem]">
+								<InputTags id="tags" value={tags} onChange={setTags} placeholder="Add tags..." />
+							</div>
+						</div>
+						<Label htmlFor="group" className="xs:text-end">Group</Label>
+						<GroupInput value={group} groups={groups} onChange={setGroup} />
 					</div>
 					<DialogFooter className="flex justify-end gap-x-2 gap-y-3 flex-col mt-5">
 						{/* Docker */}

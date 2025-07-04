@@ -23,6 +23,8 @@ type SystemConfig struct {
 	Host  string   `yaml:"host"`
 	Port  uint16   `yaml:"port,omitempty"`
 	Users []string `yaml:"users"`
+	Tags  []string `yaml:"tags"`
+	Group string   `yaml:"group,omitempty"`
 }
 
 // Syncs systems with the config.yml file
@@ -104,6 +106,8 @@ func syncSystemsWithConfig(e *core.ServeEvent) error {
 			existingSystem.Set("name", sysConfig.Name)
 			existingSystem.Set("users", sysConfig.Users)
 			existingSystem.Set("port", sysConfig.Port)
+			existingSystem.Set("tags", sysConfig.Tags)
+			existingSystem.Set("group", sysConfig.Group)
 			if err := h.Save(existingSystem); err != nil {
 				return err
 			}
@@ -119,6 +123,8 @@ func syncSystemsWithConfig(e *core.ServeEvent) error {
 			newSystem.Set("host", sysConfig.Host)
 			newSystem.Set("port", sysConfig.Port)
 			newSystem.Set("users", sysConfig.Users)
+			newSystem.Set("tags", sysConfig.Tags)
+			newSystem.Set("group", sysConfig.Group)
 			newSystem.Set("info", system.Info{})
 			newSystem.Set("status", "pending")
 			if err := h.Save(newSystem); err != nil {
@@ -171,11 +177,15 @@ func (h *Hub) generateConfigYAML() (string, error) {
 			}
 		}
 
+		tags := system.GetStringSlice("tags")
+		group := system.GetString("group")
 		sysConfig := SystemConfig{
 			Name:  system.GetString("name"),
 			Host:  system.GetString("host"),
 			Port:  cast.ToUint16(system.Get("port")),
 			Users: userEmails,
+			Tags:  tags,
+			Group: group,
 		}
 		config.Systems = append(config.Systems, sysConfig)
 	}

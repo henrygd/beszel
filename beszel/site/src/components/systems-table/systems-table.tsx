@@ -61,9 +61,11 @@ import {
 	Settings2Icon,
 	EyeIcon,
 	PenBoxIcon,
+	ChevronDownIcon,
+	ChevronRightIcon,
 } from "lucide-react"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
-import { $systems, pb } from "@/lib/stores"
+import { $systems, pb, $userSettings } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { cn, copyToClipboard, decimalString, isReadOnlyUser, useLocalStorage } from "@/lib/utils"
 import AlertsButton from "../alerts/alert-button"
@@ -76,6 +78,7 @@ import { ClassValue } from "clsx"
 import { getPagePath } from "@nanostores/router"
 import { SystemDialog } from "../add-system"
 import { Dialog } from "../ui/dialog"
+import { Badge } from "@/components/ui/badge"
 
 type ViewMode = "table" | "grid"
 
@@ -121,14 +124,31 @@ function sortableHeader(context: HeaderContext<SystemRecord, unknown>) {
 
 export default function SystemsTable() {
 	const data = useStore($systems)
+	const userSettings = useStore($userSettings)
 	const { i18n, t } = useLingui()
 	const [filter, setFilter] = useState<string>()
 	const [sorting, setSorting] = useState<SortingState>([{ id: "system", desc: false }])
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>("cols", {})
 	const [viewMode, setViewMode] = useLocalStorage<ViewMode>("viewMode", window.innerWidth > 1024 ? "table" : "grid")
+	const [tagFilter, setTagFilter] = useState<string>("")
+	const [selectedTags, setSelectedTags] = useState<string[]>([])
+	const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
 
 	const locale = i18n.locale
+
+	// Get all unique tags from systems
+	const allTags = useMemo(() => {
+		const tags = new Set<string>()
+		data.forEach((sys) => (sys.tags || []).forEach((tag) => tags.add(tag)))
+		return Array.from(tags).sort()
+	}, [data])
+
+	// Filter data by selected tags (OR logic: show systems with ANY selected tag)
+	const filteredData = useMemo(() => {
+		if (!selectedTags.length) return data
+		return data.filter((sys) => sys.tags?.some((tag) => selectedTags.includes(tag)))
+	}, [data, selectedTags])
 
 	useEffect(() => {
 		if (filter !== undefined) {
@@ -152,11 +172,12 @@ export default function SystemsTable() {
 				name: () => t`System`,
 				filterFn: (row, _, filterVal) => {
 					const filterLower = filterVal.toLowerCase()
-					const { name, status } = row.original
-					// Check if the filter matches the name or status for this row
+					const { name, status, tags = [] } = row.original
+					// Check if the filter matches the name, status, or any tag
 					if (
 						name.toLowerCase().includes(filterLower) ||
-						statusTranslations[status as keyof typeof statusTranslations]?.().includes(filterLower)
+						statusTranslations[status as keyof typeof statusTranslations]?.().includes(filterLower) ||
+						tags.some((tag: string) => tag.toLowerCase().includes(filterLower))
 					) {
 						return true
 					}
@@ -179,6 +200,24 @@ export default function SystemsTable() {
 					</span>
 				),
 				header: sortableHeader,
+			},
+			{
+				accessorKey: "tags",
+				id: "tags",
+				name: () => t`Tags`,
+				cell: (info) => {
+					const tags = info.getValue() as string[]
+					if (!tags?.length) return null
+					return (
+						<div className="flex flex-wrap gap-1">
+							{tags.map((tag) => (
+								<Badge key={tag}>{tag}</Badge>
+							))}
+						</div>
+					)
+				},
+				header: sortableHeader,
+				Icon: LayoutGridIcon,
 			},
 			{
 				accessorKey: "info.cpu",
@@ -314,7 +353,7 @@ export default function SystemsTable() {
 	}, [])
 
 	const table = useReactTable({
-		data,
+		data: filteredData,
 		columns: columnDefs,
 		getCoreRowModel: getCoreRowModel(),
 		onSortingChange: setSorting,
@@ -350,8 +389,38 @@ export default function SystemsTable() {
 							<Trans>Updated in real time. Click on a system to view information.</Trans>
 						</CardDescription>
 					</div>
-					<div className="flex gap-2 ms-auto w-full md:w-80">
-						<Input placeholder={t`Filter...`} onChange={(e) => setFilter(e.target.value)} className="px-4" />
+					<div className="flex gap-2 ms-auto w-auto items-center">
+						<Input placeholder={t`Filter...`} onChange={(e) => setFilter(e.target.value)} className="px-4 min-w-0" />
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant="outline" className="flex gap-2 items-center">
+									<span>{t`Tag Filtering`}</span>
+									{selectedTags.length > 0 && (
+										<Badge variant="secondary" className="px-1.5 py-0.5 text-xs">
+											{selectedTags.length}
+										</Badge>
+									)}
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="start" className="min-w-[14rem] max-h-72 overflow-y-auto">
+								<DropdownMenuLabel>{t`Filter by tags`}</DropdownMenuLabel>
+								<DropdownMenuSeparator />
+								{allTags.length === 0 && <div className="px-3 py-2 text-muted-foreground">{t`No tags found`}</div>}
+								{allTags.map((tag) => (
+									<DropdownMenuCheckboxItem
+										key={tag}
+										checked={selectedTags.includes(tag)}
+										onCheckedChange={(checked) => {
+											setSelectedTags((prev) =>
+												checked ? [...prev, tag] : prev.filter((t) => t !== tag)
+											)
+										}}
+									>
+										{tag}
+									</DropdownMenuCheckboxItem>
+								))}
+							</DropdownMenuContent>
+						</DropdownMenu>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="outline">
@@ -382,7 +451,6 @@ export default function SystemsTable() {
 											</DropdownMenuRadioItem>
 										</DropdownMenuRadioGroup>
 									</div>
-
 									<div>
 										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
 											<ArrowUpDownIcon className="size-4" />
@@ -417,7 +485,6 @@ export default function SystemsTable() {
 											})}
 										</div>
 									</div>
-
 									<div>
 										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
 											<EyeIcon className="size-4" />
@@ -449,30 +516,109 @@ export default function SystemsTable() {
 				</div>
 			</CardHeader>
 		)
-	}, [visibleColumns.length, sorting, viewMode, locale])
+	}, [visibleColumns.length, sorting, viewMode, locale, selectedTags, allTags])
+
+	// Group systems by their group field
+	const groupedSystems = useMemo(() => {
+		const groups: Record<string, SystemRecord[]> = {}
+		filteredData.forEach(system => {
+			const group = system.group || "Ungrouped"
+			if (!groups[group]) groups[group] = []
+			groups[group].push(system)
+		})
+		return groups
+	}, [filteredData])
+
+	// Determine if there is at least one system with a non-empty group
+	const hasAnyGrouped = useMemo(() => filteredData.some(sys => sys.group && sys.group.trim()), [filteredData])
 
 	return (
 		<Card>
 			{CardHead}
 			<div className="p-6 pt-0 max-sm:py-3 max-sm:px-2">
-				{viewMode === "table" ? (
-					// table layout
-					<div className="rounded-md border overflow-hidden">
-						<AllSystemsTable table={table} rows={rows} colLength={visibleColumns.length} />
-					</div>
+				{userSettings.groupingEnabled ? (
+					// Grouped layout
+					Object.entries(groupedSystems)
+						.filter(([group]) => group !== "Ungrouped" || hasAnyGrouped)
+						.map(([group, systems]) => {
+							const systemRows = systems.map(sys => table.getRowModel().rows.find(r => r.original.id === sys.id)).filter((row): row is Row<SystemRecord> => row !== undefined)
+							const isCollapsed = collapsedGroups.has(group)
+							
+							return (
+								<div key={group} className="mb-8">
+									<button
+										onClick={() => {
+											const newCollapsed = new Set(collapsedGroups)
+											if (isCollapsed) {
+												newCollapsed.delete(group)
+											} else {
+												newCollapsed.add(group)
+											}
+											setCollapsedGroups(newCollapsed)
+										}}
+										className="flex items-center gap-2 text-xl font-bold mb-2 hover:text-primary transition-colors cursor-pointer"
+									>
+										{isCollapsed ? (
+											<ChevronRightIcon className="h-5 w-5" />
+										) : (
+											<ChevronDownIcon className="h-5 w-5" />
+										)}
+										{group}
+									</button>
+									<div className="text-sm text-muted-foreground mb-3">
+										{(() => {
+											const onlineCount = systemRows.filter(row => row.original.status === "up").length
+											const offlineCount = systemRows.filter(row => row.original.status !== "up").length
+											return (
+												<span>
+													{onlineCount} online, {offlineCount} offline
+												</span>
+											)
+										})()}
+									</div>
+									{!isCollapsed && (
+										<>
+											{viewMode === "table" ? (
+												<div className="rounded-md border overflow-hidden">
+													<AllSystemsTable table={table} rows={systemRows} colLength={visibleColumns.length} />
+												</div>
+											) : (
+												<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+													{systemRows.length ? (
+														systemRows.map((row) => {
+															return <SystemCard key={row.original.id} row={row} table={table} colLength={visibleColumns.length} />
+														})
+													) : (
+														<div className="col-span-full text-center py-8">
+															<Trans>No systems found.</Trans>
+														</div>
+													)}
+												</div>
+											)}
+										</>
+									)}
+								</div>
+							)
+						})
 				) : (
-					// grid layout
-					<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-						{rows?.length ? (
-							rows.map((row) => {
-								return <SystemCard key={row.original.id} row={row} table={table} colLength={visibleColumns.length} />
-							})
-						) : (
-							<div className="col-span-full text-center py-8">
-								<Trans>No systems found.</Trans>
-							</div>
-						)}
-					</div>
+					// Simple layout (original)
+					viewMode === "table" ? (
+						<div className="rounded-md border overflow-hidden">
+							<AllSystemsTable table={table} rows={rows} colLength={visibleColumns.length} />
+						</div>
+					) : (
+						<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+							{rows?.length ? (
+								rows.map((row) => {
+									return <SystemCard key={row.original.id} row={row} table={table} colLength={visibleColumns.length} />
+								})
+							) : (
+								<div className="col-span-full text-center py-8">
+									<Trans>No systems found.</Trans>
+								</div>
+							)}
+						</div>
+					)
 				)}
 			</div>
 		</Card>
@@ -609,6 +755,13 @@ const SystemCard = memo(
 								</div>
 							)
 						})}
+						{system.tags?.length > 0 && (
+							<div className="flex flex-wrap gap-1 mt-2">
+								{system.tags.map((tag) => (
+									<Badge key={tag}>{tag}</Badge>
+								))}
+							</div>
+						)}
 					</CardContent>
 					<Link
 						href={getPagePath($router, "system", { name: row.original.name })}
