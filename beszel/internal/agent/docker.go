@@ -8,7 +8,6 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
-	"net/url"
 	"os"
 	"strings"
 	"sync"
@@ -68,9 +67,21 @@ func (dm *dockerManager) shouldExcludeContainer(name string) bool {
 	return false
 }
 
+
+
 // Returns stats for all running containers and volume-to-container mapping
 func (dm *dockerManager) getDockerStats() ([]*container.Stats, map[string][]string, error) {
-	resp, err := dm.client.Get("http://localhost/containers/json?all=1")
+	// Use context with timeout for the entire operation
+	ctx, cancel := context.WithTimeout(context.Background(), dm.client.Timeout)
+	defer cancel()
+
+	// Create request with context
+	req, err := http.NewRequestWithContext(ctx, "GET", "http://localhost/containers/json?all=1", nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resp, err := dm.client.Do(req)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -85,7 +96,7 @@ func (dm *dockerManager) getDockerStats() ([]*container.Stats, map[string][]stri
 	volumeSizes, _ := dm.getAllVolumeSizes()
 
 	// Build volume-to-container mapping for all containers (running and stopped)
-	volumeContainers := make(map[string][]string)
+	volumeContainers := make(map[string][]string, len(apiContainers))
 	for _, ctr := range apiContainers {
 		ctr.IdShort = ctr.Id[:12]
 		name := ctr.Names[0][1:]
@@ -113,7 +124,13 @@ func (dm *dockerManager) getDockerStats() ([]*container.Stats, map[string][]stri
 		err   error
 	}
 	results := make(chan result, len(filteredContainers))
-	sem := make(chan struct{}, 5) // configurable concurrency
+
+	// Use adaptive concurrency based on container count
+	concurrency := 5
+	if len(filteredContainers) < concurrency {
+		concurrency = len(filteredContainers)
+	}
+	sem := make(chan struct{}, concurrency)
 
 	var wg sync.WaitGroup
 	for _, ctr := range filteredContainers {
@@ -147,44 +164,51 @@ func (dm *dockerManager) collectContainerStats(ctr *container.ApiInfo, volumeSiz
 	// Set the short ID for the frontend
 	stats.IdShort = ctr.IdShort
 
-	// Always fetch /json to get canonical status and health
-	detailResp, err := dm.client.Get("http://localhost/containers/" + ctr.IdShort + "/json")
-	if err == nil {
-		defer detailResp.Body.Close()
-		var detail struct {
-			State struct {
-				Status     string                  `json:"Status"`
-				StartedAt  string                  `json:"StartedAt"`
-				FinishedAt string                  `json:"FinishedAt"`
-				Health     struct{ Status string } `json:"Health"`
-			} `json:"State"`
-		}
-		if err := json.NewDecoder(detailResp.Body).Decode(&detail); err == nil {
-			stats.Status = detail.State.Status // canonical state: running, exited, etc.
-			if detail.State.Health.Status != "" {
-				stats.Health = detail.State.Health.Status
-			} else {
-				stats.Health = "none"
-			}
-			if detail.State.StartedAt != "" && ctr.StartedAt == 0 {
-				if t, err := time.Parse(time.RFC3339Nano, detail.State.StartedAt); err == nil {
-					ctr.StartedAt = t.Unix()
-				}
-			}
-			// Parse FinishedAt for stopped containers
-			if detail.State.FinishedAt != "" {
-				if t, err := time.Parse(time.RFC3339Nano, detail.State.FinishedAt); err == nil {
-					ctr.FinishedAt = t.Unix()
-				}
-			}
-		}
+	// Use container data from the list when possible to reduce API calls
+	stats.Status = ctr.State
+	if stats.Status == "" {
+		stats.Status = "unknown"
 	}
 
-	if stats.Status == "" {
-		// fallback to previous logic if /json failed
-		stats.Status = ctr.State
-		if stats.Status == "" {
-			stats.Status = "unknown"
+	// Only fetch /json if we need additional details not available in the list
+	needJsonCall := ctr.StartedAt == 0 || ctr.Health == "" || ctr.FinishedAt == 0
+	if needJsonCall {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+		defer cancel()
+
+		req, err := http.NewRequestWithContext(ctx, "GET", "http://localhost/containers/"+ctr.IdShort+"/json", nil)
+		if err == nil {
+			detailResp, err := dm.client.Do(req)
+			if err == nil {
+				defer detailResp.Body.Close()
+				var detail struct {
+					State struct {
+						Status     string                  `json:"Status"`
+						StartedAt  string                  `json:"StartedAt"`
+						FinishedAt string                  `json:"FinishedAt"`
+						Health     struct{ Status string } `json:"Health"`
+					} `json:"State"`
+				}
+				if err := json.NewDecoder(detailResp.Body).Decode(&detail); err == nil {
+					stats.Status = detail.State.Status // canonical state: running, exited, etc.
+					if detail.State.Health.Status != "" {
+						stats.Health = detail.State.Health.Status
+					} else {
+						stats.Health = "none"
+					}
+					if detail.State.StartedAt != "" && ctr.StartedAt == 0 {
+						if t, err := time.Parse(time.RFC3339Nano, detail.State.StartedAt); err == nil {
+							ctr.StartedAt = t.Unix()
+						}
+					}
+					// Parse FinishedAt for stopped containers
+					if detail.State.FinishedAt != "" {
+						if t, err := time.Parse(time.RFC3339Nano, detail.State.FinishedAt); err == nil {
+							ctr.FinishedAt = t.Unix()
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -200,7 +224,16 @@ func (dm *dockerManager) collectContainerStats(ctr *container.ApiInfo, volumeSiz
 			stats.Project = projectName
 		}
 	}
-	stats.Volumes = make(map[string]float64)
+
+	// Pre-allocate volumes map with known size
+	volumeCount := 0
+	for _, mount := range ctr.Mounts {
+		if mount.Type == "volume" && mount.Name != "" {
+			volumeCount++
+		}
+	}
+	stats.Volumes = make(map[string]float64, volumeCount)
+
 	for _, mount := range ctr.Mounts {
 		if mount.Type == "volume" && mount.Name != "" {
 			stats.Volumes[mount.Name] = volumeSizes[mount.Name]
@@ -211,11 +244,20 @@ func (dm *dockerManager) collectContainerStats(ctr *container.ApiInfo, volumeSiz
 
 	// If running, fetch /stats
 	if isRunning {
-		resp, err := dm.client.Get("http://localhost/containers/" + ctr.IdShort + "/stats?stream=0&one-shot=1")
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+		defer cancel()
+
+		req, err := http.NewRequestWithContext(ctx, "GET", "http://localhost/containers/"+ctr.IdShort+"/stats?stream=0&one-shot=1", nil)
+		if err != nil {
+			return nil, err
+		}
+
+		resp, err := dm.client.Do(req)
 		if err != nil {
 			return nil, err
 		}
 		defer resp.Body.Close()
+
 		var res container.ApiStats
 		if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
 			return nil, err
@@ -286,42 +328,17 @@ func (dm *dockerManager) deleteContainerStatsSync(id string) {
 	delete(dm.containerStatsMap, id)
 }
 
-// Get size of a specific volume
-func (dm *dockerManager) getVolumeSize(volumeName string) (float64, error) {
-	// Use the system/df endpoint to get volume usage data
-	resp, err := dm.client.Get("http://localhost/system/df")
-	if err != nil {
-		return 0, err
-	}
-	defer resp.Body.Close()
-
-	var dfData struct {
-		Volumes []struct {
-			Name      string `json:"Name"`
-			UsageData struct {
-				Size int64 `json:"Size"`
-			} `json:"UsageData"`
-		} `json:"Volumes"`
-	}
-
-	if err := json.NewDecoder(resp.Body).Decode(&dfData); err != nil {
-		return 0, err
-	}
-
-	// Find the specific volume
-	for _, volume := range dfData.Volumes {
-		if volume.Name == volumeName {
-			// Convert bytes to MB
-			return float64(volume.UsageData.Size) / (1024 * 1024), nil
-		}
-	}
-
-	return 0, fmt.Errorf("volume %s not found", volumeName)
-}
-
 // Get all volume sizes in a single API call
 func (dm *dockerManager) getAllVolumeSizes() (map[string]float64, error) {
-	resp, err := dm.client.Get("http://localhost/system/df")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, "GET", "http://localhost/system/df", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := dm.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -340,7 +357,7 @@ func (dm *dockerManager) getAllVolumeSizes() (map[string]float64, error) {
 		return nil, err
 	}
 
-	volumeSizes := make(map[string]float64)
+	volumeSizes := make(map[string]float64, len(dfData.Volumes))
 	for _, volume := range dfData.Volumes {
 		// Convert bytes to MB
 		volumeSizes[volume.Name] = float64(volume.UsageData.Size) / (1024 * 1024)
@@ -351,51 +368,30 @@ func (dm *dockerManager) getAllVolumeSizes() (map[string]float64, error) {
 
 // Creates a new http client for Docker or Podman API
 func newDockerManager(a *Agent) *dockerManager {
-	dockerHost, exists := GetEnv("DOCKER_HOST")
-	if exists {
-		slog.Info("DOCKER_HOST", "host", dockerHost)
-		// return nil if set to empty string
-		if dockerHost == "" {
-			return nil
-		}
-	} else {
-		dockerHost = getDockerHost()
-	}
-
-	parsedURL, err := url.Parse(dockerHost)
-	if err != nil {
-		slog.Error("Error parsing DOCKER_HOST", "err", err)
-		os.Exit(1)
-	}
+	// Since agent runs on the same machine as Docker, use localhost
+	dockerHost := getDockerHost()
 
 	transport := &http.Transport{
 		DisableCompression: true,
-		MaxConnsPerHost:    0,
+		MaxConnsPerHost:    100, // Increased connection pool
+		MaxIdleConns:       50,  // Keep more idle connections
+		IdleConnTimeout:    90 * time.Second,
 	}
 
-	switch parsedURL.Scheme {
-	case "unix":
-		transport.DialContext = func(ctx context.Context, proto, addr string) (net.Conn, error) {
-			return (&net.Dialer{}).DialContext(ctx, "unix", parsedURL.Path)
-		}
-	case "tcp", "http", "https":
-		transport.DialContext = func(ctx context.Context, proto, addr string) (net.Conn, error) {
-			return (&net.Dialer{}).DialContext(ctx, "tcp", parsedURL.Host)
-		}
-	default:
-		slog.Error("Invalid DOCKER_HOST", "scheme", parsedURL.Scheme)
-		os.Exit(1)
+	// Always use Unix socket for local Docker/Podman
+	transport.DialContext = func(ctx context.Context, proto, addr string) (net.Conn, error) {
+		return (&net.Dialer{}).DialContext(ctx, "unix", dockerHost[7:]) // Remove "unix://" prefix
 	}
 
 	// configurable timeout
 	timeout := time.Millisecond * 2100
 	if t, set := GetEnv("DOCKER_TIMEOUT"); set {
-		timeout, err = time.ParseDuration(t)
-		if err != nil {
-			slog.Error(err.Error())
-			os.Exit(1)
+		if parsedTimeout, err := time.ParseDuration(t); err == nil {
+			timeout = parsedTimeout
+			slog.Info("DOCKER_TIMEOUT", "timeout", timeout)
+		} else {
+			slog.Error("Invalid DOCKER_TIMEOUT", "error", err)
 		}
-		slog.Info("DOCKER_TIMEOUT", "timeout", timeout)
 	}
 
 	// Custom user-agent to avoid docker bug: https://github.com/docker/for-mac/issues/7575

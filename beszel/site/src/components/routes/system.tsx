@@ -29,7 +29,7 @@ import {
 	listen,
 	toFixedFloat,
 	useLocalStorage,
-	generateStackBasedColors,
+	generateContainerColors,
 } from "@/lib/utils"
 import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
@@ -407,16 +407,10 @@ function ContainerFilterBar({ containerData, containerColors, isVolumeChart = fa
 							<label className="text-xs text-muted-foreground mb-1 block">{t`Stacks`}</label>
 							<MultiSelectDropdown
 								options={[
-									{ value: "all", label: t`All Stacks`, color: undefined },
+									{ value: "all", label: t`All Stacks` },
 									...filteredStacks.map(stackName => ({
 										value: stackName,
-										label: stackName,
-										color: (() => {
-											const firstContainerInStack = containerStackData.containers.find(container => 
-												container.stack === stackName
-											)
-											return firstContainerInStack ? firstContainerInStack.color : `hsl(${Math.random() * 360}, 60%, 55%)`
-										})()
+										label: stackName
 									}))
 								]}
 								selectedValues={stackFilter.length === 0 ? ["all"] : stackFilter}
@@ -556,31 +550,30 @@ export default function SystemDetail({ name }: { name: string }) {
 	const makeContainerData = useCallback((containers: ContainerStatsRecord[]) => {
 		const containerData = [] as ChartData["containerData"]
 		
-		// Extract all unique containers with their project information
-		const allContainers = new Map<string, any>()
-		for (let { stats } of containers) {
-			for (let container of stats) {
-				allContainers.set(container.n, container)
-			}
-		}
-		
-		// Generate stack-based colors for all containers
-		if (allContainers.size > 0) {
-			const colorMap = generateStackBasedColors(Array.from(allContainers.values()))
+		// Gather all unique container names
+		const allContainerNames = Array.from(new Set(containers.flatMap(
+			record => (record && record.stats) ? record.stats.map(c => c.n) : []
+		)));
+
+		// Generate consistent colors for all containers by name
+		if (allContainerNames.length > 0) {
+			const colorMap = generateContainerColors(allContainerNames)
 			$containerColors.set(colorMap)
 		}
 		
-		for (let { created, stats } of containers) {
-			if (!created) {
+		for (let containerRecord of containers) {
+			if (!containerRecord || !containerRecord.created) {
 				// @ts-ignore add null value for gaps
 				containerData.push({ created: null })
 				continue
 			}
-			created = new Date(created).getTime()
+			const created = new Date(containerRecord.created).getTime()
 			// @ts-ignore not dealing with this rn
 			let containerStats: ChartData["containerData"][0] = { created }
-			for (let container of stats) {
-				containerStats[container.n] = container
+			if (containerRecord.stats) {
+				for (let container of containerRecord.stats) {
+					containerStats[container.n] = container
+				}
 			}
 			containerData.push(containerStats)
 		}
