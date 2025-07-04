@@ -73,22 +73,54 @@ const (
 	Freebsd
 )
 
+type DiskInfo struct {
+	Name   string `json:"n"`
+	Model  string `json:"m,omitempty"`
+	Vendor string `json:"v,omitempty"`
+}
+
+type NetworkInfo struct {
+	Name   string `json:"n"`
+	Vendor string `json:"v,omitempty"`
+	Model  string `json:"m,omitempty"`
+	Speed  string `json:"s,omitempty"`
+}
+
+type MemoryInfo struct {
+	Total string `json:"t,omitempty"`
+}
+
+type CpuInfo struct {
+	Model    string `json:"m"`
+	SpeedGHz string `json:"s"`
+	Arch     string `json:"a"`
+	Cores    int    `json:"c"`
+	Threads  int    `json:"t"`
+}
+
+type OsInfo struct {
+	Family  string `json:"f"`
+	Version string `json:"v"`
+	Kernel  string `json:"k"`
+}
+
 type Info struct {
-	Hostname      string  `json:"h"`
-	KernelVersion string  `json:"k,omitempty"`
-	Cores         int     `json:"c"`
-	Threads       int     `json:"t,omitempty"`
-	CpuModel      string  `json:"m"`
-	Uptime        uint64  `json:"u"`
-	Cpu           float64 `json:"cpu"`
-	MemPct        float64 `json:"mp"`
-	DiskPct       float64 `json:"dp"`
-	Bandwidth     float64 `json:"b"`
-	AgentVersion  string  `json:"v"`
-	Podman        bool    `json:"p,omitempty"`
-	GpuPct        float64 `json:"g,omitempty"`
-	DashboardTemp float64 `json:"dt,omitempty"`
-	Os            Os      `json:"os"`
+	Hostname      string        `json:"h"`
+	KernelVersion string        `json:"k,omitempty"`
+	Uptime        uint64        `json:"u"`
+	Cpu           float64       `json:"cpu"`
+	MemPct        float64       `json:"mp"`
+	DiskPct       float64       `json:"dp"`
+	Bandwidth     float64       `json:"b"`
+	AgentVersion  string        `json:"v"`
+	GpuPct        float64       `json:"g,omitempty"`
+	DashboardTemp float64       `json:"dt,omitempty"`
+	Podman        bool          `json:"podman,omitempty"`
+	Disks         []DiskInfo    `json:"d,omitempty"`
+	Networks      []NetworkInfo `json:"n,omitempty"`
+	Memory        []MemoryInfo  `json:"m,omitempty"`
+	Cpus          []CpuInfo     `json:"c,omitempty"`
+	Oses          []OsInfo      `json:"o,omitempty"`
 }
 
 // Final data structure to return to the hub
