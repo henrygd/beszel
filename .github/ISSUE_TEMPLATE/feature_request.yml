@@ -47,9 +47,10 @@ body:
       label: Area
       description: Which area is this request for?
       options:
-        - Data Collection
+        - Metrics
         - Settings
         - Charts
+        - Notifications
         - Other
     validations:
       required: true

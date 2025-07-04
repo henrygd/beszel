@@ -14,7 +14,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const areaLabels = ['Collection', 'Charts', 'Settings', 'Other'];
+            const areaLabels = ['Metrics', 'Charts', 'Settings', 'Notifications', 'Other'];
             const componentLabels = ['CPU', 'GPU', 'Memory', 'Docker', 'Network', 'Other'];
 
             const issueNumber = context.issue.number;

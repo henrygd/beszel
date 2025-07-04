@@ -60,9 +60,10 @@ body:
       label: Area
       description: Which area is this report for?
       options:
-        - Data Collection
+        - Metrics
         - Charts
         - Settings
+        - Notifications
         - Other
     validations:
       required: true
