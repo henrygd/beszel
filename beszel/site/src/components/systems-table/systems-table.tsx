@@ -65,7 +65,7 @@ import {
 import { memo, useEffect, useMemo, useRef, useState } from "react"
 import { $systems, pb } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
-import { cn, copyToClipboard, decimalString, isReadOnlyUser, useLocalStorage } from "@/lib/utils"
+import { cn, copyToClipboard, decimalString, isReadOnlyUser, useLocalStorage, formatSpeed } from "@/lib/utils"
 import AlertsButton from "../alerts/alert-button"
 import { $router, Link, navigate } from "../router"
 import { EthernetIcon, GpuIcon, ThermometerIcon } from "../ui/icons"
@@ -218,22 +218,31 @@ export default function SystemsTable() {
 				header: sortableHeader,
 			},
 			{
-				accessorFn: (originalRow) => originalRow.info.b || 0,
+				accessorFn: () => undefined, // not used for sorting anymore
 				id: "net",
 				name: () => t`Net`,
 				invertSorting: true,
 				size: 50,
 				Icon: EthernetIcon,
 				header: sortableHeader,
+				sortDescFirst: true,
+				sortingFn: (rowA, rowB) => {
+					const a = (rowA.original.info.ns || 0) + (rowA.original.info.nr || 0)
+					const b = (rowB.original.info.ns || 0) + (rowB.original.info.nr || 0)
+					return a - b
+				},
 				cell(info) {
-					const val = info.getValue() as number
+					const system = info.row.original
+					const sent = system.info.ns || 0
+					const received = system.info.nr || 0
 					return (
 						<span
 							className={cn("tabular-nums whitespace-nowrap", {
 								"ps-1": viewMode === "table",
 							})}
 						>
-							{decimalString(val, val >= 100 ? 1 : 2)} MB/s
+							<span className="text-green-600">↑</span> {formatSpeed(sent)}{' '}
+							<span className="text-blue-600">↓</span> {formatSpeed(received)}
 						</span>
 					)
 				},

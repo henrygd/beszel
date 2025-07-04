@@ -51,6 +51,21 @@ export interface SystemInfo {
 	dt?: number
 	/** operating system */
 	os?: Os
+	/** network sent (mb) */
+	ns?: number
+	/** network received (mb) */
+	nr?: number
+}
+
+export interface NetworkInterfaceStats {
+	/** network sent (mb) */
+	ns: number
+	/** network received (mb) */
+	nr: number
+	/** max network sent (mb) */
+	nsm?: number
+	/** max network received (mb) */
+	nrm?: number
 }
 
 export interface SystemStats {
@@ -94,6 +109,8 @@ export interface SystemStats {
 	nsm?: number
 	/** max network received (mb) */
 	nrm?: number
+	/** per-interface network stats */
+	ni?: Record<string, NetworkInterfaceStats>
 	/** temperatures */
 	t?: Record<string, number>
 	/** extra filesystems */
