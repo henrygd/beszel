@@ -237,6 +237,17 @@ func (a *Agent) getSystemStats() system.Stats {
 			}
 		}
 	}
+	if a.smartManager != nil {
+		if smartData := a.smartManager.GetCurrentData(); len(smartData) > 0 {
+			systemStats.SmartData = smartData
+			if systemStats.Temperatures == nil {
+				systemStats.Temperatures = make(map[string]float64, len(a.smartManager.SmartDataMap))
+			}
+			for key, value := range a.smartManager.SmartDataMap {
+				systemStats.Temperatures[key] = float64(value.Temperature)
+			}
+		}
+	}
 
 	// update base system info
 	a.systemInfo.Cpu = systemStats.Cpu
