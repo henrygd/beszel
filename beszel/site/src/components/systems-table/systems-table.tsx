@@ -67,7 +67,7 @@ import {
 import { memo, useEffect, useMemo, useRef, useState } from "react"
 import { $systems, pb } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
-import { cn, copyToClipboard, decimalString, isReadOnlyUser, useLocalStorage } from "@/lib/utils"
+import { cn, copyToClipboard, decimalString, isReadOnlyUser, useLocalStorage, formatUptimeString } from "@/lib/utils"
 import AlertsButton from "../alerts/alert-button"
 import { $router, Link, navigate } from "../router"
 import { EthernetIcon, GpuIcon, ThermometerIcon } from "../ui/icons"
@@ -285,29 +285,9 @@ export default function SystemsTable() {
 				Icon: ClockIcon,
 				header: sortableHeader,
 				cell(info) {
-					// Always show uptime for all systems
 					const uptime = info.getValue() as number
-					if (!uptime) {
-						return null
-					}
-					let uptimeDisplay: React.ReactNode
-					if (uptime < 3600) {
-						uptimeDisplay = <Plural value={Math.trunc(uptime / 60)} one="# minute" other="# minutes" />
-					} else if (uptime < 172800) {
-						const hours = Math.trunc(uptime / 3600)
-						uptimeDisplay = <Plural value={hours} one="# hour" other="# hours" />
-					} else {
-						uptimeDisplay = <Plural value={Math.trunc(uptime / 86400)} one="# day" other="# days" />
-					}
-					return (
-						<span
-							className={cn("tabular-nums whitespace-nowrap", {
-								"ps-1": viewMode === "table",
-							})}
-						>
-							{uptimeDisplay}
-						</span>
-					)
+					if (!uptime) return null
+					return <span>{formatUptimeString(uptime)}</span>
 				},
 			},
 			{
@@ -328,9 +308,12 @@ export default function SystemsTable() {
 					const lastSeenTime = new Date(system.updated).getTime();
 					const diff = Math.max(0, Math.floor((now - lastSeenTime) / 1000)); // in seconds
 					let display: React.ReactNode;
-					if (diff < 60) {
+					if (system.status !== "up") {
+						// Always show absolute time for offline systems
 						const d = new Date(system.updated);
 						display = d.toLocaleString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+					} else if (diff < 60) {
+						display = t`Just now`;
 					} else if (diff < 3600) {
 						const mins = Math.trunc(diff / 60);
 						display = <Plural value={mins} one="# minute ago" other="# minutes ago" />;
