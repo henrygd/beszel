@@ -8,7 +8,6 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
-	"net/url"
 	"os"
 	"strings"
 	"sync"
@@ -27,6 +26,7 @@ type dockerManager struct {
 	validIds            map[string]struct{}         // Map of valid container ids, used to prune invalid containers from containerStatsMap
 	goodDockerVersion   bool                        // Whether docker version is at least 25.0.0 (one-shot works correctly)
 	isWindows           bool                        // Whether the Docker Engine API is running on Windows
+	excludePatterns     []string                    // Container name patterns to exclude from monitoring
 }
 
 // userAgentRoundTripper is a custom http.RoundTripper that adds a User-Agent header to all requests
@@ -57,167 +57,268 @@ func (d *dockerManager) dequeue() {
 	}
 }
 
-// Returns stats for all running containers
-func (dm *dockerManager) getDockerStats() ([]*container.Stats, error) {
-	resp, err := dm.client.Get("http://localhost/containers/json")
+// shouldExcludeContainer checks if a container should be excluded based on name patterns
+func (dm *dockerManager) shouldExcludeContainer(name string) bool {
+	for _, pattern := range dm.excludePatterns {
+		if strings.Contains(name, pattern) {
+			return true
+		}
+	}
+	return false
+}
+
+
+
+// Returns stats for all running containers and volume-to-container mapping
+func (dm *dockerManager) getDockerStats() ([]*container.Stats, map[string][]string, error) {
+	// Use context with timeout for the entire operation
+	ctx, cancel := context.WithTimeout(context.Background(), dm.client.Timeout)
+	defer cancel()
+
+	// Create request with context
+	req, err := http.NewRequestWithContext(ctx, "GET", "http://localhost/containers/json?all=1", nil)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
+	}
+
+	resp, err := dm.client.Do(req)
+	if err != nil {
+		return nil, nil, err
 	}
 	defer resp.Body.Close()
 
-	dm.apiContainerList = dm.apiContainerList[:0]
-	if err := json.NewDecoder(resp.Body).Decode(&dm.apiContainerList); err != nil {
-		return nil, err
+	var apiContainers []*container.ApiInfo
+	if err := json.NewDecoder(resp.Body).Decode(&apiContainers); err != nil {
+		return nil, nil, err
 	}
 
-	dm.isWindows = strings.Contains(resp.Header.Get("Server"), "windows")
+	// Get all volume sizes and names in one call (includes all volumes, not just those attached to containers)
+	volumeSizes, _ := dm.getAllVolumeSizes()
 
-	containersLength := len(dm.apiContainerList)
-
-	// store valid ids to clean up old container ids from map
-	if dm.validIds == nil {
-		dm.validIds = make(map[string]struct{}, containersLength)
-	} else {
-		clear(dm.validIds)
-	}
-
-	var failedContainers []*container.ApiInfo
-
-	for _, ctr := range dm.apiContainerList {
+	// Build volume-to-container mapping for all containers (running and stopped)
+	volumeContainers := make(map[string][]string, len(apiContainers))
+	for _, ctr := range apiContainers {
 		ctr.IdShort = ctr.Id[:12]
-		dm.validIds[ctr.IdShort] = struct{}{}
-		// check if container is less than 1 minute old (possible restart)
-		// note: can't use Created field because it's not updated on restart
-		if strings.Contains(ctr.Status, "second") {
-			// if so, remove old container data
-			dm.deleteContainerStatsSync(ctr.IdShort)
-		}
-		dm.queue()
-		go func() {
-			defer dm.dequeue()
-			err := dm.updateContainerStats(ctr)
-			// if error, delete from map and add to failed list to retry
-			if err != nil {
-				dm.containerStatsMutex.Lock()
-				delete(dm.containerStatsMap, ctr.IdShort)
-				failedContainers = append(failedContainers, ctr)
-				dm.containerStatsMutex.Unlock()
+		name := ctr.Names[0][1:]
+		for _, mount := range ctr.Mounts {
+			if mount.Type == "volume" && mount.Name != "" {
+				volumeContainers[mount.Name] = append(volumeContainers[mount.Name], name)
 			}
-		}()
-	}
-
-	dm.wg.Wait()
-
-	// retry failed containers separately so we can run them in parallel (docker 24 bug)
-	if len(failedContainers) > 0 {
-		slog.Debug("Retrying failed containers", "count", len(failedContainers))
-		for _, ctr := range failedContainers {
-			dm.queue()
-			go func() {
-				defer dm.dequeue()
-				err = dm.updateContainerStats(ctr)
-				if err != nil {
-					slog.Error("Error getting container stats", "err", err)
-				}
-			}()
 		}
-		dm.wg.Wait()
 	}
 
-	// populate final stats and remove old / invalid container stats
-	stats := make([]*container.Stats, 0, containersLength)
-	for id, v := range dm.containerStatsMap {
-		if _, exists := dm.validIds[id]; !exists {
-			delete(dm.containerStatsMap, id)
+	// Filter out excluded containers
+	filteredContainers := make([]*container.ApiInfo, 0, len(apiContainers))
+	for _, ctr := range apiContainers {
+		name := ctr.Names[0][1:]
+		if !dm.shouldExcludeContainer(name) {
+			filteredContainers = append(filteredContainers, ctr)
 		} else {
-			stats = append(stats, v)
+			slog.Debug("Excluding container from monitoring", "name", name)
 		}
+	}
+
+	type result struct {
+		id    string
+		stats *container.Stats
+		err   error
+	}
+	results := make(chan result, len(filteredContainers))
+
+	// Use adaptive concurrency based on container count
+	concurrency := 5
+	if len(filteredContainers) < concurrency {
+		concurrency = len(filteredContainers)
+	}
+	sem := make(chan struct{}, concurrency)
+
+	var wg sync.WaitGroup
+	for _, ctr := range filteredContainers {
+		wg.Add(1)
+		go func(ctr *container.ApiInfo) {
+			defer wg.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
+			stats, err := dm.collectContainerStats(ctr, volumeSizes)
+			results <- result{id: ctr.IdShort, stats: stats, err: err}
+		}(ctr)
+	}
+	wg.Wait()
+	close(results)
+
+	statsList := make([]*container.Stats, 0, len(filteredContainers))
+	for res := range results {
+		if res.err == nil && res.stats != nil {
+			statsList = append(statsList, res.stats)
+		}
+	}
+
+	return statsList, volumeContainers, nil
+}
+
+// Collect stats for a single container
+func (dm *dockerManager) collectContainerStats(ctr *container.ApiInfo, volumeSizes map[string]float64) (*container.Stats, error) {
+	name := ctr.Names[0][1:]
+	stats := &container.Stats{Name: name}
+
+	// Set the short ID for the frontend
+	stats.IdShort = ctr.IdShort
+
+	// Use container data from the list when possible to reduce API calls
+	stats.Status = ctr.State
+	if stats.Status == "" {
+		stats.Status = "unknown"
+	}
+
+	// Only fetch /json if we need additional details not available in the list
+	needJsonCall := ctr.StartedAt == 0 || ctr.Health == "" || ctr.FinishedAt == 0
+	if needJsonCall {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+		defer cancel()
+
+		req, err := http.NewRequestWithContext(ctx, "GET", "http://localhost/containers/"+ctr.IdShort+"/json", nil)
+		if err == nil {
+			detailResp, err := dm.client.Do(req)
+			if err == nil {
+				defer detailResp.Body.Close()
+				var detail struct {
+					State struct {
+						Status     string                  `json:"Status"`
+						StartedAt  string                  `json:"StartedAt"`
+						FinishedAt string                  `json:"FinishedAt"`
+						Health     struct{ Status string } `json:"Health"`
+					} `json:"State"`
+				}
+				if err := json.NewDecoder(detailResp.Body).Decode(&detail); err == nil {
+					stats.Status = detail.State.Status // canonical state: running, exited, etc.
+					if detail.State.Health.Status != "" {
+						stats.Health = detail.State.Health.Status
+					} else {
+						stats.Health = "none"
+					}
+					if detail.State.StartedAt != "" && ctr.StartedAt == 0 {
+						if t, err := time.Parse(time.RFC3339Nano, detail.State.StartedAt); err == nil {
+							ctr.StartedAt = t.Unix()
+						}
+					}
+					// Parse FinishedAt for stopped containers
+					if detail.State.FinishedAt != "" {
+						if t, err := time.Parse(time.RFC3339Nano, detail.State.FinishedAt); err == nil {
+							ctr.FinishedAt = t.Unix()
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if stats.Health == "" {
+		stats.Health = "none"
+		if ctr.Health != "" {
+			stats.Health = ctr.Health
+		}
+	}
+
+	if ctr.Labels != nil {
+		if projectName, exists := ctr.Labels["com.docker.compose.project"]; exists {
+			stats.Project = projectName
+		}
+	}
+
+	// Pre-allocate volumes map with known size
+	volumeCount := 0
+	for _, mount := range ctr.Mounts {
+		if mount.Type == "volume" && mount.Name != "" {
+			volumeCount++
+		}
+	}
+	stats.Volumes = make(map[string]float64, volumeCount)
+
+	for _, mount := range ctr.Mounts {
+		if mount.Type == "volume" && mount.Name != "" {
+			stats.Volumes[mount.Name] = volumeSizes[mount.Name]
+		}
+	}
+
+	isRunning := stats.Status == "running"
+
+	// If running, fetch /stats
+	if isRunning {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+		defer cancel()
+
+		req, err := http.NewRequestWithContext(ctx, "GET", "http://localhost/containers/"+ctr.IdShort+"/stats?stream=0&one-shot=1", nil)
+		if err != nil {
+			return nil, err
+		}
+
+		resp, err := dm.client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		defer resp.Body.Close()
+
+		var res container.ApiStats
+		if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
+			return nil, err
+		}
+		var usedMemory uint64
+		var cpuPct float64
+		if dm.isWindows {
+			usedMemory = res.MemoryStats.PrivateWorkingSet
+			cpuPct = res.CalculateCpuPercentWindows(stats.PrevCpu[0], stats.PrevRead)
+		} else {
+			if res.MemoryStats.Usage == 0 {
+				return nil, fmt.Errorf("%s - no memory stats", name)
+			}
+			memCache := res.MemoryStats.Stats.InactiveFile
+			if memCache == 0 {
+				memCache = res.MemoryStats.Stats.Cache
+			}
+			usedMemory = res.MemoryStats.Usage - memCache
+			cpuPct = res.CalculateCpuPercentLinux(stats.PrevCpu)
+		}
+		if cpuPct > 100 {
+			return nil, fmt.Errorf("%s cpu pct greater than 100: %+v", name, cpuPct)
+		}
+		stats.PrevCpu = [2]uint64{res.CPUStats.CPUUsage.TotalUsage, res.CPUStats.SystemUsage}
+		var total_sent, total_recv uint64
+		for _, v := range res.Networks {
+			total_sent += v.TxBytes
+			total_recv += v.RxBytes
+		}
+		var sent_delta, recv_delta float64
+		if stats.PrevRead.IsZero() {
+			sent_delta = 0
+			recv_delta = 0
+		} else {
+			secondsElapsed := time.Since(stats.PrevRead).Seconds()
+			sent_delta = float64(total_sent-stats.PrevNet.Sent) / secondsElapsed
+			recv_delta = float64(total_recv-stats.PrevNet.Recv) / secondsElapsed
+		}
+		stats.PrevNet.Sent = total_sent
+		stats.PrevNet.Recv = total_recv
+		stats.Cpu = twoDecimals(cpuPct)
+		stats.Mem = bytesToMegabytes(float64(usedMemory))
+		stats.NetworkSent = bytesToMegabytes(sent_delta)
+		stats.NetworkRecv = bytesToMegabytes(recv_delta)
+		stats.PrevRead = res.Read
+	}
+
+	// Uptime calculation
+	if ctr.StartedAt > 0 && isRunning {
+		startedTime := time.Unix(ctr.StartedAt, 0)
+		stats.Uptime = twoDecimals(time.Since(startedTime).Seconds())
+	}
+
+	if !isRunning {
+		stats.Cpu = 0
+		stats.Mem = 0
+		stats.NetworkSent = 0
+		stats.NetworkRecv = 0
 	}
 
 	return stats, nil
-}
-
-// Updates stats for individual container
-func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo) error {
-	name := ctr.Names[0][1:]
-
-	resp, err := dm.client.Get("http://localhost/containers/" + ctr.IdShort + "/stats?stream=0&one-shot=1")
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	dm.containerStatsMutex.Lock()
-	defer dm.containerStatsMutex.Unlock()
-
-	// add empty values if they doesn't exist in map
-	stats, initialized := dm.containerStatsMap[ctr.IdShort]
-	if !initialized {
-		stats = &container.Stats{Name: name}
-		dm.containerStatsMap[ctr.IdShort] = stats
-	}
-
-	// reset current stats
-	stats.Cpu = 0
-	stats.Mem = 0
-	stats.NetworkSent = 0
-	stats.NetworkRecv = 0
-
-	// docker host container stats response
-	var res container.ApiStats
-	if err := json.NewDecoder(resp.Body).Decode(&res); err != nil {
-		return err
-	}
-
-	// calculate cpu and memory stats
-	var usedMemory uint64
-	var cpuPct float64
-
-	if dm.isWindows {
-		usedMemory = res.MemoryStats.PrivateWorkingSet
-		cpuPct = res.CalculateCpuPercentWindows(stats.PrevCpu[0], stats.PrevRead)
-	} else {
-		// check if container has valid data, otherwise may be in restart loop (#103)
-		if res.MemoryStats.Usage == 0 {
-			return fmt.Errorf("%s - no memory stats - see https://github.com/henrygd/beszel/issues/144", name)
-		}
-		memCache := res.MemoryStats.Stats.InactiveFile
-		if memCache == 0 {
-			memCache = res.MemoryStats.Stats.Cache
-		}
-		usedMemory = res.MemoryStats.Usage - memCache
-
-		cpuPct = res.CalculateCpuPercentLinux(stats.PrevCpu)
-	}
-
-	if cpuPct > 100 {
-		return fmt.Errorf("%s cpu pct greater than 100: %+v", name, cpuPct)
-	}
-	stats.PrevCpu = [2]uint64{res.CPUStats.CPUUsage.TotalUsage, res.CPUStats.SystemUsage}
-
-	// network
-	var total_sent, total_recv uint64
-	for _, v := range res.Networks {
-		total_sent += v.TxBytes
-		total_recv += v.RxBytes
-	}
-	var sent_delta, recv_delta float64
-	// prevent first run from sending all prev sent/recv bytes
-	if initialized {
-		secondsElapsed := time.Since(stats.PrevRead).Seconds()
-		sent_delta = float64(total_sent-stats.PrevNet.Sent) / secondsElapsed
-		recv_delta = float64(total_recv-stats.PrevNet.Recv) / secondsElapsed
-	}
-	stats.PrevNet.Sent = total_sent
-	stats.PrevNet.Recv = total_recv
-
-	stats.Cpu = twoDecimals(cpuPct)
-	stats.Mem = bytesToMegabytes(float64(usedMemory))
-	stats.NetworkSent = bytesToMegabytes(sent_delta)
-	stats.NetworkRecv = bytesToMegabytes(recv_delta)
-	stats.PrevRead = res.Read
-
-	return nil
 }
 
 // Delete container stats from map using mutex
@@ -227,53 +328,70 @@ func (dm *dockerManager) deleteContainerStatsSync(id string) {
 	delete(dm.containerStatsMap, id)
 }
 
-// Creates a new http client for Docker or Podman API
-func newDockerManager(a *Agent) *dockerManager {
-	dockerHost, exists := GetEnv("DOCKER_HOST")
-	if exists {
-		slog.Info("DOCKER_HOST", "host", dockerHost)
-		// return nil if set to empty string
-		if dockerHost == "" {
-			return nil
-		}
-	} else {
-		dockerHost = getDockerHost()
+// Get all volume sizes in a single API call
+func (dm *dockerManager) getAllVolumeSizes() (map[string]float64, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, "GET", "http://localhost/system/df", nil)
+	if err != nil {
+		return nil, err
 	}
 
-	parsedURL, err := url.Parse(dockerHost)
+	resp, err := dm.client.Do(req)
 	if err != nil {
-		slog.Error("Error parsing DOCKER_HOST", "err", err)
-		os.Exit(1)
+		return nil, err
 	}
+	defer resp.Body.Close()
+
+	var dfData struct {
+		Volumes []struct {
+			Name      string `json:"Name"`
+			UsageData struct {
+				Size int64 `json:"Size"`
+			} `json:"UsageData"`
+		} `json:"Volumes"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&dfData); err != nil {
+		return nil, err
+	}
+
+	volumeSizes := make(map[string]float64, len(dfData.Volumes))
+	for _, volume := range dfData.Volumes {
+		// Convert bytes to MB
+		volumeSizes[volume.Name] = float64(volume.UsageData.Size) / (1024 * 1024)
+	}
+
+	return volumeSizes, nil
+}
+
+// Creates a new http client for Docker or Podman API
+func newDockerManager(a *Agent) *dockerManager {
+	// Since agent runs on the same machine as Docker, use localhost
+	dockerHost := getDockerHost()
 
 	transport := &http.Transport{
 		DisableCompression: true,
-		MaxConnsPerHost:    0,
+		MaxConnsPerHost:    100, // Increased connection pool
+		MaxIdleConns:       50,  // Keep more idle connections
+		IdleConnTimeout:    90 * time.Second,
 	}
 
-	switch parsedURL.Scheme {
-	case "unix":
-		transport.DialContext = func(ctx context.Context, proto, addr string) (net.Conn, error) {
-			return (&net.Dialer{}).DialContext(ctx, "unix", parsedURL.Path)
-		}
-	case "tcp", "http", "https":
-		transport.DialContext = func(ctx context.Context, proto, addr string) (net.Conn, error) {
-			return (&net.Dialer{}).DialContext(ctx, "tcp", parsedURL.Host)
-		}
-	default:
-		slog.Error("Invalid DOCKER_HOST", "scheme", parsedURL.Scheme)
-		os.Exit(1)
+	// Always use Unix socket for local Docker/Podman
+	transport.DialContext = func(ctx context.Context, proto, addr string) (net.Conn, error) {
+		return (&net.Dialer{}).DialContext(ctx, "unix", dockerHost[7:]) // Remove "unix://" prefix
 	}
 
 	// configurable timeout
 	timeout := time.Millisecond * 2100
 	if t, set := GetEnv("DOCKER_TIMEOUT"); set {
-		timeout, err = time.ParseDuration(t)
-		if err != nil {
-			slog.Error(err.Error())
-			os.Exit(1)
+		if parsedTimeout, err := time.ParseDuration(t); err == nil {
+			timeout = parsedTimeout
+			slog.Info("DOCKER_TIMEOUT", "timeout", timeout)
+		} else {
+			slog.Error("Invalid DOCKER_TIMEOUT", "error", err)
 		}
-		slog.Info("DOCKER_TIMEOUT", "timeout", timeout)
 	}
 
 	// Custom user-agent to avoid docker bug: https://github.com/docker/for-mac/issues/7575
@@ -290,6 +408,20 @@ func newDockerManager(a *Agent) *dockerManager {
 		containerStatsMap: make(map[string]*container.Stats),
 		sem:               make(chan struct{}, 5),
 		apiContainerList:  []*container.ApiInfo{},
+	}
+
+	// Load container exclusion patterns from environment
+	if excludePatterns, exists := GetEnv("CONTAINER_EXCLUDE"); exists && excludePatterns != "" {
+		patterns := strings.Split(excludePatterns, ",")
+		for _, pattern := range patterns {
+			pattern = strings.TrimSpace(pattern)
+			if pattern != "" {
+				manager.excludePatterns = append(manager.excludePatterns, pattern)
+			}
+		}
+		if len(manager.excludePatterns) > 0 {
+			slog.Info("Container exclusion patterns loaded", "patterns", manager.excludePatterns)
+		}
 	}
 
 	// If using podman, return client

@@ -229,8 +229,9 @@ export function useYAxisWidth() {
 	return { yAxisWidth, updateYAxisWidth }
 }
 
-export function toFixedWithoutTrailingZeros(num: number, digits: number) {
-	return parseFloat(num.toFixed(digits)).toString()
+export function toFixedWithoutTrailingZeros(num: number, decimals: number): string {
+	const str = num.toFixed(decimals)
+	return str.replace(/\.?0+$/, "")
 }
 
 export function toFixedFloat(num: number, digits: number) {
@@ -306,6 +307,28 @@ export const getSizeAndUnit = (n: number, isGigabytes = true) => {
 
 export const chartMargin = { top: 12 }
 
+/**
+ * Generate a consistent fallback color for containers without assigned colors
+ * @param name Container name or identifier
+ * @returns HSL color string
+ */
+export function generateFallbackColor(name: string): string {
+	// Use a simple hash of the name to generate consistent colors
+	let hash = 0
+	for (let i = 0; i < name.length; i++) {
+		const char = name.charCodeAt(i)
+		hash = ((hash << 5) - hash) + char
+		hash = hash & hash // Convert to 32-bit integer
+	}
+	
+	// Generate hue, saturation, and lightness from the hash
+	const hue = Math.abs(hash) % 360
+	const saturation = 65 + (Math.abs(hash) % 3) * 10 // 65%, 75%, 85%
+	const lightness = 50 + (Math.abs(hash) % 3) * 10  // 50%, 60%, 70%
+	
+	return `hsl(${hue}, ${saturation}%, ${lightness}%)`
+}
+
 export const alertInfo: Record<string, AlertInfo> = {
 	Status: {
 		name: () => t`Status`,
@@ -355,3 +378,19 @@ export const alertInfo: Record<string, AlertInfo> = {
  * const hostname = getHostDisplayValue(system) // hostname will be "beszel.sock"
  */
 export const getHostDisplayValue = (system: SystemRecord): string => system.host.slice(system.host.lastIndexOf("/") + 1)
+
+/**
+ * Generate consistent colors for containers based on their names.
+ * @param containerNames Array of container names
+ * @returns Record mapping container names to HSL colors
+ */
+export function generateContainerColors(containerNames: string[]): Record<string, string> {
+	const sortedNames = [...containerNames].sort();
+	const colorMap: Record<string, string> = {};
+	for (let i = 0; i < sortedNames.length; i++) {
+		const name = sortedNames[i];
+		const hue = ((i * 360) / sortedNames.length) % 360;
+		colorMap[name] = `hsl(${hue}, 60%, 55%)`;
+	}
+	return colorMap;
+}
