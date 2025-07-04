@@ -10,10 +10,10 @@ import (
 type Stats struct {
 	Cpu            float64             `json:"cpu"`
 	MaxCpu         float64             `json:"cpum,omitempty"`
-	CpuUser        float64             `json:"cpuu,omitempty"`
-	CpuSystem      float64             `json:"cpus,omitempty"`
-	CpuIowait      float64             `json:"cpui,omitempty"`
-	CpuSteal       float64             `json:"cpusl,omitempty"`
+	CpuUser        float64             `json:"cpuu"`
+	CpuSystem      float64             `json:"cpus"`
+	CpuIowait      float64             `json:"cpui"`
+	CpuSteal       float64             `json:"cpusl"`
 	Mem            float64             `json:"m"`
 	MemUsed        float64             `json:"mu"`
 	MemPct         float64             `json:"mp"`
