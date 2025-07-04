@@ -19,17 +19,17 @@ export interface SystemRecord extends RecordModel {
 }
 
 export interface CpuInfo {
-	model: string
-	speed: string
-	arch: string
-	cores: number
-	threads: number
+	m: string
+	s: string
+	a: string
+	c: number
+	t: number
 }
 
 export interface OsInfo {
-	family: string
-	version: string
-	kernel: string
+	f: string
+	v: string
+	k: string
 }
 
 export interface systemInfo {
@@ -56,19 +56,19 @@ export interface systemInfo {
 	/** dashboard display temperature */
 	dt?: number
 	/** disks info (array of block devices with model/vendor/serial) */
-	disks?: { name: string; model?: string; vendor?: string; serial?: string }[]
+	d?: { n: string; m?: string; v?: string; serial?: string }[]
 	/** networks info (array of network interfaces with vendor/model/capabilities) */
-	networks?: { name: string; vendor?: string; model?: string; speed?: string }[]
+	n?: { n: string; v?: string; m?: string; s?: string }[]
 	/** memory info (array with total property) */
-	memory?: { total: string }[]
+	m?: { t: string }[]
 	/** OS name (from /etc/os-release NAME) */
 	onr?: string
 	/** OS version id (from /etc/os-release VERSION_ID) */
 	ovid?: string
 	/** cpu info (array of cpu objects) */
-	cpus?: CpuInfo[]
+	c?: CpuInfo[]
 	/** os info (array of os objects) */
-	os?: OsInfo[]
+	o?: OsInfo[]
 }
 
 export interface SystemStats {

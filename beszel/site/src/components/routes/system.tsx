@@ -262,7 +262,7 @@ export default function SystemDetail({ name }: { name: string }) {
 			return []
 		}
 
-		const os = system.info.os && system.info.os.length > 0 ? system.info.os[0] : undefined;
+		const os = system.info.o && system.info.o.length > 0 ? system.info.o[0] : undefined;
 
 		let uptime: React.ReactNode
 		if (system.info.u < 172800) {
@@ -272,9 +272,9 @@ export default function SystemDetail({ name }: { name: string }) {
 			uptime = <Plural value={Math.trunc(system.info?.u / 86400)} one="# day" other="# days" />
 		}
 		
-		const cpu = system.info.cpus && system.info.cpus.length > 0 ? system.info.cpus[0] : undefined;
+		const cpu = system.info.c && system.info.c.length > 0 ? system.info.c[0] : undefined;
 
-		const memoryTotal = system.info.memory && system.info.memory.length > 0 ? system.info.memory[0].total : undefined;
+		const memoryTotal = system.info.m && system.info.m.length > 0 ? system.info.m[0].t : undefined;
 
 		const infoItems = [
 			{ value: getHostDisplayValue(system), Icon: GlobeIcon },
@@ -287,24 +287,24 @@ export default function SystemDetail({ name }: { name: string }) {
 			},
 			{ value: uptime, Icon: ClockArrowUp, label: t`Uptime`, hide: !system.info.u },
 			os ? {
-				Icon: TuxIcon, // You may want to select icon based on os.family
-				value: `${os.family} ${os.version}`.trim(),
+				Icon: TuxIcon, // You may want to select icon based on os.f
+				value: `${os.f} ${os.v}`.trim(),
 				isOs: true,
-				tooltip: os.kernel ? `Kernel: ${os.kernel}` : undefined,
+				tooltip: os.k ? `Kernel: ${os.k}` : undefined,
 			} : undefined,
 			cpu ? {
-				value: cpu.model,
+				value: cpu.m,
 				Icon: CpuIcon,
-				hide: !cpu.model,
-				arch: cpu.arch,
+				hide: !cpu.m,
+				arch: cpu.a,
 				cpu: {
-					cores: cpu.cores,
-					threads: cpu.threads,
+					cores: cpu.c,
+					threads: cpu.t,
 				},
 				tooltip: [
-					(cpu.cores || cpu.threads) ? `Cores / Threads: ${cpu.cores || '?'} / ${cpu.threads || cpu.cores || '?'}` : null,
-					cpu.arch ? `Arch: ${cpu.arch}` : null,
-					cpu.speed ? `Speed: ${cpu.speed}` : null,
+					(cpu.c || cpu.t) ? `Cores / Threads: ${cpu.c || '?'} / ${cpu.t || cpu.c || '?'}` : null,
+					cpu.a ? `Arch: ${cpu.a}` : null,
+					cpu.s ? `Speed: ${cpu.s}` : null,
 				].filter(Boolean).join("\n"),
 			} : undefined,
 			// Add total memory info here
@@ -315,18 +315,18 @@ export default function SystemDetail({ name }: { name: string }) {
 				tooltip: t`Total system memory in GB`,
 			} : undefined,
 			// Add disks info here
-			system.info.disks && system.info.disks.length > 0
+			system.info.d && system.info.d.length > 0
 				? {
-					value: `${system.info.disks.length} ${system.info.disks.length === 1 ? t`Disk` : t`Disks`}`,
+					value: `${system.info.d.length} ${system.info.d.length === 1 ? t`Disk` : t`Disks`}`,
 					Icon: HardDriveIcon,
-					disks: system.info.disks,
+					disks: system.info.d,
 				}
 				: undefined,
-			system.info.networks && system.info.networks.length > 0
+			system.info.n && system.info.n.length > 0
 				? {
-					value: `${system.info.networks.length} ${system.info.networks.length === 1 ? t`NIC` : t`NICs`}`,
+					value: `${system.info.n.length} ${system.info.n.length === 1 ? t`NIC` : t`NICs`}`,
 					Icon: EthernetIcon,
-					nics: system.info.networks,
+					nics: system.info.n,
 				}
 				: undefined,
 		] as {
@@ -337,8 +337,8 @@ export default function SystemDetail({ name }: { name: string }) {
 			pretty?: string
 			isOs?: boolean
 			arch?: string
-			disks?: { name: string; model?: string; vendor?: string; serial?: string }[]
-			nics?: { name: string; speed?: string; vendor?: string; model?: string }[]
+			disks?: { n: string; m?: string; v?: string; serial?: string }[]
+			nics?: { n: string; s?: string; v?: string; m?: string }[]
 			cpu?: { cores: number; threads?: number }
 			tooltip?: string
 		}[]
@@ -505,9 +505,9 @@ export default function SystemDetail({ name }: { name: string }) {
 														<TooltipContent>
 															<div className="flex flex-col gap-1 min-w-44">
 																{disks.map((disk, idx) => {
-																	let diskText = disk.name
-																	const vendor = disk.vendor && disk.vendor.toLowerCase() !== 'unknown' ? disk.vendor : null
-																	const model = disk.model && disk.model.toLowerCase() !== 'unknown' ? disk.model : null
+																	let diskText = disk.n
+																	const vendor = disk.v && disk.v.toLowerCase() !== 'unknown' ? disk.v : null
+																	const model = disk.m && disk.m.toLowerCase() !== 'unknown' ? disk.m : null
 																	
 																	if (vendor && model) {
 																		diskText += `: ${vendor} ${model}`
@@ -517,7 +517,7 @@ export default function SystemDetail({ name }: { name: string }) {
 																		diskText += `: ${vendor}`
 																	}
 																	return (
-																		<div key={disk.name + idx} className="flex flex-col">
+																		<div key={disk.n + idx} className="flex flex-col">
 																			<span className="font-medium">{diskText}</span>
 																		</div>
 																	)
@@ -540,23 +540,23 @@ export default function SystemDetail({ name }: { name: string }) {
 														<TooltipContent>
 															<div className="flex flex-col gap-1 min-w-52">
 																{nics.map((nic, idx) => {
-																	let nicText = nic.name
-																	const hasVendor = !!nic.vendor && nic.vendor.trim() !== ''
-																	const hasModel = !!nic.model && nic.model.trim() !== ''
+																	let nicText = nic.n
+																	const hasVendor = !!nic.v && nic.v.trim() !== ''
+																	const hasModel = !!nic.m && nic.m.trim() !== ''
 																	if (hasVendor && hasModel) {
-																		nicText += `: ${nic.vendor} ${nic.model}`
+																		nicText += `: ${nic.v} ${nic.m}`
 																	} else if (hasModel) {
-																		nicText += `: ${nic.model}`
+																		nicText += `: ${nic.m}`
 																	} else if (hasVendor) {
-																		nicText += `: ${nic.vendor}`
+																		nicText += `: ${nic.v}`
 																	} else {
 																		nicText += `: Unknown`
 																	}
-																	if (nic.speed) {
-																		nicText += ` | ${nic.speed}`
+																	if (nic.s) {
+																		nicText += ` | ${nic.s}`
 																	}
 																	return (
-																		<div key={nic.name + idx} className="flex flex-col">
+																		<div key={nic.n + idx} className="flex flex-col">
 																			<span className="font-medium max-w-40 truncate" title={nicText}>{nicText}</span>
 																		</div>
 																	)

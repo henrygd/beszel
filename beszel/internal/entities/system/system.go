@@ -74,34 +74,34 @@ const (
 )
 
 type DiskInfo struct {
-	Name   string `json:"name"`
-	Model  string `json:"model,omitempty"`
-	Vendor string `json:"vendor,omitempty"`
+	Name   string `json:"n"`
+	Model  string `json:"m,omitempty"`
+	Vendor string `json:"v,omitempty"`
 }
 
 type NetworkInfo struct {
-	Name   string `json:"name"`
-	Vendor string `json:"vendor,omitempty"`
-	Model  string `json:"model,omitempty"`
-	Speed  string `json:"speed,omitempty"`
+	Name   string `json:"n"`
+	Vendor string `json:"v,omitempty"`
+	Model  string `json:"m,omitempty"`
+	Speed  string `json:"s,omitempty"`
 }
 
 type MemoryInfo struct {
-	Total string `json:"total,omitempty"`
+	Total string `json:"t,omitempty"`
 }
 
 type CpuInfo struct {
-	Model    string `json:"model"`
-	SpeedGHz string `json:"speed"`
-	Arch     string `json:"arch"`
-	Cores    int    `json:"cores"`
-	Threads  int    `json:"threads"`
+	Model    string `json:"m"`
+	SpeedGHz string `json:"s"`
+	Arch     string `json:"a"`
+	Cores    int    `json:"c"`
+	Threads  int    `json:"t"`
 }
 
 type OsInfo struct {
-	Family  string `json:"family"`
-	Version string `json:"version"`
-	Kernel  string `json:"kernel"`
+	Family  string `json:"f"`
+	Version string `json:"v"`
+	Kernel  string `json:"k"`
 }
 
 type Info struct {
@@ -116,11 +116,11 @@ type Info struct {
 	GpuPct        float64       `json:"g,omitempty"`
 	DashboardTemp float64       `json:"dt,omitempty"`
 	Podman        bool          `json:"podman,omitempty"`
-	Disks         []DiskInfo    `json:"disks,omitempty"`
-	Networks      []NetworkInfo `json:"networks,omitempty"`
-	Memory        []MemoryInfo  `json:"memory,omitempty"`
-	Cpus          []CpuInfo     `json:"cpus,omitempty"`
-	Oses          []OsInfo      `json:"os,omitempty"`
+	Disks         []DiskInfo    `json:"d,omitempty"`
+	Networks      []NetworkInfo `json:"n,omitempty"`
+	Memory        []MemoryInfo  `json:"m,omitempty"`
+	Cpus          []CpuInfo     `json:"c,omitempty"`
+	Oses          []OsInfo      `json:"o,omitempty"`
 }
 
 // Final data structure to return to the hub
