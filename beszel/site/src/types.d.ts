@@ -182,6 +182,15 @@ export type UserSettings = {
 	chartTime: ChartTimes
 	emails?: string[]
 	webhooks?: string[]
+	meterThresholds?: {
+		cpu?: { yellow: number; red: number }
+		memory?: { yellow: number; red: number }
+		disk?: { yellow: number; red: number }
+		temp?: { yellow: number; red: number }
+		// fallback for legacy/global
+		yellow?: number
+		red?: number
+	}
 }
 
 type ChartDataContainer = {
