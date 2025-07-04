@@ -81,10 +81,10 @@ func (a *Agent) getSystemStats() system.Stats {
 	if cpuTimes, err := cpu.Times(false); err == nil && len(cpuTimes) > 0 {
 		// Get the first CPU (total across all cores)
 		currentCpu := cpuTimes[0]
-		
+
 		if len(a.prevCpuTimes) > 0 {
 			prevCpu := a.prevCpuTimes[0]
-			
+
 			// Calculate deltas
 			totalDelta := currentCpu.Total() - prevCpu.Total()
 			if totalDelta > 0 {
@@ -92,7 +92,7 @@ func (a *Agent) getSystemStats() system.Stats {
 				systemDelta := currentCpu.System - prevCpu.System
 				iowaitDelta := currentCpu.Iowait - prevCpu.Iowait
 				stealDelta := currentCpu.Steal - prevCpu.Steal
-				
+
 				// Calculate percentages
 				systemStats.CpuUser = twoDecimals((userDelta / totalDelta) * 100)
 				systemStats.CpuSystem = twoDecimals((systemDelta / totalDelta) * 100)
@@ -106,7 +106,7 @@ func (a *Agent) getSystemStats() system.Stats {
 			systemStats.CpuIowait = 0
 			systemStats.CpuSteal = 0
 		}
-		
+
 		// Store current times for next iteration
 		a.prevCpuTimes = cpuTimes
 	} else {
@@ -156,9 +156,11 @@ func (a *Agent) getSystemStats() system.Stats {
 		if d, err := disk.Usage(stats.Mountpoint); err == nil {
 			stats.DiskTotal = bytesToGigabytes(d.Total)
 			stats.DiskUsed = bytesToGigabytes(d.Used)
+			stats.DiskFree = bytesToGigabytes(d.Free)
 			if stats.Root {
 				systemStats.DiskTotal = bytesToGigabytes(d.Total)
 				systemStats.DiskUsed = bytesToGigabytes(d.Used)
+				systemStats.DiskFree = bytesToGigabytes(d.Free)
 				systemStats.DiskPct = twoDecimals(d.UsedPercent)
 			}
 		} else {
@@ -166,6 +168,7 @@ func (a *Agent) getSystemStats() system.Stats {
 			slog.Error("Error getting disk stats", "name", stats.Mountpoint, "err", err)
 			stats.DiskTotal = 0
 			stats.DiskUsed = 0
+			stats.DiskFree = 0
 			stats.TotalRead = 0
 			stats.TotalWrite = 0
 		}

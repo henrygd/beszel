@@ -153,6 +153,7 @@ export default function SystemsTable() {
 					{diskNames.map((name) => {
 						const disk = efs[name];
 						const percent = disk && disk.d ? Math.round((disk.du / disk.d) * 100) : 0;
+						const diskFree = disk?.df ?? 0;
 						return (
 							<TooltipProvider key={name}>
 								<Tooltip>
@@ -177,7 +178,12 @@ export default function SystemsTable() {
 										</div>
 									</TooltipTrigger>
 									<TooltipContent side="top">
-										<span className="font-medium">{disk.n || name}</span>
+										<div className="text-center">
+											<div className="font-medium">{disk.n || name}</div>
+											<div className="text-sm text-muted-foreground">
+												{t`Free`}: {decimalString(diskFree, 1)} GB
+											</div>
+										</div>
 									</TooltipContent>
 								</Tooltip>
 							</TooltipProvider>
@@ -258,25 +264,40 @@ export default function SystemsTable() {
 				cell(info) {
 					const system = info.row.original;
 					const percent = system.info?.dp ?? 0;
+					const diskFree = system.info?.df ?? 0;
+					
 					return (
-						<div className="flex items-center tabular-nums tracking-tight w-full">
-							<span className="min-w-[3.3em]">{decimalString(percent, 1)}%</span>
-							<span className="grow min-w-10 block bg-muted h-[1em] relative rounded-sm overflow-hidden">
-								<span
-									className={cn(
-										"absolute inset-0 w-full h-full origin-left",
-										percent < 65
-											? "bg-green-500"
-											: percent < 90
-											? "bg-yellow-500"
-											: "bg-red-600"
-									)}
-									style={{
-										transform: `scalex(${percent / 100})`,
-									}}
-								></span>
-							</span>
-						</div>
+						<TooltipProvider>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<div className="flex items-center tabular-nums tracking-tight w-full cursor-pointer">
+										<span className="min-w-[3.3em]">{decimalString(percent, 1)}%</span>
+										<span className="grow min-w-10 block bg-muted h-[1em] relative rounded-sm overflow-hidden">
+											<span
+												className={cn(
+													"absolute inset-0 w-full h-full origin-left",
+													percent < 65
+														? "bg-green-500"
+														: percent < 90
+														? "bg-yellow-500"
+														: "bg-red-600"
+												)}
+												style={{
+													transform: `scalex(${percent / 100})`,
+												}}
+											></span>
+										</span>
+									</div>
+								</TooltipTrigger>
+								<TooltipContent side="top">
+									<div className="text-center">
+										<div className="text-sm text-muted-foreground">
+											{t`Free`}: {decimalString(diskFree, 1)} GB
+										</div>
+									</div>
+								</TooltipContent>
+							</Tooltip>
+						</TooltipProvider>
 					);
 				},
 				Icon: HardDriveIcon,
@@ -314,7 +335,7 @@ export default function SystemsTable() {
 				},
 			},
 			{
-				accessorFn: (originalRow) => originalRow.info.dt,
+				accessorFn: (originalRow) => originalRow.info.dtemp,
 				id: "temp",
 				name: () => t({ message: "Temp", comment: "Temperature label in systems table" }),
 				invertSorting: true,

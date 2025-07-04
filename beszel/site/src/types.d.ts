@@ -39,6 +39,8 @@ export interface SystemInfo {
 	mp: number
 	/** disk percent */
 	dp: number
+	/** disk free (gb) */
+	df?: number
 	/** bandwidth (mb) */
 	b: number
 	/** agent version */
@@ -48,7 +50,7 @@ export interface SystemInfo {
 	/** highest gpu utilization */
 	g?: number
 	/** dashboard display temperature */
-	dt?: number
+	dtemp?: number
 	/** operating system */
 	os?: Os
 	/** extra filesystems */
@@ -90,6 +92,8 @@ export interface SystemStats {
 	d: number
 	/** disk used (gb) */
 	du: number
+	/** disk free (gb) */
+	df: number
 	/** disk percent */
 	dp: number
 	/** disk read (mb) */
@@ -135,6 +139,8 @@ export interface ExtraFsStats {
 	d: number
 	/** disk used (gb) */
 	du: number
+	/** disk free (gb) */
+	df: number
 	/** total read (mb) */
 	r: number
 	/** total write (mb) */

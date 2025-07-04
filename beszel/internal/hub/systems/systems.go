@@ -275,6 +275,7 @@ func (sys *System) createRecords() (*core.Record, error) {
 	}
 	// update system record (do this last because it triggers alerts and we need above records to be inserted first)
 	sys.data.Info.Efs = sys.data.Stats.ExtraFs
+	sys.data.Info.DiskFree = sys.data.Stats.DiskFree
 	systemRecord.Set("status", up)
 	systemRecord.Set("info", sys.data.Info)
 	if err := hub.SaveNoValidate(systemRecord); err != nil {

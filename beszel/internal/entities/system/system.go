@@ -26,6 +26,7 @@ type Stats struct {
 	SwapCached     float64             `json:"sc,omitempty"`
 	DiskTotal      float64             `json:"d"`
 	DiskUsed       float64             `json:"du"`
+	DiskFree       float64             `json:"df"`
 	DiskPct        float64             `json:"dp"`
 	DiskReadPs     float64             `json:"dr"`
 	DiskWritePs    float64             `json:"dw"`
@@ -57,6 +58,7 @@ type FsStats struct {
 	DisplayName    string    `json:"n"`
 	DiskTotal      float64   `json:"d"`
 	DiskUsed       float64   `json:"du"`
+	DiskFree       float64   `json:"df"`
 	TotalRead      uint64    `json:"-"`
 	TotalWrite     uint64    `json:"-"`
 	DiskReadPs     float64   `json:"r"`
@@ -91,11 +93,12 @@ type Info struct {
 	Cpu           float64             `json:"cpu"`
 	MemPct        float64             `json:"mp"`
 	DiskPct       float64             `json:"dp"`
+	DiskFree      float64             `json:"df,omitempty"`
 	Bandwidth     float64             `json:"b"`
 	AgentVersion  string              `json:"v"`
 	Podman        bool                `json:"p,omitempty"`
 	GpuPct        float64             `json:"g,omitempty"`
-	DashboardTemp float64             `json:"dt,omitempty"`
+	DashboardTemp float64             `json:"dtemp,omitempty"`
 	Os            Os                  `json:"os"`
 	Efs           map[string]*FsStats `json:"efs,omitempty"`
 }
