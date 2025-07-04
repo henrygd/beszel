@@ -10,6 +10,10 @@ import (
 type Stats struct {
 	Cpu            float64             `json:"cpu"`
 	MaxCpu         float64             `json:"cpum,omitempty"`
+	CpuUser        float64             `json:"cpuu"`
+	CpuSystem      float64             `json:"cpus"`
+	CpuIowait      float64             `json:"cpui"`
+	CpuSteal       float64             `json:"cpusl"`
 	Mem            float64             `json:"m"`
 	MemUsed        float64             `json:"mu"`
 	MemPct         float64             `json:"mp"`
@@ -17,8 +21,12 @@ type Stats struct {
 	MemZfsArc      float64             `json:"mz,omitempty"` // ZFS ARC memory
 	Swap           float64             `json:"s,omitempty"`
 	SwapUsed       float64             `json:"su,omitempty"`
+	SwapTotal      float64             `json:"st,omitempty"`
+	SwapFree       float64             `json:"sf,omitempty"`
+	SwapCached     float64             `json:"sc,omitempty"`
 	DiskTotal      float64             `json:"d"`
 	DiskUsed       float64             `json:"du"`
+	DiskFree       float64             `json:"df"`
 	DiskPct        float64             `json:"dp"`
 	DiskReadPs     float64             `json:"dr"`
 	DiskWritePs    float64             `json:"dw"`
@@ -47,8 +55,10 @@ type FsStats struct {
 	Time           time.Time `json:"-"`
 	Root           bool      `json:"-"`
 	Mountpoint     string    `json:"-"`
+	DisplayName    string    `json:"n"`
 	DiskTotal      float64   `json:"d"`
 	DiskUsed       float64   `json:"du"`
+	DiskFree       float64   `json:"df"`
 	TotalRead      uint64    `json:"-"`
 	TotalWrite     uint64    `json:"-"`
 	DiskReadPs     float64   `json:"r"`
@@ -74,21 +84,23 @@ const (
 )
 
 type Info struct {
-	Hostname      string  `json:"h"`
-	KernelVersion string  `json:"k,omitempty"`
-	Cores         int     `json:"c"`
-	Threads       int     `json:"t,omitempty"`
-	CpuModel      string  `json:"m"`
-	Uptime        uint64  `json:"u"`
-	Cpu           float64 `json:"cpu"`
-	MemPct        float64 `json:"mp"`
-	DiskPct       float64 `json:"dp"`
-	Bandwidth     float64 `json:"b"`
-	AgentVersion  string  `json:"v"`
-	Podman        bool    `json:"p,omitempty"`
-	GpuPct        float64 `json:"g,omitempty"`
-	DashboardTemp float64 `json:"dt,omitempty"`
-	Os            Os      `json:"os"`
+	Hostname      string              `json:"h"`
+	KernelVersion string              `json:"k,omitempty"`
+	Cores         int                 `json:"c"`
+	Threads       int                 `json:"t,omitempty"`
+	CpuModel      string              `json:"m"`
+	Uptime        uint64              `json:"u"`
+	Cpu           float64             `json:"cpu"`
+	MemPct        float64             `json:"mp"`
+	DiskPct       float64             `json:"dp"`
+	DiskFree      float64             `json:"df,omitempty"`
+	Bandwidth     float64             `json:"b"`
+	AgentVersion  string              `json:"v"`
+	Podman        bool                `json:"p,omitempty"`
+	GpuPct        float64             `json:"g,omitempty"`
+	DashboardTemp float64             `json:"dtemp,omitempty"`
+	Os            Os                  `json:"os"`
+	Efs           map[string]*FsStats `json:"efs,omitempty"`
 }
 
 // Final data structure to return to the hub

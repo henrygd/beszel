@@ -166,12 +166,17 @@ func (rm *RecordManager) AverageSystemStats(records RecordStats) *system.Stats {
 			continue
 		}
 		sum.Cpu += stats.Cpu
+		sum.CpuUser += stats.CpuUser
+		sum.CpuSystem += stats.CpuSystem
+		sum.CpuIowait += stats.CpuIowait
+		sum.CpuSteal += stats.CpuSteal
 		sum.Mem += stats.Mem
 		sum.MemUsed += stats.MemUsed
 		sum.MemPct += stats.MemPct
 		sum.MemBuffCache += stats.MemBuffCache
 		sum.MemZfsArc += stats.MemZfsArc
-		sum.Swap += stats.Swap
+		sum.SwapTotal += stats.SwapTotal
+		sum.SwapFree += stats.SwapFree
 		sum.SwapUsed += stats.SwapUsed
 		sum.DiskTotal += stats.DiskTotal
 		sum.DiskUsed += stats.DiskUsed
@@ -180,6 +185,7 @@ func (rm *RecordManager) AverageSystemStats(records RecordStats) *system.Stats {
 		sum.DiskWritePs += stats.DiskWritePs
 		sum.NetworkSent += stats.NetworkSent
 		sum.NetworkRecv += stats.NetworkRecv
+		sum.SwapCached += stats.SwapCached
 		// Set peak values
 		sum.MaxCpu = max(sum.MaxCpu, stats.MaxCpu, stats.Cpu)
 		sum.MaxNetworkSent = max(sum.MaxNetworkSent, stats.MaxNetworkSent, stats.NetworkSent)
@@ -241,12 +247,17 @@ func (rm *RecordManager) AverageSystemStats(records RecordStats) *system.Stats {
 	// Compute averages in place
 	if count > 0 {
 		sum.Cpu = twoDecimals(sum.Cpu / count)
+		sum.CpuUser = twoDecimals(sum.CpuUser / count)
+		sum.CpuSystem = twoDecimals(sum.CpuSystem / count)
+		sum.CpuIowait = twoDecimals(sum.CpuIowait / count)
+		sum.CpuSteal = twoDecimals(sum.CpuSteal / count)
 		sum.Mem = twoDecimals(sum.Mem / count)
 		sum.MemUsed = twoDecimals(sum.MemUsed / count)
 		sum.MemPct = twoDecimals(sum.MemPct / count)
 		sum.MemBuffCache = twoDecimals(sum.MemBuffCache / count)
 		sum.MemZfsArc = twoDecimals(sum.MemZfsArc / count)
-		sum.Swap = twoDecimals(sum.Swap / count)
+		sum.SwapTotal = twoDecimals(sum.SwapTotal / count)
+		sum.SwapFree = twoDecimals(sum.SwapFree / count)
 		sum.SwapUsed = twoDecimals(sum.SwapUsed / count)
 		sum.DiskTotal = twoDecimals(sum.DiskTotal / count)
 		sum.DiskUsed = twoDecimals(sum.DiskUsed / count)
@@ -255,6 +266,7 @@ func (rm *RecordManager) AverageSystemStats(records RecordStats) *system.Stats {
 		sum.DiskWritePs = twoDecimals(sum.DiskWritePs / count)
 		sum.NetworkSent = twoDecimals(sum.NetworkSent / count)
 		sum.NetworkRecv = twoDecimals(sum.NetworkRecv / count)
+		sum.SwapCached = twoDecimals(sum.SwapCached / count)
 
 		// Average temperatures
 		if sum.Temperatures != nil && tempCount > 0 {

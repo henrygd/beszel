@@ -18,6 +18,7 @@ type UserSettings struct {
 	NotificationEmails   []string `json:"emails"`
 	NotificationWebhooks []string `json:"webhooks"`
 	// Language             string   `json:"lang"`
+	ShowChartLegend bool `json:"showChartLegend"`
 }
 
 func NewUserManager(app core.App) *UserManager {
@@ -43,6 +44,7 @@ func (um *UserManager) InitializeUserSettings(e *core.RecordEvent) error {
 		ChartTime:            "1h",
 		NotificationEmails:   []string{},
 		NotificationWebhooks: []string{},
+		ShowChartLegend:      true,
 	}
 	record.UnmarshalJSONField("settings", &settings)
 	if len(settings.NotificationEmails) == 0 {
