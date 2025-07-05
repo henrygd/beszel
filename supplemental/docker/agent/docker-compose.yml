@@ -1,9 +1,11 @@
 services:
   beszel-agent:
-    image: 'henrygd/beszel-agent'
+    image: 'henrygd/beszel-agent' #Or henrygd/beszel-agent-nvidia
     container_name: 'beszel-agent'
     restart: unless-stopped
     network_mode: host
+    # Only when using henrygd/beszel-agent-nvidia
+    # runtime: nvidia
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       # monitor other disks / partitions by mounting a folder in /extra-filesystems
@@ -11,3 +13,6 @@ services:
     environment:
       PORT: 45876
       KEY: 'ssh-ed25519 YOUR_PUBLIC_KEY'
+      # Only when using henrygd/beszel-agent-nvidia
+      # NVIDIA_VISIBLE_DEVICES: all 
+      # NVIDIA_DRIVER_CAPABILITIES: compute,video,utility
