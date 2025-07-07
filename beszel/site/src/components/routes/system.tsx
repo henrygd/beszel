@@ -314,18 +314,7 @@ export default function SystemDetail({ name }: { name: string }) {
 				value: memoryTotal,
 				Icon: ServerIcon,
 				label: t`Total Memory`,
-				tooltip: memoryModules.length > 0
-					? memoryModules.map((mod: { vendor?: string; model?: string; size?: string }, idx: number) => {
-						const vendor = mod.vendor && mod.vendor.toLowerCase() !== 'unknown' ? mod.vendor : null;
-						const model = mod.model && mod.model.toLowerCase() !== 'unknown' ? mod.model : null;
-						const size = mod.size ? mod.size : null;
-						let text = size ? size : '';
-						if (vendor && model) text += `: ${vendor} ${model}`;
-						else if (model) text += `: ${model}`;
-						else if (vendor) text += `: ${vendor}`;
-						return text.trim() || undefined;
-					}).filter(Boolean).join('\n')
-					: t`Total system memory in GB`,
+				tooltip: t`Total system memory in GB`,
 			} : undefined,
 			// Add disks info here
 			system.info.d && system.info.d.length > 0
