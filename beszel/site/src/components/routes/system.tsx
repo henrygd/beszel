@@ -39,6 +39,8 @@ import { timeTicks } from "d3-time"
 import { useLingui } from "@lingui/react/macro"
 import { $router, navigate } from "../router"
 import { getPagePath } from "@nanostores/router"
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "../ui/table"
+import { Badge } from "../ui/badge"
 
 const AreaChartDefault = lazy(() => import("../charts/area-chart"))
 const ContainerChart = lazy(() => import("../charts/container-chart"))
@@ -47,6 +49,7 @@ const DiskChart = lazy(() => import("../charts/disk-chart"))
 const SwapChart = lazy(() => import("../charts/swap-chart"))
 const TemperatureChart = lazy(() => import("../charts/temperature-chart"))
 const GpuPowerChart = lazy(() => import("../charts/gpu-power-chart"))
+const ProcessStateChart = lazy(() => import("../charts/process-state-chart"))
 
 const cache = new Map<string, any>()
 
@@ -473,6 +476,15 @@ export default function SystemDetail({ name }: { name: string }) {
 						cornerEl={maxValSelect}
 					>
 						<AreaChartDefault chartData={chartData} chartName="CPU Usage" maxToggled={maxValues} unit="%" />
+					</ChartCard>
+
+					<ChartCard
+						empty={dataEmpty}
+						grid={grid}
+						title={t`Process States`}
+						description={t`Count of processes in each state`}
+					>
+						<ProcessStateChart chartData={chartData} />
 					</ChartCard>
 
 					{containerFilterBar && (

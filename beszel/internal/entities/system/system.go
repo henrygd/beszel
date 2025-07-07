@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+// TODO: this is confusing, make common package with common/types common/helpers etc
+
 type Stats struct {
 	Cpu            float64             `json:"cpu"`
 	MaxCpu         float64             `json:"cpum,omitempty"`
@@ -31,6 +33,7 @@ type Stats struct {
 	Temperatures   map[string]float64  `json:"t,omitempty"`
 	ExtraFs        map[string]*FsStats `json:"efs,omitempty"`
 	GPUData        map[string]GPUData  `json:"g,omitempty"`
+	ProcessStates  map[string]int      `json:"ps_states,omitempty"` // Count of processes by state (e.g., R, S, Z, etc.)
 }
 
 type GPUData struct {

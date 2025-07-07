@@ -16,6 +16,7 @@ import (
 	"github.com/shirou/gopsutil/v4/host"
 	"github.com/shirou/gopsutil/v4/mem"
 	psutilNet "github.com/shirou/gopsutil/v4/net"
+	"github.com/shirou/gopsutil/v4/process"
 )
 
 // Sets initial / non-changing values about the host system
@@ -237,6 +238,21 @@ func (a *Agent) getSystemStats() system.Stats {
 			}
 		}
 	}
+
+	// process state counts
+	processStates := make(map[string]int)
+	if processes, err := process.Processes(); err == nil {
+		for _, p := range processes {
+			if statuses, err := p.Status(); err == nil {
+				for _, status := range statuses {
+					processStates[status]++
+				}
+			}
+		}
+	} else {
+		slog.Error("Error getting process list", "err", err)
+	}
+	systemStats.ProcessStates = processStates
 
 	// update base system info
 	a.systemInfo.Cpu = systemStats.Cpu

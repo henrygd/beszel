@@ -100,6 +100,8 @@ export interface SystemStats {
 	efs?: Record<string, ExtraFsStats>
 	/** GPU data */
 	g?: Record<string, GPUData>
+	/** process state counts */
+	ps_states?: Record<string, number>
 }
 
 export interface GPUData {
