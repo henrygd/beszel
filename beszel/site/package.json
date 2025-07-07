@@ -48,7 +48,7 @@
 		"valibot": "^0.42.0"
 	},
 	"devDependencies": {
-		"@lingui/cli": "^5.2.0",
+		"@lingui/cli": "^5.3.2",
 		"@lingui/swc-plugin": "^5.5.0",
 		"@lingui/vite-plugin": "^5.2.0",
 		"@types/bun": "^1.2.4",

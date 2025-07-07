@@ -476,6 +476,7 @@ func getMemoryInfo() []system.MemoryInfo {
 				Model:  "",
 			})
 		}
+		slog.Debug("Memory modules detected", "modules", modules)
 	}
 
 	return []system.MemoryInfo{{
