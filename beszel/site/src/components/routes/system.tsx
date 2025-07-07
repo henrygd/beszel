@@ -276,6 +276,8 @@ export default function SystemDetail({ name }: { name: string }) {
 
 		const memoryTotal = system.info.m && system.info.m.length > 0 ? system.info.m[0].t : undefined;
 
+		const memoryModules = system.info.m && system.info.m.length > 0 && system.info.m[0].modules ? system.info.m[0].modules : [];
+
 		const infoItems = [
 			{ value: getHostDisplayValue(system), Icon: GlobeIcon },
 			{
@@ -312,7 +314,18 @@ export default function SystemDetail({ name }: { name: string }) {
 				value: memoryTotal,
 				Icon: ServerIcon,
 				label: t`Total Memory`,
-				tooltip: t`Total system memory in GB`,
+				tooltip: memoryModules.length > 0
+					? memoryModules.map((mod: { vendor?: string; model?: string; size?: string }, idx: number) => {
+						const vendor = mod.vendor && mod.vendor.toLowerCase() !== 'unknown' ? mod.vendor : null;
+						const model = mod.model && mod.model.toLowerCase() !== 'unknown' ? mod.model : null;
+						const size = mod.size ? mod.size : null;
+						let text = size ? size : '';
+						if (vendor && model) text += `: ${vendor} ${model}`;
+						else if (model) text += `: ${model}`;
+						else if (vendor) text += `: ${vendor}`;
+						return text.trim() || undefined;
+					}).filter(Boolean).join('\n')
+					: t`Total system memory in GB`,
 			} : undefined,
 			// Add disks info here
 			system.info.d && system.info.d.length > 0
@@ -557,7 +570,7 @@ export default function SystemDetail({ name }: { name: string }) {
 																	}
 																	return (
 																		<div key={nic.n + idx} className="flex flex-col">
-																			<span className="font-medium max-w-40 truncate" title={nicText}>{nicText}</span>
+																			<span className="font-medium">{nicText}</span>
 																		</div>
 																	)
 																})}

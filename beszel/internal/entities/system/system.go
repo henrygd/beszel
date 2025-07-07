@@ -86,8 +86,15 @@ type NetworkInfo struct {
 	Speed  string `json:"s,omitempty"`
 }
 
+type MemoryModuleInfo struct {
+	Size   string `json:"size,omitempty"`
+	Vendor string `json:"vendor,omitempty"`
+	Model  string `json:"model,omitempty"`
+}
+
 type MemoryInfo struct {
-	Total string `json:"t,omitempty"`
+	Total   string             `json:"t,omitempty"`
+	Modules []MemoryModuleInfo `json:"modules,omitempty"`
 }
 
 type CpuInfo struct {

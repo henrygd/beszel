@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/jaypipes/ghw/pkg/block"
+	ghwmemory "github.com/jaypipes/ghw/pkg/memory"
 	ghwnet "github.com/jaypipes/ghw/pkg/net"
 	ghwpci "github.com/jaypipes/ghw/pkg/pci"
 	"github.com/shirou/gopsutil/v4/cpu"
@@ -102,11 +103,8 @@ func (a *Agent) initializeSystemInfo() {
 	// Collect network interface info
 	a.systemInfo.Networks = getNetworkInfo()
 
-	// Collect total memory and store in systemInfo.Memory
-	if v, err := mem.VirtualMemory(); err == nil {
-		total := fmt.Sprintf("%d GB", int((float64(v.Total)/(1024*1024*1024))+0.5))
-		a.systemInfo.Memory = []system.MemoryInfo{{Total: total}}
-	}
+	// Collect memory info (total and modules)
+	a.systemInfo.Memory = getMemoryInfo()
 }
 
 // readPrettyName reads the PRETTY_NAME from /etc/os-release
@@ -460,4 +458,28 @@ func readOsRelease() map[string]string {
 		}
 	}
 	return release
+}
+
+// getMemoryInfo collects total memory and per-module info (vendor/model/size/serial/type)
+func getMemoryInfo() []system.MemoryInfo {
+	var total string
+	if v, err := mem.VirtualMemory(); err == nil {
+		total = fmt.Sprintf("%d GB", int((float64(v.Total)/(1024*1024*1024))+0.5))
+	}
+
+	modules := []system.MemoryModuleInfo{}
+	if memInfo, err := ghwmemory.New(); err == nil && memInfo != nil {
+		for _, mod := range memInfo.Modules {
+			modules = append(modules, system.MemoryModuleInfo{
+				Size:   fmt.Sprintf("%d MB", mod.SizeBytes/(1024*1024)),
+				Vendor: mod.Vendor,
+				Model:  "",
+			})
+		}
+	}
+
+	return []system.MemoryInfo{{
+		Total:   total,
+		Modules: modules,
+	}}
 }
