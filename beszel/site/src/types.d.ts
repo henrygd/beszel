@@ -6,6 +6,19 @@ declare global {
 	var BESZEL: {
 		BASE_PATH: string
 		HUB_VERSION: string
+		HUB_URL: string
+	}
+}
+
+export interface FingerprintRecord extends RecordModel {
+	id: string
+	system: string
+	fingerprint: string
+	token: string
+	expand: {
+		system: {
+			name: string
+		}
 	}
 }
 

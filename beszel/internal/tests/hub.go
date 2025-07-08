@@ -1,3 +1,6 @@
+//go:build testing
+// +build testing
+
 // Package tests provides helpers for testing the application.
 package tests
 
@@ -55,4 +58,31 @@ func NewTestHubWithConfig(config core.BaseAppConfig) (*TestHub, error) {
 	}
 
 	return t, nil
+}
+
+// Helper function to create a test user for config tests
+func CreateUser(app core.App, email string, password string) (*core.Record, error) {
+	userCollection, err := app.FindCachedCollectionByNameOrId("users")
+	if err != nil {
+		return nil, err
+	}
+
+	user := core.NewRecord(userCollection)
+	user.Set("email", email)
+	user.Set("password", password)
+
+	return user, app.Save(user)
+}
+
+// Helper function to create a test record
+func CreateRecord(app core.App, collectionName string, fields map[string]any) (*core.Record, error) {
+	collection, err := app.FindCachedCollectionByNameOrId(collectionName)
+	if err != nil {
+		return nil, err
+	}
+
+	record := core.NewRecord(collection)
+	record.Load(fields)
+
+	return record, app.Save(record)
 }

@@ -11,20 +11,27 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { $publicKey, pb } from "@/lib/stores"
-import { cn, copyToClipboard, isReadOnlyUser, useLocalStorage } from "@/lib/utils"
-import { i18n } from "@lingui/core"
+import { cn, generateToken, isReadOnlyUser, tokenMap, useLocalStorage } from "@/lib/utils"
 import { useStore } from "@nanostores/react"
-import { ChevronDownIcon, Copy, ExternalLinkIcon, PlusIcon } from "lucide-react"
-import { memo, useRef, useState } from "react"
-import { basePath, navigate } from "./router"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
+import { ChevronDownIcon, ExternalLinkIcon, PlusIcon } from "lucide-react"
+import { memo, useEffect, useRef, useState } from "react"
+import { $router, basePath, Link, navigate } from "./router"
 import { SystemRecord } from "@/types"
 import { AppleIcon, DockerIcon, TuxIcon, WindowsIcon } from "./ui/icons"
+import { InputCopy } from "./ui/input-copy"
+import { getPagePath } from "@nanostores/router"
+import {
+	copyDockerCompose,
+	copyDockerRun,
+	copyLinuxCommand,
+	copyWindowsCommand,
+	DropdownItem,
+	InstallDropdown,
+} from "./install-dropdowns"
+import { DropdownMenu, DropdownMenuTrigger } from "./ui/dropdown-menu"
 
 export function AddSystemButton({ className }: { className?: string }) {
 	const [open, setOpen] = useState(false)
@@ -51,44 +58,11 @@ export function AddSystemButton({ className }: { className?: string }) {
 	)
 }
 
-function copyDockerCompose(port = "45876", publicKey: string) {
-	copyToClipboard(`services:
-  beszel-agent:
-    image: "henrygd/beszel-agent"
-    container_name: "beszel-agent"
-    restart: unless-stopped
-    network_mode: host
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      # monitor other disks / partitions by mounting a folder in /extra-filesystems
-      # - /mnt/disk/.beszel:/extra-filesystems/sda1:ro
-    environment:
-      LISTEN: ${port}
-      KEY: "${publicKey}"`)
-}
-
-function copyDockerRun(port = "45876", publicKey: string) {
-	copyToClipboard(
-		`docker run -d --name beszel-agent --network host --restart unless-stopped -v /var/run/docker.sock:/var/run/docker.sock:ro -e KEY="${publicKey}" -e LISTEN=${port} henrygd/beszel-agent:latest`
-	)
-}
-
-function copyLinuxCommand(port = "45876", publicKey: string, brew = false) {
-	let cmd = `curl -sL https://get.beszel.dev${
-		brew ? "/brew" : ""
-	} -o /tmp/install-agent.sh && chmod +x /tmp/install-agent.sh && /tmp/install-agent.sh -p ${port} -k "${publicKey}"`
-	// brew script does not support --china-mirrors
-	if (!brew && (i18n.locale + navigator.language).includes("zh-CN")) {
-		cmd += ` --china-mirrors`
-	}
-	copyToClipboard(cmd)
-}
-
-function copyWindowsCommand(port = "45876", publicKey: string) {
-	copyToClipboard(
-		`& iwr -useb https://get.beszel.dev -OutFile "$env:TEMP\\install-agent.ps1"; & Powershell -ExecutionPolicy Bypass -File "$env:TEMP\\install-agent.ps1" -Key "${publicKey}" -Port ${port}`
-	)
-}
+/**
+ * Token to be used for the next system.
+ * Prevents token changing if user copies config, then closes dialog and opens again.
+ */
+let nextSystemToken: string | null = null
 
 /**
  * SystemDialog component for adding or editing a system.
@@ -96,12 +70,32 @@ function copyWindowsCommand(port = "45876", publicKey: string) {
  * @param {function} props.setOpen - Function to set the open state of the dialog.
  * @param {SystemRecord} [props.system] - Optional system record for editing an existing system.
  */
-export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean) => void; system?: SystemRecord }) => {
+export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => void; system?: SystemRecord }) => {
 	const publicKey = useStore($publicKey)
 	const port = useRef<HTMLInputElement>(null)
 	const [hostValue, setHostValue] = useState(system?.host ?? "")
 	const isUnixSocket = hostValue.startsWith("/")
 	const [tab, setTab] = useLocalStorage("as-tab", "docker")
+	const [token, setToken] = useState(system?.token ?? "")
+
+	useEffect(() => {
+		;(async () => {
+			// if no system, generate a new token
+			if (!system) {
+				nextSystemToken ||= generateToken()
+				return setToken(nextSystemToken)
+			}
+			// if system exists,get the token from the fingerprint record
+			if (tokenMap.has(system.id)) {
+				return setToken(tokenMap.get(system.id)!)
+			}
+			const { token } = await pb.collection("fingerprints").getFirstListItem(`system = "${system.id}"`, {
+				fields: "token",
+			})
+			tokenMap.set(system.id, token)
+			setToken(token)
+		})()
+	}, [system?.id])
 
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault()
@@ -113,12 +107,18 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 			if (system) {
 				await pb.collection("systems").update(system.id, { ...data, status: "pending" })
 			} else {
-				await pb.collection("systems").create(data)
+				const createdSystem = await pb.collection("systems").create(data)
+				await pb.collection("fingerprints").create({
+					system: createdSystem.id,
+					token,
+				})
+				// Reset the current token after successful system
+				// creation so next system gets a new token
+				nextSystemToken = null
 			}
 			navigate(basePath)
-			// console.log(record)
 		} catch (e) {
-			console.log(e)
+			console.error(e)
 		}
 	}
 
@@ -143,18 +143,37 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 				</DialogHeader>
 				{/* Docker (set tab index to prevent auto focusing content in edit system dialog) */}
 				<TabsContent value="docker" tabIndex={-1}>
-					<DialogDescription className="mb-4 leading-normal w-0 min-w-full">
+					<DialogDescription className="mb-3 leading-relaxed w-0 min-w-full">
 						<Trans>
-							The agent must be running on the system to connect. Copy the
-							<code className="bg-muted px-1 rounded-sm leading-3">docker-compose.yml</code> for the agent below.
+							Copy the
+							<code className="bg-muted px-1 rounded-sm leading-3">docker-compose.yml</code> content for the agent
+							below, or register agents automatically with a{" "}
+							<Link
+								onClick={() => setOpen(false)}
+								href={getPagePath($router, "settings", { name: "tokens" })}
+								className="link"
+							>
+								universal token
+							</Link>
+							.
 						</Trans>
 					</DialogDescription>
 				</TabsContent>
 				{/* Binary */}
 				<TabsContent value="binary" tabIndex={-1}>
-					<DialogDescription className="mb-4 leading-normal w-0 min-w-full">
+					<DialogDescription className="mb-3 leading-relaxed w-0 min-w-full">
 						<Trans>
-							The agent must be running on the system to connect. Copy the installation command for the agent below.
+							Copy the installation command for the agent below, or register agents automatically with a{" "}
+							<Link
+								onClick={() => {
+									setOpen(false)
+								}}
+								href={getPagePath($router, "settings", { name: "tokens" })}
+								className="link"
+							>
+								universal token
+							</Link>
+							.
 						</Trans>
 					</DialogDescription>
 				</TabsContent>
@@ -190,46 +209,27 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 						<Label htmlFor="pkey" className="xs:text-end whitespace-pre">
 							<Trans comment="Use 'Key' if your language requires many more characters">Public Key</Trans>
 						</Label>
-						<div className="relative">
-							<Input readOnly id="pkey" value={publicKey} required></Input>
-							<div
-								className={
-									"h-6 w-24 bg-gradient-to-r rtl:bg-gradient-to-l from-transparent to-background to-65% absolute top-2 end-1 pointer-events-none"
-								}
-							></div>
-							<TooltipProvider delayDuration={100}>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<Button
-											type="button"
-											variant={"link"}
-											className="absolute end-0 top-0"
-											onClick={() => copyToClipboard(publicKey)}
-										>
-											<Copy className="size-4" />
-										</Button>
-									</TooltipTrigger>
-									<TooltipContent>
-										<p>
-											<Trans>Click to copy</Trans>
-										</p>
-									</TooltipContent>
-								</Tooltip>
-							</TooltipProvider>
-						</div>
+						<InputCopy value={publicKey} id="pkey" name="pkey" />
+						<Label htmlFor="tkn" className="xs:text-end whitespace-pre">
+							<Trans>Token</Trans>
+						</Label>
+						<InputCopy value={token} id="tkn" name="tkn" />
 					</div>
 					<DialogFooter className="flex justify-end gap-x-2 gap-y-3 flex-col mt-5">
 						{/* Docker */}
 						<TabsContent value="docker" className="contents">
 							<CopyButton
 								text={t({ message: "Copy docker compose", context: "Button to copy docker compose file content" })}
-								onClick={() => copyDockerCompose(isUnixSocket ? hostValue : port.current?.value, publicKey)}
+								onClick={async () =>
+									copyDockerCompose(isUnixSocket ? hostValue : port.current?.value, publicKey, token)
+								}
 								icon={<DockerIcon className="size-4 -me-0.5" />}
 								dropdownItems={[
 									{
 										text: t({ message: "Copy docker run", context: "Button to copy docker run command" }),
-										onClick: () => copyDockerRun(isUnixSocket ? hostValue : port.current?.value, publicKey),
-										icons: [<DockerIcon className="size-4" />],
+										onClick: async () =>
+											copyDockerRun(isUnixSocket ? hostValue : port.current?.value, publicKey, token),
+										icons: [DockerIcon],
 									},
 								]}
 							/>
@@ -239,22 +239,24 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 							<CopyButton
 								text={t`Copy Linux command`}
 								icon={<TuxIcon className="size-4" />}
-								onClick={() => copyLinuxCommand(isUnixSocket ? hostValue : port.current?.value, publicKey)}
+								onClick={async () => copyLinuxCommand(isUnixSocket ? hostValue : port.current?.value, publicKey, token)}
 								dropdownItems={[
 									{
 										text: t({ message: "Homebrew command", context: "Button to copy install command" }),
-										onClick: () => copyLinuxCommand(isUnixSocket ? hostValue : port.current?.value, publicKey, true),
-										icons: [<AppleIcon className="size-4" />, <TuxIcon className="w-4 h-4" />],
+										onClick: async () =>
+											copyLinuxCommand(isUnixSocket ? hostValue : port.current?.value, publicKey, token, true),
+										icons: [AppleIcon, TuxIcon],
 									},
 									{
 										text: t({ message: "Windows command", context: "Button to copy install command" }),
-										onClick: () => copyWindowsCommand(isUnixSocket ? hostValue : port.current?.value, publicKey),
-										icons: [<WindowsIcon className="size-4" />],
+										onClick: async () =>
+											copyWindowsCommand(isUnixSocket ? hostValue : port.current?.value, publicKey, token),
+										icons: [WindowsIcon],
 									},
 									{
 										text: t`Manual setup instructions`,
 										url: "https://beszel.dev/guide/agent-installation#binary",
-										icons: [<ExternalLinkIcon className="size-4" />],
+										icons: [ExternalLinkIcon],
 									},
 								]}
 							/>
@@ -266,20 +268,13 @@ export const SystemDialog = memo(({ setOpen, system }: { setOpen: (open: boolean
 			</Tabs>
 		</DialogContent>
 	)
-})
-
-interface DropdownItem {
-	text: string
-	onClick?: () => void
-	url?: string
-	icons?: React.ReactNode[]
 }
 
 interface CopyButtonProps {
 	text: string
 	onClick: () => void
 	dropdownItems: DropdownItem[]
-	icon?: React.ReactNode
+	icon?: React.ReactElement
 }
 
 const CopyButton = memo((props: CopyButtonProps) => {
@@ -300,22 +295,7 @@ const CopyButton = memo((props: CopyButtonProps) => {
 						<ChevronDownIcon />
 					</Button>
 				</DropdownMenuTrigger>
-				<DropdownMenuContent align="end">
-					{props.dropdownItems.map((item, index) => {
-						const className = "cursor-pointer flex items-center gap-1.5"
-						return item.url ? (
-							<DropdownMenuItem key={index} asChild>
-								<a href={item.url} className={className} target="_blank" rel="noopener noreferrer">
-									{item.text} {item.icons?.map((icon) => icon)}
-								</a>
-							</DropdownMenuItem>
-						) : (
-							<DropdownMenuItem key={index} onClick={item.onClick} className={className}>
-								{item.text} {item.icons?.map((icon) => icon)}
-							</DropdownMenuItem>
-						)
-					})}
-				</DropdownMenuContent>
+				<InstallDropdown items={props.dropdownItems} />
 			</DropdownMenu>
 		</div>
 	)
