@@ -66,8 +66,11 @@ jobs:
           images: ${{ matrix.image }}
           tags: |
             type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
+            type=semver,pattern={{major}}.{{minor}},enable=${{ !contains(github.ref, '-beta') && !contains(github.ref, '-rc') }}
+            type=semver,pattern={{major}},enable=${{ !contains(github.ref, '-beta') && !contains(github.ref, '-rc') }}
+            type=raw,value=latest,enable=${{ !contains(github.ref, '-beta') && !contains(github.ref, '-rc') }}
+            type=raw,value=beta,enable=${{ contains(github.ref, '-beta') }}
+            type=raw,value=rc,enable=${{ contains(github.ref, '-rc') }}
             type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
 
       # https://github.com/docker/login-action
