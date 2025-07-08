@@ -19,6 +19,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"os"
+	"path"
 	"strings"
 	"time"
 
@@ -41,6 +42,7 @@ type Hub struct {
 	systemStats     *core.Collection
 	containerStats  *core.Collection
 	appURL          string
+	sshListenAddr   string
 }
 
 // NewHub creates a new Hub instance with default configuration
@@ -49,6 +51,8 @@ func NewHub() *Hub {
 	hub.PocketBase = pocketbase.NewWithConfig(pocketbase.Config{
 		DefaultDataDir: beszel.AppName + "_data",
 	})
+
+	hub.RootCmd.PersistentFlags().StringVarP(&hub.sshListenAddr, "sshd", "s", "0.0.0.0:45877", "defines where beszel will start an ssh server to listen for client connections")
 
 	hub.RootCmd.Version = beszel.Version
 	hub.RootCmd.Use = beszel.AppName
@@ -102,6 +106,7 @@ func (h *Hub) Run() {
 		if h.appURL != "" {
 			settings.Meta.AppURL = h.appURL
 		}
+
 		// set auth settings
 		usersCollection, err := h.FindCollectionByNameOrId("users")
 		if err != nil {
@@ -176,6 +181,15 @@ func (h *Hub) Run() {
 		return se.Next()
 	})
 
+	h.OnServe().BindFunc(func(se *core.ServeEvent) error {
+		err := h.startSSHServer(h.sshListenAddr)
+		if err != nil {
+			return fmt.Errorf("ssh server failed to listen: %w", err)
+		}
+		return se.Next()
+	})
+
+	// TODO cleanup old records in registration
 	// set up scheduled jobs / ticker for system updates
 	h.OnServe().BindFunc(func(se *core.ServeEvent) error {
 		// 15 second ticker for system updates
@@ -227,7 +241,46 @@ func (h *Hub) Run() {
 
 	// immediately create connection for new systems
 	h.OnRecordAfterCreateSuccess("systems").BindFunc(func(e *core.RecordEvent) error {
-		go h.updateSystem(e.Record)
+		clientType := e.Record.GetString("type")
+		switch clientType {
+
+		// empty string is for backwards compatiablity
+		case "server", "":
+			go h.pollSystem(e.Record)
+		case "client":
+			// After a client has been accepted by the user (or auto accepted) it will be added to the systems table and should be removed from the new_systems table.
+			record, err := h.FindFirstRecordByData("new_systems", "fingerprint", e.Record.GetString("fingerprint"))
+			if err != nil {
+				return err
+			}
+
+			err = h.Delete(record)
+			if err != nil {
+				return err
+			}
+
+		default:
+			h.Logger().Debug("Beszel had a system with unknown type", "type", clientType)
+			return fmt.Errorf("unknown client system record type %q", clientType)
+		}
+
+		return e.Next()
+	})
+
+	// once a system has been added to blocked systems delete it from new_systems
+	h.OnRecordAfterCreateSuccess("blocked_systems").BindFunc(func(e *core.RecordEvent) error {
+
+		// After a client has been accepted by the user (or auto accepted) it will be added to the systems table and should be removed from the new_systems table.
+		record, err := h.FindFirstRecordByData("new_systems", "fingerprint", e.Record.GetString("fingerprint"))
+		if err != nil {
+			return err
+		}
+
+		err = h.Delete(record)
+		if err != nil {
+			return err
+		}
+
 		return e.Next()
 	})
 
@@ -256,10 +309,14 @@ func (h *Hub) Run() {
 
 		// if system is set to pending (unpause), try to connect immediately
 		if newStatus == "pending" {
-			go h.updateSystem(newRecord)
+			if newRecord.GetString("type") == "server" {
+				go h.pollSystem(newRecord)
+			}
+			// We do not have to do anything with our client type beszel connections, they will send data every 15+/-5 seconds
 		} else {
 			h.am.HandleStatusAlerts(newStatus, oldRecord)
 		}
+
 		return e.Next()
 	})
 
@@ -277,17 +334,17 @@ func (h *Hub) Run() {
 func (h *Hub) startSystemUpdateTicker() {
 	c := time.Tick(15 * time.Second)
 	for range c {
-		h.updateSystems()
+		h.pollServerSystems()
 	}
 }
 
-func (h *Hub) updateSystems() {
+func (h *Hub) pollServerSystems() {
 	records, err := h.FindRecordsByFilter(
-		"2hz5ncl8tizk5nx",    // systems collection
-		"status != 'paused'", // filter
-		"updated",            // sort
-		-1,                   // limit
-		0,                    // offset
+		"2hz5ncl8tizk5nx",                        // systems collection
+		"status != 'paused' && type == 'server'", // filter
+		"updated",                                // sort
+		-1,                                       // limit
+		0,                                        // offset
 	)
 	// log.Println("records", len(records))
 	if err != nil || len(records) == 0 {
@@ -307,44 +364,11 @@ func (h *Hub) updateSystems() {
 		if record.GetString("status") != "down" {
 			done++
 		}
-		go h.updateSystem(record)
+		go h.pollSystem(record)
 	}
 }
 
-func (h *Hub) updateSystem(record *core.Record) {
-	var client *ssh.Client
-	var err error
-
-	// check if system connection exists
-	if existingClient, ok := h.Store().GetOk(record.Id); ok {
-		client = existingClient.(*ssh.Client)
-	} else {
-		// create system connection
-		client, err = h.createSystemConnection(record)
-		if err != nil {
-			if record.GetString("status") != "down" {
-				h.Logger().Error("Failed to connect:", "err", err.Error(), "system", record.GetString("host"), "port", record.GetString("port"))
-				h.updateSystemStatus(record, "down")
-			}
-			return
-		}
-		h.Store().Set(record.Id, client)
-	}
-	// get system stats from agent
-	var systemData system.CombinedData
-	if err := h.requestJsonFromAgent(client, &systemData); err != nil {
-		if err.Error() == "bad client" {
-			// if previous connection was closed, try again
-			h.Logger().Error("Existing SSH connection closed. Retrying...", "host", record.GetString("host"), "port", record.GetString("port"))
-			h.deleteSystemConnection(record)
-			time.Sleep(time.Millisecond * 100)
-			h.updateSystem(record)
-			return
-		}
-		h.Logger().Error("Failed to get system stats: ", "err", err.Error())
-		h.updateSystemStatus(record, "down")
-		return
-	}
+func (h *Hub) updateSystemRecord(record *core.Record, systemData system.CombinedData) {
 	// update system record
 	record.Set("status", "up")
 	record.Set("info", systemData.Info)
@@ -381,6 +405,50 @@ func (h *Hub) updateSystem(record *core.Record) {
 	}
 }
 
+// pollSystem connects to a server type beszel client on a specified port and prompts it for a record
+func (h *Hub) pollSystem(record *core.Record) {
+	if record.GetString("type") != "server" {
+		h.Logger().Debug("Beszel attempted to poll a non-server system")
+		return
+	}
+
+	var client *ssh.Client
+	var err error
+
+	// check if system connection exists
+	if existingClient, ok := h.Store().GetOk(record.Id); ok {
+		client = existingClient.(*ssh.Client)
+	} else {
+		// create system connection
+		client, err = h.createSystemConnection(record)
+		if err != nil {
+			if record.GetString("status") != "down" {
+				h.Logger().Error("Failed to connect:", "err", err.Error(), "system", record.GetString("host"), "port", record.GetString("port"))
+				h.updateSystemStatus(record, "down")
+			}
+			return
+		}
+		h.Store().Set(record.Id, client)
+	}
+	// get system stats from agent
+	var systemData system.CombinedData
+	if err := h.requestJsonFromAgent(client, &systemData); err != nil {
+		if err.Error() == "bad client" {
+			// if previous connection was closed, try again
+			h.Logger().Error("Existing SSH connection closed. Retrying...", "host", record.GetString("host"), "port", record.GetString("port"))
+			h.deleteSystemConnection(record)
+			time.Sleep(time.Millisecond * 100)
+			h.pollSystem(record)
+			return
+		}
+		h.Logger().Error("Failed to get system stats: ", "err", err.Error())
+		h.updateSystemStatus(record, "down")
+		return
+	}
+
+	h.updateSystemRecord(record, systemData)
+}
+
 // return system_stats and container_stats collections
 func (h *Hub) getCollections() (*core.Collection, *core.Collection, error) {
 	if h.systemStats == nil {
@@ -413,9 +481,12 @@ func (h *Hub) updateSystemStatus(record *core.Record, status string) {
 // delete system connection from map and close connection
 func (h *Hub) deleteSystemConnection(record *core.Record) {
 	if client, ok := h.Store().GetOk(record.Id); ok {
-		if sshClient := client.(*ssh.Client); sshClient != nil {
+		if sshClient, ok := client.(*ssh.Client); ok && sshClient != nil {
+			sshClient.Close()
+		} else if sshClient, ok := client.(*ssh.ServerConn); ok && sshClient != nil {
 			sshClient.Close()
 		}
+
 		h.Store().Remove(record.Id)
 	}
 }
@@ -429,22 +500,16 @@ func (h *Hub) createSystemConnection(record *core.Record) (*ssh.Client, error) {
 }
 
 func (h *Hub) createSSHClientConfig() error {
-	key, err := h.getSSHKey()
+	privateKey, err := h.getSSHKey()
 	if err != nil {
 		h.Logger().Error("Failed to get SSH key: ", "err", err.Error())
-		return err
-	}
-
-	// Create the Signer for this private key.
-	signer, err := ssh.ParsePrivateKey(key)
-	if err != nil {
 		return err
 	}
 
 	h.sshClientConfig = &ssh.ClientConfig{
 		User: "u",
 		Auth: []ssh.AuthMethod{
-			ssh.PublicKeys(signer),
+			ssh.PublicKeys(privateKey),
 		},
 		HostKeyCallback: ssh.InsecureIgnoreHostKey(),
 		Timeout:         4 * time.Second,
@@ -456,7 +521,7 @@ func (h *Hub) createSSHClientConfig() error {
 func (h *Hub) requestJsonFromAgent(client *ssh.Client, systemData *system.CombinedData) error {
 	session, err := newSessionWithTimeout(client, 4*time.Second)
 	if err != nil {
-		return fmt.Errorf("bad client")
+		return fmt.Errorf("bad client: %w", err)
 	}
 	defer session.Close()
 
@@ -507,72 +572,50 @@ func newSessionWithTimeout(client *ssh.Client, timeout time.Duration) (*ssh.Sess
 	}
 }
 
-func (h *Hub) getSSHKey() ([]byte, error) {
-	dataDir := h.DataDir()
+func (h *Hub) getSSHKey() (ssh.Signer, error) {
+	privateKeyPath := path.Join(h.DataDir(), "id_ed25519")
+
 	// check if the key pair already exists
-	existingKey, err := os.ReadFile(dataDir + "/id_ed25519")
+	existingKey, err := os.ReadFile(privateKeyPath)
 	if err == nil {
-		if pubKey, err := os.ReadFile(h.DataDir() + "/id_ed25519.pub"); err == nil {
-			h.pubKey = strings.TrimSuffix(string(pubKey), "\n")
+
+		private, err := ssh.ParsePrivateKey(existingKey)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse private key: %s", err)
 		}
-		// return existing private key
-		return existingKey, nil
+
+		pubKeyBytes := ssh.MarshalAuthorizedKey(private.PublicKey())
+
+		h.pubKey = strings.TrimSuffix(string(pubKeyBytes), "\n")
+
+		return private, nil
 	}
 
 	// Generate the Ed25519 key pair
 	pubKey, privKey, err := ed25519.GenerateKey(nil)
 	if err != nil {
-		// h.Logger().Error("Error generating key pair:", "err", err.Error())
 		return nil, err
 	}
 
 	// Get the private key in OpenSSH format
-	privKeyBytes, err := ssh.MarshalPrivateKey(privKey, "")
-	if err != nil {
-		// h.Logger().Error("Error marshaling private key:", "err", err.Error())
-		return nil, err
-	}
-
-	// Save the private key to a file
-	privateFile, err := os.Create(dataDir + "/id_ed25519")
-	if err != nil {
-		// h.Logger().Error("Error creating private key file:", "err", err.Error())
-		return nil, err
-	}
-	defer privateFile.Close()
-
-	if err := pem.Encode(privateFile, privKeyBytes); err != nil {
-		// h.Logger().Error("Error writing private key to file:", "err", err.Error())
-		return nil, err
-	}
-
-	// Generate the public key in OpenSSH format
-	publicKey, err := ssh.NewPublicKey(pubKey)
+	privKeyPem, err := ssh.MarshalPrivateKey(privKey, "")
 	if err != nil {
 		return nil, err
 	}
 
-	pubKeyBytes := ssh.MarshalAuthorizedKey(publicKey)
+	if err := os.WriteFile(privateKeyPath, pem.EncodeToMemory(privKeyPem), 0600); err != nil {
+		return nil, fmt.Errorf("failed to write private key to %q: err: %w", privateKeyPath, err)
+	}
+
+	// These are fine to ignore the errors on, as we've literally just created a crypto.PublicKey | crypto.Signer
+	sshPubKey, _ := ssh.NewPublicKey(pubKey)
+	sshPrivate, _ := ssh.NewSignerFromSigner(privKey)
+
+	pubKeyBytes := ssh.MarshalAuthorizedKey(sshPubKey)
 	h.pubKey = strings.TrimSuffix(string(pubKeyBytes), "\n")
 
-	// Save the public key to a file
-	publicFile, err := os.Create(dataDir + "/id_ed25519.pub")
-	if err != nil {
-		return nil, err
-	}
-	defer publicFile.Close()
-
-	if _, err := publicFile.Write(pubKeyBytes); err != nil {
-		return nil, err
-	}
-
 	h.Logger().Info("ed25519 SSH key pair generated successfully.")
-	h.Logger().Info("Private key saved to: " + dataDir + "/id_ed25519")
-	h.Logger().Info("Public key saved to: " + dataDir + "/id_ed25519.pub")
+	h.Logger().Info("Saved to: " + privateKeyPath)
 
-	existingKey, err = os.ReadFile(dataDir + "/id_ed25519")
-	if err == nil {
-		return existingKey, nil
-	}
-	return nil, err
+	return sshPrivate, err
 }

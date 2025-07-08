@@ -3,10 +3,12 @@ import "./index.css"
 import { Suspense, lazy, useEffect } from "react"
 import ReactDOM from "react-dom/client"
 import Home from "./components/routes/home.tsx"
+import AddSystems from "./components/routes/add_systems.tsx"
+
 import { ThemeProvider } from "./components/theme-provider.tsx"
 import { DirectionProvider } from "@radix-ui/react-direction"
 import { $authenticated, $systems, pb, $publicKey, $hubVersion, $copyContent, $direction } from "./lib/stores.ts"
-import { updateUserSettings, updateAlerts, updateFavicon, updateSystemList } from "./lib/utils.ts"
+import { updateUserSettings, updateAlerts, updateFavicon, updateSystemList, updateNewSystemsList } from "./lib/utils.ts"
 import { useStore } from "@nanostores/react"
 import { Toaster } from "./components/ui/toaster.tsx"
 import { $router } from "./components/router.tsx"
@@ -25,6 +27,7 @@ const App = () => {
 	const authenticated = useStore($authenticated)
 	const systems = useStore($systems)
 
+
 	useEffect(() => {
 		// change auth store on auth change
 		pb.authStore.onChange(() => {
@@ -39,6 +42,10 @@ const App = () => {
 		updateUserSettings()
 		// get alerts after system list is loaded
 		updateSystemList().then(updateAlerts)
+
+
+		// Update any new systems so we can show an alert for that
+		updateNewSystemsList()
 
 		return () => updateFavicon("favicon.svg")
 	}, [])
@@ -67,6 +74,8 @@ const App = () => {
 		return <Home />
 	} else if (page.route === "system") {
 		return <SystemDetail name={page.params.name} />
+	} else if (page.route === "add_system") {
+		return <AddSystems />
 	} else if (page.route === "settings") {
 		return (
 			<Suspense>

@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { chartTimeData } from "@/lib/utils"
+import { chartTimeData, copyToClipboard } from "@/lib/utils"
 import { Separator } from "@/components/ui/separator"
-import { LanguagesIcon, LoaderCircleIcon, SaveIcon } from "lucide-react"
+import { Copy, KeyIcon, LanguagesIcon, LoaderCircleIcon, SaveIcon } from "lucide-react"
 import { UserSettings } from "@/types"
 import { saveSettings } from "./layout"
 import { useState } from "react"
@@ -11,9 +11,12 @@ import { Trans } from "@lingui/macro"
 import languages from "@/lib/languages"
 import { dynamicActivate } from "@/lib/i18n"
 import { useLingui } from "@lingui/react"
+import { Input } from "@/components/ui/input"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+
 // import { setLang } from "@/lib/i18n"
 
-export default function SettingsProfilePage({ userSettings }: { userSettings: UserSettings }) {
+export default function SettingsProfilePage({ userSettings, apiKey: connectionKey }: { userSettings: UserSettings, apiKey: string }) {
 	const [isLoading, setIsLoading] = useState(false)
 	const { i18n } = useLingui()
 
@@ -38,6 +41,39 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 			</div>
 			<Separator className="my-4" />
 			<form onSubmit={handleSubmit} className="space-y-5">
+				<div className="space-y-2">
+					<div className="mb-4">
+						<h3 className="mb-1 text-lg font-medium flex items-center gap-2">
+							<KeyIcon className="h-4 w-4" />
+							<Trans>Connection Key</Trans>
+						</h3>
+					</div>
+					<div className="relative">
+
+					<Input readOnly={true} value={connectionKey}>
+					</Input>
+					<TooltipProvider delayDuration={100}>
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<Button
+									type="button"
+									variant={"link"}
+									className="absolute end-0 top-0"
+									onClick={() => copyToClipboard(connectionKey)}
+								>
+									<Copy className="h-4 w-4 " />
+								</Button>
+							</TooltipTrigger>
+							<TooltipContent>
+								<p>
+									<Trans>Click to copy</Trans>
+								</p>
+							</TooltipContent>
+						</Tooltip>
+					</TooltipProvider>
+					</div>
+				</div>
+				<Separator />
 				<div className="space-y-2">
 					<div className="mb-4">
 						<h3 className="mb-1 text-lg font-medium flex items-center gap-2">
