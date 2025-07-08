@@ -49,6 +49,7 @@ msgstr "30 nap"
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "Műveletek"
 
@@ -76,9 +77,6 @@ msgstr "URL hozzáadása"
 msgid "Adjust display options for charts."
 msgstr "Állítsa be a diagram megjelenítését."
 
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
@@ -186,7 +184,7 @@ msgstr "Ellenőrizd a naplót a további részletekért."
 msgid "Check your notification service"
 msgstr "Ellenőrizd az értesítési szolgáltatásodat"
 
-#: src/components/add-system.tsx
+#: src/components/ui/input-copy.tsx
 msgid "Click to copy"
 msgstr "Kattints a másoláshoz"
 
@@ -222,6 +220,11 @@ msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
 msgstr "Docker run másolása"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Environment variables"
+msgid "Copy env"
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Copy host"
 msgstr "Hoszt másolása"
@@ -233,6 +236,18 @@ msgstr "Linux parancs másolása"
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Szöveg másolása"
+
+#: src/components/add-system.tsx
+msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
+msgstr ""
+
+#: src/components/add-system.tsx
+msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
+msgstr ""
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy YAML"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "CPU"
@@ -265,6 +280,10 @@ msgstr "Alapértelmezett időszak"
 #: src/components/systems-table/systems-table.tsx
 msgid "Delete"
 msgstr "Törlés"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Delete fingerprint"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Disk"
@@ -329,6 +348,7 @@ msgstr "E-mail cím megadása a jelszó visszaállításához"
 msgid "Enter email address..."
 msgstr "Adja meg az e-mail címet..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/login/auth-form.tsx
@@ -521,6 +541,8 @@ msgid "On each restart, systems in the database will be updated to match the sys
 msgstr "Minden újraindításkor az adatbázisban lévő rendszerek frissítésre kerülnek, hogy megfeleljenek a fájlban meghatározott rendszereknek."
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
 msgstr "Menü megnyitása"
 
@@ -635,6 +657,10 @@ msgstr "Jelszó visszaállítása"
 msgid "Resume"
 msgstr "Folytatás"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Rotate token"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Mentse el a címet az Enter billentyű vagy a vessző használatával. Hagyja üresen az e-mail értesítések letiltásához."
@@ -669,7 +695,6 @@ msgstr "Elküldve"
 msgid "Sets the default time range for charts when a system is viewed."
 msgstr "Beállítja az alapértelmezett időtartamot a diagramokhoz, amikor egy rendszert néznek."
 
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -746,14 +771,6 @@ msgstr "Teszt <0>URL</0>"
 msgid "Test notification sent"
 msgstr "Teszt értesítés elküldve"
 
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
-msgstr "A csatlakozáshoz az ügynöknek futnia kell a rendszerben. Másolja ki az alábbi telepítési parancsot az ügynök telepítéséhez."
-
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
-msgstr "A csatlakozáshoz az ügynöknek futnia kell a rendszerben. Másolja az<0>docker-compose.yml</0> fájlt az ügynök futtatásához."
-
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Ezután jelentkezzen be a backendbe, és állítsa vissza a felhasználói fiók jelszavát a felhasználók táblázatban."
@@ -783,6 +800,24 @@ msgstr "Rács ki- és bekapcsolása"
 msgid "Toggle theme"
 msgstr "Téma váltása"
 
+#: src/components/add-system.tsx
+msgid "Token"
+msgstr ""
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "Tokens & Fingerprints"
+msgstr ""
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
+msgstr ""
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
+msgstr ""
+
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Bekapcsol, ha bármelyik érzékelő túllép egy küszöbértéket"
@@ -806,6 +841,10 @@ msgstr "Bekapcsol, amikor az állapot fel és le között változik"
 #: src/lib/utils.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Bekapcsol, ha a lemez érzékelő túllép egy küszöbértéket"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Universal token"
+msgstr ""
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx
@@ -861,6 +900,10 @@ msgstr "Szeretne segíteni nekünk abban, hogy fordításaink még jobbak legyen
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
 msgstr "Webhook / Push értesítések"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
+msgstr ""
 
 #: src/components/add-system.tsx
 msgctxt "Button to copy install command"

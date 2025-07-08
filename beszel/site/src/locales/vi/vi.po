@@ -49,6 +49,7 @@ msgstr "30 ngày"
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "Hành động"
 
@@ -76,9 +77,6 @@ msgstr "Thêm URL"
 msgid "Adjust display options for charts."
 msgstr "Điều chỉnh tùy chọn hiển thị cho biểu đồ."
 
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
@@ -186,7 +184,7 @@ msgstr "Kiểm tra nhật ký để biết thêm chi tiết."
 msgid "Check your notification service"
 msgstr "Kiểm tra dịch vụ thông báo của bạn"
 
-#: src/components/add-system.tsx
+#: src/components/ui/input-copy.tsx
 msgid "Click to copy"
 msgstr "Nhấp để sao chép"
 
@@ -222,6 +220,11 @@ msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
 msgstr "Sao chép docker run"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Environment variables"
+msgid "Copy env"
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Copy host"
 msgstr "Sao chép máy chủ"
@@ -233,6 +236,18 @@ msgstr "Sao chép lệnh Linux"
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Sao chép văn bản"
+
+#: src/components/add-system.tsx
+msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
+msgstr ""
+
+#: src/components/add-system.tsx
+msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
+msgstr ""
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy YAML"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "CPU"
@@ -265,6 +280,10 @@ msgstr "Thời gian mặc định"
 #: src/components/systems-table/systems-table.tsx
 msgid "Delete"
 msgstr "Xóa"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Delete fingerprint"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Disk"
@@ -329,6 +348,7 @@ msgstr "Nhập địa chỉ email để đặt lại mật khẩu"
 msgid "Enter email address..."
 msgstr "Nhập địa chỉ email..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/login/auth-form.tsx
@@ -521,6 +541,8 @@ msgid "On each restart, systems in the database will be updated to match the sys
 msgstr "Mỗi khi khởi động lại, các hệ thống trong cơ sở dữ liệu sẽ được cập nhật để khớp với các hệ thống được định nghĩa trong tệp."
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
 msgstr "Mở menu"
 
@@ -635,6 +657,10 @@ msgstr "Đặt lại Mật khẩu"
 msgid "Resume"
 msgstr "Tiếp tục"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Rotate token"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Lưu địa chỉ bằng cách sử dụng phím enter hoặc dấu phẩy. Để trống để vô hiệu hóa thông báo email."
@@ -669,7 +695,6 @@ msgstr "Đã gửi"
 msgid "Sets the default time range for charts when a system is viewed."
 msgstr "Đặt phạm vi thời gian mặc định cho biểu đồ khi một hệ thống được xem."
 
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -746,14 +771,6 @@ msgstr "Kiểm tra <0>URL</0>"
 msgid "Test notification sent"
 msgstr "Thông báo thử nghiệm đã được gửi"
 
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
-msgstr "Tác nhân phải đang chạy trên hệ thống để kết nối. Sao chép lệnh cài đặt cho tác nhân bên dưới."
-
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
-msgstr "Tác nhân phải đang chạy trên hệ thống để kết nối. Sao chép <0>docker-compose.yml</0> cho tác nhân bên dưới."
-
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Sau đó đăng nhập vào backend và đặt lại mật khẩu tài khoản người dùng của bạn trong bảng người dùng."
@@ -783,6 +800,24 @@ msgstr "Chuyển đổi lưới"
 msgid "Toggle theme"
 msgstr "Chuyển đổi chủ đề"
 
+#: src/components/add-system.tsx
+msgid "Token"
+msgstr ""
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "Tokens & Fingerprints"
+msgstr ""
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
+msgstr ""
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
+msgstr ""
+
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Kích hoạt khi bất kỳ cảm biến nào vượt quá ngưỡng"
@@ -806,6 +841,10 @@ msgstr "Kích hoạt khi trạng thái chuyển đổi giữa lên và xuống"
 #: src/lib/utils.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Kích hoạt khi sử dụng bất kỳ đĩa nào vượt quá ngưỡng"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Universal token"
+msgstr ""
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx
@@ -861,6 +900,10 @@ msgstr "Muốn giúp chúng tôi cải thiện bản dịch của mình? Xem <0>
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
 msgstr "Thông báo Webhook / Push"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
+msgstr ""
 
 #: src/components/add-system.tsx
 msgctxt "Button to copy install command"
