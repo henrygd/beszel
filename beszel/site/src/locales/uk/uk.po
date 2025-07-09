@@ -8,7 +8,7 @@ msgstr ""
 "Language: uk\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-04-27 11:20\n"
+"PO-Revision-Date: 2025-07-09 00:09\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -49,6 +49,7 @@ msgstr "30 днів"
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "Дії"
 
@@ -76,9 +77,6 @@ msgstr "Додати URL"
 msgid "Adjust display options for charts."
 msgstr "Налаштуйте параметри відображення для графіків."
 
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
@@ -186,7 +184,7 @@ msgstr "Перевірте журнали для отримання додатк
 msgid "Check your notification service"
 msgstr "Перевірте свій сервіс сповіщень"
 
-#: src/components/add-system.tsx
+#: src/components/ui/input-copy.tsx
 msgid "Click to copy"
 msgstr "Натисніть, щоб скопіювати"
 
@@ -222,6 +220,11 @@ msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
 msgstr "Копіювати docker run"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Environment variables"
+msgid "Copy env"
+msgstr "Копіювати змінні середовища"
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Copy host"
 msgstr "Копіювати хост"
@@ -233,6 +236,18 @@ msgstr "Копіювати команду Linux"
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Копіювати текст"
+
+#: src/components/add-system.tsx
+msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
+msgstr "Скопіюйте команду встановлення для агента нижче, або зареєструйте агентів автоматично за допомогою <0>універсального токена</0>."
+
+#: src/components/add-system.tsx
+msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
+msgstr "Скопіюйте вміст <0>docker-compose.yml</0> для агента нижче, або зареєструйте агентів автоматично за допомогою <1>універсального токена</1>."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy YAML"
+msgstr "Копіювати YAML"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "CPU"
@@ -265,6 +280,10 @@ msgstr "Стандартний період часу"
 #: src/components/systems-table/systems-table.tsx
 msgid "Delete"
 msgstr "Видалити"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Delete fingerprint"
+msgstr "Видалити відбиток"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Disk"
@@ -329,6 +348,7 @@ msgstr "Введіть адресу електронної пошти для с�
 msgid "Enter email address..."
 msgstr "Введіть адресу електронної пошти..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/login/auth-form.tsx
@@ -521,6 +541,8 @@ msgid "On each restart, systems in the database will be updated to match the sys
 msgstr "При кожному перезапуску системи в базі даних будуть оновлені, щоб відповідати системам, визначеним у файлі."
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
 msgstr "Відкрити меню"
 
@@ -635,6 +657,10 @@ msgstr "Скинути пароль"
 msgid "Resume"
 msgstr "Відновити"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Rotate token"
+msgstr "Оновити токен"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Збережіть адресу, використовуючи клавішу Enter або кому. Залиште порожнім, щоб вимкнути сповіщення електронною поштою."
@@ -669,7 +695,6 @@ msgstr "Відправлено"
 msgid "Sets the default time range for charts when a system is viewed."
 msgstr "Встановлює стандартний діапазон часу для графіків при перегляді системи."
 
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -746,14 +771,6 @@ msgstr "Тест <0>URL</0>"
 msgid "Test notification sent"
 msgstr "Тестове сповіщення надіслано"
 
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
-msgstr "Агент повинен працювати на системі для підключення. Скопіюйте команду встановлення для агента нижче."
-
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
-msgstr "Агент повинен працювати на системі для підключення. Скопіюйте <0>docker-compose.yml</0> для агента нижче."
-
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Потім увійдіть у бекенд і скиньте пароль вашого облікового запису користувача в таблиці користувачів."
@@ -783,6 +800,24 @@ msgstr "Перемкнути сітку"
 msgid "Toggle theme"
 msgstr "Перемкнути тему"
 
+#: src/components/add-system.tsx
+msgid "Token"
+msgstr "Токен"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "Tokens & Fingerprints"
+msgstr "Токени та Відбитки"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
+msgstr "Токени дозволяють агентам підключатися та реєструватися. Відбитки - це стабільні ідентифікатори, унікальні для кожної системи, встановлюються при першому підключенні."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
+msgstr "Токени та відбитки використовуються для автентифікації WebSocket з'єднань до хабу."
+
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Спрацьовує, коли будь-який датчик перевищує поріг"
@@ -806,6 +841,10 @@ msgstr "Спрацьовує, коли статус перемикається �
 #: src/lib/utils.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Спрацьовує, коли використання будь-якого диска перевищує поріг"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Universal token"
+msgstr "Універсальний токен"
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx
@@ -861,6 +900,10 @@ msgstr "Хочете допомогти покращити наші перекл
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
 msgstr "Webhook / Push сповіщення"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
+msgstr "Коли увімкнено, цей токен дозволяє агентам самостійно реєструватися без попереднього створення системи. Термін дії закінчується через годину або при перезапуску хабу."
 
 #: src/components/add-system.tsx
 msgctxt "Button to copy install command"
