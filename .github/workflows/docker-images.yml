@@ -3,7 +3,7 @@ name: Make docker images
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   build:
@@ -65,12 +65,10 @@ jobs:
         with:
           images: ${{ matrix.image }}
           tags: |
+            type=edge,enable=true
             type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}},enable=${{ !contains(github.ref, '-beta') && !contains(github.ref, '-rc') }}
-            type=semver,pattern={{major}},enable=${{ !contains(github.ref, '-beta') && !contains(github.ref, '-rc') }}
-            type=raw,value=latest,enable=${{ !contains(github.ref, '-beta') && !contains(github.ref, '-rc') }}
-            type=raw,value=beta,enable=${{ contains(github.ref, '-beta') }}
-            type=raw,value=rc,enable=${{ contains(github.ref, '-rc') }}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
             type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
 
       # https://github.com/docker/login-action
@@ -87,7 +85,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: '${{ matrix.context }}'
+          context: "${{ matrix.context }}"
           file: ${{ matrix.dockerfile }}
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: ${{ github.ref_type == 'tag' }}

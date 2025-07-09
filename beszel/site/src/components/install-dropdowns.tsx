@@ -4,7 +4,7 @@ import { copyToClipboard, getHubURL } from "@/lib/utils"
 import { i18n } from "@lingui/core"
 
 const isBeta = BESZEL.HUB_VERSION.includes("beta")
-const imageTag = isBeta ? ":beta" : ""
+const imageTag = isBeta ? ":edge" : ""
 
 /**
  * Get the URL of the script to install the agent.
