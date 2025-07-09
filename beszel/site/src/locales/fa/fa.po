@@ -211,11 +211,13 @@ msgid "Copied to clipboard"
 msgstr "در کلیپ‌بورد کپی شد"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
 msgstr "کپی docker compose"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
 msgstr "کپی docker run"
@@ -230,6 +232,7 @@ msgid "Copy host"
 msgstr "کپی میزبان"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
 msgstr "کپی دستور لینوکس"
 
@@ -396,6 +399,10 @@ msgstr "به‌روزرسانی هشدار ناموفق بود"
 msgid "Filter..."
 msgstr "فیلتر..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Fingerprint"
+msgstr ""
+
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "برای <0>{min}</0> {min, plural, one {دقیقه} other {دقیقه}}"
@@ -419,6 +426,7 @@ msgid "Grid"
 msgstr "جدول"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
 msgstr "دستور Homebrew"
@@ -734,6 +742,7 @@ msgstr "میزان استفاده از Swap"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "سیستم"
 
@@ -801,6 +810,7 @@ msgid "Toggle theme"
 msgstr "تغییر تم"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
 msgstr "توکن"
 
@@ -906,6 +916,7 @@ msgid "When enabled, this token allows agents to self-register without prior sys
 msgstr "هنگامی که فعال است، این توکن به عامل‌ها اجازه خودثبت‌نامی بدون ایجاد سیستم قبلی می‌دهد. پس از یک ساعت یا در راه‌اندازی مجدد هاب منقضی می‌شود."
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
 msgstr "دستور Windows"

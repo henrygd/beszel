@@ -211,11 +211,13 @@ msgid "Copied to clipboard"
 msgstr "已複製到剪貼簿"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
 msgstr "复制 docker compose"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
 msgstr "复制 docker run"
@@ -230,6 +232,7 @@ msgid "Copy host"
 msgstr "複製主機"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
 msgstr "複製 Linux 指令"
 
@@ -396,6 +399,10 @@ msgstr "更新警報失敗"
 msgid "Filter..."
 msgstr "篩選..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Fingerprint"
+msgstr ""
+
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "持續<0>{min}</0> {min, plural, one {分鐘} other {分鐘}}"
@@ -419,6 +426,7 @@ msgid "Grid"
 msgstr "網格"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
 msgstr "Homebrew 命令"
@@ -734,6 +742,7 @@ msgstr "虛擬記憶體使用量"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "系統"
 
@@ -801,6 +810,7 @@ msgid "Toggle theme"
 msgstr "切換主題"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
 msgstr "令牌"
 
@@ -906,6 +916,7 @@ msgid "When enabled, this token allows agents to self-register without prior sys
 msgstr "啟用時，此令牌允許代理程式在無需預先創建系統的情況下自動註冊。在一小時後或中心重啟時過期。"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
 msgstr "Windows 命令"

@@ -211,11 +211,13 @@ msgid "Copied to clipboard"
 msgstr "Kopieret til udklipsholder"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
 msgstr "Kopiér docker compose"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
 msgstr "Kopiér docker run"
@@ -230,6 +232,7 @@ msgid "Copy host"
 msgstr "Kopier host"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
 msgstr "Kopier Linux kommando"
 
@@ -396,6 +399,10 @@ msgstr "Kunne ikke opdatere alarm"
 msgid "Filter..."
 msgstr "Filter..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Fingerprint"
+msgstr ""
+
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "For <0>{min}</0> {min, plural, one {minut} other {minutter}}"
@@ -419,6 +426,7 @@ msgid "Grid"
 msgstr "Gitter"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
 msgstr "Homebrew-kommando"
@@ -734,6 +742,7 @@ msgstr "Swap forbrug"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "System"
 
@@ -801,6 +810,7 @@ msgid "Toggle theme"
 msgstr "Skift tema"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
 msgstr ""
 
@@ -906,6 +916,7 @@ msgid "When enabled, this token allows agents to self-register without prior sys
 msgstr ""
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
 msgstr "Windows-kommando"

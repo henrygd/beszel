@@ -211,11 +211,13 @@ msgid "Copied to clipboard"
 msgstr "تم النسخ إلى الحافظة"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
 msgstr "نسخ docker compose"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
 msgstr "نسخ docker run"
@@ -230,6 +232,7 @@ msgid "Copy host"
 msgstr "نسخ المضيف"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
 msgstr "نسخ أمر لينكس"
 
@@ -396,6 +399,10 @@ msgstr "فشل في تحديث التنبيه"
 msgid "Filter..."
 msgstr "تصفية..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Fingerprint"
+msgstr ""
+
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "لمدة <0>{min}</0> {min, plural, one {دقيقة} other {دقائق}}"
@@ -419,6 +426,7 @@ msgid "Grid"
 msgstr "شبكة"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
 msgstr "أمر Homebrew"
@@ -734,6 +742,7 @@ msgstr "استخدام التبديل"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "النظام"
 
@@ -801,6 +810,7 @@ msgid "Toggle theme"
 msgstr "تبديل السمة"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
 msgstr "رمز مميز"
 
@@ -906,6 +916,7 @@ msgid "When enabled, this token allows agents to self-register without prior sys
 msgstr "عند التفعيل، يسمح هذا الرمز المميز للوكلاء بالتسجيل الذاتي دون إنشاء نظام مسبق. ينتهي بعد ساعة واحدة أو عند إعادة تشغيل المحور."
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
 msgstr "أمر Windows"

@@ -211,11 +211,13 @@ msgid "Copied to clipboard"
 msgstr "Panoya kopyalandı"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
 msgstr "Docker compose kopyala"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
 msgstr "Docker run kopyala"
@@ -230,6 +232,7 @@ msgid "Copy host"
 msgstr "Ana bilgisayarı kopyala"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
 msgstr "Linux komutunu kopyala"
 
@@ -396,6 +399,10 @@ msgstr "Uyarı güncellenemedi"
 msgid "Filter..."
 msgstr "Filtrele..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Fingerprint"
+msgstr ""
+
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "<0>{min}</0> {min, plural, one {dakika} other {dakika}} için"
@@ -419,6 +426,7 @@ msgid "Grid"
 msgstr "Izgara"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
 msgstr "Homebrew komutu"
@@ -734,6 +742,7 @@ msgstr "Takas Kullanımı"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "Sistem"
 
@@ -801,6 +810,7 @@ msgid "Toggle theme"
 msgstr "Temayı değiştir"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
 msgstr "Token"
 
@@ -906,6 +916,7 @@ msgid "When enabled, this token allows agents to self-register without prior sys
 msgstr "Etkinleştirildiğinde, bu token agentların önceden sistem oluşturmadan kendilerini kaydetmelerine izin verir. Bir saat sonra veya hub yeniden başlatıldığında sona erer."
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
 msgstr "Windows komutu"

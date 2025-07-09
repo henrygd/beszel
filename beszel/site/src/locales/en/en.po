@@ -206,11 +206,13 @@ msgid "Copied to clipboard"
 msgstr "Copied to clipboard"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
 msgstr "Copy docker compose"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
 msgstr "Copy docker run"
@@ -225,6 +227,7 @@ msgid "Copy host"
 msgstr "Copy host"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
 msgstr "Copy Linux command"
 
@@ -391,6 +394,10 @@ msgstr "Failed to update alert"
 msgid "Filter..."
 msgstr "Filter..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Fingerprint"
+msgstr "Fingerprint"
+
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -414,6 +421,7 @@ msgid "Grid"
 msgstr "Grid"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
 msgstr "Homebrew command"
@@ -729,6 +737,7 @@ msgstr "Swap Usage"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "System"
 
@@ -796,6 +805,7 @@ msgid "Toggle theme"
 msgstr "Toggle theme"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
 msgstr "Token"
 
@@ -901,6 +911,7 @@ msgid "When enabled, this token allows agents to self-register without prior sys
 msgstr "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
 msgstr "Windows command"

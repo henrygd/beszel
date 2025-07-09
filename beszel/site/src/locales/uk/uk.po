@@ -211,11 +211,13 @@ msgid "Copied to clipboard"
 msgstr "Скопійовано в буфер обміну"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
 msgstr "Копіювати docker compose"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
 msgstr "Копіювати docker run"
@@ -230,6 +232,7 @@ msgid "Copy host"
 msgstr "Копіювати хост"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
 msgstr "Копіювати команду Linux"
 
@@ -396,6 +399,10 @@ msgstr "Не вдалося оновити сповіщення"
 msgid "Filter..."
 msgstr "Фільтр..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Fingerprint"
+msgstr ""
+
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "Протягом <0>{min}</0> {min, plural, one {хвилини} other {хвилин}}"
@@ -419,6 +426,7 @@ msgid "Grid"
 msgstr "Сітка"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
 msgstr "Команда Homebrew"
@@ -734,6 +742,7 @@ msgstr "Використання підкачки"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "Система"
 
@@ -801,6 +810,7 @@ msgid "Toggle theme"
 msgstr "Перемкнути тему"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
 msgstr "Токен"
 
@@ -906,6 +916,7 @@ msgid "When enabled, this token allows agents to self-register without prior sys
 msgstr "Коли увімкнено, цей токен дозволяє агентам самостійно реєструватися без попереднього створення системи. Термін дії закінчується через годину або при перезапуску хабу."
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
 msgstr "Команда Windows"
