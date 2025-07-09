@@ -8,7 +8,7 @@ msgstr ""
 "Language: no\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-04-26 21:53\n"
+"PO-Revision-Date: 2025-07-09 00:09\n"
 "Last-Translator: \n"
 "Language-Team: Norwegian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -49,6 +49,7 @@ msgstr "30 dager"
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "Handlinger"
 
@@ -76,9 +77,6 @@ msgstr "Legg Til URL"
 msgid "Adjust display options for charts."
 msgstr "Juster visningsalternativer for diagrammer."
 
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
@@ -186,7 +184,7 @@ msgstr "Sjekk loggene for flere detaljer."
 msgid "Check your notification service"
 msgstr "Sjekk din meldingstjeneste"
 
-#: src/components/add-system.tsx
+#: src/components/ui/input-copy.tsx
 msgid "Click to copy"
 msgstr "Klikk for å kopiere"
 
@@ -222,6 +220,11 @@ msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
 msgstr "Kopier docker run"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Environment variables"
+msgid "Copy env"
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Copy host"
 msgstr "Kopier vert"
@@ -233,6 +236,18 @@ msgstr "Kopier Linux-kommando"
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Kopier tekst"
+
+#: src/components/add-system.tsx
+msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
+msgstr ""
+
+#: src/components/add-system.tsx
+msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
+msgstr ""
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy YAML"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "CPU"
@@ -265,6 +280,10 @@ msgstr "Standard tidsperiode"
 #: src/components/systems-table/systems-table.tsx
 msgid "Delete"
 msgstr "Slett"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Delete fingerprint"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Disk"
@@ -329,6 +348,7 @@ msgstr "Skriv inn e-postadresse for å nullstille passordet"
 msgid "Enter email address..."
 msgstr "Skriv inn e-postadresse..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/login/auth-form.tsx
@@ -521,6 +541,8 @@ msgid "On each restart, systems in the database will be updated to match the sys
 msgstr "Ved hver omstart vil systemer i databasen bli oppdatert til å matche systemene definert i fila."
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
 msgstr "Åpne meny"
 
@@ -635,6 +657,10 @@ msgstr "Nullstill Passord"
 msgid "Resume"
 msgstr "Gjenoppta"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Rotate token"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Lagre adressen med Enter-tasten eller komma. La feltet være tomt for å deaktivere e-postvarsler."
@@ -669,7 +695,6 @@ msgstr "Sendt"
 msgid "Sets the default time range for charts when a system is viewed."
 msgstr "Angir standard tidsperiode for diagrammer når et system vises."
 
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -746,14 +771,6 @@ msgstr "Test <0>URL</0>"
 msgid "Test notification sent"
 msgstr "Test-varsling sendt"
 
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
-msgstr "Agenten må kjøre på systemet du vil koble til. Kopier installasjons-kommandoen for agenten under."
-
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
-msgstr "Agenten må kjøre på systemet du vil koble til. Kopier <0>docker-compose.yml</0> for agenten under."
-
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Logg deretter inn i backend og nullstill passordet på din konto i users-tabellen."
@@ -783,6 +800,24 @@ msgstr "Rutenett av/på"
 msgid "Toggle theme"
 msgstr "Tema av/på"
 
+#: src/components/add-system.tsx
+msgid "Token"
+msgstr ""
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "Tokens & Fingerprints"
+msgstr ""
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
+msgstr ""
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
+msgstr ""
+
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Slår inn når enhver sensor overstiger en grenseverdi"
@@ -806,6 +841,10 @@ msgstr "Slår inn når statusen veksler mellom oppe og nede"
 #: src/lib/utils.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Slår inn når forbruk av hvilken som helst disk overstiger en grenseverdi"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Universal token"
+msgstr ""
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx
@@ -861,6 +900,10 @@ msgstr "Vil du hjelpe oss med å gjøre oversettelsene enda bedre? Ta en titt p�
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
 msgstr "Webhook / Push-varslinger"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
+msgstr ""
 
 #: src/components/add-system.tsx
 msgctxt "Button to copy install command"
