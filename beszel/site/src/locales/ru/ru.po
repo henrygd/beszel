@@ -8,7 +8,7 @@ msgstr ""
 "Language: ru\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-07-09 01:37\n"
+"PO-Revision-Date: 2025-07-09 08:25\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -225,7 +225,7 @@ msgstr "Скопировать docker run"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Environment variables"
 msgid "Copy env"
-msgstr ""
+msgstr "Копировать env"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Copy host"
@@ -242,15 +242,15 @@ msgstr "Копировать текст"
 
 #: src/components/add-system.tsx
 msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
-msgstr ""
+msgstr "Скопируйте команду для установки агента ниже, или зарегистрируйте агентов автоматически с помощью <0>универсального токена</0>."
 
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
-msgstr ""
+msgstr "Скопируйте <0>содержимое docker-compose.yml</0> для агента ниже, или зарегистрируйте агентов автоматически с помощью <1>универсального токена</1>."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
-msgstr ""
+msgstr "Копировать YAML"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "CPU"
@@ -286,7 +286,7 @@ msgstr "Удалить"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
-msgstr ""
+msgstr "Удалить цифровой отпечаток"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Disk"
@@ -401,7 +401,7 @@ msgstr "Фильтр..."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
-msgstr ""
+msgstr "Цифровой отпечаток"
 
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -667,7 +667,7 @@ msgstr "Возобновить"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
-msgstr ""
+msgstr "Обновить токен"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -812,21 +812,21 @@ msgstr "Переключить тему"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr ""
+msgstr "Токен"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Tokens & Fingerprints"
-msgstr ""
+msgstr "Токены и цифровые отпечатки"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
-msgstr ""
+msgstr "Токены позволяют агентам подключаться и регистрироваться. Цифровые отпечатки являются постоянными идентификаторами, уникальными для каждой системы, которые создаются при первом подключении."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
-msgstr ""
+msgstr "Токены и цифровые отпечатки используются для аутентификации соединений WebSocket с хабом."
 
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -854,7 +854,7 @@ msgstr "Срабатывает, когда использование любог
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
-msgstr ""
+msgstr "Универсальный токен"
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx
@@ -913,7 +913,7 @@ msgstr "Webhook / Push уведомления"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
-msgstr ""
+msgstr "Если включено, этот токен позволяет агентам регистрироваться самостоятельно без предварительного создания системы. Истекает через час или при перезапуске хаба."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
