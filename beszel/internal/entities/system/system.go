@@ -107,24 +107,20 @@ type OsInfo struct {
 type Info struct {
 	Hostname      string        `json:"h" cbor:"0,keyasint"`
 	KernelVersion string        `json:"k,omitempty" cbor:"1,keyasint,omitempty"`
-	Cores         int           `json:"c" cbor:"2,keyasint"`
-	Threads       int           `json:"t,omitempty" cbor:"3,keyasint,omitempty"`
-	CpuModel      string        `json:"m" cbor:"4,keyasint"`
-	Uptime        uint64        `json:"u" cbor:"5,keyasint"`
-	Cpu           float64       `json:"cpu" cbor:"6,keyasint"`
-	MemPct        float64       `json:"mp" cbor:"7,keyasint"`
-	DiskPct       float64       `json:"dp" cbor:"8,keyasint"`
-	Bandwidth     float64       `json:"b" cbor:"9,keyasint"`
-	AgentVersion  string        `json:"v" cbor:"10,keyasint"`
-	Podman        bool          `json:"podman,omitempty" cbor:"11,keyasint,omitempty"`
-	GpuPct        float64       `json:"g,omitempty" cbor:"12,keyasint,omitempty"`
-	DashboardTemp float64       `json:"dt,omitempty" cbor:"13,keyasint,omitempty"`
+	Uptime        uint64        `json:"u"`
+	Cpu           float64       `json:"cpu"`
+	MemPct        float64       `json:"mp"`
+	DiskPct       float64       `json:"dp"`
+	Bandwidth     float64       `json:"b"`
+	AgentVersion  string        `json:"v"`
+	GpuPct        float64       `json:"g,omitempty"`
+	DashboardTemp float64       `json:"dt,omitempty"`
+	Podman        bool          `json:"podman,omitempty"`
 	Disks         []DiskInfo    `json:"d,omitempty"`
 	Networks      []NetworkInfo `json:"n,omitempty"`
 	Memory        []MemoryInfo  `json:"m,omitempty"`
 	Cpus          []CpuInfo     `json:"c,omitempty"`
 	Oses          []OsInfo      `json:"o,omitempty"`
-	Os            Os            `json:"os" cbor:"14,keyasint"`
 }
 
 // Final data structure to return to the hub

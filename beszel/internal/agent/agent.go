@@ -163,7 +163,11 @@ func (a *Agent) getFingerprint() string {
 	// if no fingerprint is found, generate one
 	fingerprint, err := host.HostID()
 	if err != nil || fingerprint == "" {
-		fingerprint = a.systemInfo.Hostname + a.systemInfo.CpuModel
+		cpuModel := ""
+		if len(a.systemInfo.Cpus) > 0 {
+			cpuModel = a.systemInfo.Cpus[0].Model
+		}
+		fingerprint = a.systemInfo.Hostname + cpuModel
 	}
 
 	// hash fingerprint
