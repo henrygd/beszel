@@ -19,23 +19,23 @@ import (
 )
 
 type Agent struct {
-	sync.Mutex                                   // Used to lock agent while collecting data
-	debug             bool                       // true if LOG_LEVEL is set to debug
-	zfs               bool                       // true if system has arcstats
-	memCalc           string                     // Memory calculation formula
-	fsNames           []string                   // List of filesystem device names being monitored
-	fsStats           map[string]*system.FsStats // Keeps track of disk stats for each filesystem
-	netInterfaces     map[string]struct{}        // Stores all valid network interfaces
-	netIoStats        system.NetIoStats          // Keeps track of bandwidth usage
-	dockerManager     *dockerManager             // Manages Docker API requests
-	sensorConfig      *SensorConfig              // Sensors config
-	systemInfo        system.Info                // Host system info
-	gpuManager        *GPUManager                // Manages GPU data
-	cache             *SessionCache              // Cache for system stats based on primary session ID
-	connectionManager *ConnectionManager         // Channel to signal connection events
-	server            *ssh.Server                // SSH server
-	dataDir           string                     // Directory for persisting data
-	keys              []gossh.PublicKey          // SSH public keys
+	sync.Mutex                                     // Used to lock agent while collecting data
+	debug             bool                         // true if LOG_LEVEL is set to debug
+	zfs               bool                         // true if system has arcstats
+	memCalc           string                       // Memory calculation formula
+	fsNames           []string                     // List of filesystem device names being monitored
+	fsStats           map[string]*system.FsStats   // Keeps track of disk stats for each filesystem
+	netInterfaces     map[string]struct{}          // Stores all valid network interfaces
+	netIoStats        map[string]system.NetIoStats // Keeps track of bandwidth usage
+	dockerManager     *dockerManager               // Manages Docker API requests
+	sensorConfig      *SensorConfig                // Sensors config
+	systemInfo        system.Info                  // Host system info
+	gpuManager        *GPUManager                  // Manages GPU data
+	cache             *SessionCache                // Cache for system stats based on primary session ID
+	connectionManager *ConnectionManager           // Channel to signal connection events
+	server            *ssh.Server                  // SSH server
+	dataDir           string                       // Directory for persisting data
+	keys              []gossh.PublicKey            // SSH public keys
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.

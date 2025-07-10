@@ -8,7 +8,7 @@ import { useStore } from "@nanostores/react"
 import { $networkInterfaceFilter } from "@/lib/stores"
 
 const getNestedValue = (path: string, max = false, data: any): number | null => {
-	return `stats.ni.${path}${max ? "m" : ""}`
+	return `stats.ns.${path}${max ? "m" : ""}`
 		.split(".")
 		.reduce((acc: any, key: string) => acc?.[key] ?? (data.stats?.cpum ? 0 : null), data)
 }
@@ -33,7 +33,7 @@ export default memo(function NetworkInterfaceChart({
 	const networkInterfaces = useMemo(() => {
 		if (chartData.systemStats.length === 0) return []
 		const latestStats = chartData.systemStats[chartData.systemStats.length - 1]
-		const allInterfaces = Object.keys(latestStats.stats.ni || {})
+		const allInterfaces = Object.keys(latestStats.stats.ns || {})
 		
 		// Filter interfaces based on filter value
 		if (networkInterfaceFilter) {
@@ -85,8 +85,8 @@ export default memo(function NetworkInterfaceChart({
 		
 		// Find the maximum value across all network interfaces and all data points
 		for (const stats of chartData.systemStats) {
-			if (stats.stats?.ni) {
-				for (const iface of Object.values(stats.stats.ni)) {
+			if (stats.stats?.ns) {
+				for (const iface of Object.values(stats.stats.ns)) {
 					const sent = showMax ? (iface.nsm ?? iface.ns ?? 0) : (iface.ns ?? 0)
 					const received = showMax ? (iface.nrm ?? iface.nr ?? 0) : (iface.nr ?? 0)
 					maxValue = Math.max(maxValue, sent, received)

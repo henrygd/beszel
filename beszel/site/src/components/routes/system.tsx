@@ -245,7 +245,7 @@ export default function SystemDetail({ name }: { name: string }) {
 	useEffect(() => {
 		if (systemStats.length > 0) {
 			const latestStats = systemStats[systemStats.length - 1]
-			const networkInterfaces = Object.keys(latestStats.stats.ni || {})
+			const networkInterfaces = Object.keys(latestStats.stats.ns || {})
 			if (networkInterfaces.length > 0) {
 				!networkInterfaceFilterBar && setNetworkInterfaceFilterBar(<FilterBar store={$networkInterfaceFilter} />)
 			} else if (networkInterfaceFilterBar) {
@@ -400,6 +400,8 @@ export default function SystemDetail({ name }: { name: string }) {
 		translatedStatus = t({ message: "Down", comment: "Context: System is down" })
 	}
 
+	const latestNetworkStats = systemStats.at(-1)?.stats.ns;
+
 	return (
 		<>
 			<div id="chartwrap" className="grid gap-4 mb-10 overflow-x-clip">
@@ -541,7 +543,7 @@ export default function SystemDetail({ name }: { name: string }) {
 					</ChartCard>
 
 					{/* Network interface charts */}
-					{Object.keys(systemStats.at(-1)?.stats.ni ?? {}).length > 0 && (
+					{Object.keys(latestNetworkStats ?? {}).length > 0 && (
 						<>
 							<ChartCard
 								empty={dataEmpty}
