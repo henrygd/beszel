@@ -113,6 +113,8 @@ export interface SystemStats {
 	efs?: Record<string, ExtraFsStats>
 	/** GPU data */
 	g?: Record<string, GPUData>
+	/** extra data */
+	eData?: Record<string, number>
 }
 
 export interface GPUData {
@@ -188,6 +190,22 @@ export interface ChartTimeData {
 		format: (timestamp: string) => string
 		getOffset: (endTime: Date) => Date
 	}
+}
+
+/** External Data Config - For using custom data */
+export interface ExtraDataConfig extends RecordModel {
+	systemId: string
+	name: string
+	title: string
+	description: string
+	unit: string
+	keys: Record<string, ExtraDataKey>
+}
+
+export type ExtraDataKey = {
+	label: string
+	color: number
+	opacity: number
 }
 
 export type UserSettings = {
