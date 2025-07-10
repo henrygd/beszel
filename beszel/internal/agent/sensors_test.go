@@ -4,11 +4,14 @@
 package agent
 
 import (
+	"beszel/internal/entities/system"
 	"context"
+	"fmt"
 	"os"
 	"testing"
 
 	"github.com/shirou/gopsutil/v4/common"
+	"github.com/shirou/gopsutil/v4/sensors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -371,4 +374,180 @@ func TestNewSensorConfig(t *testing.T) {
 	sysPath, ok := envMap[common.HostSysEnvKey]
 	require.True(t, ok, "EnvMap should contain HostSysEnvKey")
 	assert.Equal(t, "/test/path", sysPath)
+}
+
+func TestScaleTemperature(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    float64
+		expected float64
+		desc     string
+	}{
+		// Normal temperatures (no scaling needed)
+		{"normal_cpu_temp", 45.0, 45.0, "Normal CPU temperature"},
+		{"normal_room_temp", 25.0, 25.0, "Normal room temperature"},
+		{"high_cpu_temp", 85.0, 85.0, "High CPU temperature"},
+		// Zero temperature
+		{"zero_temp", 0.0, 0.0, "Zero temperature"},
+		// Fractional values that should use 100x scaling
+		{"fractional_45c", 0.45, 45.0, "0.45 should become 45°C (100x)"},
+		{"fractional_25c", 0.25, 25.0, "0.25 should become 25°C (100x)"},
+		{"fractional_60c", 0.60, 60.0, "0.60 should become 60°C (100x)"},
+		{"fractional_75c", 0.75, 75.0, "0.75 should become 75°C (100x)"},
+		{"fractional_30c", 0.30, 30.0, "0.30 should become 30°C (100x)"},
+		// Fractional values that should use 1000x scaling
+		{"millifractional_45c", 0.045, 45.0, "0.045 should become 45°C (1000x)"},
+		{"millifractional_25c", 0.025, 25.0, "0.025 should become 25°C (1000x)"},
+		{"millifractional_60c", 0.060, 60.0, "0.060 should become 60°C (1000x)"},
+		{"millifractional_75c", 0.075, 75.0, "0.075 should become 75°C (1000x)"},
+		{"millifractional_35c", 0.035, 35.0, "0.035 should become 35°C (1000x)"},
+		// Edge cases - values outside reasonable range
+		{"very_low_fractional", 0.01, 1.0, "0.01 should default to 100x scaling (1°C)"},
+		{"very_high_fractional", 0.99, 99.0, "0.99 should default to 100x scaling (99°C)"},
+		{"extremely_low", 0.001, 0.1, "0.001 should default to 100x scaling (0.1°C)"},
+		// Boundary cases around the reasonable range (15-95°C)
+		{"boundary_low_100x", 0.15, 15.0, "0.15 should use 100x scaling (15°C)"},
+		{"boundary_high_100x", 0.95, 95.0, "0.95 should use 100x scaling (95°C)"},
+		{"boundary_low_1000x", 0.015, 15.0, "0.015 should use 1000x scaling (15°C)"},
+		{"boundary_high_1000x", 0.095, 95.0, "0.095 should use 1000x scaling (95°C)"},
+		// Values just outside reasonable range
+		{"just_below_range_100x", 0.14, 14.0, "0.14 should default to 100x (14°C)"},
+		{"just_above_range_100x", 0.96, 96.0, "0.96 should default to 100x (96°C)"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := scaleTemperature(tt.input)
+			assert.InDelta(t, tt.expected, result, 0.001,
+				"scaleTemperature(%v) = %v, expected %v (%s)",
+				tt.input, result, tt.expected, tt.desc)
+		})
+	}
+}
+
+func TestScaleTemperatureLogic(t *testing.T) {
+	// Test the logic flow for ambiguous cases
+	t.Run("prefers_100x_when_both_valid", func(t *testing.T) {
+		// 0.5 could be 50°C (100x) or 500°C (1000x)
+		// Should prefer 100x since it's tried first and is in range
+		result := scaleTemperature(0.5)
+		expected := 50.0
+		assert.InDelta(t, expected, result, 0.001,
+			"scaleTemperature(0.5) = %v, expected %v (should prefer 100x scaling)",
+			result, expected)
+	})
+
+	t.Run("uses_1000x_when_100x_too_low", func(t *testing.T) {
+		// 0.05 -> 5°C (100x, too low) or 50°C (1000x, in range)
+		// Should use 1000x since 100x is below reasonable range
+		result := scaleTemperature(0.05)
+		expected := 50.0
+		assert.InDelta(t, expected, result, 0.001,
+			"scaleTemperature(0.05) = %v, expected %v (should use 1000x scaling)",
+			result, expected)
+	})
+
+	t.Run("defaults_to_100x_when_both_invalid", func(t *testing.T) {
+		// 0.005 -> 0.5°C (100x, too low) or 5°C (1000x, too low)
+		// Should default to 100x scaling
+		result := scaleTemperature(0.005)
+		expected := 0.5
+		assert.InDelta(t, expected, result, 0.001,
+			"scaleTemperature(0.005) = %v, expected %v (should default to 100x)",
+			result, expected)
+	})
+}
+
+func TestGetTempsWithPanicRecovery(t *testing.T) {
+	agent := &Agent{
+		systemInfo: system.Info{},
+		sensorConfig: &SensorConfig{
+			context: context.Background(),
+		},
+	}
+
+	tests := []struct {
+		name        string
+		getTempsFn  getTempsFn
+		expectError bool
+		errorMsg    string
+	}{
+		{
+			name: "successful_function_call",
+			getTempsFn: func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+				return []sensors.TemperatureStat{
+					{SensorKey: "test_sensor", Temperature: 45.0},
+				}, nil
+			},
+			expectError: false,
+		},
+		{
+			name: "function_returns_error",
+			getTempsFn: func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+				return []sensors.TemperatureStat{
+					{SensorKey: "test_sensor", Temperature: 45.0},
+				}, fmt.Errorf("sensor error")
+			},
+			expectError: false, // getTempsWithPanicRecovery ignores errors from the function
+		},
+		{
+			name: "function_panics_with_string",
+			getTempsFn: func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+				panic("test panic")
+			},
+			expectError: true,
+			errorMsg:    "panic: test panic",
+		},
+		{
+			name: "function_panics_with_error",
+			getTempsFn: func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+				panic(fmt.Errorf("panic error"))
+			},
+			expectError: true,
+			errorMsg:    "panic:",
+		},
+		{
+			name: "function_panics_with_index_out_of_bounds",
+			getTempsFn: func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+				slice := []int{1, 2, 3}
+				_ = slice[10] // out of bounds panic
+				return nil, nil
+			},
+			expectError: true,
+			errorMsg:    "panic:",
+		},
+		{
+			name: "function_panics_with_any_conversion",
+			getTempsFn: func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+				var i any = "string"
+				_ = i.(int) // type assertion panic
+				return nil, nil
+			},
+			expectError: true,
+			errorMsg:    "panic:",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var temps []sensors.TemperatureStat
+			var err error
+
+			// The function should not panic, regardless of what the injected function does
+			assert.NotPanics(t, func() {
+				temps, err = agent.getTempsWithPanicRecovery(tt.getTempsFn)
+			}, "getTempsWithPanicRecovery should not panic")
+
+			if tt.expectError {
+				assert.Error(t, err, "Expected an error to be returned")
+				if tt.errorMsg != "" {
+					assert.Contains(t, err.Error(), tt.errorMsg,
+						"Error message should contain expected text")
+				}
+				assert.Nil(t, temps, "Temps should be nil when panic occurs")
+			} else {
+				assert.NoError(t, err, "Should not return error for successful calls")
+			}
+		})
+	}
 }

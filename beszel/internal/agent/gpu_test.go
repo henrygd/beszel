@@ -280,6 +280,19 @@ func TestParseJetsonData(t *testing.T) {
 			},
 		},
 		{
+			name:  "orin nano",
+			input: "06-18-2025 11:25:24 RAM 3452/7620MB (lfb 25x4MB) SWAP 1518/16384MB (cached 174MB) CPU [1%@1420,2%@1420,0%@1420,2%@1420,2%@729,1%@729] GR3D_FREQ 0% cpu@50.031C soc2@49.031C soc0@50C gpu@49.031C tj@50.25C soc1@50.25C VDD_IN 4824mW/4824mW VDD_CPU_GPU_CV 518mW/518mW VDD_SOC 1475mW/1475mW",
+			wantMetrics: &system.GPUData{
+				Name:        "GPU",
+				MemoryUsed:  3452.0,
+				MemoryTotal: 7620.0,
+				Usage:       0.0,
+				Temperature: 50.25,
+				Power:       0.518,
+				Count:       1,
+			},
+		},
+		{
 			name:  "missing temperature",
 			input: "11-14-2024 22:54:33 RAM 4300/30698MB GR3D_FREQ 45% VDD_GPU_SOC 2171mW",
 			wantMetrics: &system.GPUData{
@@ -318,44 +331,85 @@ func TestParseJetsonData(t *testing.T) {
 }
 
 func TestGetCurrentData(t *testing.T) {
-	gm := &GPUManager{
-		GpuDataMap: map[string]*system.GPUData{
-			"0": {
-				Name:        "GPU1",
-				Temperature: 50,
-				MemoryUsed:  2048,
-				MemoryTotal: 4096,
-				Usage:       100, // 100 over 2 counts = 50 avg
-				Power:       200, // 200 over 2 counts = 100 avg
-				Count:       2,
+	t.Run("calculates averages and resets accumulators", func(t *testing.T) {
+		gm := &GPUManager{
+			GpuDataMap: map[string]*system.GPUData{
+				"0": {
+					Name:        "GPU1",
+					Temperature: 50,
+					MemoryUsed:  2048,
+					MemoryTotal: 4096,
+					Usage:       100, // 100 over 2 counts = 50 avg
+					Power:       200, // 200 over 2 counts = 100 avg
+					Count:       2,
+				},
+				"1": {
+					Name:        "GPU1",
+					Temperature: 60,
+					MemoryUsed:  3072,
+					MemoryTotal: 8192,
+					Usage:       30,
+					Power:       60,
+					Count:       1,
+				},
+				"2": {
+					Name:        "GPU 2",
+					Temperature: 70,
+					MemoryUsed:  4096,
+					MemoryTotal: 8192,
+					Usage:       200,
+					Power:       400,
+					Count:       1,
+				},
 			},
-			"1": {
-				Name:        "GPU1",
-				Temperature: 60,
-				MemoryUsed:  3072,
-				MemoryTotal: 8192,
-				Usage:       30,
-				Power:       60,
-				Count:       1,
+		}
+
+		result := gm.GetCurrentData()
+
+		// Verify name disambiguation
+		assert.Equal(t, "GPU1 0", result["0"].Name)
+		assert.Equal(t, "GPU1 1", result["1"].Name)
+		assert.Equal(t, "GPU 2", result["2"].Name)
+
+		// Check averaged values in the result
+		assert.InDelta(t, 50.0, result["0"].Usage, 0.01)
+		assert.InDelta(t, 100.0, result["0"].Power, 0.01)
+		assert.InDelta(t, 30.0, result["1"].Usage, 0.01)
+		assert.InDelta(t, 60.0, result["1"].Power, 0.01)
+
+		// Verify that accumulators in the original map are reset
+		assert.Equal(t, float64(0), gm.GpuDataMap["0"].Count, "GPU 0 Count should be reset")
+		assert.Equal(t, float64(0), gm.GpuDataMap["0"].Usage, "GPU 0 Usage should be reset")
+		assert.Equal(t, float64(0), gm.GpuDataMap["0"].Power, "GPU 0 Power should be reset")
+		assert.Equal(t, float64(0), gm.GpuDataMap["1"].Count, "GPU 1 Count should be reset")
+		assert.Equal(t, float64(0), gm.GpuDataMap["1"].Usage, "GPU 1 Usage should be reset")
+		assert.Equal(t, float64(0), gm.GpuDataMap["1"].Power, "GPU 1 Power should be reset")
+	})
+
+	t.Run("handles zero count without panicking", func(t *testing.T) {
+		gm := &GPUManager{
+			GpuDataMap: map[string]*system.GPUData{
+				"0": {
+					Name:  "TestGPU",
+					Count: 0,
+					Usage: 0,
+					Power: 0,
+				},
 			},
-		},
-	}
+		}
 
-	result := gm.GetCurrentData()
+		var result map[string]system.GPUData
+		assert.NotPanics(t, func() {
+			result = gm.GetCurrentData()
+		})
 
-	// Verify name disambiguation
-	assert.Equal(t, "GPU1 0", result["0"].Name)
-	assert.Equal(t, "GPU1 1", result["1"].Name)
+		// Check that usage and power are 0
+		assert.Equal(t, 0.0, result["0"].Usage)
+		assert.Equal(t, 0.0, result["0"].Power)
 
-	// Check averaged values
-	assert.InDelta(t, 50.0, result["0"].Usage, 0.01)
-	assert.InDelta(t, 100.0, result["0"].Power, 0.01)
-	assert.InDelta(t, 30.0, result["1"].Usage, 0.01)
-	assert.InDelta(t, 60.0, result["1"].Power, 0.01)
-
-	// Verify reset counts
-	assert.Equal(t, float64(1), gm.GpuDataMap["0"].Count)
-	assert.Equal(t, float64(1), gm.GpuDataMap["1"].Count)
+		// Verify reset count
+		assert.Equal(t, float64(0), gm.GpuDataMap["0"].Count)
+	})
 }
 
 func TestDetectGPUs(t *testing.T) {
@@ -721,6 +775,18 @@ func TestAccumulation(t *testing.T) {
 				assert.InDelta(t, expected.temperature, gpu.Temperature, 0.01, "Temperature in GetCurrentData should match")
 				assert.InDelta(t, expected.avgUsage, gpu.Usage, 0.01, "Average usage in GetCurrentData should match")
 				assert.InDelta(t, expected.avgPower, gpu.Power, 0.01, "Average power in GetCurrentData should match")
+			}
+
+			// Verify that accumulators in the original map are reset
+			for id := range tt.expectedValues {
+				gpu, exists := gm.GpuDataMap[id]
+				assert.True(t, exists, "GPU with ID %s should still exist after GetCurrentData", id)
+				if !exists {
+					continue
+				}
+				assert.Equal(t, float64(0), gpu.Count, "Count should be reset for GPU ID %s", id)
+				assert.Equal(t, float64(0), gpu.Usage, "Usage should be reset for GPU ID %s", id)
+				assert.Equal(t, float64(0), gpu.Power, "Power should be reset for GPU ID %s", id)
 			}
 		})
 	}

@@ -264,7 +264,7 @@ if [ -n "$GITHUB_PROXY_URL" ]; then
   fi
 fi
 
-# Function to check if a package is installed
+# Check if a package is installed
 package_installed() {
   command -v "$1" >/dev/null 2>&1
 }
@@ -316,18 +316,27 @@ fi
 # Create a dedicated user for the service if it doesn't exist
 if is_alpine; then
   if ! id -u beszel >/dev/null 2>&1; then
+    echo "Creating a dedicated group for the Beszel Agent service..."
+    addgroup beszel
     echo "Creating a dedicated user for the Beszel Agent service..."
-    adduser -D -H -s /sbin/nologin beszel
+    adduser -S -D -H -s /sbin/nologin -G beszel beszel
   fi
-  # Add the user to the docker group to allow access to the Docker socket
-  addgroup beszel docker
+  # Add the user to the docker group to allow access to the Docker socket if group docker exists
+  if getent group docker; then
+    echo "Adding beszel to docker group"
+    usermod -aG docker beszel
+  fi
+
 else
   if ! id -u beszel >/dev/null 2>&1; then
     echo "Creating a dedicated user for the Beszel Agent service..."
-    useradd -M -s /bin/false beszel
+    useradd --system --home-dir /nonexistent --shell /bin/false beszel
   fi
-  # Add the user to the docker group to allow access to the Docker socket
-  usermod -aG docker beszel
+  # Add the user to the docker group to allow access to the Docker socket if group docker exists
+  if getent group docker; then
+    echo "Adding beszel to docker group"
+    usermod -aG docker beszel
+  fi
 fi
 
 # Create the directory for the Beszel Agent
@@ -388,6 +397,17 @@ set_selinux_context
 
 # Cleanup
 rm -rf "$TEMP_DIR"
+
+# Check for NVIDIA GPUs and grant device permissions for systemd service
+detect_nvidia_devices() {
+  local devices=""
+  for i in /dev/nvidia*; do
+    if [ -e "$i" ]; then
+      devices="${devices}DeviceAllow=$i rw\n"
+    fi
+  done
+  echo "$devices"
+}
 
 # Modify service installation part, add Alpine check before systemd service creation
 if is_alpine; then
@@ -560,6 +580,10 @@ EOF
 else
   # Original systemd service installation code
   echo "Creating the systemd service for the agent..."
+
+  # Detect NVIDIA devices and grant device permissions
+  NVIDIA_DEVICES=$(detect_nvidia_devices)
+
   cat >/etc/systemd/system/beszel-agent.service <<EOF
 [Unit]
 Description=Beszel Agent Service
@@ -588,6 +612,8 @@ ProtectSystem=strict
 RemoveIPC=yes
 RestrictSUIDSGID=true
 SystemCallArchitectures=native
+
+$(if [ -n "$NVIDIA_DEVICES" ]; then printf "%b" "# NVIDIA device permissions\n${NVIDIA_DEVICES}"; fi)
 
 [Install]
 WantedBy=multi-user.target
