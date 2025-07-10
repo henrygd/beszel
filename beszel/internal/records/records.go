@@ -201,12 +201,9 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.DiskPct += stats.DiskPct
 		sum.DiskReadPs += stats.DiskReadPs
 		sum.DiskWritePs += stats.DiskWritePs
-		sum.NetworkSent += stats.NetworkSent
-		sum.NetworkRecv += stats.NetworkRecv
+
 		// Set peak values
 		sum.MaxCpu = max(sum.MaxCpu, stats.MaxCpu, stats.Cpu)
-		sum.MaxNetworkSent = max(sum.MaxNetworkSent, stats.MaxNetworkSent, stats.NetworkSent)
-		sum.MaxNetworkRecv = max(sum.MaxNetworkRecv, stats.MaxNetworkRecv, stats.NetworkRecv)
 		sum.MaxDiskReadPs = max(sum.MaxDiskReadPs, stats.MaxDiskReadPs, stats.DiskReadPs)
 		sum.MaxDiskWritePs = max(sum.MaxDiskWritePs, stats.MaxDiskWritePs, stats.DiskWritePs)
 
@@ -276,8 +273,6 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.DiskPct = twoDecimals(sum.DiskPct / count)
 		sum.DiskReadPs = twoDecimals(sum.DiskReadPs / count)
 		sum.DiskWritePs = twoDecimals(sum.DiskWritePs / count)
-		sum.NetworkSent = twoDecimals(sum.NetworkSent / count)
-		sum.NetworkRecv = twoDecimals(sum.NetworkRecv / count)
 
 		// Average temperatures
 		if sum.Temperatures != nil && tempCount > 0 {
@@ -343,19 +338,15 @@ func (rm *RecordManager) AverageContainerStats(db dbx.Builder, records RecordIds
 			}
 			sums[stat.Name].Cpu += stat.Cpu
 			sums[stat.Name].Mem += stat.Mem
-			sums[stat.Name].NetworkSent += stat.NetworkSent
-			sums[stat.Name].NetworkRecv += stat.NetworkRecv
 		}
 	}
 
 	result := make([]container.Stats, 0, len(sums))
 	for _, value := range sums {
 		result = append(result, container.Stats{
-			Name:        value.Name,
-			Cpu:         twoDecimals(value.Cpu / count),
-			Mem:         twoDecimals(value.Mem / count),
-			NetworkSent: twoDecimals(value.NetworkSent / count),
-			NetworkRecv: twoDecimals(value.NetworkRecv / count),
+			Name: value.Name,
+			Cpu:  twoDecimals(value.Cpu / count),
+			Mem:  twoDecimals(value.Mem / count),
 		})
 	}
 	return result
