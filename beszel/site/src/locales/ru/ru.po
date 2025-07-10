@@ -8,7 +8,7 @@ msgstr ""
 "Language: ru\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-07-09 08:25\n"
+"PO-Revision-Date: 2025-07-10 06:22\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -225,7 +225,7 @@ msgstr "Скопировать docker run"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Environment variables"
 msgid "Copy env"
-msgstr "Копировать env"
+msgstr "Скопировать env"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Copy host"
@@ -250,7 +250,7 @@ msgstr "Скопируйте <0>содержимое docker-compose.yml</0> дл
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
-msgstr "Копировать YAML"
+msgstr "Скопировать YAML"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "CPU"
@@ -286,7 +286,7 @@ msgstr "Удалить"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
-msgstr "Удалить цифровой отпечаток"
+msgstr "Удалить отпечаток"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Disk"
@@ -401,7 +401,7 @@ msgstr "Фильтр..."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
-msgstr "Цифровой отпечаток"
+msgstr "Отпечаток"
 
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -818,15 +818,15 @@ msgstr "Токен"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Tokens & Fingerprints"
-msgstr "Токены и цифровые отпечатки"
+msgstr "Токены и отпечатки"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
-msgstr "Токены позволяют агентам подключаться и регистрироваться. Цифровые отпечатки являются постоянными идентификаторами, уникальными для каждой системы, которые создаются при первом подключении."
+msgstr "Токены позволяют агентам подключаться и регистрироваться. Отпечатки являются постоянными идентификаторами, уникальными для каждой системы, которые создаются при первом подключении."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
-msgstr "Токены и цифровые отпечатки используются для аутентификации соединений WebSocket с хабом."
+msgstr "Токены и отпечатки используются для аутентификации соединений WebSocket с хабом."
 
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
