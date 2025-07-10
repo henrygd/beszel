@@ -82,8 +82,8 @@ type ViewMode = "table" | "grid"
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	const val = (info.getValue() as number) || 0
 	const userSettings = useStore($userSettings)
-	const yellow = userSettings.meterThresholds!.yellow
-	const red = userSettings.meterThresholds!.red
+	const yellow = userSettings?.meterThresholds?.yellow ?? 65
+	const red = userSettings?.meterThresholds?.red ?? 90
 	return (
 		<div className="flex gap-2 items-center tabular-nums tracking-tight">
 			<span className="min-w-[3.3em]">{decimalString(val, 1)}%</span>
