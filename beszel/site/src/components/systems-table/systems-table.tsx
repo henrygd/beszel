@@ -61,6 +61,7 @@ import {
 	Settings2Icon,
 	EyeIcon,
 	PenBoxIcon,
+	FlameIcon,
 } from "lucide-react"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
 import { $systems, pb } from "@/lib/stores"
@@ -260,6 +261,84 @@ export default function SystemsTable() {
 							})}
 						>
 							{decimalString(val)} °C
+						</span>
+					)
+				},
+			},
+			{
+				accessorKey: "info.la1",
+				id: "la1",
+				name: () => t({ message: "LA 1", comment: "Load average 1 minute" }),
+				invertSorting: true,
+				sortUndefined: -1,
+				size: 50,
+				hideSort: true,
+				Icon: FlameIcon,
+				header: sortableHeader,
+				cell(info) {
+					const val = info.getValue() as number
+					if (!val) {
+						return null
+					}
+					return (
+						<span
+							className={cn("tabular-nums whitespace-nowrap", {
+								"ps-1.5": viewMode === "table",
+							})}
+						>
+							{decimalString(val)}
+						</span>
+					)
+				},
+			},
+			{
+				accessorKey: "info.la5",
+				id: "la5",
+				name: () => t({ message: "LA 5", comment: "Load average 5 minutes" }),
+				invertSorting: true,
+				sortUndefined: -1,
+				size: 50,
+				hideSort: true,
+				Icon: FlameIcon,
+				header: sortableHeader,
+				cell(info) {
+					const val = info.getValue() as number
+					if (!val) {
+						return null
+					}
+					return (
+						<span
+							className={cn("tabular-nums whitespace-nowrap", {
+								"ps-1.5": viewMode === "table",
+							})}
+						>
+							{decimalString(val)}
+						</span>
+					)
+				},
+			},
+			{
+				accessorKey: "info.la15",
+				id: "la15",
+				name: () => t({ message: "LA 15", comment: "Load average 15 minutes" }),
+				invertSorting: true,
+				sortUndefined: -1,
+				size: 50,
+				hideSort: true,
+				Icon: FlameIcon,
+				header: sortableHeader,
+				cell(info) {
+					const val = info.getValue() as number
+					if (!val) {
+						return null
+					}
+					return (
+						<span
+							className={cn("tabular-nums whitespace-nowrap", {
+								"ps-1.5": viewMode === "table",
+							})}
+						>
+							{decimalString(val)}
 						</span>
 					)
 				},

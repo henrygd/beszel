@@ -31,6 +31,9 @@ type Stats struct {
 	Temperatures   map[string]float64  `json:"t,omitempty" cbor:"20,keyasint,omitempty"`
 	ExtraFs        map[string]*FsStats `json:"efs,omitempty" cbor:"21,keyasint,omitempty"`
 	GPUData        map[string]GPUData  `json:"g,omitempty" cbor:"22,keyasint,omitempty"`
+  LoadAvg1       float64             `json:"la1,omitempty"`
+	LoadAvg5       float64             `json:"la5,omitempty"`
+	LoadAvg15      float64             `json:"la15,omitempty"`
 }
 
 type GPUData struct {
@@ -89,6 +92,9 @@ type Info struct {
 	GpuPct        float64 `json:"g,omitempty" cbor:"12,keyasint,omitempty"`
 	DashboardTemp float64 `json:"dt,omitempty" cbor:"13,keyasint,omitempty"`
 	Os            Os      `json:"os" cbor:"14,keyasint"`
+ 	LoadAvg1      float64 `json:"la1,omitempty"`
+	LoadAvg5      float64 `json:"la5,omitempty"`
+	LoadAvg15     float64 `json:"la15,omitempty"`
 }
 
 // Final data structure to return to the hub
