@@ -4,9 +4,9 @@ title: "[Feature]: "
 labels: ["enhancement", "needs review"]
 body:
   - type: dropdown
-    id: product
+    id: component
     attributes:
-      label: Product
+      label: Component
       description: Which part of Beszel is this about?
       options:
         - Hub
@@ -42,29 +42,35 @@ body:
     validations:
       required: false
   - type: dropdown
-    id: area
+    id: category
     attributes:
-      label: Area
-      description: Which area is this request for?
+      label: Category
+      description: Which category does this relate to most?
       options:
         - Metrics
-        - Settings
-        - Charts
-        - Notifications
+        - Charts & Visualization
+        - Settings & Configuration
+        - Notifications & Alerts
+        - Authentication
+        - Installation
+        - Performance
+        - UI / UX
         - Other
     validations:
       required: true
   - type: dropdown
-    id: component
+    id: metrics
     attributes:
-      label: Component
-      description: Which component is affected?
+      label: Affected Metrics
+      description: If applicable, which specific metric does this relate to most?
       options:
         - CPU
-        - GPU
         - Memory
-        - Docker
+        - Storage
         - Network
+        - Containers
+        - GPU
+        - Sensors
         - Other
     validations:
       required: true
