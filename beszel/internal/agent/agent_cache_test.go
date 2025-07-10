@@ -1,6 +1,3 @@
-//go:build testing
-// +build testing
-
 package agent
 
 import (

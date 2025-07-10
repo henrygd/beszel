@@ -11,133 +11,70 @@ import (
 	"fmt"
 	"sync"
 	"testing"
-	"testing/synctest"
 	"time"
 
+	"github.com/pocketbase/dbx"
+	"github.com/pocketbase/pocketbase/core"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestSystemManagerNew(t *testing.T) {
-	hub, err := tests.NewTestHub(t.TempDir())
+// createTestSystem creates a test system record with a unique host name
+// and returns the created record and any error
+func createTestSystem(t *testing.T, hub *tests.TestHub, options map[string]any) (*core.Record, error) {
+	collection, err := hub.FindCachedCollectionByNameOrId("systems")
+	if err != nil {
+		return nil, err
+	}
+
+	// get user record
+	var firstUser *core.Record
+	users, err := hub.FindAllRecords("users", dbx.NewExp("id != ''"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(users) > 0 {
+		firstUser = users[0]
+	}
+	// Generate a unique host name to ensure we're adding a new system
+	uniqueHost := fmt.Sprintf("test-host-%d.example.com", time.Now().UnixNano())
+
+	// Create the record
+	record := core.NewRecord(collection)
+	record.Set("name", uniqueHost)
+	record.Set("host", uniqueHost)
+	record.Set("port", "45876")
+	record.Set("status", "pending")
+	record.Set("users", []string{firstUser.Id})
+
+	// Apply any custom options
+	for key, value := range options {
+		record.Set(key, value)
+	}
+
+	// Save the record to the database
+	err = hub.Save(record)
+	if err != nil {
+		return nil, err
+	}
+
+	return record, nil
+}
+
+func TestSystemManagerIntegration(t *testing.T) {
+	// Create a test hub
+	hub, err := tests.NewTestHub()
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer hub.Cleanup()
-	sm := hub.GetSystemManager()
 
-	user, err := tests.CreateUser(hub, "test@test.com", "testtesttest")
-	require.NoError(t, err)
-
-	synctest.Run(func() {
-		sm.Initialize()
-
-		record, err := tests.CreateRecord(hub, "systems", map[string]any{
-			"name":  "it-was-coney-island",
-			"host":  "the-playground-of-the-world",
-			"port":  "33914",
-			"users": []string{user.Id},
-		})
-		require.NoError(t, err)
-
-		assert.Equal(t, "pending", record.GetString("status"), "System status should be 'pending'")
-		assert.Equal(t, "pending", sm.GetSystemStatusFromStore(record.Id), "System status should be 'pending'")
-
-		// Verify the system host and port
-		host, port := sm.GetSystemHostPort(record.Id)
-		assert.Equal(t, record.GetString("host"), host, "System host should match")
-		assert.Equal(t, record.GetString("port"), port, "System port should match")
-
-		time.Sleep(13 * time.Second)
-		synctest.Wait()
-
-		assert.Equal(t, "pending", record.Fresh().GetString("status"), "System status should be 'pending'")
-		// Verify the system was added by checking if it exists
-		assert.True(t, sm.HasSystem(record.Id), "System should exist in the store")
-
-		time.Sleep(10 * time.Second)
-		synctest.Wait()
-
-		// system should be set to down after 15 seconds (no websocket connection)
-		assert.Equal(t, "down", sm.GetSystemStatusFromStore(record.Id), "System status should be 'down'")
-		// make sure the system is down in the db
-		record, err = hub.FindRecordById("systems", record.Id)
-		require.NoError(t, err)
-		assert.Equal(t, "down", record.GetString("status"), "System status should be 'down'")
-
-		assert.Equal(t, 1, sm.GetSystemCount(), "System count should be 1")
-
-		err = sm.RemoveSystem(record.Id)
-		assert.NoError(t, err)
-
-		assert.Equal(t, 0, sm.GetSystemCount(), "System count should be 0")
-		assert.False(t, sm.HasSystem(record.Id), "System should not exist in the store after removal")
-
-		// let's also make sure a system is removed from the store when the record is deleted
-		record, err = tests.CreateRecord(hub, "systems", map[string]any{
-			"name":  "there-was-no-place-like-it",
-			"host":  "in-the-whole-world",
-			"port":  "33914",
-			"users": []string{user.Id},
-		})
-		require.NoError(t, err)
-
-		assert.True(t, sm.HasSystem(record.Id), "System should exist in the store after creation")
-
-		time.Sleep(8 * time.Second)
-		synctest.Wait()
-		assert.Equal(t, "pending", sm.GetSystemStatusFromStore(record.Id), "System status should be 'pending'")
-
-		sm.SetSystemStatusInDB(record.Id, "up")
-		time.Sleep(time.Second)
-		synctest.Wait()
-		assert.Equal(t, "up", sm.GetSystemStatusFromStore(record.Id), "System status should be 'up'")
-
-		// make sure the system switches to down after 11 seconds
-		sm.RemoveSystem(record.Id)
-		sm.AddRecord(record, nil)
-		assert.Equal(t, "pending", sm.GetSystemStatusFromStore(record.Id), "System status should be 'pending'")
-		time.Sleep(12 * time.Second)
-		synctest.Wait()
-		assert.Equal(t, "down", sm.GetSystemStatusFromStore(record.Id), "System status should be 'down'")
-
-		// sm.SetSystemStatusInDB(record.Id, "paused")
-		// time.Sleep(time.Second)
-		// synctest.Wait()
-		// assert.Equal(t, "paused", sm.GetSystemStatusFromStore(record.Id), "System status should be 'paused'")
-
-		// delete the record
-		err = hub.Delete(record)
-		require.NoError(t, err)
-		assert.False(t, sm.HasSystem(record.Id), "System should not exist in the store after deletion")
-
-		testOld(t, hub)
-
-		time.Sleep(time.Second)
-		synctest.Wait()
-
-		for _, systemId := range sm.GetAllSystemIDs() {
-			err = sm.RemoveSystem(systemId)
-			require.NoError(t, err)
-			assert.False(t, sm.HasSystem(systemId), "System should not exist in the store after deletion")
-		}
-
-		assert.Equal(t, 0, sm.GetSystemCount(), "System count should be 0")
-
-		// TODO: test with websocket client
-	})
-}
-
-func testOld(t *testing.T, hub *tests.TestHub) {
-	user, err := tests.CreateUser(hub, "test@testy.com", "testtesttest")
-	require.NoError(t, err)
-
-	sm := hub.GetSystemManager()
+	// Create independent system manager
+	sm := systems.NewSystemManager(hub)
 	assert.NotNil(t, sm)
 
-	// error expected when creating a user with a duplicate email
-	_, err = tests.CreateUser(hub, "test@test.com", "testtesttest")
-	require.Error(t, err)
+	// Test initialization
+	sm.Initialize()
 
 	// Test collection existence. todo: move to hub package tests
 	t.Run("CollectionExistence", func(t *testing.T) {
@@ -155,17 +92,81 @@ func testOld(t *testing.T, hub *tests.TestHub) {
 		assert.NotNil(t, containerStats)
 	})
 
+	// Test adding a system record
+	t.Run("AddRecord", func(t *testing.T) {
+		var wg sync.WaitGroup
+		wg.Add(2)
+
+		// Get the count before adding the system
+		countBefore := sm.GetSystemCount()
+
+		// record should be pending on create
+		hub.OnRecordCreate("systems").BindFunc(func(e *core.RecordEvent) error {
+			record := e.Record
+			if record.GetString("name") == "welcometoarcoampm" {
+				assert.Equal(t, "pending", e.Record.GetString("status"), "System status should be 'pending'")
+				wg.Done()
+			}
+			return e.Next()
+		})
+
+		// record should be down on update
+		hub.OnRecordAfterUpdateSuccess("systems").BindFunc(func(e *core.RecordEvent) error {
+			record := e.Record
+			if record.GetString("name") == "welcometoarcoampm" {
+				assert.Equal(t, "down", e.Record.GetString("status"), "System status should be 'pending'")
+				wg.Done()
+			}
+			return e.Next()
+		})
+		// Create a test system with the first user assigned
+		record, err := createTestSystem(t, hub, map[string]any{
+			"name": "welcometoarcoampm",
+			"host": "localhost",
+			"port": "33914",
+		})
+		require.NoError(t, err)
+
+		wg.Wait()
+
+		// system should be down if grabbed from the store
+		assert.Equal(t, "down", sm.GetSystemStatusFromStore(record.Id), "System status should be 'down'")
+
+		// Check that the system count increased
+		countAfter := sm.GetSystemCount()
+		assert.Equal(t, countBefore+1, countAfter, "System count should increase after adding a system via event hook")
+
+		// Verify the system was added by checking if it exists
+		assert.True(t, sm.HasSystem(record.Id), "System should exist in the store")
+
+		// Verify the system host and port
+		host, port := sm.GetSystemHostPort(record.Id)
+		assert.Equal(t, record.Get("host"), host, "System host should match")
+		assert.Equal(t, record.Get("port"), port, "System port should match")
+
+		// Verify the system is in the list of all system IDs
+		ids := sm.GetAllSystemIDs()
+		assert.Contains(t, ids, record.Id, "System ID should be in the list of all system IDs")
+
+		// Verify the system was added by checking if removing it works
+		err = sm.RemoveSystem(record.Id)
+		assert.NoError(t, err, "System should exist and be removable")
+
+		// Verify the system no longer exists
+		assert.False(t, sm.HasSystem(record.Id), "System should not exist in the store after removal")
+
+		// Verify the system is not in the list of all system IDs
+		newIds := sm.GetAllSystemIDs()
+		assert.NotContains(t, newIds, record.Id, "System ID should not be in the list of all system IDs after removal")
+
+	})
+
 	t.Run("RemoveSystem", func(t *testing.T) {
 		// Get the count before adding the system
 		countBefore := sm.GetSystemCount()
 
 		// Create a test system record
-		record, err := tests.CreateRecord(hub, "systems", map[string]any{
-			"name":  "i-even-got-lost-at-coney-island",
-			"host":  "but-they-found-me",
-			"port":  "33914",
-			"users": []string{user.Id},
-		})
+		record, err := createTestSystem(t, hub, map[string]any{})
 		require.NoError(t, err)
 
 		// Verify the system count increased
@@ -201,16 +202,11 @@ func testOld(t *testing.T, hub *tests.TestHub) {
 
 	t.Run("NewRecordPending", func(t *testing.T) {
 		// Create a test system
-		record, err := tests.CreateRecord(hub, "systems", map[string]any{
-			"name":  "and-you-know",
-			"host":  "i-feel-very-bad",
-			"port":  "33914",
-			"users": []string{user.Id},
-		})
+		record, err := createTestSystem(t, hub, map[string]any{})
 		require.NoError(t, err)
 
 		// Add the record to the system manager
-		err = sm.AddRecord(record, nil)
+		err = sm.AddRecord(record)
 		require.NoError(t, err)
 
 		// Test filtering records by status - should be "pending" now
@@ -222,16 +218,11 @@ func testOld(t *testing.T, hub *tests.TestHub) {
 
 	t.Run("SystemStatusUpdate", func(t *testing.T) {
 		// Create a test system record
-		record, err := tests.CreateRecord(hub, "systems", map[string]any{
-			"name":  "we-used-to-sleep-on-the-beach",
-			"host":  "sleep-overnight-here",
-			"port":  "33914",
-			"users": []string{user.Id},
-		})
+		record, err := createTestSystem(t, hub, map[string]any{})
 		require.NoError(t, err)
 
 		// Add the record to the system manager
-		err = sm.AddRecord(record, nil)
+		err = sm.AddRecord(record)
 		require.NoError(t, err)
 
 		// Test status changes
@@ -253,12 +244,7 @@ func testOld(t *testing.T, hub *tests.TestHub) {
 
 	t.Run("HandleSystemData", func(t *testing.T) {
 		// Create a test system record
-		record, err := tests.CreateRecord(hub, "systems", map[string]any{
-			"name":  "things-changed-you-know",
-			"host":  "they-dont-sleep-anymore-on-the-beach",
-			"port":  "33914",
-			"users": []string{user.Id},
-		})
+		record, err := createTestSystem(t, hub, map[string]any{})
 		require.NoError(t, err)
 
 		// Create test system data
@@ -309,14 +295,54 @@ func testOld(t *testing.T, hub *tests.TestHub) {
 		assert.Error(t, err)
 	})
 
+	t.Run("DeleteRecord", func(t *testing.T) {
+		var wg sync.WaitGroup
+		wg.Add(2)
+
+		runs := 0
+
+		hub.OnRecordUpdate("systems").BindFunc(func(e *core.RecordEvent) error {
+			runs++
+			record := e.Record
+			if record.GetString("name") == "deadflagblues" {
+				if runs == 1 {
+					assert.Equal(t, "up", e.Record.GetString("status"), "System status should be 'up'")
+					wg.Done()
+				} else if runs == 2 {
+					assert.Equal(t, "paused", e.Record.GetString("status"), "System status should be 'paused'")
+					wg.Done()
+				}
+			}
+			return e.Next()
+		})
+
+		// Create a test system record
+		record, err := createTestSystem(t, hub, map[string]any{
+			"name": "deadflagblues",
+		})
+		require.NoError(t, err)
+
+		// Verify the system exists
+		assert.True(t, sm.HasSystem(record.Id), "System should exist in the store")
+
+		// set the status manually to up
+		sm.SetSystemStatusInDB(record.Id, "up")
+
+		// verify the status is up
+		assert.Equal(t, "up", sm.GetSystemStatusFromStore(record.Id), "System status should be 'up'")
+
+		// Set the status to "paused" which should cause it to be deleted from the store
+		sm.SetSystemStatusInDB(record.Id, "paused")
+
+		wg.Wait()
+
+		// Verify the system no longer exists
+		assert.False(t, sm.HasSystem(record.Id), "System should not exist in the store after deletion")
+	})
+
 	t.Run("ConcurrentOperations", func(t *testing.T) {
 		// Create a test system
-		record, err := tests.CreateRecord(hub, "systems", map[string]any{
-			"name":  "jfkjahkfajs",
-			"host":  "localhost",
-			"port":  "33914",
-			"users": []string{user.Id},
-		})
+		record, err := createTestSystem(t, hub, map[string]any{})
 		require.NoError(t, err)
 
 		// Run concurrent operations
@@ -351,12 +377,7 @@ func testOld(t *testing.T, hub *tests.TestHub) {
 
 	t.Run("ContextCancellation", func(t *testing.T) {
 		// Create a test system record
-		record, err := tests.CreateRecord(hub, "systems", map[string]any{
-			"name":  "lkhsdfsjf",
-			"host":  "localhost",
-			"port":  "33914",
-			"users": []string{user.Id},
-		})
+		record, err := createTestSystem(t, hub, map[string]any{})
 		require.NoError(t, err)
 
 		// Verify the system exists in the store
@@ -399,7 +420,7 @@ func testOld(t *testing.T, hub *tests.TestHub) {
 		assert.Error(t, err, "RemoveSystem should fail for non-existent system")
 
 		// Add the system back
-		err = sm.AddRecord(record, nil)
+		err = sm.AddRecord(record)
 		require.NoError(t, err, "AddRecord should succeed")
 
 		// Verify the system is back in the store

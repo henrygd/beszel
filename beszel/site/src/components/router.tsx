@@ -11,7 +11,7 @@ const routes = {
  * The base path of the application.
  * This is used to prepend the base path to all routes.
  */
-export const basePath = BESZEL?.BASE_PATH || ""
+export const basePath = globalThis.BESZEL.BASE_PATH || ""
 
 /**
  * Prepends the base path to the given path.
@@ -41,12 +41,5 @@ function onClick(e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) {
 }
 
 export const Link = (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
-	let clickFn = onClick
-	if (props.onClick) {
-		clickFn = (e) => {
-			onClick(e)
-			props.onClick?.(e)
-		}
-	}
-	return <a {...props} onClick={clickFn}></a>
+	return <a onClick={onClick} {...props}></a>
 }

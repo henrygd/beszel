@@ -18,24 +18,24 @@ import (
 
 const (
 	// Commands
-	nvidiaSmiCmd  string = "nvidia-smi"
-	rocmSmiCmd    string = "rocm-smi"
-	tegraStatsCmd string = "tegrastats"
+	nvidiaSmiCmd  = "nvidia-smi"
+	rocmSmiCmd    = "rocm-smi"
+	tegraStatsCmd = "tegrastats"
 
 	// Polling intervals
-	nvidiaSmiInterval  string        = "4"    // in seconds
-	tegraStatsInterval string        = "3700" // in milliseconds
-	rocmSmiInterval    time.Duration = 4300 * time.Millisecond
+	nvidiaSmiInterval  = "4"    // in seconds
+	tegraStatsInterval = "3700" // in milliseconds
+	rocmSmiInterval    = 4300 * time.Millisecond
 
 	// Command retry and timeout constants
-	retryWaitTime     time.Duration = 5 * time.Second
-	maxFailureRetries int           = 5
+	retryWaitTime     = 5 * time.Second
+	maxFailureRetries = 5
 
-	cmdBufferSize uint16 = 10 * 1024
+	cmdBufferSize = 10 * 1024
 
 	// Unit Conversions
-	mebibytesInAMegabyte float64 = 1.024  // nvidia-smi reports memory in MiB
-	milliwattsInAWatt    float64 = 1000.0 // tegrastats reports power in mW
+	mebibytesInAMegabyte = 1.024  // nvidia-smi reports memory in MiB
+	milliwattsInAWatt    = 1000.0 // tegrastats reports power in mW
 )
 
 // GPUManager manages data collection for GPUs (either Nvidia or AMD)

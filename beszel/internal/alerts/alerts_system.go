@@ -2,11 +2,11 @@ package alerts
 
 import (
 	"beszel/internal/entities/system"
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/goccy/go-json"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/types"

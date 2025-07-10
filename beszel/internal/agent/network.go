@@ -57,7 +57,6 @@ func (a *Agent) skipNetworkInterface(v psutilNet.IOCountersStat) bool {
 		strings.HasPrefix(v.Name, "docker"),
 		strings.HasPrefix(v.Name, "br-"),
 		strings.HasPrefix(v.Name, "veth"),
-		strings.HasPrefix(v.Name, "bond"),
 		v.BytesRecv == 0,
 		v.BytesSent == 0:
 		return true

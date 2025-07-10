@@ -4,13 +4,13 @@ package records
 import (
 	"beszel/internal/entities/container"
 	"beszel/internal/entities/system"
-	"encoding/json"
 	"fmt"
 	"log"
 	"math"
 	"strings"
 	"time"
 
+	"github.com/goccy/go-json"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 )
@@ -26,25 +26,13 @@ type LongerRecordData struct {
 	minShorterRecords  int
 }
 
-type RecordIds []struct {
-	Id string `db:"id"`
+type RecordStats []struct {
+	Stats []byte `db:"stats"`
 }
 
 func NewRecordManager(app core.App) *RecordManager {
 	return &RecordManager{app}
 }
-
-type StatsRecord struct {
-	Stats []byte `db:"stats"`
-}
-
-// global variables for reusing allocations
-var statsRecord StatsRecord
-var containerStats []container.Stats
-var sumStats system.Stats
-var tempStats system.Stats
-var queryParams = make(dbx.Params, 1)
-var containerSums = make(map[string]*container.Stats)
 
 // Create longer records by averaging shorter records
 func (rm *RecordManager) CreateLongerRecords() {
@@ -88,10 +76,11 @@ func (rm *RecordManager) CreateLongerRecords() {
 		if err != nil {
 			return err
 		}
-		var systems RecordIds
-		db := txApp.DB()
+		var systems []struct {
+			Id string `db:"id"`
+		}
 
-		db.NewQuery("SELECT id FROM systems WHERE status='up'").All(&systems)
+		txApp.DB().NewQuery("SELECT id FROM systems WHERE status='up'").All(&systems)
 
 		// loop through all active systems, time periods, and collections
 		for _, system := range systems {
@@ -107,23 +96,22 @@ func (rm *RecordManager) CreateLongerRecords() {
 				for _, collection := range collections {
 					// check creation time of last longer record if not 10m, since 10m is created every run
 					if recordData.longerType != "10m" {
-						count, err := txApp.CountRecords(
+						lastLongerRecord, err := txApp.FindFirstRecordByFilter(
 							collection.Id,
-							dbx.NewExp(
-								"system = {:system} AND type = {:type} AND created > {:created}",
-								dbx.Params{"type": recordData.longerType, "system": system.Id, "created": longerRecordPeriod},
-							),
+							"system = {:system} && type = {:type} && created > {:created}",
+							dbx.Params{"type": recordData.longerType, "system": system.Id, "created": longerRecordPeriod},
 						)
 						// continue if longer record exists
-						if err != nil || count > 0 {
+						if err == nil || lastLongerRecord != nil {
+							// log.Println("longer record found. continuing")
 							continue
 						}
 					}
 					// get shorter records from the past x minutes
-					var recordIds RecordIds
+					var stats RecordStats
 
 					err := txApp.DB().
-						Select("id").
+						Select("stats").
 						From(collection.Name).
 						AndWhere(dbx.NewExp(
 							"system={:system} AND type={:type} AND created > {:created}",
@@ -133,10 +121,10 @@ func (rm *RecordManager) CreateLongerRecords() {
 								"created": shorterRecordPeriod,
 							},
 						)).
-						All(&recordIds)
+						All(&stats)
 
 					// continue if not enough shorter records
-					if err != nil || len(recordIds) < recordData.minShorterRecords {
+					if err != nil || len(stats) < recordData.minShorterRecords {
 						continue
 					}
 					// average the shorter records and create longer record
@@ -145,10 +133,9 @@ func (rm *RecordManager) CreateLongerRecords() {
 					longerRecord.Set("type", recordData.longerType)
 					switch collection.Name {
 					case "system_stats":
-						longerRecord.Set("stats", rm.AverageSystemStats(db, recordIds))
+						longerRecord.Set("stats", rm.AverageSystemStats(stats))
 					case "container_stats":
-
-						longerRecord.Set("stats", rm.AverageContainerStats(db, recordIds))
+						longerRecord.Set("stats", rm.AverageContainerStats(stats))
 					}
 					if err := txApp.SaveNoValidate(longerRecord); err != nil {
 						log.Println("failed to save longer record", "err", err)
@@ -160,34 +147,24 @@ func (rm *RecordManager) CreateLongerRecords() {
 		return nil
 	})
 
-	statsRecord.Stats = statsRecord.Stats[:0]
-
 	// log.Println("finished creating longer records", "time (ms)", time.Since(start).Milliseconds())
 }
 
 // Calculate the average stats of a list of system_stats records without reflect
-func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *system.Stats {
-	// Clear/reset global structs for reuse
-	sumStats = system.Stats{}
-	tempStats = system.Stats{}
-	sum := &sumStats
-	stats := &tempStats
-
+func (rm *RecordManager) AverageSystemStats(records RecordStats) *system.Stats {
+	sum := &system.Stats{}
 	count := float64(len(records))
 	tempCount := float64(0)
 
-	// Accumulate totals
-	for _, record := range records {
-		id := record.Id
-		// clear global statsRecord for reuse
-		statsRecord.Stats = statsRecord.Stats[:0]
+	// Temporary struct for unmarshaling
+	stats := &system.Stats{}
 
-		queryParams["id"] = id
-		db.NewQuery("SELECT stats FROM system_stats WHERE id = {:id}").Bind(queryParams).One(&statsRecord)
-		if err := json.Unmarshal(statsRecord.Stats, stats); err != nil {
+	// Accumulate totals
+	for i := range records {
+		*stats = system.Stats{} // Reset tempStats for unmarshaling
+		if err := json.Unmarshal(records[i].Stats, stats); err != nil {
 			continue
 		}
-
 		sum.Cpu += stats.Cpu
 		sum.Mem += stats.Mem
 		sum.MemUsed += stats.MemUsed
@@ -316,24 +293,14 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 }
 
 // Calculate the average stats of a list of container_stats records
-func (rm *RecordManager) AverageContainerStats(db dbx.Builder, records RecordIds) []container.Stats {
-	// Clear global map for reuse
-	for k := range containerSums {
-		delete(containerSums, k)
-	}
-	sums := containerSums
+func (rm *RecordManager) AverageContainerStats(records RecordStats) []container.Stats {
+	sums := make(map[string]*container.Stats)
 	count := float64(len(records))
-
+	containerStats := make([]container.Stats, 0, 50)
 	for i := range records {
-		id := records[i].Id
-		// clear global statsRecord and containerStats for reuse
-		statsRecord.Stats = statsRecord.Stats[:0]
+		// reset slice
 		containerStats = containerStats[:0]
-
-		queryParams["id"] = id
-		db.NewQuery("SELECT stats FROM container_stats WHERE id = {:id}").Bind(queryParams).One(&statsRecord)
-
-		if err := json.Unmarshal(statsRecord.Stats, &containerStats); err != nil {
+		if err := json.Unmarshal(records[i].Stats, &containerStats); err != nil {
 			return []container.Stats{}
 		}
 		for i := range containerStats {
@@ -364,7 +331,7 @@ func (rm *RecordManager) AverageContainerStats(db dbx.Builder, records RecordIds
 // Deletes records older than what is displayed in the UI
 func (rm *RecordManager) DeleteOldRecords() {
 	// Define the collections to process
-	collections := [2]string{"system_stats", "container_stats"}
+	collections := []string{"system_stats", "container_stats"}
 
 	// Define record types and their retention periods
 	type RecordDeletionData struct {
@@ -379,19 +346,17 @@ func (rm *RecordManager) DeleteOldRecords() {
 		{recordType: "480m", retention: 30 * 24 * time.Hour}, // 30 days
 	}
 
-	now := time.Now().UTC()
-
+	// Process each collection
 	for _, collection := range collections {
 		// Build the WHERE clause dynamically
 		var conditionParts []string
 		var params dbx.Params = make(map[string]any)
 
-		for i := range recordData {
-			rd := recordData[i]
+		for i, rd := range recordData {
 			// Create parameterized condition for this record type
 			dateParam := fmt.Sprintf("date%d", i)
 			conditionParts = append(conditionParts, fmt.Sprintf("(type = '%s' AND created < {:%s})", rd.recordType, dateParam))
-			params[dateParam] = now.Add(-rd.retention)
+			params[dateParam] = time.Now().UTC().Add(-rd.retention)
 		}
 
 		// Combine conditions with OR

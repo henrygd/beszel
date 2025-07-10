@@ -1,14 +1,23 @@
 package migrations
 
 import (
-	"github.com/google/uuid"
 	"github.com/pocketbase/pocketbase/core"
 	m "github.com/pocketbase/pocketbase/migrations"
 )
 
 func init() {
 	m.Register(func(app core.App) error {
-		// update collections
+		// delete duplicate alerts
+		app.DB().NewQuery(`
+		DELETE FROM alerts
+		WHERE rowid NOT IN (
+				SELECT MAX(rowid)
+				FROM alerts
+				GROUP BY user, system, name
+		);
+	`).Execute()
+
+		// import collections
 		jsonData := `[
 	{
 		"id": "elngm8x1l60zi2v",
@@ -224,88 +233,6 @@ func init() {
 		],
 		"indexes": [
 			"CREATE INDEX ` + "`" + `idx_d87OiXGZD8` + "`" + ` ON ` + "`" + `container_stats` + "`" + ` (\n  ` + "`" + `system` + "`" + `,\n  ` + "`" + `type` + "`" + `,\n  ` + "`" + `created` + "`" + `\n)"
-		],
-		"system": false
-	},
-	{
-		"id": "pbc_3663931638",
-		"listRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id",
-		"viewRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id",
-		"createRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id && @request.auth.role != \"readonly\"",
-		"updateRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id && @request.auth.role != \"readonly\"",
-		"deleteRule": null,
-		"name": "fingerprints",
-		"type": "base",
-		"fields": [
-			{
-				"autogeneratePattern": "[a-z0-9]{9}",
-				"hidden": false,
-				"id": "text3208210256",
-				"max": 15,
-				"min": 9,
-				"name": "id",
-				"pattern": "^[a-z0-9]+$",
-				"presentable": false,
-				"primaryKey": true,
-				"required": true,
-				"system": true,
-				"type": "text"
-			},
-			{
-				"cascadeDelete": true,
-				"collectionId": "2hz5ncl8tizk5nx",
-				"hidden": false,
-				"id": "relation3377271179",
-				"maxSelect": 1,
-				"minSelect": 0,
-				"name": "system",
-				"presentable": false,
-				"required": true,
-				"system": false,
-				"type": "relation"
-			},
-			{
-				"autogeneratePattern": "[a-zA-Z9-9]{20}",
-				"hidden": false,
-				"id": "text1597481275",
-				"max": 255,
-				"min": 9,
-				"name": "token",
-				"pattern": "",
-				"presentable": false,
-				"primaryKey": false,
-				"required": true,
-				"system": false,
-				"type": "text"
-			},
-			{
-				"autogeneratePattern": "",
-				"hidden": false,
-				"id": "text4228609354",
-				"max": 255,
-				"min": 9,
-				"name": "fingerprint",
-				"pattern": "",
-				"presentable": false,
-				"primaryKey": false,
-				"required": false,
-				"system": false,
-				"type": "text"
-			},
-			{
-				"hidden": false,
-				"id": "autodate3332085495",
-				"name": "updated",
-				"onCreate": true,
-				"onUpdate": true,
-				"presentable": false,
-				"system": false,
-				"type": "autodate"
-			}
-		],
-		"indexes": [
-			"CREATE INDEX ` + "`" + `idx_p9qZlu26po` + "`" + ` ON ` + "`" + `fingerprints` + "`" + ` (` + "`" + `token` + "`" + `)",
-			"CREATE UNIQUE INDEX ` + "`" + `idx_ngboulGMYw` + "`" + ` ON ` + "`" + `fingerprints` + "`" + ` (` + "`" + `system` + "`" + `)"
 		],
 		"system": false
 	},
@@ -742,38 +669,7 @@ func init() {
 	}
 ]`
 
-		err := app.ImportCollectionsByMarshaledJSON([]byte(jsonData), false)
-		if err != nil {
-			return err
-		}
-
-		// Get all systems that don't have fingerprint records
-		var systemIds []string
-		err = app.DB().NewQuery(`
-			SELECT s.id FROM systems s
-			LEFT JOIN fingerprints f ON s.id = f.system
-			WHERE f.system IS NULL
-		`).Column(&systemIds)
-
-		if err != nil {
-			return err
-		}
-		// Create fingerprint records with unique UUID tokens for each system
-		for _, systemId := range systemIds {
-			token := uuid.New().String()
-			_, err = app.DB().NewQuery(`
-				INSERT INTO fingerprints (system, token)
-				VALUES ({:system}, {:token})
-			`).Bind(map[string]any{
-				"system": systemId,
-				"token":  token,
-			}).Execute()
-			if err != nil {
-				return err
-			}
-		}
-
-		return nil
+		return app.ImportCollectionsByMarshaledJSON([]byte(jsonData), false)
 	}, func(app core.App) error {
 		return nil
 	})

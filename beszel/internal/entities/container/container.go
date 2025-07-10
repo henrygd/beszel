@@ -34,16 +34,10 @@ type ApiStats struct {
 	MemoryStats MemoryStats `json:"memory_stats"`
 }
 
-func (s *ApiStats) CalculateCpuPercentLinux(prevCpuContainer uint64, prevCpuSystem uint64) float64 {
-	cpuDelta := s.CPUStats.CPUUsage.TotalUsage - prevCpuContainer
-	systemDelta := s.CPUStats.SystemUsage - prevCpuSystem
-
-	// Avoid division by zero and handle first run case
-	if systemDelta == 0 || prevCpuContainer == 0 {
-		return 0.0
-	}
-
-	return float64(cpuDelta) / float64(systemDelta) * 100.0
+func (s *ApiStats) CalculateCpuPercentLinux(prevCpuUsage [2]uint64) float64 {
+	cpuDelta := s.CPUStats.CPUUsage.TotalUsage - prevCpuUsage[0]
+	systemDelta := s.CPUStats.SystemUsage - prevCpuUsage[1]
+	return float64(cpuDelta) / float64(systemDelta) * 100
 }
 
 // from: https://github.com/docker/cli/blob/master/cli/command/container/stats_helpers.go#L185
@@ -105,14 +99,12 @@ type prevNetStats struct {
 
 // Docker container stats
 type Stats struct {
-	Name        string  `json:"n" cbor:"0,keyasint"`
-	Cpu         float64 `json:"c" cbor:"1,keyasint"`
-	Mem         float64 `json:"m" cbor:"2,keyasint"`
-	NetworkSent float64 `json:"ns" cbor:"3,keyasint"`
-	NetworkRecv float64 `json:"nr" cbor:"4,keyasint"`
-	// PrevCpu     [2]uint64    `json:"-"`
-	CpuSystem    uint64       `json:"-"`
-	CpuContainer uint64       `json:"-"`
-	PrevNet      prevNetStats `json:"-"`
-	PrevReadTime time.Time    `json:"-"`
+	Name        string       `json:"n"`
+	Cpu         float64      `json:"c"`
+	Mem         float64      `json:"m"`
+	NetworkSent float64      `json:"ns"`
+	NetworkRecv float64      `json:"nr"`
+	PrevCpu     [2]uint64    `json:"-"`
+	PrevNet     prevNetStats `json:"-"`
+	PrevRead    time.Time    `json:"-"`
 }

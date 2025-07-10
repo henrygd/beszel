@@ -31,9 +31,9 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
 							if (item.admin && !isAdmin()) return null
 							return (
 								<SelectItem key={item.href} value={item.href}>
-									<span className="flex items-center gap-2 truncate">
+									<span className="flex items-center gap-2">
 										{item.icon && <item.icon className="h-4 w-4" />}
-										<span className="truncate">{item.title}</span>
+										{item.title}
 									</span>
 								</SelectItem>
 							)
@@ -55,12 +55,13 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
 							href={item.href}
 							className={cn(
 								buttonVariants({ variant: "ghost" }),
-								"flex items-center gap-3 justify-start truncate",
-								page?.path === item.href ? "bg-muted hover:bg-muted" : "hover:bg-muted/50"
+								"flex items-center gap-3",
+								page?.path === item.href ? "bg-muted hover:bg-muted" : "hover:bg-muted/50",
+								"justify-start"
 							)}
 						>
-							{item.icon && <item.icon className="h-4 w-4 shrink-0" />}
-							<span className="truncate">{item.title}</span>
+							{item.icon && <item.icon className="h-4 w-4" />}
+							{item.title}
 						</Link>
 					)
 				})}

@@ -332,7 +332,7 @@ export default function SystemsTable() {
 									"bg-yellow-500"
 								}
 							/>
-							<span className="truncate max-w-14">{info.getValue() as string}</span>
+							<span>{info.getValue() as string}</span>
 						</span>
 					)
 				},

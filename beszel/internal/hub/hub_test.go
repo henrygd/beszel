@@ -1,10 +1,9 @@
 //go:build testing
 // +build testing
 
-package hub_test
+package hub
 
 import (
-	"beszel/internal/tests"
 	"testing"
 
 	"crypto/ed25519"
@@ -13,18 +12,20 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/pocketbase/pocketbase"
 	"github.com/stretchr/testify/assert"
+
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/ssh"
 )
 
-func getTestHub(t testing.TB) *tests.TestHub {
-	hub, _ := tests.NewTestHub(t.TempDir())
-	return hub
+func getTestHub() *Hub {
+	app := pocketbase.New()
+	return NewHub(app)
 }
 
 func TestMakeLink(t *testing.T) {
-	hub := getTestHub(t)
+	hub := getTestHub()
 
 	tests := []struct {
 		name     string
@@ -114,14 +115,14 @@ func TestMakeLink(t *testing.T) {
 }
 
 func TestGetSSHKey(t *testing.T) {
-	hub := getTestHub(t)
+	hub := getTestHub()
 
 	// Test Case 1: Key generation (no existing key)
 	t.Run("KeyGeneration", func(t *testing.T) {
 		tempDir := t.TempDir()
 
 		// Ensure pubKey is initially empty or different to ensure GetSSHKey sets it
-		hub.SetPubkey("")
+		hub.pubKey = ""
 
 		signer, err := hub.GetSSHKey(tempDir)
 		assert.NoError(t, err, "GetSSHKey should not error when generating a new key")
@@ -134,8 +135,8 @@ func TestGetSSHKey(t *testing.T) {
 		assert.False(t, info.IsDir(), "Private key path should be a file, not a directory")
 
 		// Check if h.pubKey was set
-		assert.NotEmpty(t, hub.GetPubkey(), "h.pubKey should be set after key generation")
-		assert.True(t, strings.HasPrefix(hub.GetPubkey(), "ssh-ed25519 "), "h.pubKey should start with 'ssh-ed25519 '")
+		assert.NotEmpty(t, hub.pubKey, "h.pubKey should be set after key generation")
+		assert.True(t, strings.HasPrefix(hub.pubKey, "ssh-ed25519 "), "h.pubKey should start with 'ssh-ed25519 '")
 
 		// Verify the generated private key is parsable
 		keyData, err := os.ReadFile(privateKeyPath)
@@ -169,14 +170,14 @@ func TestGetSSHKey(t *testing.T) {
 		expectedPubKeyStr := strings.TrimSpace(string(ssh.MarshalAuthorizedKey(sshPubKey)))
 
 		// Reset h.pubKey to ensure it's set by GetSSHKey from the file
-		hub.SetPubkey("")
+		hub.pubKey = ""
 
 		signer, err := hub.GetSSHKey(tempDir)
 		assert.NoError(t, err, "GetSSHKey should not error when reading an existing key")
 		assert.NotNil(t, signer, "GetSSHKey should return a non-nil signer for an existing key")
 
 		// Check if h.pubKey was set correctly to the public key from the file
-		assert.Equal(t, expectedPubKeyStr, hub.GetPubkey(), "h.pubKey should match the existing public key")
+		assert.Equal(t, expectedPubKeyStr, hub.pubKey, "h.pubKey should match the existing public key")
 
 		// Verify the signer's public key matches the original public key
 		signerPubKey := signer.PublicKey()
@@ -240,7 +241,7 @@ func TestGetSSHKey(t *testing.T) {
 				require.NoError(t, err, "Setup failed")
 
 				// Reset h.pubKey before each test case
-				hub.SetPubkey("")
+				hub.pubKey = ""
 
 				// Attempt to get SSH key
 				_, err = hub.GetSSHKey(tempDir)
@@ -249,10 +250,8 @@ func TestGetSSHKey(t *testing.T) {
 				tc.errorCheck(t, err)
 
 				// Check that pubKey was not set in error cases
-				assert.Empty(t, hub.GetPubkey(), "h.pubKey should not be set if there was an error")
+				assert.Empty(t, hub.pubKey, "h.pubKey should not be set if there was an error")
 			})
 		}
 	})
 }
-
-// Helper function to create test records

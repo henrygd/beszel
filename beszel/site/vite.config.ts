@@ -15,7 +15,7 @@ export default defineConfig({
 			name: "replace version in index.html during dev",
 			apply: "serve",
 			transformIndexHtml(html) {
-				return html.replace("{{V}}", version).replace("{{HUB_URL}}", "")
+				return html.replace("{{V}}", version)
 			},
 		},
 	],

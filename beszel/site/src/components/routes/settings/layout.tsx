@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useStore } from "@nanostores/react"
 import { $router } from "@/components/router.tsx"
 import { getPagePath, redirectPage } from "@nanostores/router"
-import { BellIcon, FileSlidersIcon, FingerprintIcon, SettingsIcon } from "lucide-react"
+import { BellIcon, FileSlidersIcon, SettingsIcon } from "lucide-react"
 import { $userSettings, pb } from "@/lib/stores.ts"
 import { toast } from "@/components/ui/use-toast.ts"
 import { UserSettings } from "@/types.js"
@@ -15,7 +15,6 @@ import General from "./general.tsx"
 import Notifications from "./notifications.tsx"
 import ConfigYaml from "./config-yaml.tsx"
 import { useLingui } from "@lingui/react/macro"
-import Fingerprints from "./tokens-fingerprints.tsx"
 
 export async function saveSettings(newSettings: Partial<UserSettings>) {
 	try {
@@ -60,12 +59,6 @@ export default function SettingsLayout() {
 			icon: BellIcon,
 		},
 		{
-			title: t`Tokens & Fingerprints`,
-			href: getPagePath($router, "settings", { name: "tokens" }),
-			icon: FingerprintIcon,
-			// admin: true,
-		},
-		{
 			title: t`YAML Config`,
 			href: getPagePath($router, "settings", { name: "config" }),
 			icon: FileSlidersIcon,
@@ -84,7 +77,7 @@ export default function SettingsLayout() {
 	}, [])
 
 	return (
-		<Card className="pt-5 px-4 pb-8 min-h-96 sm:pt-6 sm:px-7">
+		<Card className="pt-5 px-4 pb-8 sm:pt-6 sm:px-7">
 			<CardHeader className="p-0">
 				<CardTitle className="mb-1">
 					<Trans>Settings</Trans>
@@ -96,10 +89,10 @@ export default function SettingsLayout() {
 			<CardContent className="p-0">
 				<Separator className="hidden md:block my-5" />
 				<div className="flex flex-col gap-3.5 md:flex-row md:gap-5 lg:gap-10">
-					<aside className="md:max-w-44 min-w-40">
+					<aside className="md:w-48 w-full">
 						<SidebarNav items={sidebarNavItems} />
 					</aside>
-					<div className="flex-1 min-w-0">
+					<div className="flex-1">
 						{/* @ts-ignore */}
 						<SettingsContent name={page?.params?.name ?? "general"} />
 					</div>
@@ -119,7 +112,5 @@ function SettingsContent({ name }: { name: string }) {
 			return <Notifications userSettings={userSettings} />
 		case "config":
 			return <ConfigYaml />
-		case "tokens":
-			return <Fingerprints />
 	}
 }

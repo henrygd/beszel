@@ -3,7 +3,6 @@ package main
 import (
 	"beszel"
 	"beszel/internal/agent"
-	"beszel/internal/agent/health"
 	"flag"
 	"fmt"
 	"log"
@@ -51,7 +50,12 @@ func (opts *cmdOptions) parse() bool {
 		agent.Update()
 		return true
 	case "health":
-		err := health.Check()
+		// for health, we need to parse flags first to get the listen address
+		args := append(os.Args[2:], subcommand)
+		flag.CommandLine.Parse(args)
+		addr := opts.getAddress()
+		network := agent.GetNetwork(addr)
+		err := agent.Health(addr, network)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -111,12 +115,8 @@ func main() {
 	serverConfig.Addr = addr
 	serverConfig.Network = agent.GetNetwork(addr)
 
-	agent, err := agent.NewAgent("")
-	if err != nil {
-		log.Fatal("Failed to create agent: ", err)
-	}
-
-	if err := agent.Start(serverConfig); err != nil {
-		log.Fatal("Failed to start server: ", err)
+	agent := agent.NewAgent()
+	if err := agent.StartServer(serverConfig); err != nil {
+		log.Fatal("Failed to start server:", err)
 	}
 }

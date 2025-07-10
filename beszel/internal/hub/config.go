@@ -1,5 +1,4 @@
-// Package config provides functions for syncing systems with the config.yml file
-package config
+package hub
 
 import (
 	"beszel/internal/entities/system"
@@ -8,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/google/uuid"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
@@ -16,20 +14,19 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type config struct {
-	Systems []systemConfig `yaml:"systems"`
+type Config struct {
+	Systems []SystemConfig `yaml:"systems"`
 }
 
-type systemConfig struct {
+type SystemConfig struct {
 	Name  string   `yaml:"name"`
 	Host  string   `yaml:"host"`
 	Port  uint16   `yaml:"port,omitempty"`
-	Token string   `yaml:"token,omitempty"`
 	Users []string `yaml:"users"`
 }
 
 // Syncs systems with the config.yml file
-func SyncSystems(e *core.ServeEvent) error {
+func syncSystemsWithConfig(e *core.ServeEvent) error {
 	h := e.App
 	configPath := filepath.Join(h.DataDir(), "config.yml")
 	configData, err := os.ReadFile(configPath)
@@ -37,7 +34,7 @@ func SyncSystems(e *core.ServeEvent) error {
 		return nil
 	}
 
-	var config config
+	var config Config
 	err = yaml.Unmarshal(configData, &config)
 	if err != nil {
 		return fmt.Errorf("failed to parse config.yml: %v", err)
@@ -110,14 +107,6 @@ func SyncSystems(e *core.ServeEvent) error {
 			if err := h.Save(existingSystem); err != nil {
 				return err
 			}
-
-			// Only update token if one is specified in config, otherwise preserve existing token
-			if sysConfig.Token != "" {
-				if err := updateFingerprintToken(h, existingSystem.Id, sysConfig.Token); err != nil {
-					return err
-				}
-			}
-
 			delete(existingSystemsMap, key)
 		} else {
 			// Create new system
@@ -135,21 +124,10 @@ func SyncSystems(e *core.ServeEvent) error {
 			if err := h.Save(newSystem); err != nil {
 				return fmt.Errorf("failed to create new system: %v", err)
 			}
-
-			// For new systems, generate token if not provided
-			token := sysConfig.Token
-			if token == "" {
-				token = uuid.New().String()
-			}
-
-			// Create fingerprint record for new system
-			if err := createFingerprintRecord(h, newSystem.Id, token); err != nil {
-				return err
-			}
 		}
 	}
 
-	// Delete systems not in config (and their fingerprint records will cascade delete)
+	// Delete systems not in config
 	for _, system := range existingSystemsMap {
 		if err := h.Delete(system); err != nil {
 			return err
@@ -161,7 +139,7 @@ func SyncSystems(e *core.ServeEvent) error {
 }
 
 // Generates content for the config.yml file as a YAML string
-func generateYAML(h core.App) (string, error) {
+func (h *Hub) generateConfigYAML() (string, error) {
 	// Fetch all systems from the database
 	systems, err := h.FindRecordsByFilter("systems", "id != ''", "name", -1, 0)
 	if err != nil {
@@ -169,8 +147,8 @@ func generateYAML(h core.App) (string, error) {
 	}
 
 	// Create a Config struct to hold the data
-	config := config{
-		Systems: make([]systemConfig, 0, len(systems)),
+	config := Config{
+		Systems: make([]SystemConfig, 0, len(systems)),
 	}
 
 	// Fetch all users at once
@@ -178,27 +156,9 @@ func generateYAML(h core.App) (string, error) {
 	for _, system := range systems {
 		allUserIDs = append(allUserIDs, system.GetStringSlice("users")...)
 	}
-	userEmailMap, err := getUserEmailMap(h, allUserIDs)
+	userEmailMap, err := h.getUserEmailMap(allUserIDs)
 	if err != nil {
 		return "", err
-	}
-
-	// Fetch all fingerprint records to get tokens
-	type fingerprintData struct {
-		ID     string `db:"id"`
-		System string `db:"system"`
-		Token  string `db:"token"`
-	}
-	var fingerprints []fingerprintData
-	err = h.DB().NewQuery("SELECT id, system, token FROM fingerprints").All(&fingerprints)
-	if err != nil {
-		return "", err
-	}
-
-	// Create a map of system ID to token
-	systemTokenMap := make(map[string]string)
-	for _, fingerprint := range fingerprints {
-		systemTokenMap[fingerprint.System] = fingerprint.Token
 	}
 
 	// Populate the Config struct with system data
@@ -211,12 +171,11 @@ func generateYAML(h core.App) (string, error) {
 			}
 		}
 
-		sysConfig := systemConfig{
+		sysConfig := SystemConfig{
 			Name:  system.GetString("name"),
 			Host:  system.GetString("host"),
 			Port:  cast.ToUint16(system.Get("port")),
 			Users: userEmails,
-			Token: systemTokenMap[system.Id],
 		}
 		config.Systems = append(config.Systems, sysConfig)
 	}
@@ -228,13 +187,13 @@ func generateYAML(h core.App) (string, error) {
 	}
 
 	// Add a header to the YAML
-	yamlData = append([]byte("# Values for port, users, and token are optional.\n# Defaults are port 45876, the first created user, and a generated UUID token.\n\n"), yamlData...)
+	yamlData = append([]byte("# Values for port and users are optional.\n# Defaults are port 45876 and the first created user.\n\n"), yamlData...)
 
 	return string(yamlData), nil
 }
 
 // New helper function to get a map of user IDs to emails
-func getUserEmailMap(h core.App, userIDs []string) (map[string]string, error) {
+func (h *Hub) getUserEmailMap(userIDs []string) (map[string]string, error) {
 	users, err := h.FindRecordsByIds("users", userIDs)
 	if err != nil {
 		return nil, err
@@ -248,42 +207,13 @@ func getUserEmailMap(h core.App, userIDs []string) (map[string]string, error) {
 	return userEmailMap, nil
 }
 
-// Helper function to update or create fingerprint token for an existing system
-func updateFingerprintToken(app core.App, systemID, token string) error {
-	// Try to find existing fingerprint record
-	fingerprint, err := app.FindFirstRecordByFilter("fingerprints", "system = {:system}", dbx.Params{"system": systemID})
-	if err != nil {
-		// If no fingerprint record exists, create one
-		return createFingerprintRecord(app, systemID, token)
-	}
-
-	// Update existing fingerprint record with new token (keep existing fingerprint)
-	fingerprint.Set("token", token)
-	return app.Save(fingerprint)
-}
-
-// Helper function to create a new fingerprint record for a system
-func createFingerprintRecord(app core.App, systemID, token string) error {
-	fingerprintsCollection, err := app.FindCollectionByNameOrId("fingerprints")
-	if err != nil {
-		return fmt.Errorf("failed to find fingerprints collection: %v", err)
-	}
-
-	newFingerprint := core.NewRecord(fingerprintsCollection)
-	newFingerprint.Set("system", systemID)
-	newFingerprint.Set("token", token)
-	newFingerprint.Set("fingerprint", "") // Empty fingerprint, will be set on first connection
-
-	return app.Save(newFingerprint)
-}
-
 // Returns the current config.yml file as a JSON object
-func GetYamlConfig(e *core.RequestEvent) error {
+func (h *Hub) getYamlConfig(e *core.RequestEvent) error {
 	info, _ := e.RequestInfo()
 	if info.Auth == nil || info.Auth.GetString("role") != "admin" {
 		return apis.NewForbiddenError("Forbidden", nil)
 	}
-	configContent, err := generateYAML(e.App)
+	configContent, err := h.generateConfigYAML()
 	if err != nil {
 		return err
 	}

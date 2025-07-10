@@ -49,7 +49,6 @@ msgstr "30 dias"
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "Ações"
 
@@ -77,6 +76,9 @@ msgstr "Adicionar URL"
 msgid "Adjust display options for charts."
 msgstr "Ajustar opções de exibição para gráficos."
 
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
@@ -184,7 +186,7 @@ msgstr "Verifique os logs para mais detalhes."
 msgid "Check your notification service"
 msgstr "Verifique seu serviço de notificação"
 
-#: src/components/ui/input-copy.tsx
+#: src/components/add-system.tsx
 msgid "Click to copy"
 msgstr "Clique para copiar"
 
@@ -211,46 +213,26 @@ msgid "Copied to clipboard"
 msgstr "Copiado para a área de transferência"
 
 #: src/components/add-system.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
 msgstr "Copiar docker compose"
 
 #: src/components/add-system.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
 msgstr "Copiar docker run"
-
-#: src/components/routes/settings/tokens-fingerprints.tsx
-msgctxt "Environment variables"
-msgid "Copy env"
-msgstr "Copiar variáveis de ambiente"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Copy host"
 msgstr "Copiar host"
 
 #: src/components/add-system.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
 msgstr "Copiar comando Linux"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Copiar texto"
-
-#: src/components/add-system.tsx
-msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
-msgstr "Copie o comando de instalação do agente abaixo, ou registre agentes automaticamente com um <0>token universal</0>."
-
-#: src/components/add-system.tsx
-msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
-msgstr "Copie o conteúdo do <0>docker-compose.yml</0> do agente abaixo, ou registre agentes automaticamente com um <1>token universal</1>."
-
-#: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "Copy YAML"
-msgstr "Copiar YAML"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "CPU"
@@ -283,10 +265,6 @@ msgstr "Período de tempo padrão"
 #: src/components/systems-table/systems-table.tsx
 msgid "Delete"
 msgstr "Excluir"
-
-#: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "Delete fingerprint"
-msgstr "Excluir impressão digital"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Disk"
@@ -351,7 +329,6 @@ msgstr "Digite o endereço de email para redefinir a senha"
 msgid "Enter email address..."
 msgstr "Digite o endereço de email..."
 
-#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/login/auth-form.tsx
@@ -399,10 +376,6 @@ msgstr "Falha ao atualizar alerta"
 msgid "Filter..."
 msgstr "Filtrar..."
 
-#: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "Fingerprint"
-msgstr ""
-
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "Por <0>{min}</0> {min, plural, one {minuto} other {minutos}}"
@@ -426,7 +399,6 @@ msgid "Grid"
 msgstr "Grade"
 
 #: src/components/add-system.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
 msgstr "Comando Homebrew"
@@ -549,8 +521,6 @@ msgid "On each restart, systems in the database will be updated to match the sys
 msgstr "A cada reinício, os sistemas no banco de dados serão atualizados para corresponder aos sistemas definidos no arquivo."
 
 #: src/components/systems-table/systems-table.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
 msgstr "Abrir menu"
 
@@ -665,10 +635,6 @@ msgstr "Redefinir Senha"
 msgid "Resume"
 msgstr "Retomar"
 
-#: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "Rotate token"
-msgstr "Rotacionar token"
-
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Salve o endereço usando a tecla enter ou vírgula. Deixe em branco para desativar notificações por email."
@@ -703,6 +669,7 @@ msgstr "Enviado"
 msgid "Sets the default time range for charts when a system is viewed."
 msgstr "Define o intervalo de tempo padrão para gráficos quando um sistema é visualizado."
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -742,7 +709,6 @@ msgstr "Uso de Swap"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/systems-table/systems-table.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "Sistema"
 
@@ -780,6 +746,14 @@ msgstr "Testar <0>URL</0>"
 msgid "Test notification sent"
 msgstr "Notificação de teste enviada"
 
+#: src/components/add-system.tsx
+msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
+msgstr "O agente deve estar em execução no sistema para conectar. Copie o comando de instalação para o agente abaixo."
+
+#: src/components/add-system.tsx
+msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
+msgstr "O agente deve estar em execução no sistema para conectar. Copie o <0>docker-compose.yml</0> para o agente abaixo."
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Em seguida, faça login no backend e redefina a senha da sua conta de usuário na tabela de usuários."
@@ -809,25 +783,6 @@ msgstr "Alternar grade"
 msgid "Toggle theme"
 msgstr "Alternar tema"
 
-#: src/components/add-system.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "Token"
-msgstr "Token"
-
-#: src/components/command-palette.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
-#: src/components/routes/settings/layout.tsx
-msgid "Tokens & Fingerprints"
-msgstr "Tokens e Impressões Digitais"
-
-#: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
-msgstr "Os tokens permitem que os agentes se conectem e registrem. As impressões digitais são identificadores estáveis únicos para cada sistema, definidos na primeira conexão."
-
-#: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
-msgstr "Tokens e impressões digitais são usados para autenticar conexões WebSocket ao hub."
-
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Dispara quando qualquer sensor excede um limite"
@@ -851,10 +806,6 @@ msgstr "Dispara quando o status alterna entre ativo e inativo"
 #: src/lib/utils.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Dispara quando o uso de qualquer disco excede um limite"
-
-#: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "Universal token"
-msgstr "Token universal"
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx
@@ -911,12 +862,7 @@ msgstr "Quer nos ajudar a melhorar ainda mais nossas traduções? Confira <0>Cro
 msgid "Webhook / Push notifications"
 msgstr "Notificações Webhook / Push"
 
-#: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
-msgstr "Quando habilitado, este token permite que os agentes se registrem automaticamente sem criação prévia do sistema. Expira após uma hora ou na reinicialização do hub."
-
 #: src/components/add-system.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
 msgstr "Comando Windows"
