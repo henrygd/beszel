@@ -195,6 +195,10 @@ export type UserSettings = {
 	chartTime: ChartTimes
 	emails?: string[]
 	webhooks?: string[]
+	meterThresholds?: {
+		yellow?: number
+		red?: number
+	}
 }
 
 type ChartDataContainer = {
