@@ -1,8 +1,19 @@
 name: 🚀 Feature request
 description: Request a new feature or change.
 title: "[Feature]: "
-labels: ["enhancement"]
+labels: ["enhancement", "needs review"]
 body:
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which part of Beszel is this about?
+      options:
+        - Hub
+        - Agent
+        - Hub & Agent
+    validations:
+      required: true
   - type: markdown
     attributes:
       value: Before submitting, please search existing [issues](https://github.com/henrygd/beszel/issues) and [discussions](https://github.com/henrygd/beszel/discussions) (including closed).
@@ -12,7 +23,54 @@ body:
     validations:
       required: true
   - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation / Use Case
+      description: Why do you want this feature? What problem does it solve?
+    validations:
+      required: true
+  - type: textarea
     attributes:
       label: Describe how you would like to see this feature implemented
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Screenshots
+      description: Please attach any relevant screenshots, such as images from your current solution or similar implementations.
+    validations:
+      required: false
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: Which category does this relate to most?
+      options:
+        - Metrics
+        - Charts & Visualization
+        - Settings & Configuration
+        - Notifications & Alerts
+        - Authentication
+        - Installation
+        - Performance
+        - UI / UX
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: metrics
+    attributes:
+      label: Affected Metrics
+      description: If applicable, which specific metric does this relate to most?
+      options:
+        - CPU
+        - Memory
+        - Storage
+        - Network
+        - Containers
+        - GPU
+        - Sensors
+        - Other
     validations:
       required: true
