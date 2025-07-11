@@ -3,7 +3,7 @@ import { toast } from "@/components/ui/use-toast"
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { $alerts, $copyContent, $systems, $userSettings, pb } from "./stores"
-import { AlertInfo, AlertRecord, ChartTimeData, ChartTimes, SystemRecord, TemperatureUnit, TemperatureConversion, SpeedUnit, SpeedConversion } from "@/types"
+import { AlertInfo, AlertRecord, ChartTimeData, ChartTimes, FingerprintRecord, SystemRecord, TemperatureUnit, TemperatureConversion, SpeedUnit, SpeedConversion } from "@/types"
 import { RecordModel, RecordSubscription } from "pocketbase"
 import { WritableAtom } from "nanostores"
 import { timeDay, timeHour } from "d3-time"
@@ -17,13 +17,9 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /** Adds event listener to node and returns function that removes the listener */
-export function listen<T extends Event = Event>(
-  node: Node, 
-  event: string, 
-  handler: (event: T) => void
-) {
-  node.addEventListener(event, handler as EventListener)
-  return () => node.removeEventListener(event, handler as EventListener)
+export function listen<T extends Event = Event>(node: Node, event: string, handler: (event: T) => void) {
+	node.addEventListener(event, handler as EventListener)
+	return () => node.removeEventListener(event, handler as EventListener)
 }
 
 export async function copyToClipboard(content: string) {
@@ -458,3 +454,12 @@ export const alertInfo: Record<string, AlertInfo> = {
  * const hostname = getHostDisplayValue(system) // hostname will be "beszel.sock"
  */
 export const getHostDisplayValue = (system: SystemRecord): string => system.host.slice(system.host.lastIndexOf("/") + 1)
+
+/** Generate a random token for the agent */
+export const generateToken = () => crypto?.randomUUID() ?? (performance.now() * Math.random()).toString(16)
+
+/** Get the hub URL from the global BESZEL object */
+export const getHubURL = () => BESZEL?.HUB_URL || window.location.origin
+
+/** Map of system IDs to their corresponding tokens (used to avoid fetching in add-system dialog) */
+export const tokenMap = new Map<SystemRecord["id"], FingerprintRecord["token"]>()
