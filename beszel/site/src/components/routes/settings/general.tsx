@@ -101,6 +101,63 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 					</p>
 				</div>
 				<Separator />
+				<div className="space-y-2">
+					<div className="mb-4">
+						<h3 className="mb-1 text-lg font-medium">
+							<Trans>Unit preferences</Trans>
+						</h3>
+						<p className="text-sm text-muted-foreground leading-relaxed">
+							<Trans>Adjust Display units for metrics.</Trans>
+						</p>
+					</div>
+					<div className="space-y-4">
+						<div className="space-y-2">
+							<Label className="block" htmlFor="temperatureUnit">
+								<Trans>Temperature unit</Trans>
+							</Label>
+							<Select name="temperatureUnit" key={userSettings.temperatureUnit} defaultValue={userSettings.temperatureUnit || "celsius"}>
+								<SelectTrigger id="temperatureUnit">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="celsius">Celsius (°C)</SelectItem>
+									<SelectItem value="fahrenheit">Fahrenheit (°F)</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+
+						<div className="space-y-2">
+							<Label className="block" htmlFor="networkUnit">
+								<Trans>Network unit</Trans>
+							</Label>
+							<Select name="networkUnit" key={userSettings.networkUnit} defaultValue={userSettings.networkUnit || "mbps"}>
+								<SelectTrigger id="networkUnit">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="mbps">MB/s (Megabytes per second)</SelectItem>
+									<SelectItem value="bps">bps (Bits per second)</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+
+						<div className="space-y-2">
+							<Label className="block" htmlFor="diskUnit">
+								<Trans>Disk unit</Trans>
+							</Label>
+							<Select name="diskUnit" key={userSettings.diskUnit} defaultValue={userSettings.diskUnit || "mbps"}>
+								<SelectTrigger id="diskUnit">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="mbps">MB/s (Megabytes per second)</SelectItem>
+									<SelectItem value="bps">bps (Bits per second)</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+					</div>
+				</div>
+				<Separator />
 				<Button type="submit" className="flex items-center gap-1.5 disabled:opacity-100" disabled={isLoading}>
 					{isLoading ? <LoaderCircleIcon className="h-4 w-4 animate-spin" /> : <SaveIcon className="h-4 w-4" />}
 					<Trans>Save Settings</Trans>
