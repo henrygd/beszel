@@ -49,6 +49,7 @@ msgstr "۳۰ روز"
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "عملیات"
 
@@ -76,9 +77,6 @@ msgstr "افزودن آدرس اینترنتی"
 msgid "Adjust display options for charts."
 msgstr "تنظیم گزینه‌های نمایش برای نمودارها."
 
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
@@ -186,7 +184,7 @@ msgstr "برای جزئیات بیشتر، لاگ‌ها را بررسی کنی�
 msgid "Check your notification service"
 msgstr "سرویس اطلاع‌رسانی خود را بررسی کنید"
 
-#: src/components/add-system.tsx
+#: src/components/ui/input-copy.tsx
 msgid "Click to copy"
 msgstr "برای کپی کردن کلیک کنید"
 
@@ -213,26 +211,46 @@ msgid "Copied to clipboard"
 msgstr "در کلیپ‌بورد کپی شد"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
 msgstr "کپی docker compose"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
 msgstr "کپی docker run"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Environment variables"
+msgid "Copy env"
+msgstr "کپی متغیرهای محیط"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Copy host"
 msgstr "کپی میزبان"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
 msgstr "کپی دستور لینوکس"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "کپی متن"
+
+#: src/components/add-system.tsx
+msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
+msgstr "دستور نصب عامل زیر را کپی کنید، یا عامل‌ها را به طور خودکار با <0>توکن جهانی</0> ثبت کنید."
+
+#: src/components/add-system.tsx
+msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
+msgstr "محتوای <0>docker-compose.yml</0> عامل زیر را کپی کنید، یا عامل‌ها را به طور خودکار با <1>توکن جهانی</1> ثبت کنید."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy YAML"
+msgstr "کپی YAML"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "CPU"
@@ -265,6 +283,10 @@ msgstr "بازه زمانی پیش‌فرض"
 #: src/components/systems-table/systems-table.tsx
 msgid "Delete"
 msgstr "حذف"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Delete fingerprint"
+msgstr "حذف اثر انگشت"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Disk"
@@ -329,6 +351,7 @@ msgstr "آدرس ایمیل را برای بازنشانی رمز عبور وا�
 msgid "Enter email address..."
 msgstr "آدرس ایمیل را وارد کنید..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/login/auth-form.tsx
@@ -376,6 +399,10 @@ msgstr "به‌روزرسانی هشدار ناموفق بود"
 msgid "Filter..."
 msgstr "فیلتر..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Fingerprint"
+msgstr ""
+
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "برای <0>{min}</0> {min, plural, one {دقیقه} other {دقیقه}}"
@@ -399,6 +426,7 @@ msgid "Grid"
 msgstr "جدول"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
 msgstr "دستور Homebrew"
@@ -521,6 +549,8 @@ msgid "On each restart, systems in the database will be updated to match the sys
 msgstr "در هر بار راه‌اندازی مجدد، سیستم‌های موجود در پایگاه داده با سیستم‌های تعریف شده در فایل مطابقت داده می‌شوند."
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
 msgstr "باز کردن منو"
 
@@ -635,6 +665,10 @@ msgstr "بازنشانی رمز عبور"
 msgid "Resume"
 msgstr "ادامه"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Rotate token"
+msgstr "چرخش توکن"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "آدرس را با استفاده از کلید Enter یا کاما ذخیره کنید. برای غیرفعال کردن اعلان‌های ایمیلی، خالی بگذارید."
@@ -669,7 +703,6 @@ msgstr "ارسال شد"
 msgid "Sets the default time range for charts when a system is viewed."
 msgstr "بازه زمانی پیش‌فرض برای نمودارها هنگام مشاهده یک سیستم را تعیین می‌کند."
 
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -709,6 +742,7 @@ msgstr "میزان استفاده از Swap"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "سیستم"
 
@@ -746,14 +780,6 @@ msgstr "تست <0>آدرس اینترنتی</0>"
 msgid "Test notification sent"
 msgstr "اعلان آزمایشی ارسال شد"
 
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
-msgstr "برای اتصال، عامل باید روی سیستم در حال اجرا باشد. دستور نصب عامل را از زیر کپی کنید."
-
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
-msgstr "برای اتصال، عامل باید روی سیستم در حال اجرا باشد. <0>docker-compose.yml</0> مربوط به عامل را از زیر کپی کنید."
-
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "سپس وارد بخش پشتیبان شوید و رمز عبور حساب کاربری خود را در جدول کاربران بازنشانی کنید."
@@ -783,6 +809,25 @@ msgstr "تغییر نمایش جدول"
 msgid "Toggle theme"
 msgstr "تغییر تم"
 
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token"
+msgstr "توکن"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "Tokens & Fingerprints"
+msgstr "توکن‌ها و اثرات انگشت"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
+msgstr "توکن‌ها به عامل‌ها اجازه اتصال و ثبت‌نام می‌دهند. اثرات انگشت شناسه‌های پایدار منحصر به فرد هر سیستم هستند که در اولین اتصال تنظیم می‌شوند."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
+msgstr "توکن‌ها و اثرات انگشت برای احراز هویت اتصالات WebSocket به هاب استفاده می‌شوند."
+
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "هنگامی که هر حسگری از یک آستانه فراتر رود، فعال می‌شود"
@@ -806,6 +851,10 @@ msgstr "هنگامی که وضعیت بین بالا و پایین تغییر م
 #: src/lib/utils.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "هنگامی که استفاده از هر دیسکی از یک آستانه فراتر رود، فعال می‌شود"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Universal token"
+msgstr "توکن جهانی"
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx
@@ -862,7 +911,12 @@ msgstr "می‌خواهید به ما کمک کنید تا ترجمه‌های �
 msgid "Webhook / Push notifications"
 msgstr "اعلان‌های Webhook / Push"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
+msgstr "هنگامی که فعال است، این توکن به عامل‌ها اجازه خودثبت‌نامی بدون ایجاد سیستم قبلی می‌دهد. پس از یک ساعت یا در راه‌اندازی مجدد هاب منقضی می‌شود."
+
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
 msgstr "دستور Windows"
