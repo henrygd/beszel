@@ -66,6 +66,19 @@ export interface SystemInfo {
 	os?: Os
 }
 
+export interface ProcessInfo {
+	/** process ID */
+	pid: number
+	/** process name */
+	name: string
+	/** CPU usage percentage */
+	cpu: number
+	/** memory usage percentage */
+	mem: number
+	/** command line */
+	cmd?: string
+}
+
 export interface SystemStats {
 	/** cpu percent */
 	cpu: number
@@ -115,6 +128,10 @@ export interface SystemStats {
 	g?: Record<string, GPUData>
 	/** process state counts */
 	ps_states?: Record<string, number>
+	/** top CPU consuming processes */
+	top_cpu?: ProcessInfo[]
+	/** top memory consuming processes */
+	top_mem?: ProcessInfo[]
 }
 
 export interface GPUData {

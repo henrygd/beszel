@@ -252,6 +252,10 @@ msgstr "复制下面的客户端<0>docker-compose.yml</0>内容，或使用<1>�
 msgid "Copy YAML"
 msgstr "复制YAML"
 
+#: src/components/routes/system.tsx
+msgid "Count of processes in each state"
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
 msgid "CPU"
 msgstr "CPU"
@@ -641,6 +645,18 @@ msgstr "采集时间下的精确内存使用率"
 msgid "Preferred Language"
 msgstr "首选语言"
 
+#: src/components/routes/system.tsx
+msgid "Process States"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Processes consuming the most CPU"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Processes consuming the most memory"
+msgstr ""
+
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
@@ -827,6 +843,14 @@ msgstr "令牌允许客户端连接和注册。指纹是每个系统唯一的稳
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "令牌和指纹用于验证到中心的WebSocket连接。"
+
+#: src/components/routes/system.tsx
+msgid "Top CPU Users"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Top Memory Users"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"

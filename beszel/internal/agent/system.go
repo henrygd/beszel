@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -239,9 +240,12 @@ func (a *Agent) getSystemStats() system.Stats {
 		}
 	}
 
-	// process state counts
+	// process state counts and top processes
 	processStates := make(map[string]int)
+	var allProcesses []*process.Process
+
 	if processes, err := process.Processes(); err == nil {
+		allProcesses = processes
 		for _, p := range processes {
 			if statuses, err := p.Status(); err == nil {
 				for _, status := range statuses {
@@ -253,6 +257,10 @@ func (a *Agent) getSystemStats() system.Stats {
 		slog.Error("Error getting process list", "err", err)
 	}
 	systemStats.ProcessStates = processStates
+
+	// Get top 3 CPU and memory processes
+	systemStats.TopCpuProcesses = getTopProcesses(allProcesses, "cpu", 3)
+	systemStats.TopMemProcesses = getTopProcesses(allProcesses, "memory", 3)
 
 	// update base system info
 	a.systemInfo.Cpu = systemStats.Cpu
@@ -289,4 +297,68 @@ func getARCSize() (uint64, error) {
 	}
 
 	return 0, fmt.Errorf("failed to parse size field")
+}
+
+// getTopProcesses returns the top N processes by CPU or memory usage
+func getTopProcesses(processes []*process.Process, metric string, limit int) []system.ProcessInfo {
+	var processInfos []system.ProcessInfo
+
+	for _, p := range processes {
+		// Skip processes we can't get info for
+		name, err := p.Name()
+		if err != nil {
+			continue
+		}
+
+		pid := p.Pid
+
+		var cpuPercent, memPercent float64
+
+		// Get CPU percentage
+		if cpuPercent, err = p.CPUPercent(); err != nil {
+			cpuPercent = 0
+		}
+
+		// Get memory percentage
+		if memPercent32, err := p.MemoryPercent(); err != nil {
+			memPercent = 0
+		} else {
+			memPercent = float64(memPercent32)
+		}
+
+		// Get command line (truncate if too long)
+		cmdline, err := p.Cmdline()
+		if err != nil {
+			cmdline = ""
+		}
+		if len(cmdline) > 100 {
+			cmdline = cmdline[:97] + "..."
+		}
+
+		processInfos = append(processInfos, system.ProcessInfo{
+			PID:     pid,
+			Name:    name,
+			CPU:     twoDecimals(cpuPercent),
+			Memory:  twoDecimals(memPercent),
+			Command: cmdline,
+		})
+	}
+
+	// Sort by the requested metric
+	switch metric {
+	case "cpu":
+		sort.Slice(processInfos, func(i, j int) bool {
+			return processInfos[i].CPU > processInfos[j].CPU
+		})
+	case "memory":
+		sort.Slice(processInfos, func(i, j int) bool {
+			return processInfos[i].Memory > processInfos[j].Memory
+		})
+	}
+
+	// Return top N processes
+	if len(processInfos) > limit {
+		return processInfos[:limit]
+	}
+	return processInfos
 }

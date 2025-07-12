@@ -252,6 +252,10 @@ msgstr "Kopieren Sie den<0>docker-compose.yml</0> Inhalt für den Agent unten od
 msgid "Copy YAML"
 msgstr "YAML kopieren"
 
+#: src/components/routes/system.tsx
+msgid "Count of processes in each state"
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
 msgid "CPU"
 msgstr "CPU"
@@ -641,6 +645,18 @@ msgstr "Genaue Nutzung zum aufgezeichneten Zeitpunkt"
 msgid "Preferred Language"
 msgstr "Bevorzugte Sprache"
 
+#: src/components/routes/system.tsx
+msgid "Process States"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Processes consuming the most CPU"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Processes consuming the most memory"
+msgstr ""
+
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
@@ -827,6 +843,14 @@ msgstr "Tokens ermöglichen es Agents, sich zu verbinden und zu registrieren. Fi
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Tokens und Fingerabdrücke werden verwendet, um WebSocket-Verbindungen zum Hub zu authentifizieren."
+
+#: src/components/routes/system.tsx
+msgid "Top CPU Users"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Top Memory Users"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"

@@ -252,6 +252,10 @@ msgstr "انسخ محتوى <0>docker-compose.yml</0> للوكيل أدناه، 
 msgid "Copy YAML"
 msgstr "نسخ YAML"
 
+#: src/components/routes/system.tsx
+msgid "Count of processes in each state"
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
 msgid "CPU"
 msgstr "المعالج"
@@ -641,6 +645,18 @@ msgstr "الاستخدام الدقيق في الوقت المسجل"
 msgid "Preferred Language"
 msgstr "اللغة المفضلة"
 
+#: src/components/routes/system.tsx
+msgid "Process States"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Processes consuming the most CPU"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Processes consuming the most memory"
+msgstr ""
+
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
@@ -827,6 +843,14 @@ msgstr "تسمح الرموز المميزة للوكلاء بالاتصال و�
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "تُستخدم الرموز المميزة والبصمات للمصادقة على اتصالات WebSocket إلى المحور."
+
+#: src/components/routes/system.tsx
+msgid "Top CPU Users"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Top Memory Users"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
