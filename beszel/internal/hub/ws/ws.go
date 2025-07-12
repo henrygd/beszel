@@ -77,7 +77,7 @@ func (h *Handler) OnMessage(conn *gws.Conn, message *gws.Message) {
 	case wsConn.(*WsConn).responseChan <- message:
 	default:
 		// close if the connection is not expecting a response
-		wsConn.(*WsConn).Close()
+		wsConn.(*WsConn).Close(nil)
 	}
 }
 
@@ -100,9 +100,9 @@ func (h *Handler) OnClose(conn *gws.Conn, err error) {
 }
 
 // Close terminates the WebSocket connection gracefully.
-func (ws *WsConn) Close() {
+func (ws *WsConn) Close(msg []byte) {
 	if ws.IsConnected() {
-		ws.conn.WriteClose(1000, nil)
+		ws.conn.WriteClose(1000, msg)
 	}
 }
 
@@ -130,7 +130,7 @@ func (ws *WsConn) RequestSystemData(data *system.CombinedData) error {
 	})
 	select {
 	case <-time.After(10 * time.Second):
-		ws.Close()
+		ws.Close(nil)
 		return gws.ErrConnClosed
 	case message = <-ws.responseChan:
 	}

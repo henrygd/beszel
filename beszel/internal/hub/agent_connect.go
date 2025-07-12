@@ -100,8 +100,7 @@ func (acr *agentConnectRequest) verifyWsConn(conn *gws.Conn, fpRecords []ws.Fing
 	// make sure connection is closed if there is an error
 	defer func() {
 		if err != nil {
-			wsConn.Close()
-			acr.hub.Logger().Error("WebSocket error", "error", err, "systems", fpRecords)
+			wsConn.Close([]byte(err.Error()))
 		}
 	}()
 
