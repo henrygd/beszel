@@ -8,7 +8,7 @@ msgstr ""
 "Language: uk\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-07-13 02:50\n"
+"PO-Revision-Date: 2025-07-13 11:22\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -451,12 +451,12 @@ msgstr "Ядро"
 #. Load average 15 minutes
 #: src/components/systems-table/systems-table.tsx
 msgid "L15"
-msgstr ""
+msgstr "Н15"
 
 #. Load average 5 minutes
 #: src/components/systems-table/systems-table.tsx
 msgid "L5"
-msgstr ""
+msgstr "Н5"
 
 #: src/components/routes/settings/general.tsx
 msgid "Language"
@@ -473,11 +473,11 @@ msgstr "Світлий"
 
 #: src/lib/utils.ts
 msgid "Load Average 15m"
-msgstr ""
+msgstr "Середнє навантаження за 15 хв"
 
 #: src/lib/utils.ts
 msgid "Load Average 5m"
-msgstr ""
+msgstr "Середнє навантаження за 5 хв"
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -848,11 +848,11 @@ msgstr "Токени та відбитки використовуються дл
 
 #: src/lib/utils.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Спрацьовує, коли середнє навантаження за 15 хвилин перевищує поріг"
 
 #: src/lib/utils.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Спрацьовує, коли середнє навантаження за 5 хвилин перевищує поріг"
 
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
