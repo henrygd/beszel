@@ -363,7 +363,7 @@ export default function SystemsTable() {
 				},
 			},
 			{
-				accessorFn: (originalRow) => originalRow.info.dtemp,
+				accessorFn: (originalRow) => originalRow.info.dt,
 				id: "temp",
 				name: () => t({ message: "Temp", comment: "Temperature label in systems table" }),
 				size: 50,

@@ -12,11 +12,11 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"github.com/shirou/gopsutil/v4/cpu"
+
 	"github.com/gliderlabs/ssh"
+	"github.com/shirou/gopsutil/v4/cpu"
 	"github.com/shirou/gopsutil/v4/host"
 	gossh "golang.org/x/crypto/ssh"
-
 )
 
 type Agent struct {
@@ -33,20 +33,22 @@ type Agent struct {
 	systemInfo        system.Info                // Host system info
 	gpuManager        *GPUManager                // Manages GPU data
 	cache             *SessionCache              // Cache for system stats based on primary session ID
+	prevCpuTimes      []cpu.TimesStat            // Previous CPU times for calculating detailed metrics
 	connectionManager *ConnectionManager         // Channel to signal connection events
 	server            *ssh.Server                // SSH server
 	dataDir           string                     // Directory for persisting data
 	keys              []gossh.PublicKey          // SSH public keys
-	prevCpuTimes      []cpu.TimesStat            // Previous CPU times for calculating detailed metrics
-
 }
 
-func NewAgent() *Agent {
+// NewAgent creates a new agent with the given data directory for persisting data.
+// If the data directory is not set, it will attempt to find the optimal directory.
+func NewAgent(dataDir string) (*Agent, error) {
 	agent := &Agent{
 		fsStats: make(map[string]*system.FsStats),
 		cache:   NewSessionCache(69 * time.Second),
 	}
 
+	var err error
 	agent.dataDir, err = getDataDir(dataDir)
 	if err != nil {
 		slog.Warn("Data directory not found")

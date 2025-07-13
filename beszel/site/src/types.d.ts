@@ -67,7 +67,7 @@ export interface SystemInfo {
 	/** highest gpu utilization */
 	g?: number
 	/** dashboard display temperature */
-	dtemp?: number
+	dt?: number
 	/** operating system */
 	os?: Os
 	/** extra filesystems */
