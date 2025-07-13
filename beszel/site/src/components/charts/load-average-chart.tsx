@@ -44,14 +44,14 @@ export default memo(function LoadAverageChart({ chartData }: { chartData: ChartD
 		for (let data of chartData.systemStats) {
 			let newData = { created: data.created } as Record<string, number | string>
 			
-			// Add load average values if they exist
-			if (data.stats.l1 !== undefined) {
+			// Add load average values if they exist and stats is not null
+			if (data.stats && data.stats.l1 !== undefined) {
 				newData["1m"] = data.stats.l1
 			}
-			if (data.stats.l5 !== undefined) {
+			if (data.stats && data.stats.l5 !== undefined) {
 				newData["5m"] = data.stats.l5
 			}
-			if (data.stats.l15 !== undefined) {
+			if (data.stats && data.stats.l15 !== undefined) {
 				newData["15m"] = data.stats.l15
 			}
 			
