@@ -65,7 +65,7 @@ jobs:
         with:
           images: ${{ matrix.image }}
           tags: |
-            type=edge,enable=true
+            type=raw,value=edge
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
