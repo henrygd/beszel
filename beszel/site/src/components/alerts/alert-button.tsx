@@ -11,13 +11,14 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog"
-import { BellIcon, GlobeIcon, ServerIcon } from "lucide-react"
+import { BellIcon, GlobeIcon, ServerIcon, HourglassIcon } from "lucide-react"
 import { alertInfo, cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { AlertRecord, SystemRecord } from "@/types"
 import { $router, Link } from "../router"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "../ui/checkbox"
+import { Collapsible } from "../ui/collapsible"
 import { SystemAlert, SystemAlertGlobal } from "./alerts-system"
 import { getPagePath } from "@nanostores/router"
 
@@ -93,6 +94,14 @@ function AlertDialogContent({ system }: { system: SystemRecord }) {
 			}
 		})
 
+		// Separate load average alerts from other alerts
+		const loadAverageAlerts = data.filter((d) => 
+			d.name === "LoadAvg1" || d.name === "LoadAvg5" || d.name === "LoadAvg15"
+		)
+		const otherAlerts = data.filter((d) => 
+			d.name !== "LoadAvg1" && d.name !== "LoadAvg5" && d.name !== "LoadAvg15"
+		)
+
 		return (
 			<>
 				<DialogHeader>
@@ -122,9 +131,19 @@ function AlertDialogContent({ system }: { system: SystemRecord }) {
 					</TabsList>
 					<TabsContent value="system">
 						<div className="grid gap-3">
-							{data.map((d) => (
+							{otherAlerts.map((d) => (
 								<SystemAlert key={d.name} system={system} data={d} systemAlerts={systemAlerts} />
 							))}
+							<Collapsible
+								title={t`Load Average`}
+								defaultOpen={false}
+								icon={<HourglassIcon className="h-4 w-4" />}
+								description={<Trans>Triggers when load average exceeds a threshold</Trans>}
+							>
+								{loadAverageAlerts.map((d) => (
+									<SystemAlert key={d.name} system={system} data={d} systemAlerts={systemAlerts} />
+								))}
+							</Collapsible>
 						</div>
 					</TabsContent>
 					<TabsContent value="global">
@@ -141,9 +160,19 @@ function AlertDialogContent({ system }: { system: SystemRecord }) {
 							<Trans>Overwrite existing alerts</Trans>
 						</label>
 						<div className="grid gap-3">
-							{data.map((d) => (
+							{otherAlerts.map((d) => (
 								<SystemAlertGlobal key={d.name} data={d} overwrite={overwriteExisting} />
 							))}
+							<Collapsible
+								title={t`Load Average`}
+								defaultOpen={false}
+								icon={<HourglassIcon className="h-4 w-4" />}
+								description={<Trans>Triggers when load average exceeds a threshold</Trans>}
+							>
+								{loadAverageAlerts.map((d) => (
+									<SystemAlertGlobal key={d.name} data={d} overwrite={overwriteExisting} />
+								))}
+							</Collapsible>
 						</div>
 					</TabsContent>
 				</Tabs>
