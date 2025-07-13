@@ -8,7 +8,7 @@ msgstr ""
 "Language: hr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-07-09 01:37\n"
+"PO-Revision-Date: 2025-07-13 02:50\n"
 "Last-Translator: \n"
 "Language-Team: Croatian\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
@@ -448,6 +448,16 @@ msgstr "Nevažeća adresa e-pošte."
 msgid "Kernel"
 msgstr "Kernel"
 
+#. Load average 15 minutes
+#: src/components/systems-table/systems-table.tsx
+msgid "L15"
+msgstr ""
+
+#. Load average 5 minutes
+#: src/components/systems-table/systems-table.tsx
+msgid "L5"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Jezik"
@@ -460,6 +470,14 @@ msgstr "Izgled"
 #: src/components/mode-toggle.tsx
 msgid "Light"
 msgstr "Svijetlo"
+
+#: src/lib/utils.ts
+msgid "Load Average 15m"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Load Average 5m"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -826,6 +844,14 @@ msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Triggers when 15 minute load average exceeds a threshold"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr ""
 
 #: src/lib/utils.ts
