@@ -342,6 +342,16 @@ export const alertInfo: Record<string, AlertInfo> = {
 		icon: ThermometerIcon,
 		desc: () => t`Triggers when any sensor exceeds a threshold`,
 	},
+	LoadAvg1: {
+		name: () => t`Load Average 1m`,
+		unit: "",
+		icon: HourglassIcon,
+		max: 100,
+		min: 0.1,
+		start: 10,
+		step: 0.1,
+		desc: () => t`Triggers when 1 minute load average exceeds a threshold`,
+	},
 	LoadAvg5: {
 		name: () => t`Load Average 5m`,
 		unit: "",
@@ -380,3 +390,27 @@ export const getHubURL = () => BESZEL?.HUB_URL || window.location.origin
 
 /** Map of system IDs to their corresponding tokens (used to avoid fetching in add-system dialog) */
 export const tokenMap = new Map<SystemRecord["id"], FingerprintRecord["token"]>()
+
+/**
+ * Calculate load average percentage relative to CPU cores
+ * @param loadAverage - The load average value (1m, 5m, or 15m)
+ * @param cores - Number of CPU cores
+ * @returns Percentage (0-100) representing CPU utilization
+ */
+export const calculateLoadAveragePercent = (loadAverage: number, cores: number): number => {
+	if (!loadAverage || !cores) return 0
+	return Math.min((loadAverage / cores) * 100, 100)
+}
+
+/**
+ * Get load average opacity based on utilization relative to cores
+ * @param loadAverage - The load average value
+ * @param cores - Number of CPU cores
+ * @returns Opacity value (0.6, 0.8, or 1.0)
+ */
+export const getLoadAverageOpacity = (loadAverage: number, cores: number): number => {
+	if (!loadAverage || !cores) return 0.6
+	if (loadAverage < cores * 0.5) return 0.6
+	if (loadAverage < cores) return 0.8
+	return 1.0
+}

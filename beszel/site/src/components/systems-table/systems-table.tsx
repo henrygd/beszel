@@ -65,7 +65,7 @@ import {
 import { memo, useEffect, useMemo, useRef, useState } from "react"
 import { $systems, pb } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
-import { cn, copyToClipboard, decimalString, isReadOnlyUser, useLocalStorage } from "@/lib/utils"
+import { cn, copyToClipboard, decimalString, isReadOnlyUser, useLocalStorage, calculateLoadAveragePercent, getLoadAverageOpacity } from "@/lib/utils"
 import AlertsButton from "../alerts/alert-button"
 import { $router, Link, navigate } from "../router"
 import { EthernetIcon, GpuIcon, HourglassIcon, ThermometerIcon } from "../ui/icons"
@@ -76,6 +76,7 @@ import { ClassValue } from "clsx"
 import { getPagePath } from "@nanostores/router"
 import { SystemDialog } from "../add-system"
 import { Dialog } from "../ui/dialog"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 
 type ViewMode = "table" | "grid"
 
@@ -226,43 +227,72 @@ export default function SystemsTable() {
 				},
 			},
 			{
-				accessorFn: (originalRow) => originalRow.info.l5,
-				id: "l5",
-				name: () => t({ message: "L5", comment: "Load average 5 minutes" }),
+				id: "loadAverage",
+				name: () => t`Load Average`,
 				size: 0,
 				hideSort: true,
 				Icon: HourglassIcon,
 				header: sortableHeader,
-				cell(info) {
-					const val = info.getValue() as number
-					if (!val) {
-						return null
-					}
+				cell(info: CellContext<SystemRecord, unknown>) {
+					const system = info.row.original;
+					const l1 = system.info?.l1;
+					const l5 = system.info?.l5;
+					const l15 = system.info?.l15;
+					
+					// If no load average data, return null
+					if (!l1 && !l5 && !l15) return null;
+					
+					const loadAverages = [
+						{ name: "1m", value: l1, color: "bg-orange-500" },
+						{ name: "5m", value: l5, color: "bg-blue-500" },
+						{ name: "15m", value: l15, color: "bg-purple-500" }
+					].filter(la => la.value !== undefined);
+					
+					if (!loadAverages.length) return null;
+					
+					// Get core count for proper load average interpretation
+					const cores = system.info?.c || 1;
+					
 					return (
-						<span className={cn("tabular-nums whitespace-nowrap", viewMode === "table" && "ps-1")}>
-							{decimalString(val)}
-						</span>
-					)
-				},
-			},
-			{
-				accessorFn: (originalRow) => originalRow.info.l15,
-				id: "l15",
-				name: () => t({ message: "L15", comment: "Load average 15 minutes" }),
-				size: 0,
-				hideSort: true,
-				Icon: HourglassIcon,
-				header: sortableHeader,
-				cell(info) {
-					const val = info.getValue() as number
-					if (!val) {
-						return null
-					}
-					return (
-						<span className={cn("tabular-nums whitespace-nowrap", viewMode === "table" && "ps-1")}>
-							{decimalString(val)}
-						</span>
-					)
+						<div className="flex flex-col gap-1 w-full">
+							{loadAverages.map((la) => {
+								const value = la.value || 0;
+								const percent = calculateLoadAveragePercent(value, cores);
+								
+								return (
+									<TooltipProvider key={la.name}>
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<div className="flex items-center w-full cursor-pointer">
+													<span className="min-w-[2.5em] text-xs">{decimalString(value, 2)}</span>
+													<span className="grow min-w-8 block bg-muted h-[0.7em] relative rounded-sm overflow-hidden">
+														<span
+															className={cn(
+																"absolute inset-0 w-full h-full origin-left transition-transform duration-200",
+																la.color,
+																`opacity-${Math.round(getLoadAverageOpacity(value, cores) * 100)}`
+															)}
+															style={{
+																transform: `scalex(${percent / 100})`,
+															}}
+														></span>
+													</span>
+												</div>
+											</TooltipTrigger>
+											<TooltipContent side="top">
+												<div className="text-center">
+													<div className="font-medium">{t`${la.name}`}</div>
+													<div className="text-sm text-muted-foreground">
+														{decimalString(value, 2)}
+													</div>
+												</div>
+											</TooltipContent>
+										</Tooltip>
+									</TooltipProvider>
+								);
+							})}
+						</div>
+					);
 				},
 			},
 			{
