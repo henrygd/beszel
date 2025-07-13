@@ -1,6 +1,7 @@
 import {
 	BookIcon,
 	DatabaseBackupIcon,
+	FingerprintIcon,
 	LayoutDashboard,
 	LogsIcon,
 	MailIcon,
@@ -40,6 +41,16 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 
 	return useMemo(() => {
 		const systems = $systems.get()
+		const SettingsShortcut = (
+			<CommandShortcut>
+				<Trans>Settings</Trans>
+			</CommandShortcut>
+		)
+		const AdminShortcut = (
+			<CommandShortcut>
+				<Trans>Admin</Trans>
+			</CommandShortcut>
+		)
 		return (
 			<CommandDialog open={open} onOpenChange={setOpen}>
 				<CommandInput placeholder={t`Search for systems or settings...`} />
@@ -93,9 +104,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 							<span>
 								<Trans>Settings</Trans>
 							</span>
-							<CommandShortcut>
-								<Trans>Settings</Trans>
-							</CommandShortcut>
+							{SettingsShortcut}
 						</CommandItem>
 						<CommandItem
 							keywords={["alerts"]}
@@ -108,9 +117,19 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 							<span>
 								<Trans>Notifications</Trans>
 							</span>
-							<CommandShortcut>
-								<Trans>Settings</Trans>
-							</CommandShortcut>
+							{SettingsShortcut}
+						</CommandItem>
+						<CommandItem
+							onSelect={() => {
+								navigate(getPagePath($router, "settings", { name: "tokens" }))
+								setOpen(false)
+							}}
+						>
+							<FingerprintIcon className="me-2 h-4 w-4" />
+							<span>
+								<Trans>Tokens & Fingerprints</Trans>
+							</span>
+							{SettingsShortcut}
 						</CommandItem>
 						<CommandItem
 							keywords={["help", "oauth", "oidc"]}
@@ -140,9 +159,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 									<span>
 										<Trans>Users</Trans>
 									</span>
-									<CommandShortcut>
-										<Trans>Admin</Trans>
-									</CommandShortcut>
+									{AdminShortcut}
 								</CommandItem>
 								<CommandItem
 									onSelect={() => {
@@ -154,9 +171,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 									<span>
 										<Trans>Logs</Trans>
 									</span>
-									<CommandShortcut>
-										<Trans>Admin</Trans>
-									</CommandShortcut>
+									{AdminShortcut}
 								</CommandItem>
 								<CommandItem
 									onSelect={() => {
@@ -168,9 +183,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 									<span>
 										<Trans>Backups</Trans>
 									</span>
-									<CommandShortcut>
-										<Trans>Admin</Trans>
-									</CommandShortcut>
+									{AdminShortcut}
 								</CommandItem>
 								<CommandItem
 									keywords={["email"]}
@@ -183,9 +196,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 									<span>
 										<Trans>SMTP settings</Trans>
 									</span>
-									<CommandShortcut>
-										<Trans>Admin</Trans>
-									</CommandShortcut>
+									{AdminShortcut}
 								</CommandItem>
 							</CommandGroup>
 						</>

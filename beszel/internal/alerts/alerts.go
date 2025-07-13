@@ -47,6 +47,8 @@ type SystemAlertStats struct {
 	NetSent      float64            `json:"ns"`
 	NetRecv      float64            `json:"nr"`
 	Temperatures map[string]float32 `json:"t"`
+	LoadAvg5     float64            `json:"l5"`
+	LoadAvg15    float64            `json:"l15"`
 }
 
 type SystemAlertData struct {

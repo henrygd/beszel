@@ -5,7 +5,7 @@ import (
 	m "github.com/pocketbase/pocketbase/migrations"
 )
 
-var (
+const (
 	TempAdminEmail = "_@b.b"
 )
 

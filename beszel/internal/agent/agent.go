@@ -4,30 +4,41 @@ package agent
 import (
 	"beszel"
 	"beszel/internal/entities/system"
+	"crypto/sha256"
+	"encoding/hex"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
-
 	"github.com/shirou/gopsutil/v4/cpu"
+	"github.com/gliderlabs/ssh"
+	"github.com/shirou/gopsutil/v4/host"
+	gossh "golang.org/x/crypto/ssh"
+
 )
 
 type Agent struct {
-	sync.Mutex                               // Used to lock agent while collecting data
-	debug         bool                       // true if LOG_LEVEL is set to debug
-	zfs           bool                       // true if system has arcstats
-	memCalc       string                     // Memory calculation formula
-	fsNames       []string                   // List of filesystem device names being monitored
-	fsStats       map[string]*system.FsStats // Keeps track of disk stats for each filesystem
-	netInterfaces map[string]struct{}        // Stores all valid network interfaces
-	netIoStats    system.NetIoStats          // Keeps track of bandwidth usage
-	dockerManager *dockerManager             // Manages Docker API requests
-	sensorConfig  *SensorConfig              // Sensors config
-	systemInfo    system.Info                // Host system info
-	gpuManager    *GPUManager                // Manages GPU data
-	cache         *SessionCache              // Cache for system stats based on primary session ID
-	prevCpuTimes  []cpu.TimesStat            // Previous CPU times for calculating detailed metrics
+	sync.Mutex                                   // Used to lock agent while collecting data
+	debug             bool                       // true if LOG_LEVEL is set to debug
+	zfs               bool                       // true if system has arcstats
+	memCalc           string                     // Memory calculation formula
+	fsNames           []string                   // List of filesystem device names being monitored
+	fsStats           map[string]*system.FsStats // Keeps track of disk stats for each filesystem
+	netInterfaces     map[string]struct{}        // Stores all valid network interfaces
+	netIoStats        system.NetIoStats          // Keeps track of bandwidth usage
+	dockerManager     *dockerManager             // Manages Docker API requests
+	sensorConfig      *SensorConfig              // Sensors config
+	systemInfo        system.Info                // Host system info
+	gpuManager        *GPUManager                // Manages GPU data
+	cache             *SessionCache              // Cache for system stats based on primary session ID
+	connectionManager *ConnectionManager         // Channel to signal connection events
+	server            *ssh.Server                // SSH server
+	dataDir           string                     // Directory for persisting data
+	keys              []gossh.PublicKey          // SSH public keys
+	prevCpuTimes      []cpu.TimesStat            // Previous CPU times for calculating detailed metrics
+
 }
 
 func NewAgent() *Agent {
@@ -35,6 +46,14 @@ func NewAgent() *Agent {
 		fsStats: make(map[string]*system.FsStats),
 		cache:   NewSessionCache(69 * time.Second),
 	}
+
+	agent.dataDir, err = getDataDir(dataDir)
+	if err != nil {
+		slog.Warn("Data directory not found")
+	} else {
+		slog.Info("Data directory", "path", agent.dataDir)
+	}
+
 	agent.memCalc, _ = GetEnv("MEM_CALC")
 	agent.sensorConfig = agent.newSensorConfig()
 	// Set up slog with a log level determined by the LOG_LEVEL env var
@@ -52,10 +71,19 @@ func NewAgent() *Agent {
 
 	slog.Debug(beszel.Version)
 
-	// initialize system info / docker manager
+	// initialize system info
 	agent.initializeSystemInfo()
+
+	// initialize connection manager
+	agent.connectionManager = newConnectionManager(agent)
+
+	// initialize disk info
 	agent.initializeDiskInfo()
+
+	// initialize net io stats
 	agent.initializeNetIoStats()
+
+	// initialize docker manager
 	agent.dockerManager = newDockerManager(agent)
 
 	// initialize GPU manager
@@ -70,7 +98,7 @@ func NewAgent() *Agent {
 		slog.Debug("Stats", "data", agent.gatherStats(""))
 	}
 
-	return agent
+	return agent, nil
 }
 
 // GetEnv retrieves an environment variable with a "BESZEL_AGENT_" prefix, or falls back to the unprefixed key.
@@ -117,4 +145,39 @@ func (a *Agent) gatherStats(sessionID string) *system.CombinedData {
 
 	a.cache.Set(sessionID, cachedData)
 	return cachedData
+}
+
+// StartAgent initializes and starts the agent with optional WebSocket connection
+func (a *Agent) Start(serverOptions ServerOptions) error {
+	a.keys = serverOptions.Keys
+	return a.connectionManager.Start(serverOptions)
+}
+
+func (a *Agent) getFingerprint() string {
+	// first look for a fingerprint in the data directory
+	if a.dataDir != "" {
+		if fp, err := os.ReadFile(filepath.Join(a.dataDir, "fingerprint")); err == nil {
+			return string(fp)
+		}
+	}
+
+	// if no fingerprint is found, generate one
+	fingerprint, err := host.HostID()
+	if err != nil || fingerprint == "" {
+		fingerprint = a.systemInfo.Hostname + a.systemInfo.CpuModel
+	}
+
+	// hash fingerprint
+	sum := sha256.Sum256([]byte(fingerprint))
+	fingerprint = hex.EncodeToString(sum[:24])
+
+	// save fingerprint to data directory
+	if a.dataDir != "" {
+		err = os.WriteFile(filepath.Join(a.dataDir, "fingerprint"), []byte(fingerprint), 0644)
+		if err != nil {
+			slog.Warn("Failed to save fingerprint", "err", err)
+		}
+	}
+
+	return fingerprint
 }

@@ -6,6 +6,19 @@ declare global {
 	var BESZEL: {
 		BASE_PATH: string
 		HUB_VERSION: string
+		HUB_URL: string
+	}
+}
+
+export interface FingerprintRecord extends RecordModel {
+	id: string
+	system: string
+	fingerprint: string
+	token: string
+	expand: {
+		system: {
+			name: string
+		}
 	}
 }
 
@@ -31,6 +44,10 @@ export interface SystemInfo {
 	c: number
 	/** cpu model */
 	m: string
+	/** load average 5 minutes */
+	l5?: number
+	/** load average 15 minutes */
+	l15?: number
 	/** operating system */
 	o?: string
 	/** uptime */
@@ -70,6 +87,12 @@ export interface SystemStats {
 	cpui?: number
 	/** cpu steal percent */
 	cpusl?: number
+	/** load average 1 minute */
+	l1?: number
+	/** load average 5 minutes */
+	l5?: number
+	/** load average 15 minutes */
+	l15?: number
 	/** total memory (gb) */
 	m: number
 	/** memory used (gb) */
@@ -229,6 +252,9 @@ interface AlertInfo {
 	icon: any
 	desc: () => string
 	max?: number
+	min?: number
+	step?: number
+	start?: number
 	/** Single value description (when there's only one value, like status) */
 	singleDesc?: () => string
 }

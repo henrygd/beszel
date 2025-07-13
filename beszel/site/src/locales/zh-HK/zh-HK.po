@@ -49,6 +49,7 @@ msgstr "30天"
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "操作"
 
@@ -76,9 +77,6 @@ msgstr "添加 URL"
 msgid "Adjust display options for charts."
 msgstr "調整圖表的顯示選項。"
 
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
@@ -186,7 +184,7 @@ msgstr "檢查日誌以取得更多資訊。"
 msgid "Check your notification service"
 msgstr "檢查您的通知服務"
 
-#: src/components/add-system.tsx
+#: src/components/ui/input-copy.tsx
 msgid "Click to copy"
 msgstr "點擊以複製"
 
@@ -213,26 +211,46 @@ msgid "Copied to clipboard"
 msgstr "已複製到剪貼板"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
 msgstr "複製 docker compose"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
 msgstr "複製 docker run"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Environment variables"
+msgid "Copy env"
+msgstr "複製環境變數"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Copy host"
 msgstr "複製主機"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
 msgstr "複製 Linux 指令"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "複製文本"
+
+#: src/components/add-system.tsx
+msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
+msgstr "複製下面的代理程式安裝指令，或使用<0>通用令牌</0>自動註冊代理程式。"
+
+#: src/components/add-system.tsx
+msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
+msgstr "複製下面的代理程式<0>docker-compose.yml</0>內容，或使用<1>通用令牌</1>自動註冊代理程式。"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy YAML"
+msgstr "複製YAML"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "CPU"
@@ -265,6 +283,10 @@ msgstr "預設時間段"
 #: src/components/systems-table/systems-table.tsx
 msgid "Delete"
 msgstr "刪除"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Delete fingerprint"
+msgstr "刪除指紋"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Disk"
@@ -329,6 +351,7 @@ msgstr "輸入電子郵件地址以重置密碼"
 msgid "Enter email address..."
 msgstr "輸入電子郵件地址..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/login/auth-form.tsx
@@ -376,6 +399,10 @@ msgstr "更新警報失敗"
 msgid "Filter..."
 msgstr "篩選..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Fingerprint"
+msgstr ""
+
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "持續<0>{min}</0> {min, plural, one {分鐘} other {分鐘}}"
@@ -399,6 +426,7 @@ msgid "Grid"
 msgstr "網格"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
 msgstr "Homebrew 指令"
@@ -420,6 +448,16 @@ msgstr "無效的電子郵件地址。"
 msgid "Kernel"
 msgstr "Kernel"
 
+#. Load average 15 minutes
+#: src/components/systems-table/systems-table.tsx
+msgid "L15"
+msgstr ""
+
+#. Load average 5 minutes
+#: src/components/systems-table/systems-table.tsx
+msgid "L5"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "語言"
@@ -432,6 +470,14 @@ msgstr "版面配置"
 #: src/components/mode-toggle.tsx
 msgid "Light"
 msgstr "淺色"
+
+#: src/lib/utils.ts
+msgid "Load Average 15m"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Load Average 5m"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -521,6 +567,8 @@ msgid "On each restart, systems in the database will be updated to match the sys
 msgstr "每次重新啟動時，將會以檔案中的系統定義更新資料庫。"
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
 msgstr "開啟選單"
 
@@ -635,6 +683,10 @@ msgstr "重設密碼"
 msgid "Resume"
 msgstr "恢復"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Rotate token"
+msgstr "輪換令牌"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "使用回車鍵或逗號保存地址。留空以禁用電子郵件通知。"
@@ -669,7 +721,6 @@ msgstr "發送"
 msgid "Sets the default time range for charts when a system is viewed."
 msgstr "設置查看系統時圖表的默認時間範圍。"
 
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -709,6 +760,7 @@ msgstr "交換使用"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "系統"
 
@@ -746,14 +798,6 @@ msgstr "測試<0>URL</0>"
 msgid "Test notification sent"
 msgstr "測試通知已發送"
 
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
-msgstr "代理必須在系統上運行才能連接。複製下面的代理安裝命令。"
-
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
-msgstr "代理必須在系統上運行才能連接。複製下面的<0>docker-compose.yml</0>。"
-
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "然後登錄到後端並在用戶表中重置您的用戶帳戶密碼。"
@@ -783,6 +827,33 @@ msgstr "切換網格"
 msgid "Toggle theme"
 msgstr "切換主題"
 
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token"
+msgstr "令牌"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "Tokens & Fingerprints"
+msgstr "令牌和指紋"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
+msgstr "令牌允許代理程式連接和註冊。指紋是每個系統唯一的穩定識別符，在首次連接時設置。"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
+msgstr "令牌和指紋用於驗證到中心的WebSocket連接。"
+
+#: src/lib/utils.ts
+msgid "Triggers when 15 minute load average exceeds a threshold"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Triggers when 5 minute load average exceeds a threshold"
+msgstr ""
+
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "當任何傳感器超過閾值時觸發"
@@ -806,6 +877,10 @@ msgstr "當狀態在上和下之間切換時觸發"
 #: src/lib/utils.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "當任何磁碟的使用超過閾值時觸發"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Universal token"
+msgstr "通用令牌"
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx
@@ -862,7 +937,12 @@ msgstr "想幫助我們改進翻譯嗎？查看<0>Crowdin</0>以獲取更多詳�
 msgid "Webhook / Push notifications"
 msgstr "Webhook / 推送通知"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
+msgstr "啟用時，此令牌允許代理程式在無需預先創建系統的情況下自動註冊。在一小時後或中心重啟時過期。"
+
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
 msgstr "Windows 指令"
