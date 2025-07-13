@@ -226,7 +226,7 @@ export default function SystemsTable() {
 				},
 			},
 			{
-				accessorKey: "info.l5",
+				accessorFn: (originalRow) => originalRow.info.l5,
 				id: "l5",
 				name: () => t({ message: "L5", comment: "Load average 5 minutes" }),
 				size: 0,
@@ -246,7 +246,7 @@ export default function SystemsTable() {
 				},
 			},
 			{
-				accessorKey: "info.l15",
+				accessorFn: (originalRow) => originalRow.info.l15,
 				id: "l15",
 				name: () => t({ message: "L15", comment: "Load average 15 minutes" }),
 				size: 0,
