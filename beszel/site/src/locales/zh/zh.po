@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-07-09 01:37\n"
+"PO-Revision-Date: 2025-07-13 01:11\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -401,7 +401,7 @@ msgstr "篩選..."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
-msgstr ""
+msgstr "指紋"
 
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -667,7 +667,7 @@ msgstr "繼續"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
-msgstr "輪換令牌"
+msgstr "輪替令牌"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -822,11 +822,11 @@ msgstr "令牌和指紋"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
-msgstr "令牌允許代理程式連接和註冊。指紋是每個系統唯一的穩定識別符，在首次連接時設置。"
+msgstr "令牌允許代理程式連線和註冊。指紋是每個系統的唯一穩定識別符，在首次連線時產生。"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
-msgstr "令牌和指紋用於驗證到中心的WebSocket連接。"
+msgstr "令牌和指紋被用於驗證到 Hub 的 WebSocket 連線。"
 
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -913,7 +913,7 @@ msgstr "Webhook / 推送通知"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
-msgstr "啟用時，此令牌允許代理程式在無需預先創建系統的情況下自動註冊。在一小時後或中心重啟時過期。"
+msgstr "啟用時，此令牌允許代理程式在沒有預先建立系統的情況下自動註冊。在一小時後或 Hub 重啟時過期。"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
