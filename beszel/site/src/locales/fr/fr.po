@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-07-09 01:36\n"
+"PO-Revision-Date: 2025-07-13 02:49\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -448,6 +448,16 @@ msgstr "Adresse email invalide."
 msgid "Kernel"
 msgstr "Noyau"
 
+#. Load average 15 minutes
+#: src/components/systems-table/systems-table.tsx
+msgid "L15"
+msgstr ""
+
+#. Load average 5 minutes
+#: src/components/systems-table/systems-table.tsx
+msgid "L5"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Langue"
@@ -460,6 +470,14 @@ msgstr "Disposition"
 #: src/components/mode-toggle.tsx
 msgid "Light"
 msgstr "Clair"
+
+#: src/lib/utils.ts
+msgid "Load Average 15m"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Load Average 5m"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -827,6 +845,14 @@ msgstr "Les tokens permettent aux agents de se connecter et de s'enregistrer. Le
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Les tokens et les empreintes sont utilisés pour authentifier les connexions WebSocket vers le hub."
+
+#: src/lib/utils.ts
+msgid "Triggers when 15 minute load average exceeds a threshold"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Triggers when 5 minute load average exceeds a threshold"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
