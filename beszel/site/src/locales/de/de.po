@@ -8,7 +8,7 @@ msgstr ""
 "Language: de\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-07-13 02:50\n"
+"PO-Revision-Date: 2025-07-13 20:24\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -401,7 +401,7 @@ msgstr "Filter..."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
-msgstr ""
+msgstr "Fingerabdruck"
 
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -451,12 +451,12 @@ msgstr "Kernel"
 #. Load average 15 minutes
 #: src/components/systems-table/systems-table.tsx
 msgid "L15"
-msgstr ""
+msgstr "L15"
 
 #. Load average 5 minutes
 #: src/components/systems-table/systems-table.tsx
 msgid "L5"
-msgstr ""
+msgstr "L5"
 
 #: src/components/routes/settings/general.tsx
 msgid "Language"
@@ -473,11 +473,11 @@ msgstr "Hell"
 
 #: src/lib/utils.ts
 msgid "Load Average 15m"
-msgstr ""
+msgstr "Durchschnittliche Systemlast 15 Min"
 
 #: src/lib/utils.ts
 msgid "Load Average 5m"
-msgstr ""
+msgstr "Durchschnittliche Systemlast 5 Min"
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -830,7 +830,7 @@ msgstr "Darstellung umschalten"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr ""
+msgstr "Token"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -848,11 +848,11 @@ msgstr "Tokens und Fingerabdrücke werden verwendet, um WebSocket-Verbindungen z
 
 #: src/lib/utils.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Löst aus, wenn der Lastdurchschnitt der letzten 15 Minuten einen Schwellenwert überschreitet"
 
 #: src/lib/utils.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Löst aus, wenn der Lastdurchschnitt der letzten 5 Minuten einen Schwellenwert überschreitet"
 
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
