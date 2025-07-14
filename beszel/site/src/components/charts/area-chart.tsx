@@ -9,11 +9,15 @@ import {
 	toFixedWithoutTrailingZeros,
 	decimalString,
 	chartMargin,
+	convertNetworkSpeed,
+	convertDiskSpeed,
 } from "@/lib/utils"
 // import Spinner from '../spinner'
 import { ChartData } from "@/types"
 import { memo, useMemo } from "react"
 import { useLingui } from "@lingui/react/macro"
+import { useStore } from "@nanostores/react"
+import { $userSettings } from "@/lib/stores"
 
 /** [label, key, color, opacity] */
 type DataKeys = [string, string, number, number]
@@ -47,10 +51,25 @@ export default memo(function AreaChartDefault({
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { i18n } = useLingui()
+	const userSettings = useStore($userSettings)
 
 	const { chartTime } = chartData
 
 	const showMax = chartTime !== "1h" && maxToggled
+
+	// Determine if this is a network chart or disk chart and adjust unit accordingly
+	const isNetworkChart = chartName === "bw"
+	const isDiskChart = chartName === "dio" || chartName.startsWith("efs")
+	const displayUnit = useMemo(() => {
+		if (isNetworkChart) {
+			const { symbol } = convertNetworkSpeed(1, userSettings.networkUnit)
+			return symbol
+		} else if (isDiskChart) {
+			const { symbol } = convertDiskSpeed(1, userSettings.diskUnit)
+			return symbol
+		}
+		return unit
+	}, [isNetworkChart, isDiskChart, userSettings.networkUnit, userSettings.diskUnit, unit])
 
 	const dataKeys: DataKeys[] = useMemo(() => {
 		// [label, key, color, opacity]
@@ -102,8 +121,14 @@ export default memo(function AreaChartDefault({
 							let val: string
 							if (tickFormatter) {
 								val = tickFormatter(value)
+							} else if (isNetworkChart) {
+								const { value: convertedValue, symbol } = convertNetworkSpeed(value, userSettings.networkUnit)
+								val = toFixedWithoutTrailingZeros(convertedValue, 2) + symbol
+							} else if (isDiskChart) {
+								const { value: convertedValue, symbol } = convertDiskSpeed(value, userSettings.diskUnit)
+								val = toFixedWithoutTrailingZeros(convertedValue, 2) + symbol
 							} else {
-								val = toFixedWithoutTrailingZeros(value, 2) + unit
+								val = toFixedWithoutTrailingZeros(value, 2) + displayUnit
 							}
 							return updateYAxisWidth(val)
 						}}
@@ -120,8 +145,14 @@ export default memo(function AreaChartDefault({
 								contentFormatter={({ value }) => {
 									if (contentFormatter) {
 										return contentFormatter(value)
+									} else if (isNetworkChart) {
+										const { display } = convertNetworkSpeed(value, userSettings.networkUnit)
+										return display
+									} else if (isDiskChart) {
+										const { display } = convertDiskSpeed(value, userSettings.diskUnit)
+										return display
 									}
-									return decimalString(value) + unit
+									return decimalString(value) + displayUnit
 								}}
 								// indicator="line"
 							/>

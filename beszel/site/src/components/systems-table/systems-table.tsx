@@ -63,9 +63,17 @@ import {
 	PenBoxIcon,
 } from "lucide-react"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
-import { $systems, pb } from "@/lib/stores"
+import { $systems, $userSettings, pb } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
-import { cn, copyToClipboard, decimalString, isReadOnlyUser, useLocalStorage } from "@/lib/utils"
+import {
+	cn,
+	copyToClipboard,
+	decimalString,
+	isReadOnlyUser,
+	useLocalStorage,
+	convertTemperature,
+	convertNetworkSpeed,
+} from "@/lib/utils"
 import AlertsButton from "../alerts/alert-button"
 import { $router, Link, navigate } from "../router"
 import { EthernetIcon, GpuIcon, HourglassIcon, ThermometerIcon } from "../ui/icons"
@@ -222,7 +230,9 @@ export default function SystemsTable() {
 				header: sortableHeader,
 				cell(info) {
 					const val = info.getValue() as number
-					return <span className="tabular-nums whitespace-nowrap">{decimalString(val, val >= 100 ? 1 : 2)} MB/s</span>
+					const userSettings = useStore($userSettings)
+					const { display } = convertNetworkSpeed(val, userSettings.networkUnit)
+					return <span className="tabular-nums whitespace-nowrap">{display}</span>
 				},
 			},
 			{
@@ -278,9 +288,11 @@ export default function SystemsTable() {
 					if (!val) {
 						return null
 					}
+					const userSettings = useStore($userSettings)
+					const { value, symbol } = convertTemperature(val, userSettings.temperatureUnit)
 					return (
 						<span className={cn("tabular-nums whitespace-nowrap", viewMode === "table" && "ps-0.5")}>
-							{decimalString(val)} °C
+							{decimalString(value, value >= 100 ? 1 : 2)} {symbol}
 						</span>
 					)
 				},
