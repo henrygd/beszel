@@ -110,26 +110,24 @@ type OsInfo struct {
 type Info struct {
 	Hostname      string        `json:"h" cbor:"0,keyasint"`
 	KernelVersion string        `json:"k,omitempty" cbor:"1,keyasint,omitempty"`
-	Cores         int           `json:"c" cbor:"2,keyasint"`
-	Threads       int           `json:"t,omitempty" cbor:"3,keyasint,omitempty"`
-	CpuModel      string        `json:"m" cbor:"4,keyasint"`
-	Uptime        uint64        `json:"u" cbor:"5,keyasint"`
-	Cpu           float64       `json:"cpu" cbor:"6,keyasint"`
-	MemPct        float64       `json:"mp" cbor:"7,keyasint"`
-	DiskPct       float64       `json:"dp" cbor:"8,keyasint"`
-	Bandwidth     float64       `json:"b" cbor:"9,keyasint"`
-	AgentVersion  string        `json:"v" cbor:"10,keyasint"`
-	Podman        bool          `json:"p,omitempty" cbor:"11,keyasint,omitempty"`
-	GpuPct        float64       `json:"g,omitempty" cbor:"12,keyasint,omitempty"`
-	DashboardTemp float64       `json:"dt,omitempty" cbor:"13,keyasint,omitempty"`
-	Os            Os            `json:"os" cbor:"14,keyasint"`
-	LoadAvg5      float64       `json:"l5,omitempty" cbor:"15,keyasint,omitempty,omitzero"`
-	LoadAvg15     float64       `json:"l15,omitempty" cbor:"16,keyasint,omitempty,omitzero"`
-	Disks         []DiskInfo    `json:"d" cbor:"17,omitempty"`
-	Networks      []NetworkInfo `json:"n,omitempty" cbor:"18,omitempty"`
-	Memory        []MemoryInfo  `json:"m,omitempty" cbor:"19,omitempty"`
-	Cpus          []CpuInfo     `json:"c,omitempty" cbor:"20,omitempty"`
-	Oses          []OsInfo      `json:"o,omitempty" cbor:"21,omitempty"`
+	Threads       int           `json:"t,omitempty" cbor:"2,keyasint,omitempty"`
+	Uptime        uint64        `json:"u" cbor:"3,keyasint"`
+	Cpu           float64       `json:"cpu" cbor:"4,keyasint"`
+	MemPct        float64       `json:"mp" cbor:"5,keyasint"`
+	DiskPct       float64       `json:"dp" cbor:"6,keyasint"`
+	Bandwidth     float64       `json:"b" cbor:"7,keyasint"`
+	AgentVersion  string        `json:"v" cbor:"8,keyasint"`
+	Podman        bool          `json:"p,omitempty" cbor:"9,keyasint,omitempty"`
+	GpuPct        float64       `json:"g,omitempty" cbor:"10,keyasint,omitempty"`
+	DashboardTemp float64       `json:"dt,omitempty" cbor:"11,keyasint,omitempty"`
+	Os            Os            `json:"os" cbor:"12,keyasint"`
+	LoadAvg5      float64       `json:"l5,omitempty" cbor:"13,keyasint,omitempty,omitzero"`
+	LoadAvg15     float64       `json:"l15,omitempty" cbor:"14,keyasint,omitempty,omitzero"`
+	Disks         []DiskInfo    `json:"d" cbor:"15,omitempty"`
+	Networks      []NetworkInfo `json:"n,omitempty" cbor:"16,omitempty"`
+	Memory        []MemoryInfo  `json:"m,omitempty" cbor:"17,omitempty"`
+	Cpus          []CpuInfo     `json:"c,omitempty" cbor:"18,omitempty"`
+	Oses          []OsInfo      `json:"o,omitempty" cbor:"19,omitempty"`
 }
 
 // Final data structure to return to the hub

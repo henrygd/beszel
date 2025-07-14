@@ -290,7 +290,42 @@ export default function SystemsTable() {
 				},
 			},
 			{
-				accessorFn: (originalRow) => originalRow.info.v,
+				accessorFn: (originalRow) => {
+					const os = originalRow.info.o && originalRow.info.o.length > 0 ? originalRow.info.o[0] : undefined;
+					if (!os) return "";
+					return `${os.f} ${os.v}`.trim();
+				},
+				id: "os",
+				name: () => t`OS`,
+				size: 120,
+				hideSort: true,
+				Icon: TuxIcon,
+				header: sortableHeader,
+				cell(info) {
+					const system = info.row.original;
+					const os = system.info.o && system.info.o.length > 0 ? system.info.o[0] : undefined;
+					if (!os) return null;
+					const osText = `${os.f} ${os.v}`.trim();
+					const getOsIcon = () => {
+						const family = os.f.toLowerCase();
+						if (family.includes("darwin") || family.includes("mac")) return AppleIcon;
+						if (family.includes("windows")) return WindowsIcon;
+						if (family.includes("freebsd")) return FreeBsdIcon;
+						return TuxIcon;
+					};
+					const OsIcon = getOsIcon();
+					return (
+						<span className={cn("flex gap-1.5 items-center tabular-nums", { "ps-1": viewMode === "table" })}>
+							<OsIcon className="h-3.5 w-3.5" />
+							<span className="truncate" title={os.k ? `Kernel: ${os.k}` : undefined}>
+								{osText}
+							</span>
+						</span>
+					);
+				},
+			},
+			{
+				accessorKey: "info.v",
 				id: "agent",
 				name: () => t`Agent`,
 				// invertSorting: true,
