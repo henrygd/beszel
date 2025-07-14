@@ -56,6 +56,8 @@ export interface SystemInfo {
 	mp: number
 	/** disk percent */
 	dp: number
+	/** disk free (gb) */
+	df?: number
 	/** bandwidth (mb) */
 	b: number
 	/** agent version */
@@ -68,6 +70,8 @@ export interface SystemInfo {
 	dt?: number
 	/** operating system */
 	os?: Os
+	/** extra filesystems */
+	efs?: Record<string, ExtraFsStats>
 }
 
 export interface SystemStats {
@@ -75,6 +79,14 @@ export interface SystemStats {
 	cpu: number
 	/** peak cpu */
 	cpum?: number
+	/** cpu user percent */
+	cpuu?: number
+	/** cpu system percent */
+	cpus?: number
+	/** cpu iowait percent */
+	cpui?: number
+	/** cpu steal percent */
+	cpusl?: number
 	/** load average 1 minute */
 	l1?: number
 	/** load average 5 minutes */
@@ -95,10 +107,16 @@ export interface SystemStats {
 	s: number
 	/** swap used (gb) */
 	su: number
+	/** swap total (gb) */
+	st?: number
+	/** swap free (gb) */
+	sf?: number
 	/** disk size (gb) */
 	d: number
 	/** disk used (gb) */
 	du: number
+	/** disk free (gb) */
+	df: number
 	/** disk percent */
 	dp: number
 	/** disk read (mb) */
@@ -123,6 +141,7 @@ export interface SystemStats {
 	efs?: Record<string, ExtraFsStats>
 	/** GPU data */
 	g?: Record<string, GPUData>
+	sc?: number // swap cached (gb)
 }
 
 export interface GPUData {
@@ -143,6 +162,8 @@ export interface ExtraFsStats {
 	d: number
 	/** disk used (gb) */
 	du: number
+	/** disk free (gb) */
+	df: number
 	/** total read (mb) */
 	r: number
 	/** total write (mb) */
@@ -151,6 +172,8 @@ export interface ExtraFsStats {
 	rm: number
 	/** max write (mb) */
 	wm: number
+	/** display name (mountpoint or label) */
+	n?: string
 }
 
 export interface ContainerStatsRecord extends RecordModel {
@@ -205,6 +228,7 @@ export type UserSettings = {
 	chartTime: ChartTimes
 	emails?: string[]
 	webhooks?: string[]
+	showChartLegend?: boolean
 }
 
 type ChartDataContainer = {

@@ -159,6 +159,17 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		}
 	}
 	// update system record (do this last because it triggers alerts and we need above records to be inserted first)
+	infoFs := make(map[string]*system.InfoFsStats, len(sys.data.Stats.ExtraFs))
+	for k, v := range sys.data.Stats.ExtraFs {
+		infoFs[k] = &system.InfoFsStats{
+			DisplayName: v.DisplayName,
+			DiskTotal:   v.DiskTotal,
+			DiskUsed:    v.DiskUsed,
+			DiskFree:    v.DiskFree,
+		}
+	}
+	sys.data.Info.ExtraFs = infoFs
+	sys.data.Info.DiskFree = sys.data.Stats.DiskFree
 	systemRecord.Set("status", up)
 
 	systemRecord.Set("info", data.Info)

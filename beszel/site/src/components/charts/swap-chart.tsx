@@ -1,7 +1,7 @@
 import { t } from "@lingui/core/macro";
 
-import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
-import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
+import { Area, AreaChart, CartesianGrid, Line, YAxis } from "recharts"
+import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
 import {
 	useYAxisWidth,
 	cn,
@@ -9,16 +9,29 @@ import {
 	toFixedWithoutTrailingZeros,
 	decimalString,
 	chartMargin,
+	getSizeAndUnit,
 } from "@/lib/utils"
 import { ChartData } from "@/types"
 import { memo } from "react"
 
-export default memo(function SwapChart({ chartData }: { chartData: ChartData }) {
+type SwapChartProps = { chartData: ChartData, showLegend?: boolean }
+export default memo(function SwapChart({ chartData, showLegend = true }: SwapChartProps) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
 	if (chartData.systemStats.length === 0) {
 		return null
 	}
+
+	const lastStats = chartData.systemStats.at(-1)?.stats
+	const swapTotal = lastStats?.st ?? lastStats?.s ?? 0.04
+
+	// Debug: log the swap data
+	console.log('Swap chart data:', {
+		swapTotal: lastStats?.st,
+		swapFree: lastStats?.sf,
+		swapUsed: lastStats?.su,
+		legacySwap: lastStats?.s
+	})
 
 	return (
 		<div>
@@ -33,11 +46,14 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 						direction="ltr"
 						orientation={chartData.orientation}
 						className="tracking-tighter"
-						domain={[0, () => toFixedWithoutTrailingZeros(chartData.systemStats.at(-1)?.stats.s ?? 0.04, 2)]}
+						domain={[0, () => toFixedWithoutTrailingZeros(swapTotal, 2)]}
 						width={yAxisWidth}
 						tickLine={false}
 						axisLine={false}
-						tickFormatter={(value) => updateYAxisWidth(value + " GB")}
+						tickFormatter={(value) => {
+							const { v, u } = getSizeAndUnit(value)
+							return updateYAxisWidth(toFixedWithoutTrailingZeros(v, 2) + u)
+						}}
 					/>
 					{xAxis(chartData)}
 					<ChartTooltip
@@ -46,8 +62,10 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 						content={
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
-								contentFormatter={(item) => decimalString(item.value) + " GB"}
-								// indicator="line"
+								contentFormatter={(item) => {
+									const { v, u } = getSizeAndUnit(item.value)
+									return decimalString(v) + u
+								}}
 							/>
 						}
 					/>
@@ -59,7 +77,29 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 						fillOpacity={0.4}
 						stroke="hsl(var(--chart-2))"
 						isAnimationActive={false}
+						stackId="swap"
 					/>
+					<Area
+						dataKey="stats.sf"
+						name={t`Free`}
+						type="monotoneX"
+						fill="hsl(var(--chart-1))"
+						fillOpacity={0.3}
+						stroke="hsl(var(--chart-1))"
+						isAnimationActive={false}
+						stackId="swap"
+					/>
+					<Area
+						dataKey="stats.sc"
+						name={t`Cached`}
+						type="monotoneX"
+						fill="hsl(var(--chart-3))"
+						fillOpacity={0.3}
+						stroke="hsl(var(--chart-3))"
+						isAnimationActive={false}
+						stackId="swap"
+					/>
+					{showLegend && <ChartLegend content={<ChartLegendContent />} />}
 				</AreaChart>
 			</ChartContainer>
 		</div>
