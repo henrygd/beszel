@@ -10,7 +10,7 @@ import {
 	$maxValues,
 	$temperatureFilter,
 } from "@/lib/stores"
-import { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord } from "@/types"
+import { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord, ExtraDataConfig } from "@/types"
 import { ChartType, Os } from "@/lib/enums"
 import React, { lazy, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Card, CardHeader, CardTitle, CardDescription } from "../ui/card"
@@ -47,6 +47,7 @@ const DiskChart = lazy(() => import("../charts/disk-chart"))
 const SwapChart = lazy(() => import("../charts/swap-chart"))
 const TemperatureChart = lazy(() => import("../charts/temperature-chart"))
 const GpuPowerChart = lazy(() => import("../charts/gpu-power-chart"))
+const ExtraDataChart = lazy(() => import("../charts/extra-data-chart"))
 
 const cache = new Map<string, any>()
 
@@ -123,6 +124,7 @@ export default function SystemDetail({ name }: { name: string }) {
 	const maxValues = useStore($maxValues)
 	const [grid, setGrid] = useLocalStorage("grid", true)
 	const [system, setSystem] = useState({} as SystemRecord)
+	const [extraDataConfigs, setExtraDataConfigs] = useState([] as ExtraDataConfig[])
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
 	const [containerData, setContainerData] = useState([] as ChartData["containerData"])
 	const netCardRef = useRef<HTMLDivElement>(null)
@@ -169,6 +171,9 @@ export default function SystemDetail({ name }: { name: string }) {
 		if (!system.id) {
 			return
 		}
+		pb.collection<ExtraDataConfig>("extra_data_configs").getFullList({
+			filter: `systemId='${system.id}'`
+		}).then(configs => setExtraDataConfigs(configs))
 		pb.collection<SystemRecord>("systems").subscribe(system.id, (e) => {
 			setSystem(e.record)
 		})
@@ -654,6 +659,28 @@ export default function SystemDetail({ name }: { name: string }) {
 										cornerEl={maxValSelect}
 									>
 										<AreaChartDefault chartData={chartData} chartName={`efs.${extraFsName}`} maxToggled={maxValues} />
+									</ChartCard>
+								</div>
+							)
+						})}
+					</div>
+				)}
+
+				{/* extra data charts */}
+				{extraDataConfigs.length > 0 && (
+					<div className="grid xl:grid-cols-2 gap-4">
+						{extraDataConfigs.map(conf => {
+
+							return (
+								<div key={conf.name} className="contents">
+									<ChartCard
+										empty={dataEmpty}
+										grid={grid}
+										title={conf.title}
+										description={t`Battery Charge`}
+										cornerEl={maxValSelect}
+									>
+										<ExtraDataChart eDataConfig={conf} chartData={chartData} />
 									</ChartCard>
 								</div>
 							)
