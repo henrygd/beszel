@@ -33,7 +33,7 @@ func (a *Agent) initializeSystemInfo() {
 	var osFamily, osVersion, osKernel string
 	if platform == "darwin" {
 		osKernel = version
-		osFamily = family
+		osFamily = "macOS" // macOS is the family name for Darwin
 		osVersion = version
 	} else if strings.Contains(platform, "indows") {
 		osKernel = strings.Replace(platform, "Microsoft ", "", 1) + " " + version

@@ -276,8 +276,6 @@ export default function SystemDetail({ name }: { name: string }) {
 
 		const memoryTotal = system.info.m && system.info.m.length > 0 ? system.info.m[0].t : undefined;
 
-		const memoryModules = system.info.m && system.info.m.length > 0 && system.info.m[0].modules ? system.info.m[0].modules : [];
-
 		const infoItems = [
 			{ value: getHostDisplayValue(system), Icon: GlobeIcon },
 			{
@@ -289,7 +287,10 @@ export default function SystemDetail({ name }: { name: string }) {
 			},
 			{ value: uptime, Icon: ClockArrowUp, label: t`Uptime`, hide: !system.info.u },
 			os ? {
-				Icon: TuxIcon, // You may want to select icon based on os.f
+				Icon: os.f?.toLowerCase().includes("darwin") || os.f?.toLowerCase().includes("mac") ? AppleIcon
+					: os.f?.toLowerCase().includes("windows") ? WindowsIcon
+					: os.f?.toLowerCase().includes("freebsd") ? FreeBsdIcon
+					: TuxIcon,
 				value: `${os.f} ${os.v}`.trim(),
 				isOs: true,
 				tooltip: os.k ? `Kernel: ${os.k}` : undefined,
