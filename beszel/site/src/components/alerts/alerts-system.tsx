@@ -217,7 +217,7 @@ function AlertContent({ data }: { data: AlertData }) {
 
 	const [checked, setChecked] = useState(data.checked || false)
 	const [min, setMin] = useState(data.min || 10)
-	const [value, setValue] = useState(data.val || (singleDescription ? 0 : 80))
+	const [value, setValue] = useState(data.val || (singleDescription ? 0 : data.alert.start ?? 80))
 
 	const Icon = alertInfo[name].icon
 
@@ -268,7 +268,8 @@ function AlertContent({ data }: { data: AlertData }) {
 										onValueChange={(val) => {
 											setValue(val[0])
 										}}
-										min={1}
+										step={data.alert.step ?? 1}
+										min={data.alert.min ?? 1}
 										max={alertInfo[name].max ?? 99}
 									/>
 								</div>

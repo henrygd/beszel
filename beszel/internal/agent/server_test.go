@@ -475,7 +475,7 @@ func TestWriteToSessionEncoding(t *testing.T) {
 		},
 		{
 			name:             "matching beta version should use CBOR",
-			hubVersion:       "0.12.0-beta1",
+			hubVersion:       "0.12.0-beta2",
 			expectedUsesCbor: true,
 		},
 	}

@@ -323,8 +323,8 @@ if is_alpine; then
   fi
   # Add the user to the docker group to allow access to the Docker socket if group docker exists
   if getent group docker; then
-	  echo "Adding besel to docker group"
-	  usermod -aG docker beszel
+    echo "Adding beszel to docker group"
+    usermod -aG docker beszel
   fi
 
 else
@@ -332,10 +332,10 @@ else
     echo "Creating a dedicated user for the Beszel Agent service..."
     useradd --system --home-dir /nonexistent --shell /bin/false beszel
   fi
-# Add the user to the docker group to allow access to the Docker socket if group docker exists
+  # Add the user to the docker group to allow access to the Docker socket if group docker exists
   if getent group docker; then
-	  echo "Adding besel to docker group"
-	  usermod -aG docker beszel
+    echo "Adding beszel to docker group"
+    usermod -aG docker beszel
   fi
 fi
 
