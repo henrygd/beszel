@@ -77,7 +77,7 @@ func (h *Handler) OnMessage(conn *gws.Conn, message *gws.Message) {
 	case wsConn.(*WsConn).responseChan <- message:
 	default:
 		// close if the connection is not expecting a response
-		wsConn.(*WsConn).Close()
+		wsConn.(*WsConn).Close(nil)
 	}
 }
 
@@ -100,9 +100,9 @@ func (h *Handler) OnClose(conn *gws.Conn, err error) {
 }
 
 // Close terminates the WebSocket connection gracefully.
-func (ws *WsConn) Close() {
+func (ws *WsConn) Close(msg []byte) {
 	if ws.IsConnected() {
-		ws.conn.WriteClose(1000, nil)
+		ws.conn.WriteClose(1000, msg)
 	}
 }
 
@@ -130,7 +130,7 @@ func (ws *WsConn) RequestSystemData(data *system.CombinedData) error {
 	})
 	select {
 	case <-time.After(10 * time.Second):
-		ws.Close()
+		ws.Close(nil)
 		return gws.ErrConnClosed
 	case message = <-ws.responseChan:
 	}
@@ -140,11 +140,12 @@ func (ws *WsConn) RequestSystemData(data *system.CombinedData) error {
 
 // GetFingerprint authenticates with the agent using SSH signature and returns the agent's fingerprint.
 func (ws *WsConn) GetFingerprint(token string, signer ssh.Signer, needSysInfo bool) (common.FingerprintResponse, error) {
+	var clientFingerprint common.FingerprintResponse
 	challenge := []byte(token)
 
 	signature, err := signer.Sign(nil, challenge)
 	if err != nil {
-		return common.FingerprintResponse{}, err
+		return clientFingerprint, err
 	}
 
 	err = ws.sendMessage(common.HubRequest[any]{
@@ -155,24 +156,19 @@ func (ws *WsConn) GetFingerprint(token string, signer ssh.Signer, needSysInfo bo
 		},
 	})
 	if err != nil {
-		return common.FingerprintResponse{}, err
+		return clientFingerprint, err
 	}
 
 	var message *gws.Message
-	var clientFingerprint common.FingerprintResponse
 	select {
 	case message = <-ws.responseChan:
 	case <-time.After(10 * time.Second):
-		return common.FingerprintResponse{}, errors.New("request expired")
+		return clientFingerprint, errors.New("request expired")
 	}
 	defer message.Close()
 
 	err = cbor.Unmarshal(message.Data.Bytes(), &clientFingerprint)
-	if err != nil {
-		return common.FingerprintResponse{}, err
-	}
-
-	return clientFingerprint, nil
+	return clientFingerprint, err
 }
 
 // IsConnected returns true if the WebSocket connection is active.

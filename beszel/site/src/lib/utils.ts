@@ -9,7 +9,7 @@ import { WritableAtom } from "nanostores"
 import { timeDay, timeHour } from "d3-time"
 import { useEffect, useState } from "react"
 import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from "lucide-react"
-import { EthernetIcon, ThermometerIcon } from "@/components/ui/icons"
+import { EthernetIcon, HourglassIcon, ThermometerIcon } from "@/components/ui/icons"
 import { prependBasePath } from "@/components/router"
 
 export function cn(...inputs: ClassValue[]) {
@@ -444,6 +444,26 @@ export const alertInfo: Record<string, AlertInfo> = {
 		unit: "°C",
 		icon: ThermometerIcon,
 		desc: () => t`Triggers when any sensor exceeds a threshold`,
+	},
+	LoadAvg5: {
+		name: () => t`Load Average 5m`,
+		unit: "",
+		icon: HourglassIcon,
+		max: 100,
+		min: 0.1,
+		start: 10,
+		step: 0.1,
+		desc: () => t`Triggers when 5 minute load average exceeds a threshold`,
+	},
+	LoadAvg15: {
+		name: () => t`Load Average 15m`,
+		unit: "",
+		icon: HourglassIcon,
+		min: 0.1,
+		max: 100,
+		start: 10,
+		step: 0.1,
+		desc: () => t`Triggers when 15 minute load average exceeds a threshold`,
 	},
 }
 

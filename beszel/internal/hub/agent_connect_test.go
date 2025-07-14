@@ -6,7 +6,6 @@ package hub
 import (
 	"beszel/internal/agent"
 	"beszel/internal/common"
-	"beszel/internal/hub/expirymap"
 	"beszel/internal/hub/ws"
 	"crypto/ed25519"
 	"fmt"
@@ -14,6 +13,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -115,7 +115,7 @@ func TestValidateAgentHeaders(t *testing.T) {
 		{
 			name: "token too long",
 			headers: http.Header{
-				"X-Token":  []string{string(make([]byte, 513))}, // 513 bytes > 512 limit
+				"X-Token":  []string{strings.Repeat("a", 65)},
 				"X-Beszel": []string{"0.5.0"},
 			},
 			expectError: true,
@@ -124,7 +124,8 @@ func TestValidateAgentHeaders(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			token, agentVersion, err := hub.validateAgentHeaders(tc.headers)
+			acr := &agentConnectRequest{hub: hub}
+			token, agentVersion, err := acr.validateAgentHeaders(tc.headers)
 
 			if tc.expectError {
 				assert.Error(t, err)
@@ -137,8 +138,8 @@ func TestValidateAgentHeaders(t *testing.T) {
 	}
 }
 
-// TestGetFingerprintRecord tests the getFingerprintRecord function
-func TestGetFingerprintRecord(t *testing.T) {
+// TestGetAllFingerprintRecordsByToken tests the getAllFingerprintRecordsByToken function
+func TestGetAllFingerprintRecordsByToken(t *testing.T) {
 	hub, testApp, err := createTestHub(t)
 	if err != nil {
 		t.Fatal(err)
@@ -168,44 +169,60 @@ func TestGetFingerprintRecord(t *testing.T) {
 		"token":       "test-token-123",
 		"fingerprint": "test-fingerprint",
 	})
+	for i := range 3 {
+		systemRecord, _ := createTestRecord(testApp, "systems", map[string]any{
+			"name":   fmt.Sprintf("test-system-%d", i),
+			"host":   "localhost",
+			"port":   "45876",
+			"status": "pending",
+			"users":  []string{userRecord.Id},
+		})
+		createTestRecord(testApp, "fingerprints", map[string]any{
+			"system":      systemRecord.Id,
+			"token":       "duplicate-token",
+			"fingerprint": fmt.Sprintf("test-fingerprint-%d", i),
+		})
+	}
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	testCases := []struct {
-		name        string
-		token       string
-		expectError bool
-		expectedId  string
+		name       string
+		token      string
+		expectedId string
+		expectLen  int
 	}{
 		{
-			name:        "valid token",
-			token:       "test-token-123",
-			expectError: false,
-			expectedId:  fingerprintRecord.Id,
+			name:       "valid token",
+			token:      "test-token-123",
+			expectLen:  1,
+			expectedId: fingerprintRecord.Id,
 		},
 		{
-			name:        "invalid token",
-			token:       "invalid-token",
-			expectError: true,
+			name:      "invalid token",
+			token:     "invalid-token",
+			expectLen: 0,
 		},
 		{
-			name:        "empty token",
-			token:       "",
-			expectError: true,
+			name:      "empty token",
+			token:     "",
+			expectLen: 0,
+		},
+		{
+			name:      "duplicate token",
+			token:     "duplicate-token",
+			expectLen: 3,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			var recordData ws.FingerprintRecord
-			err := hub.getFingerprintRecord(tc.token, &recordData)
+			records := getFingerprintRecordsByToken(tc.token, hub)
 
-			if tc.expectError {
-				assert.Error(t, err)
-			} else {
-				require.NoError(t, err)
-				assert.Equal(t, tc.expectedId, recordData.Id)
+			require.Len(t, records, tc.expectLen)
+			if tc.expectedId != "" {
+				assert.Equal(t, tc.expectedId, records[0].Id)
 			}
 		})
 	}
@@ -318,8 +335,11 @@ func TestCreateSystemFromAgentData(t *testing.T) {
 		{
 			name: "successful system creation with all fields",
 			agentConnReq: agentConnectRequest{
-				userId:     userRecord.Id,
-				remoteAddr: "192.168.1.100",
+				hub:    hub,
+				userId: userRecord.Id,
+				req: &http.Request{
+					RemoteAddr: "192.168.0.1",
+				},
 			},
 			fingerprint: common.FingerprintResponse{
 				Hostname: "test-server",
@@ -327,15 +347,18 @@ func TestCreateSystemFromAgentData(t *testing.T) {
 			},
 			expectError:   false,
 			expectedName:  "test-server",
-			expectedHost:  "192.168.1.100",
+			expectedHost:  "192.168.0.1", // This will be the parsed IP from the mock request
 			expectedPort:  "8080",
 			expectedUsers: []string{userRecord.Id},
 		},
 		{
 			name: "system creation with default port",
 			agentConnReq: agentConnectRequest{
-				userId:     userRecord.Id,
-				remoteAddr: "10.0.0.50",
+				hub:    hub,
+				userId: userRecord.Id,
+				req: &http.Request{
+					RemoteAddr: "192.168.0.1",
+				},
 			},
 			fingerprint: common.FingerprintResponse{
 				Hostname: "default-port-server",
@@ -343,23 +366,26 @@ func TestCreateSystemFromAgentData(t *testing.T) {
 			},
 			expectError:   false,
 			expectedName:  "default-port-server",
-			expectedHost:  "10.0.0.50",
+			expectedHost:  "192.168.0.1", // This will be the parsed IP from the mock request
 			expectedPort:  "45876",
 			expectedUsers: []string{userRecord.Id},
 		},
 		{
 			name: "system creation with empty hostname",
 			agentConnReq: agentConnectRequest{
-				userId:     userRecord.Id,
-				remoteAddr: "172.16.0.1",
+				hub:    hub,
+				userId: userRecord.Id,
+				req: &http.Request{
+					RemoteAddr: "192.168.0.1",
+				},
 			},
 			fingerprint: common.FingerprintResponse{
 				Hostname: "",
 				Port:     "9090",
 			},
 			expectError:   false,
-			expectedName:  "172.16.0.1", // Should fall back to host IP when hostname is empty
-			expectedHost:  "172.16.0.1",
+			expectedName:  "192.168.0.1", // Should fall back to host IP when hostname is empty
+			expectedHost:  "192.168.0.1", // This will be the parsed IP from the mock request
 			expectedPort:  "9090",
 			expectedUsers: []string{userRecord.Id},
 		},
@@ -367,7 +393,7 @@ func TestCreateSystemFromAgentData(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			recordId, err := hub.createSystemFromAgentData(&tc.agentConnReq, tc.fingerprint)
+			recordId, err := tc.agentConnReq.createSystem(tc.fingerprint)
 
 			if tc.expectError {
 				assert.Error(t, err)
@@ -409,11 +435,7 @@ func TestUniversalTokenFlow(t *testing.T) {
 	// Set up universal token in the token map
 	universalToken := "universal-token-123"
 
-	// Initialize tokenMap if it doesn't exist
-	if tokenMap == nil {
-		tokenMap = expirymap.New[string](time.Hour)
-	}
-	tokenMap.Set(universalToken, userRecord.Id, time.Hour)
+	universalTokenMap.GetMap().Set(universalToken, userRecord.Id, time.Hour)
 
 	testCases := []struct {
 		name                string
@@ -447,100 +469,18 @@ func TestUniversalTokenFlow(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			var acr agentConnectRequest
-			acr.token = tc.token
+			acr := &agentConnectRequest{}
 
-			err := checkUniversalToken(&acr)
+			acr.userId, acr.isUniversalToken = universalTokenMap.GetMap().GetOk(tc.token)
 
 			if tc.expectError {
-				assert.Error(t, err)
 				assert.False(t, acr.isUniversalToken)
 				assert.Empty(t, acr.userId)
 			} else {
-				require.NoError(t, err)
 				assert.Equal(t, tc.expectUniversalAuth, acr.isUniversalToken)
 				if tc.expectUniversalAuth {
 					assert.Equal(t, userRecord.Id, acr.userId)
 				}
-			}
-		})
-	}
-}
-
-// TestAgentDataProtection tests that agent won't send system data before fingerprint verification
-func TestAgentDataProtection(t *testing.T) {
-	// This test verifies the logic in the agent's handleHubRequest method
-	// Since we can't access private fields directly, we'll test the behavior indirectly
-	// by creating a mock scenario that simulates the verification flow
-
-	// The key behavior is tested in the agent's handleHubRequest method:
-	// if !client.hubVerified && msg.Action != common.CheckFingerprint {
-	//     return errors.New("hub not verified")
-	// }
-
-	// This test documents the expected behavior rather than testing implementation details
-	t.Run("agent should reject GetData before fingerprint verification", func(t *testing.T) {
-		// This behavior is enforced by the agent's WebSocket client
-		// When hubVerified is false and action is GetData, it returns "hub not verified" error
-		assert.True(t, true, "Agent rejects GetData requests before hub verification")
-	})
-
-	t.Run("agent should allow CheckFingerprint before verification", func(t *testing.T) {
-		// CheckFingerprint action is always allowed regardless of hubVerified status
-		assert.True(t, true, "Agent allows CheckFingerprint requests before hub verification")
-	})
-}
-
-// TestFingerprintResponseFields tests that FingerprintResponse includes hostname and port when requested
-func TestFingerprintResponseFields(t *testing.T) {
-	testCases := []struct {
-		name           string
-		includeSysInfo bool
-		expectHostname bool
-		expectPort     bool
-		description    string
-	}{
-		{
-			name:           "include system info",
-			includeSysInfo: true,
-			expectHostname: true,
-			expectPort:     true,
-			description:    "Should include hostname and port when requested",
-		},
-		{
-			name:           "exclude system info",
-			includeSysInfo: false,
-			expectHostname: false,
-			expectPort:     false,
-			description:    "Should not include hostname and port when not requested",
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			// Test the response creation logic as it would be used in the agent
-			response := &common.FingerprintResponse{
-				Fingerprint: "test-fingerprint",
-			}
-
-			if tc.includeSysInfo {
-				response.Hostname = "test-hostname"
-				response.Port = "8080"
-			}
-
-			// Verify the response structure
-			assert.NotEmpty(t, response.Fingerprint, "Fingerprint should always be present")
-
-			if tc.expectHostname {
-				assert.NotEmpty(t, response.Hostname, "Hostname should be present when requested")
-			} else {
-				assert.Empty(t, response.Hostname, "Hostname should be empty when not requested")
-			}
-
-			if tc.expectPort {
-				assert.NotEmpty(t, response.Port, "Port should be present when requested")
-			} else {
-				assert.Empty(t, response.Port, "Port should be empty when not requested")
 			}
 		})
 	}
@@ -588,22 +528,25 @@ func TestAgentConnect(t *testing.T) {
 		headers        map[string]string
 		expectedStatus int
 		description    string
+		errorMessage   string
 	}{
 		{
 			name: "missing token header",
 			headers: map[string]string{
 				"X-Beszel": "0.5.0",
 			},
-			expectedStatus: http.StatusUnauthorized,
+			expectedStatus: http.StatusBadRequest,
 			description:    "Should fail due to missing token",
+			errorMessage:   "",
 		},
 		{
 			name: "missing agent version header",
 			headers: map[string]string{
 				"X-Token": testToken,
 			},
-			expectedStatus: http.StatusUnauthorized,
+			expectedStatus: http.StatusBadRequest,
 			description:    "Should fail due to missing agent version",
+			errorMessage:   "",
 		},
 		{
 			name: "invalid token",
@@ -613,6 +556,7 @@ func TestAgentConnect(t *testing.T) {
 			},
 			expectedStatus: http.StatusUnauthorized,
 			description:    "Should fail due to invalid token",
+			errorMessage:   "Invalid token",
 		},
 		{
 			name: "invalid agent version",
@@ -622,6 +566,7 @@ func TestAgentConnect(t *testing.T) {
 			},
 			expectedStatus: http.StatusUnauthorized,
 			description:    "Should fail due to invalid agent version",
+			errorMessage:   "Invalid agent version",
 		},
 		{
 			name: "valid headers but websocket upgrade will fail in test",
@@ -631,6 +576,14 @@ func TestAgentConnect(t *testing.T) {
 			},
 			expectedStatus: http.StatusInternalServerError,
 			description:    "Should pass validation but fail at WebSocket upgrade due to test limitations",
+			errorMessage:   "WebSocket upgrade failed",
+		},
+		{
+			name:           "Token too long",
+			headers:        map[string]string{"X-Token": strings.Repeat("a", 65), "X-Beszel": "0.5.0"},
+			expectedStatus: http.StatusBadRequest,
+			description:    "Should reject token exceeding 64 characters",
+			errorMessage:   "",
 		},
 	}
 
@@ -642,9 +595,15 @@ func TestAgentConnect(t *testing.T) {
 			}
 
 			recorder := httptest.NewRecorder()
-			err = hub.agentConnect(req, recorder)
+			acr := &agentConnectRequest{
+				hub: hub,
+				req: req,
+				res: recorder,
+			}
+			err = acr.agentConnect()
 
 			assert.Equal(t, tc.expectedStatus, recorder.Code, tc.description)
+			assert.Equal(t, tc.errorMessage, recorder.Body.String(), tc.description)
 		})
 	}
 }
@@ -677,7 +636,8 @@ func TestSendResponseError(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			recorder := httptest.NewRecorder()
-			sendResponseError(recorder, tc.statusCode, tc.message)
+			acr := &agentConnectRequest{}
+			acr.sendResponseError(recorder, tc.statusCode, tc.message)
 
 			assert.Equal(t, tc.expectedStatus, recorder.Code)
 			assert.Equal(t, tc.expectedBody, recorder.Body.String())
@@ -759,7 +719,12 @@ func TestHandleAgentConnect(t *testing.T) {
 			}
 
 			recorder := httptest.NewRecorder()
-			err = hub.agentConnect(req, recorder)
+			acr := &agentConnectRequest{
+				hub: hub,
+				req: req,
+				res: recorder,
+			}
+			err = acr.agentConnect()
 
 			assert.Equal(t, tc.expectedStatus, recorder.Code, tc.description)
 		})
@@ -773,25 +738,30 @@ func TestAgentWebSocketIntegration(t *testing.T) {
 	require.NoError(t, err)
 	defer testApp.Cleanup()
 
-	// Get the hub's SSH key using the proper method
+	// Get the hub's SSH key
 	hubSigner, err := hub.GetSSHKey("")
 	require.NoError(t, err)
 	goodPubKey := hubSigner.PublicKey()
 
-	// Generate WRONG key pair (should be rejected)
+	// Generate bad key pair (should be rejected)
 	_, badPrivKey, err := ed25519.GenerateKey(nil)
 	require.NoError(t, err)
 	badPubKey, err := ssh.NewPublicKey(badPrivKey.Public().(ed25519.PublicKey))
 	require.NoError(t, err)
 
-	// Create test user once
+	// Create test user
 	userRecord, err := createTestUser(testApp)
 	require.NoError(t, err)
 
 	// Create HTTP server with the actual API route
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/api/beszel/agent-connect" {
-			hub.agentConnect(r, w)
+			acr := &agentConnectRequest{
+				hub: hub,
+				req: r,
+				res: w,
+			}
+			acr.agentConnect()
 		} else {
 			http.NotFound(w, r)
 		}
@@ -926,10 +896,10 @@ func TestAgentWebSocketIntegration(t *testing.T) {
 
 			// Wait for connection result
 			maxWait := 2 * time.Second
-			checkInterval := 100 * time.Millisecond
+			time.Sleep(20 * time.Millisecond)
+			checkInterval := 20 * time.Millisecond
 			timeout := time.After(maxWait)
-			ticker := time.NewTicker(checkInterval)
-			defer ticker.Stop()
+			ticker := time.Tick(checkInterval)
 
 			connectionManager := testAgent.GetConnectionManager()
 
@@ -944,7 +914,7 @@ func TestAgentWebSocketIntegration(t *testing.T) {
 						t.Logf("Connection properly rejected (timeout) - agent state: %d", connectionManager.State)
 					}
 					connectionResult = false
-				case <-ticker.C:
+				case <-ticker:
 					if connectionManager.State == agent.WebSocketConnected {
 						if tc.expectConnection {
 							t.Logf("WebSocket connection successful - agent state: %d", connectionManager.State)
@@ -996,6 +966,735 @@ func TestAgentWebSocketIntegration(t *testing.T) {
 			assert.Equal(t, tc.expectSystemStatus, status, "System status should match expected value")
 
 			t.Logf("%s - System status: %s, Fingerprint: %s", tc.description, status, finalFingerprint)
+		})
+	}
+}
+
+// TestMultipleSystemsWithSameUniversalToken tests that multiple systems can share the same universal token
+func TestMultipleSystemsWithSameUniversalToken(t *testing.T) {
+	// Create hub and test app
+	hub, testApp, err := createTestHub(t)
+	require.NoError(t, err)
+	defer testApp.Cleanup()
+
+	// Get the hub's SSH key
+	hubSigner, err := hub.GetSSHKey("")
+	require.NoError(t, err)
+	goodPubKey := hubSigner.PublicKey()
+
+	// Create test user
+	userRecord, err := createTestUser(testApp)
+	require.NoError(t, err)
+
+	// Set up universal token in the token map
+	universalToken := "shared-universal-token-123"
+	universalTokenMap.GetMap().Set(universalToken, userRecord.Id, time.Hour)
+
+	// Create HTTP server with the actual API route
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/api/beszel/agent-connect" {
+			acr := &agentConnectRequest{
+				hub: hub,
+				req: r,
+				res: w,
+			}
+			acr.agentConnect()
+		} else {
+			http.NotFound(w, r)
+		}
+	}))
+	defer ts.Close()
+
+	// Test scenarios for universal tokens
+	testCases := []struct {
+		name               string
+		agentFingerprint   string
+		expectConnection   bool
+		expectSystemStatus string
+		expectNewSystem    bool // Whether we expect a new system to be created
+		description        string
+	}{
+		{
+			name:               "first system with universal token",
+			agentFingerprint:   "system-1-fingerprint",
+			expectConnection:   true,
+			expectSystemStatus: "up",
+			expectNewSystem:    true,
+			description:        "First system should create a new system",
+		},
+		{
+			name:               "same system reconnecting with same fingerprint",
+			agentFingerprint:   "system-1-fingerprint", // Same fingerprint as first
+			expectConnection:   true,
+			expectSystemStatus: "up",
+			expectNewSystem:    false, // Should reuse existing system
+			description:        "Same system should reuse existing system record",
+		},
+		{
+			name:               "different system with same universal token",
+			agentFingerprint:   "system-2-fingerprint", // Different fingerprint
+			expectConnection:   true,
+			expectSystemStatus: "up",
+			expectNewSystem:    true, // Should create new system
+			description:        "Different system should create a new system record",
+		},
+	}
+
+	var systemCount int
+	for i, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Create unique port for each test
+			portNum := 46000 + i
+
+			// Create and configure agent
+			agentDataDir := t.TempDir()
+
+			// Set up agent fingerprint
+			err = os.WriteFile(filepath.Join(agentDataDir, "fingerprint"), []byte(tc.agentFingerprint), 0644)
+			require.NoError(t, err)
+
+			testAgent, err := agent.NewAgent(agentDataDir)
+			require.NoError(t, err)
+
+			// Set up environment variables for the agent
+			os.Setenv("BESZEL_AGENT_HUB_URL", ts.URL)
+			os.Setenv("BESZEL_AGENT_TOKEN", universalToken)
+			defer func() {
+				os.Unsetenv("BESZEL_AGENT_HUB_URL")
+				os.Unsetenv("BESZEL_AGENT_TOKEN")
+			}()
+
+			// Count systems before connection
+			systemsBefore, err := testApp.FindRecordsByFilter("systems", "users ~ {:userId}", "", -1, 0, map[string]any{"userId": userRecord.Id})
+			require.NoError(t, err)
+			systemsBeforeCount := len(systemsBefore)
+
+			// Start agent in background
+			done := make(chan error, 1)
+			go func() {
+				serverOptions := agent.ServerOptions{
+					Network: "tcp",
+					Addr:    fmt.Sprintf("127.0.0.1:%d", portNum),
+					Keys:    []ssh.PublicKey{goodPubKey},
+				}
+				done <- testAgent.Start(serverOptions)
+			}()
+
+			// Wait for connection result
+			maxWait := 2 * time.Second
+			time.Sleep(20 * time.Millisecond)
+			checkInterval := 20 * time.Millisecond
+			timeout := time.After(maxWait)
+			ticker := time.Tick(checkInterval)
+
+			connectionManager := testAgent.GetConnectionManager()
+			connectionResult := false
+
+			for {
+				select {
+				case <-timeout:
+					if tc.expectConnection {
+						t.Fatalf("Expected connection to succeed but timed out - agent state: %d", connectionManager.State)
+					} else {
+						t.Logf("Connection properly rejected (timeout) - agent state: %d", connectionManager.State)
+					}
+					connectionResult = false
+				case <-ticker:
+					if connectionManager.State == agent.WebSocketConnected {
+						if tc.expectConnection {
+							t.Logf("WebSocket connection successful - agent state: %d", connectionManager.State)
+							connectionResult = true
+						} else {
+							t.Errorf("Unexpected: Connection succeeded when it should have been rejected")
+							return
+						}
+					}
+				case err := <-done:
+					if err != nil {
+						if !tc.expectConnection {
+							t.Logf("Agent connection properly rejected: %v", err)
+							connectionResult = false
+						} else {
+							t.Fatalf("Agent failed to start: %v", err)
+						}
+					}
+				}
+
+				if connectionResult == tc.expectConnection || connectionResult {
+					break
+				}
+			}
+
+			// Verify system creation/reuse behavior
+			if tc.expectConnection {
+				// Count systems after connection
+				systemsAfter, err := testApp.FindRecordsByFilter("systems", "users ~ {:userId}", "", -1, 0, map[string]any{"userId": userRecord.Id})
+				require.NoError(t, err)
+				systemsAfterCount := len(systemsAfter)
+
+				if tc.expectNewSystem {
+					// Should have created a new system
+					systemCount++
+					assert.Equal(t, systemsBeforeCount+1, systemsAfterCount, "Should have created a new system")
+					assert.Equal(t, systemCount, systemsAfterCount, "Total system count should match expected")
+				} else {
+					// Should have reused existing system
+					assert.Equal(t, systemsBeforeCount, systemsAfterCount, "Should not have created a new system")
+					assert.Equal(t, systemCount, systemsAfterCount, "Total system count should remain the same")
+				}
+
+				// Verify that a fingerprint record exists for this fingerprint
+				fingerprints, err := testApp.FindRecordsByFilter("fingerprints", "token = {:token} && fingerprint = {:fingerprint}", "", -1, 0, map[string]any{
+					"token":       universalToken,
+					"fingerprint": tc.agentFingerprint,
+				})
+				require.NoError(t, err)
+				require.Len(t, fingerprints, 1, "Should have exactly one fingerprint record for this token+fingerprint combination")
+
+				fingerprint := fingerprints[0]
+				assert.Equal(t, universalToken, fingerprint.GetString("token"), "Fingerprint should have the universal token")
+				assert.Equal(t, tc.agentFingerprint, fingerprint.GetString("fingerprint"), "Fingerprint should match agent's fingerprint")
+
+				// Verify system status
+				systemId := fingerprint.GetString("system")
+				system, err := testApp.FindRecordById("systems", systemId)
+				require.NoError(t, err)
+				status := system.GetString("status")
+				assert.Equal(t, tc.expectSystemStatus, status, "System status should match expected value")
+
+				t.Logf("%s - System ID: %s, Status: %s, New System: %v", tc.description, systemId, status, tc.expectNewSystem)
+			}
+		})
+	}
+}
+
+// TestFindOrCreateSystemForToken tests the findOrCreateSystemForToken function
+func TestFindOrCreateSystemForToken(t *testing.T) {
+	hub, testApp, err := createTestHub(t)
+	require.NoError(t, err)
+	defer testApp.Cleanup()
+
+	// Create test user
+	userRecord, err := createTestUser(testApp)
+	require.NoError(t, err)
+
+	type testCase struct {
+		name                string
+		setup               func(t *testing.T, hub *Hub, testApp *pbtests.TestApp, userRecord *core.Record) (agentConnectRequest, []ws.FingerprintRecord)
+		agentFingerprint    common.FingerprintResponse
+		expectError         bool
+		expectNewSystem     bool
+		expectedFingerprint string
+		description         string
+	}
+
+	testCases := []testCase{
+		{
+			name: "universal token - existing fingerprint match",
+			setup: func(t *testing.T, hub *Hub, testApp *pbtests.TestApp, userRecord *core.Record) (agentConnectRequest, []ws.FingerprintRecord) {
+				// Create test system
+				systemRecord, err := createTestRecord(testApp, "systems", map[string]any{
+					"name":   "existing-system",
+					"host":   "192.168.1.100",
+					"port":   "45876",
+					"status": "pending",
+					"users":  []string{userRecord.Id},
+				})
+				require.NoError(t, err)
+
+				// Create fingerprint record
+				fpRecord, err := createTestRecord(testApp, "fingerprints", map[string]any{
+					"system":      systemRecord.Id,
+					"token":       "universal-token-123",
+					"fingerprint": "existing-fingerprint",
+				})
+				require.NoError(t, err)
+
+				acr := agentConnectRequest{
+					hub:              hub,
+					token:            "universal-token-123",
+					isUniversalToken: true,
+					userId:           userRecord.Id,
+					req: &http.Request{
+						RemoteAddr: "192.168.1.100",
+					},
+				}
+
+				fpRecords := []ws.FingerprintRecord{
+					{
+						Id:          fpRecord.Id,
+						SystemId:    systemRecord.Id,
+						Fingerprint: "existing-fingerprint",
+						Token:       "universal-token-123",
+					},
+				}
+
+				return acr, fpRecords
+			},
+			agentFingerprint: common.FingerprintResponse{
+				Fingerprint: "existing-fingerprint",
+				Hostname:    "test-host",
+				Port:        "8080",
+			},
+			expectError:         false,
+			expectNewSystem:     false,
+			expectedFingerprint: "existing-fingerprint",
+			description:         "Should reuse existing system with matching fingerprint",
+		},
+		{
+			name: "universal token - new fingerprint",
+			setup: func(t *testing.T, hub *Hub, testApp *pbtests.TestApp, userRecord *core.Record) (agentConnectRequest, []ws.FingerprintRecord) {
+				// Create test system
+				systemRecord, err := createTestRecord(testApp, "systems", map[string]any{
+					"name":   "existing-system-2",
+					"host":   "192.168.1.101",
+					"port":   "45876",
+					"status": "pending",
+					"users":  []string{userRecord.Id},
+				})
+				require.NoError(t, err)
+
+				// Create fingerprint record
+				fpRecord, err := createTestRecord(testApp, "fingerprints", map[string]any{
+					"system":      systemRecord.Id,
+					"token":       "universal-token-123",
+					"fingerprint": "existing-fingerprint",
+				})
+				require.NoError(t, err)
+
+				acr := agentConnectRequest{
+					hub:              hub,
+					token:            "universal-token-123",
+					isUniversalToken: true,
+					userId:           userRecord.Id,
+					req: &http.Request{
+						RemoteAddr: "192.168.1.200",
+					},
+				}
+
+				fpRecords := []ws.FingerprintRecord{
+					{
+						Id:          fpRecord.Id,
+						SystemId:    systemRecord.Id,
+						Fingerprint: "existing-fingerprint",
+						Token:       "universal-token-123",
+					},
+				}
+
+				return acr, fpRecords
+			},
+			agentFingerprint: common.FingerprintResponse{
+				Fingerprint: "new-fingerprint",
+				Hostname:    "new-host",
+				Port:        "9090",
+			},
+			expectError:         false,
+			expectNewSystem:     true,
+			expectedFingerprint: "new-fingerprint",
+			description:         "Should create new system with different fingerprint",
+		},
+		{
+			name: "universal token - no existing records",
+			setup: func(t *testing.T, hub *Hub, testApp *pbtests.TestApp, userRecord *core.Record) (agentConnectRequest, []ws.FingerprintRecord) {
+				acr := agentConnectRequest{
+					hub:              hub,
+					token:            "universal-token-456",
+					isUniversalToken: true,
+					userId:           userRecord.Id,
+					req: &http.Request{
+						RemoteAddr: "192.168.1.300",
+					},
+				}
+
+				fpRecords := []ws.FingerprintRecord{}
+
+				return acr, fpRecords
+			},
+			agentFingerprint: common.FingerprintResponse{
+				Fingerprint: "first-fingerprint",
+				Hostname:    "first-host",
+				Port:        "7070",
+			},
+			expectError:         false,
+			expectNewSystem:     true,
+			expectedFingerprint: "first-fingerprint",
+			description:         "Should create new system when no existing records",
+		},
+		{
+			name: "regular token - empty fingerprint",
+			setup: func(t *testing.T, hub *Hub, testApp *pbtests.TestApp, userRecord *core.Record) (agentConnectRequest, []ws.FingerprintRecord) {
+				// Create test system
+				systemRecord, err := createTestRecord(testApp, "systems", map[string]any{
+					"name":   "regular-system",
+					"host":   "192.168.1.200",
+					"port":   "45876",
+					"status": "pending",
+					"users":  []string{userRecord.Id},
+				})
+				require.NoError(t, err)
+
+				// Create fingerprint record with empty fingerprint
+				fpRecord, err := createTestRecord(testApp, "fingerprints", map[string]any{
+					"system":      systemRecord.Id,
+					"token":       "regular-token-123",
+					"fingerprint": "",
+				})
+				require.NoError(t, err)
+
+				acr := agentConnectRequest{
+					hub:              hub,
+					token:            "regular-token-123",
+					isUniversalToken: false,
+				}
+
+				fpRecords := []ws.FingerprintRecord{
+					{
+						Id:          fpRecord.Id,
+						SystemId:    systemRecord.Id,
+						Fingerprint: "",
+						Token:       "regular-token-123",
+					},
+				}
+
+				return acr, fpRecords
+			},
+			agentFingerprint: common.FingerprintResponse{
+				Fingerprint: "agent-fingerprint",
+				Hostname:    "agent-host",
+				Port:        "6060",
+			},
+			expectError:         false,
+			expectNewSystem:     false,
+			expectedFingerprint: "agent-fingerprint",
+			description:         "Should update empty fingerprint for regular token",
+		},
+		{
+			name: "regular token - fingerprint mismatch",
+			setup: func(t *testing.T, hub *Hub, testApp *pbtests.TestApp, userRecord *core.Record) (agentConnectRequest, []ws.FingerprintRecord) {
+				// Create test system
+				systemRecord, err := createTestRecord(testApp, "systems", map[string]any{
+					"name":   "regular-system-2",
+					"host":   "192.168.1.250",
+					"port":   "45876",
+					"status": "pending",
+					"users":  []string{userRecord.Id},
+				})
+				require.NoError(t, err)
+
+				// Create fingerprint record with different fingerprint
+				fpRecord, err := createTestRecord(testApp, "fingerprints", map[string]any{
+					"system":      systemRecord.Id,
+					"token":       "regular-token-456",
+					"fingerprint": "different-fingerprint",
+				})
+				require.NoError(t, err)
+
+				acr := agentConnectRequest{
+					hub:              hub,
+					token:            "regular-token-456",
+					isUniversalToken: false,
+				}
+
+				fpRecords := []ws.FingerprintRecord{
+					{
+						Id:          fpRecord.Id,
+						SystemId:    systemRecord.Id,
+						Fingerprint: "different-fingerprint",
+						Token:       "regular-token-456",
+					},
+				}
+
+				return acr, fpRecords
+			},
+			agentFingerprint: common.FingerprintResponse{
+				Fingerprint: "agent-fingerprint",
+				Hostname:    "agent-host",
+				Port:        "5050",
+			},
+			expectError: true,
+			description: "Should reject fingerprint mismatch for regular token",
+		},
+		{
+			name: "universal token - missing user ID",
+			setup: func(t *testing.T, hub *Hub, testApp *pbtests.TestApp, userRecord *core.Record) (agentConnectRequest, []ws.FingerprintRecord) {
+				acr := agentConnectRequest{
+					hub:              hub,
+					token:            "universal-token-789",
+					isUniversalToken: true,
+					userId:           "", // Missing user ID
+					req: &http.Request{
+						RemoteAddr: "192.168.1.400",
+					},
+				}
+
+				fpRecords := []ws.FingerprintRecord{}
+
+				return acr, fpRecords
+			},
+			agentFingerprint: common.FingerprintResponse{
+				Fingerprint: "some-fingerprint",
+				Hostname:    "some-host",
+				Port:        "4040",
+			},
+			expectError: true,
+			description: "Should reject universal token without user ID",
+		},
+		{
+			name: "expired universal token - matching fingerprint",
+			setup: func(t *testing.T, hub *Hub, testApp *pbtests.TestApp, userRecord *core.Record) (agentConnectRequest, []ws.FingerprintRecord) {
+				// Create test systems
+				systemRecord1, err := createTestRecord(testApp, "systems", map[string]any{
+					"name":   "expired-system-1",
+					"host":   "192.168.1.500",
+					"port":   "45876",
+					"status": "pending",
+					"users":  []string{userRecord.Id},
+				})
+				require.NoError(t, err)
+
+				systemRecord2, err := createTestRecord(testApp, "systems", map[string]any{
+					"name":   "expired-system-2",
+					"host":   "192.168.1.501",
+					"port":   "45876",
+					"status": "pending",
+					"users":  []string{userRecord.Id},
+				})
+				require.NoError(t, err)
+
+				// Create fingerprint records
+				fpRecord1, err := createTestRecord(testApp, "fingerprints", map[string]any{
+					"system":      systemRecord1.Id,
+					"token":       "expired-universal-token-123",
+					"fingerprint": "expired-fingerprint-1",
+				})
+				require.NoError(t, err)
+
+				fpRecord2, err := createTestRecord(testApp, "fingerprints", map[string]any{
+					"system":      systemRecord2.Id,
+					"token":       "expired-universal-token-123",
+					"fingerprint": "expired-fingerprint-2",
+				})
+				require.NoError(t, err)
+
+				acr := agentConnectRequest{
+					hub:              hub,
+					token:            "expired-universal-token-123",
+					isUniversalToken: false, // Token is no longer active
+					userId:           "",    // No user ID since token is expired
+				}
+
+				fpRecords := []ws.FingerprintRecord{
+					{
+						Id:          fpRecord1.Id,
+						SystemId:    systemRecord1.Id,
+						Fingerprint: "expired-fingerprint-1",
+						Token:       "expired-universal-token-123",
+					},
+					{
+						Id:          fpRecord2.Id,
+						SystemId:    systemRecord2.Id,
+						Fingerprint: "expired-fingerprint-2",
+						Token:       "expired-universal-token-123",
+					},
+				}
+
+				return acr, fpRecords
+			},
+			agentFingerprint: common.FingerprintResponse{
+				Fingerprint: "expired-fingerprint-1", // Matches first record
+				Hostname:    "expired-host",
+				Port:        "3030",
+			},
+			expectError:         false,
+			expectNewSystem:     false,
+			expectedFingerprint: "expired-fingerprint-1",
+			description:         "Should allow connection with expired universal token if fingerprint matches",
+		},
+		{
+			name: "expired universal token - no matching fingerprint",
+			setup: func(t *testing.T, hub *Hub, testApp *pbtests.TestApp, userRecord *core.Record) (agentConnectRequest, []ws.FingerprintRecord) {
+				// Create test system
+				systemRecord, err := createTestRecord(testApp, "systems", map[string]any{
+					"name":   "expired-system-3",
+					"host":   "192.168.1.600",
+					"port":   "45876",
+					"status": "pending",
+					"users":  []string{userRecord.Id},
+				})
+				require.NoError(t, err)
+
+				// Create fingerprint record
+				fpRecord, err := createTestRecord(testApp, "fingerprints", map[string]any{
+					"system":      systemRecord.Id,
+					"token":       "expired-universal-token-456",
+					"fingerprint": "expired-fingerprint-3",
+				})
+				require.NoError(t, err)
+
+				acr := agentConnectRequest{
+					hub:              hub,
+					token:            "expired-universal-token-456",
+					isUniversalToken: false, // Token is no longer active
+					userId:           "",    // No user ID since token is expired
+					req: &http.Request{
+						RemoteAddr: "192.168.1.600",
+					},
+				}
+
+				fpRecords := []ws.FingerprintRecord{
+					{
+						Id:          fpRecord.Id,
+						SystemId:    systemRecord.Id,
+						Fingerprint: "expired-fingerprint-3",
+						Token:       "expired-universal-token-456",
+					},
+				}
+
+				return acr, fpRecords
+			},
+			agentFingerprint: common.FingerprintResponse{
+				Fingerprint: "different-fingerprint", // Doesn't match any existing record
+				Hostname:    "different-host",
+				Port:        "2020",
+			},
+			expectError: true,
+			description: "Should reject connection with expired universal token if no fingerprint matches",
+		},
+		{
+			name: "regular token - no existing records",
+			setup: func(t *testing.T, hub *Hub, testApp *pbtests.TestApp, userRecord *core.Record) (agentConnectRequest, []ws.FingerprintRecord) {
+				acr := agentConnectRequest{
+					hub:              hub,
+					token:            "regular-token-no-record",
+					isUniversalToken: false,
+				}
+				return acr, []ws.FingerprintRecord{}
+			},
+			agentFingerprint: common.FingerprintResponse{
+				Fingerprint: "some-fingerprint",
+			},
+			expectError: true,
+			description: "Should reject regular token with no fingerprint record",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			acr, fpRecords := tc.setup(t, hub, testApp, userRecord)
+			result, err := acr.findOrCreateSystemForToken(fpRecords, tc.agentFingerprint)
+
+			if tc.expectError {
+				assert.Error(t, err, tc.description)
+				return
+			}
+
+			require.NoError(t, err, tc.description)
+
+			// Verify expected fingerprint
+			if tc.expectedFingerprint != "" {
+				assert.Equal(t, tc.expectedFingerprint, result.Fingerprint, "Fingerprint should match expected")
+			}
+
+			// For new systems, verify they were actually created
+			if tc.expectNewSystem {
+				assert.NotEmpty(t, result.SystemId, "New system should have a system ID")
+
+				// Verify system was created in database
+				system, err := testApp.FindRecordById("systems", result.SystemId)
+				require.NoError(t, err, "New system should exist in database")
+
+				// Verify system properties
+				assert.Equal(t, tc.agentFingerprint.Hostname, system.GetString("name"), "System name should match hostname")
+				assert.Equal(t, getRealIP(acr.req), system.GetString("host"), "System host should match remote address")
+				assert.Equal(t, tc.agentFingerprint.Port, system.GetString("port"), "System port should match agent port")
+				assert.Equal(t, []string{acr.userId}, system.Get("users"), "System users should match")
+			}
+
+			t.Logf("%s - Result: SystemId=%s, Fingerprint=%s", tc.description, result.SystemId, result.Fingerprint)
+		})
+	}
+}
+
+// TestGetRealIP tests the getRealIP function
+func TestGetRealIP(t *testing.T) {
+	testCases := []struct {
+		name       string
+		headers    map[string]string
+		remoteAddr string
+		expectedIP string
+	}{
+		{
+			name:       "CF-Connecting-IP header",
+			headers:    map[string]string{"CF-Connecting-IP": "192.168.1.1"},
+			remoteAddr: "127.0.0.1:12345",
+			expectedIP: "192.168.1.1",
+		},
+		{
+			name:       "X-Forwarded-For header with single IP",
+			headers:    map[string]string{"X-Forwarded-For": "192.168.1.2"},
+			remoteAddr: "127.0.0.1:12345",
+			expectedIP: "192.168.1.2",
+		},
+		{
+			name:       "X-Forwarded-For header with multiple IPs",
+			headers:    map[string]string{"X-Forwarded-For": "192.168.1.3, 10.0.0.1, 172.16.0.1"},
+			remoteAddr: "127.0.0.1:12345",
+			expectedIP: "192.168.1.3",
+		},
+		{
+			name:       "X-Forwarded-For header with spaces",
+			headers:    map[string]string{"X-Forwarded-For": "  192.168.1.4  "},
+			remoteAddr: "127.0.0.1:12345",
+			expectedIP: "192.168.1.4",
+		},
+		{
+			name:       "No headers, fallback to RemoteAddr with port",
+			headers:    map[string]string{},
+			remoteAddr: "192.168.1.5:54321",
+			expectedIP: "192.168.1.5",
+		},
+		{
+			name:       "No headers, fallback to RemoteAddr without port",
+			headers:    map[string]string{},
+			remoteAddr: "192.168.1.6",
+			expectedIP: "192.168.1.6",
+		},
+		{
+			name:       "Both headers present, CF takes precedence",
+			headers:    map[string]string{"CF-Connecting-IP": "192.168.1.1", "X-Forwarded-For": "192.168.1.2"},
+			remoteAddr: "127.0.0.1:12345",
+			expectedIP: "192.168.1.1",
+		},
+		{
+			name:       "X-Forwarded-For present, takes precedence over RemoteAddr",
+			headers:    map[string]string{"X-Forwarded-For": "192.168.1.2"},
+			remoteAddr: "192.168.1.5:54321",
+			expectedIP: "192.168.1.2",
+		},
+		{
+			name:       "Empty X-Forwarded-For, fallback to RemoteAddr",
+			headers:    map[string]string{"X-Forwarded-For": ""},
+			remoteAddr: "192.168.1.7:12345",
+			expectedIP: "192.168.1.7",
+		},
+		{
+			name:       "Empty CF-Connecting-IP, fallback to X-Forwarded-For",
+			headers:    map[string]string{"CF-Connecting-IP": "", "X-Forwarded-For": "192.168.1.8"},
+			remoteAddr: "127.0.0.1:12345",
+			expectedIP: "192.168.1.8",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			req := httptest.NewRequest("GET", "/", nil)
+			for key, value := range tc.headers {
+				req.Header.Set(key, value)
+			}
+			req.RemoteAddr = tc.remoteAddr
+
+			ip := getRealIP(req)
+			assert.Equal(t, tc.expectedIP, ip)
 		})
 	}
 }

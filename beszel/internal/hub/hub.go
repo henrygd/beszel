@@ -259,7 +259,7 @@ func (h *Hub) getUniversalToken(e *core.RequestEvent) error {
 		return apis.NewForbiddenError("Forbidden", nil)
 	}
 
-	tokenMap := getTokenMap()
+	tokenMap := universalTokenMap.GetMap()
 	userID := info.Auth.Id
 	query := e.Request.URL.Query()
 	token := query.Get("token")

@@ -5,10 +5,10 @@ import (
 	"beszel/internal/hub/expirymap"
 	"beszel/internal/hub/ws"
 	"errors"
-	"fmt"
 	"net"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/blang/semver"
@@ -17,118 +17,96 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 )
 
-// tokenMap maps tokens to user IDs for universal tokens
-var tokenMap *expirymap.ExpiryMap[string]
-
+// agentConnectRequest holds information related to an agent's connection attempt.
 type agentConnectRequest struct {
+	hub         *Hub
+	req         *http.Request
+	res         http.ResponseWriter
 	token       string
 	agentSemVer semver.Version
-	// for universal token
+	// isUniversalToken is true if the token is a universal token.
 	isUniversalToken bool
-	userId           string
-	remoteAddr       string
+	// userId is the user ID associated with the universal token.
+	userId string
 }
 
-// validateAgentHeaders validates the required headers from agent connection requests.
-func (h *Hub) validateAgentHeaders(headers http.Header) (string, string, error) {
-	token := headers.Get("X-Token")
-	agentVersion := headers.Get("X-Beszel")
+// universalTokenMap stores active universal tokens and their associated user IDs.
+var universalTokenMap tokenMap
 
-	if agentVersion == "" || token == "" || len(token) > 512 {
-		return "", "", errors.New("")
-	}
-	return token, agentVersion, nil
+type tokenMap struct {
+	store *expirymap.ExpiryMap[string]
+	once  sync.Once
 }
 
-// getFingerprintRecord retrieves fingerprint data from the database by token.
-func (h *Hub) getFingerprintRecord(token string, recordData *ws.FingerprintRecord) error {
-	err := h.DB().NewQuery("SELECT id, system, fingerprint, token FROM fingerprints WHERE token = {:token}").
-		Bind(dbx.Params{
-			"token": token,
-		}).
-		One(recordData)
-	return err
+// getMap returns the expirymap, creating it if necessary.
+func (tm *tokenMap) GetMap() *expirymap.ExpiryMap[string] {
+	tm.once.Do(func() {
+		tm.store = expirymap.New[string](time.Hour)
+	})
+	return tm.store
 }
 
-// sendResponseError sends an HTTP error response with the given status code and message.
-func sendResponseError(res http.ResponseWriter, code int, message string) error {
-	res.WriteHeader(code)
-	if message != "" {
-		res.Write([]byte(message))
-	}
-	return nil
-}
-
-// handleAgentConnect handles the incoming connection request from the agent.
+// handleAgentConnect is the HTTP handler for an agent's connection request.
 func (h *Hub) handleAgentConnect(e *core.RequestEvent) error {
-	if err := h.agentConnect(e.Request, e.Response); err != nil {
-		return err
-	}
+	agentRequest := agentConnectRequest{req: e.Request, res: e.Response, hub: h}
+	_ = agentRequest.agentConnect()
 	return nil
 }
 
-// agentConnect handles agent connection requests, validating credentials and upgrading to WebSocket.
-func (h *Hub) agentConnect(req *http.Request, res http.ResponseWriter) (err error) {
-	var agentConnectRequest agentConnectRequest
+// agentConnect validates agent credentials and upgrades the connection to a WebSocket.
+func (acr *agentConnectRequest) agentConnect() (err error) {
 	var agentVersion string
-	// check if user agent and token are valid
-	agentConnectRequest.token, agentVersion, err = h.validateAgentHeaders(req.Header)
+
+	acr.token, agentVersion, err = acr.validateAgentHeaders(acr.req.Header)
 	if err != nil {
-		return sendResponseError(res, http.StatusUnauthorized, "")
+		return acr.sendResponseError(acr.res, http.StatusBadRequest, "")
 	}
 
-	// Pull fingerprint from database matching token
-	var fpRecord ws.FingerprintRecord
-	err = h.getFingerprintRecord(agentConnectRequest.token, &fpRecord)
+	// Check if token is an active universal token
+	acr.userId, acr.isUniversalToken = universalTokenMap.GetMap().GetOk(acr.token)
 
-	// if no existing record, check if token is a universal token
-	if err != nil {
-		if err = checkUniversalToken(&agentConnectRequest); err == nil {
-			// if this is a universal token, set the remote address and new record token
-			agentConnectRequest.remoteAddr = getRealIP(req)
-			fpRecord.Token = agentConnectRequest.token
-		}
-	}
-
-	// If no matching token, return unauthorized
-	if err != nil {
-		return sendResponseError(res, http.StatusUnauthorized, "Invalid token")
+	// Find matching fingerprint records for this token
+	fpRecords := getFingerprintRecordsByToken(acr.token, acr.hub)
+	if len(fpRecords) == 0 && !acr.isUniversalToken {
+		// Invalid token - no records found and not a universal token
+		return acr.sendResponseError(acr.res, http.StatusUnauthorized, "Invalid token")
 	}
 
 	// Validate agent version
-	agentConnectRequest.agentSemVer, err = semver.Parse(agentVersion)
+	acr.agentSemVer, err = semver.Parse(agentVersion)
 	if err != nil {
-		return sendResponseError(res, http.StatusUnauthorized, "Invalid agent version")
+		return acr.sendResponseError(acr.res, http.StatusUnauthorized, "Invalid agent version")
 	}
 
 	// Upgrade connection to WebSocket
-	conn, err := ws.GetUpgrader().Upgrade(res, req)
+	conn, err := ws.GetUpgrader().Upgrade(acr.res, acr.req)
 	if err != nil {
-		return sendResponseError(res, http.StatusInternalServerError, "WebSocket upgrade failed")
+		return acr.sendResponseError(acr.res, http.StatusInternalServerError, "WebSocket upgrade failed")
 	}
 
-	go h.verifyWsConn(conn, agentConnectRequest, fpRecord)
+	go acr.verifyWsConn(conn, fpRecords)
 
 	return nil
 }
 
-// verifyWsConn verifies the WebSocket connection using agent's fingerprint and SSH key signature.
-func (h *Hub) verifyWsConn(conn *gws.Conn, acr agentConnectRequest, fpRecord ws.FingerprintRecord) (err error) {
+// verifyWsConn verifies the WebSocket connection using the agent's fingerprint and
+// SSH key signature, then adds the system to the system manager.
+func (acr *agentConnectRequest) verifyWsConn(conn *gws.Conn, fpRecords []ws.FingerprintRecord) (err error) {
 	wsConn := ws.NewWsConnection(conn)
-	// must be set before the read loop
+
+	// must set wsConn in connection store before the read loop
 	conn.Session().Store("wsConn", wsConn)
 
 	// make sure connection is closed if there is an error
 	defer func() {
 		if err != nil {
-			wsConn.Close()
-			h.Logger().Error("WebSocket error", "error", err, "system", fpRecord.SystemId)
+			wsConn.Close([]byte(err.Error()))
 		}
 	}()
 
 	go conn.ReadLoop()
 
-	signer, err := h.GetSSHKey("")
+	signer, err := acr.hub.GetSSHKey("")
 	if err != nil {
 		return err
 	}
@@ -138,40 +116,152 @@ func (h *Hub) verifyWsConn(conn *gws.Conn, acr agentConnectRequest, fpRecord ws.
 		return err
 	}
 
-	// Create system if using universal token
-	if acr.isUniversalToken {
-		if acr.userId == "" {
-			return errors.New("token user not found")
-		}
-		fpRecord.SystemId, err = h.createSystemFromAgentData(&acr, agentFingerprint)
-		if err != nil {
-			return fmt.Errorf("failed to create system from universal token: %w", err)
-		}
+	// Find or create the appropriate system for this token and fingerprint
+	fpRecord, err := acr.findOrCreateSystemForToken(fpRecords, agentFingerprint)
+	if err != nil {
+		return err
 	}
 
-	switch {
-	// If no current fingerprint, update with new fingerprint (first time connecting)
-	case fpRecord.Fingerprint == "":
-		if err := h.SetFingerprint(&fpRecord, agentFingerprint.Fingerprint); err != nil {
-			return err
-		}
-	// Abort if fingerprint exists but doesn't match (different machine)
-	case fpRecord.Fingerprint != agentFingerprint.Fingerprint:
-		return errors.New("fingerprint mismatch")
-	}
-
-	return h.sm.AddWebSocketSystem(fpRecord.SystemId, acr.agentSemVer, wsConn)
+	return acr.hub.sm.AddWebSocketSystem(fpRecord.SystemId, acr.agentSemVer, wsConn)
 }
 
-// createSystemFromAgentData creates a new system record using data from the agent
-func (h *Hub) createSystemFromAgentData(acr *agentConnectRequest, agentFingerprint common.FingerprintResponse) (recordId string, err error) {
-	systemsCollection, err := h.FindCollectionByNameOrId("systems")
-	if err != nil {
-		return "", fmt.Errorf("failed to find systems collection: %w", err)
+// validateAgentHeaders extracts and validates the token and agent version from HTTP headers.
+func (acr *agentConnectRequest) validateAgentHeaders(headers http.Header) (string, string, error) {
+	token := headers.Get("X-Token")
+	agentVersion := headers.Get("X-Beszel")
+
+	if agentVersion == "" || token == "" || len(token) > 64 {
+		return "", "", errors.New("")
 	}
+	return token, agentVersion, nil
+}
+
+// sendResponseError writes an HTTP error response.
+func (acr *agentConnectRequest) sendResponseError(res http.ResponseWriter, code int, message string) error {
+	res.WriteHeader(code)
+	if message != "" {
+		res.Write([]byte(message))
+	}
+	return nil
+}
+
+// getFingerprintRecordsByToken retrieves all fingerprint records associated with a given token.
+func getFingerprintRecordsByToken(token string, h *Hub) []ws.FingerprintRecord {
+	var records []ws.FingerprintRecord
+	// All will populate empty slice even on error
+	_ = h.DB().NewQuery("SELECT id, system, fingerprint, token FROM fingerprints WHERE token = {:token}").
+		Bind(dbx.Params{
+			"token": token,
+		}).
+		All(&records)
+	return records
+}
+
+// findOrCreateSystemForToken finds an existing system matching the token and fingerprint,
+// or creates a new one for a universal token.
+func (acr *agentConnectRequest) findOrCreateSystemForToken(fpRecords []ws.FingerprintRecord, agentFingerprint common.FingerprintResponse) (ws.FingerprintRecord, error) {
+	// No records - only valid for active universal tokens
+	if len(fpRecords) == 0 {
+		return acr.handleNoRecords(agentFingerprint)
+	}
+
+	// Single record - handle as regular token
+	if len(fpRecords) == 1 && !acr.isUniversalToken {
+		return acr.handleSingleRecord(fpRecords[0], agentFingerprint)
+	}
+
+	// Multiple records or universal token - look for matching fingerprint
+	return acr.handleMultipleRecordsOrUniversalToken(fpRecords, agentFingerprint)
+}
+
+// handleNoRecords handles the case where no fingerprint records are found for a token.
+// A new system is created if the token is a valid universal token.
+func (acr *agentConnectRequest) handleNoRecords(agentFingerprint common.FingerprintResponse) (ws.FingerprintRecord, error) {
+	var fpRecord ws.FingerprintRecord
+
+	if !acr.isUniversalToken || acr.userId == "" {
+		return fpRecord, errors.New("no matching fingerprints")
+	}
+
+	return acr.createNewSystemForUniversalToken(agentFingerprint)
+}
+
+// handleSingleRecord handles the case with a single fingerprint record. It validates
+// the agent's fingerprint against the stored one, or sets it on first connect.
+func (acr *agentConnectRequest) handleSingleRecord(fpRecord ws.FingerprintRecord, agentFingerprint common.FingerprintResponse) (ws.FingerprintRecord, error) {
+	// If no current fingerprint, update with new fingerprint (first time connecting)
+	if fpRecord.Fingerprint == "" {
+		if err := acr.hub.SetFingerprint(&fpRecord, agentFingerprint.Fingerprint); err != nil {
+			return fpRecord, err
+		}
+		// Update the record with the fingerprint that was set
+		fpRecord.Fingerprint = agentFingerprint.Fingerprint
+		return fpRecord, nil
+	}
+
+	// Abort if fingerprint exists but doesn't match (different machine)
+	if fpRecord.Fingerprint != agentFingerprint.Fingerprint {
+		return fpRecord, errors.New("fingerprint mismatch")
+	}
+
+	return fpRecord, nil
+}
+
+// handleMultipleRecordsOrUniversalToken finds a matching fingerprint from multiple records.
+// If no match is found and the token is a universal token, a new system is created.
+func (acr *agentConnectRequest) handleMultipleRecordsOrUniversalToken(fpRecords []ws.FingerprintRecord, agentFingerprint common.FingerprintResponse) (ws.FingerprintRecord, error) {
+	// Return existing record with matching fingerprint if found
+	for i := range fpRecords {
+		if fpRecords[i].Fingerprint == agentFingerprint.Fingerprint {
+			return fpRecords[i], nil
+		}
+	}
+
+	// No matching fingerprint record found, but it's
+	// an active universal token so create a new system
+	if acr.isUniversalToken {
+		return acr.createNewSystemForUniversalToken(agentFingerprint)
+	}
+
+	return ws.FingerprintRecord{}, errors.New("fingerprint mismatch")
+}
+
+// createNewSystemForUniversalToken creates a new system and fingerprint record for a universal token.
+func (acr *agentConnectRequest) createNewSystemForUniversalToken(agentFingerprint common.FingerprintResponse) (ws.FingerprintRecord, error) {
+	var fpRecord ws.FingerprintRecord
+	if !acr.isUniversalToken || acr.userId == "" {
+		return fpRecord, errors.New("invalid token")
+	}
+
+	fpRecord.Token = acr.token
+
+	systemId, err := acr.createSystem(agentFingerprint)
+	if err != nil {
+		return fpRecord, err
+	}
+	fpRecord.SystemId = systemId
+
+	// Set the fingerprint for the new system
+	if err := acr.hub.SetFingerprint(&fpRecord, agentFingerprint.Fingerprint); err != nil {
+		return fpRecord, err
+	}
+
+	// Update the record with the fingerprint that was set
+	fpRecord.Fingerprint = agentFingerprint.Fingerprint
+
+	return fpRecord, nil
+}
+
+// createSystem creates a new system record in the database using details from the agent.
+func (acr *agentConnectRequest) createSystem(agentFingerprint common.FingerprintResponse) (recordId string, err error) {
+	systemsCollection, err := acr.hub.FindCachedCollectionByNameOrId("systems")
+	if err != nil {
+		return "", err
+	}
+	remoteAddr := getRealIP(acr.req)
 	// separate port from address
 	if agentFingerprint.Hostname == "" {
-		agentFingerprint.Hostname = acr.remoteAddr
+		agentFingerprint.Hostname = remoteAddr
 	}
 	if agentFingerprint.Port == "" {
 		agentFingerprint.Port = "45876"
@@ -179,14 +269,14 @@ func (h *Hub) createSystemFromAgentData(acr *agentConnectRequest, agentFingerpri
 	// create new record
 	systemRecord := core.NewRecord(systemsCollection)
 	systemRecord.Set("name", agentFingerprint.Hostname)
-	systemRecord.Set("host", acr.remoteAddr)
+	systemRecord.Set("host", remoteAddr)
 	systemRecord.Set("port", agentFingerprint.Port)
 	systemRecord.Set("users", []string{acr.userId})
 
-	return systemRecord.Id, h.Save(systemRecord)
+	return systemRecord.Id, acr.hub.Save(systemRecord)
 }
 
-// SetFingerprint updates the fingerprint for a given record ID.
+// SetFingerprint creates or updates a fingerprint record in the database.
 func (h *Hub) SetFingerprint(fpRecord *ws.FingerprintRecord, fingerprint string) (err error) {
 	// // can't use raw query here because it doesn't trigger SSE
 	var record *core.Record
@@ -207,25 +297,8 @@ func (h *Hub) SetFingerprint(fpRecord *ws.FingerprintRecord, fingerprint string)
 	return h.SaveNoValidate(record)
 }
 
-func getTokenMap() *expirymap.ExpiryMap[string] {
-	if tokenMap == nil {
-		tokenMap = expirymap.New[string](time.Hour)
-	}
-	return tokenMap
-}
-
-func checkUniversalToken(acr *agentConnectRequest) (err error) {
-	if tokenMap == nil {
-		tokenMap = expirymap.New[string](time.Hour)
-	}
-	acr.userId, acr.isUniversalToken = tokenMap.GetOk(acr.token)
-	if !acr.isUniversalToken {
-		return errors.New("invalid token")
-	}
-	return nil
-}
-
-// getRealIP attempts to extract the real IP address from the request headers.
+// getRealIP extracts the client's real IP address from request headers,
+// checking common proxy headers before falling back to the remote address.
 func getRealIP(r *http.Request) string {
 	if ip := r.Header.Get("CF-Connecting-IP"); ip != "" {
 		return ip
