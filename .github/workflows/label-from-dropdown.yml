@@ -14,8 +14,6 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const areaLabels = ['Metrics', 'Charts & Visualization', 'Settings & Configuration', 'Notifications & Alerts', 'Authentication', 'Installation', 'Performance', 'UI / UX', 'Other'];
-            const componentLabels = ['CPU', 'Memory', 'Storage', 'Network', 'Containers', 'GPU', 'Sensors', 'Other'];
 
             const issueNumber = context.issue.number;
             const owner = context.repo.owner;
@@ -37,14 +35,14 @@ jobs:
             }
 
             // Extract dropdown selections
-            const product = extractSectionValue('Product');
-            const area = extractSectionValue('Area');
+            const category = extractSectionValue('Category');
+            const metrics = extractSectionValue('Affected Metrics');
             const component = extractSectionValue('Component');
 
             // Build labels to add
             let labelsToAdd = [];
-            if (product) labelsToAdd.push(product);
-            if (area) labelsToAdd.push(area);
+            if (category) labelsToAdd.push(category);
+            if (metrics) labelsToAdd.push(metrics);
             if (component) labelsToAdd.push(component);
 
             // Get existing labels in the repo
