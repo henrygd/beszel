@@ -28,9 +28,9 @@ export const $maxValues = atom(false)
 export const $userSettings = map<UserSettings>({
 	chartTime: "1h",
 	emails: [pb.authStore.record?.email || ""],
-	temperatureUnit: "celsius",
-	networkUnit: "mbps",
-	diskUnit: "mbps",
+	// unitTemp: "celsius",
+	// unitNet: "mbps",
+	// unitDisk: "mbps",
 })
 // update local storage on change
 $userSettings.subscribe((value) => {

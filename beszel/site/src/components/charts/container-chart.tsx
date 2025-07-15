@@ -5,19 +5,17 @@ import {
 	useYAxisWidth,
 	cn,
 	formatShortDate,
-	decimalString,
 	chartMargin,
-	toFixedFloat,
-	getSizeAndUnit,
 	toFixedWithoutTrailingZeros,
-	convertNetworkSpeed,
+	formatBytes,
+	decimalString,
 } from "@/lib/utils"
 // import Spinner from '../spinner'
 import { useStore } from "@nanostores/react"
 import { $containerFilter, $userSettings } from "@/lib/stores"
 import { ChartData } from "@/types"
 import { Separator } from "../ui/separator"
-import { ChartType } from "@/lib/enums"
+import { ChartType, Unit } from "@/lib/enums"
 
 export default memo(function ContainerChart({
 	dataKey,
@@ -31,7 +29,7 @@ export default memo(function ContainerChart({
 	unit?: string
 }) {
 	const filter = useStore($containerFilter)
-	const userSettings = useStore($userSettings)
+	const userSettings = $userSettings.get()
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
 	const { containerData } = chartData
@@ -89,15 +87,11 @@ export default memo(function ContainerChart({
 				const val = toFixedWithoutTrailingZeros(value, 2) + unit
 				return updateYAxisWidth(val)
 			}
-		} else if (isNetChart) {
-			obj.tickFormatter = (value) => {
-				const { value: convertedValue, symbol } = convertNetworkSpeed(value, userSettings.networkUnit)
-				return updateYAxisWidth(`${toFixedFloat(convertedValue, 2)}${symbol}`)
-			}
 		} else {
-			obj.tickFormatter = (value) => {
-				const { v, u } = getSizeAndUnit(value, false)
-				return updateYAxisWidth(`${toFixedFloat(v, 2)}${u}`)
+			const chartUnit = isNetChart ? userSettings.unitNet : Unit.Bytes
+			obj.tickFormatter = (val) => {
+				const { value, unit } = formatBytes(val, isNetChart, chartUnit, true)
+				return updateYAxisWidth(decimalString(value, value >= 10 ? 0 : 1) + " " + unit)
 			}
 		}
 		// tooltip formatter
@@ -106,14 +100,14 @@ export default memo(function ContainerChart({
 				try {
 					const sent = item?.payload?.[key]?.ns ?? 0
 					const received = item?.payload?.[key]?.nr ?? 0
-					const { display: receivedDisplay } = convertNetworkSpeed(received, userSettings.networkUnit)
-					const { display: sentDisplay } = convertNetworkSpeed(sent, userSettings.networkUnit)
+					const { value: receivedValue, unit: receivedUnit } = formatBytes(received, true, userSettings.unitNet, true)
+					const { value: sentValue, unit: sentUnit } = formatBytes(sent, true, userSettings.unitNet, true)
 					return (
 						<span className="flex">
-							{receivedDisplay}
+							{decimalString(receivedValue)} {receivedUnit}
 							<span className="opacity-70 ms-0.5"> rx </span>
 							<Separator orientation="vertical" className="h-3 mx-1.5 bg-primary/40" />
-							{sentDisplay}
+							{decimalString(sentValue)} {sentUnit}
 							<span className="opacity-70 ms-0.5"> tx</span>
 						</span>
 					)
@@ -123,8 +117,8 @@ export default memo(function ContainerChart({
 			}
 		} else if (chartType === ChartType.Memory) {
 			obj.toolTipFormatter = (item: any) => {
-				const { v, u } = getSizeAndUnit(item.value, false)
-				return decimalString(v, 2) + u
+				const { value, unit } = formatBytes(item.value, false, Unit.Bytes, true)
+				return decimalString(value) + " " + unit
 			}
 		} else {
 			obj.toolTipFormatter = (item: any) => decimalString(item.value) + unit

@@ -13,9 +13,9 @@ import {
 	cn,
 	formatShortDate,
 	toFixedWithoutTrailingZeros,
-	decimalString,
 	chartMargin,
-	convertTemperature,
+	formatTemperature,
+	decimalString,
 } from "@/lib/utils"
 import { ChartData } from "@/types"
 import { memo, useMemo } from "react"
@@ -38,17 +38,13 @@ export default memo(function TemperatureChart({ chartData }: { chartData: ChartD
 			colors: Record<string, string>
 		}
 		const tempSums = {} as Record<string, number>
-		const unit = userSettings.temperatureUnit || "celsius"
-		
 		for (let data of chartData.systemStats) {
 			let newData = { created: data.created } as Record<string, number | string>
 			let keys = Object.keys(data.stats?.t ?? {})
 			for (let i = 0; i < keys.length; i++) {
 				let key = keys[i]
-				const celsiusTemp = data.stats.t![key]
-				const { value } = convertTemperature(celsiusTemp, unit)
-				newData[key] = value
-				tempSums[key] = (tempSums[key] ?? 0) + value
+				newData[key] = data.stats.t![key]
+				tempSums[key] = (tempSums[key] ?? 0) + newData[key]
 			}
 			newChartData.data.push(newData)
 		}
@@ -57,7 +53,7 @@ export default memo(function TemperatureChart({ chartData }: { chartData: ChartD
 			newChartData.colors[key] = `hsl(${((keys.indexOf(key) * 360) / keys.length) % 360}, 60%, 55%)`
 		}
 		return newChartData
-	}, [chartData, userSettings.temperatureUnit])
+	}, [chartData])
 
 	const colors = Object.keys(newChartData.colors)
 
@@ -78,10 +74,9 @@ export default memo(function TemperatureChart({ chartData }: { chartData: ChartD
 						className="tracking-tighter"
 						domain={[0, "auto"]}
 						width={yAxisWidth}
-						tickFormatter={(value) => {
-							const val = toFixedWithoutTrailingZeros(value, 2)
-							const { symbol } = convertTemperature(0, userSettings.temperatureUnit || "celsius")
-							return updateYAxisWidth(val + " " + symbol)
+						tickFormatter={(val) => {
+							const { value, unit } = formatTemperature(val, userSettings.unitTemp)
+							return updateYAxisWidth(toFixedWithoutTrailingZeros(value, 2) + " " + unit)
 						}}
 						tickLine={false}
 						axisLine={false}
@@ -96,8 +91,8 @@ export default memo(function TemperatureChart({ chartData }: { chartData: ChartD
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 								contentFormatter={(item) => {
-									const { symbol } = convertTemperature(0, userSettings.temperatureUnit || "celsius")
-									return decimalString(item.value) + " " + symbol
+									const { value, unit } = formatTemperature(item.value, userSettings.unitTemp)
+									return decimalString(value) + " " + unit
 								}}
 								filter={filter}
 							/>

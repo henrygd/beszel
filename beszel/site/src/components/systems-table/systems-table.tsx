@@ -68,11 +68,11 @@ import { useStore } from "@nanostores/react"
 import {
 	cn,
 	copyToClipboard,
-	decimalString,
 	isReadOnlyUser,
 	useLocalStorage,
-	convertTemperature,
-	convertNetworkSpeed,
+	formatTemperature,
+	decimalString,
+	formatBytes,
 } from "@/lib/utils"
 import AlertsButton from "../alerts/alert-button"
 import { $router, Link, navigate } from "../router"
@@ -135,6 +135,7 @@ export default function SystemsTable() {
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>("cols", {})
 	const [viewMode, setViewMode] = useLocalStorage<ViewMode>("viewMode", window.innerWidth > 1024 ? "table" : "grid")
+	const userSettings = useStore($userSettings)
 
 	const locale = i18n.locale
 
@@ -225,14 +226,16 @@ export default function SystemsTable() {
 				accessorFn: (originalRow) => originalRow.info.b || 0,
 				id: "net",
 				name: () => t`Net`,
-				size: 50,
+				size: 0,
 				Icon: EthernetIcon,
 				header: sortableHeader,
 				cell(info) {
-					const val = info.getValue() as number
-					const userSettings = useStore($userSettings)
-					const { display } = convertNetworkSpeed(val, userSettings.networkUnit)
-					return <span className="tabular-nums whitespace-nowrap">{display}</span>
+					const { value, unit } = formatBytes(info.getValue() as number, true, userSettings.unitNet, true)
+					return (
+						<span className="tabular-nums whitespace-nowrap">
+							{decimalString(value, value >= 100 ? 1 : 2)} {unit}
+						</span>
+					)
 				},
 			},
 			{
@@ -288,11 +291,10 @@ export default function SystemsTable() {
 					if (!val) {
 						return null
 					}
-					const userSettings = useStore($userSettings)
-					const { value, symbol } = convertTemperature(val, userSettings.temperatureUnit)
+					const { value, unit } = formatTemperature(val, userSettings.unitTemp)
 					return (
 						<span className={cn("tabular-nums whitespace-nowrap", viewMode === "table" && "ps-0.5")}>
-							{decimalString(value, value >= 100 ? 1 : 2)} {symbol}
+							{decimalString(value, value >= 100 ? 1 : 2)} {unit}
 						</span>
 					)
 				},

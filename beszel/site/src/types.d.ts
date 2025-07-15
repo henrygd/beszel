@@ -1,5 +1,5 @@
 import { RecordModel } from "pocketbase"
-import { Os } from "./lib/enums"
+import { Unit, Os } from "./lib/enums"
 
 // global window properties
 declare global {
@@ -20,22 +20,6 @@ export interface FingerprintRecord extends RecordModel {
 			name: string
 		}
 	}
-}
-
-// Unit preference types
-export type TemperatureUnit = "celsius" | "fahrenheit"
-export type SpeedUnit = "mbps" | "bps"
-
-// Unit conversion result types
-export interface TemperatureConversion {
-	value: number
-	symbol: string
-}
-
-export interface SpeedConversion {
-	value: number
-	symbol: string
-	display: string
 }
 
 export interface SystemRecord extends RecordModel {
@@ -221,9 +205,9 @@ export type UserSettings = {
 	chartTime: ChartTimes
 	emails?: string[]
 	webhooks?: string[]
-	temperatureUnit?: TemperatureUnit
-	networkUnit?: SpeedUnit
-	diskUnit?: SpeedUnit
+	unitTemp?: Unit
+	unitNet?: Unit
+	unitDisk?: Unit
 }
 
 type ChartDataContainer = {

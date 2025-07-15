@@ -17,10 +17,9 @@ type UserSettings struct {
 	ChartTime            string   `json:"chartTime"`
 	NotificationEmails   []string `json:"emails"`
 	NotificationWebhooks []string `json:"webhooks"`
-	TemperatureUnit      string   `json:"temperatureUnit"` // "celsius" or "fahrenheit"
-	NetworkUnit          string   `json:"networkUnit"`     // "mbps" (MB/s) or "bps"
-	DiskUnit             string   `json:"diskUnit"`        // "mbps" (MB/s) or "bps"
-	// Language             string   `json:"lang"`
+	// UnitTemp             uint8    `json:"unitTemp"` // 0 for Celsius, 1 for Fahrenheit
+	// UnitNet              uint8    `json:"unitNet"`  // 0 for bytes, 1 for bits
+	// UnitDisk             uint8    `json:"unitDisk"` // 0 for bytes, 1 for bits
 }
 
 func NewUserManager(app core.App) *UserManager {
@@ -42,13 +41,9 @@ func (um *UserManager) InitializeUserSettings(e *core.RecordEvent) error {
 	record := e.Record
 	// intialize settings with defaults
 	settings := UserSettings{
-		// Language:             "en",
 		ChartTime:            "1h",
 		NotificationEmails:   []string{},
 		NotificationWebhooks: []string{},
-		TemperatureUnit:      "celsius",
-		NetworkUnit:          "mbps",
-		DiskUnit:             "mbps",
 	}
 	record.UnmarshalJSONField("settings", &settings)
 	if len(settings.NotificationEmails) == 0 {

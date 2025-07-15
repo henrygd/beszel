@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro";
+import { t } from "@lingui/core/macro"
 
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
@@ -9,12 +9,15 @@ import {
 	toFixedWithoutTrailingZeros,
 	decimalString,
 	chartMargin,
+	formatBytes,
 } from "@/lib/utils"
 import { ChartData } from "@/types"
 import { memo } from "react"
+import { $userSettings } from "@/lib/stores"
 
 export default memo(function SwapChart({ chartData }: { chartData: ChartData }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
+	const userSettings = $userSettings.get()
 
 	if (chartData.systemStats.length === 0) {
 		return null
@@ -37,7 +40,10 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 						width={yAxisWidth}
 						tickLine={false}
 						axisLine={false}
-						tickFormatter={(value) => updateYAxisWidth(value + " GB")}
+						tickFormatter={(value) => {
+							const { value: convertedValue, unit } = formatBytes(value * 1024, false, userSettings.unitDisk, true)
+							return updateYAxisWidth(decimalString(convertedValue, value >= 10 ? 0 : 1) + " " + unit)
+						}}
 					/>
 					{xAxis(chartData)}
 					<ChartTooltip
@@ -46,7 +52,11 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 						content={
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
-								contentFormatter={(item) => decimalString(item.value) + " GB"}
+								contentFormatter={({ value }) => {
+									// mem values are supplied as GB
+									const { value: convertedValue, unit } = formatBytes(value * 1024, false, userSettings.unitDisk, true)
+									return decimalString(convertedValue, convertedValue >= 100 ? 1 : 2) + " " + unit
+								}}
 								// indicator="line"
 							/>
 						}
