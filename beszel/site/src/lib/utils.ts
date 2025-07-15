@@ -3,7 +3,16 @@ import { toast } from "@/components/ui/use-toast"
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { $alerts, $copyContent, $systems, $userSettings, pb } from "./stores"
-import { AlertInfo, AlertRecord, ChartTimeData, ChartTimes, FingerprintRecord, SystemRecord, TemperatureUnit, TemperatureConversion, SpeedUnit, SpeedConversion } from "@/types"
+import {
+	AlertInfo,
+	AlertRecord,
+	ChartTimeData,
+	ChartTimes,
+	FingerprintRecord,
+	SystemRecord,
+	TemperatureConversion,
+	DataUnitConversion,
+} from "@/types"
 import { RecordModel, RecordSubscription } from "pocketbase"
 import { WritableAtom } from "nanostores"
 import { timeDay, timeHour } from "d3-time"
@@ -11,6 +20,7 @@ import { useEffect, useState } from "react"
 import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from "lucide-react"
 import { EthernetIcon, HourglassIcon, ThermometerIcon } from "@/components/ui/icons"
 import { prependBasePath } from "@/components/router"
+import { DataUnit, TemperatureUnit } from "./enums"
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -230,7 +240,7 @@ export function toFixedWithoutTrailingZeros(num: number, digits: number) {
 }
 
 export function toFixedFloat(num: number, digits: number) {
-	return parseFloat(num.toFixed(digits))
+	return parseFloat((digits === 0 ? Math.ceil(num) : num).toFixed(digits))
 }
 
 let decimalFormatters: Map<number, Intl.NumberFormat> = new Map()
@@ -266,106 +276,69 @@ export function useLocalStorage<T>(key: string, defaultValue: T) {
 	return [value, setValue]
 }
 
-/** Convert temperature from Celsius to the specified unit */
-export function convertTemperature(
-	celsius: number,
-	unit: TemperatureUnit = "celsius"
-): TemperatureConversion {
-	switch (unit) {
-		case "fahrenheit":
-			return { value: (celsius * 9) / 5 + 32, symbol: "°F" }
-		default:
-			return { value: celsius, symbol: "°C" }
+export function convertTemperature(celsius: number, unit = TemperatureUnit.Celsius): TemperatureConversion {
+	const userSettings = $userSettings.get()
+	unit ||= userSettings.unitTemp || TemperatureUnit.Celsius
+	// need loose equality check due to form data being strings
+	if (unit == TemperatureUnit.Fahrenheit) {
+		return {
+			value: celsius * 1.8 + 32,
+			unit: "°F",
+		}
+	}
+	return {
+		value: celsius,
+		unit: "°C",
 	}
 }
 
-/** Convert network speed from MB/s to the specified unit  */
-export function convertNetworkSpeed(
-	mbps: number,
-	unit: SpeedUnit = "mbps"
-): SpeedConversion {
-	switch (unit) {
-		case "bps": {
-			const bps = mbps * 8 * 1_000_000 // Convert MB/s to bits per second
+export function formatBytes(
+	size: number,
+	perSecond = false,
+	unit = DataUnit.Bytes,
+	isMegabytes = false
+): DataUnitConversion {
+	// Convert MB to bytes if isMegabytes is true
+	if (isMegabytes) size *= 1024 * 1024
 
-			// Format large numbers appropriately
-			if (bps >= 1_000_000_000) {
-				return {
-					value: bps / 1_000_000_000,
-					symbol: " Gbps",
-					display: `${decimalString(bps / 1_000_000_000, bps >= 10_000_000_000 ? 0 : 1)} Gbps`,
-				}
-			} else if (bps >= 1_000_000) {
-				return {
-					value: bps / 1_000_000,
-					symbol: " Mbps",
-					display: `${decimalString(bps / 1_000_000, bps >= 10_000_000 ? 0 : 1)} Mbps`,
-				}
-			} else if (bps >= 1_000) {
-				return {
-					value: bps / 1_000,
-					symbol: " Kbps",
-					display: `${decimalString(bps / 1_000, bps >= 10_000 ? 0 : 1)} Kbps`,
-				}
-			} else {
-				return {
-					value: bps,
-					symbol: " bps",
-					display: `${Math.round(bps)} bps`,
-				}
-			}
-		}
-		default:
+	// need loose equality check due to form data being strings
+	if (unit == DataUnit.Bits) {
+		const bits = size * 8
+		const suffix = perSecond ? "ps" : ""
+		if (bits < 1000) return { value: bits, unit: `b${suffix}` }
+		if (bits < 1_000_000) return { value: bits / 1_000, unit: `Kb${suffix}` }
+		if (bits < 1_000_000_000)
 			return {
-				value: mbps,
-				symbol: " MB/s",
-				display: `${decimalString(mbps, mbps >= 100 ? 1 : 2)} MB/s`,
+				value: bits / 1_000_000,
+				unit: `Mb${suffix}`,
 			}
+		if (bits < 1_000_000_000_000)
+			return {
+				value: bits / 1_000_000_000,
+				unit: `Gb${suffix}`,
+			}
+		return {
+			value: bits / 1_000_000_000_000,
+			unit: `Tb${suffix}`,
+		}
 	}
-}
 
-/** Convert disk speed from MB/s to the specified unit  */
-export function convertDiskSpeed(
-	mbps: number,
-	unit: SpeedUnit = "mbps"
-): SpeedConversion {
-	switch (unit) {
-		case "bps": {
-			const bps = mbps * 8 * 1_000_000 // Convert MB/s to bits per second
-
-			// Format large numbers appropriately
-			if (bps >= 1_000_000_000) {
-				return {
-					value: bps / 1_000_000_000,
-					symbol: " Gbps",
-					display: `${decimalString(bps / 1_000_000_000, bps >= 10_000_000_000 ? 0 : 1)} Gbps`,
-				}
-			} else if (bps >= 1_000_000) {
-				return {
-					value: bps / 1_000_000,
-					symbol: " Mbps",
-					display: `${decimalString(bps / 1_000_000, bps >= 10_000_000 ? 0 : 1)} Mbps`,
-				}
-			} else if (bps >= 1_000) {
-				return {
-					value: bps / 1_000,
-					symbol: " Kbps",
-					display: `${decimalString(bps / 1_000, bps >= 10_000 ? 0 : 1)} Kbps`,
-				}
-			} else {
-				return {
-					value: bps,
-					symbol: " bps",
-					display: `${Math.round(bps)} bps`,
-				}
-			}
+	const suffix = perSecond ? "/s" : ""
+	if (size < 100) return { value: size, unit: `B${suffix}` }
+	if (size < 1000 * 1024) return { value: size / 1024, unit: `KB${suffix}` }
+	if (size < 1000 * 1024 ** 2)
+		return {
+			value: size / 1024 ** 2,
+			unit: `MB${suffix}`,
 		}
-		default:
-			return {
-				value: mbps,
-				symbol: " MB/s",
-				display: `${decimalString(mbps, mbps >= 100 ? 1 : 2)} MB/s`,
-			}
+	if (size < 1000 * 1024 ** 3)
+		return {
+			value: size / 1024 ** 3,
+			unit: `GB${suffix}`,
+		}
+	return {
+		value: size / 1024 ** 4,
+		unit: `TB${suffix}`,
 	}
 }
 

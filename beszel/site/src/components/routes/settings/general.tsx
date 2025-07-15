@@ -11,7 +11,7 @@ import { useState } from "react"
 import languages from "@/lib/languages"
 import { dynamicActivate } from "@/lib/i18n"
 import { useLingui } from "@lingui/react/macro"
-// import { setLang } from "@/lib/i18n"
+import { DataUnit, TemperatureUnit } from "@/lib/enums"
 
 export default function SettingsProfilePage({ userSettings }: { userSettings: UserSettings }) {
 	const [isLoading, setIsLoading] = useState(false)
@@ -107,51 +107,63 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 							<Trans>Unit preferences</Trans>
 						</h3>
 						<p className="text-sm text-muted-foreground leading-relaxed">
-							<Trans>Adjust Display units for metrics.</Trans>
+							<Trans>Change display units for metrics.</Trans>
 						</p>
 					</div>
-					<div className="space-y-4">
+					<div className="grid sm:grid-cols-3 gap-4">
 						<div className="space-y-2">
-							<Label className="block" htmlFor="temperatureUnit">
+							<Label className="block" htmlFor="unitTemp">
 								<Trans>Temperature unit</Trans>
 							</Label>
-							<Select name="temperatureUnit" key={userSettings.temperatureUnit} defaultValue={userSettings.temperatureUnit || "celsius"}>
-								<SelectTrigger id="temperatureUnit">
+							<Select
+								name="unitTemp"
+								key={userSettings.unitTemp}
+								defaultValue={userSettings.unitTemp?.toString() || String(TemperatureUnit.Celsius)}
+							>
+								<SelectTrigger id="unitTemp">
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="celsius">Celsius (°C)</SelectItem>
-									<SelectItem value="fahrenheit">Fahrenheit (°F)</SelectItem>
+									<SelectItem value={String(TemperatureUnit.Celsius)}>Celsius (°C)</SelectItem>
+									<SelectItem value={String(TemperatureUnit.Fahrenheit)}>Fahrenheit (°F)</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>
 
 						<div className="space-y-2">
-							<Label className="block" htmlFor="networkUnit">
+							<Label className="block" htmlFor="unitTemp">
 								<Trans>Network unit</Trans>
 							</Label>
-							<Select name="networkUnit" key={userSettings.networkUnit} defaultValue={userSettings.networkUnit || "mbps"}>
-								<SelectTrigger id="networkUnit">
+							<Select
+								name="unitNet"
+								key={userSettings.unitNet}
+								defaultValue={userSettings.unitNet?.toString() ?? String(DataUnit.Bytes)}
+							>
+								<SelectTrigger id="unitTemp">
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="mbps">MB/s (Megabytes per second)</SelectItem>
-									<SelectItem value="bps">bps (Bits per second)</SelectItem>
+									<SelectItem value={String(DataUnit.Bytes)}>Bytes (KB/s, MB/s, GB/s)</SelectItem>
+									<SelectItem value={String(DataUnit.Bits)}>Bits (kbps, Mbps, Gbps)</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>
 
 						<div className="space-y-2">
-							<Label className="block" htmlFor="diskUnit">
+							<Label className="block" htmlFor="unitDisk">
 								<Trans>Disk unit</Trans>
 							</Label>
-							<Select name="diskUnit" key={userSettings.diskUnit} defaultValue={userSettings.diskUnit || "mbps"}>
-								<SelectTrigger id="diskUnit">
+							<Select
+								name="unitDisk"
+								key={userSettings.unitDisk}
+								defaultValue={userSettings.unitDisk?.toString() ?? String(DataUnit.Bytes)}
+							>
+								<SelectTrigger id="unitDisk">
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									<SelectItem value="mbps">MB/s (Megabytes per second)</SelectItem>
-									<SelectItem value="bps">bps (Bits per second)</SelectItem>
+									<SelectItem value={String(DataUnit.Bytes)}>Bytes (KB/s, MB/s, GB/s)</SelectItem>
+									<SelectItem value={String(DataUnit.Bits)}>Bits (kbps, Mbps, Gbps)</SelectItem>
 								</SelectContent>
 							</Select>
 						</div>

@@ -11,3 +11,13 @@ export enum ChartType {
 	Network,
 	CPU,
 }
+
+export enum DataUnit {
+	Bytes,
+	Bits,
+}
+
+export enum TemperatureUnit {
+	Celsius,
+	Fahrenheit,
+}
