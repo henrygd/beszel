@@ -1,5 +1,5 @@
 import { RecordModel } from "pocketbase"
-import { Os } from "./lib/enums"
+import { Unit, Os } from "./lib/enums"
 
 // global window properties
 declare global {
@@ -207,6 +207,9 @@ export type UserSettings = {
 	chartTime: ChartTimes
 	emails?: string[]
 	webhooks?: string[]
+	unitTemp?: Unit
+	unitNet?: Unit
+	unitDisk?: Unit
 }
 
 type ChartDataContainer = {
