@@ -49,6 +49,7 @@ msgstr "30日間"
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "アクション"
 
@@ -76,9 +77,6 @@ msgstr "URLを追加"
 msgid "Adjust display options for charts."
 msgstr "チャートの表示オプションを調整します。"
 
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
@@ -186,7 +184,7 @@ msgstr "詳細についてはログを確認してください。"
 msgid "Check your notification service"
 msgstr "通知サービスを確認してください"
 
-#: src/components/add-system.tsx
+#: src/components/ui/input-copy.tsx
 msgid "Click to copy"
 msgstr "クリックしてコピー"
 
@@ -213,26 +211,46 @@ msgid "Copied to clipboard"
 msgstr "クリップボードにコピーされました"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
 msgstr "docker compose をコピー"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
 msgstr "docker run をコピー"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Environment variables"
+msgid "Copy env"
+msgstr "環境変数をコピー"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Copy host"
 msgstr "ホストをコピー"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
 msgstr "Linuxコマンドをコピー"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "テキストをコピー"
+
+#: src/components/add-system.tsx
+msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
+msgstr "下記のエージェントのインストールコマンドをコピーするか、<0>ユニバーサルトークン</0>を使用してエージェントを自動登録してください。"
+
+#: src/components/add-system.tsx
+msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
+msgstr "下記のエージェントの<0>docker-compose.yml</0>内容をコピーするか、<1>ユニバーサルトークン</1>を使用してエージェントを自動登録してください。"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy YAML"
+msgstr "YAMLをコピー"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "CPU"
@@ -265,6 +283,10 @@ msgstr "デフォルトの期間"
 #: src/components/systems-table/systems-table.tsx
 msgid "Delete"
 msgstr "削除"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Delete fingerprint"
+msgstr "フィンガープリントを削除"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Disk"
@@ -329,6 +351,7 @@ msgstr "パスワードをリセットするためにメールアドレスを入
 msgid "Enter email address..."
 msgstr "メールアドレスを入力..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/login/auth-form.tsx
@@ -376,6 +399,10 @@ msgstr "アラートの更新に失敗しました"
 msgid "Filter..."
 msgstr "フィルター..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Fingerprint"
+msgstr ""
+
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "<0>{min}</0> {min, plural, one {分} other {分}}の間"
@@ -399,6 +426,7 @@ msgid "Grid"
 msgstr "グリッド"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
 msgstr "Homebrew コマンド"
@@ -420,6 +448,16 @@ msgstr "無効なメールアドレスです。"
 msgid "Kernel"
 msgstr "カーネル"
 
+#. Load average 15 minutes
+#: src/components/systems-table/systems-table.tsx
+msgid "L15"
+msgstr ""
+
+#. Load average 5 minutes
+#: src/components/systems-table/systems-table.tsx
+msgid "L5"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "言語"
@@ -432,6 +470,14 @@ msgstr "レイアウト"
 #: src/components/mode-toggle.tsx
 msgid "Light"
 msgstr "ライト"
+
+#: src/lib/utils.ts
+msgid "Load Average 15m"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Load Average 5m"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -521,6 +567,8 @@ msgid "On each restart, systems in the database will be updated to match the sys
 msgstr "再起動のたびに、データベース内のシステムはファイルに定義されたシステムに一致するように更新されます。"
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
 msgstr "メニューを開く"
 
@@ -635,6 +683,10 @@ msgstr "パスワードをリセット"
 msgid "Resume"
 msgstr "再開"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Rotate token"
+msgstr "トークンをローテート"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Enterキーまたはカンマを使用してアドレスを保存します。空白のままにするとメール通知が無効になります。"
@@ -669,7 +721,6 @@ msgstr "送信"
 msgid "Sets the default time range for charts when a system is viewed."
 msgstr "システムを表示する際のチャートのデフォルトの時間範囲を設定します。"
 
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -709,6 +760,7 @@ msgstr "スワップ使用量"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "システム"
 
@@ -746,14 +798,6 @@ msgstr "テスト<0>URL</0>"
 msgid "Test notification sent"
 msgstr "テスト通知が送信されました"
 
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
-msgstr "接続するにはエージェントがシステム上で実行されている必要があります。以下のエージェントのインストールコマンドをコピーしてください。"
-
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
-msgstr "接続するにはエージェントがシステム上で実行されている必要があります。以下のエージェント用<0>docker-compose.yml</0>をコピーしてください。"
-
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "その後、バックエンドにログインして、ユーザーテーブルでユーザーアカウントのパスワードをリセットしてください。"
@@ -783,6 +827,33 @@ msgstr "グリッドを切り替え"
 msgid "Toggle theme"
 msgstr "テーマを切り替え"
 
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token"
+msgstr "トークン"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "Tokens & Fingerprints"
+msgstr "トークンとフィンガープリント"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
+msgstr "トークンはエージェントの接続と登録を可能にします。フィンガープリントは各システム固有の安定した識別子で、初回接続時に設定されます。"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
+msgstr "トークンとフィンガープリントは、ハブへのWebSocket接続の認証に使用されます。"
+
+#: src/lib/utils.ts
+msgid "Triggers when 15 minute load average exceeds a threshold"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Triggers when 5 minute load average exceeds a threshold"
+msgstr ""
+
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "センサーがしきい値を超えたときにトリガーされます"
@@ -806,6 +877,10 @@ msgstr "ステータスが上から下に切り替わるときにトリガーさ
 #: src/lib/utils.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "ディスクの使用量がしきい値を超えたときにトリガーされます"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Universal token"
+msgstr "ユニバーサルトークン"
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx
@@ -862,7 +937,12 @@ msgstr "翻訳をさらに良くするためにご協力いただけますか？
 msgid "Webhook / Push notifications"
 msgstr "Webhook / プッシュ通知"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
+msgstr "有効にすると、このトークンはエージェントが事前のシステム作成なしに自己登録することを可能にします。1時間後またはハブの再起動時に期限切れになります。"
+
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
 msgstr "Windows コマンド"

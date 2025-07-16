@@ -49,6 +49,7 @@ msgstr "30 gün"
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "Eylemler"
 
@@ -76,9 +77,6 @@ msgstr "URL Ekle"
 msgid "Adjust display options for charts."
 msgstr "Grafikler için görüntüleme seçeneklerini ayarlayın."
 
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
@@ -186,7 +184,7 @@ msgstr "Daha fazla ayrıntı için günlükleri kontrol edin."
 msgid "Check your notification service"
 msgstr "Bildirim hizmetinizi kontrol edin"
 
-#: src/components/add-system.tsx
+#: src/components/ui/input-copy.tsx
 msgid "Click to copy"
 msgstr "Kopyalamak için tıklayın"
 
@@ -213,26 +211,46 @@ msgid "Copied to clipboard"
 msgstr "Panoya kopyalandı"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
 msgstr "Docker compose kopyala"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
 msgstr "Docker run kopyala"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Environment variables"
+msgid "Copy env"
+msgstr "Ortam değişkenlerini kopyala"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Copy host"
 msgstr "Ana bilgisayarı kopyala"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
 msgstr "Linux komutunu kopyala"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Metni kopyala"
+
+#: src/components/add-system.tsx
+msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
+msgstr "Aşağıdaki agent için kurulum komutunu kopyalayın veya <0>evrensel token</0> ile agentları otomatik olarak kaydedin."
+
+#: src/components/add-system.tsx
+msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
+msgstr "Aşağıdaki agent için <0>docker-compose.yml</0> içeriğini kopyalayın veya <1>evrensel token</1> ile agentları otomatik olarak kaydedin."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy YAML"
+msgstr "YAML'ı kopyala"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "CPU"
@@ -265,6 +283,10 @@ msgstr "Varsayılan zaman dilimi"
 #: src/components/systems-table/systems-table.tsx
 msgid "Delete"
 msgstr "Sil"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Delete fingerprint"
+msgstr "Parmak izini sil"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Disk"
@@ -329,6 +351,7 @@ msgstr "Şifreyi sıfırlamak için e-posta adresini girin"
 msgid "Enter email address..."
 msgstr "E-posta adresini girin..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/login/auth-form.tsx
@@ -376,6 +399,10 @@ msgstr "Uyarı güncellenemedi"
 msgid "Filter..."
 msgstr "Filtrele..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Fingerprint"
+msgstr ""
+
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "<0>{min}</0> {min, plural, one {dakika} other {dakika}} için"
@@ -399,6 +426,7 @@ msgid "Grid"
 msgstr "Izgara"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
 msgstr "Homebrew komutu"
@@ -420,6 +448,16 @@ msgstr "Geçersiz e-posta adresi."
 msgid "Kernel"
 msgstr "Çekirdek"
 
+#. Load average 15 minutes
+#: src/components/systems-table/systems-table.tsx
+msgid "L15"
+msgstr ""
+
+#. Load average 5 minutes
+#: src/components/systems-table/systems-table.tsx
+msgid "L5"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Dil"
@@ -432,6 +470,14 @@ msgstr "Düzen"
 #: src/components/mode-toggle.tsx
 msgid "Light"
 msgstr "Açık"
+
+#: src/lib/utils.ts
+msgid "Load Average 15m"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Load Average 5m"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -521,6 +567,8 @@ msgid "On each restart, systems in the database will be updated to match the sys
 msgstr "Her yeniden başlatmada, veritabanındaki sistemler dosyada tanımlanan sistemlerle eşleşecek şekilde güncellenecektir."
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
 msgstr "Menüyü aç"
 
@@ -635,6 +683,10 @@ msgstr "Şifreyi Sıfırla"
 msgid "Resume"
 msgstr "Devam et"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Rotate token"
+msgstr "Token'ı döndür"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Adresleri enter tuşu veya virgül ile kaydedin. E-posta bildirimlerini devre dışı bırakmak için boş bırakın."
@@ -669,7 +721,6 @@ msgstr "Gönderildi"
 msgid "Sets the default time range for charts when a system is viewed."
 msgstr "Bir sistem görüntülendiğinde grafikler için varsayılan zaman aralığını ayarlar."
 
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -709,6 +760,7 @@ msgstr "Takas Kullanımı"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "Sistem"
 
@@ -746,14 +798,6 @@ msgstr "Test <0>URL</0>"
 msgid "Test notification sent"
 msgstr "Test bildirimi gönderildi"
 
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
-msgstr "Bağlanmak için aracının sistemde çalışıyor olması gerekir. Aşağıdaki aracı kurulum komutunu kopyalayın."
-
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
-msgstr "Bağlanmak için aracının sistemde çalışıyor olması gerekir. Aşağıdaki <0>docker-compose.yml</0> dosyasını kopyalayın."
-
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Ardından arka uca giriş yapın ve kullanıcılar tablosunda kullanıcı hesabı şifrenizi sıfırlayın."
@@ -783,6 +827,33 @@ msgstr "Izgarayı değiştir"
 msgid "Toggle theme"
 msgstr "Temayı değiştir"
 
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token"
+msgstr "Token"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "Tokens & Fingerprints"
+msgstr "Token'lar ve Parmak İzleri"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
+msgstr "Token'lar agentların bağlanıp kaydolmasına izin verir. Parmak izleri her sisteme özgü kararlı tanımlayıcılardır ve ilk bağlantıda ayarlanır."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
+msgstr "Token'lar ve parmak izleri hub'a WebSocket bağlantılarını doğrulamak için kullanılır."
+
+#: src/lib/utils.ts
+msgid "Triggers when 15 minute load average exceeds a threshold"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Triggers when 5 minute load average exceeds a threshold"
+msgstr ""
+
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Herhangi bir sensör bir eşiği aştığında tetiklenir"
@@ -806,6 +877,10 @@ msgstr "Durum yukarı ve aşağı arasında değiştiğinde tetiklenir"
 #: src/lib/utils.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Herhangi bir diskin kullanımı bir eşiği aştığında tetiklenir"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Universal token"
+msgstr "Evrensel token"
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx
@@ -862,7 +937,12 @@ msgstr "Çevirilerimizi daha iyi hale getirmemize yardımcı olmak ister misiniz
 msgid "Webhook / Push notifications"
 msgstr "Webhook / Anlık bildirimler"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
+msgstr "Etkinleştirildiğinde, bu token agentların önceden sistem oluşturmadan kendilerini kaydetmelerine izin verir. Bir saat sonra veya hub yeniden başlatıldığında sona erer."
+
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
 msgstr "Windows komutu"

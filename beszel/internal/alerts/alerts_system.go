@@ -2,11 +2,11 @@ package alerts
 
 import (
 	"beszel/internal/entities/system"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
-	"github.com/goccy/go-json"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/types"
@@ -54,6 +54,12 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			}
 			val = data.Info.DashboardTemp
 			unit = "°C"
+		case "LoadAvg5":
+			val = data.Info.LoadAvg5
+			unit = ""
+		case "LoadAvg15":
+			val = data.Info.LoadAvg15
+			unit = ""
 		}
 
 		triggered := alertRecord.GetBool("triggered")
@@ -190,6 +196,10 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 					}
 					alert.mapSums[key] += temp
 				}
+			case "LoadAvg5":
+				alert.val += stats.LoadAvg5
+			case "LoadAvg15":
+				alert.val += stats.LoadAvg15
 			default:
 				continue
 			}
@@ -246,6 +256,10 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 	// change Disk to Disk usage
 	if alert.name == "Disk" {
 		alert.name += " usage"
+	}
+	// format LoadAvg5 and LoadAvg15
+	if after, ok := strings.CutPrefix(alert.name, "LoadAvg"); ok {
+		alert.name = after + "m Load"
 	}
 
 	// make title alert name lowercase if not CPU

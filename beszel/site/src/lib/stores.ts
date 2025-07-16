@@ -32,6 +32,9 @@ export const $userSettings = map<UserSettings>({
 		yellow: 65,
 		red: 90,
 	},
+	// unitTemp: "celsius",
+	// unitNet: "mbps",
+	// unitDisk: "mbps",
 })
 // update local storage on change
 $userSettings.subscribe((value) => {

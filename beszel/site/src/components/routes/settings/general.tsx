@@ -13,6 +13,7 @@ import { dynamicActivate } from "@/lib/i18n"
 import { useLingui } from "@lingui/react/macro"
 import { Input } from "@/components/ui/input"
 // import { setLang } from "@/lib/i18n"
+import { Unit } from "@/lib/enums"
 
 export default function SettingsProfilePage({ userSettings }: { userSettings: UserSettings }) {
 	const [isLoading, setIsLoading] = useState(false)
@@ -157,6 +158,88 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 						<Trans>Save Settings</Trans>
 					</Button>
 				</div>
+							<Trans>Unit preferences</Trans>
+						</h3>
+						<p className="text-sm text-muted-foreground leading-relaxed">
+							<Trans>Change display units for metrics.</Trans>
+						</p>
+					</div>
+					<div className="grid sm:grid-cols-3 gap-4">
+						<div className="space-y-2">
+							<Label className="block" htmlFor="unitTemp">
+								<Trans>Temperature unit</Trans>
+							</Label>
+							<Select
+								name="unitTemp"
+								key={userSettings.unitTemp}
+								defaultValue={userSettings.unitTemp?.toString() || String(Unit.Celsius)}
+							>
+								<SelectTrigger id="unitTemp">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value={String(Unit.Celsius)}>
+										<Trans>Celsius (°C)</Trans>
+									</SelectItem>
+									<SelectItem value={String(Unit.Fahrenheit)}>
+										<Trans>Fahrenheit (°F)</Trans>
+									</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+
+						<div className="space-y-2">
+							<Label className="block" htmlFor="unitNet">
+								<Trans>Network unit</Trans>
+							</Label>
+							<Select
+								name="unitNet"
+								key={userSettings.unitNet}
+								defaultValue={userSettings.unitNet?.toString() ?? String(Unit.Bytes)}
+							>
+								<SelectTrigger id="unitNet">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value={String(Unit.Bytes)}>
+										<Trans>Bytes (KB/s, MB/s, GB/s)</Trans>
+									</SelectItem>
+									<SelectItem value={String(Unit.Bits)}>
+										<Trans>Bits (Kbps, Mbps, Gbps)</Trans>
+									</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+
+						<div className="space-y-2">
+							<Label className="block" htmlFor="unitDisk">
+								<Trans>Disk unit</Trans>
+							</Label>
+							<Select
+								name="unitDisk"
+								key={userSettings.unitDisk}
+								defaultValue={userSettings.unitDisk?.toString() ?? String(Unit.Bytes)}
+							>
+								<SelectTrigger id="unitDisk">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value={String(Unit.Bytes)}>
+										<Trans>Bytes (KB/s, MB/s, GB/s)</Trans>
+									</SelectItem>
+									<SelectItem value={String(Unit.Bits)}>
+										<Trans>Bits (Kbps, Mbps, Gbps)</Trans>
+									</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+					</div>
+				</div>
+				<Separator />
+				<Button type="submit" className="flex items-center gap-1.5 disabled:opacity-100" disabled={isLoading}>
+					{isLoading ? <LoaderCircleIcon className="h-4 w-4 animate-spin" /> : <SaveIcon className="h-4 w-4" />}
+					<Trans>Save Settings</Trans>
+				</Button>
 			</form>
 		</div>
 	)

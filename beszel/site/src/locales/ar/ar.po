@@ -49,6 +49,7 @@ msgstr "30 يومًا"
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "إجراءات"
 
@@ -76,9 +77,6 @@ msgstr "إضافة عنوان URL"
 msgid "Adjust display options for charts."
 msgstr "تعديل خيارات العرض للرسوم البيانية."
 
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
@@ -186,7 +184,7 @@ msgstr "تحقق من السجلات لمزيد من التفاصيل."
 msgid "Check your notification service"
 msgstr "تحقق من خدمة الإشعارات الخاصة بك"
 
-#: src/components/add-system.tsx
+#: src/components/ui/input-copy.tsx
 msgid "Click to copy"
 msgstr "انقر للنسخ"
 
@@ -213,26 +211,46 @@ msgid "Copied to clipboard"
 msgstr "تم النسخ إلى الحافظة"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
 msgstr "نسخ docker compose"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
 msgstr "نسخ docker run"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Environment variables"
+msgid "Copy env"
+msgstr "نسخ متغيرات البيئة"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Copy host"
 msgstr "نسخ المضيف"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
 msgstr "نسخ أمر لينكس"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "نسخ النص"
+
+#: src/components/add-system.tsx
+msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
+msgstr "انسخ أمر التثبيت للوكيل أدناه، أو سجل الوكلاء تلقائياً باستخدام <0>رمز مميز عالمي</0>."
+
+#: src/components/add-system.tsx
+msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
+msgstr "انسخ محتوى <0>docker-compose.yml</0> للوكيل أدناه، أو سجل الوكلاء تلقائياً باستخدام <1>رمز مميز عالمي</1>."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy YAML"
+msgstr "نسخ YAML"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "CPU"
@@ -265,6 +283,10 @@ msgstr "الفترة الزمنية الافتراضية"
 #: src/components/systems-table/systems-table.tsx
 msgid "Delete"
 msgstr "حذف"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Delete fingerprint"
+msgstr "حذف البصمة"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Disk"
@@ -329,6 +351,7 @@ msgstr "أدخل عنوان البريد الإشباكي لإعادة تعيي�
 msgid "Enter email address..."
 msgstr "أدخل عنوان البريد الإشباكي..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/login/auth-form.tsx
@@ -376,6 +399,10 @@ msgstr "فشل في تحديث التنبيه"
 msgid "Filter..."
 msgstr "تصفية..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Fingerprint"
+msgstr ""
+
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "لمدة <0>{min}</0> {min, plural, one {دقيقة} other {دقائق}}"
@@ -399,6 +426,7 @@ msgid "Grid"
 msgstr "شبكة"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
 msgstr "أمر Homebrew"
@@ -420,6 +448,16 @@ msgstr "عنوان البريد الإشباكي غير صالح."
 msgid "Kernel"
 msgstr "النواة"
 
+#. Load average 15 minutes
+#: src/components/systems-table/systems-table.tsx
+msgid "L15"
+msgstr ""
+
+#. Load average 5 minutes
+#: src/components/systems-table/systems-table.tsx
+msgid "L5"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "اللغة"
@@ -432,6 +470,14 @@ msgstr "التخطيط"
 #: src/components/mode-toggle.tsx
 msgid "Light"
 msgstr "فاتح"
+
+#: src/lib/utils.ts
+msgid "Load Average 15m"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Load Average 5m"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -521,6 +567,8 @@ msgid "On each restart, systems in the database will be updated to match the sys
 msgstr "في كل إعادة تشغيل، سيتم تحديث الأنظمة في قاعدة البيانات لتتطابق مع الأنظمة المعرفة في الملف."
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
 msgstr "فتح القائمة"
 
@@ -635,6 +683,10 @@ msgstr "إعادة تعيين كلمة المرور"
 msgid "Resume"
 msgstr "استئناف"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Rotate token"
+msgstr "تدوير الرمز المميز"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "احفظ العنوان باستخدام مفتاح الإدخال أو الفاصلة. اتركه فارغًا لتعطيل إشعارات البريد الإشباكي."
@@ -669,7 +721,6 @@ msgstr "تم الإرسال"
 msgid "Sets the default time range for charts when a system is viewed."
 msgstr "يحدد النطاق الزمني الافتراضي للرسوم البيانية عند عرض النظام."
 
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -709,6 +760,7 @@ msgstr "استخدام التبديل"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "النظام"
 
@@ -746,14 +798,6 @@ msgstr "اختبار <0>URL</0>"
 msgid "Test notification sent"
 msgstr "تم إرسال إشعار الاختبار"
 
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
-msgstr "يجب أن يكون الوكيل قيد التشغيل على النظام للاتصال. انسخ أمر التثبيت للوكيل أدناه."
-
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
-msgstr "يجب أن يكون الوكيل قيد التشغيل على النظام للاتصال. انسخ <0>docker-compose.yml</0> للوكيل أدناه."
-
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "ثم قم بتسجيل الدخول إلى الواجهة الخلفية وأعد تعيين كلمة مرور حساب المستخدم الخاص بك في جدول المستخدمين."
@@ -783,6 +827,33 @@ msgstr "تبديل الشبكة"
 msgid "Toggle theme"
 msgstr "تبديل السمة"
 
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token"
+msgstr "رمز مميز"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "Tokens & Fingerprints"
+msgstr "الرموز المميزة والبصمات"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
+msgstr "تسمح الرموز المميزة للوكلاء بالاتصال والتسجيل. البصمات هي معرفات مستقرة فريدة لكل نظام، يتم تعيينها عند الاتصال الأول."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
+msgstr "تُستخدم الرموز المميزة والبصمات للمصادقة على اتصالات WebSocket إلى المحور."
+
+#: src/lib/utils.ts
+msgid "Triggers when 15 minute load average exceeds a threshold"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Triggers when 5 minute load average exceeds a threshold"
+msgstr ""
+
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز أي مستشعر عتبة معينة"
@@ -806,6 +877,10 @@ msgstr "يتم التفعيل عندما يتغير الحالة بين التش
 #: src/lib/utils.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز استخدام أي قرص عتبة معينة"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Universal token"
+msgstr "رمز مميز عالمي"
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx
@@ -862,7 +937,12 @@ msgstr "هل تريد مساعدتنا في تحسين ترجماتنا؟ تحق
 msgid "Webhook / Push notifications"
 msgstr "إشعارات Webhook / Push"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
+msgstr "عند التفعيل، يسمح هذا الرمز المميز للوكلاء بالتسجيل الذاتي دون إنشاء نظام مسبق. ينتهي بعد ساعة واحدة أو عند إعادة تشغيل المحور."
+
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
 msgstr "أمر Windows"
