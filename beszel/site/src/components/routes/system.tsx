@@ -26,7 +26,7 @@ import {
 	getHostDisplayValue,
 	getPbTimestamp,
 	listen,
-	toFixedWithoutTrailingZeros,
+	toFixedFloat,
 	useLocalStorage,
 } from "@/lib/utils"
 import { Separator } from "../ui/separator"
@@ -478,7 +478,7 @@ export default function SystemDetail({ name }: { name: string }) {
 							chartData={chartData}
 							chartName="CPU Usage"
 							maxToggled={maxValues}
-							tickFormatter={(val) => toFixedWithoutTrailingZeros(val, 2) + "%"}
+							tickFormatter={(val) => toFixedFloat(val, 2) + "%"}
 							contentFormatter={({ value }) => decimalString(value) + "%"}
 						/>
 					</ChartCard>
@@ -533,7 +533,7 @@ export default function SystemDetail({ name }: { name: string }) {
 							maxToggled={maxValues}
 							tickFormatter={(val) => {
 								const { value, unit } = formatBytes(val, true, userSettings.unitDisk, true)
-								return decimalString(value, value >= 10 ? 0 : 1) + " " + unit
+								return toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit
 							}}
 							contentFormatter={({ value }) => {
 								const { value: convertedValue, unit } = formatBytes(value, true, userSettings.unitDisk, true)
@@ -555,8 +555,7 @@ export default function SystemDetail({ name }: { name: string }) {
 							maxToggled={maxValues}
 							tickFormatter={(val) => {
 								let { value, unit } = formatBytes(val, true, userSettings.unitNet, true)
-								// value = value >= 10 ? Math.ceil(value) : value
-								return decimalString(value, value >= 10 ? 0 : 1) + " " + unit
+								return toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit
 							}}
 							contentFormatter={({ value }) => {
 								const { value: convertedValue, unit } = formatBytes(value, true, userSettings.unitNet, true)
@@ -638,7 +637,7 @@ export default function SystemDetail({ name }: { name: string }) {
 										<AreaChartDefault
 											chartData={chartData}
 											chartName={`g.${id}.u`}
-											tickFormatter={(val) => toFixedWithoutTrailingZeros(val, 2) + "%"}
+											tickFormatter={(val) => toFixedFloat(val, 2) + "%"}
 											contentFormatter={({ value }) => decimalString(value) + "%"}
 										/>
 									</ChartCard>
@@ -654,7 +653,7 @@ export default function SystemDetail({ name }: { name: string }) {
 											max={gpu.mt}
 											tickFormatter={(val) => {
 												const { value, unit } = formatBytes(val, false, Unit.Bytes, true)
-												return decimalString(value, value >= 10 ? 0 : 1) + " " + unit
+												return toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit
 											}}
 											contentFormatter={({ value }) => {
 												const { value: convertedValue, unit } = formatBytes(value, false, Unit.Bytes, true)
@@ -699,7 +698,7 @@ export default function SystemDetail({ name }: { name: string }) {
 											maxToggled={maxValues}
 											tickFormatter={(val) => {
 												const { value, unit } = formatBytes(val, true, userSettings.unitDisk, true)
-												return decimalString(value, value >= 10 ? 0 : 1) + " " + unit
+												return toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit
 											}}
 											contentFormatter={({ value }) => {
 												const { value: convertedValue, unit } = formatBytes(value, true, userSettings.unitDisk, true)

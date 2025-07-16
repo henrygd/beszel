@@ -1,15 +1,7 @@
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
 import { memo, useMemo } from "react"
-import {
-	useYAxisWidth,
-	cn,
-	formatShortDate,
-	chartMargin,
-	toFixedWithoutTrailingZeros,
-	formatBytes,
-	decimalString,
-} from "@/lib/utils"
+import { useYAxisWidth, cn, formatShortDate, chartMargin, toFixedFloat, formatBytes, decimalString } from "@/lib/utils"
 // import Spinner from '../spinner'
 import { useStore } from "@nanostores/react"
 import { $containerFilter, $userSettings } from "@/lib/stores"
@@ -84,14 +76,14 @@ export default memo(function ContainerChart({
 		// tick formatter
 		if (chartType === ChartType.CPU) {
 			obj.tickFormatter = (value) => {
-				const val = toFixedWithoutTrailingZeros(value, 2) + unit
+				const val = toFixedFloat(value, 2) + unit
 				return updateYAxisWidth(val)
 			}
 		} else {
 			const chartUnit = isNetChart ? userSettings.unitNet : Unit.Bytes
 			obj.tickFormatter = (val) => {
 				const { value, unit } = formatBytes(val, isNetChart, chartUnit, true)
-				return updateYAxisWidth(decimalString(value, value >= 10 ? 0 : 1) + " " + unit)
+				return updateYAxisWidth(toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit)
 			}
 		}
 		// tooltip formatter

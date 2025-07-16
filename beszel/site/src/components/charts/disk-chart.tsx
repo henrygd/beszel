@@ -1,6 +1,6 @@
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
-import { useYAxisWidth, cn, formatShortDate, decimalString, chartMargin, formatBytes } from "@/lib/utils"
+import { useYAxisWidth, cn, formatShortDate, decimalString, chartMargin, formatBytes, toFixedFloat } from "@/lib/utils"
 import { ChartData } from "@/types"
 import { memo } from "react"
 import { useLingui } from "@lingui/react/macro"
@@ -48,7 +48,7 @@ export default memo(function DiskChart({
 						axisLine={false}
 						tickFormatter={(val) => {
 							const { value, unit } = formatBytes(val * 1024, false, Unit.Bytes, true)
-							return updateYAxisWidth(decimalString(value, value >= 10 ? 0 : 1) + " " + unit)
+							return updateYAxisWidth(toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit)
 						}}
 					/>
 					{xAxis(chartData)}

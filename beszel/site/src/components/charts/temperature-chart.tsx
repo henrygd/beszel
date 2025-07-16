@@ -12,7 +12,7 @@ import {
 	useYAxisWidth,
 	cn,
 	formatShortDate,
-	toFixedWithoutTrailingZeros,
+	toFixedFloat,
 	chartMargin,
 	formatTemperature,
 	decimalString,
@@ -76,7 +76,7 @@ export default memo(function TemperatureChart({ chartData }: { chartData: ChartD
 						width={yAxisWidth}
 						tickFormatter={(val) => {
 							const { value, unit } = formatTemperature(val, userSettings.unitTemp)
-							return updateYAxisWidth(toFixedWithoutTrailingZeros(value, 2) + " " + unit)
+							return updateYAxisWidth(toFixedFloat(value, 2) + " " + unit)
 						}}
 						tickLine={false}
 						axisLine={false}

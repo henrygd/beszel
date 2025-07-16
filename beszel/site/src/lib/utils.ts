@@ -226,16 +226,13 @@ export function useYAxisWidth() {
 	return { yAxisWidth, updateYAxisWidth }
 }
 
-export function toFixedWithoutTrailingZeros(num: number, digits: number) {
-	return parseFloat(num.toFixed(digits)).toString()
-}
-
+/** Format number to x decimal places, without trailing zeros */
 export function toFixedFloat(num: number, digits: number) {
 	return parseFloat((digits === 0 ? Math.ceil(num) : num).toFixed(digits))
 }
 
 let decimalFormatters: Map<number, Intl.NumberFormat> = new Map()
-/** Format number to x decimal places */
+/** Format number to x decimal places, maintaining trailing zeros */
 export function decimalString(num: number, digits = 2) {
 	if (digits === 0) {
 		return Math.ceil(num).toString()

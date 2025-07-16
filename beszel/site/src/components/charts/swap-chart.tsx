@@ -2,15 +2,7 @@ import { t } from "@lingui/core/macro"
 
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
-import {
-	useYAxisWidth,
-	cn,
-	formatShortDate,
-	toFixedWithoutTrailingZeros,
-	decimalString,
-	chartMargin,
-	formatBytes,
-} from "@/lib/utils"
+import { useYAxisWidth, cn, formatShortDate, decimalString, chartMargin, formatBytes, toFixedFloat } from "@/lib/utils"
 import { ChartData } from "@/types"
 import { memo } from "react"
 import { $userSettings } from "@/lib/stores"
@@ -37,13 +29,13 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 						direction="ltr"
 						orientation={chartData.orientation}
 						className="tracking-tighter"
-						domain={[0, () => toFixedWithoutTrailingZeros(chartData.systemStats.at(-1)?.stats.s ?? 0.04, 2)]}
+						domain={[0, () => toFixedFloat(chartData.systemStats.at(-1)?.stats.s ?? 0.04, 2)]}
 						width={yAxisWidth}
 						tickLine={false}
 						axisLine={false}
 						tickFormatter={(value) => {
 							const { value: convertedValue, unit } = formatBytes(value * 1024, false, userSettings.unitDisk, true)
-							return updateYAxisWidth(decimalString(convertedValue, value >= 10 ? 0 : 1) + " " + unit)
+							return updateYAxisWidth(toFixedFloat(convertedValue, value >= 10 ? 0 : 1) + " " + unit)
 						}}
 					/>
 					{xAxis(chartData)}
