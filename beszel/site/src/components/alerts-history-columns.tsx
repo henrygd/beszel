@@ -78,7 +78,7 @@ export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
     enableSorting: true,
   },
   {
-    accessorKey: "",
+    accessorKey: "create_date",
     header: ({ column }) => (
       <Button
         variant="ghost"
