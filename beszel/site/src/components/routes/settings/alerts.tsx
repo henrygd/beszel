@@ -98,7 +98,7 @@ export default function AlertsSettingsPage() {
 					</SheetHeader>
 					<MultiSystemAlertSheetContent
 						systems={systems}
-						alerts={alerts}
+						alerts={[]}
 						initialSystems={addAlertSystems}
 						onClose={() => setAddSheetOpen(false)}
 						hideSystemSelector={false}
