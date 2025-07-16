@@ -222,7 +222,7 @@ export default function SystemsTable() {
 				header: sortableHeader,
 			},
 			{
-				accessorFn: () => undefined, // not used for sorting anymore
+				accessorFn: (row) => (row.info.ns || 0) + (row.info.nr || 0),
 				id: "net",
 				name: () => t`Net`,
 				size: 0,
@@ -234,23 +234,21 @@ export default function SystemsTable() {
 					const b = (rowB.original.info.ns || 0) + (rowB.original.info.nr || 0)
 					return a - b
 				},
-          cell(info) {
+				cell(info) {
 					const system = info.row.original
 					const sent = system.info.ns || 0
 					const received = system.info.nr || 0
-          const userSettings = useStore($userSettings)
-					const { value, unit } = formatBytes(info.getValue() as number, true, userSettings.unitNet, true)
+					const userSettings = useStore($userSettings)
+					const sentFmt = formatBytes(sent, true, userSettings.unitNet, true)
+					const receivedFmt = formatBytes(received, true, userSettings.unitNet, true)
 					return (
-						<span
-							className={cn("tabular-nums whitespace-nowrap", {
-								"ps-1": viewMode === "table",
-							})}
-						>
-							<span className="text-green-600">↑</span> {formatBytes(sent)}{' '}
-							<span className="text-blue-600">↓</span> {formatBytes(received)}
+						<span className={cn("tabular-nums whitespace-nowrap", { "ps-1": viewMode === "table" })}>
+							<span className="text-green-600">↑</span> {Math.round(sentFmt.value)} {sentFmt.unit}{" "}
+							<span className="text-blue-600">↓</span> {Math.round(receivedFmt.value)} {receivedFmt.unit}
 						</span>
 					)
 				},
+			},
 			{
 				accessorFn: (originalRow) => originalRow.info.l5,
 				id: "l5",
