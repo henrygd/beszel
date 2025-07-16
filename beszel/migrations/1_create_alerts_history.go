@@ -13,6 +13,7 @@ func init() {
 			"type": "base",
 			"system": false,
 			"listRule": "",
+			"deleteRule": "",
 			"viewRule": ""
 			"fields": [
 				{
