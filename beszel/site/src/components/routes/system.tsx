@@ -11,7 +11,7 @@ import {
 	$temperatureFilter,
 } from "@/lib/stores"
 import { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord } from "@/types"
-import { ChartType, Os } from "@/lib/enums"
+import { ChartType, Unit, Os } from "@/lib/enums"
 import React, { lazy, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { Card, CardHeader, CardTitle, CardDescription } from "../ui/card"
 import { useStore } from "@nanostores/react"
@@ -21,9 +21,10 @@ import ChartTimeSelect from "../charts/chart-time-select"
 import {
 	chartTimeData,
 	cn,
+	decimalString,
+	formatBytes,
 	getHostDisplayValue,
 	getPbTimestamp,
-	getSizeAndUnit,
 	listen,
 	toFixedFloat,
 	useLocalStorage,
@@ -132,6 +133,7 @@ export default function SystemDetail({ name }: { name: string }) {
 	const [bottomSpacing, setBottomSpacing] = useState(0)
 	const [chartLoading, setChartLoading] = useState(true)
 	const isLongerChart = chartTime !== "1h"
+	const userSettings = $userSettings.get()
 
 	useEffect(() => {
 		document.title = `${name} / Beszel`
@@ -467,7 +469,13 @@ export default function SystemDetail({ name }: { name: string }) {
 						description={t`Average system-wide CPU utilization`}
 						cornerEl={maxValSelect}
 					>
-						<AreaChartDefault chartData={chartData} chartName="CPU Usage" maxToggled={maxValues} unit="%" />
+						<AreaChartDefault
+							chartData={chartData}
+							chartName="CPU Usage"
+							maxToggled={maxValues}
+							tickFormatter={(val) => toFixedFloat(val, 2) + "%"}
+							contentFormatter={({ value }) => decimalString(value) + "%"}
+						/>
 					</ChartCard>
 
 					{containerFilterBar && (
@@ -514,7 +522,19 @@ export default function SystemDetail({ name }: { name: string }) {
 						description={t`Throughput of root filesystem`}
 						cornerEl={maxValSelect}
 					>
-						<AreaChartDefault chartData={chartData} chartName="dio" maxToggled={maxValues} />
+						<AreaChartDefault
+							chartData={chartData}
+							chartName="dio"
+							maxToggled={maxValues}
+							tickFormatter={(val) => {
+								const { value, unit } = formatBytes(val, true, userSettings.unitDisk, true)
+								return toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit
+							}}
+							contentFormatter={({ value }) => {
+								const { value: convertedValue, unit } = formatBytes(value, true, userSettings.unitDisk, true)
+								return decimalString(convertedValue, convertedValue >= 100 ? 1 : 2) + " " + unit
+							}}
+						/>
 					</ChartCard>
 
 					<ChartCard
@@ -524,7 +544,19 @@ export default function SystemDetail({ name }: { name: string }) {
 						cornerEl={maxValSelect}
 						description={t`Network traffic of public interfaces`}
 					>
-						<AreaChartDefault chartData={chartData} chartName="bw" maxToggled={maxValues} />
+						<AreaChartDefault
+							chartData={chartData}
+							chartName="bw"
+							maxToggled={maxValues}
+							tickFormatter={(val) => {
+								let { value, unit } = formatBytes(val, true, userSettings.unitNet, true)
+								return toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit
+							}}
+							contentFormatter={({ value }) => {
+								const { value: convertedValue, unit } = formatBytes(value, true, userSettings.unitNet, true)
+								return decimalString(convertedValue, convertedValue >= 100 ? 1 : 2) + " " + unit
+							}}
+						/>
 					</ChartCard>
 
 					{containerFilterBar && containerData.length > 0 && (
@@ -589,10 +621,6 @@ export default function SystemDetail({ name }: { name: string }) {
 					<div className="grid xl:grid-cols-2 gap-4">
 						{Object.keys(systemStats.at(-1)?.stats.g ?? {}).map((id) => {
 							const gpu = systemStats.at(-1)?.stats.g?.[id] as GPUData
-							const sizeFormatter = (value: number, decimals?: number) => {
-								const { v, u } = getSizeAndUnit(value, false)
-								return toFixedFloat(v, decimals || 1) + u
-							}
 							return (
 								<div key={id} className="contents">
 									<ChartCard
@@ -601,7 +629,12 @@ export default function SystemDetail({ name }: { name: string }) {
 										title={`${gpu.n} ${t`Usage`}`}
 										description={t`Average utilization of ${gpu.n}`}
 									>
-										<AreaChartDefault chartData={chartData} chartName={`g.${id}.u`} unit="%" />
+										<AreaChartDefault
+											chartData={chartData}
+											chartName={`g.${id}.u`}
+											tickFormatter={(val) => toFixedFloat(val, 2) + "%"}
+											contentFormatter={({ value }) => decimalString(value) + "%"}
+										/>
 									</ChartCard>
 									<ChartCard
 										empty={dataEmpty}
@@ -613,8 +646,14 @@ export default function SystemDetail({ name }: { name: string }) {
 											chartData={chartData}
 											chartName={`g.${id}.mu`}
 											max={gpu.mt}
-											tickFormatter={sizeFormatter}
-											contentFormatter={(value) => sizeFormatter(value, 2)}
+											tickFormatter={(val) => {
+												const { value, unit } = formatBytes(val, false, Unit.Bytes, true)
+												return toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit
+											}}
+											contentFormatter={({ value }) => {
+												const { value: convertedValue, unit } = formatBytes(value, false, Unit.Bytes, true)
+												return decimalString(convertedValue) + " " + unit
+											}}
 										/>
 									</ChartCard>
 								</div>
@@ -648,7 +687,19 @@ export default function SystemDetail({ name }: { name: string }) {
 										description={t`Throughput of ${extraFsName}`}
 										cornerEl={maxValSelect}
 									>
-										<AreaChartDefault chartData={chartData} chartName={`efs.${extraFsName}`} maxToggled={maxValues} />
+										<AreaChartDefault
+											chartData={chartData}
+											chartName={`efs.${extraFsName}`}
+											maxToggled={maxValues}
+											tickFormatter={(val) => {
+												const { value, unit } = formatBytes(val, true, userSettings.unitDisk, true)
+												return toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit
+											}}
+											contentFormatter={({ value }) => {
+												const { value: convertedValue, unit } = formatBytes(value, true, userSettings.unitDisk, true)
+												return decimalString(convertedValue, convertedValue >= 100 ? 1 : 2) + " " + unit
+											}}
+										/>
 									</ChartCard>
 								</div>
 							)

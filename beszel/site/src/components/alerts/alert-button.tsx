@@ -39,13 +39,33 @@ export default memo(function AlertsButton({ system }: { system: SystemRecord }) 
 						/>
 					</Button>
 				</DialogTrigger>
-				<DialogContent className="max-h-full overflow-auto max-w-[35rem]">
+				<DialogContent className="max-h-full sm:max-h-[95svh] overflow-auto max-w-[37rem]">
 					{opened && <AlertDialogContent system={system} />}
 				</DialogContent>
 			</Dialog>
 		),
 		[opened, hasAlert]
 	)
+
+	// return useMemo(
+	// 	() => (
+	// 		<Sheet>
+	// 			<SheetTrigger asChild>
+	// 				<Button variant="ghost" size="icon" aria-label={t`Alerts`} data-nolink onClick={() => setOpened(true)}>
+	// 					<BellIcon
+	// 						className={cn("h-[1.2em] w-[1.2em] pointer-events-none", {
+	// 							"fill-primary": hasAlert,
+	// 						})}
+	// 					/>
+	// 				</Button>
+	// 			</SheetTrigger>
+	// 			<SheetContent className="max-h-full overflow-auto w-[35em] p-4 sm:p-5">
+	// 				{opened && <AlertDialogContent system={system} />}
+	// 			</SheetContent>
+	// 		</Sheet>
+	// 	),
+	// 	[opened, hasAlert]
+	// )
 })
 
 function AlertDialogContent({ system }: { system: SystemRecord }) {
