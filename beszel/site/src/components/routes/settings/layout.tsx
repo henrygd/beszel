@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useStore } from "@nanostores/react"
 import { $router } from "@/components/router.tsx"
 import { getPagePath, redirectPage } from "@nanostores/router"
-import { BellIcon, FileSlidersIcon, FingerprintIcon, SettingsIcon } from "lucide-react"
+import { BellIcon, FileSlidersIcon, FingerprintIcon, SettingsIcon, TriangleAlert} from "lucide-react"
 import { $userSettings, pb } from "@/lib/stores.ts"
 import { toast } from "@/components/ui/use-toast.ts"
 import { UserSettings } from "@/types.js"
@@ -16,6 +16,7 @@ import Notifications from "./notifications.tsx"
 import ConfigYaml from "./config-yaml.tsx"
 import { useLingui } from "@lingui/react/macro"
 import Fingerprints from "./tokens-fingerprints.tsx"
+import AlertsSettingsPage from "./alerts.tsx"
 
 export async function saveSettings(newSettings: Partial<UserSettings>) {
 	try {
@@ -58,6 +59,11 @@ export default function SettingsLayout() {
 			title: t`Notifications`,
 			href: getPagePath($router, "settings", { name: "notifications" }),
 			icon: BellIcon,
+		},
+		{
+			title: t`Alerts`,
+			href: getPagePath($router, "settings", { name: "alerts" }),
+			icon: TriangleAlert,
 		},
 		{
 			title: t`Tokens & Fingerprints`,
@@ -117,6 +123,8 @@ function SettingsContent({ name }: { name: string }) {
 			return <General userSettings={userSettings} />
 		case "notifications":
 			return <Notifications userSettings={userSettings} />
+		case "alerts":
+			return <AlertsSettingsPage />
 		case "config":
 			return <ConfigYaml />
 		case "tokens":

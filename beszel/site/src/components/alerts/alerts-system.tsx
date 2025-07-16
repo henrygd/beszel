@@ -28,41 +28,111 @@ const failedUpdateToast = () =>
 		variant: "destructive",
 	})
 
+// Extracted batch update logic for reuse
+export async function updateAlertsForSystems({
+  systems,
+  alertsBySystem,
+  alertName,
+  checked,
+  value,
+  min,
+  userId,
+  onAllDisabled,
+  systemAlerts,
+  allSystems
+}: {
+  systems: SystemRecord[],
+  alertsBySystem: Map<string, AlertRecord>,
+  alertName: string,
+  checked: boolean,
+  value: number,
+  min: number,
+  userId: string,
+  onAllDisabled?: () => void,
+  systemAlerts: AlertRecord[],
+  allSystems: SystemRecord[],
+}) {
+  try {
+    const batch = batchWrapper("alerts", 25)
+    let changed = false
+    const debugOps: any[] = []
+    for (const system of systems) {
+      const alert = alertsBySystem.get(system.id)
+      if (alert && !checked) {
+        debugOps.push({ op: 'remove', id: alert.id })
+        await batch.remove(alert.id)
+        changed = true
+      } else if (alert && checked) {
+        debugOps.push({ op: 'update', id: alert.id, value, min })
+        await batch.update(alert.id, { value, min, triggered: false })
+        changed = true
+      } else if (checked) {
+        debugOps.push({ op: 'create', system: system.id, user: userId, name: alertName, value, min })
+        await batch.create({
+          system: system.id,
+          user: userId,
+          name: alertName,
+          value: value,
+          min: min,
+        })
+        changed = true
+      }
+    }
+    console.debug('[updateAlertsForSystems] Batch ops:', debugOps)
+    await batch.send()
+    if (onAllDisabled && !checked && changed) {
+      // If all alerts for this name are deleted, call onAllDisabled
+      const remaining = systemAlerts.filter(a => a.name === alertName && !allSystems.some(s => s.id === a.system))
+      if (remaining.length === 0) {
+        onAllDisabled()
+      }
+    }
+  } catch (e) {
+    console.error('[updateAlertsForSystems] Batch error:', e)
+    failedUpdateToast()
+  }
+}
+
 export function SystemAlert({
-	system,
+	systems,
 	systemAlerts,
 	data,
+	onAllDisabled,
 }: {
-	system: SystemRecord
+	systems: SystemRecord[]
 	systemAlerts: AlertRecord[]
 	data: AlertData
+	onAllDisabled?: () => void
 }) {
-	const alert = systemAlerts.find((alert) => alert.name === data.name)
+	const alertsBySystem = useMemo(() => {
+		const map = new Map<string, AlertRecord>()
+		for (const alert of systemAlerts) {
+			map.set(alert.system, alert)
+		}
+		return map
+	}, [systemAlerts])
 
 	data.updateAlert = async (checked: boolean, value: number, min: number) => {
-		try {
-			if (alert && !checked) {
-				await pb.collection("alerts").delete(alert.id)
-			} else if (alert && checked) {
-				await pb.collection("alerts").update(alert.id, { value, min, triggered: false })
-			} else if (checked) {
-				pb.collection("alerts").create({
-					system: system.id,
-					user: pb.authStore.record!.id,
-					name: data.name,
-					value: value,
-					min: min,
-				})
-			}
-		} catch (e) {
-			failedUpdateToast()
-		}
+		await updateAlertsForSystems({
+			systems,
+			alertsBySystem,
+			alertName: data.name,
+			checked,
+			value,
+			min,
+			userId: pb.authStore.record!.id,
+			onAllDisabled,
+			systemAlerts,
+			allSystems: systems,
+		})
 	}
 
-	if (alert) {
+	// Set initial values based on the first system with an alert, or defaults
+	const firstAlert = systems.map(s => alertsBySystem.get(s.id)).find(Boolean)
+	if (firstAlert) {
 		data.checked = true
-		data.val = alert.value
-		data.min = alert.min || 1
+		data.val = firstAlert.value
+		data.min = firstAlert.min || 1
 	}
 
 	return <AlertContent data={data} />
@@ -249,12 +319,11 @@ function AlertContent({ data }: { data: AlertData }) {
 					<Suspense fallback={<div className="h-10" />}>
 						{!singleDescription && (
 							<div>
-								<p id={`v${name}`} className="text-sm block h-8">
+								<p id={`v${name}`} className="text-sm block h-10">
 									<Trans>
 										Average exceeds{" "}
 										<strong className="text-foreground">
-											{value}
-											{data.alert.unit}
+											{value} {data.alert.unit}
 										</strong>
 									</Trans>
 								</p>
@@ -276,7 +345,7 @@ function AlertContent({ data }: { data: AlertData }) {
 							</div>
 						)}
 						<div className={cn(singleDescription && "col-span-full lowercase")}>
-							<p id={`t${name}`} className="text-sm block h-8 first-letter:uppercase">
+							<p id={`t${name}`} className="text-sm block h-10 first-letter:uppercase">
 								{singleDescription && (
 									<>
 										{singleDescription}
