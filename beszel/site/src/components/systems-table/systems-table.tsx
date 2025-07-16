@@ -238,59 +238,48 @@ export default function SystemsTable() {
 					const l1 = system.info?.l1;
 					const l5 = system.info?.l5;
 					const l15 = system.info?.l15;
-					
+					const cores = system.info?.c || 1;
+
 					// If no load average data, return null
 					if (!l1 && !l5 && !l15) return null;
-					
+
 					const loadAverages = [
-						{ name: "1m", value: l1, color: "bg-orange-500" },
-						{ name: "5m", value: l5, color: "bg-blue-500" },
-						{ name: "15m", value: l15, color: "bg-purple-500" }
+						{ name: "1m", value: l1 },
+						{ name: "5m", value: l5 },
+						{ name: "15m", value: l15 }
 					].filter(la => la.value !== undefined);
-					
+
 					if (!loadAverages.length) return null;
-					
-					// Get core count for proper load average interpretation
-					const cores = system.info?.c || 1;
-					
+
+					function getDotColor(value: number) {
+						const normalized = value / cores;
+						if (normalized < 0.7) return "bg-green-500";
+						if (normalized < 1.0) return "bg-orange-500";
+						return "bg-red-600";
+					}
+
 					return (
-						<div className="flex flex-col gap-1 w-full">
-							{loadAverages.map((la) => {
-								const value = la.value || 0;
-								const percent = calculateLoadAveragePercent(value, cores);
-								
-								return (
-									<TooltipProvider key={la.name}>
-										<Tooltip>
-											<TooltipTrigger asChild>
-												<div className="flex items-center w-full cursor-pointer">
-													<span className="min-w-[2.5em] text-xs">{decimalString(value, 2)}</span>
-													<span className="grow min-w-8 block bg-muted h-[0.7em] relative rounded-sm overflow-hidden">
-														<span
-															className={cn(
-																"absolute inset-0 w-full h-full origin-left transition-transform duration-200",
-																la.color,
-																`opacity-${Math.round(getLoadAverageOpacity(value, cores) * 100)}`
-															)}
-															style={{
-																transform: `scalex(${percent / 100})`,
-															}}
-														></span>
-													</span>
-												</div>
-											</TooltipTrigger>
-											<TooltipContent side="top">
-												<div className="text-center">
-													<div className="font-medium">{t`${la.name}`}</div>
-													<div className="text-sm text-muted-foreground">
-														{decimalString(value, 2)}
-													</div>
-												</div>
-											</TooltipContent>
-										</Tooltip>
-									</TooltipProvider>
-								);
-							})}
+						<div className="flex items-center gap-2 w-full">
+							{loadAverages.map((la, idx) => (
+								<TooltipProvider key={la.name}>
+									<Tooltip>
+										<TooltipTrigger asChild>
+											<span className="flex items-center cursor-pointer">
+												<span className={cn("inline-block w-2 h-2 rounded-full mr-1", getDotColor(la.value || 0))} />
+												<span className="tabular-nums">
+													{decimalString(la.value || 0, 2)}
+												</span>
+												{idx < loadAverages.length - 1 && <span className="mx-1 text-muted-foreground">/</span>}
+											</span>
+										</TooltipTrigger>
+										<TooltipContent side="top">
+											<div className="text-center">
+												<div className="font-medium">{t`${la.name}`}</div>
+											</div>
+										</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
+							))}
 						</div>
 					);
 				},
