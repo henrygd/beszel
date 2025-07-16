@@ -2,10 +2,10 @@
 	"compilerOptions": {
 		"composite": true,
 		"tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
-		"target": "ES2021",
+		"target": "ES2022",
 		"useDefineForClassFields": true,
 		"module": "ESNext",
-		"lib": ["ES2021", "DOM", "DOM.Iterable"],
+		"lib": ["ES2022", "DOM", "DOM.Iterable"],
 		"skipLibCheck": true,
 		"baseUrl": ".",
 		"paths": {

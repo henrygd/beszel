@@ -254,5 +254,3 @@ func TestGetSSHKey(t *testing.T) {
 		}
 	})
 }
-
-// Helper function to create test records

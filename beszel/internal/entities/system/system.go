@@ -15,26 +15,29 @@ type NetworkInterfaceStats struct {
 }
 
 type Stats struct {
-	Cpu               float64                          `json:"cpu" cbor:"0,keyasint"`
-	MaxCpu            float64                          `json:"cpum,omitempty" cbor:"1,keyasint,omitempty"`
-	Mem               float64                          `json:"m" cbor:"2,keyasint"`
-	MemUsed           float64                          `json:"mu" cbor:"3,keyasint"`
-	MemPct            float64                          `json:"mp" cbor:"4,keyasint"`
-	MemBuffCache      float64                          `json:"mb" cbor:"5,keyasint"`
-	MemZfsArc         float64                          `json:"mz,omitempty" cbor:"6,keyasint,omitempty"` // ZFS ARC memory
-	Swap              float64                          `json:"s,omitempty" cbor:"7,keyasint,omitempty"`
-	SwapUsed          float64                          `json:"su,omitempty" cbor:"8,keyasint,omitempty"`
-	DiskTotal         float64                          `json:"d" cbor:"9,keyasint"`
-	DiskUsed          float64                          `json:"du" cbor:"10,keyasint"`
-	DiskPct           float64                          `json:"dp" cbor:"11,keyasint"`
-	DiskReadPs        float64                          `json:"dr" cbor:"12,keyasint"`
-	DiskWritePs       float64                          `json:"dw" cbor:"13,keyasint"`
-	MaxDiskReadPs     float64                          `json:"drm,omitempty" cbor:"14,keyasint,omitempty"`
-	MaxDiskWritePs    float64                          `json:"dwm,omitempty" cbor:"15,keyasint,omitempty"`
+	Cpu            float64             `json:"cpu" cbor:"0,keyasint"`
+	MaxCpu         float64             `json:"cpum,omitempty" cbor:"1,keyasint,omitempty"`
+	Mem            float64             `json:"m" cbor:"2,keyasint"`
+	MemUsed        float64             `json:"mu" cbor:"3,keyasint"`
+	MemPct         float64             `json:"mp" cbor:"4,keyasint"`
+	MemBuffCache   float64             `json:"mb" cbor:"5,keyasint"`
+	MemZfsArc      float64             `json:"mz,omitempty" cbor:"6,keyasint,omitempty"` // ZFS ARC memory
+	Swap           float64             `json:"s,omitempty" cbor:"7,keyasint,omitempty"`
+	SwapUsed       float64             `json:"su,omitempty" cbor:"8,keyasint,omitempty"`
+	DiskTotal      float64             `json:"d" cbor:"9,keyasint"`
+	DiskUsed       float64             `json:"du" cbor:"10,keyasint"`
+	DiskPct        float64             `json:"dp" cbor:"11,keyasint"`
+	DiskReadPs     float64             `json:"dr" cbor:"12,keyasint"`
+	DiskWritePs    float64             `json:"dw" cbor:"13,keyasint"`
+	MaxDiskReadPs  float64             `json:"drm,omitempty" cbor:"14,keyasint,omitempty"`
+	MaxDiskWritePs float64             `json:"dwm,omitempty" cbor:"15,keyasint,omitempty"`
 	NetworkInterfaces map[string]NetworkInterfaceStats `json:"ns" cbor:"16,omitempty"` // Per-interface network stats
-	Temperatures      map[string]float64               `json:"t,omitempty" cbor:"20,keyasint,omitempty"`
-	ExtraFs           map[string]*FsStats              `json:"efs,omitempty" cbor:"21,keyasint,omitempty"`
-	GPUData           map[string]GPUData               `json:"g,omitempty" cbor:"22,keyasint,omitempty"`
+	Temperatures   map[string]float64  `json:"t,omitempty" cbor:"17,keyasint,omitempty"`
+	ExtraFs        map[string]*FsStats `json:"efs,omitempty" cbor:"18,keyasint,omitempty"`
+	GPUData        map[string]GPUData  `json:"g,omitempty" cbor:"19,keyasint,omitempty"`
+	LoadAvg1       float64             `json:"l1,omitempty" cbor:"20,keyasint,omitempty,omitzero"`
+	LoadAvg5       float64             `json:"l5,omitempty" cbor:"21,keyasint,omitempty,omitzero"`
+	LoadAvg15      float64             `json:"l15,omitempty" cbor:"22,keyasint,omitempty,omitzero"`
 }
 
 type GPUData struct {
@@ -96,6 +99,8 @@ type Info struct {
 	GpuPct        float64 `json:"g,omitempty" cbor:"13,keyasint,omitempty"`
 	DashboardTemp float64 `json:"dt,omitempty" cbor:"14,keyasint,omitempty"`
 	Os            Os      `json:"os" cbor:"15,keyasint"`
+	LoadAvg5      float64 `json:"l5,omitempty" cbor:"16,keyasint,omitempty,omitzero"`
+	LoadAvg15     float64 `json:"l15,omitempty" cbor:"17,keyasint,omitempty,omitzero"`
 }
 
 // Final data structure to return to the hub

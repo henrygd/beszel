@@ -63,12 +63,20 @@ import {
 	PenBoxIcon,
 } from "lucide-react"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
-import { $systems, pb } from "@/lib/stores"
+import { $systems, $userSettings, pb } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
-import { cn, copyToClipboard, decimalString, isReadOnlyUser, useLocalStorage, formatSpeed } from "@/lib/utils"
+import {
+	cn,
+	copyToClipboard,
+	isReadOnlyUser,
+	useLocalStorage,
+	formatTemperature,
+	decimalString,
+	formatBytes,
+} from "@/lib/utils"
 import AlertsButton from "../alerts/alert-button"
 import { $router, Link, navigate } from "../router"
-import { EthernetIcon, GpuIcon, ThermometerIcon } from "../ui/icons"
+import { EthernetIcon, GpuIcon, HourglassIcon, ThermometerIcon } from "../ui/icons"
 import { useLingui, Trans } from "@lingui/react/macro"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Input } from "../ui/input"
@@ -83,8 +91,8 @@ function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	const val = (info.getValue() as number) || 0
 	return (
 		<div className="flex gap-2 items-center tabular-nums tracking-tight">
-			<span className="min-w-[3.3em]">{decimalString(val, 1)}%</span>
-			<span className="grow min-w-10 block bg-muted h-[1em] relative rounded-sm overflow-hidden">
+			<span className="min-w-8">{decimalString(val, 1)}%</span>
+			<span className="grow min-w-8 block bg-muted h-[1em] relative rounded-sm overflow-hidden">
 				<span
 					className={cn(
 						"absolute inset-0 w-full h-full origin-left",
@@ -144,7 +152,6 @@ export default function SystemsTable() {
 		}
 		return [
 			{
-				// size: 200,
 				size: 200,
 				minSize: 0,
 				accessorKey: "name",
@@ -163,6 +170,7 @@ export default function SystemsTable() {
 					return false
 				},
 				enableHiding: false,
+				invertSorting: false,
 				Icon: ServerIcon,
 				cell: (info) => (
 					<span className="flex gap-0.5 items-center text-base md:pe-5">
@@ -181,28 +189,26 @@ export default function SystemsTable() {
 				header: sortableHeader,
 			},
 			{
-				accessorKey: "info.cpu",
+				accessorFn: (originalRow) => originalRow.info.cpu,
 				id: "cpu",
 				name: () => t`CPU`,
-				invertSorting: true,
 				cell: CellFormatter,
 				Icon: CpuIcon,
 				header: sortableHeader,
 			},
 			{
-				accessorKey: "info.mp",
+				// accessorKey: "info.mp",
+				accessorFn: (originalRow) => originalRow.info.mp,
 				id: "memory",
 				name: () => t`Memory`,
-				invertSorting: true,
 				cell: CellFormatter,
 				Icon: MemoryStickIcon,
 				header: sortableHeader,
 			},
 			{
-				accessorKey: "info.dp",
+				accessorFn: (originalRow) => originalRow.info.dp,
 				id: "disk",
 				name: () => t`Disk`,
-				invertSorting: true,
 				cell: CellFormatter,
 				Icon: HardDriveIcon,
 				header: sortableHeader,
@@ -211,8 +217,6 @@ export default function SystemsTable() {
 				accessorFn: (originalRow) => originalRow.info.g,
 				id: "gpu",
 				name: () => "GPU",
-				invertSorting: true,
-				sortUndefined: -1,
 				cell: CellFormatter,
 				Icon: GpuIcon,
 				header: sortableHeader,
@@ -221,8 +225,7 @@ export default function SystemsTable() {
 				accessorFn: () => undefined, // not used for sorting anymore
 				id: "net",
 				name: () => t`Net`,
-				invertSorting: true,
-				size: 50,
+				size: 0,
 				Icon: EthernetIcon,
 				header: sortableHeader,
 				sortDescFirst: true,
@@ -231,18 +234,59 @@ export default function SystemsTable() {
 					const b = (rowB.original.info.ns || 0) + (rowB.original.info.nr || 0)
 					return a - b
 				},
-				cell(info) {
+          cell(info) {
 					const system = info.row.original
 					const sent = system.info.ns || 0
 					const received = system.info.nr || 0
+          const userSettings = useStore($userSettings)
+					const { value, unit } = formatBytes(info.getValue() as number, true, userSettings.unitNet, true)
 					return (
 						<span
 							className={cn("tabular-nums whitespace-nowrap", {
 								"ps-1": viewMode === "table",
 							})}
 						>
-							<span className="text-green-600">↑</span> {formatSpeed(sent)}{' '}
-							<span className="text-blue-600">↓</span> {formatSpeed(received)}
+							<span className="text-green-600">↑</span> {formatBytes(sent)}{' '}
+							<span className="text-blue-600">↓</span> {formatBytes(received)}
+						</span>
+					)
+				},
+			{
+				accessorFn: (originalRow) => originalRow.info.l5,
+				id: "l5",
+				name: () => t({ message: "L5", comment: "Load average 5 minutes" }),
+				size: 0,
+				hideSort: true,
+				Icon: HourglassIcon,
+				header: sortableHeader,
+				cell(info) {
+					const val = info.getValue() as number
+					if (!val) {
+						return null
+					}
+					return (
+						<span className={cn("tabular-nums whitespace-nowrap", viewMode === "table" && "ps-1")}>
+							{decimalString(val)}
+						</span>
+					)
+				},
+			},
+			{
+				accessorFn: (originalRow) => originalRow.info.l15,
+				id: "l15",
+				name: () => t({ message: "L15", comment: "Load average 15 minutes" }),
+				size: 0,
+				hideSort: true,
+				Icon: HourglassIcon,
+				header: sortableHeader,
+				cell(info) {
+					const val = info.getValue() as number
+					if (!val) {
+						return null
+					}
+					return (
+						<span className={cn("tabular-nums whitespace-nowrap", viewMode === "table" && "ps-1")}>
+							{decimalString(val)}
 						</span>
 					)
 				},
@@ -251,8 +295,6 @@ export default function SystemsTable() {
 				accessorFn: (originalRow) => originalRow.info.dt,
 				id: "temp",
 				name: () => t({ message: "Temp", comment: "Temperature label in systems table" }),
-				invertSorting: true,
-				sortUndefined: -1,
 				size: 50,
 				hideSort: true,
 				Icon: ThermometerIcon,
@@ -262,22 +304,20 @@ export default function SystemsTable() {
 					if (!val) {
 						return null
 					}
+					const userSettings = useStore($userSettings)
+					const { value, unit } = formatTemperature(val, userSettings.unitTemp)
 					return (
-						<span
-							className={cn("tabular-nums whitespace-nowrap", {
-								"ps-1.5": viewMode === "table",
-							})}
-						>
-							{decimalString(val)} °C
+						<span className={cn("tabular-nums whitespace-nowrap", viewMode === "table" && "ps-0.5")}>
+							{decimalString(value, value >= 100 ? 1 : 2)} {unit}
 						</span>
 					)
 				},
 			},
 			{
-				accessorKey: "info.v",
+				accessorFn: (originalRow) => originalRow.info.v,
 				id: "agent",
 				name: () => t`Agent`,
-				invertSorting: true,
+				// invertSorting: true,
 				size: 50,
 				Icon: WifiIcon,
 				hideSort: true,
@@ -289,11 +329,7 @@ export default function SystemsTable() {
 					}
 					const system = info.row.original
 					return (
-						<span
-							className={cn("flex gap-2 items-center md:pe-5 tabular-nums", {
-								"ps-1": viewMode === "table",
-							})}
-						>
+						<span className={cn("flex gap-2 items-center md:pe-5 tabular-nums", viewMode === "table" && "ps-0.5")}>
 							<IndicatorDot
 								system={system}
 								className={
@@ -313,7 +349,7 @@ export default function SystemsTable() {
 				name: () => t({ message: "Actions", comment: "Table column" }),
 				size: 50,
 				cell: ({ row }) => (
-					<div className="flex justify-end items-center gap-1">
+					<div className="flex justify-end items-center gap-1 -ms-3">
 						<AlertsButton system={row.original} />
 						<ActionsButton system={row.original} />
 					</div>
@@ -337,6 +373,9 @@ export default function SystemsTable() {
 			columnVisibility,
 		},
 		defaultColumn: {
+			// sortDescFirst: true,
+			invertSorting: true,
+			sortUndefined: "last",
 			minSize: 0,
 			size: 900,
 			maxSize: 900,
@@ -520,7 +559,7 @@ function SystemsTableHead({ table, colLength }: { table: TableType<SystemRecord>
 					<TableRow key={headerGroup.id}>
 						{headerGroup.headers.map((header) => {
 							return (
-								<TableHead className="px-2" key={header.id}>
+								<TableHead className="px-1" key={header.id}>
 									{flexRender(header.column.columnDef.header, header.getContext())}
 								</TableHead>
 							)

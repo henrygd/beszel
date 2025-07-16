@@ -121,3 +121,12 @@ export function GpuIcon(props: SVGProps<SVGSVGElement>) {
 		</svg>
 	)
 }
+
+// Remix icons (Apache 2.0) https://github.com/Remix-Design/RemixIcon/blob/master/License
+export function HourglassIcon(props: SVGProps<SVGSVGElement>) {
+	return (
+		<svg viewBox="0 0 24 24" {...props} fill="currentColor">
+			<path d="M4 2h16v4.5L13.5 12l6.5 5.5V22H4v-4.5l6.5-5.5L4 6.5zm12.3 5L18 5.5V4H6v1.5L7.7 7zM12 13.3l-6 5.2V20h1l5-3 5 3h1v-1.5z" />
+		</svg>
+	)
+}
