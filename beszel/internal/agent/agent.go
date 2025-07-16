@@ -29,7 +29,7 @@ type Agent struct {
 	netIoStats        system.NetIoStats          // Keeps track of bandwidth usage
 	dockerManager     *dockerManager             // Manages Docker API requests
 	sensorConfig      *SensorConfig              // Sensors config
-	systemInfo        system.Info                // Host system info
+	systemInfo        system.Info                // Host system info OS, CPU Architecture, etc.
 	gpuManager        *GPUManager                // Manages GPU data
 	cache             *SessionCache              // Cache for system stats based on primary session ID
 	connectionManager *ConnectionManager         // Channel to signal connection events
@@ -163,7 +163,11 @@ func (a *Agent) getFingerprint() string {
 	// if no fingerprint is found, generate one
 	fingerprint, err := host.HostID()
 	if err != nil || fingerprint == "" {
-		fingerprint = a.systemInfo.Hostname + a.systemInfo.CpuModel
+		cpuModel := ""
+		if len(a.systemInfo.Cpus) > 0 {
+			cpuModel = a.systemInfo.Cpus[0].Model
+		}
+		fingerprint = a.systemInfo.Hostname + cpuModel
 	}
 
 	// hash fingerprint
