@@ -11,13 +11,14 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog"
-import { BellIcon, GlobeIcon, ServerIcon } from "lucide-react"
+import { BellIcon, GlobeIcon, ServerIcon, HourglassIcon } from "lucide-react"
 import { alertInfo, cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { AlertRecord, SystemRecord } from "@/types"
 import { $router, Link } from "../router"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "../ui/checkbox"
+import { Collapsible } from "../ui/collapsible"
 import { SystemAlert, SystemAlertGlobal } from "./alerts-system"
 import { getPagePath } from "@nanostores/router"
 

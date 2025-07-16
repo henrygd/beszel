@@ -84,6 +84,7 @@ import { ClassValue } from "clsx"
 import { getPagePath } from "@nanostores/router"
 import { SystemDialog } from "../add-system"
 import { Dialog } from "../ui/dialog"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 
 type ViewMode = "table" | "grid"
 
@@ -239,43 +240,61 @@ export default function SystemsTable() {
 				},
 			},
 			{
-				accessorFn: (originalRow) => originalRow.info.l5,
-				id: "l5",
-				name: () => t({ message: "L5", comment: "Load average 5 minutes" }),
+				id: "loadAverage",
+				name: () => t`Load Average`,
 				size: 0,
 				hideSort: true,
 				Icon: HourglassIcon,
 				header: sortableHeader,
-				cell(info) {
-					const val = info.getValue() as number
-					if (!val) {
-						return null
+				cell(info: CellContext<SystemRecord, unknown>) {
+					const system = info.row.original;
+					const l1 = system.info?.l1;
+					const l5 = system.info?.l5;
+					const l15 = system.info?.l15;
+					const cores = system.info?.c || 1;
+
+					// If no load average data, return null
+					if (!l1 && !l5 && !l15) return null;
+
+					const loadAverages = [
+						{ name: "1m", value: l1 },
+						{ name: "5m", value: l5 },
+						{ name: "15m", value: l15 }
+					].filter(la => la.value !== undefined);
+
+					if (!loadAverages.length) return null;
+
+					function getDotColor(value: number) {
+						const normalized = value / cores;
+						if (normalized < 0.7) return "bg-green-500";
+						if (normalized < 1.0) return "bg-orange-500";
+						return "bg-red-600";
 					}
+
 					return (
-						<span className={cn("tabular-nums whitespace-nowrap", viewMode === "table" && "ps-1")}>
-							{decimalString(val)}
-						</span>
-					)
-				},
-			},
-			{
-				accessorFn: (originalRow) => originalRow.info.l15,
-				id: "l15",
-				name: () => t({ message: "L15", comment: "Load average 15 minutes" }),
-				size: 0,
-				hideSort: true,
-				Icon: HourglassIcon,
-				header: sortableHeader,
-				cell(info) {
-					const val = info.getValue() as number
-					if (!val) {
-						return null
-					}
-					return (
-						<span className={cn("tabular-nums whitespace-nowrap", viewMode === "table" && "ps-1")}>
-							{decimalString(val)}
-						</span>
-					)
+						<div className="flex items-center gap-2 w-full">
+							{loadAverages.map((la, idx) => (
+								<TooltipProvider key={la.name}>
+									<Tooltip>
+										<TooltipTrigger asChild>
+											<span className="flex items-center cursor-pointer">
+												<span className={cn("inline-block w-2 h-2 rounded-full mr-1", getDotColor(la.value || 0))} />
+												<span className="tabular-nums">
+													{decimalString(la.value || 0, 2)}
+												</span>
+												{idx < loadAverages.length - 1 && <span className="mx-1 text-muted-foreground">/</span>}
+											</span>
+										</TooltipTrigger>
+										<TooltipContent side="top">
+											<div className="text-center">
+												<div className="font-medium">{t`${la.name}`}</div>
+											</div>
+										</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
+							))}
+						</div>
+					);
 				},
 			},
 			{

@@ -48,6 +48,7 @@ const DiskChart = lazy(() => import("../charts/disk-chart"))
 const SwapChart = lazy(() => import("../charts/swap-chart"))
 const TemperatureChart = lazy(() => import("../charts/temperature-chart"))
 const GpuPowerChart = lazy(() => import("../charts/gpu-power-chart"))
+const LoadAverageChart = lazy(() => import("../charts/load-average-chart"))
 
 const cache = new Map<string, any>()
 
@@ -482,6 +483,18 @@ export default function SystemDetail({ name }: { name: string }) {
 							contentFormatter={({ value }) => decimalString(value) + "%"}
 						/>
 					</ChartCard>
+
+					{/* Load Average chart */}
+					{(systemStats.at(-1)?.stats.l1 !== undefined || systemStats.at(-1)?.stats.l5 !== undefined || systemStats.at(-1)?.stats.l15 !== undefined) && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Load Average`}
+							description={t`System load averages over time`}
+						>
+							<LoadAverageChart chartData={chartData} />
+						</ChartCard>
+					)}
 
 					{containerFilterBar && (
 						<ChartCard
