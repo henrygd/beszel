@@ -63,6 +63,7 @@ import {
 	PenBoxIcon,
 	ClockIcon,
 	FilterIcon,
+	HourglassIcon,
 } from "lucide-react"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
 import { $systems, $userSettings, pb } from "@/lib/stores"
@@ -75,6 +76,7 @@ import {
 	formatTemperature,
 	decimalString,
 	formatBytes,
+	formatUptimeString,
 } from "@/lib/utils"
 import AlertsButton from "../alerts/alert-button"
 import { $router, Link, navigate } from "../router"
