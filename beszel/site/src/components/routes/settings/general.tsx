@@ -152,12 +152,10 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 					</div>
 				</div>
 				<Separator />
-				<div className="flex gap-2">
-					<Button type="submit" className="flex items-center gap-1.5 disabled:opacity-100" disabled={isLoading}>
-						{isLoading ? <LoaderCircleIcon className="h-4 w-4 animate-spin" /> : <SaveIcon className="h-4 w-4" />}
-						<Trans>Save Settings</Trans>
-					</Button>
-				</div>
+				{/* Unit preferences section fixed and wrapped in a div */}
+				<div className="space-y-2">
+					<div className="mb-4">
+						<h3 className="mb-1 text-lg font-medium">
 							<Trans>Unit preferences</Trans>
 						</h3>
 						<p className="text-sm text-muted-foreground leading-relaxed">
@@ -187,7 +185,6 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 								</SelectContent>
 							</Select>
 						</div>
-
 						<div className="space-y-2">
 							<Label className="block" htmlFor="unitNet">
 								<Trans>Network unit</Trans>
@@ -210,7 +207,6 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 								</SelectContent>
 							</Select>
 						</div>
-
 						<div className="space-y-2">
 							<Label className="block" htmlFor="unitDisk">
 								<Trans>Disk unit</Trans>
