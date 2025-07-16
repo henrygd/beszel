@@ -29,7 +29,7 @@ export default memo(function ContainerChart({
 	unit?: string
 }) {
 	const filter = useStore($containerFilter)
-	const userSettings = $userSettings.get()
+	const userSettings = useStore($userSettings)
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
 	const { containerData } = chartData

@@ -14,10 +14,11 @@ import {
 import { ChartData } from "@/types"
 import { memo } from "react"
 import { $userSettings } from "@/lib/stores"
+import { useStore } from "@nanostores/react"
 
 export default memo(function SwapChart({ chartData }: { chartData: ChartData }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
-	const userSettings = $userSettings.get()
+	const userSettings = useStore($userSettings)
 
 	if (chartData.systemStats.length === 0) {
 		return null

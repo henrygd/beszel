@@ -135,7 +135,6 @@ export default function SystemsTable() {
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>("cols", {})
 	const [viewMode, setViewMode] = useLocalStorage<ViewMode>("viewMode", window.innerWidth > 1024 ? "table" : "grid")
-	const userSettings = useStore($userSettings)
 
 	const locale = i18n.locale
 
@@ -230,6 +229,7 @@ export default function SystemsTable() {
 				Icon: EthernetIcon,
 				header: sortableHeader,
 				cell(info) {
+					const userSettings = useStore($userSettings)
 					const { value, unit } = formatBytes(info.getValue() as number, true, userSettings.unitNet, true)
 					return (
 						<span className="tabular-nums whitespace-nowrap">
@@ -291,6 +291,7 @@ export default function SystemsTable() {
 					if (!val) {
 						return null
 					}
+					const userSettings = useStore($userSettings)
 					const { value, unit } = formatTemperature(val, userSettings.unitTemp)
 					return (
 						<span className={cn("tabular-nums whitespace-nowrap", viewMode === "table" && "ps-0.5")}>
