@@ -187,6 +187,17 @@ export interface AlertRecord extends RecordModel {
 	// user: string
 }
 
+export interface AlertsHistoryRecord extends RecordModel {
+  alert: string;
+  user: string;
+  system: string;
+  name: string;
+  value: number;
+  state: "active" | "solved";
+  created_date: string;
+  solved_date?: string | null;
+}
+
 export type ChartTimes = "1h" | "12h" | "24h" | "1w" | "30d"
 
 export interface ChartTimeData {
