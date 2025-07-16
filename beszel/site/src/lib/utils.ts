@@ -3,7 +3,15 @@ import { toast } from "@/components/ui/use-toast"
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { $alerts, $copyContent, $systems, $userSettings, pb } from "./stores"
-import { AlertInfo, AlertRecord, ChartTimeData, ChartTimes, FingerprintRecord, SystemRecord } from "@/types"
+import {
+	AlertInfo,
+	AlertRecord,
+	ChartTimeData,
+	ChartTimes,
+	FingerprintRecord,
+	SystemRecord,
+	UserSettings,
+} from "@/types"
 import { RecordModel, RecordSubscription } from "pocketbase"
 import { WritableAtom } from "nanostores"
 import { timeDay, timeHour } from "d3-time"
@@ -74,7 +82,10 @@ export const updateSystemList = (() => {
 
 /** Logs the user out by clearing the auth store and unsubscribing from realtime updates. */
 export async function logOut() {
-	sessionStorage.setItem("lo", "t")
+	$systems.set([])
+	$alerts.set([])
+	$userSettings.set({} as UserSettings)
+	sessionStorage.setItem("lo", "t") // prevent auto login on logout
 	pb.authStore.clear()
 	pb.realtime.unsubscribe()
 }
