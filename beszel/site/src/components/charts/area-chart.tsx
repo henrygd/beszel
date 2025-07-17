@@ -2,14 +2,7 @@ import { t } from "@lingui/core/macro"
 
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
-import {
-	useYAxisWidth,
-	cn,
-	formatShortDate,
-	toFixedWithoutTrailingZeros,
-	decimalString,
-	chartMargin,
-} from "@/lib/utils"
+import { useYAxisWidth, cn, formatShortDate, chartMargin } from "@/lib/utils"
 // import Spinner from '../spinner'
 import { ChartData } from "@/types"
 import { memo, useMemo } from "react"
@@ -30,7 +23,6 @@ const getNestedValue = (path: string, max = false, data: any): number | null => 
 
 export default memo(function AreaChartDefault({
 	maxToggled = false,
-	unit = " MB/s",
 	chartName,
 	chartData,
 	max,
@@ -38,12 +30,11 @@ export default memo(function AreaChartDefault({
 	contentFormatter,
 }: {
 	maxToggled?: boolean
-	unit?: string
 	chartName: string
 	chartData: ChartData
 	max?: number
-	tickFormatter?: (value: number) => string
-	contentFormatter?: (value: number) => string
+	tickFormatter: (value: number) => string
+	contentFormatter: ({ value }: { value: number }) => string
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { i18n } = useLingui()
@@ -98,15 +89,7 @@ export default memo(function AreaChartDefault({
 						className="tracking-tighter"
 						width={yAxisWidth}
 						domain={[0, max ?? "auto"]}
-						tickFormatter={(value) => {
-							let val: string
-							if (tickFormatter) {
-								val = tickFormatter(value)
-							} else {
-								val = toFixedWithoutTrailingZeros(value, 2) + unit
-							}
-							return updateYAxisWidth(val)
-						}}
+						tickFormatter={(value) => updateYAxisWidth(tickFormatter(value))}
 						tickLine={false}
 						axisLine={false}
 					/>
@@ -117,12 +100,7 @@ export default memo(function AreaChartDefault({
 						content={
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
-								contentFormatter={({ value }) => {
-									if (contentFormatter) {
-										return contentFormatter(value)
-									}
-									return decimalString(value) + unit
-								}}
+								contentFormatter={contentFormatter}
 								// indicator="line"
 							/>
 						}

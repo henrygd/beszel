@@ -1,9 +1,10 @@
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
-import { useYAxisWidth, cn, toFixedFloat, decimalString, formatShortDate, chartMargin } from "@/lib/utils"
+import { useYAxisWidth, cn, decimalString, formatShortDate, chartMargin, formatBytes, toFixedFloat } from "@/lib/utils"
 import { memo } from "react"
 import { ChartData } from "@/types"
 import { useLingui } from "@lingui/react/macro"
+import { Unit } from "@/lib/enums"
 
 export default memo(function MemChart({ chartData }: { chartData: ChartData }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
@@ -39,8 +40,8 @@ export default memo(function MemChart({ chartData }: { chartData: ChartData }) {
 							tickLine={false}
 							axisLine={false}
 							tickFormatter={(value) => {
-								const val = toFixedFloat(value, 1)
-								return updateYAxisWidth(val + " GB")
+								const { value: convertedValue, unit } = formatBytes(value * 1024, false, Unit.Bytes, true)
+								return updateYAxisWidth(toFixedFloat(convertedValue, value >= 10 ? 0 : 1) + " " + unit)
 							}}
 						/>
 					)}
@@ -54,8 +55,11 @@ export default memo(function MemChart({ chartData }: { chartData: ChartData }) {
 								// @ts-ignore
 								itemSorter={(a, b) => a.order - b.order}
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
-								contentFormatter={(item) => decimalString(item.value) + " GB"}
-								// indicator="line"
+								contentFormatter={({ value }) => {
+									// mem values are supplied as GB
+									const { value: convertedValue, unit } = formatBytes(value * 1024, false, Unit.Bytes, true)
+									return decimalString(convertedValue, convertedValue >= 100 ? 1 : 2) + " " + unit
+								}}
 							/>
 						}
 					/>
