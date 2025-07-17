@@ -99,8 +99,9 @@ type Info struct {
 	GpuPct        float64 `json:"g,omitempty" cbor:"13,keyasint,omitempty"`
 	DashboardTemp float64 `json:"dt,omitempty" cbor:"14,keyasint,omitempty"`
 	Os            Os      `json:"os" cbor:"15,keyasint"`
-	LoadAvg5      float64 `json:"l5,omitempty" cbor:"16,keyasint,omitempty,omitzero"`
-	LoadAvg15     float64 `json:"l15,omitempty" cbor:"17,keyasint,omitempty,omitzero"`
+  LoadAvg1      float64 `json:"l1,omitempty" cbor:"16,keyasint,omitempty"`
+	LoadAvg5      float64 `json:"l5,omitempty" cbor:"17,keyasint,omitempty,omitzero"`
+	LoadAvg15     float64 `json:"l15,omitempty" cbor:"18,keyasint,omitempty,omitzero"`
 }
 
 // Final data structure to return to the hub

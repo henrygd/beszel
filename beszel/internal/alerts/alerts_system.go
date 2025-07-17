@@ -54,6 +54,9 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			}
 			val = data.Info.DashboardTemp
 			unit = "°C"
+		case "LoadAvg1":
+			val = data.Info.LoadAvg1
+			unit = ""
 		case "LoadAvg5":
 			val = data.Info.LoadAvg5
 			unit = ""
@@ -196,6 +199,8 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 					}
 					alert.mapSums[key] += temp
 				}
+			case "LoadAvg1":
+				alert.val += stats.LoadAvg1
 			case "LoadAvg5":
 				alert.val += stats.LoadAvg5
 			case "LoadAvg15":

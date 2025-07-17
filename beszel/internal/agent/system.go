@@ -272,6 +272,7 @@ func (a *Agent) getSystemStats() system.Stats {
 
 	// update base system info
 	a.systemInfo.Cpu = systemStats.Cpu
+	a.systemInfo.LoadAvg1 = systemStats.LoadAvg1
 	a.systemInfo.LoadAvg5 = systemStats.LoadAvg5
 	a.systemInfo.LoadAvg15 = systemStats.LoadAvg15
 	a.systemInfo.MemPct = systemStats.MemPct
