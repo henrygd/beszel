@@ -15,6 +15,9 @@ export const $systems = atom([] as SystemRecord[])
 /** List of alert records */
 export const $alerts = atom([] as AlertRecord[])
 
+/** List of alerts history records */
+export const $alertsHistory = atom([] as AlertsHistoryRecord[])
+
 /** SSH public key */
 export const $publicKey = atom("")
 

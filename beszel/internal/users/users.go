@@ -20,6 +20,9 @@ type UserSettings struct {
 	// UnitTemp             uint8    `json:"unitTemp"` // 0 for Celsius, 1 for Fahrenheit
 	// UnitNet              uint8    `json:"unitNet"`  // 0 for bytes, 1 for bits
 	// UnitDisk             uint8    `json:"unitDisk"` // 0 for bytes, 1 for bits
+
+	// New field for alert history retention (e.g., "1m", "3m", "6m", "1y")
+	AlertHistoryRetention string `json:"alertHistoryRetention,omitempty"`
 }
 
 func NewUserManager(app core.App) *UserManager {

@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useStore } from "@nanostores/react"
 import { $router } from "@/components/router.tsx"
 import { getPagePath, redirectPage } from "@nanostores/router"
-import { BellIcon, FileSlidersIcon, FingerprintIcon, SettingsIcon } from "lucide-react"
+import { BellIcon, FileSlidersIcon, FingerprintIcon, SettingsIcon, LogsIcon } from "lucide-react"
 import { $userSettings, pb } from "@/lib/stores.ts"
 import { toast } from "@/components/ui/use-toast.ts"
 import { UserSettings } from "@/types.js"
@@ -16,6 +16,7 @@ import Notifications from "./notifications.tsx"
 import ConfigYaml from "./config-yaml.tsx"
 import { useLingui } from "@lingui/react/macro"
 import Fingerprints from "./tokens-fingerprints.tsx"
+import AlertsHistoryDataTable from "./alerts-history-data-table"
 
 export async function saveSettings(newSettings: Partial<UserSettings>) {
 	try {
@@ -71,6 +72,11 @@ export default function SettingsLayout() {
 			icon: FileSlidersIcon,
 			admin: true,
 		},
+		{
+			title: t`Alerts History`,
+			href: getPagePath($router, "settings", { name: "alerts-history" }),
+			icon: LogsIcon,
+		},
 	]
 
 	const page = useStore($router)
@@ -121,5 +127,7 @@ function SettingsContent({ name }: { name: string }) {
 			return <ConfigYaml />
 		case "tokens":
 			return <Fingerprints />
+		case "alerts-history":
+			return <AlertsHistoryDataTable />
 	}
 }

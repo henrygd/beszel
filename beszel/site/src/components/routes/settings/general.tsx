@@ -17,11 +17,16 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 	const [isLoading, setIsLoading] = useState(false)
 	const { i18n } = useLingui()
 
+	// Add state for alert history retention
+	const [alertHistoryRetention, setAlertHistoryRetention] = useState(userSettings.alertHistoryRetention || "3m")
+
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault()
 		setIsLoading(true)
 		const formData = new FormData(e.target as HTMLFormElement)
 		const data = Object.fromEntries(formData) as Partial<UserSettings>
+		// Add alertHistoryRetention to data
+		data.alertHistoryRetention = alertHistoryRetention
 		await saveSettings(data)
 		setIsLoading(false)
 	}
@@ -180,6 +185,27 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 							</Select>
 						</div>
 					</div>
+				</div>
+				<Separator />
+				<div>
+					<Label htmlFor="alertHistoryRetention">
+						<Trans>Alert History Retention</Trans>
+					</Label>
+					<Select
+						name="alertHistoryRetention"
+						value={alertHistoryRetention}
+						onValueChange={setAlertHistoryRetention}
+					>
+						<SelectTrigger className="w-64 mt-1">
+							<SelectValue />
+						</SelectTrigger>
+						<SelectContent>
+							<SelectItem value="1m">1 month</SelectItem>
+							<SelectItem value="3m">3 months</SelectItem>
+							<SelectItem value="6m">6 months</SelectItem>
+							<SelectItem value="1y">1 year</SelectItem>
+						</SelectContent>
+					</Select>
 				</div>
 				<Separator />
 				<Button type="submit" className="flex items-center gap-1.5 disabled:opacity-100" disabled={isLoading}>
