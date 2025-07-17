@@ -34,6 +34,8 @@ import {
 	InstallDropdown,
 } from "@/components/install-dropdowns"
 import { AppleIcon, DockerIcon, TuxIcon, WindowsIcon } from "@/components/ui/icons"
+import { redirectPage } from "@nanostores/router"
+import { $router } from "@/components/router"
 
 const pbFingerprintOptions = {
 	expand: "system",
@@ -41,6 +43,9 @@ const pbFingerprintOptions = {
 }
 
 const SettingsFingerprintsPage = memo(() => {
+	if (isReadOnlyUser()) {
+		redirectPage($router, "settings", { name: "general" })
+	}
 	const [fingerprints, setFingerprints] = useState<FingerprintRecord[]>([])
 
 	// Get fingerprint records on mount
