@@ -61,6 +61,9 @@ import {
 	Settings2Icon,
 	EyeIcon,
 	PenBoxIcon,
+	ClockIcon,
+	FilterIcon,
+	HourglassIcon,
 } from "lucide-react"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
 import { $systems, $userSettings, pb } from "@/lib/stores"
@@ -73,19 +76,21 @@ import {
 	formatTemperature,
 	decimalString,
 	formatBytes,
+	formatUptimeString,
 } from "@/lib/utils"
 import AlertsButton from "../alerts/alert-button"
 import { $router, Link, navigate } from "../router"
-import { EthernetIcon, GpuIcon, HourglassIcon, ThermometerIcon } from "../ui/icons"
-import { useLingui, Trans } from "@lingui/react/macro"
+import { EthernetIcon, GpuIcon, ThermometerIcon } from "../ui/icons"
+import { useLingui, Trans, Plural } from "@lingui/react/macro"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
-import { Input } from "../ui/input"
+import { Input } from "@/components/ui/input"
 import { ClassValue } from "clsx"
 import { getPagePath } from "@nanostores/router"
 import { SystemDialog } from "../add-system"
 import { Dialog } from "../ui/dialog"
 
 type ViewMode = "table" | "grid"
+type StatusFilter = "all" | "up" | "down" | "paused"
 
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 	const val = (info.getValue() as number) || 0
@@ -131,12 +136,21 @@ export default function SystemsTable() {
 	const data = useStore($systems)
 	const { i18n, t } = useLingui()
 	const [filter, setFilter] = useState<string>()
+	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
 	const [sorting, setSorting] = useState<SortingState>([{ id: "system", desc: false }])
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>("cols", {})
 	const [viewMode, setViewMode] = useLocalStorage<ViewMode>("viewMode", window.innerWidth > 1024 ? "table" : "grid")
 
 	const locale = i18n.locale
+
+	// Filter data based on status filter
+	const filteredData = useMemo(() => {
+		if (statusFilter === "all") {
+			return data
+		}
+		return data.filter((system) => system.status === statusFilter)
+	}, [data, statusFilter])
 
 	useEffect(() => {
 		if (filter !== undefined) {
@@ -285,7 +299,6 @@ export default function SystemsTable() {
 				id: "temp",
 				name: () => t({ message: "Temp", comment: "Temperature label in systems table" }),
 				size: 50,
-				hideSort: true,
 				Icon: ThermometerIcon,
 				header: sortableHeader,
 				cell(info) {
@@ -303,13 +316,69 @@ export default function SystemsTable() {
 				},
 			},
 			{
+				accessorFn: (originalRow) => originalRow.info.u,
+				id: "uptime",
+				name: () => t`Uptime`,
+				invertSorting: true,
+				sortUndefined: -1,
+				size: 60,
+				Icon: ClockIcon,
+				header: sortableHeader,
+				cell(info) {
+					const uptime = info.getValue() as number
+					if (!uptime) return null
+					return <span>{formatUptimeString(uptime)}</span>
+				},
+			},
+			{
+				accessorFn: (originalRow) => originalRow.updated,
+				id: "lastSeen",
+				name: () => t`Last Seen`,
+				size: 120,
+				header: sortableHeader,
+				sortUndefined: -1,
+				cell(info) {
+					const system = info.row.original
+					if (!system.updated) {
+						return (
+							<span className={cn("tabular-nums whitespace-nowrap", { "ps-1": viewMode === "table" })}>-</span>
+						);
+					}
+					const now = Date.now();
+					const lastSeenTime = new Date(system.updated).getTime();
+					const diff = Math.max(0, Math.floor((now - lastSeenTime) / 1000)); // in seconds
+					let display: React.ReactNode;
+					if (system.status !== "up") {
+						// Always show absolute time for offline systems
+						const d = new Date(system.updated);
+						display = d.toLocaleString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+					} else if (diff < 60) {
+						display = t`Just now`;
+					} else if (diff < 3600) {
+						const mins = Math.trunc(diff / 60);
+						display = <Plural value={mins} one="# minute ago" other="# minutes ago" />;
+					} else if (diff < 172800) {
+						const hours = Math.trunc(diff / 3600);
+						display = <Plural value={hours} one="# hour ago" other="# hours ago" />;
+					} else {
+						const days = Math.trunc(diff / 86400);
+						display = <Plural value={days} one="# day ago" other="# days ago" />;
+					}
+					return (
+						<span className={cn("flex items-center gap-1 tabular-nums whitespace-nowrap", { "ps-1": viewMode === "table" })}>
+							{display}
+						</span>
+					);
+				},
+			},
+			{
+				accessorKey: "info.v",
 				accessorFn: (originalRow) => originalRow.info.v,
 				id: "agent",
 				name: () => t`Agent`,
 				// invertSorting: true,
 				size: 50,
 				Icon: WifiIcon,
-				hideSort: true,
 				header: sortableHeader,
 				cell(info) {
 					const version = info.getValue() as string
@@ -348,7 +417,7 @@ export default function SystemsTable() {
 	}, [])
 
 	const table = useReactTable({
-		data,
+		data: filteredData,
 		columns: columnDefs,
 		getCoreRowModel: getCoreRowModel(),
 		onSortingChange: setSorting,
@@ -387,8 +456,8 @@ export default function SystemsTable() {
 							<Trans>Updated in real time. Click on a system to view information.</Trans>
 						</CardDescription>
 					</div>
-					<div className="flex gap-2 ms-auto w-full md:w-80">
-						<Input placeholder={t`Filter...`} onChange={(e) => setFilter(e.target.value)} className="px-4" />
+					<div className="flex gap-2 ms-auto w-full md:w-auto">
+						<Input placeholder={t`Filter...`} onChange={(e) => setFilter(e.target.value)} className="px-4 w-full md:w-80" />
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="outline">
@@ -397,7 +466,7 @@ export default function SystemsTable() {
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end" className="h-72 md:h-auto min-w-48 md:min-w-auto overflow-y-auto">
-								<div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-s md:divide-y-0">
+								<div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-s md:divide-y-0">
 									<div>
 										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
 											<LayoutGridIcon className="size-4" />
@@ -416,6 +485,32 @@ export default function SystemsTable() {
 											<DropdownMenuRadioItem value="grid" onSelect={(e) => e.preventDefault()} className="gap-2">
 												<LayoutGridIcon className="size-4" />
 												<Trans>Grid</Trans>
+											</DropdownMenuRadioItem>
+										</DropdownMenuRadioGroup>
+									</div>
+
+									<div>
+										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
+											<FilterIcon className="size-4" />
+											<Trans>Status</Trans>
+										</DropdownMenuLabel>
+										<DropdownMenuSeparator />
+										<DropdownMenuRadioGroup
+											className="px-1 pb-1"
+											value={statusFilter}
+											onValueChange={(value) => setStatusFilter(value as StatusFilter)}
+										>
+											<DropdownMenuRadioItem value="all" onSelect={(e) => e.preventDefault()} className="gap-2">
+												<Trans>All Systems</Trans>
+											</DropdownMenuRadioItem>
+											<DropdownMenuRadioItem value="up" onSelect={(e) => e.preventDefault()} className="gap-2">
+												<Trans>Up</Trans>
+											</DropdownMenuRadioItem>
+											<DropdownMenuRadioItem value="down" onSelect={(e) => e.preventDefault()} className="gap-2">
+												<Trans>Down</Trans>
+											</DropdownMenuRadioItem>
+											<DropdownMenuRadioItem value="paused" onSelect={(e) => e.preventDefault()} className="gap-2">
+												<Trans>Paused</Trans>
 											</DropdownMenuRadioItem>
 										</DropdownMenuRadioGroup>
 									</div>
@@ -486,7 +581,7 @@ export default function SystemsTable() {
 				</div>
 			</CardHeader>
 		)
-	}, [visibleColumns.length, sorting, viewMode, locale])
+	}, [visibleColumns.length, sorting, viewMode, locale, statusFilter])
 
 	return (
 		<Card>
@@ -613,7 +708,7 @@ const SystemCard = memo(
 				>
 					<CardHeader className="py-1 ps-5 pe-3 bg-muted/30 border-b border-border/60">
 						<div className="flex items-center justify-between gap-2">
-							<CardTitle className="text-base tracking-normal shrink-1 text-primary/90 flex items-center min-h-10 gap-2.5 min-w-0">
+							<CardTitle className="text-base tracking-normal shrink-1 text-primary/90 flex items-center min-w-0 gap-2.5">
 								<div className="flex items-center gap-2.5 min-w-0">
 									<IndicatorDot system={system} />
 									<CardTitle className="text-[.95em]/normal tracking-normal truncate text-primary/90">
@@ -638,7 +733,9 @@ const SystemCard = memo(
 							const { Icon, name } = column.columnDef as ColumnDef<SystemRecord, unknown>
 							return (
 								<div key={column.id} className="flex items-center gap-3">
-									{Icon && <Icon className="size-4 text-muted-foreground" />}
+									{column.id === "lastSeen" ? (
+										<EyeIcon className="size-4 text-muted-foreground" />
+									) : Icon && <Icon className="size-4 text-muted-foreground" />}
 									<div className="flex items-center gap-3 flex-1">
 										<span className="text-muted-foreground min-w-16">{name()}:</span>
 										<div className="flex-1">{flexRender(cell.column.columnDef.cell, cell.getContext())}</div>
