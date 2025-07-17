@@ -484,18 +484,6 @@ export default function SystemDetail({ name }: { name: string }) {
 						/>
 					</ChartCard>
 
-					{/* Load Average chart */}
-					{(systemStats.at(-1)?.stats.l1 !== undefined || systemStats.at(-1)?.stats.l5 !== undefined || systemStats.at(-1)?.stats.l15 !== undefined) && (
-						<ChartCard
-							empty={dataEmpty}
-							grid={grid}
-							title={t`Load Average`}
-							description={t`System load averages over time`}
-						>
-							<LoadAverageChart chartData={chartData} />
-						</ChartCard>
-					)}
-
 					{containerFilterBar && (
 						<ChartCard
 							empty={dataEmpty}
@@ -605,6 +593,18 @@ export default function SystemDetail({ name }: { name: string }) {
 							description={t`Swap space used by the system`}
 						>
 							<SwapChart chartData={chartData} />
+						</ChartCard>
+					)}
+
+					{/* Load Average chart */}
+					{system.info.l1 !== undefined && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Load Average`}
+							description={t`System load averages over time`}
+						>
+							<LoadAverageChart chartData={chartData} />
 						</ChartCard>
 					)}
 
