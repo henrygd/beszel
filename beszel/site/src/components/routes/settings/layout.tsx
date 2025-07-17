@@ -63,7 +63,7 @@ export default function SettingsLayout() {
 			title: t`Tokens & Fingerprints`,
 			href: getPagePath($router, "settings", { name: "tokens" }),
 			icon: FingerprintIcon,
-			// admin: true,
+			noReadOnly: true,
 		},
 		{
 			title: t`YAML Config`,

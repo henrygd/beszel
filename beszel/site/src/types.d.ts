@@ -46,6 +46,8 @@ export interface SystemInfo {
 	c: number
 	/** cpu model */
 	m: string
+	/** load average 1 minute */
+	l1?: number
 	/** load average 5 minutes */
 	l5?: number
 	/** load average 15 minutes */

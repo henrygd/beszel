@@ -196,14 +196,14 @@ export default function SystemsTable() {
 							onClick={() => copyToClipboard(info.getValue() as string)}
 						>
 							{info.getValue() as string}
-							<CopyIcon className="h-2.5 w-2.5" />
+							<CopyIcon className="size-2.5" />
 						</Button>
 					</span>
 				),
 				header: sortableHeader,
 			},
 			{
-				accessorFn: (originalRow) => originalRow.info.cpu,
+				accessorFn: ({ info }) => decimalString(info.cpu, info.cpu >= 10 ? 1 : 2),
 				id: "cpu",
 				name: () => t`CPU`,
 				cell: CellFormatter,
@@ -236,6 +236,44 @@ export default function SystemsTable() {
 				header: sortableHeader,
 			},
 			{
+				id: "loadAverage",
+				accessorFn: ({ info }) => {
+					const { l1 = 0, l5 = 0, l15 = 0 } = info
+					return l1 + l5 + l15
+				},
+				name: () => t({ message: "Load Avg", comment: "Short label for load average" }),
+				size: 0,
+				Icon: HourglassIcon,
+				header: sortableHeader,
+				cell(info: CellContext<SystemRecord, unknown>) {
+					const { info: sysInfo, status } = info.row.original
+					if (sysInfo.l1 == undefined) {
+						return null
+					}
+
+					const { l1 = 0, l5 = 0, l15 = 0, t: cpuThreads = 1 } = sysInfo
+					const loadAverages = [l1, l5, l15]
+
+					function getDotColor() {
+						const max = Math.max(...loadAverages)
+						const normalized = max / cpuThreads
+						if (status !== "up") return "bg-primary/30"
+						if (normalized < 0.7) return "bg-green-500"
+						if (normalized < 1.0) return "bg-yellow-500"
+						return "bg-red-600"
+					}
+
+					return (
+						<div className="flex items-center gap-2 w-full tabular-nums tracking-tight">
+							<span className={cn("inline-block size-2 rounded-full", getDotColor())} />
+							{loadAverages.map((la, i) => (
+								<span key={i}>{decimalString(la, la >= 10 ? 1 : 2)}</span>
+							))}
+						</div>
+					)
+				},
+			},
+			{
 				accessorFn: (originalRow) => originalRow.info.b || 0,
 				id: "net",
 				name: () => t`Net`,
@@ -243,51 +281,15 @@ export default function SystemsTable() {
 				Icon: EthernetIcon,
 				header: sortableHeader,
 				cell(info) {
+					if (info.row.original.status !== "up") {
+						return null
+					}
+					const val = info.getValue() as number
 					const userSettings = useStore($userSettings)
-					const { value, unit } = formatBytes(info.getValue() as number, true, userSettings.unitNet, true)
+					const { value, unit } = formatBytes(val, true, userSettings.unitNet, true)
 					return (
 						<span className="tabular-nums whitespace-nowrap">
 							{decimalString(value, value >= 100 ? 1 : 2)} {unit}
-						</span>
-					)
-				},
-			},
-			{
-				accessorFn: (originalRow) => originalRow.info.l5,
-				id: "l5",
-				name: () => t({ message: "L5", comment: "Load average 5 minutes" }),
-				size: 0,
-				hideSort: true,
-				Icon: HourglassIcon,
-				header: sortableHeader,
-				cell(info) {
-					const val = info.getValue() as number
-					if (!val) {
-						return null
-					}
-					return (
-						<span className={cn("tabular-nums whitespace-nowrap", viewMode === "table" && "ps-1")}>
-							{decimalString(val)}
-						</span>
-					)
-				},
-			},
-			{
-				accessorFn: (originalRow) => originalRow.info.l15,
-				id: "l15",
-				name: () => t({ message: "L15", comment: "Load average 15 minutes" }),
-				size: 0,
-				hideSort: true,
-				Icon: HourglassIcon,
-				header: sortableHeader,
-				cell(info) {
-					const val = info.getValue() as number
-					if (!val) {
-						return null
-					}
-					return (
-						<span className={cn("tabular-nums whitespace-nowrap", viewMode === "table" && "ps-1")}>
-							{decimalString(val)}
 						</span>
 					)
 				},
@@ -641,7 +643,7 @@ function SystemsTableHead({ table, colLength }: { table: TableType<SystemRecord>
 					<TableRow key={headerGroup.id}>
 						{headerGroup.headers.map((header) => {
 							return (
-								<TableHead className="px-1" key={header.id}>
+								<TableHead className="px-1.5" key={header.id}>
 									{flexRender(header.column.columnDef.header, header.getContext())}
 								</TableHead>
 							)
