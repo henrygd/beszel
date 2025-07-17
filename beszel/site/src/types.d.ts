@@ -213,7 +213,7 @@ export interface ChartTimeData {
 	}
 }
 
-export type UserSettings = {
+export interface UserSettings {
 	// lang?: string
 	chartTime: ChartTimes
 	emails?: string[]
@@ -221,6 +221,9 @@ export type UserSettings = {
 	unitTemp?: Unit
 	unitNet?: Unit
 	unitDisk?: Unit
+
+	// New field for alert history retention (e.g., '1m', '3m', '6m', '1y')
+	alertHistoryRetention?: string
 }
 
 type ChartDataContainer = {

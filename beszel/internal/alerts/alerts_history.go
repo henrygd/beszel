@@ -50,3 +50,47 @@ func (am *AlertManager) RecordAlertHistory(alert SystemAlertData) {
 		}
 	}
 }
+
+// DeleteOldAlertHistory deletes alerts_history records older than the given retention duration
+func (am *AlertManager) DeleteOldAlertHistory(retention time.Duration) {
+	now := time.Now().UTC()
+	cutoff := now.Add(-retention)
+	_, err := am.hub.DB().NewQuery(
+		"DELETE FROM alerts_history WHERE solved_date IS NOT NULL AND solved_date < {:cutoff}",
+	).Bind(dbx.Params{"cutoff": cutoff}).Execute()
+	if err != nil {
+		am.hub.Logger().Error("failed to delete old alerts_history records", "error", err)
+	}
+}
+
+// Helper to get retention duration from user settings
+func getAlertHistoryRetention(settings map[string]interface{}) time.Duration {
+	retStr, _ := settings["alertHistoryRetention"].(string)
+	switch retStr {
+	case "1m":
+		return 30 * 24 * time.Hour
+	case "3m":
+		return 90 * 24 * time.Hour
+	case "6m":
+		return 180 * 24 * time.Hour
+	case "1y":
+		return 365 * 24 * time.Hour
+	default:
+		return 90 * 24 * time.Hour // default 3 months
+	}
+}
+
+// CleanUpAllAlertHistory deletes old alerts_history records for each user based on their retention setting
+func (am *AlertManager) CleanUpAllAlertHistory() {
+	records, err := am.hub.FindAllRecords("user_settings")
+	if err != nil {
+		return
+	}
+	for _, record := range records {
+		var settings map[string]interface{}
+		if err := record.UnmarshalJSONField("settings", &settings); err != nil {
+			continue
+		}
+		am.DeleteOldAlertHistory(getAlertHistoryRetention(settings))
+	}
+}
