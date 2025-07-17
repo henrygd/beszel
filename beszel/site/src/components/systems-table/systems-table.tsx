@@ -247,8 +247,9 @@ export default function SystemsTable() {
 							<span className="text-blue-600">↓</span> {Math.round(receivedFmt.value)} {receivedFmt.unit}
 						</span>
 					)
-        },
-        {
+				},
+        	},
+        	{
 				id: "loadAverage",
 				accessorFn: ({ info }) => {
 					const { l1 = 0, l5 = 0, l15 = 0 } = info
@@ -284,27 +285,6 @@ export default function SystemsTable() {
 								<span key={i}>{decimalString(la, la >= 10 ? 1 : 2)}</span>
 							))}
 						</div>
-					)
-				},
-			},
-			{
-				accessorFn: (originalRow) => originalRow.info.b || 0,
-				id: "net",
-				name: () => t`Net`,
-				size: 0,
-				Icon: EthernetIcon,
-				header: sortableHeader,
-				cell(info) {
-					if (info.row.original.status !== "up") {
-						return null
-					}
-					const val = info.getValue() as number
-					const userSettings = useStore($userSettings)
-					const { value, unit } = formatBytes(val, true, userSettings.unitNet, true)
-					return (
-						<span className="tabular-nums whitespace-nowrap">
-							{decimalString(value, value >= 100 ? 1 : 2)} {unit}
-						</span>
 					)
 				},
 			},

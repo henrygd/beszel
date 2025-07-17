@@ -201,11 +201,25 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.DiskPct += stats.DiskPct
 		sum.DiskReadPs += stats.DiskReadPs
 		sum.DiskWritePs += stats.DiskWritePs
-		sum.NetworkSent += stats.NetworkSent
-		sum.NetworkRecv += stats.NetworkRecv
 		sum.LoadAvg1 += stats.LoadAvg1
 		sum.LoadAvg5 += stats.LoadAvg5
 		sum.LoadAvg15 += stats.LoadAvg15
+		if stats.NetworkInterfaces != nil {
+			if sum.NetworkInterfaces == nil {
+				sum.NetworkInterfaces = make(map[string]system.NetworkInterfaceStats, len(stats.NetworkInterfaces))
+			}
+			for key, value := range stats.NetworkInterfaces {
+				if _, ok := sum.NetworkInterfaces[key]; !ok {
+					sum.NetworkInterfaces[key] = system.NetworkInterfaceStats{}
+				}
+				ni := sum.NetworkInterfaces[key]
+				ni.NetworkSent += value.NetworkSent
+				ni.NetworkRecv += value.NetworkRecv
+				ni.MaxNetworkSent += value.MaxNetworkSent
+				ni.MaxNetworkRecv += value.MaxNetworkRecv
+				sum.NetworkInterfaces[key] = ni
+			}
+		}
 
 		// Set peak values
 		sum.MaxCpu = max(sum.MaxCpu, stats.MaxCpu, stats.Cpu)
@@ -278,12 +292,19 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.DiskPct = twoDecimals(sum.DiskPct / count)
 		sum.DiskReadPs = twoDecimals(sum.DiskReadPs / count)
 		sum.DiskWritePs = twoDecimals(sum.DiskWritePs / count)
-		sum.NetworkSent = twoDecimals(sum.NetworkSent / count)
-		sum.NetworkRecv = twoDecimals(sum.NetworkRecv / count)
 		sum.LoadAvg1 = twoDecimals(sum.LoadAvg1 / count)
 		sum.LoadAvg5 = twoDecimals(sum.LoadAvg5 / count)
 		sum.LoadAvg15 = twoDecimals(sum.LoadAvg15 / count)
-
+		if sum.NetworkInterfaces != nil {
+			for key := range sum.NetworkInterfaces {
+				ni := sum.NetworkInterfaces[key]
+				ni.NetworkSent = twoDecimals(ni.NetworkSent / count)
+				ni.NetworkRecv = twoDecimals(ni.NetworkRecv / count)
+				ni.MaxNetworkSent = twoDecimals(max(ni.MaxNetworkSent, ni.NetworkSent))
+				ni.MaxNetworkRecv = twoDecimals(max(ni.MaxNetworkRecv, ni.NetworkRecv))
+				sum.NetworkInterfaces[key] = ni
+			}
+		}
 		// Average temperatures
 		if sum.Temperatures != nil && tempCount > 0 {
 			for key := range sum.Temperatures {
