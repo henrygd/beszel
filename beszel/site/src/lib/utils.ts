@@ -407,6 +407,16 @@ export const alertInfo: Record<string, AlertInfo> = {
 		icon: ThermometerIcon,
 		desc: () => t`Triggers when any sensor exceeds a threshold`,
 	},
+	LoadAvg1: {
+		name: () => t`Load Average 1m`,
+		unit: "",
+		icon: HourglassIcon,
+		max: 100,
+		min: 0.1,
+		start: 10,
+		step: 0.1,
+		desc: () => t`Triggers when 1 minute load average exceeds a threshold`,
+	},
 	LoadAvg5: {
 		name: () => t`Load Average 5m`,
 		unit: "",
