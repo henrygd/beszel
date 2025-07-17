@@ -222,10 +222,39 @@ export default function SystemsTable() {
 				header: sortableHeader,
 			},
 			{
+				accessorFn: (row) => (row.info.ns || 0) + (row.info.nr || 0),
+				id: "net",
+				name: () => t`Net`,
+				size: 0,
+				Icon: EthernetIcon,
+				header: sortableHeader,
+				sortDescFirst: true,
+				sortingFn: (rowA, rowB) => {
+					const a = (rowA.original.info.ns || 0) + (rowA.original.info.nr || 0)
+					const b = (rowB.original.info.ns || 0) + (rowB.original.info.nr || 0)
+					return a - b
+				},
+				cell(info) {
+					const system = info.row.original
+					const sent = system.info.ns || 0
+					const received = system.info.nr || 0
+					const userSettings = useStore($userSettings)
+					const sentFmt = formatBytes(sent, true, userSettings.unitNet, true)
+					const receivedFmt = formatBytes(received, true, userSettings.unitNet, true)
+					return (
+						<span className={cn("tabular-nums whitespace-nowrap", { "ps-1": viewMode === "table" })}>
+							<span className="text-green-600">↑</span> {Math.round(sentFmt.value)} {sentFmt.unit}{" "}
+							<span className="text-blue-600">↓</span> {Math.round(receivedFmt.value)} {receivedFmt.unit}
+						</span>
+					)
+				},
+        	},
+        	{
 				id: "loadAverage",
 				accessorFn: ({ info }) => {
 					const { l1 = 0, l5 = 0, l15 = 0 } = info
 					return l1 + l5 + l15
+
 				},
 				name: () => t({ message: "Load Avg", comment: "Short label for load average" }),
 				size: 0,
@@ -256,27 +285,6 @@ export default function SystemsTable() {
 								<span key={i}>{decimalString(la, la >= 10 ? 1 : 2)}</span>
 							))}
 						</div>
-					)
-				},
-			},
-			{
-				accessorFn: (originalRow) => originalRow.info.b || 0,
-				id: "net",
-				name: () => t`Net`,
-				size: 0,
-				Icon: EthernetIcon,
-				header: sortableHeader,
-				cell(info) {
-					if (info.row.original.status !== "up") {
-						return null
-					}
-					const val = info.getValue() as number
-					const userSettings = useStore($userSettings)
-					const { value, unit } = formatBytes(val, true, userSettings.unitNet, true)
-					return (
-						<span className="tabular-nums whitespace-nowrap">
-							{decimalString(value, value >= 100 ? 1 : 2)} {unit}
-						</span>
 					)
 				},
 			},
