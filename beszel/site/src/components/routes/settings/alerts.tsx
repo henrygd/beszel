@@ -393,6 +393,7 @@ function ConfiguredAlertsTab({ alerts, systems }: { alerts: AlertRecord[]; syste
 						<>
 							<SheetHeader>
 								<SheetTitle><Trans>Edit Alert</Trans></SheetTitle>
+								<SheetDescription>If you want to change an alert for a specific system, you’ll need to remove it from the current alert and create a new one.</SheetDescription>
 							</SheetHeader>
 							<MultiSystemAlertSheetContent
 								key={editGroupIdx}
