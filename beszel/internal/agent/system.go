@@ -270,8 +270,8 @@ func (a *Agent) getSystemStats() system.Stats {
 	systemStats.ProcessStates = processStates
 
 	// Get top 3 CPU and memory processes
-	systemStats.TopCpuProcesses = getTopProcesses(allProcesses, "cpu", 3)
-	systemStats.TopMemProcesses = getTopProcesses(allProcesses, "memory", 3)
+	systemStats.TopCpuProcesses = getTopProcesses(allProcesses, "cpu", 4)
+	systemStats.TopMemProcesses = getTopProcesses(allProcesses, "memory", 4)
 
 	// update base system info
 	a.systemInfo.Cpu = systemStats.Cpu
