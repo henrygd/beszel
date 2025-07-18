@@ -43,6 +43,7 @@ import { useLingui } from "@lingui/react/macro"
 import { $router, navigate } from "../router"
 import { getPagePath } from "@nanostores/router"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
+import { ContainerHealthTable, DockerHealthRow } from "../charts/container-health-table"
 
 const AreaChartDefault = lazy(() => import("../charts/area-chart"))
 const ContainerChart = lazy(() => import("../charts/container-chart"))
@@ -706,6 +707,12 @@ export default function SystemDetail({ name }: { name: string }) {
 		translatedStatus = t({ message: "Down", comment: "Context: System is down" })
 	}
 
+	const filteredRows = containerDataToRows(containerData, containerColors)
+  .filter(row =>
+    (containerFilter.length === 0 || containerFilter.includes(row.name)) &&
+    (stackFilter.length === 0 || stackFilter.includes(row.stack))
+  );
+
 	return (
 		<>
 			<div id="chartwrap" className="grid gap-4 mb-10 overflow-x-clip">
@@ -1016,7 +1023,7 @@ export default function SystemDetail({ name }: { name: string }) {
 														}
 													}
 													
-													return container && typeof container === 'object' && 'v' in container && 
+													return container && typeof container === 'object' && 
 														container.v && Object.keys(container.v).length > 0
 												})
 											})
@@ -1038,55 +1045,18 @@ export default function SystemDetail({ name }: { name: string }) {
 											)
 										})()}
 									</ChartCard>
-									{/* Docker Health+Uptime Combined Chart */}
-									<ChartCard
-										empty={dataEmpty}
-										grid={grid}
-										title={dockerOrPodman(t`Docker Health & Uptime`, system)}
-										description={t`Health status and Uptime of containers`}
-									>
-										{(() => {
-											// Check if any containers have health or uptime data, accounting for current filters
-											const hasHealthUptime = containerData.some(stats => {
-												if (!stats.created) return false
-												return Object.entries(stats).some(([containerName, container]) => {
-													if (containerName === "created") return false
-													
-													// Apply container filter
-													if (containerFilter.length > 0 && !containerFilter.includes(containerName)) {
-														return false
-													}
-													
-													// Apply stack filter
-													if (stackFilter.length > 0 && typeof container === 'object' && container) {
-														const stackName = (container as any).p || "—"
-														if (!stackFilter.includes(stackName)) {
-															return false
-														}
-													}
-													
-													return container && typeof container === 'object' && 
-														(('h' in container && container.h) || ('u' in container && container.u))
-												})
-											})
-											
-											return hasHealthUptime ? (
-												<ContainerChart chartData={chartData} dataKey="h" chartType={ChartType.HealthUptime} />
-											) : (
-												<div className="flex items-center justify-center h-full opacity-100">
-													<div className="text-center space-y-2">
-														<ContainerIcon className="h-8 w-8 mx-auto text-muted-foreground" />
-														<p className="text-sm text-muted-foreground">
-															{containerFilter.length > 0 || stackFilter.length > 0 
-																? t`No health/uptime data for the selected containers`
-																: t`No health/uptime data found`
-															}
-														</p>
-													</div>
-												</div>
-											)
-										})()}
-									</ChartCard>
+								</div>
+								{/* Advanced Docker Health Table */}
+								<div className="mt-6">
+									<Card>
+										<CardHeader className="pb-2 pt-2">
+											<CardTitle className="text-xl sm:text-2xl">Docker Health & Uptime</CardTitle>
+											<CardDescription className="mt-1">Health status and Uptime of containers</CardDescription>
+										</CardHeader>
+										<CardContent className="pt-0">
+											<ContainerHealthTable data={filteredRows} />
+										</CardContent>
+									</Card>
 								</div>
 							</>
 						) : (
@@ -1207,4 +1177,53 @@ function ChartCard({
 			</div>
 		</Card>
 	)
+}
+
+// Helper to convert containerData to DockerHealthRow[]
+function containerDataToRows(containerData: any[], containerColors: Record<string, string>): DockerHealthRow[] {
+  // Find the latest data point with container stats
+  let latestStats = undefined
+  for (let i = containerData.length - 1; i >= 0; i--) {
+    if (containerData[i] && containerData[i].created) {
+      latestStats = containerData[i]
+      break
+    }
+  }
+  if (!latestStats) return []
+  return Object.entries(latestStats)
+    .filter(([name, val]) => name !== "created" && typeof val === "object" && val)
+    .map(([name, val]: [string, any]) => {
+      let healthValue = 0
+      let health = "Unknown"
+      if (val.h) {
+        switch ((val.h as string).toLowerCase()) {
+          case "healthy": healthValue = 3; health = "Healthy"; break
+          case "starting": healthValue = 2; health = "Starting"; break
+          case "unhealthy": healthValue = 1; health = "Unhealthy"; break
+          default: healthValue = 0; health = "None"; break
+        }
+      }
+      let uptime = "N/A"
+      if (typeof val.u === "number" && !isNaN(val.u)) {
+        const hours = Math.floor(val.u / 3600)
+        const minutes = Math.floor((val.u % 3600) / 60)
+        const days = Math.floor(hours / 24)
+        const remainingHours = hours % 24
+        if (days > 0) {
+          uptime = `${days}d ${remainingHours}h ${minutes}m`
+        } else {
+          uptime = `${hours}h ${minutes}m`
+        }
+      }
+      return {
+        id: val.idShort || name,
+        name,
+        stack: val.p || "—",
+        health,
+        healthValue,
+        status: val.s || "—",
+        uptime,
+        color: containerColors[name] || `hsl(${Math.random() * 360}, 60%, 55%)`,
+      }
+    })
 }
