@@ -48,6 +48,7 @@ const DiskChart = lazy(() => import("../charts/disk-chart"))
 const SwapChart = lazy(() => import("../charts/swap-chart"))
 const TemperatureChart = lazy(() => import("../charts/temperature-chart"))
 const GpuPowerChart = lazy(() => import("../charts/gpu-power-chart"))
+const LoadAverageChart = lazy(() => import("../charts/load-average-chart"))
 
 const cache = new Map<string, any>()
 
@@ -592,6 +593,18 @@ export default function SystemDetail({ name }: { name: string }) {
 							description={t`Swap space used by the system`}
 						>
 							<SwapChart chartData={chartData} />
+						</ChartCard>
+					)}
+
+					{/* Load Average chart */}
+					{system.info.l1 !== undefined && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Load Average`}
+							description={t`System load averages over time`}
+						>
+							<LoadAverageChart chartData={chartData} />
 						</ChartCard>
 					)}
 
