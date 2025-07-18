@@ -11,7 +11,7 @@ import {
 	useYAxisWidth,
 	cn,
 	formatShortDate,
-	toFixedWithoutTrailingZeros,
+	toFixedFloat,
 	chartMargin,
 } from "@/lib/utils"
 import { ChartData } from "@/types"
@@ -66,7 +66,7 @@ export default memo(function ProcessStateChart({ chartData }: { chartData: Chart
 						domain={[0, "auto"]}
 						width={yAxisWidth}
 						tickFormatter={(value: number) => {
-							const val = toFixedWithoutTrailingZeros(value, 0)
+							const val = toFixedFloat(value, 0)
 							return updateYAxisWidth(val + "")
 						}}
 						tickLine={false}
