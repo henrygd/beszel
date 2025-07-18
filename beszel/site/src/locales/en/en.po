@@ -447,6 +447,16 @@ msgstr "Invalid email address."
 msgid "Kernel"
 msgstr "Kernel"
 
+#. Load average 15 minutes
+#: src/components/systems-table/systems-table.tsx
+msgid "L15"
+msgstr "L15"
+
+#. Load average 5 minutes
+#: src/components/systems-table/systems-table.tsx
+msgid "L5"
+msgstr "L5"
+
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Language"
@@ -459,6 +469,14 @@ msgstr "Layout"
 #: src/components/mode-toggle.tsx
 msgid "Light"
 msgstr "Light"
+
+#: src/lib/utils.ts
+msgid "Load Average 15m"
+msgstr "Load Average 15m"
+
+#: src/lib/utils.ts
+msgid "Load Average 5m"
+msgstr "Load Average 5m"
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -846,6 +864,14 @@ msgstr "Top CPU Users"
 #: src/components/routes/system.tsx
 msgid "Top Memory Users"
 msgstr "Top Memory Users"
+
+#: src/lib/utils.ts
+msgid "Triggers when 15 minute load average exceeds a threshold"
+msgstr "Triggers when 15 minute load average exceeds a threshold"
+
+#: src/lib/utils.ts
+msgid "Triggers when 5 minute load average exceeds a threshold"
+msgstr "Triggers when 5 minute load average exceeds a threshold"
 
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"

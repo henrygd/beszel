@@ -1,5 +1,5 @@
 import React from "react"
-import { cn, isAdmin } from "@/lib/utils"
+import { cn, isAdmin, isReadOnlyUser } from "@/lib/utils"
 import { buttonVariants } from "../../ui/button"
 import { $router, Link, navigate } from "../../router"
 import { useStore } from "@nanostores/react"
@@ -12,6 +12,7 @@ interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
 		title: string
 		icon?: React.FC<React.SVGProps<SVGSVGElement>>
 		admin?: boolean
+		noReadOnly?: boolean
 	}[]
 }
 
@@ -46,7 +47,7 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
 			{/* Desktop View */}
 			<nav className={cn("hidden md:grid gap-1", className)} {...props}>
 				{items.map((item) => {
-					if (item.admin && !isAdmin()) {
+					if ((item.admin && !isAdmin()) || (item.noReadOnly && isReadOnlyUser())) {
 						return null
 					}
 					return (

@@ -452,6 +452,16 @@ msgstr "Napačen e-poštni naslov."
 msgid "Kernel"
 msgstr "Jedro"
 
+#. Load average 15 minutes
+#: src/components/systems-table/systems-table.tsx
+msgid "L15"
+msgstr ""
+
+#. Load average 5 minutes
+#: src/components/systems-table/systems-table.tsx
+msgid "L5"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Jezik"
@@ -464,6 +474,14 @@ msgstr "Postavitev"
 #: src/components/mode-toggle.tsx
 msgid "Light"
 msgstr "Svetlo"
+
+#: src/lib/utils.ts
+msgid "Load Average 15m"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Load Average 5m"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -850,6 +868,14 @@ msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Top Memory Users"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Triggers when 15 minute load average exceeds a threshold"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr ""
 
 #: src/lib/utils.ts

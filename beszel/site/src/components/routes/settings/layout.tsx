@@ -63,7 +63,7 @@ export default function SettingsLayout() {
 			title: t`Tokens & Fingerprints`,
 			href: getPagePath($router, "settings", { name: "tokens" }),
 			icon: FingerprintIcon,
-			// admin: true,
+			noReadOnly: true,
 		},
 		{
 			title: t`YAML Config`,
@@ -95,8 +95,8 @@ export default function SettingsLayout() {
 			</CardHeader>
 			<CardContent className="p-0">
 				<Separator className="hidden md:block my-5" />
-				<div className="flex flex-col gap-3.5 md:flex-row md:gap-5 lg:gap-10">
-					<aside className="md:max-w-44 min-w-40">
+				<div className="flex flex-col gap-3.5 md:flex-row md:gap-5 lg:gap-12">
+					<aside className="md:max-w-52 min-w-40">
 						<SidebarNav items={sidebarNavItems} />
 					</aside>
 					<div className="flex-1 min-w-0">

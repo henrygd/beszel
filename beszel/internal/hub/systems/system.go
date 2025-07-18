@@ -365,7 +365,7 @@ func (sys *System) closeSSHConnection() {
 // The system will be set as down a few seconds later if the connection is not re-established.
 func (sys *System) closeWebSocketConnection() {
 	if sys.WsConn != nil {
-		sys.WsConn.Close()
+		sys.WsConn.Close(nil)
 	}
 }
 
