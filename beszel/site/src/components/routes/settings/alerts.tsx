@@ -3,7 +3,6 @@ import { useStore } from "@nanostores/react"
 import { $alerts, $systems, pb } from "@/lib/stores"
 import { alertInfo } from "@/lib/utils"
 import { Separator } from "@/components/ui/separator"
-import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import type { AlertRecord, SystemRecord } from "@/types"
 import React from "react"
@@ -19,19 +18,149 @@ import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
-  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { updateAlertsForSystems } from "@/components/alerts/alerts-system"
 import { PlusIcon } from "lucide-react"
 import MultiSystemAlertSheetContent from "@/components/alerts/alerts-multi-sheet"
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion"
+import { useReactTable, getCoreRowModel, flexRender, getPaginationRowModel, getSortedRowModel, getFilteredRowModel, SortingState, ColumnFiltersState, VisibilityState } from "@tanstack/react-table"
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "@/components/ui/table"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { MoreHorizontal } from "lucide-react"
+import { PenBoxIcon, Trash2Icon, ServerIcon, ClockIcon, OctagonAlert, TagIcon, ArrowUpDownIcon } from "lucide-react"
+import { updateAlerts } from "@/lib/utils"
 
-function ConfiguredAlertsTab({ alerts, systems }: { alerts: AlertRecord[]; systems: SystemRecord[] }) {
+
+// Reusable DataTable component
+function DataTable<TData extends { alerts: { id: string }[] }>({
+  table,
+  columnsLength,
+}: {
+  table: ReturnType<typeof useReactTable<TData>>,
+  columnsLength: number,
+}) {
+  const pageSizes = [5, 10, 15, 20];
+  // Bulk delete logic
+  const selectedRows = table.getFilteredSelectedRowModel().rows;
+  const selectedAlertIds = selectedRows.flatMap(row => row.original.alerts.map(a => a.id));
+  async function handleBulkDelete() {
+    if (!selectedAlertIds.length) return;
+    if (!window.confirm(`Delete ${selectedAlertIds.length} selected alerts?`)) return;
+    for (const id of selectedAlertIds) {
+      await pb.collection("alerts").delete(id);
+    }
+    await updateAlerts();
+    // Optionally, clear selection
+    table.resetRowSelection();
+  }
+  return (
+    <div>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columnsLength}
+                  className="h-24 text-center"
+                >
+                  No results.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      <div className="flex items-center justify-between py-4 gap-2">
+        <div className="text-muted-foreground text-sm">
+          {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s) selected.
+        </div>
+        <div className="flex-1 flex justify-center">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                Per Page: {table.getState().pagination.pageSize}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="center">
+              {pageSizes.map((size) => (
+                <DropdownMenuItem
+                  key={size}
+                  onClick={() => table.setPageSize(size)}
+                  className={table.getState().pagination.pageSize === size ? "font-semibold" : ""}
+                >
+                  {size}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        <div className="flex gap-2 items-center">
+          <Button
+            variant="destructive"
+            size="sm"
+            disabled={selectedAlertIds.length === 0}
+            onClick={handleBulkDelete}
+          >
+            Delete Selected
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ConfiguredAlertsTab({ alerts, systems, onAddAlert }: { alerts: AlertRecord[]; systems: SystemRecord[]; onAddAlert: () => void }) {
 	// Group alerts by type (name)
 	const alertsByType: Record<string, AlertRecord[]> = React.useMemo(() => {
 		const map: Record<string, AlertRecord[]> = {};
@@ -48,7 +177,6 @@ function ConfiguredAlertsTab({ alerts, systems }: { alerts: AlertRecord[]; syste
 	const [editValue, setEditValue] = React.useState<number | null>(null)
 	const [editMin, setEditMin] = React.useState<number | null>(null)
 
-	// Sync edit state with alert group when Sheet opens
 	React.useEffect(() => {
 		if (editAlerts && openSheet) {
 			setEditValue(editAlerts[0]?.value ?? null)
@@ -104,164 +232,243 @@ function ConfiguredAlertsTab({ alerts, systems }: { alerts: AlertRecord[]; syste
 		closeSheet();
 	}
 
-	const alertTypeOptions = Object.keys(alertInfo).map((key) => ({ label: alertInfo[key].name(), value: key }));
-	const systemOptions = systems.map((s) => ({ label: s.name, value: s.id }));
+	// --- FLATTENED DATA FOR TABLE ---
 
-	// --- FILTER STATE ---
-	const [filterTypes, setFilterTypes] = React.useState<string[]>([]);
-	const [filterSystems, setFilterSystems] = React.useState<string[]>([]);
+type AlertTableRow = {
+	type: string;
+	systemNames: string;
+	min: number;
+	value: number;
+	alerts: AlertRecord[];
+};
 
-	// --- FILTERED TYPES ---
-	const filteredTypes = Object.keys(alertsByType).filter(type => {
-		const typeMatch = filterTypes.length === 0 || filterTypes.includes(type);
-		const systemMatch = filterSystems.length === 0 || alertsByType[type].some(a => filterSystems.includes(a.system));
-		return typeMatch && systemMatch;
-	});
+const tableData: AlertTableRow[] = React.useMemo(() => {
+	const rows: AlertTableRow[] = [];
+	for (const type of Object.keys(alertsByType)) {
+		const groupMap: Record<string, AlertRecord[]> = {};
+		for (const alert of alertsByType[type]) {
+			const key = `${alert.min}|${alert.value}`;
+			if (!groupMap[key]) groupMap[key] = [];
+			groupMap[key].push(alert);
+		}
+		for (const [key, groupAlerts] of Object.entries(groupMap)) {
+			const min = groupAlerts[0].min;
+			const value = groupAlerts[0].value;
+			const systemNames = groupAlerts
+				.map(alert => systems.find(s => s.id === alert.system)?.name ?? alert.system)
+				.join(', ');
+			rows.push({
+				type: alertInfo[type]?.name() ?? type,
+				systemNames,
+				min,
+				value,
+				alerts: groupAlerts,
+			});
+		}
+	}
+	return rows;
+}, [alertsByType, systems]);
 
-	return (
-		<div className="space-y-6">
-			{/* FILTERS ROW */}
-			<div className="flex flex-wrap gap-3 mb-2 items-center">
-				{/* Alert Type Filter */}
+// --- TABLE STATE ---
+const [sorting, setSorting] = React.useState<SortingState>([])
+const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
+const [rowSelection, setRowSelection] = React.useState({})
+const [combinedFilter, setCombinedFilter] = React.useState("");
+const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 5 });
+
+// --- TABLE COLUMNS ---
+const columns = React.useMemo<import("@tanstack/react-table").ColumnDef<AlertTableRow, any>[]>(() => [
+	{
+		id: "select",
+		enableSorting: false,
+		enableHiding: false,
+		header: ({ table }) => (
+			<Checkbox
+				checked={
+					table.getIsAllPageRowsSelected() ||
+					(table.getIsSomePageRowsSelected() && "indeterminate")
+				}
+				onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+				aria-label="Select all"
+			/>
+		),
+		cell: ({ row }) => (
+			<Checkbox
+				checked={row.getIsSelected()}
+				onCheckedChange={(value) => row.toggleSelected(!!value)}
+				aria-label="Select row"
+			/>
+		),
+	},
+	{ 
+		accessorKey: "type", 
+		name: () => `Type`,
+		Icon: TagIcon,
+		header: ({ column }) => (
+			<Button
+				variant="ghost"
+				className="justify-center w-full"
+				onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+			>
+				<TagIcon className="mr-2 h-4 w-4 opacity-70" />
+				Type <ArrowUpDownIcon className="ml-2 h-3 w-3" />
+			</Button>
+		),
+		cell: info => <span className="text-center block">{info.getValue()}</span>,
+	},
+	{
+		accessorKey: "systemNames",
+		name: () => `System`,
+		Icon: ServerIcon,
+		header: ({ column }) => (
+			<Button
+				variant="ghost"
+				className="justify-center w-full"
+				onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+			>
+				<ServerIcon className="mr-2 h-4 w-4 opacity-70" />
+				System <ArrowUpDownIcon className="ml-2 h-3 w-3" />
+			</Button>
+		),
+		cell: info => <span className="text-center block">{info.getValue()}</span>,
+		filterFn: (row, columnId, filterValue) => {
+			const systemNamesRaw = row.getValue(columnId);
+			const systemNames = typeof systemNamesRaw === "string" ? systemNamesRaw.toLowerCase() : "";
+			const type = row.original.type?.toLowerCase() ?? "";
+			const value = (filterValue || "").toLowerCase();
+			return systemNames.includes(value) || type.includes(value);
+		},
+	},
+	{ 
+		accessorKey: "value",
+		name: () => `Value`,
+		Icon: OctagonAlert,
+		header: ({ column }) => (
+			<Button
+				variant="ghost"
+				className="justify-center w-full"
+				onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+			>
+				<OctagonAlert className="mr-2 h-4 w-4 opacity-70" />
+				Value <ArrowUpDownIcon className="ml-2 h-3 w-3" />
+			</Button>
+		),
+		cell: info => <span className="text-center block">{info.getValue()}</span>,
+	},
+	{ 
+		accessorKey: "min",
+		name: () => `Duration`,
+		Icon: ClockIcon,
+		header: ({ column }) => (
+			<Button
+				variant="ghost"
+				className="justify-center w-full"
+				onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+			>
+				<ClockIcon className="mr-2 h-4 w-4 opacity-70" />
+				Duration <ArrowUpDownIcon className="ml-2 h-3 w-3" />
+			</Button>
+		),
+		cell: info => <span className="text-center block">{info.getValue()}</span>,
+	},
+	{
+		id: "actions",
+		enableHiding: false,
+		cell: ({ row }) => {
+			const groupAlerts = row.original.alerts
+			return (
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<Button variant="outline" className="min-w-[180px] flex items-center justify-between">
-							<span className="truncate">
-								{filterTypes.length === 0
-									? <Trans>All Types</Trans>
-									: alertTypeOptions.filter(o => filterTypes.includes(o.value)).map(o => o.label).join(", ")}
-							</span>
+						<Button variant="ghost" className="h-8 w-8 p-0">
+							<span className="sr-only">Open menu</span>
+							<MoreHorizontal />
 						</Button>
 					</DropdownMenuTrigger>
-					<DropdownMenuContent className="w-64 max-h-60 overflow-auto">
-						{alertTypeOptions.map((option) => (
-							<DropdownMenuCheckboxItem
-								key={option.value}
-								checked={filterTypes.includes(option.value)}
-								onCheckedChange={(checked) => {
-									if (checked) {
-										setFilterTypes([...filterTypes, option.value]);
-									} else {
-										setFilterTypes(filterTypes.filter((v) => v !== option.value));
-									}
-								}}
-							>
-								{option.label}
-							</DropdownMenuCheckboxItem>
-						))}
+					<DropdownMenuContent align="end">
+						<DropdownMenuLabel>Actions</DropdownMenuLabel>
+						<DropdownMenuItem onClick={() => openEditSheet(groupAlerts)}>
+							<PenBoxIcon className="me-2.5 size-4" />
+							<Trans>Edit</Trans>
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={() => handleDelete(groupAlerts)}>
+							<Trash2Icon className="me-2.5 size-4" />
+							<Trans>Delete</Trans>
+						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
-				{/* System Filter */}
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button variant="outline" className="min-w-[180px] flex items-center justify-between">
-							<span className="truncate">
-								{filterSystems.length === 0
-									? <Trans>All Systems</Trans>
-									: systemOptions.filter(o => filterSystems.includes(o.value)).map(o => o.label).join(", ")}
-							</span>
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent className="w-64 max-h-60 overflow-auto">
-						{systemOptions.map((option) => (
-							<DropdownMenuCheckboxItem
-								key={option.value}
-								checked={filterSystems.includes(option.value)}
-								onCheckedChange={(checked) => {
-									if (checked) {
-										setFilterSystems([...filterSystems, option.value]);
-									} else {
-										setFilterSystems(filterSystems.filter((v) => v !== option.value));
-									}
-								}}
-							>
-								{option.label}
-							</DropdownMenuCheckboxItem>
-						))}
-					</DropdownMenuContent>
-				</DropdownMenu>
+			)
+		},
+	},
+], [openEditSheet, handleDelete]);
+
+const table = useReactTable({
+	data: tableData,
+	columns,
+	onSortingChange: setSorting,
+	onColumnFiltersChange: setColumnFilters,
+	getCoreRowModel: getCoreRowModel(),
+	getPaginationRowModel: getPaginationRowModel(),
+	getSortedRowModel: getSortedRowModel(),
+	getFilteredRowModel: getFilteredRowModel(),
+	onColumnVisibilityChange: setColumnVisibility,
+	onRowSelectionChange: setRowSelection,
+	state: {
+		sorting,
+		columnFilters,
+		columnVisibility,
+		rowSelection,
+		pagination,
+	},
+	onPaginationChange: setPagination,
+});
+
+return (
+	<div className="w-full">
+		<div className="flex items-center py-4 gap-2">
+			<Input
+				placeholder="Filter systems or type..."
+				value={combinedFilter}
+				onChange={event => {
+					setCombinedFilter(event.target.value);
+					table.getColumn("systemNames")?.setFilterValue(event.target.value);
+				}}
+				className="max-w-sm"
+			/>
+			<div className="flex items-center gap-2 ml-auto">
+				<Button variant="outline" onClick={onAddAlert}>
+					<PlusIcon className="w-4 h-4 mr-2" />
+					<Trans>Add Alert</Trans>
+				</Button>
 			</div>
-			{/* ALERT ACCORDION BY TYPE, GROUPED BY (min, value) */}
-			{filteredTypes.length === 0 ? (
-				<p className="text-muted-foreground"><Trans>No alerts configured.</Trans></p>
-			) : (
-				<Accordion type="single" collapsible className="w-full">
-					{filteredTypes.map((type) => {
-						// Group alerts of this type by (min, value)
-						const groupMap: Record<string, AlertRecord[]> = {};
-						for (const alert of alertsByType[type]) {
-							const key = `${alert.min}|${alert.value}`;
-							if (!groupMap[key]) groupMap[key] = [];
-							groupMap[key].push(alert);
-						}
-						return (
-							<AccordionItem key={type} value={type}>
-								<AccordionTrigger>
-									{alertInfo[type]?.name() ?? type}
-								</AccordionTrigger>
-								<AccordionContent className="flex flex-col gap-4 text-balance">
-									{Object.entries(groupMap).map(([key, groupAlerts]) => {
-										const min = groupAlerts[0].min;
-										const value = groupAlerts[0].value;
-										const systemNames = groupAlerts
-											.map(alert => systems.find(s => s.id === alert.system)?.name ?? alert.system)
-											.join(', ');
-										return (
-											<Card key={key} className="p-4 flex flex-col gap-2">
-												<div className="flex justify-between items-center">
-													<div>
-														<div className="font-semibold">{systemNames}</div>
-														<div className="text-sm text-muted-foreground">
-															<Trans>Min</Trans>: <b>{min}</b> | <Trans>Value</Trans>: <b>{value}</b>
-														</div>
-													</div>
-													<div className="flex gap-2">
-														<Button size="sm" variant="outline" onClick={() => openEditSheet(groupAlerts)}>
-															<Trans>Edit</Trans>
-														</Button>
-														<Button size="sm" variant="destructive" onClick={() => handleDelete(groupAlerts)}>
-															<Trans>Delete</Trans>
-														</Button>
-													</div>
-												</div>
-											</Card>
-										);
-									})}
-								</AccordionContent>
-							</AccordionItem>
-						);
-					})}
-				</Accordion>
-			)}
-			{/* Single Sheet instance for editing */}
-			<Sheet open={openSheet} onOpenChange={open => !open ? closeSheet() : setOpenSheet(true)}>
-				{editAlerts ? (
-					<SheetContent side="right" className="flex flex-col h-full">
-						<SheetHeader>
-							<SheetTitle><Trans>Edit Alert</Trans></SheetTitle>
-							<SheetDescription>Edit the alert configuration for these systems.</SheetDescription>
-						</SheetHeader>
-						<MultiSystemAlertSheetContent
-							systems={systems}
-							alerts={alerts}
-							initialSystems={editAlerts.map(a => a.system)}
-							onClose={closeSheet}
-							singleAlertType={editAlerts[0]?.name}
-							value={editValue ?? undefined}
-							min={editMin ?? undefined}
-							onValueChange={setEditValue}
-							onMinChange={setEditMin}
-						/>
-						<Button className="mt-4 self-end" onClick={() => handleSave(editAlerts)}>
-							<Trans>Save</Trans>
-						</Button>
-					</SheetContent>
-				) : (
-					openSheet && closeSheet(), null
-				)}
-			</Sheet>
 		</div>
-	);
+		<DataTable table={table} columnsLength={columns.length} />
+		{/* Single Sheet instance for editing */}
+		<Sheet open={openSheet} onOpenChange={open => open ? setOpenSheet(true) : closeSheet()}>
+			{editAlerts ? (
+				<SheetContent side="right" className="flex flex-col h-full">
+					<SheetHeader>
+						<SheetTitle><Trans>Edit Alert</Trans></SheetTitle>
+						<SheetDescription>Edit the alert configuration for these systems.</SheetDescription>
+					</SheetHeader>
+					<MultiSystemAlertSheetContent
+						systems={systems}
+						alerts={alerts}
+						initialSystems={editAlerts.map(a => a.system)}
+						onClose={closeSheet}
+						singleAlertType={editAlerts[0]?.name}
+						value={editValue ?? undefined}
+						min={editMin ?? undefined}
+						onValueChange={setEditValue}
+						onMinChange={setEditMin}
+					/>
+				</SheetContent>
+			) : (
+				openSheet && closeSheet(), null
+			)}
+		</Sheet>
+	</div>
+)
 }
 
 export default function AlertsSettingsPage() {
@@ -278,16 +485,12 @@ export default function AlertsSettingsPage() {
 				<h3 className="text-xl font-medium">
 					<Trans>Alerts</Trans>
 				</h3>
-				<Button variant="outline" onClick={() => setAddSheetOpen(true)}>
-					<PlusIcon className="w-4 h-4 mr-2" />
-					<Trans>Add Alert</Trans>
-				</Button>
 			</div>
 			<p className="text-sm text-muted-foreground leading-relaxed mb-4">
 				<Trans>Overview of all configured alerts, grouped by alert type and configuration.</Trans>
 			</p>
 			<Separator className="my-4" />
-			<ConfiguredAlertsTab alerts={alerts} systems={systems} />
+			<ConfiguredAlertsTab alerts={alerts} systems={systems} onAddAlert={() => setAddSheetOpen(true)} />
 
 			{/* Add Alert Sheet */}
 			<Sheet open={addSheetOpen} onOpenChange={setAddSheetOpen}>
@@ -295,7 +498,7 @@ export default function AlertsSettingsPage() {
 					<SheetHeader>
 						<SheetTitle><Trans>Add Alert</Trans></SheetTitle>
 						<SheetDescription>
-							<Trans>Select systems and configure alerts for each type below.</Trans>
+							<Trans>Select systems and configure alerts below.</Trans>
 						</SheetDescription>
 					</SheetHeader>
 					<MultiSystemAlertSheetContent
@@ -309,4 +512,4 @@ export default function AlertsSettingsPage() {
 			</Sheet>
 		</div>
 	)
-} 
+}
