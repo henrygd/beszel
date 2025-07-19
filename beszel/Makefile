@@ -33,6 +33,18 @@ build-web-ui:
 build-agent: tidy
 	GOOS=$(OS) GOARCH=$(ARCH) go build -o ./build/beszel-agent_$(OS)_$(ARCH) -ldflags "-w -s" beszel/cmd/agent
 
+build-agent-mips: tidy
+	GOOS=$(OS) GOARCH=mips go build -o ./build/beszel-agent_$(OS)_mips -ldflags "-w -s" beszel/cmd/agent
+
+build-agent-mipsle: tidy
+	GOOS=$(OS) GOARCH=mipsle go build -o ./build/beszel-agent_$(OS)_mipsle -ldflags "-w -s" beszel/cmd/agent
+
+build-agent-mips64: tidy
+	GOOS=$(OS) GOARCH=mips64 go build -o ./build/beszel-agent_$(OS)_mips64 -ldflags "-w -s" beszel/cmd/agent
+
+build-agent-mips64le: tidy
+	GOOS=$(OS) GOARCH=mips64le go build -o ./build/beszel-agent_$(OS)_mips64le -ldflags "-w -s" beszel/cmd/agent
+
 build-hub: tidy $(if $(filter false,$(SKIP_WEB)),build-web-ui)
 	GOOS=$(OS) GOARCH=$(ARCH) go build -o ./build/beszel_$(OS)_$(ARCH) -ldflags "-w -s" beszel/cmd/hub
 

@@ -35,9 +35,11 @@ builds:
       - amd64
       - arm64
       - arm
+      - mips
       - mips64
-      - riscv64
+      - mips64le
       - mipsle
+      - riscv64
       - ppc64le
     ignore:
       - goos: freebsd
