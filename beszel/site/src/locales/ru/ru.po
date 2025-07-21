@@ -8,7 +8,7 @@ msgstr ""
 "Language: ru\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-07-14 06:25\n"
+"PO-Revision-Date: 2025-07-21 19:36\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -246,7 +246,7 @@ msgstr "Скопируйте команду для установки агент
 
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
-msgstr "Скопируйте <0>содержимое docker-compose.yml</0> для агента ниже, или зарегистрируйте агентов автоматически с помощью <1>универсального токена</1>."
+msgstr "Скопируйте содержимое <0>docker-compose.yml</0> для агента ниже, или зарегистрируйте агентов автоматически с помощью <1>универсального токена</1>."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
