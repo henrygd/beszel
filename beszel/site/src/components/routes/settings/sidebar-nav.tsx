@@ -33,7 +33,7 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
 							return (
 								<SelectItem key={item.href} value={item.href}>
 									<span className="flex items-center gap-2 truncate">
-										{item.icon && <item.icon className="h-4 w-4" />}
+										{item.icon && <item.icon className="size-4" />}
 										<span className="truncate">{item.title}</span>
 									</span>
 								</SelectItem>
@@ -45,7 +45,7 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
 			</div>
 
 			{/* Desktop View */}
-			<nav className={cn("hidden md:grid gap-1", className)} {...props}>
+			<nav className={cn("hidden md:grid gap-1 sticky top-6", className)} {...props}>
 				{items.map((item) => {
 					if ((item.admin && !isAdmin()) || (item.noReadOnly && isReadOnlyUser())) {
 						return null
@@ -60,7 +60,7 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
 								page?.path === item.href ? "bg-muted hover:bg-muted" : "hover:bg-muted/50"
 							)}
 						>
-							{item.icon && <item.icon className="h-4 w-4 shrink-0" />}
+							{item.icon && <item.icon className="size-4 shrink-0" />}
 							<span className="truncate">{item.title}</span>
 						</Link>
 					)

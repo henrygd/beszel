@@ -190,14 +190,13 @@ export interface AlertRecord extends RecordModel {
 }
 
 export interface AlertsHistoryRecord extends RecordModel {
-  alert: string;
-  user: string;
-  system: string;
-  name: string;
-  value: number;
-  state: "active" | "solved";
-  created_date: string;
-  solved_date?: string | null;
+	alert: string
+	user: string
+	system: string
+	name: string
+	val: number
+	created: string
+	resolved?: string | null
 }
 
 export type ChartTimes = "1h" | "12h" | "24h" | "1w" | "30d"
@@ -221,9 +220,6 @@ export interface UserSettings {
 	unitTemp?: Unit
 	unitNet?: Unit
 	unitDisk?: Unit
-
-	// New field for alert history retention (e.g., '1m', '3m', '6m', '1y')
-	alertHistoryRetention?: string
 }
 
 type ChartDataContainer = {

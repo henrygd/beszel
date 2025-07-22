@@ -43,7 +43,6 @@
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
 		"recharts": "^2.15.3",
-		"sonner": "^2.0.6",
 		"tailwind-merge": "^2.6.0",
 		"tailwindcss-animate": "^1.0.7",
 		"valibot": "^0.42.1"
@@ -52,6 +51,7 @@
 		"@lingui/cli": "^5.3.2",
 		"@lingui/swc-plugin": "^5.5.2",
 		"@lingui/vite-plugin": "^5.3.2",
+		"@tailwindcss/container-queries": "^0.1.1",
 		"@types/bun": "^1.2.15",
 		"@types/react": "^18.3.23",
 		"@types/react-dom": "^18.3.7",

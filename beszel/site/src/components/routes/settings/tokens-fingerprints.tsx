@@ -159,7 +159,7 @@ const SectionUniversalToken = memo(() => {
 					or on hub restart.
 				</Trans>
 			</p>
-			<div className="min-h-16 overflow-auto max-w-full inline-flex items-center gap-5 mt-3 border py-2 pl-5 pr-4 rounded-md">
+			<div className="min-h-16 overflow-auto max-w-full inline-flex items-center gap-5 mt-3 border py-2 ps-5 pe-4 rounded-md">
 				{!isLoading && (
 					<>
 						<Switch

@@ -110,10 +110,14 @@ const ActiveAlerts = memo(({ activeAlerts }: { activeAlerts: AlertRecord[] }) =>
 										{alert.sysname} {info.name().toLowerCase().replace("cpu", "CPU")}
 									</AlertTitle>
 									<AlertDescription>
-										<Trans>
-											Exceeds {alert.value}
-											{info.unit} in last <Plural value={alert.min} one="# minute" other="# minutes" />
-										</Trans>
+										{alert.name === "Status" ? (
+											<Trans>Connection is down</Trans>
+										) : (
+											<Trans>
+												Exceeds {alert.value}
+												{info.unit} in last <Plural value={alert.min} one="# minute" other="# minutes" />
+											</Trans>
+										)}
 									</AlertDescription>
 									<Link
 										href={getPagePath($router, "system", { name: alert.sysname! })}

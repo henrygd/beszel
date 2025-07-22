@@ -159,8 +159,10 @@ func (sm *SystemManager) onRecordUpdate(e *core.RecordEvent) error {
 // - down: Triggers status change alerts
 func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 	newStatus := e.Record.GetString("status")
+	prevStatus := pending
 	system, ok := sm.systems.GetOk(e.Record.Id)
 	if ok {
+		prevStatus = system.Status
 		system.Status = newStatus
 	}
 
@@ -182,6 +184,7 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 		if err := sm.AddRecord(e.Record, nil); err != nil {
 			e.App.Logger().Error("Error adding record", "err", err)
 		}
+		_ = deactivateAlerts(e.App, e.Record.Id)
 		return e.Next()
 	}
 
@@ -189,8 +192,6 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 	if !ok {
 		return sm.AddRecord(e.Record, nil)
 	}
-
-	prevStatus := system.Status
 
 	// Trigger system alerts when system comes online
 	if newStatus == up {

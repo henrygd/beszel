@@ -7,90 +7,79 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 )
 
-func (am *AlertManager) RecordAlertHistory(alert SystemAlertData) {
-	// Get alert, user, system, name, value
-	alertId := alert.alertRecord.Id
-	userId := ""
-	if errs := am.hub.ExpandRecord(alert.alertRecord, []string{"user"}, nil); len(errs) == 0 {
-		if user := alert.alertRecord.ExpandedOne("user"); user != nil {
-			userId = user.Id
-		}
+// On triggered alert record delete, set matching alert history record to resolved
+func resolveHistoryOnAlertDelete(e *core.RecordEvent) error {
+	if !e.Record.GetBool("triggered") {
+		return e.Next()
 	}
-	systemId := alert.systemRecord.Id
-	name := alert.name
-	value := alert.val
-	now := time.Now().UTC()
-
-	if alert.triggered {
-		// Create new alerts_history record
-		collection, err := am.hub.FindCollectionByNameOrId("alerts_history")
-		if err == nil {
-			history := core.NewRecord(collection)
-			history.Set("alert", alertId)
-			history.Set("user", userId)
-			history.Set("system", systemId)
-			history.Set("name", name)
-			history.Set("value", value)
-			history.Set("state", "active")
-			history.Set("created_date", now)
-			history.Set("solved_date", nil)
-			_ = am.hub.Save(history)
-		}
-	} else {
-		// Find latest active alerts_history record for this alert and set to solved
-		record, err := am.hub.FindFirstRecordByFilter(
-			"alerts_history",
-			"alert={:alert} && state='active'",
-			dbx.Params{"alert": alertId},
-		)
-		if err == nil && record != nil {
-			record.Set("state", "solved")
-			record.Set("solved_date", now)
-			_ = am.hub.Save(record)
-		}
-	}
+	_ = resolveAlertHistoryRecord(e.App, e.Record)
+	return e.Next()
 }
 
-// DeleteOldAlertHistory deletes alerts_history records older than the given retention duration
-func (am *AlertManager) DeleteOldAlertHistory(retention time.Duration) {
-	now := time.Now().UTC()
-	cutoff := now.Add(-retention)
-	_, err := am.hub.DB().NewQuery(
-		"DELETE FROM alerts_history WHERE solved_date IS NOT NULL AND solved_date < {:cutoff}",
-	).Bind(dbx.Params{"cutoff": cutoff}).Execute()
+// On alert record update, update alert history record
+func updateHistoryOnAlertUpdate(e *core.RecordEvent) error {
+	original := e.Record.Original()
+	new := e.Record
+
+	originalTriggered := original.GetBool("triggered")
+	newTriggered := new.GetBool("triggered")
+
+	// no need to update alert history if triggered state has not changed
+	if originalTriggered == newTriggered {
+		return e.Next()
+	}
+
+	// if new state is triggered, create new alert history record
+	if newTriggered {
+		_, _ = createAlertHistoryRecord(e.App, new)
+		return e.Next()
+	}
+
+	// if new state is not triggered, check for matching alert history record and set it to resolved
+	_ = resolveAlertHistoryRecord(e.App, new)
+	return e.Next()
+}
+
+// resolveAlertHistoryRecord sets the resolved field to the current time
+func resolveAlertHistoryRecord(app core.App, alertRecord *core.Record) error {
+	alertHistoryRecords, err := app.FindRecordsByFilter(
+		"alerts_history",
+		"alert_id={:alert_id} && resolved=null",
+		"-created",
+		1,
+		0,
+		dbx.Params{"alert_id": alertRecord.Id},
+	)
 	if err != nil {
-		am.hub.Logger().Error("failed to delete old alerts_history records", "error", err)
+		return err
 	}
-}
-
-// Helper to get retention duration from user settings
-func getAlertHistoryRetention(settings map[string]interface{}) time.Duration {
-	retStr, _ := settings["alertHistoryRetention"].(string)
-	switch retStr {
-	case "1m":
-		return 30 * 24 * time.Hour
-	case "3m":
-		return 90 * 24 * time.Hour
-	case "6m":
-		return 180 * 24 * time.Hour
-	case "1y":
-		return 365 * 24 * time.Hour
-	default:
-		return 90 * 24 * time.Hour // default 3 months
+	if len(alertHistoryRecords) == 0 {
+		return nil
 	}
-}
-
-// CleanUpAllAlertHistory deletes old alerts_history records for each user based on their retention setting
-func (am *AlertManager) CleanUpAllAlertHistory() {
-	records, err := am.hub.FindAllRecords("user_settings")
+	alertHistoryRecord := alertHistoryRecords[0] // there should be only one record
+	alertHistoryRecord.Set("resolved", time.Now().UTC())
+	err = app.Save(alertHistoryRecord)
 	if err != nil {
-		return
+		app.Logger().Error("Failed to resolve alert history", "err", err)
 	}
-	for _, record := range records {
-		var settings map[string]interface{}
-		if err := record.UnmarshalJSONField("settings", &settings); err != nil {
-			continue
-		}
-		am.DeleteOldAlertHistory(getAlertHistoryRetention(settings))
+	return err
+}
+
+// createAlertHistoryRecord creates a new alert history record
+func createAlertHistoryRecord(app core.App, alertRecord *core.Record) (alertHistoryRecord *core.Record, err error) {
+	alertHistoryCollection, err := app.FindCachedCollectionByNameOrId("alerts_history")
+	if err != nil {
+		return nil, err
 	}
+	alertHistoryRecord = core.NewRecord(alertHistoryCollection)
+	alertHistoryRecord.Set("alert_id", alertRecord.Id)
+	alertHistoryRecord.Set("user", alertRecord.GetString("user"))
+	alertHistoryRecord.Set("system", alertRecord.GetString("system"))
+	alertHistoryRecord.Set("name", alertRecord.GetString("name"))
+	alertHistoryRecord.Set("value", alertRecord.GetFloat("value"))
+	err = app.Save(alertHistoryRecord)
+	if err != nil {
+		app.Logger().Error("Failed to save alert history", "err", err)
+	}
+	return alertHistoryRecord, err
 }

@@ -366,12 +366,46 @@ func (rm *RecordManager) AverageContainerStats(db dbx.Builder, records RecordIds
 	return result
 }
 
-// Deletes records older than what is displayed in the UI
+// Delete old records
 func (rm *RecordManager) DeleteOldRecords() {
-	// Define the collections to process
+	rm.app.RunInTransaction(func(txApp core.App) error {
+		err := deleteOldSystemStats(txApp)
+		if err != nil {
+			return err
+		}
+		err = deleteOldAlertsHistory(txApp, 200, 250)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+// Delete old alerts history records
+func deleteOldAlertsHistory(app core.App, countToKeep, countBeforeDeletion int) error {
+	db := app.DB()
+	var users []struct {
+		Id string `db:"user"`
+	}
+	err := db.NewQuery("SELECT user, COUNT(*) as count FROM alerts_history GROUP BY user HAVING count > {:countBeforeDeletion}").Bind(dbx.Params{"countBeforeDeletion": countBeforeDeletion}).All(&users)
+	if err != nil {
+		return err
+	}
+	for _, user := range users {
+		_, err = db.NewQuery("DELETE FROM alerts_history WHERE user = {:user} AND id NOT IN (SELECT id FROM alerts_history WHERE user = {:user} ORDER BY created DESC LIMIT {:countToKeep})").Bind(dbx.Params{"user": user.Id, "countToKeep": countToKeep}).Execute()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Deletes system_stats records older than what is displayed in the UI
+func deleteOldSystemStats(app core.App) error {
+	// Collections to process
 	collections := [2]string{"system_stats", "container_stats"}
 
-	// Define record types and their retention periods
+	// Record types and their retention periods
 	type RecordDeletionData struct {
 		recordType string
 		retention  time.Duration
@@ -387,10 +421,9 @@ func (rm *RecordManager) DeleteOldRecords() {
 	now := time.Now().UTC()
 
 	for _, collection := range collections {
-		// Build the WHERE clause dynamically
+		// Build the WHERE clause
 		var conditionParts []string
 		var params dbx.Params = make(map[string]any)
-
 		for i := range recordData {
 			rd := recordData[i]
 			// Create parameterized condition for this record type
@@ -398,19 +431,15 @@ func (rm *RecordManager) DeleteOldRecords() {
 			conditionParts = append(conditionParts, fmt.Sprintf("(type = '%s' AND created < {:%s})", rd.recordType, dateParam))
 			params[dateParam] = now.Add(-rd.retention)
 		}
-
 		// Combine conditions with OR
 		conditionStr := strings.Join(conditionParts, " OR ")
-
-		// Construct the full raw query
+		// Construct and execute the full raw query
 		rawQuery := fmt.Sprintf("DELETE FROM %s WHERE %s", collection, conditionStr)
-
-		// Execute the query with parameters
-		if _, err := rm.app.DB().NewQuery(rawQuery).Bind(params).Execute(); err != nil {
-			// return fmt.Errorf("failed to delete from %s: %v", collection, err)
-			rm.app.Logger().Error("failed to delete", "collection", collection, "error", err)
+		if _, err := app.DB().NewQuery(rawQuery).Bind(params).Execute(); err != nil {
+			return fmt.Errorf("failed to delete from %s: %v", collection, err)
 		}
 	}
+	return nil
 }
 
 /* Round float to two decimals */

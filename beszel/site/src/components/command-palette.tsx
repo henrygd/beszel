@@ -69,7 +69,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 											setOpen(false)
 										}}
 									>
-										<Server className="me-2 h-4 w-4" />
+										<Server className="me-2 size-4" />
 										<span>{system.name}</span>
 										<CommandShortcut>{getHostDisplayValue(system)}</CommandShortcut>
 									</CommandItem>
@@ -86,7 +86,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 								setOpen(false)
 							}}
 						>
-							<LayoutDashboard className="me-2 h-4 w-4" />
+							<LayoutDashboard className="me-2 size-4" />
 							<span>
 								<Trans>Dashboard</Trans>
 							</span>
@@ -100,7 +100,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 								setOpen(false)
 							}}
 						>
-							<SettingsIcon className="me-2 h-4 w-4" />
+							<SettingsIcon className="me-2 size-4" />
 							<span>
 								<Trans>Settings</Trans>
 							</span>
@@ -113,7 +113,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 								setOpen(false)
 							}}
 						>
-							<MailIcon className="me-2 h-4 w-4" />
+							<MailIcon className="me-2 size-4" />
 							<span>
 								<Trans>Notifications</Trans>
 							</span>
@@ -125,9 +125,21 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 								setOpen(false)
 							}}
 						>
-							<FingerprintIcon className="me-2 h-4 w-4" />
+							<FingerprintIcon className="me-2 size-4" />
 							<span>
 								<Trans>Tokens & Fingerprints</Trans>
+							</span>
+							{SettingsShortcut}
+						</CommandItem>
+						<CommandItem
+							onSelect={() => {
+								navigate(getPagePath($router, "settings", { name: "alert-history" }))
+								setOpen(false)
+							}}
+						>
+							<LogsIcon className="me-2 size-4" />
+							<span>
+								<Trans>Alert History</Trans>
 							</span>
 							{SettingsShortcut}
 						</CommandItem>
@@ -137,7 +149,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 								window.location.href = "https://beszel.dev/guide/what-is-beszel"
 							}}
 						>
-							<BookIcon className="me-2 h-4 w-4" />
+							<BookIcon className="me-2 size-4" />
 							<span>
 								<Trans>Documentation</Trans>
 							</span>
@@ -155,7 +167,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 										window.open(prependBasePath("/_/"), "_blank")
 									}}
 								>
-									<UsersIcon className="me-2 h-4 w-4" />
+									<UsersIcon className="me-2 size-4" />
 									<span>
 										<Trans>Users</Trans>
 									</span>
@@ -167,7 +179,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 										window.open(prependBasePath("/_/#/logs"), "_blank")
 									}}
 								>
-									<LogsIcon className="me-2 h-4 w-4" />
+									<LogsIcon className="me-2 size-4" />
 									<span>
 										<Trans>Logs</Trans>
 									</span>
@@ -179,7 +191,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 										window.open(prependBasePath("/_/#/settings/backups"), "_blank")
 									}}
 								>
-									<DatabaseBackupIcon className="me-2 h-4 w-4" />
+									<DatabaseBackupIcon className="me-2 size-4" />
 									<span>
 										<Trans>Backups</Trans>
 									</span>
@@ -192,7 +204,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 										window.open(prependBasePath("/_/#/settings/mail"), "_blank")
 									}}
 								>
-									<MailIcon className="me-2 h-4 w-4" />
+									<MailIcon className="me-2 size-4" />
 									<span>
 										<Trans>SMTP settings</Trans>
 									</span>

@@ -67,15 +67,15 @@ export default function SettingsLayout() {
 			noReadOnly: true,
 		},
 		{
+			title: t`Alert History`,
+			href: getPagePath($router, "settings", { name: "alert-history" }),
+			icon: LogsIcon,
+		},
+		{
 			title: t`YAML Config`,
 			href: getPagePath($router, "settings", { name: "config" }),
 			icon: FileSlidersIcon,
 			admin: true,
-		},
-		{
-			title: t`Alerts History`,
-			href: getPagePath($router, "settings", { name: "alerts-history" }),
-			icon: LogsIcon,
 		},
 	]
 
@@ -127,7 +127,7 @@ function SettingsContent({ name }: { name: string }) {
 			return <ConfigYaml />
 		case "tokens":
 			return <Fingerprints />
-		case "alerts-history":
+		case "alert-history":
 			return <AlertsHistoryDataTable />
 	}
 }
