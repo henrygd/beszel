@@ -252,6 +252,10 @@ msgstr "Скопіюйте вміст <0>docker-compose.yml</0> для аген�
 msgid "Copy YAML"
 msgstr "Копіювати YAML"
 
+#: src/components/routes/system.tsx
+msgid "Count of processes in each state"
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
 msgid "CPU"
 msgstr "ЦП"
@@ -659,6 +663,18 @@ msgstr "Точне використання в записаний час"
 msgid "Preferred Language"
 msgstr "Бажана мова"
 
+#: src/components/routes/system.tsx
+msgid "Process States"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Processes consuming the most CPU"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Processes consuming the most memory"
+msgstr ""
+
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
@@ -845,6 +861,14 @@ msgstr "Токени дозволяють агентам підключатис�
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Токени та відбитки використовуються для автентифікації WebSocket з'єднань до хабу."
+
+#: src/components/routes/system.tsx
+msgid "Top CPU Users"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Top Memory Users"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"

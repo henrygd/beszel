@@ -40,14 +40,18 @@ import { timeTicks } from "d3-time"
 import { useLingui } from "@lingui/react/macro"
 import { $router, navigate } from "../router"
 import { getPagePath } from "@nanostores/router"
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from "../ui/table"
+import { Badge } from "../ui/badge"
 
 const AreaChartDefault = lazy(() => import("../charts/area-chart"))
 const ContainerChart = lazy(() => import("../charts/container-chart"))
 const MemChart = lazy(() => import("../charts/mem-chart"))
 const DiskChart = lazy(() => import("../charts/disk-chart"))
+const TopProcesses = lazy(() => import("../top-processes"))
 const SwapChart = lazy(() => import("../charts/swap-chart"))
 const TemperatureChart = lazy(() => import("../charts/temperature-chart"))
 const GpuPowerChart = lazy(() => import("../charts/gpu-power-chart"))
+const ProcessStateChart = lazy(() => import("../charts/process-state-chart"))
 const LoadAverageChart = lazy(() => import("../charts/load-average-chart"))
 
 const cache = new Map<string, any>()
@@ -484,6 +488,15 @@ export default function SystemDetail({ name }: { name: string }) {
 						/>
 					</ChartCard>
 
+					<ChartCard
+						empty={dataEmpty}
+						grid={grid}
+						title={t`Process States`}
+						description={t`Count of processes in each state`}
+					>
+						<ProcessStateChart chartData={chartData} />
+					</ChartCard>
+
 					{containerFilterBar && (
 						<ChartCard
 							empty={dataEmpty}
@@ -633,6 +646,38 @@ export default function SystemDetail({ name }: { name: string }) {
 						</ChartCard>
 					)}
 				</div>
+
+				{/* Top Processes */}
+				{((systemStats.at(-1)?.stats.top_cpu?.length ?? 0) > 0 || (systemStats.at(-1)?.stats.top_mem?.length ?? 0) > 0) && (
+					<div className="grid xl:grid-cols-2 gap-4">
+						{systemStats.at(-1)?.stats.top_cpu?.length > 0 && (
+							<ChartCard
+								empty={dataEmpty}
+								grid={grid}
+								title={t`Top CPU Users`}
+								description={t`Processes consuming the most CPU`}
+							>
+								<TopProcesses
+									topCpuProcesses={systemStats.at(-1)?.stats.top_cpu}
+									topMemProcesses={[]}
+								/>
+							</ChartCard>
+						)}
+						{systemStats.at(-1)?.stats.top_mem?.length > 0 && (
+							<ChartCard
+								empty={dataEmpty}
+								grid={grid}
+								title={t`Top Memory Users`}
+								description={t`Processes consuming the most memory`}
+							>
+								<TopProcesses
+									topCpuProcesses={[]}
+									topMemProcesses={systemStats.at(-1)?.stats.top_mem}
+								/>
+							</ChartCard>
+						)}
+					</div>
+				)}
 
 				{/* GPU charts */}
 				{hasGpuData && (
