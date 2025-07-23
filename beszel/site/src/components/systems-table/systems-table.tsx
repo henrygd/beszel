@@ -260,19 +260,19 @@ export default function SystemsTable() {
 				},
 			},
 			{
-				accessorFn: (originalRow) => originalRow.info.b || 0,
+				accessorFn: ({ info }) => info.bb || (info.b || 0) * 1024 * 1024,
 				id: "net",
 				name: () => t`Net`,
 				size: 0,
 				Icon: EthernetIcon,
 				header: sortableHeader,
 				cell(info) {
-					if (info.row.original.status === "paused") {
+					const sys = info.row.original
+					if (sys.status === "paused") {
 						return null
 					}
-					const val = info.getValue() as number
 					const userSettings = useStore($userSettings)
-					const { value, unit } = formatBytes(val, true, userSettings.unitNet, true)
+					const { value, unit } = formatBytes(info.getValue() as number, true, userSettings.unitNet, false)
 					return (
 						<span className="tabular-nums whitespace-nowrap">
 							{decimalString(value, value >= 100 ? 1 : 2)} {unit}

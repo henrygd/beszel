@@ -60,6 +60,8 @@ export interface SystemInfo {
 	dp: number
 	/** bandwidth (mb) */
 	b: number
+	/** bandwidth bytes */
+	bb?: number
 	/** agent version */
 	v: string
 	/** system is using podman */
@@ -115,10 +117,14 @@ export interface SystemStats {
 	ns: number
 	/** network received (mb) */
 	nr: number
+	/** bandwidth bytes [sent, recv] */
+	b?: [number, number]
 	/** max network sent (mb) */
 	nsm?: number
 	/** max network received (mb) */
 	nrm?: number
+	/** max network sent (bytes) */
+	bm?: [number, number]
 	/** temperatures */
 	t?: Record<string, number>
 	/** extra filesystems */

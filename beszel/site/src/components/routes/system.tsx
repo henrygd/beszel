@@ -371,6 +371,7 @@ export default function SystemDetail({ name }: { name: string }) {
 
 	// select field for switching between avg and max values
 	const maxValSelect = isLongerChart ? <SelectAvgMax max={maxValues} /> : null
+	const showMax = chartTime !== "1h" && maxValues
 
 	// if no data, show empty message
 	const dataEmpty = !chartLoading && chartData.systemStats.length === 0
@@ -477,8 +478,15 @@ export default function SystemDetail({ name }: { name: string }) {
 					>
 						<AreaChartDefault
 							chartData={chartData}
-							chartName="CPU Usage"
 							maxToggled={maxValues}
+							dataPoints={[
+								{
+									label: t`CPU Usage`,
+									dataKey: ({ stats }) => (showMax ? stats?.cpum : stats?.cpu),
+									color: "1",
+									opacity: 0.4,
+								},
+							]}
 							tickFormatter={(val) => toFixedFloat(val, 2) + "%"}
 							contentFormatter={({ value }) => decimalString(value) + "%"}
 						/>
@@ -530,8 +538,21 @@ export default function SystemDetail({ name }: { name: string }) {
 					>
 						<AreaChartDefault
 							chartData={chartData}
-							chartName="dio"
 							maxToggled={maxValues}
+							dataPoints={[
+								{
+									label: t({ message: "Write", comment: "Disk write" }),
+									dataKey: ({ stats }) => (showMax ? stats?.dwm : stats?.dw),
+									color: "3",
+									opacity: 0.3,
+								},
+								{
+									label: t({ message: "Read", comment: "Disk read" }),
+									dataKey: ({ stats }) => (showMax ? stats?.drm : stats?.dr),
+									color: "1",
+									opacity: 0.3,
+								},
+							]}
 							tickFormatter={(val) => {
 								const { value, unit } = formatBytes(val, true, userSettings.unitDisk, true)
 								return toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit
@@ -552,15 +573,39 @@ export default function SystemDetail({ name }: { name: string }) {
 					>
 						<AreaChartDefault
 							chartData={chartData}
-							chartName="bw"
 							maxToggled={maxValues}
+							dataPoints={[
+								{
+									label: t`Sent`,
+									// use bytes if available, otherwise multiply old MB (can remove in future)
+									dataKey(data) {
+										if (showMax) {
+											return data?.stats?.bm?.[0] ?? (data?.stats?.nsm ?? 0) * 1024 * 1024
+										}
+										return data?.stats?.b?.[0] ?? data?.stats?.ns * 1024 * 1024
+									},
+									color: "5",
+									opacity: 0.2,
+								},
+								{
+									label: t`Received`,
+									dataKey(data) {
+										if (showMax) {
+											return data?.stats?.bm?.[1] ?? (data?.stats?.nrm ?? 0) * 1024 * 1024
+										}
+										return data?.stats?.b?.[1] ?? data?.stats?.nr * 1024 * 1024
+									},
+									color: "2",
+									opacity: 0.2,
+								},
+							]}
 							tickFormatter={(val) => {
-								let { value, unit } = formatBytes(val, true, userSettings.unitNet, true)
+								let { value, unit } = formatBytes(val, true, userSettings.unitNet, false)
 								return toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit
 							}}
-							contentFormatter={({ value }) => {
-								const { value: convertedValue, unit } = formatBytes(value, true, userSettings.unitNet, true)
-								return decimalString(convertedValue, convertedValue >= 100 ? 1 : 2) + " " + unit
+							contentFormatter={(data) => {
+								const { value, unit } = formatBytes(data.value, true, userSettings.unitNet, false)
+								return decimalString(value, value >= 100 ? 1 : 2) + " " + unit
 							}}
 						/>
 					</ChartCard>
@@ -649,7 +694,14 @@ export default function SystemDetail({ name }: { name: string }) {
 									>
 										<AreaChartDefault
 											chartData={chartData}
-											chartName={`g.${id}.u`}
+											dataPoints={[
+												{
+													label: t`Usage`,
+													dataKey: ({ stats }) => stats?.g?.[id]?.u ?? 0,
+													color: "1",
+													opacity: 0.35,
+												},
+											]}
 											tickFormatter={(val) => toFixedFloat(val, 2) + "%"}
 											contentFormatter={({ value }) => decimalString(value) + "%"}
 										/>
@@ -662,7 +714,14 @@ export default function SystemDetail({ name }: { name: string }) {
 									>
 										<AreaChartDefault
 											chartData={chartData}
-											chartName={`g.${id}.mu`}
+											dataPoints={[
+												{
+													label: t`Usage`,
+													dataKey: ({ stats }) => stats?.g?.[id]?.mu ?? 0,
+													color: "2",
+													opacity: 0.25,
+												},
+											]}
 											max={gpu.mt}
 											tickFormatter={(val) => {
 												const { value, unit } = formatBytes(val, false, Unit.Bytes, true)
@@ -707,7 +766,20 @@ export default function SystemDetail({ name }: { name: string }) {
 									>
 										<AreaChartDefault
 											chartData={chartData}
-											chartName={`efs.${extraFsName}`}
+											dataPoints={[
+												{
+													label: t`Write`,
+													dataKey: ({ stats }) => stats?.efs?.[extraFsName]?.[showMax ? "wm" : "w"] ?? 0,
+													color: "3",
+													opacity: 0.3,
+												},
+												{
+													label: t`Read`,
+													dataKey: ({ stats }) => stats?.efs?.[extraFsName]?.[showMax ? "rm" : "r"] ?? 0,
+													color: "1",
+													opacity: 0.3,
+												},
+											]}
 											maxToggled={maxValues}
 											tickFormatter={(val) => {
 												const { value, unit } = formatBytes(val, true, userSettings.unitDisk, true)

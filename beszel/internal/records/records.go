@@ -206,12 +206,16 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.LoadAvg1 += stats.LoadAvg1
 		sum.LoadAvg5 += stats.LoadAvg5
 		sum.LoadAvg15 += stats.LoadAvg15
+		sum.Bandwidth[0] += stats.Bandwidth[0]
+		sum.Bandwidth[1] += stats.Bandwidth[1]
 		// Set peak values
 		sum.MaxCpu = max(sum.MaxCpu, stats.MaxCpu, stats.Cpu)
 		sum.MaxNetworkSent = max(sum.MaxNetworkSent, stats.MaxNetworkSent, stats.NetworkSent)
 		sum.MaxNetworkRecv = max(sum.MaxNetworkRecv, stats.MaxNetworkRecv, stats.NetworkRecv)
 		sum.MaxDiskReadPs = max(sum.MaxDiskReadPs, stats.MaxDiskReadPs, stats.DiskReadPs)
 		sum.MaxDiskWritePs = max(sum.MaxDiskWritePs, stats.MaxDiskWritePs, stats.DiskWritePs)
+		sum.MaxBandwidth[0] = max(sum.MaxBandwidth[0], stats.MaxBandwidth[0], stats.Bandwidth[0])
+		sum.MaxBandwidth[1] = max(sum.MaxBandwidth[1], stats.MaxBandwidth[1], stats.Bandwidth[1])
 
 		// Accumulate temperatures
 		if stats.Temperatures != nil {
@@ -284,6 +288,8 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.LoadAvg1 = twoDecimals(sum.LoadAvg1 / count)
 		sum.LoadAvg5 = twoDecimals(sum.LoadAvg5 / count)
 		sum.LoadAvg15 = twoDecimals(sum.LoadAvg15 / count)
+		sum.Bandwidth[0] = sum.Bandwidth[0] / uint64(count)
+		sum.Bandwidth[1] = sum.Bandwidth[1] / uint64(count)
 		// Average temperatures
 		if sum.Temperatures != nil && tempCount > 0 {
 			for key := range sum.Temperatures {
