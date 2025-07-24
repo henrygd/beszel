@@ -148,50 +148,80 @@ export default function SystemsTable() {
 			const efs = info.row.original.info?.efs || {};
 			const diskNames = Object.keys(efs);
 			if (!diskNames.length) return null;
+			if (diskNames.length === 1) {
+				// Show the bar as before for a single extra disk
+				const disk = efs[diskNames[0]];
+				const percent = disk && disk.d ? Math.round((disk.du / disk.d) * 100) : 0;
+				const diskFree = disk?.df ?? 0;
+				return (
+					<div className="flex items-center tabular-nums tracking-tight w-full">
+						<span className="min-w-[3.3em]">{decimalString(percent, 1)}%</span>
+						<span className="grow min-w-10 block bg-muted h-[1em] relative rounded-sm overflow-hidden">
+							<span
+								className={cn(
+									"absolute inset-0 w-full h-full origin-left transition-transform duration-200",
+									percent < 65
+										? "bg-green-500"
+										: percent < 90
+										? "bg-yellow-500"
+										: "bg-red-600"
+								)}
+								style={{
+									transform: `scalex(${percent / 100})`,
+								}}
+							></span>
+						</span>
+					</div>
+				);
+			}
+			// Multiple extra disks: show summary and tooltip with bars
 			return (
-				<div className="flex flex-col gap-1 w-full">
-					{diskNames.map((name) => {
-						const disk = efs[name];
-						const percent = disk && disk.d ? Math.round((disk.du / disk.d) * 100) : 0;
-						const diskFree = disk?.df ?? 0;
-						return (
-							<TooltipProvider key={name}>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<div className="flex items-center w-full cursor-pointer">
-											<span className="min-w-[3.3em]">{percent}%</span>
-											<span className="grow min-w-10 block bg-muted h-[0.7em] relative rounded-sm overflow-hidden">
-												<span
-													className={cn(
-														"absolute inset-0 w-full h-full origin-left transition-transform duration-200",
-														percent < 65
-															? "bg-green-500"
-															: percent < 90
-															? "bg-yellow-500"
-															: "bg-red-600"
-													)}
-													style={{
-														transform: `scalex(${percent / 100})`,
-													}}
-												></span>
-											</span>
-										</div>
-									</TooltipTrigger>
-									<TooltipContent side="top">
-										<div className="text-center">
-											<div className="font-medium">{disk.n || name}</div>
-											<div className="text-sm text-muted-foreground">
+				<TooltipProvider>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<span className="cursor-pointer">{diskNames.length} Extra Disks</span>
+						</TooltipTrigger>
+						<TooltipContent side="top">
+							<div className="flex flex-col gap-2 min-w-48">
+								{diskNames.map((name, idx) => {
+									const disk = efs[name];
+									const percent = disk && disk.d ? Math.round((disk.du / disk.d) * 100) : 0;
+									const diskFree = disk?.df ?? 0;
+									return (
+										<div key={name + idx}>
+											<div className="font-medium mb-0.5">{disk.n || name}</div>
+											<div className="flex items-center tabular-nums tracking-tight w-full">
+												<span className="min-w-[3.3em]">{decimalString(percent, 1)}%</span>
+												<span className="grow min-w-10 block bg-muted h-[1em] relative rounded-sm overflow-hidden">
+													<span
+														className={cn(
+															"absolute inset-0 w-full h-full origin-left transition-transform duration-200",
+															percent < 65
+																? "bg-green-500"
+																: percent < 90
+																? "bg-yellow-500"
+																: "bg-red-600"
+														)}
+														style={{
+															transform: `scalex(${percent / 100})`,
+														}}
+													></span>
+												</span>
+											</div>
+											<div className="text-xs text-muted-foreground mt-0.5">
 												{t`Free`}: {decimalString(diskFree, 1)} GB
 											</div>
 										</div>
-									</TooltipContent>
-								</Tooltip>
-							</TooltipProvider>
-						);
-					})}
-				</div>
+									);
+								})}
+							</div>
+						</TooltipContent>
+					</Tooltip>
+				</TooltipProvider>
 			);
 		},
+		Icon: HardDriveIcon,
+		header: sortableHeader,
 	};
 
 	const columnDefs = useMemo(() => {
