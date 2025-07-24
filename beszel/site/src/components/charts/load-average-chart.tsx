@@ -23,15 +23,15 @@ export default memo(function LoadAverageChart({ chartData }: { chartData: ChartD
 	const keys = {
 		l1: {
 			color: "hsl(271, 81%, 60%)", // Purple
-			label: t`1 min`,
+			label: t({ message: `1 min`, comment: "Load average" }),
 		},
 		l5: {
 			color: "hsl(217, 91%, 60%)", // Blue
-			label: t`5 min`,
+			label: t({ message: `5 min`, comment: "Load average" }),
 		},
 		l15: {
 			color: "hsl(25, 95%, 53%)", // Orange
-			label: t`15 min`,
+			label: t({ message: `15 min`, comment: "Load average" }),
 		},
 	}
 

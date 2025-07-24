@@ -76,7 +76,7 @@ export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 		sortingFn: (rowA, rowB) => (rowA.original.resolved ? 1 : 0) - (rowB.original.resolved ? 1 : 0),
 		header: ({ column }) => (
 			<Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-				<Trans>State</Trans>
+				<Trans comment="Context: alert state (active or resolved)">State</Trans>
 			</Button>
 		),
 		cell: ({ row }) => {
@@ -91,7 +91,7 @@ export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 					)}
 				>
 					{/* {resolved ? <CircleCheckIcon className="size-3 me-0.5" /> : <CircleAlertIcon className="size-3 me-0.5" />} */}
-					<Trans>{resolved ? "Resolved" : "Active"}</Trans>
+					{resolved ? <Trans>Resolved</Trans> : <Trans>Active</Trans>}
 				</Badge>
 			)
 		},
@@ -103,7 +103,7 @@ export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 		invertSorting: true,
 		header: ({ column }) => (
 			<Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-				<Trans>Created</Trans>
+				<Trans comment="Context: date created">Created</Trans>
 			</Button>
 		),
 		cell: ({ getValue, row }) => (
