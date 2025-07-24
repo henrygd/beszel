@@ -215,7 +215,7 @@ func (h *Hub) startServer(se *core.ServeEvent) error {
 
 // registerCronJobs sets up scheduled tasks
 func (h *Hub) registerCronJobs(_ *core.ServeEvent) error {
-	// delete old records once every hour
+	// delete old system_stats and alerts_history records once every hour
 	h.Cron().MustAdd("delete old records", "8 * * * *", h.rm.DeleteOldRecords)
 	// create longer records every 10 minutes
 	h.Cron().MustAdd("create longer records", "*/10 * * * *", h.rm.CreateLongerRecords)

@@ -141,6 +141,124 @@ func init() {
 		"system": false
 	},
 	{
+		"id": "pbc_1697146157",
+		"listRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
+		"viewRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
+		"createRule": null,
+		"updateRule": null,
+		"deleteRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
+		"name": "alerts_history",
+		"type": "base",
+		"fields": [
+			{
+					"autogeneratePattern": "[a-z0-9]{15}",
+					"hidden": false,
+					"id": "text3208210256",
+					"max": 15,
+					"min": 15,
+					"name": "id",
+					"pattern": "^[a-z0-9]+$",
+					"presentable": false,
+					"primaryKey": true,
+					"required": true,
+					"system": true,
+					"type": "text"
+				},
+				{
+					"cascadeDelete": true,
+					"collectionId": "_pb_users_auth_",
+					"hidden": false,
+					"id": "relation2375276105",
+					"maxSelect": 1,
+					"minSelect": 0,
+					"name": "user",
+					"presentable": false,
+					"required": true,
+					"system": false,
+					"type": "relation"
+				},
+				{
+					"cascadeDelete": true,
+					"collectionId": "2hz5ncl8tizk5nx",
+					"hidden": false,
+					"id": "relation3377271179",
+					"maxSelect": 1,
+					"minSelect": 0,
+					"name": "system",
+					"presentable": false,
+					"required": true,
+					"system": false,
+					"type": "relation"
+				},
+				{
+					"autogeneratePattern": "",
+					"hidden": false,
+					"id": "text2466471794",
+					"max": 0,
+					"min": 0,
+					"name": "alert_id",
+					"pattern": "",
+					"presentable": false,
+					"primaryKey": false,
+					"required": false,
+					"system": false,
+					"type": "text"
+				},
+				{
+					"autogeneratePattern": "",
+					"hidden": false,
+					"id": "text1579384326",
+					"max": 0,
+					"min": 0,
+					"name": "name",
+					"pattern": "",
+					"presentable": false,
+					"primaryKey": false,
+					"required": true,
+					"system": false,
+					"type": "text"
+				},
+				{
+					"hidden": false,
+					"id": "number494360628",
+					"max": null,
+					"min": null,
+					"name": "value",
+					"onlyInt": false,
+					"presentable": false,
+					"required": false,
+					"system": false,
+					"type": "number"
+				},
+				{
+					"hidden": false,
+					"id": "autodate2990389176",
+					"name": "created",
+					"onCreate": true,
+					"onUpdate": false,
+					"presentable": false,
+					"system": false,
+					"type": "autodate"
+				},
+				{
+					"hidden": false,
+					"id": "date2276568630",
+					"max": "",
+					"min": "",
+					"name": "resolved",
+					"presentable": false,
+					"required": false,
+					"system": false,
+					"type": "date"
+				}
+		],
+		"indexes": [
+			"CREATE INDEX ` + "`" + `idx_YdGnup5aqB` + "`" + ` ON ` + "`" + `alerts_history` + "`" + ` (` + "`" + `user` + "`" + `)",
+			"CREATE INDEX ` + "`" + `idx_taLet9VdME` + "`" + ` ON ` + "`" + `alerts_history` + "`" + ` (` + "`" + `created` + "`" + `)"
+		],
+		"system": false
+	},
+	{
 		"id": "juohu4jipgc13v7",
 		"listRule": "@request.auth.id != \"\"",
 		"viewRule": null,
@@ -757,7 +875,6 @@ func init() {
 			LEFT JOIN fingerprints f ON s.id = f.system
 			WHERE f.system IS NULL
 		`).Column(&systemIds)
-
 		if err != nil {
 			return err
 		}

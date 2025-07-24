@@ -174,24 +174,27 @@ func (a *Agent) getSystemStats() system.Stats {
 		a.initializeNetIoStats()
 	}
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
-		secondsElapsed := time.Since(a.netIoStats.Time).Seconds()
+		msElapsed := uint64(time.Since(a.netIoStats.Time).Milliseconds())
 		a.netIoStats.Time = time.Now()
-		bytesSent := uint64(0)
-		bytesRecv := uint64(0)
+		totalBytesSent := uint64(0)
+		totalBytesRecv := uint64(0)
 		// sum all bytes sent and received
 		for _, v := range netIO {
 			// skip if not in valid network interfaces list
 			if _, exists := a.netInterfaces[v.Name]; !exists {
 				continue
 			}
-			bytesSent += v.BytesSent
-			bytesRecv += v.BytesRecv
+			totalBytesSent += v.BytesSent
+			totalBytesRecv += v.BytesRecv
 		}
 		// add to systemStats
-		sentPerSecond := float64(bytesSent-a.netIoStats.BytesSent) / secondsElapsed
-		recvPerSecond := float64(bytesRecv-a.netIoStats.BytesRecv) / secondsElapsed
-		networkSentPs := bytesToMegabytes(sentPerSecond)
-		networkRecvPs := bytesToMegabytes(recvPerSecond)
+		var bytesSentPerSecond, bytesRecvPerSecond uint64
+		if msElapsed > 0 {
+			bytesSentPerSecond = (totalBytesSent - a.netIoStats.BytesSent) * 1000 / msElapsed
+			bytesRecvPerSecond = (totalBytesRecv - a.netIoStats.BytesRecv) * 1000 / msElapsed
+		}
+		networkSentPs := bytesToMegabytes(float64(bytesSentPerSecond))
+		networkRecvPs := bytesToMegabytes(float64(bytesRecvPerSecond))
 		// add check for issue (#150) where sent is a massive number
 		if networkSentPs > 10_000 || networkRecvPs > 10_000 {
 			slog.Warn("Invalid net stats. Resetting.", "sent", networkSentPs, "recv", networkRecvPs)
@@ -206,9 +209,10 @@ func (a *Agent) getSystemStats() system.Stats {
 		} else {
 			systemStats.NetworkSent = networkSentPs
 			systemStats.NetworkRecv = networkRecvPs
+			systemStats.Bandwidth[0], systemStats.Bandwidth[1] = bytesSentPerSecond, bytesRecvPerSecond
 			// update netIoStats
-			a.netIoStats.BytesSent = bytesSent
-			a.netIoStats.BytesRecv = bytesRecv
+			a.netIoStats.BytesSent = totalBytesSent
+			a.netIoStats.BytesRecv = totalBytesRecv
 		}
 	}
 
@@ -257,7 +261,9 @@ func (a *Agent) getSystemStats() system.Stats {
 	a.systemInfo.MemPct = systemStats.MemPct
 	a.systemInfo.DiskPct = systemStats.DiskPct
 	a.systemInfo.Uptime, _ = host.Uptime()
+	// TODO: in future release, remove MB bandwidth values in favor of bytes
 	a.systemInfo.Bandwidth = twoDecimals(systemStats.NetworkSent + systemStats.NetworkRecv)
+	a.systemInfo.BandwidthBytes = systemStats.Bandwidth[0] + systemStats.Bandwidth[1]
 	slog.Debug("sysinfo", "data", a.systemInfo)
 
 	return systemStats
