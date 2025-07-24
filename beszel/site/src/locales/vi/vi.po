@@ -8,7 +8,7 @@ msgstr ""
 "Language: vi\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-07-13 02:50\n"
+"PO-Revision-Date: 2025-07-24 23:54\n"
 "Last-Translator: \n"
 "Language-Team: Vietnamese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -23,6 +23,12 @@ msgstr ""
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# ngày} other {# ngày}}"
 
+#. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
+#. placeholder {1}: table.getFilteredRowModel().rows.length
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "{0} of {1} row(s) selected."
+msgstr "Đã chọn {0} trên {1} hàng."
+
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# giờ} other {# giờ}}"
@@ -30,6 +36,11 @@ msgstr "{hours, plural, one {# giờ} other {# giờ}}"
 #: src/lib/utils.ts
 msgid "1 hour"
 msgstr "1 giờ"
+
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "1 min"
+msgstr "1 phút"
 
 #: src/lib/utils.ts
 msgid "1 week"
@@ -39,6 +50,11 @@ msgstr "1 tuần"
 msgid "12 hours"
 msgstr "12 giờ"
 
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "15 min"
+msgstr "15 phút"
+
 #: src/lib/utils.ts
 msgid "24 hours"
 msgstr "24 giờ"
@@ -47,11 +63,21 @@ msgstr "24 giờ"
 msgid "30 days"
 msgstr "30 ngày"
 
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "5 min"
+msgstr "5 phút"
+
 #. Table column
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "Hành động"
+
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Active"
+msgstr "Hoạt động"
 
 #: src/components/routes/home.tsx
 msgid "Active Alerts"
@@ -86,6 +112,12 @@ msgstr "Quản trị viên"
 msgid "Agent"
 msgstr "Tác nhân"
 
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Alert History"
+msgstr "Lịch sử Cảnh báo"
+
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alert-button.tsx
 msgid "Alerts"
@@ -99,6 +131,10 @@ msgstr "Tất cả Hệ thống"
 #: src/components/systems-table/systems-table.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Bạn có chắc chắn muốn xóa {name} không?"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Are you sure?"
+msgstr "Bạn có chắc không?"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -119,7 +155,7 @@ msgstr "Trung bình vượt quá <0>{value}{0}</0>"
 
 #: src/components/routes/system.tsx
 msgid "Average power consumption of GPUs"
-msgstr ""
+msgstr "Tiêu thụ điện năng trung bình của GPU"
 
 #: src/components/routes/system.tsx
 msgid "Average system-wide CPU utilization"
@@ -128,7 +164,7 @@ msgstr "Sử dụng CPU trung bình toàn hệ thống"
 #. placeholder {0}: gpu.n
 #: src/components/routes/system.tsx
 msgid "Average utilization of {0}"
-msgstr ""
+msgstr "Mức sử dụng trung bình của {0}"
 
 #: src/components/navbar.tsx
 #: src/components/command-palette.tsx
@@ -152,17 +188,36 @@ msgstr "Beszel sử dụng <0>Shoutrrr</0> để tích hợp với các dịch v
 msgid "Binary"
 msgstr "Nhị phân"
 
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/general.tsx
+msgid "Bits (Kbps, Mbps, Gbps)"
+msgstr "Bit (Kbps, Mbps, Gbps)"
+
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/general.tsx
+msgid "Bytes (KB/s, MB/s, GB/s)"
+msgstr "Byte (KB/giây, MB/giây, GB/giây)"
+
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
 msgstr "Bộ nhớ đệm / Bộ đệm"
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Cancel"
 msgstr "Hủy bỏ"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
 msgstr "Cẩn thận - có thể mất dữ liệu"
+
+#: src/components/routes/settings/general.tsx
+msgid "Celsius (°C)"
+msgstr "Độ C (°C)"
+
+#: src/components/routes/settings/general.tsx
+msgid "Change display units for metrics."
+msgstr "Thay đổi đơn vị hiển thị cho các chỉ số."
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
@@ -202,7 +257,12 @@ msgstr "Cấu hình cách bạn nhận thông báo cảnh báo."
 msgid "Confirm password"
 msgstr "Xác nhận mật khẩu"
 
+#: src/components/routes/home.tsx
+msgid "Connection is down"
+msgstr "Mất kết nối"
+
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Continue"
 msgstr "Tiếp tục"
 
@@ -225,7 +285,7 @@ msgstr "Sao chép docker run"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Environment variables"
 msgid "Copy env"
-msgstr ""
+msgstr "Sao chép môi trường"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Copy host"
@@ -242,15 +302,15 @@ msgstr "Sao chép văn bản"
 
 #: src/components/add-system.tsx
 msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
-msgstr ""
+msgstr "Sao chép lệnh cài đặt cho tác nhân bên dưới hoặc tự động đăng ký tác nhân bằng <0>token chung</0>."
 
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
-msgstr ""
+msgstr "Sao chép nội dung <0>docker-compose.yml</0> cho tác nhân bên dưới hoặc tự động đăng ký tác nhân bằng <1>token chung</1>."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
-msgstr ""
+msgstr "Sao chép YAML"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "CPU"
@@ -258,13 +318,18 @@ msgstr "CPU"
 
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
 msgid "CPU Usage"
 msgstr "Sử dụng CPU"
 
 #: src/components/login/auth-form.tsx
 msgid "Create account"
 msgstr "Tạo tài khoản"
+
+#. Context: date created
+#: src/components/alerts-history-columns.tsx
+msgid "Created"
+msgstr "Đã tạo"
 
 #. Dark theme
 #: src/components/mode-toggle.tsx
@@ -281,12 +346,13 @@ msgid "Default time period"
 msgstr "Thời gian mặc định"
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Delete"
 msgstr "Xóa"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
-msgstr ""
+msgstr "Xóa vân tay"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Disk"
@@ -295,6 +361,10 @@ msgstr "Đĩa"
 #: src/components/routes/system.tsx
 msgid "Disk I/O"
 msgstr "Đĩa I/O"
+
+#: src/components/routes/settings/general.tsx
+msgid "Disk unit"
+msgstr "Đơn vị đĩa"
 
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
@@ -324,15 +394,20 @@ msgstr "Tài liệu"
 
 #. Context: System is down
 #: src/lib/utils.ts
+#: src/components/alerts-history-columns.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
-msgstr ""
+msgstr "Mất kết nối"
+
+#: src/components/alerts-history-columns.tsx
+msgid "Duration"
+msgstr "Thời lượng"
 
 #: src/components/add-system.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Edit"
-msgstr ""
+msgstr "Chỉnh sửa"
 
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/auth-form.tsx
@@ -354,6 +429,7 @@ msgstr "Nhập địa chỉ email..."
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/config-yaml.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/login/auth-form.tsx
 msgid "Error"
 msgstr "Lỗi"
@@ -369,6 +445,10 @@ msgstr "Vượt quá {0}{1} trong {2, plural, one {# phút} other {# phút}} qua
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr "Các hệ thống hiện có không được định nghĩa trong <0>config.yml</0> sẽ bị xóa. Vui lòng sao lưu thường xuyên."
 
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Export"
+msgstr "Xuất"
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
 msgstr "Xuất cấu hình"
@@ -376,6 +456,10 @@ msgstr "Xuất cấu hình"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export your current systems configuration."
 msgstr "Xuất cấu hình hệ thống hiện tại của bạn."
+
+#: src/components/routes/settings/general.tsx
+msgid "Fahrenheit (°F)"
+msgstr "Độ F (°F)"
 
 #: src/lib/utils.ts
 msgid "Failed to authenticate"
@@ -396,12 +480,13 @@ msgstr "Cập nhật cảnh báo thất bại"
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Filter..."
 msgstr "Lọc..."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
-msgstr ""
+msgstr "Vân tay"
 
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -419,7 +504,7 @@ msgstr "Chung"
 
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
-msgstr ""
+msgstr "Mức tiêu thụ điện của GPU"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
@@ -429,7 +514,7 @@ msgstr "Lưới"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
-msgstr ""
+msgstr "Lệnh Homebrew"
 
 #: src/components/add-system.tsx
 msgid "Host / IP"
@@ -448,16 +533,6 @@ msgstr "Địa chỉ email không hợp lệ."
 msgid "Kernel"
 msgstr "Nhân"
 
-#. Load average 15 minutes
-#: src/components/systems-table/systems-table.tsx
-msgid "L15"
-msgstr ""
-
-#. Load average 5 minutes
-#: src/components/systems-table/systems-table.tsx
-msgid "L5"
-msgstr ""
-
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Ngôn ngữ"
@@ -471,13 +546,26 @@ msgstr "Bố cục"
 msgid "Light"
 msgstr "Sáng"
 
+#: src/components/routes/system.tsx
+msgid "Load Average"
+msgstr "Tải trung bình"
+
 #: src/lib/utils.ts
 msgid "Load Average 15m"
-msgstr ""
+msgstr "Tải trung bình 15 phút"
+
+#: src/lib/utils.ts
+msgid "Load Average 1m"
+msgstr "Tải trung bình 1 phút"
 
 #: src/lib/utils.ts
 msgid "Load Average 5m"
-msgstr ""
+msgstr "Tải trung bình 5 phút"
+
+#. Short label for load average
+#: src/components/systems-table/systems-table.tsx
+msgid "Load Avg"
+msgstr "Tải TB"
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -507,7 +595,7 @@ msgstr "Quản lý tùy chọn hiển thị và thông báo."
 
 #: src/components/add-system.tsx
 msgid "Manual setup instructions"
-msgstr ""
+msgstr "Hướng dẫn cài đặt thủ công"
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx
@@ -527,6 +615,7 @@ msgstr "Sử dụng Bộ nhớ"
 msgid "Memory usage of docker containers"
 msgstr "Sử dụng bộ nhớ của các container Docker"
 
+#: src/components/alerts-history-columns.tsx
 #: src/components/add-system.tsx
 msgid "Name"
 msgstr "Tên"
@@ -543,9 +632,18 @@ msgstr "Lưu lượng mạng của các container Docker"
 msgid "Network traffic of public interfaces"
 msgstr "Lưu lượng mạng của các giao diện công cộng"
 
+#. Context: Bytes or bits
+#: src/components/routes/settings/general.tsx
+msgid "Network unit"
+msgstr "Đơn vị mạng"
+
 #: src/components/command-palette.tsx
 msgid "No results found."
 msgstr "Không tìm thấy kết quả."
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "No results."
+msgstr "Không có kết quả."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -584,6 +682,12 @@ msgstr "Ghi đè các cảnh báo hiện có"
 msgid "Page"
 msgstr "Trang"
 
+#. placeholder {0}: table.getState().pagination.pageIndex + 1
+#. placeholder {1}: table.getPageCount()
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Page {0} of {1}"
+msgstr "Trang {0} trên {1}"
+
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
 msgstr "Trang / Cài đặt"
@@ -599,7 +703,7 @@ msgstr "Mật khẩu phải có ít nhất 8 ký tự."
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
-msgstr ""
+msgstr "Mật khẩu phải nhỏ hơn 72 byte."
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"
@@ -611,7 +715,7 @@ msgstr "Tạm dừng"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused"
-msgstr ""
+msgstr "Đã tạm dừng"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -665,13 +769,12 @@ msgid "Public Key"
 msgstr "Khóa"
 
 #. Disk read
-#: src/components/charts/area-chart.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
 msgid "Read"
 msgstr "Đọc"
 
-#. Network bytes received (download)
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
 msgid "Received"
 msgstr "Đã nhận"
 
@@ -679,13 +782,23 @@ msgstr "Đã nhận"
 msgid "Reset Password"
 msgstr "Đặt lại Mật khẩu"
 
+#: src/components/alerts-history-columns.tsx
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Resolved"
+msgstr "Đã giải quyết"
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Resume"
 msgstr "Tiếp tục"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
-msgstr ""
+msgstr "Xoay vòng token"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Rows per page"
+msgstr "Số hàng mỗi trang"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -698,7 +811,7 @@ msgstr "Lưu Cài đặt"
 
 #: src/components/add-system.tsx
 msgid "Save system"
-msgstr ""
+msgstr "Lưu hệ thống"
 
 #: src/components/navbar.tsx
 msgid "Search"
@@ -712,8 +825,7 @@ msgstr "Tìm kiếm hệ thống hoặc cài đặt..."
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Xem <0>cài đặt thông báo</0> để cấu hình cách bạn nhận cảnh báo."
 
-#. Network bytes sent (upload)
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Đã gửi"
 
@@ -744,6 +856,11 @@ msgstr "Cài đặt SMTP"
 msgid "Sort By"
 msgstr "Sắp xếp theo"
 
+#. Context: alert state (active or resolved)
+#: src/components/alerts-history-columns.tsx
+msgid "State"
+msgstr "Trạng thái"
+
 #: src/lib/utils.ts
 msgid "Status"
 msgstr "Trạng thái"
@@ -759,10 +876,15 @@ msgstr "Sử dụng Hoán đổi"
 #. System theme
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
+#: src/components/alerts-history-columns.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "Hệ thống"
+
+#: src/components/routes/system.tsx
+msgid "System load averages over time"
+msgstr "Tải trung bình của hệ thống theo thời gian"
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -779,12 +901,16 @@ msgstr "Bảng"
 #. Temperature label in systems table
 #: src/components/systems-table/systems-table.tsx
 msgid "Temp"
-msgstr ""
+msgstr "Nhiệt độ"
 
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
 msgid "Temperature"
 msgstr "Nhiệt độ"
+
+#: src/components/routes/settings/general.tsx
+msgid "Temperature unit"
+msgstr "Đơn vị nhiệt độ"
 
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
@@ -805,6 +931,10 @@ msgstr "Sau đó đăng nhập vào backend và đặt lại mật khẩu tài k
 #: src/components/systems-table/systems-table.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Hành động này không thể hoàn tác. Điều này sẽ xóa vĩnh viễn tất cả các bản ghi hiện tại cho {name} khỏi cơ sở dữ liệu."
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "This will permanently delete all selected records from the database."
+msgstr "Thao tác này sẽ xóa vĩnh viễn tất cả các bản ghi đã chọn khỏi cơ sở dữ liệu."
 
 #: src/components/routes/system.tsx
 msgid "Throughput of {extraFsName}"
@@ -836,23 +966,27 @@ msgstr ""
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Tokens & Fingerprints"
-msgstr ""
+msgstr "Token & Vân tay"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
-msgstr ""
+msgstr "Token cho phép các tác nhân kết nối và đăng ký. Vân tay là các định danh ổn định duy nhất cho mỗi hệ thống, được đặt khi kết nối lần đầu."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
-msgstr ""
+msgstr "Token và vân tay được sử dụng để xác thực các kết nối WebSocket đến trung tâm."
+
+#: src/lib/utils.ts
+msgid "Triggers when 1 minute load average exceeds a threshold"
+msgstr "Kích hoạt khi tải trung bình 1 phút vượt quá ngưỡng"
 
 #: src/lib/utils.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Kích hoạt khi tải trung bình 15 phút vượt quá ngưỡng"
 
 #: src/lib/utils.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Kích hoạt khi tải trung bình 5 phút vượt quá ngưỡng"
 
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -878,15 +1012,20 @@ msgstr "Kích hoạt khi trạng thái chuyển đổi giữa lên và xuống"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Kích hoạt khi sử dụng bất kỳ đĩa nào vượt quá ngưỡng"
 
+#. Temperature / network units
+#: src/components/routes/settings/general.tsx
+msgid "Unit preferences"
+msgstr "Tùy chọn đơn vị"
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
-msgstr ""
+msgstr "Token chung"
 
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
-msgstr ""
+msgstr "Hoạt động"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Updated in real time. Click on a system to view information."
@@ -898,7 +1037,8 @@ msgstr "Thời gian hoạt động"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
 msgid "Usage"
 msgstr "Sử dụng"
 
@@ -908,7 +1048,6 @@ msgstr "Sử dụng phân vùng gốc"
 
 #: src/components/charts/swap-chart.tsx
 #: src/components/charts/mem-chart.tsx
-#: src/components/charts/area-chart.tsx
 msgid "Used"
 msgstr "Đã sử dụng"
 
@@ -917,9 +1056,17 @@ msgstr "Đã sử dụng"
 msgid "Users"
 msgstr "Người dùng"
 
+#: src/components/alerts-history-columns.tsx
+msgid "Value"
+msgstr "Giá trị"
+
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Xem"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "View your 200 most recent alerts."
+msgstr "Xem 200 cảnh báo gần đây nhất của bạn."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
@@ -939,17 +1086,17 @@ msgstr "Thông báo Webhook / Push"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
-msgstr ""
+msgstr "Khi được bật, token này cho phép các tác nhân tự đăng ký mà không cần tạo hệ thống trước. Hết hạn sau một giờ hoặc khi khởi động lại trung tâm."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
-msgstr ""
+msgstr "Lệnh Windows"
 
 #. Disk write
-#: src/components/charts/area-chart.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
 msgid "Write"
 msgstr "Ghi"
 
