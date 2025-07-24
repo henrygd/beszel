@@ -15,7 +15,7 @@ import (
 
 func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error {
 	alertRecords, err := am.hub.FindAllRecords("alerts",
-		dbx.NewExp("system={:system}", dbx.Params{"system": systemRecord.Id}),
+		dbx.NewExp("system={:system} AND name!='Status'", dbx.Params{"system": systemRecord.Id}),
 	)
 	if err != nil || len(alertRecords) == 0 {
 		// log.Println("no alerts found for system")

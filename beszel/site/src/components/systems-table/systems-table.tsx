@@ -187,7 +187,7 @@ export default function SystemsTable() {
 				invertSorting: false,
 				Icon: ServerIcon,
 				cell: (info) => (
-					<span className="flex gap-0.5 items-center text-base md:pe-5">
+					<span className="flex gap-0.5 items-center text-base md:ps-1 md:pe-5">
 						<IndicatorDot system={info.row.original} />
 						<Button
 							data-nolink
@@ -247,7 +247,7 @@ export default function SystemsTable() {
 				header: sortableHeader,
 				cell(info: CellContext<SystemRecord, unknown>) {
 					const { info: sysInfo, status } = info.row.original
-					if (sysInfo.l1 == undefined) {
+					if (sysInfo.l1 === undefined) {
 						return null
 					}
 
@@ -259,13 +259,13 @@ export default function SystemsTable() {
 						const normalized = max / cpuThreads
 						if (status !== "up") return "bg-primary/30"
 						if (normalized < 0.7) return "bg-green-500"
-						if (normalized < 1.0) return "bg-yellow-500"
+						if (normalized < 1) return "bg-yellow-500"
 						return "bg-red-600"
 					}
 
 					return (
-						<div className="flex items-center gap-2 w-full tabular-nums tracking-tight">
-							<span className={cn("inline-block size-2 rounded-full", getDotColor())} />
+						<div className="flex items-center gap-[.35em] w-full tabular-nums tracking-tight">
+							<span className={cn("inline-block size-2 rounded-full me-0.5", getDotColor())} />
 							{loadAverages.map((la, i) => (
 								<span key={i}>{decimalString(la, la >= 10 ? 1 : 2)}</span>
 							))}
@@ -274,19 +274,19 @@ export default function SystemsTable() {
 				},
 			},
 			{
-				accessorFn: (originalRow) => originalRow.info.b || 0,
+				accessorFn: ({ info }) => info.bb || (info.b || 0) * 1024 * 1024,
 				id: "net",
 				name: () => t`Net`,
 				size: 0,
 				Icon: EthernetIcon,
 				header: sortableHeader,
 				cell(info) {
-					if (info.row.original.status !== "up") {
+					const sys = info.row.original
+					if (sys.status === "paused") {
 						return null
 					}
-					const val = info.getValue() as number
 					const userSettings = useStore($userSettings)
-					const { value, unit } = formatBytes(val, true, userSettings.unitNet, true)
+					const { value, unit } = formatBytes(info.getValue() as number, true, userSettings.unitNet, false)
 					return (
 						<span className="tabular-nums whitespace-nowrap">
 							{decimalString(value, value >= 100 ? 1 : 2)} {unit}
