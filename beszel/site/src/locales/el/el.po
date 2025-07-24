@@ -8,7 +8,7 @@ msgstr ""
 "Language: el\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-07-13 02:50\n"
+"PO-Revision-Date: 2025-07-24 23:54\n"
 "Last-Translator: \n"
 "Language-Team: Greek\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -23,12 +23,23 @@ msgstr ""
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr ""
 
+#. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
+#. placeholder {1}: table.getFilteredRowModel().rows.length
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "{0} of {1} row(s) selected."
+msgstr ""
+
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
+msgstr ""
+
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "1 min"
 msgstr ""
 
 #: src/lib/utils.ts
@@ -39,6 +50,11 @@ msgstr ""
 msgid "12 hours"
 msgstr ""
 
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "15 min"
+msgstr ""
+
 #: src/lib/utils.ts
 msgid "24 hours"
 msgstr ""
@@ -47,10 +63,20 @@ msgstr ""
 msgid "30 days"
 msgstr ""
 
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "5 min"
+msgstr ""
+
 #. Table column
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
+msgstr ""
+
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Active"
 msgstr ""
 
 #: src/components/routes/home.tsx
@@ -86,6 +112,12 @@ msgstr ""
 msgid "Agent"
 msgstr ""
 
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Alert History"
+msgstr ""
+
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alert-button.tsx
 msgid "Alerts"
@@ -98,6 +130,10 @@ msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Are you sure you want to delete {name}?"
+msgstr ""
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Are you sure?"
 msgstr ""
 
 #: src/components/copy-to-clipboard.tsx
@@ -152,16 +188,35 @@ msgstr ""
 msgid "Binary"
 msgstr ""
 
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/general.tsx
+msgid "Bits (Kbps, Mbps, Gbps)"
+msgstr ""
+
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/general.tsx
+msgid "Bytes (KB/s, MB/s, GB/s)"
+msgstr ""
+
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
 msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Cancel"
 msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
+msgstr ""
+
+#: src/components/routes/settings/general.tsx
+msgid "Celsius (°C)"
+msgstr ""
+
+#: src/components/routes/settings/general.tsx
+msgid "Change display units for metrics."
 msgstr ""
 
 #: src/components/routes/settings/general.tsx
@@ -202,7 +257,12 @@ msgstr ""
 msgid "Confirm password"
 msgstr ""
 
+#: src/components/routes/home.tsx
+msgid "Connection is down"
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Continue"
 msgstr ""
 
@@ -258,12 +318,17 @@ msgstr ""
 
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
 msgid "CPU Usage"
 msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Create account"
+msgstr ""
+
+#. Context: date created
+#: src/components/alerts-history-columns.tsx
+msgid "Created"
 msgstr ""
 
 #. Dark theme
@@ -281,6 +346,7 @@ msgid "Default time period"
 msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Delete"
 msgstr ""
 
@@ -294,6 +360,10 @@ msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Disk I/O"
+msgstr ""
+
+#: src/components/routes/settings/general.tsx
+msgid "Disk unit"
 msgstr ""
 
 #: src/lib/utils.ts
@@ -324,9 +394,14 @@ msgstr ""
 
 #. Context: System is down
 #: src/lib/utils.ts
+#: src/components/alerts-history-columns.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
+msgstr ""
+
+#: src/components/alerts-history-columns.tsx
+msgid "Duration"
 msgstr ""
 
 #: src/components/add-system.tsx
@@ -354,6 +429,7 @@ msgstr ""
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/config-yaml.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/login/auth-form.tsx
 msgid "Error"
 msgstr ""
@@ -369,12 +445,20 @@ msgstr ""
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr ""
 
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Export"
+msgstr ""
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
 msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export your current systems configuration."
+msgstr ""
+
+#: src/components/routes/settings/general.tsx
+msgid "Fahrenheit (°F)"
 msgstr ""
 
 #: src/lib/utils.ts
@@ -396,6 +480,7 @@ msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Filter..."
 msgstr ""
 
@@ -448,16 +533,6 @@ msgstr ""
 msgid "Kernel"
 msgstr ""
 
-#. Load average 15 minutes
-#: src/components/systems-table/systems-table.tsx
-msgid "L15"
-msgstr ""
-
-#. Load average 5 minutes
-#: src/components/systems-table/systems-table.tsx
-msgid "L5"
-msgstr ""
-
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr ""
@@ -471,12 +546,25 @@ msgstr ""
 msgid "Light"
 msgstr ""
 
+#: src/components/routes/system.tsx
+msgid "Load Average"
+msgstr ""
+
 #: src/lib/utils.ts
 msgid "Load Average 15m"
 msgstr ""
 
 #: src/lib/utils.ts
+msgid "Load Average 1m"
+msgstr ""
+
+#: src/lib/utils.ts
 msgid "Load Average 5m"
+msgstr ""
+
+#. Short label for load average
+#: src/components/systems-table/systems-table.tsx
+msgid "Load Avg"
 msgstr ""
 
 #: src/components/navbar.tsx
@@ -527,6 +615,7 @@ msgstr ""
 msgid "Memory usage of docker containers"
 msgstr ""
 
+#: src/components/alerts-history-columns.tsx
 #: src/components/add-system.tsx
 msgid "Name"
 msgstr ""
@@ -543,8 +632,17 @@ msgstr ""
 msgid "Network traffic of public interfaces"
 msgstr ""
 
+#. Context: Bytes or bits
+#: src/components/routes/settings/general.tsx
+msgid "Network unit"
+msgstr ""
+
 #: src/components/command-palette.tsx
 msgid "No results found."
+msgstr ""
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "No results."
 msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
@@ -582,6 +680,12 @@ msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Page"
+msgstr ""
+
+#. placeholder {0}: table.getState().pagination.pageIndex + 1
+#. placeholder {1}: table.getPageCount()
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Page {0} of {1}"
 msgstr ""
 
 #: src/components/command-palette.tsx
@@ -665,18 +769,23 @@ msgid "Public Key"
 msgstr ""
 
 #. Disk read
-#: src/components/charts/area-chart.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
 msgid "Read"
 msgstr ""
 
-#. Network bytes received (download)
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
 msgid "Received"
 msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
+msgstr ""
+
+#: src/components/alerts-history-columns.tsx
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Resolved"
 msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
@@ -685,6 +794,10 @@ msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
+msgstr ""
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Rows per page"
 msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
@@ -712,8 +825,7 @@ msgstr ""
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr ""
 
-#. Network bytes sent (upload)
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
 msgid "Sent"
 msgstr ""
 
@@ -744,6 +856,11 @@ msgstr ""
 msgid "Sort By"
 msgstr ""
 
+#. Context: alert state (active or resolved)
+#: src/components/alerts-history-columns.tsx
+msgid "State"
+msgstr ""
+
 #: src/lib/utils.ts
 msgid "Status"
 msgstr ""
@@ -759,9 +876,14 @@ msgstr ""
 #. System theme
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
+#: src/components/alerts-history-columns.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "System load averages over time"
 msgstr ""
 
 #: src/components/navbar.tsx
@@ -786,6 +908,10 @@ msgstr ""
 msgid "Temperature"
 msgstr ""
 
+#: src/components/routes/settings/general.tsx
+msgid "Temperature unit"
+msgstr ""
+
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
 msgstr ""
@@ -804,6 +930,10 @@ msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
+msgstr ""
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "This will permanently delete all selected records from the database."
 msgstr ""
 
 #: src/components/routes/system.tsx
@@ -847,6 +977,10 @@ msgid "Tokens and fingerprints are used to authenticate WebSocket connections to
 msgstr ""
 
 #: src/lib/utils.ts
+msgid "Triggers when 1 minute load average exceeds a threshold"
+msgstr ""
+
+#: src/lib/utils.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
 msgstr ""
 
@@ -878,6 +1012,11 @@ msgstr ""
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr ""
 
+#. Temperature / network units
+#: src/components/routes/settings/general.tsx
+msgid "Unit preferences"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
 msgstr ""
@@ -898,7 +1037,8 @@ msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
 msgid "Usage"
 msgstr ""
 
@@ -908,7 +1048,6 @@ msgstr ""
 
 #: src/components/charts/swap-chart.tsx
 #: src/components/charts/mem-chart.tsx
-#: src/components/charts/area-chart.tsx
 msgid "Used"
 msgstr ""
 
@@ -917,8 +1056,16 @@ msgstr ""
 msgid "Users"
 msgstr ""
 
+#: src/components/alerts-history-columns.tsx
+msgid "Value"
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
+msgstr ""
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "View your 200 most recent alerts."
 msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
@@ -948,8 +1095,8 @@ msgid "Windows command"
 msgstr ""
 
 #. Disk write
-#: src/components/charts/area-chart.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
 msgid "Write"
 msgstr ""
 
