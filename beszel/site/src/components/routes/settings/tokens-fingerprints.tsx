@@ -34,6 +34,8 @@ import {
 	InstallDropdown,
 } from "@/components/install-dropdowns"
 import { AppleIcon, DockerIcon, TuxIcon, WindowsIcon } from "@/components/ui/icons"
+import { redirectPage } from "@nanostores/router"
+import { $router } from "@/components/router"
 
 const pbFingerprintOptions = {
 	expand: "system",
@@ -41,6 +43,9 @@ const pbFingerprintOptions = {
 }
 
 const SettingsFingerprintsPage = memo(() => {
+	if (isReadOnlyUser()) {
+		redirectPage($router, "settings", { name: "general" })
+	}
 	const [fingerprints, setFingerprints] = useState<FingerprintRecord[]>([])
 
 	// Get fingerprint records on mount
@@ -154,7 +159,7 @@ const SectionUniversalToken = memo(() => {
 					or on hub restart.
 				</Trans>
 			</p>
-			<div className="min-h-16 overflow-auto max-w-full inline-flex items-center gap-5 mt-3 border py-2 pl-5 pr-4 rounded-md">
+			<div className="min-h-16 overflow-auto max-w-full inline-flex items-center gap-5 mt-3 border py-2 ps-5 pe-4 rounded-md">
 				{!isLoading && (
 					<>
 						<Switch
