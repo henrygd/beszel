@@ -28,6 +28,10 @@ export const $maxValues = atom(false)
 export const $userSettings = map<UserSettings>({
 	chartTime: "1h",
 	emails: [pb.authStore.record?.email || ""],
+	meterThresholds: {
+		yellow: 65,
+		red: 90,
+	},
 	// unitTemp: "celsius",
 	// unitNet: "mbps",
 	// unitDisk: "mbps",
