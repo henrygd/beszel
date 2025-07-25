@@ -73,6 +73,7 @@ import {
 	formatTemperature,
 	decimalString,
 	formatBytes,
+	parseSemVer,
 } from "@/lib/utils"
 import AlertsButton from "../alerts/alert-button"
 import { $router, Link, navigate } from "../router"
@@ -224,8 +225,12 @@ export default function SystemsTable() {
 			{
 				id: "loadAverage",
 				accessorFn: ({ info }) => {
-					const { l1 = 0, l5 = 0, l15 = 0 } = info
-					return l1 + l5 + l15
+					const sum = info.la?.reduce((acc, curr) => acc + curr, 0)
+					// TODO: remove this in future release in favor of la array
+					if (!sum) {
+						return (info.l1 ?? 0) + (info.l5 ?? 0) + (info.l15 ?? 0)
+					}
+					return sum
 				},
 				name: () => t({ message: "Load Avg", comment: "Short label for load average" }),
 				size: 0,
@@ -233,16 +238,22 @@ export default function SystemsTable() {
 				header: sortableHeader,
 				cell(info: CellContext<SystemRecord, unknown>) {
 					const { info: sysInfo, status } = info.row.original
-					if (sysInfo.l1 === undefined) {
+					// agent version
+					const { minor, patch } = parseSemVer(sysInfo.v)
+					let loadAverages = sysInfo.la
+
+					// use legacy load averages if agent version is less than 12.1.0
+					if (!loadAverages || (minor === 12 && patch < 1)) {
+						loadAverages = [sysInfo.l1 ?? 0, sysInfo.l5 ?? 0, sysInfo.l15 ?? 0]
+					}
+
+					const max = Math.max(...loadAverages)
+					if (max === 0 && (status === "paused" || minor < 12)) {
 						return null
 					}
 
-					const { l1 = 0, l5 = 0, l15 = 0, t: cpuThreads = 1 } = sysInfo
-					const loadAverages = [l1, l5, l15]
-
 					function getDotColor() {
-						const max = Math.max(...loadAverages)
-						const normalized = max / cpuThreads
+						const normalized = max / (sysInfo.t ?? 1)
 						if (status !== "up") return "bg-primary/30"
 						if (normalized < 0.7) return "bg-green-500"
 						if (normalized < 1) return "bg-yellow-500"
@@ -252,7 +263,7 @@ export default function SystemsTable() {
 					return (
 						<div className="flex items-center gap-[.35em] w-full tabular-nums tracking-tight">
 							<span className={cn("inline-block size-2 rounded-full me-0.5", getDotColor())} />
-							{loadAverages.map((la, i) => (
+							{loadAverages?.map((la, i) => (
 								<span key={i}>{decimalString(la, la >= 10 ? 1 : 2)}</span>
 							))}
 						</div>
