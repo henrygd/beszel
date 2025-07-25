@@ -88,10 +88,10 @@ import { Dialog } from "../ui/dialog"
 type ViewMode = "table" | "grid"
 
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
-	const val = (info.getValue() as number) || 0
+	const val = Number(info.getValue()) || 0
 	return (
 		<div className="flex gap-2 items-center tabular-nums tracking-tight">
-			<span className="min-w-8">{decimalString(val, 1)}%</span>
+			<span className="min-w-8">{decimalString(val, val >= 10 ? 1 : 2)}%</span>
 			<span className="grow min-w-8 block bg-muted h-[1em] relative rounded-sm overflow-hidden">
 				<span
 					className={cn(
@@ -189,7 +189,7 @@ export default function SystemsTable() {
 				header: sortableHeader,
 			},
 			{
-				accessorFn: ({ info }) => decimalString(info.cpu, info.cpu >= 10 ? 1 : 2),
+				accessorFn: ({ info }) => info.cpu,
 				id: "cpu",
 				name: () => t`CPU`,
 				cell: CellFormatter,
@@ -198,7 +198,7 @@ export default function SystemsTable() {
 			},
 			{
 				// accessorKey: "info.mp",
-				accessorFn: (originalRow) => originalRow.info.mp,
+				accessorFn: ({ info }) => info.mp,
 				id: "memory",
 				name: () => t`Memory`,
 				cell: CellFormatter,
@@ -206,7 +206,7 @@ export default function SystemsTable() {
 				header: sortableHeader,
 			},
 			{
-				accessorFn: (originalRow) => originalRow.info.dp,
+				accessorFn: ({ info }) => info.dp,
 				id: "disk",
 				name: () => t`Disk`,
 				cell: CellFormatter,
@@ -214,7 +214,7 @@ export default function SystemsTable() {
 				header: sortableHeader,
 			},
 			{
-				accessorFn: (originalRow) => originalRow.info.g,
+				accessorFn: ({ info }) => info.g,
 				id: "gpu",
 				name: () => "GPU",
 				cell: CellFormatter,
@@ -281,7 +281,7 @@ export default function SystemsTable() {
 				},
 			},
 			{
-				accessorFn: (originalRow) => originalRow.info.dt,
+				accessorFn: ({ info }) => info.dt,
 				id: "temp",
 				name: () => t({ message: "Temp", comment: "Temperature label in systems table" }),
 				size: 50,
@@ -303,7 +303,7 @@ export default function SystemsTable() {
 				},
 			},
 			{
-				accessorFn: (originalRow) => originalRow.info.v,
+				accessorFn: ({ info }) => info.v,
 				id: "agent",
 				name: () => t`Agent`,
 				// invertSorting: true,
