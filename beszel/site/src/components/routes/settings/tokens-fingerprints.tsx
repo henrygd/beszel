@@ -42,6 +42,10 @@ const pbFingerprintOptions = {
 	fields: "id,fingerprint,token,system,expand.system.name",
 }
 
+function sortFingerprints(fingerprints: FingerprintRecord[]) {
+	return fingerprints.sort((a, b) => a.expand.system.name.localeCompare(b.expand.system.name))
+}
+
 const SettingsFingerprintsPage = memo(() => {
 	if (isReadOnlyUser()) {
 		redirectPage($router, "settings", { name: "general" })
@@ -51,9 +55,10 @@ const SettingsFingerprintsPage = memo(() => {
 	// Get fingerprint records on mount
 	useEffect(() => {
 		pb.collection("fingerprints")
-			.getFullList(pbFingerprintOptions)
-			// @ts-ignore
-			.then(setFingerprints)
+			.getFullList<FingerprintRecord>(pbFingerprintOptions)
+			.then((prints) => {
+				setFingerprints(sortFingerprints(prints))
+			})
 	}, [])
 
 	// Subscribe to fingerprint updates
@@ -66,7 +71,7 @@ const SettingsFingerprintsPage = memo(() => {
 				(res) => {
 					setFingerprints((currentFingerprints) => {
 						if (res.action === "create") {
-							return [...currentFingerprints, res.record as FingerprintRecord]
+							return sortFingerprints([...currentFingerprints, res.record as FingerprintRecord])
 						}
 						if (res.action === "update") {
 							return currentFingerprints.map((fingerprint) => {
