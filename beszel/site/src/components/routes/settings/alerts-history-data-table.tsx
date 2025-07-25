@@ -74,11 +74,11 @@ export default function AlertsHistoryDataTable() {
 		}
 		// Initial load
 		pb.collection<AlertsHistoryRecord>("alerts_history")
-			.getFullList({
+			.getList(0, 200, {
 				...pbOptions,
 				sort: "-created",
 			})
-			.then((records) => setData(records))
+			.then(({ items }) => setData(items))
 
 		// Subscribe to changes
 		;(async () => {
