@@ -8,7 +8,7 @@ msgstr ""
 "Language: ru\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-07-25 06:21\n"
+"PO-Revision-Date: 2025-07-25 07:41\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -27,7 +27,7 @@ msgstr "{0, plural, one {# день} other {# дней}}"
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
-msgstr ""
+msgstr "Выбрано {0} из {1} строк."
 
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
@@ -40,7 +40,7 @@ msgstr "1 час"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr ""
+msgstr "1 мин"
 
 #: src/lib/utils.ts
 msgid "1 week"
@@ -53,7 +53,7 @@ msgstr "12 часов"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr ""
+msgstr "15 мин"
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -66,7 +66,7 @@ msgstr "30 дней"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr ""
+msgstr "5 мин"
 
 #. Table column
 #: src/components/systems-table/systems-table.tsx
@@ -77,7 +77,7 @@ msgstr "Действия"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Active"
-msgstr ""
+msgstr "Активно"
 
 #: src/components/routes/home.tsx
 msgid "Active Alerts"
@@ -191,12 +191,12 @@ msgstr "Двоичный"
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr ""
+msgstr "Биты (Кбит/с, Мбит/с, Гбит/с)"
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
-msgstr ""
+msgstr "Байты (Кбайт/с, Мбайт/с, Гбайт/с)"
 
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
@@ -213,11 +213,11 @@ msgstr "Внимание - возможная потеря данных"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr ""
+msgstr "Цельсий (°C)"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
-msgstr ""
+msgstr "Изменить единицы измерения для метрик."
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
@@ -259,7 +259,7 @@ msgstr "Подтвердите пароль"
 
 #: src/components/routes/home.tsx
 msgid "Connection is down"
-msgstr ""
+msgstr "Нет соединения"
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -329,7 +329,7 @@ msgstr "Создать аккаунт"
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
 msgid "Created"
-msgstr ""
+msgstr "Создано"
 
 #. Dark theme
 #: src/components/mode-toggle.tsx
@@ -364,7 +364,7 @@ msgstr "Дисковый ввод/вывод"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
-msgstr ""
+msgstr "Единицы измерения температуры"
 
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
@@ -402,7 +402,7 @@ msgstr "Не в сети"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
-msgstr ""
+msgstr "Длительность"
 
 #: src/components/add-system.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -447,7 +447,7 @@ msgstr "Существующие системы, не определенные �
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
-msgstr ""
+msgstr "Экспорт"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
@@ -459,7 +459,7 @@ msgstr "Экспортируйте текущую конфигурацию си�
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr ""
+msgstr "Фаренгейт (°F)"
 
 #: src/lib/utils.ts
 msgid "Failed to authenticate"
@@ -548,7 +548,7 @@ msgstr "Светлая"
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
-msgstr ""
+msgstr "Средняя загрузка"
 
 #: src/lib/utils.ts
 msgid "Load Average 15m"
@@ -556,7 +556,7 @@ msgstr "Средняя загрузка за 15м"
 
 #: src/lib/utils.ts
 msgid "Load Average 1m"
-msgstr ""
+msgstr "Средняя загрузка за 1м"
 
 #: src/lib/utils.ts
 msgid "Load Average 5m"
@@ -565,7 +565,7 @@ msgstr "Средняя загрузка за 5м"
 #. Short label for load average
 #: src/components/systems-table/systems-table.tsx
 msgid "Load Avg"
-msgstr "Средняя загрузка"
+msgstr "Ср. загрузка"
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -635,7 +635,7 @@ msgstr "Сетевой трафик публичных интерфейсов"
 #. Context: Bytes or bits
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
-msgstr ""
+msgstr "Единицы измерения скорости сети"
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -643,7 +643,7 @@ msgstr "Результаты не найдены."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "No results."
-msgstr ""
+msgstr "Нет результатов."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -686,7 +686,7 @@ msgstr "Страница"
 #. placeholder {1}: table.getPageCount()
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Page {0} of {1}"
-msgstr ""
+msgstr "Страница {0} из {1}"
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
@@ -786,7 +786,7 @@ msgstr "Сбросить пароль"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Resolved"
-msgstr ""
+msgstr "Завершено"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Resume"
@@ -798,7 +798,7 @@ msgstr "Обновить токен"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
-msgstr ""
+msgstr "Строк на странице"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -859,7 +859,7 @@ msgstr "Сортировать по"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 msgid "State"
-msgstr ""
+msgstr "Состояние"
 
 #: src/lib/utils.ts
 msgid "Status"
@@ -910,7 +910,7 @@ msgstr "Температура"
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"
-msgstr ""
+msgstr "Температура"
 
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
@@ -934,7 +934,7 @@ msgstr "Это действие не может быть отменено. Эт�
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
-msgstr ""
+msgstr "Это навсегда удалит все выбранные записи из базы данных."
 
 #: src/components/routes/system.tsx
 msgid "Throughput of {extraFsName}"
@@ -1015,7 +1015,7 @@ msgstr "Срабатывает, когда использование любог
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
-msgstr ""
+msgstr "Параметры единиц измерения"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
@@ -1058,7 +1058,7 @@ msgstr "Пользователи"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
-msgstr ""
+msgstr "Значение"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
@@ -1066,7 +1066,7 @@ msgstr "Вид"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
-msgstr ""
+msgstr "Просмотреть 200 последних оповещений."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
