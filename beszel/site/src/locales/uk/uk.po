@@ -8,7 +8,7 @@ msgstr ""
 "Language: uk\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-03-15 04:14\n"
+"PO-Revision-Date: 2025-07-25 22:44\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -285,7 +285,7 @@ msgstr "Копіювати docker run"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Environment variables"
 msgid "Copy env"
-msgstr "Копіювати змінні середовища"
+msgstr "Копіювати env"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Copy host"
@@ -1078,7 +1078,7 @@ msgstr "Очікування достатньої кількості запис�
 
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
-msgstr "Хочете допомогти нам зробити наші переклади ще кращими? Перегляньте <0>Crowdin</0> для отримання додаткової інформації."
+msgstr "Хочете допомогти покращити наші переклади? Подробиці на <0>Crowdin</0>."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"

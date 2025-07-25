@@ -8,7 +8,7 @@ msgstr ""
 "Language: no\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-03-06 07:27\n"
+"PO-Revision-Date: 2025-07-25 22:44\n"
 "Last-Translator: \n"
 "Language-Team: Norwegian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -715,7 +715,7 @@ msgstr "Pause"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused"
-msgstr "Pauset"
+msgstr "Satt på Pause"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
