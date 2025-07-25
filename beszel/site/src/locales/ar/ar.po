@@ -8,7 +8,7 @@ msgstr ""
 "Language: ar\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-03-06 07:27\n"
+"PO-Revision-Date: 2025-07-25 22:44\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
@@ -97,7 +97,7 @@ msgstr "إضافة نظام"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
-msgstr "إضافة عنوان URL"
+msgstr "إضافة رابط"
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
@@ -155,7 +155,7 @@ msgstr "المتوسط يتجاوز <0>{value}{0}</0>"
 
 #: src/components/routes/system.tsx
 msgid "Average power consumption of GPUs"
-msgstr "متوسط ​​استهلاك طاقة GPUs"
+msgstr "متوسط ​​استهلاك طاقة وحدة معالجة الرسوميات"
 
 #: src/components/routes/system.tsx
 msgid "Average system-wide CPU utilization"
@@ -178,7 +178,7 @@ msgstr "عرض النطاق الترددي"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
-msgstr "يدعم Beszel OpenID Connect والعديد من مزودي المصادقة OAuth2."
+msgstr "يدعم بيزيل بروتوكول OpenID Connect والعديد من مزوّدي المصادقة عبر بروتوكول OAuth2."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
@@ -274,13 +274,13 @@ msgstr "تم النسخ إلى الحافظة"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
-msgstr "نسخ docker compose"
+msgstr "نسخ أمر تركيب الدوكر"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
-msgstr "نسخ docker run"
+msgstr "نسخ أمر تشغيل الدوكر"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Environment variables"
@@ -378,15 +378,15 @@ msgstr "استخدام القرص لـ {extraFsName}"
 
 #: src/components/routes/system.tsx
 msgid "Docker CPU Usage"
-msgstr "استخدام المعالج لـ Docker"
+msgstr "استخدام المعالج للدوكر"
 
 #: src/components/routes/system.tsx
 msgid "Docker Memory Usage"
-msgstr "استخدام الذاكرة لـ Docker"
+msgstr "استخدام الذاكرة للدوكر"
 
 #: src/components/routes/system.tsx
 msgid "Docker Network I/O"
-msgstr "إدخال/إخراج الشبكة لـ Docker"
+msgstr "إدخال/إخراج الشبكة للدوكر"
 
 #: src/components/command-palette.tsx
 msgid "Documentation"
@@ -504,7 +504,7 @@ msgstr "عام"
 
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
-msgstr "استهلاك طاقة GPU"
+msgstr "استهلاك طاقة وحدة معالجة الرسوميات"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
@@ -600,7 +600,7 @@ msgstr "تعليمات الإعداد اليدوي"
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx
 msgid "Max 1 min"
-msgstr "1 دقيقة كحد"
+msgstr "الحد الأقصى دقيقة"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Memory"
@@ -613,7 +613,7 @@ msgstr "استخدام الذاكرة"
 
 #: src/components/routes/system.tsx
 msgid "Memory usage of docker containers"
-msgstr "استخدام الذاكرة لحاويات Docker"
+msgstr "استخدام الذاكرة لحاويات دوكر"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/add-system.tsx
@@ -626,7 +626,7 @@ msgstr "الشبكة"
 
 #: src/components/routes/system.tsx
 msgid "Network traffic of docker containers"
-msgstr "حركة مرور الشبكة لحاويات Docker"
+msgstr "حركة مرور الشبكة لحاويات الدوكر"
 
 #: src/components/routes/system.tsx
 msgid "Network traffic of public interfaces"
@@ -715,7 +715,7 @@ msgstr "إيقاف مؤقت"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused"
-msgstr "متوقف مؤقتًا"
+msgstr "متوقف مؤقتا"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -990,7 +990,7 @@ msgstr "يتم التفعيل عندما يتجاوز متوسط التحميل 
 
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
-msgstr "يتم التفعيل عندما يتجاوز أي مستشعر عتبة معينة"
+msgstr "يتم التفعيل عندما ��تجاوز أي مستشعر عتبة معينة"
 
 #: src/lib/utils.ts
 msgid "Triggers when combined up/down exceeds a threshold"
@@ -1092,7 +1092,7 @@ msgstr "عند التفعيل، يسمح هذا الرمز المميز للوك
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
-msgstr "أمر Windows"
+msgstr "أمر ويندوز"
 
 #. Disk write
 #: src/components/routes/system.tsx
@@ -1111,3 +1111,4 @@ msgstr "تكوين YAML"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "تم تحديث إعدادات المستخدم الخاصة بك."
+

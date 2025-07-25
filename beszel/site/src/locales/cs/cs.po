@@ -8,7 +8,7 @@ msgstr ""
 "Language: cs\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-03-14 00:50\n"
+"PO-Revision-Date: 2025-07-25 22:44\n"
 "Last-Translator: \n"
 "Language-Team: Czech\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 3;\n"
@@ -280,7 +280,7 @@ msgstr "Kopírovat docker compose"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
-msgstr ""
+msgstr "Zkopírovat příkaz na spuštění dockeru"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Environment variables"
@@ -514,7 +514,7 @@ msgstr "Mřížka"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
-msgstr ""
+msgstr "Homebrew příkaz"
 
 #: src/components/add-system.tsx
 msgid "Host / IP"
@@ -1092,7 +1092,7 @@ msgstr ""
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
-msgstr ""
+msgstr "Windows příkaz"
 
 #. Disk write
 #: src/components/routes/system.tsx
@@ -1111,3 +1111,4 @@ msgstr "YAML konfigurace"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Vaše uživatelská nastavení byla aktualizována."
+

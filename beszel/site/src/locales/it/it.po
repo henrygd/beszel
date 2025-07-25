@@ -8,7 +8,7 @@ msgstr ""
 "Language: it\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-03-06 07:27\n"
+"PO-Revision-Date: 2025-07-25 22:44\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -552,7 +552,7 @@ msgstr ""
 
 #: src/lib/utils.ts
 msgid "Load Average 15m"
-msgstr ""
+msgstr "Caricamento medio 15m"
 
 #: src/lib/utils.ts
 msgid "Load Average 1m"
@@ -560,7 +560,7 @@ msgstr ""
 
 #: src/lib/utils.ts
 msgid "Load Average 5m"
-msgstr ""
+msgstr "Caricamento medio 5m"
 
 #. Short label for load average
 #: src/components/systems-table/systems-table.tsx
@@ -1111,3 +1111,4 @@ msgstr "Configurazione YAML"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Le impostazioni utente sono state aggiornate."
+
