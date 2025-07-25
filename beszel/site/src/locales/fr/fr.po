@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-07-25 22:44\n"
+"PO-Revision-Date: 2025-07-25 23:46\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -85,7 +85,7 @@ msgstr "Alertes actives"
 
 #: src/components/add-system.tsx
 msgid "Add <0>System</0>"
-msgstr "Ajouter <0>Système</0>"
+msgstr "Ajouter <0>un Système</0>"
 
 #: src/components/add-system.tsx
 msgid "Add New System"
@@ -97,7 +97,7 @@ msgstr "Ajouter un système"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
-msgstr "Ajouter URL"
+msgstr "Ajouter l’URL"
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
