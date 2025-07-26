@@ -73,6 +73,7 @@ import {
 	formatTemperature,
 	decimalString,
 	formatBytes,
+	parseSemVer,
 } from "@/lib/utils"
 import AlertsButton from "../alerts/alert-button"
 import { $router, Link, navigate } from "../router"
@@ -88,10 +89,10 @@ import { Dialog } from "../ui/dialog"
 type ViewMode = "table" | "grid"
 
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
-	const val = (info.getValue() as number) || 0
+	const val = Number(info.getValue()) || 0
 	return (
 		<div className="flex gap-2 items-center tabular-nums tracking-tight">
-			<span className="min-w-8">{decimalString(val, 1)}%</span>
+			<span className="min-w-8">{decimalString(val, val >= 10 ? 1 : 2)}%</span>
 			<span className="grow min-w-8 block bg-muted h-[1em] relative rounded-sm overflow-hidden">
 				<span
 					className={cn(
@@ -173,7 +174,7 @@ export default function SystemsTable() {
 				invertSorting: false,
 				Icon: ServerIcon,
 				cell: (info) => (
-					<span className="flex gap-0.5 items-center text-base md:pe-5">
+					<span className="flex gap-0.5 items-center text-base md:ps-1 md:pe-5">
 						<IndicatorDot system={info.row.original} />
 						<Button
 							data-nolink
@@ -189,7 +190,7 @@ export default function SystemsTable() {
 				header: sortableHeader,
 			},
 			{
-				accessorFn: ({ info }) => decimalString(info.cpu, info.cpu >= 10 ? 1 : 2),
+				accessorFn: ({ info }) => info.cpu,
 				id: "cpu",
 				name: () => t`CPU`,
 				cell: CellFormatter,
@@ -198,7 +199,7 @@ export default function SystemsTable() {
 			},
 			{
 				// accessorKey: "info.mp",
-				accessorFn: (originalRow) => originalRow.info.mp,
+				accessorFn: ({ info }) => info.mp,
 				id: "memory",
 				name: () => t`Memory`,
 				cell: CellFormatter,
@@ -206,7 +207,7 @@ export default function SystemsTable() {
 				header: sortableHeader,
 			},
 			{
-				accessorFn: (originalRow) => originalRow.info.dp,
+				accessorFn: ({ info }) => info.dp,
 				id: "disk",
 				name: () => t`Disk`,
 				cell: CellFormatter,
@@ -214,7 +215,7 @@ export default function SystemsTable() {
 				header: sortableHeader,
 			},
 			{
-				accessorFn: (originalRow) => originalRow.info.g,
+				accessorFn: ({ info }) => info.g,
 				id: "gpu",
 				name: () => "GPU",
 				cell: CellFormatter,
@@ -224,8 +225,12 @@ export default function SystemsTable() {
 			{
 				id: "loadAverage",
 				accessorFn: ({ info }) => {
-					const { l1 = 0, l5 = 0, l15 = 0 } = info
-					return l1 + l5 + l15
+					const sum = info.la?.reduce((acc, curr) => acc + curr, 0)
+					// TODO: remove this in future release in favor of la array
+					if (!sum) {
+						return (info.l1 ?? 0) + (info.l5 ?? 0) + (info.l15 ?? 0)
+					}
+					return sum
 				},
 				name: () => t({ message: "Load Avg", comment: "Short label for load average" }),
 				size: 0,
@@ -233,26 +238,32 @@ export default function SystemsTable() {
 				header: sortableHeader,
 				cell(info: CellContext<SystemRecord, unknown>) {
 					const { info: sysInfo, status } = info.row.original
-					if (sysInfo.l1 == undefined) {
+					// agent version
+					const { minor, patch } = parseSemVer(sysInfo.v)
+					let loadAverages = sysInfo.la
+
+					// use legacy load averages if agent version is less than 12.1.0
+					if (!loadAverages || (minor === 12 && patch < 1)) {
+						loadAverages = [sysInfo.l1 ?? 0, sysInfo.l5 ?? 0, sysInfo.l15 ?? 0]
+					}
+
+					const max = Math.max(...loadAverages)
+					if (max === 0 && (status === "paused" || minor < 12)) {
 						return null
 					}
 
-					const { l1 = 0, l5 = 0, l15 = 0, t: cpuThreads = 1 } = sysInfo
-					const loadAverages = [l1, l5, l15]
-
 					function getDotColor() {
-						const max = Math.max(...loadAverages)
-						const normalized = max / cpuThreads
+						const normalized = max / (sysInfo.t ?? 1)
 						if (status !== "up") return "bg-primary/30"
 						if (normalized < 0.7) return "bg-green-500"
-						if (normalized < 1.0) return "bg-yellow-500"
+						if (normalized < 1) return "bg-yellow-500"
 						return "bg-red-600"
 					}
 
 					return (
-						<div className="flex items-center gap-2 w-full tabular-nums tracking-tight">
-							<span className={cn("inline-block size-2 rounded-full", getDotColor())} />
-							{loadAverages.map((la, i) => (
+						<div className="flex items-center gap-[.35em] w-full tabular-nums tracking-tight">
+							<span className={cn("inline-block size-2 rounded-full me-0.5", getDotColor())} />
+							{loadAverages?.map((la, i) => (
 								<span key={i}>{decimalString(la, la >= 10 ? 1 : 2)}</span>
 							))}
 						</div>
@@ -260,19 +271,19 @@ export default function SystemsTable() {
 				},
 			},
 			{
-				accessorFn: (originalRow) => originalRow.info.b || 0,
+				accessorFn: ({ info }) => info.bb || (info.b || 0) * 1024 * 1024,
 				id: "net",
 				name: () => t`Net`,
 				size: 0,
 				Icon: EthernetIcon,
 				header: sortableHeader,
 				cell(info) {
-					if (info.row.original.status !== "up") {
+					const sys = info.row.original
+					if (sys.status === "paused") {
 						return null
 					}
-					const val = info.getValue() as number
 					const userSettings = useStore($userSettings)
-					const { value, unit } = formatBytes(val, true, userSettings.unitNet, true)
+					const { value, unit } = formatBytes(info.getValue() as number, true, userSettings.unitNet, false)
 					return (
 						<span className="tabular-nums whitespace-nowrap">
 							{decimalString(value, value >= 100 ? 1 : 2)} {unit}
@@ -281,7 +292,7 @@ export default function SystemsTable() {
 				},
 			},
 			{
-				accessorFn: (originalRow) => originalRow.info.dt,
+				accessorFn: ({ info }) => info.dt,
 				id: "temp",
 				name: () => t({ message: "Temp", comment: "Temperature label in systems table" }),
 				size: 50,
@@ -303,7 +314,7 @@ export default function SystemsTable() {
 				},
 			},
 			{
-				accessorFn: (originalRow) => originalRow.info.v,
+				accessorFn: ({ info }) => info.v,
 				id: "agent",
 				name: () => t`Agent`,
 				// invertSorting: true,

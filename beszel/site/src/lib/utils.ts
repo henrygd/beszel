@@ -9,6 +9,7 @@ import {
 	ChartTimeData,
 	ChartTimes,
 	FingerprintRecord,
+	SemVer,
 	SystemRecord,
 	UserSettings,
 } from "@/types"
@@ -367,6 +368,7 @@ export async function updateUserSettings() {
 
 export const chartMargin = { top: 12 }
 
+/** Alert info for each alert type */
 export const alertInfo: Record<string, AlertInfo> = {
 	Status: {
 		name: () => t`Status`,
@@ -455,3 +457,53 @@ export const getHubURL = () => BESZEL?.HUB_URL || window.location.origin
 
 /** Map of system IDs to their corresponding tokens (used to avoid fetching in add-system dialog) */
 export const tokenMap = new Map<SystemRecord["id"], FingerprintRecord["token"]>()
+
+/** Calculate duration between two dates and format as human-readable string */
+export function formatDuration(
+	createdDate: string | null | undefined,
+	resolvedDate: string | null | undefined
+): string {
+	const created = createdDate ? new Date(createdDate) : null
+	const resolved = resolvedDate ? new Date(resolvedDate) : null
+
+	if (!created || !resolved) return ""
+
+	const diffMs = resolved.getTime() - created.getTime()
+	if (diffMs < 0) return ""
+
+	const totalSeconds = Math.floor(diffMs / 1000)
+	let hours = Math.floor(totalSeconds / 3600)
+	let minutes = Math.floor((totalSeconds % 3600) / 60)
+	let seconds = totalSeconds % 60
+
+	// if seconds are close to 60, round up to next minute
+	// if minutes are close to 60, round up to next hour
+	if (seconds >= 58) {
+		minutes += 1
+		seconds = 0
+	}
+	if (minutes >= 60) {
+		hours += 1
+		minutes = 0
+	}
+
+	// For durations over 1 hour, omit seconds for cleaner display
+	if (hours > 0) {
+		return [hours ? `${hours}h` : null, minutes ? `${minutes}m` : null].filter(Boolean).join(" ")
+	}
+
+	return [hours ? `${hours}h` : null, minutes ? `${minutes}m` : null, seconds ? `${seconds}s` : null]
+		.filter(Boolean)
+		.join(" ")
+}
+
+export const parseSemVer = (semVer = ""): SemVer => {
+	// if (semVer.startsWith("v")) {
+	// 	semVer = semVer.slice(1)
+	// }
+	if (semVer.includes("-")) {
+		semVer = semVer.slice(0, semVer.indexOf("-"))
+	}
+	const parts = semVer.split(".").map(Number)
+	return { major: parts?.[0] ?? 0, minor: parts?.[1] ?? 0, patch: parts?.[2] ?? 0 }
+}
