@@ -188,6 +188,7 @@ winget:
     publisher_support_url: "https://github.com/henrygd/beszel/issues"
     short_description: "Agent for Beszel, a lightweight server monitoring platform."
     skip_upload: auto
+    token: "{{ .Env.WINGET_TOKEN }}"
     description: |
       Beszel is a lightweight server monitoring platform that includes Docker
       statistics, historical data, and alert functions. It has a friendly web
