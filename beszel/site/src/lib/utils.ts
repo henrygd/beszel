@@ -9,6 +9,7 @@ import {
 	ChartTimeData,
 	ChartTimes,
 	FingerprintRecord,
+	SemVer,
 	SystemRecord,
 	UserSettings,
 } from "@/types"
@@ -494,4 +495,15 @@ export function formatDuration(
 	return [hours ? `${hours}h` : null, minutes ? `${minutes}m` : null, seconds ? `${seconds}s` : null]
 		.filter(Boolean)
 		.join(" ")
+}
+
+export const parseSemVer = (semVer = ""): SemVer => {
+	// if (semVer.startsWith("v")) {
+	// 	semVer = semVer.slice(1)
+	// }
+	if (semVer.includes("-")) {
+		semVer = semVer.slice(0, semVer.indexOf("-"))
+	}
+	const parts = semVer.split(".").map(Number)
+	return { major: parts?.[0] ?? 0, minor: parts?.[1] ?? 0, patch: parts?.[2] ?? 0 }
 }

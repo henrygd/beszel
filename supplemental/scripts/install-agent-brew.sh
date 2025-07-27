@@ -2,6 +2,8 @@
 
 PORT=45876
 KEY=""
+TOKEN=""
+HUB_URL=""
 
 usage() {
   printf "Beszel Agent homebrew installation script\n\n"
@@ -9,36 +11,40 @@ usage() {
   printf "Options: \n"
   printf "  -k            SSH key (required, or interactive if not provided)\n"
   printf "  -p            Port (default: $PORT)\n"
+  printf "  -t            Token (optional for backwards compatibility)\n"
+  printf "  -url          Hub URL (optional for backwards compatibility)\n"
   printf "  -h, --help    Display this help message\n"
   exit 0
 }
 
-# Handle --help explicitly since getopts doesn't handle long options
-if [ "$1" = "--help" ]; then
-  usage
-fi
-
-# Parse arguments with getopts
-while getopts "k:p:h" opt; do
-  case ${opt} in
-  k)
-    KEY="$OPTARG"
+# Parse arguments
+while [ $# -gt 0 ]; do
+  case "$1" in
+  -k)
+    shift
+    KEY="$1"
     ;;
-  p)
-    PORT="$OPTARG"
+  -p)
+    shift
+    PORT="$1"
     ;;
-  h)
+  -t)
+    shift
+    TOKEN="$1"
+    ;;
+  -url)
+    shift
+    HUB_URL="$1"
+    ;;
+  -h | --help)
     usage
     ;;
-  \?)
-    echo "Invalid option: -$OPTARG" >&2
-    usage
-    ;;
-  :)
-    echo "Option -$OPTARG requires an argument." >&2
+  *)
+    echo "Invalid option: $1" >&2
     usage
     ;;
   esac
+  shift
 done
 
 # Check if brew is installed, prompt to install if not
@@ -64,10 +70,19 @@ if [ -z "$KEY" ]; then
   read -p "Enter SSH key: " KEY
 fi
 
+# TOKEN and HUB_URL are optional for backwards compatibility - no interactive prompts
+
 mkdir -p ~/.config/beszel ~/.cache/beszel
 
 echo "KEY=\"$KEY\"" >~/.config/beszel/beszel-agent.env
 echo "LISTEN=$PORT" >>~/.config/beszel/beszel-agent.env
+
+if [ -n "$TOKEN" ]; then
+  echo "TOKEN=\"$TOKEN\"" >>~/.config/beszel/beszel-agent.env
+fi
+if [ -n "$HUB_URL" ]; then
+  echo "HUB_URL=\"$HUB_URL\"" >>~/.config/beszel/beszel-agent.env
+fi
 
 brew tap henrygd/beszel
 brew install beszel-agent

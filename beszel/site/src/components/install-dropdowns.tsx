@@ -3,8 +3,8 @@ import { DropdownMenuContent, DropdownMenuItem } from "./ui/dropdown-menu"
 import { copyToClipboard, getHubURL } from "@/lib/utils"
 import { i18n } from "@lingui/core"
 
-const isBeta = BESZEL.HUB_VERSION.includes("beta")
-const imageTag = isBeta ? ":edge" : ""
+// const isbeta = beszel.hub_version.includes("beta")
+// const imagetag = isbeta ? ":edge" : ""
 
 /**
  * Get the URL of the script to install the agent.
@@ -12,18 +12,20 @@ const imageTag = isBeta ? ":edge" : ""
  * @returns The URL for the script.
  */
 const getScriptUrl = (path: string = "") => {
-	const url = new URL("https://get.beszel.dev")
-	url.pathname = path
-	if (isBeta) {
-		url.searchParams.set("beta", "1")
-	}
-	return url.toString()
+	return `https://get.beszel.dev${path}`
+	// no beta for now
+	// const url = new URL("https://get.beszel.dev")
+	// url.pathname = path
+	// if (isBeta) {
+	// 	url.searchParams.set("beta", "1")
+	// }
+	// return url.toString()
 }
 
 export function copyDockerCompose(port = "45876", publicKey: string, token: string) {
 	copyToClipboard(`services:
   beszel-agent:
-    image: henrygd/beszel-agent${imageTag}
+    image: henrygd/beszel-agent
     container_name: beszel-agent
     restart: unless-stopped
     network_mode: host
@@ -41,7 +43,7 @@ export function copyDockerCompose(port = "45876", publicKey: string, token: stri
 
 export function copyDockerRun(port = "45876", publicKey: string, token: string) {
 	copyToClipboard(
-		`docker run -d --name beszel-agent --network host --restart unless-stopped -v /var/run/docker.sock:/var/run/docker.sock:ro -v ./beszel_agent_data:/var/lib/beszel-agent -e KEY="${publicKey}" -e LISTEN=${port} -e TOKEN="${token}" -e HUB_URL="${getHubURL()}" henrygd/beszel-agent${imageTag}`
+		`docker run -d --name beszel-agent --network host --restart unless-stopped -v /var/run/docker.sock:/var/run/docker.sock:ro -v ./beszel_agent_data:/var/lib/beszel-agent -e KEY="${publicKey}" -e LISTEN=${port} -e TOKEN="${token}" -e HUB_URL="${getHubURL()}" henrygd/beszel-agent`
 	)
 }
 

@@ -1,4 +1,5 @@
 import {
+	AlertOctagonIcon,
 	BookIcon,
 	DatabaseBackupIcon,
 	FingerprintIcon,
@@ -137,7 +138,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 								setOpen(false)
 							}}
 						>
-							<LogsIcon className="me-2 size-4" />
+							<AlertOctagonIcon className="me-2 size-4" />
 							<span>
 								<Trans>Alert History</Trans>
 							</span>

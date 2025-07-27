@@ -73,7 +73,10 @@ GITHUB_URL="https://github.com"
 GITHUB_API_URL="https://api.github.com" # not blocked in China currently
 GITHUB_PROXY_URL=""
 KEY=""
+TOKEN=""
+HUB_URL=""
 AUTO_UPDATE_FLAG="" # empty string means prompt, "true" means auto-enable, "false" means skip
+VERSION="latest"
 
 # Check for help flag
 case "$1" in
@@ -83,6 +86,9 @@ case "$1" in
   printf "Options: \n"
   printf "  -k                    : SSH key (required, or interactive if not provided)\n"
   printf "  -p                    : Port (default: $PORT)\n"
+  printf "  -t                    : Token (optional for backwards compatibility)\n"
+  printf "  -url                  : Hub URL (optional for backwards compatibility)\n"
+  printf "  -v, --version         : Version to install (default: latest)\n"
   printf "  -u                    : Uninstall Beszel Agent\n"
   printf "  --auto-update [VALUE] : Control automatic daily updates\n"
   printf "                          VALUE can be true (enable) or false (disable). If not specified, will prompt.\n"
@@ -129,6 +135,18 @@ while [ $# -gt 0 ]; do
   -p)
     shift
     PORT="$1"
+    ;;
+  -t)
+    shift
+    TOKEN="$1"
+    ;;
+  -url)
+    shift
+    HUB_URL="$1"
+    ;;
+  -v | --version)
+    shift
+    VERSION="$1"
     ;;
   -u)
     UNINSTALL=true
@@ -303,6 +321,9 @@ if [ -z "$KEY" ]; then
   read KEY
 fi
 
+# TOKEN and HUB_URL are optional for backwards compatibility - no interactive prompts
+# They will be set as empty environment variables if not provided
+
 # Verify checksum
 if command -v sha256sum >/dev/null; then
   CHECK_CMD="sha256sum"
@@ -351,27 +372,35 @@ fi
 echo "Downloading and installing the agent..."
 
 OS=$(uname -s | sed -e 'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/')
-ARCH=$(uname -m | sed -e 's/x86_64/amd64/' -e 's/armv6l/arm/' -e 's/armv7l/arm/' -e 's/aarch64/arm64/')
+ARCH=$(uname -m | sed -e 's/x86_64/amd64/' -e 's/armv6l/arm/' -e 's/armv7l/arm/' -e 's/aarch64/arm64/' -e 's/mips/mipsle/')
 FILE_NAME="beszel-agent_${OS}_${ARCH}.tar.gz"
-LATEST_VERSION=$(curl -s "$GITHUB_API_URL""/repos/henrygd/beszel/releases/latest" | grep -o '"tag_name": "v[^"]*"' | cut -d'"' -f4 | tr -d 'v')
-if [ -z "$LATEST_VERSION" ]; then
-  echo "Failed to get latest version"
-  exit 1
+
+# Determine version to install
+if [ "$VERSION" = "latest" ]; then
+  INSTALL_VERSION=$(curl -s "$GITHUB_API_URL""/repos/henrygd/beszel/releases/latest" | grep -o '"tag_name": "v[^"]*"' | cut -d'"' -f4 | tr -d 'v')
+  if [ -z "$INSTALL_VERSION" ]; then
+    echo "Failed to get latest version"
+    exit 1
+  fi
+else
+  INSTALL_VERSION="$VERSION"
+  # Remove 'v' prefix if present
+  INSTALL_VERSION=$(echo "$INSTALL_VERSION" | sed 's/^v//')
 fi
 
-echo "Downloading and installing agent version ${LATEST_VERSION} from ${GITHUB_URL} ..."
+echo "Downloading and installing agent version ${INSTALL_VERSION} from ${GITHUB_URL} ..."
 
 # Download checksums file
 TEMP_DIR=$(mktemp -d)
 cd "$TEMP_DIR" || exit 1
-CHECKSUM=$(curl -sL "$GITHUB_URL/henrygd/beszel/releases/download/v${LATEST_VERSION}/beszel_${LATEST_VERSION}_checksums.txt" | grep "$FILE_NAME" | cut -d' ' -f1)
+CHECKSUM=$(curl -sL "$GITHUB_URL/henrygd/beszel/releases/download/v${INSTALL_VERSION}/beszel_${INSTALL_VERSION}_checksums.txt" | grep "$FILE_NAME" | cut -d' ' -f1)
 if [ -z "$CHECKSUM" ] || ! echo "$CHECKSUM" | grep -qE "^[a-fA-F0-9]{64}$"; then
   echo "Failed to get checksum or invalid checksum format"
   exit 1
 fi
 
-if ! curl -#L "$GITHUB_URL/henrygd/beszel/releases/download/v${LATEST_VERSION}/$FILE_NAME" -o "$FILE_NAME"; then
-  echo "Failed to download the agent from ""$GITHUB_URL/henrygd/beszel/releases/download/v${LATEST_VERSION}/$FILE_NAME"
+if ! curl -#L "$GITHUB_URL/henrygd/beszel/releases/download/v${INSTALL_VERSION}/$FILE_NAME" -o "$FILE_NAME"; then
+  echo "Failed to download the agent from ""$GITHUB_URL/henrygd/beszel/releases/download/v${INSTALL_VERSION}/$FILE_NAME"
   rm -rf "$TEMP_DIR"
   exit 1
 fi
@@ -430,6 +459,8 @@ start_pre() {
 
 export PORT="$PORT"
 export KEY="$KEY"
+export TOKEN="$TOKEN"
+export HUB_URL="$HUB_URL"
 
 depend() {
     need net
@@ -517,6 +548,8 @@ start_service() {
     procd_set_param pidfile /var/run/beszel-agent.pid
     procd_set_param env PORT="$PORT"
     procd_set_param env KEY="$KEY"
+    procd_set_param env TOKEN="$TOKEN"
+    procd_set_param env HUB_URL="$HUB_URL"
     procd_set_param stdout 1
     procd_set_param stderr 1
     procd_close_instance
@@ -593,6 +626,8 @@ After=network-online.target
 [Service]
 Environment="PORT=$PORT"
 Environment="KEY=$KEY"
+Environment="TOKEN=$TOKEN"
+Environment="HUB_URL=$HUB_URL"
 # Environment="EXTRA_FILESYSTEMS=sdb"
 ExecStart=/opt/beszel-agent/beszel-agent
 User=beszel
@@ -611,7 +646,6 @@ ProtectKernelLogs=yes
 ProtectSystem=strict
 RemoveIPC=yes
 RestrictSUIDSGID=true
-SystemCallArchitectures=native
 
 $(if [ -n "$NVIDIA_DEVICES" ]; then printf "%b" "# NVIDIA device permissions\n${NVIDIA_DEVICES}"; fi)
 

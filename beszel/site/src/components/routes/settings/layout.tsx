@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useStore } from "@nanostores/react"
 import { $router } from "@/components/router.tsx"
 import { getPagePath, redirectPage } from "@nanostores/router"
-import { BellIcon, FileSlidersIcon, FingerprintIcon, SettingsIcon, LogsIcon } from "lucide-react"
+import { BellIcon, FileSlidersIcon, FingerprintIcon, SettingsIcon, AlertOctagonIcon } from "lucide-react"
 import { $userSettings, pb } from "@/lib/stores.ts"
 import { toast } from "@/components/ui/use-toast.ts"
 import { UserSettings } from "@/types.js"
@@ -69,7 +69,7 @@ export default function SettingsLayout() {
 		{
 			title: t`Alert History`,
 			href: getPagePath($router, "settings", { name: "alert-history" }),
-			icon: LogsIcon,
+			icon: AlertOctagonIcon,
 		},
 		{
 			title: t`YAML Config`,
