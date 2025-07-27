@@ -5,7 +5,7 @@ is_alpine() {
 }
 
 is_openwrt() {
-  cat /etc/os-release | grep -q "OpenWrt"
+  grep -qi "OpenWrt" /etc/os-release
 }
 
 # If SELinux is enabled, set the context of the binary
@@ -335,11 +335,10 @@ else
 fi
 
 # Create a dedicated user for the service if it doesn't exist
+echo "Creating a dedicated user for the Beszel Agent service..."
 if is_alpine; then
   if ! id -u beszel >/dev/null 2>&1; then
-    echo "Creating a dedicated group for the Beszel Agent service..."
     addgroup beszel
-    echo "Creating a dedicated user for the Beszel Agent service..."
     adduser -S -D -H -s /sbin/nologin -G beszel beszel
   fi
   # Add the user to the docker group to allow access to the Docker socket if group docker exists
@@ -347,10 +346,37 @@ if is_alpine; then
     echo "Adding beszel to docker group"
     usermod -aG docker beszel
   fi
+  
+elif is_openwrt; then
+  # Create beszel group first if it doesn't exist (check /etc/group directly)
+  if ! grep -q "^beszel:" /etc/group >/dev/null 2>&1; then
+    echo "beszel:x:999:" >> /etc/group
+  fi
+  
+  # Create beszel user if it doesn't exist (double-check to prevent duplicates)
+  if ! id -u beszel >/dev/null 2>&1 && ! grep -q "^beszel:" /etc/passwd >/dev/null 2>&1; then
+    echo "beszel:x:999:999::/nonexistent:/bin/false" >> /etc/passwd
+  fi
+  
+  # Add the user to the docker group if docker group exists and user is not already in it
+  if grep -q "^docker:" /etc/group >/dev/null 2>&1; then
+    echo "Adding beszel to docker group"
+    # Check if beszel is already in docker group
+    if ! grep "^docker:" /etc/group | grep -q "beszel"; then
+      # Add beszel to docker group by modifying /etc/group
+      # Handle both cases: group with existing members and group without members
+      if grep "^docker:" /etc/group | grep -q ":.*:.*$"; then
+        # Group has existing members, append with comma
+        sed -i 's/^docker:\([^:]*:[^:]*:\)\(.*\)$/docker:\1\2,beszel/' /etc/group
+      else
+        # Group has no members, just append
+        sed -i 's/^docker:\([^:]*:[^:]*:\)$/docker:\1beszel/' /etc/group
+      fi
+    fi
+  fi
 
 else
   if ! id -u beszel >/dev/null 2>&1; then
-    echo "Creating a dedicated user for the Beszel Agent service..."
     useradd --system --home-dir /nonexistent --shell /bin/false beszel
   fi
   # Add the user to the docker group to allow access to the Docker socket if group docker exists
