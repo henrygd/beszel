@@ -572,10 +572,7 @@ start_service() {
     procd_set_param command /opt/beszel-agent/beszel-agent
     procd_set_param user beszel
     procd_set_param pidfile /var/run/beszel-agent.pid
-    procd_set_param env PORT="$PORT"
-    procd_set_param env KEY="$KEY"
-    procd_set_param env TOKEN="$TOKEN"
-    procd_set_param env HUB_URL="$HUB_URL"
+    procd_set_param env PORT="$PORT" KEY="$KEY" TOKEN="$TOKEN" HUB_URL="$HUB_URL"
     procd_set_param stdout 1
     procd_set_param stderr 1
     procd_close_instance
