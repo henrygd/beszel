@@ -289,12 +289,12 @@ package_installed() {
 
 # Check for package manager and install necessary packages if not installed
 if package_installed apk; then
-  if ! package_installed tar || ! package_installed curl || ! package_installed coreutils; then
+  if ! package_installed tar || ! package_installed curl || ! package_installed sha256sum; then
     apk update
     apk add tar curl coreutils shadow
   fi
 elif package_installed opkg; then
-  if ! package_installed tar || ! package_installed curl || ! package_installed coreutils; then
+  if ! package_installed tar || ! package_installed curl || ! package_installed sha256sum; then
     opkg update
     opkg install tar curl coreutils
   fi
