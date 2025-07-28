@@ -1,7 +1,7 @@
 #!/bin/sh
 
 is_alpine() {
-  [ -f /etc/alpine-release ]is_alpine
+  [ -f /etc/alpine-release ]
 }
 
 is_openwrt() {
