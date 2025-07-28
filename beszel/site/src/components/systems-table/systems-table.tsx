@@ -174,17 +174,11 @@ export default function SystemsTable() {
 				invertSorting: false,
 				Icon: ServerIcon,
 				cell: (info) => (
-					<span className="flex gap-0.5 items-center text-base md:ps-1 md:pe-5">
+					<span className="flex gap-2 items-center md:ps-1 md:pe-5">
 						<IndicatorDot system={info.row.original} />
-						<Button
-							data-nolink
-							variant={"ghost"}
-							className="text-primary/90 h-7 px-1.5 gap-1.5"
-							onClick={() => copyToClipboard(info.getValue() as string)}
-						>
+						<span className="font-medium text-sm">
 							{info.getValue() as string}
-							<CopyIcon className="size-2.5" />
-						</Button>
+						</span>
 					</span>
 				),
 				header: sortableHeader,
@@ -720,6 +714,10 @@ const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 									<Trans>Pause</Trans>
 								</>
 							)}
+						</DropdownMenuItem>
+						<DropdownMenuItem onClick={() => copyToClipboard(name)}>
+							<CopyIcon className="me-2.5 size-4" />
+							<Trans>Copy name</Trans>
 						</DropdownMenuItem>
 						<DropdownMenuItem onClick={() => copyToClipboard(host)}>
 							<CopyIcon className="me-2.5 size-4" />
