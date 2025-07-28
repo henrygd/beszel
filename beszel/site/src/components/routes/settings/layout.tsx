@@ -50,38 +50,53 @@ export async function saveSettings(newSettings: Partial<UserSettings>) {
 export default function SettingsLayout() {
 	const { t } = useLingui()
 
-	const sidebarNavItems = [
+	const sidebarNavSections = [
 		{
-			title: t({ message: `General`, comment: "Context: General settings" }),
-			href: getPagePath($router, "settings", { name: "general" }),
-			icon: SettingsIcon,
-		},
-		{
-			title: t`Notifications`,
-			href: getPagePath($router, "settings", { name: "notifications" }),
-			icon: BellIcon,
+			title: t`General`,
+			items: [
+				{
+					title: t({ message: `General`, comment: "Context: General settings" }),
+					href: getPagePath($router, "settings", { name: "general" }),
+					icon: SettingsIcon,
+				},
+				{
+					title: t`Notifications`,
+					href: getPagePath($router, "settings", { name: "notifications" }),
+					icon: BellIcon,
+				},
+			]
 		},
 		{
 			title: t`Alerts`,
-			href: getPagePath($router, "settings", { name: "alerts" }),
-			icon: TriangleAlert,
+			items: [
+				{
+					title: t`Alerts`,
+					href: getPagePath($router, "settings", { name: "alerts" }),
+					icon: TriangleAlert,
+				},
+				{
+					title: t`Alert History`,
+					href: getPagePath($router, "settings", { name: "alert-history" }),
+					icon: AlertOctagonIcon,
+				},
+			]
 		},
 		{
-			title: t`Tokens & Fingerprints`,
-			href: getPagePath($router, "settings", { name: "tokens" }),
-			icon: FingerprintIcon,
-			noReadOnly: true,
-		},
-		{
-			title: t`Alert History`,
-			href: getPagePath($router, "settings", { name: "alert-history" }),
-			icon: AlertOctagonIcon,
-		},
-		{
-			title: t`YAML Config`,
-			href: getPagePath($router, "settings", { name: "config" }),
-			icon: FileSlidersIcon,
-			admin: true,
+			title: t`Advanced`,
+			items: [
+				{
+					title: t`Tokens & Fingerprints`,
+					href: getPagePath($router, "settings", { name: "tokens" }),
+					icon: FingerprintIcon,
+					noReadOnly: true,
+				},
+				{
+					title: t`YAML Config`,
+					href: getPagePath($router, "settings", { name: "config" }),
+					icon: FileSlidersIcon,
+					admin: true,
+				},
+			]
 		},
 	]
 
@@ -109,7 +124,7 @@ export default function SettingsLayout() {
 				<Separator className="hidden md:block my-5" />
 				<div className="flex flex-col gap-3.5 md:flex-row md:gap-5 lg:gap-12">
 					<aside className="md:max-w-52 min-w-40">
-						<SidebarNav items={sidebarNavItems} />
+						<SidebarNav sections={sidebarNavSections} />
 					</aside>
 					<div className="flex-1 min-w-0">
 						{/* @ts-ignore */}
