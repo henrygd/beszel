@@ -114,6 +114,9 @@ func (ws *WsConn) Ping() error {
 
 // sendMessage encodes data to CBOR and sends it as a binary message to the agent.
 func (ws *WsConn) sendMessage(data common.HubRequest[any]) error {
+	if ws.conn == nil {
+		return gws.ErrConnClosed
+	}
 	bytes, err := cbor.Marshal(data)
 	if err != nil {
 		return err

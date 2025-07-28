@@ -173,7 +173,6 @@ brews:
       error_log_path "#{Dir.home}/.cache/beszel/beszel-agent.log"
       keep_alive true
       restart_delay 5
-      name beszel-agent
       process_type :background
 
 winget:
@@ -189,6 +188,7 @@ winget:
     publisher_support_url: "https://github.com/henrygd/beszel/issues"
     short_description: "Agent for Beszel, a lightweight server monitoring platform."
     skip_upload: auto
+    token: "{{ .Env.WINGET_TOKEN }}"
     description: |
       Beszel is a lightweight server monitoring platform that includes Docker
       statistics, historical data, and alert functions. It has a friendly web
@@ -204,7 +204,7 @@ winget:
       name: beszel-winget
       branch: henrygd.beszel-agent-{{ .Version }}
       pull_request:
-        enabled: false
+        enabled: true
         draft: false
         base:
           owner: microsoft

@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useStore } from "@nanostores/react"
 import { $router } from "@/components/router.tsx"
 import { getPagePath, redirectPage } from "@nanostores/router"
-import { BellIcon, FileSlidersIcon, FingerprintIcon, SettingsIcon, TriangleAlert} from "lucide-react"
+import { BellIcon, FileSlidersIcon, FingerprintIcon, SettingsIcon, AlertOctagonIcon, TriangleAlert } from "lucide-react"
 import { $userSettings, pb } from "@/lib/stores.ts"
 import { toast } from "@/components/ui/use-toast.ts"
 import { UserSettings } from "@/types.js"
@@ -17,6 +17,7 @@ import ConfigYaml from "./config-yaml.tsx"
 import { useLingui } from "@lingui/react/macro"
 import Fingerprints from "./tokens-fingerprints.tsx"
 import AlertsSettingsPage from "./alerts.tsx"
+import AlertsHistoryDataTable from "./alerts-history-data-table"
 
 export async function saveSettings(newSettings: Partial<UserSettings>) {
 	try {
@@ -70,6 +71,11 @@ export default function SettingsLayout() {
 			href: getPagePath($router, "settings", { name: "tokens" }),
 			icon: FingerprintIcon,
 			noReadOnly: true,
+		},
+		{
+			title: t`Alert History`,
+			href: getPagePath($router, "settings", { name: "alert-history" }),
+			icon: AlertOctagonIcon,
 		},
 		{
 			title: t`YAML Config`,
@@ -129,5 +135,7 @@ function SettingsContent({ name }: { name: string }) {
 			return <ConfigYaml />
 		case "tokens":
 			return <Fingerprints />
+		case "alert-history":
+			return <AlertsHistoryDataTable />
 	}
 }

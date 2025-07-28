@@ -50,6 +50,8 @@ export interface SystemInfo {
 	l5?: number
 	/** load average 15 minutes */
 	l15?: number
+	/** load average */
+	la?: [number, number, number]
 	/** operating system */
 	o?: string
 	/** uptime */
@@ -60,6 +62,8 @@ export interface SystemInfo {
 	dp: number
 	/** bandwidth (mb) */
 	b: number
+	/** bandwidth bytes */
+	bb?: number
 	/** agent version */
 	v: string
 	/** system is using podman */
@@ -77,12 +81,15 @@ export interface SystemStats {
 	cpu: number
 	/** peak cpu */
 	cpum?: number
+	// TODO: remove these in future release in favor of la
 	/** load average 1 minute */
 	l1?: number
 	/** load average 5 minutes */
 	l5?: number
 	/** load average 15 minutes */
 	l15?: number
+	/** load average */
+	la?: [number, number, number]
 	/** total memory (gb) */
 	m: number
 	/** memory used (gb) */
@@ -115,10 +122,14 @@ export interface SystemStats {
 	ns: number
 	/** network received (mb) */
 	nr: number
+	/** bandwidth bytes [sent, recv] */
+	b?: [number, number]
 	/** max network sent (mb) */
 	nsm?: number
 	/** max network received (mb) */
 	nrm?: number
+	/** max network sent (bytes) */
+	bm?: [number, number]
 	/** temperatures */
 	t?: Record<string, number>
 	/** extra filesystems */
@@ -189,6 +200,16 @@ export interface AlertRecord extends RecordModel {
 	// user: string
 }
 
+export interface AlertsHistoryRecord extends RecordModel {
+	alert: string
+	user: string
+	system: string
+	name: string
+	val: number
+	created: string
+	resolved?: string | null
+}
+
 export type ChartTimes = "1h" | "12h" | "24h" | "1w" | "30d"
 
 export interface ChartTimeData {
@@ -202,7 +223,7 @@ export interface ChartTimeData {
 	}
 }
 
-export type UserSettings = {
+export interface UserSettings {
 	// lang?: string
 	chartTime: ChartTimes
 	emails?: string[]
@@ -218,7 +239,14 @@ type ChartDataContainer = {
 	[key: string]: key extends "created" ? never : ContainerStats
 }
 
+export interface SemVer {
+	major: number
+	minor: number
+	patch: number
+}
+
 export interface ChartData {
+	agentVersion: SemVer
 	systemStats: SystemStatsRecord[]
 	containerData: ChartDataContainer[]
 	orientation: "right" | "left"
