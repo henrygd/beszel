@@ -39,7 +39,8 @@ export async function updateAlertsForSystems({
   userId,
   onAllDisabled,
   systemAlerts,
-  allSystems
+  allSystems,
+  onAlertsUpdated
 }: {
   systems: SystemRecord[],
   alertsBySystem: Map<string, AlertRecord>,
@@ -51,6 +52,7 @@ export async function updateAlertsForSystems({
   onAllDisabled?: () => void,
   systemAlerts: AlertRecord[],
   allSystems: SystemRecord[],
+  onAlertsUpdated?: () => void,
 }) {
   try {
     const batch = batchWrapper("alerts", 25)
@@ -87,6 +89,10 @@ export async function updateAlertsForSystems({
         onAllDisabled()
       }
     }
+    // Call onAlertsUpdated callback if provided
+    if (onAlertsUpdated && changed) {
+      onAlertsUpdated()
+    }
   } catch (e) {
     console.error('[updateAlertsForSystems] Batch error:', e)
     failedUpdateToast()
@@ -98,11 +104,13 @@ export function SystemAlert({
 	systemAlerts,
 	data,
 	onAllDisabled,
+	onAlertsUpdated,
 }: {
 	systems: SystemRecord[]
 	systemAlerts: AlertRecord[]
 	data: AlertData
 	onAllDisabled?: () => void
+	onAlertsUpdated?: () => void
 }) {
 	const alertsBySystem = useMemo(() => {
 		const map = new Map<string, AlertRecord>()
@@ -124,6 +132,7 @@ export function SystemAlert({
 			onAllDisabled,
 			systemAlerts,
 			allSystems: systems,
+			onAlertsUpdated,
 		})
 	}
 

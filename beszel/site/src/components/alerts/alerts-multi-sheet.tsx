@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react"
+import React, { useState } from "react"
 import { alertInfo } from "@/lib/utils"
 import { SystemAlert, updateAlertsForSystems } from "./alerts-system"
 import { pb } from "@/lib/stores"
@@ -17,6 +17,7 @@ interface Props {
   onValueChange?: (v: number) => void;
   onMinChange?: (v: number) => void;
   hideSystemSelector?: boolean;
+  onAlertsUpdated?: () => void;
 }
 
 export default function MultiSystemAlertSheetContent({
@@ -27,9 +28,8 @@ export default function MultiSystemAlertSheetContent({
   singleAlertType,
   value,
   min,
-  onValueChange,
-  onMinChange,
   hideSystemSelector,
+  onAlertsUpdated,
 }: Props) {
   const [selectedSystems, setSelectedSystems] = useState<string[]>(initialSystems)
   const alertTypeOptions = singleAlertType
@@ -64,6 +64,7 @@ export default function MultiSystemAlertSheetContent({
             onAllDisabled: undefined,
             systemAlerts: alerts,
             allSystems: systems,
+            onAlertsUpdated,
           })
         }
       })
@@ -88,6 +89,7 @@ export default function MultiSystemAlertSheetContent({
             onAllDisabled: undefined,
             systemAlerts: alerts,
             allSystems: systems,
+            onAlertsUpdated,
           })
         }
       })
@@ -100,8 +102,7 @@ export default function MultiSystemAlertSheetContent({
   }, [selectedSystems])
 
   function triggerBatchUpdate(newSelection: string[]) {
-    // For now, just log the new selection
-    console.log('Batch update triggered for systems:', newSelection)
+     newSelection
   }
 
   return (
@@ -143,6 +144,7 @@ export default function MultiSystemAlertSheetContent({
                   data={data}
                   systemAlerts={allAlerts}
                   onAllDisabled={onClose}
+                  onAlertsUpdated={onAlertsUpdated}
                 />
               </div>
             );

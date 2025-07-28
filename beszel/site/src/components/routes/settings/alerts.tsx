@@ -1,9 +1,9 @@
 import { Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { $alerts, $systems, pb } from "@/lib/stores"
-import { alertInfo } from "@/lib/utils"
+import { alertInfo, cn } from "@/lib/utils"
 import { Separator } from "@/components/ui/separator"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import type { AlertRecord, SystemRecord } from "@/types"
 import React from "react"
 import {
@@ -33,17 +33,25 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label"
 import { PenBoxIcon, Trash2Icon, ServerIcon, ClockIcon, OctagonAlert, TagIcon, ArrowUpDownIcon, ChevronLeftIcon, ChevronRightIcon, ChevronsLeftIcon, ChevronsRightIcon } from "lucide-react"
 import { updateAlerts } from "@/lib/utils"
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 
 // Reusable DataTable component
 function DataTable<TData extends { alerts: { id: string }[] }>({
   table,
   columnsLength,
-  onBulkDelete,
 }: {
   table: ReturnType<typeof useReactTable<TData>>,
   columnsLength: number,
-  onBulkDelete?: () => void,
 }) {
   const pageSizes = [5, 10, 15, 20];
   return (
@@ -192,6 +200,11 @@ function ConfiguredAlertsTab({ alerts, systems, onAddAlert }: { alerts: AlertRec
 	const [editValue, setEditValue] = React.useState<number | null>(null)
 	const [editMin, setEditMin] = React.useState<number | null>(null)
 
+	// Delete confirmation state
+	const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false)
+	const [alertsToDelete, setAlertsToDelete] = React.useState<AlertRecord[]>([])
+	const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = React.useState(false)
+
 	React.useEffect(() => {
 		if (editAlerts && openSheet) {
 			setEditValue(editAlerts[0]?.value ?? null)
@@ -234,16 +247,26 @@ function ConfiguredAlertsTab({ alerts, systems, onAddAlert }: { alerts: AlertRec
 		closeSheet()
 	}
 
+	function showDeleteConfirmation(alerts: AlertRecord[]) {
+		setAlertsToDelete(alerts)
+		setDeleteDialogOpen(true)
+	}
+
+	function showBulkDeleteConfirmation() {
+		setBulkDeleteDialogOpen(true)
+	}
+
 	async function handleDelete(alerts: AlertRecord[]) {
-		const confirmed = window.confirm(`Are you sure you want to delete this alert for all selected systems? This action cannot be undone.`);
-		if (!confirmed) return;
 		for (const alert of alerts) {
 			await pb.collection("alerts").delete(alert.id);
 		}
+		await updateAlerts();
 		toast({
 			title: "Alert deleted",
 			description: "Your alert configuration has been deleted.",
 		});
+		setDeleteDialogOpen(false)
+		setAlertsToDelete([])
 		closeSheet();
 	}
 
@@ -291,6 +314,11 @@ const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(
 const [rowSelection, setRowSelection] = React.useState({})
 const [combinedFilter, setCombinedFilter] = React.useState("");
 const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 5 });
+const [isReady, setIsReady] = React.useState(false);
+
+React.useEffect(() => {
+	setIsReady(true);
+}, []);
 
 // --- TABLE COLUMNS ---
 const columns = React.useMemo<import("@tanstack/react-table").ColumnDef<AlertTableRow, any>[]>(() => [
@@ -406,7 +434,7 @@ const columns = React.useMemo<import("@tanstack/react-table").ColumnDef<AlertTab
 							<PenBoxIcon className="me-2.5 size-4" />
 							<Trans>Edit</Trans>
 						</DropdownMenuItem>
-						<DropdownMenuItem onClick={() => handleDelete(groupAlerts)}>
+						<DropdownMenuItem onClick={() => showDeleteConfirmation(groupAlerts)}>
 							<Trash2Icon className="me-2.5 size-4" />
 							<Trans>Delete</Trans>
 						</DropdownMenuItem>
@@ -415,10 +443,10 @@ const columns = React.useMemo<import("@tanstack/react-table").ColumnDef<AlertTab
 			)
 		},
 	},
-], [openEditSheet, handleDelete]);
+], [openEditSheet, showDeleteConfirmation]);
 
 const table = useReactTable({
-	data: tableData,
+	data: isReady ? tableData : [],
 	columns,
 	onSortingChange: setSorting,
 	onColumnFiltersChange: setColumnFilters,
@@ -442,13 +470,16 @@ const table = useReactTable({
 const selectedRows = table.getFilteredSelectedRowModel().rows;
 const selectedAlertIds = selectedRows.flatMap(row => row.original.alerts.map(a => a.id));
 async function handleBulkDelete() {
-	if (!selectedAlertIds.length) return;
-	if (!window.confirm(`Delete ${selectedAlertIds.length} selected alerts?`)) return;
 	for (const id of selectedAlertIds) {
 		await pb.collection("alerts").delete(id);
 	}
 	await updateAlerts();
 	table.resetRowSelection();
+	setBulkDeleteDialogOpen(false);
+}
+
+if (!isReady) {
+	return <div className="w-full">Loading...</div>;
 }
 
 return (
@@ -468,7 +499,7 @@ return (
             variant="destructive"
             size="sm"
             disabled={selectedAlertIds.length === 0}
-            onClick={handleBulkDelete}
+            onClick={showBulkDeleteConfirmation}
           >
             Delete Selected
           </Button>
@@ -480,7 +511,7 @@ return (
 				</Button>
 			</div>
 		</div>
-		<DataTable table={table} columnsLength={columns.length} onBulkDelete={handleBulkDelete} />
+		<DataTable table={table} columnsLength={columns.length} />
 		{/* Single Sheet instance for editing */}
 		<Sheet open={openSheet} onOpenChange={open => open ? setOpenSheet(true) : closeSheet()}>
 			{editAlerts ? (
@@ -499,12 +530,65 @@ return (
 						min={editMin ?? undefined}
 						onValueChange={setEditValue}
 						onMinChange={setEditMin}
+						onAlertsUpdated={updateAlerts}
 					/>
 				</SheetContent>
 			) : (
 				openSheet && closeSheet(), null
 			)}
 		</Sheet>
+		{/* Delete confirmation dialog */}
+		<AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+			<AlertDialogContent>
+				<AlertDialogHeader>
+					<AlertDialogTitle>
+						<Trans>Are you sure you want to delete this alert?</Trans>
+					</AlertDialogTitle>
+					<AlertDialogDescription>
+						<Trans>
+							This action cannot be undone. This will permanently delete the alert configuration for all selected systems.
+						</Trans>
+					</AlertDialogDescription>
+				</AlertDialogHeader>
+				<AlertDialogFooter>
+					<AlertDialogCancel>
+						<Trans>Cancel</Trans>
+					</AlertDialogCancel>
+					<AlertDialogAction
+						className={cn(buttonVariants({ variant: "destructive" }))}
+						onClick={() => handleDelete(alertsToDelete)}
+					>
+						<Trans>Continue</Trans>
+					</AlertDialogAction>
+				</AlertDialogFooter>
+			</AlertDialogContent>
+		</AlertDialog>
+		{/* Bulk delete confirmation dialog */}
+		<AlertDialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
+			<AlertDialogContent>
+				<AlertDialogHeader>
+					<AlertDialogTitle>
+						<Trans>Are you sure you want to delete {selectedAlertIds.length} selected alerts?</Trans>
+					</AlertDialogTitle>
+					<AlertDialogDescription>
+						<Trans>
+							This action cannot be undone. This will permanently delete the selected alert configurations.
+						</Trans>
+					</AlertDialogDescription>
+				</AlertDialogHeader>
+				<AlertDialogFooter>
+					<AlertDialogCancel>
+						<Trans>Cancel</Trans>
+					</AlertDialogCancel>
+					<AlertDialogAction
+						className={cn(buttonVariants({ variant: "destructive" }))}
+						onClick={handleBulkDelete}
+					>
+						<Trans>Continue</Trans>
+					</AlertDialogAction>
+				</AlertDialogFooter>
+			</AlertDialogContent>
+		</AlertDialog>
 	</div>
 )
 }
@@ -545,6 +629,7 @@ export default function AlertsSettingsPage() {
 						initialSystems={addAlertSystems}
 						onClose={() => setAddSheetOpen(false)}
 						hideSystemSelector={false}
+						onAlertsUpdated={updateAlerts}
 					/>
 				</SheetContent>
 			</Sheet>
