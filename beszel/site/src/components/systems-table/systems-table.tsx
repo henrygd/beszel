@@ -138,91 +138,7 @@ export default function SystemsTable() {
 		}
 	}, [filter])
 
-	const hasAnyExtraDisks = data.some(system => system.info?.efs && Object.keys(system.info.efs).length > 0);
 
-	const extraDisksColumn = {
-		id: "extraDisks",
-		name: () => t`Extra Disks`,
-		header: sortableHeader,
-		cell(info: CellContext<SystemRecord, unknown>) {
-			const efs = info.row.original.info?.efs || {};
-			const diskNames = Object.keys(efs);
-			if (!diskNames.length) return null;
-			if (diskNames.length === 1) {
-				// Show the bar as before for a single extra disk
-				const disk = efs[diskNames[0]];
-				const percent = disk && disk.d ? Math.round((disk.du / disk.d) * 100) : 0;
-				const diskFree = disk?.df ?? 0;
-				return (
-					<div className="flex items-center tabular-nums tracking-tight w-full">
-						<span className="min-w-[3.3em]">{decimalString(percent, 1)}%</span>
-						<span className="grow min-w-10 block bg-muted h-[1em] relative rounded-sm overflow-hidden">
-							<span
-								className={cn(
-									"absolute inset-0 w-full h-full origin-left transition-transform duration-200",
-									percent < 65
-										? "bg-green-500"
-										: percent < 90
-										? "bg-yellow-500"
-										: "bg-red-600"
-								)}
-								style={{
-									transform: `scalex(${percent / 100})`,
-								}}
-							></span>
-						</span>
-					</div>
-				);
-			}
-			// Multiple extra disks: show summary and tooltip with bars
-			return (
-				<TooltipProvider>
-					<Tooltip>
-						<TooltipTrigger asChild>
-							<span className="cursor-pointer">{diskNames.length} Extra Disks</span>
-						</TooltipTrigger>
-						<TooltipContent side="top">
-							<div className="flex flex-col gap-2 min-w-48">
-								{diskNames.map((name, idx) => {
-									const disk = efs[name];
-									const percent = disk && disk.d ? Math.round((disk.du / disk.d) * 100) : 0;
-									const diskFree = disk?.df ?? 0;
-									return (
-										<div key={name + idx}>
-											<div className="font-medium mb-0.5">{disk.n || name}</div>
-											<div className="flex items-center tabular-nums tracking-tight w-full">
-												<span className="min-w-[3.3em]">{decimalString(percent, 1)}%</span>
-												<span className="grow min-w-10 block bg-muted h-[1em] relative rounded-sm overflow-hidden">
-													<span
-														className={cn(
-															"absolute inset-0 w-full h-full origin-left transition-transform duration-200",
-															percent < 65
-																? "bg-green-500"
-																: percent < 90
-																? "bg-yellow-500"
-																: "bg-red-600"
-														)}
-														style={{
-															transform: `scalex(${percent / 100})`,
-														}}
-													></span>
-												</span>
-											</div>
-											<div className="text-xs text-muted-foreground mt-0.5">
-												{t`Free`}: {decimalString(diskFree, 1)} GB
-											</div>
-										</div>
-									);
-								})}
-							</div>
-						</TooltipContent>
-					</Tooltip>
-				</TooltipProvider>
-			);
-		},
-		Icon: HardDriveIcon,
-		header: sortableHeader,
-	};
 
 	const columnDefs = useMemo(() => {
 		const statusTranslations = {
@@ -293,7 +209,9 @@ export default function SystemsTable() {
 				cell(info) {
 					const system = info.row.original;
 					const percent = system.info?.dp ?? 0;
-					const diskFree = system.info?.df ?? 0;
+					const efs = system.info?.efs || {};
+					const diskNames = Object.keys(efs);
+					const hasExtraDisks = diskNames.length > 0;
 					
 					return (
 						<TooltipProvider>
@@ -321,8 +239,45 @@ export default function SystemsTable() {
 								<TooltipContent side="top">
 									<div className="text-center">
 										<div className="text-sm text-muted-foreground">
-											{t`Free`}: {decimalString(diskFree, 1)} GB
+											Extra Disks:
 										</div>
+										{hasExtraDisks && (
+											<>
+												<div className="flex flex-col gap-2 min-w-48 mt-2">
+													{diskNames.map((name, idx) => {
+														const disk = efs[name];
+														const extraPercent = disk && disk.d ? Math.round((disk.du / disk.d) * 100) : 0;
+														const extraDiskFree = disk?.df ?? 0;
+														return (
+															<div key={name + idx}>
+																<div className="font-medium mb-0.5 text-xs">{disk.n || name}</div>
+																<div className="flex items-center tabular-nums tracking-tight w-full">
+																	<span className="min-w-[3.3em] text-xs">{decimalString(extraPercent, 1)}%</span>
+																	<span className="grow min-w-10 block bg-muted h-[1em] relative rounded-sm overflow-hidden">
+																		<span
+																			className={cn(
+																				"absolute inset-0 w-full h-full origin-left transition-transform duration-200",
+																				extraPercent < 65
+																					? "bg-green-500"
+																					: extraPercent < 90
+																					? "bg-yellow-500"
+																					: "bg-red-600"
+																			)}
+																			style={{
+																				transform: `scalex(${extraPercent / 100})`,
+																			}}
+																		></span>
+																	</span>
+																</div>
+																<div className="text-xs text-muted-foreground mt-0.5">
+																	{t`Free`}: {decimalString(extraDiskFree, 1)} GB
+																</div>
+															</div>
+														);
+													})}
+												</div>
+											</>
+										)}
 									</div>
 								</TooltipContent>
 							</Tooltip>
@@ -455,13 +410,8 @@ export default function SystemsTable() {
 				),
 			},
 		] as ColumnDef<SystemRecord>[]
-		// Find the index of the disk column
-		const diskColIdx = baseColumns.findIndex(col => col.id === "disk");
-		if (hasAnyExtraDisks && diskColIdx !== -1) {
-			baseColumns.splice(diskColIdx + 1, 0, extraDisksColumn);
-		}
 		return baseColumns;
-	}, [hasAnyExtraDisks, /* other deps as needed */])
+	}, [/* other deps as needed */])
 
 	const table = useReactTable({
 		data,
