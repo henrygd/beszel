@@ -47,10 +47,30 @@ func (m *Manager) Initialize() error {
 
 	m.config = config
 
-	// Initialize Tailscale client
-	client := &tsclient.Client{
-		APIKey:  config.APIKey,
-		Tailnet: config.Tailnet,
+	// Initialize Tailscale client with appropriate authentication
+	var client *tsclient.Client
+
+	if config.APIKey != "" {
+		// Use API key authentication
+		slog.Info("Using API key authentication for Tailscale")
+		client = &tsclient.Client{
+			APIKey:  config.APIKey,
+			Tailnet: config.Tailnet,
+		}
+	} else {
+		// Use OAuth2 authentication
+		slog.Info("Using OAuth2 authentication for Tailscale")
+		oauthConfig := tsclient.OAuthConfig{
+			ClientID:     config.ClientID,
+			ClientSecret: config.ClientSecret,
+			Scopes:       []string{"read:devices", "read:tailnet"},
+		}
+
+		httpClient := oauthConfig.HTTPClient()
+		client = &tsclient.Client{
+			HTTP:    httpClient,
+			Tailnet: config.Tailnet,
+		}
 	}
 
 	m.client = client
@@ -76,13 +96,6 @@ func (m *Manager) loadConfig() (*tailscale.TailscaleConfig, error) {
 		return config, nil
 	}
 
-	// Load API key
-	if apiKey := os.Getenv("TAILSCALE_API_KEY"); apiKey != "" {
-		config.APIKey = apiKey
-	} else {
-		return nil, fmt.Errorf("TAILSCALE_API_KEY environment variable is required")
-	}
-
 	// Load tailnet name
 	if tailnet := os.Getenv("TAILSCALE_TAILNET"); tailnet != "" {
 		config.Tailnet = tailnet
@@ -90,9 +103,23 @@ func (m *Manager) loadConfig() (*tailscale.TailscaleConfig, error) {
 		return nil, fmt.Errorf("TAILSCALE_TAILNET environment variable is required")
 	}
 
-	// Optional OAuth2 credentials
+	// Load API key (optional)
+	config.APIKey = os.Getenv("TAILSCALE_API_KEY")
+
+	// Load OAuth2 credentials (optional)
 	config.ClientID = os.Getenv("TAILSCALE_CLIENT_ID")
 	config.ClientSecret = os.Getenv("TAILSCALE_CLIENT_SECRET")
+
+	// Check that at least one authentication method is provided
+	if config.APIKey == "" && (config.ClientID == "" || config.ClientSecret == "") {
+		return nil, fmt.Errorf("either TAILSCALE_API_KEY or both TAILSCALE_CLIENT_ID and TAILSCALE_CLIENT_SECRET environment variables are required")
+	}
+
+	// If both are provided, prefer OAuth2
+	if config.APIKey != "" && config.ClientID != "" && config.ClientSecret != "" {
+		slog.Info("Both API key and OAuth2 credentials provided, using OAuth2")
+		config.APIKey = "" // Clear API key to use OAuth2
+	}
 
 	return config, nil
 }
