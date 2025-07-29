@@ -22,6 +22,7 @@ require (
 	golang.org/x/crypto v0.40.0
 	golang.org/x/exp v0.0.0-20250718183923-645b1fa84792
 	gopkg.in/yaml.v3 v3.0.1
+	tailscale.com/client/tailscale/v2 v2.0.0-20250729171440-3f3f51970e08
 )
 
 require (
@@ -53,6 +54,7 @@ require (
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/spf13/pflag v1.0.7 // indirect
+	github.com/tailscale/hujson v0.0.0-20220506213045-af5ed07155e5 // indirect
 	github.com/tcnksm/go-gitconfig v0.1.2 // indirect
 	github.com/tklauser/go-sysconf v0.3.15 // indirect
 	github.com/tklauser/numcpus v0.10.0 // indirect

@@ -11,7 +11,7 @@ import { $router, Link } from "../router"
 import { Plural, Trans, useLingui } from "@lingui/react/macro"
 import { getPagePath } from "@nanostores/router"
 
-const SystemsTable = lazy(() => import("../systems-table/systems-table"))
+const TabbedSystemsTable = lazy(() => import("../systems-table/tabbed-systems-table"))
 
 export const Home = memo(() => {
 	const alerts = useStore($alerts)
@@ -59,7 +59,7 @@ export const Home = memo(() => {
 				{/* show active alerts */}
 				{activeAlerts.length > 0 && <ActiveAlerts key={activeAlerts.length} activeAlerts={activeAlerts} />}
 				<Suspense>
-					<SystemsTable />
+					<TabbedSystemsTable />
 				</Suspense>
 
 				<div className="flex gap-1.5 justify-end items-center pe-3 sm:pe-6 mt-3.5 text-xs opacity-80">
