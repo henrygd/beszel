@@ -217,13 +217,6 @@ function Update-ServicePath {
         throw "NSSM is not available in PATH and no valid NSSMPath was provided"
     }
     
-    # Stop the service
-    Write-Host "Stopping beszel-agent service..."
-    & $nssmCommand stop beszel-agent
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Warning: Failed to stop service, continuing anyway..." -ForegroundColor Yellow
-    }
-    
     # Update the application path
     & $nssmCommand set beszel-agent Application $NewAgentPath
     if ($LASTEXITCODE -ne 0) {
@@ -233,7 +226,25 @@ function Update-ServicePath {
     Write-Host "Service path updated to: $NewAgentPath"
     
     # Start the service
+    Start-BeszelAgentService -NSSMPath $nssmCommand
+}
+
+# Function to start and monitor the service
+function Start-BeszelAgentService {
+    param (
+        [string]$NSSMPath = ""
+    )
+    
     Write-Host "Starting beszel-agent service..."
+    
+    # Determine the NSSM executable to use
+    $nssmCommand = "nssm"
+    if ($NSSMPath -and (Test-Path $NSSMPath)) {
+        $nssmCommand = $NSSMPath
+    } elseif (-not (Test-CommandExists "nssm")) {
+        throw "NSSM is not available in PATH and no valid NSSMPath was provided"
+    }
+    
     & $nssmCommand start beszel-agent
     $startResult = $LASTEXITCODE
     
@@ -255,7 +266,7 @@ function Update-ServicePath {
             
             if ($serviceStatus -eq "SERVICE_RUNNING") {
                 $serviceStarted = $true
-                Write-Host "Success! The beszel-agent service is now running with the updated path." -ForegroundColor Green
+                Write-Host "Success! The beszel-agent service is now running." -ForegroundColor Green
             }
             elseif ($serviceStatus -like "*PENDING*") {
                 Write-Host "Service is still starting (status: $serviceStatus)... waiting" -ForegroundColor Yellow
@@ -273,7 +284,7 @@ function Update-ServicePath {
         }
     } else {
         # NSSM start command was successful
-        Write-Host "Success! The beszel-agent service is running with the updated path." -ForegroundColor Green
+        Write-Host "Success! The beszel-agent service is running properly." -ForegroundColor Green
     }
 }
 
@@ -287,7 +298,6 @@ $isAdmin = Test-Admin
 try {
     Write-Host "Beszel Agent Upgrade Script" -ForegroundColor Cyan
     Write-Host "===========================" -ForegroundColor Cyan
-    Write-Host ""
     
     # First: Check if service exists (doesn't require admin)
     $existingService = Get-Service -Name "beszel-agent" -ErrorAction SilentlyContinue
@@ -311,6 +321,13 @@ try {
     # Get current service configuration (doesn't require admin)
     Write-Host "Retrieving current service configuration..."
     $currentConfig = Get-ServiceConfiguration -NSSMPath $nssmPath
+    
+    # Stop the service before upgrade
+    Write-Host "Stopping beszel-agent service..."
+    & $nssmPath stop beszel-agent
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Warning: Failed to stop service, continuing anyway..." -ForegroundColor Yellow
+    }
     
     # Upgrade the agent (doesn't require admin)
     Write-Host "Upgrading beszel-agent..."
@@ -340,7 +357,8 @@ try {
     
     # Check if the path has changed
     if ($currentConfig.CurrentPath -eq $newAgentPath) {
-        Write-Host "Agent path has not changed. Service update not needed." -ForegroundColor Green
+        Write-Host "Agent path has not changed. Restarting service..." -ForegroundColor Green
+        Start-BeszelAgentService -NSSMPath $nssmPath
         Write-Host "Upgrade completed successfully!" -ForegroundColor Green
         exit 0
     }
