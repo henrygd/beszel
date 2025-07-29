@@ -284,7 +284,6 @@ export default function TailscaleTable() {
 					const node = info.row.original
 					return (
 						<div className="flex items-center gap-2">
-							<ClockIcon className="h-3 w-3 text-muted-foreground" />
 							<span className="text-sm tabular-nums">
 								{node.online ? "Online" : formatLastSeen(node.lastSeen)}
 							</span>
