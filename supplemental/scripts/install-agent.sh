@@ -453,6 +453,11 @@ set_selinux_context
 # Cleanup
 rm -rf "$TEMP_DIR"
 
+# Make sure /etc/machine-id exists for persistent fingerprint
+if [ ! -f /etc/machine-id ]; then
+  cat /proc/sys/kernel/random/uuid | tr -d '-' > /etc/machine-id
+fi
+
 # Check for NVIDIA GPUs and grant device permissions for systemd service
 detect_nvidia_devices() {
   local devices=""
