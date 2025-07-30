@@ -89,7 +89,7 @@ func (m *Manager) loadConfig() (*tailscale.TailscaleConfig, error) {
 	config := &tailscale.TailscaleConfig{}
 
 	// Check if Tailscale monitoring is enabled
-	if enabled := os.Getenv("TAILSCALE_ENABLED"); enabled == "true" {
+	if enabled := os.Getenv("TS_ENABLED"); enabled == "true" {
 		config.Enabled = true
 	} else {
 		config.Enabled = false
@@ -97,22 +97,22 @@ func (m *Manager) loadConfig() (*tailscale.TailscaleConfig, error) {
 	}
 
 	// Load tailnet name
-	if tailnet := os.Getenv("TAILSCALE_TAILNET"); tailnet != "" {
+	if tailnet := os.Getenv("TS_TAILNET"); tailnet != "" {
 		config.Tailnet = tailnet
 	} else {
-		return nil, fmt.Errorf("TAILSCALE_TAILNET environment variable is required")
+		return nil, fmt.Errorf("TS_TAILNET environment variable is required")
 	}
 
 	// Load API key (optional)
-	config.APIKey = os.Getenv("TAILSCALE_API_KEY")
+	config.APIKey = os.Getenv("TS_API_KEY")
 
 	// Load OAuth2 credentials (optional)
-	config.ClientID = os.Getenv("TAILSCALE_CLIENT_ID")
-	config.ClientSecret = os.Getenv("TAILSCALE_CLIENT_SECRET")
+	config.ClientID = os.Getenv("TS_CLIENT_ID")
+	config.ClientSecret = os.Getenv("TS_CLIENT_SECRET")
 
 	// Check that at least one authentication method is provided
 	if config.APIKey == "" && (config.ClientID == "" || config.ClientSecret == "") {
-		return nil, fmt.Errorf("either TAILSCALE_API_KEY or both TAILSCALE_CLIENT_ID and TAILSCALE_CLIENT_SECRET environment variables are required")
+		return nil, fmt.Errorf("either TS_API_KEY or both TS_CLIENT_ID and TS_CLIENT_SECRET environment variables are required")
 	}
 
 	// If both are provided, prefer OAuth2
