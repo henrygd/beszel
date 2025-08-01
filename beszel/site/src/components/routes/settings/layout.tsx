@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useStore } from "@nanostores/react"
 import { $router } from "@/components/router.tsx"
 import { getPagePath, redirectPage } from "@nanostores/router"
-import { BellIcon, FileSlidersIcon, FingerprintIcon, SettingsIcon, AlertOctagonIcon } from "lucide-react"
+import { BellIcon, FileSlidersIcon, FingerprintIcon, SettingsIcon, AlertOctagonIcon, TriangleAlert } from "lucide-react"
 import { $userSettings, pb } from "@/lib/stores.ts"
 import { toast } from "@/components/ui/use-toast.ts"
 import { UserSettings } from "@/types.js"
@@ -16,6 +16,7 @@ import Notifications from "./notifications.tsx"
 import ConfigYaml from "./config-yaml.tsx"
 import { useLingui } from "@lingui/react/macro"
 import Fingerprints from "./tokens-fingerprints.tsx"
+import AlertsSettingsPage from "./alerts.tsx"
 import AlertsHistoryDataTable from "./alerts-history-data-table"
 
 export async function saveSettings(newSettings: Partial<UserSettings>) {
@@ -49,33 +50,53 @@ export async function saveSettings(newSettings: Partial<UserSettings>) {
 export default function SettingsLayout() {
 	const { t } = useLingui()
 
-	const sidebarNavItems = [
+	const sidebarNavSections = [
 		{
-			title: t({ message: `General`, comment: "Context: General settings" }),
-			href: getPagePath($router, "settings", { name: "general" }),
-			icon: SettingsIcon,
+			title: t`General`,
+			items: [
+				{
+					title: t({ message: `General`, comment: "Context: General settings" }),
+					href: getPagePath($router, "settings", { name: "general" }),
+					icon: SettingsIcon,
+				},
+				{
+					title: t`Notifications`,
+					href: getPagePath($router, "settings", { name: "notifications" }),
+					icon: BellIcon,
+				},
+			]
 		},
 		{
-			title: t`Notifications`,
-			href: getPagePath($router, "settings", { name: "notifications" }),
-			icon: BellIcon,
+			title: t`Alerts`,
+			items: [
+				{
+					title: t`Alerts`,
+					href: getPagePath($router, "settings", { name: "alerts" }),
+					icon: TriangleAlert,
+				},
+				{
+					title: t`Alert History`,
+					href: getPagePath($router, "settings", { name: "alert-history" }),
+					icon: AlertOctagonIcon,
+				},
+			]
 		},
 		{
-			title: t`Tokens & Fingerprints`,
-			href: getPagePath($router, "settings", { name: "tokens" }),
-			icon: FingerprintIcon,
-			noReadOnly: true,
-		},
-		{
-			title: t`Alert History`,
-			href: getPagePath($router, "settings", { name: "alert-history" }),
-			icon: AlertOctagonIcon,
-		},
-		{
-			title: t`YAML Config`,
-			href: getPagePath($router, "settings", { name: "config" }),
-			icon: FileSlidersIcon,
-			admin: true,
+			title: t`Advanced`,
+			items: [
+				{
+					title: t`Tokens & Fingerprints`,
+					href: getPagePath($router, "settings", { name: "tokens" }),
+					icon: FingerprintIcon,
+					noReadOnly: true,
+				},
+				{
+					title: t`YAML Config`,
+					href: getPagePath($router, "settings", { name: "config" }),
+					icon: FileSlidersIcon,
+					admin: true,
+				},
+			]
 		},
 	]
 
@@ -103,7 +124,7 @@ export default function SettingsLayout() {
 				<Separator className="hidden md:block my-5" />
 				<div className="flex flex-col gap-3.5 md:flex-row md:gap-5 lg:gap-12">
 					<aside className="md:max-w-52 min-w-40">
-						<SidebarNav items={sidebarNavItems} />
+						<SidebarNav sections={sidebarNavSections} />
 					</aside>
 					<div className="flex-1 min-w-0">
 						{/* @ts-ignore */}
@@ -123,6 +144,8 @@ function SettingsContent({ name }: { name: string }) {
 			return <General userSettings={userSettings} />
 		case "notifications":
 			return <Notifications userSettings={userSettings} />
+		case "alerts":
+			return <AlertsSettingsPage />
 		case "config":
 			return <ConfigYaml />
 		case "tokens":

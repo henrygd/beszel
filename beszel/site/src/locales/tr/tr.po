@@ -8,7 +8,7 @@ msgstr ""
 "Language: tr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-07-25 22:44\n"
+"PO-Revision-Date: 2025-03-06 07:27\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -23,12 +23,6 @@ msgstr ""
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# gün} other {# gün}}"
 
-#. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
-#. placeholder {1}: table.getFilteredRowModel().rows.length
-#: src/components/routes/settings/alerts-history-data-table.tsx
-msgid "{0} of {1} row(s) selected."
-msgstr "{1} satırdan {0} tanesi seçildi."
-
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# saat} other {# saat}}"
@@ -36,11 +30,6 @@ msgstr "{hours, plural, one {# saat} other {# saat}}"
 #: src/lib/utils.ts
 msgid "1 hour"
 msgstr "1 saat"
-
-#. Load average
-#: src/components/charts/load-average-chart.tsx
-msgid "1 min"
-msgstr "1 dk"
 
 #: src/lib/utils.ts
 msgid "1 week"
@@ -50,11 +39,6 @@ msgstr "1 hafta"
 msgid "12 hours"
 msgstr "12 saat"
 
-#. Load average
-#: src/components/charts/load-average-chart.tsx
-msgid "15 min"
-msgstr "15 dk"
-
 #: src/lib/utils.ts
 msgid "24 hours"
 msgstr "24 saat"
@@ -63,21 +47,11 @@ msgstr "24 saat"
 msgid "30 days"
 msgstr "30 gün"
 
-#. Load average
-#: src/components/charts/load-average-chart.tsx
-msgid "5 min"
-msgstr "5 dk"
-
 #. Table column
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "Eylemler"
-
-#: src/components/alerts-history-columns.tsx
-#: src/components/routes/settings/alerts-history-data-table.tsx
-msgid "Active"
-msgstr "Aktif"
 
 #: src/components/routes/home.tsx
 msgid "Active Alerts"
@@ -112,12 +86,6 @@ msgstr "Yönetici"
 msgid "Agent"
 msgstr "Aracı"
 
-#: src/components/command-palette.tsx
-#: src/components/routes/settings/layout.tsx
-#: src/components/routes/settings/alerts-history-data-table.tsx
-msgid "Alert History"
-msgstr "Uyarı Geçmişi"
-
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alert-button.tsx
 msgid "Alerts"
@@ -131,10 +99,6 @@ msgstr "Tüm Sistemler"
 #: src/components/systems-table/systems-table.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "{name} silmek istediğinizden emin misiniz?"
-
-#: src/components/routes/settings/alerts-history-data-table.tsx
-msgid "Are you sure?"
-msgstr "Emin misiniz?"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -188,36 +152,17 @@ msgstr "Beszel, popüler bildirim hizmetleriyle entegre olmak için <0>Shoutrrr<
 msgid "Binary"
 msgstr "İkili"
 
-#: src/components/routes/settings/general.tsx
-#: src/components/routes/settings/general.tsx
-msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr "Bit (Kbps, Mbps, Gbps)"
-
-#: src/components/routes/settings/general.tsx
-#: src/components/routes/settings/general.tsx
-msgid "Bytes (KB/s, MB/s, GB/s)"
-msgstr "Bayt (KB/s, MB/s, GB/s)"
-
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
 msgstr "Önbellek / Tamponlar"
 
 #: src/components/systems-table/systems-table.tsx
-#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Cancel"
 msgstr "İptal"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
 msgstr "Dikkat - potansiyel veri kaybı"
-
-#: src/components/routes/settings/general.tsx
-msgid "Celsius (°C)"
-msgstr "Santigrat (°C)"
-
-#: src/components/routes/settings/general.tsx
-msgid "Change display units for metrics."
-msgstr "Metrikler için görüntüleme birimlerini değiştirin."
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
@@ -257,12 +202,7 @@ msgstr "Uyarı bildirimlerini nasıl alacağınızı yapılandırın."
 msgid "Confirm password"
 msgstr "Şifreyi onayla"
 
-#: src/components/routes/home.tsx
-msgid "Connection is down"
-msgstr "Bağlantı kesildi"
-
 #: src/components/systems-table/systems-table.tsx
-#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Continue"
 msgstr "Devam et"
 
@@ -318,18 +258,13 @@ msgstr "CPU"
 
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/charts/area-chart.tsx
 msgid "CPU Usage"
 msgstr "CPU Kullanımı"
 
 #: src/components/login/auth-form.tsx
 msgid "Create account"
 msgstr "Hesap oluştur"
-
-#. Context: date created
-#: src/components/alerts-history-columns.tsx
-msgid "Created"
-msgstr "Oluşturuldu"
 
 #. Dark theme
 #: src/components/mode-toggle.tsx
@@ -346,7 +281,6 @@ msgid "Default time period"
 msgstr "Varsayılan zaman dilimi"
 
 #: src/components/systems-table/systems-table.tsx
-#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Delete"
 msgstr "Sil"
 
@@ -361,10 +295,6 @@ msgstr "Disk"
 #: src/components/routes/system.tsx
 msgid "Disk I/O"
 msgstr "Disk G/Ç"
-
-#: src/components/routes/settings/general.tsx
-msgid "Disk unit"
-msgstr "Disk birimi"
 
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
@@ -394,20 +324,15 @@ msgstr "Dokümantasyon"
 
 #. Context: System is down
 #: src/lib/utils.ts
-#: src/components/alerts-history-columns.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
-msgstr "Kapalı"
-
-#: src/components/alerts-history-columns.tsx
-msgid "Duration"
-msgstr "Süre"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Edit"
-msgstr "Düzenle"
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/auth-form.tsx
@@ -429,7 +354,6 @@ msgstr "E-posta adresini girin..."
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/config-yaml.tsx
-#: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/login/auth-form.tsx
 msgid "Error"
 msgstr "Hata"
@@ -445,10 +369,6 @@ msgstr "Son {2, plural, one {# dakika} other {# dakika}} içinde {0}{1} aşıyor
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr "<0>config.yml</0> içinde tanımlanmayan mevcut sistemler silinecektir. Lütfen düzenli yedekler alın."
 
-#: src/components/routes/settings/alerts-history-data-table.tsx
-msgid "Export"
-msgstr "Dışa aktar"
-
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
 msgstr "Yapılandırmayı dışa aktar"
@@ -456,10 +376,6 @@ msgstr "Yapılandırmayı dışa aktar"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export your current systems configuration."
 msgstr "Mevcut sistem yapılandırmanızı dışa aktarın."
-
-#: src/components/routes/settings/general.tsx
-msgid "Fahrenheit (°F)"
-msgstr "Fahrenhayt (°F)"
 
 #: src/lib/utils.ts
 msgid "Failed to authenticate"
@@ -480,13 +396,12 @@ msgstr "Uyarı güncellenemedi"
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
-#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Filter..."
 msgstr "Filtrele..."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
-msgstr "Parmak izi"
+msgstr ""
 
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -533,6 +448,16 @@ msgstr "Geçersiz e-posta adresi."
 msgid "Kernel"
 msgstr "Çekirdek"
 
+#. Load average 15 minutes
+#: src/components/systems-table/systems-table.tsx
+msgid "L15"
+msgstr ""
+
+#. Load average 5 minutes
+#: src/components/systems-table/systems-table.tsx
+msgid "L5"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Dil"
@@ -546,26 +471,13 @@ msgstr "Düzen"
 msgid "Light"
 msgstr "Açık"
 
-#: src/components/routes/system.tsx
-msgid "Load Average"
-msgstr "Yük Ortalaması"
-
 #: src/lib/utils.ts
 msgid "Load Average 15m"
-msgstr "Yük Ortalaması 15d"
-
-#: src/lib/utils.ts
-msgid "Load Average 1m"
-msgstr "Yük Ortalaması 1d"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "Load Average 5m"
-msgstr "Yük Ortalaması 5d"
-
-#. Short label for load average
-#: src/components/systems-table/systems-table.tsx
-msgid "Load Avg"
-msgstr "Yük Ort."
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -595,7 +507,7 @@ msgstr "Görüntüleme ve bildirim tercihlerini yönetin."
 
 #: src/components/add-system.tsx
 msgid "Manual setup instructions"
-msgstr "Manuel kurulum talimatları"
+msgstr ""
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx
@@ -615,7 +527,6 @@ msgstr "Bellek Kullanımı"
 msgid "Memory usage of docker containers"
 msgstr "Docker konteynerlerinin bellek kullanımı"
 
-#: src/components/alerts-history-columns.tsx
 #: src/components/add-system.tsx
 msgid "Name"
 msgstr "Ad"
@@ -632,18 +543,9 @@ msgstr "Docker konteynerlerinin ağ trafiği"
 msgid "Network traffic of public interfaces"
 msgstr "Genel arayüzlerin ağ trafiği"
 
-#. Context: Bytes or bits
-#: src/components/routes/settings/general.tsx
-msgid "Network unit"
-msgstr "Ağ birimi"
-
 #: src/components/command-palette.tsx
 msgid "No results found."
 msgstr "Sonuç bulunamadı."
-
-#: src/components/routes/settings/alerts-history-data-table.tsx
-msgid "No results."
-msgstr "Sonuç yok."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -682,12 +584,6 @@ msgstr "Mevcut uyarıların üzerine yaz"
 msgid "Page"
 msgstr "Sayfa"
 
-#. placeholder {0}: table.getState().pagination.pageIndex + 1
-#. placeholder {1}: table.getPageCount()
-#: src/components/routes/settings/alerts-history-data-table.tsx
-msgid "Page {0} of {1}"
-msgstr "Sayfa {0} / {1}"
-
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
 msgstr "Sayfalar / Ayarlar"
@@ -703,7 +599,7 @@ msgstr "Şifre en az 8 karakter olmalıdır."
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
-msgstr "Parola 72 bayttan küçük olmalıdır."
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"
@@ -769,24 +665,19 @@ msgid "Public Key"
 msgstr "Genel Anahtar"
 
 #. Disk read
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/charts/area-chart.tsx
+#: src/components/charts/area-chart.tsx
 msgid "Read"
 msgstr "Oku"
 
-#: src/components/routes/system.tsx
+#. Network bytes received (download)
+#: src/components/charts/area-chart.tsx
 msgid "Received"
 msgstr "Alındı"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
 msgstr "Şifreyi Sıfırla"
-
-#: src/components/alerts-history-columns.tsx
-#: src/components/alerts-history-columns.tsx
-#: src/components/routes/settings/alerts-history-data-table.tsx
-msgid "Resolved"
-msgstr "Çözüldü"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Resume"
@@ -795,10 +686,6 @@ msgstr "Devam et"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
 msgstr "Token'ı döndür"
-
-#: src/components/routes/settings/alerts-history-data-table.tsx
-msgid "Rows per page"
-msgstr "Sayfa başına satır"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -811,7 +698,7 @@ msgstr "Ayarları Kaydet"
 
 #: src/components/add-system.tsx
 msgid "Save system"
-msgstr "Sistemi kaydet"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Search"
@@ -825,7 +712,8 @@ msgstr "Sistemler veya ayarlar için ara..."
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Uyarıları nasıl alacağınızı yapılandırmak için <0>bildirim ayarlarını</0> inceleyin."
 
-#: src/components/routes/system.tsx
+#. Network bytes sent (upload)
+#: src/components/charts/area-chart.tsx
 msgid "Sent"
 msgstr "Gönderildi"
 
@@ -856,11 +744,6 @@ msgstr "SMTP ayarları"
 msgid "Sort By"
 msgstr "Sıralama Ölçütü"
 
-#. Context: alert state (active or resolved)
-#: src/components/alerts-history-columns.tsx
-msgid "State"
-msgstr "Durum"
-
 #: src/lib/utils.ts
 msgid "Status"
 msgstr "Durum"
@@ -876,15 +759,10 @@ msgstr "Takas Kullanımı"
 #. System theme
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
-#: src/components/alerts-history-columns.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "Sistem"
-
-#: src/components/routes/system.tsx
-msgid "System load averages over time"
-msgstr "Zaman içindeki sistem yükü ortalamaları"
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -901,16 +779,12 @@ msgstr "Tablo"
 #. Temperature label in systems table
 #: src/components/systems-table/systems-table.tsx
 msgid "Temp"
-msgstr "Sıc"
+msgstr ""
 
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
 msgid "Temperature"
 msgstr "Sıcaklık"
-
-#: src/components/routes/settings/general.tsx
-msgid "Temperature unit"
-msgstr "Sıcaklık birimi"
 
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
@@ -931,10 +805,6 @@ msgstr "Ardından arka uca giriş yapın ve kullanıcılar tablosunda kullanıc�
 #: src/components/systems-table/systems-table.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Bu işlem geri alınamaz. Bu, veritabanından {name} için tüm mevcut kayıtları kalıcı olarak silecektir."
-
-#: src/components/routes/settings/alerts-history-data-table.tsx
-msgid "This will permanently delete all selected records from the database."
-msgstr "Bu, seçilen tüm kayıtları veritabanından kalıcı olarak silecektir."
 
 #: src/components/routes/system.tsx
 msgid "Throughput of {extraFsName}"
@@ -960,7 +830,7 @@ msgstr "Temayı değiştir"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr ""
+msgstr "Token"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -977,16 +847,12 @@ msgid "Tokens and fingerprints are used to authenticate WebSocket connections to
 msgstr "Token'lar ve parmak izleri hub'a WebSocket bağlantılarını doğrulamak için kullanılır."
 
 #: src/lib/utils.ts
-msgid "Triggers when 1 minute load average exceeds a threshold"
-msgstr "1 dakikalık yük ortalaması bir eşiği aştığında tetiklenir"
-
-#: src/lib/utils.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
-msgstr "15 dakikalık yük ortalaması bir eşiği aştığında tetiklenir"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
-msgstr "5 dakikalık yük ortalaması bir eşiği aştığında tetiklenir"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -1012,11 +878,6 @@ msgstr "Durum yukarı ve aşağı arasında değiştiğinde tetiklenir"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Herhangi bir diskin kullanımı bir eşiği aştığında tetiklenir"
 
-#. Temperature / network units
-#: src/components/routes/settings/general.tsx
-msgid "Unit preferences"
-msgstr "Birim tercihleri"
-
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
 msgstr "Evrensel token"
@@ -1025,7 +886,7 @@ msgstr "Evrensel token"
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
-msgstr "Açık"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Updated in real time. Click on a system to view information."
@@ -1037,8 +898,7 @@ msgstr "Çalışma Süresi"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/charts/area-chart.tsx
 msgid "Usage"
 msgstr "Kullanım"
 
@@ -1048,6 +908,7 @@ msgstr "Kök bölümün kullanımı"
 
 #: src/components/charts/swap-chart.tsx
 #: src/components/charts/mem-chart.tsx
+#: src/components/charts/area-chart.tsx
 msgid "Used"
 msgstr "Kullanıldı"
 
@@ -1056,17 +917,9 @@ msgstr "Kullanıldı"
 msgid "Users"
 msgstr "Kullanıcılar"
 
-#: src/components/alerts-history-columns.tsx
-msgid "Value"
-msgstr "Değer"
-
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Görüntüle"
-
-#: src/components/routes/settings/alerts-history-data-table.tsx
-msgid "View your 200 most recent alerts."
-msgstr "En son 200 uyarınızı görüntüleyin."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
@@ -1095,8 +948,8 @@ msgid "Windows command"
 msgstr "Windows komutu"
 
 #. Disk write
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/charts/area-chart.tsx
+#: src/components/charts/area-chart.tsx
 msgid "Write"
 msgstr "Yaz"
 

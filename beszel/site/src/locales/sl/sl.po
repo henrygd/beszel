@@ -8,7 +8,7 @@ msgstr ""
 "Language: sl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-07-25 22:44\n"
+"PO-Revision-Date: 2025-03-06 07:27\n"
 "Last-Translator: \n"
 "Language-Team: Slovenian\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
@@ -23,12 +23,6 @@ msgstr ""
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# dan} two {# dneva} few {# dni} other {# dni}}"
 
-#. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
-#. placeholder {1}: table.getFilteredRowModel().rows.length
-#: src/components/routes/settings/alerts-history-data-table.tsx
-msgid "{0} of {1} row(s) selected."
-msgstr ""
-
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# ura} two {# uri} few {# ur} other {# ur}}"
@@ -36,11 +30,6 @@ msgstr "{hours, plural, one {# ura} two {# uri} few {# ur} other {# ur}}"
 #: src/lib/utils.ts
 msgid "1 hour"
 msgstr "1 ura"
-
-#. Load average
-#: src/components/charts/load-average-chart.tsx
-msgid "1 min"
-msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 week"
@@ -50,11 +39,6 @@ msgstr "1 teden"
 msgid "12 hours"
 msgstr "12 ur"
 
-#. Load average
-#: src/components/charts/load-average-chart.tsx
-msgid "15 min"
-msgstr ""
-
 #: src/lib/utils.ts
 msgid "24 hours"
 msgstr "24 ur"
@@ -63,21 +47,11 @@ msgstr "24 ur"
 msgid "30 days"
 msgstr "30 dni"
 
-#. Load average
-#: src/components/charts/load-average-chart.tsx
-msgid "5 min"
-msgstr ""
-
 #. Table column
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "Dejanja"
-
-#: src/components/alerts-history-columns.tsx
-#: src/components/routes/settings/alerts-history-data-table.tsx
-msgid "Active"
-msgstr ""
 
 #: src/components/routes/home.tsx
 msgid "Active Alerts"
@@ -112,12 +86,6 @@ msgstr "Administrator"
 msgid "Agent"
 msgstr "Agent"
 
-#: src/components/command-palette.tsx
-#: src/components/routes/settings/layout.tsx
-#: src/components/routes/settings/alerts-history-data-table.tsx
-msgid "Alert History"
-msgstr ""
-
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alert-button.tsx
 msgid "Alerts"
@@ -131,10 +99,6 @@ msgstr "Vsi sistemi"
 #: src/components/systems-table/systems-table.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Ali ste prepričani, da želite izbrisati {name}?"
-
-#: src/components/routes/settings/alerts-history-data-table.tsx
-msgid "Are you sure?"
-msgstr ""
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -188,36 +152,17 @@ msgstr "Beszel uporablja <0>Shoutrrr</0> za integracijo s priljubljenimi storitv
 msgid "Binary"
 msgstr "Binarno"
 
-#: src/components/routes/settings/general.tsx
-#: src/components/routes/settings/general.tsx
-msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr ""
-
-#: src/components/routes/settings/general.tsx
-#: src/components/routes/settings/general.tsx
-msgid "Bytes (KB/s, MB/s, GB/s)"
-msgstr ""
-
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
 msgstr "Predpomnilnik / medpomnilniki"
 
 #: src/components/systems-table/systems-table.tsx
-#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Cancel"
 msgstr "Prekliči"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
 msgstr "Pozor - možna izguba podatkov"
-
-#: src/components/routes/settings/general.tsx
-msgid "Celsius (°C)"
-msgstr ""
-
-#: src/components/routes/settings/general.tsx
-msgid "Change display units for metrics."
-msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
@@ -257,12 +202,7 @@ msgstr "Nastavi način prejemanja opozorilnih obvestil."
 msgid "Confirm password"
 msgstr "Potrdite geslo"
 
-#: src/components/routes/home.tsx
-msgid "Connection is down"
-msgstr ""
-
 #: src/components/systems-table/systems-table.tsx
-#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Continue"
 msgstr "Nadaljuj"
 
@@ -318,18 +258,13 @@ msgstr "CPU"
 
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/charts/area-chart.tsx
 msgid "CPU Usage"
 msgstr "CPU poraba"
 
 #: src/components/login/auth-form.tsx
 msgid "Create account"
 msgstr "Ustvari račun"
-
-#. Context: date created
-#: src/components/alerts-history-columns.tsx
-msgid "Created"
-msgstr ""
 
 #. Dark theme
 #: src/components/mode-toggle.tsx
@@ -346,7 +281,6 @@ msgid "Default time period"
 msgstr "Privzeto časovno obdobje"
 
 #: src/components/systems-table/systems-table.tsx
-#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Delete"
 msgstr "Izbriši"
 
@@ -361,10 +295,6 @@ msgstr "Disk"
 #: src/components/routes/system.tsx
 msgid "Disk I/O"
 msgstr "Disk I/O"
-
-#: src/components/routes/settings/general.tsx
-msgid "Disk unit"
-msgstr ""
 
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
@@ -394,14 +324,9 @@ msgstr "Dokumentacija"
 
 #. Context: System is down
 #: src/lib/utils.ts
-#: src/components/alerts-history-columns.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
-msgstr ""
-
-#: src/components/alerts-history-columns.tsx
-msgid "Duration"
 msgstr ""
 
 #: src/components/add-system.tsx
@@ -429,7 +354,6 @@ msgstr "Vnesite e-poštni naslov..."
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/config-yaml.tsx
-#: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/login/auth-form.tsx
 msgid "Error"
 msgstr "Napaka"
@@ -445,10 +369,6 @@ msgstr "Preseženo {0}{1} v zadnjih {2, plural, one {# minuti} other {# minutah}
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr "Obstoječi sistemi, ki niso definirani v <0>config.yml</0>, bodo izbrisani. Prosimo, naredite redne varnostne kopije."
 
-#: src/components/routes/settings/alerts-history-data-table.tsx
-msgid "Export"
-msgstr ""
-
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
 msgstr "Izvozi nastavitve"
@@ -456,10 +376,6 @@ msgstr "Izvozi nastavitve"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export your current systems configuration."
 msgstr "Izvozi trenutne nastavitve sistema."
-
-#: src/components/routes/settings/general.tsx
-msgid "Fahrenheit (°F)"
-msgstr ""
 
 #: src/lib/utils.ts
 msgid "Failed to authenticate"
@@ -480,7 +396,6 @@ msgstr "Opozorila ni bilo mogoče posodobiti"
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
-#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Filter..."
 msgstr "Filter..."
 
@@ -533,6 +448,16 @@ msgstr "Napačen e-poštni naslov."
 msgid "Kernel"
 msgstr "Jedro"
 
+#. Load average 15 minutes
+#: src/components/systems-table/systems-table.tsx
+msgid "L15"
+msgstr ""
+
+#. Load average 5 minutes
+#: src/components/systems-table/systems-table.tsx
+msgid "L5"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Jezik"
@@ -546,25 +471,12 @@ msgstr "Postavitev"
 msgid "Light"
 msgstr "Svetlo"
 
-#: src/components/routes/system.tsx
-msgid "Load Average"
-msgstr ""
-
 #: src/lib/utils.ts
 msgid "Load Average 15m"
 msgstr ""
 
 #: src/lib/utils.ts
-msgid "Load Average 1m"
-msgstr ""
-
-#: src/lib/utils.ts
 msgid "Load Average 5m"
-msgstr ""
-
-#. Short label for load average
-#: src/components/systems-table/systems-table.tsx
-msgid "Load Avg"
 msgstr ""
 
 #: src/components/navbar.tsx
@@ -615,7 +527,6 @@ msgstr "Poraba pomnilnika"
 msgid "Memory usage of docker containers"
 msgstr "Poraba pomnilnika docker kontejnerjev"
 
-#: src/components/alerts-history-columns.tsx
 #: src/components/add-system.tsx
 msgid "Name"
 msgstr "Naziv"
@@ -632,18 +543,9 @@ msgstr "Omrežni promet docker kontejnerjev"
 msgid "Network traffic of public interfaces"
 msgstr "Omrežni promet javnih vmesnikov"
 
-#. Context: Bytes or bits
-#: src/components/routes/settings/general.tsx
-msgid "Network unit"
-msgstr ""
-
 #: src/components/command-palette.tsx
 msgid "No results found."
 msgstr "Ni rezultatov."
-
-#: src/components/routes/settings/alerts-history-data-table.tsx
-msgid "No results."
-msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -681,12 +583,6 @@ msgstr "Prepiši obstoječe alarme"
 #: src/components/command-palette.tsx
 msgid "Page"
 msgstr "Stran"
-
-#. placeholder {0}: table.getState().pagination.pageIndex + 1
-#. placeholder {1}: table.getPageCount()
-#: src/components/routes/settings/alerts-history-data-table.tsx
-msgid "Page {0} of {1}"
-msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
@@ -769,12 +665,13 @@ msgid "Public Key"
 msgstr "Javni ključ"
 
 #. Disk read
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/charts/area-chart.tsx
+#: src/components/charts/area-chart.tsx
 msgid "Read"
 msgstr "Preberano"
 
-#: src/components/routes/system.tsx
+#. Network bytes received (download)
+#: src/components/charts/area-chart.tsx
 msgid "Received"
 msgstr "Prejeto"
 
@@ -782,22 +679,12 @@ msgstr "Prejeto"
 msgid "Reset Password"
 msgstr "Ponastavi geslo"
 
-#: src/components/alerts-history-columns.tsx
-#: src/components/alerts-history-columns.tsx
-#: src/components/routes/settings/alerts-history-data-table.tsx
-msgid "Resolved"
-msgstr ""
-
 #: src/components/systems-table/systems-table.tsx
 msgid "Resume"
 msgstr "Nadaljuj"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
-msgstr ""
-
-#: src/components/routes/settings/alerts-history-data-table.tsx
-msgid "Rows per page"
 msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
@@ -825,7 +712,8 @@ msgstr "Iskanje sistemov ali nastavitev..."
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Glejte <0>nastavitve obvestil</0>, da nastavite način prejemanja opozoril."
 
-#: src/components/routes/system.tsx
+#. Network bytes sent (upload)
+#: src/components/charts/area-chart.tsx
 msgid "Sent"
 msgstr "Poslano"
 
@@ -856,11 +744,6 @@ msgstr "SMTP nastavitve"
 msgid "Sort By"
 msgstr "Razvrsti po"
 
-#. Context: alert state (active or resolved)
-#: src/components/alerts-history-columns.tsx
-msgid "State"
-msgstr ""
-
 #: src/lib/utils.ts
 msgid "Status"
 msgstr "Status"
@@ -876,15 +759,10 @@ msgstr "Swap uporaba"
 #. System theme
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
-#: src/components/alerts-history-columns.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "Sistemsko"
-
-#: src/components/routes/system.tsx
-msgid "System load averages over time"
-msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -908,10 +786,6 @@ msgstr ""
 msgid "Temperature"
 msgstr "Temperatura"
 
-#: src/components/routes/settings/general.tsx
-msgid "Temperature unit"
-msgstr ""
-
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
 msgstr "Temperature sistemskih senzorjev"
@@ -931,10 +805,6 @@ msgstr "Nato se prijavite v zaledni sistem in ponastavite geslo svojega uporabni
 #: src/components/systems-table/systems-table.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Tega dejanja ni mogoče razveljaviti. To bo trajno izbrisalo vse trenutne zapise za {name} iz zbirke podatkov."
-
-#: src/components/routes/settings/alerts-history-data-table.tsx
-msgid "This will permanently delete all selected records from the database."
-msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Throughput of {extraFsName}"
@@ -977,10 +847,6 @@ msgid "Tokens and fingerprints are used to authenticate WebSocket connections to
 msgstr ""
 
 #: src/lib/utils.ts
-msgid "Triggers when 1 minute load average exceeds a threshold"
-msgstr ""
-
-#: src/lib/utils.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
 msgstr ""
 
@@ -1012,11 +878,6 @@ msgstr "Sproži se, ko se stanje preklaplja med gor in dol"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Sproži se, ko uporaba katerega koli diska preseže prag"
 
-#. Temperature / network units
-#: src/components/routes/settings/general.tsx
-msgid "Unit preferences"
-msgstr ""
-
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
 msgstr ""
@@ -1037,8 +898,7 @@ msgstr "Čas delovanja"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/charts/area-chart.tsx
 msgid "Usage"
 msgstr "Uporaba"
 
@@ -1048,6 +908,7 @@ msgstr "Uporaba korenske particije"
 
 #: src/components/charts/swap-chart.tsx
 #: src/components/charts/mem-chart.tsx
+#: src/components/charts/area-chart.tsx
 msgid "Used"
 msgstr "Uporabljeno"
 
@@ -1056,17 +917,9 @@ msgstr "Uporabljeno"
 msgid "Users"
 msgstr "Uporabniki"
 
-#: src/components/alerts-history-columns.tsx
-msgid "Value"
-msgstr ""
-
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Pogled"
-
-#: src/components/routes/settings/alerts-history-data-table.tsx
-msgid "View your 200 most recent alerts."
-msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
@@ -1095,8 +948,8 @@ msgid "Windows command"
 msgstr "Ukaz Windows"
 
 #. Disk write
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/charts/area-chart.tsx
+#: src/components/charts/area-chart.tsx
 msgid "Write"
 msgstr "Pisanje"
 
