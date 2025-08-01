@@ -227,8 +227,8 @@ if [ "$UNINSTALL" = true ]; then
     rm -f /var/log/beszel-agent.log /var/log/beszel-agent.err
   elif is_openwrt; then
     echo "Stopping and disabling the agent service..."
-    service beszel-agent stop
-    service beszel-agent disable
+    /etc/init.d/beszel-agent stop
+    /etc/init.d/beszel-agent disable
 
     echo "Removing the OpenWRT service files..."
     rm -f /etc/init.d/beszel-agent
@@ -288,13 +288,13 @@ package_installed() {
 }
 
 # Check for package manager and install necessary packages if not installed
-if is_alpine; then
-  if ! package_installed tar || ! package_installed curl || ! package_installed coreutils; then
+if package_installed apk; then
+  if ! package_installed tar || ! package_installed curl || ! package_installed sha256sum; then
     apk update
     apk add tar curl coreutils shadow
   fi
-elif is_openwrt; then
-  if ! package_installed tar || ! package_installed curl || ! package_installed coreutils; then
+elif package_installed opkg; then
+  if ! package_installed tar || ! package_installed curl || ! package_installed sha256sum; then
     opkg update
     opkg install tar curl coreutils
   fi
@@ -453,6 +453,11 @@ set_selinux_context
 # Cleanup
 rm -rf "$TEMP_DIR"
 
+# Make sure /etc/machine-id exists for persistent fingerprint
+if [ ! -f /etc/machine-id ]; then
+  cat /proc/sys/kernel/random/uuid | tr -d '-' > /etc/machine-id
+fi
+
 # Check for NVIDIA GPUs and grant device permissions for systemd service
 detect_nvidia_devices() {
   local devices=""
@@ -594,10 +599,10 @@ EOF
 
   # Enable the service
   chmod +x /etc/init.d/beszel-agent
-  service beszel-agent enable
+  /etc/init.d/beszel-agent enable
 
   # Start the service
-  service beszel-agent restart
+  /etc/init.d/beszel-agent restart
 
   # Auto-update service for OpenWRT using a crontab job
   if [ "$AUTO_UPDATE_FLAG" = "true" ]; then
@@ -625,9 +630,9 @@ EOF
   esac
 
   # Check service status
-  if ! service beszel-agent running >/dev/null 2>&1; then
+  if ! /etc/init.d/beszel-agent running >/dev/null 2>&1; then
     echo "Error: The Beszel Agent service is not running."
-    service beszel-agent status
+    /etc/init.d/beszel-agent status
     exit 1
   fi
 

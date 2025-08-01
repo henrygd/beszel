@@ -87,5 +87,5 @@ export default function AreaChartDefault({
 				</ChartContainer>
 			</div>
 		)
-	}, [chartData.systemStats.length, yAxisWidth, maxToggled])
+	}, [chartData.systemStats.at(-1), yAxisWidth, maxToggled])
 }
