@@ -111,7 +111,7 @@ func main() {
 	serverConfig.Addr = addr
 	serverConfig.Network = agent.GetNetwork(addr)
 
-	agent, err := agent.NewAgent("")
+	agent, err := agent.NewAgent()
 	if err != nil {
 		log.Fatal("Failed to create agent: ", err)
 	}

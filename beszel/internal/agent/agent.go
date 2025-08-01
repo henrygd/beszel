@@ -40,13 +40,13 @@ type Agent struct {
 
 // NewAgent creates a new agent with the given data directory for persisting data.
 // If the data directory is not set, it will attempt to find the optimal directory.
-func NewAgent(dataDir string) (agent *Agent, err error) {
+func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	agent = &Agent{
 		fsStats: make(map[string]*system.FsStats),
 		cache:   NewSessionCache(69 * time.Second),
 	}
 
-	agent.dataDir, err = getDataDir(dataDir)
+	agent.dataDir, err = getDataDir(dataDir...)
 	if err != nil {
 		slog.Warn("Data directory not found")
 	} else {

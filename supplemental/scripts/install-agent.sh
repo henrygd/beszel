@@ -5,7 +5,7 @@ is_alpine() {
 }
 
 is_openwrt() {
-  cat /etc/os-release | grep -q "OpenWrt"
+  grep -qi "OpenWrt" /etc/os-release
 }
 
 # If SELinux is enabled, set the context of the binary
@@ -227,8 +227,8 @@ if [ "$UNINSTALL" = true ]; then
     rm -f /var/log/beszel-agent.log /var/log/beszel-agent.err
   elif is_openwrt; then
     echo "Stopping and disabling the agent service..."
-    service beszel-agent stop
-    service beszel-agent disable
+    /etc/init.d/beszel-agent stop
+    /etc/init.d/beszel-agent disable
 
     echo "Removing the OpenWRT service files..."
     rm -f /etc/init.d/beszel-agent
@@ -288,13 +288,13 @@ package_installed() {
 }
 
 # Check for package manager and install necessary packages if not installed
-if is_alpine; then
-  if ! package_installed tar || ! package_installed curl || ! package_installed coreutils; then
+if package_installed apk; then
+  if ! package_installed tar || ! package_installed curl || ! package_installed sha256sum; then
     apk update
     apk add tar curl coreutils shadow
   fi
-elif is_openwrt; then
-  if ! package_installed tar || ! package_installed curl || ! package_installed coreutils; then
+elif package_installed opkg; then
+  if ! package_installed tar || ! package_installed curl || ! package_installed sha256sum; then
     opkg update
     opkg install tar curl coreutils
   fi
@@ -335,11 +335,10 @@ else
 fi
 
 # Create a dedicated user for the service if it doesn't exist
+echo "Creating a dedicated user for the Beszel Agent service..."
 if is_alpine; then
   if ! id -u beszel >/dev/null 2>&1; then
-    echo "Creating a dedicated group for the Beszel Agent service..."
     addgroup beszel
-    echo "Creating a dedicated user for the Beszel Agent service..."
     adduser -S -D -H -s /sbin/nologin -G beszel beszel
   fi
   # Add the user to the docker group to allow access to the Docker socket if group docker exists
@@ -347,10 +346,37 @@ if is_alpine; then
     echo "Adding beszel to docker group"
     usermod -aG docker beszel
   fi
+  
+elif is_openwrt; then
+  # Create beszel group first if it doesn't exist (check /etc/group directly)
+  if ! grep -q "^beszel:" /etc/group >/dev/null 2>&1; then
+    echo "beszel:x:999:" >> /etc/group
+  fi
+  
+  # Create beszel user if it doesn't exist (double-check to prevent duplicates)
+  if ! id -u beszel >/dev/null 2>&1 && ! grep -q "^beszel:" /etc/passwd >/dev/null 2>&1; then
+    echo "beszel:x:999:999::/nonexistent:/bin/false" >> /etc/passwd
+  fi
+  
+  # Add the user to the docker group if docker group exists and user is not already in it
+  if grep -q "^docker:" /etc/group >/dev/null 2>&1; then
+    echo "Adding beszel to docker group"
+    # Check if beszel is already in docker group
+    if ! grep "^docker:" /etc/group | grep -q "beszel"; then
+      # Add beszel to docker group by modifying /etc/group
+      # Handle both cases: group with existing members and group without members
+      if grep "^docker:" /etc/group | grep -q ":.*:.*$"; then
+        # Group has existing members, append with comma
+        sed -i 's/^docker:\([^:]*:[^:]*:\)\(.*\)$/docker:\1\2,beszel/' /etc/group
+      else
+        # Group has no members, just append
+        sed -i 's/^docker:\([^:]*:[^:]*:\)$/docker:\1beszel/' /etc/group
+      fi
+    fi
+  fi
 
 else
   if ! id -u beszel >/dev/null 2>&1; then
-    echo "Creating a dedicated user for the Beszel Agent service..."
     useradd --system --home-dir /nonexistent --shell /bin/false beszel
   fi
   # Add the user to the docker group to allow access to the Docker socket if group docker exists
@@ -426,6 +452,11 @@ set_selinux_context
 
 # Cleanup
 rm -rf "$TEMP_DIR"
+
+# Make sure /etc/machine-id exists for persistent fingerprint
+if [ ! -f /etc/machine-id ]; then
+  cat /proc/sys/kernel/random/uuid | tr -d '-' > /etc/machine-id
+fi
 
 # Check for NVIDIA GPUs and grant device permissions for systemd service
 detect_nvidia_devices() {
@@ -546,10 +577,7 @@ start_service() {
     procd_set_param command /opt/beszel-agent/beszel-agent
     procd_set_param user beszel
     procd_set_param pidfile /var/run/beszel-agent.pid
-    procd_set_param env PORT="$PORT"
-    procd_set_param env KEY="$KEY"
-    procd_set_param env TOKEN="$TOKEN"
-    procd_set_param env HUB_URL="$HUB_URL"
+    procd_set_param env PORT="$PORT" KEY="$KEY" TOKEN="$TOKEN" HUB_URL="$HUB_URL"
     procd_set_param stdout 1
     procd_set_param stderr 1
     procd_close_instance
@@ -573,10 +601,10 @@ EOF
 
   # Enable the service
   chmod +x /etc/init.d/beszel-agent
-  service beszel-agent enable
+  /etc/init.d/beszel-agent enable
 
   # Start the service
-  service beszel-agent restart
+  /etc/init.d/beszel-agent restart
 
   # Auto-update service for OpenWRT using a crontab job
   if [ "$AUTO_UPDATE_FLAG" = "true" ]; then
@@ -604,9 +632,9 @@ EOF
   esac
 
   # Check service status
-  if ! service beszel-agent running >/dev/null 2>&1; then
+  if ! /etc/init.d/beszel-agent running >/dev/null 2>&1; then
     echo "Error: The Beszel Agent service is not running."
-    service beszel-agent status
+    /etc/init.d/beszel-agent status
     exit 1
   fi
 
