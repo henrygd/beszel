@@ -296,6 +296,10 @@ msgstr "Copia host"
 msgid "Copy Linux command"
 msgstr "Copia comando Linux"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Copy name"
+msgstr "Copia nome"
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Copia testo"

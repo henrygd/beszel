@@ -296,6 +296,10 @@ msgstr "Kopiraj gostitelja"
 msgid "Copy Linux command"
 msgstr "Kopiraj Linux ukaz"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Copy name"
+msgstr "Kopiraj ime"
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Kopiraj besedilo"

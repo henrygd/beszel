@@ -296,6 +296,10 @@ msgstr "Sao chép máy chủ"
 msgid "Copy Linux command"
 msgstr "Sao chép lệnh Linux"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Copy name"
+msgstr "Sao chép tên"
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Sao chép văn bản"

@@ -296,6 +296,10 @@ msgstr "ホストをコピー"
 msgid "Copy Linux command"
 msgstr "Linuxコマンドをコピー"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Copy name"
+msgstr "名前をコピー"
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "テキストをコピー"

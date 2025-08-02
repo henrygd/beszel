@@ -296,6 +296,10 @@ msgstr "Ana bilgisayarı kopyala"
 msgid "Copy Linux command"
 msgstr "Linux komutunu kopyala"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Copy name"
+msgstr "Adı kopyala"
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Metni kopyala"

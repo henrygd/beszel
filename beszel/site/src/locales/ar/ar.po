@@ -296,6 +296,10 @@ msgstr "نسخ المضيف"
 msgid "Copy Linux command"
 msgstr "نسخ أمر لينكس"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Copy name"
+msgstr "نسخ الاسم"
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "نسخ النص"

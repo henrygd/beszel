@@ -296,6 +296,10 @@ msgstr "Afrita host"
 msgid "Copy Linux command"
 msgstr "Afrita Linux aðgerð"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Copy name"
+msgstr "Afrita nafn"
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Afrita texta"

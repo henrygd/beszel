@@ -296,6 +296,10 @@ msgstr "Kopiera värd"
 msgid "Copy Linux command"
 msgstr "Kopiera Linux-kommando"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Copy name"
+msgstr "Kopiera namn"
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Kopiera text"
@@ -1111,4 +1115,3 @@ msgstr "YAML-konfiguration"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Dina användarinställningar har uppdaterats."
-

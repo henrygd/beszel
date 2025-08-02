@@ -296,6 +296,10 @@ msgstr "复制主机名"
 msgid "Copy Linux command"
 msgstr "复制 Linux 安装命令"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Copy name"
+msgstr "复制名称"
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "复制文本"

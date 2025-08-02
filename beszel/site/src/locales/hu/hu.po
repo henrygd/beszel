@@ -296,6 +296,10 @@ msgstr "Hoszt másolása"
 msgid "Copy Linux command"
 msgstr "Linux parancs másolása"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Copy name"
+msgstr "Név másolása"
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Szöveg másolása"
