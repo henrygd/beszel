@@ -6,6 +6,7 @@ import (
 	"beszel/internal/entities/system"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -36,6 +37,7 @@ type Agent struct {
 	server            *ssh.Server                // SSH server
 	dataDir           string                     // Directory for persisting data
 	keys              []gossh.PublicKey          // SSH public keys
+	configManager     *ConfigManager             // Manages configuration from hub
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.
@@ -55,7 +57,24 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 
 	agent.memCalc, _ = GetEnv("MEM_CALC")
 	agent.sensorConfig = agent.newSensorConfig()
+
+	// Initialize configuration manager
+	hubURL, _ := GetEnv("HUB_URL")
+	token, _ := GetEnv("TOKEN")
+	agent.configManager = NewConfigManager(hubURL, token)
+
+	// Pull configuration from hub if available
+	if err := agent.configManager.PullConfig(); err != nil {
+		slog.Warn("Failed to pull configuration from hub", "error", err)
+	} else {
+		// Apply the pulled configuration
+		if err := agent.configManager.ApplyConfig(agent); err != nil {
+			slog.Warn("Failed to apply configuration from hub", "error", err)
+		}
+	}
+
 	// Set up slog with a log level determined by the LOG_LEVEL env var
+	// This will override any config from hub if set via environment
 	if logLevelStr, exists := GetEnv("LOG_LEVEL"); exists {
 		switch strings.ToLower(logLevelStr) {
 		case "debug":
@@ -78,6 +97,13 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 
 	// initialize disk info
 	agent.initializeDiskInfo()
+
+	// Re-apply configuration after disk initialization to ensure extra filesystems are included
+	if agent.configManager.GetConfig() != nil {
+		if err := agent.configManager.ApplyConfig(agent); err != nil {
+			slog.Warn("Failed to re-apply configuration after disk initialization", "error", err)
+		}
+	}
 
 	// initialize net io stats
 	agent.initializeNetIoStats()
@@ -179,4 +205,26 @@ func (a *Agent) getFingerprint() string {
 	}
 
 	return fingerprint
+}
+
+// RefreshConfig pulls and applies the latest configuration from the hub
+func (a *Agent) RefreshConfig() error {
+	if a.configManager == nil {
+		return nil
+	}
+
+	if err := a.configManager.PullConfig(); err != nil {
+		return fmt.Errorf("failed to pull config: %w", err)
+	}
+
+	if err := a.configManager.ApplyConfig(a); err != nil {
+		return fmt.Errorf("failed to apply config: %w", err)
+	}
+
+	return nil
+}
+
+// GetConfigManager returns the configuration manager
+func (a *Agent) GetConfigManager() *ConfigManager {
+	return a.configManager
 }

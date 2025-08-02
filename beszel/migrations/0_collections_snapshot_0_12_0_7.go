@@ -700,6 +700,16 @@ func init() {
 			},
 			{
 				"hidden": false,
+				"id": "qoq64nt3",
+				"maxSize": 2000000,
+				"name": "agent_config",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "json"
+			},
+			{
+				"hidden": false,
 				"id": "autodate2990389176",
 				"name": "created",
 				"onCreate": true,

@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useStore } from "@nanostores/react"
 import { $router } from "@/components/router.tsx"
 import { getPagePath, redirectPage } from "@nanostores/router"
-import { BellIcon, FileSlidersIcon, FingerprintIcon, SettingsIcon, AlertOctagonIcon } from "lucide-react"
+import { BellIcon, FileSlidersIcon, FingerprintIcon, SettingsIcon, AlertOctagonIcon, ServerIcon } from "lucide-react"
 import { $userSettings, pb } from "@/lib/stores.ts"
 import { toast } from "@/components/ui/use-toast.ts"
 import { UserSettings } from "@/types.js"
@@ -17,6 +17,7 @@ import ConfigYaml from "./config-yaml.tsx"
 import { useLingui } from "@lingui/react/macro"
 import Fingerprints from "./tokens-fingerprints.tsx"
 import AlertsHistoryDataTable from "./alerts-history-data-table"
+import AgentConfig from "./agent-config.tsx"
 
 export async function saveSettings(newSettings: Partial<UserSettings>) {
 	try {
@@ -77,6 +78,12 @@ export default function SettingsLayout() {
 			icon: FileSlidersIcon,
 			admin: true,
 		},
+		{
+			title: t`Agent Config`,
+			href: getPagePath($router, "settings", { name: "agent-config" }),
+			icon: ServerIcon,
+			admin: true,
+		},
 	]
 
 	const page = useStore($router)
@@ -129,5 +136,7 @@ function SettingsContent({ name }: { name: string }) {
 			return <Fingerprints />
 		case "alert-history":
 			return <AlertsHistoryDataTable />
+		case "agent-config":
+			return <AgentConfig />
 	}
 }
