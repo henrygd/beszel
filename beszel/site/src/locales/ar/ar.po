@@ -8,7 +8,7 @@ msgstr ""
 "Language: ar\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-01 23:21\n"
+"PO-Revision-Date: 2025-08-02 01:36\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
@@ -295,6 +295,10 @@ msgstr "نسخ المضيف"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
 msgstr "نسخ أمر لينكس"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Copy name"
+msgstr "نسخ الاسم"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
