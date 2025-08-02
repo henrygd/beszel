@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-01 23:21\n"
+"PO-Revision-Date: 2025-08-02 01:36\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -295,6 +295,10 @@ msgstr "複製主機"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
 msgstr "複製 Linux 指令"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Copy name"
+msgstr "複製名稱"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
