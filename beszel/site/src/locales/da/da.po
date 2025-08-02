@@ -8,7 +8,7 @@ msgstr ""
 "Language: da\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-01 23:21\n"
+"PO-Revision-Date: 2025-08-02 01:36\n"
 "Last-Translator: \n"
 "Language-Team: Danish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -295,6 +295,10 @@ msgstr "Kopier host"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
 msgstr "Kopier Linux kommando"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Copy name"
+msgstr "Kopier navn"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
