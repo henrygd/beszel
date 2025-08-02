@@ -203,13 +203,13 @@ winget:
       name: beszel-winget
       branch: henrygd.beszel-agent-{{ .Version }}
       token: "{{ .Env.WINGET_TOKEN }}"
-      pull_request:
-        enabled: true
-        draft: false
-        base:
-          owner: microsoft
-          name: winget-pkgs
-          branch: master
+      # pull_request:
+      #   enabled: true
+      #   draft: false
+      #   base:
+      #     owner: microsoft
+      #     name: winget-pkgs
+      #     branch: master
 
 release:
   draft: true
