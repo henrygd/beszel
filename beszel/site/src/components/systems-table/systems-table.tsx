@@ -176,7 +176,7 @@ export default function SystemsTable() {
 				cell: (info) => (
 					<span className="flex gap-2 items-center md:ps-1 md:pe-5">
 						<IndicatorDot system={info.row.original} />
-						<span className="font-medium text-sm">
+						<span className="font-medium text-sm text-nowrap">
 							{info.getValue() as string}
 						</span>
 					</span>
