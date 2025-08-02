@@ -113,37 +113,37 @@ func (a *Agent) gatherStats(sessionID string) *system.CombinedData {
 	a.Lock()
 	defer a.Unlock()
 
-	cachedData, ok := a.cache.Get(sessionID)
-	if ok {
-		slog.Debug("Cached stats", "session", sessionID)
-		return cachedData
+	data, isCached := a.cache.Get(sessionID)
+	if isCached {
+		slog.Debug("Cached data", "session", sessionID)
+		return data
 	}
 
-	*cachedData = system.CombinedData{
+	*data = system.CombinedData{
 		Stats: a.getSystemStats(),
 		Info:  a.systemInfo,
 	}
-	slog.Debug("System stats", "data", cachedData)
+	slog.Debug("System data", "data", data)
 
 	if a.dockerManager != nil {
 		if containerStats, err := a.dockerManager.getDockerStats(); err == nil {
-			cachedData.Containers = containerStats
-			slog.Debug("Docker stats", "data", cachedData.Containers)
+			data.Containers = containerStats
+			slog.Debug("Containers", "data", data.Containers)
 		} else {
-			slog.Debug("Docker stats", "err", err)
+			slog.Debug("Containers", "err", err)
 		}
 	}
 
-	cachedData.Stats.ExtraFs = make(map[string]*system.FsStats)
+	data.Stats.ExtraFs = make(map[string]*system.FsStats)
 	for name, stats := range a.fsStats {
 		if !stats.Root && stats.DiskTotal > 0 {
-			cachedData.Stats.ExtraFs[name] = stats
+			data.Stats.ExtraFs[name] = stats
 		}
 	}
-	slog.Debug("Extra filesystems", "data", cachedData.Stats.ExtraFs)
+	slog.Debug("Extra FS", "data", data.Stats.ExtraFs)
 
-	a.cache.Set(sessionID, cachedData)
-	return cachedData
+	a.cache.Set(sessionID, data)
+	return data
 }
 
 // StartAgent initializes and starts the agent with optional WebSocket connection
