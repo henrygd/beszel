@@ -6,6 +6,7 @@ import (
 	"beszel/internal/alerts"
 	"beszel/internal/hub/config"
 	"beszel/internal/hub/systems"
+	"beszel/internal/hub/tailscale"
 	"beszel/internal/records"
 	"beszel/internal/users"
 	"beszel/site"
@@ -13,6 +14,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io/fs"
+	"log/slog"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -34,6 +36,7 @@ type Hub struct {
 	um     *users.UserManager
 	rm     *records.RecordManager
 	sm     *systems.SystemManager
+	tm     *tailscale.Manager
 	pubKey string
 	signer ssh.Signer
 	appURL string
@@ -48,6 +51,7 @@ func NewHub(app core.App) *Hub {
 	hub.um = users.NewUserManager(hub)
 	hub.rm = records.NewRecordManager(hub)
 	hub.sm = systems.NewSystemManager(hub)
+	hub.tm = tailscale.NewManager(hub)
 	hub.appURL, _ = GetEnv("APP_URL")
 	return hub
 }
@@ -85,6 +89,10 @@ func (h *Hub) StartHub() error {
 		}
 		// start system updates
 		if err := h.sm.Initialize(); err != nil {
+			return err
+		}
+		// initialize Tailscale monitoring
+		if err := h.tm.Initialize(); err != nil {
 			return err
 		}
 		return e.Next()
@@ -219,6 +227,12 @@ func (h *Hub) registerCronJobs(_ *core.ServeEvent) error {
 	h.Cron().MustAdd("delete old records", "8 * * * *", h.rm.DeleteOldRecords)
 	// create longer records every 10 minutes
 	h.Cron().MustAdd("create longer records", "*/10 * * * *", h.rm.CreateLongerRecords)
+	// fetch Tailscale network data every 5 minutes
+	h.Cron().MustAdd("fetch tailscale data", "*/5 * * * *", func() {
+		if err := h.tm.FetchNetworkData(); err != nil {
+			slog.Error("Failed to fetch Tailscale data", "error", err)
+		}
+	})
 	return nil
 }
 
@@ -245,6 +259,10 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	se.Router.GET("/api/beszel/agent-connect", h.handleAgentConnect)
 	// get or create universal tokens
 	se.Router.GET("/api/beszel/universal-token", h.getUniversalToken)
+	// Tailscale API endpoints
+	se.Router.GET("/api/beszel/tailscale/network", h.getTailscaleNetwork)
+	se.Router.GET("/api/beszel/tailscale/stats", h.getTailscaleStats)
+	se.Router.GET("/api/beszel/tailscale/nodes", h.getTailscaleNodes)
 	// create first user endpoint only needed if no users exist
 	if totalUsers, _ := h.CountRecords("users"); totalUsers == 0 {
 		se.Router.POST("/api/beszel/create-user", h.um.CreateFirstUser)
@@ -348,4 +366,61 @@ func (h *Hub) MakeLink(parts ...string) string {
 		base = fmt.Sprintf("%s/%s", base, url.PathEscape(part))
 	}
 	return base
+}
+
+// getTailscaleNetwork returns the current Tailscale network data
+func (h *Hub) getTailscaleNetwork(e *core.RequestEvent) error {
+	info, err := e.RequestInfo()
+	if err != nil || info.Auth == nil {
+		return apis.NewForbiddenError("Forbidden", nil)
+	}
+
+	if !h.tm.IsEnabled() {
+		return e.JSON(http.StatusServiceUnavailable, map[string]string{"error": "Tailscale monitoring is disabled"})
+	}
+
+	network := h.tm.GetNetworkData()
+	if network == nil {
+		return e.JSON(http.StatusNotFound, map[string]string{"error": "No Tailscale network data available"})
+	}
+
+	return e.JSON(http.StatusOK, network)
+}
+
+// getTailscaleStats returns the current Tailscale network statistics
+func (h *Hub) getTailscaleStats(e *core.RequestEvent) error {
+	info, err := e.RequestInfo()
+	if err != nil || info.Auth == nil {
+		return apis.NewForbiddenError("Forbidden", nil)
+	}
+
+	if !h.tm.IsEnabled() {
+		return e.JSON(http.StatusServiceUnavailable, map[string]string{"error": "Tailscale monitoring is disabled"})
+	}
+
+	stats := h.tm.GetStats()
+	if stats == nil {
+		return e.JSON(http.StatusNotFound, map[string]string{"error": "No Tailscale statistics available"})
+	}
+
+	return e.JSON(http.StatusOK, stats)
+}
+
+// getTailscaleNodes returns the list of Tailscale nodes
+func (h *Hub) getTailscaleNodes(e *core.RequestEvent) error {
+	info, err := e.RequestInfo()
+	if err != nil || info.Auth == nil {
+		return apis.NewForbiddenError("Forbidden", nil)
+	}
+
+	if !h.tm.IsEnabled() {
+		return e.JSON(http.StatusServiceUnavailable, map[string]string{"error": "Tailscale monitoring is disabled"})
+	}
+
+	network := h.tm.GetNetworkData()
+	if network == nil {
+		return e.JSON(http.StatusNotFound, map[string]string{"error": "No Tailscale network data available"})
+	}
+
+	return e.JSON(http.StatusOK, network.Nodes)
 }

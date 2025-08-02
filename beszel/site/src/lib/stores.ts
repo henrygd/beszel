@@ -1,6 +1,6 @@
 import PocketBase from "pocketbase"
 import { atom, map, PreinitializedWritableAtom } from "nanostores"
-import { AlertRecord, ChartTimes, SystemRecord, UserSettings } from "@/types"
+import { AlertRecord, ChartTimes, SystemRecord, UserSettings, TailscaleNode, TailscaleNetwork, TailscaleStats } from "@/types"
 import { basePath } from "@/components/router"
 
 /** PocketBase JS Client */
@@ -49,3 +49,15 @@ export const $copyContent = atom("")
 
 /** Direction for localization */
 export const $direction = atom<"ltr" | "rtl">("ltr")
+
+/** Tailscale network data */
+export const $tailscaleNetwork = atom<TailscaleNetwork | null>(null)
+
+/** Tailscale statistics */
+export const $tailscaleStats = atom<TailscaleStats | null>(null)
+
+/** Tailscale nodes list */
+export const $tailscaleNodes = atom<TailscaleNode[]>([])
+
+/** Tailscale enabled flag */
+export const $tailscaleEnabled = atom<boolean>(false)
