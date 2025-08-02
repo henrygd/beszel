@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"golang.org/x/crypto/ssh"
 )
@@ -25,13 +26,16 @@ func (opts *cmdOptions) parse() bool {
 	flag.StringVar(&opts.listen, "listen", "", "Address or port to listen on")
 
 	flag.Usage = func() {
-		fmt.Printf("Usage: %s [command] [flags]\n", os.Args[0])
-		fmt.Println("\nCommands:")
-		fmt.Println("  health    Check if the agent is running")
-		fmt.Println("  help      Display this help message")
-		fmt.Println("  update    Update to the latest version")
-		fmt.Println("  version   Display the version")
-		fmt.Println("\nFlags:")
+		builder := strings.Builder{}
+		builder.WriteString("Usage: ")
+		builder.WriteString(os.Args[0])
+		builder.WriteString(" [command] [flags]\n")
+		builder.WriteString("\nCommands:\n")
+		builder.WriteString("  health    Check if the agent is running\n")
+		builder.WriteString("  help      Display this help message\n")
+		builder.WriteString("  update    Update to the latest version\n")
+		builder.WriteString("\nFlags:\n")
+		fmt.Print(builder.String())
 		flag.PrintDefaults()
 	}
 
@@ -111,12 +115,12 @@ func main() {
 	serverConfig.Addr = addr
 	serverConfig.Network = agent.GetNetwork(addr)
 
-	agent, err := agent.NewAgent("")
+	a, err := agent.NewAgent()
 	if err != nil {
 		log.Fatal("Failed to create agent: ", err)
 	}
 
-	if err := agent.Start(serverConfig); err != nil {
+	if err := a.Start(serverConfig); err != nil {
 		log.Fatal("Failed to start server: ", err)
 	}
 }

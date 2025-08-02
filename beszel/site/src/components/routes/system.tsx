@@ -26,6 +26,7 @@ import {
 	getHostDisplayValue,
 	getPbTimestamp,
 	listen,
+	parseSemVer,
 	toFixedFloat,
 	useLocalStorage,
 } from "@/lib/utils"
@@ -191,6 +192,7 @@ export default function SystemDetail({ name }: { name: string }) {
 			chartTime,
 			orientation: direction === "rtl" ? "right" : "left",
 			...getTimeData(chartTime, lastCreated),
+			agentVersion: parseSemVer(system?.info?.v),
 		}
 	}, [systemStats, containerData, direction])
 
@@ -642,7 +644,7 @@ export default function SystemDetail({ name }: { name: string }) {
 					)}
 
 					{/* Load Average chart */}
-					{system.info.l1 !== undefined && (
+					{chartData.agentVersion?.minor >= 12 && (
 						<ChartCard
 							empty={dataEmpty}
 							grid={grid}

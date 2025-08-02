@@ -44,15 +44,15 @@ func TestGetDataDir(t *testing.T) {
 		oldValue := os.Getenv("DATA_DIR")
 		defer func() {
 			if oldValue == "" {
-				os.Unsetenv("DATA_DIR")
+				os.Unsetenv("BESZEL_AGENT_DATA_DIR")
 			} else {
-				os.Setenv("DATA_DIR", oldValue)
+				os.Setenv("BESZEL_AGENT_DATA_DIR", oldValue)
 			}
 		}()
 
-		os.Setenv("DATA_DIR", tempDir)
+		os.Setenv("BESZEL_AGENT_DATA_DIR", tempDir)
 
-		result, err := getDataDir("")
+		result, err := getDataDir()
 		require.NoError(t, err)
 		assert.Equal(t, tempDir, result)
 	})
@@ -79,7 +79,7 @@ func TestGetDataDir(t *testing.T) {
 
 		// This will try platform-specific defaults, which may or may not work
 		// We're mainly testing that it doesn't panic and returns some result
-		result, err := getDataDir("")
+		result, err := getDataDir()
 		// We don't assert success/failure here since it depends on system permissions
 		// Just verify we get a string result if no error
 		if err == nil {

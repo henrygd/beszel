@@ -50,6 +50,8 @@ export interface SystemInfo {
 	l5?: number
 	/** load average 15 minutes */
 	l15?: number
+	/** load average */
+	la?: [number, number, number]
 	/** operating system */
 	o?: string
 	/** uptime */
@@ -79,12 +81,15 @@ export interface SystemStats {
 	cpu: number
 	/** peak cpu */
 	cpum?: number
+	// TODO: remove these in future release in favor of la
 	/** load average 1 minute */
 	l1?: number
 	/** load average 5 minutes */
 	l5?: number
 	/** load average 15 minutes */
 	l15?: number
+	/** load average */
+	la?: [number, number, number]
 	/** total memory (gb) */
 	m: number
 	/** memory used (gb) */
@@ -238,7 +243,14 @@ type ChartDataContainer = {
 	[key: string]: key extends "created" ? never : ContainerStats
 }
 
+export interface SemVer {
+	major: number
+	minor: number
+	patch: number
+}
+
 export interface ChartData {
+	agentVersion: SemVer
 	systemStats: SystemStatsRecord[]
 	containerData: ChartDataContainer[]
 	orientation: "right" | "left"

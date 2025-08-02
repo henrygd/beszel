@@ -9,35 +9,30 @@ import (
 )
 
 // getDataDir returns the path to the data directory for the agent and an error
-// if the directory is not valid. Pass an empty string to attempt to find the
-// optimal data directory.
-func getDataDir(dataDir string) (string, error) {
-	if dataDir == "" {
-		dataDir, _ = GetEnv("DATA_DIR")
+// if the directory is not valid. Attempts to find the optimal data directory if
+// no data directories are provided.
+func getDataDir(dataDirs ...string) (string, error) {
+	if len(dataDirs) > 0 {
+		return testDataDirs(dataDirs)
 	}
 
+	dataDir, _ := GetEnv("DATA_DIR")
 	if dataDir != "" {
-		return testDataDirs([]string{dataDir})
+		dataDirs = append(dataDirs, dataDir)
 	}
-
-	var dirsToTry []string
 
 	if runtime.GOOS == "windows" {
-		dirsToTry = []string{
+		dataDirs = append(dataDirs,
 			filepath.Join(os.Getenv("APPDATA"), "beszel-agent"),
 			filepath.Join(os.Getenv("LOCALAPPDATA"), "beszel-agent"),
-		}
+		)
 	} else {
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			return "", err
-		}
-		dirsToTry = []string{
-			"/var/lib/beszel-agent",
-			filepath.Join(homeDir, ".config", "beszel"),
+		dataDirs = append(dataDirs, "/var/lib/beszel-agent")
+		if homeDir, err := os.UserHomeDir(); err == nil {
+			dataDirs = append(dataDirs, filepath.Join(homeDir, ".config", "beszel"))
 		}
 	}
-	return testDataDirs(dirsToTry)
+	return testDataDirs(dataDirs)
 }
 
 func testDataDirs(paths []string) (string, error) {

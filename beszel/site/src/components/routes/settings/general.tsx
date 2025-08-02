@@ -156,7 +156,7 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 				<div className="space-y-2">
 					<div className="mb-4">
 						<h3 className="mb-1 text-lg font-medium">
-							<Trans>Unit preferences</Trans>
+							<Trans comment="Temperature / network units">Unit preferences</Trans>
 						</h3>
 						<p className="text-sm text-muted-foreground leading-relaxed">
 							<Trans>Change display units for metrics.</Trans>
@@ -187,7 +187,7 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 						</div>
 						<div className="space-y-2">
 							<Label className="block" htmlFor="unitNet">
-								<Trans>Network unit</Trans>
+								<Trans comment="Context: Bytes or bits">Network unit</Trans>
 							</Label>
 							<Select
 								name="unitNet"
