@@ -23,8 +23,6 @@ interface AgentConfig {
 	data_dir?: string;
 	docker_host?: string;
 	filesystem?: string;
-	listen?: string;
-	network?: string;
 	nics?: string;
 	primary_sensor?: string;
 	sensors?: string;
@@ -145,27 +143,6 @@ export default function AgentConfig() {
 		}))
 	}
 
-	function updateEnvironment(key: string, value: string) {
-		setConfig(prev => ({
-			...prev,
-			environment: {
-				...prev.environment,
-				[key]: value
-			}
-		}))
-	}
-
-	function removeEnvironment(key: string) {
-		setConfig(prev => {
-			const newEnv = { ...prev.environment }
-			delete newEnv[key]
-			return {
-				...prev,
-				environment: newEnv
-			}
-		})
-	}
-
 	if (!isAdmin()) {
 		redirectPage($router, "settings", { name: "general" })
 	}
@@ -186,7 +163,7 @@ export default function AgentConfig() {
                  <AlertTitle><Trans>Configuration Distribution</Trans></AlertTitle>
                  <AlertDescription>
                      <Trans>
-                         This configuration will be pulled by the agent when it starts up. 
+                         This configuration will be pulled by the agent when it starts up, and only work with the WebSocket connection.
                          The agent will use these settings to configure its behavior.
                          <br />
                          System environment variables will override hub configuration settings.
@@ -295,33 +272,7 @@ export default function AgentConfig() {
 										/>
 									</div>
 
-									<div className="space-y-2">
-										<Label htmlFor="listen"><Trans>Listen Address</Trans></Label>
-										<Input
-											id="listen"
-											value={config.listen || ""}
-											onChange={(e) => updateConfig("listen", e.target.value)}
-											placeholder="e.g., 45876 or 0.0.0.0:45876"
-										/>
-									</div>
 
-									<div className="space-y-2">
-										<Label htmlFor="network"><Trans>Network Type</Trans></Label>
-										<Select 
-											value={config.network || ""} 
-											onValueChange={(value) => updateConfig("network", value)}
-										>
-											<SelectTrigger>
-												<SelectValue placeholder="Select network type" />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value="tcp">TCP</SelectItem>
-												<SelectItem value="tcp4">TCP4</SelectItem>
-												<SelectItem value="tcp6">TCP6</SelectItem>
-												<SelectItem value="unix">Unix Socket</SelectItem>
-											</SelectContent>
-										</Select>
-									</div>
 
 									<div className="space-y-2">
 										<Label htmlFor="nics"><Trans>Network Interfaces</Trans></Label>
