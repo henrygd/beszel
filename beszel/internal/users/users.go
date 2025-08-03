@@ -14,18 +14,6 @@ type UserManager struct {
 	app core.App
 }
 
-type UserSettings struct {
-	ChartTime            string   `json:"chartTime"`
-	NotificationEmails   []string `json:"emails"`
-	NotificationWebhooks []string `json:"webhooks"`
-	// UnitTemp             uint8    `json:"unitTemp"` // 0 for Celsius, 1 for Fahrenheit
-	// UnitNet              uint8    `json:"unitNet"`  // 0 for bytes, 1 for bits
-	// UnitDisk             uint8    `json:"unitDisk"` // 0 for bytes, 1 for bits
-
-	// New field for alert history retention (e.g., "1m", "3m", "6m", "1y")
-	AlertHistoryRetention string `json:"alertHistoryRetention,omitempty"`
-}
-
 func NewUserManager(app core.App) *UserManager {
 	return &UserManager{
 		app: app,
@@ -44,7 +32,10 @@ func (um *UserManager) InitializeUserRole(e *core.RecordEvent) error {
 func (um *UserManager) InitializeUserSettings(e *core.RecordEvent) error {
 	record := e.Record
 	// intialize settings with defaults (zero values can be ignored)
-	settings := UserSettings{
+	settings := struct {
+		ChartTime string   `json:"chartTime"`
+		Emails    []string `json:"emails"`
+	}{
 		ChartTime: "1h",
 	}
 	record.UnmarshalJSONField("settings", &settings)
@@ -59,10 +50,7 @@ func (um *UserManager) InitializeUserSettings(e *core.RecordEvent) error {
 		log.Println("failed to get user email", "err", err)
 		return err
 	}
-	settings.NotificationEmails = []string{user.Email}
-	if len(settings.NotificationWebhooks) == 0 {
-		settings.NotificationWebhooks = []string{""}
-	}
+	settings.Emails = []string{user.Email}
 	record.Set("settings", settings)
 	return e.Next()
 }

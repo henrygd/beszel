@@ -12,29 +12,17 @@ import languages from "@/lib/languages"
 import { dynamicActivate } from "@/lib/i18n"
 import { useLingui } from "@lingui/react/macro"
 import { Input } from "@/components/ui/input"
-// import { setLang } from "@/lib/i18n"
 import { Unit } from "@/lib/enums"
 
 export default function SettingsProfilePage({ userSettings }: { userSettings: UserSettings }) {
 	const [isLoading, setIsLoading] = useState(false)
 	const { i18n } = useLingui()
 
-	// Remove all per-metric threshold state and UI
-	// Only keep general yellow/red threshold state and UI
-	const [yellow, setYellow] = useState(userSettings.meterThresholds?.yellow ?? 65)
-	const [red, setRed] = useState(userSettings.meterThresholds?.red ?? 90)
-
-	function handleResetThresholds() {
-		setYellow(65)
-		setRed(90)
-	}
-
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault()
 		setIsLoading(true)
 		const formData = new FormData(e.target as HTMLFormElement)
 		const data = Object.fromEntries(formData) as Partial<UserSettings>
-		data.meterThresholds = { yellow, red }
 		await saveSettings(data)
 		setIsLoading(false)
 	}
@@ -117,45 +105,6 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 				<div className="space-y-2">
 					<div className="mb-4">
 						<h3 className="mb-1 text-lg font-medium">
-							<Trans>Dashboard meter thresholds</Trans>
-						</h3>
-						<p className="text-sm text-muted-foreground leading-relaxed">
-							<Trans>Choose when the dashboard meters changes colors, based on percentage values.</Trans>
-						</p>
-					</div>
-					<div className="flex gap-4 items-end">
-						<div>
-							<Label htmlFor="yellow-threshold"><Trans>Warning threshold (%)</Trans></Label>
-							<Input
-								type="number"
-								id="yellow-threshold"
-								min={1}
-								max={100}
-								value={yellow}
-								onChange={e => setYellow(Number(e.target.value))}
-							/>
-						</div>
-						<div>
-							<Label htmlFor="red-threshold"><Trans>Danger threshold (%)</Trans></Label>
-							<Input
-								type="number"
-								id="red-threshold"
-								min={1}
-								max={100}
-								value={red}
-								onChange={e => setRed(Number(e.target.value))}
-							/>
-						</div>
-						<Button type="button" variant="outline" onClick={handleResetThresholds} disabled={isLoading} className="mt-4">
-							<Trans>Reset to default</Trans>
-						</Button>
-					</div>
-				</div>
-				<Separator />
-				{/* Unit preferences section fixed and wrapped in a div */}
-				<div className="space-y-2">
-					<div className="mb-4">
-						<h3 className="mb-1 text-lg font-medium">
 							<Trans comment="Temperature / network units">Unit preferences</Trans>
 						</h3>
 						<p className="text-sm text-muted-foreground leading-relaxed">
@@ -228,6 +177,47 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 									</SelectItem>
 								</SelectContent>
 							</Select>
+						</div>
+					</div>
+				</div>
+				<Separator />
+				<div className="space-y-2">
+					<div className="mb-4">
+						<h3 className="mb-1 text-lg font-medium">
+							<Trans>Warning thresholds</Trans>
+						</h3>
+						<p className="text-sm text-muted-foreground leading-relaxed">
+							<Trans>Set percentage thresholds for meter colors.</Trans>
+						</p>
+					</div>
+					<div className="grid grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+						<div className="space-y-1">
+							<Label htmlFor="colorWarn">
+								<Trans>Warning (%)</Trans>
+							</Label>
+							<Input
+								id="colorWarn"
+								name="colorWarn"
+								type="number"
+								min={1}
+								max={100}
+								className="min-w-24"
+								defaultValue={userSettings.colorWarn ?? 65}
+							/>
+						</div>
+						<div className="space-y-1">
+							<Label htmlFor="colorCrit">
+								<Trans>Critical (%)</Trans>
+							</Label>
+							<Input
+								id="colorCrit"
+								name="colorCrit"
+								type="number"
+								min={1}
+								max={100}
+								className="min-w-24"
+								defaultValue={userSettings.colorCrit ?? 90}
+							/>
 						</div>
 					</div>
 				</div>

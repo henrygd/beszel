@@ -51,49 +51,6 @@ import AlertButton from "../alerts/alert-button"
 
 type ViewMode = "table" | "grid"
 
-function CellFormatter(info: CellContext<SystemRecord, unknown>) {
-	const val = (info.getValue() as number) || 0
-	const userSettings = useStore($userSettings)
-	const yellow = userSettings?.meterThresholds?.yellow ?? 65
-	const red = userSettings?.meterThresholds?.red ?? 90
-	return (
-		<div className="flex gap-2 items-center tabular-nums tracking-tight">
-			<span className="min-w-8">{decimalString(val, 1)}%</span>
-			<span className="grow min-w-8 block bg-muted h-[1em] relative rounded-sm overflow-hidden">
-				<span
-					className={cn(
-						"absolute inset-0 w-full h-full origin-left",
-						(info.row.original.status !== "up" && "bg-primary/30") ||
-						(val < yellow! && "bg-green-500") ||
-						(val < red! && "bg-yellow-500") ||
-						"bg-red-600"
-					)}
-					style={{
-						transform: `scalex(${val / 100})`,
-					}}
-				></span>
-			</span>
-		</div>
-	)
-}
-
-function sortableHeader(context: HeaderContext<SystemRecord, unknown>) {
-	const { column } = context
-	// @ts-ignore
-	const { Icon, hideSort, name }: { Icon: React.ElementType; name: () => string; hideSort: boolean } = column.columnDef
-	return (
-		<Button
-			variant="ghost"
-			className="h-9 px-3 flex"
-			onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-		>
-			{Icon && <Icon className="me-2 size-4" />}
-			{name()}
-			{hideSort || <ArrowUpDownIcon className="ms-2 size-4" />}
-		</Button>
-	)
-}
-
 export default function SystemsTable() {
 	const data = useStore($systems)
 	const { i18n, t } = useLingui()

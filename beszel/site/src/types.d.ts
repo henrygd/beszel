@@ -224,17 +224,14 @@ export interface ChartTimeData {
 }
 
 export interface UserSettings {
-	// lang?: string
 	chartTime: ChartTimes
 	emails?: string[]
 	webhooks?: string[]
-	meterThresholds?: {
-		yellow?: number
-		red?: number
-	}
 	unitTemp?: Unit
 	unitNet?: Unit
 	unitDisk?: Unit
+	colorWarn?: number
+	colorCrit?: number
 }
 
 type ChartDataContainer = {

@@ -279,8 +279,11 @@ function sortableHeader(context: HeaderContext<SystemRecord, unknown>) {
 		</Button>
 	)
 }
+
 function CellFormatter(info: CellContext<SystemRecord, unknown>) {
+	const userSettings = useStore($userSettings)
 	const val = Number(info.getValue()) || 0
+	const { colorWarn = 65, colorCrit = 90 } = userSettings
 	return (
 		<div className="flex gap-2 items-center tabular-nums tracking-tight">
 			<span className="min-w-8">{decimalString(val, val >= 10 ? 1 : 2)}%</span>
@@ -289,8 +292,8 @@ function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 					className={cn(
 						"absolute inset-0 w-full h-full origin-left",
 						(info.row.original.status !== "up" && "bg-primary/30") ||
-							(val < 65 && "bg-green-500") ||
-							(val < 90 && "bg-yellow-500") ||
+							(val < colorWarn && "bg-green-500") ||
+							(val < colorCrit && "bg-yellow-500") ||
 							"bg-red-600"
 					)}
 					style={{
