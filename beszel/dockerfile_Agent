@@ -14,13 +14,21 @@ RUN CGO_ENABLED=0 GOGC=75 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-
 
 RUN rm -rf /tmp/*
 
-# ? -------------------------
-FROM scratch
-
+# --------------------------
+# Final image: default scratch-based agent
+# --------------------------
+FROM scratch AS default-agent
 COPY --from=builder /agent /agent
 
-# this is so we don't need to create the 
-# /tmp directory in the scratch container
+# this is so we don't need to create the /tmp directory in the scratch container
 COPY --from=builder /tmp /tmp
 
+ENTRYPOINT ["/agent"]
+
+# --------------------------
+# Final image: GPU-enabled agent with nvidia-smi
+# --------------------------
+FROM nvidia/cuda:12.9.0-base-ubuntu22.04 AS nvidia-agent
+COPY --from=builder /agent /agent
+COPY --from=builder /tmp /tmp
 ENTRYPOINT ["/agent"]
