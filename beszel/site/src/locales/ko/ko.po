@@ -8,7 +8,7 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-03-07 10:06\n"
+"PO-Revision-Date: 2025-07-25 22:44\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -23,6 +23,12 @@ msgstr ""
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# 일} other {# 일}}"
 
+#. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
+#. placeholder {1}: table.getFilteredRowModel().rows.length
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "{0} of {1} row(s) selected."
+msgstr "{1}개의 행 중 {0}개가 선택되었습니다."
+
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# 시간} other {# 시간}}"
@@ -30,6 +36,11 @@ msgstr "{hours, plural, one {# 시간} other {# 시간}}"
 #: src/lib/utils.ts
 msgid "1 hour"
 msgstr "1시간"
+
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "1 min"
+msgstr "1분"
 
 #: src/lib/utils.ts
 msgid "1 week"
@@ -39,6 +50,11 @@ msgstr "1주"
 msgid "12 hours"
 msgstr "12시간"
 
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "15 min"
+msgstr "15분"
+
 #: src/lib/utils.ts
 msgid "24 hours"
 msgstr "24시간"
@@ -47,10 +63,21 @@ msgstr "24시간"
 msgid "30 days"
 msgstr "30일"
 
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "5 min"
+msgstr "5분"
+
 #. Table column
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "작업"
+
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Active"
+msgstr "활성"
 
 #: src/components/routes/home.tsx
 msgid "Active Alerts"
@@ -78,15 +105,18 @@ msgstr "차트 표시 옵션 변경."
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
 msgid "Admin"
 msgstr "관리자"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Agent"
 msgstr "에이전트"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Alert History"
+msgstr "알림 기록"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alert-button.tsx
@@ -102,6 +132,10 @@ msgstr "모든 시스템"
 msgid "Are you sure you want to delete {name}?"
 msgstr "{name}을(를) 삭제하시겠습니까?"
 
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Are you sure?"
+msgstr "확실합니까?"
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "자동 복사는 안전한 컨텍스트가 필요합니다."
@@ -112,7 +146,7 @@ msgstr "평균"
 
 #: src/components/routes/system.tsx
 msgid "Average CPU utilization of containers"
-msgstr "컨테이너의 평균 CPU 사용량"
+msgstr "Docker 컨테이너의 평균 CPU 사용량"
 
 #. placeholder {0}: data.alert.unit
 #: src/components/alerts/alerts-system.tsx
@@ -154,17 +188,36 @@ msgstr "Beszel은 여러 인기 있는 알림 서비스와 연동하기 위해 <
 msgid "Binary"
 msgstr "실행 파일"
 
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/general.tsx
+msgid "Bits (Kbps, Mbps, Gbps)"
+msgstr "비트 (Kbps, Mbps, Gbps)"
+
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/general.tsx
+msgid "Bytes (KB/s, MB/s, GB/s)"
+msgstr "바이트 (KB/s, MB/s, GB/s)"
+
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
 msgstr "캐시 / 버퍼"
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Cancel"
 msgstr "취소"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
 msgstr "주의 - 데이터 손실 가능성"
+
+#: src/components/routes/settings/general.tsx
+msgid "Celsius (°C)"
+msgstr "섭씨 (°C)"
+
+#: src/components/routes/settings/general.tsx
+msgid "Change display units for metrics."
+msgstr "메트릭의 표시 단위를 변경합니다."
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
@@ -186,7 +239,7 @@ msgstr "자세한 내용은 로그를 확인하세요."
 msgid "Check your notification service"
 msgstr "알림 서비스를 확인하세요."
 
-#: src/components/add-system.tsx
+#: src/components/ui/input-copy.tsx
 msgid "Click to copy"
 msgstr "클릭하여 복사"
 
@@ -204,7 +257,12 @@ msgstr "알림을 수신할 방법을 설정하세요."
 msgid "Confirm password"
 msgstr "비밀번호 확인"
 
+#: src/components/routes/home.tsx
+msgid "Connection is down"
+msgstr "연결이 끊겼습니다"
+
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Continue"
 msgstr "계속"
 
@@ -213,26 +271,50 @@ msgid "Copied to clipboard"
 msgstr "클립보드에 복사됨"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
-msgstr "docker compose 복사"
+msgstr "docker compose 내용 복사"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
-msgstr "docker run 복사"
+msgstr "docker run 명령어 복사"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Environment variables"
+msgid "Copy env"
+msgstr "환경 복사"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Copy host"
 msgstr "호스트 복사"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
 msgstr "리눅스 명령어 복사"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Copy name"
+msgstr "이름 복사"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "텍스트 복사"
+
+#: src/components/add-system.tsx
+msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
+msgstr "아래 에이전트의 설치 명령을 복사하거나 <0>범용 토큰</0>으로 에이전트를 자동으로 등록하세요."
+
+#: src/components/add-system.tsx
+msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
+msgstr "아래 에이전트의 <0>docker-compose.yml</0> 내용을 복사하거나 <1>범용 토큰</1>으로 에이전트를 자동으로 등록하세요."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy YAML"
+msgstr "YAML 복사"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "CPU"
@@ -240,13 +322,18 @@ msgstr "CPU"
 
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
 msgid "CPU Usage"
 msgstr "CPU 사용량"
 
 #: src/components/login/auth-form.tsx
 msgid "Create account"
 msgstr "계정 생성"
+
+#. Context: date created
+#: src/components/alerts-history-columns.tsx
+msgid "Created"
+msgstr "생성됨"
 
 #. Dark theme
 #: src/components/mode-toggle.tsx
@@ -263,8 +350,13 @@ msgid "Default time period"
 msgstr "기본 기간"
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Delete"
 msgstr "삭제"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Delete fingerprint"
+msgstr "지문 삭제"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Disk"
@@ -273,6 +365,10 @@ msgstr "디스크"
 #: src/components/routes/system.tsx
 msgid "Disk I/O"
 msgstr "디스크 I/O"
+
+#: src/components/routes/settings/general.tsx
+msgid "Disk unit"
+msgstr "디스크 단위"
 
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
@@ -302,10 +398,15 @@ msgstr "문서"
 
 #. Context: System is down
 #: src/lib/utils.ts
+#: src/components/alerts-history-columns.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
 msgstr "오프라인"
+
+#: src/components/alerts-history-columns.tsx
+msgid "Duration"
+msgstr "기간"
 
 #: src/components/add-system.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -329,8 +430,10 @@ msgstr "비밀번호를 재설정하려면 이메일 주소를 입력하세요"
 msgid "Enter email address..."
 msgstr "이메일 주소 입력..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/config-yaml.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/login/auth-form.tsx
 msgid "Error"
 msgstr "오류"
@@ -346,6 +449,10 @@ msgstr "마지막 {2, plural, one {# 분} other {# 분}} 동안 {0}{1} 초과"
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr "<0>config.yml</0>에 정의되지 않은 기존 시스템은 삭제됩니다. 정기적으로 백업을 하세요."
 
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Export"
+msgstr "내보내기"
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
 msgstr "구성 내보내기"
@@ -353,6 +460,10 @@ msgstr "구성 내보내기"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export your current systems configuration."
 msgstr "현재 시스템 구성 내보내기"
+
+#: src/components/routes/settings/general.tsx
+msgid "Fahrenheit (°F)"
+msgstr "화씨 (°F)"
 
 #: src/lib/utils.ts
 msgid "Failed to authenticate"
@@ -373,8 +484,13 @@ msgstr "알림 수정 실패"
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Filter..."
 msgstr "필터..."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Fingerprint"
+msgstr "지문"
 
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -399,6 +515,7 @@ msgid "Grid"
 msgstr "그리드"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
 msgstr "Homebrew 명령어"
@@ -432,6 +549,27 @@ msgstr "레이아웃"
 #: src/components/mode-toggle.tsx
 msgid "Light"
 msgstr "밝게"
+
+#: src/components/routes/system.tsx
+msgid "Load Average"
+msgstr "부하 평균"
+
+#: src/lib/utils.ts
+msgid "Load Average 15m"
+msgstr "부하 평균 15분"
+
+#: src/lib/utils.ts
+msgid "Load Average 1m"
+msgstr "부하 평균 1분"
+
+#: src/lib/utils.ts
+msgid "Load Average 5m"
+msgstr "부하 평균 5분"
+
+#. Short label for load average
+#: src/components/systems-table/systems-table.tsx
+msgid "Load Avg"
+msgstr "부하 평균"
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -481,6 +619,7 @@ msgstr "메모리 사용량"
 msgid "Memory usage of docker containers"
 msgstr "Docker 컨테이너의 메모리 사용량"
 
+#: src/components/alerts-history-columns.tsx
 #: src/components/add-system.tsx
 msgid "Name"
 msgstr "이름"
@@ -497,9 +636,18 @@ msgstr "Docker 컨테이너의 네트워크 트래픽"
 msgid "Network traffic of public interfaces"
 msgstr "공용 인터페이스의 네트워크 트래픽"
 
+#. Context: Bytes or bits
+#: src/components/routes/settings/general.tsx
+msgid "Network unit"
+msgstr "네트워크 단위"
+
 #: src/components/command-palette.tsx
 msgid "No results found."
 msgstr "결과가 없습니다."
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "No results."
+msgstr "결과 없음."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -521,6 +669,8 @@ msgid "On each restart, systems in the database will be updated to match the sys
 msgstr "매 시작 시, 데이터베이스가 파일에 정의된 시스템과 일치하도록 업데이트됩니다."
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
 msgstr "메뉴 열기"
 
@@ -535,6 +685,12 @@ msgstr "기존 알림 덮어쓰기"
 #: src/components/command-palette.tsx
 msgid "Page"
 msgstr "페이지"
+
+#. placeholder {0}: table.getState().pagination.pageIndex + 1
+#. placeholder {1}: table.getPageCount()
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Page {0} of {1}"
+msgstr "{1}페이지 중 {0}페이지"
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
@@ -563,7 +719,7 @@ msgstr "일시 중지"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused"
-msgstr "일시정지됨"
+msgstr "일시 정지됨"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -617,13 +773,12 @@ msgid "Public Key"
 msgstr "공개 키"
 
 #. Disk read
-#: src/components/charts/area-chart.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
 msgid "Read"
 msgstr "읽기"
 
-#. Network bytes received (download)
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
 msgid "Received"
 msgstr "수신됨"
 
@@ -631,9 +786,23 @@ msgstr "수신됨"
 msgid "Reset Password"
 msgstr "비밀번호 재설정"
 
+#: src/components/alerts-history-columns.tsx
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Resolved"
+msgstr "해결됨"
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Resume"
 msgstr "재개"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Rotate token"
+msgstr "토큰 회전"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Rows per page"
+msgstr "페이지당 행 수"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -660,8 +829,7 @@ msgstr "시스템 또는 설정 검색..."
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "알림을 받는 방법을 구성하려면 <0>알림 설정</0>을 참조하세요."
 
-#. Network bytes sent (upload)
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "보냄"
 
@@ -669,7 +837,6 @@ msgstr "보냄"
 msgid "Sets the default time range for charts when a system is viewed."
 msgstr "시스템을 볼 때 차트의 기본 시간 범위를 설정합니다."
 
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -693,6 +860,11 @@ msgstr "SMTP 설정"
 msgid "Sort By"
 msgstr "정렬 기준"
 
+#. Context: alert state (active or resolved)
+#: src/components/alerts-history-columns.tsx
+msgid "State"
+msgstr "상태"
+
 #: src/lib/utils.ts
 msgid "Status"
 msgstr "상태"
@@ -708,9 +880,15 @@ msgstr "스왑 사용량"
 #. System theme
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
+#: src/components/alerts-history-columns.tsx
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "시스템"
+
+#: src/components/routes/system.tsx
+msgid "System load averages over time"
+msgstr "시간에 따른 시스템 부하 평균"
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -734,6 +912,10 @@ msgstr "온도"
 msgid "Temperature"
 msgstr "온도"
 
+#: src/components/routes/settings/general.tsx
+msgid "Temperature unit"
+msgstr "온도 단위"
+
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
 msgstr "시스템 센서의 온도"
@@ -746,14 +928,6 @@ msgstr "테스트 <0>URL</0>"
 msgid "Test notification sent"
 msgstr "테스트 알림이 전송되었습니다."
 
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
-msgstr "에이전트가 시스템에서 실행 중이어야 연결할 수 있습니다. 아래의 에이전트 설치 명령을 복사하세요."
-
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
-msgstr "에이전트가 시스템에서 실행 중이어야 연결할 수 있습니다. 아래의 <0>docker-compose.yml</0>을 복사하세요."
-
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "그런 다음 백엔드에 로그인하여 사용자 테이블에서 사용자 계정 비밀번호를 재설정하세요."
@@ -761,6 +935,10 @@ msgstr "그런 다음 백엔드에 로그인하여 사용자 테이블에서 사
 #: src/components/systems-table/systems-table.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "이 작업은 되돌릴 수 없습니다. 데이터베이스에서 {name}에 대한 모든 현재 기록이 영구적으로 삭제됩니다."
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "This will permanently delete all selected records from the database."
+msgstr "선택한 모든 레코드를 데이터베이스에서 영구적으로 삭제합니다."
 
 #: src/components/routes/system.tsx
 msgid "Throughput of {extraFsName}"
@@ -782,6 +960,37 @@ msgstr "그리드 전환"
 #: src/components/mode-toggle.tsx
 msgid "Toggle theme"
 msgstr "테마 전환"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token"
+msgstr "토큰"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "Tokens & Fingerprints"
+msgstr "토큰 및 지문"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
+msgstr "토큰은 에이전트가 연결하고 등록할 수 있도록 합니다. 지문은 첫 연결 시 설정되는 각 시스템의 고유한 안정적인 식별자입니다."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
+msgstr "토큰과 지문은 허브에 대한 WebSocket 연결을 인증하는 데 사용됩니다."
+
+#: src/lib/utils.ts
+msgid "Triggers when 1 minute load average exceeds a threshold"
+msgstr "1분 부하 평균이 임계값을 초과하면 트리거됩니다."
+
+#: src/lib/utils.ts
+msgid "Triggers when 15 minute load average exceeds a threshold"
+msgstr "15분 부하 평균이 임계값을 초과하면 트리거됩니다."
+
+#: src/lib/utils.ts
+msgid "Triggers when 5 minute load average exceeds a threshold"
+msgstr "5분 부하 평균이 임계값을 초과하면 트리거됩니다."
 
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -807,6 +1016,15 @@ msgstr "시스템의 전원이 켜지거나 꺼질때 트리거됩니다."
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "디스크 사용량이 임계값을 초과할 때 트리거됩니다."
 
+#. Temperature / network units
+#: src/components/routes/settings/general.tsx
+msgid "Unit preferences"
+msgstr "단위 기본 설정"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Universal token"
+msgstr "범용 토큰"
+
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
@@ -823,7 +1041,8 @@ msgstr "가동 시간"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
 msgid "Usage"
 msgstr "사용량"
 
@@ -833,7 +1052,6 @@ msgstr "루트 파티션의 사용량"
 
 #: src/components/charts/swap-chart.tsx
 #: src/components/charts/mem-chart.tsx
-#: src/components/charts/area-chart.tsx
 msgid "Used"
 msgstr "사용됨"
 
@@ -842,9 +1060,17 @@ msgstr "사용됨"
 msgid "Users"
 msgstr "사용자"
 
+#: src/components/alerts-history-columns.tsx
+msgid "Value"
+msgstr "값"
+
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "보기"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "View your 200 most recent alerts."
+msgstr "최근 200개의 알림을 봅니다."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
@@ -856,20 +1082,25 @@ msgstr "표시할 충분한 기록을 기다리는 중"
 
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
-msgstr "번역을 더 좋게 만드는 데 도움을 주시겠습니까? 자세한 내용은 <0>Crowdin</0>을 확인하세요."
+msgstr "번역을 개선하는데 도움을 주시겠습니까? 자세한 내용은 <0>Crowdin</0>을 확인해 주세요."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
 msgstr "Webhook / 푸시 알림"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
+msgstr "활성화하면 이 토큰을 통해 에이전트가 사전 시스템 생성 없이 자체 등록할 수 있습니다. 1시간 후 또는 허브 재시작 시 만료됩니다."
+
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
 msgstr "Windows 명령어"
 
 #. Disk write
-#: src/components/charts/area-chart.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
 msgid "Write"
 msgstr "쓰기"
 

@@ -4,11 +4,14 @@
 package agent
 
 import (
+	"beszel/internal/entities/system"
 	"context"
+	"fmt"
 	"os"
 	"testing"
 
 	"github.com/shirou/gopsutil/v4/common"
+	"github.com/shirou/gopsutil/v4/sensors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -453,4 +456,98 @@ func TestScaleTemperatureLogic(t *testing.T) {
 			"scaleTemperature(0.005) = %v, expected %v (should default to 100x)",
 			result, expected)
 	})
+}
+
+func TestGetTempsWithPanicRecovery(t *testing.T) {
+	agent := &Agent{
+		systemInfo: system.Info{},
+		sensorConfig: &SensorConfig{
+			context: context.Background(),
+		},
+	}
+
+	tests := []struct {
+		name        string
+		getTempsFn  getTempsFn
+		expectError bool
+		errorMsg    string
+	}{
+		{
+			name: "successful_function_call",
+			getTempsFn: func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+				return []sensors.TemperatureStat{
+					{SensorKey: "test_sensor", Temperature: 45.0},
+				}, nil
+			},
+			expectError: false,
+		},
+		{
+			name: "function_returns_error",
+			getTempsFn: func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+				return []sensors.TemperatureStat{
+					{SensorKey: "test_sensor", Temperature: 45.0},
+				}, fmt.Errorf("sensor error")
+			},
+			expectError: false, // getTempsWithPanicRecovery ignores errors from the function
+		},
+		{
+			name: "function_panics_with_string",
+			getTempsFn: func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+				panic("test panic")
+			},
+			expectError: true,
+			errorMsg:    "panic: test panic",
+		},
+		{
+			name: "function_panics_with_error",
+			getTempsFn: func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+				panic(fmt.Errorf("panic error"))
+			},
+			expectError: true,
+			errorMsg:    "panic:",
+		},
+		{
+			name: "function_panics_with_index_out_of_bounds",
+			getTempsFn: func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+				slice := []int{1, 2, 3}
+				_ = slice[10] // out of bounds panic
+				return nil, nil
+			},
+			expectError: true,
+			errorMsg:    "panic:",
+		},
+		{
+			name: "function_panics_with_any_conversion",
+			getTempsFn: func(ctx context.Context) ([]sensors.TemperatureStat, error) {
+				var i any = "string"
+				_ = i.(int) // type assertion panic
+				return nil, nil
+			},
+			expectError: true,
+			errorMsg:    "panic:",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var temps []sensors.TemperatureStat
+			var err error
+
+			// The function should not panic, regardless of what the injected function does
+			assert.NotPanics(t, func() {
+				temps, err = agent.getTempsWithPanicRecovery(tt.getTempsFn)
+			}, "getTempsWithPanicRecovery should not panic")
+
+			if tt.expectError {
+				assert.Error(t, err, "Expected an error to be returned")
+				if tt.errorMsg != "" {
+					assert.Contains(t, err.Error(), tt.errorMsg,
+						"Error message should contain expected text")
+				}
+				assert.Nil(t, temps, "Temps should be nil when panic occurs")
+			} else {
+				assert.NoError(t, err, "Should not return error for successful calls")
+			}
+		})
+	}
 }

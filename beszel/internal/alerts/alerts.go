@@ -47,6 +47,7 @@ type SystemAlertStats struct {
 	NetSent      float64            `json:"ns"`
 	NetRecv      float64            `json:"nr"`
 	Temperatures map[string]float32 `json:"t"`
+	LoadAvg      [3]float64         `json:"la"`
 }
 
 type SystemAlertData struct {
@@ -90,10 +91,18 @@ func NewAlertManager(app hubLike) *AlertManager {
 		alertQueue: make(chan alertTask),
 		stopChan:   make(chan struct{}),
 	}
+	am.bindEvents()
 	go am.startWorker()
 	return am
 }
 
+// Bind events to the alerts collection lifecycle
+func (am *AlertManager) bindEvents() {
+	am.hub.OnRecordAfterUpdateSuccess("alerts").BindFunc(updateHistoryOnAlertUpdate)
+	am.hub.OnRecordAfterDeleteSuccess("alerts").BindFunc(resolveHistoryOnAlertDelete)
+}
+
+// SendAlert sends an alert to the user
 func (am *AlertManager) SendAlert(data AlertMessageData) error {
 	// get user settings
 	record, err := am.hub.FindFirstRecordByFilter(

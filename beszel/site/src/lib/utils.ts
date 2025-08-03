@@ -1,29 +1,35 @@
-import { t } from "@lingui/core/macro";
+import { t } from "@lingui/core/macro"
 import { toast } from "@/components/ui/use-toast"
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { $alerts, $copyContent, $systems, $userSettings, pb } from "./stores"
-import { AlertInfo, AlertRecord, ChartTimeData, ChartTimes, SystemRecord } from "@/types"
+import {
+	AlertInfo,
+	AlertRecord,
+	ChartTimeData,
+	ChartTimes,
+	FingerprintRecord,
+	SemVer,
+	SystemRecord,
+	UserSettings,
+} from "@/types"
 import { RecordModel, RecordSubscription } from "pocketbase"
 import { WritableAtom } from "nanostores"
 import { timeDay, timeHour } from "d3-time"
 import { useEffect, useState } from "react"
 import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from "lucide-react"
-import { EthernetIcon, ThermometerIcon } from "@/components/ui/icons"
+import { EthernetIcon, HourglassIcon, ThermometerIcon } from "@/components/ui/icons"
 import { prependBasePath } from "@/components/router"
+import { MeterState, Unit } from "./enums"
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
 }
 
 /** Adds event listener to node and returns function that removes the listener */
-export function listen<T extends Event = Event>(
-  node: Node, 
-  event: string, 
-  handler: (event: T) => void
-) {
-  node.addEventListener(event, handler as EventListener)
-  return () => node.removeEventListener(event, handler as EventListener)
+export function listen<T extends Event = Event>(node: Node, event: string, handler: (event: T) => void) {
+	node.addEventListener(event, handler as EventListener)
+	return () => node.removeEventListener(event, handler as EventListener)
 }
 
 export async function copyToClipboard(content: string) {
@@ -77,7 +83,10 @@ export const updateSystemList = (() => {
 
 /** Logs the user out by clearing the auth store and unsubscribing from realtime updates. */
 export async function logOut() {
-	sessionStorage.setItem("lo", "t")
+	$systems.set([])
+	$alerts.set([])
+	$userSettings.set({} as UserSettings)
+	sessionStorage.setItem("lo", "t") // prevent auto login on logout
 	pb.authStore.clear()
 	pb.realtime.unsubscribe()
 }
@@ -229,17 +238,17 @@ export function useYAxisWidth() {
 	return { yAxisWidth, updateYAxisWidth }
 }
 
-export function toFixedWithoutTrailingZeros(num: number, digits: number) {
-	return parseFloat(num.toFixed(digits)).toString()
-}
-
+/** Format number to x decimal places, without trailing zeros */
 export function toFixedFloat(num: number, digits: number) {
-	return parseFloat(num.toFixed(digits))
+	return parseFloat((digits === 0 ? Math.ceil(num) : num).toFixed(digits))
 }
 
 let decimalFormatters: Map<number, Intl.NumberFormat> = new Map()
-/** Format number to x decimal places */
+/** Format number to x decimal places, maintaining trailing zeros */
 export function decimalString(num: number, digits = 2) {
+	if (digits === 0) {
+		return Math.ceil(num).toString()
+	}
 	let formatter = decimalFormatters.get(digits)
 	if (!formatter) {
 		formatter = new Intl.NumberFormat(undefined, {
@@ -270,42 +279,96 @@ export function useLocalStorage<T>(key: string, defaultValue: T) {
 	return [value, setValue]
 }
 
+/** Format temperature to user's preferred unit */
+export function formatTemperature(celsius: number, unit?: Unit): { value: number; unit: string } {
+	if (!unit) {
+		unit = $userSettings.get().unitTemp || Unit.Celsius
+	}
+	// need loose equality check due to form data being strings
+	if (unit == Unit.Fahrenheit) {
+		return {
+			value: celsius * 1.8 + 32,
+			unit: "°F",
+		}
+	}
+	return {
+		value: celsius,
+		unit: "°C",
+	}
+}
+
+/** Format bytes to user's preferred unit */
+export function formatBytes(
+	size: number,
+	perSecond = false,
+	unit = Unit.Bytes,
+	isMegabytes = false
+): { value: number; unit: string } {
+	// Convert MB to bytes if isMegabytes is true
+	if (isMegabytes) size *= 1024 * 1024
+
+	// need loose equality check due to form data being strings
+	if (unit == Unit.Bits) {
+		const bits = size * 8
+		const suffix = perSecond ? "ps" : ""
+		if (bits < 1000) return { value: bits, unit: `b${suffix}` }
+		if (bits < 1_000_000) return { value: bits / 1_000, unit: `Kb${suffix}` }
+		if (bits < 1_000_000_000)
+			return {
+				value: bits / 1_000_000,
+				unit: `Mb${suffix}`,
+			}
+		if (bits < 1_000_000_000_000)
+			return {
+				value: bits / 1_000_000_000,
+				unit: `Gb${suffix}`,
+			}
+		return {
+			value: bits / 1_000_000_000_000,
+			unit: `Tb${suffix}`,
+		}
+	}
+	// bytes
+	const suffix = perSecond ? "/s" : ""
+	if (size < 100) return { value: size, unit: `B${suffix}` }
+	if (size < 1000 * 1024) return { value: size / 1024, unit: `KB${suffix}` }
+	if (size < 1000 * 1024 ** 2)
+		return {
+			value: size / 1024 ** 2,
+			unit: `MB${suffix}`,
+		}
+	if (size < 1000 * 1024 ** 3)
+		return {
+			value: size / 1024 ** 3,
+			unit: `GB${suffix}`,
+		}
+	return {
+		value: size / 1024 ** 4,
+		unit: `TB${suffix}`,
+	}
+}
+
+/** Fetch or create user settings in database */
 export async function updateUserSettings() {
 	try {
 		const req = await pb.collection("user_settings").getFirstListItem("", { fields: "settings" })
 		$userSettings.set(req.settings)
 		return
 	} catch (e) {
-		console.log("get settings", e)
+		console.error("get settings", e)
 	}
 	// create user settings if error fetching existing
 	try {
 		const createdSettings = await pb.collection("user_settings").create({ user: pb.authStore.record!.id })
 		$userSettings.set(createdSettings.settings)
 	} catch (e) {
-		console.log("create settings", e)
+		console.error("create settings", e)
 	}
-}
-
-/**
- * Get the value and unit of size (TB, GB, or MB) for a given size
- * @param n size in gigabytes or megabytes
- * @param isGigabytes boolean indicating if n represents gigabytes (true) or megabytes (false)
- * @returns an object containing the value and unit of size
- */
-export const getSizeAndUnit = (n: number, isGigabytes = true) => {
-	const sizeInGB = isGigabytes ? n : n / 1_000
-
-	if (sizeInGB >= 1_000) {
-		return { v: sizeInGB / 1_000, u: " TB" }
-	} else if (sizeInGB >= 1) {
-		return { v: sizeInGB, u: " GB" }
-	}
-	return { v: isGigabytes ? sizeInGB * 1_000 : n, u: " MB" }
 }
 
 export const chartMargin = { top: 12 }
 
+/** Alert info for each alert type */
 export const alertInfo: Record<string, AlertInfo> = {
 	Status: {
 		name: () => t`Status`,
@@ -346,6 +409,36 @@ export const alertInfo: Record<string, AlertInfo> = {
 		icon: ThermometerIcon,
 		desc: () => t`Triggers when any sensor exceeds a threshold`,
 	},
+	LoadAvg1: {
+		name: () => t`Load Average 1m`,
+		unit: "",
+		icon: HourglassIcon,
+		max: 100,
+		min: 0.1,
+		start: 10,
+		step: 0.1,
+		desc: () => t`Triggers when 1 minute load average exceeds a threshold`,
+	},
+	LoadAvg5: {
+		name: () => t`Load Average 5m`,
+		unit: "",
+		icon: HourglassIcon,
+		max: 100,
+		min: 0.1,
+		start: 10,
+		step: 0.1,
+		desc: () => t`Triggers when 5 minute load average exceeds a threshold`,
+	},
+	LoadAvg15: {
+		name: () => t`Load Average 15m`,
+		unit: "",
+		icon: HourglassIcon,
+		min: 0.1,
+		max: 100,
+		start: 10,
+		step: 0.1,
+		desc: () => t`Triggers when 15 minute load average exceeds a threshold`,
+	},
 }
 
 /**
@@ -355,3 +448,68 @@ export const alertInfo: Record<string, AlertInfo> = {
  * const hostname = getHostDisplayValue(system) // hostname will be "beszel.sock"
  */
 export const getHostDisplayValue = (system: SystemRecord): string => system.host.slice(system.host.lastIndexOf("/") + 1)
+
+/** Generate a random token for the agent */
+export const generateToken = () => crypto?.randomUUID() ?? (performance.now() * Math.random()).toString(16)
+
+/** Get the hub URL from the global BESZEL object */
+export const getHubURL = () => BESZEL?.HUB_URL || window.location.origin
+
+/** Map of system IDs to their corresponding tokens (used to avoid fetching in add-system dialog) */
+export const tokenMap = new Map<SystemRecord["id"], FingerprintRecord["token"]>()
+
+/** Calculate duration between two dates and format as human-readable string */
+export function formatDuration(
+	createdDate: string | null | undefined,
+	resolvedDate: string | null | undefined
+): string {
+	const created = createdDate ? new Date(createdDate) : null
+	const resolved = resolvedDate ? new Date(resolvedDate) : null
+
+	if (!created || !resolved) return ""
+
+	const diffMs = resolved.getTime() - created.getTime()
+	if (diffMs < 0) return ""
+
+	const totalSeconds = Math.floor(diffMs / 1000)
+	let hours = Math.floor(totalSeconds / 3600)
+	let minutes = Math.floor((totalSeconds % 3600) / 60)
+	let seconds = totalSeconds % 60
+
+	// if seconds are close to 60, round up to next minute
+	// if minutes are close to 60, round up to next hour
+	if (seconds >= 58) {
+		minutes += 1
+		seconds = 0
+	}
+	if (minutes >= 60) {
+		hours += 1
+		minutes = 0
+	}
+
+	// For durations over 1 hour, omit seconds for cleaner display
+	if (hours > 0) {
+		return [hours ? `${hours}h` : null, minutes ? `${minutes}m` : null].filter(Boolean).join(" ")
+	}
+
+	return [hours ? `${hours}h` : null, minutes ? `${minutes}m` : null, seconds ? `${seconds}s` : null]
+		.filter(Boolean)
+		.join(" ")
+}
+
+export const parseSemVer = (semVer = ""): SemVer => {
+	// if (semVer.startsWith("v")) {
+	// 	semVer = semVer.slice(1)
+	// }
+	if (semVer.includes("-")) {
+		semVer = semVer.slice(0, semVer.indexOf("-"))
+	}
+	const parts = semVer.split(".").map(Number)
+	return { major: parts?.[0] ?? 0, minor: parts?.[1] ?? 0, patch: parts?.[2] ?? 0 }
+}
+
+/** Get meter state from 0-100 value. Used for color coding meters. */
+export function getMeterState(value: number): MeterState {
+	const { colorWarn = 65, colorCrit = 90 } = $userSettings.get()
+	return value >= colorCrit ? MeterState.Crit : value >= colorWarn ? MeterState.Warn : MeterState.Good
+}

@@ -3,10 +3,12 @@ package main
 import (
 	"beszel"
 	"beszel/internal/agent"
+	"beszel/internal/agent/health"
 	"flag"
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"golang.org/x/crypto/ssh"
 )
@@ -24,13 +26,16 @@ func (opts *cmdOptions) parse() bool {
 	flag.StringVar(&opts.listen, "listen", "", "Address or port to listen on")
 
 	flag.Usage = func() {
-		fmt.Printf("Usage: %s [command] [flags]\n", os.Args[0])
-		fmt.Println("\nCommands:")
-		fmt.Println("  health    Check if the agent is running")
-		fmt.Println("  help      Display this help message")
-		fmt.Println("  update    Update to the latest version")
-		fmt.Println("  version   Display the version")
-		fmt.Println("\nFlags:")
+		builder := strings.Builder{}
+		builder.WriteString("Usage: ")
+		builder.WriteString(os.Args[0])
+		builder.WriteString(" [command] [flags]\n")
+		builder.WriteString("\nCommands:\n")
+		builder.WriteString("  health    Check if the agent is running\n")
+		builder.WriteString("  help      Display this help message\n")
+		builder.WriteString("  update    Update to the latest version\n")
+		builder.WriteString("\nFlags:\n")
+		fmt.Print(builder.String())
 		flag.PrintDefaults()
 	}
 
@@ -50,12 +55,7 @@ func (opts *cmdOptions) parse() bool {
 		agent.Update()
 		return true
 	case "health":
-		// for health, we need to parse flags first to get the listen address
-		args := append(os.Args[2:], subcommand)
-		flag.CommandLine.Parse(args)
-		addr := opts.getAddress()
-		network := agent.GetNetwork(addr)
-		err := agent.Health(addr, network)
+		err := health.Check()
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -115,8 +115,12 @@ func main() {
 	serverConfig.Addr = addr
 	serverConfig.Network = agent.GetNetwork(addr)
 
-	agent := agent.NewAgent()
-	if err := agent.StartServer(serverConfig); err != nil {
-		log.Fatal("Failed to start server:", err)
+	a, err := agent.NewAgent()
+	if err != nil {
+		log.Fatal("Failed to create agent: ", err)
+	}
+
+	if err := a.Start(serverConfig); err != nil {
+		log.Fatal("Failed to start server: ", err)
 	}
 }

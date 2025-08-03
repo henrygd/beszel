@@ -8,7 +8,7 @@ module.exports = {
 			center: true,
 			padding: "1rem",
 			screens: {
-				"2xl": "1420px",
+				"2xl": "1440px",
 			},
 		},
 		extend: {
@@ -91,6 +91,7 @@ module.exports = {
 		},
 	},
 	plugins: [
+		require("@tailwindcss/container-queries"),
 		require("tailwindcss-animate"),
 		require("tailwindcss-rtl"),
 		function ({ addVariant }) {

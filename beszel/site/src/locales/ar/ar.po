@@ -8,7 +8,7 @@ msgstr ""
 "Language: ar\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-03-06 07:27\n"
+"PO-Revision-Date: 2025-07-25 22:44\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
@@ -23,6 +23,12 @@ msgstr ""
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# يوم} other {# أيام}}"
 
+#. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
+#. placeholder {1}: table.getFilteredRowModel().rows.length
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "{0} of {1} row(s) selected."
+msgstr "تم تحديد {0} من {1} صف"
+
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# ساعة} other {# ساعات}}"
@@ -30,6 +36,11 @@ msgstr "{hours, plural, one {# ساعة} other {# ساعات}}"
 #: src/lib/utils.ts
 msgid "1 hour"
 msgstr "1 ساعة"
+
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "1 min"
+msgstr "دقيقة واحدة"
 
 #: src/lib/utils.ts
 msgid "1 week"
@@ -39,6 +50,11 @@ msgstr "1 أسبوع"
 msgid "12 hours"
 msgstr "12 ساعة"
 
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "15 min"
+msgstr "15 دقيقة"
+
 #: src/lib/utils.ts
 msgid "24 hours"
 msgstr "24 ساعة"
@@ -47,10 +63,21 @@ msgstr "24 ساعة"
 msgid "30 days"
 msgstr "30 يومًا"
 
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "5 min"
+msgstr "5 دقائق"
+
 #. Table column
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "إجراءات"
+
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Active"
+msgstr "نشط"
 
 #: src/components/routes/home.tsx
 msgid "Active Alerts"
@@ -70,15 +97,12 @@ msgstr "إضافة نظام"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
-msgstr "إضافة عنوان URL"
+msgstr "إضافة رابط"
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
 msgstr "تعديل خيارات العرض للرسوم البيانية."
 
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
@@ -87,6 +111,12 @@ msgstr "مسؤول"
 #: src/components/systems-table/systems-table.tsx
 msgid "Agent"
 msgstr "وكيل"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Alert History"
+msgstr "سجل التنبيهات"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alert-button.tsx
@@ -101,6 +131,10 @@ msgstr "جميع الأنظمة"
 #: src/components/systems-table/systems-table.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "هل أنت متأكد أنك تريد حذف {name}؟"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Are you sure?"
+msgstr "هل أنت متأكد؟"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -121,7 +155,7 @@ msgstr "المتوسط يتجاوز <0>{value}{0}</0>"
 
 #: src/components/routes/system.tsx
 msgid "Average power consumption of GPUs"
-msgstr "متوسط ​​استهلاك طاقة GPUs"
+msgstr "متوسط ​​استهلاك طاقة وحدة معالجة الرسوميات"
 
 #: src/components/routes/system.tsx
 msgid "Average system-wide CPU utilization"
@@ -144,7 +178,7 @@ msgstr "عرض النطاق الترددي"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
-msgstr "يدعم Beszel OpenID Connect والعديد من مزودي المصادقة OAuth2."
+msgstr "يدعم بيزيل بروتوكول OpenID Connect والعديد من مزوّدي المصادقة عبر بروتوكول OAuth2."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
@@ -154,17 +188,36 @@ msgstr "يستخدم بيزيل <0>Shoutrrr</0> للتكامل مع خدمات �
 msgid "Binary"
 msgstr "ثنائي"
 
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/general.tsx
+msgid "Bits (Kbps, Mbps, Gbps)"
+msgstr "بت (كيلوبت/ثانية، ميجابت/ثانية، جيجابت/ثانية)"
+
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/general.tsx
+msgid "Bytes (KB/s, MB/s, GB/s)"
+msgstr "بايت (كيلوبايت/ثانية، ميجابايت/ثانية، جيجابايت/ثانية)"
+
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
 msgstr "ذاكرة التخزين المؤقت / المخازن المؤقتة"
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Cancel"
 msgstr "إلغاء"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
 msgstr "تحذير - فقدان محتمل للبيانات"
+
+#: src/components/routes/settings/general.tsx
+msgid "Celsius (°C)"
+msgstr "درجة مئوية (°م)"
+
+#: src/components/routes/settings/general.tsx
+msgid "Change display units for metrics."
+msgstr "تغيير وحدات عرض المقاييس."
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
@@ -186,7 +239,7 @@ msgstr "تحقق من السجلات لمزيد من التفاصيل."
 msgid "Check your notification service"
 msgstr "تحقق من خدمة الإشعارات الخاصة بك"
 
-#: src/components/add-system.tsx
+#: src/components/ui/input-copy.tsx
 msgid "Click to copy"
 msgstr "انقر للنسخ"
 
@@ -197,14 +250,19 @@ msgstr "تعليمات سطر الأوامر"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
-msgstr "قم بتكوين كيفية تلقي إشعارات التنبيه."
+msgstr "هيئ التنبيهات الواردة"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Confirm password"
 msgstr "تأكيد كلمة المرور"
 
+#: src/components/routes/home.tsx
+msgid "Connection is down"
+msgstr "الاتصال مقطوع"
+
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Continue"
 msgstr "متابعة"
 
@@ -213,26 +271,50 @@ msgid "Copied to clipboard"
 msgstr "تم النسخ إلى الحافظة"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
-msgstr "نسخ docker compose"
+msgstr "نسخ أمر تركيب الدوكر"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
-msgstr "نسخ docker run"
+msgstr "نسخ أمر تشغيل الدوكر"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Environment variables"
+msgid "Copy env"
+msgstr "نسخ متغيرات البيئة"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Copy host"
 msgstr "نسخ المضيف"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
 msgstr "نسخ أمر لينكس"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Copy name"
+msgstr "نسخ الاسم"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "نسخ النص"
+
+#: src/components/add-system.tsx
+msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
+msgstr "انسخ أمر التثبيت للوكيل أدناه، أو سجل الوكلاء تلقائياً باستخدام <0>رمز مميز عالمي</0>."
+
+#: src/components/add-system.tsx
+msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
+msgstr "انسخ محتوى <0>docker-compose.yml</0> للوكيل أدناه، أو سجل الوكلاء تلقائياً باستخدام <1>رمز مميز عالمي</1>."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy YAML"
+msgstr "نسخ YAML"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "CPU"
@@ -240,13 +322,18 @@ msgstr "المعالج"
 
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
 msgid "CPU Usage"
 msgstr "استخدام وحدة المعالجة المركزية"
 
 #: src/components/login/auth-form.tsx
 msgid "Create account"
 msgstr "إنشاء حساب"
+
+#. Context: date created
+#: src/components/alerts-history-columns.tsx
+msgid "Created"
+msgstr "أنشئت"
 
 #. Dark theme
 #: src/components/mode-toggle.tsx
@@ -263,8 +350,13 @@ msgid "Default time period"
 msgstr "الفترة الزمنية الافتراضية"
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Delete"
 msgstr "حذف"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Delete fingerprint"
+msgstr "حذف البصمة"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Disk"
@@ -273,6 +365,10 @@ msgstr "القرص"
 #: src/components/routes/system.tsx
 msgid "Disk I/O"
 msgstr "إدخال/إخراج القرص"
+
+#: src/components/routes/settings/general.tsx
+msgid "Disk unit"
+msgstr "وحدة القرص"
 
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
@@ -286,15 +382,15 @@ msgstr "استخدام القرص لـ {extraFsName}"
 
 #: src/components/routes/system.tsx
 msgid "Docker CPU Usage"
-msgstr "استخدام المعالج لـ Docker"
+msgstr "استخدام المعالج للدوكر"
 
 #: src/components/routes/system.tsx
 msgid "Docker Memory Usage"
-msgstr "استخدام الذاكرة لـ Docker"
+msgstr "استخدام الذاكرة للدوكر"
 
 #: src/components/routes/system.tsx
 msgid "Docker Network I/O"
-msgstr "إدخال/إخراج الشبكة لـ Docker"
+msgstr "إدخال/إخراج الشبكة للدوكر"
 
 #: src/components/command-palette.tsx
 msgid "Documentation"
@@ -302,10 +398,15 @@ msgstr "التوثيق"
 
 #. Context: System is down
 #: src/lib/utils.ts
+#: src/components/alerts-history-columns.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
 msgstr "معطل"
+
+#: src/components/alerts-history-columns.tsx
+msgid "Duration"
+msgstr "المدة"
 
 #: src/components/add-system.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -329,8 +430,10 @@ msgstr "أدخل عنوان البريد الإشباكي لإعادة تعيي�
 msgid "Enter email address..."
 msgstr "أدخل عنوان البريد الإشباكي..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/config-yaml.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/login/auth-form.tsx
 msgid "Error"
 msgstr "خطأ"
@@ -346,6 +449,10 @@ msgstr "يتجاوز {0}{1} في آخر {2, plural, one {# دقيقة} other {# 
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr "سيتم حذف الأنظمة الحالية غير المعرفة في <0>config.yml</0>. يرجى عمل نسخ احتياطية بانتظام."
 
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Export"
+msgstr "تصدير"
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
 msgstr "تصدير التكوين"
@@ -353,6 +460,10 @@ msgstr "تصدير التكوين"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export your current systems configuration."
 msgstr "تصدير تكوين الأنظمة الحالية الخاصة بك."
+
+#: src/components/routes/settings/general.tsx
+msgid "Fahrenheit (°F)"
+msgstr "فهرنهايت (°ف)"
 
 #: src/lib/utils.ts
 msgid "Failed to authenticate"
@@ -373,8 +484,13 @@ msgstr "فشل في تحديث التنبيه"
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Filter..."
 msgstr "تصفية..."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Fingerprint"
+msgstr "البصمة"
 
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -392,13 +508,14 @@ msgstr "عام"
 
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
-msgstr "استهلاك طاقة GPU"
+msgstr "استهلاك طاقة وحدة معالجة الرسوميات"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "شبكة"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
 msgstr "أمر Homebrew"
@@ -433,6 +550,27 @@ msgstr "التخطيط"
 msgid "Light"
 msgstr "فاتح"
 
+#: src/components/routes/system.tsx
+msgid "Load Average"
+msgstr "متوسط التحميل"
+
+#: src/lib/utils.ts
+msgid "Load Average 15m"
+msgstr "متوسط التحميل 15 دقيقة"
+
+#: src/lib/utils.ts
+msgid "Load Average 1m"
+msgstr "متوسط التحميل 1 دقيقة"
+
+#: src/lib/utils.ts
+msgid "Load Average 5m"
+msgstr "متوسط التحميل 5 دقائق"
+
+#. Short label for load average
+#: src/components/systems-table/systems-table.tsx
+msgid "Load Avg"
+msgstr "متوسط التحميل"
+
 #: src/components/navbar.tsx
 msgid "Log Out"
 msgstr "تسجيل الخروج"
@@ -466,7 +604,7 @@ msgstr "تعليمات الإعداد اليدوي"
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx
 msgid "Max 1 min"
-msgstr "1 دقيقة كحد"
+msgstr "الحد الأقصى دقيقة"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Memory"
@@ -479,8 +617,9 @@ msgstr "استخدام الذاكرة"
 
 #: src/components/routes/system.tsx
 msgid "Memory usage of docker containers"
-msgstr "استخدام الذاكرة لحاويات Docker"
+msgstr "استخدام الذاكرة لحاويات دوكر"
 
+#: src/components/alerts-history-columns.tsx
 #: src/components/add-system.tsx
 msgid "Name"
 msgstr "الاسم"
@@ -491,15 +630,24 @@ msgstr "الشبكة"
 
 #: src/components/routes/system.tsx
 msgid "Network traffic of docker containers"
-msgstr "حركة مرور الشبكة لحاويات Docker"
+msgstr "حركة مرور الشبكة لحاويات الدوكر"
 
 #: src/components/routes/system.tsx
 msgid "Network traffic of public interfaces"
 msgstr "حركة مرور الشبكة للواجهات العامة"
 
+#. Context: Bytes or bits
+#: src/components/routes/settings/general.tsx
+msgid "Network unit"
+msgstr "وحدة الشبكة"
+
 #: src/components/command-palette.tsx
 msgid "No results found."
 msgstr "لم يتم العثور على نتائج."
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "No results."
+msgstr "لا توجد نتائج."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -521,6 +669,8 @@ msgid "On each restart, systems in the database will be updated to match the sys
 msgstr "في كل إعادة تشغيل، سيتم تحديث الأنظمة في قاعدة البيانات لتتطابق مع الأنظمة المعرفة في الملف."
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
 msgstr "فتح القائمة"
 
@@ -535,6 +685,12 @@ msgstr "الكتابة فوق التنبيهات الحالية"
 #: src/components/command-palette.tsx
 msgid "Page"
 msgstr "صفحة"
+
+#. placeholder {0}: table.getState().pagination.pageIndex + 1
+#. placeholder {1}: table.getPageCount()
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Page {0} of {1}"
+msgstr "صفحة {0} من {1}"
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
@@ -563,7 +719,7 @@ msgstr "إيقاف مؤقت"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused"
-msgstr "متوقف مؤقتًا"
+msgstr "متوقف مؤقتا"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -617,13 +773,12 @@ msgid "Public Key"
 msgstr "المفتاح العام"
 
 #. Disk read
-#: src/components/charts/area-chart.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
 msgid "Read"
 msgstr "قراءة"
 
-#. Network bytes received (download)
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
 msgid "Received"
 msgstr "تم الاستلام"
 
@@ -631,9 +786,23 @@ msgstr "تم الاستلام"
 msgid "Reset Password"
 msgstr "إعادة تعيين كلمة المرور"
 
+#: src/components/alerts-history-columns.tsx
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Resolved"
+msgstr "تم حلها"
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Resume"
 msgstr "استئناف"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Rotate token"
+msgstr "تدوير الرمز المميز"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Rows per page"
+msgstr "صفوف لكل صفحة"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -660,8 +829,7 @@ msgstr "البحث عن الأنظمة أو الإعدادات..."
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "راجع <0>إعدادات الإشعارات</0> لتكوين كيفية تلقي التنبيهات."
 
-#. Network bytes sent (upload)
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "تم الإرسال"
 
@@ -669,7 +837,6 @@ msgstr "تم الإرسال"
 msgid "Sets the default time range for charts when a system is viewed."
 msgstr "يحدد النطاق الزمني الافتراضي للرسوم البيانية عند عرض النظام."
 
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -693,6 +860,11 @@ msgstr "إعدادات SMTP"
 msgid "Sort By"
 msgstr "الترتيب حسب"
 
+#. Context: alert state (active or resolved)
+#: src/components/alerts-history-columns.tsx
+msgid "State"
+msgstr "الحالة"
+
 #: src/lib/utils.ts
 msgid "Status"
 msgstr "الحالة"
@@ -708,9 +880,15 @@ msgstr "استخدام التبديل"
 #. System theme
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
+#: src/components/alerts-history-columns.tsx
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "النظام"
+
+#: src/components/routes/system.tsx
+msgid "System load averages over time"
+msgstr "متوسط تحميل النظام مع مرور الوقت"
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -734,6 +912,10 @@ msgstr "درجة الحرارة"
 msgid "Temperature"
 msgstr "درجة الحرارة"
 
+#: src/components/routes/settings/general.tsx
+msgid "Temperature unit"
+msgstr "وحدة درجة الحرارة"
+
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
 msgstr "درجات حرارة مستشعرات النظام"
@@ -746,14 +928,6 @@ msgstr "اختبار <0>URL</0>"
 msgid "Test notification sent"
 msgstr "تم إرسال إشعار الاختبار"
 
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
-msgstr "يجب أن يكون الوكيل قيد التشغيل على النظام للاتصال. انسخ أمر التثبيت للوكيل أدناه."
-
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
-msgstr "يجب أن يكون الوكيل قيد التشغيل على النظام للاتصال. انسخ <0>docker-compose.yml</0> للوكيل أدناه."
-
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "ثم قم بتسجيل الدخول إلى الواجهة الخلفية وأعد تعيين كلمة مرور حساب المستخدم الخاص بك في جدول المستخدمين."
@@ -761,6 +935,10 @@ msgstr "ثم قم بتسجيل الدخول إلى الواجهة الخلفية
 #: src/components/systems-table/systems-table.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "لا يمكن التراجع عن هذا الإجراء. سيؤدي ذلك إلى حذف جميع السجلات الحالية لـ {name} من قاعدة البيانات بشكل دائم."
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "This will permanently delete all selected records from the database."
+msgstr "سيؤدي هذا إلى حذف جميع السجلات المحددة من قاعدة البيانات بشكل دائم."
 
 #: src/components/routes/system.tsx
 msgid "Throughput of {extraFsName}"
@@ -783,9 +961,40 @@ msgstr "تبديل الشبكة"
 msgid "Toggle theme"
 msgstr "تبديل السمة"
 
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token"
+msgstr "رمز مميز"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "Tokens & Fingerprints"
+msgstr "الرموز المميزة والبصمات"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
+msgstr "تسمح الرموز المميزة للوكلاء بالاتصال والتسجيل. البصمات هي معرفات مستقرة فريدة لكل نظام، يتم تعيينها عند الاتصال الأول."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
+msgstr "تُستخدم الرموز المميزة والبصمات للمصادقة على اتصالات WebSocket إلى المحور."
+
+#: src/lib/utils.ts
+msgid "Triggers when 1 minute load average exceeds a threshold"
+msgstr "يتم التفعيل عندما يتجاوز متوسط التحميل لمدة دقيقة واحدة عتبة معينة"
+
+#: src/lib/utils.ts
+msgid "Triggers when 15 minute load average exceeds a threshold"
+msgstr "يتم التفعيل عندما يتجاوز متوسط التحميل لمدة 15 دقيقة عتبة معينة"
+
+#: src/lib/utils.ts
+msgid "Triggers when 5 minute load average exceeds a threshold"
+msgstr "يتم التفعيل عندما يتجاوز متوسط التحميل لمدة 5 دقائق عتبة معينة"
+
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
-msgstr "يتم التفعيل عندما يتجاوز أي مستشعر عتبة معينة"
+msgstr "يتم التفعيل عندما ��تجاوز أي مستشعر عتبة معينة"
 
 #: src/lib/utils.ts
 msgid "Triggers when combined up/down exceeds a threshold"
@@ -807,6 +1016,15 @@ msgstr "يتم التفعيل عندما يتغير الحالة بين التش
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز استخدام أي قرص عتبة معينة"
 
+#. Temperature / network units
+#: src/components/routes/settings/general.tsx
+msgid "Unit preferences"
+msgstr "تفضيلات الوحدة"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Universal token"
+msgstr "رمز مميز عالمي"
+
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
@@ -823,7 +1041,8 @@ msgstr "مدة التشغيل"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
 msgid "Usage"
 msgstr "الاستخدام"
 
@@ -833,7 +1052,6 @@ msgstr "استخدام القسم الجذر"
 
 #: src/components/charts/swap-chart.tsx
 #: src/components/charts/mem-chart.tsx
-#: src/components/charts/area-chart.tsx
 msgid "Used"
 msgstr "مستخدم"
 
@@ -842,9 +1060,17 @@ msgstr "مستخدم"
 msgid "Users"
 msgstr "المستخدمون"
 
+#: src/components/alerts-history-columns.tsx
+msgid "Value"
+msgstr "القيمة"
+
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "عرض"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "View your 200 most recent alerts."
+msgstr "عرض أحدث 200 تنبيه."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
@@ -862,14 +1088,19 @@ msgstr "هل تريد مساعدتنا في تحسين ترجماتنا؟ تحق
 msgid "Webhook / Push notifications"
 msgstr "إشعارات Webhook / Push"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
+msgstr "عند التفعيل، يسمح هذا الرمز المميز للوكلاء بالتسجيل الذاتي دون إنشاء نظام مسبق. ينتهي بعد ساعة واحدة أو عند إعادة تشغيل المحور."
+
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
-msgstr "أمر Windows"
+msgstr "أمر ويندوز"
 
 #. Disk write
-#: src/components/charts/area-chart.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
 msgid "Write"
 msgstr "كتابة"
 

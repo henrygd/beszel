@@ -8,7 +8,7 @@ msgstr ""
 "Language: hr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-03-06 07:27\n"
+"PO-Revision-Date: 2025-07-25 22:44\n"
 "Last-Translator: \n"
 "Language-Team: Croatian\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
@@ -23,6 +23,12 @@ msgstr ""
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# dan} other {# dani}}"
 
+#. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
+#. placeholder {1}: table.getFilteredRowModel().rows.length
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "{0} of {1} row(s) selected."
+msgstr ""
+
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# sat} other {# sati}}"
@@ -30,6 +36,11 @@ msgstr "{hours, plural, one {# sat} other {# sati}}"
 #: src/lib/utils.ts
 msgid "1 hour"
 msgstr "1 sat"
+
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "1 min"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 week"
@@ -39,6 +50,11 @@ msgstr "1 tjedan"
 msgid "12 hours"
 msgstr "12 sati"
 
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "15 min"
+msgstr ""
+
 #: src/lib/utils.ts
 msgid "24 hours"
 msgstr "24 sati"
@@ -47,10 +63,21 @@ msgstr "24 sati"
 msgid "30 days"
 msgstr "30 dana"
 
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "5 min"
+msgstr ""
+
 #. Table column
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "Akcije"
+
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Active"
+msgstr ""
 
 #: src/components/routes/home.tsx
 msgid "Active Alerts"
@@ -78,15 +105,18 @@ msgstr "Podesite opcije prikaza za grafikone."
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
 msgid "Admin"
 msgstr "Admin"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Agent"
 msgstr "Agent"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Alert History"
+msgstr ""
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alert-button.tsx
@@ -101,6 +131,10 @@ msgstr "Svi Sistemi"
 #: src/components/systems-table/systems-table.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Jeste li sigurni da želite izbrisati {name}?"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Are you sure?"
+msgstr ""
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -154,17 +188,36 @@ msgstr "Beszel koristi <0>Shoutrrr</0> za integraciju sa popularnim servisima za
 msgid "Binary"
 msgstr "Binarni"
 
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/general.tsx
+msgid "Bits (Kbps, Mbps, Gbps)"
+msgstr ""
+
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/general.tsx
+msgid "Bytes (KB/s, MB/s, GB/s)"
+msgstr ""
+
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
 msgstr "Predmemorija / Međuspremnici"
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Cancel"
 msgstr "Otkaži"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
 msgstr "Oprez - mogući gubitak podataka"
+
+#: src/components/routes/settings/general.tsx
+msgid "Celsius (°C)"
+msgstr ""
+
+#: src/components/routes/settings/general.tsx
+msgid "Change display units for metrics."
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
@@ -186,7 +239,7 @@ msgstr "Provjerite logove za više detalja."
 msgid "Check your notification service"
 msgstr "Provjerite Vaš servis notifikacija"
 
-#: src/components/add-system.tsx
+#: src/components/ui/input-copy.tsx
 msgid "Click to copy"
 msgstr "Pritisnite za kopiranje"
 
@@ -204,7 +257,12 @@ msgstr "Konfigurirajte način primanja obavijesti upozorenja."
 msgid "Confirm password"
 msgstr "Potvrdite lozinku"
 
+#: src/components/routes/home.tsx
+msgid "Connection is down"
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Continue"
 msgstr "Nastavite"
 
@@ -213,26 +271,50 @@ msgid "Copied to clipboard"
 msgstr "Kopirano u međuspremnik"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
 msgstr "Kopiraj docker compose"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
 msgstr "Kopiraj docker run"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Environment variables"
+msgid "Copy env"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Copy host"
 msgstr "Kopiraj hosta"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
 msgstr "Kopiraj Linux komandu"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Copy name"
+msgstr "Kopiraj naziv"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Kopiraj tekst"
+
+#: src/components/add-system.tsx
+msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
+msgstr ""
+
+#: src/components/add-system.tsx
+msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
+msgstr ""
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy YAML"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "CPU"
@@ -240,13 +322,18 @@ msgstr "Procesor"
 
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
 msgid "CPU Usage"
 msgstr "Iskorištenost procesora"
 
 #: src/components/login/auth-form.tsx
 msgid "Create account"
 msgstr "Napravite račun"
+
+#. Context: date created
+#: src/components/alerts-history-columns.tsx
+msgid "Created"
+msgstr ""
 
 #. Dark theme
 #: src/components/mode-toggle.tsx
@@ -263,8 +350,13 @@ msgid "Default time period"
 msgstr "Zadano vremensko razdoblje"
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Delete"
 msgstr "Izbriši"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Delete fingerprint"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Disk"
@@ -273,6 +365,10 @@ msgstr "Disk"
 #: src/components/routes/system.tsx
 msgid "Disk I/O"
 msgstr "Disk I/O"
+
+#: src/components/routes/settings/general.tsx
+msgid "Disk unit"
+msgstr ""
 
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
@@ -302,9 +398,14 @@ msgstr "Dokumentacija"
 
 #. Context: System is down
 #: src/lib/utils.ts
+#: src/components/alerts-history-columns.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
+msgstr ""
+
+#: src/components/alerts-history-columns.tsx
+msgid "Duration"
 msgstr ""
 
 #: src/components/add-system.tsx
@@ -329,8 +430,10 @@ msgstr "Unesite email adresu za resetiranje lozinke"
 msgid "Enter email address..."
 msgstr "Unesite email adresu..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/config-yaml.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/login/auth-form.tsx
 msgid "Error"
 msgstr "Greška"
@@ -346,6 +449,10 @@ msgstr "Premašuje {0}{1} u posljednjih {2, plural, one {# minuta} other {# minu
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr "Postojeći sistemi koji nisu definirani u <0>config.yml</0> će biti izbrisani. Molimo Vas napravite redovite sigurnosne kopije."
 
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Export"
+msgstr ""
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
 msgstr "Izvoz konfiguracije"
@@ -353,6 +460,10 @@ msgstr "Izvoz konfiguracije"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export your current systems configuration."
 msgstr "Izvoz trenutne sistemske konfiguracije."
+
+#: src/components/routes/settings/general.tsx
+msgid "Fahrenheit (°F)"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "Failed to authenticate"
@@ -373,8 +484,13 @@ msgstr "Ažuriranje upozorenja nije uspjelo"
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Filter..."
 msgstr "Filter..."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Fingerprint"
+msgstr ""
 
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -399,6 +515,7 @@ msgid "Grid"
 msgstr "Mreža"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
 msgstr "Homebrew naredba"
@@ -432,6 +549,27 @@ msgstr "Izgled"
 #: src/components/mode-toggle.tsx
 msgid "Light"
 msgstr "Svijetlo"
+
+#: src/components/routes/system.tsx
+msgid "Load Average"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Load Average 15m"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Load Average 1m"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Load Average 5m"
+msgstr ""
+
+#. Short label for load average
+#: src/components/systems-table/systems-table.tsx
+msgid "Load Avg"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -481,6 +619,7 @@ msgstr "Upotreba memorije"
 msgid "Memory usage of docker containers"
 msgstr "Upotreba memorije Docker spremnika"
 
+#: src/components/alerts-history-columns.tsx
 #: src/components/add-system.tsx
 msgid "Name"
 msgstr "Ime"
@@ -497,9 +636,18 @@ msgstr "Mrežni promet Docker spremnika"
 msgid "Network traffic of public interfaces"
 msgstr "Mrežni promet javnih sučelja"
 
+#. Context: Bytes or bits
+#: src/components/routes/settings/general.tsx
+msgid "Network unit"
+msgstr ""
+
 #: src/components/command-palette.tsx
 msgid "No results found."
 msgstr "Nema rezultata."
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "No results."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -521,6 +669,8 @@ msgid "On each restart, systems in the database will be updated to match the sys
 msgstr "Prilikom svakog ponovnog pokretanja, sustavi u bazi podataka biti će ažurirani kako bi odgovarali sustavima definiranim u datoteci."
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
 msgstr "Otvori menu"
 
@@ -535,6 +685,12 @@ msgstr "Prebrišite postojeća upozorenja"
 #: src/components/command-palette.tsx
 msgid "Page"
 msgstr "Stranica"
+
+#. placeholder {0}: table.getState().pagination.pageIndex + 1
+#. placeholder {1}: table.getPageCount()
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Page {0} of {1}"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
@@ -617,13 +773,12 @@ msgid "Public Key"
 msgstr "Javni Ključ"
 
 #. Disk read
-#: src/components/charts/area-chart.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
 msgid "Read"
 msgstr "Pročitaj"
 
-#. Network bytes received (download)
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
 msgid "Received"
 msgstr "Primljeno"
 
@@ -631,9 +786,23 @@ msgstr "Primljeno"
 msgid "Reset Password"
 msgstr "Resetiraj Lozinku"
 
+#: src/components/alerts-history-columns.tsx
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Resolved"
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Resume"
 msgstr "Nastavi"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Rotate token"
+msgstr ""
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Rows per page"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -660,8 +829,7 @@ msgstr "Pretraži za sisteme ili postavke..."
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Pogledajte <0>postavke obavijesti</0> da biste konfigurirali način primanja upozorenja."
 
-#. Network bytes sent (upload)
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Poslano"
 
@@ -669,7 +837,6 @@ msgstr "Poslano"
 msgid "Sets the default time range for charts when a system is viewed."
 msgstr "Postavlja zadani vremenski raspon za grafikone kada se sustav gleda."
 
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -693,6 +860,11 @@ msgstr "SMTP postavke"
 msgid "Sort By"
 msgstr "Sortiraj po"
 
+#. Context: alert state (active or resolved)
+#: src/components/alerts-history-columns.tsx
+msgid "State"
+msgstr ""
+
 #: src/lib/utils.ts
 msgid "Status"
 msgstr "Status"
@@ -708,9 +880,15 @@ msgstr "Swap Iskorištenost"
 #. System theme
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
+#: src/components/alerts-history-columns.tsx
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "Sistem"
+
+#: src/components/routes/system.tsx
+msgid "System load averages over time"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -734,6 +912,10 @@ msgstr ""
 msgid "Temperature"
 msgstr "Temperatura"
 
+#: src/components/routes/settings/general.tsx
+msgid "Temperature unit"
+msgstr ""
+
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
 msgstr "Temperature sistemskih senzora"
@@ -746,14 +928,6 @@ msgstr "Testni <0>URL</0>"
 msgid "Test notification sent"
 msgstr "Testna obavijest poslana"
 
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
-msgstr "Agent mora biti pokrenut na sistemu da bi se spojio. Kopirajte instalacijske komande za agenta ispod."
-
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
-msgstr "Agent mora biti pokrenut na sistemu da bi se spojio. Kopirajte <0>docker-compose.yml</0> za agenta ispod."
-
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Zatim se prijavite u backend i resetirajte lozinku korisničkog računa u tablici korisnika."
@@ -761,6 +935,10 @@ msgstr "Zatim se prijavite u backend i resetirajte lozinku korisničkog računa 
 #: src/components/systems-table/systems-table.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Ova radnja se ne može poništiti. Ovo će trajno izbrisati sve trenutne zapise za {name} iz baze podataka."
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "This will permanently delete all selected records from the database."
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Throughput of {extraFsName}"
@@ -782,6 +960,37 @@ msgstr "Uključi/isključi rešetku"
 #: src/components/mode-toggle.tsx
 msgid "Toggle theme"
 msgstr "Uključi/isključi temu"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token"
+msgstr ""
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "Tokens & Fingerprints"
+msgstr ""
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
+msgstr ""
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Triggers when 1 minute load average exceeds a threshold"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Triggers when 15 minute load average exceeds a threshold"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "Triggers when 5 minute load average exceeds a threshold"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -807,6 +1016,15 @@ msgstr "Pokreće se kada se status sistema promijeni"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Pokreće se kada iskorištenost bilo kojeg diska premaši prag"
 
+#. Temperature / network units
+#: src/components/routes/settings/general.tsx
+msgid "Unit preferences"
+msgstr ""
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Universal token"
+msgstr ""
+
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
@@ -823,7 +1041,8 @@ msgstr "Vrijeme rada"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
 msgid "Usage"
 msgstr "Iskorištenost"
 
@@ -833,7 +1052,6 @@ msgstr "Iskorištenost root datotečnog sustava"
 
 #: src/components/charts/swap-chart.tsx
 #: src/components/charts/mem-chart.tsx
-#: src/components/charts/area-chart.tsx
 msgid "Used"
 msgstr "Iskorišteno"
 
@@ -842,9 +1060,17 @@ msgstr "Iskorišteno"
 msgid "Users"
 msgstr "Korisnici"
 
+#: src/components/alerts-history-columns.tsx
+msgid "Value"
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Prikaz"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "View your 200 most recent alerts."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
@@ -862,14 +1088,19 @@ msgstr "Želite li nam pomoći da naše prijevode učinimo još boljim? Posjetit
 msgid "Webhook / Push notifications"
 msgstr "Webhook / Push obavijest"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
+msgstr ""
+
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
 msgstr "Windows naredba"
 
 #. Disk write
-#: src/components/charts/area-chart.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
 msgid "Write"
 msgstr "Piši"
 

@@ -1,6 +1,8 @@
 import {
+	AlertOctagonIcon,
 	BookIcon,
 	DatabaseBackupIcon,
+	FingerprintIcon,
 	LayoutDashboard,
 	LogsIcon,
 	MailIcon,
@@ -40,6 +42,16 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 
 	return useMemo(() => {
 		const systems = $systems.get()
+		const SettingsShortcut = (
+			<CommandShortcut>
+				<Trans>Settings</Trans>
+			</CommandShortcut>
+		)
+		const AdminShortcut = (
+			<CommandShortcut>
+				<Trans>Admin</Trans>
+			</CommandShortcut>
+		)
 		return (
 			<CommandDialog open={open} onOpenChange={setOpen}>
 				<CommandInput placeholder={t`Search for systems or settings...`} />
@@ -58,7 +70,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 											setOpen(false)
 										}}
 									>
-										<Server className="me-2 h-4 w-4" />
+										<Server className="me-2 size-4" />
 										<span>{system.name}</span>
 										<CommandShortcut>{getHostDisplayValue(system)}</CommandShortcut>
 									</CommandItem>
@@ -75,7 +87,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 								setOpen(false)
 							}}
 						>
-							<LayoutDashboard className="me-2 h-4 w-4" />
+							<LayoutDashboard className="me-2 size-4" />
 							<span>
 								<Trans>Dashboard</Trans>
 							</span>
@@ -89,13 +101,11 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 								setOpen(false)
 							}}
 						>
-							<SettingsIcon className="me-2 h-4 w-4" />
+							<SettingsIcon className="me-2 size-4" />
 							<span>
 								<Trans>Settings</Trans>
 							</span>
-							<CommandShortcut>
-								<Trans>Settings</Trans>
-							</CommandShortcut>
+							{SettingsShortcut}
 						</CommandItem>
 						<CommandItem
 							keywords={["alerts"]}
@@ -104,13 +114,35 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 								setOpen(false)
 							}}
 						>
-							<MailIcon className="me-2 h-4 w-4" />
+							<MailIcon className="me-2 size-4" />
 							<span>
 								<Trans>Notifications</Trans>
 							</span>
-							<CommandShortcut>
-								<Trans>Settings</Trans>
-							</CommandShortcut>
+							{SettingsShortcut}
+						</CommandItem>
+						<CommandItem
+							onSelect={() => {
+								navigate(getPagePath($router, "settings", { name: "tokens" }))
+								setOpen(false)
+							}}
+						>
+							<FingerprintIcon className="me-2 size-4" />
+							<span>
+								<Trans>Tokens & Fingerprints</Trans>
+							</span>
+							{SettingsShortcut}
+						</CommandItem>
+						<CommandItem
+							onSelect={() => {
+								navigate(getPagePath($router, "settings", { name: "alert-history" }))
+								setOpen(false)
+							}}
+						>
+							<AlertOctagonIcon className="me-2 size-4" />
+							<span>
+								<Trans>Alert History</Trans>
+							</span>
+							{SettingsShortcut}
 						</CommandItem>
 						<CommandItem
 							keywords={["help", "oauth", "oidc"]}
@@ -118,7 +150,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 								window.location.href = "https://beszel.dev/guide/what-is-beszel"
 							}}
 						>
-							<BookIcon className="me-2 h-4 w-4" />
+							<BookIcon className="me-2 size-4" />
 							<span>
 								<Trans>Documentation</Trans>
 							</span>
@@ -136,13 +168,11 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 										window.open(prependBasePath("/_/"), "_blank")
 									}}
 								>
-									<UsersIcon className="me-2 h-4 w-4" />
+									<UsersIcon className="me-2 size-4" />
 									<span>
 										<Trans>Users</Trans>
 									</span>
-									<CommandShortcut>
-										<Trans>Admin</Trans>
-									</CommandShortcut>
+									{AdminShortcut}
 								</CommandItem>
 								<CommandItem
 									onSelect={() => {
@@ -150,13 +180,11 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 										window.open(prependBasePath("/_/#/logs"), "_blank")
 									}}
 								>
-									<LogsIcon className="me-2 h-4 w-4" />
+									<LogsIcon className="me-2 size-4" />
 									<span>
 										<Trans>Logs</Trans>
 									</span>
-									<CommandShortcut>
-										<Trans>Admin</Trans>
-									</CommandShortcut>
+									{AdminShortcut}
 								</CommandItem>
 								<CommandItem
 									onSelect={() => {
@@ -164,13 +192,11 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 										window.open(prependBasePath("/_/#/settings/backups"), "_blank")
 									}}
 								>
-									<DatabaseBackupIcon className="me-2 h-4 w-4" />
+									<DatabaseBackupIcon className="me-2 size-4" />
 									<span>
 										<Trans>Backups</Trans>
 									</span>
-									<CommandShortcut>
-										<Trans>Admin</Trans>
-									</CommandShortcut>
+									{AdminShortcut}
 								</CommandItem>
 								<CommandItem
 									keywords={["email"]}
@@ -179,13 +205,11 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 										window.open(prependBasePath("/_/#/settings/mail"), "_blank")
 									}}
 								>
-									<MailIcon className="me-2 h-4 w-4" />
+									<MailIcon className="me-2 size-4" />
 									<span>
 										<Trans>SMTP settings</Trans>
 									</span>
-									<CommandShortcut>
-										<Trans>Admin</Trans>
-									</CommandShortcut>
+									{AdminShortcut}
 								</CommandItem>
 							</CommandGroup>
 						</>

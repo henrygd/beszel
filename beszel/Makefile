@@ -4,6 +4,9 @@ ARCH ?= $(shell go env GOARCH)
 # Skip building the web UI if true
 SKIP_WEB ?= false
 
+# Set executable extension based on target OS
+EXE_EXT := $(if $(filter windows,$(OS)),.exe,)
+
 .PHONY: tidy build-agent build-hub build clean lint dev-server dev-agent dev-hub dev generate-locales
 .DEFAULT_GOAL := build
 
@@ -30,11 +33,25 @@ build-web-ui:
 		npm run --prefix ./site build; \
 	fi
 
-build-agent: tidy
-	GOOS=$(OS) GOARCH=$(ARCH) go build -o ./build/beszel-agent_$(OS)_$(ARCH) -ldflags "-w -s" beszel/cmd/agent
+# Conditional .NET build - only for Windows
+build-dotnet-conditional:
+	@if [ "$(OS)" = "windows" ]; then \
+		echo "Building .NET executable for Windows..."; \
+		if command -v dotnet >/dev/null 2>&1; then \
+			rm -rf ./internal/agent/lhm/bin; \
+			dotnet build -c Release ./internal/agent/lhm/beszel_lhm.csproj; \
+		else \
+			echo "Error: dotnet not found. Install .NET SDK to build Windows agent."; \
+			exit 1; \
+		fi; \
+	fi
+
+# Update build-agent to include conditional .NET build
+build-agent: tidy build-dotnet-conditional
+	GOOS=$(OS) GOARCH=$(ARCH) go build -o ./build/beszel-agent_$(OS)_$(ARCH)$(EXE_EXT) -ldflags "-w -s" beszel/cmd/agent
 
 build-hub: tidy $(if $(filter false,$(SKIP_WEB)),build-web-ui)
-	GOOS=$(OS) GOARCH=$(ARCH) go build -o ./build/beszel_$(OS)_$(ARCH) -ldflags "-w -s" beszel/cmd/hub
+	GOOS=$(OS) GOARCH=$(ARCH) go build -o ./build/beszel_$(OS)_$(ARCH)$(EXE_EXT) -ldflags "-w -s" beszel/cmd/hub
 
 build: build-agent build-hub
 
@@ -47,18 +64,18 @@ generate-locales:
 dev-server: generate-locales
 	cd ./site
 	@if command -v bun >/dev/null 2>&1; then \
-		cd ./site && bun run dev; \
+		cd ./site && bun run dev --host 0.0.0.0; \
 	else \
-		cd ./site && npm run dev; \
+		cd ./site && npm run dev --host 0.0.0.0; \
 	fi
 
 dev-hub: export ENV=dev
 dev-hub:
 	mkdir -p ./site/dist && touch ./site/dist/index.html
 	@if command -v entr >/dev/null 2>&1; then \
-		find ./cmd/hub/*.go ./internal/{alerts,hub,records,users}/*.go | entr -r -s "cd ./cmd/hub && go run . serve"; \
+		find ./cmd/hub/*.go ./internal/{alerts,hub,records,users}/*.go | entr -r -s "cd ./cmd/hub && go run . serve --http 0.0.0.0:8090"; \
 	else \
-		cd ./cmd/hub && go run . serve; \
+		cd ./cmd/hub && go run . serve --http 0.0.0.0:8090; \
 	fi
 
 dev-agent:
@@ -67,6 +84,15 @@ dev-agent:
 	else \
 		go run beszel/cmd/agent; \
 	fi
+	
+build-dotnet:
+	@if command -v dotnet >/dev/null 2>&1; then \
+		rm -rf ./internal/agent/lhm/bin; \
+		dotnet build -c Release ./internal/agent/lhm/beszel_lhm.csproj; \
+	else \
+		echo "dotnet not found"; \
+	fi
+
 
 # KEY="..." make -j dev
 dev: dev-server dev-hub dev-agent

@@ -8,7 +8,7 @@ msgstr ""
 "Language: es\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-03-06 07:27\n"
+"PO-Revision-Date: 2025-07-25 22:44\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -23,6 +23,12 @@ msgstr ""
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# día} other {# días}}"
 
+#. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
+#. placeholder {1}: table.getFilteredRowModel().rows.length
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "{0} of {1} row(s) selected."
+msgstr "{0} de {1} fila(s) seleccionada(s)."
+
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# hora} other {# horas}}"
@@ -30,6 +36,11 @@ msgstr "{hours, plural, one {# hora} other {# horas}}"
 #: src/lib/utils.ts
 msgid "1 hour"
 msgstr "1 hora"
+
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "1 min"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 week"
@@ -39,6 +50,11 @@ msgstr "1 semana"
 msgid "12 hours"
 msgstr "12 horas"
 
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "15 min"
+msgstr ""
+
 #: src/lib/utils.ts
 msgid "24 hours"
 msgstr "24 horas"
@@ -47,10 +63,21 @@ msgstr "24 horas"
 msgid "30 days"
 msgstr "30 días"
 
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "5 min"
+msgstr ""
+
 #. Table column
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "Acciones"
+
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Active"
+msgstr "Activo"
 
 #: src/components/routes/home.tsx
 msgid "Active Alerts"
@@ -78,15 +105,18 @@ msgstr "Ajustar las opciones de visualización para los gráficos."
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
 msgid "Admin"
 msgstr "Administrador"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Agent"
 msgstr "Agente"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Alert History"
+msgstr "Historial de Alertas"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alert-button.tsx
@@ -101,6 +131,10 @@ msgstr "Todos los Sistemas"
 #: src/components/systems-table/systems-table.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "¿Está seguro de que desea eliminar {name}?"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Are you sure?"
+msgstr "¿Estás seguro?"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -154,17 +188,36 @@ msgstr "Beszel utiliza <0>Shoutrrr</0> para integrarse con servicios populares d
 msgid "Binary"
 msgstr "Binario"
 
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/general.tsx
+msgid "Bits (Kbps, Mbps, Gbps)"
+msgstr ""
+
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/general.tsx
+msgid "Bytes (KB/s, MB/s, GB/s)"
+msgstr ""
+
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
 msgstr "Caché / Buffers"
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Cancel"
 msgstr "Cancelar"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
 msgstr "Precaución - posible pérdida de datos"
+
+#: src/components/routes/settings/general.tsx
+msgid "Celsius (°C)"
+msgstr ""
+
+#: src/components/routes/settings/general.tsx
+msgid "Change display units for metrics."
+msgstr "Cambiar las unidades de visualización de las métricas."
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
@@ -186,7 +239,7 @@ msgstr "Revise los registros para más detalles."
 msgid "Check your notification service"
 msgstr "Verifique su servicio de notificaciones"
 
-#: src/components/add-system.tsx
+#: src/components/ui/input-copy.tsx
 msgid "Click to copy"
 msgstr "Haga clic para copiar"
 
@@ -204,7 +257,12 @@ msgstr "Configure cómo recibe las notificaciones de alertas."
 msgid "Confirm password"
 msgstr "Confirmar contraseña"
 
+#: src/components/routes/home.tsx
+msgid "Connection is down"
+msgstr "La conexión está caída"
+
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Continue"
 msgstr "Continuar"
 
@@ -213,26 +271,50 @@ msgid "Copied to clipboard"
 msgstr "Copiado al portapapeles"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
 msgstr "Copiar docker compose"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
 msgstr "Copiar docker run"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Environment variables"
+msgid "Copy env"
+msgstr "Copiar env"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Copy host"
 msgstr "Copiar host"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
 msgstr "Copiar comando de Linux"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Copy name"
+msgstr "Copiar nombre"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Copiar texto"
+
+#: src/components/add-system.tsx
+msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
+msgstr "Copia el comando de instalación del agente a continuación, o registra agentes automáticamente con un <0>token universal</0>."
+
+#: src/components/add-system.tsx
+msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
+msgstr "Copia el contenido del<0>docker-compose.yml</0> para el agente a continuación, o registra agentes automáticamente con un <1>token universal</1>."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy YAML"
+msgstr "Copiar YAML"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "CPU"
@@ -240,13 +322,18 @@ msgstr "CPU"
 
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
 msgid "CPU Usage"
 msgstr "Uso de CPU"
 
 #: src/components/login/auth-form.tsx
 msgid "Create account"
 msgstr "Crear cuenta"
+
+#. Context: date created
+#: src/components/alerts-history-columns.tsx
+msgid "Created"
+msgstr "Creado"
 
 #. Dark theme
 #: src/components/mode-toggle.tsx
@@ -263,8 +350,13 @@ msgid "Default time period"
 msgstr "Período de tiempo predeterminado"
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Delete"
 msgstr "Eliminar"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Delete fingerprint"
+msgstr "Eliminar huella digital"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Disk"
@@ -273,6 +365,10 @@ msgstr "Disco"
 #: src/components/routes/system.tsx
 msgid "Disk I/O"
 msgstr "E/S de Disco"
+
+#: src/components/routes/settings/general.tsx
+msgid "Disk unit"
+msgstr "Unidad de disco"
 
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
@@ -302,10 +398,15 @@ msgstr "Documentación"
 
 #. Context: System is down
 #: src/lib/utils.ts
+#: src/components/alerts-history-columns.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
 msgstr "Abajo"
+
+#: src/components/alerts-history-columns.tsx
+msgid "Duration"
+msgstr "Duración"
 
 #: src/components/add-system.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -329,8 +430,10 @@ msgstr "Ingrese la dirección de correo electrónico para restablecer la contras
 msgid "Enter email address..."
 msgstr "Ingrese dirección de correo..."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/config-yaml.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/login/auth-form.tsx
 msgid "Error"
 msgstr "Error"
@@ -346,6 +449,10 @@ msgstr "Excede {0}{1} en el último {2, plural, one {# minuto} other {# minutos}
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr "Los sistemas existentes no definidos en <0>config.yml</0> serán eliminados. Por favor, haga copias de seguridad regularmente."
 
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Export"
+msgstr "Exportar"
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
 msgstr "Exportar configuración"
@@ -353,6 +460,10 @@ msgstr "Exportar configuración"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export your current systems configuration."
 msgstr "Exporte la configuración actual de sus sistemas."
+
+#: src/components/routes/settings/general.tsx
+msgid "Fahrenheit (°F)"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "Failed to authenticate"
@@ -373,8 +484,13 @@ msgstr "Error al actualizar la alerta"
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Filter..."
 msgstr "Filtrar..."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Fingerprint"
+msgstr "Huella dactilar"
 
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -399,6 +515,7 @@ msgid "Grid"
 msgstr "Cuadrícula"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
 msgstr "Comando Homebrew"
@@ -432,6 +549,27 @@ msgstr "Diseño"
 #: src/components/mode-toggle.tsx
 msgid "Light"
 msgstr "Claro"
+
+#: src/components/routes/system.tsx
+msgid "Load Average"
+msgstr "Carga Media"
+
+#: src/lib/utils.ts
+msgid "Load Average 15m"
+msgstr "Carga media 15m"
+
+#: src/lib/utils.ts
+msgid "Load Average 1m"
+msgstr "Carga media 1m"
+
+#: src/lib/utils.ts
+msgid "Load Average 5m"
+msgstr "Carga media 5m"
+
+#. Short label for load average
+#: src/components/systems-table/systems-table.tsx
+msgid "Load Avg"
+msgstr "Carga media"
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -481,6 +619,7 @@ msgstr "Uso de Memoria"
 msgid "Memory usage of docker containers"
 msgstr "Uso de memoria de los contenedores de Docker"
 
+#: src/components/alerts-history-columns.tsx
 #: src/components/add-system.tsx
 msgid "Name"
 msgstr "Nombre"
@@ -497,9 +636,18 @@ msgstr "Tráfico de red de los contenedores de Docker"
 msgid "Network traffic of public interfaces"
 msgstr "Tráfico de red de interfaces públicas"
 
+#. Context: Bytes or bits
+#: src/components/routes/settings/general.tsx
+msgid "Network unit"
+msgstr "Unidad de red"
+
 #: src/components/command-palette.tsx
 msgid "No results found."
 msgstr "No se encontraron resultados."
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "No results."
+msgstr "Sin resultados."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -521,6 +669,8 @@ msgid "On each restart, systems in the database will be updated to match the sys
 msgstr "En cada reinicio, los sistemas en la base de datos se actualizarán para coincidir con los sistemas definidos en el archivo."
 
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
 msgstr "Abrir menú"
 
@@ -535,6 +685,12 @@ msgstr "Sobrescribir alertas existentes"
 #: src/components/command-palette.tsx
 msgid "Page"
 msgstr "Página"
+
+#. placeholder {0}: table.getState().pagination.pageIndex + 1
+#. placeholder {1}: table.getPageCount()
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Page {0} of {1}"
+msgstr "Página {0} de {1}"
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
@@ -617,13 +773,12 @@ msgid "Public Key"
 msgstr "Clave Pública"
 
 #. Disk read
-#: src/components/charts/area-chart.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
 msgid "Read"
 msgstr "Lectura"
 
-#. Network bytes received (download)
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
 msgid "Received"
 msgstr "Recibido"
 
@@ -631,9 +786,23 @@ msgstr "Recibido"
 msgid "Reset Password"
 msgstr "Restablecer Contraseña"
 
+#: src/components/alerts-history-columns.tsx
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Resolved"
+msgstr "Resuelto"
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Resume"
 msgstr "Reanudar"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Rotate token"
+msgstr "Rotar token"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Rows per page"
+msgstr "Filas por página"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -660,8 +829,7 @@ msgstr "Buscar sistemas o configuraciones..."
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Consulte <0>configuración de notificaciones</0> para configurar cómo recibe alertas."
 
-#. Network bytes sent (upload)
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Enviado"
 
@@ -669,7 +837,6 @@ msgstr "Enviado"
 msgid "Sets the default time range for charts when a system is viewed."
 msgstr "Establece el rango de tiempo predeterminado para los gráficos cuando se visualiza un sistema."
 
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -693,6 +860,11 @@ msgstr "Configuración SMTP"
 msgid "Sort By"
 msgstr "Ordenar por"
 
+#. Context: alert state (active or resolved)
+#: src/components/alerts-history-columns.tsx
+msgid "State"
+msgstr "Estado"
+
 #: src/lib/utils.ts
 msgid "Status"
 msgstr "Estado"
@@ -708,9 +880,15 @@ msgstr "Uso de Swap"
 #. System theme
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
+#: src/components/alerts-history-columns.tsx
 #: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "Sistema"
+
+#: src/components/routes/system.tsx
+msgid "System load averages over time"
+msgstr "Promedios de carga del sistema a lo largo del tiempo"
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -734,6 +912,10 @@ msgstr "Temperatura"
 msgid "Temperature"
 msgstr "Temperatura"
 
+#: src/components/routes/settings/general.tsx
+msgid "Temperature unit"
+msgstr "Unidad de temperatura"
+
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
 msgstr "Temperaturas de los sensores del sistema"
@@ -746,14 +928,6 @@ msgstr "Probar <0>URL</0>"
 msgid "Test notification sent"
 msgstr "Notificación de prueba enviada"
 
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
-msgstr "El agente debe estar ejecutándose en el sistema para conectarse. Copie el comando de instalación para el agente a continuación."
-
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
-msgstr "El agente debe estar ejecutándose en el sistema para conectarse. Copie el <0>docker-compose.yml</0> para el agente a continuación."
-
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Luego inicie sesión en el backend y restablezca la contraseña de su cuenta de usuario en la tabla de usuarios."
@@ -761,6 +935,10 @@ msgstr "Luego inicie sesión en el backend y restablezca la contraseña de su cu
 #: src/components/systems-table/systems-table.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Esta acción no se puede deshacer. Esto eliminará permanentemente todos los registros actuales de {name} de la base de datos."
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "This will permanently delete all selected records from the database."
+msgstr "Esto eliminará permanentemente todos los registros seleccionados de la base de datos."
 
 #: src/components/routes/system.tsx
 msgid "Throughput of {extraFsName}"
@@ -782,6 +960,37 @@ msgstr "Alternar cuadrícula"
 #: src/components/mode-toggle.tsx
 msgid "Toggle theme"
 msgstr "Alternar tema"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token"
+msgstr ""
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "Tokens & Fingerprints"
+msgstr "Tokens y Huellas Digitales"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
+msgstr "Los tokens permiten que los agentes se conecten y registren. Las huellas digitales son identificadores estables únicos para cada sistema, establecidos en la primera conexión."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
+msgstr "Los tokens y las huellas digitales se utilizan para autenticar las conexiones WebSocket al hub."
+
+#: src/lib/utils.ts
+msgid "Triggers when 1 minute load average exceeds a threshold"
+msgstr "Se activa cuando la carga media de 1 minuto supera un umbral"
+
+#: src/lib/utils.ts
+msgid "Triggers when 15 minute load average exceeds a threshold"
+msgstr "Se activa cuando la carga media de 15 minutos supera un umbral"
+
+#: src/lib/utils.ts
+msgid "Triggers when 5 minute load average exceeds a threshold"
+msgstr "Se activa cuando la carga media de 5 minutos supera un umbral"
 
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -807,6 +1016,15 @@ msgstr "Se activa cuando el estado cambia entre activo e inactivo"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Se activa cuando el uso de cualquier disco supera un umbral"
 
+#. Temperature / network units
+#: src/components/routes/settings/general.tsx
+msgid "Unit preferences"
+msgstr "Preferencias de unidad"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Universal token"
+msgstr "Token universal"
+
 #. Context: System is up
 #: src/components/systems-table/systems-table.tsx
 #: src/components/routes/system.tsx
@@ -823,7 +1041,8 @@ msgstr "Tiempo de actividad"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
 msgid "Usage"
 msgstr "Uso"
 
@@ -833,7 +1052,6 @@ msgstr "Uso de la partición raíz"
 
 #: src/components/charts/swap-chart.tsx
 #: src/components/charts/mem-chart.tsx
-#: src/components/charts/area-chart.tsx
 msgid "Used"
 msgstr "Usado"
 
@@ -842,9 +1060,17 @@ msgstr "Usado"
 msgid "Users"
 msgstr "Usuarios"
 
+#: src/components/alerts-history-columns.tsx
+msgid "Value"
+msgstr "Valor"
+
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Vista"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "View your 200 most recent alerts."
+msgstr "Ver sus 200 alertas más recientes."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
@@ -862,14 +1088,19 @@ msgstr "¿Quieres ayudarnos a mejorar nuestras traducciones? Consulta <0>Crowdin
 msgid "Webhook / Push notifications"
 msgstr "Notificaciones Webhook / Push"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
+msgstr "Cuando está habilitado, este token permite que los agentes se auto-registren sin crear previamente el sistema. Expira después de una hora o al reiniciar el hub."
+
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
 msgstr "Comando Windows"
 
 #. Disk write
-#: src/components/charts/area-chart.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
 msgid "Write"
 msgstr "Escritura"
 

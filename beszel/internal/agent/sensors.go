@@ -3,10 +3,13 @@ package agent
 import (
 	"beszel/internal/entities/system"
 	"context"
+	"fmt"
 	"log/slog"
 	"path"
+	"runtime"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/shirou/gopsutil/v4/common"
 	"github.com/shirou/gopsutil/v4/sensors"
@@ -29,6 +32,9 @@ func (a *Agent) newSensorConfig() *SensorConfig {
 
 	return a.newSensorConfigWithEnv(primarySensor, sysSensors, sensorsEnvVal, skipCollection)
 }
+
+// Matches sensors.TemperaturesWithContext to allow for panic recovery (gopsutil/issues/1832)
+type getTempsFn func(ctx context.Context) ([]sensors.TemperatureStat, error)
 
 // newSensorConfigWithEnv creates a SensorConfig with the provided environment variables
 // sensorsSet indicates if the SENSORS environment variable was explicitly set (even to empty string)
@@ -78,8 +84,18 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) {
 	// reset high temp
 	a.systemInfo.DashboardTemp = 0
 
-	// get sensor data
-	temps, _ := sensors.TemperaturesWithContext(a.sensorConfig.context)
+	temps, err := a.getTempsWithPanicRecovery(getSensorTemps)
+	if err != nil {
+		// retry once on panic (gopsutil/issues/1832)
+		temps, err = a.getTempsWithPanicRecovery(getSensorTemps)
+		if err != nil {
+			slog.Warn("Error updating temperatures", "err", err)
+			if len(systemStats.Temperatures) > 0 {
+				systemStats.Temperatures = make(map[string]float64)
+			}
+			return
+		}
+	}
 	slog.Debug("Temperature", "sensors", temps)
 
 	// return if no sensors
@@ -89,6 +105,11 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) {
 
 	systemStats.Temperatures = make(map[string]float64, len(temps))
 	for i, sensor := range temps {
+		// check for malformed strings on darwin (gopsutil/issues/1832)
+		if runtime.GOOS == "darwin" && !utf8.ValidString(sensor.SensorKey) {
+			continue
+		}
+
 		// scale temperature
 		if sensor.Temperature != 0 && sensor.Temperature < 1 {
 			sensor.Temperature = scaleTemperature(sensor.Temperature)
@@ -107,13 +128,26 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) {
 			continue
 		}
 		// set dashboard temperature
-		if a.sensorConfig.primarySensor == "" {
+		switch a.sensorConfig.primarySensor {
+		case "":
 			a.systemInfo.DashboardTemp = max(a.systemInfo.DashboardTemp, sensor.Temperature)
-		} else if a.sensorConfig.primarySensor == sensorName {
+		case sensorName:
 			a.systemInfo.DashboardTemp = sensor.Temperature
 		}
 		systemStats.Temperatures[sensorName] = twoDecimals(sensor.Temperature)
 	}
+}
+
+// getTempsWithPanicRecovery wraps sensors.TemperaturesWithContext to recover from panics (gopsutil/issues/1832)
+func (a *Agent) getTempsWithPanicRecovery(getTemps getTempsFn) (temps []sensors.TemperatureStat, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic: %v", r)
+		}
+	}()
+	// get sensor data (error ignored intentionally as it may be only with one sensor)
+	temps, _ = getTemps(a.sensorConfig.context)
+	return
 }
 
 // isValidSensor checks if a sensor is valid based on the sensor name and the sensor config

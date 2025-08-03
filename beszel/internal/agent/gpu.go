@@ -18,24 +18,24 @@ import (
 
 const (
 	// Commands
-	nvidiaSmiCmd  = "nvidia-smi"
-	rocmSmiCmd    = "rocm-smi"
-	tegraStatsCmd = "tegrastats"
+	nvidiaSmiCmd  string = "nvidia-smi"
+	rocmSmiCmd    string = "rocm-smi"
+	tegraStatsCmd string = "tegrastats"
 
 	// Polling intervals
-	nvidiaSmiInterval  = "4"    // in seconds
-	tegraStatsInterval = "3700" // in milliseconds
-	rocmSmiInterval    = 4300 * time.Millisecond
+	nvidiaSmiInterval  string        = "4"    // in seconds
+	tegraStatsInterval string        = "3700" // in milliseconds
+	rocmSmiInterval    time.Duration = 4300 * time.Millisecond
 
 	// Command retry and timeout constants
-	retryWaitTime     = 5 * time.Second
-	maxFailureRetries = 5
+	retryWaitTime     time.Duration = 5 * time.Second
+	maxFailureRetries int           = 5
 
-	cmdBufferSize = 10 * 1024
+	cmdBufferSize uint16 = 10 * 1024
 
 	// Unit Conversions
-	mebibytesInAMegabyte = 1.024  // nvidia-smi reports memory in MiB
-	milliwattsInAWatt    = 1000.0 // tegrastats reports power in mW
+	mebibytesInAMegabyte float64 = 1.024  // nvidia-smi reports memory in MiB
+	milliwattsInAWatt    float64 = 1000.0 // tegrastats reports power in mW
 )
 
 // GPUManager manages data collection for GPUs (either Nvidia or AMD)
@@ -243,21 +243,26 @@ func (gm *GPUManager) GetCurrentData() map[string]system.GPUData {
 	// copy / reset the data
 	gpuData := make(map[string]system.GPUData, len(gm.GpuDataMap))
 	for id, gpu := range gm.GpuDataMap {
-		// sum the data
-		gpu.Temperature = twoDecimals(gpu.Temperature)
-		gpu.MemoryUsed = twoDecimals(gpu.MemoryUsed)
-		gpu.MemoryTotal = twoDecimals(gpu.MemoryTotal)
-		gpu.Usage = twoDecimals(gpu.Usage / gpu.Count)
-		gpu.Power = twoDecimals(gpu.Power / gpu.Count)
-		// reset the count
-		gpu.Count = 1
-		// dereference to avoid overwriting anything else
-		gpuCopy := *gpu
+		gpuAvg := *gpu
+
+		gpuAvg.Temperature = twoDecimals(gpu.Temperature)
+		gpuAvg.MemoryUsed = twoDecimals(gpu.MemoryUsed)
+		gpuAvg.MemoryTotal = twoDecimals(gpu.MemoryTotal)
+
+		// avoid division by zero
+		if gpu.Count > 0 {
+			gpuAvg.Usage = twoDecimals(gpu.Usage / gpu.Count)
+			gpuAvg.Power = twoDecimals(gpu.Power / gpu.Count)
+		}
+
+		// reset accumulators in the original
+		gpu.Usage, gpu.Power, gpu.Count = 0, 0, 0
+
 		// append id to the name if there are multiple GPUs with the same name
 		if nameCounts[gpu.Name] > 1 {
-			gpuCopy.Name = fmt.Sprintf("%s %s", gpu.Name, id)
+			gpuAvg.Name = fmt.Sprintf("%s %s", gpu.Name, id)
 		}
-		gpuData[id] = gpuCopy
+		gpuData[id] = gpuAvg
 	}
 	slog.Debug("GPU", "data", gpuData)
 	return gpuData

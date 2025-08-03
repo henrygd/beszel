@@ -12,11 +12,17 @@ COPY internal ./internal
 ARG TARGETOS TARGETARCH
 RUN CGO_ENABLED=0 GOGC=75 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-w -s" -o /agent ./cmd/agent
 
+RUN rm -rf /tmp/*
+
 # --------------------------
 # Final image: default scratch-based agent
 # --------------------------
 FROM scratch AS default-agent
 COPY --from=builder /agent /agent
+
+# this is so we don't need to create the /tmp directory in the scratch container
+COPY --from=builder /tmp /tmp
+
 ENTRYPOINT ["/agent"]
 
 # --------------------------
@@ -24,4 +30,5 @@ ENTRYPOINT ["/agent"]
 # --------------------------
 FROM nvidia/cuda:12.9.0-base-ubuntu22.04 AS nvidia-agent
 COPY --from=builder /agent /agent
+COPY --from=builder /tmp /tmp
 ENTRYPOINT ["/agent"]

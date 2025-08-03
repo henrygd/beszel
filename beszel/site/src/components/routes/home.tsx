@@ -18,7 +18,9 @@ export const Home = memo(() => {
 	const systems = useStore($systems)
 	const { t } = useLingui()
 
-	let alertsKey = ""
+	/* key to prevent re-rendering of active alerts */
+	const alertsKey: string[] = []
+
 	const activeAlerts = useMemo(() => {
 		const activeAlerts = alerts.filter((alert) => {
 			const active = alert.triggered && alert.name in alertInfo
@@ -26,7 +28,7 @@ export const Home = memo(() => {
 				return false
 			}
 			alert.sysname = systems.find((system) => system.id === alert.system)?.name
-			alertsKey += alert.id
+			alertsKey.push(alert.id)
 			return true
 		})
 		return activeAlerts
@@ -81,7 +83,7 @@ export const Home = memo(() => {
 				</div>
 			</>
 		),
-		[alertsKey]
+		[alertsKey.join("")]
 	)
 })
 
@@ -110,10 +112,14 @@ const ActiveAlerts = memo(({ activeAlerts }: { activeAlerts: AlertRecord[] }) =>
 										{alert.sysname} {info.name().toLowerCase().replace("cpu", "CPU")}
 									</AlertTitle>
 									<AlertDescription>
-										<Trans>
-											Exceeds {alert.value}
-											{info.unit} in last <Plural value={alert.min} one="# minute" other="# minutes" />
-										</Trans>
+										{alert.name === "Status" ? (
+											<Trans>Connection is down</Trans>
+										) : (
+											<Trans>
+												Exceeds {alert.value}
+												{info.unit} in last <Plural value={alert.min} one="# minute" other="# minutes" />
+											</Trans>
+										)}
 									</AlertDescription>
 									<Link
 										href={getPagePath($router, "system", { name: alert.sysname! })}

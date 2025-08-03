@@ -1,8 +1,19 @@
 name: 🐛 Bug report
 description: Report a new bug or issue.
 title: '[Bug]: '
-labels: ['bug']
+labels: ['bug', "needs confirmation"]
 body:
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which part of Beszel is this about?
+      options:
+        - Hub
+        - Agent
+        - Hub & Agent
+    validations:
+      required: true
   - type: markdown
     attributes:
       value: |
@@ -43,6 +54,39 @@ body:
         3. Pour it into a cup.
     validations:
       required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: Which category does this relate to most?
+      options:
+        - Metrics
+        - Charts & Visualization
+        - Settings & Configuration
+        - Notifications & Alerts
+        - Authentication
+        - Installation
+        - Performance
+        - UI / UX
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: metrics
+    attributes:
+      label: Affected Metrics
+      description: If applicable, which specific metric does this relate to most?
+      options:
+        - CPU
+        - Memory
+        - Storage
+        - Network
+        - Containers
+        - GPU
+        - Sensors
+        - Other
+    validations:
+      required: true
   - type: input
     id: system
     attributes:
@@ -61,7 +105,6 @@ body:
     id: install-method
     attributes:
       label: Installation method
-      default: 0
       options:
         - Docker
         - Binary
