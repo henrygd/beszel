@@ -22,6 +22,7 @@ import {
 	decimalString,
 	formatBytes,
 	formatTemperature,
+	getMeterState,
 	isReadOnlyUser,
 	parseSemVer,
 } from "@/lib/utils"
@@ -53,6 +54,7 @@ import {
 } from "../ui/alert-dialog"
 import { buttonVariants } from "../ui/button"
 import { t } from "@lingui/core/macro"
+import { MeterState } from "@/lib/enums"
 
 /**
  * @param viewMode - "table" or "grid"
@@ -98,7 +100,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			accessorFn: ({ info }) => info.cpu,
 			id: "cpu",
 			name: () => t`CPU`,
-			cell: CellFormatter,
+			cell: TableCellWithMeter,
 			Icon: CpuIcon,
 			header: sortableHeader,
 		},
@@ -107,7 +109,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			accessorFn: ({ info }) => info.mp,
 			id: "memory",
 			name: () => t`Memory`,
-			cell: CellFormatter,
+			cell: TableCellWithMeter,
 			Icon: MemoryStickIcon,
 			header: sortableHeader,
 		},
@@ -115,7 +117,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			accessorFn: ({ info }) => info.dp,
 			id: "disk",
 			name: () => t`Disk`,
-			cell: CellFormatter,
+			cell: TableCellWithMeter,
 			Icon: HardDriveIcon,
 			header: sortableHeader,
 		},
@@ -123,7 +125,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			accessorFn: ({ info }) => info.g,
 			id: "gpu",
 			name: () => "GPU",
-			cell: CellFormatter,
+			cell: TableCellWithMeter,
 			Icon: GpuIcon,
 			header: sortableHeader,
 		},
@@ -157,17 +159,18 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 					return null
 				}
 
-				function getDotColor() {
-					const normalized = max / (sysInfo.t ?? 1)
-					if (status !== "up") return "bg-primary/30"
-					if (normalized < 0.7) return "bg-green-500"
-					if (normalized < 1) return "bg-yellow-500"
-					return "bg-red-600"
-				}
+				const normalizedLoad = max / (sysInfo.t ?? 1)
+				const threshold = getMeterState(normalizedLoad * 100)
 
 				return (
 					<div className="flex items-center gap-[.35em] w-full tabular-nums tracking-tight">
-						<span className={cn("inline-block size-2 rounded-full me-0.5", getDotColor())} />
+						<span
+							className={cn("inline-block size-2 rounded-full me-0.5", {
+								"bg-green-500": threshold === MeterState.Good,
+								"bg-yellow-500": threshold === MeterState.Warn,
+								"bg-red-600": threshold === MeterState.Crit,
+							})}
+						/>
 						{loadAverages?.map((la, i) => (
 							<span key={i}>{decimalString(la, la >= 10 ? 1 : 2)}</span>
 						))}
@@ -280,10 +283,9 @@ function sortableHeader(context: HeaderContext<SystemRecord, unknown>) {
 	)
 }
 
-function CellFormatter(info: CellContext<SystemRecord, unknown>) {
-	const userSettings = useStore($userSettings)
+function TableCellWithMeter(info: CellContext<SystemRecord, unknown>) {
 	const val = Number(info.getValue()) || 0
-	const { colorWarn = 65, colorCrit = 90 } = userSettings
+	const threshold = getMeterState(val)
 	return (
 		<div className="flex gap-2 items-center tabular-nums tracking-tight">
 			<span className="min-w-8">{decimalString(val, val >= 10 ? 1 : 2)}%</span>
@@ -292,8 +294,8 @@ function CellFormatter(info: CellContext<SystemRecord, unknown>) {
 					className={cn(
 						"absolute inset-0 w-full h-full origin-left",
 						(info.row.original.status !== "up" && "bg-primary/30") ||
-							(val < colorWarn && "bg-green-500") ||
-							(val < colorCrit && "bg-yellow-500") ||
+							(threshold === MeterState.Good && "bg-green-500") ||
+							(threshold === MeterState.Warn && "bg-yellow-500") ||
 							"bg-red-600"
 					)}
 					style={{
