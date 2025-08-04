@@ -8,7 +8,7 @@ msgstr ""
 "Language: ru\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-04 01:51\n"
+"PO-Revision-Date: 2025-08-04 02:56\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -69,7 +69,7 @@ msgid "5 min"
 msgstr "5 мин"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "Действия"
@@ -108,7 +108,7 @@ msgstr "Настроить параметры отображения для гр
 msgid "Admin"
 msgstr "Администратор"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
 msgstr "Агент"
 
@@ -128,7 +128,7 @@ msgstr "Оповещения"
 msgid "All Systems"
 msgstr "Все системы"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Вы уверены, что хотите удалить {name}?"
 
@@ -202,7 +202,7 @@ msgstr "Байты (Кбайт/с, Мбайт/с, Гбайт/с)"
 msgid "Cache / Buffers"
 msgstr "Кэш / Буферы"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Cancel"
 msgstr "Отмена"
@@ -261,7 +261,7 @@ msgstr "Подтвердите пароль"
 msgid "Connection is down"
 msgstr "Нет соединения"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Continue"
 msgstr "Продолжить"
@@ -287,7 +287,7 @@ msgctxt "Environment variables"
 msgid "Copy env"
 msgstr "Скопировать env"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
 msgstr "Копировать хост"
 
@@ -296,7 +296,7 @@ msgstr "Копировать хост"
 msgid "Copy Linux command"
 msgstr "Копировать команду Linux"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
 msgstr "Копировать имя"
 
@@ -316,7 +316,7 @@ msgstr "Скопируйте содержимое <0>docker-compose.yml</0> дл
 msgid "Copy YAML"
 msgstr "Скопировать YAML"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "CPU"
 
@@ -335,6 +335,10 @@ msgstr "Создать аккаунт"
 msgid "Created"
 msgstr "Создано"
 
+#: src/components/routes/settings/general.tsx
+msgid "Critical (%)"
+msgstr "Критический (%)"
+
 #. Dark theme
 #: src/components/mode-toggle.tsx
 msgid "Dark"
@@ -349,7 +353,7 @@ msgstr "Панель управления"
 msgid "Default time period"
 msgstr "Период по умолчанию"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Delete"
 msgstr "Удалить"
@@ -358,7 +362,7 @@ msgstr "Удалить"
 msgid "Delete fingerprint"
 msgstr "Удалить отпечаток"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
 msgstr "Диск"
 
@@ -399,7 +403,7 @@ msgstr "Документация"
 #. Context: System is down
 #: src/lib/utils.ts
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
 msgstr "Не в сети"
@@ -409,7 +413,7 @@ msgid "Duration"
 msgstr "Длительность"
 
 #: src/components/add-system.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "Редактировать"
 
@@ -567,7 +571,7 @@ msgid "Load Average 5m"
 msgstr "Средняя загрузка за 5м"
 
 #. Short label for load average
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
 msgstr "Ср. загрузка"
 
@@ -606,7 +610,7 @@ msgstr "Инструкции по ручной настройке"
 msgid "Max 1 min"
 msgstr "Макс 1 мин"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Память"
 
@@ -624,7 +628,7 @@ msgstr "Использование памяти контейнерами Docker"
 msgid "Name"
 msgstr "Имя"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "Сеть"
 
@@ -668,7 +672,7 @@ msgstr "Поддержка OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "При каждом перезапуске системы в базе данных будут обновлены в соответствии с системами, определенными в файле."
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
@@ -713,11 +717,11 @@ msgstr "Пароль должен быть меньше 72 символов."
 msgid "Password reset request received"
 msgstr "Запрос на сброс пароля получен"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "Пауза"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "Пауза"
 
@@ -792,7 +796,7 @@ msgstr "Сбросить пароль"
 msgid "Resolved"
 msgstr "Завершено"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Возобновить"
 
@@ -832,6 +836,10 @@ msgstr "Смотрите <0>настройки уведомлений</0>, чт�
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Отправлено"
+
+#: src/components/routes/settings/general.tsx
+msgid "Set percentage thresholds for meter colors."
+msgstr "Установите процентные пороги для цветов счетчиков."
 
 #: src/components/routes/settings/general.tsx
 msgid "Sets the default time range for charts when a system is viewed."
@@ -881,7 +889,7 @@ msgstr "Использование подкачки"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "Система"
@@ -903,7 +911,7 @@ msgid "Table"
 msgstr "Таблица"
 
 #. Temperature label in systems table
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr "Темп"
 
@@ -932,7 +940,7 @@ msgstr "Тестовое уведомление отправлено"
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Затем войдите в бэкенд и сбросьте пароль вашей учетной записи в таблице пользователей."
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Это действие не может быть отменено. Это навсегда удалит все текущие записи для {name} из базы данных."
 
@@ -1026,7 +1034,7 @@ msgid "Universal token"
 msgstr "Универсальный токен"
 
 #. Context: System is up
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
 msgstr "В сети"
@@ -1083,6 +1091,14 @@ msgstr "Ожидание достаточного количества запи�
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "Хотите помочь нам улучшить наши переводы? Посетите <0>Crowdin</0> для получения более подробной информации."
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning (%)"
+msgstr "Предупреждение (%)"
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning thresholds"
+msgstr "Пороги предупреждения"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
