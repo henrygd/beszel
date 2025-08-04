@@ -8,7 +8,7 @@ msgstr ""
 "Language: ja\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-04 01:51\n"
+"PO-Revision-Date: 2025-08-04 02:56\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -69,7 +69,7 @@ msgid "5 min"
 msgstr "5分"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "アクション"
@@ -108,7 +108,7 @@ msgstr "チャートの表示オプションを調整します。"
 msgid "Admin"
 msgstr "管理者"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
 msgstr "エージェント"
 
@@ -128,7 +128,7 @@ msgstr "アラート"
 msgid "All Systems"
 msgstr "すべてのシステム"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "{name}を削除してもよろしいですか？"
 
@@ -202,7 +202,7 @@ msgstr "バイト (KB/s, MB/s, GB/s)"
 msgid "Cache / Buffers"
 msgstr "キャッシュ / バッファ"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Cancel"
 msgstr "キャンセル"
@@ -261,7 +261,7 @@ msgstr "パスワードを確認"
 msgid "Connection is down"
 msgstr "接続が切断されました"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Continue"
 msgstr "続行"
@@ -287,7 +287,7 @@ msgctxt "Environment variables"
 msgid "Copy env"
 msgstr "環境変数をコピー"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
 msgstr "ホストをコピー"
 
@@ -296,7 +296,7 @@ msgstr "ホストをコピー"
 msgid "Copy Linux command"
 msgstr "Linuxコマンドをコピー"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
 msgstr "名前をコピー"
 
@@ -316,7 +316,7 @@ msgstr "下記のエージェントの<0>docker-compose.yml</0>内容をコピ�
 msgid "Copy YAML"
 msgstr "YAMLをコピー"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "CPU"
 
@@ -335,6 +335,10 @@ msgstr "アカウントを作成"
 msgid "Created"
 msgstr "作成日"
 
+#: src/components/routes/settings/general.tsx
+msgid "Critical (%)"
+msgstr "クリティカル (%)"
+
 #. Dark theme
 #: src/components/mode-toggle.tsx
 msgid "Dark"
@@ -349,7 +353,7 @@ msgstr "ダッシュボード"
 msgid "Default time period"
 msgstr "デフォルトの期間"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Delete"
 msgstr "削除"
@@ -358,7 +362,7 @@ msgstr "削除"
 msgid "Delete fingerprint"
 msgstr "フィンガープリントを削除"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
 msgstr "ディスク"
 
@@ -399,7 +403,7 @@ msgstr "ドキュメント"
 #. Context: System is down
 #: src/lib/utils.ts
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
 msgstr "停止"
@@ -409,7 +413,7 @@ msgid "Duration"
 msgstr "期間"
 
 #: src/components/add-system.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "編集"
 
@@ -567,7 +571,7 @@ msgid "Load Average 5m"
 msgstr "ロードアベレージ (5分)"
 
 #. Short label for load average
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
 msgstr "ロードアベレージ"
 
@@ -606,7 +610,7 @@ msgstr "手動セットアップの手順"
 msgid "Max 1 min"
 msgstr "最大1分"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "メモリ"
 
@@ -624,7 +628,7 @@ msgstr "Dockerコンテナのメモリ使用率"
 msgid "Name"
 msgstr "名前"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "帯域"
 
@@ -668,7 +672,7 @@ msgstr "OAuth 2 / OIDCサポート"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "再起動のたびに、データベース内のシステムはファイルに定義されたシステムに一致するように更新されます。"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
@@ -713,11 +717,11 @@ msgstr "パスワードは72バイト未満でなければなりません。"
 msgid "Password reset request received"
 msgstr "パスワードリセットのリクエストを受け取りました"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "一時停止"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "一時停止中"
 
@@ -792,7 +796,7 @@ msgstr "パスワードをリセット"
 msgid "Resolved"
 msgstr "解決済み"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "再開"
 
@@ -832,6 +836,10 @@ msgstr "アラートの受信方法を設定するには<0>通知設定</0>を�
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "送信"
+
+#: src/components/routes/settings/general.tsx
+msgid "Set percentage thresholds for meter colors."
+msgstr "メーターの色にパーセンテージのしきい値を設定します。"
 
 #: src/components/routes/settings/general.tsx
 msgid "Sets the default time range for charts when a system is viewed."
@@ -881,7 +889,7 @@ msgstr "スワップ使用量"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "システム"
@@ -903,7 +911,7 @@ msgid "Table"
 msgstr "テーブル"
 
 #. Temperature label in systems table
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr "温度"
 
@@ -932,7 +940,7 @@ msgstr "テスト通知が送信されました"
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "その後、バックエンドにログインして、ユーザーテーブルでユーザーアカウントのパスワードをリセットしてください。"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "この操作は元に戻せません。これにより、データベースから{name}のすべての現在のレコードが永久に削除されます。"
 
@@ -1026,7 +1034,7 @@ msgid "Universal token"
 msgstr "ユニバーサルトークン"
 
 #. Context: System is up
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
 msgstr "正常"
@@ -1083,6 +1091,14 @@ msgstr "表示するのに十分なレコードを待っています"
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "翻訳をさらに良くするためにご協力をお願いします。詳細については<0>Crowdin</0>をご覧ください。"
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning (%)"
+msgstr "警告 (%)"
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning thresholds"
+msgstr "警告のしきい値"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
