@@ -8,7 +8,7 @@ msgstr ""
 "Language: nl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-04 01:51\n"
+"PO-Revision-Date: 2025-08-04 02:56\n"
 "Last-Translator: \n"
 "Language-Team: Dutch\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -69,7 +69,7 @@ msgid "5 min"
 msgstr ""
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "Acties"
@@ -108,7 +108,7 @@ msgstr "Weergaveopties voor grafieken aanpassen."
 msgid "Admin"
 msgstr "Admin"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
 msgstr "Agent"
 
@@ -128,7 +128,7 @@ msgstr "Waarschuwingen"
 msgid "All Systems"
 msgstr "Alle systemen"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Weet je zeker dat je {name} wilt verwijderen?"
 
@@ -202,7 +202,7 @@ msgstr ""
 msgid "Cache / Buffers"
 msgstr "Cache / Buffers"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Cancel"
 msgstr "Annuleren"
@@ -261,7 +261,7 @@ msgstr "Bevestig wachtwoord"
 msgid "Connection is down"
 msgstr ""
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Continue"
 msgstr "Volgende"
@@ -287,7 +287,7 @@ msgctxt "Environment variables"
 msgid "Copy env"
 msgstr "Env kopiëren"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
 msgstr "Kopieer host"
 
@@ -296,7 +296,7 @@ msgstr "Kopieer host"
 msgid "Copy Linux command"
 msgstr "Kopieer Linux-opdracht"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
 msgstr "Kopieer naam"
 
@@ -316,7 +316,7 @@ msgstr "Kopieer de<0>docker-compose.yml</0> inhoud voor de agent hieronder, of r
 msgid "Copy YAML"
 msgstr "YAML kopiëren"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "CPU"
 
@@ -335,6 +335,10 @@ msgstr "Account aanmaken"
 msgid "Created"
 msgstr ""
 
+#: src/components/routes/settings/general.tsx
+msgid "Critical (%)"
+msgstr "Kritiek (%)"
+
 #. Dark theme
 #: src/components/mode-toggle.tsx
 msgid "Dark"
@@ -349,7 +353,7 @@ msgstr "Dashboard"
 msgid "Default time period"
 msgstr "Standaard tijdsduur"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Delete"
 msgstr "Verwijderen"
@@ -358,7 +362,7 @@ msgstr "Verwijderen"
 msgid "Delete fingerprint"
 msgstr "Vingerafdruk verwijderen"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
 msgstr "Schijf"
 
@@ -399,7 +403,7 @@ msgstr "Documentatie"
 #. Context: System is down
 #: src/lib/utils.ts
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
 msgstr "Offline"
@@ -409,7 +413,7 @@ msgid "Duration"
 msgstr ""
 
 #: src/components/add-system.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "Bewerken"
 
@@ -567,7 +571,7 @@ msgid "Load Average 5m"
 msgstr "Gemiddelde Belasting 5m"
 
 #. Short label for load average
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
 msgstr ""
 
@@ -606,7 +610,7 @@ msgstr "Handmatige installatie-instructies"
 msgid "Max 1 min"
 msgstr "Max 1 min"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Geheugen"
 
@@ -624,7 +628,7 @@ msgstr "Geheugengebruik van docker containers"
 msgid "Name"
 msgstr "Naam"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "Net"
 
@@ -668,7 +672,7 @@ msgstr "OAuth 2 / OIDC ondersteuning"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Bij elke herstart zullen systemen in de database worden bijgewerkt om overeen te komen met de systemen die in het bestand zijn gedefinieerd."
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
@@ -713,11 +717,11 @@ msgstr "Het wachtwoord moet minder zijn dat 72 bytes."
 msgid "Password reset request received"
 msgstr "Wachtwoord reset aanvraag ontvangen"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "Pauze"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "Gepauzeerd"
 
@@ -792,7 +796,7 @@ msgstr "Wachtwoord resetten"
 msgid "Resolved"
 msgstr ""
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Hervatten"
 
@@ -832,6 +836,10 @@ msgstr "Zie <0>notificatie-instellingen</0> om te configureren hoe je meldingen 
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Verzonden"
+
+#: src/components/routes/settings/general.tsx
+msgid "Set percentage thresholds for meter colors."
+msgstr "Stel percentagedrempels in voor meterkleuren."
 
 #: src/components/routes/settings/general.tsx
 msgid "Sets the default time range for charts when a system is viewed."
@@ -881,7 +889,7 @@ msgstr "Swap gebruik"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "Systeem"
@@ -903,7 +911,7 @@ msgid "Table"
 msgstr "Tabel"
 
 #. Temperature label in systems table
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr "Temperatuur"
 
@@ -932,7 +940,7 @@ msgstr "Testmelding verzonden"
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Log vervolgens in op de backend en reset het wachtwoord van je gebruikersaccount in het gebruikersoverzicht."
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Deze actie kan niet ongedaan worden gemaakt. Dit zal alle huidige records voor {name} permanent verwijderen uit de database."
 
@@ -1026,7 +1034,7 @@ msgid "Universal token"
 msgstr "Universele token"
 
 #. Context: System is up
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
 msgstr "Online"
@@ -1083,6 +1091,14 @@ msgstr "Wachtend op genoeg records om weer te geven"
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "Wil je ons helpen onze vertalingen nog beter te maken? Bekijk <0>Crowdin</0> voor meer informatie."
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning (%)"
+msgstr "Waarschuwing (%)"
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning thresholds"
+msgstr "Waarschuwingsdrempels"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
