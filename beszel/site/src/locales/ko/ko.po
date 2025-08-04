@@ -8,7 +8,7 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-04 01:51\n"
+"PO-Revision-Date: 2025-08-04 02:56\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -69,7 +69,7 @@ msgid "5 min"
 msgstr "5분"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "작업"
@@ -108,7 +108,7 @@ msgstr "차트 표시 옵션 변경."
 msgid "Admin"
 msgstr "관리자"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
 msgstr "에이전트"
 
@@ -128,7 +128,7 @@ msgstr "알림"
 msgid "All Systems"
 msgstr "모든 시스템"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "{name}을(를) 삭제하시겠습니까?"
 
@@ -202,7 +202,7 @@ msgstr "바이트 (KB/s, MB/s, GB/s)"
 msgid "Cache / Buffers"
 msgstr "캐시 / 버퍼"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Cancel"
 msgstr "취소"
@@ -261,7 +261,7 @@ msgstr "비밀번호 확인"
 msgid "Connection is down"
 msgstr "연결이 끊겼습니다"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Continue"
 msgstr "계속"
@@ -287,7 +287,7 @@ msgctxt "Environment variables"
 msgid "Copy env"
 msgstr "환경 복사"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
 msgstr "호스트 복사"
 
@@ -296,7 +296,7 @@ msgstr "호스트 복사"
 msgid "Copy Linux command"
 msgstr "리눅스 명령어 복사"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
 msgstr "이름 복사"
 
@@ -316,7 +316,7 @@ msgstr "아래 에이전트의 <0>docker-compose.yml</0> 내용을 복사하거�
 msgid "Copy YAML"
 msgstr "YAML 복사"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "CPU"
 
@@ -335,6 +335,10 @@ msgstr "계정 생성"
 msgid "Created"
 msgstr "생성됨"
 
+#: src/components/routes/settings/general.tsx
+msgid "Critical (%)"
+msgstr "치명적 (%)"
+
 #. Dark theme
 #: src/components/mode-toggle.tsx
 msgid "Dark"
@@ -349,7 +353,7 @@ msgstr "대시보드"
 msgid "Default time period"
 msgstr "기본 기간"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Delete"
 msgstr "삭제"
@@ -358,7 +362,7 @@ msgstr "삭제"
 msgid "Delete fingerprint"
 msgstr "지문 삭제"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
 msgstr "디스크"
 
@@ -399,7 +403,7 @@ msgstr "문서"
 #. Context: System is down
 #: src/lib/utils.ts
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
 msgstr "오프라인"
@@ -409,7 +413,7 @@ msgid "Duration"
 msgstr "기간"
 
 #: src/components/add-system.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "수정"
 
@@ -567,7 +571,7 @@ msgid "Load Average 5m"
 msgstr "부하 평균 5분"
 
 #. Short label for load average
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
 msgstr "부하 평균"
 
@@ -606,7 +610,7 @@ msgstr "수동 설정 방법"
 msgid "Max 1 min"
 msgstr "1분간 최댓값"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "메모리"
 
@@ -624,7 +628,7 @@ msgstr "Docker 컨테이너의 메모리 사용량"
 msgid "Name"
 msgstr "이름"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "네트워크"
 
@@ -668,7 +672,7 @@ msgstr "OAuth 2 / OIDC 지원"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "매 시작 시, 데이터베이스가 파일에 정의된 시스템과 일치하도록 업데이트됩니다."
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
@@ -713,11 +717,11 @@ msgstr "비밀번호는 72 바이트 이하여야 합니다."
 msgid "Password reset request received"
 msgstr "비밀번호 재설정 요청이 접수되었습니다"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "일시 중지"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "일시 정지됨"
 
@@ -792,7 +796,7 @@ msgstr "비밀번호 재설정"
 msgid "Resolved"
 msgstr "해결됨"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "재개"
 
@@ -832,6 +836,10 @@ msgstr "알림을 받는 방법을 구성하려면 <0>알림 설정</0>을 참�
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "보냄"
+
+#: src/components/routes/settings/general.tsx
+msgid "Set percentage thresholds for meter colors."
+msgstr "미터 색상에 대한 백분율 임계값을 설정합니다."
 
 #: src/components/routes/settings/general.tsx
 msgid "Sets the default time range for charts when a system is viewed."
@@ -881,7 +889,7 @@ msgstr "스왑 사용량"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "시스템"
@@ -903,7 +911,7 @@ msgid "Table"
 msgstr "표"
 
 #. Temperature label in systems table
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr "온도"
 
@@ -932,7 +940,7 @@ msgstr "테스트 알림이 전송되었습니다."
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "그런 다음 백엔드에 로그인하여 사용자 테이블에서 사용자 계정 비밀번호를 재설정하세요."
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "이 작업은 되돌릴 수 없습니다. 데이터베이스에서 {name}에 대한 모든 현재 기록이 영구적으로 삭제됩니다."
 
@@ -1026,7 +1034,7 @@ msgid "Universal token"
 msgstr "범용 토큰"
 
 #. Context: System is up
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
 msgstr "온라인"
@@ -1083,6 +1091,14 @@ msgstr "표시할 충분한 기록을 기다리는 중"
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "번역을 개선하는데 도움을 주시겠습니까? 자세한 내용은 <0>Crowdin</0>을 확인해 주세요."
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning (%)"
+msgstr "경고 (%)"
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning thresholds"
+msgstr "경고 임계값"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
