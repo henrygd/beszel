@@ -862,7 +862,7 @@ func init() {
 		"manageRule": null
 	},
 	{
-		"id": "tailscale_network_data",
+		"id": "tailscale_detailed",
 		"listRule": "@request.auth.id != \"\"",
 		"viewRule": "@request.auth.id != \"\"",
 		"createRule": null,
@@ -888,6 +888,20 @@ func init() {
 			{
 				"autogeneratePattern": "",
 				"hidden": false,
+				"id": "node_id_field",
+				"max": 255,
+				"min": 0,
+				"name": "node_id",
+				"pattern": "",
+				"presentable": false,
+				"primaryKey": false,
+				"required": true,
+				"system": false,
+				"type": "text"
+			},
+			{
+				"autogeneratePattern": "",
+				"hidden": false,
 				"id": "tailnet_field",
 				"max": 255,
 				"min": 0,
@@ -901,9 +915,9 @@ func init() {
 			},
 			{
 				"hidden": false,
-				"id": "network_data_field",
+				"id": "network_field",
 				"maxSize": 5000000,
-				"name": "network_data",
+				"name": "network",
 				"presentable": false,
 				"required": true,
 				"system": false,
@@ -911,9 +925,9 @@ func init() {
 			},
 			{
 				"hidden": false,
-				"id": "stats_data_field",
+				"id": "infofield",
 				"maxSize": 1000000,
-				"name": "stats_data",
+				"name": "info",
 				"presentable": false,
 				"required": true,
 				"system": false,
@@ -941,8 +955,8 @@ func init() {
 			}
 		],
 		"indexes": [
-			"CREATE INDEX ` + "`" + `idx_tailscale_tailnet` + "`" + ` ON ` + "`" + `tailscale_network_data` + "`" + ` (` + "`" + `tailnet` + "`" + `)",
-			"CREATE INDEX ` + "`" + `idx_tailscale_created` + "`" + ` ON ` + "`" + `tailscale_network_data` + "`" + ` (` + "`" + `created` + "`" + `)"
+			"CREATE INDEX ` + "`" + `idx_tailscale_stats_tailnet` + "`" + ` ON ` + "`" + `tailscale_stats` + "`" + ` (` + "`" + `tailnet` + "`" + `)",
+			"CREATE INDEX ` + "`" + `idx_tailscale_stats_created` + "`" + ` ON ` + "`" + `tailscale_stats` + "`" + ` (` + "`" + `created` + "`" + `)"
 		],
 		"system": false
 	}

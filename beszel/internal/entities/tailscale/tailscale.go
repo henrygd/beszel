@@ -40,6 +40,20 @@ type TailscaleNode struct {
 	KeyExpired           bool      `json:"keyExpired" cbor:"31,keyasint"`
 	ConnectedToControl   bool      `json:"connectedToControl" cbor:"32,keyasint"`
 	UpdateAvailable      bool      `json:"updateAvailable" cbor:"33,keyasint"`
+	Authorized           bool      `json:"authorized" cbor:"34,keyasint"`
+	IsExternal           bool      `json:"isExternal" cbor:"35,keyasint"`
+	KeyExpiryDisabled    bool           `json:"keyExpiryDisabled" cbor:"36,keyasint"`
+	ClientSupports       *ClientSupports `json:"clientSupports,omitempty" cbor:"37,keyasint,omitempty"`
+}
+
+// ClientSupports represents the client capabilities
+type ClientSupports struct {
+	HairPinning bool `json:"hairPinning" cbor:"0,keyasint"`
+	IPV6        bool `json:"ipv6" cbor:"1,keyasint"`
+	PCP         bool `json:"pcp" cbor:"2,keyasint"`
+	PMP         bool `json:"pmp" cbor:"3,keyasint"`
+	UDP         bool `json:"udp" cbor:"4,keyasint"`
+	UPNP        bool `json:"upnp" cbor:"5,keyasint"`
 }
 
 // TailscaleNetwork represents the overall Tailscale network state

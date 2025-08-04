@@ -247,6 +247,7 @@ export interface SemVer {
 
 export interface TailscaleNode {
 	id: string
+	node_id: string
 	name: string
 	hostname: string
 	ip: string
@@ -280,6 +281,21 @@ export interface TailscaleNode {
 	keyExpired: boolean
 	connectedToControl: boolean
 	updateAvailable: boolean
+	authorized: boolean
+	isExternal: boolean
+	keyExpiryDisabled: boolean
+	clientSupports?: {
+		hairPinning: boolean
+		ipv6: boolean
+		pcp: boolean
+		pmp: boolean
+		udp: boolean
+		upnp: boolean
+	} | null
+	tailnet?: string
+	network?: any
+	info?: any
+	updated?: string
 }
 
 export interface TailscaleNetwork {

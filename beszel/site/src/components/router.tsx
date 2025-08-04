@@ -5,6 +5,7 @@ const routes = {
 	system: `/system/:name`,
 	settings: `/settings/:name?`,
 	forgot_password: `/forgot-password`,
+	tailscale_node: `/tailscale/node/:nodeId`,
 } as const
 
 /**

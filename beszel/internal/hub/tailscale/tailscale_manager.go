@@ -89,7 +89,7 @@ func (m *Manager) loadConfig() (*tailscale.TailscaleConfig, error) {
 	config := &tailscale.TailscaleConfig{}
 
 	// Check if Tailscale monitoring is enabled
-	if enabled := os.Getenv("TS_ENABLED"); enabled == "true" {
+	if enabled := os.Getenv("TS_ENABLE"); enabled == "true" {
 		config.Enabled = true
 	} else {
 		config.Enabled = false
@@ -134,8 +134,8 @@ func (m *Manager) FetchNetworkData() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
-	// Get devices (nodes) from Tailscale API
-	devices, err := m.client.Devices().List(ctx)
+	// Get devices (nodes) from Tailscale API with all fields including latency
+	devices, err := m.client.Devices().ListWithAllFields(ctx)
 	if err != nil {
 		slog.Error("Failed to fetch devices from Tailscale API", "error", err)
 		return fmt.Errorf("failed to fetch devices: %w", err)
@@ -195,9 +195,14 @@ func (m *Manager) FetchNetworkData() error {
 	m.stats = stats
 	m.lastFetch = time.Now()
 
-	// Store data in database
-	if err := m.storeNetworkData(); err != nil {
-		slog.Warn("Failed to store Tailscale network data", "error", err)
+	// Store aggregated stats in database (disabled - no longer storing in tailscale_summary)
+	// if err := m.storeNetworkData(); err != nil {
+	// 	slog.Warn("Failed to store Tailscale stats data", "error", err)
+	// }
+
+	// Store detailed network data (one record per node)
+	if err := m.storeDetailedNetworkData(devices); err != nil {
+		slog.Warn("Failed to store Tailscale detailed network data", "error", err)
 	}
 
 	slog.Info("Tailscale network data updated",
@@ -207,6 +212,120 @@ func (m *Manager) FetchNetworkData() error {
 		"expiredNodes", stats.ExpiredNodes,
 		"exitNodes", stats.ExitNodes,
 		"subnetRouters", stats.SubnetRouters)
+
+	return nil
+}
+
+// storeNetworkData stores the aggregated stats data in the database
+func (m *Manager) storeNetworkData() error {
+	if m.network == nil {
+		return nil
+	}
+
+	// Get the tailscale collection (for storing aggregated stats)
+	collection, err := m.hub.FindCollectionByNameOrId("tailscale_summary")
+	if err != nil {
+		slog.Warn("Tailscale collection not found, skipping storage", "error", err)
+		return nil
+	}
+
+	// Convert stats data to JSON (we only store stats in this collection)
+	statsData, err := json.Marshal(m.stats)
+	if err != nil {
+		return fmt.Errorf("failed to marshal stats data: %w", err)
+	}
+
+	// Create a new record
+	record := core.NewRecord(collection)
+	record.Set("tailnet", m.config.Tailnet)
+	record.Set("stats_data", string(statsData))
+
+	// Save the record to the database
+	if err := m.hub.Save(record); err != nil {
+		return fmt.Errorf("failed to save record: %w", err)
+	}
+
+	slog.Info("Tailscale stats data saved to database",
+		"tailnet", m.config.Tailnet,
+		"totalNodes", m.stats.TotalNodes,
+		"onlineNodes", m.stats.OnlineNodes,
+		"recordId", record.Id)
+
+	return nil
+}
+
+// storeDetailedNetworkData stores individual node information in the tailscales_stats collection
+func (m *Manager) storeDetailedNetworkData(devices []tsclient.Device) error {
+	if m.network == nil || len(m.network.Nodes) == 0 {
+		return nil
+	}
+
+	// Get the tailscale_stats collection (for storing individual node data)
+	collection, err := m.hub.FindCollectionByNameOrId("tailscale_detailed")
+	if err != nil {
+		slog.Warn("Tailscale stats collection not found, skipping detailed storage", "error", err)
+		return nil
+	}
+
+	// Create a map of device ID to device for quick lookup
+	deviceMap := make(map[string]*tsclient.Device)
+	for i := range devices {
+		deviceMap[devices[i].ID] = &devices[i]
+	}
+
+	// Save one record per node
+	for _, node := range m.network.Nodes {
+		// Get endpoints from network data if available
+		if device, exists := deviceMap[node.ID]; exists && device.ClientConnectivity != nil {
+			node.Endpoints = device.ClientConnectivity.Endpoints
+		}
+		
+		// Convert node data to JSON for the info field
+		nodeData, err := json.Marshal(node)
+		if err != nil {
+			slog.Warn("Failed to marshal node data", "node", node.Name, "error", err)
+			continue
+		}
+
+		// Create a new record for this node
+		record := core.NewRecord(collection)
+		record.Set("tailnet", m.config.Tailnet)
+		record.Set("node_id", node.ID)
+		
+		// Store network connectivity information in the network field
+		var networkData map[string]interface{}
+		if device, exists := deviceMap[node.ID]; exists && device.ClientConnectivity != nil {
+			networkData = map[string]interface{}{
+				"endpoints": device.ClientConnectivity.Endpoints,
+				"derp":      device.ClientConnectivity.DERP,
+				"latency":   device.ClientConnectivity.DERPLatency,
+			}
+		} else {
+			// Skip this record if connectivity data is not available
+			continue
+		}
+		networkJSON, _ := json.Marshal(networkData)
+		record.Set("network", string(networkJSON))
+		
+		record.Set("info", string(nodeData))
+
+		// Save the record to the database
+		if err := m.hub.Save(record); err != nil {
+			slog.Warn("Failed to save node record", "node", node.Name, "error", err)
+			continue
+		}
+
+		slog.Debug("Tailscale node data saved to database",
+			"tailnet", m.config.Tailnet,
+			"nodeName", node.Name,
+			"nodeID", node.ID,
+			"online", node.Online,
+			"recordId", record.Id)
+	}
+
+	slog.Info("Tailscale node data saved to database",
+		"tailnet", m.config.Tailnet,
+		"totalNodes", len(m.network.Nodes))
 
 	return nil
 }
@@ -225,91 +344,26 @@ func (m *Manager) convertDeviceToNode(device *tsclient.Device) *tailscale.Tailsc
 	// Determine if device is online based on last seen time
 	online := !device.LastSeen.IsZero() && time.Since(device.LastSeen.Time) < 5*time.Minute
 
-	// Determine if device is expired
-	expired := !device.Expires.IsZero() && time.Now().After(device.Expires.Time)
-
 	node := &tailscale.TailscaleNode{
-		ID:                   device.ID,
-		Name:                 device.Name,
-		Hostname:             device.Hostname,
-		IP:                   ip,
-		IPv6:                 ipv6,
-		OS:                   device.OS,
-		Version:              device.ClientVersion,
-		LastSeen:             device.LastSeen.Time,
-		Online:               online,
-		Tags:                 device.Tags,
-		IsExitNode:           false, // Not available in basic device info
-		IsSubnetRouter:       false, // Not available in basic device info
-		MachineKey:           device.MachineKey,
-		NodeKey:              device.NodeKey,
-		DiscoKey:             "",         // Not available in basic device info
-		Endpoints:            []string{}, // Not available in basic device info
-		Derp:                 "",         // Not available in basic device info
-		InNetworkMap:         true,       // Assumed true if device exists
-		InMagicSock:          true,       // Assumed true if device exists
-		InEngine:             true,       // Assumed true if device exists
-		Created:              device.Created.Time,
-		KeyExpiry:            device.Expires.Time,
-		Capabilities:         []string{}, // Not available in basic device info
-		ComputedName:         device.Name,
-		ComputedNameWithHost: device.Hostname,
-		PrimaryRoutes:        []string{}, // Not available in basic device info
-		AllowedIPs:           device.Addresses,
-		AdvertisedRoutes:     device.AdvertisedRoutes,
-		EnabledRoutes:        device.EnabledRoutes,
-		IsEphemeral:          device.IsEphemeral,
-		Expired:              expired,
-		KeyExpired:           expired,
-		ConnectedToControl:   device.Authorized,
-		UpdateAvailable:      device.UpdateAvailable,
+		ID:             device.ID,
+		Name:           device.Name,
+		Hostname:       device.Hostname,
+		IP:             ip,
+		IPv6:           ipv6,
+		OS:             device.OS,
+		Version:        device.ClientVersion,
+		LastSeen:       device.LastSeen.Time,
+		Online:         online,
+		Tags:           device.Tags,
+		IsExitNode:     false, // Not available in basic device info
+		IsSubnetRouter: false, // Not available in basic device info
+		KeyExpiry:      device.Expires.Time,
+		AdvertisedRoutes: device.AdvertisedRoutes,
+		EnabledRoutes:    device.EnabledRoutes,
+		Endpoints:      []string{}, // Will be populated from network data
 	}
 
 	return node
-}
-
-// storeNetworkData stores the network data in the database
-func (m *Manager) storeNetworkData() error {
-	if m.network == nil {
-		return nil
-	}
-
-	// Get the tailscale_stats collection
-	collection, err := m.hub.FindCollectionByNameOrId("tailscale_stats")
-	if err != nil {
-		slog.Warn("Tailscale collection not found, skipping storage", "error", err)
-		return nil
-	}
-
-	// Convert network and stats data to JSON
-	networkData, err := json.Marshal(m.network)
-	if err != nil {
-		return fmt.Errorf("failed to marshal network data: %w", err)
-	}
-
-	statsData, err := json.Marshal(m.stats)
-	if err != nil {
-		return fmt.Errorf("failed to marshal stats data: %w", err)
-	}
-
-	// Create a new record
-	record := core.NewRecord(collection)
-	record.Set("tailnet", m.config.Tailnet)
-	record.Set("network_data", string(networkData))
-	record.Set("stats_data", string(statsData))
-
-	// Save the record to the database
-	if err := m.hub.Save(record); err != nil {
-		return fmt.Errorf("failed to save record: %w", err)
-	}
-
-	slog.Info("Tailscale network data saved to database",
-		"tailnet", m.config.Tailnet,
-		"totalNodes", m.stats.TotalNodes,
-		"onlineNodes", m.stats.OnlineNodes,
-		"recordId", record.Id)
-
-	return nil
 }
 
 // GetNetworkData returns the current network data

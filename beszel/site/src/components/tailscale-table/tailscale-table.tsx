@@ -17,7 +17,7 @@ import {
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
-import { Button, buttonVariants } from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
 
 import {
 	DropdownMenu,
@@ -31,16 +31,6 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog"
-
-import { Collapsible } from "@/components/ui/collapsible"
-
 import { TailscaleNode } from "@/types"
 import {
 	MoreHorizontalIcon,
@@ -52,20 +42,16 @@ import {
 	SmartphoneIcon,
 	ClockIcon,
 	TagIcon,
-	RefreshCwIcon as UpdateIcon,
-	LayoutGridIcon,
+	LogOutIcon,
+	LayoutGridIcon, 
 	LayoutListIcon,
 	Settings2Icon,
 	AppleIcon,
-	ZapIcon,
 	RouterIcon,
 	CalendarIcon,
-	UserIcon,
-	TimerIcon,
 	ArrowDownIcon,
 	ArrowUpIcon,
 	EyeIcon,
-	ChevronDownIcon,
 	ChevronLeftIcon,
 	ChevronRightIcon,
 	ChevronsLeftIcon,
@@ -86,6 +72,7 @@ import { Input } from "../ui/input"
 import { Label } from "../ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { ClassValue } from "clsx"
+import { navigate } from "../router"
 
 type ViewMode = "table" | "grid"
 
@@ -211,9 +198,9 @@ export default function TailscaleTable() {
 				cell: (info: CellContext<TailscaleNode, unknown>) => {
 					const node = info.row.original
 					return (
-						<span className="flex gap-2 items-center md:ps-1 md:pe-5">
+						<span className="flex gap-2 items-center md:ps-1 md:pe-5 ">
 							<TailscaleIndicatorDot node={node} />
-							<span className="font-medium text-sm" title={node.name}>
+							<span className="font-medium text-sm text-nowrap" title={node.name}>
 								{truncateTailnetName(node.name)}
 							</span>
 						</span>
@@ -229,8 +216,7 @@ export default function TailscaleTable() {
 					const node = info.row.original
 					return (
 						<div className="flex flex-col">
-							<span className="text-muted-foreground tabular-nums">{node.ip}</span>
-							{node.ipv6 && <span className="text-muted-foreground text-xs text-muted-foreground tabular-nums">{node.ipv6}</span>}
+							<span className="flex gap-2 items-center md:pe-5 tabular-nums">{node.ip}</span>
 						</div>
 					)
 				},
@@ -253,29 +239,7 @@ export default function TailscaleTable() {
 				Icon: MonitorIcon,
 				header: sortableHeader,
 			},
-						{
-				accessorKey: "version",
-				id: "version",
-				name: () => "Version",
-				cell: (info: CellContext<TailscaleNode, unknown>) => {
-					const node = info.row.original
-					return (
-						<span className="flex gap-2 items-center md:pe-5 tabular-nums">
-							<TailscaleIndicatorDot
-								node={node}
-								className={
-									(!node.online && "bg-primary/30") ||
-									(node.updateAvailable && "bg-yellow-500") ||
-									"bg-green-500"
-								}
-							/>
-							<span className="truncate max-w-14 tabular-nums" title={node.version}>{truncateVersion(node.version)}</span>
-						</span>
-					)
-				},
-				Icon: WifiIcon,
-				header: sortableHeader,
-			},
+			
 			{
 				accessorKey: "lastSeen",
 				id: "lastSeen",
@@ -318,6 +282,113 @@ export default function TailscaleTable() {
 					)
 				},
 				Icon: TagIcon,
+				header: sortableHeader,
+			},
+			{
+				accessorKey: "isExitNode",
+				id: "isExitNode",
+				name: () => "Exit Node",
+				cell: (info: CellContext<TailscaleNode, unknown>) => {
+					const node = info.row.original
+					return (
+						<div className="flex items-center gap-2">
+							<span className="text-sm tabular-nums">
+								{node.isExitNode ? "Yes" : "No"}
+							</span>
+						</div>
+					)
+				},
+				Icon: LogOutIcon,
+				header: sortableHeader,
+			},
+			{
+				accessorKey: "isSubnetRouter",
+				id: "isSubnetRouter",
+				name: () => "Subnet Router",
+				cell: (info: CellContext<TailscaleNode, unknown>) => {
+					const node = info.row.original
+					return (
+						<div className="flex items-center gap-2">
+							<span className="text-sm tabular-nums">
+								{node.isSubnetRouter ? "Yes" : "No"}
+							</span>
+						</div>
+					)
+				},
+				Icon: RouterIcon,
+				header: sortableHeader,
+			},
+			{
+				accessorKey: "keyExpiry",
+				id: "keyExpiry",
+				name: () => "Key Expiry",
+				cell: (info: CellContext<TailscaleNode, unknown>) => {
+					const node = info.row.original
+					
+					// If key expiry is disabled, show "Never"
+					if (node.keyExpiryDisabled) {
+						return (
+							<div className="flex items-center gap-2">
+								<span className="text-sm tabular-nums text-muted-foreground">Never</span>
+							</div>
+						)
+					}
+					
+					// Parse the key expiry date
+					const expiryDate = new Date(node.keyExpiry)
+					const now = new Date()
+					const diffTime = expiryDate.getTime() - now.getTime()
+					const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+					
+					// If already expired
+					if (diffDays < 0) {
+						return (
+							<div className="flex items-center gap-2">
+								<span className="text-sm tabular-nums text-red-600 font-medium">Expired</span>
+							</div>
+						)
+					}
+					
+					// If expiring soon (within 30 days)
+					if (diffDays <= 30) {
+						return (
+							<div className="flex items-center gap-2">
+								<span className="text-sm tabular-nums text-orange-600 font-medium">{diffDays}d</span>
+							</div>
+						)
+					}
+					
+					// Normal case
+					return (
+						<div className="flex items-center gap-2">
+							<span className="text-sm tabular-nums">{diffDays}d</span>
+						</div>
+					)
+				},
+				Icon: CalendarIcon,
+				header: sortableHeader,
+			},
+			{
+				accessorKey: "version",
+				id: "version",
+				name: () => "Version",
+				cell: (info: CellContext<TailscaleNode, unknown>) => {
+					const node = info.row.original
+					return (
+						<span className="flex gap-2 items-center md:pe-5 tabular-nums">
+							<TailscaleIndicatorDot
+								node={node}
+								className={
+									(!node.online && "bg-primary/30") ||
+									(node.updateAvailable && "bg-yellow-500") ||
+									"bg-green-500"
+								}
+							/>
+							<span className="truncate max-w-14 tabular-nums" title={node.version}>{truncateVersion(node.version)}</span>
+						</span>
+					)
+				},
+				Icon: WifiIcon,
 				header: sortableHeader,
 			},
 			{
@@ -570,14 +641,14 @@ export default function TailscaleTable() {
 				{viewMode === "table" ? (
 					// table layout
 					<div className="rounded-md border overflow-hidden">
-						<AllTailscaleTable table={table} rows={rows} colLength={visibleColumns.length} onNodeClick={handleNodeClick} />
+						<AllTailscaleTable table={table} rows={rows} colLength={visibleColumns.length} />
 					</div>
 				) : (
 					// grid layout
 					<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
 						{rows?.length ? (
 							rows.map((row) => {
-								return <TailscaleCard key={row.original.id} row={row} table={table} colLength={visibleColumns.length} onNodeClick={handleNodeClick} />
+								return <TailscaleCard key={row.original.id} row={row} table={table} colLength={visibleColumns.length} />
 							})
 						) : (
 							<div className="col-span-full text-center py-8">
@@ -663,28 +734,19 @@ export default function TailscaleTable() {
 					</div>
 				</div>
 			)}
-			
-			{/* Node Details Dialog */}
-			{selectedNode && (
-				<TailscaleNodeDialog 
-					node={selectedNode} 
-					open={dialogOpen} 
-					setOpen={setDialogOpen} 
-				/>
-			)}
 		</Card>
 	)
 }
 
 const AllTailscaleTable = memo(
-	({ table, rows, colLength, onNodeClick }: { table: TableType<TailscaleNode>; rows: Row<TailscaleNode>[]; colLength: number; onNodeClick: (node: TailscaleNode) => void }) => {
+	({ table, rows, colLength }: { table: TableType<TailscaleNode>; rows: Row<TailscaleNode>[]; colLength: number }) => {
 		return (
 			<Table>
 				<TailscaleTableHead table={table} colLength={colLength} />
 				<TableBody>
 					{rows.length ? (
 						rows.map((row) => (
-							<TailscaleTableRow key={row.original.id} row={row} length={rows.length} colLength={colLength} onNodeClick={onNodeClick} />
+							<TailscaleTableRow key={row.original.id} row={row} length={rows.length} colLength={colLength} />
 						))
 					) : (
 						<TableRow>
@@ -721,14 +783,17 @@ function TailscaleTableHead({ table, colLength }: { table: TableType<TailscaleNo
 }
 
 const TailscaleTableRow = memo(
-	({ row, length, colLength, onNodeClick }: { row: Row<TailscaleNode>; length: number; colLength: number; onNodeClick: (node: TailscaleNode) => void }) => {
+	({ row, length, colLength }: { row: Row<TailscaleNode>; length: number; colLength: number }) => {
 		const node = row.original
 		const { t } = useLingui()
 		return useMemo(() => {
 			return (
 				<TableRow
 					className={cn("cursor-pointer transition-opacity")}
-					onClick={() => onNodeClick(node)}
+					onClick={() => {
+						// Navigate to node details page
+						navigate(`/tailscale/node/${node.id}`)
+					}}
 				>
 					{row.getVisibleCells().map((cell) => (
 						<TableCell
@@ -748,7 +813,7 @@ const TailscaleTableRow = memo(
 )
 
 const TailscaleCard = memo(
-	({ row, table, colLength, onNodeClick }: { row: Row<TailscaleNode>; table: TableType<TailscaleNode>; colLength: number; onNodeClick: (node: TailscaleNode) => void }) => {
+	({ row, table, colLength }: { row: Row<TailscaleNode>; table: TableType<TailscaleNode>; colLength: number }) => {
 		const node = row.original
 		const { t } = useLingui()
 
@@ -757,7 +822,10 @@ const TailscaleCard = memo(
 				<Card
 					key={node.id}
 					className="cursor-pointer hover:shadow-md transition-all bg-transparent w-full dark:border-border duration-200 relative"
-					onClick={() => onNodeClick(node)}
+					onClick={() => {
+						// Navigate to node details page
+						navigate(`/tailscale/node/${node.id}`)
+					}}
 				>
 					<CardHeader className="py-1 ps-5 pe-3 bg-muted/30 border-b border-border/60">
 						<div className="flex items-center justify-between gap-2">
@@ -841,196 +909,3 @@ function TailscaleIndicatorDot({ node, className }: { node: TailscaleNode; class
 		/>
 	)
 }
-
-function TailscaleNodeDialog({ node, open, setOpen }: { node: TailscaleNode; open: boolean; setOpen: (open: boolean) => void }) {
-	const { t } = useLingui()
-	
-	const formatDate = (dateString: string) => {
-		return new Date(dateString).toLocaleString()
-	}
-	
-	const getStatusColor = (online: boolean) => {
-		return "text-foreground"
-	}
-	
-	const getStatusText = (online: boolean) => {
-		return online ? "Online" : "Offline"
-	}
-
-	return (
-		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-				<DialogHeader>
-					<DialogTitle className="flex items-center gap-2">
-						<TailscaleIndicatorDot node={node} />
-						<span>{node.name}</span>
-					</DialogTitle>
-					<DialogDescription>
-						Detailed information about this Tailscale node
-					</DialogDescription>
-				</DialogHeader>
-				
-				<div className="space-y-4">
-					{/* Basic Information */}
-					<Collapsible title="Basic Information" icon={<ServerIcon className="h-4 w-4" />} defaultOpen={true}>
-						<div className="flex justify-between">
-							<span className="text-muted-foreground">Status:</span>
-							<span className={getStatusColor(node.online)}>{getStatusText(node.online)}</span>
-						</div>
-						<div className="flex justify-between">
-							<span className="text-muted-foreground">Hostname:</span>
-							<span className="text-muted-foreground">{node.hostname}</span>
-						</div>
-						<div className="flex justify-between">
-							<span className="text-muted-foreground">Computed Name:</span>
-							<span className="text-muted-foreground">{node.computedName}</span>
-						</div>
-						<div className="flex justify-between">
-							<span className="text-muted-foreground">Operating System:</span>
-							<span>{node.os}</span>
-						</div>
-						<div className="flex justify-between">
-							<span className="text-muted-foreground">Version:</span>
-							<span className="text-muted-foreground">{node.version}</span>
-						</div>
-					</Collapsible>
-
-					{/* Network Information */}
-					<Collapsible title="Network Information" icon={<WifiIcon className="h-4 w-4" />}>
-						<div className="flex justify-between">
-							<span className="text-muted-foreground">IP Address:</span>
-							<span className="text-muted-foreground">{node.ip}</span>
-						</div>
-						{node.ipv6 && (
-							<div className="flex justify-between">
-								<span className="text-muted-foreground">IPv6 Address:</span>
-								<span className="text-muted-foreground">{node.ipv6}</span>
-							</div>
-						)}
-						<div className="flex justify-between">
-							<span className="text-muted-foreground">DERP Server:</span>
-							<span className="text-muted-foreground">{node.derp}</span>
-						</div>
-						<div className="flex justify-between">
-							<span className="text-muted-foreground">Last Seen:</span>
-							<span>{formatDate(node.lastSeen)}</span>
-						</div>
-					</Collapsible>
-
-					{/* Node Properties */}
-					<Collapsible title="Node Properties" icon={<Settings2Icon className="h-4 w-4" />}>
-						<div className="flex justify-between">
-							<span className="text-muted-foreground">Exit Node:</span>
-							<span className="text-foreground">
-								{node.isExitNode ? "Yes" : "No"}
-							</span>
-						</div>
-						<div className="flex justify-between">
-							<span className="text-muted-foreground">Subnet Router:</span>
-							<span className="text-foreground">
-								{node.isSubnetRouter ? "Yes" : "No"}
-							</span>
-						</div>
-						<div className="flex justify-between">
-							<span className="text-muted-foreground">Ephemeral:</span>
-							<span className="text-foreground">
-								{node.isEphemeral ? "Yes" : "No"}
-							</span>
-						</div>
-						<div className="flex justify-between">
-							<span className="text-muted-foreground">Connected to Control:</span>
-							<span className="text-foreground">
-								{node.connectedToControl ? "Yes" : "No"}
-							</span>
-						</div>
-						<div className="flex justify-between">
-							<span className="text-muted-foreground">Update Available:</span>
-							<span className="text-foreground">
-								{node.updateAvailable ? "Yes" : "No"}
-							</span>
-						</div>
-					</Collapsible>
-
-					{/* Security & Keys */}
-					<Collapsible title="Security & Keys" icon={<CalendarIcon className="h-4 w-4" />}>
-						<div className="flex justify-between">
-							<span className="text-muted-foreground">Key Expiry:</span>
-							<span className="text-muted-foreground">{formatDate(node.keyExpiry)}</span>
-						</div>
-						<div className="flex justify-between">
-							<span className="text-muted-foreground">Expired:</span>
-							<span className="text-foreground">
-								{node.expired ? "Yes" : "No"}
-							</span>
-						</div>
-						<div className="flex justify-between">
-							<span className="text-muted-foreground">Key Expired:</span>
-							<span className="text-foreground">
-								{node.keyExpired ? "Yes" : "No"}
-							</span>
-						</div>
-						<div className="flex justify-between">
-							<span className="text-muted-foreground">Created:</span>
-							<span>{formatDate(node.created)}</span>
-						</div>
-					</Collapsible>
-
-					{/* Tags */}
-					{node.tags && node.tags.length > 0 && (
-						<Collapsible title="Tags" icon={<TagIcon className="h-4 w-4" />}>
-							<div className="flex flex-wrap gap-2">
-								{node.tags.map((tag, index) => (
-									<span
-										key={index}
-										className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1 text-sm"
-									>
-										<TagIcon className="h-3 w-3" />
-										{tag.replace("tag:", "")}
-									</span>
-								))}
-							</div>
-						</Collapsible>
-					)}
-
-					{/* Advanced Information */}
-					<Collapsible title="Advanced Information" icon={<EyeIcon className="h-4 w-4" />}>
-						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-							<div className="space-y-3">
-								<div className="flex justify-between">
-									<span className="text-muted-foreground">In Network Map:</span>
-									<span className="text-foreground">
-										{node.inNetworkMap ? "Yes" : "No"}
-									</span>
-								</div>
-								<div className="flex justify-between">
-									<span className="text-muted-foreground">In Magic Sock:</span>
-									<span className="text-foreground">
-										{node.inMagicSock ? "Yes" : "No"}
-									</span>
-								</div>
-								<div className="flex justify-between">
-									<span className="text-muted-foreground">In Engine:</span>
-									<span className="text-foreground">
-										{node.inEngine ? "Yes" : "No"}
-									</span>
-								</div>
-							</div>
-							<div className="space-y-3">
-								{node.endpoints && node.endpoints.length > 0 && (
-									<div>
-										<span className="text-muted-foreground">Endpoints:</span>
-										<div className="mt-1 space-y-1">
-											{node.endpoints.map((endpoint, index) => (
-												<div key={index} className="text-muted-foreground text-sm">{endpoint}</div>
-											))}
-										</div>
-									</div>
-								)}
-							</div>
-						</div>
-					</Collapsible>
-				</div>
-			</DialogContent>
-		</Dialog>
-	)
-} 
