@@ -8,7 +8,7 @@ msgstr ""
 "Language: sl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-04 01:51\n"
+"PO-Revision-Date: 2025-08-04 02:56\n"
 "Last-Translator: \n"
 "Language-Team: Slovenian\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
@@ -69,7 +69,7 @@ msgid "5 min"
 msgstr ""
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "Dejanja"
@@ -108,7 +108,7 @@ msgstr "Prilagodi možnosti prikaza za grafikone."
 msgid "Admin"
 msgstr "Administrator"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
 msgstr "Agent"
 
@@ -128,7 +128,7 @@ msgstr "Opozorila"
 msgid "All Systems"
 msgstr "Vsi sistemi"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Ali ste prepričani, da želite izbrisati {name}?"
 
@@ -202,7 +202,7 @@ msgstr ""
 msgid "Cache / Buffers"
 msgstr "Predpomnilnik / medpomnilniki"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Cancel"
 msgstr "Prekliči"
@@ -261,7 +261,7 @@ msgstr "Potrdite geslo"
 msgid "Connection is down"
 msgstr ""
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Continue"
 msgstr "Nadaljuj"
@@ -287,7 +287,7 @@ msgctxt "Environment variables"
 msgid "Copy env"
 msgstr ""
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
 msgstr "Kopiraj gostitelja"
 
@@ -296,7 +296,7 @@ msgstr "Kopiraj gostitelja"
 msgid "Copy Linux command"
 msgstr "Kopiraj Linux ukaz"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
 msgstr "Kopiraj ime"
 
@@ -316,7 +316,7 @@ msgstr ""
 msgid "Copy YAML"
 msgstr ""
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "CPU"
 
@@ -335,6 +335,10 @@ msgstr "Ustvari račun"
 msgid "Created"
 msgstr ""
 
+#: src/components/routes/settings/general.tsx
+msgid "Critical (%)"
+msgstr "Kritično (%)"
+
 #. Dark theme
 #: src/components/mode-toggle.tsx
 msgid "Dark"
@@ -349,7 +353,7 @@ msgstr "Nadzorna plošča"
 msgid "Default time period"
 msgstr "Privzeto časovno obdobje"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Delete"
 msgstr "Izbriši"
@@ -358,7 +362,7 @@ msgstr "Izbriši"
 msgid "Delete fingerprint"
 msgstr ""
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
 msgstr "Disk"
 
@@ -399,7 +403,7 @@ msgstr "Dokumentacija"
 #. Context: System is down
 #: src/lib/utils.ts
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
 msgstr ""
@@ -409,7 +413,7 @@ msgid "Duration"
 msgstr ""
 
 #: src/components/add-system.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr ""
 
@@ -567,7 +571,7 @@ msgid "Load Average 5m"
 msgstr ""
 
 #. Short label for load average
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
 msgstr ""
 
@@ -606,7 +610,7 @@ msgstr ""
 msgid "Max 1 min"
 msgstr "Največ 1 min"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Pomnilnik"
 
@@ -624,7 +628,7 @@ msgstr "Poraba pomnilnika docker kontejnerjev"
 msgid "Name"
 msgstr "Naziv"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "Mreža"
 
@@ -668,7 +672,7 @@ msgstr "Podpora za OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Ob vsakem ponovnem zagonu bodo sistemi v zbirki podatkov posodobljeni, da se bodo ujemali s sistemi, definiranimi v datoteki."
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
@@ -713,11 +717,11 @@ msgstr ""
 msgid "Password reset request received"
 msgstr "Prejeta zahteva za ponastavitev gesla"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "Premor"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "Zaustavljeno"
 
@@ -792,7 +796,7 @@ msgstr "Ponastavi geslo"
 msgid "Resolved"
 msgstr ""
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Nadaljuj"
 
@@ -832,6 +836,10 @@ msgstr "Glejte <0>nastavitve obvestil</0>, da nastavite način prejemanja opozor
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Poslano"
+
+#: src/components/routes/settings/general.tsx
+msgid "Set percentage thresholds for meter colors."
+msgstr "Nastavite odstotne pragove za barve merilnikov."
 
 #: src/components/routes/settings/general.tsx
 msgid "Sets the default time range for charts when a system is viewed."
@@ -881,7 +889,7 @@ msgstr "Swap uporaba"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "Sistemsko"
@@ -903,7 +911,7 @@ msgid "Table"
 msgstr "Tabela"
 
 #. Temperature label in systems table
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr ""
 
@@ -932,7 +940,7 @@ msgstr "Testno obvestilo je poslano"
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Nato se prijavite v zaledni sistem in ponastavite geslo svojega uporabniškega računa v tabeli uporabnikov."
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Tega dejanja ni mogoče razveljaviti. To bo trajno izbrisalo vse trenutne zapise za {name} iz zbirke podatkov."
 
@@ -1026,7 +1034,7 @@ msgid "Universal token"
 msgstr ""
 
 #. Context: System is up
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
 msgstr ""
@@ -1083,6 +1091,14 @@ msgstr "Čakam na dovolj zapisov za prikaz"
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "Ali nam želite pomagati, da bomo naše prevode še izboljšali? Za več podrobnosti si oglejte <0>Crowdin</0>."
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning (%)"
+msgstr "Opozorilo (%)"
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning thresholds"
+msgstr "Pragovi za opozorila"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
