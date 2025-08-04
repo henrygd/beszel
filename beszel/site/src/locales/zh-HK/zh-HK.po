@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-04 01:51\n"
+"PO-Revision-Date: 2025-08-04 02:56\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional, Hong Kong\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -69,7 +69,7 @@ msgid "5 min"
 msgstr "5 分鐘"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "操作"
@@ -108,7 +108,7 @@ msgstr "調整圖表的顯示選項。"
 msgid "Admin"
 msgstr "管理員"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
 msgstr "客户端"
 
@@ -128,7 +128,7 @@ msgstr "警報"
 msgid "All Systems"
 msgstr "所有系統"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "您確定要刪除 {name} 嗎？"
 
@@ -202,7 +202,7 @@ msgstr "位元組 (KB/s, MB/s, GB/s)"
 msgid "Cache / Buffers"
 msgstr "快取 / 緩衝區"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Cancel"
 msgstr "取消"
@@ -261,7 +261,7 @@ msgstr "確認密碼"
 msgid "Connection is down"
 msgstr "連線中斷"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Continue"
 msgstr "繼續"
@@ -287,7 +287,7 @@ msgctxt "Environment variables"
 msgid "Copy env"
 msgstr "複製環境變數"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
 msgstr "複製主機"
 
@@ -296,7 +296,7 @@ msgstr "複製主機"
 msgid "Copy Linux command"
 msgstr "複製 Linux 指令"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
 msgstr "複製名稱"
 
@@ -316,7 +316,7 @@ msgstr "複製下面的代理程式<0>docker-compose.yml</0>內容，或使用<1
 msgid "Copy YAML"
 msgstr "複製YAML"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "CPU"
 
@@ -335,6 +335,10 @@ msgstr "創建帳戶"
 msgid "Created"
 msgstr "已建立"
 
+#: src/components/routes/settings/general.tsx
+msgid "Critical (%)"
+msgstr "嚴重 (%)"
+
 #. Dark theme
 #: src/components/mode-toggle.tsx
 msgid "Dark"
@@ -349,7 +353,7 @@ msgstr "控制面板"
 msgid "Default time period"
 msgstr "預設時間段"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Delete"
 msgstr "刪除"
@@ -358,7 +362,7 @@ msgstr "刪除"
 msgid "Delete fingerprint"
 msgstr "刪除指紋"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
 msgstr "磁碟"
 
@@ -399,7 +403,7 @@ msgstr "文件"
 #. Context: System is down
 #: src/lib/utils.ts
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
 msgstr "中斷"
@@ -409,7 +413,7 @@ msgid "Duration"
 msgstr "持續時間"
 
 #: src/components/add-system.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "編輯"
 
@@ -567,7 +571,7 @@ msgid "Load Average 5m"
 msgstr "5分鐘平均負載"
 
 #. Short label for load average
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
 msgstr "平均負載"
 
@@ -606,7 +610,7 @@ msgstr "手動設定說明"
 msgid "Max 1 min"
 msgstr "一分鐘內最大值"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "記憶體"
 
@@ -624,7 +628,7 @@ msgstr "Docker 容器的記憶體使用量"
 msgid "Name"
 msgstr "名稱"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "網絡"
 
@@ -668,7 +672,7 @@ msgstr "支援 OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "每次重新啟動時，將會以檔案中的系統定義更新資料庫。"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
@@ -713,11 +717,11 @@ msgstr "密碼必須少於 72 個字節。"
 msgid "Password reset request received"
 msgstr "已收到密碼重設請求"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "暫停"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "已暫停"
 
@@ -792,7 +796,7 @@ msgstr "重設密碼"
 msgid "Resolved"
 msgstr "已解決"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "恢復"
 
@@ -832,6 +836,10 @@ msgstr "查看<0>通知設置</0>以配置您接收警報的方式。"
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "發送"
+
+#: src/components/routes/settings/general.tsx
+msgid "Set percentage thresholds for meter colors."
+msgstr "設定儀表顏色的百分比閾值。"
 
 #: src/components/routes/settings/general.tsx
 msgid "Sets the default time range for charts when a system is viewed."
@@ -881,7 +889,7 @@ msgstr "交換使用"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "系統"
@@ -903,7 +911,7 @@ msgid "Table"
 msgstr "表格"
 
 #. Temperature label in systems table
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr "溫度"
 
@@ -932,7 +940,7 @@ msgstr "測試通知已發送"
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "然後登錄到後端並在用戶表中重置您的用戶帳戶密碼。"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "此操作無法撤銷。這將永久刪除數據庫中{name}的所有當前記錄。"
 
@@ -1026,7 +1034,7 @@ msgid "Universal token"
 msgstr "通用令牌"
 
 #. Context: System is up
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
 msgstr "上線"
@@ -1083,6 +1091,14 @@ msgstr "等待足夠的記錄以顯示"
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "想幫助我們改進翻譯嗎？查看<0>Crowdin</0>以獲取更多詳細信息。"
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning (%)"
+msgstr "警告 (%)"
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning thresholds"
+msgstr "警告閾值"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
