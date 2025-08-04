@@ -68,7 +68,6 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 	}
 	return [
 		{
-			size: 200,
 			minSize: 0,
 			accessorKey: "name",
 			id: "system",
