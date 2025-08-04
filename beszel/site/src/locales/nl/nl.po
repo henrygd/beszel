@@ -8,7 +8,7 @@ msgstr ""
 "Language: nl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-04 02:56\n"
+"PO-Revision-Date: 2025-08-04 15:16\n"
 "Last-Translator: \n"
 "Language-Team: Dutch\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -27,7 +27,7 @@ msgstr "{0, plural, one {# dag} other {# dagen}}"
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
-msgstr ""
+msgstr "{0} van de {1} rij(en) geselecteerd."
 
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
@@ -40,7 +40,7 @@ msgstr "1 uur"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr ""
+msgstr "1 minuut"
 
 #: src/lib/utils.ts
 msgid "1 week"
@@ -53,7 +53,7 @@ msgstr "12 uren"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr ""
+msgstr "15 minuten"
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -66,7 +66,7 @@ msgstr "30 dagen"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr ""
+msgstr "5 minuten"
 
 #. Table column
 #: src/components/systems-table/systems-table-columns.tsx
@@ -77,7 +77,7 @@ msgstr "Acties"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Active"
-msgstr ""
+msgstr "Actief"
 
 #: src/components/routes/home.tsx
 msgid "Active Alerts"
@@ -116,7 +116,7 @@ msgstr "Agent"
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Alert History"
-msgstr ""
+msgstr "Melding geschiedenis"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alert-button.tsx
@@ -134,7 +134,7 @@ msgstr "Weet je zeker dat je {name} wilt verwijderen?"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
-msgstr ""
+msgstr "Weet je het zeker?"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -191,12 +191,12 @@ msgstr "Binair"
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr ""
+msgstr "Bits (Kbps, Mbps, Gbps)"
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
-msgstr ""
+msgstr "Bytes (KB/s, MB/s, GB/s)"
 
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
@@ -213,11 +213,11 @@ msgstr "Opgelet - potentieel gegevensverlies"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr ""
+msgstr "Celsius (°C)"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
-msgstr ""
+msgstr "Verander statistiek eenheden."
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
@@ -259,7 +259,7 @@ msgstr "Bevestig wachtwoord"
 
 #: src/components/routes/home.tsx
 msgid "Connection is down"
-msgstr ""
+msgstr "Verbinding is niet actief"
 
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -333,7 +333,7 @@ msgstr "Account aanmaken"
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
 msgid "Created"
-msgstr ""
+msgstr "Aangemaakt"
 
 #: src/components/routes/settings/general.tsx
 msgid "Critical (%)"
@@ -372,7 +372,7 @@ msgstr "Schijf I/O"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
-msgstr ""
+msgstr "Schijf eenheid"
 
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
@@ -410,7 +410,7 @@ msgstr "Offline"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
-msgstr ""
+msgstr "Duur"
 
 #: src/components/add-system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -455,7 +455,7 @@ msgstr "Bestaande systemen die niet gedefinieerd zijn in <0>config.yml</0> zulle
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
-msgstr ""
+msgstr "Exporteren"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
@@ -467,7 +467,7 @@ msgstr "Exporteer je huidige systeemconfiguratie."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr ""
+msgstr "Fahrenheit (°F)"
 
 #: src/lib/utils.ts
 msgid "Failed to authenticate"
@@ -556,7 +556,7 @@ msgstr "Licht"
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
-msgstr ""
+msgstr "Gemiddelde Belasting"
 
 #: src/lib/utils.ts
 msgid "Load Average 15m"
@@ -564,7 +564,7 @@ msgstr "Gemiddelde Belasting 15m"
 
 #: src/lib/utils.ts
 msgid "Load Average 1m"
-msgstr ""
+msgstr "Gemiddelde Belasting 1m"
 
 #: src/lib/utils.ts
 msgid "Load Average 5m"
@@ -573,7 +573,7 @@ msgstr "Gemiddelde Belasting 5m"
 #. Short label for load average
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
-msgstr ""
+msgstr "Gem. Belasting"
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -643,7 +643,7 @@ msgstr "Netwerkverkeer van publieke interfaces"
 #. Context: Bytes or bits
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
-msgstr ""
+msgstr "Netwerk eenheid"
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -651,7 +651,7 @@ msgstr "Geen resultaten gevonden."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "No results."
-msgstr ""
+msgstr "Geen resultaten."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -694,7 +694,7 @@ msgstr "Pagina"
 #. placeholder {1}: table.getPageCount()
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Page {0} of {1}"
-msgstr ""
+msgstr "Pagina {0} van de {1}"
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
@@ -794,7 +794,7 @@ msgstr "Wachtwoord resetten"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Resolved"
-msgstr ""
+msgstr "Opgelost"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
@@ -806,7 +806,7 @@ msgstr "Roteer Token"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
-msgstr ""
+msgstr "Rijen per pagina"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -871,7 +871,7 @@ msgstr "Sorteren op"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 msgid "State"
-msgstr ""
+msgstr "Status"
 
 #: src/lib/utils.ts
 msgid "Status"
@@ -896,7 +896,7 @@ msgstr "Systeem"
 
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
-msgstr ""
+msgstr "Gemiddelde systeembelasting na verloop van tijd"
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -922,7 +922,7 @@ msgstr "Temperatuur"
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"
-msgstr ""
+msgstr "Temperatuureenheid"
 
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
@@ -946,7 +946,7 @@ msgstr "Deze actie kan niet ongedaan worden gemaakt. Dit zal alle huidige record
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
-msgstr ""
+msgstr "Dit zal alle geselecteerde records verwijderen uit de database."
 
 #: src/components/routes/system.tsx
 msgid "Throughput of {extraFsName}"
@@ -990,7 +990,7 @@ msgstr "Tokens en vingerafdrukken worden gebruikt om WebSocket verbindingen te v
 
 #: src/lib/utils.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Triggert wanneer de gemiddelde belasting een drempelwaarde overschrijdt"
 
 #: src/lib/utils.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
@@ -1027,7 +1027,7 @@ msgstr "Triggert wanneer het gebruik van een schijf een drempelwaarde overschrij
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
-msgstr ""
+msgstr "Eenheid voorkeuren"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
@@ -1070,7 +1070,7 @@ msgstr "Gebruikers"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
-msgstr ""
+msgstr "Waarde"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
@@ -1078,7 +1078,7 @@ msgstr "Weergave"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
-msgstr ""
+msgstr "Bekijk je 200 meest recente meldingen."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
