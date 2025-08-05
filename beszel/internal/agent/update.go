@@ -104,7 +104,7 @@ func Update() error {
         return fmt.Errorf("unable to locate executable: %w", err)
     }
     log.Printf("Updating from %s to %s…", current, latest.Version)
-    if err := updater.UpdateTo(latest.AssetURL, exePath); err != nil {
+    if err := updater.UpdateTo(latest, exePath); err != nil {
         return fmt.Errorf("update failed: %w", err)
     }
     log.Printf("Successfully updated to %s", latest.Version)
