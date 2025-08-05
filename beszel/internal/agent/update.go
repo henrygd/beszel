@@ -1,153 +1,168 @@
 package agent
 
 import (
-	"beszel"
-	"fmt"
-	"os"
-	"os/exec"
-	"strings"
+    "fmt"
+    "log"
+    "os"
+    "os/exec"
+    "strings"
 
-	"github.com/blang/semver"
-	"github.com/rhysd/go-github-selfupdate/selfupdate"
+    "beszel"
+
+    "github.com/blang/semver"
+    "github.com/rhysd/go-github-selfupdate/selfupdate"
 )
 
-// Update updates beszel-agent to the latest version
-func Update() {
-	var latest *selfupdate.Release
-	var found bool
-	var err error
-	currentVersion := semver.MustParse(beszel.Version)
-	fmt.Println("beszel-agent", currentVersion)
-	fmt.Println("Checking for updates...")
-	updater, _ := selfupdate.NewUpdater(selfupdate.Config{
-		Filters: []string{"beszel-agent"},
-	})
-	latest, found, err = updater.DetectLatest("henrygd/beszel")
-
-	if err != nil {
-		fmt.Println("Error checking for updates:", err)
-		os.Exit(1)
-	}
-
-	if !found {
-		fmt.Println("No updates found")
-		os.Exit(0)
-	}
-
-	fmt.Println("Latest version:", latest.Version)
-
-	if latest.Version.LTE(currentVersion) {
-		fmt.Println("You are up to date")
-		return
-	}
-
-	var binaryPath string
-	fmt.Printf("Updating from %s to %s...\n", currentVersion, latest.Version)
-	binaryPath, err = os.Executable()
-	if err != nil {
-		fmt.Println("Error getting binary path:", err)
-		os.Exit(1)
-	}
-	err = selfupdate.UpdateTo(latest.AssetURL, binaryPath)
-	if err != nil {
-		fmt.Println("Please try rerunning with sudo. Error:", err)
-		os.Exit(1)
-	}
-	fmt.Printf("Successfully updated to %s\n\n%s\n", latest.Version, strings.TrimSpace(latest.ReleaseNotes))
-
-	// Handle SELinux context if needed
-	handleSELinuxContext()
-
-	// Try to restart the service if it's running
-	restartService()
+// restarter knows how to restart the beszel-agent service.
+type restarter interface {
+    Restart() error
 }
 
-// restartService attempts to restart the beszel-agent service
-func restartService() {
-	// Check if we're running as a service by looking for systemd
-	if _, err := exec.LookPath("systemctl"); err == nil {
-		// Check if beszel-agent service exists and is active
-		cmd := exec.Command("systemctl", "is-active", "beszel-agent.service")
-		if err := cmd.Run(); err == nil {
-			fmt.Println("Restarting beszel-agent service...")
-			restartCmd := exec.Command("systemctl", "restart", "beszel-agent.service")
-			if err := restartCmd.Run(); err != nil {
-				fmt.Printf("Warning: Failed to restart service: %v\n", err)
-				fmt.Println("Please restart the service manually: sudo systemctl restart beszel-agent")
-			} else {
-				fmt.Println("Service restarted successfully")
-			}
-			return
-		}
-	}
+type systemdRestarter struct{ cmd string }
 
-	// Check for OpenRC (Alpine Linux)
-	if _, err := exec.LookPath("rc-service"); err == nil {
-		cmd := exec.Command("rc-service", "beszel-agent", "status")
-		if err := cmd.Run(); err == nil {
-			fmt.Println("Restarting beszel-agent service...")
-			restartCmd := exec.Command("rc-service", "beszel-agent", "restart")
-			if err := restartCmd.Run(); err != nil {
-				fmt.Printf("Warning: Failed to restart service: %v\n", err)
-				fmt.Println("Please restart the service manually: sudo rc-service beszel-agent restart")
-			} else {
-				fmt.Println("Service restarted successfully")
-			}
-			return
-		}
-	}
-
-	// Check for OpenWRT procd
-	if _, err := exec.LookPath("service"); err == nil {
-		cmd := exec.Command("service", "beszel-agent", "running")
-		if err := cmd.Run(); err == nil {
-			fmt.Println("Restarting beszel-agent service...")
-			restartCmd := exec.Command("service", "beszel-agent", "restart")
-			if err := restartCmd.Run(); err != nil {
-				fmt.Printf("Warning: Failed to restart service: %v\n", err)
-				fmt.Println("Please restart the service manually: sudo service beszel-agent restart")
-			} else {
-				fmt.Println("Service restarted successfully")
-			}
-			return
-		}
-	}
-
-	fmt.Println("Note: Service restart not attempted. If running as a service, restart manually.")
+func (s *systemdRestarter) Restart() error {
+    // Only restart if the service is active
+    if err := exec.Command(s.cmd, "is-active", "beszel-agent.service").Run(); err != nil {
+        return nil
+    }
+    log.Print("Restarting beszel-agent.service via systemd…")
+    return exec.Command(s.cmd, "restart", "beszel-agent.service").Run()
 }
 
-// handleSELinuxContext applies SELinux context if SELinux is enabled
-func handleSELinuxContext() {
-	// Check if SELinux is enabled
-	cmd := exec.Command("getenforce")
-	output, err := cmd.Output()
-	if err != nil {
-		return // SELinux not available
-	}
+type openRCRestarter struct{ cmd string }
 
-	if strings.TrimSpace(string(output)) == "Disabled" {
-		return // SELinux is disabled
-	}
+func (o *openRCRestarter) Restart() error {
+    if err := exec.Command(o.cmd, "status", "beszel-agent").Run(); err != nil {
+        return nil
+    }
+    log.Print("Restarting beszel-agent via OpenRC…")
+    return exec.Command(o.cmd, "restart", "beszel-agent").Run()
+}
 
-	fmt.Println("SELinux enabled, applying context...")
+type openWRTRestarter struct{ cmd string }
 
-	// Try chcon first
-	if chconCmd, err := exec.LookPath("chcon"); err == nil {
-		binaryPath, _ := os.Executable()
-		chconExec := exec.Command(chconCmd, "-t", "bin_t", binaryPath)
-		if err := chconExec.Run(); err != nil {
-			fmt.Println("Warning: chcon command failed to apply context.")
-		}
-	}
+func (w *openWRTRestarter) Restart() error {
+    if err := exec.Command(w.cmd, "running", "beszel-agent").Run(); err != nil {
+        return nil
+    }
+    log.Print("Restarting beszel-agent via procd…")
+    return exec.Command(w.cmd, "restart", "beszel-agent").Run()
+}
 
-	// Try restorecon as well
-	if restoreconCmd, err := exec.LookPath("restorecon"); err == nil {
-		binaryPath, _ := os.Executable()
-		restoreconExec := exec.Command(restoreconCmd, "-v", binaryPath)
-		restoreconExec.Stdout = nil
-		restoreconExec.Stderr = nil
-		if err := restoreconExec.Run(); err != nil {
-			fmt.Println("Warning: restorecon command failed to apply context.")
-		}
-	}
+func detectRestarter() restarter {
+    if path, err := exec.LookPath("systemctl"); err == nil {
+        return &systemdRestarter{cmd: path}
+    }
+    if path, err := exec.LookPath("rc-service"); err == nil {
+        return &openRCRestarter{cmd: path}
+    }
+    if path, err := exec.LookPath("service"); err == nil {
+        return &openWRTRestarter{cmd: path}
+    }
+    return nil
+}
+
+// Update checks GitHub for a newer release of beszel-agent, applies it,
+// fixes SELinux context if needed, and restarts the service.
+func Update() error {
+    // 1) Parse current version
+    current, err := semver.Parse(beszel.Version)
+    if err != nil {
+        return fmt.Errorf("invalid current version %q: %w", beszel.Version, err)
+    }
+    log.Printf("Current version: %s", current)
+
+    // 2) Create updater with our binary name filter
+    updater, err := selfupdate.NewUpdater(selfupdate.Config{
+        Filters: []string{"beszel-agent"},
+    })
+    if err != nil {
+        return fmt.Errorf("creating self-update client: %w", err)
+    }
+
+    // 3) Detect latest
+    log.Print("Checking for updates…")
+    latest, found, err := updater.DetectLatest("henrygd/beszel")
+    if err != nil {
+        return fmt.Errorf("failed to detect latest release: %w", err)
+    }
+    if !found {
+        log.Print("No updates available.")
+        return nil
+    }
+    log.Printf("Latest version: %s", latest.Version)
+
+    // 4) Compare versions
+    if !latest.Version.GT(current) {
+        log.Print("You are already up to date.")
+        return nil
+    }
+
+    // 5) Perform the update
+    exePath, err := os.Executable()
+    if err != nil {
+        return fmt.Errorf("unable to locate executable: %w", err)
+    }
+    log.Printf("Updating from %s to %s…", current, latest.Version)
+    if err := updater.UpdateTo(latest.AssetURL, exePath); err != nil {
+        return fmt.Errorf("update failed: %w", err)
+    }
+    log.Printf("Successfully updated to %s", latest.Version)
+    log.Print("Release notes:\n", strings.TrimSpace(latest.ReleaseNotes))
+
+    // 6) Fix SELinux context if necessary
+    if err := handleSELinuxContext(exePath); err != nil {
+        log.Printf("Warning: SELinux context handling: %v", err)
+    }
+
+    // 7) Restart service if running under a recognised init system
+    if r := detectRestarter(); r != nil {
+        if err := r.Restart(); err != nil {
+            log.Printf("Warning: failed to restart service: %v", err)
+            log.Print("Please restart the service manually.")
+        }
+    } else {
+        log.Print("No supported init system detected; please restart manually if needed.")
+    }
+
+    return nil
+}
+
+// handleSELinuxContext restores or applies the correct SELinux label to the binary.
+func handleSELinuxContext(path string) error {
+    out, err := exec.Command("getenforce").Output()
+    if err != nil {
+        // SELinux not enabled or getenforce not available
+        return nil
+    }
+    state := strings.TrimSpace(string(out))
+    if state == "Disabled" {
+        return nil
+    }
+
+    log.Print("SELinux is enabled; applying context…")
+    var errs []string
+
+    // Try persistent context via semanage+restorecon
+    if semanagePath, err := exec.LookPath("semanage"); err == nil {
+        if err := exec.Command(semanagePath, "fcontext", "-a", "-t", "bin_t", path).Run(); err != nil {
+            errs = append(errs, "semanage fcontext failed: "+err.Error())
+        } else if restoreconPath, err := exec.LookPath("restorecon"); err == nil {
+            if err := exec.Command(restoreconPath, "-v", path).Run(); err != nil {
+                errs = append(errs, "restorecon failed: "+err.Error())
+            }
+        }
+    }
+
+    // Fallback to temporary context via chcon
+    if chconPath, err := exec.LookPath("chcon"); err == nil {
+        if err := exec.Command(chconPath, "-t", "bin_t", path).Run(); err != nil {
+            errs = append(errs, "chcon failed: "+err.Error())
+        }
+    }
+
+    if len(errs) > 0 {
+        return fmt.Errorf("SELinux context errors: %s", strings.Join(errs, "; "))
+    }
+    return nil
 }
