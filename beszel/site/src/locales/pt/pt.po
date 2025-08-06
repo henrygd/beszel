@@ -8,7 +8,7 @@ msgstr ""
 "Language: pt\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-04 02:56\n"
+"PO-Revision-Date: 2025-08-06 20:10\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -40,7 +40,7 @@ msgstr "1 hora"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr ""
+msgstr "1 min"
 
 #: src/lib/utils.ts
 msgid "1 week"
@@ -53,7 +53,7 @@ msgstr "12 horas"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr ""
+msgstr "15 min"
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -66,7 +66,7 @@ msgstr "30 dias"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr ""
+msgstr "5 min"
 
 #. Table column
 #: src/components/systems-table/systems-table-columns.tsx
@@ -77,7 +77,7 @@ msgstr "Ações"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Active"
-msgstr ""
+msgstr "Ativo"
 
 #: src/components/routes/home.tsx
 msgid "Active Alerts"
@@ -116,7 +116,7 @@ msgstr "Agente"
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Alert History"
-msgstr ""
+msgstr "Histórico de alertas"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alert-button.tsx
@@ -134,7 +134,7 @@ msgstr "Tem certeza de que deseja excluir {name}?"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
-msgstr ""
+msgstr "Tem certeza?"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -333,7 +333,7 @@ msgstr "Criar conta"
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
 msgid "Created"
-msgstr ""
+msgstr "Criado"
 
 #: src/components/routes/settings/general.tsx
 msgid "Critical (%)"
@@ -410,7 +410,7 @@ msgstr "“Desligado”"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
-msgstr ""
+msgstr "Duração"
 
 #: src/components/add-system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -455,7 +455,7 @@ msgstr "Sistemas existentes não definidos em <0>config.yml</0> serão excluído
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
-msgstr ""
+msgstr "Exportar"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
@@ -651,7 +651,7 @@ msgstr "Nenhum resultado encontrado."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "No results."
-msgstr ""
+msgstr "Sem resultados."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -806,7 +806,7 @@ msgstr "Rotacionar token"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
-msgstr ""
+msgstr "Linhas por página"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -1070,7 +1070,7 @@ msgstr "Usuários"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
-msgstr ""
+msgstr "Valor"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
@@ -1078,7 +1078,7 @@ msgstr "Visual"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
-msgstr ""
+msgstr "Veja os seus 200 alertas mais recentes."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
