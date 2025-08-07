@@ -2,6 +2,7 @@ import PocketBase from "pocketbase"
 import { atom, map, PreinitializedWritableAtom } from "nanostores"
 import { AlertRecord, ChartTimes, SystemRecord, UserSettings } from "@/types"
 import { basePath } from "@/components/router"
+import { Unit } from "./enums"
 
 /** PocketBase JS Client */
 export const pb = new PocketBase(basePath)
@@ -39,10 +40,11 @@ export const $maxValues = atom(false)
 export const $userSettings = map<UserSettings>({
 	chartTime: "1h",
 	emails: [pb.authStore.record?.email || ""],
+	unitNet: Unit.Bytes,
+	unitTemp: Unit.Celsius,
 })
 // update local storage on change
 $userSettings.subscribe((value) => {
-	// console.log('user settings changed', value)
 	$chartTime.set(value.chartTime)
 })
 

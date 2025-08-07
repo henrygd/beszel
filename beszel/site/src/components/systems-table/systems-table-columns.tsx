@@ -56,16 +56,18 @@ import { buttonVariants } from "../ui/button"
 import { t } from "@lingui/core/macro"
 import { MeterState } from "@/lib/enums"
 
+const STATUS_COLORS = {
+	up: "bg-green-500",
+	down: "bg-red-500",
+	paused: "bg-primary/40",
+	pending: "bg-yellow-500",
+} as const
+
 /**
  * @param viewMode - "table" or "grid"
  * @returns - Column definitions for the systems table
  */
 export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<SystemRecord>[] {
-	const statusTranslations = {
-		up: () => t`Up`.toLowerCase(),
-		down: () => t`Down`.toLowerCase(),
-		paused: () => t`Paused`.toLowerCase(),
-	}
 	return [
 		{
 			size: 200,
@@ -73,18 +75,35 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			accessorKey: "name",
 			id: "system",
 			name: () => t`System`,
-			filterFn: (row, _, filterVal) => {
-				const filterLower = filterVal.toLowerCase()
-				const { name, status } = row.original
-				// Check if the filter matches the name or status for this row
-				if (
-					name.toLowerCase().includes(filterLower) ||
-					statusTranslations[status as keyof typeof statusTranslations]?.().includes(filterLower)
-				) {
-					return true
+			filterFn: (() => {
+				let filterInput = ""
+				let filterInputLower = ""
+				const nameCache = new Map<string, string>()
+				const statusTranslations = {
+					up: t`Up`.toLowerCase(),
+					down: t`Down`.toLowerCase(),
+					paused: t`Paused`.toLowerCase(),
+				} as const
+
+				// match filter value against name or translated status
+				return (row, _, newFilterInput) => {
+					const { name, status } = row.original
+					if (newFilterInput !== filterInput) {
+						filterInput = newFilterInput
+						filterInputLower = newFilterInput.toLowerCase()
+					}
+					let nameLower = nameCache.get(name)
+					if (nameLower === undefined) {
+						nameLower = name.toLowerCase()
+						nameCache.set(name, nameLower)
+					}
+					if (nameLower.includes(filterInputLower)) {
+						return true
+					}
+					const statusLower = statusTranslations[status as keyof typeof statusTranslations]
+					return statusLower?.includes(filterInputLower) || false
 				}
-				return false
-			},
+			})(),
 			enableHiding: false,
 			invertSorting: false,
 			Icon: ServerIcon,
@@ -166,9 +185,9 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 					<div className="flex items-center gap-[.35em] w-full tabular-nums tracking-tight">
 						<span
 							className={cn("inline-block size-2 rounded-full me-0.5", {
-								"bg-green-500": threshold === MeterState.Good,
-								"bg-yellow-500": threshold === MeterState.Warn,
-								"bg-red-600": threshold === MeterState.Crit,
+								[STATUS_COLORS.up]: threshold === MeterState.Good,
+								[STATUS_COLORS.pending]: threshold === MeterState.Warn,
+								[STATUS_COLORS.down]: threshold === MeterState.Crit,
 							})}
 						/>
 						{loadAverages?.map((la, i) => (
@@ -190,7 +209,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 				if (sys.status === "paused") {
 					return null
 				}
-				const userSettings = useStore($userSettings)
+				const userSettings = useStore($userSettings, { keys: ["unitNet"] })
 				const { value, unit } = formatBytes(info.getValue() as number, true, userSettings.unitNet, false)
 				return (
 					<span className="tabular-nums whitespace-nowrap">
@@ -212,7 +231,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 				if (!val) {
 					return null
 				}
-				const userSettings = useStore($userSettings)
+				const userSettings = useStore($userSettings, { keys: ["unitTemp"] })
 				const { value, unit } = formatTemperature(val, userSettings.unitTemp)
 				return (
 					<span className={cn("tabular-nums whitespace-nowrap", viewMode === "table" && "ps-0.5")}>
@@ -241,9 +260,9 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 						<IndicatorDot
 							system={system}
 							className={
-								(system.status !== "up" && "bg-primary/30") ||
-								(version === globalThis.BESZEL.HUB_VERSION && "bg-green-500") ||
-								"bg-yellow-500"
+								(system.status !== "up" && STATUS_COLORS.paused) ||
+								(version === globalThis.BESZEL.HUB_VERSION && STATUS_COLORS.up) ||
+								STATUS_COLORS.pending
 							}
 						/>
 						<span className="truncate max-w-14">{info.getValue() as string}</span>
@@ -293,10 +312,10 @@ function TableCellWithMeter(info: CellContext<SystemRecord, unknown>) {
 				<span
 					className={cn(
 						"absolute inset-0 w-full h-full origin-left",
-						(info.row.original.status !== "up" && "bg-primary/30") ||
-							(threshold === MeterState.Good && "bg-green-500") ||
-							(threshold === MeterState.Warn && "bg-yellow-500") ||
-							"bg-red-600"
+						(info.row.original.status !== "up" && STATUS_COLORS.paused) ||
+							(threshold === MeterState.Good && STATUS_COLORS.up) ||
+							(threshold === MeterState.Warn && STATUS_COLORS.pending) ||
+							STATUS_COLORS.down
 					)}
 					style={{
 						transform: `scalex(${val / 100})`,
@@ -308,12 +327,7 @@ function TableCellWithMeter(info: CellContext<SystemRecord, unknown>) {
 }
 
 export function IndicatorDot({ system, className }: { system: SystemRecord; className?: ClassValue }) {
-	className ||= {
-		"bg-green-500": system.status === "up",
-		"bg-red-500": system.status === "down",
-		"bg-primary/40": system.status === "paused",
-		"bg-yellow-500": system.status === "pending",
-	}
+	className ||= STATUS_COLORS[system.status as keyof typeof STATUS_COLORS] || ""
 	return (
 		<span
 			className={cn("flex-shrink-0 size-2 rounded-full", className)}

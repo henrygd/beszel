@@ -68,7 +68,7 @@ export default function SystemsTable() {
 		}
 	}, [filter])
 
-	const columnDefs = useMemo(() => SystemsTableColumns(viewMode), [])
+	const columnDefs = useMemo(() => SystemsTableColumns(viewMode), [viewMode])
 
 	const table = useReactTable({
 		data,
