@@ -246,6 +246,84 @@ export interface SemVer {
 	patch: number
 }
 
+export interface TailscaleNode {
+	id: string
+	node_id: string
+	name: string
+	hostname: string
+	ip: string
+	ipv6?: string
+	os: string
+	version: string
+	lastSeen: string
+	online: boolean
+	tags?: string[]
+	isExitNode: boolean
+	isSubnetRouter: boolean
+	machineKey: string
+	nodeKey: string
+	discoKey: string
+	endpoints?: string[]
+	derp: string
+	inNetworkMap: boolean
+	inMagicSock: boolean
+	inEngine: boolean
+	created: string
+	keyExpiry: string
+	capabilities?: string[]
+	computedName: string
+	computedNameWithHost: string
+	primaryRoutes?: string[]
+	allowedIPs?: string[]
+	advertisedRoutes?: string[]
+	enabledRoutes?: string[]
+	isEphemeral: boolean
+	expired: boolean
+	keyExpired: boolean
+	connectedToControl: boolean
+	updateAvailable: boolean
+	authorized: boolean
+	isExternal: boolean
+	keyExpiryDisabled: boolean
+	clientSupports?: {
+		hairPinning: boolean
+		ipv6: boolean
+		pcp: boolean
+		pmp: boolean
+		udp: boolean
+		upnp: boolean
+	} | null
+	tailnet?: string
+	network?: any
+	info?: any
+	updated?: string
+}
+
+export interface TailscaleNetwork {
+	domain: string
+	tailnetName: string
+	totalNodes: number
+	onlineNodes: number
+	offlineNodes: number
+	expiredNodes: number
+	exitNodes: number
+	subnetRouters: number
+	nodes: TailscaleNode[]
+	lastUpdated: string
+}
+
+export interface TailscaleStats {
+	totalNodes: number
+	onlineNodes: number
+	offlineNodes: number
+	expiredNodes: number
+	exitNodes: number
+	subnetRouters: number
+	ephemeralNodes: number
+	nodesWithUpdates: number
+	lastUpdated: string
+}
+
 export interface ChartData {
 	agentVersion: SemVer
 	systemStats: SystemStatsRecord[]
