@@ -1,5 +1,4 @@
 import {
-	CellContext,
 	ColumnDef,
 	ColumnFiltersState,
 	getFilteredRowModel,
@@ -9,14 +8,13 @@ import {
 	VisibilityState,
 	getCoreRowModel,
 	useReactTable,
-	HeaderContext,
 	Row,
 	Table as TableType,
 } from "@tanstack/react-table"
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
-import { Button, buttonVariants } from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
 
 import {
 	DropdownMenu,
@@ -29,104 +27,29 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-
 import { SystemRecord } from "@/types"
 import {
-	MoreHorizontalIcon,
 	ArrowUpDownIcon,
-	MemoryStickIcon,
-	CopyIcon,
-	PauseCircleIcon,
-	PlayCircleIcon,
-	Trash2Icon,
-	WifiIcon,
-	HardDriveIcon,
-	ServerIcon,
-	CpuIcon,
 	LayoutGridIcon,
 	LayoutListIcon,
 	ArrowDownIcon,
 	ArrowUpIcon,
 	Settings2Icon,
 	EyeIcon,
-	PenBoxIcon,
 } from "lucide-react"
-import { memo, useEffect, useMemo, useRef, useState } from "react"
-import { $systems, $userSettings, pb } from "@/lib/stores"
+import { memo, useEffect, useMemo, useState } from "react"
+import { $systems } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
-import {
-	cn,
-	copyToClipboard,
-	isReadOnlyUser,
-	useLocalStorage,
-	formatTemperature,
-	decimalString,
-	formatBytes,
-	parseSemVer,
-} from "@/lib/utils"
-import AlertsButton from "../alerts/alert-button"
+import { cn, useLocalStorage } from "@/lib/utils"
 import { $router, Link, navigate } from "../router"
-import { EthernetIcon, GpuIcon, HourglassIcon, ThermometerIcon } from "../ui/icons"
 import { useLingui, Trans } from "@lingui/react/macro"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Input } from "../ui/input"
-import { ClassValue } from "clsx"
 import { getPagePath } from "@nanostores/router"
-import { SystemDialog } from "../add-system"
-import { Dialog } from "../ui/dialog"
+import SystemsTableColumns, { ActionsButton, IndicatorDot } from "./systems-table-columns"
+import AlertButton from "../alerts/alert-button"
 
 type ViewMode = "table" | "grid"
-
-function CellFormatter(info: CellContext<SystemRecord, unknown>) {
-	const val = Number(info.getValue()) || 0
-	return (
-		<div className="flex gap-2 items-center tabular-nums tracking-tight">
-			<span className="min-w-8">{decimalString(val, val >= 10 ? 1 : 2)}%</span>
-			<span className="grow min-w-8 block bg-muted h-[1em] relative rounded-sm overflow-hidden">
-				<span
-					className={cn(
-						"absolute inset-0 w-full h-full origin-left",
-						(info.row.original.status !== "up" && "bg-primary/30") ||
-							(val < 65 && "bg-green-500") ||
-							(val < 90 && "bg-yellow-500") ||
-							"bg-red-600"
-					)}
-					style={{
-						transform: `scalex(${val / 100})`,
-					}}
-				></span>
-			</span>
-		</div>
-	)
-}
-
-function sortableHeader(context: HeaderContext<SystemRecord, unknown>) {
-	const { column } = context
-	// @ts-ignore
-	const { Icon, hideSort, name }: { Icon: React.ElementType; name: () => string; hideSort: boolean } = column.columnDef
-	return (
-		<Button
-			variant="ghost"
-			className="h-9 px-3 flex"
-			onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-		>
-			{Icon && <Icon className="me-2 size-4" />}
-			{name()}
-			{hideSort || <ArrowUpDownIcon className="ms-2 size-4" />}
-		</Button>
-	)
-}
 
 export default function SystemsTable() {
 	const data = useStore($systems)
@@ -145,212 +68,7 @@ export default function SystemsTable() {
 		}
 	}, [filter])
 
-	const columnDefs = useMemo(() => {
-		const statusTranslations = {
-			up: () => t`Up`.toLowerCase(),
-			down: () => t`Down`.toLowerCase(),
-			paused: () => t`Paused`.toLowerCase(),
-		}
-		return [
-			{
-				size: 200,
-				minSize: 0,
-				accessorKey: "name",
-				id: "system",
-				name: () => t`System`,
-				filterFn: (row, _, filterVal) => {
-					const filterLower = filterVal.toLowerCase()
-					const { name, status } = row.original
-					// Check if the filter matches the name or status for this row
-					if (
-						name.toLowerCase().includes(filterLower) ||
-						statusTranslations[status as keyof typeof statusTranslations]?.().includes(filterLower)
-					) {
-						return true
-					}
-					return false
-				},
-				enableHiding: false,
-				invertSorting: false,
-				Icon: ServerIcon,
-				cell: (info) => (
-					<span className="flex gap-2 items-center md:ps-1 md:pe-5">
-						<IndicatorDot system={info.row.original} />
-						<span className="font-medium text-sm">
-							{info.getValue() as string}
-						</span>
-					</span>
-				),
-				header: sortableHeader,
-			},
-			{
-				accessorFn: ({ info }) => info.cpu,
-				id: "cpu",
-				name: () => t`CPU`,
-				cell: CellFormatter,
-				Icon: CpuIcon,
-				header: sortableHeader,
-			},
-			{
-				// accessorKey: "info.mp",
-				accessorFn: ({ info }) => info.mp,
-				id: "memory",
-				name: () => t`Memory`,
-				cell: CellFormatter,
-				Icon: MemoryStickIcon,
-				header: sortableHeader,
-			},
-			{
-				accessorFn: ({ info }) => info.dp,
-				id: "disk",
-				name: () => t`Disk`,
-				cell: CellFormatter,
-				Icon: HardDriveIcon,
-				header: sortableHeader,
-			},
-			{
-				accessorFn: ({ info }) => info.g,
-				id: "gpu",
-				name: () => "GPU",
-				cell: CellFormatter,
-				Icon: GpuIcon,
-				header: sortableHeader,
-			},
-			{
-				id: "loadAverage",
-				accessorFn: ({ info }) => {
-					const sum = info.la?.reduce((acc, curr) => acc + curr, 0)
-					// TODO: remove this in future release in favor of la array
-					if (!sum) {
-						return (info.l1 ?? 0) + (info.l5 ?? 0) + (info.l15 ?? 0)
-					}
-					return sum
-				},
-				name: () => t({ message: "Load Avg", comment: "Short label for load average" }),
-				size: 0,
-				Icon: HourglassIcon,
-				header: sortableHeader,
-				cell(info: CellContext<SystemRecord, unknown>) {
-					const { info: sysInfo, status } = info.row.original
-					// agent version
-					const { minor, patch } = parseSemVer(sysInfo.v)
-					let loadAverages = sysInfo.la
-
-					// use legacy load averages if agent version is less than 12.1.0
-					if (!loadAverages || (minor === 12 && patch < 1)) {
-						loadAverages = [sysInfo.l1 ?? 0, sysInfo.l5 ?? 0, sysInfo.l15 ?? 0]
-					}
-
-					const max = Math.max(...loadAverages)
-					if (max === 0 && (status === "paused" || minor < 12)) {
-						return null
-					}
-
-					function getDotColor() {
-						const normalized = max / (sysInfo.t ?? 1)
-						if (status !== "up") return "bg-primary/30"
-						if (normalized < 0.7) return "bg-green-500"
-						if (normalized < 1) return "bg-yellow-500"
-						return "bg-red-600"
-					}
-
-					return (
-						<div className="flex items-center gap-[.35em] w-full tabular-nums tracking-tight">
-							<span className={cn("inline-block size-2 rounded-full me-0.5", getDotColor())} />
-							{loadAverages?.map((la, i) => (
-								<span key={i}>{decimalString(la, la >= 10 ? 1 : 2)}</span>
-							))}
-						</div>
-					)
-				},
-			},
-			{
-				accessorFn: ({ info }) => info.bb || (info.b || 0) * 1024 * 1024,
-				id: "net",
-				name: () => t`Net`,
-				size: 0,
-				Icon: EthernetIcon,
-				header: sortableHeader,
-				cell(info) {
-					const sys = info.row.original
-					if (sys.status === "paused") {
-						return null
-					}
-					const userSettings = useStore($userSettings)
-					const { value, unit } = formatBytes(info.getValue() as number, true, userSettings.unitNet, false)
-					return (
-						<span className="tabular-nums whitespace-nowrap">
-							{decimalString(value, value >= 100 ? 1 : 2)} {unit}
-						</span>
-					)
-				},
-			},
-			{
-				accessorFn: ({ info }) => info.dt,
-				id: "temp",
-				name: () => t({ message: "Temp", comment: "Temperature label in systems table" }),
-				size: 50,
-				hideSort: true,
-				Icon: ThermometerIcon,
-				header: sortableHeader,
-				cell(info) {
-					const val = info.getValue() as number
-					if (!val) {
-						return null
-					}
-					const userSettings = useStore($userSettings)
-					const { value, unit } = formatTemperature(val, userSettings.unitTemp)
-					return (
-						<span className={cn("tabular-nums whitespace-nowrap", viewMode === "table" && "ps-0.5")}>
-							{decimalString(value, value >= 100 ? 1 : 2)} {unit}
-						</span>
-					)
-				},
-			},
-			{
-				accessorFn: ({ info }) => info.v,
-				id: "agent",
-				name: () => t`Agent`,
-				// invertSorting: true,
-				size: 50,
-				Icon: WifiIcon,
-				hideSort: true,
-				header: sortableHeader,
-				cell(info) {
-					const version = info.getValue() as string
-					if (!version) {
-						return null
-					}
-					const system = info.row.original
-					return (
-						<span className={cn("flex gap-2 items-center md:pe-5 tabular-nums", viewMode === "table" && "ps-0.5")}>
-							<IndicatorDot
-								system={system}
-								className={
-									(system.status !== "up" && "bg-primary/30") ||
-									(version === globalThis.BESZEL.HUB_VERSION && "bg-green-500") ||
-									"bg-yellow-500"
-								}
-							/>
-							<span className="truncate max-w-14">{info.getValue() as string}</span>
-						</span>
-					)
-				},
-			},
-			{
-				id: "actions",
-				// @ts-ignore
-				name: () => t({ message: "Actions", comment: "Table column" }),
-				size: 50,
-				cell: ({ row }) => (
-					<div className="flex justify-end items-center gap-1 -ms-3">
-						<AlertsButton system={row.original} />
-						<ActionsButton system={row.original} />
-					</div>
-				),
-			},
-		] as ColumnDef<SystemRecord>[]
-	}, [])
+	const columnDefs = useMemo(() => SystemsTableColumns(viewMode), [viewMode])
 
 	const table = useReactTable({
 		data,
@@ -628,7 +346,7 @@ const SystemCard = memo(
 							</CardTitle>
 							{table.getColumn("actions")?.getIsVisible() && (
 								<div className="flex gap-1 flex-shrink-0 relative z-10">
-									<AlertsButton system={system} />
+									<AlertButton system={system} />
 									<ActionsButton system={system} />
 								</div>
 							)}
@@ -663,120 +381,3 @@ const SystemCard = memo(
 		}, [system, colLength, t])
 	}
 )
-
-const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
-	const [deleteOpen, setDeleteOpen] = useState(false)
-	const [editOpen, setEditOpen] = useState(false)
-	let editOpened = useRef(false)
-	const { t } = useLingui()
-	const { id, status, host, name } = system
-
-	return useMemo(() => {
-		return (
-			<>
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button variant="ghost" size={"icon"} data-nolink>
-							<span className="sr-only">
-								<Trans>Open menu</Trans>
-							</span>
-							<MoreHorizontalIcon className="w-5" />
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end">
-						{!isReadOnlyUser() && (
-							<DropdownMenuItem
-								onSelect={() => {
-									editOpened.current = true
-									setEditOpen(true)
-								}}
-							>
-								<PenBoxIcon className="me-2.5 size-4" />
-								<Trans>Edit</Trans>
-							</DropdownMenuItem>
-						)}
-						<DropdownMenuItem
-							className={cn(isReadOnlyUser() && "hidden")}
-							onClick={() => {
-								pb.collection("systems").update(id, {
-									status: status === "paused" ? "pending" : "paused",
-								})
-							}}
-						>
-							{status === "paused" ? (
-								<>
-									<PlayCircleIcon className="me-2.5 size-4" />
-									<Trans>Resume</Trans>
-								</>
-							) : (
-								<>
-									<PauseCircleIcon className="me-2.5 size-4" />
-									<Trans>Pause</Trans>
-								</>
-							)}
-						</DropdownMenuItem>
-						<DropdownMenuItem onClick={() => copyToClipboard(name)}>
-							<CopyIcon className="me-2.5 size-4" />
-							<Trans>Copy name</Trans>
-						</DropdownMenuItem>
-						<DropdownMenuItem onClick={() => copyToClipboard(host)}>
-							<CopyIcon className="me-2.5 size-4" />
-							<Trans>Copy host</Trans>
-						</DropdownMenuItem>
-						<DropdownMenuSeparator className={cn(isReadOnlyUser() && "hidden")} />
-						<DropdownMenuItem className={cn(isReadOnlyUser() && "hidden")} onSelect={() => setDeleteOpen(true)}>
-							<Trash2Icon className="me-2.5 size-4" />
-							<Trans>Delete</Trans>
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
-				{/* edit dialog */}
-				<Dialog open={editOpen} onOpenChange={setEditOpen}>
-					{editOpened.current && <SystemDialog system={system} setOpen={setEditOpen} />}
-				</Dialog>
-				{/* deletion dialog */}
-				<AlertDialog open={deleteOpen} onOpenChange={(open) => setDeleteOpen(open)}>
-					<AlertDialogContent>
-						<AlertDialogHeader>
-							<AlertDialogTitle>
-								<Trans>Are you sure you want to delete {name}?</Trans>
-							</AlertDialogTitle>
-							<AlertDialogDescription>
-								<Trans>
-									This action cannot be undone. This will permanently delete all current records for {name} from the
-									database.
-								</Trans>
-							</AlertDialogDescription>
-						</AlertDialogHeader>
-						<AlertDialogFooter>
-							<AlertDialogCancel>
-								<Trans>Cancel</Trans>
-							</AlertDialogCancel>
-							<AlertDialogAction
-								className={cn(buttonVariants({ variant: "destructive" }))}
-								onClick={() => pb.collection("systems").delete(id)}
-							>
-								<Trans>Continue</Trans>
-							</AlertDialogAction>
-						</AlertDialogFooter>
-					</AlertDialogContent>
-				</AlertDialog>
-			</>
-		)
-	}, [id, status, host, name, t, deleteOpen, editOpen])
-})
-
-function IndicatorDot({ system, className }: { system: SystemRecord; className?: ClassValue }) {
-	className ||= {
-		"bg-green-500": system.status === "up",
-		"bg-red-500": system.status === "down",
-		"bg-primary/40": system.status === "paused",
-		"bg-yellow-500": system.status === "pending",
-	}
-	return (
-		<span
-			className={cn("flex-shrink-0 size-2 rounded-full", className)}
-			// style={{ marginBottom: "-1px" }}
-		/>
-	)
-}

@@ -21,3 +21,10 @@ export enum Unit {
 	Celsius,
 	Fahrenheit,
 }
+
+/** Meter state for color */
+export enum MeterState {
+	Good,
+	Warn,
+	Crit,
+}

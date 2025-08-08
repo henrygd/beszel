@@ -69,7 +69,7 @@ msgid "5 min"
 msgstr "۵ دقیقه"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "عملیات"
@@ -108,7 +108,7 @@ msgstr "تنظیم گزینه‌های نمایش برای نمودارها."
 msgid "Admin"
 msgstr "مدیر"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
 msgstr "عامل"
 
@@ -128,7 +128,7 @@ msgstr "هشدارها"
 msgid "All Systems"
 msgstr "همه سیستم‌ها"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "آیا مطمئن هستید که می‌خواهید {name} را حذف کنید؟"
 
@@ -202,7 +202,7 @@ msgstr "بایت (کیلوبایت بر ثانیه، مگابایت بر ثان�
 msgid "Cache / Buffers"
 msgstr "حافظه پنهان / بافرها"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Cancel"
 msgstr "لغو"
@@ -261,7 +261,7 @@ msgstr "تأیید رمز عبور"
 msgid "Connection is down"
 msgstr "اتصال قطع است"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Continue"
 msgstr "ادامه"
@@ -287,7 +287,7 @@ msgctxt "Environment variables"
 msgid "Copy env"
 msgstr "کپی متغیرهای محیط"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
 msgstr "کپی میزبان"
 
@@ -296,7 +296,7 @@ msgstr "کپی میزبان"
 msgid "Copy Linux command"
 msgstr "کپی دستور لینوکس"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
 msgstr "کپی نام"
 
@@ -316,7 +316,7 @@ msgstr "محتوای <0>docker-compose.yml</0> عامل زیر را کپی کن�
 msgid "Copy YAML"
 msgstr "کپی YAML"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "پردازنده"
 
@@ -335,6 +335,10 @@ msgstr "ایجاد حساب کاربری"
 msgid "Created"
 msgstr "ایجاد شده"
 
+#: src/components/routes/settings/general.tsx
+msgid "Critical (%)"
+msgstr "بحرانی (%)"
+
 #. Dark theme
 #: src/components/mode-toggle.tsx
 msgid "Dark"
@@ -349,7 +353,7 @@ msgstr "داشبورد"
 msgid "Default time period"
 msgstr "بازه زمانی پیش‌فرض"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Delete"
 msgstr "حذف"
@@ -358,7 +362,7 @@ msgstr "حذف"
 msgid "Delete fingerprint"
 msgstr "حذف اثر انگشت"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
 msgstr "دیسک"
 
@@ -399,7 +403,7 @@ msgstr "مستندات"
 #. Context: System is down
 #: src/lib/utils.ts
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
 msgstr "قطع"
@@ -409,7 +413,7 @@ msgid "Duration"
 msgstr "مدت زمان"
 
 #: src/components/add-system.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "ویرایش"
 
@@ -567,7 +571,7 @@ msgid "Load Average 5m"
 msgstr "میانگین بار ۵ دقیقه"
 
 #. Short label for load average
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
 msgstr "میانگین بار"
 
@@ -606,7 +610,7 @@ msgstr "دستورالعمل‌های راه‌اندازی دستی"
 msgid "Max 1 min"
 msgstr "حداکثر ۱ دقیقه"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "حافظه"
 
@@ -624,7 +628,7 @@ msgstr "میزان استفاده از حافظه کانتینرهای داکر"
 msgid "Name"
 msgstr "نام"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "شبکه"
 
@@ -668,7 +672,7 @@ msgstr "پشتیبانی از OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "در هر بار راه‌اندازی مجدد، سیستم‌های موجود در پایگاه داده با سیستم‌های تعریف شده در فایل مطابقت داده می‌شوند."
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
@@ -713,11 +717,11 @@ msgstr "رمز عبور باید کمتر از ۷۲ بایت باشد."
 msgid "Password reset request received"
 msgstr "درخواست بازنشانی رمز عبور دریافت شد"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "توقف"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "مکث شده"
 
@@ -792,7 +796,7 @@ msgstr "بازنشانی رمز عبور"
 msgid "Resolved"
 msgstr "حل شده"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "ادامه"
 
@@ -832,6 +836,10 @@ msgstr "برای پیکربندی نحوه دریافت هشدارها، به <0
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "ارسال شد"
+
+#: src/components/routes/settings/general.tsx
+msgid "Set percentage thresholds for meter colors."
+msgstr "آستانه های درصدی را برای رنگ های متر تنظیم کنید."
 
 #: src/components/routes/settings/general.tsx
 msgid "Sets the default time range for charts when a system is viewed."
@@ -881,7 +889,7 @@ msgstr "میزان استفاده از Swap"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "سیستم"
@@ -903,7 +911,7 @@ msgid "Table"
 msgstr "جدول"
 
 #. Temperature label in systems table
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr "دما"
 
@@ -932,7 +940,7 @@ msgstr "اعلان آزمایشی ارسال شد"
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "سپس وارد بخش پشتیبان شوید و رمز عبور حساب کاربری خود را در جدول کاربران بازنشانی کنید."
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "این عمل قابل برگشت نیست. این کار تمام رکوردهای فعلی {name} را برای همیشه از پایگاه داده حذف خواهد کرد."
 
@@ -1026,7 +1034,7 @@ msgid "Universal token"
 msgstr "توکن جهانی"
 
 #. Context: System is up
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
 msgstr "فعال"
@@ -1083,6 +1091,14 @@ msgstr "در انتظار رکوردهای کافی برای نمایش"
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "می‌خواهید به ما کمک کنید تا ترجمه‌های خود را بهتر کنیم؟ برای جزئیات بیشتر به <0>Crowdin</0> مراجعه کنید."
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning (%)"
+msgstr "هشدار (%)"
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning thresholds"
+msgstr "آستانه های هشدار"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"

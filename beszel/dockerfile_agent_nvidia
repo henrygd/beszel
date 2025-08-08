@@ -12,15 +12,10 @@ COPY internal ./internal
 ARG TARGETOS TARGETARCH
 RUN CGO_ENABLED=0 GOGC=75 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-w -s" -o /agent ./cmd/agent
 
-RUN rm -rf /tmp/*
-
-# ? -------------------------
-FROM scratch
-
+# --------------------------
+# Final image: GPU-enabled agent with nvidia-smi
+# --------------------------
+FROM nvidia/cuda:12.9.1-base-ubuntu22.04
 COPY --from=builder /agent /agent
-
-# this is so we don't need to create the 
-# /tmp directory in the scratch container
-COPY --from=builder /tmp /tmp
 
 ENTRYPOINT ["/agent"]

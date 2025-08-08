@@ -8,7 +8,7 @@ msgstr ""
 "Language: cs\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-07-25 22:44\n"
+"PO-Revision-Date: 2025-08-04 01:51\n"
 "Last-Translator: \n"
 "Language-Team: Czech\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 3;\n"
@@ -27,7 +27,7 @@ msgstr "{0, plural, one {# den} few {# dny} other {# dní}}"
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
-msgstr ""
+msgstr "{0} z {1} vybraných řádků."
 
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
@@ -40,7 +40,7 @@ msgstr "1 hodina"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr ""
+msgstr "1 min"
 
 #: src/lib/utils.ts
 msgid "1 week"
@@ -53,7 +53,7 @@ msgstr "12 hodin"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr ""
+msgstr "15 min"
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -66,10 +66,10 @@ msgstr "30 dní"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr ""
+msgstr "5 min"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "Akce"
@@ -77,7 +77,7 @@ msgstr "Akce"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Active"
-msgstr ""
+msgstr "Aktivní"
 
 #: src/components/routes/home.tsx
 msgid "Active Alerts"
@@ -108,7 +108,7 @@ msgstr "Upravit možnosti zobrazení pro grafy."
 msgid "Admin"
 msgstr "Admin"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
 msgstr "Agent"
 
@@ -116,7 +116,7 @@ msgstr "Agent"
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Alert History"
-msgstr ""
+msgstr "Historie upozornění"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alert-button.tsx
@@ -128,13 +128,13 @@ msgstr "Výstrahy"
 msgid "All Systems"
 msgstr "Všechny systémy"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Opravdu chcete odstranit {name}?"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
-msgstr ""
+msgstr "Jste si jistý?"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -191,18 +191,18 @@ msgstr "Binary"
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr ""
+msgstr "Bits (Kbps, Mbps, Gbps)"
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
-msgstr ""
+msgstr "Bytes (KB/s, MB/s, GB/s)"
 
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
 msgstr "Cache / vyrovnávací paměť"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Cancel"
 msgstr "Zrušit"
@@ -213,11 +213,11 @@ msgstr "Upozornění - možná ztráta dat"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr ""
+msgstr "Celsia (°C)"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
-msgstr ""
+msgstr "Změnit jednotky zobrazení metrik."
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
@@ -259,9 +259,9 @@ msgstr "Potvrdit heslo"
 
 #: src/components/routes/home.tsx
 msgid "Connection is down"
-msgstr ""
+msgstr "Připojení je nedostupné"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Continue"
 msgstr "Pokračovat"
@@ -285,9 +285,9 @@ msgstr "Zkopírovat příkaz na spuštění dockeru"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Environment variables"
 msgid "Copy env"
-msgstr ""
+msgstr "Kopírovat env"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
 msgstr "Kopírovat hostitele"
 
@@ -296,7 +296,7 @@ msgstr "Kopírovat hostitele"
 msgid "Copy Linux command"
 msgstr "Kopírovat příkaz Linux"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
 msgstr "Kopírovat název"
 
@@ -306,17 +306,17 @@ msgstr "Kopírovat text"
 
 #: src/components/add-system.tsx
 msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
-msgstr ""
+msgstr "Zkopírujte instalační příkaz pro agenta níže nebo automaticky registrujte agenty s <0>univerzálním token</0>."
 
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
-msgstr ""
+msgstr "Zkopírujte obsah <0>docker-compose.yml</0> pro agenta níže nebo automaticky registrujte agenty s <1>univerzálním token</1>."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
-msgstr ""
+msgstr "Kopírovat YAML"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "Procesor"
 
@@ -333,7 +333,11 @@ msgstr "Vytvořit účet"
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
 msgid "Created"
-msgstr ""
+msgstr "Vytvořeno"
+
+#: src/components/routes/settings/general.tsx
+msgid "Critical (%)"
+msgstr "Kritické (%)"
 
 #. Dark theme
 #: src/components/mode-toggle.tsx
@@ -349,16 +353,16 @@ msgstr "Přehled"
 msgid "Default time period"
 msgstr "Výchozí doba"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Delete"
 msgstr "Odstranit"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
-msgstr ""
+msgstr "Smazat identifikátor"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
 msgstr "Disk"
 
@@ -368,7 +372,7 @@ msgstr "Disk I/O"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
-msgstr ""
+msgstr "Disková jednotka"
 
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
@@ -399,17 +403,17 @@ msgstr "Dokumentace"
 #. Context: System is down
 #: src/lib/utils.ts
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
 msgstr "Nefunkční"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
-msgstr ""
+msgstr "Doba trvání"
 
 #: src/components/add-system.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "Upravit"
 
@@ -451,7 +455,7 @@ msgstr "Stávající systémy, které nejsou definovány v <0>config.yml</0>, bu
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
-msgstr ""
+msgstr "Export"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
@@ -463,7 +467,7 @@ msgstr "Exportovat aktuální konfiguraci systémů."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr ""
+msgstr "Fahrenheita (°F)"
 
 #: src/lib/utils.ts
 msgid "Failed to authenticate"
@@ -490,7 +494,7 @@ msgstr "Filtr..."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
-msgstr ""
+msgstr "Otisk"
 
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -552,24 +556,24 @@ msgstr "Světlý"
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
-msgstr ""
+msgstr "Průměrné vytížení"
 
 #: src/lib/utils.ts
 msgid "Load Average 15m"
-msgstr ""
+msgstr "Průměrná zátěž 15m"
 
 #: src/lib/utils.ts
 msgid "Load Average 1m"
-msgstr ""
+msgstr "Průměrná zátěž 1m"
 
 #: src/lib/utils.ts
 msgid "Load Average 5m"
-msgstr ""
+msgstr "Průměrná zátěž 5m"
 
 #. Short label for load average
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
-msgstr ""
+msgstr "Prům. zatížení"
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -606,7 +610,7 @@ msgstr "Pokyny k manuálnímu nastavení"
 msgid "Max 1 min"
 msgstr "Max. 1 min"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Paměť"
 
@@ -624,7 +628,7 @@ msgstr "Využití paměti docker kontejnerů"
 msgid "Name"
 msgstr "Název"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "Síť"
 
@@ -639,7 +643,7 @@ msgstr "Síťový provoz veřejných rozhraní"
 #. Context: Bytes or bits
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
-msgstr ""
+msgstr "Síťová jednotka"
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -647,7 +651,7 @@ msgstr "Nenalezeny žádné výskyty."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "No results."
-msgstr ""
+msgstr "Žádné výsledky."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -668,7 +672,7 @@ msgstr "Podpora OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Při každém restartu budou systémy v databázi aktualizovány tak, aby odpovídaly systémům definovaným v souboru."
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
@@ -690,7 +694,7 @@ msgstr "Stránka"
 #. placeholder {1}: table.getPageCount()
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Page {0} of {1}"
-msgstr ""
+msgstr "Stránka {0} z {1}"
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
@@ -713,11 +717,11 @@ msgstr "Heslo musí být menší než 72 bytů."
 msgid "Password reset request received"
 msgstr "Žádost o obnovu hesla byla přijata"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "Pozastavit"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "Pozastaveno"
 
@@ -790,19 +794,19 @@ msgstr "Obnovit heslo"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Resolved"
-msgstr ""
+msgstr "Vyřešeno"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Pokračovat"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
-msgstr ""
+msgstr "Změnit token"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
-msgstr ""
+msgstr "Řádků na stránku"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -834,6 +838,10 @@ msgid "Sent"
 msgstr "Odeslat"
 
 #: src/components/routes/settings/general.tsx
+msgid "Set percentage thresholds for meter colors."
+msgstr "Nastavte procentuální prahové hodnoty pro barvy měřičů."
+
+#: src/components/routes/settings/general.tsx
 msgid "Sets the default time range for charts when a system is viewed."
 msgstr "Nastaví výchozí časový rozsah grafů, když je systém zobrazen."
 
@@ -863,7 +871,7 @@ msgstr "Seřadit podle"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 msgid "State"
-msgstr ""
+msgstr "Stav"
 
 #: src/lib/utils.ts
 msgid "Status"
@@ -881,14 +889,14 @@ msgstr "Swap využití"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "Systém"
 
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
-msgstr ""
+msgstr "Průměry zatížení systému v průběhu času"
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -903,7 +911,7 @@ msgid "Table"
 msgstr "Tabulka"
 
 #. Temperature label in systems table
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr "Teplota"
 
@@ -914,7 +922,7 @@ msgstr "Teplota"
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"
-msgstr ""
+msgstr "Jednotky teploty"
 
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
@@ -932,13 +940,13 @@ msgstr "Testovací oznámení odesláno"
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Poté se přihlaste do backendu a obnovte heslo k uživatelskému účtu v tabulce uživatelů."
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Tuto akci nelze vzít zpět. Tím se z databáze trvale odstraní všechny aktuální záznamy pro {name}."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
-msgstr ""
+msgstr "Tímto trvale odstraníte všechny vybrané záznamy z databáze."
 
 #: src/components/routes/system.tsx
 msgid "Throughput of {extraFsName}"
@@ -964,33 +972,33 @@ msgstr "Přepnout motiv"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr ""
+msgstr "Token"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Tokens & Fingerprints"
-msgstr ""
+msgstr "Tokeny & Otisky"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
-msgstr ""
+msgstr "Tokeny umožňují agentům připojení a registraci. Otisky jsou stabilní identifikátory jedinečné pro každý systém, nastavené na první připojení."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
-msgstr ""
+msgstr "Tokeny a otisky slouží k ověření připojení WebSocket k uzlu."
 
 #: src/lib/utils.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Spustí se, když využití paměti během 1 minuty překročí prahovou hodnotu"
 
 #: src/lib/utils.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Spustí se, když využití paměti během 15 minut překročí prahovou hodnotu"
 
 #: src/lib/utils.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Spustí se, když využití paměti během 5 minut překročí prahovou hodnotu"
 
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -1019,14 +1027,14 @@ msgstr "Spustí se, když využití disku překročí prahovou hodnotu"
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
-msgstr ""
+msgstr "Předvolby jednotek"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
-msgstr ""
+msgstr "Univerzální token"
 
 #. Context: System is up
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
 msgstr "Funkční"
@@ -1062,7 +1070,7 @@ msgstr "Uživatelé"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
-msgstr ""
+msgstr "Hodnota"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
@@ -1070,7 +1078,7 @@ msgstr "Zobrazení"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
-msgstr ""
+msgstr "Zobrazit vašich 200 nejnovějších upozornění."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
@@ -1084,13 +1092,21 @@ msgstr "Čeká se na dostatek záznamů k zobrazení"
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "Chcete nám pomoci s našimi překlady ještě lépe? Podívejte se na <0>Crowdin</0> pro více informací."
 
+#: src/components/routes/settings/general.tsx
+msgid "Warning (%)"
+msgstr "Varování (%)"
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning thresholds"
+msgstr "Prahové hodnoty pro varování"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
 msgstr "Webhook / Push oznámení"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
-msgstr ""
+msgstr "Pokud je povoleno, tento token umožňuje agentům, aby se sami zaregistrovali bez předchozího vytvoření systému. Vyprší po jedné hodině nebo po restartu uzlu."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx

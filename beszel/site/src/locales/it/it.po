@@ -69,7 +69,7 @@ msgid "5 min"
 msgstr ""
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "Azioni"
@@ -108,7 +108,7 @@ msgstr "Regola le opzioni di visualizzazione per i grafici."
 msgid "Admin"
 msgstr "Amministratore"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
 msgstr "Agente"
 
@@ -128,7 +128,7 @@ msgstr "Avvisi"
 msgid "All Systems"
 msgstr "Tutti i Sistemi"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Sei sicuro di voler eliminare {name}?"
 
@@ -202,7 +202,7 @@ msgstr ""
 msgid "Cache / Buffers"
 msgstr "Cache / Buffer"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Cancel"
 msgstr "Annulla"
@@ -261,7 +261,7 @@ msgstr "Conferma password"
 msgid "Connection is down"
 msgstr ""
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Continue"
 msgstr "Continua"
@@ -287,7 +287,7 @@ msgctxt "Environment variables"
 msgid "Copy env"
 msgstr "Copia env"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
 msgstr "Copia host"
 
@@ -296,7 +296,7 @@ msgstr "Copia host"
 msgid "Copy Linux command"
 msgstr "Copia comando Linux"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
 msgstr "Copia nome"
 
@@ -316,7 +316,7 @@ msgstr "Copia il contenuto<0>docker-compose.yml</0> per l'agente qui sotto, o re
 msgid "Copy YAML"
 msgstr "Copia YAML"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "CPU"
 
@@ -335,6 +335,10 @@ msgstr "Crea account"
 msgid "Created"
 msgstr ""
 
+#: src/components/routes/settings/general.tsx
+msgid "Critical (%)"
+msgstr "Critico (%)"
+
 #. Dark theme
 #: src/components/mode-toggle.tsx
 msgid "Dark"
@@ -349,7 +353,7 @@ msgstr "Cruscotto"
 msgid "Default time period"
 msgstr "Periodo di tempo predefinito"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Delete"
 msgstr "Elimina"
@@ -358,7 +362,7 @@ msgstr "Elimina"
 msgid "Delete fingerprint"
 msgstr "Elimina impronta digitale"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
 msgstr "Disco"
 
@@ -399,7 +403,7 @@ msgstr "Documentazione"
 #. Context: System is down
 #: src/lib/utils.ts
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
 msgstr "Offline"
@@ -409,7 +413,7 @@ msgid "Duration"
 msgstr ""
 
 #: src/components/add-system.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "Modifica"
 
@@ -567,7 +571,7 @@ msgid "Load Average 5m"
 msgstr "Caricamento medio 5m"
 
 #. Short label for load average
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
 msgstr ""
 
@@ -606,7 +610,7 @@ msgstr "Istruzioni di configurazione manuale"
 msgid "Max 1 min"
 msgstr "Max 1 min"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Memoria"
 
@@ -624,7 +628,7 @@ msgstr "Utilizzo della memoria dei container Docker"
 msgid "Name"
 msgstr "Nome"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "Rete"
 
@@ -668,7 +672,7 @@ msgstr "Supporto OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Ad ogni riavvio, i sistemi nel database verranno aggiornati per corrispondere ai sistemi definiti nel file."
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
@@ -713,11 +717,11 @@ msgstr "La password deve essere inferiore a 72 byte."
 msgid "Password reset request received"
 msgstr "Richiesta di reimpostazione password ricevuta"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "Pausa"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "In pausa"
 
@@ -792,7 +796,7 @@ msgstr "Reimposta Password"
 msgid "Resolved"
 msgstr ""
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Riprendi"
 
@@ -832,6 +836,10 @@ msgstr "Vedi <0>impostazioni di notifica</0> per configurare come ricevere gli a
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Inviato"
+
+#: src/components/routes/settings/general.tsx
+msgid "Set percentage thresholds for meter colors."
+msgstr "Imposta le soglie percentuali per i colori dei contatori."
 
 #: src/components/routes/settings/general.tsx
 msgid "Sets the default time range for charts when a system is viewed."
@@ -881,7 +889,7 @@ msgstr "Utilizzo Swap"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "Sistema"
@@ -903,7 +911,7 @@ msgid "Table"
 msgstr "Tabella"
 
 #. Temperature label in systems table
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr "Temperatura"
 
@@ -932,7 +940,7 @@ msgstr "Notifica di test inviata"
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Quindi accedi al backend e reimposta la password del tuo account utente nella tabella degli utenti."
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Questa azione non può essere annullata. Questo eliminerà permanentemente tutti i record attuali per {name} dal database."
 
@@ -1026,7 +1034,7 @@ msgid "Universal token"
 msgstr "Token universale"
 
 #. Context: System is up
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
 msgstr "Attivo"
@@ -1083,6 +1091,14 @@ msgstr "In attesa di abbastanza record da visualizzare"
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "Vuoi aiutarci a migliorare ulteriormente le nostre traduzioni? Dai un'occhiata a <0>Crowdin</0> per maggiori dettagli."
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning (%)"
+msgstr "Avviso (%)"
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning thresholds"
+msgstr "Soglie di avviso"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
