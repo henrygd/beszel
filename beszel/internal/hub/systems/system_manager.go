@@ -74,22 +74,21 @@ func (sm *SystemManager) Initialize() error {
 	}
 
 	// Load existing systems from database (excluding paused ones)
-	var systems []*System
-	err = sm.hub.DB().NewQuery("SELECT id, host, port, status FROM systems WHERE status != 'paused'").All(&systems)
-	if err != nil || len(systems) == 0 {
+	records, err := sm.hub.FindRecordsByFilter("systems", "status != 'paused'", "", -1, 0)
+	if err != nil || len(records) == 0 {
 		return err
 	}
 
 	// Start systems in background with staggered timing
 	go func() {
 		// Calculate staggered delay between system starts (max 2 seconds per system)
-		delta := interval / max(1, len(systems))
+		delta := interval / max(1, len(records))
 		delta = min(delta, 2_000)
 		sleepTime := time.Duration(delta) * time.Millisecond
 
-		for _, system := range systems {
+		for _, record := range records {
 			time.Sleep(sleepTime)
-			_ = sm.AddSystem(system)
+			_ = sm.AddRecord(record, nil)
 		}
 	}()
 	return nil

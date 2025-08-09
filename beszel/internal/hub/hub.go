@@ -241,6 +241,8 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	se.Router.GET("/api/beszel/send-test-notification", h.SendTestNotification)
 	// API endpoint to get config.yml content
 	se.Router.GET("/api/beszel/config-yaml", config.GetYamlConfig)
+	// API endpoint for agent configuration
+	se.Router.GET("/api/beszel/agent-config", config.GetAgentConfig)
 	// handle agent websocket connection
 	se.Router.GET("/api/beszel/agent-connect", h.handleAgentConnect)
 	// get or create universal tokens
