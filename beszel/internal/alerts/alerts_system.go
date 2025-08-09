@@ -293,18 +293,11 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 		// app.Logger().Error("failed to save alert record", "err", err)
 		return
 	}
-	// expand the user relation and send the alert
-	if errs := am.hub.ExpandRecord(alert.alertRecord, []string{"user"}, nil); len(errs) > 0 {
-		// app.Logger().Error("failed to expand user relation", "errs", errs)
-		return
-	}
-	if user := alert.alertRecord.ExpandedOne("user"); user != nil {
-		am.SendAlert(AlertMessageData{
-			UserID:   user.Id,
-			Title:    subject,
-			Message:  body,
-			Link:     am.hub.MakeLink("system", systemName),
-			LinkText: "View " + systemName,
-		})
-	}
+	am.SendAlert(AlertMessageData{
+		UserID:   alert.alertRecord.GetString("user"),
+		Title:    subject,
+		Message:  body,
+		Link:     am.hub.MakeLink("system", systemName),
+		LinkText: "View " + systemName,
+	})
 }

@@ -29,41 +29,36 @@ export default memo(function ContainerChart({
 	const isNetChart = chartType === ChartType.Network
 
 	const chartConfig = useMemo(() => {
-		let config = {} as Record<
-			string,
-			{
-				label: string
-				color: string
-			}
-		>
-		const totalUsage = {} as Record<string, number>
-		for (let stats of containerData) {
-			for (let key in stats) {
-				if (!key || key === "created") {
-					continue
-				}
-				if (!(key in totalUsage)) {
-					totalUsage[key] = 0
-				}
-				if (isNetChart) {
-					totalUsage[key] += (stats[key]?.nr ?? 0) + (stats[key]?.ns ?? 0)
-				} else {
-					// @ts-ignore
-					totalUsage[key] += stats[key]?.[dataKey] ?? 0
-				}
+		const config = {} as Record<string, { label: string; color: string }>
+		const totalUsage = new Map<string, number>()
+
+		// calculate total usage of each container
+		for (const stats of containerData) {
+			for (const key in stats) {
+				if (!key || key === "created") continue
+
+				const currentTotal = totalUsage.get(key) ?? 0
+				const increment = isNetChart
+					? (stats[key]?.nr ?? 0) + (stats[key]?.ns ?? 0)
+					: // @ts-ignore
+					  stats[key]?.[dataKey] ?? 0
+
+				totalUsage.set(key, currentTotal + increment)
 			}
 		}
-		let keys = Object.keys(totalUsage)
-		keys.sort((a, b) => (totalUsage[a] > totalUsage[b] ? -1 : 1))
-		const length = keys.length
-		for (let i = 0; i < length; i++) {
-			const key = keys[i]
+
+		// Sort keys and generate colors based on usage
+		const sortedEntries = Array.from(totalUsage.entries()).sort(([, a], [, b]) => b - a)
+
+		const length = sortedEntries.length
+		sortedEntries.forEach(([key], i) => {
 			const hue = ((i * 360) / length) % 360
 			config[key] = {
 				label: key,
 				color: `hsl(${hue}, 60%, 55%)`,
 			}
-		}
+		})
+
 		return config satisfies ChartConfig
 	}, [chartData])
 
@@ -124,6 +119,8 @@ export default memo(function ContainerChart({
 		return obj
 	}, [])
 
+	const filterLower = filter?.toLowerCase()
+
 	// console.log('rendered at', new Date())
 
 	if (containerData.length === 0) {
@@ -165,7 +162,7 @@ export default memo(function ContainerChart({
 						content={<ChartTooltipContent filter={filter} contentFormatter={toolTipFormatter} />}
 					/>
 					{Object.keys(chartConfig).map((key) => {
-						const filtered = filter && !key.toLowerCase().includes(filter.toLowerCase())
+						const filtered = filterLower && !key.toLowerCase().includes(filterLower)
 						let fillOpacity = filtered ? 0.05 : 0.4
 						let strokeOpacity = filtered ? 0.1 : 1
 						return (

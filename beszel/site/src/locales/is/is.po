@@ -69,7 +69,7 @@ msgid "5 min"
 msgstr ""
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "Aðgerðir"
@@ -108,7 +108,7 @@ msgstr ""
 msgid "Admin"
 msgstr "Admin"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
 msgstr ""
 
@@ -128,7 +128,7 @@ msgstr "Tilkynningar"
 msgid "All Systems"
 msgstr "Öll kerfi"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Ertu viss um að þú viljir eyða {name}?"
 
@@ -202,7 +202,7 @@ msgstr ""
 msgid "Cache / Buffers"
 msgstr "Skyndiminni / Biðminni"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Cancel"
 msgstr "Hætta við"
@@ -261,7 +261,7 @@ msgstr "Staðfestu lykilorð"
 msgid "Connection is down"
 msgstr ""
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Continue"
 msgstr "Halda áfram"
@@ -287,7 +287,7 @@ msgctxt "Environment variables"
 msgid "Copy env"
 msgstr ""
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
 msgstr "Afrita host"
 
@@ -296,7 +296,7 @@ msgstr "Afrita host"
 msgid "Copy Linux command"
 msgstr "Afrita Linux aðgerð"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
 msgstr "Afrita nafn"
 
@@ -316,7 +316,7 @@ msgstr ""
 msgid "Copy YAML"
 msgstr ""
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "Örgjörvi"
 
@@ -335,6 +335,10 @@ msgstr "Búa til aðgang"
 msgid "Created"
 msgstr ""
 
+#: src/components/routes/settings/general.tsx
+msgid "Critical (%)"
+msgstr "Kritískt (%)"
+
 #. Dark theme
 #: src/components/mode-toggle.tsx
 msgid "Dark"
@@ -349,7 +353,7 @@ msgstr "Yfirlitssíða"
 msgid "Default time period"
 msgstr "Sjálfgefið tímabil"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Delete"
 msgstr "Eyða"
@@ -358,7 +362,7 @@ msgstr "Eyða"
 msgid "Delete fingerprint"
 msgstr ""
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
 msgstr "Diskur"
 
@@ -399,7 +403,7 @@ msgstr "Skjal"
 #. Context: System is down
 #: src/lib/utils.ts
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
 msgstr ""
@@ -409,7 +413,7 @@ msgid "Duration"
 msgstr ""
 
 #: src/components/add-system.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr ""
 
@@ -567,7 +571,7 @@ msgid "Load Average 5m"
 msgstr ""
 
 #. Short label for load average
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
 msgstr ""
 
@@ -606,7 +610,7 @@ msgstr ""
 msgid "Max 1 min"
 msgstr "Mest 1 mínúta"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Minni"
 
@@ -624,7 +628,7 @@ msgstr "Minnisnotkun docker kerfa"
 msgid "Name"
 msgstr "Nafn"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "Net"
 
@@ -668,7 +672,7 @@ msgstr "OAuth 2 / OIDC stuðningur"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr ""
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
@@ -713,11 +717,11 @@ msgstr ""
 msgid "Password reset request received"
 msgstr "Beiðni um að endurstilla lykilorð móttekin"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "Pása"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "Í bið"
 
@@ -792,7 +796,7 @@ msgstr "Endurstilla lykilorð"
 msgid "Resolved"
 msgstr ""
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Halda áfram"
 
@@ -832,6 +836,10 @@ msgstr ""
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Sent"
+
+#: src/components/routes/settings/general.tsx
+msgid "Set percentage thresholds for meter colors."
+msgstr "Stilltu prósentuþröskuld fyrir mælaliti."
 
 #: src/components/routes/settings/general.tsx
 msgid "Sets the default time range for charts when a system is viewed."
@@ -881,7 +889,7 @@ msgstr "Skipti minni"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "Kerfi"
@@ -903,7 +911,7 @@ msgid "Table"
 msgstr "Tafla"
 
 #. Temperature label in systems table
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr ""
 
@@ -932,7 +940,7 @@ msgstr "Prufu tilkynning send"
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Skráðu þig þá inní bakendann og endurstilltu lykilorðið þitt inni í notenda töflunni."
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Þessi aðgerð er óafturkvæmanleg. Þetta mun eyða gögnum fyrir {name} varanlega úr gagnagrunninum."
 
@@ -1026,7 +1034,7 @@ msgid "Universal token"
 msgstr ""
 
 #. Context: System is up
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
 msgstr ""
@@ -1083,6 +1091,14 @@ msgstr "Bíður eftir nægum upplýsingum til að sýna"
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr ""
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning (%)"
+msgstr "Viðvörun (%)"
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning thresholds"
+msgstr "Viðvörunarþröskuldur"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"

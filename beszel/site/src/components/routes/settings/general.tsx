@@ -11,6 +11,7 @@ import { useState } from "react"
 import languages from "@/lib/languages"
 import { dynamicActivate } from "@/lib/i18n"
 import { useLingui } from "@lingui/react/macro"
+import { Input } from "@/components/ui/input"
 import { Unit } from "@/lib/enums"
 
 export default function SettingsProfilePage({ userSettings }: { userSettings: UserSettings }) {
@@ -133,7 +134,6 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 								</SelectContent>
 							</Select>
 						</div>
-
 						<div className="space-y-2">
 							<Label className="block" htmlFor="unitNet">
 								<Trans comment="Context: Bytes or bits">Network unit</Trans>
@@ -156,7 +156,6 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 								</SelectContent>
 							</Select>
 						</div>
-
 						<div className="space-y-2">
 							<Label className="block" htmlFor="unitDisk">
 								<Trans>Disk unit</Trans>
@@ -178,6 +177,47 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 									</SelectItem>
 								</SelectContent>
 							</Select>
+						</div>
+					</div>
+				</div>
+				<Separator />
+				<div className="space-y-2">
+					<div className="mb-4">
+						<h3 className="mb-1 text-lg font-medium">
+							<Trans>Warning thresholds</Trans>
+						</h3>
+						<p className="text-sm text-muted-foreground leading-relaxed">
+							<Trans>Set percentage thresholds for meter colors.</Trans>
+						</p>
+					</div>
+					<div className="grid grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+						<div className="space-y-1">
+							<Label htmlFor="colorWarn">
+								<Trans>Warning (%)</Trans>
+							</Label>
+							<Input
+								id="colorWarn"
+								name="colorWarn"
+								type="number"
+								min={1}
+								max={100}
+								className="min-w-24"
+								defaultValue={userSettings.colorWarn ?? 65}
+							/>
+						</div>
+						<div className="space-y-1">
+							<Label htmlFor="colorCrit">
+								<Trans>Critical (%)</Trans>
+							</Label>
+							<Input
+								id="colorCrit"
+								name="colorCrit"
+								type="number"
+								min={1}
+								max={100}
+								className="min-w-24"
+								defaultValue={userSettings.colorCrit ?? 90}
+							/>
 						</div>
 					</div>
 				</div>

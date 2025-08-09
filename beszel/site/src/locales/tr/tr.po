@@ -69,7 +69,7 @@ msgid "5 min"
 msgstr "5 dk"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "Eylemler"
@@ -108,7 +108,7 @@ msgstr "Grafikler için görüntüleme seçeneklerini ayarlayın."
 msgid "Admin"
 msgstr "Yönetici"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
 msgstr "Aracı"
 
@@ -128,7 +128,7 @@ msgstr "Uyarılar"
 msgid "All Systems"
 msgstr "Tüm Sistemler"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "{name} silmek istediğinizden emin misiniz?"
 
@@ -202,7 +202,7 @@ msgstr "Bayt (KB/s, MB/s, GB/s)"
 msgid "Cache / Buffers"
 msgstr "Önbellek / Tamponlar"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Cancel"
 msgstr "İptal"
@@ -261,7 +261,7 @@ msgstr "Şifreyi onayla"
 msgid "Connection is down"
 msgstr "Bağlantı kesildi"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Continue"
 msgstr "Devam et"
@@ -287,7 +287,7 @@ msgctxt "Environment variables"
 msgid "Copy env"
 msgstr "Ortam değişkenlerini kopyala"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
 msgstr "Ana bilgisayarı kopyala"
 
@@ -296,7 +296,7 @@ msgstr "Ana bilgisayarı kopyala"
 msgid "Copy Linux command"
 msgstr "Linux komutunu kopyala"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
 msgstr "Adı kopyala"
 
@@ -316,7 +316,7 @@ msgstr "Aşağıdaki agent için <0>docker-compose.yml</0> içeriğini kopyalay�
 msgid "Copy YAML"
 msgstr "YAML'ı kopyala"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "CPU"
 
@@ -335,6 +335,10 @@ msgstr "Hesap oluştur"
 msgid "Created"
 msgstr "Oluşturuldu"
 
+#: src/components/routes/settings/general.tsx
+msgid "Critical (%)"
+msgstr "Kritik (%)"
+
 #. Dark theme
 #: src/components/mode-toggle.tsx
 msgid "Dark"
@@ -349,7 +353,7 @@ msgstr "Gösterge Paneli"
 msgid "Default time period"
 msgstr "Varsayılan zaman dilimi"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Delete"
 msgstr "Sil"
@@ -358,7 +362,7 @@ msgstr "Sil"
 msgid "Delete fingerprint"
 msgstr "Parmak izini sil"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
 msgstr "Disk"
 
@@ -399,7 +403,7 @@ msgstr "Dokümantasyon"
 #. Context: System is down
 #: src/lib/utils.ts
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
 msgstr "Kapalı"
@@ -409,7 +413,7 @@ msgid "Duration"
 msgstr "Süre"
 
 #: src/components/add-system.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "Düzenle"
 
@@ -567,7 +571,7 @@ msgid "Load Average 5m"
 msgstr "Yük Ortalaması 5d"
 
 #. Short label for load average
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
 msgstr "Yük Ort."
 
@@ -606,7 +610,7 @@ msgstr "Manuel kurulum talimatları"
 msgid "Max 1 min"
 msgstr "Maks 1 dk"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Bellek"
 
@@ -624,7 +628,7 @@ msgstr "Docker konteynerlerinin bellek kullanımı"
 msgid "Name"
 msgstr "Ad"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "Ağ"
 
@@ -668,7 +672,7 @@ msgstr "OAuth 2 / OIDC desteği"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Her yeniden başlatmada, veritabanındaki sistemler dosyada tanımlanan sistemlerle eşleşecek şekilde güncellenecektir."
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
@@ -713,11 +717,11 @@ msgstr "Parola 72 bayttan küçük olmalıdır."
 msgid "Password reset request received"
 msgstr "Şifre sıfırlama isteği alındı"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "Duraklat"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "Duraklatıldı"
 
@@ -792,7 +796,7 @@ msgstr "Şifreyi Sıfırla"
 msgid "Resolved"
 msgstr "Çözüldü"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Devam et"
 
@@ -832,6 +836,10 @@ msgstr "Uyarıları nasıl alacağınızı yapılandırmak için <0>bildirim aya
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Gönderildi"
+
+#: src/components/routes/settings/general.tsx
+msgid "Set percentage thresholds for meter colors."
+msgstr "Sayaç renkleri için yüzde eşiklerini ayarlayın."
 
 #: src/components/routes/settings/general.tsx
 msgid "Sets the default time range for charts when a system is viewed."
@@ -881,7 +889,7 @@ msgstr "Takas Kullanımı"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "Sistem"
@@ -903,7 +911,7 @@ msgid "Table"
 msgstr "Tablo"
 
 #. Temperature label in systems table
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr "Sıc"
 
@@ -932,7 +940,7 @@ msgstr "Test bildirimi gönderildi"
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Ardından arka uca giriş yapın ve kullanıcılar tablosunda kullanıcı hesabı şifrenizi sıfırlayın."
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Bu işlem geri alınamaz. Bu, veritabanından {name} için tüm mevcut kayıtları kalıcı olarak silecektir."
 
@@ -1026,7 +1034,7 @@ msgid "Universal token"
 msgstr "Evrensel token"
 
 #. Context: System is up
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
 msgstr "Açık"
@@ -1083,6 +1091,14 @@ msgstr "Görüntülemek için yeterli kayıt bekleniyor"
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "Çevirilerimizi daha iyi hale getirmemize yardımcı olmak ister misiniz? Daha fazla bilgi için <0>Crowdin</0> inceleyin."
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning (%)"
+msgstr "Uyarı (%)"
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning thresholds"
+msgstr "Uyarı eşikleri"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"

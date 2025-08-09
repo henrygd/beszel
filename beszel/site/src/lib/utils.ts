@@ -20,7 +20,7 @@ import { useEffect, useState } from "react"
 import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from "lucide-react"
 import { EthernetIcon, HourglassIcon, ThermometerIcon } from "@/components/ui/icons"
 import { prependBasePath } from "@/components/router"
-import { Unit } from "./enums"
+import { MeterState, Unit } from "./enums"
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -506,4 +506,10 @@ export const parseSemVer = (semVer = ""): SemVer => {
 	}
 	const parts = semVer.split(".").map(Number)
 	return { major: parts?.[0] ?? 0, minor: parts?.[1] ?? 0, patch: parts?.[2] ?? 0 }
+}
+
+/** Get meter state from 0-100 value. Used for color coding meters. */
+export function getMeterState(value: number): MeterState {
+	const { colorWarn = 65, colorCrit = 90 } = $userSettings.get()
+	return value >= colorCrit ? MeterState.Crit : value >= colorWarn ? MeterState.Warn : MeterState.Good
 }

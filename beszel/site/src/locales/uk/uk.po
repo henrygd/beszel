@@ -69,7 +69,7 @@ msgid "5 min"
 msgstr "5 хв"
 
 #. Table column
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Actions"
 msgstr "Дії"
@@ -108,7 +108,7 @@ msgstr "Налаштуйте параметри відображення для 
 msgid "Admin"
 msgstr "Адміністратор"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
 msgstr "Агент"
 
@@ -128,7 +128,7 @@ msgstr "Сповіщення"
 msgid "All Systems"
 msgstr "Всі системи"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "Ви впевнені, що хочете видалити {name}?"
 
@@ -202,7 +202,7 @@ msgstr "Байти (КБ/с, МБ/с, ГБ/с)"
 msgid "Cache / Buffers"
 msgstr "Кеш / Буфери"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Cancel"
 msgstr "Скасувати"
@@ -261,7 +261,7 @@ msgstr "Підтвердьте пароль"
 msgid "Connection is down"
 msgstr "З'єднання розірвано"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Continue"
 msgstr "Продовжити"
@@ -287,7 +287,7 @@ msgctxt "Environment variables"
 msgid "Copy env"
 msgstr "Копіювати env"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
 msgstr "Копіювати хост"
 
@@ -296,7 +296,7 @@ msgstr "Копіювати хост"
 msgid "Copy Linux command"
 msgstr "Копіювати команду Linux"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
 msgstr "Копіювати імʼя"
 
@@ -316,7 +316,7 @@ msgstr "Скопіюйте вміст <0>docker-compose.yml</0> для аген�
 msgid "Copy YAML"
 msgstr "Копіювати YAML"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "ЦП"
 
@@ -335,6 +335,10 @@ msgstr "Створити обліковий запис"
 msgid "Created"
 msgstr "Створено"
 
+#: src/components/routes/settings/general.tsx
+msgid "Critical (%)"
+msgstr "Критично (%)"
+
 #. Dark theme
 #: src/components/mode-toggle.tsx
 msgid "Dark"
@@ -349,7 +353,7 @@ msgstr "Панель управління"
 msgid "Default time period"
 msgstr "Стандартний період часу"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Delete"
 msgstr "Видалити"
@@ -358,7 +362,7 @@ msgstr "Видалити"
 msgid "Delete fingerprint"
 msgstr "Видалити відбиток"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
 msgstr "Диск"
 
@@ -399,7 +403,7 @@ msgstr "Документація"
 #. Context: System is down
 #: src/lib/utils.ts
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
 msgstr "Не працює"
@@ -409,7 +413,7 @@ msgid "Duration"
 msgstr "Тривалість"
 
 #: src/components/add-system.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "Редагувати"
 
@@ -567,7 +571,7 @@ msgid "Load Average 5m"
 msgstr "Середнє навантаження за 5 хв"
 
 #. Short label for load average
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
 msgstr "Сер. навантаження"
 
@@ -606,7 +610,7 @@ msgstr "Інструкції з ручного налаштування"
 msgid "Max 1 min"
 msgstr "Макс 1 хв"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Пам'ять"
 
@@ -624,7 +628,7 @@ msgstr "Використання пам'яті контейнерами Docker"
 msgid "Name"
 msgstr "Ім'я"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "Мережа"
 
@@ -668,7 +672,7 @@ msgstr "Підтримка OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "При кожному перезапуску системи в базі даних будуть оновлені, щоб відповідати системам, визначеним у файлі."
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
@@ -713,11 +717,11 @@ msgstr "Пароль не повинен перевищувати 72 байти.
 msgid "Password reset request received"
 msgstr "Запит на скидання пароля отримано"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "Призупинити"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "Призупинено"
 
@@ -792,7 +796,7 @@ msgstr "Скинути пароль"
 msgid "Resolved"
 msgstr "Вирішено"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Відновити"
 
@@ -832,6 +836,10 @@ msgstr "Перегляньте <0>налаштування сповіщень</0
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Відправлено"
+
+#: src/components/routes/settings/general.tsx
+msgid "Set percentage thresholds for meter colors."
+msgstr "Встановіть відсоткові пороги для кольорів лічильників."
 
 #: src/components/routes/settings/general.tsx
 msgid "Sets the default time range for charts when a system is viewed."
@@ -881,7 +889,7 @@ msgstr "Використання підкачки"
 #: src/lib/utils.ts
 #: src/components/mode-toggle.tsx
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "System"
 msgstr "Система"
@@ -903,7 +911,7 @@ msgid "Table"
 msgstr "Таблиця"
 
 #. Temperature label in systems table
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr "Температура"
 
@@ -932,7 +940,7 @@ msgstr "Тестове сповіщення надіслано"
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Потім увійдіть у бекенд і скиньте пароль вашого облікового запису користувача в таблиці користувачів."
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Цю дію не можна скасувати. Це назавжди видалить всі поточні записи для {name} з бази даних."
 
@@ -1026,7 +1034,7 @@ msgid "Universal token"
 msgstr "Універсальний токен"
 
 #. Context: System is up
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
 msgstr "Працює"
@@ -1083,6 +1091,14 @@ msgstr "Очікування достатньої кількості запис�
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "Хочете допомогти покращити наші переклади? Подробиці на <0>Crowdin</0>."
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning (%)"
+msgstr "Попередження (%)"
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning thresholds"
+msgstr "Пороги попередження"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"

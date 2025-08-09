@@ -6,23 +6,12 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 )
 
 type UserManager struct {
 	app core.App
-}
-
-type UserSettings struct {
-	ChartTime            string   `json:"chartTime"`
-	NotificationEmails   []string `json:"emails"`
-	NotificationWebhooks []string `json:"webhooks"`
-	// UnitTemp             uint8    `json:"unitTemp"` // 0 for Celsius, 1 for Fahrenheit
-	// UnitNet              uint8    `json:"unitNet"`  // 0 for bytes, 1 for bits
-	// UnitDisk             uint8    `json:"unitDisk"` // 0 for bytes, 1 for bits
-
-	// New field for alert history retention (e.g., "1m", "3m", "6m", "1y")
-	AlertHistoryRetention string `json:"alertHistoryRetention,omitempty"`
 }
 
 func NewUserManager(app core.App) *UserManager {
@@ -42,29 +31,26 @@ func (um *UserManager) InitializeUserRole(e *core.RecordEvent) error {
 // Initialize user settings with defaults if not set
 func (um *UserManager) InitializeUserSettings(e *core.RecordEvent) error {
 	record := e.Record
-	// intialize settings with defaults
-	settings := UserSettings{
-		ChartTime:            "1h",
-		NotificationEmails:   []string{},
-		NotificationWebhooks: []string{},
+	// intialize settings with defaults (zero values can be ignored)
+	settings := struct {
+		ChartTime string   `json:"chartTime"`
+		Emails    []string `json:"emails"`
+	}{
+		ChartTime: "1h",
 	}
 	record.UnmarshalJSONField("settings", &settings)
-	if len(settings.NotificationEmails) == 0 {
-		// get user email from auth record
-		if errs := um.app.ExpandRecord(record, []string{"user"}, nil); len(errs) == 0 {
-			// app.Logger().Error("failed to expand user relation", "errs", errs)
-			if user := record.ExpandedOne("user"); user != nil {
-				settings.NotificationEmails = []string{user.GetString("email")}
-			} else {
-				log.Println("Failed to get user email from auth record")
-			}
-		} else {
-			log.Println("failed to expand user relation", "errs", errs)
-		}
+	// get user email from auth record
+	var user struct {
+		Email string `db:"email"`
 	}
-	// if len(settings.NotificationWebhooks) == 0 {
-	// 	settings.NotificationWebhooks = []string{""}
-	// }
+	err := e.App.DB().NewQuery("SELECT email FROM users WHERE id = {:id}").Bind(dbx.Params{
+		"id": record.GetString("user"),
+	}).One(&user)
+	if err != nil {
+		log.Println("failed to get user email", "err", err)
+		return err
+	}
+	settings.Emails = []string{user.Email}
 	record.Set("settings", settings)
 	return e.Next()
 }

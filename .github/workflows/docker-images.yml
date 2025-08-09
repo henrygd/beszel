@@ -14,28 +14,48 @@ jobs:
         include:
           - image: henrygd/beszel
             context: ./beszel
-            dockerfile: ./beszel/dockerfile_Hub
+            dockerfile: ./beszel/dockerfile_hub
             registry: docker.io
             username_secret: DOCKERHUB_USERNAME
             password_secret: DOCKERHUB_TOKEN
+
           - image: henrygd/beszel-agent
             context: ./beszel
-            dockerfile: ./beszel/dockerfile_Agent
+            dockerfile: ./beszel/dockerfile_agent
             registry: docker.io
             username_secret: DOCKERHUB_USERNAME
             password_secret: DOCKERHUB_TOKEN
+
+          - image: henrygd/beszel-agent-nvidia
+            context: ./beszel
+            dockerfile: ./beszel/dockerfile_agent_nvidia
+            platforms: linux/amd64
+            registry: docker.io
+            username_secret: DOCKERHUB_USERNAME
+            password_secret: DOCKERHUB_TOKEN
+
           - image: ghcr.io/${{ github.repository }}/beszel
             context: ./beszel
-            dockerfile: ./beszel/dockerfile_Hub
+            dockerfile: ./beszel/dockerfile_hub
             registry: ghcr.io
             username: ${{ github.actor }}
             password_secret: GITHUB_TOKEN
+
           - image: ghcr.io/${{ github.repository }}/beszel-agent
             context: ./beszel
-            dockerfile: ./beszel/dockerfile_Agent
+            dockerfile: ./beszel/dockerfile_agent
             registry: ghcr.io
             username: ${{ github.actor }}
             password_secret: GITHUB_TOKEN
+
+          - image: ghcr.io/${{ github.repository }}/beszel-agent-nvidia
+            context: ./beszel
+            dockerfile: ./beszel/dockerfile_agent_nvidia
+            platforms: linux/amd64
+            registry: ghcr.io
+            username: ${{ github.actor }}
+            password_secret: GITHUB_TOKEN
+
     permissions:
       contents: read
       packages: write
@@ -87,7 +107,7 @@ jobs:
         with:
           context: "${{ matrix.context }}"
           file: ${{ matrix.dockerfile }}
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: ${{ matrix.platforms || 'linux/amd64,linux/arm64,linux/arm/v7' }}
           push: ${{ github.ref_type == 'tag' }}
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
