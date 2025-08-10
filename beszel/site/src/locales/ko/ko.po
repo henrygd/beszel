@@ -8,7 +8,7 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-04 02:56\n"
+"PO-Revision-Date: 2025-08-10 12:51\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -337,7 +337,7 @@ msgstr "생성됨"
 
 #: src/components/routes/settings/general.tsx
 msgid "Critical (%)"
-msgstr "치명적 (%)"
+msgstr "위험 (%)"
 
 #. Dark theme
 #: src/components/mode-toggle.tsx
@@ -839,7 +839,7 @@ msgstr "보냄"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
-msgstr "미터 색상에 대한 백분율 임계값을 설정합니다."
+msgstr "그래프 미터 색상의 백분율 임계값을 설정합니다."
 
 #: src/components/routes/settings/general.tsx
 msgid "Sets the default time range for charts when a system is viewed."
