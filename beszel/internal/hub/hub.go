@@ -261,7 +261,6 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	se.Router.GET("/api/beszel/universal-token", h.getUniversalToken)
 	// Tailscale API endpoints
 	se.Router.GET("/api/beszel/tailscale/network", h.getTailscaleNetwork)
-	se.Router.GET("/api/beszel/tailscale/stats", h.getTailscaleStats)
 	se.Router.GET("/api/beszel/tailscale/nodes", h.getTailscaleNodes)
 	// create first user endpoint only needed if no users exist
 	if totalUsers, _ := h.CountRecords("users"); totalUsers == 0 {
@@ -385,25 +384,6 @@ func (h *Hub) getTailscaleNetwork(e *core.RequestEvent) error {
 	}
 
 	return e.JSON(http.StatusOK, network)
-}
-
-// getTailscaleStats returns the current Tailscale network statistics
-func (h *Hub) getTailscaleStats(e *core.RequestEvent) error {
-	info, err := e.RequestInfo()
-	if err != nil || info.Auth == nil {
-		return apis.NewForbiddenError("Forbidden", nil)
-	}
-
-	if !h.tm.IsEnabled() {
-		return e.JSON(http.StatusServiceUnavailable, map[string]string{"error": "Tailscale monitoring is disabled"})
-	}
-
-	stats := h.tm.GetStats()
-	if stats == nil {
-		return e.JSON(http.StatusNotFound, map[string]string{"error": "No Tailscale statistics available"})
-	}
-
-	return e.JSON(http.StatusOK, stats)
 }
 
 // getTailscaleNodes returns the list of Tailscale nodes

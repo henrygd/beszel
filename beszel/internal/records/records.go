@@ -4,7 +4,6 @@ package records
 import (
 	"beszel/internal/entities/container"
 	"beszel/internal/entities/system"
-	"beszel/internal/entities/tailscale"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -44,8 +43,6 @@ var statsRecord StatsRecord
 var containerStats []container.Stats
 var sumStats system.Stats
 var tempStats system.Stats
-var tailscaleStats tailscale.TailscaleStats
-var tempTailscaleStats tailscale.TailscaleStats
 var queryParams = make(dbx.Params, 1)
 var containerSums = make(map[string]*container.Stats)
 
@@ -156,7 +153,8 @@ func (rm *RecordManager) CreateLongerRecords() {
 					case "container_stats":
 						longerRecord.Set("stats", rm.AverageContainerStats(db, recordIds))
 					case "tailscale_stats":
-						longerRecord.Set("stats", rm.AverageTailscaleStats(db, recordIds))
+						// Skip tailscale_stats aggregation since TailscaleStats struct was removed
+						continue
 					}
 					if err := txApp.SaveNoValidate(longerRecord); err != nil {
 						log.Println("failed to save longer record", "err", err)
@@ -378,56 +376,6 @@ func (rm *RecordManager) AverageContainerStats(db dbx.Builder, records RecordIds
 		})
 	}
 	return result
-}
-
-// Calculate the average stats of a list of tailscale_stats records
-func (rm *RecordManager) AverageTailscaleStats(db dbx.Builder, records RecordIds) *tailscale.TailscaleStats {
-	// Clear/reset global structs for reuse
-	tailscaleStats = tailscale.TailscaleStats{}
-	tempTailscaleStats = tailscale.TailscaleStats{}
-	sum := &tailscaleStats
-	stats := &tempTailscaleStats
-
-	count := float64(len(records))
-
-	// Accumulate totals
-	for _, record := range records {
-		id := record.Id
-		// clear global statsRecord for reuse
-		statsRecord.Stats = statsRecord.Stats[:0]
-
-		queryParams["id"] = id
-		db.NewQuery("SELECT stats FROM tailscale_stats WHERE id = {:id}").Bind(queryParams).One(&statsRecord)
-		if err := json.Unmarshal(statsRecord.Stats, stats); err != nil {
-			continue
-		}
-
-		sum.TotalNodes += stats.TotalNodes
-		sum.OnlineNodes += stats.OnlineNodes
-		sum.OfflineNodes += stats.OfflineNodes
-		sum.ExpiredNodes += stats.ExpiredNodes
-		sum.ExitNodes += stats.ExitNodes
-		sum.SubnetRouters += stats.SubnetRouters
-		sum.EphemeralNodes += stats.EphemeralNodes
-		sum.NodesWithUpdates += stats.NodesWithUpdates
-	}
-
-	// Compute averages in place
-	if count > 0 {
-		sum.TotalNodes = int(float64(sum.TotalNodes) / count)
-		sum.OnlineNodes = int(float64(sum.OnlineNodes) / count)
-		sum.OfflineNodes = int(float64(sum.OfflineNodes) / count)
-		sum.ExpiredNodes = int(float64(sum.ExpiredNodes) / count)
-		sum.ExitNodes = int(float64(sum.ExitNodes) / count)
-		sum.SubnetRouters = int(float64(sum.SubnetRouters) / count)
-		sum.EphemeralNodes = int(float64(sum.EphemeralNodes) / count)
-		sum.NodesWithUpdates = int(float64(sum.NodesWithUpdates) / count)
-	}
-
-	// Set the last updated time to now
-	sum.LastUpdated = time.Now().UTC()
-
-	return sum
 }
 
 // Delete old records

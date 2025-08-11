@@ -12,6 +12,7 @@ import {
 	MonitorIcon,
 	SmartphoneIcon,
 	AppleIcon,
+	UserIcon,
 	CalendarIcon,
 
 } from "lucide-react"
@@ -189,44 +190,33 @@ export default function TailscaleNodeDetail({ nodeId }: { nodeId: string }) {
 					const nodeData: TailscaleNode = {
 						id: record.node_id,
 						node_id: record.node_id,
+						nodeId: nodeInfo.nodeId || "",
 						name: nodeInfo.name || record.node_id,
 						hostname: nodeInfo.hostname || record.node_id,
-						ip: nodeInfo.ip || "",
-						ipv6: nodeInfo.ipv6 || "",
+						ip: nodeInfo.addresses?.[0] || "",
+						addresses: nodeInfo.addresses || [],
+						user: nodeInfo.user || "",
 						os: nodeInfo.os || "",
 						version: nodeInfo.version || "",
+						created: nodeInfo.created || record.created,
 						lastSeen: nodeInfo.lastSeen || record.lastSeen || "",
 						online: nodeInfo.online || false,
-						tags: nodeInfo.tags || [],
-						isExitNode: nodeInfo.isExitNode || false,
-						isSubnetRouter: nodeInfo.isSubnetRouter || false,
+						keyExpiry: nodeInfo.keyExpiry || "",
+						keyExpiryDisabled: nodeInfo.keyExpiryDisabled || false,
+						authorized: nodeInfo.authorized || false,
+						isExternal: nodeInfo.isExternal || false,
+						updateAvailable: nodeInfo.updateAvailable || false,
+						blocksIncomingConnections: nodeInfo.blocksIncomingConnections || false,
 						machineKey: nodeInfo.machineKey || "",
 						nodeKey: nodeInfo.nodeKey || "",
-						discoKey: nodeInfo.discoKey || "",
-						endpoints: nodeInfo.endpoints || [],
-						derp: nodeInfo.derp || "",
-						inNetworkMap: nodeInfo.inNetworkMap || false,
-						inMagicSock: nodeInfo.inMagicSock || false,
-						inEngine: nodeInfo.inEngine || false,
-						created: nodeInfo.created || record.created,
-						keyExpiry: nodeInfo.keyExpiry || "",
-						capabilities: nodeInfo.capabilities || [],
-						computedName: nodeInfo.computedName || nodeInfo.name || record.node_id,
-						computedNameWithHost: nodeInfo.computedNameWithHost || nodeInfo.hostname || record.node_id,
-						primaryRoutes: nodeInfo.primaryRoutes || [],
-						allowedIPs: nodeInfo.allowedIPs || [],
+						tailnetLockKey: nodeInfo.tailnetLockKey || "",
+						tailnetLockError: nodeInfo.tailnetLockError || "",
+						tags: nodeInfo.tags || [],
 						advertisedRoutes: nodeInfo.advertisedRoutes || [],
 						enabledRoutes: nodeInfo.enabledRoutes || [],
-						isEphemeral: nodeInfo.isEphemeral || false,
-						expired: nodeInfo.expired || false,
-						keyExpired: nodeInfo.keyExpired || false,
-						connectedToControl: nodeInfo.connectedToControl || false,
-						updateAvailable: nodeInfo.updateAvailable || false,
-						authorized: nodeInfo.connectedToControl !== undefined ? nodeInfo.connectedToControl : 
-						           nodeInfo.authorized !== undefined ? nodeInfo.authorized : 
-						           false,
-						isExternal: nodeInfo.isExternal || false,
-						keyExpiryDisabled: nodeInfo.keyExpiryDisabled || false,
+						endpoints: nodeInfo.endpoints || [],
+						mappingVariesByDestIP: nodeInfo.mappingVariesByDestIP || false,
+						derpLatency: nodeInfo.derpLatency || {},
 						clientSupports: nodeInfo.clientSupports || null,
 						tailnet: record.tailnet,
 						network: record.network,
@@ -347,11 +337,11 @@ export default function TailscaleNodeDetail({ nodeId }: { nodeId: string }) {
 									</span>
 									{getStatusText(isOnline)}
 								</div>
-								{nodeInfo?.ip && (
+								{node.addresses && node.addresses.length > 0 && (
 									<>
 										<Separator orientation="vertical" className="h-4 bg-primary/30" />
 										<div className="flex gap-1.5 items-center">
-											<GlobeIcon className="h-4 w-4" /> {nodeInfo.ip}
+											<GlobeIcon className="h-4 w-4" /> {node.addresses[0]}
 										</div>
 									</>
 								)}
@@ -379,13 +369,21 @@ export default function TailscaleNodeDetail({ nodeId }: { nodeId: string }) {
 										</div>
 									</>
 								)}
-								{nodeInfo?.tags && nodeInfo.tags.length > 0 && (
+								{node.user && (
+									<>
+										<Separator orientation="vertical" className="h-4 bg-primary/30" />
+										<div className="flex gap-1.5 items-center">
+											<UserIcon className="h-4 w-4" /> {node.user}
+										</div>
+									</>
+								)}
+								{node.tags && node.tags.length > 0 && (
 									<>
 										<Separator orientation="vertical" className="h-4 bg-primary/30" />
 										<div className="flex gap-1.5 items-center">
 											<TagIcon className="h-4 w-4" />
 											<div className="flex gap-1">
-												{nodeInfo.tags.slice(0, 2).map((tag: string, index: number) => (
+												{node.tags.slice(0, 2).map((tag: string, index: number) => (
 													<span
 														key={index}
 														className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs"
@@ -393,8 +391,8 @@ export default function TailscaleNodeDetail({ nodeId }: { nodeId: string }) {
 														{tag}
 													</span>
 												))}
-												{nodeInfo.tags.length > 2 && (
-													<span className="text-xs text-muted-foreground">+{nodeInfo.tags.length - 2}</span>
+												{node.tags.length > 2 && (
+													<span className="text-xs text-muted-foreground">+{node.tags.length - 2}</span>
 												)}
 											</div>
 										</div>
@@ -480,11 +478,21 @@ export default function TailscaleNodeDetail({ nodeId }: { nodeId: string }) {
 							</div>
 						</CardHeader>
 						<CardContent className="space-y-4">
-							<div className="grid grid-cols-2 gap-4">
+							{/* IP Addresses */}
+							{node.addresses && node.addresses.length > 0 && (
 								<div>
-									<Label className="text-sm font-medium">DERP Server</Label>
-									<p className="text-sm text-gray-600">{nodeInfo?.derp || "Not Connected to DERP"}</p>
+									<Label className="text-sm font-medium">IP Addresses</Label>
+									<div className="flex flex-wrap gap-1">
+										{node.addresses.map((address: string, index: number) => (
+											<Badge key={index} variant="outline" className="text-xs font-mono">
+												{address}
+											</Badge>
+										))}
+									</div>
 								</div>
+							)}
+
+							<div className="grid grid-cols-2 gap-4">
 								{latencyData.length > 0 && (() => {
 									const preferredServer = getPreferredDerpServer(latencyData)
 									if (preferredServer) {
@@ -492,7 +500,7 @@ export default function TailscaleNodeDetail({ nodeId }: { nodeId: string }) {
 											<div>
 												<Label className="text-sm font-medium">Preferred DERP Server</Label>
 												<p className="text-sm text-gray-600">
-													{preferredServer.name}
+													{preferredServer.name} ({preferredServer.latency.toFixed(1)}ms)
 												</p>
 											</div>
 										)
@@ -500,24 +508,24 @@ export default function TailscaleNodeDetail({ nodeId }: { nodeId: string }) {
 									return null
 								})()}
 								<div>
-									<Label className="text-sm font-medium">Exit Node</Label>
-									<p className="text-sm text-gray-600">{nodeInfo?.isExitNode ? "Yes" : "No"}</p>
+									<Label className="text-sm font-medium">NAT Mapping Varies</Label>
+									<p className="text-sm text-gray-600">{node.mappingVariesByDestIP ? "Yes" : "No"}</p>
 								</div>
 								<div>
-									<Label className="text-sm font-medium">Subnet Router</Label>
-									<p className="text-sm text-gray-600">{nodeInfo?.isSubnetRouter ? "Yes" : "No"}</p>
+									<Label className="text-sm font-medium">Blocks Incoming</Label>
+									<p className="text-sm text-gray-600">{node.blocksIncomingConnections ? "Yes" : "No"}</p>
 								</div>
 								<div>
-									<Label className="text-sm font-medium">Connected to Control</Label>
-									<p className="text-sm text-gray-600">{nodeInfo?.connectedToControl ? "Yes" : "No"}</p>
+									<Label className="text-sm font-medium">External Device</Label>
+									<p className="text-sm text-gray-600">{node.isExternal ? "Yes" : "No"}</p>
 								</div>
 							</div>
 
-							{nodeInfo?.endpoints && nodeInfo.endpoints.length > 0 && (
+							{node.endpoints && node.endpoints.length > 0 && (
 								<div>
 									<Label className="text-sm font-medium">Endpoints</Label>
 									<div className="flex flex-wrap gap-1">
-										{nodeInfo.endpoints.map((endpoint: string, index: number) => (
+										{node.endpoints.map((endpoint: string, index: number) => (
 											<Badge key={index} variant="outline" className="text-xs font-mono">
 												{endpoint}
 											</Badge>
@@ -526,11 +534,11 @@ export default function TailscaleNodeDetail({ nodeId }: { nodeId: string }) {
 								</div>
 							)}
 
-							{nodeInfo?.advertisedRoutes && nodeInfo.advertisedRoutes.length > 0 && (
+							{node.advertisedRoutes && node.advertisedRoutes.length > 0 && (
 								<div>
 									<Label className="text-sm font-medium">Advertised Routes</Label>
 									<div className="flex flex-wrap gap-1">
-										{nodeInfo.advertisedRoutes.map((route: string, index: number) => (
+										{node.advertisedRoutes.map((route: string, index: number) => (
 											<Badge key={index} variant="outline" className="text-xs">
 												{route}
 											</Badge>
@@ -539,11 +547,11 @@ export default function TailscaleNodeDetail({ nodeId }: { nodeId: string }) {
 								</div>
 							)}
 
-							{nodeInfo?.enabledRoutes && nodeInfo.enabledRoutes.length > 0 && (
+							{node.enabledRoutes && node.enabledRoutes.length > 0 && (
 								<div>
 									<Label className="text-sm font-medium">Enabled Routes</Label>
 									<div className="flex flex-wrap gap-1">
-										{nodeInfo.enabledRoutes.map((route: string, index: number) => (
+										{node.enabledRoutes.map((route: string, index: number) => (
 											<Badge key={index} variant="outline" className="text-xs">
 												{route}
 											</Badge>
@@ -565,8 +573,14 @@ export default function TailscaleNodeDetail({ nodeId }: { nodeId: string }) {
 						<CardContent className="space-y-4">
 							<div className="grid grid-cols-2 gap-4">
 								<div>
-									<Label className="text-sm font-medium">Ephemeral</Label>
-									<p className="text-sm text-gray-600">{nodeInfo?.isEphemeral ? "Yes" : "No"}</p>
+									<Label className="text-sm font-medium">Node ID</Label>
+									<p className="text-sm text-gray-600 font-mono">{node.nodeId || "N/A"}</p>
+								</div>
+								<div>
+									<Label className="text-sm font-medium">Created</Label>
+									<p className="text-sm text-gray-600">
+										{node.created ? new Date(node.created).toLocaleDateString() : "N/A"}
+									</p>
 								</div>
 								<div>
 									<Label className="text-sm font-medium">Authorized</Label>
@@ -577,10 +591,45 @@ export default function TailscaleNodeDetail({ nodeId }: { nodeId: string }) {
 									<p className="text-sm text-gray-600">{node.keyExpiryDisabled ? "Yes" : "No"}</p>
 								</div>
 								<div>
-									<Label className="text-sm font-medium">External Device</Label>
-									<p className="text-sm text-gray-600">{nodeInfo?.isExternal ? "Yes" : "No"}</p>
+									<Label className="text-sm font-medium">Update Available</Label>
+									<p className={cn("text-sm", node.updateAvailable ? "text-orange-600 font-medium" : "text-gray-600")}>
+										{node.updateAvailable ? "Yes" : "No"}
+									</p>
+								</div>
+								<div>
+									<Label className="text-sm font-medium">Last Seen</Label>
+									<p className="text-sm text-gray-600">
+										{node.lastSeen ? new Date(node.lastSeen).toLocaleString() : "N/A"}
+									</p>
 								</div>
 							</div>
+
+							{/* Client Capabilities */}
+							{node.clientSupports && (
+								<div>
+									<Label className="text-sm font-medium">Client Capabilities</Label>
+									<div className="flex flex-wrap gap-1 mt-1">
+										{node.clientSupports.udp && (
+											<Badge variant="outline" className="text-xs">UDP</Badge>
+										)}
+										{node.clientSupports.ipv6 && (
+											<Badge variant="outline" className="text-xs">IPv6</Badge>
+										)}
+										{node.clientSupports.pcp && (
+											<Badge variant="outline" className="text-xs">PCP</Badge>
+										)}
+										{node.clientSupports.pmp && (
+											<Badge variant="outline" className="text-xs">PMP</Badge>
+										)}
+										{node.clientSupports.upnp && (
+											<Badge variant="outline" className="text-xs">UPnP</Badge>
+										)}
+										{node.clientSupports.hairPinning && (
+											<Badge variant="outline" className="text-xs">Hair Pinning</Badge>
+										)}
+									</div>
+								</div>
+							)}
 						</CardContent>
 					</Card>
 				</div>

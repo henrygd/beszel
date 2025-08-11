@@ -20,7 +20,6 @@ type Manager struct {
 	client    *tsclient.Client
 	config    *tailscale.TailscaleConfig
 	network   *tailscale.TailscaleNetwork
-	stats     *tailscale.TailscaleStats
 	mutex     sync.RWMutex
 	lastFetch time.Time
 }
@@ -146,53 +145,23 @@ func (m *Manager) FetchNetworkData() error {
 
 	// Convert devices to our internal format
 	nodes := make([]*tailscale.TailscaleNode, 0, len(devices))
-	stats := &tailscale.TailscaleStats{
-		LastUpdated: time.Now(),
-	}
 
 	for _, device := range devices {
 		node := m.convertDeviceToNode(&device)
 		nodes = append(nodes, node)
-
-		// Update statistics
-		stats.TotalNodes++
-		if node.Online {
-			stats.OnlineNodes++
-		} else {
-			stats.OfflineNodes++
-		}
-		if node.Expired {
-			stats.ExpiredNodes++
-		}
-		if node.IsExitNode {
-			stats.ExitNodes++
-		}
-		if node.IsSubnetRouter {
-			stats.SubnetRouters++
-		}
-		if node.IsEphemeral {
-			stats.EphemeralNodes++
-		}
-		if node.UpdateAvailable {
-			stats.NodesWithUpdates++
-		}
 	}
 
 	// Update network data
 	m.network = &tailscale.TailscaleNetwork{
-		Domain:        m.config.Tailnet,
-		TailnetName:   m.config.Tailnet,
-		TotalNodes:    stats.TotalNodes,
-		OnlineNodes:   stats.OnlineNodes,
-		OfflineNodes:  stats.OfflineNodes,
-		ExpiredNodes:  stats.ExpiredNodes,
-		ExitNodes:     stats.ExitNodes,
-		SubnetRouters: stats.SubnetRouters,
-		Nodes:         nodes,
-		LastUpdated:   time.Now(),
+		Domain:       m.config.Tailnet,
+		TailnetName:  m.config.Tailnet,
+		TotalNodes:   len(nodes),
+		OnlineNodes:  m.countOnlineNodes(nodes),
+		OfflineNodes: len(nodes) - m.countOnlineNodes(nodes),
+		Nodes:        nodes,
+		LastUpdated:  time.Now(),
 	}
 
-	m.stats = stats
 	m.lastFetch = time.Now()
 
 	// Store aggregated stats in database (disabled - no longer storing in tailscale_summary)
@@ -206,50 +175,9 @@ func (m *Manager) FetchNetworkData() error {
 	}
 
 	slog.Info("Tailscale network data updated",
-		"totalNodes", stats.TotalNodes,
-		"onlineNodes", stats.OnlineNodes,
-		"offlineNodes", stats.OfflineNodes,
-		"expiredNodes", stats.ExpiredNodes,
-		"exitNodes", stats.ExitNodes,
-		"subnetRouters", stats.SubnetRouters)
-
-	return nil
-}
-
-// storeNetworkData stores the aggregated stats data in the database
-func (m *Manager) storeNetworkData() error {
-	if m.network == nil {
-		return nil
-	}
-
-	// Get the tailscale collection (for storing aggregated stats)
-	collection, err := m.hub.FindCollectionByNameOrId("tailscale_summary")
-	if err != nil {
-		slog.Warn("Tailscale collection not found, skipping storage", "error", err)
-		return nil
-	}
-
-	// Convert stats data to JSON (we only store stats in this collection)
-	statsData, err := json.Marshal(m.stats)
-	if err != nil {
-		return fmt.Errorf("failed to marshal stats data: %w", err)
-	}
-
-	// Create a new record
-	record := core.NewRecord(collection)
-	record.Set("tailnet", m.config.Tailnet)
-	record.Set("stats_data", string(statsData))
-
-	// Save the record to the database
-	if err := m.hub.Save(record); err != nil {
-		return fmt.Errorf("failed to save record: %w", err)
-	}
-
-	slog.Info("Tailscale stats data saved to database",
-		"tailnet", m.config.Tailnet,
-		"totalNodes", m.stats.TotalNodes,
-		"onlineNodes", m.stats.OnlineNodes,
-		"recordId", record.Id)
+		"totalNodes", len(nodes),
+		"onlineNodes", m.countOnlineNodes(nodes),
+		"offlineNodes", len(nodes)-m.countOnlineNodes(nodes))
 
 	return nil
 }
@@ -275,11 +203,7 @@ func (m *Manager) storeDetailedNetworkData(devices []tsclient.Device) error {
 
 	// Save one record per node
 	for _, node := range m.network.Nodes {
-		// Get endpoints from network data if available
-		if device, exists := deviceMap[node.ID]; exists && device.ClientConnectivity != nil {
-			node.Endpoints = device.ClientConnectivity.Endpoints
-		}
-		
+
 		// Convert node data to JSON for the info field
 		nodeData, err := json.Marshal(node)
 		if err != nil {
@@ -291,7 +215,7 @@ func (m *Manager) storeDetailedNetworkData(devices []tsclient.Device) error {
 		record := core.NewRecord(collection)
 		record.Set("tailnet", m.config.Tailnet)
 		record.Set("node_id", node.ID)
-		
+
 		// Store network connectivity information in the network field
 		var networkData map[string]interface{}
 		if device, exists := deviceMap[node.ID]; exists && device.ClientConnectivity != nil {
@@ -306,7 +230,7 @@ func (m *Manager) storeDetailedNetworkData(devices []tsclient.Device) error {
 		}
 		networkJSON, _ := json.Marshal(networkData)
 		record.Set("network", string(networkJSON))
-		
+
 		record.Set("info", string(nodeData))
 
 		// Save the record to the database
@@ -332,35 +256,54 @@ func (m *Manager) storeDetailedNetworkData(devices []tsclient.Device) error {
 
 // convertDeviceToNode converts a Tailscale device to our internal node format
 func (m *Manager) convertDeviceToNode(device *tsclient.Device) *tailscale.TailscaleNode {
-	// Extract IP addresses from the addresses slice
-	var ip, ipv6 string
-	if len(device.Addresses) > 0 {
-		ip = device.Addresses[0] // First address is typically IPv4
-		if len(device.Addresses) > 1 {
-			ipv6 = device.Addresses[1] // Second address is typically IPv6
-		}
-	}
-
 	// Determine if device is online based on last seen time
 	online := !device.LastSeen.IsZero() && time.Since(device.LastSeen.Time) < 5*time.Minute
 
 	node := &tailscale.TailscaleNode{
-		ID:             device.ID,
-		Name:           device.Name,
-		Hostname:       device.Hostname,
-		IP:             ip,
-		IPv6:           ipv6,
-		OS:             device.OS,
-		Version:        device.ClientVersion,
-		LastSeen:       device.LastSeen.Time,
-		Online:         online,
-		Tags:           device.Tags,
-		IsExitNode:     false, // Not available in basic device info
-		IsSubnetRouter: false, // Not available in basic device info
-		KeyExpiry:      device.Expires.Time,
-		AdvertisedRoutes: device.AdvertisedRoutes,
-		EnabledRoutes:    device.EnabledRoutes,
-		Endpoints:      []string{}, // Will be populated from network data
+		ID:                        device.ID,
+		NodeID:                    device.NodeID,
+		Name:                      device.Name,
+		Hostname:                  device.Hostname,
+		Addresses:                 device.Addresses,
+		User:                      device.User,
+		OS:                        device.OS,
+		Version:                   device.ClientVersion,
+		Created:                   device.Created.Time,
+		LastSeen:                  device.LastSeen.Time,
+		Online:                    online,
+		KeyExpiry:                 device.Expires.Time,
+		KeyExpiryDisabled:         device.KeyExpiryDisabled,
+		Authorized:                device.Authorized,
+		IsExternal:                device.IsExternal,
+		UpdateAvailable:           device.UpdateAvailable,
+		BlocksIncomingConnections: device.BlocksIncomingConnections,
+		MachineKey:                device.MachineKey,
+		NodeKey:                   device.NodeKey,
+		TailnetLockKey:            device.TailnetLockKey,
+		TailnetLockError:          device.TailnetLockError,
+		Tags:                      device.Tags,
+		AdvertisedRoutes:          device.AdvertisedRoutes,
+		EnabledRoutes:             device.EnabledRoutes,
+		Endpoints:                 []string{}, // Will be populated from connectivity data
+	}
+
+	// Populate connectivity data if available
+	if device.ClientConnectivity != nil {
+		node.Endpoints = device.ClientConnectivity.Endpoints
+		node.MappingVariesByDestIP = device.ClientConnectivity.MappingVariesByDestIP
+
+		// Note: DERP latency data structure mapping needs to be determined
+		// from the actual Tailscale client library structure
+
+		// Convert client supports data
+		node.ClientSupports = &tailscale.ClientSupports{
+			HairPinning: &device.ClientConnectivity.ClientSupports.HairPinning,
+			IPv6:        device.ClientConnectivity.ClientSupports.IPV6,
+			PCP:         device.ClientConnectivity.ClientSupports.PCP,
+			PMP:         device.ClientConnectivity.ClientSupports.PMP,
+			UDP:         device.ClientConnectivity.ClientSupports.UDP,
+			UPnP:        device.ClientConnectivity.ClientSupports.UPNP,
+		}
 	}
 
 	return node
@@ -373,11 +316,15 @@ func (m *Manager) GetNetworkData() *tailscale.TailscaleNetwork {
 	return m.network
 }
 
-// GetStats returns the current network statistics
-func (m *Manager) GetStats() *tailscale.TailscaleStats {
-	m.mutex.RLock()
-	defer m.mutex.RUnlock()
-	return m.stats
+// countOnlineNodes counts how many nodes are currently online
+func (m *Manager) countOnlineNodes(nodes []*tailscale.TailscaleNode) int {
+	count := 0
+	for _, node := range nodes {
+		if node.Online {
+			count++
+		}
+	}
+	return count
 }
 
 // GetLastFetchTime returns when the data was last fetched

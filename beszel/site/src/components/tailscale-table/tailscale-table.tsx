@@ -216,7 +216,7 @@ export default function TailscaleTable() {
 					const node = info.row.original
 					return (
 						<div className="flex flex-col">
-							<span className="flex gap-2 items-center md:pe-5 tabular-nums">{node.ip}</span>
+							<span className="flex gap-2 items-center md:pe-5 tabular-nums">{node.addresses?.[0]}</span>
 						</div>
 					)
 				},
@@ -285,40 +285,6 @@ export default function TailscaleTable() {
 				header: sortableHeader,
 			},
 			{
-				accessorKey: "isExitNode",
-				id: "isExitNode",
-				name: () => "Exit Node",
-				cell: (info: CellContext<TailscaleNode, unknown>) => {
-					const node = info.row.original
-					return (
-						<div className="flex items-center gap-2">
-							<span className="text-sm tabular-nums">
-								{node.isExitNode ? "Yes" : "No"}
-							</span>
-						</div>
-					)
-				},
-				Icon: LogOutIcon,
-				header: sortableHeader,
-			},
-			{
-				accessorKey: "isSubnetRouter",
-				id: "isSubnetRouter",
-				name: () => "Subnet Router",
-				cell: (info: CellContext<TailscaleNode, unknown>) => {
-					const node = info.row.original
-					return (
-						<div className="flex items-center gap-2">
-							<span className="text-sm tabular-nums">
-								{node.isSubnetRouter ? "Yes" : "No"}
-							</span>
-						</div>
-					)
-				},
-				Icon: RouterIcon,
-				header: sortableHeader,
-			},
-			{
 				accessorKey: "keyExpiry",
 				id: "keyExpiry",
 				name: () => "Key Expiry",
@@ -335,6 +301,13 @@ export default function TailscaleTable() {
 					}
 					
 					// Parse the key expiry date
+					if (!node.keyExpiry) {
+						return (
+							<div className="flex items-center gap-2">
+								<span className="text-sm tabular-nums text-muted-foreground">N/A</span>
+							</div>
+						)
+					}
 					const expiryDate = new Date(node.keyExpiry)
 					const now = new Date()
 					const diffTime = expiryDate.getTime() - now.getTime()
@@ -407,7 +380,7 @@ export default function TailscaleTable() {
 							<DropdownMenuContent align="end">
 								<DropdownMenuLabel>Actions</DropdownMenuLabel>
 								<DropdownMenuItem
-									onClick={() => copyToClipboard(node.ip)}
+									onClick={() => node.ip && copyToClipboard(node.ip)}
 									className="cursor-pointer"
 								>
 									<CopyIcon className="mr-2 h-4 w-4" />
@@ -884,7 +857,7 @@ const ActionsButton = memo(({ node }: { node: TailscaleNode }) => {
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent align="end">
-					<DropdownMenuItem onClick={() => copyToClipboard(ip)}>
+					<DropdownMenuItem onClick={() => ip && copyToClipboard(ip)}>
 						<CopyIcon className="me-2.5 size-4" />
 						<Trans>Copy IP</Trans>
 					</DropdownMenuItem>

@@ -248,42 +248,50 @@ export interface SemVer {
 export interface TailscaleNode {
 	id: string
 	node_id: string
+	nodeId?: string
 	name: string
 	hostname: string
-	ip: string
+	ip?: string
 	ipv6?: string
 	os: string
 	version: string
 	lastSeen: string
 	online: boolean
 	tags?: string[]
-	isExitNode: boolean
-	isSubnetRouter: boolean
-	machineKey: string
-	nodeKey: string
-	discoKey: string
+	user?: string
+	addresses?: string[]
+	blocksIncomingConnections?: boolean
+	mappingVariesByDestIP?: boolean
+	derpLatency?: Record<string, any>
+	isExitNode?: boolean
+	isSubnetRouter?: boolean
+	machineKey?: string
+	nodeKey?: string
+	tailnetLockKey?: string
+	tailnetLockError?: string
+	discoKey?: string
 	endpoints?: string[]
-	derp: string
-	inNetworkMap: boolean
-	inMagicSock: boolean
-	inEngine: boolean
+	derp?: string
+	inNetworkMap?: boolean
+	inMagicSock?: boolean
+	inEngine?: boolean
 	created: string
-	keyExpiry: string
+	keyExpiry?: string
 	capabilities?: string[]
-	computedName: string
-	computedNameWithHost: string
+	computedName?: string
+	computedNameWithHost?: string
 	primaryRoutes?: string[]
 	allowedIPs?: string[]
 	advertisedRoutes?: string[]
 	enabledRoutes?: string[]
-	isEphemeral: boolean
-	expired: boolean
-	keyExpired: boolean
-	connectedToControl: boolean
-	updateAvailable: boolean
-	authorized: boolean
-	isExternal: boolean
-	keyExpiryDisabled: boolean
+	isEphemeral?: boolean
+	expired?: boolean
+	keyExpired?: boolean
+	connectedToControl?: boolean
+	updateAvailable?: boolean
+	authorized?: boolean
+	isExternal?: boolean
+	keyExpiryDisabled?: boolean
 	clientSupports?: {
 		hairPinning: boolean
 		ipv6: boolean
