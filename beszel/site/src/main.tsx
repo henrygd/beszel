@@ -11,6 +11,7 @@ import { useStore } from "@nanostores/react"
 import { Toaster } from "./components/ui/toaster.tsx"
 import { $router } from "./components/router.tsx"
 import SystemDetail from "./components/routes/system.tsx"
+import TailscaleNodeDetail from "./components/routes/tailscale-node.tsx"
 import Navbar from "./components/navbar.tsx"
 import { I18nProvider } from "@lingui/react"
 import { i18n } from "@lingui/core"
@@ -67,6 +68,8 @@ const App = memo(() => {
 		return <Home />
 	} else if (page.route === "system") {
 		return <SystemDetail name={page.params.name} />
+	} else if (page.route === "tailscale_node") {
+		return <TailscaleNodeDetail nodeId={page.params.nodeId} />
 	} else if (page.route === "settings") {
 		return (
 			<Suspense>
