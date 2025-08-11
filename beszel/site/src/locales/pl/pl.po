@@ -8,7 +8,7 @@ msgstr ""
 "Language: pl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-11 16:12\n"
+"PO-Revision-Date: 2025-08-11 17:24\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
@@ -40,7 +40,7 @@ msgstr "1 godzina"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr ""
+msgstr "1 minuta"
 
 #: src/lib/utils.ts
 msgid "1 week"
@@ -53,7 +53,7 @@ msgstr "12 godzin"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr ""
+msgstr "15 minut"
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -66,7 +66,7 @@ msgstr "30 dni"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr ""
+msgstr "5 minut"
 
 #. Table column
 #: src/components/systems-table/systems-table-columns.tsx
@@ -77,7 +77,7 @@ msgstr "Akcje"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Active"
-msgstr ""
+msgstr "Aktywny"
 
 #: src/components/routes/home.tsx
 msgid "Active Alerts"
@@ -116,7 +116,7 @@ msgstr "Agent"
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Alert History"
-msgstr ""
+msgstr "Historia alertów"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alert-button.tsx
@@ -134,7 +134,7 @@ msgstr "Czy na pewno chcesz usunąć {name}?"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
-msgstr ""
+msgstr "Czy jesteś pewien?"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -191,12 +191,12 @@ msgstr "Plik binarny"
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr ""
+msgstr "Bity (Kbps, Mbps, Gbps)"
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
-msgstr ""
+msgstr "Bajty (KB/s, MB/s, GB/s)"
 
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
@@ -213,11 +213,11 @@ msgstr "Uwaga- potencjalna utrata danych."
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr ""
+msgstr "Celsjusza (°C)"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
-msgstr ""
+msgstr "Zmień jednostki wyświetlania dla metryk."
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
@@ -259,7 +259,7 @@ msgstr "Potwierdź hasło"
 
 #: src/components/routes/home.tsx
 msgid "Connection is down"
-msgstr ""
+msgstr "Brak połączenia"
 
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -285,7 +285,7 @@ msgstr "Skopiuj docker run"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Environment variables"
 msgid "Copy env"
-msgstr ""
+msgstr "Kopiuj env"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
@@ -306,15 +306,15 @@ msgstr "Kopiuj tekst"
 
 #: src/components/add-system.tsx
 msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
-msgstr ""
+msgstr "Skopiuj poniżej polecenie instalacji agenta albo zarejestruj agentów automatycznie za pomocą <0>uniwersalnego tokenu</0>"
 
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
-msgstr ""
+msgstr "Skopiuj poniżej zawartość pliku <0>docker-compose.yml</0> dla agenta lub zarejestruj agentów automatycznie przy użyciu <1>uniwersalnego tokenu</1>."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
-msgstr ""
+msgstr "Kopiuj YAML"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
@@ -333,7 +333,7 @@ msgstr "Utwórz konto"
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
 msgid "Created"
-msgstr ""
+msgstr "Utworzono"
 
 #: src/components/routes/settings/general.tsx
 msgid "Critical (%)"
@@ -360,7 +360,7 @@ msgstr "Usuń"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
-msgstr ""
+msgstr "Usuń odcisk palca"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
@@ -372,7 +372,7 @@ msgstr "Dysk I/O"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
-msgstr ""
+msgstr "Jednostka dysku"
 
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
@@ -410,7 +410,7 @@ msgstr "Nie działa"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
-msgstr ""
+msgstr "Czas trwania"
 
 #: src/components/add-system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -455,7 +455,7 @@ msgstr "Istniejące systemy, które nie są zdefiniowane w <0>config.yml</0>, zo
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
-msgstr ""
+msgstr "Eksport"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
@@ -467,7 +467,7 @@ msgstr "Eksportuj aktualną konfigurację systemów."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr ""
+msgstr "Fahrenheit (°F)"
 
 #: src/lib/utils.ts
 msgid "Failed to authenticate"
@@ -494,7 +494,7 @@ msgstr "Filtruj..."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
-msgstr ""
+msgstr "Odcisk palca"
 
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -556,24 +556,24 @@ msgstr "Jasny"
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
-msgstr ""
+msgstr "Średnie obciążenie"
 
 #: src/lib/utils.ts
 msgid "Load Average 15m"
-msgstr ""
+msgstr "Średnie obciążenie 15 m"
 
 #: src/lib/utils.ts
 msgid "Load Average 1m"
-msgstr ""
+msgstr "Średnie obciążenie 1 m"
 
 #: src/lib/utils.ts
 msgid "Load Average 5m"
-msgstr ""
+msgstr "Średnie obciążenie 5 m"
 
 #. Short label for load average
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
-msgstr ""
+msgstr "Śr. obciążenie"
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -643,7 +643,7 @@ msgstr "Ruch sieciowy interfejsów publicznych"
 #. Context: Bytes or bits
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
-msgstr ""
+msgstr "Jednostka sieciowa"
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -651,7 +651,7 @@ msgstr "Brak wyników."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "No results."
-msgstr ""
+msgstr "Brak wyników."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -694,7 +694,7 @@ msgstr "Strona"
 #. placeholder {1}: table.getPageCount()
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Page {0} of {1}"
-msgstr ""
+msgstr "Strona {0} z {1}"
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
@@ -794,7 +794,7 @@ msgstr "Resetuj hasło"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Resolved"
-msgstr ""
+msgstr "Rozwiązany"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
@@ -802,11 +802,11 @@ msgstr "Wznów"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
-msgstr ""
+msgstr "Zmień token"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
-msgstr ""
+msgstr "Wiersze na stronę"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -871,7 +871,7 @@ msgstr "Sortuj według"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 msgid "State"
-msgstr ""
+msgstr "Stan"
 
 #: src/lib/utils.ts
 msgid "Status"
@@ -896,7 +896,7 @@ msgstr "System"
 
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
-msgstr ""
+msgstr "Średnie obciążenie systemu w czasie"
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -922,7 +922,7 @@ msgstr "Temperatura"
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"
-msgstr ""
+msgstr "Jednostka temperatury"
 
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
@@ -946,7 +946,7 @@ msgstr "Tej akcji nie można cofnąć. Spowoduje to trwałe usunięcie wszystkic
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
-msgstr ""
+msgstr "Spowoduje to trwałe usunięcie wszystkich zaznaczonych rekordów z bazy danych."
 
 #: src/components/routes/system.tsx
 msgid "Throughput of {extraFsName}"
@@ -972,21 +972,21 @@ msgstr "Zmień motyw"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr ""
+msgstr "Token"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Tokens & Fingerprints"
-msgstr ""
+msgstr "Tokeny & odciski palców"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
-msgstr ""
+msgstr "Tokeny umożliwiają agentom łączenie się i rejestrację. Odciski palców (fingerprinty) to stałe, unikalne identyfikatory przypisane do każdego systemu przy pierwszym połączeniu."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
-msgstr ""
+msgstr "Tokeny i odciski palców (fingerprinty) służą do uwierzytelniania połączeń WebSocket z hubem."
 
 #: src/lib/utils.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
