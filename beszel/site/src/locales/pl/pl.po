@@ -8,7 +8,7 @@ msgstr ""
 "Language: pl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-12 14:39\n"
+"PO-Revision-Date: 2025-08-12 18:47\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
@@ -990,7 +990,7 @@ msgstr "Tokeny i odciski palców (fingerprinty) służą do uwierzytelniania po�
 
 #: src/lib/utils.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Uruchamia się, gdy 1-minutowe średnie obciążenie systemu przekroczy ustawiony próg"
 
 #: src/lib/utils.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
