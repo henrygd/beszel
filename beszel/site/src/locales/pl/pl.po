@@ -8,7 +8,7 @@ msgstr ""
 "Language: pl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-11 17:24\n"
+"PO-Revision-Date: 2025-08-12 14:39\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
@@ -994,11 +994,11 @@ msgstr ""
 
 #: src/lib/utils.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Uruchamia się, gdy 15-minutowe średnie obciążenie systemu przekroczy ustawiony próg"
 
 #: src/lib/utils.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Uruchamia się, gdy 5-minutowe średnie obciążenie systemu przekroczy ustawiony próg"
 
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -1027,11 +1027,11 @@ msgstr "Wyzwalane, gdy wykorzystanie któregokolwiek dysku przekroczy ustalony p
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
-msgstr ""
+msgstr "Ustawienia jednostek"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
-msgstr ""
+msgstr "Uniwersalny token"
 
 #. Context: System is up
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1070,7 +1070,7 @@ msgstr "Użytkownicy"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
-msgstr ""
+msgstr "Wartość"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
@@ -1078,7 +1078,7 @@ msgstr "Widok"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
-msgstr ""
+msgstr "Wyświetl 200 ostatnich alertów."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
@@ -1106,7 +1106,7 @@ msgstr "Webhook / Powiadomienia push"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
-msgstr ""
+msgstr "Po włączeniu ten token umożliwia agentom samodzielną rejestrację bez wcześniejszego utworzenia systemu. Wygasa po jednej godzinie lub po ponownym uruchomieniu huba."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
