@@ -8,7 +8,7 @@ msgstr ""
 "Language: pl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-12 18:47\n"
+"PO-Revision-Date: 2025-08-13 15:36\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
@@ -40,7 +40,7 @@ msgstr "1 godzina"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr "1 minuta"
+msgstr "1 min"
 
 #: src/lib/utils.ts
 msgid "1 week"
@@ -53,7 +53,7 @@ msgstr "12 godzin"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr "15 minut"
+msgstr "15 min"
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -66,7 +66,7 @@ msgstr "30 dni"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr "5 minut"
+msgstr "5 min"
 
 #. Table column
 #: src/components/systems-table/systems-table-columns.tsx
