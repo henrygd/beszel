@@ -8,7 +8,7 @@ msgstr ""
 "Language: vi\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-07-25 22:44\n"
+"PO-Revision-Date: 2025-08-14 10:35\n"
 "Last-Translator: \n"
 "Language-Team: Vietnamese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -337,7 +337,7 @@ msgstr "Đã tạo"
 
 #: src/components/routes/settings/general.tsx
 msgid "Critical (%)"
-msgstr "Mức độ nghiêm trọng (%)"
+msgstr "Độ nghiêm trọng (%)"
 
 #. Dark theme
 #: src/components/mode-toggle.tsx
@@ -839,7 +839,7 @@ msgstr "Đã gửi"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
-msgstr "Đặt ngưỡng phần trăm cho màu sắc của đồng hồ."
+msgstr "Đặt ngưỡng cho màu sắc đồng hồ."
 
 #: src/components/routes/settings/general.tsx
 msgid "Sets the default time range for charts when a system is viewed."
@@ -972,7 +972,7 @@ msgstr "Chuyển đổi chủ đề"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr ""
+msgstr "Token"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1131,3 +1131,4 @@ msgstr "Cấu hình YAML"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Cài đặt người dùng của bạn đã được cập nhật."
+
