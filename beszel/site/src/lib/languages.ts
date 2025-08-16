@@ -87,7 +87,7 @@ export default [
 	{
 		lang: "pt",
 		label: "Português",
-		e: "🇧🇷",
+		e: "🇵🇹",
 	},
 	{
 		lang: "tr",
