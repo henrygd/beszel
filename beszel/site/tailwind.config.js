@@ -69,6 +69,9 @@ module.exports = {
 					foreground: "hsl(var(--card-foreground))",
 				},
 			},
+			transitionDuration: {
+				50: "50ms",
+			},
 			borderRadius: {
 				lg: "var(--radius)",
 				md: "calc(var(--radius) - 2px)",

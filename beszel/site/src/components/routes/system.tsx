@@ -456,9 +456,9 @@ export default function SystemDetail({ name }: { name: string }) {
 											onClick={() => setGrid(!grid)}
 										>
 											{grid ? (
-												<LayoutGridIcon className="h-[1.2rem] w-[1.2rem] opacity-85" />
+												<LayoutGridIcon className="h-[1.2rem] w-[1.2rem] opacity-75" />
 											) : (
-												<Rows className="h-[1.3rem] w-[1.3rem] opacity-85" />
+												<Rows className="h-[1.3rem] w-[1.3rem] opacity-75" />
 											)}
 										</Button>
 									</TooltipTrigger>

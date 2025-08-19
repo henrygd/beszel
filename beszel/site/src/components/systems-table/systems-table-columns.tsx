@@ -188,6 +188,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 								[STATUS_COLORS.up]: threshold === MeterState.Good,
 								[STATUS_COLORS.pending]: threshold === MeterState.Warn,
 								[STATUS_COLORS.down]: threshold === MeterState.Crit,
+								[STATUS_COLORS.paused]: status !== "up",
 							})}
 						/>
 						{loadAverages?.map((la, i) => (
