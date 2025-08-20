@@ -207,10 +207,10 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			header: sortableHeader,
 			cell(info) {
 				const sys = info.row.original
+				const userSettings = useStore($userSettings, { keys: ["unitNet"] })
 				if (sys.status === "paused") {
 					return null
 				}
-				const userSettings = useStore($userSettings, { keys: ["unitNet"] })
 				const { value, unit } = formatBytes(info.getValue() as number, true, userSettings.unitNet, false)
 				return (
 					<span className="tabular-nums whitespace-nowrap">
@@ -229,10 +229,10 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			header: sortableHeader,
 			cell(info) {
 				const val = info.getValue() as number
+				const userSettings = useStore($userSettings, { keys: ["unitTemp"] })
 				if (!val) {
 					return null
 				}
-				const userSettings = useStore($userSettings, { keys: ["unitTemp"] })
 				const { value, unit } = formatTemperature(val, userSettings.unitTemp)
 				return (
 					<span className={cn("tabular-nums whitespace-nowrap", viewMode === "table" && "ps-0.5")}>
