@@ -224,27 +224,33 @@ func (h *Hub) registerCronJobs(_ *core.ServeEvent) error {
 
 // custom api routes
 func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
-	// returns public key and version
-	se.Router.GET("/api/beszel/getkey", func(e *core.RequestEvent) error {
-		info, _ := e.RequestInfo()
-		if info.Auth == nil {
-			return apis.NewForbiddenError("Forbidden", nil)
-		}
-		return e.JSON(http.StatusOK, map[string]string{"key": h.pubKey, "v": beszel.Version})
-	})
+	// auth protected routes
+	apiAuth := se.Router.Group("/api/beszel")
+	apiAuth.Bind(apis.RequireAuth())
+	// auth optional routes
+	apiNoAuth := se.Router.Group("/api/beszel")
+
+	// create first user endpoint only needed if no users exist
+	if totalUsers, _ := se.App.CountRecords("users"); totalUsers == 0 {
+		apiNoAuth.POST("/create-user", h.um.CreateFirstUser)
+	}
 	// check if first time setup on login page
-	se.Router.GET("/api/beszel/first-run", func(e *core.RequestEvent) error {
-		total, err := h.CountRecords("users")
+	apiNoAuth.GET("/first-run", func(e *core.RequestEvent) error {
+		total, err := e.App.CountRecords("users")
 		return e.JSON(http.StatusOK, map[string]bool{"firstRun": err == nil && total == 0})
 	})
+	// get public key and version
+	apiAuth.GET("/getkey", func(e *core.RequestEvent) error {
+		return e.JSON(http.StatusOK, map[string]string{"key": h.pubKey, "v": beszel.Version})
+	})
 	// send test notification
-	se.Router.GET("/api/beszel/send-test-notification", h.SendTestNotification)
-	// API endpoint to get config.yml content
-	se.Router.GET("/api/beszel/config-yaml", config.GetYamlConfig)
+	apiAuth.POST("/test-notification", h.SendTestNotification)
+	// get config.yml content
+	apiAuth.GET("/config-yaml", config.GetYamlConfig)
 	// handle agent websocket connection
-	se.Router.GET("/api/beszel/agent-connect", h.handleAgentConnect)
+	apiNoAuth.GET("/agent-connect", h.handleAgentConnect)
 	// get or create universal tokens
-	se.Router.GET("/api/beszel/universal-token", h.getUniversalToken)
+	apiAuth.GET("/universal-token", h.getUniversalToken)
 	// create first user endpoint only needed if no users exist
 	if totalUsers, _ := h.CountRecords("users"); totalUsers == 0 {
 		se.Router.POST("/api/beszel/create-user", h.um.CreateFirstUser)
@@ -254,18 +260,12 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 
 // Handler for universal token API endpoint (create, read, delete)
 func (h *Hub) getUniversalToken(e *core.RequestEvent) error {
-	info, err := e.RequestInfo()
-	if err != nil || info.Auth == nil {
-		return apis.NewForbiddenError("Forbidden", nil)
-	}
-
 	tokenMap := universalTokenMap.GetMap()
-	userID := info.Auth.Id
+	userID := e.Auth.Id
 	query := e.Request.URL.Query()
 	token := query.Get("token")
-	tokenSet := token != ""
 
-	if !tokenSet {
+	if token == "" {
 		// return existing token if it exists
 		if token, _, ok := tokenMap.GetByValue(userID); ok {
 			return e.JSON(http.StatusOK, map[string]any{"token": token, "active": true})
