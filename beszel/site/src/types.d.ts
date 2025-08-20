@@ -196,7 +196,8 @@ export interface AlertRecord extends RecordModel {
 	system: string
 	name: string
 	triggered: boolean
-	sysname?: string
+	value: number
+	min: number
 	// user: string
 }
 
@@ -268,3 +269,5 @@ interface AlertInfo {
 	/** Single value description (when there's only one value, like status) */
 	singleDesc?: () => string
 }
+
+export type AlertMap = Record<string, Map<string, AlertRecord>>

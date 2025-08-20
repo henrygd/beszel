@@ -251,10 +251,10 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	apiNoAuth.GET("/agent-connect", h.handleAgentConnect)
 	// get or create universal tokens
 	apiAuth.GET("/universal-token", h.getUniversalToken)
-	// create first user endpoint only needed if no users exist
-	if totalUsers, _ := h.CountRecords("users"); totalUsers == 0 {
-		se.Router.POST("/api/beszel/create-user", h.um.CreateFirstUser)
-	}
+	// update / delete user alerts
+	apiAuth.POST("/user-alerts", alerts.UpsertUserAlerts)
+	apiAuth.DELETE("/user-alerts", alerts.DeleteUserAlerts)
+
 	return nil
 }
 

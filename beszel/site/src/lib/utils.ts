@@ -84,19 +84,11 @@ export const updateSystemList = (() => {
 /** Logs the user out by clearing the auth store and unsubscribing from realtime updates. */
 export async function logOut() {
 	$systems.set([])
-	$alerts.set([])
+	$alerts.set({})
 	$userSettings.set({} as UserSettings)
 	sessionStorage.setItem("lo", "t") // prevent auto login on logout
 	pb.authStore.clear()
 	pb.realtime.unsubscribe()
-}
-
-export const updateAlerts = () => {
-	pb.collection("alerts")
-		.getFullList<AlertRecord>({ fields: "id,name,system,value,min,triggered", sort: "updated" })
-		.then((records) => {
-			$alerts.set(records)
-		})
 }
 
 const hourWithMinutesFormatter = new Intl.DateTimeFormat(undefined, {
@@ -439,7 +431,7 @@ export const alertInfo: Record<string, AlertInfo> = {
 		step: 0.1,
 		desc: () => t`Triggers when 15 minute load average exceeds a threshold`,
 	},
-}
+} as const
 
 /**
  * Retuns value of system host, truncating full path if socket.
@@ -513,3 +505,103 @@ export function getMeterState(value: number): MeterState {
 	const { colorWarn = 65, colorCrit = 90 } = $userSettings.get()
 	return value >= colorCrit ? MeterState.Crit : value >= colorWarn ? MeterState.Warn : MeterState.Good
 }
+
+export function debounce<T extends (...args: any[]) => any>(func: T, wait: number): (...args: Parameters<T>) => void {
+	let timeout: ReturnType<typeof setTimeout>
+	return (...args: Parameters<T>) => {
+		clearTimeout(timeout)
+		timeout = setTimeout(() => func(...args), wait)
+	}
+}
+
+/* returns the name of a system from its id */
+export const getSystemNameFromId = (() => {
+	const cache = new Map<string, string>()
+	return (systemId: string): string => {
+		if (cache.has(systemId)) {
+			return cache.get(systemId)!
+		}
+		const sysName = $systems.get().find((s) => s.id === systemId)?.name ?? ""
+		cache.set(systemId, sysName)
+		return sysName
+	}
+})()
+
+// TODO: reorganize this utils file into more specific files
+/** Helper to manage user alerts */
+export const alertManager = (() => {
+	const collection = pb.collection<AlertRecord>("alerts")
+
+	/** Fields to fetch from alerts collection */
+	const fields = "id,name,system,value,min,triggered"
+
+	/** Fetch alerts from collection */
+	async function fetchAlerts(): Promise<AlertRecord[]> {
+		return await collection.getFullList<AlertRecord>({ fields, sort: "updated" })
+	}
+
+	/** Format alerts into a map of system id to alert name to alert record */
+	function add(alerts: AlertRecord[]) {
+		for (const alert of alerts) {
+			const systemId = alert.system
+			const systemAlerts = $alerts.get()[systemId] ?? new Map()
+			const newAlerts = new Map(systemAlerts)
+			newAlerts.set(alert.name, alert)
+			$alerts.setKey(systemId, newAlerts)
+		}
+	}
+
+	function remove(alerts: Pick<AlertRecord, "name" | "system">[]) {
+		for (const alert of alerts) {
+			const systemId = alert.system
+			const systemAlerts = $alerts.get()[systemId]
+			const newAlerts = new Map(systemAlerts)
+			newAlerts.delete(alert.name)
+			$alerts.setKey(systemId, newAlerts)
+		}
+	}
+
+	const actionFns = {
+		create: add,
+		update: add,
+		delete: remove,
+	}
+
+	// batch alert updates to prevent unnecessary re-renders when adding many alerts at once
+	const batchUpdate = (() => {
+		const batch = new Map<string, RecordSubscription<AlertRecord>>()
+		let timeout: ReturnType<typeof setTimeout>
+
+		return (data: RecordSubscription<AlertRecord>) => {
+			const { record } = data
+			batch.set(`${record.system}${record.name}`, data)
+			clearTimeout(timeout!)
+			timeout = setTimeout(() => {
+				const groups = { create: [], update: [], delete: [] } as Record<string, AlertRecord[]>
+				for (const { action, record } of batch.values()) {
+					groups[action]?.push(record)
+				}
+				for (const key in groups) {
+					if (groups[key].length) {
+						actionFns[key as keyof typeof actionFns]?.(groups[key])
+					}
+				}
+				batch.clear()
+			}, 50)
+		}
+	})()
+
+	collection.subscribe("*", batchUpdate, { fields })
+
+	return {
+		/** Add alerts to store */
+		add,
+		/** Remove alerts from store */
+		remove,
+		/** Refresh alerts with latest data from hub */
+		async refresh() {
+			const records = await fetchAlerts()
+			add(records)
+		},
+	}
+})()

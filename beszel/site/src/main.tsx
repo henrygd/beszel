@@ -6,7 +6,7 @@ import { Home } from "./components/routes/home.tsx"
 import { ThemeProvider } from "./components/theme-provider.tsx"
 import { DirectionProvider } from "@radix-ui/react-direction"
 import { $authenticated, $systems, pb, $publicKey, $copyContent, $direction } from "./lib/stores.ts"
-import { updateUserSettings, updateAlerts, updateFavicon, updateSystemList } from "./lib/utils.ts"
+import { updateUserSettings, updateFavicon, updateSystemList, alertManager } from "./lib/utils.ts"
 import { useStore } from "@nanostores/react"
 import { Toaster } from "./components/ui/toaster.tsx"
 import { $router } from "./components/router.tsx"
@@ -38,7 +38,7 @@ const App = memo(() => {
 		// get servers / alerts / settings
 		updateUserSettings()
 		// get alerts after system list is loaded
-		updateSystemList().then(updateAlerts)
+		updateSystemList().then(alertManager.refresh)
 
 		return () => updateFavicon("favicon.svg")
 	}, [])
