@@ -41,7 +41,7 @@ import { memo, useEffect, useMemo, useState } from "react"
 import { $systems } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { cn, useLocalStorage } from "@/lib/utils"
-import { $router, Link, navigate } from "../router"
+import { $router, Link } from "../router"
 import { useLingui, Trans } from "@lingui/react/macro"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Input } from "../ui/input"
@@ -291,15 +291,9 @@ const SystemTableRow = memo(
 			return (
 				<TableRow
 					// data-state={row.getIsSelected() && "selected"}
-					className={cn("cursor-pointer transition-opacity", {
+					className={cn("cursor-pointer transition-opacity relative", {
 						"opacity-50": system.status === "paused",
 					})}
-					onClick={(e) => {
-						const target = e.target as HTMLElement
-						if (!target.closest("[data-nolink]") && e.currentTarget.contains(target)) {
-							navigate(getPagePath($router, "system", { name: system.name }))
-						}
-					}}
 				>
 					{row.getVisibleCells().map((cell) => (
 						<TableCell
@@ -307,7 +301,7 @@ const SystemTableRow = memo(
 							style={{
 								width: cell.column.getSize(),
 							}}
-							className={cn("overflow-hidden relative", length > 10 ? "py-2" : "py-2.5")}
+							className={length > 10 ? "py-2" : "py-2.5"}
 						>
 							{flexRender(cell.column.columnDef.cell, cell.getContext())}
 						</TableCell>

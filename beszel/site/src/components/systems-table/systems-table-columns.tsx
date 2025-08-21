@@ -55,6 +55,8 @@ import {
 import { buttonVariants } from "../ui/button"
 import { t } from "@lingui/core/macro"
 import { MeterState } from "@/lib/enums"
+import { $router, Link } from "../router"
+import { getPagePath } from "@nanostores/router"
 
 const STATUS_COLORS = {
 	up: "bg-green-500",
@@ -107,12 +109,25 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			enableHiding: false,
 			invertSorting: false,
 			Icon: ServerIcon,
-			cell: (info) => (
-				<span className="flex gap-2 items-center font-medium text-sm text-nowrap md:ps-1 md:pe-5">
-					<IndicatorDot system={info.row.original} />
-					{info.getValue() as string}
-				</span>
-			),
+			cell: (info) => {
+				const { name } = info.row.original
+				return useMemo(
+					() => (
+						<>
+							<span className="flex gap-2 items-center font-medium text-sm text-nowrap md:ps-1 md:pe-5">
+								<IndicatorDot system={info.row.original} />
+								{name}
+							</span>
+							<Link
+								href={getPagePath($router, "system", { name })}
+								className="inset-0 absolute size-full"
+								aria-label={name}
+							></Link>
+						</>
+					),
+					[name]
+				)
+			},
 			header: sortableHeader,
 		},
 		{
@@ -277,7 +292,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			name: () => t({ message: "Actions", comment: "Table column" }),
 			size: 50,
 			cell: ({ row }) => (
-				<div className="flex justify-end items-center gap-1 -ms-3">
+				<div className="relative z-10 flex justify-end items-center gap-1 -ms-3">
 					<AlertButton system={row.original} />
 					<ActionsButton system={row.original} />
 				</div>
@@ -349,7 +364,7 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 			<>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<Button variant="ghost" size={"icon"} data-nolink>
+						<Button variant="ghost" size={"icon"}>
 							<span className="sr-only">
 								<Trans>Open menu</Trans>
 							</span>

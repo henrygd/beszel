@@ -35,18 +35,15 @@ export const navigate = (urlString: string) => {
 	$router.open(urlString)
 }
 
-function onClick(e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) {
-	e.preventDefault()
-	$router.open(new URL((e.currentTarget as HTMLAnchorElement).href).pathname)
-}
-
-export const Link = (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
-	let clickFn = onClick
-	if (props.onClick) {
-		clickFn = (e) => {
-			onClick(e)
-			props.onClick?.(e)
-		}
-	}
-	return <a {...props} onClick={clickFn}></a>
+export function Link(props: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
+	return (
+		<a
+			{...props}
+			onClick={(e) => {
+				e.preventDefault()
+				$router.open(new URL((e.currentTarget as HTMLAnchorElement).href).pathname)
+				props.onClick?.(e)
+			}}
+		></a>
+	)
 }

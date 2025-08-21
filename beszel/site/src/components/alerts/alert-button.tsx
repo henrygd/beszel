@@ -19,9 +19,9 @@ export default memo(function AlertsButton({ system }: { system: SystemRecord }) 
 		() => (
 			<Dialog>
 				<DialogTrigger asChild>
-					<Button variant="ghost" size="icon" aria-label={t`Alerts`} data-nolink onClick={() => setOpened(true)}>
+					<Button variant="ghost" size="icon" aria-label={t`Alerts`} onClick={() => setOpened(true)}>
 						<BellIcon
-							className={cn("h-[1.2em] w-[1.2em] pointer-events-none", {
+							className={cn("h-[1.2em] w-[1.2em]", {
 								"fill-primary": hasSystemAlert,
 							})}
 						/>
