@@ -4,7 +4,8 @@ import (
 	"beszel"
 	"beszel/internal/common"
 	"beszel/internal/entities/system"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"io"
@@ -144,7 +145,7 @@ func (a *Agent) writeToSession(w io.Writer, stats *system.CombinedData, hubVersi
 	if hubVersion.GTE(beszel.MinVersionCbor) {
 		return cbor.NewEncoder(w).Encode(stats)
 	}
-	return json.NewEncoder(w).Encode(stats)
+	return json.MarshalEncode(jsontext.NewEncoder(w), stats)
 }
 
 // extractHubVersion extracts the beszel version from SSH client version string.

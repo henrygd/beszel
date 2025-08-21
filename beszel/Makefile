@@ -17,7 +17,7 @@ clean:
 lint:
 	golangci-lint run
 
-test: export GOEXPERIMENT=synctest
+test: export GOEXPERIMENT=synctest,jsonv2
 test:
 	go test -tags=testing ./...
 
@@ -70,6 +70,7 @@ dev-server: generate-locales
 	fi
 
 dev-hub: export ENV=dev
+dev-hub: export GOEXPERIMENT=jsonv2
 dev-hub:
 	mkdir -p ./site/dist && touch ./site/dist/index.html
 	@if command -v entr >/dev/null 2>&1; then \
@@ -78,6 +79,7 @@ dev-hub:
 		cd ./cmd/hub && go run . serve --http 0.0.0.0:8090; \
 	fi
 
+dev-agent: export GOEXPERIMENT=jsonv2
 dev-agent:
 	@if command -v entr >/dev/null 2>&1; then \
 		find ./cmd/agent/*.go ./internal/agent/*.go | entr -r go run beszel/cmd/agent; \

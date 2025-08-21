@@ -2,7 +2,7 @@ package alerts
 
 import (
 	"beszel/internal/entities/system"
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 	"strings"
 	"time"

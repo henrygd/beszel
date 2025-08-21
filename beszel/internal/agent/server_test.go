@@ -5,7 +5,7 @@ import (
 	"beszel/internal/entities/system"
 	"context"
 	"crypto/ed25519"
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 	"net"
 	"os"

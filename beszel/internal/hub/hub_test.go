@@ -9,7 +9,7 @@ import (
 
 	"bytes"
 	"crypto/ed25519"
-	"encoding/json"
+	"encoding/json/v2"
 	"encoding/pem"
 	"io"
 	"net/http"

@@ -4,7 +4,7 @@ package records
 import (
 	"beszel/internal/entities/container"
 	"beszel/internal/entities/system"
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 	"log"
 	"math"

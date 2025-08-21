@@ -4,7 +4,7 @@ import (
 	"beszel/internal/entities/system"
 	"bufio"
 	"bytes"
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 	"os/exec"
 	"regexp"
@@ -50,7 +50,7 @@ type GPUManager struct {
 // RocmSmiJson represents the JSON structure of rocm-smi output
 type RocmSmiJson struct {
 	ID           string `json:"GUID"`
-	Name         string `json:"Card series"`
+	Name         string `json:"Card Series"`
 	Temperature  string `json:"Temperature (Sensor edge) (C)"`
 	MemoryUsed   string `json:"VRAM Total Used Memory (B)"`
 	MemoryTotal  string `json:"VRAM Total Memory (B)"`

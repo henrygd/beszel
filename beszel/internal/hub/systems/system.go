@@ -5,7 +5,8 @@ import (
 	"beszel/internal/entities/system"
 	"beszel/internal/hub/ws"
 	"context"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -275,7 +276,7 @@ func (sys *System) fetchDataViaSSH() (*system.CombinedData, error) {
 		if sys.agentVersion.GTE(beszel.MinVersionCbor) {
 			err = cbor.NewDecoder(stdout).Decode(sys.data)
 		} else {
-			err = json.NewDecoder(stdout).Decode(sys.data)
+			err = json.UnmarshalDecode(jsontext.NewDecoder(stdout), sys.data)
 		}
 
 		if err != nil {

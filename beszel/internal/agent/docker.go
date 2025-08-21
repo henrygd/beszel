@@ -4,7 +4,7 @@ import (
 	"beszel/internal/entities/container"
 	"bytes"
 	"context"
-	"encoding/json"
+	"encoding/json/v2"
 	"fmt"
 	"log/slog"
 	"net"
@@ -29,7 +29,6 @@ type dockerManager struct {
 	goodDockerVersion   bool                        // Whether docker version is at least 25.0.0 (one-shot works correctly)
 	isWindows           bool                        // Whether the Docker Engine API is running on Windows
 	buf                 *bytes.Buffer               // Buffer to store and read response bodies
-	decoder             *json.Decoder               // Reusable JSON decoder that reads from buf
 	apiStats            *container.ApiStats         // Reusable API stats object
 }
 
@@ -343,17 +342,16 @@ func newDockerManager(a *Agent) *dockerManager {
 // Decodes Docker API JSON response using a reusable buffer and decoder. Not thread safe.
 func (dm *dockerManager) decode(resp *http.Response, d any) error {
 	if dm.buf == nil {
-		// initialize buffer with 256kb starting size
-		dm.buf = bytes.NewBuffer(make([]byte, 0, 1024*256))
-		dm.decoder = json.NewDecoder(dm.buf)
+		// initialize buffer with 128kb starting size
+		dm.buf = bytes.NewBuffer(make([]byte, 0, 1024*128))
 	}
 	defer resp.Body.Close()
-	defer dm.buf.Reset()
+	dm.buf.Reset()
 	_, err := dm.buf.ReadFrom(resp.Body)
 	if err != nil {
 		return err
 	}
-	return dm.decoder.Decode(d)
+	return json.Unmarshal(dm.buf.Bytes(), d)
 }
 
 // Test docker / podman sockets and return if one exists
