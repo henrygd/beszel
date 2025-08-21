@@ -41,8 +41,13 @@ export function Link(props: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
 			{...props}
 			onClick={(e) => {
 				e.preventDefault()
-				$router.open(new URL((e.currentTarget as HTMLAnchorElement).href).pathname)
-				props.onClick?.(e)
+				const href = props.href || ""
+				if (e.ctrlKey || e.metaKey) {
+					window.open(href, "_blank")
+				} else {
+					$router.open(href)
+					props.onClick?.(e)
+				}
 			}}
 		></a>
 	)
