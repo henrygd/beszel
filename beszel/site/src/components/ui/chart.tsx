@@ -4,6 +4,8 @@ import * as RechartsPrimitive from "recharts"
 import { chartTimeData, cn } from "@/lib/utils"
 import { ChartData } from "@/types"
 
+import type { JSX } from "react";
+
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const
 
@@ -41,8 +43,9 @@ const ChartContainer = React.forwardRef<
 	const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`
 
 	return (
-		//<ChartContext.Provider value={{ config }}>
-		<div
+        //<ChartContext.Provider value={{ config }}>
+        //</ChartContext.Provider>
+        <div
 			data-chart={chartId}
 			ref={ref}
 			className={cn(
@@ -51,11 +54,10 @@ const ChartContainer = React.forwardRef<
 			)}
 			{...props}
 		>
-			{/* <ChartStyle id={chartId} config={config} /> */}
-			<RechartsPrimitive.ResponsiveContainer>{children}</RechartsPrimitive.ResponsiveContainer>
-		</div>
-		//</ChartContext.Provider>
-	)
+            {/* <ChartStyle id={chartId} config={config} /> */}
+            <RechartsPrimitive.ResponsiveContainer>{children}</RechartsPrimitive.ResponsiveContainer>
+        </div>
+    );
 })
 ChartContainer.displayName = "Chart"
 

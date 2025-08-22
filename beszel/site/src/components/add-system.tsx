@@ -274,7 +274,7 @@ interface CopyButtonProps {
 	text: string
 	onClick: () => void
 	dropdownItems: DropdownItem[]
-	icon?: React.ReactElement
+	icon?: React.ReactElement<any>
 }
 
 const CopyButton = memo((props: CopyButtonProps) => {
