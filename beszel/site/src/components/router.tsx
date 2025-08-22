@@ -45,7 +45,7 @@ export function Link(props: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
 				if (e.ctrlKey || e.metaKey) {
 					window.open(href, "_blank")
 				} else {
-					$router.open(href)
+					navigate(href)
 					props.onClick?.(e)
 				}
 			}}

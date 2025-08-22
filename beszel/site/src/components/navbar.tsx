@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from "@lingui/react/macro"
 import { useState, lazy, Suspense } from "react"
 import { Button, buttonVariants } from "@/components/ui/button"
 import {

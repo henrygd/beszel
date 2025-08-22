@@ -111,21 +111,18 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			Icon: ServerIcon,
 			cell: (info) => {
 				const { name } = info.row.original
-				return useMemo(
-					() => (
-						<>
-							<span className="flex gap-2 items-center font-medium text-sm text-nowrap md:ps-1 md:pe-5">
-								<IndicatorDot system={info.row.original} />
-								{name}
-							</span>
-							<Link
-								href={getPagePath($router, "system", { name })}
-								className="inset-0 absolute size-full"
-								aria-label={name}
-							></Link>
-						</>
-					),
-					[name]
+				return (
+					<>
+						<span className="flex gap-2 items-center font-medium text-sm text-nowrap md:ps-1 md:pe-5">
+							<IndicatorDot system={info.row.original} />
+							{name}
+						</span>
+						<Link
+							href={getPagePath($router, "system", { name })}
+							className="inset-0 absolute size-full"
+							aria-label={name}
+						></Link>
+					</>
 				)
 			},
 			header: sortableHeader,
