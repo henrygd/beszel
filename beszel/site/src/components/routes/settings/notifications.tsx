@@ -87,8 +87,8 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 			</div>
 			<Separator className="my-4" />
 			<div className="space-y-5">
-				<div className="space-y-2">
-					<div className="mb-4">
+				<div className="grid gap-2">
+					<div className="mb-2">
 						<h3 className="mb-1 text-lg font-medium">
 							<Trans>Email notifications</Trans>
 						</h3>

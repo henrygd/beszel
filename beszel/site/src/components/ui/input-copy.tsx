@@ -11,7 +11,7 @@ export function InputCopy({ value, id, name }: { value: string; id: string; name
 			<Input readOnly id={id} name={name} value={value} required></Input>
 			<div
 				className={
-					"h-6 w-24 bg-gradient-to-r rtl:bg-gradient-to-l from-transparent to-background to-65% absolute top-2 end-1 pointer-events-none"
+					"h-6 w-24 bg-linear-to-r rtl:bg-linear-to-l from-transparent to-background to-65% absolute top-2 end-1 pointer-events-none"
 				}
 			></div>
 			<TooltipProvider delayDuration={100} disableHoverableContent>

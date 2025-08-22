@@ -339,14 +339,14 @@ const SystemCard = memo(
 								</div>
 							</CardTitle>
 							{table.getColumn("actions")?.getIsVisible() && (
-								<div className="flex gap-1 flex-shrink-0 relative z-10">
+								<div className="flex gap-1 shrink-0 relative z-10">
 									<AlertButton system={system} />
 									<ActionsButton system={system} />
 								</div>
 							)}
 						</div>
 					</CardHeader>
-					<CardContent className="space-y-2.5 text-sm px-5 pt-3.5 pb-4">
+					<CardContent className="grid gap-2.5 text-sm px-5 pt-3.5 pb-4">
 						{table.getAllColumns().map((column) => {
 							if (!column.getIsVisible() || column.id === "system" || column.id === "actions") return null
 							const cell = row.getAllCells().find((cell) => cell.column.id === column.id)

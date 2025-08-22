@@ -94,11 +94,11 @@ module.exports = {
 		},
 	},
 	plugins: [
-		require("@tailwindcss/container-queries"),
-		require("tailwindcss-animate"),
-		require("tailwindcss-rtl"),
-		function ({ addVariant }) {
-			addVariant("light", ".light &")
-		},
+		// require("@tailwindcss/container-queries"),
+		// require("tailwindcss-animate"),
+		// require("tailwindcss-rtl"),
+		// function ({ addVariant }) {
+		// 	addVariant("light", ".light &")
+		// },
 	],
 }

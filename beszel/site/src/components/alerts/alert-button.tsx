@@ -27,7 +27,7 @@ export default memo(function AlertsButton({ system }: { system: SystemRecord }) 
 						/>
 					</Button>
 				</DialogTrigger>
-				<DialogContent className="max-h-full sm:max-h-[95svh] overflow-auto max-w-[37rem]">
+				<DialogContent className="max-h-full sm:max-h-[95svh] overflow-auto max-w-148">
 					{opened && <AlertDialogContent system={system} />}
 				</DialogContent>
 			</Dialog>

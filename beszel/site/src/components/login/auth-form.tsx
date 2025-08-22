@@ -288,7 +288,7 @@ export function UserAuthForm({
 									// }}
 								/>
 							)}
-							<span className="translate-y-[1px]">{provider.displayName}</span>
+							<span className="translate-y-px">{provider.displayName}</span>
 						</button>
 					))}
 				</div>
@@ -299,7 +299,7 @@ export function UserAuthForm({
 					<DialogTrigger asChild>
 						<button type="button" className={cn(buttonVariants({ variant: "outline" }))}>
 							<img className="me-2 h-4 w-4 dark:invert" src={prependBasePath("/_/images/oauth2/github.svg")} alt="" />
-							<span className="translate-y-[1px]">GitHub</span>
+							<span className="translate-y-px">GitHub</span>
 						</button>
 					</DialogTrigger>
 					<DialogContent style={{ maxWidth: 440, width: "90%" }}>

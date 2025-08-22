@@ -12,7 +12,7 @@ const Command = React.forwardRef<
 >(({ className, ...props }, ref) => (
 	<CommandPrimitive
 		ref={ref}
-		className={cn("flex h-full w-full flex-col overflow-hidden bg-popover text-popover-foreground", className)}
+		className={cn("flex h-full w-full flex-col overflow-hidden bg-card", className)}
 		{...props}
 	/>
 ))
@@ -44,7 +44,7 @@ const CommandInput = React.forwardRef<
 		<CommandPrimitive.Input
 			ref={ref}
 			className={cn(
-				"flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50",
+				"flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-hidden placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50",
 				className
 			)}
 			{...props}
@@ -105,7 +105,7 @@ const CommandItem = React.forwardRef<
 	<CommandPrimitive.Item
 		ref={ref}
 		className={cn(
-			"relative flex cursor-default opacity-70 select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-accent/70 aria-selected:opacity-90 data-[disabled='true']:pointer-events-none data-[disabled='true']:opacity-50",
+			"relative flex cursor-default opacity-70 select-none items-center rounded-sm px-2 py-1.5 text-sm outline-hidden aria-selected:bg-accent/60 aria-selected:opacity-90 data-[disabled='true']:pointer-events-none data-[disabled='true']:opacity-50",
 			className
 		)}
 		{...props}

@@ -39,8 +39,8 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 			</div>
 			<Separator className="my-4" />
 			<form onSubmit={handleSubmit} className="space-y-5">
-				<div className="space-y-2">
-					<div className="mb-4">
+				<div className="grid gap-2">
+					<div className="mb-2">
 						<h3 className="mb-1 text-lg font-medium flex items-center gap-2">
 							<LanguagesIcon className="h-4 w-4" />
 							<Trans>Language</Trans>
@@ -73,8 +73,8 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 					</Select>
 				</div>
 				<Separator />
-				<div className="space-y-2">
-					<div className="mb-4">
+				<div className="grid gap-2">
+					<div className="mb-2">
 						<h3 className="mb-1 text-lg font-medium">
 							<Trans>Chart options</Trans>
 						</h3>
@@ -102,8 +102,8 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 					</p>
 				</div>
 				<Separator />
-				<div className="space-y-2">
-					<div className="mb-4">
+				<div className="grid gap-2">
+					<div className="mb-2">
 						<h3 className="mb-1 text-lg font-medium">
 							<Trans comment="Temperature / network units">Unit preferences</Trans>
 						</h3>
@@ -112,7 +112,7 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 						</p>
 					</div>
 					<div className="grid sm:grid-cols-3 gap-4">
-						<div className="space-y-2">
+						<div className="grid gap-2">
 							<Label className="block" htmlFor="unitTemp">
 								<Trans>Temperature unit</Trans>
 							</Label>
@@ -134,7 +134,7 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 								</SelectContent>
 							</Select>
 						</div>
-						<div className="space-y-2">
+						<div className="grid gap-2">
 							<Label className="block" htmlFor="unitNet">
 								<Trans comment="Context: Bytes or bits">Network unit</Trans>
 							</Label>
@@ -156,7 +156,7 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 								</SelectContent>
 							</Select>
 						</div>
-						<div className="space-y-2">
+						<div className="grid gap-2">
 							<Label className="block" htmlFor="unitDisk">
 								<Trans>Disk unit</Trans>
 							</Label>
@@ -181,8 +181,8 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 					</div>
 				</div>
 				<Separator />
-				<div className="space-y-2">
-					<div className="mb-4">
+				<div className="grid gap-2">
+					<div className="mb-2">
 						<h3 className="mb-1 text-lg font-medium">
 							<Trans>Warning thresholds</Trans>
 						</h3>
@@ -191,7 +191,7 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 						</p>
 					</div>
 					<div className="grid grid-cols-2 lg:grid-cols-3 gap-4 items-end">
-						<div className="space-y-1">
+						<div className="grid gap-2">
 							<Label htmlFor="colorWarn">
 								<Trans>Warning (%)</Trans>
 							</Label>
@@ -205,7 +205,7 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 								defaultValue={userSettings.colorWarn ?? 65}
 							/>
 						</div>
-						<div className="space-y-1">
+						<div className="grid gap-1">
 							<Label htmlFor="colorCrit">
 								<Trans>Critical (%)</Trans>
 							</Label>

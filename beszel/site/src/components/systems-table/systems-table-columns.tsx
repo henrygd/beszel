@@ -346,7 +346,7 @@ export function IndicatorDot({ system, className }: { system: SystemRecord; clas
 	className ||= STATUS_COLORS[system.status as keyof typeof STATUS_COLORS] || ""
 	return (
 		<span
-			className={cn("flex-shrink-0 size-2 rounded-full", className)}
+			className={cn("shrink-0 size-2 rounded-full", className)}
 			// style={{ marginBottom: "-1px" }}
 		/>
 	)

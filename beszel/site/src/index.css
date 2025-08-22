@@ -1,6 +1,55 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@config '../tailwind.config.js';
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+	*,
+	::after,
+	::before,
+	::backdrop,
+	::file-selector-button {
+		border-color: var(--color-gray-200, currentcolor);
+	}
+}
+
+@utility link {
+	@apply text-primary font-medium underline-offset-4 hover:underline;
+}
+
+@utility ns-dialog {
+	/* New system dialog width */
+	min-width: 30.3rem;
+	:where(:lang(zh), :lang(zh-CN), :lang(ko)) & {
+		min-width: 27.9rem;
+	}
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+	*,
+	::after,
+	::before,
+	::backdrop,
+	::file-selector-button {
+		border-color: var(--color-gray-200, currentcolor);
+	}
+}
 
 @layer base {
 	:root {
@@ -57,18 +106,20 @@
 	}
 }
 
-/* Fonts */
-@supports (font-variation-settings: normal) {
-	:root {
-		font-family: Inter, InterVariable, sans-serif;
+@layer utilities {
+	/* Fonts */
+	@supports (font-variation-settings: normal) {
+		:root {
+			font-family: Inter, InterVariable, sans-serif;
+		}
 	}
-}
-@font-face {
-	font-family: InterVariable;
-	font-style: normal;
-	font-weight: 100 900;
-	font-display: swap;
-	src: url("/static/InterVariable.woff2?v=4.0") format("woff2");
+	@font-face {
+		font-family: InterVariable;
+		font-style: normal;
+		font-weight: 100 900;
+		font-display: swap;
+		src: url("/static/InterVariable.woff2?v=4.0") format("woff2");
+	}
 }
 
 @layer base {
@@ -78,19 +129,6 @@
 	}
 	body {
 		@apply bg-background text-foreground;
-	}
-}
-
-@layer utilities {
-	.link {
-		@apply text-primary font-medium underline-offset-4 hover:underline;
-	}
-	/* New system dialog width */
-	.ns-dialog {
-		min-width: 30.3rem;
-	}
-	:where(:lang(zh), :lang(zh-CN), :lang(ko)) .ns-dialog {
-		min-width: 27.9rem;
 	}
 }
 

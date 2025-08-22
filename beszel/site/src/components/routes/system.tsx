@@ -12,7 +12,7 @@ import {
 } from "@/lib/stores"
 import { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord } from "@/types"
 import { ChartType, Unit, Os } from "@/lib/enums"
-import React, { lazy, memo, useCallback, useEffect, useMemo, useRef, useState, type JSX } from "react";
+import React, { lazy, memo, useCallback, useEffect, useMemo, useRef, useState, type JSX } from "react"
 import { Card, CardHeader, CardTitle, CardDescription } from "../ui/card"
 import { useStore } from "@nanostores/react"
 import Spinner from "../spinner"
@@ -872,10 +872,10 @@ function ChartCard({
 
 	return (
 		<Card className={cn("pb-2 sm:pb-4 odd:last-of-type:col-span-full", { "col-span-full": !grid })} ref={ref}>
-			<CardHeader className="pb-5 pt-4 relative space-y-1 max-sm:py-3 max-sm:px-4">
+			<CardHeader className="pb-5 pt-4 gap-1 relative max-sm:py-3 max-sm:px-4">
 				<CardTitle className="text-xl sm:text-2xl">{title}</CardTitle>
 				<CardDescription>{description}</CardDescription>
-				{cornerEl && <div className="relative py-1 block sm:w-44 sm:absolute sm:top-2.5 sm:end-3.5">{cornerEl}</div>}
+				{cornerEl && <div className="relative py-1 block sm:w-44 sm:absolute sm:top-3.5 sm:end-3.5">{cornerEl}</div>}
 			</CardHeader>
 			<div className="ps-0 w-[calc(100%-1.5em)] h-48 md:h-52 relative group">
 				{
