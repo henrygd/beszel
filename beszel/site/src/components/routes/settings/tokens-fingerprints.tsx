@@ -292,11 +292,11 @@ const SectionTable = memo(({ fingerprints = [] }: { fingerprints: FingerprintRec
 				<TableBody className="whitespace-pre">
 					{fingerprints.map((fingerprint, i) => (
 						<TableRow key={i}>
-							<TableCell className="font-medium ps-5 py-2.5">{fingerprint.expand.system.name}</TableCell>
-							<TableCell className="font-mono text-[0.95em] py-2.5">{fingerprint.token}</TableCell>
-							<TableCell className="font-mono text-[0.95em] py-2.5">{fingerprint.fingerprint}</TableCell>
+							<TableCell className="font-medium ps-5 py-2">{fingerprint.expand.system.name}</TableCell>
+							<TableCell className="font-mono text-[0.95em] py-2">{fingerprint.token}</TableCell>
+							<TableCell className="font-mono text-[0.95em] py-2">{fingerprint.fingerprint}</TableCell>
 							{!isReadOnly && (
-								<TableCell className="py-2.5 px-4 xl:px-2">
+								<TableCell className="py-2 px-4 xl:px-2">
 									<ActionsButtonTable fingerprint={fingerprint} />
 								</TableCell>
 							)}

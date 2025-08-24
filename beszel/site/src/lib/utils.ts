@@ -537,6 +537,7 @@ export const getSystemNameFromId = (() => {
 /** Helper to manage user alerts */
 export const alertManager = (() => {
 	const collection = pb.collection<AlertRecord>("alerts")
+	let unsub: () => void
 
 	/** Fields to fetch from alerts collection */
 	const fields = "id,name,system,value,min,triggered"
@@ -597,17 +598,29 @@ export const alertManager = (() => {
 		}
 	})()
 
-	collection.subscribe("*", batchUpdate, { fields })
+	async function subscribe() {
+		unsub = await collection.subscribe("*", batchUpdate, { fields })
+	}
+
+	function unsubscribe() {
+		unsub?.()
+	}
+
+	async function refresh() {
+		const records = await fetchAlerts()
+		add(records)
+	}
 
 	return {
 		/** Add alerts to store */
 		add,
 		/** Remove alerts from store */
 		remove,
+		/** Subscribe to alerts */
+		subscribe,
+		/** Unsubscribe from alerts */
+		unsubscribe,
 		/** Refresh alerts with latest data from hub */
-		async refresh() {
-			const records = await fetchAlerts()
-			add(records)
-		},
+		refresh,
 	}
 })()

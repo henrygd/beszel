@@ -38,10 +38,17 @@ const App = memo(() => {
 		})
 		// get servers / alerts / settings
 		updateUserSettings()
-		// get alerts after system list is loaded
-		updateSystemList().then(alertManager.refresh)
+		// need to get system list before alerts
+		updateSystemList()
+			// get alerts
+			.then(alertManager.refresh)
+			// subscribe to new alert updates
+			.then(alertManager.subscribe)
 
-		return () => updateFavicon("favicon.svg")
+		return () => {
+			updateFavicon("favicon.svg")
+			alertManager.unsubscribe()
+		}
 	}, [])
 
 	// update favicon
@@ -54,7 +61,8 @@ const App = memo(() => {
 				if (system.status === SystemStatus.Down) {
 					updateFavicon("favicon-red.svg")
 					return
-				} else if (system.status === SystemStatus.Up) {
+				} 
+				if (system.status === SystemStatus.Up) {
 					up = true
 				}
 			}
