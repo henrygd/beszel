@@ -6,7 +6,7 @@ import { Home } from "./components/routes/home.tsx"
 import { ThemeProvider } from "./components/theme-provider.tsx"
 import { DirectionProvider } from "@radix-ui/react-direction"
 import { $authenticated, $systems, pb, $publicKey, $copyContent, $direction } from "./lib/stores.ts"
-import { updateUserSettings, updateFavicon, updateSystemList, alertManager } from "./lib/utils.ts"
+import { updateUserSettings, updateFavicon, updateSystemList } from "./lib/utils.ts"
 import { useStore } from "@nanostores/react"
 import { Toaster } from "./components/ui/toaster.tsx"
 import { $router } from "./components/router.tsx"
@@ -14,8 +14,9 @@ import SystemDetail from "./components/routes/system.tsx"
 import Navbar from "./components/navbar.tsx"
 import { I18nProvider } from "@lingui/react"
 import { i18n } from "@lingui/core"
-import { getLocale, dynamicActivate } from "./lib/i18n.ts"
-import { SystemStatus } from "./lib/enums.ts"
+import { getLocale, dynamicActivate } from "./lib/i18n"
+import { SystemStatus } from "./lib/enums"
+import { alertManager } from "./lib/alerts"
 
 // const ServerDetail = lazy(() => import('./components/routes/system.tsx'))
 const LoginPage = lazy(() => import("./components/login/login.tsx"))
@@ -61,7 +62,7 @@ const App = memo(() => {
 				if (system.status === SystemStatus.Down) {
 					updateFavicon("favicon-red.svg")
 					return
-				} 
+				}
 				if (system.status === SystemStatus.Up) {
 					up = true
 				}

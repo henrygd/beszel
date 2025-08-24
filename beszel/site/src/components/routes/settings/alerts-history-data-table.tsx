@@ -1,5 +1,6 @@
 import { pb } from "@/lib/stores"
-import { alertInfo, cn, formatDuration, formatShortDate } from "@/lib/utils"
+import { cn, formatDuration, formatShortDate } from "@/lib/utils"
+import { alertInfo } from "@/lib/alerts"
 import { AlertsHistoryRecord } from "@/types"
 import {
 	getCoreRowModel,

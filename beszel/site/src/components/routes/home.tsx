@@ -4,12 +4,13 @@ import { $alerts, $systems, pb } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { GithubIcon } from "lucide-react"
 import { Separator } from "../ui/separator"
-import { alertInfo, getSystemNameFromId, updateRecordList, updateSystemList } from "@/lib/utils"
+import { getSystemNameFromId, updateRecordList, updateSystemList } from "@/lib/utils"
 import { AlertRecord, SystemRecord } from "@/types"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { $router, Link } from "../router"
 import { Plural, Trans, useLingui } from "@lingui/react/macro"
 import { getPagePath } from "@nanostores/router"
+import { alertInfo } from "@/lib/alerts"
 
 const SystemsTable = lazy(() => import("../systems-table/systems-table"))
 

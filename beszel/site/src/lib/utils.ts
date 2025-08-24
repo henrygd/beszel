@@ -3,22 +3,11 @@ import { toast } from "@/components/ui/use-toast"
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { $alerts, $copyContent, $systems, $userSettings, pb } from "./stores"
-import {
-	AlertInfo,
-	AlertRecord,
-	ChartTimeData,
-	ChartTimes,
-	FingerprintRecord,
-	SemVer,
-	SystemRecord,
-	UserSettings,
-} from "@/types"
+import type { ChartTimeData, ChartTimes, FingerprintRecord, SemVer, SystemRecord, UserSettings } from "@/types"
 import { RecordModel, RecordSubscription } from "pocketbase"
 import { WritableAtom } from "nanostores"
 import { timeDay, timeHour } from "d3-time"
 import { useEffect, useState } from "react"
-import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from "lucide-react"
-import { EthernetIcon, HourglassIcon, ThermometerIcon } from "@/components/ui/icons"
 import { prependBasePath } from "@/components/router"
 import { MeterState, Unit } from "./enums"
 
@@ -360,79 +349,6 @@ export async function updateUserSettings() {
 
 export const chartMargin = { top: 12 }
 
-/** Alert info for each alert type */
-export const alertInfo: Record<string, AlertInfo> = {
-	Status: {
-		name: () => t`Status`,
-		unit: "",
-		icon: ServerIcon,
-		desc: () => t`Triggers when status switches between up and down`,
-		/** "for x minutes" is appended to desc when only one value */
-		singleDesc: () => t`System` + " " + t`Down`,
-	},
-	CPU: {
-		name: () => t`CPU Usage`,
-		unit: "%",
-		icon: CpuIcon,
-		desc: () => t`Triggers when CPU usage exceeds a threshold`,
-	},
-	Memory: {
-		name: () => t`Memory Usage`,
-		unit: "%",
-		icon: MemoryStickIcon,
-		desc: () => t`Triggers when memory usage exceeds a threshold`,
-	},
-	Disk: {
-		name: () => t`Disk Usage`,
-		unit: "%",
-		icon: HardDriveIcon,
-		desc: () => t`Triggers when usage of any disk exceeds a threshold`,
-	},
-	Bandwidth: {
-		name: () => t`Bandwidth`,
-		unit: " MB/s",
-		icon: EthernetIcon,
-		desc: () => t`Triggers when combined up/down exceeds a threshold`,
-		max: 125,
-	},
-	Temperature: {
-		name: () => t`Temperature`,
-		unit: "°C",
-		icon: ThermometerIcon,
-		desc: () => t`Triggers when any sensor exceeds a threshold`,
-	},
-	LoadAvg1: {
-		name: () => t`Load Average 1m`,
-		unit: "",
-		icon: HourglassIcon,
-		max: 100,
-		min: 0.1,
-		start: 10,
-		step: 0.1,
-		desc: () => t`Triggers when 1 minute load average exceeds a threshold`,
-	},
-	LoadAvg5: {
-		name: () => t`Load Average 5m`,
-		unit: "",
-		icon: HourglassIcon,
-		max: 100,
-		min: 0.1,
-		start: 10,
-		step: 0.1,
-		desc: () => t`Triggers when 5 minute load average exceeds a threshold`,
-	},
-	LoadAvg15: {
-		name: () => t`Load Average 15m`,
-		unit: "",
-		icon: HourglassIcon,
-		min: 0.1,
-		max: 100,
-		start: 10,
-		step: 0.1,
-		desc: () => t`Triggers when 15 minute load average exceeds a threshold`,
-	},
-} as const
-
 /**
  * Retuns value of system host, truncating full path if socket.
  * @example
@@ -530,97 +446,5 @@ export const getSystemNameFromId = (() => {
 		const sysName = $systems.get().find((s) => s.id === systemId)?.name ?? ""
 		cache.set(systemId, sysName)
 		return sysName
-	}
-})()
-
-// TODO: reorganize this utils file into more specific files
-/** Helper to manage user alerts */
-export const alertManager = (() => {
-	const collection = pb.collection<AlertRecord>("alerts")
-	let unsub: () => void
-
-	/** Fields to fetch from alerts collection */
-	const fields = "id,name,system,value,min,triggered"
-
-	/** Fetch alerts from collection */
-	async function fetchAlerts(): Promise<AlertRecord[]> {
-		return await collection.getFullList<AlertRecord>({ fields, sort: "updated" })
-	}
-
-	/** Format alerts into a map of system id to alert name to alert record */
-	function add(alerts: AlertRecord[]) {
-		for (const alert of alerts) {
-			const systemId = alert.system
-			const systemAlerts = $alerts.get()[systemId] ?? new Map()
-			const newAlerts = new Map(systemAlerts)
-			newAlerts.set(alert.name, alert)
-			$alerts.setKey(systemId, newAlerts)
-		}
-	}
-
-	function remove(alerts: Pick<AlertRecord, "name" | "system">[]) {
-		for (const alert of alerts) {
-			const systemId = alert.system
-			const systemAlerts = $alerts.get()[systemId]
-			const newAlerts = new Map(systemAlerts)
-			newAlerts.delete(alert.name)
-			$alerts.setKey(systemId, newAlerts)
-		}
-	}
-
-	const actionFns = {
-		create: add,
-		update: add,
-		delete: remove,
-	}
-
-	// batch alert updates to prevent unnecessary re-renders when adding many alerts at once
-	const batchUpdate = (() => {
-		const batch = new Map<string, RecordSubscription<AlertRecord>>()
-		let timeout: ReturnType<typeof setTimeout>
-
-		return (data: RecordSubscription<AlertRecord>) => {
-			const { record } = data
-			batch.set(`${record.system}${record.name}`, data)
-			clearTimeout(timeout!)
-			timeout = setTimeout(() => {
-				const groups = { create: [], update: [], delete: [] } as Record<string, AlertRecord[]>
-				for (const { action, record } of batch.values()) {
-					groups[action]?.push(record)
-				}
-				for (const key in groups) {
-					if (groups[key].length) {
-						actionFns[key as keyof typeof actionFns]?.(groups[key])
-					}
-				}
-				batch.clear()
-			}, 50)
-		}
-	})()
-
-	async function subscribe() {
-		unsub = await collection.subscribe("*", batchUpdate, { fields })
-	}
-
-	function unsubscribe() {
-		unsub?.()
-	}
-
-	async function refresh() {
-		const records = await fetchAlerts()
-		add(records)
-	}
-
-	return {
-		/** Add alerts to store */
-		add,
-		/** Remove alerts from store */
-		remove,
-		/** Subscribe to alerts */
-		subscribe,
-		/** Unsubscribe from alerts */
-		unsubscribe,
-		/** Refresh alerts with latest data from hub */
-		refresh,
 	}
 })()
