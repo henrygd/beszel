@@ -442,7 +442,13 @@ export const alertInfo: Record<string, AlertInfo> = {
 export const getHostDisplayValue = (system: SystemRecord): string => system.host.slice(system.host.lastIndexOf("/") + 1)
 
 /** Generate a random token for the agent */
-export const generateToken = () => crypto?.randomUUID() ?? (performance.now() * Math.random()).toString(16)
+export const generateToken = () => {
+	try {
+		return crypto?.randomUUID()
+	} catch (e) {
+		return Array.from({ length: 2 }, () => (performance.now() * Math.random()).toString(16).replace(".", "-")).join("-")
+	}
+}
 
 /** Get the hub URL from the global BESZEL object */
 export const getHubURL = () => BESZEL?.HUB_URL || window.location.origin
