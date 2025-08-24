@@ -28,3 +28,11 @@ export enum MeterState {
 	Warn,
 	Crit,
 }
+
+/** System status states */
+export enum SystemStatus {
+	Up = "up",
+	Down = "down",
+	Pending = "pending",
+	Paused = "paused",
+}

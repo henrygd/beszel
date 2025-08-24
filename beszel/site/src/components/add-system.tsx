@@ -20,6 +20,7 @@ import { ChevronDownIcon, ExternalLinkIcon, PlusIcon } from "lucide-react"
 import { memo, useEffect, useRef, useState } from "react"
 import { $router, basePath, Link, navigate } from "./router"
 import { SystemRecord } from "@/types"
+import { SystemStatus } from "@/lib/enums"
 import { AppleIcon, DockerIcon, TuxIcon, WindowsIcon } from "./ui/icons"
 import { InputCopy } from "./ui/input-copy"
 import { getPagePath } from "@nanostores/router"
@@ -105,7 +106,7 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 		try {
 			setOpen(false)
 			if (system) {
-				await pb.collection("systems").update(system.id, { ...data, status: "pending" })
+				await pb.collection("systems").update(system.id, { ...data, status: SystemStatus.Pending })
 			} else {
 				const createdSystem = await pb.collection("systems").create(data)
 				await pb.collection("fingerprints").create({

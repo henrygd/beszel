@@ -11,7 +11,7 @@ import {
 	$temperatureFilter,
 } from "@/lib/stores"
 import { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord } from "@/types"
-import { ChartType, Unit, Os } from "@/lib/enums"
+import { ChartType, Unit, Os, SystemStatus } from "@/lib/enums"
 import React, { lazy, memo, useCallback, useEffect, useMemo, useRef, useState, type JSX } from "react"
 import { Card, CardHeader, CardTitle, CardDescription } from "../ui/card"
 import { useStore } from "@nanostores/react"
@@ -382,9 +382,9 @@ export default function SystemDetail({ name }: { name: string }) {
 	const hasGpuPowerData = lastGpuVals.some((gpu) => gpu.p !== undefined)
 
 	let translatedStatus: string = system.status
-	if (system.status === "up") {
+	if (system.status === SystemStatus.Up) {
 		translatedStatus = t({ message: "Up", comment: "Context: System is up" })
-	} else if (system.status === "down") {
+	} else if (system.status === SystemStatus.Down) {
 		translatedStatus = t({ message: "Down", comment: "Context: System is down" })
 	}
 
@@ -399,7 +399,7 @@ export default function SystemDetail({ name }: { name: string }) {
 							<div className="flex flex-wrap items-center gap-3 gap-y-2 text-sm opacity-90">
 								<div className="capitalize flex gap-2 items-center">
 									<span className={cn("relative flex h-3 w-3")}>
-										{system.status === "up" && (
+										{system.status === SystemStatus.Up && (
 											<span
 												className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
 												style={{ animationDuration: "1.5s" }}
@@ -407,10 +407,10 @@ export default function SystemDetail({ name }: { name: string }) {
 										)}
 										<span
 											className={cn("relative inline-flex rounded-full h-3 w-3", {
-												"bg-green-500": system.status === "up",
-												"bg-red-500": system.status === "down",
-												"bg-primary/40": system.status === "paused",
-												"bg-yellow-500": system.status === "pending",
+												"bg-green-500": system.status === SystemStatus.Up,
+												"bg-red-500": system.status === SystemStatus.Down,
+												"bg-primary/40": system.status === SystemStatus.Paused,
+												"bg-yellow-500": system.status === SystemStatus.Pending,
 											})}
 										></span>
 									</span>

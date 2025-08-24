@@ -15,6 +15,7 @@ import Navbar from "./components/navbar.tsx"
 import { I18nProvider } from "@lingui/react"
 import { i18n } from "@lingui/core"
 import { getLocale, dynamicActivate } from "./lib/i18n.ts"
+import { SystemStatus } from "./lib/enums.ts"
 
 // const ServerDetail = lazy(() => import('./components/routes/system.tsx'))
 const LoginPage = lazy(() => import("./components/login/login.tsx"))
@@ -50,10 +51,10 @@ const App = memo(() => {
 		} else {
 			let up = false
 			for (const system of systems) {
-				if (system.status === "down") {
+				if (system.status === SystemStatus.Down) {
 					updateFavicon("favicon-red.svg")
 					return
-				} else if (system.status === "up") {
+				} else if (system.status === SystemStatus.Up) {
 					up = true
 				}
 			}

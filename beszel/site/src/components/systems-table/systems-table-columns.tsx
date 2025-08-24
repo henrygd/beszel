@@ -54,15 +54,15 @@ import {
 } from "../ui/alert-dialog"
 import { buttonVariants } from "../ui/button"
 import { t } from "@lingui/core/macro"
-import { MeterState } from "@/lib/enums"
+import { MeterState, SystemStatus } from "@/lib/enums"
 import { $router, Link } from "../router"
 import { getPagePath } from "@nanostores/router"
 
 const STATUS_COLORS = {
-	up: "bg-green-500",
-	down: "bg-red-500",
-	paused: "bg-primary/40",
-	pending: "bg-yellow-500",
+	[SystemStatus.Up]: "bg-green-500",
+	[SystemStatus.Down]: "bg-red-500",
+	[SystemStatus.Paused]: "bg-primary/40",
+	[SystemStatus.Pending]: "bg-yellow-500",
 } as const
 
 /**
@@ -82,9 +82,9 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 				let filterInputLower = ""
 				const nameCache = new Map<string, string>()
 				const statusTranslations = {
-					up: t`Up`.toLowerCase(),
-					down: t`Down`.toLowerCase(),
-					paused: t`Paused`.toLowerCase(),
+					[SystemStatus.Up]: t`Up`.toLowerCase(),
+					[SystemStatus.Down]: t`Down`.toLowerCase(),
+					[SystemStatus.Paused]: t`Paused`.toLowerCase(),
 				} as const
 
 				// match filter value against name or translated status
@@ -186,7 +186,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 				}
 
 				const max = Math.max(...loadAverages)
-				if (max === 0 && (status === "paused" || minor < 12)) {
+				if (max === 0 && (status === SystemStatus.Paused || minor < 12)) {
 					return null
 				}
 
@@ -197,10 +197,10 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 					<div className="flex items-center gap-[.35em] w-full tabular-nums tracking-tight">
 						<span
 							className={cn("inline-block size-2 rounded-full me-0.5", {
-								[STATUS_COLORS.up]: threshold === MeterState.Good,
-								[STATUS_COLORS.pending]: threshold === MeterState.Warn,
-								[STATUS_COLORS.down]: threshold === MeterState.Crit,
-								[STATUS_COLORS.paused]: status !== "up",
+								[STATUS_COLORS[SystemStatus.Up]]: threshold === MeterState.Good,
+								[STATUS_COLORS[SystemStatus.Pending]]: threshold === MeterState.Warn,
+								[STATUS_COLORS[SystemStatus.Down]]: threshold === MeterState.Crit,
+								[STATUS_COLORS[SystemStatus.Paused]]: status !== SystemStatus.Up,
 							})}
 						/>
 						{loadAverages?.map((la, i) => (
@@ -220,7 +220,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			cell(info) {
 				const sys = info.row.original
 				const userSettings = useStore($userSettings, { keys: ["unitNet"] })
-				if (sys.status === "paused") {
+				if (sys.status === SystemStatus.Paused) {
 					return null
 				}
 				const { value, unit } = formatBytes(info.getValue() as number, true, userSettings.unitNet, false)
@@ -273,9 +273,9 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 						<IndicatorDot
 							system={system}
 							className={
-								(system.status !== "up" && STATUS_COLORS.paused) ||
-								(version === globalThis.BESZEL.HUB_VERSION && STATUS_COLORS.up) ||
-								STATUS_COLORS.pending
+								(system.status !== SystemStatus.Up && STATUS_COLORS[SystemStatus.Paused]) ||
+								(version === globalThis.BESZEL.HUB_VERSION && STATUS_COLORS[SystemStatus.Up]) ||
+								STATUS_COLORS[SystemStatus.Pending]
 							}
 						/>
 						<span className="truncate max-w-14">{info.getValue() as string}</span>
@@ -325,7 +325,7 @@ function TableCellWithMeter(info: CellContext<SystemRecord, unknown>) {
 				<span
 					className={cn(
 						"absolute inset-0 w-full h-full origin-left",
-						(info.row.original.status !== "up" && STATUS_COLORS.paused) ||
+						(info.row.original.status !== SystemStatus.Up && STATUS_COLORS.paused) ||
 							(threshold === MeterState.Good && STATUS_COLORS.up) ||
 							(threshold === MeterState.Warn && STATUS_COLORS.pending) ||
 							STATUS_COLORS.down
@@ -384,11 +384,11 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 							className={cn(isReadOnlyUser() && "hidden")}
 							onClick={() => {
 								pb.collection("systems").update(id, {
-									status: status === "paused" ? "pending" : "paused",
+									status: status === SystemStatus.Paused ? SystemStatus.Pending : SystemStatus.Paused,
 								})
 							}}
 						>
-							{status === "paused" ? (
+							{status === SystemStatus.Paused ? (
 								<>
 									<PlayCircleIcon className="me-2.5 size-4" />
 									<Trans>Resume</Trans>

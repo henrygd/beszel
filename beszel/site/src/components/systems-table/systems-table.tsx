@@ -48,6 +48,7 @@ import { Input } from "../ui/input"
 import { getPagePath } from "@nanostores/router"
 import SystemsTableColumns, { ActionsButton, IndicatorDot } from "./systems-table-columns"
 import AlertButton from "../alerts/alert-button"
+import { SystemStatus } from "@/lib/enums"
 
 type ViewMode = "table" | "grid"
 
@@ -292,7 +293,7 @@ const SystemTableRow = memo(
 				<TableRow
 					// data-state={row.getIsSelected() && "selected"}
 					className={cn("cursor-pointer transition-opacity relative", {
-						"opacity-50": system.status === "paused",
+						"opacity-50": system.status === SystemStatus.Paused,
 					})}
 				>
 					{row.getVisibleCells().map((cell) => (
@@ -324,7 +325,7 @@ const SystemCard = memo(
 					className={cn(
 						"cursor-pointer hover:shadow-md transition-all bg-transparent w-full dark:border-border duration-200 relative",
 						{
-							"opacity-50": system.status === "paused",
+							"opacity-50": system.status === SystemStatus.Paused,
 						}
 					)}
 				>
