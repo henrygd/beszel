@@ -178,7 +178,7 @@ msgstr "Băng thông"
 
 #: src/components/routes/system.tsx
 msgid "Battery"
-msgstr ""
+msgstr "Pin"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -229,12 +229,12 @@ msgstr "Thay đổi các tùy chọn ứng dụng chung."
 
 #: src/components/routes/system.tsx
 msgid "Charge"
-msgstr ""
+msgstr "Sạc"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Charging"
-msgstr ""
+msgstr "Đang sạc"
 
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
@@ -355,7 +355,7 @@ msgstr "Độ nghiêm trọng (%)"
 #. Context: Battery state
 #: src/components/routes/system.tsx
 msgid "Current state"
-msgstr ""
+msgstr "Trạng thái hiện tại"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
@@ -378,7 +378,7 @@ msgstr "Xóa vân tay"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Discharging"
-msgstr ""
+msgstr "Đang xả"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
@@ -447,7 +447,7 @@ msgstr "Thông báo email"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Empty"
-msgstr ""
+msgstr "Hết pin"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -530,7 +530,7 @@ msgstr "Quên mật khẩu?"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Full"
-msgstr ""
+msgstr "Đầy pin"
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx
@@ -559,7 +559,7 @@ msgstr "Máy chủ / IP"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
-msgstr ""
+msgstr "Không hoạt động"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
@@ -1062,7 +1062,7 @@ msgstr "Token chung"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Unknown"
-msgstr ""
+msgstr "Không xác định"
 
 #. Context: System is up
 #: src/components/routes/system.tsx

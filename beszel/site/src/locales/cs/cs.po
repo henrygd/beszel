@@ -178,7 +178,7 @@ msgstr "Přenos"
 
 #: src/components/routes/system.tsx
 msgid "Battery"
-msgstr ""
+msgstr "Baterie"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -229,12 +229,12 @@ msgstr "Změnit obecné nastavení aplikace."
 
 #: src/components/routes/system.tsx
 msgid "Charge"
-msgstr ""
+msgstr "Nabíjení"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Charging"
-msgstr ""
+msgstr "Nabíjení"
 
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
@@ -355,7 +355,7 @@ msgstr "Kritické (%)"
 #. Context: Battery state
 #: src/components/routes/system.tsx
 msgid "Current state"
-msgstr ""
+msgstr "Aktuální stav"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
@@ -378,7 +378,7 @@ msgstr "Smazat identifikátor"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Discharging"
-msgstr ""
+msgstr "Vybíjení"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
@@ -447,7 +447,7 @@ msgstr "Emailová upozornění"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Empty"
-msgstr ""
+msgstr "Prázdná"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -530,7 +530,7 @@ msgstr "Zapomněli jste heslo?"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Full"
-msgstr ""
+msgstr "Plná"
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx
@@ -559,7 +559,7 @@ msgstr "Hostitel / IP"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
-msgstr ""
+msgstr "Neaktivní"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
@@ -1062,7 +1062,7 @@ msgstr "Univerzální token"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Unknown"
-msgstr ""
+msgstr "Neznámá"
 
 #. Context: System is up
 #: src/components/routes/system.tsx

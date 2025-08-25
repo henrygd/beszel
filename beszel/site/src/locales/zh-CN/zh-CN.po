@@ -178,7 +178,7 @@ msgstr "带宽"
 
 #: src/components/routes/system.tsx
 msgid "Battery"
-msgstr ""
+msgstr "电池"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -229,12 +229,12 @@ msgstr "更改常规应用程序选项。"
 
 #: src/components/routes/system.tsx
 msgid "Charge"
-msgstr ""
+msgstr "充电"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Charging"
-msgstr ""
+msgstr "充电中"
 
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
@@ -355,7 +355,7 @@ msgstr "临界 (%)"
 #. Context: Battery state
 #: src/components/routes/system.tsx
 msgid "Current state"
-msgstr ""
+msgstr "当前状态"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
@@ -378,7 +378,7 @@ msgstr "删除指纹"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Discharging"
-msgstr ""
+msgstr "放电中"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
@@ -447,7 +447,7 @@ msgstr "电子邮件通知"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Empty"
-msgstr ""
+msgstr "空电"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -530,7 +530,7 @@ msgstr "忘记密码？"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Full"
-msgstr ""
+msgstr "满电"
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx
@@ -559,7 +559,7 @@ msgstr "主机/IP"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
-msgstr ""
+msgstr "闲置"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
@@ -1062,7 +1062,7 @@ msgstr "通用令牌"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Unknown"
-msgstr ""
+msgstr "未知"
 
 #. Context: System is up
 #: src/components/routes/system.tsx

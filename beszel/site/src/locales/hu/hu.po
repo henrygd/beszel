@@ -178,7 +178,7 @@ msgstr "Sávszélesség"
 
 #: src/components/routes/system.tsx
 msgid "Battery"
-msgstr ""
+msgstr "Akkumulátor"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -229,12 +229,12 @@ msgstr "Általános alkalmazásbeállítások módosítása."
 
 #: src/components/routes/system.tsx
 msgid "Charge"
-msgstr ""
+msgstr "Töltés"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Charging"
-msgstr ""
+msgstr "Töltődik"
 
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
@@ -355,7 +355,7 @@ msgstr "Kritikus (%)"
 #. Context: Battery state
 #: src/components/routes/system.tsx
 msgid "Current state"
-msgstr ""
+msgstr "Jelenlegi állapot"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
@@ -378,7 +378,7 @@ msgstr ""
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Discharging"
-msgstr ""
+msgstr "Kisül"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
@@ -447,7 +447,7 @@ msgstr "E-mail értesítések"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Empty"
-msgstr ""
+msgstr "Üres"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -530,7 +530,7 @@ msgstr "Elfelejtette a jelszavát?"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Full"
-msgstr ""
+msgstr "Tele"
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx
@@ -559,7 +559,7 @@ msgstr "Állomás / IP"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
-msgstr ""
+msgstr "Tétlen"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
@@ -1062,7 +1062,7 @@ msgstr ""
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Unknown"
-msgstr ""
+msgstr "Ismeretlen"
 
 #. Context: System is up
 #: src/components/routes/system.tsx

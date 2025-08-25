@@ -178,7 +178,7 @@ msgstr "Пропускная способность"
 
 #: src/components/routes/system.tsx
 msgid "Battery"
-msgstr ""
+msgstr "Батарея"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -229,12 +229,12 @@ msgstr "Изменить общие параметры приложения."
 
 #: src/components/routes/system.tsx
 msgid "Charge"
-msgstr ""
+msgstr "Заряд"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Charging"
-msgstr ""
+msgstr "Заряжается"
 
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
@@ -355,7 +355,7 @@ msgstr "Критический (%)"
 #. Context: Battery state
 #: src/components/routes/system.tsx
 msgid "Current state"
-msgstr ""
+msgstr "Текущее состояние"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
@@ -378,7 +378,7 @@ msgstr "Удалить отпечаток"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Discharging"
-msgstr ""
+msgstr "Разряжается"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
@@ -447,7 +447,7 @@ msgstr "Уведомления по электронной почте"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Empty"
-msgstr ""
+msgstr "Пустая"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -530,7 +530,7 @@ msgstr "Забыли пароль?"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Full"
-msgstr ""
+msgstr "Полная"
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx
@@ -559,7 +559,7 @@ msgstr "Хост / IP"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
-msgstr ""
+msgstr "Неактивная"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
@@ -1062,7 +1062,7 @@ msgstr "Универсальный токен"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Unknown"
-msgstr ""
+msgstr "Неизвестная"
 
 #. Context: System is up
 #: src/components/routes/system.tsx
