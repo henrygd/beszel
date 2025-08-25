@@ -101,6 +101,7 @@
 
 .recharts-tooltip-wrapper {
 	z-index: 1;
+	@apply tabular-nums;
 }
 
 .recharts-yAxis {

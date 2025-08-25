@@ -1,5 +1,5 @@
 import { RecordModel } from "pocketbase"
-import { Unit, Os } from "./lib/enums"
+import { Unit, Os, BatteryState } from "./lib/enums"
 
 // global window properties
 declare global {
@@ -136,6 +136,8 @@ export interface SystemStats {
 	efs?: Record<string, ExtraFsStats>
 	/** GPU data */
 	g?: Record<string, GPUData>
+	/** battery percent and state */
+	bat?: [number, BatteryState]
 }
 
 export interface GPUData {

@@ -36,3 +36,13 @@ export enum SystemStatus {
 	Pending = "pending",
 	Paused = "paused",
 }
+
+/** Battery state */
+export enum BatteryState {
+	Unknown,
+	Empty,
+	Full,
+	Charging,
+	Discharging,
+	Idle,
+}

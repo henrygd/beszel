@@ -59,16 +59,28 @@ func (a *Agent) initializeSystemInfo() {
 	}
 
 	// zfs
-	if _, err := getARCSize(); err == nil {
-		a.zfs = true
-	} else {
+	if _, err := getARCSize(); err != nil {
 		slog.Debug("Not monitoring ZFS ARC", "err", err)
+	} else {
+		a.zfs = true
+	}
+
+	// battery
+	if _, _, err := getBatteryStats(); err != nil {
+		slog.Debug("No battery detected", "err", err)
+	} else {
+		a.hasBattery = true
 	}
 }
 
 // Returns current info, stats about the host system
 func (a *Agent) getSystemStats() system.Stats {
 	systemStats := system.Stats{}
+
+	// battery
+	if a.hasBattery {
+		systemStats.Battery[0], systemStats.Battery[1], _ = getBatteryStats()
+	}
 
 	// cpu percent
 	cpuPct, err := cpu.Percent(0, false)
@@ -80,7 +92,6 @@ func (a *Agent) getSystemStats() system.Stats {
 
 	// load average
 	if avgstat, err := load.Avg(); err == nil {
-		// TODO: remove these in future release in favor of load avg array
 		systemStats.LoadAvg[0] = avgstat.Load1
 		systemStats.LoadAvg[1] = avgstat.Load5
 		systemStats.LoadAvg[2] = avgstat.Load15

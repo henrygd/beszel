@@ -18,6 +18,7 @@ export default function AreaChartDefault({
 	tickFormatter,
 	contentFormatter,
 	dataPoints,
+	domain,
 }: // logRender = false,
 {
 	chartData: ChartData
@@ -26,6 +27,7 @@ export default function AreaChartDefault({
 	tickFormatter: (value: number, index: number) => string
 	contentFormatter: ({ value, payload }: { value: number; payload: SystemStatsRecord }) => string
 	dataPoints?: DataPoint[]
+	domain?: [number, number]
 	// logRender?: boolean
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
@@ -51,7 +53,7 @@ export default function AreaChartDefault({
 							orientation={chartData.orientation}
 							className="tracking-tighter"
 							width={yAxisWidth}
-							domain={[0, max ?? "auto"]}
+							domain={domain ?? [0, max ?? "auto"]}
 							tickFormatter={(value, index) => updateYAxisWidth(tickFormatter(value, index))}
 							tickLine={false}
 							axisLine={false}

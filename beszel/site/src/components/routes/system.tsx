@@ -41,6 +41,7 @@ import { timeTicks } from "d3-time"
 import { useLingui } from "@lingui/react/macro"
 import { $router, navigate } from "../router"
 import { getPagePath } from "@nanostores/router"
+import { batteryStateTranslations } from "@/lib/i18n"
 
 const AreaChartDefault = lazy(() => import("../charts/area-chart"))
 const ContainerChart = lazy(() => import("../charts/container-chart"))
@@ -665,6 +666,35 @@ export default function SystemDetail({ name }: { name: string }) {
 							cornerEl={<FilterBar store={$temperatureFilter} />}
 						>
 							<TemperatureChart chartData={chartData} />
+						</ChartCard>
+					)}
+
+					{/* Battery chart */}
+					{systemStats.at(-1)?.stats.bat && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Battery`}
+							description={`${t({
+								message: "Current state",
+								comment: "Context: Battery state",
+							})}: ${batteryStateTranslations[systemStats.at(-1)?.stats.bat![1] ?? 0]()}`}
+						>
+							<AreaChartDefault
+								chartData={chartData}
+								maxToggled={maxValues}
+								dataPoints={[
+									{
+										label: t`Charge`,
+										dataKey: ({ stats }) => stats?.bat?.[0],
+										color: "1",
+										opacity: 0.35,
+									},
+								]}
+								domain={[0, 100]}
+								tickFormatter={(val) => `${val}%`}
+								contentFormatter={({ value }) => `${value}%`}
+							/>
 						</ChartCard>
 					)}
 
