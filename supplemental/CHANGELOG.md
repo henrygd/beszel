@@ -14,6 +14,8 @@
 
 - Update Go and JS dependencies.
 
+- New translations by @Radotornado, @AlexVanSteenhoven, @harupong, @dymek37, Tommaso Cavazza, Caio Garcia, and others.
+
 ## Older
 
 Release notes are available at https://github.com/henrygd/beszel/releases
