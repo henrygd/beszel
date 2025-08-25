@@ -8,7 +8,7 @@ msgstr ""
 "Language: ja\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-07-25 22:44\n"
+"PO-Revision-Date: 2025-08-25 01:15\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -213,7 +213,7 @@ msgstr "注意 - データ損失の可能性"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr "セルシウス (°C)"
+msgstr "摂氏 (°C)"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -298,7 +298,7 @@ msgstr "Linuxコマンドをコピー"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
-msgstr "名前をコピー"
+msgstr "名前をコピーする"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
@@ -337,7 +337,7 @@ msgstr "作成日"
 
 #: src/components/routes/settings/general.tsx
 msgid "Critical (%)"
-msgstr "クリティカル (%)"
+msgstr "致命的 (%)"
 
 #. Dark theme
 #: src/components/mode-toggle.tsx
@@ -839,7 +839,7 @@ msgstr "送信"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
-msgstr "メーターの色にパーセンテージのしきい値を設定します。"
+msgstr "メーターの色を変更するしきい値（パーセンテージ）を設定します。"
 
 #: src/components/routes/settings/general.tsx
 msgid "Sets the default time range for charts when a system is viewed."
@@ -1131,3 +1131,4 @@ msgstr "YAML設定"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "ユーザー設定が更新されました。"
+

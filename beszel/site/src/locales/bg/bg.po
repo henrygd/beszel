@@ -8,7 +8,7 @@ msgstr ""
 "Language: bg\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-07-25 22:44\n"
+"PO-Revision-Date: 2025-08-25 01:16\n"
 "Last-Translator: \n"
 "Language-Team: Bulgarian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -27,7 +27,7 @@ msgstr "{0, plural, one {# ден} other {# дни}}"
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
-msgstr ""
+msgstr "{0} от {1} селектирани."
 
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
@@ -40,7 +40,7 @@ msgstr "1 час"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr ""
+msgstr "1 минута"
 
 #: src/lib/utils.ts
 msgid "1 week"
@@ -53,7 +53,7 @@ msgstr "12 часа"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr ""
+msgstr "15 минути"
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -66,7 +66,7 @@ msgstr "30 дни"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr ""
+msgstr "5 минути"
 
 #. Table column
 #: src/components/systems-table/systems-table-columns.tsx
@@ -77,7 +77,7 @@ msgstr "Действия"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Active"
-msgstr ""
+msgstr "Активен"
 
 #: src/components/routes/home.tsx
 msgid "Active Alerts"
@@ -116,7 +116,7 @@ msgstr "Агент"
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Alert History"
-msgstr ""
+msgstr "История на нотификациите"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alert-button.tsx
@@ -134,7 +134,7 @@ msgstr "Сигурен ли си, че искаш да изтриеш {name}?"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
-msgstr ""
+msgstr "Сигурни ли сте?"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -191,12 +191,12 @@ msgstr "Двоичен код"
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr ""
+msgstr "Бита (Kbps, Mbps, Gbps)"
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
-msgstr ""
+msgstr "Байта (KB/s, MB/s, GB/s)"
 
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
@@ -213,11 +213,11 @@ msgstr "Внимание - възможност за загуба на данн�
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr ""
+msgstr "Целзий (°C)"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
-msgstr ""
+msgstr "Промяна на единиците за показване на метриките."
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
@@ -259,7 +259,7 @@ msgstr "Потвърди парола"
 
 #: src/components/routes/home.tsx
 msgid "Connection is down"
-msgstr ""
+msgstr "Връзката е прекъсната"
 
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -285,7 +285,7 @@ msgstr "Копирай docker run"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Environment variables"
 msgid "Copy env"
-msgstr ""
+msgstr "Копирай еnv"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
@@ -306,15 +306,15 @@ msgstr "Копирай текста"
 
 #: src/components/add-system.tsx
 msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
-msgstr ""
+msgstr "Копирайте командата за инсталиране на агента по-долу или регистрирайте агентите автоматично с <0>универсален токен</0>."
 
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
-msgstr ""
+msgstr "Копирайте съдържанието на<0>docker-compose.yml</0> за агента по-долу или регистрирайте агентите автоматично с <1>универсален токен</1>."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
-msgstr ""
+msgstr "Копирай YAML"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
@@ -333,7 +333,7 @@ msgstr "Създай акаунт"
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
 msgid "Created"
-msgstr ""
+msgstr "Създаден"
 
 #: src/components/routes/settings/general.tsx
 msgid "Critical (%)"
@@ -360,7 +360,7 @@ msgstr "Изтрий"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
-msgstr ""
+msgstr "Изтрий пръстов отпечатък"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
@@ -372,7 +372,7 @@ msgstr "Диск I/O"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
-msgstr ""
+msgstr "Единица за диск"
 
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
@@ -406,16 +406,16 @@ msgstr "Документация"
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Down"
-msgstr ""
+msgstr "Офлайн"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
-msgstr ""
+msgstr "Продължителност"
 
 #: src/components/add-system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
-msgstr ""
+msgstr "Редактирай"
 
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/auth-form.tsx
@@ -455,7 +455,7 @@ msgstr "Съществуващи системи които не са дефин�
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
-msgstr ""
+msgstr "Експортиране"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
@@ -467,7 +467,7 @@ msgstr "Експортирай конфигурацията на системи�
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr ""
+msgstr "Фаренхайт (°F)"
 
 #: src/lib/utils.ts
 msgid "Failed to authenticate"
@@ -494,7 +494,7 @@ msgstr "Филтрирай..."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
-msgstr ""
+msgstr "Пръстов отпечатък"
 
 #: src/components/alerts/alerts-system.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -556,24 +556,24 @@ msgstr "Светъл"
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
-msgstr ""
+msgstr "Средно натоварване"
 
 #: src/lib/utils.ts
 msgid "Load Average 15m"
-msgstr ""
+msgstr "Средно натоварване 15 минути"
 
 #: src/lib/utils.ts
 msgid "Load Average 1m"
-msgstr ""
+msgstr "Средно натоварване 1 минута"
 
 #: src/lib/utils.ts
 msgid "Load Average 5m"
-msgstr ""
+msgstr "Средно натоварване 5 минути"
 
 #. Short label for load average
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
-msgstr ""
+msgstr "Средно натоварване"
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -603,7 +603,7 @@ msgstr "Управление на предпочитанията за показ
 
 #: src/components/add-system.tsx
 msgid "Manual setup instructions"
-msgstr ""
+msgstr "Инструкции за ръчна настройка"
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx
@@ -643,7 +643,7 @@ msgstr "Мрежов трафик на публични интерфейси"
 #. Context: Bytes or bits
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
-msgstr ""
+msgstr "Единица за измерване на скорост"
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -651,7 +651,7 @@ msgstr "Няма намерени резултати."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "No results."
-msgstr ""
+msgstr "Няма резултати."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -694,7 +694,7 @@ msgstr "Страница"
 #. placeholder {1}: table.getPageCount()
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Page {0} of {1}"
-msgstr ""
+msgstr "Страница {0} от {1}"
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
@@ -711,7 +711,7 @@ msgstr "Паролата трябва да е поне 8 символа."
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
-msgstr ""
+msgstr "Паролата трябва да е по-малка от 72 байта."
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"
@@ -794,7 +794,7 @@ msgstr "Нулиране на парола"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Resolved"
-msgstr ""
+msgstr "Решен"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
@@ -802,11 +802,11 @@ msgstr "Възобнови"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
-msgstr ""
+msgstr "Пресъздаване на идентификатора"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
-msgstr ""
+msgstr "Редове на страница"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -819,7 +819,7 @@ msgstr "Запази настройките"
 
 #: src/components/add-system.tsx
 msgid "Save system"
-msgstr ""
+msgstr "Запази система"
 
 #: src/components/navbar.tsx
 msgid "Search"
@@ -871,7 +871,7 @@ msgstr "Сортиране по"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 msgid "State"
-msgstr ""
+msgstr "Състояние"
 
 #: src/lib/utils.ts
 msgid "Status"
@@ -896,7 +896,7 @@ msgstr "Система"
 
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
-msgstr ""
+msgstr "Средно натоварване на системата във времето"
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -913,7 +913,7 @@ msgstr "Таблица"
 #. Temperature label in systems table
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
-msgstr ""
+msgstr "Температура"
 
 #: src/lib/utils.ts
 #: src/components/routes/system.tsx
@@ -922,7 +922,7 @@ msgstr "Температура"
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"
-msgstr ""
+msgstr "Единица за температура"
 
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
@@ -946,7 +946,7 @@ msgstr "Това действие не може да бъде отменено. 
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
-msgstr ""
+msgstr "Това ще доведе до трайно изтриване на всички избрани записи от базата данни."
 
 #: src/components/routes/system.tsx
 msgid "Throughput of {extraFsName}"
@@ -972,33 +972,33 @@ msgstr "Включи тема"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr ""
+msgstr "Токен"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Tokens & Fingerprints"
-msgstr ""
+msgstr "Токен & Пръстов отпечатък"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
-msgstr ""
+msgstr "Токените позволяват на агентите да се свързват и регистрират. Отпечатъците са стабилни идентификатори, уникални за всяка система, които се задават при първото свързване."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
-msgstr ""
+msgstr "Токените и пръстовите отпечатъци се използват за удостоверяване на WebSocket връзките към концентратора."
 
 #: src/lib/utils.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Задейства се, когато употребата на паметта за 1 минута надвиши зададен праг"
 
 #: src/lib/utils.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Задейства се, когато употребата на паметта за 15 минута надвиши зададен праг"
 
 #: src/lib/utils.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Задейства се, когато употребата на паметта за 5 минута надвиши зададен праг"
 
 #: src/lib/utils.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -1027,17 +1027,17 @@ msgstr "Задейства се, когато употребата на няко
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
-msgstr ""
+msgstr "Предпочитания на единицата"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
-msgstr ""
+msgstr "Универсален тоукън"
 
 #. Context: System is up
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
 msgid "Up"
-msgstr ""
+msgstr "Нагоре"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Updated in real time. Click on a system to view information."
@@ -1070,7 +1070,7 @@ msgstr "Потребители"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
-msgstr ""
+msgstr "Стойност"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
@@ -1078,7 +1078,7 @@ msgstr "Изглед"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
-msgstr ""
+msgstr "Прегледайте последните си 200 сигнала."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
@@ -1106,7 +1106,7 @@ msgstr "Webhook / Пуш нотификации"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
-msgstr ""
+msgstr "Когато е активиран, този символ позволява на агентите да се регистрират сами без предварително създаване на система. Изтича след един час или при рестартиране на хъба."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1131,3 +1131,4 @@ msgstr "YAML конфигурация"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Настройките за потребителя ти са обновени."
+
