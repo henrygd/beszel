@@ -8,7 +8,7 @@ msgstr ""
 "Language: it\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-07-25 22:44\n"
+"PO-Revision-Date: 2025-08-25 01:16\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -27,7 +27,7 @@ msgstr "{0, plural, one {# giorno} other {# giorni}}"
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
-msgstr ""
+msgstr "{0} di {1} righe selezionate."
 
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
@@ -40,7 +40,7 @@ msgstr "1 ora"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr ""
+msgstr "1 min"
 
 #: src/lib/utils.ts
 msgid "1 week"
@@ -53,7 +53,7 @@ msgstr "12 ore"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr ""
+msgstr "15 min"
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -66,7 +66,7 @@ msgstr "30 giorni"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr ""
+msgstr "5 min"
 
 #. Table column
 #: src/components/systems-table/systems-table-columns.tsx
@@ -77,7 +77,7 @@ msgstr "Azioni"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Active"
-msgstr ""
+msgstr "Attivo"
 
 #: src/components/routes/home.tsx
 msgid "Active Alerts"
@@ -116,7 +116,7 @@ msgstr "Agente"
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Alert History"
-msgstr ""
+msgstr "Cronologia Avvisi"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alert-button.tsx
@@ -134,7 +134,7 @@ msgstr "Sei sicuro di voler eliminare {name}?"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
-msgstr ""
+msgstr "Sei sicuro?"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -455,7 +455,7 @@ msgstr "I sistemi esistenti non definiti in <0>config.yml</0> verranno eliminati
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
-msgstr ""
+msgstr "Esporta"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
@@ -556,7 +556,7 @@ msgstr "Chiaro"
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
-msgstr ""
+msgstr "Carico medio"
 
 #: src/lib/utils.ts
 msgid "Load Average 15m"
@@ -564,7 +564,7 @@ msgstr "Caricamento medio 15m"
 
 #: src/lib/utils.ts
 msgid "Load Average 1m"
-msgstr ""
+msgstr "Caricamento medio 1m"
 
 #: src/lib/utils.ts
 msgid "Load Average 5m"
@@ -573,7 +573,7 @@ msgstr "Caricamento medio 5m"
 #. Short label for load average
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
-msgstr ""
+msgstr "Carico Medio"
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -651,7 +651,7 @@ msgstr "Nessun risultato trovato."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "No results."
-msgstr ""
+msgstr "Nessun risultato."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -694,7 +694,7 @@ msgstr "Pagina"
 #. placeholder {1}: table.getPageCount()
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Page {0} of {1}"
-msgstr ""
+msgstr "Pagina {0} di {1}"
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
@@ -1131,3 +1131,4 @@ msgstr "Configurazione YAML"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Le impostazioni utente sono state aggiornate."
+
