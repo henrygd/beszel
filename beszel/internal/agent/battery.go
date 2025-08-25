@@ -8,17 +8,17 @@ func getBatteryStats() (batteryPercent uint8, batteryState uint8, err error) {
 	if err != nil {
 		return batteryPercent, batteryState, err
 	}
-	batteriesTotalCapacity := float64(0)
-	batteriesTotalCharge := float64(0)
+	totalCapacity := float64(0)
+	totalCharge := float64(0)
 	for _, bat := range batteries {
-		full := bat.Design
-		if full == 0 {
-			full = bat.Full
+		if bat.Design != 0 {
+			totalCapacity += bat.Design
+		} else {
+			totalCapacity += bat.Full
 		}
-		batteriesTotalCapacity += full
-		batteriesTotalCharge += bat.Current
+		totalCharge += bat.Current
 	}
-	batteryPercent = uint8(batteriesTotalCharge / batteriesTotalCapacity * 100)
+	batteryPercent = uint8(totalCharge / totalCapacity * 100)
 	batteryState = uint8(batteries[0].State.Raw)
 	return batteryPercent, batteryState, nil
 }
