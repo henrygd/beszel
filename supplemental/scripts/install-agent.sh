@@ -542,9 +542,7 @@ depend() {
 
 start() {
     ebegin "Checking for beszel-agent updates"
-    if /opt/beszel-agent/beszel-agent update | grep -q "Successfully updated"; then
-        rc-service beszel-agent restart
-    fi
+    /opt/beszel-agent/beszel-agent update
     eend $?
 }
 EOF
@@ -687,36 +685,7 @@ EOF
   systemctl enable beszel-agent.service
   systemctl start beszel-agent.service
 
-  # Create the update script
-  echo "Creating the update script..."
-  cat >/opt/beszel-agent/run-update.sh <<'EOF'
-#!/bin/sh
 
-set -e
-
-if /opt/beszel-agent/beszel-agent update | grep -q "Successfully updated"; then
-    echo "Update found, checking SELinux context."
-    if command -v getenforce >/dev/null 2>&1 && [ "$(getenforce)" != "Disabled" ]; then
-        echo "SELinux enabled, applying context..."
-        if command -v chcon >/dev/null 2>&1; then
-            chcon -t bin_t /opt/beszel-agent/beszel-agent || echo "Warning: chcon command failed to apply context."
-        fi
-        if command -v restorecon >/dev/null 2>&1; then
-            restorecon -v /opt/beszel-agent/beszel-agent >/dev/null 2>&1 || echo "Warning: restorecon command failed to apply context."
-        fi
-    fi
-    echo "Restarting beszel-agent service..."
-    systemctl restart beszel-agent
-    echo "Update process finished."
-else
-    echo "No updates found or applied."
-fi
-
-exit 0
-EOF
-
-  chown root:root /opt/beszel-agent/run-update.sh
-  chmod +x /opt/beszel-agent/run-update.sh
 
   # Prompt for auto-update setup
   if [ "$AUTO_UPDATE_FLAG" = "true" ]; then
@@ -741,7 +710,7 @@ Wants=beszel-agent.service
 
 [Service]
 Type=oneshot
-ExecStart=/opt/beszel-agent/run-update.sh
+ExecStart=/opt/beszel-agent/beszel-agent update
 EOF
 
     # Create systemd timer for the daily update
