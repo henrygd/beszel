@@ -269,7 +269,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 				}
 				const system = info.row.original
 				return (
-					<span className={cn("flex gap-2 items-center md:pe-5 tabular-nums", viewMode === "table" && "ps-0.5")}>
+					<span className={cn("flex gap-1.5 items-center md:pe-5 tabular-nums", viewMode === "table" && "ps-0.5")}>
 						<IndicatorDot
 							system={system}
 							className={

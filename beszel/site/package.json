@@ -43,7 +43,7 @@
 		"react": "^19.1.1",
 		"react-dom": "^19.1.1",
 		"recharts": "^2.15.4",
-		"tailwind-merge": "^2.6.0",
+		"tailwind-merge": "^3.3.1",
 		"valibot": "^0.42.1"
 	},
 	"devDependencies": {
@@ -51,17 +51,15 @@
 		"@lingui/swc-plugin": "^5.6.1",
 		"@lingui/vite-plugin": "^5.4.1",
 		"@tailwindcss/container-queries": "^0.1.1",
-		"@tailwindcss/postcss": "^4.1.12",
+		"@tailwindcss/vite": "^4.1.12",
 		"@types/bun": "^1.2.20",
-		"@types/react": "^18.3.24",
-		"@types/react-dom": "^18.3.7",
-		"@vitejs/plugin-react-swc": "^3.11.0",
-		"postcss": "^8.5.6",
+		"@types/react": "^19.1.11",
+		"@types/react-dom": "^19.1.7",
+		"@vitejs/plugin-react-swc": "^4.0.1",
 		"tailwindcss": "^4.1.12",
-		"tailwindcss-rtl": "^0.9.0",
 		"tw-animate-css": "^1.3.7",
 		"typescript": "^5.9.2",
-		"vite": "^6.3.5"
+		"vite": "^7.1.3"
 	},
 	"overrides": {
 		"@nanostores/router": {

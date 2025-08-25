@@ -70,7 +70,7 @@ export default function AreaChartDefault({
 							}
 						/>
 						{dataPoints?.map((dataPoint, i) => {
-							const color = `hsl(var(--chart-${dataPoint.color}))`
+							const color = `var(--chart-${dataPoint.color})`
 							return (
 								<Area
 									key={i}

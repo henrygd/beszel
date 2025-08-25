@@ -14,7 +14,7 @@ import { alertInfo } from "@/lib/alerts"
 
 const SystemsTable = lazy(() => import("../systems-table/systems-table"))
 
-export const Home = memo(() => {
+export default memo(function () {
 	const { t } = useLingui()
 
 	useEffect(() => {
@@ -106,7 +106,7 @@ const ActiveAlerts = () => {
 								return (
 									<Alert
 										key={alert.id}
-										className="hover:-translate-y-px duration-200 bg-transparent border-foreground/10  hover:shadow-md shadow-black"
+										className="hover:-translate-y-px duration-200 bg-transparent border-foreground/10 hover:shadow-md shadow-black/5"
 									>
 										<info.icon className="h-4 w-4" />
 										<AlertTitle>
