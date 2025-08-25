@@ -69,8 +69,8 @@ msgid "5 min"
 msgstr ""
 
 #. Table column
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "Aðgerðir"
 
@@ -113,18 +113,18 @@ msgid "Agent"
 msgstr ""
 
 #: src/components/command-palette.tsx
-#: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/layout.tsx
 msgid "Alert History"
 msgstr ""
 
 #: src/components/alerts/alert-button.tsx
-#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Alerts"
 msgstr "Tilkynningar"
 
+#: src/components/alerts/alerts-sheet.tsx
 #: src/components/systems-table/systems-table.tsx
-#: src/components/alerts/alert-button.tsx
 msgid "All Systems"
 msgstr "Öll kerfi"
 
@@ -148,8 +148,8 @@ msgstr "Meðal"
 msgid "Average CPU utilization of containers"
 msgstr "Meðal örgjörva notkun container-a."
 
-#. placeholder {0}: data.alert.unit
-#: src/components/alerts/alerts-system.tsx
+#. placeholder {0}: alertData.unit
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Meðaltal er yfir <0>{value}{0}</0>"
 
@@ -166,15 +166,19 @@ msgstr "Meðal nýting örgjörva yfir allt kerfið"
 msgid "Average utilization of {0}"
 msgstr "Meðal notkun af {0}"
 
-#: src/components/navbar.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 msgid "Backups"
 msgstr "Öryggisafrit"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Bandwidth"
 msgstr "Gangnaflutningsgeta"
+
+#: src/components/routes/system.tsx
+msgid "Battery"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -202,8 +206,8 @@ msgstr ""
 msgid "Cache / Buffers"
 msgstr "Skyndiminni / Biðminni"
 
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "Hætta við"
 
@@ -222,6 +226,15 @@ msgstr ""
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
 msgstr "Breyta almennum stillingum."
+
+#: src/components/routes/system.tsx
+msgid "Charge"
+msgstr ""
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Charging"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
@@ -261,8 +274,8 @@ msgstr "Staðfestu lykilorð"
 msgid "Connection is down"
 msgstr ""
 
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
 msgstr "Halda áfram"
 
@@ -320,9 +333,9 @@ msgstr ""
 msgid "CPU"
 msgstr "Örgjörvi"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "CPU Usage"
 msgstr "Örgjörva notkun"
 
@@ -339,10 +352,10 @@ msgstr ""
 msgid "Critical (%)"
 msgstr "Kritískt (%)"
 
-#. Dark theme
-#: src/components/mode-toggle.tsx
-msgid "Dark"
-msgstr "Dökkt"
+#. Context: Battery state
+#: src/components/routes/system.tsx
+msgid "Current state"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
@@ -353,13 +366,18 @@ msgstr "Yfirlitssíða"
 msgid "Default time period"
 msgstr "Sjálfgefið tímabil"
 
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "Eyða"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
+msgstr ""
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Discharging"
 msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
@@ -374,9 +392,9 @@ msgstr ""
 msgid "Disk unit"
 msgstr ""
 
-#: src/lib/utils.ts
-#: src/components/routes/system.tsx
 #: src/components/charts/disk-chart.tsx
+#: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Disk Usage"
 msgstr "Diskanotkun"
 
@@ -401,10 +419,10 @@ msgid "Documentation"
 msgstr "Skjal"
 
 #. Context: System is down
-#: src/lib/utils.ts
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
 msgid "Down"
 msgstr ""
 
@@ -417,14 +435,19 @@ msgstr ""
 msgid "Edit"
 msgstr ""
 
-#: src/components/login/forgot-pass-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
 msgid "Email"
 msgstr "Netfang"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
 msgstr "Tilkynningar í tölvupósti"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Empty"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -434,11 +457,11 @@ msgstr "Settu netfang til að endursetja lykilorð"
 msgid "Enter email address..."
 msgstr "Settu inn Netfang..."
 
-#: src/components/routes/settings/tokens-fingerprints.tsx
-#: src/components/routes/settings/notifications.tsx
-#: src/components/routes/settings/config-yaml.tsx
-#: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/config-yaml.tsx
+#: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Error"
 msgstr "Villa"
 
@@ -473,8 +496,8 @@ msgstr ""
 msgid "Failed to authenticate"
 msgstr "Villa í auðkenningu"
 
-#: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/notifications.tsx
 msgid "Failed to save settings"
 msgstr "Villa við að vista stillingar"
 
@@ -482,13 +505,13 @@ msgstr "Villa við að vista stillingar"
 msgid "Failed to send test notification"
 msgstr "Villa í sendingu prufu skilaboða"
 
-#: src/components/alerts/alerts-system.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Failed to update alert"
 msgstr "Mistókst að uppfæra tilkynningu"
 
-#: src/components/systems-table/systems-table.tsx
-#: src/components/routes/system.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Sía..."
 
@@ -496,7 +519,7 @@ msgstr "Sía..."
 msgid "Fingerprint"
 msgstr ""
 
-#: src/components/alerts/alerts-system.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr ""
 
@@ -504,9 +527,14 @@ msgstr ""
 msgid "Forgot password?"
 msgstr "Gleymt lykilorð?"
 
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Full"
+msgstr ""
+
 #. Context: General settings
-#: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/layout.tsx
 msgid "General"
 msgstr "Almennt"
 
@@ -527,6 +555,11 @@ msgstr "Homebrew skipun"
 #: src/components/add-system.tsx
 msgid "Host / IP"
 msgstr "Host / IP"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Idle"
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
@@ -549,24 +582,19 @@ msgstr "Tungumál"
 msgid "Layout"
 msgstr ""
 
-#. Light theme
-#: src/components/mode-toggle.tsx
-msgid "Light"
-msgstr "Ljóst"
-
 #: src/components/routes/system.tsx
 msgid "Load Average"
 msgstr ""
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Load Average 15m"
 msgstr ""
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Load Average 1m"
 msgstr ""
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Load Average 5m"
 msgstr ""
 
@@ -583,13 +611,13 @@ msgstr "Útskrá"
 msgid "Login"
 msgstr "Innskrá"
 
-#: src/components/login/forgot-pass-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
 msgid "Login attempt failed"
 msgstr "Innskránings tilraun misheppnaðist"
 
-#: src/components/navbar.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 msgid "Logs"
 msgstr "Loggar"
 
@@ -614,8 +642,8 @@ msgstr "Mest 1 mínúta"
 msgid "Memory"
 msgstr "Minni"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Memory Usage"
 msgstr "Minnisnotkun"
 
@@ -623,8 +651,8 @@ msgstr "Minnisnotkun"
 msgid "Memory usage of docker containers"
 msgstr "Minnisnotkun docker kerfa"
 
-#: src/components/alerts-history-columns.tsx
 #: src/components/add-system.tsx
+#: src/components/alerts-history-columns.tsx
 msgid "Name"
 msgstr "Nafn"
 
@@ -659,8 +687,8 @@ msgid "No systems found."
 msgstr "Engin kerfi fundust."
 
 #: src/components/command-palette.tsx
-#: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
 msgstr "Tilkynningar"
 
@@ -672,9 +700,9 @@ msgstr "OAuth 2 / OIDC stuðningur"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr ""
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
 msgstr "Opna valmynd"
 
@@ -682,7 +710,7 @@ msgstr "Opna valmynd"
 msgid "Or continue with"
 msgstr "Eða halda áfram með"
 
-#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "Yfirskrifa núverandi tilkynningu"
 
@@ -729,12 +757,12 @@ msgstr "Í bið"
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr ""
 
-#: src/components/alerts/alerts-system.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Please check logs for more details."
 msgstr "Skoðaðu logga til að sjá meiri upplýsingar."
 
-#: src/components/login/forgot-pass-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
 msgid "Please check your credentials and try again"
 msgstr "Vinsamlegast farðu yfir upplýsingarnar þínar og reyndu aftur"
 
@@ -812,8 +840,8 @@ msgstr ""
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr ""
 
-#: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "Vista stillingar"
 
@@ -829,7 +857,7 @@ msgstr "Leita"
 msgid "Search for systems or settings..."
 msgstr "Leita að kerfum eða stillingum..."
 
-#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr ""
 
@@ -873,7 +901,7 @@ msgstr "Raða eftir"
 msgid "State"
 msgstr ""
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Status"
 msgstr "Staða"
 
@@ -885,12 +913,10 @@ msgstr ""
 msgid "Swap Usage"
 msgstr "Skipti minni"
 
-#. System theme
-#: src/lib/utils.ts
-#: src/components/mode-toggle.tsx
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
 msgid "System"
 msgstr "Kerfi"
 
@@ -915,8 +941,8 @@ msgstr "Tafla"
 msgid "Temp"
 msgstr ""
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Temperature"
 msgstr "Hitastig"
 
@@ -975,8 +1001,8 @@ msgid "Token"
 msgstr ""
 
 #: src/components/command-palette.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens & Fingerprints"
 msgstr ""
 
@@ -988,39 +1014,39 @@ msgstr ""
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr ""
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
 msgstr ""
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
 msgstr ""
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr ""
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Virkjast þegar einhver skynjari fer yfir þröskuld"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Virkjast þegar samanlagt sent/móttekið fer yfir þröskuld"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Virkjast þegar örgjörva notkun fer yfir þröskuld"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Virkjast þegar minnisnotkun fer yfir þröskuld"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"
 msgstr "Virkjast þegar staða breytist milli virkur og óvirkur"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Virkjast þegar diska notkun fer yfir þröskuld"
 
@@ -1033,9 +1059,14 @@ msgstr ""
 msgid "Universal token"
 msgstr ""
 
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Unknown"
+msgstr ""
+
 #. Context: System is up
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
 msgstr ""
 
@@ -1058,13 +1089,13 @@ msgstr ""
 msgid "Usage of root partition"
 msgstr ""
 
-#: src/components/charts/swap-chart.tsx
 #: src/components/charts/mem-chart.tsx
+#: src/components/charts/swap-chart.tsx
 msgid "Used"
 msgstr "Notað"
 
-#: src/components/navbar.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 msgid "Users"
 msgstr "Notendur"
 

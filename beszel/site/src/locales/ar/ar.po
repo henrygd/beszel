@@ -69,8 +69,8 @@ msgid "5 min"
 msgstr "5 دقائق"
 
 #. Table column
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "إجراءات"
 
@@ -113,18 +113,18 @@ msgid "Agent"
 msgstr "وكيل"
 
 #: src/components/command-palette.tsx
-#: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/layout.tsx
 msgid "Alert History"
 msgstr "سجل التنبيهات"
 
 #: src/components/alerts/alert-button.tsx
-#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Alerts"
 msgstr "التنبيهات"
 
+#: src/components/alerts/alerts-sheet.tsx
 #: src/components/systems-table/systems-table.tsx
-#: src/components/alerts/alert-button.tsx
 msgid "All Systems"
 msgstr "جميع الأنظمة"
 
@@ -148,8 +148,8 @@ msgstr "متوسط"
 msgid "Average CPU utilization of containers"
 msgstr "متوسط استخدام وحدة المعالجة المركزية للحاويات"
 
-#. placeholder {0}: data.alert.unit
-#: src/components/alerts/alerts-system.tsx
+#. placeholder {0}: alertData.unit
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "المتوسط يتجاوز <0>{value}{0}</0>"
 
@@ -166,15 +166,19 @@ msgstr "متوسط استخدام وحدة المعالجة المركزية ع�
 msgid "Average utilization of {0}"
 msgstr "متوسط ​​استخدام {0}"
 
-#: src/components/navbar.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 msgid "Backups"
 msgstr "النسخ الاحتياطية"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Bandwidth"
 msgstr "عرض النطاق الترددي"
+
+#: src/components/routes/system.tsx
+msgid "Battery"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -202,8 +206,8 @@ msgstr "بايت (كيلوبايت/ثانية، ميجابايت/ثانية، ج
 msgid "Cache / Buffers"
 msgstr "ذاكرة التخزين المؤقت / المخازن المؤقتة"
 
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "إلغاء"
 
@@ -222,6 +226,15 @@ msgstr "تغيير وحدات عرض المقاييس."
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
 msgstr "تغيير خيارات التطبيق العامة."
+
+#: src/components/routes/system.tsx
+msgid "Charge"
+msgstr ""
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Charging"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
@@ -261,8 +274,8 @@ msgstr "تأكيد كلمة المرور"
 msgid "Connection is down"
 msgstr "الاتصال مقطوع"
 
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
 msgstr "متابعة"
 
@@ -320,9 +333,9 @@ msgstr "نسخ YAML"
 msgid "CPU"
 msgstr "المعالج"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "CPU Usage"
 msgstr "استخدام وحدة المعالجة المركزية"
 
@@ -339,10 +352,10 @@ msgstr "أنشئت"
 msgid "Critical (%)"
 msgstr "حرج (%)"
 
-#. Dark theme
-#: src/components/mode-toggle.tsx
-msgid "Dark"
-msgstr "داكن"
+#. Context: Battery state
+#: src/components/routes/system.tsx
+msgid "Current state"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
@@ -353,14 +366,19 @@ msgstr "لوحة التحكم"
 msgid "Default time period"
 msgstr "الفترة الزمنية الافتراضية"
 
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "حذف"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
 msgstr "حذف البصمة"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Discharging"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
@@ -374,9 +392,9 @@ msgstr "إدخال/إخراج القرص"
 msgid "Disk unit"
 msgstr "وحدة القرص"
 
-#: src/lib/utils.ts
-#: src/components/routes/system.tsx
 #: src/components/charts/disk-chart.tsx
+#: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Disk Usage"
 msgstr "استخدام القرص"
 
@@ -401,10 +419,10 @@ msgid "Documentation"
 msgstr "التوثيق"
 
 #. Context: System is down
-#: src/lib/utils.ts
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
 msgid "Down"
 msgstr "معطل"
 
@@ -417,14 +435,19 @@ msgstr "المدة"
 msgid "Edit"
 msgstr "تعديل"
 
-#: src/components/login/forgot-pass-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
 msgid "Email"
 msgstr "البريد الإشباكي"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
 msgstr "إشعارات البريد الإشباكي"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Empty"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -434,11 +457,11 @@ msgstr "أدخل عنوان البريد الإشباكي لإعادة تعيي�
 msgid "Enter email address..."
 msgstr "أدخل عنوان البريد الإشباكي..."
 
-#: src/components/routes/settings/tokens-fingerprints.tsx
-#: src/components/routes/settings/notifications.tsx
-#: src/components/routes/settings/config-yaml.tsx
-#: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/config-yaml.tsx
+#: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Error"
 msgstr "خطأ"
 
@@ -473,8 +496,8 @@ msgstr "فهرنهايت (°ف)"
 msgid "Failed to authenticate"
 msgstr "فشل في المصادقة"
 
-#: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/notifications.tsx
 msgid "Failed to save settings"
 msgstr "فشل في حفظ الإعدادات"
 
@@ -482,13 +505,13 @@ msgstr "فشل في حفظ الإعدادات"
 msgid "Failed to send test notification"
 msgstr "فشل في إرسال إشعار الاختبار"
 
-#: src/components/alerts/alerts-system.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Failed to update alert"
 msgstr "فشل في تحديث التنبيه"
 
-#: src/components/systems-table/systems-table.tsx
-#: src/components/routes/system.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "تصفية..."
 
@@ -496,7 +519,7 @@ msgstr "تصفية..."
 msgid "Fingerprint"
 msgstr "البصمة"
 
-#: src/components/alerts/alerts-system.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "لمدة <0>{min}</0> {min, plural, one {دقيقة} other {دقائق}}"
 
@@ -504,9 +527,14 @@ msgstr "لمدة <0>{min}</0> {min, plural, one {دقيقة} other {دقائق}}
 msgid "Forgot password?"
 msgstr "هل نسيت كلمة المرور؟"
 
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Full"
+msgstr ""
+
 #. Context: General settings
-#: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/layout.tsx
 msgid "General"
 msgstr "عام"
 
@@ -527,6 +555,11 @@ msgstr "أمر Homebrew"
 #: src/components/add-system.tsx
 msgid "Host / IP"
 msgstr "مضيف / IP"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Idle"
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
@@ -549,24 +582,19 @@ msgstr "اللغة"
 msgid "Layout"
 msgstr "التخطيط"
 
-#. Light theme
-#: src/components/mode-toggle.tsx
-msgid "Light"
-msgstr "فاتح"
-
 #: src/components/routes/system.tsx
 msgid "Load Average"
 msgstr "متوسط التحميل"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Load Average 15m"
 msgstr "متوسط التحميل 15 دقيقة"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Load Average 1m"
 msgstr "متوسط التحميل 1 دقيقة"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Load Average 5m"
 msgstr "متوسط التحميل 5 دقائق"
 
@@ -583,13 +611,13 @@ msgstr "تسجيل الخروج"
 msgid "Login"
 msgstr "تسجيل الدخول"
 
-#: src/components/login/forgot-pass-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
 msgid "Login attempt failed"
 msgstr "فشل محاولة تسجيل الدخول"
 
-#: src/components/navbar.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 msgid "Logs"
 msgstr "السجلات"
 
@@ -614,8 +642,8 @@ msgstr "الحد الأقصى دقيقة"
 msgid "Memory"
 msgstr "الذاكرة"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Memory Usage"
 msgstr "استخدام الذاكرة"
 
@@ -623,8 +651,8 @@ msgstr "استخدام الذاكرة"
 msgid "Memory usage of docker containers"
 msgstr "استخدام الذاكرة لحاويات دوكر"
 
-#: src/components/alerts-history-columns.tsx
 #: src/components/add-system.tsx
+#: src/components/alerts-history-columns.tsx
 msgid "Name"
 msgstr "الاسم"
 
@@ -659,8 +687,8 @@ msgid "No systems found."
 msgstr "لم يتم العثور على أنظمة."
 
 #: src/components/command-palette.tsx
-#: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
 msgstr "الإشعارات"
 
@@ -672,9 +700,9 @@ msgstr "دعم OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "في كل إعادة تشغيل، سيتم تحديث الأنظمة في قاعدة البيانات لتتطابق مع الأنظمة المعرفة في الملف."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
 msgstr "فتح القائمة"
 
@@ -682,7 +710,7 @@ msgstr "فتح القائمة"
 msgid "Or continue with"
 msgstr "أو المتابعة باستخدام"
 
-#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "الكتابة فوق التنبيهات الحالية"
 
@@ -729,12 +757,12 @@ msgstr "متوقف مؤقتا"
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "يرجى <0>تكوين خادم SMTP</0> لضمان تسليم التنبيهات."
 
-#: src/components/alerts/alerts-system.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Please check logs for more details."
 msgstr "يرجى التحقق من السجلات لمزيد من التفاصيل."
 
-#: src/components/login/forgot-pass-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
 msgid "Please check your credentials and try again"
 msgstr "يرجى التحقق من بيانات الاعتماد الخاصة بك والمحاولة مرة أخرى"
 
@@ -812,8 +840,8 @@ msgstr "صفوف لكل صفحة"
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "احفظ العنوان باستخدام مفتاح الإدخال أو الفاصلة. اتركه فارغًا لتعطيل إشعارات البريد الإشباكي."
 
-#: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "حفظ الإعدادات"
 
@@ -829,7 +857,7 @@ msgstr "بحث"
 msgid "Search for systems or settings..."
 msgstr "البحث عن الأنظمة أو الإعدادات..."
 
-#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "راجع <0>إعدادات الإشعارات</0> لتكوين كيفية تلقي التنبيهات."
 
@@ -873,7 +901,7 @@ msgstr "الترتيب حسب"
 msgid "State"
 msgstr "الحالة"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Status"
 msgstr "الحالة"
 
@@ -885,12 +913,10 @@ msgstr "مساحة التبديل المستخدمة من قبل النظام"
 msgid "Swap Usage"
 msgstr "استخدام التبديل"
 
-#. System theme
-#: src/lib/utils.ts
-#: src/components/mode-toggle.tsx
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
 msgid "System"
 msgstr "النظام"
 
@@ -915,8 +941,8 @@ msgstr "جدول"
 msgid "Temp"
 msgstr "درجة الحرارة"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Temperature"
 msgstr "درجة الحرارة"
 
@@ -975,8 +1001,8 @@ msgid "Token"
 msgstr "رمز مميز"
 
 #: src/components/command-palette.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens & Fingerprints"
 msgstr "الرموز المميزة والبصمات"
 
@@ -988,39 +1014,39 @@ msgstr "تسمح الرموز المميزة للوكلاء بالاتصال و�
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "تُستخدم الرموز المميزة والبصمات للمصادقة على اتصالات WebSocket إلى المحور."
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز متوسط التحميل لمدة دقيقة واحدة عتبة معينة"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز متوسط التحميل لمدة 15 دقيقة عتبة معينة"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز متوسط التحميل لمدة 5 دقائق عتبة معينة"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "يتم التفعيل عندما ��تجاوز أي مستشعر عتبة معينة"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز الجمع بين الصعود/الهبوط عتبة معينة"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز استخدام وحدة المعالجة المركزية عتبة معينة"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز استخدام الذاكرة عتبة معينة"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"
 msgstr "يتم التفعيل عندما يتغير الحالة بين التشغيل والإيقاف"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز استخدام أي قرص عتبة معينة"
 
@@ -1033,9 +1059,14 @@ msgstr "تفضيلات الوحدة"
 msgid "Universal token"
 msgstr "رمز مميز عالمي"
 
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Unknown"
+msgstr ""
+
 #. Context: System is up
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
 msgstr "قيد التشغيل"
 
@@ -1058,13 +1089,13 @@ msgstr "الاستخدام"
 msgid "Usage of root partition"
 msgstr "استخدام القسم الجذر"
 
-#: src/components/charts/swap-chart.tsx
 #: src/components/charts/mem-chart.tsx
+#: src/components/charts/swap-chart.tsx
 msgid "Used"
 msgstr "مستخدم"
 
-#: src/components/navbar.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 msgid "Users"
 msgstr "المستخدمون"
 
@@ -1131,4 +1162,3 @@ msgstr "تكوين YAML"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "تم تحديث إعدادات المستخدم الخاصة بك."
-

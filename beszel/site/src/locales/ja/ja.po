@@ -69,8 +69,8 @@ msgid "5 min"
 msgstr "5分"
 
 #. Table column
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "アクション"
 
@@ -113,18 +113,18 @@ msgid "Agent"
 msgstr "エージェント"
 
 #: src/components/command-palette.tsx
-#: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/layout.tsx
 msgid "Alert History"
 msgstr "アラート履歴"
 
 #: src/components/alerts/alert-button.tsx
-#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Alerts"
 msgstr "アラート"
 
+#: src/components/alerts/alerts-sheet.tsx
 #: src/components/systems-table/systems-table.tsx
-#: src/components/alerts/alert-button.tsx
 msgid "All Systems"
 msgstr "すべてのシステム"
 
@@ -148,8 +148,8 @@ msgstr "平均"
 msgid "Average CPU utilization of containers"
 msgstr "コンテナの平均CPU使用率"
 
-#. placeholder {0}: data.alert.unit
-#: src/components/alerts/alerts-system.tsx
+#. placeholder {0}: alertData.unit
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "平均が<0>{value}{0}</0>を超えています"
 
@@ -166,15 +166,19 @@ msgstr "システム全体の平均CPU使用率"
 msgid "Average utilization of {0}"
 msgstr "{0}の平均使用率"
 
-#: src/components/navbar.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 msgid "Backups"
 msgstr "バックアップ"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Bandwidth"
 msgstr "帯域幅"
+
+#: src/components/routes/system.tsx
+msgid "Battery"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -202,8 +206,8 @@ msgstr "バイト (KB/s, MB/s, GB/s)"
 msgid "Cache / Buffers"
 msgstr "キャッシュ / バッファ"
 
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "キャンセル"
 
@@ -222,6 +226,15 @@ msgstr "メトリックの表示単位を変更します。"
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
 msgstr "一般的なアプリケーションオプションを変更します。"
+
+#: src/components/routes/system.tsx
+msgid "Charge"
+msgstr ""
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Charging"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
@@ -261,8 +274,8 @@ msgstr "パスワードを確認"
 msgid "Connection is down"
 msgstr "接続が切断されました"
 
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
 msgstr "続行"
 
@@ -320,9 +333,9 @@ msgstr "YAMLをコピー"
 msgid "CPU"
 msgstr "CPU"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "CPU Usage"
 msgstr "CPU使用率"
 
@@ -339,10 +352,10 @@ msgstr "作成日"
 msgid "Critical (%)"
 msgstr "致命的 (%)"
 
-#. Dark theme
-#: src/components/mode-toggle.tsx
-msgid "Dark"
-msgstr "ダーク"
+#. Context: Battery state
+#: src/components/routes/system.tsx
+msgid "Current state"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
@@ -353,14 +366,19 @@ msgstr "ダッシュボード"
 msgid "Default time period"
 msgstr "デフォルトの期間"
 
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "削除"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
 msgstr "フィンガープリントを削除"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Discharging"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
@@ -374,9 +392,9 @@ msgstr "ディスクI/O"
 msgid "Disk unit"
 msgstr "ディスク単位"
 
-#: src/lib/utils.ts
-#: src/components/routes/system.tsx
 #: src/components/charts/disk-chart.tsx
+#: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Disk Usage"
 msgstr "ディスク使用率"
 
@@ -401,10 +419,10 @@ msgid "Documentation"
 msgstr "ドキュメント"
 
 #. Context: System is down
-#: src/lib/utils.ts
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
 msgid "Down"
 msgstr "停止"
 
@@ -417,14 +435,19 @@ msgstr "期間"
 msgid "Edit"
 msgstr "編集"
 
-#: src/components/login/forgot-pass-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
 msgid "Email"
 msgstr "メール"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
 msgstr "メール通知"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Empty"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -434,11 +457,11 @@ msgstr "パスワードをリセットするためにメールアドレスを入
 msgid "Enter email address..."
 msgstr "メールアドレスを入力..."
 
-#: src/components/routes/settings/tokens-fingerprints.tsx
-#: src/components/routes/settings/notifications.tsx
-#: src/components/routes/settings/config-yaml.tsx
-#: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/config-yaml.tsx
+#: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Error"
 msgstr "エラー"
 
@@ -473,8 +496,8 @@ msgstr "華氏 (°F)"
 msgid "Failed to authenticate"
 msgstr "認証に失敗しました"
 
-#: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/notifications.tsx
 msgid "Failed to save settings"
 msgstr "設定の保存に失敗しました"
 
@@ -482,13 +505,13 @@ msgstr "設定の保存に失敗しました"
 msgid "Failed to send test notification"
 msgstr "テスト通知の送信に失敗しました"
 
-#: src/components/alerts/alerts-system.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Failed to update alert"
 msgstr "アラートの更新に失敗しました"
 
-#: src/components/systems-table/systems-table.tsx
-#: src/components/routes/system.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "フィルター..."
 
@@ -496,7 +519,7 @@ msgstr "フィルター..."
 msgid "Fingerprint"
 msgstr "フィンガープリント"
 
-#: src/components/alerts/alerts-system.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "<0>{min}</0> {min, plural, one {分} other {分}}の間"
 
@@ -504,9 +527,14 @@ msgstr "<0>{min}</0> {min, plural, one {分} other {分}}の間"
 msgid "Forgot password?"
 msgstr "パスワードをお忘れですか？"
 
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Full"
+msgstr ""
+
 #. Context: General settings
-#: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/layout.tsx
 msgid "General"
 msgstr "一般"
 
@@ -527,6 +555,11 @@ msgstr "Homebrew コマンド"
 #: src/components/add-system.tsx
 msgid "Host / IP"
 msgstr "ホスト / IP"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Idle"
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
@@ -549,31 +582,26 @@ msgstr "言語"
 msgid "Layout"
 msgstr "レイアウト"
 
-#. Light theme
-#: src/components/mode-toggle.tsx
-msgid "Light"
-msgstr "ライト"
-
 #: src/components/routes/system.tsx
 msgid "Load Average"
-msgstr "ロードアベレージ"
+msgstr "負荷平均"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Load Average 15m"
-msgstr "ロードアベレージ (15分)"
+msgstr "負荷平均 (15分)"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Load Average 1m"
-msgstr "ロードアベレージ (1分)"
+msgstr "負荷平均 (1分)"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Load Average 5m"
-msgstr "ロードアベレージ (5分)"
+msgstr "負荷平均 (5分)"
 
 #. Short label for load average
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
-msgstr "ロードアベレージ"
+msgstr "負荷平均"
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -583,13 +611,13 @@ msgstr "ログアウト"
 msgid "Login"
 msgstr "ログイン"
 
-#: src/components/login/forgot-pass-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
 msgid "Login attempt failed"
 msgstr "ログイン試行に失敗しました"
 
-#: src/components/navbar.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 msgid "Logs"
 msgstr "ログ"
 
@@ -614,8 +642,8 @@ msgstr "最大1分"
 msgid "Memory"
 msgstr "メモリ"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Memory Usage"
 msgstr "メモリ使用率"
 
@@ -623,8 +651,8 @@ msgstr "メモリ使用率"
 msgid "Memory usage of docker containers"
 msgstr "Dockerコンテナのメモリ使用率"
 
-#: src/components/alerts-history-columns.tsx
 #: src/components/add-system.tsx
+#: src/components/alerts-history-columns.tsx
 msgid "Name"
 msgstr "名前"
 
@@ -659,8 +687,8 @@ msgid "No systems found."
 msgstr "システムが見つかりませんでした。"
 
 #: src/components/command-palette.tsx
-#: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
 msgstr "通知"
 
@@ -672,9 +700,9 @@ msgstr "OAuth 2 / OIDCサポート"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "再起動のたびに、データベース内のシステムはファイルに定義されたシステムに一致するように更新されます。"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
 msgstr "メニューを開く"
 
@@ -682,7 +710,7 @@ msgstr "メニューを開く"
 msgid "Or continue with"
 msgstr "または、以下の方法でログイン"
 
-#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "既存のアラートを上書き"
 
@@ -729,12 +757,12 @@ msgstr "一時停止中"
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "アラートが配信されるように<0>SMTPサーバーを設定</0>してください。"
 
-#: src/components/alerts/alerts-system.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Please check logs for more details."
 msgstr "詳細についてはログを確認してください。"
 
-#: src/components/login/forgot-pass-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
 msgid "Please check your credentials and try again"
 msgstr "資格情報を確認して再試行してください"
 
@@ -812,8 +840,8 @@ msgstr "ページあたりの行数"
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Enterキーまたはカンマを使用してアドレスを保存します。空白のままにするとメール通知が無効になります。"
 
-#: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "設定を保存"
 
@@ -829,7 +857,7 @@ msgstr "検索"
 msgid "Search for systems or settings..."
 msgstr "システムまたは設定を検索..."
 
-#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "アラートの受信方法を設定するには<0>通知設定</0>を参照してください。"
 
@@ -873,7 +901,7 @@ msgstr "並び替え基準"
 msgid "State"
 msgstr "状態"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Status"
 msgstr "ステータス"
 
@@ -885,18 +913,16 @@ msgstr "システムが使用するスワップ領域"
 msgid "Swap Usage"
 msgstr "スワップ使用量"
 
-#. System theme
-#: src/lib/utils.ts
-#: src/components/mode-toggle.tsx
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
 msgid "System"
 msgstr "システム"
 
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
-msgstr "システムのロードアベレージの推移"
+msgstr "システムの負荷平均の推移"
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -915,8 +941,8 @@ msgstr "テーブル"
 msgid "Temp"
 msgstr "温度"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Temperature"
 msgstr "温度"
 
@@ -975,8 +1001,8 @@ msgid "Token"
 msgstr "トークン"
 
 #: src/components/command-palette.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens & Fingerprints"
 msgstr "トークンとフィンガープリント"
 
@@ -988,39 +1014,39 @@ msgstr "トークンはエージェントの接続と登録を可能にします
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "トークンとフィンガープリントは、ハブへのWebSocket接続の認証に使用されます。"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
-msgstr "1分間のロードアベレージがしきい値を超えたときにトリガーされます"
+msgstr "1分間の負荷平均がしきい値を超えたときにトリガーされます"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
-msgstr "15分間のロードアベレージがしきい値を超えたときにトリガーされます"
+msgstr "15分間の負荷平均がしきい値を超えたときにトリガーされます"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
-msgstr "5分間のロードアベレージがしきい値を超えたときにトリガーされます"
+msgstr "5分間の負荷平均がしきい値を超えたときにトリガーされます"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "センサーがしきい値を超えたときにトリガーされます"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "上り/下りの合計がしきい値を超えたときにトリガーされます"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "CPU使用率がしきい値を超えたときにトリガーされます"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "メモリ使用率がしきい値を超えたときにトリガーされます"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"
 msgstr "ステータスが上から下に切り替わるときにトリガーされます"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "ディスクの使用量がしきい値を超えたときにトリガーされます"
 
@@ -1033,9 +1059,14 @@ msgstr "単位の設定"
 msgid "Universal token"
 msgstr "ユニバーサルトークン"
 
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Unknown"
+msgstr ""
+
 #. Context: System is up
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
 msgstr "正常"
 
@@ -1058,13 +1089,13 @@ msgstr "使用量"
 msgid "Usage of root partition"
 msgstr "ルートパーティションの使用量"
 
-#: src/components/charts/swap-chart.tsx
 #: src/components/charts/mem-chart.tsx
+#: src/components/charts/swap-chart.tsx
 msgid "Used"
 msgstr "使用中"
 
-#: src/components/navbar.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 msgid "Users"
 msgstr "ユーザー"
 
@@ -1131,4 +1162,3 @@ msgstr "YAML設定"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "ユーザー設定が更新されました。"
-

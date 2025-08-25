@@ -14,7 +14,7 @@
 
 - Update Go and JS dependencies.
 
-- New translations by @Radotornado, @AlexVanSteenhoven, @harupong, @dymek37, Tommaso Cavazza, Caio Garcia, and others.
+- New translations by @Radotornado, @AlexVanSteenhoven, @harupong, @dymek37, @NaNomicon, Tommaso Cavazza, Caio Garcia, and others.
 
 ## Older
 
