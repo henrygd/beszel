@@ -8,7 +8,7 @@ msgstr ""
 "Language: de\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-23 16:54\n"
+"PO-Revision-Date: 2025-08-25 01:15\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -756,7 +756,7 @@ msgstr "In der <0>Dokumentation</0> findest du weitere Anweisungen."
 
 #: src/components/login/login.tsx
 msgid "Please sign in to your account"
-msgstr "Bitte melde dich bei beinem Konto an"
+msgstr "Bitte melde dich bei deinem Konto an"
 
 #: src/components/add-system.tsx
 msgid "Port"
