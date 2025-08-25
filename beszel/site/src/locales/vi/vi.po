@@ -8,7 +8,7 @@ msgstr ""
 "Language: vi\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-14 10:35\n"
+"PO-Revision-Date: 2025-08-25 21:20\n"
 "Last-Translator: \n"
 "Language-Team: Vietnamese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -1162,3 +1162,4 @@ msgstr "Cấu hình YAML"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Cài đặt người dùng của bạn đã được cập nhật."
+
