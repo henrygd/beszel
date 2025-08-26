@@ -36,7 +36,6 @@ type Agent struct {
 	server            *ssh.Server                // SSH server
 	dataDir           string                     // Directory for persisting data
 	keys              []gossh.PublicKey          // SSH public keys
-	hasBattery        bool                       // true if agent has access to battery stats
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.

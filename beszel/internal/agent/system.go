@@ -2,6 +2,7 @@ package agent
 
 import (
 	"beszel"
+	"beszel/internal/agent/battery"
 	"beszel/internal/entities/system"
 	"bufio"
 	"fmt"
@@ -64,13 +65,6 @@ func (a *Agent) initializeSystemInfo() {
 	} else {
 		a.zfs = true
 	}
-
-	// battery
-	if _, _, err := getBatteryStats(); err != nil {
-		slog.Debug("No battery detected", "err", err)
-	} else {
-		a.hasBattery = true
-	}
 }
 
 // Returns current info, stats about the host system
@@ -78,8 +72,8 @@ func (a *Agent) getSystemStats() system.Stats {
 	systemStats := system.Stats{}
 
 	// battery
-	if a.hasBattery {
-		systemStats.Battery[0], systemStats.Battery[1], _ = getBatteryStats()
+	if battery.HasReadableBattery() {
+		systemStats.Battery[0], systemStats.Battery[1], _ = battery.GetBatteryStats()
 	}
 
 	// cpu percent
