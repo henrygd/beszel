@@ -132,10 +132,16 @@ func (cm *ConfigManager) PullConfig() error {
 		return fmt.Errorf("failed to parse config JSON: %w", err)
 	}
 
+	// Check if configuration actually changed
+	if cm.config != nil && cm.config.Version >= config.Version {
+		slog.Debug("Configuration is up to date", "current_version", cm.config.Version, "hub_version", config.Version)
+		return nil
+	}
+
 	cm.config = &config
 	cm.lastUpdate = time.Now()
 
-	slog.Info("Successfully pulled configuration from hub",
+	slog.Info("Successfully pulled updated configuration from hub",
 		"log_level", config.LogLevel,
 		"mem_calc", config.MemCalc,
 		"extra_fs_count", len(config.ExtraFs),

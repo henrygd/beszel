@@ -10,7 +10,10 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Label } from "@/components/ui/label"
 import { toast } from "@/components/ui/use-toast"
-import { Loader2, Save, RefreshCw, AlertTriangle, CheckCircle, XCircle } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Loader2, Save, RefreshCw, AlertTriangle, CheckCircle, XCircle, Settings, Database, Server, HardDrive, Wifi, Thermometer } from "lucide-react"
 import { pb } from "@/lib/stores"
 import { isAdmin } from "@/lib/utils"
 import { redirectPage } from "@nanostores/router"
@@ -32,12 +35,16 @@ interface AgentConfig {
   data_dir?: string
   docker_host?: string
   filesystem?: string
+  listen?: string
+  network?: string
   nics?: string
   primary_sensor?: string
   sensors?: string
   sys_sensors?: string
   environment?: Record<string, string>
+  version?: number
 }
+
 
 export default function AgentConfig() {
   const [systems, setSystems] = useState<System[]>([])
@@ -195,6 +202,14 @@ export default function AgentConfig() {
           cleanConfig.environment = cleanEnv
         }
 
+        // Filter out empty filesystem entries
+        if (cleanConfig.extra_fs) {
+          cleanConfig.extra_fs = cleanConfig.extra_fs.filter(fs => fs.trim() !== "")
+        }
+
+        // Add/update version timestamp to trigger agent config refresh
+        cleanConfig.version = Math.floor(Date.now() / 1000)
+
         await pb.collection("systems").update(systemId, {
           agent_config: JSON.stringify(cleanConfig)
         })
@@ -202,7 +217,7 @@ export default function AgentConfig() {
 
       toast({
         title: "Success",
-        description: `Configuration updated for ${selectedSystems.size} system(s)`,
+        description: `Configuration updated for ${selectedSystems.size} system(s). Agents will refresh automatically within 90 seconds.`,
       })
       await loadSystems() // Reload to get updated data
     } catch (error) {
@@ -216,6 +231,7 @@ export default function AgentConfig() {
       setSaving(false)
     }
   }
+
 
   const getSystemStatusIcon = (status: string) => {
     switch (status) {
@@ -235,36 +251,6 @@ export default function AgentConfig() {
     }))
   }
 
-  const updateEnvironment = (key: string, value: string) => {
-    setAgentConfig(prev => ({
-      ...prev,
-      environment: {
-        ...prev.environment,
-        [key]: value
-      }
-    }))
-  }
-
-  const removeEnvironment = (key: string) => {
-    setAgentConfig(prev => {
-      const newEnv = { ...prev.environment }
-      delete newEnv[key]
-      return {
-        ...prev,
-        environment: newEnv
-      }
-    })
-  }
-
-  const addEnvironment = () => {
-    setAgentConfig(prev => ({
-      ...prev,
-      environment: {
-        ...prev.environment,
-        "": ""
-      }
-    }))
-  }
 
   if (!isAdmin()) {
     redirectPage($router, "settings", { name: "general" })
@@ -392,182 +378,167 @@ export default function AgentConfig() {
                 <Separator />
 
                 {/* Agent Configuration Tabs */}
-                <Tabs defaultValue="basic" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="basic">Basic Settings</TabsTrigger>
-                    <TabsTrigger value="advanced">Advanced</TabsTrigger>
-                    <TabsTrigger value="environment">Environment</TabsTrigger>
+                <Tabs defaultValue="system" className="w-full">
+                  <TabsList className="grid w-full grid-cols-5 h-12">
+                    <TabsTrigger value="system" className="flex items-center space-x-1 text-xs">
+                      <Settings className="h-3 w-3" />
+                      <span>System</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="docker" className="flex items-center space-x-1 text-xs">
+                      <Database className="h-3 w-3" />
+                      <span>Docker</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="disks" className="flex items-center space-x-1 text-xs">
+                      <HardDrive className="h-3 w-3" />
+                      <span>Disks</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="network" className="flex items-center space-x-1 text-xs">
+                      <Wifi className="h-3 w-3" />
+                      <span>Network</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="temperature" className="flex items-center space-x-1 text-xs">
+                      <Thermometer className="h-3 w-3" />
+                      <span>Temperature</span>
+                    </TabsTrigger>
                   </TabsList>
                   
-                  <TabsContent value="basic" className="mt-6 space-y-4">
+                  <TabsContent value="system" className="mt-6 space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="log_level">Log Level</Label>
-                      <select 
-                        id="log_level"
-                        value={agentConfig.log_level || "info"} 
-                        onChange={(e) => updateConfig("log_level", e.target.value)}
-                        className="w-full p-2 border rounded-md"
+                      <Select
+                        value={agentConfig.log_level || "info"}
+                        onValueChange={(value) => updateConfig("log_level", value)}
                       >
-                        <option value="debug">Debug</option>
-                        <option value="info">Info</option>
-                        <option value="warn">Warn</option>
-                        <option value="error">Error</option>
-                      </select>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select log level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="debug">Debug</SelectItem>
+                          <SelectItem value="info">Info</SelectItem>
+                          <SelectItem value="warn">Warn</SelectItem>
+                          <SelectItem value="error">Error</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="data_dir">Data Directory</Label>
-                      <input
+                      <Input
                         id="data_dir"
                         type="text"
                         value={agentConfig.data_dir || ""}
                         onChange={(e) => updateConfig("data_dir", e.target.value)}
                         placeholder="e.g., /home/user/.config/beszel"
-                        className="w-full p-2 border rounded-md"
+                        className="font-mono text-sm"
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="docker_host">Docker Host</Label>
-                      <input
-                        id="docker_host"
-                        type="text"
-                        value={agentConfig.docker_host || ""}
-                        onChange={(e) => updateConfig("docker_host", e.target.value)}
-                        placeholder="e.g., unix:///var/run/docker.sock"
-                        className="w-full p-2 border rounded-md"
-                      />
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="advanced" className="mt-6 space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="mem_calc">Memory Calculation</Label>
-                      <input
+                      <Input
                         id="mem_calc"
                         type="text"
                         value={agentConfig.mem_calc || ""}
                         onChange={(e) => updateConfig("mem_calc", e.target.value)}
                         placeholder="e.g., total-available"
-                        className="w-full p-2 border rounded-md"
+                        className="font-mono text-sm"
                       />
                     </div>
+                  </TabsContent>
 
+                  <TabsContent value="docker" className="mt-6 space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="docker_host">Docker Host</Label>
+                      <Input
+                        id="docker_host"
+                        type="text"
+                        value={agentConfig.docker_host || ""}
+                        onChange={(e) => updateConfig("docker_host", e.target.value)}
+                        placeholder="e.g., unix:///var/run/docker.sock"
+                        className="font-mono text-sm"
+                      />
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="disks" className="mt-6 space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="filesystem">Root Filesystem</Label>
-                      <input
+                      <Input
                         id="filesystem"
                         type="text"
                         value={agentConfig.filesystem || ""}
                         onChange={(e) => updateConfig("filesystem", e.target.value)}
                         placeholder="e.g., /dev/nvme0n1p2"
-                        className="w-full p-2 border rounded-md"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="nics">Network Interfaces</Label>
-                      <input
-                        id="nics"
-                        type="text"
-                        value={agentConfig.nics || ""}
-                        onChange={(e) => updateConfig("nics", e.target.value)}
-                        placeholder="e.g., eth0,wlan0"
-                        className="w-full p-2 border rounded-md"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="primary_sensor">Primary Temperature Sensor</Label>
-                      <input
-                        id="primary_sensor"
-                        type="text"
-                        value={agentConfig.primary_sensor || ""}
-                        onChange={(e) => updateConfig("primary_sensor", e.target.value)}
-                        placeholder="e.g., cpu_thermal"
-                        className="w-full p-2 border rounded-md"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="sensors">Temperature Sensors</Label>
-                      <input
-                        id="sensors"
-                        type="text"
-                        value={agentConfig.sensors || ""}
-                        onChange={(e) => updateConfig("sensors", e.target.value)}
-                        placeholder="e.g., cpu_thermal,nvme_composite"
-                        className="w-full p-2 border rounded-md"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="sys_sensors">Sensors Sys Path</Label>
-                      <input
-                        id="sys_sensors"
-                        type="text"
-                        value={agentConfig.sys_sensors || ""}
-                        onChange={(e) => updateConfig("sys_sensors", e.target.value)}
-                        placeholder="e.g., /sys/class/hwmon"
-                        className="w-full p-2 border rounded-md"
+                        className="font-mono text-sm"
                       />
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="extra_fs">Extra Filesystems</Label>
-                      <textarea
+                      <Textarea
                         id="extra_fs"
                         value={agentConfig.extra_fs?.join("\n") || ""}
-                        onChange={(e) => updateConfig("extra_fs", e.target.value.split("\n").filter(fs => fs.trim()))}
-                        placeholder="Enter filesystem names, one per line"
-                        rows={3}
-                        className="w-full p-2 border rounded-md resize-none"
+                        onChange={(e) => updateConfig("extra_fs", e.target.value.split("\n").filter(fs => fs.trim() !== ""))}
+                        placeholder="Enter filesystem names, one per line&#10;e.g.:&#10;/home&#10;/var/log&#10;/mnt/storage"
+                        rows={4}
+                        className="font-mono text-sm resize-y min-h-[100px]"
+                        style={{ whiteSpace: 'pre-wrap' }}
                       />
                     </div>
                   </TabsContent>
 
-                  <TabsContent value="environment" className="mt-6 space-y-4">
-                    <div className="space-y-4">
-                      {Object.entries(agentConfig.environment || {}).map(([key, value]) => (
-                        <div key={key} className="flex space-x-2">
-                          <input
-                            type="text"
-                            value={key}
-                            onChange={(e) => {
-                              const newEnv = { ...agentConfig.environment }
-                              delete newEnv[key]
-                              newEnv[e.target.value] = value
-                              updateConfig("environment", newEnv)
-                            }}
-                            placeholder="Variable name"
-                            className="flex-1 p-2 border rounded-md"
-                          />
-                          <input
-                            type="text"
-                            value={value}
-                            onChange={(e) => updateEnvironment(key, e.target.value)}
-                            placeholder="Value"
-                            className="flex-1 p-2 border rounded-md"
-                          />
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeEnvironment(key)}
-                            className="px-3"
-                          >
-                            Remove
-                          </Button>
-                        </div>
-                      ))}
-                      <Button
-                        variant="outline"
-                        onClick={addEnvironment}
-                        className="w-full"
-                      >
-                        Add Environment Variable
-                      </Button>
+                  <TabsContent value="network" className="mt-6 space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="nics">Network Interfaces</Label>
+                      <Input
+                        id="nics"
+                        type="text"
+                        value={agentConfig.nics || ""}
+                        onChange={(e) => updateConfig("nics", e.target.value)}
+                        placeholder="e.g., eth0,wlan0"
+                        className="font-mono text-sm"
+                      />
                     </div>
                   </TabsContent>
+
+                  <TabsContent value="temperature" className="mt-6 space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="primary_sensor">Primary Temperature Sensor</Label>
+                      <Input
+                        id="primary_sensor"
+                        type="text"
+                        value={agentConfig.primary_sensor || ""}
+                        onChange={(e) => updateConfig("primary_sensor", e.target.value)}
+                        placeholder="e.g., cpu_thermal"
+                        className="font-mono text-sm"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="sensors">Temperature Sensors</Label>
+                      <Input
+                        id="sensors"
+                        type="text"
+                        value={agentConfig.sensors || ""}
+                        onChange={(e) => updateConfig("sensors", e.target.value)}
+                        placeholder="e.g., cpu_thermal,nvme_composite"
+                        className="font-mono text-sm"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="sys_sensors">Sensors System Path</Label>
+                      <Input
+                        id="sys_sensors"
+                        type="text"
+                        value={agentConfig.sys_sensors || ""}
+                        onChange={(e) => updateConfig("sys_sensors", e.target.value)}
+                        placeholder="e.g., /sys/class/hwmon"
+                        className="font-mono text-sm"
+                      />
+                    </div>
+                  </TabsContent>
+
                 </Tabs>
               </div>
             )}
