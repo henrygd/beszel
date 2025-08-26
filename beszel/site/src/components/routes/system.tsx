@@ -256,8 +256,8 @@ export default function SystemDetail({ name }: { name: string }) {
 		setContainerData(containerData)
 	}, [])
 
-	// values for system info bar
-	const systemInfo = useMemo(() => {
+	// values for system info bar organized by groups
+	const systemInfoGroups = useMemo(() => {
 		if (!system.info) {
 			return []
 		}
@@ -273,74 +273,10 @@ export default function SystemDetail({ name }: { name: string }) {
 		}
 		
 		const cpu = system.info.c && system.info.c.length > 0 ? system.info.c[0] : undefined;
-
 		const memoryTotal = system.info.m && system.info.m.length > 0 ? system.info.m[0].t : undefined;
 
-		const infoItems = [
-			{ value: getHostDisplayValue(system), Icon: GlobeIcon },
-			{
-				value: system.info.h,
-				Icon: MonitorIcon,
-				label: "Hostname",
-				// hide if hostname is same as host or name
-				hide: system.info.h === system.host || system.info.h === system.name,
-			},
-			{ value: uptime, Icon: ClockArrowUp, label: t`Uptime`, hide: !system.info.u },
-			os ? {
-				Icon: os.f?.toLowerCase().includes("darwin") || os.f?.toLowerCase().includes("mac") ? AppleIcon
-					: os.f?.toLowerCase().includes("windows") ? WindowsIcon
-					: os.f?.toLowerCase().includes("freebsd") ? FreeBsdIcon
-					: TuxIcon,
-				value: `${os.f} ${os.v}`.trim(),
-				isOs: true,
-				tooltip: os.k ? `Kernel: ${os.k}` : undefined,
-			} : undefined,
-			cpu ? {
-				value: cpu.m,
-				Icon: CpuIcon,
-				hide: !cpu.m,
-				arch: cpu.a,
-				cpu: {
-					cores: cpu.c,
-					threads: cpu.t,
-				},
-				tooltip: [
-					(cpu.c || cpu.t) ? `Cores / Threads: ${cpu.c || '?'} / ${cpu.t || cpu.c || '?'}` : null,
-					cpu.a ? `Arch: ${cpu.a}` : null,
-					cpu.s ? `Speed: ${cpu.s}` : null,
-				].filter(Boolean).join("\n"),
-			} : undefined,
-			// Add total memory info here
-			memoryTotal ? {
-				value: memoryTotal,
-				Icon: ServerIcon,
-				label: t`Total Memory`,
-				tooltip: t`Total system memory in GB`,
-			} : undefined,
-			// Add disks info here
-			system.info.d && system.info.d.length > 0
-				? {
-					value: `${system.info.d.length} ${system.info.d.length === 1 ? t`Disk` : t`Disks`}`,
-					Icon: HardDriveIcon,
-					disks: system.info.d,
-				}
-				: undefined,
-			system.info.n && system.info.n.length > 0
-				? {
-					value: `${system.info.n.length} ${system.info.n.length === 1 ? t`NIC` : t`NICs`}`,
-					Icon: EthernetIcon,
-					nics: system.info.n,
-				}
-				: undefined,
-			system.info.nl && system.info.nl.length > 0 && system.info.nl[0].ip
-				? {
-					value: system.info.nl[0].ip,
-					Icon: CableIcon,
-					networkLocation: system.info.nl[0],
-				}
-				: undefined,
-		] as {
-			value: string | number | undefined
+		type InfoItem = {
+			value: string | number | React.ReactNode | undefined
 			label?: string
 			Icon: any
 			hide?: boolean
@@ -352,9 +288,89 @@ export default function SystemDetail({ name }: { name: string }) {
 			networkLocation?: { ip?: string; isp?: string; asn?: string }
 			cpu?: { cores: number; threads?: number }
 			tooltip?: string
-		}[]
-		
-		return infoItems.filter(Boolean)
+		}
+
+		const groups = [
+			{
+				name: "identity",
+				label: "Identity",
+				items: [
+					{ value: getHostDisplayValue(system), Icon: GlobeIcon },
+					{
+						value: system.info.h,
+						Icon: MonitorIcon,
+						label: "Hostname",
+						hide: system.info.h === system.host || system.info.h === system.name,
+					}
+				].filter((item): item is InfoItem => !item.hide && Boolean(item.value))
+			},
+			{
+				name: "network",
+				label: "Network",
+				items: [
+					system.info.nl && system.info.nl.length > 0 && system.info.nl[0].ip ? {
+						value: system.info.nl[0].ip,
+						Icon: CableIcon,
+						networkLocation: system.info.nl[0],
+					} : null,
+					system.info.n && system.info.n.length > 0 ? {
+						value: `${system.info.n.length} ${system.info.n.length === 1 ? t`NIC` : t`NICs`}`,
+						Icon: EthernetIcon,
+						nics: system.info.n,
+					} : null,
+				].filter((item): item is InfoItem => Boolean(item))
+			},
+			{
+				name: "hardware",
+				label: "Hardware",
+				items: [
+					cpu ? {
+						value: cpu.m,
+						Icon: CpuIcon,
+						hide: !cpu.m,
+						arch: cpu.a,
+						cpu: {
+							cores: cpu.c,
+							threads: cpu.t,
+						},
+						tooltip: [
+							(cpu.c || cpu.t) ? `Cores / Threads: ${cpu.c || '?'} / ${cpu.t || cpu.c || '?'}` : null,
+							cpu.a ? `Arch: ${cpu.a}` : null,
+							cpu.s ? `Speed: ${cpu.s}` : null,
+						].filter(Boolean).join("\n"),
+					} : null,
+					memoryTotal ? {
+						value: memoryTotal,
+						Icon: ServerIcon,
+						label: t`Total Memory`,
+						tooltip: t`Total system memory in GB`,
+					} : null,
+					system.info.d && system.info.d.length > 0 ? {
+						value: `${system.info.d.length} ${system.info.d.length === 1 ? t`Disk` : t`Disks`}`,
+						Icon: HardDriveIcon,
+						disks: system.info.d,
+					} : null,
+				].filter((item): item is InfoItem => Boolean(item))
+			},
+			{
+				name: "system",
+				label: "System",
+				items: [
+					os ? {
+						Icon: os.f?.toLowerCase().includes("darwin") || os.f?.toLowerCase().includes("mac") ? AppleIcon
+							: os.f?.toLowerCase().includes("windows") ? WindowsIcon
+							: os.f?.toLowerCase().includes("freebsd") ? FreeBsdIcon
+							: TuxIcon,
+						value: `${os.f} ${os.v}`.trim(),
+						isOs: true,
+						tooltip: os.k ? `Kernel: ${os.k}` : undefined,
+					} : null,
+					{ value: uptime, Icon: ClockArrowUp, label: t`Uptime`, hide: !system.info.u },
+				].filter((item): item is InfoItem => !item?.hide && Boolean(item?.value))
+			}
+		].filter(group => group.items.length > 0)
+
+		return groups
 	}, [system.info])
 
 	/** Space for tooltip if more than 12 containers */
@@ -454,168 +470,177 @@ export default function SystemDetail({ name }: { name: string }) {
 									</span>
 									{translatedStatus}
 								</div>
-								{systemInfo.map(({ value, label, Icon, hide, pretty, isOs, arch, disks, nics, networkLocation, cpu, tooltip }, i) => {
-									if (hide || !value) {
-										return null
-									}
-									const content = (
-										<div className="flex gap-1.5 items-center">
-											<Icon className="h-4 w-4" /> {value}
-										</div>
-									)
-									if (isOs && tooltip) {
-										return (
-											<div key={i} className="contents">
-												<Separator orientation="vertical" className="h-4 bg-primary/30" />
-												<TooltipProvider>
-													<Tooltip delayDuration={150}>
-														<TooltipTrigger asChild>{content}</TooltipTrigger>
-														<TooltipContent style={{ whiteSpace: 'pre-line' }}>{tooltip}</TooltipContent>
-													</Tooltip>
-												</TooltipProvider>
-											</div>
-										)
-									}
-									// Show CPU info tooltip (cores/threads and architecture)
-									if (cpu) {
-										let cpuInfo = tooltip || `Core / Threads: ${cpu.cores} / ${cpu.threads || cpu.cores}`
-										return (
-											<div key={i} className="contents">
-												<Separator orientation="vertical" className="h-4 bg-primary/30" />
-												<TooltipProvider>
-													<Tooltip delayDuration={150}>
-														<TooltipTrigger asChild>{content}</TooltipTrigger>
-														<TooltipContent style={{ whiteSpace: 'pre-line' }}>{cpuInfo}</TooltipContent>
-													</Tooltip>
-												</TooltipProvider>
-											</div>
-										)
-									}
-									// Show architecture as tooltip for CPU info (fallback for when cpu is not available)
-									if (arch) {
-										return (
-											<div key={i} className="contents">
-												<Separator orientation="vertical" className="h-4 bg-primary/30" />
-												<TooltipProvider>
-													<Tooltip delayDuration={150}>
-														<TooltipTrigger asChild>{content}</TooltipTrigger>
-														<TooltipContent>{arch}</TooltipContent>
-													</Tooltip>
-												</TooltipProvider>
-											</div>
-										)
-									}
-									// Show disks tooltip if present
-									if (disks && disks.length > 0) {
-										return (
-											<div key={i} className="contents">
-												<Separator orientation="vertical" className="h-4 bg-primary/30" />
-												<TooltipProvider>
-													<Tooltip delayDuration={150}>
-														<TooltipTrigger asChild>{content}</TooltipTrigger>
-														<TooltipContent>
-															<div className="flex flex-col gap-1 min-w-44">
-																{disks.map((disk, idx) => {
-																	let diskText = disk.n
-																	const vendor = disk.v && disk.v.toLowerCase() !== 'unknown' ? disk.v : null
-																	const model = disk.m && disk.m.toLowerCase() !== 'unknown' ? disk.m : null
-																	
-																	if (vendor && model) {
-																		diskText += `: ${vendor} ${model}`
-																	} else if (model) {
-																		diskText += `: ${model}`
-																	} else if (vendor) {
-																		diskText += `: ${vendor}`
-																	}
-																	return (
-																		<div key={disk.n + idx} className="flex flex-col">
-																			<span className="font-medium">{diskText}</span>
-																		</div>
-																	)
-																})}
-															</div>
-														</TooltipContent>
-													</Tooltip>
-												</TooltipProvider>
-											</div>
-										)
-									}
-									// Show nics tooltip if present
-									if (nics && nics.length > 0) {
-										return (
-											<div key={i} className="contents">
-												<Separator orientation="vertical" className="h-4 bg-primary/30" />
-												<TooltipProvider>
-													<Tooltip delayDuration={150}>
-														<TooltipTrigger asChild>{content}</TooltipTrigger>
-														<TooltipContent>
-															<div className="flex flex-col gap-1 min-w-52">
-																{nics.map((nic, idx) => {
-																	let nicText = nic.n
-																	const hasVendor = !!nic.v && nic.v.trim() !== ''
-																	const hasModel = !!nic.m && nic.m.trim() !== ''
-																	if (hasVendor && hasModel) {
-																		nicText += `: ${nic.v} ${nic.m}`
-																	} else if (hasModel) {
-																		nicText += `: ${nic.m}`
-																	} else if (hasVendor) {
-																		nicText += `: ${nic.v}`
-																	} else {
-																		nicText += `: Unknown`
-																	}
-																	if (nic.s) {
-																		nicText += ` | ${nic.s}`
-																	}
-																	return (
-																		<div key={nic.n + idx} className="flex flex-col">
-																			<span className="font-medium">{nicText}</span>
-																		</div>
-																	)
-																})}
-															</div>
-														</TooltipContent>
-													</Tooltip>
-												</TooltipProvider>
-											</div>
-										)
-									}
-									// Show network location tooltip if present
-									if (networkLocation && (networkLocation.isp || networkLocation.asn)) {
-										let tooltipText = []
-										if (networkLocation.isp) {
-											tooltipText.push(`ISP: ${networkLocation.isp}`)
-										}
-										if (networkLocation.asn) {
-											tooltipText.push(`ASN: ${networkLocation.asn}`)
-										}
-										return (
-											<div key={i} className="contents">
-												<Separator orientation="vertical" className="h-4 bg-primary/30" />
-												<TooltipProvider>
-													<Tooltip delayDuration={150}>
-														<TooltipTrigger asChild>{content}</TooltipTrigger>
-														<TooltipContent style={{ whiteSpace: 'pre-line' }}>{tooltipText.join('\n')}</TooltipContent>
-													</Tooltip>
-												</TooltipProvider>
-											</div>
-										)
-									}
-									return (
-										<div key={i} className="contents">
-											<Separator orientation="vertical" className="h-4 bg-primary/30" />
-											{label ? (
-												<TooltipProvider>
-													<Tooltip delayDuration={150}>
-														<TooltipTrigger asChild>{content}</TooltipTrigger>
-														<TooltipContent>{label}</TooltipContent>
-													</Tooltip>
-												</TooltipProvider>
-											) : (
-												content
-											)}
-										</div>
-									)
-								})}
+								{systemInfoGroups.map((group, groupIndex) => (
+									<React.Fragment key={group.name}>
+										{group.items.map((item, itemIndex) => {
+											const { value, label, Icon, isOs, arch, disks, nics, networkLocation, cpu, tooltip } = item
+											const content = (
+												<div className="flex gap-1.5 items-center">
+													<Icon className="h-4 w-4" /> {value}
+												</div>
+											)
+
+											// Handle different tooltip types
+											if (isOs && tooltip) {
+												return (
+													<div key={`${groupIndex}-${itemIndex}`} className="contents">
+														<Separator orientation="vertical" className="h-4 bg-primary/30" />
+														<TooltipProvider>
+															<Tooltip delayDuration={150}>
+																<TooltipTrigger asChild>{content}</TooltipTrigger>
+																<TooltipContent style={{ whiteSpace: 'pre-line' }}>{tooltip}</TooltipContent>
+															</Tooltip>
+														</TooltipProvider>
+													</div>
+												)
+											}
+
+											// Show CPU info tooltip (cores/threads and architecture)
+											if (cpu && tooltip) {
+												return (
+													<div key={`${groupIndex}-${itemIndex}`} className="contents">
+														<Separator orientation="vertical" className="h-4 bg-primary/30" />
+														<TooltipProvider>
+															<Tooltip delayDuration={150}>
+																<TooltipTrigger asChild>{content}</TooltipTrigger>
+																<TooltipContent style={{ whiteSpace: 'pre-line' }}>{tooltip}</TooltipContent>
+															</Tooltip>
+														</TooltipProvider>
+													</div>
+												)
+											}
+
+											// Show architecture as tooltip for CPU info (fallback for when cpu is not available)
+											if (arch) {
+												return (
+													<div key={`${groupIndex}-${itemIndex}`} className="contents">
+														<Separator orientation="vertical" className="h-4 bg-primary/30" />
+														<TooltipProvider>
+															<Tooltip delayDuration={150}>
+																<TooltipTrigger asChild>{content}</TooltipTrigger>
+																<TooltipContent>{arch}</TooltipContent>
+															</Tooltip>
+														</TooltipProvider>
+													</div>
+												)
+											}
+
+											// Show disks tooltip if present
+											if (disks && disks.length > 0) {
+												return (
+													<div key={`${groupIndex}-${itemIndex}`} className="contents">
+														<Separator orientation="vertical" className="h-4 bg-primary/30" />
+														<TooltipProvider>
+															<Tooltip delayDuration={150}>
+																<TooltipTrigger asChild>{content}</TooltipTrigger>
+																<TooltipContent>
+																	<div className="flex flex-col gap-1 min-w-44">
+																		{disks.map((disk, idx) => {
+																			let diskText = disk.n
+																			const vendor = disk.v && disk.v.toLowerCase() !== 'unknown' ? disk.v : null
+																			const model = disk.m && disk.m.toLowerCase() !== 'unknown' ? disk.m : null
+																			
+																			if (vendor && model) {
+																				diskText += `: ${vendor} ${model}`
+																			} else if (model) {
+																				diskText += `: ${model}`
+																			} else if (vendor) {
+																				diskText += `: ${vendor}`
+																			}
+																			return (
+																				<div key={disk.n + idx} className="flex flex-col">
+																					<span className="font-medium">{diskText}</span>
+																				</div>
+																			)
+																		})}
+																	</div>
+																</TooltipContent>
+															</Tooltip>
+														</TooltipProvider>
+													</div>
+												)
+											}
+
+											// Show nics tooltip if present
+											if (nics && nics.length > 0) {
+												return (
+													<div key={`${groupIndex}-${itemIndex}`} className="contents">
+														<Separator orientation="vertical" className="h-4 bg-primary/30" />
+														<TooltipProvider>
+															<Tooltip delayDuration={150}>
+																<TooltipTrigger asChild>{content}</TooltipTrigger>
+																<TooltipContent>
+																	<div className="flex flex-col gap-1 min-w-52">
+																		{nics.map((nic, idx) => {
+																			let nicText = nic.n
+																			const hasVendor = !!nic.v && nic.v.trim() !== ''
+																			const hasModel = !!nic.m && nic.m.trim() !== ''
+																			if (hasVendor && hasModel) {
+																				nicText += `: ${nic.v} ${nic.m}`
+																			} else if (hasModel) {
+																				nicText += `: ${nic.m}`
+																			} else if (hasVendor) {
+																				nicText += `: ${nic.v}`
+																			} else {
+																				nicText += `: Unknown`
+																			}
+																			if (nic.s) {
+																				nicText += ` | ${nic.s}`
+																			}
+																			return (
+																				<div key={nic.n + idx} className="flex flex-col">
+																					<span className="font-medium">{nicText}</span>
+																				</div>
+																			)
+																		})}
+																	</div>
+																</TooltipContent>
+															</Tooltip>
+														</TooltipProvider>
+													</div>
+												)
+											}
+
+											// Show network location tooltip if present
+											if (networkLocation && (networkLocation.isp || networkLocation.asn)) {
+												let tooltipText = []
+												if (networkLocation.isp) {
+													tooltipText.push(`ISP: ${networkLocation.isp}`)
+												}
+												if (networkLocation.asn) {
+													tooltipText.push(`ASN: ${networkLocation.asn}`)
+												}
+												return (
+													<div key={`${groupIndex}-${itemIndex}`} className="contents">
+														<Separator orientation="vertical" className="h-4 bg-primary/30" />
+														<TooltipProvider>
+															<Tooltip delayDuration={150}>
+																<TooltipTrigger asChild>{content}</TooltipTrigger>
+																<TooltipContent style={{ whiteSpace: 'pre-line' }}>{tooltipText.join('\n')}</TooltipContent>
+															</Tooltip>
+														</TooltipProvider>
+													</div>
+												)
+											}
+
+											return (
+												<div key={`${groupIndex}-${itemIndex}`} className="contents">
+													<Separator orientation="vertical" className="h-4 bg-primary/30" />
+													{label ? (
+														<TooltipProvider>
+															<Tooltip delayDuration={150}>
+																<TooltipTrigger asChild>{content}</TooltipTrigger>
+																<TooltipContent>{label}</TooltipContent>
+															</Tooltip>
+														</TooltipProvider>
+													) : (
+														content
+													)}
+												</div>
+											)
+										})}
+									</React.Fragment>
+								))}
 							</div>
 						</div>
 						<div className="xl:ms-auto flex items-center gap-2 max-sm:-mb-1">
