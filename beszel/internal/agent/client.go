@@ -198,6 +198,41 @@ func (client *WebSocketClient) handleAuthChallenge(msg *common.HubRequest[cbor.R
 	return client.sendMessage(response)
 }
 
+// handleConfigUpdate processes configuration update requests from the hub
+func (client *WebSocketClient) handleConfigUpdate(msg *common.HubRequest[cbor.RawMessage]) error {
+	var configUpdate common.ConfigUpdateRequest
+	if err := cbor.Unmarshal(msg.Data, &configUpdate); err != nil {
+		slog.Error("Failed to unmarshal config update", "error", err)
+		response := common.ConfigUpdateResponse{
+			Success: false,
+			Version: client.agent.configManager.GetCurrentVersion(),
+			Error:   "failed to parse config update: " + err.Error(),
+		}
+		return client.sendMessage(response)
+	}
+
+	slog.Info("Received configuration update", "version", configUpdate.Version, "current_version", client.agent.configManager.GetCurrentVersion())
+
+	// Apply the configuration update
+	restartNeeded, err := client.agent.configManager.ApplyWebSocketConfigUpdate(configUpdate, client.agent)
+	
+	// Prepare response
+	response := common.ConfigUpdateResponse{
+		Success:       err == nil,
+		Version:       configUpdate.Version,
+		RestartNeeded: restartNeeded,
+	}
+	
+	if err != nil {
+		response.Error = err.Error()
+		slog.Error("Failed to apply config update", "error", err)
+	} else {
+		slog.Info("Successfully applied config update", "version", configUpdate.Version, "restart_needed", restartNeeded)
+	}
+
+	return client.sendMessage(response)
+}
+
 // verifySignature verifies the signature of the token using the public keys.
 func (client *WebSocketClient) verifySignature(signature []byte) (err error) {
 	for _, pubKey := range client.agent.keys {
@@ -231,6 +266,8 @@ func (client *WebSocketClient) handleHubRequest(msg *common.HubRequest[cbor.RawM
 		return client.sendSystemData()
 	case common.CheckFingerprint:
 		return client.handleAuthChallenge(msg)
+	case common.ConfigUpdate:
+		return client.handleConfigUpdate(msg)
 	}
 	return nil
 }

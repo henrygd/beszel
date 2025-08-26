@@ -4,8 +4,10 @@ package config
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"time"
 
+	"beszel/internal/common"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 )
@@ -26,7 +28,40 @@ type AgentConfig struct {
 	SysSensors    string            `json:"sys_sensors,omitempty"`
 	Environment   map[string]string `json:"environment,omitempty"`
 	LastUpdated   time.Time         `json:"last_updated"`
-	Version       string            `json:"version"`
+	Version       uint64            `json:"version"`
+}
+
+// UnmarshalJSON provides custom JSON unmarshaling to handle version field that might be stored as string
+func (c *AgentConfig) UnmarshalJSON(data []byte) error {
+	// Create a temporary struct with Version as interface{} to handle both string and uint64
+	type Alias AgentConfig
+	aux := &struct {
+		Version interface{} `json:"version"`
+		*Alias
+	}{
+		Alias: (*Alias)(c),
+	}
+
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+
+	// Handle version field conversion
+	switch v := aux.Version.(type) {
+	case string:
+		if parsed, err := strconv.ParseUint(v, 10, 64); err == nil {
+			c.Version = parsed
+		}
+	case float64:
+		c.Version = uint64(v)
+	case uint64:
+		c.Version = v
+	default:
+		// If version is not present or invalid, use current timestamp
+		c.Version = uint64(time.Now().Unix())
+	}
+
+	return nil
 }
 
 // GetAgentConfig returns the agent configuration as JSON
@@ -66,7 +101,7 @@ func GetAgentConfig(e *core.RequestEvent) error {
 		ExtraFs:     []string{},
 		Environment: make(map[string]string),
 		LastUpdated: time.Now(),
-		Version:     "1.0.0", // TODO: Get from beszel.Version
+		Version:     uint64(time.Now().Unix()), // Unix timestamp as version
 	}
 
 	// Check if there's a specific configuration for this system
@@ -88,6 +123,10 @@ func GetAgentConfig(e *core.RequestEvent) error {
 			if len(customConfig.Environment) > 0 {
 				config.Environment = customConfig.Environment
 			}
+			// Preserve version if it exists and is valid
+			if customConfig.Version > 0 {
+				config.Version = customConfig.Version
+			}
 		}
 	}
 
@@ -98,4 +137,96 @@ func GetAgentConfig(e *core.RequestEvent) error {
 	e.Response.Header().Set("Expires", "0")
 
 	return e.JSON(http.StatusOK, config)
+}
+
+// ToConfigUpdateRequest converts AgentConfig to ConfigUpdateRequest for WebSocket push
+func (c *AgentConfig) ToConfigUpdateRequest() common.ConfigUpdateRequest {
+	return common.ConfigUpdateRequest{
+		LogLevel:      c.LogLevel,
+		MemCalc:       c.MemCalc,
+		ExtraFs:       c.ExtraFs,
+		DataDir:       c.DataDir,
+		DockerHost:    c.DockerHost,
+		Filesystem:    c.Filesystem,
+		Listen:        c.Listen,
+		Network:       c.Network,
+		Nics:          c.Nics,
+		PrimarySensor: c.PrimarySensor,
+		Sensors:       c.Sensors,
+		SysSensors:    c.SysSensors,
+		Environment:   c.Environment,
+		Version:       c.Version,
+		ForceRestart:  false, // Can be set based on what changed
+	}
+}
+
+// IncrementVersion creates a new version number based on current timestamp
+func (c *AgentConfig) IncrementVersion() {
+	c.Version = uint64(time.Now().Unix())
+	c.LastUpdated = time.Now()
+}
+
+// GetAgentConfigForSystem retrieves configuration for a specific system ID
+func GetAgentConfigForSystem(app core.App, systemID string) (*AgentConfig, error) {
+	system, err := app.FindRecordById("systems", systemID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create default configuration
+	config := &AgentConfig{
+		LogLevel:    "info",
+		MemCalc:     "",
+		ExtraFs:     []string{},
+		Environment: make(map[string]string),
+		LastUpdated: time.Now(),
+		Version:     uint64(time.Now().Unix()),
+	}
+
+	// Apply system-specific configuration if it exists
+	systemConfig := system.GetString("agent_config")
+	if systemConfig != "" {
+		var customConfig AgentConfig
+		if err := json.Unmarshal([]byte(systemConfig), &customConfig); err == nil {
+			// Merge custom config with defaults
+			if customConfig.LogLevel != "" {
+				config.LogLevel = customConfig.LogLevel
+			}
+			if customConfig.MemCalc != "" {
+				config.MemCalc = customConfig.MemCalc
+			}
+			if len(customConfig.ExtraFs) > 0 {
+				config.ExtraFs = customConfig.ExtraFs
+			}
+			if len(customConfig.Environment) > 0 {
+				config.Environment = customConfig.Environment
+			}
+			// Preserve version if it exists
+			if customConfig.Version > 0 {
+				config.Version = customConfig.Version
+			}
+		}
+	}
+
+	return config, nil
+}
+
+// UpdateSystemConfig updates the configuration for a specific system and increments version
+func UpdateSystemConfig(app core.App, systemID string, newConfig *AgentConfig) error {
+	system, err := app.FindRecordById("systems", systemID)
+	if err != nil {
+		return err
+	}
+
+	// Increment version for the new configuration
+	newConfig.IncrementVersion()
+
+	// Convert to JSON and save
+	configJSON, err := json.Marshal(newConfig)
+	if err != nil {
+		return err
+	}
+
+	system.Set("agent_config", string(configJSON))
+	return app.Save(system)
 }

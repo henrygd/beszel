@@ -113,7 +113,7 @@ func (ws *WsConn) Ping() error {
 }
 
 // sendMessage encodes data to CBOR and sends it as a binary message to the agent.
-func (ws *WsConn) sendMessage(data common.HubRequest[any]) error {
+func (ws *WsConn) sendMessage(data interface{}) error {
 	if ws.conn == nil {
 		return gws.ErrConnClosed
 	}
@@ -139,6 +139,31 @@ func (ws *WsConn) RequestSystemData(data *system.CombinedData) error {
 	}
 	defer message.Close()
 	return cbor.Unmarshal(message.Data.Bytes(), data)
+}
+
+// PushConfig sends configuration update to the agent and returns the response.
+func (ws *WsConn) PushConfig(configUpdate common.ConfigUpdateRequest) (common.ConfigUpdateResponse, error) {
+	var response common.ConfigUpdateResponse
+	var message *gws.Message
+
+	err := ws.sendMessage(common.HubRequest[common.ConfigUpdateRequest]{
+		Action: common.ConfigUpdate,
+		Data:   configUpdate,
+	})
+	if err != nil {
+		return response, err
+	}
+
+	select {
+	case <-time.After(30 * time.Second): // Longer timeout for config updates
+		ws.Close(nil)
+		return response, gws.ErrConnClosed
+	case message = <-ws.responseChan:
+	}
+	defer message.Close()
+	
+	err = cbor.Unmarshal(message.Data.Bytes(), &response)
+	return response, err
 }
 
 // GetFingerprint authenticates with the agent using SSH signature and returns the agent's fingerprint.

@@ -7,9 +7,11 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
+	"beszel/internal/common"
 	"beszel/internal/entities/system"
 	"log/slog"
 )
@@ -30,7 +32,40 @@ type AgentConfig struct {
 	SysSensors    string            `json:"sys_sensors,omitempty"`
 	Environment   map[string]string `json:"environment,omitempty"`
 	LastUpdated   time.Time         `json:"last_updated"`
-	Version       string            `json:"version"`
+	Version       uint64            `json:"version"`
+}
+
+// UnmarshalJSON provides custom JSON unmarshaling to handle version field that might be stored as string
+func (c *AgentConfig) UnmarshalJSON(data []byte) error {
+	// Create a temporary struct with Version as interface{} to handle both string and uint64
+	type Alias AgentConfig
+	aux := &struct {
+		Version interface{} `json:"version"`
+		*Alias
+	}{
+		Alias: (*Alias)(c),
+	}
+
+	if err := json.Unmarshal(data, aux); err != nil {
+		return err
+	}
+
+	// Handle version field conversion
+	switch v := aux.Version.(type) {
+	case string:
+		if parsed, err := strconv.ParseUint(v, 10, 64); err == nil {
+			c.Version = parsed
+		}
+	case float64:
+		c.Version = uint64(v)
+	case uint64:
+		c.Version = v
+	default:
+		// If version is not present or invalid, use 0
+		c.Version = 0
+	}
+
+	return nil
 }
 
 // ConfigManager handles configuration pulling and management
@@ -218,4 +253,99 @@ func (cm *ConfigManager) GetConfig() *AgentConfig {
 // GetLastUpdate returns when the configuration was last updated
 func (cm *ConfigManager) GetLastUpdate() time.Time {
 	return cm.lastUpdate
+}
+
+// GetCurrentVersion returns the current configuration version
+func (cm *ConfigManager) GetCurrentVersion() uint64 {
+	if cm.config == nil {
+		return 0
+	}
+	return cm.config.Version
+}
+
+// ApplyWebSocketConfigUpdate applies configuration from WebSocket push and returns if restart is needed
+func (cm *ConfigManager) ApplyWebSocketConfigUpdate(configUpdate common.ConfigUpdateRequest, agent *Agent) (bool, error) {
+	// Check if this is a newer version
+	if configUpdate.Version <= cm.GetCurrentVersion() {
+		slog.Debug("Received config update with same or older version", "received", configUpdate.Version, "current", cm.GetCurrentVersion())
+		return false, nil
+	}
+
+	slog.Info("Applying WebSocket configuration update", "version", configUpdate.Version, "current_version", cm.GetCurrentVersion())
+
+	// Convert ConfigUpdateRequest to AgentConfig
+	newConfig := &AgentConfig{
+		LogLevel:      configUpdate.LogLevel,
+		MemCalc:       configUpdate.MemCalc,
+		ExtraFs:       configUpdate.ExtraFs,
+		DataDir:       configUpdate.DataDir,
+		DockerHost:    configUpdate.DockerHost,
+		Filesystem:    configUpdate.Filesystem,
+		Listen:        configUpdate.Listen,
+		Network:       configUpdate.Network,
+		Nics:          configUpdate.Nics,
+		PrimarySensor: configUpdate.PrimarySensor,
+		Sensors:       configUpdate.Sensors,
+		SysSensors:    configUpdate.SysSensors,
+		Environment:   configUpdate.Environment,
+		Version:       configUpdate.Version,
+		LastUpdated:   time.Now(),
+	}
+
+	// Store the old config for comparison
+	oldConfig := cm.config
+	cm.config = newConfig
+	cm.lastUpdate = time.Now()
+
+	// Apply the new configuration
+	if err := cm.ApplyConfig(agent); err != nil {
+		slog.Error("Failed to apply WebSocket config update", "error", err)
+		// Restore old config on failure
+		cm.config = oldConfig
+		return false, err
+	}
+
+	// Check if restart is needed by comparing critical settings
+	restartNeeded := cm.needsRestart(oldConfig, newConfig) || configUpdate.ForceRestart
+
+	slog.Info("Successfully applied WebSocket configuration update", "restart_needed", restartNeeded)
+	return restartNeeded, nil
+}
+
+// needsRestart determines if the agent needs to restart based on configuration changes
+func (cm *ConfigManager) needsRestart(oldConfig, newConfig *AgentConfig) bool {
+	if oldConfig == nil {
+		return false
+	}
+
+	// Critical settings that require restart
+	restartFields := []struct {
+		old, new string
+	}{
+		{oldConfig.Listen, newConfig.Listen},
+		{oldConfig.DataDir, newConfig.DataDir},
+		{oldConfig.DockerHost, newConfig.DockerHost},
+		{oldConfig.Filesystem, newConfig.Filesystem},
+		{oldConfig.Network, newConfig.Network},
+		{oldConfig.Nics, newConfig.Nics},
+	}
+
+	for _, field := range restartFields {
+		if field.old != field.new {
+			slog.Debug("Restart needed due to configuration change", "old", field.old, "new", field.new)
+			return true
+		}
+	}
+
+	// Check if extra filesystems changed
+	if len(oldConfig.ExtraFs) != len(newConfig.ExtraFs) {
+		return true
+	}
+	for i, fs := range oldConfig.ExtraFs {
+		if i >= len(newConfig.ExtraFs) || fs != newConfig.ExtraFs[i] {
+			return true
+		}
+	}
+
+	return false
 }
