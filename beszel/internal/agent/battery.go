@@ -5,7 +5,7 @@ import "github.com/distatus/battery"
 // getBatteryStats returns the current battery percent and charge state
 func getBatteryStats() (batteryPercent uint8, batteryState uint8, err error) {
 	batteries, err := battery.GetAll()
-	if err != nil {
+	if err != nil || len(batteries) == 0 {
 		return batteryPercent, batteryState, err
 	}
 	totalCapacity := float64(0)
