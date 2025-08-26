@@ -107,6 +107,12 @@ type OsInfo struct {
 	Kernel  string `json:"k"`
 }
 
+type NetworkLocationInfo struct {
+	PublicIP string `json:"ip,omitempty"`
+	ISP      string `json:"isp,omitempty"`
+	ASN      string `json:"asn,omitempty"`
+}
+
 type Info struct {
 	Hostname      string        `json:"h" cbor:"0,keyasint"`
 	KernelVersion string        `json:"k,omitempty" cbor:"1,keyasint,omitempty"`
@@ -123,11 +129,12 @@ type Info struct {
 	Os            Os            `json:"os" cbor:"12,keyasint"`
 	LoadAvg5      float64       `json:"l5,omitempty" cbor:"13,keyasint,omitempty,omitzero"`
 	LoadAvg15     float64       `json:"l15,omitempty" cbor:"14,keyasint,omitempty,omitzero"`
-	Disks         []DiskInfo    `json:"d" cbor:"15,omitempty"`
-	Networks      []NetworkInfo `json:"n,omitempty" cbor:"16,omitempty"`
-	Memory        []MemoryInfo  `json:"m,omitempty" cbor:"17,omitempty"`
-	Cpus          []CpuInfo     `json:"c,omitempty" cbor:"18,omitempty"`
-	Oses          []OsInfo      `json:"o,omitempty" cbor:"19,omitempty"`
+	Disks         []DiskInfo            `json:"d" cbor:"15,omitempty"`
+	Networks      []NetworkInfo         `json:"n,omitempty" cbor:"16,omitempty"`
+	Memory        []MemoryInfo          `json:"m,omitempty" cbor:"17,omitempty"`
+	Cpus          []CpuInfo             `json:"c,omitempty" cbor:"18,omitempty"`
+	Oses          []OsInfo              `json:"o,omitempty" cbor:"19,omitempty"`
+	NetworkLoc    []NetworkLocationInfo `json:"nl,omitempty" cbor:"20,keyasint,omitempty"`
 }
 
 // Final data structure to return to the hub

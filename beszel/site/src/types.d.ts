@@ -45,6 +45,12 @@ export interface OsInfo {
 	k: string
 }
 
+export interface NetworkLocationInfo {
+	ip?: string
+	isp?: string
+	asn?: string
+}
+
 export interface systemInfo {
 	/** hostname */
 	h: string
@@ -94,6 +100,8 @@ export interface systemInfo {
 	c?: CpuInfo[]
 	/** os info (array of os objects) */
 	o?: OsInfo[]
+	/** network location info (array of network location objects) */
+	nl?: NetworkLocationInfo[]
 }
 
 export interface SystemStats {

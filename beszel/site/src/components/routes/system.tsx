@@ -16,7 +16,7 @@ import React, { lazy, memo, useCallback, useEffect, useMemo, useRef, useState } 
 import { Card, CardHeader, CardTitle, CardDescription } from "../ui/card"
 import { useStore } from "@nanostores/react"
 import Spinner from "../spinner"
-import { ClockArrowUp, CpuIcon, GlobeIcon, LayoutGridIcon, MonitorIcon, XIcon, ServerIcon, HardDriveIcon } from "lucide-react"
+import { ClockArrowUp, CpuIcon, GlobeIcon, LayoutGridIcon, MonitorIcon, XIcon, ServerIcon, HardDriveIcon, CableIcon } from "lucide-react"
 import ChartTimeSelect from "../charts/chart-time-select"
 import {
 	chartTimeData,
@@ -332,6 +332,13 @@ export default function SystemDetail({ name }: { name: string }) {
 					nics: system.info.n,
 				}
 				: undefined,
+			system.info.nl && system.info.nl.length > 0 && system.info.nl[0].ip
+				? {
+					value: system.info.nl[0].ip,
+					Icon: CableIcon,
+					networkLocation: system.info.nl[0],
+				}
+				: undefined,
 		] as {
 			value: string | number | undefined
 			label?: string
@@ -342,6 +349,7 @@ export default function SystemDetail({ name }: { name: string }) {
 			arch?: string
 			disks?: { n: string; m?: string; v?: string; serial?: string }[]
 			nics?: { n: string; s?: string; v?: string; m?: string }[]
+			networkLocation?: { ip?: string; isp?: string; asn?: string }
 			cpu?: { cores: number; threads?: number }
 			tooltip?: string
 		}[]
@@ -446,7 +454,7 @@ export default function SystemDetail({ name }: { name: string }) {
 									</span>
 									{translatedStatus}
 								</div>
-								{systemInfo.map(({ value, label, Icon, hide, pretty, isOs, arch, disks, nics, cpu, tooltip }, i) => {
+								{systemInfo.map(({ value, label, Icon, hide, pretty, isOs, arch, disks, nics, networkLocation, cpu, tooltip }, i) => {
 									if (hide || !value) {
 										return null
 									}
@@ -566,6 +574,27 @@ export default function SystemDetail({ name }: { name: string }) {
 																})}
 															</div>
 														</TooltipContent>
+													</Tooltip>
+												</TooltipProvider>
+											</div>
+										)
+									}
+									// Show network location tooltip if present
+									if (networkLocation && (networkLocation.isp || networkLocation.asn)) {
+										let tooltipText = []
+										if (networkLocation.isp) {
+											tooltipText.push(`ISP: ${networkLocation.isp}`)
+										}
+										if (networkLocation.asn) {
+											tooltipText.push(`ASN: ${networkLocation.asn}`)
+										}
+										return (
+											<div key={i} className="contents">
+												<Separator orientation="vertical" className="h-4 bg-primary/30" />
+												<TooltipProvider>
+													<Tooltip delayDuration={150}>
+														<TooltipTrigger asChild>{content}</TooltipTrigger>
+														<TooltipContent style={{ whiteSpace: 'pre-line' }}>{tooltipText.join('\n')}</TooltipContent>
 													</Tooltip>
 												</TooltipProvider>
 											</div>
