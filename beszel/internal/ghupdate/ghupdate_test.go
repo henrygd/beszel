@@ -1,6 +1,9 @@
 package ghupdate
 
-import "testing"
+import (
+	"path/filepath"
+	"testing"
+)
 
 func TestReleaseFindAssetBySuffix(t *testing.T) {
 	r := release{
@@ -19,5 +22,24 @@ func TestReleaseFindAssetBySuffix(t *testing.T) {
 
 	if asset.Id != 2 {
 		t.Fatalf("Expected asset with id %d, got %v", 2, asset)
+	}
+}
+
+func TestExtractFailure(t *testing.T) {
+	testDir := t.TempDir()
+
+	// Test with missing zip file
+	missingZipPath := filepath.Join(testDir, "missing_test.zip")
+	extractedPath := filepath.Join(testDir, "zip_extract")
+
+	if err := extract(missingZipPath, extractedPath); err == nil {
+		t.Fatal("Expected Extract to fail due to missing zip file")
+	}
+
+	// Test with missing tar.gz file
+	missingTarPath := filepath.Join(testDir, "missing_test.tar.gz")
+
+	if err := extract(missingTarPath, extractedPath); err == nil {
+		t.Fatal("Expected Extract to fail due to missing tar.gz file")
 	}
 }

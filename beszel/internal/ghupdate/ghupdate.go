@@ -4,9 +4,7 @@
 package ghupdate
 
 import (
-	"archive/tar"
 	"beszel"
-	"compress/gzip"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -19,8 +17,6 @@ import (
 	"strings"
 
 	"github.com/blang/semver"
-	"github.com/pocketbase/pocketbase/core"
-	"github.com/pocketbase/pocketbase/tools/archive"
 )
 
 // Minimal color functions using ANSI escape codes
@@ -143,7 +139,7 @@ func (p *plugin) update() (updated bool, err error) {
 		return false, err
 	}
 
-	releaseDir := filepath.Join(p.config.DataDir, core.LocalTempDirName)
+	releaseDir := filepath.Join(p.config.DataDir, ".beszel_update")
 	defer os.RemoveAll(releaseDir)
 
 	ColorPrintf(ColorYellow, "Downloading %s...", asset.Name)
@@ -159,15 +155,9 @@ func (p *plugin) update() (updated bool, err error) {
 	extractDir := filepath.Join(releaseDir, "extracted_"+asset.Name)
 	defer os.RemoveAll(extractDir)
 
-	// Extract based on file extension
-	if strings.HasSuffix(asset.Name, ".tar.gz") {
-		if err := extractTarGz(assetPath, extractDir); err != nil {
-			return false, err
-		}
-	} else {
-		if err := archive.Extract(assetPath, extractDir); err != nil {
-			return false, err
-		}
+	// Extract the archive (automatically detects format)
+	if err := extract(assetPath, extractDir); err != nil {
+		return false, err
 	}
 
 	ColorPrint(ColorYellow, "Replacing the executable...")
@@ -356,53 +346,4 @@ func archiveSuffix(binaryName, goos, goarch string) string {
 		return fmt.Sprintf("%s_%s_%s.zip", binaryName, goos, goarch)
 	}
 	return fmt.Sprintf("%s_%s_%s.tar.gz", binaryName, goos, goarch)
-}
-
-func extractTarGz(srcPath, destDir string) error {
-	src, err := os.Open(srcPath)
-	if err != nil {
-		return err
-	}
-	defer src.Close()
-
-	gz, err := gzip.NewReader(src)
-	if err != nil {
-		return err
-	}
-	defer gz.Close()
-
-	tr := tar.NewReader(gz)
-
-	for {
-		header, err := tr.Next()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return err
-		}
-
-		if header.Typeflag == tar.TypeDir {
-			if err := os.MkdirAll(filepath.Join(destDir, header.Name), 0755); err != nil {
-				return err
-			}
-			continue
-		}
-
-		if err := os.MkdirAll(filepath.Dir(filepath.Join(destDir, header.Name)), 0755); err != nil {
-			return err
-		}
-
-		outFile, err := os.Create(filepath.Join(destDir, header.Name))
-		if err != nil {
-			return err
-		}
-		defer outFile.Close()
-
-		if _, err := io.Copy(outFile, tr); err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
