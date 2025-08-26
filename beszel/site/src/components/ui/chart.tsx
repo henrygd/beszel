@@ -4,6 +4,8 @@ import * as RechartsPrimitive from "recharts"
 import { chartTimeData, cn } from "@/lib/utils"
 import { ChartData } from "@/types"
 
+import type { JSX } from "react"
+
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const
 
@@ -42,11 +44,12 @@ const ChartContainer = React.forwardRef<
 
 	return (
 		//<ChartContext.Provider value={{ config }}>
+		//</ChartContext.Provider>
 		<div
 			data-chart={chartId}
 			ref={ref}
 			className={cn(
-				"text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-none [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line-line]:stroke-border [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-sector]:outline-none [&_.recharts-surface]:outline-none",
+				"text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line-line]:stroke-border [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-sector]:outline-hidden [&_.recharts-surface]:outline-hidden",
 				className
 			)}
 			{...props}
@@ -54,7 +57,6 @@ const ChartContainer = React.forwardRef<
 			{/* <ChartStyle id={chartId} config={config} /> */}
 			<RechartsPrimitive.ResponsiveContainer>{children}</RechartsPrimitive.ResponsiveContainer>
 		</div>
-		//</ChartContext.Provider>
 	)
 })
 ChartContainer.displayName = "Chart"
@@ -169,7 +171,7 @@ const ChartTooltipContent = React.forwardRef<
 			<div
 				ref={ref}
 				className={cn(
-					"grid min-w-[7rem] items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl",
+					"grid min-w-28 items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl",
 					className
 				)}
 			>
@@ -196,7 +198,7 @@ const ChartTooltipContent = React.forwardRef<
 											<itemConfig.icon />
 										) : (
 											<div
-												className={cn("shrink-0 rounded-[2px] border-[--color-border] bg-[--color-bg]", {
+												className={cn("shrink-0 rounded-[2px] border-border bg-(--color-bg)", {
 													"h-2.5 w-2.5": indicator === "dot",
 													"w-1": indicator === "line",
 													"w-0 border-[1.5px] border-dashed bg-transparent": indicator === "dashed",
@@ -226,7 +228,7 @@ const ChartTooltipContent = React.forwardRef<
 												{itemConfig?.label || item.name}
 											</span>
 											{item.value !== undefined && (
-												<span className="font-medium tabular-nums text-foreground">
+												<span className="font-medium text-foreground">
 													{content && typeof content === "function"
 														? content(item, key)
 														: item.value.toLocaleString() + (unit ? unit : "")}
@@ -265,7 +267,7 @@ const ChartLegendContent = React.forwardRef<
 		<div
 			ref={ref}
 			className={cn(
-				"flex items-center justify-center gap-4 gap-y-1 flex-wrap",
+				"flex items-center justify-center gap-4 gap-y-1 flex-wrap ps-4",
 				verticalAlign === "top" ? "pb-3" : "pt-3",
 				className
 			)}

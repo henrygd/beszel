@@ -36,8 +36,9 @@ type Stats struct {
 	LoadAvg15      float64             `json:"l15,omitempty" cbor:"25,keyasint,omitempty"`
 	Bandwidth      [2]uint64           `json:"b,omitzero" cbor:"26,keyasint,omitzero"`  // [sent bytes, recv bytes]
 	MaxBandwidth   [2]uint64           `json:"bm,omitzero" cbor:"27,keyasint,omitzero"` // [sent bytes, recv bytes]
-	LoadAvg        [3]float64          `json:"la,omitempty" cbor:"28,keyasint"`
 	// TODO: remove other load fields in future release in favor of load avg array
+	LoadAvg [3]float64 `json:"la,omitempty" cbor:"28,keyasint"`
+	Battery [2]uint8   `json:"bat,omitzero" cbor:"29,keyasint,omitzero"` // [percent, charge state, current]
 }
 
 type GPUData struct {
@@ -81,27 +82,27 @@ const (
 )
 
 type Info struct {
-	Hostname       string     `json:"h" cbor:"0,keyasint"`
-	KernelVersion  string     `json:"k,omitempty" cbor:"1,keyasint,omitempty"`
-	Cores          int        `json:"c" cbor:"2,keyasint"`
-	Threads        int        `json:"t,omitempty" cbor:"3,keyasint,omitempty"`
-	CpuModel       string     `json:"m" cbor:"4,keyasint"`
-	Uptime         uint64     `json:"u" cbor:"5,keyasint"`
-	Cpu            float64    `json:"cpu" cbor:"6,keyasint"`
-	MemPct         float64    `json:"mp" cbor:"7,keyasint"`
-	DiskPct        float64    `json:"dp" cbor:"8,keyasint"`
-	Bandwidth      float64    `json:"b" cbor:"9,keyasint"`
-	AgentVersion   string     `json:"v" cbor:"10,keyasint"`
-	Podman         bool       `json:"p,omitempty" cbor:"11,keyasint,omitempty"`
-	GpuPct         float64    `json:"g,omitempty" cbor:"12,keyasint,omitempty"`
-	DashboardTemp  float64    `json:"dt,omitempty" cbor:"13,keyasint,omitempty"`
-	Os             Os         `json:"os" cbor:"14,keyasint"`
-	LoadAvg1       float64    `json:"l1,omitempty" cbor:"15,keyasint,omitempty"`
-	LoadAvg5       float64    `json:"l5,omitempty" cbor:"16,keyasint,omitempty"`
-	LoadAvg15      float64    `json:"l15,omitempty" cbor:"17,keyasint,omitempty"`
-	BandwidthBytes uint64     `json:"bb" cbor:"18,keyasint"`
-	LoadAvg        [3]float64 `json:"la,omitempty" cbor:"19,keyasint"`
+	Hostname       string  `json:"h" cbor:"0,keyasint"`
+	KernelVersion  string  `json:"k,omitempty" cbor:"1,keyasint,omitempty"`
+	Cores          int     `json:"c" cbor:"2,keyasint"`
+	Threads        int     `json:"t,omitempty" cbor:"3,keyasint,omitempty"`
+	CpuModel       string  `json:"m" cbor:"4,keyasint"`
+	Uptime         uint64  `json:"u" cbor:"5,keyasint"`
+	Cpu            float64 `json:"cpu" cbor:"6,keyasint"`
+	MemPct         float64 `json:"mp" cbor:"7,keyasint"`
+	DiskPct        float64 `json:"dp" cbor:"8,keyasint"`
+	Bandwidth      float64 `json:"b" cbor:"9,keyasint"`
+	AgentVersion   string  `json:"v" cbor:"10,keyasint"`
+	Podman         bool    `json:"p,omitempty" cbor:"11,keyasint,omitempty"`
+	GpuPct         float64 `json:"g,omitempty" cbor:"12,keyasint,omitempty"`
+	DashboardTemp  float64 `json:"dt,omitempty" cbor:"13,keyasint,omitempty"`
+	Os             Os      `json:"os" cbor:"14,keyasint"`
+	LoadAvg1       float64 `json:"l1,omitempty" cbor:"15,keyasint,omitempty"`
+	LoadAvg5       float64 `json:"l5,omitempty" cbor:"16,keyasint,omitempty"`
+	LoadAvg15      float64 `json:"l15,omitempty" cbor:"17,keyasint,omitempty"`
+	BandwidthBytes uint64  `json:"bb" cbor:"18,keyasint"`
 	// TODO: remove load fields in future release in favor of load avg array
+	LoadAvg [3]float64 `json:"la,omitempty" cbor:"19,keyasint"`
 }
 
 // Final data structure to return to the hub

@@ -69,9 +69,9 @@ export default memo(function DiskChart({
 						dataKey={dataKey}
 						name={t`Disk Usage`}
 						type="monotoneX"
-						fill="hsl(var(--chart-4))"
+						fill="var(--chart-4)"
 						fillOpacity={0.4}
-						stroke="hsl(var(--chart-4))"
+						stroke="var(--chart-4)"
 						// animationDuration={1200}
 						isAnimationActive={false}
 					/>

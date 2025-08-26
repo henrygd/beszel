@@ -49,6 +49,7 @@ The [quick start guide](https://beszel.dev/guide/getting-started) and other docu
 - **Load average** - Host system.
 - **Temperature** - Host system sensors.
 - **GPU usage / temperature / power draw** - Nvidia and AMD only. Must use binary agent.
+- **Battery** - Host system battery charge.
 
 ## Help and discussion
 

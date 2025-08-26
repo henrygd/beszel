@@ -1,6 +1,6 @@
 import PocketBase from "pocketbase"
-import { atom, map, PreinitializedWritableAtom } from "nanostores"
-import { AlertRecord, ChartTimes, SystemRecord, UserSettings } from "@/types"
+import { atom, map } from "nanostores"
+import { AlertMap, ChartTimes, SystemRecord, UserSettings } from "@/types"
 import { basePath } from "@/components/router"
 import { Unit } from "./enums"
 
@@ -11,16 +11,16 @@ export const pb = new PocketBase(basePath)
 export const $authenticated = atom(pb.authStore.isValid)
 
 /** List of system records */
-export const $systems = atom([] as SystemRecord[])
+export const $systems = atom<SystemRecord[]>([])
 
-/** List of alert records */
-export const $alerts = atom([] as AlertRecord[])
+/** Map of alert records by system id and alert name */
+export const $alerts = map<AlertMap>({})
 
 /** SSH public key */
 export const $publicKey = atom("")
 
 /** Chart time period */
-export const $chartTime = atom("1h") as PreinitializedWritableAtom<ChartTimes>
+export const $chartTime = atom<ChartTimes>("1h")
 
 /** Whether to display average or max chart values */
 export const $maxValues = atom(false)
@@ -43,10 +43,8 @@ export const $userSettings = map<UserSettings>({
 	unitNet: Unit.Bytes,
 	unitTemp: Unit.Celsius,
 })
-// update local storage on change
-$userSettings.subscribe((value) => {
-	$chartTime.set(value.chartTime)
-})
+// update chart time on change
+$userSettings.subscribe((value) => $chartTime.set(value.chartTime))
 
 /** Container chart filter */
 export const $containerFilter = atom("")

@@ -8,7 +8,7 @@ msgstr ""
 "Language: cs\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-04 01:51\n"
+"PO-Revision-Date: 2025-08-25 01:16\n"
 "Last-Translator: \n"
 "Language-Team: Czech\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 3;\n"
@@ -69,8 +69,8 @@ msgid "5 min"
 msgstr "5 min"
 
 #. Table column
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "Akce"
 
@@ -113,18 +113,18 @@ msgid "Agent"
 msgstr "Agent"
 
 #: src/components/command-palette.tsx
-#: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/layout.tsx
 msgid "Alert History"
 msgstr "Historie upozornění"
 
 #: src/components/alerts/alert-button.tsx
-#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Alerts"
 msgstr "Výstrahy"
 
+#: src/components/alerts/alerts-sheet.tsx
 #: src/components/systems-table/systems-table.tsx
-#: src/components/alerts/alert-button.tsx
 msgid "All Systems"
 msgstr "Všechny systémy"
 
@@ -148,8 +148,8 @@ msgstr "Průměr"
 msgid "Average CPU utilization of containers"
 msgstr "Průměrné využití CPU kontejnerů"
 
-#. placeholder {0}: data.alert.unit
-#: src/components/alerts/alerts-system.tsx
+#. placeholder {0}: alertData.unit
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Průměr je vyšší než <0>{value}{0}</0>"
 
@@ -166,15 +166,19 @@ msgstr "Průměrné využití CPU v celém systému"
 msgid "Average utilization of {0}"
 msgstr "Průměrné využití {0}"
 
-#: src/components/navbar.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 msgid "Backups"
 msgstr "Zálohy"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Bandwidth"
 msgstr "Přenos"
+
+#: src/components/routes/system.tsx
+msgid "Battery"
+msgstr "Baterie"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -202,8 +206,8 @@ msgstr "Bytes (KB/s, MB/s, GB/s)"
 msgid "Cache / Buffers"
 msgstr "Cache / vyrovnávací paměť"
 
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "Zrušit"
 
@@ -222,6 +226,15 @@ msgstr "Změnit jednotky zobrazení metrik."
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
 msgstr "Změnit obecné nastavení aplikace."
+
+#: src/components/routes/system.tsx
+msgid "Charge"
+msgstr "Nabíjení"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Charging"
+msgstr "Nabíjení"
 
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
@@ -261,8 +274,8 @@ msgstr "Potvrdit heslo"
 msgid "Connection is down"
 msgstr "Připojení je nedostupné"
 
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
 msgstr "Pokračovat"
 
@@ -320,9 +333,9 @@ msgstr "Kopírovat YAML"
 msgid "CPU"
 msgstr "Procesor"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "CPU Usage"
 msgstr "Využití procesoru"
 
@@ -339,10 +352,10 @@ msgstr "Vytvořeno"
 msgid "Critical (%)"
 msgstr "Kritické (%)"
 
-#. Dark theme
-#: src/components/mode-toggle.tsx
-msgid "Dark"
-msgstr "Tmavý"
+#. Context: Battery state
+#: src/components/routes/system.tsx
+msgid "Current state"
+msgstr "Aktuální stav"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
@@ -353,14 +366,19 @@ msgstr "Přehled"
 msgid "Default time period"
 msgstr "Výchozí doba"
 
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "Odstranit"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
 msgstr "Smazat identifikátor"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Discharging"
+msgstr "Vybíjení"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
@@ -374,9 +392,9 @@ msgstr "Disk I/O"
 msgid "Disk unit"
 msgstr "Disková jednotka"
 
-#: src/lib/utils.ts
-#: src/components/routes/system.tsx
 #: src/components/charts/disk-chart.tsx
+#: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Disk Usage"
 msgstr "Využití disku"
 
@@ -401,10 +419,10 @@ msgid "Documentation"
 msgstr "Dokumentace"
 
 #. Context: System is down
-#: src/lib/utils.ts
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
 msgid "Down"
 msgstr "Nefunkční"
 
@@ -417,14 +435,19 @@ msgstr "Doba trvání"
 msgid "Edit"
 msgstr "Upravit"
 
-#: src/components/login/forgot-pass-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
 msgid "Email"
 msgstr "Email"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
 msgstr "Emailová upozornění"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Empty"
+msgstr "Prázdná"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -434,11 +457,11 @@ msgstr "Zadejte e-mailovou adresu pro obnovu hesla"
 msgid "Enter email address..."
 msgstr "Zadejte e-mailovou adresu..."
 
-#: src/components/routes/settings/tokens-fingerprints.tsx
-#: src/components/routes/settings/notifications.tsx
-#: src/components/routes/settings/config-yaml.tsx
-#: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/config-yaml.tsx
+#: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Error"
 msgstr "Chyba"
 
@@ -473,8 +496,8 @@ msgstr "Fahrenheita (°F)"
 msgid "Failed to authenticate"
 msgstr "Ověření se nezdařilo"
 
-#: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/notifications.tsx
 msgid "Failed to save settings"
 msgstr "Nepodařilo se uložit nastavení"
 
@@ -482,13 +505,13 @@ msgstr "Nepodařilo se uložit nastavení"
 msgid "Failed to send test notification"
 msgstr "Nepodařilo se odeslat testovací oznámení"
 
-#: src/components/alerts/alerts-system.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Failed to update alert"
 msgstr "Nepodařilo se aktualizovat upozornění"
 
-#: src/components/systems-table/systems-table.tsx
-#: src/components/routes/system.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Filtr..."
 
@@ -496,7 +519,7 @@ msgstr "Filtr..."
 msgid "Fingerprint"
 msgstr "Otisk"
 
-#: src/components/alerts/alerts-system.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "Za <0>{min}</0> {min, plural, one {minutu} few {minuty} other {minut}}"
 
@@ -504,9 +527,14 @@ msgstr "Za <0>{min}</0> {min, plural, one {minutu} few {minuty} other {minut}}"
 msgid "Forgot password?"
 msgstr "Zapomněli jste heslo?"
 
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Full"
+msgstr "Plná"
+
 #. Context: General settings
-#: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/layout.tsx
 msgid "General"
 msgstr "Obecné"
 
@@ -527,6 +555,11 @@ msgstr "Homebrew příkaz"
 #: src/components/add-system.tsx
 msgid "Host / IP"
 msgstr "Hostitel / IP"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Idle"
+msgstr "Neaktivní"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
@@ -549,24 +582,19 @@ msgstr "Jazyk"
 msgid "Layout"
 msgstr "Rozvržení"
 
-#. Light theme
-#: src/components/mode-toggle.tsx
-msgid "Light"
-msgstr "Světlý"
-
 #: src/components/routes/system.tsx
 msgid "Load Average"
 msgstr "Průměrné vytížení"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Load Average 15m"
 msgstr "Průměrná zátěž 15m"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Load Average 1m"
 msgstr "Průměrná zátěž 1m"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Load Average 5m"
 msgstr "Průměrná zátěž 5m"
 
@@ -583,13 +611,13 @@ msgstr "Odhlásit"
 msgid "Login"
 msgstr "Přihlásit"
 
-#: src/components/login/forgot-pass-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
 msgid "Login attempt failed"
 msgstr "Pokus o přihlášení selhal"
 
-#: src/components/navbar.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 msgid "Logs"
 msgstr "Logy"
 
@@ -614,8 +642,8 @@ msgstr "Max. 1 min"
 msgid "Memory"
 msgstr "Paměť"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Memory Usage"
 msgstr "Využití paměti"
 
@@ -623,8 +651,8 @@ msgstr "Využití paměti"
 msgid "Memory usage of docker containers"
 msgstr "Využití paměti docker kontejnerů"
 
-#: src/components/alerts-history-columns.tsx
 #: src/components/add-system.tsx
+#: src/components/alerts-history-columns.tsx
 msgid "Name"
 msgstr "Název"
 
@@ -659,8 +687,8 @@ msgid "No systems found."
 msgstr "Nenalezeny žádné systémy."
 
 #: src/components/command-palette.tsx
-#: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
 msgstr "Upozornění"
 
@@ -672,9 +700,9 @@ msgstr "Podpora OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Při každém restartu budou systémy v databázi aktualizovány tak, aby odpovídaly systémům definovaným v souboru."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
 msgstr "Otevřít menu"
 
@@ -682,7 +710,7 @@ msgstr "Otevřít menu"
 msgid "Or continue with"
 msgstr "Nebo pokračujte s"
 
-#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "Přepsat existující upozornění"
 
@@ -729,12 +757,12 @@ msgstr "Pozastaveno"
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "<0>nakonfigurujte SMTP server</0> pro zajištění toho, aby byla upozornění doručena."
 
-#: src/components/alerts/alerts-system.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Please check logs for more details."
 msgstr "Pro více informací zkontrolujte logy."
 
-#: src/components/login/forgot-pass-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
 msgid "Please check your credentials and try again"
 msgstr "Zkontrolujte prosím Vaše přihlašovací údaje a zkuste to znovu"
 
@@ -812,8 +840,8 @@ msgstr "Řádků na stránku"
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Adresu uložte pomocí klávesy enter nebo čárky. Pro deaktivaci e-mailových oznámení ponechte prázdné pole."
 
-#: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "Uložit nastavení"
 
@@ -829,7 +857,7 @@ msgstr "Hledat"
 msgid "Search for systems or settings..."
 msgstr "Hledat systémy nebo nastavení..."
 
-#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Podívejte se na <0>nastavení upozornění</0> pro nastavení toho, jak přijímáte upozornění."
 
@@ -873,7 +901,7 @@ msgstr "Seřadit podle"
 msgid "State"
 msgstr "Stav"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Status"
 msgstr "Stav"
 
@@ -885,12 +913,10 @@ msgstr "Swap prostor využívaný systémem"
 msgid "Swap Usage"
 msgstr "Swap využití"
 
-#. System theme
-#: src/lib/utils.ts
-#: src/components/mode-toggle.tsx
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
 msgid "System"
 msgstr "Systém"
 
@@ -915,8 +941,8 @@ msgstr "Tabulka"
 msgid "Temp"
 msgstr "Teplota"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Temperature"
 msgstr "Teplota"
 
@@ -975,8 +1001,8 @@ msgid "Token"
 msgstr "Token"
 
 #: src/components/command-palette.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens & Fingerprints"
 msgstr "Tokeny & Otisky"
 
@@ -988,39 +1014,39 @@ msgstr "Tokeny umožňují agentům připojení a registraci. Otisky jsou stabil
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Tokeny a otisky slouží k ověření připojení WebSocket k uzlu."
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
 msgstr "Spustí se, když využití paměti během 1 minuty překročí prahovou hodnotu"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
 msgstr "Spustí se, když využití paměti během 15 minut překročí prahovou hodnotu"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "Spustí se, když využití paměti během 5 minut překročí prahovou hodnotu"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Spustí se, když některý senzor překročí prahovou hodnotu"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Spustí se, když kombinace up/down překročí prahovou hodnotu"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Spustí se, když využití procesoru překročí prahovou hodnotu"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Spustí se, když využití paměti překročí prahovou hodnotu"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"
 msgstr "Spouští se, když se změní dostupnost"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Spustí se, když využití disku překročí prahovou hodnotu"
 
@@ -1033,9 +1059,14 @@ msgstr "Předvolby jednotek"
 msgid "Universal token"
 msgstr "Univerzální token"
 
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Unknown"
+msgstr "Neznámá"
+
 #. Context: System is up
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
 msgstr "Funkční"
 
@@ -1058,13 +1089,13 @@ msgstr "Využití"
 msgid "Usage of root partition"
 msgstr "Využití kořenového oddílu"
 
-#: src/components/charts/swap-chart.tsx
 #: src/components/charts/mem-chart.tsx
+#: src/components/charts/swap-chart.tsx
 msgid "Used"
 msgstr "Využito"
 
-#: src/components/navbar.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 msgid "Users"
 msgstr "Uživatelé"
 

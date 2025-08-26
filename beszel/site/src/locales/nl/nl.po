@@ -8,7 +8,7 @@ msgstr ""
 "Language: nl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-07-25 22:44\n"
+"PO-Revision-Date: 2025-08-25 01:16\n"
 "Last-Translator: \n"
 "Language-Team: Dutch\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -27,7 +27,7 @@ msgstr "{0, plural, one {# dag} other {# dagen}}"
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
-msgstr ""
+msgstr "{0} van de {1} rij(en) geselecteerd."
 
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
@@ -40,7 +40,7 @@ msgstr "1 uur"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr ""
+msgstr "1 minuut"
 
 #: src/lib/utils.ts
 msgid "1 week"
@@ -53,7 +53,7 @@ msgstr "12 uren"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr ""
+msgstr "15 minuten"
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -66,18 +66,18 @@ msgstr "30 dagen"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr ""
+msgstr "5 minuten"
 
 #. Table column
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "Acties"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Active"
-msgstr ""
+msgstr "Actief"
 
 #: src/components/routes/home.tsx
 msgid "Active Alerts"
@@ -113,18 +113,18 @@ msgid "Agent"
 msgstr "Agent"
 
 #: src/components/command-palette.tsx
-#: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/layout.tsx
 msgid "Alert History"
-msgstr ""
+msgstr "Melding geschiedenis"
 
 #: src/components/alerts/alert-button.tsx
-#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Alerts"
 msgstr "Waarschuwingen"
 
+#: src/components/alerts/alerts-sheet.tsx
 #: src/components/systems-table/systems-table.tsx
-#: src/components/alerts/alert-button.tsx
 msgid "All Systems"
 msgstr "Alle systemen"
 
@@ -134,7 +134,7 @@ msgstr "Weet je zeker dat je {name} wilt verwijderen?"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
-msgstr ""
+msgstr "Weet je het zeker?"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -148,8 +148,8 @@ msgstr "Gemiddelde"
 msgid "Average CPU utilization of containers"
 msgstr "Gemiddeld CPU-gebruik van containers"
 
-#. placeholder {0}: data.alert.unit
-#: src/components/alerts/alerts-system.tsx
+#. placeholder {0}: alertData.unit
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Gemiddelde overschrijdt <0>{value}{0}</0>"
 
@@ -166,15 +166,19 @@ msgstr "Gemiddeld systeembrede CPU-gebruik"
 msgid "Average utilization of {0}"
 msgstr "Gemiddeld gebruik van {0}"
 
-#: src/components/navbar.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 msgid "Backups"
 msgstr "Back-ups"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Bandwidth"
 msgstr "Bandbreedte"
+
+#: src/components/routes/system.tsx
+msgid "Battery"
+msgstr "Batterij"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -191,19 +195,19 @@ msgstr "Binair"
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr ""
+msgstr "Bits (Kbps, Mbps, Gbps)"
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
-msgstr ""
+msgstr "Bytes (KB/s, MB/s, GB/s)"
 
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
 msgstr "Cache / Buffers"
 
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "Annuleren"
 
@@ -213,15 +217,24 @@ msgstr "Opgelet - potentieel gegevensverlies"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr ""
+msgstr "Celsius (°C)"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
-msgstr ""
+msgstr "Verander statistiek eenheden."
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
 msgstr "Wijzig algemene applicatie opties."
+
+#: src/components/routes/system.tsx
+msgid "Charge"
+msgstr "Lading"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Charging"
+msgstr "Opladen"
 
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
@@ -259,10 +272,10 @@ msgstr "Bevestig wachtwoord"
 
 #: src/components/routes/home.tsx
 msgid "Connection is down"
-msgstr ""
+msgstr "Verbinding is niet actief"
 
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
 msgstr "Volgende"
 
@@ -320,9 +333,9 @@ msgstr "YAML kopiëren"
 msgid "CPU"
 msgstr "CPU"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "CPU Usage"
 msgstr "Processorgebruik"
 
@@ -333,16 +346,16 @@ msgstr "Account aanmaken"
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
 msgid "Created"
-msgstr ""
+msgstr "Aangemaakt"
 
 #: src/components/routes/settings/general.tsx
 msgid "Critical (%)"
 msgstr "Kritiek (%)"
 
-#. Dark theme
-#: src/components/mode-toggle.tsx
-msgid "Dark"
-msgstr "Donker"
+#. Context: Battery state
+#: src/components/routes/system.tsx
+msgid "Current state"
+msgstr "Huidige status"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
@@ -353,14 +366,19 @@ msgstr "Dashboard"
 msgid "Default time period"
 msgstr "Standaard tijdsduur"
 
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "Verwijderen"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
 msgstr "Vingerafdruk verwijderen"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Discharging"
+msgstr "Ontladen"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
@@ -372,11 +390,11 @@ msgstr "Schijf I/O"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
-msgstr ""
+msgstr "Schijf eenheid"
 
-#: src/lib/utils.ts
-#: src/components/routes/system.tsx
 #: src/components/charts/disk-chart.tsx
+#: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Disk Usage"
 msgstr "Schijfgebruik"
 
@@ -401,30 +419,35 @@ msgid "Documentation"
 msgstr "Documentatie"
 
 #. Context: System is down
-#: src/lib/utils.ts
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
 msgid "Down"
 msgstr "Offline"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
-msgstr ""
+msgstr "Duur"
 
 #: src/components/add-system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "Bewerken"
 
-#: src/components/login/forgot-pass-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
 msgid "Email"
 msgstr "E-mail"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
 msgstr "E-mailnotificaties"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Empty"
+msgstr "Leeg"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -434,11 +457,11 @@ msgstr "Voer een e-mailadres in om het wachtwoord opnieuw in te stellen"
 msgid "Enter email address..."
 msgstr "Voer een e-mailadres in..."
 
-#: src/components/routes/settings/tokens-fingerprints.tsx
-#: src/components/routes/settings/notifications.tsx
-#: src/components/routes/settings/config-yaml.tsx
-#: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/config-yaml.tsx
+#: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Error"
 msgstr "Fout"
 
@@ -455,7 +478,7 @@ msgstr "Bestaande systemen die niet gedefinieerd zijn in <0>config.yml</0> zulle
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
-msgstr ""
+msgstr "Exporteren"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
@@ -467,14 +490,14 @@ msgstr "Exporteer je huidige systeemconfiguratie."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr ""
+msgstr "Fahrenheit (°F)"
 
 #: src/lib/utils.ts
 msgid "Failed to authenticate"
 msgstr "Authenticatie mislukt"
 
-#: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/notifications.tsx
 msgid "Failed to save settings"
 msgstr "Instellingen opslaan mislukt"
 
@@ -482,13 +505,13 @@ msgstr "Instellingen opslaan mislukt"
 msgid "Failed to send test notification"
 msgstr "Versturen test notificatie mislukt"
 
-#: src/components/alerts/alerts-system.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Failed to update alert"
 msgstr "Bijwerken waarschuwing mislukt"
 
-#: src/components/systems-table/systems-table.tsx
-#: src/components/routes/system.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Filter..."
 
@@ -496,7 +519,7 @@ msgstr "Filter..."
 msgid "Fingerprint"
 msgstr "Vingerafdruk"
 
-#: src/components/alerts/alerts-system.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "Voor <0>{min}</0> {min, plural, one {minuut} other {minuten}}"
 
@@ -504,9 +527,14 @@ msgstr "Voor <0>{min}</0> {min, plural, one {minuut} other {minuten}}"
 msgid "Forgot password?"
 msgstr "Wachtwoord vergeten?"
 
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Full"
+msgstr "Vol"
+
 #. Context: General settings
-#: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/layout.tsx
 msgid "General"
 msgstr "Algemeen"
 
@@ -527,6 +555,11 @@ msgstr "Homebrew-commando"
 #: src/components/add-system.tsx
 msgid "Host / IP"
 msgstr "Host / IP-adres"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Idle"
+msgstr "Inactief"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
@@ -549,31 +582,26 @@ msgstr "Taal"
 msgid "Layout"
 msgstr "Indeling"
 
-#. Light theme
-#: src/components/mode-toggle.tsx
-msgid "Light"
-msgstr "Licht"
-
 #: src/components/routes/system.tsx
 msgid "Load Average"
-msgstr ""
+msgstr "Gemiddelde Belasting"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Load Average 15m"
 msgstr "Gemiddelde Belasting 15m"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Load Average 1m"
-msgstr ""
+msgstr "Gemiddelde Belasting 1m"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Load Average 5m"
 msgstr "Gemiddelde Belasting 5m"
 
 #. Short label for load average
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
-msgstr ""
+msgstr "Gem. Belasting"
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -583,13 +611,13 @@ msgstr "Afmelden"
 msgid "Login"
 msgstr "Aanmelden"
 
-#: src/components/login/forgot-pass-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
 msgid "Login attempt failed"
 msgstr "Aanmelding mislukt"
 
-#: src/components/navbar.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 msgid "Logs"
 msgstr "Logs"
 
@@ -614,8 +642,8 @@ msgstr "Max 1 min"
 msgid "Memory"
 msgstr "Geheugen"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Memory Usage"
 msgstr "Geheugengebruik"
 
@@ -623,8 +651,8 @@ msgstr "Geheugengebruik"
 msgid "Memory usage of docker containers"
 msgstr "Geheugengebruik van docker containers"
 
-#: src/components/alerts-history-columns.tsx
 #: src/components/add-system.tsx
+#: src/components/alerts-history-columns.tsx
 msgid "Name"
 msgstr "Naam"
 
@@ -643,7 +671,7 @@ msgstr "Netwerkverkeer van publieke interfaces"
 #. Context: Bytes or bits
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
-msgstr ""
+msgstr "Netwerk eenheid"
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -651,7 +679,7 @@ msgstr "Geen resultaten gevonden."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "No results."
-msgstr ""
+msgstr "Geen resultaten."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -659,8 +687,8 @@ msgid "No systems found."
 msgstr "Geen systemen gevonden."
 
 #: src/components/command-palette.tsx
-#: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
 msgstr "Meldingen"
 
@@ -672,9 +700,9 @@ msgstr "OAuth 2 / OIDC ondersteuning"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Bij elke herstart zullen systemen in de database worden bijgewerkt om overeen te komen met de systemen die in het bestand zijn gedefinieerd."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
 msgstr "Open menu"
 
@@ -682,7 +710,7 @@ msgstr "Open menu"
 msgid "Or continue with"
 msgstr "Of ga verder met"
 
-#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "Overschrijf bestaande waarschuwingen"
 
@@ -694,7 +722,7 @@ msgstr "Pagina"
 #. placeholder {1}: table.getPageCount()
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Page {0} of {1}"
-msgstr ""
+msgstr "Pagina {0} van de {1}"
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
@@ -729,12 +757,12 @@ msgstr "Gepauzeerd"
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "<0>Configureer een SMTP-server </0> om ervoor te zorgen dat waarschuwingen worden afgeleverd."
 
-#: src/components/alerts/alerts-system.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Please check logs for more details."
 msgstr "Controleer de logs voor meer details."
 
-#: src/components/login/forgot-pass-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
 msgid "Please check your credentials and try again"
 msgstr "Controleer je aanmeldgegevens en probeer het opnieuw"
 
@@ -794,7 +822,7 @@ msgstr "Wachtwoord resetten"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Resolved"
-msgstr ""
+msgstr "Opgelost"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
@@ -806,14 +834,14 @@ msgstr "Roteer Token"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
-msgstr ""
+msgstr "Rijen per pagina"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Bewaar het adres met de enter-toets of komma. Laat leeg om e-mailmeldingen uit te schakelen."
 
-#: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "Instellingen opslaan"
 
@@ -829,7 +857,7 @@ msgstr "Zoeken"
 msgid "Search for systems or settings..."
 msgstr "Zoek naar systemen of instellingen..."
 
-#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Zie <0>notificatie-instellingen</0> om te configureren hoe je meldingen ontvangt."
 
@@ -871,9 +899,9 @@ msgstr "Sorteren op"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 msgid "State"
-msgstr ""
+msgstr "Status"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Status"
 msgstr "Status"
 
@@ -885,18 +913,16 @@ msgstr "Swap ruimte gebruikt door het systeem"
 msgid "Swap Usage"
 msgstr "Swap gebruik"
 
-#. System theme
-#: src/lib/utils.ts
-#: src/components/mode-toggle.tsx
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
 msgid "System"
 msgstr "Systeem"
 
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
-msgstr ""
+msgstr "Gemiddelde systeembelasting na verloop van tijd"
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -915,14 +941,14 @@ msgstr "Tabel"
 msgid "Temp"
 msgstr "Temperatuur"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Temperature"
 msgstr "Temperatuur"
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"
-msgstr ""
+msgstr "Temperatuureenheid"
 
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
@@ -946,7 +972,7 @@ msgstr "Deze actie kan niet ongedaan worden gemaakt. Dit zal alle huidige record
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
-msgstr ""
+msgstr "Dit zal alle geselecteerde records verwijderen uit de database."
 
 #: src/components/routes/system.tsx
 msgid "Throughput of {extraFsName}"
@@ -975,8 +1001,8 @@ msgid "Token"
 msgstr "Token"
 
 #: src/components/command-palette.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens & Fingerprints"
 msgstr "Tokens & Vingerafdrukken"
 
@@ -988,54 +1014,59 @@ msgstr "Tokens staan agenten toe om verbinding te maken met en te registreren. V
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Tokens en vingerafdrukken worden gebruikt om WebSocket verbindingen te verifiëren naar de hub."
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Triggert wanneer de gemiddelde belasting een drempelwaarde overschrijdt"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
 msgstr "Triggert wanneer de 15 minuten gemiddelde belasting een drempelwaarde overschrijdt"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr "Triggert wanneer de 5 minuten gemiddelde belasting een drempelwaarde overschrijdt"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Triggert wanneer een sensor een drempelwaarde overschrijdt"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Triggert wanneer de gecombineerde up/down een drempelwaarde overschrijdt"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Triggert wanneer het CPU-gebruik een drempelwaarde overschrijdt"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Triggert wanneer het geheugengebruik een drempelwaarde overschrijdt"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"
 msgstr "Triggert wanneer de status schakelt tussen up en down"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Triggert wanneer het gebruik van een schijf een drempelwaarde overschrijdt"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
-msgstr ""
+msgstr "Eenheid voorkeuren"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
 msgstr "Universele token"
 
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Unknown"
+msgstr "Onbekend"
+
 #. Context: System is up
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
 msgstr "Online"
 
@@ -1058,19 +1089,19 @@ msgstr "Gebruik"
 msgid "Usage of root partition"
 msgstr "Gebruik van root-partitie"
 
-#: src/components/charts/swap-chart.tsx
 #: src/components/charts/mem-chart.tsx
+#: src/components/charts/swap-chart.tsx
 msgid "Used"
 msgstr "Gebruikt"
 
-#: src/components/navbar.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 msgid "Users"
 msgstr "Gebruikers"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
-msgstr ""
+msgstr "Waarde"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
@@ -1078,7 +1109,7 @@ msgstr "Weergave"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
-msgstr ""
+msgstr "Bekijk je 200 meest recente meldingen."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"

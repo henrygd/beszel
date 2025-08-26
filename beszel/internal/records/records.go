@@ -172,6 +172,8 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 	tempStats = system.Stats{}
 	sum := &sumStats
 	stats := &tempStats
+	// necessary because uint8 is not big enough for the sum
+	batterySum := 0
 
 	count := float64(len(records))
 	tempCount := float64(0)
@@ -208,6 +210,8 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.LoadAvg[2] += stats.LoadAvg[2]
 		sum.Bandwidth[0] += stats.Bandwidth[0]
 		sum.Bandwidth[1] += stats.Bandwidth[1]
+		batterySum += int(stats.Battery[0])
+		sum.Battery[1] = stats.Battery[1]
 		// Set peak values
 		sum.MaxCpu = max(sum.MaxCpu, stats.MaxCpu, stats.Cpu)
 		sum.MaxNetworkSent = max(sum.MaxNetworkSent, stats.MaxNetworkSent, stats.NetworkSent)
@@ -290,6 +294,7 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.LoadAvg[2] = twoDecimals(sum.LoadAvg[2] / count)
 		sum.Bandwidth[0] = sum.Bandwidth[0] / uint64(count)
 		sum.Bandwidth[1] = sum.Bandwidth[1] / uint64(count)
+		sum.Battery[0] = uint8(batterySum / int(count))
 		// Average temperatures
 		if sum.Temperatures != nil && tempCount > 0 {
 			for key := range sum.Temperatures {

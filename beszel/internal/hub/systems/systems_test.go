@@ -29,7 +29,7 @@ func TestSystemManagerNew(t *testing.T) {
 	user, err := tests.CreateUser(hub, "test@test.com", "testtesttest")
 	require.NoError(t, err)
 
-	synctest.Run(func() {
+	synctest.Test(t, func(t *testing.T) {
 		sm.Initialize()
 
 		record, err := tests.CreateRecord(hub, "systems", map[string]any{
@@ -110,9 +110,11 @@ func TestSystemManagerNew(t *testing.T) {
 		err = hub.Delete(record)
 		require.NoError(t, err)
 		assert.False(t, sm.HasSystem(record.Id), "System should not exist in the store after deletion")
+	})
 
-		testOld(t, hub)
+	testOld(t, hub)
 
+	synctest.Test(t, func(t *testing.T) {
 		time.Sleep(time.Second)
 		synctest.Wait()
 

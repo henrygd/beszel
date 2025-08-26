@@ -1,5 +1,5 @@
 import { RecordModel } from "pocketbase"
-import { Unit, Os } from "./lib/enums"
+import { Unit, Os, BatteryState } from "./lib/enums"
 
 // global window properties
 declare global {
@@ -136,6 +136,8 @@ export interface SystemStats {
 	efs?: Record<string, ExtraFsStats>
 	/** GPU data */
 	g?: Record<string, GPUData>
+	/** battery percent and state */
+	bat?: [number, BatteryState]
 }
 
 export interface GPUData {
@@ -196,7 +198,8 @@ export interface AlertRecord extends RecordModel {
 	system: string
 	name: string
 	triggered: boolean
-	sysname?: string
+	value: number
+	min: number
 	// user: string
 }
 
@@ -268,3 +271,5 @@ interface AlertInfo {
 	/** Single value description (when there's only one value, like status) */
 	singleDesc?: () => string
 }
+
+export type AlertMap = Record<string, Map<string, AlertRecord>>

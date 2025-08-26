@@ -20,6 +20,7 @@ import { ChevronDownIcon, ExternalLinkIcon, PlusIcon } from "lucide-react"
 import { memo, useEffect, useRef, useState } from "react"
 import { $router, basePath, Link, navigate } from "./router"
 import { SystemRecord } from "@/types"
+import { SystemStatus } from "@/lib/enums"
 import { AppleIcon, DockerIcon, TuxIcon, WindowsIcon } from "./ui/icons"
 import { InputCopy } from "./ui/input-copy"
 import { getPagePath } from "@nanostores/router"
@@ -105,7 +106,7 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 		try {
 			setOpen(false)
 			if (system) {
-				await pb.collection("systems").update(system.id, { ...data, status: "pending" })
+				await pb.collection("systems").update(system.id, { ...data, status: SystemStatus.Pending })
 			} else {
 				const createdSystem = await pb.collection("systems").create(data)
 				await pb.collection("fingerprints").create({
@@ -165,9 +166,7 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 						<Trans>
 							Copy the installation command for the agent below, or register agents automatically with a{" "}
 							<Link
-								onClick={() => {
-									setOpen(false)
-								}}
+								onClick={() => setOpen(false)}
 								href={getPagePath($router, "settings", { name: "tokens" })}
 								className="link"
 							>
@@ -274,7 +273,7 @@ interface CopyButtonProps {
 	text: string
 	onClick: () => void
 	dropdownItems: DropdownItem[]
-	icon?: React.ReactElement
+	icon?: React.ReactElement<any>
 }
 
 const CopyButton = memo((props: CopyButtonProps) => {

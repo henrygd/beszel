@@ -54,13 +54,15 @@ import {
 } from "../ui/alert-dialog"
 import { buttonVariants } from "../ui/button"
 import { t } from "@lingui/core/macro"
-import { MeterState } from "@/lib/enums"
+import { MeterState, SystemStatus } from "@/lib/enums"
+import { $router, Link } from "../router"
+import { getPagePath } from "@nanostores/router"
 
 const STATUS_COLORS = {
-	up: "bg-green-500",
-	down: "bg-red-500",
-	paused: "bg-primary/40",
-	pending: "bg-yellow-500",
+	[SystemStatus.Up]: "bg-green-500",
+	[SystemStatus.Down]: "bg-red-500",
+	[SystemStatus.Paused]: "bg-primary/40",
+	[SystemStatus.Pending]: "bg-yellow-500",
 } as const
 
 /**
@@ -80,9 +82,9 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 				let filterInputLower = ""
 				const nameCache = new Map<string, string>()
 				const statusTranslations = {
-					up: t`Up`.toLowerCase(),
-					down: t`Down`.toLowerCase(),
-					paused: t`Paused`.toLowerCase(),
+					[SystemStatus.Up]: t`Up`.toLowerCase(),
+					[SystemStatus.Down]: t`Down`.toLowerCase(),
+					[SystemStatus.Paused]: t`Paused`.toLowerCase(),
 				} as const
 
 				// match filter value against name or translated status
@@ -107,12 +109,22 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			enableHiding: false,
 			invertSorting: false,
 			Icon: ServerIcon,
-			cell: (info) => (
-				<span className="flex gap-2 items-center font-medium text-sm text-nowrap md:ps-1 md:pe-5">
-					<IndicatorDot system={info.row.original} />
-					{info.getValue() as string}
-				</span>
-			),
+			cell: (info) => {
+				const { name } = info.row.original
+				return (
+					<>
+						<span className="flex gap-2 items-center font-medium text-sm text-nowrap md:ps-1 md:pe-5">
+							<IndicatorDot system={info.row.original} />
+							{name}
+						</span>
+						<Link
+							href={getPagePath($router, "system", { name })}
+							className="inset-0 absolute size-full"
+							aria-label={name}
+						></Link>
+					</>
+				)
+			},
 			header: sortableHeader,
 		},
 		{
@@ -174,7 +186,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 				}
 
 				const max = Math.max(...loadAverages)
-				if (max === 0 && (status === "paused" || minor < 12)) {
+				if (max === 0 && (status === SystemStatus.Paused || minor < 12)) {
 					return null
 				}
 
@@ -185,9 +197,10 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 					<div className="flex items-center gap-[.35em] w-full tabular-nums tracking-tight">
 						<span
 							className={cn("inline-block size-2 rounded-full me-0.5", {
-								[STATUS_COLORS.up]: threshold === MeterState.Good,
-								[STATUS_COLORS.pending]: threshold === MeterState.Warn,
-								[STATUS_COLORS.down]: threshold === MeterState.Crit,
+								[STATUS_COLORS[SystemStatus.Up]]: threshold === MeterState.Good,
+								[STATUS_COLORS[SystemStatus.Pending]]: threshold === MeterState.Warn,
+								[STATUS_COLORS[SystemStatus.Down]]: threshold === MeterState.Crit,
+								[STATUS_COLORS[SystemStatus.Paused]]: status !== SystemStatus.Up,
 							})}
 						/>
 						{loadAverages?.map((la, i) => (
@@ -206,10 +219,10 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			header: sortableHeader,
 			cell(info) {
 				const sys = info.row.original
-				if (sys.status === "paused") {
+				const userSettings = useStore($userSettings, { keys: ["unitNet"] })
+				if (sys.status === SystemStatus.Paused) {
 					return null
 				}
-				const userSettings = useStore($userSettings, { keys: ["unitNet"] })
 				const { value, unit } = formatBytes(info.getValue() as number, true, userSettings.unitNet, false)
 				return (
 					<span className="tabular-nums whitespace-nowrap">
@@ -228,10 +241,10 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			header: sortableHeader,
 			cell(info) {
 				const val = info.getValue() as number
+				const userSettings = useStore($userSettings, { keys: ["unitTemp"] })
 				if (!val) {
 					return null
 				}
-				const userSettings = useStore($userSettings, { keys: ["unitTemp"] })
 				const { value, unit } = formatTemperature(val, userSettings.unitTemp)
 				return (
 					<span className={cn("tabular-nums whitespace-nowrap", viewMode === "table" && "ps-0.5")}>
@@ -256,13 +269,13 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 				}
 				const system = info.row.original
 				return (
-					<span className={cn("flex gap-2 items-center md:pe-5 tabular-nums", viewMode === "table" && "ps-0.5")}>
+					<span className={cn("flex gap-1.5 items-center md:pe-5 tabular-nums", viewMode === "table" && "ps-0.5")}>
 						<IndicatorDot
 							system={system}
 							className={
-								(system.status !== "up" && STATUS_COLORS.paused) ||
-								(version === globalThis.BESZEL.HUB_VERSION && STATUS_COLORS.up) ||
-								STATUS_COLORS.pending
+								(system.status !== SystemStatus.Up && STATUS_COLORS[SystemStatus.Paused]) ||
+								(version === globalThis.BESZEL.HUB_VERSION && STATUS_COLORS[SystemStatus.Up]) ||
+								STATUS_COLORS[SystemStatus.Pending]
 							}
 						/>
 						<span className="truncate max-w-14">{info.getValue() as string}</span>
@@ -276,7 +289,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			name: () => t({ message: "Actions", comment: "Table column" }),
 			size: 50,
 			cell: ({ row }) => (
-				<div className="flex justify-end items-center gap-1 -ms-3">
+				<div className="relative z-10 flex justify-end items-center gap-1 -ms-3">
 					<AlertButton system={row.original} />
 					<ActionsButton system={row.original} />
 				</div>
@@ -312,7 +325,7 @@ function TableCellWithMeter(info: CellContext<SystemRecord, unknown>) {
 				<span
 					className={cn(
 						"absolute inset-0 w-full h-full origin-left",
-						(info.row.original.status !== "up" && STATUS_COLORS.paused) ||
+						(info.row.original.status !== SystemStatus.Up && STATUS_COLORS.paused) ||
 							(threshold === MeterState.Good && STATUS_COLORS.up) ||
 							(threshold === MeterState.Warn && STATUS_COLORS.pending) ||
 							STATUS_COLORS.down
@@ -330,7 +343,7 @@ export function IndicatorDot({ system, className }: { system: SystemRecord; clas
 	className ||= STATUS_COLORS[system.status as keyof typeof STATUS_COLORS] || ""
 	return (
 		<span
-			className={cn("flex-shrink-0 size-2 rounded-full", className)}
+			className={cn("shrink-0 size-2 rounded-full", className)}
 			// style={{ marginBottom: "-1px" }}
 		/>
 	)
@@ -348,7 +361,7 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 			<>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<Button variant="ghost" size={"icon"} data-nolink>
+						<Button variant="ghost" size={"icon"}>
 							<span className="sr-only">
 								<Trans>Open menu</Trans>
 							</span>
@@ -371,11 +384,11 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 							className={cn(isReadOnlyUser() && "hidden")}
 							onClick={() => {
 								pb.collection("systems").update(id, {
-									status: status === "paused" ? "pending" : "paused",
+									status: status === SystemStatus.Paused ? SystemStatus.Pending : SystemStatus.Paused,
 								})
 							}}
 						>
-							{status === "paused" ? (
+							{status === SystemStatus.Paused ? (
 								<>
 									<PlayCircleIcon className="me-2.5 size-4" />
 									<Trans>Resume</Trans>

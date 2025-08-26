@@ -6,9 +6,12 @@ package tests
 
 import (
 	"beszel/internal/hub"
+	"fmt"
+	"testing"
 
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tests"
+	"github.com/stretchr/testify/assert"
 
 	_ "github.com/pocketbase/pocketbase/migrations"
 )
@@ -85,4 +88,11 @@ func CreateRecord(app core.App, collectionName string, fields map[string]any) (*
 	record.Load(fields)
 
 	return record, app.Save(record)
+}
+
+func ClearCollection(t testing.TB, app core.App, collectionName string) error {
+	_, err := app.DB().NewQuery(fmt.Sprintf("DELETE from %s", collectionName)).Execute()
+	recordCount, err := app.CountRecords(collectionName)
+	assert.EqualValues(t, recordCount, 0, "should have 0 records after clearing")
+	return err
 }

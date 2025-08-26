@@ -1,5 +1,5 @@
-import { t } from "@lingui/core/macro";
-import { Trans } from "@lingui/react/macro";
+import { t } from "@lingui/core/macro"
+import { Trans } from "@lingui/react/macro"
 import { isAdmin } from "@/lib/utils"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"

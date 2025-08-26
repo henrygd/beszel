@@ -39,7 +39,7 @@ func TestHealth(t *testing.T) {
 	// This test uses synctest to simulate time passing.
 	// NOTE: This test requires GOEXPERIMENT=synctest to run.
 	t.Run("check with simulated time", func(t *testing.T) {
-		synctest.Run(func() {
+		synctest.Test(t, func(t *testing.T) {
 			// Update the file to set the initial timestamp.
 			require.NoError(t, Update(), "Update() failed inside synctest")
 

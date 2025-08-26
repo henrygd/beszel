@@ -3,22 +3,11 @@ import { toast } from "@/components/ui/use-toast"
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { $alerts, $copyContent, $systems, $userSettings, pb } from "./stores"
-import {
-	AlertInfo,
-	AlertRecord,
-	ChartTimeData,
-	ChartTimes,
-	FingerprintRecord,
-	SemVer,
-	SystemRecord,
-	UserSettings,
-} from "@/types"
+import type { ChartTimeData, ChartTimes, FingerprintRecord, SemVer, SystemRecord, UserSettings } from "@/types"
 import { RecordModel, RecordSubscription } from "pocketbase"
 import { WritableAtom } from "nanostores"
 import { timeDay, timeHour } from "d3-time"
 import { useEffect, useState } from "react"
-import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from "lucide-react"
-import { EthernetIcon, HourglassIcon, ThermometerIcon } from "@/components/ui/icons"
 import { prependBasePath } from "@/components/router"
 import { MeterState, Unit } from "./enums"
 
@@ -84,19 +73,11 @@ export const updateSystemList = (() => {
 /** Logs the user out by clearing the auth store and unsubscribing from realtime updates. */
 export async function logOut() {
 	$systems.set([])
-	$alerts.set([])
+	$alerts.set({})
 	$userSettings.set({} as UserSettings)
 	sessionStorage.setItem("lo", "t") // prevent auto login on logout
 	pb.authStore.clear()
 	pb.realtime.unsubscribe()
-}
-
-export const updateAlerts = () => {
-	pb.collection("alerts")
-		.getFullList<AlertRecord>({ fields: "id,name,system,value,min,triggered", sort: "updated" })
-		.then((records) => {
-			$alerts.set(records)
-		})
 }
 
 const hourWithMinutesFormatter = new Intl.DateTimeFormat(undefined, {
@@ -368,79 +349,6 @@ export async function updateUserSettings() {
 
 export const chartMargin = { top: 12 }
 
-/** Alert info for each alert type */
-export const alertInfo: Record<string, AlertInfo> = {
-	Status: {
-		name: () => t`Status`,
-		unit: "",
-		icon: ServerIcon,
-		desc: () => t`Triggers when status switches between up and down`,
-		/** "for x minutes" is appended to desc when only one value */
-		singleDesc: () => t`System` + " " + t`Down`,
-	},
-	CPU: {
-		name: () => t`CPU Usage`,
-		unit: "%",
-		icon: CpuIcon,
-		desc: () => t`Triggers when CPU usage exceeds a threshold`,
-	},
-	Memory: {
-		name: () => t`Memory Usage`,
-		unit: "%",
-		icon: MemoryStickIcon,
-		desc: () => t`Triggers when memory usage exceeds a threshold`,
-	},
-	Disk: {
-		name: () => t`Disk Usage`,
-		unit: "%",
-		icon: HardDriveIcon,
-		desc: () => t`Triggers when usage of any disk exceeds a threshold`,
-	},
-	Bandwidth: {
-		name: () => t`Bandwidth`,
-		unit: " MB/s",
-		icon: EthernetIcon,
-		desc: () => t`Triggers when combined up/down exceeds a threshold`,
-		max: 125,
-	},
-	Temperature: {
-		name: () => t`Temperature`,
-		unit: "°C",
-		icon: ThermometerIcon,
-		desc: () => t`Triggers when any sensor exceeds a threshold`,
-	},
-	LoadAvg1: {
-		name: () => t`Load Average 1m`,
-		unit: "",
-		icon: HourglassIcon,
-		max: 100,
-		min: 0.1,
-		start: 10,
-		step: 0.1,
-		desc: () => t`Triggers when 1 minute load average exceeds a threshold`,
-	},
-	LoadAvg5: {
-		name: () => t`Load Average 5m`,
-		unit: "",
-		icon: HourglassIcon,
-		max: 100,
-		min: 0.1,
-		start: 10,
-		step: 0.1,
-		desc: () => t`Triggers when 5 minute load average exceeds a threshold`,
-	},
-	LoadAvg15: {
-		name: () => t`Load Average 15m`,
-		unit: "",
-		icon: HourglassIcon,
-		min: 0.1,
-		max: 100,
-		start: 10,
-		step: 0.1,
-		desc: () => t`Triggers when 15 minute load average exceeds a threshold`,
-	},
-}
-
 /**
  * Retuns value of system host, truncating full path if socket.
  * @example
@@ -450,7 +358,13 @@ export const alertInfo: Record<string, AlertInfo> = {
 export const getHostDisplayValue = (system: SystemRecord): string => system.host.slice(system.host.lastIndexOf("/") + 1)
 
 /** Generate a random token for the agent */
-export const generateToken = () => crypto?.randomUUID() ?? (performance.now() * Math.random()).toString(16)
+export const generateToken = () => {
+	try {
+		return crypto?.randomUUID()
+	} catch (e) {
+		return Array.from({ length: 2 }, () => (performance.now() * Math.random()).toString(16).replace(".", "-")).join("-")
+	}
+}
 
 /** Get the hub URL from the global BESZEL object */
 export const getHubURL = () => BESZEL?.HUB_URL || window.location.origin
@@ -513,3 +427,24 @@ export function getMeterState(value: number): MeterState {
 	const { colorWarn = 65, colorCrit = 90 } = $userSettings.get()
 	return value >= colorCrit ? MeterState.Crit : value >= colorWarn ? MeterState.Warn : MeterState.Good
 }
+
+export function debounce<T extends (...args: any[]) => any>(func: T, wait: number): (...args: Parameters<T>) => void {
+	let timeout: ReturnType<typeof setTimeout>
+	return (...args: Parameters<T>) => {
+		clearTimeout(timeout)
+		timeout = setTimeout(() => func(...args), wait)
+	}
+}
+
+/* returns the name of a system from its id */
+export const getSystemNameFromId = (() => {
+	const cache = new Map<string, string>()
+	return (systemId: string): string => {
+		if (cache.has(systemId)) {
+			return cache.get(systemId)!
+		}
+		const sysName = $systems.get().find((s) => s.id === systemId)?.name ?? ""
+		cache.set(systemId, sysName)
+		return sysName
+	}
+})()

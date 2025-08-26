@@ -69,8 +69,8 @@ msgid "5 min"
 msgstr ""
 
 #. Table column
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "Műveletek"
 
@@ -113,18 +113,18 @@ msgid "Agent"
 msgstr "Ügynök"
 
 #: src/components/command-palette.tsx
-#: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/layout.tsx
 msgid "Alert History"
 msgstr ""
 
 #: src/components/alerts/alert-button.tsx
-#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Alerts"
 msgstr "Riasztások"
 
+#: src/components/alerts/alerts-sheet.tsx
 #: src/components/systems-table/systems-table.tsx
-#: src/components/alerts/alert-button.tsx
 msgid "All Systems"
 msgstr "Minden rendszer"
 
@@ -148,8 +148,8 @@ msgstr "Átlag"
 msgid "Average CPU utilization of containers"
 msgstr "Konténerek átlagos CPU kihasználtsága"
 
-#. placeholder {0}: data.alert.unit
-#: src/components/alerts/alerts-system.tsx
+#. placeholder {0}: alertData.unit
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Az átlag meghaladja a <0>{value}{0}</0> értéket"
 
@@ -166,15 +166,19 @@ msgstr "Rendszerszintű CPU átlagos kihasználtság"
 msgid "Average utilization of {0}"
 msgstr "{0} átlagos kihasználtsága"
 
-#: src/components/navbar.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 msgid "Backups"
 msgstr "Biztonsági mentések"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Bandwidth"
 msgstr "Sávszélesség"
+
+#: src/components/routes/system.tsx
+msgid "Battery"
+msgstr "Akkumulátor"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -202,8 +206,8 @@ msgstr ""
 msgid "Cache / Buffers"
 msgstr "Gyorsítótár / Pufferelések"
 
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "Mégsem"
 
@@ -222,6 +226,15 @@ msgstr ""
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
 msgstr "Általános alkalmazásbeállítások módosítása."
+
+#: src/components/routes/system.tsx
+msgid "Charge"
+msgstr "Töltés"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Charging"
+msgstr "Töltődik"
 
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
@@ -261,8 +274,8 @@ msgstr "Jelszó megerősítése"
 msgid "Connection is down"
 msgstr ""
 
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
 msgstr "Tovább"
 
@@ -320,9 +333,9 @@ msgstr ""
 msgid "CPU"
 msgstr "CPU"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "CPU Usage"
 msgstr "CPU használat"
 
@@ -339,10 +352,10 @@ msgstr ""
 msgid "Critical (%)"
 msgstr "Kritikus (%)"
 
-#. Dark theme
-#: src/components/mode-toggle.tsx
-msgid "Dark"
-msgstr "Sötét"
+#. Context: Battery state
+#: src/components/routes/system.tsx
+msgid "Current state"
+msgstr "Jelenlegi állapot"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
@@ -353,14 +366,19 @@ msgstr "Áttekintés"
 msgid "Default time period"
 msgstr "Alapértelmezett időszak"
 
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "Törlés"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
 msgstr ""
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Discharging"
+msgstr "Kisül"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
@@ -374,9 +392,9 @@ msgstr "Lemez I/O"
 msgid "Disk unit"
 msgstr ""
 
-#: src/lib/utils.ts
-#: src/components/routes/system.tsx
 #: src/components/charts/disk-chart.tsx
+#: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Disk Usage"
 msgstr "Lemezhasználat"
 
@@ -401,10 +419,10 @@ msgid "Documentation"
 msgstr "Dokumentáció"
 
 #. Context: System is down
-#: src/lib/utils.ts
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
 msgid "Down"
 msgstr ""
 
@@ -417,14 +435,19 @@ msgstr ""
 msgid "Edit"
 msgstr ""
 
-#: src/components/login/forgot-pass-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
 msgid "Email"
 msgstr "Email"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
 msgstr "E-mail értesítések"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Empty"
+msgstr "Üres"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -434,11 +457,11 @@ msgstr "E-mail cím megadása a jelszó visszaállításához"
 msgid "Enter email address..."
 msgstr "Adja meg az e-mail címet..."
 
-#: src/components/routes/settings/tokens-fingerprints.tsx
-#: src/components/routes/settings/notifications.tsx
-#: src/components/routes/settings/config-yaml.tsx
-#: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/config-yaml.tsx
+#: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Error"
 msgstr "Hiba"
 
@@ -473,8 +496,8 @@ msgstr ""
 msgid "Failed to authenticate"
 msgstr "Hitelesítés sikertelen"
 
-#: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/notifications.tsx
 msgid "Failed to save settings"
 msgstr "Nem sikerült menteni a beállításokat"
 
@@ -482,13 +505,13 @@ msgstr "Nem sikerült menteni a beállításokat"
 msgid "Failed to send test notification"
 msgstr "Teszt értesítés elküldése sikertelen"
 
-#: src/components/alerts/alerts-system.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Failed to update alert"
 msgstr "Nem sikerült frissíteni a riasztást"
 
-#: src/components/systems-table/systems-table.tsx
-#: src/components/routes/system.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Szűrő..."
 
@@ -496,7 +519,7 @@ msgstr "Szűrő..."
 msgid "Fingerprint"
 msgstr ""
 
-#: src/components/alerts/alerts-system.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "A <0>{min}</0> {min, plural, one {perc} other {percek}}"
 
@@ -504,9 +527,14 @@ msgstr "A <0>{min}</0> {min, plural, one {perc} other {percek}}"
 msgid "Forgot password?"
 msgstr "Elfelejtette a jelszavát?"
 
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Full"
+msgstr "Tele"
+
 #. Context: General settings
-#: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/layout.tsx
 msgid "General"
 msgstr "Általános"
 
@@ -527,6 +555,11 @@ msgstr "Homebrew parancs"
 #: src/components/add-system.tsx
 msgid "Host / IP"
 msgstr "Állomás / IP"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Idle"
+msgstr "Tétlen"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
@@ -549,24 +582,19 @@ msgstr "Nyelv"
 msgid "Layout"
 msgstr "Elrendezés"
 
-#. Light theme
-#: src/components/mode-toggle.tsx
-msgid "Light"
-msgstr "Világos"
-
 #: src/components/routes/system.tsx
 msgid "Load Average"
 msgstr ""
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Load Average 15m"
 msgstr ""
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Load Average 1m"
 msgstr ""
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Load Average 5m"
 msgstr ""
 
@@ -583,13 +611,13 @@ msgstr "Kijelentkezés"
 msgid "Login"
 msgstr "Bejelentkezés"
 
-#: src/components/login/forgot-pass-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
 msgid "Login attempt failed"
 msgstr "Bejelentkezés sikertelen"
 
-#: src/components/navbar.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 msgid "Logs"
 msgstr "Naplók"
 
@@ -614,8 +642,8 @@ msgstr "Maximum 1 perc"
 msgid "Memory"
 msgstr "RAM"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Memory Usage"
 msgstr "Memóriahasználat"
 
@@ -623,8 +651,8 @@ msgstr "Memóriahasználat"
 msgid "Memory usage of docker containers"
 msgstr "Docker konténerek memória használata"
 
-#: src/components/alerts-history-columns.tsx
 #: src/components/add-system.tsx
+#: src/components/alerts-history-columns.tsx
 msgid "Name"
 msgstr "Név"
 
@@ -659,8 +687,8 @@ msgid "No systems found."
 msgstr "Nem található rendszer."
 
 #: src/components/command-palette.tsx
-#: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
 msgstr "Értesítések"
 
@@ -672,9 +700,9 @@ msgstr "OAuth 2 / OIDC támogatás"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Minden újraindításkor az adatbázisban lévő rendszerek frissítésre kerülnek, hogy megfeleljenek a fájlban meghatározott rendszereknek."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Open menu"
 msgstr "Menü megnyitása"
 
@@ -682,7 +710,7 @@ msgstr "Menü megnyitása"
 msgid "Or continue with"
 msgstr "Vagy folytasd ezzel"
 
-#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "Felülírja a meglévő riasztásokat"
 
@@ -729,12 +757,12 @@ msgstr "Szüneteltetve"
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "Kérjük, <0>konfigurálj egy SMTP szervert</0> az értesítések kézbesítésének biztosítása érdekében."
 
-#: src/components/alerts/alerts-system.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Please check logs for more details."
 msgstr "Kérjük, ellenőrizd a naplókat a további részletekért."
 
-#: src/components/login/forgot-pass-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
 msgid "Please check your credentials and try again"
 msgstr "Kérjük, ellenőrizze a hitelesítő adatait, és próbálja újra"
 
@@ -812,8 +840,8 @@ msgstr ""
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Mentse el a címet az Enter billentyű vagy a vessző használatával. Hagyja üresen az e-mail értesítések letiltásához."
 
-#: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "Beállítások mentése"
 
@@ -829,7 +857,7 @@ msgstr "Keresés"
 msgid "Search for systems or settings..."
 msgstr "Keresés rendszerek vagy beállítások után..."
 
-#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Lásd <0>az értesítési beállításokat</0>, hogy konfigurálja, hogyan kap értesítéseket."
 
@@ -873,7 +901,7 @@ msgstr "Rendezés"
 msgid "State"
 msgstr ""
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Status"
 msgstr "Állapot"
 
@@ -885,12 +913,10 @@ msgstr "Rendszer által használt swap terület"
 msgid "Swap Usage"
 msgstr "Swap használat"
 
-#. System theme
-#: src/lib/utils.ts
-#: src/components/mode-toggle.tsx
 #: src/components/alerts-history-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
 msgid "System"
 msgstr "Rendszer"
 
@@ -915,8 +941,8 @@ msgstr "Tábla"
 msgid "Temp"
 msgstr ""
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Temperature"
 msgstr "Hőmérséklet"
 
@@ -975,8 +1001,8 @@ msgid "Token"
 msgstr ""
 
 #: src/components/command-palette.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens & Fingerprints"
 msgstr ""
 
@@ -988,39 +1014,39 @@ msgstr ""
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr ""
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
 msgstr ""
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
 msgstr ""
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
 msgstr ""
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Bekapcsol, ha bármelyik érzékelő túllép egy küszöbértéket"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Bekapcsol, ha bármelyik érzékelő túllép egy küszöbértéket"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Bekapcsol, ha a CPU érzékelő túllép egy küszöbértéket"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Bekapcsol, ha a Ram érzékelő túllép egy küszöbértéket"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"
 msgstr "Bekapcsol, amikor az állapot fel és le között változik"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Bekapcsol, ha a lemez érzékelő túllép egy küszöbértéket"
 
@@ -1033,9 +1059,14 @@ msgstr ""
 msgid "Universal token"
 msgstr ""
 
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Unknown"
+msgstr "Ismeretlen"
+
 #. Context: System is up
-#: src/components/systems-table/systems-table-columns.tsx
 #: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
 msgstr ""
 
@@ -1058,13 +1089,13 @@ msgstr "Használat"
 msgid "Usage of root partition"
 msgstr "Root partíció kihasználtsága"
 
-#: src/components/charts/swap-chart.tsx
 #: src/components/charts/mem-chart.tsx
+#: src/components/charts/swap-chart.tsx
 msgid "Used"
 msgstr "Felhasznált"
 
-#: src/components/navbar.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 msgid "Users"
 msgstr "Felhasználók"
 

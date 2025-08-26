@@ -11,8 +11,8 @@ import {
 	$temperatureFilter,
 } from "@/lib/stores"
 import { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord } from "@/types"
-import { ChartType, Unit, Os } from "@/lib/enums"
-import React, { lazy, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { ChartType, Unit, Os, SystemStatus } from "@/lib/enums"
+import React, { lazy, memo, useCallback, useEffect, useMemo, useRef, useState, type JSX } from "react"
 import { Card, CardHeader, CardTitle, CardDescription } from "../ui/card"
 import { useStore } from "@nanostores/react"
 import Spinner from "../spinner"
@@ -41,6 +41,7 @@ import { timeTicks } from "d3-time"
 import { useLingui } from "@lingui/react/macro"
 import { $router, navigate } from "../router"
 import { getPagePath } from "@nanostores/router"
+import { batteryStateTranslations } from "@/lib/i18n"
 
 const AreaChartDefault = lazy(() => import("../charts/area-chart"))
 const ContainerChart = lazy(() => import("../charts/container-chart"))
@@ -382,9 +383,9 @@ export default function SystemDetail({ name }: { name: string }) {
 	const hasGpuPowerData = lastGpuVals.some((gpu) => gpu.p !== undefined)
 
 	let translatedStatus: string = system.status
-	if (system.status === "up") {
+	if (system.status === SystemStatus.Up) {
 		translatedStatus = t({ message: "Up", comment: "Context: System is up" })
-	} else if (system.status === "down") {
+	} else if (system.status === SystemStatus.Down) {
 		translatedStatus = t({ message: "Down", comment: "Context: System is down" })
 	}
 
@@ -399,7 +400,7 @@ export default function SystemDetail({ name }: { name: string }) {
 							<div className="flex flex-wrap items-center gap-3 gap-y-2 text-sm opacity-90">
 								<div className="capitalize flex gap-2 items-center">
 									<span className={cn("relative flex h-3 w-3")}>
-										{system.status === "up" && (
+										{system.status === SystemStatus.Up && (
 											<span
 												className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
 												style={{ animationDuration: "1.5s" }}
@@ -407,10 +408,10 @@ export default function SystemDetail({ name }: { name: string }) {
 										)}
 										<span
 											className={cn("relative inline-flex rounded-full h-3 w-3", {
-												"bg-green-500": system.status === "up",
-												"bg-red-500": system.status === "down",
-												"bg-primary/40": system.status === "paused",
-												"bg-yellow-500": system.status === "pending",
+												"bg-green-500": system.status === SystemStatus.Up,
+												"bg-red-500": system.status === SystemStatus.Down,
+												"bg-primary/40": system.status === SystemStatus.Paused,
+												"bg-yellow-500": system.status === SystemStatus.Pending,
 											})}
 										></span>
 									</span>
@@ -456,9 +457,9 @@ export default function SystemDetail({ name }: { name: string }) {
 											onClick={() => setGrid(!grid)}
 										>
 											{grid ? (
-												<LayoutGridIcon className="h-[1.2rem] w-[1.2rem] opacity-85" />
+												<LayoutGridIcon className="h-[1.2rem] w-[1.2rem] opacity-75" />
 											) : (
-												<Rows className="h-[1.3rem] w-[1.3rem] opacity-85" />
+												<Rows className="h-[1.3rem] w-[1.3rem] opacity-75" />
 											)}
 										</Button>
 									</TooltipTrigger>
@@ -668,6 +669,35 @@ export default function SystemDetail({ name }: { name: string }) {
 						</ChartCard>
 					)}
 
+					{/* Battery chart */}
+					{systemStats.at(-1)?.stats.bat && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Battery`}
+							description={`${t({
+								message: "Current state",
+								comment: "Context: Battery state",
+							})}: ${batteryStateTranslations[systemStats.at(-1)?.stats.bat![1] ?? 0]()}`}
+						>
+							<AreaChartDefault
+								chartData={chartData}
+								maxToggled={maxValues}
+								dataPoints={[
+									{
+										label: t`Charge`,
+										dataKey: ({ stats }) => stats?.bat?.[0],
+										color: "1",
+										opacity: 0.35,
+									},
+								]}
+								domain={[0, 100]}
+								tickFormatter={(val) => `${val}%`}
+								contentFormatter={({ value }) => `${value}%`}
+							/>
+						</ChartCard>
+					)}
+
 					{/* GPU power draw chart */}
 					{hasGpuPowerData && (
 						<ChartCard
@@ -872,10 +902,10 @@ function ChartCard({
 
 	return (
 		<Card className={cn("pb-2 sm:pb-4 odd:last-of-type:col-span-full", { "col-span-full": !grid })} ref={ref}>
-			<CardHeader className="pb-5 pt-4 relative space-y-1 max-sm:py-3 max-sm:px-4">
+			<CardHeader className="pb-5 pt-4 gap-1 relative max-sm:py-3 max-sm:px-4">
 				<CardTitle className="text-xl sm:text-2xl">{title}</CardTitle>
 				<CardDescription>{description}</CardDescription>
-				{cornerEl && <div className="relative py-1 block sm:w-44 sm:absolute sm:top-2.5 sm:end-3.5">{cornerEl}</div>}
+				{cornerEl && <div className="relative py-1 block sm:w-44 sm:absolute sm:top-3.5 sm:end-3.5">{cornerEl}</div>}
 			</CardHeader>
 			<div className="ps-0 w-[calc(100%-1.5em)] h-48 md:h-52 relative group">
 				{

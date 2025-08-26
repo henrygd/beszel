@@ -41,13 +41,14 @@ import { memo, useEffect, useMemo, useState } from "react"
 import { $systems } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { cn, useLocalStorage } from "@/lib/utils"
-import { $router, Link, navigate } from "../router"
+import { $router, Link } from "../router"
 import { useLingui, Trans } from "@lingui/react/macro"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Input } from "../ui/input"
 import { getPagePath } from "@nanostores/router"
 import SystemsTableColumns, { ActionsButton, IndicatorDot } from "./systems-table-columns"
 import AlertButton from "../alerts/alert-button"
+import { SystemStatus } from "@/lib/enums"
 
 type ViewMode = "table" | "grid"
 
@@ -291,15 +292,9 @@ const SystemTableRow = memo(
 			return (
 				<TableRow
 					// data-state={row.getIsSelected() && "selected"}
-					className={cn("cursor-pointer transition-opacity", {
-						"opacity-50": system.status === "paused",
+					className={cn("cursor-pointer transition-opacity relative", {
+						"opacity-50": system.status === SystemStatus.Paused,
 					})}
-					onClick={(e) => {
-						const target = e.target as HTMLElement
-						if (!target.closest("[data-nolink]") && e.currentTarget.contains(target)) {
-							navigate(getPagePath($router, "system", { name: system.name }))
-						}
-					}}
 				>
 					{row.getVisibleCells().map((cell) => (
 						<TableCell
@@ -307,7 +302,7 @@ const SystemTableRow = memo(
 							style={{
 								width: cell.column.getSize(),
 							}}
-							className={cn("overflow-hidden relative", length > 10 ? "py-2" : "py-2.5")}
+							className={length > 10 ? "py-2" : "py-2.5"}
 						>
 							{flexRender(cell.column.columnDef.cell, cell.getContext())}
 						</TableCell>
@@ -330,7 +325,7 @@ const SystemCard = memo(
 					className={cn(
 						"cursor-pointer hover:shadow-md transition-all bg-transparent w-full dark:border-border duration-200 relative",
 						{
-							"opacity-50": system.status === "paused",
+							"opacity-50": system.status === SystemStatus.Paused,
 						}
 					)}
 				>
@@ -345,14 +340,14 @@ const SystemCard = memo(
 								</div>
 							</CardTitle>
 							{table.getColumn("actions")?.getIsVisible() && (
-								<div className="flex gap-1 flex-shrink-0 relative z-10">
+								<div className="flex gap-1 shrink-0 relative z-10">
 									<AlertButton system={system} />
 									<ActionsButton system={system} />
 								</div>
 							)}
 						</div>
 					</CardHeader>
-					<CardContent className="space-y-2.5 text-sm px-5 pt-3.5 pb-4">
+					<CardContent className="grid gap-2.5 text-sm px-5 pt-3.5 pb-4">
 						{table.getAllColumns().map((column) => {
 							if (!column.getIsVisible() || column.id === "system" || column.id === "actions") return null
 							const cell = row.getAllCells().find((cell) => cell.column.id === column.id)

@@ -38,6 +38,7 @@ type Agent struct {
 	dataDir           string                     // Directory for persisting data
 	keys              []gossh.PublicKey          // SSH public keys
 	configManager     *ConfigManager             // Manages configuration from hub
+	hasBattery        bool                       // true if agent has access to battery stats
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.
