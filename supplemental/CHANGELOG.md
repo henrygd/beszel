@@ -2,6 +2,8 @@
 
 - Add battery charge monitoring.
 
+- Add fallback mirror to the `update` commands. (#1035)
+
 - Fix blank token field in insecure contexts.
 
 - Allow opening internal router links in new tab.

@@ -108,6 +108,8 @@ func (p *plugin) update() (updated bool, err error) {
 	}
 
 	var latest *release
+	var useMirror bool
+
 	latest, err = fetchLatestRelease(
 		p.config.Context,
 		p.config.HttpClient,
@@ -116,6 +118,7 @@ func (p *plugin) update() (updated bool, err error) {
 	// if the first fetch fails, try the beszel.dev API (fallback for China)
 	if err != nil {
 		ColorPrint(ColorYellow, "Failed to fetch release. Trying beszel.dev mirror...")
+		useMirror = true
 		latest, err = fetchLatestRelease(
 			p.config.Context,
 			p.config.HttpClient,
@@ -147,7 +150,7 @@ func (p *plugin) update() (updated bool, err error) {
 
 	// download the release asset
 	assetPath := filepath.Join(releaseDir, asset.Name)
-	if err := downloadFile(p.config.Context, p.config.HttpClient, asset.DownloadUrl, assetPath); err != nil {
+	if err := downloadFile(p.config.Context, p.config.HttpClient, asset.DownloadUrl, assetPath, useMirror); err != nil {
 		return false, err
 	}
 
@@ -275,7 +278,11 @@ func downloadFile(
 	client HttpClient,
 	url string,
 	destPath string,
+	useMirror bool,
 ) error {
+	if useMirror {
+		url = strings.Replace(url, "github.com", "gh.beszel.dev", 1)
+	}
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return err
