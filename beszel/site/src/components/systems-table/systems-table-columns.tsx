@@ -55,6 +55,8 @@ import {
 import { buttonVariants } from "../ui/button"
 import { t } from "@lingui/core/macro"
 import { MeterState, SystemStatus } from "@/lib/enums"
+import { $router, Link } from "../router"
+import { getPagePath } from "@nanostores/router"
 
 const STATUS_COLORS = {
 	[SystemStatus.Up]: "bg-green-500",
@@ -107,12 +109,22 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			enableHiding: false,
 			invertSorting: false,
 			Icon: ServerIcon,
-			cell: (info) => (
-				<span className="flex gap-2 items-center font-medium text-sm text-nowrap md:ps-1 md:pe-5">
-					<IndicatorDot system={info.row.original} />
-					{info.row.original.name}
-				</span>
-			),
+			cell: (info) => {
+				const { name } = info.row.original
+				return (
+					<>
+						<span className="flex gap-2 items-center font-medium text-sm text-nowrap md:ps-1 md:pe-5">
+							<IndicatorDot system={info.row.original} />
+							{name}
+						</span>
+						<Link
+							href={getPagePath($router, "system", { name })}
+							className="inset-0 absolute size-full"
+							aria-label={name}
+						></Link>
+					</>
+				)
+			},
 			header: sortableHeader,
 		},
 		{

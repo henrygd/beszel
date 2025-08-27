@@ -41,7 +41,7 @@ import { memo, useEffect, useMemo, useState } from "react"
 import { $systems } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { cn, useLocalStorage } from "@/lib/utils"
-import { $router, Link, navigate } from "../router"
+import { $router, Link } from "../router"
 import { useLingui, Trans } from "@lingui/react/macro"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Input } from "../ui/input"
@@ -292,20 +292,9 @@ const SystemTableRow = memo(
 			return (
 				<TableRow
 					// data-state={row.getIsSelected() && "selected"}
-					className={cn("cursor-pointer transition-opacity", {
+					className={cn("cursor-pointer transition-opacity relative safari:transform-3d", {
 						"opacity-50": system.status === SystemStatus.Paused,
 					})}
-					onClick={(e) => {
-						const target = e.target as HTMLElement
-						// Only navigate if we didn't click on an action button
-						if (!target.closest("button") && !target.closest("[role='button']")) {
-							if (e.ctrlKey || e.metaKey) {
-								window.open(getPagePath($router, "system", { name: system.name }), "_blank")
-							} else {
-								navigate(getPagePath($router, "system", { name: system.name }))
-							}
-						}
-					}}
 				>
 					{row.getVisibleCells().map((cell) => (
 						<TableCell
