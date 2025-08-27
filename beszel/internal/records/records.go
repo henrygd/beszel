@@ -312,6 +312,8 @@ func (rm *RecordManager) AverageContainerStats(records RecordStats) []container.
 			sums[stat.Name].Mem += stat.Mem
 			sums[stat.Name].NetworkSent += stat.NetworkSent
 			sums[stat.Name].NetworkRecv += stat.NetworkRecv
+			sums[stat.Name].DiskRead += stat.DiskRead
+			sums[stat.Name].DiskWrite += stat.DiskWrite
 		}
 	}
 
@@ -323,6 +325,8 @@ func (rm *RecordManager) AverageContainerStats(records RecordStats) []container.
 			Mem:         twoDecimals(value.Mem / count),
 			NetworkSent: twoDecimals(value.NetworkSent / count),
 			NetworkRecv: twoDecimals(value.NetworkRecv / count),
+			DiskRead:    twoDecimals(value.DiskRead / count),
+			DiskWrite:   twoDecimals(value.DiskWrite / count),
 		})
 	}
 	return result

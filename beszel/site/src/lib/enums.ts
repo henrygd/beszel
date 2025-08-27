@@ -14,4 +14,5 @@ export enum ChartType {
 	Health,
 	Uptime,
 	HealthUptime,
+	DiskIO,
 }

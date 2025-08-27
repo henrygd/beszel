@@ -996,6 +996,15 @@ export default function SystemDetail({ name }: { name: string }) {
 									>
 										<ContainerChart chartData={chartData} dataKey="n" chartType={ChartType.Network} />
 									</ChartCard>
+									{/* Docker Disk I/O Chart */}
+									<ChartCard
+										empty={dataEmpty}
+										grid={grid}
+										title={dockerOrPodman(t`Docker Disk I/O`, system)}
+										description={t`Disk read/write activity of containers`}
+									>
+										<ContainerChart chartData={chartData} dataKey="d" chartType={ChartType.DiskIO} unit=" MB/s" />
+									</ChartCard>
 									{/* Docker Volumes Chart */}
 									<ChartCard
 										empty={dataEmpty}

@@ -44,6 +44,7 @@ export default memo(function ContainerChart({
 	const isHealthChart = chartType === ChartType.Health
 	const isUptimeChart = chartType === ChartType.Uptime
 	const isHealthUptimeChart = chartType === ChartType.HealthUptime
+	const isDiskIOChart = chartType === ChartType.DiskIO
 
 	// Centralized data processing for all chart types
 	const chartDatasets = useMemo(() => {
@@ -212,7 +213,7 @@ export default memo(function ContainerChart({
 		} else {
 			obj.tickFormatter = (value) => {
 				const { v, u } = getSizeAndUnit(value, false)
-				return updateYAxisWidth(`${toFixedFloat(v, 2)}${u}${isNetChart ? "/s" : ""}`)
+				return updateYAxisWidth(`${toFixedFloat(v, 2)}${u}${isNetChart || isDiskIOChart ? "/s" : ""}`)
 			}
 		}
 		// tooltip formatter
@@ -228,6 +229,24 @@ export default memo(function ContainerChart({
 							<Separator orientation="vertical" className="h-3 mx-1.5 bg-primary/40" />
 							{decimalString(sent)} MB/s
 							<span className="opacity-70 ms-0.5"> tx</span>
+						</span>
+					)
+				} catch (e) {
+					return null
+				}
+			}
+		} else if (isDiskIOChart) {
+			obj.toolTipFormatter = (item: any, key: string) => {
+				try {
+					const read = item?.payload?.[key]?.dr ?? 0
+					const write = item?.payload?.[key]?.dw ?? 0
+					return (
+						<span className="flex">
+							{decimalString(read)} MB/s
+							<span className="opacity-70 ms-0.5"> read </span>
+							<Separator orientation="vertical" className="h-3 mx-1.5 bg-primary/40" />
+							{decimalString(write)} MB/s
+							<span className="opacity-70 ms-0.5"> write</span>
 						</span>
 					)
 				} catch (e) {
@@ -282,11 +301,13 @@ export default memo(function ContainerChart({
 		// data function
 		if (isNetChart) {
 			obj.dataFunction = (key: string, data: any) => (data[key] ? data[key].nr + data[key].ns : null)
+		} else if (isDiskIOChart) {
+			obj.dataFunction = (key: string, data: any) => (data[key] ? (data[key].dr || 0) + (data[key].dw || 0) : null)
 		} else {
 			obj.dataFunction = (key: string, data: any) => data[key]?.[dataKey] ?? null
 		}
 		return obj
-	}, [chartType, isNetChart, isVolumeChart, unit])
+	}, [chartType, isNetChart, isVolumeChart, isDiskIOChart, unit])
 
 	if (containerData.length === 0) {
 		return null

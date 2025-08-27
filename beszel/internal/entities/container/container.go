@@ -36,6 +36,7 @@ type ApiStats struct {
 	Networks    map[string]NetworkStats
 	CPUStats    CPUStats    `json:"cpu_stats"`
 	MemoryStats MemoryStats `json:"memory_stats"`
+	BlkioStats  BlkioStats  `json:"blkio_stats"`
 }
 
 func (s *ApiStats) CalculateCpuPercentLinux(prevCpuUsage [2]uint64) float64 {
@@ -96,9 +97,26 @@ type NetworkStats struct {
 	TxBytes uint64 `json:"tx_bytes"`
 }
 
+type BlkioStats struct {
+	IoServiceBytesRecursive []BlkioStatEntry `json:"io_service_bytes_recursive"`
+	IoServicedRecursive     []BlkioStatEntry `json:"io_serviced_recursive"`
+}
+
+type BlkioStatEntry struct {
+	Major uint64 `json:"major"`
+	Minor uint64 `json:"minor"`
+	Op    string `json:"op"`
+	Value uint64 `json:"value"`
+}
+
 type prevNetStats struct {
 	Sent uint64
 	Recv uint64
+}
+
+type prevDiskStats struct {
+	Read  uint64
+	Write uint64
 }
 
 // Docker container stats
@@ -108,6 +126,8 @@ type Stats struct {
 	Mem         float64            `json:"m"`
 	NetworkSent float64            `json:"ns"`
 	NetworkRecv float64            `json:"nr"`
+	DiskRead    float64            `json:"dr"`                // Disk read rate in MB/s
+	DiskWrite   float64            `json:"dw"`                // Disk write rate in MB/s
 	Volumes     map[string]float64 `json:"v,omitempty"`       // Volume name to size mapping
 	Health      string             `json:"h,omitempty"`       // Container health status
 	Status      string             `json:"s,omitempty"`       // Container status (running, stopped, etc.)
@@ -116,6 +136,7 @@ type Stats struct {
 	IdShort     string             `json:"idShort,omitempty"` // Container short ID for frontend
 	PrevCpu     [2]uint64          `json:"-"`
 	PrevNet     prevNetStats       `json:"-"`
+	PrevDisk    prevDiskStats      `json:"-"`
 	PrevRead    time.Time          `json:"-"`
 }
 
