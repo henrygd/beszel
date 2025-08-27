@@ -601,7 +601,7 @@ msgstr "Durchschnittliche Systemlast 5 Min"
 #. Short label for load average
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
-msgstr "Durchschnittliche Last"
+msgstr "Systemlast"
 
 #: src/components/navbar.tsx
 msgid "Log Out"
