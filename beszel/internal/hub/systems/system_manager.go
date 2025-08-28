@@ -4,6 +4,7 @@ import (
 	"beszel"
 	"beszel/internal/common"
 	"beszel/internal/entities/system"
+	"beszel/internal/hub/config"
 	"beszel/internal/hub/ws"
 	"errors"
 	"fmt"
@@ -163,6 +164,13 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 	if ok {
 		prevStatus = system.Status
 		system.Status = newStatus
+	}
+
+	// Check for agent_config changes and push to agent immediately
+	if ok && system.WsConn != nil && system.WsConn.IsConnected() {
+		if sm.hasAgentConfigChanged(e) {
+			go sm.pushConfigToAgent(e.Record.Id, e.Record)
+		}
 	}
 
 	switch newStatus {
@@ -342,4 +350,122 @@ func deactivateAlerts(app core.App, systemID string) error {
 		}
 	}
 	return nil
+}
+
+// hasAgentConfigChanged checks if the agent_config field has changed in a record update
+func (sm *SystemManager) hasAgentConfigChanged(e *core.RecordEvent) bool {
+	if e.Record == nil {
+		return false
+	}
+
+	// Get current and original agent_config values
+	newConfig := e.Record.GetString("agent_config")
+	originalConfig := e.Record.Original().GetString("agent_config")
+	
+	// Return true if the configs are different
+	return newConfig != originalConfig
+}
+
+// pushConfigToAgent immediately pushes configuration updates to an agent via WebSocket
+func (sm *SystemManager) pushConfigToAgent(systemID string, _ *core.Record) {
+	system, ok := sm.systems.GetOk(systemID)
+	if !ok || system.WsConn == nil || !system.WsConn.IsConnected() {
+		sm.hub.Logger().Warn("Cannot push config: system not connected", "system_id", systemID)
+		return
+	}
+
+	// Get the agent configuration for this system
+	agentConfig, err := config.GetAgentConfigForSystem(sm.hub, systemID)
+	if err != nil {
+		sm.hub.Logger().Error("Failed to get agent config for push", "system_id", systemID, "error", err)
+		return
+	}
+
+	// Convert to ConfigUpdateRequest
+	configUpdate := agentConfig.ToConfigUpdateRequest()
+	configUpdate.ForceRestart = sm.shouldForceRestart(agentConfig)
+
+	sm.hub.Logger().Info("Pushing real-time config update to agent", 
+		"system_id", systemID, 
+		"version", configUpdate.Version,
+		"force_restart", configUpdate.ForceRestart)
+
+	// Push the configuration via WebSocket
+	response, err := system.WsConn.PushConfig(configUpdate)
+	if err != nil {
+		sm.hub.Logger().Error("Failed to push config to agent", 
+			"system_id", systemID, 
+			"error", err)
+		return
+	}
+
+	if !response.Success {
+		sm.hub.Logger().Error("Agent rejected config update", 
+			"system_id", systemID, 
+			"error", response.Error,
+			"agent_version", response.Version)
+		return
+	}
+
+	sm.hub.Logger().Info("Successfully pushed config to agent", 
+		"system_id", systemID,
+		"agent_version", response.Version,
+		"restart_needed", response.RestartNeeded)
+
+	// Update system record with last config push timestamp for tracking
+	if record, err := sm.hub.FindRecordById("systems", systemID); err == nil {
+		record.Set("last_config_push", time.Now())
+		if err := sm.hub.SaveNoValidate(record); err != nil {
+			sm.hub.Logger().Warn("Failed to update last_config_push timestamp", "system_id", systemID, "error", err)
+		}
+	}
+
+	// If restart is needed, the agent will handle it automatically
+	if response.RestartNeeded {
+		sm.hub.Logger().Info("Agent will restart to apply new configuration", "system_id", systemID)
+	}
+}
+
+// shouldForceRestart determines if certain configuration changes require a forced restart
+func (sm *SystemManager) shouldForceRestart(_ *config.AgentConfig) bool {
+	// For now, we let the agent decide based on configuration changes
+	// This could be extended to force restarts for critical security updates, etc.
+	return false
+}
+
+// GetConfigSyncStatus returns information about config sync status for connected systems
+func (sm *SystemManager) GetConfigSyncStatus() map[string]ConfigSyncInfo {
+	status := make(map[string]ConfigSyncInfo)
+	
+	// Get all systems from store
+	allSystems := sm.systems.GetAll()
+	for systemID, system := range allSystems {
+		info := ConfigSyncInfo{
+			SystemID:      systemID,
+			IsConnected:   system.WsConn != nil && system.WsConn.IsConnected(),
+			SupportsSync:  system.WsConn != nil,
+			Status:        system.Status,
+		}
+		
+		// Get last config push time from database if available
+		if record, err := sm.hub.FindRecordById("systems", systemID); err == nil {
+			if pushTime := record.GetDateTime("last_config_push"); !pushTime.IsZero() {
+				timeValue := pushTime.Time()
+				info.LastConfigPush = &timeValue
+			}
+		}
+		
+		status[systemID] = info
+	}
+	
+	return status
+}
+
+// ConfigSyncInfo contains information about config sync status for a system
+type ConfigSyncInfo struct {
+	SystemID       string     `json:"system_id"`
+	IsConnected    bool       `json:"is_connected"`
+	SupportsSync   bool       `json:"supports_sync"`
+	Status         string     `json:"status"`
+	LastConfigPush *time.Time `json:"last_config_push,omitempty"`
 }

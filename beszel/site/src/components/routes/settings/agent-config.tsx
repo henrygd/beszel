@@ -217,7 +217,7 @@ export default function AgentConfig() {
 
       toast({
         title: "Success",
-        description: `Configuration updated for ${selectedSystems.size} system(s). Agents will refresh automatically within 90 seconds.`,
+        description: `Configuration updated for ${selectedSystems.size} system(s). Changes are being pushed to online agents immediately.`,
       })
       await loadSystems() // Reload to get updated data
     } catch (error) {
@@ -312,6 +312,11 @@ export default function AgentConfig() {
                       <Badge variant={system.status === 'up' ? 'default' : 'secondary'}>
                         {system.status}
                       </Badge>
+                      {system.status === 'up' && (
+                        <Badge variant="outline" className="text-green-600 border-green-300 bg-green-50">
+                          Real-time
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 </div>
