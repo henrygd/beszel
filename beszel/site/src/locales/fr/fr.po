@@ -33,6 +33,10 @@ msgstr ""
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# heure} other {# heures}}"
 
+#: src/components/routes/system.tsx
+msgid "{mins, plural, one {# minute} other {# minutes}}"
+msgstr ""
+
 #: src/lib/utils.ts
 msgid "1 hour"
 msgstr "1 heure"
@@ -124,6 +128,7 @@ msgid "Alerts"
 msgstr "Alertes"
 
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "Tous les systèmes"
@@ -422,6 +427,7 @@ msgstr "Documentation"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Down"
 msgstr "Injoignable"
@@ -492,7 +498,7 @@ msgstr "Exportez la configuration actuelle de vos systèmes."
 msgid "Fahrenheit (°F)"
 msgstr ""
 
-#: src/lib/utils.ts
+#: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Échec de l'authentification"
 
@@ -750,6 +756,7 @@ msgid "Pause"
 msgstr "Pause"
 
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Paused"
 msgstr "En pause"
 
@@ -774,7 +781,7 @@ msgstr "Veuillez créer un compte administrateur"
 msgid "Please enable pop-ups for this site"
 msgstr "Veuillez activer les pop-ups pour ce site"
 
-#: src/lib/utils.ts
+#: src/lib/api.ts
 msgid "Please log in again"
 msgstr "Veuillez vous reconnecter"
 
@@ -901,6 +908,7 @@ msgstr "Trier par"
 msgid "State"
 msgstr ""
 
+#: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
 msgstr "Statut"
@@ -1067,6 +1075,7 @@ msgstr "Inconnue"
 #. Context: System is up
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Up"
 msgstr "Joignable"
 

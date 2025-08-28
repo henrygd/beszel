@@ -33,6 +33,10 @@ msgstr "{1}개의 행 중 {0}개가 선택되었습니다."
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# 시간} other {# 시간}}"
 
+#: src/components/routes/system.tsx
+msgid "{mins, plural, one {# minute} other {# minutes}}"
+msgstr ""
+
 #: src/lib/utils.ts
 msgid "1 hour"
 msgstr "1시간"
@@ -124,6 +128,7 @@ msgid "Alerts"
 msgstr "알림"
 
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "모든 시스템"
@@ -422,6 +427,7 @@ msgstr "문서"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Down"
 msgstr "오프라인"
@@ -492,7 +498,7 @@ msgstr "현재 시스템 구성 내보내기"
 msgid "Fahrenheit (°F)"
 msgstr "화씨 (°F)"
 
-#: src/lib/utils.ts
+#: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "인증 실패"
 
@@ -750,6 +756,7 @@ msgid "Pause"
 msgstr "일시 중지"
 
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Paused"
 msgstr "일시 정지됨"
 
@@ -774,7 +781,7 @@ msgstr "관리자 계정을 생성하세요."
 msgid "Please enable pop-ups for this site"
 msgstr "이 사이트에 대해 팝업을 활성화하세요."
 
-#: src/lib/utils.ts
+#: src/lib/api.ts
 msgid "Please log in again"
 msgstr "다시 로그인하세요."
 
@@ -901,6 +908,7 @@ msgstr "정렬 기준"
 msgid "State"
 msgstr "상태"
 
+#: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
 msgstr "상태"
@@ -1067,6 +1075,7 @@ msgstr "알 수 없음"
 #. Context: System is up
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Up"
 msgstr "온라인"
 

@@ -33,6 +33,10 @@ msgstr ""
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# time} other {# timer}}"
 
+#: src/components/routes/system.tsx
+msgid "{mins, plural, one {# minute} other {# minutes}}"
+msgstr ""
+
 #: src/lib/utils.ts
 msgid "1 hour"
 msgstr "1 time"
@@ -124,6 +128,7 @@ msgid "Alerts"
 msgstr "Alarmer"
 
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "Alle Systemer"
@@ -422,6 +427,7 @@ msgstr "Dokumentasjon"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Down"
 msgstr "Nede"
@@ -492,7 +498,7 @@ msgstr "Eksporter din nåværende systemkonfigurasjon"
 msgid "Fahrenheit (°F)"
 msgstr ""
 
-#: src/lib/utils.ts
+#: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Autentisering mislyktes"
 
@@ -750,6 +756,7 @@ msgid "Pause"
 msgstr "Pause"
 
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Paused"
 msgstr "Satt på Pause"
 
@@ -774,7 +781,7 @@ msgstr "Vennligst opprett en admin-konto"
 msgid "Please enable pop-ups for this site"
 msgstr "Vennligst aktiver pop-ups for nettsiden"
 
-#: src/lib/utils.ts
+#: src/lib/api.ts
 msgid "Please log in again"
 msgstr "Vennligst logg inn på nytt"
 
@@ -901,6 +908,7 @@ msgstr "Sorter Etter"
 msgid "State"
 msgstr ""
 
+#: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
 msgstr "Status"
@@ -1067,6 +1075,7 @@ msgstr "Ukjent"
 #. Context: System is up
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Up"
 msgstr "Oppe"
 

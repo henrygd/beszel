@@ -33,6 +33,10 @@ msgstr "Đã chọn {0} trên {1} hàng."
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# giờ} other {# giờ}}"
 
+#: src/components/routes/system.tsx
+msgid "{mins, plural, one {# minute} other {# minutes}}"
+msgstr ""
+
 #: src/lib/utils.ts
 msgid "1 hour"
 msgstr "1 giờ"
@@ -124,6 +128,7 @@ msgid "Alerts"
 msgstr "Cảnh báo"
 
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "Tất cả Hệ thống"
@@ -422,6 +427,7 @@ msgstr "Tài liệu"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Down"
 msgstr "Mất kết nối"
@@ -492,7 +498,7 @@ msgstr "Xuất cấu hình hệ thống hiện tại của bạn."
 msgid "Fahrenheit (°F)"
 msgstr "Độ F (°F)"
 
-#: src/lib/utils.ts
+#: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Xác thực thất bại"
 
@@ -750,6 +756,7 @@ msgid "Pause"
 msgstr "Tạm dừng"
 
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Paused"
 msgstr "Đã tạm dừng"
 
@@ -774,7 +781,7 @@ msgstr "Vui lòng tạo một tài khoản quản trị viên"
 msgid "Please enable pop-ups for this site"
 msgstr "Vui lòng bật cửa sổ bật lên cho trang web này"
 
-#: src/lib/utils.ts
+#: src/lib/api.ts
 msgid "Please log in again"
 msgstr "Vui lòng đăng nhập lại"
 
@@ -901,6 +908,7 @@ msgstr "Sắp xếp theo"
 msgid "State"
 msgstr "Trạng thái"
 
+#: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
 msgstr "Trạng thái"
@@ -1067,6 +1075,7 @@ msgstr "Không xác định"
 #. Context: System is up
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Up"
 msgstr "Hoạt động"
 

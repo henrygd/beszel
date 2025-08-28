@@ -33,6 +33,10 @@ msgstr "{0} от {1} селектирани."
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# час} other {# часа}}"
 
+#: src/components/routes/system.tsx
+msgid "{mins, plural, one {# minute} other {# minutes}}"
+msgstr ""
+
 #: src/lib/utils.ts
 msgid "1 hour"
 msgstr "1 час"
@@ -124,6 +128,7 @@ msgid "Alerts"
 msgstr "Тревоги"
 
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "Всички системи"
@@ -422,6 +427,7 @@ msgstr "Документация"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Down"
 msgstr "Офлайн"
@@ -492,7 +498,7 @@ msgstr "Експортирай конфигурацията на системи�
 msgid "Fahrenheit (°F)"
 msgstr "Фаренхайт (°F)"
 
-#: src/lib/utils.ts
+#: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Неуспешно удостоверяване"
 
@@ -750,6 +756,7 @@ msgid "Pause"
 msgstr "Пауза"
 
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Paused"
 msgstr "На пауза"
 
@@ -774,7 +781,7 @@ msgstr "Моля създай администраторски акаунт"
 msgid "Please enable pop-ups for this site"
 msgstr "Моля активирай изскачащите прозорци за този сайт"
 
-#: src/lib/utils.ts
+#: src/lib/api.ts
 msgid "Please log in again"
 msgstr "Моля влез отново"
 
@@ -901,6 +908,7 @@ msgstr "Сортиране по"
 msgid "State"
 msgstr "Състояние"
 
+#: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
 msgstr "Статус"
@@ -1067,6 +1075,7 @@ msgstr "Неизвестна"
 #. Context: System is up
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Up"
 msgstr "Нагоре"
 
