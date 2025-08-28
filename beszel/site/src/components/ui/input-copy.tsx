@@ -15,7 +15,7 @@ export function InputCopy({ value, id, name }: { value: string; id: string; name
 				}
 			></div>
 			<TooltipProvider delayDuration={100} disableHoverableContent>
-				<Tooltip>
+				<Tooltip disableHoverableContent={true}>
 					<TooltipTrigger asChild>
 						<Button
 							type="button"

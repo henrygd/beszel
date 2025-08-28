@@ -318,22 +318,18 @@ function sortableHeader(context: HeaderContext<SystemRecord, unknown>) {
 function TableCellWithMeter(info: CellContext<SystemRecord, unknown>) {
 	const val = Number(info.getValue()) || 0
 	const threshold = getMeterState(val)
+	const meterClass = cn(
+		"h-full",
+		(info.row.original.status !== SystemStatus.Up && STATUS_COLORS.paused) ||
+			(threshold === MeterState.Good && STATUS_COLORS.up) ||
+			(threshold === MeterState.Warn && STATUS_COLORS.pending) ||
+			STATUS_COLORS.down
+	)
 	return (
 		<div className="flex gap-2 items-center tabular-nums tracking-tight">
 			<span className="min-w-8">{decimalString(val, val >= 10 ? 1 : 2)}%</span>
-			<span className="grow min-w-8 block bg-muted h-[1em] relative rounded-sm overflow-hidden">
-				<span
-					className={cn(
-						"absolute inset-0 w-full h-full origin-left",
-						(info.row.original.status !== SystemStatus.Up && STATUS_COLORS.paused) ||
-							(threshold === MeterState.Good && STATUS_COLORS.up) ||
-							(threshold === MeterState.Warn && STATUS_COLORS.pending) ||
-							STATUS_COLORS.down
-					)}
-					style={{
-						transform: `scalex(${val / 100})`,
-					}}
-				></span>
+			<span className="grow min-w-8 grid bg-muted h-[1em] rounded-sm overflow-hidden">
+				<span className={meterClass} style={{ width: `${val}%` }}></span>
 			</span>
 		</div>
 	)

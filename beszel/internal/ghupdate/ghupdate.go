@@ -66,8 +66,13 @@ type Config struct {
 	DataDir string
 }
 
+type updater struct {
+	config         Config
+	currentVersion string
+}
+
 func Update(config Config) (updated bool, err error) {
-	p := &plugin{
+	p := &updater{
 		currentVersion: beszel.Version,
 		config:         config,
 	}
@@ -75,12 +80,7 @@ func Update(config Config) (updated bool, err error) {
 	return p.update()
 }
 
-type plugin struct {
-	config         Config
-	currentVersion string
-}
-
-func (p *plugin) update() (updated bool, err error) {
+func (p *updater) update() (updated bool, err error) {
 	ColorPrint(ColorYellow, "Fetching release information...")
 
 	if p.config.DataDir == "" {

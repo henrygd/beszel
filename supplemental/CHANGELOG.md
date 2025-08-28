@@ -1,3 +1,11 @@
+## 0.12.5
+
+- Downgrade `gopsutil` to `v4.25.6` to fix panic on FreeBSD (#1083)
+
+- Exclude FreeBSD from battery charge monitoring to fix deadlock. (#1081)
+
+- Minor hub UI improvements.
+
 ## 0.12.4
 
 - Add battery charge monitoring.

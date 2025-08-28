@@ -30,6 +30,14 @@ func Update(_ *cobra.Command, _ []string) {
 		return
 	}
 
+	// make sure the file is executable
+	exePath, err := os.Executable()
+	if err == nil {
+		if err := os.Chmod(exePath, 0755); err != nil {
+			fmt.Printf("Warning: failed to set executable permissions: %v\n", err)
+		}
+	}
+
 	// Try to restart the service if it's running
 	restartService()
 }
