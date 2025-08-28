@@ -1,5 +1,5 @@
 import { t } from "@lingui/core/macro"
-import { Plural, Trans } from "@lingui/react/macro"
+import { Trans } from "@lingui/react/macro"
 import {
 	$systems,
 	pb,
@@ -29,6 +29,7 @@ import {
 	parseSemVer,
 	toFixedFloat,
 	useLocalStorage,
+	formatUptimeString,
 } from "@/lib/utils"
 import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
@@ -288,13 +289,7 @@ export default function SystemDetail({ name }: { name: string }) {
 			},
 		}
 
-		let uptime: React.ReactNode
-		if (system.info.u < 172800) {
-			const hours = Math.trunc(system.info.u / 3600)
-			uptime = <Plural value={hours} one="# hour" other="# hours" />
-		} else {
-			uptime = <Plural value={Math.trunc(system.info?.u / 86400)} one="# day" other="# days" />
-		}
+		let uptime: React.ReactNode = formatUptimeString(system.info.u)
 		return [
 			{ value: getHostDisplayValue(system), Icon: GlobeIcon },
 			{

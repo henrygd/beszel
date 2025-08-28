@@ -29,6 +29,8 @@ export interface SystemRecord extends RecordModel {
 	port: string
 	info: SystemInfo
 	v: string
+	updated: string
+	
 }
 
 export interface SystemInfo {

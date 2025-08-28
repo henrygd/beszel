@@ -57,7 +57,7 @@ export const updateSystemList = (() => {
 		try {
 			const records = await pb
 				.collection<SystemRecord>("systems")
-				.getFullList({ sort: "+name", fields: "id,name,host,port,info,status" })
+				.getFullList({ sort: "+name", fields: "id,name,host,port,info,status,updated" })
 
 			if (records.length) {
 				$systems.set(records)
@@ -356,6 +356,20 @@ export const chartMargin = { top: 12 }
  * const hostname = getHostDisplayValue(system) // hostname will be "beszel.sock"
  */
 export const getHostDisplayValue = (system: SystemRecord): string => system.host.slice(system.host.lastIndexOf("/") + 1)
+
+export function formatUptimeString(uptimeSeconds: number): string {
+	if (!uptimeSeconds || isNaN(uptimeSeconds)) return "";
+	if (uptimeSeconds < 3600) {
+		const mins = Math.trunc(uptimeSeconds / 60);
+		return mins === 1 ? "1 minute" : `${mins} minutes`;
+	} else if (uptimeSeconds < 172800) {
+		const hours = Math.trunc(uptimeSeconds / 3600);
+		return hours === 1 ? "1 hour" : `${hours} hours`;
+	} else {
+		const days = Math.trunc(uptimeSeconds / 86400);
+		return days === 1 ? "1 day" : `${days} days`;
+	}
+}
 
 /** Generate a random token for the agent */
 export const generateToken = () => {
