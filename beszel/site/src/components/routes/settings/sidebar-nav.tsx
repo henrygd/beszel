@@ -56,8 +56,8 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
 							href={item.href}
 							className={cn(
 								buttonVariants({ variant: "ghost" }),
-								"flex items-center gap-3 justify-start truncate",
-								page?.path === item.href ? "bg-muted hover:bg-muted" : "hover:bg-muted/50"
+								"flex items-center gap-3 justify-start truncate duration-50",
+								page?.path === item.href ? "bg-muted hover:bg-accent/70" : "hover:bg-accent/50"
 							)}
 						>
 							{item.icon && <item.icon className="size-4 shrink-0" />}

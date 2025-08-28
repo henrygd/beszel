@@ -3,7 +3,7 @@ name: Make release and binaries
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 permissions:
   contents: write
@@ -29,7 +29,17 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '^1.22.1'
+          go-version: "^1.22.1"
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Build .NET LHM executable for Windows sensors
+        run: |
+          dotnet build -c Release ./beszel/internal/agent/lhm/beszel_lhm.csproj
+        shell: bash
 
       - name: GoReleaser beszel
         uses: goreleaser/goreleaser-action@v6
@@ -40,3 +50,4 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN || secrets.GITHUB_TOKEN }}
+          WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}

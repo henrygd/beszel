@@ -1,101 +1,158 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "tw-animate-css";
 
-@layer base {
-	:root {
-		--background: 30 8% 98.5%;
-		--foreground: 30 0% 0%;
-		--card: 30 0% 100%;
-		--card-foreground: 240 6.67% 2.94%;
-		--popover: 30 0% 100%;
-		--popover-foreground: 240 10% 6.2%;
-		--primary: 240 5.88% 10%;
-		--primary-foreground: 30 0% 100%;
-		--secondary: 240 4.76% 95.88%;
-		--secondary-foreground: 240 5.88% 10%;
-		--muted: 26 6% 94%;
-		--muted-foreground: 24 2.79% 35.1%;
-		--accent: 20 23.08% 94%;
-		--accent-foreground: 240 5.88% 10%;
-		--destructive: 0 66% 53%;
-		--destructive-foreground: 0 0% 98.04%;
-		--border: 30 8.11% 85.49%;
-		--input: 30 4.29% 72.55%;
-		--ring: 30 3.97% 49.41%;
-		--radius: 0.8rem;
-		/* charts */
-		--chart-1: 220 70% 50%;
-		--chart-2: 160 60% 45%;
-		--chart-3: 30 80% 55%;
-		--chart-4: 280 65% 60%;
-		--chart-5: 340 75% 55%;
-	}
+@custom-variant dark (&:is(.dark *));
+@custom-variant safari (@supports (hanging-punctuation: first) and (-webkit-appearance: none));
 
-	.dark {
-		color-scheme: dark;
-		--background: 220 5.5% 9%;
-		--foreground: 220 2% 97%;
-		--card: 220 5.5% 10.5%;
-		--card-foreground: 220 2% 97%;
-		--popover: 220 5.5% 9%;
-		--popover-foreground: 220 2% 97%;
-		--primary: 220 2% 96%;
-		--primary-foreground: 220 4% 10%;
-		--secondary: 220 4% 16%;
-		--secondary-foreground: 220 0% 98%;
-		--muted: 220 6% 16%;
-		--muted-foreground: 220 4% 67%;
-		--accent: 220 5% 15.5%;
-		--accent-foreground: 220 2% 98%;
-		--destructive: 0 62% 46%;
-		--destructive-foreground: 0 0% 97%;
-		--border: 220 3% 16%;
-		--input: 220 4% 22%;
-		--ring: 220 4% 80%;
-		--radius: 0.8rem;
-	}
+:root {
+	--background: hsl(30 8% 98%);
+	--foreground: hsl(30 0% 0%);
+	--card: hsl(30 0% 100%);
+	--card-foreground: hsl(240 6.67% 2.94%);
+	--popover: hsl(30 0% 100%);
+	--popover-foreground: hsl(240 10% 6.2%);
+	--primary: hsl(240 5.88% 10%);
+	--primary-foreground: hsl(30 0% 100%);
+	--secondary: hsl(240 4.76% 95.88%);
+	--secondary-foreground: hsl(240 5.88% 10%);
+	--muted: hsl(26 6% 94%);
+	--muted-foreground: hsl(24 2.79% 35.1%);
+	--accent: hsl(20 23.08% 94%);
+	--accent-foreground: hsl(240 5.88% 10%);
+	--destructive: hsl(0 66% 53%);
+	--destructive-foreground: hsl(0 0% 98.04%);
+	--border: hsl(30 8.11% 85.49%);
+	--input: hsl(30 4.29% 72.55%);
+	--ring: hsl(30 3.97% 49.41%);
+	--radius: 0.8rem;
+	--chart-1: hsl(220 70% 50%);
+	--chart-2: hsl(160 60% 45%);
+	--chart-3: hsl(30 80% 55%);
+	--chart-4: hsl(280 65% 60%);
+	--chart-5: hsl(340 75% 55%);
 }
 
-/* Fonts */
-@supports (font-variation-settings: normal) {
-	:root {
-		font-family: Inter, InterVariable, sans-serif;
-	}
+.dark {
+	color-scheme: dark;
+	--background: hsl(220 5.5% 9%);
+	--foreground: hsl(220 2% 97%);
+	--card: hsl(220 5.5% 10.5%);
+	--card-foreground: hsl(220 2% 97%);
+	--popover: hsl(220 5.5% 9%);
+	--popover-foreground: hsl(220 2% 97%);
+	--primary: hsl(220 2% 96%);
+	--primary-foreground: hsl(220 4% 10%);
+	--secondary: hsl(220 4% 16%);
+	--secondary-foreground: hsl(220 0% 98%);
+	--muted: hsl(220 6% 16%);
+	--muted-foreground: hsl(220 4% 67%);
+	--accent: hsl(220 5% 15.5%);
+	--accent-foreground: hsl(220 2% 98%);
+	--destructive: hsl(0 62% 46%);
+	--destructive-foreground: hsl(0 0% 97%);
+	--border: hsl(220 3% 16%);
+	--input: hsl(220 4% 22%);
+	--ring: hsl(220 4% 80%);
+	--radius: 0.8rem;
 }
-@font-face {
-	font-family: InterVariable;
-	font-style: normal;
-	font-weight: 100 900;
-	font-display: swap;
-	src: url("/static/InterVariable.woff2?v=4.0") format("woff2");
+
+@theme inline {
+	--font-sans: Inter, InterVariable, sans-serif;
+
+	--breakpoint-xs: 26.6rem;
+	--breakpoint-450: 28rem;
+	--breakpoint-2xl: 90rem;
+
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
+
+	--color-green-50: hsl(140 60% 95%);
+	--color-green-100: hsl(140 50% 90%);
+	--color-green-200: hsl(140 49% 80%);
+	--color-green-300: hsl(140 48% 70%);
+	--color-green-400: hsl(140 49% 60%);
+	--color-green-500: hsl(140 50% 48%);
+	--color-green-600: hsl(140 52% 38%);
+	--color-green-700: hsl(140 53% 29%);
+	--color-green-800: hsl(140 54% 20%);
+	--color-green-900: hsl(140 54% 12%);
+	--color-green-950: hsl(140 57% 6%);
+
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--destructive);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+	--color-chart-1: var(--chart-1);
+	--color-chart-2: var(--chart-2);
+	--color-chart-3: var(--chart-3);
+	--color-chart-4: var(--chart-4);
+	--color-chart-5: var(--chart-5);
+}
+
+@layer utilities {
+	/* Fonts */
+	@supports (font-variation-settings: normal) {
+		:root {
+			font-family: Inter, InterVariable, sans-serif;
+		}
+	}
+	@font-face {
+		font-family: InterVariable;
+		font-style: normal;
+		font-weight: 100 900;
+		font-display: swap;
+		src: url("/static/InterVariable.woff2?v=4.0") format("woff2");
+	}
 }
 
 @layer base {
 	* {
-		@apply border-border;
+		@apply border-border outline-ring/50;
 		overflow-anchor: none;
 	}
 	body {
 		@apply bg-background text-foreground;
 	}
+	button {
+		cursor: pointer;
+	}
 }
 
-@layer utilities {
-	.link {
-		@apply text-primary font-medium underline-offset-4 hover:underline;
-	}
+@utility container {
+	@apply max-w-360 mx-auto px-4;
+}
+
+@utility link {
+	@apply text-primary font-medium underline-offset-4 hover:underline;
+}
+
+@utility ns-dialog {
 	/* New system dialog width */
-	.ns-dialog {
-		min-width: 30.3rem;
-	}
-	:where(:lang(zh), :lang(zh-CN), :lang(ko)) .ns-dialog {
+	min-width: 30.3rem;
+	:where(:lang(zh), :lang(zh-CN), :lang(ko)) & {
 		min-width: 27.9rem;
 	}
 }
 
 .recharts-tooltip-wrapper {
 	z-index: 1;
+	@apply tabular-nums;
 }
 
 .recharts-yAxis {

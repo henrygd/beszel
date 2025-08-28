@@ -31,11 +31,14 @@ type Stats struct {
 	Temperatures   map[string]float64  `json:"t,omitempty" cbor:"20,keyasint,omitempty"`
 	ExtraFs        map[string]*FsStats `json:"efs,omitempty" cbor:"21,keyasint,omitempty"`
 	GPUData        map[string]GPUData  `json:"g,omitempty" cbor:"22,keyasint,omitempty"`
-	LoadAvg1       float64             `json:"l1,omitempty" cbor:"23,keyasint,omitempty,omitzero"`
-	LoadAvg5       float64             `json:"l5,omitempty" cbor:"24,keyasint,omitempty,omitzero"`
-	LoadAvg15      float64             `json:"l15,omitempty" cbor:"25,keyasint,omitempty,omitzero"`
+	LoadAvg1       float64             `json:"l1,omitempty" cbor:"23,keyasint,omitempty"`
+	LoadAvg5       float64             `json:"l5,omitempty" cbor:"24,keyasint,omitempty"`
+	LoadAvg15      float64             `json:"l15,omitempty" cbor:"25,keyasint,omitempty"`
 	Bandwidth      [2]uint64           `json:"b,omitzero" cbor:"26,keyasint,omitzero"`  // [sent bytes, recv bytes]
 	MaxBandwidth   [2]uint64           `json:"bm,omitzero" cbor:"27,keyasint,omitzero"` // [sent bytes, recv bytes]
+	// TODO: remove other load fields in future release in favor of load avg array
+	LoadAvg [3]float64 `json:"la,omitempty" cbor:"28,keyasint"`
+	Battery [2]uint8   `json:"bat,omitzero" cbor:"29,keyasint,omitzero"` // [percent, charge state, current]
 }
 
 type GPUData struct {
@@ -98,6 +101,8 @@ type Info struct {
 	LoadAvg5       float64 `json:"l5,omitempty" cbor:"16,keyasint,omitempty"`
 	LoadAvg15      float64 `json:"l15,omitempty" cbor:"17,keyasint,omitempty"`
 	BandwidthBytes uint64  `json:"bb" cbor:"18,keyasint"`
+	// TODO: remove load fields in future release in favor of load avg array
+	LoadAvg [3]float64 `json:"la,omitempty" cbor:"19,keyasint"`
 }
 
 // Final data structure to return to the hub

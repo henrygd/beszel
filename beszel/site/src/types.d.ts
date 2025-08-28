@@ -1,5 +1,5 @@
 import { RecordModel } from "pocketbase"
-import { Unit, Os } from "./lib/enums"
+import { Unit, Os, BatteryState } from "./lib/enums"
 
 // global window properties
 declare global {
@@ -52,6 +52,8 @@ export interface SystemInfo {
 	l5?: number
 	/** load average 15 minutes */
 	l15?: number
+	/** load average */
+	la?: [number, number, number]
 	/** operating system */
 	o?: string
 	/** uptime */
@@ -81,12 +83,15 @@ export interface SystemStats {
 	cpu: number
 	/** peak cpu */
 	cpum?: number
+	// TODO: remove these in future release in favor of la
 	/** load average 1 minute */
 	l1?: number
 	/** load average 5 minutes */
 	l5?: number
 	/** load average 15 minutes */
 	l15?: number
+	/** load average */
+	la?: [number, number, number]
 	/** total memory (gb) */
 	m: number
 	/** memory used (gb) */
@@ -133,6 +138,8 @@ export interface SystemStats {
 	efs?: Record<string, ExtraFsStats>
 	/** GPU data */
 	g?: Record<string, GPUData>
+	/** battery percent and state */
+	bat?: [number, BatteryState]
 }
 
 export interface GPUData {
@@ -193,7 +200,8 @@ export interface AlertRecord extends RecordModel {
 	system: string
 	name: string
 	triggered: boolean
-	sysname?: string
+	value: number
+	min: number
 	// user: string
 }
 
@@ -221,13 +229,14 @@ export interface ChartTimeData {
 }
 
 export interface UserSettings {
-	// lang?: string
 	chartTime: ChartTimes
 	emails?: string[]
 	webhooks?: string[]
 	unitTemp?: Unit
 	unitNet?: Unit
 	unitDisk?: Unit
+	colorWarn?: number
+	colorCrit?: number
 }
 
 type ChartDataContainer = {
@@ -236,7 +245,14 @@ type ChartDataContainer = {
 	[key: string]: key extends "created" ? never : ContainerStats
 }
 
+export interface SemVer {
+	major: number
+	minor: number
+	patch: number
+}
+
 export interface ChartData {
+	agentVersion: SemVer
 	systemStats: SystemStatsRecord[]
 	containerData: ChartDataContainer[]
 	orientation: "right" | "left"
@@ -257,3 +273,5 @@ interface AlertInfo {
 	/** Single value description (when there's only one value, like status) */
 	singleDesc?: () => string
 }
+
+export type AlertMap = Record<string, Map<string, AlertRecord>>

@@ -2,6 +2,7 @@ package agent
 
 import (
 	"beszel"
+	"beszel/internal/agent/battery"
 	"beszel/internal/entities/system"
 	"bufio"
 	"fmt"
@@ -59,16 +60,21 @@ func (a *Agent) initializeSystemInfo() {
 	}
 
 	// zfs
-	if _, err := getARCSize(); err == nil {
-		a.zfs = true
-	} else {
+	if _, err := getARCSize(); err != nil {
 		slog.Debug("Not monitoring ZFS ARC", "err", err)
+	} else {
+		a.zfs = true
 	}
 }
 
 // Returns current info, stats about the host system
 func (a *Agent) getSystemStats() system.Stats {
 	systemStats := system.Stats{}
+
+	// battery
+	if battery.HasReadableBattery() {
+		systemStats.Battery[0], systemStats.Battery[1], _ = battery.GetBatteryStats()
+	}
 
 	// cpu percent
 	cpuPct, err := cpu.Percent(0, false)
@@ -80,10 +86,10 @@ func (a *Agent) getSystemStats() system.Stats {
 
 	// load average
 	if avgstat, err := load.Avg(); err == nil {
-		systemStats.LoadAvg1 = twoDecimals(avgstat.Load1)
-		systemStats.LoadAvg5 = twoDecimals(avgstat.Load5)
-		systemStats.LoadAvg15 = twoDecimals(avgstat.Load15)
-		slog.Debug("Load average", "5m", systemStats.LoadAvg5, "15m", systemStats.LoadAvg15)
+		systemStats.LoadAvg[0] = avgstat.Load1
+		systemStats.LoadAvg[1] = avgstat.Load5
+		systemStats.LoadAvg[2] = avgstat.Load15
+		slog.Debug("Load average", "5m", avgstat.Load5, "15m", avgstat.Load15)
 	} else {
 		slog.Error("Error getting load average", "err", err)
 	}
@@ -255,9 +261,11 @@ func (a *Agent) getSystemStats() system.Stats {
 
 	// update base system info
 	a.systemInfo.Cpu = systemStats.Cpu
-	a.systemInfo.LoadAvg1 = systemStats.LoadAvg1
-	a.systemInfo.LoadAvg5 = systemStats.LoadAvg5
-	a.systemInfo.LoadAvg15 = systemStats.LoadAvg15
+	a.systemInfo.LoadAvg = systemStats.LoadAvg
+	// TODO: remove these in future release in favor of load avg array
+	a.systemInfo.LoadAvg1 = systemStats.LoadAvg[0]
+	a.systemInfo.LoadAvg5 = systemStats.LoadAvg[1]
+	a.systemInfo.LoadAvg15 = systemStats.LoadAvg[2]
 	a.systemInfo.MemPct = systemStats.MemPct
 	a.systemInfo.DiskPct = systemStats.DiskPct
 	a.systemInfo.Uptime, _ = host.Uptime()

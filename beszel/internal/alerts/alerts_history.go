@@ -12,7 +12,7 @@ func resolveHistoryOnAlertDelete(e *core.RecordEvent) error {
 	if !e.Record.GetBool("triggered") {
 		return e.Next()
 	}
-	_ = resolveAlertHistoryRecord(e.App, e.Record)
+	_ = resolveAlertHistoryRecord(e.App, e.Record.Id)
 	return e.Next()
 }
 
@@ -36,19 +36,19 @@ func updateHistoryOnAlertUpdate(e *core.RecordEvent) error {
 	}
 
 	// if new state is not triggered, check for matching alert history record and set it to resolved
-	_ = resolveAlertHistoryRecord(e.App, new)
+	_ = resolveAlertHistoryRecord(e.App, new.Id)
 	return e.Next()
 }
 
 // resolveAlertHistoryRecord sets the resolved field to the current time
-func resolveAlertHistoryRecord(app core.App, alertRecord *core.Record) error {
+func resolveAlertHistoryRecord(app core.App, alertRecordID string) error {
 	alertHistoryRecords, err := app.FindRecordsByFilter(
 		"alerts_history",
 		"alert_id={:alert_id} && resolved=null",
 		"-created",
 		1,
 		0,
-		dbx.Params{"alert_id": alertRecord.Id},
+		dbx.Params{"alert_id": alertRecordID},
 	)
 	if err != nil {
 		return err

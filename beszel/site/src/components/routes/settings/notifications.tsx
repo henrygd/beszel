@@ -87,8 +87,8 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 			</div>
 			<Separator className="my-4" />
 			<div className="space-y-5">
-				<div className="space-y-2">
-					<div className="mb-4">
+				<div className="grid gap-2">
+					<div className="mb-2">
 						<h3 className="mb-1 text-lg font-medium">
 							<Trans>Email notifications</Trans>
 						</h3>
@@ -178,7 +178,7 @@ const ShoutrrrUrlCard = ({ url, onUrlChange, onRemove }: ShoutrrrUrlCardProps) =
 
 	const sendTestNotification = async () => {
 		setIsLoading(true)
-		const res = await pb.send("/api/beszel/send-test-notification", { url })
+		const res = await pb.send("/api/beszel/test-notification", { method: "POST", body: { url } })
 		if ("err" in res && !res.err) {
 			toast({
 				title: t`Test notification sent`,

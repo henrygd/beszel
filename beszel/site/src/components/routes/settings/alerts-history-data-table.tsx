@@ -1,5 +1,6 @@
 import { pb } from "@/lib/stores"
-import { alertInfo, cn, formatDuration, formatShortDate } from "@/lib/utils"
+import { cn, formatDuration, formatShortDate } from "@/lib/utils"
+import { alertInfo } from "@/lib/alerts"
 import { AlertsHistoryRecord } from "@/types"
 import {
 	getCoreRowModel,
@@ -74,11 +75,11 @@ export default function AlertsHistoryDataTable() {
 		}
 		// Initial load
 		pb.collection<AlertsHistoryRecord>("alerts_history")
-			.getFullList({
+			.getList(0, 200, {
 				...pbOptions,
 				sort: "-created",
 			})
-			.then((records) => setData(records))
+			.then(({ items }) => setData(items))
 
 		// Subscribe to changes
 		;(async () => {

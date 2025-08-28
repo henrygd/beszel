@@ -10,7 +10,6 @@ import (
 
 	"github.com/nicholas-fedor/shoutrrr"
 	"github.com/pocketbase/dbx"
-	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tools/mailer"
 )
@@ -47,9 +46,7 @@ type SystemAlertStats struct {
 	NetSent      float64            `json:"ns"`
 	NetRecv      float64            `json:"nr"`
 	Temperatures map[string]float32 `json:"t"`
-	LoadAvg1     float64            `json:"l1"`
-	LoadAvg5     float64            `json:"l5"`
-	LoadAvg15    float64            `json:"l15"`
+	LoadAvg      [3]float64         `json:"la"`
 }
 
 type SystemAlertData struct {
@@ -208,16 +205,14 @@ func (am *AlertManager) SendShoutrrrAlert(notificationUrl, title, message, link,
 }
 
 func (am *AlertManager) SendTestNotification(e *core.RequestEvent) error {
-	info, _ := e.RequestInfo()
-	if info.Auth == nil {
-		return apis.NewForbiddenError("Forbidden", nil)
+	var data struct {
+		URL string `json:"url"`
 	}
-	url := e.Request.URL.Query().Get("url")
-	// log.Println("url", url)
-	if url == "" {
-		return e.JSON(200, map[string]string{"err": "URL is required"})
+	err := e.BindBody(&data)
+	if err != nil || data.URL == "" {
+		return e.BadRequestError("URL is required", err)
 	}
-	err := am.SendShoutrrrAlert(url, "Test Alert", "This is a notification from Beszel.", am.hub.Settings().Meta.AppURL, "View Beszel")
+	err = am.SendShoutrrrAlert(data.URL, "Test Alert", "This is a notification from Beszel.", am.hub.Settings().Meta.AppURL, "View Beszel")
 	if err != nil {
 		return e.JSON(200, map[string]string{"err": err.Error()})
 	}

@@ -1,5 +1,4 @@
 import {
-	CellContext,
 	ColumnDef,
 	ColumnFiltersState,
 	getFilteredRowModel,
@@ -9,14 +8,13 @@ import {
 	VisibilityState,
 	getCoreRowModel,
 	useReactTable,
-	HeaderContext,
 	Row,
 	Table as TableType,
 } from "@tanstack/react-table"
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
-import { Button, buttonVariants } from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
 
 import {
 	DropdownMenu,
@@ -29,31 +27,9 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-
 import { SystemRecord } from "@/types"
 import {
-	MoreHorizontalIcon,
 	ArrowUpDownIcon,
-	MemoryStickIcon,
-	CopyIcon,
-	PauseCircleIcon,
-	PlayCircleIcon,
-	Trash2Icon,
-	WifiIcon,
-	HardDriveIcon,
-	ServerIcon,
-	CpuIcon,
 	LayoutGridIcon,
 	LayoutListIcon,
 	ArrowDownIcon,
@@ -65,8 +41,8 @@ import {
 	FilterIcon,
 	HourglassIcon,
 } from "lucide-react"
-import { memo, useEffect, useMemo, useRef, useState } from "react"
-import { $systems, $userSettings, pb } from "@/lib/stores"
+import { memo, useEffect, useMemo, useState } from "react"
+import { $systems } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import {
 	cn,
@@ -85,52 +61,18 @@ import { useLingui, Trans, Plural } from "@lingui/react/macro"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Input } from "@/components/ui/input"
 import { ClassValue } from "clsx"
+import { cn, useLocalStorage } from "@/lib/utils"
+import { $router, Link } from "../router"
+import { useLingui, Trans } from "@lingui/react/macro"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
+import { Input } from "../ui/input"
 import { getPagePath } from "@nanostores/router"
-import { SystemDialog } from "../add-system"
-import { Dialog } from "../ui/dialog"
+import SystemsTableColumns, { ActionsButton, IndicatorDot } from "./systems-table-columns"
+import AlertButton from "../alerts/alert-button"
+import { SystemStatus } from "@/lib/enums"
 
 type ViewMode = "table" | "grid"
 type StatusFilter = "all" | "up" | "down" | "paused"
-
-function CellFormatter(info: CellContext<SystemRecord, unknown>) {
-	const val = (info.getValue() as number) || 0
-	return (
-		<div className="flex gap-2 items-center tabular-nums tracking-tight">
-			<span className="min-w-8">{decimalString(val, 1)}%</span>
-			<span className="grow min-w-8 block bg-muted h-[1em] relative rounded-sm overflow-hidden">
-				<span
-					className={cn(
-						"absolute inset-0 w-full h-full origin-left",
-						(info.row.original.status !== "up" && "bg-primary/30") ||
-							(val < 65 && "bg-green-500") ||
-							(val < 90 && "bg-yellow-500") ||
-							"bg-red-600"
-					)}
-					style={{
-						transform: `scalex(${val / 100})`,
-					}}
-				></span>
-			</span>
-		</div>
-	)
-}
-
-function sortableHeader(context: HeaderContext<SystemRecord, unknown>) {
-	const { column } = context
-	// @ts-ignore
-	const { Icon, hideSort, name }: { Icon: React.ElementType; name: () => string; hideSort: boolean } = column.columnDef
-	return (
-		<Button
-			variant="ghost"
-			className="h-9 px-3 flex"
-			onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-		>
-			{Icon && <Icon className="me-2 size-4" />}
-			{name()}
-			{hideSort || <ArrowUpDownIcon className="ms-2 size-4" />}
-		</Button>
-	)
-}
 
 export default function SystemsTable() {
 	const data = useStore($systems)
@@ -415,6 +357,7 @@ export default function SystemsTable() {
 			},
 		] as ColumnDef<SystemRecord>[]
 	}, [])
+	const columnDefs = useMemo(() => SystemsTableColumns(viewMode), [viewMode])
 
 	const table = useReactTable({
 		data: filteredData,
@@ -663,15 +606,9 @@ const SystemTableRow = memo(
 			return (
 				<TableRow
 					// data-state={row.getIsSelected() && "selected"}
-					className={cn("cursor-pointer transition-opacity", {
-						"opacity-50": system.status === "paused",
+					className={cn("cursor-pointer transition-opacity relative safari:transform-3d", {
+						"opacity-50": system.status === SystemStatus.Paused,
 					})}
-					onClick={(e) => {
-						const target = e.target as HTMLElement
-						if (!target.closest("[data-nolink]") && e.currentTarget.contains(target)) {
-							navigate(getPagePath($router, "system", { name: system.name }))
-						}
-					}}
 				>
 					{row.getVisibleCells().map((cell) => (
 						<TableCell
@@ -679,7 +616,7 @@ const SystemTableRow = memo(
 							style={{
 								width: cell.column.getSize(),
 							}}
-							className={cn("overflow-hidden relative", length > 10 ? "py-2" : "py-2.5")}
+							className={length > 10 ? "py-2" : "py-2.5"}
 						>
 							{flexRender(cell.column.columnDef.cell, cell.getContext())}
 						</TableCell>
@@ -702,7 +639,7 @@ const SystemCard = memo(
 					className={cn(
 						"cursor-pointer hover:shadow-md transition-all bg-transparent w-full dark:border-border duration-200 relative",
 						{
-							"opacity-50": system.status === "paused",
+							"opacity-50": system.status === SystemStatus.Paused,
 						}
 					)}
 				>
@@ -717,14 +654,14 @@ const SystemCard = memo(
 								</div>
 							</CardTitle>
 							{table.getColumn("actions")?.getIsVisible() && (
-								<div className="flex gap-1 flex-shrink-0 relative z-10">
-									<AlertsButton system={system} />
+								<div className="flex gap-1 shrink-0 relative z-10">
+									<AlertButton system={system} />
 									<ActionsButton system={system} />
 								</div>
 							)}
 						</div>
 					</CardHeader>
-					<CardContent className="space-y-2.5 text-sm px-5 pt-3.5 pb-4">
+					<CardContent className="grid gap-2.5 text-sm px-5 pt-3.5 pb-4">
 						{table.getAllColumns().map((column) => {
 							if (!column.getIsVisible() || column.id === "system" || column.id === "actions") return null
 							const cell = row.getAllCells().find((cell) => cell.column.id === column.id)
@@ -755,116 +692,3 @@ const SystemCard = memo(
 		}, [system, colLength, t])
 	}
 )
-
-const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
-	const [deleteOpen, setDeleteOpen] = useState(false)
-	const [editOpen, setEditOpen] = useState(false)
-	let editOpened = useRef(false)
-	const { t } = useLingui()
-	const { id, status, host, name } = system
-
-	return useMemo(() => {
-		return (
-			<>
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button variant="ghost" size={"icon"} data-nolink>
-							<span className="sr-only">
-								<Trans>Open menu</Trans>
-							</span>
-							<MoreHorizontalIcon className="w-5" />
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent align="end">
-						{!isReadOnlyUser() && (
-							<DropdownMenuItem
-								onSelect={() => {
-									editOpened.current = true
-									setEditOpen(true)
-								}}
-							>
-								<PenBoxIcon className="me-2.5 size-4" />
-								<Trans>Edit</Trans>
-							</DropdownMenuItem>
-						)}
-						<DropdownMenuItem
-							className={cn(isReadOnlyUser() && "hidden")}
-							onClick={() => {
-								pb.collection("systems").update(id, {
-									status: status === "paused" ? "pending" : "paused",
-								})
-							}}
-						>
-							{status === "paused" ? (
-								<>
-									<PlayCircleIcon className="me-2.5 size-4" />
-									<Trans>Resume</Trans>
-								</>
-							) : (
-								<>
-									<PauseCircleIcon className="me-2.5 size-4" />
-									<Trans>Pause</Trans>
-								</>
-							)}
-						</DropdownMenuItem>
-						<DropdownMenuItem onClick={() => copyToClipboard(host)}>
-							<CopyIcon className="me-2.5 size-4" />
-							<Trans>Copy host</Trans>
-						</DropdownMenuItem>
-						<DropdownMenuSeparator className={cn(isReadOnlyUser() && "hidden")} />
-						<DropdownMenuItem className={cn(isReadOnlyUser() && "hidden")} onSelect={() => setDeleteOpen(true)}>
-							<Trash2Icon className="me-2.5 size-4" />
-							<Trans>Delete</Trans>
-						</DropdownMenuItem>
-					</DropdownMenuContent>
-				</DropdownMenu>
-				{/* edit dialog */}
-				<Dialog open={editOpen} onOpenChange={setEditOpen}>
-					{editOpened.current && <SystemDialog system={system} setOpen={setEditOpen} />}
-				</Dialog>
-				{/* deletion dialog */}
-				<AlertDialog open={deleteOpen} onOpenChange={(open) => setDeleteOpen(open)}>
-					<AlertDialogContent>
-						<AlertDialogHeader>
-							<AlertDialogTitle>
-								<Trans>Are you sure you want to delete {name}?</Trans>
-							</AlertDialogTitle>
-							<AlertDialogDescription>
-								<Trans>
-									This action cannot be undone. This will permanently delete all current records for {name} from the
-									database.
-								</Trans>
-							</AlertDialogDescription>
-						</AlertDialogHeader>
-						<AlertDialogFooter>
-							<AlertDialogCancel>
-								<Trans>Cancel</Trans>
-							</AlertDialogCancel>
-							<AlertDialogAction
-								className={cn(buttonVariants({ variant: "destructive" }))}
-								onClick={() => pb.collection("systems").delete(id)}
-							>
-								<Trans>Continue</Trans>
-							</AlertDialogAction>
-						</AlertDialogFooter>
-					</AlertDialogContent>
-				</AlertDialog>
-			</>
-		)
-	}, [id, status, host, name, t, deleteOpen, editOpen])
-})
-
-function IndicatorDot({ system, className }: { system: SystemRecord; className?: ClassValue }) {
-	className ||= {
-		"bg-green-500": system.status === "up",
-		"bg-red-500": system.status === "down",
-		"bg-primary/40": system.status === "paused",
-		"bg-yellow-500": system.status === "pending",
-	}
-	return (
-		<span
-			className={cn("flex-shrink-0 size-2 rounded-full", className)}
-			// style={{ marginBottom: "-1px" }}
-		/>
-	)
-}

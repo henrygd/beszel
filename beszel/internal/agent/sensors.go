@@ -84,10 +84,10 @@ func (a *Agent) updateTemperatures(systemStats *system.Stats) {
 	// reset high temp
 	a.systemInfo.DashboardTemp = 0
 
-	temps, err := a.getTempsWithPanicRecovery(sensors.TemperaturesWithContext)
+	temps, err := a.getTempsWithPanicRecovery(getSensorTemps)
 	if err != nil {
 		// retry once on panic (gopsutil/issues/1832)
-		temps, err = a.getTempsWithPanicRecovery(sensors.TemperaturesWithContext)
+		temps, err = a.getTempsWithPanicRecovery(getSensorTemps)
 		if err != nil {
 			slog.Warn("Error updating temperatures", "err", err)
 			if len(systemStats.Temperatures) > 0 {

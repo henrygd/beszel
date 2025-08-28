@@ -68,9 +68,9 @@ export default memo(function MemChart({ chartData }: { chartData: ChartData }) {
 						order={3}
 						dataKey="stats.mu"
 						type="monotoneX"
-						fill="hsl(var(--chart-2))"
+						fill="var(--chart-2)"
 						fillOpacity={0.4}
-						stroke="hsl(var(--chart-2))"
+						stroke="var(--chart-2)"
 						stackId="1"
 						isAnimationActive={false}
 					/>
