@@ -36,28 +36,14 @@ import {
 	ArrowUpIcon,
 	Settings2Icon,
 	EyeIcon,
-	PenBoxIcon,
-	ClockIcon,
 	FilterIcon,
-	HourglassIcon,
 } from "lucide-react"
 import { memo, useEffect, useMemo, useState } from "react"
 import { $systems } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
-import {
-	cn,
-	copyToClipboard,
-	isReadOnlyUser,
-	useLocalStorage,
-	formatTemperature,
-	decimalString,
-	formatBytes,
-	formatUptimeString,
-} from "@/lib/utils"
-import AlertsButton from "../alerts/alert-button"
-import { $router, Link, navigate } from "../router"
-import { EthernetIcon, GpuIcon, ThermometerIcon } from "../ui/icons"
-import { useLingui, Trans, Plural } from "@lingui/react/macro"
+import { cn, useLocalStorage } from "@/lib/utils"
+import { $router, Link } from "../router"
+import { useLingui, Trans } from "@lingui/react/macro"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Input } from "@/components/ui/input"
 import { getPagePath } from "@nanostores/router"
@@ -136,8 +122,9 @@ export default function SystemsTable() {
 							<Trans>Updated in real time. Click on a system to view information.</Trans>
 						</CardDescription>
 					</div>
-					<div className="flex gap-2 ms-auto w-full md:w-auto">
-						<Input placeholder={t`Filter...`} onChange={(e) => setFilter(e.target.value)} className="px-4 w-full md:w-80" />
+
+					<div className="flex gap-2 ms-auto w-full md:w-80">
+						<Input placeholder={t`Filter...`} onChange={(e) => setFilter(e.target.value)} className="px-4" />
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="outline">
@@ -147,7 +134,7 @@ export default function SystemsTable() {
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end" className="h-72 md:h-auto min-w-48 md:min-w-auto overflow-y-auto">
 								<div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-s md:divide-y-0">
-									<div>
+									<div className="border-r">
 										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
 											<LayoutGridIcon className="size-4" />
 											<Trans>Layout</Trans>
@@ -169,7 +156,7 @@ export default function SystemsTable() {
 										</DropdownMenuRadioGroup>
 									</div>
 
-									<div>
+									<div className="border-r">
 										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
 											<FilterIcon className="size-4" />
 											<Trans>Status</Trans>
@@ -180,22 +167,22 @@ export default function SystemsTable() {
 											value={statusFilter}
 											onValueChange={(value) => setStatusFilter(value as StatusFilter)}
 										>
-											<DropdownMenuRadioItem value="all" onSelect={(e) => e.preventDefault()} className="gap-2">
+											<DropdownMenuRadioItem value="all" onSelect={(e) => e.preventDefault()}>
 												<Trans>All Systems</Trans>
 											</DropdownMenuRadioItem>
-											<DropdownMenuRadioItem value="up" onSelect={(e) => e.preventDefault()} className="gap-2">
+											<DropdownMenuRadioItem value="up" onSelect={(e) => e.preventDefault()}>
 												<Trans>Up</Trans>
 											</DropdownMenuRadioItem>
-											<DropdownMenuRadioItem value="down" onSelect={(e) => e.preventDefault()} className="gap-2">
+											<DropdownMenuRadioItem value="down" onSelect={(e) => e.preventDefault()}>
 												<Trans>Down</Trans>
 											</DropdownMenuRadioItem>
-											<DropdownMenuRadioItem value="paused" onSelect={(e) => e.preventDefault()} className="gap-2">
+											<DropdownMenuRadioItem value="paused" onSelect={(e) => e.preventDefault()}>
 												<Trans>Paused</Trans>
 											</DropdownMenuRadioItem>
 										</DropdownMenuRadioGroup>
 									</div>
 
-									<div>
+									<div className="border-r">
 										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
 											<ArrowUpDownIcon className="size-4" />
 											<Trans>Sort By</Trans>
@@ -409,7 +396,9 @@ const SystemCard = memo(
 								<div key={column.id} className="flex items-center gap-3">
 									{column.id === "lastSeen" ? (
 										<EyeIcon className="size-4 text-muted-foreground" />
-									) : Icon && <Icon className="size-4 text-muted-foreground" />}
+									) : (
+										Icon && <Icon className="size-4 text-muted-foreground" />
+									)}
 									<div className="flex items-center gap-3 flex-1">
 										<span className="text-muted-foreground min-w-16">{name()}:</span>
 										<div className="flex-1">{flexRender(cell.column.columnDef.cell, cell.getContext())}</div>
