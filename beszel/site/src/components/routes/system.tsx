@@ -1,8 +1,7 @@
 import { t } from "@lingui/core/macro"
-import { Trans } from "@lingui/react/macro"
+import { Plural, Trans } from "@lingui/react/macro"
 import {
 	$systems,
-	pb,
 	$chartTime,
 	$containerFilter,
 	$userSettings,
@@ -12,7 +11,7 @@ import {
 } from "@/lib/stores"
 import { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord } from "@/types"
 import { ChartType, Unit, Os, SystemStatus } from "@/lib/enums"
-import React, { lazy, memo, useCallback, useEffect, useMemo, useRef, useState, type JSX } from "react"
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState, type JSX } from "react"
 import { Card, CardHeader, CardTitle, CardDescription } from "../ui/card"
 import { useStore } from "@nanostores/react"
 import Spinner from "../spinner"
@@ -24,13 +23,12 @@ import {
 	decimalString,
 	formatBytes,
 	getHostDisplayValue,
-	getPbTimestamp,
 	listen,
 	parseSemVer,
 	toFixedFloat,
 	useLocalStorage,
-	formatUptimeString,
 } from "@/lib/utils"
+import { getPbTimestamp, pb } from "@/lib/api"
 import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import { Button } from "../ui/button"
@@ -43,15 +41,14 @@ import { useLingui } from "@lingui/react/macro"
 import { $router, navigate } from "../router"
 import { getPagePath } from "@nanostores/router"
 import { batteryStateTranslations } from "@/lib/i18n"
-
-const AreaChartDefault = lazy(() => import("../charts/area-chart"))
-const ContainerChart = lazy(() => import("../charts/container-chart"))
-const MemChart = lazy(() => import("../charts/mem-chart"))
-const DiskChart = lazy(() => import("../charts/disk-chart"))
-const SwapChart = lazy(() => import("../charts/swap-chart"))
-const TemperatureChart = lazy(() => import("../charts/temperature-chart"))
-const GpuPowerChart = lazy(() => import("../charts/gpu-power-chart"))
-const LoadAverageChart = lazy(() => import("../charts/load-average-chart"))
+import AreaChartDefault from "@/components/charts/area-chart"
+import ContainerChart from "@/components/charts/container-chart"
+import MemChart from "@/components/charts/mem-chart"
+import DiskChart from "@/components/charts/disk-chart"
+import SwapChart from "@/components/charts/swap-chart"
+import TemperatureChart from "@/components/charts/temperature-chart"
+import GpuPowerChart from "@/components/charts/gpu-power-chart"
+import LoadAverageChart from "@/components/charts/load-average-chart"
 
 const cache = new Map<string, any>()
 
@@ -288,8 +285,16 @@ export default function SystemDetail({ name }: { name: string }) {
 				value: system.info.k,
 			},
 		}
-
-		let uptime: React.ReactNode = formatUptimeString(system.info.u)
+		let uptime: React.ReactNode
+		if (system.info.u < 3600) {
+			const mins = Math.trunc(system.info.u / 60)
+			uptime = <Plural value={mins} one="# minute" other="# minutes" />
+		} else if (system.info.u < 172800) {
+			const hours = Math.trunc(system.info.u / 3600)
+			uptime = <Plural value={hours} one="# hour" other="# hours" />
+		} else {
+			uptime = <Plural value={Math.trunc(system.info?.u / 86400)} one="# day" other="# days" />
+		}
 		return [
 			{ value: getHostDisplayValue(system), Icon: GlobeIcon },
 			{
@@ -312,7 +317,7 @@ export default function SystemDetail({ name }: { name: string }) {
 			Icon: any
 			hide?: boolean
 		}[]
-	}, [system.info])
+	}, [system.info, t])
 
 	/** Space for tooltip if more than 12 containers */
 	useEffect(() => {

@@ -1,18 +1,20 @@
-import { Suspense, lazy, memo, useEffect, useMemo } from "react"
+import { Suspense, memo, useEffect, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
-import { $alerts, $systems, pb } from "@/lib/stores"
+import { $alerts, $systems } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { GithubIcon } from "lucide-react"
 import { Separator } from "../ui/separator"
-import { getSystemNameFromId, updateRecordList, updateSystemList } from "@/lib/utils"
+import { getSystemNameFromId } from "@/lib/utils"
+import { pb, updateRecordList, updateSystemList } from "@/lib/api"
 import { AlertRecord, SystemRecord } from "@/types"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { $router, Link } from "../router"
 import { Plural, Trans, useLingui } from "@lingui/react/macro"
 import { getPagePath } from "@nanostores/router"
 import { alertInfo } from "@/lib/alerts"
+import SystemsTable from "@/components/systems-table/systems-table"
 
-const SystemsTable = lazy(() => import("../systems-table/systems-table"))
+// const SystemsTable = lazy(() => import("../systems-table/systems-table"))
 
 export default memo(function () {
 	const { t } = useLingui()

@@ -1,6 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro"
 import { t } from "@lingui/core/macro"
-import { $publicKey, pb } from "@/lib/stores"
+import { $publicKey } from "@/lib/stores"
 import { memo, useEffect, useMemo, useState } from "react"
 import { Table, TableCell, TableHead, TableBody, TableRow, TableHeader } from "@/components/ui/table"
 import { FingerprintRecord } from "@/types"
@@ -14,7 +14,8 @@ import {
 	Trash2Icon,
 } from "lucide-react"
 import { toast } from "@/components/ui/use-toast"
-import { cn, copyToClipboard, generateToken, getHubURL, isReadOnlyUser, tokenMap } from "@/lib/utils"
+import { cn, copyToClipboard, generateToken, getHubURL, tokenMap } from "@/lib/utils"
+import { isReadOnlyUser, pb } from "@/lib/api"
 import {
 	DropdownMenu,
 	DropdownMenuContent,

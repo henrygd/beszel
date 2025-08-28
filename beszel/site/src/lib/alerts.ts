@@ -1,9 +1,10 @@
 import type { AlertInfo, AlertRecord } from "@/types"
 import type { RecordSubscription } from "pocketbase"
-import { pb, $alerts } from "@/lib/stores"
+import { $alerts } from "@/lib/stores"
 import { EthernetIcon } from "@/components/ui/icons"
 import { ServerIcon, CpuIcon, MemoryStickIcon, HardDriveIcon, ThermometerIcon, HourglassIcon } from "lucide-react"
 import { t } from "@lingui/core/macro"
+import { pb } from "./api"
 
 /** Alert info for each alert type */
 export const alertInfo: Record<string, AlertInfo> = {

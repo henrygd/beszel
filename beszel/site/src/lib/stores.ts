@@ -1,11 +1,7 @@
-import PocketBase from "pocketbase"
 import { atom, map } from "nanostores"
 import { AlertMap, ChartTimes, SystemRecord, UserSettings } from "@/types"
-import { basePath } from "@/components/router"
 import { Unit } from "./enums"
-
-/** PocketBase JS Client */
-export const pb = new PocketBase(basePath)
+import { pb } from "./api"
 
 /** Store if user is authenticated */
 export const $authenticated = atom(pb.authStore.isValid)

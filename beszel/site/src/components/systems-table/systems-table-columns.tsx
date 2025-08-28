@@ -23,12 +23,11 @@ import {
 	formatBytes,
 	formatTemperature,
 	getMeterState,
-	isReadOnlyUser,
 	parseSemVer,
 } from "@/lib/utils"
 import { EthernetIcon, GpuIcon, HourglassIcon, ThermometerIcon } from "../ui/icons"
 import { useStore } from "@nanostores/react"
-import { $userSettings, pb } from "@/lib/stores"
+import { $userSettings } from "@/lib/stores"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useMemo, useRef, useState } from "react"
 import { memo } from "react"
@@ -57,6 +56,7 @@ import { t } from "@lingui/core/macro"
 import { MeterState, SystemStatus } from "@/lib/enums"
 import { $router, Link } from "../router"
 import { getPagePath } from "@nanostores/router"
+import { isReadOnlyUser, pb } from "@/lib/api"
 
 const STATUS_COLORS = {
 	[SystemStatus.Up]: "bg-green-500",

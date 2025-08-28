@@ -1,6 +1,6 @@
 import { t } from "@lingui/core/macro"
 import { Trans, Plural } from "@lingui/react/macro"
-import { $alerts, $systems, pb } from "@/lib/stores"
+import { $alerts, $systems } from "@/lib/stores"
 import { cn, debounce } from "@/lib/utils"
 import { alertInfo } from "@/lib/alerts"
 import { Switch } from "@/components/ui/switch"
@@ -15,6 +15,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { ServerIcon, GlobeIcon } from "lucide-react"
 import { $router, Link } from "@/components/router"
 import { DialogHeader } from "@/components/ui/dialog"
+import { pb } from "@/lib/api"
 
 const Slider = lazy(() => import("@/components/ui/slider"))
 

@@ -1,15 +1,13 @@
-import { t } from "@lingui/core/macro"
+import { plural, t } from "@lingui/core/macro"
 import { toast } from "@/components/ui/use-toast"
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { $alerts, $copyContent, $systems, $userSettings, pb } from "./stores"
-import type { ChartTimeData, ChartTimes, FingerprintRecord, SemVer, SystemRecord, UserSettings } from "@/types"
-import { RecordModel, RecordSubscription } from "pocketbase"
-import { WritableAtom } from "nanostores"
+import { $copyContent, $systems, $userSettings } from "./stores"
+import type { ChartTimeData, FingerprintRecord, SemVer, SystemRecord } from "@/types"
 import { timeDay, timeHour } from "d3-time"
 import { useEffect, useState } from "react"
-import { prependBasePath } from "@/components/router"
 import { MeterState, Unit } from "./enums"
+import { prependBasePath } from "@/components/router"
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -32,52 +30,6 @@ export async function copyToClipboard(content: string) {
 	} catch (e: any) {
 		$copyContent.set(content)
 	}
-}
-
-const verifyAuth = () => {
-	pb.collection("users")
-		.authRefresh()
-		.catch(() => {
-			logOut()
-			toast({
-				title: t`Failed to authenticate`,
-				description: t`Please log in again`,
-				variant: "destructive",
-			})
-		})
-}
-
-export const updateSystemList = (() => {
-	let isFetchingSystems = false
-	return async () => {
-		if (isFetchingSystems) {
-			return
-		}
-		isFetchingSystems = true
-		try {
-			const records = await pb
-				.collection<SystemRecord>("systems")
-				.getFullList({ sort: "+name", fields: "id,name,host,port,info,status,updated" })
-
-			if (records.length) {
-				$systems.set(records)
-			} else {
-				verifyAuth()
-			}
-		} finally {
-			isFetchingSystems = false
-		}
-	}
-})()
-
-/** Logs the user out by clearing the auth store and unsubscribing from realtime updates. */
-export async function logOut() {
-	$systems.set([])
-	$alerts.set({})
-	$userSettings.set({} as UserSettings)
-	sessionStorage.setItem("lo", "t") // prevent auto login on logout
-	pb.authStore.clear()
-	pb.realtime.unsubscribe()
 }
 
 const hourWithMinutesFormatter = new Intl.DateTimeFormat(undefined, {
@@ -108,47 +60,6 @@ export const formatDay = (timestamp: string) => {
 
 export const updateFavicon = (newIcon: string) => {
 	;(document.querySelector("link[rel='icon']") as HTMLLinkElement).href = prependBasePath(`/static/${newIcon}`)
-}
-
-export const isAdmin = () => pb.authStore.record?.role === "admin"
-export const isReadOnlyUser = () => pb.authStore.record?.role === "readonly"
-
-/** Update systems / alerts list when records change  */
-export function updateRecordList<T extends RecordModel>(e: RecordSubscription<T>, $store: WritableAtom<T[]>) {
-	const curRecords = $store.get()
-	const newRecords = []
-	if (e.action === "delete") {
-		for (const server of curRecords) {
-			if (server.id !== e.record.id) {
-				newRecords.push(server)
-			}
-		}
-	} else {
-		let found = 0
-		for (const server of curRecords) {
-			if (server.id === e.record.id) {
-				found = newRecords.push(e.record)
-			} else {
-				newRecords.push(server)
-			}
-		}
-		if (!found) {
-			newRecords.push(e.record)
-		}
-	}
-	$store.set(newRecords)
-}
-
-export function getPbTimestamp(timeString: ChartTimes, d?: Date) {
-	d ||= chartTimeData[timeString].getOffset(new Date())
-	const year = d.getUTCFullYear()
-	const month = String(d.getUTCMonth() + 1).padStart(2, "0")
-	const day = String(d.getUTCDate()).padStart(2, "0")
-	const hours = String(d.getUTCHours()).padStart(2, "0")
-	const minutes = String(d.getUTCMinutes()).padStart(2, "0")
-	const seconds = String(d.getUTCSeconds()).padStart(2, "0")
-
-	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
 export const chartTimeData: ChartTimeData = {
@@ -329,24 +240,6 @@ export function formatBytes(
 	}
 }
 
-/** Fetch or create user settings in database */
-export async function updateUserSettings() {
-	try {
-		const req = await pb.collection("user_settings").getFirstListItem("", { fields: "settings" })
-		$userSettings.set(req.settings)
-		return
-	} catch (e) {
-		console.error("get settings", e)
-	}
-	// create user settings if error fetching existing
-	try {
-		const createdSettings = await pb.collection("user_settings").create({ user: pb.authStore.record!.id })
-		$userSettings.set(createdSettings.settings)
-	} catch (e) {
-		console.error("create settings", e)
-	}
-}
-
 export const chartMargin = { top: 12 }
 
 /**
@@ -357,19 +250,20 @@ export const chartMargin = { top: 12 }
  */
 export const getHostDisplayValue = (system: SystemRecord): string => system.host.slice(system.host.lastIndexOf("/") + 1)
 
-export function formatUptimeString(uptimeSeconds: number): string {
-	if (!uptimeSeconds || isNaN(uptimeSeconds)) return "";
-	if (uptimeSeconds < 3600) {
-		const mins = Math.trunc(uptimeSeconds / 60);
-		return mins === 1 ? "1 minute" : `${mins} minutes`;
-	} else if (uptimeSeconds < 172800) {
-		const hours = Math.trunc(uptimeSeconds / 3600);
-		return hours === 1 ? "1 hour" : `${hours} hours`;
-	} else {
-		const days = Math.trunc(uptimeSeconds / 86400);
-		return days === 1 ? "1 day" : `${days} days`;
-	}
-}
+// export function formatUptimeString(uptimeSeconds: number): string {
+// 	if (!uptimeSeconds || isNaN(uptimeSeconds)) return ""
+// 	if (uptimeSeconds < 3600) {
+// 		const minutes = Math.trunc(uptimeSeconds / 60)
+// 		return plural({ minutes }, { one: "# minute", other: "# minutes" })
+// 	} else if (uptimeSeconds < 172800) {
+// 		const hours = Math.trunc(uptimeSeconds / 3600)
+// 		console.log(hours)
+// 		return plural({ hours }, { one: "# hour", other: "# hours" })
+// 	} else {
+// 		const days = Math.trunc(uptimeSeconds / 86400)
+// 		return plural({ days }, { one: "# day", other: "# days" })
+// 	}
+// }
 
 /** Generate a random token for the agent */
 export const generateToken = () => {
@@ -462,3 +356,16 @@ export const getSystemNameFromId = (() => {
 		return sysName
 	}
 })()
+
+/** Run a function only once */
+export function runOnce<T extends (...args: any[]) => any>(fn: T): (...args: Parameters<T>) => ReturnType<T> {
+	let done = false
+	let result: any
+	return (...args: any) => {
+		if (!done) {
+			result = fn(...args)
+			done = true
+		}
+		return result
+	}
+}

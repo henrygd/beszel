@@ -1,6 +1,6 @@
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
-import { useEffect } from "react"
+import { lazy, useEffect } from "react"
 import { Separator } from "../../ui/separator"
 import { SidebarNav } from "./sidebar-nav.tsx"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx"
@@ -8,15 +8,23 @@ import { useStore } from "@nanostores/react"
 import { $router } from "@/components/router.tsx"
 import { getPagePath, redirectPage } from "@nanostores/router"
 import { BellIcon, FileSlidersIcon, FingerprintIcon, SettingsIcon, AlertOctagonIcon } from "lucide-react"
-import { $userSettings, pb } from "@/lib/stores.ts"
+import { $userSettings } from "@/lib/stores.ts"
 import { toast } from "@/components/ui/use-toast.ts"
 import { UserSettings } from "@/types"
-import General from "./general.tsx"
-import Notifications from "./notifications.tsx"
-import ConfigYaml from "./config-yaml.tsx"
 import { useLingui } from "@lingui/react/macro"
-import Fingerprints from "./tokens-fingerprints.tsx"
-import AlertsHistoryDataTable from "./alerts-history-data-table"
+import { pb } from "@/lib/api"
+
+const generalSettingsImport = () => import("./general.tsx")
+const notificationsSettingsImport = () => import("./notifications.tsx")
+const configYamlSettingsImport = () => import("./config-yaml.tsx")
+const fingerprintsSettingsImport = () => import("./tokens-fingerprints.tsx")
+const alertsHistoryDataTableSettingsImport = () => import("./alerts-history-data-table.tsx")
+
+const GeneralSettings = lazy(generalSettingsImport)
+const NotificationsSettings = lazy(notificationsSettingsImport)
+const ConfigYamlSettings = lazy(configYamlSettingsImport)
+const FingerprintsSettings = lazy(fingerprintsSettingsImport)
+const AlertsHistoryDataTableSettings = lazy(alertsHistoryDataTableSettingsImport)
 
 export async function saveSettings(newSettings: Partial<UserSettings>) {
 	try {
@@ -59,23 +67,27 @@ export default function SettingsLayout() {
 			title: t`Notifications`,
 			href: getPagePath($router, "settings", { name: "notifications" }),
 			icon: BellIcon,
+			preload: notificationsSettingsImport,
 		},
 		{
 			title: t`Tokens & Fingerprints`,
 			href: getPagePath($router, "settings", { name: "tokens" }),
 			icon: FingerprintIcon,
 			noReadOnly: true,
+			preload: fingerprintsSettingsImport,
 		},
 		{
 			title: t`Alert History`,
 			href: getPagePath($router, "settings", { name: "alert-history" }),
 			icon: AlertOctagonIcon,
+			preload: alertsHistoryDataTableSettingsImport,
 		},
 		{
 			title: t`YAML Config`,
 			href: getPagePath($router, "settings", { name: "config" }),
 			icon: FileSlidersIcon,
 			admin: true,
+			preload: configYamlSettingsImport,
 		},
 	]
 
@@ -120,14 +132,14 @@ function SettingsContent({ name }: { name: string }) {
 
 	switch (name) {
 		case "general":
-			return <General userSettings={userSettings} />
+			return <GeneralSettings userSettings={userSettings} />
 		case "notifications":
-			return <Notifications userSettings={userSettings} />
+			return <NotificationsSettings userSettings={userSettings} />
 		case "config":
-			return <ConfigYaml />
+			return <ConfigYamlSettings />
 		case "tokens":
-			return <Fingerprints />
+			return <FingerprintsSettings />
 		case "alert-history":
-			return <AlertsHistoryDataTable />
+			return <AlertsHistoryDataTableSettings />
 	}
 }

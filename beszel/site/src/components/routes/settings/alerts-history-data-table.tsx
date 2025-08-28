@@ -1,4 +1,4 @@
-import { pb } from "@/lib/stores"
+import { pb } from "@/lib/api"
 import { cn, formatDuration, formatShortDate } from "@/lib/utils"
 import { alertInfo } from "@/lib/alerts"
 import { AlertsHistoryRecord } from "@/types"

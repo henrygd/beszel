@@ -23,11 +23,13 @@ import {
 } from "@/components/ui/command"
 import { memo, useEffect, useMemo } from "react"
 import { $systems } from "@/lib/stores"
-import { getHostDisplayValue, isAdmin, listen } from "@/lib/utils"
+import { getHostDisplayValue, listen } from "@/lib/utils"
 import { $router, basePath, navigate, prependBasePath } from "./router"
 import { Trans } from "@lingui/react/macro"
 import { t } from "@lingui/core/macro"
 import { getPagePath } from "@nanostores/router"
+import { DialogDescription } from "@radix-ui/react-dialog"
+import { isAdmin } from "@/lib/api"
 
 export default memo(function CommandPalette({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) {
 	useEffect(() => {
@@ -54,11 +56,9 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 		)
 		return (
 			<CommandDialog open={open} onOpenChange={setOpen}>
+				<DialogDescription className="sr-only">Command palette</DialogDescription>
 				<CommandInput placeholder={t`Search for systems or settings...`} />
 				<CommandList>
-					<CommandEmpty>
-						<Trans>No results found.</Trans>
-					</CommandEmpty>
 					{systems.length > 0 && (
 						<>
 							<CommandGroup>
@@ -214,6 +214,9 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 							</CommandGroup>
 						</>
 					)}
+					<CommandEmpty>
+						<Trans>No results found.</Trans>
+					</CommandEmpty>
 				</CommandList>
 			</CommandDialog>
 		)

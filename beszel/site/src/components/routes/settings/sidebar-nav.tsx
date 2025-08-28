@@ -1,5 +1,6 @@
 import React from "react"
-import { cn, isAdmin, isReadOnlyUser } from "@/lib/utils"
+import { cn } from "@/lib/utils"
+import { isAdmin, isReadOnlyUser } from "@/lib/api"
 import { buttonVariants } from "../../ui/button"
 import { $router, Link, navigate } from "../../router"
 import { useStore } from "@nanostores/react"
@@ -13,6 +14,7 @@ interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
 		icon?: React.FC<React.SVGProps<SVGSVGElement>>
 		admin?: boolean
 		noReadOnly?: boolean
+		preload?: () => Promise<{ default: React.ComponentType<any> }>
 	}[]
 }
 
@@ -52,6 +54,7 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
 					}
 					return (
 						<Link
+							onMouseEnter={() => item.preload?.()}
 							key={item.href}
 							href={item.href}
 							className={cn(

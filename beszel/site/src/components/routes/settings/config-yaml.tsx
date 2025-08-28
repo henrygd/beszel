@@ -1,17 +1,16 @@
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
-import { isAdmin } from "@/lib/utils"
 import { Separator } from "@/components/ui/separator"
 import { Button } from "@/components/ui/button"
 import { redirectPage } from "@nanostores/router"
 import { $router } from "@/components/router"
 import { AlertCircleIcon, FileSlidersIcon, LoaderCircleIcon } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { pb } from "@/lib/stores"
 import { useState } from "react"
 import { Textarea } from "@/components/ui/textarea"
 import { toast } from "@/components/ui/use-toast"
 import clsx from "clsx"
+import { isAdmin, pb } from "@/lib/api"
 
 export default function ConfigYaml() {
 	const [configContent, setConfigContent] = useState<string>("")

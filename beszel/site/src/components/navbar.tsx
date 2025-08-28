@@ -15,8 +15,8 @@ import { $router, basePath, Link, prependBasePath } from "./router"
 import { LangToggle } from "./lang-toggle"
 import { ModeToggle } from "./mode-toggle"
 import { Logo } from "./logo"
-import { pb } from "@/lib/stores"
-import { cn, isReadOnlyUser, isAdmin, logOut } from "@/lib/utils"
+import { cn, runOnce } from "@/lib/utils"
+import { isReadOnlyUser, isAdmin, logOut, pb } from "@/lib/api"
 import {
 	DropdownMenu,
 	DropdownMenuTrigger,
@@ -36,12 +36,17 @@ const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0
 export default function Navbar() {
 	return (
 		<div className="flex items-center h-14 md:h-16 bg-card px-4 pe-3 sm:px-6 border border-border/60 bt-0 rounded-md my-4">
-			<Link href={basePath} aria-label="Home" className="p-2 ps-0 me-3">
+			<Link
+				href={basePath}
+				aria-label="Home"
+				className="p-2 ps-0 me-3"
+				onMouseEnter={runOnce(() => import("@/components/routes/home"))}
+			>
 				<Logo className="h-[1.1rem] md:h-5 fill-foreground" />
 			</Link>
 			<SearchButton />
 
-			<div className="flex items-center ms-auto">
+			<div className="flex items-center ms-auto" onMouseEnter={() => import("@/components/routes/settings/general")}>
 				<LangToggle />
 				<ModeToggle />
 				<Link

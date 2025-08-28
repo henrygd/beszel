@@ -11,11 +11,8 @@ import {
 	Row,
 	Table as TableType,
 } from "@tanstack/react-table"
-
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-
 import { Button } from "@/components/ui/button"
-
 import {
 	DropdownMenu,
 	DropdownMenuCheckboxItem,
@@ -41,7 +38,7 @@ import {
 import { memo, useEffect, useMemo, useState } from "react"
 import { $systems } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
-import { cn, useLocalStorage } from "@/lib/utils"
+import { cn, runOnce, useLocalStorage } from "@/lib/utils"
 import { $router, Link } from "../router"
 import { useLingui, Trans } from "@lingui/react/macro"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
@@ -53,6 +50,8 @@ import { SystemStatus } from "@/lib/enums"
 
 type ViewMode = "table" | "grid"
 type StatusFilter = "all" | "up" | "down" | "paused"
+
+const preloadSystemDetail = runOnce(() => import("@/components/routes/system.tsx"))
 
 export default function SystemsTable() {
 	const data = useStore($systems)
@@ -283,7 +282,7 @@ const AllSystemsTable = memo(
 		return (
 			<Table>
 				<SystemsTableHead table={table} colLength={colLength} />
-				<TableBody>
+				<TableBody onMouseEnter={preloadSystemDetail}>
 					{rows.length ? (
 						rows.map((row) => (
 							<SystemTableRow key={row.original.id} row={row} length={rows.length} colLength={colLength} />
@@ -359,6 +358,7 @@ const SystemCard = memo(
 		return useMemo(() => {
 			return (
 				<Card
+					onMouseEnter={preloadSystemDetail}
 					key={system.id}
 					className={cn(
 						"cursor-pointer hover:shadow-md transition-all bg-transparent w-full dark:border-border duration-200 relative",

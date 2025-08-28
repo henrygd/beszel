@@ -5,7 +5,7 @@ import { buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { LoaderCircle, LockIcon, LogInIcon, MailIcon } from "lucide-react"
-import { $authenticated, pb } from "@/lib/stores"
+import { $authenticated } from "@/lib/stores"
 import * as v from "valibot"
 import { toast } from "../ui/use-toast"
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -13,6 +13,7 @@ import { useCallback, useEffect, useState } from "react"
 import { AuthMethodsList, AuthProviderInfo, OAuth2AuthConfig } from "pocketbase"
 import { $router, Link, prependBasePath } from "../router"
 import { getPagePath } from "@nanostores/router"
+import { pb } from "@/lib/api"
 
 const honeypot = v.literal("")
 const emailSchema = v.pipe(v.string(), v.email(t`Invalid email address.`))
