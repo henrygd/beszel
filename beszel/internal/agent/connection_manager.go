@@ -106,6 +106,10 @@ func (c *ConnectionManager) Start(serverOptions ServerOptions) error {
 			_ = c.startWebSocketConnection()
 		case <-healthTicker:
 			_ = health.Update()
+			// Also refresh configuration from hub
+			if err := c.agent.RefreshConfig(); err != nil {
+				slog.Debug("Failed to refresh configuration", "error", err)
+			}
 		case <-sigChan:
 			slog.Info("Shutting down")
 			_ = c.agent.StopServer()

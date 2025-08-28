@@ -243,6 +243,8 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	apiAuth.GET("/getkey", func(e *core.RequestEvent) error {
 		return e.JSON(http.StatusOK, map[string]string{"key": h.pubKey, "v": beszel.Version})
 	})
+	// API endpoint for agent configuration
+	se.Router.GET("/api/beszel/agent-config", config.GetAgentConfig)
 	// send test notification
 	apiAuth.POST("/test-notification", h.SendTestNotification)
 	// get config.yml content
