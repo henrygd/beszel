@@ -8,7 +8,7 @@ msgstr ""
 "Language: da\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-25 21:20\n"
+"PO-Revision-Date: 2025-08-28 23:21\n"
 "Last-Translator: \n"
 "Language-Team: Danish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -32,6 +32,10 @@ msgstr ""
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {# hour} other {# hours}}"
+
+#: src/components/routes/system.tsx
+msgid "{mins, plural, one {# minute} other {# minutes}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -124,6 +128,7 @@ msgid "Alerts"
 msgstr "Alarmer"
 
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "Alle systemer"
@@ -422,6 +427,7 @@ msgstr "Dokumentation"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Down"
 msgstr "Nede"
@@ -492,7 +498,7 @@ msgstr "Eksporter din nuværende systemkonfiguration."
 msgid "Fahrenheit (°F)"
 msgstr ""
 
-#: src/lib/utils.ts
+#: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Kunne ikke godkende"
 
@@ -750,6 +756,7 @@ msgid "Pause"
 msgstr "Pause"
 
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Paused"
 msgstr "Sat på pause"
 
@@ -774,7 +781,7 @@ msgstr "Opret venligst en administratorkonto"
 msgid "Please enable pop-ups for this site"
 msgstr "Aktiver pop-ups for dette websted"
 
-#: src/lib/utils.ts
+#: src/lib/api.ts
 msgid "Please log in again"
 msgstr "Log venligst ind igen"
 
@@ -901,6 +908,7 @@ msgstr "Sorter efter"
 msgid "State"
 msgstr ""
 
+#: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
 msgstr "Status"
@@ -1067,6 +1075,7 @@ msgstr "Ukendt"
 #. Context: System is up
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Up"
 msgstr "Oppe"
 
