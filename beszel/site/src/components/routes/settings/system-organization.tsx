@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from "react"
+import { useState, useMemo, useEffect, useRef, useCallback } from "react"
 import { useStore } from "@nanostores/react"
 import { $systems, pb, $userSettings } from "@/lib/stores"
 import { SystemRecord } from "@/types"
@@ -32,17 +32,33 @@ export default function SystemOrganization() {
   const [collapsedCards, setCollapsedCards] = useState<Set<string>>(new Set())
   const initialCollapseSet = useRef(false)
 
-  // Get all unique tags from systems
-  const allTags = Array.from(new Set(systems.flatMap(s => s.tags || []).filter(Boolean))).sort()
+  // Optimized tag computation
+  const allTags = useMemo(() => {
+    const tagSet = new Set<string>()
+    for (const sys of systems) {
+      if (sys.tags) {
+        for (const tag of sys.tags) {
+          if (tag) tagSet.add(tag)
+        }
+      }
+    }
+    return Array.from(tagSet).sort()
+  }, [systems])
 
-  // Filter systems based on selected filters
-  const filteredSystems = systems.filter(system => {
-    const matchesGroup = selectedGroupFilter === "all" || 
-      (selectedGroupFilter === "no-group" && !system.group) ||
-      system.group === selectedGroupFilter
-    const matchesTag = selectedTagFilter === "all" || (system.tags || []).includes(selectedTagFilter)
-    return matchesGroup && matchesTag
-  })
+  // Optimized system filtering
+  const filteredSystems = useMemo(() => {
+    if (selectedGroupFilter === "all" && selectedTagFilter === "all") {
+      return systems
+    }
+    return systems.filter(system => {
+      const matchesGroup = selectedGroupFilter === "all" || 
+        (selectedGroupFilter === "no-group" && !system.group) ||
+        system.group === selectedGroupFilter
+      const matchesTag = selectedTagFilter === "all" || 
+        (system.tags && system.tags.includes(selectedTagFilter))
+      return matchesGroup && matchesTag
+    })
+  }, [systems, selectedGroupFilter, selectedTagFilter])
 
   // Add group - this is now handled automatically when systems are updated
   const addGroup = () => {
@@ -51,54 +67,67 @@ export default function SystemOrganization() {
     }
   }
 
-  // Update pending changes for tags
-  const updatePendingTags = (system: SystemRecord, tags: string[]) => {
-    const current = pendingChanges.get(system.id) || {}
-    setPendingChanges(new Map(pendingChanges.set(system.id, { ...current, tags })))
-  }
+  // Optimized pending change handlers with useCallback
+  const updatePendingTags = useCallback((system: SystemRecord, tags: string[]) => {
+    setPendingChanges(prev => {
+      const newMap = new Map(prev)
+      const current = newMap.get(system.id) || {}
+      newMap.set(system.id, { ...current, tags })
+      return newMap
+    })
+  }, [])
 
-  // Update pending changes for group
-  const updatePendingGroup = (system: SystemRecord, group: string) => {
-    const current = pendingChanges.get(system.id) || {}
-    setPendingChanges(new Map(pendingChanges.set(system.id, { ...current, group })))
-  }
+  const updatePendingGroup = useCallback((system: SystemRecord, group: string) => {
+    setPendingChanges(prev => {
+      const newMap = new Map(prev)
+      const current = newMap.get(system.id) || {}
+      newMap.set(system.id, { ...current, group })
+      return newMap
+    })
+  }, [])
 
-  // Save all pending changes
-  const saveChanges = async () => {
+  // Optimized batch save with concurrent updates
+  const saveChanges = useCallback(async () => {
     if (pendingChanges.size === 0) return
     
     setIsSaving(true)
     try {
-      const promises = Array.from(pendingChanges.entries()).map(async ([systemId, changes]) => {
-        const updates: any = {}
+      // Batch all updates into a single Promise.all for better performance
+      const updatePromises: Promise<any>[] = []
+      
+      for (const [systemId, changes] of pendingChanges.entries()) {
+        const updates: Record<string, any> = {}
         if (changes.tags !== undefined) updates.tags = changes.tags
         if (changes.group !== undefined) updates.group = changes.group
         
         if (Object.keys(updates).length > 0) {
-          await pb.collection("systems").update(systemId, updates)
+          updatePromises.push(pb.collection("systems").update(systemId, updates))
         }
-      })
+      }
       
-      await Promise.all(promises)
-      await updateSystemList()
+      // Execute all updates concurrently
+      if (updatePromises.length > 0) {
+        await Promise.all(updatePromises)
+        await updateSystemList()
+      }
       setPendingChanges(new Map())
     } catch (error) {
       console.error('Failed to save changes:', error)
     } finally {
       setIsSaving(false)
     }
-  }
+  }, [pendingChanges])
 
-  // Get current value (pending or original) for display
-  const getCurrentTags = (system: SystemRecord) => {
+  // Memoized current value getters for better performance
+  const getCurrentTags = useCallback((system: SystemRecord) => {
     const pending = pendingChanges.get(system.id)
     return pending?.tags !== undefined ? pending.tags : (system.tags || [])
-  }
+  }, [pendingChanges])
 
-  const getCurrentGroup = (system: SystemRecord) => {
+  const getCurrentGroup = useCallback((system: SystemRecord) => {
     const pending = pendingChanges.get(system.id)
     return pending?.group !== undefined ? pending.group : (system.group || "")
-  }
+  }, [pendingChanges])
 
   // Get pending changes description for a system
   const getPendingChangesDescription = (system: SystemRecord) => {

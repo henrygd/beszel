@@ -20,42 +20,53 @@ const InputTags = React.forwardRef<HTMLInputElement, InputTagsProps>(
 		const [dropdownOpen, setDropdownOpen] = React.useState(false)
 		const systems = useStore($systems)
 
-		// Get all existing tags from systems
+		// Optimized existing tags computation
 		const existingTags = React.useMemo(() => {
-			const allTags = new Set<string>()
-			systems.forEach(system => {
+			const tagSet = new Set<string>()
+			for (const system of systems) {
 				if (system.tags) {
-					system.tags.forEach(tag => allTags.add(tag))
+					for (const tag of system.tags) {
+						tagSet.add(tag)
+					}
 				}
-			})
-			return Array.from(allTags).sort()
+			}
+			return Array.from(tagSet).sort()
 		}, [systems])
 
-		// Filter out tags that are already selected
-		const availableTags = existingTags.filter(tag => !value.includes(tag))
+		// Optimized filtering of available tags
+		const availableTags = React.useMemo(() => {
+			const selectedSet = new Set(value)
+			return existingTags.filter(tag => !selectedSet.has(tag))
+		}, [existingTags, value])
+
+		// Optimized comma handling with useCallback
+		const handleCommaInput = React.useCallback(() => {
+			if (pendingDataPoint.includes(",")) {
+				const newTags = pendingDataPoint.split(",").map(chunk => chunk.trim()).filter(Boolean)
+				const combinedTags = new Set([...value, ...newTags])
+				onChange(Array.from(combinedTags))
+				setPendingDataPoint("")
+			}
+		}, [pendingDataPoint, value, onChange])
 
 		React.useEffect(() => {
-			if (pendingDataPoint.includes(",")) {
-				const newDataPoints = new Set([...value, ...pendingDataPoint.split(",").map((chunk) => chunk.trim())])
-				onChange(Array.from(newDataPoints))
+			handleCommaInput()
+		}, [handleCommaInput])
+
+		// Optimized tag operations with useCallback
+		const addPendingDataPoint = React.useCallback(() => {
+			const trimmed = pendingDataPoint.trim()
+			if (trimmed && !value.includes(trimmed)) {
+				onChange([...value, trimmed])
 				setPendingDataPoint("")
 			}
-		}, [pendingDataPoint, onChange, value])
+		}, [pendingDataPoint, value, onChange])
 
-		const addPendingDataPoint = () => {
-			if (pendingDataPoint) {
-				const newDataPoints = new Set([...value, pendingDataPoint])
-				onChange(Array.from(newDataPoints))
-				setPendingDataPoint("")
-			}
-		}
-
-		const addTag = (tag: string) => {
+		const addTag = React.useCallback((tag: string) => {
 			if (!value.includes(tag)) {
-				const newDataPoints = new Set([...value, tag])
-				onChange(Array.from(newDataPoints))
+				onChange([...value, tag])
 			}
-		}
+		}, [value, onChange])
 
 		return (
 			<div className="flex items-start gap-2">

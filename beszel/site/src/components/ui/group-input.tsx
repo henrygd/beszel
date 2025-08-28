@@ -3,6 +3,7 @@ import { Button } from "./button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "./dropdown-menu"
 import { PlusIcon, XIcon } from "lucide-react"
 import React from "react"
+import { useDebounce } from "@/lib/useDebounce"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "./command"
 
 interface GroupInputProps {
@@ -21,11 +22,14 @@ export const GroupInput: React.FC<GroupInputProps> = ({ value, groups, onChange,
     if (!value) setPending("")
   }, [value])
 
-  // Filter groups based on pending input
+  // Debounced filtering for better performance
+  const debouncedPending = useDebounce(pending, 200)
+  
+  // Filter groups based on debounced pending input
   const filteredGroups = React.useMemo(() => {
-    if (!pending) return groups
-    return groups.filter(g => g.toLowerCase().includes(pending.toLowerCase()))
-  }, [groups, pending])
+    if (!debouncedPending) return groups
+    return groups.filter(g => g.toLowerCase().includes(debouncedPending.toLowerCase()))
+  }, [groups, debouncedPending])
 
   // Only show suggestions dropdown when the + button is clicked (DropdownMenu)
   // Remove the suggestions dropdown from the input area

@@ -64,10 +64,11 @@ import {
 	ChevronDownIcon,
 	ChevronRightIcon,
 } from "lucide-react"
-import { memo, useEffect, useMemo, useRef, useState } from "react"
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { $systems, pb, $userSettings } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { cn, copyToClipboard, decimalString, isReadOnlyUser, useLocalStorage } from "@/lib/utils"
+import { useDebounce } from "@/lib/useDebounce"
 import AlertsButton from "../alerts/alert-button"
 import { $router, Link, navigate } from "../router"
 import { EthernetIcon, GpuIcon, ThermometerIcon } from "../ui/icons"
@@ -127,34 +128,47 @@ export default function SystemsTable() {
 	const userSettings = useStore($userSettings)
 	const { i18n, t } = useLingui()
 	const [filter, setFilter] = useState<string>()
+	const debouncedFilter = useDebounce(filter, 300)
 	const [sorting, setSorting] = useState<SortingState>([{ id: "system", desc: false }])
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>("cols", {})
 	const [viewMode, setViewMode] = useLocalStorage<ViewMode>("viewMode", window.innerWidth > 1024 ? "table" : "grid")
-	const [tagFilter, setTagFilter] = useState<string>("")
 	const [selectedTags, setSelectedTags] = useState<string[]>([])
 	const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
 
 	const locale = i18n.locale
 
-	// Get all unique tags from systems
+	// Optimized tag computation with better memoization
 	const allTags = useMemo(() => {
-		const tags = new Set<string>()
-		data.forEach((sys) => (sys.tags || []).forEach((tag) => tags.add(tag)))
-		return Array.from(tags).sort()
+		const tagSet = new Set<string>()
+		for (const sys of data) {
+			if (sys.tags) {
+				for (const tag of sys.tags) {
+					tagSet.add(tag)
+				}
+			}
+		}
+		return Array.from(tagSet).sort()
 	}, [data])
 
-	// Filter data by selected tags (OR logic: show systems with ANY selected tag)
+	// Optimized filtering with combined operations
 	const filteredData = useMemo(() => {
 		if (!selectedTags.length) return data
-		return data.filter((sys) => sys.tags?.some((tag) => selectedTags.includes(tag)))
+		const selectedTagsSet = new Set(selectedTags)
+		return data.filter((sys) => {
+			if (!sys.tags?.length) return false
+			for (const tag of sys.tags) {
+				if (selectedTagsSet.has(tag)) return true
+			}
+			return false
+		})
 	}, [data, selectedTags])
 
 	useEffect(() => {
-		if (filter !== undefined) {
-			table.getColumn("system")?.setFilterValue(filter)
+		if (debouncedFilter !== undefined) {
+			table.getColumn("system")?.setFilterValue(debouncedFilter)
 		}
-	}, [filter])
+	}, [debouncedFilter])
 
 	const columnDefs = useMemo(() => {
 		const statusTranslations = {
@@ -518,15 +532,14 @@ export default function SystemsTable() {
 		)
 	}, [visibleColumns.length, sorting, viewMode, locale, selectedTags, allTags])
 
-	// Group systems by their group field
+	// Optimized group processing with reduce
 	const groupedSystems = useMemo(() => {
-		const groups: Record<string, SystemRecord[]> = {}
-		filteredData.forEach(system => {
+		return filteredData.reduce((groups, system) => {
 			const group = system.group || "Ungrouped"
-			if (!groups[group]) groups[group] = []
+			groups[group] ??= []
 			groups[group].push(system)
-		})
-		return groups
+			return groups
+		}, {} as Record<string, SystemRecord[]>)
 	}, [filteredData])
 
 	// Determine if there is at least one system with a non-empty group
