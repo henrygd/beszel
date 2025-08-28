@@ -3,7 +3,6 @@ import { CellContext, ColumnDef, HeaderContext } from "@tanstack/react-table"
 import { ClassValue } from "clsx"
 import {
 	ArrowUpDownIcon,
-	ClockIcon,
 	CopyIcon,
 	CpuIcon,
 	HardDriveIcon,
@@ -23,7 +22,6 @@ import {
 	decimalString,
 	formatBytes,
 	formatTemperature,
-	formatUptimeString,
 	getMeterState,
 	isReadOnlyUser,
 	parseSemVer,
@@ -31,7 +29,7 @@ import {
 import { EthernetIcon, GpuIcon, HourglassIcon, ThermometerIcon } from "../ui/icons"
 import { useStore } from "@nanostores/react"
 import { $userSettings, pb } from "@/lib/stores"
-import { Trans, useLingui, Plural } from "@lingui/react/macro"
+import { Trans, useLingui } from "@lingui/react/macro"
 import { useMemo, useRef, useState } from "react"
 import { memo } from "react"
 import {
@@ -253,62 +251,6 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 						{decimalString(value, value >= 100 ? 1 : 2)} {unit}
 					</span>
 				)
-			},
-		},
-		{
-			accessorFn: ({ info }) => info.u,
-			id: "uptime",
-			name: () => t`Uptime`,
-			invertSorting: true,
-			sortUndefined: -1,
-			size: 60,
-			Icon: ClockIcon,
-			header: sortableHeader,
-			cell(info) {
-				const uptime = info.getValue() as number
-				if (!uptime) return null
-				return <span>{formatUptimeString(uptime)}</span>
-			},
-		},
-		{
-			accessorFn: ({ updated }) => updated,
-			id: "lastSeen",
-			name: () => t`Last Seen`,
-			size: 120,
-			header: sortableHeader,
-			sortUndefined: -1,
-			cell(info) {
-				const system = info.row.original
-				if (!system.updated) {
-					return (
-						<span className={cn("tabular-nums whitespace-nowrap", { "ps-1": viewMode === "table" })}>-</span>
-					);
-				}
-				const now = Date.now();
-				const lastSeenTime = new Date(system.updated).getTime();
-				const diff = Math.max(0, Math.floor((now - lastSeenTime) / 1000)); // in seconds
-				let display: React.ReactNode;
-				if (system.status !== SystemStatus.Up) {
-					// Always show absolute time for offline systems
-					const d = new Date(system.updated);
-					display = d.toLocaleString(undefined, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
-				} else if (diff < 60) {
-					display = t`Just now`;
-				} else if (diff < 3600) {
-					const mins = Math.trunc(diff / 60);
-					display = <Plural value={mins} one="# minute ago" other="# minutes ago" />;
-				} else if (diff < 172800) {
-					const hours = Math.trunc(diff / 3600);
-					display = <Plural value={hours} one="# hour ago" other="# hours ago" />;
-				} else {
-					const days = Math.trunc(diff / 86400);
-					display = <Plural value={days} one="# day ago" other="# days ago" />;
-				}
-				return (
-					<span className={cn("flex items-center gap-1 tabular-nums whitespace-nowrap", { "ps-1": viewMode === "table" })}>
-						{display}
-					</span>
-				);
 			},
 		},
 		{
