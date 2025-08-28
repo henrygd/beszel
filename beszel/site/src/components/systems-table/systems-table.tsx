@@ -80,6 +80,9 @@ import { getPagePath } from "@nanostores/router"
 import { SystemDialog } from "../add-system"
 import { Dialog } from "../ui/dialog"
 import { Badge } from "@/components/ui/badge"
+import { bulkRenameTag, bulkDeleteTag, getSystemsWithTag } from "@/lib/bulkOperations"
+import { updateSystemList } from "@/lib/utils"
+import { toast } from "@/components/ui/use-toast"
 
 type ViewMode = "table" | "grid"
 
@@ -225,7 +228,57 @@ export default function SystemsTable() {
 					return (
 						<div className="flex flex-wrap gap-1">
 							{tags.map((tag) => (
-								<Badge key={tag}>{tag}</Badge>
+								<DropdownMenu key={tag}>
+									<DropdownMenuTrigger asChild>
+										<Badge 
+											data-nolink
+											variant="secondary" 
+											className="cursor-pointer hover:bg-secondary/80 transition-colors"
+										>
+											{tag}
+										</Badge>
+									</DropdownMenuTrigger>
+									<DropdownMenuContent align="start">
+										<DropdownMenuLabel>Tag: {tag}</DropdownMenuLabel>
+										<DropdownMenuSeparator />
+										<DropdownMenuItem
+											onClick={async () => {
+												const affectedSystems = getSystemsWithTag(tag, data)
+												const newName = prompt(`Rename tag "${tag}" (used by ${affectedSystems.length} systems):`, tag)
+												if (newName && newName !== tag) {
+													const result = await bulkRenameTag(tag, newName, data)
+													if (result.success) {
+														toast({ title: "Tag renamed", description: `Updated ${result.affectedSystems} systems` })
+														await updateSystemList()
+													} else {
+														toast({ title: "Rename failed", description: result.errors?.join(', '), variant: "destructive" })
+													}
+												}
+											}}
+										>
+											<PenBoxIcon className="mr-2 h-4 w-4" />
+											Rename tag
+										</DropdownMenuItem>
+										<DropdownMenuItem
+											className="text-destructive focus:text-destructive"
+											onClick={async () => {
+												const affectedSystems = getSystemsWithTag(tag, data)
+												if (confirm(`Delete tag "${tag}" from ${affectedSystems.length} systems?`)) {
+													const result = await bulkDeleteTag(tag, data)
+													if (result.success) {
+														toast({ title: "Tag deleted", description: `Removed from ${result.affectedSystems} systems` })
+														await updateSystemList()
+													} else {
+														toast({ title: "Delete failed", description: result.errors?.join(', '), variant: "destructive" })
+													}
+												}
+											}}
+										>
+											<Trash2Icon className="mr-2 h-4 w-4" />
+											Delete tag
+										</DropdownMenuItem>
+									</DropdownMenuContent>
+								</DropdownMenu>
 							))}
 						</div>
 					)

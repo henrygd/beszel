@@ -13,6 +13,8 @@ import { Label } from "@/components/ui/label"
 import { saveSettings } from "./layout"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { AlertCircle, Loader2, SaveIcon, ChevronDown, ChevronRight, ChevronsDownUp } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import TagGroupManager from "@/components/tag-group-manager"
 
 export default function SystemOrganization() {
   const systems = useStore($systems)
@@ -206,6 +208,13 @@ export default function SystemOrganization() {
         <CardTitle>System Organization</CardTitle>
       </CardHeader>
       <CardContent>
+        <Tabs defaultValue="organize" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="organize">Organize Systems</TabsTrigger>
+            <TabsTrigger value="manage">Manage Tags & Groups</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="organize" className="mt-6">
         <div className="flex items-center space-x-2 mb-6 p-4 bg-muted/30 rounded-lg">
           <Switch
             id="grouping-toggle"
@@ -344,6 +353,12 @@ export default function SystemOrganization() {
             </Button>
           </div>
         )}
+          </TabsContent>
+          
+          <TabsContent value="manage" className="mt-6">
+            <TagGroupManager />
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   )
