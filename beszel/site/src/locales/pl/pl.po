@@ -8,7 +8,7 @@ msgstr ""
 "Language: pl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-25 21:20\n"
+"PO-Revision-Date: 2025-08-28 23:21\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
@@ -32,6 +32,10 @@ msgstr "{0} z {1} wybranych wierszy."
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
 msgstr "{hours, plural, one {godzinę} few {# godziny} many {# godzin} other {# godziny}}"
+
+#: src/components/routes/system.tsx
+msgid "{mins, plural, one {# minute} other {# minutes}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -124,6 +128,7 @@ msgid "Alerts"
 msgstr "Alerty"
 
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "Wszystkie systemy"
@@ -422,6 +427,7 @@ msgstr "Dokumentacja"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Down"
 msgstr "Nie działa"
@@ -492,7 +498,7 @@ msgstr "Eksportuj aktualną konfigurację systemów."
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenheit (°F)"
 
-#: src/lib/utils.ts
+#: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Błąd autoryzacji"
 
@@ -750,6 +756,7 @@ msgid "Pause"
 msgstr "Pauza"
 
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Paused"
 msgstr "Wstrzymane"
 
@@ -774,7 +781,7 @@ msgstr "Utwórz konto administratora"
 msgid "Please enable pop-ups for this site"
 msgstr "Włącz wyskakujące okna dla tej strony"
 
-#: src/lib/utils.ts
+#: src/lib/api.ts
 msgid "Please log in again"
 msgstr "Zaloguj się ponownie"
 
@@ -901,6 +908,7 @@ msgstr "Sortuj według"
 msgid "State"
 msgstr "Stan"
 
+#: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
 msgstr "Status"
@@ -1067,6 +1075,7 @@ msgstr "Nieznana"
 #. Context: System is up
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Up"
 msgstr "Działa"
 
