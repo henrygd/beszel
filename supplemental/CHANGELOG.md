@@ -1,3 +1,13 @@
+## 0.12.6
+
+- Add maximum 1 minute memory usage.
+
+- Add status filters to All Systems table.
+
+- Fix Safari system link CSS bug.
+
+- Use older cuda image for increased compatibility (#1103)
+
 ## 0.12.5
 
 - Downgrade `gopsutil` to `v4.25.6` to fix panic on FreeBSD (#1083)
