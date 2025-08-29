@@ -385,27 +385,33 @@ const SystemCard = memo(
 							)}
 						</div>
 					</CardHeader>
-					<CardContent className="grid gap-2.5 text-sm px-5 pt-3.5 pb-4">
-						{table.getAllColumns().map((column) => {
-							if (!column.getIsVisible() || column.id === "system" || column.id === "actions") return null
-							const cell = row.getAllCells().find((cell) => cell.column.id === column.id)
-							if (!cell) return null
-							// @ts-ignore
-							const { Icon, name } = column.columnDef as ColumnDef<SystemRecord, unknown>
-							return (
-								<div key={column.id} className="flex items-center gap-3">
-									{column.id === "lastSeen" ? (
-										<EyeIcon className="size-4 text-muted-foreground" />
-									) : (
-										Icon && <Icon className="size-4 text-muted-foreground" />
-									)}
-									<div className="flex items-center gap-3 flex-1">
-										<span className="text-muted-foreground min-w-16">{name()}:</span>
-										<div className="flex-1">{flexRender(cell.column.columnDef.cell, cell.getContext())}</div>
-									</div>
-								</div>
-							)
-						})}
+					<CardContent className="text-sm px-5 pt-3.5 pb-4">
+						<div className="grid gap-2.5" style={{ gridTemplateColumns: "24px minmax(80px, max-content) 1fr" }}>
+							{table.getAllColumns().map((column) => {
+								if (!column.getIsVisible() || column.id === "system" || column.id === "actions") return null
+								const cell = row.getAllCells().find((cell) => cell.column.id === column.id)
+								if (!cell) return null
+								// @ts-ignore
+								const { Icon, name } = column.columnDef as ColumnDef<SystemRecord, unknown>
+								return (
+									<>
+										<div key={`${column.id}-icon`} className="flex items-center">
+											{column.id === "lastSeen" ? (
+												<EyeIcon className="size-4 text-muted-foreground" />
+											) : (
+												Icon && <Icon className="size-4 text-muted-foreground" />
+											)}
+										</div>
+										<div key={`${column.id}-label`} className="flex items-center text-muted-foreground pr-3">
+											{name()}:
+										</div>
+										<div key={`${column.id}-value`} className="flex items-center">
+											{flexRender(cell.column.columnDef.cell, cell.getContext())}
+										</div>
+									</>
+								)
+							})}
+						</div>
 					</CardContent>
 					<Link
 						href={getPagePath($router, "system", { name: row.original.name })}

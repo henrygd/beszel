@@ -326,9 +326,9 @@ function TableCellWithMeter(info: CellContext<SystemRecord, unknown>) {
 			STATUS_COLORS.down
 	)
 	return (
-		<div className="flex gap-2 items-center tabular-nums tracking-tight">
-			<span className="min-w-8">{decimalString(val, val >= 10 ? 1 : 2)}%</span>
-			<span className="grow min-w-8 grid bg-muted h-[1em] rounded-sm overflow-hidden">
+		<div className="flex gap-2 items-center tabular-nums tracking-tight w-full">
+			<span className="min-w-8 shrink-0">{decimalString(val, val >= 10 ? 1 : 2)}%</span>
+			<span className="flex-1 min-w-8 grid bg-muted h-[1em] rounded-sm overflow-hidden">
 				<span className={meterClass} style={{ width: `${val}%` }}></span>
 			</span>
 		</div>
