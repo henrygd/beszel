@@ -71,7 +71,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 										}}
 									>
 										<Server className="me-2 size-4" />
-										<span>{system.name}</span>
+										<span className="max-w-60 truncate">{system.name}</span>
 										<CommandShortcut>{getHostDisplayValue(system)}</CommandShortcut>
 									</CommandItem>
 								))}
