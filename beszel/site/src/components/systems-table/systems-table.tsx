@@ -58,7 +58,7 @@ export default function SystemsTable() {
 	const { i18n, t } = useLingui()
 	const [filter, setFilter] = useState<string>()
 	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
-	const [sorting, setSorting] = useState<SortingState>([{ id: "system", desc: false }])
+	const [sorting, setSorting] = useLocalStorage<SortingState>("sortMode",[{ id: "system", desc: false }])
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>("cols", {})
 	const [viewMode, setViewMode] = useLocalStorage<ViewMode>("viewMode", window.innerWidth > 1024 ? "table" : "grid")
