@@ -11,7 +11,7 @@ import (
 )
 
 // Update updates beszel to the latest version
-func Update(_ *cobra.Command, _ []string) {
+func Update(cmd *cobra.Command, _ []string) {
 	dataDir := os.TempDir()
 
 	// set dataDir to ./beszel_data if it exists
@@ -19,9 +19,13 @@ func Update(_ *cobra.Command, _ []string) {
 		dataDir = "./beszel_data"
 	}
 
+	// Check if china-mirrors flag is set
+	useMirror, _ := cmd.Flags().GetBool("china-mirrors")
+
 	updated, err := ghupdate.Update(ghupdate.Config{
 		ArchiveExecutable: "beszel",
 		DataDir:           dataDir,
+		UseMirror:         useMirror,
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -49,13 +53,13 @@ func restartService() {
 		// Check if beszel service exists and is active
 		cmd := exec.Command("systemctl", "is-active", "beszel.service")
 		if err := cmd.Run(); err == nil {
-			fmt.Println("Restarting beszel service...")
+			ghupdate.ColorPrint(ghupdate.ColorYellow, "Restarting beszel service...")
 			restartCmd := exec.Command("systemctl", "restart", "beszel.service")
 			if err := restartCmd.Run(); err != nil {
-				fmt.Printf("Warning: Failed to restart service: %v\n", err)
-				fmt.Println("Please restart the service manually: sudo systemctl restart beszel")
+				ghupdate.ColorPrintf(ghupdate.ColorYellow, "Warning: Failed to restart service: %v\n", err)
+				ghupdate.ColorPrint(ghupdate.ColorYellow, "Please restart the service manually: sudo systemctl restart beszel")
 			} else {
-				fmt.Println("Service restarted successfully")
+				ghupdate.ColorPrint(ghupdate.ColorGreen, "Service restarted successfully")
 			}
 			return
 		}
@@ -65,17 +69,17 @@ func restartService() {
 	if _, err := exec.LookPath("rc-service"); err == nil {
 		cmd := exec.Command("rc-service", "beszel", "status")
 		if err := cmd.Run(); err == nil {
-			fmt.Println("Restarting beszel service...")
+			ghupdate.ColorPrint(ghupdate.ColorYellow, "Restarting beszel service...")
 			restartCmd := exec.Command("rc-service", "beszel", "restart")
 			if err := restartCmd.Run(); err != nil {
-				fmt.Printf("Warning: Failed to restart service: %v\n", err)
-				fmt.Println("Please restart the service manually: sudo rc-service beszel restart")
+				ghupdate.ColorPrintf(ghupdate.ColorYellow, "Warning: Failed to restart service: %v\n", err)
+				ghupdate.ColorPrint(ghupdate.ColorYellow, "Please restart the service manually: sudo rc-service beszel restart")
 			} else {
-				fmt.Println("Service restarted successfully")
+				ghupdate.ColorPrint(ghupdate.ColorGreen, "Service restarted successfully")
 			}
 			return
 		}
 	}
 
-	fmt.Println("Note: Service restart not attempted. If running as a service, restart manually.")
+	ghupdate.ColorPrint(ghupdate.ColorYellow, "Service restart not attempted. If running as a service, restart manually.")
 }

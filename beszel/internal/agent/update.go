@@ -60,7 +60,7 @@ func detectRestarter() restarter {
 
 // Update checks GitHub for a newer release of beszel-agent, applies it,
 // fixes SELinux context if needed, and restarts the service.
-func Update() error {
+func Update(useMirror bool) error {
 	exePath, _ := os.Executable()
 
 	dataDir, err := getDataDir()
@@ -70,6 +70,7 @@ func Update() error {
 	updated, err := ghupdate.Update(ghupdate.Config{
 		ArchiveExecutable: "beszel-agent",
 		DataDir:           dataDir,
+		UseMirror:         useMirror,
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -99,6 +100,8 @@ func Update() error {
 		if err := r.Restart(); err != nil {
 			ghupdate.ColorPrintf(ghupdate.ColorYellow, "Warning: failed to restart service: %v", err)
 			ghupdate.ColorPrint(ghupdate.ColorYellow, "Please restart the service manually.")
+		} else {
+			ghupdate.ColorPrint(ghupdate.ColorGreen, "Service restarted successfully")
 		}
 	} else {
 		ghupdate.ColorPrint(ghupdate.ColorYellow, "No supported init system detected; please restart manually if needed.")

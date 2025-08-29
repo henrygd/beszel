@@ -23,7 +23,7 @@ import (
 const (
 	colorReset  = "\033[0m"
 	ColorYellow = "\033[33m"
-	colorGreen  = "\033[32m"
+	ColorGreen  = "\033[32m"
 	colorCyan   = "\033[36m"
 	colorGray   = "\033[90m"
 )
@@ -64,6 +64,10 @@ type Config struct {
 
 	// The data directory to use when fetching and downloading the latest release.
 	DataDir string
+
+	// UseMirror specifies whether to use the beszel.dev mirror instead of GitHub API.
+	// When false (default), always uses api.github.com. When true, uses gh.beszel.dev.
+	UseMirror bool
 }
 
 type updater struct {
@@ -106,21 +110,19 @@ func (p *updater) update() (updated bool, err error) {
 	var latest *release
 	var useMirror bool
 
+	// Determine the API endpoint based on UseMirror flag
+	apiURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", p.config.Owner, p.config.Repo)
+	if p.config.UseMirror {
+		useMirror = true
+		apiURL = fmt.Sprintf("https://gh.beszel.dev/repos/%s/%s/releases/latest?api=true", p.config.Owner, p.config.Repo)
+		ColorPrint(ColorYellow, "Using mirror for update.")
+	}
+
 	latest, err = fetchLatestRelease(
 		p.config.Context,
 		p.config.HttpClient,
-		fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", p.config.Owner, p.config.Repo),
+		apiURL,
 	)
-	// if the first fetch fails, try the beszel.dev API (fallback for China)
-	if err != nil {
-		ColorPrint(ColorYellow, "Failed to fetch release. Trying beszel.dev mirror...")
-		useMirror = true
-		latest, err = fetchLatestRelease(
-			p.config.Context,
-			p.config.HttpClient,
-			fmt.Sprintf("https://gh.beszel.dev/repos/%s/%s/releases/latest?api=true", p.config.Owner, p.config.Repo),
-		)
-	}
 	if err != nil {
 		return false, err
 	}
@@ -129,7 +131,7 @@ func (p *updater) update() (updated bool, err error) {
 	newVersion := semver.MustParse(strings.TrimPrefix(latest.Tag, "v"))
 
 	if newVersion.LTE(currentVersion) {
-		ColorPrintf(colorGreen, "You already have the latest version %s.", p.currentVersion)
+		ColorPrintf(ColorGreen, "You already have the latest version %s.", p.currentVersion)
 		return false, nil
 	}
 
@@ -209,14 +211,11 @@ func (p *updater) update() (updated bool, err error) {
 	}
 
 	ColorPrint(colorGray, "---")
-	ColorPrint(colorGreen, "Update completed successfully! You can start the executable as usual.")
+	ColorPrint(ColorGreen, "Update completed successfully!")
 
 	// print the release notes
 	if latest.Body != "" {
 		fmt.Print("\n")
-		ColorPrintf(colorCyan, "Here is a list with some of the %s changes:", latest.Tag)
-		// remove the update command note to avoid "stuttering"
-		// (@todo consider moving to a config option)
 		releaseNotes := strings.TrimSpace(strings.Replace(latest.Body, "> _To update the prebuilt executable you can run `./"+p.config.ArchiveExecutable+" update`._", "", 1))
 		ColorPrint(colorCyan, releaseNotes)
 		fmt.Print("\n")
