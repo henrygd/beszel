@@ -27,7 +27,7 @@ import {
 } from "@/lib/utils"
 import { EthernetIcon, GpuIcon, HourglassIcon, ThermometerIcon } from "../ui/icons"
 import { useStore } from "@nanostores/react"
-import { $userSettings } from "@/lib/stores"
+import { $longestSystemNameLen, $userSettings } from "@/lib/stores"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useMemo, useRef, useState } from "react"
 import { memo } from "react"
@@ -111,11 +111,14 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			Icon: ServerIcon,
 			cell: (info) => {
 				const { name } = info.row.original
+				const longestName = useStore($longestSystemNameLen)
 				return (
 					<>
 						<span className="flex gap-2 items-center font-medium text-sm text-nowrap md:ps-1 md:pe-5">
 							<IndicatorDot system={info.row.original} />
-							{name}
+							<span className="truncate" style={{ width: `${longestName}ch` }}>
+								{name}
+							</span>
 						</span>
 						<Link
 							href={getPagePath($router, "system", { name })}

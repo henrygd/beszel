@@ -96,7 +96,7 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 				<TabsList className="mb-1 -mt-0.5">
 					<TabsTrigger value="system">
 						<ServerIcon className="me-2 h-3.5 w-3.5" />
-						{system.name}
+						<span className="truncate max-w-60">{system.name}</span>
 					</TabsTrigger>
 					<TabsTrigger value="global">
 						<GlobeIcon className="me-1.5 h-3.5 w-3.5" />

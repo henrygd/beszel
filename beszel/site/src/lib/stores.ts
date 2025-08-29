@@ -53,3 +53,8 @@ export const $copyContent = atom("")
 
 /** Direction for localization */
 export const $direction = atom<"ltr" | "rtl">("ltr")
+
+/** Longest system name length. Used to set table column width. I know this
+ *  is stupid but the table is virtualized and I know this will work.
+ */
+export const $longestSystemNameLen = atom(8)

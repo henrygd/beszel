@@ -11,7 +11,7 @@ import {
 	Row,
 	Table as TableType,
 } from "@tanstack/react-table"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import {
 	DropdownMenu,
@@ -35,7 +35,7 @@ import {
 	EyeIcon,
 	FilterIcon,
 } from "lucide-react"
-import { memo, useEffect, useMemo, useState } from "react"
+import { memo, useEffect, useMemo, useRef, useState } from "react"
 import { $systems } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { cn, runOnce, useLocalStorage } from "@/lib/utils"
@@ -47,6 +47,7 @@ import { getPagePath } from "@nanostores/router"
 import SystemsTableColumns, { ActionsButton, IndicatorDot } from "./systems-table-columns"
 import AlertButton from "../alerts/alert-button"
 import { SystemStatus } from "@/lib/enums"
+import { useVirtualizer, VirtualItem } from "@tanstack/react-virtual"
 
 type ViewMode = "table" | "grid"
 type StatusFilter = "all" | "up" | "down" | "paused"
@@ -255,7 +256,7 @@ export default function SystemsTable() {
 			<div className="p-6 pt-0 max-sm:py-3 max-sm:px-2">
 				{viewMode === "table" ? (
 					// table layout
-					<div className="rounded-md border overflow-hidden">
+					<div className="rounded-md">
 						<AllSystemsTable table={table} rows={rows} colLength={visibleColumns.length} />
 					</div>
 				) : (
@@ -277,36 +278,78 @@ export default function SystemsTable() {
 	)
 }
 
-const AllSystemsTable = memo(
-	({ table, rows, colLength }: { table: TableType<SystemRecord>; rows: Row<SystemRecord>[]; colLength: number }) => {
-		return (
-			<Table>
-				<SystemsTableHead table={table} colLength={colLength} />
-				<TableBody onMouseEnter={preloadSystemDetail}>
-					{rows.length ? (
-						rows.map((row) => (
-							<SystemTableRow key={row.original.id} row={row} length={rows.length} colLength={colLength} />
-						))
-					) : (
-						<TableRow>
-							<TableCell colSpan={colLength} className="h-24 text-center">
-								<Trans>No systems found.</Trans>
-							</TableCell>
-						</TableRow>
-					)}
-				</TableBody>
-			</Table>
-		)
-	}
-)
+const AllSystemsTable = memo(function ({
+	table,
+	rows,
+	colLength,
+}: {
+	table: TableType<SystemRecord>
+	rows: Row<SystemRecord>[]
+	colLength: number
+}) {
+	// The virtualizer will need a reference to the scrollable container element
+	const scrollRef = useRef<HTMLDivElement>(null)
+
+	const virtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
+		count: rows.length,
+		estimateSize: () => (rows.length > 10 ? 56 : 60),
+		getScrollElement: () => scrollRef.current,
+		overscan: 5,
+	})
+	const virtualRows = virtualizer.getVirtualItems()
+
+	const paddingTop = Math.max(0, virtualRows[0]?.start ?? 0 - virtualizer.options.scrollMargin)
+	const paddingBottom = Math.max(0, virtualizer.getTotalSize() - (virtualRows[virtualRows.length - 1]?.end ?? 0))
+
+	return (
+		<div
+			className={cn(
+				"h-min max-h-[calc(100dvh-17rem)] max-w-full relative overflow-auto border rounded-md",
+				// don't set min height if there are less than 2 rows, do set if we need to display the empty state
+				(!rows.length || rows.length > 2) && "min-h-50"
+			)}
+			ref={scrollRef}
+		>
+			{/* add header height to table size */}
+			<div style={{ height: `${virtualizer.getTotalSize() + 50}px`, paddingTop, paddingBottom }}>
+				<table className="text-sm w-full h-full">
+					<SystemsTableHead table={table} colLength={colLength} />
+					<TableBody onMouseEnter={preloadSystemDetail}>
+						{rows.length ? (
+							virtualRows.map((virtualRow) => {
+								const row = rows[virtualRow.index] as Row<SystemRecord>
+								return (
+									<SystemTableRow
+										key={row.id}
+										row={row}
+										virtualRow={virtualRow}
+										length={rows.length}
+										colLength={colLength}
+									/>
+								)
+							})
+						) : (
+							<TableRow>
+								<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
+									<Trans>No systems found.</Trans>
+								</TableCell>
+							</TableRow>
+						)}
+					</TableBody>
+				</table>
+			</div>
+		</div>
+	)
+})
 
 function SystemsTableHead({ table, colLength }: { table: TableType<SystemRecord>; colLength: number }) {
 	const { i18n } = useLingui()
+
 	return useMemo(() => {
 		return (
-			<TableHeader>
+			<TableHeader className="sticky top-0 z-20 w-full">
 				{table.getHeaderGroups().map((headerGroup) => (
-					<TableRow key={headerGroup.id}>
+					<tr key={headerGroup.id} className="border-border/50">
 						{headerGroup.headers.map((header) => {
 							return (
 								<TableHead className="px-1.5" key={header.id}>
@@ -314,41 +357,49 @@ function SystemsTableHead({ table, colLength }: { table: TableType<SystemRecord>
 								</TableHead>
 							)
 						})}
-					</TableRow>
+					</tr>
 				))}
 			</TableHeader>
 		)
 	}, [i18n.locale, colLength])
 }
 
-const SystemTableRow = memo(
-	({ row, length, colLength }: { row: Row<SystemRecord>; length: number; colLength: number }) => {
-		const system = row.original
-		const { t } = useLingui()
-		return useMemo(() => {
-			return (
-				<TableRow
-					// data-state={row.getIsSelected() && "selected"}
-					className={cn("cursor-pointer transition-opacity relative safari:transform-3d", {
-						"opacity-50": system.status === SystemStatus.Paused,
-					})}
-				>
-					{row.getVisibleCells().map((cell) => (
-						<TableCell
-							key={cell.id}
-							style={{
-								width: cell.column.getSize(),
-							}}
-							className={length > 10 ? "py-2" : "py-2.5"}
-						>
-							{flexRender(cell.column.columnDef.cell, cell.getContext())}
-						</TableCell>
-					))}
-				</TableRow>
-			)
-		}, [system, system.status, colLength, t])
-	}
-)
+const SystemTableRow = memo(function ({
+	row,
+	virtualRow,
+	colLength,
+}: {
+	row: Row<SystemRecord>
+	virtualRow: VirtualItem
+	length: number
+	colLength: number
+}) {
+	const system = row.original
+	const { t } = useLingui()
+	return useMemo(() => {
+		return (
+			<TableRow
+				// data-state={row.getIsSelected() && "selected"}
+				className={cn("cursor-pointer transition-opacity relative safari:transform-3d", {
+					"opacity-50": system.status === SystemStatus.Paused,
+				})}
+			>
+				{row.getVisibleCells().map((cell) => (
+					<TableCell
+						key={cell.id}
+						style={{
+							width: cell.column.getSize(),
+							height: virtualRow.size,
+						}}
+						className="py-0"
+					>
+						{flexRender(cell.column.columnDef.cell, cell.getContext())}
+					</TableCell>
+				))}
+			</TableRow>
+		)
+	}, [system, system.status, colLength, t])
+})
 
 const SystemCard = memo(
 	({ row, table, colLength }: { row: Row<SystemRecord>; table: TableType<SystemRecord>; colLength: number }) => {
@@ -368,13 +419,11 @@ const SystemCard = memo(
 					)}
 				>
 					<CardHeader className="py-1 ps-5 pe-3 bg-muted/30 border-b border-border/60">
-						<div className="flex items-center justify-between gap-2">
-							<CardTitle className="text-base tracking-normal shrink-1 text-primary/90 flex items-center min-w-0 gap-2.5">
-								<div className="flex items-center gap-2.5 min-w-0">
+						<div className="flex items-center gap-2 w-full overflow-hidden">
+							<CardTitle className="text-base tracking-normal text-primary/90 flex items-center min-w-0 flex-1 gap-2.5">
+								<div className="flex items-center gap-2.5 min-w-0 flex-1">
 									<IndicatorDot system={system} />
-									<CardTitle className="text-[.95em]/normal tracking-normal truncate text-primary/90">
-										{system.name}
-									</CardTitle>
+									<span className="text-[.95em]/normal tracking-normal text-primary/90 truncate">{system.name}</span>
 								</div>
 							</CardTitle>
 							{table.getColumn("actions")?.getIsVisible() && (

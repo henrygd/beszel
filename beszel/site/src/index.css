@@ -1,14 +1,15 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+@custom-variant light (&:is(.light *));
 @custom-variant dark (&:is(.dark *));
 @custom-variant safari (@supports (hanging-punctuation: first) and (-webkit-appearance: none));
 
 :root {
 	--background: hsl(30 8% 98%);
-	--foreground: hsl(30 0% 0%);
+	--foreground: hsl(30 0% 10%);
 	--card: hsl(30 0% 100%);
-	--card-foreground: hsl(240 6.67% 2.94%);
+	--card-foreground: hsl(240 6% 12%);
 	--popover: hsl(30 0% 100%);
 	--popover-foreground: hsl(240 10% 6.2%);
 	--primary: hsl(240 5.88% 10%);
@@ -30,6 +31,7 @@
 	--chart-3: hsl(30 80% 55%);
 	--chart-4: hsl(280 65% 60%);
 	--chart-5: hsl(340 75% 55%);
+	--table-header: hsl(225, 6%, 97%);
 }
 
 .dark {
@@ -53,6 +55,7 @@
 	--border: hsl(220 3% 16%);
 	--input: hsl(220 4% 22%);
 	--ring: hsl(220 4% 80%);
+	--table-header: hsl(220, 6%, 13%);
 	--radius: 0.8rem;
 }
 
@@ -103,6 +106,7 @@
 	--color-chart-3: var(--chart-3);
 	--color-chart-4: var(--chart-4);
 	--color-chart-5: var(--chart-5);
+	--color-table-header: var(--table-header);
 }
 
 @layer utilities {

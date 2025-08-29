@@ -391,7 +391,7 @@ export default function SystemDetail({ name }: { name: string }) {
 
 	return (
 		<>
-			<div id="chartwrap" className="grid gap-4 mb-10 overflow-x-clip">
+			<div id="chartwrap" className="grid gap-4 mb-14 overflow-x-clip">
 				{/* system info */}
 				<Card>
 					<div className="grid xl:flex gap-4 px-4 sm:px-6 pt-3 sm:pt-4 pb-5">

@@ -133,7 +133,7 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 		>
 			<Tabs defaultValue={tab} onValueChange={setTab}>
 				<DialogHeader>
-					<DialogTitle className="mb-2">
+					<DialogTitle className="mb-2 max-w-100 truncate pr-8">
 						{system ? `${t`Edit`} ${system?.name}` : <Trans>Add New System</Trans>}
 					</DialogTitle>
 					<TabsList className="grid w-full grid-cols-2">

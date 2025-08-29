@@ -44,7 +44,7 @@ export default memo(function () {
 					<SystemsTable />
 				</Suspense>
 
-				<div className="flex gap-1.5 justify-end items-center pe-3 sm:pe-6 mt-3.5 text-xs opacity-80">
+				<div className="flex gap-1.5 justify-end items-center pe-3 sm:pe-6 mt-3.5 mb-4 text-xs opacity-80">
 					<a
 						href="https://github.com/henrygd/beszel"
 						target="_blank"

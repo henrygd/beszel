@@ -1,5 +1,5 @@
 import { ChartTimes, SystemRecord, UserSettings } from "@/types"
-import { $alerts, $systems, $userSettings } from "./stores"
+import { $alerts, $longestSystemNameLen, $systems, $userSettings } from "./stores"
 import { toast } from "@/components/ui/use-toast"
 import { t } from "@lingui/core/macro"
 import { chartTimeData } from "./utils"
@@ -88,11 +88,29 @@ export const updateSystemList = (() => {
 		}
 		isFetchingSystems = true
 		try {
-			const records = await pb
+			let records = await pb
 				.collection<SystemRecord>("systems")
 				.getFullList({ sort: "+name", fields: "id,name,host,port,info,status" })
 
 			if (records.length) {
+				// records = [
+				// 	...records,
+				// 	...records,
+				// 	...records,
+				// 	...records,
+				// 	...records,
+				// 	...records,
+				// 	...records,
+				// 	...records,
+				// 	...records,
+				// ]
+				// we need to loop once to get the longest name
+				let longestName = $longestSystemNameLen.get()
+				for (const { name } of records) {
+					if (name.length > longestName) {
+						$longestSystemNameLen.set(Math.min(20, name.length))
+					}
+				}
 				$systems.set(records)
 			} else {
 				verifyAuth()

@@ -272,7 +272,7 @@ const SectionTable = memo(({ fingerprints = [] }: { fingerprints: FingerprintRec
 		<div className="rounded-md border overflow-hidden w-full mt-4">
 			<Table>
 				<TableHeader>
-					<TableRow>
+					<tr className="border-border/50">
 						{headerCols.map((col) => (
 							<TableHead key={col.label} style={{ minWidth: col.w }}>
 								<span className="flex items-center gap-2">
@@ -288,12 +288,14 @@ const SectionTable = memo(({ fingerprints = [] }: { fingerprints: FingerprintRec
 								</span>
 							</TableHead>
 						)}
-					</TableRow>
+					</tr>
 				</TableHeader>
 				<TableBody className="whitespace-pre">
 					{fingerprints.map((fingerprint, i) => (
 						<TableRow key={i}>
-							<TableCell className="font-medium ps-5 py-2">{fingerprint.expand.system.name}</TableCell>
+							<TableCell className="font-medium ps-5 py-2 max-w-60 truncate">
+								{fingerprint.expand.system.name}
+							</TableCell>
 							<TableCell className="font-mono text-[0.95em] py-2">{fingerprint.token}</TableCell>
 							<TableCell className="font-mono text-[0.95em] py-2">{fingerprint.fingerprint}</TableCell>
 							{!isReadOnly && (

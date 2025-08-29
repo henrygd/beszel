@@ -102,7 +102,7 @@ const Layout = () => {
 					<div className="container">
 						<Navbar />
 					</div>
-					<div className="container mb-14 relative">
+					<div className="container relative">
 						<App />
 						{copyContent && (
 							<Suspense>

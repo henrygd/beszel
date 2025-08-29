@@ -16,7 +16,9 @@ export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 				<Trans>System</Trans>
 			</Button>
 		),
-		cell: ({ row }) => <span className="ps-2">{row.original.expand?.system?.name || row.original.system}</span>,
+		cell: ({ row }) => (
+			<div className="ps-2 max-w-60 truncate">{row.original.expand?.system?.name || row.original.system}</div>
+		),
 		filterFn: (row, _, filterValue) => {
 			const display = row.original.expand?.system?.name || row.original.system || ""
 			return display.toLowerCase().includes(filterValue.toLowerCase())

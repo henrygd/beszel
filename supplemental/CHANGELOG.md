@@ -4,9 +4,15 @@
 
 - Add status filters to All Systems table.
 
+- Virtualize All Systems table to improve performance with hundreds of systems. (#1100)
+
 - Fix Safari system link CSS bug.
 
 - Use older cuda image for increased compatibility (#1103)
+
+- Truncate long system names in All Systems table. (#1104)
+
+- Fix update mirror and add `--china-mirrors` flag. (#1035)
 
 ## 0.12.5
 
