@@ -165,11 +165,9 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 			DisplayName: v.DisplayName,
 			DiskTotal:   v.DiskTotal,
 			DiskUsed:    v.DiskUsed,
-			DiskFree:    v.DiskFree,
 		}
 	}
 	sys.data.Info.ExtraFs = infoFs
-	sys.data.Info.DiskFree = sys.data.Stats.DiskFree
 	systemRecord.Set("status", up)
 
 	systemRecord.Set("info", data.Info)

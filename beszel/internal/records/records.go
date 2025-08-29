@@ -199,7 +199,6 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.MemBuffCache += stats.MemBuffCache
 		sum.MemZfsArc += stats.MemZfsArc
 		sum.SwapTotal += stats.SwapTotal
-		sum.SwapFree += stats.SwapFree
 		sum.SwapUsed += stats.SwapUsed
 		sum.DiskTotal += stats.DiskTotal
 		sum.DiskUsed += stats.DiskUsed
@@ -280,7 +279,6 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.MemBuffCache = twoDecimals(sum.MemBuffCache / count)
 		sum.MemZfsArc = twoDecimals(sum.MemZfsArc / count)
 		sum.SwapTotal = twoDecimals(sum.SwapTotal / count)
-		sum.SwapFree = twoDecimals(sum.SwapFree / count)
 		sum.SwapUsed = twoDecimals(sum.SwapUsed / count)
 		sum.DiskTotal = twoDecimals(sum.DiskTotal / count)
 		sum.DiskUsed = twoDecimals(sum.DiskUsed / count)

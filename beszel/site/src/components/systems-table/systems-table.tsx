@@ -270,7 +270,7 @@ export default function SystemsTable() {
 																	</span>
 																</div>
 																<div className="text-xs text-muted-foreground mt-0.5">
-																	{t`Free`}: {decimalString(extraDiskFree, 1)} GB
+																	{decimalString(extraDiskFree, 1)} GB
 																</div>
 															</div>
 														);

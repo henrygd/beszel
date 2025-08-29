@@ -135,7 +135,6 @@ func (a *Agent) getSystemStats() system.Stats {
 		systemStats.Swap = bytesToGigabytes(v.SwapTotal)
 		systemStats.SwapUsed = bytesToGigabytes(v.SwapTotal - v.SwapFree - v.SwapCached)
 		systemStats.SwapTotal = bytesToGigabytes(v.SwapTotal)
-		systemStats.SwapFree = bytesToGigabytes(v.SwapFree)
 		systemStats.SwapCached = bytesToGigabytes(v.SwapCached)
 		// cache + buffers value for default mem calculation
 		cacheBuff := v.Total - v.Free - v.Used
@@ -165,11 +164,9 @@ func (a *Agent) getSystemStats() system.Stats {
 		if d, err := disk.Usage(stats.Mountpoint); err == nil {
 			stats.DiskTotal = bytesToGigabytes(d.Total)
 			stats.DiskUsed = bytesToGigabytes(d.Used)
-			stats.DiskFree = bytesToGigabytes(d.Free)
 			if stats.Root {
 				systemStats.DiskTotal = bytesToGigabytes(d.Total)
 				systemStats.DiskUsed = bytesToGigabytes(d.Used)
-				systemStats.DiskFree = bytesToGigabytes(d.Free)
 				systemStats.DiskPct = twoDecimals(d.UsedPercent)
 			}
 		} else {
@@ -177,7 +174,6 @@ func (a *Agent) getSystemStats() system.Stats {
 			slog.Error("Error getting disk stats", "name", stats.Mountpoint, "err", err)
 			stats.DiskTotal = 0
 			stats.DiskUsed = 0
-			stats.DiskFree = 0
 			stats.TotalRead = 0
 			stats.TotalWrite = 0
 		}

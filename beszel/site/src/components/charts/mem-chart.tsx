@@ -37,7 +37,6 @@ export default memo(function MemChart({ chartData, showLegend = true }: MemChart
 
 	// Define memory area keys, labels, colors, and opacities
 	const dataKeys = [
-		{ label: t`Free`, key: "mf", color: 1, opacity: 0.3 },
 		{ label: t`Used`, key: "mu", color: 2, opacity: 0.4 },
 		{ label: t`Cache / Buffers`, key: "mb", color: 3, opacity: 0.4 },
 	]

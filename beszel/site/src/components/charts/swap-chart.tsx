@@ -80,16 +80,6 @@ export default memo(function SwapChart({ chartData, showLegend = true }: SwapCha
 						stackId="swap"
 					/>
 					<Area
-						dataKey="stats.sf"
-						name={t`Free`}
-						type="monotoneX"
-						fill="hsl(var(--chart-1))"
-						fillOpacity={0.3}
-						stroke="hsl(var(--chart-1))"
-						isAnimationActive={false}
-						stackId="swap"
-					/>
-					<Area
 						dataKey="stats.sc"
 						name={t`Cached`}
 						type="monotoneX"

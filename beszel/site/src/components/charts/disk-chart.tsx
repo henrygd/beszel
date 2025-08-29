@@ -80,16 +80,6 @@ export default memo(function DiskChart({ dataKey, diskSize, chartData, showLegen
 						}
 					/>
 					<Area
-						dataKey="stats.df"
-						name={t`Free`}
-						type="monotoneX"
-						fill="hsl(var(--chart-1))"
-						fillOpacity={0.3}
-						stroke="hsl(var(--chart-1))"
-						stackId="disk"
-						isAnimationActive={false}
-					/>
-					<Area
 						dataKey={dataKey}
 						name={t`Used`}
 						type="monotoneX"

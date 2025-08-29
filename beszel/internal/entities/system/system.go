@@ -22,11 +22,9 @@ type Stats struct {
 	Swap           float64             `json:"s,omitempty"`
 	SwapUsed       float64             `json:"su,omitempty"`
 	SwapTotal      float64             `json:"st,omitempty"`
-	SwapFree       float64             `json:"sf,omitempty"`
 	SwapCached     float64             `json:"sc,omitempty"`
 	DiskTotal      float64             `json:"d"`
 	DiskUsed       float64             `json:"du"`
-	DiskFree       float64             `json:"df"`
 	DiskPct        float64             `json:"dp"`
 	DiskReadPs     float64             `json:"dr"`
 	DiskWritePs    float64             `json:"dw"`
@@ -61,7 +59,6 @@ type FsStats struct {
 	DisplayName    string    `json:"n"`
 	DiskTotal      float64   `json:"d" cbor:"0,keyasint"`
 	DiskUsed       float64   `json:"du" cbor:"1,keyasint"`
-	DiskFree       float64   `json:"df"`
 	TotalRead      uint64    `json:"-"`
 	TotalWrite     uint64    `json:"-"`
 	DiskReadPs     float64   `json:"r" cbor:"2,keyasint"`
@@ -90,7 +87,6 @@ type InfoFsStats struct {
 	DisplayName string  `json:"n"`
 	DiskTotal   float64 `json:"d"`
 	DiskUsed    float64 `json:"du"`
-	DiskFree    float64 `json:"df"`
 }
 
 type Info struct {
@@ -103,7 +99,6 @@ type Info struct {
 	Cpu           float64                 `json:"cpu" cbor:"6,keyasint"`
 	MemPct        float64                 `json:"mp" cbor:"7,keyasint"`
 	DiskPct       float64                 `json:"dp" cbor:"8,keyasint"`
-	DiskFree      float64                 `json:"df,omitempty"`
 	Bandwidth     float64                 `json:"b" cbor:"9,keyasint"`
 	AgentVersion  string                  `json:"v" cbor:"10,keyasint"`
 	Podman        bool                    `json:"p,omitempty" cbor:"11,keyasint,omitempty"`
