@@ -107,8 +107,10 @@ export const updateSystemList = (() => {
 				// we need to loop once to get the longest name
 				let longestName = $longestSystemNameLen.get()
 				for (const { name } of records) {
-					if (name.length > longestName) {
-						$longestSystemNameLen.set(Math.min(20, name.length))
+					const nameLen = Math.min(20, name.length)
+					if (nameLen > longestName) {
+						$longestSystemNameLen.set(nameLen)
+						longestName = nameLen
 					}
 				}
 				$systems.set(records)

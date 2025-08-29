@@ -72,7 +72,8 @@ const STATUS_COLORS = {
 export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<SystemRecord>[] {
 	return [
 		{
-			size: 200,
+			// size: 200,
+			size: 100,
 			minSize: 0,
 			accessorKey: "name",
 			id: "system",
@@ -114,9 +115,10 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 				const longestName = useStore($longestSystemNameLen)
 				return (
 					<>
-						<span className="flex gap-2 items-center font-medium text-sm text-nowrap md:ps-1 md:pe-5">
+						<span className="flex gap-2 items-center font-medium text-sm text-nowrap md:ps-1">
 							<IndicatorDot system={info.row.original} />
-							<span className="truncate" style={{ width: `${longestName}ch` }}>
+							{/* NOTE: change to 1 ch if switching to monospace font */}
+							<span className="truncate" style={{ width: `${longestName / 1.1}ch` }}>
 								{name}
 							</span>
 						</span>

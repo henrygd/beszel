@@ -62,7 +62,11 @@ export default function SystemsTable() {
 	const [sorting, setSorting] = useState<SortingState>([{ id: "system", desc: false }])
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>("cols", {})
-	const [viewMode, setViewMode] = useLocalStorage<ViewMode>("viewMode", window.innerWidth > 1024 ? "table" : "grid")
+	const [viewMode, setViewMode] = useLocalStorage<ViewMode>(
+		"viewMode",
+		// show grid view on mobile if there are less than 200 systems (looks better but table is more efficient)
+		window.innerWidth < 1024 && data.length < 200 ? "grid" : "table"
+	)
 
 	const locale = i18n.locale
 
@@ -347,9 +351,9 @@ function SystemsTableHead({ table, colLength }: { table: TableType<SystemRecord>
 
 	return useMemo(() => {
 		return (
-			<TableHeader className="sticky top-0 z-20 w-full">
+			<TableHeader className="sticky top-0 z-20 w-full border-b-2">
 				{table.getHeaderGroups().map((headerGroup) => (
-					<tr key={headerGroup.id} className="border-border/50">
+					<tr key={headerGroup.id}>
 						{headerGroup.headers.map((header) => {
 							return (
 								<TableHead className="px-1.5" key={header.id}>
