@@ -73,6 +73,14 @@ export default function SystemsTable() {
 		return data.filter((system) => system.status === statusFilter)
 	}, [data, statusFilter])
 
+	const runningRecords = useMemo(() => {
+		return data.filter((record) => record.status === "up").length
+	}, [data])
+
+	const totalRecords = useMemo(() => {
+		return data.length
+	}, [data])
+
 	useEffect(() => {
 		if (filter !== undefined) {
 			table.getColumn("system")?.setFilterValue(filter)
@@ -114,8 +122,9 @@ export default function SystemsTable() {
 			<CardHeader className="pb-5 px-2 sm:px-6 max-sm:pt-5 max-sm:pb-1">
 				<div className="grid md:flex gap-5 w-full items-end">
 					<div className="px-2 sm:px-1">
-						<CardTitle className="mb-2.5">
-							<Trans>All Systems</Trans>
+						<CardTitle className="mb-2.5 flex">
+							<Trans>All Systems - {runningRecords} / {totalRecords}</Trans>
+							<p className={runningRecords === totalRecords ? "ml-2 text-emerald-600":"ml-2 text-red-600" }>Online</p>
 						</CardTitle>
 						<CardDescription>
 							<Trans>Updated in real time. Click on a system to view information.</Trans>
@@ -247,7 +256,7 @@ export default function SystemsTable() {
 				</div>
 			</CardHeader>
 		)
-	}, [visibleColumns.length, sorting, viewMode, locale, statusFilter])
+	}, [visibleColumns.length, sorting, viewMode, locale, statusFilter, totalRecords])
 
 	return (
 		<Card>
