@@ -30,7 +30,6 @@ export interface SystemRecord extends RecordModel {
 	info: SystemInfo
 	v: string
 	updated: string
-	
 }
 
 export interface SystemInfo {
@@ -100,6 +99,8 @@ export interface SystemStats {
 	mp: number
 	/** memory buffer + cache (gb) */
 	mb: number
+	/** max used memory (gb) */
+	mm?: number
 	/** zfs arc memory (gb) */
 	mz?: number
 	/** swap space (gb) */

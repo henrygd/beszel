@@ -7,7 +7,7 @@ import { useMemo } from "react"
 export type DataPoint = {
 	label: string
 	dataKey: (data: SystemStatsRecord) => number | undefined
-	color: string
+	color: number | string
 	opacity: number
 }
 

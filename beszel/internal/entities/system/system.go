@@ -39,6 +39,7 @@ type Stats struct {
 	// TODO: remove other load fields in future release in favor of load avg array
 	LoadAvg [3]float64 `json:"la,omitempty" cbor:"28,keyasint"`
 	Battery [2]uint8   `json:"bat,omitzero" cbor:"29,keyasint,omitzero"` // [percent, charge state, current]
+	MaxMem  float64    `json:"mm,omitempty" cbor:"30,keyasint,omitempty"`
 }
 
 type GPUData struct {

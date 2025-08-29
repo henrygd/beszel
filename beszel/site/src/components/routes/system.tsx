@@ -486,7 +486,7 @@ export default function SystemDetail({ name }: { name: string }) {
 								{
 									label: t`CPU Usage`,
 									dataKey: ({ stats }) => (showMax ? stats?.cpum : stats?.cpu),
-									color: "1",
+									color: 1,
 									opacity: 0.4,
 								},
 							]}
@@ -512,8 +512,9 @@ export default function SystemDetail({ name }: { name: string }) {
 						grid={grid}
 						title={t`Memory Usage`}
 						description={t`Precise utilization at the recorded time`}
+						cornerEl={maxValSelect}
 					>
-						<MemChart chartData={chartData} />
+						<MemChart chartData={chartData} showMax={showMax} />
 					</ChartCard>
 
 					{containerFilterBar && (
@@ -546,13 +547,13 @@ export default function SystemDetail({ name }: { name: string }) {
 								{
 									label: t({ message: "Write", comment: "Disk write" }),
 									dataKey: ({ stats }) => (showMax ? stats?.dwm : stats?.dw),
-									color: "3",
+									color: 3,
 									opacity: 0.3,
 								},
 								{
 									label: t({ message: "Read", comment: "Disk read" }),
 									dataKey: ({ stats }) => (showMax ? stats?.drm : stats?.dr),
-									color: "1",
+									color: 1,
 									opacity: 0.3,
 								},
 							]}
@@ -587,7 +588,7 @@ export default function SystemDetail({ name }: { name: string }) {
 										}
 										return data?.stats?.b?.[0] ?? data?.stats?.ns * 1024 * 1024
 									},
-									color: "5",
+									color: 5,
 									opacity: 0.2,
 								},
 								{
@@ -598,7 +599,7 @@ export default function SystemDetail({ name }: { name: string }) {
 										}
 										return data?.stats?.b?.[1] ?? data?.stats?.nr * 1024 * 1024
 									},
-									color: "2",
+									color: 2,
 									opacity: 0.2,
 								},
 							]}
@@ -687,7 +688,7 @@ export default function SystemDetail({ name }: { name: string }) {
 									{
 										label: t`Charge`,
 										dataKey: ({ stats }) => stats?.bat?.[0],
-										color: "1",
+										color: 1,
 										opacity: 0.35,
 									},
 								]}
@@ -730,7 +731,7 @@ export default function SystemDetail({ name }: { name: string }) {
 												{
 													label: t`Usage`,
 													dataKey: ({ stats }) => stats?.g?.[id]?.u ?? 0,
-													color: "1",
+													color: 1,
 													opacity: 0.35,
 												},
 											]}
@@ -750,7 +751,7 @@ export default function SystemDetail({ name }: { name: string }) {
 												{
 													label: t`Usage`,
 													dataKey: ({ stats }) => stats?.g?.[id]?.mu ?? 0,
-													color: "2",
+													color: 2,
 													opacity: 0.25,
 												},
 											]}
@@ -802,13 +803,13 @@ export default function SystemDetail({ name }: { name: string }) {
 												{
 													label: t`Write`,
 													dataKey: ({ stats }) => stats?.efs?.[extraFsName]?.[showMax ? "wm" : "w"] ?? 0,
-													color: "3",
+													color: 3,
 													opacity: 0.3,
 												},
 												{
 													label: t`Read`,
 													dataKey: ({ stats }) => stats?.efs?.[extraFsName]?.[showMax ? "rm" : "r"] ?? 0,
-													color: "1",
+													color: 1,
 													opacity: 0.3,
 												},
 											]}
