@@ -238,6 +238,11 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 			}
 		}
 
+		// Handle connection counts - use the latest values (most recent sample)
+		if stats.ConnectionCounts != nil {
+			sum.ConnectionCounts = stats.ConnectionCounts
+		}
+
 		// Set peak values
 		sum.MaxCpu = max(sum.MaxCpu, stats.MaxCpu, stats.Cpu)
 		sum.MaxMem = max(sum.MaxMem, stats.MaxMem, stats.MemUsed)

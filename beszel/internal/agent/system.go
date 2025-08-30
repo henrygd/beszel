@@ -179,7 +179,7 @@ func (a *Agent) getSystemStats() system.Stats {
 	}
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
 		now := time.Now()
-		
+
 		// pre-allocate maps with known capacity
 		interfaceCount := len(a.netInterfaces)
 		if systemStats.NetworkInterfaces == nil || len(systemStats.NetworkInterfaces) != interfaceCount {
@@ -187,7 +187,7 @@ func (a *Agent) getSystemStats() system.Stats {
 		}
 
 		var totalSent, totalRecv float64
-		
+
 		// single pass through interfaces
 		for _, v := range netIO {
 			// skip if not in valid network interfaces list
@@ -198,7 +198,7 @@ func (a *Agent) getSystemStats() system.Stats {
 			// get previous stats for this interface
 			prevStats, exists := a.netIoStats[v.Name]
 			var networkSentPs, networkRecvPs float64
-			
+
 			if exists {
 				secondsElapsed := time.Since(prevStats.Time).Seconds()
 				if secondsElapsed > 0 {
@@ -239,7 +239,7 @@ func (a *Agent) getSystemStats() system.Stats {
 				}
 			}
 		}
-		
+
 		// add check for issue (#150) where sent is a massive number
 		if totalSent > 10_000 || totalRecv > 10_000 {
 			slog.Warn("Invalid net stats. Resetting.", "sent", totalSent, "recv", totalRecv)
@@ -250,6 +250,9 @@ func (a *Agent) getSystemStats() system.Stats {
 			systemStats.NetworkRecv = totalRecv
 		}
 	}
+
+	// connection counts
+	a.updateConnectionCounts(&systemStats)
 
 	// temperatures
 	// TODO: maybe refactor to methods on systemStats
@@ -310,6 +313,39 @@ func (a *Agent) getSystemStats() system.Stats {
 	slog.Debug("sysinfo", "data", a.systemInfo)
 
 	return systemStats
+}
+
+func (a *Agent) updateConnectionCounts(systemStats *system.Stats) {
+	connections, err := psutilNet.Connections("all")
+	if err != nil {
+		slog.Debug("Failed to get connection stats", "err", err)
+		return
+	}
+
+	counts := &system.ConnectionCounts{}
+
+	for _, conn := range connections {
+		counts.Total++
+
+		// Count by protocol - Type is uint32 representing socket type
+		// Common values: 1 = SOCK_STREAM (TCP), 2 = SOCK_DGRAM (UDP)
+		switch conn.Type {
+		case 1: // SOCK_STREAM (TCP)
+			counts.TCP++
+		case 2: // SOCK_DGRAM (UDP)
+			counts.UDP++
+		}
+
+		// Count by status
+		switch strings.ToUpper(conn.Status) {
+		case "LISTEN":
+			counts.Listening++
+		case "ESTABLISHED":
+			counts.Established++
+		}
+	}
+
+	systemStats.ConnectionCounts = counts
 }
 
 // Returns the size of the ZFS ARC memory cache in bytes

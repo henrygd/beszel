@@ -162,6 +162,21 @@ export interface SystemStats {
 	g?: Record<string, GPUData>
 	/** battery percent and state */
 	bat?: [number, BatteryState]
+	/** connection counts */
+	cc?: ConnectionCounts
+}
+
+export interface ConnectionCounts {
+	/** total connections */
+	t: number
+	/** tcp connections */
+	tcp: number
+	/** udp connections */
+	udp: number
+	/** listening connections */
+	l: number
+	/** established connections */
+	e: number
 }
 
 export interface GPUData {

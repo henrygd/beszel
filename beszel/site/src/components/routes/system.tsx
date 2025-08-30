@@ -48,6 +48,7 @@ const AreaChartDefault = lazy(() => import("../charts/area-chart"))
 const ContainerChart = lazy(() => import("../charts/container-chart"))
 const NetworkInterfaceChart = lazy(() => import("../charts/network-interface-chart"))
 const TotalBandwidthChart = lazy(() => import("../charts/total-bandwidth-chart"))
+const ConnectionChart = lazy(() => import("../charts/connection-chart"))
 const MemChart = lazy(() => import("../charts/mem-chart"))
 const DiskChart = lazy(() => import("../charts/disk-chart"))
 const SwapChart = lazy(() => import("../charts/swap-chart"))
@@ -646,6 +647,18 @@ export default function SystemDetail({ name }: { name: string }) {
 							description={t`System load averages over time`}
 						>
 							<LoadAverageChart chartData={chartData} />
+						</ChartCard>
+					)}
+
+					{/* Connection Counts chart */}
+					{(systemStats.at(-1)?.stats.cc?.t ?? 0) > 0 && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Network Connections`}
+							description={t`Active network connections by type and state`}
+						>
+							<ConnectionChart chartData={chartData} />
 						</ChartCard>
 					)}
 

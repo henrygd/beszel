@@ -8,12 +8,12 @@ import (
 )
 
 type NetworkInterfaceStats struct {
-	NetworkSent     float64 `json:"ns"`
-	NetworkRecv     float64 `json:"nr"`
-	MaxNetworkSent  float64 `json:"nsm,omitempty"`
-	MaxNetworkRecv  float64 `json:"nrm,omitempty"`
-	TotalBytesSent  uint64  `json:"tbs,omitempty"` // Total bytes sent since boot
-	TotalBytesRecv  uint64  `json:"tbr,omitempty"` // Total bytes received since boot
+	NetworkSent    float64 `json:"ns"`
+	NetworkRecv    float64 `json:"nr"`
+	MaxNetworkSent float64 `json:"nsm,omitempty"`
+	MaxNetworkRecv float64 `json:"nrm,omitempty"`
+	TotalBytesSent uint64  `json:"tbs,omitempty"` // Total bytes sent since boot
+	TotalBytesRecv uint64  `json:"tbr,omitempty"` // Total bytes received since boot
 }
 
 type Stats struct {
@@ -33,9 +33,9 @@ type Stats struct {
 	DiskWritePs       float64                          `json:"dw" cbor:"13,keyasint"`
 	MaxDiskReadPs     float64                          `json:"drm,omitempty" cbor:"14,keyasint,omitempty"`
 	MaxDiskWritePs    float64                          `json:"dwm,omitempty" cbor:"15,keyasint,omitempty"`
-	NetworkInterfaces map[string]NetworkInterfaceStats `json:"ni" cbor:"16,omitempty"`     // Per-interface network stats
-	NetworkSent       float64                          `json:"ns" cbor:"17,keyasint"`      // Total network sent (MB/s)
-	NetworkRecv       float64                          `json:"nr" cbor:"18,keyasint"`      // Total network recv (MB/s)
+	NetworkInterfaces map[string]NetworkInterfaceStats `json:"ni" cbor:"16,omitempty"` // Per-interface network stats
+	NetworkSent       float64                          `json:"ns" cbor:"17,keyasint"`  // Total network sent (MB/s)
+	NetworkRecv       float64                          `json:"nr" cbor:"18,keyasint"`  // Total network recv (MB/s)
 	MaxNetworkSent    float64                          `json:"nsm,omitempty" cbor:"19,keyasint,omitempty"`
 	MaxNetworkRecv    float64                          `json:"nrm,omitempty" cbor:"20,keyasint,omitempty"`
 	Temperatures      map[string]float64               `json:"t,omitempty" cbor:"21,keyasint,omitempty"`
@@ -44,9 +44,18 @@ type Stats struct {
 	LoadAvg1          float64                          `json:"l1,omitempty" cbor:"24,keyasint,omitempty"`
 	LoadAvg5          float64                          `json:"l5,omitempty" cbor:"25,keyasint,omitempty"`
 	LoadAvg15         float64                          `json:"l15,omitempty" cbor:"26,keyasint,omitempty"`
-	LoadAvg           [3]float64                       `json:"la,omitempty" cbor:"27,keyasint"`           // [1min, 5min, 15min]
-	Battery           [2]uint8                         `json:"bat,omitzero" cbor:"28,keyasint,omitzero"`  // [percent, charge state]
+	LoadAvg           [3]float64                       `json:"la,omitempty" cbor:"27,keyasint"`          // [1min, 5min, 15min]
+	Battery           [2]uint8                         `json:"bat,omitzero" cbor:"28,keyasint,omitzero"` // [percent, charge state]
 	MaxMem            float64                          `json:"mm,omitempty" cbor:"29,keyasint,omitempty"`
+	ConnectionCounts  *ConnectionCounts                `json:"cc,omitempty" cbor:"30,keyasint,omitempty"` // Network connection statistics
+}
+
+type ConnectionCounts struct {
+	Total       int `json:"t" cbor:"0,keyasint"`   // Total active connections
+	TCP         int `json:"tcp" cbor:"1,keyasint"` // TCP connections
+	UDP         int `json:"udp" cbor:"2,keyasint"` // UDP connections
+	Listening   int `json:"l" cbor:"3,keyasint"`   // Listening connections
+	Established int `json:"e" cbor:"4,keyasint"`   // Established connections
 }
 
 type GPUData struct {
@@ -92,26 +101,26 @@ const (
 )
 
 type Info struct {
-	Hostname       string     `json:"h" cbor:"0,keyasint"`
-	KernelVersion  string     `json:"k,omitempty" cbor:"1,keyasint,omitempty"`
-	Cores          int        `json:"c" cbor:"2,keyasint"`
-	Threads        int        `json:"t,omitempty" cbor:"3,keyasint,omitempty"`
-	CpuModel       string     `json:"m" cbor:"4,keyasint"`
-	Uptime         uint64     `json:"u" cbor:"5,keyasint"`
-	Cpu            float64    `json:"cpu" cbor:"6,keyasint"`
-	MemPct         float64    `json:"mp" cbor:"7,keyasint"`
-	DiskPct        float64    `json:"dp" cbor:"8,keyasint"`
-	NetworkSent    float64    `json:"ns" cbor:"9,keyasint"`      // Per-interface total (MB/s)
-	NetworkRecv    float64    `json:"nr" cbor:"10,keyasint"`     // Per-interface total (MB/s)
-	AgentVersion   string     `json:"v" cbor:"11,keyasint"`
-	Podman         bool       `json:"p,omitempty" cbor:"12,keyasint,omitempty"`
-	GpuPct         float64    `json:"g,omitempty" cbor:"13,keyasint,omitempty"`
-	DashboardTemp  float64    `json:"dt,omitempty" cbor:"14,keyasint,omitempty"`
-	Os             Os         `json:"os" cbor:"15,keyasint"`
-	LoadAvg1       float64    `json:"l1,omitempty" cbor:"16,keyasint,omitempty"`
-	LoadAvg5       float64    `json:"l5,omitempty" cbor:"17,keyasint,omitempty"`
-	LoadAvg15      float64    `json:"l15,omitempty" cbor:"18,keyasint,omitempty"`
-	LoadAvg        [3]float64 `json:"la,omitempty" cbor:"19,keyasint"` // [1min, 5min, 15min]
+	Hostname      string     `json:"h" cbor:"0,keyasint"`
+	KernelVersion string     `json:"k,omitempty" cbor:"1,keyasint,omitempty"`
+	Cores         int        `json:"c" cbor:"2,keyasint"`
+	Threads       int        `json:"t,omitempty" cbor:"3,keyasint,omitempty"`
+	CpuModel      string     `json:"m" cbor:"4,keyasint"`
+	Uptime        uint64     `json:"u" cbor:"5,keyasint"`
+	Cpu           float64    `json:"cpu" cbor:"6,keyasint"`
+	MemPct        float64    `json:"mp" cbor:"7,keyasint"`
+	DiskPct       float64    `json:"dp" cbor:"8,keyasint"`
+	NetworkSent   float64    `json:"ns" cbor:"9,keyasint"`  // Per-interface total (MB/s)
+	NetworkRecv   float64    `json:"nr" cbor:"10,keyasint"` // Per-interface total (MB/s)
+	AgentVersion  string     `json:"v" cbor:"11,keyasint"`
+	Podman        bool       `json:"p,omitempty" cbor:"12,keyasint,omitempty"`
+	GpuPct        float64    `json:"g,omitempty" cbor:"13,keyasint,omitempty"`
+	DashboardTemp float64    `json:"dt,omitempty" cbor:"14,keyasint,omitempty"`
+	Os            Os         `json:"os" cbor:"15,keyasint"`
+	LoadAvg1      float64    `json:"l1,omitempty" cbor:"16,keyasint,omitempty"`
+	LoadAvg5      float64    `json:"l5,omitempty" cbor:"17,keyasint,omitempty"`
+	LoadAvg15     float64    `json:"l15,omitempty" cbor:"18,keyasint,omitempty"`
+	LoadAvg       [3]float64 `json:"la,omitempty" cbor:"19,keyasint"` // [1min, 5min, 15min]
 }
 
 // Final data structure to return to the hub
