@@ -2,24 +2,12 @@ import { t } from "@lingui/core/macro"
 import { toast } from "@/components/ui/use-toast"
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { $alerts, $copyContent, $systems, $userSettings, pb } from "./stores"
-import {
-	AlertInfo,
-	AlertRecord,
-	ChartTimeData,
-	ChartTimes,
-	FingerprintRecord,
-	SystemRecord,
-	UserSettings,
-} from "@/types"
-import { RecordModel, RecordSubscription } from "pocketbase"
-import { WritableAtom } from "nanostores"
+import { $copyContent, $systems, $userSettings } from "./stores"
+import type { ChartTimeData, FingerprintRecord, SemVer, SystemRecord } from "@/types"
 import { timeDay, timeHour } from "d3-time"
 import { useEffect, useState } from "react"
-import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from "lucide-react"
-import { EthernetIcon, HourglassIcon, ThermometerIcon } from "@/components/ui/icons"
+import { MeterState, Unit } from "./enums"
 import { prependBasePath } from "@/components/router"
-import { Unit } from "./enums"
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -42,60 +30,6 @@ export async function copyToClipboard(content: string) {
 	} catch (e: any) {
 		$copyContent.set(content)
 	}
-}
-
-const verifyAuth = () => {
-	pb.collection("users")
-		.authRefresh()
-		.catch(() => {
-			logOut()
-			toast({
-				title: t`Failed to authenticate`,
-				description: t`Please log in again`,
-				variant: "destructive",
-			})
-		})
-}
-
-export const updateSystemList = (() => {
-	let isFetchingSystems = false
-	return async () => {
-		if (isFetchingSystems) {
-			return
-		}
-		isFetchingSystems = true
-		try {
-			const records = await pb
-				.collection<SystemRecord>("systems")
-				.getFullList({ sort: "+name", fields: "id,name,host,port,info,status" })
-
-			if (records.length) {
-				$systems.set(records)
-			} else {
-				verifyAuth()
-			}
-		} finally {
-			isFetchingSystems = false
-		}
-	}
-})()
-
-/** Logs the user out by clearing the auth store and unsubscribing from realtime updates. */
-export async function logOut() {
-	$systems.set([])
-	$alerts.set([])
-	$userSettings.set({} as UserSettings)
-	sessionStorage.setItem("lo", "t") // prevent auto login on logout
-	pb.authStore.clear()
-	pb.realtime.unsubscribe()
-}
-
-export const updateAlerts = () => {
-	pb.collection("alerts")
-		.getFullList<AlertRecord>({ fields: "id,name,system,value,min,triggered", sort: "updated" })
-		.then((records) => {
-			$alerts.set(records)
-		})
 }
 
 const hourWithMinutesFormatter = new Intl.DateTimeFormat(undefined, {
@@ -126,47 +60,6 @@ export const formatDay = (timestamp: string) => {
 
 export const updateFavicon = (newIcon: string) => {
 	;(document.querySelector("link[rel='icon']") as HTMLLinkElement).href = prependBasePath(`/static/${newIcon}`)
-}
-
-export const isAdmin = () => pb.authStore.record?.role === "admin"
-export const isReadOnlyUser = () => pb.authStore.record?.role === "readonly"
-
-/** Update systems / alerts list when records change  */
-export function updateRecordList<T extends RecordModel>(e: RecordSubscription<T>, $store: WritableAtom<T[]>) {
-	const curRecords = $store.get()
-	const newRecords = []
-	if (e.action === "delete") {
-		for (const server of curRecords) {
-			if (server.id !== e.record.id) {
-				newRecords.push(server)
-			}
-		}
-	} else {
-		let found = 0
-		for (const server of curRecords) {
-			if (server.id === e.record.id) {
-				found = newRecords.push(e.record)
-			} else {
-				newRecords.push(server)
-			}
-		}
-		if (!found) {
-			newRecords.push(e.record)
-		}
-	}
-	$store.set(newRecords)
-}
-
-export function getPbTimestamp(timeString: ChartTimes, d?: Date) {
-	d ||= chartTimeData[timeString].getOffset(new Date())
-	const year = d.getUTCFullYear()
-	const month = String(d.getUTCMonth() + 1).padStart(2, "0")
-	const day = String(d.getUTCDate()).padStart(2, "0")
-	const hours = String(d.getUTCHours()).padStart(2, "0")
-	const minutes = String(d.getUTCMinutes()).padStart(2, "0")
-	const seconds = String(d.getUTCSeconds()).padStart(2, "0")
-
-	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
 export const chartTimeData: ChartTimeData = {
@@ -347,97 +240,7 @@ export function formatBytes(
 	}
 }
 
-/** Fetch or create user settings in database */
-export async function updateUserSettings() {
-	try {
-		const req = await pb.collection("user_settings").getFirstListItem("", { fields: "settings" })
-		$userSettings.set(req.settings)
-		return
-	} catch (e) {
-		console.error("get settings", e)
-	}
-	// create user settings if error fetching existing
-	try {
-		const createdSettings = await pb.collection("user_settings").create({ user: pb.authStore.record!.id })
-		$userSettings.set(createdSettings.settings)
-	} catch (e) {
-		console.error("create settings", e)
-	}
-}
-
 export const chartMargin = { top: 12 }
-
-export const alertInfo: Record<string, AlertInfo> = {
-	Status: {
-		name: () => t`Status`,
-		unit: "",
-		icon: ServerIcon,
-		desc: () => t`Triggers when status switches between up and down`,
-		/** "for x minutes" is appended to desc when only one value */
-		singleDesc: () => t`System` + " " + t`Down`,
-	},
-	CPU: {
-		name: () => t`CPU Usage`,
-		unit: "%",
-		icon: CpuIcon,
-		desc: () => t`Triggers when CPU usage exceeds a threshold`,
-	},
-	Memory: {
-		name: () => t`Memory Usage`,
-		unit: "%",
-		icon: MemoryStickIcon,
-		desc: () => t`Triggers when memory usage exceeds a threshold`,
-	},
-	Disk: {
-		name: () => t`Disk Usage`,
-		unit: "%",
-		icon: HardDriveIcon,
-		desc: () => t`Triggers when usage of any disk exceeds a threshold`,
-	},
-	Bandwidth: {
-		name: () => t`Bandwidth`,
-		unit: " MB/s",
-		icon: EthernetIcon,
-		desc: () => t`Triggers when combined up/down exceeds a threshold`,
-		max: 125,
-	},
-	Temperature: {
-		name: () => t`Temperature`,
-		unit: "°C",
-		icon: ThermometerIcon,
-		desc: () => t`Triggers when any sensor exceeds a threshold`,
-	},
-	LoadAvg1: {
-		name: () => t`Load Average 1m`,
-		unit: "",
-		icon: HourglassIcon,
-		max: 100,
-		min: 0.1,
-		start: 10,
-		step: 0.1,
-		desc: () => t`Triggers when 1 minute load average exceeds a threshold`,
-	},
-	LoadAvg5: {
-		name: () => t`Load Average 5m`,
-		unit: "",
-		icon: HourglassIcon,
-		max: 100,
-		min: 0.1,
-		start: 10,
-		step: 0.1,
-		desc: () => t`Triggers when 5 minute load average exceeds a threshold`,
-	},
-	LoadAvg15: {
-		name: () => t`Load Average 15m`,
-		unit: "",
-		icon: HourglassIcon,
-		min: 0.1,
-		max: 100,
-		start: 10,
-		step: 0.1,
-		desc: () => t`Triggers when 15 minute load average exceeds a threshold`,
-	},
-}
 
 /**
  * Retuns value of system host, truncating full path if socket.
@@ -447,8 +250,29 @@ export const alertInfo: Record<string, AlertInfo> = {
  */
 export const getHostDisplayValue = (system: SystemRecord): string => system.host.slice(system.host.lastIndexOf("/") + 1)
 
+// export function formatUptimeString(uptimeSeconds: number): string {
+// 	if (!uptimeSeconds || isNaN(uptimeSeconds)) return ""
+// 	if (uptimeSeconds < 3600) {
+// 		const minutes = Math.trunc(uptimeSeconds / 60)
+// 		return plural({ minutes }, { one: "# minute", other: "# minutes" })
+// 	} else if (uptimeSeconds < 172800) {
+// 		const hours = Math.trunc(uptimeSeconds / 3600)
+// 		console.log(hours)
+// 		return plural({ hours }, { one: "# hour", other: "# hours" })
+// 	} else {
+// 		const days = Math.trunc(uptimeSeconds / 86400)
+// 		return plural({ days }, { one: "# day", other: "# days" })
+// 	}
+// }
+
 /** Generate a random token for the agent */
-export const generateToken = () => crypto?.randomUUID() ?? (performance.now() * Math.random()).toString(16)
+export const generateToken = () => {
+	try {
+		return crypto?.randomUUID()
+	} catch (e) {
+		return Array.from({ length: 2 }, () => (performance.now() * Math.random()).toString(16).replace(".", "-")).join("-")
+	}
+}
 
 /** Get the hub URL from the global BESZEL object */
 export const getHubURL = () => BESZEL?.HUB_URL || window.location.origin
@@ -469,5 +293,95 @@ export function formatSpeed(valueMBps: number): string {
 		return (bitsPerSec / 1_000_000).toFixed(2) + ' Mbit/s'
 	} else {
 		return (bitsPerSec / 1_000).toFixed(2) + ' kbit/s'
+	}
+}
+
+/** Calculate duration between two dates and format as human-readable string */
+export function formatDuration(
+	createdDate: string | null | undefined,
+	resolvedDate: string | null | undefined
+): string {
+	const created = createdDate ? new Date(createdDate) : null
+	const resolved = resolvedDate ? new Date(resolvedDate) : null
+
+	if (!created || !resolved) return ""
+
+	const diffMs = resolved.getTime() - created.getTime()
+	if (diffMs < 0) return ""
+
+	const totalSeconds = Math.floor(diffMs / 1000)
+	let hours = Math.floor(totalSeconds / 3600)
+	let minutes = Math.floor((totalSeconds % 3600) / 60)
+	let seconds = totalSeconds % 60
+
+	// if seconds are close to 60, round up to next minute
+	// if minutes are close to 60, round up to next hour
+	if (seconds >= 58) {
+		minutes += 1
+		seconds = 0
+	}
+	if (minutes >= 60) {
+		hours += 1
+		minutes = 0
+	}
+
+	// For durations over 1 hour, omit seconds for cleaner display
+	if (hours > 0) {
+		return [hours ? `${hours}h` : null, minutes ? `${minutes}m` : null].filter(Boolean).join(" ")
+	}
+
+	return [hours ? `${hours}h` : null, minutes ? `${minutes}m` : null, seconds ? `${seconds}s` : null]
+		.filter(Boolean)
+		.join(" ")
+}
+
+export const parseSemVer = (semVer = ""): SemVer => {
+	// if (semVer.startsWith("v")) {
+	// 	semVer = semVer.slice(1)
+	// }
+	if (semVer.includes("-")) {
+		semVer = semVer.slice(0, semVer.indexOf("-"))
+	}
+	const parts = semVer.split(".").map(Number)
+	return { major: parts?.[0] ?? 0, minor: parts?.[1] ?? 0, patch: parts?.[2] ?? 0 }
+}
+
+/** Get meter state from 0-100 value. Used for color coding meters. */
+export function getMeterState(value: number): MeterState {
+	const { colorWarn = 65, colorCrit = 90 } = $userSettings.get()
+	return value >= colorCrit ? MeterState.Crit : value >= colorWarn ? MeterState.Warn : MeterState.Good
+}
+
+export function debounce<T extends (...args: any[]) => any>(func: T, wait: number): (...args: Parameters<T>) => void {
+	let timeout: ReturnType<typeof setTimeout>
+	return (...args: Parameters<T>) => {
+		clearTimeout(timeout)
+		timeout = setTimeout(() => func(...args), wait)
+	}
+}
+
+/* returns the name of a system from its id */
+export const getSystemNameFromId = (() => {
+	const cache = new Map<string, string>()
+	return (systemId: string): string => {
+		if (cache.has(systemId)) {
+			return cache.get(systemId)!
+		}
+		const sysName = $systems.get().find((s) => s.id === systemId)?.name ?? ""
+		cache.set(systemId, sysName)
+		return sysName
+	}
+})()
+
+/** Run a function only once */
+export function runOnce<T extends (...args: any[]) => any>(fn: T): (...args: Parameters<T>) => ReturnType<T> {
+	let done = false
+	let result: any
+	return (...args: any) => {
+		if (!done) {
+			result = fn(...args)
+			done = true
+		}
+		return result
 	}
 }

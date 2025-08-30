@@ -21,3 +21,28 @@ export enum Unit {
 	Celsius,
 	Fahrenheit,
 }
+
+/** Meter state for color */
+export enum MeterState {
+	Good,
+	Warn,
+	Crit,
+}
+
+/** System status states */
+export enum SystemStatus {
+	Up = "up",
+	Down = "down",
+	Pending = "pending",
+	Paused = "paused",
+}
+
+/** Battery state */
+export enum BatteryState {
+	Unknown,
+	Empty,
+	Full,
+	Charging,
+	Discharging,
+	Idle,
+}

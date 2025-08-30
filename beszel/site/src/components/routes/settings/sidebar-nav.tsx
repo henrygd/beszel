@@ -1,5 +1,6 @@
 import React from "react"
-import { cn, isAdmin, isReadOnlyUser } from "@/lib/utils"
+import { cn } from "@/lib/utils"
+import { isAdmin, isReadOnlyUser } from "@/lib/api"
 import { buttonVariants } from "../../ui/button"
 import { $router, Link, navigate } from "../../router"
 import { useStore } from "@nanostores/react"
@@ -13,6 +14,7 @@ interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
 		icon?: React.FC<React.SVGProps<SVGSVGElement>>
 		admin?: boolean
 		noReadOnly?: boolean
+		preload?: () => Promise<{ default: React.ComponentType<any> }>
 	}[]
 }
 
@@ -33,7 +35,7 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
 							return (
 								<SelectItem key={item.href} value={item.href}>
 									<span className="flex items-center gap-2 truncate">
-										{item.icon && <item.icon className="h-4 w-4" />}
+										{item.icon && <item.icon className="size-4" />}
 										<span className="truncate">{item.title}</span>
 									</span>
 								</SelectItem>
@@ -45,22 +47,23 @@ export function SidebarNav({ className, items, ...props }: SidebarNavProps) {
 			</div>
 
 			{/* Desktop View */}
-			<nav className={cn("hidden md:grid gap-1", className)} {...props}>
+			<nav className={cn("hidden md:grid gap-1 sticky top-6", className)} {...props}>
 				{items.map((item) => {
 					if ((item.admin && !isAdmin()) || (item.noReadOnly && isReadOnlyUser())) {
 						return null
 					}
 					return (
 						<Link
+							onMouseEnter={() => item.preload?.()}
 							key={item.href}
 							href={item.href}
 							className={cn(
 								buttonVariants({ variant: "ghost" }),
-								"flex items-center gap-3 justify-start truncate",
-								page?.path === item.href ? "bg-muted hover:bg-muted" : "hover:bg-muted/50"
+								"flex items-center gap-3 justify-start truncate duration-50",
+								page?.path === item.href ? "bg-muted hover:bg-accent/70" : "hover:bg-accent/50"
 							)}
 						>
-							{item.icon && <item.icon className="h-4 w-4 shrink-0" />}
+							{item.icon && <item.icon className="size-4 shrink-0" />}
 							<span className="truncate">{item.title}</span>
 						</Link>
 					)

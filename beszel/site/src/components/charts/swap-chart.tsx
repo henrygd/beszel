@@ -58,9 +58,9 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 						dataKey="stats.su"
 						name={t`Used`}
 						type="monotoneX"
-						fill="hsl(var(--chart-2))"
+						fill="var(--chart-2)"
 						fillOpacity={0.4}
-						stroke="hsl(var(--chart-2))"
+						stroke="var(--chart-2)"
 						isAnimationActive={false}
 					/>
 				</AreaChart>

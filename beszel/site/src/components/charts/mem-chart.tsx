@@ -6,7 +6,7 @@ import { ChartData } from "@/types"
 import { useLingui } from "@lingui/react/macro"
 import { Unit } from "@/lib/enums"
 
-export default memo(function MemChart({ chartData }: { chartData: ChartData }) {
+export default memo(function MemChart({ chartData, showMax }: { chartData: ChartData; showMax: boolean }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { t } = useLingui()
 
@@ -66,39 +66,39 @@ export default memo(function MemChart({ chartData }: { chartData: ChartData }) {
 					<Area
 						name={t`Used`}
 						order={3}
-						dataKey="stats.mu"
+						dataKey={({ stats }) => (showMax ? stats?.mm : stats?.mu)}
 						type="monotoneX"
-						fill="hsl(var(--chart-2))"
+						fill="var(--chart-2)"
 						fillOpacity={0.4}
-						stroke="hsl(var(--chart-2))"
+						stroke="var(--chart-2)"
 						stackId="1"
 						isAnimationActive={false}
 					/>
-					{chartData.systemStats.at(-1)?.stats.mz && (
-						<Area
-							name="ZFS ARC"
-							order={2}
-							dataKey="stats.mz"
-							type="monotoneX"
-							fill="hsla(175 60% 45% / 0.8)"
-							fillOpacity={0.5}
-							stroke="hsla(175 60% 45% / 0.8)"
-							stackId="1"
-							isAnimationActive={false}
-						/>
-					)}
+					{/* {chartData.systemStats.at(-1)?.stats.mz && ( */}
+					<Area
+						name="ZFS ARC"
+						order={2}
+						dataKey={({ stats }) => (showMax ? null : stats?.mz)}
+						type="monotoneX"
+						fill="hsla(175 60% 45% / 0.8)"
+						fillOpacity={0.5}
+						stroke="hsla(175 60% 45% / 0.8)"
+						stackId="1"
+						isAnimationActive={false}
+					/>
+					{/* )} */}
 					<Area
 						name={t`Cache / Buffers`}
 						order={1}
-						dataKey="stats.mb"
+						dataKey={({ stats }) => (showMax ? null : stats?.mb)}
 						type="monotoneX"
 						fill="hsla(160 60% 45% / 0.5)"
 						fillOpacity={0.4}
-						// strokeOpacity={1}
 						stroke="hsla(160 60% 45% / 0.5)"
 						stackId="1"
 						isAnimationActive={false}
 					/>
+					{/* <ChartLegend content={<ChartLegendContent />} /> */}
 				</AreaChart>
 			</ChartContainer>
 		</div>

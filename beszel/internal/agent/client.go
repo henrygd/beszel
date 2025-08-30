@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"os"
 	"path"
 	"strings"
 	"time"
@@ -53,9 +54,9 @@ func newWebSocketClient(agent *Agent) (client *WebSocketClient, err error) {
 		return nil, errors.New("invalid hub URL")
 	}
 	// get registration token
-	client.token, _ = GetEnv("TOKEN")
-	if client.token == "" {
-		return nil, errors.New("TOKEN environment variable not set")
+	client.token, err = getToken()
+	if err != nil {
+		return nil, err
 	}
 
 	client.agent = agent
@@ -63,6 +64,27 @@ func newWebSocketClient(agent *Agent) (client *WebSocketClient, err error) {
 	client.fingerprint = agent.getFingerprint()
 
 	return client, nil
+}
+
+// getToken returns the token for the WebSocket client.
+// It first checks the TOKEN environment variable, then the TOKEN_FILE environment variable.
+// If neither is set, it returns an error.
+func getToken() (string, error) {
+	// get token from env var
+	token, _ := GetEnv("TOKEN")
+	if token != "" {
+		return token, nil
+	}
+	// get token from file
+	tokenFile, _ := GetEnv("TOKEN_FILE")
+	if tokenFile == "" {
+		return "", errors.New("must set TOKEN or TOKEN_FILE")
+	}
+	tokenBytes, err := os.ReadFile(tokenFile)
+	if err != nil {
+		return "", err
+	}
+	return string(tokenBytes), nil
 }
 
 // getOptions returns the WebSocket client options, creating them if necessary.

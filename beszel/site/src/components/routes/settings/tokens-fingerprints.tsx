@@ -1,6 +1,6 @@
 import { Trans, useLingui } from "@lingui/react/macro"
 import { t } from "@lingui/core/macro"
-import { $publicKey, pb } from "@/lib/stores"
+import { $publicKey } from "@/lib/stores"
 import { memo, useEffect, useMemo, useState } from "react"
 import { Table, TableCell, TableHead, TableBody, TableRow, TableHeader } from "@/components/ui/table"
 import { FingerprintRecord } from "@/types"
@@ -14,7 +14,8 @@ import {
 	Trash2Icon,
 } from "lucide-react"
 import { toast } from "@/components/ui/use-toast"
-import { cn, copyToClipboard, generateToken, getHubURL, isReadOnlyUser, tokenMap } from "@/lib/utils"
+import { cn, copyToClipboard, generateToken, getHubURL, tokenMap } from "@/lib/utils"
+import { isReadOnlyUser, pb } from "@/lib/api"
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -42,6 +43,10 @@ const pbFingerprintOptions = {
 	fields: "id,fingerprint,token,system,expand.system.name",
 }
 
+function sortFingerprints(fingerprints: FingerprintRecord[]) {
+	return fingerprints.sort((a, b) => a.expand.system.name.localeCompare(b.expand.system.name))
+}
+
 const SettingsFingerprintsPage = memo(() => {
 	if (isReadOnlyUser()) {
 		redirectPage($router, "settings", { name: "general" })
@@ -51,9 +56,10 @@ const SettingsFingerprintsPage = memo(() => {
 	// Get fingerprint records on mount
 	useEffect(() => {
 		pb.collection("fingerprints")
-			.getFullList(pbFingerprintOptions)
-			// @ts-ignore
-			.then(setFingerprints)
+			.getFullList<FingerprintRecord>(pbFingerprintOptions)
+			.then((prints) => {
+				setFingerprints(sortFingerprints(prints))
+			})
 	}, [])
 
 	// Subscribe to fingerprint updates
@@ -66,7 +72,7 @@ const SettingsFingerprintsPage = memo(() => {
 				(res) => {
 					setFingerprints((currentFingerprints) => {
 						if (res.action === "create") {
-							return [...currentFingerprints, res.record as FingerprintRecord]
+							return sortFingerprints([...currentFingerprints, res.record as FingerprintRecord])
 						}
 						if (res.action === "update") {
 							return currentFingerprints.map((fingerprint) => {
@@ -159,7 +165,7 @@ const SectionUniversalToken = memo(() => {
 					or on hub restart.
 				</Trans>
 			</p>
-			<div className="min-h-16 overflow-auto max-w-full inline-flex items-center gap-5 mt-3 border py-2 pl-5 pr-4 rounded-md">
+			<div className="min-h-16 overflow-auto max-w-full inline-flex items-center gap-5 mt-3 border py-2 ps-5 pe-4 rounded-md">
 				{!isLoading && (
 					<>
 						<Switch
@@ -266,7 +272,7 @@ const SectionTable = memo(({ fingerprints = [] }: { fingerprints: FingerprintRec
 		<div className="rounded-md border overflow-hidden w-full mt-4">
 			<Table>
 				<TableHeader>
-					<TableRow>
+					<tr className="border-border/50">
 						{headerCols.map((col) => (
 							<TableHead key={col.label} style={{ minWidth: col.w }}>
 								<span className="flex items-center gap-2">
@@ -282,16 +288,18 @@ const SectionTable = memo(({ fingerprints = [] }: { fingerprints: FingerprintRec
 								</span>
 							</TableHead>
 						)}
-					</TableRow>
+					</tr>
 				</TableHeader>
 				<TableBody className="whitespace-pre">
 					{fingerprints.map((fingerprint, i) => (
 						<TableRow key={i}>
-							<TableCell className="font-medium ps-5 py-2.5">{fingerprint.expand.system.name}</TableCell>
-							<TableCell className="font-mono text-[0.95em] py-2.5">{fingerprint.token}</TableCell>
-							<TableCell className="font-mono text-[0.95em] py-2.5">{fingerprint.fingerprint}</TableCell>
+							<TableCell className="font-medium ps-5 py-2 max-w-60 truncate">
+								{fingerprint.expand.system.name}
+							</TableCell>
+							<TableCell className="font-mono text-[0.95em] py-2">{fingerprint.token}</TableCell>
+							<TableCell className="font-mono text-[0.95em] py-2">{fingerprint.fingerprint}</TableCell>
 							{!isReadOnly && (
-								<TableCell className="py-2.5 px-4 xl:px-2">
+								<TableCell className="py-2 px-4 xl:px-2">
 									<ActionsButtonTable fingerprint={fingerprint} />
 								</TableCell>
 							)}

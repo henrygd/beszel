@@ -4,27 +4,37 @@
 package hub_test
 
 import (
-	"beszel/internal/tests"
+	beszelTests "beszel/internal/tests"
 	"testing"
 
+	"bytes"
 	"crypto/ed25519"
+	"encoding/json"
 	"encoding/pem"
+	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/pocketbase/pocketbase/core"
+	pbTests "github.com/pocketbase/pocketbase/tests"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/ssh"
 )
 
-func getTestHub(t testing.TB) *tests.TestHub {
-	hub, _ := tests.NewTestHub(t.TempDir())
-	return hub
+// marshal to json and return an io.Reader (for use in ApiScenario.Body)
+func jsonReader(v any) io.Reader {
+	data, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+	return bytes.NewReader(data)
 }
 
 func TestMakeLink(t *testing.T) {
-	hub := getTestHub(t)
+	hub, _ := beszelTests.NewTestHub(t.TempDir())
 
 	tests := []struct {
 		name     string
@@ -114,7 +124,7 @@ func TestMakeLink(t *testing.T) {
 }
 
 func TestGetSSHKey(t *testing.T) {
-	hub := getTestHub(t)
+	hub, _ := beszelTests.NewTestHub(t.TempDir())
 
 	// Test Case 1: Key generation (no existing key)
 	t.Run("KeyGeneration", func(t *testing.T) {
@@ -252,5 +262,342 @@ func TestGetSSHKey(t *testing.T) {
 				assert.Empty(t, hub.GetPubkey(), "h.pubKey should not be set if there was an error")
 			})
 		}
+	})
+}
+
+func TestApiRoutesAuthentication(t *testing.T) {
+	hub, _ := beszelTests.NewTestHub(t.TempDir())
+	defer hub.Cleanup()
+
+	hub.StartHub()
+
+	// Create test user and get auth token
+	user, err := beszelTests.CreateUser(hub, "testuser@example.com", "password123")
+	require.NoError(t, err, "Failed to create test user")
+
+	adminUser, err := beszelTests.CreateRecord(hub, "users", map[string]any{
+		"email":    "admin@example.com",
+		"password": "password123",
+		"role":     "admin",
+	})
+	require.NoError(t, err, "Failed to create admin user")
+	adminUserToken, err := adminUser.NewAuthToken()
+
+	// superUser, err := beszelTests.CreateRecord(hub, core.CollectionNameSuperusers, map[string]any{
+	// 	"email":    "superuser@example.com",
+	// 	"password": "password123",
+	// })
+	// require.NoError(t, err, "Failed to create superuser")
+
+	userToken, err := user.NewAuthToken()
+	require.NoError(t, err, "Failed to create auth token")
+
+	// Create test system for user-alerts endpoints
+	system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
+		"name":  "test-system",
+		"users": []string{user.Id},
+		"host":  "127.0.0.1",
+	})
+	require.NoError(t, err, "Failed to create test system")
+
+	testAppFactory := func(t testing.TB) *pbTests.TestApp {
+		return hub.TestApp
+	}
+
+	scenarios := []beszelTests.ApiScenario{
+		// Auth Protected Routes - Should require authentication
+		{
+			Name:            "POST /test-notification - no auth should fail",
+			Method:          http.MethodPost,
+			URL:             "/api/beszel/test-notification",
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+			Body: jsonReader(map[string]any{
+				"url": "generic://127.0.0.1",
+			}),
+		},
+		{
+			Name:           "POST /test-notification - with auth should succeed",
+			Method:         http.MethodPost,
+			URL:            "/api/beszel/test-notification",
+			TestAppFactory: testAppFactory,
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			Body: jsonReader(map[string]any{
+				"url": "generic://127.0.0.1",
+			}),
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"sending message"},
+		},
+		{
+			Name:            "GET /config-yaml - no auth should fail",
+			Method:          http.MethodGet,
+			URL:             "/api/beszel/config-yaml",
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /config-yaml - with user auth should fail",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/config-yaml",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  403,
+			ExpectedContent: []string{"Requires admin"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /config-yaml - with admin auth should succeed",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/config-yaml",
+			Headers: map[string]string{
+				"Authorization": adminUserToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"test-system"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:            "GET /universal-token - no auth should fail",
+			Method:          http.MethodGet,
+			URL:             "/api/beszel/universal-token",
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /universal-token - with auth should succeed",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/universal-token",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"active", "token"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:            "POST /user-alerts - no auth should fail",
+			Method:          http.MethodPost,
+			URL:             "/api/beszel/user-alerts",
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+			Body: jsonReader(map[string]any{
+				"name":    "CPU",
+				"value":   80,
+				"min":     10,
+				"systems": []string{system.Id},
+			}),
+		},
+		{
+			Name:   "POST /user-alerts - with auth should succeed",
+			Method: http.MethodPost,
+			URL:    "/api/beszel/user-alerts",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"success\":true"},
+			TestAppFactory:  testAppFactory,
+			Body: jsonReader(map[string]any{
+				"name":    "CPU",
+				"value":   80,
+				"min":     10,
+				"systems": []string{system.Id},
+			}),
+		},
+		{
+			Name:            "DELETE /user-alerts - no auth should fail",
+			Method:          http.MethodDelete,
+			URL:             "/api/beszel/user-alerts",
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+			Body: jsonReader(map[string]any{
+				"name":    "CPU",
+				"systems": []string{system.Id},
+			}),
+		},
+		{
+			Name:   "DELETE /user-alerts - with auth should succeed",
+			Method: http.MethodDelete,
+			URL:    "/api/beszel/user-alerts",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"success\":true"},
+			TestAppFactory:  testAppFactory,
+			Body: jsonReader(map[string]any{
+				"name":    "CPU",
+				"systems": []string{system.Id},
+			}),
+			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+				// Create an alert to delete
+				beszelTests.CreateRecord(app, "alerts", map[string]any{
+					"name":   "CPU",
+					"system": system.Id,
+					"user":   user.Id,
+					"value":  80,
+					"min":    10,
+				})
+			},
+		},
+
+		// Auth Optional Routes - Should work without authentication
+		{
+			Name:            "GET /getkey - no auth should fail",
+			Method:          http.MethodGet,
+			URL:             "/api/beszel/getkey",
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /getkey - with auth should also succeed",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/getkey",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"key\":", "\"v\":"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:            "GET /first-run - no auth should succeed",
+			Method:          http.MethodGet,
+			URL:             "/api/beszel/first-run",
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"firstRun\":false"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /first-run - with auth should also succeed",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/first-run",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"firstRun\":false"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:            "GET /agent-connect - no auth should succeed (websocket upgrade fails but route is accessible)",
+			Method:          http.MethodGet,
+			URL:             "/api/beszel/agent-connect",
+			ExpectedStatus:  400,
+			ExpectedContent: []string{},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "POST /test-notification - invalid auth token should fail",
+			Method: http.MethodPost,
+			URL:    "/api/beszel/test-notification",
+			Body: jsonReader(map[string]any{
+				"url": "generic://127.0.0.1",
+			}),
+			Headers: map[string]string{
+				"Authorization": "invalid-token",
+			},
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "POST /user-alerts - invalid auth token should fail",
+			Method: http.MethodPost,
+			URL:    "/api/beszel/user-alerts",
+			Headers: map[string]string{
+				"Authorization": "invalid-token",
+			},
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+			Body: jsonReader(map[string]any{
+				"name":    "CPU",
+				"value":   80,
+				"min":     10,
+				"systems": []string{system.Id},
+			}),
+		},
+	}
+
+	for _, scenario := range scenarios {
+		scenario.Test(t)
+	}
+}
+
+func TestCreateUserEndpointAvailability(t *testing.T) {
+	t.Run("CreateUserEndpoint available when no users exist", func(t *testing.T) {
+		hub, _ := beszelTests.NewTestHub(t.TempDir())
+		defer hub.Cleanup()
+
+		// Ensure no users exist
+		userCount, err := hub.CountRecords("users")
+		require.NoError(t, err)
+		require.Zero(t, userCount, "Should start with no users")
+
+		hub.StartHub()
+
+		testAppFactory := func(t testing.TB) *pbTests.TestApp {
+			return hub.TestApp
+		}
+
+		scenario := beszelTests.ApiScenario{
+			Name:   "POST /create-user - should be available when no users exist",
+			Method: http.MethodPost,
+			URL:    "/api/beszel/create-user",
+			Body: jsonReader(map[string]any{
+				"email":    "firstuser@example.com",
+				"password": "password123",
+			}),
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"User created"},
+			TestAppFactory:  testAppFactory,
+		}
+
+		scenario.Test(t)
+
+		// Verify user was created
+		userCount, err = hub.CountRecords("users")
+		require.NoError(t, err)
+		require.EqualValues(t, 1, userCount, "Should have created one user")
+	})
+
+	t.Run("CreateUserEndpoint not available when users exist", func(t *testing.T) {
+		hub, _ := beszelTests.NewTestHub(t.TempDir())
+		defer hub.Cleanup()
+
+		// Create a user first
+		_, err := beszelTests.CreateUser(hub, "existing@example.com", "password")
+		require.NoError(t, err)
+
+		hub.StartHub()
+
+		testAppFactory := func(t testing.TB) *pbTests.TestApp {
+			return hub.TestApp
+		}
+
+		scenario := beszelTests.ApiScenario{
+			Name:   "POST /create-user - should not be available when users exist",
+			Method: http.MethodPost,
+			URL:    "/api/beszel/create-user",
+			Body: jsonReader(map[string]any{
+				"email":    "another@example.com",
+				"password": "password123",
+			}),
+			ExpectedStatus:  404,
+			ExpectedContent: []string{"wasn't found"},
+			TestAppFactory:  testAppFactory,
+		}
+
+		scenario.Test(t)
 	})
 }

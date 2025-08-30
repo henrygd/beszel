@@ -13,13 +13,15 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { $publicKey, pb } from "@/lib/stores"
-import { cn, generateToken, isReadOnlyUser, tokenMap, useLocalStorage } from "@/lib/utils"
+import { $publicKey } from "@/lib/stores"
+import { cn, generateToken, tokenMap, useLocalStorage } from "@/lib/utils"
+import { pb, isReadOnlyUser } from "@/lib/api"
 import { useStore } from "@nanostores/react"
 import { ChevronDownIcon, ExternalLinkIcon, PlusIcon } from "lucide-react"
 import { memo, useEffect, useRef, useState } from "react"
 import { $router, basePath, Link, navigate } from "./router"
 import { SystemRecord } from "@/types"
+import { SystemStatus } from "@/lib/enums"
 import { AppleIcon, DockerIcon, TuxIcon, WindowsIcon } from "./ui/icons"
 import { InputCopy } from "./ui/input-copy"
 import { getPagePath } from "@nanostores/router"
@@ -105,7 +107,7 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 		try {
 			setOpen(false)
 			if (system) {
-				await pb.collection("systems").update(system.id, { ...data, status: "pending" })
+				await pb.collection("systems").update(system.id, { ...data, status: SystemStatus.Pending })
 			} else {
 				const createdSystem = await pb.collection("systems").create(data)
 				await pb.collection("fingerprints").create({
@@ -131,7 +133,7 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 		>
 			<Tabs defaultValue={tab} onValueChange={setTab}>
 				<DialogHeader>
-					<DialogTitle className="mb-2">
+					<DialogTitle className="mb-2 max-w-100 truncate pr-8">
 						{system ? `${t`Edit`} ${system?.name}` : <Trans>Add New System</Trans>}
 					</DialogTitle>
 					<TabsList className="grid w-full grid-cols-2">
@@ -165,9 +167,7 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 						<Trans>
 							Copy the installation command for the agent below, or register agents automatically with a{" "}
 							<Link
-								onClick={() => {
-									setOpen(false)
-								}}
+								onClick={() => setOpen(false)}
 								href={getPagePath($router, "settings", { name: "tokens" })}
 								className="link"
 							>
@@ -274,7 +274,7 @@ interface CopyButtonProps {
 	text: string
 	onClick: () => void
 	dropdownItems: DropdownItem[]
-	icon?: React.ReactElement
+	icon?: React.ReactElement<any>
 }
 
 const CopyButton = memo((props: CopyButtonProps) => {

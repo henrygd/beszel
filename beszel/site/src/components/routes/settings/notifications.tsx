@@ -3,7 +3,6 @@ import { Trans } from "@lingui/react/macro"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { pb } from "@/lib/stores"
 import { Separator } from "@/components/ui/separator"
 import { Card } from "@/components/ui/card"
 import { BellIcon, LoaderCircleIcon, PlusIcon, SaveIcon, Trash2Icon } from "lucide-react"
@@ -13,8 +12,8 @@ import { InputTags } from "@/components/ui/input-tags"
 import { UserSettings } from "@/types"
 import { saveSettings } from "./layout"
 import * as v from "valibot"
-import { isAdmin } from "@/lib/utils"
 import { prependBasePath } from "@/components/router"
+import { isAdmin, pb } from "@/lib/api"
 
 interface ShoutrrrUrlCardProps {
 	url: string
@@ -87,8 +86,8 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 			</div>
 			<Separator className="my-4" />
 			<div className="space-y-5">
-				<div className="space-y-2">
-					<div className="mb-4">
+				<div className="grid gap-2">
+					<div className="mb-2">
 						<h3 className="mb-1 text-lg font-medium">
 							<Trans>Email notifications</Trans>
 						</h3>
@@ -178,7 +177,7 @@ const ShoutrrrUrlCard = ({ url, onUrlChange, onRemove }: ShoutrrrUrlCardProps) =
 
 	const sendTestNotification = async () => {
 		setIsLoading(true)
-		const res = await pb.send("/api/beszel/send-test-notification", { url })
+		const res = await pb.send("/api/beszel/test-notification", { method: "POST", body: { url } })
 		if ("err" in res && !res.err) {
 			toast({
 				title: t`Test notification sent`,

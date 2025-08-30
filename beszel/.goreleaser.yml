@@ -173,7 +173,6 @@ brews:
       error_log_path "#{Dir.home}/.cache/beszel/beszel-agent.log"
       keep_alive true
       restart_delay 5
-      name beszel-agent
       process_type :background
 
 winget:
@@ -203,13 +202,14 @@ winget:
       owner: henrygd
       name: beszel-winget
       branch: henrygd.beszel-agent-{{ .Version }}
-      pull_request:
-        enabled: false
-        draft: false
-        base:
-          owner: microsoft
-          name: winget-pkgs
-          branch: master
+      token: "{{ .Env.WINGET_TOKEN }}"
+      # pull_request:
+      #   enabled: true
+      #   draft: false
+      #   base:
+      #     owner: microsoft
+      #     name: winget-pkgs
+      #     branch: master
 
 release:
   draft: true
