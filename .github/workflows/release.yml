@@ -51,3 +51,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN || secrets.GITHUB_TOKEN }}
           WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
+          IS_FORK: ${{ github.repository_owner != 'henrygd' }}
