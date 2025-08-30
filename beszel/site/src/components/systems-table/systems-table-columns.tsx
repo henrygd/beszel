@@ -216,22 +216,32 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			},
 		},
 		{
-			accessorFn: ({ info }) => info.bb || (info.b || 0) * 1024 * 1024,
+			accessorFn: (row) => (row.info.ns || 0) + (row.info.nr || 0),
 			id: "net",
 			name: () => t`Net`,
 			size: 0,
 			Icon: EthernetIcon,
 			header: sortableHeader,
+			sortDescFirst: true,
+			sortingFn: (rowA, rowB) => {
+				const a = (rowA.original.info.ns || 0) + (rowA.original.info.nr || 0)
+				const b = (rowB.original.info.ns || 0) + (rowB.original.info.nr || 0)
+				return a - b
+			},
 			cell(info) {
-				const sys = info.row.original
+				const system = info.row.original
+				const sent = system.info.ns || 0
+				const received = system.info.nr || 0
 				const userSettings = useStore($userSettings, { keys: ["unitNet"] })
-				if (sys.status === SystemStatus.Paused) {
+				if (system.status === SystemStatus.Paused) {
 					return null
 				}
-				const { value, unit } = formatBytes(info.getValue() as number, true, userSettings.unitNet, false)
+				const sentFmt = formatBytes(sent, true, userSettings.unitNet, true)
+				const receivedFmt = formatBytes(received, true, userSettings.unitNet, true)
 				return (
-					<span className="tabular-nums whitespace-nowrap">
-						{decimalString(value, value >= 100 ? 1 : 2)} {unit}
+					<span className={cn("tabular-nums whitespace-nowrap", { "ps-1": viewMode === "table" })}>
+						<span className="text-green-600">↑</span> {Math.round(sentFmt.value)} {sentFmt.unit}{" "}
+						<span className="text-blue-600">↓</span> {Math.round(receivedFmt.value)} {receivedFmt.unit}
 					</span>
 				)
 			},
