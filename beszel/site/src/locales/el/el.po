@@ -5,33 +5,33 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
-"Language: ru\n"
+"Language: el\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
 "PO-Revision-Date: 2025-08-28 23:21\n"
 "Last-Translator: \n"
-"Language-Team: Russian\n"
-"Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
+"Language-Team: Greek\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
-"X-Crowdin-Language: ru\n"
+"X-Crowdin-Language: el\n"
 "X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 16\n"
 
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
 #: src/components/routes/system.tsx
 msgid "{0, plural, one {# day} other {# days}}"
-msgstr "{0, plural, one {# день} other {# дней}}"
+msgstr ""
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
-msgstr "Выбрано {0} из {1} строк."
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "{hours, plural, one {# hour} other {# hours}}"
-msgstr "{hours, plural, one {# час} other {# часов}}"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "{mins, plural, one {# minute} other {# minutes}}"
@@ -39,389 +39,389 @@ msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
-msgstr "1 час"
+msgstr ""
 
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr "1 мин"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 week"
-msgstr "1 неделя"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "12 hours"
-msgstr "12 часов"
+msgstr ""
 
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr "15 мин"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "24 hours"
-msgstr "24 часа"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "30 days"
-msgstr "30 дней"
+msgstr ""
 
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr "5 мин"
+msgstr ""
 
 #. Table column
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
-msgstr "Действия"
+msgstr ""
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Active"
-msgstr "Активно"
+msgstr ""
 
 #: src/components/routes/home.tsx
 msgid "Active Alerts"
-msgstr "Активные оповещения"
+msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Add <0>System</0>"
-msgstr "Добавить <0>Систему</0>"
+msgstr "Προσθήκη <0>System</0>"
 
 #: src/components/add-system.tsx
 msgid "Add New System"
-msgstr "Добавить новую систему"
+msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Add system"
-msgstr "Добавить систему"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
-msgstr "Добавить URL"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
-msgstr "Настроить параметры отображения для графиков."
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
-msgstr "Администратор"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr "Агент"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Alert History"
-msgstr "История оповещений"
+msgstr ""
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Alerts"
-msgstr "Оповещения"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
-msgstr "Все системы"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
-msgstr "Вы уверены, что хотите удалить {name}?"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
-msgstr "Вы уверены?"
+msgstr ""
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
-msgstr "Автоматическое копирование требует безопасного контекста."
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Average"
-msgstr "Среднее"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Average CPU utilization of containers"
-msgstr "Среднее использование CPU контейнерами"
+msgstr ""
 
 #. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Average exceeds <0>{value}{0}</0>"
-msgstr "Среднее превышает <0>{value}{0}</0>"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Average power consumption of GPUs"
-msgstr "Среднее потребление мощности всеми GPU"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Average system-wide CPU utilization"
-msgstr "Среднее использование CPU по всей системе"
+msgstr ""
 
 #. placeholder {0}: gpu.n
 #: src/components/routes/system.tsx
 msgid "Average utilization of {0}"
-msgstr "Среднее использование {0}"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
-msgstr "Резервные копии"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "Bandwidth"
-msgstr "Пропускная способность"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Battery"
-msgstr "Батарея"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
-msgstr "Beszel поддерживает OpenID Connect и множество поставщиков аутентификации OAuth2."
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
-msgstr "Beszel использует <0>Shoutrrr</0> для интеграции с популярными сервисами уведомлений."
+msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Binary"
-msgstr "Двоичный"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr "Биты (Кбит/с, Мбит/с, Гбит/с)"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
-msgstr "Байты (Кбайт/с, Мбайт/с, Гбайт/с)"
+msgstr ""
 
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
-msgstr "Кэш / Буферы"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
-msgstr "Отмена"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
-msgstr "Внимание - возможная потеря данных"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr "Цельсий (°C)"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
-msgstr "Изменить единицы измерения для метрик."
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
-msgstr "Изменить общие параметры приложения."
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Charge"
-msgstr "Заряд"
+msgstr ""
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Charging"
-msgstr "Заряжается"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
-msgstr "Параметры графиков"
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
-msgstr "Проверьте {email} для получения ссылки на сброс."
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx
 msgid "Check logs for more details."
-msgstr "Проверьте журналы для получения более подробной информации."
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
-msgstr "Проверьте ваш сервис уведомлений"
+msgstr ""
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
-msgstr "Нажмите, чтобы скопировать"
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
-msgstr "Инструкции командной строки"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
-msgstr "Настройте, как вы получаете уведомления об оповещениях."
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Confirm password"
-msgstr "Подтвердите пароль"
+msgstr ""
 
 #: src/components/routes/home.tsx
 msgid "Connection is down"
-msgstr "Нет соединения"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
-msgstr "Продолжить"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "Copied to clipboard"
-msgstr "Скопировано в буфер обмена"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
-msgstr "Скопировать docker compose"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
-msgstr "Скопировать docker run"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Environment variables"
 msgid "Copy env"
-msgstr "Скопировать env"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
-msgstr "Копировать хост"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
-msgstr "Копировать команду Linux"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
-msgstr "Скопировать имя"
+msgstr ""
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
-msgstr "Копировать текст"
+msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
-msgstr "Скопируйте команду для установки агента ниже, или зарегистрируйте агентов автоматически с помощью <0>универсального токена</0>."
+msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
-msgstr "Скопируйте содержимое <0>docker-compose.yml</0> для агента ниже, или зарегистрируйте агентов автоматически с помощью <1>универсального токена</1>."
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
-msgstr "Скопировать YAML"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr "CPU"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "CPU Usage"
-msgstr "Использование CPU"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Create account"
-msgstr "Создать аккаунт"
+msgstr ""
 
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
 msgid "Created"
-msgstr "Создано"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Critical (%)"
-msgstr "Критический (%)"
+msgstr ""
 
 #. Context: Battery state
 #: src/components/routes/system.tsx
 msgid "Current state"
-msgstr "Текущее состояние"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
 msgid "Dashboard"
-msgstr "Панель управления"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
-msgstr "Период по умолчанию"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
-msgstr "Удалить"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
-msgstr "Удалить отпечаток"
+msgstr ""
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Discharging"
-msgstr "Разряжается"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
-msgstr "Диск"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Disk I/O"
-msgstr "Дисковый ввод/вывод"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
-msgstr "Единицы измерения температуры"
+msgstr ""
 
 #: src/components/charts/disk-chart.tsx
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
-msgstr "Использование диска"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Disk usage of {extraFsName}"
-msgstr "Использование диска {extraFsName}"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Docker CPU Usage"
-msgstr "Использование CPU Docker"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Docker Memory Usage"
-msgstr "Использование памяти Docker"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Docker Network I/O"
-msgstr "Сетевой ввод/вывод Docker"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Documentation"
-msgstr "Документация"
+msgstr ""
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
@@ -430,38 +430,38 @@ msgstr "Документация"
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Down"
-msgstr "Не в сети"
+msgstr ""
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
-msgstr "Длительность"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
-msgstr "Редактировать"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Email"
-msgstr "Электронная почта"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
-msgstr "Уведомления по электронной почте"
+msgstr ""
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Empty"
-msgstr "Пустая"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
-msgstr "Введите адрес электронной почты для сброса пароля"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Enter email address..."
-msgstr "Введите адрес электронной почты..."
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -469,706 +469,706 @@ msgstr "Введите адрес электронной почты..."
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Error"
-msgstr "Ошибка"
+msgstr ""
 
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
 #: src/components/routes/home.tsx
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
-msgstr "Превышает {0}{1} за последние {2, plural, one {# минуту} other {# минут}}"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
-msgstr "Существующие системы, не определенные в <0>config.yml</0>, будут удалены. Пожалуйста, делайте регулярные резервные копии."
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
-msgstr "Экспорт"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
-msgstr "Экспорт конфигурации"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export your current systems configuration."
-msgstr "Экспортируйте текущую конфигурацию систем."
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr "Фаренгейт (°F)"
+msgstr ""
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
-msgstr "Не удалось аутентифицировать"
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Failed to save settings"
-msgstr "Не удалось сохранить настройки"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Failed to send test notification"
-msgstr "Не удалось отправить тестовое уведомление"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Failed to update alert"
-msgstr "Не удалось обновить оповещение"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
-msgstr "Фильтр..."
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
-msgstr "Отпечаток"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
-msgstr "На <0>{min}</0> {min, plural, one {минуту} other {минут}}"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
-msgstr "Забыли пароль?"
+msgstr ""
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Full"
-msgstr "Полная"
+msgstr ""
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "General"
-msgstr "Общие"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
-msgstr "Потребляемая мощность GPU"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
-msgstr "Сетка"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
-msgstr "Команда Homebrew"
+msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Host / IP"
-msgstr "Хост / IP"
+msgstr ""
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
-msgstr "Неактивная"
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
-msgstr "Если вы потеряли пароль от своей учетной записи администратора, вы можете сбросить его, используя следующую команду."
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
-msgstr "Неверный адрес электронной почты."
+msgstr ""
 
 #. Linux kernel
 #: src/components/routes/system.tsx
 msgid "Kernel"
-msgstr "Ядро"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Language"
-msgstr "Язык"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
-msgstr "Макет"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
-msgstr "Средняя загрузка"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Load Average 15m"
-msgstr "Средняя загрузка за 15м"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Load Average 1m"
-msgstr "Средняя загрузка за 1м"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Load Average 5m"
-msgstr "Средняя загрузка за 5м"
+msgstr ""
 
 #. Short label for load average
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
-msgstr "Ср. загрузка"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Log Out"
-msgstr "Выйти"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Login"
-msgstr "Вход"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Login attempt failed"
-msgstr "Попытка входа не удалась"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Logs"
-msgstr "Журналы"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
-msgstr "Ищете, где создать оповещения? Нажмите на значки колокольчика <0/> в таблице систем."
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
-msgstr "Управляйте предпочтениями отображения и уведомлений."
+msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Manual setup instructions"
-msgstr "Инструкции по ручной настройке"
+msgstr ""
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx
 msgid "Max 1 min"
-msgstr "Макс 1 мин"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
-msgstr "Память"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "Memory Usage"
-msgstr "Использование памяти"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Memory usage of docker containers"
-msgstr "Использование памяти контейнерами Docker"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 msgid "Name"
-msgstr "Имя"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
-msgstr "Сеть"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Network traffic of docker containers"
-msgstr "Сетевой трафик контейнеров Docker"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Network traffic of public interfaces"
-msgstr "Сетевой трафик публичных интерфейсов"
+msgstr ""
 
 #. Context: Bytes or bits
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
-msgstr "Единицы измерения скорости сети"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "No results found."
-msgstr "Результаты не найдены."
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "No results."
-msgstr "Нет результатов."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
-msgstr "Системы не найдены."
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
-msgstr "Уведомления"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
-msgstr "Поддержка OAuth 2 / OIDC"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
-msgstr "При каждом перезапуске системы в базе данных будут обновлены в соответствии с системами, определенными в файле."
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
-msgstr "Открыть меню"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Or continue with"
-msgstr "Или продолжить с"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
-msgstr "Перезаписать существующие оповещения"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Page"
-msgstr "Страница"
+msgstr ""
 
 #. placeholder {0}: table.getState().pagination.pageIndex + 1
 #. placeholder {1}: table.getPageCount()
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Page {0} of {1}"
-msgstr "Страница {0} из {1}"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
-msgstr "Страницы / Настройки"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Password"
-msgstr "Пароль"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be at least 8 characters."
-msgstr "Пароль должен содержать не менее 8 символов."
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
-msgstr "Пароль должен быть меньше 72 символов."
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"
-msgstr "Запрос на сброс пароля получен"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
-msgstr "Пауза"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused"
-msgstr "Пауза"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
-msgstr "Пожалуйста, <0>настройте SMTP-сервер</0>, чтобы гарантировать доставку оповещений."
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Please check logs for more details."
-msgstr "Пожалуйста, проверьте журналы для получения более подробной информации."
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Please check your credentials and try again"
-msgstr "Пожалуйста, проверьте свои учетные данные и попробуйте снова"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Please create an admin account"
-msgstr "Пожалуйста, создайте учетную запись администратора"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Please enable pop-ups for this site"
-msgstr "Пожалуйста, включите всплывающие окна для этого сайта"
+msgstr ""
 
 #: src/lib/api.ts
 msgid "Please log in again"
-msgstr "Пожалуйста, войдите снова"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Please see <0>the documentation</0> for instructions."
-msgstr "Пожалуйста, смотрите <0>документацию</0> для получения инструкций."
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Please sign in to your account"
-msgstr "Пожалуйста, войдите в свою учетную запись"
+msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr "Порт"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Precise utilization at the recorded time"
-msgstr "Точное использование в записанное время"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Preferred Language"
-msgstr "Предпочтительный язык"
+msgstr ""
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
-msgstr "Ключ"
+msgstr ""
 
 #. Disk read
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Read"
-msgstr "Чтение"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Received"
-msgstr "Получено"
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
-msgstr "Сбросить пароль"
+msgstr ""
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Resolved"
-msgstr "Завершено"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
-msgstr "Возобновить"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
-msgstr "Обновить токен"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
-msgstr "Строк на странице"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
-msgstr "Сохраните адрес, используя клавишу ввода или запятую. Оставьте пустым, чтобы отключить уведомления по электронной почте."
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
-msgstr "Сохранить настройки"
+msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Save system"
-msgstr "Сохранить систему"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Search"
-msgstr "Поиск"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Search for systems or settings..."
-msgstr "Поиск систем или настроек..."
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
-msgstr "Смотрите <0>настройки уведомлений</0>, чтобы настроить, как вы получаете оповещения."
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Sent"
-msgstr "Отправлено"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
-msgstr "Установите процентные пороги для цветов счетчиков."
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Sets the default time range for charts when a system is viewed."
-msgstr "Устанавливает диапазон времени по умолчанию для графиков при просмотре системы."
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Settings"
-msgstr "Настройки"
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx
 msgid "Settings saved"
-msgstr "Настройки сохранены"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Sign in"
-msgstr "Войти"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
-msgstr "Настройки SMTP"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
-msgstr "Сортировать по"
+msgstr ""
 
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 msgid "State"
-msgstr "Состояние"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
-msgstr "Статус"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Swap space used by the system"
-msgstr "Используемое системой пространство подкачки"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Swap Usage"
-msgstr "Использование подкачки"
+msgstr ""
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
-msgstr "Система"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
-msgstr "Средняя загрузка системы за время"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Systems"
-msgstr "Системы"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
-msgstr "Системы могут управляться в файле <0>config.yml</0> внутри вашего каталога данных."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
-msgstr "Таблица"
+msgstr ""
 
 #. Temperature label in systems table
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
-msgstr "Темп"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "Temperature"
-msgstr "Температура"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"
-msgstr "Температура"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
-msgstr "Температуры датчиков системы"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test <0>URL</0>"
-msgstr "Тест <0>URL</0>"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test notification sent"
-msgstr "Тестовое уведомление отправлено"
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
-msgstr "Затем войдите в бэкенд и сбросьте пароль вашей учетной записи в таблице пользователей."
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
-msgstr "Это действие не может быть отменено. Это навсегда удалит все текущие записи для {name} из базы данных."
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
-msgstr "Это навсегда удалит все выбранные записи из базы данных."
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Throughput of {extraFsName}"
-msgstr "Пропускная способность {extraFsName}"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Throughput of root filesystem"
-msgstr "Пропускная способность корневой файловой системы"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
-msgstr "На электронную почту"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Toggle grid"
-msgstr "Переключить сетку"
+msgstr ""
 
 #: src/components/mode-toggle.tsx
 msgid "Toggle theme"
-msgstr "Переключить тему"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr "Токен"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens & Fingerprints"
-msgstr "Токены и отпечатки"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
-msgstr "Токены позволяют агентам подключаться и регистрироваться. Отпечатки являются постоянными идентификаторами, уникальными для каждой системы, которые создаются при первом подключении."
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
-msgstr "Токены и отпечатки используются для аутентификации соединений WebSocket с хабом."
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
-msgstr "Срабатывает, когда средняя загрузка за 1 минуту превышает порог"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
-msgstr "Срабатывает, когда средняя загрузка за 15 минут превышает порог"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
-msgstr "Срабатывает, когда средняя загрузка за 5 минут превышает порог"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
-msgstr "Срабатывает, когда любой датчик превышает порог"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
-msgstr "Срабатывает, когда комбинированный вход/выход превышает порог"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
-msgstr "Срабатывает, когда использование CPU превышает порог"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
-msgstr "Срабатывает, когда использование памяти превышает порог"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"
-msgstr "Срабатывает, когда статус переключается между включено и выключено"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
-msgstr "Срабатывает, когда использование любого диска превышает порог"
+msgstr ""
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
-msgstr "Параметры единиц измерения"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
-msgstr "Универсальный токен"
+msgstr ""
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Unknown"
-msgstr "Неизвестная"
+msgstr ""
 
 #. Context: System is up
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Up"
-msgstr "В сети"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Updated in real time. Click on a system to view information."
-msgstr "Обновляется в реальном времени. Нажмите на систему, чтобы просмотреть информацию."
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Uptime"
-msgstr "Время работы"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Usage"
-msgstr "Использование"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Usage of root partition"
-msgstr "Использование корневого раздела"
+msgstr ""
 
 #: src/components/charts/mem-chart.tsx
 #: src/components/charts/swap-chart.tsx
 msgid "Used"
-msgstr "Использовано"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Users"
-msgstr "Пользователи"
+msgstr ""
 
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
-msgstr "Значение"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
-msgstr "Вид"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
-msgstr "Просмотреть 200 последних оповещений."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
-msgstr "Видимые столбцы"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Waiting for enough records to display"
-msgstr "Ожидание достаточного количества записей для отображения"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
-msgstr "Хотите помочь нам улучшить наши переводы? Посетите <0>Crowdin</0> для получения более подробной информации."
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Warning (%)"
-msgstr "Предупреждение (%)"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Warning thresholds"
-msgstr "Пороги предупреждения"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
-msgstr "Webhook / Push уведомления"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
-msgstr "Если включено, этот токен позволяет агентам регистрироваться самостоятельно без предварительного создания системы. Истекает через час или при перезапуске хаба."
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
-msgstr "Команда Windows"
+msgstr ""
 
 #. Disk write
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Write"
-msgstr "Запись"
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
-msgstr "YAML конфигурация"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
-msgstr "YAML конфигурация"
+msgstr ""
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
-msgstr "Ваши настройки пользователя были обновлены."
+msgstr ""
 
