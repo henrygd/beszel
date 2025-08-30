@@ -39,11 +39,20 @@ builds:
       - riscv64
       - mipsle
       - ppc64le
+    gomips:
+      - hardfloat
+      - softfloat
     ignore:
       - goos: freebsd
         goarch: arm
       - goos: openbsd
         goarch: arm
+      - goos: linux
+        goarch: mips64
+        gomips: softfloat
+      - goos: linux
+        goarch: mipsle
+        gomips: hardfloat
       - goos: windows
         goarch: arm
       - goos: darwin
