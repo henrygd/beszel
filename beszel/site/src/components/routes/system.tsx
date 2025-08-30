@@ -409,7 +409,7 @@ export default function SystemDetail({ name }: { name: string }) {
 		translatedStatus = t({ message: "Down", comment: "Context: System is down" })
 	}
 
-	const latestNetworkStats = systemStats.at(-1)?.stats.ns;
+	const latestNetworkStats = systemStats.at(-1)?.stats.ni;
 
 	return (
 		<>
@@ -586,52 +586,6 @@ export default function SystemDetail({ name }: { name: string }) {
 							contentFormatter={({ value }) => {
 								const { value: convertedValue, unit } = formatBytes(value, true, userSettings.unitDisk, true)
 								return decimalString(convertedValue, convertedValue >= 100 ? 1 : 2) + " " + unit
-							}}
-						/>
-					</ChartCard>
-
-					<ChartCard
-						empty={dataEmpty}
-						grid={grid}
-						title={t`Bandwidth`}
-						cornerEl={maxValSelect}
-						description={t`Network traffic of public interfaces`}
-					>
-						<AreaChartDefault
-							chartData={chartData}
-							maxToggled={maxValues}
-							dataPoints={[
-								{
-									label: t`Sent`,
-									// use bytes if available, otherwise multiply old MB (can remove in future)
-									dataKey(data) {
-										if (showMax) {
-											return data?.stats?.bm?.[0] ?? (data?.stats?.nsm ?? 0) * 1024 * 1024
-										}
-										return data?.stats?.b?.[0] ?? data?.stats?.ns * 1024 * 1024
-									},
-									color: 5,
-									opacity: 0.2,
-								},
-								{
-									label: t`Received`,
-									dataKey(data) {
-										if (showMax) {
-											return data?.stats?.bm?.[1] ?? (data?.stats?.nrm ?? 0) * 1024 * 1024
-										}
-										return data?.stats?.b?.[1] ?? data?.stats?.nr * 1024 * 1024
-									},
-									color: 2,
-									opacity: 0.2,
-								},
-							]}
-							tickFormatter={(val) => {
-								let { value, unit } = formatBytes(val, true, userSettings.unitNet, false)
-								return toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit
-							}}
-							contentFormatter={(data) => {
-								const { value, unit } = formatBytes(data.value, true, userSettings.unitNet, false)
-								return decimalString(value, value >= 100 ? 1 : 2) + " " + unit
 							}}
 						/>
 					</ChartCard>

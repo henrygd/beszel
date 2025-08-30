@@ -9,7 +9,7 @@ import { $networkInterfaceFilter, $userSettings } from "@/lib/stores"
 import { Unit } from "@/lib/enums"
 
 const getNestedValue = (path: string, max = false, data: any): number | null => {
-	return `stats.ns.${path}${max ? "m" : ""}`
+	return `stats.ni.${path}${max ? "m" : ""}`
 		.split(".")
 		.reduce((acc: any, key: string) => acc?.[key] ?? (data.stats?.cpum ? 0 : null), data)
 }
@@ -35,7 +35,7 @@ export default memo(function NetworkInterfaceChart({
 	const networkInterfaces = useMemo(() => {
 		if (chartData.systemStats.length === 0) return []
 		const latestStats = chartData.systemStats[chartData.systemStats.length - 1]
-		const allInterfaces = Object.keys(latestStats.stats.ns || {})
+		const allInterfaces = Object.keys(latestStats.stats.ni || {})
 		
 		// Filter interfaces based on filter value
 		if (networkInterfaceFilter) {
