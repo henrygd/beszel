@@ -27,7 +27,6 @@ type Agent struct {
 	fsStats           map[string]*system.FsStats   // Keeps track of disk stats for each filesystem
 	netInterfaces     map[string]struct{}          // Stores all valid network interfaces
 	netIoStats        map[string]system.NetIoStats // Keeps track of per-interface bandwidth usage
-	globalNetIoStats  system.NetIoStats            // Keeps track of total bandwidth usage
 	dockerManager     *dockerManager               // Manages Docker API requests
 	sensorConfig      *SensorConfig                // Sensors config
 	systemInfo        system.Info                  // Host system info

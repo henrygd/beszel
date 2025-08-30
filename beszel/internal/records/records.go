@@ -211,8 +211,6 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.LoadAvg[0] += stats.LoadAvg[0]
 		sum.LoadAvg[1] += stats.LoadAvg[1]
 		sum.LoadAvg[2] += stats.LoadAvg[2]
-		sum.Bandwidth[0] += stats.Bandwidth[0]
-		sum.Bandwidth[1] += stats.Bandwidth[1]
 		batterySum += int(stats.Battery[0])
 		sum.Battery[1] = stats.Battery[1]
 		
@@ -240,8 +238,6 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.MaxNetworkRecv = max(sum.MaxNetworkRecv, stats.MaxNetworkRecv, stats.NetworkRecv)
 		sum.MaxDiskReadPs = max(sum.MaxDiskReadPs, stats.MaxDiskReadPs, stats.DiskReadPs)
 		sum.MaxDiskWritePs = max(sum.MaxDiskWritePs, stats.MaxDiskWritePs, stats.DiskWritePs)
-		sum.MaxBandwidth[0] = max(sum.MaxBandwidth[0], stats.MaxBandwidth[0], stats.Bandwidth[0])
-		sum.MaxBandwidth[1] = max(sum.MaxBandwidth[1], stats.MaxBandwidth[1], stats.Bandwidth[1])
 
 		// Accumulate temperatures
 		if stats.Temperatures != nil {
@@ -317,8 +313,6 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.LoadAvg[0] = twoDecimals(sum.LoadAvg[0] / count)
 		sum.LoadAvg[1] = twoDecimals(sum.LoadAvg[1] / count)
 		sum.LoadAvg[2] = twoDecimals(sum.LoadAvg[2] / count)
-		sum.Bandwidth[0] = sum.Bandwidth[0] / uint64(count)
-		sum.Bandwidth[1] = sum.Bandwidth[1] / uint64(count)
 		sum.Battery[0] = uint8(batterySum / int(count))
 		
 		if sum.NetworkInterfaces != nil {

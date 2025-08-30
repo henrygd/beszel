@@ -244,14 +244,6 @@ func (a *Agent) getSystemStats() system.Stats {
 			}
 		}
 		
-		// Calculate total bandwidth in bytes per second 
-		msElapsed := uint64(time.Since(a.globalNetIoStats.Time).Milliseconds())
-		if msElapsed == 0 {
-			msElapsed = 1 // prevent division by zero
-		}
-		bytesSentPerSecond := (totalBytesSent - a.globalNetIoStats.BytesSent) * 1000 / msElapsed
-		bytesRecvPerSecond := (totalBytesRecv - a.globalNetIoStats.BytesRecv) * 1000 / msElapsed
-		
 		// add check for issue (#150) where sent is a massive number
 		if totalSent > 10_000 || totalRecv > 10_000 {
 			slog.Warn("Invalid net stats. Resetting.", "sent", totalSent, "recv", totalRecv)
@@ -260,12 +252,6 @@ func (a *Agent) getSystemStats() system.Stats {
 		} else {
 			systemStats.NetworkSent = totalSent
 			systemStats.NetworkRecv = totalRecv
-			systemStats.Bandwidth[0] = bytesSentPerSecond
-			systemStats.Bandwidth[1] = bytesRecvPerSecond
-			// update global netIoStats for bandwidth calculation
-			a.globalNetIoStats.BytesSent = totalBytesSent
-			a.globalNetIoStats.BytesRecv = totalBytesRecv
-			a.globalNetIoStats.Time = now
 		}
 	}
 
@@ -325,10 +311,6 @@ func (a *Agent) getSystemStats() system.Stats {
 	}
 	a.systemInfo.NetworkSent = twoDecimals(totalSent)
 	a.systemInfo.NetworkRecv = twoDecimals(totalRecv)
-
-	// TODO: in future release, remove MB bandwidth values in favor of bytes
-	a.systemInfo.Bandwidth = twoDecimals(systemStats.NetworkSent + systemStats.NetworkRecv)
-	a.systemInfo.BandwidthBytes = systemStats.Bandwidth[0] + systemStats.Bandwidth[1]
 	slog.Debug("sysinfo", "data", a.systemInfo)
 
 	return systemStats
