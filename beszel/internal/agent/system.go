@@ -175,72 +175,66 @@ func (a *Agent) getSystemStats() system.Stats {
 	if len(a.netInterfaces) == 0 {
 		// if no network interfaces, initialize again
 		// this is a fix if agent started before network is online (#466)
-		// maybe refactor this in the future to not cache interface names at all so we
-		// don't miss an interface that's been added after agent started in any circumstance
 		a.initializeNetIoStats()
 	}
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
 		now := time.Now()
-		// initialize per-interface network stats
-		systemStats.NetworkInterfaces = make(map[string]system.NetworkInterfaceStats)
+		
+		// pre-allocate maps with known capacity
+		interfaceCount := len(a.netInterfaces)
+		if systemStats.NetworkInterfaces == nil || len(systemStats.NetworkInterfaces) != interfaceCount {
+			systemStats.NetworkInterfaces = make(map[string]system.NetworkInterfaceStats, interfaceCount)
+		}
 
-		totalBytesSent := uint64(0)
-		totalBytesRecv := uint64(0)
 		var totalSent, totalRecv float64
 		
-		// process each interface
+		// single pass through interfaces
 		for _, v := range netIO {
 			// skip if not in valid network interfaces list
 			if _, exists := a.netInterfaces[v.Name]; !exists {
 				continue
 			}
-			
-			totalBytesSent += v.BytesSent
-			totalBytesRecv += v.BytesRecv
 
 			// get previous stats for this interface
 			prevStats, exists := a.netIoStats[v.Name]
-			if !exists {
-				// initialize if not found
-				prevStats = system.NetIoStats{
-					BytesRecv: v.BytesRecv,
-					BytesSent: v.BytesSent,
-					Time:      now,
-					Name:      v.Name,
-				}
-			}
-			// calculate per-interface stats
-			secondsElapsed := time.Since(prevStats.Time).Seconds()
-
 			var networkSentPs, networkRecvPs float64
-			if exists && secondsElapsed > 0 {
-				sentPerSecond := float64(v.BytesSent-prevStats.BytesSent) / secondsElapsed
-				recvPerSecond := float64(v.BytesRecv-prevStats.BytesRecv) / secondsElapsed
-				networkSentPs = bytesToMegabytes(sentPerSecond)
-				networkRecvPs = bytesToMegabytes(recvPerSecond)
-			} else {
-				networkSentPs = 0
-				networkRecvPs = 0
-			}
-
-			// store per-interface stats (bandwidth only)
-			systemStats.NetworkInterfaces[v.Name] = system.NetworkInterfaceStats{
-				NetworkSent: networkSentPs,
-				NetworkRecv: networkRecvPs,
+			
+			if exists {
+				secondsElapsed := time.Since(prevStats.Time).Seconds()
+				if secondsElapsed > 0 {
+					// direct calculation to MB/s, avoiding intermediate bytes/sec
+					networkSentPs = bytesToMegabytes(float64(v.BytesSent-prevStats.BytesSent) / secondsElapsed)
+					networkRecvPs = bytesToMegabytes(float64(v.BytesRecv-prevStats.BytesRecv) / secondsElapsed)
+				}
 			}
 
 			// accumulate totals
 			totalSent += networkSentPs
 			totalRecv += networkRecvPs
 
-			// update previous stats for this interface
-			a.netIoStats[v.Name] = system.NetIoStats{
-				BytesRecv:   v.BytesRecv,
-				BytesSent:   v.BytesSent,
-				PacketsSent: v.PacketsSent,
-				PacketsRecv: v.PacketsRecv,
-				Time:        now,
-				Name:        v.Name,
+			// store per-interface stats
+			systemStats.NetworkInterfaces[v.Name] = system.NetworkInterfaceStats{
+				NetworkSent: networkSentPs,
+				NetworkRecv: networkRecvPs,
+			}
+
+			// update previous stats (reuse existing struct if possible)
+			if prevStats.Name == v.Name {
+				prevStats.BytesRecv = v.BytesRecv
+				prevStats.BytesSent = v.BytesSent
+				prevStats.PacketsSent = v.PacketsSent
+				prevStats.PacketsRecv = v.PacketsRecv
+				prevStats.Time = now
+				a.netIoStats[v.Name] = prevStats
+			} else {
+				a.netIoStats[v.Name] = system.NetIoStats{
+					BytesRecv:   v.BytesRecv,
+					BytesSent:   v.BytesSent,
+					PacketsSent: v.PacketsSent,
+					PacketsRecv: v.PacketsRecv,
+					Time:        now,
+					Name:        v.Name,
+				}
 			}
 		}
 		
