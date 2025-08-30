@@ -651,12 +651,12 @@ export default function SystemDetail({ name }: { name: string }) {
 					)}
 
 					{/* Connection Counts chart */}
-					{(systemStats.at(-1)?.stats.cc?.t ?? 0) > 0 && (
+					{systemStats.at(-1)?.stats.nets && Object.keys(systemStats.at(-1)?.stats.nets ?? {}).length > 0 && (
 						<ChartCard
 							empty={dataEmpty}
 							grid={grid}
-							title={t`Network Connections`}
-							description={t`Active network connections by type and state`}
+							title={t`TCP Connection States`}
+							description={t`TCP connection states for IPv4 and IPv6`}
 						>
 							<ConnectionChart chartData={chartData} />
 						</ChartCard>

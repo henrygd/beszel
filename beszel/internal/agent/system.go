@@ -316,36 +316,92 @@ func (a *Agent) getSystemStats() system.Stats {
 }
 
 func (a *Agent) updateConnectionCounts(systemStats *system.Stats) {
-	connections, err := psutilNet.Connections("all")
+	// Get IPv4 connections
+	connectionsIPv4, err := psutilNet.Connections("inet")
 	if err != nil {
-		slog.Debug("Failed to get connection stats", "err", err)
+		slog.Debug("Failed to get IPv4 connection stats", "err", err)
 		return
 	}
 
-	counts := &system.ConnectionCounts{}
+	// Get IPv6 connections
+	connectionsIPv6, err := psutilNet.Connections("inet6")
+	if err != nil {
+		slog.Debug("Failed to get IPv6 connection stats", "err", err)
+		// Continue with IPv4 only if IPv6 fails
+	}
 
-	for _, conn := range connections {
-		counts.Total++
+	// Initialize Nets map if needed
+	if systemStats.Nets == nil {
+		systemStats.Nets = make(map[string]float64)
+	}
 
-		// Count by protocol - Type is uint32 representing socket type
-		// Common values: 1 = SOCK_STREAM (TCP), 2 = SOCK_DGRAM (UDP)
-		switch conn.Type {
-		case 1: // SOCK_STREAM (TCP)
-			counts.TCP++
-		case 2: // SOCK_DGRAM (UDP)
-			counts.UDP++
-		}
+	// Count IPv4 connection states
+	connStatsIPv4 := map[string]int{
+		"established": 0,
+		"listen":      0,
+		"time_wait":   0,
+		"close_wait":  0,
+		"syn_recv":    0,
+	}
 
-		// Count by status
-		switch strings.ToUpper(conn.Status) {
-		case "LISTEN":
-			counts.Listening++
-		case "ESTABLISHED":
-			counts.Established++
+	for _, conn := range connectionsIPv4 {
+		// Only count TCP connections (Type 1 = SOCK_STREAM)
+		if conn.Type == 1 {
+			switch strings.ToUpper(conn.Status) {
+			case "ESTABLISHED":
+				connStatsIPv4["established"]++
+			case "LISTEN":
+				connStatsIPv4["listen"]++
+			case "TIME_WAIT":
+				connStatsIPv4["time_wait"]++
+			case "CLOSE_WAIT":
+				connStatsIPv4["close_wait"]++
+			case "SYN_RECV":
+				connStatsIPv4["syn_recv"]++
+			}
 		}
 	}
 
-	systemStats.ConnectionCounts = counts
+	// Count IPv6 connection states
+	connStatsIPv6 := map[string]int{
+		"established": 0,
+		"listen":      0,
+		"time_wait":   0,
+		"close_wait":  0,
+		"syn_recv":    0,
+	}
+
+	for _, conn := range connectionsIPv6 {
+		// Only count TCP connections (Type 1 = SOCK_STREAM)
+		if conn.Type == 1 {
+			switch strings.ToUpper(conn.Status) {
+			case "ESTABLISHED":
+				connStatsIPv6["established"]++
+			case "LISTEN":
+				connStatsIPv6["listen"]++
+			case "TIME_WAIT":
+				connStatsIPv6["time_wait"]++
+			case "CLOSE_WAIT":
+				connStatsIPv6["close_wait"]++
+			case "SYN_RECV":
+				connStatsIPv6["syn_recv"]++
+			}
+		}
+	}
+
+	// Add IPv4 connection counts to Nets
+	systemStats.Nets["conn_established"] = float64(connStatsIPv4["established"])
+	systemStats.Nets["conn_listen"] = float64(connStatsIPv4["listen"])
+	systemStats.Nets["conn_timewait"] = float64(connStatsIPv4["time_wait"])
+	systemStats.Nets["conn_closewait"] = float64(connStatsIPv4["close_wait"])
+	systemStats.Nets["conn_synrecv"] = float64(connStatsIPv4["syn_recv"])
+
+	// Add IPv6 connection counts to Nets
+	systemStats.Nets["conn6_established"] = float64(connStatsIPv6["established"])
+	systemStats.Nets["conn6_listen"] = float64(connStatsIPv6["listen"])
+	systemStats.Nets["conn6_timewait"] = float64(connStatsIPv6["time_wait"])
+	systemStats.Nets["conn6_closewait"] = float64(connStatsIPv6["close_wait"])
+	systemStats.Nets["conn6_synrecv"] = float64(connStatsIPv6["syn_recv"])
 }
 
 // Returns the size of the ZFS ARC memory cache in bytes

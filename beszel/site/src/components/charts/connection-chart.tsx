@@ -15,29 +15,54 @@ export default memo(function ConnectionChart({ chartData }: { chartData: ChartDa
 
 	const dataKeys = [
 		{
-			name: t`Total`,
-			dataKey: "stats.cc.t",
+			name: t`IPv4 Established`,
+			dataKey: "stats.nets.conn_established",
 			color: "hsl(220, 70%, 50%)", // Blue
 		},
 		{
-			name: t`TCP`,
-			dataKey: "stats.cc.tcp",
+			name: t`IPv4 Listen`,
+			dataKey: "stats.nets.conn_listen",
 			color: "hsl(142, 70%, 45%)", // Green
 		},
 		{
-			name: t`UDP`,
-			dataKey: "stats.cc.udp",
+			name: t`IPv4 Time Wait`,
+			dataKey: "stats.nets.conn_timewait",
 			color: "hsl(48, 96%, 53%)", // Yellow
 		},
 		{
-			name: t`Established`,
-			dataKey: "stats.cc.e",
+			name: t`IPv4 Close Wait`,
+			dataKey: "stats.nets.conn_closewait",
 			color: "hsl(271, 81%, 56%)", // Purple
 		},
 		{
-			name: t`Listening`,
-			dataKey: "stats.cc.l",
+			name: t`IPv4 Syn Recv`,
+			dataKey: "stats.nets.conn_synrecv",
 			color: "hsl(9, 78%, 56%)", // Red
+		},
+		{
+			name: t`IPv6 Established`,
+			dataKey: "stats.nets.conn6_established",
+			color: "hsl(220, 70%, 65%)", // Light Blue
+		},
+		{
+			name: t`IPv6 Listen`,
+			dataKey: "stats.nets.conn6_listen",
+			color: "hsl(142, 70%, 60%)", // Light Green
+		},
+		{
+			name: t`IPv6 Time Wait`,
+			dataKey: "stats.nets.conn6_timewait",
+			color: "hsl(48, 96%, 68%)", // Light Yellow
+		},
+		{
+			name: t`IPv6 Close Wait`,
+			dataKey: "stats.nets.conn6_closewait",
+			color: "hsl(271, 81%, 71%)", // Light Purple
+		},
+		{
+			name: t`IPv6 Syn Recv`,
+			dataKey: "stats.nets.conn6_synrecv",
+			color: "hsl(9, 78%, 71%)", // Light Red
 		}
 	]
 

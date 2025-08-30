@@ -238,9 +238,14 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 			}
 		}
 
-		// Handle connection counts - use the latest values (most recent sample)
-		if stats.ConnectionCounts != nil {
-			sum.ConnectionCounts = stats.ConnectionCounts
+		// Handle network connection stats - use the latest values (most recent sample)
+		if stats.Nets != nil {
+			if sum.Nets == nil {
+				sum.Nets = make(map[string]float64)
+			}
+			for key, value := range stats.Nets {
+				sum.Nets[key] = value
+			}
 		}
 
 		// Set peak values

@@ -47,15 +47,7 @@ type Stats struct {
 	LoadAvg           [3]float64                       `json:"la,omitempty" cbor:"27,keyasint"`          // [1min, 5min, 15min]
 	Battery           [2]uint8                         `json:"bat,omitzero" cbor:"28,keyasint,omitzero"` // [percent, charge state]
 	MaxMem            float64                          `json:"mm,omitempty" cbor:"29,keyasint,omitempty"`
-	ConnectionCounts  *ConnectionCounts                `json:"cc,omitempty" cbor:"30,keyasint,omitempty"` // Network connection statistics
-}
-
-type ConnectionCounts struct {
-	Total       int `json:"t" cbor:"0,keyasint"`   // Total active connections
-	TCP         int `json:"tcp" cbor:"1,keyasint"` // TCP connections
-	UDP         int `json:"udp" cbor:"2,keyasint"` // UDP connections
-	Listening   int `json:"l" cbor:"3,keyasint"`   // Listening connections
-	Established int `json:"e" cbor:"4,keyasint"`   // Established connections
+	Nets              map[string]float64               `json:"nets,omitempty" cbor:"30,keyasint,omitempty"` // Network connection statistics
 }
 
 type GPUData struct {
