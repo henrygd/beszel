@@ -612,13 +612,13 @@ export default function SystemDetail({ name }: { name: string }) {
 						</div>
 					)}
 
-					{/* Total Bandwidth chart */}
+					{/* Per-Interface Cumulative Bandwidth chart */}
 					{Object.keys(latestNetworkStats ?? {}).length > 0 && (
 						<ChartCard
 							empty={dataEmpty}
 							grid={grid}
-							title={t`Total Bandwidth Usage`}
-							description={t`Cumulative network data sent and received`}
+							title={t`Cumulative Bandwidth`}
+							description={t`Total bytes sent and received per network interface since boot`}
 						>
 							{/* @ts-ignore */}
 							<TotalBandwidthChart chartData={chartData} />

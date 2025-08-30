@@ -213,7 +213,7 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.LoadAvg[2] += stats.LoadAvg[2]
 		batterySum += int(stats.Battery[0])
 		sum.Battery[1] = stats.Battery[1]
-		
+
 		if stats.NetworkInterfaces != nil {
 			if sum.NetworkInterfaces == nil {
 				sum.NetworkInterfaces = make(map[string]system.NetworkInterfaceStats, len(stats.NetworkInterfaces))
@@ -227,6 +227,13 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 				ni.NetworkRecv += value.NetworkRecv
 				ni.MaxNetworkSent += value.MaxNetworkSent
 				ni.MaxNetworkRecv += value.MaxNetworkRecv
+				// For cumulative totals, use the maximum value (most recent)
+				if value.TotalBytesSent > ni.TotalBytesSent {
+					ni.TotalBytesSent = value.TotalBytesSent
+				}
+				if value.TotalBytesRecv > ni.TotalBytesRecv {
+					ni.TotalBytesRecv = value.TotalBytesRecv
+				}
 				sum.NetworkInterfaces[key] = ni
 			}
 		}
@@ -314,7 +321,7 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.LoadAvg[1] = twoDecimals(sum.LoadAvg[1] / count)
 		sum.LoadAvg[2] = twoDecimals(sum.LoadAvg[2] / count)
 		sum.Battery[0] = uint8(batterySum / int(count))
-		
+
 		if sum.NetworkInterfaces != nil {
 			for key := range sum.NetworkInterfaces {
 				ni := sum.NetworkInterfaces[key]
