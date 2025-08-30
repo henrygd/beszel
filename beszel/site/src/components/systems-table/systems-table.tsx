@@ -256,7 +256,7 @@ export default function SystemsTable() {
 				</div>
 			</CardHeader>
 		)
-	}, [visibleColumns.length, sorting, viewMode, locale, statusFilter, totalRecords])
+	}, [visibleColumns.length, sorting, viewMode, locale, statusFilter, runningRecords, totalRecords])
 
 	return (
 		<Card>
