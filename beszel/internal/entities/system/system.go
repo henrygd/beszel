@@ -8,10 +8,12 @@ import (
 )
 
 type NetworkInterfaceStats struct {
-	NetworkSent    float64 `json:"ns"`
-	NetworkRecv    float64 `json:"nr"`
-	MaxNetworkSent float64 `json:"nsm,omitempty"`
-	MaxNetworkRecv float64 `json:"nrm,omitempty"`
+	NetworkSent     float64 `json:"ns"`
+	NetworkRecv     float64 `json:"nr"`
+	MaxNetworkSent  float64 `json:"nsm,omitempty"`
+	MaxNetworkRecv  float64 `json:"nrm,omitempty"`
+	TotalBytesSent  uint64  `json:"tbs,omitempty"` // Total bytes sent since boot
+	TotalBytesRecv  uint64  `json:"tbr,omitempty"` // Total bytes received since boot
 }
 
 type Stats struct {

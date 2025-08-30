@@ -90,6 +90,10 @@ export interface NetworkInterfaceStats {
 	nsm?: number
 	/** max network received (mb) */
 	nrm?: number
+	/** total bytes sent since boot */
+	tbs?: number
+	/** total bytes received since boot */
+	tbr?: number
 }
 
 export interface SystemStats {

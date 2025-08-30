@@ -47,6 +47,7 @@ import { lazy } from "react"
 const AreaChartDefault = lazy(() => import("../charts/area-chart"))
 const ContainerChart = lazy(() => import("../charts/container-chart"))
 const NetworkInterfaceChart = lazy(() => import("../charts/network-interface-chart"))
+const TotalBandwidthChart = lazy(() => import("../charts/total-bandwidth-chart"))
 const MemChart = lazy(() => import("../charts/mem-chart"))
 const DiskChart = lazy(() => import("../charts/disk-chart"))
 const SwapChart = lazy(() => import("../charts/swap-chart"))
@@ -609,6 +610,19 @@ export default function SystemDetail({ name }: { name: string }) {
 								<NetworkInterfaceChart chartData={chartData} />
 							</ChartCard>
 						</div>
+					)}
+
+					{/* Total Bandwidth chart */}
+					{Object.keys(latestNetworkStats ?? {}).length > 0 && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Total Bandwidth Usage`}
+							description={t`Cumulative network data sent and received`}
+						>
+							{/* @ts-ignore */}
+							<TotalBandwidthChart chartData={chartData} />
+						</ChartCard>
 					)}
 
 					{/* Swap chart */}

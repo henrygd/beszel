@@ -214,8 +214,10 @@ func (a *Agent) getSystemStats() system.Stats {
 
 			// store per-interface stats
 			systemStats.NetworkInterfaces[v.Name] = system.NetworkInterfaceStats{
-				NetworkSent: networkSentPs,
-				NetworkRecv: networkRecvPs,
+				NetworkSent:    networkSentPs,
+				NetworkRecv:    networkRecvPs,
+				TotalBytesSent: v.BytesSent,
+				TotalBytesRecv: v.BytesRecv,
 			}
 
 			// update previous stats (reuse existing struct if possible)
