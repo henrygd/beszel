@@ -14,28 +14,48 @@ jobs:
         include:
           - image: henrygd/beszel
             context: ./beszel
-            dockerfile: ./beszel/dockerfile_Hub
+            dockerfile: ./beszel/dockerfile_hub
             registry: docker.io
             username_secret: DOCKERHUB_USERNAME
             password_secret: DOCKERHUB_TOKEN
+
           - image: henrygd/beszel-agent
             context: ./beszel
-            dockerfile: ./beszel/dockerfile_Agent
+            dockerfile: ./beszel/dockerfile_agent
             registry: docker.io
             username_secret: DOCKERHUB_USERNAME
             password_secret: DOCKERHUB_TOKEN
+
+          - image: henrygd/beszel-agent-nvidia
+            context: ./beszel
+            dockerfile: ./beszel/dockerfile_agent_nvidia
+            platforms: linux/amd64
+            registry: docker.io
+            username_secret: DOCKERHUB_USERNAME
+            password_secret: DOCKERHUB_TOKEN
+
           - image: ghcr.io/${{ github.repository }}/beszel
             context: ./beszel
-            dockerfile: ./beszel/dockerfile_Hub
+            dockerfile: ./beszel/dockerfile_hub
             registry: ghcr.io
             username: ${{ github.actor }}
             password_secret: GITHUB_TOKEN
+
           - image: ghcr.io/${{ github.repository }}/beszel-agent
             context: ./beszel
-            dockerfile: ./beszel/dockerfile_Agent
+            dockerfile: ./beszel/dockerfile_agent
             registry: ghcr.io
             username: ${{ github.actor }}
             password_secret: GITHUB_TOKEN
+
+          - image: ghcr.io/${{ github.repository }}/beszel-agent-nvidia
+            context: ./beszel
+            dockerfile: ./beszel/dockerfile_agent_nvidia
+            platforms: linux/amd64
+            registry: ghcr.io
+            username: ${{ github.actor }}
+            password_secret: GITHUB_TOKEN
+
     permissions:
       contents: read
       packages: write
@@ -65,7 +85,7 @@ jobs:
         with:
           images: ${{ matrix.image }}
           tags: |
-            type=edge,enable=true
+            type=raw,value=edge
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}
@@ -73,7 +93,9 @@ jobs:
 
       # https://github.com/docker/login-action
       - name: Login to Docker Hub
-        if: github.event_name != 'pull_request'
+        env: 
+            password_secret_exists: ${{ secrets[matrix.password_secret] != '' && 'true' || 'false' }}
+        if: github.event_name != 'pull_request' && env.password_secret_exists == 'true'
         uses: docker/login-action@v3
         with:
           username: ${{ matrix.username || secrets[matrix.username_secret] }}
@@ -87,7 +109,7 @@ jobs:
         with:
           context: "${{ matrix.context }}"
           file: ${{ matrix.dockerfile }}
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
-          push: ${{ github.ref_type == 'tag' }}
+          platforms: ${{ matrix.platforms || 'linux/amd64,linux/arm64,linux/arm/v7' }}
+          push: ${{ github.ref_type == 'tag' && secrets[matrix.password_secret] != '' }}
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}

@@ -4,6 +4,8 @@ import type { Messages } from "@lingui/core"
 import languages from "@/lib/languages"
 import { detect, fromStorage, fromNavigator } from "@lingui/detect-locale"
 import { messages as enMessages } from "@/locales/en/en"
+import { BatteryState } from "./enums"
+import { t } from "@lingui/core/macro"
 
 // activates locale
 function activateLocale(locale: string, messages: Messages = enMessages) {
@@ -54,3 +56,14 @@ export function getLocale() {
 	}
 	return locale
 }
+
+////////////////////////////////////////////////////////
+
+export const batteryStateTranslations = {
+	[BatteryState.Unknown]: () => t({ message: "Unknown", comment: "Context: Battery state" }),
+	[BatteryState.Empty]: () => t({ message: "Empty", comment: "Context: Battery state" }),
+	[BatteryState.Full]: () => t({ message: "Full", comment: "Context: Battery state" }),
+	[BatteryState.Charging]: () => t({ message: "Charging", comment: "Context: Battery state" }),
+	[BatteryState.Discharging]: () => t({ message: "Discharging", comment: "Context: Battery state" }),
+	[BatteryState.Idle]: () => t({ message: "Idle", comment: "Context: Battery state" }),
+} as const

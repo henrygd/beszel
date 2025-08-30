@@ -8,14 +8,7 @@ import {
 	ChartTooltipContent,
 	xAxis,
 } from "@/components/ui/chart"
-import {
-	useYAxisWidth,
-	cn,
-	formatShortDate,
-	toFixedWithoutTrailingZeros,
-	decimalString,
-	chartMargin,
-} from "@/lib/utils"
+import { useYAxisWidth, cn, formatShortDate, toFixedFloat, decimalString, chartMargin } from "@/lib/utils"
 import { ChartData } from "@/types"
 import { memo, useMemo } from "react"
 
@@ -72,7 +65,7 @@ export default memo(function GpuPowerChart({ chartData, showLegend = true }: { c
 						domain={[0, "auto"]}
 						width={yAxisWidth}
 						tickFormatter={(value) => {
-							const val = toFixedWithoutTrailingZeros(value, 2)
+							const val = toFixedFloat(value, 2)
 							return updateYAxisWidth(val + "W")
 						}}
 						tickLine={false}

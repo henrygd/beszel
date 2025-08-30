@@ -2,15 +2,18 @@ param (
     [switch]$Elevated,
     [Parameter(Mandatory=$true)]
     [string]$Key,
+    [string]$Token = "",
+    [string]$Url = "",
     [int]$Port = 45876,
     [string]$AgentPath = "",
     [string]$NSSMPath = ""
 )
 
-# Check if key is provided or empty
+# Check if required parameters are provided
 if ([string]::IsNullOrWhiteSpace($Key)) {
     Write-Host "ERROR: SSH Key is required." -ForegroundColor Red
-    Write-Host "Usage: .\install-agent.ps1 -Key 'your-ssh-key-here' [-Port port-number]" -ForegroundColor Yellow
+    Write-Host "Usage: .\install-agent.ps1 -Key 'your-ssh-key-here' [-Token 'your-token-here'] [-Url 'your-hub-url-here'] [-Port port-number]" -ForegroundColor Yellow
+    Write-Host "Note: Token and Url are optional for backwards compatibility with older hub versions." -ForegroundColor Yellow
     exit 1
 }
 
@@ -302,6 +305,8 @@ function Install-NSSMService {
         [string]$AgentPath,
         [Parameter(Mandatory=$true)]
         [string]$Key,
+        [string]$Token = "",
+        [string]$HubUrl = "",
         [Parameter(Mandatory=$true)]
         [int]$Port,
         [string]$NSSMPath = ""
@@ -321,7 +326,24 @@ function Install-NSSMService {
     # Check if service already exists
     $existingService = Get-Service -Name "beszel-agent" -ErrorAction SilentlyContinue
     if ($existingService) {
-        Write-Host "Service already exists. Stopping and removing existing service..."
+        Write-Host "Service already exists. Checking if path update is needed..."
+        
+        # Get current service path 
+        try {
+            $currentPath = & $nssmCommand get beszel-agent Application
+            if ($LASTEXITCODE -eq 0 -and $currentPath.Trim() -eq $AgentPath) {
+                Write-Host "Service already configured with correct path. Skipping service recreation." -ForegroundColor Green
+                return
+            }
+            
+            Write-Host "Service path needs updating. Stopping and removing existing service..."
+            Write-Host "  Current path: $($currentPath.Trim())"
+            Write-Host "  New path: $AgentPath"
+        } catch {
+            Write-Host "Could not retrieve current service path, will recreate service: $($_.Exception.Message)" -ForegroundColor Yellow
+            Write-Host "Service path needs updating. Stopping and removing existing service..."
+        }
+        
         try {
             & $nssmCommand stop beszel-agent
             & $nssmCommand remove beszel-agent confirm
@@ -337,6 +359,8 @@ function Install-NSSMService {
     
     Write-Host "Configuring service environment variables..."
     & $nssmCommand set beszel-agent AppEnvironmentExtra "+KEY=$Key"
+    & $nssmCommand set beszel-agent AppEnvironmentExtra "+TOKEN=$Token"
+    & $nssmCommand set beszel-agent AppEnvironmentExtra "+HUB_URL=$HubUrl"
     & $nssmCommand set beszel-agent AppEnvironmentExtra "+PORT=$Port"
     
     # Configure log files
@@ -533,6 +557,8 @@ try {
             "-File", "`"$PSCommandPath`"",
             "-Elevated",
             "-Key", "`"$Key`"",
+            "-Token", "`"$Token`"",
+            "-Url", "`"$Url`"",
             "-Port", $Port,
             "-AgentPath", "`"$AgentPath`""
         )
@@ -551,7 +577,7 @@ try {
     # Third: If we have admin rights, install service and configure firewall
     if ($isAdmin -or $Elevated) {
         # Install the service
-        Install-NSSMService -AgentPath $AgentPath -Key $Key -Port $Port -NSSMPath $NSSMPath
+        Install-NSSMService -AgentPath $AgentPath -Key $Key -Token $Token -HubUrl $Url -Port $Port -NSSMPath $NSSMPath
         
         # Configure firewall
         Configure-Firewall -Port $Port

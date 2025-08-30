@@ -1,22 +1,25 @@
-import { t } from "@lingui/core/macro";
+import { t } from "@lingui/core/macro"
 
-import { Area, AreaChart, CartesianGrid, Line, YAxis } from "recharts"
+import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
 import {
 	useYAxisWidth,
 	cn,
 	formatShortDate,
-	toFixedWithoutTrailingZeros,
 	decimalString,
 	chartMargin,
-	getSizeAndUnit,
+	formatBytes,
+	toFixedFloat,
 } from "@/lib/utils"
 import { ChartData } from "@/types"
 import { memo } from "react"
+import { $userSettings } from "@/lib/stores"
+import { useStore } from "@nanostores/react"
 
 type SwapChartProps = { chartData: ChartData, showLegend?: boolean }
 export default memo(function SwapChart({ chartData, showLegend = true }: SwapChartProps) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
+	const userSettings = useStore($userSettings)
 
 	if (chartData.systemStats.length === 0) {
 		return null
@@ -46,13 +49,13 @@ export default memo(function SwapChart({ chartData, showLegend = true }: SwapCha
 						direction="ltr"
 						orientation={chartData.orientation}
 						className="tracking-tighter"
-						domain={[0, () => toFixedWithoutTrailingZeros(swapTotal, 2)]}
+						domain={[0, () => toFixedFloat(swapTotal, 2)]}
 						width={yAxisWidth}
 						tickLine={false}
 						axisLine={false}
 						tickFormatter={(value) => {
-							const { v, u } = getSizeAndUnit(value)
-							return updateYAxisWidth(toFixedWithoutTrailingZeros(v, 2) + u)
+							const { value: convertedValue, unit } = formatBytes(value * 1024, false, userSettings.unitDisk, true)
+							return updateYAxisWidth(toFixedFloat(convertedValue, value >= 10 ? 0 : 1) + " " + unit)
 						}}
 					/>
 					{xAxis(chartData)}
@@ -62,9 +65,10 @@ export default memo(function SwapChart({ chartData, showLegend = true }: SwapCha
 						content={
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
-								contentFormatter={(item) => {
-									const { v, u } = getSizeAndUnit(item.value)
-									return decimalString(v) + u
+								contentFormatter={({ value }) => {
+									// mem values are supplied as GB
+									const { value: convertedValue, unit } = formatBytes(value * 1024, false, userSettings.unitDisk, true)
+									return decimalString(convertedValue, convertedValue >= 100 ? 1 : 2) + " " + unit
 								}}
 							/>
 						}
@@ -73,9 +77,9 @@ export default memo(function SwapChart({ chartData, showLegend = true }: SwapCha
 						dataKey="stats.su"
 						name={t`Used`}
 						type="monotoneX"
-						fill="hsl(var(--chart-2))"
+						fill="var(--chart-2)"
 						fillOpacity={0.4}
-						stroke="hsl(var(--chart-2))"
+						stroke="var(--chart-2)"
 						isAnimationActive={false}
 						stackId="swap"
 					/>
@@ -83,9 +87,9 @@ export default memo(function SwapChart({ chartData, showLegend = true }: SwapCha
 						dataKey="stats.sc"
 						name={t`Cached`}
 						type="monotoneX"
-						fill="hsl(var(--chart-3))"
+						fill="var(--chart-3)"
 						fillOpacity={0.3}
-						stroke="hsl(var(--chart-3))"
+						stroke="var(--chart-3)"
 						isAnimationActive={false}
 						stackId="swap"
 					/>

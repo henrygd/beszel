@@ -5,7 +5,7 @@ is_alpine() {
 }
 
 is_openwrt() {
-  cat /etc/os-release | grep -q "OpenWrt"
+  grep -qi "OpenWrt" /etc/os-release
 }
 
 # If SELinux is enabled, set the context of the binary
@@ -73,7 +73,10 @@ GITHUB_URL="https://github.com"
 GITHUB_API_URL="https://api.github.com" # not blocked in China currently
 GITHUB_PROXY_URL=""
 KEY=""
+TOKEN=""
+HUB_URL=""
 AUTO_UPDATE_FLAG="" # empty string means prompt, "true" means auto-enable, "false" means skip
+VERSION="latest"
 
 # Check for help flag
 case "$1" in
@@ -83,6 +86,9 @@ case "$1" in
   printf "Options: \n"
   printf "  -k                    : SSH key (required, or interactive if not provided)\n"
   printf "  -p                    : Port (default: $PORT)\n"
+  printf "  -t                    : Token (optional for backwards compatibility)\n"
+  printf "  -url                  : Hub URL (optional for backwards compatibility)\n"
+  printf "  -v, --version         : Version to install (default: latest)\n"
   printf "  -u                    : Uninstall Beszel Agent\n"
   printf "  --auto-update [VALUE] : Control automatic daily updates\n"
   printf "                          VALUE can be true (enable) or false (disable). If not specified, will prompt.\n"
@@ -129,6 +135,18 @@ while [ $# -gt 0 ]; do
   -p)
     shift
     PORT="$1"
+    ;;
+  -t)
+    shift
+    TOKEN="$1"
+    ;;
+  -url)
+    shift
+    HUB_URL="$1"
+    ;;
+  -v | --version)
+    shift
+    VERSION="$1"
     ;;
   -u)
     UNINSTALL=true
@@ -209,8 +227,8 @@ if [ "$UNINSTALL" = true ]; then
     rm -f /var/log/beszel-agent.log /var/log/beszel-agent.err
   elif is_openwrt; then
     echo "Stopping and disabling the agent service..."
-    service beszel-agent stop
-    service beszel-agent disable
+    /etc/init.d/beszel-agent stop
+    /etc/init.d/beszel-agent disable
 
     echo "Removing the OpenWRT service files..."
     rm -f /etc/init.d/beszel-agent
@@ -270,13 +288,13 @@ package_installed() {
 }
 
 # Check for package manager and install necessary packages if not installed
-if is_alpine; then
-  if ! package_installed tar || ! package_installed curl || ! package_installed coreutils; then
+if package_installed apk; then
+  if ! package_installed tar || ! package_installed curl || ! package_installed sha256sum; then
     apk update
     apk add tar curl coreutils shadow
   fi
-elif is_openwrt; then
-  if ! package_installed tar || ! package_installed curl || ! package_installed coreutils; then
+elif package_installed opkg; then
+  if ! package_installed tar || ! package_installed curl || ! package_installed sha256sum; then
     opkg update
     opkg install tar curl coreutils
   fi
@@ -303,6 +321,9 @@ if [ -z "$KEY" ]; then
   read KEY
 fi
 
+# TOKEN and HUB_URL are optional for backwards compatibility - no interactive prompts
+# They will be set as empty environment variables if not provided
+
 # Verify checksum
 if command -v sha256sum >/dev/null; then
   CHECK_CMD="sha256sum"
@@ -314,11 +335,10 @@ else
 fi
 
 # Create a dedicated user for the service if it doesn't exist
+echo "Creating a dedicated user for the Beszel Agent service..."
 if is_alpine; then
   if ! id -u beszel >/dev/null 2>&1; then
-    echo "Creating a dedicated group for the Beszel Agent service..."
     addgroup beszel
-    echo "Creating a dedicated user for the Beszel Agent service..."
     adduser -S -D -H -s /sbin/nologin -G beszel beszel
   fi
   # Add the user to the docker group to allow access to the Docker socket if group docker exists
@@ -326,10 +346,37 @@ if is_alpine; then
     echo "Adding beszel to docker group"
     usermod -aG docker beszel
   fi
+  
+elif is_openwrt; then
+  # Create beszel group first if it doesn't exist (check /etc/group directly)
+  if ! grep -q "^beszel:" /etc/group >/dev/null 2>&1; then
+    echo "beszel:x:999:" >> /etc/group
+  fi
+  
+  # Create beszel user if it doesn't exist (double-check to prevent duplicates)
+  if ! id -u beszel >/dev/null 2>&1 && ! grep -q "^beszel:" /etc/passwd >/dev/null 2>&1; then
+    echo "beszel:x:999:999::/nonexistent:/bin/false" >> /etc/passwd
+  fi
+  
+  # Add the user to the docker group if docker group exists and user is not already in it
+  if grep -q "^docker:" /etc/group >/dev/null 2>&1; then
+    echo "Adding beszel to docker group"
+    # Check if beszel is already in docker group
+    if ! grep "^docker:" /etc/group | grep -q "beszel"; then
+      # Add beszel to docker group by modifying /etc/group
+      # Handle both cases: group with existing members and group without members
+      if grep "^docker:" /etc/group | grep -q ":.*:.*$"; then
+        # Group has existing members, append with comma
+        sed -i 's/^docker:\([^:]*:[^:]*:\)\(.*\)$/docker:\1\2,beszel/' /etc/group
+      else
+        # Group has no members, just append
+        sed -i 's/^docker:\([^:]*:[^:]*:\)$/docker:\1beszel/' /etc/group
+      fi
+    fi
+  fi
 
 else
   if ! id -u beszel >/dev/null 2>&1; then
-    echo "Creating a dedicated user for the Beszel Agent service..."
     useradd --system --home-dir /nonexistent --shell /bin/false beszel
   fi
   # Add the user to the docker group to allow access to the Docker socket if group docker exists
@@ -353,25 +400,33 @@ echo "Downloading and installing the agent..."
 OS=$(uname -s | sed -e 'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/')
 ARCH=$(uname -m | sed -e 's/x86_64/amd64/' -e 's/armv6l/arm/' -e 's/armv7l/arm/' -e 's/aarch64/arm64/')
 FILE_NAME="beszel-agent_${OS}_${ARCH}.tar.gz"
-LATEST_VERSION=$(curl -s "$GITHUB_API_URL""/repos/henrygd/beszel/releases/latest" | grep -o '"tag_name": "v[^"]*"' | cut -d'"' -f4 | tr -d 'v')
-if [ -z "$LATEST_VERSION" ]; then
-  echo "Failed to get latest version"
-  exit 1
+
+# Determine version to install
+if [ "$VERSION" = "latest" ]; then
+  INSTALL_VERSION=$(curl -s "$GITHUB_API_URL""/repos/henrygd/beszel/releases/latest" | grep -o '"tag_name": "v[^"]*"' | cut -d'"' -f4 | tr -d 'v')
+  if [ -z "$INSTALL_VERSION" ]; then
+    echo "Failed to get latest version"
+    exit 1
+  fi
+else
+  INSTALL_VERSION="$VERSION"
+  # Remove 'v' prefix if present
+  INSTALL_VERSION=$(echo "$INSTALL_VERSION" | sed 's/^v//')
 fi
 
-echo "Downloading and installing agent version ${LATEST_VERSION} from ${GITHUB_URL} ..."
+echo "Downloading and installing agent version ${INSTALL_VERSION} from ${GITHUB_URL} ..."
 
 # Download checksums file
 TEMP_DIR=$(mktemp -d)
 cd "$TEMP_DIR" || exit 1
-CHECKSUM=$(curl -sL "$GITHUB_URL/henrygd/beszel/releases/download/v${LATEST_VERSION}/beszel_${LATEST_VERSION}_checksums.txt" | grep "$FILE_NAME" | cut -d' ' -f1)
+CHECKSUM=$(curl -sL "$GITHUB_URL/henrygd/beszel/releases/download/v${INSTALL_VERSION}/beszel_${INSTALL_VERSION}_checksums.txt" | grep "$FILE_NAME" | cut -d' ' -f1)
 if [ -z "$CHECKSUM" ] || ! echo "$CHECKSUM" | grep -qE "^[a-fA-F0-9]{64}$"; then
   echo "Failed to get checksum or invalid checksum format"
   exit 1
 fi
 
-if ! curl -#L "$GITHUB_URL/henrygd/beszel/releases/download/v${LATEST_VERSION}/$FILE_NAME" -o "$FILE_NAME"; then
-  echo "Failed to download the agent from ""$GITHUB_URL/henrygd/beszel/releases/download/v${LATEST_VERSION}/$FILE_NAME"
+if ! curl -#L "$GITHUB_URL/henrygd/beszel/releases/download/v${INSTALL_VERSION}/$FILE_NAME" -o "$FILE_NAME"; then
+  echo "Failed to download the agent from ""$GITHUB_URL/henrygd/beszel/releases/download/v${INSTALL_VERSION}/$FILE_NAME"
   rm -rf "$TEMP_DIR"
   exit 1
 fi
@@ -397,6 +452,11 @@ set_selinux_context
 
 # Cleanup
 rm -rf "$TEMP_DIR"
+
+# Make sure /etc/machine-id exists for persistent fingerprint
+if [ ! -f /etc/machine-id ]; then
+  cat /proc/sys/kernel/random/uuid | tr -d '-' > /etc/machine-id
+fi
 
 # Check for NVIDIA GPUs and grant device permissions for systemd service
 detect_nvidia_devices() {
@@ -430,6 +490,8 @@ start_pre() {
 
 export PORT="$PORT"
 export KEY="$KEY"
+export TOKEN="$TOKEN"
+export HUB_URL="$HUB_URL"
 
 depend() {
     need net
@@ -480,9 +542,7 @@ depend() {
 
 start() {
     ebegin "Checking for beszel-agent updates"
-    if /opt/beszel-agent/beszel-agent update | grep -q "Successfully updated"; then
-        rc-service beszel-agent restart
-    fi
+    /opt/beszel-agent/beszel-agent update
     eend $?
 }
 EOF
@@ -515,8 +575,7 @@ start_service() {
     procd_set_param command /opt/beszel-agent/beszel-agent
     procd_set_param user beszel
     procd_set_param pidfile /var/run/beszel-agent.pid
-    procd_set_param env PORT="$PORT"
-    procd_set_param env KEY="$KEY"
+    procd_set_param env PORT="$PORT" KEY="$KEY" TOKEN="$TOKEN" HUB_URL="$HUB_URL"
     procd_set_param stdout 1
     procd_set_param stderr 1
     procd_close_instance
@@ -540,10 +599,10 @@ EOF
 
   # Enable the service
   chmod +x /etc/init.d/beszel-agent
-  service beszel-agent enable
+  /etc/init.d/beszel-agent enable
 
   # Start the service
-  service beszel-agent restart
+  /etc/init.d/beszel-agent restart
 
   # Auto-update service for OpenWRT using a crontab job
   if [ "$AUTO_UPDATE_FLAG" = "true" ]; then
@@ -571,9 +630,9 @@ EOF
   esac
 
   # Check service status
-  if ! service beszel-agent running >/dev/null 2>&1; then
+  if ! /etc/init.d/beszel-agent running >/dev/null 2>&1; then
     echo "Error: The Beszel Agent service is not running."
-    service beszel-agent status
+    /etc/init.d/beszel-agent status
     exit 1
   fi
 
@@ -593,6 +652,8 @@ After=network-online.target
 [Service]
 Environment="PORT=$PORT"
 Environment="KEY=$KEY"
+Environment="TOKEN=$TOKEN"
+Environment="HUB_URL=$HUB_URL"
 # Environment="EXTRA_FILESYSTEMS=sdb"
 ExecStart=/opt/beszel-agent/beszel-agent
 User=beszel
@@ -611,7 +672,6 @@ ProtectKernelLogs=yes
 ProtectSystem=strict
 RemoveIPC=yes
 RestrictSUIDSGID=true
-SystemCallArchitectures=native
 
 $(if [ -n "$NVIDIA_DEVICES" ]; then printf "%b" "# NVIDIA device permissions\n${NVIDIA_DEVICES}"; fi)
 
@@ -625,36 +685,7 @@ EOF
   systemctl enable beszel-agent.service
   systemctl start beszel-agent.service
 
-  # Create the update script
-  echo "Creating the update script..."
-  cat >/opt/beszel-agent/run-update.sh <<'EOF'
-#!/bin/sh
 
-set -e
-
-if /opt/beszel-agent/beszel-agent update | grep -q "Successfully updated"; then
-    echo "Update found, checking SELinux context."
-    if command -v getenforce >/dev/null 2>&1 && [ "$(getenforce)" != "Disabled" ]; then
-        echo "SELinux enabled, applying context..."
-        if command -v chcon >/dev/null 2>&1; then
-            chcon -t bin_t /opt/beszel-agent/beszel-agent || echo "Warning: chcon command failed to apply context."
-        fi
-        if command -v restorecon >/dev/null 2>&1; then
-            restorecon -v /opt/beszel-agent/beszel-agent >/dev/null 2>&1 || echo "Warning: restorecon command failed to apply context."
-        fi
-    fi
-    echo "Restarting beszel-agent service..."
-    systemctl restart beszel-agent
-    echo "Update process finished."
-else
-    echo "No updates found or applied."
-fi
-
-exit 0
-EOF
-
-  chown root:root /opt/beszel-agent/run-update.sh
-  chmod +x /opt/beszel-agent/run-update.sh
 
   # Prompt for auto-update setup
   if [ "$AUTO_UPDATE_FLAG" = "true" ]; then
@@ -679,7 +710,7 @@ Wants=beszel-agent.service
 
 [Service]
 Type=oneshot
-ExecStart=/opt/beszel-agent/run-update.sh
+ExecStart=/opt/beszel-agent/beszel-agent update
 EOF
 
     # Create systemd timer for the daily update

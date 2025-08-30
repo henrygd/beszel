@@ -7,11 +7,12 @@ import {
 	decimalString,
 	toFixedFloat,
 	chartMargin,
-	getSizeAndUnit,
+	formatBytes,
 } from "@/lib/utils"
 import { ChartData } from "@/types"
 import { memo } from "react"
 import { useLingui } from "@lingui/react/macro"
+import { Unit } from "@/lib/enums"
 
 type DiskChartProps = { dataKey: string, diskSize: number, chartData: ChartData, showLegend?: boolean }
 export default memo(function DiskChart({ dataKey, diskSize, chartData, showLegend = true }: DiskChartProps) {
@@ -60,9 +61,9 @@ export default memo(function DiskChart({ dataKey, diskSize, chartData, showLegen
 						minTickGap={6}
 						tickLine={false}
 						axisLine={false}
-						tickFormatter={(value) => {
-							const { v, u } = getSizeAndUnit(value)
-							return updateYAxisWidth(toFixedFloat(v, 2) + u)
+						tickFormatter={(val) => {
+							const { value, unit } = formatBytes(val * 1024, false, Unit.Bytes, true)
+							return updateYAxisWidth(toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit)
 						}}
 					/>
 					{xAxis(chartData)}
@@ -73,8 +74,8 @@ export default memo(function DiskChart({ dataKey, diskSize, chartData, showLegen
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 								contentFormatter={({ value }) => {
-									const { v, u } = getSizeAndUnit(value)
-									return decimalString(v) + u
+									const { value: convertedValue, unit } = formatBytes(value * 1024, false, Unit.Bytes, true)
+									return decimalString(convertedValue) + " " + unit
 								}}
 							/>
 						}
@@ -83,9 +84,9 @@ export default memo(function DiskChart({ dataKey, diskSize, chartData, showLegen
 						dataKey={dataKey}
 						name={t`Used`}
 						type="monotoneX"
-						fill="hsl(var(--chart-4))"
+						fill="var(--chart-4)"
 						fillOpacity={0.4}
-						stroke="hsl(var(--chart-4))"
+						stroke="var(--chart-4)"
 						isAnimationActive={false}
 						stackId="disk"
 					/>

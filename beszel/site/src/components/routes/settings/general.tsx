@@ -12,7 +12,8 @@ import languages from "@/lib/languages"
 import { dynamicActivate } from "@/lib/i18n"
 import { useLingui } from "@lingui/react/macro"
 import { Switch } from "@/components/ui/switch"
-// import { setLang } from "@/lib/i18n"
+import { Input } from "@/components/ui/input"
+import { Unit } from "@/lib/enums"
 
 export default function SettingsProfilePage({ userSettings }: { userSettings: UserSettings }) {
 	const [isLoading, setIsLoading] = useState(false)
@@ -41,8 +42,8 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 			</div>
 			<Separator className="my-4" />
 			<form onSubmit={handleSubmit} className="space-y-5">
-				<div className="space-y-2">
-					<div className="mb-4">
+				<div className="grid gap-2">
+					<div className="mb-2">
 						<h3 className="mb-1 text-lg font-medium flex items-center gap-2">
 							<LanguagesIcon className="h-4 w-4" />
 							<Trans>Language</Trans>
@@ -75,8 +76,8 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 					</Select>
 				</div>
 				<Separator />
-				<div className="space-y-2">
-					<div className="mb-4">
+				<div className="grid gap-2">
+					<div className="mb-2">
 						<h3 className="mb-1 text-lg font-medium">
 							<Trans>Chart options</Trans>
 						</h3>
@@ -117,6 +118,126 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 					<p className="text-[0.8rem] text-muted-foreground">
 						<Trans>Toggle the display of chart legends below each chart.</Trans>
 					</p>
+				</div>
+				<Separator />
+				<div className="grid gap-2">
+					<div className="mb-2">
+						<h3 className="mb-1 text-lg font-medium">
+							<Trans comment="Temperature / network units">Unit preferences</Trans>
+						</h3>
+						<p className="text-sm text-muted-foreground leading-relaxed">
+							<Trans>Change display units for metrics.</Trans>
+						</p>
+					</div>
+					<div className="grid sm:grid-cols-3 gap-4">
+						<div className="grid gap-2">
+							<Label className="block" htmlFor="unitTemp">
+								<Trans>Temperature unit</Trans>
+							</Label>
+							<Select
+								name="unitTemp"
+								key={userSettings.unitTemp}
+								defaultValue={userSettings.unitTemp?.toString() || String(Unit.Celsius)}
+							>
+								<SelectTrigger id="unitTemp">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value={String(Unit.Celsius)}>
+										<Trans>Celsius (°C)</Trans>
+									</SelectItem>
+									<SelectItem value={String(Unit.Fahrenheit)}>
+										<Trans>Fahrenheit (°F)</Trans>
+									</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+						<div className="grid gap-2">
+							<Label className="block" htmlFor="unitNet">
+								<Trans comment="Context: Bytes or bits">Network unit</Trans>
+							</Label>
+							<Select
+								name="unitNet"
+								key={userSettings.unitNet}
+								defaultValue={userSettings.unitNet?.toString() ?? String(Unit.Bytes)}
+							>
+								<SelectTrigger id="unitNet">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value={String(Unit.Bytes)}>
+										<Trans>Bytes (KB/s, MB/s, GB/s)</Trans>
+									</SelectItem>
+									<SelectItem value={String(Unit.Bits)}>
+										<Trans>Bits (Kbps, Mbps, Gbps)</Trans>
+									</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+						<div className="grid gap-2">
+							<Label className="block" htmlFor="unitDisk">
+								<Trans>Disk unit</Trans>
+							</Label>
+							<Select
+								name="unitDisk"
+								key={userSettings.unitDisk}
+								defaultValue={userSettings.unitDisk?.toString() ?? String(Unit.Bytes)}
+							>
+								<SelectTrigger id="unitDisk">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value={String(Unit.Bytes)}>
+										<Trans>Bytes (KB/s, MB/s, GB/s)</Trans>
+									</SelectItem>
+									<SelectItem value={String(Unit.Bits)}>
+										<Trans>Bits (Kbps, Mbps, Gbps)</Trans>
+									</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+					</div>
+				</div>
+				<Separator />
+				<div className="grid gap-2">
+					<div className="mb-2">
+						<h3 className="mb-1 text-lg font-medium">
+							<Trans>Warning thresholds</Trans>
+						</h3>
+						<p className="text-sm text-muted-foreground leading-relaxed">
+							<Trans>Set percentage thresholds for meter colors.</Trans>
+						</p>
+					</div>
+					<div className="grid grid-cols-2 lg:grid-cols-3 gap-4 items-end">
+						<div className="grid gap-2">
+							<Label htmlFor="colorWarn">
+								<Trans>Warning (%)</Trans>
+							</Label>
+							<Input
+								id="colorWarn"
+								name="colorWarn"
+								type="number"
+								min={1}
+								max={100}
+								className="min-w-24"
+								defaultValue={userSettings.colorWarn ?? 65}
+							/>
+						</div>
+						<div className="grid gap-1">
+							<Label htmlFor="colorCrit">
+								<Trans>Critical (%)</Trans>
+							</Label>
+							<Input
+								id="colorCrit"
+								name="colorCrit"
+								type="number"
+								min={1}
+								max={100}
+								className="min-w-24"
+								defaultValue={userSettings.colorCrit ?? 90}
+							/>
+						</div>
+					</div>
 				</div>
 				<Separator />
 				<Button type="submit" className="flex items-center gap-1.5 disabled:opacity-100" disabled={isLoading}>

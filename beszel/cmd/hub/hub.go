@@ -45,11 +45,13 @@ func getBaseApp() *pocketbase.PocketBase {
 	baseApp.RootCmd.Use = beszel.AppName
 	baseApp.RootCmd.Short = ""
 	// add update command
-	baseApp.RootCmd.AddCommand(&cobra.Command{
+	updateCmd := &cobra.Command{
 		Use:   "update",
 		Short: "Update " + beszel.AppName + " to the latest version",
 		Run:   hub.Update,
-	})
+	}
+	updateCmd.Flags().Bool("china-mirrors", false, "Use mirror (gh.beszel.dev) instead of GitHub")
+	baseApp.RootCmd.AddCommand(updateCmd)
 	// add health command
 	baseApp.RootCmd.AddCommand(newHealthCmd())
 

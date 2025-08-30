@@ -2,7 +2,6 @@ import { t } from "@lingui/core/macro"
 import { Plural, Trans } from "@lingui/react/macro"
 import {
 	$systems,
-	pb,
 	$chartTime,
 	$containerFilter,
 	$userSettings,
@@ -11,8 +10,8 @@ import {
 	$temperatureFilter,
 } from "@/lib/stores"
 import { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord } from "@/types"
-import { ChartType, Os } from "@/lib/enums"
-import React, { lazy, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { ChartType, Unit, Os, SystemStatus } from "@/lib/enums"
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState, type JSX } from "react"
 import { Card, CardHeader, CardTitle, CardDescription } from "../ui/card"
 import { useStore } from "@nanostores/react"
 import Spinner from "../spinner"
@@ -21,13 +20,15 @@ import ChartTimeSelect from "../charts/chart-time-select"
 import {
 	chartTimeData,
 	cn,
+	decimalString,
+	formatBytes,
 	getHostDisplayValue,
-	getPbTimestamp,
-	getSizeAndUnit,
 	listen,
+	parseSemVer,
 	toFixedFloat,
 	useLocalStorage,
 } from "@/lib/utils"
+import { getPbTimestamp, pb } from "@/lib/api"
 import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import { Button } from "../ui/button"
@@ -39,14 +40,15 @@ import { timeTicks } from "d3-time"
 import { useLingui } from "@lingui/react/macro"
 import { $router, navigate } from "../router"
 import { getPagePath } from "@nanostores/router"
-
-const AreaChartDefault = lazy(() => import("../charts/area-chart"))
-const ContainerChart = lazy(() => import("../charts/container-chart"))
-const MemChart = lazy(() => import("../charts/mem-chart"))
-const DiskChart = lazy(() => import("../charts/disk-chart"))
-const SwapChart = lazy(() => import("../charts/swap-chart"))
-const TemperatureChart = lazy(() => import("../charts/temperature-chart"))
-const GpuPowerChart = lazy(() => import("../charts/gpu-power-chart"))
+import { batteryStateTranslations } from "@/lib/i18n"
+import AreaChartDefault from "@/components/charts/area-chart"
+import ContainerChart from "@/components/charts/container-chart"
+import MemChart from "@/components/charts/mem-chart"
+import DiskChart from "@/components/charts/disk-chart"
+import SwapChart from "@/components/charts/swap-chart"
+import TemperatureChart from "@/components/charts/temperature-chart"
+import GpuPowerChart from "@/components/charts/gpu-power-chart"
+import LoadAverageChart from "@/components/charts/load-average-chart"
 
 const cache = new Map<string, any>()
 
@@ -189,6 +191,7 @@ export default function SystemDetail({ name }: { name: string }) {
 			chartTime,
 			orientation: direction === "rtl" ? "right" : "left",
 			...getTimeData(chartTime, lastCreated),
+			agentVersion: parseSemVer(system?.info?.v),
 		}
 	}, [systemStats, containerData, direction])
 
@@ -282,9 +285,11 @@ export default function SystemDetail({ name }: { name: string }) {
 				value: system.info.k,
 			},
 		}
-
 		let uptime: React.ReactNode
-		if (system.info.u < 172800) {
+		if (system.info.u < 3600) {
+			const mins = Math.trunc(system.info.u / 60)
+			uptime = <Plural value={mins} one="# minute" other="# minutes" />
+		} else if (system.info.u < 172800) {
 			const hours = Math.trunc(system.info.u / 3600)
 			uptime = <Plural value={hours} one="# hour" other="# hours" />
 		} else {
@@ -312,7 +317,7 @@ export default function SystemDetail({ name }: { name: string }) {
 			Icon: any
 			hide?: boolean
 		}[]
-	}, [system.info])
+	}, [system.info, t])
 
 	/** Space for tooltip if more than 12 containers */
 	useEffect(() => {
@@ -369,6 +374,7 @@ export default function SystemDetail({ name }: { name: string }) {
 
 	// select field for switching between avg and max values
 	const maxValSelect = isLongerChart ? <SelectAvgMax max={maxValues} /> : null
+	const showMax = chartTime !== "1h" && maxValues
 
 	// if no data, show empty message
 	const dataEmpty = !chartLoading && chartData.systemStats.length === 0
@@ -377,15 +383,15 @@ export default function SystemDetail({ name }: { name: string }) {
 	const hasGpuPowerData = lastGpuVals.some((gpu) => gpu.p !== undefined)
 
 	let translatedStatus: string = system.status
-	if (system.status === "up") {
+	if (system.status === SystemStatus.Up) {
 		translatedStatus = t({ message: "Up", comment: "Context: System is up" })
-	} else if (system.status === "down") {
+	} else if (system.status === SystemStatus.Down) {
 		translatedStatus = t({ message: "Down", comment: "Context: System is down" })
 	}
 
 	return (
 		<>
-			<div id="chartwrap" className="grid gap-4 mb-10 overflow-x-clip">
+			<div id="chartwrap" className="grid gap-4 mb-14 overflow-x-clip">
 				{/* system info */}
 				<Card>
 					<div className="grid xl:flex gap-4 px-4 sm:px-6 pt-3 sm:pt-4 pb-5">
@@ -394,7 +400,7 @@ export default function SystemDetail({ name }: { name: string }) {
 							<div className="flex flex-wrap items-center gap-3 gap-y-2 text-sm opacity-90">
 								<div className="capitalize flex gap-2 items-center">
 									<span className={cn("relative flex h-3 w-3")}>
-										{system.status === "up" && (
+										{system.status === SystemStatus.Up && (
 											<span
 												className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
 												style={{ animationDuration: "1.5s" }}
@@ -402,10 +408,10 @@ export default function SystemDetail({ name }: { name: string }) {
 										)}
 										<span
 											className={cn("relative inline-flex rounded-full h-3 w-3", {
-												"bg-green-500": system.status === "up",
-												"bg-red-500": system.status === "down",
-												"bg-primary/40": system.status === "paused",
-												"bg-yellow-500": system.status === "pending",
+												"bg-green-500": system.status === SystemStatus.Up,
+												"bg-red-500": system.status === SystemStatus.Down,
+												"bg-primary/40": system.status === SystemStatus.Paused,
+												"bg-yellow-500": system.status === SystemStatus.Pending,
 											})}
 										></span>
 									</span>
@@ -451,9 +457,9 @@ export default function SystemDetail({ name }: { name: string }) {
 											onClick={() => setGrid(!grid)}
 										>
 											{grid ? (
-												<LayoutGridIcon className="h-[1.2rem] w-[1.2rem] opacity-85" />
+												<LayoutGridIcon className="h-[1.2rem] w-[1.2rem] opacity-75" />
 											) : (
-												<Rows className="h-[1.3rem] w-[1.3rem] opacity-85" />
+												<Rows className="h-[1.3rem] w-[1.3rem] opacity-75" />
 											)}
 										</Button>
 									</TooltipTrigger>
@@ -493,8 +499,9 @@ export default function SystemDetail({ name }: { name: string }) {
 						grid={grid}
 						title={t`Memory Usage`}
 						description={t`Precise utilization at the recorded time`}
+						cornerEl={maxValSelect}
 					>
-						<MemChart chartData={chartData} showLegend={userSettings.showChartLegend !== false} />
+						<MemChart chartData={chartData} showLegend={userSettings.showChartLegend !== false} showMax={showMax} />
 					</ChartCard>
 
 					{containerFilterBar && (
@@ -564,6 +571,18 @@ export default function SystemDetail({ name }: { name: string }) {
 						</ChartCard>
 					)}
 
+					{/* Load Average chart */}
+					{chartData.agentVersion?.minor >= 12 && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Load Average`}
+							description={t`System load averages over time`}
+						>
+							<LoadAverageChart chartData={chartData} />
+						</ChartCard>
+					)}
+
 					{/* Temperature chart */}
 					{systemStats.at(-1)?.stats.t && (
 						<ChartCard
@@ -574,6 +593,35 @@ export default function SystemDetail({ name }: { name: string }) {
 							cornerEl={<FilterBar store={$temperatureFilter} />}
 						>
 							<TemperatureChart chartData={chartData} showLegend={userSettings.showChartLegend !== false} />
+						</ChartCard>
+					)}
+
+					{/* Battery chart */}
+					{systemStats.at(-1)?.stats.bat && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Battery`}
+							description={`${t({
+								message: "Current state",
+								comment: "Context: Battery state",
+							})}: ${batteryStateTranslations[systemStats.at(-1)?.stats.bat![1] ?? 0]()}`}
+						>
+							<AreaChartDefault
+								chartData={chartData}
+								maxToggled={maxValues}
+								dataPoints={[
+									{
+										label: t`Charge`,
+										dataKey: ({ stats }) => stats?.bat?.[0],
+										color: 1,
+										opacity: 0.35,
+									},
+								]}
+								domain={[0, 100]}
+								tickFormatter={(val) => `${val}%`}
+								contentFormatter={({ value }) => `${value}%`}
+							/>
 						</ChartCard>
 					)}
 
@@ -595,10 +643,6 @@ export default function SystemDetail({ name }: { name: string }) {
 					<div className="grid xl:grid-cols-2 gap-4">
 						{Object.keys(systemStats.at(-1)?.stats.g ?? {}).map((id) => {
 							const gpu = systemStats.at(-1)?.stats.g?.[id] as GPUData
-							const sizeFormatter = (value: number, decimals?: number) => {
-								const { v, u } = getSizeAndUnit(value, false)
-								return toFixedFloat(v, decimals || 1) + u
-							}
 							return (
 								<div key={id} className="contents">
 									<ChartCard
@@ -617,10 +661,23 @@ export default function SystemDetail({ name }: { name: string }) {
 									>
 										<AreaChartDefault
 											chartData={chartData}
-											chartName={`g.${id}.mu`}
+											dataPoints={[
+												{
+													label: t`Usage`,
+													dataKey: ({ stats }) => stats?.g?.[id]?.mu ?? 0,
+													color: 2,
+													opacity: 0.25,
+												},
+											]}
 											max={gpu.mt}
-											tickFormatter={sizeFormatter}
-											contentFormatter={(value) => sizeFormatter(value, 2)}
+											tickFormatter={(val) => {
+												const { value, unit } = formatBytes(val, false, Unit.Bytes, true)
+												return toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit
+											}}
+											contentFormatter={({ value }) => {
+												const { value: convertedValue, unit } = formatBytes(value, false, Unit.Bytes, true)
+												return decimalString(convertedValue) + " " + unit
+											}}
 											showLegend={userSettings.showChartLegend !== false}
 										/>
 									</ChartCard>
@@ -759,10 +816,10 @@ function ChartCard({
 
 	return (
 		<Card className={cn("pb-2 sm:pb-4 odd:last-of-type:col-span-full", { "col-span-full": !grid })} ref={ref}>
-			<CardHeader className="pb-5 pt-4 relative space-y-1 max-sm:py-3 max-sm:px-4">
+			<CardHeader className="pb-5 pt-4 gap-1 relative max-sm:py-3 max-sm:px-4">
 				<CardTitle className="text-xl sm:text-2xl">{title}</CardTitle>
 				<CardDescription>{description}</CardDescription>
-				{cornerEl && <div className="relative py-1 block sm:w-44 sm:absolute sm:top-2.5 sm:end-3.5">{cornerEl}</div>}
+				{cornerEl && <div className="relative py-1 block sm:w-44 sm:absolute sm:top-3.5 sm:end-3.5">{cornerEl}</div>}
 			</CardHeader>
 			<div className="ps-0 w-[calc(100%-1.5em)] h-48 md:h-52 relative group">
 				{

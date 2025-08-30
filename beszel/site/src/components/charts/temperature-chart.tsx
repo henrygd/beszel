@@ -12,18 +12,20 @@ import {
 	useYAxisWidth,
 	cn,
 	formatShortDate,
-	toFixedWithoutTrailingZeros,
-	decimalString,
+	toFixedFloat,
 	chartMargin,
+	formatTemperature,
+	decimalString,
 } from "@/lib/utils"
 import { ChartData } from "@/types"
 import { memo, useMemo } from "react"
-import { $temperatureFilter } from "@/lib/stores"
+import { $temperatureFilter, $userSettings } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 
 type TemperatureChartProps = { chartData: ChartData, showLegend?: boolean }
 export default memo(function TemperatureChart({ chartData, showLegend = true }: TemperatureChartProps) {
 	const filter = useStore($temperatureFilter)
+	const userSettings = useStore($userSettings)
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
 	if (chartData.systemStats.length === 0) {
@@ -73,9 +75,9 @@ export default memo(function TemperatureChart({ chartData, showLegend = true }: 
 						className="tracking-tighter"
 						domain={[0, "auto"]}
 						width={yAxisWidth}
-						tickFormatter={(value) => {
-							const val = toFixedWithoutTrailingZeros(value, 2)
-							return updateYAxisWidth(val + " °C")
+						tickFormatter={(val) => {
+							const { value, unit } = formatTemperature(val, userSettings.unitTemp)
+							return updateYAxisWidth(toFixedFloat(value, 2) + " " + unit)
 						}}
 						tickLine={false}
 						axisLine={false}
@@ -89,7 +91,10 @@ export default memo(function TemperatureChart({ chartData, showLegend = true }: 
 						content={
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
-								contentFormatter={(item) => decimalString(item.value) + " °C"}
+								contentFormatter={(item) => {
+									const { value, unit } = formatTemperature(item.value, userSettings.unitTemp)
+									return decimalString(value) + " " + unit
+								}}
 								filter={filter}
 							/>
 						}
