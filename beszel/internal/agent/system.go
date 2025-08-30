@@ -244,13 +244,13 @@ func (a *Agent) getSystemStats() system.Stats {
 			}
 		}
 		
-		// Calculate total bandwidth in bytes per second from accumulated MB/s values
-		msElapsed := uint64(time.Since(a.netIoStats.Time).Milliseconds())
+		// Calculate total bandwidth in bytes per second 
+		msElapsed := uint64(time.Since(a.globalNetIoStats.Time).Milliseconds())
 		if msElapsed == 0 {
 			msElapsed = 1 // prevent division by zero
 		}
-		bytesSentPerSecond := (totalBytesSent - a.netIoStats.BytesSent) * 1000 / msElapsed
-		bytesRecvPerSecond := (totalBytesRecv - a.netIoStats.BytesRecv) * 1000 / msElapsed
+		bytesSentPerSecond := (totalBytesSent - a.globalNetIoStats.BytesSent) * 1000 / msElapsed
+		bytesRecvPerSecond := (totalBytesRecv - a.globalNetIoStats.BytesRecv) * 1000 / msElapsed
 		
 		// add check for issue (#150) where sent is a massive number
 		if totalSent > 10_000 || totalRecv > 10_000 {
@@ -263,9 +263,9 @@ func (a *Agent) getSystemStats() system.Stats {
 			systemStats.Bandwidth[0] = bytesSentPerSecond
 			systemStats.Bandwidth[1] = bytesRecvPerSecond
 			// update global netIoStats for bandwidth calculation
-			a.netIoStats.BytesSent = totalBytesSent
-			a.netIoStats.BytesRecv = totalBytesRecv
-			a.netIoStats.Time = now
+			a.globalNetIoStats.BytesSent = totalBytesSent
+			a.globalNetIoStats.BytesRecv = totalBytesRecv
+			a.globalNetIoStats.Time = now
 		}
 	}
 

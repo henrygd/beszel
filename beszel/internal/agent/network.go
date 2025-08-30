@@ -14,6 +14,8 @@ func (a *Agent) initializeNetIoStats() {
 	a.netInterfaces = make(map[string]struct{}, 0)
 	// reset network I/O stats per interface
 	a.netIoStats = make(map[string]system.NetIoStats, 0)
+	// reset global network I/O stats
+	a.globalNetIoStats = system.NetIoStats{}
 
 	// map of network interface names passed in via NICS env var
 	var nicsMap map[string]struct{}
@@ -28,6 +30,8 @@ func (a *Agent) initializeNetIoStats() {
 	// get intial network I/O stats
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
 		now := time.Now()
+		var totalBytesSent, totalBytesRecv uint64
+		
 		for _, v := range netIO {
 			switch {
 			// skip if nics exists and the interface is not in the list
@@ -51,6 +55,16 @@ func (a *Agent) initializeNetIoStats() {
 				Time:      now,
 				Name:      v.Name,
 			}
+			// accumulate for global stats
+			totalBytesSent += v.BytesSent
+			totalBytesRecv += v.BytesRecv
+		}
+		
+		// initialize global network stats
+		a.globalNetIoStats = system.NetIoStats{
+			BytesRecv: totalBytesRecv,
+			BytesSent: totalBytesSent,
+			Time:      now,
 		}
 	}
 }
