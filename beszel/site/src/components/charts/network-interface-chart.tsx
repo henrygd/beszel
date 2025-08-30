@@ -9,9 +9,15 @@ import { $networkInterfaceFilter, $userSettings } from "@/lib/stores"
 import { Unit } from "@/lib/enums"
 
 const getNestedValue = (path: string, max = false, data: any): number | null => {
-	return `stats.ni.${path}${max ? "m" : ""}`
-		.split(".")
-		.reduce((acc: any, key: string) => acc?.[key] ?? (data.stats?.cpum ? 0 : null), data)
+	// path format is like "eth0.ns" or "eth0.nr"
+	// need to access data.stats.ni[interface][property]
+	const parts = path.split('.')
+	if (parts.length !== 2) return null
+	
+	const [interfaceName, property] = parts
+	const propertyKey = property + (max ? "m" : "")
+	
+	return data?.stats?.ni?.[interfaceName]?.[propertyKey] ?? null
 }
 
 export default memo(function NetworkInterfaceChart({
