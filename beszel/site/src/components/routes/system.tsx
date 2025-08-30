@@ -626,6 +626,18 @@ export default function SystemDetail({ name }: { name: string }) {
 						</ChartCard>
 					)}
 
+					{/* TCP Connection States chart */}
+					{systemStats.at(-1)?.stats.nets && Object.keys(systemStats.at(-1)?.stats.nets ?? {}).length > 0 && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`TCP Connection States`}
+							description={t`TCP connection states for IPv4 and IPv6`}
+						>
+							<ConnectionChart chartData={chartData} />
+						</ChartCard>
+					)}
+
 					{/* Swap chart */}
 					{(systemStats.at(-1)?.stats.su ?? 0) > 0 && (
 						<ChartCard
@@ -647,18 +659,6 @@ export default function SystemDetail({ name }: { name: string }) {
 							description={t`System load averages over time`}
 						>
 							<LoadAverageChart chartData={chartData} />
-						</ChartCard>
-					)}
-
-					{/* Connection Counts chart */}
-					{systemStats.at(-1)?.stats.nets && Object.keys(systemStats.at(-1)?.stats.nets ?? {}).length > 0 && (
-						<ChartCard
-							empty={dataEmpty}
-							grid={grid}
-							title={t`TCP Connection States`}
-							description={t`TCP connection states for IPv4 and IPv6`}
-						>
-							<ConnectionChart chartData={chartData} />
 						</ChartCard>
 					)}
 
