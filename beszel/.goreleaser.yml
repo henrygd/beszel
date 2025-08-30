@@ -38,6 +38,7 @@ builds:
       - mips64
       - riscv64
       - mipsle
+      - mips
       - ppc64le
     gomips:
       - hardfloat
@@ -52,6 +53,9 @@ builds:
         gomips: softfloat
       - goos: linux
         goarch: mipsle
+        gomips: hardfloat
+      - goos: linux
+        goarch: mips
         gomips: hardfloat
       - goos: windows
         goarch: arm
