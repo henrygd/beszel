@@ -4,7 +4,7 @@ import {
 	useYAxisWidth,
 	cn,
 	formatShortDate,
-	toFixedWithoutTrailingZeros,
+	toFixedFloat,
 	decimalString,
 	chartMargin,
 } from "@/lib/utils"
@@ -128,7 +128,7 @@ export default memo(function AreaChartDefault({
 								if (tickFormatter) {
 									val = tickFormatter(value, index)
 								} else {
-									val = toFixedWithoutTrailingZeros(value, 2) + (unit || "")
+									val = toFixedFloat(value, 2) + (unit || "")
 								}
 								return updateYAxisWidth(val)
 							}}
@@ -167,7 +167,7 @@ export default memo(function AreaChartDefault({
 							})
 							:
 							dataKeys.map((key, i) => {
-								const color = `hsl(var(--chart-${key[2]}))`
+								const color = `var(--chart-${key[2]})`
 								return (
 									<Area
 										key={i}
