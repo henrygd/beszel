@@ -11,18 +11,21 @@ import { useState } from "react"
 import languages from "@/lib/languages"
 import { dynamicActivate } from "@/lib/i18n"
 import { useLingui } from "@lingui/react/macro"
+import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 import { Unit } from "@/lib/enums"
 
 export default function SettingsProfilePage({ userSettings }: { userSettings: UserSettings }) {
 	const [isLoading, setIsLoading] = useState(false)
 	const { i18n } = useLingui()
+	const [showChartLegend, setShowChartLegend] = useState(userSettings.showChartLegend ?? true)
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault()
 		setIsLoading(true)
 		const formData = new FormData(e.target as HTMLFormElement)
 		const data = Object.fromEntries(formData) as Partial<UserSettings>
+		data.showChartLegend = showChartLegend
 		await saveSettings(data)
 		setIsLoading(false)
 	}
@@ -99,6 +102,21 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 					</Select>
 					<p className="text-[0.8rem] text-muted-foreground">
 						<Trans>Sets the default time range for charts when a system is viewed.</Trans>
+					</p>
+					<Separator />
+					<div className="flex items-center gap-3 mt-2">
+						<Switch
+							id="showChartLegend"
+							checked={showChartLegend}
+							onCheckedChange={setShowChartLegend}
+							className="data-[state=checked]:bg-primary"
+						/>
+						<Label htmlFor="showChartLegend" className="mb-0">
+							<Trans>Show chart legend</Trans>
+						</Label>
+					</div>
+					<p className="text-[0.8rem] text-muted-foreground">
+						<Trans>Toggle the display of chart legends below each chart.</Trans>
 					</p>
 				</div>
 				<Separator />

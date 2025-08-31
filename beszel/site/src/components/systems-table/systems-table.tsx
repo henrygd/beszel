@@ -33,6 +33,8 @@ import {
 	ArrowUpIcon,
 	Settings2Icon,
 	EyeIcon,
+	PenBoxIcon,
+	ChevronDownIcon,
 	FilterIcon,
 } from "lucide-react"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
@@ -44,6 +46,9 @@ import { useLingui, Trans } from "@lingui/react/macro"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Input } from "@/components/ui/input"
 import { getPagePath } from "@nanostores/router"
+import { SystemDialog } from "../add-system"
+import { Dialog } from "../ui/dialog"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import SystemsTableColumns, { ActionsButton, IndicatorDot } from "./systems-table-columns"
 import AlertButton from "../alerts/alert-button"
 import { SystemStatus } from "@/lib/enums"

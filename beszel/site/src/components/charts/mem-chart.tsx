@@ -4,19 +4,23 @@ import { useYAxisWidth, cn, decimalString, formatShortDate, chartMargin, formatB
 import { memo } from "react"
 import { ChartData } from "@/types"
 import { useLingui } from "@lingui/react/macro"
+import { ChartLegend, ChartLegendContent } from "@/components/ui/chart"
 import { Unit } from "@/lib/enums"
 
-export default memo(function MemChart({ chartData, showMax }: { chartData: ChartData; showMax: boolean }) {
+type MemChartProps = { chartData: ChartData, showLegend?: boolean, showMax?: boolean }
+export default memo(function MemChart({ chartData, showLegend = true, showMax = false }: MemChartProps) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { t } = useLingui()
 
 	const totalMem = toFixedFloat(chartData.systemStats.at(-1)?.stats.m ?? 0, 1)
+
 
 	// console.log('rendered at', new Date())
 
 	if (chartData.systemStats.length === 0) {
 		return null
 	}
+
 
 	return (
 		<div>
@@ -80,9 +84,9 @@ export default memo(function MemChart({ chartData, showMax }: { chartData: Chart
 						order={2}
 						dataKey={({ stats }) => (showMax ? null : stats?.mz)}
 						type="monotoneX"
-						fill="hsla(175 60% 45% / 0.8)"
-						fillOpacity={0.5}
-						stroke="hsla(175 60% 45% / 0.8)"
+						fill="var(--chart-3)"
+						fillOpacity={0.4}
+						stroke="var(--chart-3)"
 						stackId="1"
 						isAnimationActive={false}
 					/>
@@ -92,13 +96,13 @@ export default memo(function MemChart({ chartData, showMax }: { chartData: Chart
 						order={1}
 						dataKey={({ stats }) => (showMax ? null : stats?.mb)}
 						type="monotoneX"
-						fill="hsla(160 60% 45% / 0.5)"
-						fillOpacity={0.4}
-						stroke="hsla(160 60% 45% / 0.5)"
+						fill="var(--chart-1)"
+						fillOpacity={0.3}
+						stroke="var(--chart-1)"
 						stackId="1"
 						isAnimationActive={false}
 					/>
-					{/* <ChartLegend content={<ChartLegendContent />} /> */}
+					{showLegend && <ChartLegend content={<ChartLegendContent />} wrapperStyle={{ marginTop: 16 }} />}
 				</AreaChart>
 			</ChartContainer>
 		</div>

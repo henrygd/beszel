@@ -1,20 +1,21 @@
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
-import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
-import { useYAxisWidth, cn, formatShortDate, decimalString, chartMargin, formatBytes, toFixedFloat } from "@/lib/utils"
+import { ChartContainer, ChartTooltip, ChartLegend, ChartLegendContent, ChartTooltipContent, xAxis } from "@/components/ui/chart"
+import {
+	useYAxisWidth,
+	cn,
+	formatShortDate,
+	decimalString,
+	toFixedFloat,
+	chartMargin,
+	formatBytes,
+} from "@/lib/utils"
 import { ChartData } from "@/types"
 import { memo } from "react"
 import { useLingui } from "@lingui/react/macro"
 import { Unit } from "@/lib/enums"
 
-export default memo(function DiskChart({
-	dataKey,
-	diskSize,
-	chartData,
-}: {
-	dataKey: string
-	diskSize: number
-	chartData: ChartData
-}) {
+type DiskChartProps = { dataKey: string, diskSize: number, chartData: ChartData, showLegend?: boolean }
+export default memo(function DiskChart({ dataKey, diskSize, chartData, showLegend = true }: DiskChartProps) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { t } = useLingui()
 
@@ -22,6 +23,20 @@ export default memo(function DiskChart({
 	if (diskSize >= 100) {
 		diskSize = Math.round(diskSize)
 	}
+
+	// Compute free disk for each data point
+	const diskDataWithFree = chartData.systemStats.map((point) => {
+		const used = point.stats && typeof point.stats.du === 'number' ? point.stats.du : 0
+		const total = point.stats && typeof point.stats.d === 'number' ? point.stats.d : diskSize
+		const free = total - used
+		return {
+			...point,
+			stats: {
+				...point.stats,
+				df: free > 0 ? free : 0, // df = disk free
+			},
+		}
+	})
 
 	if (chartData.systemStats.length === 0) {
 		return null
@@ -34,7 +49,7 @@ export default memo(function DiskChart({
 					"opacity-100": yAxisWidth,
 				})}
 			>
-				<AreaChart accessibilityLayer data={chartData.systemStats} margin={chartMargin}>
+				<AreaChart accessibilityLayer data={diskDataWithFree} margin={chartMargin}>
 					<CartesianGrid vertical={false} />
 					<YAxis
 						direction="ltr"
@@ -67,14 +82,15 @@ export default memo(function DiskChart({
 					/>
 					<Area
 						dataKey={dataKey}
-						name={t`Disk Usage`}
+						name={t`Used`}
 						type="monotoneX"
 						fill="var(--chart-4)"
 						fillOpacity={0.4}
 						stroke="var(--chart-4)"
-						// animationDuration={1200}
 						isAnimationActive={false}
+						stackId="disk"
 					/>
+					{showLegend && <ChartLegend content={<ChartLegendContent />} wrapperStyle={{ marginTop: 16 }} />}
 				</AreaChart>
 			</ChartContainer>
 		</div>

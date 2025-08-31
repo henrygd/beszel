@@ -10,6 +10,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/shirou/gopsutil/v4/cpu"
@@ -18,6 +19,7 @@ import (
 	"github.com/shirou/gopsutil/v4/load"
 	"github.com/shirou/gopsutil/v4/mem"
 	psutilNet "github.com/shirou/gopsutil/v4/net"
+	"github.com/shirou/gopsutil/v4/process"
 )
 
 // Sets initial / non-changing values about the host system
@@ -67,6 +69,69 @@ func (a *Agent) initializeSystemInfo() {
 	}
 }
 
+// getProcessStateCounts returns count of processes by state
+func getProcessStateCounts() map[string]int {
+	states := make(map[string]int)
+	pids, err := process.Pids()
+	if err != nil {
+		slog.Debug("Error getting process PIDs", "err", err)
+		return states
+	}
+
+	for _, pid := range pids {
+		proc, err := process.NewProcess(pid)
+		if err != nil {
+			continue // Process might have disappeared
+		}
+		
+		status, err := proc.Status()
+		if err != nil {
+			continue
+		}
+		
+		// Status returns a slice, we want the first element
+		if len(status) == 0 {
+			continue
+		}
+		
+		// Normalize status names - be more comprehensive with state detection
+		statusLower := strings.ToLower(status[0])
+		switch {
+		case statusLower == "r" || strings.Contains(statusLower, "running"):
+			states["running"]++
+		case statusLower == "s" || strings.Contains(statusLower, "sleep") || strings.Contains(statusLower, "interruptible"):
+			states["sleeping"]++
+		case statusLower == "d" || strings.Contains(statusLower, "disk") || strings.Contains(statusLower, "uninterruptible"):
+			states["disk_sleep"]++
+		case statusLower == "z" || strings.Contains(statusLower, "zombie") || strings.Contains(statusLower, "defunct"):
+			states["zombie"]++
+		case statusLower == "t" || strings.Contains(statusLower, "stop") || strings.Contains(statusLower, "traced"):
+			states["stopped"]++
+		case statusLower == "i" || strings.Contains(statusLower, "idle"):
+			states["idle"]++
+		case statusLower == "w" || strings.Contains(statusLower, "wait"):
+			states["sleeping"]++ // Waiting processes are essentially sleeping
+		default:
+			states["other"]++
+		}
+	}
+	
+	return states
+}
+
+// getInodeStats returns inode usage for filesystems
+func getInodeStats(mountpoint string) (used, total uint64, err error) {
+	var stat syscall.Statfs_t
+	err = syscall.Statfs(mountpoint, &stat)
+	if err != nil {
+		return 0, 0, err
+	}
+	
+	total = stat.Files
+	used = total - stat.Ffree
+	return used, total, nil
+}
+
 // Returns current info, stats about the host system
 func (a *Agent) getSystemStats() system.Stats {
 	systemStats := system.Stats{}
@@ -83,7 +148,86 @@ func (a *Agent) getSystemStats() system.Stats {
 	} else if len(cpuPct) > 0 {
 		systemStats.Cpu = twoDecimals(cpuPct[0])
 	}
+	// detailed cpu times
+	if cpuTimes, err := cpu.Times(false); err == nil && len(cpuTimes) > 0 {
+		// Get the first CPU (total across all cores)
+		currentCpu := cpuTimes[0]
 
+		if len(a.prevCpuTimes) > 0 {
+			prevCpu := a.prevCpuTimes[0]
+
+			// Calculate deltas
+			totalDelta := currentCpu.Total() - prevCpu.Total()
+			if totalDelta > 0 {
+				userDelta := currentCpu.User - prevCpu.User
+				systemDelta := currentCpu.System - prevCpu.System
+				iowaitDelta := currentCpu.Iowait - prevCpu.Iowait
+				stealDelta := currentCpu.Steal - prevCpu.Steal
+
+				// Calculate percentages
+				systemStats.CpuUser = twoDecimals((userDelta / totalDelta) * 100)
+				systemStats.CpuSystem = twoDecimals((systemDelta / totalDelta) * 100)
+				systemStats.CpuIowait = twoDecimals((iowaitDelta / totalDelta) * 100)
+				systemStats.CpuSteal = twoDecimals((stealDelta / totalDelta) * 100)
+			}
+		} else {
+			// First run, initialize with zeros
+			systemStats.CpuUser = 0
+			systemStats.CpuSystem = 0
+			systemStats.CpuIowait = 0
+			systemStats.CpuSteal = 0
+		}
+
+		// Store current times for next iteration
+		a.prevCpuTimes = cpuTimes
+	} else {
+		// If we can't get CPU times, set all detailed metrics to 0
+		systemStats.CpuUser = 0
+		systemStats.CpuSystem = 0
+		systemStats.CpuIowait = 0
+		systemStats.CpuSteal = 0
+		if err != nil {
+			slog.Debug("Error getting CPU times", "err", err)
+		}
+	}
+
+	// per-core cpu times
+	if perCoreTimes, err := cpu.Times(true); err == nil && len(perCoreTimes) > 0 {
+		systemStats.CpuCores = make(map[string]system.CpuCoreStats)
+
+		for i, currentCore := range perCoreTimes {
+			coreId := currentCore.CPU
+			coreStats := system.CpuCoreStats{}
+
+			if len(a.prevPerCoreTimes) > i {
+				prevCore := a.prevPerCoreTimes[i]
+
+				// Calculate deltas
+				totalDelta := currentCore.Total() - prevCore.Total()
+				if totalDelta > 0 {
+					userDelta := currentCore.User - prevCore.User
+					systemDelta := currentCore.System - prevCore.System
+					iowaitDelta := currentCore.Iowait - prevCore.Iowait
+					stealDelta := currentCore.Steal - prevCore.Steal
+
+					// Calculate percentages
+					coreStats.CpuUser = twoDecimals((userDelta / totalDelta) * 100)
+					coreStats.CpuSystem = twoDecimals((systemDelta / totalDelta) * 100)
+					coreStats.CpuIowait = twoDecimals((iowaitDelta / totalDelta) * 100)
+					coreStats.CpuSteal = twoDecimals((stealDelta / totalDelta) * 100)
+				}
+			}
+
+			systemStats.CpuCores[coreId] = coreStats
+		}
+
+		// Store current per-core times for next iteration
+		a.prevPerCoreTimes = perCoreTimes
+	} else {
+		if err != nil {
+			slog.Debug("Error getting per-core CPU times", "err", err)
+		}
+	}
 	// load average
 	if avgstat, err := load.Avg(); err == nil {
 		systemStats.LoadAvg[0] = avgstat.Load1
@@ -99,6 +243,8 @@ func (a *Agent) getSystemStats() system.Stats {
 		// swap
 		systemStats.Swap = bytesToGigabytes(v.SwapTotal)
 		systemStats.SwapUsed = bytesToGigabytes(v.SwapTotal - v.SwapFree - v.SwapCached)
+		systemStats.SwapTotal = bytesToGigabytes(v.SwapTotal)
+		systemStats.SwapCached = bytesToGigabytes(v.SwapCached)
 		// cache + buffers value for default mem calculation
 		cacheBuff := v.Total - v.Free - v.Used
 		// htop memory calculation overrides
@@ -272,6 +418,30 @@ func (a *Agent) getSystemStats() system.Stats {
 	// TODO: in future release, remove MB bandwidth values in favor of bytes
 	a.systemInfo.Bandwidth = twoDecimals(systemStats.NetworkSent + systemStats.NetworkRecv)
 	a.systemInfo.BandwidthBytes = systemStats.Bandwidth[0] + systemStats.Bandwidth[1]
+	
+	// process states
+	systemStats.ProcessStates = getProcessStateCounts()
+	
+	// inode stats for filesystems
+	for _, stats := range a.fsStats {
+		if inodeUsed, inodeTotal, err := getInodeStats(stats.Mountpoint); err == nil {
+			stats.InodeUsed = inodeUsed
+			stats.InodeTotal = inodeTotal
+			if inodeTotal > 0 {
+				stats.InodePct = float64(inodeUsed) / float64(inodeTotal) * 100
+			}
+			
+			// Update root filesystem inode stats
+			if stats.Root {
+				systemStats.InodeUsed = inodeUsed
+				systemStats.InodeTotal = inodeTotal
+				systemStats.InodePct = stats.InodePct
+			}
+		} else {
+			slog.Debug("Error getting inode stats", "mountpoint", stats.Mountpoint, "err", err)
+		}
+	}
+	
 	slog.Debug("sysinfo", "data", a.systemInfo)
 
 	return systemStats
