@@ -59,7 +59,7 @@ export default function SystemsTable() {
 	const { i18n, t } = useLingui()
 	const [filter, setFilter] = useState<string>()
 	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
-	const [sorting, setSorting] = useState<SortingState>([{ id: "system", desc: false }])
+	const [sorting, setSorting] = useLocalStorage<SortingState>("sortMode",[{ id: "system", desc: false }])
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>("cols", {})
 	const [viewMode, setViewMode] = useLocalStorage<ViewMode>(
@@ -77,6 +77,14 @@ export default function SystemsTable() {
 		}
 		return data.filter((system) => system.status === statusFilter)
 	}, [data, statusFilter])
+
+	const runningRecords = useMemo(() => {
+		return data.filter((record) => record.status === "up").length
+	}, [data])
+
+	const totalRecords = useMemo(() => {
+		return data.length
+	}, [data])
 
 	useEffect(() => {
 		if (filter !== undefined) {
@@ -121,9 +129,10 @@ export default function SystemsTable() {
 					<div className="px-2 sm:px-1">
 						<CardTitle className="mb-2.5">
 							<Trans>All Systems</Trans>
-						</CardTitle>
-						<CardDescription>
-							<Trans>Updated in real time. Click on a system to view information.</Trans>
+							</CardTitle>
+						<CardDescription className="flex">
+							<Trans>Click on a system to view information - {runningRecords} / {totalRecords}</Trans>
+							<p className={"ml-2 text-" + (runningRecords === totalRecords ? "emerald" : "red") + "-600"}>Online</p>
 						</CardDescription>
 					</div>
 
@@ -252,7 +261,7 @@ export default function SystemsTable() {
 				</div>
 			</CardHeader>
 		)
-	}, [visibleColumns.length, sorting, viewMode, locale, statusFilter])
+	}, [visibleColumns.length, sorting, viewMode, locale, statusFilter, runningRecords, totalRecords])
 
 	return (
 		<Card>
