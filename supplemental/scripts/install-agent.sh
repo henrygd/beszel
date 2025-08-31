@@ -542,7 +542,9 @@ depend() {
 
 start() {
     ebegin "Checking for beszel-agent updates"
-    /opt/beszel-agent/beszel-agent update
+    if /opt/beszel-agent/beszel-agent update | grep -q "Successfully updated"; then
+        rc-service beszel-agent restart
+    fi
     eend $?
 }
 EOF
@@ -551,7 +553,12 @@ EOF
     rc-update add beszel-agent-update default
     rc-service beszel-agent-update start
 
-    printf "\nAutomatic daily updates have been enabled.\n"
+    # Create cron job to run the update service daily at midnight
+    if ! crontab -u root -l 2>/dev/null | grep -q "beszel-agent-update"; then
+      (crontab -u root -l 2>/dev/null; echo "0 0 * * * /sbin/rc-service beszel-agent-update start >/dev/null 2>&1") | crontab -u root -
+    fi
+
+    printf "\nAutomatic daily updates have been enabled via cron job.\n"
     ;;
   esac
 
