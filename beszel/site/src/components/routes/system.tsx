@@ -8,6 +8,7 @@ import {
 	$direction,
 	$maxValues,
 	$temperatureFilter,
+	$cpuViewMode,
 } from "@/lib/stores"
 import { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord } from "@/types"
 import { ChartType, Unit, Os, SystemStatus } from "@/lib/enums"
@@ -49,6 +50,7 @@ import SwapChart from "@/components/charts/swap-chart"
 import TemperatureChart from "@/components/charts/temperature-chart"
 import GpuPowerChart from "@/components/charts/gpu-power-chart"
 import LoadAverageChart from "@/components/charts/load-average-chart"
+import CpuChart from "@/components/charts/cpu-chart"
 
 const cache = new Map<string, any>()
 
@@ -477,9 +479,9 @@ export default function SystemDetail({ name }: { name: string }) {
 						grid={grid}
 						title={t`CPU Usage`}
 						description={t`Average system-wide CPU utilization`}
-						cornerEl={maxValSelect}
+						cornerEl={<div className="flex gap-2"><SelectCpuView />{maxValSelect}</div>}
 					>
-						<AreaChartDefault chartData={chartData} chartName="CPU Usage" maxToggled={maxValues} unit="%" showLegend={userSettings.showChartLegend !== false} />
+						<CpuChart chartData={chartData} maxToggled={maxValues} showLegend={userSettings.showChartLegend !== false} />
 					</ChartCard>
 
 					{containerFilterBar && (
@@ -791,6 +793,26 @@ const SelectAvgMax = memo(({ max }: { max: boolean }) => {
 				</SelectItem>
 				<SelectItem key="max" value="max">
 					<Trans comment="Chart select field. Please try to keep this short.">Max 1 min</Trans>
+				</SelectItem>
+			</SelectContent>
+		</Select>
+	)
+})
+
+const SelectCpuView = memo(() => {
+	const cpuViewMode = useStore($cpuViewMode)
+	return (
+		<Select value={cpuViewMode} onValueChange={(e) => $cpuViewMode.set(e as "total" | "per-core")}>
+			<SelectTrigger className="relative ps-10 pe-5">
+				<CpuIcon className="h-4 w-4 absolute start-4 top-1/2 -translate-y-1/2 opacity-85" />
+				<SelectValue />
+			</SelectTrigger>
+			<SelectContent>
+				<SelectItem key="total" value="total">
+					<Trans>Total</Trans>
+				</SelectItem>
+				<SelectItem key="per-core" value="per-core">
+					<Trans>Per Core</Trans>
 				</SelectItem>
 			</SelectContent>
 		</Select>

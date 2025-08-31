@@ -125,6 +125,44 @@ func (a *Agent) getSystemStats() system.Stats {
 			slog.Debug("Error getting CPU times", "err", err)
 		}
 	}
+
+	// per-core cpu times
+	if perCoreTimes, err := cpu.Times(true); err == nil && len(perCoreTimes) > 0 {
+		systemStats.CpuCores = make(map[string]system.CpuCoreStats)
+
+		for i, currentCore := range perCoreTimes {
+			coreId := currentCore.CPU
+			coreStats := system.CpuCoreStats{}
+
+			if len(a.prevPerCoreTimes) > i {
+				prevCore := a.prevPerCoreTimes[i]
+
+				// Calculate deltas
+				totalDelta := currentCore.Total() - prevCore.Total()
+				if totalDelta > 0 {
+					userDelta := currentCore.User - prevCore.User
+					systemDelta := currentCore.System - prevCore.System
+					iowaitDelta := currentCore.Iowait - prevCore.Iowait
+					stealDelta := currentCore.Steal - prevCore.Steal
+
+					// Calculate percentages
+					coreStats.CpuUser = twoDecimals((userDelta / totalDelta) * 100)
+					coreStats.CpuSystem = twoDecimals((systemDelta / totalDelta) * 100)
+					coreStats.CpuIowait = twoDecimals((iowaitDelta / totalDelta) * 100)
+					coreStats.CpuSteal = twoDecimals((stealDelta / totalDelta) * 100)
+				}
+			}
+
+			systemStats.CpuCores[coreId] = coreStats
+		}
+
+		// Store current per-core times for next iteration
+		a.prevPerCoreTimes = perCoreTimes
+	} else {
+		if err != nil {
+			slog.Debug("Error getting per-core CPU times", "err", err)
+		}
+	}
 	// load average
 	if avgstat, err := load.Avg(); err == nil {
 		systemStats.LoadAvg[0] = avgstat.Load1

@@ -34,6 +34,7 @@ type Agent struct {
 	gpuManager        *GPUManager                // Manages GPU data
 	cache             *SessionCache              // Cache for system stats based on primary session ID
 	prevCpuTimes      []cpu.TimesStat            // Previous CPU times for calculating detailed metrics
+	prevPerCoreTimes  []cpu.TimesStat            // Previous per-core CPU times for per-core metrics
 	connectionManager *ConnectionManager         // Channel to signal connection events
 	server            *ssh.Server                // SSH server
 	dataDir           string                     // Directory for persisting data

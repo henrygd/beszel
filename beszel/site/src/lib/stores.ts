@@ -48,6 +48,9 @@ export const $containerFilter = atom("")
 /** Temperature chart filter */
 export const $temperatureFilter = atom("")
 
+/** CPU chart view mode: total or per-core */
+export const $cpuViewMode = atom<"total" | "per-core">("total")
+
 /** Fallback copy to clipboard dialog content */
 export const $copyContent = atom("")
 

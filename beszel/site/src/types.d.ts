@@ -94,6 +94,8 @@ export interface SystemStats {
 	cpui?: number
 	/** cpu steal percent */
 	cpusl?: number
+	/** per-core cpu stats */
+	cpuc?: Record<string, CpuCoreStats>
 	// TODO: remove these in future release in favor of la
 	/** load average 1 minute */
 	l1?: number
@@ -174,6 +176,17 @@ export interface GPUData {
 	u: number
 	/** power (w) */
 	p?: number
+}
+
+export interface CpuCoreStats {
+	/** cpu user percent */
+	u: number
+	/** cpu system percent */
+	s: number
+	/** cpu iowait percent */
+	i: number
+	/** cpu steal percent */
+	st: number
 }
 
 export interface ExtraFsStats {

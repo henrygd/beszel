@@ -14,6 +14,7 @@ type Stats struct {
 	CpuSystem      float64             `json:"cpus" cbor:"32,keyasint"`
 	CpuIowait      float64             `json:"cpui" cbor:"33,keyasint"`
 	CpuSteal       float64             `json:"cpusl" cbor:"34,keyasint"`
+	CpuCores       map[string]CpuCoreStats `json:"cpuc,omitempty" cbor:"37,keyasint,omitempty"`
 	Mem            float64             `json:"m" cbor:"2,keyasint"`
 	MemUsed        float64             `json:"mu" cbor:"3,keyasint"`
 	MemPct         float64             `json:"mp" cbor:"4,keyasint"`
@@ -56,6 +57,13 @@ type GPUData struct {
 	Usage       float64 `json:"u" cbor:"3,keyasint"`
 	Power       float64 `json:"p,omitempty" cbor:"4,keyasint,omitempty"`
 	Count       float64 `json:"-"`
+}
+
+type CpuCoreStats struct {
+	CpuUser   float64 `json:"u" cbor:"0,keyasint"`
+	CpuSystem float64 `json:"s" cbor:"1,keyasint"`
+	CpuIowait float64 `json:"i" cbor:"2,keyasint"`
+	CpuSteal  float64 `json:"st" cbor:"3,keyasint"`
 }
 
 type FsStats struct {
