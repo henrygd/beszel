@@ -75,6 +75,25 @@ export interface SystemInfo {
 	dt?: number
 	/** operating system */
 	os?: Os
+	/** network sent (mb) */
+	ns?: number
+	/** network received (mb) */
+	nr?: number
+}
+
+export interface NetworkInterfaceStats {
+	/** network sent (mb) */
+	ns: number
+	/** network received (mb) */
+	nr: number
+	/** max network sent (mb) */
+	nsm?: number
+	/** max network received (mb) */
+	nrm?: number
+	/** total bytes sent since boot */
+	tbs?: number
+	/** total bytes received since boot */
+	tbr?: number
 }
 
 export interface SystemStats {
@@ -131,7 +150,9 @@ export interface SystemStats {
 	nsm?: number
 	/** max network received (mb) */
 	nrm?: number
-	/** max network sent (bytes) */
+	/** per-interface network stats */
+	ni?: Record<string, NetworkInterfaceStats>
+	/** max bandwidth (bytes) [sent, received] */
 	bm?: [number, number]
 	/** temperatures */
 	t?: Record<string, number>
@@ -141,6 +162,8 @@ export interface SystemStats {
 	g?: Record<string, GPUData>
 	/** battery percent and state */
 	bat?: [number, BatteryState]
+	/** network connection statistics */
+	nets?: Record<string, number>
 }
 
 export interface GPUData {

@@ -45,6 +45,9 @@ $userSettings.subscribe((value) => $chartTime.set(value.chartTime))
 /** Container chart filter */
 export const $containerFilter = atom("")
 
+/** Network interface chart filter */
+export const $networkInterfaceFilter = atom("")
+
 /** Temperature chart filter */
 export const $temperatureFilter = atom("")
 

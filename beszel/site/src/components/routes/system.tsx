@@ -4,6 +4,7 @@ import {
 	$systems,
 	$chartTime,
 	$containerFilter,
+	$networkInterfaceFilter,
 	$userSettings,
 	$direction,
 	$maxValues,
@@ -41,14 +42,19 @@ import { useLingui } from "@lingui/react/macro"
 import { $router, navigate } from "../router"
 import { getPagePath } from "@nanostores/router"
 import { batteryStateTranslations } from "@/lib/i18n"
-import AreaChartDefault from "@/components/charts/area-chart"
-import ContainerChart from "@/components/charts/container-chart"
-import MemChart from "@/components/charts/mem-chart"
-import DiskChart from "@/components/charts/disk-chart"
-import SwapChart from "@/components/charts/swap-chart"
-import TemperatureChart from "@/components/charts/temperature-chart"
-import GpuPowerChart from "@/components/charts/gpu-power-chart"
-import LoadAverageChart from "@/components/charts/load-average-chart"
+import { lazy } from "react"
+
+const AreaChartDefault = lazy(() => import("../charts/area-chart"))
+const ContainerChart = lazy(() => import("../charts/container-chart"))
+const NetworkInterfaceChart = lazy(() => import("../charts/network-interface-chart"))
+const TotalBandwidthChart = lazy(() => import("../charts/total-bandwidth-chart"))
+const ConnectionChart = lazy(() => import("../charts/connection-chart"))
+const MemChart = lazy(() => import("../charts/mem-chart"))
+const DiskChart = lazy(() => import("../charts/disk-chart"))
+const SwapChart = lazy(() => import("../charts/swap-chart"))
+const TemperatureChart = lazy(() => import("../charts/temperature-chart"))
+const GpuPowerChart = lazy(() => import("../charts/gpu-power-chart"))
+const LoadAverageChart = lazy(() => import("../charts/load-average-chart"))
 
 const cache = new Map<string, any>()
 
@@ -130,6 +136,7 @@ export default function SystemDetail({ name }: { name: string }) {
 	const netCardRef = useRef<HTMLDivElement>(null)
 	const persistChartTime = useRef(false)
 	const [containerFilterBar, setContainerFilterBar] = useState(null as null | JSX.Element)
+	const [networkInterfaceFilterBar, setNetworkInterfaceFilterBar] = useState(null as null | JSX.Element)
 	const [bottomSpacing, setBottomSpacing] = useState(0)
 	const [chartLoading, setChartLoading] = useState(true)
 	const isLongerChart = chartTime !== "1h"
@@ -145,7 +152,9 @@ export default function SystemDetail({ name }: { name: string }) {
 			setSystemStats([])
 			setContainerData([])
 			setContainerFilterBar(null)
+			setNetworkInterfaceFilterBar(null)
 			$containerFilter.set("")
+			$networkInterfaceFilter.set("")
 		}
 	}, [name])
 
@@ -239,6 +248,19 @@ export default function SystemDetail({ name }: { name: string }) {
 			makeContainerData(containerData)
 		})
 	}, [system, chartTime])
+
+	// Set up network interface filter bar
+	useEffect(() => {
+		if (systemStats.length > 0) {
+			const latestStats = systemStats[systemStats.length - 1]
+			const networkInterfaces = Object.keys(latestStats.stats.ns || {})
+			if (networkInterfaces.length > 0) {
+				!networkInterfaceFilterBar && setNetworkInterfaceFilterBar(<FilterBar store={$networkInterfaceFilter} />)
+			} else if (networkInterfaceFilterBar) {
+				setNetworkInterfaceFilterBar(null)
+			}
+		}
+	}, [systemStats, networkInterfaceFilterBar])
 
 	// make container stats for charts
 	const makeContainerData = useCallback((containers: ContainerStatsRecord[]) => {
@@ -389,6 +411,8 @@ export default function SystemDetail({ name }: { name: string }) {
 		translatedStatus = t({ message: "Down", comment: "Context: System is down" })
 	}
 
+	const latestNetworkStats = systemStats.at(-1)?.stats.ni;
+
 	return (
 		<>
 			<div id="chartwrap" className="grid gap-4 mb-14 overflow-x-clip">
@@ -537,7 +561,7 @@ export default function SystemDetail({ name }: { name: string }) {
 						empty={dataEmpty}
 						grid={grid}
 						title={t`Disk I/O`}
-						description={t`Throughput of root filesystem`}
+						description={t`Disk read and write throughput`}
 						cornerEl={maxValSelect}
 					>
 						<AreaChartDefault
@@ -568,53 +592,8 @@ export default function SystemDetail({ name }: { name: string }) {
 						/>
 					</ChartCard>
 
-					<ChartCard
-						empty={dataEmpty}
-						grid={grid}
-						title={t`Bandwidth`}
-						cornerEl={maxValSelect}
-						description={t`Network traffic of public interfaces`}
-					>
-						<AreaChartDefault
-							chartData={chartData}
-							maxToggled={maxValues}
-							dataPoints={[
-								{
-									label: t`Sent`,
-									// use bytes if available, otherwise multiply old MB (can remove in future)
-									dataKey(data) {
-										if (showMax) {
-											return data?.stats?.bm?.[0] ?? (data?.stats?.nsm ?? 0) * 1024 * 1024
-										}
-										return data?.stats?.b?.[0] ?? data?.stats?.ns * 1024 * 1024
-									},
-									color: 5,
-									opacity: 0.2,
-								},
-								{
-									label: t`Received`,
-									dataKey(data) {
-										if (showMax) {
-											return data?.stats?.bm?.[1] ?? (data?.stats?.nrm ?? 0) * 1024 * 1024
-										}
-										return data?.stats?.b?.[1] ?? data?.stats?.nr * 1024 * 1024
-									},
-									color: 2,
-									opacity: 0.2,
-								},
-							]}
-							tickFormatter={(val) => {
-								let { value, unit } = formatBytes(val, true, userSettings.unitNet, false)
-								return toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit
-							}}
-							contentFormatter={(data) => {
-								const { value, unit } = formatBytes(data.value, true, userSettings.unitNet, false)
-								return decimalString(value, value >= 100 ? 1 : 2) + " " + unit
-							}}
-						/>
-					</ChartCard>
-
-					{containerFilterBar && containerData.length > 0 && (
+					{/* Network interface charts */}
+					{Object.keys(latestNetworkStats ?? {}).length > 0 && (
 						<div
 							ref={netCardRef}
 							className={cn({
@@ -623,14 +602,40 @@ export default function SystemDetail({ name }: { name: string }) {
 						>
 							<ChartCard
 								empty={dataEmpty}
-								title={dockerOrPodman(t`Docker Network I/O`, system)}
-								description={dockerOrPodman(t`Network traffic of docker containers`, system)}
-								cornerEl={containerFilterBar}
+								grid={grid}
+								title={t`Network Interfaces`}
+								description={t`Network traffic per interface`}
+								cornerEl={networkInterfaceFilterBar}
 							>
 								{/* @ts-ignore */}
-								<ContainerChart chartData={chartData} chartType={ChartType.Network} dataKey="n" />
+								<NetworkInterfaceChart chartData={chartData} />
 							</ChartCard>
 						</div>
+					)}
+
+					{/* Per-Interface Cumulative Bandwidth chart */}
+					{Object.keys(latestNetworkStats ?? {}).length > 0 && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Cumulative Bandwidth`}
+							description={t`Total bytes sent and received per network interface since boot`}
+						>
+							{/* @ts-ignore */}
+							<TotalBandwidthChart chartData={chartData} />
+						</ChartCard>
+					)}
+
+					{/* TCP Connection States chart */}
+					{systemStats.at(-1)?.stats.nets && Object.keys(systemStats.at(-1)?.stats.nets ?? {}).length > 0 && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`TCP Connection States`}
+							description={t`TCP connection states for IPv4 and IPv6`}
+						>
+							<ConnectionChart chartData={chartData} />
+						</ChartCard>
 					)}
 
 					{/* Swap chart */}
