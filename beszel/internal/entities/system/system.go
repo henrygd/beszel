@@ -44,9 +44,13 @@ type Stats struct {
 	Bandwidth      [2]uint64           `json:"b,omitzero" cbor:"26,keyasint,omitzero"`  // [sent bytes, recv bytes]
 	MaxBandwidth   [2]uint64           `json:"bm,omitzero" cbor:"27,keyasint,omitzero"` // [sent bytes, recv bytes]
 	// TODO: remove other load fields in future release in favor of load avg array
-	LoadAvg [3]float64 `json:"la,omitempty" cbor:"28,keyasint"`
-	Battery [2]uint8   `json:"bat,omitzero" cbor:"29,keyasint,omitzero"` // [percent, charge state, current]
-	MaxMem  float64    `json:"mm,omitempty" cbor:"30,keyasint,omitempty"`
+	LoadAvg       [3]float64         `json:"la,omitempty" cbor:"28,keyasint"`
+	Battery       [2]uint8           `json:"bat,omitzero" cbor:"29,keyasint,omitzero"` // [percent, charge state, current]
+	MaxMem        float64            `json:"mm,omitempty" cbor:"30,keyasint,omitempty"`
+	ProcessStates map[string]int     `json:"ps,omitempty" cbor:"38,keyasint,omitempty"`  // process count by state
+	InodeUsed     uint64             `json:"iu,omitempty" cbor:"39,keyasint,omitempty"`  // root fs inodes used
+	InodeTotal    uint64             `json:"it,omitempty" cbor:"40,keyasint,omitempty"`  // root fs inodes total
+	InodePct      float64            `json:"ip,omitempty" cbor:"41,keyasint,omitempty"`  // root fs inode percent
 }
 
 type GPUData struct {
@@ -79,6 +83,9 @@ type FsStats struct {
 	DiskWritePs    float64   `json:"w" cbor:"3,keyasint"`
 	MaxDiskReadPS  float64   `json:"rm,omitempty" cbor:"4,keyasint,omitempty"`
 	MaxDiskWritePS float64   `json:"wm,omitempty" cbor:"5,keyasint,omitempty"`
+	InodeUsed      uint64    `json:"iu,omitempty" cbor:"6,keyasint,omitempty"`
+	InodeTotal     uint64    `json:"it,omitempty" cbor:"7,keyasint,omitempty"`
+	InodePct       float64   `json:"ip,omitempty" cbor:"8,keyasint,omitempty"`
 }
 
 type NetIoStats struct {
@@ -101,6 +108,9 @@ type InfoFsStats struct {
 	DisplayName string  `json:"n"`
 	DiskTotal   float64 `json:"d"`
 	DiskUsed    float64 `json:"du"`
+	InodeUsed   uint64  `json:"iu,omitempty"`
+	InodeTotal  uint64  `json:"it,omitempty"`
+	InodePct    float64 `json:"ip,omitempty"`
 }
 
 type Info struct {

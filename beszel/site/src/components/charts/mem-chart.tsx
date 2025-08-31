@@ -84,9 +84,9 @@ export default memo(function MemChart({ chartData, showLegend = true, showMax = 
 						order={2}
 						dataKey={({ stats }) => (showMax ? null : stats?.mz)}
 						type="monotoneX"
-						fill="hsla(175 60% 45% / 0.8)"
-						fillOpacity={0.5}
-						stroke="hsla(175 60% 45% / 0.8)"
+						fill="var(--chart-3)"
+						fillOpacity={0.4}
+						stroke="var(--chart-3)"
 						stackId="1"
 						isAnimationActive={false}
 					/>
@@ -96,9 +96,9 @@ export default memo(function MemChart({ chartData, showLegend = true, showMax = 
 						order={1}
 						dataKey={({ stats }) => (showMax ? null : stats?.mb)}
 						type="monotoneX"
-						fill="hsla(160 60% 45% / 0.5)"
-						fillOpacity={0.4}
-						stroke="hsla(160 60% 45% / 0.5)"
+						fill="var(--chart-1)"
+						fillOpacity={0.3}
+						stroke="var(--chart-1)"
 						stackId="1"
 						isAnimationActive={false}
 					/>

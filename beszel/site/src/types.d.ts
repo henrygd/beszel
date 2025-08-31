@@ -163,6 +163,14 @@ export interface SystemStats {
 	sc?: number
 	/** battery percent and state */
 	bat?: [number, BatteryState]
+	/** process count by state */
+	ps?: Record<string, number>
+	/** root filesystem inodes used */
+	iu?: number
+	/** root filesystem inodes total */
+	it?: number
+	/** root filesystem inode percent */
+	ip?: number
 }
 
 export interface GPUData {
@@ -206,6 +214,12 @@ export interface ExtraFsStats {
 	wm: number
 	/** display name (mountpoint or label) */
 	n?: string
+	/** inodes used */
+	iu?: number
+	/** inodes total */
+	it?: number
+	/** inode percent */
+	ip?: number
 }
 
 export interface ContainerStatsRecord extends RecordModel {

@@ -13,7 +13,13 @@ import { ChartData, SystemStats } from "@/types"
 import { memo } from "react"
 import { t } from "@lingui/core/macro"
 
-export default memo(function LoadAverageChart({ chartData }: { chartData: ChartData }) {
+export default memo(function LoadAverageChart({ 
+	chartData, 
+	showLegend = true 
+}: { 
+	chartData: ChartData
+	showLegend?: boolean 
+}) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
 	const keys: { legacy: keyof SystemStats; color: string; label: string }[] = [
@@ -88,7 +94,7 @@ export default memo(function LoadAverageChart({ chartData }: { chartData: ChartD
 							/>
 						)
 					})}
-					<ChartLegend content={<ChartLegendContent />} />
+					{showLegend && <ChartLegend content={<ChartLegendContent />} />}
 				</LineChart>
 			</ChartContainer>
 		</div>

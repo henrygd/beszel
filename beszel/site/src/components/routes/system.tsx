@@ -51,6 +51,8 @@ import TemperatureChart from "@/components/charts/temperature-chart"
 import GpuPowerChart from "@/components/charts/gpu-power-chart"
 import LoadAverageChart from "@/components/charts/load-average-chart"
 import CpuChart from "@/components/charts/cpu-chart"
+import ProcessChart from "@/components/charts/process-chart"
+import InodeChart from "@/components/charts/inode-chart"
 
 const cache = new Map<string, any>()
 
@@ -581,7 +583,31 @@ export default function SystemDetail({ name }: { name: string }) {
 							title={t`Load Average`}
 							description={t`System load averages over time`}
 						>
-							<LoadAverageChart chartData={chartData} />
+							<LoadAverageChart chartData={chartData} showLegend={userSettings.showChartLegend !== false} />
+						</ChartCard>
+					)}
+
+					{/* Process States chart */}
+					{systemStats.at(-1)?.stats.ps && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Processes`}
+							description={t`Process count by state`}
+						>
+							<ProcessChart chartData={chartData} showLegend={userSettings.showChartLegend !== false} />
+						</ChartCard>
+					)}
+
+					{/* Inodes chart */}
+					{(systemStats.at(-1)?.stats.it ?? 0) > 0 && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Inodes`}
+							description={t`Filesystem inode usage`}
+						>
+							<InodeChart chartData={chartData} inodeTotal={systemStats.at(-1)?.stats.it ?? NaN} showLegend={userSettings.showChartLegend !== false} />
 						</ChartCard>
 					)}
 
@@ -739,6 +765,35 @@ export default function SystemDetail({ name }: { name: string }) {
 									>
 										<AreaChartDefault chartData={chartData} chartName={`efs.${extraFsName}`} maxToggled={maxValues} showLegend={userSettings.showChartLegend !== false} />
 									</ChartCard>
+									{/* Inode chart for extra filesystem */}
+									{(fsStats?.it ?? 0) > 0 && (
+										<ChartCard
+											empty={dataEmpty}
+											grid={grid}
+											title={`${displayName} Inodes`}
+											description={t`Inode usage of ${displayName}`}
+										>
+											<InodeChart 
+												chartData={{
+													...chartData,
+													systemStats: chartData.systemStats.map((point) => {
+														const efs = point.stats && point.stats.efs ? point.stats.efs[extraFsName] : undefined;
+														return {
+															...point,
+															stats: {
+																...point.stats,
+																iu: efs?.iu ?? 0,
+																it: efs?.it ?? 0,
+																ip: efs?.ip ?? 0,
+															},
+														}
+													}),
+												}}
+												inodeTotal={fsStats?.it ?? NaN} 
+												showLegend={userSettings.showChartLegend !== false} 
+											/>
+										</ChartCard>
+									)}
 								</div>
 							)
 						})}
