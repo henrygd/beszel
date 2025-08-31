@@ -122,12 +122,12 @@ export default function SystemsTable() {
 			<CardHeader className="pb-5 px-2 sm:px-6 max-sm:pt-5 max-sm:pb-1">
 				<div className="grid md:flex gap-5 w-full items-end">
 					<div className="px-2 sm:px-1">
-						<CardTitle className="mb-2.5 flex">
-							<Trans>All Systems - {runningRecords} / {totalRecords}</Trans>
-							<p className={runningRecords === totalRecords ? "ml-2 text-emerald-600":"ml-2 text-red-600" }>Online</p>
-						</CardTitle>
-						<CardDescription>
-							<Trans>Updated in real time. Click on a system to view information.</Trans>
+						<CardTitle className="mb-2.5">
+							<Trans>All Systems</Trans>
+							</CardTitle>
+						<CardDescription className="flex">
+							<Trans>Click on a system to view information - {runningRecords} / {totalRecords}</Trans>
+							<p className={"ml-2 text-" + (runningRecords === totalRecords ? "emerald" : "red") + "-600"}>Online</p>
 						</CardDescription>
 					</div>
 
