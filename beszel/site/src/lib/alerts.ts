@@ -77,6 +77,12 @@ export const alertInfo: Record<string, AlertInfo> = {
 		step: 0.1,
 		desc: () => t`Triggers when 15 minute load average exceeds a threshold`,
 	},
+	Swap: {
+		name: () => t`Swap Usage`,
+		unit: "%",
+		icon: MemoryStickIcon,
+		desc: () => t`Triggers when swap usage exceeds a threshold`,
+	},
 } as const
 
 /** Helper to manage user alerts */

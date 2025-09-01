@@ -78,7 +78,8 @@ func init() {
 					"Bandwidth",
 					"LoadAvg1",
 					"LoadAvg5",
-					"LoadAvg15"
+					"LoadAvg15",
+					"Swap"
 				]
 			},
 			{

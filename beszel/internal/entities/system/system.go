@@ -17,6 +17,7 @@ type Stats struct {
 	MemZfsArc      float64             `json:"mz,omitempty" cbor:"6,keyasint,omitempty"` // ZFS ARC memory
 	Swap           float64             `json:"s,omitempty" cbor:"7,keyasint,omitempty"`
 	SwapUsed       float64             `json:"su,omitempty" cbor:"8,keyasint,omitempty"`
+	SwapPct        float64             `json:"sp,omitempty" cbor:"31,keyasint,omitempty"`
 	DiskTotal      float64             `json:"d" cbor:"9,keyasint"`
 	DiskUsed       float64             `json:"du" cbor:"10,keyasint"`
 	DiskPct        float64             `json:"dp" cbor:"11,keyasint"`
@@ -102,8 +103,9 @@ type Info struct {
 	LoadAvg5       float64 `json:"l5,omitempty" cbor:"16,keyasint,omitempty"`
 	LoadAvg15      float64 `json:"l15,omitempty" cbor:"17,keyasint,omitempty"`
 	BandwidthBytes uint64  `json:"bb" cbor:"18,keyasint"`
+	SwapPct        float64 `json:"sp,omitempty" cbor:"20,keyasint,omitempty"`
 	// TODO: remove load fields in future release in favor of load avg array
-	LoadAvg [3]float64 `json:"la,omitempty" cbor:"19,keyasint"`
+	LoadAvg [3]float64 `json:"la,omitempty" cbor:"21,keyasint"`
 }
 
 // Final data structure to return to the hub

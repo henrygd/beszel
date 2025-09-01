@@ -99,6 +99,9 @@ func (a *Agent) getSystemStats() system.Stats {
 		// swap
 		systemStats.Swap = bytesToGigabytes(v.SwapTotal)
 		systemStats.SwapUsed = bytesToGigabytes(v.SwapTotal - v.SwapFree - v.SwapCached)
+		if v.SwapTotal > 0 {
+			systemStats.SwapPct = twoDecimals(float64(v.SwapTotal-v.SwapFree-v.SwapCached) / float64(v.SwapTotal) * 100.0)
+		}
 		// cache + buffers value for default mem calculation
 		cacheBuff := v.Total - v.Free - v.Used
 		// htop memory calculation overrides
@@ -268,6 +271,7 @@ func (a *Agent) getSystemStats() system.Stats {
 	a.systemInfo.LoadAvg15 = systemStats.LoadAvg[2]
 	a.systemInfo.MemPct = systemStats.MemPct
 	a.systemInfo.DiskPct = systemStats.DiskPct
+	a.systemInfo.SwapPct = systemStats.SwapPct
 	a.systemInfo.Uptime, _ = host.Uptime()
 	// TODO: in future release, remove MB bandwidth values in favor of bytes
 	a.systemInfo.Bandwidth = twoDecimals(systemStats.NetworkSent + systemStats.NetworkRecv)

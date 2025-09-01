@@ -18,7 +18,6 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		dbx.NewExp("system={:system} AND name!='Status'", dbx.Params{"system": systemRecord.Id}),
 	)
 	if err != nil || len(alertRecords) == 0 {
-		// log.Println("no alerts found for system")
 		return nil
 	}
 
@@ -63,6 +62,12 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		case "LoadAvg15":
 			val = data.Info.LoadAvg[2]
 			unit = ""
+		case "Swap":
+			if data.Info.SwapPct == 0 && data.Stats.Swap == 0 {
+				continue // Skip if no swap is configured
+			}
+			val = data.Info.SwapPct
+			unit = "%"
 		}
 
 		triggered := alertRecord.GetBool("triggered")
@@ -72,7 +77,6 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		// IF alert is not triggered and curValue is less than threshold
 		// OR alert is triggered and curValue is greater than threshold
 		if (!triggered && val <= threshold) || (triggered && val > threshold) {
-			// log.Printf("Skipping alert %s: val %f | threshold %f | triggered %v\n", name, val, threshold, triggered)
 			continue
 		}
 
@@ -205,6 +209,8 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 				alert.val += stats.LoadAvg[1]
 			case "LoadAvg15":
 				alert.val += stats.LoadAvg[2]
+			case "Swap":
+				alert.val += stats.SwapPct
 			default:
 				continue
 			}
@@ -238,8 +244,6 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			alert.val = alert.val / float64(alert.count)
 		}
 		minCount := float32(alert.min) / 1.2
-		// log.Println("alert", alert.name, "val", alert.val, "threshold", alert.threshold, "triggered", alert.triggered)
-		// log.Printf("%s: val %f | count %d | min-count %f | threshold %f\n", alert.name, alert.val, alert.count, minCount, alert.threshold)
 		// pass through alert if count is greater than or equal to minCount
 		if float32(alert.count) >= minCount {
 			if !alert.triggered && alert.val > alert.threshold {
@@ -255,7 +259,6 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 }
 
 func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
-	// log.Printf("Sending alert %s: val %f | count %d | threshold %f\n", alert.name, alert.val, alert.count, alert.threshold)
 	systemName := alert.systemRecord.GetString("name")
 
 	// change Disk to Disk usage
@@ -290,7 +293,6 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 
 	alert.alertRecord.Set("triggered", alert.triggered)
 	if err := am.hub.Save(alert.alertRecord); err != nil {
-		// app.Logger().Error("failed to save alert record", "err", err)
 		return
 	}
 	am.SendAlert(AlertMessageData{
