@@ -348,15 +348,20 @@ export function debounce<T extends (...args: any[]) => any>(func: T, wait: numbe
 	}
 }
 
+// Cache for runOnce
+const runOnceCache = new WeakMap<Function, { done: boolean; result: unknown }>()
 /** Run a function only once */
-export function runOnce<T extends (...args: any[]) => any>(fn: T): (...args: Parameters<T>) => ReturnType<T> {
-	let done = false
-	let result: any
-	return (...args: any) => {
-		if (!done) {
-			result = fn(...args)
-			done = true
+export function runOnce<T extends (...args: any[]) => any>(fn: T): T {
+	return ((...args: Parameters<T>) => {
+		let state = runOnceCache.get(fn)
+		if (!state) {
+			state = { done: false, result: undefined }
+			runOnceCache.set(fn, state)
 		}
-		return result
-	}
+		if (!state.done) {
+			state.result = fn(...args)
+			state.done = true
+		}
+		return state.result
+	}) as T
 }
