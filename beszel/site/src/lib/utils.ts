@@ -152,20 +152,20 @@ export function decimalString(num: number, digits = 2) {
 	return formatter.format(num)
 }
 
-/** Get value from local storage */
-function getStorageValue(key: string, defaultValue: any) {
-	const saved = localStorage?.getItem(key)
+/** Get value from local or session storage */
+function getStorageValue(key: string, defaultValue: any, storageInterface: Storage = localStorage) {
+	const saved = storageInterface?.getItem(key)
 	return saved ? JSON.parse(saved) : defaultValue
 }
 
-/** Hook to sync value in local storage */
-export function useLocalStorage<T>(key: string, defaultValue: T) {
+/** Hook to sync value in local or session storage */
+export function useBrowserStorage<T>(key: string, defaultValue: T, storageInterface: Storage = localStorage) {
 	key = `besz-${key}`
 	const [value, setValue] = useState(() => {
-		return getStorageValue(key, defaultValue)
+		return getStorageValue(key, defaultValue, storageInterface)
 	})
 	useEffect(() => {
-		localStorage?.setItem(key, JSON.stringify(value))
+		storageInterface?.setItem(key, JSON.stringify(value))
 	}, [key, value])
 
 	return [value, setValue]

@@ -26,7 +26,7 @@ import {
 	listen,
 	parseSemVer,
 	toFixedFloat,
-	useLocalStorage,
+	useBrowserStorage,
 } from "@/lib/utils"
 import { getPbTimestamp, pb } from "@/lib/api"
 import { Separator } from "../ui/separator"
@@ -123,7 +123,7 @@ export default function SystemDetail({ name }: { name: string }) {
 	const systems = useStore($systems)
 	const chartTime = useStore($chartTime)
 	const maxValues = useStore($maxValues)
-	const [grid, setGrid] = useLocalStorage("grid", true)
+	const [grid, setGrid] = useBrowserStorage("grid", true)
 	const [system, setSystem] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
 	const [containerData, setContainerData] = useState([] as ChartData["containerData"])

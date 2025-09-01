@@ -59,14 +59,13 @@ export default function SystemsTable() {
 	const { i18n, t } = useLingui()
 	const [filter, setFilter] = useState<string>()
 	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
-	const [sorting, setSorting] = useLocalStorage<SortingState>("sortMode",[{ id: "system", desc: false }])
-	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-	const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>("cols", {})
-	const [viewMode, setViewMode] = useLocalStorage<ViewMode>(
-		"viewMode",
-		// show grid view on mobile if there are less than 200 systems (looks better but table is more efficient)
-		window.innerWidth < 1024 && data.length < 200 ? "grid" : "table"
+	const [sorting, setSorting] = useBrowserStorage<SortingState>(
+		"sortMode",
+		[{ id: "system", desc: false }],
+		sessionStorage
 	)
+	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+	const [columnVisibility, setColumnVisibility] = useBrowserStorage<VisibilityState>("cols", {})
 
 	const locale = i18n.locale
 
@@ -78,13 +77,11 @@ export default function SystemsTable() {
 		return data.filter((system) => system.status === statusFilter)
 	}, [data, statusFilter])
 
-	const runningRecords = useMemo(() => {
-		return data.filter((record) => record.status === "up").length
-	}, [data])
-
-	const totalRecords = useMemo(() => {
-		return data.length
-	}, [data])
+	const [viewMode, setViewMode] = useBrowserStorage<ViewMode>(
+		"viewMode",
+		// show grid view on mobile if there are less than 200 systems (looks better but table is more efficient)
+		window.innerWidth < 1024 && filteredData.length < 200 ? "grid" : "table"
+	)
 
 	useEffect(() => {
 		if (filter !== undefined) {
