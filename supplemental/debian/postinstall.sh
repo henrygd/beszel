@@ -31,10 +31,12 @@ if ! getent passwd "$SERVICE_USER" >/dev/null; then
 		--gecos "System user for $SERVICE"
 fi
 
-# Enable docker
-if ! getent group docker | grep -q "$SERVICE_USER"; then
-	echo "Adding $SERVICE_USER to docker group"
-	usermod -aG docker "$SERVICE_USER"
+# Enable docker (only if docker group exists)
+if getent group docker >/dev/null 2>&1; then
+	if ! getent group docker | grep -q "$SERVICE_USER"; then
+		echo "Adding $SERVICE_USER to docker group"
+		usermod -aG docker "$SERVICE_USER"
+	fi
 fi
 
 # Create config file if it doesn't already exist

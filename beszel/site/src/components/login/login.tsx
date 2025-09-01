@@ -1,13 +1,14 @@
-import { t } from "@lingui/core/macro";
+import { t } from "@lingui/core/macro"
 import { UserAuthForm } from "@/components/login/auth-form"
 import { Logo } from "../logo"
 import { useEffect, useMemo, useState } from "react"
-import { pb } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import ForgotPassword from "./forgot-pass-form"
 import { $router } from "../router"
 import { AuthMethodsList } from "pocketbase"
 import { useTheme } from "../theme-provider"
+import { pb } from "@/lib/api"
+import { ModeToggle } from "../mode-toggle"
 
 export default function () {
 	const page = useStore($router)
@@ -50,8 +51,11 @@ export default function () {
 			<div
 				className="grid gap-5 w-full px-4 mx-auto"
 				// @ts-ignore
-				style={{ maxWidth: "22em", "--border": theme == "light" ? "30 8% 80%" : "220 3% 20%" }}
+				style={{ maxWidth: "22em", "--border": theme == "light" ? "hsl(30, 8%, 70%)" : "hsl(220, 3%, 25%)" }}
 			>
+				<div className="absolute top-3 right-3">
+					<ModeToggle />
+				</div>
 				<div className="text-center">
 					<h1 className="mb-3">
 						<Logo className="h-7 fill-foreground mx-auto" />

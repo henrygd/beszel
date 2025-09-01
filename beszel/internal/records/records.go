@@ -172,6 +172,8 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 	tempStats = system.Stats{}
 	sum := &sumStats
 	stats := &tempStats
+	// necessary because uint8 is not big enough for the sum
+	batterySum := 0
 
 	count := float64(len(records))
 	tempCount := float64(0)
@@ -203,12 +205,22 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.DiskWritePs += stats.DiskWritePs
 		sum.NetworkSent += stats.NetworkSent
 		sum.NetworkRecv += stats.NetworkRecv
+		sum.LoadAvg[0] += stats.LoadAvg[0]
+		sum.LoadAvg[1] += stats.LoadAvg[1]
+		sum.LoadAvg[2] += stats.LoadAvg[2]
+		sum.Bandwidth[0] += stats.Bandwidth[0]
+		sum.Bandwidth[1] += stats.Bandwidth[1]
+		batterySum += int(stats.Battery[0])
+		sum.Battery[1] = stats.Battery[1]
 		// Set peak values
 		sum.MaxCpu = max(sum.MaxCpu, stats.MaxCpu, stats.Cpu)
+		sum.MaxMem = max(sum.MaxMem, stats.MaxMem, stats.MemUsed)
 		sum.MaxNetworkSent = max(sum.MaxNetworkSent, stats.MaxNetworkSent, stats.NetworkSent)
 		sum.MaxNetworkRecv = max(sum.MaxNetworkRecv, stats.MaxNetworkRecv, stats.NetworkRecv)
 		sum.MaxDiskReadPs = max(sum.MaxDiskReadPs, stats.MaxDiskReadPs, stats.DiskReadPs)
 		sum.MaxDiskWritePs = max(sum.MaxDiskWritePs, stats.MaxDiskWritePs, stats.DiskWritePs)
+		sum.MaxBandwidth[0] = max(sum.MaxBandwidth[0], stats.MaxBandwidth[0], stats.Bandwidth[0])
+		sum.MaxBandwidth[1] = max(sum.MaxBandwidth[1], stats.MaxBandwidth[1], stats.Bandwidth[1])
 
 		// Accumulate temperatures
 		if stats.Temperatures != nil {
@@ -278,7 +290,12 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.DiskWritePs = twoDecimals(sum.DiskWritePs / count)
 		sum.NetworkSent = twoDecimals(sum.NetworkSent / count)
 		sum.NetworkRecv = twoDecimals(sum.NetworkRecv / count)
-
+		sum.LoadAvg[0] = twoDecimals(sum.LoadAvg[0] / count)
+		sum.LoadAvg[1] = twoDecimals(sum.LoadAvg[1] / count)
+		sum.LoadAvg[2] = twoDecimals(sum.LoadAvg[2] / count)
+		sum.Bandwidth[0] = sum.Bandwidth[0] / uint64(count)
+		sum.Bandwidth[1] = sum.Bandwidth[1] / uint64(count)
+		sum.Battery[0] = uint8(batterySum / int(count))
 		// Average temperatures
 		if sum.Temperatures != nil && tempCount > 0 {
 			for key := range sum.Temperatures {
@@ -361,12 +378,46 @@ func (rm *RecordManager) AverageContainerStats(db dbx.Builder, records RecordIds
 	return result
 }
 
-// Deletes records older than what is displayed in the UI
+// Delete old records
 func (rm *RecordManager) DeleteOldRecords() {
-	// Define the collections to process
+	rm.app.RunInTransaction(func(txApp core.App) error {
+		err := deleteOldSystemStats(txApp)
+		if err != nil {
+			return err
+		}
+		err = deleteOldAlertsHistory(txApp, 200, 250)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+// Delete old alerts history records
+func deleteOldAlertsHistory(app core.App, countToKeep, countBeforeDeletion int) error {
+	db := app.DB()
+	var users []struct {
+		Id string `db:"user"`
+	}
+	err := db.NewQuery("SELECT user, COUNT(*) as count FROM alerts_history GROUP BY user HAVING count > {:countBeforeDeletion}").Bind(dbx.Params{"countBeforeDeletion": countBeforeDeletion}).All(&users)
+	if err != nil {
+		return err
+	}
+	for _, user := range users {
+		_, err = db.NewQuery("DELETE FROM alerts_history WHERE user = {:user} AND id NOT IN (SELECT id FROM alerts_history WHERE user = {:user} ORDER BY created DESC LIMIT {:countToKeep})").Bind(dbx.Params{"user": user.Id, "countToKeep": countToKeep}).Execute()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Deletes system_stats records older than what is displayed in the UI
+func deleteOldSystemStats(app core.App) error {
+	// Collections to process
 	collections := [2]string{"system_stats", "container_stats"}
 
-	// Define record types and their retention periods
+	// Record types and their retention periods
 	type RecordDeletionData struct {
 		recordType string
 		retention  time.Duration
@@ -382,10 +433,9 @@ func (rm *RecordManager) DeleteOldRecords() {
 	now := time.Now().UTC()
 
 	for _, collection := range collections {
-		// Build the WHERE clause dynamically
+		// Build the WHERE clause
 		var conditionParts []string
 		var params dbx.Params = make(map[string]any)
-
 		for i := range recordData {
 			rd := recordData[i]
 			// Create parameterized condition for this record type
@@ -393,19 +443,15 @@ func (rm *RecordManager) DeleteOldRecords() {
 			conditionParts = append(conditionParts, fmt.Sprintf("(type = '%s' AND created < {:%s})", rd.recordType, dateParam))
 			params[dateParam] = now.Add(-rd.retention)
 		}
-
 		// Combine conditions with OR
 		conditionStr := strings.Join(conditionParts, " OR ")
-
-		// Construct the full raw query
+		// Construct and execute the full raw query
 		rawQuery := fmt.Sprintf("DELETE FROM %s WHERE %s", collection, conditionStr)
-
-		// Execute the query with parameters
-		if _, err := rm.app.DB().NewQuery(rawQuery).Bind(params).Execute(); err != nil {
-			// return fmt.Errorf("failed to delete from %s: %v", collection, err)
-			rm.app.Logger().Error("failed to delete", "collection", collection, "error", err)
+		if _, err := app.DB().NewQuery(rawQuery).Bind(params).Execute(); err != nil {
+			return fmt.Errorf("failed to delete from %s: %v", collection, err)
 		}
 	}
+	return nil
 }
 
 /* Round float to two decimals */

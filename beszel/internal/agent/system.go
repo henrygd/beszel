@@ -2,6 +2,7 @@ package agent
 
 import (
 	"beszel"
+	"beszel/internal/agent/battery"
 	"beszel/internal/entities/system"
 	"bufio"
 	"encoding/json"
@@ -101,10 +102,10 @@ func (a *Agent) initializeSystemInfo() {
 	}
 
 	// zfs
-	if _, err := getARCSize(); err == nil {
-		a.zfs = true
-	} else {
+	if _, err := getARCSize(); err != nil {
 		slog.Debug("Not monitoring ZFS ARC", "err", err)
+	} else {
+		a.zfs = true
 	}
 
 	// Collect disk info (model/vendor)
@@ -148,6 +149,11 @@ func readPrettyName() string {
 func (a *Agent) getSystemStats() system.Stats {
 	systemStats := system.Stats{}
 
+	// battery
+	if battery.HasReadableBattery() {
+		systemStats.Battery[0], systemStats.Battery[1], _ = battery.GetBatteryStats()
+	}
+
 	// cpu percent
 	cpuPct, err := cpu.Percent(0, false)
 	if err != nil {
@@ -158,10 +164,10 @@ func (a *Agent) getSystemStats() system.Stats {
 
 	// load average
 	if avgstat, err := load.Avg(); err == nil {
-		systemStats.LoadAvg1 = twoDecimals(avgstat.Load1)
-		systemStats.LoadAvg5 = twoDecimals(avgstat.Load5)
-		systemStats.LoadAvg15 = twoDecimals(avgstat.Load15)
-		slog.Debug("Load average", "5m", systemStats.LoadAvg5, "15m", systemStats.LoadAvg15)
+		systemStats.LoadAvg[0] = avgstat.Load1
+		systemStats.LoadAvg[1] = avgstat.Load5
+		systemStats.LoadAvg[2] = avgstat.Load15
+		slog.Debug("Load average", "5m", avgstat.Load5, "15m", avgstat.Load15)
 	} else {
 		slog.Error("Error getting load average", "err", err)
 	}
@@ -252,24 +258,27 @@ func (a *Agent) getSystemStats() system.Stats {
 		a.initializeNetIoStats()
 	}
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
-		secondsElapsed := time.Since(a.netIoStats.Time).Seconds()
+		msElapsed := uint64(time.Since(a.netIoStats.Time).Milliseconds())
 		a.netIoStats.Time = time.Now()
-		bytesSent := uint64(0)
-		bytesRecv := uint64(0)
+		totalBytesSent := uint64(0)
+		totalBytesRecv := uint64(0)
 		// sum all bytes sent and received
 		for _, v := range netIO {
 			// skip if not in valid network interfaces list
 			if _, exists := a.netInterfaces[v.Name]; !exists {
 				continue
 			}
-			bytesSent += v.BytesSent
-			bytesRecv += v.BytesRecv
+			totalBytesSent += v.BytesSent
+			totalBytesRecv += v.BytesRecv
 		}
 		// add to systemStats
-		sentPerSecond := float64(bytesSent-a.netIoStats.BytesSent) / secondsElapsed
-		recvPerSecond := float64(bytesRecv-a.netIoStats.BytesRecv) / secondsElapsed
-		networkSentPs := bytesToMegabytes(sentPerSecond)
-		networkRecvPs := bytesToMegabytes(recvPerSecond)
+		var bytesSentPerSecond, bytesRecvPerSecond uint64
+		if msElapsed > 0 {
+			bytesSentPerSecond = (totalBytesSent - a.netIoStats.BytesSent) * 1000 / msElapsed
+			bytesRecvPerSecond = (totalBytesRecv - a.netIoStats.BytesRecv) * 1000 / msElapsed
+		}
+		networkSentPs := bytesToMegabytes(float64(bytesSentPerSecond))
+		networkRecvPs := bytesToMegabytes(float64(bytesRecvPerSecond))
 		// add check for issue (#150) where sent is a massive number
 		if networkSentPs > 10_000 || networkRecvPs > 10_000 {
 			slog.Warn("Invalid net stats. Resetting.", "sent", networkSentPs, "recv", networkRecvPs)
@@ -284,9 +293,10 @@ func (a *Agent) getSystemStats() system.Stats {
 		} else {
 			systemStats.NetworkSent = networkSentPs
 			systemStats.NetworkRecv = networkRecvPs
+			systemStats.Bandwidth[0], systemStats.Bandwidth[1] = bytesSentPerSecond, bytesRecvPerSecond
 			// update netIoStats
-			a.netIoStats.BytesSent = bytesSent
-			a.netIoStats.BytesRecv = bytesRecv
+			a.netIoStats.BytesSent = totalBytesSent
+			a.netIoStats.BytesRecv = totalBytesRecv
 		}
 	}
 
@@ -329,12 +339,17 @@ func (a *Agent) getSystemStats() system.Stats {
 
 	// update base system info
 	a.systemInfo.Cpu = systemStats.Cpu
-	a.systemInfo.LoadAvg5 = systemStats.LoadAvg5
-	a.systemInfo.LoadAvg15 = systemStats.LoadAvg15
+	a.systemInfo.LoadAvg = systemStats.LoadAvg
+	// TODO: remove these in future release in favor of load avg array
+	a.systemInfo.LoadAvg1 = systemStats.LoadAvg[0]
+	a.systemInfo.LoadAvg5 = systemStats.LoadAvg[1]
+	a.systemInfo.LoadAvg15 = systemStats.LoadAvg[2]
 	a.systemInfo.MemPct = systemStats.MemPct
 	a.systemInfo.DiskPct = systemStats.DiskPct
 	a.systemInfo.Uptime, _ = host.Uptime()
+	// TODO: in future release, remove MB bandwidth values in favor of bytes
 	a.systemInfo.Bandwidth = twoDecimals(systemStats.NetworkSent + systemStats.NetworkRecv)
+	a.systemInfo.BandwidthBytes = systemStats.Bandwidth[0] + systemStats.Bandwidth[1]
 	slog.Debug("sysinfo", "data", a.systemInfo)
 
 	return systemStats

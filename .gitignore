@@ -17,3 +17,6 @@ beszel/build
 beszel/site/src/locales/**/*.ts
 *.bak
 __debug_*
+beszel/internal/agent/lhm/obj
+beszel/internal/agent/lhm/bin
+dockerfile_agent_dev

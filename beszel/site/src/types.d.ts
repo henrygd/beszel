@@ -1,5 +1,5 @@
 import { RecordModel } from "pocketbase"
-import { Os } from "./lib/enums"
+import { Unit, Os, BatteryState } from "./lib/enums"
 
 // global window properties
 declare global {
@@ -29,6 +29,7 @@ export interface SystemRecord extends RecordModel {
 	port: string
 	info: systemInfo
 	v: string
+	updated: string
 }
 
 export interface CpuInfo {
@@ -64,10 +65,14 @@ export interface systemInfo {
 	c: number
 	/** cpu model */
 	m: string
+	/** load average 1 minute */
+	l1?: number
 	/** load average 5 minutes */
 	l5?: number
 	/** load average 15 minutes */
 	l15?: number
+	/** load average */
+	la?: [number, number, number]
 	/** operating system */
 	o?: string
 	/** uptime */
@@ -78,6 +83,8 @@ export interface systemInfo {
 	dp: number
 	/** bandwidth (mb) */
 	b: number
+	/** bandwidth bytes */
+	bb?: number
 	/** agent version */
 	v: string
 	/** system is using podman */
@@ -109,12 +116,15 @@ export interface SystemStats {
 	cpu: number
 	/** peak cpu */
 	cpum?: number
+	// TODO: remove these in future release in favor of la
 	/** load average 1 minute */
 	l1?: number
 	/** load average 5 minutes */
 	l5?: number
 	/** load average 15 minutes */
 	l15?: number
+	/** load average */
+	la?: [number, number, number]
 	/** total memory (gb) */
 	m: number
 	/** memory used (gb) */
@@ -123,6 +133,8 @@ export interface SystemStats {
 	mp: number
 	/** memory buffer + cache (gb) */
 	mb: number
+	/** max used memory (gb) */
+	mm?: number
 	/** zfs arc memory (gb) */
 	mz?: number
 	/** swap space (gb) */
@@ -147,16 +159,22 @@ export interface SystemStats {
 	ns: number
 	/** network received (mb) */
 	nr: number
+	/** bandwidth bytes [sent, recv] */
+	b?: [number, number]
 	/** max network sent (mb) */
 	nsm?: number
 	/** max network received (mb) */
 	nrm?: number
+	/** max network sent (bytes) */
+	bm?: [number, number]
 	/** temperatures */
 	t?: Record<string, number>
 	/** extra filesystems */
 	efs?: Record<string, ExtraFsStats>
 	/** GPU data */
 	g?: Record<string, GPUData>
+	/** battery percent and state */
+	bat?: [number, BatteryState]
 }
 
 export interface GPUData {
@@ -217,8 +235,19 @@ export interface AlertRecord extends RecordModel {
 	system: string
 	name: string
 	triggered: boolean
-	sysname?: string
+	value: number
+	min: number
 	// user: string
+}
+
+export interface AlertsHistoryRecord extends RecordModel {
+	alert: string
+	user: string
+	system: string
+	name: string
+	val: number
+	created: string
+	resolved?: string | null
 }
 
 export type ChartTimes = "1h" | "12h" | "24h" | "1w" | "30d"
@@ -234,11 +263,15 @@ export interface ChartTimeData {
 	}
 }
 
-export type UserSettings = {
-	// lang?: string
+export interface UserSettings {
 	chartTime: ChartTimes
 	emails?: string[]
 	webhooks?: string[]
+	unitTemp?: Unit
+	unitNet?: Unit
+	unitDisk?: Unit
+	colorWarn?: number
+	colorCrit?: number
 }
 
 type ChartDataContainer = {
@@ -247,7 +280,14 @@ type ChartDataContainer = {
 	[key: string]: key extends "created" ? never : ContainerStats
 }
 
+export interface SemVer {
+	major: number
+	minor: number
+	patch: number
+}
+
 export interface ChartData {
+	agentVersion: SemVer
 	systemStats: SystemStatsRecord[]
 	containerData: ChartDataContainer[]
 	orientation: "right" | "left"
@@ -268,3 +308,5 @@ interface AlertInfo {
 	/** Single value description (when there's only one value, like status) */
 	singleDesc?: () => string
 }
+
+export type AlertMap = Record<string, Map<string, AlertRecord>>

@@ -15,7 +15,7 @@ import (
 
 func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error {
 	alertRecords, err := am.hub.FindAllRecords("alerts",
-		dbx.NewExp("system={:system}", dbx.Params{"system": systemRecord.Id}),
+		dbx.NewExp("system={:system} AND name!='Status'", dbx.Params{"system": systemRecord.Id}),
 	)
 	if err != nil || len(alertRecords) == 0 {
 		// log.Println("no alerts found for system")
@@ -54,11 +54,14 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			}
 			val = data.Info.DashboardTemp
 			unit = "°C"
+		case "LoadAvg1":
+			val = data.Info.LoadAvg[0]
+			unit = ""
 		case "LoadAvg5":
-			val = data.Info.LoadAvg5
+			val = data.Info.LoadAvg[1]
 			unit = ""
 		case "LoadAvg15":
-			val = data.Info.LoadAvg15
+			val = data.Info.LoadAvg[2]
 			unit = ""
 		}
 
@@ -196,10 +199,12 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 					}
 					alert.mapSums[key] += temp
 				}
+			case "LoadAvg1":
+				alert.val += stats.LoadAvg[0]
 			case "LoadAvg5":
-				alert.val += stats.LoadAvg5
+				alert.val += stats.LoadAvg[1]
 			case "LoadAvg15":
-				alert.val += stats.LoadAvg15
+				alert.val += stats.LoadAvg[2]
 			default:
 				continue
 			}
@@ -288,18 +293,11 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 		// app.Logger().Error("failed to save alert record", "err", err)
 		return
 	}
-	// expand the user relation and send the alert
-	if errs := am.hub.ExpandRecord(alert.alertRecord, []string{"user"}, nil); len(errs) > 0 {
-		// app.Logger().Error("failed to expand user relation", "errs", errs)
-		return
-	}
-	if user := alert.alertRecord.ExpandedOne("user"); user != nil {
-		am.SendAlert(AlertMessageData{
-			UserID:   user.Id,
-			Title:    subject,
-			Message:  body,
-			Link:     am.hub.MakeLink("system", systemName),
-			LinkText: "View " + systemName,
-		})
-	}
+	am.SendAlert(AlertMessageData{
+		UserID:   alert.alertRecord.GetString("user"),
+		Title:    subject,
+		Message:  body,
+		Link:     am.hub.MakeLink("system", systemName),
+		LinkText: "View " + systemName,
+	})
 }
