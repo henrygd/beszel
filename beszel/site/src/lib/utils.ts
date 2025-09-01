@@ -108,32 +108,6 @@ export const chartTimeData: ChartTimeData = {
 	},
 }
 
-/** Sets the correct width of the y axis in recharts based on the longest label */
-export function useYAxisWidth() {
-	const [yAxisWidth, setYAxisWidth] = useState(0)
-	let maxChars = 0
-	let timeout: Timer
-	function updateYAxisWidth(str: string) {
-		if (str.length > maxChars) {
-			maxChars = str.length
-			const div = document.createElement("div")
-			div.className = "text-xs tabular-nums tracking-tighter table sr-only"
-			div.innerHTML = str
-			clearTimeout(timeout)
-			timeout = setTimeout(() => {
-				document.body.appendChild(div)
-				const width = div.offsetWidth + 24
-				if (width > yAxisWidth) {
-					setYAxisWidth(div.offsetWidth + 24)
-				}
-				document.body.removeChild(div)
-			})
-		}
-		return str
-	}
-	return { yAxisWidth, updateYAxisWidth }
-}
-
 /** Format number to x decimal places, without trailing zeros */
 export function toFixedFloat(num: number, digits: number) {
 	return parseFloat((digits === 0 ? Math.ceil(num) : num).toFixed(digits))

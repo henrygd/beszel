@@ -11,6 +11,7 @@ import {
 	$allSystemsByName,
 } from "@/lib/stores"
 import { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord } from "@/types"
+import { useContainerChartConfigs } from "@/components/charts/hooks"
 import { ChartType, Unit, Os, SystemStatus } from "@/lib/enums"
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState, type JSX } from "react"
 import { Card, CardHeader, CardTitle, CardDescription } from "../ui/card"
@@ -173,6 +174,9 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 			agentVersion: parseSemVer(system?.info?.v),
 		}
 	}, [systemStats, containerData, direction])
+
+	// Share chart config computation for all container charts
+	const containerChartConfigs = useContainerChartConfigs(containerData)
 
 	// get stats
 	useEffect(() => {
@@ -482,7 +486,12 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 							description={t`Average CPU utilization of containers`}
 							cornerEl={containerFilterBar}
 						>
-							<ContainerChart chartData={chartData} dataKey="c" chartType={ChartType.CPU} />
+							<ContainerChart
+								chartData={chartData}
+								dataKey="c"
+								chartType={ChartType.CPU}
+								chartConfig={containerChartConfigs.cpu}
+							/>
 						</ChartCard>
 					)}
 
@@ -504,7 +513,12 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 							description={dockerOrPodman(t`Memory usage of docker containers`, system)}
 							cornerEl={containerFilterBar}
 						>
-							<ContainerChart chartData={chartData} dataKey="m" chartType={ChartType.Memory} />
+							<ContainerChart
+								chartData={chartData}
+								dataKey="m"
+								chartType={ChartType.Memory}
+								chartConfig={containerChartConfigs.memory}
+							/>
 						</ChartCard>
 					)}
 
@@ -606,8 +620,12 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 								description={dockerOrPodman(t`Network traffic of docker containers`, system)}
 								cornerEl={containerFilterBar}
 							>
-								{/* @ts-ignore */}
-								<ContainerChart chartData={chartData} chartType={ChartType.Network} dataKey="n" />
+								<ContainerChart
+									chartData={chartData}
+									chartType={ChartType.Network}
+									dataKey="n"
+									chartConfig={containerChartConfigs.network}
+								/>
 							</ChartCard>
 						</div>
 					)}
