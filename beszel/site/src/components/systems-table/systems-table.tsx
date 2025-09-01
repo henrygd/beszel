@@ -36,9 +36,9 @@ import {
 	FilterIcon,
 } from "lucide-react"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
-import { $systems } from "@/lib/stores"
+import { $pausedSystems, $downSystems, $upSystems, $systems } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
-import { cn, runOnce, useLocalStorage } from "@/lib/utils"
+import { cn, runOnce, useBrowserStorage } from "@/lib/utils"
 import { $router, Link } from "../router"
 import { useLingui, Trans } from "@lingui/react/macro"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
@@ -50,12 +50,15 @@ import { SystemStatus } from "@/lib/enums"
 import { useVirtualizer, VirtualItem } from "@tanstack/react-virtual"
 
 type ViewMode = "table" | "grid"
-type StatusFilter = "all" | "up" | "down" | "paused"
+type StatusFilter = "all" | SystemRecord["status"]
 
 const preloadSystemDetail = runOnce(() => import("@/components/routes/system.tsx"))
 
 export default function SystemsTable() {
 	const data = useStore($systems)
+	const downSystems = $downSystems.get()
+	const upSystems = $upSystems.get()
+	const pausedSystems = $pausedSystems.get()
 	const { i18n, t } = useLingui()
 	const [filter, setFilter] = useState<string>()
 	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
@@ -74,7 +77,13 @@ export default function SystemsTable() {
 		if (statusFilter === "all") {
 			return data
 		}
-		return data.filter((system) => system.status === statusFilter)
+		if (statusFilter === SystemStatus.Up) {
+			return Object.values(upSystems) ?? []
+		}
+		if (statusFilter === SystemStatus.Down) {
+			return Object.values(downSystems) ?? []
+		}
+		return Object.values(pausedSystems) ?? []
 	}, [data, statusFilter])
 
 	const [viewMode, setViewMode] = useBrowserStorage<ViewMode>(
@@ -106,7 +115,6 @@ export default function SystemsTable() {
 			columnVisibility,
 		},
 		defaultColumn: {
-			// sortDescFirst: true,
 			invertSorting: true,
 			sortUndefined: "last",
 			minSize: 0,
@@ -118,18 +126,22 @@ export default function SystemsTable() {
 	const rows = table.getRowModel().rows
 	const columns = table.getAllColumns()
 	const visibleColumns = table.getVisibleLeafColumns()
+
+	const [upSystemsLength, downSystemsLength, pausedSystemsLength] = useMemo(() => {
+		return [Object.values(upSystems).length, Object.values(downSystems).length, Object.values(pausedSystems).length]
+	}, [upSystems, downSystems, pausedSystems])
+
 	// TODO: hiding temp then gpu messes up table headers
 	const CardHead = useMemo(() => {
 		return (
-			<CardHeader className="pb-5 px-2 sm:px-6 max-sm:pt-5 max-sm:pb-1">
+			<CardHeader className="pb-4.5 px-2 sm:px-6 max-sm:pt-5 max-sm:pb-1">
 				<div className="grid md:flex gap-5 w-full items-end">
 					<div className="px-2 sm:px-1">
-						<CardTitle className="mb-2.5">
+						<CardTitle className="mb-2">
 							<Trans>All Systems</Trans>
-							</CardTitle>
+						</CardTitle>
 						<CardDescription className="flex">
-							<Trans>Click on a system to view information - {runningRecords} / {totalRecords}</Trans>
-							<p className={"ml-2 text-" + (runningRecords === totalRecords ? "emerald" : "red") + "-600"}>Online</p>
+							<Trans>Click on a system to view more information.</Trans>
 						</CardDescription>
 					</div>
 
@@ -181,13 +193,13 @@ export default function SystemsTable() {
 												<Trans>All Systems</Trans>
 											</DropdownMenuRadioItem>
 											<DropdownMenuRadioItem value="up" onSelect={(e) => e.preventDefault()}>
-												<Trans>Up</Trans>
+												<Trans>Up ({upSystemsLength})</Trans>
 											</DropdownMenuRadioItem>
 											<DropdownMenuRadioItem value="down" onSelect={(e) => e.preventDefault()}>
-												<Trans>Down</Trans>
+												<Trans>Down ({downSystemsLength})</Trans>
 											</DropdownMenuRadioItem>
 											<DropdownMenuRadioItem value="paused" onSelect={(e) => e.preventDefault()}>
-												<Trans>Paused</Trans>
+												<Trans>Paused ({pausedSystemsLength})</Trans>
 											</DropdownMenuRadioItem>
 										</DropdownMenuRadioGroup>
 									</div>
@@ -258,7 +270,16 @@ export default function SystemsTable() {
 				</div>
 			</CardHeader>
 		)
-	}, [visibleColumns.length, sorting, viewMode, locale, statusFilter, runningRecords, totalRecords])
+	}, [
+		visibleColumns.length,
+		sorting,
+		viewMode,
+		locale,
+		statusFilter,
+		upSystemsLength,
+		downSystemsLength,
+		pausedSystemsLength,
+	])
 
 	return (
 		<Card>

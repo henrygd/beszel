@@ -2,12 +2,16 @@ import { t } from "@lingui/core/macro"
 import { toast } from "@/components/ui/use-toast"
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { $copyContent, $systems, $userSettings } from "./stores"
+import { $copyContent, $userSettings } from "./stores"
 import type { ChartTimeData, FingerprintRecord, SemVer, SystemRecord } from "@/types"
 import { timeDay, timeHour } from "d3-time"
 import { useEffect, useState } from "react"
 import { MeterState, Unit } from "./enums"
 import { prependBasePath } from "@/components/router"
+
+export const FAVICON_DEFAULT = "favicon.svg"
+export const FAVICON_GREEN = "favicon-green.svg"
+export const FAVICON_RED = "favicon-red.svg"
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -343,19 +347,6 @@ export function debounce<T extends (...args: any[]) => any>(func: T, wait: numbe
 		timeout = setTimeout(() => func(...args), wait)
 	}
 }
-
-/* returns the name of a system from its id */
-export const getSystemNameFromId = (() => {
-	const cache = new Map<string, string>()
-	return (systemId: string): string => {
-		if (cache.has(systemId)) {
-			return cache.get(systemId)!
-		}
-		const sysName = $systems.get().find((s) => s.id === systemId)?.name ?? ""
-		cache.set(systemId, sysName)
-		return sysName
-	}
-})()
 
 /** Run a function only once */
 export function runOnce<T extends (...args: any[]) => any>(fn: T): (...args: Parameters<T>) => ReturnType<T> {

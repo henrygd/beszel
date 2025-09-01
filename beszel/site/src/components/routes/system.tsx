@@ -8,6 +8,7 @@ import {
 	$direction,
 	$maxValues,
 	$temperatureFilter,
+	$allSystemsByName,
 } from "@/lib/stores"
 import { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord } from "@/types"
 import { ChartType, Unit, Os, SystemStatus } from "@/lib/enums"
@@ -49,6 +50,7 @@ import SwapChart from "@/components/charts/swap-chart"
 import TemperatureChart from "@/components/charts/temperature-chart"
 import GpuPowerChart from "@/components/charts/gpu-power-chart"
 import LoadAverageChart from "@/components/charts/load-average-chart"
+import { subscribeKeys } from "nanostores"
 
 const cache = new Map<string, any>()
 
@@ -117,7 +119,7 @@ function dockerOrPodman(str: string, system: SystemRecord) {
 	return str
 }
 
-export default function SystemDetail({ name }: { name: string }) {
+export default memo(function SystemDetail({ name }: { name: string }) {
 	const direction = useStore($direction)
 	const { t } = useLingui()
 	const systems = useStore($systems)
@@ -149,36 +151,13 @@ export default function SystemDetail({ name }: { name: string }) {
 		}
 	}, [name])
 
-	// function resetCharts() {
-	// 	setSystemStats([])
-	// 	setContainerData([])
-	// }
-
-	// useEffect(resetCharts, [chartTime])
-
-	// find matching system
+	// find matching system and update when it changes
 	useEffect(() => {
-		if (system.id && system.name === name) {
-			return
-		}
-		const matchingSystem = systems.find((s) => s.name === name) as SystemRecord
-		if (matchingSystem) {
-			setSystem(matchingSystem)
-		}
-	}, [name, system, systems])
-
-	// update system when new data is available
-	useEffect(() => {
-		if (!system.id) {
-			return
-		}
-		pb.collection<SystemRecord>("systems").subscribe(system.id, (e) => {
-			setSystem(e.record)
+		return subscribeKeys($allSystemsByName, [name], (newSystems) => {
+			const sys = newSystems[name]
+			sys?.id && setSystem(sys)
 		})
-		return () => {
-			pb.collection("systems").unsubscribe(system.id)
-		}
-	}, [system.id])
+	}, [name])
 
 	const chartData: ChartData = useMemo(() => {
 		const lastCreated = Math.max(
@@ -835,7 +814,7 @@ export default function SystemDetail({ name }: { name: string }) {
 			{bottomSpacing > 0 && <span className="block" style={{ height: bottomSpacing }} />}
 		</>
 	)
-}
+})
 
 function FilterBar({ store = $containerFilter }: { store?: typeof $containerFilter }) {
 	const containerFilter = useStore(store)
