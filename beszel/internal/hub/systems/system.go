@@ -126,6 +126,9 @@ func (sys *System) handlePaused() {
 
 // createRecords updates the system record and adds system_stats and container_stats records
 func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error) {
+	sys.manager.hub.Logger().Debug("Creating records - CPU array", "cpus", data.Info.Cpus)
+	sys.manager.hub.Logger().Debug("Creating records - Memory array", "memory", data.Info.Memory)
+	
 	systemRecord, err := sys.getRecord()
 	if err != nil {
 		return nil, err

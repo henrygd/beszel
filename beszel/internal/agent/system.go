@@ -5,11 +5,8 @@ import (
 	"beszel/internal/agent/battery"
 	"beszel/internal/entities/system"
 	"bufio"
-	"encoding/json"
 	"fmt"
-	"io"
 	"log/slog"
-	"net/http"
 	"os"
 	"runtime"
 	"strconv"
@@ -27,12 +24,6 @@ import (
 	psutilNet "github.com/shirou/gopsutil/v4/net"
 )
 
-// GeoJSResponse represents the response from GeoJS API
-type GeoJSResponse struct {
-	IP               string `json:"ip"`
-	OrganizationName string `json:"organization_name"`
-	ASN              int    `json:"asn"`
-}
 
 // Sets initial / non-changing values about the host system
 func (a *Agent) initializeSystemInfo() {
@@ -99,6 +90,7 @@ func (a *Agent) initializeSystemInfo() {
 			Threads:  totalThreads,
 		}
 		a.systemInfo.Cpus = []system.CpuInfo{cpu}
+		slog.Debug("CPU info populated", "cpus", a.systemInfo.Cpus)
 	}
 
 	// zfs
@@ -118,10 +110,9 @@ func (a *Agent) initializeSystemInfo() {
 	if v, err := mem.VirtualMemory(); err == nil {
 		total := fmt.Sprintf("%d GB", int((float64(v.Total)/(1024*1024*1024))+0.5))
 		a.systemInfo.Memory = []system.MemoryInfo{{Total: total}}
+		slog.Debug("Memory info populated", "memory", a.systemInfo.Memory)
 	}
 
-	// Collect IP, ISP, and ASN information
-	a.getIPInfo()
 }
 
 // readPrettyName reads the PRETTY_NAME from /etc/os-release
@@ -513,38 +504,3 @@ func getMemoryInfo() []system.MemoryInfo {
 	}}
 }
 
-// getIPInfo collects public IP, ISP, and ASN information using GeoJS API
-func (a *Agent) getIPInfo() {
-	resp, err := http.Get("https://get.geojs.io/v1/ip/geo.json")
-	if err != nil {
-		slog.Debug("Failed to get IP info", "err", err)
-		return
-	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		slog.Debug("Failed to read IP info response", "err", err)
-		return
-	}
-
-	var geoInfo GeoJSResponse
-	if err := json.Unmarshal(body, &geoInfo); err != nil {
-		slog.Debug("Failed to parse IP info response", "err", err)
-		return
-	}
-
-	var asn string
-	if geoInfo.ASN > 0 {
-		asn = fmt.Sprintf("AS%d", geoInfo.ASN)
-	}
-
-	networkLoc := system.NetworkLocationInfo{
-		PublicIP: geoInfo.IP,
-		ISP:      geoInfo.OrganizationName,
-		ASN:      asn,
-	}
-	a.systemInfo.NetworkLoc = []system.NetworkLocationInfo{networkLoc}
-
-	slog.Debug("IP info collected", "ip", geoInfo.IP, "isp", geoInfo.OrganizationName, "asn", geoInfo.ASN)
-}

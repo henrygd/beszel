@@ -123,6 +123,8 @@ func (a *Agent) gatherStats(sessionID string) *system.CombinedData {
 		Stats: a.getSystemStats(),
 		Info:  a.systemInfo,
 	}
+	slog.Debug("Before sending - CPU array", "cpus", a.systemInfo.Cpus)
+	slog.Debug("Before sending - Memory array", "memory", a.systemInfo.Memory)
 	slog.Debug("System data", "data", data)
 
 	if a.dockerManager != nil {

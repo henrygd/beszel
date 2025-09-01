@@ -4,6 +4,7 @@ import (
 	"beszel/internal/common"
 	"beszel/internal/entities/system"
 	"errors"
+	"log/slog"
 	"time"
 	"weak"
 
@@ -138,7 +139,12 @@ func (ws *WsConn) RequestSystemData(data *system.CombinedData) error {
 	case message = <-ws.responseChan:
 	}
 	defer message.Close()
-	return cbor.Unmarshal(message.Data.Bytes(), data)
+	err := cbor.Unmarshal(message.Data.Bytes(), data)
+	if err == nil {
+		slog.Debug("Hub received data - CPU array", "cpus", data.Info.Cpus)
+		slog.Debug("Hub received data - Memory array", "memory", data.Info.Memory)
+	}
+	return err
 }
 
 // GetFingerprint authenticates with the agent using SSH signature and returns the agent's fingerprint.

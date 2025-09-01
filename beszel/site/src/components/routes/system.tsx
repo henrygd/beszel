@@ -292,7 +292,6 @@ export default function SystemDetail({ name }: { name: string }) {
 			arch?: string
 			disks?: { n: string; m?: string; v?: string; serial?: string }[]
 			nics?: { n: string; s?: string; v?: string; m?: string }[]
-			networkLocation?: { ip?: string; isp?: string; asn?: string }
 			cpu?: { cores: number; threads?: number }
 			tooltip?: string
 		}
@@ -315,11 +314,6 @@ export default function SystemDetail({ name }: { name: string }) {
 				name: "network",
 				label: "Network",
 				items: [
-					system.info.nl && system.info.nl.length > 0 && system.info.nl[0].ip ? {
-						value: system.info.nl[0].ip,
-						Icon: CableIcon,
-						networkLocation: system.info.nl[0],
-					} : null,
 					system.info.n && system.info.n.length > 0 ? {
 						value: `${system.info.n.length} ${system.info.n.length === 1 ? t`NIC` : t`NICs`}`,
 						Icon: EthernetIcon,
@@ -481,7 +475,7 @@ export default function SystemDetail({ name }: { name: string }) {
 								{systemInfoGroups.map((group, groupIndex) => (
 									<React.Fragment key={group.name}>
 										{group.items.map((item, itemIndex) => {
-											const { value, label, Icon, isOs, arch, disks, nics, networkLocation, cpu, tooltip } = item
+											const { value, label, Icon, isOs, arch, disks, nics, cpu, tooltip } = item
 											const content = (
 												<div className="flex gap-1.5 items-center">
 													<Icon className="h-4 w-4" /> {value}
@@ -609,27 +603,6 @@ export default function SystemDetail({ name }: { name: string }) {
 												)
 											}
 
-											// Show network location tooltip if present
-											if (networkLocation && (networkLocation.isp || networkLocation.asn)) {
-												let tooltipText = []
-												if (networkLocation.isp) {
-													tooltipText.push(`ISP: ${networkLocation.isp}`)
-												}
-												if (networkLocation.asn) {
-													tooltipText.push(`ASN: ${networkLocation.asn}`)
-												}
-												return (
-													<div key={`${groupIndex}-${itemIndex}`} className="contents">
-														<Separator orientation="vertical" className="h-4 bg-primary/30" />
-														<TooltipProvider>
-															<Tooltip delayDuration={150}>
-																<TooltipTrigger asChild>{content}</TooltipTrigger>
-																<TooltipContent style={{ whiteSpace: 'pre-line' }}>{tooltipText.join('\n')}</TooltipContent>
-															</Tooltip>
-														</TooltipProvider>
-													</div>
-												)
-											}
 
 											return (
 												<div key={`${groupIndex}-${itemIndex}`} className="contents">

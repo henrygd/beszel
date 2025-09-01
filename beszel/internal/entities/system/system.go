@@ -113,11 +113,6 @@ type OsInfo struct {
 	Kernel  string `json:"k"`
 }
 
-type NetworkLocationInfo struct {
-	PublicIP string `json:"ip,omitempty"`
-	ISP      string `json:"isp,omitempty"`
-	ASN      string `json:"asn,omitempty"`
-}
 
 type Info struct {
 	Hostname       string  `json:"h" cbor:"0,keyasint"`
@@ -135,8 +130,8 @@ type Info struct {
 	Os             Os      `json:"os" cbor:"14,keyasint"`
 	LoadAvg1       float64 `json:"l1,omitempty" cbor:"15,keyasint,omitempty"`
 	LoadAvg5       float64 `json:"l5,omitempty" cbor:"16,keyasint,omitempty"`
-	LoadAvg15      float64 `json:"l15,omitempty" cbor:"17,keyasint,omitempty"`
-	BandwidthBytes uint64                 `json:"bb" cbor:"18,keyasint"`
+	LoadAvg15      float64 `json:"l15,omitempty" cbor:"22,keyasint,omitempty"`
+	BandwidthBytes uint64                 `json:"bb" cbor:"23,keyasint"`
 	// TODO: remove load fields in future release in favor of load avg array
 	LoadAvg    [3]float64            `json:"la,omitempty" cbor:"19,keyasint"`
 	Disks      []DiskInfo            `json:"d" cbor:"20,omitempty"`
@@ -144,7 +139,6 @@ type Info struct {
 	Memory     []MemoryInfo          `json:"m" cbor:"17"`
 	Cpus       []CpuInfo             `json:"c" cbor:"18"`
 	Oses       []OsInfo              `json:"o,omitempty" cbor:"24,omitempty"`
-	NetworkLoc []NetworkLocationInfo `json:"nl,omitempty" cbor:"25,keyasint,omitempty"`
 }
 
 // Final data structure to return to the hub
