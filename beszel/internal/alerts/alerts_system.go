@@ -38,6 +38,12 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		case "Bandwidth":
 			val = data.Info.Bandwidth * 8 // Convert MB/s to Mbps
 			unit = " Mbps"
+		case "BandwidthUp":
+			val = data.Stats.NetworkSent * 8 // Convert MB/s to Mbps for upload
+			unit = " Mbps"
+		case "BandwidthDown":
+			val = data.Stats.NetworkRecv * 8 // Convert MB/s to Mbps for download  
+			unit = " Mbps"
 		case "Disk":
 			maxUsedPct := data.Info.DiskPct
 			for _, fs := range data.Stats.ExtraFs {
@@ -177,6 +183,10 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 				alert.val += stats.Mem
 			case "Bandwidth":
 				alert.val += (stats.NetSent + stats.NetRecv) * 8 // Convert MB/s to Mbps
+			case "BandwidthUp":
+				alert.val += stats.NetSent * 8 // Convert MB/s to Mbps for upload
+			case "BandwidthDown":
+				alert.val += stats.NetRecv * 8 // Convert MB/s to Mbps for download
 			case "Disk":
 				if alert.mapSums == nil {
 					alert.mapSums = make(map[string]float32, len(data.Stats.ExtraFs)+1)
@@ -268,6 +278,12 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 	// format LoadAvg5 and LoadAvg15
 	if after, ok := strings.CutPrefix(alert.name, "LoadAvg"); ok {
 		alert.name = after + "m Load"
+	}
+	// format Bandwidth alerts
+	if alert.name == "BandwidthUp" {
+		alert.name = "Upload bandwidth"
+	} else if alert.name == "BandwidthDown" {
+		alert.name = "Download bandwidth"
 	}
 
 	// make title alert name lowercase if not CPU

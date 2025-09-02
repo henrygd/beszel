@@ -81,6 +81,12 @@ func (am *AlertManager) sendRepeatingAlert(alertRecord *core.Record) {
 	if after, ok := strings.CutPrefix(alertName, "LoadAvg"); ok {
 		alertName = after + "m Load"
 	}
+	// Format Bandwidth alerts
+	if alertName == "BandwidthUp" {
+		alertName = "Upload bandwidth"
+	} else if alertName == "BandwidthDown" {
+		alertName = "Download bandwidth"
+	}
 
 	subject := fmt.Sprintf("%s %s still above threshold (repeat %d)", systemName, titleAlertName, repeatCount+1)
 	body := fmt.Sprintf("%s is still above the threshold of %.2f. This is repeat notification #%d.", alertName, threshold, repeatCount+1)
