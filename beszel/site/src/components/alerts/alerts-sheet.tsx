@@ -255,22 +255,17 @@ function DiskAlertSection({
 				
 				<div className="grid gap-3">
 					{filesystems.map(filesystem => {
-						// Look for filesystem-specific alert or legacy disk alert for root
-						let fsAlert: AlertRecord | undefined
-						for (const [, alertRecord] of systemAlerts) {
-							if (alertRecord.name === alertKey) {
-								if (alertRecord.filesystem === filesystem || 
-									(filesystem === 'root' && !alertRecord.filesystem)) {
-									fsAlert = alertRecord
-									break
-								}
-							}
-						}
+						// Create the alert key that matches the storage format
+						const alertKey = `Disk:${filesystem}`
+						
+						// Look up the alert using the proper key, with fallback for legacy alerts
+						const fsAlert = systemAlerts.get(alertKey) || 
+							(filesystem === 'root' ? systemAlerts.get('Disk') : undefined)
 						
 						return (
 							<AlertContent
 								key={`${alertKey}-${filesystem}`}
-								alertKey={alertKey}
+								alertKey="Disk"
 								data={{...alertData, name: () => `${alertData.name()} (${filesystem})`}}
 								alert={fsAlert}
 								system={system}
@@ -352,7 +347,9 @@ export function AlertContent({
 		const allSystems = $systems.get()
 		const systemIds: string[] = []
 		for (const system of allSystems) {
-			if (overwriteExisting || !initialAlertsState[system.id]?.has(alertKey)) {
+			// Create the proper key for checking existing alerts
+			const checkKey = alertKey === "Disk" && filesystem ? `Disk:${filesystem}` : alertKey
+			if (overwriteExisting || !initialAlertsState[system.id]?.has(checkKey)) {
 				systemIds.push(system.id)
 			}
 		}
@@ -409,8 +406,9 @@ export function AlertContent({
 							deleteAlerts({ name: alertKey, systems: getSystemIds(), filesystem })
 							// when force deleting all alerts of a type, also remove them from initialAlertsState
 							if (overwriteExisting) {
+								const deleteKey = alertKey === "Disk" && filesystem ? `Disk:${filesystem}` : alertKey
 								for (const curAlerts of Object.values(initialAlertsState)) {
-									curAlerts.delete(alertKey)
+									curAlerts.delete(deleteKey)
 								}
 							}
 						}

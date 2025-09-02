@@ -333,10 +333,14 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 
 func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 	systemName := alert.systemRecord.GetString("name")
+	filesystem := alert.alertRecord.GetString("filesystem")
 
-	// change Disk to Disk usage
+	// change Disk to Disk usage, add filesystem info if present
 	if alert.name == "Disk" {
 		alert.name += " usage"
+		if filesystem != "" {
+			alert.name += " (" + filesystem + ")"
+		}
 	}
 	// format LoadAvg5 and LoadAvg15
 	if after, ok := strings.CutPrefix(alert.name, "LoadAvg"); ok {

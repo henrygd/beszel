@@ -134,23 +134,33 @@ export const alertManager = (() => {
 		return await collection.getFullList<AlertRecord>({ fields, sort: "updated" })
 	}
 
-	/** Format alerts into a map of system id to alert name to alert record */
+	/** Create a unique key for an alert that includes filesystem if present */
+	function getAlertKey(alert: Pick<AlertRecord, "name" | "filesystem">): string {
+		if (alert.name === "Disk" && alert.filesystem) {
+			return `${alert.name}:${alert.filesystem}`
+		}
+		return alert.name
+	}
+
+	/** Format alerts into a map of system id to alert key to alert record */
 	function add(alerts: AlertRecord[]) {
 		for (const alert of alerts) {
 			const systemId = alert.system
 			const systemAlerts = $alerts.get()[systemId] ?? new Map()
 			const newAlerts = new Map(systemAlerts)
-			newAlerts.set(alert.name, alert)
+			const alertKey = getAlertKey(alert)
+			newAlerts.set(alertKey, alert)
 			$alerts.setKey(systemId, newAlerts)
 		}
 	}
 
-	function remove(alerts: Pick<AlertRecord, "name" | "system">[]) {
+	function remove(alerts: Pick<AlertRecord, "name" | "system" | "filesystem">[]) {
 		for (const alert of alerts) {
 			const systemId = alert.system
 			const systemAlerts = $alerts.get()[systemId]
 			const newAlerts = new Map(systemAlerts)
-			newAlerts.delete(alert.name)
+			const alertKey = getAlertKey(alert)
+			newAlerts.delete(alertKey)
 			$alerts.setKey(systemId, newAlerts)
 		}
 	}

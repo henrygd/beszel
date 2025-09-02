@@ -112,7 +112,7 @@ const ActiveAlerts = () => {
 									>
 										<info.icon className="h-4 w-4" />
 										<AlertTitle>
-											{getSystemNameFromId(alert.system)} {info.name().toLowerCase().replace("cpu", "CPU")}
+											{getSystemNameFromId(alert.system)} {info.name().toLowerCase().replace("cpu", "CPU")}{alert.filesystem && alert.name === "Disk" ? ` (${alert.filesystem})` : ""}
 										</AlertTitle>
 										<AlertDescription>
 											{alert.name === "Status" ? (
