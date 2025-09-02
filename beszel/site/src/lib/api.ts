@@ -12,6 +12,13 @@ export const pb = new PocketBase(basePath)
 export const isAdmin = () => pb.authStore.record?.role === "admin"
 export const isReadOnlyUser = () => pb.authStore.record?.role === "readonly"
 
+export const updateCookieToken = () => {
+	console.log("setting token", pb.authStore.token)
+	document.cookie = `beszauth=${pb.authStore.token}; path=/; expires=${new Date(
+		Date.now() + 7 * 24 * 60 * 60 * 1000
+	).toString()}`
+}
+
 export const verifyAuth = () => {
 	pb.collection("users")
 		.authRefresh()

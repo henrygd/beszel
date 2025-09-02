@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
@@ -112,6 +113,8 @@ func (h *Hub) initialize(e *core.ServeEvent) error {
 	// set URL if BASE_URL env is set
 	if h.appURL != "" {
 		settings.Meta.AppURL = h.appURL
+	} else {
+		h.appURL = settings.Meta.AppURL
 	}
 	if err := e.App.Save(settings); err != nil {
 		return err
@@ -296,4 +299,31 @@ func (h *Hub) MakeLink(parts ...string) string {
 		base = fmt.Sprintf("%s/%s", base, url.PathEscape(part))
 	}
 	return base
+}
+
+type SystemInfo struct {
+	Name   string `json:"name"`
+	Id     string `json:"id"`
+	Status string `json:"status"`
+	Port   uint16 `json:"port"`
+	Host   string `json:"host"`
+	Info   string `json:"info"`
+}
+
+func (h *Hub) getUserSystemsFromRequest(req *http.Request) ([]SystemInfo, error) {
+	systems := []SystemInfo{}
+	token, err := req.Cookie("beszauth")
+	if err != nil {
+		return systems, err
+	}
+	if token.Value != "" {
+		user, err := h.FindAuthRecordByToken(token.Value)
+		if err != nil {
+			return systems, err
+		}
+		h.DB().NewQuery("SELECT s.id, s.info, s.status, s.name, s.port, s.host FROM systems s JOIN json_each(s.users) AS je WHERE je.value = {:user_id}").Bind(dbx.Params{
+			"user_id": user.Id,
+		}).All(&systems)
+	}
+	return systems, err
 }

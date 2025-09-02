@@ -7,6 +7,8 @@ declare global {
 		BASE_PATH: string
 		HUB_VERSION: string
 		HUB_URL: string
+		/** initial list of systems */
+		SYSTEMS: SystemRecord[]
 	}
 }
 

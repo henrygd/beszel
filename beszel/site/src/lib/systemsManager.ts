@@ -141,7 +141,13 @@ export async function subscribe() {
 }
 
 /** Refresh all systems with latest data from the hub */
-export async function refresh() {
+export async function refresh(records: SystemRecord[] = []) {
+	if (records.length) {
+		for (const record of records) {
+			add(record)
+		}
+		return
+	}
 	try {
 		const records = await fetchSystems()
 		if (!records.length) {

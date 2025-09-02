@@ -5,7 +5,9 @@ package hub
 import (
 	"beszel"
 	"beszel/site"
+	"encoding/json"
 	"io/fs"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
@@ -24,9 +26,9 @@ func (h *Hub) startServer(se *core.ServeEvent) error {
 	// fix base paths in html if using subpath
 	basePath := strings.TrimSuffix(parsedURL.Path, "/") + "/"
 	indexFile, _ := fs.ReadFile(site.DistDirFS, "index.html")
-	indexContent := strings.ReplaceAll(string(indexFile), "./", basePath)
-	indexContent = strings.Replace(indexContent, "{{V}}", beszel.Version, 1)
-	indexContent = strings.Replace(indexContent, "{{HUB_URL}}", h.appURL, 1)
+	html := strings.ReplaceAll(string(indexFile), "./", basePath)
+	html = strings.Replace(html, "{{V}}", beszel.Version, 1)
+	html = strings.Replace(html, "{{HUB_URL}}", h.appURL, 1)
 	// set up static asset serving
 	staticPaths := [2]string{"/static/", "/assets/"}
 	serveStatic := apis.Static(site.DistDirFS, false)
@@ -45,7 +47,16 @@ func (h *Hub) startServer(se *core.ServeEvent) error {
 			e.Response.Header().Del("X-Frame-Options")
 			e.Response.Header().Set("Content-Security-Policy", csp)
 		}
-		return e.HTML(http.StatusOK, indexContent)
+		systems, err := h.getUserSystemsFromRequest(e.Request)
+		if err != nil {
+			slog.Error("error getting user systems", "error", err)
+		}
+		systemsJson, err := json.Marshal(systems)
+		if err != nil {
+			slog.Error("error marshalling user systems", "error", err)
+		}
+		html = strings.Replace(html, "'{SYSTEMS}'", string(systemsJson), 1)
+		return e.HTML(http.StatusOK, html)
 	})
 	return nil
 }

@@ -5,7 +5,7 @@ import ReactDOM from "react-dom/client"
 import { ThemeProvider } from "./components/theme-provider.tsx"
 import { DirectionProvider } from "@radix-ui/react-direction"
 import { $authenticated, $publicKey, $copyContent, $direction } from "./lib/stores.ts"
-import { pb, updateUserSettings } from "./lib/api.ts"
+import { pb, updateUserSettings, updateCookieToken } from "./lib/api.ts"
 import * as systemsManager from "./lib/systemsManager.ts"
 import { useStore } from "@nanostores/react"
 import { Toaster } from "./components/ui/toaster.tsx"
@@ -27,8 +27,10 @@ const App = memo(() => {
 
 	useEffect(() => {
 		// change auth store on auth change
+		updateCookieToken()
 		pb.authStore.onChange(() => {
 			$authenticated.set(pb.authStore.isValid)
+			updateCookieToken()
 		})
 		// get version / public key
 		pb.send("/api/beszel/getkey", {}).then((data) => {
@@ -36,11 +38,17 @@ const App = memo(() => {
 		})
 		// get user settings
 		updateUserSettings()
+		const startingSystems = globalThis.BESZEL.SYSTEMS
+		for (const system of startingSystems) {
+			// if (typeof system.info === "string") {
+			system.info = JSON.parse(system.info as unknown as string)
+			// }
+		}
 		// need to get system list before alerts
 		systemsManager.init()
 		systemsManager
 			// get current systems list
-			.refresh()
+			.refresh(startingSystems)
 			// subscribe to new system updates
 			.then(systemsManager.subscribe)
 			// get current alerts
@@ -51,6 +59,7 @@ const App = memo(() => {
 			// updateFavicon("favicon.svg")
 			alertManager.unsubscribe()
 			systemsManager.unsubscribe()
+			globalThis.BESZEL.SYSTEMS = []
 		}
 	}, [])
 
