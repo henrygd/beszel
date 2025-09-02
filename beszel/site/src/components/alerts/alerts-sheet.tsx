@@ -5,7 +5,7 @@ import { cn, debounce } from "@/lib/utils"
 import { alertInfo } from "@/lib/alerts"
 import { Switch } from "@/components/ui/switch"
 import { AlertInfo, AlertRecord, SystemRecord } from "@/types"
-import { lazy, memo, Suspense, useMemo, useState } from "react"
+import { lazy, memo, Suspense, useMemo, useState, useEffect } from "react"
 import { toast } from "@/components/ui/use-toast"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
@@ -37,19 +37,20 @@ const failedUpdateToast = (error: unknown) => {
 
 /** Create or update alerts for a given name and systems */
 const upsertAlerts = debounce(
-	async ({ name, value, min, systems, repeat_interval, max_repeats }: { 
+	async ({ name, value, min, systems, repeat_interval, max_repeats, filesystem }: { 
 		name: string; 
 		value: number; 
 		min: number; 
 		systems: string[];
 		repeat_interval?: number;
 		max_repeats?: number;
+		filesystem?: string;
 	}) => {
 		try {
 			await pb.send<{ success: boolean }>(endpoint, {
 				method: "POST",
 				// overwrite is always true because we've done filtering client side
-				body: { name, value, min, systems, overwrite: true, repeat_interval, max_repeats },
+				body: { name, value, min, systems, overwrite: true, repeat_interval, max_repeats, filesystem },
 			})
 		} catch (error) {
 			failedUpdateToast(error)
@@ -59,11 +60,11 @@ const upsertAlerts = debounce(
 )
 
 /** Delete alerts for a given name and systems */
-const deleteAlerts = debounce(async ({ name, systems }: { name: string; systems: string[] }) => {
+const deleteAlerts = debounce(async ({ name, systems, filesystem }: { name: string; systems: string[]; filesystem?: string }) => {
 	try {
 		await pb.send<{ success: boolean }>(endpoint, {
 			method: "DELETE",
-			body: { name, systems },
+			body: { name, systems, filesystem },
 		})
 	} catch (error) {
 		failedUpdateToast(error)
@@ -113,15 +114,26 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 				</TabsList>
 				<TabsContent value="system">
 					<div className="grid gap-3">
-						{alertKeys.map((name) => (
-							<AlertContent
-								key={name}
-								alertKey={name}
-								data={alertInfo[name as keyof typeof alertInfo]}
-								alert={systemAlerts.get(name)}
-								system={system}
-							/>
-						))}
+						{alertKeys.map((name) => {
+							if (name === 'Disk') {
+								return <DiskAlertSection
+									key={name}
+									alertKey={name}
+									data={alertInfo[name as keyof typeof alertInfo]}
+									systemAlerts={systemAlerts}
+									system={system}
+								/>
+							}
+							return (
+								<AlertContent
+									key={name}
+									alertKey={name}
+									data={alertInfo[name as keyof typeof alertInfo]}
+									alert={systemAlerts.get(name)}
+									system={system}
+								/>
+							)
+						})}
 					</div>
 				</TabsContent>
 				<TabsContent value="global">
@@ -138,24 +150,142 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 						<Trans>Overwrite existing alerts</Trans>
 					</label>
 					<div className="grid gap-3">
-						{alertKeys.map((name) => (
-							<AlertContent
-								key={name}
-								alertKey={name}
-								system={system}
-								alert={systemAlerts.get(name)}
-								data={alertInfo[name as keyof typeof alertInfo]}
-								global={true}
-								overwriteExisting={!!overwriteExisting}
-								initialAlertsState={alertsWhenGlobalSelected}
-							/>
-						))}
+						{alertKeys.map((name) => {
+							if (name === 'Disk') {
+								return <DiskAlertSection
+									key={name}
+									alertKey={name}
+									data={alertInfo[name as keyof typeof alertInfo]}
+									systemAlerts={systemAlerts}
+									system={system}
+									global={true}
+									overwriteExisting={!!overwriteExisting}
+									initialAlertsState={alertsWhenGlobalSelected}
+								/>
+							}
+							return (
+								<AlertContent
+									key={name}
+									alertKey={name}
+									system={system}
+									alert={systemAlerts.get(name)}
+									data={alertInfo[name as keyof typeof alertInfo]}
+									global={true}
+									overwriteExisting={!!overwriteExisting}
+									initialAlertsState={alertsWhenGlobalSelected}
+								/>
+							)
+						})}
 					</div>
 				</TabsContent>
 			</Tabs>
 		</>
 	)
 })
+
+function DiskAlertSection({
+	alertKey,
+	data: alertData,
+	systemAlerts,
+	system,
+	global = false,
+	overwriteExisting = false,
+	initialAlertsState = {},
+}: {
+	alertKey: string
+	data: AlertInfo
+	systemAlerts: Map<string, AlertRecord>
+	system: SystemRecord
+	global?: boolean
+	overwriteExisting?: boolean
+	initialAlertsState?: Record<string, Map<string, AlertRecord>>
+}) {
+	const [extraFilesystems, setExtraFilesystems] = useState<string[]>([])
+	
+	// Fetch recent system stats to get actual extra filesystems
+	useEffect(() => {
+		const fetchExtraFilesystems = async () => {
+			try {
+				// Fetch recent system stats to get efs data
+				const records = await pb.collection('system_stats').getList(1, 1, {
+					filter: `system = '${system.id}' && type = '1m'`,
+					sort: '-created',
+				})
+				
+				if (records.items.length > 0) {
+					const stats = records.items[0].stats as any
+					if (stats.efs) {
+						setExtraFilesystems(Object.keys(stats.efs))
+					}
+				}
+			} catch (error) {
+				console.warn('Could not fetch system stats for filesystem detection:', error)
+			}
+		}
+		
+		fetchExtraFilesystems()
+	}, [system.id])
+
+	// Get available filesystems: always root + extra filesystems from actual system data  
+	const filesystems = useMemo(() => {
+		const result = ['root'] // Always include root filesystem
+		
+		// Add actual extra filesystems from system stats
+		result.push(...extraFilesystems)
+		
+		// Also add any filesystems from existing alerts that might not be in current stats
+		for (const [, alertRecord] of systemAlerts) {
+			if (alertRecord.name === 'Disk' && alertRecord.filesystem && !result.includes(alertRecord.filesystem)) {
+				result.push(alertRecord.filesystem)
+			}
+		}
+		
+		return result
+	}, [extraFilesystems, systemAlerts])
+
+	return (
+		<div className="rounded-lg border border-muted-foreground/15 hover:border-muted-foreground/20 transition-colors duration-100 group">
+			<div className="p-4 pb-3">
+				<div className="grid gap-1 select-none mb-3">
+					<p className="font-semibold flex gap-3 items-center">
+						<alertData.icon className="h-4 w-4 opacity-85" /> {alertData.name()}
+					</p>
+					<span className="block text-sm text-muted-foreground">{alertData.desc()}</span>
+				</div>
+				
+				<div className="grid gap-3">
+					{filesystems.map(filesystem => {
+						// Look for filesystem-specific alert or legacy disk alert for root
+						let fsAlert: AlertRecord | undefined
+						for (const [, alertRecord] of systemAlerts) {
+							if (alertRecord.name === alertKey) {
+								if (alertRecord.filesystem === filesystem || 
+									(filesystem === 'root' && !alertRecord.filesystem)) {
+									fsAlert = alertRecord
+									break
+								}
+							}
+						}
+						
+						return (
+							<AlertContent
+								key={`${alertKey}-${filesystem}`}
+								alertKey={alertKey}
+								data={{...alertData, name: () => `${alertData.name()} (${filesystem})`}}
+								alert={fsAlert}
+								system={system}
+								global={global}
+								overwriteExisting={overwriteExisting}
+								initialAlertsState={initialAlertsState}
+								filesystem={filesystem}
+							/>
+						)
+					})}
+				</div>
+			</div>
+		</div>
+	)
+}
 
 export function AlertContent({
 	alertKey,
@@ -165,6 +295,7 @@ export function AlertContent({
 	global = false,
 	overwriteExisting = false,
 	initialAlertsState = {},
+	filesystem,
 }: {
 	alertKey: string
 	data: AlertInfo
@@ -173,6 +304,7 @@ export function AlertContent({
 	global?: boolean
 	overwriteExisting?: boolean
 	initialAlertsState?: Record<string, Map<string, AlertRecord>>
+	filesystem?: string
 }) {
 	const { name } = alertData
 
@@ -246,6 +378,7 @@ export function AlertContent({
 				systems,
 				repeat_interval: repeat_interval ?? repeatInterval,
 				max_repeats: max_repeats ?? maxRepeats,
+				filesystem,
 			})
 	}
 
@@ -273,7 +406,7 @@ export function AlertContent({
 							sendUpsert(min, value)
 						} else {
 							// if unchecked, delete alert (unless global and overwriteExisting is false)
-							deleteAlerts({ name: alertKey, systems: getSystemIds() })
+							deleteAlerts({ name: alertKey, systems: getSystemIds(), filesystem })
 							// when force deleting all alerts of a type, also remove them from initialAlertsState
 							if (overwriteExisting) {
 								for (const curAlerts of Object.values(initialAlertsState)) {

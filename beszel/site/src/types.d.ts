@@ -207,6 +207,7 @@ export interface AlertRecord extends RecordModel {
 	max_repeats?: number
 	repeat_count?: number
 	last_sent?: string
+	filesystem?: string
 	// user: string
 }
 

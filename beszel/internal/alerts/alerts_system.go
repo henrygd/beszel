@@ -45,14 +45,37 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			val = data.Stats.NetworkRecv * 8 // Convert MB/s to Mbps for download  
 			unit = " Mbps"
 		case "Disk":
-			maxUsedPct := data.Info.DiskPct
-			for _, fs := range data.Stats.ExtraFs {
-				usedPct := fs.DiskUsed / fs.DiskTotal * 100
-				if usedPct > maxUsedPct {
-					maxUsedPct = usedPct
+			// Check if this is a filesystem-specific alert
+			filesystem := alertRecord.GetString("filesystem")
+			if filesystem != "" {
+				// This is a filesystem-specific alert
+				if filesystem == "root" {
+					val = data.Info.DiskPct
+				} else {
+					// Find the matching extra filesystem
+					found := false
+					for key, fs := range data.Stats.ExtraFs {
+						if key == filesystem {
+							val = fs.DiskUsed / fs.DiskTotal * 100
+							found = true
+							break
+						}
+					}
+					if !found {
+						continue // Filesystem not found, skip this alert
+					}
 				}
+			} else {
+				// Legacy disk alert - use the old behavior for backward compatibility
+				maxUsedPct := data.Info.DiskPct
+				for _, fs := range data.Stats.ExtraFs {
+					usedPct := fs.DiskUsed / fs.DiskTotal * 100
+					if usedPct > maxUsedPct {
+						maxUsedPct = usedPct
+					}
+				}
+				val = maxUsedPct
 			}
-			val = maxUsedPct
 		case "Temperature":
 			if data.Info.DashboardTemp < 1 {
 				continue
@@ -188,20 +211,38 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			case "BandwidthDown":
 				alert.val += stats.NetRecv * 8 // Convert MB/s to Mbps for download
 			case "Disk":
-				if alert.mapSums == nil {
-					alert.mapSums = make(map[string]float32, len(data.Stats.ExtraFs)+1)
-				}
-				// add root disk
-				if _, ok := alert.mapSums["root"]; !ok {
-					alert.mapSums["root"] = 0.0
-				}
-				alert.mapSums["root"] += float32(stats.Disk)
-				// add extra disks
-				for key, fs := range data.Stats.ExtraFs {
-					if _, ok := alert.mapSums[key]; !ok {
-						alert.mapSums[key] = 0.0
+				// Check if this is a filesystem-specific alert
+				filesystem := alert.alertRecord.GetString("filesystem")
+				if filesystem != "" {
+					// Filesystem-specific alert
+					if filesystem == "root" {
+						alert.val += stats.Disk
+					} else {
+						// Find the matching extra filesystem
+						for key, fs := range data.Stats.ExtraFs {
+							if key == filesystem {
+								alert.val += fs.DiskUsed / fs.DiskTotal * 100
+								break
+							}
+						}
 					}
-					alert.mapSums[key] += float32(fs.DiskUsed / fs.DiskTotal * 100)
+				} else {
+					// Legacy disk alert - use old behavior for backward compatibility
+					if alert.mapSums == nil {
+						alert.mapSums = make(map[string]float32, len(data.Stats.ExtraFs)+1)
+					}
+					// add root disk
+					if _, ok := alert.mapSums["root"]; !ok {
+						alert.mapSums["root"] = 0.0
+					}
+					alert.mapSums["root"] += float32(stats.Disk)
+					// add extra disks
+					for key, fs := range data.Stats.ExtraFs {
+						if _, ok := alert.mapSums[key]; !ok {
+							alert.mapSums[key] = 0.0
+						}
+						alert.mapSums[key] += float32(fs.DiskUsed / fs.DiskTotal * 100)
+					}
 				}
 			case "Temperature":
 				if alert.mapSums == nil {
@@ -231,15 +272,37 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 	for _, alert := range validAlerts {
 		switch alert.name {
 		case "Disk":
-			maxPct := float32(0)
-			for key, value := range alert.mapSums {
-				sumPct := float32(value)
-				if sumPct > maxPct {
-					maxPct = sumPct
-					alert.descriptor = fmt.Sprintf("Usage of %s", key)
+			// Check if this is a filesystem-specific alert
+			filesystem := alert.alertRecord.GetString("filesystem")
+			if filesystem != "" {
+				// Filesystem-specific alert - handle normally like other alerts
+				alert.val = alert.val / float64(alert.count)
+				if (!alert.triggered && alert.val > alert.threshold) || (alert.triggered && alert.val <= alert.threshold) {
+					alert.triggered = alert.val > alert.threshold
+					alert.descriptor = fmt.Sprintf("Usage of %s", filesystem)
+					go am.sendSystemAlert(alert)
+				}
+			} else {
+				// Legacy disk alert - send separate alerts for each filesystem that exceeds threshold
+				var alertedFilesystems []string
+				for key, value := range alert.mapSums {
+					avgPct := float64(value) / float64(alert.count)
+					if avgPct > alert.threshold {
+						alertedFilesystems = append(alertedFilesystems, key)
+					}
+				}
+
+				// Send individual alerts for each filesystem above threshold
+				for _, fsName := range alertedFilesystems {
+					avgPct := float64(alert.mapSums[fsName]) / float64(alert.count)
+					diskAlert := alert // Copy alert data
+					diskAlert.descriptor = fmt.Sprintf("Usage of %s", fsName)
+					diskAlert.val = avgPct
+					diskAlert.triggered = avgPct > alert.threshold
+					go am.sendSystemAlert(diskAlert)
 				}
 			}
-			alert.val = float64(maxPct / float32(alert.count))
+			continue // Skip normal alert processing for disk alerts
 		case "Temperature":
 			maxTemp := float32(0)
 			for key, value := range alert.mapSums {

@@ -32,7 +32,7 @@ export const alertInfo: Record<string, AlertInfo> = {
 		name: () => t`Disk Usage`,
 		unit: "%",
 		icon: HardDriveIcon,
-		desc: () => t`Triggers when usage of any disk exceeds a threshold`,
+		desc: () => t`Triggers when usage of any filesystem exceeds a threshold`,
 	},
 	Bandwidth: {
 		name: () => t`Bandwidth`,
@@ -127,7 +127,7 @@ export const alertManager = (() => {
 	let unsub: () => void
 
 	/** Fields to fetch from alerts collection */
-	const fields = "id,name,system,value,min,triggered,repeat_interval,max_repeats,repeat_count,last_sent"
+	const fields = "id,name,system,value,min,triggered,repeat_interval,max_repeats,repeat_count,last_sent,filesystem"
 
 	/** Fetch alerts from collection */
 	async function fetchAlerts(): Promise<AlertRecord[]> {

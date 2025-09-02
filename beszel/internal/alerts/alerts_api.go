@@ -22,6 +22,7 @@ func UpsertUserAlerts(e *core.RequestEvent) error {
 		Overwrite       bool     `json:"overwrite"`
 		RepeatInterval  *uint16  `json:"repeat_interval"`
 		MaxRepeats      *uint16  `json:"max_repeats"`
+		Filesystem      string   `json:"filesystem"`
 	}{}
 	err := e.BindBody(&reqData)
 	if err != nil || userID == "" || reqData.Name == "" || len(reqData.Systems) == 0 {
@@ -35,10 +36,17 @@ func UpsertUserAlerts(e *core.RequestEvent) error {
 
 	err = e.App.RunInTransaction(func(txApp core.App) error {
 		for _, systemId := range reqData.Systems {
-			// find existing matching alert
-			alertRecord, err := txApp.FindFirstRecordByFilter(alertsCollection,
-				"system={:system} && name={:name} && user={:user}",
-				dbx.Params{"system": systemId, "name": reqData.Name, "user": userID})
+			// find existing matching alert (including filesystem if specified)
+			var filter string
+			var params dbx.Params
+			if reqData.Filesystem != "" {
+				filter = "system={:system} && name={:name} && user={:user} && filesystem={:filesystem}"
+				params = dbx.Params{"system": systemId, "name": reqData.Name, "user": userID, "filesystem": reqData.Filesystem}
+			} else {
+				filter = "system={:system} && name={:name} && user={:user} && (filesystem='' || filesystem IS NULL)"
+				params = dbx.Params{"system": systemId, "name": reqData.Name, "user": userID}
+			}
+			alertRecord, err := txApp.FindFirstRecordByFilter(alertsCollection, filter, params)
 
 			if err != nil && !errors.Is(err, sql.ErrNoRows) {
 				return err
@@ -67,6 +75,10 @@ func UpsertUserAlerts(e *core.RequestEvent) error {
 			if reqData.MaxRepeats != nil {
 				alertRecord.Set("max_repeats", *reqData.MaxRepeats)
 			}
+			// Set filesystem field if provided
+			if reqData.Filesystem != "" {
+				alertRecord.Set("filesystem", reqData.Filesystem)
+			}
 
 			if err := txApp.SaveNoValidate(alertRecord); err != nil {
 				return err
@@ -88,8 +100,9 @@ func DeleteUserAlerts(e *core.RequestEvent) error {
 	userID := e.Auth.Id
 
 	reqData := struct {
-		AlertName string   `json:"name"`
-		Systems   []string `json:"systems"`
+		AlertName  string   `json:"name"`
+		Systems    []string `json:"systems"`
+		Filesystem string   `json:"filesystem"`
 	}{}
 	err := e.BindBody(&reqData)
 	if err != nil || userID == "" || reqData.AlertName == "" || len(reqData.Systems) == 0 {
@@ -100,10 +113,17 @@ func DeleteUserAlerts(e *core.RequestEvent) error {
 
 	err = e.App.RunInTransaction(func(txApp core.App) error {
 		for _, systemId := range reqData.Systems {
-			// Find existing alert to delete
-			alertRecord, err := txApp.FindFirstRecordByFilter("alerts",
-				"system={:system} && name={:name} && user={:user}",
-				dbx.Params{"system": systemId, "name": reqData.AlertName, "user": userID})
+			// Find existing alert to delete (including filesystem if specified)
+			var filter string
+			var params dbx.Params
+			if reqData.Filesystem != "" {
+				filter = "system={:system} && name={:name} && user={:user} && filesystem={:filesystem}"
+				params = dbx.Params{"system": systemId, "name": reqData.AlertName, "user": userID, "filesystem": reqData.Filesystem}
+			} else {
+				filter = "system={:system} && name={:name} && user={:user} && (filesystem='' || filesystem IS NULL)"
+				params = dbx.Params{"system": systemId, "name": reqData.AlertName, "user": userID}
+			}
+			alertRecord, err := txApp.FindFirstRecordByFilter("alerts", filter, params)
 
 			if err != nil {
 				if errors.Is(err, sql.ErrNoRows) {

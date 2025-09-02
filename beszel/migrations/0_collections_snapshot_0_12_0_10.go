@@ -164,6 +164,15 @@ func init() {
 			},
 			{
 				"hidden": false,
+				"id": "filesystem",
+				"name": "filesystem",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "text"
+			},
+			{
+				"hidden": false,
 				"id": "autodate2990389176",
 				"name": "created",
 				"onCreate": true,
@@ -184,7 +193,7 @@ func init() {
 			}
 		],
 		"indexes": [
-			"CREATE UNIQUE INDEX ` + "`" + `idx_MnhEt21L5r` + "`" + ` ON ` + "`" + `alerts` + "`" + ` (\n  ` + "`" + `user` + "`" + `,\n  ` + "`" + `system` + "`" + `,\n  ` + "`" + `name` + "`" + `\n)"
+			"CREATE UNIQUE INDEX ` + "`" + `idx_MnhEt21L5r` + "`" + ` ON ` + "`" + `alerts` + "`" + ` (\n  ` + "`" + `user` + "`" + `,\n  ` + "`" + `system` + "`" + `,\n  ` + "`" + `name` + "`" + `,\n  ` + "`" + `filesystem` + "`" + `\n)"
 		],
 		"system": false
 	},
