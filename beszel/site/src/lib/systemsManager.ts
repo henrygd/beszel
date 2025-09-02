@@ -29,7 +29,7 @@ export function init() {
 	initialized = true
 
 	// sync system stores on change
-	$allSystemsByName.listen((newSystems, oldSystems, changedKey) => {
+	$allSystemsById.listen((newSystems, oldSystems, changedKey) => {
 		const oldSystem = oldSystems[changedKey]
 		const newSystem = newSystems[changedKey]
 
@@ -59,6 +59,10 @@ export function init() {
 			$pausedSystems.setKey(newSystem.id, newSystem)
 			removeFromStore(newSystem, $upSystems)
 			removeFromStore(newSystem, $downSystems)
+		} else if (newStatus === SystemStatus.Pending) {
+			removeFromStore(newSystem, $upSystems)
+			removeFromStore(newSystem, $downSystems)
+			removeFromStore(newSystem, $pausedSystems)
 		}
 
 		// run things that need to be done when systems change
@@ -100,11 +104,20 @@ async function fetchSystems(): Promise<SystemRecord[]> {
 	}
 }
 
-// Store management functions
 /** Add system to both name and ID stores */
 export function add(system: SystemRecord) {
 	$allSystemsByName.setKey(system.name, system)
 	$allSystemsById.setKey(system.id, system)
+}
+
+/** Update system in stores */
+export function update(system: SystemRecord) {
+	// if name changed, make sure old name is removed from the name store
+	const oldName = $allSystemsById.get()[system.id]?.name
+	if (oldName !== system.name) {
+		$allSystemsByName.setKey(oldName, undefined as any)
+	}
+	add(system)
 }
 
 /** Remove system from stores */
@@ -125,7 +138,7 @@ function removeFromStore(system: SystemRecord, store: PreinitializedMapStore<Rec
 /** Action functions for subscription */
 const actionFns: Record<string, (system: SystemRecord) => void> = {
 	create: add,
-	update: add,
+	update: update,
 	delete: remove,
 }
 

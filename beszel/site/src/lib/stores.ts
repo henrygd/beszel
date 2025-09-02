@@ -17,7 +17,7 @@ export const $downSystems = map<Record<string, SystemRecord>>({})
 /** Map of paused systems by id */
 export const $pausedSystems = map<Record<string, SystemRecord>>({})
 /** List of all system records */
-export const $systems: ReadableAtom<SystemRecord[]> = computed($allSystemsByName, Object.values)
+export const $systems: ReadableAtom<SystemRecord[]> = computed($allSystemsById, Object.values)
 
 /** Map of alert records by system id and alert name */
 export const $alerts = map<AlertMap>({})
