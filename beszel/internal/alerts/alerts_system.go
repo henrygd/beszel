@@ -4,7 +4,6 @@ import (
 	"beszel/internal/entities/system"
 	"encoding/json"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/pocketbase/dbx"
@@ -334,45 +333,48 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 	systemName := alert.systemRecord.GetString("name")
 	filesystem := alert.alertRecord.GetString("filesystem")
+	userID := alert.alertRecord.GetString("user")
 
-	// change Disk to Disk usage, add filesystem info if present
-	if alert.name == "Disk" {
-		alert.name += " usage"
-		if filesystem != "" {
-			alert.name += " (" + filesystem + ")"
-		}
-	}
-	// format LoadAvg5 and LoadAvg15
-	if after, ok := strings.CutPrefix(alert.name, "LoadAvg"); ok {
-		alert.name = after + "m Load"
-	}
-	// format Bandwidth alerts
-	if alert.name == "BandwidthUp" {
-		alert.name = "Upload bandwidth"
-	} else if alert.name == "BandwidthDown" {
-		alert.name = "Download bandwidth"
+	// Get template for this alert type
+	template, err := am.templateService.GetTemplate(userID, alert.name)
+	if err != nil {
+		// Fallback to system default if template lookup fails
+		template = am.templateService.getSystemDefaultTemplate(alert.name)
 	}
 
-	// make title alert name lowercase if not CPU
-	titleAlertName := alert.name
-	if titleAlertName != "CPU" {
-		titleAlertName = strings.ToLower(titleAlertName)
-	}
-
-	var subject string
-	if alert.triggered {
-		subject = fmt.Sprintf("%s %s above threshold", systemName, titleAlertName)
-	} else {
-		subject = fmt.Sprintf("%s %s below threshold", systemName, titleAlertName)
-	}
+	// Prepare template data
+	alertName := FormatAlertName(alert.name, filesystem)
 	minutesLabel := "minute"
 	if alert.min > 1 {
 		minutesLabel += "s"
 	}
-	if alert.descriptor == "" {
-		alert.descriptor = alert.name
+	
+	descriptor := alert.descriptor
+	if descriptor == "" {
+		descriptor = alertName
 	}
-	body := fmt.Sprintf("%s averaged %.2f%s for the previous %v %s.", alert.descriptor, alert.val, alert.unit, alert.min, minutesLabel)
+
+	thresholdStatus := "above"
+	if !alert.triggered {
+		thresholdStatus = "below"
+	}
+
+	templateData := TemplateData{
+		SystemName:      systemName,
+		AlertName:       alertName,
+		AlertType:       alert.name,
+		ThresholdStatus: thresholdStatus,
+		Value:           fmt.Sprintf("%.2f", alert.val),
+		Unit:            alert.unit,
+		Threshold:       fmt.Sprintf("%.2f", alert.threshold),
+		Minutes:         fmt.Sprintf("%d", alert.min),
+		MinutesLabel:    minutesLabel,
+		Descriptor:      descriptor,
+		Filesystem:      filesystem,
+	}
+
+	// Render the template
+	subject, body := am.templateService.RenderTemplate(template, templateData)
 
 	alert.alertRecord.Set("triggered", alert.triggered)
 	
@@ -390,7 +392,7 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 		return
 	}
 	am.SendAlert(AlertMessageData{
-		UserID:   alert.alertRecord.GetString("user"),
+		UserID:   userID,
 		Title:    subject,
 		Message:  body,
 		Link:     am.hub.MakeLink("system", systemName),

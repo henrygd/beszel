@@ -1,8 +1,6 @@
 package alerts
 
 import (
-	"fmt"
-	"strings"
 	"time"
 
 	"github.com/pocketbase/dbx"
@@ -144,26 +142,36 @@ func (am *AlertManager) sendStatusAlert(alertStatus string, systemName string, a
 	}
 	am.hub.Save(alertRecord)
 
-	var emoji string
-	if alertStatus == "up" {
-		emoji = "\u2705" // Green checkmark emoji
-	} else {
-		emoji = "\U0001F534" // Red alert emoji
+	userID := alertRecord.GetString("user")
+
+	// Get template for status alerts
+	template, err := am.templateService.GetTemplate(userID, "Status")
+	if err != nil {
+		// Fallback to system default if template lookup fails
+		template = am.templateService.getSystemDefaultTemplate("Status")
 	}
 
-	title := fmt.Sprintf("Connection to %s is %s %v", systemName, alertStatus, emoji)
-	message := strings.TrimSuffix(title, emoji)
+	var emoji string
+	if alertStatus == "up" {
+		emoji = "✅" // Green checkmark emoji
+	} else {
+		emoji = "🔴" // Red alert emoji
+	}
 
-	// if errs := am.hub.ExpandRecord(alertRecord, []string{"user"}, nil); len(errs) > 0 {
-	// 	return errs["user"]
-	// }
-	// user := alertRecord.ExpandedOne("user")
-	// if user == nil {
-	// 	return nil
-	// }
+	// Prepare template data for status alerts
+	templateData := TemplateData{
+		SystemName: systemName,
+		AlertName:  "Status",
+		AlertType:  "Status",
+		Status:     alertStatus,
+		Emoji:      emoji,
+	}
+
+	// Render the template
+	title, message := am.templateService.RenderTemplate(template, templateData)
 
 	return am.SendAlert(AlertMessageData{
-		UserID:   alertRecord.GetString("user"),
+		UserID:   userID,
 		Title:    title,
 		Message:  message,
 		Link:     am.hub.MakeLink("system", systemName),

@@ -211,6 +211,15 @@ export interface AlertRecord extends RecordModel {
 	// user: string
 }
 
+export interface AlertTemplateRecord extends RecordModel {
+	id: string
+	user: string
+	name: string
+	alert_type: string
+	title_template: string
+	message_template: string
+}
+
 export interface AlertsHistoryRecord extends RecordModel {
 	alert: string
 	user: string

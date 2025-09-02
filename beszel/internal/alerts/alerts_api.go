@@ -43,7 +43,7 @@ func UpsertUserAlerts(e *core.RequestEvent) error {
 				filter = "system={:system} && name={:name} && user={:user} && filesystem={:filesystem}"
 				params = dbx.Params{"system": systemId, "name": reqData.Name, "user": userID, "filesystem": reqData.Filesystem}
 			} else {
-				filter = "system={:system} && name={:name} && user={:user} && (filesystem='' || filesystem IS NULL)"
+				filter = "system={:system} && name={:name} && user={:user} && (filesystem='' || filesystem = null)"
 				params = dbx.Params{"system": systemId, "name": reqData.Name, "user": userID}
 			}
 			alertRecord, err := txApp.FindFirstRecordByFilter(alertsCollection, filter, params)
@@ -120,7 +120,7 @@ func DeleteUserAlerts(e *core.RequestEvent) error {
 				filter = "system={:system} && name={:name} && user={:user} && filesystem={:filesystem}"
 				params = dbx.Params{"system": systemId, "name": reqData.AlertName, "user": userID, "filesystem": reqData.Filesystem}
 			} else {
-				filter = "system={:system} && name={:name} && user={:user} && (filesystem='' || filesystem IS NULL)"
+				filter = "system={:system} && name={:name} && user={:user} && (filesystem='' || filesystem = null)"
 				params = dbx.Params{"system": systemId, "name": reqData.AlertName, "user": userID}
 			}
 			alertRecord, err := txApp.FindFirstRecordByFilter("alerts", filter, params)

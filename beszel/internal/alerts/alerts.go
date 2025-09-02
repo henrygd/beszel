@@ -20,10 +20,11 @@ type hubLike interface {
 }
 
 type AlertManager struct {
-	hub           hubLike
-	alertQueue    chan alertTask
-	stopChan      chan struct{}
-	pendingAlerts sync.Map
+	hub             hubLike
+	alertQueue      chan alertTask
+	stopChan        chan struct{}
+	pendingAlerts   sync.Map
+	templateService *TemplateService
 }
 
 type AlertMessageData struct {
@@ -87,9 +88,10 @@ var supportsTitle = map[string]struct{}{
 // NewAlertManager creates a new AlertManager instance.
 func NewAlertManager(app hubLike) *AlertManager {
 	am := &AlertManager{
-		hub:        app,
-		alertQueue: make(chan alertTask),
-		stopChan:   make(chan struct{}),
+		hub:             app,
+		alertQueue:      make(chan alertTask),
+		stopChan:        make(chan struct{}),
+		templateService: NewTemplateService(app),
 	}
 	am.bindEvents()
 	go am.startWorker()

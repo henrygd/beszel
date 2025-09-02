@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useStore } from "@nanostores/react"
 import { $router } from "@/components/router.tsx"
 import { getPagePath, redirectPage } from "@nanostores/router"
-import { BellIcon, FileSlidersIcon, FingerprintIcon, SettingsIcon, AlertOctagonIcon } from "lucide-react"
+import { BellIcon, FileSlidersIcon, FingerprintIcon, SettingsIcon, AlertOctagonIcon, MessageSquareIcon } from "lucide-react"
 import { $userSettings } from "@/lib/stores.ts"
 import { toast } from "@/components/ui/use-toast.ts"
 import { UserSettings } from "@/types"
@@ -19,12 +19,14 @@ const notificationsSettingsImport = () => import("./notifications.tsx")
 const configYamlSettingsImport = () => import("./config-yaml.tsx")
 const fingerprintsSettingsImport = () => import("./tokens-fingerprints.tsx")
 const alertsHistoryDataTableSettingsImport = () => import("./alerts-history-data-table.tsx")
+const alertTemplatesSettingsImport = () => import("./alert-templates.tsx")
 
 const GeneralSettings = lazy(generalSettingsImport)
 const NotificationsSettings = lazy(notificationsSettingsImport)
 const ConfigYamlSettings = lazy(configYamlSettingsImport)
 const FingerprintsSettings = lazy(fingerprintsSettingsImport)
 const AlertsHistoryDataTableSettings = lazy(alertsHistoryDataTableSettingsImport)
+const AlertTemplatesSettings = lazy(alertTemplatesSettingsImport)
 
 export async function saveSettings(newSettings: Partial<UserSettings>) {
 	try {
@@ -81,6 +83,12 @@ export default function SettingsLayout() {
 			href: getPagePath($router, "settings", { name: "alert-history" }),
 			icon: AlertOctagonIcon,
 			preload: alertsHistoryDataTableSettingsImport,
+		},
+		{
+			title: t`Alert Templates`,
+			href: getPagePath($router, "settings", { name: "alert-templates" }),
+			icon: MessageSquareIcon,
+			preload: alertTemplatesSettingsImport,
 		},
 		{
 			title: t`YAML Config`,
@@ -141,5 +149,7 @@ function SettingsContent({ name }: { name: string }) {
 			return <FingerprintsSettings />
 		case "alert-history":
 			return <AlertsHistoryDataTableSettings />
+		case "alert-templates":
+			return <AlertTemplatesSettings />
 	}
 }
