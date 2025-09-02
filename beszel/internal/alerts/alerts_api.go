@@ -15,11 +15,13 @@ func UpsertUserAlerts(e *core.RequestEvent) error {
 	userID := e.Auth.Id
 
 	reqData := struct {
-		Min       uint8    `json:"min"`
-		Value     float64  `json:"value"`
-		Name      string   `json:"name"`
-		Systems   []string `json:"systems"`
-		Overwrite bool     `json:"overwrite"`
+		Min             uint8    `json:"min"`
+		Value           float64  `json:"value"`
+		Name            string   `json:"name"`
+		Systems         []string `json:"systems"`
+		Overwrite       bool     `json:"overwrite"`
+		RepeatInterval  *uint16  `json:"repeat_interval"`
+		MaxRepeats      *uint16  `json:"max_repeats"`
 	}{}
 	err := e.BindBody(&reqData)
 	if err != nil || userID == "" || reqData.Name == "" || len(reqData.Systems) == 0 {
@@ -57,6 +59,14 @@ func UpsertUserAlerts(e *core.RequestEvent) error {
 
 			alertRecord.Set("value", reqData.Value)
 			alertRecord.Set("min", reqData.Min)
+			
+			// Set repeat fields if provided
+			if reqData.RepeatInterval != nil {
+				alertRecord.Set("repeat_interval", *reqData.RepeatInterval)
+			}
+			if reqData.MaxRepeats != nil {
+				alertRecord.Set("max_repeats", *reqData.MaxRepeats)
+			}
 
 			if err := txApp.SaveNoValidate(alertRecord); err != nil {
 				return err

@@ -36,12 +36,19 @@ const failedUpdateToast = (error: unknown) => {
 
 /** Create or update alerts for a given name and systems */
 const upsertAlerts = debounce(
-	async ({ name, value, min, systems }: { name: string; value: number; min: number; systems: string[] }) => {
+	async ({ name, value, min, systems, repeat_interval, max_repeats }: { 
+		name: string; 
+		value: number; 
+		min: number; 
+		systems: string[];
+		repeat_interval?: number;
+		max_repeats?: number;
+	}) => {
 		try {
 			await pb.send<{ success: boolean }>(endpoint, {
 				method: "POST",
 				// overwrite is always true because we've done filtering client side
-				body: { name, value, min, systems, overwrite: true },
+				body: { name, value, min, systems, overwrite: true, repeat_interval, max_repeats },
 			})
 		} catch (error) {
 			failedUpdateToast(error)
@@ -173,6 +180,8 @@ export function AlertContent({
 	const [checked, setChecked] = useState(global ? false : !!alert)
 	const [min, setMin] = useState(alert?.min || 10)
 	const [value, setValue] = useState(alert?.value || (singleDescription ? 0 : alertData.start ?? 80))
+	const [repeatInterval, setRepeatInterval] = useState(alert?.repeat_interval || 0)
+	const [maxRepeats, setMaxRepeats] = useState(alert?.max_repeats || 0)
 
 	const Icon = alertData.icon
 
@@ -194,7 +203,7 @@ export function AlertContent({
 		return systemIds
 	}
 
-	function sendUpsert(min: number, value: number) {
+	function sendUpsert(min: number, value: number, repeat_interval?: number, max_repeats?: number) {
 		const systems = getSystemIds()
 		systems.length &&
 			upsertAlerts({
@@ -202,6 +211,8 @@ export function AlertContent({
 				value,
 				min,
 				systems,
+				repeat_interval: repeat_interval ?? repeatInterval,
+				max_repeats: max_repeats ?? maxRepeats,
 			})
 	}
 
@@ -291,6 +302,56 @@ export function AlertContent({
 								/>
 							</div>
 						</div>
+						<div className="col-span-full">
+							<p id={`r${name}`} className="text-sm block h-8">
+								<Trans>
+									{repeatInterval === 0 ? (
+										<span>No repeat notifications</span>
+									) : (
+										<span>
+											Repeat every <strong className="text-foreground">{repeatInterval}</strong>{" "}
+											<Plural value={repeatInterval} one="minute" other="minutes" />
+										</span>
+									)}
+								</Trans>
+							</p>
+							<div className="flex gap-3">
+								<Slider
+									aria-labelledby={`r${name}`}
+									defaultValue={[repeatInterval]}
+									onValueCommit={(val) => sendUpsert(min, value, val[0])}
+									onValueChange={(val) => setRepeatInterval(val[0])}
+									min={0}
+									max={1440}
+									step={5}
+								/>
+							</div>
+						</div>
+						{repeatInterval > 0 && (
+							<div className="col-span-full">
+								<p id={`mr${name}`} className="text-sm block h-8">
+									<Trans>
+										{maxRepeats === 0 ? (
+											<span>Unlimited repeat notifications</span>
+										) : (
+											<span>
+												Maximum <strong className="text-foreground">{maxRepeats}</strong> repeats
+											</span>
+										)}
+									</Trans>
+								</p>
+								<div className="flex gap-3">
+									<Slider
+										aria-labelledby={`mr${name}`}
+										defaultValue={[maxRepeats]}
+										onValueCommit={(val) => sendUpsert(min, value, repeatInterval, val[0])}
+										onValueChange={(val) => setMaxRepeats(val[0])}
+										min={0}
+										max={20}
+									/>
+								</div>
+							</div>
+						)}
 					</Suspense>
 				</div>
 			)}

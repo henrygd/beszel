@@ -93,6 +93,7 @@ func NewAlertManager(app hubLike) *AlertManager {
 	}
 	am.bindEvents()
 	go am.startWorker()
+	am.StartRepeatingAlertChecker() // Start the repeating alert checker
 	return am
 }
 

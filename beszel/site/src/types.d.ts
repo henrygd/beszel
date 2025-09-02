@@ -203,6 +203,10 @@ export interface AlertRecord extends RecordModel {
 	triggered: boolean
 	value: number
 	min: number
+	repeat_interval?: number
+	max_repeats?: number
+	repeat_count?: number
+	last_sent?: string
 	// user: string
 }
 

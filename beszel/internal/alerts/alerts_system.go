@@ -292,6 +292,17 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 	body := fmt.Sprintf("%s averaged %.2f%s for the previous %v %s.", alert.descriptor, alert.val, alert.unit, alert.min, minutesLabel)
 
 	alert.alertRecord.Set("triggered", alert.triggered)
+	
+	// Initialize repeat tracking when alert is first triggered
+	if alert.triggered {
+		alert.alertRecord.Set("repeat_count", 0)
+		alert.alertRecord.Set("last_sent", types.NowDateTime())
+	} else {
+		// Reset repeat tracking when alert is resolved
+		alert.alertRecord.Set("repeat_count", 0)
+		alert.alertRecord.Set("last_sent", nil)
+	}
+	
 	if err := am.hub.Save(alert.alertRecord); err != nil {
 		return
 	}

@@ -91,7 +91,7 @@ export const alertManager = (() => {
 	let unsub: () => void
 
 	/** Fields to fetch from alerts collection */
-	const fields = "id,name,system,value,min,triggered"
+	const fields = "id,name,system,value,min,triggered,repeat_interval,max_repeats,repeat_count,last_sent"
 
 	/** Fetch alerts from collection */
 	async function fetchAlerts(): Promise<AlertRecord[]> {

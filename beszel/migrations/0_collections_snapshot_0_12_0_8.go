@@ -117,6 +117,51 @@ func init() {
 			},
 			{
 				"hidden": false,
+				"id": "repeat_interval",
+				"max": 1440,
+				"min": 0,
+				"name": "repeat_interval",
+				"onlyInt": true,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "max_repeats",
+				"max": 999,
+				"min": 0,
+				"name": "max_repeats",
+				"onlyInt": true,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "repeat_count",
+				"max": null,
+				"min": 0,
+				"name": "repeat_count",
+				"onlyInt": true,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "last_sent",
+				"name": "last_sent",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "date"
+			},
+			{
+				"hidden": false,
 				"id": "autodate2990389176",
 				"name": "created",
 				"onCreate": true,
