@@ -277,6 +277,10 @@ interface AlertInfo {
 	start?: number
 	/** Single value description (when there's only one value, like status) */
 	singleDesc?: () => string
+	/** Whether this alert has unit selection */
+	hasUnits?: boolean
+	/** Available units for selection */
+	units?: { label: string; multiplier: number }[]
 }
 
 export type AlertMap = Record<string, Map<string, AlertRecord>>

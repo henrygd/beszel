@@ -39,9 +39,15 @@ export const alertInfo: Record<string, AlertInfo> = {
 		unit: " Mbps",
 		icon: EthernetIcon,
 		desc: () => t`Triggers when combined up/down exceeds a threshold`,
-		max: 100000,
-		step: 100,
-		start: 1000,
+		max: 100,
+		step: 1,
+		start: 100,
+		// Special handling for bandwidth units
+		hasUnits: true,
+		units: [
+			{ label: "Mbps", multiplier: 1 },
+			{ label: "Gbps", multiplier: 1000 },
+		],
 	},
 	Temperature: {
 		name: () => t`Temperature`,

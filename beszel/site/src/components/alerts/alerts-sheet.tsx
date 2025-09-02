@@ -12,6 +12,7 @@ import { getPagePath } from "@nanostores/router"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ServerIcon, GlobeIcon } from "lucide-react"
 import { $router, Link } from "@/components/router"
 import { DialogHeader } from "@/components/ui/dialog"
@@ -179,7 +180,30 @@ export function AlertContent({
 
 	const [checked, setChecked] = useState(global ? false : !!alert)
 	const [min, setMin] = useState(alert?.min || 10)
-	const [value, setValue] = useState(alert?.value || (singleDescription ? 0 : alertData.start ?? 80))
+	
+	// For bandwidth alerts with units, we need to parse the stored value
+	const initValue = alert?.value || (singleDescription ? 0 : alertData.start ?? 80)
+	const [selectedUnit, setSelectedUnit] = useState(() => {
+		if (alertData.hasUnits && alertData.units) {
+			// Find the best unit for the stored value
+			const sortedUnits = [...alertData.units].sort((a, b) => b.multiplier - a.multiplier)
+			for (const unit of sortedUnits) {
+				if (initValue >= unit.multiplier) {
+					return unit.label
+				}
+			}
+			return alertData.units[0].label
+		}
+		return ""
+	})
+	const [value, setValue] = useState(() => {
+		if (alertData.hasUnits && alertData.units) {
+			const unit = alertData.units.find(u => u.label === selectedUnit)
+			return unit ? initValue / unit.multiplier : initValue
+		}
+		return initValue
+	})
+	
 	const [repeatInterval, setRepeatInterval] = useState(alert?.repeat_interval || 0)
 	const [maxRepeats, setMaxRepeats] = useState(alert?.max_repeats || 0)
 
@@ -203,12 +227,21 @@ export function AlertContent({
 		return systemIds
 	}
 
-	function sendUpsert(min: number, value: number, repeat_interval?: number, max_repeats?: number) {
+	function sendUpsert(min: number, value: number, repeat_interval?: number, max_repeats?: number, unit?: string) {
+		// Convert value to base unit if this alert has units
+		let finalValue = value
+		if (alertData.hasUnits && alertData.units) {
+			const selectedUnitData = alertData.units.find(u => u.label === (unit || selectedUnit))
+			if (selectedUnitData) {
+				finalValue = value * selectedUnitData.multiplier
+			}
+		}
+		
 		const systems = getSystemIds()
 		systems.length &&
 			upsertAlerts({
 				name: alertKey,
-				value,
+				value: finalValue,
 				min,
 				systems,
 				repeat_interval: repeat_interval ?? repeatInterval,
@@ -261,7 +294,7 @@ export function AlertContent({
 										Average exceeds{" "}
 										<strong className="text-foreground">
 											{value}
-											{alertData.unit}
+											{alertData.hasUnits ? selectedUnit : alertData.unit}
 										</strong>
 									</Trans>
 								</p>
@@ -275,6 +308,31 @@ export function AlertContent({
 										min={alertData.min ?? 1}
 										max={alertData.max ?? 99}
 									/>
+									{alertData.hasUnits && alertData.units && (
+										<Select value={selectedUnit} onValueChange={(newUnit) => {
+											// Convert current value to new unit
+											const currentUnitData = alertData.units!.find(u => u.label === selectedUnit)
+											const newUnitData = alertData.units!.find(u => u.label === newUnit)
+											if (currentUnitData && newUnitData) {
+												const baseValue = value * currentUnitData.multiplier
+												const newValue = baseValue / newUnitData.multiplier
+												setValue(newValue)
+												setSelectedUnit(newUnit)
+												sendUpsert(min, newValue, undefined, undefined, newUnit)
+											}
+										}}>
+											<SelectTrigger className="w-20 h-8">
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent>
+												{alertData.units.map((unit) => (
+													<SelectItem key={unit.label} value={unit.label}>
+														{unit.label}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									)}
 								</div>
 							</div>
 						)}
