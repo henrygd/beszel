@@ -10,7 +10,8 @@ import { useStore } from "@nanostores/react"
 import { Toaster } from "./components/ui/toaster.tsx"
 import { $router } from "./components/router.tsx"
 import { updateFavicon } from "@/lib/utils"
-import Navbar from "./components/navbar.tsx"
+import { AppSidebar } from "./components/app-sidebar.tsx"
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "./components/ui/sidebar.tsx"
 import { I18nProvider } from "@lingui/react"
 import { i18n } from "@lingui/core"
 import { getLocale, dynamicActivate } from "./lib/i18n"
@@ -21,6 +22,11 @@ import Settings from "./components/routes/settings/layout.tsx"
 const LoginPage = lazy(() => import("@/components/login/login.tsx"))
 const Home = lazy(() => import("@/components/routes/home.tsx"))
 const SystemDetail = lazy(() => import("@/components/routes/system.tsx"))
+const GeneralPage = lazy(() => import("@/components/routes/general.tsx"))
+const NotificationsPage = lazy(() => import("@/components/routes/notifications.tsx"))
+const TokensPage = lazy(() => import("@/components/routes/tokens.tsx"))
+const AlertHistoryPage = lazy(() => import("@/components/routes/alert-history.tsx"))
+const YamlConfigPage = lazy(() => import("@/components/routes/yaml-config.tsx"))
 const CopyToClipboardDialog = lazy(() => import("@/components/copy-to-clipboard.tsx"))
 
 const App = memo(() => {
@@ -78,7 +84,21 @@ const App = memo(() => {
 	} else if (page.route === "system") {
 		return <SystemDetail name={page.params.name} />
 	} else if (page.route === "settings") {
-		return <Settings />
+		// Handle individual settings pages
+		switch (page.params.name) {
+			case "general":
+				return <GeneralPage />
+			case "notifications":
+				return <NotificationsPage />
+			case "tokens":
+				return <TokensPage />
+			case "alert-history":
+				return <AlertHistoryPage />
+			case "config":
+				return <YamlConfigPage />
+			default:
+				return <Settings />
+		}
 	}
 })
 
@@ -98,19 +118,22 @@ const Layout = () => {
 					<LoginPage />
 				</Suspense>
 			) : (
-				<>
-					<div className="container">
-						<Navbar />
-					</div>
-					<div className="container relative">
-						<App />
-						{copyContent && (
-							<Suspense>
-								<CopyToClipboardDialog content={copyContent} />
-							</Suspense>
-						)}
-					</div>
-				</>
+				<SidebarProvider>
+					<AppSidebar />
+					<SidebarInset>
+						<header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+							<SidebarTrigger className="-ml-1" />
+						</header>
+						<div className="flex flex-1 flex-col gap-4 p-4">
+							<App />
+							{copyContent && (
+								<Suspense>
+									<CopyToClipboardDialog content={copyContent} />
+								</Suspense>
+							)}
+						</div>
+					</SidebarInset>
+				</SidebarProvider>
 			)}
 		</DirectionProvider>
 	)
