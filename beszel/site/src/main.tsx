@@ -12,6 +12,9 @@ import { $router } from "./components/router.tsx"
 import { updateFavicon } from "@/lib/utils"
 import { AppSidebar } from "./components/app-sidebar.tsx"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "./components/ui/sidebar.tsx"
+import { Breadcrumbs } from "./components/breadcrumbs.tsx"
+import { Separator } from "./components/ui/separator.tsx"
+import { Breadcrumb, BreadcrumbList } from "./components/ui/breadcrumb.tsx"
 import { I18nProvider } from "@lingui/react"
 import { i18n } from "@lingui/core"
 import { getLocale, dynamicActivate } from "./lib/i18n"
@@ -106,10 +109,23 @@ const Layout = () => {
 	const authenticated = useStore($authenticated)
 	const copyContent = useStore($copyContent)
 	const direction = useStore($direction)
+	const page = useStore($router)
 
 	useEffect(() => {
 		document.documentElement.dir = direction
 	}, [direction])
+
+	const getContentContainerClass = () => {
+		if (!page) return "container max-w-5xl"
+		
+		// Settings and system pages use full width
+		if (page.route === "settings" || page.route === "system") {
+			return "w-full max-w-none"
+		}
+		
+		// Home page stays centered
+		return "container max-w-5xl"
+	}
 
 	return (
 		<DirectionProvider dir={direction}>
@@ -121,11 +137,24 @@ const Layout = () => {
 				<SidebarProvider>
 					<AppSidebar />
 					<SidebarInset>
-						<header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-							<SidebarTrigger className="-ml-1" />
+						<header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+							<div className="flex items-center gap-2 px-4">
+								<SidebarTrigger className="-ml-1" />
+								<Separator
+									orientation="vertical"
+									className="mr-2 data-[orientation=vertical]:h-4"
+								/>
+								<Breadcrumb>
+									<BreadcrumbList>
+										<Breadcrumbs />
+									</BreadcrumbList>
+								</Breadcrumb>
+							</div>
 						</header>
-						<div className="flex flex-1 flex-col gap-4 p-4">
-							<App />
+						<div className="flex flex-1 flex-col gap-4 p-6">
+							<div className={getContentContainerClass()}>
+								<App />
+							</div>
 							{copyContent && (
 								<Suspense>
 									<CopyToClipboardDialog content={copyContent} />

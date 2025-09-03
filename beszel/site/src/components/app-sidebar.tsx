@@ -20,7 +20,7 @@ import {
 import { $router, basePath, Link, prependBasePath } from "./router"
 import { useTheme } from "./theme-provider"
 import { Logo } from "./logo"
-import { cn, runOnce } from "@/lib/utils"
+import { runOnce } from "@/lib/utils"
 import { isReadOnlyUser, isAdmin, logOut, pb } from "@/lib/api"
 import {
   DropdownMenu,
@@ -28,7 +28,6 @@ import {
   DropdownMenuContent,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuGroup,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
 import { AddSystemButton } from "./add-system"
@@ -68,11 +67,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <Link
           href={basePath}
           aria-label="Home"
-          className="flex items-center gap-3"
+          className="flex items-center justify-center"
           onMouseEnter={runOnce(() => import("@/components/routes/home"))}
         >
-          <Logo className="h-6 w-6 fill-foreground" />
-          <span className="text-lg font-semibold">Beszel</span>
+          <Logo className="h-6 w-40 fill-foreground" />
         </Link>
       </SidebarHeader>
       
