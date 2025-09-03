@@ -36,9 +36,9 @@ import {
 	FilterIcon,
 } from "lucide-react"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
-import { $systems } from "@/lib/stores"
+import { $pausedSystems, $downSystems, $upSystems, $systems } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
-import { cn, runOnce, useLocalStorage } from "@/lib/utils"
+import { cn, runOnce, useBrowserStorage } from "@/lib/utils"
 import { $router, Link } from "../router"
 import { useLingui, Trans } from "@lingui/react/macro"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
@@ -50,23 +50,25 @@ import { SystemStatus } from "@/lib/enums"
 import { useVirtualizer, VirtualItem } from "@tanstack/react-virtual"
 
 type ViewMode = "table" | "grid"
-type StatusFilter = "all" | "up" | "down" | "paused"
+type StatusFilter = "all" | SystemRecord["status"]
 
 const preloadSystemDetail = runOnce(() => import("@/components/routes/system.tsx"))
 
 export default function SystemsTable() {
 	const data = useStore($systems)
+	const downSystems = $downSystems.get()
+	const upSystems = $upSystems.get()
+	const pausedSystems = $pausedSystems.get()
 	const { i18n, t } = useLingui()
 	const [filter, setFilter] = useState<string>()
 	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
-	const [sorting, setSorting] = useState<SortingState>([{ id: "system", desc: false }])
-	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-	const [columnVisibility, setColumnVisibility] = useLocalStorage<VisibilityState>("cols", {})
-	const [viewMode, setViewMode] = useLocalStorage<ViewMode>(
-		"viewMode",
-		// show grid view on mobile if there are less than 200 systems (looks better but table is more efficient)
-		window.innerWidth < 1024 && data.length < 200 ? "grid" : "table"
+	const [sorting, setSorting] = useBrowserStorage<SortingState>(
+		"sortMode",
+		[{ id: "system", desc: false }],
+		sessionStorage
 	)
+	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+	const [columnVisibility, setColumnVisibility] = useBrowserStorage<VisibilityState>("cols", {})
 
 	const locale = i18n.locale
 
@@ -75,8 +77,20 @@ export default function SystemsTable() {
 		if (statusFilter === "all") {
 			return data
 		}
-		return data.filter((system) => system.status === statusFilter)
+		if (statusFilter === SystemStatus.Up) {
+			return Object.values(upSystems) ?? []
+		}
+		if (statusFilter === SystemStatus.Down) {
+			return Object.values(downSystems) ?? []
+		}
+		return Object.values(pausedSystems) ?? []
 	}, [data, statusFilter])
+
+	const [viewMode, setViewMode] = useBrowserStorage<ViewMode>(
+		"viewMode",
+		// show grid view on mobile if there are less than 200 systems (looks better but table is more efficient)
+		window.innerWidth < 1024 && filteredData.length < 200 ? "grid" : "table"
+	)
 
 	useEffect(() => {
 		if (filter !== undefined) {
@@ -101,7 +115,6 @@ export default function SystemsTable() {
 			columnVisibility,
 		},
 		defaultColumn: {
-			// sortDescFirst: true,
 			invertSorting: true,
 			sortUndefined: "last",
 			minSize: 0,
@@ -113,6 +126,11 @@ export default function SystemsTable() {
 	const rows = table.getRowModel().rows
 	const columns = table.getAllColumns()
 	const visibleColumns = table.getVisibleLeafColumns()
+
+	const [upSystemsLength, downSystemsLength, pausedSystemsLength] = useMemo(() => {
+		return [Object.values(upSystems).length, Object.values(downSystems).length, Object.values(pausedSystems).length]
+	}, [upSystems, downSystems, pausedSystems])
+
 	// TODO: hiding temp then gpu messes up table headers
 	const CardHead = useMemo(() => {
 		return (
@@ -175,13 +193,13 @@ export default function SystemsTable() {
 												<Trans>All Systems</Trans>
 											</DropdownMenuRadioItem>
 											<DropdownMenuRadioItem value="up" onSelect={(e) => e.preventDefault()}>
-												<Trans>Up</Trans>
+												<Trans>Up ({upSystemsLength})</Trans>
 											</DropdownMenuRadioItem>
 											<DropdownMenuRadioItem value="down" onSelect={(e) => e.preventDefault()}>
-												<Trans>Down</Trans>
+												<Trans>Down ({downSystemsLength})</Trans>
 											</DropdownMenuRadioItem>
 											<DropdownMenuRadioItem value="paused" onSelect={(e) => e.preventDefault()}>
-												<Trans>Paused</Trans>
+												<Trans>Paused ({pausedSystemsLength})</Trans>
 											</DropdownMenuRadioItem>
 										</DropdownMenuRadioGroup>
 									</div>
@@ -252,7 +270,16 @@ export default function SystemsTable() {
 				</div>
 			</div>
 		)
-	}, [visibleColumns.length, sorting, viewMode, locale, statusFilter])
+	}, [
+		visibleColumns.length,
+		sorting,
+		viewMode,
+		locale,
+		statusFilter,
+		upSystemsLength,
+		downSystemsLength,
+		pausedSystemsLength,
+	])
 
 	return (
 		<div className="w-full">

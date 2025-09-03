@@ -1,6 +1,6 @@
 import { Suspense, memo, useEffect, useMemo } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
-import { $alerts, $systems } from "@/lib/stores"
+import { $alerts, $allSystemsById } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 import { getSystemNameFromId } from "@/lib/utils"
 import { pb, updateRecordList, updateSystemList } from "@/lib/api"
@@ -12,27 +12,12 @@ import { getPagePath } from "@nanostores/router"
 import { alertInfo } from "@/lib/alerts"
 import SystemsTable from "@/components/systems-table/systems-table"
 
-// const SystemsTable = lazy(() => import("../systems-table/systems-table"))
-
 export default memo(function () {
 	const { t } = useLingui()
 
 	useEffect(() => {
 		document.title = t`Dashboard` + " / Beszel"
 	}, [t])
-
-	useEffect(() => {
-		// make sure we have the latest list of systems
-		updateSystemList()
-
-		// subscribe to real time updates for systems / alerts
-		pb.collection<SystemRecord>("systems").subscribe("*", (e) => {
-			updateRecordList(e, $systems)
-		})
-		return () => {
-			pb.collection("systems").unsubscribe("*")
-		}
-	}, [])
 
 	return useMemo(
 		() => (
@@ -50,6 +35,7 @@ export default memo(function () {
 
 const ActiveAlerts = () => {
 	const alerts = useStore($alerts)
+	const systems = useStore($allSystemsById)
 
 	const { activeAlerts, alertsKey } = useMemo(() => {
 		const activeAlerts: AlertRecord[] = []
@@ -93,7 +79,7 @@ const ActiveAlerts = () => {
 									>
 										<info.icon className="h-4 w-4" />
 										<AlertTitle>
-											{getSystemNameFromId(alert.system)} {info.name().toLowerCase().replace("cpu", "CPU")}
+											{systems[alert.system]?.name} {info.name().toLowerCase().replace("cpu", "CPU")}
 										</AlertTitle>
 										<AlertDescription>
 											{alert.name === "Status" ? (
@@ -106,7 +92,7 @@ const ActiveAlerts = () => {
 											)}
 										</AlertDescription>
 										<Link
-											href={getPagePath($router, "system", { name: getSystemNameFromId(alert.system) })}
+											href={getPagePath($router, "system", { name: systems[alert.system]?.name })}
 											className="absolute inset-0 w-full h-full"
 											aria-label="View system"
 										></Link>

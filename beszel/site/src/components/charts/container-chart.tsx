@@ -1,23 +1,26 @@
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
 import { memo, useMemo } from "react"
-import { useYAxisWidth, cn, formatShortDate, chartMargin, toFixedFloat, formatBytes, decimalString } from "@/lib/utils"
+import { cn, formatShortDate, chartMargin, toFixedFloat, formatBytes, decimalString } from "@/lib/utils"
 // import Spinner from '../spinner'
 import { useStore } from "@nanostores/react"
 import { $containerFilter, $userSettings } from "@/lib/stores"
 import { ChartData } from "@/types"
 import { Separator } from "../ui/separator"
 import { ChartType, Unit } from "@/lib/enums"
+import { useYAxisWidth } from "./hooks"
 
 export default memo(function ContainerChart({
 	dataKey,
 	chartData,
 	chartType,
+	chartConfig,
 	unit = "%",
 }: {
 	dataKey: string
 	chartData: ChartData
 	chartType: ChartType
+	chartConfig: ChartConfig
 	unit?: string
 }) {
 	const filter = useStore($containerFilter)
@@ -27,40 +30,6 @@ export default memo(function ContainerChart({
 	const { containerData } = chartData
 
 	const isNetChart = chartType === ChartType.Network
-
-	const chartConfig = useMemo(() => {
-		const config = {} as Record<string, { label: string; color: string }>
-		const totalUsage = new Map<string, number>()
-
-		// calculate total usage of each container
-		for (const stats of containerData) {
-			for (const key in stats) {
-				if (!key || key === "created") continue
-
-				const currentTotal = totalUsage.get(key) ?? 0
-				const increment = isNetChart
-					? (stats[key]?.nr ?? 0) + (stats[key]?.ns ?? 0)
-					: // @ts-ignore
-					  stats[key]?.[dataKey] ?? 0
-
-				totalUsage.set(key, currentTotal + increment)
-			}
-		}
-
-		// Sort keys and generate colors based on usage
-		const sortedEntries = Array.from(totalUsage.entries()).sort(([, a], [, b]) => b - a)
-
-		const length = sortedEntries.length
-		sortedEntries.forEach(([key], i) => {
-			const hue = ((i * 360) / length) % 360
-			config[key] = {
-				label: key,
-				color: `hsl(${hue}, 60%, 55%)`,
-			}
-		})
-
-		return config satisfies ChartConfig
-	}, [chartData])
 
 	const { toolTipFormatter, dataFunction, tickFormatter } = useMemo(() => {
 		const obj = {} as {
@@ -119,7 +88,14 @@ export default memo(function ContainerChart({
 		return obj
 	}, [])
 
-	const filterLower = filter?.toLowerCase()
+	// Filter with set lookup
+	const filteredKeys = useMemo(() => {
+		if (!filter) {
+			return new Set<string>()
+		}
+		const filterLower = filter.toLowerCase()
+		return new Set(Object.keys(chartConfig).filter((key) => !key.toLowerCase().includes(filterLower)))
+	}, [chartConfig, filter])
 
 	// console.log('rendered at', new Date())
 
@@ -162,9 +138,9 @@ export default memo(function ContainerChart({
 						content={<ChartTooltipContent filter={filter} contentFormatter={toolTipFormatter} />}
 					/>
 					{Object.keys(chartConfig).map((key) => {
-						const filtered = filterLower && !key.toLowerCase().includes(filterLower)
-						let fillOpacity = filtered ? 0.05 : 0.4
-						let strokeOpacity = filtered ? 0.1 : 1
+						const filtered = filteredKeys.has(key)
+						const fillOpacity = filtered ? 0.05 : 0.4
+						const strokeOpacity = filtered ? 0.1 : 1
 						return (
 							<Area
 								key={key}

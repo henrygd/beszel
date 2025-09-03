@@ -1,10 +1,8 @@
-import { ChartTimes, SystemRecord, UserSettings } from "@/types"
-import { $alerts, $longestSystemNameLen, $systems, $userSettings } from "./stores"
+import { ChartTimes, UserSettings } from "@/types"
+import { $alerts, $allSystemsByName, $userSettings } from "./stores"
 import { toast } from "@/components/ui/use-toast"
 import { t } from "@lingui/core/macro"
 import { chartTimeData } from "./utils"
-import { WritableAtom } from "nanostores"
-import { RecordModel, RecordSubscription } from "pocketbase"
 import PocketBase from "pocketbase"
 import { basePath } from "@/components/router"
 
@@ -14,7 +12,7 @@ export const pb = new PocketBase(basePath)
 export const isAdmin = () => pb.authStore.record?.role === "admin"
 export const isReadOnlyUser = () => pb.authStore.record?.role === "readonly"
 
-const verifyAuth = () => {
+export const verifyAuth = () => {
 	pb.collection("users")
 		.authRefresh()
 		.catch(() => {
@@ -29,7 +27,7 @@ const verifyAuth = () => {
 
 /** Logs the user out by clearing the auth store and unsubscribing from realtime updates. */
 export async function logOut() {
-	$systems.set([])
+	$allSystemsByName.set({})
 	$alerts.set({})
 	$userSettings.set({} as UserSettings)
 	sessionStorage.setItem("lo", "t") // prevent auto login on logout
@@ -54,74 +52,6 @@ export async function updateUserSettings() {
 		console.error("create settings", e)
 	}
 }
-/** Update systems / alerts list when records change  */
-export function updateRecordList<T extends RecordModel>(e: RecordSubscription<T>, $store: WritableAtom<T[]>) {
-	const curRecords = $store.get()
-	const newRecords = []
-	if (e.action === "delete") {
-		for (const server of curRecords) {
-			if (server.id !== e.record.id) {
-				newRecords.push(server)
-			}
-		}
-	} else {
-		let found = 0
-		for (const server of curRecords) {
-			if (server.id === e.record.id) {
-				found = newRecords.push(e.record)
-			} else {
-				newRecords.push(server)
-			}
-		}
-		if (!found) {
-			newRecords.push(e.record)
-		}
-	}
-	$store.set(newRecords)
-}
-/** Fetches updated system list from database */
-export const updateSystemList = (() => {
-	let isFetchingSystems = false
-	return async () => {
-		if (isFetchingSystems) {
-			return
-		}
-		isFetchingSystems = true
-		try {
-			let records = await pb
-				.collection<SystemRecord>("systems")
-				.getFullList({ sort: "+name", fields: "id,name,host,port,info,status" })
-
-			if (records.length) {
-				// records = [
-				// 	...records,
-				// 	...records,
-				// 	...records,
-				// 	...records,
-				// 	...records,
-				// 	...records,
-				// 	...records,
-				// 	...records,
-				// 	...records,
-				// ]
-				// we need to loop once to get the longest name
-				let longestName = $longestSystemNameLen.get()
-				for (const { name } of records) {
-					const nameLen = Math.min(20, name.length)
-					if (nameLen > longestName) {
-						$longestSystemNameLen.set(nameLen)
-						longestName = nameLen
-					}
-				}
-				$systems.set(records)
-			} else {
-				verifyAuth()
-			}
-		} finally {
-			isFetchingSystems = false
-		}
-	}
-})()
 
 export function getPbTimestamp(timeString: ChartTimes, d?: Date) {
 	d ||= chartTimeData[timeString].getOffset(new Date())
