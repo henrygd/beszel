@@ -8,19 +8,12 @@ import {
 	ChartTooltipContent,
 	xAxis,
 } from "@/components/ui/chart"
-import {
-	useYAxisWidth,
-	cn,
-	formatShortDate,
-	toFixedFloat,
-	chartMargin,
-	formatTemperature,
-	decimalString,
-} from "@/lib/utils"
+import { cn, formatShortDate, toFixedFloat, chartMargin, formatTemperature, decimalString } from "@/lib/utils"
 import { ChartData } from "@/types"
 import { memo, useMemo } from "react"
 import { $temperatureFilter, $userSettings } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
+import { useYAxisWidth } from "./hooks"
 
 export default memo(function TemperatureChart({ chartData }: { chartData: ChartData }) {
 	const filter = useStore($temperatureFilter)

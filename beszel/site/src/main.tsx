@@ -4,17 +4,16 @@ import { Suspense, lazy, memo, useEffect } from "react"
 import ReactDOM from "react-dom/client"
 import { ThemeProvider } from "./components/theme-provider.tsx"
 import { DirectionProvider } from "@radix-ui/react-direction"
-import { $authenticated, $systems, $publicKey, $copyContent, $direction } from "./lib/stores.ts"
-import { pb, updateSystemList, updateUserSettings } from "./lib/api.ts"
+import { $authenticated, $publicKey, $copyContent, $direction } from "./lib/stores.ts"
+import { pb, updateUserSettings } from "./lib/api.ts"
+import * as systemsManager from "./lib/systemsManager.ts"
 import { useStore } from "@nanostores/react"
 import { Toaster } from "./components/ui/toaster.tsx"
 import { $router } from "./components/router.tsx"
-import { updateFavicon } from "@/lib/utils"
 import Navbar from "./components/navbar.tsx"
 import { I18nProvider } from "@lingui/react"
 import { i18n } from "@lingui/core"
 import { getLocale, dynamicActivate } from "./lib/i18n"
-import { SystemStatus } from "./lib/enums"
 import { alertManager } from "./lib/alerts"
 import Settings from "./components/routes/settings/layout.tsx"
 
@@ -25,8 +24,6 @@ const CopyToClipboardDialog = lazy(() => import("@/components/copy-to-clipboard.
 
 const App = memo(() => {
 	const page = useStore($router)
-	const authenticated = useStore($authenticated)
-	const systems = useStore($systems)
 
 	useEffect(() => {
 		// change auth store on auth change
@@ -37,39 +34,25 @@ const App = memo(() => {
 		pb.send("/api/beszel/getkey", {}).then((data) => {
 			$publicKey.set(data.key)
 		})
-		// get servers / alerts / settings
+		// get user settings
 		updateUserSettings()
 		// need to get system list before alerts
-		updateSystemList()
-			// get alerts
+		systemsManager.init()
+		systemsManager
+			// get current systems list
+			.refresh()
+			// subscribe to new system updates
+			.then(systemsManager.subscribe)
+			// get current alerts
 			.then(alertManager.refresh)
 			// subscribe to new alert updates
 			.then(alertManager.subscribe)
-
 		return () => {
-			updateFavicon("favicon.svg")
+			// updateFavicon("favicon.svg")
 			alertManager.unsubscribe()
+			systemsManager.unsubscribe()
 		}
 	}, [])
-
-	// update favicon
-	useEffect(() => {
-		if (!systems.length || !authenticated) {
-			updateFavicon("favicon.svg")
-		} else {
-			let up = false
-			for (const system of systems) {
-				if (system.status === SystemStatus.Down) {
-					updateFavicon("favicon-red.svg")
-					return
-				}
-				if (system.status === SystemStatus.Up) {
-					up = true
-				}
-			}
-			updateFavicon(up ? "favicon-green.svg" : "favicon.svg")
-		}
-	}, [systems])
 
 	if (!page) {
 		return <h1 className="text-3xl text-center my-14">404</h1>

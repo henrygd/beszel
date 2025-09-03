@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { $publicKey } from "@/lib/stores"
-import { cn, generateToken, tokenMap, useLocalStorage } from "@/lib/utils"
+import { cn, generateToken, tokenMap, useBrowserStorage } from "@/lib/utils"
 import { pb, isReadOnlyUser } from "@/lib/api"
 import { useStore } from "@nanostores/react"
 import { ChevronDownIcon, ExternalLinkIcon, PlusIcon } from "lucide-react"
@@ -77,7 +77,7 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 	const port = useRef<HTMLInputElement>(null)
 	const [hostValue, setHostValue] = useState(system?.host ?? "")
 	const isUnixSocket = hostValue.startsWith("/")
-	const [tab, setTab] = useLocalStorage("as-tab", "docker")
+	const [tab, setTab] = useBrowserStorage("as-tab", "docker")
 	const [token, setToken] = useState(system?.token ?? "")
 
 	useEffect(() => {

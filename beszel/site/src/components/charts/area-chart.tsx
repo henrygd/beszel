@@ -1,6 +1,7 @@
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
-import { useYAxisWidth, cn, formatShortDate, chartMargin } from "@/lib/utils"
+import { cn, formatShortDate, chartMargin } from "@/lib/utils"
+import { useYAxisWidth } from "./hooks"
 import { ChartData, SystemStatsRecord } from "@/types"
 import { useMemo } from "react"
 

@@ -8,13 +8,10 @@ import (
 	"beszel/internal/hub/systems"
 	"beszel/internal/records"
 	"beszel/internal/users"
-	"beszel/site"
 	"crypto/ed25519"
 	"encoding/pem"
 	"fmt"
-	"io/fs"
 	"net/http"
-	"net/http/httputil"
 	"net/url"
 	"os"
 	"path"
@@ -115,6 +112,8 @@ func (h *Hub) initialize(e *core.ServeEvent) error {
 	// set URL if BASE_URL env is set
 	if h.appURL != "" {
 		settings.Meta.AppURL = h.appURL
+	} else {
+		h.appURL = settings.Meta.AppURL
 	}
 	if err := e.App.Save(settings); err != nil {
 		return err
@@ -160,55 +159,6 @@ func (h *Hub) initialize(e *core.ServeEvent) error {
 	systemsCollection.DeleteRule = &updateDeleteRule
 	if err := e.App.Save(systemsCollection); err != nil {
 		return err
-	}
-	return nil
-}
-
-// startServer sets up the server for Beszel
-func (h *Hub) startServer(se *core.ServeEvent) error {
-	// TODO: exclude dev server from production binary
-	switch h.IsDev() {
-	case true:
-		proxy := httputil.NewSingleHostReverseProxy(&url.URL{
-			Scheme: "http",
-			Host:   "localhost:5173",
-		})
-		se.Router.GET("/{path...}", func(e *core.RequestEvent) error {
-			proxy.ServeHTTP(e.Response, e.Request)
-			return nil
-		})
-	default:
-		// parse app url
-		parsedURL, err := url.Parse(h.appURL)
-		if err != nil {
-			return err
-		}
-		// fix base paths in html if using subpath
-		basePath := strings.TrimSuffix(parsedURL.Path, "/") + "/"
-		indexFile, _ := fs.ReadFile(site.DistDirFS, "index.html")
-		indexContent := strings.ReplaceAll(string(indexFile), "./", basePath)
-		indexContent = strings.Replace(indexContent, "{{V}}", beszel.Version, 1)
-		indexContent = strings.Replace(indexContent, "{{HUB_URL}}", h.appURL, 1)
-		// set up static asset serving
-		staticPaths := [2]string{"/static/", "/assets/"}
-		serveStatic := apis.Static(site.DistDirFS, false)
-		// get CSP configuration
-		csp, cspExists := GetEnv("CSP")
-		// add route
-		se.Router.GET("/{path...}", func(e *core.RequestEvent) error {
-			// serve static assets if path is in staticPaths
-			for i := range staticPaths {
-				if strings.Contains(e.Request.URL.Path, staticPaths[i]) {
-					e.Response.Header().Set("Cache-Control", "public, max-age=2592000")
-					return serveStatic(e)
-				}
-			}
-			if cspExists {
-				e.Response.Header().Del("X-Frame-Options")
-				e.Response.Header().Set("Content-Security-Policy", csp)
-			}
-			return e.HTML(http.StatusOK, indexContent)
-		})
 	}
 	return nil
 }
