@@ -4,6 +4,7 @@ import { useState, lazy, Suspense } from "react"
 import {
   AlertOctagonIcon,
   BellIcon,
+  ChevronDownIcon,
   DatabaseBackupIcon,
   FileSlidersIcon,
   FingerprintIcon,
@@ -54,6 +55,7 @@ const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [open, setOpen] = useState(false)
+  const [applicationOpen, setApplicationOpen] = useState(false)
   const { theme, setTheme } = useTheme()
 
   const Kbd = ({ children }: { children: React.ReactNode }) => (
@@ -195,53 +197,56 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
         {isAdmin() && (
           <SidebarGroup>
-            <SidebarGroupLabel>
+            <SidebarGroupLabel className="flex items-center justify-between cursor-pointer" onClick={() => setApplicationOpen(!applicationOpen)}>
               <Trans>Application</Trans>
+              <ChevronDownIcon className={`h-4 w-4 transition-transform duration-200 ${applicationOpen ? 'rotate-180' : ''}`} />
             </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <a href={prependBasePath("/_/")} target="_blank" className="flex items-center gap-2">
-                      <UsersIcon className="h-4 w-4" />
-                      <span>
-                        <Trans>Users</Trans>
-                      </span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <a href={prependBasePath("/_/#/collections?collection=systems")} target="_blank" className="flex items-center gap-2">
-                      <ServerIcon className="h-4 w-4" />
-                      <span>
-                        <Trans>Manage Systems</Trans>
-                      </span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <a href={prependBasePath("/_/#/logs")} target="_blank" className="flex items-center gap-2">
-                      <LogsIcon className="h-4 w-4" />
-                      <span>
-                        <Trans>Logs</Trans>
-                      </span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <a href={prependBasePath("/_/#/settings/backups")} target="_blank" className="flex items-center gap-2">
-                      <DatabaseBackupIcon className="h-4 w-4" />
-                      <span>
-                        <Trans>Backups</Trans>
-                      </span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
+            {applicationOpen && (
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <a href={prependBasePath("/_/")} target="_blank" className="flex items-center gap-2">
+                        <UsersIcon className="h-4 w-4" />
+                        <span>
+                          <Trans>Users</Trans>
+                        </span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <a href={prependBasePath("/_/#/collections?collection=systems")} target="_blank" className="flex items-center gap-2">
+                        <ServerIcon className="h-4 w-4" />
+                        <span>
+                          <Trans>Manage Systems</Trans>
+                        </span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <a href={prependBasePath("/_/#/logs")} target="_blank" className="flex items-center gap-2">
+                        <LogsIcon className="h-4 w-4" />
+                        <span>
+                          <Trans>Logs</Trans>
+                        </span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <a href={prependBasePath("/_/#/settings/backups")} target="_blank" className="flex items-center gap-2">
+                        <DatabaseBackupIcon className="h-4 w-4" />
+                        <span>
+                          <Trans>Backups</Trans>
+                        </span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            )}
           </SidebarGroup>
         )}
         

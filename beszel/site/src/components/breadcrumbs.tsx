@@ -16,7 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { HomeIcon, ChevronDownIcon } from "lucide-react"
+import { ChevronDownIcon } from "lucide-react"
 import { isAdmin, isReadOnlyUser } from "@/lib/api"
 
 interface BreadcrumbSegment {
@@ -101,55 +101,42 @@ export function Breadcrumbs() {
   }
 
   return (
-    <>
-      {segments.map((segment, index) => (
-        <div key={index} className="flex items-center">
-          {index > 0 && <BreadcrumbSeparator />}
-          <BreadcrumbItem>
-            {segment.hasDropdown ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger className="flex items-center gap-1 hover:text-foreground">
-                  <Trans>{segment.label}</Trans>
-                  <ChevronDownIcon className="h-4 w-4" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                  {segment.dropdownItems?.map((item, itemIndex) => (
-                    <DropdownMenuItem key={itemIndex} asChild>
-                      <Link href={item.href}>
-                        <Trans>{item.label}</Trans>
-                      </Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : segment.isLast || !segment.href ? (
-              <BreadcrumbPage>
-                {index === 0 ? (
-                  <div className="flex items-center gap-1.5">
-                    <HomeIcon className="h-4 w-4" />
+    <Breadcrumb>
+      <BreadcrumbList>
+        {segments.map((segment, index) => (
+          <>
+            {index > 0 && <BreadcrumbSeparator />}
+            <BreadcrumbItem key={index}>
+              {segment.hasDropdown ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger>
                     <Trans>{segment.label}</Trans>
-                  </div>
-                ) : (
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start">
+                    {segment.dropdownItems?.map((item, itemIndex) => (
+                      <DropdownMenuItem key={itemIndex} asChild>
+                        <Link href={item.href}>
+                          <Trans>{item.label}</Trans>
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : segment.isLast || !segment.href ? (
+                <BreadcrumbPage>
                   <Trans>{segment.label}</Trans>
-                )}
-              </BreadcrumbPage>
-            ) : (
-              <BreadcrumbLink asChild>
-                <Link href={segment.href}>
-                  {index === 0 ? (
-                    <div className="flex items-center gap-1.5">
-                      <HomeIcon className="h-4 w-4" />
-                      <Trans>{segment.label}</Trans>
-                    </div>
-                  ) : (
+                </BreadcrumbPage>
+              ) : (
+                <BreadcrumbLink asChild>
+                  <Link href={segment.href}>
                     <Trans>{segment.label}</Trans>
-                  )}
-                </Link>
-              </BreadcrumbLink>
-            )}
-          </BreadcrumbItem>
-        </div>
-      ))}
-    </>
+                  </Link>
+                </BreadcrumbLink>
+              )}
+            </BreadcrumbItem>
+          </>
+        ))}
+      </BreadcrumbList>
+    </Breadcrumb>
   )
 }
