@@ -97,10 +97,16 @@ const App = memo(() => {
 				return <TokensPage />
 			case "alert-history":
 				return <AlertHistoryPage />
+			default:
+				return <Settings />
+		}
+	} else if (page.route === "application") {
+		// Handle individual application pages
+		switch (page.params.name) {
 			case "config":
 				return <YamlConfigPage />
 			default:
-				return <Settings />
+				return <h1 className="text-3xl text-center my-14">404</h1>
 		}
 	}
 })

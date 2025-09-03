@@ -176,21 +176,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              {isAdmin() && (
-                <SidebarMenuItem>
-                  <SidebarMenuButton asChild>
-                    <Link
-                      href={getPagePath($router, "settings", { name: "config" })}
-                      className="flex items-center gap-2"
-                    >
-                      <FileSlidersIcon className="h-4 w-4" />
-                      <span>
-                        <Trans>YAML Config</Trans>
-                      </span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -242,6 +227,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                           <Trans>Backups</Trans>
                         </span>
                       </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <Link
+                        href={getPagePath($router, "application", { name: "config" })}
+                        className="flex items-center gap-2"
+                      >
+                        <FileSlidersIcon className="h-4 w-4" />
+                        <span>
+                          <Trans>YAML Config</Trans>
+                        </span>
+                      </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </SidebarMenu>

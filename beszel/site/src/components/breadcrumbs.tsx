@@ -98,6 +98,29 @@ export function Breadcrumbs() {
       // Mark Settings as last if no specific page
       segments[segments.length - 1].isLast = true
     }
+  } else if (page.route === "application") {
+    const applicationName = page.params.name
+    
+    // Add Application section  
+    segments.push({
+      label: "Application",
+      href: getPagePath($router, "application", {}),
+    })
+    
+    // Add specific application page if exists
+    if (applicationName) {
+      const applicationLabels: Record<string, string> = {
+        config: "YAML Config",
+      }
+      
+      segments.push({
+        label: applicationLabels[applicationName] || applicationName,
+        isLast: true,
+      })
+    } else {
+      // Mark Application as last if no specific page
+      segments[segments.length - 1].isLast = true
+    }
   }
 
   return (
