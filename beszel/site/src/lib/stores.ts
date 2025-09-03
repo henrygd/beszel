@@ -1,4 +1,4 @@
-import { atom, map } from "nanostores"
+import { atom, computed, map, ReadableAtom } from "nanostores"
 import { AlertMap, ChartTimes, SystemRecord, UserSettings } from "@/types"
 import { Unit } from "./enums"
 import { pb } from "./api"
@@ -6,8 +6,18 @@ import { pb } from "./api"
 /** Store if user is authenticated */
 export const $authenticated = atom(pb.authStore.isValid)
 
-/** List of system records */
-export const $systems = atom<SystemRecord[]>([])
+/** Map of system records by name */
+export const $allSystemsByName = map<Record<string, SystemRecord>>({})
+/** Map of system records by id */
+export const $allSystemsById = map<Record<string, SystemRecord>>({})
+/** Map of up systems by id */
+export const $upSystems = map<Record<string, SystemRecord>>({})
+/** Map of down systems by id */
+export const $downSystems = map<Record<string, SystemRecord>>({})
+/** Map of paused systems by id */
+export const $pausedSystems = map<Record<string, SystemRecord>>({})
+/** List of all system records */
+export const $systems: ReadableAtom<SystemRecord[]> = computed($allSystemsByName, Object.values)
 
 /** Map of alert records by system id and alert name */
 export const $alerts = map<AlertMap>({})

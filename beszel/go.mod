@@ -18,6 +18,7 @@ require (
 	github.com/shirou/gopsutil/v4 v4.25.6
 	github.com/spf13/cast v1.9.2
 	github.com/spf13/cobra v1.9.1
+	github.com/spf13/pflag v1.0.7
 	github.com/stretchr/testify v1.11.0
 	golang.org/x/crypto v0.41.0
 	golang.org/x/exp v0.0.0-20250819193227-8b4c13bb791b
@@ -49,7 +50,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
-	github.com/spf13/pflag v1.0.7 // indirect
 	github.com/tklauser/go-sysconf v0.3.15 // indirect
 	github.com/tklauser/numcpus v0.10.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect

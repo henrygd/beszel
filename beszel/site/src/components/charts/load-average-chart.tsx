@@ -8,10 +8,11 @@ import {
 	ChartTooltipContent,
 	xAxis,
 } from "@/components/ui/chart"
-import { useYAxisWidth, cn, formatShortDate, toFixedFloat, decimalString, chartMargin } from "@/lib/utils"
+import { cn, formatShortDate, toFixedFloat, decimalString, chartMargin } from "@/lib/utils"
 import { ChartData, SystemStats } from "@/types"
 import { memo } from "react"
 import { t } from "@lingui/core/macro"
+import { useYAxisWidth } from "./hooks"
 
 export default memo(function LoadAverageChart({ chartData }: { chartData: ChartData }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()

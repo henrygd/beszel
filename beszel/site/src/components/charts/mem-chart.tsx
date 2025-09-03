@@ -1,10 +1,11 @@
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
-import { useYAxisWidth, cn, decimalString, formatShortDate, chartMargin, formatBytes, toFixedFloat } from "@/lib/utils"
+import { cn, decimalString, formatShortDate, chartMargin, formatBytes, toFixedFloat } from "@/lib/utils"
 import { memo } from "react"
 import { ChartData } from "@/types"
 import { useLingui } from "@lingui/react/macro"
 import { Unit } from "@/lib/enums"
+import { useYAxisWidth } from "./hooks"
 
 export default memo(function MemChart({ chartData, showMax }: { chartData: ChartData; showMax: boolean }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()

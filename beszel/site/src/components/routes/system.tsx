@@ -8,8 +8,10 @@ import {
 	$direction,
 	$maxValues,
 	$temperatureFilter,
+	$allSystemsByName,
 } from "@/lib/stores"
 import { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord } from "@/types"
+import { useContainerChartConfigs } from "@/components/charts/hooks"
 import { ChartType, Unit, Os, SystemStatus } from "@/lib/enums"
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState, type JSX } from "react"
 import { Card, CardHeader, CardTitle, CardDescription } from "../ui/card"
@@ -26,7 +28,7 @@ import {
 	listen,
 	parseSemVer,
 	toFixedFloat,
-	useLocalStorage,
+	useBrowserStorage,
 } from "@/lib/utils"
 import { getPbTimestamp, pb } from "@/lib/api"
 import { Separator } from "../ui/separator"
@@ -49,6 +51,7 @@ import SwapChart from "@/components/charts/swap-chart"
 import TemperatureChart from "@/components/charts/temperature-chart"
 import GpuPowerChart from "@/components/charts/gpu-power-chart"
 import LoadAverageChart from "@/components/charts/load-average-chart"
+import { subscribeKeys } from "nanostores"
 
 const cache = new Map<string, any>()
 
@@ -117,13 +120,13 @@ function dockerOrPodman(str: string, system: SystemRecord) {
 	return str
 }
 
-export default function SystemDetail({ name }: { name: string }) {
+export default memo(function SystemDetail({ name }: { name: string }) {
 	const direction = useStore($direction)
 	const { t } = useLingui()
 	const systems = useStore($systems)
 	const chartTime = useStore($chartTime)
 	const maxValues = useStore($maxValues)
-	const [grid, setGrid] = useLocalStorage("grid", true)
+	const [grid, setGrid] = useBrowserStorage("grid", true)
 	const [system, setSystem] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
 	const [containerData, setContainerData] = useState([] as ChartData["containerData"])
@@ -149,36 +152,13 @@ export default function SystemDetail({ name }: { name: string }) {
 		}
 	}, [name])
 
-	// function resetCharts() {
-	// 	setSystemStats([])
-	// 	setContainerData([])
-	// }
-
-	// useEffect(resetCharts, [chartTime])
-
-	// find matching system
+	// find matching system and update when it changes
 	useEffect(() => {
-		if (system.id && system.name === name) {
-			return
-		}
-		const matchingSystem = systems.find((s) => s.name === name) as SystemRecord
-		if (matchingSystem) {
-			setSystem(matchingSystem)
-		}
-	}, [name, system, systems])
-
-	// update system when new data is available
-	useEffect(() => {
-		if (!system.id) {
-			return
-		}
-		pb.collection<SystemRecord>("systems").subscribe(system.id, (e) => {
-			setSystem(e.record)
+		return subscribeKeys($allSystemsByName, [name], (newSystems) => {
+			const sys = newSystems[name]
+			sys?.id && setSystem(sys)
 		})
-		return () => {
-			pb.collection("systems").unsubscribe(system.id)
-		}
-	}, [system.id])
+	}, [name])
 
 	const chartData: ChartData = useMemo(() => {
 		const lastCreated = Math.max(
@@ -194,6 +174,9 @@ export default function SystemDetail({ name }: { name: string }) {
 			agentVersion: parseSemVer(system?.info?.v),
 		}
 	}, [systemStats, containerData, direction])
+
+	// Share chart config computation for all container charts
+	const containerChartConfigs = useContainerChartConfigs(containerData)
 
 	// get stats
 	useEffect(() => {
@@ -503,7 +486,12 @@ export default function SystemDetail({ name }: { name: string }) {
 							description={t`Average CPU utilization of containers`}
 							cornerEl={containerFilterBar}
 						>
-							<ContainerChart chartData={chartData} dataKey="c" chartType={ChartType.CPU} />
+							<ContainerChart
+								chartData={chartData}
+								dataKey="c"
+								chartType={ChartType.CPU}
+								chartConfig={containerChartConfigs.cpu}
+							/>
 						</ChartCard>
 					)}
 
@@ -525,7 +513,12 @@ export default function SystemDetail({ name }: { name: string }) {
 							description={dockerOrPodman(t`Memory usage of docker containers`, system)}
 							cornerEl={containerFilterBar}
 						>
-							<ContainerChart chartData={chartData} dataKey="m" chartType={ChartType.Memory} />
+							<ContainerChart
+								chartData={chartData}
+								dataKey="m"
+								chartType={ChartType.Memory}
+								chartConfig={containerChartConfigs.memory}
+							/>
 						</ChartCard>
 					)}
 
@@ -627,8 +620,12 @@ export default function SystemDetail({ name }: { name: string }) {
 								description={dockerOrPodman(t`Network traffic of docker containers`, system)}
 								cornerEl={containerFilterBar}
 							>
-								{/* @ts-ignore */}
-								<ContainerChart chartData={chartData} chartType={ChartType.Network} dataKey="n" />
+								<ContainerChart
+									chartData={chartData}
+									chartType={ChartType.Network}
+									dataKey="n"
+									chartConfig={containerChartConfigs.network}
+								/>
 							</ChartCard>
 						</div>
 					)}
@@ -835,7 +832,7 @@ export default function SystemDetail({ name }: { name: string }) {
 			{bottomSpacing > 0 && <span className="block" style={{ height: bottomSpacing }} />}
 		</>
 	)
-}
+})
 
 function FilterBar({ store = $containerFilter }: { store?: typeof $containerFilter }) {
 	const containerFilter = useStore(store)

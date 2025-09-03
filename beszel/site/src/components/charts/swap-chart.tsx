@@ -2,11 +2,12 @@ import { t } from "@lingui/core/macro"
 
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
-import { useYAxisWidth, cn, formatShortDate, decimalString, chartMargin, formatBytes, toFixedFloat } from "@/lib/utils"
+import { cn, formatShortDate, decimalString, chartMargin, formatBytes, toFixedFloat } from "@/lib/utils"
 import { ChartData } from "@/types"
 import { memo } from "react"
 import { $userSettings } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
+import { useYAxisWidth } from "./hooks"
 
 export default memo(function SwapChart({ chartData }: { chartData: ChartData }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()

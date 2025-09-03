@@ -2,12 +2,16 @@ import { t } from "@lingui/core/macro"
 import { toast } from "@/components/ui/use-toast"
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { $copyContent, $systems, $userSettings } from "./stores"
+import { $copyContent, $userSettings } from "./stores"
 import type { ChartTimeData, FingerprintRecord, SemVer, SystemRecord } from "@/types"
 import { timeDay, timeHour } from "d3-time"
 import { useEffect, useState } from "react"
 import { MeterState, Unit } from "./enums"
 import { prependBasePath } from "@/components/router"
+
+export const FAVICON_DEFAULT = "favicon.svg"
+export const FAVICON_GREEN = "favicon-green.svg"
+export const FAVICON_RED = "favicon-red.svg"
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs))
@@ -104,32 +108,6 @@ export const chartTimeData: ChartTimeData = {
 	},
 }
 
-/** Sets the correct width of the y axis in recharts based on the longest label */
-export function useYAxisWidth() {
-	const [yAxisWidth, setYAxisWidth] = useState(0)
-	let maxChars = 0
-	let timeout: Timer
-	function updateYAxisWidth(str: string) {
-		if (str.length > maxChars) {
-			maxChars = str.length
-			const div = document.createElement("div")
-			div.className = "text-xs tabular-nums tracking-tighter table sr-only"
-			div.innerHTML = str
-			clearTimeout(timeout)
-			timeout = setTimeout(() => {
-				document.body.appendChild(div)
-				const width = div.offsetWidth + 24
-				if (width > yAxisWidth) {
-					setYAxisWidth(div.offsetWidth + 24)
-				}
-				document.body.removeChild(div)
-			})
-		}
-		return str
-	}
-	return { yAxisWidth, updateYAxisWidth }
-}
-
 /** Format number to x decimal places, without trailing zeros */
 export function toFixedFloat(num: number, digits: number) {
 	return parseFloat((digits === 0 ? Math.ceil(num) : num).toFixed(digits))
@@ -152,20 +130,20 @@ export function decimalString(num: number, digits = 2) {
 	return formatter.format(num)
 }
 
-/** Get value from local storage */
-function getStorageValue(key: string, defaultValue: any) {
-	const saved = localStorage?.getItem(key)
+/** Get value from local or session storage */
+function getStorageValue(key: string, defaultValue: any, storageInterface: Storage = localStorage) {
+	const saved = storageInterface?.getItem(key)
 	return saved ? JSON.parse(saved) : defaultValue
 }
 
-/** Hook to sync value in local storage */
-export function useLocalStorage<T>(key: string, defaultValue: T) {
+/** Hook to sync value in local or session storage */
+export function useBrowserStorage<T>(key: string, defaultValue: T, storageInterface: Storage = localStorage) {
 	key = `besz-${key}`
 	const [value, setValue] = useState(() => {
-		return getStorageValue(key, defaultValue)
+		return getStorageValue(key, defaultValue, storageInterface)
 	})
 	useEffect(() => {
-		localStorage?.setItem(key, JSON.stringify(value))
+		storageInterface?.setItem(key, JSON.stringify(value))
 	}, [key, value])
 
 	return [value, setValue]
@@ -344,28 +322,20 @@ export function debounce<T extends (...args: any[]) => any>(func: T, wait: numbe
 	}
 }
 
-/* returns the name of a system from its id */
-export const getSystemNameFromId = (() => {
-	const cache = new Map<string, string>()
-	return (systemId: string): string => {
-		if (cache.has(systemId)) {
-			return cache.get(systemId)!
-		}
-		const sysName = $systems.get().find((s) => s.id === systemId)?.name ?? ""
-		cache.set(systemId, sysName)
-		return sysName
-	}
-})()
-
+// Cache for runOnce
+const runOnceCache = new WeakMap<Function, { done: boolean; result: unknown }>()
 /** Run a function only once */
-export function runOnce<T extends (...args: any[]) => any>(fn: T): (...args: Parameters<T>) => ReturnType<T> {
-	let done = false
-	let result: any
-	return (...args: any) => {
-		if (!done) {
-			result = fn(...args)
-			done = true
+export function runOnce<T extends (...args: any[]) => any>(fn: T): T {
+	return ((...args: Parameters<T>) => {
+		let state = runOnceCache.get(fn)
+		if (!state) {
+			state = { done: false, result: undefined }
+			runOnceCache.set(fn, state)
 		}
-		return result
-	}
+		if (!state.done) {
+			state.result = fn(...args)
+			state.done = true
+		}
+		return state.result
+	}) as T
 }
