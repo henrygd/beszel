@@ -116,18 +116,18 @@ export default function SystemsTable() {
 	// TODO: hiding temp then gpu messes up table headers
 	const CardHead = useMemo(() => {
 		return (
-			<CardHeader className="pb-5 px-2 sm:px-6 max-sm:pt-5 max-sm:pb-1">
-				<div className="grid md:flex gap-5 w-full items-end">
-					<div className="px-2 sm:px-1">
-						<CardTitle className="mb-2.5">
+			<div className="pb-6 mb-6 border-b">
+				<div className="flex flex-col lg:flex-row gap-4 lg:gap-6 w-full items-start lg:items-end">
+					<div>
+						<h2 className="text-2xl font-semibold mb-2">
 							<Trans>All Systems</Trans>
-						</CardTitle>
-						<CardDescription>
+						</h2>
+						<p className="text-muted-foreground">
 							<Trans>Updated in real time. Click on a system to view information.</Trans>
-						</CardDescription>
+						</p>
 					</div>
 
-					<div className="flex gap-2 ms-auto w-full md:w-80">
+					<div className="flex gap-2 ms-auto w-full lg:w-auto min-w-80">
 						<Input placeholder={t`Filter...`} onChange={(e) => setFilter(e.target.value)} className="px-4" />
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
@@ -250,22 +250,22 @@ export default function SystemsTable() {
 						</DropdownMenu>
 					</div>
 				</div>
-			</CardHeader>
+			</div>
 		)
 	}, [visibleColumns.length, sorting, viewMode, locale, statusFilter])
 
 	return (
-		<Card>
+		<div className="w-full">
 			{CardHead}
-			<div className="p-6 pt-0 max-sm:py-3 max-sm:px-2">
+			<div className="pt-0">
 				{viewMode === "table" ? (
 					// table layout
-					<div className="rounded-md">
+					<div className="rounded-md border">
 						<AllSystemsTable table={table} rows={rows} colLength={visibleColumns.length} />
 					</div>
 				) : (
 					// grid layout
-					<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+					<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
 						{rows?.length ? (
 							rows.map((row) => {
 								return <SystemCard key={row.original.id} row={row} table={table} colLength={visibleColumns.length} />
@@ -278,7 +278,7 @@ export default function SystemsTable() {
 					</div>
 				)}
 			</div>
-		</Card>
+		</div>
 	)
 }
 

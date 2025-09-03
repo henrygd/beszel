@@ -1,6 +1,7 @@
 import { Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
-import { $router, basePath, Link, getPagePath } from "./router"
+import { $router, basePath, Link } from "./router"
+import { getPagePath } from "@nanostores/router"
 import {
   Breadcrumb,
   BreadcrumbItem,

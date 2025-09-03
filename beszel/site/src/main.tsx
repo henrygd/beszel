@@ -116,15 +116,10 @@ const Layout = () => {
 	}, [direction])
 
 	const getContentContainerClass = () => {
-		if (!page) return "container max-w-5xl"
+		if (!page) return "w-full max-w-none"
 		
-		// Settings and system pages use full width
-		if (page.route === "settings" || page.route === "system") {
-			return "w-full max-w-none"
-		}
-		
-		// Home page stays centered
-		return "container max-w-5xl"
+		// All pages use full width for better space utilization
+		return "w-full max-w-none"
 	}
 
 	return (

@@ -7,6 +7,7 @@ import {
   DatabaseBackupIcon,
   FileSlidersIcon,
   FingerprintIcon,
+  GithubIcon,
   LogOutIcon,
   LogsIcon,
   MoonStarIcon,
@@ -104,7 +105,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <Link href={basePath} className="flex items-center gap-2">
                     <ServerIcon className="h-4 w-4" />
                     <span>
-                      <Trans>Systems</Trans>
+                      <Trans>System Metrics</Trans>
                     </span>
                   </Link>
                 </SidebarMenuButton>
@@ -243,6 +244,30 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarGroupContent>
           </SidebarGroup>
         )}
+        
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <div className="flex gap-3 text-xs px-2 py-2">
+              <a
+                href="https://github.com/henrygd/beszel"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <GithubIcon className="h-3 w-3" />
+                <span>GitHub</span>
+              </a>
+              <a
+                href="https://github.com/henrygd/beszel/releases"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                v{globalThis.BESZEL?.HUB_VERSION || '0.0.0'}
+              </a>
+            </div>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter className="border-t p-4">
