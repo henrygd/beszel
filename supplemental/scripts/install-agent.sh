@@ -216,11 +216,11 @@ if [ "$UNINSTALL" = true ]; then
     echo "Removing the OpenRC service files..."
     rm -f /etc/init.d/beszel-agent
 
-    # Remove the update service if it exists
-    echo "Removing the daily update service..."
-    rc-service beszel-agent-update stop 2>/dev/null
-    rc-update del beszel-agent-update default 2>/dev/null
-    rm -f /etc/init.d/beszel-agent-update
+    # Remove the daily update cron job if it exists
+    echo "Removing the daily update cron job..."
+    if crontab -u root -l 2>/dev/null | grep -q "beszel-agent.*update"; then
+      crontab -u root -l 2>/dev/null | grep -v "beszel-agent.*update" | crontab -u root -
+    fi
 
     # Remove log files
     echo "Removing log files..."
@@ -530,28 +530,13 @@ EOF
   [Yy]*)
     echo "Setting up daily automatic updates for beszel-agent..."
 
-    cat >/etc/init.d/beszel-agent-update <<EOF
-#!/sbin/openrc-run
+    # Create cron job to run beszel-agent update command daily at midnight
+    if ! crontab -u root -l 2>/dev/null | grep -q "beszel-agent.*update"; then
+      (crontab -u root -l 2>/dev/null; echo "0 0 * * * /opt/beszel-agent/beszel-agent update >/dev/null 2>&1") | crontab -u root -
+    fi
 
-name="beszel-agent-update"
-description="Update beszel-agent if needed"
-
-depend() {
-    need beszel-agent
-}
-
-start() {
-    ebegin "Checking for beszel-agent updates"
-    /opt/beszel-agent/beszel-agent update
-    eend $?
-}
-EOF
-
-    chmod +x /etc/init.d/beszel-agent-update
-    rc-update add beszel-agent-update default
-    rc-service beszel-agent-update start
-
-    printf "\nAutomatic daily updates have been enabled.\n"
+    printf "\nAutomatic daily updates have been enabled via cron job.\n"
+    printf "The beszel-agent update command will run daily at midnight.\n"
     ;;
   esac
 
