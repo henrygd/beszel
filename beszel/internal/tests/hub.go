@@ -96,3 +96,31 @@ func ClearCollection(t testing.TB, app core.App, collectionName string) error {
 	assert.EqualValues(t, recordCount, 0, "should have 0 records after clearing")
 	return err
 }
+
+func (h *TestHub) Cleanup() {
+	h.GetAlertManager().StopWorker()
+	h.GetSystemManager().RemoveAllSystems()
+	h.TestApp.Cleanup()
+}
+
+func CreateSystems(app core.App, count int, userId string, status string) ([]*core.Record, error) {
+	systems := make([]*core.Record, 0, count)
+	for i := range count {
+		system, err := CreateRecord(app, "systems", map[string]any{
+			"name":  fmt.Sprintf("test-system-%d", i),
+			"host":  fmt.Sprintf("127.0.0.%d", i),
+			"port":  "33914",
+			"users": []string{userId},
+		})
+		if err != nil {
+			return nil, err
+		}
+		system.Set("status", status)
+		err = app.SaveNoValidate(system)
+		if err != nil {
+			return nil, err
+		}
+		systems = append(systems, system)
+	}
+	return systems, nil
+}

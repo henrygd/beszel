@@ -100,3 +100,10 @@ func (sm *SystemManager) SetSystemStatusInDB(systemID string, status string) boo
 
 	return true
 }
+
+// TESTING ONLY: RemoveAllSystems removes all systems from the store
+func (sm *SystemManager) RemoveAllSystems() {
+	for _, system := range sm.systems.GetAll() {
+		sm.RemoveSystem(system.Id)
+	}
+}

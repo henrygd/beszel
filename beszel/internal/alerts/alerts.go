@@ -87,7 +87,7 @@ var supportsTitle = map[string]struct{}{
 func NewAlertManager(app hubLike) *AlertManager {
 	am := &AlertManager{
 		hub:        app,
-		alertQueue: make(chan alertTask),
+		alertQueue: make(chan alertTask, 5),
 		stopChan:   make(chan struct{}),
 	}
 	am.bindEvents()

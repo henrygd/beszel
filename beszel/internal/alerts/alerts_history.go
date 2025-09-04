@@ -42,21 +42,10 @@ func updateHistoryOnAlertUpdate(e *core.RecordEvent) error {
 
 // resolveAlertHistoryRecord sets the resolved field to the current time
 func resolveAlertHistoryRecord(app core.App, alertRecordID string) error {
-	alertHistoryRecords, err := app.FindRecordsByFilter(
-		"alerts_history",
-		"alert_id={:alert_id} && resolved=null",
-		"-created",
-		1,
-		0,
-		dbx.Params{"alert_id": alertRecordID},
-	)
-	if err != nil {
+	alertHistoryRecord, err := app.FindFirstRecordByFilter("alerts_history", "alert_id={:alert_id} && resolved=null", dbx.Params{"alert_id": alertRecordID})
+	if err != nil || alertHistoryRecord == nil {
 		return err
 	}
-	if len(alertHistoryRecords) == 0 {
-		return nil
-	}
-	alertHistoryRecord := alertHistoryRecords[0] // there should be only one record
 	alertHistoryRecord.Set("resolved", time.Now().UTC())
 	err = app.Save(alertHistoryRecord)
 	if err != nil {

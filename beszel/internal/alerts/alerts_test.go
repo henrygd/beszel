@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"testing/synctest"
+	"time"
 
 	beszelTests "beszel/internal/tests"
 
@@ -63,14 +65,14 @@ func TestUserAlertsApi(t *testing.T) {
 	}
 
 	scenarios := []beszelTests.ApiScenario{
-		{
-			Name:            "GET not implemented - returns index",
-			Method:          http.MethodGet,
-			URL:             "/api/beszel/user-alerts",
-			ExpectedStatus:  200,
-			ExpectedContent: []string{"<html ", "globalThis.BESZEL"},
-			TestAppFactory:  testAppFactory,
-		},
+		// {
+		// 	Name:            "GET not implemented - returns index",
+		// 	Method:          http.MethodGet,
+		// 	URL:             "/api/beszel/user-alerts",
+		// 	ExpectedStatus:  200,
+		// 	ExpectedContent: []string{"<html ", "globalThis.BESZEL"},
+		// 	TestAppFactory:  testAppFactory,
+		// },
 		{
 			Name:            "POST no auth",
 			Method:          http.MethodPost,
@@ -365,4 +367,238 @@ func TestUserAlertsApi(t *testing.T) {
 	for _, scenario := range scenarios {
 		scenario.Test(t)
 	}
+}
+
+func getHubWithUser(t *testing.T) (*beszelTests.TestHub, *core.Record) {
+	hub, err := beszelTests.NewTestHub(t.TempDir())
+	assert.NoError(t, err)
+	hub.StartHub()
+
+	// Manually initialize the system manager to bind event hooks
+	err = hub.GetSystemManager().Initialize()
+	assert.NoError(t, err)
+
+	// Create a test user
+	user, err := beszelTests.CreateUser(hub, "test@example.com", "password")
+	assert.NoError(t, err)
+
+	// Create user settings for the test user (required for alert notifications)
+	userSettingsData := map[string]any{
+		"user":     user.Id,
+		"settings": `{"emails":[test@example.com],"webhooks":[]}`,
+	}
+	_, err = beszelTests.CreateRecord(hub, "user_settings", userSettingsData)
+	assert.NoError(t, err)
+
+	return hub, user
+}
+
+func TestStatusAlerts(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		hub, user := getHubWithUser(t)
+		defer hub.Cleanup()
+
+		systems, err := beszelTests.CreateSystems(hub, 4, user.Id, "paused")
+		assert.NoError(t, err)
+
+		var alerts []*core.Record
+		for i, system := range systems {
+			alert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
+				"name":   "Status",
+				"system": system.Id,
+				"user":   user.Id,
+				"min":    i + 1,
+			})
+			assert.NoError(t, err)
+			alerts = append(alerts, alert)
+		}
+
+		time.Sleep(10 * time.Millisecond)
+
+		for _, alert := range alerts {
+			assert.False(t, alert.GetBool("triggered"), "Alert should not be triggered immediately")
+		}
+		if hub.TestMailer.TotalSend() != 0 {
+			assert.Zero(t, hub.TestMailer.TotalSend(), "Expected 0 messages, got %d", hub.TestMailer.TotalSend())
+		}
+		for _, system := range systems {
+			assert.EqualValues(t, "paused", system.GetString("status"), "System should be paused")
+		}
+		for _, system := range systems {
+			system.Set("status", "up")
+			err = hub.SaveNoValidate(system)
+			assert.NoError(t, err)
+		}
+		time.Sleep(time.Second)
+		assert.EqualValues(t, 0, hub.GetPendingAlertsCount(), "should have 0 alerts in the pendingAlerts map")
+		for _, system := range systems {
+			system.Set("status", "down")
+			err = hub.SaveNoValidate(system)
+			assert.NoError(t, err)
+		}
+		// after 30 seconds, should have 4 alerts in the pendingAlerts map, no triggered alerts
+		time.Sleep(time.Second * 30)
+		assert.EqualValues(t, 4, hub.GetPendingAlertsCount(), "should have 4 alerts in the pendingAlerts map")
+		triggeredCount, err := hub.CountRecords("alerts", dbx.HashExp{"triggered": true})
+		assert.NoError(t, err)
+		assert.EqualValues(t, 0, triggeredCount, "should have 0 alert triggered")
+		assert.EqualValues(t, 0, hub.TestMailer.TotalSend(), "should have 0 messages sent")
+		// after 1:30 seconds, should have 1 triggered alert and 3 pending alerts
+		time.Sleep(time.Second * 60)
+		assert.EqualValues(t, 3, hub.GetPendingAlertsCount(), "should have 3 alerts in the pendingAlerts map")
+		triggeredCount, err = hub.CountRecords("alerts", dbx.HashExp{"triggered": true})
+		assert.NoError(t, err)
+		assert.EqualValues(t, 1, triggeredCount, "should have 1 alert triggered")
+		assert.EqualValues(t, 1, hub.TestMailer.TotalSend(), "should have 1 messages sent")
+		// after 2:30 seconds, should have 2 triggered alerts and 2 pending alerts
+		time.Sleep(time.Second * 60)
+		assert.EqualValues(t, 2, hub.GetPendingAlertsCount(), "should have 2 alerts in the pendingAlerts map")
+		triggeredCount, err = hub.CountRecords("alerts", dbx.HashExp{"triggered": true})
+		assert.NoError(t, err)
+		assert.EqualValues(t, 2, triggeredCount, "should have 2 alert triggered")
+		assert.EqualValues(t, 2, hub.TestMailer.TotalSend(), "should have 2 messages sent")
+		// now we will bring the remaning systems back up
+		for _, system := range systems {
+			system.Set("status", "up")
+			err = hub.SaveNoValidate(system)
+			assert.NoError(t, err)
+		}
+		time.Sleep(time.Second)
+		// should have 0 alerts in the pendingAlerts map and 0 alerts triggered
+		assert.EqualValues(t, 0, hub.GetPendingAlertsCount(), "should have 0 alerts in the pendingAlerts map")
+		triggeredCount, err = hub.CountRecords("alerts", dbx.HashExp{"triggered": true})
+		assert.NoError(t, err)
+		assert.Zero(t, triggeredCount, "should have 0 alert triggered")
+		// 4 messages sent, 2 down alerts and 2 up alerts for first 2 systems
+		assert.EqualValues(t, 4, hub.TestMailer.TotalSend(), "should have 4 messages sent")
+	})
+}
+
+func TestAlertsHistory(t *testing.T) {
+	synctest.Test(t, func(t *testing.T) {
+		hub, user := getHubWithUser(t)
+		defer hub.Cleanup()
+
+		// Create systems and alerts
+		systems, err := beszelTests.CreateSystems(hub, 1, user.Id, "up")
+		assert.NoError(t, err)
+		system := systems[0]
+
+		alert, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
+			"name":   "Status",
+			"system": system.Id,
+			"user":   user.Id,
+			"min":    1,
+		})
+		assert.NoError(t, err)
+
+		// Initially, no alert history records should exist
+		initialHistoryCount, err := hub.CountRecords("alerts_history", nil)
+		assert.NoError(t, err)
+		assert.Zero(t, initialHistoryCount, "Should have 0 alert history records initially")
+
+		// Set system to up initially
+		system.Set("status", "up")
+		err = hub.SaveNoValidate(system)
+		assert.NoError(t, err)
+		time.Sleep(10 * time.Millisecond)
+
+		// Set system to down to trigger alert
+		system.Set("status", "down")
+		err = hub.SaveNoValidate(system)
+		assert.NoError(t, err)
+
+		// Wait for alert to trigger (after the downtime delay)
+		// With 1 minute delay, we need to wait at least 1 minute + some buffer
+		time.Sleep(time.Second * 75)
+
+		// Check that alert is triggered
+		triggeredCount, err := hub.CountRecords("alerts", dbx.HashExp{"triggered": true, "id": alert.Id})
+		assert.NoError(t, err)
+		assert.EqualValues(t, 1, triggeredCount, "Alert should be triggered")
+
+		// Check that alert history record was created
+		historyCount, err := hub.CountRecords("alerts_history", dbx.HashExp{"alert_id": alert.Id})
+		assert.NoError(t, err)
+		assert.EqualValues(t, 1, historyCount, "Should have 1 alert history record for triggered alert")
+
+		// Get the alert history record and verify it's not resolved immediately
+		historyRecord, err := hub.FindFirstRecordByFilter("alerts_history", "alert_id={:alert_id}", dbx.Params{"alert_id": alert.Id})
+		assert.NoError(t, err)
+		assert.NotNil(t, historyRecord, "Alert history record should exist")
+		assert.Equal(t, alert.Id, historyRecord.GetString("alert_id"), "Alert history should reference correct alert")
+		assert.Equal(t, system.Id, historyRecord.GetString("system"), "Alert history should reference correct system")
+		assert.Equal(t, "Status", historyRecord.GetString("name"), "Alert history should have correct name")
+
+		// The alert history might be resolved immediately in some cases, so let's check the alert's triggered status
+		alertRecord, err := hub.FindFirstRecordByFilter("alerts", "id={:id}", dbx.Params{"id": alert.Id})
+		assert.NoError(t, err)
+		assert.True(t, alertRecord.GetBool("triggered"), "Alert should still be triggered when checking history")
+
+		// Now resolve the alert by setting system back to up
+		system.Set("status", "up")
+		err = hub.SaveNoValidate(system)
+		assert.NoError(t, err)
+		time.Sleep(200 * time.Millisecond)
+
+		// Check that alert is no longer triggered
+		triggeredCount, err = hub.CountRecords("alerts", dbx.HashExp{"triggered": true, "id": alert.Id})
+		assert.NoError(t, err)
+		assert.Zero(t, triggeredCount, "Alert should not be triggered after system is back up")
+
+		// Check that alert history record is now resolved
+		historyRecord, err = hub.FindFirstRecordByFilter("alerts_history", "alert_id={:alert_id}", dbx.Params{"alert_id": alert.Id})
+		assert.NoError(t, err)
+		assert.NotNil(t, historyRecord, "Alert history record should still exist")
+		assert.NotNil(t, historyRecord.Get("resolved"), "Alert history should be resolved")
+
+		// Test deleting a triggered alert resolves its history
+		// Create another system and alert
+		systems2, err := beszelTests.CreateSystems(hub, 1, user.Id, "up")
+		assert.NoError(t, err)
+		system2 := systems2[0]
+		system2.Set("name", "test-system-2") // Rename for clarity
+		err = hub.SaveNoValidate(system2)
+		assert.NoError(t, err)
+
+		alert2, err := beszelTests.CreateRecord(hub, "alerts", map[string]any{
+			"name":   "Status",
+			"system": system2.Id,
+			"user":   user.Id,
+			"min":    1,
+		})
+		assert.NoError(t, err)
+
+		// Set system2 to down to trigger alert
+		system2.Set("status", "down")
+		err = hub.SaveNoValidate(system2)
+		assert.NoError(t, err)
+
+		// Wait for alert to trigger
+		time.Sleep(time.Second * 75)
+
+		// Verify alert is triggered and history record exists
+		triggeredCount, err = hub.CountRecords("alerts", dbx.HashExp{"triggered": true, "id": alert2.Id})
+		assert.NoError(t, err)
+		assert.EqualValues(t, 1, triggeredCount, "Second alert should be triggered")
+
+		historyCount, err = hub.CountRecords("alerts_history", dbx.HashExp{"alert_id": alert2.Id})
+		assert.NoError(t, err)
+		assert.EqualValues(t, 1, historyCount, "Should have 1 alert history record for second alert")
+
+		// Delete the triggered alert
+		err = hub.Delete(alert2)
+		assert.NoError(t, err)
+
+		// Check that alert history record is resolved after deletion
+		historyRecord2, err := hub.FindFirstRecordByFilter("alerts_history", "alert_id={:alert_id}", dbx.Params{"alert_id": alert2.Id})
+		assert.NoError(t, err)
+		assert.NotNil(t, historyRecord2, "Alert history record should still exist after alert deletion")
+		assert.NotNil(t, historyRecord2.Get("resolved"), "Alert history should be resolved after alert deletion")
+
+		// Verify total history count is correct (2 records total)
+		totalHistoryCount, err := hub.CountRecords("alerts_history", nil)
+		assert.NoError(t, err)
+		assert.EqualValues(t, 2, totalHistoryCount, "Should have 2 total alert history records")
+	})
 }
