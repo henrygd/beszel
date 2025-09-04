@@ -1,6 +1,6 @@
 module beszel
 
-go 1.24.4
+go 1.25.1
 
 // lock shoutrrr to specific version to allow review before updating
 replace github.com/nicholas-fedor/shoutrrr => github.com/nicholas-fedor/shoutrrr v0.8.8

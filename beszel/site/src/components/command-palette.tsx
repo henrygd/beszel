@@ -121,6 +121,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 							{SettingsShortcut}
 						</CommandItem>
 						<CommandItem
+							keywords={[t`Universal token`]}
 							onSelect={() => {
 								navigate(getPagePath($router, "settings", { name: "tokens" }))
 								setOpen(false)
