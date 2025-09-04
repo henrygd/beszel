@@ -321,6 +321,9 @@ if [ -z "$KEY" ]; then
   read KEY
 fi
 
+# Remove newlines from KEY
+KEY=$(echo "$KEY" | tr -d '\n')
+
 # TOKEN and HUB_URL are optional for backwards compatibility - no interactive prompts
 # They will be set as empty environment variables if not provided
 
@@ -523,7 +526,7 @@ EOF
   elif [ "$AUTO_UPDATE_FLAG" = "false" ]; then
     AUTO_UPDATE="n"
   else
-    printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
+    printf "\nEnable automatic daily updates for beszel-agent? (y/n): "
     read AUTO_UPDATE
   fi
   case "$AUTO_UPDATE" in
@@ -532,11 +535,10 @@ EOF
 
     # Create cron job to run beszel-agent update command daily at midnight
     if ! crontab -u root -l 2>/dev/null | grep -q "beszel-agent.*update"; then
-      (crontab -u root -l 2>/dev/null; echo "0 0 * * * /opt/beszel-agent/beszel-agent update >/dev/null 2>&1") | crontab -u root -
+      (crontab -u root -l 2>/dev/null; echo "12 0 * * * /opt/beszel-agent/beszel-agent update >/dev/null 2>&1") | crontab -u root -
     fi
 
-    printf "\nAutomatic daily updates have been enabled via cron job.\n"
-    printf "The beszel-agent update command will run daily at midnight.\n"
+    printf "\nDaily updates have been enabled via cron job.\n"
     ;;
   esac
 
@@ -597,7 +599,7 @@ EOF
     AUTO_UPDATE="n"
     sleep 1 # give time for the service to start
   else
-    printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
+    printf "\nEnable automatic daily updates for beszel-agent? (y/n): "
     read AUTO_UPDATE
   fi
   case "$AUTO_UPDATE" in
@@ -605,12 +607,12 @@ EOF
     echo "Setting up daily automatic updates for beszel-agent..."
 
     cat >/etc/crontabs/beszel <<EOF
-0 0 * * * /etc/init.d/beszel-agent update
+12 0 * * * /etc/init.d/beszel-agent update
 EOF
 
     /etc/init.d/cron restart
 
-    printf "\nAutomatic daily updates have been enabled.\n"
+    printf "\nDaily updates have been enabled.\n"
     ;;
   esac
 
@@ -680,7 +682,7 @@ EOF
     AUTO_UPDATE="n"
     sleep 1 # give time for the service to start
   else
-    printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
+    printf "\nEnable automatic daily updates for beszel-agent? (y/n): "
     read AUTO_UPDATE
   fi
   case "$AUTO_UPDATE" in
@@ -715,7 +717,7 @@ EOF
     systemctl daemon-reload
     systemctl enable --now beszel-agent-update.timer
 
-    printf "\nAutomatic daily updates have been enabled.\n"
+    printf "\nDaily updates have been enabled.\n"
     ;;
   esac
 
