@@ -8,7 +8,7 @@ msgstr ""
 "Language: tr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-05 17:46\n"
+"PO-Revision-Date: 2025-09-05 19:01\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -30,8 +30,8 @@ msgstr "{0, plural, one {# saat} other {# saat}}"
 
 #. placeholder {0}: Math.trunc(system.info.u / 60)
 #: src/components/routes/system.tsx
-msgid "{0, plural, one {# minute} other {# minutes}}"
-msgstr ""
+msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
+msgstr "{0, plural, one {# dakika} few {# dakika} many {# dakika} other {# dakika}}"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
@@ -185,7 +185,7 @@ msgstr "Bant Genişliği"
 
 #: src/components/routes/system.tsx
 msgid "Battery"
-msgstr ""
+msgstr "Pil"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -236,12 +236,12 @@ msgstr "Genel uygulama seçeneklerini değiştirin."
 
 #: src/components/routes/system.tsx
 msgid "Charge"
-msgstr ""
+msgstr "Şarj"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Charging"
-msgstr ""
+msgstr "Şarj oluyor"
 
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
@@ -261,7 +261,7 @@ msgstr "Bildirim hizmetinizi kontrol edin"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
-msgstr ""
+msgstr "Daha fazla bilgi görmek için bir sisteme tıklayın."
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
@@ -366,7 +366,7 @@ msgstr "Kritik (%)"
 #. Context: Battery state
 #: src/components/routes/system.tsx
 msgid "Current state"
-msgstr ""
+msgstr "Mevcut durum"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
@@ -389,7 +389,7 @@ msgstr "Parmak izini sil"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Discharging"
-msgstr ""
+msgstr "Boşalıyor"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
@@ -439,7 +439,7 @@ msgstr "Kapalı"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Down ({downSystemsLength})"
-msgstr ""
+msgstr "Kapalı ({downSystemsLength})"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
@@ -462,7 +462,7 @@ msgstr "E-posta bildirimleri"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Empty"
-msgstr ""
+msgstr "Boş"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -545,7 +545,7 @@ msgstr "Şifrenizi mi unuttunuz?"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Full"
-msgstr ""
+msgstr "Dolu"
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx
@@ -574,7 +574,7 @@ msgstr "Host / IP"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
-msgstr ""
+msgstr "Boşta"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
@@ -770,7 +770,7 @@ msgstr "Duraklatıldı"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused ({pausedSystemsLength})"
-msgstr ""
+msgstr "Duraklatıldı ({pausedSystemsLength})"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1083,7 +1083,7 @@ msgstr "Evrensel token"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Unknown"
-msgstr ""
+msgstr "Bilinmiyor"
 
 #. Context: System is up
 #: src/components/routes/system.tsx
@@ -1093,7 +1093,7 @@ msgstr "Açık"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
-msgstr ""
+msgstr "Açık ({upSystemsLength})"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"
