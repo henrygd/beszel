@@ -97,7 +97,7 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 			tokenMap.set(system.id, token)
 			setToken(token)
 		})()
-	}, [system?.id])
+	}, [system?.id, nextSystemToken])
 
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault()
