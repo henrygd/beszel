@@ -30,8 +30,8 @@ msgstr "{0, plural, one {godzinę} few {# godziny} many {# godzin} other {# godz
 
 #. placeholder {0}: Math.trunc(system.info.u / 60)
 #: src/components/routes/system.tsx
-msgid "{0, plural, one {# minute} other {# minutes}}"
-msgstr "{0, plural, one {# minuta} other {# minut}}"
+msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
+msgstr "{0, plural, one {# minuta} few {# minuty} many {# minut} other {# minut}}"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
@@ -193,7 +193,7 @@ msgstr "Beszel obsługuje OpenID Connect i wielu dostawców uwierzytelniania OAu
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
-msgstr "Beszel używa <0>Shoutrrr</0> do integracji z popularnych serwisami powiadomień."
+msgstr "Beszel używa <0>Shoutrrr</0> do integracji z popularnych serwisów powiadomień."
 
 #: src/components/add-system.tsx
 msgid "Binary"
@@ -261,7 +261,7 @@ msgstr "Sprawdź swój serwis powiadomień"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
-msgstr ""
+msgstr "Kliknij na system, aby zobaczyć więcej informacji."
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
@@ -439,7 +439,7 @@ msgstr "Nie działa"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Down ({downSystemsLength})"
-msgstr ""
+msgstr "Nie działa ({downSystemsLength})"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
@@ -770,7 +770,7 @@ msgstr "Wstrzymane"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused ({pausedSystemsLength})"
-msgstr ""
+msgstr "Wstrzymane ({pausedSystemsLength})"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1093,7 +1093,7 @@ msgstr "Działa"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
-msgstr ""
+msgstr "Działa ({upSystemsLength})"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"

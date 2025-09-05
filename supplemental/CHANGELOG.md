@@ -6,6 +6,8 @@
 
 - Add `USER_EMAIL` and `USER_PASSWORD` environment variables to set the email and password of the initial user. (#1137)
 
+- Display system counts (active, paused, down) in All Systems 'view' options. (#1078)
+
 ## 0.12.6
 
 - Add maximum 1 minute memory usage.
