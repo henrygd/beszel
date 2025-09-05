@@ -700,6 +700,31 @@ func init() {
 			},
 			{
 				"hidden": false,
+				"id": "tags1234567890",
+				"maxSelect": 2147483647,
+				"name": "tags",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "select",
+				"values": []
+			},
+			{
+				"autogeneratePattern": "",
+				"hidden": false,
+				"id": "group1234567890",
+				"max": 0,
+				"min": 0,
+				"name": "group",
+				"pattern": "",
+				"presentable": false,
+				"primaryKey": false,
+				"required": false,
+				"system": false,
+				"type": "text"
+			},
+			{
+				"hidden": false,
 				"id": "autodate2990389176",
 				"name": "created",
 				"onCreate": true,
