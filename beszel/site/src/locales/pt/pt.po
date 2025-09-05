@@ -8,7 +8,7 @@ msgstr ""
 "Language: pt\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-05 17:46\n"
+"PO-Revision-Date: 2025-09-05 19:01\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -30,14 +30,14 @@ msgstr "{0, plural, one {# hora} other {# horas}}"
 
 #. placeholder {0}: Math.trunc(system.info.u / 60)
 #: src/components/routes/system.tsx
-msgid "{0, plural, one {# minute} other {# minutes}}"
-msgstr ""
+msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
+msgstr "{0, plural, one {# minuto} other {# minutos}}"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
-msgstr ""
+msgstr "{0} de {1} linha(s) selecionada(s)."
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -228,7 +228,7 @@ msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
-msgstr ""
+msgstr "Alterar unidades de exibição para métricas."
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
@@ -261,7 +261,7 @@ msgstr "Verifique seu serviço de notificação"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
-msgstr ""
+msgstr "Clique em um sistema para ver mais informações."
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
@@ -283,7 +283,7 @@ msgstr "Confirmar senha"
 
 #: src/components/routes/home.tsx
 msgid "Connection is down"
-msgstr ""
+msgstr "A conexão está inativa"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -401,7 +401,7 @@ msgstr "E/S de Disco"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
-msgstr ""
+msgstr "Unidade de disco"
 
 #: src/components/charts/disk-chart.tsx
 #: src/components/routes/system.tsx
@@ -439,7 +439,7 @@ msgstr "“Desligado”"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Down ({downSystemsLength})"
-msgstr ""
+msgstr "Inativo ({downSystemsLength})"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
@@ -532,7 +532,7 @@ msgstr "Filtrar..."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
-msgstr ""
+msgstr "Impressão digital"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -599,24 +599,24 @@ msgstr "Aspeto"
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
-msgstr ""
+msgstr "Carga Média"
 
 #: src/lib/alerts.ts
 msgid "Load Average 15m"
-msgstr ""
+msgstr "Carga média 15m"
 
 #: src/lib/alerts.ts
 msgid "Load Average 1m"
-msgstr ""
+msgstr "Carga média 1m"
 
 #: src/lib/alerts.ts
 msgid "Load Average 5m"
-msgstr ""
+msgstr "Carga média 5m"
 
 #. Short label for load average
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
-msgstr ""
+msgstr "Carga Média"
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -686,7 +686,7 @@ msgstr "Tráfego de rede das interfaces públicas"
 #. Context: Bytes or bits
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
-msgstr ""
+msgstr "Unidade de rede"
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -737,7 +737,7 @@ msgstr "Página"
 #. placeholder {1}: table.getPageCount()
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Page {0} of {1}"
-msgstr ""
+msgstr "Página {0} de {1}"
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
@@ -770,7 +770,7 @@ msgstr "Pausado"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused ({pausedSystemsLength})"
-msgstr ""
+msgstr "Pausado ({pausedSystemsLength})"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -841,7 +841,7 @@ msgstr "Redefinir Senha"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Resolved"
-msgstr ""
+msgstr "Resolvido"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
@@ -918,7 +918,7 @@ msgstr "Ordenar Por"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 msgid "State"
-msgstr ""
+msgstr "Estado"
 
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
@@ -942,7 +942,7 @@ msgstr "Sistema"
 
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
-msgstr ""
+msgstr "Médias de carga do sistema ao longo do tempo"
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -968,7 +968,7 @@ msgstr "Temperatura"
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"
-msgstr ""
+msgstr "Unidade de temperatura"
 
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
@@ -992,7 +992,7 @@ msgstr "Esta ação não pode ser desfeita. Isso excluirá permanentemente todos
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
-msgstr ""
+msgstr "Isso excluirá permanentemente todos os registros selecionados do banco de dados."
 
 #: src/components/routes/system.tsx
 msgid "Throughput of {extraFsName}"
@@ -1036,15 +1036,15 @@ msgstr "Tokens e impressões digitais são usados para autenticar conexões WebS
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Dispara quando a média de carga de 1 minuto excede um limite"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Dispara quando a média de carga de 15 minutos excede um limite"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Dispara quando a média de carga de 5 minutos excede um limite"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -1073,7 +1073,7 @@ msgstr "Dispara quando o uso de qualquer disco excede um limite"
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
-msgstr ""
+msgstr "Preferências de unidade"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1093,7 +1093,7 @@ msgstr "“Ligado”"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
-msgstr ""
+msgstr "Ativo ({upSystemsLength})"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"
