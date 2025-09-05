@@ -46,9 +46,10 @@ var lhmFs embed.FS
 var (
 	beszelLhm     *lhmProcess
 	beszelLhmOnce sync.Once
+	useLHM        = os.Getenv("LHM") == "true"
 )
 
-var errNoSensors = errors.New("no sensors found (try running as admin)")
+var errNoSensors = errors.New("no sensors found (try running as admin with LHM=true)")
 
 // newlhmProcess copies the embedded LHM executable to a temporary directory and starts it.
 func newlhmProcess() (*lhmProcess, error) {
@@ -139,7 +140,7 @@ func (lhm *lhmProcess) cleanupProcess() {
 }
 
 func (lhm *lhmProcess) getTemps(ctx context.Context) (temps []sensors.TemperatureStat, err error) {
-	if lhm.stoppedNoSensors {
+	if !useLHM || lhm.stoppedNoSensors {
 		// Fall back to gopsutil if we can't get sensors from LHM
 		return sensors.TemperaturesWithContext(ctx)
 	}
@@ -221,6 +222,10 @@ func getSensorTemps(ctx context.Context) (temps []sensors.TemperatureStat, err e
 			slog.Debug("Error reading sensors", "err", err)
 		}
 	}()
+
+	if !useLHM {
+		return sensors.TemperaturesWithContext(ctx)
+	}
 
 	// Initialize process once
 	beszelLhmOnce.Do(func() {
