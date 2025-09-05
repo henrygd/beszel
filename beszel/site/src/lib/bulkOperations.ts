@@ -1,5 +1,5 @@
 import { SystemRecord } from "@/types"
-import { pb } from "./stores"
+import { pb } from "./api"
 
 /**
  * Bulk operations for tags and groups

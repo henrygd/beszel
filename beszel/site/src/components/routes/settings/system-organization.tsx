@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react"
 import { useStore } from "@nanostores/react"
-import { $systems, pb, $userSettings } from "@/lib/stores"
+import { $systems, $userSettings } from "@/lib/stores"
+import { pb } from "@/lib/api"
 import { SystemRecord } from "@/types"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
