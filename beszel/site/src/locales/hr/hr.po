@@ -8,7 +8,7 @@ msgstr ""
 "Language: hr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-05 17:46\n"
+"PO-Revision-Date: 2025-09-05 19:01\n"
 "Last-Translator: \n"
 "Language-Team: Croatian\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
@@ -30,7 +30,7 @@ msgstr "{0, plural, one {# sat} other {# sati}}"
 
 #. placeholder {0}: Math.trunc(system.info.u / 60)
 #: src/components/routes/system.tsx
-msgid "{0, plural, one {# minute} other {# minutes}}"
+msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
 msgstr ""
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
