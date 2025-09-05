@@ -38,12 +38,25 @@ builds:
       - mips64
       - riscv64
       - mipsle
+      - mips
       - ppc64le
+    gomips:
+      - hardfloat
+      - softfloat
     ignore:
       - goos: freebsd
         goarch: arm
       - goos: openbsd
         goarch: arm
+      - goos: linux
+        goarch: mips64
+        gomips: softfloat
+      - goos: linux
+        goarch: mipsle
+        gomips: hardfloat
+      - goos: linux
+        goarch: mips
+        gomips: hardfloat
       - goos: windows
         goarch: arm
       - goos: darwin
@@ -54,7 +67,7 @@ builds:
 archives:
   - id: beszel-agent
     formats: [tar.gz]
-    builds:
+    ids:
       - beszel-agent
     name_template: >-
       {{ .Binary }}_
@@ -66,7 +79,7 @@ archives:
 
   - id: beszel
     formats: [tar.gz]
-    builds:
+    ids:
       - beszel
     name_template: >-
       {{ .Binary }}_
@@ -85,7 +98,7 @@ nfpms:
       API access.
     maintainer: henrygd <hank@henrygd.me>
     section: net
-    builds:
+    ids:
       - beszel-agent
     formats:
       - deb
@@ -119,9 +132,10 @@ scoops:
     repository:
       owner: henrygd
       name: beszel-scoops
-    homepage: 'https://beszel.dev'
-    description: 'Agent for Beszel, a lightweight server monitoring platform.'
+    homepage: "https://beszel.dev"
+    description: "Agent for Beszel, a lightweight server monitoring platform."
     license: MIT
+    skip_upload: "{{ if .Env.IS_FORK }}true{{ else }}auto{{ end }}"
 
 # # Needs choco installed, so doesn't build on linux / default gh workflow :(
 # chocolateys:
@@ -152,9 +166,10 @@ brews:
     repository:
       owner: henrygd
       name: homebrew-beszel
-    homepage: 'https://beszel.dev'
-    description: 'Agent for Beszel, a lightweight server monitoring platform.'
+    homepage: "https://beszel.dev"
+    description: "Agent for Beszel, a lightweight server monitoring platform."
     license: MIT
+    skip_upload: "{{ if .Env.IS_FORK }}true{{ else }}auto{{ end }}"
     extra_install: |
       (bin/"beszel-agent-launcher").write <<~EOS
         #!/bin/bash
@@ -172,7 +187,6 @@ brews:
       error_log_path "#{Dir.home}/.cache/beszel/beszel-agent.log"
       keep_alive true
       restart_delay 5
-      name beszel-agent
       process_type :background
 
 winget:
@@ -181,13 +195,13 @@ winget:
     package_identifier: henrygd.beszel-agent
     publisher: henrygd
     license: MIT
-    license_url: 'https://github.com/henrygd/beszel/blob/main/LICENSE'
-    copyright: '2025 henrygd'
-    homepage: 'https://beszel.dev'
-    release_notes_url: 'https://github.com/henrygd/beszel/releases/tag/v{{ .Version }}'
-    publisher_support_url: 'https://github.com/henrygd/beszel/issues'
-    short_description: 'Agent for Beszel, a lightweight server monitoring platform.'
-    skip_upload: auto
+    license_url: "https://github.com/henrygd/beszel/blob/main/LICENSE"
+    copyright: "2025 henrygd"
+    homepage: "https://beszel.dev"
+    release_notes_url: "https://github.com/henrygd/beszel/releases/tag/v{{ .Version }}"
+    publisher_support_url: "https://github.com/henrygd/beszel/issues"
+    short_description: "Agent for Beszel, a lightweight server monitoring platform."
+    skip_upload: "{{ if .Env.IS_FORK }}true{{ else }}auto{{ end }}"
     description: |
       Beszel is a lightweight server monitoring platform that includes Docker
       statistics, historical data, and alert functions. It has a friendly web
@@ -202,13 +216,14 @@ winget:
       owner: henrygd
       name: beszel-winget
       branch: henrygd.beszel-agent-{{ .Version }}
-      pull_request:
-        enabled: false
-        draft: false
-        base:
-          owner: microsoft
-          name: winget-pkgs
-          branch: master
+      token: "{{ .Env.WINGET_TOKEN }}"
+      # pull_request:
+      #   enabled: true
+      #   draft: false
+      #   base:
+      #     owner: microsoft
+      #     name: winget-pkgs
+      #     branch: master
 
 release:
   draft: true
@@ -218,5 +233,5 @@ changelog:
   sort: asc
   filters:
     exclude:
-      - '^docs:'
-      - '^test:'
+      - "^docs:"
+      - "^test:"

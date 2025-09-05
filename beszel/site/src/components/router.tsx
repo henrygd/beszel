@@ -11,7 +11,7 @@ const routes = {
  * The base path of the application.
  * This is used to prepend the base path to all routes.
  */
-export const basePath = globalThis.BESZEL.BASE_PATH || ""
+export const basePath = BESZEL?.BASE_PATH || ""
 
 /**
  * Prepends the base path to the given path.
@@ -35,11 +35,20 @@ export const navigate = (urlString: string) => {
 	$router.open(urlString)
 }
 
-function onClick(e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) {
-	e.preventDefault()
-	$router.open(new URL((e.currentTarget as HTMLAnchorElement).href).pathname)
-}
-
-export const Link = (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => {
-	return <a onClick={onClick} {...props}></a>
+export function Link(props: React.AnchorHTMLAttributes<HTMLAnchorElement>) {
+	return (
+		<a
+			{...props}
+			onClick={(e) => {
+				e.preventDefault()
+				const href = props.href || ""
+				if (e.ctrlKey || e.metaKey) {
+					window.open(href, "_blank")
+				} else {
+					navigate(href)
+					props.onClick?.(e)
+				}
+			}}
+		></a>
+	)
 }

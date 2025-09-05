@@ -1,0 +1,33 @@
+# https://github.com/minio/minio/blob/master/.github/workflows/vulncheck.yml
+
+name: VulnCheck
+on:
+  pull_request:
+    branches:
+      - main
+
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
+jobs:
+  vulncheck:
+    name: VulnCheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.25.x
+          # cached: false
+      - name: Get official govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+        shell: bash
+      - name: Run govulncheck
+        run: govulncheck -C ./beszel -show verbose ./...
+        shell: bash

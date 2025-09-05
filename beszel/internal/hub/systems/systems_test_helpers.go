@@ -9,17 +9,17 @@ import (
 	"fmt"
 )
 
-// GetSystemCount returns the number of systems in the store
+// TESTING ONLY: GetSystemCount returns the number of systems in the store
 func (sm *SystemManager) GetSystemCount() int {
 	return sm.systems.Length()
 }
 
-// HasSystem checks if a system with the given ID exists in the store
+// TESTING ONLY: HasSystem checks if a system with the given ID exists in the store
 func (sm *SystemManager) HasSystem(systemID string) bool {
 	return sm.systems.Has(systemID)
 }
 
-// GetSystemStatusFromStore returns the status of a system with the given ID
+// TESTING ONLY: GetSystemStatusFromStore returns the status of a system with the given ID
 // Returns an empty string if the system doesn't exist
 func (sm *SystemManager) GetSystemStatusFromStore(systemID string) string {
 	sys, ok := sm.systems.GetOk(systemID)
@@ -29,7 +29,7 @@ func (sm *SystemManager) GetSystemStatusFromStore(systemID string) string {
 	return sys.Status
 }
 
-// GetSystemContextFromStore returns the context and cancel function for a system
+// TESTING ONLY: GetSystemContextFromStore returns the context and cancel function for a system
 func (sm *SystemManager) GetSystemContextFromStore(systemID string) (context.Context, context.CancelFunc, error) {
 	sys, ok := sm.systems.GetOk(systemID)
 	if !ok {
@@ -38,7 +38,7 @@ func (sm *SystemManager) GetSystemContextFromStore(systemID string) (context.Con
 	return sys.ctx, sys.cancel, nil
 }
 
-// GetSystemFromStore returns a store from the system
+// TESTING ONLY: GetSystemFromStore returns a store from the system
 func (sm *SystemManager) GetSystemFromStore(systemID string) (*System, error) {
 	sys, ok := sm.systems.GetOk(systemID)
 	if !ok {
@@ -47,7 +47,7 @@ func (sm *SystemManager) GetSystemFromStore(systemID string) (*System, error) {
 	return sys, nil
 }
 
-// GetAllSystemIDs returns a slice of all system IDs in the store
+// TESTING ONLY: GetAllSystemIDs returns a slice of all system IDs in the store
 func (sm *SystemManager) GetAllSystemIDs() []string {
 	data := sm.systems.GetAll()
 	ids := make([]string, 0, len(data))
@@ -57,7 +57,7 @@ func (sm *SystemManager) GetAllSystemIDs() []string {
 	return ids
 }
 
-// GetSystemData returns the combined data for a system with the given ID
+// TESTING ONLY: GetSystemData returns the combined data for a system with the given ID
 // Returns nil if the system doesn't exist
 // This method is intended for testing
 func (sm *SystemManager) GetSystemData(systemID string) *entities.CombinedData {
@@ -68,7 +68,7 @@ func (sm *SystemManager) GetSystemData(systemID string) *entities.CombinedData {
 	return sys.data
 }
 
-// GetSystemHostPort returns the host and port for a system with the given ID
+// TESTING ONLY: GetSystemHostPort returns the host and port for a system with the given ID
 // Returns empty strings if the system doesn't exist
 func (sm *SystemManager) GetSystemHostPort(systemID string) (string, string) {
 	sys, ok := sm.systems.GetOk(systemID)
@@ -78,22 +78,7 @@ func (sm *SystemManager) GetSystemHostPort(systemID string) (string, string) {
 	return sys.Host, sys.Port
 }
 
-// DisableAutoUpdater disables the automatic updater for a system
-// This is intended for testing
-// Returns false if the system doesn't exist
-// func (sm *SystemManager) DisableAutoUpdater(systemID string) bool {
-// 	sys, ok := sm.systems.GetOk(systemID)
-// 	if !ok {
-// 		return false
-// 	}
-// 	if sys.cancel != nil {
-// 		sys.cancel()
-// 		sys.cancel = nil
-// 	}
-// 	return true
-// }
-
-// SetSystemStatusInDB sets the status of a system directly and updates the database record
+// TESTING ONLY: SetSystemStatusInDB sets the status of a system directly and updates the database record
 // This is intended for testing
 // Returns false if the system doesn't exist
 func (sm *SystemManager) SetSystemStatusInDB(systemID string, status string) bool {
@@ -114,4 +99,11 @@ func (sm *SystemManager) SetSystemStatusInDB(systemID string, status string) boo
 	}
 
 	return true
+}
+
+// TESTING ONLY: RemoveAllSystems removes all systems from the store
+func (sm *SystemManager) RemoveAllSystems() {
+	for _, system := range sm.systems.GetAll() {
+		sm.RemoveSystem(system.Id)
+	}
 }

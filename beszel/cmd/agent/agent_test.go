@@ -3,11 +3,11 @@ package main
 import (
 	"beszel/internal/agent"
 	"crypto/ed25519"
-	"flag"
 	"os"
 	"path/filepath"
 	"testing"
 
+	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/ssh"
@@ -245,7 +245,7 @@ func TestParseFlags(t *testing.T) {
 	oldArgs := os.Args
 	defer func() {
 		os.Args = oldArgs
-		flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ExitOnError)
+		pflag.CommandLine = pflag.NewFlagSet(os.Args[0], pflag.ExitOnError)
 	}()
 
 	tests := []struct {
@@ -270,8 +270,40 @@ func TestParseFlags(t *testing.T) {
 			},
 		},
 		{
+			name: "key flag double dash",
+			args: []string{"cmd", "--key", "testkey"},
+			expected: cmdOptions{
+				key:    "testkey",
+				listen: "",
+			},
+		},
+		{
+			name: "key flag short",
+			args: []string{"cmd", "-k", "testkey"},
+			expected: cmdOptions{
+				key:    "testkey",
+				listen: "",
+			},
+		},
+		{
 			name: "addr flag only",
 			args: []string{"cmd", "-listen", ":8080"},
+			expected: cmdOptions{
+				key:    "",
+				listen: ":8080",
+			},
+		},
+		{
+			name: "addr flag double dash",
+			args: []string{"cmd", "--listen", ":8080"},
+			expected: cmdOptions{
+				key:    "",
+				listen: ":8080",
+			},
+		},
+		{
+			name: "addr flag short",
+			args: []string{"cmd", "-l", ":8080"},
 			expected: cmdOptions{
 				key:    "",
 				listen: ":8080",
@@ -290,12 +322,12 @@ func TestParseFlags(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Reset flags for each test
-			flag.CommandLine = flag.NewFlagSet(tt.args[0], flag.ExitOnError)
+			pflag.CommandLine = pflag.NewFlagSet(tt.args[0], pflag.ExitOnError)
 			os.Args = tt.args
 
 			var opts cmdOptions
 			opts.parse()
-			flag.Parse()
+			pflag.Parse()
 
 			assert.Equal(t, tt.expected, opts)
 		})

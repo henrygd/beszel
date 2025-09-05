@@ -2,17 +2,18 @@ import { t } from "@lingui/core/macro"
 import { Plural, Trans } from "@lingui/react/macro"
 import {
 	$systems,
-	pb,
 	$chartTime,
 	$containerFilter,
 	$userSettings,
 	$direction,
 	$maxValues,
 	$temperatureFilter,
+	$allSystemsByName,
 } from "@/lib/stores"
 import { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord } from "@/types"
-import { ChartType, Os } from "@/lib/enums"
-import React, { lazy, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useContainerChartConfigs } from "@/components/charts/hooks"
+import { ChartType, Unit, Os, SystemStatus } from "@/lib/enums"
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState, type JSX } from "react"
 import { Card, CardHeader, CardTitle, CardDescription } from "../ui/card"
 import { useStore } from "@nanostores/react"
 import Spinner from "../spinner"
@@ -21,13 +22,15 @@ import ChartTimeSelect from "../charts/chart-time-select"
 import {
 	chartTimeData,
 	cn,
+	decimalString,
+	formatBytes,
 	getHostDisplayValue,
-	getPbTimestamp,
-	getSizeAndUnit,
 	listen,
+	parseSemVer,
 	toFixedFloat,
-	useLocalStorage,
+	useBrowserStorage,
 } from "@/lib/utils"
+import { getPbTimestamp, pb } from "@/lib/api"
 import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import { Button } from "../ui/button"
@@ -39,14 +42,16 @@ import { timeTicks } from "d3-time"
 import { useLingui } from "@lingui/react/macro"
 import { $router, navigate } from "../router"
 import { getPagePath } from "@nanostores/router"
-
-const AreaChartDefault = lazy(() => import("../charts/area-chart"))
-const ContainerChart = lazy(() => import("../charts/container-chart"))
-const MemChart = lazy(() => import("../charts/mem-chart"))
-const DiskChart = lazy(() => import("../charts/disk-chart"))
-const SwapChart = lazy(() => import("../charts/swap-chart"))
-const TemperatureChart = lazy(() => import("../charts/temperature-chart"))
-const GpuPowerChart = lazy(() => import("../charts/gpu-power-chart"))
+import { batteryStateTranslations } from "@/lib/i18n"
+import AreaChartDefault from "@/components/charts/area-chart"
+import ContainerChart from "@/components/charts/container-chart"
+import MemChart from "@/components/charts/mem-chart"
+import DiskChart from "@/components/charts/disk-chart"
+import SwapChart from "@/components/charts/swap-chart"
+import TemperatureChart from "@/components/charts/temperature-chart"
+import GpuPowerChart from "@/components/charts/gpu-power-chart"
+import LoadAverageChart from "@/components/charts/load-average-chart"
+import { subscribeKeys } from "nanostores"
 
 const cache = new Map<string, any>()
 
@@ -115,13 +120,13 @@ function dockerOrPodman(str: string, system: SystemRecord) {
 	return str
 }
 
-export default function SystemDetail({ name }: { name: string }) {
+export default memo(function SystemDetail({ name }: { name: string }) {
 	const direction = useStore($direction)
 	const { t } = useLingui()
 	const systems = useStore($systems)
 	const chartTime = useStore($chartTime)
 	const maxValues = useStore($maxValues)
-	const [grid, setGrid] = useLocalStorage("grid", true)
+	const [grid, setGrid] = useBrowserStorage("grid", true)
 	const [system, setSystem] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
 	const [containerData, setContainerData] = useState([] as ChartData["containerData"])
@@ -131,6 +136,7 @@ export default function SystemDetail({ name }: { name: string }) {
 	const [bottomSpacing, setBottomSpacing] = useState(0)
 	const [chartLoading, setChartLoading] = useState(true)
 	const isLongerChart = chartTime !== "1h"
+	const userSettings = $userSettings.get()
 
 	useEffect(() => {
 		document.title = `${name} / Beszel`
@@ -146,36 +152,13 @@ export default function SystemDetail({ name }: { name: string }) {
 		}
 	}, [name])
 
-	// function resetCharts() {
-	// 	setSystemStats([])
-	// 	setContainerData([])
-	// }
-
-	// useEffect(resetCharts, [chartTime])
-
-	// find matching system
+	// find matching system and update when it changes
 	useEffect(() => {
-		if (system.id && system.name === name) {
-			return
-		}
-		const matchingSystem = systems.find((s) => s.name === name) as SystemRecord
-		if (matchingSystem) {
-			setSystem(matchingSystem)
-		}
-	}, [name, system, systems])
-
-	// update system when new data is available
-	useEffect(() => {
-		if (!system.id) {
-			return
-		}
-		pb.collection<SystemRecord>("systems").subscribe(system.id, (e) => {
-			setSystem(e.record)
+		return subscribeKeys($allSystemsByName, [name], (newSystems) => {
+			const sys = newSystems[name]
+			sys?.id && setSystem(sys)
 		})
-		return () => {
-			pb.collection("systems").unsubscribe(system.id)
-		}
-	}, [system.id])
+	}, [name])
 
 	const chartData: ChartData = useMemo(() => {
 		const lastCreated = Math.max(
@@ -188,8 +171,12 @@ export default function SystemDetail({ name }: { name: string }) {
 			chartTime,
 			orientation: direction === "rtl" ? "right" : "left",
 			...getTimeData(chartTime, lastCreated),
+			agentVersion: parseSemVer(system?.info?.v),
 		}
 	}, [systemStats, containerData, direction])
+
+	// Share chart config computation for all container charts
+	const containerChartConfigs = useContainerChartConfigs(containerData)
 
 	// get stats
 	useEffect(() => {
@@ -281,11 +268,11 @@ export default function SystemDetail({ name }: { name: string }) {
 				value: system.info.k,
 			},
 		}
-
 		let uptime: React.ReactNode
-		if (system.info.u < 172800) {
-			const hours = Math.trunc(system.info.u / 3600)
-			uptime = <Plural value={hours} one="# hour" other="# hours" />
+		if (system.info.u < 3600) {
+			uptime = <Plural value={Math.trunc(system.info.u / 60)} one="# minute" other="# minutes" />
+		} else if (system.info.u < 172800) {
+			uptime = <Plural value={Math.trunc(system.info.u / 3600)} one="# hour" other="# hours" />
 		} else {
 			uptime = <Plural value={Math.trunc(system.info?.u / 86400)} one="# day" other="# days" />
 		}
@@ -311,7 +298,7 @@ export default function SystemDetail({ name }: { name: string }) {
 			Icon: any
 			hide?: boolean
 		}[]
-	}, [system.info])
+	}, [system.info, t])
 
 	/** Space for tooltip if more than 12 containers */
 	useEffect(() => {
@@ -368,6 +355,7 @@ export default function SystemDetail({ name }: { name: string }) {
 
 	// select field for switching between avg and max values
 	const maxValSelect = isLongerChart ? <SelectAvgMax max={maxValues} /> : null
+	const showMax = chartTime !== "1h" && maxValues
 
 	// if no data, show empty message
 	const dataEmpty = !chartLoading && chartData.systemStats.length === 0
@@ -376,15 +364,15 @@ export default function SystemDetail({ name }: { name: string }) {
 	const hasGpuPowerData = lastGpuVals.some((gpu) => gpu.p !== undefined)
 
 	let translatedStatus: string = system.status
-	if (system.status === "up") {
+	if (system.status === SystemStatus.Up) {
 		translatedStatus = t({ message: "Up", comment: "Context: System is up" })
-	} else if (system.status === "down") {
+	} else if (system.status === SystemStatus.Down) {
 		translatedStatus = t({ message: "Down", comment: "Context: System is down" })
 	}
 
 	return (
 		<>
-			<div id="chartwrap" className="grid gap-4 mb-10 overflow-x-clip">
+			<div id="chartwrap" className="grid gap-4 mb-14 overflow-x-clip">
 				{/* system info */}
 				<Card>
 					<div className="grid xl:flex gap-4 px-4 sm:px-6 pt-3 sm:pt-4 pb-5">
@@ -393,7 +381,7 @@ export default function SystemDetail({ name }: { name: string }) {
 							<div className="flex flex-wrap items-center gap-3 gap-y-2 text-sm opacity-90">
 								<div className="capitalize flex gap-2 items-center">
 									<span className={cn("relative flex h-3 w-3")}>
-										{system.status === "up" && (
+										{system.status === SystemStatus.Up && (
 											<span
 												className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
 												style={{ animationDuration: "1.5s" }}
@@ -401,10 +389,10 @@ export default function SystemDetail({ name }: { name: string }) {
 										)}
 										<span
 											className={cn("relative inline-flex rounded-full h-3 w-3", {
-												"bg-green-500": system.status === "up",
-												"bg-red-500": system.status === "down",
-												"bg-primary/40": system.status === "paused",
-												"bg-yellow-500": system.status === "pending",
+												"bg-green-500": system.status === SystemStatus.Up,
+												"bg-red-500": system.status === SystemStatus.Down,
+												"bg-primary/40": system.status === SystemStatus.Paused,
+												"bg-yellow-500": system.status === SystemStatus.Pending,
 											})}
 										></span>
 									</span>
@@ -450,9 +438,9 @@ export default function SystemDetail({ name }: { name: string }) {
 											onClick={() => setGrid(!grid)}
 										>
 											{grid ? (
-												<LayoutGridIcon className="h-[1.2rem] w-[1.2rem] opacity-85" />
+												<LayoutGridIcon className="h-[1.2rem] w-[1.2rem] opacity-75" />
 											) : (
-												<Rows className="h-[1.3rem] w-[1.3rem] opacity-85" />
+												<Rows className="h-[1.3rem] w-[1.3rem] opacity-75" />
 											)}
 										</Button>
 									</TooltipTrigger>
@@ -472,7 +460,20 @@ export default function SystemDetail({ name }: { name: string }) {
 						description={t`Average system-wide CPU utilization`}
 						cornerEl={maxValSelect}
 					>
-						<AreaChartDefault chartData={chartData} chartName="CPU Usage" maxToggled={maxValues} unit="%" />
+						<AreaChartDefault
+							chartData={chartData}
+							maxToggled={maxValues}
+							dataPoints={[
+								{
+									label: t`CPU Usage`,
+									dataKey: ({ stats }) => (showMax ? stats?.cpum : stats?.cpu),
+									color: 1,
+									opacity: 0.4,
+								},
+							]}
+							tickFormatter={(val) => toFixedFloat(val, 2) + "%"}
+							contentFormatter={({ value }) => decimalString(value) + "%"}
+						/>
 					</ChartCard>
 
 					{containerFilterBar && (
@@ -483,7 +484,12 @@ export default function SystemDetail({ name }: { name: string }) {
 							description={t`Average CPU utilization of containers`}
 							cornerEl={containerFilterBar}
 						>
-							<ContainerChart chartData={chartData} dataKey="c" chartType={ChartType.CPU} />
+							<ContainerChart
+								chartData={chartData}
+								dataKey="c"
+								chartType={ChartType.CPU}
+								chartConfig={containerChartConfigs.cpu}
+							/>
 						</ChartCard>
 					)}
 
@@ -492,8 +498,9 @@ export default function SystemDetail({ name }: { name: string }) {
 						grid={grid}
 						title={t`Memory Usage`}
 						description={t`Precise utilization at the recorded time`}
+						cornerEl={maxValSelect}
 					>
-						<MemChart chartData={chartData} />
+						<MemChart chartData={chartData} showMax={showMax} />
 					</ChartCard>
 
 					{containerFilterBar && (
@@ -504,7 +511,12 @@ export default function SystemDetail({ name }: { name: string }) {
 							description={dockerOrPodman(t`Memory usage of docker containers`, system)}
 							cornerEl={containerFilterBar}
 						>
-							<ContainerChart chartData={chartData} dataKey="m" chartType={ChartType.Memory} />
+							<ContainerChart
+								chartData={chartData}
+								dataKey="m"
+								chartType={ChartType.Memory}
+								chartConfig={containerChartConfigs.memory}
+							/>
 						</ChartCard>
 					)}
 
@@ -519,7 +531,32 @@ export default function SystemDetail({ name }: { name: string }) {
 						description={t`Throughput of root filesystem`}
 						cornerEl={maxValSelect}
 					>
-						<AreaChartDefault chartData={chartData} chartName="dio" maxToggled={maxValues} />
+						<AreaChartDefault
+							chartData={chartData}
+							maxToggled={maxValues}
+							dataPoints={[
+								{
+									label: t({ message: "Write", comment: "Disk write" }),
+									dataKey: ({ stats }) => (showMax ? stats?.dwm : stats?.dw),
+									color: 3,
+									opacity: 0.3,
+								},
+								{
+									label: t({ message: "Read", comment: "Disk read" }),
+									dataKey: ({ stats }) => (showMax ? stats?.drm : stats?.dr),
+									color: 1,
+									opacity: 0.3,
+								},
+							]}
+							tickFormatter={(val) => {
+								const { value, unit } = formatBytes(val, true, userSettings.unitDisk, true)
+								return toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit
+							}}
+							contentFormatter={({ value }) => {
+								const { value: convertedValue, unit } = formatBytes(value, true, userSettings.unitDisk, true)
+								return decimalString(convertedValue, convertedValue >= 100 ? 1 : 2) + " " + unit
+							}}
+						/>
 					</ChartCard>
 
 					<ChartCard
@@ -529,7 +566,43 @@ export default function SystemDetail({ name }: { name: string }) {
 						cornerEl={maxValSelect}
 						description={t`Network traffic of public interfaces`}
 					>
-						<AreaChartDefault chartData={chartData} chartName="bw" maxToggled={maxValues} />
+						<AreaChartDefault
+							chartData={chartData}
+							maxToggled={maxValues}
+							dataPoints={[
+								{
+									label: t`Sent`,
+									// use bytes if available, otherwise multiply old MB (can remove in future)
+									dataKey(data) {
+										if (showMax) {
+											return data?.stats?.bm?.[0] ?? (data?.stats?.nsm ?? 0) * 1024 * 1024
+										}
+										return data?.stats?.b?.[0] ?? data?.stats?.ns * 1024 * 1024
+									},
+									color: 5,
+									opacity: 0.2,
+								},
+								{
+									label: t`Received`,
+									dataKey(data) {
+										if (showMax) {
+											return data?.stats?.bm?.[1] ?? (data?.stats?.nrm ?? 0) * 1024 * 1024
+										}
+										return data?.stats?.b?.[1] ?? data?.stats?.nr * 1024 * 1024
+									},
+									color: 2,
+									opacity: 0.2,
+								},
+							]}
+							tickFormatter={(val) => {
+								let { value, unit } = formatBytes(val, true, userSettings.unitNet, false)
+								return toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit
+							}}
+							contentFormatter={(data) => {
+								const { value, unit } = formatBytes(data.value, true, userSettings.unitNet, false)
+								return decimalString(value, value >= 100 ? 1 : 2) + " " + unit
+							}}
+						/>
 					</ChartCard>
 
 					{containerFilterBar && containerData.length > 0 && (
@@ -545,8 +618,12 @@ export default function SystemDetail({ name }: { name: string }) {
 								description={dockerOrPodman(t`Network traffic of docker containers`, system)}
 								cornerEl={containerFilterBar}
 							>
-								{/* @ts-ignore */}
-								<ContainerChart chartData={chartData} chartType={ChartType.Network} dataKey="n" />
+								<ContainerChart
+									chartData={chartData}
+									chartType={ChartType.Network}
+									dataKey="n"
+									chartConfig={containerChartConfigs.network}
+								/>
 							</ChartCard>
 						</div>
 					)}
@@ -563,6 +640,18 @@ export default function SystemDetail({ name }: { name: string }) {
 						</ChartCard>
 					)}
 
+					{/* Load Average chart */}
+					{chartData.agentVersion?.minor >= 12 && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Load Average`}
+							description={t`System load averages over time`}
+						>
+							<LoadAverageChart chartData={chartData} />
+						</ChartCard>
+					)}
+
 					{/* Temperature chart */}
 					{systemStats.at(-1)?.stats.t && (
 						<ChartCard
@@ -573,6 +662,35 @@ export default function SystemDetail({ name }: { name: string }) {
 							cornerEl={<FilterBar store={$temperatureFilter} />}
 						>
 							<TemperatureChart chartData={chartData} />
+						</ChartCard>
+					)}
+
+					{/* Battery chart */}
+					{systemStats.at(-1)?.stats.bat && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Battery`}
+							description={`${t({
+								message: "Current state",
+								comment: "Context: Battery state",
+							})}: ${batteryStateTranslations[systemStats.at(-1)?.stats.bat![1] ?? 0]()}`}
+						>
+							<AreaChartDefault
+								chartData={chartData}
+								maxToggled={maxValues}
+								dataPoints={[
+									{
+										label: t`Charge`,
+										dataKey: ({ stats }) => stats?.bat?.[0],
+										color: 1,
+										opacity: 0.35,
+									},
+								]}
+								domain={[0, 100]}
+								tickFormatter={(val) => `${val}%`}
+								contentFormatter={({ value }) => `${value}%`}
+							/>
 						</ChartCard>
 					)}
 
@@ -594,10 +712,6 @@ export default function SystemDetail({ name }: { name: string }) {
 					<div className="grid xl:grid-cols-2 gap-4">
 						{Object.keys(systemStats.at(-1)?.stats.g ?? {}).map((id) => {
 							const gpu = systemStats.at(-1)?.stats.g?.[id] as GPUData
-							const sizeFormatter = (value: number, decimals?: number) => {
-								const { v, u } = getSizeAndUnit(value, false)
-								return toFixedFloat(v, decimals || 1) + u
-							}
 							return (
 								<div key={id} className="contents">
 									<ChartCard
@@ -606,7 +720,19 @@ export default function SystemDetail({ name }: { name: string }) {
 										title={`${gpu.n} ${t`Usage`}`}
 										description={t`Average utilization of ${gpu.n}`}
 									>
-										<AreaChartDefault chartData={chartData} chartName={`g.${id}.u`} unit="%" />
+										<AreaChartDefault
+											chartData={chartData}
+											dataPoints={[
+												{
+													label: t`Usage`,
+													dataKey: ({ stats }) => stats?.g?.[id]?.u ?? 0,
+													color: 1,
+													opacity: 0.35,
+												},
+											]}
+											tickFormatter={(val) => toFixedFloat(val, 2) + "%"}
+											contentFormatter={({ value }) => decimalString(value) + "%"}
+										/>
 									</ChartCard>
 									<ChartCard
 										empty={dataEmpty}
@@ -616,10 +742,23 @@ export default function SystemDetail({ name }: { name: string }) {
 									>
 										<AreaChartDefault
 											chartData={chartData}
-											chartName={`g.${id}.mu`}
+											dataPoints={[
+												{
+													label: t`Usage`,
+													dataKey: ({ stats }) => stats?.g?.[id]?.mu ?? 0,
+													color: 2,
+													opacity: 0.25,
+												},
+											]}
 											max={gpu.mt}
-											tickFormatter={sizeFormatter}
-											contentFormatter={(value) => sizeFormatter(value, 2)}
+											tickFormatter={(val) => {
+												const { value, unit } = formatBytes(val, false, Unit.Bytes, true)
+												return toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit
+											}}
+											contentFormatter={({ value }) => {
+												const { value: convertedValue, unit } = formatBytes(value, false, Unit.Bytes, true)
+												return decimalString(convertedValue) + " " + unit
+											}}
 										/>
 									</ChartCard>
 								</div>
@@ -653,7 +792,32 @@ export default function SystemDetail({ name }: { name: string }) {
 										description={t`Throughput of ${extraFsName}`}
 										cornerEl={maxValSelect}
 									>
-										<AreaChartDefault chartData={chartData} chartName={`efs.${extraFsName}`} maxToggled={maxValues} />
+										<AreaChartDefault
+											chartData={chartData}
+											dataPoints={[
+												{
+													label: t`Write`,
+													dataKey: ({ stats }) => stats?.efs?.[extraFsName]?.[showMax ? "wm" : "w"] ?? 0,
+													color: 3,
+													opacity: 0.3,
+												},
+												{
+													label: t`Read`,
+													dataKey: ({ stats }) => stats?.efs?.[extraFsName]?.[showMax ? "rm" : "r"] ?? 0,
+													color: 1,
+													opacity: 0.3,
+												},
+											]}
+											maxToggled={maxValues}
+											tickFormatter={(val) => {
+												const { value, unit } = formatBytes(val, true, userSettings.unitDisk, true)
+												return toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit
+											}}
+											contentFormatter={({ value }) => {
+												const { value: convertedValue, unit } = formatBytes(value, true, userSettings.unitDisk, true)
+												return decimalString(convertedValue, convertedValue >= 100 ? 1 : 2) + " " + unit
+											}}
+										/>
 									</ChartCard>
 								</div>
 							)
@@ -666,7 +830,7 @@ export default function SystemDetail({ name }: { name: string }) {
 			{bottomSpacing > 0 && <span className="block" style={{ height: bottomSpacing }} />}
 		</>
 	)
-}
+})
 
 function FilterBar({ store = $containerFilter }: { store?: typeof $containerFilter }) {
 	const containerFilter = useStore(store)
@@ -734,10 +898,10 @@ function ChartCard({
 
 	return (
 		<Card className={cn("pb-2 sm:pb-4 odd:last-of-type:col-span-full", { "col-span-full": !grid })} ref={ref}>
-			<CardHeader className="pb-5 pt-4 relative space-y-1 max-sm:py-3 max-sm:px-4">
+			<CardHeader className="pb-5 pt-4 gap-1 relative max-sm:py-3 max-sm:px-4">
 				<CardTitle className="text-xl sm:text-2xl">{title}</CardTitle>
 				<CardDescription>{description}</CardDescription>
-				{cornerEl && <div className="relative py-1 block sm:w-44 sm:absolute sm:top-2.5 sm:end-3.5">{cornerEl}</div>}
+				{cornerEl && <div className="relative py-1 block sm:w-44 sm:absolute sm:top-3.5 sm:end-3.5">{cornerEl}</div>}
 			</CardHeader>
 			<div className="ps-0 w-[calc(100%-1.5em)] h-48 md:h-52 relative group">
 				{

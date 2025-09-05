@@ -2,29 +2,28 @@ import "./index.css"
 // import { Suspense, lazy, useEffect, StrictMode } from "react"
 import { Suspense, lazy, memo, useEffect } from "react"
 import ReactDOM from "react-dom/client"
-import { Home } from "./components/routes/home.tsx"
 import { ThemeProvider } from "./components/theme-provider.tsx"
 import { DirectionProvider } from "@radix-ui/react-direction"
-import { $authenticated, $systems, pb, $publicKey, $copyContent, $direction } from "./lib/stores.ts"
-import { updateUserSettings, updateAlerts, updateFavicon, updateSystemList } from "./lib/utils.ts"
+import { $authenticated, $publicKey, $copyContent, $direction } from "./lib/stores.ts"
+import { pb, updateUserSettings } from "./lib/api.ts"
+import * as systemsManager from "./lib/systemsManager.ts"
 import { useStore } from "@nanostores/react"
 import { Toaster } from "./components/ui/toaster.tsx"
 import { $router } from "./components/router.tsx"
-import SystemDetail from "./components/routes/system.tsx"
 import Navbar from "./components/navbar.tsx"
 import { I18nProvider } from "@lingui/react"
 import { i18n } from "@lingui/core"
-import { getLocale, dynamicActivate } from "./lib/i18n.ts"
+import { getLocale, dynamicActivate } from "./lib/i18n"
+import { alertManager } from "./lib/alerts"
+import Settings from "./components/routes/settings/layout.tsx"
 
-// const ServerDetail = lazy(() => import('./components/routes/system.tsx'))
-const LoginPage = lazy(() => import("./components/login/login.tsx"))
-const CopyToClipboardDialog = lazy(() => import("./components/copy-to-clipboard.tsx"))
-const Settings = lazy(() => import("./components/routes/settings/layout.tsx"))
+const LoginPage = lazy(() => import("@/components/login/login.tsx"))
+const Home = lazy(() => import("@/components/routes/home.tsx"))
+const SystemDetail = lazy(() => import("@/components/routes/system.tsx"))
+const CopyToClipboardDialog = lazy(() => import("@/components/copy-to-clipboard.tsx"))
 
 const App = memo(() => {
 	const page = useStore($router)
-	const authenticated = useStore($authenticated)
-	const systems = useStore($systems)
 
 	useEffect(() => {
 		// change auth store on auth change
@@ -35,31 +34,25 @@ const App = memo(() => {
 		pb.send("/api/beszel/getkey", {}).then((data) => {
 			$publicKey.set(data.key)
 		})
-		// get servers / alerts / settings
+		// get user settings
 		updateUserSettings()
-		// get alerts after system list is loaded
-		updateSystemList().then(updateAlerts)
-
-		return () => updateFavicon("favicon.svg")
-	}, [])
-
-	// update favicon
-	useEffect(() => {
-		if (!systems.length || !authenticated) {
-			updateFavicon("favicon.svg")
-		} else {
-			let up = false
-			for (const system of systems) {
-				if (system.status === "down") {
-					updateFavicon("favicon-red.svg")
-					return
-				} else if (system.status === "up") {
-					up = true
-				}
-			}
-			updateFavicon(up ? "favicon-green.svg" : "favicon.svg")
+		// need to get system list before alerts
+		systemsManager.init()
+		systemsManager
+			// get current systems list
+			.refresh()
+			// subscribe to new system updates
+			.then(systemsManager.subscribe)
+			// get current alerts
+			.then(alertManager.refresh)
+			// subscribe to new alert updates
+			.then(alertManager.subscribe)
+		return () => {
+			// updateFavicon("favicon.svg")
+			alertManager.unsubscribe()
+			systemsManager.unsubscribe()
 		}
-	}, [systems])
+	}, [])
 
 	if (!page) {
 		return <h1 className="text-3xl text-center my-14">404</h1>
@@ -68,11 +61,7 @@ const App = memo(() => {
 	} else if (page.route === "system") {
 		return <SystemDetail name={page.params.name} />
 	} else if (page.route === "settings") {
-		return (
-			<Suspense>
-				<Settings />
-			</Suspense>
-		)
+		return <Settings />
 	}
 })
 
@@ -96,7 +85,7 @@ const Layout = () => {
 					<div className="container">
 						<Navbar />
 					</div>
-					<div className="container mb-14 relative">
+					<div className="container relative">
 						<App />
 						{copyContent && (
 							<Suspense>

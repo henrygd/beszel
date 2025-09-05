@@ -1,31 +1,41 @@
 //go:build testing
 // +build testing
 
-package hub
+package hub_test
 
 import (
+	beszelTests "beszel/internal/tests"
+	"beszel/migrations"
 	"testing"
 
+	"bytes"
 	"crypto/ed25519"
+	"encoding/json"
 	"encoding/pem"
+	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"github.com/pocketbase/pocketbase"
+	"github.com/pocketbase/pocketbase/core"
+	pbTests "github.com/pocketbase/pocketbase/tests"
 	"github.com/stretchr/testify/assert"
-
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/ssh"
 )
 
-func getTestHub() *Hub {
-	app := pocketbase.New()
-	return NewHub(app)
+// marshal to json and return an io.Reader (for use in ApiScenario.Body)
+func jsonReader(v any) io.Reader {
+	data, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+	return bytes.NewReader(data)
 }
 
 func TestMakeLink(t *testing.T) {
-	hub := getTestHub()
+	hub, _ := beszelTests.NewTestHub(t.TempDir())
 
 	tests := []struct {
 		name     string
@@ -115,14 +125,14 @@ func TestMakeLink(t *testing.T) {
 }
 
 func TestGetSSHKey(t *testing.T) {
-	hub := getTestHub()
+	hub, _ := beszelTests.NewTestHub(t.TempDir())
 
 	// Test Case 1: Key generation (no existing key)
 	t.Run("KeyGeneration", func(t *testing.T) {
 		tempDir := t.TempDir()
 
 		// Ensure pubKey is initially empty or different to ensure GetSSHKey sets it
-		hub.pubKey = ""
+		hub.SetPubkey("")
 
 		signer, err := hub.GetSSHKey(tempDir)
 		assert.NoError(t, err, "GetSSHKey should not error when generating a new key")
@@ -135,8 +145,8 @@ func TestGetSSHKey(t *testing.T) {
 		assert.False(t, info.IsDir(), "Private key path should be a file, not a directory")
 
 		// Check if h.pubKey was set
-		assert.NotEmpty(t, hub.pubKey, "h.pubKey should be set after key generation")
-		assert.True(t, strings.HasPrefix(hub.pubKey, "ssh-ed25519 "), "h.pubKey should start with 'ssh-ed25519 '")
+		assert.NotEmpty(t, hub.GetPubkey(), "h.pubKey should be set after key generation")
+		assert.True(t, strings.HasPrefix(hub.GetPubkey(), "ssh-ed25519 "), "h.pubKey should start with 'ssh-ed25519 '")
 
 		// Verify the generated private key is parsable
 		keyData, err := os.ReadFile(privateKeyPath)
@@ -170,14 +180,14 @@ func TestGetSSHKey(t *testing.T) {
 		expectedPubKeyStr := strings.TrimSpace(string(ssh.MarshalAuthorizedKey(sshPubKey)))
 
 		// Reset h.pubKey to ensure it's set by GetSSHKey from the file
-		hub.pubKey = ""
+		hub.SetPubkey("")
 
 		signer, err := hub.GetSSHKey(tempDir)
 		assert.NoError(t, err, "GetSSHKey should not error when reading an existing key")
 		assert.NotNil(t, signer, "GetSSHKey should return a non-nil signer for an existing key")
 
 		// Check if h.pubKey was set correctly to the public key from the file
-		assert.Equal(t, expectedPubKeyStr, hub.pubKey, "h.pubKey should match the existing public key")
+		assert.Equal(t, expectedPubKeyStr, hub.GetPubkey(), "h.pubKey should match the existing public key")
 
 		// Verify the signer's public key matches the original public key
 		signerPubKey := signer.PublicKey()
@@ -241,7 +251,7 @@ func TestGetSSHKey(t *testing.T) {
 				require.NoError(t, err, "Setup failed")
 
 				// Reset h.pubKey before each test case
-				hub.pubKey = ""
+				hub.SetPubkey("")
 
 				// Attempt to get SSH key
 				_, err = hub.GetSSHKey(tempDir)
@@ -250,8 +260,454 @@ func TestGetSSHKey(t *testing.T) {
 				tc.errorCheck(t, err)
 
 				// Check that pubKey was not set in error cases
-				assert.Empty(t, hub.pubKey, "h.pubKey should not be set if there was an error")
+				assert.Empty(t, hub.GetPubkey(), "h.pubKey should not be set if there was an error")
 			})
 		}
+	})
+}
+
+func TestApiRoutesAuthentication(t *testing.T) {
+	hub, _ := beszelTests.NewTestHub(t.TempDir())
+	defer hub.Cleanup()
+
+	hub.StartHub()
+
+	// Create test user and get auth token
+	user, err := beszelTests.CreateUser(hub, "testuser@example.com", "password123")
+	require.NoError(t, err, "Failed to create test user")
+
+	adminUser, err := beszelTests.CreateRecord(hub, "users", map[string]any{
+		"email":    "admin@example.com",
+		"password": "password123",
+		"role":     "admin",
+	})
+	require.NoError(t, err, "Failed to create admin user")
+	adminUserToken, err := adminUser.NewAuthToken()
+
+	// superUser, err := beszelTests.CreateRecord(hub, core.CollectionNameSuperusers, map[string]any{
+	// 	"email":    "superuser@example.com",
+	// 	"password": "password123",
+	// })
+	// require.NoError(t, err, "Failed to create superuser")
+
+	userToken, err := user.NewAuthToken()
+	require.NoError(t, err, "Failed to create auth token")
+
+	// Create test system for user-alerts endpoints
+	system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
+		"name":  "test-system",
+		"users": []string{user.Id},
+		"host":  "127.0.0.1",
+	})
+	require.NoError(t, err, "Failed to create test system")
+
+	testAppFactory := func(t testing.TB) *pbTests.TestApp {
+		return hub.TestApp
+	}
+
+	scenarios := []beszelTests.ApiScenario{
+		// Auth Protected Routes - Should require authentication
+		{
+			Name:            "POST /test-notification - no auth should fail",
+			Method:          http.MethodPost,
+			URL:             "/api/beszel/test-notification",
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+			Body: jsonReader(map[string]any{
+				"url": "generic://127.0.0.1",
+			}),
+		},
+		{
+			Name:           "POST /test-notification - with auth should succeed",
+			Method:         http.MethodPost,
+			URL:            "/api/beszel/test-notification",
+			TestAppFactory: testAppFactory,
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			Body: jsonReader(map[string]any{
+				"url": "generic://127.0.0.1",
+			}),
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"sending message"},
+		},
+		{
+			Name:            "GET /config-yaml - no auth should fail",
+			Method:          http.MethodGet,
+			URL:             "/api/beszel/config-yaml",
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /config-yaml - with user auth should fail",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/config-yaml",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  403,
+			ExpectedContent: []string{"Requires admin"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /config-yaml - with admin auth should succeed",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/config-yaml",
+			Headers: map[string]string{
+				"Authorization": adminUserToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"test-system"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:            "GET /universal-token - no auth should fail",
+			Method:          http.MethodGet,
+			URL:             "/api/beszel/universal-token",
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /universal-token - with auth should succeed",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/universal-token",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"active", "token"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:            "POST /user-alerts - no auth should fail",
+			Method:          http.MethodPost,
+			URL:             "/api/beszel/user-alerts",
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+			Body: jsonReader(map[string]any{
+				"name":    "CPU",
+				"value":   80,
+				"min":     10,
+				"systems": []string{system.Id},
+			}),
+		},
+		{
+			Name:   "POST /user-alerts - with auth should succeed",
+			Method: http.MethodPost,
+			URL:    "/api/beszel/user-alerts",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"success\":true"},
+			TestAppFactory:  testAppFactory,
+			Body: jsonReader(map[string]any{
+				"name":    "CPU",
+				"value":   80,
+				"min":     10,
+				"systems": []string{system.Id},
+			}),
+		},
+		{
+			Name:            "DELETE /user-alerts - no auth should fail",
+			Method:          http.MethodDelete,
+			URL:             "/api/beszel/user-alerts",
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+			Body: jsonReader(map[string]any{
+				"name":    "CPU",
+				"systems": []string{system.Id},
+			}),
+		},
+		{
+			Name:   "DELETE /user-alerts - with auth should succeed",
+			Method: http.MethodDelete,
+			URL:    "/api/beszel/user-alerts",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"success\":true"},
+			TestAppFactory:  testAppFactory,
+			Body: jsonReader(map[string]any{
+				"name":    "CPU",
+				"systems": []string{system.Id},
+			}),
+			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+				// Create an alert to delete
+				beszelTests.CreateRecord(app, "alerts", map[string]any{
+					"name":   "CPU",
+					"system": system.Id,
+					"user":   user.Id,
+					"value":  80,
+					"min":    10,
+				})
+			},
+		},
+
+		// Auth Optional Routes - Should work without authentication
+		{
+			Name:            "GET /getkey - no auth should fail",
+			Method:          http.MethodGet,
+			URL:             "/api/beszel/getkey",
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /getkey - with auth should also succeed",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/getkey",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"key\":", "\"v\":"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:            "GET /first-run - no auth should succeed",
+			Method:          http.MethodGet,
+			URL:             "/api/beszel/first-run",
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"firstRun\":false"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /first-run - with auth should also succeed",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/first-run",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"firstRun\":false"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:            "GET /agent-connect - no auth should succeed (websocket upgrade fails but route is accessible)",
+			Method:          http.MethodGet,
+			URL:             "/api/beszel/agent-connect",
+			ExpectedStatus:  400,
+			ExpectedContent: []string{},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "POST /test-notification - invalid auth token should fail",
+			Method: http.MethodPost,
+			URL:    "/api/beszel/test-notification",
+			Body: jsonReader(map[string]any{
+				"url": "generic://127.0.0.1",
+			}),
+			Headers: map[string]string{
+				"Authorization": "invalid-token",
+			},
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "POST /user-alerts - invalid auth token should fail",
+			Method: http.MethodPost,
+			URL:    "/api/beszel/user-alerts",
+			Headers: map[string]string{
+				"Authorization": "invalid-token",
+			},
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+			Body: jsonReader(map[string]any{
+				"name":    "CPU",
+				"value":   80,
+				"min":     10,
+				"systems": []string{system.Id},
+			}),
+		},
+	}
+
+	for _, scenario := range scenarios {
+		scenario.Test(t)
+	}
+}
+
+func TestFirstUserCreation(t *testing.T) {
+	t.Run("CreateUserEndpoint available when no users exist", func(t *testing.T) {
+		hub, _ := beszelTests.NewTestHub(t.TempDir())
+		defer hub.Cleanup()
+
+		hub.StartHub()
+
+		testAppFactoryExisting := func(t testing.TB) *pbTests.TestApp {
+			return hub.TestApp
+		}
+
+		scenarios := []beszelTests.ApiScenario{
+			{
+				Name:   "POST /create-user - should be available when no users exist",
+				Method: http.MethodPost,
+				URL:    "/api/beszel/create-user",
+				Body: jsonReader(map[string]any{
+					"email":    "firstuser@example.com",
+					"password": "password123",
+				}),
+				ExpectedStatus:  200,
+				ExpectedContent: []string{"User created"},
+				TestAppFactory:  testAppFactoryExisting,
+				BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+					userCount, err := hub.CountRecords("users")
+					require.NoError(t, err)
+					require.Zero(t, userCount, "Should start with no users")
+					superusers, err := hub.FindAllRecords(core.CollectionNameSuperusers)
+					require.NoError(t, err)
+					require.EqualValues(t, 1, len(superusers), "Should start with one temporary superuser")
+					require.EqualValues(t, migrations.TempAdminEmail, superusers[0].GetString("email"), "Should have created one temporary superuser")
+				},
+				AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+					userCount, err := hub.CountRecords("users")
+					require.NoError(t, err)
+					require.EqualValues(t, 1, userCount, "Should have created one user")
+					superusers, err := hub.FindAllRecords(core.CollectionNameSuperusers)
+					require.NoError(t, err)
+					require.EqualValues(t, 1, len(superusers), "Should have created one superuser")
+					require.EqualValues(t, "firstuser@example.com", superusers[0].GetString("email"), "Should have created one superuser")
+				},
+			},
+			{
+				Name:   "POST /create-user - should not be available when users exist",
+				Method: http.MethodPost,
+				URL:    "/api/beszel/create-user",
+				Body: jsonReader(map[string]any{
+					"email":    "firstuser@example.com",
+					"password": "password123",
+				}),
+				ExpectedStatus:  404,
+				ExpectedContent: []string{"wasn't found"},
+				TestAppFactory:  testAppFactoryExisting,
+			},
+		}
+
+		for _, scenario := range scenarios {
+			scenario.Test(t)
+		}
+	})
+
+	t.Run("CreateUserEndpoint not available when USER_EMAIL, USER_PASSWORD are set", func(t *testing.T) {
+		os.Setenv("BESZEL_HUB_USER_EMAIL", "me@example.com")
+		os.Setenv("BESZEL_HUB_USER_PASSWORD", "password123")
+		defer os.Unsetenv("BESZEL_HUB_USER_EMAIL")
+		defer os.Unsetenv("BESZEL_HUB_USER_PASSWORD")
+
+		hub, _ := beszelTests.NewTestHub(t.TempDir())
+		defer hub.Cleanup()
+
+		hub.StartHub()
+
+		testAppFactory := func(t testing.TB) *pbTests.TestApp {
+			return hub.TestApp
+		}
+
+		scenario := beszelTests.ApiScenario{
+			Name:            "POST /create-user - should not be available when USER_EMAIL, USER_PASSWORD are set",
+			Method:          http.MethodPost,
+			URL:             "/api/beszel/create-user",
+			ExpectedStatus:  404,
+			ExpectedContent: []string{"wasn't found"},
+			TestAppFactory:  testAppFactory,
+			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+				users, err := hub.FindAllRecords("users")
+				require.NoError(t, err)
+				require.EqualValues(t, 1, len(users), "Should start with one user")
+				require.EqualValues(t, "me@example.com", users[0].GetString("email"), "Should have created one user")
+				superusers, err := hub.FindAllRecords(core.CollectionNameSuperusers)
+				require.NoError(t, err)
+				require.EqualValues(t, 1, len(superusers), "Should start with one superuser")
+				require.EqualValues(t, "me@example.com", superusers[0].GetString("email"), "Should have created one superuser")
+			},
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				users, err := hub.FindAllRecords("users")
+				require.NoError(t, err)
+				require.EqualValues(t, 1, len(users), "Should still have one user")
+				require.EqualValues(t, "me@example.com", users[0].GetString("email"), "Should have created one user")
+				superusers, err := hub.FindAllRecords(core.CollectionNameSuperusers)
+				require.NoError(t, err)
+				require.EqualValues(t, 1, len(superusers), "Should still have one superuser")
+				require.EqualValues(t, "me@example.com", superusers[0].GetString("email"), "Should have created one superuser")
+			},
+		}
+
+		scenario.Test(t)
+	})
+}
+
+func TestCreateUserEndpointAvailability(t *testing.T) {
+	t.Run("CreateUserEndpoint available when no users exist", func(t *testing.T) {
+		hub, _ := beszelTests.NewTestHub(t.TempDir())
+		defer hub.Cleanup()
+
+		// Ensure no users exist
+		userCount, err := hub.CountRecords("users")
+		require.NoError(t, err)
+		require.Zero(t, userCount, "Should start with no users")
+
+		hub.StartHub()
+
+		testAppFactory := func(t testing.TB) *pbTests.TestApp {
+			return hub.TestApp
+		}
+
+		scenario := beszelTests.ApiScenario{
+			Name:   "POST /create-user - should be available when no users exist",
+			Method: http.MethodPost,
+			URL:    "/api/beszel/create-user",
+			Body: jsonReader(map[string]any{
+				"email":    "firstuser@example.com",
+				"password": "password123",
+			}),
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"User created"},
+			TestAppFactory:  testAppFactory,
+		}
+
+		scenario.Test(t)
+
+		// Verify user was created
+		userCount, err = hub.CountRecords("users")
+		require.NoError(t, err)
+		require.EqualValues(t, 1, userCount, "Should have created one user")
+	})
+
+	t.Run("CreateUserEndpoint not available when users exist", func(t *testing.T) {
+		hub, _ := beszelTests.NewTestHub(t.TempDir())
+		defer hub.Cleanup()
+
+		// Create a user first
+		_, err := beszelTests.CreateUser(hub, "existing@example.com", "password")
+		require.NoError(t, err)
+
+		hub.StartHub()
+
+		testAppFactory := func(t testing.TB) *pbTests.TestApp {
+			return hub.TestApp
+		}
+
+		scenario := beszelTests.ApiScenario{
+			Name:   "POST /create-user - should not be available when users exist",
+			Method: http.MethodPost,
+			URL:    "/api/beszel/create-user",
+			Body: jsonReader(map[string]any{
+				"email":    "another@example.com",
+				"password": "password123",
+			}),
+			ExpectedStatus:  404,
+			ExpectedContent: []string{"wasn't found"},
+			TestAppFactory:  testAppFactory,
+		}
+
+		scenario.Test(t)
 	})
 }

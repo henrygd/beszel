@@ -1,3 +1,6 @@
+//go:build testing
+// +build testing
+
 package agent
 
 import (
@@ -11,7 +14,7 @@ import (
 )
 
 func TestSessionCache_GetSet(t *testing.T) {
-	synctest.Run(func() {
+	synctest.Test(t, func(t *testing.T) {
 		cache := NewSessionCache(69 * time.Second)
 
 		testData := &system.CombinedData{

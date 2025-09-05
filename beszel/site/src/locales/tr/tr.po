@@ -8,7 +8,7 @@ msgstr ""
 "Language: tr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-03-06 07:27\n"
+"PO-Revision-Date: 2025-08-28 23:21\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -23,13 +23,30 @@ msgstr ""
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# gün} other {# gün}}"
 
+#. placeholder {0}: Math.trunc(system.info.u / 3600)
 #: src/components/routes/system.tsx
-msgid "{hours, plural, one {# hour} other {# hours}}"
-msgstr "{hours, plural, one {# saat} other {# saat}}"
+msgid "{0, plural, one {# hour} other {# hours}}"
+msgstr "{0, plural, one {# saat} other {# saat}}"
+
+#. placeholder {0}: Math.trunc(system.info.u / 60)
+#: src/components/routes/system.tsx
+msgid "{0, plural, one {# minute} other {# minutes}}"
+msgstr ""
+
+#. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
+#. placeholder {1}: table.getFilteredRowModel().rows.length
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "{0} of {1} row(s) selected."
+msgstr "{1} satırdan {0} tanesi seçildi."
 
 #: src/lib/utils.ts
 msgid "1 hour"
 msgstr "1 saat"
+
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "1 min"
+msgstr "1 dk"
 
 #: src/lib/utils.ts
 msgid "1 week"
@@ -39,6 +56,11 @@ msgstr "1 hafta"
 msgid "12 hours"
 msgstr "12 saat"
 
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "15 min"
+msgstr "15 dk"
+
 #: src/lib/utils.ts
 msgid "24 hours"
 msgstr "24 saat"
@@ -47,10 +69,21 @@ msgstr "24 saat"
 msgid "30 days"
 msgstr "30 gün"
 
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "5 min"
+msgstr "5 dk"
+
 #. Table column
-#: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "Eylemler"
+
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Active"
+msgstr "Aktif"
 
 #: src/components/routes/home.tsx
 msgid "Active Alerts"
@@ -78,29 +111,37 @@ msgstr "Grafikler için görüntüleme seçeneklerini ayarlayın."
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
-#: src/components/command-palette.tsx
 msgid "Admin"
 msgstr "Yönetici"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
 msgstr "Aracı"
 
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "Alert History"
+msgstr "Uyarı Geçmişi"
+
 #: src/components/alerts/alert-button.tsx
-#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Alerts"
 msgstr "Uyarılar"
 
+#: src/components/alerts/alerts-sheet.tsx
 #: src/components/systems-table/systems-table.tsx
-#: src/components/alerts/alert-button.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "Tüm Sistemler"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
 msgstr "{name} silmek istediğinizden emin misiniz?"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Are you sure?"
+msgstr "Emin misiniz?"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -114,8 +155,8 @@ msgstr "Ortalama"
 msgid "Average CPU utilization of containers"
 msgstr "Konteynerlerin ortalama CPU kullanımı"
 
-#. placeholder {0}: data.alert.unit
-#: src/components/alerts/alerts-system.tsx
+#. placeholder {0}: alertData.unit
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Ortalama <0>{value}{0}</0> aşıyor"
 
@@ -132,15 +173,19 @@ msgstr "Sistem genelinde ortalama CPU kullanımı"
 msgid "Average utilization of {0}"
 msgstr "{0} ortalama kullanımı"
 
-#: src/components/navbar.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 msgid "Backups"
 msgstr "Yedekler"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Bandwidth"
 msgstr "Bant Genişliği"
+
+#: src/components/routes/system.tsx
+msgid "Battery"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -154,11 +199,22 @@ msgstr "Beszel, popüler bildirim hizmetleriyle entegre olmak için <0>Shoutrrr<
 msgid "Binary"
 msgstr "İkili"
 
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/general.tsx
+msgid "Bits (Kbps, Mbps, Gbps)"
+msgstr "Bit (Kbps, Mbps, Gbps)"
+
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/general.tsx
+msgid "Bytes (KB/s, MB/s, GB/s)"
+msgstr "Bayt (KB/s, MB/s, GB/s)"
+
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
 msgstr "Önbellek / Tamponlar"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "İptal"
 
@@ -167,8 +223,25 @@ msgid "Caution - potential data loss"
 msgstr "Dikkat - potansiyel veri kaybı"
 
 #: src/components/routes/settings/general.tsx
+msgid "Celsius (°C)"
+msgstr "Santigrat (°C)"
+
+#: src/components/routes/settings/general.tsx
+msgid "Change display units for metrics."
+msgstr "Metrikler için görüntüleme birimlerini değiştirin."
+
+#: src/components/routes/settings/general.tsx
 msgid "Change general application options."
 msgstr "Genel uygulama seçeneklerini değiştirin."
+
+#: src/components/routes/system.tsx
+msgid "Charge"
+msgstr ""
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Charging"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
@@ -186,7 +259,11 @@ msgstr "Daha fazla ayrıntı için günlükleri kontrol edin."
 msgid "Check your notification service"
 msgstr "Bildirim hizmetinizi kontrol edin"
 
-#: src/components/add-system.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Click on a system to view more information."
+msgstr ""
+
+#: src/components/ui/input-copy.tsx
 msgid "Click to copy"
 msgstr "Kopyalamak için tıklayın"
 
@@ -204,7 +281,12 @@ msgstr "Uyarı bildirimlerini nasıl alacağınızı yapılandırın."
 msgid "Confirm password"
 msgstr "Şifreyi onayla"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/routes/home.tsx
+msgid "Connection is down"
+msgstr "Bağlantı kesildi"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
 msgstr "Devam et"
 
@@ -213,34 +295,58 @@ msgid "Copied to clipboard"
 msgstr "Panoya kopyalandı"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
 msgstr "Docker compose kopyala"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
 msgstr "Docker run kopyala"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Environment variables"
+msgid "Copy env"
+msgstr "Ortam değişkenlerini kopyala"
+
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
 msgstr "Ana bilgisayarı kopyala"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
 msgstr "Linux komutunu kopyala"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Copy name"
+msgstr "Adı kopyala"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
 msgstr "Metni kopyala"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/add-system.tsx
+msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
+msgstr "Aşağıdaki agent için kurulum komutunu kopyalayın veya <0>evrensel token</0> ile agentları otomatik olarak kaydedin."
+
+#: src/components/add-system.tsx
+msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
+msgstr "Aşağıdaki agent için <0>docker-compose.yml</0> içeriğini kopyalayın veya <1>evrensel token</1> ile agentları otomatik olarak kaydedin."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy YAML"
+msgstr "YAML'ı kopyala"
+
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "CPU"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "CPU Usage"
 msgstr "CPU Kullanımı"
 
@@ -248,10 +354,19 @@ msgstr "CPU Kullanımı"
 msgid "Create account"
 msgstr "Hesap oluştur"
 
-#. Dark theme
-#: src/components/mode-toggle.tsx
-msgid "Dark"
-msgstr "Koyu"
+#. Context: date created
+#: src/components/alerts-history-columns.tsx
+msgid "Created"
+msgstr "Oluşturuldu"
+
+#: src/components/routes/settings/general.tsx
+msgid "Critical (%)"
+msgstr "Kritik (%)"
+
+#. Context: Battery state
+#: src/components/routes/system.tsx
+msgid "Current state"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
@@ -262,11 +377,21 @@ msgstr "Gösterge Paneli"
 msgid "Default time period"
 msgstr "Varsayılan zaman dilimi"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "Sil"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Delete fingerprint"
+msgstr "Parmak izini sil"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Discharging"
+msgstr ""
+
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
 msgstr "Disk"
 
@@ -274,9 +399,13 @@ msgstr "Disk"
 msgid "Disk I/O"
 msgstr "Disk G/Ç"
 
-#: src/lib/utils.ts
-#: src/components/routes/system.tsx
+#: src/components/routes/settings/general.tsx
+msgid "Disk unit"
+msgstr "Disk birimi"
+
 #: src/components/charts/disk-chart.tsx
+#: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Disk Usage"
 msgstr "Disk Kullanımı"
 
@@ -301,25 +430,39 @@ msgid "Documentation"
 msgstr "Dokümantasyon"
 
 #. Context: System is down
-#: src/lib/utils.ts
-#: src/components/systems-table/systems-table.tsx
+#: src/components/alerts-history-columns.tsx
 #: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
 msgid "Down"
+msgstr "Kapalı"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Down ({downSystemsLength})"
 msgstr ""
+
+#: src/components/alerts-history-columns.tsx
+msgid "Duration"
+msgstr "Süre"
 
 #: src/components/add-system.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
-msgstr ""
+msgstr "Düzenle"
 
-#: src/components/login/forgot-pass-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
 msgid "Email"
 msgstr "E-posta"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
 msgstr "E-posta bildirimleri"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Empty"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -329,9 +472,11 @@ msgstr "Şifreyi sıfırlamak için e-posta adresini girin"
 msgid "Enter email address..."
 msgstr "E-posta adresini girin..."
 
-#: src/components/routes/settings/notifications.tsx
-#: src/components/routes/settings/config-yaml.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/config-yaml.tsx
+#: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Error"
 msgstr "Hata"
 
@@ -346,6 +491,10 @@ msgstr "Son {2, plural, one {# dakika} other {# dakika}} içinde {0}{1} aşıyor
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr "<0>config.yml</0> içinde tanımlanmayan mevcut sistemler silinecektir. Lütfen düzenli yedekler alın."
 
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Export"
+msgstr "Dışa aktar"
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
 msgstr "Yapılandırmayı dışa aktar"
@@ -354,12 +503,16 @@ msgstr "Yapılandırmayı dışa aktar"
 msgid "Export your current systems configuration."
 msgstr "Mevcut sistem yapılandırmanızı dışa aktarın."
 
-#: src/lib/utils.ts
+#: src/components/routes/settings/general.tsx
+msgid "Fahrenheit (°F)"
+msgstr "Fahrenhayt (°F)"
+
+#: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Kimlik doğrulama başarısız"
 
-#: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/notifications.tsx
 msgid "Failed to save settings"
 msgstr "Ayarlar kaydedilemedi"
 
@@ -367,16 +520,21 @@ msgstr "Ayarlar kaydedilemedi"
 msgid "Failed to send test notification"
 msgstr "Test bildirimi gönderilemedi"
 
-#: src/components/alerts/alerts-system.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Failed to update alert"
 msgstr "Uyarı güncellenemedi"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Filtrele..."
 
-#: src/components/alerts/alerts-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Fingerprint"
+msgstr "Parmak izi"
+
+#: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "<0>{min}</0> {min, plural, one {dakika} other {dakika}} için"
 
@@ -384,9 +542,14 @@ msgstr "<0>{min}</0> {min, plural, one {dakika} other {dakika}} için"
 msgid "Forgot password?"
 msgstr "Şifrenizi mi unuttunuz?"
 
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Full"
+msgstr ""
+
 #. Context: General settings
-#: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/layout.tsx
 msgid "General"
 msgstr "Genel"
 
@@ -399,6 +562,7 @@ msgid "Grid"
 msgstr "Izgara"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
 msgstr "Homebrew komutu"
@@ -406,6 +570,11 @@ msgstr "Homebrew komutu"
 #: src/components/add-system.tsx
 msgid "Host / IP"
 msgstr "Host / IP"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Idle"
+msgstr ""
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
@@ -428,10 +597,26 @@ msgstr "Dil"
 msgid "Layout"
 msgstr "Düzen"
 
-#. Light theme
-#: src/components/mode-toggle.tsx
-msgid "Light"
-msgstr "Açık"
+#: src/components/routes/system.tsx
+msgid "Load Average"
+msgstr "Yük Ortalaması"
+
+#: src/lib/alerts.ts
+msgid "Load Average 15m"
+msgstr "Yük Ortalaması 15d"
+
+#: src/lib/alerts.ts
+msgid "Load Average 1m"
+msgstr "Yük Ortalaması 1d"
+
+#: src/lib/alerts.ts
+msgid "Load Average 5m"
+msgstr "Yük Ortalaması 5d"
+
+#. Short label for load average
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Load Avg"
+msgstr "Yük Ort."
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -441,13 +626,13 @@ msgstr "Çıkış Yap"
 msgid "Login"
 msgstr "Giriş Yap"
 
-#: src/components/login/forgot-pass-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
 msgid "Login attempt failed"
 msgstr "Giriş denemesi başarısız"
 
-#: src/components/navbar.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 msgid "Logs"
 msgstr "Günlükler"
 
@@ -461,19 +646,19 @@ msgstr "Görüntüleme ve bildirim tercihlerini yönetin."
 
 #: src/components/add-system.tsx
 msgid "Manual setup instructions"
-msgstr ""
+msgstr "Manuel kurulum talimatları"
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx
 msgid "Max 1 min"
 msgstr "Maks 1 dk"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Bellek"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Memory Usage"
 msgstr "Bellek Kullanımı"
 
@@ -482,10 +667,11 @@ msgid "Memory usage of docker containers"
 msgstr "Docker konteynerlerinin bellek kullanımı"
 
 #: src/components/add-system.tsx
+#: src/components/alerts-history-columns.tsx
 msgid "Name"
 msgstr "Ad"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "Ağ"
 
@@ -497,9 +683,18 @@ msgstr "Docker konteynerlerinin ağ trafiği"
 msgid "Network traffic of public interfaces"
 msgstr "Genel arayüzlerin ağ trafiği"
 
+#. Context: Bytes or bits
+#: src/components/routes/settings/general.tsx
+msgid "Network unit"
+msgstr "Ağ birimi"
+
 #: src/components/command-palette.tsx
 msgid "No results found."
 msgstr "Sonuç bulunamadı."
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "No results."
+msgstr "Sonuç yok."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -507,8 +702,8 @@ msgid "No systems found."
 msgstr "Sistem bulunamadı."
 
 #: src/components/command-palette.tsx
-#: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
 msgstr "Bildirimler"
 
@@ -520,7 +715,9 @@ msgstr "OAuth 2 / OIDC desteği"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Her yeniden başlatmada, veritabanındaki sistemler dosyada tanımlanan sistemlerle eşleşecek şekilde güncellenecektir."
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Menüyü aç"
 
@@ -528,13 +725,19 @@ msgstr "Menüyü aç"
 msgid "Or continue with"
 msgstr "Veya devam et"
 
-#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "Mevcut uyarıların üzerine yaz"
 
 #: src/components/command-palette.tsx
 msgid "Page"
 msgstr "Sayfa"
+
+#. placeholder {0}: table.getState().pagination.pageIndex + 1
+#. placeholder {1}: table.getPageCount()
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Page {0} of {1}"
+msgstr "Sayfa {0} / {1}"
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
@@ -551,30 +754,34 @@ msgstr "Şifre en az 8 karakter olmalıdır."
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
-msgstr ""
+msgstr "Parola 72 bayttan küçük olmalıdır."
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"
 msgstr "Şifre sıfırlama isteği alındı"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "Duraklat"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
 msgstr "Duraklatıldı"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Paused ({pausedSystemsLength})"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "Uyarıların teslim edilmesini sağlamak için lütfen bir SMTP sunucusu <0>yapılandırın</0>."
 
-#: src/components/alerts/alerts-system.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Please check logs for more details."
 msgstr "Daha fazla ayrıntı için lütfen günlükleri kontrol edin."
 
-#: src/components/login/forgot-pass-form.tsx
 #: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
 msgid "Please check your credentials and try again"
 msgstr "Lütfen kimlik bilgilerinizi kontrol edin ve tekrar deneyin"
 
@@ -586,7 +793,7 @@ msgstr "Lütfen bir yönetici hesabı oluşturun"
 msgid "Please enable pop-ups for this site"
 msgstr "Lütfen bu site için açılır pencereleri etkinleştirin"
 
-#: src/lib/utils.ts
+#: src/lib/api.ts
 msgid "Please log in again"
 msgstr "Lütfen tekrar giriş yapın"
 
@@ -617,13 +824,12 @@ msgid "Public Key"
 msgstr "Genel Anahtar"
 
 #. Disk read
-#: src/components/charts/area-chart.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
 msgid "Read"
 msgstr "Oku"
 
-#. Network bytes received (download)
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
 msgid "Received"
 msgstr "Alındı"
 
@@ -631,22 +837,36 @@ msgstr "Alındı"
 msgid "Reset Password"
 msgstr "Şifreyi Sıfırla"
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/alerts-history-columns.tsx
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Resolved"
+msgstr "Çözüldü"
+
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Devam et"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Rotate token"
+msgstr "Token'ı döndür"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Rows per page"
+msgstr "Sayfa başına satır"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Adresleri enter tuşu veya virgül ile kaydedin. E-posta bildirimlerini devre dışı bırakmak için boş bırakın."
 
-#: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
 msgstr "Ayarları Kaydet"
 
 #: src/components/add-system.tsx
 msgid "Save system"
-msgstr ""
+msgstr "Sistemi kaydet"
 
 #: src/components/navbar.tsx
 msgid "Search"
@@ -656,20 +876,22 @@ msgstr "Ara"
 msgid "Search for systems or settings..."
 msgstr "Sistemler veya ayarlar için ara..."
 
-#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Uyarıları nasıl alacağınızı yapılandırmak için <0>bildirim ayarlarını</0> inceleyin."
 
-#. Network bytes sent (upload)
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Gönderildi"
+
+#: src/components/routes/settings/general.tsx
+msgid "Set percentage thresholds for meter colors."
+msgstr "Sayaç renkleri için yüzde eşiklerini ayarlayın."
 
 #: src/components/routes/settings/general.tsx
 msgid "Sets the default time range for charts when a system is viewed."
 msgstr "Bir sistem görüntülendiğinde grafikler için varsayılan zaman aralığını ayarlar."
 
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -693,7 +915,13 @@ msgstr "SMTP ayarları"
 msgid "Sort By"
 msgstr "Sıralama Ölçütü"
 
-#: src/lib/utils.ts
+#. Context: alert state (active or resolved)
+#: src/components/alerts-history-columns.tsx
+msgid "State"
+msgstr "Durum"
+
+#: src/components/systems-table/systems-table.tsx
+#: src/lib/alerts.ts
 msgid "Status"
 msgstr "Durum"
 
@@ -705,12 +933,16 @@ msgstr "Sistem tarafından kullanılan takas alanı"
 msgid "Swap Usage"
 msgstr "Takas Kullanımı"
 
-#. System theme
-#: src/lib/utils.ts
-#: src/components/mode-toggle.tsx
-#: src/components/systems-table/systems-table.tsx
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
 msgid "System"
 msgstr "Sistem"
+
+#: src/components/routes/system.tsx
+msgid "System load averages over time"
+msgstr "Zaman içindeki sistem yükü ortalamaları"
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -725,14 +957,18 @@ msgid "Table"
 msgstr "Tablo"
 
 #. Temperature label in systems table
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
-msgstr ""
+msgstr "Sıc"
 
-#: src/lib/utils.ts
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Temperature"
 msgstr "Sıcaklık"
+
+#: src/components/routes/settings/general.tsx
+msgid "Temperature unit"
+msgstr "Sıcaklık birimi"
 
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
@@ -746,21 +982,17 @@ msgstr "Test <0>URL</0>"
 msgid "Test notification sent"
 msgstr "Test bildirimi gönderildi"
 
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the installation command for the agent below."
-msgstr "Bağlanmak için aracının sistemde çalışıyor olması gerekir. Aşağıdaki aracı kurulum komutunu kopyalayın."
-
-#: src/components/add-system.tsx
-msgid "The agent must be running on the system to connect. Copy the<0>docker-compose.yml</0> for the agent below."
-msgstr "Bağlanmak için aracının sistemde çalışıyor olması gerekir. Aşağıdaki <0>docker-compose.yml</0> dosyasını kopyalayın."
-
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
 msgstr "Ardından arka uca giriş yapın ve kullanıcılar tablosunda kullanıcı hesabı şifrenizi sıfırlayın."
 
-#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
 msgstr "Bu işlem geri alınamaz. Bu, veritabanından {name} için tüm mevcut kayıtları kalıcı olarak silecektir."
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "This will permanently delete all selected records from the database."
+msgstr "Bu, seçilen tüm kayıtları veritabanından kalıcı olarak silecektir."
 
 #: src/components/routes/system.tsx
 msgid "Throughput of {extraFsName}"
@@ -783,39 +1015,85 @@ msgstr "Izgarayı değiştir"
 msgid "Toggle theme"
 msgstr "Temayı değiştir"
 
-#: src/lib/utils.ts
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token"
+msgstr ""
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens & Fingerprints"
+msgstr "Token'lar ve Parmak İzleri"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
+msgstr "Token'lar agentların bağlanıp kaydolmasına izin verir. Parmak izleri her sisteme özgü kararlı tanımlayıcılardır ve ilk bağlantıda ayarlanır."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
+msgstr "Token'lar ve parmak izleri hub'a WebSocket bağlantılarını doğrulamak için kullanılır."
+
+#: src/lib/alerts.ts
+msgid "Triggers when 1 minute load average exceeds a threshold"
+msgstr "1 dakikalık yük ortalaması bir eşiği aştığında tetiklenir"
+
+#: src/lib/alerts.ts
+msgid "Triggers when 15 minute load average exceeds a threshold"
+msgstr "15 dakikalık yük ortalaması bir eşiği aştığında tetiklenir"
+
+#: src/lib/alerts.ts
+msgid "Triggers when 5 minute load average exceeds a threshold"
+msgstr "5 dakikalık yük ortalaması bir eşiği aştığında tetiklenir"
+
+#: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Herhangi bir sensör bir eşiği aştığında tetiklenir"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Birleştirilmiş yukarı/aşağı bir eşiği aştığında tetiklenir"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "CPU kullanımı bir eşiği aştığında tetiklenir"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Bellek kullanımı bir eşiği aştığında tetiklenir"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"
 msgstr "Durum yukarı ve aşağı arasında değiştiğinde tetiklenir"
 
-#: src/lib/utils.ts
+#: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Herhangi bir diskin kullanımı bir eşiği aştığında tetiklenir"
 
-#. Context: System is up
-#: src/components/systems-table/systems-table.tsx
-#: src/components/routes/system.tsx
-msgid "Up"
+#. Temperature / network units
+#: src/components/routes/settings/general.tsx
+msgid "Unit preferences"
+msgstr "Birim tercihleri"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Universal token"
+msgstr "Evrensel token"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Unknown"
 msgstr ""
 
+#. Context: System is up
+#: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Up"
+msgstr "Açık"
+
 #: src/components/systems-table/systems-table.tsx
-msgid "Updated in real time. Click on a system to view information."
-msgstr "Gerçek zamanlı olarak güncellenir. Bilgileri görüntülemek için bir sisteme tıklayın."
+msgid "Up ({upSystemsLength})"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Uptime"
@@ -823,7 +1101,8 @@ msgstr "Çalışma Süresi"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
 msgid "Usage"
 msgstr "Kullanım"
 
@@ -831,20 +1110,27 @@ msgstr "Kullanım"
 msgid "Usage of root partition"
 msgstr "Kök bölümün kullanımı"
 
-#: src/components/charts/swap-chart.tsx
 #: src/components/charts/mem-chart.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/charts/swap-chart.tsx
 msgid "Used"
 msgstr "Kullanıldı"
 
-#: src/components/navbar.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 msgid "Users"
 msgstr "Kullanıcılar"
+
+#: src/components/alerts-history-columns.tsx
+msgid "Value"
+msgstr "Değer"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Görüntüle"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "View your 200 most recent alerts."
+msgstr "En son 200 uyarınızı görüntüleyin."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
@@ -858,18 +1144,31 @@ msgstr "Görüntülemek için yeterli kayıt bekleniyor"
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "Çevirilerimizi daha iyi hale getirmemize yardımcı olmak ister misiniz? Daha fazla bilgi için <0>Crowdin</0> inceleyin."
 
+#: src/components/routes/settings/general.tsx
+msgid "Warning (%)"
+msgstr "Uyarı (%)"
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning thresholds"
+msgstr "Uyarı eşikleri"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
 msgstr "Webhook / Anlık bildirimler"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
+msgstr "Etkinleştirildiğinde, bu token agentların önceden sistem oluşturmadan kendilerini kaydetmelerine izin verir. Bir saat sonra veya hub yeniden başlatıldığında sona erer."
+
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
 msgstr "Windows komutu"
 
 #. Disk write
-#: src/components/charts/area-chart.tsx
-#: src/components/charts/area-chart.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
 msgid "Write"
 msgstr "Yaz"
 
