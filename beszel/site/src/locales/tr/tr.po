@@ -8,7 +8,7 @@ msgstr ""
 "Language: tr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-07-25 22:44\n"
+"PO-Revision-Date: 2025-08-28 23:21\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -23,19 +23,21 @@ msgstr ""
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# gün} other {# gün}}"
 
+#. placeholder {0}: Math.trunc(system.info.u / 3600)
+#: src/components/routes/system.tsx
+msgid "{0, plural, one {# hour} other {# hours}}"
+msgstr "{0, plural, one {# saat} other {# saat}}"
+
+#. placeholder {0}: Math.trunc(system.info.u / 60)
+#: src/components/routes/system.tsx
+msgid "{0, plural, one {# minute} other {# minutes}}"
+msgstr ""
+
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
 msgstr "{1} satırdan {0} tanesi seçildi."
-
-#: src/components/routes/system.tsx
-msgid "{hours, plural, one {# hour} other {# hours}}"
-msgstr "{hours, plural, one {# saat} other {# saat}}"
-
-#: src/components/routes/system.tsx
-msgid "{mins, plural, one {# minute} other {# minutes}}"
-msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -257,6 +259,10 @@ msgstr "Daha fazla ayrıntı için günlükleri kontrol edin."
 msgid "Check your notification service"
 msgstr "Bildirim hizmetinizi kontrol edin"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Click on a system to view more information."
+msgstr ""
+
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
 msgstr "Kopyalamak için tıklayın"
@@ -427,10 +433,13 @@ msgstr "Dokümantasyon"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
-#: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Down"
 msgstr "Kapalı"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Down ({downSystemsLength})"
+msgstr ""
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
@@ -756,9 +765,12 @@ msgid "Pause"
 msgstr "Duraklat"
 
 #: src/components/systems-table/systems-table-columns.tsx
-#: src/components/systems-table/systems-table.tsx
 msgid "Paused"
 msgstr "Duraklatıldı"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Paused ({pausedSystemsLength})"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1063,6 +1075,7 @@ msgstr "Herhangi bir diskin kullanımı bir eşiği aştığında tetiklenir"
 msgid "Unit preferences"
 msgstr "Birim tercihleri"
 
+#: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
 msgstr "Evrensel token"
@@ -1075,13 +1088,12 @@ msgstr ""
 #. Context: System is up
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
-#: src/components/systems-table/systems-table.tsx
 msgid "Up"
 msgstr "Açık"
 
 #: src/components/systems-table/systems-table.tsx
-msgid "Updated in real time. Click on a system to view information."
-msgstr "Gerçek zamanlı olarak güncellenir. Bilgileri görüntülemek için bir sisteme tıklayın."
+msgid "Up ({upSystemsLength})"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Uptime"

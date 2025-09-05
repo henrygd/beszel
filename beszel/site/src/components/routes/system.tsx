@@ -270,11 +270,9 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 		}
 		let uptime: React.ReactNode
 		if (system.info.u < 3600) {
-			const mins = Math.trunc(system.info.u / 60)
-			uptime = <Plural value={mins} one="# minute" other="# minutes" />
+			uptime = <Plural value={Math.trunc(system.info.u / 60)} one="# minute" other="# minutes" />
 		} else if (system.info.u < 172800) {
-			const hours = Math.trunc(system.info.u / 3600)
-			uptime = <Plural value={hours} one="# hour" other="# hours" />
+			uptime = <Plural value={Math.trunc(system.info.u / 3600)} one="# hour" other="# hours" />
 		} else {
 			uptime = <Plural value={Math.trunc(system.info?.u / 86400)} one="# day" other="# days" />
 		}

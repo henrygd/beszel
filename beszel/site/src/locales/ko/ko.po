@@ -8,7 +8,7 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-25 01:16\n"
+"PO-Revision-Date: 2025-08-31 15:44\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -23,19 +23,21 @@ msgstr ""
 msgid "{0, plural, one {# day} other {# days}}"
 msgstr "{0, plural, one {# 일} other {# 일}}"
 
+#. placeholder {0}: Math.trunc(system.info.u / 3600)
+#: src/components/routes/system.tsx
+msgid "{0, plural, one {# hour} other {# hours}}"
+msgstr "{0, plural, one {# 시간} other {# 시간}}"
+
+#. placeholder {0}: Math.trunc(system.info.u / 60)
+#: src/components/routes/system.tsx
+msgid "{0, plural, one {# minute} other {# minutes}}"
+msgstr "{0, plural, one {# 분} other {# 분}}"
+
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
 msgstr "{1}개의 행 중 {0}개가 선택되었습니다."
-
-#: src/components/routes/system.tsx
-msgid "{hours, plural, one {# hour} other {# hours}}"
-msgstr "{hours, plural, one {# 시간} other {# 시간}}"
-
-#: src/components/routes/system.tsx
-msgid "{mins, plural, one {# minute} other {# minutes}}"
-msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -257,6 +259,10 @@ msgstr "자세한 내용은 로그를 확인하세요."
 msgid "Check your notification service"
 msgstr "알림 서비스를 확인하세요."
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Click on a system to view more information."
+msgstr ""
+
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
 msgstr "클릭하여 복사"
@@ -427,10 +433,13 @@ msgstr "문서"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
-#: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Down"
 msgstr "오프라인"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Down ({downSystemsLength})"
+msgstr ""
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
@@ -756,9 +765,12 @@ msgid "Pause"
 msgstr "일시 중지"
 
 #: src/components/systems-table/systems-table-columns.tsx
-#: src/components/systems-table/systems-table.tsx
 msgid "Paused"
 msgstr "일시 정지됨"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Paused ({pausedSystemsLength})"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1063,6 +1075,7 @@ msgstr "디스크 사용량이 임계값을 초과할 때 트리거됩니다."
 msgid "Unit preferences"
 msgstr "단위 기본 설정"
 
+#: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
 msgstr "범용 토큰"
@@ -1075,13 +1088,12 @@ msgstr "알 수 없음"
 #. Context: System is up
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
-#: src/components/systems-table/systems-table.tsx
 msgid "Up"
 msgstr "온라인"
 
 #: src/components/systems-table/systems-table.tsx
-msgid "Updated in real time. Click on a system to view information."
-msgstr "실시간으로 업데이트됩니다. 시스템을 클릭하여 정보를 확인하세요."
+msgid "Up ({upSystemsLength})"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Uptime"
