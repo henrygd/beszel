@@ -1,3 +1,11 @@
+## 0.12.7
+
+- Make LibreHardwareMonitor opt-in with `LHM=true` environment variable. (#1130)
+
+- Fix bug where token was not refreshed when adding a new system. (#1141)
+
+- Add `USER_EMAIL` and `USER_PASSWORD` environment variables to set the email and password of the initial user. (#1137)
+
 ## 0.12.6
 
 - Add maximum 1 minute memory usage.

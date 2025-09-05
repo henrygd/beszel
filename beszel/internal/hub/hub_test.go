@@ -5,6 +5,7 @@ package hub_test
 
 import (
 	beszelTests "beszel/internal/tests"
+	"beszel/migrations"
 	"testing"
 
 	"bytes"
@@ -532,6 +533,115 @@ func TestApiRoutesAuthentication(t *testing.T) {
 	for _, scenario := range scenarios {
 		scenario.Test(t)
 	}
+}
+
+func TestFirstUserCreation(t *testing.T) {
+	t.Run("CreateUserEndpoint available when no users exist", func(t *testing.T) {
+		hub, _ := beszelTests.NewTestHub(t.TempDir())
+		defer hub.Cleanup()
+
+		hub.StartHub()
+
+		testAppFactoryExisting := func(t testing.TB) *pbTests.TestApp {
+			return hub.TestApp
+		}
+
+		scenarios := []beszelTests.ApiScenario{
+			{
+				Name:   "POST /create-user - should be available when no users exist",
+				Method: http.MethodPost,
+				URL:    "/api/beszel/create-user",
+				Body: jsonReader(map[string]any{
+					"email":    "firstuser@example.com",
+					"password": "password123",
+				}),
+				ExpectedStatus:  200,
+				ExpectedContent: []string{"User created"},
+				TestAppFactory:  testAppFactoryExisting,
+				BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+					userCount, err := hub.CountRecords("users")
+					require.NoError(t, err)
+					require.Zero(t, userCount, "Should start with no users")
+					superusers, err := hub.FindAllRecords(core.CollectionNameSuperusers)
+					require.NoError(t, err)
+					require.EqualValues(t, 1, len(superusers), "Should start with one temporary superuser")
+					require.EqualValues(t, migrations.TempAdminEmail, superusers[0].GetString("email"), "Should have created one temporary superuser")
+				},
+				AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+					userCount, err := hub.CountRecords("users")
+					require.NoError(t, err)
+					require.EqualValues(t, 1, userCount, "Should have created one user")
+					superusers, err := hub.FindAllRecords(core.CollectionNameSuperusers)
+					require.NoError(t, err)
+					require.EqualValues(t, 1, len(superusers), "Should have created one superuser")
+					require.EqualValues(t, "firstuser@example.com", superusers[0].GetString("email"), "Should have created one superuser")
+				},
+			},
+			{
+				Name:   "POST /create-user - should not be available when users exist",
+				Method: http.MethodPost,
+				URL:    "/api/beszel/create-user",
+				Body: jsonReader(map[string]any{
+					"email":    "firstuser@example.com",
+					"password": "password123",
+				}),
+				ExpectedStatus:  404,
+				ExpectedContent: []string{"wasn't found"},
+				TestAppFactory:  testAppFactoryExisting,
+			},
+		}
+
+		for _, scenario := range scenarios {
+			scenario.Test(t)
+		}
+	})
+
+	t.Run("CreateUserEndpoint not available when USER_EMAIL, USER_PASSWORD are set", func(t *testing.T) {
+		os.Setenv("BESZEL_HUB_USER_EMAIL", "me@example.com")
+		os.Setenv("BESZEL_HUB_USER_PASSWORD", "password123")
+		defer os.Unsetenv("BESZEL_HUB_USER_EMAIL")
+		defer os.Unsetenv("BESZEL_HUB_USER_PASSWORD")
+
+		hub, _ := beszelTests.NewTestHub(t.TempDir())
+		defer hub.Cleanup()
+
+		hub.StartHub()
+
+		testAppFactory := func(t testing.TB) *pbTests.TestApp {
+			return hub.TestApp
+		}
+
+		scenario := beszelTests.ApiScenario{
+			Name:            "POST /create-user - should not be available when USER_EMAIL, USER_PASSWORD are set",
+			Method:          http.MethodPost,
+			URL:             "/api/beszel/create-user",
+			ExpectedStatus:  404,
+			ExpectedContent: []string{"wasn't found"},
+			TestAppFactory:  testAppFactory,
+			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+				users, err := hub.FindAllRecords("users")
+				require.NoError(t, err)
+				require.EqualValues(t, 1, len(users), "Should start with one user")
+				require.EqualValues(t, "me@example.com", users[0].GetString("email"), "Should have created one user")
+				superusers, err := hub.FindAllRecords(core.CollectionNameSuperusers)
+				require.NoError(t, err)
+				require.EqualValues(t, 1, len(superusers), "Should start with one superuser")
+				require.EqualValues(t, "me@example.com", superusers[0].GetString("email"), "Should have created one superuser")
+			},
+			AfterTestFunc: func(t testing.TB, app *pbTests.TestApp, res *http.Response) {
+				users, err := hub.FindAllRecords("users")
+				require.NoError(t, err)
+				require.EqualValues(t, 1, len(users), "Should still have one user")
+				require.EqualValues(t, "me@example.com", users[0].GetString("email"), "Should have created one user")
+				superusers, err := hub.FindAllRecords(core.CollectionNameSuperusers)
+				require.NoError(t, err)
+				require.EqualValues(t, 1, len(superusers), "Should still have one superuser")
+				require.EqualValues(t, "me@example.com", superusers[0].GetString("email"), "Should have created one superuser")
+			},
+		}
+
+		scenario.Test(t)
+	})
 }
 
 func TestCreateUserEndpointAvailability(t *testing.T) {
