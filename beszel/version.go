@@ -3,7 +3,7 @@ package beszel
 import "github.com/blang/semver"
 
 const (
-	Version = "0.12.6"
+	Version = "0.12.7"
 	AppName = "beszel"
 )
 
