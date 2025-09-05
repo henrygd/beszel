@@ -135,7 +135,7 @@ scoops:
     homepage: "https://beszel.dev"
     description: "Agent for Beszel, a lightweight server monitoring platform."
     license: MIT
-    skip_upload: "{{ if .Env.IS_FORK }}true{{ else }}auto{{ end }}"
+    skip_upload: '{{ if eq (tolower .Env.IS_FORK) "true" }}true{{ else }}auto{{ end }}'
 
 # # Needs choco installed, so doesn't build on linux / default gh workflow :(
 # chocolateys:
@@ -169,7 +169,7 @@ brews:
     homepage: "https://beszel.dev"
     description: "Agent for Beszel, a lightweight server monitoring platform."
     license: MIT
-    skip_upload: "{{ if .Env.IS_FORK }}true{{ else }}auto{{ end }}"
+    skip_upload: '{{ if eq (tolower .Env.IS_FORK) "true" }}true{{ else }}auto{{ end }}'
     extra_install: |
       (bin/"beszel-agent-launcher").write <<~EOS
         #!/bin/bash
@@ -201,7 +201,7 @@ winget:
     release_notes_url: "https://github.com/henrygd/beszel/releases/tag/v{{ .Version }}"
     publisher_support_url: "https://github.com/henrygd/beszel/issues"
     short_description: "Agent for Beszel, a lightweight server monitoring platform."
-    skip_upload: "{{ if .Env.IS_FORK }}true{{ else }}auto{{ end }}"
+    skip_upload: '{{ if eq (tolower .Env.IS_FORK) "true" }}true{{ else }}auto{{ end }}'
     description: |
       Beszel is a lightweight server monitoring platform that includes Docker
       statistics, historical data, and alert functions. It has a friendly web
