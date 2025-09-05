@@ -8,7 +8,7 @@ msgstr ""
 "Language: fa\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-05 17:46\n"
+"PO-Revision-Date: 2025-09-05 19:01\n"
 "Last-Translator: \n"
 "Language-Team: Persian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -30,8 +30,8 @@ msgstr "{0, plural, one {# ساعت} other {# ساعت}}"
 
 #. placeholder {0}: Math.trunc(system.info.u / 60)
 #: src/components/routes/system.tsx
-msgid "{0, plural, one {# minute} other {# minutes}}"
-msgstr ""
+msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
+msgstr "{0, plural, one {# دقیقه} few {# دقیقه} many {# دقیقه} other {# دقیقه}}"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
@@ -261,7 +261,7 @@ msgstr "سرویس اطلاع‌رسانی خود را بررسی کنید"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
-msgstr ""
+msgstr "برای مشاهده اطلاعات بیشتر روی یک سیستم کلیک کنید."
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
@@ -439,7 +439,7 @@ msgstr "قطع"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Down ({downSystemsLength})"
-msgstr ""
+msgstr "قطع ({downSystemsLength})"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
@@ -770,7 +770,7 @@ msgstr "مکث شده"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused ({pausedSystemsLength})"
-msgstr ""
+msgstr "مکث شده ({pausedSystemsLength})"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1093,7 +1093,7 @@ msgstr "فعال"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
-msgstr ""
+msgstr "فعال ({upSystemsLength})"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"
