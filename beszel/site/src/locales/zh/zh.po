@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-05 19:01\n"
+"PO-Revision-Date: 2025-09-06 08:32\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -41,7 +41,7 @@ msgstr "已選取 {1} 個項目中的 {0} 個"
 
 #: src/lib/utils.ts
 msgid "1 hour"
-msgstr "1小時"
+msgstr "1 小時"
 
 #. Load average
 #: src/components/charts/load-average-chart.tsx
@@ -50,11 +50,11 @@ msgstr "1 分鐘"
 
 #: src/lib/utils.ts
 msgid "1 week"
-msgstr "1週"
+msgstr "1 週"
 
 #: src/lib/utils.ts
 msgid "12 hours"
-msgstr "12小時"
+msgstr "12 小時"
 
 #. Load average
 #: src/components/charts/load-average-chart.tsx
@@ -63,11 +63,11 @@ msgstr "15 分鐘"
 
 #: src/lib/utils.ts
 msgid "24 hours"
-msgstr "24小時"
+msgstr "24 小時"
 
 #: src/lib/utils.ts
 msgid "30 days"
-msgstr "30天"
+msgstr "30 天"
 
 #. Load average
 #: src/components/charts/load-average-chart.tsx
