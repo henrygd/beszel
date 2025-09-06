@@ -4,6 +4,7 @@ const routes = {
 	home: "/",
 	system: `/system/:name`,
 	settings: `/settings/:name?`,
+	application: `/application/:name?`,
 	forgot_password: `/forgot-password`,
 } as const
 

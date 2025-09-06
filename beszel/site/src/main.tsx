@@ -10,7 +10,12 @@ import * as systemsManager from "./lib/systemsManager.ts"
 import { useStore } from "@nanostores/react"
 import { Toaster } from "./components/ui/toaster.tsx"
 import { $router } from "./components/router.tsx"
-import Navbar from "./components/navbar.tsx"
+import { updateFavicon } from "@/lib/utils"
+import { AppSidebar } from "./components/app-sidebar.tsx"
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "./components/ui/sidebar.tsx"
+import { Breadcrumbs } from "./components/breadcrumbs.tsx"
+import { Separator } from "./components/ui/separator.tsx"
+import { Breadcrumb, BreadcrumbList } from "./components/ui/breadcrumb.tsx"
 import { I18nProvider } from "@lingui/react"
 import { i18n } from "@lingui/core"
 import { getLocale, dynamicActivate } from "./lib/i18n"
@@ -20,6 +25,11 @@ import Settings from "./components/routes/settings/layout.tsx"
 const LoginPage = lazy(() => import("@/components/login/login.tsx"))
 const Home = lazy(() => import("@/components/routes/home.tsx"))
 const SystemDetail = lazy(() => import("@/components/routes/system.tsx"))
+const GeneralPage = lazy(() => import("@/components/routes/general.tsx"))
+const NotificationsPage = lazy(() => import("@/components/routes/notifications.tsx"))
+const TokensPage = lazy(() => import("@/components/routes/tokens.tsx"))
+const AlertHistoryPage = lazy(() => import("@/components/routes/alert-history.tsx"))
+const YamlConfigPage = lazy(() => import("@/components/routes/yaml-config.tsx"))
 const CopyToClipboardDialog = lazy(() => import("@/components/copy-to-clipboard.tsx"))
 
 const App = memo(() => {
@@ -61,7 +71,27 @@ const App = memo(() => {
 	} else if (page.route === "system") {
 		return <SystemDetail name={page.params.name} />
 	} else if (page.route === "settings") {
-		return <Settings />
+		// Handle individual settings pages
+		switch (page.params.name) {
+			case "general":
+				return <GeneralPage />
+			case "notifications":
+				return <NotificationsPage />
+			case "tokens":
+				return <TokensPage />
+			case "alert-history":
+				return <AlertHistoryPage />
+			default:
+				return <Settings />
+		}
+	} else if (page.route === "application") {
+		// Handle individual application pages
+		switch (page.params.name) {
+			case "config":
+				return <YamlConfigPage />
+			default:
+				return <h1 className="text-3xl text-center my-14">404</h1>
+		}
 	}
 })
 
@@ -69,10 +99,18 @@ const Layout = () => {
 	const authenticated = useStore($authenticated)
 	const copyContent = useStore($copyContent)
 	const direction = useStore($direction)
+	const page = useStore($router)
 
 	useEffect(() => {
 		document.documentElement.dir = direction
 	}, [direction])
+
+	const getContentContainerClass = () => {
+		if (!page) return "w-full max-w-none"
+		
+		// All pages use full width for better space utilization
+		return "w-full max-w-none"
+	}
 
 	return (
 		<DirectionProvider dir={direction}>
@@ -81,19 +119,35 @@ const Layout = () => {
 					<LoginPage />
 				</Suspense>
 			) : (
-				<>
-					<div className="container">
-						<Navbar />
-					</div>
-					<div className="container relative">
-						<App />
-						{copyContent && (
-							<Suspense>
-								<CopyToClipboardDialog content={copyContent} />
-							</Suspense>
-						)}
-					</div>
-				</>
+				<SidebarProvider>
+					<AppSidebar />
+					<SidebarInset>
+						<header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+							<div className="flex items-center gap-2 px-4">
+								<SidebarTrigger className="-ml-1" />
+								<Separator
+									orientation="vertical"
+									className="mr-2 data-[orientation=vertical]:h-4"
+								/>
+								<Breadcrumb>
+									<BreadcrumbList>
+										<Breadcrumbs />
+									</BreadcrumbList>
+								</Breadcrumb>
+							</div>
+						</header>
+						<div className="flex flex-1 flex-col gap-4 p-6">
+							<div className={getContentContainerClass()}>
+								<App />
+							</div>
+							{copyContent && (
+								<Suspense>
+									<CopyToClipboardDialog content={copyContent} />
+								</Suspense>
+							)}
+						</div>
+					</SidebarInset>
+				</SidebarProvider>
 			)}
 		</DirectionProvider>
 	)
