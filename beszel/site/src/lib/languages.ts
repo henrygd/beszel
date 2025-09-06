@@ -45,6 +45,11 @@ export default [
 		e: "🇫🇷",
 	},
 	{
+		lang: "he",
+		label: "עברית",
+		e: "🇮🇱",
+	},
+	{
 		lang: "hr",
 		label: "Hrvatski",
 		e: "🇭🇷",
