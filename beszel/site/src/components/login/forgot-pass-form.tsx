@@ -29,7 +29,7 @@ export default function ForgotPassword() {
 			setIsLoading(true)
 			try {
 				// console.log(email)
-				await pb.collection("users").requestPasswordReset(email)
+				await pb.collection("users").requestPasswordReset(email.toLowerCase())
 				toast({
 					title: t`Password reset request received`,
 					description: t`Check ${email} for a reset link.`,

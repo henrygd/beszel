@@ -88,7 +88,7 @@ export function UserAuthForm({
 					return
 				}
 				const { password, passwordConfirm } = result.output
-				email = result.output.email
+				email = result.output.email.toLowerCase();
 				if (isFirstRun) {
 					// check that passwords match
 					if (password !== passwordConfirm) {
