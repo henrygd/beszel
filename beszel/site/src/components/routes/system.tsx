@@ -17,7 +17,7 @@ import React, { memo, useCallback, useEffect, useMemo, useRef, useState, type JS
 import { Card, CardHeader, CardTitle, CardDescription } from "../ui/card"
 import { useStore } from "@nanostores/react"
 import Spinner from "../spinner"
-import { ClockArrowUp, CpuIcon, GlobeIcon, LayoutGridIcon, MonitorIcon, XIcon } from "lucide-react"
+import { ClockArrowUp, CpuIcon, GlobeIcon, LayoutGridIcon, MonitorIcon, XIcon, ServerIcon, HardDriveIcon, CableIcon } from "lucide-react"
 import ChartTimeSelect from "../charts/chart-time-select"
 import {
 	chartTimeData,
@@ -35,7 +35,7 @@ import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
-import { ChartAverage, ChartMax, Rows, TuxIcon, WindowsIcon, AppleIcon, FreeBsdIcon } from "../ui/icons"
+import { ChartAverage, ChartMax, Rows, TuxIcon, WindowsIcon, AppleIcon, FreeBsdIcon, EthernetIcon } from "../ui/icons"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { timeTicks } from "d3-time"
@@ -243,31 +243,14 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 		setContainerData(containerData)
 	}, [])
 
-	// values for system info bar
-	const systemInfo = useMemo(() => {
+	// values for system info bar organized by groups
+	const systemInfoGroups = useMemo(() => {
 		if (!system.info) {
 			return []
 		}
 
-		const osInfo = {
-			[Os.Linux]: {
-				Icon: TuxIcon,
-				value: system.info.k,
-				label: t({ comment: "Linux kernel", message: "Kernel" }),
-			},
-			[Os.Darwin]: {
-				Icon: AppleIcon,
-				value: `macOS ${system.info.k}`,
-			},
-			[Os.Windows]: {
-				Icon: WindowsIcon,
-				value: system.info.k,
-			},
-			[Os.FreeBSD]: {
-				Icon: FreeBsdIcon,
-				value: system.info.k,
-			},
-		}
+		const os = system.info.o && system.info.o.length > 0 ? system.info.o[0] : undefined;
+
 		let uptime: React.ReactNode
 		if (system.info.u < 3600) {
 			uptime = (
@@ -284,28 +267,100 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 		} else {
 			uptime = <Plural value={Math.trunc(system.info?.u / 86400)} one="# day" other="# days" />
 		}
-		return [
-			{ value: getHostDisplayValue(system), Icon: GlobeIcon },
-			{
-				value: system.info.h,
-				Icon: MonitorIcon,
-				label: "Hostname",
-				// hide if hostname is same as host or name
-				hide: system.info.h === system.host || system.info.h === system.name,
-			},
-			{ value: uptime, Icon: ClockArrowUp, label: t`Uptime`, hide: !system.info.u },
-			osInfo[system.info.os ?? Os.Linux],
-			{
-				value: `${system.info.m} (${system.info.c}c${system.info.t ? `/${system.info.t}t` : ""})`,
-				Icon: CpuIcon,
-				hide: !system.info.m,
-			},
-		] as {
-			value: string | number | undefined
+		
+		const cpu = system.info.c && system.info.c.length > 0 ? system.info.c[0] : undefined;
+		const memoryTotal = system.info.m && system.info.m.length > 0 ? system.info.m[0].t : undefined;
+
+		type InfoItem = {
+			value: string | number | React.ReactNode | undefined
 			label?: string
 			Icon: any
 			hide?: boolean
-		}[]
+			pretty?: string
+			isOs?: boolean
+			arch?: string
+			disks?: { n: string; m?: string; v?: string; serial?: string }[]
+			nics?: { n: string; s?: string; v?: string; m?: string }[]
+			cpu?: { cores: number; threads?: number }
+			tooltip?: string
+		}
+
+		const groups = [
+			{
+				name: "identity",
+				label: "Identity",
+				items: [
+					{ value: getHostDisplayValue(system), Icon: GlobeIcon },
+					{
+						value: system.info.h,
+						Icon: MonitorIcon,
+						label: "Hostname",
+						hide: system.info.h === system.host || system.info.h === system.name,
+					}
+				].filter((item): item is InfoItem => !item.hide && Boolean(item.value))
+			},
+			{
+				name: "network",
+				label: "Network",
+				items: [
+					system.info.n && system.info.n.length > 0 ? {
+						value: `${system.info.n.length} ${system.info.n.length === 1 ? t`NIC` : t`NICs`}`,
+						Icon: EthernetIcon,
+						nics: system.info.n,
+					} : null,
+				].filter((item): item is InfoItem => Boolean(item))
+			},
+			{
+				name: "hardware",
+				label: "Hardware",
+				items: [
+					cpu ? {
+						value: cpu.m,
+						Icon: CpuIcon,
+						hide: !cpu.m,
+						arch: cpu.a,
+						cpu: {
+							cores: cpu.c,
+							threads: cpu.t,
+						},
+						tooltip: [
+							(cpu.c || cpu.t) ? `Cores / Threads: ${cpu.c || '?'} / ${cpu.t || cpu.c || '?'}` : null,
+							cpu.a ? `Arch: ${cpu.a}` : null,
+							cpu.s ? `Speed: ${cpu.s}` : null,
+						].filter(Boolean).join("\n"),
+					} : null,
+					memoryTotal ? {
+						value: memoryTotal,
+						Icon: ServerIcon,
+						label: t`Total Memory`,
+						tooltip: t`Total system memory in GB`,
+					} : null,
+					system.info.d && system.info.d.length > 0 ? {
+						value: `${system.info.d.length} ${system.info.d.length === 1 ? t`Disk` : t`Disks`}`,
+						Icon: HardDriveIcon,
+						disks: system.info.d,
+					} : null,
+				].filter((item): item is InfoItem => Boolean(item))
+			},
+			{
+				name: "system",
+				label: "System",
+				items: [
+					os ? {
+						Icon: os.f?.toLowerCase().includes("darwin") || os.f?.toLowerCase().includes("mac") ? AppleIcon
+							: os.f?.toLowerCase().includes("windows") ? WindowsIcon
+							: os.f?.toLowerCase().includes("freebsd") ? FreeBsdIcon
+							: TuxIcon,
+						value: `${os.f} ${os.v}`.trim(),
+						isOs: true,
+						tooltip: os.k ? `Kernel: ${os.k}` : undefined,
+					} : null,
+					{ value: uptime, Icon: ClockArrowUp, label: t`Uptime`, hide: !system.info.u },
+				].filter((item): item is InfoItem => !item?.hide && Boolean(item?.value))
+			}
+		].filter(group => group.items.length > 0)
+
+		return groups
 	}, [system.info, t])
 
 	/** Space for tooltip if more than 12 containers */
@@ -406,31 +461,156 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 									</span>
 									{translatedStatus}
 								</div>
-								{systemInfo.map(({ value, label, Icon, hide }, i) => {
-									if (hide || !value) {
-										return null
-									}
-									const content = (
-										<div className="flex gap-1.5 items-center">
-											<Icon className="h-4 w-4" /> {value}
-										</div>
-									)
-									return (
-										<div key={i} className="contents">
-											<Separator orientation="vertical" className="h-4 bg-primary/30" />
-											{label ? (
-												<TooltipProvider>
-													<Tooltip delayDuration={150}>
-														<TooltipTrigger asChild>{content}</TooltipTrigger>
-														<TooltipContent>{label}</TooltipContent>
-													</Tooltip>
-												</TooltipProvider>
-											) : (
-												content
-											)}
-										</div>
-									)
-								})}
+								{systemInfoGroups.map((group, groupIndex) => (
+									<React.Fragment key={group.name}>
+										{group.items.map((item, itemIndex) => {
+											const { value, label, Icon, isOs, arch, disks, nics, cpu, tooltip } = item
+											const content = (
+												<div className="flex gap-1.5 items-center">
+													<Icon className="h-4 w-4" /> {value}
+												</div>
+											)
+
+											// Handle different tooltip types
+											if (isOs && tooltip) {
+												return (
+													<div key={`${groupIndex}-${itemIndex}`} className="contents">
+														<Separator orientation="vertical" className="h-4 bg-primary/30" />
+														<TooltipProvider>
+															<Tooltip delayDuration={150}>
+																<TooltipTrigger asChild>{content}</TooltipTrigger>
+																<TooltipContent style={{ whiteSpace: 'pre-line' }}>{tooltip}</TooltipContent>
+															</Tooltip>
+														</TooltipProvider>
+													</div>
+												)
+											}
+
+											// Show CPU info tooltip (cores/threads and architecture)
+											if (cpu && tooltip) {
+												return (
+													<div key={`${groupIndex}-${itemIndex}`} className="contents">
+														<Separator orientation="vertical" className="h-4 bg-primary/30" />
+														<TooltipProvider>
+															<Tooltip delayDuration={150}>
+																<TooltipTrigger asChild>{content}</TooltipTrigger>
+																<TooltipContent style={{ whiteSpace: 'pre-line' }}>{tooltip}</TooltipContent>
+															</Tooltip>
+														</TooltipProvider>
+													</div>
+												)
+											}
+
+											// Show architecture as tooltip for CPU info (fallback for when cpu is not available)
+											if (arch) {
+												return (
+													<div key={`${groupIndex}-${itemIndex}`} className="contents">
+														<Separator orientation="vertical" className="h-4 bg-primary/30" />
+														<TooltipProvider>
+															<Tooltip delayDuration={150}>
+																<TooltipTrigger asChild>{content}</TooltipTrigger>
+																<TooltipContent>{arch}</TooltipContent>
+															</Tooltip>
+														</TooltipProvider>
+													</div>
+												)
+											}
+
+											// Show disks tooltip if present
+											if (disks && disks.length > 0) {
+												return (
+													<div key={`${groupIndex}-${itemIndex}`} className="contents">
+														<Separator orientation="vertical" className="h-4 bg-primary/30" />
+														<TooltipProvider>
+															<Tooltip delayDuration={150}>
+																<TooltipTrigger asChild>{content}</TooltipTrigger>
+																<TooltipContent>
+																	<div className="flex flex-col gap-1 min-w-44">
+																		{disks.map((disk, idx) => {
+																			let diskText = disk.n
+																			const vendor = disk.v && disk.v.toLowerCase() !== 'unknown' ? disk.v : null
+																			const model = disk.m && disk.m.toLowerCase() !== 'unknown' ? disk.m : null
+																			
+																			if (vendor && model) {
+																				diskText += `: ${vendor} ${model}`
+																			} else if (model) {
+																				diskText += `: ${model}`
+																			} else if (vendor) {
+																				diskText += `: ${vendor}`
+																			}
+																			return (
+																				<div key={disk.n + idx} className="flex flex-col">
+																					<span className="font-medium">{diskText}</span>
+																				</div>
+																			)
+																		})}
+																	</div>
+																</TooltipContent>
+															</Tooltip>
+														</TooltipProvider>
+													</div>
+												)
+											}
+
+											// Show nics tooltip if present
+											if (nics && nics.length > 0) {
+												return (
+													<div key={`${groupIndex}-${itemIndex}`} className="contents">
+														<Separator orientation="vertical" className="h-4 bg-primary/30" />
+														<TooltipProvider>
+															<Tooltip delayDuration={150}>
+																<TooltipTrigger asChild>{content}</TooltipTrigger>
+																<TooltipContent>
+																	<div className="flex flex-col gap-1 min-w-52">
+																		{nics.map((nic, idx) => {
+																			let nicText = nic.n
+																			const hasVendor = !!nic.v && nic.v.trim() !== ''
+																			const hasModel = !!nic.m && nic.m.trim() !== ''
+																			if (hasVendor && hasModel) {
+																				nicText += `: ${nic.v} ${nic.m}`
+																			} else if (hasModel) {
+																				nicText += `: ${nic.m}`
+																			} else if (hasVendor) {
+																				nicText += `: ${nic.v}`
+																			} else if (!hasVendor && !hasModel) {
+																				// Don't show "Unknown" if we just have the basic interface name
+																			}
+																			if (nic.s) {
+																				nicText += ` | ${nic.s}`
+																			}
+																			return (
+																				<div key={nic.n + idx} className="flex flex-col">
+																					<span className="font-medium">{nicText}</span>
+																				</div>
+																			)
+																		})}
+																	</div>
+																</TooltipContent>
+															</Tooltip>
+														</TooltipProvider>
+													</div>
+												)
+											}
+
+
+											return (
+												<div key={`${groupIndex}-${itemIndex}`} className="contents">
+													<Separator orientation="vertical" className="h-4 bg-primary/30" />
+													{label ? (
+														<TooltipProvider>
+															<Tooltip delayDuration={150}>
+																<TooltipTrigger asChild>{content}</TooltipTrigger>
+																<TooltipContent>{label}</TooltipContent>
+															</Tooltip>
+														</TooltipProvider>
+													) : (
+														content
+													)}
+												</div>
+											)
+										})}
+									</React.Fragment>
+								))}
 							</div>
 						</div>
 						<div className="xl:ms-auto flex items-center gap-2 max-sm:-mb-1">
