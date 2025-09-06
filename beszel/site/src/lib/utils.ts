@@ -36,6 +36,57 @@ export async function copyToClipboard(content: string) {
 	}
 }
 
+const verifyAuth = () => {
+	pb.collection("users")
+		.authRefresh()
+		.catch(() => {
+			logOut()
+			toast({
+				title: t`Failed to authenticate`,
+				description: t`Please log in again`,
+				variant: "destructive",
+			})
+		})
+}
+
+export const updateSystemList = (() => {
+	let isFetchingSystems = false
+	return async () => {
+		if (isFetchingSystems) {
+			return
+		}
+		isFetchingSystems = true
+		try {
+			const records = await pb
+				.collection<SystemRecord>("systems")
+				.getFullList({ sort: "+name", fields: "id,name,host,port,info,status,tags,group" })
+
+			if (records.length) {
+				$systems.set(records)
+			} else {
+				verifyAuth()
+			}
+		} finally {
+			isFetchingSystems = false
+		}
+	}
+})()
+
+/** Logs the user out by clearing the auth store and unsubscribing from realtime updates. */
+export async function logOut() {
+	sessionStorage.setItem("lo", "t")
+	pb.authStore.clear()
+	pb.realtime.unsubscribe()
+}
+
+export const updateAlerts = () => {
+	pb.collection("alerts")
+		.getFullList<AlertRecord>({ fields: "id,name,system,value,min,triggered", sort: "updated" })
+		.then((records) => {
+			$alerts.set(records)
+		})
+}
+
 const hourWithMinutesFormatter = new Intl.DateTimeFormat(undefined, {
 	hour: "numeric",
 	minute: "numeric",

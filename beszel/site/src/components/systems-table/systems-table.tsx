@@ -33,17 +33,29 @@ import {
 	ArrowUpIcon,
 	Settings2Icon,
 	EyeIcon,
+	PenBoxIcon,
+	ChevronDownIcon,
+	ChevronRightIcon,
 	FilterIcon,
 } from "lucide-react"
-import { memo, useEffect, useMemo, useRef, useState } from "react"
-import { $pausedSystems, $downSystems, $upSystems, $systems } from "@/lib/stores"
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { $pausedSystems, $downSystems, $upSystems, $systems, $userSettings } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
-import { cn, runOnce, useBrowserStorage } from "@/lib/utils"
-import { $router, Link } from "../router"
+import { cn, copyToClipboard, decimalString, isReadOnlyUser, useLocalStorage, useBrowserStorage, runOnce } from "@/lib/utils"
+import { useDebounce } from "@/lib/useDebounce"
+import AlertsButton from "../alerts/alert-button"
+import { $router, Link, navigate } from "../router"
+import { EthernetIcon, GpuIcon, ThermometerIcon } from "../ui/icons"
 import { useLingui, Trans } from "@lingui/react/macro"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { Input } from "@/components/ui/input"
 import { getPagePath } from "@nanostores/router"
+import { SystemDialog } from "../add-system"
+import { Dialog } from "../ui/dialog"
+import { Badge } from "@/components/ui/badge"
+import { bulkRenameTag, bulkDeleteTag, getSystemsWithTag } from "@/lib/bulkOperations"
+import { updateSystemList } from "@/lib/utils"
+import { toast } from "@/components/ui/use-toast"
 import SystemsTableColumns, { ActionsButton, IndicatorDot } from "./systems-table-columns"
 import AlertButton from "../alerts/alert-button"
 import { SystemStatus } from "@/lib/enums"
@@ -59,8 +71,10 @@ export default function SystemsTable() {
 	const downSystems = $downSystems.get()
 	const upSystems = $upSystems.get()
 	const pausedSystems = $pausedSystems.get()
+	const userSettings = useStore($userSettings)
 	const { i18n, t } = useLingui()
 	const [filter, setFilter] = useState<string>()
+	const debouncedFilter = useDebounce(filter, 300)
 	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
 	const [sorting, setSorting] = useBrowserStorage<SortingState>(
 		"sortMode",
@@ -69,11 +83,26 @@ export default function SystemsTable() {
 	)
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const [columnVisibility, setColumnVisibility] = useBrowserStorage<VisibilityState>("cols", {})
+	const [selectedTags, setSelectedTags] = useState<string[]>([])
+	const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
 
 	const locale = i18n.locale
 
+	// Optimized tag computation with better memoization
+	const allTags = useMemo(() => {
+		const tagSet = new Set<string>()
+		for (const sys of data) {
+			if (sys.tags) {
+				for (const tag of sys.tags) {
+					tagSet.add(tag)
+				}
+			}
+		}
+		return Array.from(tagSet).sort()
+	}, [data])
+
 	// Filter data based on status filter
-	const filteredData = useMemo(() => {
+	const statusFilteredData = useMemo(() => {
 		if (statusFilter === "all") {
 			return data
 		}
@@ -86,6 +115,22 @@ export default function SystemsTable() {
 		return Object.values(pausedSystems) ?? []
 	}, [data, statusFilter])
 
+	// Optimized filtering with combined operations
+	const filteredData = useMemo(() => {
+		let result = statusFilteredData
+		if (selectedTags.length) {
+			const selectedTagsSet = new Set(selectedTags)
+			result = result.filter((sys) => {
+				if (!sys.tags?.length) return false
+				for (const tag of sys.tags) {
+					if (selectedTagsSet.has(tag)) return true
+				}
+				return false
+			})
+		}
+		return result
+	}, [statusFilteredData, selectedTags])
+
 	const [viewMode, setViewMode] = useBrowserStorage<ViewMode>(
 		"viewMode",
 		// show grid view on mobile if there are less than 200 systems (looks better but table is more efficient)
@@ -93,10 +138,10 @@ export default function SystemsTable() {
 	)
 
 	useEffect(() => {
-		if (filter !== undefined) {
-			table.getColumn("system")?.setFilterValue(filter)
+		if (debouncedFilter !== undefined) {
+			table.getColumn("system")?.setFilterValue(debouncedFilter)
 		}
-	}, [filter])
+	}, [debouncedFilter])
 
 	const columnDefs = useMemo(() => SystemsTableColumns(viewMode), [viewMode])
 
@@ -131,6 +176,19 @@ export default function SystemsTable() {
 		return [Object.values(upSystems).length, Object.values(downSystems).length, Object.values(pausedSystems).length]
 	}, [upSystems, downSystems, pausedSystems])
 
+	// Optimized group processing with reduce
+	const groupedSystems = useMemo(() => {
+		return filteredData.reduce((groups, system) => {
+			const group = system.group || "Ungrouped"
+			groups[group] ??= []
+			groups[group].push(system)
+			return groups
+		}, {} as Record<string, SystemRecord[]>)
+	}, [filteredData])
+
+	// Determine if there is at least one system with a non-empty group
+	const hasAnyGrouped = useMemo(() => filteredData.some(sys => sys.group && sys.group.trim()), [filteredData])
+
 	// TODO: hiding temp then gpu messes up table headers
 	const CardHead = useMemo(() => {
 		return (
@@ -144,9 +202,38 @@ export default function SystemsTable() {
 							<Trans>Click on a system to view more information.</Trans>
 						</CardDescription>
 					</div>
-
-					<div className="flex gap-2 ms-auto w-full md:w-80">
-						<Input placeholder={t`Filter...`} onChange={(e) => setFilter(e.target.value)} className="px-4" />
+					<div className="flex gap-2 ms-auto w-auto items-center">
+						<Input placeholder={t`Filter...`} onChange={(e) => setFilter(e.target.value)} className="px-4 min-w-0" />
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant="outline" className="flex gap-2 items-center">
+									<span>{t`Tags`}</span>
+									{selectedTags.length > 0 && (
+										<Badge variant="secondary" className="px-1.5 py-0.5 text-xs">
+											{selectedTags.length}
+										</Badge>
+									)}
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="start" className="min-w-[14rem] max-h-72 overflow-y-auto">
+								<DropdownMenuLabel>{t`Filter by tags`}</DropdownMenuLabel>
+								<DropdownMenuSeparator />
+								{allTags.length === 0 && <div className="px-3 py-2 text-muted-foreground">{t`No tags found`}</div>}
+								{allTags.map((tag) => (
+									<DropdownMenuCheckboxItem
+										key={tag}
+										checked={selectedTags.includes(tag)}
+										onCheckedChange={(checked) => {
+											setSelectedTags((prev) =>
+												checked ? [...prev, tag] : prev.filter((t) => t !== tag)
+											)
+										}}
+									>
+										{tag}
+									</DropdownMenuCheckboxItem>
+								))}
+							</DropdownMenuContent>
+						</DropdownMenu>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="outline">
@@ -238,7 +325,6 @@ export default function SystemsTable() {
 											})}
 										</div>
 									</div>
-
 									<div>
 										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
 											<EyeIcon className="size-4" />
@@ -279,30 +365,97 @@ export default function SystemsTable() {
 		upSystemsLength,
 		downSystemsLength,
 		pausedSystemsLength,
+		selectedTags,
+		allTags,
 	])
 
 	return (
 		<Card>
 			{CardHead}
 			<div className="p-6 pt-0 max-sm:py-3 max-sm:px-2">
-				{viewMode === "table" ? (
-					// table layout
-					<div className="rounded-md">
-						<AllSystemsTable table={table} rows={rows} colLength={visibleColumns.length} />
-					</div>
+				{userSettings.groupingEnabled ? (
+					// Grouped layout
+					Object.entries(groupedSystems)
+						.filter(([group]) => group !== "Ungrouped" || hasAnyGrouped)
+						.map(([group, systems]) => {
+							const systemRows = systems.map(sys => table.getRowModel().rows.find(r => r.original.id === sys.id)).filter((row): row is Row<SystemRecord> => row !== undefined)
+							const isCollapsed = collapsedGroups.has(group)
+							
+							return (
+								<div key={group} className="mb-8">
+									<button
+										onClick={() => {
+											const newCollapsed = new Set(collapsedGroups)
+											if (isCollapsed) {
+												newCollapsed.delete(group)
+											} else {
+												newCollapsed.add(group)
+											}
+											setCollapsedGroups(newCollapsed)
+										}}
+										className="flex items-center gap-2 text-xl font-bold mb-2 hover:text-primary transition-colors cursor-pointer"
+									>
+										{isCollapsed ? (
+											<ChevronRightIcon className="h-5 w-5" />
+										) : (
+											<ChevronDownIcon className="h-5 w-5" />
+										)}
+										{group}
+									</button>
+									<div className="text-sm text-muted-foreground mb-3">
+										{(() => {
+											const onlineCount = systemRows.filter(row => row.original.status === "up").length
+											const offlineCount = systemRows.filter(row => row.original.status !== "up").length
+											return (
+												<span>
+													{onlineCount} online, {offlineCount} offline
+												</span>
+											)
+										})()}
+									</div>
+									{!isCollapsed && (
+										<>
+											{viewMode === "table" ? (
+												<div className="rounded-md border overflow-hidden">
+													<AllSystemsTable table={table} rows={systemRows} colLength={visibleColumns.length} />
+												</div>
+											) : (
+												<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+													{systemRows.length ? (
+														systemRows.map((row) => {
+															return <SystemCard key={row.original.id} row={row} table={table} colLength={visibleColumns.length} />
+														})
+													) : (
+														<div className="col-span-full text-center py-8">
+															<Trans>No systems found.</Trans>
+														</div>
+													)}
+												</div>
+											)}
+										</>
+									)}
+								</div>
+							)
+						})
 				) : (
-					// grid layout
-					<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-						{rows?.length ? (
-							rows.map((row) => {
-								return <SystemCard key={row.original.id} row={row} table={table} colLength={visibleColumns.length} />
-							})
-						) : (
-							<div className="col-span-full text-center py-8">
-								<Trans>No systems found.</Trans>
-							</div>
-						)}
-					</div>
+					// Simple layout (original)
+					viewMode === "table" ? (
+						<div className="rounded-md">
+							<AllSystemsTable table={table} rows={rows} colLength={visibleColumns.length} />
+						</div>
+					) : (
+						<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+							{rows?.length ? (
+								rows.map((row) => {
+									return <SystemCard key={row.original.id} row={row} table={table} colLength={visibleColumns.length} />
+								})
+							) : (
+								<div className="col-span-full text-center py-8">
+									<Trans>No systems found.</Trans>
+								</div>
+							)}
+						</div>
+					)
 				)}
 			</div>
 		</Card>
