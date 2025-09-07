@@ -27,12 +27,32 @@ export interface SystemRecord extends RecordModel {
 	host: string
 	status: "up" | "down" | "paused" | "pending"
 	port: string
-	info: SystemInfo
+	info: systemInfo
 	v: string
 	updated: string
 }
 
-export interface SystemInfo {
+export interface CpuInfo {
+	m: string
+	s: string
+	a: string
+	c: number
+	t: number
+}
+
+export interface OsInfo {
+	f: string
+	v: string
+	k: string
+}
+
+export interface NetworkLocationInfo {
+	ip?: string
+	isp?: string
+	asn?: string
+}
+
+export interface systemInfo {
 	/** hostname */
 	h: string
 	/** kernel **/
@@ -73,8 +93,22 @@ export interface SystemInfo {
 	g?: number
 	/** dashboard display temperature */
 	dt?: number
-	/** operating system */
-	os?: Os
+	/** disks info (array of block devices with model/vendor/serial) */
+	d?: { n: string; m?: string; v?: string; serial?: string }[]
+	/** networks info (array of network interfaces with vendor/model/capabilities) */
+	n?: { n: string; v?: string; m?: string; s?: string }[]
+	/** memory info (array with total property) */
+	m?: { t: string }[]
+	/** OS name (from /etc/os-release NAME) */
+	onr?: string
+	/** OS version id (from /etc/os-release VERSION_ID) */
+	ovid?: string
+	/** cpu info (array of cpu objects) */
+	c?: CpuInfo[]
+	/** os info (array of os objects) */
+	o?: OsInfo[]
+	/** network location info (array of network location objects) */
+	nl?: NetworkLocationInfo[]
 }
 
 export interface SystemStats {

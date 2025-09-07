@@ -82,12 +82,42 @@ const (
 	Freebsd
 )
 
+type DiskInfo struct {
+	Name   string `json:"n"`
+	Model  string `json:"m,omitempty"`
+	Vendor string `json:"v,omitempty"`
+}
+
+type NetworkInfo struct {
+	Name   string `json:"n"`
+	Vendor string `json:"v,omitempty"`
+	Model  string `json:"m,omitempty"`
+	Speed  string `json:"s,omitempty"`
+}
+
+type MemoryInfo struct {
+	Total string `json:"t,omitempty"`
+}
+
+type CpuInfo struct {
+	Model    string `json:"m"`
+	SpeedGHz string `json:"s"`
+	Arch     string `json:"a"`
+	Cores    int    `json:"c"`
+	Threads  int    `json:"t"`
+}
+
+type OsInfo struct {
+	Family  string `json:"f"`
+	Version string `json:"v"`
+	Kernel  string `json:"k"`
+}
+
+
 type Info struct {
 	Hostname       string  `json:"h" cbor:"0,keyasint"`
 	KernelVersion  string  `json:"k,omitempty" cbor:"1,keyasint,omitempty"`
-	Cores          int     `json:"c" cbor:"2,keyasint"`
 	Threads        int     `json:"t,omitempty" cbor:"3,keyasint,omitempty"`
-	CpuModel       string  `json:"m" cbor:"4,keyasint"`
 	Uptime         uint64  `json:"u" cbor:"5,keyasint"`
 	Cpu            float64 `json:"cpu" cbor:"6,keyasint"`
 	MemPct         float64 `json:"mp" cbor:"7,keyasint"`
@@ -100,10 +130,15 @@ type Info struct {
 	Os             Os      `json:"os" cbor:"14,keyasint"`
 	LoadAvg1       float64 `json:"l1,omitempty" cbor:"15,keyasint,omitempty"`
 	LoadAvg5       float64 `json:"l5,omitempty" cbor:"16,keyasint,omitempty"`
-	LoadAvg15      float64 `json:"l15,omitempty" cbor:"17,keyasint,omitempty"`
-	BandwidthBytes uint64  `json:"bb" cbor:"18,keyasint"`
+	LoadAvg15      float64 `json:"l15,omitempty" cbor:"22,keyasint,omitempty"`
+	BandwidthBytes uint64                 `json:"bb" cbor:"23,keyasint"`
 	// TODO: remove load fields in future release in favor of load avg array
-	LoadAvg [3]float64 `json:"la,omitempty" cbor:"19,keyasint"`
+	LoadAvg    [3]float64            `json:"la,omitempty" cbor:"19,keyasint"`
+	Disks      []DiskInfo            `json:"d" cbor:"20,omitempty"`
+	Networks   []NetworkInfo         `json:"n,omitempty" cbor:"21,omitempty"`
+	Memory     []MemoryInfo          `json:"m" cbor:"17"`
+	Cpus       []CpuInfo             `json:"c" cbor:"18"`
+	Oses       []OsInfo              `json:"o,omitempty" cbor:"24,omitempty"`
 }
 
 // Final data structure to return to the hub
