@@ -7,11 +7,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useStore } from "@nanostores/react"
 import { $router } from "@/components/router.tsx"
 import { getPagePath, redirectPage } from "@nanostores/router"
-import { BellIcon, FileSlidersIcon, FingerprintIcon, SettingsIcon, AlertOctagonIcon } from "lucide-react"
+import { BellIcon, FileSlidersIcon, FingerprintIcon, SettingsIcon, AlertOctagonIcon, UsersIcon } from "lucide-react"
 import { $userSettings } from "@/lib/stores.ts"
 import { toast } from "@/components/ui/use-toast.ts"
 import { UserSettings } from "@/types"
 import { useLingui } from "@lingui/react/macro"
+import SystemOrganization from "./system-organization"
 import { pb } from "@/lib/api"
 
 const generalSettingsImport = () => import("./general.tsx")
@@ -89,6 +90,11 @@ export default function SettingsLayout() {
 			admin: true,
 			preload: configYamlSettingsImport,
 		},
+		{
+			title: t`System Organization`,
+			href: getPagePath($router, "settings", { name: "organization" }),
+			icon: UsersIcon,
+		},
 	]
 
 	const page = useStore($router)
@@ -141,5 +147,7 @@ function SettingsContent({ name }: { name: string }) {
 			return <FingerprintsSettings />
 		case "alert-history":
 			return <AlertsHistoryDataTableSettings />
+		case "organization":
+			return <SystemOrganization />
 	}
 }
