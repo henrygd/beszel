@@ -30,7 +30,7 @@ msgstr "{0, plural, one {# óra} other {# óra}}"
 
 #. placeholder {0}: Math.trunc(system.info.u / 60)
 #: src/components/routes/system.tsx
-msgid "{0, plural, one {# minute} other {# minutes}}"
+msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
 msgstr ""
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length

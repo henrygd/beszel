@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 )
 
@@ -45,6 +46,16 @@ func (w *openWRTRestarter) Restart() error {
 	return exec.Command(w.cmd, "restart", "beszel-agent").Run()
 }
 
+type freeBSDRestarter struct{ cmd string }
+
+func (f *freeBSDRestarter) Restart() error {
+	if err := exec.Command(f.cmd, "beszel-agent", "status").Run(); err != nil {
+		return nil
+	}
+	ghupdate.ColorPrint(ghupdate.ColorYellow, "Restarting beszel-agent via FreeBSD rc…")
+	return exec.Command(f.cmd, "beszel-agent", "restart").Run()
+}
+
 func detectRestarter() restarter {
 	if path, err := exec.LookPath("systemctl"); err == nil {
 		return &systemdRestarter{cmd: path}
@@ -53,6 +64,9 @@ func detectRestarter() restarter {
 		return &openRCRestarter{cmd: path}
 	}
 	if path, err := exec.LookPath("service"); err == nil {
+		if runtime.GOOS == "freebsd" {
+			return &freeBSDRestarter{cmd: path}
+		}
 		return &openWRTRestarter{cmd: path}
 	}
 	return nil

@@ -30,8 +30,8 @@ msgstr "{0, plural, one {# hora} other {# horas}}"
 
 #. placeholder {0}: Math.trunc(system.info.u / 60)
 #: src/components/routes/system.tsx
-msgid "{0, plural, one {# minute} other {# minutes}}"
-msgstr ""
+msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
+msgstr "{0, plural, one {# minuto} other {# minutos}}"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
@@ -46,7 +46,7 @@ msgstr "1 hora"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr ""
+msgstr "1 min"
 
 #: src/lib/utils.ts
 msgid "1 week"
@@ -59,7 +59,7 @@ msgstr "12 horas"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr ""
+msgstr "15 min"
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -72,7 +72,7 @@ msgstr "30 días"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr ""
+msgstr "5 min"
 
 #. Table column
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -202,12 +202,12 @@ msgstr "Binario"
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr ""
+msgstr "Bits (Kbps, Mbps, Gbps)"
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
-msgstr ""
+msgstr "Bytes (KB/s, MB/s, GB/s)"
 
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
@@ -224,7 +224,7 @@ msgstr "Precaución - posible pérdida de datos"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr ""
+msgstr "Celsius (°C)"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -261,7 +261,7 @@ msgstr "Verifique su servicio de notificaciones"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
-msgstr ""
+msgstr "Haga clic en un sistema para ver más información."
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
@@ -439,7 +439,7 @@ msgstr "Abajo"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Down ({downSystemsLength})"
-msgstr ""
+msgstr "Abajo ({downSystemsLength})"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
@@ -505,7 +505,7 @@ msgstr "Exporte la configuración actual de sus sistemas."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr ""
+msgstr "Fahrenheit (°F)"
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
@@ -770,7 +770,7 @@ msgstr "Pausado"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused ({pausedSystemsLength})"
-msgstr ""
+msgstr "Pausado ({pausedSystemsLength})"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1018,7 +1018,7 @@ msgstr "Alternar tema"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr ""
+msgstr "Token"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1093,7 +1093,7 @@ msgstr "Activo"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
-msgstr ""
+msgstr "Activo ({upSystemsLength})"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"

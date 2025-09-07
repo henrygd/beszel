@@ -50,6 +50,7 @@ func init() {
 			user := core.NewRecord(usersCollection)
 			user.SetEmail(email)
 			user.SetPassword(password)
+			user.SetVerified(true)
 			err := app.Save(user)
 			if err != nil {
 				return err
