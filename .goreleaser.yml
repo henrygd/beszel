@@ -1,0 +1,237 @@
+version: 2
+
+project_name: beszel
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: beszel
+    binary: beszel
+    main: src/cmd/hub/hub.go
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+      - arm
+
+  - id: beszel-agent
+    binary: beszel-agent
+    main: src/cmd/agent/agent.go
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - freebsd
+      - openbsd
+      - windows
+    goarch:
+      - amd64
+      - arm64
+      - arm
+      - mips64
+      - riscv64
+      - mipsle
+      - mips
+      - ppc64le
+    gomips:
+      - hardfloat
+      - softfloat
+    ignore:
+      - goos: freebsd
+        goarch: arm
+      - goos: openbsd
+        goarch: arm
+      - goos: linux
+        goarch: mips64
+        gomips: softfloat
+      - goos: linux
+        goarch: mipsle
+        gomips: hardfloat
+      - goos: linux
+        goarch: mips
+        gomips: hardfloat
+      - goos: windows
+        goarch: arm
+      - goos: darwin
+        goarch: riscv64
+      - goos: windows
+        goarch: riscv64
+
+archives:
+  - id: beszel-agent
+    formats: [tar.gz]
+    ids:
+      - beszel-agent
+    name_template: >-
+      {{ .Binary }}_
+      {{- .Os }}_
+      {{- .Arch }}
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+
+  - id: beszel
+    formats: [tar.gz]
+    ids:
+      - beszel
+    name_template: >-
+      {{ .Binary }}_
+      {{- .Os }}_
+      {{- .Arch }}
+
+nfpms:
+  - id: beszel-agent
+    package_name: beszel-agent
+    description: |-
+      Agent for Beszel
+      Beszel is a lightweight server monitoring platform that includes Docker
+      statistics, historical data, and alert functions. It has a friendly web
+      interface, simple configuration, and is ready to use out of the box.
+      It supports automatic backup, multi-user, OAuth authentication, and
+      API access.
+    maintainer: henrygd <hank@henrygd.me>
+    section: net
+    ids:
+      - beszel-agent
+    formats:
+      - deb
+    contents:
+      - src: ./supplemental/debian/beszel-agent.service
+        dst: lib/systemd/system/beszel-agent.service
+        packager: deb
+      - src: ./supplemental/debian/copyright
+        dst: usr/share/doc/beszel-agent/copyright
+        packager: deb
+      - src: ./supplemental/debian/lintian-overrides
+        dst: usr/share/lintian/overrides/beszel-agent
+        packager: deb
+    scripts:
+      postinstall: ./supplemental/debian/postinstall.sh
+      preremove: ./supplemental/debian/prerm.sh
+      postremove: ./supplemental/debian/postrm.sh
+    deb:
+      predepends:
+        - adduser
+        - debconf
+      scripts:
+        templates: ./supplemental/debian/templates
+        # Currently broken due to a bug in goreleaser
+        # https://github.com/goreleaser/goreleaser/issues/5487
+        #config: ./supplemental/debian/config.sh
+
+scoops:
+  - ids: [beszel-agent]
+    name: beszel-agent
+    repository:
+      owner: henrygd
+      name: beszel-scoops
+    homepage: "https://beszel.dev"
+    description: "Agent for Beszel, a lightweight server monitoring platform."
+    license: MIT
+    skip_upload: '{{ if eq (tolower .Env.IS_FORK) "true" }}true{{ else }}auto{{ end }}'
+
+# # Needs choco installed, so doesn't build on linux / default gh workflow :(
+# chocolateys:
+#   - title: Beszel Agent
+#     ids: [beszel-agent]
+#     package_source_url: https://github.com/henrygd/beszel-chocolatey
+#     owners: henrygd
+#     authors: henrygd
+#     summary: 'Agent for Beszel, a lightweight server monitoring platform.'
+#     description: |
+#       Beszel is a lightweight server monitoring platform that includes Docker statistics, historical data, and alert functions.
+
+#       It has a friendly web interface, simple configuration, and is ready to use out of the box. It supports automatic backup, multi-user, OAuth authentication, and API access.
+#     license_url: https://github.com/henrygd/beszel/blob/main/LICENSE
+#     project_url: https://beszel.dev
+#     project_source_url: https://github.com/henrygd/beszel
+#     docs_url: https://beszel.dev/guide/getting-started
+#     icon_url: https://cdn.jsdelivr.net/gh/selfhst/icons/png/beszel.png
+#     bug_tracker_url: https://github.com/henrygd/beszel/issues
+#     copyright: 2025 henrygd
+#     tags: foss cross-platform admin monitoring
+#     require_license_acceptance: false
+#     release_notes: 'https://github.com/henrygd/beszel/releases/tag/v{{ .Version }}'
+
+brews:
+  - ids: [beszel-agent]
+    name: beszel-agent
+    repository:
+      owner: henrygd
+      name: homebrew-beszel
+    homepage: "https://beszel.dev"
+    description: "Agent for Beszel, a lightweight server monitoring platform."
+    license: MIT
+    skip_upload: '{{ if eq (tolower .Env.IS_FORK) "true" }}true{{ else }}auto{{ end }}'
+    extra_install: |
+      (bin/"beszel-agent-launcher").write <<~EOS
+        #!/bin/bash
+        set -a
+        if [ -f "$HOME/.config/beszel/beszel-agent.env" ]; then
+          source "$HOME/.config/beszel/beszel-agent.env"
+        fi
+        set +a
+        exec #{bin}/beszel-agent "$@"
+      EOS
+      (bin/"beszel-agent-launcher").chmod 0755
+    service: |
+      run ["#{bin}/beszel-agent-launcher"]
+      log_path "#{Dir.home}/.cache/beszel/beszel-agent.log"
+      error_log_path "#{Dir.home}/.cache/beszel/beszel-agent.log"
+      keep_alive true
+      restart_delay 5
+      process_type :background
+
+winget:
+  - ids: [beszel-agent]
+    name: beszel-agent
+    package_identifier: henrygd.beszel-agent
+    publisher: henrygd
+    license: MIT
+    license_url: "https://github.com/henrygd/beszel/blob/main/LICENSE"
+    copyright: "2025 henrygd"
+    homepage: "https://beszel.dev"
+    release_notes_url: "https://github.com/henrygd/beszel/releases/tag/v{{ .Version }}"
+    publisher_support_url: "https://github.com/henrygd/beszel/issues"
+    short_description: "Agent for Beszel, a lightweight server monitoring platform."
+    skip_upload: '{{ if eq (tolower .Env.IS_FORK) "true" }}true{{ else }}auto{{ end }}'
+    description: |
+      Beszel is a lightweight server monitoring platform that includes Docker
+      statistics, historical data, and alert functions. It has a friendly web
+      interface, simple configuration, and is ready to use out of the box.
+      It supports automatic backup, multi-user, OAuth authentication, and
+      API access.
+    tags:
+      - homelab
+      - monitoring
+      - self-hosted
+    repository:
+      owner: henrygd
+      name: beszel-winget
+      branch: henrygd.beszel-agent-{{ .Version }}
+      token: "{{ .Env.WINGET_TOKEN }}"
+      # pull_request:
+      #   enabled: true
+      #   draft: false
+      #   base:
+      #     owner: microsoft
+      #     name: winget-pkgs
+      #     branch: master
+
+release:
+  draft: true
+
+changelog:
+  disable: true
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
