@@ -51,10 +51,10 @@ func restartService() {
 	// Check if we're running as a service by looking for systemd
 	if _, err := exec.LookPath("systemctl"); err == nil {
 		// Check if beszel service exists and is active
-		cmd := exec.Command("systemctl", "is-active", "beszel.service")
+		cmd := exec.Command("systemctl", "is-active", "beszel-hub.service")
 		if err := cmd.Run(); err == nil {
-			ghupdate.ColorPrint(ghupdate.ColorYellow, "Restarting beszel service...")
-			restartCmd := exec.Command("systemctl", "restart", "beszel.service")
+			ghupdate.ColorPrint(ghupdate.ColorYellow, "Restarting beszel hub service...")
+			restartCmd := exec.Command("systemctl", "restart", "beszel-hub.service")
 			if err := restartCmd.Run(); err != nil {
 				ghupdate.ColorPrintf(ghupdate.ColorYellow, "Warning: Failed to restart service: %v\n", err)
 				ghupdate.ColorPrint(ghupdate.ColorYellow, "Please restart the service manually: sudo systemctl restart beszel")
@@ -67,10 +67,10 @@ func restartService() {
 
 	// Check for OpenRC (Alpine Linux)
 	if _, err := exec.LookPath("rc-service"); err == nil {
-		cmd := exec.Command("rc-service", "beszel", "status")
+		cmd := exec.Command("rc-service", "beszel-hub", "status")
 		if err := cmd.Run(); err == nil {
-			ghupdate.ColorPrint(ghupdate.ColorYellow, "Restarting beszel service...")
-			restartCmd := exec.Command("rc-service", "beszel", "restart")
+			ghupdate.ColorPrint(ghupdate.ColorYellow, "Restarting beszel hub service...")
+			restartCmd := exec.Command("rc-service", "beszel-hub", "restart")
 			if err := restartCmd.Run(); err != nil {
 				ghupdate.ColorPrintf(ghupdate.ColorYellow, "Warning: Failed to restart service: %v\n", err)
 				ghupdate.ColorPrint(ghupdate.ColorYellow, "Please restart the service manually: sudo rc-service beszel restart")
