@@ -1,11 +1,13 @@
 package ws
 
 import (
-	"beszel/internal/common"
-	"beszel/internal/entities/system"
 	"errors"
 	"time"
 	"weak"
+
+	"github.com/henrygd/beszel/internal/entities/system"
+
+	"github.com/henrygd/beszel/internal/common"
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/lxzan/gws"

@@ -1,9 +1,6 @@
 package agent
 
 import (
-	"beszel"
-	"beszel/internal/common"
-	"beszel/internal/entities/system"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,6 +10,10 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/henrygd/beszel"
+	"github.com/henrygd/beszel/internal/common"
+	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/blang/semver"
 	"github.com/fxamacker/cbor/v2"

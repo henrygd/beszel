@@ -4,15 +4,16 @@
 package systems_test
 
 import (
-	"beszel/internal/entities/container"
-	"beszel/internal/entities/system"
-	"beszel/internal/hub/systems"
-	"beszel/internal/tests"
 	"fmt"
 	"sync"
 	"testing"
 	"testing/synctest"
 	"time"
+
+	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/henrygd/beszel/internal/hub/systems"
+	"github.com/henrygd/beszel/internal/tests"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

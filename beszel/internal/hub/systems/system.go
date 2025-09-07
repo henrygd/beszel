@@ -1,9 +1,6 @@
 package systems
 
 import (
-	"beszel"
-	"beszel/internal/entities/system"
-	"beszel/internal/hub/ws"
 	"context"
 	"encoding/json"
 	"errors"
@@ -12,6 +9,12 @@ import (
 	"net"
 	"strings"
 	"time"
+
+	"github.com/henrygd/beszel/internal/hub/ws"
+
+	"github.com/henrygd/beszel/internal/entities/system"
+
+	"github.com/henrygd/beszel"
 
 	"github.com/blang/semver"
 	"github.com/fxamacker/cbor/v2"

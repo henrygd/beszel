@@ -4,7 +4,6 @@
 package ghupdate
 
 import (
-	"beszel"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -15,6 +14,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/henrygd/beszel"
 
 	"github.com/blang/semver"
 )

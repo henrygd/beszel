@@ -4,11 +4,12 @@
 package records_test
 
 import (
-	"beszel/internal/records"
-	"beszel/internal/tests"
 	"fmt"
 	"testing"
 	"time"
+
+	"github.com/henrygd/beszel/internal/records"
+	"github.com/henrygd/beszel/internal/tests"
 
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"

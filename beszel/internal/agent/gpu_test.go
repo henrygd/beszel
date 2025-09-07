@@ -4,11 +4,12 @@
 package agent
 
 import (
-	"beszel/internal/entities/system"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

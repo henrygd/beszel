@@ -4,10 +4,11 @@
 package ws
 
 import (
-	"beszel/internal/common"
 	"crypto/ed25519"
 	"testing"
 	"time"
+
+	"github.com/henrygd/beszel/internal/common"
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/stretchr/testify/assert"

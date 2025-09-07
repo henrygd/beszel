@@ -1,13 +1,14 @@
 package agent
 
 import (
-	"beszel/internal/agent/health"
 	"errors"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/henrygd/beszel/internal/agent/health"
 )
 
 // ConnectionManager manages the connection state and events for the agent.

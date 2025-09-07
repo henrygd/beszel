@@ -4,11 +4,13 @@
 package config_test
 
 import (
-	"beszel/internal/hub/config"
-	"beszel/internal/tests"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/henrygd/beszel/internal/tests"
+
+	"github.com/henrygd/beszel/internal/hub/config"
 
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/stretchr/testify/assert"

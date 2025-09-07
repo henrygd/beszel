@@ -4,9 +4,10 @@
 package systems
 
 import (
-	entities "beszel/internal/entities/system"
 	"context"
 	"fmt"
+
+	entities "github.com/henrygd/beszel/internal/entities/system"
 )
 
 // TESTING ONLY: GetSystemCount returns the number of systems in the store

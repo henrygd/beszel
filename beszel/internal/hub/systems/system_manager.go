@@ -1,13 +1,17 @@
 package systems
 
 import (
-	"beszel"
-	"beszel/internal/common"
-	"beszel/internal/entities/system"
-	"beszel/internal/hub/ws"
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/henrygd/beszel/internal/hub/ws"
+
+	"github.com/henrygd/beszel/internal/entities/system"
+
+	"github.com/henrygd/beszel/internal/common"
+
+	"github.com/henrygd/beszel"
 
 	"github.com/blang/semver"
 	"github.com/pocketbase/pocketbase/core"
@@ -30,10 +34,8 @@ const (
 	sessionTimeout = 4 * time.Second
 )
 
-var (
-	// errSystemExists is returned when attempting to add a system that already exists
-	errSystemExists = errors.New("system exists")
-)
+// errSystemExists is returned when attempting to add a system that already exists
+var errSystemExists = errors.New("system exists")
 
 // SystemManager manages a collection of monitored systems and their connections.
 // It handles system lifecycle, status updates, and maintains both SSH and WebSocket connections.

@@ -4,9 +4,6 @@
 package hub
 
 import (
-	"beszel/internal/agent"
-	"beszel/internal/common"
-	"beszel/internal/hub/ws"
 	"crypto/ed25519"
 	"fmt"
 	"net/http"
@@ -16,6 +13,10 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/henrygd/beszel/internal/agent"
+	"github.com/henrygd/beszel/internal/common"
+	"github.com/henrygd/beszel/internal/hub/ws"
 
 	"github.com/pocketbase/pocketbase/core"
 	pbtests "github.com/pocketbase/pocketbase/tests"

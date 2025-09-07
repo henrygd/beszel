@@ -1,15 +1,16 @@
 package hub
 
 import (
-	"beszel/internal/common"
-	"beszel/internal/hub/expirymap"
-	"beszel/internal/hub/ws"
 	"errors"
 	"net"
 	"net/http"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/henrygd/beszel/internal/common"
+	"github.com/henrygd/beszel/internal/hub/expirymap"
+	"github.com/henrygd/beszel/internal/hub/ws"
 
 	"github.com/blang/semver"
 	"github.com/lxzan/gws"

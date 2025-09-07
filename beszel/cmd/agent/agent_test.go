@@ -1,11 +1,12 @@
 package main
 
 import (
-	"beszel/internal/agent"
 	"crypto/ed25519"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/henrygd/beszel/internal/agent"
 
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"

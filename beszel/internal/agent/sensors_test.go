@@ -4,11 +4,12 @@
 package agent
 
 import (
-	"beszel/internal/entities/system"
 	"context"
 	"fmt"
 	"os"
 	"testing"
+
+	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/shirou/gopsutil/v4/common"
 	"github.com/shirou/gopsutil/v4/sensors"

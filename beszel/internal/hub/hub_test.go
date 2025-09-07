@@ -4,10 +4,6 @@
 package hub_test
 
 import (
-	beszelTests "beszel/internal/tests"
-	"beszel/migrations"
-	"testing"
-
 	"bytes"
 	"crypto/ed25519"
 	"encoding/json"
@@ -17,6 +13,11 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"testing"
+
+	"github.com/henrygd/beszel/migrations"
+
+	beszelTests "github.com/henrygd/beszel/internal/tests"
 
 	"github.com/pocketbase/pocketbase/core"
 	pbTests "github.com/pocketbase/pocketbase/tests"

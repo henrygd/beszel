@@ -4,14 +4,16 @@
 package agent
 
 import (
-	"beszel"
-	"beszel/internal/common"
 	"crypto/ed25519"
 	"net/url"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/henrygd/beszel"
+
+	"github.com/henrygd/beszel/internal/common"
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/stretchr/testify/assert"

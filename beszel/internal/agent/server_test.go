@@ -1,8 +1,6 @@
 package agent
 
 import (
-	"beszel/internal/entities/container"
-	"beszel/internal/entities/system"
 	"context"
 	"crypto/ed25519"
 	"encoding/json"
@@ -14,6 +12,9 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/blang/semver"
 	"github.com/fxamacker/cbor/v2"

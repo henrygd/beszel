@@ -1,8 +1,6 @@
 package agent
 
 import (
-	"beszel"
-	"beszel/internal/common"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -14,6 +12,9 @@ import (
 	"path"
 	"strings"
 	"time"
+
+	"github.com/henrygd/beszel"
+	"github.com/henrygd/beszel/internal/common"
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/lxzan/gws"

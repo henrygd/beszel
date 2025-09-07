@@ -3,12 +3,13 @@
 package hub
 
 import (
-	"beszel"
-	"beszel/site"
 	"io/fs"
 	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/henrygd/beszel"
+	"github.com/henrygd/beszel/site"
 
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"

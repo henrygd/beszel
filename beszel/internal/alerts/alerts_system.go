@@ -1,11 +1,12 @@
 package alerts
 
 import (
-	"beszel/internal/entities/system"
 	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"

@@ -1,7 +1,6 @@
 package agent
 
 import (
-	"beszel/internal/entities/system"
 	"context"
 	"fmt"
 	"log/slog"
@@ -10,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/shirou/gopsutil/v4/common"
 	"github.com/shirou/gopsutil/v4/sensors"
