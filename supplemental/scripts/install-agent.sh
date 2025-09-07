@@ -705,13 +705,19 @@ stop_service() {
     killall beszel-agent
 }
 
+restart_service() {
+    stop
+    start
+}
+
 # Extra command to trigger agent update
-EXTRA_COMMANDS="update"
-EXTRA_HELP="        update          Update the Beszel agent"
+EXTRA_COMMANDS="update restart"
+EXTRA_HELP="        update          Update the Beszel agent
+        restart         Restart the Beszel agent"
 
 update() {
     if /opt/beszel-agent/beszel-agent update | grep -q "Successfully updated"; then
-        start_service
+        /etc/init.d/beszel-agent restart
     fi
 }
 
