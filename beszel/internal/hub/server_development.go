@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/tools/osutils"
 )
 
 // Wraps http.RoundTripper to modify dev proxy HTML responses
@@ -75,5 +76,6 @@ func (h *Hub) startServer(se *core.ServeEvent) error {
 		proxy.ServeHTTP(e.Response, e.Request)
 		return nil
 	})
+	_ = osutils.LaunchURL(h.appURL)
 	return nil
 }
