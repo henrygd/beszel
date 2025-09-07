@@ -112,8 +112,6 @@ func (h *Hub) initialize(e *core.ServeEvent) error {
 	// set URL if BASE_URL env is set
 	if h.appURL != "" {
 		settings.Meta.AppURL = h.appURL
-	} else {
-		h.appURL = settings.Meta.AppURL
 	}
 	if err := e.App.Save(settings); err != nil {
 		return err
