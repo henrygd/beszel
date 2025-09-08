@@ -41,6 +41,12 @@ type Stats struct {
 	LoadAvg [3]float64 `json:"la,omitempty" cbor:"28,keyasint"`
 	Battery [2]uint8   `json:"bat,omitzero" cbor:"29,keyasint,omitzero"` // [percent, charge state, current]
 	MaxMem  float64    `json:"mm,omitempty" cbor:"30,keyasint,omitempty"`
+	SystemdServices []SystemdService `json:"ss,omitempty" cbor:"31,keyasint,omitempty"`
+}
+
+type SystemdService struct {
+	Name   string `json:"name" cbor:"0,keyasint"`
+	Status string `json:"status" cbor:"1,keyasint"`
 }
 
 type GPUData struct {
