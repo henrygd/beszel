@@ -721,7 +721,7 @@ EXTRA_HELP="        update          Update the Beszel agent
         restart         Restart the Beszel agent"
 
 update() {
-    if /opt/beszel-agent/beszel-agent update | grep -q "Successfully updated"; then
+    if /opt/beszel-agent/beszel-agent update | grep -q "Update completed successfully"; then
         /etc/init.d/beszel-agent restart
     fi
 }
