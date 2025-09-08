@@ -9,6 +9,7 @@ import { AuthMethodsList } from "pocketbase"
 import { useTheme } from "../theme-provider"
 import { pb } from "@/lib/api"
 import { ModeToggle } from "../mode-toggle"
+import { OtpRequestForm } from "./otp-forms"
 
 export default function () {
 	const page = useStore($router)
@@ -37,6 +38,8 @@ export default function () {
 			return t`Please create an admin account`
 		} else if (page?.route === "forgot_password") {
 			return t`Enter email address to reset password`
+		} else if (page?.route === "request_otp") {
+			return t`Request a one-time password`
 		} else {
 			return t`Please sign in to your account`
 		}
@@ -51,7 +54,7 @@ export default function () {
 			<div
 				className="grid gap-5 w-full px-4 mx-auto"
 				// @ts-ignore
-				style={{ maxWidth: "22em", "--border": theme == "light" ? "hsl(30, 8%, 70%)" : "hsl(220, 3%, 25%)" }}
+				style={{ maxWidth: "21.5em", "--border": theme == "light" ? "hsl(30, 8%, 70%)" : "hsl(220, 3%, 25%)" }}
 			>
 				<div className="absolute top-3 right-3">
 					<ModeToggle />
@@ -65,6 +68,8 @@ export default function () {
 				</div>
 				{page?.route === "forgot_password" ? (
 					<ForgotPassword />
+				) : page?.route === "request_otp" ? (
+					<OtpRequestForm />
 				) : (
 					<UserAuthForm isFirstRun={isFirstRun} authMethods={authMethods} />
 				)}

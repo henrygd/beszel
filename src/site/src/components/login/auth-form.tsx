@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { LoaderCircle, LockIcon, LogInIcon, MailIcon } from "lucide-react"
+import { KeyIcon, LoaderCircle, LockIcon, LogInIcon, MailIcon } from "lucide-react"
 import { $authenticated } from "@/lib/stores"
 import * as v from "valibot"
 import { toast } from "../ui/use-toast"
@@ -14,6 +14,7 @@ import { AuthMethodsList, AuthProviderInfo, OAuth2AuthConfig } from "pocketbase"
 import { $router, Link, prependBasePath } from "../router"
 import { getPagePath } from "@nanostores/router"
 import { pb } from "@/lib/api"
+import { OtpInputForm } from "./otp-forms"
 
 const honeypot = v.literal("")
 const emailSchema = v.pipe(v.string(), v.email(t`Invalid email address.`))
@@ -36,10 +37,11 @@ const RegisterSchema = v.looseObject({
 	passwordConfirm: passwordSchema,
 })
 
-const showLoginFaliedToast = () => {
+export const showLoginFaliedToast = (description?: string) => {
+	description ||= t`Please check your credentials and try again`
 	toast({
 		title: t`Login attempt failed`,
-		description: t`Please check your credentials and try again`,
+		description,
 		variant: "destructive",
 	})
 }
@@ -65,6 +67,8 @@ export function UserAuthForm({
 	const [isLoading, setIsLoading] = useState<boolean>(false)
 	const [isOauthLoading, setIsOauthLoading] = useState<boolean>(false)
 	const [errors, setErrors] = useState<Record<string, string | undefined>>({})
+	const [mfaId, setMfaId] = useState<string | undefined>()
+	const [otpId, setOtpId] = useState<string | undefined>()
 
 	const handleSubmit = useCallback(
 		async (e: React.FormEvent<HTMLFormElement>) => {
@@ -106,17 +110,19 @@ export function UserAuthForm({
 				}
 				$authenticated.set(true)
 			} catch (err: any) {
-				showLoginFaliedToast()
-				// todo: implement MFA
-				// const mfaId = err.response?.mfaId
-				// if (!mfaId) {
-				// 	showLoginFaliedToast()
-				// 	throw err
-				// }
-				// the user needs to authenticate again with another auth method, for example OTP
-				// const result = await pb.collection("users").requestOTP(email)
-				// ... show a modal for users to check their email and to enter the received code ...
-				// await pb.collection("users").authWithOTP(result.otpId, "EMAIL_CODE", { mfaId: mfaId })
+				const mfaId = err?.response?.mfaId
+				if (!mfaId) {
+					showLoginFaliedToast()
+					throw err
+				}
+				setMfaId(mfaId)
+				try {
+					const { otpId } = await pb.collection("users").requestOTP(email)
+					setOtpId(otpId)
+				} catch (err) {
+					console.log({ err })
+					showLoginFaliedToast()
+				}
 			} finally {
 				setIsLoading(false)
 			}
@@ -131,6 +137,8 @@ export function UserAuthForm({
 	const authProviders = authMethods.oauth2.providers ?? []
 	const oauthEnabled = authMethods.oauth2.enabled && authProviders.length > 0
 	const passwordEnabled = authMethods.password.enabled
+	const otpEnabled = authMethods.otp.enabled
+	const mfaEnabled = authMethods.mfa.enabled
 
 	function loginWithOauth(provider: AuthProviderInfo, forcePopup = false) {
 		setIsOauthLoading(true)
@@ -172,6 +180,10 @@ export function UserAuthForm({
 			}, 300)
 		}
 	}, [])
+
+	if (otpId && mfaId) {
+		return <OtpInputForm otpId={otpId} mfaId={mfaId} />
+	}
 
 	return (
 		<div className={cn("grid gap-6", className)} {...props}>
@@ -249,7 +261,7 @@ export function UserAuthForm({
 							</button>
 						</div>
 					</form>
-					{(isFirstRun || oauthEnabled) && (
+					{(isFirstRun || oauthEnabled || (otpEnabled && !mfaEnabled)) && (
 						// only show 'continue with' during onboarding or if we have auth providers
 						<div className="relative">
 							<div className="absolute inset-0 flex items-center">
@@ -263,6 +275,15 @@ export function UserAuthForm({
 						</div>
 					)}
 				</>
+			)}
+			{/* hide OTP button if MFA is enabled (it will be used as MFA) */}
+			{otpEnabled && !mfaEnabled && (
+				<div className="grid gap-2 -mt-1">
+					<Link href="/request-otp" type="button" className={cn(buttonVariants({ variant: "outline" }), "flex gap-2")}>
+						<KeyIcon className="size-4" />
+						<Trans>One-time password</Trans>
+					</Link>
+				</div>
 			)}
 			{oauthEnabled && (
 				<div className="grid gap-2 -mt-1">

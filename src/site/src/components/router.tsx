@@ -5,6 +5,7 @@ const routes = {
 	system: `/system/:name`,
 	settings: `/settings/:name?`,
 	forgot_password: `/forgot-password`,
+	request_otp: `/request-otp`,
 } as const
 
 /**
