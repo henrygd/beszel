@@ -1,26 +1,16 @@
-import { pb } from "@/lib/api"
-import { cn, formatDuration, formatShortDate } from "@/lib/utils"
-import { alertInfo } from "@/lib/alerts"
-import { AlertsHistoryRecord } from "@/types"
+import { t } from "@lingui/core/macro"
+import { Trans } from "@lingui/react/macro"
 import {
+	type ColumnFiltersState,
+	flexRender,
 	getCoreRowModel,
+	getFilteredRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
-	getFilteredRowModel,
+	type SortingState,
 	useReactTable,
-	flexRender,
-	ColumnFiltersState,
-	SortingState,
-	VisibilityState,
+	type VisibilityState,
 } from "@tanstack/react-table"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Button, buttonVariants } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { alertsHistoryColumns } from "../../alerts-history-columns"
-import { Checkbox } from "@/components/ui/checkbox"
-import { memo, useEffect, useState } from "react"
-import { Label } from "@/components/ui/label"
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import {
 	ChevronLeftIcon,
 	ChevronRightIcon,
@@ -29,9 +19,7 @@ import {
 	DownloadIcon,
 	Trash2Icon,
 } from "lucide-react"
-import { Trans } from "@lingui/react/macro"
-import { t } from "@lingui/core/macro"
-import { useToast } from "@/components/ui/use-toast"
+import { memo, useEffect, useState } from "react"
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -43,6 +31,18 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Button, buttonVariants } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { useToast } from "@/components/ui/use-toast"
+import { alertInfo } from "@/lib/alerts"
+import { pb } from "@/lib/api"
+import { cn, formatDuration, formatShortDate } from "@/lib/utils"
+import type { AlertsHistoryRecord } from "@/types"
+import { alertsHistoryColumns } from "../../alerts-history-columns"
 
 const SectionIntro = memo(() => {
 	return (

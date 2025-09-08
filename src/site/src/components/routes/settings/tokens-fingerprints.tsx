@@ -1,9 +1,6 @@
-import { Trans, useLingui } from "@lingui/react/macro"
 import { t } from "@lingui/core/macro"
-import { $publicKey } from "@/lib/stores"
-import { memo, useEffect, useMemo, useState } from "react"
-import { Table, TableCell, TableHead, TableBody, TableRow, TableHeader } from "@/components/ui/table"
-import { FingerprintRecord } from "@/types"
+import { Trans, useLingui } from "@lingui/react/macro"
+import { redirectPage } from "@nanostores/router"
 import {
 	CopyIcon,
 	FingerprintIcon,
@@ -13,9 +10,17 @@ import {
 	ServerIcon,
 	Trash2Icon,
 } from "lucide-react"
-import { toast } from "@/components/ui/use-toast"
-import { cn, copyToClipboard, generateToken, getHubURL, tokenMap } from "@/lib/utils"
-import { isReadOnlyUser, pb } from "@/lib/api"
+import { memo, useEffect, useMemo, useState } from "react"
+import {
+	copyDockerCompose,
+	copyDockerRun,
+	copyLinuxCommand,
+	copyWindowsCommand,
+	type DropdownItem,
+	InstallDropdown,
+} from "@/components/install-dropdowns"
+import { $router } from "@/components/router"
+import { Button } from "@/components/ui/button"
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -23,20 +28,15 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
+import { AppleIcon, DockerIcon, TuxIcon, WindowsIcon } from "@/components/ui/icons"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
-import {
-	copyDockerCompose,
-	copyDockerRun,
-	copyLinuxCommand,
-	copyWindowsCommand,
-	DropdownItem,
-	InstallDropdown,
-} from "@/components/install-dropdowns"
-import { AppleIcon, DockerIcon, TuxIcon, WindowsIcon } from "@/components/ui/icons"
-import { redirectPage } from "@nanostores/router"
-import { $router } from "@/components/router"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { toast } from "@/components/ui/use-toast"
+import { isReadOnlyUser, pb } from "@/lib/api"
+import { $publicKey } from "@/lib/stores"
+import { cn, copyToClipboard, generateToken, getHubURL, tokenMap } from "@/lib/utils"
+import type { FingerprintRecord } from "@/types"
 
 const pbFingerprintOptions = {
 	expand: "system",

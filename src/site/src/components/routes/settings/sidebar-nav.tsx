@@ -1,11 +1,11 @@
-import React from "react"
-import { cn } from "@/lib/utils"
-import { isAdmin, isReadOnlyUser } from "@/lib/api"
-import { buttonVariants } from "../../ui/button"
-import { $router, Link, navigate } from "../../router"
 import { useStore } from "@nanostores/react"
+import type React from "react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
+import { isAdmin, isReadOnlyUser } from "@/lib/api"
+import { cn } from "@/lib/utils"
+import { $router, Link, navigate } from "../../router"
+import { buttonVariants } from "../../ui/button"
 
 interface SidebarNavProps extends React.HTMLAttributes<HTMLElement> {
 	items: {

@@ -6,8 +6,9 @@ import { twMerge } from "tailwind-merge"
 import { prependBasePath } from "@/components/router"
 import { toast } from "@/components/ui/use-toast"
 import type { ChartTimeData, FingerprintRecord, SemVer, SystemRecord } from "@/types"
-import { MeterState, Unit } from "./enums"
+import { HourFormat, MeterState, Unit } from "./enums"
 import { $copyContent, $userSettings } from "./stores"
+import { listenKeys } from "nanostores"
 
 export const FAVICON_DEFAULT = "favicon.svg"
 export const FAVICON_GREEN = "favicon-green.svg"
@@ -36,23 +37,46 @@ export async function copyToClipboard(content: string) {
 	}
 }
 
-const hourWithMinutesFormatter = new Intl.DateTimeFormat(undefined, {
-	hour: "numeric",
-	minute: "numeric",
-})
+// Create formatters directly without intermediate containers
+const createHourWithMinutesFormatter = (hour12?: boolean) =>
+	new Intl.DateTimeFormat(undefined, {
+		hour: "numeric",
+		minute: "numeric",
+		hour12,
+	})
+
+const createShortDateFormatter = (hour12?: boolean) =>
+	new Intl.DateTimeFormat(undefined, {
+		day: "numeric",
+		month: "short",
+		hour: "numeric",
+		minute: "numeric",
+		hour12,
+	})
+
+// Initialize formatters with default values
+let hourWithMinutesFormatter = createHourWithMinutesFormatter()
+let shortDateFormatter = createShortDateFormatter()
+
+export const currentHour12 = () => shortDateFormatter.resolvedOptions().hour12
+
 export const hourWithMinutes = (timestamp: string) => {
 	return hourWithMinutesFormatter.format(new Date(timestamp))
 }
 
-const shortDateFormatter = new Intl.DateTimeFormat(undefined, {
-	day: "numeric",
-	month: "short",
-	hour: "numeric",
-	minute: "numeric",
-})
 export const formatShortDate = (timestamp: string) => {
 	return shortDateFormatter.format(new Date(timestamp))
 }
+
+// Update the time formatters if user changes hourFormat
+listenKeys($userSettings, ["hourFormat"], ({ hourFormat }) => {
+	if (!hourFormat) return
+	const newHour12 = hourFormat === HourFormat["12h"]
+	if (currentHour12() !== newHour12) {
+		hourWithMinutesFormatter = createHourWithMinutesFormatter(newHour12)
+		shortDateFormatter = createShortDateFormatter(newHour12)
+	}
+})
 
 const dayFormatter = new Intl.DateTimeFormat(undefined, {
 	day: "numeric",

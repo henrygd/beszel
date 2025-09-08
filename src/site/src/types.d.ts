@@ -1,5 +1,5 @@
-import { RecordModel } from "pocketbase"
-import { Unit, Os, BatteryState } from "./lib/enums"
+import type { RecordModel } from "pocketbase"
+import type { Unit, Os, BatteryState, HourFormat } from "./lib/enums"
 
 // global window properties
 declare global {
@@ -238,6 +238,7 @@ export interface UserSettings {
 	unitDisk?: Unit
 	colorWarn?: number
 	colorCrit?: number
+	hourFormat?: HourFormat
 }
 
 type ChartDataContainer = {
@@ -262,17 +263,17 @@ export interface ChartData {
 	chartTime: ChartTimes
 }
 
-interface AlertInfo {
-	name: () => string
-	unit: string
-	icon: any
-	desc: () => string
-	max?: number
-	min?: number
-	step?: number
-	start?: number
-	/** Single value description (when there's only one value, like status) */
-	singleDesc?: () => string
-}
+// interface AlertInfo {
+// 	name: () => string
+// 	unit: string
+// 	icon: any
+// 	desc: () => string
+// 	max?: number
+// 	min?: number
+// 	step?: number
+// 	start?: number
+// 	/** Single value description (when there's only one value, like status) */
+// 	singleDesc?: () => string
+// }
 
 export type AlertMap = Record<string, Map<string, AlertRecord>>

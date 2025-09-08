@@ -1,18 +1,17 @@
 import { t } from "@lingui/core/macro"
-import { Trans } from "@lingui/react/macro"
+import { Trans, useLingui } from "@lingui/react/macro"
+import { useStore } from "@nanostores/react"
+import { getPagePath, redirectPage } from "@nanostores/router"
+import { AlertOctagonIcon, BellIcon, FileSlidersIcon, FingerprintIcon, SettingsIcon } from "lucide-react"
 import { lazy, useEffect } from "react"
+import { $router } from "@/components/router.tsx"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx"
+import { toast } from "@/components/ui/use-toast.ts"
+import { pb } from "@/lib/api"
+import { $userSettings } from "@/lib/stores.ts"
+import type { UserSettings } from "@/types"
 import { Separator } from "../../ui/separator"
 import { SidebarNav } from "./sidebar-nav.tsx"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx"
-import { useStore } from "@nanostores/react"
-import { $router } from "@/components/router.tsx"
-import { getPagePath, redirectPage } from "@nanostores/router"
-import { BellIcon, FileSlidersIcon, FingerprintIcon, SettingsIcon, AlertOctagonIcon } from "lucide-react"
-import { $userSettings } from "@/lib/stores.ts"
-import { toast } from "@/components/ui/use-toast.ts"
-import { UserSettings } from "@/types"
-import { useLingui } from "@lingui/react/macro"
-import { pb } from "@/lib/api"
 
 const generalSettingsImport = () => import("./general.tsx")
 const notificationsSettingsImport = () => import("./notifications.tsx")
@@ -93,9 +92,10 @@ export default function SettingsLayout() {
 
 	const page = useStore($router)
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: no dependencies
 	useEffect(() => {
-		document.title = t`Settings` + " / Beszel"
-		// @ts-ignore redirect to account page if no page is specified
+		document.title = `${t`Settings`} / Beszel`
+		// @ts-expect-error redirect to account page if no page is specified
 		if (!page?.params?.name) {
 			redirectPage($router, "settings", { name: "general" })
 		}

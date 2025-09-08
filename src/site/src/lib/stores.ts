@@ -1,4 +1,4 @@
-import { atom, computed, map, type ReadableAtom } from "nanostores"
+import { atom, computed, listenKeys, map, type ReadableAtom } from "nanostores"
 import type { AlertMap, ChartTimes, SystemRecord, UserSettings } from "@/types"
 import { pb } from "./api"
 import { Unit } from "./enums"
@@ -50,7 +50,7 @@ export const $userSettings = map<UserSettings>({
 	unitTemp: Unit.Celsius,
 })
 // update chart time on change
-$userSettings.subscribe((value) => $chartTime.set(value.chartTime))
+listenKeys($userSettings, ["chartTime"], ({ chartTime }) => $chartTime.set(chartTime))
 
 /** Container chart filter */
 export const $containerFilter = atom("")

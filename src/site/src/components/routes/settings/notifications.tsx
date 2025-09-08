@@ -1,19 +1,19 @@
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
-import { Card } from "@/components/ui/card"
 import { BellIcon, LoaderCircleIcon, PlusIcon, SaveIcon, Trash2Icon } from "lucide-react"
-import { ChangeEventHandler, useEffect, useState } from "react"
-import { toast } from "@/components/ui/use-toast"
-import { InputTags } from "@/components/ui/input-tags"
-import { UserSettings } from "@/types"
-import { saveSettings } from "./layout"
+import { type ChangeEventHandler, useEffect, useState } from "react"
 import * as v from "valibot"
 import { prependBasePath } from "@/components/router"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { InputTags } from "@/components/ui/input-tags"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
+import { toast } from "@/components/ui/use-toast"
 import { isAdmin, pb } from "@/lib/api"
+import type { UserSettings } from "@/types"
+import { saveSettings } from "./layout"
 
 interface ShoutrrrUrlCardProps {
 	url: string
@@ -127,7 +127,7 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 						<p className="text-sm text-muted-foreground leading-relaxed">
 							<Trans>
 								Beszel uses{" "}
-								<a href="https://beszel.dev/guide/notifications" target="_blank" className="link">
+								<a href="https://beszel.dev/guide/notifications" target="_blank" className="link" rel="noopener">
 									Shoutrrr
 								</a>{" "}
 								to integrate with popular notification services.

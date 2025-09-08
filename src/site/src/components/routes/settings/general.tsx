@@ -1,18 +1,18 @@
-import { Trans } from "@lingui/react/macro"
+/** biome-ignore-all lint/correctness/useUniqueElementIds: component is only rendered once */
+import { Trans, useLingui } from "@lingui/react/macro"
+import { LanguagesIcon, LoaderCircleIcon, SaveIcon } from "lucide-react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { chartTimeData } from "@/lib/utils"
 import { Separator } from "@/components/ui/separator"
-import { LanguagesIcon, LoaderCircleIcon, SaveIcon } from "lucide-react"
-import { UserSettings } from "@/types"
-import { saveSettings } from "./layout"
-import { useState } from "react"
-import languages from "@/lib/languages"
+import { HourFormat, Unit } from "@/lib/enums"
 import { dynamicActivate } from "@/lib/i18n"
-import { useLingui } from "@lingui/react/macro"
-import { Input } from "@/components/ui/input"
-import { Unit } from "@/lib/enums"
+import languages from "@/lib/languages"
+import { chartTimeData, currentHour12 } from "@/lib/utils"
+import type { UserSettings } from "@/types"
+import { saveSettings } from "./layout"
 
 export default function SettingsProfilePage({ userSettings }: { userSettings: UserSettings }) {
 	const [isLoading, setIsLoading] = useState(false)
@@ -82,24 +82,46 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 							<Trans>Adjust display options for charts.</Trans>
 						</p>
 					</div>
-					<Label className="block" htmlFor="chartTime">
-						<Trans>Default time period</Trans>
-					</Label>
-					<Select name="chartTime" key={userSettings.chartTime} defaultValue={userSettings.chartTime}>
-						<SelectTrigger id="chartTime">
-							<SelectValue />
-						</SelectTrigger>
-						<SelectContent>
-							{Object.entries(chartTimeData).map(([value, { label }]) => (
-								<SelectItem key={value} value={value}>
-									{label()}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-					<p className="text-[0.8rem] text-muted-foreground">
-						<Trans>Sets the default time range for charts when a system is viewed.</Trans>
-					</p>
+					<div className="grid sm:grid-cols-3 gap-4">
+						<div className="grid gap-2">
+							<Label className="block" htmlFor="chartTime">
+								<Trans>Default time period</Trans>
+							</Label>
+							<Select name="chartTime" key={userSettings.chartTime} defaultValue={userSettings.chartTime}>
+								<SelectTrigger id="chartTime">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									{Object.entries(chartTimeData).map(([value, { label }]) => (
+										<SelectItem key={value} value={value}>
+											{label()}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+						<div className="grid gap-2">
+							<Label className="block" htmlFor="hourFormat">
+								<Trans>Time format</Trans>
+							</Label>
+							<Select
+								name="hourFormat"
+								key={userSettings.hourFormat}
+								defaultValue={userSettings.hourFormat ?? (currentHour12() ? HourFormat["12h"] : HourFormat["24h"])}
+							>
+								<SelectTrigger id="hourFormat">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									{Object.keys(HourFormat).map((value) => (
+										<SelectItem key={value} value={value}>
+											{value}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+					</div>
 				</div>
 				<Separator />
 				<div className="grid gap-2">
