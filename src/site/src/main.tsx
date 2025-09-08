@@ -1,21 +1,21 @@
 import "./index.css"
-// import { Suspense, lazy, useEffect, StrictMode } from "react"
-import { Suspense, lazy, memo, useEffect } from "react"
-import ReactDOM from "react-dom/client"
-import { ThemeProvider } from "./components/theme-provider.tsx"
-import { DirectionProvider } from "@radix-ui/react-direction"
-import { $authenticated, $publicKey, $copyContent, $direction } from "./lib/stores.ts"
-import { pb, updateUserSettings } from "./lib/api.ts"
-import * as systemsManager from "./lib/systemsManager.ts"
-import { useStore } from "@nanostores/react"
-import { Toaster } from "./components/ui/toaster.tsx"
-import { $router } from "./components/router.tsx"
-import Navbar from "./components/navbar.tsx"
-import { I18nProvider } from "@lingui/react"
 import { i18n } from "@lingui/core"
-import { getLocale, dynamicActivate } from "./lib/i18n"
-import { alertManager } from "./lib/alerts"
-import Settings from "./components/routes/settings/layout.tsx"
+import { I18nProvider } from "@lingui/react"
+import { useStore } from "@nanostores/react"
+import { DirectionProvider } from "@radix-ui/react-direction"
+// import { Suspense, lazy, useEffect, StrictMode } from "react"
+import { lazy, memo, Suspense, useEffect } from "react"
+import ReactDOM from "react-dom/client"
+import Navbar from "@/components/navbar.tsx"
+import { $router } from "@/components/router.tsx"
+import Settings from "@/components/routes/settings/layout.tsx"
+import { ThemeProvider } from "@/components/theme-provider.tsx"
+import { Toaster } from "@/components/ui/toaster.tsx"
+import { alertManager } from "@/lib/alerts"
+import { pb, updateUserSettings } from "@/lib/api.ts"
+import { dynamicActivate, getLocale } from "@/lib/i18n"
+import { $authenticated, $copyContent, $direction, $publicKey } from "@/lib/stores.ts"
+import * as systemsManager from "@/lib/systemsManager.ts"
 
 const LoginPage = lazy(() => import("@/components/login/login.tsx"))
 const Home = lazy(() => import("@/components/routes/home.tsx"))
@@ -114,7 +114,7 @@ const I18nApp = () => {
 	)
 }
 
-ReactDOM.createRoot(document.getElementById("app")!).render(
+ReactDOM.createRoot(document.getElementById("app") as HTMLElement).render(
 	// strict mode in dev mounts / unmounts components twice
 	// and breaks the clipboard dialog
 	//<StrictMode>

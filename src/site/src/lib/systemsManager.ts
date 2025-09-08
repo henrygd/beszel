@@ -1,15 +1,15 @@
-import { SystemRecord } from "@/types"
-import { PreinitializedMapStore } from "nanostores"
+import type { PreinitializedMapStore } from "nanostores"
 import { pb, verifyAuth } from "@/lib/api"
 import {
-	$allSystemsByName,
-	$upSystems,
-	$downSystems,
-	$pausedSystems,
 	$allSystemsById,
+	$allSystemsByName,
+	$downSystems,
 	$longestSystemNameLen,
+	$pausedSystems,
+	$upSystems,
 } from "@/lib/stores"
-import { updateFavicon, FAVICON_DEFAULT, FAVICON_GREEN, FAVICON_RED } from "@/lib/utils"
+import { FAVICON_DEFAULT, FAVICON_GREEN, FAVICON_RED, updateFavicon } from "@/lib/utils"
+import type { SystemRecord } from "@/types"
 import { SystemStatus } from "./enums"
 
 const COLLECTION = pb.collection<SystemRecord>("systems")

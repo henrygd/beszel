@@ -1,7 +1,7 @@
-import { atom, computed, map, ReadableAtom } from "nanostores"
-import { AlertMap, ChartTimes, SystemRecord, UserSettings } from "@/types"
-import { Unit } from "./enums"
+import { atom, computed, map, type ReadableAtom } from "nanostores"
+import type { AlertMap, ChartTimes, SystemRecord, UserSettings } from "@/types"
 import { pb } from "./api"
+import { Unit } from "./enums"
 
 /** Store if user is authenticated */
 export const $authenticated = atom(pb.authStore.isValid)

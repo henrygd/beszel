@@ -1,11 +1,11 @@
-import { $direction } from "./stores"
-import { i18n } from "@lingui/core"
 import type { Messages } from "@lingui/core"
+import { i18n } from "@lingui/core"
+import { t } from "@lingui/core/macro"
+import { detect, fromNavigator, fromStorage } from "@lingui/detect-locale"
 import languages from "@/lib/languages"
-import { detect, fromStorage, fromNavigator } from "@lingui/detect-locale"
 import { messages as enMessages } from "@/locales/en/en"
 import { BatteryState } from "./enums"
-import { t } from "@lingui/core/macro"
+import { $direction } from "./stores"
 
 // activates locale
 function activateLocale(locale: string, messages: Messages = enMessages) {
@@ -18,7 +18,7 @@ function activateLocale(locale: string, messages: Messages = enMessages) {
 
 // dynamically loads translations for the given locale
 export async function dynamicActivate(locale: string) {
-	if (locale == "en") {
+	if (locale === "en") {
 		activateLocale(locale)
 	} else {
 		try {

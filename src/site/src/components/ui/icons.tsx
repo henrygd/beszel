@@ -1,4 +1,4 @@
-import { SVGProps } from "react"
+import type { SVGProps } from "react"
 
 // linux-logo-bold from https://github.com/phosphor-icons/core (MIT license)
 export function TuxIcon(props: SVGProps<SVGSVGElement>) {

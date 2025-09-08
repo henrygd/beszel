@@ -1,9 +1,9 @@
-import { copyToClipboard } from "@/lib/utils"
-import { Input } from "./input"
 import { Trans } from "@lingui/react/macro"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip"
 import { CopyIcon } from "lucide-react"
+import { copyToClipboard } from "@/lib/utils"
 import { Button } from "./button"
+import { Input } from "./input"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./tooltip"
 
 export function InputCopy({ value, id, name }: { value: string; id: string; name: string }) {
 	return (

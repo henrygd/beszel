@@ -8,7 +8,11 @@
 		"build": "lingui extract --overwrite && lingui compile && vite build",
 		"preview": "vite preview",
 		"sync": "lingui extract --overwrite && lingui compile",
-		"sync_and_purge": "lingui extract --overwrite --clean && lingui compile"
+		"sync_and_purge": "lingui extract --overwrite --clean && lingui compile",
+		"format": "biome format --write .",
+		"lint": "biome lint .",
+		"check": "biome check .",
+		"check:fix": "biome check --fix ."
 	},
 	"dependencies": {
 		"@henrygd/queue": "^1.0.7",
@@ -49,6 +53,7 @@
 		"valibot": "^0.42.1"
 	},
 	"devDependencies": {
+		"@biomejs/biome": "2.2.3",
 		"@lingui/cli": "^5.4.1",
 		"@lingui/swc-plugin": "^5.6.1",
 		"@lingui/vite-plugin": "^5.4.1",

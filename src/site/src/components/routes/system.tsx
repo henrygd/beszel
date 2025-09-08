@@ -1,24 +1,34 @@
 import { t } from "@lingui/core/macro"
-import { Plural, Trans } from "@lingui/react/macro"
+import { Plural, Trans, useLingui } from "@lingui/react/macro"
+import { useStore } from "@nanostores/react"
+import { getPagePath } from "@nanostores/router"
+import { timeTicks } from "d3-time"
+import { ClockArrowUp, CpuIcon, GlobeIcon, LayoutGridIcon, MonitorIcon, XIcon } from "lucide-react"
+import { subscribeKeys } from "nanostores"
+import React, { type JSX, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import AreaChartDefault from "@/components/charts/area-chart"
+import ContainerChart from "@/components/charts/container-chart"
+import DiskChart from "@/components/charts/disk-chart"
+import GpuPowerChart from "@/components/charts/gpu-power-chart"
+import { useContainerChartConfigs } from "@/components/charts/hooks"
+import LoadAverageChart from "@/components/charts/load-average-chart"
+import MemChart from "@/components/charts/mem-chart"
+import SwapChart from "@/components/charts/swap-chart"
+import TemperatureChart from "@/components/charts/temperature-chart"
+import { getPbTimestamp, pb } from "@/lib/api"
+import { ChartType, Os, SystemStatus, Unit } from "@/lib/enums"
+import { batteryStateTranslations } from "@/lib/i18n"
 import {
-	$systems,
+	$allSystemsByName,
 	$chartTime,
 	$containerFilter,
-	$userSettings,
 	$direction,
 	$maxValues,
+	$systems,
 	$temperatureFilter,
-	$allSystemsByName,
+	$userSettings,
 } from "@/lib/stores"
-import { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord } from "@/types"
-import { useContainerChartConfigs } from "@/components/charts/hooks"
-import { ChartType, Unit, Os, SystemStatus } from "@/lib/enums"
-import React, { memo, useCallback, useEffect, useMemo, useRef, useState, type JSX } from "react"
-import { Card, CardHeader, CardTitle, CardDescription } from "../ui/card"
-import { useStore } from "@nanostores/react"
-import Spinner from "../spinner"
-import { ClockArrowUp, CpuIcon, GlobeIcon, LayoutGridIcon, MonitorIcon, XIcon } from "lucide-react"
-import ChartTimeSelect from "../charts/chart-time-select"
+import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 import {
 	chartTimeData,
 	cn,
@@ -30,34 +40,33 @@ import {
 	toFixedFloat,
 	useBrowserStorage,
 } from "@/lib/utils"
-import { getPbTimestamp, pb } from "@/lib/api"
+import type { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord } from "@/types"
+import ChartTimeSelect from "../charts/chart-time-select"
+import { $router, navigate } from "../router"
+import Spinner from "../spinner"
+import { Button } from "../ui/button"
+import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card"
+import { AppleIcon, ChartAverage, ChartMax, FreeBsdIcon, Rows, TuxIcon, WindowsIcon } from "../ui/icons"
+import { Input } from "../ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
-import { Button } from "../ui/button"
-import { Input } from "../ui/input"
-import { ChartAverage, ChartMax, Rows, TuxIcon, WindowsIcon, AppleIcon, FreeBsdIcon } from "../ui/icons"
-import { useIntersectionObserver } from "@/lib/use-intersection-observer"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
-import { timeTicks } from "d3-time"
-import { useLingui } from "@lingui/react/macro"
-import { $router, navigate } from "../router"
-import { getPagePath } from "@nanostores/router"
-import { batteryStateTranslations } from "@/lib/i18n"
-import AreaChartDefault from "@/components/charts/area-chart"
-import ContainerChart from "@/components/charts/container-chart"
-import MemChart from "@/components/charts/mem-chart"
-import DiskChart from "@/components/charts/disk-chart"
-import SwapChart from "@/components/charts/swap-chart"
-import TemperatureChart from "@/components/charts/temperature-chart"
-import GpuPowerChart from "@/components/charts/gpu-power-chart"
-import LoadAverageChart from "@/components/charts/load-average-chart"
-import { subscribeKeys } from "nanostores"
 
-const cache = new Map<string, any>()
+type ChartTimeData = {
+	time: number
+	data: {
+		ticks: number[]
+		domain: number[]
+	}
+	chartTime: ChartTimes
+}
+
+
+const cache = new Map<string, ChartTimeData | SystemStatsRecord[] | ContainerStatsRecord[]>()
 
 // create ticks and domain for charts
 function getTimeData(chartTime: ChartTimes, lastCreated: number) {
-	const cached = cache.get("td")
+	const cached = cache.get("td") as ChartTimeData | undefined
 	if (cached && cached.chartTime === chartTime) {
 		if (!lastCreated || cached.time >= lastCreated) {
 			return cached.data
@@ -79,7 +88,7 @@ function getTimeData(chartTime: ChartTimes, lastCreated: number) {
 function addEmptyValues<T extends SystemStatsRecord | ContainerStatsRecord>(
 	prevRecords: T[],
 	newRecords: T[],
-	expectedInterval: number
+	expectedInterval: number,
 ) {
 	const modifiedRecords: T[] = []
 	let prevTime = (prevRecords.at(-1)?.created ?? 0) as number
@@ -90,7 +99,7 @@ function addEmptyValues<T extends SystemStatsRecord | ContainerStatsRecord>(
 			const interval = record.created - prevTime
 			// if interval is too large, add a null record
 			if (interval > expectedInterval / 2 + expectedInterval) {
-				// @ts-ignore
+				// @ts-expect-error
 				modifiedRecords.push({ created: null, stats: null })
 			}
 		}
@@ -100,8 +109,9 @@ function addEmptyValues<T extends SystemStatsRecord | ContainerStatsRecord>(
 	return modifiedRecords
 }
 
-async function getStats<T>(collection: string, system: SystemRecord, chartTime: ChartTimes): Promise<T[]> {
-	const lastCached = cache.get(`${system.id}_${chartTime}_${collection}`)?.at(-1)?.created as number
+async function getStats<T extends SystemStatsRecord | ContainerStatsRecord>(collection: string, system: SystemRecord, chartTime: ChartTimes): Promise<T[]> {
+	const cachedStats = cache.get(`${system.id}_${chartTime}_${collection}`) as T[] | undefined
+	const lastCached = cachedStats?.at(-1)?.created as number
 	return await pb.collection<T>(collection).getFullList({
 		filter: pb.filter("system={:id} && created > {:created} && type={:type}", {
 			id: system.id,
@@ -137,6 +147,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 	const [chartLoading, setChartLoading] = useState(true)
 	const isLongerChart = chartTime !== "1h"
 	const userSettings = $userSettings.get()
+	const chartWrapRef = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
 		document.title = `${name} / Beszel`
@@ -160,10 +171,11 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 		})
 	}, [name])
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: not necessary
 	const chartData: ChartData = useMemo(() => {
 		const lastCreated = Math.max(
 			(systemStats.at(-1)?.created as number) ?? 0,
-			(containerData.at(-1)?.created as number) ?? 0
+			(containerData.at(-1)?.created as number) ?? 0,
 		)
 		return {
 			systemStats,
@@ -178,8 +190,29 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 	// Share chart config computation for all container charts
 	const containerChartConfigs = useContainerChartConfigs(containerData)
 
+	// make container stats for charts
+	const makeContainerData = useCallback((containers: ContainerStatsRecord[]) => {
+		const containerData = [] as ChartData["containerData"]
+		for (let { created, stats } of containers) {
+			if (!created) {
+				// @ts-expect-error add null value for gaps
+				containerData.push({ created: null })
+				continue
+			}
+			created = new Date(created).getTime()
+			// @ts-expect-error not dealing with this rn
+			const containerStats: ChartData["containerData"][0] = { created }
+			for (const container of stats) {
+				containerStats[container.n] = container
+			}
+			containerData.push(containerStats)
+		}
+		setContainerData(containerData)
+	}, [])
+
 	// get stats
-	useEffect(() => {
+	// biome-ignore lint/correctness/useExhaustiveDependencies: not necessary
+		useEffect(() => {
 		if (!system.id || !chartTime) {
 			return
 		}
@@ -223,25 +256,6 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 		})
 	}, [system, chartTime])
 
-	// make container stats for charts
-	const makeContainerData = useCallback((containers: ContainerStatsRecord[]) => {
-		const containerData = [] as ChartData["containerData"]
-		for (let { created, stats } of containers) {
-			if (!created) {
-				// @ts-ignore add null value for gaps
-				containerData.push({ created: null })
-				continue
-			}
-			created = new Date(created).getTime()
-			// @ts-ignore not dealing with this rn
-			let containerStats: ChartData["containerData"][0] = { created }
-			for (let container of stats) {
-				containerStats[container.n] = container
-			}
-			containerData.push(containerStats)
-		}
-		setContainerData(containerData)
-	}, [])
 
 	// values for system info bar
 	const systemInfo = useMemo(() => {
@@ -303,10 +317,10 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 		] as {
 			value: string | number | undefined
 			label?: string
-			Icon: any
+			Icon: React.ElementType
 			hide?: boolean
 		}[]
-	}, [system.info, t])
+	}, [system, t])
 
 	/** Space for tooltip if more than 12 containers */
 	useEffect(() => {
@@ -315,12 +329,12 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 			return
 		}
 		const tooltipHeight = (Object.keys(containerData[0]).length - 11) * 17.8 - 40
-		const wrapperEl = document.getElementById("chartwrap") as HTMLDivElement
+		const wrapperEl = chartWrapRef.current as HTMLDivElement
 		const wrapperRect = wrapperEl.getBoundingClientRect()
 		const chartRect = netCardRef.current.getBoundingClientRect()
 		const distanceToBottom = wrapperRect.bottom - chartRect.bottom
 		setBottomSpacing(tooltipHeight - distanceToBottom)
-	}, [netCardRef, containerData])
+	}, [containerData])
 
 	// keyboard navigation between systems
 	useEffect(() => {
@@ -343,15 +357,17 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 			}
 			switch (e.key) {
 				case "ArrowLeft":
-				case "h":
+				case "h": {
 					const prevIndex = (currentIndex - 1 + systems.length) % systems.length
 					persistChartTime.current = true
 					return navigate(getPagePath($router, "system", { name: systems[prevIndex].name }))
+				}
 				case "ArrowRight":
-				case "l":
+				case "l": {
 					const nextIndex = (currentIndex + 1) % systems.length
 					persistChartTime.current = true
 					return navigate(getPagePath($router, "system", { name: systems[nextIndex].name }))
+				}
 			}
 		}
 		return listen(document, "keyup", handleKeyUp)
@@ -380,7 +396,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 
 	return (
 		<>
-			<div id="chartwrap" className="grid gap-4 mb-14 overflow-x-clip">
+			<div ref={chartWrapRef}  className="grid gap-4 mb-14 overflow-x-clip">
 				{/* system info */}
 				<Card>
 					<div className="grid xl:flex gap-4 px-4 sm:px-6 pt-3 sm:pt-4 pb-5">
@@ -406,7 +422,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 									</span>
 									{translatedStatus}
 								</div>
-								{systemInfo.map(({ value, label, Icon, hide }, i) => {
+								{systemInfo.map(({ value, label, Icon, hide }) => {
 									if (hide || !value) {
 										return null
 									}
@@ -416,7 +432,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 										</div>
 									)
 									return (
-										<div key={i} className="contents">
+										<div key={value} className="contents">
 											<Separator orientation="vertical" className="h-4 bg-primary/30" />
 											{label ? (
 												<TooltipProvider>
@@ -479,8 +495,8 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 									opacity: 0.4,
 								},
 							]}
-							tickFormatter={(val) => toFixedFloat(val, 2) + "%"}
-							contentFormatter={({ value }) => decimalString(value) + "%"}
+							tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
+							contentFormatter={({ value }) => `${decimalString(value)}%`}
 						/>
 					</ChartCard>
 
@@ -558,11 +574,11 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 							]}
 							tickFormatter={(val) => {
 								const { value, unit } = formatBytes(val, true, userSettings.unitDisk, true)
-								return toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit
+								return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
 							}}
 							contentFormatter={({ value }) => {
 								const { value: convertedValue, unit } = formatBytes(value, true, userSettings.unitDisk, true)
-								return decimalString(convertedValue, convertedValue >= 100 ? 1 : 2) + " " + unit
+								return `${decimalString(convertedValue, convertedValue >= 100 ? 1 : 2)} ${unit}`
 							}}
 						/>
 					</ChartCard>
@@ -603,12 +619,12 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 								},
 							]}
 							tickFormatter={(val) => {
-								let { value, unit } = formatBytes(val, true, userSettings.unitNet, false)
-								return toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit
+								const { value, unit } = formatBytes(val, true, userSettings.unitNet, false)
+								return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
 							}}
 							contentFormatter={(data) => {
 								const { value, unit } = formatBytes(data.value, true, userSettings.unitNet, false)
-								return decimalString(value, value >= 100 ? 1 : 2) + " " + unit
+								return `${decimalString(value, value >= 100 ? 1 : 2)} ${unit}`
 							}}
 						/>
 					</ChartCard>
@@ -682,7 +698,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 							description={`${t({
 								message: "Current state",
 								comment: "Context: Battery state",
-							})}: ${batteryStateTranslations[systemStats.at(-1)?.stats.bat![1] ?? 0]()}`}
+							})}: ${batteryStateTranslations[systemStats.at(-1)?.stats.bat?.[1] ?? 0]()}`}
 						>
 							<AreaChartDefault
 								chartData={chartData}
@@ -738,8 +754,8 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 													opacity: 0.35,
 												},
 											]}
-											tickFormatter={(val) => toFixedFloat(val, 2) + "%"}
-											contentFormatter={({ value }) => decimalString(value) + "%"}
+											tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
+											contentFormatter={({ value }) => `${decimalString(value)}%`}
 										/>
 									</ChartCard>
 									<ChartCard
@@ -761,11 +777,11 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 											max={gpu.mt}
 											tickFormatter={(val) => {
 												const { value, unit } = formatBytes(val, false, Unit.Bytes, true)
-												return toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit
+												return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
 											}}
 											contentFormatter={({ value }) => {
 												const { value: convertedValue, unit } = formatBytes(value, false, Unit.Bytes, true)
-												return decimalString(convertedValue) + " " + unit
+												return `${decimalString(convertedValue)} ${unit}`
 											}}
 										/>
 									</ChartCard>
@@ -819,11 +835,11 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 											maxToggled={maxValues}
 											tickFormatter={(val) => {
 												const { value, unit } = formatBytes(val, true, userSettings.unitDisk, true)
-												return toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit
+												return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
 											}}
 											contentFormatter={({ value }) => {
 												const { value: convertedValue, unit } = formatBytes(value, true, userSettings.unitDisk, true)
-												return decimalString(convertedValue, convertedValue >= 100 ? 1 : 2) + " " + unit
+												return `${decimalString(convertedValue, convertedValue >= 100 ? 1 : 2)} ${unit}`
 											}}
 										/>
 									</ChartCard>
@@ -846,7 +862,7 @@ function FilterBar({ store = $containerFilter }: { store?: typeof $containerFilt
 
 	const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
 		store.set(e.target.value)
-	}, [])
+	}, [store])
 
 	return (
 		<>

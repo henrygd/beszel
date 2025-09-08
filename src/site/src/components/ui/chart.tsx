@@ -1,10 +1,8 @@
+import type { JSX } from "react"
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
-
 import { chartTimeData, cn } from "@/lib/utils"
-import { ChartData } from "@/types"
-
-import type { JSX } from "react"
+import type { ChartData } from "@/types"
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const
@@ -134,7 +132,7 @@ const ChartTooltipContent = React.forwardRef<
 				payload = payload?.filter((item) => (item.name as string)?.toLowerCase().includes(filter.toLowerCase()))
 			}
 			if (itemSorter) {
-				// @ts-ignore
+				// @ts-expect-error
 				payload?.sort(itemSorter)
 			}
 		}, [itemSorter, payload])
@@ -331,7 +329,7 @@ function getPayloadConfigFromPayload(config: ChartConfig, payload: unknown, key:
 }
 
 let cachedAxis: JSX.Element
-const xAxis = function ({ domain, ticks, chartTime }: ChartData) {
+const xAxis = ({ domain, ticks, chartTime }: ChartData) => {
 	if (cachedAxis && domain[0] === cachedAxis.props.domain[0]) {
 		return cachedAxis
 	}

@@ -1,22 +1,22 @@
-import { Suspense, memo, useEffect, useMemo } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
-import { $alerts, $allSystemsById } from "@/lib/stores"
-import { useStore } from "@nanostores/react"
-import { GithubIcon } from "lucide-react"
-import { Separator } from "../ui/separator"
-import { AlertRecord } from "@/types"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { $router, Link } from "../router"
 import { Plural, Trans, useLingui } from "@lingui/react/macro"
+import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
-import { alertInfo } from "@/lib/alerts"
+import { GithubIcon } from "lucide-react"
+import { memo, Suspense, useEffect, useMemo } from "react"
+import { $router, Link } from "@/components/router"
 import SystemsTable from "@/components/systems-table/systems-table"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
+import { alertInfo } from "@/lib/alerts"
+import { $alerts, $allSystemsById } from "@/lib/stores"
+import type { AlertRecord } from "@/types"
 
-export default memo(function () {
+export default memo(() => {
 	const { t } = useLingui()
 
 	useEffect(() => {
-		document.title = t`Dashboard` + " / Beszel"
+		document.title = `${t`Dashboard`} / Beszel`
 	}, [t])
 
 	return useMemo(
@@ -32,6 +32,7 @@ export default memo(function () {
 						href="https://github.com/henrygd/beszel"
 						target="_blank"
 						className="flex items-center gap-0.5 text-muted-foreground hover:text-foreground duration-75"
+						rel="noopener"
 					>
 						<GithubIcon className="h-3 w-3" /> GitHub
 					</a>
@@ -40,6 +41,7 @@ export default memo(function () {
 						href="https://github.com/henrygd/beszel/releases"
 						target="_blank"
 						className="text-muted-foreground hover:text-foreground duration-75"
+						rel="noopener"
 					>
 						Beszel {globalThis.BESZEL.HUB_VERSION}
 					</a>
@@ -71,6 +73,7 @@ const ActiveAlerts = () => {
 		return { activeAlerts, alertsKey }
 	}, [alerts])
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: alertsKey is inclusive
 	return useMemo(() => {
 		if (activeAlerts.length === 0) {
 			return null

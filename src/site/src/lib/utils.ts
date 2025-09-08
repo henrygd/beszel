@@ -1,13 +1,13 @@
 import { t } from "@lingui/core/macro"
-import { toast } from "@/components/ui/use-toast"
 import { type ClassValue, clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
-import { $copyContent, $userSettings } from "./stores"
-import type { ChartTimeData, FingerprintRecord, SemVer, SystemRecord } from "@/types"
 import { timeDay, timeHour } from "d3-time"
 import { useEffect, useState } from "react"
-import { MeterState, Unit } from "./enums"
+import { twMerge } from "tailwind-merge"
 import { prependBasePath } from "@/components/router"
+import { toast } from "@/components/ui/use-toast"
+import type { ChartTimeData, FingerprintRecord, SemVer, SystemRecord } from "@/types"
+import { MeterState, Unit } from "./enums"
+import { $copyContent, $userSettings } from "./stores"
 
 export const FAVICON_DEFAULT = "favicon.svg"
 export const FAVICON_GREEN = "favicon-green.svg"
@@ -31,7 +31,7 @@ export async function copyToClipboard(content: string) {
 			duration,
 			description: t`Copied to clipboard`,
 		})
-	} catch (e: any) {
+	} catch (e) {
 		$copyContent.set(content)
 	}
 }
@@ -113,7 +113,7 @@ export function toFixedFloat(num: number, digits: number) {
 	return parseFloat((digits === 0 ? Math.ceil(num) : num).toFixed(digits))
 }
 
-let decimalFormatters: Map<number, Intl.NumberFormat> = new Map()
+const decimalFormatters: Map<number, Intl.NumberFormat> = new Map()
 /** Format number to x decimal places, maintaining trailing zeros */
 export function decimalString(num: number, digits = 2) {
 	if (digits === 0) {
@@ -131,7 +131,7 @@ export function decimalString(num: number, digits = 2) {
 }
 
 /** Get value from local or session storage */
-function getStorageValue(key: string, defaultValue: any, storageInterface: Storage = localStorage) {
+function getStorageValue(key: string, defaultValue: unknown, storageInterface: Storage = localStorage) {
 	const saved = storageInterface?.getItem(key)
 	return saved ? JSON.parse(saved) : defaultValue
 }
@@ -142,6 +142,7 @@ export function useBrowserStorage<T>(key: string, defaultValue: T, storageInterf
 	const [value, setValue] = useState(() => {
 		return getStorageValue(key, defaultValue, storageInterface)
 	})
+	// biome-ignore lint/correctness/useExhaustiveDependencies: storageInterface won't change
 	useEffect(() => {
 		storageInterface?.setItem(key, JSON.stringify(value))
 	}, [key, value])
@@ -155,7 +156,7 @@ export function formatTemperature(celsius: number, unit?: Unit): { value: number
 		unit = $userSettings.get().unitTemp || Unit.Celsius
 	}
 	// need loose equality check due to form data being strings
-	if (unit == Unit.Fahrenheit) {
+	if (unit === Unit.Fahrenheit) {
 		return {
 			value: celsius * 1.8 + 32,
 			unit: "°F",
@@ -178,7 +179,7 @@ export function formatBytes(
 	if (isMegabytes) size *= 1024 * 1024
 
 	// need loose equality check due to form data being strings
-	if (unit == Unit.Bits) {
+	if (unit === Unit.Bits) {
 		const bits = size * 8
 		const suffix = perSecond ? "ps" : ""
 		if (bits < 1000) return { value: bits, unit: `b${suffix}` }
@@ -314,6 +315,7 @@ export function getMeterState(value: number): MeterState {
 	return value >= colorCrit ? MeterState.Crit : value >= colorWarn ? MeterState.Warn : MeterState.Good
 }
 
+// biome-ignore lint/suspicious/noExplicitAny: any is used to allow any function to be passed in
 export function debounce<T extends (...args: any[]) => any>(func: T, wait: number): (...args: Parameters<T>) => void {
 	let timeout: ReturnType<typeof setTimeout>
 	return (...args: Parameters<T>) => {
@@ -323,8 +325,10 @@ export function debounce<T extends (...args: any[]) => any>(func: T, wait: numbe
 }
 
 // Cache for runOnce
+// biome-ignore lint/complexity/noBannedTypes: Function is used to allow any function to be passed in
 const runOnceCache = new WeakMap<Function, { done: boolean; result: unknown }>()
 /** Run a function only once */
+// biome-ignore lint/suspicious/noExplicitAny: any is used to allow any function to be passed in
 export function runOnce<T extends (...args: any[]) => any>(fn: T): T {
 	return ((...args: Parameters<T>) => {
 		let state = runOnceCache.get(fn)

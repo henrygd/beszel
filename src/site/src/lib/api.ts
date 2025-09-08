@@ -1,10 +1,10 @@
-import { ChartTimes, UserSettings } from "@/types"
-import { $alerts, $allSystemsByName, $userSettings } from "./stores"
-import { toast } from "@/components/ui/use-toast"
 import { t } from "@lingui/core/macro"
-import { chartTimeData } from "./utils"
 import PocketBase from "pocketbase"
 import { basePath } from "@/components/router"
+import { toast } from "@/components/ui/use-toast"
+import type { ChartTimes, UserSettings } from "@/types"
+import { $alerts, $allSystemsByName, $userSettings } from "./stores"
+import { chartTimeData } from "./utils"
 
 /** PocketBase JS Client */
 export const pb = new PocketBase(basePath)
@@ -46,7 +46,7 @@ export async function updateUserSettings() {
 	}
 	// create user settings if error fetching existing
 	try {
-		const createdSettings = await pb.collection("user_settings").create({ user: pb.authStore.record!.id })
+		const createdSettings = await pb.collection("user_settings").create({ user: pb.authStore.record?.id })
 		$userSettings.set(createdSettings.settings)
 	} catch (e) {
 		console.error("create settings", e)

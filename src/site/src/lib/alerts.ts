@@ -1,9 +1,9 @@
-import type { AlertInfo, AlertRecord } from "@/types"
-import type { RecordSubscription } from "pocketbase"
-import { $alerts } from "@/lib/stores"
-import { EthernetIcon } from "@/components/ui/icons"
-import { ServerIcon, CpuIcon, MemoryStickIcon, HardDriveIcon, ThermometerIcon, HourglassIcon } from "lucide-react"
 import { t } from "@lingui/core/macro"
+import { CpuIcon, HardDriveIcon, HourglassIcon, MemoryStickIcon, ServerIcon, ThermometerIcon } from "lucide-react"
+import type { RecordSubscription } from "pocketbase"
+import { EthernetIcon } from "@/components/ui/icons"
+import { $alerts } from "@/lib/stores"
+import type { AlertInfo, AlertRecord } from "@/types"
 import { pb } from "./api"
 
 /** Alert info for each alert type */
@@ -14,7 +14,7 @@ export const alertInfo: Record<string, AlertInfo> = {
 		icon: ServerIcon,
 		desc: () => t`Triggers when status switches between up and down`,
 		/** "for x minutes" is appended to desc when only one value */
-		singleDesc: () => t`System` + " " + t`Down`,
+		singleDesc: () => `${t`System`} ${t`Down`}`,
 	},
 	CPU: {
 		name: () => t`CPU Usage`,
@@ -127,7 +127,7 @@ export const alertManager = (() => {
 		return (data: RecordSubscription<AlertRecord>) => {
 			const { record } = data
 			batch.set(`${record.system}${record.name}`, data)
-			clearTimeout(timeout!)
+			clearTimeout(timeout)
 			timeout = setTimeout(() => {
 				const groups = { create: [], update: [], delete: [] } as Record<string, AlertRecord[]>
 				for (const { action, record } of batch.values()) {

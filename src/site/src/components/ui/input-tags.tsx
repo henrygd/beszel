@@ -1,9 +1,9 @@
+import { XIcon } from "lucide-react"
 import * as React from "react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { XIcon } from "lucide-react"
-import { type InputProps } from "./input"
 import { cn } from "@/lib/utils"
+import type { InputProps } from "./input"
 
 type InputTagsProps = Omit<InputProps, "value" | "onChange"> & {
 	value: string[]
