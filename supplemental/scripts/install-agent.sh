@@ -329,7 +329,12 @@ if [ "$UNINSTALL" = true ]; then
 
     # Remove the update service if it exists
     echo "Removing the daily update service..."
+    # Remove legacy beszel account based crontab file
     rm -f /etc/crontabs/beszel
+    # Install root crontab job
+    if crontab -u root -l 2>/dev/null | grep -q "beszel-agent.*update"; then
+      crontab -u root -l 2>/dev/null | grep -v "beszel-agent.*update" | crontab -u root -
+    fi
 
   elif is_freebsd; then
     echo "Stopping and disabling the agent service..."
@@ -716,7 +721,7 @@ EXTRA_HELP="        update          Update the Beszel agent
         restart         Restart the Beszel agent"
 
 update() {
-    if /opt/beszel-agent/beszel-agent update | grep -q "Successfully updated"; then
+    if /opt/beszel-agent/beszel-agent update | grep -q "Update completed successfully"; then
         /etc/init.d/beszel-agent restart
     fi
 }
@@ -745,9 +750,9 @@ EOF
   [Yy]*)
     echo "Setting up daily automatic updates for beszel-agent..."
 
-    cat >/etc/crontabs/beszel <<EOF
-12 0 * * * /etc/init.d/beszel-agent update
-EOF
+    if ! crontab -u root -l 2>/dev/null | grep -q "beszel-agent.*update"; then
+      (crontab -u root -l 2>/dev/null; echo "12 0 * * * /etc/init.d/beszel-agent update") | crontab -u root -
+    fi
 
     /etc/init.d/cron restart
 
