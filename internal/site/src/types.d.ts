@@ -145,6 +145,8 @@ export interface SystemStats {
 	bat?: [number, BatteryState]
 	/** network interfaces [upload bytes, download bytes, total upload bytes, total download bytes] */
 	ni?: Record<string, [number, number, number, number]>
+	/** systemd services */
+	ss?: unknown[]
 }
 
 export interface GPUData {

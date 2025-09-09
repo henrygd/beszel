@@ -62,6 +62,7 @@ import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import NetworkSheet from "./system/network-sheet"
 import LineChartDefault from "../charts/line-chart"
+import SystemdServicesTable from "../charts/systemd-services-table"
 
 type ChartTimeData = {
 	time: number

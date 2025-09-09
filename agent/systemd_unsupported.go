@@ -2,7 +2,7 @@
 
 package agent
 
-import "github.com/henrygd/beszel/src/entities/system"
+import "github.com/henrygd/beszel/internal/entities/system"
 
 func getSystemdServices() []system.SystemdService {
 	return nil
