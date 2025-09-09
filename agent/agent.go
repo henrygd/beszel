@@ -1,4 +1,7 @@
-// Package agent handles the agent's SSH server and system stats collection.
+// Package agent implements the Beszel monitoring agent that collects and serves system metrics.
+//
+// The agent runs on monitored systems and communicates collected data
+// to the Beszel hub for centralized monitoring and alerting.
 package agent
 
 import (
