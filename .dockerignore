@@ -1,6 +1,6 @@
 # Node.js dependencies
 node_modules
-src/site/node_modules
+internalsite/node_modules
 
 # Go build artifacts and binaries
 build

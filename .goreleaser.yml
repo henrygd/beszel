@@ -9,7 +9,7 @@ before:
 builds:
   - id: beszel
     binary: beszel
-    main: src/cmd/hub/hub.go
+    main: internal/cmd/hub/hub.go
     env:
       - CGO_ENABLED=0
     goos:
@@ -22,7 +22,7 @@ builds:
 
   - id: beszel-agent
     binary: beszel-agent
-    main: src/cmd/agent/agent.go
+    main: internal/cmd/agent/agent.go
     env:
       - CGO_ENABLED=0
     goos:
