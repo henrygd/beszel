@@ -8,13 +8,13 @@ beszel_data
 beszel_data*
 dist
 *.exe
-src/cmd/hub/hub
-src/cmd/agent/agent
+internal/cmd/hub/hub
+internal/cmd/agent/agent
 node_modules
 build
 *timestamp*
 .swc
-src/site/internal/locales/**/*.ts
+internal/site/src/locales/**/*.ts
 *.bak
 __debug_*
 agent/lhm/obj
