@@ -21,10 +21,10 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        run: bun install --no-save --cwd ./src/site
+        run: bun install --no-save --cwd ./internal/site
 
       - name: Build site
-        run: bun run --cwd ./src/site build
+        run: bun run --cwd ./internal/site build
 
       - name: Set up Go
         uses: actions/setup-go@v5

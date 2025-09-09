@@ -3,7 +3,7 @@
 
 package hub
 
-import "github.com/henrygd/beszel/src/hub/systems"
+import "github.com/henrygd/beszel/internal/hub/systems"
 
 // TESTING ONLY: GetSystemManager returns the system manager
 func (h *Hub) GetSystemManager() *systems.SystemManager {

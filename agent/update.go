@@ -8,7 +8,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/henrygd/beszel/src/ghupdate"
+	"github.com/henrygd/beszel/internal/ghupdate"
 )
 
 // restarter knows how to restart the beszel-agent service.

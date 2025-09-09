@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/henrygd/beszel/src/ghupdate"
+	"github.com/henrygd/beszel/internal/ghupdate"
 	"github.com/spf13/cobra"
 )
 

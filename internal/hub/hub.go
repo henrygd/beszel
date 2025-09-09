@@ -13,11 +13,11 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel"
-	"github.com/henrygd/beszel/src/alerts"
-	"github.com/henrygd/beszel/src/hub/config"
-	"github.com/henrygd/beszel/src/hub/systems"
-	"github.com/henrygd/beszel/src/records"
-	"github.com/henrygd/beszel/src/users"
+	"github.com/henrygd/beszel/internal/alerts"
+	"github.com/henrygd/beszel/internal/hub/config"
+	"github.com/henrygd/beszel/internal/hub/systems"
+	"github.com/henrygd/beszel/internal/records"
+	"github.com/henrygd/beszel/internal/users"
 
 	"github.com/google/uuid"
 	"github.com/pocketbase/pocketbase"

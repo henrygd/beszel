@@ -15,8 +15,8 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/agent"
-	"github.com/henrygd/beszel/src/common"
-	"github.com/henrygd/beszel/src/hub/ws"
+	"github.com/henrygd/beszel/internal/common"
+	"github.com/henrygd/beszel/internal/hub/ws"
 
 	"github.com/pocketbase/pocketbase/core"
 	pbtests "github.com/pocketbase/pocketbase/tests"

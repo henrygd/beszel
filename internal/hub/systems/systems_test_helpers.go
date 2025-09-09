@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 
-	entities "github.com/henrygd/beszel/src/entities/system"
+	entities "github.com/henrygd/beszel/internal/entities/system"
 )
 
 // TESTING ONLY: GetSystemCount returns the number of systems in the store

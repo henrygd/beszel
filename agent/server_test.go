@@ -13,8 +13,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/henrygd/beszel/src/entities/container"
-	"github.com/henrygd/beszel/src/entities/system"
+	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/blang/semver"
 	"github.com/fxamacker/cbor/v2"

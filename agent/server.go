@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel"
-	"github.com/henrygd/beszel/src/common"
-	"github.com/henrygd/beszel/src/entities/system"
+	"github.com/henrygd/beszel/internal/common"
+	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/blang/semver"
 	"github.com/fxamacker/cbor/v2"

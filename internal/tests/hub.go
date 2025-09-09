@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/henrygd/beszel/src/hub"
+	"github.com/henrygd/beszel/internal/hub"
 
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/pocketbase/pocketbase/tests"

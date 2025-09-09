@@ -15,8 +15,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/henrygd/beszel/src/migrations"
-	beszelTests "github.com/henrygd/beszel/src/tests"
+	"github.com/henrygd/beszel/internal/migrations"
+	beszelTests "github.com/henrygd/beszel/internal/tests"
 
 	"github.com/pocketbase/pocketbase/core"
 	pbTests "github.com/pocketbase/pocketbase/tests"

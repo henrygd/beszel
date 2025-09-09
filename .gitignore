@@ -14,7 +14,7 @@ node_modules
 build
 *timestamp*
 .swc
-src/site/src/locales/**/*.ts
+src/site/internal/locales/**/*.ts
 *.bak
 __debug_*
 agent/lhm/obj

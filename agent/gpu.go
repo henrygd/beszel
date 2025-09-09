@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/henrygd/beszel/src/entities/system"
+	"github.com/henrygd/beszel/internal/entities/system"
 
 	"golang.org/x/exp/slog"
 )

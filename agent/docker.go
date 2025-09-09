@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/henrygd/beszel/src/entities/container"
+	"github.com/henrygd/beszel/internal/entities/container"
 
 	"github.com/blang/semver"
 )

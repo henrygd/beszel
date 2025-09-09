@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/henrygd/beszel/src/hub/ws"
+	"github.com/henrygd/beszel/internal/hub/ws"
 
-	"github.com/henrygd/beszel/src/entities/system"
+	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/henrygd/beszel"
 

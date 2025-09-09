@@ -5,7 +5,7 @@ package system
 import (
 	"time"
 
-	"github.com/henrygd/beszel/src/entities/container"
+	"github.com/henrygd/beszel/internal/entities/container"
 )
 
 type Stats struct {

@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/henrygd/beszel"
-	"github.com/henrygd/beszel/src/site"
+	"github.com/henrygd/beszel/internal/site"
 
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"

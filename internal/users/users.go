@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/henrygd/beszel/src/migrations"
+	"github.com/henrygd/beszel/internal/migrations"
 
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"

@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel"
-	"github.com/henrygd/beszel/src/hub"
-	_ "github.com/henrygd/beszel/src/migrations"
+	"github.com/henrygd/beszel/internal/hub"
+	_ "github.com/henrygd/beszel/internal/migrations"
 
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/plugins/migratecmd"

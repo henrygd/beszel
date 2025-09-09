@@ -8,9 +8,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/henrygd/beszel/src/tests"
+	"github.com/henrygd/beszel/internal/tests"
 
-	"github.com/henrygd/beszel/src/hub/config"
+	"github.com/henrygd/beszel/internal/hub/config"
 
 	"github.com/pocketbase/pocketbase/core"
 	"github.com/stretchr/testify/assert"

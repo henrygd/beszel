@@ -3,7 +3,7 @@ package agent
 import (
 	"time"
 
-	"github.com/henrygd/beszel/src/entities/system"
+	"github.com/henrygd/beszel/internal/entities/system"
 )
 
 // Not thread safe since we only access from gatherStats which is already locked

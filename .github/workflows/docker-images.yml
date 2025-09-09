@@ -14,21 +14,21 @@ jobs:
         include:
           - image: henrygd/beszel
             context: ./
-            dockerfile: ./src/dockerfile_hub
+            dockerfile: ./internal/dockerfile_hub
             registry: docker.io
             username_secret: DOCKERHUB_USERNAME
             password_secret: DOCKERHUB_TOKEN
 
           - image: henrygd/beszel-agent
             context: ./
-            dockerfile: ./src/dockerfile_agent
+            dockerfile: ./internal/dockerfile_agent
             registry: docker.io
             username_secret: DOCKERHUB_USERNAME
             password_secret: DOCKERHUB_TOKEN
 
           - image: henrygd/beszel-agent-nvidia
             context: ./
-            dockerfile: ./src/dockerfile_agent_nvidia
+            dockerfile: ./internal/dockerfile_agent_nvidia
             platforms: linux/amd64
             registry: docker.io
             username_secret: DOCKERHUB_USERNAME
@@ -36,21 +36,21 @@ jobs:
 
           - image: ghcr.io/${{ github.repository }}/beszel
             context: ./
-            dockerfile: ./src/dockerfile_hub
+            dockerfile: ./internal/dockerfile_hub
             registry: ghcr.io
             username: ${{ github.actor }}
             password_secret: GITHUB_TOKEN
 
           - image: ghcr.io/${{ github.repository }}/beszel-agent
             context: ./
-            dockerfile: ./src/dockerfile_agent
+            dockerfile: ./internal/dockerfile_agent
             registry: ghcr.io
             username: ${{ github.actor }}
             password_secret: GITHUB_TOKEN
 
           - image: ghcr.io/${{ github.repository }}/beszel-agent-nvidia
             context: ./
-            dockerfile: ./src/dockerfile_agent_nvidia
+            dockerfile: ./internal/dockerfile_agent_nvidia
             platforms: linux/amd64
             registry: ghcr.io
             username: ${{ github.actor }}
@@ -68,10 +68,10 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        run: bun install --no-save --cwd ./src/site
+        run: bun install --no-save --cwd ./internal/site
 
       - name: Build site
-        run: bun run --cwd ./src/site build
+        run: bun run --cwd ./internal/site build
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3

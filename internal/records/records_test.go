@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/henrygd/beszel/src/records"
-	"github.com/henrygd/beszel/src/tests"
+	"github.com/henrygd/beszel/internal/records"
+	"github.com/henrygd/beszel/internal/tests"
 
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"

@@ -5,9 +5,9 @@ import (
 	"time"
 	"weak"
 
-	"github.com/henrygd/beszel/src/entities/system"
+	"github.com/henrygd/beszel/internal/entities/system"
 
-	"github.com/henrygd/beszel/src/common"
+	"github.com/henrygd/beszel/internal/common"
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/lxzan/gws"

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/henrygd/beszel/src/entities/system"
+	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/shirou/gopsutil/v4/disk"
 )

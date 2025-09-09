@@ -10,10 +10,10 @@ import (
 	"testing/synctest"
 	"time"
 
-	"github.com/henrygd/beszel/src/entities/container"
-	"github.com/henrygd/beszel/src/entities/system"
-	"github.com/henrygd/beszel/src/hub/systems"
-	"github.com/henrygd/beszel/src/tests"
+	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/henrygd/beszel/internal/hub/systems"
+	"github.com/henrygd/beszel/internal/tests"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

@@ -13,7 +13,7 @@ import (
 	"testing/synctest"
 	"time"
 
-	beszelTests "github.com/henrygd/beszel/src/tests"
+	beszelTests "github.com/henrygd/beszel/internal/tests"
 
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
