@@ -60,7 +60,7 @@ build-hub-dev: tidy
 build: build-agent build-hub
 
 generate-locales:
-	@if [ ! -f ./internal/site/internal/locales/en/en.ts ]; then \
+	@if [ ! -f ./internal/site/src/locales/en/en.ts ]; then \
 		echo "Generating locales..."; \
 		command -v bun >/dev/null 2>&1 && cd ./internal/site && bun install && bun run sync || cd ./internal/site && npm install && npm run sync; \
 	fi
