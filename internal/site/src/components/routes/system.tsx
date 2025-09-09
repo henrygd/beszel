@@ -51,6 +51,7 @@ import { Input } from "../ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
+import SystemdServicesTable from "../charts/systemd-services-table"
 
 type ChartTimeData = {
 	time: number
