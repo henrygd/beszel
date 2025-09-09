@@ -32,6 +32,7 @@ import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 import {
 	chartTimeData,
 	cn,
+	debounce,
 	decimalString,
 	formatBytes,
 	getHostDisplayValue,
@@ -61,7 +62,6 @@ type ChartTimeData = {
 	chartTime: ChartTimes
 }
 
-
 const cache = new Map<string, ChartTimeData | SystemStatsRecord[] | ContainerStatsRecord[]>()
 
 // create ticks and domain for charts
@@ -88,7 +88,7 @@ function getTimeData(chartTime: ChartTimes, lastCreated: number) {
 function addEmptyValues<T extends SystemStatsRecord | ContainerStatsRecord>(
 	prevRecords: T[],
 	newRecords: T[],
-	expectedInterval: number,
+	expectedInterval: number
 ) {
 	const modifiedRecords: T[] = []
 	let prevTime = (prevRecords.at(-1)?.created ?? 0) as number
@@ -109,7 +109,11 @@ function addEmptyValues<T extends SystemStatsRecord | ContainerStatsRecord>(
 	return modifiedRecords
 }
 
-async function getStats<T extends SystemStatsRecord | ContainerStatsRecord>(collection: string, system: SystemRecord, chartTime: ChartTimes): Promise<T[]> {
+async function getStats<T extends SystemStatsRecord | ContainerStatsRecord>(
+	collection: string,
+	system: SystemRecord,
+	chartTime: ChartTimes
+): Promise<T[]> {
 	const cachedStats = cache.get(`${system.id}_${chartTime}_${collection}`) as T[] | undefined
 	const lastCached = cachedStats?.at(-1)?.created as number
 	return await pb.collection<T>(collection).getFullList({
@@ -175,7 +179,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 	const chartData: ChartData = useMemo(() => {
 		const lastCreated = Math.max(
 			(systemStats.at(-1)?.created as number) ?? 0,
-			(containerData.at(-1)?.created as number) ?? 0,
+			(containerData.at(-1)?.created as number) ?? 0
 		)
 		return {
 			systemStats,
@@ -212,7 +216,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 
 	// get stats
 	// biome-ignore lint/correctness/useExhaustiveDependencies: not necessary
-		useEffect(() => {
+	useEffect(() => {
 		if (!system.id || !chartTime) {
 			return
 		}
@@ -255,7 +259,6 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 			makeContainerData(containerData)
 		})
 	}, [system, chartTime])
-
 
 	// values for system info bar
 	const systemInfo = useMemo(() => {
@@ -396,7 +399,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 
 	return (
 		<>
-			<div ref={chartWrapRef}  className="grid gap-4 mb-14 overflow-x-clip">
+			<div ref={chartWrapRef} className="grid gap-4 mb-14 overflow-x-clip">
 				{/* system info */}
 				<Card>
 					<div className="grid xl:flex gap-4 px-4 sm:px-6 pt-3 sm:pt-4 pb-5">
@@ -859,14 +862,24 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 function FilterBar({ store = $containerFilter }: { store?: typeof $containerFilter }) {
 	const containerFilter = useStore(store)
 	const { t } = useLingui()
+	const inputRef = useRef<HTMLInputElement>(null)
 
-	const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-		store.set(e.target.value)
-	}, [store])
+	const debouncedStoreSet = useMemo(() => debounce((value: string) => store.set(value), 150), [store])
+
+	const handleChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			const value = e.target.value
+			if (inputRef.current) {
+				inputRef.current.value = value
+			}
+			debouncedStoreSet(value)
+		},
+		[debouncedStoreSet]
+	)
 
 	return (
 		<>
-			<Input placeholder={t`Filter...`} className="ps-4 pe-8" value={containerFilter} onChange={handleChange} />
+			<Input placeholder={t`Filter...`} className="ps-4 pe-8" onChange={handleChange} ref={inputRef} />
 			{containerFilter && (
 				<Button
 					type="button"
@@ -874,7 +887,12 @@ function FilterBar({ store = $containerFilter }: { store?: typeof $containerFilt
 					size="icon"
 					aria-label="Clear"
 					className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-					onClick={() => store.set("")}
+					onClick={() => {
+						if (inputRef.current) {
+							inputRef.current.value = ""
+						}
+						store.set("")
+					}}
 				>
 					<XIcon className="h-4 w-4" />
 				</Button>

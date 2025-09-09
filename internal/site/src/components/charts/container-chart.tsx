@@ -1,11 +1,11 @@
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
+import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
 import { memo, useMemo } from "react"
 import { cn, formatShortDate, chartMargin, toFixedFloat, formatBytes, decimalString } from "@/lib/utils"
 // import Spinner from '../spinner'
 import { useStore } from "@nanostores/react"
 import { $containerFilter, $userSettings } from "@/lib/stores"
-import { ChartData } from "@/types"
+import type { ChartData } from "@/types"
 import { Separator } from "../ui/separator"
 import { ChartType, Unit } from "@/lib/enums"
 import { useYAxisWidth } from "./hooks"
@@ -31,6 +31,7 @@ export default memo(function ContainerChart({
 
 	const isNetChart = chartType === ChartType.Network
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: not necessary
 	const { toolTipFormatter, dataFunction, tickFormatter } = useMemo(() => {
 		const obj = {} as {
 			toolTipFormatter: (item: any, key: string) => React.ReactNode | string
@@ -47,7 +48,7 @@ export default memo(function ContainerChart({
 			const chartUnit = isNetChart ? userSettings.unitNet : Unit.Bytes
 			obj.tickFormatter = (val) => {
 				const { value, unit } = formatBytes(val, isNetChart, chartUnit, true)
-				return updateYAxisWidth(toFixedFloat(value, value >= 10 ? 0 : 1) + " " + unit)
+				return updateYAxisWidth(`${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`)
 			}
 		}
 		// tooltip formatter
@@ -74,10 +75,10 @@ export default memo(function ContainerChart({
 		} else if (chartType === ChartType.Memory) {
 			obj.toolTipFormatter = (item: any) => {
 				const { value, unit } = formatBytes(item.value, false, Unit.Bytes, true)
-				return decimalString(value) + " " + unit
+				return `${decimalString(value)} ${unit}`
 			}
 		} else {
-			obj.toolTipFormatter = (item: any) => decimalString(item.value) + unit
+			obj.toolTipFormatter = (item: any) => `${decimalString(item.value)} ${unit}`
 		}
 		// data function
 		if (isNetChart) {
@@ -133,7 +134,7 @@ export default memo(function ContainerChart({
 						animationDuration={150}
 						truncate={true}
 						labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
-						// @ts-ignore
+						// @ts-expect-error
 						itemSorter={(a, b) => b.value - a.value}
 						content={<ChartTooltipContent filter={filter} contentFormatter={toolTipFormatter} />}
 					/>
