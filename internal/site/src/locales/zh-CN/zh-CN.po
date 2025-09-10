@@ -41,38 +41,38 @@ msgstr "已选择 {0} / {1} 行"
 
 #: src/lib/utils.ts
 msgid "1 hour"
-msgstr "1小时"
+msgstr "1 小时"
 
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr "1分钟"
+msgstr "1 分钟"
 
 #: src/lib/utils.ts
 msgid "1 week"
-msgstr "1周"
+msgstr "1 周"
 
 #: src/lib/utils.ts
 msgid "12 hours"
-msgstr "12小时"
+msgstr "12 小时"
 
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr "15分钟"
+msgstr "15 分钟"
 
 #: src/lib/utils.ts
 msgid "24 hours"
-msgstr "24小时"
+msgstr "24 小时"
 
 #: src/lib/utils.ts
 msgid "30 days"
-msgstr "30天"
+msgstr "30 天"
 
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr "5分钟"
+msgstr "5 分钟"
 
 #. Table column
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -103,7 +103,7 @@ msgstr "添加客户端"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
-msgstr "添加URL"
+msgstr "添加 URL"
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
@@ -137,7 +137,7 @@ msgstr "所有客户端"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
-msgstr "您确定要删除{name}吗？"
+msgstr "您确定要删除 {name} 吗？"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
@@ -189,11 +189,11 @@ msgstr "电池"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
-msgstr "Beszel支持OpenID Connect和其他OAuth2认证方式。"
+msgstr "Beszel 支持 OpenID Connect 和其他 OAuth2 认证方式。"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
-msgstr "Beszel使用<0>Shoutrrr</0>以实现与常见的通知服务集成。"
+msgstr "Beszel 使用 <0>Shoutrrr</0> 以实现与常见的通知服务集成。"
 
 #: src/components/add-system.tsx
 msgid "Binary"
@@ -338,7 +338,7 @@ msgstr "复制下面的客户端<0>docker-compose.yml</0>内容，或使用<1>�
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
-msgstr "复制YAML"
+msgstr "复制 YAML"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
@@ -348,7 +348,7 @@ msgstr "CPU"
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "CPU Usage"
-msgstr "CPU使用率"
+msgstr "CPU 使用率"
 
 #: src/components/login/auth-form.tsx
 msgid "Create account"
@@ -397,7 +397,7 @@ msgstr "磁盘"
 
 #: src/components/routes/system.tsx
 msgid "Disk I/O"
-msgstr "磁盘I/O"
+msgstr "磁盘 I/O"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
@@ -415,15 +415,15 @@ msgstr "{extraFsName}的磁盘使用"
 
 #: src/components/routes/system.tsx
 msgid "Docker CPU Usage"
-msgstr "Docker CPU使用"
+msgstr "Docker CPU 使用"
 
 #: src/components/routes/system.tsx
 msgid "Docker Memory Usage"
-msgstr "Docker内存使用"
+msgstr "Docker 内存使用"
 
 #: src/components/routes/system.tsx
 msgid "Docker Network I/O"
-msgstr "Docker网络I/O"
+msgstr "Docker 网络 I/O"
 
 #: src/components/command-palette.tsx
 msgid "Documentation"
@@ -603,15 +603,15 @@ msgstr "系统负载"
 
 #: src/lib/alerts.ts
 msgid "Load Average 15m"
-msgstr "15分钟内的平均负载"
+msgstr "15 分钟内的平均负载"
 
 #: src/lib/alerts.ts
 msgid "Load Average 1m"
-msgstr "1分钟负载平均值"
+msgstr "1 分钟负载平均值"
 
 #: src/lib/alerts.ts
 msgid "Load Average 5m"
-msgstr "5分钟内的平均负载"
+msgstr "5 分钟内的平均负载"
 
 #. Short label for load average
 #: src/components/systems-table/systems-table-columns.tsx
@@ -660,11 +660,11 @@ msgstr "内存"
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "Memory Usage"
-msgstr "内存使用"
+msgstr "内存使用率"
 
 #: src/components/routes/system.tsx
 msgid "Memory usage of docker containers"
-msgstr "Docker 容器的内存使用"
+msgstr "Docker 容器的内存使用率"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -709,7 +709,7 @@ msgstr "通知"
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
-msgstr "支持 OAuth 2 / OIDC"
+msgstr "支持 OAuth 2/OIDC"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
@@ -741,7 +741,7 @@ msgstr "第 {0} 页，共 {1} 页"
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
-msgstr "页面/设置"
+msgstr "页面 / 设置"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
@@ -774,7 +774,7 @@ msgstr "已暂停 ({pausedSystemsLength})"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
-msgstr "请<0>配置SMTP服务器</0>以确保警报被传递。"
+msgstr "请<0>配置 SMTP 服务器</0>以确保警报被传递。"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Please check logs for more details."
@@ -909,7 +909,7 @@ msgstr "登录"
 
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
-msgstr "SMTP设置"
+msgstr "SMTP 设置"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
@@ -931,7 +931,7 @@ msgstr "系统使用的 SWAP 空间"
 
 #: src/components/routes/system.tsx
 msgid "Swap Usage"
-msgstr "SWAP 使用"
+msgstr "SWAP 使用率"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1024,7 +1024,7 @@ msgstr "令牌"
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens & Fingerprints"
-msgstr "令牌和指纹"
+msgstr "令牌与指纹"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
@@ -1032,19 +1032,19 @@ msgstr "令牌允许客户端连接和注册。指纹是每个系统唯一的稳
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
-msgstr "令牌和指纹用于验证到中心的WebSocket连接。"
+msgstr "令牌与指纹用于验证到中心的 WebSocket 连接。"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
-msgstr "当1分钟负载平均值超过阈值时触发"
+msgstr "当 1 分钟负载平均值超过阈值时触发"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
-msgstr "当15分钟负载平均值超过阈值时触发"
+msgstr "当 15 分钟负载平均值超过阈值时触发"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
-msgstr "当5分钟内的平均负载超过阈值时触发"
+msgstr "当 5 分钟内的平均负载超过阈值时触发"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -1056,7 +1056,7 @@ msgstr "当网络的上/下行速度超过阈值时触发"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
-msgstr "当CPU使用率超过阈值时触发"
+msgstr "当 CPU 使用率超过阈值时触发"
 
 #: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
@@ -1174,11 +1174,11 @@ msgstr "写入"
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
-msgstr "YAML配置"
+msgstr "YAML 配置"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
-msgstr "YAML配置"
+msgstr "YAML 配置"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
