@@ -1,3 +1,0 @@
-files:
-  - source: /beszel/site/src/locales/en/en.po
-    translation: /beszel/site/src/locales/%two_letters_code%/%two_letters_code%.po
