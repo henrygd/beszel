@@ -69,6 +69,8 @@ func (h *Hub) StartHub() error {
 		if err := config.SyncSystems(e); err != nil {
 			return err
 		}
+		// register middlewares
+		h.registerMiddlewares(e)
 		// register api routes
 		if err := h.registerApiRoutes(e); err != nil {
 			return err
@@ -169,6 +171,41 @@ func (h *Hub) registerCronJobs(_ *core.ServeEvent) error {
 	// create longer records every 10 minutes
 	h.Cron().MustAdd("create longer records", "*/10 * * * *", h.rm.CreateLongerRecords)
 	return nil
+}
+
+// custom middlewares
+func (h *Hub) registerMiddlewares(se *core.ServeEvent) {
+	// authenticate with trusted header
+	if trustedHeader, _ := GetEnv("TRUSTED_AUTH_HEADER"); trustedHeader != "" {
+		se.Router.BindFunc(func(e *core.RequestEvent) error {
+			if e.Auth != nil {
+				return e.Next()
+			}
+			trustedEmail := e.Request.Header.Get(trustedHeader)
+			if trustedEmail == "" {
+				return e.Next()
+			}
+			isAuthRefresh := e.Request.URL.Path == "/api/collections/users/auth-refresh" && e.Request.Method == http.MethodPost
+			if !isAuthRefresh {
+				authRecord, err := e.App.FindAuthRecordByEmail("users", trustedEmail)
+				if err == nil {
+					e.Auth = authRecord
+				}
+				return e.Next()
+			}
+			// if auth refresh endpoint, find user record directly and generate token
+			user, err := e.App.FindFirstRecordByData("users", "email", trustedEmail)
+			if err != nil {
+				return e.Next()
+			}
+			e.Auth = user
+			// need to set the authorization header for the client sdk to pick up the token
+			if token, err := user.NewAuthToken(); err == nil {
+				e.Request.Header.Set("Authorization", token)
+			}
+			return e.Next()
+		})
+	}
 }
 
 // custom api routes

@@ -711,3 +711,63 @@ func TestCreateUserEndpointAvailability(t *testing.T) {
 		scenario.Test(t)
 	})
 }
+
+func TestTrustedHeaderMiddleware(t *testing.T) {
+	var hubs []*beszelTests.TestHub
+
+	defer func() {
+		defer os.Unsetenv("TRUSTED_AUTH_HEADER")
+		for _, hub := range hubs {
+			hub.Cleanup()
+		}
+	}()
+
+	os.Setenv("TRUSTED_AUTH_HEADER", "X-Beszel-Trusted")
+
+	testAppFactory := func(t testing.TB) *pbTests.TestApp {
+		hub, _ := beszelTests.NewTestHub(t.TempDir())
+		hubs = append(hubs, hub)
+		hub.StartHub()
+		return hub.TestApp
+	}
+
+	scenarios := []beszelTests.ApiScenario{
+		{
+			Name:            "GET /getkey - without trusted header should fail",
+			Method:          http.MethodGet,
+			URL:             "/api/beszel/getkey",
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /getkey - with trusted header should fail if no matching user",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/getkey",
+			Headers: map[string]string{
+				"X-Beszel-Trusted": "user@test.com",
+			},
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /getkey - with trusted header should succeed",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/getkey",
+			Headers: map[string]string{
+				"X-Beszel-Trusted": "user@test.com",
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"key\":", "\"v\":"},
+			TestAppFactory:  testAppFactory,
+			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+				beszelTests.CreateUser(app, "user@test.com", "password123")
+			},
+		},
+	}
+
+	for _, scenario := range scenarios {
+		scenario.Test(t)
+	}
+}

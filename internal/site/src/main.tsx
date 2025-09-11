@@ -74,6 +74,19 @@ const Layout = () => {
 		document.documentElement.dir = direction
 	}, [direction])
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: only run on mount
+	useEffect(() => {
+		// refresh auth if not authenticated (required for trusted auth header)
+		if (!authenticated) {
+			pb.collection("users")
+				.authRefresh()
+				.then((res) => {
+					pb.authStore.save(res.token, res.record)
+					$authenticated.set(!!pb.authStore.isValid)
+				})
+		}
+	}, [])
+
 	return (
 		<DirectionProvider dir={direction}>
 			{!authenticated ? (
