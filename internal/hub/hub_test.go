@@ -712,6 +712,60 @@ func TestCreateUserEndpointAvailability(t *testing.T) {
 	})
 }
 
+func TestAutoLoginMiddleware(t *testing.T) {
+	var hubs []*beszelTests.TestHub
+
+	defer func() {
+		defer os.Unsetenv("AUTO_LOGIN")
+		for _, hub := range hubs {
+			hub.Cleanup()
+		}
+	}()
+
+	os.Setenv("AUTO_LOGIN", "user@test.com")
+
+	testAppFactory := func(t testing.TB) *pbTests.TestApp {
+		hub, _ := beszelTests.NewTestHub(t.TempDir())
+		hubs = append(hubs, hub)
+		hub.StartHub()
+		return hub.TestApp
+	}
+
+	scenarios := []beszelTests.ApiScenario{
+		{
+			Name:            "GET /getkey - without auto login should fail",
+			Method:          http.MethodGet,
+			URL:             "/api/beszel/getkey",
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:            "GET /getkey - with auto login should fail if no matching user",
+			Method:          http.MethodGet,
+			URL:             "/api/beszel/getkey",
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:            "GET /getkey - with auto login should succeed",
+			Method:          http.MethodGet,
+			URL:             "/api/beszel/getkey",
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"key\":", "\"v\":"},
+			TestAppFactory:  testAppFactory,
+			BeforeTestFunc: func(t testing.TB, app *pbTests.TestApp, e *core.ServeEvent) {
+				beszelTests.CreateUser(app, "user@test.com", "password123")
+			},
+		},
+	}
+
+	for _, scenario := range scenarios {
+		scenario.Test(t)
+	}
+}
+
 func TestTrustedHeaderMiddleware(t *testing.T) {
 	var hubs []*beszelTests.TestHub
 

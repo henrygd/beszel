@@ -175,35 +175,31 @@ func (h *Hub) registerCronJobs(_ *core.ServeEvent) error {
 
 // custom middlewares
 func (h *Hub) registerMiddlewares(se *core.ServeEvent) {
+	// authorizes request with user matching the provided email
+	authorizeRequestWithEmail := func(e *core.RequestEvent, email string) (err error) {
+		if e.Auth != nil || email == "" {
+			return e.Next()
+		}
+		isAuthRefresh := e.Request.URL.Path == "/api/collections/users/auth-refresh" && e.Request.Method == http.MethodPost
+		e.Auth, err = e.App.FindFirstRecordByData("users", "email", email)
+		if err != nil || !isAuthRefresh {
+			return e.Next()
+		}
+		// auth refresh endpoint, make sure token is set in header
+		token, _ := e.Auth.NewAuthToken()
+		e.Request.Header.Set("Authorization", token)
+		return e.Next()
+	}
+	// authenticate with trusted header
+	if autoLogin, _ := GetEnv("AUTO_LOGIN"); autoLogin != "" {
+		se.Router.BindFunc(func(e *core.RequestEvent) error {
+			return authorizeRequestWithEmail(e, autoLogin)
+		})
+	}
 	// authenticate with trusted header
 	if trustedHeader, _ := GetEnv("TRUSTED_AUTH_HEADER"); trustedHeader != "" {
 		se.Router.BindFunc(func(e *core.RequestEvent) error {
-			if e.Auth != nil {
-				return e.Next()
-			}
-			trustedEmail := e.Request.Header.Get(trustedHeader)
-			if trustedEmail == "" {
-				return e.Next()
-			}
-			isAuthRefresh := e.Request.URL.Path == "/api/collections/users/auth-refresh" && e.Request.Method == http.MethodPost
-			if !isAuthRefresh {
-				authRecord, err := e.App.FindAuthRecordByEmail("users", trustedEmail)
-				if err == nil {
-					e.Auth = authRecord
-				}
-				return e.Next()
-			}
-			// if auth refresh endpoint, find user record directly and generate token
-			user, err := e.App.FindFirstRecordByData("users", "email", trustedEmail)
-			if err != nil {
-				return e.Next()
-			}
-			e.Auth = user
-			// need to set the authorization header for the client sdk to pick up the token
-			if token, err := user.NewAuthToken(); err == nil {
-				e.Request.Header.Set("Authorization", token)
-			}
-			return e.Next()
+			return authorizeRequestWithEmail(e, e.Request.Header.Get(trustedHeader))
 		})
 	}
 }
