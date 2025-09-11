@@ -8,15 +8,15 @@ msgstr ""
 "Language: is\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-28 23:21\n"
+"PO-Revision-Date: 2025-09-11 16:52\n"
 "Last-Translator: \n"
 "Language-Team: Icelandic\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: is\n"
-"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 16\n"
+"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 32\n"
 
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
 #: src/components/routes/system.tsx
@@ -112,7 +112,7 @@ msgstr ""
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
-msgstr "Admin"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -197,7 +197,7 @@ msgstr "Beszel notar <0>Shoutrrr</0> til að tengjast vinsælum tilkynningaþjó
 
 #: src/components/add-system.tsx
 msgid "Binary"
-msgstr "Binary"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
@@ -545,7 +545,7 @@ msgstr "Gleymt lykilorð?"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Full"
-msgstr "Full"
+msgstr ""
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx
@@ -569,7 +569,7 @@ msgstr "Homebrew skipun"
 
 #: src/components/add-system.tsx
 msgid "Host / IP"
-msgstr "Host / IP"
+msgstr ""
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -673,7 +673,7 @@ msgstr "Nafn"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
-msgstr "Net"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Network traffic of docker containers"
@@ -807,7 +807,7 @@ msgstr "Vinsamlegast skráðu þig inn á aðganginn þinn"
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr "Port"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -882,7 +882,7 @@ msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Sent"
-msgstr "Sent"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1183,3 +1183,4 @@ msgstr ""
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Notenda stillingar vistaðar."
+
