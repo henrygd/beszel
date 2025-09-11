@@ -8,15 +8,15 @@ msgstr ""
 "Language: sv\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-28 23:21\n"
+"PO-Revision-Date: 2025-09-11 16:52\n"
 "Last-Translator: \n"
 "Language-Team: Swedish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: sv-SE\n"
-"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 16\n"
+"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 32\n"
 
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
 #: src/components/routes/system.tsx
@@ -46,7 +46,7 @@ msgstr "1 timme"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr "1 min"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 week"
@@ -59,7 +59,7 @@ msgstr "12 timmar"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr "15 min"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -72,7 +72,7 @@ msgstr "30 dagar"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr "5 min"
+msgstr ""
 
 #. Table column
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -112,11 +112,11 @@ msgstr "Justera visningsalternativ för diagram."
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
-msgstr "Admin"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr "Agent"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -202,7 +202,7 @@ msgstr "Binär"
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr "Bits (Kbps, Mbps, Gbps)"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
@@ -224,7 +224,7 @@ msgstr "Varning - potentiell dataförlust"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr "Celsius (°C)"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -342,7 +342,7 @@ msgstr "Kopiera YAML"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr "CPU"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -371,7 +371,7 @@ msgstr "Aktuellt tillstånd"
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
 msgid "Dashboard"
-msgstr "Dashboard"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
@@ -393,11 +393,11 @@ msgstr "Urladdar"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
-msgstr "Disk"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Disk I/O"
-msgstr "Disk I/O"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
@@ -545,7 +545,7 @@ msgstr "Glömt lösenordet?"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Full"
-msgstr "Full"
+msgstr ""
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx
@@ -595,7 +595,7 @@ msgstr "Språk"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
-msgstr "Layout"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
@@ -651,7 +651,7 @@ msgstr ""
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx
 msgid "Max 1 min"
-msgstr "Max 1 min"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
@@ -807,7 +807,7 @@ msgstr "Vänligen logga in på ditt konto"
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr "Port"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -923,7 +923,7 @@ msgstr ""
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
-msgstr "Status"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Swap space used by the system"
@@ -938,7 +938,7 @@ msgstr "Swap-användning"
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
-msgstr "System"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
@@ -1183,3 +1183,4 @@ msgstr "YAML-konfiguration"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Dina användarinställningar har uppdaterats."
+
