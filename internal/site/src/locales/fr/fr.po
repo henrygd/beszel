@@ -8,15 +8,15 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-28 23:21\n"
+"PO-Revision-Date: 2025-09-11 16:52\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: fr\n"
-"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 16\n"
+"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 32\n"
 
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
 #: src/components/routes/system.tsx
@@ -78,7 +78,7 @@ msgstr ""
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
-msgstr "Actions"
+msgstr ""
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -112,11 +112,11 @@ msgstr "Ajuster les options d'affichage pour les graphiques."
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
-msgstr "Admin"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr "Agent"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -236,7 +236,7 @@ msgstr "Modifier les options générales de l'application."
 
 #: src/components/routes/system.tsx
 msgid "Charge"
-msgstr "Charge"
+msgstr ""
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -342,7 +342,7 @@ msgstr "Copier YAML"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr "CPU"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -427,7 +427,7 @@ msgstr "Entrée/Sortie réseau Docker"
 
 #: src/components/command-palette.tsx
 msgid "Documentation"
-msgstr "Documentation"
+msgstr ""
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
@@ -453,7 +453,7 @@ msgstr "Éditer"
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Email"
-msgstr "Email"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
@@ -651,7 +651,7 @@ msgstr "Guide pour une installation manuelle"
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx
 msgid "Max 1 min"
-msgstr "Max 1 min"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
@@ -673,7 +673,7 @@ msgstr "Nom"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
-msgstr "Net"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Network traffic of docker containers"
@@ -705,7 +705,7 @@ msgstr "Aucun système trouvé."
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
-msgstr "Notifications"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
@@ -731,7 +731,7 @@ msgstr "Écraser les alertes existantes"
 
 #: src/components/command-palette.tsx
 msgid "Page"
-msgstr "Page"
+msgstr ""
 
 #. placeholder {0}: table.getState().pagination.pageIndex + 1
 #. placeholder {1}: table.getPageCount()
@@ -762,7 +762,7 @@ msgstr "Demande de réinitialisation du mot de passe reçue"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
-msgstr "Pause"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
@@ -807,7 +807,7 @@ msgstr "Veuillez vous connecter à votre compte"
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr "Port"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -1183,3 +1183,4 @@ msgstr "Configuration YAML"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Vos paramètres utilisateur ont été mis à jour."
+
