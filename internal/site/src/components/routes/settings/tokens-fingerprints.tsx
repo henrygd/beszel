@@ -9,6 +9,7 @@ import {
 	RotateCwIcon,
 	ServerIcon,
 	Trash2Icon,
+	ExternalLinkIcon,
 } from "lucide-react"
 import { memo, useEffect, useMemo, useState } from "react"
 import {
@@ -28,7 +29,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { AppleIcon, DockerIcon, TuxIcon, WindowsIcon } from "@/components/ui/icons"
+import { AppleIcon, DockerIcon, FreeBsdIcon, TuxIcon, WindowsIcon } from "@/components/ui/icons"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -150,6 +151,7 @@ const SectionUniversalToken = memo(() => {
 		setIsLoading(false)
 	}
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: only on mount
 	useEffect(() => {
 		updateToken()
 	}, [])
@@ -221,6 +223,16 @@ const ActionsButtonUniversalToken = memo(({ token, checked }: { token: string; c
 			onClick: () => copyWindowsCommand(port, publicKey, token),
 			icons: [WindowsIcon],
 		},
+		{
+			text: t({ message: "FreeBSD command", context: "Button to copy install command" }),
+			onClick: () => copyLinuxCommand(port, publicKey, token),
+			icons: [FreeBsdIcon],
+		},
+		{
+			text: t`Manual setup instructions`,
+			url: "https://beszel.dev/guide/agent-installation#binary",
+			icons: [ExternalLinkIcon],
+		},
 	]
 	return (
 		<div className="flex items-center gap-2">
@@ -291,8 +303,8 @@ const SectionTable = memo(({ fingerprints = [] }: { fingerprints: FingerprintRec
 					</tr>
 				</TableHeader>
 				<TableBody className="whitespace-pre">
-					{fingerprints.map((fingerprint, i) => (
-						<TableRow key={i}>
+					{fingerprints.map((fingerprint) => (
+						<TableRow key={fingerprint.id}>
 							<TableCell className="font-medium ps-5 py-2 max-w-60 truncate">
 								{fingerprint.expand.system.name}
 							</TableCell>
@@ -317,10 +329,10 @@ async function updateFingerprint(fingerprint: FingerprintRecord, rotateToken = f
 			fingerprint: "",
 			token: rotateToken ? generateToken() : fingerprint.token,
 		})
-	} catch (error: any) {
+	} catch (error: unknown) {
 		toast({
 			title: t`Error`,
-			description: error.message,
+			description: (error as Error).message,
 		})
 	}
 }

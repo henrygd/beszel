@@ -22,7 +22,7 @@ import { memo, useEffect, useRef, useState } from "react"
 import { $router, basePath, Link, navigate } from "./router"
 import { SystemRecord } from "@/types"
 import { SystemStatus } from "@/lib/enums"
-import { AppleIcon, DockerIcon, TuxIcon, WindowsIcon } from "./ui/icons"
+import { AppleIcon, DockerIcon, FreeBsdIcon, TuxIcon, WindowsIcon } from "./ui/icons"
 import { InputCopy } from "./ui/input-copy"
 import { getPagePath } from "@nanostores/router"
 import {
@@ -252,6 +252,12 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 										onClick: async () =>
 											copyWindowsCommand(isUnixSocket ? hostValue : port.current?.value, publicKey, token),
 										icons: [WindowsIcon],
+									},
+									{
+										text: t({ message: "FreeBSD command", context: "Button to copy install command" }),
+										onClick: async () =>
+											copyLinuxCommand(isUnixSocket ? hostValue : port.current?.value, publicKey, token),
+										icons: [FreeBsdIcon],
 									},
 									{
 										text: t`Manual setup instructions`,
