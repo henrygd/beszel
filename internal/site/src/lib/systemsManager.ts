@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/suspicious/noAssignInExpressions: it's fine :) */
 import type { PreinitializedMapStore } from "nanostores"
 import { pb, verifyAuth } from "@/lib/api"
 import {
@@ -16,9 +17,10 @@ const COLLECTION = pb.collection<SystemRecord>("systems")
 const FIELDS_DEFAULT = "id,name,host,port,info,status"
 
 /** Maximum system name length for display purposes */
-const MAX_SYSTEM_NAME_LENGTH = 20
+const MAX_SYSTEM_NAME_LENGTH = 22
 
 let initialized = false
+// biome-ignore lint/suspicious/noConfusingVoidType: typescript rocks
 let unsub: (() => void) | undefined | void
 
 /** Initialize the systems manager and set up listeners */
@@ -104,20 +106,37 @@ async function fetchSystems(): Promise<SystemRecord[]> {
 	}
 }
 
+/** Makes sure the system has valid info object and throws if not */
+function validateSystemInfo(system: SystemRecord) {
+	if (!("cpu" in system.info)) {
+		throw new Error(`${system.name} has no CPU info`)
+	}
+}
+
 /** Add system to both name and ID stores */
 export function add(system: SystemRecord) {
-	$allSystemsByName.setKey(system.name, system)
-	$allSystemsById.setKey(system.id, system)
+	try {
+		validateSystemInfo(system)
+		$allSystemsByName.setKey(system.name, system)
+		$allSystemsById.setKey(system.id, system)
+	} catch (error) {
+		console.error(error)
+	}
 }
 
 /** Update system in stores */
 export function update(system: SystemRecord) {
-	// if name changed, make sure old name is removed from the name store
-	const oldName = $allSystemsById.get()[system.id]?.name
-	if (oldName !== system.name) {
-		$allSystemsByName.setKey(oldName, undefined as any)
+	try {
+		validateSystemInfo(system)
+		// if name changed, make sure old name is removed from the name store
+		const oldName = $allSystemsById.get()[system.id]?.name
+		if (oldName !== system.name) {
+			$allSystemsByName.setKey(oldName, undefined as unknown as SystemRecord)
+		}
+		add(system)
+	} catch (error) {
+		console.error(error)
 	}
-	add(system)
 }
 
 /** Remove system from stores */
@@ -132,7 +151,7 @@ export function remove(system: SystemRecord) {
 /** Remove system from specific store */
 function removeFromStore(system: SystemRecord, store: PreinitializedMapStore<Record<string, SystemRecord>>) {
 	const key = store === $allSystemsByName ? system.name : system.id
-	store.setKey(key, undefined as any)
+	store.setKey(key, undefined as unknown as SystemRecord)
 }
 
 /** Action functions for subscription */
