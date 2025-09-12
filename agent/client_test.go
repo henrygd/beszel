@@ -537,4 +537,25 @@ func TestGetToken(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, "", token, "Empty file should return empty string")
 	})
+
+	t.Run("strips whitespace from TOKEN_FILE", func(t *testing.T) {
+		unsetEnvVars()
+
+		tokenWithWhitespace := "  test-token-with-whitespace  \n\t"
+		expectedToken := "test-token-with-whitespace"
+		tokenFile, err := os.CreateTemp("", "token-test-*.txt")
+		require.NoError(t, err)
+		defer os.Remove(tokenFile.Name())
+
+		_, err = tokenFile.WriteString(tokenWithWhitespace)
+		require.NoError(t, err)
+		tokenFile.Close()
+
+		os.Setenv("TOKEN_FILE", tokenFile.Name())
+		defer os.Unsetenv("TOKEN_FILE")
+
+		token, err := getToken()
+		assert.NoError(t, err)
+		assert.Equal(t, expectedToken, token, "Whitespace should be stripped from token file content")
+	})
 }

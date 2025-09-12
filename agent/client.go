@@ -85,7 +85,7 @@ func getToken() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return string(tokenBytes), nil
+	return strings.TrimSpace(string(tokenBytes)), nil
 }
 
 // getOptions returns the WebSocket client options, creating them if necessary.
