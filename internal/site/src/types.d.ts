@@ -141,6 +141,8 @@ export interface SystemStats {
 	g?: Record<string, GPUData>
 	/** battery percent and state */
 	bat?: [number, BatteryState]
+	/** systemd services */
+	ss?: unknown[]
 }
 
 export interface GPUData {

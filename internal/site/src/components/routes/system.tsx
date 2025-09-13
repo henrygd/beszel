@@ -52,6 +52,7 @@ import { Input } from "../ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
+import SystemdServicesTable from "../charts/systemd-services-table"
 
 type ChartTimeData = {
 	time: number
@@ -792,6 +793,18 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 							)
 						})}
 					</div>
+				)}
+
+				{/* systemd services table */}
+				{(systemStats.at(-1)?.stats.ss?.length ?? 0) > 0 && (
+					<Card className="col-span-full">
+						<CardHeader className="pb-5 pt-4 gap-1 relative max-sm:py-3 max-sm:px-4">
+							<CardTitle className="text-xl sm:text-2xl"><Trans>Systemd Services</Trans></CardTitle>
+						</CardHeader>
+						<div className="px-4 pb-4">
+							<SystemdServicesTable services={systemStats.at(-1)!.stats.ss!} />
+						</div>
+					</Card>
 				)}
 
 				{/* extra filesystem charts */}
