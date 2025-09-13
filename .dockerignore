@@ -1,0 +1,48 @@
+# Node.js dependencies
+node_modules
+internalsite/node_modules
+
+# Go build artifacts and binaries
+build
+dist
+*.exe
+beszel-agent
+beszel_data*
+pb_data
+data
+temp
+
+# Development and IDE files
+.vscode
+.idea*
+*.swc
+__debug_*
+
+# Git and version control
+.git
+.gitignore
+
+# Documentation and supplemental files
+*.md
+supplemental
+freebsd-port
+
+# Test files (exclude from production builds)
+*_test.go
+coverage
+
+# Docker files
+dockerfile_*
+
+# Temporary files
+*.tmp
+*.bak
+*.log
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# .NET build artifacts
+agent/lhm/obj
+agent/lhm/bin

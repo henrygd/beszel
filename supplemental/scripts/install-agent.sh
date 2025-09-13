@@ -8,6 +8,11 @@ is_openwrt() {
   grep -qi "OpenWrt" /etc/os-release
 }
 
+is_freebsd() {
+  [ "$(uname -s)" = "FreeBSD" ]
+}
+
+
 # If SELinux is enabled, set the context of the binary
 set_selinux_context() {
   # Check if SELinux is enabled and in enforcing or permissive mode
@@ -19,8 +24,8 @@ set_selinux_context() {
       # First try to set persistent context if semanage is available
       if command -v semanage >/dev/null 2>&1; then
         echo "Attempting to set persistent SELinux context..."
-        if semanage fcontext -a -t bin_t "/opt/beszel-agent/beszel-agent" >/dev/null 2>&1; then
-          restorecon -v /opt/beszel-agent/beszel-agent >/dev/null 2>&1
+        if semanage fcontext -a -t bin_t "$BIN_PATH" >/dev/null 2>&1; then
+          restorecon -v "$BIN_PATH" >/dev/null 2>&1
         else
           echo "Warning: Failed to set persistent context, falling back to temporary context."
         fi
@@ -29,8 +34,8 @@ set_selinux_context() {
       # Fall back to chcon if semanage failed or isn't available
       if command -v chcon >/dev/null 2>&1; then
         # Set context for both the directory and binary
-        chcon -t bin_t /opt/beszel-agent/beszel-agent || echo "Warning: Failed to set SELinux context for binary."
-        chcon -R -t bin_t /opt/beszel-agent || echo "Warning: Failed to set SELinux context for directory."
+        chcon -t bin_t "$BIN_PATH" || echo "Warning: Failed to set SELinux context for binary."
+        chcon -R -t bin_t "$AGENT_DIR" || echo "Warning: Failed to set SELinux context for directory."
       else
         if [ "$SELINUX_MODE" = "Enforcing" ]; then
           echo "Warning: SELinux is in enforcing mode but chcon command not found. The service may fail to start."
@@ -49,7 +54,7 @@ cleanup_selinux_context() {
     echo "Cleaning up SELinux contexts..."
     # Remove persistent context if semanage is available
     if command -v semanage >/dev/null 2>&1; then
-      semanage fcontext -d "/opt/beszel-agent/beszel-agent" 2>/dev/null || true
+      semanage fcontext -d "$BIN_PATH" 2>/dev/null || true
     fi
   fi
 }
@@ -64,6 +69,96 @@ ensure_trailing_slash() {
   else
     echo "$1"
   fi
+}
+
+# Generate FreeBSD rc service content
+generate_freebsd_rc_service() {
+  cat <<'EOF'
+#!/bin/sh
+
+# PROVIDE: beszel_agent
+# REQUIRE: DAEMON NETWORKING
+# BEFORE: LOGIN
+# KEYWORD: shutdown
+
+# Add the following lines to /etc/rc.conf to configure Beszel Agent:
+#
+# beszel_agent_enable (bool):   Set to YES to enable Beszel Agent
+#                               Default: YES
+# beszel_agent_env_file (str):  Beszel Agent env configuration file
+#                               Default: /usr/local/etc/beszel-agent/env
+# beszel_agent_user (str):      Beszel Agent daemon user
+#                               Default: beszel
+# beszel_agent_bin (str):       Path to the beszel-agent binary
+#                               Default: /usr/local/sbin/beszel-agent
+# beszel_agent_flags (str):     Extra flags passed to beszel-agent command invocation
+#                               Default:
+
+. /etc/rc.subr
+
+name="beszel_agent"
+rcvar=beszel_agent_enable
+
+load_rc_config $name
+: ${beszel_agent_enable:="YES"}
+: ${beszel_agent_user:="beszel"}
+: ${beszel_agent_flags:=""}
+: ${beszel_agent_env_file:="/usr/local/etc/beszel-agent/env"}
+: ${beszel_agent_bin:="/usr/local/sbin/beszel-agent"}
+
+logfile="/var/log/${name}.log"
+pidfile="/var/run/${name}.pid"
+
+procname="/usr/sbin/daemon"
+start_precmd="${name}_prestart"
+start_cmd="${name}_start"
+stop_cmd="${name}_stop"
+
+extra_commands="upgrade"
+upgrade_cmd="beszel_agent_upgrade"
+
+beszel_agent_prestart()
+{
+    if [ ! -f "${beszel_agent_env_file}" ]; then
+        echo WARNING: missing "${beszel_agent_env_file}" env file. Start aborted.
+        exit 1
+    fi
+}
+
+beszel_agent_start()
+{
+    echo "Starting ${name}"
+    /usr/sbin/daemon -fc \
+            -P "${pidfile}" \
+            -o "${logfile}" \
+            -u "${beszel_agent_user}" \
+            "${beszel_agent_bin}" ${beszel_agent_flags}
+}
+
+beszel_agent_stop()
+{
+    pid="$(check_pidfile "${pidfile}" "${procname}")"
+    if [ -n "${pid}" ]; then
+        echo "Stopping ${name} (pid=${pid})"
+        kill -- "-${pid}"
+        wait_for_pids "${pid}"
+    else
+        echo "${name} isn't running"
+    fi
+}
+
+beszel_agent_upgrade()
+{
+    echo "Upgrading ${name}"
+    if command -v sudo >/dev/null; then
+        sudo -u "${beszel_agent_user}" -- "${beszel_agent_bin}" update
+    else
+        su -m "${beszel_agent_user}" -c "${beszel_agent_bin} update"
+    fi
+}
+
+run_rc_command "$1"
+EOF
 }
 
 # Default values
@@ -203,6 +298,17 @@ while [ $# -gt 0 ]; do
   shift
 done
 
+# Set paths based on operating system
+if is_freebsd; then
+  AGENT_DIR="/usr/local/etc/beszel-agent"
+  BIN_DIR="/usr/local/sbin"
+  BIN_PATH="/usr/local/sbin/beszel-agent"
+else
+  AGENT_DIR="/opt/beszel-agent"
+  BIN_DIR="/opt/beszel-agent"
+  BIN_PATH="/opt/beszel-agent/beszel-agent"
+fi
+
 # Uninstall process
 if [ "$UNINSTALL" = true ]; then
   # Clean up SELinux contexts before removing files
@@ -216,11 +322,11 @@ if [ "$UNINSTALL" = true ]; then
     echo "Removing the OpenRC service files..."
     rm -f /etc/init.d/beszel-agent
 
-    # Remove the update service if it exists
-    echo "Removing the daily update service..."
-    rc-service beszel-agent-update stop 2>/dev/null
-    rc-update del beszel-agent-update default 2>/dev/null
-    rm -f /etc/init.d/beszel-agent-update
+    # Remove the daily update cron job if it exists
+    echo "Removing the daily update cron job..."
+    if crontab -u root -l 2>/dev/null | grep -q "beszel-agent.*update"; then
+      crontab -u root -l 2>/dev/null | grep -v "beszel-agent.*update" | crontab -u root -
+    fi
 
     # Remove log files
     echo "Removing log files..."
@@ -235,7 +341,34 @@ if [ "$UNINSTALL" = true ]; then
 
     # Remove the update service if it exists
     echo "Removing the daily update service..."
+    # Remove legacy beszel account based crontab file
     rm -f /etc/crontabs/beszel
+    # Install root crontab job
+    if crontab -u root -l 2>/dev/null | grep -q "beszel-agent.*update"; then
+      crontab -u root -l 2>/dev/null | grep -v "beszel-agent.*update" | crontab -u root -
+    fi
+
+  elif is_freebsd; then
+    echo "Stopping and disabling the agent service..."
+    service beszel-agent stop
+    sysrc beszel_agent_enable="NO"
+
+    echo "Removing the FreeBSD service files..."
+    rm -f /usr/local/etc/rc.d/beszel-agent
+
+    # Remove the daily update cron job if it exists
+    echo "Removing the daily update cron job..."
+    rm -f /etc/cron.d/beszel-agent
+
+    # Remove log files
+    echo "Removing log files..."
+    rm -f /var/log/beszel-agent.log
+
+    # Remove env file and directories
+    echo "Removing environment configuration file..."
+    rm -f "$AGENT_DIR/env"
+    rm -f "$BIN_PATH"
+    rmdir "$AGENT_DIR" 2>/dev/null || true
 
   else
     echo "Stopping and disabling the agent service..."
@@ -256,12 +389,14 @@ if [ "$UNINSTALL" = true ]; then
   fi
 
   echo "Removing the Beszel Agent directory..."
-  rm -rf /opt/beszel-agent
+  rm -rf "$AGENT_DIR"
 
   echo "Removing the dedicated user for the agent service..."
   killall beszel-agent 2>/dev/null
   if is_alpine || is_openwrt; then
     deluser beszel 2>/dev/null
+  elif is_freebsd; then
+    pw user del beszel 2>/dev/null
   else
     userdel beszel 2>/dev/null
   fi
@@ -298,6 +433,11 @@ elif package_installed opkg; then
     opkg update
     opkg install tar curl coreutils
   fi
+elif package_installed pkg && is_freebsd; then
+  if ! package_installed tar || ! package_installed curl || ! package_installed sha256sum; then
+    pkg update
+    pkg install -y gtar curl coreutils
+  fi
 elif package_installed apt-get; then
   if ! package_installed tar || ! package_installed curl || ! package_installed sha256sum; then
     apt-get update
@@ -320,6 +460,9 @@ if [ -z "$KEY" ]; then
   printf "Enter your SSH key: "
   read KEY
 fi
+
+# Remove newlines from KEY
+KEY=$(echo "$KEY" | tr -d '\n')
 
 # TOKEN and HUB_URL are optional for backwards compatibility - no interactive prompts
 # They will be set as empty environment variables if not provided
@@ -375,6 +518,16 @@ elif is_openwrt; then
     fi
   fi
 
+elif is_freebsd; then
+  if ! id -u beszel >/dev/null 2>&1; then
+    pw user add beszel -d /nonexistent -s /usr/sbin/nologin -c "beszel user"
+  fi
+  # Add the user to the wheel group to allow self-updates
+  if pw group show wheel >/dev/null 2>&1; then
+    echo "Adding beszel to wheel group for self-updates"
+    pw group mod wheel -m beszel
+  fi
+
 else
   if ! id -u beszel >/dev/null 2>&1; then
     useradd --system --home-dir /nonexistent --shell /bin/false beszel
@@ -387,18 +540,23 @@ else
 fi
 
 # Create the directory for the Beszel Agent
-if [ ! -d "/opt/beszel-agent" ]; then
+
+if [ ! -d "$AGENT_DIR" ]; then
   echo "Creating the directory for the Beszel Agent..."
-  mkdir -p /opt/beszel-agent
-  chown beszel:beszel /opt/beszel-agent
-  chmod 755 /opt/beszel-agent
+  mkdir -p "$AGENT_DIR"
+  chown beszel:beszel "$AGENT_DIR"
+  chmod 755 "$AGENT_DIR"
+fi
+
+if [ ! -d "$BIN_DIR" ]; then
+  mkdir -p "$BIN_DIR"
 fi
 
 # Download and install the Beszel Agent
 echo "Downloading and installing the agent..."
 
 OS=$(uname -s | sed -e 'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/')
-ARCH=$(uname -m | sed -e 's/x86_64/amd64/' -e 's/armv6l/arm/' -e 's/armv7l/arm/' -e 's/aarch64/arm64/' -e 's/mips/mipsle/')
+ARCH=$(uname -m | sed -e 's/x86_64/amd64/' -e 's/armv6l/arm/' -e 's/armv7l/arm/' -e 's/aarch64/arm64/')
 FILE_NAME="beszel-agent_${OS}_${ARCH}.tar.gz"
 
 # Determine version to install
@@ -443,9 +601,9 @@ if ! tar -xzf "$FILE_NAME" beszel-agent; then
   exit 1
 fi
 
-mv beszel-agent /opt/beszel-agent/beszel-agent
-chown beszel:beszel /opt/beszel-agent/beszel-agent
-chmod 755 /opt/beszel-agent/beszel-agent
+mv beszel-agent "$BIN_PATH"
+chown beszel:beszel "$BIN_PATH"
+chmod 755 "$BIN_PATH"
 
 # Set SELinux context if needed
 set_selinux_context
@@ -477,7 +635,7 @@ if is_alpine; then
 
 name="beszel-agent"
 description="Beszel Agent Service"
-command="/opt/beszel-agent/beszel-agent"
+command="$BIN_PATH"
 command_user="beszel"
 command_background="yes"
 pidfile="/run/\${RC_SVCNAME}.pid"
@@ -523,35 +681,19 @@ EOF
   elif [ "$AUTO_UPDATE_FLAG" = "false" ]; then
     AUTO_UPDATE="n"
   else
-    printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
+    printf "\nEnable automatic daily updates for beszel-agent? (y/n): "
     read AUTO_UPDATE
   fi
   case "$AUTO_UPDATE" in
   [Yy]*)
     echo "Setting up daily automatic updates for beszel-agent..."
 
-    cat >/etc/init.d/beszel-agent-update <<EOF
-#!/sbin/openrc-run
+    # Create cron job to run beszel-agent update command daily at midnight
+    if ! crontab -u root -l 2>/dev/null | grep -q "beszel-agent.*update"; then
+      (crontab -u root -l 2>/dev/null; echo "12 0 * * * $BIN_PATH update >/dev/null 2>&1") | crontab -u root -
+    fi
 
-name="beszel-agent-update"
-description="Update beszel-agent if needed"
-
-depend() {
-    need beszel-agent
-}
-
-start() {
-    ebegin "Checking for beszel-agent updates"
-    /opt/beszel-agent/beszel-agent update
-    eend $?
-}
-EOF
-
-    chmod +x /etc/init.d/beszel-agent-update
-    rc-update add beszel-agent-update default
-    rc-service beszel-agent-update start
-
-    printf "\nAutomatic daily updates have been enabled.\n"
+    printf "\nDaily updates have been enabled via cron job.\n"
     ;;
   esac
 
@@ -572,7 +714,7 @@ START=99
 
 start_service() {
     procd_open_instance
-    procd_set_param command /opt/beszel-agent/beszel-agent
+    procd_set_param command $BIN_PATH
     procd_set_param user beszel
     procd_set_param pidfile /var/run/beszel-agent.pid
     procd_set_param env PORT="$PORT" KEY="$KEY" TOKEN="$TOKEN" HUB_URL="$HUB_URL"
@@ -585,13 +727,19 @@ stop_service() {
     killall beszel-agent
 }
 
+restart_service() {
+    stop
+    start
+}
+
 # Extra command to trigger agent update
-EXTRA_COMMANDS="update"
-EXTRA_HELP="        update          Update the Beszel agent"
+EXTRA_COMMANDS="update restart"
+EXTRA_HELP="        update          Update the Beszel agent
+        restart         Restart the Beszel agent"
 
 update() {
-    if /opt/beszel-agent/beszel-agent update | grep -q "Successfully updated"; then
-        start_service
+    if $BIN_PATH update | grep -q "Update completed successfully"; then
+        /etc/init.d/beszel-agent restart
     fi
 }
 
@@ -612,20 +760,20 @@ EOF
     AUTO_UPDATE="n"
     sleep 1 # give time for the service to start
   else
-    printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
+    printf "\nEnable automatic daily updates for beszel-agent? (y/n): "
     read AUTO_UPDATE
   fi
   case "$AUTO_UPDATE" in
   [Yy]*)
     echo "Setting up daily automatic updates for beszel-agent..."
 
-    cat >/etc/crontabs/beszel <<EOF
-0 0 * * * /etc/init.d/beszel-agent update
-EOF
+    if ! crontab -u root -l 2>/dev/null | grep -q "beszel-agent.*update"; then
+      (crontab -u root -l 2>/dev/null; echo "12 0 * * * /etc/init.d/beszel-agent update") | crontab -u root -
+    fi
 
     /etc/init.d/cron restart
 
-    printf "\nAutomatic daily updates have been enabled.\n"
+    printf "\nDaily updates have been enabled.\n"
     ;;
   esac
 
@@ -633,6 +781,69 @@ EOF
   if ! /etc/init.d/beszel-agent running >/dev/null 2>&1; then
     echo "Error: The Beszel Agent service is not running."
     /etc/init.d/beszel-agent status
+    exit 1
+  fi
+
+elif is_freebsd; then
+  echo "Creating FreeBSD rc service..."
+  
+  # Create environment configuration file with proper permissions
+  echo "Creating environment configuration file..."
+  cat >"$AGENT_DIR/env" <<EOF
+LISTEN=$PORT
+KEY="$KEY"
+TOKEN=$TOKEN
+HUB_URL=$HUB_URL
+EOF
+  chmod 640 "$AGENT_DIR/env"
+  chown root:beszel "$AGENT_DIR/env"
+  
+  # Create the rc service file
+  generate_freebsd_rc_service > /usr/local/etc/rc.d/beszel-agent
+
+  # Set proper permissions for the rc script
+  chmod 755 /usr/local/etc/rc.d/beszel-agent
+  
+  # Enable and start the service
+  echo "Enabling and starting the agent service..."
+  sysrc beszel_agent_enable="YES"
+  service beszel-agent restart
+  
+  # Check if service started successfully
+  sleep 2
+  if ! service beszel-agent status | grep -q "is running"; then
+    echo "Error: The Beszel Agent service failed to start. Checking logs..."
+    tail -n 20 /var/log/beszel_agent.log
+    exit 1
+  fi
+
+  # Auto-update service for FreeBSD
+  if [ "$AUTO_UPDATE_FLAG" = "true" ]; then
+    AUTO_UPDATE="y"
+  elif [ "$AUTO_UPDATE_FLAG" = "false" ]; then
+    AUTO_UPDATE="n"
+  else
+    printf "\nEnable automatic daily updates for beszel-agent? (y/n): "
+    read AUTO_UPDATE
+  fi
+  case "$AUTO_UPDATE" in
+  [Yy]*)
+    echo "Setting up daily automatic updates for beszel-agent..."
+
+    # Create cron job in /etc/cron.d 
+    cat >/etc/cron.d/beszel-agent <<EOF
+# Beszel Agent daily update job
+12 0 * * * root $BIN_PATH update >/dev/null 2>&1
+EOF
+    chmod 644 /etc/cron.d/beszel-agent
+    printf "\nDaily updates have been enabled via /etc/cron.d.\n"
+    ;;
+  esac
+
+  # Check service status
+  if ! service beszel-agent status >/dev/null 2>&1; then
+    echo "Error: The Beszel Agent service is not running."
+    service beszel-agent status
     exit 1
   fi
 
@@ -655,7 +866,7 @@ Environment="KEY=$KEY"
 Environment="TOKEN=$TOKEN"
 Environment="HUB_URL=$HUB_URL"
 # Environment="EXTRA_FILESYSTEMS=sdb"
-ExecStart=/opt/beszel-agent/beszel-agent
+ExecStart=$BIN_PATH
 User=beszel
 Restart=on-failure
 RestartSec=5
@@ -695,7 +906,7 @@ EOF
     AUTO_UPDATE="n"
     sleep 1 # give time for the service to start
   else
-    printf "\nWould you like to enable automatic daily updates for beszel-agent? (y/n): "
+    printf "\nEnable automatic daily updates for beszel-agent? (y/n): "
     read AUTO_UPDATE
   fi
   case "$AUTO_UPDATE" in
@@ -710,7 +921,7 @@ Wants=beszel-agent.service
 
 [Service]
 Type=oneshot
-ExecStart=/opt/beszel-agent/beszel-agent update
+ExecStart=$BIN_PATH update
 EOF
 
     # Create systemd timer for the daily update
@@ -730,7 +941,7 @@ EOF
     systemctl daemon-reload
     systemctl enable --now beszel-agent-update.timer
 
-    printf "\nAutomatic daily updates have been enabled.\n"
+    printf "\nDaily updates have been enabled.\n"
     ;;
   esac
 
@@ -742,4 +953,4 @@ EOF
   fi
 fi
 
-printf "\n\033[32mBeszel Agent has been installed successfully! It is now running on port $PORT.\033[0m\n"
+printf "\n\033[32mBeszel Agent has been installed successfully! It is now running on $PORT.\033[0m\n"

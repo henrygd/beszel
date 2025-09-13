@@ -21,10 +21,10 @@ jobs:
         uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        run: bun install --no-save --cwd ./beszel/site
+        run: bun install --no-save --cwd ./internal/site
 
       - name: Build site
-        run: bun run --cwd ./beszel/site build
+        run: bun run --cwd ./internal/site build
 
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -38,16 +38,17 @@ jobs:
 
       - name: Build .NET LHM executable for Windows sensors
         run: |
-          dotnet build -c Release ./beszel/internal/agent/lhm/beszel_lhm.csproj
+          dotnet build -c Release ./agent/lhm/beszel_lhm.csproj
         shell: bash
 
       - name: GoReleaser beszel
         uses: goreleaser/goreleaser-action@v6
         with:
-          workdir: ./beszel
+          workdir: ./
           distribution: goreleaser
           version: latest
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN || secrets.GITHUB_TOKEN }}
           WINGET_TOKEN: ${{ secrets.WINGET_TOKEN }}
+          IS_FORK: ${{ github.repository_owner != 'henrygd' }}

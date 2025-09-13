@@ -1,3 +1,27 @@
+## 0.12.8
+
+- Add setting for time format (12h / 24h). (#424)
+
+- Add experimental one-time password (OTP) support.
+
+- Add `TRUSTED_AUTH_HEADER` environment variable for authentication forwarding. (#399)
+
+- Add `AUTO_LOGIN` environment variable for automatic login. (#399)
+
+- Add FreeBSD support for agent install script and update command.
+
+## 0.12.7
+
+- Make LibreHardwareMonitor opt-in with `LHM=true` environment variable. (#1130)
+
+- Fix bug where token was not refreshed when adding a new system. (#1141)
+
+- Add `USER_EMAIL` and `USER_PASSWORD` environment variables to set the email and password of the initial user. (#1137)
+
+- Display system counts (active, paused, down) in All Systems 'view' options. (#1078)
+
+- Remember All Systems sort order during session.
+
 ## 0.12.6
 
 - Add maximum 1 minute memory usage.
