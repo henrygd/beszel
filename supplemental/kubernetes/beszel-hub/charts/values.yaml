@@ -30,14 +30,10 @@ securityContext: {}
 
 service:
   enabled: true
-  type: LoadBalancer
-  loadBalancerIP: "10.0.10.251"
+  annotations: {}
+  type: ClusterIP
+  loadBalancerIP: ""
   port: 8090
-# -- Annotations for the DHCP service
-  annotations:
-    metallb.universe.tf/address-pool: pool
-    metallb.universe.tf/allow-shared-ip: beszel-hub-web
-  # -- Labels for the DHCP service
 
 ingress:
   enabled: false
@@ -96,7 +92,7 @@ persistentVolumeClaim:
   accessModes:
     - ReadWriteOnce
 
-  storageClass: "retain-local-path"
+  storageClass: ""
 
   # -- volume claim size
   size: "500Mi"
