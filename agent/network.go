@@ -1,10 +1,11 @@
 package agent
 
 import (
-	"beszel/internal/entities/system"
 	"log/slog"
 	"strings"
 	"time"
+
+	"github.com/henrygd/beszel/internal/entities/system"
 
 	psutilNet "github.com/shirou/gopsutil/v4/net"
 )
@@ -28,7 +29,7 @@ func (a *Agent) initializeNetIoStats() {
 	// get intial network I/O stats
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
 		now := time.Now()
-		
+
 		for _, v := range netIO {
 			switch {
 			// skip if nics exists and the interface is not in the list

@@ -1,22 +1,30 @@
 import { memo, useMemo } from "react"
 import { useLingui } from "@lingui/react/macro"
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
-import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis, ChartLegend, ChartLegendContent } from "@/components/ui/chart"
-import { useYAxisWidth, cn, formatShortDate, chartMargin, formatBytes, toFixedFloat, decimalString } from "@/lib/utils"
+import {
+	ChartContainer,
+	ChartTooltip,
+	ChartTooltipContent,
+	xAxis,
+	ChartLegend,
+	ChartLegendContent,
+} from "@/components/ui/chart"
+import { cn, formatShortDate, chartMargin, formatBytes, toFixedFloat, decimalString } from "@/lib/utils"
 import { ChartData } from "@/types"
 import { useStore } from "@nanostores/react"
 import { $networkInterfaceFilter, $userSettings } from "@/lib/stores"
 import { Unit } from "@/lib/enums"
+import { useYAxisWidth } from "./hooks"
 
 const getNestedValue = (path: string, max = false, data: any): number | null => {
 	// path format is like "eth0.ns" or "eth0.nr"
 	// need to access data.stats.ni[interface][property]
-	const parts = path.split('.')
+	const parts = path.split(".")
 	if (parts.length !== 2) return null
-	
+
 	const [interfaceName, property] = parts
 	const propertyKey = property + (max ? "m" : "")
-	
+
 	return data?.stats?.ni?.[interfaceName]?.[propertyKey] ?? null
 }
 
@@ -42,14 +50,12 @@ export default memo(function NetworkInterfaceChart({
 		if (chartData.systemStats.length === 0) return []
 		const latestStats = chartData.systemStats[chartData.systemStats.length - 1]
 		const allInterfaces = Object.keys(latestStats.stats.ni || {})
-		
+
 		// Filter interfaces based on filter value
 		if (networkInterfaceFilter) {
-			return allInterfaces.filter(iface => 
-				iface.toLowerCase().includes(networkInterfaceFilter.toLowerCase())
-			)
+			return allInterfaces.filter((iface) => iface.toLowerCase().includes(networkInterfaceFilter.toLowerCase()))
 		}
-		
+
 		return allInterfaces
 	}, [chartData.systemStats, networkInterfaceFilter])
 
@@ -64,22 +70,22 @@ export default memo(function NetworkInterfaceChart({
 				receivedColor: `hsl(${hue}, 70%, 65%)`, // Lighter shade for received
 			}
 		})
-		
+
 		return interfaceColors.flatMap(({ interface: iface, sentColor, receivedColor }) => [
 			{
 				name: `${iface} Sent`,
 				dataKey: `${iface}.ns`,
 				color: sentColor,
-				type: 'sent' as const,
+				type: "sent" as const,
 				interface: iface,
 			},
 			{
 				name: `${iface} Received`,
 				dataKey: `${iface}.nr`,
 				color: receivedColor,
-				type: 'received' as const,
+				type: "received" as const,
 				interface: iface,
-			}
+			},
 		])
 	}, [networkInterfaces, i18n.locale])
 
@@ -115,14 +121,24 @@ export default memo(function NetworkInterfaceChart({
 							<ChartTooltipContent
 								labelFormatter={(_: any, data: any) => formatShortDate(data[0].payload.created)}
 								contentFormatter={({ value }: any) => {
-									const { value: formattedValue, unit } = formatBytes(value, true, userSettings.unitNet ?? Unit.Bits, true)
-									return <span className="flex">{decimalString(formattedValue, formattedValue >= 10 ? 1 : 2)} {unit}</span>
+									const { value: formattedValue, unit } = formatBytes(
+										value,
+										true,
+										userSettings.unitNet ?? Unit.Bits,
+										true
+									)
+									return (
+										<span className="flex">
+											{decimalString(formattedValue, formattedValue >= 10 ? 1 : 2)} {unit}
+										</span>
+									)
 								}}
 							/>
 						}
 					/>
 					{dataKeys.map((key, i) => {
-						const filtered = networkInterfaceFilter && !key.interface.toLowerCase().includes(networkInterfaceFilter.toLowerCase())
+						const filtered =
+							networkInterfaceFilter && !key.interface.toLowerCase().includes(networkInterfaceFilter.toLowerCase())
 						let fillOpacity = filtered ? 0.05 : 0.4
 						let strokeOpacity = filtered ? 0.1 : 1
 						return (
@@ -145,4 +161,4 @@ export default memo(function NetworkInterfaceChart({
 			</ChartContainer>
 		</div>
 	)
-}) 
+})

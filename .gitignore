@@ -20,3 +20,4 @@ __debug_*
 agent/lhm/obj
 agent/lhm/bin
 dockerfile_agent_dev
+.vite

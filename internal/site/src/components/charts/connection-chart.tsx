@@ -1,9 +1,17 @@
 import { memo } from "react"
 import { useLingui } from "@lingui/react/macro"
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, xAxis } from "@/components/ui/chart"
-import { useYAxisWidth, cn, formatShortDate, chartMargin, decimalString } from "@/lib/utils"
+import {
+	ChartContainer,
+	ChartTooltip,
+	ChartTooltipContent,
+	ChartLegend,
+	ChartLegendContent,
+	xAxis,
+} from "@/components/ui/chart"
+import { cn, formatShortDate, chartMargin } from "@/lib/utils"
 import { ChartData } from "@/types"
+import { useYAxisWidth } from "./hooks"
 
 export default memo(function ConnectionChart({ chartData }: { chartData: ChartData }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
@@ -63,7 +71,7 @@ export default memo(function ConnectionChart({ chartData }: { chartData: ChartDa
 			name: t`IPv6 Syn Recv`,
 			dataKey: "stats.nets.conn6_synrecv",
 			color: "hsl(9, 78%, 71%)", // Light Red
-		}
+		},
 	]
 
 	return (
@@ -113,4 +121,4 @@ export default memo(function ConnectionChart({ chartData }: { chartData: ChartDa
 			</ChartContainer>
 		</div>
 	)
-}) 
+})

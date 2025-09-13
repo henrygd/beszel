@@ -54,6 +54,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import ConnectionChart from "../charts/connection-chart"
+import NetworkInterfaceChart from "../charts/network-interface-chart"
+import TotalBandwidthChart from "../charts/total-bandwidth-chart"
 
 type ChartTimeData = {
 	time: number
