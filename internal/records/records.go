@@ -206,15 +206,51 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.DiskPct += stats.DiskPct
 		sum.DiskReadPs += stats.DiskReadPs
 		sum.DiskWritePs += stats.DiskWritePs
+		sum.LoadAvg1 += stats.LoadAvg1
+		sum.LoadAvg5 += stats.LoadAvg5
+		sum.LoadAvg15 += stats.LoadAvg15
 		sum.NetworkSent += stats.NetworkSent
 		sum.NetworkRecv += stats.NetworkRecv
 		sum.LoadAvg[0] += stats.LoadAvg[0]
 		sum.LoadAvg[1] += stats.LoadAvg[1]
 		sum.LoadAvg[2] += stats.LoadAvg[2]
-		sum.Bandwidth[0] += stats.Bandwidth[0]
-		sum.Bandwidth[1] += stats.Bandwidth[1]
 		batterySum += int(stats.Battery[0])
 		sum.Battery[1] = stats.Battery[1]
+
+		if stats.NetworkInterfaces != nil {
+			if sum.NetworkInterfaces == nil {
+				sum.NetworkInterfaces = make(map[string]system.NetworkInterfaceStats, len(stats.NetworkInterfaces))
+			}
+			for key, value := range stats.NetworkInterfaces {
+				if _, ok := sum.NetworkInterfaces[key]; !ok {
+					sum.NetworkInterfaces[key] = system.NetworkInterfaceStats{}
+				}
+				ni := sum.NetworkInterfaces[key]
+				ni.NetworkSent += value.NetworkSent
+				ni.NetworkRecv += value.NetworkRecv
+				ni.MaxNetworkSent += value.MaxNetworkSent
+				ni.MaxNetworkRecv += value.MaxNetworkRecv
+				// For cumulative totals, use the maximum value (most recent)
+				if value.TotalBytesSent > ni.TotalBytesSent {
+					ni.TotalBytesSent = value.TotalBytesSent
+				}
+				if value.TotalBytesRecv > ni.TotalBytesRecv {
+					ni.TotalBytesRecv = value.TotalBytesRecv
+				}
+				sum.NetworkInterfaces[key] = ni
+			}
+		}
+
+		// Handle network connection stats - use the latest values (most recent sample)
+		if stats.Nets != nil {
+			if sum.Nets == nil {
+				sum.Nets = make(map[string]float64)
+			}
+			for key, value := range stats.Nets {
+				sum.Nets[key] = value
+			}
+		}
+
 		// Set peak values
 		sum.MaxCpu = max(sum.MaxCpu, stats.MaxCpu, stats.Cpu)
 		sum.MaxMem = max(sum.MaxMem, stats.MaxMem, stats.MemUsed)
@@ -222,8 +258,6 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.MaxNetworkRecv = max(sum.MaxNetworkRecv, stats.MaxNetworkRecv, stats.NetworkRecv)
 		sum.MaxDiskReadPs = max(sum.MaxDiskReadPs, stats.MaxDiskReadPs, stats.DiskReadPs)
 		sum.MaxDiskWritePs = max(sum.MaxDiskWritePs, stats.MaxDiskWritePs, stats.DiskWritePs)
-		sum.MaxBandwidth[0] = max(sum.MaxBandwidth[0], stats.MaxBandwidth[0], stats.Bandwidth[0])
-		sum.MaxBandwidth[1] = max(sum.MaxBandwidth[1], stats.MaxBandwidth[1], stats.Bandwidth[1])
 
 		// Accumulate temperatures
 		if stats.Temperatures != nil {
@@ -291,14 +325,26 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.DiskPct = twoDecimals(sum.DiskPct / count)
 		sum.DiskReadPs = twoDecimals(sum.DiskReadPs / count)
 		sum.DiskWritePs = twoDecimals(sum.DiskWritePs / count)
+		sum.LoadAvg1 = twoDecimals(sum.LoadAvg1 / count)
+		sum.LoadAvg5 = twoDecimals(sum.LoadAvg5 / count)
+		sum.LoadAvg15 = twoDecimals(sum.LoadAvg15 / count)
 		sum.NetworkSent = twoDecimals(sum.NetworkSent / count)
 		sum.NetworkRecv = twoDecimals(sum.NetworkRecv / count)
 		sum.LoadAvg[0] = twoDecimals(sum.LoadAvg[0] / count)
 		sum.LoadAvg[1] = twoDecimals(sum.LoadAvg[1] / count)
 		sum.LoadAvg[2] = twoDecimals(sum.LoadAvg[2] / count)
-		sum.Bandwidth[0] = sum.Bandwidth[0] / uint64(count)
-		sum.Bandwidth[1] = sum.Bandwidth[1] / uint64(count)
 		sum.Battery[0] = uint8(batterySum / int(count))
+
+		if sum.NetworkInterfaces != nil {
+			for key := range sum.NetworkInterfaces {
+				ni := sum.NetworkInterfaces[key]
+				ni.NetworkSent = twoDecimals(ni.NetworkSent / count)
+				ni.NetworkRecv = twoDecimals(ni.NetworkRecv / count)
+				ni.MaxNetworkSent = twoDecimals(max(ni.MaxNetworkSent, ni.NetworkSent))
+				ni.MaxNetworkRecv = twoDecimals(max(ni.MaxNetworkRecv, ni.NetworkRecv))
+				sum.NetworkInterfaces[key] = ni
+			}
+		}
 		// Average temperatures
 		if sum.Temperatures != nil && tempCount > 0 {
 			for key := range sum.Temperatures {
@@ -363,19 +409,15 @@ func (rm *RecordManager) AverageContainerStats(db dbx.Builder, records RecordIds
 			}
 			sums[stat.Name].Cpu += stat.Cpu
 			sums[stat.Name].Mem += stat.Mem
-			sums[stat.Name].NetworkSent += stat.NetworkSent
-			sums[stat.Name].NetworkRecv += stat.NetworkRecv
 		}
 	}
 
 	result := make([]container.Stats, 0, len(sums))
 	for _, value := range sums {
 		result = append(result, container.Stats{
-			Name:        value.Name,
-			Cpu:         twoDecimals(value.Cpu / count),
-			Mem:         twoDecimals(value.Mem / count),
-			NetworkSent: twoDecimals(value.NetworkSent / count),
-			NetworkRecv: twoDecimals(value.NetworkRecv / count),
+			Name: value.Name,
+			Cpu:  twoDecimals(value.Cpu / count),
+			Mem:  twoDecimals(value.Mem / count),
 		})
 	}
 	return result

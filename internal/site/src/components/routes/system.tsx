@@ -24,6 +24,7 @@ import {
 	$containerFilter,
 	$direction,
 	$maxValues,
+	$networkInterfaceFilter,
 	$systems,
 	$temperatureFilter,
 	$userSettings,
@@ -52,6 +53,9 @@ import { Input } from "../ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
+import ConnectionChart from "../charts/connection-chart"
+import NetworkInterfaceChart from "../charts/network-interface-chart"
+import TotalBandwidthChart from "../charts/total-bandwidth-chart"
 
 type ChartTimeData = {
 	time: number
@@ -147,6 +151,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 	const netCardRef = useRef<HTMLDivElement>(null)
 	const persistChartTime = useRef(false)
 	const [containerFilterBar, setContainerFilterBar] = useState(null as null | JSX.Element)
+	const [networkInterfaceFilterBar, setNetworkInterfaceFilterBar] = useState(null as null | JSX.Element)
 	const [bottomSpacing, setBottomSpacing] = useState(0)
 	const [chartLoading, setChartLoading] = useState(true)
 	const isLongerChart = chartTime !== "1h"
@@ -163,7 +168,9 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 			setSystemStats([])
 			setContainerData([])
 			setContainerFilterBar(null)
+			setNetworkInterfaceFilterBar(null)
 			$containerFilter.set("")
+			$networkInterfaceFilter.set("")
 		}
 	}, [name])
 
@@ -259,6 +266,19 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 			makeContainerData(containerData)
 		})
 	}, [system, chartTime])
+
+	// Set up network interface filter bar
+	useEffect(() => {
+		if (systemStats.length > 0) {
+			const latestStats = systemStats[systemStats.length - 1]
+			const networkInterfaces = Object.keys(latestStats.stats.ns || {})
+			if (networkInterfaces.length > 0) {
+				!networkInterfaceFilterBar && setNetworkInterfaceFilterBar(<FilterBar store={$networkInterfaceFilter} />)
+			} else if (networkInterfaceFilterBar) {
+				setNetworkInterfaceFilterBar(null)
+			}
+		}
+	}, [systemStats, networkInterfaceFilterBar])
 
 	// values for system info bar
 	const systemInfo = useMemo(() => {
@@ -389,6 +409,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 	const lastGpuVals = Object.values(systemStats.at(-1)?.stats.g ?? {})
 	const hasGpuData = lastGpuVals.length > 0
 	const hasGpuPowerData = lastGpuVals.some((gpu) => gpu.p !== undefined)
+	const latestNetworkStats = systemStats.at(-1)?.stats.ni
 
 	let translatedStatus: string = system.status
 	if (system.status === SystemStatus.Up) {
@@ -555,7 +576,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 						empty={dataEmpty}
 						grid={grid}
 						title={t`Disk I/O`}
-						description={t`Throughput of root filesystem`}
+						description={t`Disk read and write throughput`}
 						cornerEl={maxValSelect}
 					>
 						<AreaChartDefault
@@ -586,51 +607,44 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 						/>
 					</ChartCard>
 
-					<ChartCard
-						empty={dataEmpty}
-						grid={grid}
-						title={t`Bandwidth`}
-						cornerEl={maxValSelect}
-						description={t`Network traffic of public interfaces`}
-					>
-						<AreaChartDefault
-							chartData={chartData}
-							maxToggled={maxValues}
-							dataPoints={[
-								{
-									label: t`Sent`,
-									// use bytes if available, otherwise multiply old MB (can remove in future)
-									dataKey(data) {
-										if (showMax) {
-											return data?.stats?.bm?.[0] ?? (data?.stats?.nsm ?? 0) * 1024 * 1024
-										}
-										return data?.stats?.b?.[0] ?? data?.stats?.ns * 1024 * 1024
-									},
-									color: 5,
-									opacity: 0.2,
-								},
-								{
-									label: t`Received`,
-									dataKey(data) {
-										if (showMax) {
-											return data?.stats?.bm?.[1] ?? (data?.stats?.nrm ?? 0) * 1024 * 1024
-										}
-										return data?.stats?.b?.[1] ?? data?.stats?.nr * 1024 * 1024
-									},
-									color: 2,
-									opacity: 0.2,
-								},
-							]}
-							tickFormatter={(val) => {
-								const { value, unit } = formatBytes(val, true, userSettings.unitNet, false)
-								return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
-							}}
-							contentFormatter={(data) => {
-								const { value, unit } = formatBytes(data.value, true, userSettings.unitNet, false)
-								return `${decimalString(value, value >= 100 ? 1 : 2)} ${unit}`
-							}}
-						/>
-					</ChartCard>
+					{/* Network interface charts */}
+					{Object.keys(latestNetworkStats ?? {}).length > 0 && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Network Interfaces`}
+							description={t`Network traffic per interface`}
+							cornerEl={networkInterfaceFilterBar}
+						>
+							{/* @ts-ignore */}
+							<NetworkInterfaceChart chartData={chartData} />
+						</ChartCard>
+					)}
+
+					{/* Per-Interface Cumulative Bandwidth chart */}
+					{Object.keys(latestNetworkStats ?? {}).length > 0 && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Cumulative Bandwidth`}
+							description={t`Total bytes sent and received per network interface since boot`}
+						>
+							{/* @ts-ignore */}
+							<TotalBandwidthChart chartData={chartData} />
+						</ChartCard>
+					)}
+
+					{/* TCP Connection States chart */}
+					{systemStats.at(-1)?.stats.nets && Object.keys(systemStats.at(-1)?.stats.nets ?? {}).length > 0 && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`TCP Connection States`}
+							description={t`TCP connection states for IPv4 and IPv6`}
+						>
+							<ConnectionChart chartData={chartData} />
+						</ChartCard>
+					)}
 
 					{containerFilterBar && containerData.length > 0 && (
 						<div

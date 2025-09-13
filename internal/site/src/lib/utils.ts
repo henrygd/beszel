@@ -283,6 +283,22 @@ export const getHubURL = () => BESZEL?.HUB_URL || window.location.origin
 /** Map of system IDs to their corresponding tokens (used to avoid fetching in add-system dialog) */
 export const tokenMap = new Map<SystemRecord["id"], FingerprintRecord["token"]>()
 
+/**
+ * Formats a network speed value (in MB/s) to the most readable unit (B/s, KB/s, MB/s, GB/s, TB/s).
+ * @param valueMBps The value in MB/s
+ * @returns A string with the value and the appropriate unit
+ */
+export function formatSpeed(valueMBps: number): string {
+	const bitsPerSec = valueMBps * 8_000_000
+	if (bitsPerSec >= 1_000_000_000) {
+		return (bitsPerSec / 1_000_000_000).toFixed(2) + ' Gbit/s'
+	} else if (bitsPerSec >= 1_000_000) {
+		return (bitsPerSec / 1_000_000).toFixed(2) + ' Mbit/s'
+	} else {
+		return (bitsPerSec / 1_000).toFixed(2) + ' kbit/s'
+	}
+}
+
 /** Calculate duration between two dates and format as human-readable string */
 export function formatDuration(
 	createdDate: string | null | undefined,

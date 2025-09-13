@@ -176,52 +176,84 @@ func (a *Agent) getSystemStats() system.Stats {
 	if len(a.netInterfaces) == 0 {
 		// if no network interfaces, initialize again
 		// this is a fix if agent started before network is online (#466)
-		// maybe refactor this in the future to not cache interface names at all so we
-		// don't miss an interface that's been added after agent started in any circumstance
 		a.initializeNetIoStats()
 	}
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
-		msElapsed := uint64(time.Since(a.netIoStats.Time).Milliseconds())
-		a.netIoStats.Time = time.Now()
-		totalBytesSent := uint64(0)
-		totalBytesRecv := uint64(0)
-		// sum all bytes sent and received
+		now := time.Now()
+
+		// pre-allocate maps with known capacity
+		interfaceCount := len(a.netInterfaces)
+		if systemStats.NetworkInterfaces == nil || len(systemStats.NetworkInterfaces) != interfaceCount {
+			systemStats.NetworkInterfaces = make(map[string]system.NetworkInterfaceStats, interfaceCount)
+		}
+
+		var totalSent, totalRecv float64
+
+		// single pass through interfaces
 		for _, v := range netIO {
 			// skip if not in valid network interfaces list
 			if _, exists := a.netInterfaces[v.Name]; !exists {
 				continue
 			}
-			totalBytesSent += v.BytesSent
-			totalBytesRecv += v.BytesRecv
-		}
-		// add to systemStats
-		var bytesSentPerSecond, bytesRecvPerSecond uint64
-		if msElapsed > 0 {
-			bytesSentPerSecond = (totalBytesSent - a.netIoStats.BytesSent) * 1000 / msElapsed
-			bytesRecvPerSecond = (totalBytesRecv - a.netIoStats.BytesRecv) * 1000 / msElapsed
-		}
-		networkSentPs := bytesToMegabytes(float64(bytesSentPerSecond))
-		networkRecvPs := bytesToMegabytes(float64(bytesRecvPerSecond))
-		// add check for issue (#150) where sent is a massive number
-		if networkSentPs > 10_000 || networkRecvPs > 10_000 {
-			slog.Warn("Invalid net stats. Resetting.", "sent", networkSentPs, "recv", networkRecvPs)
-			for _, v := range netIO {
-				if _, exists := a.netInterfaces[v.Name]; !exists {
-					continue
+
+			// get previous stats for this interface
+			prevStats, exists := a.netIoStats[v.Name]
+			var networkSentPs, networkRecvPs float64
+
+			if exists {
+				secondsElapsed := time.Since(prevStats.Time).Seconds()
+				if secondsElapsed > 0 {
+					// direct calculation to MB/s, avoiding intermediate bytes/sec
+					networkSentPs = bytesToMegabytes(float64(v.BytesSent-prevStats.BytesSent) / secondsElapsed)
+					networkRecvPs = bytesToMegabytes(float64(v.BytesRecv-prevStats.BytesRecv) / secondsElapsed)
 				}
-				slog.Info(v.Name, "recv", v.BytesRecv, "sent", v.BytesSent)
 			}
+
+			// accumulate totals
+			totalSent += networkSentPs
+			totalRecv += networkRecvPs
+
+			// store per-interface stats
+			systemStats.NetworkInterfaces[v.Name] = system.NetworkInterfaceStats{
+				NetworkSent:    networkSentPs,
+				NetworkRecv:    networkRecvPs,
+				TotalBytesSent: v.BytesSent,
+				TotalBytesRecv: v.BytesRecv,
+			}
+
+			// update previous stats (reuse existing struct if possible)
+			if prevStats.Name == v.Name {
+				prevStats.BytesRecv = v.BytesRecv
+				prevStats.BytesSent = v.BytesSent
+				prevStats.PacketsSent = v.PacketsSent
+				prevStats.PacketsRecv = v.PacketsRecv
+				prevStats.Time = now
+				a.netIoStats[v.Name] = prevStats
+			} else {
+				a.netIoStats[v.Name] = system.NetIoStats{
+					BytesRecv:   v.BytesRecv,
+					BytesSent:   v.BytesSent,
+					PacketsSent: v.PacketsSent,
+					PacketsRecv: v.PacketsRecv,
+					Time:        now,
+					Name:        v.Name,
+				}
+			}
+		}
+
+		// add check for issue (#150) where sent is a massive number
+		if totalSent > 10_000 || totalRecv > 10_000 {
+			slog.Warn("Invalid net stats. Resetting.", "sent", totalSent, "recv", totalRecv)
 			// reset network I/O stats
 			a.initializeNetIoStats()
 		} else {
-			systemStats.NetworkSent = networkSentPs
-			systemStats.NetworkRecv = networkRecvPs
-			systemStats.Bandwidth[0], systemStats.Bandwidth[1] = bytesSentPerSecond, bytesRecvPerSecond
-			// update netIoStats
-			a.netIoStats.BytesSent = totalBytesSent
-			a.netIoStats.BytesRecv = totalBytesRecv
+			systemStats.NetworkSent = totalSent
+			systemStats.NetworkRecv = totalRecv
 		}
 	}
+
+	// connection counts
+	a.updateConnectionCounts(&systemStats)
 
 	// temperatures
 	// TODO: maybe refactor to methods on systemStats
@@ -270,12 +302,107 @@ func (a *Agent) getSystemStats() system.Stats {
 	a.systemInfo.MemPct = systemStats.MemPct
 	a.systemInfo.DiskPct = systemStats.DiskPct
 	a.systemInfo.Uptime, _ = host.Uptime()
-	// TODO: in future release, remove MB bandwidth values in favor of bytes
-	a.systemInfo.Bandwidth = twoDecimals(systemStats.NetworkSent + systemStats.NetworkRecv)
-	a.systemInfo.BandwidthBytes = systemStats.Bandwidth[0] + systemStats.Bandwidth[1]
+
+	// Sum all per-interface network sent/recv and assign to systemInfo
+	var totalSent, totalRecv float64
+	for _, iface := range systemStats.NetworkInterfaces {
+		totalSent += iface.NetworkSent
+		totalRecv += iface.NetworkRecv
+	}
+	a.systemInfo.NetworkSent = twoDecimals(totalSent)
+	a.systemInfo.NetworkRecv = twoDecimals(totalRecv)
 	slog.Debug("sysinfo", "data", a.systemInfo)
 
 	return systemStats
+}
+
+func (a *Agent) updateConnectionCounts(systemStats *system.Stats) {
+	// Get IPv4 connections
+	connectionsIPv4, err := psutilNet.Connections("inet")
+	if err != nil {
+		slog.Debug("Failed to get IPv4 connection stats", "err", err)
+		return
+	}
+
+	// Get IPv6 connections
+	connectionsIPv6, err := psutilNet.Connections("inet6")
+	if err != nil {
+		slog.Debug("Failed to get IPv6 connection stats", "err", err)
+		// Continue with IPv4 only if IPv6 fails
+	}
+
+	// Initialize Nets map if needed
+	if systemStats.Nets == nil {
+		systemStats.Nets = make(map[string]float64)
+	}
+
+	// Count IPv4 connection states
+	connStatsIPv4 := map[string]int{
+		"established": 0,
+		"listen":      0,
+		"time_wait":   0,
+		"close_wait":  0,
+		"syn_recv":    0,
+	}
+
+	for _, conn := range connectionsIPv4 {
+		// Only count TCP connections (Type 1 = SOCK_STREAM)
+		if conn.Type == 1 {
+			switch strings.ToUpper(conn.Status) {
+			case "ESTABLISHED":
+				connStatsIPv4["established"]++
+			case "LISTEN":
+				connStatsIPv4["listen"]++
+			case "TIME_WAIT":
+				connStatsIPv4["time_wait"]++
+			case "CLOSE_WAIT":
+				connStatsIPv4["close_wait"]++
+			case "SYN_RECV":
+				connStatsIPv4["syn_recv"]++
+			}
+		}
+	}
+
+	// Count IPv6 connection states
+	connStatsIPv6 := map[string]int{
+		"established": 0,
+		"listen":      0,
+		"time_wait":   0,
+		"close_wait":  0,
+		"syn_recv":    0,
+	}
+
+	for _, conn := range connectionsIPv6 {
+		// Only count TCP connections (Type 1 = SOCK_STREAM)
+		if conn.Type == 1 {
+			switch strings.ToUpper(conn.Status) {
+			case "ESTABLISHED":
+				connStatsIPv6["established"]++
+			case "LISTEN":
+				connStatsIPv6["listen"]++
+			case "TIME_WAIT":
+				connStatsIPv6["time_wait"]++
+			case "CLOSE_WAIT":
+				connStatsIPv6["close_wait"]++
+			case "SYN_RECV":
+				connStatsIPv6["syn_recv"]++
+			}
+		}
+	}
+
+	// Add IPv4 connection counts to Nets
+	systemStats.Nets["conn_established"] = float64(connStatsIPv4["established"])
+	systemStats.Nets["conn_listen"] = float64(connStatsIPv4["listen"])
+	systemStats.Nets["conn_timewait"] = float64(connStatsIPv4["time_wait"])
+	systemStats.Nets["conn_closewait"] = float64(connStatsIPv4["close_wait"])
+	systemStats.Nets["conn_synrecv"] = float64(connStatsIPv4["syn_recv"])
+
+	// Add IPv6 connection counts to Nets
+	systemStats.Nets["conn6_established"] = float64(connStatsIPv6["established"])
+	systemStats.Nets["conn6_listen"] = float64(connStatsIPv6["listen"])
+	systemStats.Nets["conn6_timewait"] = float64(connStatsIPv6["time_wait"])
+	systemStats.Nets["conn6_closewait"] = float64(connStatsIPv6["close_wait"])
+	systemStats.Nets["conn6_synrecv"] = float64(connStatsIPv6["syn_recv"])
 }
 
 // Returns the size of the ZFS ARC memory cache in bytes

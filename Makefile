@@ -77,7 +77,7 @@ dev-hub: export ENV=dev
 dev-hub:
 	mkdir -p ./internal/site/dist && touch ./internal/site/dist/index.html
 	@if command -v entr >/dev/null 2>&1; then \
-		find ./internal/cmd/hub/*.go ./internal/{alerts,hub,records,users}/*.go | entr -r -s "cd ./internal/cmd/hub && go run -tags development . serve --http 0.0.0.0:8090"; \
+		find ./internal -type f -name '*.go' | entr -r -s "cd ./internal/cmd/hub && go run -tags development . serve --http 0.0.0.0:8090"; \
 	else \
 		cd ./internal/cmd/hub && go run -tags development . serve --http 0.0.0.0:8090; \
 	fi
