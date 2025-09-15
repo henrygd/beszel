@@ -20,9 +20,8 @@ func HasReadableBattery() bool {
 	}
 	haveCheckedBattery = true
 	bat, err := battery.Get(0)
-	if err == nil && bat != nil {
-		systemHasBattery = true
-	} else {
+	systemHasBattery = err == nil && bat != nil && bat.Design != 0 && bat.Full != 0
+	if !systemHasBattery {
 		slog.Debug("No battery found", "err", err)
 	}
 	return systemHasBattery
