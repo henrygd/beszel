@@ -141,6 +141,8 @@ export interface SystemStats {
 	g?: Record<string, GPUData>
 	/** battery percent and state */
 	bat?: [number, BatteryState]
+	/** network interfaces [upload bytes, download bytes, total upload bytes, total download bytes] */
+	ni?: Record<string, [number, number, number, number]>
 }
 
 export interface GPUData {

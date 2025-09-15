@@ -1,5 +1,5 @@
+import { memo, useMemo } from "react"
 import { CartesianGrid, Line, LineChart, YAxis } from "recharts"
-
 import {
 	ChartContainer,
 	ChartLegend,
@@ -8,9 +8,8 @@ import {
 	ChartTooltipContent,
 	xAxis,
 } from "@/components/ui/chart"
-import { cn, formatShortDate, toFixedFloat, decimalString, chartMargin } from "@/lib/utils"
-import { ChartData } from "@/types"
-import { memo, useMemo } from "react"
+import { chartMargin, cn, decimalString, formatShortDate, toFixedFloat } from "@/lib/utils"
+import type { ChartData } from "@/types"
 import { useYAxisWidth } from "./hooks"
 
 export default memo(function GpuPowerChart({ chartData }: { chartData: ChartData }) {
@@ -27,10 +26,10 @@ export default memo(function GpuPowerChart({ chartData }: { chartData: ChartData
 			colors: Record<string, string>
 		}
 		const powerSums = {} as Record<string, number>
-		for (let data of chartData.systemStats) {
-			let newData = { created: data.created } as Record<string, number | string>
+		for (const data of chartData.systemStats) {
+			const newData = { created: data.created } as Record<string, number | string>
 
-			for (let gpu of Object.values(data.stats?.g ?? {})) {
+			for (const gpu of Object.values(data.stats?.g ?? {})) {
 				if (gpu.p) {
 					const name = gpu.n
 					newData[name] = gpu.p
@@ -40,7 +39,7 @@ export default memo(function GpuPowerChart({ chartData }: { chartData: ChartData
 			newChartData.data.push(newData)
 		}
 		const keys = Object.keys(powerSums).sort((a, b) => powerSums[b] - powerSums[a])
-		for (let key of keys) {
+		for (const key of keys) {
 			newChartData.colors[key] = `hsl(${((keys.indexOf(key) * 360) / keys.length) % 360}, 60%, 55%)`
 		}
 		return newChartData
@@ -67,7 +66,7 @@ export default memo(function GpuPowerChart({ chartData }: { chartData: ChartData
 						width={yAxisWidth}
 						tickFormatter={(value) => {
 							const val = toFixedFloat(value, 2)
-							return updateYAxisWidth(val + "W")
+							return updateYAxisWidth(`${val}W`)
 						}}
 						tickLine={false}
 						axisLine={false}
@@ -76,12 +75,12 @@ export default memo(function GpuPowerChart({ chartData }: { chartData: ChartData
 					<ChartTooltip
 						animationEasing="ease-out"
 						animationDuration={150}
-						// @ts-ignore
+						// @ts-expect-error
 						itemSorter={(a, b) => b.value - a.value}
 						content={
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
-								contentFormatter={(item) => decimalString(item.value) + "W"}
+								contentFormatter={(item) => `${decimalString(item.value)}W`}
 								// indicator="line"
 							/>
 						}

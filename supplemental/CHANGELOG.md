@@ -1,5 +1,9 @@
 ## 0.12.8
 
+- Add per-interface network traffic charts. (#926)
+
+- Add cumulative network traffic charts. (#926)
+
 - Add setting for time format (12h / 24h). (#424)
 
 - Add experimental one-time password (OTP) support.

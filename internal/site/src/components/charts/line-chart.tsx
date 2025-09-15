@@ -1,5 +1,5 @@
 import { useMemo } from "react"
-import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
+import { CartesianGrid, Line, LineChart, YAxis } from "recharts"
 import {
 	ChartContainer,
 	ChartLegend,
@@ -16,10 +16,9 @@ export type DataPoint = {
 	label: string
 	dataKey: (data: SystemStatsRecord) => number | undefined
 	color: number | string
-	opacity: number
 }
 
-export default function AreaChartDefault({
+export default function LineChartDefault({
 	chartData,
 	max,
 	maxToggled,
@@ -59,7 +58,7 @@ export default function AreaChartDefault({
 						"opacity-100": yAxisWidth,
 					})}
 				>
-					<AreaChart accessibilityLayer data={chartData.systemStats} margin={chartMargin}>
+					<LineChart accessibilityLayer data={chartData.systemStats} margin={chartMargin}>
 						<CartesianGrid vertical={false} />
 						<YAxis
 							direction="ltr"
@@ -90,20 +89,20 @@ export default function AreaChartDefault({
 								color = `var(--chart-${color})`
 							}
 							return (
-								<Area
+								<Line
 									key={dataPoint.label}
 									dataKey={dataPoint.dataKey}
 									name={dataPoint.label}
 									type="monotoneX"
-									fill={color}
-									fillOpacity={dataPoint.opacity}
+									dot={false}
+									strokeWidth={1.5}
 									stroke={color}
 									isAnimationActive={false}
 								/>
 							)
 						})}
 						{legend && <ChartLegend content={<ChartLegendContent />} />}
-					</AreaChart>
+					</LineChart>
 				</ChartContainer>
 			</div>
 		)

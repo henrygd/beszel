@@ -1,10 +1,10 @@
+import { useLingui } from "@lingui/react/macro"
+import { memo } from "react"
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
-import { cn, decimalString, formatShortDate, chartMargin, formatBytes, toFixedFloat } from "@/lib/utils"
-import { memo } from "react"
-import { ChartData } from "@/types"
-import { useLingui } from "@lingui/react/macro"
 import { Unit } from "@/lib/enums"
+import { chartMargin, cn, decimalString, formatBytes, formatShortDate, toFixedFloat } from "@/lib/utils"
+import type { ChartData } from "@/types"
 import { useYAxisWidth } from "./hooks"
 
 export default memo(function MemChart({ chartData, showMax }: { chartData: ChartData; showMax: boolean }) {
@@ -53,7 +53,7 @@ export default memo(function MemChart({ chartData, showMax }: { chartData: Chart
 						animationDuration={150}
 						content={
 							<ChartTooltipContent
-								// @ts-ignore
+								// @ts-expect-error
 								itemSorter={(a, b) => a.order - b.order}
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 								contentFormatter={({ value }) => {

@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react"
-import { ChartConfig } from "@/components/ui/chart"
-import { ChartData } from "@/types"
+import type { ChartConfig } from "@/components/ui/chart"
+import type { ChartData, SystemStats, SystemStatsRecord } from "@/types"
 
 /** Chart configurations for CPU, memory, and network usage charts */
 export interface ContainerChartConfigs {
@@ -104,4 +104,22 @@ export function useYAxisWidth() {
 		return str
 	}
 	return { yAxisWidth, updateYAxisWidth }
+}
+
+// Assures consistent colors for network interfaces
+export function useNetworkInterfaces(interfaces: SystemStats["ni"]) {
+	const keys = Object.keys(interfaces ?? {})
+	const sortedKeys = keys.sort((a, b) => (interfaces?.[b]?.[3] ?? 0) - (interfaces?.[a]?.[3] ?? 0))
+	return {
+		length: sortedKeys.length,
+		data: (index = 3) => {
+			return sortedKeys.map((key) => ({
+				label: key,
+				dataKey: (stats: SystemStatsRecord) => stats.stats?.ni?.[key]?.[index],
+				color: `hsl(${220 + (((sortedKeys.indexOf(key) * 360) / sortedKeys.length) % 360)}, 70%, 50%)`,
+
+				opacity: 0.3,
+			}))
+		},
+	}
 }

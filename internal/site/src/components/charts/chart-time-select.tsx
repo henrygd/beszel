@@ -1,9 +1,9 @@
+import { useStore } from "@nanostores/react"
+import { HistoryIcon } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { $chartTime } from "@/lib/stores"
 import { chartTimeData, cn } from "@/lib/utils"
-import { ChartTimes } from "@/types"
-import { useStore } from "@nanostores/react"
-import { HistoryIcon } from "lucide-react"
+import type { ChartTimes } from "@/types"
 
 export default function ChartTimeSelect({ className }: { className?: string }) {
 	const chartTime = useStore($chartTime)

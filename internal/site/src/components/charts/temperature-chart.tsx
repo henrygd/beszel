@@ -1,5 +1,6 @@
+import { useStore } from "@nanostores/react"
+import { memo, useMemo } from "react"
 import { CartesianGrid, Line, LineChart, YAxis } from "recharts"
-
 import {
 	ChartContainer,
 	ChartLegend,
@@ -8,11 +9,9 @@ import {
 	ChartTooltipContent,
 	xAxis,
 } from "@/components/ui/chart"
-import { cn, formatShortDate, toFixedFloat, chartMargin, formatTemperature, decimalString } from "@/lib/utils"
-import { ChartData } from "@/types"
-import { memo, useMemo } from "react"
 import { $temperatureFilter, $userSettings } from "@/lib/stores"
-import { useStore } from "@nanostores/react"
+import { chartMargin, cn, decimalString, formatShortDate, formatTemperature, toFixedFloat } from "@/lib/utils"
+import type { ChartData } from "@/types"
 import { useYAxisWidth } from "./hooks"
 
 export default memo(function TemperatureChart({ chartData }: { chartData: ChartData }) {
@@ -31,18 +30,18 @@ export default memo(function TemperatureChart({ chartData }: { chartData: ChartD
 			colors: Record<string, string>
 		}
 		const tempSums = {} as Record<string, number>
-		for (let data of chartData.systemStats) {
-			let newData = { created: data.created } as Record<string, number | string>
-			let keys = Object.keys(data.stats?.t ?? {})
+		for (const data of chartData.systemStats) {
+			const newData = { created: data.created } as Record<string, number | string>
+			const keys = Object.keys(data.stats?.t ?? {})
 			for (let i = 0; i < keys.length; i++) {
-				let key = keys[i]
+				const key = keys[i]
 				newData[key] = data.stats.t![key]
 				tempSums[key] = (tempSums[key] ?? 0) + newData[key]
 			}
 			newChartData.data.push(newData)
 		}
 		const keys = Object.keys(tempSums).sort((a, b) => tempSums[b] - tempSums[a])
-		for (let key of keys) {
+		for (const key of keys) {
 			newChartData.colors[key] = `hsl(${((keys.indexOf(key) * 360) / keys.length) % 360}, 60%, 55%)`
 		}
 		return newChartData
@@ -78,7 +77,7 @@ export default memo(function TemperatureChart({ chartData }: { chartData: ChartD
 					<ChartTooltip
 						animationEasing="ease-out"
 						animationDuration={150}
-						// @ts-ignore
+						// @ts-expect-error
 						itemSorter={(a, b) => b.value - a.value}
 						content={
 							<ChartTooltipContent
@@ -93,7 +92,7 @@ export default memo(function TemperatureChart({ chartData }: { chartData: ChartD
 					/>
 					{colors.map((key) => {
 						const filtered = filter && !key.toLowerCase().includes(filter.toLowerCase())
-						let strokeOpacity = filtered ? 0.1 : 1
+						const strokeOpacity = filtered ? 0.1 : 1
 						return (
 							<Line
 								key={key}

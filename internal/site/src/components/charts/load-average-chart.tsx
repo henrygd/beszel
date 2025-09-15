@@ -1,5 +1,6 @@
+import { t } from "@lingui/core/macro"
+import { memo } from "react"
 import { CartesianGrid, Line, LineChart, YAxis } from "recharts"
-
 import {
 	ChartContainer,
 	ChartLegend,
@@ -8,10 +9,8 @@ import {
 	ChartTooltipContent,
 	xAxis,
 } from "@/components/ui/chart"
-import { cn, formatShortDate, toFixedFloat, decimalString, chartMargin } from "@/lib/utils"
-import { ChartData, SystemStats } from "@/types"
-import { memo } from "react"
-import { t } from "@lingui/core/macro"
+import { chartMargin, cn, decimalString, formatShortDate, toFixedFloat } from "@/lib/utils"
+import type { ChartData, SystemStats } from "@/types"
 import { useYAxisWidth } from "./hooks"
 
 export default memo(function LoadAverageChart({ chartData }: { chartData: ChartData }) {
@@ -60,7 +59,7 @@ export default memo(function LoadAverageChart({ chartData }: { chartData: ChartD
 					<ChartTooltip
 						animationEasing="ease-out"
 						animationDuration={150}
-						// @ts-ignore
+						// @ts-expect-error
 						// itemSorter={(a, b) => b.value - a.value}
 						content={
 							<ChartTooltipContent

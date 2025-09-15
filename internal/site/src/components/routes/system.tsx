@@ -52,6 +52,7 @@ import { Input } from "../ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
+import NetworkSheet from "./system/network-sheet"
 
 type ChartTimeData = {
 	time: number
@@ -564,13 +565,13 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 							dataPoints={[
 								{
 									label: t({ message: "Write", comment: "Disk write" }),
-									dataKey: ({ stats }) => (showMax ? stats?.dwm : stats?.dw),
+									dataKey: ({ stats }: SystemStatsRecord) => (showMax ? stats?.dwm : stats?.dw),
 									color: 3,
 									opacity: 0.3,
 								},
 								{
 									label: t({ message: "Read", comment: "Disk read" }),
-									dataKey: ({ stats }) => (showMax ? stats?.drm : stats?.dr),
+									dataKey: ({ stats }: SystemStatsRecord) => (showMax ? stats?.drm : stats?.dr),
 									color: 1,
 									opacity: 0.3,
 								},
@@ -590,7 +591,12 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 						empty={dataEmpty}
 						grid={grid}
 						title={t`Bandwidth`}
-						cornerEl={maxValSelect}
+						cornerEl={
+							<div className="flex gap-2">
+								{maxValSelect}
+								<NetworkSheet chartData={chartData} dataEmpty={dataEmpty} grid={grid} maxValues={maxValues} />
+							</div>
+						}
 						description={t`Network traffic of public interfaces`}
 					>
 						<AreaChartDefault
@@ -600,7 +606,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 								{
 									label: t`Sent`,
 									// use bytes if available, otherwise multiply old MB (can remove in future)
-									dataKey(data) {
+									dataKey(data: SystemStatsRecord) {
 										if (showMax) {
 											return data?.stats?.bm?.[0] ?? (data?.stats?.nsm ?? 0) * 1024 * 1024
 										}
@@ -611,7 +617,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 								},
 								{
 									label: t`Received`,
-									dataKey(data) {
+									dataKey(data: SystemStatsRecord) {
 										if (showMax) {
 											return data?.stats?.bm?.[1] ?? (data?.stats?.nrm ?? 0) * 1024 * 1024
 										}
@@ -620,7 +626,9 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 									color: 2,
 									opacity: 0.2,
 								},
-							]}
+							]
+								// try to place the lesser number in front for better visibility
+								.sort(() => (systemStats.at(-1)?.stats.b?.[1] ?? 0) - (systemStats.at(-1)?.stats.b?.[0] ?? 0))}
 							tickFormatter={(val) => {
 								const { value, unit } = formatBytes(val, true, userSettings.unitNet, false)
 								return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
@@ -674,6 +682,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 							grid={grid}
 							title={t`Load Average`}
 							description={t`System load averages over time`}
+							legend={true}
 						>
 							<LoadAverageChart chartData={chartData} />
 						</ChartCard>
@@ -687,6 +696,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 							title={t`Temperature`}
 							description={t`Temperatures of system sensors`}
 							cornerEl={<FilterBar store={$temperatureFilter} />}
+							legend={Object.keys(systemStats.at(-1)?.stats.t ?? {}).length < 12}
 						>
 							<TemperatureChart chartData={chartData} />
 						</ChartCard>
@@ -879,7 +889,7 @@ function FilterBar({ store = $containerFilter }: { store?: typeof $containerFilt
 
 	return (
 		<>
-			<Input placeholder={t`Filter...`} className="ps-4 pe-8" onChange={handleChange} ref={inputRef} />
+			<Input placeholder={t`Filter...`} className="ps-4 pe-8 w-full sm:w-44" onChange={handleChange} ref={inputRef} />
 			{containerFilter && (
 				<Button
 					type="button"
@@ -905,7 +915,7 @@ const SelectAvgMax = memo(({ max }: { max: boolean }) => {
 	const Icon = max ? ChartMax : ChartAverage
 	return (
 		<Select value={max ? "max" : "avg"} onValueChange={(e) => $maxValues.set(e === "max")}>
-			<SelectTrigger className="relative ps-10 pe-5">
+			<SelectTrigger className="relative ps-10 pe-5 w-full sm:w-44">
 				<Icon className="h-4 w-4 absolute start-4 top-1/2 -translate-y-1/2 opacity-85" />
 				<SelectValue />
 			</SelectTrigger>
@@ -921,13 +931,15 @@ const SelectAvgMax = memo(({ max }: { max: boolean }) => {
 	)
 })
 
-function ChartCard({
+export function ChartCard({
 	title,
 	description,
 	children,
 	grid,
 	empty,
 	cornerEl,
+	legend,
+	className,
 }: {
 	title: string
 	description: string
@@ -935,17 +947,24 @@ function ChartCard({
 	grid?: boolean
 	empty?: boolean
 	cornerEl?: JSX.Element | null
+	legend?: boolean
+	className?: string
 }) {
 	const { isIntersecting, ref } = useIntersectionObserver()
 
 	return (
-		<Card className={cn("pb-2 sm:pb-4 odd:last-of-type:col-span-full", { "col-span-full": !grid })} ref={ref}>
+		<Card
+			className={cn("pb-2 sm:pb-4 odd:last-of-type:col-span-full min-h-full", { "col-span-full": !grid }, className)}
+			ref={ref}
+		>
 			<CardHeader className="pb-5 pt-4 gap-1 relative max-sm:py-3 max-sm:px-4">
 				<CardTitle className="text-xl sm:text-2xl">{title}</CardTitle>
 				<CardDescription>{description}</CardDescription>
-				{cornerEl && <div className="relative py-1 block sm:w-44 sm:absolute sm:top-3.5 sm:end-3.5">{cornerEl}</div>}
+				{cornerEl && (
+					<div className="relative py-1 grid sm:justify-end sm:absolute sm:top-3.5 sm:end-3.5">{cornerEl}</div>
+				)}
 			</CardHeader>
-			<div className="ps-0 w-[calc(100%-1.5em)] h-48 md:h-52 relative group">
+			<div className={cn("ps-0 w-[calc(100%-1.5em)] relative group", legend ? "h-54 md:h-56" : "h-48 md:h-52")}>
 				{
 					<Spinner
 						msg={empty ? t`Waiting for enough records to display` : undefined}

@@ -38,9 +38,10 @@ type Stats struct {
 	Bandwidth      [2]uint64           `json:"b,omitzero" cbor:"26,keyasint,omitzero"`  // [sent bytes, recv bytes]
 	MaxBandwidth   [2]uint64           `json:"bm,omitzero" cbor:"27,keyasint,omitzero"` // [sent bytes, recv bytes]
 	// TODO: remove other load fields in future release in favor of load avg array
-	LoadAvg [3]float64 `json:"la,omitempty" cbor:"28,keyasint"`
-	Battery [2]uint8   `json:"bat,omitzero" cbor:"29,keyasint,omitzero"` // [percent, charge state, current]
-	MaxMem  float64    `json:"mm,omitempty" cbor:"30,keyasint,omitempty"`
+	LoadAvg           [3]float64           `json:"la,omitempty" cbor:"28,keyasint"`
+	Battery           [2]uint8             `json:"bat,omitzero" cbor:"29,keyasint,omitzero"` // [percent, charge state, current]
+	MaxMem            float64              `json:"mm,omitempty" cbor:"30,keyasint,omitempty"`
+	NetworkInterfaces map[string][4]uint64 `json:"ni,omitempty" cbor:"31,keyasint,omitempty"` // [upload bytes, download bytes, total upload, total download]
 }
 
 type GPUData struct {

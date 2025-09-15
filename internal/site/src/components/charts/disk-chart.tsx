@@ -1,10 +1,10 @@
+import { useLingui } from "@lingui/react/macro"
+import { memo } from "react"
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
-import { cn, formatShortDate, decimalString, chartMargin, formatBytes, toFixedFloat } from "@/lib/utils"
-import { ChartData } from "@/types"
-import { memo } from "react"
-import { useLingui } from "@lingui/react/macro"
 import { Unit } from "@/lib/enums"
+import { chartMargin, cn, decimalString, formatBytes, formatShortDate, toFixedFloat } from "@/lib/utils"
+import type { ChartData } from "@/types"
 import { useYAxisWidth } from "./hooks"
 
 export default memo(function DiskChart({

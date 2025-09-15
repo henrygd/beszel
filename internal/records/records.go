@@ -225,6 +225,19 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.MaxBandwidth[0] = max(sum.MaxBandwidth[0], stats.MaxBandwidth[0], stats.Bandwidth[0])
 		sum.MaxBandwidth[1] = max(sum.MaxBandwidth[1], stats.MaxBandwidth[1], stats.Bandwidth[1])
 
+		// Accumulate network interfaces
+		if sum.NetworkInterfaces == nil {
+			sum.NetworkInterfaces = make(map[string][4]uint64, len(stats.NetworkInterfaces))
+		}
+		for key, value := range stats.NetworkInterfaces {
+			sum.NetworkInterfaces[key] = [4]uint64{
+				sum.NetworkInterfaces[key][0] + value[0],
+				sum.NetworkInterfaces[key][1] + value[1],
+				max(sum.NetworkInterfaces[key][2], value[2]),
+				max(sum.NetworkInterfaces[key][3], value[3]),
+			}
+		}
+
 		// Accumulate temperatures
 		if stats.Temperatures != nil {
 			if sum.Temperatures == nil {
@@ -299,6 +312,19 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.Bandwidth[0] = sum.Bandwidth[0] / uint64(count)
 		sum.Bandwidth[1] = sum.Bandwidth[1] / uint64(count)
 		sum.Battery[0] = uint8(batterySum / int(count))
+
+		// Average network interfaces
+		if sum.NetworkInterfaces != nil {
+			for key := range sum.NetworkInterfaces {
+				sum.NetworkInterfaces[key] = [4]uint64{
+					sum.NetworkInterfaces[key][0] / uint64(count),
+					sum.NetworkInterfaces[key][1] / uint64(count),
+					sum.NetworkInterfaces[key][2],
+					sum.NetworkInterfaces[key][3],
+				}
+			}
+		}
+
 		// Average temperatures
 		if sum.Temperatures != nil && tempCount > 0 {
 			for key := range sum.Temperatures {

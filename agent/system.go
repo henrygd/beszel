@@ -11,6 +11,7 @@ import (
 
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/agent/battery"
+	"github.com/henrygd/beszel/agent/deltatracker"
 	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/shirou/gopsutil/v4/cpu"
@@ -18,8 +19,9 @@ import (
 	"github.com/shirou/gopsutil/v4/host"
 	"github.com/shirou/gopsutil/v4/load"
 	"github.com/shirou/gopsutil/v4/mem"
-	psutilNet "github.com/shirou/gopsutil/v4/net"
 )
+
+var netInterfaceDeltaTracker = deltatracker.NewDeltaTracker[string, uint64]()
 
 // Sets initial / non-changing values about the host system
 func (a *Agent) initializeSystemInfo() {
@@ -70,7 +72,7 @@ func (a *Agent) initializeSystemInfo() {
 
 // Returns current info, stats about the host system
 func (a *Agent) getSystemStats() system.Stats {
-	systemStats := system.Stats{}
+	var systemStats system.Stats
 
 	// battery
 	if battery.HasReadableBattery() {
@@ -173,55 +175,7 @@ func (a *Agent) getSystemStats() system.Stats {
 	}
 
 	// network stats
-	if len(a.netInterfaces) == 0 {
-		// if no network interfaces, initialize again
-		// this is a fix if agent started before network is online (#466)
-		// maybe refactor this in the future to not cache interface names at all so we
-		// don't miss an interface that's been added after agent started in any circumstance
-		a.initializeNetIoStats()
-	}
-	if netIO, err := psutilNet.IOCounters(true); err == nil {
-		msElapsed := uint64(time.Since(a.netIoStats.Time).Milliseconds())
-		a.netIoStats.Time = time.Now()
-		totalBytesSent := uint64(0)
-		totalBytesRecv := uint64(0)
-		// sum all bytes sent and received
-		for _, v := range netIO {
-			// skip if not in valid network interfaces list
-			if _, exists := a.netInterfaces[v.Name]; !exists {
-				continue
-			}
-			totalBytesSent += v.BytesSent
-			totalBytesRecv += v.BytesRecv
-		}
-		// add to systemStats
-		var bytesSentPerSecond, bytesRecvPerSecond uint64
-		if msElapsed > 0 {
-			bytesSentPerSecond = (totalBytesSent - a.netIoStats.BytesSent) * 1000 / msElapsed
-			bytesRecvPerSecond = (totalBytesRecv - a.netIoStats.BytesRecv) * 1000 / msElapsed
-		}
-		networkSentPs := bytesToMegabytes(float64(bytesSentPerSecond))
-		networkRecvPs := bytesToMegabytes(float64(bytesRecvPerSecond))
-		// add check for issue (#150) where sent is a massive number
-		if networkSentPs > 10_000 || networkRecvPs > 10_000 {
-			slog.Warn("Invalid net stats. Resetting.", "sent", networkSentPs, "recv", networkRecvPs)
-			for _, v := range netIO {
-				if _, exists := a.netInterfaces[v.Name]; !exists {
-					continue
-				}
-				slog.Info(v.Name, "recv", v.BytesRecv, "sent", v.BytesSent)
-			}
-			// reset network I/O stats
-			a.initializeNetIoStats()
-		} else {
-			systemStats.NetworkSent = networkSentPs
-			systemStats.NetworkRecv = networkRecvPs
-			systemStats.Bandwidth[0], systemStats.Bandwidth[1] = bytesSentPerSecond, bytesRecvPerSecond
-			// update netIoStats
-			a.netIoStats.BytesSent = totalBytesSent
-			a.netIoStats.BytesRecv = totalBytesRecv
-		}
-	}
+	a.updateNetworkStats(&systemStats)
 
 	// temperatures
 	// TODO: maybe refactor to methods on systemStats
