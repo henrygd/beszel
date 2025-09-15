@@ -1,11 +1,11 @@
-import { ColumnDef } from "@tanstack/react-table"
-import { AlertsHistoryRecord } from "@/types"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { formatShortDate, toFixedFloat, formatDuration, cn } from "@/lib/utils"
-import { alertInfo } from "@/lib/alerts"
-import { Trans } from "@lingui/react/macro"
 import { t } from "@lingui/core/macro"
+import { Trans } from "@lingui/react/macro"
+import type { ColumnDef } from "@tanstack/react-table"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { alertInfo } from "@/lib/alerts"
+import { cn, formatDuration, formatShortDate, toFixedFloat } from "@/lib/utils"
+import type { AlertsHistoryRecord } from "@/types"
 
 export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 	{
@@ -38,7 +38,7 @@ export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 			</Button>
 		),
 		cell: ({ getValue, row }) => {
-			let name = getValue() as string
+			const name = getValue() as string
 			const info = alertInfo[row.original.name]
 			const Icon = info?.icon
 

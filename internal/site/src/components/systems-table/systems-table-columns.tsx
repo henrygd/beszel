@@ -1,6 +1,9 @@
-import { SystemRecord } from "@/types"
-import { CellContext, ColumnDef, HeaderContext } from "@tanstack/react-table"
-import { ClassValue } from "clsx"
+import { t } from "@lingui/core/macro"
+import { Trans, useLingui } from "@lingui/react/macro"
+import { useStore } from "@nanostores/react"
+import { getPagePath } from "@nanostores/router"
+import type { CellContext, ColumnDef, HeaderContext } from "@tanstack/react-table"
+import type { ClassValue } from "clsx"
 import {
 	ArrowUpDownIcon,
 	CopyIcon,
@@ -15,7 +18,10 @@ import {
 	Trash2Icon,
 	WifiIcon,
 } from "lucide-react"
-import { Button } from "../ui/button"
+import { memo, useMemo, useRef, useState } from "react"
+import { isReadOnlyUser, pb } from "@/lib/api"
+import { MeterState, SystemStatus } from "@/lib/enums"
+import { $longestSystemNameLen, $userSettings } from "@/lib/stores"
 import {
 	cn,
 	copyToClipboard,
@@ -25,24 +31,12 @@ import {
 	getMeterState,
 	parseSemVer,
 } from "@/lib/utils"
-import { EthernetIcon, GpuIcon, HourglassIcon, ThermometerIcon } from "../ui/icons"
-import { useStore } from "@nanostores/react"
-import { $longestSystemNameLen, $userSettings } from "@/lib/stores"
-import { Trans, useLingui } from "@lingui/react/macro"
-import { useMemo, useRef, useState } from "react"
-import { memo } from "react"
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "../ui/dropdown-menu"
-import AlertButton from "../alerts/alert-button"
-import { Dialog } from "../ui/dialog"
+import type { SystemRecord } from "@/types"
 import { SystemDialog } from "../add-system"
-import { AlertDialog } from "../ui/alert-dialog"
+import AlertButton from "../alerts/alert-button"
+import { $router, Link } from "../router"
 import {
+	AlertDialog,
 	AlertDialogAction,
 	AlertDialogCancel,
 	AlertDialogContent,
@@ -51,12 +45,16 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "../ui/alert-dialog"
-import { buttonVariants } from "../ui/button"
-import { t } from "@lingui/core/macro"
-import { MeterState, SystemStatus } from "@/lib/enums"
-import { $router, Link } from "../router"
-import { getPagePath } from "@nanostores/router"
-import { isReadOnlyUser, pb } from "@/lib/api"
+import { Button, buttonVariants } from "../ui/button"
+import { Dialog } from "../ui/dialog"
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "../ui/dropdown-menu"
+import { EthernetIcon, GpuIcon, HourglassIcon, ThermometerIcon } from "../ui/icons"
 
 const STATUS_COLORS = {
 	[SystemStatus.Up]: "bg-green-500",
@@ -290,7 +288,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 		},
 		{
 			id: "actions",
-			// @ts-ignore
+			// @ts-expect-error
 			name: () => t({ message: "Actions", comment: "Table column" }),
 			size: 50,
 			cell: ({ row }) => (
@@ -305,7 +303,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 
 function sortableHeader(context: HeaderContext<SystemRecord, unknown>) {
 	const { column } = context
-	// @ts-ignore
+	// @ts-expect-error
 	const { Icon, hideSort, name }: { Icon: React.ElementType; name: () => string; hideSort: boolean } = column.columnDef
 	return (
 		<Button
@@ -353,7 +351,7 @@ export function IndicatorDot({ system, className }: { system: SystemRecord; clas
 export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 	const [deleteOpen, setDeleteOpen] = useState(false)
 	const [editOpen, setEditOpen] = useState(false)
-	let editOpened = useRef(false)
+	const editOpened = useRef(false)
 	const { t } = useLingui()
 	const { id, status, host, name } = system
 

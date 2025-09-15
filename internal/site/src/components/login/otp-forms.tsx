@@ -1,15 +1,15 @@
+import { Trans } from "@lingui/react/macro"
+import { LoaderCircle, MailIcon, SendHorizonalIcon } from "lucide-react"
 import { useCallback, useState } from "react"
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/otp"
 import { pb } from "@/lib/api"
 import { $authenticated } from "@/lib/stores"
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/otp"
-import { Trans } from "@lingui/react/macro"
-import { showLoginFaliedToast } from "./auth-form"
 import { cn } from "@/lib/utils"
-import { MailIcon, LoaderCircle, SendHorizonalIcon } from "lucide-react"
-import { Label } from "../ui/label"
+import { $router } from "../router"
 import { buttonVariants } from "../ui/button"
 import { Input } from "../ui/input"
-import { $router } from "../router"
+import { Label } from "../ui/label"
+import { showLoginFaliedToast } from "./auth-form"
 
 export function OtpInputForm({ otpId, mfaId }: { otpId: string; mfaId: string }) {
 	const [value, setValue] = useState("")

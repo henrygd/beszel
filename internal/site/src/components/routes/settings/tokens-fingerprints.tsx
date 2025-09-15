@@ -3,13 +3,13 @@ import { Trans, useLingui } from "@lingui/react/macro"
 import { redirectPage } from "@nanostores/router"
 import {
 	CopyIcon,
+	ExternalLinkIcon,
 	FingerprintIcon,
 	KeyIcon,
 	MoreHorizontalIcon,
 	RotateCwIcon,
 	ServerIcon,
 	Trash2Icon,
-	ExternalLinkIcon,
 } from "lucide-react"
 import { memo, useEffect, useMemo, useState } from "react"
 import {

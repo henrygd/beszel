@@ -1,14 +1,14 @@
 import { t } from "@lingui/core/macro"
-import { UserAuthForm } from "@/components/login/auth-form"
-import { Logo } from "../logo"
-import { useEffect, useMemo, useState } from "react"
 import { useStore } from "@nanostores/react"
-import ForgotPassword from "./forgot-pass-form"
-import { $router } from "../router"
-import { AuthMethodsList } from "pocketbase"
-import { useTheme } from "../theme-provider"
+import type { AuthMethodsList } from "pocketbase"
+import { useEffect, useMemo, useState } from "react"
+import { UserAuthForm } from "@/components/login/auth-form"
 import { pb } from "@/lib/api"
+import { Logo } from "../logo"
 import { ModeToggle } from "../mode-toggle"
+import { $router } from "../router"
+import { useTheme } from "../theme-provider"
+import ForgotPassword from "./forgot-pass-form"
 import { OtpRequestForm } from "./otp-forms"
 
 export default function () {
@@ -53,7 +53,7 @@ export default function () {
 		<div className="min-h-svh grid items-center py-12">
 			<div
 				className="grid gap-5 w-full px-4 mx-auto"
-				// @ts-ignore
+				// @ts-expect-error
 				style={{ maxWidth: "21.5em", "--border": theme == "light" ? "hsl(30, 8%, 70%)" : "hsl(220, 3%, 25%)" }}
 			>
 				<div className="absolute top-3 right-3">

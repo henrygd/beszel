@@ -1,5 +1,5 @@
-import { cn } from "@/lib/utils"
 import { LoaderCircleIcon } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 export default function ({ msg, className }: { msg?: string; className?: string }) {
 	return (

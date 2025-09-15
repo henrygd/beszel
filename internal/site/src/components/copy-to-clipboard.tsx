@@ -1,8 +1,8 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans } from "@lingui/react/macro"
 import { useEffect, useMemo, useRef } from "react"
+import { $copyContent } from "@/lib/stores"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog"
 import { Textarea } from "./ui/textarea"
-import { $copyContent } from "@/lib/stores"
 
 export default function CopyToClipboard({ content }: { content: string }) {
 	return (

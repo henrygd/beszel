@@ -1,6 +1,5 @@
 import { Trans } from "@lingui/react/macro"
-import { useState, lazy, Suspense } from "react"
-import { Button, buttonVariants } from "@/components/ui/button"
+import { getPagePath } from "@nanostores/router"
 import {
 	DatabaseBackupIcon,
 	LogOutIcon,
@@ -11,23 +10,24 @@ import {
 	UserIcon,
 	UsersIcon,
 } from "lucide-react"
-import { $router, basePath, Link, prependBasePath } from "./router"
-import { LangToggle } from "./lang-toggle"
-import { ModeToggle } from "./mode-toggle"
-import { Logo } from "./logo"
-import { cn, runOnce } from "@/lib/utils"
-import { isReadOnlyUser, isAdmin, logOut, pb } from "@/lib/api"
+import { lazy, Suspense, useState } from "react"
+import { Button, buttonVariants } from "@/components/ui/button"
 import {
 	DropdownMenu,
-	DropdownMenuTrigger,
 	DropdownMenuContent,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
 	DropdownMenuGroup,
 	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { isAdmin, isReadOnlyUser, logOut, pb } from "@/lib/api"
+import { cn, runOnce } from "@/lib/utils"
 import { AddSystemButton } from "./add-system"
-import { getPagePath } from "@nanostores/router"
+import { LangToggle } from "./lang-toggle"
+import { Logo } from "./logo"
+import { ModeToggle } from "./mode-toggle"
+import { $router, basePath, Link, prependBasePath } from "./router"
 
 const CommandPalette = lazy(() => import("./command-palette"))
 

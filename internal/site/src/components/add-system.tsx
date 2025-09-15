@@ -1,5 +1,9 @@
-import { Trans } from "@lingui/react/macro"
 import { t } from "@lingui/core/macro"
+import { Trans } from "@lingui/react/macro"
+import { useStore } from "@nanostores/react"
+import { getPagePath } from "@nanostores/router"
+import { ChevronDownIcon, ExternalLinkIcon, PlusIcon } from "lucide-react"
+import { memo, useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
 	Dialog,
@@ -10,34 +14,30 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { isReadOnlyUser, pb } from "@/lib/api"
+import { SystemStatus } from "@/lib/enums"
 import { $publicKey } from "@/lib/stores"
 import { cn, generateToken, tokenMap, useBrowserStorage } from "@/lib/utils"
-import { pb, isReadOnlyUser } from "@/lib/api"
-import { useStore } from "@nanostores/react"
-import { ChevronDownIcon, ExternalLinkIcon, PlusIcon } from "lucide-react"
-import { memo, useEffect, useRef, useState } from "react"
-import { $router, basePath, Link, navigate } from "./router"
-import { SystemRecord } from "@/types"
-import { SystemStatus } from "@/lib/enums"
-import { AppleIcon, DockerIcon, FreeBsdIcon, TuxIcon, WindowsIcon } from "./ui/icons"
-import { InputCopy } from "./ui/input-copy"
-import { getPagePath } from "@nanostores/router"
+import type { SystemRecord } from "@/types"
 import {
 	copyDockerCompose,
 	copyDockerRun,
 	copyLinuxCommand,
 	copyWindowsCommand,
-	DropdownItem,
+	type DropdownItem,
 	InstallDropdown,
 } from "./install-dropdowns"
+import { $router, basePath, Link, navigate } from "./router"
 import { DropdownMenu, DropdownMenuTrigger } from "./ui/dropdown-menu"
+import { AppleIcon, DockerIcon, FreeBsdIcon, TuxIcon, WindowsIcon } from "./ui/icons"
+import { InputCopy } from "./ui/input-copy"
 
 export function AddSystemButton({ className }: { className?: string }) {
 	const [open, setOpen] = useState(false)
-	let opened = useRef(false)
+	const opened = useRef(false)
 	if (open) {
 		opened.current = true
 	}

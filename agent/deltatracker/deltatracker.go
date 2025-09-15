@@ -78,34 +78,3 @@ func (t *DeltaTracker[K, V]) Cycle() {
 	t.previous = t.current
 	t.current = make(map[K]V)
 }
-
-// 	// --- Example 1: Integer values (unchanged) ---
-// 	fmt.Println("--- 🚀 Example with int64 values (PIDs) ---")
-// 	pidTracker := NewDeltaTracker[int, int64]()
-// 	pidTracker.Set(101, 20000)
-// 	pidTracker.Cycle()
-// 	pidTracker.Set(101, 22500)
-// 	fmt.Println("PID Deltas:", pidTracker.Deltas())
-// 	fmt.Println("----------------------------------------")
-
-// 	// --- Example 2: Float values (New!) ---
-// 	fmt.Println("\n--- 🚀 Example with float64 values (CPU Load) ---")
-// 	// Track the 1-minute load average for different servers.
-// 	loadTracker := NewDeltaTracker[string, float64]()
-
-// 	// Minute 1
-// 	loadTracker.Set("server-alpha", 0.74)
-// 	loadTracker.Set("server-beta", 1.15)
-// 	fmt.Println("Minute 1 Loads:", loadTracker.Deltas())
-// 	loadTracker.Cycle()
-
-// 	// Minute 2
-// 	loadTracker.Set("server-alpha", 0.68) // Load decreased
-// 	loadTracker.Set("server-beta", 1.55)  // Load increased
-// 	loadTracker.Set("server-gamma", 0.25) // New server
-
-// 	minute2Deltas := loadTracker.Deltas()
-// 	fmt.Println("Minute 2 Load Deltas:", minute2Deltas)
-// 	fmt.Printf("Change in alpha's load: %.2f\n", minute2Deltas["server-alpha"])
-// 	fmt.Printf("Change in beta's load:  %.2f\n", minute2Deltas["server-beta"])
-// 	fmt.Println("----------------------------------------")

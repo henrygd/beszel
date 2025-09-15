@@ -23,7 +23,7 @@ export const prependBasePath = (path: string) => (basePath + path).replaceAll("/
 
 // prepend base path to routes
 for (const route in routes) {
-	// @ts-ignore need as const above to get nanostores to parse types properly
+	// @ts-expect-error need as const above to get nanostores to parse types properly
 	routes[route] = prependBasePath(routes[route])
 }
 

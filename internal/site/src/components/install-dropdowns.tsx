@@ -1,7 +1,7 @@
-import { memo } from "react"
-import { DropdownMenuContent, DropdownMenuItem } from "./ui/dropdown-menu"
-import { copyToClipboard, getHubURL } from "@/lib/utils"
 import { i18n } from "@lingui/core"
+import { memo } from "react"
+import { copyToClipboard, getHubURL } from "@/lib/utils"
+import { DropdownMenuContent, DropdownMenuItem } from "./ui/dropdown-menu"
 
 // const isbeta = beszel.hub_version.includes("beta")
 // const imagetag = isbeta ? ":edge" : ""

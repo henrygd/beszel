@@ -1,13 +1,13 @@
 import { t } from "@lingui/core/macro"
-import { memo, useMemo, useState } from "react"
 import { useStore } from "@nanostores/react"
-import { $alerts } from "@/lib/stores"
 import { BellIcon } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { memo, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { SystemRecord } from "@/types"
-import { AlertDialogContent } from "./alerts-sheet"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { $alerts } from "@/lib/stores"
+import { cn } from "@/lib/utils"
+import type { SystemRecord } from "@/types"
+import { AlertDialogContent } from "./alerts-sheet"
 
 export default memo(function AlertsButton({ system }: { system: SystemRecord }) {
 	const [opened, setOpened] = useState(false)

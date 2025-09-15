@@ -1,3 +1,7 @@
+import { t } from "@lingui/core/macro"
+import { Trans } from "@lingui/react/macro"
+import { getPagePath } from "@nanostores/router"
+import { DialogDescription } from "@radix-ui/react-dialog"
 import {
 	AlertOctagonIcon,
 	BookIcon,
@@ -10,7 +14,7 @@ import {
 	SettingsIcon,
 	UsersIcon,
 } from "lucide-react"
-
+import { memo, useEffect, useMemo } from "react"
 import {
 	CommandDialog,
 	CommandEmpty,
@@ -21,15 +25,10 @@ import {
 	CommandSeparator,
 	CommandShortcut,
 } from "@/components/ui/command"
-import { memo, useEffect, useMemo } from "react"
+import { isAdmin } from "@/lib/api"
 import { $systems } from "@/lib/stores"
 import { getHostDisplayValue, listen } from "@/lib/utils"
 import { $router, basePath, navigate, prependBasePath } from "./router"
-import { Trans } from "@lingui/react/macro"
-import { t } from "@lingui/core/macro"
-import { getPagePath } from "@nanostores/router"
-import { DialogDescription } from "@radix-ui/react-dialog"
-import { isAdmin } from "@/lib/api"
 
 export default memo(function CommandPalette({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) {
 	useEffect(() => {

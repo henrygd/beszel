@@ -1,11 +1,10 @@
+import { useLingui } from "@lingui/react/macro"
 import { LanguagesIcon } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { dynamicActivate } from "@/lib/i18n"
 import languages from "@/lib/languages"
 import { cn } from "@/lib/utils"
-import { useLingui } from "@lingui/react/macro"
-import { dynamicActivate } from "@/lib/i18n"
 
 export function LangToggle() {
 	const { i18n } = useLingui()

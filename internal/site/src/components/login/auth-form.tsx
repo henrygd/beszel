@@ -1,19 +1,19 @@
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
-import { cn } from "@/lib/utils"
+import { getPagePath } from "@nanostores/router"
+import { KeyIcon, LoaderCircle, LockIcon, LogInIcon, MailIcon } from "lucide-react"
+import type { AuthMethodsList, AuthProviderInfo, OAuth2AuthConfig } from "pocketbase"
+import { useCallback, useEffect, useState } from "react"
+import * as v from "valibot"
 import { buttonVariants } from "@/components/ui/button"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { KeyIcon, LoaderCircle, LockIcon, LogInIcon, MailIcon } from "lucide-react"
-import { $authenticated } from "@/lib/stores"
-import * as v from "valibot"
-import { toast } from "../ui/use-toast"
-import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useCallback, useEffect, useState } from "react"
-import { AuthMethodsList, AuthProviderInfo, OAuth2AuthConfig } from "pocketbase"
-import { $router, Link, prependBasePath } from "../router"
-import { getPagePath } from "@nanostores/router"
 import { pb } from "@/lib/api"
+import { $authenticated } from "@/lib/stores"
+import { cn } from "@/lib/utils"
+import { $router, Link, prependBasePath } from "../router"
+import { toast } from "../ui/use-toast"
 import { OtpInputForm } from "./otp-forms"
 
 const honeypot = v.literal("")
@@ -83,9 +83,9 @@ export function UserAuthForm({
 				const result = v.safeParse(Schema, data)
 				if (!result.success) {
 					console.log(result)
-					let errors = {}
+					const errors = {}
 					for (const issue of result.issues) {
-						// @ts-ignore
+						// @ts-expect-error
 						errors[issue.path[0].key] = issue.message
 					}
 					setErrors(errors)
@@ -96,7 +96,7 @@ export function UserAuthForm({
 				if (isFirstRun) {
 					// check that passwords match
 					if (password !== passwordConfirm) {
-						let msg = "Passwords do not match"
+						const msg = "Passwords do not match"
 						setErrors({ passwordConfirm: msg })
 						return
 					}
