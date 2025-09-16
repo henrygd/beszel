@@ -10,7 +10,7 @@ import AreaChartDefault from "@/components/charts/area-chart"
 import ContainerChart from "@/components/charts/container-chart"
 import DiskChart from "@/components/charts/disk-chart"
 import GpuPowerChart from "@/components/charts/gpu-power-chart"
-import { useContainerChartConfigs } from "@/components/charts/hooks"
+import { useContainerChartConfigs, useGpuEngines } from "@/components/charts/hooks"
 import LoadAverageChart from "@/components/charts/load-average-chart"
 import MemChart from "@/components/charts/mem-chart"
 import SwapChart from "@/components/charts/swap-chart"
@@ -53,6 +53,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import NetworkSheet from "./system/network-sheet"
+import LineChartDefault from "../charts/line-chart"
 
 type ChartTimeData = {
 	time: number
@@ -390,6 +391,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 	const lastGpuVals = Object.values(systemStats.at(-1)?.stats.g ?? {})
 	const hasGpuData = lastGpuVals.length > 0
 	const hasGpuPowerData = lastGpuVals.some((gpu) => gpu.p !== undefined)
+	const hasGpuEnginesData = lastGpuVals.some((gpu) => gpu.e !== undefined)
 
 	let translatedStatus: string = system.status
 	if (system.status === SystemStatus.Up) {
@@ -742,6 +744,17 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 							<GpuPowerChart chartData={chartData} />
 						</ChartCard>
 					)}
+
+					{hasGpuEnginesData && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`GPU Engines`}
+							description={t`Average utilization of GPU engines`}
+						>
+							<GpuEnginesChart chartData={chartData} />
+						</ChartCard>
+					)}
 				</div>
 
 				{/* GPU charts */}
@@ -868,6 +881,13 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 		</>
 	)
 })
+
+function GpuEnginesChart({ chartData }: { chartData: ChartData }) {
+	const engineData = useGpuEngines(chartData.systemStats.at(-1))
+	return (
+		<LineChartDefault legend={true} chartData={chartData} dataPoints={engineData} tickFormatter={(val) => `${toFixedFloat(val, 2)}%`} contentFormatter={({ value }) => `${decimalString(value)}%`} />
+	)
+}
 
 function FilterBar({ store = $containerFilter }: { store?: typeof $containerFilter }) {
 	const containerFilter = useStore(store)

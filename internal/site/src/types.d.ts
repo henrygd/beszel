@@ -156,6 +156,8 @@ export interface GPUData {
 	u: number
 	/** power (w) */
 	p?: number
+	/** engines */
+	e?: Record<string, number>
 }
 
 export interface ExtraFsStats {
