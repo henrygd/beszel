@@ -115,11 +115,23 @@ export function useNetworkInterfaces(interfaces: SystemStats["ni"]) {
 		data: (index = 3) => {
 			return sortedKeys.map((key) => ({
 				label: key,
-				dataKey: (stats: SystemStatsRecord) => stats.stats?.ni?.[key]?.[index],
+				dataKey: ({ stats }: SystemStatsRecord) => stats?.ni?.[key]?.[index],
 				color: `hsl(${220 + (((sortedKeys.indexOf(key) * 360) / sortedKeys.length) % 360)}, 70%, 50%)`,
 
 				opacity: 0.3,
 			}))
 		},
 	}
+}
+
+/** Generates chart configurations for GPU engines */
+export function useGpuEngines(systemStats?: SystemStatsRecord) {
+	const keys = Object.keys(systemStats?.stats.g?.[0]?.e ?? {})
+	const sortedKeys = keys.sort()
+	return sortedKeys.map((engine) => ({
+		label: engine,
+		dataKey: ({ stats }: SystemStatsRecord) => stats?.g?.[0]?.e?.[engine] ?? 0,
+		color: `hsl(${220 + ((sortedKeys.indexOf(engine) * 360) / sortedKeys.length) % 360}, 65%, 52%)`,
+		opacity: 0.35,
+	}))
 }

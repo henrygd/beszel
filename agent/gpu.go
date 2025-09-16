@@ -27,12 +27,9 @@ const (
 	nvidiaSmiInterval  string        = "4"    // in seconds
 	tegraStatsInterval string        = "3700" // in milliseconds
 	rocmSmiInterval    time.Duration = 4300 * time.Millisecond
-
 	// Command retry and timeout constants
 	retryWaitTime     time.Duration = 5 * time.Second
 	maxFailureRetries int           = 5
-
-	cmdBufferSize uint16 = 10 * 1024
 
 	// Unit Conversions
 	mebibytesInAMegabyte float64 = 1.024  // nvidia-smi reports memory in MiB
@@ -42,10 +39,11 @@ const (
 // GPUManager manages data collection for GPUs (either Nvidia or AMD)
 type GPUManager struct {
 	sync.Mutex
-	nvidiaSmi  bool
-	rocmSmi    bool
-	tegrastats bool
-	GpuDataMap map[string]*system.GPUData
+	nvidiaSmi     bool
+	rocmSmi       bool
+	tegrastats    bool
+	intelGpuStats bool
+	GpuDataMap    map[string]*system.GPUData
 }
 
 // RocmSmiJson represents the JSON structure of rocm-smi output
@@ -66,6 +64,7 @@ type gpuCollector struct {
 	cmdArgs []string
 	parse   func([]byte) bool // returns true if valid data was found
 	buf     []byte
+	bufSize uint16
 }
 
 var errNoValidData = fmt.Errorf("no valid GPU data found") // Error for missing data
@@ -99,7 +98,7 @@ func (c *gpuCollector) collect() error {
 
 	scanner := bufio.NewScanner(stdout)
 	if c.buf == nil {
-		c.buf = make([]byte, 0, cmdBufferSize)
+		c.buf = make([]byte, 0, c.bufSize)
 	}
 	scanner.Buffer(c.buf, bufio.MaxScanTokenSize)
 
@@ -244,20 +243,24 @@ func (gm *GPUManager) GetCurrentData() map[string]system.GPUData {
 	// copy / reset the data
 	gpuData := make(map[string]system.GPUData, len(gm.GpuDataMap))
 	for id, gpu := range gm.GpuDataMap {
-		gpuAvg := *gpu
+		// avoid division by zero
+		count := max(gpu.Count, 1)
 
+		// average the data
+		gpuAvg := *gpu
 		gpuAvg.Temperature = twoDecimals(gpu.Temperature)
 		gpuAvg.MemoryUsed = twoDecimals(gpu.MemoryUsed)
 		gpuAvg.MemoryTotal = twoDecimals(gpu.MemoryTotal)
-
-		// avoid division by zero
-		if gpu.Count > 0 {
-			gpuAvg.Usage = twoDecimals(gpu.Usage / gpu.Count)
-			gpuAvg.Power = twoDecimals(gpu.Power / gpu.Count)
+		gpuAvg.Usage = twoDecimals(gpu.Usage / count)
+		gpuAvg.Power = twoDecimals(gpu.Power / count)
+		gpuAvg.Engines = make(map[string]float64, len(gpu.Engines))
+		for name, engine := range gpu.Engines {
+			gpuAvg.Engines[name] = twoDecimals(engine / count)
 		}
 
-		// reset accumulators in the original
-		gpu.Usage, gpu.Power, gpu.Count = 0, 0, 0
+		// reset accumulators in the original gpu data for next collection
+		gpu.Usage, gpu.Power, gpu.Count = gpuAvg.Usage, gpuAvg.Power, 1
+		gpu.Engines = gpuAvg.Engines
 
 		// append id to the name if there are multiple GPUs with the same name
 		if nameCounts[gpu.Name] > 1 {
@@ -284,18 +287,28 @@ func (gm *GPUManager) detectGPUs() error {
 		gm.tegrastats = true
 		gm.nvidiaSmi = false
 	}
-	if gm.nvidiaSmi || gm.rocmSmi || gm.tegrastats {
+	if _, err := exec.LookPath(intelGpuStatsCmd); err == nil {
+		slog.Info("Intel GPU stats found")
+		gm.intelGpuStats = true
+	}
+	if gm.nvidiaSmi || gm.rocmSmi || gm.tegrastats || gm.intelGpuStats {
 		return nil
 	}
-	return fmt.Errorf("no GPU found - install nvidia-smi, rocm-smi, or tegrastats")
+	return fmt.Errorf("no GPU found - install nvidia-smi, rocm-smi, tegrastats, or intel_gpu_top")
 }
 
 // startCollector starts the appropriate GPU data collector based on the command
 func (gm *GPUManager) startCollector(command string) {
 	collector := gpuCollector{
-		name: command,
+		name:    command,
+		bufSize: 10 * 1024,
 	}
 	switch command {
+	case intelGpuStatsCmd:
+		slog.Info("Starting Intel GPU stats collector")
+		collector.cmdArgs = []string{"-s", intelGpuStatsInterval, "-J"}
+		collector.parse = gm.parseIntelData
+		go collector.start()
 	case nvidiaSmiCmd:
 		collector.cmdArgs = []string{
 			"-l", nvidiaSmiInterval,
@@ -343,6 +356,9 @@ func NewGPUManager() (*GPUManager, error) {
 	}
 	if gm.tegrastats {
 		gm.startCollector(tegraStatsCmd)
+	}
+	if gm.intelGpuStats {
+		gm.startCollector(intelGpuStatsCmd)
 	}
 
 	return &gm, nil
