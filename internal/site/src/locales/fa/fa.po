@@ -8,7 +8,7 @@ msgstr ""
 "Language: fa\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-11 16:52\n"
+"PO-Revision-Date: 2025-09-17 18:45\n"
 "Last-Translator: \n"
 "Language-Team: Persian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -363,6 +363,14 @@ msgstr "ایجاد شده"
 msgid "Critical (%)"
 msgstr "بحرانی (%)"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Download"
+msgstr "دانلود تجمعی"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Upload"
+msgstr "آپلود تجمعی"
+
 #. Context: Battery state
 #: src/components/routes/system.tsx
 msgid "Current state"
@@ -441,6 +449,10 @@ msgstr "قطع"
 msgid "Down ({downSystemsLength})"
 msgstr "قطع ({downSystemsLength})"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Download"
+msgstr "دانلود"
+
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
 msgstr "مدت زمان"
@@ -452,6 +464,7 @@ msgstr "ویرایش"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
+#: src/components/login/otp-forms.tsx
 msgid "Email"
 msgstr "ایمیل"
 
@@ -471,6 +484,10 @@ msgstr "آدرس ایمیل را برای بازنشانی رمز عبور وا�
 #: src/components/routes/settings/notifications.tsx
 msgid "Enter email address..."
 msgstr "آدرس ایمیل را وارد کنید..."
+
+#: src/components/login/otp-forms.tsx
+msgid "Enter your one-time password."
+msgstr "رمز عبور یک‌بار مصرف خود را وارد کنید."
 
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -541,6 +558,12 @@ msgstr "برای <0>{min}</0> {min, plural, one {دقیقه} other {دقیقه}}
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "رمز عبور را فراموش کرده‌اید؟"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "FreeBSD command"
+msgstr "دستور FreeBSD"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -645,6 +668,7 @@ msgid "Manage display and notification preferences."
 msgstr "مدیریت تنظیمات نمایش و اعلان‌ها."
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Manual setup instructions"
 msgstr "دستورالعمل‌های راه‌اندازی دستی"
 
@@ -680,6 +704,8 @@ msgid "Network traffic of docker containers"
 msgstr "ترافیک شبکه کانتینرهای داکر"
 
 #: src/components/routes/system.tsx
+#: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
 msgstr "ترافیک شبکه رابط‌های عمومی"
 
@@ -714,6 +740,10 @@ msgstr "پشتیبانی از OAuth 2 / OIDC"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "در هر بار راه‌اندازی مجدد، سیستم‌های موجود در پایگاه داده با سیستم‌های تعریف شده در فایل مطابقت داده می‌شوند."
+
+#: src/components/login/auth-form.tsx
+msgid "One-time password"
+msgstr "رمز عبور یک‌بار مصرف"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -833,6 +863,14 @@ msgstr "خواندن"
 msgid "Received"
 msgstr "دریافت شد"
 
+#: src/components/login/login.tsx
+msgid "Request a one-time password"
+msgstr "درخواست رمز عبور یک‌بار مصرف"
+
+#: src/components/login/otp-forms.tsx
+msgid "Request OTP"
+msgstr "درخواست OTP"
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
 msgstr "بازنشانی رمز عبور"
@@ -887,10 +925,6 @@ msgstr "ارسال شد"
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "آستانه های درصدی را برای رنگ های متر تنظیم کنید."
-
-#: src/components/routes/settings/general.tsx
-msgid "Sets the default time range for charts when a system is viewed."
-msgstr "بازه زمانی پیش‌فرض برای نمودارها هنگام مشاهده یک سیستم را تعیین می‌کند."
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1002,6 +1036,10 @@ msgstr "توان عملیاتی {extraFsName}"
 msgid "Throughput of root filesystem"
 msgstr "توان عملیاتی سیستم فایل ریشه"
 
+#: src/components/routes/settings/general.tsx
+msgid "Time format"
+msgstr "فرمت زمان"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "به ایمیل(ها)"
@@ -1033,6 +1071,14 @@ msgstr "توکن‌ها به عامل‌ها اجازه اتصال و ثبت‌�
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "توکن‌ها و اثرات انگشت برای احراز هویت اتصالات WebSocket به هاب استفاده می‌شوند."
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data received for each interface"
+msgstr "داده‌های کل دریافت شده برای هر رابط"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data sent for each interface"
+msgstr "داده‌های کل ارسال شده برای هر رابط"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
@@ -1094,6 +1140,10 @@ msgstr "فعال"
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
 msgstr "فعال ({upSystemsLength})"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Upload"
+msgstr "آپلود"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"
