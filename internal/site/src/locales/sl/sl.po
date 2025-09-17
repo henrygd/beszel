@@ -8,7 +8,7 @@ msgstr ""
 "Language: sl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-11 16:52\n"
+"PO-Revision-Date: 2025-09-17 18:45\n"
 "Last-Translator: \n"
 "Language-Team: Slovenian\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
@@ -363,6 +363,14 @@ msgstr ""
 msgid "Critical (%)"
 msgstr "Kritično (%)"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Download"
+msgstr "Kumulativno prenos"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Upload"
+msgstr "Kumulativno nalaganje"
+
 #. Context: Battery state
 #: src/components/routes/system.tsx
 msgid "Current state"
@@ -441,6 +449,10 @@ msgstr ""
 msgid "Down ({downSystemsLength})"
 msgstr ""
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Download"
+msgstr "Prenesi"
+
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
 msgstr ""
@@ -452,6 +464,7 @@ msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
+#: src/components/login/otp-forms.tsx
 msgid "Email"
 msgstr "E-pošta"
 
@@ -471,6 +484,10 @@ msgstr "Vnesite e-poštni naslov za ponastavitev gesla"
 #: src/components/routes/settings/notifications.tsx
 msgid "Enter email address..."
 msgstr "Vnesite e-poštni naslov..."
+
+#: src/components/login/otp-forms.tsx
+msgid "Enter your one-time password."
+msgstr "Vnesite svoje enkratno geslo."
 
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -541,6 +558,12 @@ msgstr "Za <0>{min}</0> {min, plural, one {minuto} other {minut}}"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "Pozabljeno geslo?"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "FreeBSD command"
+msgstr "Ukaz FreeBSD"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -645,6 +668,7 @@ msgid "Manage display and notification preferences."
 msgstr "Upravljajte nastavitve prikaza in obvestil."
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Manual setup instructions"
 msgstr ""
 
@@ -680,6 +704,8 @@ msgid "Network traffic of docker containers"
 msgstr "Omrežni promet docker kontejnerjev"
 
 #: src/components/routes/system.tsx
+#: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
 msgstr "Omrežni promet javnih vmesnikov"
 
@@ -714,6 +740,10 @@ msgstr "Podpora za OAuth 2 / OIDC"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Ob vsakem ponovnem zagonu bodo sistemi v zbirki podatkov posodobljeni, da se bodo ujemali s sistemi, definiranimi v datoteki."
+
+#: src/components/login/auth-form.tsx
+msgid "One-time password"
+msgstr "Enkratno geslo"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -833,6 +863,14 @@ msgstr "Preberano"
 msgid "Received"
 msgstr "Prejeto"
 
+#: src/components/login/login.tsx
+msgid "Request a one-time password"
+msgstr "Zahtevaj enkratno geslo"
+
+#: src/components/login/otp-forms.tsx
+msgid "Request OTP"
+msgstr "Zahtevaj OTP"
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
 msgstr "Ponastavi geslo"
@@ -887,10 +925,6 @@ msgstr "Poslano"
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "Nastavite odstotne pragove za barve merilnikov."
-
-#: src/components/routes/settings/general.tsx
-msgid "Sets the default time range for charts when a system is viewed."
-msgstr "Nastavi privzeti časovni obseg za grafikone, ko si ogledujete sistem."
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1002,6 +1036,10 @@ msgstr "Prepustnost {extraFsName}"
 msgid "Throughput of root filesystem"
 msgstr "Prepustnost korenskega datotečnega sistema"
 
+#: src/components/routes/settings/general.tsx
+msgid "Time format"
+msgstr "Oblika časa"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "E-pošta za"
@@ -1033,6 +1071,14 @@ msgstr ""
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr ""
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data received for each interface"
+msgstr "Skupni prejeti podatki za vsak vmesnik"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data sent for each interface"
+msgstr "Skupni poslani podatki za vsak vmesnik"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
@@ -1094,6 +1140,10 @@ msgstr ""
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
 msgstr ""
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Upload"
+msgstr "Naloži"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"
