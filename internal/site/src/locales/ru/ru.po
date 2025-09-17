@@ -8,7 +8,7 @@ msgstr ""
 "Language: ru\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-11 16:52\n"
+"PO-Revision-Date: 2025-09-17 18:45\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -363,6 +363,14 @@ msgstr "Создано"
 msgid "Critical (%)"
 msgstr "Критический (%)"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Download"
+msgstr "Совокупная загрузка"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Upload"
+msgstr "Совокупная выгрузка"
+
 #. Context: Battery state
 #: src/components/routes/system.tsx
 msgid "Current state"
@@ -441,6 +449,10 @@ msgstr "Не в сети"
 msgid "Down ({downSystemsLength})"
 msgstr ""
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Download"
+msgstr "Скачать"
+
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
 msgstr "Длительность"
@@ -452,6 +464,7 @@ msgstr "Редактировать"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
+#: src/components/login/otp-forms.tsx
 msgid "Email"
 msgstr "Электронная почта"
 
@@ -471,6 +484,10 @@ msgstr "Введите адрес электронной почты для сб�
 #: src/components/routes/settings/notifications.tsx
 msgid "Enter email address..."
 msgstr "Введите адрес электронной почты..."
+
+#: src/components/login/otp-forms.tsx
+msgid "Enter your one-time password."
+msgstr "Введите ваш одноразовый пароль."
 
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -541,6 +558,12 @@ msgstr "На <0>{min}</0> {min, plural, one {минуту} other {минут}}"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "Забыли пароль?"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "FreeBSD command"
+msgstr "Команда FreeBSD"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -645,6 +668,7 @@ msgid "Manage display and notification preferences."
 msgstr "Управляйте предпочтениями отображения и уведомлений."
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Manual setup instructions"
 msgstr "Инструкции по ручной настройке"
 
@@ -680,6 +704,8 @@ msgid "Network traffic of docker containers"
 msgstr "Сетевой трафик контейнеров Docker"
 
 #: src/components/routes/system.tsx
+#: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
 msgstr "Сетевой трафик публичных интерфейсов"
 
@@ -714,6 +740,10 @@ msgstr "Поддержка OAuth 2 / OIDC"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "При каждом перезапуске системы в базе данных будут обновлены в соответствии с системами, определенными в файле."
+
+#: src/components/login/auth-form.tsx
+msgid "One-time password"
+msgstr "Одноразовый пароль"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -833,6 +863,14 @@ msgstr "Чтение"
 msgid "Received"
 msgstr "Получено"
 
+#: src/components/login/login.tsx
+msgid "Request a one-time password"
+msgstr "Запросить одноразовый пароль"
+
+#: src/components/login/otp-forms.tsx
+msgid "Request OTP"
+msgstr "Запросить OTP"
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
 msgstr "Сбросить пароль"
@@ -887,10 +925,6 @@ msgstr "Отправлено"
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "Установите процентные пороги для цветов счетчиков."
-
-#: src/components/routes/settings/general.tsx
-msgid "Sets the default time range for charts when a system is viewed."
-msgstr "Устанавливает диапазон времени по умолчанию для графиков при просмотре системы."
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1002,6 +1036,10 @@ msgstr "Пропускная способность {extraFsName}"
 msgid "Throughput of root filesystem"
 msgstr "Пропускная способность корневой файловой системы"
 
+#: src/components/routes/settings/general.tsx
+msgid "Time format"
+msgstr "Формат времени"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "На электронную почту"
@@ -1033,6 +1071,14 @@ msgstr "Токены позволяют агентам подключаться 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Токены и отпечатки используются для аутентификации соединений WebSocket с хабом."
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data received for each interface"
+msgstr "Общий объем полученных данных для каждого интерфейса"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data sent for each interface"
+msgstr "Общий объем отправленных данных для каждого интерфейса"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
@@ -1094,6 +1140,10 @@ msgstr "В сети"
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
 msgstr ""
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Upload"
+msgstr "Загрузить"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"
