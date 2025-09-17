@@ -363,6 +363,14 @@ msgstr "作成日"
 msgid "Critical (%)"
 msgstr "致命的 (%)"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Download"
+msgstr "累積ダウンロード"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Upload"
+msgstr "累積アップロード"
+
 #. Context: Battery state
 #: src/components/routes/system.tsx
 msgid "Current state"
@@ -441,6 +449,10 @@ msgstr "停止"
 msgid "Down ({downSystemsLength})"
 msgstr "停止 ({downSystemsLength})"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Download"
+msgstr "ダウンロード"
+
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
 msgstr "期間"
@@ -452,6 +464,7 @@ msgstr "編集"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
+#: src/components/login/otp-forms.tsx
 msgid "Email"
 msgstr "メール"
 
@@ -471,6 +484,10 @@ msgstr "パスワードをリセットするためにメールアドレスを入
 #: src/components/routes/settings/notifications.tsx
 msgid "Enter email address..."
 msgstr "メールアドレスを入力..."
+
+#: src/components/login/otp-forms.tsx
+msgid "Enter your one-time password."
+msgstr "ワンタイムパスワードを入力してください。"
 
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -541,6 +558,12 @@ msgstr "<0>{min}</0> {min, plural, one {分} other {分}}の間"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "パスワードをお忘れですか？"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "FreeBSD command"
+msgstr "FreeBSD コマンド"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -645,6 +668,7 @@ msgid "Manage display and notification preferences."
 msgstr "表示と通知の設定を管理します。"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Manual setup instructions"
 msgstr "手動セットアップの手順"
 
@@ -680,6 +704,8 @@ msgid "Network traffic of docker containers"
 msgstr "Dockerコンテナのネットワークトラフィック"
 
 #: src/components/routes/system.tsx
+#: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
 msgstr "パブリックインターフェースのネットワークトラフィック"
 
@@ -714,6 +740,10 @@ msgstr "OAuth 2 / OIDCサポート"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "再起動のたびに、データベース内のシステムはファイルに定義されたシステムに一致するように更新されます。"
+
+#: src/components/login/auth-form.tsx
+msgid "One-time password"
+msgstr "ワンタイムパスワード"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -833,6 +863,14 @@ msgstr "読み取り"
 msgid "Received"
 msgstr "受信"
 
+#: src/components/login/login.tsx
+msgid "Request a one-time password"
+msgstr "ワンタイムパスワードをリクエスト"
+
+#: src/components/login/otp-forms.tsx
+msgid "Request OTP"
+msgstr "OTP をリクエスト"
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
 msgstr "パスワードをリセット"
@@ -887,10 +925,6 @@ msgstr "送信"
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "メーターの色を変更するしきい値（パーセンテージ）を設定します。"
-
-#: src/components/routes/settings/general.tsx
-msgid "Sets the default time range for charts when a system is viewed."
-msgstr "システムを表示する際のチャートのデフォルトの時間範囲を設定します。"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1002,6 +1036,10 @@ msgstr "{extraFsName}のスループット"
 msgid "Throughput of root filesystem"
 msgstr "ルートファイルシステムのスループット"
 
+#: src/components/routes/settings/general.tsx
+msgid "Time format"
+msgstr "時間形式"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "宛先メールアドレス"
@@ -1033,6 +1071,14 @@ msgstr "トークンはエージェントの接続と登録を可能にします
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "トークンとフィンガープリントは、ハブへのWebSocket接続の認証に使用されます。"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data received for each interface"
+msgstr "各インターフェースの総受信データ量"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data sent for each interface"
+msgstr "各インターフェースの総送信データ量"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
@@ -1094,6 +1140,10 @@ msgstr "正常"
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
 msgstr "正常 ({upSystemsLength})"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Upload"
+msgstr "アップロード"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"

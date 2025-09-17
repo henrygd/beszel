@@ -363,6 +363,14 @@ msgstr "Vytvořeno"
 msgid "Critical (%)"
 msgstr "Kritické (%)"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Download"
+msgstr "Kumulativní stažení"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Upload"
+msgstr "Kumulativní odeslání"
+
 #. Context: Battery state
 #: src/components/routes/system.tsx
 msgid "Current state"
@@ -441,6 +449,10 @@ msgstr "Nefunkční"
 msgid "Down ({downSystemsLength})"
 msgstr "Nefunkční ({downSystemsLength})"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Download"
+msgstr "Stažení"
+
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
 msgstr "Doba trvání"
@@ -452,6 +464,7 @@ msgstr "Upravit"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
+#: src/components/login/otp-forms.tsx
 msgid "Email"
 msgstr "Email"
 
@@ -471,6 +484,10 @@ msgstr "Zadejte e-mailovou adresu pro obnovu hesla"
 #: src/components/routes/settings/notifications.tsx
 msgid "Enter email address..."
 msgstr "Zadejte e-mailovou adresu..."
+
+#: src/components/login/otp-forms.tsx
+msgid "Enter your one-time password."
+msgstr "Zadejte Vaše jednorázové heslo."
 
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -541,6 +558,12 @@ msgstr "Za <0>{min}</0> {min, plural, one {minutu} few {minuty} other {minut}}"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "Zapomněli jste heslo?"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "FreeBSD command"
+msgstr "FreeBSD příkaz"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -645,6 +668,7 @@ msgid "Manage display and notification preferences."
 msgstr "Správa nastavení zobrazení a oznámení."
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Manual setup instructions"
 msgstr "Pokyny k manuálnímu nastavení"
 
@@ -680,6 +704,8 @@ msgid "Network traffic of docker containers"
 msgstr "Síťový provoz kontejnerů docker"
 
 #: src/components/routes/system.tsx
+#: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
 msgstr "Síťový provoz veřejných rozhraní"
 
@@ -714,6 +740,10 @@ msgstr "Podpora OAuth 2 / OIDC"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Při každém restartu budou systémy v databázi aktualizovány tak, aby odpovídaly systémům definovaným v souboru."
+
+#: src/components/login/auth-form.tsx
+msgid "One-time password"
+msgstr "Jednorázové heslo"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -833,6 +863,14 @@ msgstr "Číst"
 msgid "Received"
 msgstr "Přijato"
 
+#: src/components/login/login.tsx
+msgid "Request a one-time password"
+msgstr "Požádat o jednorázové heslo"
+
+#: src/components/login/otp-forms.tsx
+msgid "Request OTP"
+msgstr "Požádat OTP"
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
 msgstr "Obnovit heslo"
@@ -887,10 +925,6 @@ msgstr "Odeslat"
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "Nastavte procentuální prahové hodnoty pro barvy měřičů."
-
-#: src/components/routes/settings/general.tsx
-msgid "Sets the default time range for charts when a system is viewed."
-msgstr "Nastaví výchozí časový rozsah grafů, když je systém zobrazen."
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1002,6 +1036,10 @@ msgstr "Propustnost {extraFsName}"
 msgid "Throughput of root filesystem"
 msgstr "Propustnost kořenového souborového systému"
 
+#: src/components/routes/settings/general.tsx
+msgid "Time format"
+msgstr "Formát času"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "Na email(y)"
@@ -1033,6 +1071,14 @@ msgstr "Tokeny umožňují agentům připojení a registraci. Otisky jsou stabil
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Tokeny a otisky slouží k ověření připojení WebSocket k uzlu."
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data received for each interface"
+msgstr "Celkový přijatý objem dat pro každé rozhraní"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data sent for each interface"
+msgstr "Celkový odeslaný objem dat pro každé rozhraní"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
@@ -1094,6 +1140,10 @@ msgstr "Funkční"
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
 msgstr "Funkční ({upSystemsLength})"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Upload"
+msgstr "Odeslání"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"

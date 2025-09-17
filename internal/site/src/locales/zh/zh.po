@@ -363,6 +363,14 @@ msgstr "已建立"
 msgid "Critical (%)"
 msgstr "嚴重 (%)"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Download"
+msgstr "累計下載"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Upload"
+msgstr "累計上傳"
+
 #. Context: Battery state
 #: src/components/routes/system.tsx
 msgid "Current state"
@@ -441,6 +449,10 @@ msgstr "離線"
 msgid "Down ({downSystemsLength})"
 msgstr "離線 ({downSystemsLength})"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Download"
+msgstr "下載"
+
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
 msgstr "持續時間"
@@ -452,6 +464,7 @@ msgstr "編輯"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
+#: src/components/login/otp-forms.tsx
 msgid "Email"
 msgstr "電子郵件"
 
@@ -471,6 +484,10 @@ msgstr "輸入電子郵件地址以重設密碼"
 #: src/components/routes/settings/notifications.tsx
 msgid "Enter email address..."
 msgstr "輸入電子郵件地址..."
+
+#: src/components/login/otp-forms.tsx
+msgid "Enter your one-time password."
+msgstr "輸入您的一次性密碼。"
 
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -541,6 +558,12 @@ msgstr "持續<0>{min}</0> {min, plural, one {分鐘} other {分鐘}}"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "忘記密碼？"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "FreeBSD command"
+msgstr "FreeBSD 指令"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -645,6 +668,7 @@ msgid "Manage display and notification preferences."
 msgstr "管理顯示和通知偏好。"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Manual setup instructions"
 msgstr "手動設定說明"
 
@@ -680,6 +704,8 @@ msgid "Network traffic of docker containers"
 msgstr "Docker 容器的網路流量"
 
 #: src/components/routes/system.tsx
+#: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
 msgstr "公開介面的網路流量"
 
@@ -714,6 +740,10 @@ msgstr "支援 OAuth 2 / OIDC"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "每次重新啟動時，將會以檔案中的系統定義更新資料庫。"
+
+#: src/components/login/auth-form.tsx
+msgid "One-time password"
+msgstr "一次性密碼"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -833,6 +863,14 @@ msgstr "讀取"
 msgid "Received"
 msgstr "接收"
 
+#: src/components/login/login.tsx
+msgid "Request a one-time password"
+msgstr "請求一次性密碼"
+
+#: src/components/login/otp-forms.tsx
+msgid "Request OTP"
+msgstr "請求 OTP"
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
 msgstr "重設密碼"
@@ -887,10 +925,6 @@ msgstr "傳送"
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "設定儀表顏色的百分比閾值。"
-
-#: src/components/routes/settings/general.tsx
-msgid "Sets the default time range for charts when a system is viewed."
-msgstr "設定顯示系統圖表的預設時間範圍。"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1002,6 +1036,10 @@ msgstr "{extraFsName}的傳輸速率"
 msgid "Throughput of root filesystem"
 msgstr "Root文件系統的傳輸速率"
 
+#: src/components/routes/settings/general.tsx
+msgid "Time format"
+msgstr "時間格式"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "發送到電子郵件"
@@ -1033,6 +1071,14 @@ msgstr "令牌允許代理程式連線和註冊。指紋是每個系統的唯一
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "令牌和指紋被用於驗證到 Hub 的 WebSocket 連線。"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data received for each interface"
+msgstr "每個介面的總接收資料量"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data sent for each interface"
+msgstr "每個介面的總傳送資料量"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
@@ -1094,6 +1140,10 @@ msgstr "上線"
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
 msgstr "上線 ({upSystemsLength})"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Upload"
+msgstr "上傳"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"

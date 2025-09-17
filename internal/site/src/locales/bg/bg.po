@@ -363,6 +363,14 @@ msgstr "Създаден"
 msgid "Critical (%)"
 msgstr "Критично (%)"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Download"
+msgstr "Кумулативно изтегляне"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Upload"
+msgstr "Кумулативно качване"
+
 #. Context: Battery state
 #: src/components/routes/system.tsx
 msgid "Current state"
@@ -441,6 +449,10 @@ msgstr "Офлайн"
 msgid "Down ({downSystemsLength})"
 msgstr "Офлайн ({downSystemsLength})"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Download"
+msgstr "Изтегляне"
+
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
 msgstr "Продължителност"
@@ -452,6 +464,7 @@ msgstr "Редактирай"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
+#: src/components/login/otp-forms.tsx
 msgid "Email"
 msgstr "Имейл"
 
@@ -471,6 +484,10 @@ msgstr "Въведи имейл адрес за да нулираш парола
 #: src/components/routes/settings/notifications.tsx
 msgid "Enter email address..."
 msgstr "Въведи имейл адрес..."
+
+#: src/components/login/otp-forms.tsx
+msgid "Enter your one-time password."
+msgstr "Въведете Вашата еднократна парола."
 
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -541,6 +558,12 @@ msgstr "За <0>{min}</0> {min, plural, one {минута} other {минути}}
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "Забравена парола?"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "FreeBSD command"
+msgstr "FreeBSD команда"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -645,6 +668,7 @@ msgid "Manage display and notification preferences."
 msgstr "Управление на предпочитанията за показване и уведомяване."
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Manual setup instructions"
 msgstr "Инструкции за ръчна настройка"
 
@@ -680,6 +704,8 @@ msgid "Network traffic of docker containers"
 msgstr "Мрежов трафик на docker контейнери"
 
 #: src/components/routes/system.tsx
+#: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
 msgstr "Мрежов трафик на публични интерфейси"
 
@@ -714,6 +740,10 @@ msgstr "Поддръжка на OAuth 2 / OIDC"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "На всеки рестарт, системите в датабазата ще бъдат обновени да съвпадат със системите зададени във файла."
+
+#: src/components/login/auth-form.tsx
+msgid "One-time password"
+msgstr "Еднократна парола"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -833,6 +863,14 @@ msgstr "Прочети"
 msgid "Received"
 msgstr "Получени"
 
+#: src/components/login/login.tsx
+msgid "Request a one-time password"
+msgstr "Заявка за еднократна парола"
+
+#: src/components/login/otp-forms.tsx
+msgid "Request OTP"
+msgstr "Заявка OTP"
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
 msgstr "Нулиране на парола"
@@ -887,10 +925,6 @@ msgstr "Изпратени"
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "Задайте процентни прагове за цветовете на измервателните уреди."
-
-#: src/components/routes/settings/general.tsx
-msgid "Sets the default time range for charts when a system is viewed."
-msgstr "Задава диапазона за време за диаграмите, когато се разглежда система."
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1002,6 +1036,10 @@ msgstr "Пропускателна способност на {extraFsName}"
 msgid "Throughput of root filesystem"
 msgstr "Пропускателна способност на root файловата система"
 
+#: src/components/routes/settings/general.tsx
+msgid "Time format"
+msgstr "Формат на времето"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "До имейл(ите)"
@@ -1033,6 +1071,14 @@ msgstr "Токените позволяват на агентите да се с
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Токените и пръстовите отпечатъци се използват за удостоверяване на WebSocket връзките към концентратора."
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data received for each interface"
+msgstr "Общо получени данни за всеки интерфейс"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data sent for each interface"
+msgstr "Общо изпратени данни за всеки интерфейс"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
@@ -1094,6 +1140,10 @@ msgstr "Нагоре"
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
 msgstr "Нагоре ({upSystemsLength})"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Upload"
+msgstr "Качване"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"

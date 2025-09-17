@@ -363,6 +363,14 @@ msgstr ""
 msgid "Critical (%)"
 msgstr "Kritisk (%)"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Download"
+msgstr "Kumulativ download"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Upload"
+msgstr "Kumulativ upload"
+
 #. Context: Battery state
 #: src/components/routes/system.tsx
 msgid "Current state"
@@ -441,6 +449,10 @@ msgstr "Nede"
 msgid "Down ({downSystemsLength})"
 msgstr ""
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Download"
+msgstr "Download"
+
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
 msgstr ""
@@ -452,6 +464,7 @@ msgstr "Rediger"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
+#: src/components/login/otp-forms.tsx
 msgid "Email"
 msgstr "E-mail"
 
@@ -471,6 +484,10 @@ msgstr "Indtast e-mailadresse for at nulstille adgangskoden"
 #: src/components/routes/settings/notifications.tsx
 msgid "Enter email address..."
 msgstr "Indtast e-mailadresse..."
+
+#: src/components/login/otp-forms.tsx
+msgid "Enter your one-time password."
+msgstr "Indtast din engangsadgangskode."
 
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -541,6 +558,12 @@ msgstr "For <0>{min}</0> {min, plural, one {minut} other {minutter}}"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "Glemt adgangskode?"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "FreeBSD command"
+msgstr "FreeBSD kommando"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -645,6 +668,7 @@ msgid "Manage display and notification preferences."
 msgstr "Administrer display og notifikationsindstillinger."
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Manual setup instructions"
 msgstr "Manuel opsætningsvejledning"
 
@@ -680,6 +704,8 @@ msgid "Network traffic of docker containers"
 msgstr "Netværkstrafik af dockercontainere"
 
 #: src/components/routes/system.tsx
+#: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
 msgstr "Netværkstrafik af offentlige grænseflader"
 
@@ -714,6 +740,10 @@ msgstr "OAuth 2 / OIDC understøttelse"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Ved hver genstart vil systemer i databasen blive opdateret til at matche de systemer, der er defineret i filen."
+
+#: src/components/login/auth-form.tsx
+msgid "One-time password"
+msgstr "Engangsadgangskode"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -833,6 +863,14 @@ msgstr "Læs"
 msgid "Received"
 msgstr "Modtaget"
 
+#: src/components/login/login.tsx
+msgid "Request a one-time password"
+msgstr "Anmod om engangsadgangskode"
+
+#: src/components/login/otp-forms.tsx
+msgid "Request OTP"
+msgstr "Anmod OTP"
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
 msgstr "Nulstil adgangskode"
@@ -887,10 +925,6 @@ msgstr "Sendt"
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "Indstil procentvise tærskler for målerfarver."
-
-#: src/components/routes/settings/general.tsx
-msgid "Sets the default time range for charts when a system is viewed."
-msgstr "Sætter standardtidsintervallet for diagrammer når et system vises."
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1002,6 +1036,10 @@ msgstr "Gennemløb af {extraFsName}"
 msgid "Throughput of root filesystem"
 msgstr "Gennemløb af rodfilsystemet"
 
+#: src/components/routes/settings/general.tsx
+msgid "Time format"
+msgstr "Tidsformat"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "Til email(s)"
@@ -1033,6 +1071,14 @@ msgstr ""
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr ""
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data received for each interface"
+msgstr "Samlet modtaget data for hver interface"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data sent for each interface"
+msgstr "Samlet sendt data for hver interface"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
@@ -1094,6 +1140,10 @@ msgstr "Oppe"
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
 msgstr ""
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Upload"
+msgstr "Upload"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"
