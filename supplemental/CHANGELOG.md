@@ -1,3 +1,8 @@
+## 0.12.9
+
+- Fix divide by zero error introduced in 0.12.8 :) (#1175)
+
+
 ## 0.12.8
 
 - Add per-interface network traffic charts. (#926)
