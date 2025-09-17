@@ -1,10 +1,27 @@
+// Package deltatracker provides a tracker for calculating differences in numeric values over time.
 package deltatracker
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func ExampleDeltaTracker() {
+	tracker := NewDeltaTracker[string, int]()
+	tracker.Set("key1", 10)
+	tracker.Set("key2", 20)
+	tracker.Cycle()
+	tracker.Set("key1", 15)
+	tracker.Set("key2", 30)
+	fmt.Println(tracker.Delta("key1"))
+	fmt.Println(tracker.Delta("key2"))
+	fmt.Println(tracker.Deltas())
+	// Output: 5
+	// 10
+	// map[key1:5 key2:10]
+}
 
 func TestNewDeltaTracker(t *testing.T) {
 	tracker := NewDeltaTracker[string, int]()
@@ -17,8 +34,8 @@ func TestSet(t *testing.T) {
 	tracker := NewDeltaTracker[string, int]()
 	tracker.Set("key1", 10)
 
-	tracker.mu.RLock()
-	defer tracker.mu.RUnlock()
+	tracker.RLock()
+	defer tracker.RUnlock()
 
 	assert.Equal(t, 10, tracker.current["key1"])
 }
@@ -55,21 +72,21 @@ func TestCycle(t *testing.T) {
 	tracker.Set("key2", 20)
 
 	// Verify current has values
-	tracker.mu.RLock()
+	tracker.RLock()
 	assert.Equal(t, 10, tracker.current["key1"])
 	assert.Equal(t, 20, tracker.current["key2"])
 	assert.Empty(t, tracker.previous)
-	tracker.mu.RUnlock()
+	tracker.RUnlock()
 
 	tracker.Cycle()
 
 	// After cycle, previous should have the old current values
 	// and current should be empty
-	tracker.mu.RLock()
+	tracker.RLock()
 	assert.Empty(t, tracker.current)
 	assert.Equal(t, 10, tracker.previous["key1"])
 	assert.Equal(t, 20, tracker.previous["key2"])
-	tracker.mu.RUnlock()
+	tracker.RUnlock()
 }
 
 func TestCompleteWorkflow(t *testing.T) {
