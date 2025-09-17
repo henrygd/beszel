@@ -8,7 +8,7 @@ msgstr ""
 "Language: ar\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-11 16:52\n"
+"PO-Revision-Date: 2025-09-17 18:45\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
@@ -363,6 +363,14 @@ msgstr "أنشئت"
 msgid "Critical (%)"
 msgstr "حرج (%)"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Download"
+msgstr "التنزيل التراكمي"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Upload"
+msgstr "الرفع التراكمي"
+
 #. Context: Battery state
 #: src/components/routes/system.tsx
 msgid "Current state"
@@ -441,6 +449,10 @@ msgstr "معطل"
 msgid "Down ({downSystemsLength})"
 msgstr "معطل ({downSystemsLength})"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Download"
+msgstr "تنزيل"
+
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
 msgstr "المدة"
@@ -452,6 +464,7 @@ msgstr "تعديل"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
+#: src/components/login/otp-forms.tsx
 msgid "Email"
 msgstr "البريد الإشباكي"
 
@@ -471,6 +484,10 @@ msgstr "أدخل عنوان البريد الإشباكي لإعادة تعيي�
 #: src/components/routes/settings/notifications.tsx
 msgid "Enter email address..."
 msgstr "أدخل عنوان البريد الإشباكي..."
+
+#: src/components/login/otp-forms.tsx
+msgid "Enter your one-time password."
+msgstr "أدخل كلمة المرور لمرة واحدة الخاصة بك."
 
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -541,6 +558,12 @@ msgstr "لمدة <0>{min}</0> {min, plural, one {دقيقة} other {دقائق}}
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "هل نسيت كلمة المرور؟"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "FreeBSD command"
+msgstr "أمر FreeBSD"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -645,6 +668,7 @@ msgid "Manage display and notification preferences."
 msgstr "إدارة تفضيلات العرض والإشعارات."
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Manual setup instructions"
 msgstr "تعليمات الإعداد اليدوي"
 
@@ -680,6 +704,8 @@ msgid "Network traffic of docker containers"
 msgstr "حركة مرور الشبكة لحاويات الدوكر"
 
 #: src/components/routes/system.tsx
+#: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
 msgstr "حركة مرور الشبكة للواجهات العامة"
 
@@ -714,6 +740,10 @@ msgstr "دعم OAuth 2 / OIDC"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "في كل إعادة تشغيل، سيتم تحديث الأنظمة في قاعدة البيانات لتتطابق مع الأنظمة المعرفة في الملف."
+
+#: src/components/login/auth-form.tsx
+msgid "One-time password"
+msgstr "كلمة مرور لمرة واحدة"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -833,6 +863,14 @@ msgstr "قراءة"
 msgid "Received"
 msgstr "تم الاستلام"
 
+#: src/components/login/login.tsx
+msgid "Request a one-time password"
+msgstr "طلب كلمة مرور لمرة واحدة"
+
+#: src/components/login/otp-forms.tsx
+msgid "Request OTP"
+msgstr "طلب OTP"
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
 msgstr "إعادة تعيين كلمة المرور"
@@ -887,10 +925,6 @@ msgstr "تم الإرسال"
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "تعيين عتبات النسبة المئوية لألوان العداد."
-
-#: src/components/routes/settings/general.tsx
-msgid "Sets the default time range for charts when a system is viewed."
-msgstr "يحدد النطاق الزمني الافتراضي للرسوم البيانية عند عرض النظام."
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1002,6 +1036,10 @@ msgstr "معدل نقل {extraFsName}"
 msgid "Throughput of root filesystem"
 msgstr "معدل نقل نظام الملفات الجذر"
 
+#: src/components/routes/settings/general.tsx
+msgid "Time format"
+msgstr "تنسيق الوقت"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "إلى البريد الإشباكي"
@@ -1033,6 +1071,14 @@ msgstr "تسمح الرموز المميزة للوكلاء بالاتصال و�
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "تُستخدم الرموز المميزة والبصمات للمصادقة على اتصالات WebSocket إلى المحور."
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data received for each interface"
+msgstr "إجمالي البيانات المستلمة لكل واجهة"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data sent for each interface"
+msgstr "إجمالي البيانات المرسلة لكل واجهة"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
@@ -1094,6 +1140,10 @@ msgstr "قيد التشغيل"
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
 msgstr "قيد التشغيل ({upSystemsLength})"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Upload"
+msgstr "رفع"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"
