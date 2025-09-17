@@ -41,6 +41,7 @@ export default memo(function NetworkSheet({
 		<Sheet open={netInterfacesOpen} onOpenChange={setNetInterfacesOpen}>
 			<SheetTrigger asChild>
 				<Button
+					aria-label={t`View more`}
 					variant="outline"
 					size="icon"
 					className="shrink-0 absolute top-3 end-3 sm:inline-flex sm:top-0 sm:end-0"
