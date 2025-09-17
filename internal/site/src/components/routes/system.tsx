@@ -960,9 +960,7 @@ export function ChartCard({
 			<CardHeader className="pb-5 pt-4 gap-1 relative max-sm:py-3 max-sm:px-4">
 				<CardTitle className="text-xl sm:text-2xl">{title}</CardTitle>
 				<CardDescription>{description}</CardDescription>
-				{cornerEl && (
-					<div className="relative py-1 grid sm:justify-end sm:absolute sm:top-3.5 sm:end-3.5">{cornerEl}</div>
-				)}
+				{cornerEl && <div className="py-1 grid sm:justify-end sm:absolute sm:top-3.5 sm:end-3.5">{cornerEl}</div>}
 			</CardHeader>
 			<div className={cn("ps-0 w-[calc(100%-1.5em)] relative group", legend ? "h-54 md:h-56" : "h-48 md:h-52")}>
 				{

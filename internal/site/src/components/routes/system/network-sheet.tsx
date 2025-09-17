@@ -40,13 +40,17 @@ export default memo(function NetworkSheet({
 	return (
 		<Sheet open={netInterfacesOpen} onOpenChange={setNetInterfacesOpen}>
 			<SheetTrigger asChild>
-				<Button variant="outline" size="icon" className="shrink-0">
+				<Button
+					variant="outline"
+					size="icon"
+					className="shrink-0 absolute top-3 end-3 sm:inline-flex sm:top-0 sm:end-0"
+				>
 					<MoreHorizontalIcon />
 				</Button>
 			</SheetTrigger>
 			{hasOpened.current && (
 				<SheetContent className="overflow-auto w-200 !max-w-full p-4 sm:p-6">
-					<ChartTimeSelect className="w-[calc(100%-1.5em)]" />
+					<ChartTimeSelect className="w-[calc(100%-2em)]" />
 					<ChartCard
 						empty={dataEmpty}
 						grid={grid}

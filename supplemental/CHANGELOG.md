@@ -14,6 +14,8 @@
 
 - Add FreeBSD support for agent install script and update command.
 
+- Fix status alerts not being resolved when system comes up. (#1052)
+
 ## 0.12.7
 
 - Make LibreHardwareMonitor opt-in with `LHM=true` environment variable. (#1130)
