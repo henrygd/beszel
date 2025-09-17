@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-17 05:21\n"
+"PO-Revision-Date: 2025-09-17 18:45\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -363,6 +363,14 @@ msgstr "创建时间"
 msgid "Critical (%)"
 msgstr "临界 (%)"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Download"
+msgstr "累计下载"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Upload"
+msgstr "累计上传"
+
 #. Context: Battery state
 #: src/components/routes/system.tsx
 msgid "Current state"
@@ -441,6 +449,10 @@ msgstr "离线"
 msgid "Down ({downSystemsLength})"
 msgstr "离线 ({downSystemsLength})"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Download"
+msgstr "下载"
+
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
 msgstr "持续时间"
@@ -452,6 +464,7 @@ msgstr "编辑"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
+#: src/components/login/otp-forms.tsx
 msgid "Email"
 msgstr "电子邮件"
 
@@ -471,6 +484,10 @@ msgstr "输入电子邮件地址以重置密码"
 #: src/components/routes/settings/notifications.tsx
 msgid "Enter email address..."
 msgstr "输入电子邮件地址..."
+
+#: src/components/login/otp-forms.tsx
+msgid "Enter your one-time password."
+msgstr "输入您的一次性密码。"
 
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -541,6 +558,12 @@ msgstr "持续<0>{min}</0> {min, plural, one {分钟} other {分钟}}"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "忘记密码？"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "FreeBSD command"
+msgstr "FreeBSD 命令"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -645,6 +668,7 @@ msgid "Manage display and notification preferences."
 msgstr "管理显示和通知偏好。"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Manual setup instructions"
 msgstr "手动设置说明"
 
@@ -680,6 +704,8 @@ msgid "Network traffic of docker containers"
 msgstr "Docker 容器的网络流量"
 
 #: src/components/routes/system.tsx
+#: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
 msgstr "公共接口的网络流量"
 
@@ -714,6 +740,10 @@ msgstr "支持 OAuth 2/OIDC"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "每次重启时，数据库中的系统将更新以匹配文件中定义的系统。"
+
+#: src/components/login/auth-form.tsx
+msgid "One-time password"
+msgstr "一次性密码"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -833,6 +863,14 @@ msgstr "读取"
 msgid "Received"
 msgstr "接收"
 
+#: src/components/login/login.tsx
+msgid "Request a one-time password"
+msgstr "请求一次性密码"
+
+#: src/components/login/otp-forms.tsx
+msgid "Request OTP"
+msgstr "请求 OTP"
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
 msgstr "重置密码"
@@ -887,10 +925,6 @@ msgstr "发送"
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "设置仪表颜色的百分比阈值。"
-
-#: src/components/routes/settings/general.tsx
-msgid "Sets the default time range for charts when a system is viewed."
-msgstr "设置查看系统时图表的默认时间范围。"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1002,6 +1036,10 @@ msgstr "{extraFsName}的吞吐量"
 msgid "Throughput of root filesystem"
 msgstr "根文件系统的吞吐量"
 
+#: src/components/routes/settings/general.tsx
+msgid "Time format"
+msgstr "时间格式"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "发送到电子邮件"
@@ -1033,6 +1071,14 @@ msgstr "令牌允许客户端连接和注册。指纹是每个系统唯一的稳
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "令牌与指纹用于验证到中心的 WebSocket 连接。"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data received for each interface"
+msgstr "每个接口的总接收数据量"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data sent for each interface"
+msgstr "每个接口的总发送数据量"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
@@ -1094,6 +1140,10 @@ msgstr "在线"
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
 msgstr "在线 ({upSystemsLength})"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Upload"
+msgstr "上传"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"
