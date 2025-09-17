@@ -8,7 +8,7 @@ msgstr ""
 "Language: hu\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-11 16:52\n"
+"PO-Revision-Date: 2025-09-17 18:45\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -363,6 +363,14 @@ msgstr ""
 msgid "Critical (%)"
 msgstr "Kritikus (%)"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Download"
+msgstr "Kumulatív letöltés"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Upload"
+msgstr "Kumulatív feltöltés"
+
 #. Context: Battery state
 #: src/components/routes/system.tsx
 msgid "Current state"
@@ -441,6 +449,10 @@ msgstr ""
 msgid "Down ({downSystemsLength})"
 msgstr ""
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Download"
+msgstr "Letöltés"
+
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
 msgstr ""
@@ -452,6 +464,7 @@ msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
+#: src/components/login/otp-forms.tsx
 msgid "Email"
 msgstr ""
 
@@ -471,6 +484,10 @@ msgstr "E-mail cím megadása a jelszó visszaállításához"
 #: src/components/routes/settings/notifications.tsx
 msgid "Enter email address..."
 msgstr "Adja meg az e-mail címet..."
+
+#: src/components/login/otp-forms.tsx
+msgid "Enter your one-time password."
+msgstr "Adja meg az egyszeri jelszavát."
 
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -541,6 +558,12 @@ msgstr "A <0>{min}</0> {min, plural, one {perc} other {percek}}"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "Elfelejtette a jelszavát?"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "FreeBSD command"
+msgstr "FreeBSD parancs"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -645,6 +668,7 @@ msgid "Manage display and notification preferences."
 msgstr "A megjelenítési és értesítési beállítások kezelése."
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Manual setup instructions"
 msgstr ""
 
@@ -680,6 +704,8 @@ msgid "Network traffic of docker containers"
 msgstr "Docker konténerek hálózati forgalma"
 
 #: src/components/routes/system.tsx
+#: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
 msgstr "Nyilvános interfészek hálózati forgalma"
 
@@ -714,6 +740,10 @@ msgstr "OAuth 2 / OIDC támogatás"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Minden újraindításkor az adatbázisban lévő rendszerek frissítésre kerülnek, hogy megfeleljenek a fájlban meghatározott rendszereknek."
+
+#: src/components/login/auth-form.tsx
+msgid "One-time password"
+msgstr "Egyszeri jelszó"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -833,6 +863,14 @@ msgstr "Olvasás"
 msgid "Received"
 msgstr "Fogadott"
 
+#: src/components/login/login.tsx
+msgid "Request a one-time password"
+msgstr "Egyszeri jelszó kérése"
+
+#: src/components/login/otp-forms.tsx
+msgid "Request OTP"
+msgstr "OTP kérése"
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
 msgstr "Jelszó visszaállítása"
@@ -887,10 +925,6 @@ msgstr "Elküldve"
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "Százalékos küszöbértékek beállítása a mérőszínekhez."
-
-#: src/components/routes/settings/general.tsx
-msgid "Sets the default time range for charts when a system is viewed."
-msgstr "Beállítja az alapértelmezett időtartamot a diagramokhoz, amikor egy rendszert néznek."
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1002,6 +1036,10 @@ msgstr "A {extraFsName} átviteli teljesítménye"
 msgid "Throughput of root filesystem"
 msgstr "A gyökér fájlrendszer átviteli teljesítménye"
 
+#: src/components/routes/settings/general.tsx
+msgid "Time format"
+msgstr "Időformátum"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "E-mailben"
@@ -1033,6 +1071,14 @@ msgstr ""
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr ""
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data received for each interface"
+msgstr "Összes fogadott adat minden interfészenként"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data sent for each interface"
+msgstr "Összes elküldött adat minden interfészenként"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
@@ -1094,6 +1140,10 @@ msgstr ""
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
 msgstr ""
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Upload"
+msgstr "Feltöltés"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"
