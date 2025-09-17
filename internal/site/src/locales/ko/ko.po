@@ -8,7 +8,7 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-11 16:52\n"
+"PO-Revision-Date: 2025-09-17 18:45\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -363,6 +363,14 @@ msgstr "생성됨"
 msgid "Critical (%)"
 msgstr "위험 (%)"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Download"
+msgstr "누적 다운로드"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Upload"
+msgstr "누적 업로드"
+
 #. Context: Battery state
 #: src/components/routes/system.tsx
 msgid "Current state"
@@ -441,6 +449,10 @@ msgstr "오프라인"
 msgid "Down ({downSystemsLength})"
 msgstr "오프라인 ({downSystemsLength})"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Download"
+msgstr "다운로드"
+
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
 msgstr "기간"
@@ -452,6 +464,7 @@ msgstr "수정"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
+#: src/components/login/otp-forms.tsx
 msgid "Email"
 msgstr "이메일"
 
@@ -471,6 +484,10 @@ msgstr "비밀번호를 재설정하려면 이메일 주소를 입력하세요"
 #: src/components/routes/settings/notifications.tsx
 msgid "Enter email address..."
 msgstr "이메일 주소 입력..."
+
+#: src/components/login/otp-forms.tsx
+msgid "Enter your one-time password."
+msgstr "일회용 비밀번호를 입력하세요."
 
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -541,6 +558,12 @@ msgstr "<0>{min}</0> {min, plural, one {분} other {분}} 동안"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "비밀번호를 잊으셨나요?"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "FreeBSD command"
+msgstr "FreeBSD 명령어"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -645,6 +668,7 @@ msgid "Manage display and notification preferences."
 msgstr "디스플레이 및 알림 설정"
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Manual setup instructions"
 msgstr "수동 설정 방법"
 
@@ -680,6 +704,8 @@ msgid "Network traffic of docker containers"
 msgstr "Docker 컨테이너의 네트워크 트래픽"
 
 #: src/components/routes/system.tsx
+#: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
 msgstr "공용 인터페이스의 네트워크 트래픽"
 
@@ -714,6 +740,10 @@ msgstr "OAuth 2 / OIDC 지원"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "매 시작 시, 데이터베이스가 파일에 정의된 시스템과 일치하도록 업데이트됩니다."
+
+#: src/components/login/auth-form.tsx
+msgid "One-time password"
+msgstr "일회용 비밀번호"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -833,6 +863,14 @@ msgstr "읽기"
 msgid "Received"
 msgstr "수신됨"
 
+#: src/components/login/login.tsx
+msgid "Request a one-time password"
+msgstr "일회용 비밀번호 요청"
+
+#: src/components/login/otp-forms.tsx
+msgid "Request OTP"
+msgstr "OTP 요청"
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
 msgstr "비밀번호 재설정"
@@ -887,10 +925,6 @@ msgstr "보냄"
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "그래프 미터 색상의 백분율 임계값을 설정합니다."
-
-#: src/components/routes/settings/general.tsx
-msgid "Sets the default time range for charts when a system is viewed."
-msgstr "시스템을 볼 때 차트의 기본 시간 범위를 설정합니다."
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1002,6 +1036,10 @@ msgstr "{extraFsName}의 처리량"
 msgid "Throughput of root filesystem"
 msgstr "루트 파일 시스템의 처리량"
 
+#: src/components/routes/settings/general.tsx
+msgid "Time format"
+msgstr "시간 형식"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "받는사람(들)"
@@ -1033,6 +1071,14 @@ msgstr "토큰은 에이전트가 연결하고 등록할 수 있도록 합니다
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "토큰과 지문은 허브에 대한 WebSocket 연결을 인증하는 데 사용됩니다."
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data received for each interface"
+msgstr "각 인터페이스별 총 수신 데이터량"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data sent for each interface"
+msgstr "각 인터페이스별 총 발신 데이터량"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
@@ -1094,6 +1140,10 @@ msgstr "온라인"
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
 msgstr "온라인 ({upSystemsLength})"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Upload"
+msgstr "업로드"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"
