@@ -8,7 +8,7 @@ msgstr ""
 "Language: de\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-11 16:52\n"
+"PO-Revision-Date: 2025-09-17 18:45\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -363,6 +363,14 @@ msgstr "Erstellt"
 msgid "Critical (%)"
 msgstr "Kritisch (%)"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Download"
+msgstr "Kumulativer Download"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Upload"
+msgstr "Kumulativer Upload"
+
 #. Context: Battery state
 #: src/components/routes/system.tsx
 msgid "Current state"
@@ -441,6 +449,10 @@ msgstr "Offline"
 msgid "Down ({downSystemsLength})"
 msgstr "Offline ({downSystemsLength})"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Download"
+msgstr ""
+
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
 msgstr "Dauer"
@@ -452,6 +464,7 @@ msgstr "Bearbeiten"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
+#: src/components/login/otp-forms.tsx
 msgid "Email"
 msgstr "E-Mail"
 
@@ -471,6 +484,10 @@ msgstr "E-Mail-Adresse eingeben, um das Passwort zurückzusetzen"
 #: src/components/routes/settings/notifications.tsx
 msgid "Enter email address..."
 msgstr "E-Mail-Adresse eingeben..."
+
+#: src/components/login/otp-forms.tsx
+msgid "Enter your one-time password."
+msgstr "Geben Sie Ihr Einmalpasswort ein."
 
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -541,6 +558,12 @@ msgstr "Für <0>{min}</0> {min, plural, one {Minute} other {Minuten}}"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "Passwort vergessen?"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "FreeBSD command"
+msgstr "FreeBSD Befehl"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -645,6 +668,7 @@ msgid "Manage display and notification preferences."
 msgstr "Anzeige- und Benachrichtigungseinstellungen verwalten."
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Manual setup instructions"
 msgstr "Anleitung zur manuellen Einrichtung"
 
@@ -680,6 +704,8 @@ msgid "Network traffic of docker containers"
 msgstr "Netzwerkverkehr der Docker-Container"
 
 #: src/components/routes/system.tsx
+#: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
 msgstr "Netzwerkverkehr der öffentlichen Schnittstellen"
 
@@ -714,6 +740,10 @@ msgstr "OAuth 2 / OIDC-Unterstützung"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Bei jedem Neustart werden die Systeme in der Datenbank aktualisiert, um den in der Datei definierten Systemen zu entsprechen."
+
+#: src/components/login/auth-form.tsx
+msgid "One-time password"
+msgstr "Einmalpasswort"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -833,6 +863,14 @@ msgstr "Lesen"
 msgid "Received"
 msgstr "Empfangen"
 
+#: src/components/login/login.tsx
+msgid "Request a one-time password"
+msgstr "Einmalpasswort anfordern"
+
+#: src/components/login/otp-forms.tsx
+msgid "Request OTP"
+msgstr "OTP anfordern"
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
 msgstr "Passwort zurücksetzen"
@@ -887,10 +925,6 @@ msgstr "Gesendet"
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "Prozentuale Schwellenwerte für Zählerfarben festlegen."
-
-#: src/components/routes/settings/general.tsx
-msgid "Sets the default time range for charts when a system is viewed."
-msgstr "Legt den Standardzeitraum für Diagramme fest, wenn ein System angezeigt wird."
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1002,6 +1036,10 @@ msgstr "Durchsatz von {extraFsName}"
 msgid "Throughput of root filesystem"
 msgstr "Durchsatz des Root-Dateisystems"
 
+#: src/components/routes/settings/general.tsx
+msgid "Time format"
+msgstr "Zeitformat"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "An E-Mail(s)"
@@ -1033,6 +1071,14 @@ msgstr "Tokens ermöglichen es Agents, sich zu verbinden und zu registrieren. Fi
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Tokens und Fingerabdrücke werden verwendet, um WebSocket-Verbindungen zum Hub zu authentifizieren."
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data received for each interface"
+msgstr "Gesamtdatenmenge für jede Schnittstelle empfangen"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data sent for each interface"
+msgstr "Gesamtdatenmenge für jede Schnittstelle gesendet"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
@@ -1094,6 +1140,10 @@ msgstr "aktiv"
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
 msgstr "aktiv ({upSystemsLength})"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Upload"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Uptime"
