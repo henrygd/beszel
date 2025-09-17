@@ -25,7 +25,12 @@ type alertInfo struct {
 // startWorker is a long-running goroutine that processes alert tasks
 // every x seconds. It must be running to process status alerts.
 func (am *AlertManager) startWorker() {
-	tick := time.Tick(15 * time.Second)
+	processPendingAlerts := time.Tick(15 * time.Second)
+
+	// check for status alerts that are not resolved when system comes up
+	// (can be removed if we figure out core bug in #1052)
+	checkStatusAlerts := time.Tick(561 * time.Second)
+
 	for {
 		select {
 		case <-am.stopChan:
@@ -41,7 +46,9 @@ func (am *AlertManager) startWorker() {
 			case "cancel":
 				am.pendingAlerts.Delete(task.alertRecord.Id)
 			}
-		case <-tick:
+		case <-checkStatusAlerts:
+			resolveStatusAlerts(am.hub)
+		case <-processPendingAlerts:
 			// Check for expired alerts every tick
 			now := time.Now()
 			for key, value := range am.pendingAlerts.Range {
@@ -169,4 +176,36 @@ func (am *AlertManager) sendStatusAlert(alertStatus string, systemName string, a
 		Link:     am.hub.MakeLink("system", systemName),
 		LinkText: "View " + systemName,
 	})
+}
+
+// resolveStatusAlerts resolves any status alerts that weren't resolved
+// when system came up (https://github.com/henrygd/beszel/issues/1052)
+func resolveStatusAlerts(app core.App) error {
+	db := app.DB()
+	// Find all active status alerts where the system is actually up
+	var alertIds []string
+	err := db.NewQuery(`
+		SELECT a.id 
+		FROM alerts a
+		JOIN systems s ON a.system = s.id
+		WHERE a.name = 'Status' 
+		AND a.triggered = true
+		AND s.status = 'up'
+	`).Column(&alertIds)
+	if err != nil {
+		return err
+	}
+	// resolve all matching alert records
+	for _, alertId := range alertIds {
+		alert, err := app.FindRecordById("alerts", alertId)
+		if err != nil {
+			return err
+		}
+		alert.Set("triggered", false)
+		err = app.Save(alert)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

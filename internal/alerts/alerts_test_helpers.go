@@ -1,3 +1,6 @@
+//go:build testing
+// +build testing
+
 package alerts
 
 import (
@@ -52,4 +55,8 @@ func (am *AlertManager) ForceExpirePendingAlerts() {
 		info.expireTime = now.Add(-time.Second) // Set to 1 second ago
 		return true
 	})
+}
+
+func ResolveStatusAlerts(app core.App) error {
+	return resolveStatusAlerts(app)
 }

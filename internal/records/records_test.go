@@ -175,7 +175,7 @@ func TestDeleteOldSystemStats(t *testing.T) {
 	}
 
 	// Run deletion
-	err = records.TestDeleteOldSystemStats(hub)
+	err = records.DeleteOldSystemStats(hub)
 	require.NoError(t, err)
 
 	// Verify results
@@ -268,7 +268,7 @@ func TestDeleteOldAlertsHistory(t *testing.T) {
 			assert.Equal(t, int64(tc.alertCount), countBefore, "Initial count should match")
 
 			// Run deletion
-			err = records.TestDeleteOldAlertsHistory(hub, tc.countToKeep, tc.countBeforeDeletion)
+			err = records.DeleteOldAlertsHistory(hub, tc.countToKeep, tc.countBeforeDeletion)
 			require.NoError(t, err)
 
 			// Count after deletion
@@ -332,7 +332,7 @@ func TestDeleteOldAlertsHistoryEdgeCases(t *testing.T) {
 		}
 
 		// Should not error and should not delete anything
-		err = records.TestDeleteOldAlertsHistory(hub, 10, 20)
+		err = records.DeleteOldAlertsHistory(hub, 10, 20)
 		require.NoError(t, err)
 
 		count, err := hub.CountRecords("alerts_history")
@@ -346,7 +346,7 @@ func TestDeleteOldAlertsHistoryEdgeCases(t *testing.T) {
 		require.NoError(t, err)
 
 		// Should not error with empty table
-		err = records.TestDeleteOldAlertsHistory(hub, 10, 20)
+		err = records.DeleteOldAlertsHistory(hub, 10, 20)
 		require.NoError(t, err)
 	})
 }
@@ -376,7 +376,7 @@ func TestTwoDecimals(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		result := records.TestTwoDecimals(tc.input)
+		result := records.TwoDecimals(tc.input)
 		assert.InDelta(t, tc.expected, result, 0.02, "twoDecimals(%f) should equal %f", tc.input, tc.expected)
 	}
 }

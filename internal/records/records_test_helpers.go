@@ -7,17 +7,17 @@ import (
 	"github.com/pocketbase/pocketbase/core"
 )
 
-// TestDeleteOldSystemStats exposes deleteOldSystemStats for testing
-func TestDeleteOldSystemStats(app core.App) error {
+// DeleteOldSystemStats exposes deleteOldSystemStats for testing
+func DeleteOldSystemStats(app core.App) error {
 	return deleteOldSystemStats(app)
 }
 
-// TestDeleteOldAlertsHistory exposes deleteOldAlertsHistory for testing
-func TestDeleteOldAlertsHistory(app core.App, countToKeep, countBeforeDeletion int) error {
+// DeleteOldAlertsHistory exposes deleteOldAlertsHistory for testing
+func DeleteOldAlertsHistory(app core.App, countToKeep, countBeforeDeletion int) error {
 	return deleteOldAlertsHistory(app, countToKeep, countBeforeDeletion)
 }
 
-// TestTwoDecimals exposes twoDecimals for testing
-func TestTwoDecimals(value float64) float64 {
+// TwoDecimals exposes twoDecimals for testing
+func TwoDecimals(value float64) float64 {
 	return twoDecimals(value)
 }

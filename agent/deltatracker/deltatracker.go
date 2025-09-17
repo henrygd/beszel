@@ -1,3 +1,4 @@
+// Package deltatracker provides a tracker for calculating differences in numeric values over time.
 package deltatracker
 
 import (

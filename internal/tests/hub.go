@@ -125,3 +125,28 @@ func CreateSystems(app core.App, count int, userId string, status string) ([]*co
 	}
 	return systems, nil
 }
+
+// GetHubWithUser creates a test hub with a test user and user settings
+func GetHubWithUser(t *testing.T) (*TestHub, *core.Record) {
+	hub, err := NewTestHub(t.TempDir())
+	assert.NoError(t, err)
+	hub.StartHub()
+
+	// Manually initialize the system manager to bind event hooks
+	err = hub.GetSystemManager().Initialize()
+	assert.NoError(t, err)
+
+	// Create a test user
+	user, err := CreateUser(hub, "test@example.com", "password")
+	assert.NoError(t, err)
+
+	// Create user settings for the test user (required for alert notifications)
+	userSettingsData := map[string]any{
+		"user":     user.Id,
+		"settings": `{"emails":[test@example.com],"webhooks":[]}`,
+	}
+	_, err = CreateRecord(hub, "user_settings", userSettingsData)
+	assert.NoError(t, err)
+
+	return hub, user
+}
