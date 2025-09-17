@@ -8,7 +8,7 @@ msgstr ""
 "Language: vi\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-11 16:52\n"
+"PO-Revision-Date: 2025-09-17 18:45\n"
 "Last-Translator: \n"
 "Language-Team: Vietnamese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -363,6 +363,14 @@ msgstr "Đã tạo"
 msgid "Critical (%)"
 msgstr "Độ nghiêm trọng (%)"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Download"
+msgstr "Tải xuống tích lũy"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Upload"
+msgstr "Tải lên tích lũy"
+
 #. Context: Battery state
 #: src/components/routes/system.tsx
 msgid "Current state"
@@ -441,6 +449,10 @@ msgstr "Mất kết nối"
 msgid "Down ({downSystemsLength})"
 msgstr "Mất kết nối ({downSystemsLength})"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "Download"
+msgstr "Tải xuống"
+
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
 msgstr "Thời lượng"
@@ -452,6 +464,7 @@ msgstr "Chỉnh sửa"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
+#: src/components/login/otp-forms.tsx
 msgid "Email"
 msgstr ""
 
@@ -471,6 +484,10 @@ msgstr "Nhập địa chỉ email để đặt lại mật khẩu"
 #: src/components/routes/settings/notifications.tsx
 msgid "Enter email address..."
 msgstr "Nhập địa chỉ email..."
+
+#: src/components/login/otp-forms.tsx
+msgid "Enter your one-time password."
+msgstr "Nhập mật khẩu một lần của bạn."
 
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -541,6 +558,12 @@ msgstr "Trong <0>{min}</0> {min, plural, one {phút} other {phút}}"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "Quên mật khẩu?"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "FreeBSD command"
+msgstr "Lệnh FreeBSD"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -645,6 +668,7 @@ msgid "Manage display and notification preferences."
 msgstr "Quản lý tùy chọn hiển thị và thông báo."
 
 #: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Manual setup instructions"
 msgstr "Hướng dẫn cài đặt thủ công"
 
@@ -680,6 +704,8 @@ msgid "Network traffic of docker containers"
 msgstr "Lưu lượng mạng của các container Docker"
 
 #: src/components/routes/system.tsx
+#: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
 msgstr "Lưu lượng mạng của các giao diện công cộng"
 
@@ -714,6 +740,10 @@ msgstr "Hỗ trợ OAuth 2 / OIDC"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Mỗi khi khởi động lại, các hệ thống trong cơ sở dữ liệu sẽ được cập nhật để khớp với các hệ thống được định nghĩa trong tệp."
+
+#: src/components/login/auth-form.tsx
+msgid "One-time password"
+msgstr "Mật khẩu một lần"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -833,6 +863,14 @@ msgstr "Đọc"
 msgid "Received"
 msgstr "Đã nhận"
 
+#: src/components/login/login.tsx
+msgid "Request a one-time password"
+msgstr "Yêu cầu mật khẩu một lần"
+
+#: src/components/login/otp-forms.tsx
+msgid "Request OTP"
+msgstr "Yêu cầu OTP"
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
 msgstr "Đặt lại Mật khẩu"
@@ -887,10 +925,6 @@ msgstr "Đã gửi"
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "Đặt ngưỡng cho màu sắc đồng hồ."
-
-#: src/components/routes/settings/general.tsx
-msgid "Sets the default time range for charts when a system is viewed."
-msgstr "Đặt phạm vi thời gian mặc định cho biểu đồ khi một hệ thống được xem."
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1002,6 +1036,10 @@ msgstr "Thông lượng của {extraFsName}"
 msgid "Throughput of root filesystem"
 msgstr "Thông lượng của hệ thống tệp gốc"
 
+#: src/components/routes/settings/general.tsx
+msgid "Time format"
+msgstr "Định dạng thời gian"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
 msgstr "Đến email(s)"
@@ -1033,6 +1071,14 @@ msgstr "Token cho phép các tác nhân kết nối và đăng ký. Vân tay là
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Token và vân tay được sử dụng để xác thực các kết nối WebSocket đến trung tâm."
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data received for each interface"
+msgstr "Tổng dữ liệu nhận được cho mỗi giao diện"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data sent for each interface"
+msgstr "Tổng dữ liệu gửi đi cho mỗi giao diện"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
@@ -1094,6 +1140,10 @@ msgstr "Hoạt động"
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
 msgstr "Hoạt động ({upSystemsLength})"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Upload"
+msgstr "Tải lên"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"
