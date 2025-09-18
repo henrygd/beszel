@@ -161,6 +161,53 @@ run_rc_command "$1"
 EOF
 }
 
+# Detect system architecture
+detect_architecture() {
+  local arch=$(uname -m)
+
+  if [ "$arch" = "mips" ]; then
+    detect_mips_endianness
+    return $?
+  fi
+
+  case "$arch" in
+    x86_64)
+      arch="amd64"
+      ;;
+    armv6l|armv7l)
+      arch="arm"
+      ;;
+    aarch64)
+      arch="arm64"
+      ;;
+  esac
+
+  echo "$arch"
+}
+
+# Detect MIPS endianness using ELF header
+detect_mips_endianness() {
+  local bins="/bin/sh /bin/ls /usr/bin/env"
+  local bin_to_check endian
+  
+  for bin_to_check in $bins; do
+    if [ -f "$bin_to_check" ]; then
+      # The 6th byte in ELF header: 01 = little, 02 = big
+      endian=$(hexdump -n 1 -s 5 -e '1/1 "%02x"' "$bin_to_check" 2>/dev/null)
+      if [ "$endian" = "01" ]; then
+        echo "mipsle"
+        return
+      elif [ "$endian" = "02" ]; then
+        echo "mips" 
+        return
+      fi
+    fi
+  done
+  
+  # Final fallback
+  echo "mips"
+}
+
 # Default values
 PORT=45876
 UNINSTALL=false
@@ -556,7 +603,7 @@ fi
 echo "Downloading and installing the agent..."
 
 OS=$(uname -s | sed -e 'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/')
-ARCH=$(uname -m | sed -e 's/x86_64/amd64/' -e 's/armv6l/arm/' -e 's/armv7l/arm/' -e 's/aarch64/arm64/')
+ARCH=$(detect_architecture)
 FILE_NAME="beszel-agent_${OS}_${ARCH}.tar.gz"
 
 # Determine version to install
