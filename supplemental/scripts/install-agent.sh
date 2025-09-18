@@ -785,9 +785,7 @@ EXTRA_HELP="        update          Update the Beszel agent
         restart         Restart the Beszel agent"
 
 update() {
-    if $BIN_PATH update | grep -q "Update completed successfully"; then
-        /etc/init.d/beszel-agent restart
-    fi
+    $BIN_PATH update
 }
 
 EOF
