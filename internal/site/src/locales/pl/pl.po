@@ -8,7 +8,7 @@ msgstr ""
 "Language: pl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-17 18:45\n"
+"PO-Revision-Date: 2025-09-18 12:40\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
@@ -451,7 +451,7 @@ msgstr "Nie działa ({downSystemsLength})"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
-msgstr "Pobierz"
+msgstr "Pobieranie"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
@@ -1143,7 +1143,7 @@ msgstr "Działa ({upSystemsLength})"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
-msgstr "Wyślij"
+msgstr "Wysyłanie"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"
