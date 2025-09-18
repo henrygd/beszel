@@ -80,6 +80,10 @@ msgstr ""
 msgid "Actions"
 msgstr "Aðgerðir"
 
+#: src/components/charts/systemd-services-table.tsx
+msgid "active"
+msgstr ""
+
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Active"
@@ -348,6 +352,7 @@ msgstr ""
 msgid "CPU"
 msgstr "Örgjörvi"
 
+#: src/components/charts/systemd-services-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -528,6 +533,10 @@ msgstr ""
 msgid "Fahrenheit (°F)"
 msgstr ""
 
+#: src/components/charts/systemd-services-table.tsx
+msgid "failed"
+msgstr ""
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Villa í auðkenningu"
@@ -685,6 +694,7 @@ msgstr ""
 msgid "Max 1 min"
 msgstr "Mest 1 mínúta"
 
+#: src/components/charts/systemd-services-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Minni"
@@ -721,6 +731,10 @@ msgstr ""
 #. Context: Bytes or bits
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
+msgstr ""
+
+#: src/components/charts/systemd-services-table.tsx
+msgid "No failed services."
 msgstr ""
 
 #: src/components/command-palette.tsx
@@ -931,6 +945,14 @@ msgstr ""
 msgid "Sent"
 msgstr "Sent"
 
+#: src/components/charts/systemd-services-table.tsx
+msgid "Service"
+msgstr ""
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "Stilltu prósentuþröskuld fyrir mælaliti."
@@ -945,6 +967,14 @@ msgstr "Stillingar"
 #: src/components/routes/settings/layout.tsx
 msgid "Settings saved"
 msgstr "Stillingar vistaðar"
+
+#: src/components/charts/systemd-services-table.tsx
+msgid "Show all"
+msgstr ""
+
+#: src/components/charts/systemd-services-table.tsx
+msgid "Show less"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Sign in"
@@ -963,6 +993,7 @@ msgstr "Raða eftir"
 msgid "State"
 msgstr ""
 
+#: src/components/charts/systemd-services-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -985,6 +1016,11 @@ msgstr "Kerfi"
 
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
+msgstr ""
+
+#: src/components/charts/systemd-services-table.tsx
+#: src/components/routes/system.tsx
+msgid "Systemd Services"
 msgstr ""
 
 #: src/components/navbar.tsx

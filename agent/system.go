@@ -182,9 +182,6 @@ func (a *Agent) getSystemStats() system.Stats {
 	// network stats
 	a.updateNetworkStats(&systemStats)
 
-	// systemd services
-	systemStats.SystemdServices = getSystemdServices()
-
 	// temperatures
 	// TODO: maybe refactor to methods on systemStats
 	a.updateTemperatures(&systemStats)

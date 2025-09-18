@@ -161,6 +161,20 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 			return nil, err
 		}
 	}
+	// add new systemd_stats record
+	if len(data.SystemdServices) > 0 {
+		systemdStatsCollection, err := hub.FindCachedCollectionByNameOrId("systemd_stats")
+		if err != nil {
+			return nil, err
+		}
+		systemdStatsRecord := core.NewRecord(systemdStatsCollection)
+		systemdStatsRecord.Set("system", systemRecord.Id)
+		systemdStatsRecord.Set("stats", data.SystemdServices)
+		systemdStatsRecord.Set("type", "1m")
+		if err := hub.SaveNoValidate(systemdStatsRecord); err != nil {
+			return nil, err
+		}
+	}
 	// update system record (do this last because it triggers alerts and we need above records to be inserted first)
 	systemRecord.Set("status", up)
 

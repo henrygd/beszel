@@ -75,6 +75,10 @@ msgstr "5 min"
 msgid "Actions"
 msgstr "Actions"
 
+#: src/components/charts/systemd-services-table.tsx
+msgid "active"
+msgstr "active"
+
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Active"
@@ -343,6 +347,7 @@ msgstr "Copy YAML"
 msgid "CPU"
 msgstr "CPU"
 
+#: src/components/charts/systemd-services-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -523,6 +528,10 @@ msgstr "Export your current systems configuration."
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenheit (°F)"
 
+#: src/components/charts/systemd-services-table.tsx
+msgid "failed"
+msgstr "failed"
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Failed to authenticate"
@@ -680,6 +689,7 @@ msgstr "Manual setup instructions"
 msgid "Max 1 min"
 msgstr "Max 1 min"
 
+#: src/components/charts/systemd-services-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Memory"
@@ -717,6 +727,10 @@ msgstr "Network traffic of public interfaces"
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
 msgstr "Network unit"
+
+#: src/components/charts/systemd-services-table.tsx
+msgid "No failed services."
+msgstr "No failed services."
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -926,6 +940,14 @@ msgstr "See <0>notification settings</0> to configure how you receive alerts."
 msgid "Sent"
 msgstr "Sent"
 
+#: src/components/charts/systemd-services-table.tsx
+msgid "Service"
+msgstr "Service"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr "Services"
+
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "Set percentage thresholds for meter colors."
@@ -940,6 +962,14 @@ msgstr "Settings"
 #: src/components/routes/settings/layout.tsx
 msgid "Settings saved"
 msgstr "Settings saved"
+
+#: src/components/charts/systemd-services-table.tsx
+msgid "Show all"
+msgstr "Show all"
+
+#: src/components/charts/systemd-services-table.tsx
+msgid "Show less"
+msgstr "Show less"
 
 #: src/components/login/auth-form.tsx
 msgid "Sign in"
@@ -958,6 +988,7 @@ msgstr "Sort By"
 msgid "State"
 msgstr "State"
 
+#: src/components/charts/systemd-services-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -981,6 +1012,11 @@ msgstr "System"
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
 msgstr "System load averages over time"
+
+#: src/components/charts/systemd-services-table.tsx
+#: src/components/routes/system.tsx
+msgid "Systemd Services"
+msgstr "Systemd Services"
 
 #: src/components/navbar.tsx
 msgid "Systems"

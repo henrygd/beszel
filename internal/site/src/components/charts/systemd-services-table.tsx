@@ -3,13 +3,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Trans } from "@lingui/react/macro";
 import { memo, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronDownIcon, XIcon } from "lucide-react";
+import { ChevronDownIcon, ChevronsUpDownIcon, XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 
 interface SystemdServicesTableProps {
     services: SystemdService[];
 }
+
+type SortKey = "name" | "status" | "cpu" | "mem";
 
 const statusPriority: { [key: string]: number } = {
     failed: 1,
@@ -53,30 +55,55 @@ const getStatusDotColor = (status: string) => {
     }
 };
 
-
 export default memo(function SystemdServicesTable({ services }: SystemdServicesTableProps) {
     const [isExpanded, setIsExpanded] = useState(false);
     const [filter, setFilter] = useState("");
+    const [sortKey, setSortKey] = useState<SortKey>("status");
+    const [sortAsc, setSortAsc] = useState(true);
+
+    const handleSort = (key: SortKey) => {
+        if (sortKey === key) {
+            setSortAsc(!sortAsc);
+        } else {
+            setSortKey(key);
+            setSortAsc(true);
+        }
+    };
 
     const sortedServices = useMemo(() => {
         return [...services].sort((a, b) => {
-            const priorityA = statusPriority[a.status] || 99;
-            const priorityB = statusPriority[b.status] || 99;
-            if (priorityA !== priorityB) {
-                return priorityA - priorityB;
+            let compare = 0;
+            switch (sortKey) {
+                case "name":
+                    compare = a.n.localeCompare(b.n);
+                    break;
+                case "status":
+                    const priorityA = statusPriority[a.s] || 99;
+                    const priorityB = statusPriority[b.s] || 99;
+                    compare = priorityA - priorityB;
+                    if (compare === 0) {
+                        compare = a.n.localeCompare(b.n);
+                    }
+                    break;
+                case "cpu":
+                    compare = (a.c ?? 0) - (b.c ?? 0);
+                    break;
+                case "mem":
+                    compare = (a.m ?? 0) - (b.m ?? 0);
+                    break;
             }
-            return a.name.localeCompare(b.name);
+            return sortAsc ? compare : -compare;
         });
-    }, [services]);
+    }, [services, sortKey, sortAsc]);
 
-    const failedServices = useMemo(() => sortedServices.filter(s => s.status === 'failed'), [sortedServices]);
-    const activeServicesCount = useMemo(() => services.filter(s => s.status === 'active').length, [services]);
+    const failedServices = useMemo(() => sortedServices.filter(s => s.s === 'failed'), [sortedServices]);
+    const activeServicesCount = useMemo(() => services.filter(s => s.s === 'active').length, [services]);
 
     const filteredServices = useMemo(() => {
         if (!filter) {
             return sortedServices;
         }
-        return sortedServices.filter(service => service.name.toLowerCase().includes(filter.toLowerCase()));
+        return sortedServices.filter(service => service.n.toLowerCase().includes(filter.toLowerCase()));
     }, [sortedServices, filter]);
 
     const servicesToShow = isExpanded ? filteredServices : failedServices;
@@ -85,6 +112,15 @@ export default memo(function SystemdServicesTable({ services }: SystemdServicesT
         <span className="text-sm text-muted-foreground ml-2">
             ({failedServices.length} <Trans>failed</Trans>, {activeServicesCount} <Trans>active</Trans>)
         </span>
+    );
+
+    const SortableHeader = ({ sortKey: key, children }: { sortKey: SortKey, children: React.ReactNode }) => (
+        <TableHead onClick={() => handleSort(key)} className="cursor-pointer">
+            <div className="flex items-center gap-1">
+                {children}
+                <ChevronsUpDownIcon className="h-3 w-3" />
+            </div>
+        </TableHead>
     );
 
     return (
@@ -120,18 +156,22 @@ export default memo(function SystemdServicesTable({ services }: SystemdServicesT
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead><Trans>Service</Trans></TableHead>
-                            <TableHead><Trans>Status</Trans></TableHead>
+                            <SortableHeader sortKey="name"><Trans>Service</Trans></SortableHeader>
+                            <SortableHeader sortKey="status"><Trans>Status</Trans></SortableHeader>
+                            <SortableHeader sortKey="cpu"><Trans>CPU Usage</Trans></SortableHeader>
+                            <SortableHeader sortKey="mem"><Trans>Memory</Trans></SortableHeader>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {servicesToShow.map((service) => (
-                            <TableRow key={service.name}>
-                                <TableCell className="font-medium">{service.name}</TableCell>
-                                <TableCell className={cn("flex items-center gap-2", getStatusColor(service.status))}>
-                                    <span className={cn("h-2 w-2 rounded-full", getStatusDotColor(service.status))} />
-                                    {service.status}
+                            <TableRow key={service.n}>
+                                <TableCell className="font-medium">{service.n}</TableCell>
+                                <TableCell className={cn("flex items-center gap-2", getStatusColor(service.s))}>
+                                    <span className={cn("h-2 w-2 rounded-full", getStatusDotColor(service.s))} />
+                                    {service.s}
                                 </TableCell>
+                                <TableCell>{(service.c ?? 0).toFixed(2)}%</TableCell>
+                                <TableCell>{(service.m ?? 0).toFixed(2)} MB</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

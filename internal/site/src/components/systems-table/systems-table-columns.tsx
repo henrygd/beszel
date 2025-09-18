@@ -4,7 +4,7 @@ import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
 import type { CellContext, ColumnDef, HeaderContext } from "@tanstack/react-table"
 import type { ClassValue } from "clsx"
-import type { SystemRecord, SystemStats, SystemStatsRecord } from "@/types"
+import type { SystemRecord, SystemStats, SystemStatsRecord, SystemdService, SystemdStatsRecord  } from "@/types"
 import {
 	ArrowUpDownIcon,
 	ChevronRightSquareIcon,
@@ -375,12 +375,12 @@ export function IndicatorDot({ system, className }: { system: SystemRecord; clas
 }
 
 const SystemdCell = ({ systemId }: { systemId: string }) => {
-	const [stats, setStats] = useState<SystemStats | null>(null);
+	const [stats, setStats] = useState<SystemdService[] | null>(null);
 
 	useEffect(() => {
 		const fetchStats = async () => {
 			try {
-				const record = await pb.collection("system_stats").getFirstListItem<SystemStatsRecord>(`system="${systemId}"`, {
+				const record = await pb.collection("systemd_stats").getFirstListItem<SystemdStatsRecord>(`system="${systemId}"`, {
 					sort: "-created",
 				});
 				setStats(record.stats);
@@ -393,11 +393,11 @@ const SystemdCell = ({ systemId }: { systemId: string }) => {
 		fetchStats();
 	}, [systemId]);
 
-	if (!stats || !stats.ss) {
+	if (!stats) {
 		return <span className="text-muted-foreground">-</span>;
 	}
 
-	const failed = stats.ss.filter(s => s.status === 'failed').length;
+	const failed = stats.filter(s => s.s === 'failed').length;
 
 	if (failed > 0) {
 		return (

@@ -145,8 +145,17 @@ export interface SystemStats {
 	bat?: [number, BatteryState]
 	/** network interfaces [upload bytes, download bytes, total upload bytes, total download bytes] */
 	ni?: Record<string, [number, number, number, number]>
-	/** systemd services */
-	ss?: unknown[]
+}
+
+export interface SystemdService {
+	/** name */
+	n: string
+	/** status */
+	s: string
+	/** cpu percent */
+	c: number
+	/** memory used (mb) */
+	m: number
 }
 
 export interface GPUData {
@@ -184,6 +193,12 @@ export interface ExtraFsStats {
 export interface ContainerStatsRecord extends RecordModel {
 	system: string
 	stats: ContainerStats[]
+	created: string | number
+}
+
+export interface SystemdStatsRecord extends RecordModel {
+	system: string
+	stats: SystemdService[]
 	created: string | number
 }
 

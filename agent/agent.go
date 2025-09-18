@@ -31,6 +31,7 @@ type Agent struct {
 	netInterfaces     map[string]struct{}        // Stores all valid network interfaces
 	netIoStats        system.NetIoStats          // Keeps track of bandwidth usage
 	dockerManager     *dockerManager             // Manages Docker API requests
+	systemdManager    *systemdManager            // Manages systemd services
 	sensorConfig      *SensorConfig              // Sensors config
 	systemInfo        system.Info                // Host system info
 	gpuManager        *GPUManager                // Manages GPU data
@@ -88,6 +89,13 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	// initialize docker manager
 	agent.dockerManager = newDockerManager(agent)
 
+	// initialize systemd manager
+	if sm, err := newSystemdManager(); err != nil {
+		slog.Debug("Systemd", "err", err)
+	} else {
+		agent.systemdManager = sm
+	}
+
 	// initialize GPU manager
 	if gm, err := NewGPUManager(); err != nil {
 		slog.Debug("GPU", "err", err)
@@ -135,6 +143,11 @@ func (a *Agent) gatherStats(sessionID string) *system.CombinedData {
 		} else {
 			slog.Debug("Containers", "err", err)
 		}
+	}
+
+	if a.systemdManager != nil {
+		data.SystemdServices = a.systemdManager.getServiceStats()
+		slog.Debug("Systemd services", "data", data.SystemdServices)
 	}
 
 	data.Stats.ExtraFs = make(map[string]*system.FsStats)

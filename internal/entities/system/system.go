@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/systemd"
 )
 
 type Stats struct {
@@ -42,12 +43,6 @@ type Stats struct {
 	Battery           [2]uint8             `json:"bat,omitzero" cbor:"29,keyasint,omitzero"` // [percent, charge state, current]
 	MaxMem            float64              `json:"mm,omitempty" cbor:"30,keyasint,omitempty"`
 	NetworkInterfaces map[string][4]uint64 `json:"ni,omitempty" cbor:"31,keyasint,omitempty"` // [upload bytes, download bytes, total upload, total download]
-	SystemdServices   []SystemdService     `json:"ss,omitempty" cbor:"31,keyasint,omitempty"`
-}
-
-type SystemdService struct {
-	Name   string `json:"name" cbor:"0,keyasint"`
-	Status string `json:"status" cbor:"1,keyasint"`
 }
 
 type GPUData struct {
@@ -127,7 +122,8 @@ type Info struct {
 
 // Final data structure to return to the hub
 type CombinedData struct {
-	Stats      Stats              `json:"stats" cbor:"0,keyasint"`
-	Info       Info               `json:"info" cbor:"1,keyasint"`
-	Containers []*container.Stats `json:"container" cbor:"2,keyasint"`
+	Stats           Stats              `json:"stats" cbor:"0,keyasint"`
+	Info            Info               `json:"info" cbor:"1,keyasint"`
+	Containers      []*container.Stats `json:"container" cbor:"2,keyasint"`
+	SystemdServices []*systemd.Service `json:"systemd,omitempty" cbor:"3,keyasint,omitempty"`
 }

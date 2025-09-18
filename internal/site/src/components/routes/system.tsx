@@ -49,7 +49,7 @@ import {
 	toFixedFloat,
 	useBrowserStorage,
 } from "@/lib/utils"
-import type { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord } from "@/types"
+import type { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord, SystemdStatsRecord } from "@/types"
 import ChartTimeSelect from "../charts/chart-time-select"
 import { $router, navigate } from "../router"
 import Spinner from "../spinner"
@@ -96,7 +96,7 @@ function getTimeData(chartTime: ChartTimes, lastCreated: number) {
 }
 
 // add empty values between records to make gaps if interval is too large
-function addEmptyValues<T extends SystemStatsRecord | ContainerStatsRecord>(
+function addValues<T extends SystemStatsRecord | ContainerStatsRecord | SystemdStatsRecord>(
 	prevRecords: T[],
 	newRecords: T[],
 	expectedInterval: number
@@ -120,7 +120,7 @@ function addEmptyValues<T extends SystemStatsRecord | ContainerStatsRecord>(
 	return modifiedRecords
 }
 
-async function getStats<T extends SystemStatsRecord | ContainerStatsRecord>(
+async function getStats<T extends SystemStatsRecord | ContainerStatsRecord | SystemdStatsRecord>(
 	collection: string,
 	system: SystemRecord,
 	chartTime: ChartTimes
@@ -154,6 +154,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 	const [grid, setGrid] = useBrowserStorage("grid", true)
 	const [system, setSystem] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
+	const [systemdStats, setSystemdStats] = useState([] as SystemdStatsRecord[])
 	const [containerData, setContainerData] = useState([] as ChartData["containerData"])
 	const netCardRef = useRef<HTMLDivElement>(null)
 	const persistChartTime = useRef(false)
@@ -172,6 +173,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 			}
 			persistChartTime.current = false
 			setSystemStats([])
+			setSystemdStats([])
 			setContainerData([])
 			setContainerFilterBar(null)
 			$containerFilter.set("")
@@ -236,7 +238,8 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 		Promise.allSettled([
 			getStats<SystemStatsRecord>("system_stats", system, chartTime),
 			getStats<ContainerStatsRecord>("container_stats", system, chartTime),
-		]).then(([systemStats, containerStats]) => {
+			getStats<SystemdStatsRecord>("systemd_stats", system, chartTime),
+		]).then(([systemStats, containerStats, systemdStats]) => {
 			// loading: false
 			setChartLoading(false)
 
@@ -245,18 +248,29 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 			const ss_cache_key = `${system.id}_${chartTime}_system_stats`
 			let systemData = (cache.get(ss_cache_key) || []) as SystemStatsRecord[]
 			if (systemStats.status === "fulfilled" && systemStats.value.length) {
-				systemData = systemData.concat(addEmptyValues(systemData, systemStats.value, expectedInterval))
+				systemData = systemData.concat(addValues(systemData, systemStats.value, expectedInterval))
 				if (systemData.length > 120) {
 					systemData = systemData.slice(-100)
 				}
 				cache.set(ss_cache_key, systemData)
 			}
 			setSystemStats(systemData)
+			// make new systemd stats
+			const sds_cache_key = `${system.id}_${chartTime}_systemd_stats`
+			let systemdData = (cache.get(sds_cache_key) || []) as SystemdStatsRecord[]
+			if (systemdStats.status === "fulfilled" && systemdStats.value.length) {
+				systemdData = systemdData.concat(addValues(systemdData, systemdStats.value, expectedInterval))
+				if (systemdData.length > 120) {
+					systemdData = systemdData.slice(-100)
+				}
+				cache.set(sds_cache_key, systemdData)
+			}
+			setSystemdStats(systemdData)
 			// make new container stats
 			const cs_cache_key = `${system.id}_${chartTime}_container_stats`
 			let containerData = (cache.get(cs_cache_key) || []) as ContainerStatsRecord[]
 			if (containerStats.status === "fulfilled" && containerStats.value.length) {
-				containerData = containerData.concat(addEmptyValues(containerData, containerStats.value, expectedInterval))
+				containerData = containerData.concat(addValues(containerData, containerStats.value, expectedInterval))
 				if (containerData.length > 120) {
 					containerData = containerData.slice(-100)
 				}
@@ -849,13 +863,13 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 				)}
 
 				{/* systemd services table */}
-				{(systemStats.at(-1)?.stats.ss?.length ?? 0) > 0 && (
+				{(systemdStats.at(-1)?.stats?.length ?? 0) > 0 && (
 					<Card className="col-span-full">
 						<CardHeader className="pb-5 pt-4 gap-1 relative max-sm:py-3 max-sm:px-4">
 							<CardTitle className="text-xl sm:text-2xl"><Trans>Systemd Services</Trans></CardTitle>
 						</CardHeader>
 						<div className="px-4 pb-4">
-							<SystemdServicesTable services={systemStats.at(-1)!.stats.ss!} />
+							<SystemdServicesTable services={systemdStats.at(-1)!.stats!} />
 						</div>
 					</Card>
 				)}
