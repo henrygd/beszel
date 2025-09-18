@@ -11,7 +11,6 @@ import (
 
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/agent/battery"
-	"github.com/henrygd/beszel/agent/deltatracker"
 	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/shirou/gopsutil/v4/cpu"
@@ -20,8 +19,6 @@ import (
 	"github.com/shirou/gopsutil/v4/load"
 	"github.com/shirou/gopsutil/v4/mem"
 )
-
-var netInterfaceDeltaTracker = deltatracker.NewDeltaTracker[string, uint64]()
 
 // Sets initial / non-changing values about the host system
 func (a *Agent) initializeSystemInfo() {
@@ -34,7 +31,7 @@ func (a *Agent) initializeSystemInfo() {
 		a.systemInfo.KernelVersion = version
 		a.systemInfo.Os = system.Darwin
 	} else if strings.Contains(platform, "indows") {
-		a.systemInfo.KernelVersion = strings.Replace(platform, "Microsoft ", "", 1) + " " + version
+		a.systemInfo.KernelVersion = fmt.Sprintf("%s %s", strings.Replace(platform, "Microsoft ", "", 1), version)
 		a.systemInfo.Os = system.Windows
 	} else if platform == "freebsd" {
 		a.systemInfo.Os = system.Freebsd

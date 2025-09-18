@@ -6,9 +6,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/henrygd/beszel/agent/deltatracker"
 	"github.com/henrygd/beszel/internal/entities/system"
 	psutilNet "github.com/shirou/gopsutil/v4/net"
 )
+
+var netInterfaceDeltaTracker = deltatracker.NewDeltaTracker[string, uint64]()
 
 func (a *Agent) updateNetworkStats(systemStats *system.Stats) {
 	// network stats
@@ -40,12 +43,13 @@ func (a *Agent) updateNetworkStats(systemStats *system.Stats) {
 			totalBytesRecv += v.BytesRecv
 
 			// track deltas for each network interface
-			netInterfaceDeltaTracker.Set(fmt.Sprintf("%sdown", v.Name), v.BytesRecv)
-			netInterfaceDeltaTracker.Set(fmt.Sprintf("%sup", v.Name), v.BytesSent)
 			var upDelta, downDelta uint64
+			upKey, downKey := fmt.Sprintf("%sup", v.Name), fmt.Sprintf("%sdown", v.Name)
+			netInterfaceDeltaTracker.Set(upKey, v.BytesSent)
+			netInterfaceDeltaTracker.Set(downKey, v.BytesRecv)
 			if msElapsed > 0 {
-				upDelta = netInterfaceDeltaTracker.Delta(fmt.Sprintf("%sup", v.Name)) * 1000 / msElapsed
-				downDelta = netInterfaceDeltaTracker.Delta(fmt.Sprintf("%sdown", v.Name)) * 1000 / msElapsed
+				upDelta = netInterfaceDeltaTracker.Delta(upKey) * 1000 / msElapsed
+				downDelta = netInterfaceDeltaTracker.Delta(downKey) * 1000 / msElapsed
 			}
 			// add interface to systemStats
 			systemStats.NetworkInterfaces[v.Name] = [4]uint64{upDelta, downDelta, v.BytesSent, v.BytesRecv}
