@@ -179,8 +179,8 @@ export function formatTemperature(celsius: number, unit?: Unit): { value: number
 	if (!unit) {
 		unit = $userSettings.get().unitTemp || Unit.Celsius
 	}
-	// need loose equality check due to form data being strings
-	if (unit === Unit.Fahrenheit) {
+	// biome-ignore lint/suspicious/noDoubleEquals: need loose equality check due to form data being strings
+	if (unit == Unit.Fahrenheit) {
 		return {
 			value: celsius * 1.8 + 32,
 			unit: "°F",
@@ -202,8 +202,8 @@ export function formatBytes(
 	// Convert MB to bytes if isMegabytes is true
 	if (isMegabytes) size *= 1024 * 1024
 
-	// need loose equality check due to form data being strings
-	if (unit === Unit.Bits) {
+	// biome-ignore lint/suspicious/noDoubleEquals: need loose equality check due to form data being strings
+	if (unit == Unit.Bits) {
 		const bits = size * 8
 		const suffix = perSecond ? "ps" : ""
 		if (bits < 1000) return { value: bits, unit: `b${suffix}` }
