@@ -80,6 +80,10 @@ msgstr ""
 msgid "Actions"
 msgstr "Dejanja"
 
+#: src/components/charts/systemd-services-table.tsx
+msgid "active"
+msgstr ""
+
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Active"
@@ -344,6 +348,7 @@ msgstr ""
 msgid "CPU"
 msgstr "CPU"
 
+#: src/components/charts/systemd-services-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -524,6 +529,10 @@ msgstr "Izvozi trenutne nastavitve sistema."
 msgid "Fahrenheit (°F)"
 msgstr ""
 
+#: src/components/charts/systemd-services-table.tsx
+msgid "failed"
+msgstr ""
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Preverjanje pristnosti ni uspelo"
@@ -677,6 +686,7 @@ msgstr ""
 msgid "Max 1 min"
 msgstr "Največ 1 min"
 
+#: src/components/charts/systemd-services-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Pomnilnik"
@@ -712,6 +722,10 @@ msgstr "Omrežni promet javnih vmesnikov"
 #. Context: Bytes or bits
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
+msgstr ""
+
+#: src/components/charts/systemd-services-table.tsx
+msgid "No failed services."
 msgstr ""
 
 #: src/components/command-palette.tsx
@@ -922,6 +936,14 @@ msgstr "Glejte <0>nastavitve obvestil</0>, da nastavite način prejemanja opozor
 msgid "Sent"
 msgstr "Poslano"
 
+#: src/components/charts/systemd-services-table.tsx
+msgid "Service"
+msgstr ""
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "Nastavite odstotne pragove za barve merilnikov."
@@ -936,6 +958,14 @@ msgstr "Nastavitve"
 #: src/components/routes/settings/layout.tsx
 msgid "Settings saved"
 msgstr "Nastavitve so shranjene"
+
+#: src/components/charts/systemd-services-table.tsx
+msgid "Show all"
+msgstr ""
+
+#: src/components/charts/systemd-services-table.tsx
+msgid "Show less"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Sign in"
@@ -954,6 +984,7 @@ msgstr "Razvrsti po"
 msgid "State"
 msgstr ""
 
+#: src/components/charts/systemd-services-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -976,6 +1007,11 @@ msgstr "Sistemsko"
 
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
+msgstr ""
+
+#: src/components/charts/systemd-services-table.tsx
+#: src/components/routes/system.tsx
+msgid "Systemd Services"
 msgstr ""
 
 #: src/components/navbar.tsx
@@ -1177,6 +1213,10 @@ msgstr ""
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Pogled"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "View more"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."

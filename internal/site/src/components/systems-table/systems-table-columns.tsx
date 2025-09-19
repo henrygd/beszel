@@ -4,11 +4,14 @@ import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
 import type { CellContext, ColumnDef, HeaderContext } from "@tanstack/react-table"
 import type { ClassValue } from "clsx"
+import type { SystemRecord, SystemStats, SystemStatsRecord, SystemdService, SystemdStatsRecord  } from "@/types"
 import {
 	ArrowUpDownIcon,
+	CheckIcon,
 	CopyIcon,
 	CpuIcon,
 	HardDriveIcon,
+	ListChecks,
 	MemoryStickIcon,
 	MoreHorizontalIcon,
 	PauseCircleIcon,
@@ -31,7 +34,6 @@ import {
 	getMeterState,
 	parseSemVer,
 } from "@/lib/utils"
-import type { SystemRecord } from "@/types"
 import { SystemDialog } from "../add-system"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
@@ -287,6 +289,15 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			},
 		},
 		{
+			id: "systemd",
+			name: () => t`Services`,
+			size: 50,
+			Icon: ListChecks,
+			hideSort: true,
+			header: sortableHeader,
+			cell: ({ row }) => <SystemdCell systemId={row.original.id} />,
+		},
+		{
 			id: "actions",
 			// @ts-expect-error
 			name: () => t({ message: "Actions", comment: "Table column" }),
@@ -347,6 +358,46 @@ export function IndicatorDot({ system, className }: { system: SystemRecord; clas
 		/>
 	)
 }
+
+const SystemdCell = ({ systemId }: { systemId: string }) => {
+	const [stats, setStats] = useState<SystemdService[] | null>(null);
+
+	useEffect(() => {
+		const fetchStats = async () => {
+			try {
+				const record = await pb.collection("systemd_stats").getFirstListItem<SystemdStatsRecord>(`system="${systemId}"`, {
+					sort: "-created",
+				});
+				setStats(record.stats);
+			} catch (error) {
+				// Handle case where no stats are found
+				setStats(null);
+			}
+		};
+
+		fetchStats();
+	}, [systemId]);
+
+	if (!stats) {
+		return <span className="text-muted-foreground">-</span>;
+	}
+
+	const failed = stats.filter(s => s.s === 'failed').length;
+
+	if (failed > 0) {
+		return (
+			<div className="tabular-nums text-red-500">
+				{failed}
+			</div>
+		);
+	}
+
+	return (
+		<div className="text-green-500 flex items-center justify-center">
+			<CheckIcon className="size-4" />
+		</div>
+	);
+};
 
 export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 	const [deleteOpen, setDeleteOpen] = useState(false)

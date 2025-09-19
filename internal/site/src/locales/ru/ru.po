@@ -80,6 +80,10 @@ msgstr "5 мин"
 msgid "Actions"
 msgstr "Действия"
 
+#: src/components/charts/systemd-services-table.tsx
+msgid "active"
+msgstr ""
+
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Active"
@@ -344,6 +348,7 @@ msgstr "Скопировать YAML"
 msgid "CPU"
 msgstr "CPU"
 
+#: src/components/charts/systemd-services-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -524,6 +529,10 @@ msgstr "Экспортируйте текущую конфигурацию си�
 msgid "Fahrenheit (°F)"
 msgstr "Фаренгейт (°F)"
 
+#: src/components/charts/systemd-services-table.tsx
+msgid "failed"
+msgstr ""
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Не удалось аутентифицировать"
@@ -677,6 +686,7 @@ msgstr "Инструкции по ручной настройке"
 msgid "Max 1 min"
 msgstr "Макс 1 мин"
 
+#: src/components/charts/systemd-services-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Память"
@@ -713,6 +723,10 @@ msgstr "Сетевой трафик публичных интерфейсов"
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
 msgstr "Единицы измерения скорости сети"
+
+#: src/components/charts/systemd-services-table.tsx
+msgid "No failed services."
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -922,6 +936,14 @@ msgstr "Смотрите <0>настройки уведомлений</0>, чт�
 msgid "Sent"
 msgstr "Отправлено"
 
+#: src/components/charts/systemd-services-table.tsx
+msgid "Service"
+msgstr ""
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "Установите процентные пороги для цветов счетчиков."
@@ -936,6 +958,14 @@ msgstr "Настройки"
 #: src/components/routes/settings/layout.tsx
 msgid "Settings saved"
 msgstr "Настройки сохранены"
+
+#: src/components/charts/systemd-services-table.tsx
+msgid "Show all"
+msgstr ""
+
+#: src/components/charts/systemd-services-table.tsx
+msgid "Show less"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Sign in"
@@ -954,6 +984,7 @@ msgstr "Сортировать по"
 msgid "State"
 msgstr "Состояние"
 
+#: src/components/charts/systemd-services-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -977,6 +1008,11 @@ msgstr "Система"
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
 msgstr "Средняя загрузка системы за время"
+
+#: src/components/charts/systemd-services-table.tsx
+#: src/components/routes/system.tsx
+msgid "Systemd Services"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -1177,6 +1213,10 @@ msgstr "Значение"
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Вид"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "View more"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
