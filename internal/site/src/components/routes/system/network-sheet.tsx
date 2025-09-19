@@ -44,7 +44,7 @@ export default memo(function NetworkSheet({
 					aria-label={t`View more`}
 					variant="outline"
 					size="icon"
-					className="shrink-0 absolute top-3 end-3 sm:inline-flex sm:top-0 sm:end-0"
+					className="shrink-0 max-sm:absolute max-sm:top-3 max-sm:end-3"
 				>
 					<MoreHorizontalIcon />
 				</Button>
