@@ -1,3 +1,9 @@
+## 0.12.10
+
+- Show connection type (WebSocket / SSH) in hub UI.
+
+- Fix temperature unit and bytes / bits settings. (#1180)
+
 ## 0.12.9
 
 - Fix divide by zero error introduced in 0.12.8 :) (#1175)
