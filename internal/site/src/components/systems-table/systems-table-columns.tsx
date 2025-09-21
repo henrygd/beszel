@@ -306,10 +306,11 @@ function sortableHeader(context: HeaderContext<SystemRecord, unknown>) {
 	const { column } = context
 	// @ts-expect-error
 	const { Icon, hideSort, name }: { Icon: React.ElementType; name: () => string; hideSort: boolean } = column.columnDef
+	const isSorted = column.getIsSorted()
 	return (
 		<Button
 			variant="ghost"
-			className="h-9 px-3 flex"
+			className={cn("h-9 px-3 flex duration-50", isSorted && "bg-accent/70 light:bg-accent text-accent-foreground/90")}
 			onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
 		>
 			{Icon && <Icon className="me-2 size-4" />}

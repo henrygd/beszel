@@ -337,7 +337,7 @@ const AllSystemsTable = memo(
 				{/* add header height to table size */}
 				<div style={{ height: `${virtualizer.getTotalSize() + 50}px`, paddingTop, paddingBottom }}>
 					<table className="text-sm w-full h-full">
-						<SystemsTableHead table={table} colLength={colLength} />
+						<SystemsTableHead table={table} />
 						<TableBody onMouseEnter={preloadSystemDetail}>
 							{rows.length ? (
 								virtualRows.map((virtualRow) => {
@@ -367,26 +367,23 @@ const AllSystemsTable = memo(
 	}
 )
 
-function SystemsTableHead({ table, colLength }: { table: TableType<SystemRecord>; colLength: number }) {
-	const { i18n } = useLingui()
-
-	return useMemo(() => {
-		return (
-			<TableHeader className="sticky top-0 z-20 w-full border-b-2">
-				{table.getHeaderGroups().map((headerGroup) => (
-					<tr key={headerGroup.id}>
-						{headerGroup.headers.map((header) => {
-							return (
-								<TableHead className="px-1.5" key={header.id}>
-									{flexRender(header.column.columnDef.header, header.getContext())}
-								</TableHead>
-							)
-						})}
-					</tr>
-				))}
-			</TableHeader>
-		)
-	}, [i18n.locale, colLength])
+function SystemsTableHead({ table }: { table: TableType<SystemRecord> }) {
+	const { t } = useLingui()
+	return (
+		<TableHeader className="sticky top-0 z-20 w-full border-b-2">
+			{table.getHeaderGroups().map((headerGroup) => (
+				<tr key={headerGroup.id}>
+					{headerGroup.headers.map((header) => {
+						return (
+							<TableHead className="px-1.5" key={header.id}>
+								{flexRender(header.column.columnDef.header, header.getContext())}
+							</TableHead>
+						)
+					})}
+				</tr>
+			))}
+		</TableHeader>
+	)
 }
 
 const SystemTableRow = memo(
