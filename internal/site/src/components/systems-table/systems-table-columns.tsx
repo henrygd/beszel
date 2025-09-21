@@ -6,6 +6,7 @@ import type { CellContext, ColumnDef, HeaderContext } from "@tanstack/react-tabl
 import type { ClassValue } from "clsx"
 import {
 	ArrowUpDownIcon,
+	ChevronRightSquareIcon,
 	CopyIcon,
 	CpuIcon,
 	HardDriveIcon,
@@ -20,7 +21,7 @@ import {
 } from "lucide-react"
 import { memo, useMemo, useRef, useState } from "react"
 import { isReadOnlyUser, pb } from "@/lib/api"
-import { MeterState, SystemStatus } from "@/lib/enums"
+import { ConnectionType, MeterState, SystemStatus } from "@/lib/enums"
 import { $longestSystemNameLen, $userSettings } from "@/lib/stores"
 import {
 	cn,
@@ -54,7 +55,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "../ui/dropdown-menu"
-import { EthernetIcon, GpuIcon, HourglassIcon, ThermometerIcon } from "../ui/icons"
+import { EthernetIcon, GpuIcon, HourglassIcon, ThermometerIcon, WebSocketIcon } from "../ui/icons"
 
 const STATUS_COLORS = {
 	[SystemStatus.Up]: "bg-green-500",
@@ -271,18 +272,18 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 					return null
 				}
 				const system = info.row.original
+				const color = {
+					"text-green-500": version === globalThis.BESZEL.HUB_VERSION,
+					"text-yellow-500": version !== globalThis.BESZEL.HUB_VERSION,
+					"text-red-500": system.status !== SystemStatus.Up,
+				}
 				return (
-					<span className={cn("flex gap-1.5 items-center md:pe-5 tabular-nums", viewMode === "table" && "ps-0.5")}>
-						<IndicatorDot
-							system={system}
-							className={
-								(system.status !== SystemStatus.Up && STATUS_COLORS[SystemStatus.Paused]) ||
-								(version === globalThis.BESZEL.HUB_VERSION && STATUS_COLORS[SystemStatus.Up]) ||
-								STATUS_COLORS[SystemStatus.Pending]
-							}
-						/>
+					<div className={cn("flex gap-1.5 items-center md:pe-5 tabular-nums", viewMode === "table" && "ps-0.5")}>
+						{system.info.ct === ConnectionType.WebSocket && <WebSocketIcon className={cn("size-3", color)} />}
+						{system.info.ct === ConnectionType.SSH && <ChevronRightSquareIcon className={cn("size-3", color)} />}
+						{!system.info.ct && <IndicatorDot system={system} className={cn(color, "bg-current mx-0.5")} />}
 						<span className="truncate max-w-14">{info.getValue() as string}</span>
-					</span>
+					</div>
 				)
 			},
 		},

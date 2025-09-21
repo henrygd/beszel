@@ -212,6 +212,7 @@ func (a *Agent) getSystemStats() system.Stats {
 	}
 
 	// update base system info
+	a.systemInfo.ConnectionType = a.connectionManager.ConnectionType
 	a.systemInfo.Cpu = systemStats.Cpu
 	a.systemInfo.LoadAvg = systemStats.LoadAvg
 	// TODO: remove these in future release in favor of load avg array

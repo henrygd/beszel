@@ -3,7 +3,15 @@ import { Plural, Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
 import { timeTicks } from "d3-time"
-import { ClockArrowUp, CpuIcon, GlobeIcon, LayoutGridIcon, MonitorIcon, XIcon } from "lucide-react"
+import {
+	ChevronRightSquareIcon,
+	ClockArrowUp,
+	CpuIcon,
+	GlobeIcon,
+	LayoutGridIcon,
+	MonitorIcon,
+	XIcon,
+} from "lucide-react"
 import { subscribeKeys } from "nanostores"
 import React, { type JSX, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import AreaChartDefault from "@/components/charts/area-chart"
@@ -16,7 +24,7 @@ import MemChart from "@/components/charts/mem-chart"
 import SwapChart from "@/components/charts/swap-chart"
 import TemperatureChart from "@/components/charts/temperature-chart"
 import { getPbTimestamp, pb } from "@/lib/api"
-import { ChartType, Os, SystemStatus, Unit } from "@/lib/enums"
+import { ChartType, ConnectionType, Os, SystemStatus, Unit } from "@/lib/enums"
 import { batteryStateTranslations } from "@/lib/i18n"
 import {
 	$allSystemsByName,
@@ -47,7 +55,7 @@ import { $router, navigate } from "../router"
 import Spinner from "../spinner"
 import { Button } from "../ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card"
-import { AppleIcon, ChartAverage, ChartMax, FreeBsdIcon, Rows, TuxIcon, WindowsIcon } from "../ui/icons"
+import { AppleIcon, ChartAverage, ChartMax, FreeBsdIcon, Rows, TuxIcon, WebSocketIcon, WindowsIcon } from "../ui/icons"
 import { Input } from "../ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { Separator } from "../ui/separator"
@@ -130,7 +138,7 @@ async function getStats<T extends SystemStatsRecord | ContainerStatsRecord>(
 
 function dockerOrPodman(str: string, system: SystemRecord) {
 	if (system.info.p) {
-		str = str.replace("docker", "podman").replace("Docker", "Podman")
+		return str.replace("docker", "podman").replace("Docker", "Podman")
 	}
 	return str
 }
@@ -407,25 +415,45 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 						<div>
 							<h1 className="text-[1.6rem] font-semibold mb-1.5">{system.name}</h1>
 							<div className="flex flex-wrap items-center gap-3 gap-y-2 text-sm opacity-90">
-								<div className="capitalize flex gap-2 items-center">
-									<span className={cn("relative flex h-3 w-3")}>
-										{system.status === SystemStatus.Up && (
-											<span
-												className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
-												style={{ animationDuration: "1.5s" }}
-											></span>
+								<TooltipProvider>
+									<Tooltip>
+										<TooltipTrigger asChild>
+											<div className="capitalize flex gap-2 items-center">
+												<span className={cn("relative flex h-3 w-3")}>
+													{system.status === SystemStatus.Up && (
+														<span
+															className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
+															style={{ animationDuration: "1.5s" }}
+														></span>
+													)}
+													<span
+														className={cn("relative inline-flex rounded-full h-3 w-3", {
+															"bg-green-500": system.status === SystemStatus.Up,
+															"bg-red-500": system.status === SystemStatus.Down,
+															"bg-primary/40": system.status === SystemStatus.Paused,
+															"bg-yellow-500": system.status === SystemStatus.Pending,
+														})}
+													></span>
+												</span>
+												{translatedStatus}
+											</div>
+										</TooltipTrigger>
+										{system.info.ct && (
+											<TooltipContent>
+												{system.info.ct === ConnectionType.WebSocket ? (
+													<div className="flex gap-1 items-center">
+														<WebSocketIcon className="size-4" /> WebSocket
+													</div>
+												) : (
+													<div className="flex gap-1 items-center">
+														<ChevronRightSquareIcon className="size-4" strokeWidth={2} /> SSH
+													</div>
+												)}
+											</TooltipContent>
 										)}
-										<span
-											className={cn("relative inline-flex rounded-full h-3 w-3", {
-												"bg-green-500": system.status === SystemStatus.Up,
-												"bg-red-500": system.status === SystemStatus.Down,
-												"bg-primary/40": system.status === SystemStatus.Paused,
-												"bg-yellow-500": system.status === SystemStatus.Pending,
-											})}
-										></span>
-									</span>
-									{translatedStatus}
-								</div>
+									</Tooltip>
+								</TooltipProvider>
+
 								{systemInfo.map(({ value, label, Icon, hide }) => {
 									if (hide || !value) {
 										return null

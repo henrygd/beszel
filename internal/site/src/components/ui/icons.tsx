@@ -130,3 +130,12 @@ export function HourglassIcon(props: SVGProps<SVGSVGElement>) {
 		</svg>
 	)
 }
+
+export function WebSocketIcon(props: SVGProps<SVGSVGElement>) {
+	return (
+		<svg viewBox="0 0 256 193" {...props} fill="currentColor">
+			<title>WebSocket</title>
+			<path d="M192 145h32V68l-36-35-22 22 26 27zm32 16H113l-26-27 11-11 22 22h45l-44-45 11-11 44 44V88l-21-22 11-11-55-55H0l32 32h65l24 23-34 34-24-23V48H32v31l55 55-23 22 36 36h156z" />
+		</svg>
+	)
+}

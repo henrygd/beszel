@@ -1,5 +1,5 @@
 import type { RecordModel } from "pocketbase"
-import type { Unit, Os, BatteryState, HourFormat } from "./lib/enums"
+import type { Unit, Os, BatteryState, HourFormat, ConnectionType } from "@/lib/enums"
 
 // global window properties
 declare global {
@@ -75,6 +75,8 @@ export interface SystemInfo {
 	dt?: number
 	/** operating system */
 	os?: Os
+	/** connection type */
+	ct?: ConnectionType
 }
 
 export interface SystemStats {

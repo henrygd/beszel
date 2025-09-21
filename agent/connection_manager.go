@@ -9,19 +9,21 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/agent/health"
+	"github.com/henrygd/beszel/internal/entities/system"
 )
 
 // ConnectionManager manages the connection state and events for the agent.
 // It handles both WebSocket and SSH connections, automatically switching between
 // them based on availability and managing reconnection attempts.
 type ConnectionManager struct {
-	agent         *Agent               // Reference to the parent agent
-	State         ConnectionState      // Current connection state
-	eventChan     chan ConnectionEvent // Channel for connection events
-	wsClient      *WebSocketClient     // WebSocket client for hub communication
-	serverOptions ServerOptions        // Configuration for SSH server
-	wsTicker      *time.Ticker         // Ticker for WebSocket connection attempts
-	isConnecting  bool                 // Prevents multiple simultaneous reconnection attempts
+	agent          *Agent               // Reference to the parent agent
+	State          ConnectionState      // Current connection state
+	eventChan      chan ConnectionEvent // Channel for connection events
+	wsClient       *WebSocketClient     // WebSocket client for hub communication
+	serverOptions  ServerOptions        // Configuration for SSH server
+	wsTicker       *time.Ticker         // Ticker for WebSocket connection attempts
+	isConnecting   bool                 // Prevents multiple simultaneous reconnection attempts
+	ConnectionType system.ConnectionType
 }
 
 // ConnectionState represents the current connection state of the agent.
@@ -144,15 +146,18 @@ func (c *ConnectionManager) handleStateChange(newState ConnectionState) {
 	switch newState {
 	case WebSocketConnected:
 		slog.Info("WebSocket connected", "host", c.wsClient.hubURL.Host)
+		c.ConnectionType = system.ConnectionTypeWebSocket
 		c.stopWsTicker()
 		_ = c.agent.StopServer()
 		c.isConnecting = false
 	case SSHConnected:
 		// stop new ws connection attempts
 		slog.Info("SSH connection established")
+		c.ConnectionType = system.ConnectionTypeSSH
 		c.stopWsTicker()
 		c.isConnecting = false
 	case Disconnected:
+		c.ConnectionType = system.ConnectionTypeNone
 		if c.isConnecting {
 			// Already handling reconnection, avoid duplicate attempts
 			return

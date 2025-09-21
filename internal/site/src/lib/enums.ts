@@ -53,3 +53,9 @@ export enum HourFormat {
 	"12h" = "12h",
 	"24h" = "24h",
 }
+
+/** Connection type */
+export enum ConnectionType {
+	SSH = 1,
+	WebSocket,
+}
