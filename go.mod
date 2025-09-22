@@ -3,7 +3,7 @@ module github.com/henrygd/beszel
 go 1.25.1
 
 // lock shoutrrr to specific version to allow review before updating
-replace github.com/nicholas-fedor/shoutrrr => github.com/nicholas-fedor/shoutrrr v0.8.8
+replace github.com/nicholas-fedor/shoutrrr => github.com/nicholas-fedor/shoutrrr v0.9.1
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
@@ -12,16 +12,16 @@ require (
 	github.com/gliderlabs/ssh v0.3.8
 	github.com/google/uuid v1.6.0
 	github.com/lxzan/gws v1.8.9
-	github.com/nicholas-fedor/shoutrrr v0.8.17
+	github.com/nicholas-fedor/shoutrrr v0.9.1
 	github.com/pocketbase/dbx v1.11.0
-	github.com/pocketbase/pocketbase v0.29.3
-	github.com/shirou/gopsutil/v4 v4.25.6
-	github.com/spf13/cast v1.9.2
-	github.com/spf13/cobra v1.9.1
-	github.com/spf13/pflag v1.0.7
-	github.com/stretchr/testify v1.11.0
-	golang.org/x/crypto v0.41.0
-	golang.org/x/exp v0.0.0-20250819193227-8b4c13bb791b
+	github.com/pocketbase/pocketbase v0.30.0
+	github.com/shirou/gopsutil/v4 v4.25.8
+	github.com/spf13/cast v1.10.0
+	github.com/spf13/cobra v1.10.1
+	github.com/spf13/pflag v1.0.10
+	github.com/stretchr/testify v1.11.1
+	golang.org/x/crypto v0.42.0
+	golang.org/x/exp v0.0.0-20250911091902-df9299821621
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -33,9 +33,9 @@ require (
 	github.com/dolthub/maphash v0.1.0 // indirect
 	github.com/domodwyer/mailyak/v3 v3.6.2 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/ebitengine/purego v0.8.4 // indirect
+	github.com/ebitengine/purego v0.9.0 // indirect
 	github.com/fatih/color v1.18.0 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.9 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.10 // indirect
 	github.com/ganigeorgiev/fexpr v0.5.0 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0 // indirect
@@ -43,7 +43,7 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
-	github.com/lufia/plan9stats v0.0.0-20250821153705-5981dea3221d // indirect
+	github.com/lufia/plan9stats v0.0.0-20250827001030-24949be3fa54 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/ncruces/go-strftime v0.1.9 // indirect
@@ -54,12 +54,12 @@ require (
 	github.com/tklauser/numcpus v0.10.0 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
-	golang.org/x/image v0.30.0 // indirect
-	golang.org/x/net v0.43.0 // indirect
-	golang.org/x/oauth2 v0.30.0 // indirect
-	golang.org/x/sync v0.16.0 // indirect
-	golang.org/x/sys v0.35.0 // indirect
-	golang.org/x/text v0.28.0 // indirect
+	golang.org/x/image v0.31.0 // indirect
+	golang.org/x/net v0.44.0 // indirect
+	golang.org/x/oauth2 v0.31.0 // indirect
+	golang.org/x/sync v0.17.0 // indirect
+	golang.org/x/sys v0.36.0 // indirect
+	golang.org/x/text v0.29.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 	howett.net/plist v1.0.1 // indirect
 	modernc.org/libc v1.66.3 // indirect
