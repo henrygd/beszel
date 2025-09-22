@@ -8,7 +8,7 @@ msgstr ""
 "Language: ja\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-17 18:45\n"
+"PO-Revision-Date: 2025-09-22 23:10\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -172,6 +172,10 @@ msgstr "システム全体の平均CPU使用率"
 #: src/components/routes/system.tsx
 msgid "Average utilization of {0}"
 msgstr "{0}の平均使用率"
+
+#: src/components/routes/system.tsx
+msgid "Average utilization of GPU engines"
+msgstr "GPUエンジンの平均使用率"
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
@@ -575,6 +579,10 @@ msgstr "満充電"
 #: src/components/routes/settings/layout.tsx
 msgid "General"
 msgstr "一般"
+
+#: src/components/routes/system.tsx
+msgid "GPU Engines"
+msgstr "GPUエンジン"
 
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
@@ -1177,6 +1185,10 @@ msgstr "値"
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "表示"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "View more"
+msgstr "もっと見る"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
