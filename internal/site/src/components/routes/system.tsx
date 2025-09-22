@@ -61,6 +61,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import NetworkSheet from "./system/network-sheet"
+import LineChartDefault from "../charts/line-chart"
 
 type ChartTimeData = {
 	time: number
@@ -398,6 +399,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 	const lastGpuVals = Object.values(systemStats.at(-1)?.stats.g ?? {})
 	const hasGpuData = lastGpuVals.length > 0
 	const hasGpuPowerData = lastGpuVals.some((gpu) => gpu.p !== undefined)
+	const hasGpuEnginesData = lastGpuVals.some((gpu) => gpu.e !== undefined)
 
 	let translatedStatus: string = system.status
 	if (system.status === SystemStatus.Up) {
@@ -758,7 +760,6 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 							/>
 						</ChartCard>
 					)}
-
 					{/* GPU power draw chart */}
 					{hasGpuPowerData && (
 						<ChartCard
@@ -772,9 +773,20 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 					)}
 				</div>
 
-				{/* GPU charts */}
+				{/* Non-power GPU charts */}
 				{hasGpuData && (
 					<div className="grid xl:grid-cols-2 gap-4">
+						{hasGpuEnginesData && (
+							<ChartCard
+								className="!col-span-1"
+								empty={dataEmpty}
+								grid={grid}
+								title={t`GPU Engines`}
+								description={t`Average utilization of GPU engines`}
+							>
+								<GpuEnginesChart chartData={chartData} />
+							</ChartCard>
+						)}
 						{Object.keys(systemStats.at(-1)?.stats.g ?? {}).map((id) => {
 							const gpu = systemStats.at(-1)?.stats.g?.[id] as GPUData
 							return (
@@ -799,33 +811,36 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 											contentFormatter={({ value }) => `${decimalString(value)}%`}
 										/>
 									</ChartCard>
-									<ChartCard
-										empty={dataEmpty}
-										grid={grid}
-										title={`${gpu.n} VRAM`}
-										description={t`Precise utilization at the recorded time`}
-									>
-										<AreaChartDefault
-											chartData={chartData}
-											dataPoints={[
-												{
-													label: t`Usage`,
-													dataKey: ({ stats }) => stats?.g?.[id]?.mu ?? 0,
-													color: 2,
-													opacity: 0.25,
-												},
-											]}
-											max={gpu.mt}
-											tickFormatter={(val) => {
-												const { value, unit } = formatBytes(val, false, Unit.Bytes, true)
-												return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
-											}}
-											contentFormatter={({ value }) => {
-												const { value: convertedValue, unit } = formatBytes(value, false, Unit.Bytes, true)
-												return `${decimalString(convertedValue)} ${unit}`
-											}}
-										/>
-									</ChartCard>
+
+									{(gpu.mt ?? 0) > 0 && (
+										<ChartCard
+											empty={dataEmpty}
+											grid={grid}
+											title={`${gpu.n} VRAM`}
+											description={t`Precise utilization at the recorded time`}
+										>
+											<AreaChartDefault
+												chartData={chartData}
+												dataPoints={[
+													{
+														label: t`Usage`,
+														dataKey: ({ stats }) => stats?.g?.[id]?.mu ?? 0,
+														color: 2,
+														opacity: 0.25,
+													},
+												]}
+												max={gpu.mt}
+												tickFormatter={(val) => {
+													const { value, unit } = formatBytes(val, false, Unit.Bytes, true)
+													return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
+												}}
+												contentFormatter={({ value }) => {
+													const { value: convertedValue, unit } = formatBytes(value, false, Unit.Bytes, true)
+													return `${decimalString(convertedValue)} ${unit}`
+												}}
+											/>
+										</ChartCard>
+									)}
 								</div>
 							)
 						})}
@@ -896,6 +911,28 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 		</>
 	)
 })
+
+function GpuEnginesChart({ chartData }: { chartData: ChartData }) {
+	const dataPoints = []
+	const engines = Object.keys(chartData.systemStats?.at(-1)?.stats.g?.[0]?.e ?? {}).sort()
+	for (const engine of engines) {
+		dataPoints.push({
+			label: engine,
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.g?.[0]?.e?.[engine] ?? 0,
+			color: `hsl(${140 + (((engines.indexOf(engine) * 360) / engines.length) % 360)}, 65%, 52%)`,
+			opacity: 0.35,
+		})
+	}
+	return (
+		<LineChartDefault
+			legend={true}
+			chartData={chartData}
+			dataPoints={dataPoints}
+			tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
+			contentFormatter={({ value }) => `${decimalString(value)}%`}
+		/>
+	)
+}
 
 function FilterBar({ store = $containerFilter }: { store?: typeof $containerFilter }) {
 	const containerFilter = useStore(store)

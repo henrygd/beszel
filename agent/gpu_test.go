@@ -379,12 +379,12 @@ func TestGetCurrentData(t *testing.T) {
 		assert.InDelta(t, 60.0, result["1"].Power, 0.01)
 
 		// Verify that accumulators in the original map are reset
-		assert.Equal(t, float64(0), gm.GpuDataMap["0"].Count, "GPU 0 Count should be reset")
-		assert.Equal(t, float64(0), gm.GpuDataMap["0"].Usage, "GPU 0 Usage should be reset")
-		assert.Equal(t, float64(0), gm.GpuDataMap["0"].Power, "GPU 0 Power should be reset")
-		assert.Equal(t, float64(0), gm.GpuDataMap["1"].Count, "GPU 1 Count should be reset")
-		assert.Equal(t, float64(0), gm.GpuDataMap["1"].Usage, "GPU 1 Usage should be reset")
-		assert.Equal(t, float64(0), gm.GpuDataMap["1"].Power, "GPU 1 Power should be reset")
+		assert.EqualValues(t, float64(1), gm.GpuDataMap["0"].Count, "GPU 0 Count should be reset")
+		assert.EqualValues(t, float64(50.0), gm.GpuDataMap["0"].Usage, "GPU 0 Usage should be reset")
+		assert.Equal(t, float64(100.0), gm.GpuDataMap["0"].Power, "GPU 0 Power should be reset")
+		assert.Equal(t, float64(1), gm.GpuDataMap["1"].Count, "GPU 1 Count should be reset")
+		assert.Equal(t, float64(30), gm.GpuDataMap["1"].Usage, "GPU 1 Usage should be reset")
+		assert.Equal(t, float64(60), gm.GpuDataMap["1"].Power, "GPU 1 Power should be reset")
 	})
 
 	t.Run("handles zero count without panicking", func(t *testing.T) {
@@ -409,7 +409,7 @@ func TestGetCurrentData(t *testing.T) {
 		assert.Equal(t, 0.0, result["0"].Power)
 
 		// Verify reset count
-		assert.Equal(t, float64(0), gm.GpuDataMap["0"].Count)
+		assert.EqualValues(t, 1, gm.GpuDataMap["0"].Count)
 	})
 }
 
@@ -779,16 +779,109 @@ func TestAccumulation(t *testing.T) {
 			}
 
 			// Verify that accumulators in the original map are reset
-			for id := range tt.expectedValues {
+			for id, expected := range tt.expectedValues {
 				gpu, exists := gm.GpuDataMap[id]
 				assert.True(t, exists, "GPU with ID %s should still exist after GetCurrentData", id)
 				if !exists {
 					continue
 				}
-				assert.Equal(t, float64(0), gpu.Count, "Count should be reset for GPU ID %s", id)
-				assert.Equal(t, float64(0), gpu.Usage, "Usage should be reset for GPU ID %s", id)
-				assert.Equal(t, float64(0), gpu.Power, "Power should be reset for GPU ID %s", id)
+				assert.EqualValues(t, 1, gpu.Count, "Count should be reset for GPU ID %s", id)
+				assert.EqualValues(t, expected.avgUsage, gpu.Usage, "Usage should be reset for GPU ID %s", id)
+				assert.EqualValues(t, expected.avgPower, gpu.Power, "Power should be reset for GPU ID %s", id)
 			}
 		})
 	}
+}
+
+func TestIntelUpdateFromStats(t *testing.T) {
+	gm := &GPUManager{
+		GpuDataMap: make(map[string]*system.GPUData),
+	}
+
+	// First sample with power and two engines
+	sample1 := intelGpuStats{
+		Engines: map[string]struct {
+			Busy float64 `json:"busy"`
+		}{
+			"Render/3D": {Busy: 20.0},
+			"Video":     {Busy: 5.0},
+		},
+	}
+	sample1.Power.GPU = 10.5
+
+	ok := gm.updateIntelFromStats(&sample1)
+	assert.True(t, ok)
+
+	gpu := gm.GpuDataMap["0"]
+	require.NotNil(t, gpu)
+	assert.Equal(t, "GPU", gpu.Name)
+	assert.InDelta(t, 10.5, gpu.Power, 0.001)
+	assert.InDelta(t, 20.0, gpu.Engines["Render/3D"], 0.001)
+	assert.InDelta(t, 5.0, gpu.Engines["Video"], 0.001)
+	assert.Equal(t, float64(1), gpu.Count)
+
+	// Second sample with zero power (should not add) and additional engine busy
+	sample2 := intelGpuStats{
+		Engines: map[string]struct {
+			Busy float64 `json:"busy"`
+		}{
+			"Render/3D": {Busy: 10.0},
+			"Video":     {Busy: 2.5},
+			"Blitter":   {Busy: 1.0},
+		},
+	}
+	// zero power should not increment power accumulator
+	sample2.Power.GPU = 0.0
+
+	ok = gm.updateIntelFromStats(&sample2)
+	assert.True(t, ok)
+
+	gpu = gm.GpuDataMap["0"]
+	require.NotNil(t, gpu)
+	assert.InDelta(t, 10.5, gpu.Power, 0.001)
+	assert.InDelta(t, 30.0, gpu.Engines["Render/3D"], 0.001) // 20 + 10
+	assert.InDelta(t, 7.5, gpu.Engines["Video"], 0.001)      // 5 + 2.5
+	assert.InDelta(t, 1.0, gpu.Engines["Blitter"], 0.001)
+	assert.Equal(t, float64(2), gpu.Count)
+}
+
+func TestIntelCollectorStreaming(t *testing.T) {
+	// Save and override PATH
+	origPath := os.Getenv("PATH")
+	defer os.Setenv("PATH", origPath)
+
+	dir := t.TempDir()
+	os.Setenv("PATH", dir)
+
+	// Create a fake intel_gpu_top that prints a JSON array with two samples and exits
+	scriptPath := filepath.Join(dir, "intel_gpu_top")
+	script := `#!/bin/sh
+# Ignore args -s and -J
+# Emit a JSON array with two objects, separated by a comma, then exit
+(echo '['; \
+ echo '{"power":{"GPU":1.5},"engines":{"Render/3D":{"busy":12.34}}},'; \
+ echo '{"power":{"GPU":2.0},"engines":{"Video":{"busy":5}}}'; \
+ echo ']')`
+	if err := os.WriteFile(scriptPath, []byte(script), 0755); err != nil {
+		t.Fatal(err)
+	}
+
+	gm := &GPUManager{
+		GpuDataMap: make(map[string]*system.GPUData),
+	}
+
+	// Run the collector once; it should read two samples and return
+	if err := gm.collectIntelStats(); err != nil {
+		t.Fatalf("collectIntelStats error: %v", err)
+	}
+
+	gpu := gm.GpuDataMap["0"]
+	require.NotNil(t, gpu)
+	// Power should be sum of non-zero samples: 1.5 + 2.0 = 3.5
+	assert.InDelta(t, 3.5, gpu.Power, 0.001)
+	// Engines aggregated
+	assert.InDelta(t, 12.34, gpu.Engines["Render/3D"], 0.001)
+	assert.InDelta(t, 5.0, gpu.Engines["Video"], 0.001)
+	// Count should be 2 samples
+	assert.Equal(t, float64(2), gpu.Count)
 }

@@ -115,7 +115,7 @@ export function useNetworkInterfaces(interfaces: SystemStats["ni"]) {
 		data: (index = 3) => {
 			return sortedKeys.map((key) => ({
 				label: key,
-				dataKey: (stats: SystemStatsRecord) => stats.stats?.ni?.[key]?.[index],
+				dataKey: ({ stats }: SystemStatsRecord) => stats?.ni?.[key]?.[index],
 				color: `hsl(${220 + (((sortedKeys.indexOf(key) * 360) / sortedKeys.length) % 360)}, 70%, 50%)`,
 
 				opacity: 0.3,
