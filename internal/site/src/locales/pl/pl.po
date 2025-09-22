@@ -8,7 +8,7 @@ msgstr ""
 "Language: pl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-18 15:36\n"
+"PO-Revision-Date: 2025-09-22 23:10\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
@@ -172,6 +172,10 @@ msgstr "Średnie wykorzystanie procesora w całym systemie"
 #: src/components/routes/system.tsx
 msgid "Average utilization of {0}"
 msgstr "Średnie użycie {0}"
+
+#: src/components/routes/system.tsx
+msgid "Average utilization of GPU engines"
+msgstr "Średnie wykorzystanie silników GPU"
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
@@ -575,6 +579,10 @@ msgstr "Pełna"
 #: src/components/routes/settings/layout.tsx
 msgid "General"
 msgstr "Ogólne"
+
+#: src/components/routes/system.tsx
+msgid "GPU Engines"
+msgstr "Silniki GPU"
 
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
@@ -1177,6 +1185,10 @@ msgstr "Wartość"
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Widok"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "View more"
+msgstr "Zobacz więcej"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
