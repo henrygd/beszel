@@ -1,8 +1,14 @@
 ## 0.12.10
 
+- Add initial support for Intel GPUs (#1150, #755)
+
 - Show connection type (WebSocket / SSH) in hub UI.
 
 - Fix temperature unit and bytes / bits settings. (#1180)
+
+- Add `henrygd/beszel-agent-intel` image for Intel GPUs (experimental).
+
+- Update Go dependencies. Shoutrrr now supports notifications for Signal and WeChat Work (WeCom).
 
 ## 0.12.9
 
