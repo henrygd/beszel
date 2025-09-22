@@ -8,7 +8,7 @@ msgstr ""
 "Language: ar\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-17 18:45\n"
+"PO-Revision-Date: 2025-09-22 23:10\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
@@ -172,6 +172,10 @@ msgstr "متوسط استخدام وحدة المعالجة المركزية ع�
 #: src/components/routes/system.tsx
 msgid "Average utilization of {0}"
 msgstr "متوسط ​​استخدام {0}"
+
+#: src/components/routes/system.tsx
+msgid "Average utilization of GPU engines"
+msgstr "متوسط استغلال محركات GPU"
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
@@ -575,6 +579,10 @@ msgstr "ممتلئة"
 #: src/components/routes/settings/layout.tsx
 msgid "General"
 msgstr "عام"
+
+#: src/components/routes/system.tsx
+msgid "GPU Engines"
+msgstr "محركات GPU"
 
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
@@ -1177,6 +1185,10 @@ msgstr "القيمة"
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "عرض"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "View more"
+msgstr "عرض المزيد"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
