@@ -778,7 +778,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 					<div className="grid xl:grid-cols-2 gap-4">
 						{hasGpuEnginesData && (
 							<ChartCard
-								className="!col-span-1"
+								legend={true}
 								empty={dataEmpty}
 								grid={grid}
 								title={t`GPU Engines`}
@@ -792,6 +792,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 							return (
 								<div key={id} className="contents">
 									<ChartCard
+										className="!col-span-1"
 										empty={dataEmpty}
 										grid={grid}
 										title={`${gpu.n} ${t`Usage`}`}
