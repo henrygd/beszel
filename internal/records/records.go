@@ -284,6 +284,16 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 				gpu.Usage += value.Usage
 				gpu.Power += value.Power
 				gpu.Count += value.Count
+
+				if value.Engines != nil {
+					if gpu.Engines == nil {
+						gpu.Engines = make(map[string]float64, len(value.Engines))
+					}
+					for engineKey, engineValue := range value.Engines {
+						gpu.Engines[engineKey] += engineValue
+					}
+				}
+
 				sum.GPUData[id] = gpu
 			}
 		}
@@ -353,6 +363,13 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 				gpu.Usage = twoDecimals(gpu.Usage / count)
 				gpu.Power = twoDecimals(gpu.Power / count)
 				gpu.Count = twoDecimals(gpu.Count / count)
+
+				if gpu.Engines != nil {
+					for engineKey := range gpu.Engines {
+						gpu.Engines[engineKey] = twoDecimals(gpu.Engines[engineKey] / count)
+					}
+				}
+
 				sum.GPUData[id] = gpu
 			}
 		}

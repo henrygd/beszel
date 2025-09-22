@@ -123,15 +123,3 @@ export function useNetworkInterfaces(interfaces: SystemStats["ni"]) {
 		},
 	}
 }
-
-/** Generates chart configurations for GPU engines */
-export function useGpuEngines(systemStats?: SystemStatsRecord) {
-	const keys = Object.keys(systemStats?.stats.g?.[0]?.e ?? {})
-	const sortedKeys = keys.sort()
-	return sortedKeys.map((engine) => ({
-		label: engine,
-		dataKey: ({ stats }: SystemStatsRecord) => stats?.g?.[0]?.e?.[engine] ?? 0,
-		color: `hsl(${220 + ((sortedKeys.indexOf(engine) * 360) / sortedKeys.length) % 360}, 65%, 52%)`,
-		opacity: 0.35,
-	}))
-}

@@ -18,7 +18,7 @@ import AreaChartDefault from "@/components/charts/area-chart"
 import ContainerChart from "@/components/charts/container-chart"
 import DiskChart from "@/components/charts/disk-chart"
 import GpuPowerChart from "@/components/charts/gpu-power-chart"
-import { useContainerChartConfigs, useGpuEngines } from "@/components/charts/hooks"
+import { useContainerChartConfigs } from "@/components/charts/hooks"
 import LoadAverageChart from "@/components/charts/load-average-chart"
 import MemChart from "@/components/charts/mem-chart"
 import SwapChart from "@/components/charts/swap-chart"
@@ -761,6 +761,12 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 						</ChartCard>
 					)}
 
+
+				</div>
+
+				{/* Non-power GPU charts */}
+				{hasGpuData && (
+					<div className="grid xl:grid-cols-2 gap-4">
 					{/* GPU power draw chart */}
 					{hasGpuPowerData && (
 						<ChartCard
@@ -772,22 +778,16 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 							<GpuPowerChart chartData={chartData} />
 						</ChartCard>
 					)}
-
-					{hasGpuEnginesData && (
-						<ChartCard
-							empty={dataEmpty}
-							grid={grid}
-							title={t`GPU Engines`}
-							description={t`Average utilization of GPU engines`}
-						>
-							<GpuEnginesChart chartData={chartData} />
-						</ChartCard>
-					)}
-				</div>
-
-				{/* GPU charts */}
-				{hasGpuData && (
-					<div className="grid xl:grid-cols-2 gap-4">
+						{hasGpuEnginesData && (
+							<ChartCard
+								empty={dataEmpty}
+								grid={grid}
+								title={t`GPU Engines`}
+								description={t`Average utilization of GPU engines`}
+							>
+								<GpuEnginesChart chartData={chartData} />
+							</ChartCard>
+						)}
 						{Object.keys(systemStats.at(-1)?.stats.g ?? {}).map((id) => {
 							const gpu = systemStats.at(-1)?.stats.g?.[id] as GPUData
 							return (
@@ -812,6 +812,8 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 											contentFormatter={({ value }) => `${decimalString(value)}%`}
 										/>
 									</ChartCard>
+
+									{(gpu.mt ?? 0) > 0 && (
 									<ChartCard
 										empty={dataEmpty}
 										grid={grid}
@@ -839,7 +841,9 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 											}}
 										/>
 									</ChartCard>
+						)}
 								</div>
+
 							)
 						})}
 					</div>
@@ -911,9 +915,18 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 })
 
 function GpuEnginesChart({ chartData }: { chartData: ChartData }) {
-	const engineData = useGpuEngines(chartData.systemStats.at(-1))
+	const dataPoints = []
+	const engines = Object.keys(chartData.systemStats?.at(-1)?.stats.g?.[0]?.e ?? {}).sort()
+	for (const engine of engines) {
+		dataPoints.push({
+			label: engine,
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.g?.[0]?.e?.[engine] ?? 0,
+			color: `hsl(${140 + ((engines.indexOf(engine) * 360) / engines.length) % 360}, 65%, 52%)`,
+			opacity: 0.35,
+		})
+	}
 	return (
-		<LineChartDefault legend={true} chartData={chartData} dataPoints={engineData} tickFormatter={(val) => `${toFixedFloat(val, 2)}%`} contentFormatter={({ value }) => `${decimalString(value)}%`} />
+		<LineChartDefault legend={true} chartData={chartData} dataPoints={dataPoints} tickFormatter={(val) => `${toFixedFloat(val, 2)}%`} contentFormatter={({ value }) => `${decimalString(value)}%`} />
 	)
 }
 

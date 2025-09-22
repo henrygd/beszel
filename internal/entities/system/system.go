@@ -47,9 +47,9 @@ type Stats struct {
 type GPUData struct {
 	Name        string             `json:"n" cbor:"0,keyasint"`
 	Temperature float64            `json:"-"`
-	MemoryUsed  float64            `json:"mu,omitempty" cbor:"1,keyasint,omitempty"`
-	MemoryTotal float64            `json:"mt,omitempty" cbor:"2,keyasint,omitempty"`
-	Usage       float64            `json:"u" cbor:"3,keyasint"`
+	MemoryUsed  float64            `json:"mu,omitempty,omitzero" cbor:"1,keyasint,omitempty,omitzero"`
+	MemoryTotal float64            `json:"mt,omitempty,omitzero" cbor:"2,keyasint,omitempty,omitzero"`
+	Usage       float64            `json:"u" cbor:"3,keyasint,omitempty"`
 	Power       float64            `json:"p,omitempty" cbor:"4,keyasint,omitempty"`
 	Count       float64            `json:"-"`
 	Engines     map[string]float64 `json:"e,omitempty" cbor:"5,keyasint,omitempty"`

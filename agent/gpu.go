@@ -249,13 +249,20 @@ func (gm *GPUManager) GetCurrentData() map[string]system.GPUData {
 		// average the data
 		gpuAvg := *gpu
 		gpuAvg.Temperature = twoDecimals(gpu.Temperature)
-		gpuAvg.MemoryUsed = twoDecimals(gpu.MemoryUsed)
-		gpuAvg.MemoryTotal = twoDecimals(gpu.MemoryTotal)
-		gpuAvg.Usage = twoDecimals(gpu.Usage / count)
 		gpuAvg.Power = twoDecimals(gpu.Power / count)
-		gpuAvg.Engines = make(map[string]float64, len(gpu.Engines))
-		for name, engine := range gpu.Engines {
-			gpuAvg.Engines[name] = twoDecimals(engine / count)
+
+		// intel gpu stats doesn't provide usage, memory used, or memory total
+		if gm.intelGpuStats {
+			maxEngineUsage := 0.0
+			for name, engine := range gpu.Engines {
+				gpuAvg.Engines[name] = twoDecimals(engine / count)
+				maxEngineUsage = max(maxEngineUsage, engine/count)
+			}
+			gpuAvg.Usage = twoDecimals(maxEngineUsage)
+		} else {
+			gpuAvg.Usage = twoDecimals(gpu.Usage / count)
+			gpuAvg.MemoryUsed = twoDecimals(gpu.MemoryUsed)
+			gpuAvg.MemoryTotal = twoDecimals(gpu.MemoryTotal)
 		}
 
 		// reset accumulators in the original gpu data for next collection
@@ -288,7 +295,6 @@ func (gm *GPUManager) detectGPUs() error {
 		gm.nvidiaSmi = false
 	}
 	if _, err := exec.LookPath(intelGpuStatsCmd); err == nil {
-		slog.Info("Intel GPU stats found")
 		gm.intelGpuStats = true
 	}
 	if gm.nvidiaSmi || gm.rocmSmi || gm.tegrastats || gm.intelGpuStats {
@@ -305,10 +311,20 @@ func (gm *GPUManager) startCollector(command string) {
 	}
 	switch command {
 	case intelGpuStatsCmd:
-		slog.Info("Starting Intel GPU stats collector")
-		collector.cmdArgs = []string{"-s", intelGpuStatsInterval, "-J"}
-		collector.parse = gm.parseIntelData
-		go collector.start()
+		go func() {
+			failures := 0
+			for {
+				if err := gm.collectIntelStats(); err != nil {
+					failures++
+					if failures > maxFailureRetries {
+						break
+					}
+					slog.Warn("Error collecting Intel GPU data; see https://beszel.dev/guide/gpu", "err", err)
+					time.Sleep(retryWaitTime)
+					continue
+				}
+			}
+		}()
 	case nvidiaSmiCmd:
 		collector.cmdArgs = []string{
 			"-l", nvidiaSmiInterval,
