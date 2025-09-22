@@ -173,6 +173,10 @@ msgstr "시스템 전체의 평균 CPU 사용량"
 msgid "Average utilization of {0}"
 msgstr "평균 {0} 사용량"
 
+#: src/components/routes/system.tsx
+msgid "Average utilization of GPU engines"
+msgstr "GPU 엔진 평균 사용률"
+
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
@@ -575,6 +579,10 @@ msgstr "가득"
 #: src/components/routes/settings/layout.tsx
 msgid "General"
 msgstr "일반"
+
+#: src/components/routes/system.tsx
+msgid "GPU Engines"
+msgstr "GPU 엔진"
 
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
@@ -1177,6 +1185,10 @@ msgstr "값"
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "보기"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "View more"
+msgstr "더 보기"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."

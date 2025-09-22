@@ -173,6 +173,10 @@ msgstr "Średnie wykorzystanie procesora w całym systemie"
 msgid "Average utilization of {0}"
 msgstr "Średnie użycie {0}"
 
+#: src/components/routes/system.tsx
+msgid "Average utilization of GPU engines"
+msgstr "Średnie wykorzystanie silników GPU"
+
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
@@ -575,6 +579,10 @@ msgstr "Pełna"
 #: src/components/routes/settings/layout.tsx
 msgid "General"
 msgstr "Ogólne"
+
+#: src/components/routes/system.tsx
+msgid "GPU Engines"
+msgstr "Silniki GPU"
 
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
@@ -1178,6 +1186,10 @@ msgstr "Wartość"
 msgid "View"
 msgstr "Widok"
 
+#: src/components/routes/system/network-sheet.tsx
+msgid "View more"
+msgstr "Zobacz więcej"
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
 msgstr "Wyświetl 200 ostatnich alertów."
@@ -1233,4 +1245,3 @@ msgstr "Konfiguracja YAML"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Twoje ustawienia użytkownika zostały zaktualizowane."
-

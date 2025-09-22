@@ -173,6 +173,10 @@ msgstr "Gennemsnitlig systembaseret CPU-udnyttelse"
 msgid "Average utilization of {0}"
 msgstr "Gennemsnitlig udnyttelse af {0}"
 
+#: src/components/routes/system.tsx
+msgid "Average utilization of GPU engines"
+msgstr "Gennemsnitlig udnyttelse af GPU-motorer"
+
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
@@ -575,6 +579,10 @@ msgstr "Fuldt opladt"
 #: src/components/routes/settings/layout.tsx
 msgid "General"
 msgstr "Generelt"
+
+#: src/components/routes/system.tsx
+msgid "GPU Engines"
+msgstr "GPU-motorer"
 
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
@@ -1177,6 +1185,10 @@ msgstr ""
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Vis"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "View more"
+msgstr "Se mere"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."

@@ -173,6 +173,10 @@ msgstr "系统范围内的平均 CPU 使用率"
 msgid "Average utilization of {0}"
 msgstr "{0} 平均利用率"
 
+#: src/components/routes/system.tsx
+msgid "Average utilization of GPU engines"
+msgstr "GPU 引擎的平均利用率"
+
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
@@ -575,6 +579,10 @@ msgstr "满电"
 #: src/components/routes/settings/layout.tsx
 msgid "General"
 msgstr "常规"
+
+#: src/components/routes/system.tsx
+msgid "GPU Engines"
+msgstr "GPU 引擎"
 
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
@@ -1177,6 +1185,10 @@ msgstr "值"
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "视图"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "View more"
+msgstr "查看更多"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."

@@ -173,6 +173,10 @@ msgstr "Průměrné využití CPU v celém systému"
 msgid "Average utilization of {0}"
 msgstr "Průměrné využití {0}"
 
+#: src/components/routes/system.tsx
+msgid "Average utilization of GPU engines"
+msgstr "Průměrné využití GPU engine"
+
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
@@ -575,6 +579,10 @@ msgstr "Plná"
 #: src/components/routes/settings/layout.tsx
 msgid "General"
 msgstr "Obecné"
+
+#: src/components/routes/system.tsx
+msgid "GPU Engines"
+msgstr "GPU enginy"
 
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
@@ -1177,6 +1185,10 @@ msgstr "Hodnota"
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Zobrazení"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "View more"
+msgstr "Zobrazit více"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."

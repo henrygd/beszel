@@ -173,6 +173,10 @@ msgstr "متوسط استخدام وحدة المعالجة المركزية ع�
 msgid "Average utilization of {0}"
 msgstr "متوسط ​​استخدام {0}"
 
+#: src/components/routes/system.tsx
+msgid "Average utilization of GPU engines"
+msgstr "متوسط استغلال محركات GPU"
+
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
@@ -575,6 +579,10 @@ msgstr "ممتلئة"
 #: src/components/routes/settings/layout.tsx
 msgid "General"
 msgstr "عام"
+
+#: src/components/routes/system.tsx
+msgid "GPU Engines"
+msgstr "محركات GPU"
 
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
@@ -1177,6 +1185,10 @@ msgstr "القيمة"
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "عرض"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "View more"
+msgstr "عرض المزيد"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."

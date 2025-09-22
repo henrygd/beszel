@@ -173,6 +173,10 @@ msgstr "Sistem genelinde ortalama CPU kullanımı"
 msgid "Average utilization of {0}"
 msgstr "{0} ortalama kullanımı"
 
+#: src/components/routes/system.tsx
+msgid "Average utilization of GPU engines"
+msgstr "GPU motorlarının ortalama kullanımı"
+
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
@@ -575,6 +579,10 @@ msgstr "Dolu"
 #: src/components/routes/settings/layout.tsx
 msgid "General"
 msgstr "Genel"
+
+#: src/components/routes/system.tsx
+msgid "GPU Engines"
+msgstr "GPU motorları"
 
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
@@ -1177,6 +1185,10 @@ msgstr "Değer"
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Görüntüle"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "View more"
+msgstr "Daha fazla göster"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
