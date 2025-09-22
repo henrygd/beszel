@@ -33,6 +33,14 @@ jobs:
             registry: docker.io
             username_secret: DOCKERHUB_USERNAME
             password_secret: DOCKERHUB_TOKEN
+            
+          - image: henrygd/beszel-agent-intel
+            context: ./
+            dockerfile: ./internal/dockerfile_agent_intel
+            platforms: linux/amd64
+            registry: docker.io
+            username_secret: DOCKERHUB_USERNAME
+            password_secret: DOCKERHUB_TOKEN
 
           - image: ghcr.io/${{ github.repository }}/beszel
             context: ./
