@@ -8,7 +8,7 @@ msgstr ""
 "Language: pt\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-17 18:45\n"
+"PO-Revision-Date: 2025-09-22 23:10\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -172,6 +172,10 @@ msgstr "Utilização média de CPU em todo o sistema"
 #: src/components/routes/system.tsx
 msgid "Average utilization of {0}"
 msgstr "Utilização média de {0}"
+
+#: src/components/routes/system.tsx
+msgid "Average utilization of GPU engines"
+msgstr "Utilização média dos motores GPU"
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
@@ -575,6 +579,10 @@ msgstr "Cheia"
 #: src/components/routes/settings/layout.tsx
 msgid "General"
 msgstr "Geral"
+
+#: src/components/routes/system.tsx
+msgid "GPU Engines"
+msgstr "Motores GPU"
 
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
@@ -1177,6 +1185,10 @@ msgstr "Valor"
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
 msgstr "Visual"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "View more"
+msgstr "Ver mais"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
