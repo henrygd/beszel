@@ -8,7 +8,7 @@ msgstr ""
 "Language: el\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-17 18:45\n"
+"PO-Revision-Date: 2025-09-22 23:10\n"
 "Last-Translator: \n"
 "Language-Team: Greek\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -171,6 +171,10 @@ msgstr ""
 #. placeholder {0}: gpu.n
 #: src/components/routes/system.tsx
 msgid "Average utilization of {0}"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Average utilization of GPU engines"
 msgstr ""
 
 #: src/components/command-palette.tsx
@@ -574,6 +578,10 @@ msgstr ""
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "General"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "GPU Engines"
 msgstr ""
 
 #: src/components/routes/system.tsx
@@ -1176,6 +1184,10 @@ msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
+msgstr ""
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "View more"
 msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
