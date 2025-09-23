@@ -135,6 +135,7 @@ func (a *Agent) skipNetworkInterface(v psutilNet.IOCountersStat) bool {
 		strings.HasPrefix(v.Name, "br-"),
 		strings.HasPrefix(v.Name, "veth"),
 		strings.HasPrefix(v.Name, "bond"),
+		strings.HasPrefix(v.Name, "cali"),
 		v.BytesRecv == 0,
 		v.BytesSent == 0:
 		return true
