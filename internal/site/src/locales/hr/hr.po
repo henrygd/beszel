@@ -8,7 +8,7 @@ msgstr ""
 "Language: hr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-22 23:10\n"
+"PO-Revision-Date: 2025-09-23 12:43\n"
 "Last-Translator: \n"
 "Language-Team: Croatian\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
@@ -46,7 +46,7 @@ msgstr "1 sat"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr ""
+msgstr "1 minut"
 
 #: src/lib/utils.ts
 msgid "1 week"
@@ -59,7 +59,7 @@ msgstr "12 sati"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr ""
+msgstr "15 minuta"
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -83,7 +83,7 @@ msgstr "Akcije"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Active"
-msgstr ""
+msgstr "Aktivan"
 
 #: src/components/routes/home.tsx
 msgid "Active Alerts"
@@ -112,11 +112,11 @@ msgstr "Podesite opcije prikaza za grafikone."
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
-msgstr ""
+msgstr "Admin"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr ""
+msgstr "Agent"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -141,7 +141,7 @@ msgstr "Jeste li sigurni da želite izbrisati {name}?"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
-msgstr ""
+msgstr "Jeste li sigurni?"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -313,7 +313,7 @@ msgstr "Kopiraj docker run"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Environment variables"
 msgid "Copy env"
-msgstr ""
+msgstr "Kopiraj env"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
@@ -361,7 +361,7 @@ msgstr "Napravite račun"
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
 msgid "Created"
-msgstr ""
+msgstr "Kreiran"
 
 #: src/components/routes/settings/general.tsx
 msgid "Critical (%)"
@@ -405,11 +405,11 @@ msgstr "Prazni se"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
-msgstr ""
+msgstr "Disk"
 
 #: src/components/routes/system.tsx
 msgid "Disk I/O"
-msgstr ""
+msgstr "Disk I/O"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
@@ -459,18 +459,18 @@ msgstr "Preuzmi"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
-msgstr ""
+msgstr "Trajanje"
 
 #: src/components/add-system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
-msgstr ""
+msgstr "Uredi"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/otp-forms.tsx
 msgid "Email"
-msgstr ""
+msgstr "Email"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
@@ -514,7 +514,7 @@ msgstr "Postojeći sistemi koji nisu definirani u <0>config.yml</0> će biti izb
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
-msgstr ""
+msgstr "Izvezi"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
@@ -549,11 +549,11 @@ msgstr "Ažuriranje upozorenja nije uspjelo"
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
-msgstr ""
+msgstr "Filtriraj..."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
-msgstr ""
+msgstr "Otisak prsta"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -647,7 +647,7 @@ msgstr ""
 #. Short label for load average
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
-msgstr ""
+msgstr "Prosječno opterećenje"
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -728,7 +728,7 @@ msgstr "Nema rezultata."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "No results."
-msgstr ""
+msgstr "Nema rezultata."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -775,7 +775,7 @@ msgstr "Stranica"
 #. placeholder {1}: table.getPageCount()
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Page {0} of {1}"
-msgstr ""
+msgstr "Stranica {0} od {1}"
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
@@ -792,7 +792,7 @@ msgstr "Lozinka mora imati najmanje 8 znakova."
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
-msgstr ""
+msgstr "Lozinka mora biti kraća od 72 bajta."
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"
@@ -808,7 +808,7 @@ msgstr "Pauzirano"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused ({pausedSystemsLength})"
-msgstr ""
+msgstr "Pauzirano ({pausedSystemsLength})"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1180,7 +1180,7 @@ msgstr "Korisnici"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
-msgstr ""
+msgstr "Vrijednost"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
@@ -1236,7 +1236,7 @@ msgstr "Piši"
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
-msgstr ""
+msgstr "YAML konfiguracija"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
