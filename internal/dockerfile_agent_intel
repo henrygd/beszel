@@ -13,8 +13,8 @@ ARG TARGETOS TARGETARCH
 RUN CGO_ENABLED=0 GOGC=75 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-w -s" -o /agent ./internal/cmd/agent
 
 # --------------------------
-# Final image: default scratch-based agent
-# Note: must cap_add: [CAP_PERFMON] in docker-compose.yml
+# Final image
+# Note: must cap_add: [CAP_PERFMON] and mount /dev/dri/ as volume
 # --------------------------
 FROM alpine:edge
 
