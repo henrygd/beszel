@@ -100,14 +100,19 @@ func (a *Agent) getSystemStats() system.Stats {
 		systemStats.Swap = bytesToGigabytes(v.SwapTotal)
 		systemStats.SwapUsed = bytesToGigabytes(v.SwapTotal - v.SwapFree - v.SwapCached)
 		// cache + buffers value for default mem calculation
-		cacheBuff := v.Total - v.Free - v.Used
-		// htop memory calculation overrides
+		// note: gopsutil automatically adds SReclaimable to v.Cached
+		cacheBuff := v.Cached + v.Buffers - v.Shared
+		// htop memory calculation overrides (likely outdated as of mid 2025)
 		if a.memCalc == "htop" {
-			// note: gopsutil automatically adds SReclaimable to v.Cached
-			cacheBuff = v.Cached + v.Buffers - v.Shared
+			// cacheBuff = v.Cached + v.Buffers - v.Shared
 			v.Used = v.Total - (v.Free + cacheBuff)
 			v.UsedPercent = float64(v.Used) / float64(v.Total) * 100.0
 		}
+		// if a.memCalc == "legacy" {
+		// 	v.Used = v.Total - v.Free - v.Buffers - v.Cached
+		// 	cacheBuff = v.Total - v.Free - v.Used
+		// 	v.UsedPercent = float64(v.Used) / float64(v.Total) * 100.0
+		// }
 		// subtract ZFS ARC size from used memory and add as its own category
 		if a.zfs {
 			if arcSize, _ := getARCSize(); arcSize > 0 && arcSize < v.Used {
