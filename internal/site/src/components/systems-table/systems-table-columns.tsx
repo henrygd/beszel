@@ -280,10 +280,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 				return (
 					<Link
 						href={getPagePath($router, "system", { name: system.name })}
-						className={cn(
-							"flex gap-1.5 items-center md:pe-5 tabular-nums relative z-30",
-							viewMode === "table" && "ps-0.5"
-						)}
+						className={cn("flex gap-1.5 items-center md:pe-5 tabular-nums relative", viewMode === "table" && "ps-0.5")}
 						tabIndex={-1}
 						title={connectionTypeLabels[system.info.ct as ConnectionType]}
 						role="none"

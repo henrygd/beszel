@@ -40,7 +40,7 @@ export default memo(function NetworkSheet({
 
 	return (
 		<Sheet open={netInterfacesOpen} onOpenChange={setNetInterfacesOpen}>
-			<DialogTitle className="sr-only">{t`Network`}</DialogTitle>
+			<DialogTitle className="sr-only">{t`Network traffic of public interfaces`}</DialogTitle>
 			<SheetTrigger asChild>
 				<Button
 					title={t`View more`}
