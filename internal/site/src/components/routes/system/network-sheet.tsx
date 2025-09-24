@@ -7,6 +7,7 @@ import ChartTimeSelect from "@/components/charts/chart-time-select"
 import { useNetworkInterfaces } from "@/components/charts/hooks"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { DialogTitle } from "@/components/ui/dialog"
 import { $userSettings } from "@/lib/stores"
 import { decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
 import type { ChartData } from "@/types"
@@ -39,9 +40,10 @@ export default memo(function NetworkSheet({
 
 	return (
 		<Sheet open={netInterfacesOpen} onOpenChange={setNetInterfacesOpen}>
+			<DialogTitle className="sr-only">{t`Network`}</DialogTitle>
 			<SheetTrigger asChild>
 				<Button
-					aria-label={t`View more`}
+					title={t`View more`}
 					variant="outline"
 					size="icon"
 					className="shrink-0 max-sm:absolute max-sm:top-3 max-sm:end-3"
@@ -50,7 +52,7 @@ export default memo(function NetworkSheet({
 				</Button>
 			</SheetTrigger>
 			{hasOpened.current && (
-				<SheetContent className="overflow-auto w-200 !max-w-full p-4 sm:p-6">
+				<SheetContent aria-describedby={undefined} className="overflow-auto w-200 !max-w-full p-4 sm:p-6">
 					<ChartTimeSelect className="w-[calc(100%-2em)]" />
 					<ChartCard
 						empty={dataEmpty}

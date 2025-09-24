@@ -59,3 +59,5 @@ export enum ConnectionType {
 	SSH = 1,
 	WebSocket,
 }
+
+export const connectionTypeLabels = ["", "SSH", "WebSocket"] as const

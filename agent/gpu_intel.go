@@ -1,9 +1,11 @@
 package agent
 
 import (
-	"encoding/json"
-	"fmt"
+	"bufio"
+	"io"
 	"os/exec"
+	"strconv"
+	"strings"
 
 	"github.com/henrygd/beszel/internal/entities/system"
 )
@@ -14,12 +16,8 @@ const (
 )
 
 type intelGpuStats struct {
-	Power struct {
-		GPU float64 `json:"GPU"`
-	} `json:"power"`
-	Engines map[string]struct {
-		Busy float64 `json:"busy"`
-	} `json:"engines"`
+	PowerGPU float64
+	Engines  map[string]float64
 }
 
 // updateIntelFromStats updates aggregated GPU data from a single intelGpuStats sample
@@ -34,24 +32,24 @@ func (gm *GPUManager) updateIntelFromStats(sample *intelGpuStats) bool {
 		gm.GpuDataMap["0"] = gpuData
 	}
 
-	if sample.Power.GPU > 0 {
-		gpuData.Power += sample.Power.GPU
-	}
+	gpuData.Power += sample.PowerGPU
 
 	if gpuData.Engines == nil {
 		gpuData.Engines = make(map[string]float64, len(sample.Engines))
 	}
 	for name, engine := range sample.Engines {
-		gpuData.Engines[name] += engine.Busy
+		gpuData.Engines[name] += engine
 	}
 
 	gpuData.Count++
 	return true
 }
 
-// collectIntelStats executes intel_gpu_top in JSON mode and stream-decodes the array of samples
+// collectIntelStats executes intel_gpu_top in text mode (-l) and parses the output
 func (gm *GPUManager) collectIntelStats() error {
-	cmd := exec.Command(intelGpuStatsCmd, "-s", intelGpuStatsInterval, "-J")
+	cmd := exec.Command(intelGpuStatsCmd, "-s", intelGpuStatsInterval, "-l")
+	// Avoid blocking if intel_gpu_top writes to stderr
+	cmd.Stderr = io.Discard
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return err
@@ -60,43 +58,122 @@ func (gm *GPUManager) collectIntelStats() error {
 		return err
 	}
 
-	dec := json.NewDecoder(stdout)
+	// Ensure we always reap the child to avoid zombies on any return path.
+	defer func() {
+		// Best-effort close of the pipe (unblock the child if it writes)
+		_ = stdout.Close()
+		if cmd.ProcessState == nil || !cmd.ProcessState.Exited() {
+			_ = cmd.Process.Kill()
+		}
+		_ = cmd.Wait()
+	}()
 
-	// Expect a JSON array stream: [ { ... }, { ... }, ... ]
-	tok, err := dec.Token()
-	if err != nil {
-		return err
-	}
-	if delim, ok := tok.(json.Delim); !ok || delim != '[' {
-		return fmt.Errorf("unexpected JSON start token: %v", tok)
-	}
+	scanner := bufio.NewScanner(stdout)
+	var header1 string
+	var header2 string
+	var engineNames []string
+	var friendlyNames []string
+	var preEngineCols int
+	var powerIndex int
 
-	var sample intelGpuStats
-	for {
-		if dec.More() {
-			// Clear the engines map before decoding
-			if sample.Engines != nil {
-				for k := range sample.Engines {
-					delete(sample.Engines, k)
-				}
-			}
-
-			if err := dec.Decode(&sample); err != nil {
-				return fmt.Errorf("decode intel gpu: %w", err)
-			}
-			gm.updateIntelFromStats(&sample)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" {
 			continue
 		}
-		// Attempt to read closing bracket (will only be present when process exits)
-		tok, err = dec.Token()
-		if err != nil {
-			// When the process is still running, decoder will block in More/Decode; any error here is terminal
-			return err
+
+		// first header line
+		if header1 == "" {
+			header1 = line
+			continue
 		}
-		if delim, ok := tok.(json.Delim); ok && delim == ']' {
-			break
+
+		// second header line
+		if header2 == "" {
+			engineNames, friendlyNames, powerIndex, preEngineCols = gm.parseIntelHeaders(header1, line)
+			header1, header2 = "x", "x" // don't need these anymore
+			continue
+		}
+
+		// Data row
+		sample := gm.parseIntelData(line, engineNames, friendlyNames, powerIndex, preEngineCols)
+		gm.updateIntelFromStats(&sample)
+	}
+	if err := scanner.Err(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (gm *GPUManager) parseIntelHeaders(header1 string, header2 string) (engineNames []string, friendlyNames []string, powerIndex int, preEngineCols int) {
+	// Build indexes
+	h1 := strings.Fields(header1)
+	h2 := strings.Fields(header2)
+	powerIndex = -1 // Initialize to -1, will be set to actual index if found
+	// Collect engine names from header1
+	for _, col := range h1 {
+		key := strings.TrimRightFunc(col, func(r rune) bool { return r >= '0' && r <= '9' })
+		var friendly string
+		switch key {
+		case "RCS":
+			friendly = "Render/3D"
+		case "BCS":
+			friendly = "Blitter"
+		case "VCS":
+			friendly = "Video"
+		case "VECS":
+			friendly = "VideoEnhance"
+		case "CCS":
+			friendly = "Compute"
+		default:
+			continue
+		}
+		engineNames = append(engineNames, key)
+		friendlyNames = append(friendlyNames, friendly)
+	}
+	// find power gpu index among pre-engine columns
+	if n := len(engineNames); n > 0 {
+		preEngineCols = max(len(h2)-3*n, 0)
+		limit := min(len(h2), preEngineCols)
+		for i := range limit {
+			if strings.EqualFold(h2[i], "gpu") {
+				powerIndex = i
+				break
+			}
 		}
 	}
+	return engineNames, friendlyNames, powerIndex, preEngineCols
+}
 
-	return cmd.Wait()
+func (gm *GPUManager) parseIntelData(line string, engineNames []string, friendlyNames []string, powerIndex int, preEngineCols int) (sample intelGpuStats) {
+	fields := strings.Fields(line)
+	if len(fields) == 0 {
+		return sample
+	}
+	// Make sure row has enough columns for engines
+	if need := preEngineCols + 3*len(engineNames); len(fields) < need {
+		return sample
+	}
+	if powerIndex >= 0 && powerIndex < len(fields) {
+		if v, perr := strconv.ParseFloat(fields[powerIndex], 64); perr == nil {
+			sample.PowerGPU = v
+		}
+	}
+	if len(engineNames) > 0 {
+		sample.Engines = make(map[string]float64, len(engineNames))
+		for k := range engineNames {
+			base := preEngineCols + 3*k
+			if base < len(fields) {
+				busy := 0.0
+				if v, e := strconv.ParseFloat(fields[base], 64); e == nil {
+					busy = v
+				}
+				cur := sample.Engines[friendlyNames[k]]
+				sample.Engines[friendlyNames[k]] = cur + busy
+			} else {
+				sample.Engines[friendlyNames[k]] = 0
+			}
+		}
+	}
+	return sample
 }

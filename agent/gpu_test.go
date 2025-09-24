@@ -756,11 +756,11 @@ func TestAccumulation(t *testing.T) {
 					continue
 				}
 
-				assert.InDelta(t, expected.temperature, gpu.Temperature, 0.01, "Temperature should match")
-				assert.InDelta(t, expected.memoryUsed, gpu.MemoryUsed, 0.01, "Memory used should match")
-				assert.InDelta(t, expected.memoryTotal, gpu.MemoryTotal, 0.01, "Memory total should match")
-				assert.InDelta(t, expected.usage, gpu.Usage, 0.01, "Usage should match")
-				assert.InDelta(t, expected.power, gpu.Power, 0.01, "Power should match")
+				assert.EqualValues(t, expected.temperature, gpu.Temperature, "Temperature should match")
+				assert.EqualValues(t, expected.memoryUsed, gpu.MemoryUsed, "Memory used should match")
+				assert.EqualValues(t, expected.memoryTotal, gpu.MemoryTotal, "Memory total should match")
+				assert.EqualValues(t, expected.usage, gpu.Usage, "Usage should match")
+				assert.EqualValues(t, expected.power, gpu.Power, "Power should match")
 				assert.Equal(t, expected.count, gpu.Count, "Count should match")
 			}
 
@@ -773,9 +773,9 @@ func TestAccumulation(t *testing.T) {
 					continue
 				}
 
-				assert.InDelta(t, expected.temperature, gpu.Temperature, 0.01, "Temperature in GetCurrentData should match")
-				assert.InDelta(t, expected.avgUsage, gpu.Usage, 0.01, "Average usage in GetCurrentData should match")
-				assert.InDelta(t, expected.avgPower, gpu.Power, 0.01, "Average power in GetCurrentData should match")
+				assert.EqualValues(t, expected.temperature, gpu.Temperature, "Temperature in GetCurrentData should match")
+				assert.EqualValues(t, expected.avgUsage, gpu.Usage, "Average usage in GetCurrentData should match")
+				assert.EqualValues(t, expected.avgPower, gpu.Power, "Average power in GetCurrentData should match")
 			}
 
 			// Verify that accumulators in the original map are reset
@@ -800,14 +800,12 @@ func TestIntelUpdateFromStats(t *testing.T) {
 
 	// First sample with power and two engines
 	sample1 := intelGpuStats{
-		Engines: map[string]struct {
-			Busy float64 `json:"busy"`
-		}{
-			"Render/3D": {Busy: 20.0},
-			"Video":     {Busy: 5.0},
+		PowerGPU: 10.5,
+		Engines: map[string]float64{
+			"Render/3D": 20.0,
+			"Video":     5.0,
 		},
 	}
-	sample1.Power.GPU = 10.5
 
 	ok := gm.updateIntelFromStats(&sample1)
 	assert.True(t, ok)
@@ -815,33 +813,31 @@ func TestIntelUpdateFromStats(t *testing.T) {
 	gpu := gm.GpuDataMap["0"]
 	require.NotNil(t, gpu)
 	assert.Equal(t, "GPU", gpu.Name)
-	assert.InDelta(t, 10.5, gpu.Power, 0.001)
-	assert.InDelta(t, 20.0, gpu.Engines["Render/3D"], 0.001)
-	assert.InDelta(t, 5.0, gpu.Engines["Video"], 0.001)
+	assert.EqualValues(t, 10.5, gpu.Power)
+	assert.EqualValues(t, 20.0, gpu.Engines["Render/3D"])
+	assert.EqualValues(t, 5.0, gpu.Engines["Video"])
 	assert.Equal(t, float64(1), gpu.Count)
 
 	// Second sample with zero power (should not add) and additional engine busy
 	sample2 := intelGpuStats{
-		Engines: map[string]struct {
-			Busy float64 `json:"busy"`
-		}{
-			"Render/3D": {Busy: 10.0},
-			"Video":     {Busy: 2.5},
-			"Blitter":   {Busy: 1.0},
+		PowerGPU: 0.0,
+		Engines: map[string]float64{
+			"Render/3D": 10.0,
+			"Video":     2.5,
+			"Blitter":   1.0,
 		},
 	}
 	// zero power should not increment power accumulator
-	sample2.Power.GPU = 0.0
 
 	ok = gm.updateIntelFromStats(&sample2)
 	assert.True(t, ok)
 
 	gpu = gm.GpuDataMap["0"]
 	require.NotNil(t, gpu)
-	assert.InDelta(t, 10.5, gpu.Power, 0.001)
-	assert.InDelta(t, 30.0, gpu.Engines["Render/3D"], 0.001) // 20 + 10
-	assert.InDelta(t, 7.5, gpu.Engines["Video"], 0.001)      // 5 + 2.5
-	assert.InDelta(t, 1.0, gpu.Engines["Blitter"], 0.001)
+	assert.EqualValues(t, 10.5, gpu.Power)
+	assert.EqualValues(t, 30.0, gpu.Engines["Render/3D"]) // 20 + 10
+	assert.EqualValues(t, 7.5, gpu.Engines["Video"])      // 5 + 2.5
+	assert.EqualValues(t, 1.0, gpu.Engines["Blitter"])
 	assert.Equal(t, float64(2), gpu.Count)
 }
 
@@ -853,15 +849,13 @@ func TestIntelCollectorStreaming(t *testing.T) {
 	dir := t.TempDir()
 	os.Setenv("PATH", dir)
 
-	// Create a fake intel_gpu_top that prints a JSON array with two samples and exits
+	// Create a fake intel_gpu_top that prints -l format with two samples and exits
 	scriptPath := filepath.Join(dir, "intel_gpu_top")
 	script := `#!/bin/sh
-# Ignore args -s and -J
-# Emit a JSON array with two objects, separated by a comma, then exit
-(echo '['; \
- echo '{"power":{"GPU":1.5},"engines":{"Render/3D":{"busy":12.34}}},'; \
- echo '{"power":{"GPU":2.0},"engines":{"Video":{"busy":5}}}'; \
- echo ']')`
+echo "Freq MHz      IRQ RC6     Power W     IMC MiB/s             RCS             BCS             VCS"
+echo " req  act       /s   %   gpu   pkg     rd     wr       %  se  wa       %  se  wa       %  se  wa"
+echo "373  373      224  45  1.50  4.13   2554    714   12.34   0   0    0.00   0   0    5.00   0   0"
+echo "226  223      338  58  2.00  2.69   1820    965   0.00    0   0    0.00   0   0    0.00   0   0"`
 	if err := os.WriteFile(scriptPath, []byte(script), 0755); err != nil {
 		t.Fatal(err)
 	}
@@ -877,11 +871,215 @@ func TestIntelCollectorStreaming(t *testing.T) {
 
 	gpu := gm.GpuDataMap["0"]
 	require.NotNil(t, gpu)
-	// Power should be sum of non-zero samples: 1.5 + 2.0 = 3.5
-	assert.InDelta(t, 3.5, gpu.Power, 0.001)
+	// Power should be sum of samples: 1.5 + 2.0 = 3.5
+	assert.EqualValues(t, 3.5, gpu.Power)
 	// Engines aggregated
-	assert.InDelta(t, 12.34, gpu.Engines["Render/3D"], 0.001)
-	assert.InDelta(t, 5.0, gpu.Engines["Video"], 0.001)
+	assert.EqualValues(t, 12.34, gpu.Engines["Render/3D"])
+	assert.EqualValues(t, 5.0, gpu.Engines["Video"])
+	assert.EqualValues(t, 0.0, gpu.Engines["Blitter"]) // BCS is zero in both samples
 	// Count should be 2 samples
 	assert.Equal(t, float64(2), gpu.Count)
+}
+
+func TestParseIntelHeaders(t *testing.T) {
+	tests := []struct {
+		name              string
+		header1           string
+		header2           string
+		wantEngineNames   []string
+		wantFriendlyNames []string
+		wantPowerIndex    int
+		wantPreEngineCols int
+	}{
+		{
+			name:              "basic headers with RCS BCS VCS",
+			header1:           "Freq MHz      IRQ RC6     Power W     IMC MiB/s             RCS             BCS             VCS",
+			header2:           " req  act       /s   %   gpu   pkg     rd     wr       %  se  wa       %  se  wa       %  se  wa",
+			wantEngineNames:   []string{"RCS", "BCS", "VCS"},
+			wantFriendlyNames: []string{"Render/3D", "Blitter", "Video"},
+			wantPowerIndex:    4, // "gpu" is at index 4
+			wantPreEngineCols: 8, // 17 total cols - 3*3 = 8
+		},
+		{
+			name:              "headers with only RCS",
+			header1:           "Freq MHz      IRQ RC6     Power W     IMC MiB/s             RCS",
+			header2:           " req  act       /s   %   gpu   pkg     rd     wr       %  se  wa",
+			wantEngineNames:   []string{"RCS"},
+			wantFriendlyNames: []string{"Render/3D"},
+			wantPowerIndex:    4,
+			wantPreEngineCols: 8, // 11 total - 3*1 = 8
+		},
+		{
+			name:              "headers with VECS and CCS",
+			header1:           "Freq MHz      IRQ RC6     Power W     IMC MiB/s             VECS            CCS",
+			header2:           " req  act       /s   %   gpu   pkg     rd     wr       %  se  wa     %  se  wa",
+			wantEngineNames:   []string{"VECS", "CCS"},
+			wantFriendlyNames: []string{"VideoEnhance", "Compute"},
+			wantPowerIndex:    4,
+			wantPreEngineCols: 8, // 14 total - 3*2 = 8
+		},
+		{
+			name:              "no engines",
+			header1:           "Freq MHz      IRQ RC6     Power W     IMC MiB/s",
+			header2:           " req  act       /s   %   gpu   pkg     rd     wr",
+			wantEngineNames:   nil, // no engines found, slices remain nil
+			wantFriendlyNames: nil,
+			wantPowerIndex:    -1, // no engines, so no search
+			wantPreEngineCols: 0,
+		},
+		{
+			name:              "power index not found",
+			header1:           "Freq MHz      IRQ RC6     Power W     IMC MiB/s             RCS",
+			header2:           " req  act       /s   %   pkg   cpu     rd     wr       %  se  wa", // no "gpu"
+			wantEngineNames:   []string{"RCS"},
+			wantFriendlyNames: []string{"Render/3D"},
+			wantPowerIndex:    -1, // "gpu" not found
+			wantPreEngineCols: 8,  // 11 total - 3*1 = 8
+		},
+		{
+			name:              "empty headers",
+			header1:           "",
+			header2:           "",
+			wantEngineNames:   nil, // empty input, slices remain nil
+			wantFriendlyNames: nil,
+			wantPowerIndex:    -1,
+			wantPreEngineCols: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gm := &GPUManager{}
+			engineNames, friendlyNames, powerIndex, preEngineCols := gm.parseIntelHeaders(tt.header1, tt.header2)
+
+			assert.Equal(t, tt.wantEngineNames, engineNames)
+			assert.Equal(t, tt.wantFriendlyNames, friendlyNames)
+			assert.Equal(t, tt.wantPowerIndex, powerIndex)
+			assert.Equal(t, tt.wantPreEngineCols, preEngineCols)
+		})
+	}
+}
+
+func TestParseIntelData(t *testing.T) {
+	tests := []struct {
+		name          string
+		line          string
+		engineNames   []string
+		friendlyNames []string
+		powerIndex    int
+		preEngineCols int
+		wantPowerGPU  float64
+		wantEngines   map[string]float64
+	}{
+		{
+			name:          "basic data with power and engines",
+			line:          "373  373      224  45  1.50  4.13   2554    714   12.34   0   0    0.00   0   0    5.00   0   0",
+			engineNames:   []string{"RCS", "BCS", "VCS"},
+			friendlyNames: []string{"Render/3D", "Blitter", "Video"},
+			powerIndex:    4,
+			preEngineCols: 8,
+			wantPowerGPU:  1.50,
+			wantEngines: map[string]float64{
+				"Render/3D": 12.34,
+				"Blitter":   0.00,
+				"Video":     5.00,
+			},
+		},
+		{
+			name:          "data with zero power",
+			line:          "226  223      338  58  0.00  2.69   1820    965   0.00    0   0    0.00   0   0    0.00   0   0",
+			engineNames:   []string{"RCS", "BCS", "VCS"},
+			friendlyNames: []string{"Render/3D", "Blitter", "Video"},
+			powerIndex:    4,
+			preEngineCols: 8,
+			wantPowerGPU:  0.00,
+			wantEngines: map[string]float64{
+				"Render/3D": 0.00,
+				"Blitter":   0.00,
+				"Video":     0.00,
+			},
+		},
+		{
+			name:          "data with no power index",
+			line:          "373  373      224  45  1.50  4.13   2554    714   12.34   0   0    0.00   0   0    5.00   0   0",
+			engineNames:   []string{"RCS", "BCS", "VCS"},
+			friendlyNames: []string{"Render/3D", "Blitter", "Video"},
+			powerIndex:    -1,
+			preEngineCols: 8,
+			wantPowerGPU:  0.0, // no power parsed
+			wantEngines: map[string]float64{
+				"Render/3D": 12.34,
+				"Blitter":   0.00,
+				"Video":     5.00,
+			},
+		},
+		{
+			name:          "data with insufficient columns",
+			line:          "373  373      224  45  1.50", // too few columns
+			engineNames:   []string{"RCS", "BCS", "VCS"},
+			friendlyNames: []string{"Render/3D", "Blitter", "Video"},
+			powerIndex:    4,
+			preEngineCols: 8,
+			wantPowerGPU:  0.0,
+			wantEngines:   nil, // empty sample returned
+		},
+		{
+			name:          "empty line",
+			line:          "",
+			engineNames:   []string{"RCS"},
+			friendlyNames: []string{"Render/3D"},
+			powerIndex:    4,
+			preEngineCols: 8,
+			wantPowerGPU:  0.0,
+			wantEngines:   nil,
+		},
+		{
+			name:          "data with invalid power value",
+			line:          "373  373      224  45  N/A  4.13   2554    714   12.34   0   0    0.00   0   0    5.00   0   0",
+			engineNames:   []string{"RCS", "BCS", "VCS"},
+			friendlyNames: []string{"Render/3D", "Blitter", "Video"},
+			powerIndex:    4,
+			preEngineCols: 8,
+			wantPowerGPU:  0.0, // N/A can't be parsed
+			wantEngines: map[string]float64{
+				"Render/3D": 12.34,
+				"Blitter":   0.00,
+				"Video":     5.00,
+			},
+		},
+		{
+			name:          "data with invalid engine value",
+			line:          "373  373      224  45  1.50  4.13   2554    714   N/A     0   0    0.00   0   0    5.00   0   0",
+			engineNames:   []string{"RCS", "BCS", "VCS"},
+			friendlyNames: []string{"Render/3D", "Blitter", "Video"},
+			powerIndex:    4,
+			preEngineCols: 8,
+			wantPowerGPU:  1.50,
+			wantEngines: map[string]float64{
+				"Render/3D": 0.0, // N/A becomes 0
+				"Blitter":   0.00,
+				"Video":     5.00,
+			},
+		},
+		{
+			name:          "data with no engines",
+			line:          "373  373      224  45  1.50  4.13   2554    714",
+			engineNames:   []string{},
+			friendlyNames: []string{},
+			powerIndex:    4,
+			preEngineCols: 8,
+			wantPowerGPU:  1.50,
+			wantEngines:   nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gm := &GPUManager{}
+			sample := gm.parseIntelData(tt.line, tt.engineNames, tt.friendlyNames, tt.powerIndex, tt.preEngineCols)
+
+			assert.Equal(t, tt.wantPowerGPU, sample.PowerGPU)
+			assert.Equal(t, tt.wantEngines, sample.Engines)
+		})
+	}
 }

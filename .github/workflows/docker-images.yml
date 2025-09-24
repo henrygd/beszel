@@ -64,6 +64,14 @@ jobs:
             username: ${{ github.actor }}
             password_secret: GITHUB_TOKEN
 
+          - image: ghcr.io/${{ github.repository }}/beszel-agent-intel
+            context: ./
+            dockerfile: ./internal/dockerfile_agent_intel
+            platforms: linux/amd64
+            registry: ghcr.io
+            username: ${{ github.actor }}
+            password_secret: GITHUB_TOKEN
+
     permissions:
       contents: read
       packages: write
