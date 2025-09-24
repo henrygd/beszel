@@ -21,7 +21,7 @@ import {
 } from "lucide-react"
 import { memo, useMemo, useRef, useState } from "react"
 import { isReadOnlyUser, pb } from "@/lib/api"
-import { ConnectionType, MeterState, SystemStatus } from "@/lib/enums"
+import { ConnectionType, connectionTypeLabels, MeterState, SystemStatus } from "@/lib/enums"
 import { $longestSystemNameLen, $userSettings } from "@/lib/stores"
 import {
 	cn,
@@ -278,12 +278,25 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 					"text-red-500": system.status !== SystemStatus.Up,
 				}
 				return (
-					<div className={cn("flex gap-1.5 items-center md:pe-5 tabular-nums", viewMode === "table" && "ps-0.5")}>
-						{system.info.ct === ConnectionType.WebSocket && <WebSocketIcon className={cn("size-3", color)} />}
-						{system.info.ct === ConnectionType.SSH && <ChevronRightSquareIcon className={cn("size-3", color)} />}
+					<Link
+						href={getPagePath($router, "system", { name: system.name })}
+						className={cn(
+							"flex gap-1.5 items-center md:pe-5 tabular-nums relative z-30",
+							viewMode === "table" && "ps-0.5"
+						)}
+						tabIndex={-1}
+						title={connectionTypeLabels[system.info.ct as ConnectionType]}
+						role="none"
+					>
+						{system.info.ct === ConnectionType.WebSocket && (
+							<WebSocketIcon className={cn("size-3 pointer-events-none", color)} />
+						)}
+						{system.info.ct === ConnectionType.SSH && (
+							<ChevronRightSquareIcon className={cn("size-3 pointer-events-none", color)} />
+						)}
 						{!system.info.ct && <IndicatorDot system={system} className={cn(color, "bg-current mx-0.5")} />}
 						<span className="truncate max-w-14">{info.getValue() as string}</span>
-					</div>
+					</Link>
 				)
 			},
 		},

@@ -24,7 +24,7 @@ import MemChart from "@/components/charts/mem-chart"
 import SwapChart from "@/components/charts/swap-chart"
 import TemperatureChart from "@/components/charts/temperature-chart"
 import { getPbTimestamp, pb } from "@/lib/api"
-import { ChartType, ConnectionType, Os, SystemStatus, Unit } from "@/lib/enums"
+import { ChartType, ConnectionType, connectionTypeLabels, Os, SystemStatus, Unit } from "@/lib/enums"
 import { batteryStateTranslations } from "@/lib/i18n"
 import {
 	$allSystemsByName,
@@ -442,15 +442,14 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 										</TooltipTrigger>
 										{system.info.ct && (
 											<TooltipContent>
-												{system.info.ct === ConnectionType.WebSocket ? (
-													<div className="flex gap-1 items-center">
-														<WebSocketIcon className="size-4" /> WebSocket
-													</div>
-												) : (
-													<div className="flex gap-1 items-center">
-														<ChevronRightSquareIcon className="size-4" strokeWidth={2} /> SSH
-													</div>
-												)}
+												<div className="flex gap-1 items-center">
+													{system.info.ct === ConnectionType.WebSocket ? (
+														<WebSocketIcon className="size-4" />
+													) : (
+														<ChevronRightSquareIcon className="size-4" strokeWidth={2} />
+													)}
+													{connectionTypeLabels[system.info.ct as ConnectionType]}
+												</div>
 											</TooltipContent>
 										)}
 									</Tooltip>

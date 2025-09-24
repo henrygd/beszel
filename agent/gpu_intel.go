@@ -74,7 +74,7 @@ func (gm *GPUManager) collectIntelStats() error {
 	var engineNames []string
 	var friendlyNames []string
 	var preEngineCols int
-	var powerIndex int = -1
+	var powerIndex int
 
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
