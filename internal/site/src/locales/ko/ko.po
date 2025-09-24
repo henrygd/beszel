@@ -8,15 +8,15 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-31 15:44\n"
+"PO-Revision-Date: 2025-09-23 02:45\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: ko\n"
-"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 16\n"
+"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 32\n"
 
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
 #: src/components/routes/system.tsx
@@ -175,7 +175,7 @@ msgstr "평균 {0} 사용량"
 
 #: src/components/routes/system.tsx
 msgid "Average utilization of GPU engines"
-msgstr "GPU 엔진 평균 사용률"
+msgstr "GPU 엔진 평균 사용량"
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
@@ -491,7 +491,7 @@ msgstr "이메일 주소 입력..."
 
 #: src/components/login/otp-forms.tsx
 msgid "Enter your one-time password."
-msgstr "일회용 비밀번호를 입력하세요."
+msgstr "OTP를 입력하세요."
 
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -582,7 +582,7 @@ msgstr "일반"
 
 #: src/components/routes/system.tsx
 msgid "GPU Engines"
-msgstr "GPU 엔진"
+msgstr "GPU 엔진들"
 
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
@@ -751,7 +751,7 @@ msgstr "매 시작 시, 데이터베이스가 파일에 정의된 시스템과 �
 
 #: src/components/login/auth-form.tsx
 msgid "One-time password"
-msgstr "일회용 비밀번호"
+msgstr "OTP"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -873,7 +873,7 @@ msgstr "수신됨"
 
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
-msgstr "일회용 비밀번호 요청"
+msgstr "OTP 요청"
 
 #: src/components/login/otp-forms.tsx
 msgid "Request OTP"
@@ -1082,11 +1082,11 @@ msgstr "토큰과 지문은 허브에 대한 WebSocket 연결을 인증하는 �
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
-msgstr "각 인터페이스별 총 수신 데이터량"
+msgstr "각 인터페이스별 총합 다운로드 데이터량"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data sent for each interface"
-msgstr "각 인터페이스별 총 발신 데이터량"
+msgstr "각 인터페이스별 총합 업로드 데이터량"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
@@ -1245,3 +1245,4 @@ msgstr "YAML 구성"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "사용자 설정이 업데이트되었습니다."
+
