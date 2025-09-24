@@ -22,6 +22,12 @@ func Update(cmd *cobra.Command, _ []string) {
 	// Check if china-mirrors flag is set
 	useMirror, _ := cmd.Flags().GetBool("china-mirrors")
 
+	// Get the executable path before update
+	exePath, err := os.Executable()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	updated, err := ghupdate.Update(ghupdate.Config{
 		ArchiveExecutable: "beszel",
 		DataDir:           dataDir,
@@ -35,11 +41,8 @@ func Update(cmd *cobra.Command, _ []string) {
 	}
 
 	// make sure the file is executable
-	exePath, err := os.Executable()
-	if err == nil {
-		if err := os.Chmod(exePath, 0755); err != nil {
-			fmt.Printf("Warning: failed to set executable permissions: %v\n", err)
-		}
+	if err := os.Chmod(exePath, 0755); err != nil {
+		fmt.Printf("Warning: failed to set executable permissions: %v\n", err)
 	}
 
 	// Try to restart the service if it's running
