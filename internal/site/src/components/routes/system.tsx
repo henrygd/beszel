@@ -938,24 +938,22 @@ function GpuEnginesChart({ chartData }: { chartData: ChartData }) {
 function FilterBar({ store = $containerFilter }: { store?: typeof $containerFilter }) {
 	const containerFilter = useStore(store)
 	const { t } = useLingui()
-	const inputRef = useRef<HTMLInputElement>(null)
 
-	const debouncedStoreSet = useMemo(() => debounce((value: string) => store.set(value), 150), [store])
+	const debouncedStoreSet = useMemo(() => debounce((value: string) => store.set(value), 80), [store])
 
 	const handleChange = useCallback(
-		(e: React.ChangeEvent<HTMLInputElement>) => {
-			const value = e.target.value
-			if (inputRef.current) {
-				inputRef.current.value = value
-			}
-			debouncedStoreSet(value)
-		},
+		(e: React.ChangeEvent<HTMLInputElement>) => debouncedStoreSet(e.target.value),
 		[debouncedStoreSet]
 	)
 
 	return (
 		<>
-			<Input placeholder={t`Filter...`} className="ps-4 pe-8 w-full sm:w-44" onChange={handleChange} ref={inputRef} />
+			<Input
+				placeholder={t`Filter...`}
+				className="ps-4 pe-8 w-full sm:w-44"
+				onChange={handleChange}
+				value={containerFilter}
+			/>
 			{containerFilter && (
 				<Button
 					type="button"
@@ -963,12 +961,7 @@ function FilterBar({ store = $containerFilter }: { store?: typeof $containerFilt
 					size="icon"
 					aria-label="Clear"
 					className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-					onClick={() => {
-						if (inputRef.current) {
-							inputRef.current.value = ""
-						}
-						store.set("")
-					}}
+					onClick={() => store.set("")}
 				>
 					<XIcon className="h-4 w-4" />
 				</Button>
