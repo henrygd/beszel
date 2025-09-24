@@ -40,7 +40,7 @@ export default memo(function GpuPowerChart({ chartData }: { chartData: ChartData
 		}
 		const keys = Object.keys(powerSums).sort((a, b) => powerSums[b] - powerSums[a])
 		for (const key of keys) {
-			newChartData.colors[key] = `hsl(${((keys.indexOf(key) * 360) / keys.length) % 360}, 60%, 55%)`
+			newChartData.colors[key] = `hsl(${(226 + (keys.indexOf(key) * 360) / keys.length) % 360}, 60%, 55%)`
 		}
 		return newChartData
 	}, [chartData])
