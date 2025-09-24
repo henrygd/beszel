@@ -1,4 +1,12 @@
+## 0.12.11
+
+- Adjust calculation of cached memory (fixes #1187, #1196)
+
+- Update Intel GPU collector to parse plain text (`-l`) instead of JSON output (#1150)
+
 ## 0.12.10
+
+Note that the default memory calculation changed in this release, which may cause a difference in memory usage compared to previous versions.
 
 - Add initial support for Intel GPUs (#1150, #755)
 
