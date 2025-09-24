@@ -3,6 +3,7 @@ package agent
 import (
 	"fmt"
 	"log/slog"
+	"path"
 	"strings"
 	"time"
 
@@ -12,6 +13,69 @@ import (
 )
 
 var netInterfaceDeltaTracker = deltatracker.NewDeltaTracker[string, uint64]()
+
+// NicConfig controls inclusion/exclusion of network interfaces via the NICS env var
+//
+// Behavior mirrors SensorConfig's matching logic:
+// - Leading '-' means blacklist mode; otherwise whitelist mode
+// - Supports '*' wildcards using path.Match
+// - In whitelist mode with an empty list, no NICs are selected
+// - In blacklist mode with an empty list, all NICs are selected
+type NicConfig struct {
+	nics         map[string]struct{}
+	isBlacklist  bool
+	hasWildcards bool
+}
+
+func newNicConfig(nicsEnvVal string) *NicConfig {
+	cfg := &NicConfig{
+		nics: make(map[string]struct{}),
+	}
+	if strings.HasPrefix(nicsEnvVal, "-") {
+		cfg.isBlacklist = true
+		nicsEnvVal = nicsEnvVal[1:]
+	}
+	for nic := range strings.SplitSeq(nicsEnvVal, ",") {
+		nic = strings.TrimSpace(nic)
+		if nic != "" {
+			cfg.nics[nic] = struct{}{}
+			if strings.Contains(nic, "*") {
+				cfg.hasWildcards = true
+			}
+		}
+	}
+	return cfg
+}
+
+// isValidNic determines if a NIC should be included based on NicConfig rules
+func isValidNic(nicName string, cfg *NicConfig) bool {
+	// Empty list behavior differs by mode: blacklist: allow all; whitelist: allow none
+	if len(cfg.nics) == 0 {
+		return cfg.isBlacklist
+	}
+
+	// Exact match: return true if whitelist, false if blacklist
+	if _, exactMatch := cfg.nics[nicName]; exactMatch {
+		return !cfg.isBlacklist
+	}
+
+	// If no wildcards, return true if blacklist, false if whitelist
+	if !cfg.hasWildcards {
+		return cfg.isBlacklist
+	}
+
+	// Check for wildcard patterns
+	for pattern := range cfg.nics {
+		if !strings.Contains(pattern, "*") {
+			continue
+		}
+		if match, _ := path.Match(pattern, nicName); match {
+			return !cfg.isBlacklist
+		}
+	}
+
+	return cfg.isBlacklist
+}
 
 func (a *Agent) updateNetworkStats(systemStats *system.Stats) {
 	// network stats
@@ -89,14 +153,11 @@ func (a *Agent) initializeNetIoStats() {
 	// reset valid network interfaces
 	a.netInterfaces = make(map[string]struct{}, 0)
 
-	// map of network interface names passed in via NICS env var
-	var nicsMap map[string]struct{}
-	nics, nicsEnvExists := GetEnv("NICS")
+	// parse NICS env var for whitelist / blacklist
+	nicsEnvVal, nicsEnvExists := GetEnv("NICS")
+	var nicCfg *NicConfig
 	if nicsEnvExists {
-		nicsMap = make(map[string]struct{}, 0)
-		for nic := range strings.SplitSeq(nics, ",") {
-			nicsMap[nic] = struct{}{}
-		}
+		nicCfg = newNicConfig(nicsEnvVal)
 	}
 
 	// reset network I/O stats
@@ -107,17 +168,11 @@ func (a *Agent) initializeNetIoStats() {
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
 		a.netIoStats.Time = time.Now()
 		for _, v := range netIO {
-			switch {
-			// skip if nics exists and the interface is not in the list
-			case nicsEnvExists:
-				if _, nameInNics := nicsMap[v.Name]; !nameInNics {
-					continue
-				}
-			// otherwise run the interface name through the skipNetworkInterface function
-			default:
-				if a.skipNetworkInterface(v) {
-					continue
-				}
+			if nicsEnvExists && !isValidNic(v.Name, nicCfg) {
+				continue
+			}
+			if a.skipNetworkInterface(v) {
+				continue
 			}
 			slog.Info("Detected network interface", "name", v.Name, "sent", v.BytesSent, "recv", v.BytesRecv)
 			a.netIoStats.BytesSent += v.BytesSent

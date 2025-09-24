@@ -2,6 +2,8 @@
 
 - Adjust calculation of cached memory (fixes #1187, #1196)
 
+- Add pattern matching and blacklist functionality to `NICS` env var. (#1190)
+
 - Update Intel GPU collector to parse plain text (`-l`) instead of JSON output (#1150)
 
 ## 0.12.10
