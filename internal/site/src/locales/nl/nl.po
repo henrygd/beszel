@@ -714,6 +714,7 @@ msgstr "Netwerkverkeer van docker containers"
 #: src/components/routes/system.tsx
 #: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
 msgstr "Netwerkverkeer van publieke interfaces"
 

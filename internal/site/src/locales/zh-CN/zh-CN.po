@@ -714,6 +714,7 @@ msgstr "Docker 容器的网络流量"
 #: src/components/routes/system.tsx
 #: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
 msgstr "公共接口的网络流量"
 

@@ -714,6 +714,7 @@ msgstr "Trafic réseau des conteneurs Docker"
 #: src/components/routes/system.tsx
 #: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
 msgstr "Trafic réseau des interfaces publiques"
 

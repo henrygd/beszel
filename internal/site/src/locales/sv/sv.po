@@ -714,6 +714,7 @@ msgstr "Nätverkstrafik för dockercontainrar"
 #: src/components/routes/system.tsx
 #: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
 msgstr "Nätverkstrafik för publika gränssnitt"
 

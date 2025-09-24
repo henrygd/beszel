@@ -714,6 +714,7 @@ msgstr "ترافیک شبکه کانتینرهای داکر"
 #: src/components/routes/system.tsx
 #: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
 msgstr "ترافیک شبکه رابط‌های عمومی"
 

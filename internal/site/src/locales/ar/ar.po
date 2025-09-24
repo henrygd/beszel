@@ -714,6 +714,7 @@ msgstr "حركة مرور الشبكة لحاويات الدوكر"
 #: src/components/routes/system.tsx
 #: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
 msgstr "حركة مرور الشبكة للواجهات العامة"
 
