@@ -358,6 +358,9 @@ func (gm *GPUManager) startCollector(command string) {
 
 // NewGPUManager creates and initializes a new GPUManager
 func NewGPUManager() (*GPUManager, error) {
+	if skipGPU, _ := GetEnv("SKIP_GPU"); skipGPU == "true" {
+		return nil, nil
+	}
 	var gm GPUManager
 	if err := gm.detectGPUs(); err != nil {
 		return nil, err
