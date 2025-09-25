@@ -30,11 +30,11 @@ func (s *systemdRestarter) Restart() error {
 type openRCRestarter struct{ cmd string }
 
 func (o *openRCRestarter) Restart() error {
-	if err := exec.Command(o.cmd, "status", "beszel-agent").Run(); err != nil {
+	if err := exec.Command(o.cmd, "beszel-agent", "status").Run(); err != nil {
 		return nil
 	}
 	ghupdate.ColorPrint(ghupdate.ColorYellow, "Restarting beszel-agent via OpenRC…")
-	return exec.Command(o.cmd, "restart", "beszel-agent").Run()
+	return exec.Command(o.cmd, "beszel-agent", "restart").Run()
 }
 
 type openWRTRestarter struct{ cmd string }
