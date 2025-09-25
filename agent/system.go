@@ -102,6 +102,9 @@ func (a *Agent) getSystemStats() system.Stats {
 		// cache + buffers value for default mem calculation
 		// note: gopsutil automatically adds SReclaimable to v.Cached
 		cacheBuff := v.Cached + v.Buffers - v.Shared
+		if cacheBuff <= 0 {
+			cacheBuff = max(v.Total-v.Free-v.Used, 0)
+		}
 		// htop memory calculation overrides (likely outdated as of mid 2025)
 		if a.memCalc == "htop" {
 			// cacheBuff = v.Cached + v.Buffers - v.Shared
