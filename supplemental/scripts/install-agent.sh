@@ -920,7 +920,6 @@ StateDirectory=beszel-agent
 # Security/sandboxing settings
 KeyringMode=private
 LockPersonality=yes
-NoNewPrivileges=yes
 ProtectClock=yes
 ProtectHome=read-only
 ProtectHostname=yes
