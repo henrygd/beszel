@@ -1,3 +1,13 @@
+## 0.12.12
+
+- Fix high CPU usage when `intel_gpu_top` returns an error. (#1203)
+
+- Add `SKIP_GPU` environment variable to skip GPU data collection. (#1203)
+
+- Add fallback cache/buff memory calculation when cache/buff isn't available ([#1198](https://github.com/henrygd/beszel/issues/1198))
+
+- Fix automatic agent update / restart on OpenRC. (#1199)
+
 ## 0.12.11
 
 - Adjust calculation of cached memory (fixes #1187, #1196)
