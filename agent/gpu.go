@@ -258,6 +258,7 @@ func (gm *GPUManager) GetCurrentData() map[string]system.GPUData {
 				gpuAvg.Engines[name] = twoDecimals(engine / count)
 				maxEngineUsage = max(maxEngineUsage, engine/count)
 			}
+			gpuAvg.PowerPkg = twoDecimals(gpu.PowerPkg / count)
 			gpuAvg.Usage = twoDecimals(maxEngineUsage)
 		} else {
 			gpuAvg.Usage = twoDecimals(gpu.Usage / count)
@@ -266,7 +267,7 @@ func (gm *GPUManager) GetCurrentData() map[string]system.GPUData {
 		}
 
 		// reset accumulators in the original gpu data for next collection
-		gpu.Usage, gpu.Power, gpu.Count = gpuAvg.Usage, gpuAvg.Power, 1
+		gpu.Usage, gpu.Power, gpu.PowerPkg, gpu.Count = gpuAvg.Usage, gpuAvg.Power, gpuAvg.PowerPkg, 1
 		gpu.Engines = gpuAvg.Engines
 
 		// append id to the name if there are multiple GPUs with the same name

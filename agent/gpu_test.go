@@ -849,13 +849,15 @@ func TestIntelCollectorStreaming(t *testing.T) {
 	dir := t.TempDir()
 	os.Setenv("PATH", dir)
 
-	// Create a fake intel_gpu_top that prints -l format with two samples and exits
+	// Create a fake intel_gpu_top that prints -l format with four samples (first will be skipped) and exits
 	scriptPath := filepath.Join(dir, "intel_gpu_top")
 	script := `#!/bin/sh
 echo "Freq MHz      IRQ RC6     Power W     IMC MiB/s             RCS             BCS             VCS"
 echo " req  act       /s   %   gpu   pkg     rd     wr       %  se  wa       %  se  wa       %  se  wa"
 echo "373  373      224  45  1.50  4.13   2554    714   12.34   0   0    0.00   0   0    5.00   0   0"
-echo "226  223      338  58  2.00  2.69   1820    965   0.00    0   0    0.00   0   0    0.00   0   0"`
+echo "226  223      338  58  2.00  2.69   1820    965   0.00    0   0    0.00   0   0    0.00   0   0"
+echo "189  187      412  67  1.80  2.45   1950    823   8.50    2   1    15.00   1   0    22.00  0   1"
+echo "298  295      278  51  2.20  3.12   1675    942   5.75    1   2    9.50    3   1    12.00  1   0"`
 	if err := os.WriteFile(scriptPath, []byte(script), 0755); err != nil {
 		t.Fatal(err)
 	}
@@ -864,21 +866,22 @@ echo "226  223      338  58  2.00  2.69   1820    965   0.00    0   0    0.00   
 		GpuDataMap: make(map[string]*system.GPUData),
 	}
 
-	// Run the collector once; it should read two samples and return
+	// Run the collector once; it should read four samples but skip the first and return
 	if err := gm.collectIntelStats(); err != nil {
 		t.Fatalf("collectIntelStats error: %v", err)
 	}
 
 	gpu := gm.GpuDataMap["0"]
 	require.NotNil(t, gpu)
-	// Power should be sum of samples: 1.5 + 2.0 = 3.5
-	assert.EqualValues(t, 3.5, gpu.Power)
-	// Engines aggregated
-	assert.EqualValues(t, 12.34, gpu.Engines["Render/3D"])
-	assert.EqualValues(t, 5.0, gpu.Engines["Video"])
-	assert.EqualValues(t, 0.0, gpu.Engines["Blitter"]) // BCS is zero in both samples
-	// Count should be 2 samples
-	assert.Equal(t, float64(2), gpu.Count)
+	// Power should be sum of samples 2-4 (first is skipped): 2.0 + 1.8 + 2.2 = 6.0
+	assert.EqualValues(t, 6.0, gpu.Power)
+	assert.InDelta(t, 8.26, gpu.PowerPkg, 0.01) // Allow small floating point differences
+	// Engines aggregated from samples 2-4
+	assert.EqualValues(t, 14.25, gpu.Engines["Render/3D"]) // 0.00 + 8.50 + 5.75
+	assert.EqualValues(t, 34.0, gpu.Engines["Video"])      // 0.00 + 22.00 + 12.00
+	assert.EqualValues(t, 24.5, gpu.Engines["Blitter"])    // 0.00 + 15.00 + 9.50
+	// Count should be 3 samples (first is skipped)
+	assert.Equal(t, float64(3), gpu.Count)
 }
 
 func TestParseIntelHeaders(t *testing.T) {
@@ -970,6 +973,7 @@ func TestParseIntelData(t *testing.T) {
 		preEngineCols int
 		wantPowerGPU  float64
 		wantEngines   map[string]float64
+		wantErr       error
 	}{
 		{
 			name:          "basic data with power and engines",
@@ -1022,6 +1026,7 @@ func TestParseIntelData(t *testing.T) {
 			preEngineCols: 8,
 			wantPowerGPU:  0.0,
 			wantEngines:   nil, // empty sample returned
+			wantErr:       errNoValidData,
 		},
 		{
 			name:          "empty line",
@@ -1032,6 +1037,7 @@ func TestParseIntelData(t *testing.T) {
 			preEngineCols: 8,
 			wantPowerGPU:  0.0,
 			wantEngines:   nil,
+			wantErr:       errNoValidData,
 		},
 		{
 			name:          "data with invalid power value",
@@ -1076,7 +1082,8 @@ func TestParseIntelData(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			gm := &GPUManager{}
-			sample := gm.parseIntelData(tt.line, tt.engineNames, tt.friendlyNames, tt.powerIndex, tt.preEngineCols)
+			sample, err := gm.parseIntelData(tt.line, tt.engineNames, tt.friendlyNames, tt.powerIndex, tt.preEngineCols)
+			assert.Equal(t, tt.wantErr, err)
 
 			assert.Equal(t, tt.wantPowerGPU, sample.PowerGPU)
 			assert.Equal(t, tt.wantEngines, sample.Engines)

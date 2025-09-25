@@ -17,6 +17,7 @@ const (
 
 type intelGpuStats struct {
 	PowerGPU float64
+	PowerPkg float64
 	Engines  map[string]float64
 }
 
@@ -33,6 +34,7 @@ func (gm *GPUManager) updateIntelFromStats(sample *intelGpuStats) bool {
 	}
 
 	gpuData.Power += sample.PowerGPU
+	gpuData.PowerPkg += sample.PowerPkg
 
 	if gpuData.Engines == nil {
 		gpuData.Engines = make(map[string]float64, len(sample.Engines))
@@ -46,7 +48,7 @@ func (gm *GPUManager) updateIntelFromStats(sample *intelGpuStats) bool {
 }
 
 // collectIntelStats executes intel_gpu_top in text mode (-l) and parses the output
-func (gm *GPUManager) collectIntelStats() error {
+func (gm *GPUManager) collectIntelStats() (err error) {
 	cmd := exec.Command(intelGpuStatsCmd, "-s", intelGpuStatsInterval, "-l")
 	// Avoid blocking if intel_gpu_top writes to stderr
 	cmd.Stderr = io.Discard
@@ -58,23 +60,28 @@ func (gm *GPUManager) collectIntelStats() error {
 		return err
 	}
 
-	// Ensure we always reap the child to avoid zombies on any return path.
+	// Ensure we always reap the child to avoid zombies on any return path and
+	// propagate a non-zero exit code if no other error was set.
 	defer func() {
 		// Best-effort close of the pipe (unblock the child if it writes)
 		_ = stdout.Close()
 		if cmd.ProcessState == nil || !cmd.ProcessState.Exited() {
 			_ = cmd.Process.Kill()
 		}
-		_ = cmd.Wait()
+		if waitErr := cmd.Wait(); err == nil && waitErr != nil {
+			err = waitErr
+		}
 	}()
 
 	scanner := bufio.NewScanner(stdout)
 	var header1 string
-	var header2 string
 	var engineNames []string
 	var friendlyNames []string
 	var preEngineCols int
 	var powerIndex int
+	var hadDataRow bool
+	// skip first data row because it sometimes has erroneous data
+	var skippedFirstDataRow bool
 
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
@@ -83,24 +90,34 @@ func (gm *GPUManager) collectIntelStats() error {
 		}
 
 		// first header line
-		if header1 == "" {
+		if strings.HasPrefix(line, "Freq") {
 			header1 = line
 			continue
 		}
 
 		// second header line
-		if header2 == "" {
+		if strings.HasPrefix(line, "req") {
 			engineNames, friendlyNames, powerIndex, preEngineCols = gm.parseIntelHeaders(header1, line)
-			header1, header2 = "x", "x" // don't need these anymore
 			continue
 		}
 
 		// Data row
-		sample := gm.parseIntelData(line, engineNames, friendlyNames, powerIndex, preEngineCols)
+		if !skippedFirstDataRow {
+			skippedFirstDataRow = true
+			continue
+		}
+		sample, err := gm.parseIntelData(line, engineNames, friendlyNames, powerIndex, preEngineCols)
+		if err != nil {
+			return err
+		}
+		hadDataRow = true
 		gm.updateIntelFromStats(&sample)
 	}
-	if err := scanner.Err(); err != nil {
-		return err
+	if scanErr := scanner.Err(); scanErr != nil {
+		return scanErr
+	}
+	if !hadDataRow {
+		return errNoValidData
 	}
 	return nil
 }
@@ -145,18 +162,21 @@ func (gm *GPUManager) parseIntelHeaders(header1 string, header2 string) (engineN
 	return engineNames, friendlyNames, powerIndex, preEngineCols
 }
 
-func (gm *GPUManager) parseIntelData(line string, engineNames []string, friendlyNames []string, powerIndex int, preEngineCols int) (sample intelGpuStats) {
+func (gm *GPUManager) parseIntelData(line string, engineNames []string, friendlyNames []string, powerIndex int, preEngineCols int) (sample intelGpuStats, err error) {
 	fields := strings.Fields(line)
 	if len(fields) == 0 {
-		return sample
+		return sample, errNoValidData
 	}
 	// Make sure row has enough columns for engines
 	if need := preEngineCols + 3*len(engineNames); len(fields) < need {
-		return sample
+		return sample, errNoValidData
 	}
 	if powerIndex >= 0 && powerIndex < len(fields) {
 		if v, perr := strconv.ParseFloat(fields[powerIndex], 64); perr == nil {
 			sample.PowerGPU = v
+		}
+		if v, perr := strconv.ParseFloat(fields[powerIndex+1], 64); perr == nil {
+			sample.PowerPkg = v
 		}
 	}
 	if len(engineNames) > 0 {
@@ -175,5 +195,5 @@ func (gm *GPUManager) parseIntelData(line string, engineNames []string, friendly
 			}
 		}
 	}
-	return sample
+	return sample, nil
 }

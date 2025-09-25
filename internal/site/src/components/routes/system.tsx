@@ -398,7 +398,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 	const dataEmpty = !chartLoading && chartData.systemStats.length === 0
 	const lastGpuVals = Object.values(systemStats.at(-1)?.stats.g ?? {})
 	const hasGpuData = lastGpuVals.length > 0
-	const hasGpuPowerData = lastGpuVals.some((gpu) => gpu.p !== undefined)
+	const hasGpuPowerData = lastGpuVals.some((gpu) => gpu.p !== undefined || gpu.pp !== undefined)
 	const hasGpuEnginesData = lastGpuVals.some((gpu) => gpu.e !== undefined)
 
 	let translatedStatus: string = system.status

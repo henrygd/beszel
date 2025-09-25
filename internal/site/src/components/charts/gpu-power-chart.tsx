@@ -9,45 +9,57 @@ import {
 	xAxis,
 } from "@/components/ui/chart"
 import { chartMargin, cn, decimalString, formatShortDate, toFixedFloat } from "@/lib/utils"
-import type { ChartData } from "@/types"
+import type { ChartData, GPUData } from "@/types"
 import { useYAxisWidth } from "./hooks"
+import type { DataPoint } from "./line-chart"
 
 export default memo(function GpuPowerChart({ chartData }: { chartData: ChartData }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
+	const packageKey = " package"
+
+	const { gpuData, dataPoints } = useMemo(() => {
+		const dataPoints = [] as DataPoint[]
+		const gpuData = [] as Record<string, GPUData | string>[]
+		const addedKeys = new Map<string, number>()
+
+		const addKey = (key: string, value: number) => {
+			addedKeys.set(key, (addedKeys.get(key) ?? 0) + value)
+		}
+
+		for (const stats of chartData.systemStats) {
+			const gpus = stats.stats?.g ?? {}
+			const data = { created: stats.created } as Record<string, GPUData | string>
+			for (const id in gpus) {
+				const gpu = gpus[id] as GPUData
+				data[gpu.n] = gpu
+				addKey(gpu.n, gpu.p ?? 0)
+				if (gpu.pp) {
+					data[`${gpu.n}${packageKey}`] = gpu
+					addKey(`${gpu.n}${packageKey}`, gpu.pp ?? 0)
+				}
+			}
+			gpuData.push(data)
+		}
+		const sortedKeys = Array.from(addedKeys.entries())
+			.sort(([, a], [, b]) => b - a)
+			.map(([key]) => key)
+
+		for (let i = 0; i < sortedKeys.length; i++) {
+			const id = sortedKeys[i]
+			dataPoints.push({
+				label: id,
+				dataKey: (gpuData: Record<string, GPUData>) => {
+					return id.endsWith(packageKey) ? (gpuData[id]?.pp ?? 0) : (gpuData[id]?.p ?? 0)
+				},
+				color: `hsl(${226 + (((i * 360) / addedKeys.size) % 360)}, 65%, 52%)`,
+			})
+		}
+		return { gpuData, dataPoints }
+	}, [chartData])
 
 	if (chartData.systemStats.length === 0) {
 		return null
 	}
-
-	/** Format temperature data for chart and assign colors */
-	const newChartData = useMemo(() => {
-		const newChartData = { data: [], colors: {} } as {
-			data: Record<string, number | string>[]
-			colors: Record<string, string>
-		}
-		const powerSums = {} as Record<string, number>
-		for (const data of chartData.systemStats) {
-			const newData = { created: data.created } as Record<string, number | string>
-
-			for (const gpu of Object.values(data.stats?.g ?? {})) {
-				if (gpu.p) {
-					const name = gpu.n
-					newData[name] = gpu.p
-					powerSums[name] = (powerSums[name] ?? 0) + newData[name]
-				}
-			}
-			newChartData.data.push(newData)
-		}
-		const keys = Object.keys(powerSums).sort((a, b) => powerSums[b] - powerSums[a])
-		for (const key of keys) {
-			newChartData.colors[key] = `hsl(${(226 + (keys.indexOf(key) * 360) / keys.length) % 360}, 60%, 55%)`
-		}
-		return newChartData
-	}, [chartData])
-
-	const colors = Object.keys(newChartData.colors)
-
-	// console.log('rendered at', new Date())
 
 	return (
 		<div>
@@ -56,7 +68,7 @@ export default memo(function GpuPowerChart({ chartData }: { chartData: ChartData
 					"opacity-100": yAxisWidth,
 				})}
 			>
-				<LineChart accessibilityLayer data={newChartData.data} margin={chartMargin}>
+				<LineChart accessibilityLayer data={gpuData} margin={chartMargin}>
 					<CartesianGrid vertical={false} />
 					<YAxis
 						direction="ltr"
@@ -85,19 +97,19 @@ export default memo(function GpuPowerChart({ chartData }: { chartData: ChartData
 							/>
 						}
 					/>
-					{colors.map((key) => (
+					{dataPoints.map((dataPoint) => (
 						<Line
-							key={key}
-							dataKey={key}
-							name={key}
+							key={dataPoint.label}
+							dataKey={dataPoint.dataKey}
+							name={dataPoint.label}
 							type="monotoneX"
 							dot={false}
 							strokeWidth={1.5}
-							stroke={newChartData.colors[key]}
+							stroke={dataPoint.color as string}
 							isAnimationActive={false}
 						/>
 					))}
-					{colors.length > 1 && <ChartLegend content={<ChartLegendContent />} />}
+					{dataPoints.length > 1 && <ChartLegend content={<ChartLegendContent />} />}
 				</LineChart>
 			</ChartContainer>
 		</div>
