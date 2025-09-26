@@ -40,11 +40,12 @@ func (o *openRCRestarter) Restart() error {
 type openWRTRestarter struct{ cmd string }
 
 func (w *openWRTRestarter) Restart() error {
-	if err := exec.Command(w.cmd, "running", "beszel-agent").Run(); err != nil {
+	// https://openwrt.org/docs/guide-user/base-system/managing_services?s[]=service
+	if err := exec.Command("/etc/init.d/beszel-agent", "running").Run(); err != nil {
 		return nil
 	}
 	ghupdate.ColorPrint(ghupdate.ColorYellow, "Restarting beszel-agent via procd…")
-	return exec.Command(w.cmd, "restart", "beszel-agent").Run()
+	return exec.Command("/etc/init.d/beszel-agent", "restart").Run()
 }
 
 type freeBSDRestarter struct{ cmd string }
@@ -64,11 +65,13 @@ func detectRestarter() restarter {
 	if path, err := exec.LookPath("rc-service"); err == nil {
 		return &openRCRestarter{cmd: path}
 	}
+    if path, err := exec.LookPath("procd"); err == nil {
+        return &openWRTRestarter{cmd: path}
+    }
 	if path, err := exec.LookPath("service"); err == nil {
 		if runtime.GOOS == "freebsd" {
 			return &freeBSDRestarter{cmd: path}
 		}
-		return &openWRTRestarter{cmd: path}
 	}
 	return nil
 }
