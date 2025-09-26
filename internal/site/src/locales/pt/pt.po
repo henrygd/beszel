@@ -8,7 +8,7 @@ msgstr ""
 "Language: pt\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-22 23:10\n"
+"PO-Revision-Date: 2025-09-26 19:48\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -714,6 +714,7 @@ msgstr "Tráfego de rede dos contêineres Docker"
 #: src/components/routes/system.tsx
 #: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
 msgstr "Tráfego de rede das interfaces públicas"
 
@@ -1143,7 +1144,7 @@ msgstr "Desconhecida"
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
-msgstr "“Ligado”"
+msgstr "Ligado"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
