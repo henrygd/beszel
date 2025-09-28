@@ -234,7 +234,7 @@ case "$1" in
   printf "  -u                    : Uninstall Beszel Agent\n"
   printf "  --auto-update [VALUE] : Control automatic daily updates\n"
   printf "                          VALUE can be true (enable) or false (disable). If not specified, will prompt.\n"
-  printf "  --china-mirrors [URL] : Use GitHub proxy to resolve network timeout issues in mainland China\n"
+  printf "  --mirror [URL]        : Use GitHub proxy to resolve network timeout issues in mainland China\n"
   printf "                          URL: optional custom proxy URL (default: https://gh.beszel.dev)\n"
   printf "  -h, --help            : Display this help message\n"
   exit 0
@@ -293,7 +293,7 @@ while [ $# -gt 0 ]; do
   -u)
     UNINSTALL=true
     ;;
-  --china-mirrors*)
+  --mirror* | --china-mirrors*)
     # Check if there's a value after the = sign
     if echo "$1" | grep -q "="; then
       # Extract the value after =
@@ -301,19 +301,23 @@ while [ $# -gt 0 ]; do
       if [ -n "$CUSTOM_PROXY" ]; then
         GITHUB_PROXY_URL="$CUSTOM_PROXY"
         GITHUB_URL="$(ensure_trailing_slash "$CUSTOM_PROXY")https://github.com"
+        GITHUB_API_URL="$(ensure_trailing_slash "$CUSTOM_PROXY")https://api.github.com"
       else
         GITHUB_PROXY_URL="https://gh.beszel.dev"
         GITHUB_URL="$GITHUB_PROXY_URL"
+        GITHUB_API_URL="$GITHUB_PROXY_URL"
       fi
     elif [ "$2" != "" ] && ! echo "$2" | grep -q '^-'; then
       # use custom proxy URL provided as next argument
       GITHUB_PROXY_URL="$2"
       GITHUB_URL="$(ensure_trailing_slash "$2")https://github.com"
+      GITHUB_API_URL="$(ensure_trailing_slash "$2")https://api.github.com"
       shift
     else
       # No value specified, use default
       GITHUB_PROXY_URL="https://gh.beszel.dev"
       GITHUB_URL="$GITHUB_PROXY_URL"
+      GITHUB_API_URL="$GITHUB_PROXY_URL"
     fi
     ;;
   --auto-update*)
@@ -450,18 +454,6 @@ if [ "$UNINSTALL" = true ]; then
 
   echo "Beszel Agent has been uninstalled successfully!"
   exit 0
-fi
-
-# Confirm the use of GitHub mirrors for downloads
-if [ -n "$GITHUB_PROXY_URL" ]; then
-  printf "\nConfirm use of GitHub mirror (%s) for downloading beszel-agent?\nThis helps to install properly in mainland China. (Y/n): " "$GITHUB_PROXY_URL"
-  read USE_MIRROR
-  USE_MIRROR=${USE_MIRROR:-Y}
-  if [ "$USE_MIRROR" = "Y" ] || [ "$USE_MIRROR" = "y" ]; then
-    echo "Using GitHub Mirror ($GITHUB_PROXY_URL) for downloads..."
-  else
-    GITHUB_URL="https://github.com"
-  fi
 fi
 
 # Check if a package is installed
@@ -608,7 +600,12 @@ FILE_NAME="beszel-agent_${OS}_${ARCH}.tar.gz"
 
 # Determine version to install
 if [ "$VERSION" = "latest" ]; then
-  INSTALL_VERSION=$(curl -s "$GITHUB_API_URL""/repos/henrygd/beszel/releases/latest" | grep -o '"tag_name": "v[^"]*"' | cut -d'"' -f4 | tr -d 'v')
+  API_RELEASE_URL="$GITHUB_API_URL/repos/henrygd/beszel/releases/latest"
+  # gh.beszel.dev mirror needs api=true for api.github.com
+  if echo "$GITHUB_API_URL" | grep -qE "^https://gh\.beszel\.dev/?$"; then
+    API_RELEASE_URL="$API_RELEASE_URL?api=true"
+  fi
+  INSTALL_VERSION=$(curl -s "$API_RELEASE_URL" | grep -o '"tag_name"\s*:\s*"v[^"]*"' | cut -d'"' -f4 | tr -d 'v')
   if [ -z "$INSTALL_VERSION" ]; then
     echo "Failed to get latest version"
     exit 1
