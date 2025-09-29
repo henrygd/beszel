@@ -212,7 +212,6 @@ detect_mips_endianness() {
 PORT=45876
 UNINSTALL=false
 GITHUB_URL="https://github.com"
-GITHUB_API_URL="https://api.github.com" # not blocked in China currently
 GITHUB_PROXY_URL=""
 KEY=""
 TOKEN=""
@@ -301,23 +300,19 @@ while [ $# -gt 0 ]; do
       if [ -n "$CUSTOM_PROXY" ]; then
         GITHUB_PROXY_URL="$CUSTOM_PROXY"
         GITHUB_URL="$(ensure_trailing_slash "$CUSTOM_PROXY")https://github.com"
-        GITHUB_API_URL="$(ensure_trailing_slash "$CUSTOM_PROXY")https://api.github.com"
       else
         GITHUB_PROXY_URL="https://gh.beszel.dev"
         GITHUB_URL="$GITHUB_PROXY_URL"
-        GITHUB_API_URL="$GITHUB_PROXY_URL"
       fi
     elif [ "$2" != "" ] && ! echo "$2" | grep -q '^-'; then
       # use custom proxy URL provided as next argument
       GITHUB_PROXY_URL="$2"
       GITHUB_URL="$(ensure_trailing_slash "$2")https://github.com"
-      GITHUB_API_URL="$(ensure_trailing_slash "$2")https://api.github.com"
       shift
     else
       # No value specified, use default
       GITHUB_PROXY_URL="https://gh.beszel.dev"
       GITHUB_URL="$GITHUB_PROXY_URL"
-      GITHUB_API_URL="$GITHUB_PROXY_URL"
     fi
     ;;
   --auto-update*)
@@ -600,12 +595,12 @@ FILE_NAME="beszel-agent_${OS}_${ARCH}.tar.gz"
 
 # Determine version to install
 if [ "$VERSION" = "latest" ]; then
-  API_RELEASE_URL="$GITHUB_API_URL/repos/henrygd/beszel/releases/latest"
-  # gh.beszel.dev mirror needs api=true for api.github.com
-  if echo "$GITHUB_API_URL" | grep -qE "^https://gh\.beszel\.dev/?$"; then
-    API_RELEASE_URL="$API_RELEASE_URL?api=true"
+  INSTALL_VERSION=$(curl -s "https://get.beszel.dev/latest-version")
+  if [ -z "$INSTALL_VERSION" ]; then
+    # Fallback to GitHub API
+    API_RELEASE_URL="https://api.github.com/repos/henrygd/beszel/releases/latest"
+    INSTALL_VERSION=$(curl -s "$API_RELEASE_URL" | grep -o '"tag_name": "v[^"]*"' | cut -d'"' -f4 | tr -d 'v')
   fi
-  INSTALL_VERSION=$(curl -s "$API_RELEASE_URL" | grep -o '"tag_name"\s*:\s*"v[^"]*"' | cut -d'"' -f4 | tr -d 'v')
   if [ -z "$INSTALL_VERSION" ]; then
     echo "Failed to get latest version"
     exit 1
