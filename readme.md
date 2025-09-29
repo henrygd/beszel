@@ -48,7 +48,7 @@ The [quick start guide](https://beszel.dev/guide/getting-started) and other docu
 - **Network usage** - Host system and containers.
 - **Load average** - Host system.
 - **Temperature** - Host system sensors.
-- **GPU usage / temperature / power draw** - Nvidia and AMD only. Must use binary agent.
+- **GPU usage / power draw** - Nvidia, AMD, and Intel.
 - **Battery** - Host system battery charge.
 
 ## Help and discussion
