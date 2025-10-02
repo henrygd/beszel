@@ -1,6 +1,7 @@
 package hub
 
 import (
+	"context"
 	"errors"
 	"net"
 	"net/http"
@@ -93,7 +94,7 @@ func (acr *agentConnectRequest) agentConnect() (err error) {
 // verifyWsConn verifies the WebSocket connection using the agent's fingerprint and
 // SSH key signature, then adds the system to the system manager.
 func (acr *agentConnectRequest) verifyWsConn(conn *gws.Conn, fpRecords []ws.FingerprintRecord) (err error) {
-	wsConn := ws.NewWsConnection(conn)
+	wsConn := ws.NewWsConnection(conn, acr.agentSemVer)
 
 	// must set wsConn in connection store before the read loop
 	conn.Session().Store("wsConn", wsConn)
@@ -112,7 +113,7 @@ func (acr *agentConnectRequest) verifyWsConn(conn *gws.Conn, fpRecords []ws.Fing
 		return err
 	}
 
-	agentFingerprint, err := wsConn.GetFingerprint(acr.token, signer, acr.isUniversalToken)
+	agentFingerprint, err := wsConn.GetFingerprint(context.Background(), acr.token, signer, acr.isUniversalToken)
 	if err != nil {
 		return err
 	}

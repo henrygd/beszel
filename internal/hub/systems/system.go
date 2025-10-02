@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/hub/ws"
 
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -107,7 +108,7 @@ func (sys *System) update() error {
 		sys.handlePaused()
 		return nil
 	}
-	data, err := sys.fetchDataFromAgent()
+	data, err := sys.fetchDataFromAgent(common.DataRequestOptions{CacheTimeMs: uint16(interval)})
 	if err == nil {
 		_, err = sys.createRecords(data)
 	}
@@ -209,13 +210,13 @@ func (sys *System) getContext() (context.Context, context.CancelFunc) {
 
 // fetchDataFromAgent attempts to fetch data from the agent,
 // prioritizing WebSocket if available.
-func (sys *System) fetchDataFromAgent() (*system.CombinedData, error) {
+func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*system.CombinedData, error) {
 	if sys.data == nil {
 		sys.data = &system.CombinedData{}
 	}
 
 	if sys.WsConn != nil && sys.WsConn.IsConnected() {
-		wsData, err := sys.fetchDataViaWebSocket()
+		wsData, err := sys.fetchDataViaWebSocket(options)
 		if err == nil {
 			return wsData, nil
 		}
@@ -223,18 +224,18 @@ func (sys *System) fetchDataFromAgent() (*system.CombinedData, error) {
 		sys.closeWebSocketConnection()
 	}
 
-	sshData, err := sys.fetchDataViaSSH()
+	sshData, err := sys.fetchDataViaSSH(options)
 	if err != nil {
 		return nil, err
 	}
 	return sshData, nil
 }
 
-func (sys *System) fetchDataViaWebSocket() (*system.CombinedData, error) {
+func (sys *System) fetchDataViaWebSocket(options common.DataRequestOptions) (*system.CombinedData, error) {
 	if sys.WsConn == nil || !sys.WsConn.IsConnected() {
 		return nil, errors.New("no websocket connection")
 	}
-	err := sys.WsConn.RequestSystemData(sys.data)
+	err := sys.WsConn.RequestSystemData(context.Background(), sys.data, options)
 	if err != nil {
 		return nil, err
 	}
@@ -244,7 +245,7 @@ func (sys *System) fetchDataViaWebSocket() (*system.CombinedData, error) {
 // fetchDataViaSSH handles fetching data using SSH.
 // This function encapsulates the original SSH logic.
 // It updates sys.data directly upon successful fetch.
-func (sys *System) fetchDataViaSSH() (*system.CombinedData, error) {
+func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.CombinedData, error) {
 	maxRetries := 1
 	for attempt := 0; attempt <= maxRetries; attempt++ {
 		if sys.client == nil || sys.Status == down {
@@ -269,11 +270,30 @@ func (sys *System) fetchDataViaSSH() (*system.CombinedData, error) {
 		if err != nil {
 			return nil, err
 		}
+		stdin, stdinErr := session.StdinPipe()
 		if err := session.Shell(); err != nil {
 			return nil, err
 		}
 
 		*sys.data = system.CombinedData{}
+
+		if sys.agentVersion.GTE(beszel.MinVersionAgentResponse) && stdinErr == nil {
+			req := common.HubRequest[any]{Action: common.GetData, Data: options}
+			_ = cbor.NewEncoder(stdin).Encode(req)
+			// Close write side to signal end of request
+			_ = stdin.Close()
+
+			var resp common.AgentResponse
+			if decErr := cbor.NewDecoder(stdout).Decode(&resp); decErr == nil && resp.SystemData != nil {
+				*sys.data = *resp.SystemData
+				// wait for the session to complete
+				if err := session.Wait(); err != nil {
+					return nil, err
+				}
+				return sys.data, nil
+			}
+			// If decoding failed, fall back below
+		}
 
 		if sys.agentVersion.GTE(beszel.MinVersionCbor) {
 			err = cbor.NewDecoder(stdout).Decode(sys.data)
@@ -379,11 +399,11 @@ func extractAgentVersion(versionString string) (semver.Version, error) {
 }
 
 // getJitter returns a channel that will be triggered after a random delay
-// between 40% and 90% of the interval.
+// between 51% and 95% of the interval.
 // This is used to stagger the initial WebSocket connections to prevent clustering.
 func getJitter() <-chan time.Time {
-	minPercent := 40
-	maxPercent := 90
+	minPercent := 51
+	maxPercent := 95
 	jitterRange := maxPercent - minPercent
 	msDelay := (interval * minPercent / 100) + rand.Intn(interval*jitterRange/100)
 	return time.After(time.Duration(msDelay) * time.Millisecond)

@@ -1,7 +1,7 @@
 import { t } from "@lingui/core/macro"
 import { type ClassValue, clsx } from "clsx"
-import { timeDay, timeHour } from "d3-time"
 import { listenKeys } from "nanostores"
+import { timeDay, timeHour, timeMinute } from "d3-time"
 import { useEffect, useState } from "react"
 import { twMerge } from "tailwind-merge"
 import { prependBasePath } from "@/components/router"
@@ -54,9 +54,18 @@ const createShortDateFormatter = (hour12?: boolean) =>
 		hour12,
 	})
 
+const createHourWithSecondsFormatter = (hour12?: boolean) =>
+	new Intl.DateTimeFormat(undefined, {
+		hour: "numeric",
+		minute: "numeric",
+		second: "numeric",
+		hour12,
+	})
+
 // Initialize formatters with default values
 let hourWithMinutesFormatter = createHourWithMinutesFormatter()
 let shortDateFormatter = createShortDateFormatter()
+let hourWithSecondsFormatter = createHourWithSecondsFormatter()
 
 export const currentHour12 = () => shortDateFormatter.resolvedOptions().hour12
 
@@ -68,6 +77,10 @@ export const formatShortDate = (timestamp: string) => {
 	return shortDateFormatter.format(new Date(timestamp))
 }
 
+export const hourWithSeconds = (timestamp: string) => {
+	return hourWithSecondsFormatter.format(new Date(timestamp))
+}
+
 // Update the time formatters if user changes hourFormat
 listenKeys($userSettings, ["hourFormat"], ({ hourFormat }) => {
 	if (!hourFormat) return
@@ -75,6 +88,7 @@ listenKeys($userSettings, ["hourFormat"], ({ hourFormat }) => {
 	if (currentHour12() !== newHour12) {
 		hourWithMinutesFormatter = createHourWithMinutesFormatter(newHour12)
 		shortDateFormatter = createShortDateFormatter(newHour12)
+		hourWithSecondsFormatter = createHourWithSecondsFormatter(newHour12)
 	}
 })
 
@@ -91,6 +105,15 @@ export const updateFavicon = (newIcon: string) => {
 }
 
 export const chartTimeData: ChartTimeData = {
+	"1m": {
+		type: "1m",
+		expectedInterval: 1000,
+		label: () => t`1 minute`,
+		format: (timestamp: string) => hourWithSeconds(timestamp),
+		ticks: 3,
+		getOffset: (endTime: Date) => timeMinute.offset(endTime, -1),
+		minVersion: "0.13.0",
+	},
 	"1h": {
 		type: "1m",
 		expectedInterval: 60_000,
@@ -278,7 +301,7 @@ export const generateToken = () => {
 }
 
 /** Get the hub URL from the global BESZEL object */
-export const getHubURL = () => BESZEL?.HUB_URL || window.location.origin
+export const getHubURL = () => globalThis.BESZEL?.HUB_URL || window.location.origin
 
 /** Map of system IDs to their corresponding tokens (used to avoid fetching in add-system dialog) */
 export const tokenMap = new Map<SystemRecord["id"], FingerprintRecord["token"]>()
@@ -331,6 +354,17 @@ export const parseSemVer = (semVer = ""): SemVer => {
 	}
 	const parts = semVer.split(".").map(Number)
 	return { major: parts?.[0] ?? 0, minor: parts?.[1] ?? 0, patch: parts?.[2] ?? 0 }
+}
+
+/** Compare two semver strings. Returns -1 if a is less than b, 0 if a is equal to b, and 1 if a is greater than b. */
+export function compareSemVer(a: SemVer, b: SemVer) {
+	if (a.major !== b.major) {
+		return a.major - b.major
+	}
+	if (a.minor !== b.minor) {
+		return a.minor - b.minor
+	}
+	return a.patch - b.patch
 }
 
 /** Get meter state from 0-100 value. Used for color coding meters. */

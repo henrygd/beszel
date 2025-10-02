@@ -14,11 +14,17 @@ import (
 	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/shirou/gopsutil/v4/cpu"
-	"github.com/shirou/gopsutil/v4/disk"
 	"github.com/shirou/gopsutil/v4/host"
 	"github.com/shirou/gopsutil/v4/load"
 	"github.com/shirou/gopsutil/v4/mem"
 )
+
+// prevDisk stores previous per-device disk counters for a given cache interval
+type prevDisk struct {
+	readBytes  uint64
+	writeBytes uint64
+	at         time.Time
+}
 
 // Sets initial / non-changing values about the host system
 func (a *Agent) initializeSystemInfo() {
@@ -68,7 +74,7 @@ func (a *Agent) initializeSystemInfo() {
 }
 
 // Returns current info, stats about the host system
-func (a *Agent) getSystemStats() system.Stats {
+func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	var systemStats system.Stats
 
 	// battery
@@ -77,11 +83,11 @@ func (a *Agent) getSystemStats() system.Stats {
 	}
 
 	// cpu percent
-	cpuPct, err := cpu.Percent(0, false)
-	if err != nil {
+	cpuPercent, err := getCpuPercent(cacheTimeMs)
+	if err == nil {
+		systemStats.Cpu = twoDecimals(cpuPercent)
+	} else {
 		slog.Error("Error getting cpu percent", "err", err)
-	} else if len(cpuPct) > 0 {
-		systemStats.Cpu = twoDecimals(cpuPct[0])
 	}
 
 	// load average
@@ -131,56 +137,13 @@ func (a *Agent) getSystemStats() system.Stats {
 	}
 
 	// disk usage
-	for _, stats := range a.fsStats {
-		if d, err := disk.Usage(stats.Mountpoint); err == nil {
-			stats.DiskTotal = bytesToGigabytes(d.Total)
-			stats.DiskUsed = bytesToGigabytes(d.Used)
-			if stats.Root {
-				systemStats.DiskTotal = bytesToGigabytes(d.Total)
-				systemStats.DiskUsed = bytesToGigabytes(d.Used)
-				systemStats.DiskPct = twoDecimals(d.UsedPercent)
-			}
-		} else {
-			// reset stats if error (likely unmounted)
-			slog.Error("Error getting disk stats", "name", stats.Mountpoint, "err", err)
-			stats.DiskTotal = 0
-			stats.DiskUsed = 0
-			stats.TotalRead = 0
-			stats.TotalWrite = 0
-		}
-	}
+	a.updateDiskUsage(&systemStats)
 
-	// disk i/o
-	if ioCounters, err := disk.IOCounters(a.fsNames...); err == nil {
-		for _, d := range ioCounters {
-			stats := a.fsStats[d.Name]
-			if stats == nil {
-				continue
-			}
-			secondsElapsed := time.Since(stats.Time).Seconds()
-			readPerSecond := bytesToMegabytes(float64(d.ReadBytes-stats.TotalRead) / secondsElapsed)
-			writePerSecond := bytesToMegabytes(float64(d.WriteBytes-stats.TotalWrite) / secondsElapsed)
-			// check for invalid values and reset stats if so
-			if readPerSecond < 0 || writePerSecond < 0 || readPerSecond > 50_000 || writePerSecond > 50_000 {
-				slog.Warn("Invalid disk I/O. Resetting.", "name", d.Name, "read", readPerSecond, "write", writePerSecond)
-				a.initializeDiskIoStats(ioCounters)
-				break
-			}
-			stats.Time = time.Now()
-			stats.DiskReadPs = readPerSecond
-			stats.DiskWritePs = writePerSecond
-			stats.TotalRead = d.ReadBytes
-			stats.TotalWrite = d.WriteBytes
-			// if root filesystem, update system stats
-			if stats.Root {
-				systemStats.DiskReadPs = stats.DiskReadPs
-				systemStats.DiskWritePs = stats.DiskWritePs
-			}
-		}
-	}
+	// disk i/o (cache-aware per interval)
+	a.updateDiskIo(cacheTimeMs, &systemStats)
 
-	// network stats
-	a.updateNetworkStats(&systemStats)
+	// network stats (per cache interval)
+	a.updateNetworkStats(cacheTimeMs, &systemStats)
 
 	// temperatures
 	// TODO: maybe refactor to methods on systemStats
@@ -191,7 +154,7 @@ func (a *Agent) getSystemStats() system.Stats {
 		// reset high gpu percent
 		a.systemInfo.GpuPct = 0
 		// get current GPU data
-		if gpuData := a.gpuManager.GetCurrentData(); len(gpuData) > 0 {
+		if gpuData := a.gpuManager.GetCurrentData(cacheTimeMs); len(gpuData) > 0 {
 			systemStats.GPUData = gpuData
 
 			// add temperatures

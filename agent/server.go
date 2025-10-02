@@ -127,15 +127,75 @@ func (a *Agent) handleSession(s ssh.Session) {
 
 	hubVersion := a.getHubVersion(sessionID, sessionCtx)
 
-	stats := a.gatherStats(sessionID)
-
-	err := a.writeToSession(s, stats, hubVersion)
-	if err != nil {
-		slog.Error("Error encoding stats", "err", err, "stats", stats)
-		s.Exit(1)
-	} else {
-		s.Exit(0)
+	// Legacy one-shot behavior for older hubs
+	if hubVersion.LT(beszel.MinVersionAgentResponse) {
+		if err := a.handleLegacyStats(s, hubVersion); err != nil {
+			slog.Error("Error encoding stats", "err", err)
+			s.Exit(1)
+			return
+		}
 	}
+
+	var req common.HubRequest[cbor.RawMessage]
+	if err := cbor.NewDecoder(s).Decode(&req); err != nil {
+		// Fallback to legacy one-shot if the first decode fails
+		if err2 := a.handleLegacyStats(s, hubVersion); err2 != nil {
+			slog.Error("Error encoding stats (fallback)", "err", err2)
+			s.Exit(1)
+			return
+		}
+		s.Exit(0)
+		return
+	}
+	if err := a.handleSSHRequest(s, &req); err != nil {
+		slog.Error("SSH request handling failed", "err", err)
+		s.Exit(1)
+		return
+	}
+	s.Exit(0)
+}
+
+// handleSSHRequest builds a handler context and dispatches to the shared registry
+func (a *Agent) handleSSHRequest(w io.Writer, req *common.HubRequest[cbor.RawMessage]) error {
+	// SSH does not support fingerprint auth action
+	if req.Action == common.CheckFingerprint {
+		return cbor.NewEncoder(w).Encode(common.AgentResponse{Error: "unsupported action"})
+	}
+
+	// responder that writes AgentResponse to stdout
+	sshResponder := func(data any, requestID *uint32) error {
+		response := common.AgentResponse{Id: requestID}
+		switch v := data.(type) {
+		case *system.CombinedData:
+			response.SystemData = v
+		default:
+			response.Error = fmt.Sprintf("unsupported response type: %T", data)
+		}
+		return cbor.NewEncoder(w).Encode(response)
+	}
+
+	ctx := &HandlerContext{
+		Client:       nil,
+		Agent:        a,
+		Request:      req,
+		RequestID:    nil,
+		HubVerified:  true,
+		SendResponse: sshResponder,
+	}
+
+	if handler, ok := a.handlerRegistry.GetHandler(req.Action); ok {
+		if err := handler.Handle(ctx); err != nil {
+			return cbor.NewEncoder(w).Encode(common.AgentResponse{Error: err.Error()})
+		}
+		return nil
+	}
+	return cbor.NewEncoder(w).Encode(common.AgentResponse{Error: fmt.Sprintf("unknown action: %d", req.Action)})
+}
+
+// handleLegacyStats serves the legacy one-shot stats payload for older hubs
+func (a *Agent) handleLegacyStats(w io.Writer, hubVersion semver.Version) error {
+	stats := a.gatherStats(60_000)
+	return a.writeToSession(w, stats, hubVersion)
 }
 
 // writeToSession encodes and writes system statistics to the session.

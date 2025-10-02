@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/blang/semver"
 	"github.com/henrygd/beszel/internal/common"
 
 	"github.com/fxamacker/cbor/v2"
@@ -36,26 +37,25 @@ func TestGetUpgrader(t *testing.T) {
 // TestNewWsConnection tests WebSocket connection creation
 func TestNewWsConnection(t *testing.T) {
 	// We can't easily mock gws.Conn, so we'll pass nil and test the structure
-	wsConn := NewWsConnection(nil)
+	wsConn := NewWsConnection(nil, semver.MustParse("0.12.10"))
 
 	assert.NotNil(t, wsConn, "WebSocket connection should not be nil")
 	assert.Nil(t, wsConn.conn, "Connection should be nil as passed")
-	assert.NotNil(t, wsConn.responseChan, "Response channel should be initialized")
+	assert.NotNil(t, wsConn.requestManager, "Request manager should be initialized")
 	assert.NotNil(t, wsConn.DownChan, "Down channel should be initialized")
-	assert.Equal(t, 1, cap(wsConn.responseChan), "Response channel should have capacity of 1")
 	assert.Equal(t, 1, cap(wsConn.DownChan), "Down channel should have capacity of 1")
 }
 
 // TestWsConn_IsConnected tests the connection status check
 func TestWsConn_IsConnected(t *testing.T) {
 	// Test with nil connection
-	wsConn := NewWsConnection(nil)
+	wsConn := NewWsConnection(nil, semver.MustParse("0.12.10"))
 	assert.False(t, wsConn.IsConnected(), "Should not be connected when conn is nil")
 }
 
 // TestWsConn_Close tests the connection closing with nil connection
 func TestWsConn_Close(t *testing.T) {
-	wsConn := NewWsConnection(nil)
+	wsConn := NewWsConnection(nil, semver.MustParse("0.12.10"))
 
 	// Should handle nil connection gracefully
 	assert.NotPanics(t, func() {
@@ -65,7 +65,7 @@ func TestWsConn_Close(t *testing.T) {
 
 // TestWsConn_SendMessage_CBOR tests CBOR encoding in sendMessage
 func TestWsConn_SendMessage_CBOR(t *testing.T) {
-	wsConn := NewWsConnection(nil)
+	wsConn := NewWsConnection(nil, semver.MustParse("0.12.10"))
 
 	testData := common.HubRequest[any]{
 		Action: common.GetData,
@@ -194,7 +194,7 @@ func TestHandler(t *testing.T) {
 
 // TestWsConnChannelBehavior tests channel behavior without WebSocket connections
 func TestWsConnChannelBehavior(t *testing.T) {
-	wsConn := NewWsConnection(nil)
+	wsConn := NewWsConnection(nil, semver.MustParse("0.12.10"))
 
 	// Test that channels are properly initialized and can be used
 	select {
@@ -212,11 +212,6 @@ func TestWsConnChannelBehavior(t *testing.T) {
 		t.Error("Should be able to read from DownChan")
 	}
 
-	// Response channel should be empty initially
-	select {
-	case <-wsConn.responseChan:
-		t.Error("Response channel should be empty initially")
-	default:
-		// Expected - channel should be empty
-	}
+	// Request manager should have no pending requests initially
+	assert.Equal(t, 0, wsConn.requestManager.GetPendingCount(), "Should have no pending requests initially")
 }

@@ -5,13 +5,13 @@ import (
 	"time"
 	"weak"
 
-	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/blang/semver"
+	"github.com/henrygd/beszel"
 
 	"github.com/henrygd/beszel/internal/common"
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/lxzan/gws"
-	"golang.org/x/crypto/ssh"
 )
 
 const (
@@ -25,9 +25,10 @@ type Handler struct {
 
 // WsConn represents a WebSocket connection to an agent.
 type WsConn struct {
-	conn         *gws.Conn
-	responseChan chan *gws.Message
-	DownChan     chan struct{}
+	conn           *gws.Conn
+	requestManager *RequestManager
+	DownChan       chan struct{}
+	agentVersion   semver.Version
 }
 
 // FingerprintRecord is fingerprints collection record data in the hub
@@ -50,21 +51,22 @@ func GetUpgrader() *gws.Upgrader {
 	return upgrader
 }
 
-// NewWsConnection creates a new WebSocket connection wrapper.
-func NewWsConnection(conn *gws.Conn) *WsConn {
+// NewWsConnection creates a new WebSocket connection wrapper with agent version.
+func NewWsConnection(conn *gws.Conn, agentVersion semver.Version) *WsConn {
 	return &WsConn{
-		conn:         conn,
-		responseChan: make(chan *gws.Message, 1),
-		DownChan:     make(chan struct{}, 1),
+		conn:           conn,
+		requestManager: NewRequestManager(conn),
+		DownChan:       make(chan struct{}, 1),
+		agentVersion:   agentVersion,
 	}
 }
 
-// OnOpen sets a deadline for the WebSocket connection.
+// OnOpen sets a deadline for the WebSocket connection and extracts agent version.
 func (h *Handler) OnOpen(conn *gws.Conn) {
 	conn.SetDeadline(time.Now().Add(deadline))
 }
 
-// OnMessage routes incoming WebSocket messages to the response channel.
+// OnMessage routes incoming WebSocket messages to the request manager.
 func (h *Handler) OnMessage(conn *gws.Conn, message *gws.Message) {
 	conn.SetDeadline(time.Now().Add(deadline))
 	if message.Opcode != gws.OpcodeBinary || message.Data.Len() == 0 {
@@ -75,12 +77,7 @@ func (h *Handler) OnMessage(conn *gws.Conn, message *gws.Message) {
 		_ = conn.WriteClose(1000, nil)
 		return
 	}
-	select {
-	case wsConn.(*WsConn).responseChan <- message:
-	default:
-		// close if the connection is not expecting a response
-		wsConn.(*WsConn).Close(nil)
-	}
+	wsConn.(*WsConn).requestManager.handleResponse(message)
 }
 
 // OnClose handles WebSocket connection closures and triggers system down status after delay.
@@ -106,6 +103,9 @@ func (ws *WsConn) Close(msg []byte) {
 	if ws.IsConnected() {
 		ws.conn.WriteClose(1000, msg)
 	}
+	if ws.requestManager != nil {
+		ws.requestManager.Close()
+	}
 }
 
 // Ping sends a ping frame to keep the connection alive.
@@ -115,6 +115,7 @@ func (ws *WsConn) Ping() error {
 }
 
 // sendMessage encodes data to CBOR and sends it as a binary message to the agent.
+// This is kept for backwards compatibility but new actions should use RequestManager.
 func (ws *WsConn) sendMessage(data common.HubRequest[any]) error {
 	if ws.conn == nil {
 		return gws.ErrConnClosed
@@ -126,54 +127,34 @@ func (ws *WsConn) sendMessage(data common.HubRequest[any]) error {
 	return ws.conn.WriteMessage(gws.OpcodeBinary, bytes)
 }
 
-// RequestSystemData requests system metrics from the agent and unmarshals the response.
-func (ws *WsConn) RequestSystemData(data *system.CombinedData) error {
-	var message *gws.Message
-
-	ws.sendMessage(common.HubRequest[any]{
-		Action: common.GetData,
-	})
+// handleAgentRequest processes a request to the agent, handling both legacy and new formats.
+func (ws *WsConn) handleAgentRequest(req *PendingRequest, handler ResponseHandler) error {
+	// Wait for response
 	select {
-	case <-time.After(10 * time.Second):
-		ws.Close(nil)
-		return gws.ErrConnClosed
-	case message = <-ws.responseChan:
+	case message := <-req.ResponseCh:
+		defer message.Close()
+		// Cancel request context to stop timeout watcher promptly
+		defer req.Cancel()
+		data := message.Data.Bytes()
+
+		// Legacy format - unmarshal directly
+		if ws.agentVersion.LT(beszel.MinVersionAgentResponse) {
+			return handler.HandleLegacy(data)
+		}
+
+		// New format with AgentResponse wrapper
+		var agentResponse common.AgentResponse
+		if err := cbor.Unmarshal(data, &agentResponse); err != nil {
+			return err
+		}
+		if agentResponse.Error != "" {
+			return errors.New(agentResponse.Error)
+		}
+		return handler.Handle(agentResponse)
+
+	case <-req.Context.Done():
+		return req.Context.Err()
 	}
-	defer message.Close()
-	return cbor.Unmarshal(message.Data.Bytes(), data)
-}
-
-// GetFingerprint authenticates with the agent using SSH signature and returns the agent's fingerprint.
-func (ws *WsConn) GetFingerprint(token string, signer ssh.Signer, needSysInfo bool) (common.FingerprintResponse, error) {
-	var clientFingerprint common.FingerprintResponse
-	challenge := []byte(token)
-
-	signature, err := signer.Sign(nil, challenge)
-	if err != nil {
-		return clientFingerprint, err
-	}
-
-	err = ws.sendMessage(common.HubRequest[any]{
-		Action: common.CheckFingerprint,
-		Data: common.FingerprintRequest{
-			Signature:   signature.Blob,
-			NeedSysInfo: needSysInfo,
-		},
-	})
-	if err != nil {
-		return clientFingerprint, err
-	}
-
-	var message *gws.Message
-	select {
-	case message = <-ws.responseChan:
-	case <-time.After(10 * time.Second):
-		return clientFingerprint, errors.New("request expired")
-	}
-	defer message.Close()
-
-	err = cbor.Unmarshal(message.Data.Bytes(), &clientFingerprint)
-	return clientFingerprint, err
 }
 
 // IsConnected returns true if the WebSocket connection is active.

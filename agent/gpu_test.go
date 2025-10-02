@@ -332,7 +332,7 @@ func TestParseJetsonData(t *testing.T) {
 }
 
 func TestGetCurrentData(t *testing.T) {
-	t.Run("calculates averages and resets accumulators", func(t *testing.T) {
+	t.Run("calculates averages with per-cache-key delta tracking", func(t *testing.T) {
 		gm := &GPUManager{
 			GpuDataMap: map[string]*system.GPUData{
 				"0": {
@@ -365,7 +365,8 @@ func TestGetCurrentData(t *testing.T) {
 			},
 		}
 
-		result := gm.GetCurrentData()
+		cacheKey := uint16(5000)
+		result := gm.GetCurrentData(cacheKey)
 
 		// Verify name disambiguation
 		assert.Equal(t, "GPU1 0", result["0"].Name)
@@ -378,13 +379,19 @@ func TestGetCurrentData(t *testing.T) {
 		assert.InDelta(t, 30.0, result["1"].Usage, 0.01)
 		assert.InDelta(t, 60.0, result["1"].Power, 0.01)
 
-		// Verify that accumulators in the original map are reset
-		assert.EqualValues(t, float64(1), gm.GpuDataMap["0"].Count, "GPU 0 Count should be reset")
-		assert.EqualValues(t, float64(50.0), gm.GpuDataMap["0"].Usage, "GPU 0 Usage should be reset")
-		assert.Equal(t, float64(100.0), gm.GpuDataMap["0"].Power, "GPU 0 Power should be reset")
-		assert.Equal(t, float64(1), gm.GpuDataMap["1"].Count, "GPU 1 Count should be reset")
-		assert.Equal(t, float64(30), gm.GpuDataMap["1"].Usage, "GPU 1 Usage should be reset")
-		assert.Equal(t, float64(60), gm.GpuDataMap["1"].Power, "GPU 1 Power should be reset")
+		// Verify that accumulators in the original map are NOT reset (they keep growing)
+		assert.EqualValues(t, 2, gm.GpuDataMap["0"].Count, "GPU 0 Count should remain at 2")
+		assert.EqualValues(t, 100, gm.GpuDataMap["0"].Usage, "GPU 0 Usage should remain at 100")
+		assert.Equal(t, 200.0, gm.GpuDataMap["0"].Power, "GPU 0 Power should remain at 200")
+		assert.Equal(t, 1.0, gm.GpuDataMap["1"].Count, "GPU 1 Count should remain at 1")
+		assert.Equal(t, 30.0, gm.GpuDataMap["1"].Usage, "GPU 1 Usage should remain at 30")
+		assert.Equal(t, 60.0, gm.GpuDataMap["1"].Power, "GPU 1 Power should remain at 60")
+
+		// Verify snapshots were stored for this cache key
+		assert.NotNil(t, gm.lastSnapshots[cacheKey]["0"])
+		assert.Equal(t, uint32(2), gm.lastSnapshots[cacheKey]["0"].count)
+		assert.Equal(t, 100.0, gm.lastSnapshots[cacheKey]["0"].usage)
+		assert.Equal(t, 200.0, gm.lastSnapshots[cacheKey]["0"].power)
 	})
 
 	t.Run("handles zero count without panicking", func(t *testing.T) {
@@ -399,17 +406,543 @@ func TestGetCurrentData(t *testing.T) {
 			},
 		}
 
+		cacheKey := uint16(5000)
 		var result map[string]system.GPUData
 		assert.NotPanics(t, func() {
-			result = gm.GetCurrentData()
+			result = gm.GetCurrentData(cacheKey)
 		})
 
 		// Check that usage and power are 0
 		assert.Equal(t, 0.0, result["0"].Usage)
 		assert.Equal(t, 0.0, result["0"].Power)
 
-		// Verify reset count
-		assert.EqualValues(t, 1, gm.GpuDataMap["0"].Count)
+		// Verify count remains 0
+		assert.EqualValues(t, 0, gm.GpuDataMap["0"].Count)
+	})
+
+	t.Run("uses last average when no new data arrives", func(t *testing.T) {
+		gm := &GPUManager{
+			GpuDataMap: map[string]*system.GPUData{
+				"0": {
+					Name:        "TestGPU",
+					Temperature: 55.0,
+					MemoryUsed:  1500,
+					MemoryTotal: 8000,
+					Usage:       100, // Will average to 50
+					Power:       200, // Will average to 100
+					Count:       2,
+				},
+			},
+		}
+
+		cacheKey := uint16(5000)
+
+		// First collection - should calculate averages and store them
+		result1 := gm.GetCurrentData(cacheKey)
+		assert.InDelta(t, 50.0, result1["0"].Usage, 0.01)
+		assert.InDelta(t, 100.0, result1["0"].Power, 0.01)
+		assert.EqualValues(t, 2, gm.GpuDataMap["0"].Count, "Count should remain at 2")
+
+		// Update temperature but no new usage/power data (count stays same)
+		gm.GpuDataMap["0"].Temperature = 60.0
+		gm.GpuDataMap["0"].MemoryUsed = 1600
+
+		// Second collection - should use last averages since count hasn't changed (delta = 0)
+		result2 := gm.GetCurrentData(cacheKey)
+		assert.InDelta(t, 50.0, result2["0"].Usage, 0.01, "Should use last average")
+		assert.InDelta(t, 100.0, result2["0"].Power, 0.01, "Should use last average")
+		assert.InDelta(t, 60.0, result2["0"].Temperature, 0.01, "Should use current temperature")
+		assert.InDelta(t, 1600.0, result2["0"].MemoryUsed, 0.01, "Should use current memory")
+		assert.EqualValues(t, 2, gm.GpuDataMap["0"].Count, "Count should still be 2")
+	})
+
+	t.Run("tracks separate averages per cache key", func(t *testing.T) {
+		gm := &GPUManager{
+			GpuDataMap: map[string]*system.GPUData{
+				"0": {
+					Name:        "TestGPU",
+					Temperature: 55.0,
+					MemoryUsed:  1500,
+					MemoryTotal: 8000,
+					Usage:       100, // Initial: 100 over 2 counts = 50 avg
+					Power:       200, // Initial: 200 over 2 counts = 100 avg
+					Count:       2,
+				},
+			},
+		}
+
+		cacheKey1 := uint16(5000)
+		cacheKey2 := uint16(10000)
+
+		// First check with cacheKey1 - baseline
+		result1 := gm.GetCurrentData(cacheKey1)
+		assert.InDelta(t, 50.0, result1["0"].Usage, 0.01, "CacheKey1: Initial average should be 50")
+		assert.InDelta(t, 100.0, result1["0"].Power, 0.01, "CacheKey1: Initial average should be 100")
+
+		// Simulate GPU activity - accumulate more data
+		gm.GpuDataMap["0"].Usage += 60  // Now total: 160
+		gm.GpuDataMap["0"].Power += 150 // Now total: 350
+		gm.GpuDataMap["0"].Count += 3   // Now total: 5
+
+		// Check with cacheKey1 again - should get delta since last cacheKey1 check
+		result2 := gm.GetCurrentData(cacheKey1)
+		assert.InDelta(t, 20.0, result2["0"].Usage, 0.01, "CacheKey1: Delta average should be 60/3 = 20")
+		assert.InDelta(t, 50.0, result2["0"].Power, 0.01, "CacheKey1: Delta average should be 150/3 = 50")
+
+		// Check with cacheKey2 for the first time - should get average since beginning
+		result3 := gm.GetCurrentData(cacheKey2)
+		assert.InDelta(t, 32.0, result3["0"].Usage, 0.01, "CacheKey2: Total average should be 160/5 = 32")
+		assert.InDelta(t, 70.0, result3["0"].Power, 0.01, "CacheKey2: Total average should be 350/5 = 70")
+
+		// Simulate more GPU activity
+		gm.GpuDataMap["0"].Usage += 80  // Now total: 240
+		gm.GpuDataMap["0"].Power += 160 // Now total: 510
+		gm.GpuDataMap["0"].Count += 2   // Now total: 7
+
+		// Check with cacheKey1 - should get delta since last cacheKey1 check
+		result4 := gm.GetCurrentData(cacheKey1)
+		assert.InDelta(t, 40.0, result4["0"].Usage, 0.01, "CacheKey1: New delta average should be 80/2 = 40")
+		assert.InDelta(t, 80.0, result4["0"].Power, 0.01, "CacheKey1: New delta average should be 160/2 = 80")
+
+		// Check with cacheKey2 - should get delta since last cacheKey2 check
+		result5 := gm.GetCurrentData(cacheKey2)
+		assert.InDelta(t, 40.0, result5["0"].Usage, 0.01, "CacheKey2: Delta average should be 80/2 = 40")
+		assert.InDelta(t, 80.0, result5["0"].Power, 0.01, "CacheKey2: Delta average should be 160/2 = 80")
+
+		// Verify snapshots exist for both cache keys
+		assert.NotNil(t, gm.lastSnapshots[cacheKey1])
+		assert.NotNil(t, gm.lastSnapshots[cacheKey2])
+		assert.NotNil(t, gm.lastSnapshots[cacheKey1]["0"])
+		assert.NotNil(t, gm.lastSnapshots[cacheKey2]["0"])
+	})
+}
+
+func TestCalculateDeltaCount(t *testing.T) {
+	gm := &GPUManager{}
+
+	t.Run("with no previous snapshot", func(t *testing.T) {
+		delta := gm.calculateDeltaCount(10, nil)
+		assert.Equal(t, uint32(10), delta, "Should return current count when no snapshot exists")
+	})
+
+	t.Run("with previous snapshot", func(t *testing.T) {
+		snapshot := &gpuSnapshot{count: 5}
+		delta := gm.calculateDeltaCount(15, snapshot)
+		assert.Equal(t, uint32(10), delta, "Should return difference between current and snapshot")
+	})
+
+	t.Run("with same count", func(t *testing.T) {
+		snapshot := &gpuSnapshot{count: 10}
+		delta := gm.calculateDeltaCount(10, snapshot)
+		assert.Equal(t, uint32(0), delta, "Should return zero when count hasn't changed")
+	})
+}
+
+func TestCalculateDeltas(t *testing.T) {
+	gm := &GPUManager{}
+
+	t.Run("with no previous snapshot", func(t *testing.T) {
+		gpu := &system.GPUData{
+			Usage:    100.5,
+			Power:    250.75,
+			PowerPkg: 300.25,
+		}
+		deltaUsage, deltaPower, deltaPowerPkg := gm.calculateDeltas(gpu, nil)
+		assert.Equal(t, 100.5, deltaUsage)
+		assert.Equal(t, 250.75, deltaPower)
+		assert.Equal(t, 300.25, deltaPowerPkg)
+	})
+
+	t.Run("with previous snapshot", func(t *testing.T) {
+		gpu := &system.GPUData{
+			Usage:    150.5,
+			Power:    300.75,
+			PowerPkg: 400.25,
+		}
+		snapshot := &gpuSnapshot{
+			usage:    100.5,
+			power:    250.75,
+			powerPkg: 300.25,
+		}
+		deltaUsage, deltaPower, deltaPowerPkg := gm.calculateDeltas(gpu, snapshot)
+		assert.InDelta(t, 50.0, deltaUsage, 0.01)
+		assert.InDelta(t, 50.0, deltaPower, 0.01)
+		assert.InDelta(t, 100.0, deltaPowerPkg, 0.01)
+	})
+}
+
+func TestCalculateIntelGPUUsage(t *testing.T) {
+	gm := &GPUManager{}
+
+	t.Run("with no previous snapshot", func(t *testing.T) {
+		gpuAvg := &system.GPUData{
+			Engines: make(map[string]float64),
+		}
+		gpu := &system.GPUData{
+			Engines: map[string]float64{
+				"Render/3D": 80.0,
+				"Video":     40.0,
+				"Compute":   60.0,
+			},
+		}
+		maxUsage := gm.calculateIntelGPUUsage(gpuAvg, gpu, nil, 2)
+
+		assert.Equal(t, 40.0, maxUsage, "Should return max engine usage (80/2=40)")
+		assert.Equal(t, 40.0, gpuAvg.Engines["Render/3D"])
+		assert.Equal(t, 20.0, gpuAvg.Engines["Video"])
+		assert.Equal(t, 30.0, gpuAvg.Engines["Compute"])
+	})
+
+	t.Run("with previous snapshot", func(t *testing.T) {
+		gpuAvg := &system.GPUData{
+			Engines: make(map[string]float64),
+		}
+		gpu := &system.GPUData{
+			Engines: map[string]float64{
+				"Render/3D": 180.0,
+				"Video":     100.0,
+				"Compute":   140.0,
+			},
+		}
+		snapshot := &gpuSnapshot{
+			engines: map[string]float64{
+				"Render/3D": 80.0,
+				"Video":     40.0,
+				"Compute":   60.0,
+			},
+		}
+		maxUsage := gm.calculateIntelGPUUsage(gpuAvg, gpu, snapshot, 5)
+
+		// Deltas: Render/3D=100, Video=60, Compute=80 over 5 counts
+		assert.Equal(t, 20.0, maxUsage, "Should return max engine delta (100/5=20)")
+		assert.Equal(t, 20.0, gpuAvg.Engines["Render/3D"])
+		assert.Equal(t, 12.0, gpuAvg.Engines["Video"])
+		assert.Equal(t, 16.0, gpuAvg.Engines["Compute"])
+	})
+
+	t.Run("handles missing engine in snapshot", func(t *testing.T) {
+		gpuAvg := &system.GPUData{
+			Engines: make(map[string]float64),
+		}
+		gpu := &system.GPUData{
+			Engines: map[string]float64{
+				"Render/3D": 100.0,
+				"NewEngine": 50.0,
+			},
+		}
+		snapshot := &gpuSnapshot{
+			engines: map[string]float64{
+				"Render/3D": 80.0,
+				// NewEngine doesn't exist in snapshot
+			},
+		}
+		maxUsage := gm.calculateIntelGPUUsage(gpuAvg, gpu, snapshot, 2)
+
+		assert.Equal(t, 25.0, maxUsage)
+		assert.Equal(t, 10.0, gpuAvg.Engines["Render/3D"], "Should use delta for existing engine")
+		assert.Equal(t, 25.0, gpuAvg.Engines["NewEngine"], "Should use full value for new engine")
+	})
+}
+
+func TestUpdateInstantaneousValues(t *testing.T) {
+	gm := &GPUManager{}
+
+	t.Run("updates temperature, memory used and total", func(t *testing.T) {
+		gpuAvg := &system.GPUData{
+			Temperature: 50.123,
+			MemoryUsed:  1000.456,
+			MemoryTotal: 8000.789,
+		}
+		gpu := &system.GPUData{
+			Temperature: 75.567,
+			MemoryUsed:  2500.891,
+			MemoryTotal: 8192.234,
+		}
+
+		gm.updateInstantaneousValues(gpuAvg, gpu)
+
+		assert.Equal(t, 75.57, gpuAvg.Temperature, "Should update and round temperature")
+		assert.Equal(t, 2500.89, gpuAvg.MemoryUsed, "Should update and round memory used")
+		assert.Equal(t, 8192.23, gpuAvg.MemoryTotal, "Should update and round memory total")
+	})
+}
+
+func TestStoreSnapshot(t *testing.T) {
+	gm := &GPUManager{
+		lastSnapshots: make(map[uint16]map[string]*gpuSnapshot),
+	}
+
+	t.Run("stores standard GPU snapshot", func(t *testing.T) {
+		cacheKey := uint16(5000)
+		gm.lastSnapshots[cacheKey] = make(map[string]*gpuSnapshot)
+
+		gpu := &system.GPUData{
+			Count:    10.0,
+			Usage:    150.5,
+			Power:    250.75,
+			PowerPkg: 300.25,
+		}
+
+		gm.storeSnapshot("0", gpu, cacheKey)
+
+		snapshot := gm.lastSnapshots[cacheKey]["0"]
+		assert.NotNil(t, snapshot)
+		assert.Equal(t, uint32(10), snapshot.count)
+		assert.Equal(t, 150.5, snapshot.usage)
+		assert.Equal(t, 250.75, snapshot.power)
+		assert.Equal(t, 300.25, snapshot.powerPkg)
+		assert.Nil(t, snapshot.engines, "Should not have engines for standard GPU")
+	})
+
+	t.Run("stores Intel GPU snapshot with engines", func(t *testing.T) {
+		cacheKey := uint16(10000)
+		gm.lastSnapshots[cacheKey] = make(map[string]*gpuSnapshot)
+
+		gpu := &system.GPUData{
+			Count:    5.0,
+			Usage:    100.0,
+			Power:    200.0,
+			PowerPkg: 250.0,
+			Engines: map[string]float64{
+				"Render/3D": 80.0,
+				"Video":     40.0,
+			},
+		}
+
+		gm.storeSnapshot("0", gpu, cacheKey)
+
+		snapshot := gm.lastSnapshots[cacheKey]["0"]
+		assert.NotNil(t, snapshot)
+		assert.Equal(t, uint32(5), snapshot.count)
+		assert.NotNil(t, snapshot.engines, "Should have engines for Intel GPU")
+		assert.Equal(t, 80.0, snapshot.engines["Render/3D"])
+		assert.Equal(t, 40.0, snapshot.engines["Video"])
+		assert.Len(t, snapshot.engines, 2)
+	})
+
+	t.Run("overwrites existing snapshot", func(t *testing.T) {
+		cacheKey := uint16(5000)
+		gm.lastSnapshots[cacheKey] = make(map[string]*gpuSnapshot)
+
+		// Store initial snapshot
+		gpu1 := &system.GPUData{Count: 5.0, Usage: 100.0, Power: 200.0}
+		gm.storeSnapshot("0", gpu1, cacheKey)
+
+		// Store updated snapshot
+		gpu2 := &system.GPUData{Count: 10.0, Usage: 250.0, Power: 400.0}
+		gm.storeSnapshot("0", gpu2, cacheKey)
+
+		snapshot := gm.lastSnapshots[cacheKey]["0"]
+		assert.Equal(t, uint32(10), snapshot.count, "Should overwrite previous count")
+		assert.Equal(t, 250.0, snapshot.usage, "Should overwrite previous usage")
+		assert.Equal(t, 400.0, snapshot.power, "Should overwrite previous power")
+	})
+}
+
+func TestCountGPUNames(t *testing.T) {
+	t.Run("returns empty map for no GPUs", func(t *testing.T) {
+		gm := &GPUManager{
+			GpuDataMap: make(map[string]*system.GPUData),
+		}
+		counts := gm.countGPUNames()
+		assert.Empty(t, counts)
+	})
+
+	t.Run("counts unique GPU names", func(t *testing.T) {
+		gm := &GPUManager{
+			GpuDataMap: map[string]*system.GPUData{
+				"0": {Name: "GPU A"},
+				"1": {Name: "GPU B"},
+				"2": {Name: "GPU C"},
+			},
+		}
+		counts := gm.countGPUNames()
+		assert.Equal(t, 1, counts["GPU A"])
+		assert.Equal(t, 1, counts["GPU B"])
+		assert.Equal(t, 1, counts["GPU C"])
+		assert.Len(t, counts, 3)
+	})
+
+	t.Run("counts duplicate GPU names", func(t *testing.T) {
+		gm := &GPUManager{
+			GpuDataMap: map[string]*system.GPUData{
+				"0": {Name: "RTX 4090"},
+				"1": {Name: "RTX 4090"},
+				"2": {Name: "RTX 4090"},
+				"3": {Name: "RTX 3080"},
+			},
+		}
+		counts := gm.countGPUNames()
+		assert.Equal(t, 3, counts["RTX 4090"])
+		assert.Equal(t, 1, counts["RTX 3080"])
+		assert.Len(t, counts, 2)
+	})
+}
+
+func TestInitializeSnapshots(t *testing.T) {
+	t.Run("initializes all maps from scratch", func(t *testing.T) {
+		gm := &GPUManager{}
+		cacheKey := uint16(5000)
+
+		gm.initializeSnapshots(cacheKey)
+
+		assert.NotNil(t, gm.lastAvgData)
+		assert.NotNil(t, gm.lastSnapshots)
+		assert.NotNil(t, gm.lastSnapshots[cacheKey])
+	})
+
+	t.Run("initializes only missing maps", func(t *testing.T) {
+		gm := &GPUManager{
+			lastAvgData: make(map[string]system.GPUData),
+		}
+		cacheKey := uint16(5000)
+
+		gm.initializeSnapshots(cacheKey)
+
+		assert.NotNil(t, gm.lastAvgData, "Should preserve existing lastAvgData")
+		assert.NotNil(t, gm.lastSnapshots)
+		assert.NotNil(t, gm.lastSnapshots[cacheKey])
+	})
+
+	t.Run("adds new cache key to existing snapshots", func(t *testing.T) {
+		existingKey := uint16(5000)
+		newKey := uint16(10000)
+
+		gm := &GPUManager{
+			lastSnapshots: map[uint16]map[string]*gpuSnapshot{
+				existingKey: {"0": {count: 10}},
+			},
+		}
+
+		gm.initializeSnapshots(newKey)
+
+		assert.NotNil(t, gm.lastSnapshots[existingKey], "Should preserve existing cache key")
+		assert.NotNil(t, gm.lastSnapshots[newKey], "Should add new cache key")
+		assert.NotNil(t, gm.lastSnapshots[existingKey]["0"], "Should preserve existing snapshot data")
+	})
+}
+
+func TestCalculateGPUAverage(t *testing.T) {
+	t.Run("returns zero value when deltaCount is zero", func(t *testing.T) {
+		gm := &GPUManager{
+			lastSnapshots: map[uint16]map[string]*gpuSnapshot{
+				5000: {
+					"0": {count: 10, usage: 100, power: 200},
+				},
+			},
+			lastAvgData: map[string]system.GPUData{
+				"0": {Usage: 50.0, Power: 100.0},
+			},
+		}
+
+		gpu := &system.GPUData{
+			Count: 10.0, // Same as snapshot, so delta = 0
+			Usage: 100.0,
+			Power: 200.0,
+		}
+
+		result := gm.calculateGPUAverage("0", gpu, 5000)
+
+		assert.Equal(t, 50.0, result.Usage, "Should return cached average")
+		assert.Equal(t, 100.0, result.Power, "Should return cached average")
+	})
+
+	t.Run("calculates average for standard GPU", func(t *testing.T) {
+		gm := &GPUManager{
+			lastSnapshots: map[uint16]map[string]*gpuSnapshot{
+				5000: {},
+			},
+			lastAvgData: make(map[string]system.GPUData),
+		}
+
+		gpu := &system.GPUData{
+			Name:  "Test GPU",
+			Count: 4.0,
+			Usage: 200.0, // 200 / 4 = 50
+			Power: 400.0, // 400 / 4 = 100
+		}
+
+		result := gm.calculateGPUAverage("0", gpu, 5000)
+
+		assert.Equal(t, 50.0, result.Usage)
+		assert.Equal(t, 100.0, result.Power)
+		assert.Equal(t, "Test GPU", result.Name)
+	})
+
+	t.Run("calculates average for Intel GPU with engines", func(t *testing.T) {
+		gm := &GPUManager{
+			lastSnapshots: map[uint16]map[string]*gpuSnapshot{
+				5000: {},
+			},
+			lastAvgData: make(map[string]system.GPUData),
+		}
+
+		gpu := &system.GPUData{
+			Name:     "Intel GPU",
+			Count:    5.0,
+			Power:    500.0,
+			PowerPkg: 600.0,
+			Engines: map[string]float64{
+				"Render/3D": 100.0, // 100 / 5 = 20
+				"Video":     50.0,  // 50 / 5 = 10
+			},
+		}
+
+		result := gm.calculateGPUAverage("0", gpu, 5000)
+
+		assert.Equal(t, 100.0, result.Power)
+		assert.Equal(t, 120.0, result.PowerPkg)
+		assert.Equal(t, 20.0, result.Usage, "Should use max engine usage")
+		assert.Equal(t, 20.0, result.Engines["Render/3D"])
+		assert.Equal(t, 10.0, result.Engines["Video"])
+	})
+
+	t.Run("calculates delta from previous snapshot", func(t *testing.T) {
+		gm := &GPUManager{
+			lastSnapshots: map[uint16]map[string]*gpuSnapshot{
+				5000: {
+					"0": {
+						count:    2,
+						usage:    50.0,
+						power:    100.0,
+						powerPkg: 120.0,
+					},
+				},
+			},
+			lastAvgData: make(map[string]system.GPUData),
+		}
+
+		gpu := &system.GPUData{
+			Name:     "Test GPU",
+			Count:    7.0,   // Delta = 7 - 2 = 5
+			Usage:    200.0, // Delta = 200 - 50 = 150, avg = 150/5 = 30
+			Power:    350.0, // Delta = 350 - 100 = 250, avg = 250/5 = 50
+			PowerPkg: 420.0, // Delta = 420 - 120 = 300, avg = 300/5 = 60
+		}
+
+		result := gm.calculateGPUAverage("0", gpu, 5000)
+
+		assert.Equal(t, 30.0, result.Usage)
+		assert.Equal(t, 50.0, result.Power)
+	})
+
+	t.Run("stores result in lastAvgData", func(t *testing.T) {
+		gm := &GPUManager{
+			lastSnapshots: map[uint16]map[string]*gpuSnapshot{
+				5000: {},
+			},
+			lastAvgData: make(map[string]system.GPUData),
+		}
+
+		gpu := &system.GPUData{
+			Count: 2.0,
+			Usage: 100.0,
+			Power: 200.0,
+		}
+
+		result := gm.calculateGPUAverage("0", gpu, 5000)
+
+		assert.Equal(t, result, gm.lastAvgData["0"], "Should store calculated average")
 	})
 }
 
@@ -765,7 +1298,8 @@ func TestAccumulation(t *testing.T) {
 			}
 
 			// Verify average calculation in GetCurrentData
-			result := gm.GetCurrentData()
+			cacheKey := uint16(5000)
+			result := gm.GetCurrentData(cacheKey)
 			for id, expected := range tt.expectedValues {
 				gpu, exists := result[id]
 				assert.True(t, exists, "GPU with ID %s should exist in GetCurrentData result", id)
@@ -778,16 +1312,16 @@ func TestAccumulation(t *testing.T) {
 				assert.EqualValues(t, expected.avgPower, gpu.Power, "Average power in GetCurrentData should match")
 			}
 
-			// Verify that accumulators in the original map are reset
+			// Verify that accumulators in the original map are NOT reset (they keep growing)
 			for id, expected := range tt.expectedValues {
 				gpu, exists := gm.GpuDataMap[id]
 				assert.True(t, exists, "GPU with ID %s should still exist after GetCurrentData", id)
 				if !exists {
 					continue
 				}
-				assert.EqualValues(t, 1, gpu.Count, "Count should be reset for GPU ID %s", id)
-				assert.EqualValues(t, expected.avgUsage, gpu.Usage, "Usage should be reset for GPU ID %s", id)
-				assert.EqualValues(t, expected.avgPower, gpu.Power, "Power should be reset for GPU ID %s", id)
+				assert.EqualValues(t, expected.count, gpu.Count, "Count should remain at accumulated value for GPU ID %s", id)
+				assert.EqualValues(t, expected.usage, gpu.Usage, "Usage should remain at accumulated value for GPU ID %s", id)
+				assert.EqualValues(t, expected.power, gpu.Power, "Power should remain at accumulated value for GPU ID %s", id)
 			}
 		})
 	}

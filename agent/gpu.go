@@ -44,6 +44,21 @@ type GPUManager struct {
 	tegrastats    bool
 	intelGpuStats bool
 	GpuDataMap    map[string]*system.GPUData
+	// lastAvgData stores the last calculated averages for each GPU
+	// Used when a collection happens before new data arrives (Count == 0)
+	lastAvgData map[string]system.GPUData
+	// Per-cache-key tracking for delta calculations
+	// cacheKey -> gpuId -> snapshot of last count/usage/power values
+	lastSnapshots map[uint16]map[string]*gpuSnapshot
+}
+
+// gpuSnapshot stores the last observed incremental values for delta tracking
+type gpuSnapshot struct {
+	count    uint32
+	usage    float64
+	power    float64
+	powerPkg float64
+	engines  map[string]float64
 }
 
 // RocmSmiJson represents the JSON structure of rocm-smi output
@@ -229,48 +244,21 @@ func (gm *GPUManager) parseAmdData(output []byte) bool {
 	return true
 }
 
-// sums and resets the current GPU utilization data since the last update
-func (gm *GPUManager) GetCurrentData() map[string]system.GPUData {
+// GetCurrentData returns GPU utilization data averaged since the last call with this cacheKey
+func (gm *GPUManager) GetCurrentData(cacheKey uint16) map[string]system.GPUData {
 	gm.Lock()
 	defer gm.Unlock()
 
-	// check for GPUs with the same name
-	nameCounts := make(map[string]int)
-	for _, gpu := range gm.GpuDataMap {
-		nameCounts[gpu.Name]++
-	}
+	gm.initializeSnapshots(cacheKey)
+	nameCounts := gm.countGPUNames()
 
-	// copy / reset the data
 	gpuData := make(map[string]system.GPUData, len(gm.GpuDataMap))
 	for id, gpu := range gm.GpuDataMap {
-		// avoid division by zero
-		count := max(gpu.Count, 1)
+		gpuAvg := gm.calculateGPUAverage(id, gpu, cacheKey)
+		gm.updateInstantaneousValues(&gpuAvg, gpu)
+		gm.storeSnapshot(id, gpu, cacheKey)
 
-		// average the data
-		gpuAvg := *gpu
-		gpuAvg.Temperature = twoDecimals(gpu.Temperature)
-		gpuAvg.Power = twoDecimals(gpu.Power / count)
-
-		// intel gpu stats doesn't provide usage, memory used, or memory total
-		if gpu.Engines != nil {
-			maxEngineUsage := 0.0
-			for name, engine := range gpu.Engines {
-				gpuAvg.Engines[name] = twoDecimals(engine / count)
-				maxEngineUsage = max(maxEngineUsage, engine/count)
-			}
-			gpuAvg.PowerPkg = twoDecimals(gpu.PowerPkg / count)
-			gpuAvg.Usage = twoDecimals(maxEngineUsage)
-		} else {
-			gpuAvg.Usage = twoDecimals(gpu.Usage / count)
-			gpuAvg.MemoryUsed = twoDecimals(gpu.MemoryUsed)
-			gpuAvg.MemoryTotal = twoDecimals(gpu.MemoryTotal)
-		}
-
-		// reset accumulators in the original gpu data for next collection
-		gpu.Usage, gpu.Power, gpu.PowerPkg, gpu.Count = gpuAvg.Usage, gpuAvg.Power, gpuAvg.PowerPkg, 1
-		gpu.Engines = gpuAvg.Engines
-
-		// append id to the name if there are multiple GPUs with the same name
+		// Append id to name if there are multiple GPUs with the same name
 		if nameCounts[gpu.Name] > 1 {
 			gpuAvg.Name = fmt.Sprintf("%s %s", gpu.Name, id)
 		}
@@ -278,6 +266,114 @@ func (gm *GPUManager) GetCurrentData() map[string]system.GPUData {
 	}
 	slog.Debug("GPU", "data", gpuData)
 	return gpuData
+}
+
+// initializeSnapshots ensures snapshot maps are initialized for the given cache key
+func (gm *GPUManager) initializeSnapshots(cacheKey uint16) {
+	if gm.lastAvgData == nil {
+		gm.lastAvgData = make(map[string]system.GPUData)
+	}
+	if gm.lastSnapshots == nil {
+		gm.lastSnapshots = make(map[uint16]map[string]*gpuSnapshot)
+	}
+	if gm.lastSnapshots[cacheKey] == nil {
+		gm.lastSnapshots[cacheKey] = make(map[string]*gpuSnapshot)
+	}
+}
+
+// countGPUNames returns a map of GPU names to their occurrence count
+func (gm *GPUManager) countGPUNames() map[string]int {
+	nameCounts := make(map[string]int)
+	for _, gpu := range gm.GpuDataMap {
+		nameCounts[gpu.Name]++
+	}
+	return nameCounts
+}
+
+// calculateGPUAverage computes the average GPU metrics since the last snapshot for this cache key
+func (gm *GPUManager) calculateGPUAverage(id string, gpu *system.GPUData, cacheKey uint16) system.GPUData {
+	lastSnapshot := gm.lastSnapshots[cacheKey][id]
+	currentCount := uint32(gpu.Count)
+	deltaCount := gm.calculateDeltaCount(currentCount, lastSnapshot)
+
+	// If no new data arrived, use last known average
+	if deltaCount == 0 {
+		return gm.lastAvgData[id] // zero value if not found
+	}
+
+	// Calculate new average
+	gpuAvg := *gpu
+	deltaUsage, deltaPower, deltaPowerPkg := gm.calculateDeltas(gpu, lastSnapshot)
+
+	gpuAvg.Power = twoDecimals(deltaPower / float64(deltaCount))
+
+	if gpu.Engines != nil {
+		gpuAvg.Usage = gm.calculateIntelGPUUsage(&gpuAvg, gpu, lastSnapshot, deltaCount)
+		gpuAvg.PowerPkg = twoDecimals(deltaPowerPkg / float64(deltaCount))
+	} else {
+		gpuAvg.Usage = twoDecimals(deltaUsage / float64(deltaCount))
+	}
+
+	gm.lastAvgData[id] = gpuAvg
+	return gpuAvg
+}
+
+// calculateDeltaCount returns the change in count since the last snapshot
+func (gm *GPUManager) calculateDeltaCount(currentCount uint32, lastSnapshot *gpuSnapshot) uint32 {
+	if lastSnapshot != nil {
+		return currentCount - lastSnapshot.count
+	}
+	return currentCount
+}
+
+// calculateDeltas computes the change in usage, power, and powerPkg since the last snapshot
+func (gm *GPUManager) calculateDeltas(gpu *system.GPUData, lastSnapshot *gpuSnapshot) (deltaUsage, deltaPower, deltaPowerPkg float64) {
+	if lastSnapshot != nil {
+		return gpu.Usage - lastSnapshot.usage,
+			gpu.Power - lastSnapshot.power,
+			gpu.PowerPkg - lastSnapshot.powerPkg
+	}
+	return gpu.Usage, gpu.Power, gpu.PowerPkg
+}
+
+// calculateIntelGPUUsage computes Intel GPU usage from engine metrics and returns max engine usage
+func (gm *GPUManager) calculateIntelGPUUsage(gpuAvg, gpu *system.GPUData, lastSnapshot *gpuSnapshot, deltaCount uint32) float64 {
+	maxEngineUsage := 0.0
+	for name, engine := range gpu.Engines {
+		var deltaEngine float64
+		if lastSnapshot != nil && lastSnapshot.engines != nil {
+			deltaEngine = engine - lastSnapshot.engines[name]
+		} else {
+			deltaEngine = engine
+		}
+		gpuAvg.Engines[name] = twoDecimals(deltaEngine / float64(deltaCount))
+		maxEngineUsage = max(maxEngineUsage, deltaEngine/float64(deltaCount))
+	}
+	return twoDecimals(maxEngineUsage)
+}
+
+// updateInstantaneousValues updates values that should reflect current state, not averages
+func (gm *GPUManager) updateInstantaneousValues(gpuAvg *system.GPUData, gpu *system.GPUData) {
+	gpuAvg.Temperature = twoDecimals(gpu.Temperature)
+	gpuAvg.MemoryUsed = twoDecimals(gpu.MemoryUsed)
+	gpuAvg.MemoryTotal = twoDecimals(gpu.MemoryTotal)
+}
+
+// storeSnapshot saves the current GPU state for this cache key
+func (gm *GPUManager) storeSnapshot(id string, gpu *system.GPUData, cacheKey uint16) {
+	snapshot := &gpuSnapshot{
+		count:    uint32(gpu.Count),
+		usage:    gpu.Usage,
+		power:    gpu.Power,
+		powerPkg: gpu.PowerPkg,
+	}
+	if gpu.Engines != nil {
+		snapshot.engines = make(map[string]float64, len(gpu.Engines))
+		for name, value := range gpu.Engines {
+			snapshot.engines[name] = value
+		}
+	}
+	gm.lastSnapshots[cacheKey][id] = snapshot
 }
 
 // detectGPUs checks for the presence of GPU management tools (nvidia-smi, rocm-smi, tegrastats)

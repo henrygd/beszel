@@ -106,6 +106,8 @@ func (sm *SystemManager) bindEventHooks() {
 	sm.hub.OnRecordAfterUpdateSuccess("systems").BindFunc(sm.onRecordAfterUpdateSuccess)
 	sm.hub.OnRecordAfterDeleteSuccess("systems").BindFunc(sm.onRecordAfterDeleteSuccess)
 	sm.hub.OnRecordAfterUpdateSuccess("fingerprints").BindFunc(sm.onTokenRotated)
+	sm.hub.OnRealtimeSubscribeRequest().BindFunc(sm.onRealtimeSubscribeRequest)
+	sm.hub.OnRealtimeConnectRequest().BindFunc(sm.onRealtimeConnectRequest)
 }
 
 // onTokenRotated handles fingerprint token rotation events.

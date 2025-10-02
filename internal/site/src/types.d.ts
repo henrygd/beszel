@@ -123,6 +123,10 @@ export interface SystemStats {
 	drm?: number
 	/** max disk write (mb) */
 	dwm?: number
+	/** disk I/O bytes [read, write] */
+	dio?: [number, number]
+	/** max disk I/O bytes [read, write] */
+	diom?: [number, number]
 	/** network sent (mb) */
 	ns: number
 	/** network received (mb) */
@@ -177,6 +181,14 @@ export interface ExtraFsStats {
 	rm: number
 	/** max write (mb) */
 	wm: number
+	/** read per second (bytes) */
+	rb: number
+	/** write per second (bytes) */
+	wb: number
+	/** max read per second (bytes) */
+	rbm: number
+	/** max write per second (mb) */
+	wbm: number
 }
 
 export interface ContainerStatsRecord extends RecordModel {
@@ -224,7 +236,7 @@ export interface AlertsHistoryRecord extends RecordModel {
 	resolved?: string | null
 }
 
-export type ChartTimes = "1h" | "12h" | "24h" | "1w" | "30d"
+export type ChartTimes = "1m" | "1h" | "12h" | "24h" | "1w" | "30d"
 
 export interface ChartTimeData {
 	[key: string]: {
@@ -234,6 +246,7 @@ export interface ChartTimeData {
 		ticks?: number
 		format: (timestamp: string) => string
 		getOffset: (endTime: Date) => Date
+		minVersion?: string
 	}
 }
 

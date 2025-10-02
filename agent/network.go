@@ -12,8 +12,6 @@ import (
 	psutilNet "github.com/shirou/gopsutil/v4/net"
 )
 
-var netInterfaceDeltaTracker = deltatracker.NewDeltaTracker[string, uint64]()
-
 // NicConfig controls inclusion/exclusion of network interfaces via the NICS env var
 //
 // Behavior mirrors SensorConfig's matching logic:
@@ -77,75 +75,17 @@ func isValidNic(nicName string, cfg *NicConfig) bool {
 	return cfg.isBlacklist
 }
 
-func (a *Agent) updateNetworkStats(systemStats *system.Stats) {
+func (a *Agent) updateNetworkStats(cacheTimeMs uint16, systemStats *system.Stats) {
 	// network stats
-	if len(a.netInterfaces) == 0 {
-		// if no network interfaces, initialize again
-		// this is a fix if agent started before network is online (#466)
-		// maybe refactor this in the future to not cache interface names at all so we
-		// don't miss an interface that's been added after agent started in any circumstance
-		a.initializeNetIoStats()
-	}
+	a.ensureNetInterfacesInitialized()
 
-	if systemStats.NetworkInterfaces == nil {
-		systemStats.NetworkInterfaces = make(map[string][4]uint64, 0)
-	}
+	a.ensureNetworkInterfacesMap(systemStats)
 
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
-		msElapsed := uint64(time.Since(a.netIoStats.Time).Milliseconds())
-		a.netIoStats.Time = time.Now()
-		totalBytesSent := uint64(0)
-		totalBytesRecv := uint64(0)
-		netInterfaceDeltaTracker.Cycle()
-		// sum all bytes sent and received
-		for _, v := range netIO {
-			// skip if not in valid network interfaces list
-			if _, exists := a.netInterfaces[v.Name]; !exists {
-				continue
-			}
-			totalBytesSent += v.BytesSent
-			totalBytesRecv += v.BytesRecv
-
-			// track deltas for each network interface
-			var upDelta, downDelta uint64
-			upKey, downKey := fmt.Sprintf("%sup", v.Name), fmt.Sprintf("%sdown", v.Name)
-			netInterfaceDeltaTracker.Set(upKey, v.BytesSent)
-			netInterfaceDeltaTracker.Set(downKey, v.BytesRecv)
-			if msElapsed > 0 {
-				upDelta = netInterfaceDeltaTracker.Delta(upKey) * 1000 / msElapsed
-				downDelta = netInterfaceDeltaTracker.Delta(downKey) * 1000 / msElapsed
-			}
-			// add interface to systemStats
-			systemStats.NetworkInterfaces[v.Name] = [4]uint64{upDelta, downDelta, v.BytesSent, v.BytesRecv}
-		}
-
-		// add to systemStats
-		var bytesSentPerSecond, bytesRecvPerSecond uint64
-		if msElapsed > 0 {
-			bytesSentPerSecond = (totalBytesSent - a.netIoStats.BytesSent) * 1000 / msElapsed
-			bytesRecvPerSecond = (totalBytesRecv - a.netIoStats.BytesRecv) * 1000 / msElapsed
-		}
-		networkSentPs := bytesToMegabytes(float64(bytesSentPerSecond))
-		networkRecvPs := bytesToMegabytes(float64(bytesRecvPerSecond))
-		// add check for issue (#150) where sent is a massive number
-		if networkSentPs > 10_000 || networkRecvPs > 10_000 {
-			slog.Warn("Invalid net stats. Resetting.", "sent", networkSentPs, "recv", networkRecvPs)
-			for _, v := range netIO {
-				if _, exists := a.netInterfaces[v.Name]; !exists {
-					continue
-				}
-				slog.Info(v.Name, "recv", v.BytesRecv, "sent", v.BytesSent)
-			}
-			// reset network I/O stats
-			a.initializeNetIoStats()
-		} else {
-			systemStats.NetworkSent = networkSentPs
-			systemStats.NetworkRecv = networkRecvPs
-			systemStats.Bandwidth[0], systemStats.Bandwidth[1] = bytesSentPerSecond, bytesRecvPerSecond
-			// update netIoStats
-			a.netIoStats.BytesSent = totalBytesSent
-			a.netIoStats.BytesRecv = totalBytesRecv
-		}
+		nis, msElapsed := a.loadAndTickNetBaseline(cacheTimeMs)
+		totalBytesSent, totalBytesRecv := a.sumAndTrackPerNicDeltas(cacheTimeMs, msElapsed, netIO, systemStats)
+		bytesSentPerSecond, bytesRecvPerSecond := a.computeBytesPerSecond(msElapsed, totalBytesSent, totalBytesRecv, nis)
+		a.applyNetworkTotals(cacheTimeMs, netIO, systemStats, nis, totalBytesSent, totalBytesRecv, bytesSentPerSecond, bytesRecvPerSecond)
 	}
 }
 
@@ -160,13 +100,8 @@ func (a *Agent) initializeNetIoStats() {
 		nicCfg = newNicConfig(nicsEnvVal)
 	}
 
-	// reset network I/O stats
-	a.netIoStats.BytesSent = 0
-	a.netIoStats.BytesRecv = 0
-
-	// get intial network I/O stats
+	// get current network I/O stats and record valid interfaces
 	if netIO, err := psutilNet.IOCounters(true); err == nil {
-		a.netIoStats.Time = time.Now()
 		for _, v := range netIO {
 			if nicsEnvExists && !isValidNic(v.Name, nicCfg) {
 				continue
@@ -175,12 +110,116 @@ func (a *Agent) initializeNetIoStats() {
 				continue
 			}
 			slog.Info("Detected network interface", "name", v.Name, "sent", v.BytesSent, "recv", v.BytesRecv)
-			a.netIoStats.BytesSent += v.BytesSent
-			a.netIoStats.BytesRecv += v.BytesRecv
 			// store as a valid network interface
 			a.netInterfaces[v.Name] = struct{}{}
 		}
 	}
+
+	// Reset per-cache-time trackers and baselines so they will reinitialize on next use
+	a.netInterfaceDeltaTrackers = make(map[uint16]*deltatracker.DeltaTracker[string, uint64])
+	a.netIoStats = make(map[uint16]system.NetIoStats)
+}
+
+// ensureNetInterfacesInitialized re-initializes NICs if none are currently tracked
+func (a *Agent) ensureNetInterfacesInitialized() {
+	if len(a.netInterfaces) == 0 {
+		// if no network interfaces, initialize again
+		// this is a fix if agent started before network is online (#466)
+		// maybe refactor this in the future to not cache interface names at all so we
+		// don't miss an interface that's been added after agent started in any circumstance
+		a.initializeNetIoStats()
+	}
+}
+
+// ensureNetworkInterfacesMap ensures systemStats.NetworkInterfaces map exists
+func (a *Agent) ensureNetworkInterfacesMap(systemStats *system.Stats) {
+	if systemStats.NetworkInterfaces == nil {
+		systemStats.NetworkInterfaces = make(map[string][4]uint64, 0)
+	}
+}
+
+// loadAndTickNetBaseline returns the NetIoStats baseline and milliseconds elapsed, updating time
+func (a *Agent) loadAndTickNetBaseline(cacheTimeMs uint16) (netIoStat system.NetIoStats, msElapsed uint64) {
+	netIoStat = a.netIoStats[cacheTimeMs]
+	if netIoStat.Time.IsZero() {
+		netIoStat.Time = time.Now()
+		msElapsed = 0
+	} else {
+		msElapsed = uint64(time.Since(netIoStat.Time).Milliseconds())
+		netIoStat.Time = time.Now()
+	}
+	return netIoStat, msElapsed
+}
+
+// sumAndTrackPerNicDeltas accumulates totals and records per-NIC up/down deltas into systemStats
+func (a *Agent) sumAndTrackPerNicDeltas(cacheTimeMs uint16, msElapsed uint64, netIO []psutilNet.IOCountersStat, systemStats *system.Stats) (totalBytesSent, totalBytesRecv uint64) {
+	tracker := a.netInterfaceDeltaTrackers[cacheTimeMs]
+	if tracker == nil {
+		tracker = deltatracker.NewDeltaTracker[string, uint64]()
+		a.netInterfaceDeltaTrackers[cacheTimeMs] = tracker
+	}
+	tracker.Cycle()
+
+	for _, v := range netIO {
+		if _, exists := a.netInterfaces[v.Name]; !exists {
+			continue
+		}
+		totalBytesSent += v.BytesSent
+		totalBytesRecv += v.BytesRecv
+
+		var upDelta, downDelta uint64
+		upKey, downKey := fmt.Sprintf("%sup", v.Name), fmt.Sprintf("%sdown", v.Name)
+		tracker.Set(upKey, v.BytesSent)
+		tracker.Set(downKey, v.BytesRecv)
+		if msElapsed > 0 {
+			upDelta = tracker.Delta(upKey) * 1000 / msElapsed
+			downDelta = tracker.Delta(downKey) * 1000 / msElapsed
+		}
+		systemStats.NetworkInterfaces[v.Name] = [4]uint64{upDelta, downDelta, v.BytesSent, v.BytesRecv}
+	}
+
+	return totalBytesSent, totalBytesRecv
+}
+
+// computeBytesPerSecond calculates per-second totals from elapsed time and totals
+func (a *Agent) computeBytesPerSecond(msElapsed, totalBytesSent, totalBytesRecv uint64, nis system.NetIoStats) (bytesSentPerSecond, bytesRecvPerSecond uint64) {
+	if msElapsed > 0 {
+		bytesSentPerSecond = (totalBytesSent - nis.BytesSent) * 1000 / msElapsed
+		bytesRecvPerSecond = (totalBytesRecv - nis.BytesRecv) * 1000 / msElapsed
+	}
+	return bytesSentPerSecond, bytesRecvPerSecond
+}
+
+// applyNetworkTotals validates and writes computed network stats, or resets on anomaly
+func (a *Agent) applyNetworkTotals(
+	cacheTimeMs uint16,
+	netIO []psutilNet.IOCountersStat,
+	systemStats *system.Stats,
+	nis system.NetIoStats,
+	totalBytesSent, totalBytesRecv uint64,
+	bytesSentPerSecond, bytesRecvPerSecond uint64,
+) {
+	networkSentPs := bytesToMegabytes(float64(bytesSentPerSecond))
+	networkRecvPs := bytesToMegabytes(float64(bytesRecvPerSecond))
+	if networkSentPs > 10_000 || networkRecvPs > 10_000 {
+		slog.Warn("Invalid net stats. Resetting.", "sent", networkSentPs, "recv", networkRecvPs)
+		for _, v := range netIO {
+			if _, exists := a.netInterfaces[v.Name]; !exists {
+				continue
+			}
+			slog.Info(v.Name, "recv", v.BytesRecv, "sent", v.BytesSent)
+		}
+		a.initializeNetIoStats()
+		delete(a.netIoStats, cacheTimeMs)
+		delete(a.netInterfaceDeltaTrackers, cacheTimeMs)
+	}
+
+	systemStats.NetworkSent = networkSentPs
+	systemStats.NetworkRecv = networkRecvPs
+	systemStats.Bandwidth[0], systemStats.Bandwidth[1] = bytesSentPerSecond, bytesRecvPerSecond
+	nis.BytesSent = totalBytesSent
+	nis.BytesRecv = totalBytesRecv
+	a.netIoStats[cacheTimeMs] = nis
 }
 
 func (a *Agent) skipNetworkInterface(v psutilNet.IOCountersStat) bool {

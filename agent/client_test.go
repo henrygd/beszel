@@ -301,7 +301,7 @@ func TestWebSocketClient_HandleHubRequest(t *testing.T) {
 				Data:   cbor.RawMessage{},
 			}
 
-			err := client.handleHubRequest(hubRequest)
+			err := client.handleHubRequest(hubRequest, nil)
 
 			if tc.expectError {
 				assert.Error(t, err)

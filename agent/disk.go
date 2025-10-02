@@ -189,3 +189,96 @@ func (a *Agent) initializeDiskIoStats(diskIoCounters map[string]disk.IOCountersS
 		a.fsNames = append(a.fsNames, device)
 	}
 }
+
+// Updates disk usage statistics for all monitored filesystems
+func (a *Agent) updateDiskUsage(systemStats *system.Stats) {
+	// disk usage
+	for _, stats := range a.fsStats {
+		if d, err := disk.Usage(stats.Mountpoint); err == nil {
+			stats.DiskTotal = bytesToGigabytes(d.Total)
+			stats.DiskUsed = bytesToGigabytes(d.Used)
+			if stats.Root {
+				systemStats.DiskTotal = bytesToGigabytes(d.Total)
+				systemStats.DiskUsed = bytesToGigabytes(d.Used)
+				systemStats.DiskPct = twoDecimals(d.UsedPercent)
+			}
+		} else {
+			// reset stats if error (likely unmounted)
+			slog.Error("Error getting disk stats", "name", stats.Mountpoint, "err", err)
+			stats.DiskTotal = 0
+			stats.DiskUsed = 0
+			stats.TotalRead = 0
+			stats.TotalWrite = 0
+		}
+	}
+}
+
+// Updates disk I/O statistics for all monitored filesystems
+func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
+	// disk i/o (cache-aware per interval)
+	if ioCounters, err := disk.IOCounters(a.fsNames...); err == nil {
+		// Ensure map for this interval exists
+		if _, ok := a.diskPrev[cacheTimeMs]; !ok {
+			a.diskPrev[cacheTimeMs] = make(map[string]prevDisk)
+		}
+		now := time.Now()
+		for name, d := range ioCounters {
+			stats := a.fsStats[d.Name]
+			if stats == nil {
+				// skip devices not tracked
+				continue
+			}
+
+			// Previous snapshot for this interval and device
+			prev, hasPrev := a.diskPrev[cacheTimeMs][name]
+			if !hasPrev {
+				// Seed from agent-level fsStats if present, else seed from current
+				prev = prevDisk{readBytes: stats.TotalRead, writeBytes: stats.TotalWrite, at: stats.Time}
+				if prev.at.IsZero() {
+					prev = prevDisk{readBytes: d.ReadBytes, writeBytes: d.WriteBytes, at: now}
+				}
+			}
+
+			msElapsed := uint64(now.Sub(prev.at).Milliseconds())
+			if msElapsed < 100 {
+				// Avoid division by zero or clock issues; update snapshot and continue
+				a.diskPrev[cacheTimeMs][name] = prevDisk{readBytes: d.ReadBytes, writeBytes: d.WriteBytes, at: now}
+				continue
+			}
+
+			diskIORead := (d.ReadBytes - prev.readBytes) * 1000 / msElapsed
+			diskIOWrite := (d.WriteBytes - prev.writeBytes) * 1000 / msElapsed
+			readMbPerSecond := bytesToMegabytes(float64(diskIORead))
+			writeMbPerSecond := bytesToMegabytes(float64(diskIOWrite))
+
+			// validate values
+			if readMbPerSecond > 50_000 || writeMbPerSecond > 50_000 {
+				slog.Warn("Invalid disk I/O. Resetting.", "name", d.Name, "read", readMbPerSecond, "write", writeMbPerSecond)
+				// Reset interval snapshot and seed from current
+				a.diskPrev[cacheTimeMs][name] = prevDisk{readBytes: d.ReadBytes, writeBytes: d.WriteBytes, at: now}
+				// also refresh agent baseline to avoid future negatives
+				a.initializeDiskIoStats(ioCounters)
+				continue
+			}
+
+			// Update per-interval snapshot
+			a.diskPrev[cacheTimeMs][name] = prevDisk{readBytes: d.ReadBytes, writeBytes: d.WriteBytes, at: now}
+
+			// Update global fsStats baseline for cross-interval correctness
+			stats.Time = now
+			stats.TotalRead = d.ReadBytes
+			stats.TotalWrite = d.WriteBytes
+			stats.DiskReadPs = readMbPerSecond
+			stats.DiskWritePs = writeMbPerSecond
+			stats.DiskReadBytes = diskIORead
+			stats.DiskWriteBytes = diskIOWrite
+
+			if stats.Root {
+				systemStats.DiskReadPs = stats.DiskReadPs
+				systemStats.DiskWritePs = stats.DiskWritePs
+				systemStats.DiskIO[0] = diskIORead
+				systemStats.DiskIO[1] = diskIOWrite
+			}
+		}
+	}
+}

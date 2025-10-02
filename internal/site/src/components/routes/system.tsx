@@ -14,7 +14,7 @@ import {
 } from "lucide-react"
 import { subscribeKeys } from "nanostores"
 import React, { type JSX, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
-import AreaChartDefault from "@/components/charts/area-chart"
+import AreaChartDefault, { type DataPoint } from "@/components/charts/area-chart"
 import ContainerChart from "@/components/charts/container-chart"
 import DiskChart from "@/components/charts/disk-chart"
 import GpuPowerChart from "@/components/charts/gpu-power-chart"
@@ -49,7 +49,16 @@ import {
 	toFixedFloat,
 	useBrowserStorage,
 } from "@/lib/utils"
-import type { ChartData, ChartTimes, ContainerStatsRecord, GPUData, SystemRecord, SystemStatsRecord } from "@/types"
+import type {
+	ChartData,
+	ChartTimes,
+	ContainerStatsRecord,
+	GPUData,
+	SystemInfo,
+	SystemRecord,
+	SystemStats,
+	SystemStatsRecord,
+} from "@/types"
 import ChartTimeSelect from "../charts/chart-time-select"
 import { $router, navigate } from "../router"
 import Spinner from "../spinner"
@@ -95,25 +104,28 @@ function getTimeData(chartTime: ChartTimes, lastCreated: number) {
 }
 
 // add empty values between records to make gaps if interval is too large
-function addEmptyValues<T extends SystemStatsRecord | ContainerStatsRecord>(
+function addEmptyValues<T extends { created: string | number | null }>(
 	prevRecords: T[],
 	newRecords: T[],
 	expectedInterval: number
-) {
+): T[] {
 	const modifiedRecords: T[] = []
 	let prevTime = (prevRecords.at(-1)?.created ?? 0) as number
 	for (let i = 0; i < newRecords.length; i++) {
 		const record = newRecords[i]
-		record.created = new Date(record.created).getTime()
-		if (prevTime) {
+		if (record.created !== null) {
+			record.created = new Date(record.created).getTime()
+		}
+		if (prevTime && record.created !== null) {
 			const interval = record.created - prevTime
 			// if interval is too large, add a null record
 			if (interval > expectedInterval / 2 + expectedInterval) {
-				// @ts-expect-error
-				modifiedRecords.push({ created: null, stats: null })
+				modifiedRecords.push({ created: null, ...("stats" in record ? { stats: null } : {}) } as T)
 			}
 		}
-		prevTime = record.created
+		if (record.created !== null) {
+			prevTime = record.created
+		}
 		modifiedRecords.push(record)
 	}
 	return modifiedRecords
@@ -137,7 +149,7 @@ async function getStats<T extends SystemStatsRecord | ContainerStatsRecord>(
 	})
 }
 
-function dockerOrPodman(str: string, system: SystemRecord) {
+function dockerOrPodman(str: string, system: SystemRecord): string {
 	if (system.info.p) {
 		return str.replace("docker", "podman").replace("Docker", "Podman")
 	}
@@ -156,10 +168,9 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 	const [containerData, setContainerData] = useState([] as ChartData["containerData"])
 	const netCardRef = useRef<HTMLDivElement>(null)
 	const persistChartTime = useRef(false)
-	const [containerFilterBar, setContainerFilterBar] = useState(null as null | JSX.Element)
 	const [bottomSpacing, setBottomSpacing] = useState(0)
 	const [chartLoading, setChartLoading] = useState(true)
-	const isLongerChart = chartTime !== "1h"
+	const isLongerChart = !["1m", "1h"].includes(chartTime) // true if chart time is not 1m or 1h
 	const userSettings = $userSettings.get()
 	const chartWrapRef = useRef<HTMLDivElement>(null)
 
@@ -172,7 +183,6 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 			persistChartTime.current = false
 			setSystemStats([])
 			setContainerData([])
-			setContainerFilterBar(null)
 			$containerFilter.set("")
 		}
 	}, [name])
@@ -184,6 +194,51 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 			sys?.id && setSystem(sys)
 		})
 	}, [name])
+
+	// hide 1m chart time if system agent version is less than 0.13.0
+	useEffect(() => {
+		if (parseSemVer(system?.info?.v) < parseSemVer("0.13.0")) {
+			$chartTime.set("1h")
+		}
+	}, [system?.info?.v])
+
+	// subscribe to realtime metrics if chart time is 1m
+	// biome-ignore lint/correctness/useExhaustiveDependencies: not necessary
+	useEffect(() => {
+		let unsub = () => {}
+		if (!system.id || chartTime !== "1m") {
+			return
+		}
+		if (system.status !== SystemStatus.Up || parseSemVer(system?.info?.v).minor < 13) {
+			$chartTime.set("1h")
+			return
+		}
+		pb.realtime
+			.subscribe(
+				`rt_metrics`,
+				(data: { container: ContainerStatsRecord[]; info: SystemInfo; stats: SystemStats }) => {
+					// console.log("received realtime metrics", data)
+					const newContainerData = makeContainerData([
+						{ created: Date.now(), stats: data.container } as unknown as ContainerStatsRecord,
+					])
+					setContainerData((prevData) => addEmptyValues(prevData, prevData.slice(-59).concat(newContainerData), 1000))
+					setSystemStats((prevStats) =>
+						addEmptyValues(
+							prevStats,
+							prevStats.slice(-59).concat({ created: Date.now(), stats: data.stats } as SystemStatsRecord),
+							1000
+						)
+					)
+				},
+				{ query: { system: system.id } }
+			)
+			.then((us) => {
+				unsub = us
+			})
+		return () => {
+			unsub?.()
+		}
+	}, [chartTime, system.id])
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: not necessary
 	const chartData: ChartData = useMemo(() => {
@@ -221,13 +276,13 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 			}
 			containerData.push(containerStats)
 		}
-		setContainerData(containerData)
+		return containerData
 	}, [])
 
 	// get stats
 	// biome-ignore lint/correctness/useExhaustiveDependencies: not necessary
 	useEffect(() => {
-		if (!system.id || !chartTime) {
+		if (!system.id || !chartTime || chartTime === "1m") {
 			return
 		}
 		// loading: true
@@ -261,12 +316,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 				}
 				cache.set(cs_cache_key, containerData)
 			}
-			if (containerData.length) {
-				!containerFilterBar && setContainerFilterBar(<FilterBar />)
-			} else if (containerFilterBar) {
-				setContainerFilterBar(null)
-			}
-			makeContainerData(containerData)
+			setContainerData(makeContainerData(containerData))
 		})
 	}, [system, chartTime])
 
@@ -392,9 +442,10 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 
 	// select field for switching between avg and max values
 	const maxValSelect = isLongerChart ? <SelectAvgMax max={maxValues} /> : null
-	const showMax = chartTime !== "1h" && maxValues
+	const showMax = maxValues && isLongerChart
 
-	// if no data, show empty message
+	const containerFilterBar = containerData.length ? <FilterBar /> : null
+
 	const dataEmpty = !chartLoading && chartData.systemStats.length === 0
 	const lastGpuVals = Object.values(systemStats.at(-1)?.stats.g ?? {})
 	const hasGpuData = lastGpuVals.length > 0
@@ -483,7 +534,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 							</div>
 						</div>
 						<div className="xl:ms-auto flex items-center gap-2 max-sm:-mb-1">
-							<ChartTimeSelect className="w-full xl:w-40" />
+							<ChartTimeSelect className="w-full xl:w-40" agentVersion={chartData.agentVersion} />
 							<TooltipProvider delayDuration={100}>
 								<Tooltip>
 									<TooltipTrigger asChild>
@@ -594,23 +645,33 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 							dataPoints={[
 								{
 									label: t({ message: "Write", comment: "Disk write" }),
-									dataKey: ({ stats }: SystemStatsRecord) => (showMax ? stats?.dwm : stats?.dw),
+									dataKey: ({ stats }: SystemStatsRecord) => {
+										if (showMax) {
+											return stats?.dio?.[1] ?? (stats?.dwm ?? 0) * 1024 * 1024
+										}
+										return stats?.dio?.[1] ?? (stats?.dw ?? 0) * 1024 * 1024
+									},
 									color: 3,
 									opacity: 0.3,
 								},
 								{
 									label: t({ message: "Read", comment: "Disk read" }),
-									dataKey: ({ stats }: SystemStatsRecord) => (showMax ? stats?.drm : stats?.dr),
+									dataKey: ({ stats }: SystemStatsRecord) => {
+										if (showMax) {
+											return stats?.diom?.[0] ?? (stats?.drm ?? 0) * 1024 * 1024
+										}
+										return stats?.dio?.[0] ?? (stats?.dr ?? 0) * 1024 * 1024
+									},
 									color: 1,
 									opacity: 0.3,
 								},
 							]}
 							tickFormatter={(val) => {
-								const { value, unit } = formatBytes(val, true, userSettings.unitDisk, true)
+								const { value, unit } = formatBytes(val, true, userSettings.unitDisk, false)
 								return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
 							}}
 							contentFormatter={({ value }) => {
-								const { value: convertedValue, unit } = formatBytes(value, true, userSettings.unitDisk, true)
+								const { value: convertedValue, unit } = formatBytes(value, true, userSettings.unitDisk, false)
 								return `${decimalString(convertedValue, convertedValue >= 100 ? 1 : 2)} ${unit}`
 							}}
 						/>
@@ -791,7 +852,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 							return (
 								<div key={id} className="contents">
 									<ChartCard
-										className="!col-span-1"
+										className={cn(grid && "!col-span-1")}
 										empty={dataEmpty}
 										grid={grid}
 										title={`${gpu.n} ${t`Usage`}`}
@@ -877,24 +938,36 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 											dataPoints={[
 												{
 													label: t`Write`,
-													dataKey: ({ stats }) => stats?.efs?.[extraFsName]?.[showMax ? "wm" : "w"] ?? 0,
+													dataKey: ({ stats }) => {
+														if (showMax) {
+															return stats?.efs?.[extraFsName]?.wb ?? (stats?.efs?.[extraFsName]?.wm ?? 0) * 1024 * 1024
+														}
+														return stats?.efs?.[extraFsName]?.wb ?? (stats?.efs?.[extraFsName]?.w ?? 0) * 1024 * 1024
+													},
 													color: 3,
 													opacity: 0.3,
 												},
 												{
 													label: t`Read`,
-													dataKey: ({ stats }) => stats?.efs?.[extraFsName]?.[showMax ? "rm" : "r"] ?? 0,
+													dataKey: ({ stats }) => {
+														if (showMax) {
+															return (
+																stats?.efs?.[extraFsName]?.rbm ?? (stats?.efs?.[extraFsName]?.rm ?? 0) * 1024 * 1024
+															)
+														}
+														return stats?.efs?.[extraFsName]?.rb ?? (stats?.efs?.[extraFsName]?.r ?? 0) * 1024 * 1024
+													},
 													color: 1,
 													opacity: 0.3,
 												},
 											]}
 											maxToggled={maxValues}
 											tickFormatter={(val) => {
-												const { value, unit } = formatBytes(val, true, userSettings.unitDisk, true)
+												const { value, unit } = formatBytes(val, true, userSettings.unitDisk, false)
 												return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
 											}}
 											contentFormatter={({ value }) => {
-												const { value: convertedValue, unit } = formatBytes(value, true, userSettings.unitDisk, true)
+												const { value: convertedValue, unit } = formatBytes(value, true, userSettings.unitDisk, false)
 												return `${decimalString(convertedValue, convertedValue >= 100 ? 1 : 2)} ${unit}`
 											}}
 										/>
@@ -913,7 +986,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 })
 
 function GpuEnginesChart({ chartData }: { chartData: ChartData }) {
-	const dataPoints = []
+	const dataPoints: DataPoint[] = []
 	const engines = Object.keys(chartData.systemStats?.at(-1)?.stats.g?.[0]?.e ?? {}).sort()
 	for (const engine of engines) {
 		dataPoints.push({

@@ -131,7 +131,6 @@ export default function SystemsTable() {
 		return [Object.values(upSystems).length, Object.values(downSystems).length, Object.values(pausedSystems).length]
 	}, [upSystems, downSystems, pausedSystems])
 
-	// TODO: hiding temp then gpu messes up table headers
 	const CardHead = useMemo(() => {
 		return (
 			<CardHeader className="pb-4.5 px-2 sm:px-6 max-sm:pt-5 max-sm:pb-1">

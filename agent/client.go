@@ -15,6 +15,7 @@ import (
 
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/common"
+	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/lxzan/gws"
@@ -156,11 +157,15 @@ func (client *WebSocketClient) OnMessage(conn *gws.Conn, message *gws.Message) {
 		return
 	}
 
-	if err := cbor.NewDecoder(message.Data).Decode(client.hubRequest); err != nil {
+	var HubRequest common.HubRequest[cbor.RawMessage]
+
+	err := cbor.Unmarshal(message.Data.Bytes(), &HubRequest)
+	if err != nil {
 		slog.Error("Error parsing message", "err", err)
 		return
 	}
-	if err := client.handleHubRequest(client.hubRequest); err != nil {
+
+	if err := client.handleHubRequest(&HubRequest, HubRequest.Id); err != nil {
 		slog.Error("Error handling message", "err", err)
 	}
 }
@@ -173,7 +178,7 @@ func (client *WebSocketClient) OnPing(conn *gws.Conn, message []byte) {
 }
 
 // handleAuthChallenge verifies the authenticity of the hub and returns the system's fingerprint.
-func (client *WebSocketClient) handleAuthChallenge(msg *common.HubRequest[cbor.RawMessage]) (err error) {
+func (client *WebSocketClient) handleAuthChallenge(msg *common.HubRequest[cbor.RawMessage], requestID *uint32) (err error) {
 	var authRequest common.FingerprintRequest
 	if err := cbor.Unmarshal(msg.Data, &authRequest); err != nil {
 		return err
@@ -196,7 +201,7 @@ func (client *WebSocketClient) handleAuthChallenge(msg *common.HubRequest[cbor.R
 		_, response.Port, _ = net.SplitHostPort(serverAddr)
 	}
 
-	return client.sendMessage(response)
+	return client.sendResponse(response, requestID)
 }
 
 // verifySignature verifies the signature of the token using the public keys.
@@ -221,25 +226,17 @@ func (client *WebSocketClient) Close() {
 	}
 }
 
-// handleHubRequest routes the request to the appropriate handler.
-// It ensures the hub is verified before processing most requests.
-func (client *WebSocketClient) handleHubRequest(msg *common.HubRequest[cbor.RawMessage]) error {
-	if !client.hubVerified && msg.Action != common.CheckFingerprint {
-		return errors.New("hub not verified")
+// handleHubRequest routes the request to the appropriate handler using the handler registry.
+func (client *WebSocketClient) handleHubRequest(msg *common.HubRequest[cbor.RawMessage], requestID *uint32) error {
+	ctx := &HandlerContext{
+		Client:       client,
+		Agent:        client.agent,
+		Request:      msg,
+		RequestID:    requestID,
+		HubVerified:  client.hubVerified,
+		SendResponse: client.sendResponse,
 	}
-	switch msg.Action {
-	case common.GetData:
-		return client.sendSystemData()
-	case common.CheckFingerprint:
-		return client.handleAuthChallenge(msg)
-	}
-	return nil
-}
-
-// sendSystemData gathers and sends current system statistics to the hub.
-func (client *WebSocketClient) sendSystemData() error {
-	sysStats := client.agent.gatherStats(client.token)
-	return client.sendMessage(sysStats)
+	return client.agent.handlerRegistry.Handle(ctx)
 }
 
 // sendMessage encodes the given data to CBOR and sends it as a binary message over the WebSocket connection to the hub.
@@ -249,6 +246,36 @@ func (client *WebSocketClient) sendMessage(data any) error {
 		return err
 	}
 	return client.Conn.WriteMessage(gws.OpcodeBinary, bytes)
+}
+
+// sendResponse sends a response with optional request ID for the new protocol
+func (client *WebSocketClient) sendResponse(data any, requestID *uint32) error {
+	if requestID != nil {
+		// New format with ID - use typed fields
+		response := common.AgentResponse{
+			Id: requestID,
+		}
+
+		// Set the appropriate typed field based on data type
+		switch v := data.(type) {
+		case *system.CombinedData:
+			response.SystemData = v
+		case *common.FingerprintResponse:
+			response.Fingerprint = v
+		// case []byte:
+		// 	response.RawBytes = v
+		// case string:
+		// 	response.RawBytes = []byte(v)
+		default:
+			// For any other type, convert to error
+			response.Error = fmt.Sprintf("unsupported response type: %T", data)
+		}
+
+		return client.sendMessage(response)
+	} else {
+		// Legacy format - send data directly
+		return client.sendMessage(data)
+	}
 }
 
 // getUserAgent returns one of two User-Agent strings based on current time.

@@ -2,11 +2,26 @@ import { useStore } from "@nanostores/react"
 import { HistoryIcon } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { $chartTime } from "@/lib/stores"
-import { chartTimeData, cn } from "@/lib/utils"
-import type { ChartTimes } from "@/types"
+import { chartTimeData, cn, compareSemVer, parseSemVer } from "@/lib/utils"
+import type { ChartTimes, SemVer } from "@/types"
+import { memo } from "react"
 
-export default function ChartTimeSelect({ className }: { className?: string }) {
+export default memo(function ChartTimeSelect({
+	className,
+	agentVersion,
+}: {
+	className?: string
+	agentVersion: SemVer
+}) {
 	const chartTime = useStore($chartTime)
+
+	// remove chart times that are not supported by the system agent version
+	const availableChartTimes = Object.entries(chartTimeData).filter(([_, { minVersion }]) => {
+		if (!minVersion) {
+			return true
+		}
+		return compareSemVer(agentVersion, parseSemVer(minVersion)) >= 0
+	})
 
 	return (
 		<Select defaultValue="1h" value={chartTime} onValueChange={(value: ChartTimes) => $chartTime.set(value)}>
@@ -15,7 +30,7 @@ export default function ChartTimeSelect({ className }: { className?: string }) {
 				<SelectValue />
 			</SelectTrigger>
 			<SelectContent>
-				{Object.entries(chartTimeData).map(([value, { label }]) => (
+				{availableChartTimes.map(([value, { label }]) => (
 					<SelectItem key={value} value={value}>
 						{label()}
 					</SelectItem>
@@ -23,4 +38,4 @@ export default function ChartTimeSelect({ className }: { className?: string }) {
 			</SelectContent>
 		</Select>
 	)
-}
+})

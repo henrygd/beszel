@@ -59,8 +59,6 @@ export default memo(function LoadAverageChart({ chartData }: { chartData: ChartD
 					<ChartTooltip
 						animationEasing="ease-out"
 						animationDuration={150}
-						// @ts-expect-error
-						// itemSorter={(a, b) => b.value - a.value}
 						content={
 							<ChartTooltipContent
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
@@ -70,14 +68,15 @@ export default memo(function LoadAverageChart({ chartData }: { chartData: ChartD
 					/>
 					{keys.map(({ legacy, color, label }, i) => {
 						const dataKey = (value: { stats: SystemStats }) => {
-							if (chartData.agentVersion.patch < 1) {
+							const { minor, patch } = chartData.agentVersion
+							if (minor <= 12 && patch < 1) {
 								return value.stats?.[legacy]
 							}
 							return value.stats?.la?.[i] ?? value.stats?.[legacy]
 						}
 						return (
 							<Line
-								key={i}
+								key={label}
 								dataKey={dataKey}
 								name={label}
 								type="monotoneX"

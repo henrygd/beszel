@@ -213,6 +213,8 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.LoadAvg[2] += stats.LoadAvg[2]
 		sum.Bandwidth[0] += stats.Bandwidth[0]
 		sum.Bandwidth[1] += stats.Bandwidth[1]
+		sum.DiskIO[0] += stats.DiskIO[0]
+		sum.DiskIO[1] += stats.DiskIO[1]
 		batterySum += int(stats.Battery[0])
 		sum.Battery[1] = stats.Battery[1]
 		// Set peak values
@@ -224,6 +226,8 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.MaxDiskWritePs = max(sum.MaxDiskWritePs, stats.MaxDiskWritePs, stats.DiskWritePs)
 		sum.MaxBandwidth[0] = max(sum.MaxBandwidth[0], stats.MaxBandwidth[0], stats.Bandwidth[0])
 		sum.MaxBandwidth[1] = max(sum.MaxBandwidth[1], stats.MaxBandwidth[1], stats.Bandwidth[1])
+		sum.MaxDiskIO[0] = max(sum.MaxDiskIO[0], stats.MaxDiskIO[0], stats.DiskIO[0])
+		sum.MaxDiskIO[1] = max(sum.MaxDiskIO[1], stats.MaxDiskIO[1], stats.DiskIO[1])
 
 		// Accumulate network interfaces
 		if sum.NetworkInterfaces == nil {
@@ -314,6 +318,8 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.DiskPct = twoDecimals(sum.DiskPct / count)
 		sum.DiskReadPs = twoDecimals(sum.DiskReadPs / count)
 		sum.DiskWritePs = twoDecimals(sum.DiskWritePs / count)
+		sum.DiskIO[0] = sum.DiskIO[0] / uint64(count)
+		sum.DiskIO[1] = sum.DiskIO[1] / uint64(count)
 		sum.NetworkSent = twoDecimals(sum.NetworkSent / count)
 		sum.NetworkRecv = twoDecimals(sum.NetworkRecv / count)
 		sum.LoadAvg[0] = twoDecimals(sum.LoadAvg[0] / count)

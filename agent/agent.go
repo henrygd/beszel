@@ -12,33 +12,36 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/gliderlabs/ssh"
 	"github.com/henrygd/beszel"
+	"github.com/henrygd/beszel/agent/deltatracker"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/shirou/gopsutil/v4/host"
 	gossh "golang.org/x/crypto/ssh"
 )
 
 type Agent struct {
-	sync.Mutex                                   // Used to lock agent while collecting data
-	debug             bool                       // true if LOG_LEVEL is set to debug
-	zfs               bool                       // true if system has arcstats
-	memCalc           string                     // Memory calculation formula
-	fsNames           []string                   // List of filesystem device names being monitored
-	fsStats           map[string]*system.FsStats // Keeps track of disk stats for each filesystem
-	netInterfaces     map[string]struct{}        // Stores all valid network interfaces
-	netIoStats        system.NetIoStats          // Keeps track of bandwidth usage
-	dockerManager     *dockerManager             // Manages Docker API requests
-	sensorConfig      *SensorConfig              // Sensors config
-	systemInfo        system.Info                // Host system info
-	gpuManager        *GPUManager                // Manages GPU data
-	cache             *SessionCache              // Cache for system stats based on primary session ID
-	connectionManager *ConnectionManager         // Channel to signal connection events
-	server            *ssh.Server                // SSH server
-	dataDir           string                     // Directory for persisting data
-	keys              []gossh.PublicKey          // SSH public keys
+	sync.Mutex                                                                      // Used to lock agent while collecting data
+	debug                     bool                                                  // true if LOG_LEVEL is set to debug
+	zfs                       bool                                                  // true if system has arcstats
+	memCalc                   string                                                // Memory calculation formula
+	fsNames                   []string                                              // List of filesystem device names being monitored
+	fsStats                   map[string]*system.FsStats                            // Keeps track of disk stats for each filesystem
+	diskPrev                  map[uint16]map[string]prevDisk                        // Previous disk I/O counters per cache interval
+	netInterfaces             map[string]struct{}                                   // Stores all valid network interfaces
+	netIoStats                map[uint16]system.NetIoStats                          // Keeps track of bandwidth usage per cache interval
+	netInterfaceDeltaTrackers map[uint16]*deltatracker.DeltaTracker[string, uint64] // Per-cache-time NIC delta trackers
+	dockerManager             *dockerManager                                        // Manages Docker API requests
+	sensorConfig              *SensorConfig                                         // Sensors config
+	systemInfo                system.Info                                           // Host system info
+	gpuManager                *GPUManager                                           // Manages GPU data
+	cache                     *systemDataCache                                      // Cache for system stats based on cache time
+	connectionManager         *ConnectionManager                                    // Channel to signal connection events
+	handlerRegistry           *HandlerRegistry                                      // Registry for routing incoming messages
+	server                    *ssh.Server                                           // SSH server
+	dataDir                   string                                                // Directory for persisting data
+	keys                      []gossh.PublicKey                                     // SSH public keys
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.
@@ -46,8 +49,14 @@ type Agent struct {
 func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	agent = &Agent{
 		fsStats: make(map[string]*system.FsStats),
-		cache:   NewSessionCache(69 * time.Second),
+		cache:   NewSystemDataCache(),
 	}
+
+	// Initialize disk I/O previous counters storage
+	agent.diskPrev = make(map[uint16]map[string]prevDisk)
+	// Initialize per-cache-time network tracking structures
+	agent.netIoStats = make(map[uint16]system.NetIoStats)
+	agent.netInterfaceDeltaTrackers = make(map[uint16]*deltatracker.DeltaTracker[string, uint64])
 
 	agent.dataDir, err = getDataDir(dataDir...)
 	if err != nil {
@@ -79,6 +88,9 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	// initialize connection manager
 	agent.connectionManager = newConnectionManager(agent)
 
+	// initialize handler registry
+	agent.handlerRegistry = NewHandlerRegistry()
+
 	// initialize disk info
 	agent.initializeDiskInfo()
 
@@ -97,7 +109,7 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 
 	// if debugging, print stats
 	if agent.debug {
-		slog.Debug("Stats", "data", agent.gatherStats(""))
+		slog.Debug("Stats", "data", agent.gatherStats(0))
 	}
 
 	return agent, nil
@@ -112,24 +124,24 @@ func GetEnv(key string) (value string, exists bool) {
 	return os.LookupEnv(key)
 }
 
-func (a *Agent) gatherStats(sessionID string) *system.CombinedData {
+func (a *Agent) gatherStats(cacheTimeMs uint16) *system.CombinedData {
 	a.Lock()
 	defer a.Unlock()
 
-	data, isCached := a.cache.Get(sessionID)
+	data, isCached := a.cache.Get(cacheTimeMs)
 	if isCached {
-		slog.Debug("Cached data", "session", sessionID)
+		slog.Debug("Cached data", "cacheTimeMs", cacheTimeMs)
 		return data
 	}
 
 	*data = system.CombinedData{
-		Stats: a.getSystemStats(),
+		Stats: a.getSystemStats(cacheTimeMs),
 		Info:  a.systemInfo,
 	}
-	slog.Debug("System data", "data", data)
+	// slog.Info("System data", "data", data, "cacheTimeMs", cacheTimeMs)
 
 	if a.dockerManager != nil {
-		if containerStats, err := a.dockerManager.getDockerStats(); err == nil {
+		if containerStats, err := a.dockerManager.getDockerStats(cacheTimeMs); err == nil {
 			data.Containers = containerStats
 			slog.Debug("Containers", "data", data.Containers)
 		} else {
@@ -145,7 +157,7 @@ func (a *Agent) gatherStats(sessionID string) *system.CombinedData {
 	}
 	slog.Debug("Extra FS", "data", data.Stats.ExtraFs)
 
-	a.cache.Set(sessionID, data)
+	a.cache.Set(data, cacheTimeMs)
 	return data
 }
 

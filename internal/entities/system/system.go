@@ -42,6 +42,8 @@ type Stats struct {
 	Battery           [2]uint8             `json:"bat,omitzero" cbor:"29,keyasint,omitzero"` // [percent, charge state, current]
 	MaxMem            float64              `json:"mm,omitempty" cbor:"30,keyasint,omitempty"`
 	NetworkInterfaces map[string][4]uint64 `json:"ni,omitempty" cbor:"31,keyasint,omitempty"` // [upload bytes, download bytes, total upload, total download]
+	DiskIO            [2]uint64            `json:"dio,omitzero" cbor:"32,keyasint,omitzero"`  // [read bytes, write bytes]
+	MaxDiskIO         [2]uint64            `json:"diom,omitzero" cbor:"-"`                    // [max read bytes, max write bytes]
 }
 
 type GPUData struct {
@@ -68,6 +70,11 @@ type FsStats struct {
 	DiskWritePs    float64   `json:"w" cbor:"3,keyasint"`
 	MaxDiskReadPS  float64   `json:"rm,omitempty" cbor:"4,keyasint,omitempty"`
 	MaxDiskWritePS float64   `json:"wm,omitempty" cbor:"5,keyasint,omitempty"`
+	// TODO: remove DiskReadPs and DiskWritePs in future release in favor of DiskReadBytes and DiskWriteBytes
+	DiskReadBytes     uint64 `json:"rb" cbor:"6,keyasint,omitempty"`
+	DiskWriteBytes    uint64 `json:"wb" cbor:"7,keyasint,omitempty"`
+	MaxDiskReadBytes  uint64 `json:"rbm,omitempty" cbor:"-"`
+	MaxDiskWriteBytes uint64 `json:"wbm,omitempty" cbor:"-"`
 }
 
 type NetIoStats struct {

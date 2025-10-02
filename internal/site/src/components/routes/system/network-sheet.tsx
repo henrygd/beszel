@@ -53,7 +53,7 @@ export default memo(function NetworkSheet({
 			</SheetTrigger>
 			{hasOpened.current && (
 				<SheetContent aria-describedby={undefined} className="overflow-auto w-200 !max-w-full p-4 sm:p-6">
-					<ChartTimeSelect className="w-[calc(100%-2em)]" />
+					<ChartTimeSelect className="w-[calc(100%-2em)]" agentVersion={chartData.agentVersion} />
 					<ChartCard
 						empty={dataEmpty}
 						grid={grid}

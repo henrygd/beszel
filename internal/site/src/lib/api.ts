@@ -26,7 +26,7 @@ export const verifyAuth = () => {
 }
 
 /** Logs the user out by clearing the auth store and unsubscribing from realtime updates. */
-export async function logOut() {
+export function logOut() {
 	$allSystemsByName.set({})
 	$alerts.set({})
 	$userSettings.set({} as UserSettings)
