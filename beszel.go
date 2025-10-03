@@ -6,7 +6,7 @@ import "github.com/blang/semver"
 
 const (
 	// Version is the current version of the application.
-	Version = "0.13.0-alpha.1"
+	Version = "0.13.0"
 	// AppName is the name of the application.
 	AppName = "beszel"
 )
@@ -15,4 +15,4 @@ const (
 var MinVersionCbor = semver.MustParse("0.12.0")
 
 // MinVersionAgentResponse is the minimum supported version for AgentResponse compatibility.
-var MinVersionAgentResponse = semver.MustParse("0.13.0-alpha.1")
+var MinVersionAgentResponse = semver.MustParse("0.13.0")

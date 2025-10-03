@@ -1,3 +1,15 @@
+## 0.13.0
+
+- Add one minute chart with one second interval.
+
+- Improve accuracy of disk I/O statistics.
+
+- Add `SYSTEM_NAME` environment variable to override system name on universal token registration. (#1184)
+
+- Add `noindex` HTML meta tag. (#1218)
+
+- Update Go dependencies.
+
 ## 0.12.12
 
 - Fix high CPU usage when `intel_gpu_top` returns an error. (#1203)
