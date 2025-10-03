@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-24 22:31\n"
+"PO-Revision-Date: 2025-10-03 18:42\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -46,6 +46,10 @@ msgstr "1 小时"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
+msgstr "1 分钟"
+
+#: src/lib/utils.ts
+msgid "1 minute"
 msgstr "1 分钟"
 
 #: src/lib/utils.ts
