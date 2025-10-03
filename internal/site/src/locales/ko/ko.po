@@ -8,7 +8,7 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-23 02:45\n"
+"PO-Revision-Date: 2025-10-03 18:42\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -46,6 +46,10 @@ msgstr "1시간"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
+msgstr "1분"
+
+#: src/lib/utils.ts
+msgid "1 minute"
 msgstr "1분"
 
 #: src/lib/utils.ts
@@ -712,6 +716,7 @@ msgid "Network traffic of docker containers"
 msgstr "Docker 컨테이너의 네트워크 트래픽"
 
 #: src/components/routes/system.tsx
+#: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
