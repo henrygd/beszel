@@ -49,6 +49,10 @@ msgid "1 min"
 msgstr "۱ دقیقه"
 
 #: src/lib/utils.ts
+msgid "1 minute"
+msgstr "1 دقیقه"
+
+#: src/lib/utils.ts
 msgid "1 week"
 msgstr "۱ هفته"
 
