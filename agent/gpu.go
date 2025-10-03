@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -308,6 +309,9 @@ func (gm *GPUManager) calculateGPUAverage(id string, gpu *system.GPUData, cacheK
 	gpuAvg.Power = twoDecimals(deltaPower / float64(deltaCount))
 
 	if gpu.Engines != nil {
+		// make fresh map for averaged engine metrics to avoid mutating
+		// the accumulator map stored in gm.GpuDataMap
+		gpuAvg.Engines = make(map[string]float64, len(gpu.Engines))
 		gpuAvg.Usage = gm.calculateIntelGPUUsage(&gpuAvg, gpu, lastSnapshot, deltaCount)
 		gpuAvg.PowerPkg = twoDecimals(deltaPowerPkg / float64(deltaCount))
 	} else {
@@ -369,9 +373,7 @@ func (gm *GPUManager) storeSnapshot(id string, gpu *system.GPUData, cacheKey uin
 	}
 	if gpu.Engines != nil {
 		snapshot.engines = make(map[string]float64, len(gpu.Engines))
-		for name, value := range gpu.Engines {
-			snapshot.engines[name] = value
-		}
+		maps.Copy(snapshot.engines, gpu.Engines)
 	}
 	gm.lastSnapshots[cacheKey][id] = snapshot
 }

@@ -218,10 +218,12 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 				`rt_metrics`,
 				(data: { container: ContainerStatsRecord[]; info: SystemInfo; stats: SystemStats }) => {
 					// console.log("received realtime metrics", data)
-					const newContainerData = makeContainerData([
-						{ created: Date.now(), stats: data.container } as unknown as ContainerStatsRecord,
-					])
-					setContainerData((prevData) => addEmptyValues(prevData, prevData.slice(-59).concat(newContainerData), 1000))
+					if (data.container.length > 0) {
+						const newContainerData = makeContainerData([
+							{ created: Date.now(), stats: data.container } as unknown as ContainerStatsRecord,
+						])
+						setContainerData((prevData) => addEmptyValues(prevData, prevData.slice(-59).concat(newContainerData), 1000))
+					}
 					setSystemStats((prevStats) =>
 						addEmptyValues(
 							prevStats,
