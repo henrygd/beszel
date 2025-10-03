@@ -8,7 +8,7 @@ msgstr ""
 "Language: hr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-24 22:31\n"
+"PO-Revision-Date: 2025-10-03 18:42\n"
 "Last-Translator: \n"
 "Language-Team: Croatian\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
@@ -47,6 +47,10 @@ msgstr "1 sat"
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
 msgstr "1 minut"
+
+#: src/lib/utils.ts
+msgid "1 minute"
+msgstr "1 minuta"
 
 #: src/lib/utils.ts
 msgid "1 week"
