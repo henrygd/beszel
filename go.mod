@@ -14,7 +14,7 @@ require (
 	github.com/lxzan/gws v1.8.9
 	github.com/nicholas-fedor/shoutrrr v0.10.0
 	github.com/pocketbase/dbx v1.11.0
-	github.com/pocketbase/pocketbase v0.30.0
+	github.com/pocketbase/pocketbase v0.30.1
 	github.com/shirou/gopsutil/v4 v4.25.9
 	github.com/spf13/cast v1.10.0
 	github.com/spf13/cobra v1.10.1
@@ -65,5 +65,5 @@ require (
 	modernc.org/libc v1.66.3 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
-	modernc.org/sqlite v1.38.2 // indirect
+	modernc.org/sqlite v1.39.0 // indirect
 )
