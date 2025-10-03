@@ -268,9 +268,12 @@ func (acr *agentConnectRequest) createSystem(agentFingerprint common.Fingerprint
 	if agentFingerprint.Port == "" {
 		agentFingerprint.Port = "45876"
 	}
+	if agentFingerprint.Name == "" {
+		agentFingerprint.Name = agentFingerprint.Hostname
+	}
 	// create new record
 	systemRecord := core.NewRecord(systemsCollection)
-	systemRecord.Set("name", agentFingerprint.Hostname)
+	systemRecord.Set("name", agentFingerprint.Name)
 	systemRecord.Set("host", remoteAddr)
 	systemRecord.Set("port", agentFingerprint.Port)
 	systemRecord.Set("users", []string{acr.userId})

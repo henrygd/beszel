@@ -38,8 +38,9 @@ type FingerprintRequest struct {
 type FingerprintResponse struct {
 	Fingerprint string `cbor:"0,keyasint"`
 	// Optional system info for universal token system creation
-	Hostname string `cbor:"1,keyasint,omitempty,omitzero"`
-	Port     string `cbor:"2,keyasint,omitempty,omitzero"`
+	Hostname string `cbor:"1,keyasint,omitzero"`
+	Port     string `cbor:"2,keyasint,omitzero"`
+	Name     string `cbor:"3,keyasint,omitzero"`
 }
 
 type DataRequestOptions struct {
