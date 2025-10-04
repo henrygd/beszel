@@ -25,6 +25,9 @@ FROM scratch
 COPY --from=builder /beszel /
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
+# Ensure data persistence across container recreations
+VOLUME ["/beszel_data"]
+
 EXPOSE 8090
 
 ENTRYPOINT [ "/beszel" ]

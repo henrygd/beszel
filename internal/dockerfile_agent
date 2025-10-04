@@ -23,4 +23,7 @@ COPY --from=builder /agent /agent
 # this is so we don't need to create the /tmp directory in the scratch container
 COPY --from=builder /tmp /tmp
 
+# Ensure data persistence across container recreations
+VOLUME ["/beszel_data"]
+
 ENTRYPOINT ["/agent"]

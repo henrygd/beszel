@@ -22,4 +22,7 @@ COPY --from=builder /agent /agent
 
 RUN apk add --no-cache -X https://dl-cdn.alpinelinux.org/alpine/edge/testing igt-gpu-tools
 
+# Ensure data persistence across container recreations
+VOLUME ["/beszel_data"]
+
 ENTRYPOINT ["/agent"]
