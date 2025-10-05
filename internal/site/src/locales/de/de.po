@@ -8,7 +8,7 @@ msgstr ""
 "Language: de\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-28 23:21\n"
+"PO-Revision-Date: 2025-10-05 16:13\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -459,7 +459,7 @@ msgstr "Offline ({downSystemsLength})"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
-msgstr "Download"
+msgstr "Herunterladen"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
@@ -1156,7 +1156,7 @@ msgstr "aktiv ({upSystemsLength})"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
-msgstr "Upload"
+msgstr "Hochladen"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"
