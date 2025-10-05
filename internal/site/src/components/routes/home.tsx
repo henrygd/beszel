@@ -112,7 +112,7 @@ const ActiveAlerts = () => {
 											)}
 										</AlertDescription>
 										<Link
-											href={getPagePath($router, "system", { name: systems[alert.system]?.name })}
+											href={getPagePath($router, "system", { id: systems[alert.system]?.id })}
 											className="absolute inset-0 w-full h-full"
 											aria-label="View system"
 										></Link>

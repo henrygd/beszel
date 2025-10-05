@@ -27,6 +27,7 @@ import { getPbTimestamp, pb } from "@/lib/api"
 import { ChartType, ConnectionType, connectionTypeLabels, Os, SystemStatus, Unit } from "@/lib/enums"
 import { batteryStateTranslations } from "@/lib/i18n"
 import {
+	$allSystemsById,
 	$allSystemsByName,
 	$chartTime,
 	$containerFilter,
@@ -156,7 +157,7 @@ function dockerOrPodman(str: string, system: SystemRecord): string {
 	return str
 }
 
-export default memo(function SystemDetail({ name }: { name: string }) {
+export default memo(function SystemDetail({ id }: { id: string }) {
 	const direction = useStore($direction)
 	const { t } = useLingui()
 	const systems = useStore($systems)
@@ -175,7 +176,6 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 	const chartWrapRef = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
-		document.title = `${name} / Beszel`
 		return () => {
 			if (!persistChartTime.current) {
 				$chartTime.set($userSettings.get().chartTime)
@@ -185,15 +185,17 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 			setContainerData([])
 			$containerFilter.set("")
 		}
-	}, [name])
+	}, [id])
 
 	// find matching system and update when it changes
 	useEffect(() => {
-		return subscribeKeys($allSystemsByName, [name], (newSystems) => {
-			const sys = newSystems[name]
+		const store = $allSystemsById.get()[id] ? $allSystemsById : $allSystemsByName
+		return subscribeKeys(store, [id], (newSystems) => {
+			const sys = newSystems[id]
+			document.title = `${sys?.name} / Beszel`
 			sys?.id && setSystem(sys)
 		})
-	}, [name])
+	}, [id])
 
 	// hide 1m chart time if system agent version is less than 0.13.0
 	useEffect(() => {
@@ -415,7 +417,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 			) {
 				return
 			}
-			const currentIndex = systems.findIndex((s) => s.name === name)
+			const currentIndex = systems.findIndex((s) => s.id === id)
 			if (currentIndex === -1 || systems.length <= 1) {
 				return
 			}
@@ -424,18 +426,18 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 				case "h": {
 					const prevIndex = (currentIndex - 1 + systems.length) % systems.length
 					persistChartTime.current = true
-					return navigate(getPagePath($router, "system", { name: systems[prevIndex].name }))
+					return navigate(getPagePath($router, "system", { id: systems[prevIndex].id }))
 				}
 				case "ArrowRight":
 				case "l": {
 					const nextIndex = (currentIndex + 1) % systems.length
 					persistChartTime.current = true
-					return navigate(getPagePath($router, "system", { name: systems[nextIndex].name }))
+					return navigate(getPagePath($router, "system", { id: systems[nextIndex].id }))
 				}
 			}
 		}
 		return listen(document, "keyup", handleKeyUp)
-	}, [name, systems])
+	}, [id, systems])
 
 	if (!system.id) {
 		return null

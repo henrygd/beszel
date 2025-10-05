@@ -486,7 +486,7 @@ const SystemCard = memo(
 						</div>
 					</CardContent>
 					<Link
-						href={getPagePath($router, "system", { name: row.original.name })}
+						href={getPagePath($router, "system", { id: row.original.id })}
 						className="inset-0 absolute w-full h-full"
 					>
 						<span className="sr-only">{row.original.name}</span>

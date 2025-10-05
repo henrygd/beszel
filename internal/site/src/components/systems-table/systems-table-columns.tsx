@@ -77,6 +77,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			accessorKey: "name",
 			id: "system",
 			name: () => t`System`,
+			sortingFn: (a, b) => a.original.name.localeCompare(b.original.name),
 			filterFn: (() => {
 				let filterInput = ""
 				let filterInputLower = ""
@@ -110,7 +111,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			invertSorting: false,
 			Icon: ServerIcon,
 			cell: (info) => {
-				const { name } = info.row.original
+				const { name, id } = info.row.original
 				const longestName = useStore($longestSystemNameLen)
 				return (
 					<>
@@ -122,7 +123,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 							</span>
 						</span>
 						<Link
-							href={getPagePath($router, "system", { name })}
+							href={getPagePath($router, "system", { id })}
 							className="inset-0 absolute size-full"
 							aria-label={name}
 						></Link>
@@ -279,7 +280,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 				}
 				return (
 					<Link
-						href={getPagePath($router, "system", { name: system.name })}
+						href={getPagePath($router, "system", { id: system.id })}
 						className={cn(
 							"flex gap-1.5 items-center md:pe-5 tabular-nums relative z-10",
 							viewMode === "table" && "ps-0.5"

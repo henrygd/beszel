@@ -59,7 +59,7 @@ const App = memo(() => {
 	} else if (page.route === "home") {
 		return <Home />
 	} else if (page.route === "system") {
-		return <SystemDetail name={page.params.name} />
+		return <SystemDetail id={page.params.id} />
 	} else if (page.route === "settings") {
 		return <Settings />
 	}

@@ -65,7 +65,7 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 									<CommandItem
 										key={system.id}
 										onSelect={() => {
-											navigate(getPagePath($router, "system", { name: system.name }))
+											navigate(getPagePath($router, "system", { id: system.id }))
 											setOpen(false)
 										}}
 									>
