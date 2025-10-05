@@ -217,8 +217,7 @@ export default memo(function SystemDetail({ name }: { name: string }) {
 			.subscribe(
 				`rt_metrics`,
 				(data: { container: ContainerStatsRecord[]; info: SystemInfo; stats: SystemStats }) => {
-					// console.log("received realtime metrics", data)
-					if (data.container.length > 0) {
+					if (data.container?.length > 0) {
 						const newContainerData = makeContainerData([
 							{ created: Date.now(), stats: data.container } as unknown as ContainerStatsRecord,
 						])
