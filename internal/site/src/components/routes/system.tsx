@@ -189,13 +189,19 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 	// find matching system and update when it changes
 	useEffect(() => {
+		if (!systems.length) {
+			return
+		}
+		// allow old system-name slug to work
 		const store = $allSystemsById.get()[id] ? $allSystemsById : $allSystemsByName
 		return subscribeKeys(store, [id], (newSystems) => {
 			const sys = newSystems[id]
-			document.title = `${sys?.name} / Beszel`
-			sys?.id && setSystem(sys)
+			if (sys) {
+				setSystem(sys)
+				document.title = `${sys?.name} / Beszel`
+			}
 		})
-	}, [id])
+	}, [id, systems.length])
 
 	// hide 1m chart time if system agent version is less than 0.13.0
 	useEffect(() => {
