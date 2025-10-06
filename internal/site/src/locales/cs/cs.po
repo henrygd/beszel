@@ -267,10 +267,6 @@ msgstr "Pro více informací zkontrolujte logy."
 msgid "Check your notification service"
 msgstr "Zkontrolujte službu upozornění"
 
-#: src/components/routes/system.tsx
-msgid "Clear all"
-msgstr ""
-
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
 msgstr "Klikněte na systém pro zobrazení více informací."
@@ -296,10 +292,6 @@ msgstr "Potvrdit heslo"
 #: src/components/routes/home.tsx
 msgid "Connection is down"
 msgstr "Připojení je nedostupné"
-
-#: src/components/routes/system.tsx
-msgid "Container health status and uptime"
-msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -423,10 +415,6 @@ msgstr "Disk"
 msgid "Disk I/O"
 msgstr "Disk I/O"
 
-#: src/components/routes/system.tsx
-msgid "Disk read/write rates of docker containers"
-msgstr ""
-
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "Disková jednotka"
@@ -446,28 +434,12 @@ msgid "Docker CPU Usage"
 msgstr "Využití CPU Dockeru"
 
 #: src/components/routes/system.tsx
-msgid "Docker Disk I/O"
-msgstr ""
-
-#: src/components/routes/system.tsx
-msgid "Docker Health & Uptime"
-msgstr ""
-
-#: src/components/routes/system.tsx
 msgid "Docker Memory Usage"
 msgstr "Využití paměti Dockeru"
 
 #: src/components/routes/system.tsx
 msgid "Docker Network I/O"
 msgstr "Síťové I/O Dockeru"
-
-#: src/components/routes/system.tsx
-msgid "Docker Stats"
-msgstr ""
-
-#: src/components/routes/system.tsx
-msgid "Docker Volumes"
-msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Documentation"
@@ -577,15 +549,8 @@ msgstr "Nepodařilo se odeslat testovací oznámení"
 msgid "Failed to update alert"
 msgstr "Nepodařilo se aktualizovat upozornění"
 
-#: src/components/routes/system.tsx
-msgid "Filter containers..."
-msgstr ""
-
-#: src/components/routes/system.tsx
-msgid "Filter stacks..."
-msgstr ""
-
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Filtr..."
@@ -761,10 +726,6 @@ msgstr "Síťový provoz veřejných rozhraní"
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
 msgstr "Síťová jednotka"
-
-#: src/components/routes/system.tsx
-msgid "No items available"
-msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -1030,10 +991,6 @@ msgstr "Systém"
 msgid "System load averages over time"
 msgstr "Průměry zatížení systému v průběhu času"
 
-#: src/components/routes/system.tsx
-msgid "System Stats"
-msgstr ""
-
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "Systémy"
@@ -1245,10 +1202,6 @@ msgstr "Zobrazit vašich 200 nejnovějších upozornění."
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
 msgstr "Viditelné sloupce"
-
-#: src/components/routes/system.tsx
-msgid "Volume usage of docker containers"
-msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Waiting for enough records to display"

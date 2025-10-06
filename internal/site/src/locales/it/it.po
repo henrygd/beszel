@@ -267,10 +267,6 @@ msgstr "Controlla i log per maggiori dettagli."
 msgid "Check your notification service"
 msgstr "Controlla il tuo servizio di notifica"
 
-#: src/components/routes/system.tsx
-msgid "Clear all"
-msgstr ""
-
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
 msgstr "Clicca su un sistema per visualizzare più informazioni."
@@ -296,10 +292,6 @@ msgstr "Conferma password"
 #: src/components/routes/home.tsx
 msgid "Connection is down"
 msgstr "La connessione è interrotta"
-
-#: src/components/routes/system.tsx
-msgid "Container health status and uptime"
-msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -423,10 +415,6 @@ msgstr "Disco"
 msgid "Disk I/O"
 msgstr "I/O Disco"
 
-#: src/components/routes/system.tsx
-msgid "Disk read/write rates of docker containers"
-msgstr ""
-
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "Unità disco"
@@ -446,28 +434,12 @@ msgid "Docker CPU Usage"
 msgstr "Utilizzo CPU Docker"
 
 #: src/components/routes/system.tsx
-msgid "Docker Disk I/O"
-msgstr ""
-
-#: src/components/routes/system.tsx
-msgid "Docker Health & Uptime"
-msgstr ""
-
-#: src/components/routes/system.tsx
 msgid "Docker Memory Usage"
 msgstr "Utilizzo Memoria Docker"
 
 #: src/components/routes/system.tsx
 msgid "Docker Network I/O"
 msgstr "I/O di Rete Docker"
-
-#: src/components/routes/system.tsx
-msgid "Docker Stats"
-msgstr ""
-
-#: src/components/routes/system.tsx
-msgid "Docker Volumes"
-msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Documentation"
@@ -577,15 +549,8 @@ msgstr "Invio della notifica di test fallito"
 msgid "Failed to update alert"
 msgstr "Aggiornamento dell'avviso fallito"
 
-#: src/components/routes/system.tsx
-msgid "Filter containers..."
-msgstr ""
-
-#: src/components/routes/system.tsx
-msgid "Filter stacks..."
-msgstr ""
-
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Filtra..."
@@ -761,10 +726,6 @@ msgstr "Traffico di rete delle interfacce pubbliche"
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
 msgstr "Unità rete"
-
-#: src/components/routes/system.tsx
-msgid "No items available"
-msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -1030,10 +991,6 @@ msgstr "Sistema"
 msgid "System load averages over time"
 msgstr "Medie di carico del sistema nel tempo"
 
-#: src/components/routes/system.tsx
-msgid "System Stats"
-msgstr ""
-
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "Sistemi"
@@ -1245,10 +1202,6 @@ msgstr "Visualizza i tuoi 200 avvisi più recenti."
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
 msgstr "Colonne visibili"
-
-#: src/components/routes/system.tsx
-msgid "Volume usage of docker containers"
-msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Waiting for enough records to display"

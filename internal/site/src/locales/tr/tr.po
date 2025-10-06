@@ -267,10 +267,6 @@ msgstr "Daha fazla ayrıntı için günlükleri kontrol edin."
 msgid "Check your notification service"
 msgstr "Bildirim hizmetinizi kontrol edin"
 
-#: src/components/routes/system.tsx
-msgid "Clear all"
-msgstr ""
-
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
 msgstr "Daha fazla bilgi görmek için bir sisteme tıklayın."
@@ -296,10 +292,6 @@ msgstr "Şifreyi onayla"
 #: src/components/routes/home.tsx
 msgid "Connection is down"
 msgstr "Bağlantı kesildi"
-
-#: src/components/routes/system.tsx
-msgid "Container health status and uptime"
-msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -423,10 +415,6 @@ msgstr "Disk"
 msgid "Disk I/O"
 msgstr "Disk G/Ç"
 
-#: src/components/routes/system.tsx
-msgid "Disk read/write rates of docker containers"
-msgstr ""
-
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "Disk birimi"
@@ -446,28 +434,12 @@ msgid "Docker CPU Usage"
 msgstr "Docker CPU Kullanımı"
 
 #: src/components/routes/system.tsx
-msgid "Docker Disk I/O"
-msgstr ""
-
-#: src/components/routes/system.tsx
-msgid "Docker Health & Uptime"
-msgstr ""
-
-#: src/components/routes/system.tsx
 msgid "Docker Memory Usage"
 msgstr "Docker Bellek Kullanımı"
 
 #: src/components/routes/system.tsx
 msgid "Docker Network I/O"
 msgstr "Docker Ağ G/Ç"
-
-#: src/components/routes/system.tsx
-msgid "Docker Stats"
-msgstr ""
-
-#: src/components/routes/system.tsx
-msgid "Docker Volumes"
-msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Documentation"
@@ -577,15 +549,8 @@ msgstr "Test bildirimi gönderilemedi"
 msgid "Failed to update alert"
 msgstr "Uyarı güncellenemedi"
 
-#: src/components/routes/system.tsx
-msgid "Filter containers..."
-msgstr ""
-
-#: src/components/routes/system.tsx
-msgid "Filter stacks..."
-msgstr ""
-
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Filtrele..."
@@ -761,10 +726,6 @@ msgstr "Genel arayüzlerin ağ trafiği"
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
 msgstr "Ağ birimi"
-
-#: src/components/routes/system.tsx
-msgid "No items available"
-msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -1030,10 +991,6 @@ msgstr "Sistem"
 msgid "System load averages over time"
 msgstr "Zaman içindeki sistem yükü ortalamaları"
 
-#: src/components/routes/system.tsx
-msgid "System Stats"
-msgstr ""
-
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "Sistemler"
@@ -1245,10 +1202,6 @@ msgstr "En son 200 uyarınızı görüntüleyin."
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
 msgstr "Görünür Alanlar"
-
-#: src/components/routes/system.tsx
-msgid "Volume usage of docker containers"
-msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Waiting for enough records to display"

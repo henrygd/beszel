@@ -267,10 +267,6 @@ msgstr "Sprawdź logi, aby uzyskać więcej informacji."
 msgid "Check your notification service"
 msgstr "Sprawdź swój serwis powiadomień"
 
-#: src/components/routes/system.tsx
-msgid "Clear all"
-msgstr ""
-
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
 msgstr "Kliknij na system, aby zobaczyć więcej informacji."
@@ -296,10 +292,6 @@ msgstr "Potwierdź hasło"
 #: src/components/routes/home.tsx
 msgid "Connection is down"
 msgstr "Brak połączenia"
-
-#: src/components/routes/system.tsx
-msgid "Container health status and uptime"
-msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -423,10 +415,6 @@ msgstr "Dysk"
 msgid "Disk I/O"
 msgstr "Dysk I/O"
 
-#: src/components/routes/system.tsx
-msgid "Disk read/write rates of docker containers"
-msgstr ""
-
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "Jednostka dysku"
@@ -446,28 +434,12 @@ msgid "Docker CPU Usage"
 msgstr "Wykorzystanie procesora przez Docker"
 
 #: src/components/routes/system.tsx
-msgid "Docker Disk I/O"
-msgstr ""
-
-#: src/components/routes/system.tsx
-msgid "Docker Health & Uptime"
-msgstr ""
-
-#: src/components/routes/system.tsx
 msgid "Docker Memory Usage"
 msgstr "Wykorzystanie pamięci przez Docker"
 
 #: src/components/routes/system.tsx
 msgid "Docker Network I/O"
 msgstr "Sieć Docker I/O"
-
-#: src/components/routes/system.tsx
-msgid "Docker Stats"
-msgstr ""
-
-#: src/components/routes/system.tsx
-msgid "Docker Volumes"
-msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Documentation"
@@ -577,15 +549,8 @@ msgstr "Nie udało się wysłać testowego powiadomienia"
 msgid "Failed to update alert"
 msgstr "Nie udało się zaktualizować powiadomienia"
 
-#: src/components/routes/system.tsx
-msgid "Filter containers..."
-msgstr ""
-
-#: src/components/routes/system.tsx
-msgid "Filter stacks..."
-msgstr ""
-
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Filtruj..."
@@ -761,10 +726,6 @@ msgstr "Ruch sieciowy interfejsów publicznych"
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
 msgstr "Jednostka sieciowa"
-
-#: src/components/routes/system.tsx
-msgid "No items available"
-msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -1030,10 +991,6 @@ msgstr "System"
 msgid "System load averages over time"
 msgstr "Średnie obciążenie systemu w czasie"
 
-#: src/components/routes/system.tsx
-msgid "System Stats"
-msgstr ""
-
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "Systemy"
@@ -1245,10 +1202,6 @@ msgstr "Wyświetl 200 ostatnich alertów."
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
 msgstr "Widoczne kolumny"
-
-#: src/components/routes/system.tsx
-msgid "Volume usage of docker containers"
-msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Waiting for enough records to display"

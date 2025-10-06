@@ -267,10 +267,6 @@ msgstr "Kiểm tra nhật ký để biết thêm chi tiết."
 msgid "Check your notification service"
 msgstr "Kiểm tra dịch vụ thông báo của bạn"
 
-#: src/components/routes/system.tsx
-msgid "Clear all"
-msgstr ""
-
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
 msgstr "Nhấp vào hệ thống để xem thêm thông tin."
@@ -296,10 +292,6 @@ msgstr "Xác nhận mật khẩu"
 #: src/components/routes/home.tsx
 msgid "Connection is down"
 msgstr "Mất kết nối"
-
-#: src/components/routes/system.tsx
-msgid "Container health status and uptime"
-msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -423,10 +415,6 @@ msgstr "Đĩa"
 msgid "Disk I/O"
 msgstr "Đĩa I/O"
 
-#: src/components/routes/system.tsx
-msgid "Disk read/write rates of docker containers"
-msgstr ""
-
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "Đơn vị đĩa"
@@ -446,28 +434,12 @@ msgid "Docker CPU Usage"
 msgstr "Sử dụng CPU Docker"
 
 #: src/components/routes/system.tsx
-msgid "Docker Disk I/O"
-msgstr ""
-
-#: src/components/routes/system.tsx
-msgid "Docker Health & Uptime"
-msgstr ""
-
-#: src/components/routes/system.tsx
 msgid "Docker Memory Usage"
 msgstr "Sử dụng Bộ nhớ Docker"
 
 #: src/components/routes/system.tsx
 msgid "Docker Network I/O"
 msgstr "Mạng I/O Docker"
-
-#: src/components/routes/system.tsx
-msgid "Docker Stats"
-msgstr ""
-
-#: src/components/routes/system.tsx
-msgid "Docker Volumes"
-msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Documentation"
@@ -577,15 +549,8 @@ msgstr "Gửi thông báo thử nghiệm thất bại"
 msgid "Failed to update alert"
 msgstr "Cập nhật cảnh báo thất bại"
 
-#: src/components/routes/system.tsx
-msgid "Filter containers..."
-msgstr ""
-
-#: src/components/routes/system.tsx
-msgid "Filter stacks..."
-msgstr ""
-
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Lọc..."
@@ -761,10 +726,6 @@ msgstr "Lưu lượng mạng của các giao diện công cộng"
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
 msgstr "Đơn vị mạng"
-
-#: src/components/routes/system.tsx
-msgid "No items available"
-msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -1030,10 +991,6 @@ msgstr "Hệ thống"
 msgid "System load averages over time"
 msgstr "Tải trung bình của hệ thống theo thời gian"
 
-#: src/components/routes/system.tsx
-msgid "System Stats"
-msgstr ""
-
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "Các hệ thống"
@@ -1245,10 +1202,6 @@ msgstr "Xem 200 cảnh báo gần đây nhất của bạn."
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
 msgstr "Các cột hiển thị"
-
-#: src/components/routes/system.tsx
-msgid "Volume usage of docker containers"
-msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Waiting for enough records to display"
