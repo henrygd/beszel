@@ -757,18 +757,10 @@ start_service() {
     procd_set_param user beszel
     procd_set_param pidfile /var/run/beszel-agent.pid
     procd_set_param env PORT="$PORT" KEY="$KEY" TOKEN="$TOKEN" HUB_URL="$HUB_URL"
+    procd_set_param respawn
     procd_set_param stdout 1
     procd_set_param stderr 1
     procd_close_instance
-}
-
-stop_service() {
-    killall beszel-agent
-}
-
-restart_service() {
-    stop
-    start
 }
 
 # Extra command to trigger agent update
