@@ -25,6 +25,6 @@ COPY --from=builder /agent /agent
 COPY --from=builder /tmp /tmp
 
 # Ensure data persistence across container recreations
-VOLUME ["/beszel_data"]
+VOLUME ["/var/lib/beszel-agent"]
 
 ENTRYPOINT ["/agent"]
