@@ -50,6 +50,8 @@ type dockerManager struct {
 	buf                 *bytes.Buffer               // Buffer to store and read response bodies
 	decoder             *json.Decoder               // Reusable JSON decoder that reads from buf
 	apiStats            *container.ApiStats         // Reusable API stats object
+	volumeSizeCache     map[string]float64          // Cached volume sizes (name -> size in MB)
+	volumeSizeUpdated   time.Time                   // Last time volume sizes were updated
 
 	// Cache-time-aware tracking for CPU stats (similar to cpu.go)
 	// Maps cache time intervals to container-specific CPU usage tracking
@@ -437,7 +439,7 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 		stats.Uptime = 0
 	}
 
-	// Collect volume information
+	// Collect volume information and fetch sizes
 	volumeCount := 0
 	for _, mount := range ctr.Mounts {
 		if mount.Type == volumeTypeVolume && mount.Name != "" {
@@ -448,9 +450,9 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 		stats.Volumes = make(map[string]float64, volumeCount)
 		for _, mount := range ctr.Mounts {
 			if mount.Type == volumeTypeVolume && mount.Name != "" {
-				// We'll populate size later with a separate API call if needed
-				// For now, just mark that the volume exists
-				stats.Volumes[mount.Name] = 0
+				// Fetch volume size using Docker system df API
+				size := dm.getVolumeSize(mount.Name)
+				stats.Volumes[mount.Name] = size
 			}
 		}
 	} else {
@@ -602,6 +604,7 @@ func newDockerManager(a *Agent) *dockerManager {
 		sem:               make(chan struct{}, 5),
 		apiContainerList:  []*container.ApiInfo{},
 		apiStats:          &container.ApiStats{},
+		volumeSizeCache:   make(map[string]float64),
 
 		// Initialize cache-time-aware tracking structures
 		lastCpuContainer:    make(map[uint16]map[string]uint64),
@@ -642,6 +645,49 @@ func newDockerManager(a *Agent) *dockerManager {
 	}
 
 	return manager
+}
+
+// getVolumeSize returns the cached size of a Docker volume
+// Refreshes the cache every 5 minutes using the system df API
+// Returns size in MB (megabytes)
+func (dm *dockerManager) getVolumeSize(volumeName string) float64 {
+	// Refresh cache if older than 5 minutes
+	if time.Since(dm.volumeSizeUpdated) > 5*time.Minute {
+		dm.refreshVolumeSizes()
+	}
+
+	return dm.volumeSizeCache[volumeName]
+}
+
+// refreshVolumeSizes fetches all volume sizes from Docker and updates the cache
+func (dm *dockerManager) refreshVolumeSizes() {
+	type volumeInfo struct {
+		Name     string
+		UsageData struct {
+			Size int64
+		}
+	}
+	type systemDfResponse struct {
+		Volumes []volumeInfo
+	}
+
+	resp, err := dm.client.Get("http://localhost/system/df")
+	if err != nil {
+		return
+	}
+
+	var dfData systemDfResponse
+	if err := dm.decode(resp, &dfData); err != nil {
+		return
+	}
+
+	// Update all volume sizes in cache
+	for _, vol := range dfData.Volumes {
+		// Convert bytes to MB (megabytes)
+		dm.volumeSizeCache[vol.Name] = float64(vol.UsageData.Size) / 1_000_000
+	}
+
+	dm.volumeSizeUpdated = time.Now()
 }
 
 // Decodes Docker API JSON response using a reusable buffer and decoder. Not thread safe.
