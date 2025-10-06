@@ -93,7 +93,8 @@ function getTimeData(chartTime: ChartTimes, lastCreated: number) {
 		}
 	}
 
-	const now = new Date()
+	const buffer = chartTime === "1m" ? 400 : 20_000
+	const now = new Date(Date.now() + buffer)
 	const startTime = chartTimeData[chartTime].getOffset(now)
 	const ticks = timeTicks(startTime, now, chartTimeData[chartTime].ticks ?? 12).map((date) => date.getTime())
 	const data = {
