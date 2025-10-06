@@ -1,0 +1,30 @@
+FROM --platform=$BUILDPLATFORM golang:alpine AS builder
+
+WORKDIR /app
+
+
+COPY ../go.mod ../go.sum ./
+RUN go mod download
+
+# Copy source files
+COPY . ./
+
+# Build
+ARG TARGETOS TARGETARCH
+RUN CGO_ENABLED=0 GOGC=75 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-w -s" -o /agent ./internal/cmd/agent
+
+RUN rm -rf /tmp/*
+
+# --------------------------
+# Final image: GPU-enabled agent with nvidia-smi
+# --------------------------
+FROM nvidia/cuda:12.2.2-base-ubuntu22.04
+COPY --from=builder /agent /agent
+
+# this is so we don't need to create the /tmp directory in the scratch container
+COPY --from=builder /tmp /tmp
+
+# Ensure data persistence across container recreations
+VOLUME ["/var/lib/beszel-agent"]
+
+ENTRYPOINT ["/agent"]

@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "beszel.fullname" . }}-web
+  name: {{ include "beszel.fullname" . }}
   labels:
     {{- include "beszel.labels" . | nindent 4 }}
 {{- if .Values.service.annotations }}
