@@ -1,3 +1,9 @@
+## 0.13.1
+
+- Fix one minute charts on systems without Docker. (#1237)
+
+- Change system permalinks to use ID instead of name. (#1231)
+
 ## 0.13.0
 
 - Add one minute chart with one second interval.
