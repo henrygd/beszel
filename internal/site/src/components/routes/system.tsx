@@ -77,6 +77,7 @@ import LineChartDefault from "../charts/line-chart"
 import ProcessChart from "@/components/charts/process-chart"
 import NetworkSheet from "./system/network-sheet"
 import CpuSheet from "./system/cpu-sheet"
+import ExtraDisksSheet from "./system/extra-disks-sheet"
 
 type ChartTimeData = {
 	time: number
@@ -943,7 +944,12 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 				{/* extra filesystem charts */}
 				{Object.keys(systemStats.at(-1)?.stats.efs ?? {}).length > 0 && (
-					<div className="grid xl:grid-cols-2 gap-4">
+					<>
+						<div className="flex items-center justify-between mb-4">
+							<h2 className="text-lg font-semibold">{t`Extra Filesystems`}</h2>
+							<ExtraDisksSheet chartData={chartData} dataEmpty={dataEmpty} grid={grid} maxValues={maxValues} />
+						</div>
+						<div className="grid xl:grid-cols-2 gap-4">
 						{Object.keys(systemStats.at(-1)?.stats.efs ?? {}).map((extraFsName) => {
 							const fsStats = systemStats.at(-1)?.stats.efs?.[extraFsName]
 							const displayName = fsStats?.n || extraFsName
@@ -1061,7 +1067,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 								</div>
 							)
 						})}
-					</div>
+						</div>
+					</>
 				)}
 			</div>
 
