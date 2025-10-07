@@ -479,7 +479,21 @@ func newDockerManager(a *Agent) *dockerManager {
 	var versionInfo struct {
 		Version string `json:"Version"`
 	}
-	resp, err := manager.client.Get("http://localhost/version")
+	var resp *http.Response
+	const versionMaxTries = 2
+	for i := 1; i <= versionMaxTries; i++ {
+		resp, err = manager.client.Get("http://localhost/version")
+		if err == nil {
+			break
+		}
+		if resp != nil {
+			resp.Body.Close()
+		}
+		if i < versionMaxTries {
+			slog.Debug("Failed to get Docker version; retrying", "attempt", i, "error", err)
+			time.Sleep(5 * time.Second)
+		}
+	}
 	if err != nil {
 		return manager
 	}
