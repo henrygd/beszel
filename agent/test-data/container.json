@@ -1,0 +1,24 @@
+{
+	"cpu_stats": {
+		"cpu_usage": {
+			"total_usage": 312055276000
+		},
+		"system_cpu_usage": 1366399830000000
+	},
+	"memory_stats": {
+		"usage": 507400192,
+		"stats": {
+			"inactive_file": 165130240
+		}
+	},
+	"networks": {
+		"eth0": {
+			"tx_bytes": 20376558,
+			"rx_bytes": 537029455
+		},
+		"eth1": {
+			"tx_bytes": 2003766,
+			"rx_bytes": 6241
+		}
+	}
+}

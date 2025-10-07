@@ -1,3 +1,87 @@
+## 0.13.1
+
+- Fix one minute charts on systems without Docker. (#1237)
+
+- Change system permalinks to use ID instead of name. (#1231)
+
+## 0.13.0
+
+- Add one minute chart with one second interval.
+
+- Improve accuracy of disk I/O statistics.
+
+- Add `SYSTEM_NAME` environment variable to override system name on universal token registration. (#1184)
+
+- Add `noindex` HTML meta tag. (#1218)
+
+- Update Go dependencies.
+
+## 0.12.12
+
+- Fix high CPU usage when `intel_gpu_top` returns an error. (#1203)
+
+- Add `SKIP_GPU` environment variable to skip GPU data collection. (#1203)
+
+- Add fallback cache/buff memory calculation when cache/buff isn't available ([#1198](https://github.com/henrygd/beszel/issues/1198))
+
+- Fix automatic agent update / restart on OpenRC. (#1199)
+
+## 0.12.11
+
+- Adjust calculation of cached memory (fixes #1187, #1196)
+
+- Add pattern matching and blacklist functionality to `NICS` env var. (#1190)
+
+- Update Intel GPU collector to parse plain text (`-l`) instead of JSON output (#1150)
+
+## 0.12.10
+
+Note that the default memory calculation changed in this release, which may cause a difference in memory usage compared to previous versions.
+
+- Add initial support for Intel GPUs (#1150, #755)
+
+- Show connection type (WebSocket / SSH) in hub UI.
+
+- Fix temperature unit and bytes / bits settings. (#1180)
+
+- Add `henrygd/beszel-agent-intel` image for Intel GPUs (experimental).
+
+- Update Go dependencies. Shoutrrr now supports notifications for Signal and WeChat Work (WeCom).
+
+## 0.12.9
+
+- Fix divide by zero error introduced in 0.12.8 :) (#1175)
+
+## 0.12.8
+
+- Add per-interface network traffic charts. (#926)
+
+- Add cumulative network traffic charts. (#926)
+
+- Add setting for time format (12h / 24h). (#424)
+
+- Add experimental one-time password (OTP) support.
+
+- Add `TRUSTED_AUTH_HEADER` environment variable for authentication forwarding. (#399)
+
+- Add `AUTO_LOGIN` environment variable for automatic login. (#399)
+
+- Add FreeBSD support for agent install script and update command.
+
+- Fix status alerts not being resolved when system comes up. (#1052)
+
+## 0.12.7
+
+- Make LibreHardwareMonitor opt-in with `LHM=true` environment variable. (#1130)
+
+- Fix bug where token was not refreshed when adding a new system. (#1141)
+
+- Add `USER_EMAIL` and `USER_PASSWORD` environment variables to set the email and password of the initial user. (#1137)
+
+- Display system counts (active, paused, down) in All Systems 'view' options. (#1078)
+
+- Remember All Systems sort order during session.
+
 ## 0.12.6
 
 - Add maximum 1 minute memory usage.
