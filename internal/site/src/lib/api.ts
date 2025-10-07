@@ -3,7 +3,7 @@ import PocketBase from "pocketbase"
 import { basePath } from "@/components/router"
 import { toast } from "@/components/ui/use-toast"
 import type { ChartTimes, UserSettings } from "@/types"
-import { $alerts, $allSystemsByName, $userSettings } from "./stores"
+import { $alerts, $allSystemsById, $allSystemsByName, $userSettings } from "./stores"
 import { chartTimeData } from "./utils"
 
 /** PocketBase JS Client */
@@ -28,6 +28,7 @@ export const verifyAuth = () => {
 /** Logs the user out by clearing the auth store and unsubscribing from realtime updates. */
 export function logOut() {
 	$allSystemsByName.set({})
+	$allSystemsById.set({})
 	$alerts.set({})
 	$userSettings.set({} as UserSettings)
 	sessionStorage.setItem("lo", "t") // prevent auto login on logout
