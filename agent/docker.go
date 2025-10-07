@@ -474,15 +474,26 @@ func newDockerManager(a *Agent) *dockerManager {
 		return manager
 	}
 
-	// Check docker version
-	// (versions before 25.0.0 have a bug with one-shot which requires all requests to be made in one batch)
+	// this can take up to 5 seconds with retry, so run in goroutine
+	go manager.checkDockerVersion()
+
+	// give version check a chance to complete before returning
+	time.Sleep(50 * time.Millisecond)
+
+	return manager
+}
+
+// checkDockerVersion checks Docker version and sets goodDockerVersion if at least 25.0.0.
+// Versions before 25.0.0 have a bug with one-shot which requires all requests to be made in one batch.
+func (dm *dockerManager) checkDockerVersion() {
+	var err error
+	var resp *http.Response
 	var versionInfo struct {
 		Version string `json:"Version"`
 	}
-	var resp *http.Response
 	const versionMaxTries = 2
 	for i := 1; i <= versionMaxTries; i++ {
-		resp, err = manager.client.Get("http://localhost/version")
+		resp, err = dm.client.Get("http://localhost/version")
 		if err == nil {
 			break
 		}
@@ -495,21 +506,17 @@ func newDockerManager(a *Agent) *dockerManager {
 		}
 	}
 	if err != nil {
-		return manager
+		return
 	}
-
-	if err := manager.decode(resp, &versionInfo); err != nil {
-		return manager
+	if err := dm.decode(resp, &versionInfo); err != nil {
+		return
 	}
-
 	// if version > 24, one-shot works correctly and we can limit concurrent operations
 	if dockerVersion, err := semver.Parse(versionInfo.Version); err == nil && dockerVersion.Major > 24 {
-		manager.goodDockerVersion = true
+		dm.goodDockerVersion = true
 	} else {
 		slog.Info(fmt.Sprintf("Docker %s is outdated. Upgrade if possible. See https://github.com/henrygd/beszel/issues/58", versionInfo.Version))
 	}
-
-	return manager
 }
 
 // Decodes Docker API JSON response using a reusable buffer and decoder. Not thread safe.
