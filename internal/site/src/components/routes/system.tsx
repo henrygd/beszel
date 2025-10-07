@@ -636,7 +636,15 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						</ChartCard>
 					)}
 
-					<ChartCard empty={dataEmpty} grid={grid} title={t`Disk Usage`} description={t`Usage of root partition`}>
+					<ChartCard
+						empty={dataEmpty}
+						grid={grid}
+						title={t`Disk Usage`}
+						description={t`Usage of root partition`}
+						cornerEl={
+							<ExtraDisksSheet chartData={chartData} dataEmpty={dataEmpty} grid={grid} maxValues={maxValues} type="usage" />
+						}
+					>
 						<DiskChart chartData={chartData} dataKey="stats.du" diskSize={systemStats.at(-1)?.stats.d ?? NaN} showLegend={userSettings.showChartLegend !== false} />
 					</ChartCard>
 
@@ -645,7 +653,12 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						grid={grid}
 						title={t`Disk I/O`}
 						description={t`Throughput of root filesystem`}
-						cornerEl={maxValSelect}
+						cornerEl={
+							<div className="flex gap-2">
+								{maxValSelect}
+								<ExtraDisksSheet chartData={chartData} dataEmpty={dataEmpty} grid={grid} maxValues={maxValues} type="io" />
+							</div>
+						}
 					>
 						<AreaChartDefault
 							chartData={chartData}
@@ -942,134 +955,6 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 					</div>
 				)}
 
-				{/* extra filesystem charts */}
-				{Object.keys(systemStats.at(-1)?.stats.efs ?? {}).length > 0 && (
-					<>
-						<div className="flex items-center justify-between mb-4">
-							<h2 className="text-lg font-semibold">{t`Extra Filesystems`}</h2>
-							<ExtraDisksSheet chartData={chartData} dataEmpty={dataEmpty} grid={grid} maxValues={maxValues} />
-						</div>
-						<div className="grid xl:grid-cols-2 gap-4">
-						{Object.keys(systemStats.at(-1)?.stats.efs ?? {}).map((extraFsName) => {
-							const fsStats = systemStats.at(-1)?.stats.efs?.[extraFsName]
-							const displayName = fsStats?.n || extraFsName
-							// Remap chartData for this extra filesystem
-							const extraFsChartData = {
-								...chartData,
-								systemStats: chartData.systemStats.map((point) => {
-									const efs = point.stats && point.stats.efs ? point.stats.efs[extraFsName] : undefined;
-									return {
-										...point,
-										stats: {
-											...point.stats,
-											du: typeof efs?.du === 'number' ? efs.du : 0,
-											d: typeof efs?.d === 'number' ? efs.d : 0,
-										},
-									}
-								}),
-							}
-							// Only render if there is at least one data point with valid data
-							const hasData = extraFsChartData.systemStats.some(
-								(point) => typeof point.stats.du === 'number' && typeof point.stats.d === 'number' && point.stats.d > 0
-							);
-							if (!hasData) return null;
-							return (
-								<div key={extraFsName} className="contents">
-									<ChartCard
-										empty={dataEmpty}
-										grid={grid}
-										title={`${displayName} ${t`Usage`}`}
-										description={t`Disk usage of ${displayName}`}
-									>
-										<DiskChart
-											chartData={extraFsChartData}
-											dataKey="stats.du"
-											diskSize={fsStats?.d ?? NaN}
-											showLegend={userSettings.showChartLegend !== false}
-										/>
-									</ChartCard>
-									<ChartCard
-										empty={dataEmpty}
-										grid={grid}
-										title={`${displayName} I/O`}
-										description={t`Throughput of ${displayName}`}
-										cornerEl={maxValSelect}
-									>
-										<AreaChartDefault
-											chartData={chartData}
-											dataPoints={[
-												{
-													label: t`Write`,
-													dataKey: ({ stats }) => {
-														if (showMax) {
-															return stats?.efs?.[extraFsName]?.wb ?? (stats?.efs?.[extraFsName]?.wm ?? 0) * 1024 * 1024
-														}
-														return stats?.efs?.[extraFsName]?.wb ?? (stats?.efs?.[extraFsName]?.w ?? 0) * 1024 * 1024
-													},
-													color: 3,
-													opacity: 0.3,
-												},
-												{
-													label: t`Read`,
-													dataKey: ({ stats }) => {
-														if (showMax) {
-															return (
-																stats?.efs?.[extraFsName]?.rbm ?? (stats?.efs?.[extraFsName]?.rm ?? 0) * 1024 * 1024
-															)
-														}
-														return stats?.efs?.[extraFsName]?.rb ?? (stats?.efs?.[extraFsName]?.r ?? 0) * 1024 * 1024
-													},
-													color: 1,
-													opacity: 0.3,
-												},
-											]}
-											maxToggled={maxValues}
-											tickFormatter={(val) => {
-												const { value, unit } = formatBytes(val, true, userSettings.unitDisk, false)
-												return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
-											}}
-											contentFormatter={({ value }) => {
-												const { value: convertedValue, unit } = formatBytes(value, true, userSettings.unitDisk, false)
-												return `${decimalString(convertedValue, convertedValue >= 100 ? 1 : 2)} ${unit}`
-											}}
-											legend={userSettings.showChartLegend !== false}
-										/>
-									</ChartCard>
-									{/* Inode chart for extra filesystem */}
-									{(fsStats?.it ?? 0) > 0 && (
-										<ChartCard
-											empty={dataEmpty}
-											grid={grid}
-											title={`${displayName} Inodes`}
-											description={t`Inode usage of ${displayName}`}
-										>
-											<InodeChart 
-												chartData={{
-													...chartData,
-													systemStats: chartData.systemStats.map((point) => {
-														const efs = point.stats && point.stats.efs ? point.stats.efs[extraFsName] : undefined;
-														return {
-															...point,
-															stats: {
-																...point.stats,
-																iu: efs?.iu ?? 0,
-																it: efs?.it ?? 0,
-																ip: efs?.ip ?? 0,
-															},
-														}
-													}),
-												}}
-												inodeTotal={fsStats?.it ?? NaN} 
-												showLegend={userSettings.showChartLegend !== false} 
-											/>
-										</ChartCard>
-									)}
-								</div>
-							)
-						})}
-						</div>
-					</>
-				)}
 			</div>
 
 			{/* add space for tooltip if more than 12 containers */}
