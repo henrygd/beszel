@@ -9,7 +9,7 @@ import {
 	$pausedSystems,
 	$upSystems,
 } from "@/lib/stores"
-import { FAVICON_DEFAULT, FAVICON_GREEN, FAVICON_RED, updateFavicon } from "@/lib/utils"
+import { updateFavicon } from "@/lib/utils"
 import type { SystemRecord } from "@/types"
 import { SystemStatus } from "./enums"
 
@@ -74,9 +74,7 @@ export function init() {
 
 /** Update the longest system name length and favicon based on system status */
 function onSystemsChanged(_: Record<string, SystemRecord>, changedSystem: SystemRecord | undefined) {
-	const upSystemsStore = $upSystems.get()
 	const downSystemsStore = $downSystems.get()
-	const upSystems = Object.values(upSystemsStore)
 	const downSystems = Object.values(downSystemsStore)
 
 	// Update longest system name length
@@ -86,14 +84,7 @@ function onSystemsChanged(_: Record<string, SystemRecord>, changedSystem: System
 		$longestSystemNameLen.set(nameLen)
 	}
 
-	// Update favicon based on system status
-	if (downSystems.length > 0) {
-		updateFavicon(FAVICON_RED)
-	} else if (upSystems.length > 0) {
-		updateFavicon(FAVICON_GREEN)
-	} else {
-		updateFavicon(FAVICON_DEFAULT)
-	}
+	updateFavicon(downSystems.length)
 }
 
 /** Fetch systems from collection */
