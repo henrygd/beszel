@@ -221,6 +221,10 @@ msgstr "Bajty (KB/s, MB/s, GB/s)"
 msgid "Cache / Buffers"
 msgstr "Pamięć podręczna / Bufory"
 
+#: src/components/charts/swap-chart.tsx
+msgid "Cached"
+msgstr ""
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
@@ -353,7 +357,6 @@ msgid "CPU"
 msgstr "Procesor"
 
 #: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "CPU Usage"
 msgstr "Użycie procesora"
@@ -415,19 +418,26 @@ msgstr "Dysk"
 msgid "Disk I/O"
 msgstr "Dysk I/O"
 
+#: src/components/charts/process-chart.tsx
+msgid "Disk Sleep"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "Jednostka dysku"
 
-#: src/components/charts/disk-chart.tsx
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
 msgstr "Użycie dysku"
 
 #: src/components/routes/system.tsx
-msgid "Disk usage of {extraFsName}"
-msgstr "Wykorzystanie dysku {extraFsName}"
+msgid "Disk usage of {displayName}"
+msgstr ""
+
+#: src/components/routes/system.tsx
+#~ msgid "Disk usage of {extraFsName}"
+#~ msgstr "Wykorzystanie dysku {extraFsName}"
 
 #: src/components/routes/system.tsx
 msgid "Docker CPU Usage"
@@ -549,6 +559,10 @@ msgstr "Nie udało się wysłać testowego powiadomienia"
 msgid "Failed to update alert"
 msgstr "Nie udało się zaktualizować powiadomienia"
 
+#: src/components/routes/system.tsx
+msgid "Filesystem inode usage"
+msgstr ""
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -606,7 +620,13 @@ msgstr "Polecenie Homebrew"
 msgid "Host / IP"
 msgstr "Host / adres IP"
 
+#: src/components/charts/area-chart.tsx
+#: src/components/charts/cpu-chart.tsx
+msgid "I/O Wait"
+msgstr ""
+
 #. Context: Battery state
+#: src/components/charts/process-chart.tsx
 #: src/lib/i18n.ts
 msgid "Idle"
 msgstr "Bezczynna"
@@ -614,6 +634,14 @@ msgstr "Bezczynna"
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Jeśli utraciłeś hasło do swojego konta administratora, możesz je zresetować, używając następującego polecenia."
+
+#: src/components/routes/system.tsx
+msgid "Inode usage of {displayName}"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Inodes"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -768,6 +796,10 @@ msgstr "Otwórz menu"
 msgid "Or continue with"
 msgstr "Lub kontynuuj z"
 
+#: src/components/charts/process-chart.tsx
+msgid "Other"
+msgstr ""
+
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "Nadpisz istniejące alerty"
@@ -815,6 +847,10 @@ msgstr "Wstrzymane"
 msgid "Paused ({pausedSystemsLength})"
 msgstr "Wstrzymane ({pausedSystemsLength})"
 
+#: src/components/routes/system.tsx
+msgid "Per Core"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "Proszę <0>skonfigurować serwer SMTP</0>, aby zapewnić dostarczanie powiadomień."
@@ -861,17 +897,30 @@ msgstr "Dokładne wykorzystanie w zarejestrowanym czasie"
 msgid "Preferred Language"
 msgstr "Preferowany język"
 
+#: src/components/routes/system.tsx
+msgid "Process count by state"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Processes"
+msgstr ""
+
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
 msgstr "Klucz publiczny"
 
 #. Disk read
+#. Disk read
+#: src/components/charts/area-chart.tsx
+#: src/components/charts/area-chart.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Read"
 msgstr "Odczyt"
 
+#. Network bytes received (download)
+#: src/components/charts/area-chart.tsx
 #: src/components/routes/system.tsx
 msgid "Received"
 msgstr "Otrzymane"
@@ -906,6 +955,10 @@ msgstr "Zmień token"
 msgid "Rows per page"
 msgstr "Wiersze na stronę"
 
+#: src/components/charts/process-chart.tsx
+msgid "Running"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Zapisz adres, używając klawisza enter lub przecinka. Pozostaw puste, aby wyłączyć powiadomienia e-mail."
@@ -931,6 +984,8 @@ msgstr "Szukaj systemów lub ustawień..."
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Zobacz <0>ustawienia powiadomień</0>, aby skonfigurować sposób, w jaki otrzymujesz powiadomienia."
 
+#. Network bytes sent (upload)
+#: src/components/charts/area-chart.tsx
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Wysłane"
@@ -950,9 +1005,17 @@ msgstr "Ustawienia"
 msgid "Settings saved"
 msgstr "Ustawienia zapisane"
 
+#: src/components/routes/settings/general.tsx
+msgid "Show chart legend"
+msgstr ""
+
 #: src/components/login/auth-form.tsx
 msgid "Sign in"
 msgstr "Zaloguj się"
+
+#: src/components/charts/process-chart.tsx
+msgid "Sleeping"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
@@ -972,6 +1035,15 @@ msgstr "Stan"
 msgid "Status"
 msgstr "Status"
 
+#: src/components/charts/area-chart.tsx
+#: src/components/charts/cpu-chart.tsx
+msgid "Steal"
+msgstr ""
+
+#: src/components/charts/process-chart.tsx
+msgid "Stopped"
+msgstr ""
+
 #: src/components/routes/system.tsx
 msgid "Swap space used by the system"
 msgstr "Pamięć wymiany używana przez system"
@@ -981,6 +1053,8 @@ msgid "Swap Usage"
 msgstr "Użycie pamięci wymiany"
 
 #: src/components/alerts-history-columns.tsx
+#: src/components/charts/area-chart.tsx
+#: src/components/charts/cpu-chart.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -1042,8 +1116,12 @@ msgid "This will permanently delete all selected records from the database."
 msgstr "Spowoduje to trwałe usunięcie wszystkich zaznaczonych rekordów z bazy danych."
 
 #: src/components/routes/system.tsx
-msgid "Throughput of {extraFsName}"
-msgstr "Przepustowość {extraFsName}"
+msgid "Throughput of {displayName}"
+msgstr ""
+
+#: src/components/routes/system.tsx
+#~ msgid "Throughput of {extraFsName}"
+#~ msgstr "Przepustowość {extraFsName}"
 
 #: src/components/routes/system.tsx
 msgid "Throughput of root filesystem"
@@ -1061,6 +1139,10 @@ msgstr "Do e-mail(ów)"
 #: src/components/routes/system.tsx
 msgid "Toggle grid"
 msgstr "Przełącz siatkę"
+
+#: src/components/routes/settings/general.tsx
+msgid "Toggle the display of chart legends below each chart."
+msgstr ""
 
 #: src/components/mode-toggle.tsx
 msgid "Toggle theme"
@@ -1084,6 +1166,10 @@ msgstr "Tokeny umożliwiają agentom łączenie się i rejestrację. Odciski pal
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Tokeny i odciski palców (fingerprinty) służą do uwierzytelniania połączeń WebSocket z hubem."
+
+#: src/components/routes/system.tsx
+msgid "Total"
+msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
@@ -1162,6 +1248,7 @@ msgstr "Wysyłanie"
 msgid "Uptime"
 msgstr "Czas pracy"
 
+#: src/components/charts/area-chart.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -1173,10 +1260,18 @@ msgstr "Wykorzystanie"
 msgid "Usage of root partition"
 msgstr "Użycie partycji głównej"
 
+#: src/components/charts/area-chart.tsx
+#: src/components/charts/disk-chart.tsx
+#: src/components/charts/inode-chart.tsx
 #: src/components/charts/mem-chart.tsx
 #: src/components/charts/swap-chart.tsx
 msgid "Used"
 msgstr "Używane"
+
+#: src/components/charts/area-chart.tsx
+#: src/components/charts/cpu-chart.tsx
+msgid "User"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
@@ -1234,6 +1329,9 @@ msgid "Windows command"
 msgstr "Polecenie Windows"
 
 #. Disk write
+#. Disk write
+#: src/components/charts/area-chart.tsx
+#: src/components/charts/area-chart.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Write"
@@ -1250,3 +1348,7 @@ msgstr "Konfiguracja YAML"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Twoje ustawienia użytkownika zostały zaktualizowane."
+
+#: src/components/charts/process-chart.tsx
+msgid "Zombie"
+msgstr ""
