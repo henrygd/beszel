@@ -129,7 +129,7 @@ export const updateFavicon = (() => {
 export const chartTimeData: ChartTimeData = {
 	"1m": {
 		type: "1m",
-		expectedInterval: 1000,
+		expectedInterval: 2000, // allow a bit of latency for one second updates (#1247)
 		label: () => t`1 minute`,
 		format: (timestamp: string) => hourWithSeconds(timestamp),
 		ticks: 3,
