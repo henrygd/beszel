@@ -2,7 +2,6 @@ package alerts
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/pocketbase/dbx"
@@ -65,27 +64,18 @@ func (am *AlertManager) sendRepeatingAlert(alertRecord *core.Record) {
 	}
 
 	systemName := systemRecord.GetString("name")
-	alertName := alertRecord.GetString("name")
+	alertType := alertRecord.GetString("name")
+	filesystem := alertRecord.GetString("filesystem")
 	threshold := alertRecord.GetFloat("value")
 	repeatCount := int(alertRecord.GetFloat("repeat_count"))
 
-	// Format alert name for display
+	// Use the shared FormatAlertName function for consistent formatting
+	alertName := FormatAlertName(alertType, filesystem)
+
+	// For title, use the alert name (lowercase unless CPU)
 	titleAlertName := alertName
-	if titleAlertName != "CPU" {
-		titleAlertName = strings.ToLower(titleAlertName)
-	}
-	if alertName == "Disk" {
-		alertName += " usage"
-	}
-	// Format LoadAvg5 and LoadAvg15
-	if after, ok := strings.CutPrefix(alertName, "LoadAvg"); ok {
-		alertName = after + "m Load"
-	}
-	// Format Bandwidth alerts
-	if alertName == "BandwidthUp" {
-		alertName = "Upload bandwidth"
-	} else if alertName == "BandwidthDown" {
-		alertName = "Download bandwidth"
+	if alertType == "CPU" {
+		titleAlertName = "CPU"
 	}
 
 	subject := fmt.Sprintf("%s %s still above threshold (repeat %d)", systemName, titleAlertName, repeatCount+1)

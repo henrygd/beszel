@@ -2,6 +2,8 @@ package alerts
 
 import (
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
@@ -32,31 +34,72 @@ type TemplateData struct {
 	Filesystem      string
 }
 
+type templateCacheEntry struct {
+	template  *AlertTemplateRecord
+	timestamp time.Time
+}
+
 type TemplateService struct {
-	hub core.App
+	hub          core.App
+	templateCache sync.Map // map[string]templateCacheEntry
+	cacheTTL     time.Duration
 }
 
 func NewTemplateService(hub core.App) *TemplateService {
-	return &TemplateService{hub: hub}
+	return &TemplateService{
+		hub:      hub,
+		cacheTTL: 5 * time.Minute, // Cache templates for 5 minutes
+	}
 }
 
 // GetTemplate retrieves the template for an alert type, or returns system default
 func (ts *TemplateService) GetTemplate(userID, alertType string) (*AlertTemplateRecord, error) {
+	cacheKey := userID + ":" + alertType
+
+	// Check cache first
+	if cached, ok := ts.templateCache.Load(cacheKey); ok {
+		entry := cached.(templateCacheEntry)
+		if time.Since(entry.timestamp) < ts.cacheTTL {
+			return entry.template, nil
+		}
+		// Cache expired, remove it
+		ts.templateCache.Delete(cacheKey)
+	}
+
 	// Try to find user's custom template for this alert type
 	template := &AlertTemplateRecord{}
 	err := ts.hub.DB().
 		Select("*").
 		From("alert_templates").
-		Where(dbx.NewExp("user={:user} AND alert_type={:type}", 
+		Where(dbx.NewExp("user={:user} AND alert_type={:type}",
 			dbx.Params{"user": userID, "type": alertType})).
 		One(template)
-	
+
 	if err == nil {
+		// Cache the template
+		ts.templateCache.Store(cacheKey, templateCacheEntry{
+			template:  template,
+			timestamp: time.Now(),
+		})
 		return template, nil
 	}
-	
+
 	// If no custom template found, return system default templates
-	return ts.getSystemDefaultTemplate(alertType), nil
+	defaultTemplate := ts.getSystemDefaultTemplate(alertType)
+	// Also cache the default to avoid repeated DB lookups
+	ts.templateCache.Store(cacheKey, templateCacheEntry{
+		template:  defaultTemplate,
+		timestamp: time.Now(),
+	})
+	return defaultTemplate, nil
+}
+
+// InvalidateCache clears the template cache (call this when templates are updated)
+func (ts *TemplateService) InvalidateCache() {
+	ts.templateCache.Range(func(key, value interface{}) bool {
+		ts.templateCache.Delete(key)
+		return true
+	})
 }
 
 // getSystemDefaultTemplate returns built-in templates
@@ -129,24 +172,30 @@ func (ts *TemplateService) RenderTemplate(template *AlertTemplateRecord, data Te
 
 // replaceTemplateVariables replaces {{variable}} placeholders with actual values
 func (ts *TemplateService) replaceTemplateVariables(template string, data TemplateData) string {
-	result := template
-	
-	// Replace all variables
-	result = strings.ReplaceAll(result, "{{systemName}}", data.SystemName)
-	result = strings.ReplaceAll(result, "{{alertName}}", data.AlertName)
-	result = strings.ReplaceAll(result, "{{alertType}}", data.AlertType)
-	result = strings.ReplaceAll(result, "{{thresholdStatus}}", data.ThresholdStatus)
-	result = strings.ReplaceAll(result, "{{status}}", data.Status)
-	result = strings.ReplaceAll(result, "{{emoji}}", data.Emoji)
-	result = strings.ReplaceAll(result, "{{value}}", data.Value)
-	result = strings.ReplaceAll(result, "{{unit}}", data.Unit)
-	result = strings.ReplaceAll(result, "{{threshold}}", data.Threshold)
-	result = strings.ReplaceAll(result, "{{minutes}}", data.Minutes)
-	result = strings.ReplaceAll(result, "{{minutesLabel}}", data.MinutesLabel)
-	result = strings.ReplaceAll(result, "{{descriptor}}", data.Descriptor)
-	result = strings.ReplaceAll(result, "{{filesystem}}", data.Filesystem)
-	
-	return result
+	// Use strings.Builder for efficient string building
+	var result strings.Builder
+	result.Grow(len(template) + 100) // Pre-allocate with some extra space for replacements
+
+	// Create replacer with all variables
+	replacer := strings.NewReplacer(
+		"{{systemName}}", data.SystemName,
+		"{{alertName}}", data.AlertName,
+		"{{alertType}}", data.AlertType,
+		"{{thresholdStatus}}", data.ThresholdStatus,
+		"{{status}}", data.Status,
+		"{{emoji}}", data.Emoji,
+		"{{value}}", data.Value,
+		"{{unit}}", data.Unit,
+		"{{threshold}}", data.Threshold,
+		"{{minutes}}", data.Minutes,
+		"{{minutesLabel}}", data.MinutesLabel,
+		"{{descriptor}}", data.Descriptor,
+		"{{filesystem}}", data.Filesystem,
+	)
+
+	// Write the replaced string to builder
+	replacer.WriteString(&result, template)
+	return result.String()
 }
 
 // FormatAlertName formats the alert name for display

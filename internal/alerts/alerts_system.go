@@ -13,6 +13,22 @@ import (
 	"github.com/spf13/cast"
 )
 
+// getFilesystemUsage retrieves disk usage percentage for a specific filesystem
+func getFilesystemUsage(filesystem string, data *system.CombinedData) (float64, bool) {
+	if filesystem == "root" {
+		return data.Info.DiskPct, true
+	}
+
+	// Find the matching extra filesystem
+	for key, fs := range data.Stats.ExtraFs {
+		if key == filesystem {
+			return fs.DiskUsed / fs.DiskTotal * 100, true
+		}
+	}
+
+	return 0, false
+}
+
 func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error {
 	alertRecords, err := am.hub.FindAllRecords("alerts",
 		dbx.NewExp("system={:system} AND name!='Status'", dbx.Params{"system": systemRecord.Id}),
@@ -21,7 +37,8 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		return nil
 	}
 
-	var validAlerts []SystemAlertData
+	// Pre-allocate with capacity to avoid growing
+	validAlerts := make([]SystemAlertData, 0, len(alertRecords))
 	now := systemRecord.GetDateTime("updated").Time().UTC()
 	oldestTime := now
 
@@ -49,21 +66,10 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			filesystem := alertRecord.GetString("filesystem")
 			if filesystem != "" {
 				// This is a filesystem-specific alert
-				if filesystem == "root" {
-					val = data.Info.DiskPct
-				} else {
-					// Find the matching extra filesystem
-					found := false
-					for key, fs := range data.Stats.ExtraFs {
-						if key == filesystem {
-							val = fs.DiskUsed / fs.DiskTotal * 100
-							found = true
-							break
-						}
-					}
-					if !found {
-						continue // Filesystem not found, skip this alert
-					}
+				var found bool
+				val, found = getFilesystemUsage(filesystem, data)
+				if !found {
+					continue // Filesystem not found, skip this alert
 				}
 			} else {
 				// Legacy disk alert - use the old behavior for backward compatibility
@@ -218,12 +224,9 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 					if filesystem == "root" {
 						alert.val += stats.Disk
 					} else {
-						// Find the matching extra filesystem
-						for key, fs := range data.Stats.ExtraFs {
-							if key == filesystem {
-								alert.val += fs.DiskUsed / fs.DiskTotal * 100
-								break
-							}
+						// Use helper function for consistency
+						if usage, found := getFilesystemUsage(filesystem, data); found {
+							alert.val += usage
 						}
 					}
 				} else {

@@ -19,12 +19,25 @@ type hubLike interface {
 	MakeLink(parts ...string) string
 }
 
+type userSettingsCacheEntry struct {
+	settings  UserNotificationSettings
+	timestamp time.Time
+}
+
+type parsedWebhook struct {
+	url    *url.URL
+	scheme string
+}
+
 type AlertManager struct {
-	hub             hubLike
-	alertQueue      chan alertTask
-	stopChan        chan struct{}
-	pendingAlerts   sync.Map
-	templateService *TemplateService
+	hub                hubLike
+	alertQueue         chan alertTask
+	stopChan           chan struct{}
+	pendingAlerts      sync.Map
+	templateService    *TemplateService
+	userSettingsCache  sync.Map // map[string]userSettingsCacheEntry
+	webhookCache       sync.Map // map[string]parsedWebhook
+	settingsCacheTTL   time.Duration
 }
 
 type AlertMessageData struct {
@@ -88,10 +101,11 @@ var supportsTitle = map[string]struct{}{
 // NewAlertManager creates a new AlertManager instance.
 func NewAlertManager(app hubLike) *AlertManager {
 	am := &AlertManager{
-		hub:             app,
-		alertQueue:      make(chan alertTask, 5),
-		stopChan:        make(chan struct{}),
-		templateService: NewTemplateService(app),
+		hub:              app,
+		alertQueue:       make(chan alertTask, 100), // Increased buffer for burst traffic
+		stopChan:         make(chan struct{}),
+		templateService:  NewTemplateService(app),
+		settingsCacheTTL: 5 * time.Minute, // Cache settings for 5 minutes
 	}
 	am.bindEvents()
 	go am.startWorker()
@@ -107,21 +121,10 @@ func (am *AlertManager) bindEvents() {
 
 // SendAlert sends an alert to the user
 func (am *AlertManager) SendAlert(data AlertMessageData) error {
-	// get user settings
-	record, err := am.hub.FindFirstRecordByFilter(
-		"user_settings", "user={:user}",
-		dbx.Params{"user": data.UserID},
-	)
+	// Get user settings from cache or database
+	userAlertSettings, err := am.getUserSettings(data.UserID)
 	if err != nil {
 		return err
-	}
-	// unmarshal user settings
-	userAlertSettings := UserNotificationSettings{
-		Emails:   []string{},
-		Webhooks: []string{},
-	}
-	if err := record.UnmarshalJSONField("settings", &userAlertSettings); err != nil {
-		am.hub.Logger().Error("Failed to unmarshal user settings", "err", err)
 	}
 	// send alerts via webhooks
 	for _, webhook := range userAlertSettings.Webhooks {
@@ -154,22 +157,96 @@ func (am *AlertManager) SendAlert(data AlertMessageData) error {
 	return nil
 }
 
-// SendShoutrrrAlert sends an alert via a Shoutrrr URL
-func (am *AlertManager) SendShoutrrrAlert(notificationUrl, title, message, link, linkText string) error {
+// getUserSettings retrieves user settings from cache or database
+func (am *AlertManager) getUserSettings(userID string) (UserNotificationSettings, error) {
+	// Check cache first
+	if cached, ok := am.userSettingsCache.Load(userID); ok {
+		entry := cached.(userSettingsCacheEntry)
+		if time.Since(entry.timestamp) < am.settingsCacheTTL {
+			return entry.settings, nil
+		}
+		// Cache expired, remove it
+		am.userSettingsCache.Delete(userID)
+	}
+
+	// Fetch from database
+	record, err := am.hub.FindFirstRecordByFilter(
+		"user_settings", "user={:user}",
+		dbx.Params{"user": userID},
+	)
+	if err != nil {
+		return UserNotificationSettings{}, err
+	}
+
+	// unmarshal user settings
+	userAlertSettings := UserNotificationSettings{
+		Emails:   []string{},
+		Webhooks: []string{},
+	}
+	if err := record.UnmarshalJSONField("settings", &userAlertSettings); err != nil {
+		am.hub.Logger().Error("Failed to unmarshal user settings", "err", err)
+		return userAlertSettings, err
+	}
+
+	// Cache the settings
+	am.userSettingsCache.Store(userID, userSettingsCacheEntry{
+		settings:  userAlertSettings,
+		timestamp: time.Now(),
+	})
+
+	return userAlertSettings, nil
+}
+
+// parseWebhookURL parses and caches webhook URLs
+func (am *AlertManager) parseWebhookURL(notificationUrl string) (parsedWebhook, error) {
+	// Check cache first
+	if cached, ok := am.webhookCache.Load(notificationUrl); ok {
+		return cached.(parsedWebhook), nil
+	}
+
 	// Parse the URL
 	parsedURL, err := url.Parse(notificationUrl)
 	if err != nil {
-		return fmt.Errorf("error parsing URL: %v", err)
+		return parsedWebhook{}, fmt.Errorf("error parsing URL: %v", err)
 	}
-	scheme := parsedURL.Scheme
+
+	webhook := parsedWebhook{
+		url:    parsedURL,
+		scheme: parsedURL.Scheme,
+	}
+
+	// Cache it
+	am.webhookCache.Store(notificationUrl, webhook)
+	return webhook, nil
+}
+
+// SendShoutrrrAlert sends an alert via a Shoutrrr URL
+func (am *AlertManager) SendShoutrrrAlert(notificationUrl, title, message, link, linkText string) error {
+	// Parse the URL (from cache if available)
+	webhook, err := am.parseWebhookURL(notificationUrl)
+	if err != nil {
+		return err
+	}
+
+	// Create a copy of the URL to avoid modifying the cached version
+	parsedURL := *webhook.url
+	scheme := webhook.scheme
 	queryParams := parsedURL.Query()
+
+	// Use strings.Builder for efficient message building
+	var msgBuilder strings.Builder
+	msgBuilder.Grow(len(message) + len(title) + len(link) + 20)
 
 	// Add title
 	if _, ok := supportsTitle[scheme]; ok {
 		queryParams.Add("title", title)
+		msgBuilder.WriteString(message)
 	} else if scheme == "mattermost" {
 		// use markdown title for mattermost
-		message = "##### " + title + "\n\n" + message
+		msgBuilder.WriteString("##### ")
+		msgBuilder.WriteString(title)
+		msgBuilder.WriteString("\n\n")
+		msgBuilder.WriteString(message)
 	} else if scheme == "generic" && queryParams.Has("template") {
 		// add title as property if using generic with template json
 		titleKey := queryParams.Get("titlekey")
@@ -177,9 +254,12 @@ func (am *AlertManager) SendShoutrrrAlert(notificationUrl, title, message, link,
 			titleKey = "title"
 		}
 		queryParams.Add("$"+titleKey, title)
+		msgBuilder.WriteString(message)
 	} else {
 		// otherwise just add title to message
-		message = title + "\n\n" + message
+		msgBuilder.WriteString(title)
+		msgBuilder.WriteString("\n\n")
+		msgBuilder.WriteString(message)
 	}
 
 	// Add link
@@ -190,8 +270,11 @@ func (am *AlertManager) SendShoutrrrAlert(notificationUrl, title, message, link,
 	} else if scheme == "bark" {
 		queryParams.Add("url", link)
 	} else {
-		message += "\n\n" + link
+		msgBuilder.WriteString("\n\n")
+		msgBuilder.WriteString(link)
 	}
+
+	message = msgBuilder.String()
 
 	// Encode the modified query parameters back into the URL
 	parsedURL.RawQuery = queryParams.Encode()
