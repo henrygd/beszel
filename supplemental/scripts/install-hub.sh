@@ -16,6 +16,7 @@ fi
 version=0.0.1
 PORT=8090                              # Default port
 GITHUB_PROXY_URL="https://ghfast.top/" # Default proxy URL
+AUTO_UPDATE_FLAG="false" # default to no auto-updates, "true" means enable
 
 # Function to ensure the proxy URL ends with a /
 ensure_trailing_slash() {
@@ -32,26 +33,42 @@ ensure_trailing_slash() {
 # Ensure the proxy URL ends with a /
 GITHUB_PROXY_URL=$(ensure_trailing_slash "$GITHUB_PROXY_URL")
 
-# Read command line options
-while getopts ":uhp:c:" opt; do
-  case $opt in
-  u) UNINSTALL="true" ;;
-  h)
-    printf "Beszel Hub installation script\n\n"
-    printf "Usage: ./install-hub.sh [options]\n\n"
-    printf "Options: \n"
-    printf "  -u  : Uninstall the Beszel Hub\n"
-    printf "  -p <port> : Specify a port number (default: 8090)\n"
-    printf "  -c <url>  : Use a custom GitHub mirror URL (e.g., https://ghfast.top/)\n"
-    echo "  -h  : Display this help message"
-    exit 0
-    ;;
-  p) PORT=$OPTARG ;;
-  c) GITHUB_PROXY_URL=$(ensure_trailing_slash "$OPTARG") ;;
-  \?)
-    echo "Invalid option: -$OPTARG"
-    exit 1
-    ;;
+# Parse command line arguments
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -u)
+      UNINSTALL="true"
+      shift
+      ;;
+    -h|--help)
+      printf "Beszel Hub installation script\n\n"
+      printf "Usage: ./install-hub.sh [options]\n\n"
+      printf "Options: \n"
+      printf "  -u           : Uninstall the Beszel Hub\n"
+      printf "  -p <port>    : Specify a port number (default: 8090)\n"
+      printf "  -c <url>     : Use a custom GitHub mirror URL (e.g., https://ghfast.top/)\n"
+      printf "  --auto-update : Enable automatic daily updates (disabled by default)\n"
+      printf "  -h, --help   : Display this help message\n"
+      exit 0
+      ;;
+    -p)
+      shift
+      PORT="$1"
+      shift
+      ;;
+    -c)
+      shift
+      GITHUB_PROXY_URL=$(ensure_trailing_slash "$1")
+      shift
+      ;;
+    --auto-update)
+      AUTO_UPDATE_FLAG="true"
+      shift
+      ;;
+    *)
+      echo "Invalid option: $1" >&2
+      exit 1
+      ;;
   esac
 done
 
@@ -63,7 +80,14 @@ if [ "$UNINSTALL" = "true" ]; then
 
   # Remove the systemd service file
   echo "Removing the systemd service file..."
-  rm /etc/systemd/system/beszel-hub.service
+  rm -f /etc/systemd/system/beszel-hub.service
+
+  # Remove the update timer and service if they exist
+  echo "Removing the daily update service and timer..."
+  systemctl stop beszel-hub-update.timer 2>/dev/null
+  systemctl disable beszel-hub-update.timer 2>/dev/null
+  rm -f /etc/systemd/system/beszel-hub-update.service
+  rm -f /etc/systemd/system/beszel-hub-update.timer
 
   # Reload the systemd daemon
   echo "Reloading the systemd daemon..."
@@ -75,7 +99,7 @@ if [ "$UNINSTALL" = "true" ]; then
 
   # Remove the dedicated user
   echo "Removing the dedicated user..."
-  userdel beszel
+  userdel beszel 2>/dev/null
 
   echo "The Beszel Hub has been uninstalled successfully!"
   exit 0
@@ -149,6 +173,41 @@ if [ "$(systemctl is-active beszel-hub.service)" != "active" ]; then
   echo "Error: The Beszel Hub service is not running."
   echo "$(systemctl status beszel-hub.service)"
   exit 1
+fi
+
+# Enable auto-update if flag is set to true
+if [ "$AUTO_UPDATE_FLAG" = "true" ]; then
+  echo "Setting up daily automatic updates for beszel-hub..."
+
+  # Create systemd service for the daily update
+  cat >/etc/systemd/system/beszel-hub-update.service <<EOF
+[Unit]
+Description=Update beszel-hub if needed
+Wants=beszel-hub.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/beszel/beszel update
+EOF
+
+  # Create systemd timer for the daily update
+  cat >/etc/systemd/system/beszel-hub-update.timer <<EOF
+[Unit]
+Description=Run beszel-hub update daily
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=4h
+
+[Install]
+WantedBy=timers.target
+EOF
+
+  systemctl daemon-reload
+  systemctl enable --now beszel-hub-update.timer
+
+  printf "\nDaily updates have been enabled.\n"
 fi
 
 echo "The Beszel Hub has been installed and configured successfully! It is now accessible on port $PORT."

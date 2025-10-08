@@ -12,6 +12,7 @@ is_freebsd() {
   [ "$(uname -s)" = "FreeBSD" ]
 }
 
+
 # If SELinux is enabled, set the context of the binary
 set_selinux_context() {
   # Check if SELinux is enabled and in enforcing or permissive mode
@@ -23,8 +24,8 @@ set_selinux_context() {
       # First try to set persistent context if semanage is available
       if command -v semanage >/dev/null 2>&1; then
         echo "Attempting to set persistent SELinux context..."
-        if semanage fcontext -a -t bin_t "/opt/beszel-agent/beszel-agent" >/dev/null 2>&1; then
-          restorecon -v /opt/beszel-agent/beszel-agent >/dev/null 2>&1
+        if semanage fcontext -a -t bin_t "$BIN_PATH" >/dev/null 2>&1; then
+          restorecon -v "$BIN_PATH" >/dev/null 2>&1
         else
           echo "Warning: Failed to set persistent context, falling back to temporary context."
         fi
@@ -33,8 +34,8 @@ set_selinux_context() {
       # Fall back to chcon if semanage failed or isn't available
       if command -v chcon >/dev/null 2>&1; then
         # Set context for both the directory and binary
-        chcon -t bin_t /opt/beszel-agent/beszel-agent || echo "Warning: Failed to set SELinux context for binary."
-        chcon -R -t bin_t /opt/beszel-agent || echo "Warning: Failed to set SELinux context for directory."
+        chcon -t bin_t "$BIN_PATH" || echo "Warning: Failed to set SELinux context for binary."
+        chcon -R -t bin_t "$AGENT_DIR" || echo "Warning: Failed to set SELinux context for directory."
       else
         if [ "$SELINUX_MODE" = "Enforcing" ]; then
           echo "Warning: SELinux is in enforcing mode but chcon command not found. The service may fail to start."
@@ -53,7 +54,7 @@ cleanup_selinux_context() {
     echo "Cleaning up SELinux contexts..."
     # Remove persistent context if semanage is available
     if command -v semanage >/dev/null 2>&1; then
-      semanage fcontext -d "/opt/beszel-agent/beszel-agent" 2>/dev/null || true
+      semanage fcontext -d "$BIN_PATH" 2>/dev/null || true
     fi
   fi
 }
@@ -85,11 +86,11 @@ generate_freebsd_rc_service() {
 # beszel_agent_enable (bool):   Set to YES to enable Beszel Agent
 #                               Default: YES
 # beszel_agent_env_file (str):  Beszel Agent env configuration file
-#                               Default: /opt/beszel-agent/env
+#                               Default: /usr/local/etc/beszel-agent/env
 # beszel_agent_user (str):      Beszel Agent daemon user
 #                               Default: beszel
 # beszel_agent_bin (str):       Path to the beszel-agent binary
-#                               Default: /opt/beszel-agent/beszel-agent
+#                               Default: /usr/local/sbin/beszel-agent
 # beszel_agent_flags (str):     Extra flags passed to beszel-agent command invocation
 #                               Default:
 
@@ -102,8 +103,8 @@ load_rc_config $name
 : ${beszel_agent_enable:="YES"}
 : ${beszel_agent_user:="beszel"}
 : ${beszel_agent_flags:=""}
-: ${beszel_agent_env_file:="/opt/beszel-agent/env"}
-: ${beszel_agent_bin:="/opt/beszel-agent/beszel-agent"}
+: ${beszel_agent_env_file:="/usr/local/etc/beszel-agent/env"}
+: ${beszel_agent_bin:="/usr/local/sbin/beszel-agent"}
 
 logfile="/var/log/${name}.log"
 pidfile="/var/run/${name}.pid"
@@ -160,11 +161,57 @@ run_rc_command "$1"
 EOF
 }
 
+# Detect system architecture
+detect_architecture() {
+  local arch=$(uname -m)
+
+  if [ "$arch" = "mips" ]; then
+    detect_mips_endianness
+    return $?
+  fi
+
+  case "$arch" in
+    x86_64)
+      arch="amd64"
+      ;;
+    armv6l|armv7l)
+      arch="arm"
+      ;;
+    aarch64)
+      arch="arm64"
+      ;;
+  esac
+
+  echo "$arch"
+}
+
+# Detect MIPS endianness using ELF header
+detect_mips_endianness() {
+  local bins="/bin/sh /bin/ls /usr/bin/env"
+  local bin_to_check endian
+  
+  for bin_to_check in $bins; do
+    if [ -f "$bin_to_check" ]; then
+      # The 6th byte in ELF header: 01 = little, 02 = big
+      endian=$(hexdump -n 1 -s 5 -e '1/1 "%02x"' "$bin_to_check" 2>/dev/null)
+      if [ "$endian" = "01" ]; then
+        echo "mipsle"
+        return
+      elif [ "$endian" = "02" ]; then
+        echo "mips" 
+        return
+      fi
+    fi
+  done
+  
+  # Final fallback
+  echo "mips"
+}
+
 # Default values
 PORT=45876
 UNINSTALL=false
 GITHUB_URL="https://github.com"
-GITHUB_API_URL="https://api.github.com" # not blocked in China currently
 GITHUB_PROXY_URL=""
 KEY=""
 TOKEN=""
@@ -186,7 +233,7 @@ case "$1" in
   printf "  -u                    : Uninstall Beszel Agent\n"
   printf "  --auto-update [VALUE] : Control automatic daily updates\n"
   printf "                          VALUE can be true (enable) or false (disable). If not specified, will prompt.\n"
-  printf "  --china-mirrors [URL] : Use GitHub proxy to resolve network timeout issues in mainland China\n"
+  printf "  --mirror [URL]        : Use GitHub proxy to resolve network timeout issues in mainland China\n"
   printf "                          URL: optional custom proxy URL (default: https://gh.beszel.dev)\n"
   printf "  -h, --help            : Display this help message\n"
   exit 0
@@ -245,7 +292,7 @@ while [ $# -gt 0 ]; do
   -u)
     UNINSTALL=true
     ;;
-  --china-mirrors*)
+  --mirror* | --china-mirrors*)
     # Check if there's a value after the = sign
     if echo "$1" | grep -q "="; then
       # Extract the value after =
@@ -297,6 +344,17 @@ while [ $# -gt 0 ]; do
   shift
 done
 
+# Set paths based on operating system
+if is_freebsd; then
+  AGENT_DIR="/usr/local/etc/beszel-agent"
+  BIN_DIR="/usr/local/sbin"
+  BIN_PATH="/usr/local/sbin/beszel-agent"
+else
+  AGENT_DIR="/opt/beszel-agent"
+  BIN_DIR="/opt/beszel-agent"
+  BIN_PATH="/opt/beszel-agent/beszel-agent"
+fi
+
 # Uninstall process
 if [ "$UNINSTALL" = true ]; then
   # Clean up SELinux contexts before removing files
@@ -329,7 +387,12 @@ if [ "$UNINSTALL" = true ]; then
 
     # Remove the update service if it exists
     echo "Removing the daily update service..."
+    # Remove legacy beszel account based crontab file
     rm -f /etc/crontabs/beszel
+    # Install root crontab job
+    if crontab -u root -l 2>/dev/null | grep -q "beszel-agent.*update"; then
+      crontab -u root -l 2>/dev/null | grep -v "beszel-agent.*update" | crontab -u root -
+    fi
 
   elif is_freebsd; then
     echo "Stopping and disabling the agent service..."
@@ -341,17 +404,17 @@ if [ "$UNINSTALL" = true ]; then
 
     # Remove the daily update cron job if it exists
     echo "Removing the daily update cron job..."
-    if crontab -u root -l 2>/dev/null | grep -q "beszel-agent.*update"; then
-      crontab -u root -l 2>/dev/null | grep -v "beszel-agent.*update" | crontab -u root -
-    fi
+    rm -f /etc/cron.d/beszel-agent
 
     # Remove log files
     echo "Removing log files..."
     rm -f /var/log/beszel-agent.log
 
-    # Remove env file
+    # Remove env file and directories
     echo "Removing environment configuration file..."
-    rm -f /opt/beszel-agent/env
+    rm -f "$AGENT_DIR/env"
+    rm -f "$BIN_PATH"
+    rmdir "$AGENT_DIR" 2>/dev/null || true
 
   else
     echo "Stopping and disabling the agent service..."
@@ -372,7 +435,7 @@ if [ "$UNINSTALL" = true ]; then
   fi
 
   echo "Removing the Beszel Agent directory..."
-  rm -rf /opt/beszel-agent
+  rm -rf "$AGENT_DIR"
 
   echo "Removing the dedicated user for the agent service..."
   killall beszel-agent 2>/dev/null
@@ -386,18 +449,6 @@ if [ "$UNINSTALL" = true ]; then
 
   echo "Beszel Agent has been uninstalled successfully!"
   exit 0
-fi
-
-# Confirm the use of GitHub mirrors for downloads
-if [ -n "$GITHUB_PROXY_URL" ]; then
-  printf "\nConfirm use of GitHub mirror (%s) for downloading beszel-agent?\nThis helps to install properly in mainland China. (Y/n): " "$GITHUB_PROXY_URL"
-  read USE_MIRROR
-  USE_MIRROR=${USE_MIRROR:-Y}
-  if [ "$USE_MIRROR" = "Y" ] || [ "$USE_MIRROR" = "y" ]; then
-    echo "Using GitHub Mirror ($GITHUB_PROXY_URL) for downloads..."
-  else
-    GITHUB_URL="https://github.com"
-  fi
 fi
 
 # Check if a package is installed
@@ -503,7 +554,7 @@ elif is_openwrt; then
 
 elif is_freebsd; then
   if ! id -u beszel >/dev/null 2>&1; then
-    pw user add beszel -u 2000 -d /nonexistent -s /usr/sbin/nologin -c "beszel user"
+    pw user add beszel -d /nonexistent -s /usr/sbin/nologin -c "beszel user"
   fi
   # Add the user to the wheel group to allow self-updates
   if pw group show wheel >/dev/null 2>&1; then
@@ -523,23 +574,33 @@ else
 fi
 
 # Create the directory for the Beszel Agent
-if [ ! -d "/opt/beszel-agent" ]; then
+
+if [ ! -d "$AGENT_DIR" ]; then
   echo "Creating the directory for the Beszel Agent..."
-  mkdir -p /opt/beszel-agent
-  chown beszel:beszel /opt/beszel-agent
-  chmod 755 /opt/beszel-agent
+  mkdir -p "$AGENT_DIR"
+  chown beszel:beszel "$AGENT_DIR"
+  chmod 755 "$AGENT_DIR"
+fi
+
+if [ ! -d "$BIN_DIR" ]; then
+  mkdir -p "$BIN_DIR"
 fi
 
 # Download and install the Beszel Agent
 echo "Downloading and installing the agent..."
 
 OS=$(uname -s | sed -e 'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/')
-ARCH=$(uname -m | sed -e 's/x86_64/amd64/' -e 's/armv6l/arm/' -e 's/armv7l/arm/' -e 's/aarch64/arm64/')
+ARCH=$(detect_architecture)
 FILE_NAME="beszel-agent_${OS}_${ARCH}.tar.gz"
 
 # Determine version to install
 if [ "$VERSION" = "latest" ]; then
-  INSTALL_VERSION=$(curl -s "$GITHUB_API_URL""/repos/henrygd/beszel/releases/latest" | grep -o '"tag_name": "v[^"]*"' | cut -d'"' -f4 | tr -d 'v')
+  INSTALL_VERSION=$(curl -s "https://get.beszel.dev/latest-version")
+  if [ -z "$INSTALL_VERSION" ]; then
+    # Fallback to GitHub API
+    API_RELEASE_URL="https://api.github.com/repos/henrygd/beszel/releases/latest"
+    INSTALL_VERSION=$(curl -s "$API_RELEASE_URL" | grep -o '"tag_name": "v[^"]*"' | cut -d'"' -f4 | tr -d 'v')
+  fi
   if [ -z "$INSTALL_VERSION" ]; then
     echo "Failed to get latest version"
     exit 1
@@ -579,9 +640,9 @@ if ! tar -xzf "$FILE_NAME" beszel-agent; then
   exit 1
 fi
 
-mv beszel-agent /opt/beszel-agent/beszel-agent
-chown beszel:beszel /opt/beszel-agent/beszel-agent
-chmod 755 /opt/beszel-agent/beszel-agent
+mv beszel-agent "$BIN_PATH"
+chown beszel:beszel "$BIN_PATH"
+chmod 755 "$BIN_PATH"
 
 # Set SELinux context if needed
 set_selinux_context
@@ -613,7 +674,7 @@ if is_alpine; then
 
 name="beszel-agent"
 description="Beszel Agent Service"
-command="/opt/beszel-agent/beszel-agent"
+command="$BIN_PATH"
 command_user="beszel"
 command_background="yes"
 pidfile="/run/\${RC_SVCNAME}.pid"
@@ -668,7 +729,7 @@ EOF
 
     # Create cron job to run beszel-agent update command daily at midnight
     if ! crontab -u root -l 2>/dev/null | grep -q "beszel-agent.*update"; then
-      (crontab -u root -l 2>/dev/null; echo "12 0 * * * /opt/beszel-agent/beszel-agent update >/dev/null 2>&1") | crontab -u root -
+      (crontab -u root -l 2>/dev/null; echo "12 0 * * * $BIN_PATH update >/dev/null 2>&1") | crontab -u root -
     fi
 
     printf "\nDaily updates have been enabled via cron job.\n"
@@ -692,27 +753,23 @@ START=99
 
 start_service() {
     procd_open_instance
-    procd_set_param command /opt/beszel-agent/beszel-agent
+    procd_set_param command $BIN_PATH
     procd_set_param user beszel
     procd_set_param pidfile /var/run/beszel-agent.pid
     procd_set_param env PORT="$PORT" KEY="$KEY" TOKEN="$TOKEN" HUB_URL="$HUB_URL"
+    procd_set_param respawn
     procd_set_param stdout 1
     procd_set_param stderr 1
     procd_close_instance
 }
 
-stop_service() {
-    killall beszel-agent
-}
-
 # Extra command to trigger agent update
-EXTRA_COMMANDS="update"
-EXTRA_HELP="        update          Update the Beszel agent"
+EXTRA_COMMANDS="update restart"
+EXTRA_HELP="        update          Update the Beszel agent
+        restart         Restart the Beszel agent"
 
 update() {
-    if /opt/beszel-agent/beszel-agent update | grep -q "Successfully updated"; then
-        start_service
-    fi
+    $BIN_PATH update
 }
 
 EOF
@@ -739,9 +796,9 @@ EOF
   [Yy]*)
     echo "Setting up daily automatic updates for beszel-agent..."
 
-    cat >/etc/crontabs/beszel <<EOF
-12 0 * * * /etc/init.d/beszel-agent update
-EOF
+    if ! crontab -u root -l 2>/dev/null | grep -q "beszel-agent.*update"; then
+      (crontab -u root -l 2>/dev/null; echo "12 0 * * * /etc/init.d/beszel-agent update") | crontab -u root -
+    fi
 
     /etc/init.d/cron restart
 
@@ -761,14 +818,14 @@ elif is_freebsd; then
   
   # Create environment configuration file with proper permissions
   echo "Creating environment configuration file..."
-  cat >/opt/beszel-agent/env <<EOF
+  cat >"$AGENT_DIR/env" <<EOF
 LISTEN=$PORT
 KEY="$KEY"
 TOKEN=$TOKEN
 HUB_URL=$HUB_URL
 EOF
-  chmod 640 /opt/beszel-agent/env
-  chown root:beszel /opt/beszel-agent/env
+  chmod 640 "$AGENT_DIR/env"
+  chown root:beszel "$AGENT_DIR/env"
   
   # Create the rc service file
   generate_freebsd_rc_service > /usr/local/etc/rc.d/beszel-agent
@@ -802,12 +859,13 @@ EOF
   [Yy]*)
     echo "Setting up daily automatic updates for beszel-agent..."
 
-    # Create cron job to run beszel-agent update command daily
-    if ! crontab -u root -l 2>/dev/null | grep -q "beszel-agent.*update"; then
-      (crontab -u root -l 2>/dev/null; echo "12 0 * * * /opt/beszel-agent/beszel-agent update >/dev/null 2>&1") | crontab -u root -
-    fi
-
-    printf "\nDaily updates have been enabled via cron job.\n"
+    # Create cron job in /etc/cron.d 
+    cat >/etc/cron.d/beszel-agent <<EOF
+# Beszel Agent daily update job
+12 0 * * * root $BIN_PATH update >/dev/null 2>&1
+EOF
+    chmod 644 /etc/cron.d/beszel-agent
+    printf "\nDaily updates have been enabled via /etc/cron.d.\n"
     ;;
   esac
 
@@ -837,7 +895,7 @@ Environment="KEY=$KEY"
 Environment="TOKEN=$TOKEN"
 Environment="HUB_URL=$HUB_URL"
 # Environment="EXTRA_FILESYSTEMS=sdb"
-ExecStart=/opt/beszel-agent/beszel-agent
+ExecStart=$BIN_PATH
 User=beszel
 Restart=on-failure
 RestartSec=5
@@ -846,7 +904,6 @@ StateDirectory=beszel-agent
 # Security/sandboxing settings
 KeyringMode=private
 LockPersonality=yes
-NoNewPrivileges=yes
 ProtectClock=yes
 ProtectHome=read-only
 ProtectHostname=yes
@@ -892,7 +949,7 @@ Wants=beszel-agent.service
 
 [Service]
 Type=oneshot
-ExecStart=/opt/beszel-agent/beszel-agent update
+ExecStart=$BIN_PATH update
 EOF
 
     # Create systemd timer for the daily update

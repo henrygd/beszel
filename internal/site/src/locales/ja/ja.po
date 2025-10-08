@@ -1,0 +1,1275 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2024-11-01 11:30-0400\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: ja\n"
+"Project-Id-Version: beszel\n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: 2025-08-28 23:21\n"
+"Last-Translator: \n"
+"Language-Team: Japanese\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Crowdin-Project: beszel\n"
+"X-Crowdin-Project-ID: 733311\n"
+"X-Crowdin-Language: ja\n"
+"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 16\n"
+
+#. placeholder {0}: Math.trunc(system.info?.u / 86400)
+#: src/components/routes/system.tsx
+msgid "{0, plural, one {# day} other {# days}}"
+msgstr "{0, plural, one {# 日} other {# 日}}"
+
+#. placeholder {0}: Math.trunc(system.info.u / 3600)
+#: src/components/routes/system.tsx
+msgid "{0, plural, one {# hour} other {# hours}}"
+msgstr "{0, plural, one {# 時間} other {# 時間}}"
+
+#. placeholder {0}: Math.trunc(system.info.u / 60)
+#: src/components/routes/system.tsx
+msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
+msgstr "{0, plural, one {# 分} few {# 分} many {# 分} other {# 分}}"
+
+#. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
+#. placeholder {1}: table.getFilteredRowModel().rows.length
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "{0} of {1} row(s) selected."
+msgstr "{1}行のうち{0}行が選択されました。"
+
+#: src/lib/utils.ts
+msgid "1 hour"
+msgstr "1時間"
+
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "1 min"
+msgstr "1分"
+
+#: src/lib/utils.ts
+msgid "1 minute"
+msgstr "1分"
+
+#: src/lib/utils.ts
+msgid "1 week"
+msgstr "1週間"
+
+#: src/lib/utils.ts
+msgid "12 hours"
+msgstr "12時間"
+
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "15 min"
+msgstr "15分"
+
+#: src/lib/utils.ts
+msgid "24 hours"
+msgstr "24時間"
+
+#: src/lib/utils.ts
+msgid "30 days"
+msgstr "30日間"
+
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "5 min"
+msgstr "5分"
+
+#. Table column
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Actions"
+msgstr "アクション"
+
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Active"
+msgstr "アクティブ"
+
+#: src/components/routes/home.tsx
+msgid "Active Alerts"
+msgstr "アクティブなアラート"
+
+#: src/components/add-system.tsx
+msgid "Add <0>System</0>"
+msgstr "<0>システム</0>を追加"
+
+#: src/components/add-system.tsx
+msgid "Add New System"
+msgstr "新しいシステムを追加"
+
+#: src/components/add-system.tsx
+msgid "Add system"
+msgstr "システムを追加"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Add URL"
+msgstr "URLを追加"
+
+#: src/components/routes/settings/general.tsx
+msgid "Adjust display options for charts."
+msgstr "チャートの表示オプションを調整します。"
+
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+msgid "Admin"
+msgstr "管理者"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Agent"
+msgstr "エージェント"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "Alert History"
+msgstr "アラート履歴"
+
+#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Alerts"
+msgstr "アラート"
+
+#: src/components/alerts/alerts-sheet.tsx
+#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "All Systems"
+msgstr "すべてのシステム"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Are you sure you want to delete {name}?"
+msgstr "{name}を削除してもよろしいですか？"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Are you sure?"
+msgstr "よろしいですか？"
+
+#: src/components/copy-to-clipboard.tsx
+msgid "Automatic copy requires a secure context."
+msgstr "自動コピーには安全なコンテキストが必要です。"
+
+#: src/components/routes/system.tsx
+msgid "Average"
+msgstr "平均"
+
+#: src/components/routes/system.tsx
+msgid "Average CPU utilization of containers"
+msgstr "コンテナの平均CPU使用率"
+
+#. placeholder {0}: alertData.unit
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Average exceeds <0>{value}{0}</0>"
+msgstr "平均が<0>{value}{0}</0>を超えています"
+
+#: src/components/routes/system.tsx
+msgid "Average power consumption of GPUs"
+msgstr "GPUの平均消費電力"
+
+#: src/components/routes/system.tsx
+msgid "Average system-wide CPU utilization"
+msgstr "システム全体の平均CPU使用率"
+
+#. placeholder {0}: gpu.n
+#: src/components/routes/system.tsx
+msgid "Average utilization of {0}"
+msgstr "{0}の平均使用率"
+
+#: src/components/routes/system.tsx
+msgid "Average utilization of GPU engines"
+msgstr "GPUエンジンの平均使用率"
+
+#: src/components/command-palette.tsx
+#: src/components/navbar.tsx
+msgid "Backups"
+msgstr "バックアップ"
+
+#: src/components/routes/system.tsx
+#: src/lib/alerts.ts
+msgid "Bandwidth"
+msgstr "帯域幅"
+
+#: src/components/routes/system.tsx
+msgid "Battery"
+msgstr "バッテリー"
+
+#: src/components/login/auth-form.tsx
+msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
+msgstr "BeszelはOpenID Connectと多くのOAuth2認証プロバイダーをサポートしています。"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
+msgstr "Beszelは<0>Shoutrrr</0>を使用して、人気のある通知サービスと統合します。"
+
+#: src/components/add-system.tsx
+msgid "Binary"
+msgstr "バイナリ"
+
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/general.tsx
+msgid "Bits (Kbps, Mbps, Gbps)"
+msgstr "ビット (Kbps, Mbps, Gbps)"
+
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/general.tsx
+msgid "Bytes (KB/s, MB/s, GB/s)"
+msgstr "バイト (KB/s, MB/s, GB/s)"
+
+#: src/components/charts/mem-chart.tsx
+msgid "Cache / Buffers"
+msgstr "キャッシュ / バッファ"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Cancel"
+msgstr "キャンセル"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "Caution - potential data loss"
+msgstr "注意 - データ損失の可能性"
+
+#: src/components/routes/settings/general.tsx
+msgid "Celsius (°C)"
+msgstr "摂氏 (°C)"
+
+#: src/components/routes/settings/general.tsx
+msgid "Change display units for metrics."
+msgstr "メトリックの表示単位を変更します。"
+
+#: src/components/routes/settings/general.tsx
+msgid "Change general application options."
+msgstr "一般的なアプリケーションオプションを変更します。"
+
+#: src/components/routes/system.tsx
+msgid "Charge"
+msgstr "充電"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Charging"
+msgstr "充電中"
+
+#: src/components/routes/settings/general.tsx
+msgid "Chart options"
+msgstr "チャートオプション"
+
+#: src/components/login/forgot-pass-form.tsx
+msgid "Check {email} for a reset link."
+msgstr "{email}を確認してリセットリンクを探してください。"
+
+#: src/components/routes/settings/layout.tsx
+msgid "Check logs for more details."
+msgstr "詳細についてはログを確認してください。"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Check your notification service"
+msgstr "通知サービスを確認してください"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Click on a system to view more information."
+msgstr "システムをクリックして詳細を表示します。"
+
+#: src/components/ui/input-copy.tsx
+msgid "Click to copy"
+msgstr "クリックしてコピー"
+
+#: src/components/login/forgot-pass-form.tsx
+#: src/components/login/forgot-pass-form.tsx
+msgid "Command line instructions"
+msgstr "コマンドラインの指示"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Configure how you receive alert notifications."
+msgstr "アラート通知の受信方法を設定します。"
+
+#: src/components/login/auth-form.tsx
+#: src/components/login/auth-form.tsx
+msgid "Confirm password"
+msgstr "パスワードを確認"
+
+#: src/components/routes/home.tsx
+msgid "Connection is down"
+msgstr "接続が切断されました"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Continue"
+msgstr "続行"
+
+#: src/lib/utils.ts
+msgid "Copied to clipboard"
+msgstr "クリップボードにコピーされました"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy docker compose file content"
+msgid "Copy docker compose"
+msgstr "docker compose をコピー"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy docker run command"
+msgid "Copy docker run"
+msgstr "docker run をコピー"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Environment variables"
+msgid "Copy env"
+msgstr "環境変数をコピー"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Copy host"
+msgstr "ホストをコピー"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy Linux command"
+msgstr "Linuxコマンドをコピー"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Copy name"
+msgstr "名前をコピーする"
+
+#: src/components/copy-to-clipboard.tsx
+msgid "Copy text"
+msgstr "テキストをコピー"
+
+#: src/components/add-system.tsx
+msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
+msgstr "下記のエージェントのインストールコマンドをコピーするか、<0>ユニバーサルトークン</0>を使用してエージェントを自動登録してください。"
+
+#: src/components/add-system.tsx
+msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
+msgstr "下記のエージェントの<0>docker-compose.yml</0>内容をコピーするか、<1>ユニバーサルトークン</1>を使用してエージェントを自動登録してください。"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy YAML"
+msgstr "YAMLをコピー"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "CPU"
+msgstr "CPU"
+
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
+#: src/lib/alerts.ts
+msgid "CPU Usage"
+msgstr "CPU使用率"
+
+#: src/components/login/auth-form.tsx
+msgid "Create account"
+msgstr "アカウントを作成"
+
+#. Context: date created
+#: src/components/alerts-history-columns.tsx
+msgid "Created"
+msgstr "作成日"
+
+#: src/components/routes/settings/general.tsx
+msgid "Critical (%)"
+msgstr "致命的 (%)"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Download"
+msgstr "累積ダウンロード"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Upload"
+msgstr "累積アップロード"
+
+#. Context: Battery state
+#: src/components/routes/system.tsx
+msgid "Current state"
+msgstr "現在の状態"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/home.tsx
+msgid "Dashboard"
+msgstr "ダッシュボード"
+
+#: src/components/routes/settings/general.tsx
+msgid "Default time period"
+msgstr "デフォルトの期間"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Delete"
+msgstr "削除"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Delete fingerprint"
+msgstr "フィンガープリントを削除"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Discharging"
+msgstr "放電中"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Disk"
+msgstr "ディスク"
+
+#: src/components/routes/system.tsx
+msgid "Disk I/O"
+msgstr "ディスクI/O"
+
+#: src/components/routes/settings/general.tsx
+msgid "Disk unit"
+msgstr "ディスク単位"
+
+#: src/components/charts/disk-chart.tsx
+#: src/components/routes/system.tsx
+#: src/lib/alerts.ts
+msgid "Disk Usage"
+msgstr "ディスク使用率"
+
+#: src/components/routes/system.tsx
+msgid "Disk usage of {extraFsName}"
+msgstr "{extraFsName}のディスク使用率"
+
+#: src/components/routes/system.tsx
+msgid "Docker CPU Usage"
+msgstr "Docker CPU使用率"
+
+#: src/components/routes/system.tsx
+msgid "Docker Memory Usage"
+msgstr "Dockerメモリ使用率"
+
+#: src/components/routes/system.tsx
+msgid "Docker Network I/O"
+msgstr "DockerネットワークI/O"
+
+#: src/components/command-palette.tsx
+msgid "Documentation"
+msgstr "ドキュメント"
+
+#. Context: System is down
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
+msgid "Down"
+msgstr "停止"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Down ({downSystemsLength})"
+msgstr "停止 ({downSystemsLength})"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Download"
+msgstr "ダウンロード"
+
+#: src/components/alerts-history-columns.tsx
+msgid "Duration"
+msgstr "期間"
+
+#: src/components/add-system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Edit"
+msgstr "編集"
+
+#: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
+#: src/components/login/otp-forms.tsx
+msgid "Email"
+msgstr "メール"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Email notifications"
+msgstr "メール通知"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Empty"
+msgstr "空"
+
+#: src/components/login/login.tsx
+msgid "Enter email address to reset password"
+msgstr "パスワードをリセットするためにメールアドレスを入力してください"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Enter email address..."
+msgstr "メールアドレスを入力..."
+
+#: src/components/login/otp-forms.tsx
+msgid "Enter your one-time password."
+msgstr "ワンタイムパスワードを入力してください。"
+
+#: src/components/login/auth-form.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/config-yaml.tsx
+#: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Error"
+msgstr "エラー"
+
+#. placeholder {0}: alert.value
+#. placeholder {1}: info.unit
+#. placeholder {2}: alert.min
+#: src/components/routes/home.tsx
+msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
+msgstr "過去{2, plural, one {# 分} other {# 分}}で{0}{1}を超えています"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
+msgstr "<0>config.yml</0>に定義されていない既存のシステムは削除されます。定期的にバックアップを作成してください。"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Export"
+msgstr "エクスポート"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "Export configuration"
+msgstr "設定をエクスポート"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "Export your current systems configuration."
+msgstr "現在のシステム設定をエクスポートします。"
+
+#: src/components/routes/settings/general.tsx
+msgid "Fahrenheit (°F)"
+msgstr "華氏 (°F)"
+
+#: src/lib/api.ts
+msgid "Failed to authenticate"
+msgstr "認証に失敗しました"
+
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/notifications.tsx
+msgid "Failed to save settings"
+msgstr "設定の保存に失敗しました"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Failed to send test notification"
+msgstr "テスト通知の送信に失敗しました"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Failed to update alert"
+msgstr "アラートの更新に失敗しました"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Filter by tags"
+msgstr ""
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Filter..."
+msgstr "フィルター..."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Fingerprint"
+msgstr "フィンガープリント"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
+msgstr "<0>{min}</0> {min, plural, one {分} other {分}}の間"
+
+#: src/components/login/auth-form.tsx
+msgid "Forgot password?"
+msgstr "パスワードをお忘れですか？"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "FreeBSD command"
+msgstr "FreeBSD コマンド"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Full"
+msgstr "満充電"
+
+#. Context: General settings
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "General"
+msgstr "一般"
+
+#: src/components/routes/system.tsx
+msgid "GPU Engines"
+msgstr "GPUエンジン"
+
+#: src/components/routes/system.tsx
+msgid "GPU Power Draw"
+msgstr "GPUの消費電力"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Grid"
+msgstr "グリッド"
+
+#: src/components/systems-table/systems-table-columns.tsx
+#~ msgid "Group"
+#~ msgstr ""
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "Homebrew command"
+msgstr "Homebrew コマンド"
+
+#: src/components/add-system.tsx
+msgid "Host / IP"
+msgstr "ホスト / IP"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Idle"
+msgstr "アイドル"
+
+#: src/components/login/forgot-pass-form.tsx
+msgid "If you've lost the password to your admin account, you may reset it using the following command."
+msgstr "管理者アカウントのパスワードを忘れた場合は、次のコマンドを使用してリセットできます。"
+
+#: src/components/login/auth-form.tsx
+msgid "Invalid email address."
+msgstr "無効なメールアドレスです。"
+
+#. Linux kernel
+#: src/components/routes/system.tsx
+msgid "Kernel"
+msgstr "カーネル"
+
+#: src/components/routes/settings/general.tsx
+msgid "Language"
+msgstr "言語"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Layout"
+msgstr "レイアウト"
+
+#: src/components/routes/system.tsx
+msgid "Load Average"
+msgstr "負荷平均"
+
+#: src/lib/alerts.ts
+msgid "Load Average 15m"
+msgstr "負荷平均 (15分)"
+
+#: src/lib/alerts.ts
+msgid "Load Average 1m"
+msgstr "負荷平均 (1分)"
+
+#: src/lib/alerts.ts
+msgid "Load Average 5m"
+msgstr "負荷平均 (5分)"
+
+#. Short label for load average
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Load Avg"
+msgstr "負荷平均"
+
+#: src/components/navbar.tsx
+msgid "Log Out"
+msgstr "ログアウト"
+
+#: src/components/login/login.tsx
+msgid "Login"
+msgstr "ログイン"
+
+#: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
+msgid "Login attempt failed"
+msgstr "ログイン試行に失敗しました"
+
+#: src/components/command-palette.tsx
+#: src/components/navbar.tsx
+msgid "Logs"
+msgstr "ログ"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
+msgstr "アラートを作成する場所を探していますか？システムテーブルのベル<0/>アイコンをクリックしてください。"
+
+#: src/components/routes/settings/layout.tsx
+msgid "Manage display and notification preferences."
+msgstr "表示と通知の設定を管理します。"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Manual setup instructions"
+msgstr "手動セットアップの手順"
+
+#. Chart select field. Please try to keep this short.
+#: src/components/routes/system.tsx
+msgid "Max 1 min"
+msgstr "最大1分"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Memory"
+msgstr "メモリ"
+
+#: src/components/routes/system.tsx
+#: src/lib/alerts.ts
+msgid "Memory Usage"
+msgstr "メモリ使用率"
+
+#: src/components/routes/system.tsx
+msgid "Memory usage of docker containers"
+msgstr "Dockerコンテナのメモリ使用率"
+
+#: src/components/add-system.tsx
+#: src/components/alerts-history-columns.tsx
+msgid "Name"
+msgstr "名前"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Net"
+msgstr "帯域"
+
+#: src/components/routes/system.tsx
+msgid "Network traffic of docker containers"
+msgstr "Dockerコンテナのネットワークトラフィック"
+
+#: src/components/routes/system.tsx
+#: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
+msgid "Network traffic of public interfaces"
+msgstr "パブリックインターフェースのネットワークトラフィック"
+
+#. Context: Bytes or bits
+#: src/components/routes/settings/general.tsx
+msgid "Network unit"
+msgstr "ネットワーク単位"
+
+#: src/components/command-palette.tsx
+msgid "No results found."
+msgstr "結果が見つかりませんでした。"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "No results."
+msgstr "結果がありません。"
+
+#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "No systems found."
+msgstr "システムが見つかりませんでした。"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "No tags found"
+msgstr ""
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/notifications.tsx
+msgid "Notifications"
+msgstr "通知"
+
+#: src/components/login/auth-form.tsx
+msgid "OAuth 2 / OIDC support"
+msgstr "OAuth 2 / OIDCサポート"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
+msgstr "再起動のたびに、データベース内のシステムはファイルに定義されたシステムに一致するように更新されます。"
+
+#: src/components/login/auth-form.tsx
+msgid "One-time password"
+msgstr "ワンタイムパスワード"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Open menu"
+msgstr "メニューを開く"
+
+#: src/components/login/auth-form.tsx
+msgid "Or continue with"
+msgstr "または、以下の方法でログイン"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Overwrite existing alerts"
+msgstr "既存のアラートを上書き"
+
+#: src/components/command-palette.tsx
+msgid "Page"
+msgstr "ページ"
+
+#. placeholder {0}: table.getState().pagination.pageIndex + 1
+#. placeholder {1}: table.getPageCount()
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Page {0} of {1}"
+msgstr "{1}ページ中{0}ページ目"
+
+#: src/components/command-palette.tsx
+msgid "Pages / Settings"
+msgstr "ページ / 設定"
+
+#: src/components/login/auth-form.tsx
+#: src/components/login/auth-form.tsx
+msgid "Password"
+msgstr "パスワード"
+
+#: src/components/login/auth-form.tsx
+msgid "Password must be at least 8 characters."
+msgstr "パスワードは8文字以上である必要があります。"
+
+#: src/components/login/auth-form.tsx
+msgid "Password must be less than 72 bytes."
+msgstr "パスワードは72バイト未満でなければなりません。"
+
+#: src/components/login/forgot-pass-form.tsx
+msgid "Password reset request received"
+msgstr "パスワードリセットのリクエストを受け取りました"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Pause"
+msgstr "一時停止"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Paused"
+msgstr "一時停止中"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Paused ({pausedSystemsLength})"
+msgstr "一時停止 ({pausedSystemsLength})"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
+msgstr "アラートが配信されるように<0>SMTPサーバーを設定</0>してください。"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Please check logs for more details."
+msgstr "詳細についてはログを確認してください。"
+
+#: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
+msgid "Please check your credentials and try again"
+msgstr "資格情報を確認して再試行してください"
+
+#: src/components/login/login.tsx
+msgid "Please create an admin account"
+msgstr "管理者アカウントを作成してください"
+
+#: src/components/login/auth-form.tsx
+msgid "Please enable pop-ups for this site"
+msgstr "このサイトのポップアップを有効にしてください"
+
+#: src/lib/api.ts
+msgid "Please log in again"
+msgstr "再度ログインしてください"
+
+#: src/components/login/auth-form.tsx
+msgid "Please see <0>the documentation</0> for instructions."
+msgstr "手順については<0>ドキュメント</0>を参照してください。"
+
+#: src/components/login/login.tsx
+msgid "Please sign in to your account"
+msgstr "アカウントにサインインしてください"
+
+#: src/components/add-system.tsx
+msgid "Port"
+msgstr "ポート"
+
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
+msgid "Precise utilization at the recorded time"
+msgstr "記録された時点での正確な利用"
+
+#: src/components/routes/settings/general.tsx
+msgid "Preferred Language"
+msgstr "優先言語"
+
+#. Use 'Key' if your language requires many more characters
+#: src/components/add-system.tsx
+msgid "Public Key"
+msgstr "公開鍵"
+
+#. Disk read
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
+msgid "Read"
+msgstr "読み取り"
+
+#: src/components/routes/system.tsx
+msgid "Received"
+msgstr "受信"
+
+#: src/components/login/login.tsx
+msgid "Request a one-time password"
+msgstr "ワンタイムパスワードをリクエスト"
+
+#: src/components/login/otp-forms.tsx
+msgid "Request OTP"
+msgstr "OTP をリクエスト"
+
+#: src/components/login/forgot-pass-form.tsx
+msgid "Reset Password"
+msgstr "パスワードをリセット"
+
+#: src/components/alerts-history-columns.tsx
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Resolved"
+msgstr "解決済み"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Resume"
+msgstr "再開"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Rotate token"
+msgstr "トークンをローテート"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Rows per page"
+msgstr "ページあたりの行数"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Save address using enter key or comma. Leave blank to disable email notifications."
+msgstr "Enterキーまたはカンマを使用してアドレスを保存します。空白のままにするとメール通知が無効になります。"
+
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/notifications.tsx
+msgid "Save Settings"
+msgstr "設定を保存"
+
+#: src/components/add-system.tsx
+msgid "Save system"
+msgstr "システムを保存"
+
+#: src/components/navbar.tsx
+msgid "Search"
+msgstr "検索"
+
+#: src/components/command-palette.tsx
+msgid "Search for systems or settings..."
+msgstr "システムまたは設定を検索..."
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "See <0>notification settings</0> to configure how you receive alerts."
+msgstr "アラートの受信方法を設定するには<0>通知設定</0>を参照してください。"
+
+#: src/components/routes/system.tsx
+msgid "Sent"
+msgstr "送信"
+
+#: src/components/routes/settings/general.tsx
+msgid "Set percentage thresholds for meter colors."
+msgstr "メーターの色を変更するしきい値（パーセンテージ）を設定します。"
+
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "Settings"
+msgstr "設定"
+
+#: src/components/routes/settings/layout.tsx
+msgid "Settings saved"
+msgstr "設定が保存されました"
+
+#: src/components/login/auth-form.tsx
+msgid "Sign in"
+msgstr "サインイン"
+
+#: src/components/command-palette.tsx
+msgid "SMTP settings"
+msgstr "SMTP設定"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Sort By"
+msgstr "並び替え基準"
+
+#. Context: alert state (active or resolved)
+#: src/components/alerts-history-columns.tsx
+msgid "State"
+msgstr "状態"
+
+#: src/components/systems-table/systems-table.tsx
+#: src/lib/alerts.ts
+msgid "Status"
+msgstr "ステータス"
+
+#: src/components/routes/system.tsx
+msgid "Swap space used by the system"
+msgstr "システムが使用するスワップ領域"
+
+#: src/components/routes/system.tsx
+msgid "Swap Usage"
+msgstr "スワップ使用量"
+
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
+msgid "System"
+msgstr "システム"
+
+#: src/components/routes/system.tsx
+msgid "System load averages over time"
+msgstr "システムの負荷平均の推移"
+
+#: src/components/routes/settings/layout.tsx
+msgid "System Organization"
+msgstr ""
+
+#: src/components/navbar.tsx
+msgid "Systems"
+msgstr "システム"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
+msgstr "システムはデータディレクトリ内の<0>config.yml</0>ファイルで管理できます。"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Table"
+msgstr "テーブル"
+
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Tags"
+msgstr ""
+
+#. Temperature label in systems table
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Temp"
+msgstr "温度"
+
+#: src/components/routes/system.tsx
+#: src/lib/alerts.ts
+msgid "Temperature"
+msgstr "温度"
+
+#: src/components/routes/settings/general.tsx
+msgid "Temperature unit"
+msgstr "温度単位"
+
+#: src/components/routes/system.tsx
+msgid "Temperatures of system sensors"
+msgstr "システムセンサーの温度"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Test <0>URL</0>"
+msgstr "テスト<0>URL</0>"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Test notification sent"
+msgstr "テスト通知が送信されました"
+
+#: src/components/login/forgot-pass-form.tsx
+msgid "Then log into the backend and reset your user account password in the users table."
+msgstr "その後、バックエンドにログインして、ユーザーテーブルでユーザーアカウントのパスワードをリセットしてください。"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
+msgstr "この操作は元に戻せません。これにより、データベースから{name}のすべての現在のレコードが永久に削除されます。"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "This will permanently delete all selected records from the database."
+msgstr "これにより、選択したすべてのレコードがデータベースから完全に削除されます。"
+
+#: src/components/routes/system.tsx
+msgid "Throughput of {extraFsName}"
+msgstr "{extraFsName}のスループット"
+
+#: src/components/routes/system.tsx
+msgid "Throughput of root filesystem"
+msgstr "ルートファイルシステムのスループット"
+
+#: src/components/routes/settings/general.tsx
+msgid "Time format"
+msgstr "時間形式"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "To email(s)"
+msgstr "宛先メールアドレス"
+
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
+msgid "Toggle grid"
+msgstr "グリッドを切り替え"
+
+#: src/components/mode-toggle.tsx
+msgid "Toggle theme"
+msgstr "テーマを切り替え"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token"
+msgstr "トークン"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens & Fingerprints"
+msgstr "トークンとフィンガープリント"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
+msgstr "トークンはエージェントの接続と登録を可能にします。フィンガープリントは各システム固有の安定した識別子で、初回接続時に設定されます。"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
+msgstr "トークンとフィンガープリントは、ハブへのWebSocket接続の認証に使用されます。"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data received for each interface"
+msgstr "各インターフェースの総受信データ量"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data sent for each interface"
+msgstr "各インターフェースの総送信データ量"
+
+#: src/lib/alerts.ts
+msgid "Triggers when 1 minute load average exceeds a threshold"
+msgstr "1分間の負荷平均がしきい値を超えたときにトリガーされます"
+
+#: src/lib/alerts.ts
+msgid "Triggers when 15 minute load average exceeds a threshold"
+msgstr "15分間の負荷平均がしきい値を超えたときにトリガーされます"
+
+#: src/lib/alerts.ts
+msgid "Triggers when 5 minute load average exceeds a threshold"
+msgstr "5分間の負荷平均がしきい値を超えたときにトリガーされます"
+
+#: src/lib/alerts.ts
+msgid "Triggers when any sensor exceeds a threshold"
+msgstr "センサーがしきい値を超えたときにトリガーされます"
+
+#: src/lib/alerts.ts
+msgid "Triggers when combined up/down exceeds a threshold"
+msgstr "上り/下りの合計がしきい値を超えたときにトリガーされます"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU usage exceeds a threshold"
+msgstr "CPU使用率がしきい値を超えたときにトリガーされます"
+
+#: src/lib/alerts.ts
+msgid "Triggers when memory usage exceeds a threshold"
+msgstr "メモリ使用率がしきい値を超えたときにトリガーされます"
+
+#: src/lib/alerts.ts
+msgid "Triggers when status switches between up and down"
+msgstr "ステータスが上から下に切り替わるときにトリガーされます"
+
+#: src/lib/alerts.ts
+msgid "Triggers when usage of any disk exceeds a threshold"
+msgstr "ディスクの使用量がしきい値を超えたときにトリガーされます"
+
+#. Temperature / network units
+#: src/components/routes/settings/general.tsx
+msgid "Unit preferences"
+msgstr "単位の設定"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Universal token"
+msgstr "ユニバーサルトークン"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Unknown"
+msgstr "不明"
+
+#. Context: System is up
+#: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Up"
+msgstr "正常"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Up ({upSystemsLength})"
+msgstr "正常 ({upSystemsLength})"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Upload"
+msgstr "アップロード"
+
+#: src/components/routes/system.tsx
+msgid "Uptime"
+msgstr "稼働時間"
+
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
+msgid "Usage"
+msgstr "使用量"
+
+#: src/components/routes/system.tsx
+msgid "Usage of root partition"
+msgstr "ルートパーティションの使用量"
+
+#: src/components/charts/mem-chart.tsx
+#: src/components/charts/swap-chart.tsx
+msgid "Used"
+msgstr "使用中"
+
+#: src/components/command-palette.tsx
+#: src/components/navbar.tsx
+msgid "Users"
+msgstr "ユーザー"
+
+#: src/components/alerts-history-columns.tsx
+msgid "Value"
+msgstr "値"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "View"
+msgstr "表示"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "View more"
+msgstr "もっと見る"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "View your 200 most recent alerts."
+msgstr "直近200件のアラートを表示します。"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Visible Fields"
+msgstr "表示列"
+
+#: src/components/routes/system.tsx
+msgid "Waiting for enough records to display"
+msgstr "表示するのに十分なレコードを待っています"
+
+#: src/components/routes/settings/general.tsx
+msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
+msgstr "翻訳をさらに良くするためにご協力をお願いします。詳細については<0>Crowdin</0>をご覧ください。"
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning (%)"
+msgstr "警告 (%)"
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning thresholds"
+msgstr "警告のしきい値"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Webhook / Push notifications"
+msgstr "Webhook / プッシュ通知"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
+msgstr "有効にすると、このトークンはエージェントが事前のシステム作成なしに自己登録することを可能にします。1時間後またはハブの再起動時に期限切れになります。"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "Windows command"
+msgstr "Windows コマンド"
+
+#. Disk write
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
+msgid "Write"
+msgstr "書き込み"
+
+#: src/components/routes/settings/layout.tsx
+msgid "YAML Config"
+msgstr "YAML設定"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "YAML Configuration"
+msgstr "YAML設定"
+
+#: src/components/routes/settings/layout.tsx
+msgid "Your user settings have been updated."
+msgstr "ユーザー設定が更新されました。"
