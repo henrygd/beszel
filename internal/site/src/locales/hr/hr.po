@@ -221,6 +221,10 @@ msgstr ""
 msgid "Cache / Buffers"
 msgstr "Predmemorija / Međuspremnici"
 
+#: src/components/charts/swap-chart.tsx
+msgid "Cached"
+msgstr ""
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
@@ -353,7 +357,6 @@ msgid "CPU"
 msgstr "Procesor"
 
 #: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "CPU Usage"
 msgstr "Iskorištenost procesora"
@@ -415,19 +418,26 @@ msgstr "Disk"
 msgid "Disk I/O"
 msgstr "Disk I/O"
 
+#: src/components/charts/process-chart.tsx
+msgid "Disk Sleep"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr ""
 
-#: src/components/charts/disk-chart.tsx
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
 msgstr "Iskorištenost Diska"
 
 #: src/components/routes/system.tsx
-msgid "Disk usage of {extraFsName}"
-msgstr "Iskorištenost diska od {extraFsName}"
+msgid "Disk usage of {displayName}"
+msgstr ""
+
+#: src/components/routes/system.tsx
+#~ msgid "Disk usage of {extraFsName}"
+#~ msgstr "Iskorištenost diska od {extraFsName}"
 
 #: src/components/routes/system.tsx
 msgid "Docker CPU Usage"
@@ -549,6 +559,10 @@ msgstr "Neuspješno slanje testne notifikacije"
 msgid "Failed to update alert"
 msgstr "Ažuriranje upozorenja nije uspjelo"
 
+#: src/components/routes/system.tsx
+msgid "Filesystem inode usage"
+msgstr ""
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -606,7 +620,13 @@ msgstr "Homebrew naredba"
 msgid "Host / IP"
 msgstr "Host / IP"
 
+#: src/components/charts/area-chart.tsx
+#: src/components/charts/cpu-chart.tsx
+msgid "I/O Wait"
+msgstr ""
+
 #. Context: Battery state
+#: src/components/charts/process-chart.tsx
 #: src/lib/i18n.ts
 msgid "Idle"
 msgstr "Neaktivna"
@@ -614,6 +634,14 @@ msgstr "Neaktivna"
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Ako ste izgubili lozinku za svoj administratorski račun, možete ju resetirati pomoću sljedeće naredbe."
+
+#: src/components/routes/system.tsx
+msgid "Inode usage of {displayName}"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Inodes"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -768,6 +796,10 @@ msgstr "Otvori menu"
 msgid "Or continue with"
 msgstr "Ili nastavi sa"
 
+#: src/components/charts/process-chart.tsx
+msgid "Other"
+msgstr ""
+
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "Prebrišite postojeća upozorenja"
@@ -815,6 +847,10 @@ msgstr "Pauzirano"
 msgid "Paused ({pausedSystemsLength})"
 msgstr "Pauzirano ({pausedSystemsLength})"
 
+#: src/components/routes/system.tsx
+msgid "Per Core"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "Molimo <0>konfigurirajte SMTP server</0> kako biste osigurali isporuku upozorenja."
@@ -861,17 +897,30 @@ msgstr "Precizno iskorištenje u zabilježenom vremenu"
 msgid "Preferred Language"
 msgstr "Preferirani jezik"
 
+#: src/components/routes/system.tsx
+msgid "Process count by state"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Processes"
+msgstr ""
+
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
 msgstr "Javni Ključ"
 
 #. Disk read
+#. Disk read
+#: src/components/charts/area-chart.tsx
+#: src/components/charts/area-chart.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Read"
 msgstr "Pročitaj"
 
+#. Network bytes received (download)
+#: src/components/charts/area-chart.tsx
 #: src/components/routes/system.tsx
 msgid "Received"
 msgstr "Primljeno"
@@ -906,6 +955,10 @@ msgstr ""
 msgid "Rows per page"
 msgstr ""
 
+#: src/components/charts/process-chart.tsx
+msgid "Running"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Spremite adresu pomoću tipke enter ili zareza. Ostavite prazno kako biste onemogućili obavijesti e-poštom."
@@ -931,6 +984,8 @@ msgstr "Pretraži za sisteme ili postavke..."
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Pogledajte <0>postavke obavijesti</0> da biste konfigurirali način primanja upozorenja."
 
+#. Network bytes sent (upload)
+#: src/components/charts/area-chart.tsx
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Poslano"
@@ -950,9 +1005,17 @@ msgstr "Postavke"
 msgid "Settings saved"
 msgstr "Postavke spremljene"
 
+#: src/components/routes/settings/general.tsx
+msgid "Show chart legend"
+msgstr ""
+
 #: src/components/login/auth-form.tsx
 msgid "Sign in"
 msgstr "Prijava"
+
+#: src/components/charts/process-chart.tsx
+msgid "Sleeping"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
@@ -972,6 +1035,15 @@ msgstr ""
 msgid "Status"
 msgstr "Status"
 
+#: src/components/charts/area-chart.tsx
+#: src/components/charts/cpu-chart.tsx
+msgid "Steal"
+msgstr ""
+
+#: src/components/charts/process-chart.tsx
+msgid "Stopped"
+msgstr ""
+
 #: src/components/routes/system.tsx
 msgid "Swap space used by the system"
 msgstr "Swap prostor uzet od strane sistema"
@@ -981,6 +1053,8 @@ msgid "Swap Usage"
 msgstr "Swap Iskorištenost"
 
 #: src/components/alerts-history-columns.tsx
+#: src/components/charts/area-chart.tsx
+#: src/components/charts/cpu-chart.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -1042,8 +1116,12 @@ msgid "This will permanently delete all selected records from the database."
 msgstr ""
 
 #: src/components/routes/system.tsx
-msgid "Throughput of {extraFsName}"
-msgstr "Protok {extraFsName}"
+msgid "Throughput of {displayName}"
+msgstr ""
+
+#: src/components/routes/system.tsx
+#~ msgid "Throughput of {extraFsName}"
+#~ msgstr "Protok {extraFsName}"
 
 #: src/components/routes/system.tsx
 msgid "Throughput of root filesystem"
@@ -1061,6 +1139,10 @@ msgstr "Primaoci e-pošte"
 #: src/components/routes/system.tsx
 msgid "Toggle grid"
 msgstr "Uključi/isključi rešetku"
+
+#: src/components/routes/settings/general.tsx
+msgid "Toggle the display of chart legends below each chart."
+msgstr ""
 
 #: src/components/mode-toggle.tsx
 msgid "Toggle theme"
@@ -1083,6 +1165,10 @@ msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Total"
 msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
@@ -1162,6 +1248,7 @@ msgstr "Otpremi"
 msgid "Uptime"
 msgstr "Vrijeme rada"
 
+#: src/components/charts/area-chart.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -1173,10 +1260,18 @@ msgstr "Iskorištenost"
 msgid "Usage of root partition"
 msgstr "Iskorištenost root datotečnog sustava"
 
+#: src/components/charts/area-chart.tsx
+#: src/components/charts/disk-chart.tsx
+#: src/components/charts/inode-chart.tsx
 #: src/components/charts/mem-chart.tsx
 #: src/components/charts/swap-chart.tsx
 msgid "Used"
 msgstr "Iskorišteno"
+
+#: src/components/charts/area-chart.tsx
+#: src/components/charts/cpu-chart.tsx
+msgid "User"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
@@ -1234,6 +1329,9 @@ msgid "Windows command"
 msgstr "Windows naredba"
 
 #. Disk write
+#. Disk write
+#: src/components/charts/area-chart.tsx
+#: src/components/charts/area-chart.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Write"
@@ -1250,3 +1348,7 @@ msgstr "YAML Konfiguracija"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Vaše korisničke postavke su ažurirane."
+
+#: src/components/charts/process-chart.tsx
+msgid "Zombie"
+msgstr ""

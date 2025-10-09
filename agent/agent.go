@@ -17,6 +17,7 @@ import (
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/agent/deltatracker"
 	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/shirou/gopsutil/v4/cpu"
 	"github.com/shirou/gopsutil/v4/host"
 	gossh "golang.org/x/crypto/ssh"
 )
@@ -37,6 +38,8 @@ type Agent struct {
 	systemInfo                system.Info                                           // Host system info
 	gpuManager                *GPUManager                                           // Manages GPU data
 	cache                     *systemDataCache                                      // Cache for system stats based on cache time
+	prevCpuTimes              []cpu.TimesStat                                       // Previous CPU times for calculating detailed metrics
+	prevPerCoreTimes          []cpu.TimesStat                                       // Previous per-core CPU times for per-core metrics
 	connectionManager         *ConnectionManager                                    // Channel to signal connection events
 	handlerRegistry           *HandlerRegistry                                      // Registry for routing incoming messages
 	server                    *ssh.Server                                           // SSH server

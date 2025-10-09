@@ -34,10 +34,12 @@ func (um *UserManager) InitializeUserSettings(e *core.RecordEvent) error {
 	record := e.Record
 	// intialize settings with defaults (zero values can be ignored)
 	settings := struct {
-		ChartTime string   `json:"chartTime"`
-		Emails    []string `json:"emails"`
+		ChartTime       string   `json:"chartTime"`
+		Emails          []string `json:"emails"`
+		ShowChartLegend bool     `json:"showChartLegend"`
 	}{
-		ChartTime: "1h",
+		ChartTime:       "1h",
+		ShowChartLegend: true,
 	}
 	record.UnmarshalJSONField("settings", &settings)
 	// get user email from auth record

@@ -86,6 +86,9 @@ func (a *Agent) updateNetworkStats(cacheTimeMs uint16, systemStats *system.Stats
 		totalBytesSent, totalBytesRecv := a.sumAndTrackPerNicDeltas(cacheTimeMs, msElapsed, netIO, systemStats)
 		bytesSentPerSecond, bytesRecvPerSecond := a.computeBytesPerSecond(msElapsed, totalBytesSent, totalBytesRecv, nis)
 		a.applyNetworkTotals(cacheTimeMs, netIO, systemStats, nis, totalBytesSent, totalBytesRecv, bytesSentPerSecond, bytesRecvPerSecond)
+		slog.Debug("Network stats", "interfaces", len(a.netInterfaces), "ni_count", len(systemStats.NetworkInterfaces))
+	} else {
+		slog.Debug("Failed to get network IO counters", "err", err)
 	}
 }
 

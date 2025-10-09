@@ -61,6 +61,8 @@ export interface SystemInfo {
 	mp: number
 	/** disk percent */
 	dp: number
+	/** disk free (gb) */
+	df?: number
 	/** bandwidth (mb) */
 	b: number
 	/** bandwidth bytes */
@@ -77,6 +79,8 @@ export interface SystemInfo {
 	os?: Os
 	/** connection type */
 	ct?: ConnectionType
+	/** extra filesystems */
+	efs?: Record<string, ExtraFsStats>
 }
 
 export interface SystemStats {
@@ -84,6 +88,16 @@ export interface SystemStats {
 	cpu: number
 	/** peak cpu */
 	cpum?: number
+	/** cpu user percent */
+	cpuu?: number
+	/** cpu system percent */
+	cpus?: number
+	/** cpu iowait percent */
+	cpui?: number
+	/** cpu steal percent */
+	cpusl?: number
+	/** per-core cpu stats */
+	cpuc?: Record<string, CpuCoreStats>
 	// TODO: remove these in future release in favor of la
 	/** load average 1 minute */
 	l1?: number
@@ -109,10 +123,16 @@ export interface SystemStats {
 	s: number
 	/** swap used (gb) */
 	su: number
+	/** swap total (gb) */
+	st?: number
+	/** swap free (gb) */
+	sf?: number
 	/** disk size (gb) */
 	d: number
 	/** disk used (gb) */
 	du: number
+	/** disk free (gb) */
+	df: number
 	/** disk percent */
 	dp: number
 	/** disk read (mb) */
@@ -145,8 +165,18 @@ export interface SystemStats {
 	efs?: Record<string, ExtraFsStats>
 	/** GPU data */
 	g?: Record<string, GPUData>
+	/** swap cached (gb) */
+	sc?: number
 	/** battery percent and state */
 	bat?: [number, BatteryState]
+	/** process count by state */
+	ps?: Record<string, number>
+	/** root filesystem inodes used */
+	iu?: number
+	/** root filesystem inodes total */
+	it?: number
+	/** root filesystem inode percent */
+	ip?: number
 	/** network interfaces [upload bytes, download bytes, total upload bytes, total download bytes] */
 	ni?: Record<string, [number, number, number, number]>
 }
@@ -168,11 +198,24 @@ export interface GPUData {
 	e?: Record<string, number>
 }
 
+export interface CpuCoreStats {
+	/** cpu user percent */
+	u: number
+	/** cpu system percent */
+	s: number
+	/** cpu iowait percent */
+	i: number
+	/** cpu steal percent */
+	st: number
+}
+
 export interface ExtraFsStats {
 	/** disk size (gb) */
 	d: number
 	/** disk used (gb) */
 	du: number
+	/** disk free (gb) */
+	df: number
 	/** total read (mb) */
 	r: number
 	/** total write (mb) */
@@ -189,6 +232,14 @@ export interface ExtraFsStats {
 	rbm: number
 	/** max write per second (mb) */
 	wbm: number
+	/** display name (mountpoint or label) */
+	n?: string
+	/** inodes used */
+	iu?: number
+	/** inodes total */
+	it?: number
+	/** inode percent */
+	ip?: number
 }
 
 export interface ContainerStatsRecord extends RecordModel {
@@ -254,6 +305,7 @@ export interface UserSettings {
 	chartTime: ChartTimes
 	emails?: string[]
 	webhooks?: string[]
+	showChartLegend?: boolean
 	unitTemp?: Unit
 	unitNet?: Unit
 	unitDisk?: Unit

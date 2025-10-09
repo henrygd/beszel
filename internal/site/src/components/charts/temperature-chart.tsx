@@ -14,7 +14,8 @@ import { chartMargin, cn, decimalString, formatShortDate, formatTemperature, toF
 import type { ChartData } from "@/types"
 import { useYAxisWidth } from "./hooks"
 
-export default memo(function TemperatureChart({ chartData }: { chartData: ChartData }) {
+type TemperatureChartProps = { chartData: ChartData, showLegend?: boolean }
+export default memo(function TemperatureChart({ chartData, showLegend = true }: TemperatureChartProps) {
 	const filter = useStore($temperatureFilter)
 	const userSettings = useStore($userSettings)
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
@@ -108,7 +109,7 @@ export default memo(function TemperatureChart({ chartData }: { chartData: ChartD
 							/>
 						)
 					})}
-					{colors.length < 12 && <ChartLegend content={<ChartLegendContent />} />}
+					{showLegend && colors.length < 12 && <ChartLegend content={<ChartLegendContent />} />}
 				</LineChart>
 			</ChartContainer>
 		</div>

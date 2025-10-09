@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
+import { Switch } from "@/components/ui/switch"
 import { HourFormat, Unit } from "@/lib/enums"
 import { dynamicActivate } from "@/lib/i18n"
 import languages from "@/lib/languages"
@@ -17,12 +18,14 @@ import { saveSettings } from "./layout"
 export default function SettingsProfilePage({ userSettings }: { userSettings: UserSettings }) {
 	const [isLoading, setIsLoading] = useState(false)
 	const { i18n } = useLingui()
+	const [showChartLegend, setShowChartLegend] = useState(userSettings.showChartLegend ?? true)
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault()
 		setIsLoading(true)
 		const formData = new FormData(e.target as HTMLFormElement)
 		const data = Object.fromEntries(formData) as Partial<UserSettings>
+		data.showChartLegend = showChartLegend
 		await saveSettings(data)
 		setIsLoading(false)
 	}
@@ -122,6 +125,21 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 							</Select>
 						</div>
 					</div>
+					<Separator className="mt-2" />
+					<div className="flex items-center gap-3 mt-2">
+						<Switch
+							id="showChartLegend"
+							checked={showChartLegend}
+							onCheckedChange={setShowChartLegend}
+							className="data-[state=checked]:bg-primary"
+						/>
+						<Label htmlFor="showChartLegend" className="mb-0">
+							<Trans>Show chart legend</Trans>
+						</Label>
+					</div>
+					<p className="text-[0.8rem] text-muted-foreground">
+						<Trans>Toggle the display of chart legends below each chart.</Trans>
+					</p>
 				</div>
 				<Separator />
 				<div className="grid gap-2">

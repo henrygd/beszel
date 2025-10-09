@@ -37,7 +37,7 @@ func (a *Agent) initializeDiskInfo() {
 	slog.Debug("Disk I/O", "diskstats", diskIoCounters)
 
 	// Helper function to add a filesystem to fsStats if it doesn't exist
-	addFsStat := func(device, mountpoint string, root bool) {
+	addFsStat := func(device, mountpoint, displayName string, root bool) {
 		var key string
 		if runtime.GOOS == "windows" {
 			key = device
@@ -48,7 +48,6 @@ func (a *Agent) initializeDiskInfo() {
 		if _, exists := a.fsStats[key]; !exists {
 			if root {
 				slog.Info("Detected root device", "name", key)
-				// Check if root device is in /proc/diskstats, use fallback if not
 				if _, ioMatch = diskIoCounters[key]; !ioMatch {
 					key, ioMatch = findIoDevice(filesystem, diskIoCounters, a.fsStats)
 					if !ioMatch {
@@ -56,9 +55,6 @@ func (a *Agent) initializeDiskInfo() {
 					}
 				}
 			} else {
-				// Check if non-root has diskstats and fall back to folder name if not
-				// Scenario: device is encrypted and named luks-2bcb02be-999d-4417-8d18-5c61e660fb6e - not in /proc/diskstats.
-				// However, the device can be specified by mounting folder from luks device at /extra-filesystems/sda1
 				if _, ioMatch = diskIoCounters[key]; !ioMatch {
 					efBase := filepath.Base(mountpoint)
 					if _, ioMatch = diskIoCounters[efBase]; ioMatch {
@@ -66,7 +62,7 @@ func (a *Agent) initializeDiskInfo() {
 					}
 				}
 			}
-			a.fsStats[key] = &system.FsStats{Root: root, Mountpoint: mountpoint}
+			a.fsStats[key] = &system.FsStats{Root: root, Mountpoint: mountpoint, DisplayName: displayName}
 		}
 	}
 
@@ -74,7 +70,7 @@ func (a *Agent) initializeDiskInfo() {
 	if filesystem != "" {
 		for _, p := range partitions {
 			if strings.HasSuffix(p.Device, filesystem) || p.Mountpoint == filesystem {
-				addFsStat(p.Device, p.Mountpoint, true)
+				addFsStat(p.Device, p.Mountpoint, p.Device, true)
 				hasRoot = true
 				break
 			}
@@ -84,21 +80,48 @@ func (a *Agent) initializeDiskInfo() {
 		}
 	}
 
+	// Helper function to get a friendly display name for an extra filesystem
+	getExtraFsDisplayName := func(device, mountpoint string, partitions []disk.PartitionStat) string {
+		// If the user specified a mount point, use it as-is
+		if strings.HasPrefix(device, "/") {
+			return mountpoint
+		}
+		// If the device is a partition, show its mount point
+		for _, p := range partitions {
+			if strings.HasSuffix(p.Device, device) {
+				return p.Mountpoint
+			}
+		}
+		// If the device is a whole disk, list all its partitions and mount points
+		var partitionMounts []string
+		for _, p := range partitions {
+			if strings.HasPrefix(p.Device, "/dev/"+device) {
+				partitionMounts = append(partitionMounts, p.Mountpoint)
+			}
+		}
+		if len(partitionMounts) > 0 {
+			return device + ": " + strings.Join(partitionMounts, ", ")
+		}
+		// Fallback to device name
+		return device
+	}
+
 	// Add EXTRA_FILESYSTEMS env var values to fsStats
 	if extraFilesystems, exists := GetEnv("EXTRA_FILESYSTEMS"); exists {
 		for _, fs := range strings.Split(extraFilesystems, ",") {
 			found := false
 			for _, p := range partitions {
 				if strings.HasSuffix(p.Device, fs) || p.Mountpoint == fs {
-					addFsStat(p.Device, p.Mountpoint, false)
+					displayName := getExtraFsDisplayName(fs, p.Mountpoint, partitions)
+					addFsStat(p.Device, p.Mountpoint, displayName, false)
 					found = true
 					break
 				}
 			}
-			// if not in partitions, test if we can get disk usage
 			if !found {
 				if _, err := disk.Usage(fs); err == nil {
-					addFsStat(filepath.Base(fs), fs, false)
+					displayName := getExtraFsDisplayName(fs, fs, partitions)
+					addFsStat(filepath.Base(fs), fs, displayName, false)
 				} else {
 					slog.Error("Invalid filesystem", "name", fs, "err", err)
 				}
@@ -113,14 +136,14 @@ func (a *Agent) initializeDiskInfo() {
 		if !hasRoot && (p.Mountpoint == "/" || (p.Mountpoint == "/etc/hosts" && strings.HasPrefix(p.Device, "/dev"))) {
 			fs, match := findIoDevice(filepath.Base(p.Device), diskIoCounters, a.fsStats)
 			if match {
-				addFsStat(fs, p.Mountpoint, true)
+				addFsStat(fs, p.Mountpoint, p.Device, true)
 				hasRoot = true
 			}
 		}
 
 		// Check if device is in /extra-filesystems
 		if strings.HasPrefix(p.Mountpoint, efPath) {
-			addFsStat(p.Device, p.Mountpoint, false)
+			addFsStat(p.Device, p.Mountpoint, p.Device, false)
 		}
 	}
 
@@ -135,7 +158,7 @@ func (a *Agent) initializeDiskInfo() {
 				mountpoint := filepath.Join(efPath, folder.Name())
 				slog.Debug("/extra-filesystems", "mountpoint", mountpoint)
 				if !existingMountpoints[mountpoint] {
-					addFsStat(folder.Name(), mountpoint, false)
+					addFsStat(folder.Name(), mountpoint, folder.Name(), false)
 				}
 			}
 		}
@@ -145,7 +168,7 @@ func (a *Agent) initializeDiskInfo() {
 	if !hasRoot {
 		rootDevice, _ := findIoDevice(filepath.Base(filesystem), diskIoCounters, a.fsStats)
 		slog.Info("Root disk", "mountpoint", "/", "io", rootDevice)
-		a.fsStats[rootDevice] = &system.FsStats{Root: true, Mountpoint: "/"}
+		a.fsStats[rootDevice] = &system.FsStats{Root: true, Mountpoint: "/", DisplayName: rootDevice}
 	}
 
 	a.initializeDiskIoStats(diskIoCounters)

@@ -2,19 +2,31 @@ import { t } from "@lingui/core/macro"
 import { useStore } from "@nanostores/react"
 import { memo } from "react"
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
-import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
+import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
 import { $userSettings } from "@/lib/stores"
 import { chartMargin, cn, decimalString, formatBytes, formatShortDate, toFixedFloat } from "@/lib/utils"
 import type { ChartData } from "@/types"
 import { useYAxisWidth } from "./hooks"
 
-export default memo(function SwapChart({ chartData }: { chartData: ChartData }) {
+type SwapChartProps = { chartData: ChartData, showLegend?: boolean }
+export default memo(function SwapChart({ chartData, showLegend = true }: SwapChartProps) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const userSettings = useStore($userSettings)
 
 	if (chartData.systemStats.length === 0) {
 		return null
 	}
+
+	const lastStats = chartData.systemStats.at(-1)?.stats
+	const swapTotal = lastStats?.st ?? lastStats?.s ?? 0.04
+
+	// Debug: log the swap data
+	console.log('Swap chart data:', {
+		swapTotal: lastStats?.st,
+		swapFree: lastStats?.sf,
+		swapUsed: lastStats?.su,
+		legacySwap: lastStats?.s
+	})
 
 	return (
 		<div>
@@ -29,7 +41,7 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 						direction="ltr"
 						orientation={chartData.orientation}
 						className="tracking-tighter"
-						domain={[0, () => toFixedFloat(chartData.systemStats.at(-1)?.stats.s ?? 0.04, 2)]}
+						domain={[0, () => toFixedFloat(swapTotal, 2)]}
 						width={yAxisWidth}
 						tickLine={false}
 						axisLine={false}
@@ -50,7 +62,6 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 									const { value: convertedValue, unit } = formatBytes(value * 1024, false, userSettings.unitDisk, true)
 									return decimalString(convertedValue, convertedValue >= 100 ? 1 : 2) + " " + unit
 								}}
-								// indicator="line"
 							/>
 						}
 					/>
@@ -62,7 +73,19 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 						fillOpacity={0.4}
 						stroke="var(--chart-2)"
 						isAnimationActive={false}
+						stackId="swap"
 					/>
+					<Area
+						dataKey="stats.sc"
+						name={t`Cached`}
+						type="monotoneX"
+						fill="var(--chart-3)"
+						fillOpacity={0.3}
+						stroke="var(--chart-3)"
+						isAnimationActive={false}
+						stackId="swap"
+					/>
+					{showLegend && <ChartLegend content={<ChartLegendContent />} />}
 				</AreaChart>
 			</ChartContainer>
 		</div>
