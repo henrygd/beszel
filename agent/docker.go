@@ -25,6 +25,8 @@ const (
 	dockerTimeoutMs = 2100
 	// Maximum realistic network speed (5 GB/s) to detect bad deltas
 	maxNetworkSpeedBps uint64 = 5e9
+	// Maximum conceivable memory usage of a container (100TB) to detect bad memory stats
+	maxMemoryUsage uint64 = 100 * 1024 * 1024 * 1024 * 1024
 )
 
 type dockerManager struct {
@@ -198,17 +200,17 @@ func calculateMemoryUsage(apiStats *container.ApiStats, isWindows bool) (uint64,
 		return apiStats.MemoryStats.PrivateWorkingSet, nil
 	}
 
-	// Check if container has valid data, otherwise may be in restart loop (#103)
-	if apiStats.MemoryStats.Usage == 0 {
-		return 0, fmt.Errorf("no memory stats available")
-	}
-
 	memCache := apiStats.MemoryStats.Stats.InactiveFile
 	if memCache == 0 {
 		memCache = apiStats.MemoryStats.Stats.Cache
 	}
 
-	return apiStats.MemoryStats.Usage - memCache, nil
+	usedDelta := apiStats.MemoryStats.Usage - memCache
+	if usedDelta <= 0 || usedDelta > maxMemoryUsage {
+		return 0, fmt.Errorf("bad memory stats")
+	}
+
+	return usedDelta, nil
 }
 
 // getNetworkTracker returns the DeltaTracker for a specific cache time, creating it if needed
