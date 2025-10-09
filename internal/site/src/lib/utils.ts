@@ -63,7 +63,6 @@ let shortDateFormatter = createShortDateFormatter()
 let hourWithSecondsFormatter = createHourWithSecondsFormatter()
 
 export const currentHour12 = () => shortDateFormatter.resolvedOptions().hour12
-
 export const hourWithMinutes = (timestamp: string) => {
 	return hourWithMinutesFormatter.format(new Date(timestamp))
 }

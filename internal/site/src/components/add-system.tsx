@@ -19,9 +19,11 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { isReadOnlyUser, pb } from "@/lib/api"
 import { SystemStatus } from "@/lib/enums"
-import { $publicKey } from "@/lib/stores"
+import { $publicKey, $systems } from "@/lib/stores"
 import { cn, generateToken, tokenMap, useBrowserStorage } from "@/lib/utils"
 import type { SystemRecord } from "@/types"
+import { InputTags } from "@/components/ui/input-tags"
+import { GroupInput } from "@/components/ui/group-input"
 import {
 	copyDockerCompose,
 	copyDockerRun,
@@ -78,7 +80,13 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 	const [hostValue, setHostValue] = useState(system?.host ?? "")
 	const isUnixSocket = hostValue.startsWith("/")
 	const [tab, setTab] = useBrowserStorage("as-tab", "docker")
+	const [tags, setTags] = useState<string[]>(system?.tags ?? [])
 	const [token, setToken] = useState(system?.token ?? "")
+
+	// Derive groups from all systems
+	const systems = useStore($systems)
+	const groups = Array.from(new Set(systems.map(s => s.group).filter(Boolean))) as string[]
+	const [group, setGroup] = useState<string>(system?.group ?? "")
 
 	useEffect(() => {
 		;(async () => {
@@ -104,6 +112,8 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 		const formData = new FormData(e.target as HTMLFormElement)
 		const data = Object.fromEntries(formData) as Record<string, any>
 		data.users = pb.authStore.record!.id
+		data.tags = tags
+		data.group = group // Save group
 		try {
 			setOpen(false)
 			if (system) {
@@ -214,6 +224,15 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 							<Trans>Token</Trans>
 						</Label>
 						<InputCopy value={token} id="tkn" name="tkn" />
+						{/* Tags field aligned in the grid */}
+						<Label htmlFor="tags" className="xs:text-end">Tags</Label>
+						<div className="flex">
+							<div className="max-w-[25rem]">
+								<InputTags id="tags" value={tags} onChange={setTags} placeholder="Add tags..." />
+							</div>
+						</div>
+						<Label htmlFor="group" className="xs:text-end">Group</Label>
+						<GroupInput value={group} groups={groups} onChange={setGroup} />
 					</div>
 					<DialogFooter className="flex justify-end gap-x-2 gap-y-3 flex-col mt-5">
 						{/* Docker */}

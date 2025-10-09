@@ -29,6 +29,8 @@ export interface SystemRecord extends RecordModel {
 	port: string
 	info: SystemInfo
 	v: string
+	tags: string[]
+	group?: string
 	updated: string
 }
 
@@ -254,6 +256,7 @@ export interface UserSettings {
 	chartTime: ChartTimes
 	emails?: string[]
 	webhooks?: string[]
+	groupingEnabled?: boolean
 	unitTemp?: Unit
 	unitNet?: Unit
 	unitDisk?: Unit

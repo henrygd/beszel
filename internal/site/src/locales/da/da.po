@@ -549,6 +549,10 @@ msgstr "Afsendelse af testnotifikation mislykkedes"
 msgid "Failed to update alert"
 msgstr "Kunne ikke opdatere alarm"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Filter by tags"
+msgstr ""
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -595,6 +599,10 @@ msgstr "Gpu Strøm Træk"
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "Gitter"
+
+#: src/components/systems-table/systems-table-columns.tsx
+#~ msgid "Group"
+#~ msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -737,8 +745,13 @@ msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "Ingen systemer fundet."
+
+#: src/components/systems-table/systems-table.tsx
+msgid "No tags found"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -991,6 +1004,10 @@ msgstr "System"
 msgid "System load averages over time"
 msgstr ""
 
+#: src/components/routes/settings/layout.tsx
+msgid "System Organization"
+msgstr ""
+
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "Systemer"
@@ -1002,6 +1019,12 @@ msgstr "Systemer kan være administreres i filen <0>config.yml</0> i din datamap
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "Tabel"
+
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Tags"
+msgstr ""
 
 #. Temperature label in systems table
 #: src/components/systems-table/systems-table-columns.tsx

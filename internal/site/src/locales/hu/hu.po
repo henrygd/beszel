@@ -549,6 +549,10 @@ msgstr "Teszt értesítés elküldése sikertelen"
 msgid "Failed to update alert"
 msgstr "Nem sikerült frissíteni a riasztást"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Filter by tags"
+msgstr ""
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -595,6 +599,10 @@ msgstr "GPU áramfelvétele"
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "Rács"
+
+#: src/components/systems-table/systems-table-columns.tsx
+#~ msgid "Group"
+#~ msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -737,8 +745,13 @@ msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "Nem található rendszer."
+
+#: src/components/systems-table/systems-table.tsx
+msgid "No tags found"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -991,6 +1004,10 @@ msgstr "Rendszer"
 msgid "System load averages over time"
 msgstr ""
 
+#: src/components/routes/settings/layout.tsx
+msgid "System Organization"
+msgstr ""
+
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "Rendszer"
@@ -1002,6 +1019,12 @@ msgstr "A rendszereket egy <0>config.yml</0> fájlban lehet kezelni az adatköny
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "Tábla"
+
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Tags"
+msgstr ""
 
 #. Temperature label in systems table
 #: src/components/systems-table/systems-table-columns.tsx
