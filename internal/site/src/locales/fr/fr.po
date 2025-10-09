@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-03 18:42\n"
+"PO-Revision-Date: 2025-10-09 22:25\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -1015,7 +1015,7 @@ msgstr "Température"
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"
-msgstr ""
+msgstr "Unité de température"
 
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
@@ -1095,7 +1095,7 @@ msgstr "Données totales envoyées pour chaque interface"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Se déclenche lorsque la charge moyenne sur 1 minute dépasse un seuil"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
