@@ -53,7 +53,13 @@ export const $userSettings = map<UserSettings>({
 listenKeys($userSettings, ["chartTime"], ({ chartTime }) => $chartTime.set(chartTime))
 
 /** Container chart filter */
-export const $containerFilter = atom("")
+export const $containerFilter = atom<string[]>([])
+
+/** Stack chart filter */
+export const $stackFilter = atom<string[]>([])
+
+/** Container color mapping for consistent colors across charts */
+export const $containerColors = atom<Record<string, string>>({})
 
 /** Temperature chart filter */
 export const $temperatureFilter = atom("")
