@@ -932,7 +932,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 									>
 										<DiskChart
 											chartData={chartData}
-											dataKey={`stats.efs.${extraFsName}.du`}
+											dataKey={({ stats }: SystemStatsRecord) => stats?.efs?.[extraFsName]?.du}
 											diskSize={systemStats.at(-1)?.stats.efs?.[extraFsName].d ?? NaN}
 										/>
 									</ChartCard>
