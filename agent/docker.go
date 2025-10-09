@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -208,7 +209,55 @@ func calculateMemoryUsage(apiStats *container.ApiStats, isWindows bool) (uint64,
 		memCache = apiStats.MemoryStats.Stats.Cache
 	}
 
+	// Prevent uint64 underflow: cache should not exceed total usage
+	if memCache > apiStats.MemoryStats.Usage {
+		// Log to structured logger
+		slog.Warn("Memory cache > usage (possible cgroup race or kernel bug)",
+			"usage", apiStats.MemoryStats.Usage,
+			"cache", memCache,
+			"inactive_file", apiStats.MemoryStats.Stats.InactiveFile,
+			"cache_field", apiStats.MemoryStats.Stats.Cache)
+
+		// Also persist to disk for offline analysis (append mode)
+		logMemoryAnomaly(apiStats)
+
+		// Return 0 as safe fallback; do not break stats collection
+		return 0, nil
+	}
+
 	return apiStats.MemoryStats.Usage - memCache, nil
+}
+
+// logMemoryAnomaly appends memory anomaly details to a persistent log file
+func logMemoryAnomaly(apiStats *container.ApiStats) {
+	const logDir = "/var/log/beszel"
+	const logFile = "mem_err.log"
+
+	if err := os.MkdirAll(logDir, 0755); err != nil {
+		slog.Error("Failed to create log directory", "dir", logDir, "err", err)
+		return
+	}
+
+	path := filepath.Join(logDir, logFile)
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		slog.Error("Failed to open memory error log file", "path", path, "err", err)
+		return
+	}
+	defer f.Close()
+
+	entry := fmt.Sprintf(
+		"[%s] usage=%d cache=%d inactive_file=%d cache_field=%d\n",
+		time.Now().Format(time.RFC3339),
+		apiStats.MemoryStats.Usage,
+		apiStats.MemoryStats.Stats.Cache,
+		apiStats.MemoryStats.Stats.InactiveFile,
+		apiStats.MemoryStats.Stats.Cache,
+	)
+
+	if _, err := f.WriteString(entry); err != nil {
+		slog.Error("Failed to write memory anomaly log", "err", err)
+	}
 }
 
 // getNetworkTracker returns the DeltaTracker for a specific cache time, creating it if needed
