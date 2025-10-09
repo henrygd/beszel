@@ -105,6 +105,9 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 		// swap
 		systemStats.Swap = bytesToGigabytes(v.SwapTotal)
 		systemStats.SwapUsed = bytesToGigabytes(v.SwapTotal - v.SwapFree - v.SwapCached)
+		if v.SwapTotal > 0 {
+			systemStats.SwapPct = twoDecimals(float64(v.SwapTotal-v.SwapFree-v.SwapCached) / float64(v.SwapTotal) * 100.0)
+		}
 		// cache + buffers value for default mem calculation
 		// note: gopsutil automatically adds SReclaimable to v.Cached
 		cacheBuff := v.Cached + v.Buffers - v.Shared

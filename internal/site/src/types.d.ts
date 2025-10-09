@@ -223,7 +223,21 @@ export interface AlertRecord extends RecordModel {
 	triggered: boolean
 	value: number
 	min: number
+	repeat_interval?: number
+	max_repeats?: number
+	repeat_count?: number
+	last_sent?: string
+	filesystem?: string
 	// user: string
+}
+
+export interface AlertTemplateRecord extends RecordModel {
+	id: string
+	user: string
+	name: string
+	alert_type: string
+	title_template: string
+	message_template: string
 }
 
 export interface AlertsHistoryRecord extends RecordModel {
@@ -284,17 +298,21 @@ export interface ChartData {
 	chartTime: ChartTimes
 }
 
-// interface AlertInfo {
-// 	name: () => string
-// 	unit: string
-// 	icon: any
-// 	desc: () => string
-// 	max?: number
-// 	min?: number
-// 	step?: number
-// 	start?: number
-// 	/** Single value description (when there's only one value, like status) */
-// 	singleDesc?: () => string
-// }
+export interface AlertInfo {
+	name: () => string
+	unit: string
+	icon: any
+	desc: () => string
+	max?: number
+	min?: number
+	step?: number
+	start?: number
+	/** Single value description (when there's only one value, like status) */
+	singleDesc?: () => string
+	/** Whether this alert has unit selection */
+	hasUnits?: boolean
+	/** Available units for selection */
+	units?: { label: string; multiplier: number }[]
+}
 
 export type AlertMap = Record<string, Map<string, AlertRecord>>

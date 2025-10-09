@@ -3,7 +3,6 @@ package alerts
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/system"
@@ -14,16 +13,32 @@ import (
 	"github.com/spf13/cast"
 )
 
+// getFilesystemUsage retrieves disk usage percentage for a specific filesystem
+func getFilesystemUsage(filesystem string, data *system.CombinedData) (float64, bool) {
+	if filesystem == "root" {
+		return data.Info.DiskPct, true
+	}
+
+	// Find the matching extra filesystem
+	for key, fs := range data.Stats.ExtraFs {
+		if key == filesystem {
+			return fs.DiskUsed / fs.DiskTotal * 100, true
+		}
+	}
+
+	return 0, false
+}
+
 func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *system.CombinedData) error {
 	alertRecords, err := am.hub.FindAllRecords("alerts",
 		dbx.NewExp("system={:system} AND name!='Status'", dbx.Params{"system": systemRecord.Id}),
 	)
 	if err != nil || len(alertRecords) == 0 {
-		// log.Println("no alerts found for system")
 		return nil
 	}
 
-	var validAlerts []SystemAlertData
+	// Pre-allocate with capacity to avoid growing
+	validAlerts := make([]SystemAlertData, 0, len(alertRecords))
 	now := systemRecord.GetDateTime("updated").Time().UTC()
 	oldestTime := now
 
@@ -38,17 +53,35 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		case "Memory":
 			val = data.Info.MemPct
 		case "Bandwidth":
-			val = data.Info.Bandwidth
-			unit = " MB/s"
+			val = data.Info.Bandwidth * 8 // Convert MB/s to Mbps
+			unit = " Mbps"
+		case "BandwidthUp":
+			val = data.Stats.NetworkSent * 8 // Convert MB/s to Mbps for upload
+			unit = " Mbps"
+		case "BandwidthDown":
+			val = data.Stats.NetworkRecv * 8 // Convert MB/s to Mbps for download  
+			unit = " Mbps"
 		case "Disk":
-			maxUsedPct := data.Info.DiskPct
-			for _, fs := range data.Stats.ExtraFs {
-				usedPct := fs.DiskUsed / fs.DiskTotal * 100
-				if usedPct > maxUsedPct {
-					maxUsedPct = usedPct
+			// Check if this is a filesystem-specific alert
+			filesystem := alertRecord.GetString("filesystem")
+			if filesystem != "" {
+				// This is a filesystem-specific alert
+				var found bool
+				val, found = getFilesystemUsage(filesystem, data)
+				if !found {
+					continue // Filesystem not found, skip this alert
 				}
+			} else {
+				// Legacy disk alert - use the old behavior for backward compatibility
+				maxUsedPct := data.Info.DiskPct
+				for _, fs := range data.Stats.ExtraFs {
+					usedPct := fs.DiskUsed / fs.DiskTotal * 100
+					if usedPct > maxUsedPct {
+						maxUsedPct = usedPct
+					}
+				}
+				val = maxUsedPct
 			}
-			val = maxUsedPct
 		case "Temperature":
 			if data.Info.DashboardTemp < 1 {
 				continue
@@ -64,6 +97,12 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		case "LoadAvg15":
 			val = data.Info.LoadAvg[2]
 			unit = ""
+		case "Swap":
+			if data.Stats.SwapPct == 0 && data.Stats.Swap == 0 {
+				continue // Skip if no swap is configured
+			}
+			val = data.Stats.SwapPct
+			unit = "%"
 		}
 
 		triggered := alertRecord.GetBool("triggered")
@@ -73,7 +112,6 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		// IF alert is not triggered and curValue is less than threshold
 		// OR alert is triggered and curValue is greater than threshold
 		if (!triggered && val <= threshold) || (triggered && val > threshold) {
-			// log.Printf("Skipping alert %s: val %f | threshold %f | triggered %v\n", name, val, threshold, triggered)
 			continue
 		}
 
@@ -173,22 +211,41 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			case "Memory":
 				alert.val += stats.Mem
 			case "Bandwidth":
-				alert.val += stats.NetSent + stats.NetRecv
+				alert.val += (stats.NetSent + stats.NetRecv) * 8 // Convert MB/s to Mbps
+			case "BandwidthUp":
+				alert.val += stats.NetSent * 8 // Convert MB/s to Mbps for upload
+			case "BandwidthDown":
+				alert.val += stats.NetRecv * 8 // Convert MB/s to Mbps for download
 			case "Disk":
-				if alert.mapSums == nil {
-					alert.mapSums = make(map[string]float32, len(data.Stats.ExtraFs)+1)
-				}
-				// add root disk
-				if _, ok := alert.mapSums["root"]; !ok {
-					alert.mapSums["root"] = 0.0
-				}
-				alert.mapSums["root"] += float32(stats.Disk)
-				// add extra disks
-				for key, fs := range data.Stats.ExtraFs {
-					if _, ok := alert.mapSums[key]; !ok {
-						alert.mapSums[key] = 0.0
+				// Check if this is a filesystem-specific alert
+				filesystem := alert.alertRecord.GetString("filesystem")
+				if filesystem != "" {
+					// Filesystem-specific alert
+					if filesystem == "root" {
+						alert.val += stats.Disk
+					} else {
+						// Use helper function for consistency
+						if usage, found := getFilesystemUsage(filesystem, data); found {
+							alert.val += usage
+						}
 					}
-					alert.mapSums[key] += float32(fs.DiskUsed / fs.DiskTotal * 100)
+				} else {
+					// Legacy disk alert - use old behavior for backward compatibility
+					if alert.mapSums == nil {
+						alert.mapSums = make(map[string]float32, len(data.Stats.ExtraFs)+1)
+					}
+					// add root disk
+					if _, ok := alert.mapSums["root"]; !ok {
+						alert.mapSums["root"] = 0.0
+					}
+					alert.mapSums["root"] += float32(stats.Disk)
+					// add extra disks
+					for key, fs := range data.Stats.ExtraFs {
+						if _, ok := alert.mapSums[key]; !ok {
+							alert.mapSums[key] = 0.0
+						}
+						alert.mapSums[key] += float32(fs.DiskUsed / fs.DiskTotal * 100)
+					}
 				}
 			case "Temperature":
 				if alert.mapSums == nil {
@@ -206,6 +263,8 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 				alert.val += stats.LoadAvg[1]
 			case "LoadAvg15":
 				alert.val += stats.LoadAvg[2]
+			case "Swap":
+				alert.val += stats.SwapPct
 			default:
 				continue
 			}
@@ -216,15 +275,37 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 	for _, alert := range validAlerts {
 		switch alert.name {
 		case "Disk":
-			maxPct := float32(0)
-			for key, value := range alert.mapSums {
-				sumPct := float32(value)
-				if sumPct > maxPct {
-					maxPct = sumPct
-					alert.descriptor = fmt.Sprintf("Usage of %s", key)
+			// Check if this is a filesystem-specific alert
+			filesystem := alert.alertRecord.GetString("filesystem")
+			if filesystem != "" {
+				// Filesystem-specific alert - handle normally like other alerts
+				alert.val = alert.val / float64(alert.count)
+				if (!alert.triggered && alert.val > alert.threshold) || (alert.triggered && alert.val <= alert.threshold) {
+					alert.triggered = alert.val > alert.threshold
+					alert.descriptor = fmt.Sprintf("Usage of %s", filesystem)
+					go am.sendSystemAlert(alert)
+				}
+			} else {
+				// Legacy disk alert - send separate alerts for each filesystem that exceeds threshold
+				var alertedFilesystems []string
+				for key, value := range alert.mapSums {
+					avgPct := float64(value) / float64(alert.count)
+					if avgPct > alert.threshold {
+						alertedFilesystems = append(alertedFilesystems, key)
+					}
+				}
+
+				// Send individual alerts for each filesystem above threshold
+				for _, fsName := range alertedFilesystems {
+					avgPct := float64(alert.mapSums[fsName]) / float64(alert.count)
+					diskAlert := alert // Copy alert data
+					diskAlert.descriptor = fmt.Sprintf("Usage of %s", fsName)
+					diskAlert.val = avgPct
+					diskAlert.triggered = avgPct > alert.threshold
+					go am.sendSystemAlert(diskAlert)
 				}
 			}
-			alert.val = float64(maxPct / float32(alert.count))
+			continue // Skip normal alert processing for disk alerts
 		case "Temperature":
 			maxTemp := float32(0)
 			for key, value := range alert.mapSums {
@@ -239,8 +320,6 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			alert.val = alert.val / float64(alert.count)
 		}
 		minCount := float32(alert.min) / 1.2
-		// log.Println("alert", alert.name, "val", alert.val, "threshold", alert.threshold, "triggered", alert.triggered)
-		// log.Printf("%s: val %f | count %d | min-count %f | threshold %f\n", alert.name, alert.val, alert.count, minCount, alert.threshold)
 		// pass through alert if count is greater than or equal to minCount
 		if float32(alert.count) >= minCount {
 			if !alert.triggered && alert.val > alert.threshold {
@@ -256,46 +335,68 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 }
 
 func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
-	// log.Printf("Sending alert %s: val %f | count %d | threshold %f\n", alert.name, alert.val, alert.count, alert.threshold)
 	systemName := alert.systemRecord.GetString("name")
+	filesystem := alert.alertRecord.GetString("filesystem")
+	userID := alert.alertRecord.GetString("user")
 
-	// change Disk to Disk usage
-	if alert.name == "Disk" {
-		alert.name += " usage"
-	}
-	// format LoadAvg5 and LoadAvg15
-	if after, ok := strings.CutPrefix(alert.name, "LoadAvg"); ok {
-		alert.name = after + "m Load"
-	}
-
-	// make title alert name lowercase if not CPU
-	titleAlertName := alert.name
-	if titleAlertName != "CPU" {
-		titleAlertName = strings.ToLower(titleAlertName)
+	// Get template for this alert type
+	template, err := am.templateService.GetTemplate(userID, alert.name)
+	if err != nil {
+		// Fallback to system default if template lookup fails
+		template = am.templateService.getSystemDefaultTemplate(alert.name)
 	}
 
-	var subject string
-	if alert.triggered {
-		subject = fmt.Sprintf("%s %s above threshold", systemName, titleAlertName)
-	} else {
-		subject = fmt.Sprintf("%s %s below threshold", systemName, titleAlertName)
-	}
+	// Prepare template data
+	alertName := FormatAlertName(alert.name, filesystem)
 	minutesLabel := "minute"
 	if alert.min > 1 {
 		minutesLabel += "s"
 	}
-	if alert.descriptor == "" {
-		alert.descriptor = alert.name
+	
+	descriptor := alert.descriptor
+	if descriptor == "" {
+		descriptor = alertName
 	}
-	body := fmt.Sprintf("%s averaged %.2f%s for the previous %v %s.", alert.descriptor, alert.val, alert.unit, alert.min, minutesLabel)
+
+	thresholdStatus := "above"
+	if !alert.triggered {
+		thresholdStatus = "below"
+	}
+
+	templateData := TemplateData{
+		SystemName:      systemName,
+		AlertName:       alertName,
+		AlertType:       alert.name,
+		ThresholdStatus: thresholdStatus,
+		Value:           fmt.Sprintf("%.2f", alert.val),
+		Unit:            alert.unit,
+		Threshold:       fmt.Sprintf("%.2f", alert.threshold),
+		Minutes:         fmt.Sprintf("%d", alert.min),
+		MinutesLabel:    minutesLabel,
+		Descriptor:      descriptor,
+		Filesystem:      filesystem,
+	}
+
+	// Render the template
+	subject, body := am.templateService.RenderTemplate(template, templateData)
 
 	alert.alertRecord.Set("triggered", alert.triggered)
+	
+	// Initialize repeat tracking when alert is first triggered
+	if alert.triggered {
+		alert.alertRecord.Set("repeat_count", 0)
+		alert.alertRecord.Set("last_sent", types.NowDateTime())
+	} else {
+		// Reset repeat tracking when alert is resolved
+		alert.alertRecord.Set("repeat_count", 0)
+		alert.alertRecord.Set("last_sent", nil)
+	}
+	
 	if err := am.hub.Save(alert.alertRecord); err != nil {
-		// app.Logger().Error("failed to save alert record", "err", err)
 		return
 	}
 	am.SendAlert(AlertMessageData{
-		UserID:   alert.alertRecord.GetString("user"),
+		UserID:   userID,
 		Title:    subject,
 		Message:  body,
 		Link:     am.hub.MakeLink("system", systemName),
