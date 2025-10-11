@@ -544,6 +544,10 @@ msgstr "Failed to send test notification"
 msgid "Failed to update alert"
 msgstr "Failed to update alert"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Filter by tags"
+msgstr "Filter by tags"
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -590,6 +594,10 @@ msgstr "GPU Power Draw"
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "Grid"
+
+#: src/components/systems-table/systems-table-columns.tsx
+#~ msgid "Group"
+#~ msgstr "Group"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -732,8 +740,13 @@ msgstr "No results."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "No systems found."
+
+#: src/components/systems-table/systems-table.tsx
+msgid "No tags found"
+msgstr "No tags found"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -986,6 +999,10 @@ msgstr "System"
 msgid "System load averages over time"
 msgstr "System load averages over time"
 
+#: src/components/routes/settings/layout.tsx
+msgid "System Organization"
+msgstr "System Organization"
+
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "Systems"
@@ -997,6 +1014,12 @@ msgstr "Systems may be managed in a <0>config.yml</0> file inside your data dire
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "Table"
+
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Tags"
+msgstr "Tags"
 
 #. Temperature label in systems table
 #: src/components/systems-table/systems-table-columns.tsx

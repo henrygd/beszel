@@ -2,7 +2,7 @@ import { t } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath, redirectPage } from "@nanostores/router"
-import { AlertOctagonIcon, BellIcon, FileSlidersIcon, FingerprintIcon, SettingsIcon } from "lucide-react"
+import { AlertOctagonIcon, BellIcon, FileSlidersIcon, FingerprintIcon, SettingsIcon, UsersIcon } from "lucide-react"
 import { lazy, useEffect } from "react"
 import { $router } from "@/components/router.tsx"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx"
@@ -12,6 +12,7 @@ import { $userSettings } from "@/lib/stores.ts"
 import type { UserSettings } from "@/types"
 import { Separator } from "../../ui/separator"
 import { SidebarNav } from "./sidebar-nav.tsx"
+import SystemOrganization from "./system-organization"
 
 const generalSettingsImport = () => import("./general.tsx")
 const notificationsSettingsImport = () => import("./notifications.tsx")
@@ -88,6 +89,11 @@ export default function SettingsLayout() {
 			admin: true,
 			preload: configYamlSettingsImport,
 		},
+		{
+			title: t`System Organization`,
+			href: getPagePath($router, "settings", { name: "organization" }),
+			icon: UsersIcon,
+		},
 	]
 
 	const page = useStore($router)
@@ -141,5 +147,7 @@ function SettingsContent({ name }: { name: string }) {
 			return <FingerprintsSettings />
 		case "alert-history":
 			return <AlertsHistoryDataTableSettings />
+		case "organization":
+			return <SystemOrganization />
 	}
 }
