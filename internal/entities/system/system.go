@@ -41,8 +41,9 @@ type Stats struct {
 	LoadAvg           [3]float64           `json:"la,omitempty" cbor:"28,keyasint"`
 	Battery           [2]uint8             `json:"bat,omitzero" cbor:"29,keyasint,omitzero"` // [percent, charge state, current]
 	MaxMem            float64              `json:"mm,omitempty" cbor:"30,keyasint,omitempty"`
-	NetworkInterfaces map[string][4]uint64 `json:"ni,omitempty" cbor:"31,keyasint,omitempty"` // [upload bytes, download bytes, total upload, total download]
-	DiskIO            [2]uint64            `json:"dio,omitzero" cbor:"32,keyasint,omitzero"`  // [read bytes, write bytes]
+	SwapPct           float64              `json:"sp,omitempty" cbor:"31,keyasint,omitempty"`
+	NetworkInterfaces map[string][4]uint64 `json:"ni,omitempty" cbor:"32,keyasint,omitempty"` // [upload bytes, download bytes, total upload, total download]
+	DiskIO            [2]uint64            `json:"dio,omitzero" cbor:"33,keyasint,omitzero"`  // [read bytes, write bytes]
 	MaxDiskIO         [2]uint64            `json:"diom,omitzero" cbor:"-"`                    // [max read bytes, max write bytes]
 }
 

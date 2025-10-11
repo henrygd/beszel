@@ -32,14 +32,50 @@ export const alertInfo: Record<string, AlertInfo> = {
 		name: () => t`Disk Usage`,
 		unit: "%",
 		icon: HardDriveIcon,
-		desc: () => t`Triggers when usage of any disk exceeds a threshold`,
+		desc: () => t`Triggers when usage of any filesystem exceeds a threshold`,
 	},
 	Bandwidth: {
 		name: () => t`Bandwidth`,
-		unit: " MB/s",
+		unit: " Mbps",
 		icon: EthernetIcon,
 		desc: () => t`Triggers when combined up/down exceeds a threshold`,
-		max: 125,
+		max: 100,
+		step: 1,
+		start: 100,
+		// Special handling for bandwidth units
+		hasUnits: true,
+		units: [
+			{ label: "Mbps", multiplier: 1 },
+			{ label: "Gbps", multiplier: 1000 },
+		],
+	},
+	BandwidthUp: {
+		name: () => t`Upload Bandwidth`,
+		unit: " Mbps",
+		icon: EthernetIcon,
+		desc: () => t`Triggers when upload speed exceeds a threshold`,
+		max: 100,
+		step: 1,
+		start: 50,
+		hasUnits: true,
+		units: [
+			{ label: "Mbps", multiplier: 1 },
+			{ label: "Gbps", multiplier: 1000 },
+		],
+	},
+	BandwidthDown: {
+		name: () => t`Download Bandwidth`,
+		unit: " Mbps",
+		icon: EthernetIcon,
+		desc: () => t`Triggers when download speed exceeds a threshold`,
+		max: 100,
+		step: 1,
+		start: 50,
+		hasUnits: true,
+		units: [
+			{ label: "Mbps", multiplier: 1 },
+			{ label: "Gbps", multiplier: 1000 },
+		],
 	},
 	Temperature: {
 		name: () => t`Temperature`,
@@ -77,6 +113,12 @@ export const alertInfo: Record<string, AlertInfo> = {
 		step: 0.1,
 		desc: () => t`Triggers when 15 minute load average exceeds a threshold`,
 	},
+	Swap: {
+		name: () => t`Swap Usage`,
+		unit: "%",
+		icon: MemoryStickIcon,
+		desc: () => t`Triggers when swap usage exceeds a threshold`,
+	},
 } as const
 
 /** Helper to manage user alerts */
@@ -85,30 +127,40 @@ export const alertManager = (() => {
 	let unsub: () => void
 
 	/** Fields to fetch from alerts collection */
-	const fields = "id,name,system,value,min,triggered"
+	const fields = "id,name,system,value,min,triggered,repeat_interval,max_repeats,repeat_count,last_sent,filesystem"
 
 	/** Fetch alerts from collection */
 	async function fetchAlerts(): Promise<AlertRecord[]> {
 		return await collection.getFullList<AlertRecord>({ fields, sort: "updated" })
 	}
 
-	/** Format alerts into a map of system id to alert name to alert record */
+	/** Create a unique key for an alert that includes filesystem if present */
+	function getAlertKey(alert: Pick<AlertRecord, "name" | "filesystem">): string {
+		if (alert.name === "Disk" && alert.filesystem) {
+			return `${alert.name}:${alert.filesystem}`
+		}
+		return alert.name
+	}
+
+	/** Format alerts into a map of system id to alert key to alert record */
 	function add(alerts: AlertRecord[]) {
 		for (const alert of alerts) {
 			const systemId = alert.system
 			const systemAlerts = $alerts.get()[systemId] ?? new Map()
 			const newAlerts = new Map(systemAlerts)
-			newAlerts.set(alert.name, alert)
+			const alertKey = getAlertKey(alert)
+			newAlerts.set(alertKey, alert)
 			$alerts.setKey(systemId, newAlerts)
 		}
 	}
 
-	function remove(alerts: Pick<AlertRecord, "name" | "system">[]) {
+	function remove(alerts: Pick<AlertRecord, "name" | "system" | "filesystem">[]) {
 		for (const alert of alerts) {
 			const systemId = alert.system
 			const systemAlerts = $alerts.get()[systemId]
 			const newAlerts = new Map(systemAlerts)
-			newAlerts.delete(alert.name)
+			const alertKey = getAlertKey(alert)
+			newAlerts.delete(alertKey)
 			$alerts.setKey(systemId, newAlerts)
 		}
 	}
