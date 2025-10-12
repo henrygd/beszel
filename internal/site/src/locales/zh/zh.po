@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-03 18:42\n"
+"PO-Revision-Date: 2025-10-12 03:15\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -50,7 +50,7 @@ msgstr "1 分鐘"
 
 #: src/lib/utils.ts
 msgid "1 minute"
-msgstr "1 分钟"
+msgstr "1 分鐘"
 
 #: src/lib/utils.ts
 msgid "1 week"
@@ -350,7 +350,7 @@ msgstr "複製YAML"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -604,7 +604,7 @@ msgstr "Homebrew 指令"
 
 #: src/components/add-system.tsx
 msgid "Host / IP"
-msgstr ""
+msgstr "Host / IP"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -622,7 +622,7 @@ msgstr "無效的電子郵件地址。"
 #. Linux kernel
 #: src/components/routes/system.tsx
 msgid "Kernel"
-msgstr ""
+msgstr "Kernel"
 
 #: src/components/routes/settings/general.tsx
 msgid "Language"
@@ -850,7 +850,7 @@ msgstr "請登入您的帳號"
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr ""
+msgstr "Port"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
