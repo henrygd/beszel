@@ -8,7 +8,7 @@ msgstr ""
 "Language: no\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-06 07:37\n"
+"PO-Revision-Date: 2025-10-13 15:54\n"
 "Last-Translator: \n"
 "Language-Team: Norwegian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -291,7 +291,7 @@ msgstr "Bekreft passord"
 
 #: src/components/routes/home.tsx
 msgid "Connection is down"
-msgstr ""
+msgstr "Tilkoblingen er nede"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -317,7 +317,7 @@ msgstr "Kopier docker run"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Environment variables"
 msgid "Copy env"
-msgstr ""
+msgstr "Kopier env"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
