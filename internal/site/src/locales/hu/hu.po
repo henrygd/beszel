@@ -8,7 +8,7 @@ msgstr ""
 "Language: hu\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-14 20:31\n"
+"PO-Revision-Date: 2025-10-14 23:40\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -179,7 +179,7 @@ msgstr "{0} átlagos kihasználtsága"
 
 #: src/components/routes/system.tsx
 msgid "Average utilization of GPU engines"
-msgstr "GPU motorok átlagos kihasználtsága"
+msgstr "GPU-k átlagos kihasználtsága"
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
@@ -586,7 +586,7 @@ msgstr "Általános"
 
 #: src/components/routes/system.tsx
 msgid "GPU Engines"
-msgstr "GPU motorok"
+msgstr "GPU-k"
 
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
