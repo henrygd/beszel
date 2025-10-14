@@ -4,7 +4,7 @@ import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
 import { Unit } from "@/lib/enums"
 import { chartMargin, cn, decimalString, formatBytes, formatShortDate, toFixedFloat } from "@/lib/utils"
-import type { ChartData } from "@/types"
+import type { ChartData, SystemStatsRecord } from "@/types"
 import { useYAxisWidth } from "./hooks"
 
 export default memo(function DiskChart({
@@ -12,7 +12,7 @@ export default memo(function DiskChart({
 	diskSize,
 	chartData,
 }: {
-	dataKey: string
+	dataKey: string | ((data: SystemStatsRecord) => number | undefined)
 	diskSize: number
 	chartData: ChartData
 }) {

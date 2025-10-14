@@ -1,3 +1,13 @@
+## 0.13.2
+
+- Add ability to set custom name for extra filesystems. (#379)
+
+- Improve WebSocket agent reconnection after network interruptions. (#1263)
+
+- Allow more latency in one minute charts before visually disconnecting points. (#1247)
+
+- Update favicon and add add down systems count in bubble.
+
 ## 0.13.1
 
 - Fix one minute charts on systems without Docker. (#1237)

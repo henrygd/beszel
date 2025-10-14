@@ -152,7 +152,12 @@ func (a *Agent) gatherStats(cacheTimeMs uint16) *system.CombinedData {
 	data.Stats.ExtraFs = make(map[string]*system.FsStats)
 	for name, stats := range a.fsStats {
 		if !stats.Root && stats.DiskTotal > 0 {
-			data.Stats.ExtraFs[name] = stats
+			// Use custom name if available, otherwise use device name
+			key := name
+			if stats.Name != "" {
+				key = stats.Name
+			}
+			data.Stats.ExtraFs[key] = stats
 		}
 	}
 	slog.Debug("Extra FS", "data", data.Stats.ExtraFs)

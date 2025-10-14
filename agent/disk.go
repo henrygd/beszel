@@ -13,6 +13,19 @@ import (
 	"github.com/shirou/gopsutil/v4/disk"
 )
 
+// parseFilesystemEntry parses a filesystem entry in the format "device__customname"
+// Returns the device/filesystem part and the custom name part
+func parseFilesystemEntry(entry string) (device, customName string) {
+	entry = strings.TrimSpace(entry)
+	if parts := strings.SplitN(entry, "__", 2); len(parts) == 2 {
+		device = strings.TrimSpace(parts[0])
+		customName = strings.TrimSpace(parts[1])
+	} else {
+		device = entry
+	}
+	return device, customName
+}
+
 // Sets up the filesystems to monitor for disk usage and I/O.
 func (a *Agent) initializeDiskInfo() {
 	filesystem, _ := GetEnv("FILESYSTEM")
@@ -37,7 +50,7 @@ func (a *Agent) initializeDiskInfo() {
 	slog.Debug("Disk I/O", "diskstats", diskIoCounters)
 
 	// Helper function to add a filesystem to fsStats if it doesn't exist
-	addFsStat := func(device, mountpoint string, root bool) {
+	addFsStat := func(device, mountpoint string, root bool, customName ...string) {
 		var key string
 		if runtime.GOOS == "windows" {
 			key = device
@@ -66,7 +79,11 @@ func (a *Agent) initializeDiskInfo() {
 					}
 				}
 			}
-			a.fsStats[key] = &system.FsStats{Root: root, Mountpoint: mountpoint}
+			fsStats := &system.FsStats{Root: root, Mountpoint: mountpoint}
+			if len(customName) > 0 && customName[0] != "" {
+				fsStats.Name = customName[0]
+			}
+			a.fsStats[key] = fsStats
 		}
 	}
 
@@ -86,11 +103,14 @@ func (a *Agent) initializeDiskInfo() {
 
 	// Add EXTRA_FILESYSTEMS env var values to fsStats
 	if extraFilesystems, exists := GetEnv("EXTRA_FILESYSTEMS"); exists {
-		for _, fs := range strings.Split(extraFilesystems, ",") {
+		for _, fsEntry := range strings.Split(extraFilesystems, ",") {
+			// Parse custom name from format: device__customname
+			fs, customName := parseFilesystemEntry(fsEntry)
+
 			found := false
 			for _, p := range partitions {
 				if strings.HasSuffix(p.Device, fs) || p.Mountpoint == fs {
-					addFsStat(p.Device, p.Mountpoint, false)
+					addFsStat(p.Device, p.Mountpoint, false, customName)
 					found = true
 					break
 				}
@@ -98,7 +118,7 @@ func (a *Agent) initializeDiskInfo() {
 			// if not in partitions, test if we can get disk usage
 			if !found {
 				if _, err := disk.Usage(fs); err == nil {
-					addFsStat(filepath.Base(fs), fs, false)
+					addFsStat(filepath.Base(fs), fs, false, customName)
 				} else {
 					slog.Error("Invalid filesystem", "name", fs, "err", err)
 				}
@@ -120,7 +140,8 @@ func (a *Agent) initializeDiskInfo() {
 
 		// Check if device is in /extra-filesystems
 		if strings.HasPrefix(p.Mountpoint, efPath) {
-			addFsStat(p.Device, p.Mountpoint, false)
+			device, customName := parseFilesystemEntry(p.Mountpoint)
+			addFsStat(device, p.Mountpoint, false, customName)
 		}
 	}
 
@@ -135,7 +156,8 @@ func (a *Agent) initializeDiskInfo() {
 				mountpoint := filepath.Join(efPath, folder.Name())
 				slog.Debug("/extra-filesystems", "mountpoint", mountpoint)
 				if !existingMountpoints[mountpoint] {
-					addFsStat(folder.Name(), mountpoint, false)
+					device, customName := parseFilesystemEntry(folder.Name())
+					addFsStat(device, mountpoint, false, customName)
 				}
 			}
 		}

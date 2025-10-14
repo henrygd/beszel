@@ -48,7 +48,6 @@ const App = memo(() => {
 			// subscribe to new alert updates
 			.then(alertManager.subscribe)
 		return () => {
-			// updateFavicon("favicon.svg")
 			alertManager.unsubscribe()
 			systemsManager.unsubscribe()
 		}

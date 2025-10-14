@@ -143,7 +143,9 @@ func (client *WebSocketClient) OnOpen(conn *gws.Conn) {
 // OnClose handles WebSocket connection closure.
 // It logs the closure reason and notifies the connection manager.
 func (client *WebSocketClient) OnClose(conn *gws.Conn, err error) {
-	slog.Warn("Connection closed", "err", strings.TrimPrefix(err.Error(), "gws: "))
+	if err != nil {
+		slog.Warn("Connection closed", "err", strings.TrimPrefix(err.Error(), "gws: "))
+	}
 	client.agent.connectionManager.eventChan <- WebSocketDisconnect
 }
 
@@ -246,7 +248,13 @@ func (client *WebSocketClient) sendMessage(data any) error {
 	if err != nil {
 		return err
 	}
-	return client.Conn.WriteMessage(gws.OpcodeBinary, bytes)
+	err = client.Conn.WriteMessage(gws.OpcodeBinary, bytes)
+	if err != nil {
+		// If writing fails (e.g., broken pipe due to network issues),
+		// close the connection to trigger reconnection logic (#1263)
+		client.Close()
+	}
+	return err
 }
 
 // sendResponse sends a response with optional request ID for the new protocol
