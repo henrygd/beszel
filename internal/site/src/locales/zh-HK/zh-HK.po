@@ -267,6 +267,10 @@ msgstr "檢查日誌以取得更多資訊。"
 msgid "Check your notification service"
 msgstr "檢查您的通知服務"
 
+#: src/components/routes/system.tsx
+msgid "Clear all"
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
 msgstr "點擊系統以查看更多資訊。"
@@ -292,6 +296,10 @@ msgstr "確認密碼"
 #: src/components/routes/home.tsx
 msgid "Connection is down"
 msgstr "連線中斷"
+
+#: src/components/routes/system.tsx
+msgid "Container health status and uptime"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -415,6 +423,10 @@ msgstr "磁碟"
 msgid "Disk I/O"
 msgstr "磁碟 I/O"
 
+#: src/components/routes/system.tsx
+msgid "Disk read/write rates of docker containers"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "磁碟單位"
@@ -434,12 +446,28 @@ msgid "Docker CPU Usage"
 msgstr "Docker CPU 使用率"
 
 #: src/components/routes/system.tsx
+msgid "Docker Disk I/O"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Docker Health & Uptime"
+msgstr ""
+
+#: src/components/routes/system.tsx
 msgid "Docker Memory Usage"
 msgstr "Docker 記憶體使用率"
 
 #: src/components/routes/system.tsx
 msgid "Docker Network I/O"
 msgstr "Docker 網絡 I/O"
+
+#: src/components/routes/system.tsx
+msgid "Docker Stats"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Docker Volumes"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Documentation"
@@ -549,8 +577,15 @@ msgstr "發送測試通知失敗"
 msgid "Failed to update alert"
 msgstr "更新警報失敗"
 
-#: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
+msgid "Filter containers..."
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Filter stacks..."
+msgstr ""
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "篩選..."
@@ -726,6 +761,10 @@ msgstr "公共接口的網絡流量"
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
 msgstr "網路單位"
+
+#: src/components/routes/system.tsx
+msgid "No items available"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -991,6 +1030,10 @@ msgstr "系統"
 msgid "System load averages over time"
 msgstr "系統平均負載隨時間變化"
 
+#: src/components/routes/system.tsx
+msgid "System Stats"
+msgstr ""
+
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "系統"
@@ -1202,6 +1245,10 @@ msgstr "檢視最近 200 則警報。"
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
 msgstr "可見欄位"
+
+#: src/components/routes/system.tsx
+msgid "Volume usage of docker containers"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Waiting for enough records to display"

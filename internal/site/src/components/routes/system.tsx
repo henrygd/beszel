@@ -6,10 +6,12 @@ import { timeTicks } from "d3-time"
 import {
 	ChevronRightSquareIcon,
 	ClockArrowUp,
+	Container as ContainerIcon,
 	CpuIcon,
 	GlobeIcon,
 	LayoutGridIcon,
 	MonitorIcon,
+	Server as ServerIcon,
 	XIcon,
 } from "lucide-react"
 import { subscribeKeys } from "nanostores"
@@ -30,9 +32,11 @@ import {
 	$allSystemsById,
 	$allSystemsByName,
 	$chartTime,
+	$containerColors,
 	$containerFilter,
 	$direction,
 	$maxValues,
+	$stackFilter,
 	$systems,
 	$temperatureFilter,
 	$userSettings,
@@ -69,6 +73,7 @@ import { AppleIcon, ChartAverage, ChartMax, FreeBsdIcon, Rows, TuxIcon, WebSocke
 import { Input } from "../ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { Separator } from "../ui/separator"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import NetworkSheet from "./system/network-sheet"
 import LineChartDefault from "../charts/line-chart"
@@ -396,17 +401,74 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	}, [system, t])
 
 	/** Space for tooltip if more than 12 containers */
+	// biome-ignore lint/correctness/useExhaustiveDependencies: filters accessed via .get()
 	useEffect(() => {
-		if (!netCardRef.current || !containerData.length) {
-			setBottomSpacing(0)
-			return
+		const calculateSpacing = () => {
+			if (!netCardRef.current || !containerData.length) {
+				setBottomSpacing(0)
+				return
+			}
+
+			// Count visible containers after applying filters
+			const containerFilter = $containerFilter.get()
+			const stackFilter = $stackFilter.get()
+			let visibleCount = 0
+
+			if (containerData[0]) {
+				for (const [key, value] of Object.entries(containerData[0])) {
+					if (key === "created") continue
+
+					// Apply container filter
+					if (containerFilter.length > 0 && !containerFilter.includes(key)) {
+						continue
+					}
+
+					// Apply stack filter
+					if (stackFilter.length > 0 && typeof value === "object" && value) {
+						const stackName = (value as any).p || "—"
+						if (!stackFilter.includes(stackName)) {
+							continue
+						}
+					}
+
+					visibleCount++
+				}
+			}
+
+			// Only add spacing if there are more than 12 visible containers
+			if (visibleCount > 12) {
+				const tooltipHeight = (visibleCount - 11) * 17.8 - 40
+				const wrapperEl = chartWrapRef.current as HTMLDivElement
+				const wrapperRect = wrapperEl.getBoundingClientRect()
+				const chartRect = netCardRef.current.getBoundingClientRect()
+				const distanceToBottom = wrapperRect.bottom - chartRect.bottom
+				const spacing = Math.max(0, tooltipHeight - distanceToBottom)
+				setBottomSpacing(spacing)
+			} else {
+				setBottomSpacing(0)
+			}
 		}
-		const tooltipHeight = (Object.keys(containerData[0]).length - 11) * 17.8 - 40
-		const wrapperEl = chartWrapRef.current as HTMLDivElement
-		const wrapperRect = wrapperEl.getBoundingClientRect()
-		const chartRect = netCardRef.current.getBoundingClientRect()
-		const distanceToBottom = wrapperRect.bottom - chartRect.bottom
-		setBottomSpacing(tooltipHeight - distanceToBottom)
+
+		// Initial calculation
+		calculateSpacing()
+
+		// Subscribe to filter changes to recalculate
+		// Use requestAnimationFrame to wait for chart re-render, then add small delay for layout
+		const unsubContainer = $containerFilter.subscribe(() => {
+			requestAnimationFrame(() => {
+				setTimeout(calculateSpacing, 100)
+			})
+		})
+		const unsubStack = $stackFilter.subscribe(() => {
+			requestAnimationFrame(() => {
+				setTimeout(calculateSpacing, 100)
+			})
+		})
+
+		return () => {
+			unsubContainer()
+			unsubStack()
+		}
 	}, [containerData])
 
 	// keyboard navigation between systems
@@ -454,7 +516,14 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const maxValSelect = isLongerChart ? <SelectAvgMax max={maxValues} /> : null
 	const showMax = maxValues && isLongerChart
 
-	const containerFilterBar = containerData.length ? <FilterBar /> : null
+	const containerFilterBar = containerData.length ? <FilterBar containerData={containerData} /> : null
+	const stackFilterBar = containerData.length ? <FilterBar containerData={containerData} store={$stackFilter} mode="stack" /> : null
+	const combinedFilterBar = containerData.length ? (
+		<div className="flex gap-2">
+			<FilterBar containerData={containerData} />
+			<FilterBar containerData={containerData} store={$stackFilter} mode="stack" />
+		</div>
+	) : null
 
 	const dataEmpty = !chartLoading && chartData.systemStats.length === 0
 	const lastGpuVals = Object.values(systemStats.at(-1)?.stats.g ?? {})
@@ -569,6 +638,22 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 					</div>
 				</Card>
 
+
+			{/* Tabbed interface for system and Docker stats */}
+			<Tabs defaultValue="system" className="w-full">
+				<TabsList className="grid w-full grid-cols-2 mb-4">
+					<TabsTrigger value="system" className="flex items-center gap-2">
+						<ServerIcon className="h-4 w-4" />
+						{t`System Stats`}
+					</TabsTrigger>
+					<TabsTrigger value="docker" className="flex items-center gap-2">
+						<ContainerIcon className="h-4 w-4" />
+						{dockerOrPodman(t`Docker Stats`, system)}
+					</TabsTrigger>
+				</TabsList>
+
+				{/* System Stats Tab */}
+				<TabsContent value="system" className="space-y-4">
 				{/* main charts */}
 				<div className="grid xl:grid-cols-2 gap-4">
 					<ChartCard
@@ -594,23 +679,6 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						/>
 					</ChartCard>
 
-					{containerFilterBar && (
-						<ChartCard
-							empty={dataEmpty}
-							grid={grid}
-							title={dockerOrPodman(t`Docker CPU Usage`, system)}
-							description={t`Average CPU utilization of containers`}
-							cornerEl={containerFilterBar}
-						>
-							<ContainerChart
-								chartData={chartData}
-								dataKey="c"
-								chartType={ChartType.CPU}
-								chartConfig={containerChartConfigs.cpu}
-							/>
-						</ChartCard>
-					)}
-
 					<ChartCard
 						empty={dataEmpty}
 						grid={grid}
@@ -620,23 +688,6 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 					>
 						<MemChart chartData={chartData} showMax={showMax} />
 					</ChartCard>
-
-					{containerFilterBar && (
-						<ChartCard
-							empty={dataEmpty}
-							grid={grid}
-							title={dockerOrPodman(t`Docker Memory Usage`, system)}
-							description={dockerOrPodman(t`Memory usage of docker containers`, system)}
-							cornerEl={containerFilterBar}
-						>
-							<ContainerChart
-								chartData={chartData}
-								dataKey="m"
-								chartType={ChartType.Memory}
-								chartConfig={containerChartConfigs.memory}
-							/>
-						</ChartCard>
-					)}
 
 					<ChartCard empty={dataEmpty} grid={grid} title={t`Disk Usage`} description={t`Usage of root partition`}>
 						<DiskChart chartData={chartData} dataKey="stats.du" diskSize={systemStats.at(-1)?.stats.d ?? NaN} />
@@ -739,29 +790,6 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 							}}
 						/>
 					</ChartCard>
-
-					{containerFilterBar && containerData.length > 0 && (
-						<div
-							ref={netCardRef}
-							className={cn({
-								"col-span-full": !grid,
-							})}
-						>
-							<ChartCard
-								empty={dataEmpty}
-								title={dockerOrPodman(t`Docker Network I/O`, system)}
-								description={dockerOrPodman(t`Network traffic of docker containers`, system)}
-								cornerEl={containerFilterBar}
-							>
-								<ContainerChart
-									chartData={chartData}
-									chartType={ChartType.Network}
-									dataKey="n"
-									chartConfig={containerChartConfigs.network}
-								/>
-							</ChartCard>
-						</div>
-					)}
 
 					{/* Swap chart */}
 					{(systemStats.at(-1)?.stats.su ?? 0) > 0 && (
@@ -987,6 +1015,125 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						})}
 					</div>
 				)}
+			</TabsContent>
+
+			{/* Docker Stats Tab */}
+			<TabsContent value="docker" className="space-y-4">
+				{/* Centralized filter bar for all Docker charts */}
+				{combinedFilterBar && (
+					<div className="flex justify-end gap-2 pb-2">
+						{combinedFilterBar}
+					</div>
+				)}
+				<div className="grid xl:grid-cols-2 gap-4">
+					{containerFilterBar && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={dockerOrPodman(t`Docker CPU Usage`, system)}
+							description={t`Average CPU utilization of containers`}
+													>
+							<ContainerChart
+								chartData={chartData}
+								dataKey="c"
+								chartType={ChartType.CPU}
+								chartConfig={containerChartConfigs.cpu}
+							/>
+						</ChartCard>
+					)}
+
+					{containerFilterBar && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={dockerOrPodman(t`Docker Memory Usage`, system)}
+							description={dockerOrPodman(t`Memory usage of docker containers`, system)}
+													>
+							<ContainerChart
+								chartData={chartData}
+								dataKey="m"
+								chartType={ChartType.Memory}
+								chartConfig={containerChartConfigs.memory}
+							/>
+						</ChartCard>
+					)}
+
+					{containerFilterBar && containerData.length > 0 && (
+						<div
+							ref={netCardRef}
+							className={cn({
+								"col-span-full": !grid,
+							})}
+						>
+							<ChartCard
+								empty={dataEmpty}
+								title={dockerOrPodman(t`Docker Network I/O`, system)}
+								description={dockerOrPodman(t`Network traffic of docker containers`, system)}
+															>
+								<ContainerChart
+									chartData={chartData}
+									chartType={ChartType.Network}
+									dataKey="n"
+									chartConfig={containerChartConfigs.network}
+								/>
+							</ChartCard>
+						</div>
+					)}
+
+					{/* Docker Disk I/O chart */}
+					{containerFilterBar && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={dockerOrPodman(t`Docker Disk I/O`, system)}
+							description={dockerOrPodman(t`Disk read/write rates of docker containers`, system)}
+													>
+							<ContainerChart
+								chartData={chartData}
+								chartType={ChartType.DiskIO}
+								dataKey="d"
+								chartConfig={{}}
+								unit=" MB/s"
+							/>
+						</ChartCard>
+					)}
+
+					{/* Docker Volumes chart */}
+					{containerFilterBar && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={dockerOrPodman(t`Docker Volumes`, system)}
+							description={dockerOrPodman(t`Volume usage of docker containers`, system)}
+													>
+							<ContainerChart
+								chartData={chartData}
+								chartType={ChartType.Volume}
+								dataKey="v"
+								chartConfig={{}}
+							/>
+						</ChartCard>
+					)}
+
+					{/* Docker Health & Uptime chart */}
+					{containerFilterBar && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={dockerOrPodman(t`Docker Health & Uptime`, system)}
+							description={dockerOrPodman(t`Container health status and uptime`, system)}
+													>
+							<ContainerChart
+								chartData={chartData}
+								chartType={ChartType.HealthUptime}
+								dataKey="h"
+								chartConfig={{}}
+							/>
+						</ChartCard>
+					)}
+				</div>
+			</TabsContent>
+			</Tabs>
 			</div>
 
 			{/* add space for tooltip if more than 12 containers */}
@@ -1017,38 +1164,121 @@ function GpuEnginesChart({ chartData }: { chartData: ChartData }) {
 	)
 }
 
-function FilterBar({ store = $containerFilter }: { store?: typeof $containerFilter }) {
-	const containerFilter = useStore(store)
+function FilterBar({
+	store = $containerFilter,
+	containerData,
+	mode = "container"
+}: {
+	store?: typeof $containerFilter
+	containerData?: ChartData["containerData"]
+	mode?: "container" | "stack"
+}) {
+	const selected = useStore(store)
 	const { t } = useLingui()
+	const [open, setOpen] = useState(false)
 
-	const debouncedStoreSet = useMemo(() => debounce((value: string) => store.set(value), 80), [store])
+	// Extract all unique container names or stack names from current data
+	const availableItems = useMemo(() => {
+		const items = new Set<string>()
+		if (containerData) {
+			for (const dataPoint of containerData) {
+				if (dataPoint.created) {
+					for (const [key, value] of Object.entries(dataPoint)) {
+						if (key !== "created") {
+							if (mode === "stack" && typeof value === "object" && value) {
+								// Extract stack/project name
+								const stackName = (value as any).p || "—"
+								items.add(stackName)
+							} else if (mode === "container") {
+								// Add container name
+								items.add(key)
+							}
+						}
+					}
+				}
+			}
+		}
+		return Array.from(items).sort()
+	}, [containerData, mode])
 
-	const handleChange = useCallback(
-		(e: React.ChangeEvent<HTMLInputElement>) => debouncedStoreSet(e.target.value),
-		[debouncedStoreSet]
-	)
+	const toggleItem = useCallback((item: string) => {
+		const current = store.get()
+		if (current.includes(item)) {
+			store.set(current.filter(i => i !== item))
+		} else {
+			store.set([...current, item])
+		}
+	}, [store])
+
+	const clearAll = useCallback(() => {
+		store.set([])
+		setOpen(false)
+	}, [store])
+
+	// Close dropdown when clicking outside
+	useEffect(() => {
+		if (!open) return
+		const handleClickOutside = (e: MouseEvent) => {
+			const target = e.target as HTMLElement
+			if (!target.closest('[data-filter-dropdown]')) {
+				setOpen(false)
+			}
+		}
+		document.addEventListener('mousedown', handleClickOutside)
+		return () => document.removeEventListener('mousedown', handleClickOutside)
+	}, [open])
 
 	return (
-		<>
-			<Input
-				placeholder={t`Filter...`}
-				className="ps-4 pe-8 w-full sm:w-44"
-				onChange={handleChange}
-				value={containerFilter}
-			/>
-			{containerFilter && (
-				<Button
-					type="button"
-					variant="ghost"
-					size="icon"
-					aria-label="Clear"
-					className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-					onClick={() => store.set("")}
-				>
-					<XIcon className="h-4 w-4" />
-				</Button>
+		<div className="relative" data-filter-dropdown>
+			<Button
+				variant="outline"
+				size="sm"
+				className="h-9 w-full sm:w-44 justify-between"
+				onClick={() => setOpen(!open)}
+			>
+				<span className="truncate">
+					{selected.length === 0
+						? (mode === "stack" ? t`Filter stacks...` : t`Filter containers...`)
+						: `${selected.length} selected`
+					}
+				</span>
+				<ChevronRightSquareIcon className="ml-2 h-4 w-4 opacity-50" />
+			</Button>
+			{open && (
+				<div className="absolute z-50 mt-1 w-full sm:w-64 bg-popover border rounded-md shadow-md">
+					<div className="p-2 space-y-1 max-h-64 overflow-y-auto">
+						{availableItems.length === 0 ? (
+							<div className="py-6 text-center text-sm text-muted-foreground">
+								{t`No items available`}
+							</div>
+						) : (
+							availableItems.map((item) => (
+								<div
+									key={item}
+									className="flex items-center space-x-2 rounded-sm px-2 py-1.5 cursor-pointer hover:bg-accent"
+									onClick={() => toggleItem(item)}
+								>
+									<input
+										type="checkbox"
+										checked={selected.includes(item)}
+										onChange={() => {}}
+										className="h-4 w-4"
+									/>
+									<span className="text-sm truncate flex-1">{item}</span>
+								</div>
+							))
+						)}
+					</div>
+					{selected.length > 0 && (
+						<div className="border-t p-2">
+							<Button variant="ghost" size="sm" className="w-full" onClick={clearAll}>
+								{t`Clear all`}
+							</Button>
+						</div>
+					)}
+				</div>
 			)}
-		</>
+		</div>
 	)
 }
 

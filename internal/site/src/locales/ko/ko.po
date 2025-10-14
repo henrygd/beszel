@@ -267,6 +267,10 @@ msgstr "자세한 내용은 로그를 확인하세요."
 msgid "Check your notification service"
 msgstr "알림 서비스를 확인하세요."
 
+#: src/components/routes/system.tsx
+msgid "Clear all"
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
 msgstr "더 많은 정보를 보려면 시스템을 클릭하세요."
@@ -292,6 +296,10 @@ msgstr "비밀번호 확인"
 #: src/components/routes/home.tsx
 msgid "Connection is down"
 msgstr "연결이 끊겼습니다"
+
+#: src/components/routes/system.tsx
+msgid "Container health status and uptime"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -415,6 +423,10 @@ msgstr "디스크"
 msgid "Disk I/O"
 msgstr "디스크 I/O"
 
+#: src/components/routes/system.tsx
+msgid "Disk read/write rates of docker containers"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "디스크 단위"
@@ -434,12 +446,28 @@ msgid "Docker CPU Usage"
 msgstr "Docker CPU 사용량"
 
 #: src/components/routes/system.tsx
+msgid "Docker Disk I/O"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Docker Health & Uptime"
+msgstr ""
+
+#: src/components/routes/system.tsx
 msgid "Docker Memory Usage"
 msgstr "Docker 메모리 사용량"
 
 #: src/components/routes/system.tsx
 msgid "Docker Network I/O"
 msgstr "Docker 네트워크 I/O"
+
+#: src/components/routes/system.tsx
+msgid "Docker Stats"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Docker Volumes"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Documentation"
@@ -549,8 +577,15 @@ msgstr "테스트 알림 전송 실패"
 msgid "Failed to update alert"
 msgstr "알림 수정 실패"
 
-#: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
+msgid "Filter containers..."
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Filter stacks..."
+msgstr ""
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "필터..."
@@ -726,6 +761,10 @@ msgstr "공용 인터페이스의 네트워크 트래픽"
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
 msgstr "네트워크 단위"
+
+#: src/components/routes/system.tsx
+msgid "No items available"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -991,6 +1030,10 @@ msgstr "시스템"
 msgid "System load averages over time"
 msgstr "시간에 따른 시스템 부하 평균"
 
+#: src/components/routes/system.tsx
+msgid "System Stats"
+msgstr ""
+
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "시스템"
@@ -1202,6 +1245,10 @@ msgstr "최근 200개의 알림을 봅니다."
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
 msgstr "표시할 열"
+
+#: src/components/routes/system.tsx
+msgid "Volume usage of docker containers"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Waiting for enough records to display"

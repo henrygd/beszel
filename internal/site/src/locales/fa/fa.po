@@ -267,6 +267,10 @@ msgstr "برای جزئیات بیشتر، لاگ‌ها را بررسی کنی�
 msgid "Check your notification service"
 msgstr "سرویس اطلاع‌رسانی خود را بررسی کنید"
 
+#: src/components/routes/system.tsx
+msgid "Clear all"
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
 msgstr "برای مشاهده اطلاعات بیشتر روی یک سیستم کلیک کنید."
@@ -292,6 +296,10 @@ msgstr "تأیید رمز عبور"
 #: src/components/routes/home.tsx
 msgid "Connection is down"
 msgstr "اتصال قطع است"
+
+#: src/components/routes/system.tsx
+msgid "Container health status and uptime"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -415,6 +423,10 @@ msgstr "دیسک"
 msgid "Disk I/O"
 msgstr "ورودی/خروجی دیسک"
 
+#: src/components/routes/system.tsx
+msgid "Disk read/write rates of docker containers"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "واحد دیسک"
@@ -434,12 +446,28 @@ msgid "Docker CPU Usage"
 msgstr "میزان استفاده از CPU داکر"
 
 #: src/components/routes/system.tsx
+msgid "Docker Disk I/O"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Docker Health & Uptime"
+msgstr ""
+
+#: src/components/routes/system.tsx
 msgid "Docker Memory Usage"
 msgstr "میزان استفاده از حافظه داکر"
 
 #: src/components/routes/system.tsx
 msgid "Docker Network I/O"
 msgstr "ورودی/خروجی شبکه داکر"
+
+#: src/components/routes/system.tsx
+msgid "Docker Stats"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Docker Volumes"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Documentation"
@@ -549,8 +577,15 @@ msgstr "ارسال اعلان آزمایشی ناموفق بود"
 msgid "Failed to update alert"
 msgstr "به‌روزرسانی هشدار ناموفق بود"
 
-#: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
+msgid "Filter containers..."
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Filter stacks..."
+msgstr ""
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "فیلتر..."
@@ -726,6 +761,10 @@ msgstr "ترافیک شبکه رابط‌های عمومی"
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
 msgstr "واحد شبکه"
+
+#: src/components/routes/system.tsx
+msgid "No items available"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -991,6 +1030,10 @@ msgstr "سیستم"
 msgid "System load averages over time"
 msgstr "میانگین بار سیستم در طول زمان"
 
+#: src/components/routes/system.tsx
+msgid "System Stats"
+msgstr ""
+
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "سیستم‌ها"
@@ -1202,6 +1245,10 @@ msgstr "۲۰۰ هشدار اخیر خود را مشاهده کنید."
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
 msgstr "فیلدهای قابل مشاهده"
+
+#: src/components/routes/system.tsx
+msgid "Volume usage of docker containers"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Waiting for enough records to display"
