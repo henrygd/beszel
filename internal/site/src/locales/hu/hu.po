@@ -8,7 +8,7 @@ msgstr ""
 "Language: hu\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-14 19:16\n"
+"PO-Revision-Date: 2025-10-14 20:31\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -37,7 +37,7 @@ msgstr "{0, plural, one {# perc} few {# perc} many {# perc} other {# perc}}"
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
-msgstr ""
+msgstr "{0} a(z) {1} sorból kiválasztva."
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -210,12 +210,12 @@ msgstr "Bináris"
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr ""
+msgstr "Bitek (Kbps, Mbps, Gbps)"
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
-msgstr ""
+msgstr "Byte-ok (KB/s, MB/s, GB/s)"
 
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
@@ -451,11 +451,11 @@ msgstr "Dokumentáció"
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "Down"
-msgstr ""
+msgstr "Offline"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Down ({downSystemsLength})"
-msgstr ""
+msgstr "Offline ({downSystemsLength})"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
@@ -682,7 +682,7 @@ msgstr "A megjelenítési és értesítési beállítások kezelése."
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Manual setup instructions"
-msgstr ""
+msgstr "Manuális beállítási lépések"
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx
@@ -725,7 +725,7 @@ msgstr "Nyilvános interfészek hálózati forgalma"
 #. Context: Bytes or bits
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
-msgstr "Hálózat mértékegysége"
+msgstr "Sávszélesség mértékegysége"
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -780,7 +780,7 @@ msgstr "Oldal"
 #. placeholder {1}: table.getPageCount()
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Page {0} of {1}"
-msgstr ""
+msgstr "{0}/{1} oldal"
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
@@ -892,7 +892,7 @@ msgstr "Jelszó visszaállítása"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Resolved"
-msgstr ""
+msgstr "Megoldva"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
@@ -1039,7 +1039,7 @@ msgstr "Ezt a műveletet nem lehet visszavonni! Véglegesen törli a {name} öss
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
-msgstr ""
+msgstr "Ez véglegesen törli az összes kijelölt bejegyzést az adatbázisból."
 
 #: src/components/routes/system.tsx
 msgid "Throughput of {extraFsName}"
@@ -1095,15 +1095,15 @@ msgstr "Összes elküldött adat minden interfészenként"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Riaszt, ha az 1 perces terhelési átlag túllép egy küszöbértéket"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Riaszt, ha a 15 perces terhelési átlag túllép egy küszöbértéket"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Riaszt, ha az 5 perces terhelési átlag túllép egy küszöbértéket"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -1148,11 +1148,11 @@ msgstr "Ismeretlen"
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
-msgstr ""
+msgstr "Online"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
-msgstr ""
+msgstr "Online ({upSystemsLength})"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
@@ -1197,7 +1197,7 @@ msgstr "Továbbiak megjelenítése"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
-msgstr ""
+msgstr "Legfrissebb 200 riasztásod áttekintése."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
