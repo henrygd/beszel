@@ -8,7 +8,7 @@ msgstr ""
 "Language: hu\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-03 18:42\n"
+"PO-Revision-Date: 2025-10-14 18:15\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -46,7 +46,7 @@ msgstr "1 óra"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr ""
+msgstr "1 perc"
 
 #: src/lib/utils.ts
 msgid "1 minute"
@@ -63,7 +63,7 @@ msgstr "12 óra"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr ""
+msgstr "15 perc"
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -76,7 +76,7 @@ msgstr "30 nap"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr ""
+msgstr "5 perc"
 
 #. Table column
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -87,7 +87,7 @@ msgstr "Műveletek"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Active"
-msgstr ""
+msgstr "Aktív"
 
 #: src/components/routes/home.tsx
 msgid "Active Alerts"
@@ -116,7 +116,7 @@ msgstr "Állítsa be a diagram megjelenítését."
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
-msgstr ""
+msgstr "Adminisztáció"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -126,7 +126,7 @@ msgstr "Ügynök"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Alert History"
-msgstr ""
+msgstr "Riasztási előzmények"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
@@ -145,7 +145,7 @@ msgstr "Biztosan törölni szeretnéd {name}-t?"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
-msgstr ""
+msgstr "Biztos vagy benne?"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -232,7 +232,7 @@ msgstr "Figyelem - potenciális adatvesztés"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr ""
+msgstr "Celsius (°C)"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -269,7 +269,7 @@ msgstr "Ellenőrizd az értesítési szolgáltatásodat"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
-msgstr ""
+msgstr "További információkért kattints egy rendszerre."
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
@@ -291,7 +291,7 @@ msgstr "Jelszó megerősítése"
 
 #: src/components/routes/home.tsx
 msgid "Connection is down"
-msgstr ""
+msgstr "Kapcsolat megszakadt"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -317,7 +317,7 @@ msgstr "Docker run másolása"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Environment variables"
 msgid "Copy env"
-msgstr ""
+msgstr "Környezet másolása"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
@@ -346,11 +346,11 @@ msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
-msgstr ""
+msgstr "YAML másolása"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -365,7 +365,7 @@ msgstr "Fiók létrehozása"
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
 msgid "Created"
-msgstr ""
+msgstr "Létrehozva"
 
 #: src/components/routes/settings/general.tsx
 msgid "Critical (%)"
@@ -463,18 +463,18 @@ msgstr "Letöltés"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
-msgstr ""
+msgstr "Időtartam"
 
 #: src/components/add-system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
-msgstr ""
+msgstr "Szerkesztés"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/otp-forms.tsx
 msgid "Email"
-msgstr ""
+msgstr "Email"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
@@ -518,7 +518,7 @@ msgstr "A <0>config.yml</0> fájlban nem definiált meglévő rendszerek törlé
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
-msgstr ""
+msgstr "Exportálás"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
@@ -530,7 +530,7 @@ msgstr "Exportálja a jelenlegi rendszerkonfigurációt."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr ""
+msgstr "Fahrenheit (°F)"
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
@@ -622,7 +622,7 @@ msgstr "Érvénytelen e-mail cím."
 #. Linux kernel
 #: src/components/routes/system.tsx
 msgid "Kernel"
-msgstr ""
+msgstr "Kernel"
 
 #: src/components/routes/settings/general.tsx
 msgid "Language"
@@ -634,24 +634,24 @@ msgstr "Elrendezés"
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
-msgstr ""
+msgstr "Terhelési átlag"
 
 #: src/lib/alerts.ts
 msgid "Load Average 15m"
-msgstr ""
+msgstr "Terhelési átlag 15p"
 
 #: src/lib/alerts.ts
 msgid "Load Average 1m"
-msgstr ""
+msgstr "Terhelési átlag 1p"
 
 #: src/lib/alerts.ts
 msgid "Load Average 5m"
-msgstr ""
+msgstr "Terhelési átlag 5p"
 
 #. Short label for load average
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
-msgstr ""
+msgstr "Terhelési átlag"
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -733,7 +733,7 @@ msgstr "Nincs találat."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "No results."
-msgstr ""
+msgstr "Nincs találat."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -797,7 +797,7 @@ msgstr "A jelszónak legalább 8 karakternek kell lennie."
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
-msgstr ""
+msgstr "A jelszó legfeljebb 72 byte lehet."
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"
@@ -813,7 +813,7 @@ msgstr "Szüneteltetve"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused ({pausedSystemsLength})"
-msgstr ""
+msgstr "Szüneteltetve ({pausedSystemsLength})"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -850,7 +850,7 @@ msgstr "Kérjük, jelentkezzen be a fiókjába"
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr ""
+msgstr "Port"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -917,7 +917,7 @@ msgstr "Beállítások mentése"
 
 #: src/components/add-system.tsx
 msgid "Save system"
-msgstr ""
+msgstr "Rendszer mentése"
 
 #: src/components/navbar.tsx
 msgid "Search"
@@ -965,7 +965,7 @@ msgstr "Rendezés"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 msgid "State"
-msgstr ""
+msgstr "Állapot"
 
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
@@ -989,7 +989,7 @@ msgstr "Rendszer"
 
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
-msgstr ""
+msgstr "Rendszer terhelési átlaga"
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -1006,7 +1006,7 @@ msgstr "Tábla"
 #. Temperature label in systems table
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
-msgstr ""
+msgstr "Hőmérséklet"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -1015,7 +1015,7 @@ msgstr "Hőmérséklet"
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"
-msgstr ""
+msgstr "Hőmérséklet mértékegysége"
 
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
@@ -1185,7 +1185,7 @@ msgstr "Felhasználók"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
-msgstr ""
+msgstr "Érték"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
