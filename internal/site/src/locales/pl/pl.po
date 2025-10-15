@@ -1085,6 +1085,11 @@ msgstr "Tokeny umożliwiają agentom łączenie się i rejestrację. Odciski pal
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Tokeny i odciski palców (fingerprinty) służą do uwierzytelniania połączeń WebSocket z hubem."
 
+#: src/components/ui/chart.tsx
+#: src/components/ui/chart.tsx
+msgid "Total"
+msgstr ""
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
 msgstr "Całkowita ilość danych odebranych dla każdego interfejsu"

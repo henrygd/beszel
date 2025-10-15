@@ -61,6 +61,7 @@ export default memo(function MemChart({ chartData, showMax }: { chartData: Chart
 									const { value: convertedValue, unit } = formatBytes(value * 1024, false, Unit.Bytes, true)
 									return decimalString(convertedValue, convertedValue >= 100 ? 1 : 2) + " " + unit
 								}}
+								showTotal={true}
 							/>
 						}
 					/>
