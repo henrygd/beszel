@@ -1080,6 +1080,11 @@ msgstr "Tokens allow agents to connect and register. Fingerprints are stable ide
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 
+#: src/components/ui/chart.tsx
+#: src/components/ui/chart.tsx
+msgid "Total"
+msgstr "Total"
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
 msgstr "Total data received for each interface"

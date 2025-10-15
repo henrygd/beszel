@@ -1085,6 +1085,11 @@ msgstr "تسمح الرموز المميزة للوكلاء بالاتصال و�
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "تُستخدم الرموز المميزة والبصمات للمصادقة على اتصالات WebSocket إلى المحور."
 
+#: src/components/ui/chart.tsx
+#: src/components/ui/chart.tsx
+msgid "Total"
+msgstr ""
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
 msgstr "إجمالي البيانات المستلمة لكل واجهة"
