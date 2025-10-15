@@ -124,7 +124,7 @@ const ChartTooltipContent = React.forwardRef<
 			itemSorter,
 			contentFormatter: content = undefined,
 			truncate = false,
-			showTotal = true,
+			showTotal = false,
 			totalLabel,
 		},
 		ref

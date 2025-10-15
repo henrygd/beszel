@@ -29,6 +29,7 @@ export default function AreaChartDefault({
 	domain,
 	legend,
 	itemSorter,
+	showTotal = false,
 }: // logRender = false,
 {
 	chartData: ChartData
@@ -40,6 +41,7 @@ export default function AreaChartDefault({
 	domain?: [number, number]
 	legend?: boolean
 	itemSorter?: (a: any, b: any) => number
+	showTotal?: boolean
 	// logRender?: boolean
 }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
@@ -81,6 +83,7 @@ export default function AreaChartDefault({
 								<ChartTooltipContent
 									labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 									contentFormatter={contentFormatter}
+									showTotal={showTotal}
 								/>
 							}
 						/>
@@ -107,5 +110,5 @@ export default function AreaChartDefault({
 				</ChartContainer>
 			</div>
 		)
-	}, [chartData.systemStats.at(-1), yAxisWidth, maxToggled])
+	}, [chartData.systemStats.at(-1), yAxisWidth, maxToggled, showTotal])
 }
