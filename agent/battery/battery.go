@@ -5,6 +5,8 @@ package battery
 
 import (
 	"errors"
+	"fmt"
+	"os"
 	"log/slog"
 
 	"github.com/distatus/battery"
@@ -12,7 +14,6 @@ import (
 
 var systemHasBattery = false
 var haveCheckedBattery = false
-var hasReportedBatteryError []bool = []
 
 // HasReadableBattery checks if the system has a battery and returns true if it does.
 func HasReadableBattery() bool {
@@ -20,8 +21,15 @@ func HasReadableBattery() bool {
 		return systemHasBattery
 	}
 	haveCheckedBattery = true
-	bat, err := battery.Get(0)
-	systemHasBattery = err == nil && bat != nil && bat.Design != 0 && bat.Full != 0
+	batteries,err := battery.GetAll()
+	if err == nil {
+		// even if there's errors getting some batteries, the system
+		// definitely has a battery if the list is not empty.
+		// This list will include everything `battery` can find,
+		// including things like bluetooth devices.
+		fmt.Fprintln(os.Stderr, err)
+	}
+	systemHasBattery = len(batteries) > 0
 	if !systemHasBattery {
 		slog.Debug("No battery found", "err", err)
 	}
@@ -35,28 +43,27 @@ func GetBatteryStats() (batteryPercent uint8, batteryState uint8, err error) {
 		return batteryPercent, batteryState, errors.ErrUnsupported
 	}
 	batteries, err := battery.GetAll()
-	if err != nil || len(batteries) == 0 {
-		return batteryPercent, batteryState, err
+	// we'll handle errors later by skipping batteries with errors, rather
+	// than skipping everything because of the presence of some errors.
+	if len(batteries) == 0 {
+		return batteryPercent, batteryState, errors.New("no batteries")
 	}
+
 	totalCapacity := float64(0)
 	totalCharge := float64(0)
 	errs, partialErrs := err.(battery.Errors)
 
 	for i, bat := range batteries {
 		if partialErrs && errs[i] != nil {
-			if ! hasReportedBatteryError[i] {
-				fmt.Fprintf(os.Stderr, "Error getting info for BAT%d: %s\n", i, errs[i])
-				hasReportedBatteryError[i] = true
-				continue
-			}
+			continue
 		}
-		hasReportedBatteryError[i] = true
 		// we don't need to nil check here because we skip batteries with incomplete stats
-		if bat.Design != 0 {
-			totalCapacity += bat.Design
-		} else {
-			totalCapacity += bat.Full
-		}
+		// if bat.Design != 0 {
+		// 	totalCapacity += bat.Design
+		// } else {
+		// 	totalCapacity += bat.Full
+		// }
+		totalCapacity += bat.Full
 		totalCharge += bat.Current
 	}
 	batteryPercent = uint8(totalCharge / totalCapacity * 100)
