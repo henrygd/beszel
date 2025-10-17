@@ -55,14 +55,9 @@ func GetBatteryStats() (batteryPercent uint8, batteryState uint8, err error) {
 
 	for i, bat := range batteries {
 		if partialErrs && errs[i] != nil {
+			// if there were some errors, like missing data, skip it
 			continue
 		}
-		// we don't need to nil check here because we skip batteries with incomplete stats
-		// if bat.Design != 0 {
-		// 	totalCapacity += bat.Design
-		// } else {
-		// 	totalCapacity += bat.Full
-		// }
 		totalCapacity += bat.Full
 		totalCharge += bat.Current
 	}
