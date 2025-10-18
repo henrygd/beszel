@@ -1,4 +1,12 @@
-## 0.13.2
+## 0.14.0
+
+- Add `/containers` page for viewing current status of all running containers. (#928)
+
+- Add ability to view container status, health, details, and basic logs. (#928)
+
+- Probable fix for erroneous network stats when interface resets (#1267, #1246)
+
+# 0.13.2
 
 - Add ability to set custom name for extra filesystems. (#379)
 

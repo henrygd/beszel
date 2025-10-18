@@ -465,7 +465,7 @@ func TestApiRoutesAuthentication(t *testing.T) {
 				"Authorization": userToken,
 			},
 			ExpectedStatus:  400,
-			ExpectedContent: []string{"system parameter is required"},
+			ExpectedContent: []string{"system and container parameters are required"},
 			TestAppFactory:  testAppFactory,
 		},
 		{
@@ -476,7 +476,7 @@ func TestApiRoutesAuthentication(t *testing.T) {
 				"Authorization": userToken,
 			},
 			ExpectedStatus:  400,
-			ExpectedContent: []string{"container parameter is required"},
+			ExpectedContent: []string{"system and container parameters are required"},
 			TestAppFactory:  testAppFactory,
 		},
 		{
