@@ -39,7 +39,7 @@ export default function Navbar() {
 			<Link
 				href={basePath}
 				aria-label="Home"
-				className="p-2 ps-0 me-3"
+				className="p-2 ps-0 me-3 group"
 				onMouseEnter={runOnce(() => import("@/components/routes/home"))}
 			>
 				<Logo className="h-[1.1rem] md:h-5 fill-foreground" />
