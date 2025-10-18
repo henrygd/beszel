@@ -154,19 +154,20 @@ func (sm *SystemManager) startRealtimeWorker() {
 // fetchRealtimeDataAndNotify fetches realtime data for all active subscriptions and notifies the clients.
 func (sm *SystemManager) fetchRealtimeDataAndNotify() {
 	for systemId, info := range activeSubscriptions {
-		system, ok := sm.systems.GetOk(systemId)
-		if ok {
-			go func() {
-				data, err := system.fetchDataFromAgent(common.DataRequestOptions{CacheTimeMs: 1000})
-				if err != nil {
-					return
-				}
-				bytes, err := json.Marshal(data)
-				if err == nil {
-					notify(sm.hub, info.subscription, bytes)
-				}
-			}()
+		system, err := sm.GetSystem(systemId)
+		if err != nil {
+			continue
 		}
+		go func() {
+			data, err := system.fetchDataFromAgent(common.DataRequestOptions{CacheTimeMs: 1000})
+			if err != nil {
+				return
+			}
+			bytes, err := json.Marshal(data)
+			if err == nil {
+				notify(sm.hub, info.subscription, bytes)
+			}
+		}()
 	}
 }
 

@@ -271,6 +271,8 @@ func (client *WebSocketClient) sendResponse(data any, requestID *uint32) error {
 			response.SystemData = v
 		case *common.FingerprintResponse:
 			response.Fingerprint = v
+		case string:
+			response.String = &v
 		// case []byte:
 		// 	response.RawBytes = v
 		// case string:

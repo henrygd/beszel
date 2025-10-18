@@ -13,7 +13,7 @@ import {
 	XIcon,
 } from "lucide-react"
 import { subscribeKeys } from "nanostores"
-import React, { type JSX, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import React, { type JSX, lazy, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import AreaChartDefault, { type DataPoint } from "@/components/charts/area-chart"
 import ContainerChart from "@/components/charts/container-chart"
 import DiskChart from "@/components/charts/disk-chart"
@@ -72,6 +72,8 @@ import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import NetworkSheet from "./system/network-sheet"
 import LineChartDefault from "../charts/line-chart"
+
+
 
 type ChartTimeData = {
 	time: number
@@ -214,7 +216,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	// subscribe to realtime metrics if chart time is 1m
 	// biome-ignore lint/correctness/useExhaustiveDependencies: not necessary
 	useEffect(() => {
-		let unsub = () => {}
+		let unsub = () => { }
 		if (!system.id || chartTime !== "1m") {
 			return
 		}
@@ -987,6 +989,9 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						})}
 					</div>
 				)}
+				{id && containerData.length > 0 && (
+					<LazyContainersTable systemId={id} />
+				)}
 			</div>
 
 			{/* add space for tooltip if more than 12 containers */}
@@ -1114,5 +1119,16 @@ export function ChartCard({
 				{isIntersecting && children}
 			</div>
 		</Card>
+	)
+}
+
+const ContainersTable = lazy(() => import("../containers-table/containers-table"))
+
+function LazyContainersTable({ systemId }: { systemId: string }) {
+	const { isIntersecting, ref } = useIntersectionObserver()
+	return (
+		<div ref={ref}>
+			{isIntersecting && <ContainersTable systemId={systemId} />}
+		</div>
 	)
 }

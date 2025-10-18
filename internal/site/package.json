@@ -1,7 +1,7 @@
 {
 	"name": "beszel",
 	"private": true,
-	"version": "0.13.2",
+	"version": "0.14.0-alpha.2",
 	"type": "module",
 	"scripts": {
 		"dev": "vite --host",
@@ -49,11 +49,12 @@
 		"react": "^19.1.1",
 		"react-dom": "^19.1.1",
 		"recharts": "^2.15.4",
+		"shiki": "^3.13.0",
 		"tailwind-merge": "^3.3.1",
 		"valibot": "^0.42.1"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "2.2.3",
+		"@biomejs/biome": "2.2.4",
 		"@lingui/cli": "^5.4.1",
 		"@lingui/swc-plugin": "^5.6.1",
 		"@lingui/vite-plugin": "^5.4.1",

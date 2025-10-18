@@ -1,6 +1,7 @@
 import { Trans } from "@lingui/react/macro"
 import { getPagePath } from "@nanostores/router"
 import {
+	ContainerIcon,
 	DatabaseBackupIcon,
 	LogOutIcon,
 	LogsIcon,
@@ -47,6 +48,13 @@ export default function Navbar() {
 			<SearchButton />
 
 			<div className="flex items-center ms-auto" onMouseEnter={() => import("@/components/routes/settings/general")}>
+				<Link
+					href={getPagePath($router, "containers")}
+					className={cn("", buttonVariants({ variant: "ghost", size: "icon" }))}
+					aria-label="Containers"
+				>
+					<ContainerIcon className="h-[1.2rem] w-[1.2rem]" strokeWidth={1.5} />
+				</Link>
 				<LangToggle />
 				<ModeToggle />
 				<Link

@@ -236,7 +236,10 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// update / delete user alerts
 	apiAuth.POST("/user-alerts", alerts.UpsertUserAlerts)
 	apiAuth.DELETE("/user-alerts", alerts.DeleteUserAlerts)
-
+	// get container logs
+	apiAuth.GET("/containers/logs", h.getContainerLogs)
+	// get container info
+	apiAuth.GET("/containers/info", h.getContainerInfo)
 	return nil
 }
 
@@ -265,6 +268,41 @@ func (h *Hub) getUniversalToken(e *core.RequestEvent) error {
 	}
 	_, response["active"] = tokenMap.GetOk(token)
 	return e.JSON(http.StatusOK, response)
+}
+
+// containerRequestHandler handles both container logs and info requests
+func (h *Hub) containerRequestHandler(e *core.RequestEvent, fetchFunc func(*systems.System, string) (string, error), responseKey string) error {
+	systemID := e.Request.URL.Query().Get("system")
+	containerID := e.Request.URL.Query().Get("container")
+
+	if systemID == "" || containerID == "" {
+		return e.JSON(http.StatusBadRequest, map[string]string{"error": "system and container parameters are required"})
+	}
+
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil {
+		return e.JSON(http.StatusNotFound, map[string]string{"error": "system not found"})
+	}
+
+	data, err := fetchFunc(system, containerID)
+	if err != nil {
+		return e.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+
+	return e.JSON(http.StatusOK, map[string]string{responseKey: data})
+}
+
+// getContainerLogs handles GET /api/beszel/containers/logs requests
+func (h *Hub) getContainerLogs(e *core.RequestEvent) error {
+	return h.containerRequestHandler(e, func(system *systems.System, containerID string) (string, error) {
+		return system.FetchContainerLogsFromAgent(containerID)
+	}, "logs")
+}
+
+func (h *Hub) getContainerInfo(e *core.RequestEvent) error {
+	return h.containerRequestHandler(e, func(system *systems.System, containerID string) (string, error) {
+		return system.FetchContainerInfoFromAgent(containerID)
+	}, "info")
 }
 
 // generates key pair if it doesn't exist and returns signer

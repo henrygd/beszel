@@ -449,6 +449,47 @@ func TestApiRoutesAuthentication(t *testing.T) {
 				})
 			},
 		},
+		{
+			Name:            "GET /containers/logs - no auth should fail",
+			Method:          http.MethodGet,
+			URL:             "/api/beszel/containers/logs?system=test-system&container=test-container",
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /containers/logs - with auth but missing system param should fail",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/containers/logs?container=test-container",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  400,
+			ExpectedContent: []string{"system parameter is required"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /containers/logs - with auth but missing container param should fail",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/containers/logs?system=test-system",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  400,
+			ExpectedContent: []string{"container parameter is required"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /containers/logs - with auth but invalid system should fail",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/containers/logs?system=invalid-system&container=test-container",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  404,
+			ExpectedContent: []string{"system not found"},
+			TestAppFactory:  testAppFactory,
+		},
 
 		// Auth Optional Routes - Should work without authentication
 		{

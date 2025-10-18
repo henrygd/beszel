@@ -63,6 +63,15 @@ func NewSystemManager(hub hubLike) *SystemManager {
 	}
 }
 
+// GetSystem returns a system by ID from the store
+func (sm *SystemManager) GetSystem(systemID string) (*System, error) {
+	sys, ok := sm.systems.GetOk(systemID)
+	if !ok {
+		return nil, fmt.Errorf("system not found")
+	}
+	return sys, nil
+}
+
 // Initialize sets up the system manager by binding event hooks and starting existing systems.
 // It configures SSH client settings and begins monitoring all non-paused systems from the database.
 // Systems are started with staggered delays to prevent overwhelming the hub during startup.

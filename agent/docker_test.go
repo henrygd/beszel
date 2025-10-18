@@ -858,6 +858,54 @@ func TestDeltaTrackerCacheTimeIsolation(t *testing.T) {
 	assert.Equal(t, uint64(200000), recvTracker2.Delta(ctr.IdShort))
 }
 
+func TestParseDockerStatus(t *testing.T) {
+	tests := []struct {
+		name           string
+		input          string
+		expectedStatus string
+		expectedHealth container.DockerHealth
+	}{
+		{
+			name:           "status with About an removed",
+			input:          "Up About an hour (healthy)",
+			expectedStatus: "Up an hour",
+			expectedHealth: container.DockerHealthHealthy,
+		},
+		{
+			name:           "status without About an unchanged",
+			input:          "Up 2 hours (healthy)",
+			expectedStatus: "Up 2 hours",
+			expectedHealth: container.DockerHealthHealthy,
+		},
+		{
+			name:           "status with About and no parentheses",
+			input:          "Up About an hour",
+			expectedStatus: "Up an hour",
+			expectedHealth: container.DockerHealthNone,
+		},
+		{
+			name:           "status without parentheses",
+			input:          "Created",
+			expectedStatus: "Created",
+			expectedHealth: container.DockerHealthNone,
+		},
+		{
+			name:           "empty status",
+			input:          "",
+			expectedStatus: "",
+			expectedHealth: container.DockerHealthNone,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			status, health := parseDockerStatus(tt.input)
+			assert.Equal(t, tt.expectedStatus, status)
+			assert.Equal(t, tt.expectedHealth, health)
+		})
+	}
+}
+
 func TestConstantsAndUtilityFunctions(t *testing.T) {
 	// Test constants are properly defined
 	assert.Equal(t, uint16(60000), defaultCacheTimeMs)
