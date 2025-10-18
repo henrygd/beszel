@@ -8,7 +8,7 @@ msgstr ""
 "Language: hr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-03 18:42\n"
+"PO-Revision-Date: 2025-10-18 22:52\n"
 "Last-Translator: \n"
 "Language-Team: Croatian\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
@@ -76,7 +76,7 @@ msgstr "30 dana"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr ""
+msgstr "5 minuta"
 
 #. Table column
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -126,7 +126,7 @@ msgstr "Agent"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Alert History"
-msgstr ""
+msgstr "Povijest Upozorenja"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
@@ -166,7 +166,7 @@ msgstr "Prosjek premašuje <0>{value}{0}</0>"
 
 #: src/components/routes/system.tsx
 msgid "Average power consumption of GPUs"
-msgstr ""
+msgstr "Prosječna potrošnja energije grafičkog procesora"
 
 #: src/components/routes/system.tsx
 msgid "Average system-wide CPU utilization"
@@ -175,7 +175,7 @@ msgstr "Prosječna iskorištenost procesora na cijelom sustavu"
 #. placeholder {0}: gpu.n
 #: src/components/routes/system.tsx
 msgid "Average utilization of {0}"
-msgstr ""
+msgstr "Prosječna iskorištenost {0}"
 
 #: src/components/routes/system.tsx
 msgid "Average utilization of GPU engines"
@@ -210,12 +210,12 @@ msgstr "Binarni"
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr ""
+msgstr "Bitovi (Kbps, Mbps, Gbps)"
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
-msgstr ""
+msgstr "Bajtovi (KB/s, MB/s, GB/s)"
 
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
@@ -232,11 +232,11 @@ msgstr "Oprez - mogući gubitak podataka"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr ""
+msgstr "Celsius (°C)"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
-msgstr ""
+msgstr "Promijenite mjerene jedinice korištene za prikazivanje podataka."
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
@@ -269,7 +269,7 @@ msgstr "Provjerite Vaš servis notifikacija"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
-msgstr ""
+msgstr "Odaberite sustav za prikaz više informacija."
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
@@ -291,7 +291,7 @@ msgstr "Potvrdite lozinku"
 
 #: src/components/routes/home.tsx
 msgid "Connection is down"
-msgstr ""
+msgstr "Veza je pala"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -338,15 +338,15 @@ msgstr "Kopiraj tekst"
 
 #: src/components/add-system.tsx
 msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
-msgstr ""
+msgstr "Kopirajte instalacijsku komandu za opisanog agenta ili automatski registrirajte agenta uz pomoć <0>sveopćeg tokena</0>."
 
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
-msgstr ""
+msgstr "Kopirajte sadržaj <0>docker-compose.yml</0> datoteke za opisanog agenta ili automatski registrirajte agenta uz pomoć <1>sveopćeg tokena</1>."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
-msgstr ""
+msgstr "Kopiraj YAML"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
@@ -400,7 +400,7 @@ msgstr "Izbriši"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
-msgstr ""
+msgstr "Izbriši otisak"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -417,7 +417,7 @@ msgstr "Disk I/O"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
-msgstr ""
+msgstr "Mjerna jedinica za disk"
 
 #: src/components/charts/disk-chart.tsx
 #: src/components/routes/system.tsx
@@ -451,11 +451,11 @@ msgstr "Dokumentacija"
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "Down"
-msgstr ""
+msgstr "Sustav je pao"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Down ({downSystemsLength})"
-msgstr ""
+msgstr "Sustav je pao ({downSystemsLength})"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
