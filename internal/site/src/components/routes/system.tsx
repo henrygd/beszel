@@ -172,7 +172,6 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const [containerData, setContainerData] = useState([] as ChartData["containerData"])
 	const netCardRef = useRef<HTMLDivElement>(null)
 	const persistChartTime = useRef(false)
-	const [bottomSpacing, setBottomSpacing] = useState(0)
 	const [chartLoading, setChartLoading] = useState(true)
 	const isLongerChart = !["1m", "1h"].includes(chartTime) // true if chart time is not 1m or 1h
 	const userSettings = $userSettings.get()
@@ -396,20 +395,6 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 			hide?: boolean
 		}[]
 	}, [system, t])
-
-	/** Space for tooltip if more than 12 containers */
-	useEffect(() => {
-		if (!netCardRef.current || !containerData.length) {
-			setBottomSpacing(0)
-			return
-		}
-		const tooltipHeight = (Object.keys(containerData[0]).length - 11) * 17.8 - 40
-		const wrapperEl = chartWrapRef.current as HTMLDivElement
-		const wrapperRect = wrapperEl.getBoundingClientRect()
-		const chartRect = netCardRef.current.getBoundingClientRect()
-		const distanceToBottom = wrapperRect.bottom - chartRect.bottom
-		setBottomSpacing(tooltipHeight - distanceToBottom)
-	}, [containerData])
 
 	// keyboard navigation between systems
 	useEffect(() => {
@@ -993,9 +978,6 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 					<LazyContainersTable systemId={id} />
 				)}
 			</div>
-
-			{/* add space for tooltip if more than 12 containers */}
-			{bottomSpacing > 0 && <span className="block" style={{ height: bottomSpacing }} />}
 		</>
 	)
 })

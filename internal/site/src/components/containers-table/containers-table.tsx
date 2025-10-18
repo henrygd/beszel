@@ -51,11 +51,12 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 		}
 
 		const fetchData = (lastXMs: number) => {
+			const updated = Date.now() - lastXMs
 			let filter: string
 			if (systemId) {
-				filter = pb.filter("system={:system}", { system: systemId })
+				filter = pb.filter("system={:system} && updated > {:updated}", { system: systemId, updated })
 			} else {
-				filter = pb.filter("updated > {:updated}", { updated: Date.now() - lastXMs })
+				filter = pb.filter("updated > {:updated}", { updated })
 			}
 			pb.collection<ContainerRecord>("containers")
 				.getList(0, 2000, {
@@ -132,6 +133,8 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 
 	const rows = table.getRowModel().rows
 	const visibleColumns = table.getVisibleLeafColumns()
+
+	if (!rows.length) return null
 
 	return (
 		<Card className="p-6 @container w-full">
@@ -370,7 +373,7 @@ function ContainerSheet({ sheetOpen, setSheetOpen, activeContainer }: { sheetOpe
 								<MaximizeIcon className="size-4" />
 							</Button>
 						</div>
-						<div className={cn("grow h-[calc(50dvh-2rem)] w-full overflow-auto p-3 rounded-md bg-gh-dark text-sm", !infoDisplay && "animate-pulse")}>
+						<div className={cn("grow h-[calc(50dvh-4rem)] w-full overflow-auto p-3 rounded-md bg-gh-dark text-sm", !infoDisplay && "animate-pulse")}>
 							<div dangerouslySetInnerHTML={{ __html: infoDisplay }} />
 						</div>
 
@@ -461,8 +464,8 @@ function LogsFullscreenDialog({ open, onOpenChange, logsDisplay, containerName, 
 					}}
 					className="absolute top-3 right-11 opacity-60 hover:opacity-100 p-1"
 					disabled={isRefreshing}
-					title={t`Refresh logs`}
-					aria-label={t`Refresh logs`}
+					title={t`Refresh`}
+					aria-label={t`Refresh`}
 				>
 					<RefreshCwIcon
 						className={`size-4 transition-transform duration-300 ${isRefreshing ? 'animate-spin' : ''}`}
