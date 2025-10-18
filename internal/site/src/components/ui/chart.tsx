@@ -91,16 +91,16 @@ const ChartTooltip = RechartsPrimitive.Tooltip
 const ChartTooltipContent = React.forwardRef<
 	HTMLDivElement,
 	React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
-		React.ComponentProps<"div"> & {
-			hideLabel?: boolean
-			indicator?: "line" | "dot" | "dashed"
-			nameKey?: string
-			labelKey?: string
-			unit?: string
-			filter?: string
-			contentFormatter?: (item: any, key: string) => React.ReactNode | string
-			truncate?: boolean
-		}
+	React.ComponentProps<"div"> & {
+		hideLabel?: boolean
+		indicator?: "line" | "dot" | "dashed"
+		nameKey?: string
+		labelKey?: string
+		unit?: string
+		filter?: string
+		contentFormatter?: (item: any, key: string) => React.ReactNode | string
+		truncate?: boolean
+	}
 >(
 	(
 		{
@@ -129,7 +129,11 @@ const ChartTooltipContent = React.forwardRef<
 
 		React.useMemo(() => {
 			if (filter) {
-				payload = payload?.filter((item) => (item.name as string)?.toLowerCase().includes(filter.toLowerCase()))
+				const filterTerms = filter.toLowerCase().split(" ").filter(term => term.length > 0)
+				payload = payload?.filter((item) => {
+					const itemName = (item.name as string)?.toLowerCase()
+					return filterTerms.some(term => itemName?.includes(term))
+				})
 			}
 			if (itemSorter) {
 				// @ts-expect-error
@@ -250,10 +254,10 @@ const ChartLegend = RechartsPrimitive.Legend
 const ChartLegendContent = React.forwardRef<
 	HTMLDivElement,
 	React.ComponentProps<"div"> &
-		Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
-			hideIcon?: boolean
-			nameKey?: string
-		}
+	Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
+		hideIcon?: boolean
+		nameKey?: string
+	}
 >(({ className, payload, verticalAlign = "bottom" }, ref) => {
 	// const { config } = useChart()
 

@@ -91,7 +91,8 @@ export default memo(function TemperatureChart({ chartData }: { chartData: ChartD
 						}
 					/>
 					{colors.map((key) => {
-						const filtered = filter && !key.toLowerCase().includes(filter.toLowerCase())
+						const filterTerms = filter ? filter.toLowerCase().split(" ").filter(term => term.length > 0) : []
+						const filtered = filterTerms.length > 0 && !filterTerms.some(term => key.toLowerCase().includes(term))
 						const strokeOpacity = filtered ? 0.1 : 1
 						return (
 							<Line

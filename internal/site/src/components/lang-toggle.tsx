@@ -12,7 +12,7 @@ export function LangToggle() {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Button variant={"ghost"} size="icon" className="hidden 450:flex">
+				<Button variant={"ghost"} size="icon" className="hidden sm:flex">
 					<LanguagesIcon className="absolute h-[1.2rem] w-[1.2rem] light:opacity-85" />
 					<span className="sr-only">Language</span>
 				</Button>

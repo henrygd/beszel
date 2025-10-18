@@ -94,8 +94,11 @@ export default memo(function ContainerChart({
 		if (!filter) {
 			return new Set<string>()
 		}
-		const filterLower = filter.toLowerCase()
-		return new Set(Object.keys(chartConfig).filter((key) => !key.toLowerCase().includes(filterLower)))
+		const filterTerms = filter.toLowerCase().split(" ").filter(term => term.length > 0)
+		return new Set(Object.keys(chartConfig).filter((key) => {
+			const keyLower = key.toLowerCase()
+			return !filterTerms.some(term => keyLower.includes(term))
+		}))
 	}, [chartConfig, filter])
 
 	// console.log('rendered at', new Date())

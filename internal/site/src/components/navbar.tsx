@@ -50,7 +50,7 @@ export default function Navbar() {
 			<div className="flex items-center ms-auto" onMouseEnter={() => import("@/components/routes/settings/general")}>
 				<Link
 					href={getPagePath($router, "containers")}
-					className={cn("", buttonVariants({ variant: "ghost", size: "icon" }))}
+					className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
 					aria-label="Containers"
 				>
 					<ContainerIcon className="h-[1.2rem] w-[1.2rem]" strokeWidth={1.5} />
@@ -60,13 +60,13 @@ export default function Navbar() {
 				<Link
 					href={getPagePath($router, "settings", { name: "general" })}
 					aria-label="Settings"
-					className={cn("", buttonVariants({ variant: "ghost", size: "icon" }))}
+					className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
 				>
 					<SettingsIcon className="h-[1.2rem] w-[1.2rem]" />
 				</Link>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
-						<button aria-label="User Actions" className={cn("", buttonVariants({ variant: "ghost", size: "icon" }))}>
+						<button aria-label="User Actions" className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}>
 							<UserIcon className="h-[1.2rem] w-[1.2rem]" />
 						</button>
 					</DropdownMenuTrigger>
@@ -120,7 +120,7 @@ export default function Navbar() {
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
-				<AddSystemButton className="ms-2" />
+				<AddSystemButton className="ms-2 hidden 450:flex" />
 			</div>
 		</div>
 	)

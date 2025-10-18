@@ -14,7 +14,7 @@ export default memo(() => {
 	return useMemo(
 		() => (
 			<>
-				<div className="grid gap-4">
+				<div className="flex flex-col gap-4">
 					<ActiveAlerts />
 					<Suspense>
 						<SystemsTable />
