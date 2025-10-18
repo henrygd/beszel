@@ -8,7 +8,7 @@ msgstr ""
 "Language: tr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-03 18:42\n"
+"PO-Revision-Date: 2025-10-18 23:59\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -89,7 +89,7 @@ msgstr "Eylemler"
 msgid "Active"
 msgstr "Aktif"
 
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Active Alerts"
 msgstr "Aktif Uyarılar"
 
@@ -133,7 +133,15 @@ msgstr "Uyarı Geçmişi"
 msgid "Alerts"
 msgstr "Uyarılar"
 
+#: src/components/command-palette.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/containers.tsx
+msgid "All Containers"
+msgstr "Tüm Konteynerler"
+
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/command-palette.tsx
+#: src/components/routes/home.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
@@ -267,6 +275,10 @@ msgstr "Daha fazla ayrıntı için günlükleri kontrol edin."
 msgid "Check your notification service"
 msgstr "Bildirim hizmetinizi kontrol edin"
 
+#: src/components/containers-table/containers-table.tsx
+msgid "Click on a container to view more information."
+msgstr "Daha fazla bilgi görüntülemek için bir konteynere tıklayın."
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
 msgstr "Daha fazla bilgi görmek için bir sisteme tıklayın."
@@ -289,7 +301,7 @@ msgstr "Uyarı bildirimlerini nasıl alacağınızı yapılandırın."
 msgid "Confirm password"
 msgstr "Şifreyi onayla"
 
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "Bağlantı kesildi"
 
@@ -348,6 +360,7 @@ msgstr "Aşağıdaki agent için <0>docker-compose.yml</0> içeriğini kopyalay�
 msgid "Copy YAML"
 msgstr "YAML'ı kopyala"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr ""
@@ -385,7 +398,6 @@ msgid "Current state"
 msgstr "Mevcut durum"
 
 #: src/components/command-palette.tsx
-#: src/components/routes/home.tsx
 msgid "Dashboard"
 msgstr "Gösterge Paneli"
 
@@ -401,6 +413,10 @@ msgstr "Sil"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
 msgstr "Parmak izini sil"
+
+#: src/components/containers-table/containers-table.tsx
+msgid "Detail"
+msgstr "Ayrıntı"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -508,7 +524,7 @@ msgstr "Hata"
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Son {2, plural, one {# dakika} other {# dakika}} içinde {0}{1} aşıyor"
 
@@ -549,6 +565,7 @@ msgstr "Test bildirimi gönderilemedi"
 msgid "Failed to update alert"
 msgstr "Uyarı güncellenemedi"
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -595,6 +612,10 @@ msgstr "GPU Güç Çekimi"
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "Izgara"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Health"
+msgstr "Sağlık"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -667,6 +688,7 @@ msgid "Login attempt failed"
 msgstr "Giriş denemesi başarısız"
 
 #: src/components/command-palette.tsx
+#: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
 msgid "Logs"
 msgstr "Günlükler"
@@ -689,6 +711,7 @@ msgstr "Manuel kurulum talimatları"
 msgid "Max 1 min"
 msgstr "Maks 1 dk"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Bellek"
@@ -704,9 +727,11 @@ msgstr "Docker konteynerlerinin bellek kullanımı"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
 msgid "Name"
 msgstr "Ad"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "Ağ"
@@ -731,6 +756,7 @@ msgstr "Ağ birimi"
 msgid "No results found."
 msgstr "Sonuç bulunamadı."
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "No results."
 msgstr "Sonuç yok."
@@ -772,6 +798,7 @@ msgstr "Veya devam et"
 msgid "Overwrite existing alerts"
 msgstr "Mevcut uyarıların üzerine yaz"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
 msgstr "Sayfa"
@@ -876,6 +903,11 @@ msgstr "Oku"
 msgid "Received"
 msgstr "Alındı"
 
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+msgid "Refresh"
+msgstr "Yenile"
+
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
 msgstr "Tek kullanımlık şifre iste"
@@ -967,6 +999,7 @@ msgstr "Sıralama Ölçütü"
 msgid "State"
 msgstr "Durum"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -981,6 +1014,7 @@ msgid "Swap Usage"
 msgstr "Takas Kullanımı"
 
 #: src/components/alerts-history-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -1153,6 +1187,10 @@ msgstr "Açık"
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
 msgstr "Açık ({upSystemsLength})"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Updated"
+msgstr "Güncellendi"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
