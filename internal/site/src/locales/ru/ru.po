@@ -8,7 +8,7 @@ msgstr ""
 "Language: ru\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-03 18:42\n"
+"PO-Revision-Date: 2025-10-18 23:59\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -89,7 +89,7 @@ msgstr "Действия"
 msgid "Active"
 msgstr "Активно"
 
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Active Alerts"
 msgstr "Активные оповещения"
 
@@ -133,7 +133,15 @@ msgstr "История оповещений"
 msgid "Alerts"
 msgstr "Оповещения"
 
+#: src/components/command-palette.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/containers.tsx
+msgid "All Containers"
+msgstr "Все контейнеры"
+
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/command-palette.tsx
+#: src/components/routes/home.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
@@ -267,6 +275,10 @@ msgstr "Проверьте журналы для получения более �
 msgid "Check your notification service"
 msgstr "Проверьте ваш сервис уведомлений"
 
+#: src/components/containers-table/containers-table.tsx
+msgid "Click on a container to view more information."
+msgstr "Нажмите на контейнер, чтобы просмотреть дополнительную информацию."
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
 msgstr "Нажмите на систему для просмотра дополнительной информации."
@@ -289,7 +301,7 @@ msgstr "Настройте, как вы получаете уведомлени�
 msgid "Confirm password"
 msgstr "Подтвердите пароль"
 
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "Нет соединения"
 
@@ -348,6 +360,7 @@ msgstr "Скопируйте содержимое <0>docker-compose.yml</0> дл
 msgid "Copy YAML"
 msgstr "Скопировать YAML"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "ЦП"
@@ -385,7 +398,6 @@ msgid "Current state"
 msgstr "Текущее состояние"
 
 #: src/components/command-palette.tsx
-#: src/components/routes/home.tsx
 msgid "Dashboard"
 msgstr "Панель управления"
 
@@ -401,6 +413,10 @@ msgstr "Удалить"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
 msgstr "Удалить отпечаток"
+
+#: src/components/containers-table/containers-table.tsx
+msgid "Detail"
+msgstr "Подробности"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -508,7 +524,7 @@ msgstr "Ошибка"
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Превышает {0}{1} за последние {2, plural, one {# минуту} other {# минут}}"
 
@@ -549,6 +565,7 @@ msgstr "Не удалось отправить тестовое уведомле
 msgid "Failed to update alert"
 msgstr "Не удалось обновить оповещение"
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -595,6 +612,10 @@ msgstr "Потребляемая мощность GPU"
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "Сетка"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Health"
+msgstr "Здоровье"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -667,6 +688,7 @@ msgid "Login attempt failed"
 msgstr "Попытка входа не удалась"
 
 #: src/components/command-palette.tsx
+#: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
 msgid "Logs"
 msgstr "Журналы"
@@ -689,6 +711,7 @@ msgstr "Инструкции по ручной настройке"
 msgid "Max 1 min"
 msgstr "Макс 1 мин"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Память"
@@ -704,9 +727,11 @@ msgstr "Использование памяти контейнерами Docker"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
 msgid "Name"
 msgstr "Имя"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "Сеть"
@@ -731,6 +756,7 @@ msgstr "Единицы измерения скорости сети"
 msgid "No results found."
 msgstr "Результаты не найдены."
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "No results."
 msgstr "Нет результатов."
@@ -772,6 +798,7 @@ msgstr "Или продолжить с"
 msgid "Overwrite existing alerts"
 msgstr "Перезаписать существующие оповещения"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
 msgstr "Страница"
@@ -876,6 +903,11 @@ msgstr "Чтение"
 msgid "Received"
 msgstr "Получено"
 
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+msgid "Refresh"
+msgstr "Обновить"
+
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
 msgstr "Запросить одноразовый пароль"
@@ -967,6 +999,7 @@ msgstr "Сортировать по"
 msgid "State"
 msgstr "Состояние"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -981,6 +1014,7 @@ msgid "Swap Usage"
 msgstr "Использование подкачки"
 
 #: src/components/alerts-history-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -1153,6 +1187,10 @@ msgstr "В сети"
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
 msgstr "В сети ({upSystemsLength})"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Updated"
+msgstr "Обновлено"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
