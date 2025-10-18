@@ -8,7 +8,7 @@ msgstr ""
 "Language: vi\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-03 18:42\n"
+"PO-Revision-Date: 2025-10-18 23:59\n"
 "Last-Translator: \n"
 "Language-Team: Vietnamese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -89,7 +89,7 @@ msgstr "Hành động"
 msgid "Active"
 msgstr "Hoạt động"
 
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Active Alerts"
 msgstr "Cảnh báo hoạt động"
 
@@ -133,7 +133,15 @@ msgstr "Lịch sử Cảnh báo"
 msgid "Alerts"
 msgstr "Cảnh báo"
 
+#: src/components/command-palette.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/containers.tsx
+msgid "All Containers"
+msgstr "Tất cả container"
+
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/command-palette.tsx
+#: src/components/routes/home.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
@@ -267,6 +275,10 @@ msgstr "Kiểm tra nhật ký để biết thêm chi tiết."
 msgid "Check your notification service"
 msgstr "Kiểm tra dịch vụ thông báo của bạn"
 
+#: src/components/containers-table/containers-table.tsx
+msgid "Click on a container to view more information."
+msgstr "Nhấp vào container để xem thêm thông tin."
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
 msgstr "Nhấp vào hệ thống để xem thêm thông tin."
@@ -289,7 +301,7 @@ msgstr "Cấu hình cách bạn nhận thông báo cảnh báo."
 msgid "Confirm password"
 msgstr "Xác nhận mật khẩu"
 
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "Mất kết nối"
 
@@ -348,6 +360,7 @@ msgstr "Sao chép nội dung <0>docker-compose.yml</0> cho tác nhân bên dư�
 msgid "Copy YAML"
 msgstr "Sao chép YAML"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr ""
@@ -385,7 +398,6 @@ msgid "Current state"
 msgstr "Trạng thái hiện tại"
 
 #: src/components/command-palette.tsx
-#: src/components/routes/home.tsx
 msgid "Dashboard"
 msgstr "Bảng điều khiển"
 
@@ -401,6 +413,10 @@ msgstr "Xóa"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
 msgstr "Xóa vân tay"
+
+#: src/components/containers-table/containers-table.tsx
+msgid "Detail"
+msgstr "Chi tiết"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -508,7 +524,7 @@ msgstr "Lỗi"
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Vượt quá {0}{1} trong {2, plural, one {# phút} other {# phút}} qua"
 
@@ -549,6 +565,7 @@ msgstr "Gửi thông báo thử nghiệm thất bại"
 msgid "Failed to update alert"
 msgstr "Cập nhật cảnh báo thất bại"
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -595,6 +612,10 @@ msgstr "Mức tiêu thụ điện của GPU"
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "Lưới"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Health"
+msgstr "Sức khỏe"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -667,6 +688,7 @@ msgid "Login attempt failed"
 msgstr "Nỗ lực đăng nhập thất bại"
 
 #: src/components/command-palette.tsx
+#: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
 msgid "Logs"
 msgstr "Nhật ký"
@@ -689,6 +711,7 @@ msgstr "Hướng dẫn cài đặt thủ công"
 msgid "Max 1 min"
 msgstr "Tối đa 1 phút"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Bộ nhớ"
@@ -704,9 +727,11 @@ msgstr "Sử dụng bộ nhớ của các container Docker"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
 msgid "Name"
 msgstr "Tên"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "Mạng"
@@ -731,6 +756,7 @@ msgstr "Đơn vị mạng"
 msgid "No results found."
 msgstr "Không tìm thấy kết quả."
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "No results."
 msgstr "Không có kết quả."
@@ -772,6 +798,7 @@ msgstr "Hoặc tiếp tục với"
 msgid "Overwrite existing alerts"
 msgstr "Ghi đè các cảnh báo hiện có"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
 msgstr "Trang"
@@ -876,6 +903,11 @@ msgstr "Đọc"
 msgid "Received"
 msgstr "Đã nhận"
 
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+msgid "Refresh"
+msgstr "Làm mới"
+
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
 msgstr "Yêu cầu mật khẩu một lần"
@@ -967,6 +999,7 @@ msgstr "Sắp xếp theo"
 msgid "State"
 msgstr "Trạng thái"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -981,6 +1014,7 @@ msgid "Swap Usage"
 msgstr "Sử dụng Hoán đổi"
 
 #: src/components/alerts-history-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -1153,6 +1187,10 @@ msgstr "Hoạt động"
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
 msgstr "Hoạt động ({upSystemsLength})"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Updated"
+msgstr "Đã cập nhật"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
