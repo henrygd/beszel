@@ -89,7 +89,7 @@ msgstr "操作"
 msgid "Active"
 msgstr "活跃"
 
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Active Alerts"
 msgstr "启用的警报"
 
@@ -133,7 +133,15 @@ msgstr "警报历史"
 msgid "Alerts"
 msgstr "警报"
 
+#: src/components/command-palette.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/containers.tsx
+msgid "All Containers"
+msgstr "所有容器"
+
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/command-palette.tsx
+#: src/components/routes/home.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
@@ -267,6 +275,10 @@ msgstr "检查日志以获取更多详细信息。"
 msgid "Check your notification service"
 msgstr "检查您的通知服务"
 
+#: src/components/containers-table/containers-table.tsx
+msgid "Click on a container to view more information."
+msgstr "点击容器查看更多信息。"
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
 msgstr "点击系统查看更多信息。"
@@ -289,7 +301,7 @@ msgstr "配置您接收警报通知的方式。"
 msgid "Confirm password"
 msgstr "确认密码"
 
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "连接已断开"
 
@@ -348,6 +360,7 @@ msgstr "复制下面的客户端<0>docker-compose.yml</0>内容，或使用<1>�
 msgid "Copy YAML"
 msgstr "复制 YAML"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "CPU"
@@ -385,7 +398,6 @@ msgid "Current state"
 msgstr "当前状态"
 
 #: src/components/command-palette.tsx
-#: src/components/routes/home.tsx
 msgid "Dashboard"
 msgstr "仪表板"
 
@@ -401,6 +413,10 @@ msgstr "删除"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
 msgstr "删除指纹"
+
+#: src/components/containers-table/containers-table.tsx
+msgid "Detail"
+msgstr "详情"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -508,7 +524,7 @@ msgstr "错误"
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "在过去的{2, plural, one {# 分钟} other {# 分钟}}中超过{0}{1}"
 
@@ -549,6 +565,7 @@ msgstr "发送测试通知失败"
 msgid "Failed to update alert"
 msgstr "更新警报失败"
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -595,6 +612,10 @@ msgstr "GPU 功耗"
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "网格"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Health"
+msgstr "健康"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -667,6 +688,7 @@ msgid "Login attempt failed"
 msgstr "登录尝试失败"
 
 #: src/components/command-palette.tsx
+#: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
 msgid "Logs"
 msgstr "日志"
@@ -689,6 +711,7 @@ msgstr "手动设置说明"
 msgid "Max 1 min"
 msgstr "1分钟内最大值"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "内存"
@@ -704,9 +727,11 @@ msgstr "Docker 容器的内存使用率"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
 msgid "Name"
 msgstr "名称"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "网络"
@@ -731,6 +756,7 @@ msgstr "网络单位"
 msgid "No results found."
 msgstr "未找到结果。"
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "No results."
 msgstr "无结果。"
@@ -772,6 +798,7 @@ msgstr "或使用以下方式登录"
 msgid "Overwrite existing alerts"
 msgstr "覆盖现有警报"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
 msgstr "页面"
@@ -876,6 +903,11 @@ msgstr "读取"
 msgid "Received"
 msgstr "接收"
 
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+msgid "Refresh"
+msgstr "刷新"
+
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
 msgstr "请求一次性密码"
@@ -967,6 +999,7 @@ msgstr "排序依据"
 msgid "State"
 msgstr "状态"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -981,6 +1014,7 @@ msgid "Swap Usage"
 msgstr "SWAP 使用率"
 
 #: src/components/alerts-history-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -1153,6 +1187,10 @@ msgstr "在线"
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
 msgstr "在线 ({upSystemsLength})"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Updated"
+msgstr "已更新"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"

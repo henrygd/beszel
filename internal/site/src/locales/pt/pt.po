@@ -89,7 +89,7 @@ msgstr "Ações"
 msgid "Active"
 msgstr "Ativo"
 
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Active Alerts"
 msgstr "Alertas Ativos"
 
@@ -133,7 +133,15 @@ msgstr "Histórico de alertas"
 msgid "Alerts"
 msgstr "Alertas"
 
+#: src/components/command-palette.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/containers.tsx
+msgid "All Containers"
+msgstr "Todos os contentores"
+
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/command-palette.tsx
+#: src/components/routes/home.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
@@ -267,6 +275,10 @@ msgstr "Verifique os logs para mais detalhes."
 msgid "Check your notification service"
 msgstr "Verifique seu serviço de notificação"
 
+#: src/components/containers-table/containers-table.tsx
+msgid "Click on a container to view more information."
+msgstr "Clique num contentor para ver mais informações."
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
 msgstr "Clique em um sistema para ver mais informações."
@@ -289,7 +301,7 @@ msgstr "Configure como você recebe notificações de alerta."
 msgid "Confirm password"
 msgstr "Confirmar senha"
 
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "A conexão está inativa"
 
@@ -348,6 +360,7 @@ msgstr "Copie o conteúdo do <0>docker-compose.yml</0> do agente abaixo, ou regi
 msgid "Copy YAML"
 msgstr "Copiar YAML"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "CPU"
@@ -385,7 +398,6 @@ msgid "Current state"
 msgstr "Estado atual"
 
 #: src/components/command-palette.tsx
-#: src/components/routes/home.tsx
 msgid "Dashboard"
 msgstr "Painel"
 
@@ -401,6 +413,10 @@ msgstr "Excluir"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
 msgstr "Excluir impressão digital"
+
+#: src/components/containers-table/containers-table.tsx
+msgid "Detail"
+msgstr "Detalhe"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -508,7 +524,7 @@ msgstr "Erro"
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Excede {0}{1} no último {2, plural, one {# minuto} other {# minutos}}"
 
@@ -549,6 +565,7 @@ msgstr "Falha ao enviar notificação de teste"
 msgid "Failed to update alert"
 msgstr "Falha ao atualizar alerta"
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -595,6 +612,10 @@ msgstr "Consumo de Energia da GPU"
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "Grade"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Health"
+msgstr "Saúde"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -667,6 +688,7 @@ msgid "Login attempt failed"
 msgstr "Tentativa de login falhou"
 
 #: src/components/command-palette.tsx
+#: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
 msgid "Logs"
 msgstr "Logs"
@@ -689,6 +711,7 @@ msgstr "Instruções de configuração manual"
 msgid "Max 1 min"
 msgstr "Máx 1 min"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Memória"
@@ -704,9 +727,11 @@ msgstr "Uso de memória dos contêineres Docker"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
 msgid "Name"
 msgstr "Nome"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "Rede"
@@ -731,6 +756,7 @@ msgstr "Unidade de rede"
 msgid "No results found."
 msgstr "Nenhum resultado encontrado."
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "No results."
 msgstr "Sem resultados."
@@ -772,6 +798,7 @@ msgstr "Ou continue com"
 msgid "Overwrite existing alerts"
 msgstr "Sobrescrever alertas existentes"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
 msgstr "Página"
@@ -876,6 +903,11 @@ msgstr "Ler"
 msgid "Received"
 msgstr "Recebido"
 
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+msgid "Refresh"
+msgstr "Atualizar"
+
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
 msgstr "Solicitar senha de uso único"
@@ -967,6 +999,7 @@ msgstr "Ordenar Por"
 msgid "State"
 msgstr "Estado"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -981,6 +1014,7 @@ msgid "Swap Usage"
 msgstr "Uso de Swap"
 
 #: src/components/alerts-history-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -1153,6 +1187,10 @@ msgstr "“Ligado”"
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
 msgstr "Ativo ({upSystemsLength})"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Updated"
+msgstr "Atualizado"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
