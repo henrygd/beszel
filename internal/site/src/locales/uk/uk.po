@@ -267,6 +267,10 @@ msgstr "Перевірте журнали для отримання додатк
 msgid "Check your notification service"
 msgstr "Перевірте свій сервіс сповіщень"
 
+#: src/components/routes/system.tsx
+msgid "Clear all"
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
 msgstr "Натисніть на систему, щоб переглянути більше інформації."
@@ -292,6 +296,10 @@ msgstr "Підтвердьте пароль"
 #: src/components/routes/home.tsx
 msgid "Connection is down"
 msgstr "З'єднання розірвано"
+
+#: src/components/routes/system.tsx
+msgid "Container health status and uptime"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -415,6 +423,10 @@ msgstr "Диск"
 msgid "Disk I/O"
 msgstr "Дисковий ввід/вивід"
 
+#: src/components/routes/system.tsx
+msgid "Disk read/write rates of docker containers"
+msgstr ""
+
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
 msgstr "Одиниця виміру диска"
@@ -434,12 +446,28 @@ msgid "Docker CPU Usage"
 msgstr "Використання ЦП Docker"
 
 #: src/components/routes/system.tsx
+msgid "Docker Disk I/O"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Docker Health & Uptime"
+msgstr ""
+
+#: src/components/routes/system.tsx
 msgid "Docker Memory Usage"
 msgstr "Використання пам'яті Docker"
 
 #: src/components/routes/system.tsx
 msgid "Docker Network I/O"
 msgstr "Мережевий ввід/вивід Docker"
+
+#: src/components/routes/system.tsx
+msgid "Docker Stats"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Docker Volumes"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Documentation"
@@ -549,8 +577,15 @@ msgstr "Не вдалося надіслати тестове сповіщенн
 msgid "Failed to update alert"
 msgstr "Не вдалося оновити сповіщення"
 
-#: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
+msgid "Filter containers..."
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Filter stacks..."
+msgstr ""
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Фільтр..."
@@ -726,6 +761,10 @@ msgstr "Мережевий трафік публічних інтерфейсі�
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
 msgstr "Одиниця виміру мережі"
+
+#: src/components/routes/system.tsx
+msgid "No items available"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -991,6 +1030,10 @@ msgstr "Система"
 msgid "System load averages over time"
 msgstr "Середнє навантаження системи з часом"
 
+#: src/components/routes/system.tsx
+msgid "System Stats"
+msgstr ""
+
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "Системи"
@@ -1202,6 +1245,10 @@ msgstr "Переглянути 200 останніх сповіщень."
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
 msgstr "Видимі стовпці"
+
+#: src/components/routes/system.tsx
+msgid "Volume usage of docker containers"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Waiting for enough records to display"

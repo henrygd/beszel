@@ -4,25 +4,29 @@ import "time"
 
 // Docker container info from /containers/json
 type ApiInfo struct {
-	Id      string
-	IdShort string
-	Names   []string
-	Status  string
+	Id         string
+	IdShort    string
+	Names      []string
+	Status     string
+	Health     string `json:"Health,omitempty"`     // Container health status
+	Created    int64  `json:"Created,omitempty"`    // Container creation timestamp
+	StartedAt  int64  `json:"StartedAt,omitempty"`  // Container start timestamp
+	FinishedAt int64  `json:"FinishedAt,omitempty"` // Container finish timestamp
+	State      string `json:"State,omitempty"`      // Container state (running, stopped, etc.)
 	// Image   string
 	// ImageID string
 	// Command string
-	// Created int64
 	// Ports      []Port
 	// SizeRw     int64 `json:",omitempty"`
 	// SizeRootFs int64 `json:",omitempty"`
-	// Labels     map[string]string
+	Labels map[string]string
 	// State      string
 	// HostConfig struct {
 	// 	NetworkMode string            `json:",omitempty"`
 	// 	Annotations map[string]string `json:",omitempty"`
 	// }
 	// NetworkSettings *SummaryNetworkSettings
-	// Mounts          []MountPoint
+	Mounts []MountPoint
 }
 
 // Docker container resources from /containers/{id}/stats
@@ -32,6 +36,7 @@ type ApiStats struct {
 	Networks    map[string]NetworkStats
 	CPUStats    CPUStats    `json:"cpu_stats"`
 	MemoryStats MemoryStats `json:"memory_stats"`
+	BlkioStats  BlkioStats  `json:"blkio_stats"`
 }
 
 func (s *ApiStats) CalculateCpuPercentLinux(prevCpuContainer uint64, prevCpuSystem uint64) float64 {
@@ -98,21 +103,58 @@ type NetworkStats struct {
 	TxBytes uint64 `json:"tx_bytes"`
 }
 
+type BlkioStats struct {
+	IoServiceBytesRecursive []BlkioStatEntry `json:"io_service_bytes_recursive"`
+	IoServicedRecursive     []BlkioStatEntry `json:"io_serviced_recursive"`
+}
+
+type BlkioStatEntry struct {
+	Major uint64 `json:"major"`
+	Minor uint64 `json:"minor"`
+	Op    string `json:"op"`
+	Value uint64 `json:"value"`
+}
+
 type prevNetStats struct {
 	Sent uint64
 	Recv uint64
 }
 
+type prevDiskStats struct {
+	Read  uint64
+	Write uint64
+}
+
 // Docker container stats
 type Stats struct {
-	Name        string  `json:"n" cbor:"0,keyasint"`
-	Cpu         float64 `json:"c" cbor:"1,keyasint"`
-	Mem         float64 `json:"m" cbor:"2,keyasint"`
-	NetworkSent float64 `json:"ns" cbor:"3,keyasint"`
-	NetworkRecv float64 `json:"nr" cbor:"4,keyasint"`
-	// PrevCpu     [2]uint64    `json:"-"`
-	CpuSystem    uint64       `json:"-"`
-	CpuContainer uint64       `json:"-"`
-	PrevNet      prevNetStats `json:"-"`
-	PrevReadTime time.Time    `json:"-"`
+	Name        string             `json:"n" cbor:"0,keyasint"`
+	Cpu         float64            `json:"c" cbor:"1,keyasint"`
+	Mem         float64            `json:"m" cbor:"2,keyasint"`
+	NetworkSent float64            `json:"ns" cbor:"3,keyasint"`
+	NetworkRecv float64            `json:"nr" cbor:"4,keyasint"`
+	DiskRead    float64            `json:"dr" cbor:"5,keyasint"`                // Disk read rate in MB/s
+	DiskWrite   float64            `json:"dw" cbor:"6,keyasint"`                // Disk write rate in MB/s
+	Volumes     map[string]float64 `json:"v,omitempty" cbor:"7,keyasint"`       // Volume name to size mapping
+	Health      string             `json:"h,omitempty" cbor:"8,keyasint"`       // Container health status
+	Status      string             `json:"s,omitempty" cbor:"9,keyasint"`       // Container status (running, stopped, etc.)
+	Uptime      float64            `json:"u,omitempty" cbor:"10,keyasint"`      // Container uptime in seconds
+	Project     string             `json:"p,omitempty" cbor:"11,keyasint"`      // Docker Compose project name
+	IdShort     string             `json:"idShort,omitempty" cbor:"12,keyasint"` // Container short ID for frontend
+	CpuSystem    uint64            `json:"-"`
+	CpuContainer uint64            `json:"-"`
+	PrevNet      prevNetStats      `json:"-"`
+	PrevDisk     prevDiskStats     `json:"-"`
+	PrevReadTime time.Time         `json:"-"`
+}
+
+// MountPoint represents a mount point in a container
+type MountPoint struct {
+	Type        string `json:"Type"`
+	Name        string `json:"Name"`
+	Source      string `json:"Source"`
+	Destination string `json:"Destination"`
+	Driver      string `json:"Driver,omitempty"`
+	Mode        string `json:"Mode"`
+	RW          bool   `json:"RW"`
+	Propagation string `json:"Propagation"`
 }

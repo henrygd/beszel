@@ -290,6 +290,45 @@ export function formatBytes(
 
 export const chartMargin = { top: 12 }
 
+export function toFixedWithoutTrailingZeros(num: number, decimals: number): string {
+	const str = num.toFixed(decimals)
+	return str.replace(/\.?0+$/, "")
+}
+
+export const getSizeAndUnit = (n: number, isGigabytes = true) => {
+	const sizeInGB = isGigabytes ? n : n / 1_000
+
+	if (sizeInGB >= 1_000) {
+		return { v: sizeInGB / 1_000, u: " TB" }
+	}
+	if (sizeInGB >= 1) {
+		return { v: sizeInGB, u: " GB" }
+	}
+	return { v: isGigabytes ? sizeInGB * 1_000 : n, u: " MB" }
+}
+
+/**
+ * Generate a consistent fallback color for containers without assigned colors
+ * @param name Container name or identifier
+ * @returns HSL color string
+ */
+export function generateFallbackColor(name: string): string {
+	// Use a simple hash of the name to generate consistent colors
+	let hash = 0
+	for (let i = 0; i < name.length; i++) {
+		const char = name.charCodeAt(i)
+		hash = (hash << 5) - hash + char
+		hash = hash & hash // Convert to 32-bit integer
+	}
+
+	// Generate hue, saturation, and lightness from the hash
+	const hue = Math.abs(hash) % 360
+	const saturation = 65 + (Math.abs(hash) % 3) * 10 // 65%, 75%, 85%
+	const lightness = 50 + (Math.abs(hash) % 3) * 10 // 50%, 60%, 70%
+
+	return `hsl(${hue}, ${saturation}%, ${lightness}%)`
+}
+
 /**
  * Retuns value of system host, truncating full path if socket.
  * @example
