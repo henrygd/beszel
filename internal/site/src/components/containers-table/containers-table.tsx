@@ -28,8 +28,9 @@ import { Button } from "@/components/ui/button"
 import { $allSystemsById } from "@/lib/stores"
 import { MaximizeIcon, RefreshCwIcon } from "lucide-react"
 import { Separator } from "../ui/separator"
-import { Link } from "../router"
+import { $router, Link } from "../router"
 import { listenKeys } from "nanostores"
+import { getPagePath } from "@nanostores/router"
 
 const syntaxTheme = "github-dark-dimmed"
 
@@ -327,7 +328,7 @@ function ContainerSheet({ sheetOpen, setSheetOpen, activeContainer }: { sheetOpe
 					<SheetHeader>
 						<SheetTitle>{container.name}</SheetTitle>
 						<SheetDescription className="flex items-center gap-2">
-							<Link className="hover:underline" href={`/system/${container.system}`}>{$allSystemsById.get()[container.system]?.name ?? ""}</Link>
+							<Link className="hover:underline" href={getPagePath($router, "system", { id: container.system })}>{$allSystemsById.get()[container.system]?.name ?? ""}</Link>
 							<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 							{container.status}
 							<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
