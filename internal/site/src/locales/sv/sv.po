@@ -636,6 +636,11 @@ msgstr "Vilande"
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Om du har glömt lösenordet till ditt administratörskonto kan du återställa det med följande kommando."
 
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image"
+msgstr "Image"
+
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
 msgstr "Ogiltig e-postadress."

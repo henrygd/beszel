@@ -636,6 +636,11 @@ msgstr "Boşta"
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Yönetici hesabınızın şifresini kaybettiyseniz, aşağıdaki komutu kullanarak sıfırlayabilirsiniz."
 
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image"
+msgstr "İmaj"
+
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
 msgstr "Geçersiz e-posta adresi."

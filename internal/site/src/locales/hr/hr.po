@@ -189,10 +189,6 @@ msgstr "Prosječna iskorištenost {0}"
 msgid "Average utilization of GPU engines"
 msgstr "Prosječna iskorištenost GPU motora"
 
-#: src/components/routes/system.tsx
-msgid "Average utilization of GPU engines"
-msgstr "Prosječna iskorištenost GPU motora"
-
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
@@ -422,10 +418,6 @@ msgstr "Izbriši otisak"
 msgid "Detail"
 msgstr "Detalj"
 
-#: src/components/containers-table/containers-table.tsx
-msgid "Detail"
-msgstr "Detalj"
-
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Discharging"
@@ -480,10 +472,6 @@ msgstr "Sustav je pao"
 #: src/components/systems-table/systems-table.tsx
 msgid "Down ({downSystemsLength})"
 msgstr "Sustav je pao ({downSystemsLength})"
-
-#: src/components/routes/system/network-sheet.tsx
-msgid "Download"
-msgstr "Preuzmi"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
@@ -647,6 +635,11 @@ msgstr "Neaktivna"
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Ako ste izgubili lozinku za svoj administratorski račun, možete ju resetirati pomoću sljedeće naredbe."
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image"
+msgstr "Slika"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -1139,14 +1132,6 @@ msgstr "Ukupni podaci primljeni za svako sučelje"
 msgid "Total data sent for each interface"
 msgstr "Ukupni podaci poslani za svako sučelje"
 
-#: src/components/routes/system/network-sheet.tsx
-msgid "Total data received for each interface"
-msgstr "Ukupni podaci primljeni za svako sučelje"
-
-#: src/components/routes/system/network-sheet.tsx
-msgid "Total data sent for each interface"
-msgstr "Ukupni podaci poslani za svako sučelje"
-
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
 msgstr "Pokreće se kada prosječna opterećenost sustava unutar 1 minute prijeđe prag"
@@ -1207,14 +1192,6 @@ msgstr "Sustav je podignut"
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
 msgstr "Sustav je podignut ({upSystemsLength})"
-
-#: src/components/containers-table/containers-table-columns.tsx
-msgid "Updated"
-msgstr "Ažurirano"
-
-#: src/components/routes/system/network-sheet.tsx
-msgid "Upload"
-msgstr "Otpremi"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Updated"
@@ -1316,4 +1293,3 @@ msgstr "YAML Konfiguracija"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Vaše korisničke postavke su ažurirane."
-

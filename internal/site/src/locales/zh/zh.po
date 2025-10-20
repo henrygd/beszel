@@ -636,6 +636,11 @@ msgstr "閒置"
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "如果您遺失管理員帳號密碼，可以使用以下指令重設。"
 
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image"
+msgstr "鏡像"
+
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
 msgstr "無效的電子郵件地址。"
