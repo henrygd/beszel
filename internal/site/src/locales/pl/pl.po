@@ -8,7 +8,7 @@ msgstr ""
 "Language: pl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-18 23:59\n"
+"PO-Revision-Date: 2025-10-20 21:37\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
@@ -635,6 +635,11 @@ msgstr "Bezczynna"
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Jeśli utraciłeś hasło do swojego konta administratora, możesz je zresetować, używając następującego polecenia."
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image"
+msgstr "Obraz"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
