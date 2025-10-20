@@ -6,13 +6,14 @@ param (
     [string]$Url = "",
     [int]$Port = 45876,
     [string]$AgentPath = "",
-    [string]$NSSMPath = ""
+    [string]$NSSMPath = "",
+    [switch]$ConfigureFirewall
 )
 
 # Check if required parameters are provided
 if ([string]::IsNullOrWhiteSpace($Key)) {
     Write-Host "ERROR: SSH Key is required." -ForegroundColor Red
-    Write-Host "Usage: .\install-agent.ps1 -Key 'your-ssh-key-here' [-Token 'your-token-here'] [-Url 'your-hub-url-here'] [-Port port-number]" -ForegroundColor Yellow
+    Write-Host "Usage: .\install-agent.ps1 -Key 'your-ssh-key-here' [-Token 'your-token-here'] [-Url 'your-hub-url-here'] [-Port port-number] [-ConfigureFirewall]" -ForegroundColor Yellow
     Write-Host "Note: Token and Url are optional for backwards compatibility with older hub versions." -ForegroundColor Yellow
     exit 1
 }
@@ -568,6 +569,10 @@ try {
             $argumentList += "-NSSMPath"
             $argumentList += "`"$NSSMPath`""
         }
+
+        if ($ConfigureFirewall) {
+            $argumentList += "-ConfigureFirewall"
+        }
         
         # Relaunch the script with the -Elevated switch and pass parameters
         Start-Process powershell.exe -Verb RunAs -ArgumentList $argumentList
@@ -579,8 +584,11 @@ try {
         # Install the service
         Install-NSSMService -AgentPath $AgentPath -Key $Key -Token $Token -HubUrl $Url -Port $Port -NSSMPath $NSSMPath
         
-        # Configure firewall
-        Configure-Firewall -Port $Port
+        if ($ConfigureFirewall) {
+            Configure-Firewall -Port $Port
+        } else {
+            Write-Host "Skipping firewall configuration. Use -ConfigureFirewall to add an inbound rule for port $Port." -ForegroundColor Yellow
+        }
         
         # Start the service
         Start-BeszelAgentService -NSSMPath $NSSMPath

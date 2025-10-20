@@ -1,0 +1,28 @@
+FROM --platform=$BUILDPLATFORM golang:alpine AS builder
+
+WORKDIR /app
+
+COPY ../go.mod ../go.sum ./
+RUN go mod download
+
+# Copy source files
+COPY . ./
+
+# Build
+ARG TARGETOS TARGETARCH
+RUN CGO_ENABLED=0 GOGC=75 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-w -s" -o /agent ./internal/cmd/agent
+
+# --------------------------
+# Final image
+# Note: must cap_add: [CAP_PERFMON] and mount /dev/dri/ as volume
+# --------------------------
+FROM alpine:edge
+
+COPY --from=builder /agent /agent
+
+RUN apk add --no-cache -X https://dl-cdn.alpinelinux.org/alpine/edge/testing igt-gpu-tools
+
+# Ensure data persistence across container recreations
+VOLUME ["/var/lib/beszel-agent"]
+
+ENTRYPOINT ["/agent"]
