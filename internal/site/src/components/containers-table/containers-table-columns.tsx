@@ -8,7 +8,7 @@ import {
 	ClockIcon,
 	ContainerIcon,
 	CpuIcon,
-	HashIcon,
+	LayersIcon,
 	MemoryStickIcon,
 	ServerIcon,
 	ShieldCheckIcon,
@@ -58,15 +58,15 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 			return <span className="ms-1.5 xl:w-32 block truncate">{allSystems[getValue() as string]?.name ?? ""}</span>
 		},
 	},
-	{
-		id: "id",
-		accessorFn: (record) => record.id,
-		sortingFn: (a, b) => a.original.id.localeCompare(b.original.id),
-		header: ({ column }) => <HeaderButton column={column} name="ID" Icon={HashIcon} />,
-		cell: ({ getValue }) => {
-			return <span className="ms-1.5 me-3 font-mono">{getValue() as string}</span>
-		},
-	},
+	// {
+	// 	id: "id",
+	// 	accessorFn: (record) => record.id,
+	// 	sortingFn: (a, b) => a.original.id.localeCompare(b.original.id),
+	// 	header: ({ column }) => <HeaderButton column={column} name="ID" Icon={HashIcon} />,
+	// 	cell: ({ getValue }) => {
+	// 		return <span className="ms-1.5 me-3 font-mono">{getValue() as string}</span>
+	// 	},
+	// },
 	{
 		id: "cpu",
 		accessorFn: (record) => record.cpu,
@@ -123,6 +123,15 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 					{healthStatus}
 				</Badge>
 			)
+		},
+	},
+	{
+		id: "image",
+		sortingFn: (a, b) => a.original.image.localeCompare(b.original.image),
+		accessorFn: (record) => record.image,
+		header: ({ column }) => <HeaderButton column={column} name={t({ message: "Image", context: "Docker image" })} Icon={LayersIcon} />,
+		cell: ({ getValue }) => {
+			return <span className="ms-1.5 xl:w-36 block truncate">{getValue() as string}</span>
 		},
 	},
 	{

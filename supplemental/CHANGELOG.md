@@ -1,8 +1,12 @@
 ## 0.14.1
 
-- Add `MFA_OTP` environment variable to enable email-based one-time password for users and/or superusers. 
+- Add `MFA_OTP` environment variable to enable email-based one-time password for users and/or superusers.
+
+- Add image name to containers table. (#1302)
 
 - Add spacing for long temperature chart tooltip. (#1299)
+
+- Fix sorting by status in containers table. (#1294)
 
 ## 0.14.0
 
