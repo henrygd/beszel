@@ -120,7 +120,19 @@ func (h *Hub) initialize(e *core.ServeEvent) error {
 		return err
 	}
 	// set auth settings
-	usersCollection, err := e.App.FindCollectionByNameOrId("users")
+	if err := setCollectionAuthSettings(e.App); err != nil {
+		return err
+	}
+	return nil
+}
+
+// setCollectionAuthSettings sets up default authentication settings for the app
+func setCollectionAuthSettings(app core.App) error {
+	usersCollection, err := app.FindCollectionByNameOrId("users")
+	if err != nil {
+		return err
+	}
+	superusersCollection, err := app.FindCollectionByNameOrId(core.CollectionNameSuperusers)
 	if err != nil {
 		return err
 	}
@@ -128,10 +140,6 @@ func (h *Hub) initialize(e *core.ServeEvent) error {
 	disablePasswordAuth, _ := GetEnv("DISABLE_PASSWORD_AUTH")
 	usersCollection.PasswordAuth.Enabled = disablePasswordAuth != "true"
 	usersCollection.PasswordAuth.IdentityFields = []string{"email"}
-	// disable oauth if no providers are configured (todo: remove this in post 0.9.0 release)
-	if usersCollection.OAuth2.Enabled {
-		usersCollection.OAuth2.Enabled = len(usersCollection.OAuth2.Providers) > 0
-	}
 	// allow oauth user creation if USER_CREATION is set
 	if userCreation, _ := GetEnv("USER_CREATION"); userCreation == "true" {
 		cr := "@request.context = 'oauth2'"
@@ -139,11 +147,22 @@ func (h *Hub) initialize(e *core.ServeEvent) error {
 	} else {
 		usersCollection.CreateRule = nil
 	}
-	if err := e.App.Save(usersCollection); err != nil {
+	// enable mfaOtp mfa if MFA_OTP env var is set
+	mfaOtp, _ := GetEnv("MFA_OTP")
+	usersCollection.OTP.Length = 6
+	superusersCollection.OTP.Length = 6
+	usersCollection.OTP.Enabled = mfaOtp == "true"
+	usersCollection.MFA.Enabled = mfaOtp == "true"
+	superusersCollection.OTP.Enabled = mfaOtp == "true" || mfaOtp == "superusers"
+	superusersCollection.MFA.Enabled = mfaOtp == "true" || mfaOtp == "superusers"
+	if err := app.Save(superusersCollection); err != nil {
+		return err
+	}
+	if err := app.Save(usersCollection); err != nil {
 		return err
 	}
 	// allow all users to access systems if SHARE_ALL_SYSTEMS is set
-	systemsCollection, err := e.App.FindCachedCollectionByNameOrId("systems")
+	systemsCollection, err := app.FindCollectionByNameOrId("systems")
 	if err != nil {
 		return err
 	}
@@ -158,10 +177,7 @@ func (h *Hub) initialize(e *core.ServeEvent) error {
 	systemsCollection.ViewRule = &systemsReadRule
 	systemsCollection.UpdateRule = &updateDeleteRule
 	systemsCollection.DeleteRule = &updateDeleteRule
-	if err := e.App.Save(systemsCollection); err != nil {
-		return err
-	}
-	return nil
+	return app.Save(systemsCollection)
 }
 
 // registerCronJobs sets up scheduled tasks
