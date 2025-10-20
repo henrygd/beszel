@@ -11,6 +11,7 @@ import {
 	HardDriveIcon,
 	LayoutGridIcon,
 	MonitorIcon,
+	ServerIcon,
 	XIcon,
 } from "lucide-react"
 import { subscribeKeys } from "nanostores"
@@ -419,7 +420,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 			} : undefined,
 			memoryInfo ? {
 				value: memoryInfo.t,
-				Icon: MonitorIcon,
+				Icon: ServerIcon,
 				label: "Total Memory",
 			} : undefined,
 			system.info.d && system.info.d.length > 0 ? {
