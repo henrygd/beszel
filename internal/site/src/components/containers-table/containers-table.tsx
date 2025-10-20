@@ -135,8 +135,6 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 	const rows = table.getRowModel().rows
 	const visibleColumns = table.getVisibleLeafColumns()
 
-	if (!rows.length) return null
-
 	return (
 		<Card className="p-6 @container w-full">
 			<CardHeader className="p-0 mb-4">
@@ -196,7 +194,7 @@ const AllContainersTable = memo(
 				ref={scrollRef}
 			>
 				{/* add header height to table size */}
-				<div style={{ height: `${virtualizer.getTotalSize() + 50}px`, paddingTop, paddingBottom }}>
+				<div style={{ height: `${virtualizer.getTotalSize() + 48}px`, paddingTop, paddingBottom }}>
 					<table className="text-sm w-full h-full">
 						<ContainersTableHead table={table} />
 						<TableBody>
@@ -423,6 +421,7 @@ const ContainerTableRow = memo(
 				{row.getVisibleCells().map((cell) => (
 					<TableCell
 						key={cell.id}
+						className="py-0"
 						style={{
 							height: virtualRow.size,
 						}}
