@@ -8,7 +8,7 @@ msgstr ""
 "Language: ja\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-18 23:59\n"
+"PO-Revision-Date: 2025-10-20 21:37\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -635,6 +635,11 @@ msgstr "アイドル"
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "管理者アカウントのパスワードを忘れた場合は、次のコマンドを使用してリセットできます。"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image"
+msgstr "イメージ"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
