@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-20 15:14\n"
+"PO-Revision-Date: 2025-10-20 16:38\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -31,7 +31,7 @@ msgstr "{0, plural, one {# heure} other {# heures}}"
 #. placeholder {0}: Math.trunc(system.info.u / 60)
 #: src/components/routes/system.tsx
 msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
-msgstr ""
+msgstr "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
@@ -734,7 +734,7 @@ msgstr "Nom"
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
-msgstr ""
+msgstr "Net"
 
 #: src/components/routes/system.tsx
 msgid "Network traffic of docker containers"
@@ -750,7 +750,7 @@ msgstr "Trafic réseau des interfaces publiques"
 #. Context: Bytes or bits
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
-msgstr ""
+msgstr "Unité réseau"
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -759,7 +759,7 @@ msgstr "Aucun résultat trouvé."
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "No results."
-msgstr ""
+msgstr "Aucun résultat."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -770,7 +770,7 @@ msgstr "Aucun système trouvé."
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
-msgstr ""
+msgstr "Notifications"
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
@@ -801,13 +801,13 @@ msgstr "Écraser les alertes existantes"
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
-msgstr ""
+msgstr "Page"
 
 #. placeholder {0}: table.getState().pagination.pageIndex + 1
 #. placeholder {1}: table.getPageCount()
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Page {0} of {1}"
-msgstr ""
+msgstr "Page {0} sur {1}"
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
@@ -832,7 +832,7 @@ msgstr "Demande de réinitialisation du mot de passe reçue"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
-msgstr ""
+msgstr "Pause"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
@@ -840,7 +840,7 @@ msgstr "En pause"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused ({pausedSystemsLength})"
-msgstr ""
+msgstr "Mis en pause ({pausedSystemsLength})"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -877,7 +877,7 @@ msgstr "Veuillez vous connecter à votre compte"
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr ""
+msgstr "Port"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -924,7 +924,7 @@ msgstr "Réinitialiser le mot de passe"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Resolved"
-msgstr ""
+msgstr "Résolue"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
@@ -936,7 +936,7 @@ msgstr "Faire tourner le token"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
-msgstr ""
+msgstr "Lignes par page"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -997,7 +997,7 @@ msgstr "Trier par"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 msgid "State"
-msgstr ""
+msgstr "État"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -1073,7 +1073,7 @@ msgstr "Cette action ne peut pas être annulée. Cela supprimera définitivement
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
-msgstr ""
+msgstr "Ceci supprimera définitivement tous les enregistrements sélectionnés de la base de données."
 
 #: src/components/routes/system.tsx
 msgid "Throughput of {extraFsName}"
@@ -1103,7 +1103,7 @@ msgstr "Changer le thème"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr ""
+msgstr "Token"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1133,11 +1133,11 @@ msgstr "Se déclenche lorsque la charge moyenne sur 1 minute dépasse un seuil"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Se déclenche lorsque la charge moyenne sur 15 minute dépasse un seuil"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Se déclenche lorsque la charge moyenne sur 5 minute dépasse un seuil"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -1166,7 +1166,7 @@ msgstr "Déclenchement lorsque l'utilisation de tout disque dépasse un seuil"
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
-msgstr ""
+msgstr "Préférences des unités"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1186,7 +1186,7 @@ msgstr "Joignable"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
-msgstr ""
+msgstr "Joignable ({upSystemsLength})"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Updated"
@@ -1223,7 +1223,7 @@ msgstr "Utilisateurs"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
-msgstr ""
+msgstr "Valeur"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
@@ -1235,7 +1235,7 @@ msgstr "Voir plus"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
-msgstr ""
+msgstr "Voir vos 200 dernières alertes."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
