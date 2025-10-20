@@ -33,6 +33,17 @@ msgstr "{0, plural, one {# 시간} other {# 시간}}"
 msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
 msgstr "{0, plural, one {# 분} few {# 분} many {# 분} other {# 분}}"
 
+#. placeholder {0}: item.label
+#. placeholder {0}: segment.label
+#. placeholder {0}: theme === "dark" ? "Light Mode" : "Dark Mode"
+#: src/components/app-sidebar.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+msgid "{0}"
+msgstr ""
+
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -122,6 +133,7 @@ msgstr "관리자"
 msgid "Agent"
 msgstr "에이전트"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
@@ -146,6 +158,10 @@ msgstr "모든 컨테이너"
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "모든 시스템"
+
+#: src/components/app-sidebar.tsx
+msgid "Application"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
@@ -189,6 +205,7 @@ msgstr "평균 {0} 사용량"
 msgid "Average utilization of GPU engines"
 msgstr "GPU 엔진 평균 사용량"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
@@ -280,8 +297,8 @@ msgid "Click on a container to view more information."
 msgstr "더 많은 정보를 보려면 컨테이너를 클릭하세요."
 
 #: src/components/systems-table/systems-table.tsx
-msgid "Click on a system to view more information."
-msgstr "더 많은 정보를 보려면 시스템을 클릭하세요."
+#~ msgid "Click on a system to view more information."
+#~ msgstr "더 많은 정보를 보려면 시스템을 클릭하세요."
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
@@ -596,6 +613,7 @@ msgid "Full"
 msgstr "가득"
 
 #. Context: General settings
+#: src/components/app-sidebar.tsx
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "General"
@@ -674,6 +692,7 @@ msgstr "부하 평균 5분"
 msgid "Load Avg"
 msgstr "부하 평균"
 
+#: src/components/app-sidebar.tsx
 #: src/components/navbar.tsx
 msgid "Log Out"
 msgstr "로그아웃"
@@ -687,6 +706,7 @@ msgstr "로그인"
 msgid "Login attempt failed"
 msgstr "로그인 실패"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
@@ -700,6 +720,10 @@ msgstr "알림을 생성하려 하시나요? 시스템 테이블의 종 <0/> 아
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "디스플레이 및 알림 설정"
+
+#: src/components/app-sidebar.tsx
+msgid "Manage Systems"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -766,6 +790,7 @@ msgstr "결과 없음."
 msgid "No systems found."
 msgstr "시스템을 찾을 수 없습니다."
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
@@ -951,6 +976,7 @@ msgstr "설정 저장"
 msgid "Save system"
 msgstr "시스템 저장"
 
+#: src/components/app-sidebar.tsx
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "검색"
@@ -971,6 +997,7 @@ msgstr "보냄"
 msgid "Set percentage thresholds for meter colors."
 msgstr "그래프 미터 색상의 백분율 임계값을 설정합니다."
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1024,6 +1051,10 @@ msgstr "시스템"
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
 msgstr "시간에 따른 시스템 부하 평균"
+
+#: src/components/app-sidebar.tsx
+msgid "System Metrics"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -1105,6 +1136,7 @@ msgstr "테마 전환"
 msgid "Token"
 msgstr "토큰"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1192,6 +1224,10 @@ msgstr "온라인 ({upSystemsLength})"
 msgid "Updated"
 msgstr "업데이트됨"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Updated in real time. Click on a system to view information."
+msgstr ""
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
 msgstr "업로드"
@@ -1216,6 +1252,7 @@ msgstr "루트 파티션의 사용량"
 msgid "Used"
 msgstr "사용됨"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Users"
@@ -1277,6 +1314,7 @@ msgstr "Windows 명령어"
 msgid "Write"
 msgstr "쓰기"
 
+#: src/components/app-sidebar.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
 msgstr "YAML 구성"

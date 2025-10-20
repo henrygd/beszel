@@ -33,6 +33,17 @@ msgstr "{0, plural, one {# hora} other {# horas}}"
 msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
 msgstr "{0, plural, one {# minuto} other {# minutos}}"
 
+#. placeholder {0}: item.label
+#. placeholder {0}: segment.label
+#. placeholder {0}: theme === "dark" ? "Light Mode" : "Dark Mode"
+#: src/components/app-sidebar.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+msgid "{0}"
+msgstr ""
+
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -122,6 +133,7 @@ msgstr "Administrador"
 msgid "Agent"
 msgstr "Agente"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
@@ -146,6 +158,10 @@ msgstr "Todos los contenedores"
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "Todos los Sistemas"
+
+#: src/components/app-sidebar.tsx
+msgid "Application"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
@@ -189,6 +205,7 @@ msgstr "Uso promedio de {0}"
 msgid "Average utilization of GPU engines"
 msgstr "Utilización promedio de motores GPU"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
@@ -280,8 +297,8 @@ msgid "Click on a container to view more information."
 msgstr "Haga clic en un contenedor para ver más información."
 
 #: src/components/systems-table/systems-table.tsx
-msgid "Click on a system to view more information."
-msgstr "Haga clic en un sistema para ver más información."
+#~ msgid "Click on a system to view more information."
+#~ msgstr "Haga clic en un sistema para ver más información."
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
@@ -596,6 +613,7 @@ msgid "Full"
 msgstr "Llena"
 
 #. Context: General settings
+#: src/components/app-sidebar.tsx
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "General"
@@ -674,6 +692,7 @@ msgstr "Carga media 5m"
 msgid "Load Avg"
 msgstr "Carga media"
 
+#: src/components/app-sidebar.tsx
 #: src/components/navbar.tsx
 msgid "Log Out"
 msgstr "Cerrar Sesión"
@@ -687,6 +706,7 @@ msgstr "Iniciar sesión"
 msgid "Login attempt failed"
 msgstr "Intento de inicio de sesión fallido"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
@@ -700,6 +720,10 @@ msgstr "¿Busca dónde crear alertas? Haga clic en los iconos de campana <0/> en
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "Administrar preferencias de visualización y notificaciones."
+
+#: src/components/app-sidebar.tsx
+msgid "Manage Systems"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -766,6 +790,7 @@ msgstr "Sin resultados."
 msgid "No systems found."
 msgstr "No se encontraron sistemas."
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
@@ -951,6 +976,7 @@ msgstr "Guardar Configuración"
 msgid "Save system"
 msgstr "Guardar Sistema"
 
+#: src/components/app-sidebar.tsx
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "Buscar"
@@ -971,6 +997,7 @@ msgstr "Enviado"
 msgid "Set percentage thresholds for meter colors."
 msgstr "Establecer umbrales de porcentaje para los colores de los medidores."
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1024,6 +1051,10 @@ msgstr "Sistema"
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
 msgstr "Promedios de carga del sistema a lo largo del tiempo"
+
+#: src/components/app-sidebar.tsx
+msgid "System Metrics"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -1105,6 +1136,7 @@ msgstr "Alternar tema"
 msgid "Token"
 msgstr "Token"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1192,6 +1224,10 @@ msgstr "Activo ({upSystemsLength})"
 msgid "Updated"
 msgstr "Actualizado"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Updated in real time. Click on a system to view information."
+msgstr ""
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
 msgstr "Cargar"
@@ -1216,6 +1252,7 @@ msgstr "Uso de la partición raíz"
 msgid "Used"
 msgstr "Usado"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Users"
@@ -1277,6 +1314,7 @@ msgstr "Comando Windows"
 msgid "Write"
 msgstr "Escritura"
 
+#: src/components/app-sidebar.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
 msgstr "Configuración YAML"

@@ -33,6 +33,17 @@ msgstr "{0, plural, one {# 時間} other {# 時間}}"
 msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
 msgstr "{0, plural, one {# 分} few {# 分} many {# 分} other {# 分}}"
 
+#. placeholder {0}: item.label
+#. placeholder {0}: segment.label
+#. placeholder {0}: theme === "dark" ? "Light Mode" : "Dark Mode"
+#: src/components/app-sidebar.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+msgid "{0}"
+msgstr ""
+
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -122,6 +133,7 @@ msgstr "管理者"
 msgid "Agent"
 msgstr "エージェント"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
@@ -146,6 +158,10 @@ msgstr "すべてのコンテナ"
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "すべてのシステム"
+
+#: src/components/app-sidebar.tsx
+msgid "Application"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
@@ -189,6 +205,7 @@ msgstr "{0}の平均使用率"
 msgid "Average utilization of GPU engines"
 msgstr "GPUエンジンの平均使用率"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
@@ -280,8 +297,8 @@ msgid "Click on a container to view more information."
 msgstr "詳細情報を表示するにはコンテナをクリックしてください。"
 
 #: src/components/systems-table/systems-table.tsx
-msgid "Click on a system to view more information."
-msgstr "システムをクリックして詳細を表示します。"
+#~ msgid "Click on a system to view more information."
+#~ msgstr "システムをクリックして詳細を表示します。"
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
@@ -596,6 +613,7 @@ msgid "Full"
 msgstr "満充電"
 
 #. Context: General settings
+#: src/components/app-sidebar.tsx
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "General"
@@ -674,6 +692,7 @@ msgstr "負荷平均 (5分)"
 msgid "Load Avg"
 msgstr "負荷平均"
 
+#: src/components/app-sidebar.tsx
 #: src/components/navbar.tsx
 msgid "Log Out"
 msgstr "ログアウト"
@@ -687,6 +706,7 @@ msgstr "ログイン"
 msgid "Login attempt failed"
 msgstr "ログイン試行に失敗しました"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
@@ -700,6 +720,10 @@ msgstr "アラートを作成する場所を探していますか？システム
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "表示と通知の設定を管理します。"
+
+#: src/components/app-sidebar.tsx
+msgid "Manage Systems"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -766,6 +790,7 @@ msgstr "結果がありません。"
 msgid "No systems found."
 msgstr "システムが見つかりませんでした。"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
@@ -951,6 +976,7 @@ msgstr "設定を保存"
 msgid "Save system"
 msgstr "システムを保存"
 
+#: src/components/app-sidebar.tsx
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "検索"
@@ -971,6 +997,7 @@ msgstr "送信"
 msgid "Set percentage thresholds for meter colors."
 msgstr "メーターの色を変更するしきい値（パーセンテージ）を設定します。"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1024,6 +1051,10 @@ msgstr "システム"
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
 msgstr "システムの負荷平均の推移"
+
+#: src/components/app-sidebar.tsx
+msgid "System Metrics"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -1105,6 +1136,7 @@ msgstr "テーマを切り替え"
 msgid "Token"
 msgstr "トークン"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1192,6 +1224,10 @@ msgstr "正常 ({upSystemsLength})"
 msgid "Updated"
 msgstr "更新済み"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Updated in real time. Click on a system to view information."
+msgstr ""
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
 msgstr "アップロード"
@@ -1216,6 +1252,7 @@ msgstr "ルートパーティションの使用量"
 msgid "Used"
 msgstr "使用中"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Users"
@@ -1277,6 +1314,7 @@ msgstr "Windows コマンド"
 msgid "Write"
 msgstr "書き込み"
 
+#: src/components/app-sidebar.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
 msgstr "YAML設定"

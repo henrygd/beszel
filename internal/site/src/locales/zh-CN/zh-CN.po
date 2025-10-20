@@ -33,6 +33,17 @@ msgstr "{0, plural, one {# 小时} other {# 小时}}"
 msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
 msgstr "{0, plural, one {# 分钟} few {# 分钟} many {# 分钟} other {# 分钟}}"
 
+#. placeholder {0}: item.label
+#. placeholder {0}: segment.label
+#. placeholder {0}: theme === "dark" ? "Light Mode" : "Dark Mode"
+#: src/components/app-sidebar.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+msgid "{0}"
+msgstr ""
+
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -122,6 +133,7 @@ msgstr "管理员"
 msgid "Agent"
 msgstr "客户端"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
@@ -146,6 +158,10 @@ msgstr "所有容器"
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "所有客户端"
+
+#: src/components/app-sidebar.tsx
+msgid "Application"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
@@ -189,6 +205,7 @@ msgstr "{0} 平均利用率"
 msgid "Average utilization of GPU engines"
 msgstr "GPU 引擎的平均利用率"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
@@ -280,8 +297,8 @@ msgid "Click on a container to view more information."
 msgstr "点击容器查看更多信息。"
 
 #: src/components/systems-table/systems-table.tsx
-msgid "Click on a system to view more information."
-msgstr "点击系统查看更多信息。"
+#~ msgid "Click on a system to view more information."
+#~ msgstr "点击系统查看更多信息。"
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
@@ -596,6 +613,7 @@ msgid "Full"
 msgstr "满电"
 
 #. Context: General settings
+#: src/components/app-sidebar.tsx
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "General"
@@ -674,6 +692,7 @@ msgstr "5 分钟内的平均负载"
 msgid "Load Avg"
 msgstr "负载"
 
+#: src/components/app-sidebar.tsx
 #: src/components/navbar.tsx
 msgid "Log Out"
 msgstr "登出"
@@ -687,6 +706,7 @@ msgstr "登录"
 msgid "Login attempt failed"
 msgstr "登录尝试失败"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
@@ -700,6 +720,10 @@ msgstr "在寻找创建警报的位置吗？点击系统表中的铃铛<0/>图�
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "管理显示和通知偏好。"
+
+#: src/components/app-sidebar.tsx
+msgid "Manage Systems"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -766,6 +790,7 @@ msgstr "无结果。"
 msgid "No systems found."
 msgstr "未找到系统。"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
@@ -951,6 +976,7 @@ msgstr "保存设置"
 msgid "Save system"
 msgstr "保存系统"
 
+#: src/components/app-sidebar.tsx
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "搜索"
@@ -971,6 +997,7 @@ msgstr "发送"
 msgid "Set percentage thresholds for meter colors."
 msgstr "设置仪表颜色的百分比阈值。"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1024,6 +1051,10 @@ msgstr "系统"
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
 msgstr "系统负载平均值随时间变化"
+
+#: src/components/app-sidebar.tsx
+msgid "System Metrics"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -1105,6 +1136,7 @@ msgstr "切换主题"
 msgid "Token"
 msgstr "令牌"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1192,6 +1224,10 @@ msgstr "在线 ({upSystemsLength})"
 msgid "Updated"
 msgstr "已更新"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Updated in real time. Click on a system to view information."
+msgstr ""
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
 msgstr "上传"
@@ -1216,6 +1252,7 @@ msgstr "根分区的使用"
 msgid "Used"
 msgstr "已用"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Users"
@@ -1277,6 +1314,7 @@ msgstr "Windows 安装命令"
 msgid "Write"
 msgstr "写入"
 
+#: src/components/app-sidebar.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
 msgstr "YAML 配置"

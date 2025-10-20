@@ -5,6 +5,7 @@ import {
   AlertOctagonIcon,
   BellIcon,
   ChevronDownIcon,
+  ContainerIcon,
   DatabaseBackupIcon,
   FileSlidersIcon,
   FingerprintIcon,
@@ -107,7 +108,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <Link href={basePath} className="flex items-center gap-2">
                     <ServerIcon className="h-4 w-4" />
                     <span>
-                      <Trans>System Metrics</Trans>
+                      <Trans>Systems</Trans>
+                    </span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href={getPagePath($router, "containers")} className="flex items-center gap-2">
+                    <ContainerIcon className="h-4 w-4" />
+                    <span>
+                      <Trans>Containers</Trans>
                     </span>
                   </Link>
                 </SidebarMenuButton>

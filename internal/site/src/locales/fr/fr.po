@@ -33,6 +33,17 @@ msgstr "{0, plural, one {# heure} other {# heures}}"
 msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
 msgstr ""
 
+#. placeholder {0}: item.label
+#. placeholder {0}: segment.label
+#. placeholder {0}: theme === "dark" ? "Light Mode" : "Dark Mode"
+#: src/components/app-sidebar.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+msgid "{0}"
+msgstr ""
+
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -122,6 +133,7 @@ msgstr "Admin"
 msgid "Agent"
 msgstr "Agent"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
@@ -146,6 +158,10 @@ msgstr "Tous les conteneurs"
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "Tous les systèmes"
+
+#: src/components/app-sidebar.tsx
+msgid "Application"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
@@ -189,6 +205,7 @@ msgstr "Utilisation moyenne de {0}"
 msgid "Average utilization of GPU engines"
 msgstr "Utilisation moyenne des moteurs GPU"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
@@ -280,8 +297,8 @@ msgid "Click on a container to view more information."
 msgstr "Cliquez sur un conteneur pour voir plus d'informations."
 
 #: src/components/systems-table/systems-table.tsx
-msgid "Click on a system to view more information."
-msgstr ""
+#~ msgid "Click on a system to view more information."
+#~ msgstr ""
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
@@ -596,6 +613,7 @@ msgid "Full"
 msgstr "Pleine"
 
 #. Context: General settings
+#: src/components/app-sidebar.tsx
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "General"
@@ -674,6 +692,7 @@ msgstr ""
 msgid "Load Avg"
 msgstr ""
 
+#: src/components/app-sidebar.tsx
 #: src/components/navbar.tsx
 msgid "Log Out"
 msgstr "Déconnexion"
@@ -687,6 +706,7 @@ msgstr "Connexion"
 msgid "Login attempt failed"
 msgstr "Échec de la tentative de connexion"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
@@ -700,6 +720,10 @@ msgstr "Vous cherchez plutôt où créer des alertes ? Cliquez sur les icônes d
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "Gérer les préférences d'affichage et de notification."
+
+#: src/components/app-sidebar.tsx
+msgid "Manage Systems"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -766,6 +790,7 @@ msgstr ""
 msgid "No systems found."
 msgstr "Aucun système trouvé."
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
@@ -951,6 +976,7 @@ msgstr "Enregistrer les paramètres"
 msgid "Save system"
 msgstr "Sauvegarder le système"
 
+#: src/components/app-sidebar.tsx
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "Recherche"
@@ -971,6 +997,7 @@ msgstr "Envoyé"
 msgid "Set percentage thresholds for meter colors."
 msgstr "Définir des seuils de pourcentage pour les couleurs des compteurs."
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1023,6 +1050,10 @@ msgstr "Système"
 
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
+msgstr ""
+
+#: src/components/app-sidebar.tsx
+msgid "System Metrics"
 msgstr ""
 
 #: src/components/navbar.tsx
@@ -1105,6 +1136,7 @@ msgstr "Changer le thème"
 msgid "Token"
 msgstr ""
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1192,6 +1224,10 @@ msgstr ""
 msgid "Updated"
 msgstr "Mis à jour"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Updated in real time. Click on a system to view information."
+msgstr ""
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
 msgstr "Téléverser"
@@ -1216,6 +1252,7 @@ msgstr "Utilisation de la partition racine"
 msgid "Used"
 msgstr "Utilisé"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Users"
@@ -1277,6 +1314,7 @@ msgstr "Commande Windows"
 msgid "Write"
 msgstr "Écriture"
 
+#: src/components/app-sidebar.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
 msgstr "Configuration YAML"

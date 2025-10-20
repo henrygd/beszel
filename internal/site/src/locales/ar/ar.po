@@ -33,6 +33,17 @@ msgstr "{0, plural, one {# ساعة} other {# ساعات}}"
 msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
 msgstr "{0, plural, one {# دقيقة} few {# دقائق} many {# دقيقة} other {# دقيقة}}"
 
+#. placeholder {0}: item.label
+#. placeholder {0}: segment.label
+#. placeholder {0}: theme === "dark" ? "Light Mode" : "Dark Mode"
+#: src/components/app-sidebar.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+msgid "{0}"
+msgstr ""
+
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -122,6 +133,7 @@ msgstr "مسؤول"
 msgid "Agent"
 msgstr "وكيل"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
@@ -146,6 +158,10 @@ msgstr "جميع الحاويات"
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "جميع الأنظمة"
+
+#: src/components/app-sidebar.tsx
+msgid "Application"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
@@ -189,6 +205,7 @@ msgstr "متوسط ​​استخدام {0}"
 msgid "Average utilization of GPU engines"
 msgstr "متوسط استغلال محركات GPU"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
@@ -280,8 +297,8 @@ msgid "Click on a container to view more information."
 msgstr "انقر على حاوية لعرض مزيد من المعلومات."
 
 #: src/components/systems-table/systems-table.tsx
-msgid "Click on a system to view more information."
-msgstr "انقر على نظام لعرض مزيد من المعلومات."
+#~ msgid "Click on a system to view more information."
+#~ msgstr "انقر على نظام لعرض مزيد من المعلومات."
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
@@ -596,6 +613,7 @@ msgid "Full"
 msgstr "ممتلئة"
 
 #. Context: General settings
+#: src/components/app-sidebar.tsx
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "General"
@@ -674,6 +692,7 @@ msgstr "متوسط التحميل 5 دقائق"
 msgid "Load Avg"
 msgstr "متوسط التحميل"
 
+#: src/components/app-sidebar.tsx
 #: src/components/navbar.tsx
 msgid "Log Out"
 msgstr "تسجيل الخروج"
@@ -687,6 +706,7 @@ msgstr "تسجيل الدخول"
 msgid "Login attempt failed"
 msgstr "فشل محاولة تسجيل الدخول"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
@@ -700,6 +720,10 @@ msgstr "هل تبحث عن مكان لإنشاء التنبيهات؟ انقر �
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "إدارة تفضيلات العرض والإشعارات."
+
+#: src/components/app-sidebar.tsx
+msgid "Manage Systems"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -766,6 +790,7 @@ msgstr "لا توجد نتائج."
 msgid "No systems found."
 msgstr "لم يتم العثور على أنظمة."
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
@@ -951,6 +976,7 @@ msgstr "حفظ الإعدادات"
 msgid "Save system"
 msgstr "احفظ النظام"
 
+#: src/components/app-sidebar.tsx
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "بحث"
@@ -971,6 +997,7 @@ msgstr "تم الإرسال"
 msgid "Set percentage thresholds for meter colors."
 msgstr "تعيين عتبات النسبة المئوية لألوان العداد."
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1024,6 +1051,10 @@ msgstr "النظام"
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
 msgstr "متوسط تحميل النظام مع مرور الوقت"
+
+#: src/components/app-sidebar.tsx
+msgid "System Metrics"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -1105,6 +1136,7 @@ msgstr "تبديل السمة"
 msgid "Token"
 msgstr "رمز مميز"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1192,6 +1224,10 @@ msgstr "قيد التشغيل ({upSystemsLength})"
 msgid "Updated"
 msgstr "تم التحديث"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Updated in real time. Click on a system to view information."
+msgstr ""
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
 msgstr "رفع"
@@ -1216,6 +1252,7 @@ msgstr "استخدام القسم الجذر"
 msgid "Used"
 msgstr "مستخدم"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Users"
@@ -1277,6 +1314,7 @@ msgstr "أمر ويندوز"
 msgid "Write"
 msgstr "كتابة"
 
+#: src/components/app-sidebar.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
 msgstr "تكوين YAML"

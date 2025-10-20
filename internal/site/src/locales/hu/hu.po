@@ -33,6 +33,17 @@ msgstr "{0, plural, one {# óra} other {# óra}}"
 msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
 msgstr "{0, plural, one {# perc} few {# perc} many {# perc} other {# perc}}"
 
+#. placeholder {0}: item.label
+#. placeholder {0}: segment.label
+#. placeholder {0}: theme === "dark" ? "Light Mode" : "Dark Mode"
+#: src/components/app-sidebar.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+msgid "{0}"
+msgstr ""
+
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -122,6 +133,7 @@ msgstr "Adminisztráció"
 msgid "Agent"
 msgstr "Ügynök"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
@@ -146,6 +158,10 @@ msgstr "Összes konténer"
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "Minden rendszer"
+
+#: src/components/app-sidebar.tsx
+msgid "Application"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
@@ -189,6 +205,7 @@ msgstr "{0} átlagos kihasználtsága"
 msgid "Average utilization of GPU engines"
 msgstr "GPU motorok átlagos kihasználtsága"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
@@ -280,8 +297,8 @@ msgid "Click on a container to view more information."
 msgstr "Kattintson egy konténerre a további információk megtekintéséhez."
 
 #: src/components/systems-table/systems-table.tsx
-msgid "Click on a system to view more information."
-msgstr "További információkért kattints egy rendszerre."
+#~ msgid "Click on a system to view more information."
+#~ msgstr "További információkért kattints egy rendszerre."
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
@@ -596,6 +613,7 @@ msgid "Full"
 msgstr "Tele"
 
 #. Context: General settings
+#: src/components/app-sidebar.tsx
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "General"
@@ -674,6 +692,7 @@ msgstr "Terhelési átlag 5p"
 msgid "Load Avg"
 msgstr "Terhelési átlag"
 
+#: src/components/app-sidebar.tsx
 #: src/components/navbar.tsx
 msgid "Log Out"
 msgstr "Kijelentkezés"
@@ -687,6 +706,7 @@ msgstr "Bejelentkezés"
 msgid "Login attempt failed"
 msgstr "Bejelentkezés sikertelen"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
@@ -700,6 +720,10 @@ msgstr "Inkább azt keresi, hogy hol hozhat létre riasztásokat? Kattintson a c
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "A megjelenítési és értesítési beállítások kezelése."
+
+#: src/components/app-sidebar.tsx
+msgid "Manage Systems"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -766,6 +790,7 @@ msgstr "Nincs találat."
 msgid "No systems found."
 msgstr "Nem található rendszer."
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
@@ -951,6 +976,7 @@ msgstr "Beállítások mentése"
 msgid "Save system"
 msgstr "Rendszer mentése"
 
+#: src/components/app-sidebar.tsx
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "Keresés"
@@ -971,6 +997,7 @@ msgstr "Elküldve"
 msgid "Set percentage thresholds for meter colors."
 msgstr "Százalékos küszöbértékek beállítása a mérőszínekhez."
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1024,6 +1051,10 @@ msgstr "Rendszer"
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
 msgstr "Rendszer terhelési átlaga"
+
+#: src/components/app-sidebar.tsx
+msgid "System Metrics"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -1105,6 +1136,7 @@ msgstr "Téma váltása"
 msgid "Token"
 msgstr "Token"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1192,6 +1224,10 @@ msgstr "Online ({upSystemsLength})"
 msgid "Updated"
 msgstr "Frissítve"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Updated in real time. Click on a system to view information."
+msgstr ""
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
 msgstr "Feltöltés"
@@ -1216,6 +1252,7 @@ msgstr "Root partíció kihasználtsága"
 msgid "Used"
 msgstr "Felhasznált"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Users"
@@ -1277,6 +1314,7 @@ msgstr "Windows parancs"
 msgid "Write"
 msgstr "Írás"
 
+#: src/components/app-sidebar.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
 msgstr "YAML konfiguráció"

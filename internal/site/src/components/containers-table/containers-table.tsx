@@ -135,32 +135,34 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 	const rows = table.getRowModel().rows
 	const visibleColumns = table.getVisibleLeafColumns()
 
-	if (!rows.length) return null
-
 	return (
-		<Card className="p-6 @container w-full">
-			<CardHeader className="p-0 mb-4">
-				<div className="grid md:flex gap-5 w-full items-end">
-					<div className="px-2 sm:px-1">
-						<CardTitle className="mb-2">
+		<div className="w-full">
+			<div className="pb-6 mb-6 border-b">
+				<div className="flex flex-col lg:flex-row gap-4 lg:gap-6 w-full items-start lg:items-end">
+					<div>
+						<h2 className="text-2xl font-semibold mb-2">
 							<Trans>All Containers</Trans>
-						</CardTitle>
-						<CardDescription className="flex">
+						</h2>
+						<p className="text-muted-foreground">
 							<Trans>Click on a container to view more information.</Trans>
-						</CardDescription>
+						</p>
 					</div>
-					<Input
-						placeholder={t`Filter...`}
-						value={globalFilter}
-						onChange={(e) => setGlobalFilter(e.target.value)}
-						className="ms-auto px-4 w-full max-w-full md:w-64"
-					/>
+					<div className="ms-auto w-full lg:w-auto min-w-80">
+						<Input
+							placeholder={t`Filter...`}
+							value={globalFilter}
+							onChange={(e) => setGlobalFilter(e.target.value)}
+							className="px-4"
+						/>
+					</div>
 				</div>
-			</CardHeader>
-			<div className="rounded-md">
-				<AllContainersTable table={table} rows={rows} colLength={visibleColumns.length} />
 			</div>
-		</Card>
+			<div className="pt-0">
+				<div className="rounded-md border">
+					<AllContainersTable table={table} rows={rows} colLength={visibleColumns.length} />
+				</div>
+			</div>
+		</div>
 	)
 }
 

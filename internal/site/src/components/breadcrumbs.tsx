@@ -41,7 +41,14 @@ export function Breadcrumbs() {
   })
 
   // Add route-specific breadcrumbs
-  if (page.route === "system") {
+  if (page.route === "home") {
+    segments[segments.length - 1].isLast = true
+  } else if (page.route === "containers") {
+    segments.push({
+      label: "Containers",
+      isLast: true,
+    })
+  } else if (page.route === "system") {
     segments.push({
       label: page.params.name,
       isLast: true,
