@@ -356,7 +356,7 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	// add empty values if they doesn't exist in map
 	stats, initialized := dm.containerStatsMap[ctr.IdShort]
 	if !initialized {
-		stats = &container.Stats{Name: name, Id: ctr.IdShort}
+		stats = &container.Stats{Name: name, Id: ctr.IdShort, Image: ctr.Image}
 		dm.containerStatsMap[ctr.IdShort] = stats
 	}
 

@@ -270,6 +270,7 @@ export interface ContainerRecord extends RecordModel {
 	id: string
 	system: string
 	name: string
+	image: string
 	cpu: number
 	memory: number
 	net: number

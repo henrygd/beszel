@@ -636,6 +636,11 @@ msgstr "خاملة"
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "إذا فقدت كلمة المرور لحساب المسؤول الخاص بك، يمكنك إعادة تعيينها باستخدام الأمر التالي."
 
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image"
+msgstr "صورة"
+
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
 msgstr "عنوان البريد الإشباكي غير صالح."

@@ -636,6 +636,11 @@ msgstr "Inaktiv"
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Hvis du har mistet adgangskoden til din administratorkonto, kan du nulstille den ved hjælp af følgende kommando."
 
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image"
+msgstr "Image"
+
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
 msgstr "Ugyldig email adresse."

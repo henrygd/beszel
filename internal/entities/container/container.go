@@ -9,7 +9,7 @@ type ApiInfo struct {
 	Names   []string
 	Status  string
 	State   string
-	// Image   string
+	Image   string
 	// ImageID string
 	// Command string
 	// Created int64
@@ -130,6 +130,7 @@ type Stats struct {
 	Health DockerHealth `json:"-" cbor:"5,keyasint"`
 	Status string       `json:"-" cbor:"6,keyasint"`
 	Id     string       `json:"-" cbor:"7,keyasint"`
+	Image  string       `json:"-" cbor:"8,keyasint"`
 	// PrevCpu     [2]uint64    `json:"-"`
 	CpuSystem    uint64       `json:"-"`
 	CpuContainer uint64       `json:"-"`

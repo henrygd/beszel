@@ -199,9 +199,10 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 	valueStrings := make([]string, 0, len(data))
 	for i, container := range data {
 		suffix := fmt.Sprintf("%d", i)
-		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:status%[1]s}, {:health%[1]s}, {:cpu%[1]s}, {:memory%[1]s}, {:net%[1]s}, {:updated})", suffix))
+		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:image%[1]s}, {:status%[1]s}, {:health%[1]s}, {:cpu%[1]s}, {:memory%[1]s}, {:net%[1]s}, {:updated})", suffix))
 		params["id"+suffix] = container.Id
 		params["name"+suffix] = container.Name
+		params["image"+suffix] = container.Image
 		params["status"+suffix] = container.Status
 		params["health"+suffix] = container.Health
 		params["cpu"+suffix] = container.Cpu
@@ -209,7 +210,7 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 		params["net"+suffix] = container.NetworkSent + container.NetworkRecv
 	}
 	queryString := fmt.Sprintf(
-		"INSERT INTO containers (id, system, name, status, health, cpu, memory, net, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, status = excluded.status, health = excluded.health, cpu = excluded.cpu, memory = excluded.memory, net = excluded.net, updated = excluded.updated",
+		"INSERT INTO containers (id, system, name, image, status, health, cpu, memory, net, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, image = excluded.image, status = excluded.status, health = excluded.health, cpu = excluded.cpu, memory = excluded.memory, net = excluded.net, updated = excluded.updated",
 		strings.Join(valueStrings, ","),
 	)
 	_, err := app.DB().NewQuery(queryString).Bind(params).Execute()
