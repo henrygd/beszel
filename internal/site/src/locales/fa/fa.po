@@ -654,6 +654,11 @@ msgstr "بیکار"
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "اگر رمز عبور حساب مدیر خود را گم کرده‌اید، می‌توانید آن را با استفاده از دستور زیر بازنشانی کنید."
 
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image"
+msgstr "تصویر"
+
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
 msgstr "آدرس ایمیل نامعتبر است."

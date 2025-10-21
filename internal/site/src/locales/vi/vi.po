@@ -654,6 +654,11 @@ msgstr "Không hoạt động"
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Nếu bạn đã mất mật khẩu cho tài khoản quản trị viên của mình, bạn có thể đặt lại bằng cách sử dụng lệnh sau."
 
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image"
+msgstr "Hình ảnh"
+
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
 msgstr "Địa chỉ email không hợp lệ."

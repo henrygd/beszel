@@ -654,6 +654,11 @@ msgstr "Neaktivna"
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Če ste izgubili geslo za svoj skrbniški račun, ga lahko ponastavite z naslednjim ukazom."
 
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image"
+msgstr "Slika"
+
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
 msgstr "Napačen e-poštni naslov."

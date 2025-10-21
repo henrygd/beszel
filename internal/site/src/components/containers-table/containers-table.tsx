@@ -48,7 +48,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 
 	useEffect(() => {
 		const pbOptions = {
-			fields: "id,name,cpu,memory,net,health,status,system,updated",
+			fields: "id,name,image,cpu,memory,net,health,status,system,updated",
 		}
 
 		const fetchData = (lastXMs: number) => {
@@ -123,7 +123,8 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 			const name = container.name ?? ""
 			const status = container.status ?? ""
 			const healthLabel = ContainerHealthLabels[container.health as ContainerHealth] ?? ""
-			const searchString = `${systemName} ${id} ${name} ${healthLabel} ${status}`.toLowerCase()
+			const image = container.image ?? ""
+			const searchString = `${systemName} ${id} ${name} ${healthLabel} ${status} ${image}`.toLowerCase()
 
 			return (filterValue as string)
 				.toLowerCase()
@@ -198,8 +199,8 @@ const AllContainersTable = memo(
 				ref={scrollRef}
 			>
 				{/* add header height to table size */}
-				<div style={{ height: `${virtualizer.getTotalSize() + 50}px`, paddingTop, paddingBottom }}>
-					<table className="text-sm w-full h-full">
+				<div style={{ height: `${virtualizer.getTotalSize() + 48}px`, paddingTop, paddingBottom }}>
+					<table className="text-sm w-full h-full text-nowrap">
 						<ContainersTableHead table={table} />
 						<TableBody>
 							{rows.length ? (
@@ -329,10 +330,12 @@ function ContainerSheet({ sheetOpen, setSheetOpen, activeContainer }: { sheetOpe
 				<SheetContent className="w-full sm:max-w-220 p-2">
 					<SheetHeader>
 						<SheetTitle>{container.name}</SheetTitle>
-						<SheetDescription className="flex items-center gap-2">
+						<SheetDescription className="flex flex-wrap items-center gap-x-2 gap-y-1">
 							<Link className="hover:underline" href={getPagePath($router, "system", { id: container.system })}>{$allSystemsById.get()[container.system]?.name ?? ""}</Link>
 							<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 							{container.status}
+							<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
+							{container.image}
 							<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 							{container.id}
 							<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
@@ -425,6 +428,7 @@ const ContainerTableRow = memo(
 				{row.getVisibleCells().map((cell) => (
 					<TableCell
 						key={cell.id}
+						className="py-0"
 						style={{
 							height: virtualRow.size,
 						}}

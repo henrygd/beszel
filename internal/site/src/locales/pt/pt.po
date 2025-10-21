@@ -654,6 +654,11 @@ msgstr "Inativa"
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Se você perdeu a senha da sua conta de administrador, pode redefini-la usando o seguinte comando."
 
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image"
+msgstr "Imagem"
+
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
 msgstr "Endereço de email inválido."

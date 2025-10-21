@@ -654,6 +654,11 @@ msgstr "Aðgerðalaus"
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr ""
 
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image"
+msgstr "Mynd"
+
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
 msgstr "Ógilt netfang."

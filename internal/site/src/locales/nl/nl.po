@@ -654,6 +654,11 @@ msgstr "Inactief"
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Als je het wachtwoord voor je beheerdersaccount bent kwijtgeraakt, kan je het opnieuw instellen met behulp van de volgende opdracht."
 
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image"
+msgstr "Image"
+
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
 msgstr "Ongeldig e-mailadres."
