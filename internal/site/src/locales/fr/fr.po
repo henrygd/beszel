@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-20 21:37\n"
+"PO-Revision-Date: 2025-10-21 10:28\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -639,7 +639,7 @@ msgstr "Si vous avez perdu le mot de passe de votre compte administrateur, vous 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
-msgstr ""
+msgstr "Image"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
