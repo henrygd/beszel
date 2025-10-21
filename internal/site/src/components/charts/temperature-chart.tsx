@@ -49,6 +49,31 @@ export default memo(function TemperatureChart({ chartData }: { chartData: ChartD
 
 	const colors = Object.keys(newChartData.colors)
 
+	/** Calculate temperature domain to focus on operating range */
+	const tempDomain = useMemo((): [number, number] | [number, "auto"] => {
+		if (newChartData.data.length === 0) {
+			return [0, "auto"] as [number, "auto"]
+		}
+		let minTemp = Infinity
+		let maxTemp = -Infinity
+		for (const data of newChartData.data) {
+			for (const key of colors) {
+				const temp = data[key] as number
+				if (typeof temp === "number" && !isNaN(temp)) {
+					minTemp = Math.min(minTemp, temp)
+					maxTemp = Math.max(maxTemp, temp)
+				}
+			}
+		}
+		if (minTemp === Infinity || maxTemp === -Infinity) {
+			return [0, "auto"] as [number, "auto"]
+		}
+		// Add 10% padding and round down/up to nice numbers
+		const range = maxTemp - minTemp
+		const padding = Math.max(range * 0.1, 5) // At least 5 degrees padding
+		return [Math.floor(minTemp - padding), Math.ceil(maxTemp + padding)]
+	}, [newChartData.data, colors])
+
 	// console.log('rendered at', new Date())
 
 	return (
@@ -64,7 +89,7 @@ export default memo(function TemperatureChart({ chartData }: { chartData: ChartD
 						direction="ltr"
 						orientation={chartData.orientation}
 						className="tracking-tighter"
-						domain={[0, "auto"]}
+						domain={tempDomain}
 						width={yAxisWidth}
 						tickFormatter={(val) => {
 							const { value, unit } = formatTemperature(val, userSettings.unitTemp)
