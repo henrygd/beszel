@@ -8,7 +8,7 @@ msgstr ""
 "Language: de\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-20 21:37\n"
+"PO-Revision-Date: 2025-10-21 08:08\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -416,7 +416,7 @@ msgstr "Fingerabdruck löschen"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
-msgstr ""
+msgstr "Details"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -639,7 +639,7 @@ msgstr "Wenn du das Passwort für dein Administratorkonto verloren hast, kannst 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
-msgstr ""
+msgstr "Image"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
