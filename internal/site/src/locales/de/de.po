@@ -8,7 +8,7 @@ msgstr ""
 "Language: de\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-21 08:08\n"
+"PO-Revision-Date: 2025-10-22 10:37\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -277,7 +277,7 @@ msgstr "Überprüfe deinen Benachrichtigungsdienst"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
-msgstr "Klicken Sie auf einen Container, um weitere Informationen zu sehen."
+msgstr "Klicke auf einen Container, um weitere Informationen zu sehen."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
