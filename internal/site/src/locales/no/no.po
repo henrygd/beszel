@@ -8,7 +8,7 @@ msgstr ""
 "Language: no\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-20 21:37\n"
+"PO-Revision-Date: 2025-10-22 10:37\n"
 "Last-Translator: \n"
 "Language-Team: Norwegian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -416,7 +416,7 @@ msgstr "Slett fingeravtrykk"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
-msgstr "Detalj"
+msgstr "Detaljer"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -639,7 +639,7 @@ msgstr "Dersom du har mistet passordet til admin-kontoen kan du nullstille det m
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
-msgstr ""
+msgstr "Image"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
