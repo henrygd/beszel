@@ -64,7 +64,7 @@ export default memo(function TemperatureChart({ chartData }: { chartData: ChartD
 						direction="ltr"
 						orientation={chartData.orientation}
 						className="tracking-tighter"
-						domain={[0, "auto"]}
+						domain={["auto", "auto"]}
 						width={yAxisWidth}
 						tickFormatter={(val) => {
 							const { value, unit } = formatTemperature(val, userSettings.unitTemp)
