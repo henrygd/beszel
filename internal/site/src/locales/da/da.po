@@ -8,7 +8,7 @@ msgstr ""
 "Language: da\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-22 21:51\n"
+"PO-Revision-Date: 2025-10-22 23:14\n"
 "Last-Translator: \n"
 "Language-Team: Danish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -116,7 +116,7 @@ msgstr "Juster visningsindstillinger for diagrammer."
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
-msgstr ""
+msgstr "Administrator"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -303,7 +303,7 @@ msgstr "Bekræft adgangskode"
 
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
-msgstr ""
+msgstr "Forbindelsen er nede"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -358,7 +358,7 @@ msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
-msgstr ""
+msgstr "Kopier YAML"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -378,7 +378,7 @@ msgstr "Opret konto"
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
 msgid "Created"
-msgstr ""
+msgstr "Oprettet"
 
 #: src/components/routes/settings/general.tsx
 msgid "Critical (%)"
@@ -755,7 +755,7 @@ msgstr "Netværkstrafik af offentlige grænseflader"
 #. Context: Bytes or bits
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
-msgstr ""
+msgstr "Netværksenhed"
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -812,7 +812,7 @@ msgstr "Side"
 #. placeholder {1}: table.getPageCount()
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Page {0} of {1}"
-msgstr ""
+msgstr "Side {0} af {1}"
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
@@ -941,7 +941,7 @@ msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
-msgstr ""
+msgstr "Rækker per side"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -1002,7 +1002,7 @@ msgstr "Sorter efter"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 msgid "State"
-msgstr ""
+msgstr "Tilstand"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -1024,7 +1024,7 @@ msgstr "Swap forbrug"
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
-msgstr ""
+msgstr "System"
 
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
@@ -1062,7 +1062,7 @@ msgstr "Temperaturer i systemsensorer"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test <0>URL</0>"
-msgstr ""
+msgstr "Test <0>URL</0>"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test notification sent"
@@ -1108,13 +1108,13 @@ msgstr "Skift tema"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr ""
+msgstr "Nøgle"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens & Fingerprints"
-msgstr ""
+msgstr "Nøgler & fingeraftryk"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
@@ -1176,7 +1176,7 @@ msgstr ""
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
-msgstr ""
+msgstr "Universalnøgle"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
