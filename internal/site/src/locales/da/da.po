@@ -8,7 +8,7 @@ msgstr ""
 "Language: da\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-22 18:17\n"
+"PO-Revision-Date: 2025-10-22 21:51\n"
 "Last-Translator: \n"
 "Language-Team: Danish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -37,7 +37,7 @@ msgstr ""
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
-msgstr ""
+msgstr "{0} af {1} række(r) valgt."
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -46,7 +46,7 @@ msgstr "1 time"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr ""
+msgstr "1 minut"
 
 #: src/lib/utils.ts
 msgid "1 minute"
@@ -63,7 +63,7 @@ msgstr "12 timer"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr ""
+msgstr "15 minutter"
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -76,7 +76,7 @@ msgstr "30 dage"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr ""
+msgstr "5 minutter"
 
 #. Table column
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -87,7 +87,7 @@ msgstr "Handlinger"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Active"
-msgstr ""
+msgstr "Aktiv"
 
 #: src/components/active-alerts.tsx
 msgid "Active Alerts"
@@ -120,13 +120,13 @@ msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr ""
+msgstr "Agent"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Alert History"
-msgstr ""
+msgstr "Advarselshistorik"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
@@ -363,7 +363,7 @@ msgstr ""
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -412,7 +412,7 @@ msgstr "Slet"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
-msgstr ""
+msgstr "Slet fingeraftryk"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
@@ -471,11 +471,11 @@ msgstr "Nede"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Down ({downSystemsLength})"
-msgstr ""
+msgstr "Nede ({downSystemsLength})"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
-msgstr ""
+msgstr "Hent ned"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
@@ -534,7 +534,7 @@ msgstr "Eksisterende systemer ikke defineret i <0>config.yml</0> vil blive slett
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
-msgstr ""
+msgstr "Eksporter"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
@@ -546,7 +546,7 @@ msgstr "Eksporter din nuværende systemkonfiguration."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr ""
+msgstr "Fahrenheit (°F)"
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
@@ -570,11 +570,11 @@ msgstr "Kunne ikke opdatere alarm"
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
-msgstr ""
+msgstr "Filter..."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
-msgstr ""
+msgstr "Fingeraftryk"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -639,7 +639,7 @@ msgstr "Hvis du har mistet adgangskoden til din administratorkonto, kan du nulst
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
-msgstr ""
+msgstr "Billede"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -696,7 +696,7 @@ msgstr "Loginforsøg mislykkedes"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
 msgid "Logs"
-msgstr ""
+msgstr "Logs"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
@@ -764,7 +764,7 @@ msgstr "Ingen resultater fundet."
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "No results."
-msgstr ""
+msgstr "Ingen resultater."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -845,7 +845,7 @@ msgstr "Sat på pause"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused ({pausedSystemsLength})"
-msgstr ""
+msgstr "Sat på pause ({pausedSystemsLength})"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -882,7 +882,7 @@ msgstr "Log venligst ind på din konto"
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr ""
+msgstr "Port"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -1008,7 +1008,7 @@ msgstr ""
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
-msgstr ""
+msgstr "Status"
 
 #: src/components/routes/system.tsx
 msgid "Swap space used by the system"
@@ -1199,7 +1199,7 @@ msgstr "Opdateret"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
-msgstr ""
+msgstr "Overfør"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"
@@ -1228,7 +1228,7 @@ msgstr "Brugere"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
-msgstr ""
+msgstr "Værdi"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
