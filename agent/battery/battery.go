@@ -22,7 +22,7 @@ func HasReadableBattery() bool {
 	}
 	haveCheckedBattery = true
 	batteries,err := battery.GetAll()
-	if err == nil {
+	if err != nil {
 		// even if there's errors getting some batteries, the system
 		// definitely has a battery if the list is not empty.
 		// This list will include everything `battery` can find,
