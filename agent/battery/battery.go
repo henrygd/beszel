@@ -68,7 +68,7 @@ func GetBatteryStats() (batteryPercent uint8, batteryState uint8, err error) {
 	}
 
 	if totalCapacity == 0 {
-		// for mac's there's sometimes a ghost battery with 0 capacity
+		// for macs there's sometimes a ghost battery with 0 capacity
 		// https://github.com/distatus/battery/issues/34
 		// Instead of skipping over those batteries, we'll check for total 0 capacity
 		// and return an error. This also prevents a divide by zero.
