@@ -89,7 +89,7 @@ msgstr "Akce"
 msgid "Active"
 msgstr "Aktivní"
 
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Active Alerts"
 msgstr "Aktivní výstrahy"
 
@@ -133,7 +133,15 @@ msgstr "Historie upozornění"
 msgid "Alerts"
 msgstr "Výstrahy"
 
+#: src/components/command-palette.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/containers.tsx
+msgid "All Containers"
+msgstr "Všechny kontejnery"
+
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/command-palette.tsx
+#: src/components/routes/home.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
@@ -267,6 +275,10 @@ msgstr "Pro více informací zkontrolujte logy."
 msgid "Check your notification service"
 msgstr "Zkontrolujte službu upozornění"
 
+#: src/components/containers-table/containers-table.tsx
+msgid "Click on a container to view more information."
+msgstr "Klikněte na kontejner pro zobrazení dalších informací."
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
 msgstr "Klikněte na systém pro zobrazení více informací."
@@ -289,7 +301,7 @@ msgstr "Konfigurace způsobu přijímání upozornění."
 msgid "Confirm password"
 msgstr "Potvrdit heslo"
 
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "Připojení je nedostupné"
 
@@ -348,6 +360,7 @@ msgstr "Zkopírujte obsah <0>docker-compose.yml</0> pro agenta níže nebo autom
 msgid "Copy YAML"
 msgstr "Kopírovat YAML"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "Procesor"
@@ -385,7 +398,6 @@ msgid "Current state"
 msgstr "Aktuální stav"
 
 #: src/components/command-palette.tsx
-#: src/components/routes/home.tsx
 msgid "Dashboard"
 msgstr "Přehled"
 
@@ -401,6 +413,10 @@ msgstr "Odstranit"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
 msgstr "Smazat identifikátor"
+
+#: src/components/containers-table/containers-table.tsx
+msgid "Detail"
+msgstr "Detail"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -508,7 +524,7 @@ msgstr "Chyba"
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Překračuje {0}{1} za {2, plural, one {poslední # minutu} few {poslední # minuty} other {posledních # minut}}"
 
@@ -549,6 +565,7 @@ msgstr "Nepodařilo se odeslat testovací oznámení"
 msgid "Failed to update alert"
 msgstr "Nepodařilo se aktualizovat upozornění"
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -596,6 +613,10 @@ msgstr "Spotřeba energie GPU"
 msgid "Grid"
 msgstr "Mřížka"
 
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Health"
+msgstr "Zdraví"
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -614,6 +635,11 @@ msgstr "Neaktivní"
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Pokud jste ztratili heslo k vašemu účtu správce, můžete jej obnovit pomocí následujícího příkazu."
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image"
+msgstr "Obraz"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -667,6 +693,7 @@ msgid "Login attempt failed"
 msgstr "Pokus o přihlášení selhal"
 
 #: src/components/command-palette.tsx
+#: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
 msgid "Logs"
 msgstr "Logy"
@@ -689,6 +716,7 @@ msgstr "Pokyny k manuálnímu nastavení"
 msgid "Max 1 min"
 msgstr "Max. 1 min"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Paměť"
@@ -704,9 +732,11 @@ msgstr "Využití paměti docker kontejnerů"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
 msgid "Name"
 msgstr "Název"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "Síť"
@@ -731,6 +761,7 @@ msgstr "Síťová jednotka"
 msgid "No results found."
 msgstr "Nenalezeny žádné výskyty."
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "No results."
 msgstr "Žádné výsledky."
@@ -772,6 +803,7 @@ msgstr "Nebo pokračujte s"
 msgid "Overwrite existing alerts"
 msgstr "Přepsat existující upozornění"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
 msgstr "Stránka"
@@ -876,6 +908,11 @@ msgstr "Číst"
 msgid "Received"
 msgstr "Přijato"
 
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+msgid "Refresh"
+msgstr "Aktualizovat"
+
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
 msgstr "Požádat o jednorázové heslo"
@@ -967,6 +1004,7 @@ msgstr "Seřadit podle"
 msgid "State"
 msgstr "Stav"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -981,6 +1019,7 @@ msgid "Swap Usage"
 msgstr "Swap využití"
 
 #: src/components/alerts-history-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -1153,6 +1192,10 @@ msgstr "Funkční"
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
 msgstr "Funkční ({upSystemsLength})"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Updated"
+msgstr "Aktualizováno"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"

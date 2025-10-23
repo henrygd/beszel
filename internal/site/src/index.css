@@ -82,6 +82,8 @@
 	--color-green-900: hsl(140 54% 12%);
 	--color-green-950: hsl(140 57% 6%);
 
+	--color-gh-dark: #22272e;
+
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
 	--color-card: var(--card);
@@ -110,12 +112,14 @@
 }
 
 @layer utilities {
+
 	/* Fonts */
 	@supports (font-variation-settings: normal) {
 		:root {
 			font-family: Inter, InterVariable, sans-serif;
 		}
 	}
+
 	@font-face {
 		font-family: InterVariable;
 		font-style: normal;
@@ -130,9 +134,11 @@
 		@apply border-border outline-ring/50;
 		overflow-anchor: none;
 	}
+
 	body {
 		@apply bg-background text-foreground;
 	}
+
 	button {
 		cursor: pointer;
 	}
@@ -149,13 +155,14 @@
 @utility ns-dialog {
 	/* New system dialog width */
 	min-width: 30.3rem;
+
 	:where(:lang(zh), :lang(zh-CN), :lang(ko)) & {
 		min-width: 27.9rem;
 	}
 }
 
 .recharts-tooltip-wrapper {
-	z-index: 1;
+	z-index: 51;
 	@apply tabular-nums;
 }
 

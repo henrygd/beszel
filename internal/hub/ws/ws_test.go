@@ -181,6 +181,17 @@ func TestCommonActions(t *testing.T) {
 	// Test that the actions we use exist and have expected values
 	assert.Equal(t, common.WebSocketAction(0), common.GetData, "GetData should be action 0")
 	assert.Equal(t, common.WebSocketAction(1), common.CheckFingerprint, "CheckFingerprint should be action 1")
+	assert.Equal(t, common.WebSocketAction(2), common.GetContainerLogs, "GetLogs should be action 2")
+}
+
+func TestLogsHandler(t *testing.T) {
+	h := &stringResponseHandler{errorMsg: "no logs in response"}
+
+	logValue := "test logs"
+	resp := common.AgentResponse{String: &logValue}
+	err := h.Handle(resp)
+	assert.NoError(t, err)
+	assert.Equal(t, logValue, h.value)
 }
 
 // TestHandler tests that we can create a Handler

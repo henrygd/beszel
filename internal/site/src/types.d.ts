@@ -236,6 +236,19 @@ export interface AlertsHistoryRecord extends RecordModel {
 	resolved?: string | null
 }
 
+export interface ContainerRecord extends RecordModel {
+	id: string
+	system: string
+	name: string
+	image: string
+	cpu: number
+	memory: number
+	net: number
+	health: number
+	status: string
+	updated: number
+}
+
 export type ChartTimes = "1m" | "1h" | "12h" | "24h" | "1w" | "30d"
 
 export interface ChartTimeData {

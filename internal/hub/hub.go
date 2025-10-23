@@ -120,7 +120,19 @@ func (h *Hub) initialize(e *core.ServeEvent) error {
 		return err
 	}
 	// set auth settings
-	usersCollection, err := e.App.FindCollectionByNameOrId("users")
+	if err := setCollectionAuthSettings(e.App); err != nil {
+		return err
+	}
+	return nil
+}
+
+// setCollectionAuthSettings sets up default authentication settings for the app
+func setCollectionAuthSettings(app core.App) error {
+	usersCollection, err := app.FindCollectionByNameOrId("users")
+	if err != nil {
+		return err
+	}
+	superusersCollection, err := app.FindCollectionByNameOrId(core.CollectionNameSuperusers)
 	if err != nil {
 		return err
 	}
@@ -128,10 +140,6 @@ func (h *Hub) initialize(e *core.ServeEvent) error {
 	disablePasswordAuth, _ := GetEnv("DISABLE_PASSWORD_AUTH")
 	usersCollection.PasswordAuth.Enabled = disablePasswordAuth != "true"
 	usersCollection.PasswordAuth.IdentityFields = []string{"email"}
-	// disable oauth if no providers are configured (todo: remove this in post 0.9.0 release)
-	if usersCollection.OAuth2.Enabled {
-		usersCollection.OAuth2.Enabled = len(usersCollection.OAuth2.Providers) > 0
-	}
 	// allow oauth user creation if USER_CREATION is set
 	if userCreation, _ := GetEnv("USER_CREATION"); userCreation == "true" {
 		cr := "@request.context = 'oauth2'"
@@ -139,11 +147,22 @@ func (h *Hub) initialize(e *core.ServeEvent) error {
 	} else {
 		usersCollection.CreateRule = nil
 	}
-	if err := e.App.Save(usersCollection); err != nil {
+	// enable mfaOtp mfa if MFA_OTP env var is set
+	mfaOtp, _ := GetEnv("MFA_OTP")
+	usersCollection.OTP.Length = 6
+	superusersCollection.OTP.Length = 6
+	usersCollection.OTP.Enabled = mfaOtp == "true"
+	usersCollection.MFA.Enabled = mfaOtp == "true"
+	superusersCollection.OTP.Enabled = mfaOtp == "true" || mfaOtp == "superusers"
+	superusersCollection.MFA.Enabled = mfaOtp == "true" || mfaOtp == "superusers"
+	if err := app.Save(superusersCollection); err != nil {
+		return err
+	}
+	if err := app.Save(usersCollection); err != nil {
 		return err
 	}
 	// allow all users to access systems if SHARE_ALL_SYSTEMS is set
-	systemsCollection, err := e.App.FindCachedCollectionByNameOrId("systems")
+	systemsCollection, err := app.FindCollectionByNameOrId("systems")
 	if err != nil {
 		return err
 	}
@@ -158,10 +177,7 @@ func (h *Hub) initialize(e *core.ServeEvent) error {
 	systemsCollection.ViewRule = &systemsReadRule
 	systemsCollection.UpdateRule = &updateDeleteRule
 	systemsCollection.DeleteRule = &updateDeleteRule
-	if err := e.App.Save(systemsCollection); err != nil {
-		return err
-	}
-	return nil
+	return app.Save(systemsCollection)
 }
 
 // registerCronJobs sets up scheduled tasks
@@ -236,7 +252,10 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// update / delete user alerts
 	apiAuth.POST("/user-alerts", alerts.UpsertUserAlerts)
 	apiAuth.DELETE("/user-alerts", alerts.DeleteUserAlerts)
-
+	// get container logs
+	apiAuth.GET("/containers/logs", h.getContainerLogs)
+	// get container info
+	apiAuth.GET("/containers/info", h.getContainerInfo)
 	return nil
 }
 
@@ -265,6 +284,41 @@ func (h *Hub) getUniversalToken(e *core.RequestEvent) error {
 	}
 	_, response["active"] = tokenMap.GetOk(token)
 	return e.JSON(http.StatusOK, response)
+}
+
+// containerRequestHandler handles both container logs and info requests
+func (h *Hub) containerRequestHandler(e *core.RequestEvent, fetchFunc func(*systems.System, string) (string, error), responseKey string) error {
+	systemID := e.Request.URL.Query().Get("system")
+	containerID := e.Request.URL.Query().Get("container")
+
+	if systemID == "" || containerID == "" {
+		return e.JSON(http.StatusBadRequest, map[string]string{"error": "system and container parameters are required"})
+	}
+
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil {
+		return e.JSON(http.StatusNotFound, map[string]string{"error": "system not found"})
+	}
+
+	data, err := fetchFunc(system, containerID)
+	if err != nil {
+		return e.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+
+	return e.JSON(http.StatusOK, map[string]string{responseKey: data})
+}
+
+// getContainerLogs handles GET /api/beszel/containers/logs requests
+func (h *Hub) getContainerLogs(e *core.RequestEvent) error {
+	return h.containerRequestHandler(e, func(system *systems.System, containerID string) (string, error) {
+		return system.FetchContainerLogsFromAgent(containerID)
+	}, "logs")
+}
+
+func (h *Hub) getContainerInfo(e *core.RequestEvent) error {
+	return h.containerRequestHandler(e, func(system *systems.System, containerID string) (string, error) {
+		return system.FetchContainerInfoFromAgent(containerID)
+	}, "info")
 }
 
 // generates key pair if it doesn't exist and returns signer

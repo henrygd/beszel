@@ -168,6 +168,8 @@ func (a *Agent) handleSSHRequest(w io.Writer, req *common.HubRequest[cbor.RawMes
 		switch v := data.(type) {
 		case *system.CombinedData:
 			response.SystemData = v
+		case string:
+			response.String = &v
 		default:
 			response.Error = fmt.Sprintf("unsupported response type: %T", data)
 		}

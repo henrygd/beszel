@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -43,6 +44,8 @@ func NewHandlerRegistry() *HandlerRegistry {
 
 	registry.Register(common.GetData, &GetDataHandler{})
 	registry.Register(common.CheckFingerprint, &CheckFingerprintHandler{})
+	registry.Register(common.GetContainerLogs, &GetContainerLogsHandler{})
+	registry.Register(common.GetContainerInfo, &GetContainerInfoHandler{})
 
 	return registry
 }
@@ -98,4 +101,54 @@ type CheckFingerprintHandler struct{}
 
 func (h *CheckFingerprintHandler) Handle(hctx *HandlerContext) error {
 	return hctx.Client.handleAuthChallenge(hctx.Request, hctx.RequestID)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// GetContainerLogsHandler handles container log requests
+type GetContainerLogsHandler struct{}
+
+func (h *GetContainerLogsHandler) Handle(hctx *HandlerContext) error {
+	if hctx.Agent.dockerManager == nil {
+		return hctx.SendResponse("", hctx.RequestID)
+	}
+
+	var req common.ContainerLogsRequest
+	if err := cbor.Unmarshal(hctx.Request.Data, &req); err != nil {
+		return err
+	}
+
+	ctx := context.Background()
+	logContent, err := hctx.Agent.dockerManager.getLogs(ctx, req.ContainerID)
+	if err != nil {
+		return err
+	}
+
+	return hctx.SendResponse(logContent, hctx.RequestID)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// GetContainerInfoHandler handles container info requests
+type GetContainerInfoHandler struct{}
+
+func (h *GetContainerInfoHandler) Handle(hctx *HandlerContext) error {
+	if hctx.Agent.dockerManager == nil {
+		return hctx.SendResponse("", hctx.RequestID)
+	}
+
+	var req common.ContainerInfoRequest
+	if err := cbor.Unmarshal(hctx.Request.Data, &req); err != nil {
+		return err
+	}
+
+	ctx := context.Background()
+	info, err := hctx.Agent.dockerManager.getContainerInfo(ctx, req.ContainerID)
+	if err != nil {
+		return err
+	}
+
+	return hctx.SendResponse(info, hctx.RequestID)
 }

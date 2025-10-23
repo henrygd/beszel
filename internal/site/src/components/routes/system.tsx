@@ -13,7 +13,7 @@ import {
 	XIcon,
 } from "lucide-react"
 import { subscribeKeys } from "nanostores"
-import React, { type JSX, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import React, { type JSX, lazy, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import AreaChartDefault, { type DataPoint } from "@/components/charts/area-chart"
 import ContainerChart from "@/components/charts/container-chart"
 import DiskChart from "@/components/charts/disk-chart"
@@ -41,6 +41,7 @@ import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 import {
 	chartTimeData,
 	cn,
+	compareSemVer,
 	debounce,
 	decimalString,
 	formatBytes,
@@ -72,6 +73,8 @@ import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import NetworkSheet from "./system/network-sheet"
 import LineChartDefault from "../charts/line-chart"
+
+
 
 type ChartTimeData = {
 	time: number
@@ -168,7 +171,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const [system, setSystem] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
 	const [containerData, setContainerData] = useState([] as ChartData["containerData"])
-	const netCardRef = useRef<HTMLDivElement>(null)
+	const temperatureChartRef = useRef<HTMLDivElement>(null)
 	const persistChartTime = useRef(false)
 	const [bottomSpacing, setBottomSpacing] = useState(0)
 	const [chartLoading, setChartLoading] = useState(true)
@@ -214,7 +217,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	// subscribe to realtime metrics if chart time is 1m
 	// biome-ignore lint/correctness/useExhaustiveDependencies: not necessary
 	useEffect(() => {
-		let unsub = () => {}
+		let unsub = () => { }
 		if (!system.id || chartTime !== "1m") {
 			return
 		}
@@ -395,19 +398,20 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 		}[]
 	}, [system, t])
 
-	/** Space for tooltip if more than 12 containers */
+	/** Space for tooltip if more than 10 sensors and no containers table */
 	useEffect(() => {
-		if (!netCardRef.current || !containerData.length) {
+		const sensors = Object.keys(systemStats.at(-1)?.stats.t ?? {})
+		if (!temperatureChartRef.current || sensors.length < 10 || containerData.length > 0) {
 			setBottomSpacing(0)
 			return
 		}
-		const tooltipHeight = (Object.keys(containerData[0]).length - 11) * 17.8 - 40
+		const tooltipHeight = (sensors.length - 10) * 17.8 - 40
 		const wrapperEl = chartWrapRef.current as HTMLDivElement
 		const wrapperRect = wrapperEl.getBoundingClientRect()
-		const chartRect = netCardRef.current.getBoundingClientRect()
+		const chartRect = temperatureChartRef.current.getBoundingClientRect()
 		const distanceToBottom = wrapperRect.bottom - chartRect.bottom
 		setBottomSpacing(tooltipHeight - distanceToBottom)
-	}, [containerData])
+	}, [])
 
 	// keyboard navigation between systems
 	useEffect(() => {
@@ -741,26 +745,20 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 					</ChartCard>
 
 					{containerFilterBar && containerData.length > 0 && (
-						<div
-							ref={netCardRef}
-							className={cn({
-								"col-span-full": !grid,
-							})}
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={dockerOrPodman(t`Docker Network I/O`, system)}
+							description={dockerOrPodman(t`Network traffic of docker containers`, system)}
+							cornerEl={containerFilterBar}
 						>
-							<ChartCard
-								empty={dataEmpty}
-								title={dockerOrPodman(t`Docker Network I/O`, system)}
-								description={dockerOrPodman(t`Network traffic of docker containers`, system)}
-								cornerEl={containerFilterBar}
-							>
-								<ContainerChart
-									chartData={chartData}
-									chartType={ChartType.Network}
-									dataKey="n"
-									chartConfig={containerChartConfigs.network}
-								/>
-							</ChartCard>
-						</div>
+							<ContainerChart
+								chartData={chartData}
+								chartType={ChartType.Network}
+								dataKey="n"
+								chartConfig={containerChartConfigs.network}
+							/>
+						</ChartCard>
 					)}
 
 					{/* Swap chart */}
@@ -790,16 +788,21 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 					{/* Temperature chart */}
 					{systemStats.at(-1)?.stats.t && (
-						<ChartCard
-							empty={dataEmpty}
-							grid={grid}
-							title={t`Temperature`}
-							description={t`Temperatures of system sensors`}
-							cornerEl={<FilterBar store={$temperatureFilter} />}
-							legend={Object.keys(systemStats.at(-1)?.stats.t ?? {}).length < 12}
+						<div
+							ref={temperatureChartRef}
+							className={cn("odd:last-of-type:col-span-full", { "col-span-full": !grid })}
 						>
-							<TemperatureChart chartData={chartData} />
-						</ChartCard>
+							<ChartCard
+								empty={dataEmpty}
+								grid={grid}
+								title={t`Temperature`}
+								description={t`Temperatures of system sensors`}
+								cornerEl={<FilterBar store={$temperatureFilter} />}
+								legend={Object.keys(systemStats.at(-1)?.stats.t ?? {}).length < 12}
+							>
+								<TemperatureChart chartData={chartData} />
+							</ChartCard>
+						</div>
 					)}
 
 					{/* Battery chart */}
@@ -987,6 +990,9 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						})}
 					</div>
 				)}
+				{containerData.length > 0 && compareSemVer(chartData.agentVersion, parseSemVer("0.14.0")) >= 0 && (
+					<LazyContainersTable systemId={id} />
+				)}
 			</div>
 
 			{/* add space for tooltip if more than 12 containers */}
@@ -1114,5 +1120,16 @@ export function ChartCard({
 				{isIntersecting && children}
 			</div>
 		</Card>
+	)
+}
+
+const ContainersTable = lazy(() => import("../containers-table/containers-table"))
+
+function LazyContainersTable({ systemId }: { systemId: string }) {
+	const { isIntersecting, ref } = useIntersectionObserver()
+	return (
+		<div ref={ref}>
+			{isIntersecting && <ContainersTable systemId={systemId} />}
+		</div>
 	)
 }

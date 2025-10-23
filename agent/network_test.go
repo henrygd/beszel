@@ -338,6 +338,43 @@ func TestSumAndTrackPerNicDeltas(t *testing.T) {
 	assert.Equal(t, uint64(7000), ni[1])
 }
 
+func TestSumAndTrackPerNicDeltasHandlesCounterReset(t *testing.T) {
+	a := &Agent{
+		netInterfaces:             map[string]struct{}{"eth0": {}},
+		netInterfaceDeltaTrackers: make(map[uint16]*deltatracker.DeltaTracker[string, uint64]),
+	}
+
+	cache := uint16(77)
+
+	// First interval establishes baseline values
+	initial := []psutilNet.IOCountersStat{{Name: "eth0", BytesSent: 4_000, BytesRecv: 6_000}}
+	statsInitial := &system.Stats{}
+	a.ensureNetworkInterfacesMap(statsInitial)
+	_, _ = a.sumAndTrackPerNicDeltas(cache, 0, initial, statsInitial)
+
+	// Second interval increments counters normally so previous snapshot gets populated
+	increment := []psutilNet.IOCountersStat{{Name: "eth0", BytesSent: 9_000, BytesRecv: 11_000}}
+	statsIncrement := &system.Stats{}
+	a.ensureNetworkInterfacesMap(statsIncrement)
+	_, _ = a.sumAndTrackPerNicDeltas(cache, 1_000, increment, statsIncrement)
+
+	niIncrement, ok := statsIncrement.NetworkInterfaces["eth0"]
+	require.True(t, ok)
+	assert.Equal(t, uint64(5_000), niIncrement[0])
+	assert.Equal(t, uint64(5_000), niIncrement[1])
+
+	// Third interval simulates counter reset (values drop below previous totals)
+	reset := []psutilNet.IOCountersStat{{Name: "eth0", BytesSent: 1_200, BytesRecv: 1_500}}
+	statsReset := &system.Stats{}
+	a.ensureNetworkInterfacesMap(statsReset)
+	_, _ = a.sumAndTrackPerNicDeltas(cache, 1_000, reset, statsReset)
+
+	niReset, ok := statsReset.NetworkInterfaces["eth0"]
+	require.True(t, ok)
+	assert.Equal(t, uint64(1_200), niReset[0], "upload delta should match new counter value after reset")
+	assert.Equal(t, uint64(1_500), niReset[1], "download delta should match new counter value after reset")
+}
+
 func TestApplyNetworkTotals(t *testing.T) {
 	tests := []struct {
 		name                  string
@@ -441,10 +478,13 @@ func TestApplyNetworkTotals(t *testing.T) {
 			)
 
 			if tt.expectReset {
-				// Should have reset network tracking state - delta trackers should be cleared
-				// Note: initializeNetIoStats resets the maps, then applyNetworkTotals sets nis back
-				assert.Contains(t, a.netIoStats, cacheTimeMs, "cache entry should exist after reset")
+				// Should have reset network tracking state - maps cleared and stats zeroed
+				assert.NotContains(t, a.netIoStats, cacheTimeMs, "cache entry should be cleared after reset")
 				assert.NotContains(t, a.netInterfaceDeltaTrackers, cacheTimeMs, "tracker should be cleared on reset")
+				assert.Zero(t, systemStats.NetworkSent)
+				assert.Zero(t, systemStats.NetworkRecv)
+				assert.Zero(t, systemStats.Bandwidth[0])
+				assert.Zero(t, systemStats.Bandwidth[1])
 			} else {
 				// Should have applied stats
 				assert.Equal(t, tt.expectedNetworkSent, systemStats.NetworkSent)

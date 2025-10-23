@@ -13,12 +13,14 @@ import (
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/hub/ws"
 
+	"github.com/henrygd/beszel/internal/entities/container"
 	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/henrygd/beszel"
 
 	"github.com/blang/semver"
 	"github.com/fxamacker/cbor/v2"
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 	"golang.org/x/crypto/ssh"
 )
@@ -135,41 +137,81 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		return nil, err
 	}
 	hub := sys.manager.hub
-	// add system_stats and container_stats records
-	systemStatsCollection, err := hub.FindCachedCollectionByNameOrId("system_stats")
-	if err != nil {
-		return nil, err
-	}
-
-	systemStatsRecord := core.NewRecord(systemStatsCollection)
-	systemStatsRecord.Set("system", systemRecord.Id)
-	systemStatsRecord.Set("stats", data.Stats)
-	systemStatsRecord.Set("type", "1m")
-	if err := hub.SaveNoValidate(systemStatsRecord); err != nil {
-		return nil, err
-	}
-	// add new container_stats record
-	if len(data.Containers) > 0 {
-		containerStatsCollection, err := hub.FindCachedCollectionByNameOrId("container_stats")
+	err = hub.RunInTransaction(func(txApp core.App) error {
+		// add system_stats and container_stats records
+		systemStatsCollection, err := txApp.FindCachedCollectionByNameOrId("system_stats")
 		if err != nil {
-			return nil, err
+			return err
 		}
-		containerStatsRecord := core.NewRecord(containerStatsCollection)
-		containerStatsRecord.Set("system", systemRecord.Id)
-		containerStatsRecord.Set("stats", data.Containers)
-		containerStatsRecord.Set("type", "1m")
-		if err := hub.SaveNoValidate(containerStatsRecord); err != nil {
-			return nil, err
-		}
-	}
-	// update system record (do this last because it triggers alerts and we need above records to be inserted first)
-	systemRecord.Set("status", up)
 
-	systemRecord.Set("info", data.Info)
-	if err := hub.SaveNoValidate(systemRecord); err != nil {
-		return nil, err
+		systemStatsRecord := core.NewRecord(systemStatsCollection)
+		systemStatsRecord.Set("system", systemRecord.Id)
+		systemStatsRecord.Set("stats", data.Stats)
+		systemStatsRecord.Set("type", "1m")
+		if err := txApp.SaveNoValidate(systemStatsRecord); err != nil {
+			return err
+		}
+		if len(data.Containers) > 0 {
+			// add / update containers records
+			if data.Containers[0].Id != "" {
+				if err := createContainerRecords(txApp, data.Containers, sys.Id); err != nil {
+					return err
+				}
+			}
+			// add new container_stats record
+			containerStatsCollection, err := txApp.FindCachedCollectionByNameOrId("container_stats")
+			if err != nil {
+				return err
+			}
+			containerStatsRecord := core.NewRecord(containerStatsCollection)
+			containerStatsRecord.Set("system", systemRecord.Id)
+			containerStatsRecord.Set("stats", data.Containers)
+			containerStatsRecord.Set("type", "1m")
+			if err := txApp.SaveNoValidate(containerStatsRecord); err != nil {
+				return err
+			}
+		}
+		// update system record (do this last because it triggers alerts and we need above records to be inserted first)
+		systemRecord.Set("status", up)
+
+		systemRecord.Set("info", data.Info)
+		if err := txApp.SaveNoValidate(systemRecord); err != nil {
+			return err
+		}
+		return nil
+	})
+
+	return systemRecord, err
+}
+
+// createContainerRecords creates container records
+func createContainerRecords(app core.App, data []*container.Stats, systemId string) error {
+	if len(data) == 0 {
+		return nil
 	}
-	return systemRecord, nil
+	params := dbx.Params{
+		"system":  systemId,
+		"updated": time.Now().UTC().UnixMilli(),
+	}
+	valueStrings := make([]string, 0, len(data))
+	for i, container := range data {
+		suffix := fmt.Sprintf("%d", i)
+		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:image%[1]s}, {:status%[1]s}, {:health%[1]s}, {:cpu%[1]s}, {:memory%[1]s}, {:net%[1]s}, {:updated})", suffix))
+		params["id"+suffix] = container.Id
+		params["name"+suffix] = container.Name
+		params["image"+suffix] = container.Image
+		params["status"+suffix] = container.Status
+		params["health"+suffix] = container.Health
+		params["cpu"+suffix] = container.Cpu
+		params["memory"+suffix] = container.Mem
+		params["net"+suffix] = container.NetworkSent + container.NetworkRecv
+	}
+	queryString := fmt.Sprintf(
+		"INSERT INTO containers (id, system, name, image, status, health, cpu, memory, net, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, image = excluded.image, status = excluded.status, health = excluded.health, cpu = excluded.cpu, memory = excluded.memory, net = excluded.net, updated = excluded.updated",
+		strings.Join(valueStrings, ","),
+	)
+	_, err := app.DB().NewQuery(queryString).Bind(params).Execute()
+	return err
 }
 
 // getRecord retrieves the system record from the database.
@@ -242,37 +284,74 @@ func (sys *System) fetchDataViaWebSocket(options common.DataRequestOptions) (*sy
 	return sys.data, nil
 }
 
+// fetchStringFromAgentViaSSH is a generic function to fetch strings via SSH
+func (sys *System) fetchStringFromAgentViaSSH(action common.WebSocketAction, requestData any, errorMsg string) (string, error) {
+	var result string
+	err := sys.runSSHOperation(4*time.Second, 1, func(session *ssh.Session) (bool, error) {
+		stdout, err := session.StdoutPipe()
+		if err != nil {
+			return false, err
+		}
+		stdin, stdinErr := session.StdinPipe()
+		if stdinErr != nil {
+			return false, stdinErr
+		}
+		if err := session.Shell(); err != nil {
+			return false, err
+		}
+		req := common.HubRequest[any]{Action: action, Data: requestData}
+		_ = cbor.NewEncoder(stdin).Encode(req)
+		_ = stdin.Close()
+		var resp common.AgentResponse
+		err = cbor.NewDecoder(stdout).Decode(&resp)
+		if err != nil {
+			return false, err
+		}
+		if resp.String == nil {
+			return false, errors.New(errorMsg)
+		}
+		result = *resp.String
+		return false, nil
+	})
+	return result, err
+}
+
+// FetchContainerInfoFromAgent fetches container info from the agent
+func (sys *System) FetchContainerInfoFromAgent(containerID string) (string, error) {
+	// fetch via websocket
+	if sys.WsConn != nil && sys.WsConn.IsConnected() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		return sys.WsConn.RequestContainerInfo(ctx, containerID)
+	}
+	// fetch via SSH
+	return sys.fetchStringFromAgentViaSSH(common.GetContainerInfo, common.ContainerInfoRequest{ContainerID: containerID}, "no info in response")
+}
+
+// FetchContainerLogsFromAgent fetches container logs from the agent
+func (sys *System) FetchContainerLogsFromAgent(containerID string) (string, error) {
+	// fetch via websocket
+	if sys.WsConn != nil && sys.WsConn.IsConnected() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		return sys.WsConn.RequestContainerLogs(ctx, containerID)
+	}
+	// fetch via SSH
+	return sys.fetchStringFromAgentViaSSH(common.GetContainerLogs, common.ContainerLogsRequest{ContainerID: containerID}, "no logs in response")
+}
+
 // fetchDataViaSSH handles fetching data using SSH.
 // This function encapsulates the original SSH logic.
 // It updates sys.data directly upon successful fetch.
 func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.CombinedData, error) {
-	maxRetries := 1
-	for attempt := 0; attempt <= maxRetries; attempt++ {
-		if sys.client == nil || sys.Status == down {
-			if err := sys.createSSHClient(); err != nil {
-				return nil, err
-			}
-		}
-
-		session, err := sys.createSessionWithTimeout(4 * time.Second)
-		if err != nil {
-			if attempt >= maxRetries {
-				return nil, err
-			}
-			sys.manager.hub.Logger().Warn("Session closed. Retrying...", "host", sys.Host, "port", sys.Port, "err", err)
-			sys.closeSSHConnection()
-			// Reset format detection on connection failure - agent might have been upgraded
-			continue
-		}
-		defer session.Close()
-
+	err := sys.runSSHOperation(4*time.Second, 1, func(session *ssh.Session) (bool, error) {
 		stdout, err := session.StdoutPipe()
 		if err != nil {
-			return nil, err
+			return false, err
 		}
 		stdin, stdinErr := session.StdinPipe()
 		if err := session.Shell(); err != nil {
-			return nil, err
+			return false, err
 		}
 
 		*sys.data = system.CombinedData{}
@@ -280,45 +359,82 @@ func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.C
 		if sys.agentVersion.GTE(beszel.MinVersionAgentResponse) && stdinErr == nil {
 			req := common.HubRequest[any]{Action: common.GetData, Data: options}
 			_ = cbor.NewEncoder(stdin).Encode(req)
-			// Close write side to signal end of request
 			_ = stdin.Close()
 
 			var resp common.AgentResponse
 			if decErr := cbor.NewDecoder(stdout).Decode(&resp); decErr == nil && resp.SystemData != nil {
 				*sys.data = *resp.SystemData
-				// wait for the session to complete
 				if err := session.Wait(); err != nil {
-					return nil, err
+					return false, err
 				}
-				return sys.data, nil
+				return false, nil
 			}
-			// If decoding failed, fall back below
 		}
 
+		var decodeErr error
 		if sys.agentVersion.GTE(beszel.MinVersionCbor) {
-			err = cbor.NewDecoder(stdout).Decode(sys.data)
+			decodeErr = cbor.NewDecoder(stdout).Decode(sys.data)
 		} else {
-			err = json.NewDecoder(stdout).Decode(sys.data)
+			decodeErr = json.NewDecoder(stdout).Decode(sys.data)
 		}
 
-		if err != nil {
-			sys.closeSSHConnection()
-			if attempt < maxRetries {
-				continue
-			}
-			return nil, err
+		if decodeErr != nil {
+			return true, decodeErr
 		}
 
-		// wait for the session to complete
 		if err := session.Wait(); err != nil {
-			return nil, err
+			return false, err
 		}
 
-		return sys.data, nil
+		return false, nil
+	})
+	if err != nil {
+		return nil, err
 	}
 
-	// this should never be reached due to the return in the loop
-	return nil, fmt.Errorf("failed to fetch data")
+	return sys.data, nil
+}
+
+// runSSHOperation establishes an SSH session and executes the provided operation.
+// The operation can request a retry by returning true as the first return value.
+func (sys *System) runSSHOperation(timeout time.Duration, retries int, operation func(*ssh.Session) (bool, error)) error {
+	for attempt := 0; attempt <= retries; attempt++ {
+		if sys.client == nil || sys.Status == down {
+			if err := sys.createSSHClient(); err != nil {
+				return err
+			}
+		}
+
+		session, err := sys.createSessionWithTimeout(timeout)
+		if err != nil {
+			if attempt >= retries {
+				return err
+			}
+			sys.manager.hub.Logger().Warn("Session closed. Retrying...", "host", sys.Host, "port", sys.Port, "err", err)
+			sys.closeSSHConnection()
+			continue
+		}
+
+		retry, opErr := func() (bool, error) {
+			defer session.Close()
+			return operation(session)
+		}()
+
+		if opErr == nil {
+			return nil
+		}
+
+		if retry {
+			sys.closeSSHConnection()
+			if attempt < retries {
+				continue
+			}
+		}
+
+		return opErr
+	}
+
+	return fmt.Errorf("ssh operation failed")
 }
 
 // createSSHClient creates a new SSH client for the system

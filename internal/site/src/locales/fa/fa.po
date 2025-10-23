@@ -89,7 +89,7 @@ msgstr "عملیات"
 msgid "Active"
 msgstr "فعال"
 
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Active Alerts"
 msgstr " هشدارهای فعال"
 
@@ -133,7 +133,15 @@ msgstr "تاریخچه هشدارها"
 msgid "Alerts"
 msgstr "هشدارها"
 
+#: src/components/command-palette.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/containers.tsx
+msgid "All Containers"
+msgstr "همه کانتینرها"
+
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/command-palette.tsx
+#: src/components/routes/home.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
@@ -267,6 +275,10 @@ msgstr "برای جزئیات بیشتر، لاگ‌ها را بررسی کنی�
 msgid "Check your notification service"
 msgstr "سرویس اطلاع‌رسانی خود را بررسی کنید"
 
+#: src/components/containers-table/containers-table.tsx
+msgid "Click on a container to view more information."
+msgstr "برای مشاهده اطلاعات بیشتر روی کانتینر کلیک کنید."
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
 msgstr "برای مشاهده اطلاعات بیشتر روی یک سیستم کلیک کنید."
@@ -289,7 +301,7 @@ msgstr "نحوه دریافت هشدارهای اطلاع‌رسانی را پی
 msgid "Confirm password"
 msgstr "تأیید رمز عبور"
 
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "اتصال قطع است"
 
@@ -348,6 +360,7 @@ msgstr "محتوای <0>docker-compose.yml</0> عامل زیر را کپی کن�
 msgid "Copy YAML"
 msgstr "کپی YAML"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "پردازنده"
@@ -385,7 +398,6 @@ msgid "Current state"
 msgstr "وضعیت فعلی"
 
 #: src/components/command-palette.tsx
-#: src/components/routes/home.tsx
 msgid "Dashboard"
 msgstr "داشبورد"
 
@@ -401,6 +413,10 @@ msgstr "حذف"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
 msgstr "حذف اثر انگشت"
+
+#: src/components/containers-table/containers-table.tsx
+msgid "Detail"
+msgstr "جزئیات"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -508,7 +524,7 @@ msgstr "خطا"
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "در {2, plural, one {# دقیقه} other {# دقیقه}} گذشته از {0}{1} بیشتر است"
 
@@ -549,6 +565,7 @@ msgstr "ارسال اعلان آزمایشی ناموفق بود"
 msgid "Failed to update alert"
 msgstr "به‌روزرسانی هشدار ناموفق بود"
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -596,6 +613,10 @@ msgstr "مصرف برق پردازنده گرافیکی"
 msgid "Grid"
 msgstr "جدول"
 
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Health"
+msgstr "سلامتی"
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -614,6 +635,11 @@ msgstr "بیکار"
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "اگر رمز عبور حساب مدیر خود را گم کرده‌اید، می‌توانید آن را با استفاده از دستور زیر بازنشانی کنید."
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image"
+msgstr "تصویر"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -667,6 +693,7 @@ msgid "Login attempt failed"
 msgstr "تلاش برای ورود ناموفق بود"
 
 #: src/components/command-palette.tsx
+#: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
 msgid "Logs"
 msgstr "لاگ‌ها"
@@ -689,6 +716,7 @@ msgstr "دستورالعمل‌های راه‌اندازی دستی"
 msgid "Max 1 min"
 msgstr "حداکثر ۱ دقیقه"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "حافظه"
@@ -704,9 +732,11 @@ msgstr "میزان استفاده از حافظه کانتینرهای داکر"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
 msgid "Name"
 msgstr "نام"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "شبکه"
@@ -731,6 +761,7 @@ msgstr "واحد شبکه"
 msgid "No results found."
 msgstr "هیچ نتیجه‌ای یافت نشد."
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "No results."
 msgstr "نتیجه‌ای یافت نشد."
@@ -772,6 +803,7 @@ msgstr "یا ادامه با"
 msgid "Overwrite existing alerts"
 msgstr "بازنویسی هشدارهای موجود"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
 msgstr "صفحه"
@@ -876,6 +908,11 @@ msgstr "خواندن"
 msgid "Received"
 msgstr "دریافت شد"
 
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+msgid "Refresh"
+msgstr "تازه‌سازی"
+
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
 msgstr "درخواست رمز عبور یک‌بار مصرف"
@@ -967,6 +1004,7 @@ msgstr "مرتب‌سازی بر اساس"
 msgid "State"
 msgstr "وضعیت"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -981,6 +1019,7 @@ msgid "Swap Usage"
 msgstr "میزان استفاده از Swap"
 
 #: src/components/alerts-history-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -1153,6 +1192,10 @@ msgstr "فعال"
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
 msgstr "فعال ({upSystemsLength})"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Updated"
+msgstr "به‌روزرسانی شد"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"

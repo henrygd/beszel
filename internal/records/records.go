@@ -437,6 +437,10 @@ func (rm *RecordManager) DeleteOldRecords() {
 		if err != nil {
 			return err
 		}
+		err = deleteOldContainerRecords(txApp)
+		if err != nil {
+			return err
+		}
 		err = deleteOldAlertsHistory(txApp, 200, 250)
 		if err != nil {
 			return err
@@ -503,6 +507,20 @@ func deleteOldSystemStats(app core.App) error {
 			return fmt.Errorf("failed to delete from %s: %v", collection, err)
 		}
 	}
+	return nil
+}
+
+// Deletes container records that haven't been updated in the last 10 minutes
+func deleteOldContainerRecords(app core.App) error {
+	now := time.Now().UTC()
+	tenMinutesAgo := now.Add(-10 * time.Minute)
+
+	// Delete container records where updated < tenMinutesAgo
+	_, err := app.DB().NewQuery("DELETE FROM containers WHERE updated < {:updated}").Bind(dbx.Params{"updated": tenMinutesAgo.UnixMilli()}).Execute()
+	if err != nil {
+		return fmt.Errorf("failed to delete old container records: %v", err)
+	}
+
 	return nil
 }
 
