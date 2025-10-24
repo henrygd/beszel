@@ -340,6 +340,45 @@ func (sys *System) FetchContainerLogsFromAgent(containerID string) (string, erro
 	return sys.fetchStringFromAgentViaSSH(common.GetContainerLogs, common.ContainerLogsRequest{ContainerID: containerID}, "no logs in response")
 }
 
+// FetchSmartDataFromAgent fetches SMART data from the agent
+func (sys *System) FetchSmartDataFromAgent() (map[string]any, error) {
+	// fetch via websocket
+	if sys.WsConn != nil && sys.WsConn.IsConnected() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		return sys.WsConn.RequestSmartData(ctx)
+	}
+	// fetch via SSH
+	var result map[string]any
+	err := sys.runSSHOperation(5*time.Second, 1, func(session *ssh.Session) (bool, error) {
+		stdout, err := session.StdoutPipe()
+		if err != nil {
+			return false, err
+		}
+		stdin, stdinErr := session.StdinPipe()
+		if stdinErr != nil {
+			return false, stdinErr
+		}
+		if err := session.Shell(); err != nil {
+			return false, err
+		}
+		req := common.HubRequest[any]{Action: common.GetSmartData}
+		_ = cbor.NewEncoder(stdin).Encode(req)
+		_ = stdin.Close()
+		var resp common.AgentResponse
+		if err := cbor.NewDecoder(stdout).Decode(&resp); err != nil {
+			return false, err
+		}
+		// Convert to generic map for JSON response
+		result = make(map[string]any, len(resp.SmartData))
+		for k, v := range resp.SmartData {
+			result[k] = v
+		}
+		return false, nil
+	})
+	return result, err
+}
+
 // fetchDataViaSSH handles fetching data using SSH.
 // This function encapsulates the original SSH logic.
 // It updates sys.data directly upon successful fetch.

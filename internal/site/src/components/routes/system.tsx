@@ -573,6 +573,18 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 					</div>
 				</Card>
 
+
+				{/* <Tabs defaultValue="overview" className="w-full">
+					<TabsList className="w-full h-11">
+						<TabsTrigger value="overview" className="w-full h-9">Overview</TabsTrigger>
+						<TabsTrigger value="containers" className="w-full h-9">Containers</TabsTrigger>
+						<TabsTrigger value="smart" className="w-full h-9">S.M.A.R.T.</TabsTrigger>
+					</TabsList>
+					<TabsContent value="smart">
+					</TabsContent>
+				</Tabs> */}
+
+
 				{/* main charts */}
 				<div className="grid xl:grid-cols-2 gap-4">
 					<ChartCard
@@ -990,9 +1002,13 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						})}
 					</div>
 				)}
+
+
 				{containerData.length > 0 && compareSemVer(chartData.agentVersion, parseSemVer("0.14.0")) >= 0 && (
 					<LazyContainersTable systemId={id} />
 				)}
+
+				<LazySmartTable systemId={system.id} />
 			</div>
 
 			{/* add space for tooltip if more than 12 containers */}
@@ -1126,10 +1142,21 @@ export function ChartCard({
 const ContainersTable = lazy(() => import("../containers-table/containers-table"))
 
 function LazyContainersTable({ systemId }: { systemId: string }) {
-	const { isIntersecting, ref } = useIntersectionObserver()
+	const { isIntersecting, ref } = useIntersectionObserver({ rootMargin: "90px" })
 	return (
 		<div ref={ref}>
 			{isIntersecting && <ContainersTable systemId={systemId} />}
+		</div>
+	)
+}
+
+const SmartTable = lazy(() => import("./system/smart-table"))
+
+function LazySmartTable({ systemId }: { systemId: string }) {
+	const { isIntersecting, ref } = useIntersectionObserver()
+	return (
+		<div ref={ref}>
+			{isIntersecting && <SmartTable systemId={systemId} />}
 		</div>
 	)
 }

@@ -311,3 +311,45 @@ export interface ChartData {
 // }
 
 export type AlertMap = Record<string, Map<string, AlertRecord>>
+
+export interface SmartData {
+	/** model family */
+	// mf?: string
+	/** model name */
+	mn?: string
+	/** serial number */
+	sn?: string
+	/** firmware version */
+	fv?: string
+	/** capacity */
+	c?: number
+	/** smart status */
+	s?: string
+	/** disk name (like /dev/sda) */
+	dn?: string
+	/** disk type */
+	dt?: string
+	/** temperature */
+	t?: number
+	/** attributes */
+	a?: SmartAttribute[]
+}
+
+export interface SmartAttribute {
+	/** id */
+	id?: number
+	/** name */
+	n: string
+	/** value */
+	v: number
+	/** worst */
+	w?: number
+	/** threshold */
+	t?: number
+	/** raw value */
+	rv?: number
+	/** raw string */
+	rs?: string
+	/** when failed */
+	wf?: string
+}

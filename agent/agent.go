@@ -42,6 +42,7 @@ type Agent struct {
 	server                    *ssh.Server                                           // SSH server
 	dataDir                   string                                                // Directory for persisting data
 	keys                      []gossh.PublicKey                                     // SSH public keys
+	smartManager              *SmartManager                                         // Manages SMART data
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.
@@ -100,11 +101,15 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	// initialize docker manager
 	agent.dockerManager = newDockerManager(agent)
 
+	agent.smartManager, err = NewSmartManager()
+	if err != nil {
+		slog.Debug("SMART", "err", err)
+	}
+
 	// initialize GPU manager
-	if gm, err := NewGPUManager(); err != nil {
+	agent.gpuManager, err = NewGPUManager()
+	if err != nil {
 		slog.Debug("GPU", "err", err)
-	} else {
-		agent.gpuManager = gm
 	}
 
 	// if debugging, print stats
