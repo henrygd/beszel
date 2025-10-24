@@ -8,7 +8,7 @@ msgstr ""
 "Language: es\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-20 21:37\n"
+"PO-Revision-Date: 2025-10-24 16:17\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -277,7 +277,7 @@ msgstr "Verifique su servicio de notificaciones"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
-msgstr "Haga clic en un contenedor para ver más información."
+msgstr "Haz clic en un contenedor para ver más información."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -386,11 +386,11 @@ msgstr "Crítico (%)"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
-msgstr "Descarga acumulativa"
+msgstr "Descarga acumulada"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
-msgstr "Carga acumulativa"
+msgstr "Carga acumulada"
 
 #. Context: Battery state
 #: src/components/routes/system.tsx
