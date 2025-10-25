@@ -596,30 +596,34 @@ func getDockerHost() string {
 }
 
 // getContainerInfo fetches the inspection data for a container
-func (dm *dockerManager) getContainerInfo(ctx context.Context, containerID string) (string, error) {
+func (dm *dockerManager) getContainerInfo(ctx context.Context, containerID string) ([]byte, error) {
 	endpoint := fmt.Sprintf("http://localhost/containers/%s/json", containerID)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	resp, err := dm.client.Do(req)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(io.LimitReader(resp.Body, 1024))
-		return "", fmt.Errorf("container info request failed: %s: %s", resp.Status, strings.TrimSpace(string(body)))
+		return nil, fmt.Errorf("container info request failed: %s: %s", resp.Status, strings.TrimSpace(string(body)))
 	}
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
+	// Remove sensitive environment variables from Config.Env
+	var containerInfo map[string]any
+	if err := json.NewDecoder(resp.Body).Decode(&containerInfo); err != nil {
+		return nil, err
+	}
+	if config, ok := containerInfo["Config"].(map[string]any); ok {
+		delete(config, "Env")
 	}
 
-	return string(data), nil
+	return json.Marshal(containerInfo)
 }
 
 // getLogs fetches the logs for a container

@@ -154,7 +154,7 @@ func (h *GetContainerInfoHandler) Handle(hctx *HandlerContext) error {
 		return err
 	}
 
-	return hctx.SendResponse(info, hctx.RequestID)
+	return hctx.SendResponse(string(info), hctx.RequestID)
 }
 
 ////////////////////////////////////////////////////////////////////////////
