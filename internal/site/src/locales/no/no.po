@@ -8,7 +8,7 @@ msgstr ""
 "Language: no\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-13 17:31\n"
+"PO-Revision-Date: 2025-10-22 10:37\n"
 "Last-Translator: \n"
 "Language-Team: Norwegian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -416,7 +416,7 @@ msgstr "Slett fingeravtrykk"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
-msgstr "Detalj"
+msgstr "Detaljer"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -1293,3 +1293,4 @@ msgstr "YAML Konfigurasjon"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Dine brukerinnstillinger har blitt oppdatert."
+

@@ -8,15 +8,15 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-05 08:15\n"
+"PO-Revision-Date: 2025-10-25 21:09\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: zh-CN\n"
-"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 16\n"
+"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 32\n"
 
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
 #: src/components/routes/system.tsx
@@ -95,7 +95,7 @@ msgstr "启用的警报"
 
 #: src/components/add-system.tsx
 msgid "Add <0>System</0>"
-msgstr "添加<0>客户端</0>"
+msgstr "添加客户端</0>"
 
 #: src/components/add-system.tsx
 msgid "Add New System"
@@ -1195,7 +1195,7 @@ msgstr "在线 ({upSystemsLength})"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Updated"
-msgstr "已更新"
+msgstr "更新于"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
@@ -1293,3 +1293,4 @@ msgstr "YAML 配置"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "您的用户设置已更新。"
+

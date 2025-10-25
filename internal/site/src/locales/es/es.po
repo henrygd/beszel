@@ -8,15 +8,15 @@ msgstr ""
 "Language: es\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-28 23:21\n"
+"PO-Revision-Date: 2025-10-25 21:09\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: es-ES\n"
-"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 16\n"
+"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 32\n"
 
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
 #: src/components/routes/system.tsx
@@ -91,15 +91,15 @@ msgstr "Activo"
 
 #: src/components/active-alerts.tsx
 msgid "Active Alerts"
-msgstr "Alertas Activas"
+msgstr "Alertas activas"
 
 #: src/components/add-system.tsx
 msgid "Add <0>System</0>"
-msgstr "Agregar <0>Sistema</0>"
+msgstr "Agregar <0>sistema</0>"
 
 #: src/components/add-system.tsx
 msgid "Add New System"
-msgstr "Agregar Nuevo Sistema"
+msgstr "Agregar nuevo sistema"
 
 #: src/components/add-system.tsx
 msgid "Add system"
@@ -149,7 +149,7 @@ msgstr "Todos los Sistemas"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
-msgstr "¿Está seguro de que desea eliminar {name}?"
+msgstr "¿Estás seguro de que deseas eliminar {name}?"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
@@ -192,7 +192,7 @@ msgstr "Utilización promedio de motores GPU"
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
-msgstr "Copias de Seguridad"
+msgstr "Copias de seguridad"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -218,12 +218,12 @@ msgstr "Binario"
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr "Bits (Kbps, Mbps, Gbps)"
+msgstr "Bits (kbps, Mbps, Gbps)"
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
-msgstr "Bytes (KB/s, MB/s, GB/s)"
+msgstr "Bytes (kB/s, MB/s, GB/s)"
 
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
@@ -261,19 +261,23 @@ msgstr "Cargando"
 
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
-msgstr "Opciones de Gráficos"
+msgstr "Opciones de gráficos"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
-msgstr "Revise {email} para un enlace de restablecimiento."
+msgstr "Revisa {email} para un enlace de restablecimiento."
 
 #: src/components/routes/settings/layout.tsx
 msgid "Check logs for more details."
-msgstr "Revise los registros para más detalles."
+msgstr "Revisa los registros para más detalles."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
-msgstr "Verifique su servicio de notificaciones"
+msgstr "Verifica tu servicio de notificaciones"
+
+#: src/components/containers-table/containers-table.tsx
+msgid "Click on a container to view more information."
+msgstr "Haz clic en un contenedor para ver más información."
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
@@ -281,11 +285,11 @@ msgstr "Haga clic en un contenedor para ver más información."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
-msgstr "Haga clic en un sistema para ver más información."
+msgstr "Haz clic en un sistema para ver más información."
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
-msgstr "Haga clic para copiar"
+msgstr "Haz clic para copiar"
 
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -294,7 +298,7 @@ msgstr "Instrucciones de línea de comandos"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
-msgstr "Configure cómo recibe las notificaciones de alertas."
+msgstr "Configura cómo recibe las notificaciones de alertas."
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
@@ -378,7 +382,7 @@ msgstr "Crear cuenta"
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
 msgid "Created"
-msgstr "Creado"
+msgstr "Creada"
 
 #: src/components/routes/settings/general.tsx
 msgid "Critical (%)"
@@ -386,11 +390,11 @@ msgstr "Crítico (%)"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
-msgstr "Descarga acumulativa"
+msgstr "Descarga acumulada"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
-msgstr "Carga acumulativa"
+msgstr "Carga acumulada"
 
 #. Context: Battery state
 #: src/components/routes/system.tsx
@@ -403,7 +407,7 @@ msgstr "Tablero"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
-msgstr "Período de tiempo predeterminado"
+msgstr "Periodo de tiempo predeterminado"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -439,7 +443,7 @@ msgstr "Unidad de disco"
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
-msgstr "Uso de Disco"
+msgstr "Uso de disco"
 
 #: src/components/routes/system.tsx
 msgid "Disk usage of {extraFsName}"
@@ -451,11 +455,11 @@ msgstr "Uso de CPU de Docker"
 
 #: src/components/routes/system.tsx
 msgid "Docker Memory Usage"
-msgstr "Uso de Memoria de Docker"
+msgstr "Uso de memoria de Docker"
 
 #: src/components/routes/system.tsx
 msgid "Docker Network I/O"
-msgstr "E/S de Red de Docker"
+msgstr "E/S de red de Docker"
 
 #: src/components/command-palette.tsx
 msgid "Documentation"
@@ -467,11 +471,15 @@ msgstr "Documentación"
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "Down"
-msgstr "Abajo"
+msgstr "Caído"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Down ({downSystemsLength})"
-msgstr "Abajo ({downSystemsLength})"
+msgstr "Caído ({downSystemsLength})"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Download"
+msgstr "Descargar"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
@@ -503,11 +511,15 @@ msgstr "Vacía"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
-msgstr "Ingrese la dirección de correo electrónico para restablecer la contraseña"
+msgstr "Ingresa la dirección de correo electrónico para restablecer la contraseña"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Enter email address..."
-msgstr "Ingrese dirección de correo..."
+msgstr "Ingresa dirección de correo..."
+
+#: src/components/login/otp-forms.tsx
+msgid "Enter your one-time password."
+msgstr "Ingresa tu contraseña de un solo uso."
 
 #: src/components/login/otp-forms.tsx
 msgid "Enter your one-time password."
@@ -530,7 +542,7 @@ msgstr "Excede {0}{1} en el último {2, plural, one {# minuto} other {# minutos}
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
-msgstr "Los sistemas existentes no definidos en <0>config.yml</0> serán eliminados. Por favor, haga copias de seguridad regularmente."
+msgstr "Los sistemas existentes no definidos en <0>config.yml</0> serán eliminados. Por favor, haz copias de seguridad regularmente."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -542,7 +554,7 @@ msgstr "Exportar configuración"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export your current systems configuration."
-msgstr "Exporte la configuración actual de sus sistemas."
+msgstr "Exporta la configuración actual de sus sistemas."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
@@ -582,7 +594,13 @@ msgstr "Por <0>{min}</0> {min, plural, one {minuto} other {minutos}}"
 
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
-msgstr "¿Olvidó su contraseña?"
+msgstr "¿Olvidaste tu contraseña?"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "FreeBSD command"
+msgstr "Comando FreeBSD"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -625,7 +643,7 @@ msgstr "Comando Homebrew"
 
 #: src/components/add-system.tsx
 msgid "Host / IP"
-msgstr "Host / IP"
+msgstr "Servidor / IP"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -634,7 +652,12 @@ msgstr "Inactiva"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
-msgstr "Si ha perdido la contraseña de su cuenta de administrador, puede restablecerla usando el siguiente comando."
+msgstr "Si has perdido la contraseña de tu cuenta de administrador, puedes restablecerla usando el siguiente comando."
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image"
+msgstr "Imagen"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
@@ -660,7 +683,7 @@ msgstr "Diseño"
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
-msgstr "Carga Media"
+msgstr "Carga media"
 
 #: src/lib/alerts.ts
 msgid "Load Average 15m"
@@ -681,7 +704,7 @@ msgstr "Carga media"
 
 #: src/components/navbar.tsx
 msgid "Log Out"
-msgstr "Cerrar Sesión"
+msgstr "Cerrar sesión"
 
 #: src/components/login/login.tsx
 msgid "Login"
@@ -700,7 +723,7 @@ msgstr "Registros"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
-msgstr "¿Busca dónde crear alertas? Haga clic en los iconos de campana <0/> en la tabla de sistemas."
+msgstr "¿Buscas dónde crear alertas? Haz clic en los iconos de campana <0/> en la tabla de sistemas."
 
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
@@ -1293,3 +1316,4 @@ msgstr "Configuración YAML"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Su configuración de usuario ha sido actualizada."
+

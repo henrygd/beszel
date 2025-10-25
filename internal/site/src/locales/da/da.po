@@ -53,10 +53,6 @@ msgid "1 minute"
 msgstr "1 minut"
 
 #: src/lib/utils.ts
-msgid "1 minute"
-msgstr "1 minut"
-
-#: src/lib/utils.ts
 msgid "1 week"
 msgstr "1 uge"
 
@@ -422,10 +418,6 @@ msgstr "Slet fingeraftryk"
 msgid "Detail"
 msgstr "Detalje"
 
-#: src/components/containers-table/containers-table.tsx
-msgid "Detail"
-msgstr "Detalje"
-
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Discharging"
@@ -484,10 +476,6 @@ msgstr "Nede ({downSystemsLength})"
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
 msgstr "Hent ned"
-
-#: src/components/routes/system/network-sheet.tsx
-msgid "Download"
-msgstr "Download"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
@@ -1212,14 +1200,6 @@ msgstr "Opdateret"
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
 msgstr "Overfør"
-
-#: src/components/containers-table/containers-table-columns.tsx
-msgid "Updated"
-msgstr "Opdateret"
-
-#: src/components/routes/system/network-sheet.tsx
-msgid "Upload"
-msgstr "Upload"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"
