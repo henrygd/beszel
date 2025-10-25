@@ -234,7 +234,7 @@ async function getLogsHtml(container: ContainerRecord): Promise<string> {
 			system: container.system,
 			container: container.id,
 		})])
-		return highlighter.codeToHtml(logsHtml.logs, { lang: "log", theme: syntaxTheme })
+		return logsHtml.logs ? highlighter.codeToHtml(logsHtml.logs, { lang: "log", theme: syntaxTheme }) : t`No results.`
 	} catch (error) {
 		console.error(error)
 		return ""
@@ -250,7 +250,7 @@ async function getInfoHtml(container: ContainerRecord): Promise<string> {
 		try {
 			info = JSON.stringify(JSON.parse(info), null, 2)
 		} catch (_) { }
-		return highlighter.codeToHtml(info, { lang: "json", theme: syntaxTheme })
+		return info ? highlighter.codeToHtml(info, { lang: "json", theme: syntaxTheme }) : t`No results.`
 	} catch (error) {
 		console.error(error)
 		return ""

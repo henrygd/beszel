@@ -252,12 +252,15 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// update / delete user alerts
 	apiAuth.POST("/user-alerts", alerts.UpsertUserAlerts)
 	apiAuth.DELETE("/user-alerts", alerts.DeleteUserAlerts)
-	// get container logs
-	apiAuth.GET("/containers/logs", h.getContainerLogs)
-	// get container info
-	apiAuth.GET("/containers/info", h.getContainerInfo)
 	// get SMART data
 	apiAuth.GET("/smart", h.getSmartData)
+	// /containers routes
+	if enabled, _ := GetEnv("CONTAINER_DETAILS"); enabled != "false" {
+		// get container logs
+		apiAuth.GET("/containers/logs", h.getContainerLogs)
+		// get container info
+		apiAuth.GET("/containers/info", h.getContainerInfo)
+	}
 	return nil
 }
 
