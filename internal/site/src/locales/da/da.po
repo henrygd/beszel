@@ -8,7 +8,7 @@ msgstr ""
 "Language: da\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-22 23:14\n"
+"PO-Revision-Date: 2025-10-25 09:58\n"
 "Last-Translator: \n"
 "Language-Team: Danish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -244,7 +244,7 @@ msgstr "Celsius (°C)"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
-msgstr ""
+msgstr "Ændre viste enheder for målinger."
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
@@ -425,15 +425,15 @@ msgstr "Aflader"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
-msgstr ""
+msgstr "Disk"
 
 #: src/components/routes/system.tsx
 msgid "Disk I/O"
-msgstr ""
+msgstr "Disk I/O"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
-msgstr ""
+msgstr "Diskenhed"
 
 #: src/components/charts/disk-chart.tsx
 #: src/components/routes/system.tsx
@@ -479,7 +479,7 @@ msgstr "Hent ned"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
-msgstr ""
+msgstr "Varighed"
 
 #: src/components/add-system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -656,28 +656,28 @@ msgstr "Sprog"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
-msgstr ""
+msgstr "Opstilling"
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
-msgstr ""
+msgstr "Belastning Gennemsnitlig"
 
 #: src/lib/alerts.ts
 msgid "Load Average 15m"
-msgstr ""
+msgstr "Belastning Gennemsnitlig 15m"
 
 #: src/lib/alerts.ts
 msgid "Load Average 1m"
-msgstr ""
+msgstr "Belastning Gennemsnitlig 1m"
 
 #: src/lib/alerts.ts
 msgid "Load Average 5m"
-msgstr ""
+msgstr "Belastning Gennemsnitlig 5m"
 
 #. Short label for load average
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
-msgstr ""
+msgstr "Belastning gns."
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -837,7 +837,7 @@ msgstr "Anmodning om nulstilling af adgangskode modtaget"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
-msgstr ""
+msgstr "Pause"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
@@ -929,7 +929,7 @@ msgstr "Nulstil adgangskode"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Resolved"
-msgstr ""
+msgstr "Løst"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
@@ -937,7 +937,7 @@ msgstr "Genoptag"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
-msgstr ""
+msgstr "Roter nøgle"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
@@ -1028,7 +1028,7 @@ msgstr "System"
 
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
-msgstr ""
+msgstr "Gennemsnitlig system belastning over tid"
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -1054,7 +1054,7 @@ msgstr "Temperatur"
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"
-msgstr ""
+msgstr "Temperaturenhed"
 
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
@@ -1078,7 +1078,7 @@ msgstr "Denne handling kan ikke fortrydes. Dette vil permanent slette alle aktue
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
-msgstr ""
+msgstr "Dette vil permanent slette alle poster fra databasen."
 
 #: src/components/routes/system.tsx
 msgid "Throughput of {extraFsName}"
