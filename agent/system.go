@@ -78,8 +78,9 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 	var systemStats system.Stats
 
 	// battery
-	if battery.HasReadableBattery() {
-		systemStats.Battery[0], systemStats.Battery[1], _ = battery.GetBatteryStats()
+	if batteryPercent, batteryState, err := battery.GetBatteryStats(); err == nil {
+		systemStats.Battery[0] = batteryPercent
+		systemStats.Battery[1] = batteryState
 	}
 
 	// cpu percent
