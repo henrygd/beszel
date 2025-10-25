@@ -234,6 +234,10 @@ msgstr "Gyorsítótár / Pufferelések"
 msgid "Cancel"
 msgstr "Mégsem"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Capacity"
+msgstr "Kapacitás"
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
 msgstr "Figyelem - potenciális adatvesztés"
@@ -278,6 +282,10 @@ msgstr "Ellenőrizd az értesítési szolgáltatásodat"
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
 msgstr "Kattintson egy konténerre a további információk megtekintéséhez."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Click on a device to view more information."
+msgstr "Kattintson egy eszközre további információk megtekintéséhez."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -397,6 +405,11 @@ msgstr "Kumulatív feltöltés"
 msgid "Current state"
 msgstr "Jelenlegi állapot"
 
+#. Power Cycles
+#: src/components/routes/system/smart-table.tsx
+msgid "Cycles"
+msgstr "Ciklusok"
+
 #: src/components/command-palette.tsx
 msgid "Dashboard"
 msgstr "Áttekintés"
@@ -417,6 +430,10 @@ msgstr "Ujjlenyomat törlése"
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
 msgstr "Részlet"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Device"
+msgstr "Eszköz"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -548,6 +565,10 @@ msgstr "Exportálja a jelenlegi rendszerkonfigurációt."
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenheit (°F)"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Failed Attributes:"
+msgstr "Sikertelen attribútumok:"
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Hitelesítés sikertelen"
@@ -568,6 +589,7 @@ msgstr "Nem sikerült frissíteni a riasztást"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Szűrő..."
@@ -575,6 +597,10 @@ msgstr "Szűrő..."
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
 msgstr "Ujjlenyomat"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Firmware"
+msgstr "Firmware"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -730,6 +756,10 @@ msgstr "Memóriahasználat"
 msgid "Memory usage of docker containers"
 msgstr "Docker konténerek memória használata"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Model"
+msgstr "Modell"
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -762,9 +792,16 @@ msgid "No results found."
 msgstr "Nincs találat."
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "No results."
 msgstr "Nincs találat."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "No S.M.A.R.T. attributes available for this device."
+msgstr "Ehhez az eszközhöz nem állnak rendelkezésre S.M.A.R.T. attribútumok."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -884,6 +921,11 @@ msgstr "Kérjük, jelentkezzen be a fiókjába"
 msgid "Port"
 msgstr "Port"
 
+#. Power On Time
+#: src/components/routes/system/smart-table.tsx
+msgid "Power On"
+msgstr "Bekapcsolás"
+
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Precise utilization at the recorded time"
@@ -943,6 +985,14 @@ msgstr "Tokenváltás"
 msgid "Rows per page"
 msgstr "Sorok száma oldalanként"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Details"
+msgstr "S.M.A.R.T. Részletek"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Self-Test"
+msgstr "S.M.A.R.T. Önteszt"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Mentse el a címet az Enter billentyű vagy a vessző használatával. Hagyja üresen az e-mail értesítések letiltásához."
@@ -971,6 +1021,10 @@ msgstr "Lásd <0>az értesítési beállításokat</0>, hogy konfigurálja, hogy
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Elküldve"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Serial Number"
+msgstr "Sorozatszám"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1005,6 +1059,7 @@ msgid "State"
 msgstr "Állapot"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -1043,6 +1098,7 @@ msgid "Table"
 msgstr "Tábla"
 
 #. Temperature label in systems table
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr "Hőmérséklet"
@@ -1167,6 +1223,10 @@ msgstr "Bekapcsol, amikor az állapot fel és le között változik"
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Bekapcsol, ha a lemez érzékelő túllép egy küszöbértéket"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Type"
+msgstr "Típus"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
@@ -1293,4 +1353,3 @@ msgstr "YAML konfiguráció"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "A felhasználói beállítások frissítésre kerültek."
-

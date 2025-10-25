@@ -234,6 +234,10 @@ msgstr "Skyndiminni / Biðminni"
 msgid "Cancel"
 msgstr "Hætta við"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Capacity"
+msgstr ""
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
 msgstr "Aðvörun - möguleiki á gagnatapi"
@@ -278,6 +282,10 @@ msgstr "Athugaðu tilkynningaþjónustuna þína"
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
 msgstr "Smelltu á gám til að sjá frekari upplýsingar."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Click on a device to view more information."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -397,6 +405,11 @@ msgstr ""
 msgid "Current state"
 msgstr "Núverandi ástand"
 
+#. Power Cycles
+#: src/components/routes/system/smart-table.tsx
+msgid "Cycles"
+msgstr ""
+
 #: src/components/command-palette.tsx
 msgid "Dashboard"
 msgstr "Yfirlitssíða"
@@ -417,6 +430,10 @@ msgstr ""
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
 msgstr "Nánar"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Device"
+msgstr ""
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -548,6 +565,10 @@ msgstr ""
 msgid "Fahrenheit (°F)"
 msgstr ""
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Failed Attributes:"
+msgstr ""
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Villa í auðkenningu"
@@ -568,12 +589,17 @@ msgstr "Mistókst að uppfæra tilkynningu"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Sía..."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
+msgstr ""
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Firmware"
 msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
@@ -730,6 +756,10 @@ msgstr "Minnisnotkun"
 msgid "Memory usage of docker containers"
 msgstr "Minnisnotkun docker kerfa"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Model"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -748,6 +778,7 @@ msgstr "Net traffík docker kerfa"
 #: src/components/routes/system.tsx
 #: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
 msgstr ""
 
@@ -761,8 +792,15 @@ msgid "No results found."
 msgstr "Engar niðurstöður fundust."
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "No results."
+msgstr ""
+
+#: src/components/routes/system/smart-table.tsx
+msgid "No S.M.A.R.T. attributes available for this device."
 msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
@@ -883,6 +921,11 @@ msgstr "Vinsamlegast skráðu þig inn á aðganginn þinn"
 msgid "Port"
 msgstr ""
 
+#. Power On Time
+#: src/components/routes/system/smart-table.tsx
+msgid "Power On"
+msgstr ""
+
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Precise utilization at the recorded time"
@@ -906,6 +949,11 @@ msgstr "Lesa"
 #: src/components/routes/system.tsx
 msgid "Received"
 msgstr "Móttekið"
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+msgid "Refresh"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
@@ -937,6 +985,14 @@ msgstr ""
 msgid "Rows per page"
 msgstr ""
 
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Details"
+msgstr ""
+
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Self-Test"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr ""
@@ -964,6 +1020,10 @@ msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Sent"
+msgstr ""
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Serial Number"
 msgstr ""
 
 #: src/components/routes/settings/general.tsx
@@ -999,6 +1059,7 @@ msgid "State"
 msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -1037,6 +1098,7 @@ msgid "Table"
 msgstr "Tafla"
 
 #. Temperature label in systems table
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr ""
@@ -1162,6 +1224,10 @@ msgstr "Virkjast þegar staða breytist milli virkur og óvirkur"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Virkjast þegar diska notkun fer yfir þröskuld"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Type"
+msgstr ""
+
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
@@ -1185,6 +1251,10 @@ msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
+msgstr ""
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Updated"
 msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
@@ -1283,4 +1353,3 @@ msgstr ""
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Notenda stillingar vistaðar."
-

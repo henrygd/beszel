@@ -234,6 +234,10 @@ msgstr "Caché / Buffers"
 msgid "Cancel"
 msgstr "Cancelar"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Capacity"
+msgstr "Capacidad"
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
 msgstr "Precaución - posible pérdida de datos"
@@ -277,11 +281,11 @@ msgstr "Verifica tu servicio de notificaciones"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
-msgstr "Haz clic en un contenedor para ver más información."
-
-#: src/components/containers-table/containers-table.tsx
-msgid "Click on a container to view more information."
 msgstr "Haga clic en un contenedor para ver más información."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Click on a device to view more information."
+msgstr "Haz clic en un dispositivo para ver más información."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -401,6 +405,11 @@ msgstr "Carga acumulada"
 msgid "Current state"
 msgstr "Estado actual"
 
+#. Power Cycles
+#: src/components/routes/system/smart-table.tsx
+msgid "Cycles"
+msgstr "Ciclos"
+
 #: src/components/command-palette.tsx
 msgid "Dashboard"
 msgstr "Tablero"
@@ -421,6 +430,10 @@ msgstr "Eliminar huella digital"
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
 msgstr "Detalle"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Device"
+msgstr "Dispositivo"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -481,10 +494,6 @@ msgstr "Caído ({downSystemsLength})"
 msgid "Download"
 msgstr "Descargar"
 
-#: src/components/routes/system/network-sheet.tsx
-msgid "Download"
-msgstr "Descargar"
-
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
 msgstr "Duración"
@@ -516,10 +525,6 @@ msgstr "Ingresa la dirección de correo electrónico para restablecer la contras
 #: src/components/routes/settings/notifications.tsx
 msgid "Enter email address..."
 msgstr "Ingresa dirección de correo..."
-
-#: src/components/login/otp-forms.tsx
-msgid "Enter your one-time password."
-msgstr "Ingresa tu contraseña de un solo uso."
 
 #: src/components/login/otp-forms.tsx
 msgid "Enter your one-time password."
@@ -560,6 +565,10 @@ msgstr "Exporta la configuración actual de sus sistemas."
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenheit (°F)"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Failed Attributes:"
+msgstr "Atributos fallidos:"
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Error al autenticar"
@@ -580,6 +589,7 @@ msgstr "Error al actualizar la alerta"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Filtrar..."
@@ -588,6 +598,10 @@ msgstr "Filtrar..."
 msgid "Fingerprint"
 msgstr "Huella dactilar"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Firmware"
+msgstr "Firmware"
+
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 msgstr "Por <0>{min}</0> {min, plural, one {minuto} other {minutos}}"
@@ -595,12 +609,6 @@ msgstr "Por <0>{min}</0> {min, plural, one {minuto} other {minutos}}"
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
 msgstr "¿Olvidaste tu contraseña?"
-
-#: src/components/add-system.tsx
-#: src/components/routes/settings/tokens-fingerprints.tsx
-msgctxt "Button to copy install command"
-msgid "FreeBSD command"
-msgstr "Comando FreeBSD"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -653,11 +661,6 @@ msgstr "Inactiva"
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Si has perdido la contraseña de tu cuenta de administrador, puedes restablecerla usando el siguiente comando."
-
-#: src/components/containers-table/containers-table-columns.tsx
-msgctxt "Docker image"
-msgid "Image"
-msgstr "Imagen"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
@@ -753,6 +756,10 @@ msgstr "Uso de Memoria"
 msgid "Memory usage of docker containers"
 msgstr "Uso de memoria de los contenedores de Docker"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Model"
+msgstr "Modelo"
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -785,9 +792,16 @@ msgid "No results found."
 msgstr "No se encontraron resultados."
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "No results."
 msgstr "Sin resultados."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "No S.M.A.R.T. attributes available for this device."
+msgstr "No hay atributos S.M.A.R.T. disponibles para este dispositivo."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -907,6 +921,11 @@ msgstr "Por favor, inicie sesión en su cuenta"
 msgid "Port"
 msgstr "Puerto"
 
+#. Power On Time
+#: src/components/routes/system/smart-table.tsx
+msgid "Power On"
+msgstr "Encendido"
+
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Precise utilization at the recorded time"
@@ -966,6 +985,14 @@ msgstr "Rotar token"
 msgid "Rows per page"
 msgstr "Filas por página"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Details"
+msgstr "Detalles S.M.A.R.T."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Self-Test"
+msgstr "Autoprueba S.M.A.R.T."
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Guarde la dirección usando la tecla enter o coma. Deje en blanco para desactivar las notificaciones por correo."
@@ -994,6 +1021,10 @@ msgstr "Consulte <0>configuración de notificaciones</0> para configurar cómo r
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Enviado"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Serial Number"
+msgstr "Número de serie"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1028,6 +1059,7 @@ msgid "State"
 msgstr "Estado"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -1066,6 +1098,7 @@ msgid "Table"
 msgstr "Tabla"
 
 #. Temperature label in systems table
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr "Temperatura"
@@ -1190,6 +1223,10 @@ msgstr "Se activa cuando el estado cambia entre activo e inactivo"
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Se activa cuando el uso de cualquier disco supera un umbral"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Type"
+msgstr "Tipo"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
@@ -1316,4 +1353,3 @@ msgstr "Configuración YAML"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Su configuración de usuario ha sido actualizada."
-
