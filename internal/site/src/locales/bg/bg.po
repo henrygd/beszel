@@ -8,7 +8,7 @@ msgstr ""
 "Language: bg\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-20 21:37\n"
+"PO-Revision-Date: 2025-10-25 23:16\n"
 "Last-Translator: \n"
 "Language-Team: Bulgarian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -234,6 +234,10 @@ msgstr "Кеш / Буфери"
 msgid "Cancel"
 msgstr "Откажи"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Capacity"
+msgstr "Капацитет"
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
 msgstr "Внимание - възможност за загуба на данни"
@@ -278,6 +282,10 @@ msgstr "Провери услугата си за удостоверяване"
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
 msgstr "Кликнете върху контейнер, за да видите повече информация."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Click on a device to view more information."
+msgstr "Кликнете върху устройство, за да видите повече информация."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -397,6 +405,11 @@ msgstr "Кумулативно качване"
 msgid "Current state"
 msgstr "Текущо състояние"
 
+#. Power Cycles
+#: src/components/routes/system/smart-table.tsx
+msgid "Cycles"
+msgstr "Цикли"
+
 #: src/components/command-palette.tsx
 msgid "Dashboard"
 msgstr "Табло"
@@ -417,6 +430,10 @@ msgstr "Изтрий пръстов отпечатък"
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
 msgstr "Подробности"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Device"
+msgstr "Устройство"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -548,6 +565,10 @@ msgstr "Експортирай конфигурацията на системи�
 msgid "Fahrenheit (°F)"
 msgstr "Фаренхайт (°F)"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Failed Attributes:"
+msgstr "Неуспешни атрибути:"
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Неуспешно удостоверяване"
@@ -568,6 +589,7 @@ msgstr "Неуспешно обнови тревога"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Филтрирай..."
@@ -575,6 +597,10 @@ msgstr "Филтрирай..."
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
 msgstr "Пръстов отпечатък"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Firmware"
+msgstr "Фърмуер"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -730,6 +756,10 @@ msgstr "Употреба на паметта"
 msgid "Memory usage of docker containers"
 msgstr "Използването на памет от docker контейнерите"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Model"
+msgstr "Модел"
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -762,9 +792,16 @@ msgid "No results found."
 msgstr "Няма намерени резултати."
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "No results."
 msgstr "Няма резултати."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "No S.M.A.R.T. attributes available for this device."
+msgstr "Няма налични S.M.A.R.T. атрибути за това устройство."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -884,6 +921,11 @@ msgstr "Моля влез в акаунта ти"
 msgid "Port"
 msgstr "Порт"
 
+#. Power On Time
+#: src/components/routes/system/smart-table.tsx
+msgid "Power On"
+msgstr "Включване"
+
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Precise utilization at the recorded time"
@@ -943,6 +985,14 @@ msgstr "Пресъздаване на идентификатора"
 msgid "Rows per page"
 msgstr "Редове на страница"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Details"
+msgstr "S.M.A.R.T. Детайли"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Self-Test"
+msgstr "S.M.A.R.T. Самотест"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Запази адреса с enter или запетая. Остави празно за да изключиш нотификациите чрез имейл."
@@ -971,6 +1021,10 @@ msgstr "Виж <0>настройките за нотификациите</0> з�
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Изпратени"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Serial Number"
+msgstr "Сериен номер"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1005,6 +1059,7 @@ msgid "State"
 msgstr "Състояние"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -1043,6 +1098,7 @@ msgid "Table"
 msgstr "Таблица"
 
 #. Temperature label in systems table
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr "Температура"
@@ -1167,6 +1223,10 @@ msgstr "Задейства се, когато статуса превключв�
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Задейства се, когато употребата на някой диск надивши зададен праг"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Type"
+msgstr "Тип"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
