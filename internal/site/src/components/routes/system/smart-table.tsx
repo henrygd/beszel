@@ -36,10 +36,6 @@ export const smartColumns: ColumnDef<SmartAttribute>[] = [
    {
       accessorKey: "id",
       header: "ID",
-      cell: ({ getValue }) => {
-         const id = getValue() as number | undefined
-         return <div className="font-mono text-sm">{id?.toString() || ""}</div>
-      },
    },
    {
       accessorFn: (row) => row.n,
@@ -386,8 +382,6 @@ export default function DisksTable({ systemId }: { systemId: string }) {
 function DiskSheet({ disk, smartData, open, onOpenChange }: { disk: DiskInfo | null; smartData?: SmartData; open: boolean; onOpenChange: (open: boolean) => void }) {
    if (!disk) return null
 
-   const [sorting, setSorting] = React.useState<SortingState>([{ id: "id", desc: false }])
-
    const smartAttributes = smartData?.a || []
 
    // Find all attributes where when failed is not empty
@@ -411,11 +405,6 @@ function DiskSheet({ disk, smartData, open, onOpenChange }: { disk: DiskInfo | n
       data: smartAttributes,
       columns: visibleColumns,
       getCoreRowModel: getCoreRowModel(),
-      getSortedRowModel: getSortedRowModel(),
-      onSortingChange: setSorting,
-      state: {
-         sorting,
-      }
    })
 
    return (

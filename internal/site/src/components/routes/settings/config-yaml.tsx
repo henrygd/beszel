@@ -63,7 +63,7 @@ export default function ConfigYaml() {
 						</Trans>
 					</p>
 					<Alert className="my-4 border-destructive text-destructive w-auto table md:pe-6">
-						<AlertCircleIcon className="h-4 w-4 stroke-destructive" />
+						<AlertCircleIcon className="size-4.5 stroke-destructive" />
 						<AlertTitle>
 							<Trans>Caution - potential data loss</Trans>
 						</AlertTitle>

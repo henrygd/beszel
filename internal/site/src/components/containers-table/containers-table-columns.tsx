@@ -40,7 +40,7 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		accessorFn: (record) => record.name,
 		header: ({ column }) => <HeaderButton column={column} name={t`Name`} Icon={ContainerIcon} />,
 		cell: ({ getValue }) => {
-			return <span className="ms-1.5 xl:w-45 block truncate">{getValue() as string}</span>
+			return <span className="ms-1.5 xl:w-48 block truncate">{getValue() as string}</span>
 		},
 	},
 	{
@@ -55,7 +55,7 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		header: ({ column }) => <HeaderButton column={column} name={t`System`} Icon={ServerIcon} />,
 		cell: ({ getValue }) => {
 			const allSystems = useStore($allSystemsById)
-			return <span className="ms-1.5 xl:w-32 block truncate">{allSystems[getValue() as string]?.name ?? ""}</span>
+			return <span className="ms-1.5 xl:w-34 block truncate">{allSystems[getValue() as string]?.name ?? ""}</span>
 		},
 	},
 	// {
@@ -131,7 +131,7 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		accessorFn: (record) => record.image,
 		header: ({ column }) => <HeaderButton column={column} name={t({ message: "Image", context: "Docker image" })} Icon={LayersIcon} />,
 		cell: ({ getValue }) => {
-			return <span className="ms-1.5 xl:w-36 block truncate">{getValue() as string}</span>
+			return <span className="ms-1.5 xl:w-40 block truncate">{getValue() as string}</span>
 		},
 	},
 	{
