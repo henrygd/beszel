@@ -8,7 +8,7 @@ msgstr ""
 "Language: de\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-22 10:37\n"
+"PO-Revision-Date: 2025-10-25 21:09\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -126,7 +126,7 @@ msgstr "Agent"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Alert History"
-msgstr "Alarm-Verlauf"
+msgstr "Warnungsverlauf"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
@@ -350,11 +350,11 @@ msgstr "Text kopieren"
 
 #: src/components/add-system.tsx
 msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
-msgstr "Kopieren Sie den Installationsbefehl für den Agent unten oder registrieren Sie Agents automatisch mit einem <0>universellen Token</0>."
+msgstr "Kopiere den Installationsbefehl für den Agent unten oder registriere Agents automatisch mit einem <0>universellen Token</0>."
 
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
-msgstr "Kopieren Sie den<0>docker-compose.yml</0> Inhalt für den Agent unten oder registrieren Sie Agents automatisch mit einem <1>universellen Token</1>."
+msgstr "Kopiere den<0>docker-compose.yml</0> Inhalt für den Agent unten oder registriere Agents automatisch mit einem <1>universellen Token</1>."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
@@ -896,7 +896,7 @@ msgstr "Bevorzugte Sprache"
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
-msgstr "Schlüssel"
+msgstr "Öffentlicher Schlüssel"
 
 #. Disk read
 #: src/components/routes/system.tsx
@@ -954,7 +954,7 @@ msgstr "Einstellungen speichern"
 
 #: src/components/add-system.tsx
 msgid "Save system"
-msgstr "System sichern"
+msgstr "System speichern"
 
 #: src/components/navbar.tsx
 msgid "Search"
@@ -1126,11 +1126,11 @@ msgstr "Tokens und Fingerabdrücke werden verwendet, um WebSocket-Verbindungen z
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
-msgstr "Gesamtdatenmenge für jede Schnittstelle empfangen"
+msgstr "Empfangene Gesamtdatenmenge je Schnittstelle "
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data sent for each interface"
-msgstr "Gesamtdatenmenge für jede Schnittstelle gesendet"
+msgstr "Gesendete Gesamtdatenmenge je Schnittstelle"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
@@ -1150,7 +1150,7 @@ msgstr "Löst aus, wenn ein Sensor einen Schwellenwert überschreitet"
 
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
-msgstr "Löst aus, wenn die kombinierte Auf-/Abwärtsbewegung einen Schwellenwert überschreitet"
+msgstr "Löst aus, wenn die kombinierte Up- und Downloadrate einen Schwellenwert überschreitet"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
