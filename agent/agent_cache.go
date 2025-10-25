@@ -13,8 +13,7 @@ type systemDataCache struct {
 }
 
 type cacheNode struct {
-	data       *system.CombinedData
-	lastUpdate time.Time
+	data *system.CombinedData
 }
 
 // NewSystemDataCache creates a cache keyed by the polling interval in milliseconds.
@@ -36,7 +35,7 @@ func (c *systemDataCache) Get(cacheTimeMs uint16) (stats *system.CombinedData, i
 	// allowedSkew := time.Second
 	// isFresh := time.Since(node.lastUpdate) < time.Duration(cacheTimeMs)*time.Millisecond-allowedSkew
 	// allow a 50% skew of the cache time
-	isFresh := time.Since(node.lastUpdate) < time.Duration(cacheTimeMs/2)*time.Millisecond
+	isFresh := time.Since(*node.data.Timestamp) < time.Duration(cacheTimeMs/2)*time.Millisecond
 	return node.data, isFresh
 }
 
@@ -51,5 +50,4 @@ func (c *systemDataCache) Set(data *system.CombinedData, cacheTimeMs uint16) {
 		c.cache[cacheTimeMs] = node
 	}
 	node.data = data
-	node.lastUpdate = time.Now()
 }
