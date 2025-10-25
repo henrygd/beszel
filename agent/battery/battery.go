@@ -5,8 +5,6 @@ package battery
 
 import (
 	"errors"
-	"fmt"
-	"os"
 	"log/slog"
 
 	"github.com/distatus/battery"
@@ -21,22 +19,20 @@ func HasReadableBattery() bool {
 		return systemHasBattery
 	}
 	haveCheckedBattery = true
-	batteries,err := battery.GetAll()
-	if err != nil {
-		// even if there's errors getting some batteries, the system
-		// definitely has a battery if the list is not empty.
-		// This list will include everything `battery` can find,
-		// including things like bluetooth devices.
-		fmt.Fprintln(os.Stderr, err)
+	batteries, err := battery.GetAll()
+	for _, bat := range batteries {
+		if bat.Full > 0 {
+			systemHasBattery = true
+			break
+		}
 	}
-	systemHasBattery = len(batteries) > 0
 	if !systemHasBattery {
 		slog.Debug("No battery found", "err", err)
 	}
 	return systemHasBattery
 }
 
-// GetBatteryStats returns the current battery percent and charge state 
+// GetBatteryStats returns the current battery percent and charge state
 // percent = (current charge of all batteries) / (sum of designed/full capacity of all batteries)
 func GetBatteryStats() (batteryPercent uint8, batteryState uint8, err error) {
 	if !HasReadableBattery() {
@@ -58,7 +54,7 @@ func GetBatteryStats() (batteryPercent uint8, batteryState uint8, err error) {
 			// if there were some errors, like missing data, skip it
 			continue
 		}
-		if bat.Full == 0  {
+		if bat.Full == 0 {
 			// skip batteries with no capacity. Charge is unlikely to ever be zero, but
 			// we can't guarantee that, so don't skip based on charge.
 			continue
