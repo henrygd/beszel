@@ -8,7 +8,7 @@ msgstr ""
 "Language: da\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-25 09:58\n"
+"PO-Revision-Date: 2025-10-25 10:58\n"
 "Last-Translator: \n"
 "Language-Team: Danish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -187,7 +187,7 @@ msgstr "Gennemsnitlig udnyttelse af {0}"
 
 #: src/components/routes/system.tsx
 msgid "Average utilization of GPU engines"
-msgstr "Gennemsnitlig udnyttelse af GPU-motorer"
+msgstr "Gennemsnitlig udnyttelse af GPU-enheder"
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
@@ -218,12 +218,12 @@ msgstr "Binær"
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr ""
+msgstr "Bits (Kbps, Mbps, Gbps)"
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
-msgstr ""
+msgstr "Bytes (KB/s, MB/s, GB/s)"
 
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
@@ -329,7 +329,7 @@ msgstr "Kopiér docker run"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Environment variables"
 msgid "Copy env"
-msgstr ""
+msgstr "Kopier miljø"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
@@ -603,7 +603,7 @@ msgstr "Generelt"
 
 #: src/components/routes/system.tsx
 msgid "GPU Engines"
-msgstr "GPU-motorer"
+msgstr "GPU-enheder"
 
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
@@ -1171,7 +1171,7 @@ msgstr "Udløser når brugen af en disk overstiger en tærskel"
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
-msgstr ""
+msgstr "Enhedspræferencer"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1191,7 +1191,7 @@ msgstr "Oppe"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
-msgstr ""
+msgstr "Oppe ({upSystemsLength})"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Updated"
@@ -1240,7 +1240,7 @@ msgstr "Se mere"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
-msgstr ""
+msgstr "Se dine 200 nyeste alarmer."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
