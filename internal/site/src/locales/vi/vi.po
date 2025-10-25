@@ -8,7 +8,7 @@ msgstr ""
 "Language: vi\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-20 21:37\n"
+"PO-Revision-Date: 2025-10-25 23:16\n"
 "Last-Translator: \n"
 "Language-Team: Vietnamese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -234,6 +234,10 @@ msgstr "Bộ nhớ đệm / Bộ đệm"
 msgid "Cancel"
 msgstr "Hủy bỏ"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Capacity"
+msgstr "Dung lượng"
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
 msgstr "Cẩn thận - có thể mất dữ liệu"
@@ -278,6 +282,10 @@ msgstr "Kiểm tra dịch vụ thông báo của bạn"
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
 msgstr "Nhấp vào container để xem thêm thông tin."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Click on a device to view more information."
+msgstr "Nhấp vào thiết bị để xem thêm thông tin."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -397,6 +405,11 @@ msgstr "Tải lên tích lũy"
 msgid "Current state"
 msgstr "Trạng thái hiện tại"
 
+#. Power Cycles
+#: src/components/routes/system/smart-table.tsx
+msgid "Cycles"
+msgstr "Chu kỳ"
+
 #: src/components/command-palette.tsx
 msgid "Dashboard"
 msgstr "Bảng điều khiển"
@@ -417,6 +430,10 @@ msgstr "Xóa vân tay"
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
 msgstr "Chi tiết"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Device"
+msgstr "Thiết bị"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -548,6 +565,10 @@ msgstr "Xuất cấu hình hệ thống hiện tại của bạn."
 msgid "Fahrenheit (°F)"
 msgstr "Độ F (°F)"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Failed Attributes:"
+msgstr "Thuộc tính thất bại:"
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Xác thực thất bại"
@@ -568,6 +589,7 @@ msgstr "Cập nhật cảnh báo thất bại"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Lọc..."
@@ -575,6 +597,10 @@ msgstr "Lọc..."
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
 msgstr "Vân tay"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Firmware"
+msgstr "Phần sụn"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -730,6 +756,10 @@ msgstr "Sử dụng Bộ nhớ"
 msgid "Memory usage of docker containers"
 msgstr "Sử dụng bộ nhớ của các container Docker"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Model"
+msgstr "Mô hình"
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -762,9 +792,16 @@ msgid "No results found."
 msgstr "Không tìm thấy kết quả."
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "No results."
 msgstr "Không có kết quả."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "No S.M.A.R.T. attributes available for this device."
+msgstr "Không có thuộc tính S.M.A.R.T. nào khả dụng cho thiết bị này."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -884,6 +921,11 @@ msgstr "Vui lòng đăng nhập vào tài khoản của bạn"
 msgid "Port"
 msgstr "Cổng"
 
+#. Power On Time
+#: src/components/routes/system/smart-table.tsx
+msgid "Power On"
+msgstr "Bật nguồn"
+
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Precise utilization at the recorded time"
@@ -943,6 +985,14 @@ msgstr "Xoay vòng token"
 msgid "Rows per page"
 msgstr "Số hàng mỗi trang"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Details"
+msgstr "Chi tiết S.M.A.R.T."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Self-Test"
+msgstr "Tự kiểm tra S.M.A.R.T."
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Lưu địa chỉ bằng cách sử dụng phím enter hoặc dấu phẩy. Để trống để vô hiệu hóa thông báo email."
@@ -971,6 +1021,10 @@ msgstr "Xem <0>cài đặt thông báo</0> để cấu hình cách bạn nhận 
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Đã gửi"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Serial Number"
+msgstr "Số seri"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1005,6 +1059,7 @@ msgid "State"
 msgstr "Trạng thái"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -1043,6 +1098,7 @@ msgid "Table"
 msgstr "Bảng"
 
 #. Temperature label in systems table
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr "Nhiệt độ"
@@ -1167,6 +1223,10 @@ msgstr "Kích hoạt khi trạng thái chuyển đổi giữa lên và xuống"
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Kích hoạt khi sử dụng bất kỳ đĩa nào vượt quá ngưỡng"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Type"
+msgstr "Loại"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
