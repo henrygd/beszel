@@ -8,7 +8,7 @@ msgstr ""
 "Language: da\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-25 10:58\n"
+"PO-Revision-Date: 2025-10-25 23:16\n"
 "Last-Translator: \n"
 "Language-Team: Danish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -21,17 +21,17 @@ msgstr ""
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
 #: src/components/routes/system.tsx
 msgid "{0, plural, one {# day} other {# days}}"
-msgstr ""
+msgstr "{0, plural, one {# dag} other {# dage}}"
 
 #. placeholder {0}: Math.trunc(system.info.u / 3600)
 #: src/components/routes/system.tsx
 msgid "{0, plural, one {# hour} other {# hours}}"
-msgstr ""
+msgstr "{0, plural, one {# time} other {# timer}}"
 
 #. placeholder {0}: Math.trunc(system.info.u / 60)
 #: src/components/routes/system.tsx
 msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
-msgstr ""
+msgstr "{0, plural, one {# minut} other {# minutter}}"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
@@ -234,6 +234,10 @@ msgstr "Cache / Buffere"
 msgid "Cancel"
 msgstr "Fortryd"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Capacity"
+msgstr "Kapacitet"
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
 msgstr "Forsigtig - muligt tab af data"
@@ -278,6 +282,10 @@ msgstr "Tjek din notifikationstjeneste"
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
 msgstr "Klik på en container for at se mere information."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Click on a device to view more information."
+msgstr "Klik på en enhed for at se flere oplysninger."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -350,11 +358,11 @@ msgstr "Kopier tekst"
 
 #: src/components/add-system.tsx
 msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
-msgstr ""
+msgstr "Kopier installationskommandoen for agenten nedenfor, eller registrer agenter automatisk med en <0>universalnøgle</0>."
 
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
-msgstr ""
+msgstr "Kopier <0>docker-compose.yml</0> indholdet for agenten nedenfor, eller registrer agenter automatisk med en <1>universalnøgle</1>."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
@@ -397,6 +405,11 @@ msgstr "Kumulativ upload"
 msgid "Current state"
 msgstr "Nuværende tilstand"
 
+#. Power Cycles
+#: src/components/routes/system/smart-table.tsx
+msgid "Cycles"
+msgstr "Cykler"
+
 #: src/components/command-palette.tsx
 msgid "Dashboard"
 msgstr "Oversigtspanel"
@@ -417,6 +430,10 @@ msgstr "Slet fingeraftryk"
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
 msgstr "Detalje"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Device"
+msgstr "Enhed"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -548,6 +565,10 @@ msgstr "Eksporter din nuværende systemkonfiguration."
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenheit (°F)"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Failed Attributes:"
+msgstr "Mislykkede attributter:"
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Kunne ikke godkende"
@@ -568,6 +589,7 @@ msgstr "Kunne ikke opdatere alarm"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Filter..."
@@ -575,6 +597,10 @@ msgstr "Filter..."
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
 msgstr "Fingeraftryk"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Firmware"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -648,7 +674,7 @@ msgstr "Ugyldig email adresse."
 #. Linux kernel
 #: src/components/routes/system.tsx
 msgid "Kernel"
-msgstr ""
+msgstr "Kerne"
 
 #: src/components/routes/settings/general.tsx
 msgid "Language"
@@ -730,6 +756,10 @@ msgstr "Hukommelsesforbrug"
 msgid "Memory usage of docker containers"
 msgstr "Hukommelsesforbrug af dockercontainere"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Model"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -762,9 +792,16 @@ msgid "No results found."
 msgstr "Ingen resultater fundet."
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "No results."
 msgstr "Ingen resultater."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "No S.M.A.R.T. attributes available for this device."
+msgstr "Ingen S.M.A.R.T.-attributter tilgængelige for denne enhed."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -884,6 +921,11 @@ msgstr "Log venligst ind på din konto"
 msgid "Port"
 msgstr "Port"
 
+#. Power On Time
+#: src/components/routes/system/smart-table.tsx
+msgid "Power On"
+msgstr "Tænd"
+
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Precise utilization at the recorded time"
@@ -943,6 +985,14 @@ msgstr "Roter nøgle"
 msgid "Rows per page"
 msgstr "Rækker per side"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Details"
+msgstr "S.M.A.R.T.-detaljer"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Self-Test"
+msgstr "S.M.A.R.T. selvtest"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Gem adresse ved hjælp af enter eller komma. Lad feltet stå tomt for at deaktivere e-mail-meddelelser."
@@ -971,6 +1021,10 @@ msgstr "Se <0>meddelelsesindstillinger</0> for at konfigurere, hvordan du modtag
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Sendt"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Serial Number"
+msgstr "Serienummer"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1005,6 +1059,7 @@ msgid "State"
 msgstr "Tilstand"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -1043,6 +1098,7 @@ msgid "Table"
 msgstr "Tabel"
 
 #. Temperature label in systems table
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr "Temperatur"
@@ -1118,11 +1174,11 @@ msgstr "Nøgler & fingeraftryk"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
-msgstr ""
+msgstr "Nøgler tillader agenter at oprette forbindelse og registrere. Fingeraftryk er stabile identifikatorer unikke for hvert system, indstillet ved første forbindelse."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
-msgstr ""
+msgstr "Nøgler og fingeraftryk bruges til at godkende WebSocket-forbindelser til hubben."
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
@@ -1134,15 +1190,15 @@ msgstr "Samlet sendt data for hver interface"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Udløser når 1 minut belastning gennemsnit overstiger en tærskel"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Udløser når 15 minut belastning gennemsnit overstiger en tærskel"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Udløser når 5 minut belastning gennemsnit overstiger en tærskel"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -1167,6 +1223,10 @@ msgstr "Udløser når status skifter mellem op og ned"
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Udløser når brugen af en disk overstiger en tærskel"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Type"
+msgstr ""
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
@@ -1268,7 +1328,7 @@ msgstr "Webhook / Push notifikationer"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
-msgstr ""
+msgstr "Når aktiveret tillader denne nøgle agenter at selvregistrere uden forudgående systemoprettelse. Udløber efter en time eller ved hub-genstart."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
