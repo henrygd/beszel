@@ -94,6 +94,37 @@ const (
 	Freebsd
 )
 
+type DiskInfo struct {
+	Name   string `json:"n"`
+	Model  string `json:"m,omitempty"`
+	Vendor string `json:"v,omitempty"`
+}
+
+type NetworkInfo struct {
+	Name   string `json:"n"`
+	Vendor string `json:"v,omitempty"`
+	Model  string `json:"m,omitempty"`
+	Speed  string `json:"s,omitempty"`
+}
+
+type MemoryInfo struct {
+	Total string `json:"t,omitempty"`
+}
+
+type CpuInfo struct {
+	Model    string `json:"m"`
+	SpeedGHz string `json:"s"`
+	Arch     string `json:"a"`
+	Cores    int    `json:"c"`
+	Threads  int    `json:"t"`
+}
+
+type OsInfo struct {
+	Family  string `json:"f"`
+	Version string `json:"v"`
+	Kernel  string `json:"k"`
+}
+
 type ConnectionType = uint8
 
 const (
@@ -105,9 +136,7 @@ const (
 type Info struct {
 	Hostname       string  `json:"h" cbor:"0,keyasint"`
 	KernelVersion  string  `json:"k,omitempty" cbor:"1,keyasint,omitempty"`
-	Cores          int     `json:"c" cbor:"2,keyasint"`
 	Threads        int     `json:"t,omitempty" cbor:"3,keyasint,omitempty"`
-	CpuModel       string  `json:"m" cbor:"4,keyasint"`
 	Uptime         uint64  `json:"u" cbor:"5,keyasint"`
 	Cpu            float64 `json:"cpu" cbor:"6,keyasint"`
 	MemPct         float64 `json:"mp" cbor:"7,keyasint"`
@@ -125,6 +154,11 @@ type Info struct {
 	// TODO: remove load fields in future release in favor of load avg array
 	LoadAvg        [3]float64     `json:"la,omitempty" cbor:"19,keyasint"`
 	ConnectionType ConnectionType `json:"ct,omitempty" cbor:"20,keyasint,omitempty,omitzero"`
+	Disks          []DiskInfo     `json:"d" cbor:"21,omitempty"`
+	Networks       []NetworkInfo  `json:"n,omitempty" cbor:"22,omitempty"`
+	Memory         []MemoryInfo   `json:"m" cbor:"23"`
+	Cpus           []CpuInfo      `json:"c" cbor:"24"`
+	Oses           []OsInfo       `json:"o,omitempty" cbor:"25,omitempty"`
 }
 
 // Final data structure to return to the hub
