@@ -1,3 +1,15 @@
+## 0.15.0
+
+- Add initial S.M.A.R.T. support for disk health monitoring. (#962)
+
+- Add `CONTAINER_DETAILS` environment variable to control access to container logs and info APIs. (#1305)
+
+- Improve temperature chart by allowing y-axis to start above 0 for better readability. (#1307)
+
+- Add `henrygd/beszel-agent:alpine` Docker image and include `smartmontools` in all non-base agent images.
+
+- Improve battery detection logic. (#1287)
+
 ## 0.14.1
 
 - Add `MFA_OTP` environment variable to enable email-based one-time password for users and/or superusers.

@@ -367,6 +367,12 @@ export function formatDuration(
 		.join(" ")
 }
 
+/** Parse semver string into major, minor, and patch numbers 
+ * @example
+ * const semVer = "1.2.3"
+ * const { major, minor, patch } = parseSemVer(semVer)
+ * console.log(major, minor, patch) // 1, 2, 3
+*/
 export const parseSemVer = (semVer = ""): SemVer => {
 	// if (semVer.startsWith("v")) {
 	// 	semVer = semVer.slice(1)

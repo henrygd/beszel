@@ -46,7 +46,7 @@ func (sm *SmartManager) Refresh() error {
 
 	scanErr := sm.ScanDevices()
 	if scanErr != nil {
-		slog.Warn("smartctl scan failed", "err", scanErr)
+		slog.Debug("smartctl scan failed", "err", scanErr)
 	}
 
 	devices := sm.devicesSnapshot()
@@ -56,7 +56,7 @@ func (sm *SmartManager) Refresh() error {
 			continue
 		}
 		if err := sm.CollectSmart(deviceInfo); err != nil {
-			slog.Info("smartctl collect failed for device, skipping", "device", deviceInfo.Name, "err", err)
+			slog.Debug("smartctl collect failed, skipping", "device", deviceInfo.Name, "err", err)
 			collectErr = err
 		}
 	}
@@ -220,7 +220,7 @@ func (sm *SmartManager) parseScan(output []byte) bool {
 	scan := &scanOutput{}
 
 	if err := json.Unmarshal(output, scan); err != nil {
-		slog.Warn("Failed to parse smartctl scan JSON", "err", err)
+		slog.Debug("Failed to parse smartctl scan JSON", "err", err)
 		return false
 	}
 
@@ -260,7 +260,7 @@ func (sm *SmartManager) parseSmartForSata(output []byte) (bool, int) {
 	}
 
 	if data.SerialNumber == "" {
-		slog.Warn("device has no serial number, skipping", "device", data.Device.Name)
+		slog.Debug("device has no serial number, skipping", "device", data.Device.Name)
 		return false, data.Smartctl.ExitStatus
 	}
 
@@ -327,7 +327,7 @@ func (sm *SmartManager) parseSmartForNvme(output []byte) (bool, int) {
 	}
 
 	if data.SerialNumber == "" {
-		slog.Warn("device has no serial number, skipping", "device", data.Device.Name)
+		slog.Debug("device has no serial number, skipping", "device", data.Device.Name)
 		return false, data.Smartctl.ExitStatus
 	}
 
@@ -386,7 +386,7 @@ func (sm *SmartManager) detectSmartctl() error {
 	if _, err := exec.LookPath("smartctl"); err == nil {
 		return nil
 	}
-	return fmt.Errorf("no smartctl found - install smartctl")
+	return fmt.Errorf("smartctl not found")
 }
 
 // NewSmartManager creates and initializes a new SmartManager

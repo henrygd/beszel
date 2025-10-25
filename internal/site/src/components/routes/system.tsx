@@ -1003,15 +1003,16 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 					</div>
 				)}
 
+				{compareSemVer(chartData.agentVersion, parseSemVer("0.15.0")) >= 0 && (
+					<LazySmartTable systemId={system.id} />
+				)}
 
 				{containerData.length > 0 && compareSemVer(chartData.agentVersion, parseSemVer("0.14.0")) >= 0 && (
 					<LazyContainersTable systemId={id} />
 				)}
-
-				<LazySmartTable systemId={system.id} />
 			</div>
 
-			{/* add space for tooltip if more than 12 containers */}
+			{/* add space for tooltip if lots of sensors */}
 			{bottomSpacing > 0 && <span className="block" style={{ height: bottomSpacing }} />}
 		</>
 	)
@@ -1144,7 +1145,7 @@ const ContainersTable = lazy(() => import("../containers-table/containers-table"
 function LazyContainersTable({ systemId }: { systemId: string }) {
 	const { isIntersecting, ref } = useIntersectionObserver({ rootMargin: "90px" })
 	return (
-		<div ref={ref}>
+		<div ref={ref} className={cn(isIntersecting && "contents")}>
 			{isIntersecting && <ContainersTable systemId={systemId} />}
 		</div>
 	)
@@ -1153,9 +1154,9 @@ function LazyContainersTable({ systemId }: { systemId: string }) {
 const SmartTable = lazy(() => import("./system/smart-table"))
 
 function LazySmartTable({ systemId }: { systemId: string }) {
-	const { isIntersecting, ref } = useIntersectionObserver()
+	const { isIntersecting, ref } = useIntersectionObserver({ rootMargin: "90px" })
 	return (
-		<div ref={ref}>
+		<div ref={ref} className={cn(isIntersecting && "contents")}>
 			{isIntersecting && <SmartTable systemId={systemId} />}
 		</div>
 	)

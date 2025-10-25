@@ -252,7 +252,7 @@ export const columns: ColumnDef<DiskInfo>[] = [
 ]
 
 export default function DisksTable({ systemId }: { systemId: string }) {
-   const [sorting, setSorting] = React.useState<SortingState>([{ id: "device", desc: false }])
+   // const [sorting, setSorting] = React.useState<SortingState>([{ id: "device", desc: false }])
    const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
    const [rowSelection, setRowSelection] = React.useState({})
    const [smartData, setSmartData] = React.useState<Record<string, SmartData> | undefined>(undefined)
@@ -284,18 +284,22 @@ export default function DisksTable({ systemId }: { systemId: string }) {
    const table = useReactTable({
       data: diskData,
       columns: columns,
-      onSortingChange: setSorting,
+      // onSortingChange: setSorting,
       onColumnFiltersChange: setColumnFilters,
       getCoreRowModel: getCoreRowModel(),
       getSortedRowModel: getSortedRowModel(),
       getFilteredRowModel: getFilteredRowModel(),
       onRowSelectionChange: setRowSelection,
       state: {
-         sorting,
+         // sorting,
          columnFilters,
          rowSelection,
       },
    })
+
+   if (!diskData.length && !columnFilters.length) {
+      return null
+   }
 
    return (
       <div>
