@@ -8,25 +8,25 @@ msgstr ""
 "Language: da\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-28 23:21\n"
+"PO-Revision-Date: 2025-10-25 10:58\n"
 "Last-Translator: \n"
 "Language-Team: Danish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: da\n"
-"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 16\n"
+"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 32\n"
 
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
 #: src/components/routes/system.tsx
 msgid "{0, plural, one {# day} other {# days}}"
-msgstr "{0, plural, one {# day} other {# days}}"
+msgstr ""
 
 #. placeholder {0}: Math.trunc(system.info.u / 3600)
 #: src/components/routes/system.tsx
 msgid "{0, plural, one {# hour} other {# hours}}"
-msgstr "{0, plural, one {# hour} other {# hours}}"
+msgstr ""
 
 #. placeholder {0}: Math.trunc(system.info.u / 60)
 #: src/components/routes/system.tsx
@@ -37,7 +37,7 @@ msgstr ""
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
-msgstr ""
+msgstr "{0} af {1} række(r) valgt."
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -46,7 +46,11 @@ msgstr "1 time"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr ""
+msgstr "1 minut"
+
+#: src/lib/utils.ts
+msgid "1 minute"
+msgstr "1 minut"
 
 #: src/lib/utils.ts
 msgid "1 minute"
@@ -63,7 +67,7 @@ msgstr "12 timer"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr ""
+msgstr "15 minutter"
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -76,7 +80,7 @@ msgstr "30 dage"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr ""
+msgstr "5 minutter"
 
 #. Table column
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -87,7 +91,7 @@ msgstr "Handlinger"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Active"
-msgstr ""
+msgstr "Aktiv"
 
 #: src/components/active-alerts.tsx
 msgid "Active Alerts"
@@ -116,7 +120,7 @@ msgstr "Juster visningsindstillinger for diagrammer."
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
-msgstr "Admin"
+msgstr "Administrator"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -126,7 +130,7 @@ msgstr "Agent"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Alert History"
-msgstr ""
+msgstr "Advarselshistorik"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
@@ -153,7 +157,7 @@ msgstr "Er du sikker på, at du vil slette {name}?"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
-msgstr ""
+msgstr "Er du sikker?"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -187,7 +191,7 @@ msgstr "Gennemsnitlig udnyttelse af {0}"
 
 #: src/components/routes/system.tsx
 msgid "Average utilization of GPU engines"
-msgstr "Gennemsnitlig udnyttelse af GPU-motorer"
+msgstr "Gennemsnitlig udnyttelse af GPU-enheder"
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
@@ -218,12 +222,12 @@ msgstr "Binær"
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr ""
+msgstr "Bits (Kbps, Mbps, Gbps)"
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
-msgstr ""
+msgstr "Bytes (KB/s, MB/s, GB/s)"
 
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
@@ -240,11 +244,11 @@ msgstr "Forsigtig - muligt tab af data"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr ""
+msgstr "Celsius (°C)"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
-msgstr ""
+msgstr "Ændre viste enheder for målinger."
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
@@ -281,7 +285,7 @@ msgstr "Klik på en container for at se mere information."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
-msgstr ""
+msgstr "Klik på et system for at se mere information."
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
@@ -303,7 +307,7 @@ msgstr "Bekræft adgangskode"
 
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
-msgstr ""
+msgstr "Forbindelsen er nede"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -329,7 +333,7 @@ msgstr "Kopiér docker run"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Environment variables"
 msgid "Copy env"
-msgstr ""
+msgstr "Kopier miljø"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
@@ -358,7 +362,7 @@ msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
-msgstr ""
+msgstr "Kopier YAML"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -378,7 +382,7 @@ msgstr "Opret konto"
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
 msgid "Created"
-msgstr ""
+msgstr "Oprettet"
 
 #: src/components/routes/settings/general.tsx
 msgid "Critical (%)"
@@ -412,7 +416,11 @@ msgstr "Slet"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
-msgstr ""
+msgstr "Slet fingeraftryk"
+
+#: src/components/containers-table/containers-table.tsx
+msgid "Detail"
+msgstr "Detalje"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
@@ -433,7 +441,7 @@ msgstr "Disk I/O"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
-msgstr ""
+msgstr "Diskenhed"
 
 #: src/components/charts/disk-chart.tsx
 #: src/components/routes/system.tsx
@@ -471,7 +479,11 @@ msgstr "Nede"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Down ({downSystemsLength})"
-msgstr ""
+msgstr "Nede ({downSystemsLength})"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Download"
+msgstr "Hent ned"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
@@ -479,7 +491,7 @@ msgstr "Download"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
-msgstr ""
+msgstr "Varighed"
 
 #: src/components/add-system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -534,7 +546,7 @@ msgstr "Eksisterende systemer ikke defineret i <0>config.yml</0> vil blive slett
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
-msgstr ""
+msgstr "Eksporter"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
@@ -546,7 +558,7 @@ msgstr "Eksporter din nuværende systemkonfiguration."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr ""
+msgstr "Fahrenheit (°F)"
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
@@ -574,7 +586,7 @@ msgstr "Filter..."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
-msgstr ""
+msgstr "Fingeraftryk"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -603,7 +615,7 @@ msgstr "Generelt"
 
 #: src/components/routes/system.tsx
 msgid "GPU Engines"
-msgstr "GPU-motorer"
+msgstr "GPU-enheder"
 
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
@@ -639,7 +651,7 @@ msgstr "Hvis du har mistet adgangskoden til din administratorkonto, kan du nulst
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
-msgstr "Image"
+msgstr "Billede"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -648,7 +660,7 @@ msgstr "Ugyldig email adresse."
 #. Linux kernel
 #: src/components/routes/system.tsx
 msgid "Kernel"
-msgstr "Kernel"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Language"
@@ -656,28 +668,28 @@ msgstr "Sprog"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
-msgstr "Layout"
+msgstr "Opstilling"
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
-msgstr ""
+msgstr "Belastning Gennemsnitlig"
 
 #: src/lib/alerts.ts
 msgid "Load Average 15m"
-msgstr ""
+msgstr "Belastning Gennemsnitlig 15m"
 
 #: src/lib/alerts.ts
 msgid "Load Average 1m"
-msgstr ""
+msgstr "Belastning Gennemsnitlig 1m"
 
 #: src/lib/alerts.ts
 msgid "Load Average 5m"
-msgstr ""
+msgstr "Belastning Gennemsnitlig 5m"
 
 #. Short label for load average
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
-msgstr ""
+msgstr "Belastning gns."
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -739,7 +751,7 @@ msgstr "Navn"
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
-msgstr "Net"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Network traffic of docker containers"
@@ -755,7 +767,7 @@ msgstr "Netværkstrafik af offentlige grænseflader"
 #. Context: Bytes or bits
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
-msgstr ""
+msgstr "Netværksenhed"
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -764,7 +776,7 @@ msgstr "Ingen resultater fundet."
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "No results."
-msgstr ""
+msgstr "Ingen resultater."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -812,7 +824,7 @@ msgstr "Side"
 #. placeholder {1}: table.getPageCount()
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Page {0} of {1}"
-msgstr ""
+msgstr "Side {0} af {1}"
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
@@ -845,7 +857,7 @@ msgstr "Sat på pause"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused ({pausedSystemsLength})"
-msgstr ""
+msgstr "Sat på pause ({pausedSystemsLength})"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -929,7 +941,7 @@ msgstr "Nulstil adgangskode"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Resolved"
-msgstr ""
+msgstr "Løst"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
@@ -937,11 +949,11 @@ msgstr "Genoptag"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
-msgstr ""
+msgstr "Roter nøgle"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
-msgstr ""
+msgstr "Rækker per side"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -1002,7 +1014,7 @@ msgstr "Sorter efter"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 msgid "State"
-msgstr ""
+msgstr "Tilstand"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -1028,7 +1040,7 @@ msgstr "System"
 
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
-msgstr ""
+msgstr "Gennemsnitlig system belastning over tid"
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -1054,7 +1066,7 @@ msgstr "Temperatur"
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"
-msgstr ""
+msgstr "Temperaturenhed"
 
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
@@ -1078,7 +1090,7 @@ msgstr "Denne handling kan ikke fortrydes. Dette vil permanent slette alle aktue
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
-msgstr ""
+msgstr "Dette vil permanent slette alle poster fra databasen."
 
 #: src/components/routes/system.tsx
 msgid "Throughput of {extraFsName}"
@@ -1108,13 +1120,13 @@ msgstr "Skift tema"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr ""
+msgstr "Nøgle"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens & Fingerprints"
-msgstr ""
+msgstr "Nøgler & fingeraftryk"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
@@ -1171,12 +1183,12 @@ msgstr "Udløser når brugen af en disk overstiger en tærskel"
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
-msgstr ""
+msgstr "Enhedspræferencer"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
-msgstr ""
+msgstr "Universalnøgle"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -1191,7 +1203,15 @@ msgstr "Oppe"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
-msgstr ""
+msgstr "Oppe ({upSystemsLength})"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Updated"
+msgstr "Opdateret"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Upload"
+msgstr "Overfør"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Updated"
@@ -1228,7 +1248,7 @@ msgstr "Brugere"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
-msgstr ""
+msgstr "Værdi"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
@@ -1240,7 +1260,7 @@ msgstr "Se mere"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
-msgstr ""
+msgstr "Se dine 200 nyeste alarmer."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
@@ -1293,3 +1313,4 @@ msgstr "YAML Konfiguration"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Dine brugerindstillinger er opdateret."
+
