@@ -12,15 +12,15 @@ COPY . ./
 ARG TARGETOS TARGETARCH
 RUN CGO_ENABLED=0 GOGC=75 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-w -s" -o /agent ./internal/cmd/agent
 
-# --------------------------
-# Final image
-# Note: must cap_add: [CAP_PERFMON] and mount /dev/dri/ as volume
-# --------------------------
-FROM alpine:edge
+RUN rm -rf /tmp/*
 
+# --------------------------
+# Final image: default scratch-based agent
+# --------------------------
+FROM alpine:latest
 COPY --from=builder /agent /agent
 
-RUN apk add --no-cache -X https://dl-cdn.alpinelinux.org/alpine/edge/testing igt-gpu-tools smartmontools
+RUN apk add --no-cache smartmontools
 
 # Ensure data persistence across container recreations
 VOLUME ["/var/lib/beszel-agent"]
