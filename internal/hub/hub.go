@@ -307,7 +307,7 @@ func (h *Hub) containerRequestHandler(e *core.RequestEvent, fetchFunc func(*syst
 
 	data, err := fetchFunc(system, containerID)
 	if err != nil {
-		return e.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return e.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
 	}
 
 	return e.JSON(http.StatusOK, map[string]string{responseKey: data})
@@ -338,7 +338,7 @@ func (h *Hub) getSmartData(e *core.RequestEvent) error {
 	}
 	data, err := system.FetchSmartDataFromAgent()
 	if err != nil {
-		return e.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return e.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
 	}
 	e.Response.Header().Set("Cache-Control", "public, max-age=60")
 	return e.JSON(http.StatusOK, data)
