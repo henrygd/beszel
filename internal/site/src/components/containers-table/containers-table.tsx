@@ -362,7 +362,7 @@ function ContainerSheet({ sheetOpen, setSheetOpen, activeContainer }: { sheetOpe
 								<MaximizeIcon className="size-4" />
 							</Button>
 						</div>
-						<div ref={logsContainerRef} className={cn("max-h-[calc(50dvh-10rem)] w-full overflow-auto p-3 rounded-md bg-gh-dark text-sm", !logsDisplay && ["animate-pulse", "h-full"])}>
+						<div ref={logsContainerRef} className={cn("max-h-[calc(50dvh-10rem)] w-full overflow-auto p-3 rounded-md bg-gh-dark text-white text-sm", !logsDisplay && ["animate-pulse", "h-full"])}>
 							<div dangerouslySetInnerHTML={{ __html: logsDisplay }} />
 						</div>
 						<div className="flex items-center w-full">
@@ -376,7 +376,7 @@ function ContainerSheet({ sheetOpen, setSheetOpen, activeContainer }: { sheetOpe
 								<MaximizeIcon className="size-4" />
 							</Button>
 						</div>
-						<div className={cn("grow h-[calc(50dvh-4rem)] w-full overflow-auto p-3 rounded-md bg-gh-dark text-sm", !infoDisplay && "animate-pulse")}>
+						<div className={cn("grow h-[calc(50dvh-4rem)] w-full overflow-auto p-3 rounded-md bg-gh-dark text-white text-sm", !infoDisplay && "animate-pulse")}>
 							<div dangerouslySetInnerHTML={{ __html: infoDisplay }} />
 						</div>
 
