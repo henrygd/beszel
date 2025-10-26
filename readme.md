@@ -50,6 +50,7 @@ The [quick start guide](https://beszel.dev/guide/getting-started) and other docu
 - **Temperature** - Host system sensors.
 - **GPU usage / power draw** - Nvidia, AMD, and Intel.
 - **Battery** - Host system battery charge.
+- **Container** - Monitoring current status of all running containers.
 
 ## Help and discussion
 
