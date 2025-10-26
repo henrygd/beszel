@@ -12,65 +12,137 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # henrygd/beszel
           - image: henrygd/beszel
-            context: ./
             dockerfile: ./internal/dockerfile_hub
             registry: docker.io
             username_secret: DOCKERHUB_USERNAME
             password_secret: DOCKERHUB_TOKEN
+            tags: |
+              type=raw,value=edge
+              type=semver,pattern={{version}}
+              type=semver,pattern={{major}}.{{minor}}
+              type=semver,pattern={{major}}
+              type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
 
+          # henrygd/beszel-agent
           - image: henrygd/beszel-agent
-            context: ./
             dockerfile: ./internal/dockerfile_agent
             registry: docker.io
             username_secret: DOCKERHUB_USERNAME
             password_secret: DOCKERHUB_TOKEN
+            tags: |
+              type=raw,value=edge
+              type=semver,pattern={{version}}
+              type=semver,pattern={{major}}.{{minor}}
+              type=semver,pattern={{major}}
+              type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
 
+          # henrygd/beszel-agent-nvidia
           - image: henrygd/beszel-agent-nvidia
-            context: ./
             dockerfile: ./internal/dockerfile_agent_nvidia
             platforms: linux/amd64
             registry: docker.io
             username_secret: DOCKERHUB_USERNAME
             password_secret: DOCKERHUB_TOKEN
-            
+            tags: |
+              type=raw,value=edge
+              type=semver,pattern={{version}}
+              type=semver,pattern={{major}}.{{minor}}
+              type=semver,pattern={{major}}
+              type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
+
+          # henrygd/beszel-agent-intel
           - image: henrygd/beszel-agent-intel
-            context: ./
             dockerfile: ./internal/dockerfile_agent_intel
             platforms: linux/amd64
             registry: docker.io
             username_secret: DOCKERHUB_USERNAME
             password_secret: DOCKERHUB_TOKEN
+            tags: |
+              type=raw,value=edge
+              type=semver,pattern={{version}}
+              type=semver,pattern={{major}}.{{minor}}
+              type=semver,pattern={{major}}
+              type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
 
+          # henrygd/beszel-agent:alpine
+          - image: henrygd/beszel-agent
+            dockerfile: ./internal/dockerfile_agent_alpine
+            registry: docker.io
+            username_secret: DOCKERHUB_USERNAME
+            password_secret: DOCKERHUB_TOKEN
+            tags: |
+              type=raw,value=alpine
+              type=semver,pattern={{version}}-alpine
+              type=semver,pattern={{major}}.{{minor}}-alpine
+              type=semver,pattern={{major}}-alpine
+
+          # ghcr.io/henrygd/beszel
           - image: ghcr.io/${{ github.repository }}/beszel
-            context: ./
             dockerfile: ./internal/dockerfile_hub
             registry: ghcr.io
             username: ${{ github.actor }}
             password_secret: GITHUB_TOKEN
+            tags: |
+              type=raw,value=edge
+              type=semver,pattern={{version}}
+              type=semver,pattern={{major}}.{{minor}}
+              type=semver,pattern={{major}}
+              type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
 
+          # ghcr.io/henrygd/beszel-agent
           - image: ghcr.io/${{ github.repository }}/beszel-agent
-            context: ./
             dockerfile: ./internal/dockerfile_agent
             registry: ghcr.io
             username: ${{ github.actor }}
             password_secret: GITHUB_TOKEN
+            tags: |
+              type=raw,value=edge
+              type=semver,pattern={{version}}
+              type=semver,pattern={{major}}.{{minor}}
+              type=semver,pattern={{major}}
+              type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
 
+          # ghcr.io/henrygd/beszel-agent-nvidia
           - image: ghcr.io/${{ github.repository }}/beszel-agent-nvidia
-            context: ./
             dockerfile: ./internal/dockerfile_agent_nvidia
             platforms: linux/amd64
             registry: ghcr.io
             username: ${{ github.actor }}
             password_secret: GITHUB_TOKEN
+            tags: |
+              type=raw,value=edge
+              type=semver,pattern={{version}}
+              type=semver,pattern={{major}}.{{minor}}
+              type=semver,pattern={{major}}
+              type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
 
+          # ghcr.io/henrygd/beszel-agent-intel
           - image: ghcr.io/${{ github.repository }}/beszel-agent-intel
-            context: ./
             dockerfile: ./internal/dockerfile_agent_intel
             platforms: linux/amd64
             registry: ghcr.io
             username: ${{ github.actor }}
             password_secret: GITHUB_TOKEN
+            tags: |
+              type=raw,value=edge
+              type=semver,pattern={{version}}
+              type=semver,pattern={{major}}.{{minor}}
+              type=semver,pattern={{major}}
+              type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
+
+          # ghcr.io/henrygd/beszel-agent:alpine
+          - image: ghcr.io/${{ github.repository }}/beszel-agent
+            dockerfile: ./internal/dockerfile_agent_alpine
+            registry: ghcr.io
+            username: ${{ github.actor }}
+            password_secret: GITHUB_TOKEN
+            tags: |
+              type=raw,value=alpine
+              type=semver,pattern={{version}}-alpine
+              type=semver,pattern={{major}}.{{minor}}-alpine
+              type=semver,pattern={{major}}-alpine
 
     permissions:
       contents: read
@@ -100,12 +172,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ matrix.image }}
-          tags: |
-            type=raw,value=edge
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
-            type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
+          tags: ${{ matrix.tags }}
 
       # https://github.com/docker/login-action
       - name: Login to Docker Hub
@@ -123,7 +190,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: "${{ matrix.context }}"
+          context: ./
           file: ${{ matrix.dockerfile }}
           platforms: ${{ matrix.platforms || 'linux/amd64,linux/arm64,linux/arm/v7' }}
           push: ${{ github.ref_type == 'tag' && secrets[matrix.password_secret] != '' }}

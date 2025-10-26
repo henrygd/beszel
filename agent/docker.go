@@ -32,6 +32,12 @@ const (
 	maxMemoryUsage uint64 = 100 * 1024 * 1024 * 1024 * 1024
 	// Number of log lines to request when fetching container logs
 	dockerLogsTail = 200
+	// Maximum size of a single log frame (1MB) to prevent memory exhaustion
+	// A single log line larger than 1MB is likely an error or misconfiguration
+	maxLogFrameSize = 1024 * 1024
+	// Maximum total log content size (5MB) to prevent memory exhaustion
+	// This provides a reasonable limit for network transfer and browser rendering
+	maxTotalLogSize = 5 * 1024 * 1024
 )
 
 type dockerManager struct {
@@ -596,30 +602,34 @@ func getDockerHost() string {
 }
 
 // getContainerInfo fetches the inspection data for a container
-func (dm *dockerManager) getContainerInfo(ctx context.Context, containerID string) (string, error) {
+func (dm *dockerManager) getContainerInfo(ctx context.Context, containerID string) ([]byte, error) {
 	endpoint := fmt.Sprintf("http://localhost/containers/%s/json", containerID)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	resp, err := dm.client.Do(req)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(io.LimitReader(resp.Body, 1024))
-		return "", fmt.Errorf("container info request failed: %s: %s", resp.Status, strings.TrimSpace(string(body)))
+		return nil, fmt.Errorf("container info request failed: %s: %s", resp.Status, strings.TrimSpace(string(body)))
 	}
 
-	data, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
+	// Remove sensitive environment variables from Config.Env
+	var containerInfo map[string]any
+	if err := json.NewDecoder(resp.Body).Decode(&containerInfo); err != nil {
+		return nil, err
+	}
+	if config, ok := containerInfo["Config"].(map[string]any); ok {
+		delete(config, "Env")
 	}
 
-	return string(data), nil
+	return json.Marshal(containerInfo)
 }
 
 // getLogs fetches the logs for a container
@@ -653,6 +663,7 @@ func decodeDockerLogStream(reader io.Reader, builder *strings.Builder) error {
 	const headerSize = 8
 	var header [headerSize]byte
 	buf := make([]byte, 0, dockerLogsTail*200)
+	totalBytesRead := 0
 
 	for {
 		if _, err := io.ReadFull(reader, header[:]); err != nil {
@@ -667,6 +678,19 @@ func decodeDockerLogStream(reader io.Reader, builder *strings.Builder) error {
 			continue
 		}
 
+		// Prevent memory exhaustion from excessively large frames
+		if frameLen > maxLogFrameSize {
+			return fmt.Errorf("log frame size (%d) exceeds maximum (%d)", frameLen, maxLogFrameSize)
+		}
+
+		// Check if reading this frame would exceed total log size limit
+		if totalBytesRead+int(frameLen) > maxTotalLogSize {
+			// Read and discard remaining data to avoid blocking
+			_, _ = io.Copy(io.Discard, io.LimitReader(reader, int64(frameLen)))
+			slog.Debug("Truncating logs: limit reached", "read", totalBytesRead, "limit", maxTotalLogSize)
+			return nil
+		}
+
 		buf = allocateBuffer(buf, int(frameLen))
 		if _, err := io.ReadFull(reader, buf[:frameLen]); err != nil {
 			if errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) {
@@ -678,6 +702,7 @@ func decodeDockerLogStream(reader io.Reader, builder *strings.Builder) error {
 			return err
 		}
 		builder.Write(buf[:frameLen])
+		totalBytesRead += int(frameLen)
 	}
 }
 

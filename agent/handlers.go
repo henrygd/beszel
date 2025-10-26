@@ -7,6 +7,9 @@ import (
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/common"
+	"github.com/henrygd/beszel/internal/entities/smart"
+
+	"golang.org/x/exp/slog"
 )
 
 // HandlerContext provides context for request handlers
@@ -46,6 +49,7 @@ func NewHandlerRegistry() *HandlerRegistry {
 	registry.Register(common.CheckFingerprint, &CheckFingerprintHandler{})
 	registry.Register(common.GetContainerLogs, &GetContainerLogsHandler{})
 	registry.Register(common.GetContainerInfo, &GetContainerInfoHandler{})
+	registry.Register(common.GetSmartData, &GetSmartDataHandler{})
 
 	return registry
 }
@@ -150,5 +154,23 @@ func (h *GetContainerInfoHandler) Handle(hctx *HandlerContext) error {
 		return err
 	}
 
-	return hctx.SendResponse(info, hctx.RequestID)
+	return hctx.SendResponse(string(info), hctx.RequestID)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// GetSmartDataHandler handles SMART data requests
+type GetSmartDataHandler struct{}
+
+func (h *GetSmartDataHandler) Handle(hctx *HandlerContext) error {
+	if hctx.Agent.smartManager == nil {
+		// return empty map to indicate no data
+		return hctx.SendResponse(map[string]smart.SmartData{}, hctx.RequestID)
+	}
+	if err := hctx.Agent.smartManager.Refresh(); err != nil {
+		slog.Debug("smart refresh failed", "err", err)
+	}
+	data := hctx.Agent.smartManager.GetCurrentData()
+	return hctx.SendResponse(data, hctx.RequestID)
 }

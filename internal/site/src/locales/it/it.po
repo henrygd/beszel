@@ -8,15 +8,15 @@ msgstr ""
 "Language: it\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-28 23:21\n"
+"PO-Revision-Date: 2025-10-20 21:37\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: it\n"
-"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 16\n"
+"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 32\n"
 
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
 #: src/components/routes/system.tsx
@@ -234,6 +234,10 @@ msgstr "Cache / Buffer"
 msgid "Cancel"
 msgstr "Annulla"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Capacity"
+msgstr "Capacità"
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
 msgstr "Attenzione - possibile perdita di dati"
@@ -278,6 +282,10 @@ msgstr "Controlla il tuo servizio di notifica"
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
 msgstr "Fare clic su un contenitore per visualizzare ulteriori informazioni."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Click on a device to view more information."
+msgstr "Fare clic su un dispositivo per visualizzare più informazioni."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -397,6 +405,11 @@ msgstr "Upload cumulativo"
 msgid "Current state"
 msgstr "Stato attuale"
 
+#. Power Cycles
+#: src/components/routes/system/smart-table.tsx
+msgid "Cycles"
+msgstr "Cicli"
+
 #: src/components/command-palette.tsx
 msgid "Dashboard"
 msgstr "Cruscotto"
@@ -417,6 +430,10 @@ msgstr "Elimina impronta digitale"
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
 msgstr "Dettagli"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Device"
+msgstr "Dispositivo"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -548,6 +565,10 @@ msgstr "Esporta la configurazione attuale dei tuoi sistemi."
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenheit (°F)"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Failed Attributes:"
+msgstr "Attributi falliti:"
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Autenticazione fallita"
@@ -568,6 +589,7 @@ msgstr "Aggiornamento dell'avviso fallito"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Filtra..."
@@ -575,6 +597,10 @@ msgstr "Filtra..."
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
 msgstr "Impronta digitale"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Firmware"
+msgstr "Firmware"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -730,6 +756,10 @@ msgstr "Utilizzo Memoria"
 msgid "Memory usage of docker containers"
 msgstr "Utilizzo della memoria dei container Docker"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Model"
+msgstr "Modello"
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -762,9 +792,16 @@ msgid "No results found."
 msgstr "Nessun risultato trovato."
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "No results."
 msgstr "Nessun risultato."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "No S.M.A.R.T. attributes available for this device."
+msgstr "Nessun attributo S.M.A.R.T. disponibile per questo dispositivo."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -884,6 +921,11 @@ msgstr "Si prega di accedere al proprio account"
 msgid "Port"
 msgstr "Porta"
 
+#. Power On Time
+#: src/components/routes/system/smart-table.tsx
+msgid "Power On"
+msgstr "Accensione"
+
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Precise utilization at the recorded time"
@@ -943,6 +985,14 @@ msgstr "Ruota token"
 msgid "Rows per page"
 msgstr "Righe per pagina"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Details"
+msgstr "Dettagli S.M.A.R.T."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Self-Test"
+msgstr "Autotest S.M.A.R.T."
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Salva l'indirizzo usando il tasto invio o la virgola. Lascia vuoto per disabilitare le notifiche email."
@@ -971,6 +1021,10 @@ msgstr "Vedi <0>impostazioni di notifica</0> per configurare come ricevere gli a
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Inviato"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Serial Number"
+msgstr "Numero di serie"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1005,6 +1059,7 @@ msgid "State"
 msgstr "Stato"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -1043,6 +1098,7 @@ msgid "Table"
 msgstr "Tabella"
 
 #. Temperature label in systems table
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr "Temperatura"
@@ -1167,6 +1223,10 @@ msgstr "Attiva quando lo stato passa tra up e down"
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Attiva quando l'utilizzo di un disco supera una soglia"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Type"
+msgstr "Tipo"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx

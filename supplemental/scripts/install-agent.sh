@@ -571,6 +571,11 @@ else
     echo "Adding beszel to docker group"
     usermod -aG docker beszel
   fi
+  # Add the user to the disk group to allow access to disk devices if group disk exists
+  if getent group disk; then
+    echo "Adding beszel to disk group"
+    usermod -aG disk beszel
+  fi
 fi
 
 # Create the directory for the Beszel Agent

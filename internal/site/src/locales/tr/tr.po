@@ -8,15 +8,15 @@ msgstr ""
 "Language: tr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-28 23:21\n"
+"PO-Revision-Date: 2025-10-20 21:37\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: tr\n"
-"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 16\n"
+"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 32\n"
 
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
 #: src/components/routes/system.tsx
@@ -234,6 +234,10 @@ msgstr "Önbellek / Tamponlar"
 msgid "Cancel"
 msgstr "İptal"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Capacity"
+msgstr "Kapasite"
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
 msgstr "Dikkat - potansiyel veri kaybı"
@@ -278,6 +282,10 @@ msgstr "Bildirim hizmetinizi kontrol edin"
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
 msgstr "Daha fazla bilgi görüntülemek için bir konteynere tıklayın."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Click on a device to view more information."
+msgstr "Daha fazla bilgi görüntülemek için bir cihaza tıklayın."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -397,6 +405,11 @@ msgstr "Kümülatif Yükleme"
 msgid "Current state"
 msgstr "Mevcut durum"
 
+#. Power Cycles
+#: src/components/routes/system/smart-table.tsx
+msgid "Cycles"
+msgstr "Döngüler"
+
 #: src/components/command-palette.tsx
 msgid "Dashboard"
 msgstr "Gösterge Paneli"
@@ -417,6 +430,10 @@ msgstr "Parmak izini sil"
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
 msgstr "Ayrıntı"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Device"
+msgstr "Cihaz"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -548,6 +565,10 @@ msgstr "Mevcut sistem yapılandırmanızı dışa aktarın."
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenhayt (°F)"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Failed Attributes:"
+msgstr "Başarısız Özellikler:"
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Kimlik doğrulama başarısız"
@@ -568,6 +589,7 @@ msgstr "Uyarı güncellenemedi"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Filtrele..."
@@ -575,6 +597,10 @@ msgstr "Filtrele..."
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
 msgstr "Parmak izi"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Firmware"
+msgstr "Donanım Yazılımı"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -625,7 +651,7 @@ msgstr "Homebrew komutu"
 
 #: src/components/add-system.tsx
 msgid "Host / IP"
-msgstr "Host / IP"
+msgstr "Ana Bilgisayar / IP"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -730,6 +756,10 @@ msgstr "Bellek Kullanımı"
 msgid "Memory usage of docker containers"
 msgstr "Docker konteynerlerinin bellek kullanımı"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Model"
+msgstr "Model"
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -762,9 +792,16 @@ msgid "No results found."
 msgstr "Sonuç bulunamadı."
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "No results."
 msgstr "Sonuç yok."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "No S.M.A.R.T. attributes available for this device."
+msgstr "Bu cihaz için kullanılabilir S.M.A.R.T. özelliği yok."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -884,6 +921,11 @@ msgstr "Lütfen hesabınıza giriş yapın"
 msgid "Port"
 msgstr "Port"
 
+#. Power On Time
+#: src/components/routes/system/smart-table.tsx
+msgid "Power On"
+msgstr "Güç Açık"
+
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Precise utilization at the recorded time"
@@ -943,6 +985,14 @@ msgstr "Token'ı döndür"
 msgid "Rows per page"
 msgstr "Sayfa başına satır"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Details"
+msgstr "S.M.A.R.T. Ayrıntıları"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Self-Test"
+msgstr "S.M.A.R.T. Kendiliğinden Test"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Adresleri enter tuşu veya virgül ile kaydedin. E-posta bildirimlerini devre dışı bırakmak için boş bırakın."
@@ -971,6 +1021,10 @@ msgstr "Uyarıları nasıl alacağınızı yapılandırmak için <0>bildirim aya
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Gönderildi"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Serial Number"
+msgstr "Seri Numarası"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1005,6 +1059,7 @@ msgid "State"
 msgstr "Durum"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -1043,6 +1098,7 @@ msgid "Table"
 msgstr "Tablo"
 
 #. Temperature label in systems table
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr "Sıc"
@@ -1062,7 +1118,7 @@ msgstr "Sistem sensörlerinin sıcaklıkları"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test <0>URL</0>"
-msgstr "Test <0>URL</0>"
+msgstr "<0>URL</0>'yi Test Et"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test notification sent"
@@ -1167,6 +1223,10 @@ msgstr "Durum yukarı ve aşağı arasında değiştiğinde tetiklenir"
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Herhangi bir diskin kullanımı bir eşiği aştığında tetiklenir"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Type"
+msgstr "Tür"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx

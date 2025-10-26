@@ -8,15 +8,15 @@ msgstr ""
 "Language: fa\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-28 23:21\n"
+"PO-Revision-Date: 2025-10-20 21:37\n"
 "Last-Translator: \n"
 "Language-Team: Persian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: fa\n"
-"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 16\n"
+"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 32\n"
 
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
 #: src/components/routes/system.tsx
@@ -234,6 +234,10 @@ msgstr "حافظه پنهان / بافرها"
 msgid "Cancel"
 msgstr "لغو"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Capacity"
+msgstr "ظرفیت"
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
 msgstr "احتیاط - احتمال از دست رفتن داده‌ها"
@@ -278,6 +282,10 @@ msgstr "سرویس اطلاع‌رسانی خود را بررسی کنید"
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
 msgstr "برای مشاهده اطلاعات بیشتر روی کانتینر کلیک کنید."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Click on a device to view more information."
+msgstr "برای مشاهده اطلاعات بیشتر روی دستگاه کلیک کنید."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -397,6 +405,11 @@ msgstr "آپلود تجمعی"
 msgid "Current state"
 msgstr "وضعیت فعلی"
 
+#. Power Cycles
+#: src/components/routes/system/smart-table.tsx
+msgid "Cycles"
+msgstr "چرخه‌ها"
+
 #: src/components/command-palette.tsx
 msgid "Dashboard"
 msgstr "داشبورد"
@@ -417,6 +430,10 @@ msgstr "حذف اثر انگشت"
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
 msgstr "جزئیات"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Device"
+msgstr "دستگاه"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -548,6 +565,10 @@ msgstr "پیکربندی سیستم‌های فعلی خود را خارج کن�
 msgid "Fahrenheit (°F)"
 msgstr "فارنهایت (°F)"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Failed Attributes:"
+msgstr "ویژگی‌های ناموفق:"
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "احراز هویت ناموفق بود"
@@ -568,6 +589,7 @@ msgstr "به‌روزرسانی هشدار ناموفق بود"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "فیلتر..."
@@ -575,6 +597,10 @@ msgstr "فیلتر..."
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
 msgstr "اثر انگشت"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Firmware"
+msgstr "فرم‌ویر"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -730,6 +756,10 @@ msgstr "میزان استفاده از حافظه"
 msgid "Memory usage of docker containers"
 msgstr "میزان استفاده از حافظه کانتینرهای داکر"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Model"
+msgstr "مدل"
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -762,9 +792,16 @@ msgid "No results found."
 msgstr "هیچ نتیجه‌ای یافت نشد."
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "No results."
 msgstr "نتیجه‌ای یافت نشد."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "No S.M.A.R.T. attributes available for this device."
+msgstr "هیچ ویژگی S.M.A.R.T برای این دستگاه موجود نیست."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -884,6 +921,11 @@ msgstr "لطفاً به حساب کاربری خود وارد شوید"
 msgid "Port"
 msgstr "پورت"
 
+#. Power On Time
+#: src/components/routes/system/smart-table.tsx
+msgid "Power On"
+msgstr "روشن کردن"
+
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Precise utilization at the recorded time"
@@ -943,6 +985,14 @@ msgstr "چرخش توکن"
 msgid "Rows per page"
 msgstr "ردیف در هر صفحه"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Details"
+msgstr "جزئیات S.M.A.R.T"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Self-Test"
+msgstr "تست خود S.M.A.R.T"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "آدرس را با استفاده از کلید Enter یا کاما ذخیره کنید. برای غیرفعال کردن اعلان‌های ایمیلی، خالی بگذارید."
@@ -971,6 +1021,10 @@ msgstr "برای پیکربندی نحوه دریافت هشدارها، به <0
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "ارسال شد"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Serial Number"
+msgstr "شماره سریال"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1005,6 +1059,7 @@ msgid "State"
 msgstr "وضعیت"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -1043,6 +1098,7 @@ msgid "Table"
 msgstr "جدول"
 
 #. Temperature label in systems table
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr "دما"
@@ -1167,6 +1223,10 @@ msgstr "هنگامی که وضعیت بین بالا و پایین تغییر م
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "هنگامی که استفاده از هر دیسکی از یک آستانه فراتر رود، فعال می‌شود"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Type"
+msgstr "نوع"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx

@@ -13,6 +13,7 @@ import (
 
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/common"
+	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/blang/semver"
@@ -170,6 +171,8 @@ func (a *Agent) handleSSHRequest(w io.Writer, req *common.HubRequest[cbor.RawMes
 			response.SystemData = v
 		case string:
 			response.String = &v
+		case map[string]smart.SmartData:
+			response.SmartData = v
 		default:
 			response.Error = fmt.Sprintf("unsupported response type: %T", data)
 		}
