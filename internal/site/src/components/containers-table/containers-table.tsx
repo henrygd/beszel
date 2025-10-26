@@ -89,7 +89,8 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 
 		// if systemId, fetch containers after the system is updated
 		return listenKeys($allSystemsById, [systemId], (_newSystems) => {
-			setTimeout(() => fetchData(1000), 100)
+			const changeTime = Date.now()
+			setTimeout(() => fetchData(Date.now() - changeTime + 1000), 100)
 		})
 	}, [])
 
