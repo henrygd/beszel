@@ -15,6 +15,7 @@ import (
 
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/common"
+	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/fxamacker/cbor/v2"
@@ -273,6 +274,8 @@ func (client *WebSocketClient) sendResponse(data any, requestID *uint32) error {
 			response.Fingerprint = v
 		case string:
 			response.String = &v
+		case map[string]smart.SmartData:
+			response.SmartData = v
 		// case []byte:
 		// 	response.RawBytes = v
 		// case string:

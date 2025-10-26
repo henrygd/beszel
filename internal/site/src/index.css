@@ -169,7 +169,7 @@
 }
 
 @utility container {
-	@apply max-w-360 mx-auto px-4;
+	@apply max-w-370 mx-auto px-4;
 }
 
 @utility link {

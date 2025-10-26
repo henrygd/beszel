@@ -246,6 +246,10 @@ msgstr "Cache / Buffers"
 msgid "Cancel"
 msgstr "Cancel"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Capacity"
+msgstr "Capacity"
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
 msgstr "Caution - potential data loss"
@@ -290,6 +294,10 @@ msgstr "Check your notification service"
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
 msgstr "Click on a container to view more information."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Click on a device to view more information."
+msgstr "Click on a device to view more information."
 
 #: src/components/systems-table/systems-table.tsx
 #~ msgid "Click on a system to view more information."
@@ -409,6 +417,11 @@ msgstr "Cumulative Upload"
 msgid "Current state"
 msgstr "Current state"
 
+#. Power Cycles
+#: src/components/routes/system/smart-table.tsx
+msgid "Cycles"
+msgstr "Cycles"
+
 #: src/components/command-palette.tsx
 msgid "Dashboard"
 msgstr "Dashboard"
@@ -429,6 +442,10 @@ msgstr "Delete fingerprint"
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
 msgstr "Detail"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Device"
+msgstr "Device"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -560,6 +577,10 @@ msgstr "Export your current systems configuration."
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenheit (°F)"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Failed Attributes:"
+msgstr "Failed Attributes:"
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Failed to authenticate"
@@ -580,6 +601,7 @@ msgstr "Failed to update alert"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Filter..."
@@ -587,6 +609,10 @@ msgstr "Filter..."
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
 msgstr "Fingerprint"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Firmware"
+msgstr "Firmware"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -749,6 +775,10 @@ msgstr "Memory Usage"
 msgid "Memory usage of docker containers"
 msgstr "Memory usage of docker containers"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Model"
+msgstr "Model"
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -781,9 +811,16 @@ msgid "No results found."
 msgstr "No results found."
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "No results."
 msgstr "No results."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "No S.M.A.R.T. attributes available for this device."
+msgstr "No S.M.A.R.T. attributes available for this device."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -904,6 +941,11 @@ msgstr "Please sign in to your account"
 msgid "Port"
 msgstr "Port"
 
+#. Power On Time
+#: src/components/routes/system/smart-table.tsx
+msgid "Power On"
+msgstr "Power On"
+
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Precise utilization at the recorded time"
@@ -963,6 +1005,14 @@ msgstr "Rotate token"
 msgid "Rows per page"
 msgstr "Rows per page"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Details"
+msgstr "S.M.A.R.T. Details"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Self-Test"
+msgstr "S.M.A.R.T. Self-Test"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -992,6 +1042,10 @@ msgstr "See <0>notification settings</0> to configure how you receive alerts."
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Sent"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Serial Number"
+msgstr "Serial Number"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1027,6 +1081,7 @@ msgid "State"
 msgstr "State"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -1069,6 +1124,7 @@ msgid "Table"
 msgstr "Table"
 
 #. Temperature label in systems table
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr "Temp"
@@ -1194,6 +1250,10 @@ msgstr "Triggers when status switches between up and down"
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Triggers when usage of any disk exceeds a threshold"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Type"
+msgstr "Type"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx

@@ -8,7 +8,7 @@ msgstr ""
 "Language: no\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-13 17:31\n"
+"PO-Revision-Date: 2025-10-22 10:37\n"
 "Last-Translator: \n"
 "Language-Team: Norwegian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -251,6 +251,10 @@ msgstr "Cache / Buffere"
 msgid "Cancel"
 msgstr "Avbryt"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Capacity"
+msgstr "Kapasitet"
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
 msgstr "Advarsel - potensielt tap av data"
@@ -295,6 +299,10 @@ msgstr "Sjekk din meldingstjeneste"
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
 msgstr "Klikk på en container for å se mer informasjon."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Click on a device to view more information."
+msgstr "Klikk på en enhet for å se mer informasjon."
 
 #: src/components/systems-table/systems-table.tsx
 #~ msgid "Click on a system to view more information."
@@ -414,6 +422,11 @@ msgstr "Kumulativ opplasting"
 msgid "Current state"
 msgstr "Nåværende tilstand"
 
+#. Power Cycles
+#: src/components/routes/system/smart-table.tsx
+msgid "Cycles"
+msgstr "Sykluser"
+
 #: src/components/command-palette.tsx
 msgid "Dashboard"
 msgstr "Dashbord"
@@ -433,7 +446,11 @@ msgstr "Slett fingeravtrykk"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
-msgstr "Detalj"
+msgstr "Detaljer"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Device"
+msgstr "Enhet"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -565,6 +582,10 @@ msgstr "Eksporter din nåværende systemkonfigurasjon"
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenheit (°F)"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Failed Attributes:"
+msgstr "Mislykkede attributter:"
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Autentisering mislyktes"
@@ -585,6 +606,7 @@ msgstr "Kunne ikke oppdatere alarm"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Filter..."
@@ -592,6 +614,10 @@ msgstr "Filter..."
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
 msgstr "Fingeravtrykk"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Firmware"
+msgstr "Fastvare"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -754,6 +780,10 @@ msgstr "Minnebruk"
 msgid "Memory usage of docker containers"
 msgstr "Minnebruk av docker-konteinere"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Model"
+msgstr "Modell"
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -786,9 +816,16 @@ msgid "No results found."
 msgstr "Ingen resultater funnet."
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "No results."
 msgstr "Ingen resultater."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "No S.M.A.R.T. attributes available for this device."
+msgstr "Ingen S.M.A.R.T.-attributter tilgjengelig for denne enheten."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -909,6 +946,11 @@ msgstr "Vennligst logg inn på kontoen din"
 msgid "Port"
 msgstr "Port"
 
+#. Power On Time
+#: src/components/routes/system/smart-table.tsx
+msgid "Power On"
+msgstr "Påslag"
+
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Precise utilization at the recorded time"
@@ -968,6 +1010,14 @@ msgstr "Forny token"
 msgid "Rows per page"
 msgstr "Rader per side"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Details"
+msgstr "S.M.A.R.T.-detaljer"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Self-Test"
+msgstr "S.M.A.R.T. selvtest"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Lagre adressen med Enter-tasten eller komma. La feltet være tomt for å deaktivere e-postvarsler."
@@ -997,6 +1047,10 @@ msgstr "Se <0>varslingsinnstillingene</0> for å konfigurere hvordan du vil mott
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Sendt"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Serial Number"
+msgstr "Serienummer"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1032,6 +1086,7 @@ msgid "State"
 msgstr "Tilstand"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -1074,6 +1129,7 @@ msgid "Table"
 msgstr "Tabell"
 
 #. Temperature label in systems table
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr "Temp"
@@ -1199,6 +1255,10 @@ msgstr "Slår inn når statusen veksler mellom oppe og nede"
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Slår inn når forbruk av hvilken som helst disk overstiger en grenseverdi"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Type"
+msgstr "Type"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx

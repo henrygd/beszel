@@ -115,6 +115,46 @@ func (ws *WsConn) RequestContainerInfo(ctx context.Context, containerID string) 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
+// RequestSmartData requests SMART data via WebSocket.
+func (ws *WsConn) RequestSmartData(ctx context.Context) (map[string]any, error) {
+	if !ws.IsConnected() {
+		return nil, gws.ErrConnClosed
+	}
+	req, err := ws.requestManager.SendRequest(ctx, common.GetSmartData, nil)
+	if err != nil {
+		return nil, err
+	}
+	var result map[string]any
+	handler := ResponseHandler(&smartDataHandler{result: &result})
+	if err := ws.handleAgentRequest(req, handler); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+// smartDataHandler parses SMART data map from AgentResponse
+type smartDataHandler struct {
+	BaseHandler
+	result *map[string]any
+}
+
+func (h *smartDataHandler) Handle(agentResponse common.AgentResponse) error {
+	if agentResponse.SmartData == nil {
+		return errors.New("no SMART data in response")
+	}
+	// convert to map[string]any for transport convenience in hub layer
+	out := make(map[string]any, len(agentResponse.SmartData))
+	for k, v := range agentResponse.SmartData {
+		out[k] = v
+	}
+	*h.result = out
+	return nil
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
 // fingerprintHandler implements ResponseHandler for fingerprint requests
 type fingerprintHandler struct {
 	result *common.FingerprintResponse

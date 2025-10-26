@@ -8,15 +8,15 @@ msgstr ""
 "Language: cs\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-28 23:21\n"
+"PO-Revision-Date: 2025-10-20 21:37\n"
 "Last-Translator: \n"
 "Language-Team: Czech\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 3;\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: cs\n"
-"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 16\n"
+"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 32\n"
 
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
 #: src/components/routes/system.tsx
@@ -127,7 +127,7 @@ msgstr "Upravit možnosti zobrazení pro grafy."
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
-msgstr "Admin"
+msgstr "Administrátor"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -230,17 +230,17 @@ msgstr "Beszel používá <0>Shoutrrr</0> k integraci s populárními notifikač
 
 #: src/components/add-system.tsx
 msgid "Binary"
-msgstr "Binary"
+msgstr "Binární"
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr "Bits (Kbps, Mbps, Gbps)"
+msgstr "Bity (Kbps, Mbps, Gbps)"
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
-msgstr "Bytes (KB/s, MB/s, GB/s)"
+msgstr "Byty (KB/s, MB/s, GB/s)"
 
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
@@ -250,6 +250,10 @@ msgstr "Cache / vyrovnávací paměť"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "Zrušit"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Capacity"
+msgstr "Kapacita"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
@@ -295,6 +299,10 @@ msgstr "Zkontrolujte službu upozornění"
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
 msgstr "Klikněte na kontejner pro zobrazení dalších informací."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Click on a device to view more information."
+msgstr "Klikněte na zařízení pro zobrazení dalších informací."
 
 #: src/components/systems-table/systems-table.tsx
 #~ msgid "Click on a system to view more information."
@@ -414,6 +422,11 @@ msgstr "Kumulativní odeslání"
 msgid "Current state"
 msgstr "Aktuální stav"
 
+#. Power Cycles
+#: src/components/routes/system/smart-table.tsx
+msgid "Cycles"
+msgstr "Cykly"
+
 #: src/components/command-palette.tsx
 msgid "Dashboard"
 msgstr "Přehled"
@@ -434,6 +447,10 @@ msgstr "Smazat identifikátor"
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
 msgstr "Detail"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Device"
+msgstr "Zařízení"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -551,7 +568,7 @@ msgstr "Stávající systémy, které nejsou definovány v <0>config.yml</0>, bu
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
-msgstr "Export"
+msgstr "Exportovat"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
@@ -564,6 +581,10 @@ msgstr "Exportovat aktuální konfiguraci systémů."
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenheita (°F)"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Failed Attributes:"
+msgstr "Neúspěšné atributy:"
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
@@ -585,6 +606,7 @@ msgstr "Nepodařilo se aktualizovat upozornění"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Filtr..."
@@ -592,6 +614,10 @@ msgstr "Filtr..."
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
 msgstr "Otisk"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Firmware"
+msgstr "Firmware"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -666,7 +692,7 @@ msgstr "Neplatná e-mailová adresa."
 #. Linux kernel
 #: src/components/routes/system.tsx
 msgid "Kernel"
-msgstr "Kernel"
+msgstr "Jádro"
 
 #: src/components/routes/settings/general.tsx
 msgid "Language"
@@ -754,6 +780,10 @@ msgstr "Využití paměti"
 msgid "Memory usage of docker containers"
 msgstr "Využití paměti docker kontejnerů"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Model"
+msgstr "Model"
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -786,9 +816,16 @@ msgid "No results found."
 msgstr "Nenalezeny žádné výskyty."
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "No results."
 msgstr "Žádné výsledky."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "No S.M.A.R.T. attributes available for this device."
+msgstr "Pro toto zařízení nejsou k dispozici žádné atributy S.M.A.R.T."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -909,6 +946,11 @@ msgstr "Přihlaste se prosím k vašemu účtu"
 msgid "Port"
 msgstr "Port"
 
+#. Power On Time
+#: src/components/routes/system/smart-table.tsx
+msgid "Power On"
+msgstr "Zapnutí"
+
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Precise utilization at the recorded time"
@@ -968,6 +1010,14 @@ msgstr "Změnit token"
 msgid "Rows per page"
 msgstr "Řádků na stránku"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Details"
+msgstr "S.M.A.R.T. Detaily"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Self-Test"
+msgstr "S.M.A.R.T. Vlastní test"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Adresu uložte pomocí klávesy enter nebo čárky. Pro deaktivaci e-mailových oznámení ponechte prázdné pole."
@@ -997,6 +1047,10 @@ msgstr "Podívejte se na <0>nastavení upozornění</0> pro nastavení toho, jak
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Odeslat"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Serial Number"
+msgstr "Sériové číslo"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1032,6 +1086,7 @@ msgid "State"
 msgstr "Stav"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -1074,6 +1129,7 @@ msgid "Table"
 msgstr "Tabulka"
 
 #. Temperature label in systems table
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr "Teplota"
@@ -1093,7 +1149,7 @@ msgstr "Teploty systémových senzorů"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test <0>URL</0>"
-msgstr "Test <0>URL</0>"
+msgstr "Testovat <0>URL</0>"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test notification sent"
@@ -1199,6 +1255,10 @@ msgstr "Spouští se, když se změní dostupnost"
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Spustí se, když využití disku překročí prahovou hodnotu"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Type"
+msgstr "Typ"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx

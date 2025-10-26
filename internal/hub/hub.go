@@ -252,10 +252,15 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// update / delete user alerts
 	apiAuth.POST("/user-alerts", alerts.UpsertUserAlerts)
 	apiAuth.DELETE("/user-alerts", alerts.DeleteUserAlerts)
-	// get container logs
-	apiAuth.GET("/containers/logs", h.getContainerLogs)
-	// get container info
-	apiAuth.GET("/containers/info", h.getContainerInfo)
+	// get SMART data
+	apiAuth.GET("/smart", h.getSmartData)
+	// /containers routes
+	if enabled, _ := GetEnv("CONTAINER_DETAILS"); enabled != "false" {
+		// get container logs
+		apiAuth.GET("/containers/logs", h.getContainerLogs)
+		// get container info
+		apiAuth.GET("/containers/info", h.getContainerInfo)
+	}
 	return nil
 }
 
@@ -302,7 +307,7 @@ func (h *Hub) containerRequestHandler(e *core.RequestEvent, fetchFunc func(*syst
 
 	data, err := fetchFunc(system, containerID)
 	if err != nil {
-		return e.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return e.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
 	}
 
 	return e.JSON(http.StatusOK, map[string]string{responseKey: data})
@@ -319,6 +324,24 @@ func (h *Hub) getContainerInfo(e *core.RequestEvent) error {
 	return h.containerRequestHandler(e, func(system *systems.System, containerID string) (string, error) {
 		return system.FetchContainerInfoFromAgent(containerID)
 	}, "info")
+}
+
+// getSmartData handles GET /api/beszel/smart requests
+func (h *Hub) getSmartData(e *core.RequestEvent) error {
+	systemID := e.Request.URL.Query().Get("system")
+	if systemID == "" {
+		return e.JSON(http.StatusBadRequest, map[string]string{"error": "system parameter is required"})
+	}
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil {
+		return e.JSON(http.StatusNotFound, map[string]string{"error": "system not found"})
+	}
+	data, err := system.FetchSmartDataFromAgent()
+	if err != nil {
+		return e.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
+	}
+	e.Response.Header().Set("Cache-Control", "public, max-age=60")
+	return e.JSON(http.StatusOK, data)
 }
 
 // generates key pair if it doesn't exist and returns signer
