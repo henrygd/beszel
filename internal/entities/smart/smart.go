@@ -163,6 +163,11 @@ type TemperatureInfo struct {
 	Current uint8 `json:"current"`
 }
 
+type TemperatureInfoScsi struct {
+	Current   uint8 `json:"current"`
+	DriveTrip uint8 `json:"drive_trip"`
+}
+
 // type SelectiveSelfTestTable struct {
 // 	LbaMin int        `json:"lba_min"`
 // 	LbaMax int        `json:"lba_max"`
@@ -233,6 +238,54 @@ type SmartInfoForSata struct {
 	// AtaSmartErrorLog             AtaSmartErrorLog             `json:"ata_smart_error_log"`
 	// AtaSmartSelfTestLog          AtaSmartSelfTestLog          `json:"ata_smart_self_test_log"`
 	// AtaSmartSelectiveSelfTestLog AtaSmartSelectiveSelfTestLog `json:"ata_smart_selective_self_test_log"`
+}
+
+type ScsiErrorCounter struct {
+	ErrorsCorrectedByECCFast         uint64 `json:"errors_corrected_by_eccfast"`
+	ErrorsCorrectedByECCDelayed      uint64 `json:"errors_corrected_by_eccdelayed"`
+	ErrorsCorrectedByRereadsRewrites uint64 `json:"errors_corrected_by_rereads_rewrites"`
+	TotalErrorsCorrected             uint64 `json:"total_errors_corrected"`
+	CorrectionAlgorithmInvocations   uint64 `json:"correction_algorithm_invocations"`
+	GigabytesProcessed               string `json:"gigabytes_processed"`
+	TotalUncorrectedErrors           uint64 `json:"total_uncorrected_errors"`
+}
+
+type ScsiErrorCounterLog struct {
+	Read   ScsiErrorCounter `json:"read"`
+	Write  ScsiErrorCounter `json:"write"`
+	Verify ScsiErrorCounter `json:"verify"`
+}
+
+type ScsiStartStopCycleCounter struct {
+	YearOfManufacture                          string `json:"year_of_manufacture"`
+	WeekOfManufacture                          string `json:"week_of_manufacture"`
+	SpecifiedCycleCountOverDeviceLifetime      uint64 `json:"specified_cycle_count_over_device_lifetime"`
+	AccumulatedStartStopCycles                 uint64 `json:"accumulated_start_stop_cycles"`
+	SpecifiedLoadUnloadCountOverDeviceLifetime uint64 `json:"specified_load_unload_count_over_device_lifetime"`
+	AccumulatedLoadUnloadCycles                uint64 `json:"accumulated_load_unload_cycles"`
+}
+
+type PowerOnTimeScsi struct {
+	Hours   uint64 `json:"hours"`
+	Minutes uint64 `json:"minutes"`
+}
+
+type SmartInfoForScsi struct {
+	Smartctl                  SmartctlInfoLegacy        `json:"smartctl"`
+	Device                    DeviceInfo                `json:"device"`
+	ScsiVendor                string                    `json:"scsi_vendor"`
+	ScsiProduct               string                    `json:"scsi_product"`
+	ScsiModelName             string                    `json:"scsi_model_name"`
+	ScsiRevision              string                    `json:"scsi_revision"`
+	ScsiVersion               string                    `json:"scsi_version"`
+	SerialNumber              string                    `json:"serial_number"`
+	UserCapacity              UserCapacity              `json:"user_capacity"`
+	Temperature               TemperatureInfoScsi       `json:"temperature"`
+	SmartStatus               SmartStatusInfo           `json:"smart_status"`
+	PowerOnTime               PowerOnTimeScsi           `json:"power_on_time"`
+	ScsiStartStopCycleCounter ScsiStartStopCycleCounter `json:"scsi_start_stop_cycle_counter"`
+	ScsiGrownDefectList       uint64                    `json:"scsi_grown_defect_list"`
+	ScsiErrorCounterLog       ScsiErrorCounterLog       `json:"scsi_error_counter_log"`
 }
 
 // type AtaSmartErrorLog struct {

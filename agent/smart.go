@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os/exec"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -146,7 +147,7 @@ func (sm *SmartManager) ScanDevices() error {
 }
 
 // CollectSmart collects SMART data for a device
-// Collect data using `smartctl --all -j /dev/sdX` or `smartctl --all -j /dev/nvmeX`
+// Collect data using `smartctl -d <type> -aj /dev/<device>` when device type is known
 // Always attempts to parse output even if command fails, as some data may still be available
 // If collect fails, return error
 // If collect succeeds, parse the output and update the SmartDataMap
@@ -160,7 +161,8 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 	defer cancel()
 
 	// Try with -n standby first if we have existing data
-	cmd := exec.CommandContext(ctx, "smartctl", "-aj", "-n", "standby", deviceInfo.Name)
+	args := sm.smartctlArgs(deviceInfo, true)
+	cmd := exec.CommandContext(ctx, "smartctl", args...)
 	output, err := cmd.CombinedOutput()
 
 	// Check if device is in standby (exit status 2)
@@ -174,18 +176,19 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 		slog.Debug("device in standby but no cached data, collecting initial data", "device", deviceInfo.Name)
 		ctx2, cancel2 := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel2()
-		cmd = exec.CommandContext(ctx2, "smartctl", "-aj", deviceInfo.Name)
+		args = sm.smartctlArgs(deviceInfo, false)
+		cmd = exec.CommandContext(ctx2, "smartctl", args...)
 		output, err = cmd.CombinedOutput()
 	}
 
 	hasValidData := false
 
 	switch deviceInfo.Type {
-	case "scsi", "sat", "ata":
-		// parse SATA/SCSI/ATA devices
+	case "scsi":
+		hasValidData, _ = sm.parseSmartForScsi(output)
+	case "sat", "ata":
 		hasValidData, _ = sm.parseSmartForSata(output)
-	case "nvme":
-		// parse nvme devices
+	case "nvme", "sntasmedia":
 		hasValidData, _ = sm.parseSmartForNvme(output)
 	}
 
@@ -196,6 +199,28 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 		return errNoValidSmartData
 	}
 	return nil
+}
+
+// smartctlArgs returns the arguments for the smartctl command
+// based on the device type and whether to include standby mode
+func (sm *SmartManager) smartctlArgs(deviceInfo *DeviceInfo, includeStandby bool) []string {
+	args := make([]string, 0, 7)
+
+	if deviceInfo != nil && deviceInfo.Type != "" {
+		args = append(args, "-d", deviceInfo.Type)
+	}
+
+	args = append(args, "-aj")
+
+	if includeStandby {
+		args = append(args, "-n", "standby")
+	}
+
+	if deviceInfo != nil {
+		args = append(args, deviceInfo.Name)
+	}
+
+	return args
 }
 
 // hasDataForDevice checks if we have cached SMART data for a specific device
@@ -345,6 +370,87 @@ func getSmartStatus(temperature uint8, passed bool) string {
 	} else {
 		return "UNKNOWN"
 	}
+}
+
+func (sm *SmartManager) parseSmartForScsi(output []byte) (bool, int) {
+	var data smart.SmartInfoForScsi
+
+	if err := json.Unmarshal(output, &data); err != nil {
+		return false, 0
+	}
+
+	if data.SerialNumber == "" {
+		slog.Debug("scsi device has no serial number, skipping", "device", data.Device.Name)
+		return false, data.Smartctl.ExitStatus
+	}
+
+	sm.Lock()
+	defer sm.Unlock()
+
+	keyName := data.SerialNumber
+	if _, ok := sm.SmartDataMap[keyName]; !ok {
+		sm.SmartDataMap[keyName] = &smart.SmartData{}
+	}
+
+	smartData := sm.SmartDataMap[keyName]
+	smartData.ModelName = data.ScsiModelName
+	smartData.SerialNumber = data.SerialNumber
+	smartData.FirmwareVersion = data.ScsiRevision
+	smartData.Capacity = data.UserCapacity.Bytes
+	smartData.Temperature = data.Temperature.Current
+	smartData.SmartStatus = getSmartStatus(smartData.Temperature, data.SmartStatus.Passed)
+	smartData.DiskName = data.Device.Name
+	smartData.DiskType = data.Device.Type
+
+	attributes := make([]*smart.SmartAttribute, 0, 10)
+	attributes = append(attributes, &smart.SmartAttribute{Name: "PowerOnHours", RawValue: data.PowerOnTime.Hours})
+	attributes = append(attributes, &smart.SmartAttribute{Name: "PowerOnMinutes", RawValue: data.PowerOnTime.Minutes})
+	attributes = append(attributes, &smart.SmartAttribute{Name: "GrownDefectList", RawValue: data.ScsiGrownDefectList})
+	attributes = append(attributes, &smart.SmartAttribute{Name: "StartStopCycles", RawValue: data.ScsiStartStopCycleCounter.AccumulatedStartStopCycles})
+	attributes = append(attributes, &smart.SmartAttribute{Name: "LoadUnloadCycles", RawValue: data.ScsiStartStopCycleCounter.AccumulatedLoadUnloadCycles})
+	attributes = append(attributes, &smart.SmartAttribute{Name: "StartStopSpecified", RawValue: data.ScsiStartStopCycleCounter.SpecifiedCycleCountOverDeviceLifetime})
+	attributes = append(attributes, &smart.SmartAttribute{Name: "LoadUnloadSpecified", RawValue: data.ScsiStartStopCycleCounter.SpecifiedLoadUnloadCountOverDeviceLifetime})
+
+	readStats := data.ScsiErrorCounterLog.Read
+	writeStats := data.ScsiErrorCounterLog.Write
+	verifyStats := data.ScsiErrorCounterLog.Verify
+
+	attributes = append(attributes, &smart.SmartAttribute{Name: "ReadTotalErrorsCorrected", RawValue: readStats.TotalErrorsCorrected})
+	attributes = append(attributes, &smart.SmartAttribute{Name: "ReadTotalUncorrectedErrors", RawValue: readStats.TotalUncorrectedErrors})
+	attributes = append(attributes, &smart.SmartAttribute{Name: "ReadCorrectionAlgorithmInvocations", RawValue: readStats.CorrectionAlgorithmInvocations})
+	if val := parseScsiGigabytesProcessed(readStats.GigabytesProcessed); val >= 0 {
+		attributes = append(attributes, &smart.SmartAttribute{Name: "ReadGigabytesProcessed", RawValue: uint64(val)})
+	}
+	attributes = append(attributes, &smart.SmartAttribute{Name: "WriteTotalErrorsCorrected", RawValue: writeStats.TotalErrorsCorrected})
+	attributes = append(attributes, &smart.SmartAttribute{Name: "WriteTotalUncorrectedErrors", RawValue: writeStats.TotalUncorrectedErrors})
+	attributes = append(attributes, &smart.SmartAttribute{Name: "WriteCorrectionAlgorithmInvocations", RawValue: writeStats.CorrectionAlgorithmInvocations})
+	if val := parseScsiGigabytesProcessed(writeStats.GigabytesProcessed); val >= 0 {
+		attributes = append(attributes, &smart.SmartAttribute{Name: "WriteGigabytesProcessed", RawValue: uint64(val)})
+	}
+	attributes = append(attributes, &smart.SmartAttribute{Name: "VerifyTotalErrorsCorrected", RawValue: verifyStats.TotalErrorsCorrected})
+	attributes = append(attributes, &smart.SmartAttribute{Name: "VerifyTotalUncorrectedErrors", RawValue: verifyStats.TotalUncorrectedErrors})
+	attributes = append(attributes, &smart.SmartAttribute{Name: "VerifyCorrectionAlgorithmInvocations", RawValue: verifyStats.CorrectionAlgorithmInvocations})
+	if val := parseScsiGigabytesProcessed(verifyStats.GigabytesProcessed); val >= 0 {
+		attributes = append(attributes, &smart.SmartAttribute{Name: "VerifyGigabytesProcessed", RawValue: uint64(val)})
+	}
+
+	smartData.Attributes = attributes
+	sm.SmartDataMap[keyName] = smartData
+
+	return true, data.Smartctl.ExitStatus
+}
+
+func parseScsiGigabytesProcessed(value string) int64 {
+	if value == "" {
+		return -1
+	}
+	normalized := strings.ReplaceAll(value, ",", "")
+	parsed, err := strconv.ParseInt(normalized, 10, 64)
+	if err != nil {
+		slog.Debug("failed to parse SCSI gigabytes processed", "value", value, "err", err)
+		return -1
+	}
+	return parsed
 }
 
 // parseSmartForNvme parses the output of smartctl --all -j /dev/nvmeX and updates the SmartDataMap
