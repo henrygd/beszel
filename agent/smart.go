@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os/exec"
+	"strings"
 	"sync"
 	"time"
 
@@ -250,6 +251,29 @@ func (sm *SmartManager) parseScan(output []byte) bool {
 	return true
 }
 
+// isVirtualDevice checks if a device is a virtual disk that should be filtered out
+func (sm *SmartManager) isVirtualDevice(data *smart.SmartInfoForSata) bool {
+	vendorUpper := strings.ToUpper(data.ScsiVendor)
+	productUpper := strings.ToUpper(data.ScsiProduct)
+	modelUpper := strings.ToUpper(data.ModelName)
+
+	switch {
+	case strings.Contains(vendorUpper, "IET"), // iSCSI Enterprise Target
+		strings.Contains(productUpper, "VIRTUAL"),
+		strings.Contains(productUpper, "QEMU"),
+		strings.Contains(productUpper, "VBOX"),
+		strings.Contains(productUpper, "VMWARE"),
+		strings.Contains(vendorUpper, "MSFT"), // Microsoft Hyper-V
+		strings.Contains(modelUpper, "VIRTUAL"),
+		strings.Contains(modelUpper, "QEMU"),
+		strings.Contains(modelUpper, "VBOX"),
+		strings.Contains(modelUpper, "VMWARE"):
+		return true
+	default:
+		return false
+	}
+}
+
 // parseSmartForSata parses the output of smartctl --all -j for SATA/ATA devices and updates the SmartDataMap
 // Returns hasValidData and exitStatus
 func (sm *SmartManager) parseSmartForSata(output []byte) (bool, int) {
@@ -261,6 +285,12 @@ func (sm *SmartManager) parseSmartForSata(output []byte) (bool, int) {
 
 	if data.SerialNumber == "" {
 		slog.Debug("device has no serial number, skipping", "device", data.Device.Name)
+		return false, data.Smartctl.ExitStatus
+	}
+
+	// Skip virtual devices (e.g., Kubernetes PVCs, QEMU, VirtualBox, etc.)
+	if sm.isVirtualDevice(&data) {
+		slog.Debug("skipping virtual device", "device", data.Device.Name, "model", data.ModelName)
 		return false, data.Smartctl.ExitStatus
 	}
 

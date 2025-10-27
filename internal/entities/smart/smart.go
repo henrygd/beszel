@@ -211,6 +211,8 @@ type SmartInfoForSata struct {
 	// Wwn               WwnInfo            `json:"wwn"`
 	FirmwareVersion string       `json:"firmware_version"`
 	UserCapacity    UserCapacity `json:"user_capacity"`
+	ScsiVendor      string       `json:"scsi_vendor"`
+	ScsiProduct     string       `json:"scsi_product"`
 	// LogicalBlockSize  int                `json:"logical_block_size"`
 	// PhysicalBlockSize int                `json:"physical_block_size"`
 	// RotationRate      int                `json:"rotation_rate"`
