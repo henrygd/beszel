@@ -11,7 +11,7 @@ import {
    SortingState,
    useReactTable,
 } from "@tanstack/react-table"
-import { Activity, Box, Clock, HardDrive, HashIcon, CpuIcon, BinaryIcon, RotateCwIcon, LoaderCircleIcon, CheckCircle2Icon, XCircleIcon, ArrowLeftRightIcon, ArrowUpDownIcon } from "lucide-react"
+import { Activity, Box, Clock, HardDrive, HashIcon, CpuIcon, BinaryIcon, RotateCwIcon, LoaderCircleIcon, CheckCircle2Icon, XCircleIcon, ArrowLeftRightIcon } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Input } from "@/components/ui/input"
@@ -27,7 +27,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { pb } from "@/lib/api"
 import { SmartData, SmartAttribute } from "@/types"
-import { formatBytes, toFixedFloat, formatTemperature, cn } from "@/lib/utils"
+import { formatBytes, toFixedFloat, formatTemperature, cn, secondsToString } from "@/lib/utils"
 import { Trans } from "@lingui/react/macro"
 import { ThermometerIcon } from "@/components/ui/icons"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -172,8 +172,8 @@ export const columns: ColumnDef<DiskInfo>[] = [
       accessorKey: "powerOnHours",
       invertSorting: true,
       header: ({ column }) => <HeaderButton column={column} name={t({ message: "Power On", comment: "Power On Time" })} Icon={Clock} />,
-      cell: ({ row }) => {
-         const hours = row.getValue("powerOnHours") as number | undefined
+      cell: ({ getValue }) => {
+         const hours = (getValue() ?? 0) as number
          if (!hours && hours !== 0) {
             return (
                <div className="text-sm text-muted-foreground ms-1.5">
@@ -181,11 +181,11 @@ export const columns: ColumnDef<DiskInfo>[] = [
                </div>
             )
          }
-         const days = Math.floor(hours / 24)
+         const seconds = hours * 3600
          return (
             <div className="text-sm ms-1.5">
-               <div>{hours.toLocaleString()} hours</div>
-               <div className="text-muted-foreground text-xs">{days} days</div>
+               <div>{secondsToString(seconds, "hour")}</div>
+               <div className="text-muted-foreground text-xs">{secondsToString(seconds, "day")}</div>
             </div>
          )
       },
@@ -234,7 +234,6 @@ function HeaderButton({ column, name, Icon }: { column: Column<DiskInfo>; name: 
       >
          {Icon && <Icon className="size-4" />}
          {name}
-         <ArrowUpDownIcon className="size-4" />
       </Button>
    )
 }
@@ -342,7 +341,7 @@ export default function DisksTable({ systemId }: { systemId: string }) {
                               onClick={() => openSheet(row.original)}
                            >
                               {row.getVisibleCells().map((cell) => (
-                                 <TableCell key={cell.id}>
+                                 <TableCell key={cell.id} className="md:ps-5">
                                     {flexRender(
                                        cell.column.columnDef.cell,
                                        cell.getContext()
