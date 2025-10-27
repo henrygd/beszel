@@ -3,6 +3,7 @@ import { t } from "@lingui/core/macro"
 import {
    ColumnDef,
    ColumnFiltersState,
+   Column,
    flexRender,
    getCoreRowModel,
    getFilteredRowModel,
@@ -10,7 +11,7 @@ import {
    SortingState,
    useReactTable,
 } from "@tanstack/react-table"
-import { Activity, Box, Clock, HardDrive, HashIcon, CpuIcon, BinaryIcon, RotateCwIcon, LoaderCircleIcon, CheckCircle2Icon, XCircleIcon, ArrowLeftRightIcon } from "lucide-react"
+import { Activity, Box, Clock, HardDrive, HashIcon, CpuIcon, BinaryIcon, RotateCwIcon, LoaderCircleIcon, CheckCircle2Icon, XCircleIcon, ArrowLeftRightIcon, ArrowUpDownIcon } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Input } from "@/components/ui/input"
@@ -23,9 +24,10 @@ import {
    TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { pb } from "@/lib/api"
 import { SmartData, SmartAttribute } from "@/types"
-import { formatBytes, toFixedFloat, formatTemperature } from "@/lib/utils"
+import { formatBytes, toFixedFloat, formatTemperature, cn } from "@/lib/utils"
 import { Trans } from "@lingui/react/macro"
 import { ThermometerIcon } from "@/components/ui/icons"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -106,105 +108,82 @@ function convertSmartDataToDiskInfo(smartDataRecord: Record<string, SmartData>):
 export const columns: ColumnDef<DiskInfo>[] = [
    {
       accessorKey: "device",
-      header: () => (
-         <div className="flex items-center gap-1.5">
-            <HardDrive className="size-4" />
-            <Trans>Device</Trans>
-         </div>
-      ),
+      sortingFn: (a, b) => a.original.device.localeCompare(b.original.device),
+      header: ({ column }) => <HeaderButton column={column} name={t`Device`} Icon={HardDrive} />,
       cell: ({ row }) => (
-         <div className="font-medium">{row.getValue("device")}</div>
+         <div className="font-medium ms-1.5">{row.getValue("device")}</div>
       ),
    },
    {
       accessorKey: "model",
-      header: () => (
-         <div className="flex items-center gap-1.5">
-            <Box className="size-4" />
-            <Trans>Model</Trans>
-         </div>
-      ),
+      sortingFn: (a, b) => a.original.model.localeCompare(b.original.model),
+      header: ({ column }) => <HeaderButton column={column} name={t`Model`} Icon={Box} />,
       cell: ({ row }) => (
-         <div className="max-w-50 truncate" title={row.getValue("model")}>
+         <div className="max-w-50 truncate ms-1.5" title={row.getValue("model")}>
             {row.getValue("model")}
          </div>
       ),
    },
    {
       accessorKey: "capacity",
-      header: () => (
-         <div className="flex items-center gap-1.5">
-            <BinaryIcon className="size-4" />
-            <Trans>Capacity</Trans>
-         </div>
+      header: ({ column }) => <HeaderButton column={column} name={t`Capacity`} Icon={BinaryIcon} />,
+      cell: ({ getValue }) => (
+         <span className="ms-1.5">{getValue() as string}</span>
       ),
    },
    {
       accessorKey: "temperature",
-      header: () => (
-         <div className="flex items-center gap-2">
-            <ThermometerIcon className="size-4" />
-            <Trans>Temp</Trans>
-         </div>
-      ),
+      invertSorting: true,
+      header: ({ column }) => <HeaderButton column={column} name={t`Temp`} Icon={ThermometerIcon} />,
       cell: ({ getValue }) => {
          const { value, unit } = formatTemperature(getValue() as number)
-         return `${value} ${unit}`
+         return <span className="ms-1.5">{`${value} ${unit}`}</span>
       },
    },
    {
       accessorKey: "status",
-      header: () => (
-         <div className="flex items-center gap-2">
-            <Activity className="size-4" />
-            <Trans>Status</Trans>
-         </div>
-      ),
+      header: ({ column }) => <HeaderButton column={column} name={t`Status`} Icon={Activity} />,
       cell: ({ getValue }) => {
          const status = getValue() as string
          return (
-            <Badge
-               variant={status === "PASSED" ? "success" : status === "FAILED" ? "danger" : "warning"}
-            >
-               {status}
-            </Badge>
+            <div className="ms-1.5">
+               <Badge
+                  variant={status === "PASSED" ? "success" : status === "FAILED" ? "danger" : "warning"}
+               >
+                  {status}
+               </Badge>
+            </div>
          )
       },
    },
    {
       accessorKey: "deviceType",
-      header: () => (
-         <div className="flex items-center gap-1.5">
-            <ArrowLeftRightIcon className="size-4" />
-            <Trans>Type</Trans>
-         </div>
-      ),
+      sortingFn: (a, b) => a.original.deviceType.localeCompare(b.original.deviceType),
+      header: ({ column }) => <HeaderButton column={column} name={t`Type`} Icon={ArrowLeftRightIcon} />,
       cell: ({ getValue }) => (
-         <Badge variant="outline" className="uppercase">
-            {getValue() as string}
-         </Badge>
+         <div className="ms-1.5">
+            <Badge variant="outline" className="uppercase">
+               {getValue() as string}
+            </Badge>
+         </div>
       ),
    },
    {
       accessorKey: "powerOnHours",
-      header: () => (
-         <div className="flex items-center gap-1.5">
-            <Clock className="size-4" />
-            <Trans comment="Power On Time">Power On</Trans>
-         </div>
-      ),
+      invertSorting: true,
+      header: ({ column }) => <HeaderButton column={column} name={t({ message: "Power On", comment: "Power On Time" })} Icon={Clock} />,
       cell: ({ row }) => {
          const hours = row.getValue("powerOnHours") as number | undefined
          if (!hours && hours !== 0) {
             return (
-               <div className="text-sm text-muted-foreground">
+               <div className="text-sm text-muted-foreground ms-1.5">
                   N/A
                </div>
             )
          }
          const days = Math.floor(hours / 24)
          return (
-            <div className="text-sm">
+            <div className="text-sm ms-1.5">
                <div>{hours.toLocaleString()} hours</div>
                <div className="text-muted-foreground text-xs">{days} days</div>
             </div>
@@ -213,46 +192,55 @@ export const columns: ColumnDef<DiskInfo>[] = [
    },
    {
       accessorKey: "powerCycles",
-      header: () => (
-         <div className="flex items-center gap-1.5">
-            <RotateCwIcon className="size-4" />
-            <Trans comment="Power Cycles">Cycles</Trans>
-         </div>
-      ),
+      invertSorting: true,
+      header: ({ column }) => <HeaderButton column={column} name={t({ message: "Cycles", comment: "Power Cycles" })} Icon={RotateCwIcon} />,
       cell: ({ getValue }) => {
          const cycles = getValue() as number | undefined
          if (!cycles && cycles !== 0) {
             return (
-               <div className="text-muted-foreground">
+               <div className="text-muted-foreground ms-1.5">
                   N/A
                </div>
             )
          }
-         return cycles
+         return <span className="ms-1.5">{cycles}</span>
       },
    },
    {
       accessorKey: "serialNumber",
-      header: () => (
-         <div className="flex items-center gap-1.5">
-            <HashIcon className="size-4" />
-            <Trans>Serial Number</Trans>
-         </div>
+      sortingFn: (a, b) => a.original.serialNumber.localeCompare(b.original.serialNumber),
+      header: ({ column }) => <HeaderButton column={column} name={t`Serial Number`} Icon={HashIcon} />,
+      cell: ({ getValue }) => (
+         <span className="ms-1.5">{getValue() as string}</span>
       ),
    },
    {
       accessorKey: "firmwareVersion",
-      header: () => (
-         <div className="flex items-center gap-1.5">
-            <CpuIcon className="size-4" />
-            <Trans>Firmware</Trans>
-         </div>
+      sortingFn: (a, b) => a.original.firmwareVersion.localeCompare(b.original.firmwareVersion),
+      header: ({ column }) => <HeaderButton column={column} name={t`Firmware`} Icon={CpuIcon} />,
+      cell: ({ getValue }) => (
+         <span className="ms-1.5">{getValue() as string}</span>
       ),
    },
 ]
 
+function HeaderButton({ column, name, Icon }: { column: Column<DiskInfo>; name: string; Icon: React.ElementType }) {
+   const isSorted = column.getIsSorted()
+   return (
+      <Button
+         className={cn("h-9 px-3 flex items-center gap-2 duration-50", isSorted && "bg-accent/70 light:bg-accent text-accent-foreground/90")}
+         variant="ghost"
+         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+         {Icon && <Icon className="size-4" />}
+         {name}
+         <ArrowUpDownIcon className="size-4" />
+      </Button>
+   )
+}
+
 export default function DisksTable({ systemId }: { systemId: string }) {
-   // const [sorting, setSorting] = React.useState<SortingState>([{ id: "device", desc: false }])
+   const [sorting, setSorting] = React.useState<SortingState>([{ id: "device", desc: false }])
    const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
    const [rowSelection, setRowSelection] = React.useState({})
    const [smartData, setSmartData] = React.useState<Record<string, SmartData> | undefined>(undefined)
@@ -284,14 +272,14 @@ export default function DisksTable({ systemId }: { systemId: string }) {
    const table = useReactTable({
       data: diskData,
       columns: columns,
-      // onSortingChange: setSorting,
+      onSortingChange: setSorting,
       onColumnFiltersChange: setColumnFilters,
       getCoreRowModel: getCoreRowModel(),
       getSortedRowModel: getSortedRowModel(),
       getFilteredRowModel: getFilteredRowModel(),
       onRowSelectionChange: setRowSelection,
       state: {
-         // sorting,
+         sorting,
          columnFilters,
          rowSelection,
       },
@@ -331,7 +319,7 @@ export default function DisksTable({ systemId }: { systemId: string }) {
                         <TableRow key={headerGroup.id}>
                            {headerGroup.headers.map((header) => {
                               return (
-                                 <TableHead key={header.id}>
+                                 <TableHead key={header.id} className="px-2">
                                     {header.isPlaceholder
                                        ? null
                                        : flexRender(
