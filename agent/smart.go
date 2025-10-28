@@ -363,11 +363,11 @@ func (sm *SmartManager) parseScan(output []byte) ([]*DeviceInfo, bool) {
 
 	if err := json.Unmarshal(output, scan); err != nil {
 		slog.Debug("Failed to parse smartctl scan JSON", "err", err)
-		return false
+		return nil, false
 	}
 
 	if len(scan.Devices) == 0 {
-		return false
+		return nil, false
 	}
 
 	devices := make([]*DeviceInfo, 0, len(scan.Devices))
