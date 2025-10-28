@@ -3,6 +3,7 @@ package agent
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os/exec"
 	"slices"
@@ -60,7 +61,7 @@ func (sm *SmartManager) Refresh(forceScan bool) error {
 			continue
 		}
 		if err := sm.CollectSmart(deviceInfo); err != nil {
-			slog.Debug("smartctl collect failed, skipping", "device", deviceInfo.Name, "err", err)
+			slog.Debug("smartctl collect failed", "device", deviceInfo.Name, "err", err)
 			collectErr = err
 		}
 	}
@@ -131,18 +132,18 @@ func (sm *SmartManager) GetCurrentData() map[string]smart.SmartData {
 // If scan fails, return error
 // If scan succeeds, parse the output and update the SmartDevices slice
 func (sm *SmartManager) ScanDevices(force bool) error {
-	if !force && time.Since(sm.lastScanTime) < 10*time.Minute {
+	if !force && time.Since(sm.lastScanTime) < 30*time.Minute {
 		return nil
 	}
 	sm.lastScanTime = time.Now()
 
 	var configuredDevices []*DeviceInfo
 	if configuredRaw, ok := GetEnv("SMART_DEVICES"); ok {
+		slog.Info("SMART_DEVICES", "value", configuredRaw)
 		config := strings.TrimSpace(configuredRaw)
 		if config == "" {
 			return errNoValidSmartData
 		}
-		slog.Info("SMART_DEVICES", "config", config)
 
 		parsedDevices, err := sm.parseConfiguredDevices(config)
 		if err != nil {
@@ -174,8 +175,10 @@ func (sm *SmartManager) ScanDevices(force bool) error {
 
 	finalDevices := mergeDeviceLists(scannedDevices, configuredDevices)
 	sm.updateSmartDevices(finalDevices)
+
 	if len(finalDevices) == 0 {
 		if scanErr != nil {
+			slog.Debug("smartctl scan failed", "err", scanErr)
 			return scanErr
 		}
 		return errNoValidSmartData
@@ -197,7 +200,7 @@ func (sm *SmartManager) parseConfiguredDevices(config string) ([]*DeviceInfo, er
 
 		name := strings.TrimSpace(parts[0])
 		if name == "" {
-			return nil, fmt.Errorf("invalid SMART_DEVICES entry %q: device name is required", entry)
+			return nil, fmt.Errorf("invalid SMART_DEVICES entry %q", entry)
 		}
 
 		devType := ""
@@ -269,9 +272,12 @@ func (sm *SmartManager) parseSmartOutput(deviceInfo *DeviceInfo, output []byte) 
 				deviceInfo.Type = parser.Type
 			}
 			return true
+		} else {
+			slog.Debug("parser failed", "device", deviceInfo.Name, "parser", parser.Type)
 		}
 	}
 
+	slog.Debug("parsing failed", "device", deviceInfo.Name)
 	return false
 }
 
@@ -283,10 +289,12 @@ func (sm *SmartManager) parseSmartOutput(deviceInfo *DeviceInfo, output []byte) 
 // Uses -n standby to avoid waking up sleeping disks, but bypasses standby mode
 // for initial data collection when no cached data exists
 func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
+	// slog.Info("collecting SMART data", "device", deviceInfo.Name, "type", deviceInfo.Type, "has_existing_data", sm.hasDataForDevice(deviceInfo.Name))
+
 	// Check if we have any existing data for this device
 	hasExistingData := sm.hasDataForDevice(deviceInfo.Name)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
 	// Try with -n standby first if we have existing data
@@ -298,12 +306,10 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 	if exitErr, ok := err.(*exec.ExitError); ok && exitErr.ExitCode() == 2 {
 		if hasExistingData {
 			// Device is in standby and we have cached data, keep using cache
-			slog.Debug("device in standby mode, using cached data", "device", deviceInfo.Name)
 			return nil
 		}
 		// No cached data, need to collect initial data by bypassing standby
-		slog.Debug("device in standby but no cached data, collecting initial data", "device", deviceInfo.Name)
-		ctx2, cancel2 := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx2, cancel2 := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel2()
 		args = sm.smartctlArgs(deviceInfo, false)
 		cmd = exec.CommandContext(ctx2, "smartctl", args...)
@@ -314,10 +320,13 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 
 	if !hasValidData {
 		if err != nil {
+			slog.Debug("smartctl failed", "device", deviceInfo.Name, "err", err)
 			return err
 		}
+		slog.Debug("no valid SMART data found", "device", deviceInfo.Name)
 		return errNoValidSmartData
 	}
+
 	return nil
 }
 
@@ -362,17 +371,17 @@ func (sm *SmartManager) parseScan(output []byte) ([]*DeviceInfo, bool) {
 	scan := &scanOutput{}
 
 	if err := json.Unmarshal(output, scan); err != nil {
-		slog.Debug("Failed to parse smartctl scan JSON", "err", err)
 		return nil, false
 	}
 
 	if len(scan.Devices) == 0 {
+		slog.Debug("no devices found in smartctl scan")
 		return nil, false
 	}
 
 	devices := make([]*DeviceInfo, 0, len(scan.Devices))
 	for _, device := range scan.Devices {
-		// slog.Info("found device during scan", "name", device.Name, "type", device.Type, "protocol", device.Protocol)
+		slog.Debug("smartctl scan", "name", device.Name, "type", device.Type, "protocol", device.Protocol)
 		devices = append(devices, &DeviceInfo{
 			Name:     device.Name,
 			Type:     device.Type,
@@ -452,7 +461,7 @@ func (sm *SmartManager) updateSmartDevices(devices []*DeviceInfo) {
 	for key, data := range sm.SmartDataMap {
 		if data == nil {
 			delete(sm.SmartDataMap, key)
-continue
+			continue
 		}
 
 		if _, ok := validNames[data.DiskName]; ok {
@@ -496,13 +505,13 @@ func (sm *SmartManager) parseSmartForSata(output []byte) (bool, int) {
 	}
 
 	if data.SerialNumber == "" {
-		slog.Debug("device has no serial number, skipping", "device", data.Device.Name)
+		slog.Debug("no serial number", "device", data.Device.Name)
 		return false, data.Smartctl.ExitStatus
 	}
 
 	// Skip virtual devices (e.g., Kubernetes PVCs, QEMU, VirtualBox, etc.)
 	if sm.isVirtualDevice(&data) {
-		slog.Debug("skipping virtual device", "device", data.Device.Name, "model", data.ModelName)
+		slog.Debug("skipping smart", "device", data.Device.Name, "model", data.ModelName)
 		return false, data.Smartctl.ExitStatus
 	}
 
@@ -566,7 +575,7 @@ func (sm *SmartManager) parseSmartForScsi(output []byte) (bool, int) {
 	}
 
 	if data.SerialNumber == "" {
-		slog.Debug("scsi device has no serial number, skipping", "device", data.Device.Name)
+		slog.Debug("no serial number", "device", data.Device.Name)
 		return false, data.Smartctl.ExitStatus
 	}
 
@@ -633,7 +642,6 @@ func parseScsiGigabytesProcessed(value string) int64 {
 	normalized := strings.ReplaceAll(value, ",", "")
 	parsed, err := strconv.ParseInt(normalized, 10, 64)
 	if err != nil {
-		slog.Debug("failed to parse SCSI gigabytes processed", "value", value, "err", err)
 		return -1
 	}
 	return parsed
@@ -649,7 +657,7 @@ func (sm *SmartManager) parseSmartForNvme(output []byte) (bool, int) {
 	}
 
 	if data.SerialNumber == "" {
-		slog.Debug("device has no serial number, skipping", "device", data.Device.Name)
+		slog.Debug("no serial number", "device", data.Device.Name)
 		return false, data.Smartctl.ExitStatus
 	}
 
@@ -705,9 +713,11 @@ func (sm *SmartManager) parseSmartForNvme(output []byte) (bool, int) {
 // detectSmartctl checks if smartctl is installed, returns an error if not
 func (sm *SmartManager) detectSmartctl() error {
 	if _, err := exec.LookPath("smartctl"); err == nil {
+		slog.Debug("smartctl found")
 		return nil
 	}
-	return fmt.Errorf("smartctl not found")
+	slog.Debug("smartctl not found")
+	return errors.New("smartctl not found")
 }
 
 // NewSmartManager creates and initializes a new SmartManager
