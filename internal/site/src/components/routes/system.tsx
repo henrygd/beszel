@@ -45,6 +45,7 @@ import {
 	debounce,
 	decimalString,
 	formatBytes,
+	secondsToString,
 	getHostDisplayValue,
 	listen,
 	parseSemVer,
@@ -358,21 +359,13 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				value: system.info.k,
 			},
 		}
-		let uptime: React.ReactNode
+		let uptime: string
 		if (system.info.u < 3600) {
-			uptime = (
-				<Plural
-					value={Math.trunc(system.info.u / 60)}
-					one="# minute"
-					few="# minutes"
-					many="# minutes"
-					other="# minutes"
-				/>
-			)
-		} else if (system.info.u < 172800) {
-			uptime = <Plural value={Math.trunc(system.info.u / 3600)} one="# hour" other="# hours" />
+			uptime = secondsToString(system.info.u, "minute")
+		} else if (system.info.u * 360000) {
+			uptime = secondsToString(system.info.u, "hour")
 		} else {
-			uptime = <Plural value={Math.trunc(system.info?.u / 86400)} one="# day" other="# days" />
+			uptime = secondsToString(system.info.u, "day")
 		}
 		return [
 			{ value: getHostDisplayValue(system), Icon: GlobeIcon },
