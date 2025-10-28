@@ -159,7 +159,7 @@ func TestScanDevicesWithEnvOverride(t *testing.T) {
 		SmartDataMap: make(map[string]*smart.SmartData),
 	}
 
-	err := sm.ScanDevices()
+	err := sm.ScanDevices(true)
 	require.NoError(t, err)
 
 	require.Len(t, sm.SmartDevices, 2)
@@ -176,7 +176,7 @@ func TestScanDevicesWithEnvOverrideInvalid(t *testing.T) {
 		SmartDataMap: make(map[string]*smart.SmartData),
 	}
 
-	err := sm.ScanDevices()
+	err := sm.ScanDevices(true)
 	require.Error(t, err)
 }
 
@@ -187,7 +187,7 @@ func TestScanDevicesWithEnvOverrideEmpty(t *testing.T) {
 		SmartDataMap: make(map[string]*smart.SmartData),
 	}
 
-	err := sm.ScanDevices()
+	err := sm.ScanDevices(true)
 	assert.ErrorIs(t, err, errNoValidSmartData)
 	assert.Empty(t, sm.SmartDevices)
 }
@@ -315,8 +315,10 @@ func TestParseScan(t *testing.T) {
         ]
     }`)
 
-	hasData := sm.parseScan(scanJSON)
+	devices, hasData := sm.parseScan(scanJSON)
 	assert.True(t, hasData)
+
+	sm.updateSmartDevices(devices)
 
 	require.Len(t, sm.SmartDevices, 2)
 	assert.Equal(t, "/dev/sda", sm.SmartDevices[0].Name)
@@ -329,6 +331,36 @@ func TestParseScan(t *testing.T) {
 
 	_, staleExists := sm.SmartDataMap["serial-stale"]
 	assert.False(t, staleExists, "stale smart data entry should be removed when device path disappears")
+}
+
+func TestMergeDeviceListsPrefersConfigured(t *testing.T) {
+	scanned := []*DeviceInfo{
+		{Name: "/dev/sda", Type: "sat", InfoName: "scan-info", Protocol: "ATA"},
+		{Name: "/dev/nvme0", Type: "nvme"},
+	}
+
+	configured := []*DeviceInfo{
+		{Name: "/dev/sda", Type: "sat-override"},
+		{Name: "/dev/sdb", Type: "sat"},
+	}
+
+	merged := mergeDeviceLists(scanned, configured)
+	require.Len(t, merged, 3)
+
+	byName := make(map[string]*DeviceInfo, len(merged))
+	for _, dev := range merged {
+		byName[dev.Name] = dev
+	}
+
+	require.Contains(t, byName, "/dev/sda")
+	assert.Equal(t, "sat-override", byName["/dev/sda"].Type, "configured type should override scanned type")
+	assert.Equal(t, "scan-info", byName["/dev/sda"].InfoName, "scan metadata should be preserved when config does not provide it")
+
+	require.Contains(t, byName, "/dev/nvme0")
+	assert.Equal(t, "nvme", byName["/dev/nvme0"].Type)
+
+	require.Contains(t, byName, "/dev/sdb")
+	assert.Equal(t, "sat", byName["/dev/sdb"].Type)
 }
 
 func assertAttrValue(t *testing.T, attributes []*smart.SmartAttribute, name string, expected uint64) {
