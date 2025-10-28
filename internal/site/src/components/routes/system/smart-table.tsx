@@ -89,18 +89,25 @@ function formatCapacity(bytes: number): string {
 
 // Function to convert SmartData to DiskInfo
 function convertSmartDataToDiskInfo(smartDataRecord: Record<string, SmartData>): DiskInfo[] {
+   const unknown = "Unknown"
    return Object.entries(smartDataRecord).map(([key, smartData]) => ({
       device: smartData.dn || key,
-      model: smartData.mn || "Unknown",
-      serialNumber: smartData.sn || "Unknown",
-      firmwareVersion: smartData.fv || "Unknown",
-      capacity: smartData.c ? formatCapacity(smartData.c) : "Unknown",
-      status: smartData.s || "Unknown",
+      model: smartData.mn || unknown,
+      serialNumber: smartData.sn || unknown,
+      firmwareVersion: smartData.fv || unknown,
+      capacity: smartData.c ? formatCapacity(smartData.c) : unknown,
+      status: smartData.s || unknown,
       temperature: smartData.t || 0,
-      deviceType: smartData.dt || "Unknown",
+      deviceType: smartData.dt || unknown,
       // These fields need to be extracted from SmartAttribute if available
-      powerOnHours: smartData.a?.find(attr => attr.n.toLowerCase().includes("poweronhours") || attr.n.toLowerCase().includes("power_on_hours"))?.rv,
-      powerCycles: smartData.a?.find(attr => attr.n.toLowerCase().includes("power") && attr.n.toLowerCase().includes("cycle"))?.rv,
+      powerOnHours: smartData.a?.find(attr => {
+         const name = attr.n.toLowerCase();
+         return name.includes("poweronhours") || name.includes("power_on_hours");
+      })?.rv,
+      powerCycles: smartData.a?.find(attr => {
+         const name = attr.n.toLowerCase();
+         return (name.includes("power") && name.includes("cycle")) || name.includes("startstopcycles");
+      })?.rv,
    }))
 }
 
@@ -365,7 +372,7 @@ export default function DisksTable({ systemId }: { systemId: string }) {
                </Table>
             </div>
          </Card>
-         <DiskSheet disk={activeDisk} smartData={activeDisk && smartData ? Object.values(smartData).find(sd => sd.dn === activeDisk.device || sd.mn === activeDisk.model) : undefined} open={sheetOpen} onOpenChange={setSheetOpen} />
+         <DiskSheet disk={activeDisk} smartData={smartData?.[activeDisk?.serialNumber ?? ""]} open={sheetOpen} onOpenChange={setSheetOpen} />
       </div>
    )
 }
