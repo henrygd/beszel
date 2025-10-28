@@ -362,7 +362,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 		let uptime: string
 		if (system.info.u < 3600) {
 			uptime = secondsToString(system.info.u, "minute")
-		} else if (system.info.u * 360000) {
+		} else if (system.info.u < 360000) {
 			uptime = secondsToString(system.info.u, "hour")
 		} else {
 			uptime = secondsToString(system.info.u, "day")
