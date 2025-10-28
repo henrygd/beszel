@@ -5,6 +5,7 @@ const routes = {
 	containers: "/containers",
 	system: `/system/:id`,
 	settings: `/settings/:name?`,
+	application: `/application/:name?`,
 	forgot_password: `/forgot-password`,
 	request_otp: `/request-otp`,
 } as const

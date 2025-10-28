@@ -33,6 +33,17 @@ msgstr "{0, plural, one {# timme} other {# timmar}}"
 msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
 msgstr "{0, plural, one {# minut} few {# minuter} many {# minuter} other {# minuter}}"
 
+#. placeholder {0}: item.label
+#. placeholder {0}: segment.label
+#. placeholder {0}: theme === "dark" ? "Light Mode" : "Dark Mode"
+#: src/components/app-sidebar.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+msgid "{0}"
+msgstr ""
+
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -122,6 +133,7 @@ msgstr "Admin"
 msgid "Agent"
 msgstr "Agent"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
@@ -146,6 +158,10 @@ msgstr "Alla behållare"
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "Alla system"
+
+#: src/components/app-sidebar.tsx
+msgid "Application"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
@@ -189,6 +205,7 @@ msgstr "Genomsnittlig användning av {0}"
 msgid "Average utilization of GPU engines"
 msgstr "Genomsnittlig användning av GPU-motorer"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
@@ -622,6 +639,7 @@ msgid "Full"
 msgstr "Full"
 
 #. Context: General settings
+#: src/components/app-sidebar.tsx
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "General"
@@ -705,6 +723,7 @@ msgstr "Genomsnittlig belastning 5m"
 msgid "Load Avg"
 msgstr "Belastning"
 
+#: src/components/app-sidebar.tsx
 #: src/components/navbar.tsx
 msgid "Log Out"
 msgstr "Logga ut"
@@ -718,6 +737,7 @@ msgstr "Logga in"
 msgid "Login attempt failed"
 msgstr "Inloggningsförsök misslyckades"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
@@ -731,6 +751,10 @@ msgstr "Letar du istället efter var du skapar larm? Klicka på klockikonerna <0
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "Hantera visnings- och aviseringsinställningar."
+
+#: src/components/app-sidebar.tsx
+msgid "Manage Systems"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -808,6 +832,7 @@ msgstr "Inga S.M.A.R.T.-attribut tillgängliga för den här enheten."
 msgid "No systems found."
 msgstr "Inga system hittades."
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
@@ -1006,6 +1031,7 @@ msgstr "Spara inställningar"
 msgid "Save system"
 msgstr "Spara system"
 
+#: src/components/app-sidebar.tsx
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "Sök"
@@ -1030,6 +1056,7 @@ msgstr "Serienummer"
 msgid "Set percentage thresholds for meter colors."
 msgstr "Ställ in procentuella tröskelvärden för mätarfärger."
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1084,6 +1111,10 @@ msgstr "System"
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
 msgstr "Systembelastning över tid"
+
+#: src/components/app-sidebar.tsx
+msgid "System Metrics"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -1166,6 +1197,7 @@ msgstr "Växla tema"
 msgid "Token"
 msgstr "Token"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1257,6 +1289,10 @@ msgstr "Upp ({upSystemsLength})"
 msgid "Updated"
 msgstr "Uppdaterad"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Updated in real time. Click on a system to view information."
+msgstr ""
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
 msgstr "Ladda upp"
@@ -1281,6 +1317,7 @@ msgstr "Användning av rotpartitionen"
 msgid "Used"
 msgstr "Använt"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Users"
@@ -1342,6 +1379,7 @@ msgstr "Windows-kommando"
 msgid "Write"
 msgstr "Skriv"
 
+#: src/components/app-sidebar.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
 msgstr "YAML-konfiguration"

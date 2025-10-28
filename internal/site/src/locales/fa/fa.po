@@ -33,6 +33,17 @@ msgstr "{0, plural, one {# ساعت} other {# ساعت}}"
 msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
 msgstr "{0, plural, one {# دقیقه} few {# دقیقه} many {# دقیقه} other {# دقیقه}}"
 
+#. placeholder {0}: item.label
+#. placeholder {0}: segment.label
+#. placeholder {0}: theme === "dark" ? "Light Mode" : "Dark Mode"
+#: src/components/app-sidebar.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+msgid "{0}"
+msgstr ""
+
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -122,6 +133,7 @@ msgstr "مدیر"
 msgid "Agent"
 msgstr "عامل"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
@@ -146,6 +158,10 @@ msgstr "همه کانتینرها"
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "همه سیستم‌ها"
+
+#: src/components/app-sidebar.tsx
+msgid "Application"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
@@ -189,6 +205,7 @@ msgstr "میانگین استفاده از {0}"
 msgid "Average utilization of GPU engines"
 msgstr "میانگین استفاده از موتورهای GPU"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
@@ -288,8 +305,8 @@ msgid "Click on a device to view more information."
 msgstr "برای مشاهده اطلاعات بیشتر روی دستگاه کلیک کنید."
 
 #: src/components/systems-table/systems-table.tsx
-msgid "Click on a system to view more information."
-msgstr "برای مشاهده اطلاعات بیشتر روی یک سیستم کلیک کنید."
+#~ msgid "Click on a system to view more information."
+#~ msgstr "برای مشاهده اطلاعات بیشتر روی یک سیستم کلیک کنید."
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
@@ -622,6 +639,7 @@ msgid "Full"
 msgstr "پر"
 
 #. Context: General settings
+#: src/components/app-sidebar.tsx
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "General"
@@ -705,6 +723,7 @@ msgstr "میانگین بار ۵ دقیقه"
 msgid "Load Avg"
 msgstr "میانگین بار"
 
+#: src/components/app-sidebar.tsx
 #: src/components/navbar.tsx
 msgid "Log Out"
 msgstr "خروج"
@@ -718,6 +737,7 @@ msgstr "ورود"
 msgid "Login attempt failed"
 msgstr "تلاش برای ورود ناموفق بود"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
@@ -731,6 +751,10 @@ msgstr "به دنبال جایی برای ایجاد هشدار هستید؟ ر�
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "مدیریت تنظیمات نمایش و اعلان‌ها."
+
+#: src/components/app-sidebar.tsx
+msgid "Manage Systems"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -808,6 +832,7 @@ msgstr "هیچ ویژگی S.M.A.R.T برای این دستگاه موجود نی
 msgid "No systems found."
 msgstr "هیچ سیستمی یافت نشد."
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
@@ -1006,6 +1031,7 @@ msgstr "ذخیره تنظیمات"
 msgid "Save system"
 msgstr "ذخیره سیستم"
 
+#: src/components/app-sidebar.tsx
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "جستجو"
@@ -1030,6 +1056,7 @@ msgstr "شماره سریال"
 msgid "Set percentage thresholds for meter colors."
 msgstr "آستانه های درصدی را برای رنگ های متر تنظیم کنید."
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1084,6 +1111,10 @@ msgstr "سیستم"
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
 msgstr "میانگین بار سیستم در طول زمان"
+
+#: src/components/app-sidebar.tsx
+msgid "System Metrics"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -1166,6 +1197,7 @@ msgstr "تغییر تم"
 msgid "Token"
 msgstr "توکن"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1257,6 +1289,10 @@ msgstr "فعال ({upSystemsLength})"
 msgid "Updated"
 msgstr "به‌روزرسانی شد"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Updated in real time. Click on a system to view information."
+msgstr ""
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
 msgstr "آپلود"
@@ -1281,6 +1317,7 @@ msgstr "میزان استفاده از پارتیشن ریشه"
 msgid "Used"
 msgstr "استفاده شده"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Users"
@@ -1342,6 +1379,7 @@ msgstr "دستور Windows"
 msgid "Write"
 msgstr "نوشتن"
 
+#: src/components/app-sidebar.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
 msgstr "پیکربندی YAML"

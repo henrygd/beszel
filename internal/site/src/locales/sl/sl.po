@@ -33,6 +33,17 @@ msgstr "{0, plural, one {# ura} two {# uri} few {# ur} other {# ur}}"
 msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
 msgstr "{0, plural, one {# minuta} few {# minuti} many {# minut} other {# minut}}"
 
+#. placeholder {0}: item.label
+#. placeholder {0}: segment.label
+#. placeholder {0}: theme === "dark" ? "Light Mode" : "Dark Mode"
+#: src/components/app-sidebar.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+msgid "{0}"
+msgstr ""
+
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -122,6 +133,7 @@ msgstr "Administrator"
 msgid "Agent"
 msgstr "Agent"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
@@ -146,6 +158,10 @@ msgstr "Vsi kontejnerji"
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "Vsi sistemi"
+
+#: src/components/app-sidebar.tsx
+msgid "Application"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
@@ -189,6 +205,7 @@ msgstr "Povprečna poraba {0}"
 msgid "Average utilization of GPU engines"
 msgstr "Povprečna uporaba GPU motorjev"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
@@ -622,6 +639,7 @@ msgid "Full"
 msgstr "Polna"
 
 #. Context: General settings
+#: src/components/app-sidebar.tsx
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "General"
@@ -705,6 +723,7 @@ msgstr "Povprečna obremenitev 5m"
 msgid "Load Avg"
 msgstr "Povpr. obrem."
 
+#: src/components/app-sidebar.tsx
 #: src/components/navbar.tsx
 msgid "Log Out"
 msgstr "Odjava"
@@ -718,6 +737,7 @@ msgstr "Prijava"
 msgid "Login attempt failed"
 msgstr "Poskus prijave ni uspel"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
@@ -731,6 +751,10 @@ msgstr "Namesto tega iščete, kje ustvariti opozorila? Kliknite ikone zvonca <0
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "Upravljajte nastavitve prikaza in obvestil."
+
+#: src/components/app-sidebar.tsx
+msgid "Manage Systems"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -808,6 +832,7 @@ msgstr "Za to napravo ni na voljo atributov S.M.A.R.T."
 msgid "No systems found."
 msgstr "Ne najdem sistema."
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
@@ -1006,6 +1031,7 @@ msgstr "Shrani nastavitve"
 msgid "Save system"
 msgstr "Shrani sistem"
 
+#: src/components/app-sidebar.tsx
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "Iskanje"
@@ -1030,6 +1056,7 @@ msgstr "Serijska številka"
 msgid "Set percentage thresholds for meter colors."
 msgstr "Nastavite odstotne pragove za barve merilnikov."
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1084,6 +1111,10 @@ msgstr "Sistemsko"
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
 msgstr "Sistemske povprečne obremenitve skozi čas"
+
+#: src/components/app-sidebar.tsx
+msgid "System Metrics"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -1166,6 +1197,7 @@ msgstr "Obrni temo"
 msgid "Token"
 msgstr "Žeton"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1257,6 +1289,10 @@ msgstr "Delujoči ({upSystemsLength})"
 msgid "Updated"
 msgstr "Posodobljeno"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Updated in real time. Click on a system to view information."
+msgstr ""
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
 msgstr "Naloži"
@@ -1281,6 +1317,7 @@ msgstr "Uporaba korenske particije"
 msgid "Used"
 msgstr "Uporabljeno"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Users"
@@ -1342,6 +1379,7 @@ msgstr "Ukaz Windows"
 msgid "Write"
 msgstr "Pisanje"
 
+#: src/components/app-sidebar.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
 msgstr "YAML nastaviitev"

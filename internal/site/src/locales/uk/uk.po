@@ -33,6 +33,17 @@ msgstr "{0, plural, one {# година} few {# години} many {# годин
 msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
 msgstr "{0, plural, one {# хвилина} few {# хвилини} many {# хвилин} other {# хвилини}}"
 
+#. placeholder {0}: item.label
+#. placeholder {0}: segment.label
+#. placeholder {0}: theme === "dark" ? "Light Mode" : "Dark Mode"
+#: src/components/app-sidebar.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+msgid "{0}"
+msgstr ""
+
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -122,6 +133,7 @@ msgstr "Адміністратор"
 msgid "Agent"
 msgstr "Агент"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
@@ -146,6 +158,10 @@ msgstr "Всі контейнери"
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "Всі системи"
+
+#: src/components/app-sidebar.tsx
+msgid "Application"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
@@ -189,6 +205,7 @@ msgstr "Середнє використання {0}"
 msgid "Average utilization of GPU engines"
 msgstr "Середнє використання рушіїв GPU"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
@@ -288,8 +305,8 @@ msgid "Click on a device to view more information."
 msgstr "Натисніть на пристрій, щоб переглянути більше інформації."
 
 #: src/components/systems-table/systems-table.tsx
-msgid "Click on a system to view more information."
-msgstr "Натисніть на систему, щоб переглянути більше інформації."
+#~ msgid "Click on a system to view more information."
+#~ msgstr "Натисніть на систему, щоб переглянути більше інформації."
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
@@ -622,6 +639,7 @@ msgid "Full"
 msgstr "Повна"
 
 #. Context: General settings
+#: src/components/app-sidebar.tsx
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "General"
@@ -705,6 +723,7 @@ msgstr "Середнє навантаження за 5 хв"
 msgid "Load Avg"
 msgstr "Сер. навантаження"
 
+#: src/components/app-sidebar.tsx
 #: src/components/navbar.tsx
 msgid "Log Out"
 msgstr "Вийти"
@@ -718,6 +737,7 @@ msgstr "Увійти"
 msgid "Login attempt failed"
 msgstr "Спроба входу не вдалася"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
@@ -731,6 +751,10 @@ msgstr "Шукаєте, де створити сповіщення? Натисн
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "Керуйте параметрами відображення та сповіщень."
+
+#: src/components/app-sidebar.tsx
+msgid "Manage Systems"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -808,6 +832,7 @@ msgstr "Для цього пристрою немає доступних атр�
 msgid "No systems found."
 msgstr "Систем не знайдено."
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
@@ -1006,6 +1031,7 @@ msgstr "Зберегти налаштування"
 msgid "Save system"
 msgstr "Зберегти систему"
 
+#: src/components/app-sidebar.tsx
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "Пошук"
@@ -1030,6 +1056,7 @@ msgstr "Серійний номер"
 msgid "Set percentage thresholds for meter colors."
 msgstr "Встановіть відсоткові пороги для кольорів лічильників."
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1084,6 +1111,10 @@ msgstr "Система"
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
 msgstr "Середнє навантаження системи з часом"
+
+#: src/components/app-sidebar.tsx
+msgid "System Metrics"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -1166,6 +1197,7 @@ msgstr "Перемкнути тему"
 msgid "Token"
 msgstr "Токен"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1257,6 +1289,10 @@ msgstr "Працює ({upSystemsLength})"
 msgid "Updated"
 msgstr "Оновлено"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Updated in real time. Click on a system to view information."
+msgstr ""
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
 msgstr "Відвантажити"
@@ -1281,6 +1317,7 @@ msgstr "Використання кореневого розділу"
 msgid "Used"
 msgstr "Використано"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Users"
@@ -1342,6 +1379,7 @@ msgstr "Команда Windows"
 msgid "Write"
 msgstr "Запис"
 
+#: src/components/app-sidebar.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
 msgstr "Конфігурація YAML"

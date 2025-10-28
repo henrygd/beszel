@@ -33,6 +33,17 @@ msgstr "{0, plural, one {# giờ} other {# giờ}}"
 msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
 msgstr "{0, plural, one {# phút} few {# phút} many {# phút} other {# phút}}"
 
+#. placeholder {0}: item.label
+#. placeholder {0}: segment.label
+#. placeholder {0}: theme === "dark" ? "Light Mode" : "Dark Mode"
+#: src/components/app-sidebar.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+#: src/components/breadcrumbs.tsx
+msgid "{0}"
+msgstr ""
+
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -122,6 +133,7 @@ msgstr "Quản trị viên"
 msgid "Agent"
 msgstr "Tác nhân"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
@@ -146,6 +158,10 @@ msgstr "Tất cả container"
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
 msgstr "Tất cả Hệ thống"
+
+#: src/components/app-sidebar.tsx
+msgid "Application"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
@@ -189,6 +205,7 @@ msgstr "Mức sử dụng trung bình của {0}"
 msgid "Average utilization of GPU engines"
 msgstr "Mức sử dụng trung bình của động cơ GPU"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
@@ -288,8 +305,8 @@ msgid "Click on a device to view more information."
 msgstr "Nhấp vào thiết bị để xem thêm thông tin."
 
 #: src/components/systems-table/systems-table.tsx
-msgid "Click on a system to view more information."
-msgstr "Nhấp vào hệ thống để xem thêm thông tin."
+#~ msgid "Click on a system to view more information."
+#~ msgstr "Nhấp vào hệ thống để xem thêm thông tin."
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
@@ -622,6 +639,7 @@ msgid "Full"
 msgstr "Đầy pin"
 
 #. Context: General settings
+#: src/components/app-sidebar.tsx
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "General"
@@ -705,6 +723,7 @@ msgstr "Tải trung bình 5 phút"
 msgid "Load Avg"
 msgstr "Tải TB"
 
+#: src/components/app-sidebar.tsx
 #: src/components/navbar.tsx
 msgid "Log Out"
 msgstr "Đăng xuất"
@@ -718,6 +737,7 @@ msgstr "Đăng nhập"
 msgid "Login attempt failed"
 msgstr "Nỗ lực đăng nhập thất bại"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
@@ -731,6 +751,10 @@ msgstr "Thay vào đó, bạn đang tìm nơi để tạo cảnh báo? Nhấp v�
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "Quản lý tùy chọn hiển thị và thông báo."
+
+#: src/components/app-sidebar.tsx
+msgid "Manage Systems"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -808,6 +832,7 @@ msgstr "Không có thuộc tính S.M.A.R.T. nào khả dụng cho thiết bị n
 msgid "No systems found."
 msgstr "Không tìm thấy hệ thống."
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
@@ -1006,6 +1031,7 @@ msgstr "Lưu Cài đặt"
 msgid "Save system"
 msgstr "Lưu hệ thống"
 
+#: src/components/app-sidebar.tsx
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "Tìm kiếm"
@@ -1030,6 +1056,7 @@ msgstr "Số seri"
 msgid "Set percentage thresholds for meter colors."
 msgstr "Đặt ngưỡng cho màu sắc đồng hồ."
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1084,6 +1111,10 @@ msgstr "Hệ thống"
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
 msgstr "Tải trung bình của hệ thống theo thời gian"
+
+#: src/components/app-sidebar.tsx
+msgid "System Metrics"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -1166,6 +1197,7 @@ msgstr "Chuyển đổi chủ đề"
 msgid "Token"
 msgstr "Token"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1257,6 +1289,10 @@ msgstr "Hoạt động ({upSystemsLength})"
 msgid "Updated"
 msgstr "Đã cập nhật"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Updated in real time. Click on a system to view information."
+msgstr ""
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
 msgstr "Tải lên"
@@ -1281,6 +1317,7 @@ msgstr "Sử dụng phân vùng gốc"
 msgid "Used"
 msgstr "Đã sử dụng"
 
+#: src/components/app-sidebar.tsx
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Users"
@@ -1342,6 +1379,7 @@ msgstr "Lệnh Windows"
 msgid "Write"
 msgstr "Ghi"
 
+#: src/components/app-sidebar.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
 msgstr "Cấu hình YAML"
