@@ -453,7 +453,7 @@ func (sm *SmartManager) parseSmartForSata(output []byte) (bool, int) {
 			Value:      attr.Value,
 			Worst:      attr.Worst,
 			Threshold:  attr.Thresh,
-			RawValue:   attr.Raw.Value,
+			RawValue:   uint64(attr.Raw.Value),
 			RawString:  attr.Raw.String,
 			WhenFailed: attr.WhenFailed,
 		}
