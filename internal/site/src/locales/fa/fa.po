@@ -8,7 +8,7 @@ msgstr ""
 "Language: fa\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-25 23:16\n"
+"PO-Revision-Date: 2025-10-28 23:00\n"
 "Last-Translator: \n"
 "Language-Team: Persian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -18,26 +18,23 @@ msgstr ""
 "X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 32\n"
 
-#. placeholder {0}: Math.trunc(system.info?.u / 86400)
-#: src/components/routes/system.tsx
-msgid "{0, plural, one {# day} other {# days}}"
-msgstr "{0, plural, one {# روز} other {# روز}}"
-
-#. placeholder {0}: Math.trunc(system.info.u / 3600)
-#: src/components/routes/system.tsx
-msgid "{0, plural, one {# hour} other {# hours}}"
-msgstr "{0, plural, one {# ساعت} other {# ساعت}}"
-
-#. placeholder {0}: Math.trunc(system.info.u / 60)
-#: src/components/routes/system.tsx
-msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
-msgstr "{0, plural, one {# دقیقه} few {# دقیقه} many {# دقیقه} other {# دقیقه}}"
-
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
 msgstr "{0} از {1} ردیف انتخاب شده است."
+
+#: src/lib/utils.ts
+msgid "{count, plural, one {{countString} day} other {{countString} days}}"
+msgstr "{count, plural, one {{countString} روز} other {{countString} روز}}"
+
+#: src/lib/utils.ts
+msgid "{count, plural, one {{countString} hour} other {{countString} hours}}"
+msgstr "{count, plural, one {{countString} ساعت} other {{countString} ساعت}}"
+
+#: src/lib/utils.ts
+msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
+msgstr "{count, plural, one {{countString} دقیقه} few {{countString} دقیقه} many {{countString} دقیقه} other {{countString} دقیقه}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
