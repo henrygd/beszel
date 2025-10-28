@@ -22,6 +22,7 @@ type SmartManager struct {
 	SmartDataMap map[string]*smart.SmartData
 	SmartDevices []*DeviceInfo
 	refreshMutex sync.Mutex
+	lastScanTime time.Time
 }
 
 type scanOutput struct {
@@ -42,12 +43,12 @@ type DeviceInfo struct {
 
 var errNoValidSmartData = fmt.Errorf("no valid SMART data found") // Error for missing data
 
-// Refresh updates SMART data for all known devices on demand.
-func (sm *SmartManager) Refresh() error {
+// Refresh updates SMART data for all known devices
+func (sm *SmartManager) Refresh(forceScan bool) error {
 	sm.refreshMutex.Lock()
 	defer sm.refreshMutex.Unlock()
 
-	scanErr := sm.ScanDevices()
+	scanErr := sm.ScanDevices(false)
 	if scanErr != nil {
 		slog.Debug("smartctl scan failed", "err", scanErr)
 	}
@@ -129,7 +130,12 @@ func (sm *SmartManager) GetCurrentData() map[string]smart.SmartData {
 // Scan devices using `smartctl --scan -j`
 // If scan fails, return error
 // If scan succeeds, parse the output and update the SmartDevices slice
-func (sm *SmartManager) ScanDevices() error {
+func (sm *SmartManager) ScanDevices(force bool) error {
+	if !force && time.Since(sm.lastScanTime) < 10*time.Minute {
+		return nil
+	}
+	sm.lastScanTime = time.Now()
+
 	if configuredDevices, ok := GetEnv("SMART_DEVICES"); ok {
 		config := strings.TrimSpace(configuredDevices)
 		if config == "" {
@@ -232,7 +238,7 @@ func (sm *SmartManager) parseSmartOutput(deviceInfo *DeviceInfo, output []byte) 
 		Parse func([]byte) (bool, int)
 		Alias []string
 	}{
-		{Type: "nvme", Parse: sm.parseSmartForNvme, Alias: []string{"sntasmedia"}},
+		{Type: "nvme", Parse: sm.parseSmartForNvme, Alias: []string{"sntasmedia", "sntrealtek"}},
 		{Type: "sat", Parse: sm.parseSmartForSata, Alias: []string{"ata"}},
 		{Type: "scsi", Parse: sm.parseSmartForScsi},
 	}
@@ -368,11 +374,18 @@ func (sm *SmartManager) parseScan(output []byte) bool {
 		sm.SmartDevices = append(sm.SmartDevices, deviceInfo)
 		scannedDeviceNameMap[device.Name] = true
 	}
-	// remove devices that are not in the scan
-	for key := range sm.SmartDataMap {
-		if _, ok := scannedDeviceNameMap[key]; !ok {
+	// remove cached entries whose device path no longer appears in the scan
+	for key, data := range sm.SmartDataMap {
+		if data == nil {
 			delete(sm.SmartDataMap, key)
+continue
 		}
+
+		if _, ok := scannedDeviceNameMap[data.DiskName]; ok {
+			continue
+		}
+
+		delete(sm.SmartDataMap, key)
 	}
 
 	return true
@@ -424,7 +437,6 @@ func (sm *SmartManager) parseSmartForSata(output []byte) (bool, int) {
 	sm.Lock()
 	defer sm.Unlock()
 
-	// get device name (e.g. /dev/sda)
 	keyName := data.SerialNumber
 
 	// if device does not exist in SmartDataMap, initialize it
@@ -572,7 +584,6 @@ func (sm *SmartManager) parseSmartForNvme(output []byte) (bool, int) {
 	sm.Lock()
 	defer sm.Unlock()
 
-	// get device name (e.g. /dev/nvme0)
 	keyName := data.SerialNumber
 
 	// if device does not exist in SmartDataMap, initialize it

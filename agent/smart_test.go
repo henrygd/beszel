@@ -38,27 +38,14 @@ func TestParseSmartForScsi(t *testing.T) {
 		t.Fatalf("expected smart data entry for serial 9YHSDH9B")
 	}
 
-	if deviceData.ModelName != "YADRO WUH721414AL4204" {
-		t.Fatalf("unexpected model name: %s", deviceData.ModelName)
-	}
-	if deviceData.FirmwareVersion != "C240" {
-		t.Fatalf("unexpected firmware version: %s", deviceData.FirmwareVersion)
-	}
-	if deviceData.DiskName != "/dev/sde" {
-		t.Fatalf("unexpected disk name: %s", deviceData.DiskName)
-	}
-	if deviceData.DiskType != "scsi" {
-		t.Fatalf("unexpected disk type: %s", deviceData.DiskType)
-	}
-	if deviceData.Temperature != 34 {
-		t.Fatalf("unexpected temperature: %d", deviceData.Temperature)
-	}
-	if deviceData.SmartStatus != "PASSED" {
-		t.Fatalf("unexpected SMART status: %s", deviceData.SmartStatus)
-	}
-	if deviceData.Capacity != 14000519643136 {
-		t.Fatalf("unexpected capacity: %d", deviceData.Capacity)
-	}
+	assert.Equal(t, deviceData.ModelName, "YADRO WUH721414AL4204")
+	assert.Equal(t, deviceData.SerialNumber, "9YHSDH9B")
+	assert.Equal(t, deviceData.FirmwareVersion, "C240")
+	assert.Equal(t, deviceData.DiskName, "/dev/sde")
+	assert.Equal(t, deviceData.DiskType, "scsi")
+	assert.EqualValues(t, deviceData.Temperature, 34)
+	assert.Equal(t, deviceData.SmartStatus, "PASSED")
+	assert.EqualValues(t, deviceData.Capacity, 14000519643136)
 
 	if len(deviceData.Attributes) == 0 {
 		t.Fatalf("expected attributes to be populated")
@@ -316,7 +303,8 @@ func TestResolveRefreshError(t *testing.T) {
 func TestParseScan(t *testing.T) {
 	sm := &SmartManager{
 		SmartDataMap: map[string]*smart.SmartData{
-			"/dev/sdb": {},
+			"serial-active": {DiskName: "/dev/sda"},
+			"serial-stale":  {DiskName: "/dev/sdb"},
 		},
 	}
 
@@ -336,8 +324,11 @@ func TestParseScan(t *testing.T) {
 	assert.Equal(t, "/dev/nvme0", sm.SmartDevices[1].Name)
 	assert.Equal(t, "nvme", sm.SmartDevices[1].Type)
 
-	_, exists := sm.SmartDataMap["/dev/sdb"]
-	assert.False(t, exists, "stale smart data entry should be removed")
+	_, activeExists := sm.SmartDataMap["serial-active"]
+	assert.True(t, activeExists, "active smart data should be preserved when device path remains")
+
+	_, staleExists := sm.SmartDataMap["serial-stale"]
+	assert.False(t, staleExists, "stale smart data entry should be removed when device path disappears")
 }
 
 func assertAttrValue(t *testing.T, attributes []*smart.SmartAttribute, name string, expected uint64) {
