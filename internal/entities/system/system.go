@@ -156,4 +156,5 @@ type CombinedData struct {
 	Info            Info               `json:"info" cbor:"1,keyasint"`
 	Containers      []*container.Stats `json:"container" cbor:"2,keyasint"`
 	SystemdServices []*systemd.Service `json:"systemd,omitempty" cbor:"3,keyasint,omitempty"`
+	Timestamp       *time.Time         `json:"ts,omitempty" cbor:"4,keyasint,omitempty"`
 }
