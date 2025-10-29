@@ -28,7 +28,7 @@ export default memo(function GpuPowerChart({ chartData }: { chartData: ChartData
 
 		for (const stats of chartData.systemStats) {
 			const gpus = stats.stats?.g ?? {}
-			const data = { created: stats.created } as Record<string, GPUData | string>
+			const data = { timestamp: stats.timestamp } as Record<string, GPUData | string>
 			for (const id in gpus) {
 				const gpu = gpus[id] as GPUData
 				data[gpu.n] = gpu
@@ -91,7 +91,7 @@ export default memo(function GpuPowerChart({ chartData }: { chartData: ChartData
 						itemSorter={(a, b) => b.value - a.value}
 						content={
 							<ChartTooltipContent
-								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
+								labelFormatter={(_, data) => formatShortDate(data[0].payload.timestamp)}
 								contentFormatter={(item) => `${decimalString(item.value)}W`}
 								// indicator="line"
 							/>

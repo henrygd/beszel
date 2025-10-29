@@ -58,7 +58,7 @@ export default memo(function DiskChart({
 						animationDuration={150}
 						content={
 							<ChartTooltipContent
-								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
+								labelFormatter={(_, data) => formatShortDate(data[0].payload.timestamp)}
 								contentFormatter={({ value }) => {
 									const { value: convertedValue, unit } = formatBytes(value * 1024, false, Unit.Bytes, true)
 									return decimalString(convertedValue) + " " + unit

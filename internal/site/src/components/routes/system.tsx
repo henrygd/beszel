@@ -88,10 +88,10 @@ type ChartTimeData = {
 const cache = new Map<string, ChartTimeData | SystemStatsRecord[] | ContainerStatsRecord[]>()
 
 // create ticks and domain for charts
-function getTimeData(chartTime: ChartTimes, lastCreated: number) {
+function getTimeData(chartTime: ChartTimes, lastTimestamp: number) {
 	const cached = cache.get("td") as ChartTimeData | undefined
 	if (cached && cached.chartTime === chartTime) {
-		if (!lastCreated || cached.time >= lastCreated) {
+		if (!lastTimestamp || cached.time >= lastTimestamp) {
 			return cached.data
 		}
 	}
@@ -109,27 +109,27 @@ function getTimeData(chartTime: ChartTimes, lastCreated: number) {
 }
 
 // add empty values between records to make gaps if interval is too large
-function addEmptyValues<T extends { created: string | number | null }>(
+function addEmptyValues<T extends { timestamp: string | number | null }>(
 	prevRecords: T[],
 	newRecords: T[],
 	expectedInterval: number
 ): T[] {
 	const modifiedRecords: T[] = []
-	let prevTime = (prevRecords.at(-1)?.created ?? 0) as number
+	let prevTime = (prevRecords.at(-1)?.timestamp ?? 0) as number
 	for (let i = 0; i < newRecords.length; i++) {
 		const record = newRecords[i]
-		if (record.created !== null) {
-			record.created = new Date(record.created).getTime()
+		if (record.timestamp !== null) {
+			record.timestamp = new Date(record.timestamp).getTime()
 		}
-		if (prevTime && record.created !== null) {
-			const interval = record.created - prevTime
+		if (prevTime && record.timestamp !== null) {
+			const interval = record.timestamp - prevTime
 			// if interval is too large, add a null record
 			if (interval > expectedInterval / 2 + expectedInterval) {
-				modifiedRecords.push({ created: null, ...("stats" in record ? { stats: null } : {}) } as T)
+				modifiedRecords.push({ timestamp: null, ...("stats" in record ? { stats: null } : {}) } as T)
 			}
 		}
-		if (record.created !== null) {
-			prevTime = record.created
+		if (record.timestamp !== null) {
+			prevTime = record.timestamp
 		}
 		modifiedRecords.push(record)
 	}
@@ -142,15 +142,15 @@ async function getStats<T extends SystemStatsRecord | ContainerStatsRecord>(
 	chartTime: ChartTimes
 ): Promise<T[]> {
 	const cachedStats = cache.get(`${system.id}_${chartTime}_${collection}`) as T[] | undefined
-	const lastCached = cachedStats?.at(-1)?.created as number
+	const lastCached = cachedStats?.at(-1)?.timestamp as number
 	return await pb.collection<T>(collection).getFullList({
-		filter: pb.filter("system={:id} && created > {:created} && type={:type}", {
+		filter: pb.filter("system={:id} && timestamp > {:timestamp} && type={:type}", {
 			id: system.id,
-			created: getPbTimestamp(chartTime, lastCached ? new Date(lastCached + 1000) : undefined),
+			timestamp: getPbTimestamp(chartTime, lastCached ? new Date(lastCached + 1000) : undefined),
 			type: chartTimeData[chartTime].type,
 		}),
-		fields: "created,stats",
-		sort: "created",
+		fields: "timestamp,stats",
+		sort: "timestamp",
 	})
 }
 
@@ -231,14 +231,14 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				(data: { container: ContainerStatsRecord[]; info: SystemInfo; stats: SystemStats }) => {
 					if (data.container?.length > 0) {
 						const newContainerData = makeContainerData([
-							{ created: Date.now(), stats: data.container } as unknown as ContainerStatsRecord,
+							{ timestamp: Date.now(), stats: data.container } as unknown as ContainerStatsRecord,
 						])
 						setContainerData((prevData) => addEmptyValues(prevData, prevData.slice(-59).concat(newContainerData), 1000))
 					}
 					setSystemStats((prevStats) =>
 						addEmptyValues(
 							prevStats,
-							prevStats.slice(-59).concat({ created: Date.now(), stats: data.stats } as SystemStatsRecord),
+							prevStats.slice(-59).concat({ timestamp: Date.now(), stats: data.stats } as SystemStatsRecord),
 							1000
 						)
 					)
@@ -255,16 +255,16 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: not necessary
 	const chartData: ChartData = useMemo(() => {
-		const lastCreated = Math.max(
-			(systemStats.at(-1)?.created as number) ?? 0,
-			(containerData.at(-1)?.created as number) ?? 0
+		const lastTimestamp = Math.max(
+			(systemStats.at(-1)?.timestamp as number) ?? 0,
+			(containerData.at(-1)?.timestamp as number) ?? 0
 		)
 		return {
 			systemStats,
 			containerData,
 			chartTime,
 			orientation: direction === "rtl" ? "right" : "left",
-			...getTimeData(chartTime, lastCreated),
+			...getTimeData(chartTime, lastTimestamp),
 			agentVersion: parseSemVer(system?.info?.v),
 		}
 	}, [systemStats, containerData, direction])
@@ -275,15 +275,15 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	// make container stats for charts
 	const makeContainerData = useCallback((containers: ContainerStatsRecord[]) => {
 		const containerData = [] as ChartData["containerData"]
-		for (let { created, stats } of containers) {
-			if (!created) {
+		for (let { timestamp, stats } of containers) {
+			if (!timestamp) {
 				// @ts-expect-error add null value for gaps
-				containerData.push({ created: null })
+				containerData.push({ timestamp: null })
 				continue
 			}
-			created = new Date(created).getTime()
+			timestamp = new Date(timestamp).getTime()
 			// @ts-expect-error not dealing with this rn
-			const containerStats: ChartData["containerData"][0] = { created }
+			const containerStats: ChartData["containerData"][0] = { timestamp }
 			for (const container of stats) {
 				containerStats[container.n] = container
 			}
