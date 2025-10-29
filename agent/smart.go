@@ -335,8 +335,12 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 func (sm *SmartManager) smartctlArgs(deviceInfo *DeviceInfo, includeStandby bool) []string {
 	args := make([]string, 0, 7)
 
-	if deviceInfo != nil && deviceInfo.Type != "" {
-		args = append(args, "-d", deviceInfo.Type)
+	if deviceInfo != nil {
+		deviceType := strings.ToLower(deviceInfo.Type)
+		// types sometimes misidentified in scan; see github.com/henrygd/beszel/issues/1345
+		if deviceType != "" && deviceType != "scsi" && deviceType != "ata" {
+			args = append(args, "-d", deviceInfo.Type)
+		}
 	}
 
 	args = append(args, "-aj")
