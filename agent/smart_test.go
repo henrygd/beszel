@@ -344,7 +344,7 @@ func TestMergeDeviceListsPrefersConfigured(t *testing.T) {
 		{Name: "/dev/sdb", Type: "sat"},
 	}
 
-	merged := mergeDeviceLists(scanned, configured)
+	merged := mergeDeviceLists(nil, scanned, configured)
 	require.Len(t, merged, 3)
 
 	byName := make(map[string]*DeviceInfo, len(merged))
@@ -361,6 +361,79 @@ func TestMergeDeviceListsPrefersConfigured(t *testing.T) {
 
 	require.Contains(t, byName, "/dev/sdb")
 	assert.Equal(t, "sat", byName["/dev/sdb"].Type)
+}
+
+func TestMergeDeviceListsPreservesVerification(t *testing.T) {
+	existing := []*DeviceInfo{
+		{Name: "/dev/sda", Type: "sat+megaraid", parserType: "sat", typeVerified: true},
+	}
+
+	scanned := []*DeviceInfo{
+		{Name: "/dev/sda", Type: "nvme"},
+	}
+
+	merged := mergeDeviceLists(existing, scanned, nil)
+	require.Len(t, merged, 1)
+
+	device := merged[0]
+	assert.True(t, device.typeVerified)
+	assert.Equal(t, "sat", device.parserType)
+	assert.Equal(t, "sat+megaraid", device.Type)
+}
+
+func TestMergeDeviceListsUpdatesTypeWhenUnverified(t *testing.T) {
+	existing := []*DeviceInfo{
+		{Name: "/dev/sda", Type: "sat", parserType: "sat", typeVerified: false},
+	}
+
+	scanned := []*DeviceInfo{
+		{Name: "/dev/sda", Type: "nvme"},
+	}
+
+	merged := mergeDeviceLists(existing, scanned, nil)
+	require.Len(t, merged, 1)
+
+	device := merged[0]
+	assert.False(t, device.typeVerified)
+	assert.Equal(t, "nvme", device.Type)
+	assert.Equal(t, "", device.parserType)
+}
+
+func TestParseSmartOutputMarksVerified(t *testing.T) {
+	fixturePath := filepath.Join("test-data", "smart", "nvme0.json")
+	data, err := os.ReadFile(fixturePath)
+	require.NoError(t, err)
+
+	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
+	device := &DeviceInfo{Name: "/dev/nvme0"}
+
+	require.True(t, sm.parseSmartOutput(device, data))
+	assert.Equal(t, "nvme", device.Type)
+	assert.Equal(t, "nvme", device.parserType)
+	assert.True(t, device.typeVerified)
+}
+
+func TestParseSmartOutputKeepsCustomType(t *testing.T) {
+	fixturePath := filepath.Join("test-data", "smart", "sda.json")
+	data, err := os.ReadFile(fixturePath)
+	require.NoError(t, err)
+
+	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
+	device := &DeviceInfo{Name: "/dev/sda", Type: "sat+megaraid"}
+
+	require.True(t, sm.parseSmartOutput(device, data))
+	assert.Equal(t, "sat+megaraid", device.Type)
+	assert.Equal(t, "sat", device.parserType)
+	assert.True(t, device.typeVerified)
+}
+
+func TestParseSmartOutputResetsVerificationOnFailure(t *testing.T) {
+	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
+	device := &DeviceInfo{Name: "/dev/sda", Type: "sat", parserType: "sat", typeVerified: true}
+
+	assert.False(t, sm.parseSmartOutput(device, []byte("not json")))
+	assert.False(t, device.typeVerified)
+	assert.Equal(t, "sat", device.parserType)
 }
 
 func assertAttrValue(t *testing.T, attributes []*smart.SmartAttribute, name string, expected uint64) {
@@ -381,4 +454,94 @@ func findAttr(attributes []*smart.SmartAttribute, name string) *smart.SmartAttri
 		}
 	}
 	return nil
+}
+
+func TestIsVirtualDevice(t *testing.T) {
+	sm := &SmartManager{}
+
+	tests := []struct {
+		name     string
+		vendor   string
+		product  string
+		model    string
+		expected bool
+	}{
+		{"regular drive", "SEAGATE", "ST1000DM003", "ST1000DM003-1CH162", false},
+		{"qemu virtual", "QEMU", "QEMU HARDDISK", "QEMU HARDDISK", true},
+		{"virtualbox virtual", "VBOX", "HARDDISK", "VBOX HARDDISK", true},
+		{"vmware virtual", "VMWARE", "Virtual disk", "VMWARE Virtual disk", true},
+		{"virtual in model", "ATA", "VIRTUAL", "VIRTUAL DISK", true},
+		{"iet virtual", "IET", "VIRTUAL-DISK", "VIRTUAL-DISK", true},
+		{"hyper-v virtual", "MSFT", "VIRTUAL HD", "VIRTUAL HD", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			data := &smart.SmartInfoForSata{
+				ScsiVendor:  tt.vendor,
+				ScsiProduct: tt.product,
+				ModelName:   tt.model,
+			}
+			result := sm.isVirtualDevice(data)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestIsVirtualDeviceNvme(t *testing.T) {
+	sm := &SmartManager{}
+
+	tests := []struct {
+		name     string
+		model    string
+		expected bool
+	}{
+		{"regular nvme", "Samsung SSD 970 EVO Plus 1TB", false},
+		{"qemu virtual", "QEMU NVMe Ctrl", true},
+		{"virtualbox virtual", "VBOX NVMe", true},
+		{"vmware virtual", "VMWARE NVMe", true},
+		{"virtual in model", "Virtual NVMe Device", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			data := &smart.SmartInfoForNvme{
+				ModelName: tt.model,
+			}
+			result := sm.isVirtualDeviceNvme(data)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestIsVirtualDeviceScsi(t *testing.T) {
+	sm := &SmartManager{}
+
+	tests := []struct {
+		name     string
+		vendor   string
+		product  string
+		model    string
+		expected bool
+	}{
+		{"regular scsi", "SEAGATE", "ST1000DM003", "ST1000DM003-1CH162", false},
+		{"qemu virtual", "QEMU", "QEMU HARDDISK", "QEMU HARDDISK", true},
+		{"virtualbox virtual", "VBOX", "HARDDISK", "VBOX HARDDISK", true},
+		{"vmware virtual", "VMWARE", "Virtual disk", "VMWARE Virtual disk", true},
+		{"virtual in model", "ATA", "VIRTUAL", "VIRTUAL DISK", true},
+		{"iet virtual", "IET", "VIRTUAL-DISK", "VIRTUAL-DISK", true},
+		{"hyper-v virtual", "MSFT", "VIRTUAL HD", "VIRTUAL HD", true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			data := &smart.SmartInfoForScsi{
+				ScsiVendor:    tt.vendor,
+				ScsiProduct:   tt.product,
+				ScsiModelName: tt.model,
+			}
+			result := sm.isVirtualDeviceScsi(data)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
 }

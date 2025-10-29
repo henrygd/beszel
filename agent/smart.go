@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"os/exec"
-	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -40,6 +39,11 @@ type DeviceInfo struct {
 	Type     string `json:"type"`
 	InfoName string `json:"info_name"`
 	Protocol string `json:"protocol"`
+	// typeVerified reports whether we have already parsed SMART data for this device
+	// with the stored parserType. When true we can skip re-running the detection logic.
+	typeVerified bool
+	// parserType holds the parser type (nvme, sat, scsi) that last succeeded.
+	parserType string
 }
 
 var errNoValidSmartData = fmt.Errorf("no valid SMART data found") // Error for missing data
@@ -136,6 +140,7 @@ func (sm *SmartManager) ScanDevices(force bool) error {
 		return nil
 	}
 	sm.lastScanTime = time.Now()
+	currentDevices := sm.devicesSnapshot()
 
 	var configuredDevices []*DeviceInfo
 	if configuredRaw, ok := GetEnv("SMART_DEVICES"); ok {
@@ -173,7 +178,7 @@ func (sm *SmartManager) ScanDevices(force bool) error {
 		}
 	}
 
-	finalDevices := mergeDeviceLists(scannedDevices, configuredDevices)
+	finalDevices := mergeDeviceLists(currentDevices, scannedDevices, configuredDevices)
 	sm.updateSmartDevices(finalDevices)
 
 	if len(finalDevices) == 0 {
@@ -221,62 +226,140 @@ func (sm *SmartManager) parseConfiguredDevices(config string) ([]*DeviceInfo, er
 	return devices, nil
 }
 
-// detectDeviceType extracts the device type reported in smartctl JSON output.
-func detectDeviceType(output []byte) string {
-	var payload struct {
-		Device struct {
-			Type string `json:"type"`
-		} `json:"device"`
+// detectSmartOutputType inspects sections that are unique to each smartctl
+// JSON schema (NVMe, ATA/SATA, SCSI) to determine which parser should be used
+// when the reported device type is ambiguous or missing.
+func detectSmartOutputType(output []byte) string {
+	var hints struct {
+		AtaSmartAttributes            json.RawMessage `json:"ata_smart_attributes"`
+		NVMeSmartHealthInformationLog json.RawMessage `json:"nvme_smart_health_information_log"`
+		ScsiErrorCounterLog           json.RawMessage `json:"scsi_error_counter_log"`
 	}
 
-	if err := json.Unmarshal(output, &payload); err != nil {
+	if err := json.Unmarshal(output, &hints); err != nil {
 		return ""
 	}
 
-	return strings.ToLower(payload.Device.Type)
+	switch {
+	case hasJSONValue(hints.NVMeSmartHealthInformationLog):
+		return "nvme"
+	case hasJSONValue(hints.AtaSmartAttributes):
+		return "sat"
+	case hasJSONValue(hints.ScsiErrorCounterLog):
+		return "scsi"
+	default:
+		return "sat"
+	}
+}
+
+// hasJSONValue reports whether a JSON payload contains a concrete value. The
+// smartctl output often emits "null" for sections that do not apply, so we
+// only treat non-null content as a hint.
+func hasJSONValue(raw json.RawMessage) bool {
+	if len(raw) == 0 {
+		return false
+	}
+	trimmed := strings.TrimSpace(string(raw))
+	return trimmed != "" && trimmed != "null"
+}
+
+func normalizeParserType(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "nvme", "sntasmedia", "sntrealtek":
+		return "nvme"
+	case "sat", "ata":
+		return "sat"
+	case "scsi":
+		return "scsi"
+	default:
+		return strings.ToLower(strings.TrimSpace(value))
+	}
 }
 
 // parseSmartOutput attempts each SMART parser, optionally detecting the type when
 // it is not provided, and updates the device info when a parser succeeds.
 func (sm *SmartManager) parseSmartOutput(deviceInfo *DeviceInfo, output []byte) bool {
-	deviceType := strings.ToLower(deviceInfo.Type)
-
-	if deviceType == "" {
-		if detected := detectDeviceType(output); detected != "" {
-			deviceType = detected
-			deviceInfo.Type = detected
-		}
-	}
-
 	parsers := []struct {
 		Type  string
 		Parse func([]byte) (bool, int)
-		Alias []string
 	}{
-		{Type: "nvme", Parse: sm.parseSmartForNvme, Alias: []string{"sntasmedia", "sntrealtek"}},
-		{Type: "sat", Parse: sm.parseSmartForSata, Alias: []string{"ata"}},
+		{Type: "nvme", Parse: sm.parseSmartForNvme},
+		{Type: "sat", Parse: sm.parseSmartForSata},
 		{Type: "scsi", Parse: sm.parseSmartForScsi},
 	}
 
-	for _, parser := range parsers {
-		if deviceType != "" && deviceType != parser.Type {
-			aliasMatched := slices.Contains(parser.Alias, deviceType)
-			if !aliasMatched {
-				continue
-			}
-		}
-
-		hasData, _ := parser.Parse(output)
-		if hasData {
-			if deviceInfo.Type == "" {
-				deviceInfo.Type = parser.Type
-			}
-			return true
-		} else {
-			slog.Debug("parser failed", "device", deviceInfo.Name, "parser", parser.Type)
+	deviceType := normalizeParserType(deviceInfo.parserType)
+	if deviceType == "" {
+		deviceType = normalizeParserType(deviceInfo.Type)
+	}
+	if deviceInfo.parserType == "" {
+		switch deviceType {
+		case "nvme", "sat", "scsi":
+			deviceInfo.parserType = deviceType
 		}
 	}
 
+	// Only run the type detection when we do not yet know which parser works
+	// or the previous attempt failed.
+	needsDetection := deviceType == "" || !deviceInfo.typeVerified
+	if needsDetection {
+		structureType := detectSmartOutputType(output)
+		if deviceType != structureType {
+			deviceType = structureType
+			deviceInfo.parserType = structureType
+			deviceInfo.typeVerified = false
+		}
+		if deviceInfo.Type == "" || strings.EqualFold(deviceInfo.Type, structureType) {
+			deviceInfo.Type = structureType
+		}
+	}
+
+	// Try the most likely parser first, but keep the remaining parsers in reserve
+	// so an incorrect hint never leaves the device unparsed.
+	selectedParsers := make([]struct {
+		Type  string
+		Parse func([]byte) (bool, int)
+	}, 0, len(parsers))
+	if deviceType != "" {
+		for _, parser := range parsers {
+			if parser.Type == deviceType {
+				selectedParsers = append(selectedParsers, parser)
+				break
+			}
+		}
+	}
+	for _, parser := range parsers {
+		alreadySelected := false
+		for _, selected := range selectedParsers {
+			if selected.Type == parser.Type {
+				alreadySelected = true
+				break
+			}
+		}
+		if alreadySelected {
+			continue
+		}
+		selectedParsers = append(selectedParsers, parser)
+	}
+
+	// Try the selected parsers in order until we find one that succeeds.
+	for _, parser := range selectedParsers {
+		hasData, _ := parser.Parse(output)
+		if hasData {
+			deviceInfo.parserType = parser.Type
+			if deviceInfo.Type == "" || strings.EqualFold(deviceInfo.Type, parser.Type) {
+				deviceInfo.Type = parser.Type
+			}
+			// Remember that this parser is valid so future refreshes can bypass
+			// detection entirely.
+			deviceInfo.typeVerified = true
+			return true
+		}
+		slog.Debug("parser failed", "device", deviceInfo.Name, "parser", parser.Type)
+	}
+
+	// Leave verification false so the next pass will attempt detection again.
+	deviceInfo.typeVerified = false
 	slog.Debug("parsing failed", "device", deviceInfo.Name)
 	return false
 }
@@ -399,42 +482,84 @@ func (sm *SmartManager) parseScan(output []byte) ([]*DeviceInfo, bool) {
 
 // mergeDeviceLists combines scanned and configured SMART devices, preferring
 // configured SMART_DEVICES when both sources reference the same device.
-func mergeDeviceLists(scanned, configured []*DeviceInfo) []*DeviceInfo {
+func mergeDeviceLists(existing, scanned, configured []*DeviceInfo) []*DeviceInfo {
 	if len(scanned) == 0 && len(configured) == 0 {
-		return nil
+		return existing
+	}
+
+	// preserveVerifiedType copies the verified type/parser metadata from an existing
+	// device record so that subsequent scans/config updates never downgrade a
+	// previously verified device.
+	preserveVerifiedType := func(target, prev *DeviceInfo) {
+		if prev == nil || !prev.typeVerified {
+			return
+		}
+		target.Type = prev.Type
+		target.typeVerified = true
+		target.parserType = prev.parserType
+	}
+
+	existingIndex := make(map[string]*DeviceInfo, len(existing))
+	for _, dev := range existing {
+		if dev == nil || dev.Name == "" {
+			continue
+		}
+		existingIndex[dev.Name] = dev
 	}
 
 	finalDevices := make([]*DeviceInfo, 0, len(scanned)+len(configured))
 	deviceIndex := make(map[string]*DeviceInfo, len(scanned)+len(configured))
 
+	// Start with the newly scanned devices so we always surface fresh metadata,
+	// but ensure we retain any previously verified parser assignment.
 	for _, dev := range scanned {
 		if dev == nil || dev.Name == "" {
 			continue
 		}
+
+		// Work on a copy so we can safely adjust metadata without mutating the
+		// input slices that may be reused elsewhere.
 		copyDev := *dev
+		if prev := existingIndex[copyDev.Name]; prev != nil {
+			preserveVerifiedType(&copyDev, prev)
+		}
+
 		finalDevices = append(finalDevices, &copyDev)
 		deviceIndex[copyDev.Name] = finalDevices[len(finalDevices)-1]
 	}
 
+	// Merge configured devices on top so users can override scan results (except
+	// for verified type information).
 	for _, dev := range configured {
 		if dev == nil || dev.Name == "" {
 			continue
 		}
 
-		if existing, ok := deviceIndex[dev.Name]; ok {
-			if dev.Type != "" {
-				existing.Type = dev.Type
+		if existingDev, ok := deviceIndex[dev.Name]; ok {
+			// Only update the type if it has not been verified yet; otherwise we
+			// keep the existing verified metadata intact.
+			if dev.Type != "" && !existingDev.typeVerified {
+				newType := strings.TrimSpace(dev.Type)
+				existingDev.Type = newType
+				existingDev.typeVerified = false
+				existingDev.parserType = normalizeParserType(newType)
 			}
 			if dev.InfoName != "" {
-				existing.InfoName = dev.InfoName
+				existingDev.InfoName = dev.InfoName
 			}
 			if dev.Protocol != "" {
-				existing.Protocol = dev.Protocol
+				existingDev.Protocol = dev.Protocol
 			}
 			continue
 		}
 
 		copyDev := *dev
+		if prev := existingIndex[copyDev.Name]; prev != nil {
+			preserveVerifiedType(&copyDev, prev)
+		} else if copyDev.Type != "" {
+			copyDev.parserType = normalizeParserType(copyDev.Type)
+		}
+
 		finalDevices = append(finalDevices, &copyDev)
 		deviceIndex[copyDev.Name] = finalDevices[len(finalDevices)-1]
 	}
@@ -482,21 +607,40 @@ func (sm *SmartManager) isVirtualDevice(data *smart.SmartInfoForSata) bool {
 	productUpper := strings.ToUpper(data.ScsiProduct)
 	modelUpper := strings.ToUpper(data.ModelName)
 
-	switch {
-	case strings.Contains(vendorUpper, "IET"), // iSCSI Enterprise Target
-		strings.Contains(productUpper, "VIRTUAL"),
-		strings.Contains(productUpper, "QEMU"),
-		strings.Contains(productUpper, "VBOX"),
-		strings.Contains(productUpper, "VMWARE"),
-		strings.Contains(vendorUpper, "MSFT"), // Microsoft Hyper-V
-		strings.Contains(modelUpper, "VIRTUAL"),
-		strings.Contains(modelUpper, "QEMU"),
-		strings.Contains(modelUpper, "VBOX"),
-		strings.Contains(modelUpper, "VMWARE"):
-		return true
-	default:
-		return false
+	return sm.isVirtualDeviceFromStrings(vendorUpper, productUpper, modelUpper)
+}
+
+// isVirtualDeviceNvme checks if an NVMe device is a virtual disk that should be filtered out
+func (sm *SmartManager) isVirtualDeviceNvme(data *smart.SmartInfoForNvme) bool {
+	modelUpper := strings.ToUpper(data.ModelName)
+
+	return sm.isVirtualDeviceFromStrings(modelUpper)
+}
+
+// isVirtualDeviceScsi checks if a SCSI device is a virtual disk that should be filtered out
+func (sm *SmartManager) isVirtualDeviceScsi(data *smart.SmartInfoForScsi) bool {
+	vendorUpper := strings.ToUpper(data.ScsiVendor)
+	productUpper := strings.ToUpper(data.ScsiProduct)
+	modelUpper := strings.ToUpper(data.ScsiModelName)
+
+	return sm.isVirtualDeviceFromStrings(vendorUpper, productUpper, modelUpper)
+}
+
+// isVirtualDeviceFromStrings checks if any of the provided strings indicate a virtual device
+func (sm *SmartManager) isVirtualDeviceFromStrings(fields ...string) bool {
+	for _, field := range fields {
+		fieldUpper := strings.ToUpper(field)
+		switch {
+		case strings.Contains(fieldUpper, "IET"), // iSCSI Enterprise Target
+			strings.Contains(fieldUpper, "VIRTUAL"),
+			strings.Contains(fieldUpper, "QEMU"),
+			strings.Contains(fieldUpper, "VBOX"),
+			strings.Contains(fieldUpper, "VMWARE"),
+			strings.Contains(fieldUpper, "MSFT"): // Microsoft Hyper-V
+			return true
+		}
 	}
+	return false
 }
 
 // parseSmartForSata parses the output of smartctl --all -j for SATA/ATA devices and updates the SmartDataMap
@@ -583,6 +727,12 @@ func (sm *SmartManager) parseSmartForScsi(output []byte) (bool, int) {
 		return false, data.Smartctl.ExitStatus
 	}
 
+	// Skip virtual devices (e.g., Kubernetes PVCs, QEMU, VirtualBox, etc.)
+	if sm.isVirtualDeviceScsi(&data) {
+		slog.Debug("skipping smart", "device", data.Device.Name, "model", data.ScsiModelName)
+		return false, data.Smartctl.ExitStatus
+	}
+
 	sm.Lock()
 	defer sm.Unlock()
 
@@ -662,6 +812,12 @@ func (sm *SmartManager) parseSmartForNvme(output []byte) (bool, int) {
 
 	if data.SerialNumber == "" {
 		slog.Debug("no serial number", "device", data.Device.Name)
+		return false, data.Smartctl.ExitStatus
+	}
+
+	// Skip virtual devices (e.g., Kubernetes PVCs, QEMU, VirtualBox, etc.)
+	if sm.isVirtualDeviceNvme(data) {
+		slog.Debug("skipping smart", "device", data.Device.Name, "model", data.ModelName)
 		return false, data.Smartctl.ExitStatus
 	}
 
