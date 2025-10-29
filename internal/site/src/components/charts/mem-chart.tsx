@@ -55,7 +55,7 @@ export default memo(function MemChart({ chartData, showMax }: { chartData: Chart
 							<ChartTooltipContent
 								// @ts-expect-error
 								itemSorter={(a, b) => a.order - b.order}
-								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
+								labelFormatter={(_, data) => formatShortDate(data[0].payload.timestamp)}
 								contentFormatter={({ value }) => {
 									// mem values are supplied as GB
 									const { value: convertedValue, unit } = formatBytes(value * 1024, false, Unit.Bytes, true)

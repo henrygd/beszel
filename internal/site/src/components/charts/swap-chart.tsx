@@ -44,7 +44,7 @@ export default memo(function SwapChart({ chartData }: { chartData: ChartData }) 
 						animationDuration={150}
 						content={
 							<ChartTooltipContent
-								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
+								labelFormatter={(_, data) => formatShortDate(data[0].payload.timestamp)}
 								contentFormatter={({ value }) => {
 									// mem values are supplied as GB
 									const { value: convertedValue, unit } = formatBytes(value * 1024, false, userSettings.unitDisk, true)

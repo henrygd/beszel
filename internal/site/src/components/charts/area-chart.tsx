@@ -79,7 +79,7 @@ export default function AreaChartDefault({
 							itemSorter={itemSorter}
 							content={
 								<ChartTooltipContent
-									labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
+									labelFormatter={(_, data) => formatShortDate(data[0].payload.timestamp)}
 									contentFormatter={contentFormatter}
 								/>
 							}

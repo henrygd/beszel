@@ -194,7 +194,7 @@ export interface ExtraFsStats {
 export interface ContainerStatsRecord extends RecordModel {
 	system: string
 	stats: ContainerStats[]
-	created: string | number
+	timestamp: string | number
 }
 
 interface ContainerStats {
@@ -213,7 +213,7 @@ interface ContainerStats {
 export interface SystemStatsRecord extends RecordModel {
 	system: string
 	stats: SystemStats
-	created: string | number
+	timestamp: string | number
 }
 
 export interface AlertRecord extends RecordModel {
@@ -232,7 +232,7 @@ export interface AlertsHistoryRecord extends RecordModel {
 	system: string
 	name: string
 	val: number
-	created: string
+	timestamp: string
 	resolved?: string | null
 }
 
@@ -276,9 +276,9 @@ export interface UserSettings {
 }
 
 type ChartDataContainer = {
-	created: number | null
+	timestamp: number | null
 } & {
-	[key: string]: key extends "created" ? never : ContainerStats
+	[key: string]: key extends "timestamp" ? never : ContainerStats
 }
 
 export interface SemVer {

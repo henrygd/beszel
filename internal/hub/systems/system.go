@@ -145,6 +145,7 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		}
 
 		systemStatsRecord := core.NewRecord(systemStatsCollection)
+		systemStatsRecord.Set("timestamp", data.Timestamp)
 		systemStatsRecord.Set("system", systemRecord.Id)
 		systemStatsRecord.Set("stats", data.Stats)
 		systemStatsRecord.Set("type", "1m")
@@ -164,6 +165,7 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 				return err
 			}
 			containerStatsRecord := core.NewRecord(containerStatsCollection)
+			containerStatsRecord.Set("timestamp", data.Timestamp)
 			containerStatsRecord.Set("system", systemRecord.Id)
 			containerStatsRecord.Set("stats", data.Containers)
 			containerStatsRecord.Set("type", "1m")
