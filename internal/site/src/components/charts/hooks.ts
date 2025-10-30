@@ -123,3 +123,25 @@ export function useNetworkInterfaces(interfaces: SystemStats["ni"]) {
 		},
 	}
 }
+
+// Assures consistent colors for CPU cores
+export function useCpuCores(cores: SystemStats["cpuc"]) {
+	const keys = Object.keys(cores ?? {})
+	// Sort cores by name (cpu0, cpu1, cpu2, etc.)
+	const sortedKeys = keys.sort((a, b) => {
+		const numA = Number.parseInt(a.replace("cpu", ""))
+		const numB = Number.parseInt(b.replace("cpu", ""))
+		return numA - numB
+	})
+	return {
+		length: sortedKeys.length,
+		data: (index = 0) => {
+			return sortedKeys.map((key) => ({
+				label: key,
+				dataKey: ({ stats }: SystemStatsRecord) => stats?.cpuc?.[key]?.[index],
+				color: `hsl(${(((sortedKeys.indexOf(key) * 360) / sortedKeys.length) % 360)}, 70%, 50%)`,
+				opacity: 0.3,
+			}))
+		},
+	}
+}

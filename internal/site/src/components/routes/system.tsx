@@ -73,6 +73,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import NetworkSheet from "./system/network-sheet"
+import CpuCoresSheet from "./system/cpu-cores-sheet"
 import LineChartDefault from "../charts/line-chart"
 
 
@@ -585,7 +586,12 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						grid={grid}
 						title={t`CPU Usage`}
 						description={t`Average system-wide CPU utilization`}
-						cornerEl={maxValSelect}
+						cornerEl={
+							<>
+								{maxValSelect}
+								<CpuCoresSheet chartData={chartData} dataEmpty={dataEmpty} grid={grid} maxValues={maxValues} />
+							</>
+						}
 						legend={true}
 					>
 						<AreaChartDefault

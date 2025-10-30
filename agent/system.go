@@ -95,6 +95,11 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 		slog.Error("Error getting cpu metrics", "err", err)
 	}
 
+	// per-core cpu metrics
+	if perCoreCpuMetrics, err := getPerCoreCpuMetrics(cacheTimeMs); err == nil && len(perCoreCpuMetrics) > 0 {
+		systemStats.CpuCores = perCoreCpuMetrics
+	}
+
 	// load average
 	if avgstat, err := load.Avg(); err == nil {
 		systemStats.LoadAvg[0] = avgstat.Load1
