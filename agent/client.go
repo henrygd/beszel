@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"log"
 	"log/slog"
 	"net"
 	"net/http"
@@ -270,9 +269,8 @@ func (client *WebSocketClient) sendResponse(data any, requestID *uint32) error {
 
 		// Set the appropriate typed field based on data type
 		switch v := data.(type) {
-		case *system.CombinedData:
+		case []*system.CombinedData:
 			response.SystemData = v
-			log.Println(v.Timestamp)
 		case *common.FingerprintResponse:
 			response.Fingerprint = v
 		case string:

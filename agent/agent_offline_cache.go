@@ -22,16 +22,16 @@ func (c *systemOfflineCache) GetAll() (result []*system.CombinedData) {
 	c.Lock()
 	defer c.Unlock()
 
-	copy(result, c.cache)
-	c.cache = make([]*system.CombinedData, 0)
+	result = append(result, c.cache...)
+	c.cache = c.cache[:0]
 
 	return result
 }
 
 // Add appends a new combined data snapshot to the cache.
-func (c *systemOfflineCache) Add(data *system.CombinedData) {
+func (c *systemOfflineCache) Add(data system.CombinedData) {
 	c.Lock()
 	defer c.Unlock()
 
-	c.cache = append(c.cache, data)
+	c.cache = append(c.cache, &data)
 }
