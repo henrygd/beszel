@@ -8,7 +8,7 @@ msgstr ""
 "Language: es\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-28 23:00\n"
+"PO-Revision-Date: 2025-10-30 21:52\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -278,7 +278,7 @@ msgstr "Verifica tu servicio de notificaciones"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
-msgstr "Haz clic en un contenedor para ver más información."
+msgstr "Haga clic en un contenedor para ver más información."
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
@@ -525,7 +525,7 @@ msgstr "Ingresa dirección de correo..."
 
 #: src/components/login/otp-forms.tsx
 msgid "Enter your one-time password."
-msgstr "Ingresa tu contraseña de un solo uso."
+msgstr "Ingrese su contraseña de un solo uso."
 
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
