@@ -54,7 +54,7 @@ type dockerManager struct {
 	buf                 *bytes.Buffer               // Buffer to store and read response bodies
 	decoder             *json.Decoder               // Reusable JSON decoder that reads from buf
 	apiStats            *container.ApiStats         // Reusable API stats object
-	containerExclude    []string                    // Patterns to exclude containers by name (supports wildcards)
+	excludeContainers   []string                    // Patterns to exclude containers by name
 
 	// Cache-time-aware tracking for CPU stats (similar to cpu.go)
 	// Maps cache time intervals to container-specific CPU usage tracking
@@ -96,13 +96,12 @@ func (d *dockerManager) dequeue() {
 	}
 }
 
-// shouldExcludeContainer checks if a container name matches any exclusion pattern using path.Match
+// shouldExcludeContainer checks if a container name matches any exclusion pattern
 func (dm *dockerManager) shouldExcludeContainer(name string) bool {
-	if len(dm.containerExclude) == 0 {
+	if len(dm.excludeContainers) == 0 {
 		return false
 	}
-	for _, pattern := range dm.containerExclude {
-		// Use path.Match for wildcard support
+	for _, pattern := range dm.excludeContainers {
 		if match, _ := path.Match(pattern, name); match {
 			return true
 		}
@@ -138,15 +137,9 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 	for _, ctr := range dm.apiContainerList {
 		ctr.IdShort = ctr.Id[:12]
 
-		// Extract container name and check if it should be excluded
-		name := ctr.Names[0]
-		if len(name) > 0 && name[0] == '/' {
-			name = name[1:]
-		}
-
 		// Skip this container if it matches the exclusion pattern
-		if dm.shouldExcludeContainer(name) {
-			slog.Debug("Excluding container", "name", name, "patterns", dm.containerExclude)
+		if dm.shouldExcludeContainer(ctr.Names[0][1:]) {
+			slog.Debug("Excluding container", "name", ctr.Names[0][1:])
 			continue
 		}
 
@@ -532,20 +525,17 @@ func newDockerManager(a *Agent) *dockerManager {
 		userAgent: "Docker-Client/",
 	}
 
-	// Read container exclusion patterns from environment variable (comma-separated, supports wildcards)
-	var containerExclude []string
-	if excludeStr, set := GetEnv("CONTAINER_EXCLUDE"); set && excludeStr != "" {
-		// Split by comma and trim whitespace
-		parts := strings.Split(excludeStr, ",")
-		for _, part := range parts {
+	// Read container exclusion patterns from environment variable
+	var excludeContainers []string
+	if excludeStr, set := GetEnv("EXCLUDE_CONTAINERS"); set && excludeStr != "" {
+		parts := strings.SplitSeq(excludeStr, ",")
+		for part := range parts {
 			trimmed := strings.TrimSpace(part)
 			if trimmed != "" {
-				containerExclude = append(containerExclude, trimmed)
+				excludeContainers = append(excludeContainers, trimmed)
 			}
 		}
-		if len(containerExclude) > 0 {
-			slog.Info("Container exclusion patterns set", "patterns", containerExclude)
-		}
+		slog.Info("EXCLUDE_CONTAINERS", "patterns", excludeContainers)
 	}
 
 	manager := &dockerManager{
@@ -557,7 +547,7 @@ func newDockerManager(a *Agent) *dockerManager {
 		sem:               make(chan struct{}, 5),
 		apiContainerList:  []*container.ApiInfo{},
 		apiStats:          &container.ApiStats{},
-		containerExclude:  containerExclude,
+		excludeContainers: excludeContainers,
 
 		// Initialize cache-time-aware tracking structures
 		lastCpuContainer:    make(map[uint16]map[string]uint64),
