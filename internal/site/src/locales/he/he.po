@@ -8,7 +8,7 @@ msgstr ""
 "Language: he\n"
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: \n"
+"PO-Revision-Date: 2025-10-30 20:47\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Plural-Forms: \n"
@@ -33,7 +33,7 @@ msgstr "{count, plural, one {{countString} דקה} two {{countString} דקות} 
 
 #: src/lib/utils.ts
 msgid "1 hour"
-msgstr "שעה אחת"
+msgstr "שעה"
 
 #. Load average
 #: src/components/charts/load-average-chart.tsx
@@ -1345,3 +1345,4 @@ msgstr "תצורת YAML"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "הגדרות המשתמש שלך עודכנו."
+
