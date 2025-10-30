@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"strings"
 	"sync"
 	"time"
@@ -53,7 +54,7 @@ type dockerManager struct {
 	buf                 *bytes.Buffer               // Buffer to store and read response bodies
 	decoder             *json.Decoder               // Reusable JSON decoder that reads from buf
 	apiStats            *container.ApiStats         // Reusable API stats object
-	containerExclude    []string                    // Patterns to exclude containers by name
+	containerExclude    []string                    // Patterns to exclude containers by name (supports wildcards)
 
 	// Cache-time-aware tracking for CPU stats (similar to cpu.go)
 	// Maps cache time intervals to container-specific CPU usage tracking
@@ -95,13 +96,14 @@ func (d *dockerManager) dequeue() {
 	}
 }
 
-// shouldExcludeContainer checks if a container name matches any exclusion pattern
+// shouldExcludeContainer checks if a container name matches any exclusion pattern using path.Match
 func (dm *dockerManager) shouldExcludeContainer(name string) bool {
 	if len(dm.containerExclude) == 0 {
 		return false
 	}
 	for _, pattern := range dm.containerExclude {
-		if strings.Contains(name, pattern) {
+		// Use path.Match for wildcard support
+		if match, _ := path.Match(pattern, name); match {
 			return true
 		}
 	}
@@ -530,7 +532,7 @@ func newDockerManager(a *Agent) *dockerManager {
 		userAgent: "Docker-Client/",
 	}
 
-	// Read container exclusion patterns from environment variable (comma-separated)
+	// Read container exclusion patterns from environment variable (comma-separated, supports wildcards)
 	var containerExclude []string
 	if excludeStr, set := GetEnv("CONTAINER_EXCLUDE"); set && excludeStr != "" {
 		// Split by comma and trim whitespace
