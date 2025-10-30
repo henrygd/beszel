@@ -8,7 +8,7 @@ msgstr ""
 "Language: ar\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-28 23:00\n"
+"PO-Revision-Date: 2025-10-30 21:52\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
@@ -1199,7 +1199,7 @@ msgstr "يتم التفعيل عندما يتجاوز متوسط التحميل 
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
-msgstr "يتم التفعيل عندما ��تجاوز أي مستشعر عتبة معينة"
+msgstr "يتم التفعيل عندما يتجاوز أي مستشعر عتبة معينة"
 
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
