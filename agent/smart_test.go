@@ -89,6 +89,49 @@ func TestParseSmartForSata(t *testing.T) {
 	}
 }
 
+func TestParseSmartForSataParentheticalRawValue(t *testing.T) {
+	jsonPayload := []byte(`{
+		"smartctl": {"exit_status": 0},
+		"device": {"name": "/dev/sdz", "type": "sat"},
+		"model_name": "Example",
+		"serial_number": "PARENTHESES123",
+		"firmware_version": "1.0",
+		"user_capacity": {"bytes": 1024},
+		"smart_status": {"passed": true},
+		"temperature": {"current": 25},
+		"ata_smart_attributes": {
+			"table": [
+				{
+					"id": 9,
+					"name": "Power_On_Hours",
+					"value": 93,
+					"worst": 55,
+					"thresh": 0,
+					"when_failed": "",
+                    "raw": {
+                        "value": 57891864217128,
+                        "string": "39925 (212 206 0)"
+                    }
+				}
+			]
+		}
+	}`)
+
+	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
+
+	hasData, exitStatus := sm.parseSmartForSata(jsonPayload)
+	require.True(t, hasData)
+	assert.Equal(t, 0, exitStatus)
+
+	data, ok := sm.SmartDataMap["PARENTHESES123"]
+	require.True(t, ok)
+	require.Len(t, data.Attributes, 1)
+
+	attr := data.Attributes[0]
+	assert.Equal(t, uint64(39925), attr.RawValue)
+	assert.Equal(t, "39925 (212 206 0)", attr.RawString)
+}
+
 func TestParseSmartForNvme(t *testing.T) {
 	fixturePath := filepath.Join("test-data", "smart", "nvme0.json")
 	data, err := os.ReadFile(fixturePath)
@@ -198,7 +241,7 @@ func TestSmartctlArgsWithoutType(t *testing.T) {
 	sm := &SmartManager{}
 
 	args := sm.smartctlArgs(device, true)
-	assert.Equal(t, []string{"-aj", "-n", "standby", "/dev/sda"}, args)
+	assert.Equal(t, []string{"-a", "--json=c", "-n", "standby", "/dev/sda"}, args)
 }
 
 func TestSmartctlArgs(t *testing.T) {
@@ -206,17 +249,17 @@ func TestSmartctlArgs(t *testing.T) {
 
 	sataDevice := &DeviceInfo{Name: "/dev/sda", Type: "sat"}
 	assert.Equal(t,
-		[]string{"-d", "sat", "-aj", "-n", "standby", "/dev/sda"},
+		[]string{"-d", "sat", "-a", "--json=c", "-n", "standby", "/dev/sda"},
 		sm.smartctlArgs(sataDevice, true),
 	)
 
 	assert.Equal(t,
-		[]string{"-d", "sat", "-aj", "/dev/sda"},
+		[]string{"-d", "sat", "-a", "--json=c", "/dev/sda"},
 		sm.smartctlArgs(sataDevice, false),
 	)
 
 	assert.Equal(t,
-		[]string{"-aj", "-n", "standby"},
+		[]string{"-a", "--json=c", "-n", "standby"},
 		sm.smartctlArgs(nil, true),
 	)
 }

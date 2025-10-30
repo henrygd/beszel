@@ -1,6 +1,7 @@
 package smart
 
 import (
+	"encoding/json"
 	"strconv"
 	"strings"
 )
@@ -160,6 +161,33 @@ type RawValue struct {
 	String string        `json:"string"`
 }
 
+func (r *RawValue) UnmarshalJSON(data []byte) error {
+	var tmp struct {
+		Value  json.RawMessage `json:"value"`
+		String string          `json:"string"`
+	}
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	if len(tmp.Value) > 0 {
+		if err := r.Value.UnmarshalJSON(tmp.Value); err != nil {
+			return err
+		}
+	} else {
+		r.Value = 0
+	}
+
+	r.String = tmp.String
+
+	if parsed, ok := ParseSmartRawValueString(tmp.String); ok {
+		r.Value = SmartRawValue(parsed)
+	}
+
+	return nil
+}
+
 type SmartRawValue uint64
 
 // handles when drives report strings like "0h+0m+0.000s" or "7344 (253d 8h)" for power on hours
@@ -170,61 +198,73 @@ func (v *SmartRawValue) UnmarshalJSON(data []byte) error {
 		return nil
 	}
 
-	if trimmed[0] != '"' {
-		parsed, err := strconv.ParseUint(trimmed, 0, 64)
+	if trimmed[0] == '"' {
+		valueStr, err := strconv.Unquote(trimmed)
 		if err != nil {
 			return err
 		}
-		*v = SmartRawValue(parsed)
-		return nil
-	}
-
-	valueStr, err := strconv.Unquote(trimmed)
-	if err != nil {
-		return err
-	}
-	if valueStr == "" {
+		parsed, ok := ParseSmartRawValueString(valueStr)
+		if ok {
+			*v = SmartRawValue(parsed)
+			return nil
+		}
 		*v = 0
 		return nil
 	}
 
-	if parsed, err := strconv.ParseUint(valueStr, 0, 64); err == nil {
+	if parsed, err := strconv.ParseUint(trimmed, 0, 64); err == nil {
 		*v = SmartRawValue(parsed)
 		return nil
 	}
 
-	if idx := strings.IndexRune(valueStr, 'h'); idx >= 0 {
-		hoursPart := strings.TrimSpace(valueStr[:idx])
-		if hoursPart == "" {
-			*v = 0
-			return nil
-		}
-		if parsed, err := strconv.ParseFloat(hoursPart, 64); err == nil {
-			*v = SmartRawValue(uint64(parsed))
-			return nil
-		}
-	}
-
-	if digits := leadingDigitPrefix(valueStr); digits != "" {
-		if parsed, err := strconv.ParseUint(digits, 0, 64); err == nil {
-			*v = SmartRawValue(parsed)
-			return nil
-		}
+	if parsed, ok := ParseSmartRawValueString(trimmed); ok {
+		*v = SmartRawValue(parsed)
+		return nil
 	}
 
 	*v = 0
 	return nil
 }
 
-func leadingDigitPrefix(value string) string {
-	var builder strings.Builder
-	for _, r := range value {
-		if r < '0' || r > '9' {
-			break
-		}
-		builder.WriteRune(r)
+// ParseSmartRawValueString attempts to extract a numeric value from the raw value
+// strings emitted by smartctl, which sometimes include human-friendly annotations
+// like "7344 (253d 8h)" or "0h+0m+0.000s". It returns the parsed value and a
+// boolean indicating success.
+func ParseSmartRawValueString(value string) (uint64, bool) {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return 0, false
 	}
-	return builder.String()
+
+	if parsed, err := strconv.ParseUint(value, 0, 64); err == nil {
+		return parsed, true
+	}
+
+	if idx := strings.IndexRune(value, 'h'); idx > 0 {
+		hoursPart := strings.TrimSpace(value[:idx])
+		if hoursPart != "" {
+			if parsed, err := strconv.ParseFloat(hoursPart, 64); err == nil {
+				return uint64(parsed), true
+			}
+		}
+	}
+
+	for i := 0; i < len(value); i++ {
+		if value[i] < '0' || value[i] > '9' {
+			continue
+		}
+		end := i + 1
+		for end < len(value) && value[end] >= '0' && value[end] <= '9' {
+			end++
+		}
+		digits := value[i:end]
+		if parsed, err := strconv.ParseUint(digits, 10, 64); err == nil {
+			return parsed, true
+		}
+		i = end
+	}
+
+	return 0, false
 }
 
 // type PowerOnTimeInfo struct {
