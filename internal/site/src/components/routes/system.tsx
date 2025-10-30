@@ -600,6 +600,12 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 							legend={true}
 							dataPoints={[
 								{
+									label: t`Total`,
+									dataKey: ({ stats }) => (showMax ? stats?.cpum : stats?.cpu),
+									color: 1,
+									opacity: 0.4,
+								},
+								{
 									label: t`User`,
 									dataKey: ({ stats }) => stats?.cpuu,
 									color: 2,

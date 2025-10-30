@@ -72,6 +72,17 @@ export default memo(function CpuCoresSheet({
 								legend={true}
 								dataPoints={[
 									{
+										label: t`Total`,
+										dataKey: ({ stats }: SystemStatsRecord) => {
+											const core = stats?.cpuc?.[coreName]
+											if (!core) return undefined
+											// Sum all metrics: user + system + iowait + steal
+											return core[0] + core[1] + core[2] + core[3]
+										},
+										color: 1,
+										opacity: 0.4,
+									},
+									{
 										label: t`User`,
 										dataKey: ({ stats }: SystemStatsRecord) => stats?.cpuc?.[coreName]?.[0],
 										color: 2,
