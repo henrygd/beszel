@@ -586,16 +586,36 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						title={t`CPU Usage`}
 						description={t`Average system-wide CPU utilization`}
 						cornerEl={maxValSelect}
+						legend={true}
 					>
 						<AreaChartDefault
 							chartData={chartData}
 							maxToggled={maxValues}
+							legend={true}
 							dataPoints={[
 								{
-									label: t`CPU Usage`,
-									dataKey: ({ stats }) => (showMax ? stats?.cpum : stats?.cpu),
-									color: 1,
-									opacity: 0.4,
+									label: t`User`,
+									dataKey: ({ stats }) => stats?.cpuu,
+									color: 2,
+									opacity: 0.3,
+								},
+								{
+									label: t`System`,
+									dataKey: ({ stats }) => stats?.cpus,
+									color: 3,
+									opacity: 0.3,
+								},
+								{
+									label: t`IOWait`,
+									dataKey: ({ stats }) => stats?.cpui,
+									color: 4,
+									opacity: 0.3,
+								},
+								{
+									label: t`Steal`,
+									dataKey: ({ stats }) => stats?.cpust,
+									color: 5,
+									opacity: 0.3,
 								},
 							]}
 							tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}

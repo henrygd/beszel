@@ -83,12 +83,16 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 		systemStats.Battery[1] = batteryState
 	}
 
-	// cpu percent
-	cpuPercent, err := getCpuPercent(cacheTimeMs)
+	// cpu metrics
+	cpuMetrics, err := getCpuMetrics(cacheTimeMs)
 	if err == nil {
-		systemStats.Cpu = twoDecimals(cpuPercent)
+		systemStats.Cpu = twoDecimals(cpuMetrics.Total)
+		systemStats.CpuUser = twoDecimals(cpuMetrics.User)
+		systemStats.CpuSystem = twoDecimals(cpuMetrics.System)
+		systemStats.CpuIowait = twoDecimals(cpuMetrics.Iowait)
+		systemStats.CpuSteal = twoDecimals(cpuMetrics.Steal)
 	} else {
-		slog.Error("Error getting cpu percent", "err", err)
+		slog.Error("Error getting cpu metrics", "err", err)
 	}
 
 	// load average
