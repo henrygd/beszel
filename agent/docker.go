@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"strings"
 	"sync"
 	"time"
@@ -53,6 +54,7 @@ type dockerManager struct {
 	buf                 *bytes.Buffer               // Buffer to store and read response bodies
 	decoder             *json.Decoder               // Reusable JSON decoder that reads from buf
 	apiStats            *container.ApiStats         // Reusable API stats object
+	containerExclude    []string                    // Patterns to exclude containers by name (supports wildcards)
 
 	// Cache-time-aware tracking for CPU stats (similar to cpu.go)
 	// Maps cache time intervals to container-specific CPU usage tracking
@@ -94,6 +96,20 @@ func (d *dockerManager) dequeue() {
 	}
 }
 
+// shouldExcludeContainer checks if a container name matches any exclusion pattern using path.Match
+func (dm *dockerManager) shouldExcludeContainer(name string) bool {
+	if len(dm.containerExclude) == 0 {
+		return false
+	}
+	for _, pattern := range dm.containerExclude {
+		// Use path.Match for wildcard support
+		if match, _ := path.Match(pattern, name); match {
+			return true
+		}
+	}
+	return false
+}
+
 // Returns stats for all running containers with cache-time-aware delta tracking
 func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats, error) {
 	resp, err := dm.client.Get("http://localhost/containers/json")
@@ -121,6 +137,19 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 
 	for _, ctr := range dm.apiContainerList {
 		ctr.IdShort = ctr.Id[:12]
+
+		// Extract container name and check if it should be excluded
+		name := ctr.Names[0]
+		if len(name) > 0 && name[0] == '/' {
+			name = name[1:]
+		}
+
+		// Skip this container if it matches the exclusion pattern
+		if dm.shouldExcludeContainer(name) {
+			slog.Debug("Excluding container", "name", name, "patterns", dm.containerExclude)
+			continue
+		}
+
 		dm.validIds[ctr.IdShort] = struct{}{}
 		// check if container is less than 1 minute old (possible restart)
 		// note: can't use Created field because it's not updated on restart
@@ -503,6 +532,22 @@ func newDockerManager(a *Agent) *dockerManager {
 		userAgent: "Docker-Client/",
 	}
 
+	// Read container exclusion patterns from environment variable (comma-separated, supports wildcards)
+	var containerExclude []string
+	if excludeStr, set := GetEnv("CONTAINER_EXCLUDE"); set && excludeStr != "" {
+		// Split by comma and trim whitespace
+		parts := strings.Split(excludeStr, ",")
+		for _, part := range parts {
+			trimmed := strings.TrimSpace(part)
+			if trimmed != "" {
+				containerExclude = append(containerExclude, trimmed)
+			}
+		}
+		if len(containerExclude) > 0 {
+			slog.Info("Container exclusion patterns set", "patterns", containerExclude)
+		}
+	}
+
 	manager := &dockerManager{
 		client: &http.Client{
 			Timeout:   timeout,
@@ -512,6 +557,7 @@ func newDockerManager(a *Agent) *dockerManager {
 		sem:               make(chan struct{}, 5),
 		apiContainerList:  []*container.ApiInfo{},
 		apiStats:          &container.ApiStats{},
+		containerExclude:  containerExclude,
 
 		// Initialize cache-time-aware tracking structures
 		lastCpuContainer:    make(map[uint16]map[string]uint64),

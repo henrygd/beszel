@@ -1099,3 +1099,107 @@ func TestAllocateBuffer(t *testing.T) {
 		})
 	}
 }
+
+func TestShouldExcludeContainer(t *testing.T) {
+	tests := []struct {
+		name          string
+		containerName string
+		patterns      []string
+		expected      bool
+	}{
+		{
+			name:          "empty patterns excludes nothing",
+			containerName: "any-container",
+			patterns:      []string{},
+			expected:      false,
+		},
+		{
+			name:          "exact match - excluded",
+			containerName: "test-web",
+			patterns:      []string{"test-web", "test-api"},
+			expected:      true,
+		},
+		{
+			name:          "exact match - not excluded",
+			containerName: "prod-web",
+			patterns:      []string{"test-web", "test-api"},
+			expected:      false,
+		},
+		{
+			name:          "wildcard prefix match - excluded",
+			containerName: "test-web",
+			patterns:      []string{"test-*"},
+			expected:      true,
+		},
+		{
+			name:          "wildcard prefix match - not excluded",
+			containerName: "prod-web",
+			patterns:      []string{"test-*"},
+			expected:      false,
+		},
+		{
+			name:          "wildcard suffix match - excluded",
+			containerName: "myapp-staging",
+			patterns:      []string{"*-staging"},
+			expected:      true,
+		},
+		{
+			name:          "wildcard suffix match - not excluded",
+			containerName: "myapp-prod",
+			patterns:      []string{"*-staging"},
+			expected:      false,
+		},
+		{
+			name:          "wildcard both sides match - excluded",
+			containerName: "test-myapp-staging",
+			patterns:      []string{"*-myapp-*"},
+			expected:      true,
+		},
+		{
+			name:          "wildcard both sides match - not excluded",
+			containerName: "prod-yourapp-live",
+			patterns:      []string{"*-myapp-*"},
+			expected:      false,
+		},
+		{
+			name:          "multiple patterns - matches first",
+			containerName: "test-container",
+			patterns:      []string{"test-*", "*-staging"},
+			expected:      true,
+		},
+		{
+			name:          "multiple patterns - matches second",
+			containerName: "myapp-staging",
+			patterns:      []string{"test-*", "*-staging"},
+			expected:      true,
+		},
+		{
+			name:          "multiple patterns - no match",
+			containerName: "prod-web",
+			patterns:      []string{"test-*", "*-staging"},
+			expected:      false,
+		},
+		{
+			name:          "mixed exact and wildcard - exact match",
+			containerName: "temp-container",
+			patterns:      []string{"temp-container", "test-*"},
+			expected:      true,
+		},
+		{
+			name:          "mixed exact and wildcard - wildcard match",
+			containerName: "test-web",
+			patterns:      []string{"temp-container", "test-*"},
+			expected:      true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			dm := &dockerManager{
+				containerExclude: tt.patterns,
+			}
+			result := dm.shouldExcludeContainer(tt.containerName)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
