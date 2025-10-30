@@ -121,7 +121,9 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	}
 
 	// start offline cache filler
-	go agent.fillOfflineCache()
+	if val, exists := GetEnv("OFFLINE_CACHING"); exists && val == "true" {
+		go agent.fillOfflineCache()
+	}
 
 	return agent, nil
 }
@@ -221,7 +223,7 @@ func (a *Agent) fillOfflineCache() {
 	for range ticker.C {
 		if a.connectionManager.State == Disconnected {
 			data := a.gatherStats(0)
-			a.offlineCache.Add(data)
+			a.offlineCache.Add(*data)
 		}
 	}
 }
