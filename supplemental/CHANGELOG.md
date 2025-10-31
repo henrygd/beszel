@@ -1,3 +1,11 @@
+## 0.15.3
+
+- Improve parsing of edge case S.M.A.R.T. power on times. (#1347)
+
+## 0.15.2
+
+- Improve S.M.A.R.T. device detection logic (fix regression in 0.15.1) (#1345)
+
 ## 0.15.1
 
 - Add `SMART_DEVICES` environment variable to specify devices and types. (#373, #1335)

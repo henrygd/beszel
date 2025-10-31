@@ -269,6 +269,10 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 				fs.DiskReadPs += value.DiskReadPs
 				fs.MaxDiskReadPS = max(fs.MaxDiskReadPS, value.MaxDiskReadPS, value.DiskReadPs)
 				fs.MaxDiskWritePS = max(fs.MaxDiskWritePS, value.MaxDiskWritePS, value.DiskWritePs)
+				fs.DiskReadBytes += value.DiskReadBytes
+				fs.DiskWriteBytes += value.DiskWriteBytes
+				fs.MaxDiskReadBytes = max(fs.MaxDiskReadBytes, value.MaxDiskReadBytes, value.DiskReadBytes)
+				fs.MaxDiskWriteBytes = max(fs.MaxDiskWriteBytes, value.MaxDiskWriteBytes, value.DiskWriteBytes)
 			}
 		}
 
@@ -356,6 +360,8 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 				fs.DiskUsed = twoDecimals(fs.DiskUsed / count)
 				fs.DiskWritePs = twoDecimals(fs.DiskWritePs / count)
 				fs.DiskReadPs = twoDecimals(fs.DiskReadPs / count)
+				fs.DiskReadBytes = fs.DiskReadBytes / uint64(count)
+				fs.DiskWriteBytes = fs.DiskWriteBytes / uint64(count)
 			}
 		}
 
