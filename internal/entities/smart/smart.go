@@ -1,5 +1,11 @@
 package smart
 
+import (
+	"encoding/json"
+	"strconv"
+	"strings"
+)
+
 // Common types
 type VersionInfo [2]int
 
@@ -129,30 +135,136 @@ type AtaSmartAttributes struct {
 }
 
 type AtaSmartAttribute struct {
-	ID         uint16         `json:"id"`
-	Name       string         `json:"name"`
-	Value      uint16         `json:"value"`
-	Worst      uint16         `json:"worst"`
-	Thresh     uint16         `json:"thresh"`
-	WhenFailed string         `json:"when_failed"`
-	Flags      AttributeFlags `json:"flags"`
-	Raw        RawValue       `json:"raw"`
+	ID         uint16 `json:"id"`
+	Name       string `json:"name"`
+	Value      uint16 `json:"value"`
+	Worst      uint16 `json:"worst"`
+	Thresh     uint16 `json:"thresh"`
+	WhenFailed string `json:"when_failed"`
+	// Flags      AttributeFlags `json:"flags"`
+	Raw RawValue `json:"raw"`
 }
 
-type AttributeFlags struct {
-	Value         int    `json:"value"`
-	String        string `json:"string"`
-	Prefailure    bool   `json:"prefailure"`
-	UpdatedOnline bool   `json:"updated_online"`
-	Performance   bool   `json:"performance"`
-	ErrorRate     bool   `json:"error_rate"`
-	EventCount    bool   `json:"event_count"`
-	AutoKeep      bool   `json:"auto_keep"`
-}
+// type AttributeFlags struct {
+// 	Value         int    `json:"value"`
+// 	String        string `json:"string"`
+// 	Prefailure    bool   `json:"prefailure"`
+// 	UpdatedOnline bool   `json:"updated_online"`
+// 	Performance   bool   `json:"performance"`
+// 	ErrorRate     bool   `json:"error_rate"`
+// 	EventCount    bool   `json:"event_count"`
+// 	AutoKeep      bool   `json:"auto_keep"`
+// }
 
 type RawValue struct {
-	Value  uint64 `json:"value"`
-	String string `json:"string"`
+	Value  SmartRawValue `json:"value"`
+	String string        `json:"string"`
+}
+
+func (r *RawValue) UnmarshalJSON(data []byte) error {
+	var tmp struct {
+		Value  json.RawMessage `json:"value"`
+		String string          `json:"string"`
+	}
+
+	if err := json.Unmarshal(data, &tmp); err != nil {
+		return err
+	}
+
+	if len(tmp.Value) > 0 {
+		if err := r.Value.UnmarshalJSON(tmp.Value); err != nil {
+			return err
+		}
+	} else {
+		r.Value = 0
+	}
+
+	r.String = tmp.String
+
+	if parsed, ok := ParseSmartRawValueString(tmp.String); ok {
+		r.Value = SmartRawValue(parsed)
+	}
+
+	return nil
+}
+
+type SmartRawValue uint64
+
+// handles when drives report strings like "0h+0m+0.000s" or "7344 (253d 8h)" for power on hours
+func (v *SmartRawValue) UnmarshalJSON(data []byte) error {
+	trimmed := strings.TrimSpace(string(data))
+	if len(trimmed) == 0 || trimmed == "null" {
+		*v = 0
+		return nil
+	}
+
+	if trimmed[0] == '"' {
+		valueStr, err := strconv.Unquote(trimmed)
+		if err != nil {
+			return err
+		}
+		parsed, ok := ParseSmartRawValueString(valueStr)
+		if ok {
+			*v = SmartRawValue(parsed)
+			return nil
+		}
+		*v = 0
+		return nil
+	}
+
+	if parsed, err := strconv.ParseUint(trimmed, 0, 64); err == nil {
+		*v = SmartRawValue(parsed)
+		return nil
+	}
+
+	if parsed, ok := ParseSmartRawValueString(trimmed); ok {
+		*v = SmartRawValue(parsed)
+		return nil
+	}
+
+	*v = 0
+	return nil
+}
+
+// ParseSmartRawValueString attempts to extract a numeric value from the raw value
+// strings emitted by smartctl, which sometimes include human-friendly annotations
+// like "7344 (253d 8h)" or "0h+0m+0.000s". It returns the parsed value and a
+// boolean indicating success.
+func ParseSmartRawValueString(value string) (uint64, bool) {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return 0, false
+	}
+
+	if parsed, err := strconv.ParseUint(value, 0, 64); err == nil {
+		return parsed, true
+	}
+
+	if idx := strings.IndexRune(value, 'h'); idx > 0 {
+		hoursPart := strings.TrimSpace(value[:idx])
+		if hoursPart != "" {
+			if parsed, err := strconv.ParseFloat(hoursPart, 64); err == nil {
+				return uint64(parsed), true
+			}
+		}
+	}
+
+	for i := 0; i < len(value); i++ {
+		if value[i] < '0' || value[i] > '9' {
+			continue
+		}
+		end := i + 1
+		for end < len(value) && value[end] >= '0' && value[end] <= '9' {
+			end++
+		}
+		digits := value[i:end]
+		if parsed, err := strconv.ParseUint(digits, 10, 64); err == nil {
+			return parsed, true
+		}
+		i = end
+	}
+
+	return 0, false
 }
 
 // type PowerOnTimeInfo struct {

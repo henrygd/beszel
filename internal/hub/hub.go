@@ -136,6 +136,7 @@ func setCollectionAuthSettings(app core.App) error {
 	if err != nil {
 		return err
 	}
+
 	// disable email auth if DISABLE_PASSWORD_AUTH env var is set
 	disablePasswordAuth, _ := GetEnv("DISABLE_PASSWORD_AUTH")
 	usersCollection.PasswordAuth.Enabled = disablePasswordAuth != "true"
@@ -147,6 +148,7 @@ func setCollectionAuthSettings(app core.App) error {
 	} else {
 		usersCollection.CreateRule = nil
 	}
+
 	// enable mfaOtp mfa if MFA_OTP env var is set
 	mfaOtp, _ := GetEnv("MFA_OTP")
 	usersCollection.OTP.Length = 6
@@ -161,23 +163,37 @@ func setCollectionAuthSettings(app core.App) error {
 	if err := app.Save(usersCollection); err != nil {
 		return err
 	}
+
+	shareAllSystems, _ := GetEnv("SHARE_ALL_SYSTEMS")
+
 	// allow all users to access systems if SHARE_ALL_SYSTEMS is set
 	systemsCollection, err := app.FindCollectionByNameOrId("systems")
 	if err != nil {
 		return err
 	}
-	shareAllSystems, _ := GetEnv("SHARE_ALL_SYSTEMS")
-	systemsReadRule := "@request.auth.id != \"\""
-	if shareAllSystems != "true" {
-		// default is to only show systems that the user id is assigned to
-		systemsReadRule += " && users.id ?= @request.auth.id"
+	var systemsReadRule string
+	if shareAllSystems == "true" {
+		systemsReadRule = "@request.auth.id != \"\""
+	} else {
+		systemsReadRule = "@request.auth.id != \"\" && users.id ?= @request.auth.id"
 	}
 	updateDeleteRule := systemsReadRule + " && @request.auth.role != \"readonly\""
 	systemsCollection.ListRule = &systemsReadRule
 	systemsCollection.ViewRule = &systemsReadRule
 	systemsCollection.UpdateRule = &updateDeleteRule
 	systemsCollection.DeleteRule = &updateDeleteRule
-	return app.Save(systemsCollection)
+	if err := app.Save(systemsCollection); err != nil {
+		return err
+	}
+
+	// allow all users to access all containers if SHARE_ALL_SYSTEMS is set
+	containersCollection, err := app.FindCollectionByNameOrId("containers")
+	if err != nil {
+		return err
+	}
+	containersListRule := strings.Replace(systemsReadRule, "users.id", "system.users.id", 1)
+	containersCollection.ListRule = &containersListRule
+	return app.Save(containersCollection)
 }
 
 // registerCronJobs sets up scheduled tasks

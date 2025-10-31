@@ -1,3 +1,29 @@
+## 0.15.3
+
+- Improve parsing of edge case S.M.A.R.T. power on times. (#1347)
+
+## 0.15.2
+
+- Improve S.M.A.R.T. device detection logic (fix regression in 0.15.1) (#1345)
+
+## 0.15.1
+
+- Add `SMART_DEVICES` environment variable to specify devices and types. (#373, #1335)
+
+- Add support for `scsi`, `sntasmedia`, and `sntrealtek` S.M.A.R.T. types. (#373, #1335)
+
+- Handle power-on time attributes that are formatted as strings (e.g., "0h+0m+0.000s").
+
+- Skip virtual disks in S.M.A.R.T. monitoring. (#1332)
+
+- Add sorting to the S.M.A.R.T. table. (#1333)
+
+- Fix incorrect disk rendering in S.M.A.R.T. device details. (#1336)
+
+- Fix `SHARE_ALL_SYSTEMS` setting not working for containers. (#1334)
+
+- Fix text contrast issue when container details are disabled. (#1324)
+
 ## 0.15.0
 
 - Add initial S.M.A.R.T. support for disk health monitoring. (#962)

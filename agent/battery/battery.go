@@ -10,8 +10,10 @@ import (
 	"github.com/distatus/battery"
 )
 
-var systemHasBattery = false
-var haveCheckedBattery = false
+var (
+	systemHasBattery   = false
+	haveCheckedBattery = false
+)
 
 // HasReadableBattery checks if the system has a battery and returns true if it does.
 func HasReadableBattery() bool {
@@ -21,7 +23,7 @@ func HasReadableBattery() bool {
 	haveCheckedBattery = true
 	batteries, err := battery.GetAll()
 	for _, bat := range batteries {
-		if bat.Full > 0 {
+		if bat != nil && (bat.Full > 0 || bat.Design > 0) {
 			systemHasBattery = true
 			break
 		}

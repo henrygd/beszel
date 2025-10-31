@@ -378,7 +378,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 		let uptime: string
 		if (system.info.u < 3600) {
 			uptime = secondsToString(system.info.u, "minute")
-		} else if (system.info.u * 360000) {
+		} else if (system.info.u < 360000) {
 			uptime = secondsToString(system.info.u, "hour")
 		} else {
 			uptime = secondsToString(system.info.u, "day")
@@ -1003,9 +1003,9 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 													label: t`Write`,
 													dataKey: ({ stats }) => {
 														if (showMax) {
-															return stats?.efs?.[extraFsName]?.wb ?? (stats?.efs?.[extraFsName]?.wm ?? 0) * 1024 * 1024
+															return stats?.efs?.[extraFsName]?.wbm || (stats?.efs?.[extraFsName]?.wm ?? 0) * 1024 * 1024
 														}
-														return stats?.efs?.[extraFsName]?.wb ?? (stats?.efs?.[extraFsName]?.w ?? 0) * 1024 * 1024
+														return stats?.efs?.[extraFsName]?.wb || (stats?.efs?.[extraFsName]?.w ?? 0) * 1024 * 1024
 													},
 													color: 3,
 													opacity: 0.3,

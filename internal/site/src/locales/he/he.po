@@ -1,140 +1,135 @@
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2024-11-01 11:30-0400\n"
+"POT-Creation-Date: 2025-10-30 16:35-0400\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: @lingui/cli\n"
-"Language: sv\n"
-"Project-Id-Version: beszel\n"
+"Language: he\n"
+"Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-20 21:37\n"
+"PO-Revision-Date: 2025-10-30 20:47\n"
 "Last-Translator: \n"
-"Language-Team: Swedish\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Crowdin-Project: beszel\n"
-"X-Crowdin-Project-ID: 733311\n"
-"X-Crowdin-Language: sv-SE\n"
-"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 32\n"
+"Language-Team: \n"
+"Plural-Forms: \n"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
-msgstr "{0} av {1} rad(er) valda."
+msgstr "{0} מתוך {1} שורה(ות) נבחרו."
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} day} other {{countString} days}}"
-msgstr "{count, plural, one {{countString} dag} other {{countString} dagar}}"
+msgstr "{count, plural, one {{countString} יום} two {{countString} ימים} other {{countString} ימים}}"
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} hour} other {{countString} hours}}"
-msgstr "{count, plural, one {{countString} timme} other {{countString} timmar}}"
+msgstr "{count, plural, one {{countString} שעה} two {{countString} שעות} other {{countString} שעות}}"
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
-msgstr "{count, plural, one {{countString} minut} few {{countString} minuter} many {{countString} minuter} other {{countString} minuter}}"
+msgstr "{count, plural, one {{countString} דקה} two {{countString} דקות} other {{countString} דקות}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
-msgstr "1 timme"
+msgstr "שעה"
 
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr "1 min"
+msgstr "דקה אחת"
 
 #: src/lib/utils.ts
 msgid "1 minute"
-msgstr "1 minut"
+msgstr "דקה אחת"
 
 #: src/lib/utils.ts
 msgid "1 week"
-msgstr "1 vecka"
+msgstr "שבוע אחד"
 
 #: src/lib/utils.ts
 msgid "12 hours"
-msgstr "12 timmar"
+msgstr "12 שעות"
 
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr "15 min"
+msgstr "15 דק'"
 
 #: src/lib/utils.ts
 msgid "24 hours"
-msgstr "24 timmar"
+msgstr "24 שעות"
 
 #: src/lib/utils.ts
 msgid "30 days"
-msgstr "30 dagar"
+msgstr "30 ימים"
 
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr "5 min"
+msgstr "5 דק'"
 
 #. Table column
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
-msgstr "Åtgärder"
+msgstr "פעולות"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Active"
-msgstr "Aktiv"
+msgstr "פעיל"
 
 #: src/components/active-alerts.tsx
 msgid "Active Alerts"
-msgstr "Aktiva larm"
+msgstr "התראות פעילות"
 
 #: src/components/add-system.tsx
 msgid "Add <0>System</0>"
-msgstr "Lägg till <0>System</0>"
+msgstr "הוסף <0>מערכת</0>"
 
 #: src/components/add-system.tsx
 msgid "Add New System"
-msgstr "Lägg till nytt system"
+msgstr "הוסף מערכת חדשה"
 
 #: src/components/add-system.tsx
 msgid "Add system"
-msgstr "Lägg till system"
+msgstr "הוסף מערכת"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Add URL"
-msgstr "Lägg till URL"
+msgstr "הוסף URL"
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
-msgstr "Justera visningsalternativ för diagram."
+msgstr "התאם אפשרויות תצוגה עבור גרפים."
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
-msgstr "Admin"
+msgstr "מנהל"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr "Agent"
+msgstr "סוכן"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Alert History"
-msgstr "Larmhistorik"
+msgstr "היסטוריית התראות"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Alerts"
-msgstr "Larm"
+msgstr "התראות"
 
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
-msgstr "Alla behållare"
+msgstr "כל הקונטיינרים"
 
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
@@ -142,228 +137,228 @@ msgstr "Alla behållare"
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
-msgstr "Alla system"
+msgstr "כל המערכות"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
-msgstr "Är du säker på att du vill ta bort {name}?"
+msgstr "האם אתה בטוח שברצונך למחוק את {name}?"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
-msgstr "Är du säker?"
+msgstr "האם אתה בטוח?"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
-msgstr "Automatisk kopiering kräver en säker kontext."
+msgstr "העתקה אוטומטית דורשת הקשר מאובטח."
 
 #: src/components/routes/system.tsx
 msgid "Average"
-msgstr "Genomsnitt"
+msgstr "ממוצע"
 
 #: src/components/routes/system.tsx
 msgid "Average CPU utilization of containers"
-msgstr "Genomsnittlig CPU-användning för containrar"
+msgstr "ניצול ממוצע של CPU בקונטיינרים"
 
 #. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Average exceeds <0>{value}{0}</0>"
-msgstr "Genomsnittet överskrider <0>{value}{0}</0>"
+msgstr "הממוצע עולה על <0>{value}{0}</0>"
 
 #: src/components/routes/system.tsx
 msgid "Average power consumption of GPUs"
-msgstr "Genomsnittlig strömförbrukning för GPU:er"
+msgstr "צריכת חשמל ממוצעת של GPUs"
 
 #: src/components/routes/system.tsx
 msgid "Average system-wide CPU utilization"
-msgstr "Genomsnittlig systemomfattande CPU-användning"
+msgstr "ניצול ממוצע של CPU ברמת המערכת"
 
 #. placeholder {0}: gpu.n
 #: src/components/routes/system.tsx
 msgid "Average utilization of {0}"
-msgstr "Genomsnittlig användning av {0}"
+msgstr "ניצול ממוצע של {0}"
 
 #: src/components/routes/system.tsx
 msgid "Average utilization of GPU engines"
-msgstr "Genomsnittlig användning av GPU-motorer"
+msgstr "ניצול ממוצע של מנועי GPU"
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
-msgstr "Säkerhetskopior"
+msgstr "גיבויים"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "Bandwidth"
-msgstr "Bandbredd"
+msgstr "רוחב פס"
 
 #: src/components/routes/system.tsx
 msgid "Battery"
-msgstr "Batteri"
+msgstr "סוללה"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
-msgstr "Beszel stöder OpenID Connect och många OAuth2-autentiseringsleverantörer."
+msgstr "Beszel תומך ב-OpenID Connect ובספקי אימות רבים של OAuth2."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
-msgstr "Beszel använder <0>Shoutrrr</0> för att integrera med populära aviseringstjänster."
+msgstr "Beszel משתמש ב-<0>Shoutrrr</0> לשילוב עם שירותי התראות פופולריים."
 
 #: src/components/add-system.tsx
 msgid "Binary"
-msgstr "Binär"
+msgstr "בינרי"
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr "Bit (Kbps, Mbps, Gbps)"
+msgstr "ביטים (Kbps, Mbps, Gbps)"
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
-msgstr "Bytes (KB/s, MB/s, GB/S)"
+msgstr "בייטים (KB/s, MB/s, GB/s)"
 
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
-msgstr "Cache / Buffertar"
+msgstr "מטמון / חוצצים"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
-msgstr "Avbryt"
+msgstr "ביטול"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
-msgstr "Kapacitet"
+msgstr "קיבולת"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
-msgstr "Varning - potentiell dataförlust"
+msgstr "זהירות - אפשרות לאובדן נתונים"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr "Celsius (°C)"
+msgstr "צלזיוס (°C)"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
-msgstr "Ändra enheter för mätvärden."
+msgstr "שנה יחידות תצוגה עבור מדדים."
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
-msgstr "Ändra allmänna programalternativ."
+msgstr "שנה אפשרויות כלליות של היישום."
 
 #: src/components/routes/system.tsx
 msgid "Charge"
-msgstr "Laddning"
+msgstr "טעינה"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Charging"
-msgstr "Laddar"
+msgstr "בטעינה"
 
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
-msgstr "Diagramalternativ"
+msgstr "אפשרויות גרף"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
-msgstr "Kontrollera {email} för en återställningslänk."
+msgstr "בדוק את {email} לקישור איפוס."
 
 #: src/components/routes/settings/layout.tsx
 msgid "Check logs for more details."
-msgstr "Kontrollera loggarna för mer information."
+msgstr "בדוק יומנים לפרטים נוספים."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
-msgstr "Kontrollera din aviseringstjänst"
+msgstr "בדוק את שירות ההתראות שלך"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
-msgstr "Klicka på en behållare för att visa mer information."
+msgstr "לחץ על קונטיינר כדי לצפות במידע נוסף."
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
-msgstr "Klicka på en enhet för att visa mer information."
+msgstr "לחץ על התקן כדי לצפות במידע נוסף."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
-msgstr "Klicka på ett system för att visa mer information."
+msgstr "לחץ על מערכת כדי לצפות במידע נוסף."
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
-msgstr "Klicka för att kopiera"
+msgstr "לחץ כדי להעתיק"
 
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Command line instructions"
-msgstr "Instruktioner för kommandoraden"
+msgstr "הוראות שורת פקודה"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
-msgstr "Konfigurera hur du tar emot larmaviseringar."
+msgstr "הגדר כיצד אתה מקבל התראות."
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Confirm password"
-msgstr "Bekräfta lösenord"
+msgstr "אשר סיסמה"
 
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
-msgstr "Ej ansluten"
+msgstr "החיבור נפל"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
-msgstr "Fortsätt"
+msgstr "המשך"
 
 #: src/lib/utils.ts
 msgid "Copied to clipboard"
-msgstr "Kopierat till urklipp"
+msgstr "הועתק ללוח"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker compose file content"
 msgid "Copy docker compose"
-msgstr "Kopiera docker compose"
+msgstr "העתק docker compose"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy docker run command"
 msgid "Copy docker run"
-msgstr "Kopiera docker run"
+msgstr "העתק docker run"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Environment variables"
 msgid "Copy env"
-msgstr "Kopiera env"
+msgstr "העתק env"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
-msgstr "Kopiera värd"
+msgstr "העתק מארח"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy Linux command"
-msgstr "Kopiera Linux-kommando"
+msgstr "העתק פקודת Linux"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
-msgstr "Kopiera namn"
+msgstr "העתק שם"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
-msgstr "Kopiera text"
+msgstr "העתק טקסט"
 
 #: src/components/add-system.tsx
 msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
-msgstr "Kopiera installationskommandot för agenten nedan, eller registrera agenter automatiskt med en <0>universal token</0>."
+msgstr "העתק את פקודת ההתקנה עבור הסוכן למטה, או רשום סוכנים אוטומטית עם <0>token אוניברסלי</0>."
 
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
-msgstr "Kopiera <0>docker-compose.yml</0>-innehållet för agenten nedan, eller registrera agenter automatiskt med en <1>universal token</1>."
+msgstr "העתק את תוכן ה-<0>docker-compose.yml</0> עבור הסוכן למטה, או רשום סוכנים אוטומטית עם <1>token אוניברסלי</1>."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
-msgstr "Kopiera YAML"
+msgstr "העתק YAML"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -374,106 +369,106 @@ msgstr "CPU"
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "CPU Usage"
-msgstr "CPU-användning"
+msgstr "שימוש CPU"
 
 #: src/components/login/auth-form.tsx
 msgid "Create account"
-msgstr "Skapa konto"
+msgstr "צור חשבון"
 
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
 msgid "Created"
-msgstr "Skapad"
+msgstr "נוצר"
 
 #: src/components/routes/settings/general.tsx
 msgid "Critical (%)"
-msgstr "Kritisk (%)"
+msgstr "קריטי (%)"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
-msgstr "Kumulativ nedladdning"
+msgstr "הורדה מצטברת"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
-msgstr "Kumulativ uppladdning"
+msgstr "העלאה מצטברת"
 
 #. Context: Battery state
 #: src/components/routes/system.tsx
 msgid "Current state"
-msgstr "Aktuellt tillstånd"
+msgstr "מצב נוכחי"
 
 #. Power Cycles
 #: src/components/routes/system/smart-table.tsx
 msgid "Cycles"
-msgstr "Cykler"
+msgstr "מחזורים"
 
 #: src/components/command-palette.tsx
 msgid "Dashboard"
-msgstr "Instrumentpanel"
+msgstr "לוח בקרה"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
-msgstr "Standardtidsperiod"
+msgstr "תקופת זמן ברירת מחדל"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
-msgstr "Ta bort"
+msgstr "מחק"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
-msgstr "Ta bort fingeravtryck"
+msgstr "מחק טביעת אצבע"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
-msgstr "Detalj"
+msgstr "פרט"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
-msgstr "Enhet"
+msgstr "התקן"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Discharging"
-msgstr "Urladdar"
+msgstr "בפריקה"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
-msgstr "Disk"
+msgstr "דיסק"
 
 #: src/components/routes/system.tsx
 msgid "Disk I/O"
-msgstr "Disk-I/O"
+msgstr "דיסק I/O"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
-msgstr "Diskenhet"
+msgstr "יחידת דיסק"
 
 #: src/components/charts/disk-chart.tsx
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
-msgstr "Diskanvändning"
+msgstr "שימוש בדיסק"
 
 #: src/components/routes/system.tsx
 msgid "Disk usage of {extraFsName}"
-msgstr "Diskanvändning av {extraFsName}"
+msgstr "שימוש בדיסק של {extraFsName}"
 
 #: src/components/routes/system.tsx
 msgid "Docker CPU Usage"
-msgstr "Docker CPU-användning"
+msgstr "שימוש CPU של Docker"
 
 #: src/components/routes/system.tsx
 msgid "Docker Memory Usage"
-msgstr "Docker Minnesanvändning"
+msgstr "שימוש זיכרון של Docker"
 
 #: src/components/routes/system.tsx
 msgid "Docker Network I/O"
-msgstr "Docker Nätverks-I/O"
+msgstr "רשת Docker I/O"
 
 #: src/components/command-palette.tsx
 msgid "Documentation"
-msgstr "Dokumentation"
+msgstr "תיעוד"
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
@@ -481,51 +476,51 @@ msgstr "Dokumentation"
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "Down"
-msgstr "Nere"
+msgstr "כבוי"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Down ({downSystemsLength})"
-msgstr "Nere ({downSystemsLength})"
+msgstr "כבוי ({downSystemsLength})"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
-msgstr "Ladda ner"
+msgstr "הורד"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
-msgstr "Varaktighet"
+msgstr "משך זמן"
 
 #: src/components/add-system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
-msgstr "Redigera"
+msgstr "ערוך"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/otp-forms.tsx
 msgid "Email"
-msgstr "E-post"
+msgstr "אימייל"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
-msgstr "E-postaviseringar"
+msgstr "התראות אימייל"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Empty"
-msgstr "Tom"
+msgstr "ריק"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
-msgstr "Ange e-postadress för att återställa lösenord"
+msgstr "הכנס כתובת אימייל לאיפוס סיסמה"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Enter email address..."
-msgstr "Ange e-postadress..."
+msgstr "הכנס כתובת אימייל..."
 
 #: src/components/login/otp-forms.tsx
 msgid "Enter your one-time password."
-msgstr "Ange ditt engångslösenord."
+msgstr "הכנס את הסיסמה החד-פעמית שלך."
 
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -533,55 +528,55 @@ msgstr "Ange ditt engångslösenord."
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Error"
-msgstr "Fel"
+msgstr "שגיאה"
 
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
 #: src/components/active-alerts.tsx
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
-msgstr "Överskrider {0}{1} under de senaste {2, plural, one {# minuten} other {# minuterna}}"
+msgstr "עולה על {0}{1} ב-{2, plural, one {# דקה} other {# דקות}} האחרונות"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
-msgstr "Befintliga system som inte definieras i <0>config.yml</0> kommer att tas bort. Gör regelbundna säkerhetskopior."
+msgstr "מערכות קיימות שלא מוגדרות ב-<0>config.yml</0> יימחקו. אנא בצע גיבויים קבועים."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
-msgstr "Exportera"
+msgstr "ייצא"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
-msgstr "Exportera konfiguration"
+msgstr "ייצא תצורה"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export your current systems configuration."
-msgstr "Exportera din nuvarande systemkonfiguration."
+msgstr "ייצא את תצורת המערכות הנוכחית שלך."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr "Fahrenheit (°F)"
+msgstr "פרנהייט (°F)"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
-msgstr "Misslyckade attribut:"
+msgstr "מאפיינים שנכשלו:"
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
-msgstr "Autentisering misslyckades"
+msgstr "אימות נכשל"
 
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Failed to save settings"
-msgstr "Kunde inte spara inställningar"
+msgstr "שמירת הגדרות נכשלה"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Failed to send test notification"
-msgstr "Kunde inte skicka testavisering"
+msgstr "שליחת התראת בדיקה נכשלה"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Failed to update alert"
-msgstr "Kunde inte uppdatera larm"
+msgstr "עדכון התראה נכשל"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -589,204 +584,204 @@ msgstr "Kunde inte uppdatera larm"
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
-msgstr "Filtrera..."
+msgstr "סנן..."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
-msgstr "Fingeravtryck"
+msgstr "טביעת אצבע"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
-msgstr "Fast programvara"
+msgstr "קושחה"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
-msgstr "Under <0>{min}</0> {min, plural, one {minut} other {minuter}}"
+msgstr "למשך <0>{min}</0> {min, plural, one {דקה} other {דקות}}"
 
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
-msgstr "Glömt lösenordet?"
+msgstr "שכחת סיסמה?"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "FreeBSD command"
-msgstr "FreeBSD kommando"
+msgstr "פקודת FreeBSD"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Full"
-msgstr "Full"
+msgstr "מלא"
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "General"
-msgstr "Allmänt"
+msgstr "כללי"
 
 #: src/components/routes/system.tsx
 msgid "GPU Engines"
-msgstr "GPU-motorer"
+msgstr "מנועי GPU"
 
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
-msgstr "GPU-strömförbrukning"
+msgstr "צריכת חשמל GPU"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
-msgstr "Rutnät"
+msgstr "רשת"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Health"
-msgstr "Hälsa"
+msgstr "בריאות"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Homebrew command"
-msgstr "Homebrew-kommando"
+msgstr "פקודת Homebrew"
 
 #: src/components/add-system.tsx
 msgid "Host / IP"
-msgstr "Värd / IP"
+msgstr "מארח / IP"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
-msgstr "Vilande"
+msgstr "לא פעיל"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
-msgstr "Om du har glömt lösenordet till ditt administratörskonto kan du återställa det med följande kommando."
+msgstr "אם איבדת את הסיסמה לחשבון המנהל שלך, תוכל לאפס אותה באמצעות הפקודה הבאה."
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
-msgstr "Avbild"
+msgstr "תמונה"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
-msgstr "Ogiltig e-postadress."
+msgstr "כתובת אימייל לא תקינה."
 
 #. Linux kernel
 #: src/components/routes/system.tsx
 msgid "Kernel"
-msgstr "Kärna"
+msgstr "קרנל"
 
 #: src/components/routes/settings/general.tsx
 msgid "Language"
-msgstr "Språk"
+msgstr "שפה"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
-msgstr "Layout"
+msgstr "פריסה"
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
-msgstr "Genomsnittlig belastning"
+msgstr "ממוצע עומס"
 
 #: src/lib/alerts.ts
 msgid "Load Average 15m"
-msgstr "Genomsnittlig belastning 15m"
+msgstr "ממוצע עומס 15ד"
 
 #: src/lib/alerts.ts
 msgid "Load Average 1m"
-msgstr "Genomsnittlig belastning 1m"
+msgstr "ממוצע עומס 1ד"
 
 #: src/lib/alerts.ts
 msgid "Load Average 5m"
-msgstr "Genomsnittlig belastning 5m"
+msgstr "ממוצע עומס 5ד"
 
 #. Short label for load average
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
-msgstr "Belastning"
+msgstr "ממוצע עומס"
 
 #: src/components/navbar.tsx
 msgid "Log Out"
-msgstr "Logga ut"
+msgstr "התנתק"
 
 #: src/components/login/login.tsx
 msgid "Login"
-msgstr "Logga in"
+msgstr "התחבר"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Login attempt failed"
-msgstr "Inloggningsförsök misslyckades"
+msgstr "ניסיון התחברות נכשל"
 
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
 msgid "Logs"
-msgstr "Loggar"
+msgstr "יומנים"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
-msgstr "Letar du istället efter var du skapar larm? Klicka på klockikonerna <0/> i systemtabellen."
+msgstr "מחפש איפה ליצור התראות? לחץ על סמלי הפעמון <0/> בטבלת המערכות."
 
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
-msgstr "Hantera visnings- och aviseringsinställningar."
+msgstr "נהל העדפות תצוגה והתראות."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Manual setup instructions"
-msgstr "Manuella installationsinstruktioner"
+msgstr "הוראות התקנה ידניות"
 
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx
 msgid "Max 1 min"
-msgstr "Max 1 min"
+msgstr "מקס 1 דק'"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
-msgstr "Minne"
+msgstr "זיכרון"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "Memory Usage"
-msgstr "Minnesanvändning"
+msgstr "שימוש בזיכרון"
 
 #: src/components/routes/system.tsx
 msgid "Memory usage of docker containers"
-msgstr "Minnesanvändning för dockercontainrar"
+msgstr "שימוש בזיכרון של קונטיינרים של Docker"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
-msgstr "Modell"
+msgstr "דגם"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Name"
-msgstr "Namn"
+msgstr "שם"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
-msgstr "Nät"
+msgstr "רשת"
 
 #: src/components/routes/system.tsx
 msgid "Network traffic of docker containers"
-msgstr "Nätverkstrafik för dockercontainrar"
+msgstr "תעבורת רשת של קונטיינרים של Docker"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
-msgstr "Nätverkstrafik för publika gränssnitt"
+msgstr "תעבורת רשת של ממשקים ציבוריים"
 
 #. Context: Bytes or bits
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
-msgstr "Nätverksenhet"
+msgstr "יחידת רשת"
 
 #: src/components/command-palette.tsx
 msgid "No results found."
-msgstr "Inga resultat hittades."
+msgstr "לא נמצאו תוצאות."
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
@@ -794,281 +789,281 @@ msgstr "Inga resultat hittades."
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "No results."
-msgstr "Inga resultat."
+msgstr "אין תוצאות."
 
 #: src/components/routes/system/smart-table.tsx
 msgid "No S.M.A.R.T. attributes available for this device."
-msgstr "Inga S.M.A.R.T.-attribut tillgängliga för den här enheten."
+msgstr "אין מאפייני S.M.A.R.T. זמינים עבור התקן זה."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
-msgstr "Inga system hittades."
+msgstr "לא נמצאו מערכות."
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
-msgstr "Aviseringar"
+msgstr "התראות"
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
-msgstr "Stöd för OAuth 2 / OIDC"
+msgstr "תמיכה ב-OAuth 2 / OIDC"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
-msgstr "Vid varje omstart kommer systemen i databasen att uppdateras för att matcha systemen som definieras i filen."
+msgstr "בכל הפעלה מחדש, המערכות במסד הנתונים יעודכנו כדי להתאים למערכות המוגדרות בקובץ."
 
 #: src/components/login/auth-form.tsx
 msgid "One-time password"
-msgstr "Engångslösenord"
+msgstr "סיסמה חד-פעמית"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
-msgstr "Öppna menyn"
+msgstr "פתח תפריט"
 
 #: src/components/login/auth-form.tsx
 msgid "Or continue with"
-msgstr "Eller fortsätt med"
+msgstr "או המשך עם"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
-msgstr "Skriv över befintliga larm"
+msgstr "דרוס התראות קיימות"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
-msgstr "Sida"
+msgstr "עמוד"
 
 #. placeholder {0}: table.getState().pagination.pageIndex + 1
 #. placeholder {1}: table.getPageCount()
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Page {0} of {1}"
-msgstr "Sida {0} av {1}"
+msgstr "עמוד {0} מתוך {1}"
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
-msgstr "Sidor / Inställningar"
+msgstr "עמודים / הגדרות"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
 msgid "Password"
-msgstr "Lösenord"
+msgstr "סיסמה"
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be at least 8 characters."
-msgstr "Lösenordet måste vara minst 8 tecken."
+msgstr "הסיסמה חייבת להכיל לפחות 8 תווים."
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
-msgstr "Lösenordet måste vara mindre än 72 byte."
+msgstr "הסיסמה חייבת להיות פחות מ-72 בתים."
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"
-msgstr "Begäran om återställning av lösenord mottagen"
+msgstr "בקשת איפוס סיסמה התקבלה"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
-msgstr "Paus"
+msgstr "השהה"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
-msgstr "Pausad"
+msgstr "מושהה"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused ({pausedSystemsLength})"
-msgstr "Pausad ({pausedSystemsLength})"
+msgstr "מושהה ({pausedSystemsLength})"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
-msgstr "Vänligen <0>konfigurera en SMTP-server</0> för att säkerställa att larm levereras."
+msgstr "אנא <0>הגדר שרת SMTP</0> כדי להבטיח שהתראות יישלחו."
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Please check logs for more details."
-msgstr "Vänligen kontrollera loggarna för mer information."
+msgstr "אנא בדוק יומנים לפרטים נוספים."
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Please check your credentials and try again"
-msgstr "Vänligen kontrollera dina inloggningsuppgifter och försök igen"
+msgstr "אנא בדוק את האישורים שלך ונסה שוב"
 
 #: src/components/login/login.tsx
 msgid "Please create an admin account"
-msgstr "Vänligen skapa ett administratörskonto"
+msgstr "אנא צור חשבון מנהל"
 
 #: src/components/login/auth-form.tsx
 msgid "Please enable pop-ups for this site"
-msgstr "Vänligen aktivera popup-fönster för den här webbplatsen"
+msgstr "אנא אפשר חלונות קופצים עבור אתר זה"
 
 #: src/lib/api.ts
 msgid "Please log in again"
-msgstr "Vänligen logga in igen"
+msgstr "אנא התחבר שוב"
 
 #: src/components/login/auth-form.tsx
 msgid "Please see <0>the documentation</0> for instructions."
-msgstr "Vänligen se <0>dokumentationen</0> för instruktioner."
+msgstr "אנא ראה <0>את התיעוד</0> להוראות."
 
 #: src/components/login/login.tsx
 msgid "Please sign in to your account"
-msgstr "Vänligen logga in på ditt konto"
+msgstr "אנא התחבר לחשבון שלך"
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr "Port"
+msgstr "פורט"
 
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
 msgid "Power On"
-msgstr "Påslagen"
+msgstr "הפעלה"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Precise utilization at the recorded time"
-msgstr "Exakt användning vid den registrerade tidpunkten"
+msgstr "ניצול מדויק בזמן הרשום"
 
 #: src/components/routes/settings/general.tsx
 msgid "Preferred Language"
-msgstr "Föredraget språk"
+msgstr "שפה מועדפת"
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
-msgstr "Offentlig nyckel"
+msgstr "מפתח ציבורי"
 
 #. Disk read
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Read"
-msgstr "Läs"
+msgstr "קריאה"
 
 #: src/components/routes/system.tsx
 msgid "Received"
-msgstr "Mottaget"
+msgstr "התקבל"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 msgid "Refresh"
-msgstr "Uppdatera"
+msgstr "רענן"
 
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
-msgstr "Begär engångslösenord"
+msgstr "בקש סיסמה חד-פעמית"
 
 #: src/components/login/otp-forms.tsx
 msgid "Request OTP"
-msgstr "Begär OTP"
+msgstr "בקש OTP"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
-msgstr "Återställ lösenord"
+msgstr "איפוס סיסמה"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Resolved"
-msgstr "Löst"
+msgstr "נפתר"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
-msgstr "Återuppta"
+msgstr "המשך"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
-msgstr "Rotera token"
+msgstr "סובב token"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
-msgstr "Rader per sida"
+msgstr "שורות לעמוד"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
-msgstr "S.M.A.R.T.-detaljer"
+msgstr "פרטי S.M.A.R.T."
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Self-Test"
-msgstr "S.M.A.R.T. själftest"
+msgstr "בדיקה עצמית S.M.A.R.T."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
-msgstr "Spara adressen med Enter-tangenten eller komma. Lämna tomt för att inaktivera e-postaviseringar."
+msgstr "שמור כתובת באמצעות מקש enter או פסיק. השאר ריק כדי להשבית התראות אימייל."
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
-msgstr "Spara inställningar"
+msgstr "שמור הגדרות"
 
 #: src/components/add-system.tsx
 msgid "Save system"
-msgstr "Spara system"
+msgstr "שמור מערכת"
 
 #: src/components/navbar.tsx
 msgid "Search"
-msgstr "Sök"
+msgstr "חיפוש"
 
 #: src/components/command-palette.tsx
 msgid "Search for systems or settings..."
-msgstr "Sök efter system eller inställningar..."
+msgstr "חפש מערכות או הגדרות..."
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
-msgstr "Se <0>aviseringsinställningar</0> för att konfigurera hur du tar emot larm."
+msgstr "ראה <0>הגדרות התראות</0> כדי להגדיר כיצד אתה מקבל התראות."
 
 #: src/components/routes/system.tsx
 msgid "Sent"
-msgstr "Skickat"
+msgstr "נשלח"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
-msgstr "Serienummer"
+msgstr "מספר סידורי"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
-msgstr "Ställ in procentuella tröskelvärden för mätarfärger."
+msgstr "הגדר סף אחוזים עבור צבעי מד."
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Settings"
-msgstr "Inställningar"
+msgstr "הגדרות"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Settings saved"
-msgstr "Inställningar sparade"
+msgstr "הגדרות נשמרו"
 
 #: src/components/login/auth-form.tsx
 msgid "Sign in"
-msgstr "Logga in"
+msgstr "התחבר"
 
 #: src/components/command-palette.tsx
 msgid "SMTP settings"
-msgstr "SMTP-inställningar"
+msgstr "הגדרות SMTP"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Sort By"
-msgstr "Sortera efter"
+msgstr "מיין לפי"
 
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 msgid "State"
-msgstr "Tillstånd"
+msgstr "מצב"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
-msgstr "Status"
+msgstr "סטטוס"
 
 #: src/components/routes/system.tsx
 msgid "Swap space used by the system"
-msgstr "Swap-utrymme som används av systemet"
+msgstr "שטח swap בשימוש על ידי המערכת"
 
 #: src/components/routes/system.tsx
 msgid "Swap Usage"
-msgstr "Swap-användning"
+msgstr "שימוש ב-Swap"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1076,87 +1071,87 @@ msgstr "Swap-användning"
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
-msgstr "System"
+msgstr "מערכת"
 
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
-msgstr "Systembelastning över tid"
+msgstr "ממוצעי עומס מערכת לאורך זמן"
 
 #: src/components/navbar.tsx
 msgid "Systems"
-msgstr "System"
+msgstr "מערכות"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
-msgstr "System kan hanteras i en <0>config.yml</0>-fil i din datakatalog."
+msgstr "מערכות יכולות להיות מנוהלות בקובץ <0>config.yml</0> בתוך ספריית הנתונים שלך."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
-msgstr "Tabell"
+msgstr "טבלה"
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
-msgstr "Temp"
+msgstr "טמפ'"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "Temperature"
-msgstr "Temperatur"
+msgstr "טמפרטורה"
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"
-msgstr "Temperaturenhet"
+msgstr "יחידת טמפרטורה"
 
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
-msgstr "Temperaturer för systemsensorer"
+msgstr "טמפרטורות של חיישני המערכת"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test <0>URL</0>"
-msgstr "Testa <0>URL</0>"
+msgstr "בדוק <0>URL</0>"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test notification sent"
-msgstr "Testavisering skickad"
+msgstr "התראת בדיקה נשלחה"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
-msgstr "Logga sedan in på backend och återställ ditt användarkontos lösenord i användartabellen."
+msgstr "לאחר מכן התחבר ל-backend ואפס את סיסמת חשבון המשתמש שלך בטבלת המשתמשים."
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
-msgstr "Den här åtgärden kan inte ångras. Detta kommer permanent att ta bort alla aktuella poster för {name} från databasen."
+msgstr "פעולה זו לא ניתנת לביטול. פעולה זו תמחק לצמיתות את כל הרשומות הנוכחיות עבור {name} ממסד הנתונים."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
-msgstr "Detta kommer permanent att ta bort alla valda poster från databasen."
+msgstr "פעולה זו תמחק לצמיתות את כל הרשומות שנבחרו ממסד הנתונים."
 
 #: src/components/routes/system.tsx
 msgid "Throughput of {extraFsName}"
-msgstr "Genomströmning av {extraFsName}"
+msgstr "תפוקה של {extraFsName}"
 
 #: src/components/routes/system.tsx
 msgid "Throughput of root filesystem"
-msgstr "Genomströmning av rotfilsystemet"
+msgstr "תפוקה של מערכת הקבצים הראשית"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
-msgstr "Tidsformat"
+msgstr "פורמט זמן"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
-msgstr "Till e-postadress(er)"
+msgstr "לאימייל(ים)"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Toggle grid"
-msgstr "Växla rutnät"
+msgstr "החלף רשת"
 
 #: src/components/mode-toggle.tsx
 msgid "Toggle theme"
-msgstr "Växla tema"
+msgstr "החלף ערכת נושא"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1167,186 +1162,187 @@ msgstr "Token"
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens & Fingerprints"
-msgstr "Tokens & fingeravtryck"
+msgstr "Tokens וטביעות אצבע"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
-msgstr "Tokens tillåter agenter att ansluta och registrera. Fingeravtryck är stabila identifierare unika för varje system, inställda vid första anslutning."
+msgstr "Tokens מאפשרים לסוכנים להתחבר ולהירשם. טביעות אצבע הן מזהים יציבים ייחודיים לכל מערכת, מוגדרים בחיבור הראשון."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
-msgstr "Tokens och fingeravtryck används för att autentisera WebSocket-anslutningar till hubben."
+msgstr "Tokens וטביעות אצבע משמשים לאימות חיבורי WebSocket ל-hub."
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
-msgstr "Totalt mottagen data för varje gränssnitt"
+msgstr "סך נתונים שהתקבלו עבור כל ממשק"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data sent for each interface"
-msgstr "Totalt skickad data för varje gränssnitt"
+msgstr "סך נתונים שנשלחו עבור כל ממשק"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
-msgstr "Utlöses när 1-minuters genomsnittlig belastning överskrider ett tröskelvärde"
+msgstr "מופעל כאשר ממוצע העומס לדקה אחת עולה על סף"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
-msgstr "Utlöses när 15-minuters genomsnittlig belastning överskrider ett tröskelvärde"
+msgstr "מופעל כאשר ממוצע העומס ל-15 דקות עולה על סף"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
-msgstr "Utlöses när 5-minuters genomsnittlig belastning överskrider ett tröskelvärde"
+msgstr "מופעל כאשר ממוצע העומס ל-5 דקות עולה על סף"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
-msgstr "Utlöses när någon sensor överskrider ett tröskelvärde"
+msgstr "מופעל כאשר כל חיישן עולה על סף"
 
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
-msgstr "Utlöses när kombinerad upp/ner överskrider ett tröskelvärde"
+msgstr "מופעל כאשר השילוב של למעלה/למטה עולה על סף"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
-msgstr "Utlöses när CPU-användningen överskrider ett tröskelvärde"
+msgstr "מופעל כאשר שימוש CPU עולה על סף"
 
 #: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
-msgstr "Utlöses när minnesanvändningen överskrider ett tröskelvärde"
+msgstr "מופעל כאשר שימוש בזיכרון עולה על סף"
 
 #: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"
-msgstr "Utlöses när status växlar mellan upp och ner"
+msgstr "מופעל כאשר הסטטוס מתחלף בין למעלה ולמטה"
 
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
-msgstr "Utlöses när användningen av någon disk överskrider ett tröskelvärde"
+msgstr "מופעל כאשר שימוש בכל דיסק עולה על סף"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
-msgstr "Typ"
+msgstr "סוג"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
-msgstr "Enhetsinställningar"
+msgstr "העדפות יחידות"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
-msgstr "Universal token"
+msgstr "token אוניברסלי"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Unknown"
-msgstr "Okänd"
+msgstr "לא ידוע"
 
 #. Context: System is up
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
-msgstr "Upp"
+msgstr "למעלה"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
-msgstr "Upp ({upSystemsLength})"
+msgstr "למעלה ({upSystemsLength})"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Updated"
-msgstr "Uppdaterad"
+msgstr "עודכן"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
-msgstr "Ladda upp"
+msgstr "העלה"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"
-msgstr "Drifttid"
+msgstr "זמן פעילות"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Usage"
-msgstr "Användning"
+msgstr "שימוש"
 
 #: src/components/routes/system.tsx
 msgid "Usage of root partition"
-msgstr "Användning av rotpartitionen"
+msgstr "שימוש במחיצה הראשית"
 
 #: src/components/charts/mem-chart.tsx
 #: src/components/charts/swap-chart.tsx
 msgid "Used"
-msgstr "Använt"
+msgstr "בשימוש"
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Users"
-msgstr "Användare"
+msgstr "משתמשים"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
-msgstr "Värde"
+msgstr "ערך"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
-msgstr "Visa"
+msgstr "צפה"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "View more"
-msgstr "Visa mer"
+msgstr "צפה עוד"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
-msgstr "Visa dina 200 senaste larm."
+msgstr "צפה ב-200 ההתראות האחרונות שלך."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
-msgstr "Synliga fält"
+msgstr "שדות גלויים"
 
 #: src/components/routes/system.tsx
 msgid "Waiting for enough records to display"
-msgstr "Väntar på tillräckligt med poster att visa"
+msgstr "ממתין לרשומות מספיקות לתצוגה"
 
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
-msgstr "Vill du hjälpa oss att göra våra översättningar ännu bättre? Kolla in <0>Crowdin</0> för mer information."
+msgstr "רוצה לעזור לשפר את התרגומים שלנו? בדוק <0>Crowdin</0> לפרטים."
 
 #: src/components/routes/settings/general.tsx
 msgid "Warning (%)"
-msgstr "Varning (%)"
+msgstr "אזהרה (%)"
 
 #: src/components/routes/settings/general.tsx
 msgid "Warning thresholds"
-msgstr "Varningströsklar"
+msgstr "ספי אזהרה"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
-msgstr "Webhook / Push-aviseringar"
+msgstr "Webhook / התראות דחיפה"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
-msgstr "När aktiverad tillåter denna token agenter att självregistrera utan tidigare systemskapande. Upphör efter en timme eller vid hub-omstart."
+msgstr "כאשר מופעל, token זה מאפשר לסוכנים להירשם עצמאית ללא יצירת מערכת מוקדמת. פג לאחר שעה אחת או בהפעלה מחדש של hub."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
 msgid "Windows command"
-msgstr "Windows-kommando"
+msgstr "פקודת Windows"
 
 #. Disk write
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Write"
-msgstr "Skriv"
+msgstr "כתיבה"
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
-msgstr "YAML-konfiguration"
+msgstr "תצורת YAML"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
-msgstr "YAML-konfiguration"
+msgstr "תצורת YAML"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
-msgstr "Dina användarinställningar har uppdaterats."
+msgstr "הגדרות המשתמש שלך עודכנו."
+

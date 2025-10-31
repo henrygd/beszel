@@ -168,7 +168,7 @@ func (h *GetSmartDataHandler) Handle(hctx *HandlerContext) error {
 		// return empty map to indicate no data
 		return hctx.SendResponse(map[string]smart.SmartData{}, hctx.RequestID)
 	}
-	if err := hctx.Agent.smartManager.Refresh(); err != nil {
+	if err := hctx.Agent.smartManager.Refresh(false); err != nil {
 		slog.Debug("smart refresh failed", "err", err)
 	}
 	data := hctx.Agent.smartManager.GetCurrentData()
