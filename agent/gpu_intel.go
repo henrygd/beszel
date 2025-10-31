@@ -49,7 +49,12 @@ func (gm *GPUManager) updateIntelFromStats(sample *intelGpuStats) bool {
 
 // collectIntelStats executes intel_gpu_top in text mode (-l) and parses the output
 func (gm *GPUManager) collectIntelStats() (err error) {
-	cmd := exec.Command(intelGpuStatsCmd, "-s", intelGpuStatsInterval, "-l")
+	// Build command arguments, optionally selecting a device via -d
+	args := []string{"-s", intelGpuStatsInterval, "-l"}
+	if dev, ok := GetEnv("INTEL_GPU_DEVICE"); ok && dev != "" {
+		args = append(args, "-d", dev)
+	}
+	cmd := exec.Command(intelGpuStatsCmd, args...)
 	// Avoid blocking if intel_gpu_top writes to stderr
 	cmd.Stderr = io.Discard
 	stdout, err := cmd.StdoutPipe()
