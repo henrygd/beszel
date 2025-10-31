@@ -84,6 +84,16 @@ export interface SystemStats {
 	cpu: number
 	/** peak cpu */
 	cpum?: number
+	/** cpu user percent */
+	cpuu?: number
+	/** cpu system percent */
+	cpus?: number
+	/** cpu iowait percent */
+	cpui?: number
+	/** cpu steal percent */
+	cpust?: number
+	/** per-core cpu metrics [user, system, iowait, steal] */
+	cpuc?: Record<string, [number, number, number, number]>
 	// TODO: remove these in future release in favor of la
 	/** load average 1 minute */
 	l1?: number

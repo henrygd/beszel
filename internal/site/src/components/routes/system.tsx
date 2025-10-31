@@ -73,6 +73,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import NetworkSheet from "./system/network-sheet"
+import CpuCoresSheet from "./system/cpu-cores-sheet"
 import LineChartDefault from "../charts/line-chart"
 
 
@@ -585,17 +586,48 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						grid={grid}
 						title={t`CPU Usage`}
 						description={t`Average system-wide CPU utilization`}
-						cornerEl={maxValSelect}
+						cornerEl={
+							<>
+								{maxValSelect}
+								<CpuCoresSheet chartData={chartData} dataEmpty={dataEmpty} grid={grid} maxValues={maxValues} />
+							</>
+						}
+						legend={true}
 					>
 						<AreaChartDefault
 							chartData={chartData}
 							maxToggled={maxValues}
+							legend={true}
 							dataPoints={[
 								{
-									label: t`CPU Usage`,
+									label: t`Total`,
 									dataKey: ({ stats }) => (showMax ? stats?.cpum : stats?.cpu),
 									color: 1,
 									opacity: 0.4,
+								},
+								{
+									label: t`User`,
+									dataKey: ({ stats }) => stats?.cpuu,
+									color: 2,
+									opacity: 0.3,
+								},
+								{
+									label: t`System`,
+									dataKey: ({ stats }) => stats?.cpus,
+									color: 3,
+									opacity: 0.3,
+								},
+								{
+									label: t`IOWait`,
+									dataKey: ({ stats }) => stats?.cpui,
+									color: 4,
+									opacity: 0.3,
+								},
+								{
+									label: t`Steal`,
+									dataKey: ({ stats }) => stats?.cpust,
+									color: 5,
+									opacity: 0.3,
 								},
 							]}
 							tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}

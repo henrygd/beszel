@@ -11,7 +11,12 @@ import (
 type Stats struct {
 	Cpu            float64             `json:"cpu" cbor:"0,keyasint"`
 	MaxCpu         float64             `json:"cpum,omitempty" cbor:"1,keyasint,omitempty"`
-	Mem            float64             `json:"m" cbor:"2,keyasint"`
+	CpuUser        float64                `json:"cpuu,omitempty" cbor:"33,keyasint,omitempty"`
+	CpuSystem      float64                `json:"cpus,omitempty" cbor:"34,keyasint,omitempty"`
+	CpuIowait      float64                `json:"cpui,omitempty" cbor:"35,keyasint,omitempty"`
+	CpuSteal       float64                `json:"cpust,omitempty" cbor:"36,keyasint,omitempty"`
+	CpuCores       map[string][4]float64  `json:"cpuc,omitempty" cbor:"37,keyasint,omitempty"` // [user, system, iowait, steal] per core
+	Mem            float64                `json:"m" cbor:"2,keyasint"`
 	MemUsed        float64             `json:"mu" cbor:"3,keyasint"`
 	MemPct         float64             `json:"mp" cbor:"4,keyasint"`
 	MemBuffCache   float64             `json:"mb" cbor:"5,keyasint"`
