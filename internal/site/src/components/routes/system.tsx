@@ -958,9 +958,9 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 													label: t`Write`,
 													dataKey: ({ stats }) => {
 														if (showMax) {
-															return stats?.efs?.[extraFsName]?.wb ?? (stats?.efs?.[extraFsName]?.wm ?? 0) * 1024 * 1024
+															return stats?.efs?.[extraFsName]?.wbm || (stats?.efs?.[extraFsName]?.wm ?? 0) * 1024 * 1024
 														}
-														return stats?.efs?.[extraFsName]?.wb ?? (stats?.efs?.[extraFsName]?.w ?? 0) * 1024 * 1024
+														return stats?.efs?.[extraFsName]?.wb || (stats?.efs?.[extraFsName]?.w ?? 0) * 1024 * 1024
 													},
 													color: 3,
 													opacity: 0.3,

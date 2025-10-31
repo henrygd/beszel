@@ -426,7 +426,7 @@ func (sm *SmartManager) smartctlArgs(deviceInfo *DeviceInfo, includeStandby bool
 		}
 	}
 
-	args = append(args, "-aj")
+	args = append(args, "-a", "--json=c")
 
 	if includeStandby {
 		args = append(args, "-n", "standby")
@@ -688,13 +688,17 @@ func (sm *SmartManager) parseSmartForSata(output []byte) (bool, int) {
 	// update SmartAttributes
 	smartData.Attributes = make([]*smart.SmartAttribute, 0, len(data.AtaSmartAttributes.Table))
 	for _, attr := range data.AtaSmartAttributes.Table {
+		rawValue := uint64(attr.Raw.Value)
+		if parsed, ok := smart.ParseSmartRawValueString(attr.Raw.String); ok {
+			rawValue = parsed
+		}
 		smartAttr := &smart.SmartAttribute{
 			ID:         attr.ID,
 			Name:       attr.Name,
 			Value:      attr.Value,
 			Worst:      attr.Worst,
 			Threshold:  attr.Thresh,
-			RawValue:   uint64(attr.Raw.Value),
+			RawValue:   rawValue,
 			RawString:  attr.Raw.String,
 			WhenFailed: attr.WhenFailed,
 		}
