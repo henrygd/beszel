@@ -8,7 +8,7 @@ msgstr ""
 "Language: sv\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-20 21:37\n"
+"PO-Revision-Date: 2025-10-28 23:00\n"
 "Last-Translator: \n"
 "Language-Team: Swedish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -43,7 +43,11 @@ msgstr "1 timme"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr "1 min"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "1 minute"
+msgstr "1 minut"
 
 #: src/lib/utils.ts
 msgid "1 minute"
@@ -60,7 +64,7 @@ msgstr "12 timmar"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr "15 min"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -73,7 +77,7 @@ msgstr "30 dagar"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr "5 min"
+msgstr ""
 
 #. Table column
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -113,11 +117,11 @@ msgstr "Justera visningsalternativ för diagram."
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
-msgstr "Admin"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr "Agent"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -241,7 +245,7 @@ msgstr "Varning - potentiell dataförlust"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr "Celsius (°C)"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -368,7 +372,7 @@ msgstr "Kopiera YAML"
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr "CPU"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -439,7 +443,7 @@ msgstr "Urladdar"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
-msgstr "Disk"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Disk I/O"
@@ -566,6 +570,10 @@ msgstr "Fahrenheit (°F)"
 msgid "Failed Attributes:"
 msgstr "Misslyckade attribut:"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Failed Attributes:"
+msgstr "Misslyckade attribut:"
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Autentisering misslyckades"
@@ -616,7 +624,7 @@ msgstr "FreeBSD kommando"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Full"
-msgstr "Full"
+msgstr ""
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx
@@ -679,7 +687,7 @@ msgstr "Språk"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
-msgstr "Layout"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
@@ -737,7 +745,7 @@ msgstr "Manuella installationsinstruktioner"
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx
 msgid "Max 1 min"
-msgstr "Max 1 min"
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -916,7 +924,12 @@ msgstr "Vänligen logga in på ditt konto"
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr "Port"
+msgstr ""
+
+#. Power On Time
+#: src/components/routes/system/smart-table.tsx
+msgid "Power On"
+msgstr "Påslagen"
 
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
@@ -1060,7 +1073,7 @@ msgstr "Tillstånd"
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
-msgstr "Status"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Swap space used by the system"
@@ -1076,7 +1089,7 @@ msgstr "Swap-användning"
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
-msgstr "System"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
@@ -1350,3 +1363,4 @@ msgstr "YAML-konfiguration"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Dina användarinställningar har uppdaterats."
+

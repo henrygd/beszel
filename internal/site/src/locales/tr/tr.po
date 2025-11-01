@@ -8,7 +8,7 @@ msgstr ""
 "Language: tr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-20 21:37\n"
+"PO-Revision-Date: 2025-10-28 23:00\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -368,7 +368,7 @@ msgstr "YAML'ı kopyala"
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr "CPU"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -439,7 +439,7 @@ msgstr "Boşalıyor"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
-msgstr "Disk"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Disk I/O"
@@ -755,7 +755,7 @@ msgstr "Docker konteynerlerinin bellek kullanımı"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
-msgstr "Model"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -916,7 +916,12 @@ msgstr "Lütfen hesabınıza giriş yapın"
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr "Port"
+msgstr ""
+
+#. Power On Time
+#: src/components/routes/system/smart-table.tsx
+msgid "Power On"
+msgstr "Güç Açık"
 
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
@@ -1161,7 +1166,7 @@ msgstr "Temayı değiştir"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr "Token"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1350,3 +1355,4 @@ msgstr "YAML Yapılandırması"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Kullanıcı ayarlarınız güncellendi."
+

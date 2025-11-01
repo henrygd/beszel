@@ -778,7 +778,6 @@ msgstr "Net traffík docker kerfa"
 #: src/components/routes/system.tsx
 #: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
-#: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
 msgstr ""
 
@@ -921,11 +920,6 @@ msgstr "Vinsamlegast skráðu þig inn á aðganginn þinn"
 msgid "Port"
 msgstr ""
 
-#. Power On Time
-#: src/components/routes/system/smart-table.tsx
-msgid "Power On"
-msgstr ""
-
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Precise utilization at the recorded time"
@@ -949,11 +943,6 @@ msgstr "Lesa"
 #: src/components/routes/system.tsx
 msgid "Received"
 msgstr "Móttekið"
-
-#: src/components/containers-table/containers-table.tsx
-#: src/components/containers-table/containers-table.tsx
-msgid "Refresh"
-msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
@@ -1020,10 +1009,6 @@ msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Sent"
-msgstr ""
-
-#: src/components/routes/system/smart-table.tsx
-msgid "Serial Number"
 msgstr ""
 
 #: src/components/routes/settings/general.tsx
@@ -1253,10 +1238,6 @@ msgstr ""
 msgid "Up ({upSystemsLength})"
 msgstr ""
 
-#: src/components/containers-table/containers-table-columns.tsx
-msgid "Updated"
-msgstr ""
-
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
 msgstr ""
@@ -1353,3 +1334,4 @@ msgstr ""
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Notenda stillingar vistaðar."
+

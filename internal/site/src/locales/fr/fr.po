@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-25 20:53\n"
+"PO-Revision-Date: 2025-10-28 22:59\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -405,7 +405,7 @@ msgstr "État actuel"
 #. Power Cycles
 #: src/components/routes/system/smart-table.tsx
 msgid "Cycles"
-msgstr "Cycles"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Dashboard"
@@ -1223,7 +1223,7 @@ msgstr "Déclenchement lorsque l'utilisation de tout disque dépasse un seuil"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
-msgstr "Type"
+msgstr ""
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
@@ -1350,3 +1350,4 @@ msgstr "Configuration YAML"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Vos paramètres utilisateur ont été mis à jour."
+
