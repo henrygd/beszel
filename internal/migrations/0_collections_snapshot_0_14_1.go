@@ -718,7 +718,9 @@ func init() {
 				"type": "autodate"
 			}
 		],
-		"indexes": [],
+		"indexes": [
+			"CREATE INDEX ` + "`" + `idx_systems_status` + "`" + ` ON ` + "`" + `systems` + "`" + ` (` + "`" + `status` + "`" + `)"
+		],
 		"system": false
 	},
 	{

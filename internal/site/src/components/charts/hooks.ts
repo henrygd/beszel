@@ -69,7 +69,7 @@ export function useContainerChartConfigs(containerData: ChartData["containerData
 				const hue = ((i * 360) / count) % 360
 				chartConfig[containerName] = {
 					label: containerName,
-					color: `hsl(${hue}, 60%, 55%)`,
+					color: `hsl(${hue}, var(--chart-saturation), var(--chart-lightness))`,
 				}
 			}
 

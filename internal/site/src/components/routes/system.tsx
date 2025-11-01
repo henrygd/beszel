@@ -1,5 +1,5 @@
 import { t } from "@lingui/core/macro"
-import { Plural, Trans, useLingui } from "@lingui/react/macro"
+import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
 import { timeTicks } from "d3-time"
@@ -73,6 +73,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import NetworkSheet from "./system/network-sheet"
+import CpuCoresSheet from "./system/cpu-sheet"
 import LineChartDefault from "../charts/line-chart"
 
 
@@ -97,8 +98,8 @@ function getTimeData(chartTime: ChartTimes, lastCreated: number) {
 		}
 	}
 
-	const buffer = chartTime === "1m" ? 400 : 20_000
-	const now = new Date(Date.now() + buffer)
+	// const buffer = chartTime === "1m" ? 400 : 20_000
+	const now = new Date(Date.now())
 	const startTime = chartTimeData[chartTime].getOffset(now)
 	const ticks = timeTicks(startTime, now, chartTimeData[chartTime].ticks ?? 12).map((date) => date.getTime())
 	const data = {
@@ -585,7 +586,12 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						grid={grid}
 						title={t`CPU Usage`}
 						description={t`Average system-wide CPU utilization`}
-						cornerEl={maxValSelect}
+						cornerEl={
+							<div className="flex gap-2">
+								{maxValSelect}
+								<CpuCoresSheet chartData={chartData} dataEmpty={dataEmpty} grid={grid} maxValues={maxValues} />
+							</div>
+						}
 					>
 						<AreaChartDefault
 							chartData={chartData}
@@ -1119,7 +1125,7 @@ export function ChartCard({
 				<CardDescription>{description}</CardDescription>
 				{cornerEl && <div className="py-1 grid sm:justify-end sm:absolute sm:top-3.5 sm:end-3.5">{cornerEl}</div>}
 			</CardHeader>
-			<div className={cn("ps-0 w-[calc(100%-1.5em)] relative group", legend ? "h-54 md:h-56" : "h-48 md:h-52")}>
+			<div className={cn("ps-0 w-[calc(100%-1.3em)] relative group", legend ? "h-54 md:h-56" : "h-48 md:h-52")}>
 				{
 					<Spinner
 						msg={empty ? t`Waiting for enough records to display` : undefined}

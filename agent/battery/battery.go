@@ -56,7 +56,7 @@ func GetBatteryStats() (batteryPercent uint8, batteryState uint8, err error) {
 			// if there were some errors, like missing data, skip it
 			continue
 		}
-		if bat.Full == 0 {
+		if bat == nil || bat.Full == 0 {
 			// skip batteries with no capacity. Charge is unlikely to ever be zero, but
 			// we can't guarantee that, so don't skip based on charge.
 			continue
