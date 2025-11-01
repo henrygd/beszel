@@ -8,7 +8,7 @@ msgstr ""
 "Language: es\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-30 21:52\n"
+"PO-Revision-Date: 2025-11-01 17:41\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -997,11 +997,11 @@ msgstr "Guarde la dirección usando la tecla enter o coma. Deje en blanco para d
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
-msgstr "Guardar Configuración"
+msgstr "Guardar configuración"
 
 #: src/components/add-system.tsx
 msgid "Save system"
-msgstr "Guardar Sistema"
+msgstr "Guardar sistema"
 
 #: src/components/navbar.tsx
 msgid "Search"
