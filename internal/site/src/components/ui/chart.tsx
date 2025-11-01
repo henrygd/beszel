@@ -257,13 +257,16 @@ const ChartLegendContent = React.forwardRef<
 	Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
 		hideIcon?: boolean
 		nameKey?: string
+		reverse?: boolean
 	}
->(({ className, payload, verticalAlign = "bottom" }, ref) => {
+>(({ className, payload, verticalAlign = "bottom", reverse = false }, ref) => {
 	// const { config } = useChart()
 
 	if (!payload?.length) {
 		return null
 	}
+
+	const reversedPayload = reverse ? [...payload].reverse() : payload
 
 	return (
 		<div
@@ -274,7 +277,7 @@ const ChartLegendContent = React.forwardRef<
 				className
 			)}
 		>
-			{payload.map((item) => {
+			{reversedPayload.map((item) => {
 				// const key = `${nameKey || item.dataKey || 'value'}`
 				// const itemConfig = getPayloadConfigFromPayload(config, item, key)
 

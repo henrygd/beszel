@@ -109,7 +109,7 @@ export default function AreaChartDefault({
 								/>
 							)
 						})}
-						{legend && <ChartLegend content={<ChartLegendContent />} />}
+						{legend && <ChartLegend content={<ChartLegendContent reverse={reverseStackOrder} />} />}
 					</AreaChart>
 				</ChartContainer>
 			</div>

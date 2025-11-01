@@ -1,6 +1,6 @@
 import { t } from "@lingui/core/macro"
 import { MoreHorizontalIcon } from "lucide-react"
-import { memo, useMemo, useRef, useState } from "react"
+import { memo, useRef, useState } from "react"
 import AreaChartDefault, { DataPoint } from "@/components/charts/area-chart"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
 import { Button } from "@/components/ui/button"
@@ -26,7 +26,7 @@ export default memo(function CpuCoresSheet({
 	const [cpuCoresOpen, setCpuCoresOpen] = useState(false)
 	const hasOpened = useRef(false)
 
-	const supportsBreakdown = useMemo(() => compareSemVer(chartData.agentVersion, minAgentVersion) >= 0, [chartData.agentVersion])
+	const supportsBreakdown = compareSemVer(chartData.agentVersion, minAgentVersion) >= 0
 
 	if (!supportsBreakdown) {
 		return null
@@ -44,48 +44,48 @@ export default memo(function CpuCoresSheet({
 
 	const breakdownDataPoints = [
 		{
-			label: t`Other`,
-			dataKey: ({ stats }: SystemStatsRecord) => {
-				const total = stats?.cpub?.reduce((acc, curr) => acc + curr, 0) ?? 0
-				return total > 0 ? 100 - total : null
-			},
-			color: `hsl(80, 65%, 52%)`,
-			opacity: 0.4,
-			stackId: "a"
-		},
-		{
-			label: "Steal",
-			dataKey: ({ stats }: SystemStatsRecord) => stats?.cpub?.[3],
-			color: 5,
-			opacity: 0.4,
-			stackId: "a"
-		},
-		{
-			label: "Idle",
-			dataKey: ({ stats }: SystemStatsRecord) => stats?.cpub?.[4],
-			color: 2,
-			opacity: 0.4,
-			stackId: "a"
-		},
-		{
-			label: "IOWait",
-			dataKey: ({ stats }: SystemStatsRecord) => stats?.cpub?.[2],
-			color: 4,
-			opacity: 0.4,
+			label: "System",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.cpub?.[1],
+			color: 3,
+			opacity: 0.35,
 			stackId: "a"
 		},
 		{
 			label: "User",
 			dataKey: ({ stats }: SystemStatsRecord) => stats?.cpub?.[0],
 			color: 1,
-			opacity: 0.4,
+			opacity: 0.35,
 			stackId: "a"
 		},
 		{
-			label: "System",
-			dataKey: ({ stats }: SystemStatsRecord) => stats?.cpub?.[1],
-			color: 3,
-			opacity: 0.4,
+			label: "IOWait",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.cpub?.[2],
+			color: 4,
+			opacity: 0.35,
+			stackId: "a"
+		},
+		{
+			label: "Steal",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.cpub?.[3],
+			color: 5,
+			opacity: 0.35,
+			stackId: "a"
+		},
+		{
+			label: "Idle",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.cpub?.[4],
+			color: 2,
+			opacity: 0.35,
+			stackId: "a"
+		},
+		{
+			label: t`Other`,
+			dataKey: ({ stats }: SystemStatsRecord) => {
+				const total = stats?.cpub?.reduce((acc, curr) => acc + curr, 0) ?? 0
+				return total > 0 ? 100 - total : null
+			},
+			color: `hsl(80, 65%, 52%)`,
+			opacity: 0.35,
 			stackId: "a"
 		},
 	] as DataPoint[]
@@ -118,13 +118,13 @@ export default memo(function CpuCoresSheet({
 							className="min-h-auto"
 						>
 							<AreaChartDefault
-								reverseStackOrder={true}
 								chartData={chartData}
 								maxToggled={maxValues}
 								legend={true}
 								dataPoints={breakdownDataPoints}
 								tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
 								contentFormatter={({ value }) => `${decimalString(value)}%`}
+								reverseStackOrder={true}
 								itemSorter={() => 1}
 								domain={[0, 100]}
 							/>

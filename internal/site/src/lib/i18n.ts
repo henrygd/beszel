@@ -7,13 +7,15 @@ import { messages as enMessages } from "@/locales/en/en"
 import { BatteryState } from "./enums"
 import { $direction } from "./stores"
 
+const rtlLanguages = new Set(["ar", "fa", "he"])
+
 // activates locale
 function activateLocale(locale: string, messages: Messages = enMessages) {
 	i18n.load(locale, messages)
 	i18n.activate(locale)
 	document.documentElement.lang = locale
 	localStorage.setItem("lang", locale)
-	$direction.set(locale.startsWith("ar") || locale.startsWith("fa") ? "rtl" : "ltr")
+	$direction.set(rtlLanguages.has(locale) ? "rtl" : "ltr")
 }
 
 // dynamically loads translations for the given locale
