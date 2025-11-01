@@ -370,8 +370,17 @@ msgstr "העתק YAML"
 msgid "CPU"
 msgstr "CPU"
 
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "CPU Cores"
+msgstr "ליבות CPU"
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "CPU Time Breakdown"
+msgstr "פירוט זמן CPU"
+
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/cpu-sheet.tsx
 #: src/lib/alerts.ts
 msgid "CPU Usage"
 msgstr "שימוש CPU"
@@ -833,6 +842,10 @@ msgstr "פתח תפריט"
 msgid "Or continue with"
 msgstr "או המשך עם"
 
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Other"
+msgstr "אחר"
+
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "דרוס התראות קיימות"
@@ -880,6 +893,15 @@ msgstr "מושהה"
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused ({pausedSystemsLength})"
 msgstr "מושהה ({pausedSystemsLength})"
+
+#: src/components/routes/system/cpu-sheet.tsx
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Per-core average utilization"
+msgstr "ניצול ממוצע לליבה"
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Percentage of time spent in each state"
+msgstr "אחוז הזמן המוקדש לכל מצב"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1266,6 +1288,7 @@ msgstr "זמן פעילות"
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "שימוש"
 
@@ -1291,6 +1314,7 @@ msgstr "ערך"
 msgid "View"
 msgstr "צפה"
 
+#: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 msgid "View more"
 msgstr "צפה בעוד"
@@ -1350,4 +1374,3 @@ msgstr "תצורת YAML"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "הגדרות המשתמש שלך עודכנו."
-

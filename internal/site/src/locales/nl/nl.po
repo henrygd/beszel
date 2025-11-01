@@ -370,8 +370,17 @@ msgstr "YAML kopiëren"
 msgid "CPU"
 msgstr ""
 
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "CPU Cores"
+msgstr "CPU-kernen"
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "CPU Time Breakdown"
+msgstr "CPU-tijdverdeling"
+
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/cpu-sheet.tsx
 #: src/lib/alerts.ts
 msgid "CPU Usage"
 msgstr "Processorgebruik"
@@ -833,6 +842,10 @@ msgstr ""
 msgid "Or continue with"
 msgstr "Of ga verder met"
 
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Other"
+msgstr "Overig"
+
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "Overschrijf bestaande waarschuwingen"
@@ -880,6 +893,15 @@ msgstr "Gepauzeerd"
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused ({pausedSystemsLength})"
 msgstr "Gepauzeerd ({pausedSystemsLength})"
+
+#: src/components/routes/system/cpu-sheet.tsx
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Per-core average utilization"
+msgstr "Gemiddeld gebruik per kern"
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Percentage of time spent in each state"
+msgstr "Percentage tijd besteed in elke status"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1266,6 +1288,7 @@ msgstr "Actief"
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "Gebruik"
 
@@ -1291,6 +1314,7 @@ msgstr "Waarde"
 msgid "View"
 msgstr "Weergave"
 
+#: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 msgid "View more"
 msgstr "Meer weergeven"
@@ -1350,4 +1374,3 @@ msgstr "YAML Configuratie"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Je gebruikersinstellingen zijn bijgewerkt."
-
