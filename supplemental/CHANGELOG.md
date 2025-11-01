@@ -1,12 +1,20 @@
-## 0.15.4
-
-- Add `INTEL_GPU_DEVICE` environment variable to select Intel GPU device. (#1285)
-
-- Update `shoutrrr` and `gopsutil` dependencies.
-
 ## 0.15.3
 
+- Add CPU state details and per-core usage. (#1356)
+
+- Add `EXCLUDE_CONTAINERS` environment variable to exclude containers from being monitored. (#1352)
+
+- Add `INTEL_GPU_DEVICE` environment variable to specify Intel GPU device. (#1285)
+
 - Improve parsing of edge case S.M.A.R.T. power on times. (#1347)
+
+- Fix empty disk I/O values for extra disks. (#1355)
+
+- Fix battery nil pointer error. (#1353)
+
+- Add Hebrew with translations by @gabay.
+
+- Update `shoutrrr` and `gopsutil` dependencies.
 
 ## 0.15.2
 
