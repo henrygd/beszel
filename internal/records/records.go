@@ -113,8 +113,8 @@ func (rm *RecordManager) CreateLongerRecords() {
 						count, err := txApp.CountRecords(
 							collection.Id,
 							dbx.NewExp(
-								"system = {:system} AND type = {:type} AND created > {:created}",
-								dbx.Params{"type": recordData.longerType, "system": system.Id, "created": longerRecordPeriod},
+								"system = {:system} AND type = {:type} AND timestamp > {:timestamp}",
+								dbx.Params{"type": recordData.longerType, "system": system.Id, "timestamp": longerRecordPeriod},
 							),
 						)
 						// continue if longer record exists
@@ -129,11 +129,11 @@ func (rm *RecordManager) CreateLongerRecords() {
 						Select("id").
 						From(collection.Name).
 						AndWhere(dbx.NewExp(
-							"system={:system} AND type={:type} AND created > {:created}",
+							"system={:system} AND type={:type} AND timestamp > {:timestamp}",
 							dbx.Params{
-								"type":    recordData.shorterType,
-								"system":  system.Id,
-								"created": shorterRecordPeriod,
+								"type":      recordData.shorterType,
+								"system":    system.Id,
+								"timestamp": shorterRecordPeriod,
 							},
 						)).
 						All(&recordIds)
@@ -144,13 +144,13 @@ func (rm *RecordManager) CreateLongerRecords() {
 					}
 					// average the shorter records and create longer record
 					longerRecord := core.NewRecord(collection)
+					longerRecord.Set("timestamp", time.Now().UTC())
 					longerRecord.Set("system", system.Id)
 					longerRecord.Set("type", recordData.longerType)
 					switch collection.Name {
 					case "system_stats":
 						longerRecord.Set("stats", rm.AverageSystemStats(db, recordIds))
 					case "container_stats":
-
 						longerRecord.Set("stats", rm.AverageContainerStats(db, recordIds))
 					}
 					if err := txApp.SaveNoValidate(longerRecord); err != nil {

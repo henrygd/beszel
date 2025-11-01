@@ -31,7 +31,7 @@ export default memo(function TemperatureChart({ chartData }: { chartData: ChartD
 		}
 		const tempSums = {} as Record<string, number>
 		for (const data of chartData.systemStats) {
-			const newData = { created: data.created } as Record<string, number | string>
+			const newData = { timestamp: data.timestamp } as Record<string, number | string>
 			const keys = Object.keys(data.stats?.t ?? {})
 			for (let i = 0; i < keys.length; i++) {
 				const key = keys[i]
@@ -81,7 +81,7 @@ export default memo(function TemperatureChart({ chartData }: { chartData: ChartD
 						itemSorter={(a, b) => b.value - a.value}
 						content={
 							<ChartTooltipContent
-								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
+								labelFormatter={(_, data) => formatShortDate(data[0].payload.timestamp)}
 								contentFormatter={(item) => {
 									const { value, unit } = formatTemperature(item.value, userSettings.unitTemp)
 									return decimalString(value) + " " + unit

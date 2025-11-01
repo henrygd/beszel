@@ -132,4 +132,5 @@ type CombinedData struct {
 	Stats      Stats              `json:"stats" cbor:"0,keyasint"`
 	Info       Info               `json:"info" cbor:"1,keyasint"`
 	Containers []*container.Stats `json:"container" cbor:"2,keyasint"`
+	Timestamp  *time.Time         `json:"ts,omitempty" cbor:"3,keyasint,omitempty"`
 }
