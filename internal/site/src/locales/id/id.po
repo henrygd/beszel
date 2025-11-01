@@ -8,7 +8,7 @@ msgstr ""
 "Language: id\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-29 21:56\n"
+"PO-Revision-Date: 2025-11-01 19:01\n"
 "Last-Translator: \n"
 "Language-Team: Indonesian\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -370,8 +370,17 @@ msgstr ""
 msgid "CPU"
 msgstr ""
 
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "CPU Cores"
+msgstr ""
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "CPU Time Breakdown"
+msgstr ""
+
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/cpu-sheet.tsx
 #: src/lib/alerts.ts
 msgid "CPU Usage"
 msgstr ""
@@ -833,6 +842,10 @@ msgstr ""
 msgid "Or continue with"
 msgstr ""
 
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Other"
+msgstr ""
+
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr ""
@@ -879,6 +892,15 @@ msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused ({pausedSystemsLength})"
+msgstr ""
+
+#: src/components/routes/system/cpu-sheet.tsx
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Per-core average utilization"
+msgstr ""
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Percentage of time spent in each state"
 msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
@@ -1266,6 +1288,7 @@ msgstr ""
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr ""
 
@@ -1291,6 +1314,7 @@ msgstr ""
 msgid "View"
 msgstr ""
 
+#: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 msgid "View more"
 msgstr ""
