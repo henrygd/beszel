@@ -2,6 +2,8 @@
 
 - Add `INTEL_GPU_DEVICE` environment variable to select Intel GPU device. (#1285)
 
+- Update `shoutrrr` and `gopsutil` dependencies.
+
 ## 0.15.3
 
 - Improve parsing of edge case S.M.A.R.T. power on times. (#1347)
