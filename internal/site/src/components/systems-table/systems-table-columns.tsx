@@ -20,6 +20,7 @@ import {
 	WifiIcon,
 } from "lucide-react"
 import { memo, useMemo, useRef, useState } from "react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 import { isReadOnlyUser, pb } from "@/lib/api"
 import { ConnectionType, connectionTypeLabels, MeterState, SystemStatus } from "@/lib/enums"
 import { $longestSystemNameLen, $userSettings } from "@/lib/stores"
@@ -153,7 +154,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			accessorFn: ({ info }) => info.dp,
 			id: "disk",
 			name: () => t`Disk`,
-			cell: TableCellWithMeter,
+			cell: DiskCellWithMultiple,
 			Icon: HardDriveIcon,
 			header: sortableHeader,
 		},
@@ -351,6 +352,92 @@ function TableCellWithMeter(info: CellContext<SystemRecord, unknown>) {
 				<span className={meterClass} style={{ width: `${val}%` }}></span>
 			</span>
 		</div>
+	)
+}
+
+function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
+	const { info: sysInfo, status } = info.row.original
+	const rootDiskPct = sysInfo.dp
+	const extraFsData = sysInfo.efsp
+	const extraFsCount = extraFsData ? Object.keys(extraFsData).length : 0
+
+	const threshold = getMeterState(rootDiskPct)
+	const meterClass = cn(
+		"h-full",
+		(status !== SystemStatus.Up && STATUS_COLORS.paused) ||
+			(threshold === MeterState.Good && STATUS_COLORS.up) ||
+			(threshold === MeterState.Warn && STATUS_COLORS.pending) ||
+			STATUS_COLORS.down
+	)
+
+	// No extra disks - show simple meter
+	if (extraFsCount === 0) {
+		return (
+			<div className="flex gap-2 items-center tabular-nums tracking-tight w-full">
+				<span className="min-w-8 shrink-0">{decimalString(rootDiskPct, rootDiskPct >= 10 ? 1 : 2)}%</span>
+				<span className="flex-1 min-w-8 grid bg-muted h-[1em] rounded-sm overflow-hidden">
+					<span className={meterClass} style={{ width: `${rootDiskPct}%` }}></span>
+				</span>
+			</div>
+		)
+	}
+
+	// Has extra disks - show with tooltip
+	return (
+		<Tooltip>
+			<TooltipTrigger asChild>
+				<div className="flex flex-col gap-0.5 w-full cursor-help relative z-10">
+					<div className="flex gap-2 items-center tabular-nums tracking-tight">
+						<span className="min-w-8 shrink-0">{decimalString(rootDiskPct, rootDiskPct >= 10 ? 1 : 2)}%</span>
+						<span className="flex-1 min-w-8 grid bg-muted h-[1em] rounded-sm overflow-hidden">
+							<span className={meterClass} style={{ width: `${rootDiskPct}%` }}></span>
+						</span>
+					</div>
+					<div className="text-[0.7rem] text-muted-foreground ps-0.5">+{extraFsCount} more</div>
+				</div>
+			</TooltipTrigger>
+			<TooltipContent side="right" className="max-w-xs">
+				<div className="flex flex-col gap-2 py-1">
+					<div className="flex items-center gap-2 text-xs font-medium">
+						<HardDriveIcon className="size-3" />
+						<span>{t`All Disks`}</span>
+					</div>
+					<div className="flex flex-col gap-1.5">
+						<div className="flex flex-col gap-0.5">
+							<div className="text-[0.65rem] text-muted-foreground uppercase tracking-wider">{t`Root`}</div>
+							<div className="flex gap-2 items-center tabular-nums text-xs">
+								<span className="min-w-7">{decimalString(rootDiskPct, rootDiskPct >= 10 ? 1 : 2)}%</span>
+								<span className="flex-1 min-w-12 grid bg-muted/50 h-1.5 rounded-sm overflow-hidden">
+									<span className={meterClass} style={{ width: `${rootDiskPct}%` }}></span>
+								</span>
+							</div>
+						</div>
+						{extraFsData && Object.entries(extraFsData).map(([name, fs]) => {
+							const pct = fs.dp
+							const fsThreshold = getMeterState(pct)
+							const fsMeterClass = cn(
+								"h-full",
+								(status !== SystemStatus.Up && STATUS_COLORS.paused) ||
+									(fsThreshold === MeterState.Good && STATUS_COLORS.up) ||
+									(fsThreshold === MeterState.Warn && STATUS_COLORS.pending) ||
+									STATUS_COLORS.down
+							)
+							return (
+								<div key={name} className="flex flex-col gap-0.5">
+									<div className="text-[0.65rem] text-muted-foreground uppercase tracking-wider truncate">{name}</div>
+									<div className="flex gap-2 items-center tabular-nums text-xs">
+										<span className="min-w-7">{decimalString(pct, pct >= 10 ? 1 : 2)}%</span>
+										<span className="flex-1 min-w-12 grid bg-muted/50 h-1.5 rounded-sm overflow-hidden">
+											<span className={fsMeterClass} style={{ width: `${pct}%` }}></span>
+										</span>
+									</div>
+								</div>
+							)
+						})}
+					</div>
+				</div>
+			</TooltipContent>
+		</Tooltip>
 	)
 }
 
