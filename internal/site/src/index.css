@@ -32,6 +32,8 @@
 	--chart-4: hsl(280 65% 60%);
 	--chart-5: hsl(340 75% 55%);
 	--table-header: hsl(225, 6%, 97%);
+	--chart-saturation: 65%;
+	--chart-lightness: 50%;
 }
 
 .dark {
@@ -51,11 +53,13 @@
 	--accent: hsl(220 5% 15.5%);
 	--accent-foreground: hsl(220 2% 98%);
 	--destructive: hsl(0 62% 46%);
-	--border: hsl(220 3% 16%);
+	--border: hsl(220 3% 17%);
 	--input: hsl(220 4% 22%);
 	--ring: hsl(220 4% 80%);
 	--table-header: hsl(220, 6%, 13%);
 	--radius: 0.8rem;
+	--chart-saturation: 60%;
+	--chart-lightness: 55%;
 }
 
 @theme inline {

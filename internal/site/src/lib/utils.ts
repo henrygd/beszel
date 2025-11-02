@@ -287,7 +287,7 @@ export function formatBytes(
 	}
 }
 
-export const chartMargin = { top: 12 }
+export const chartMargin = { top: 12, right: 5 }
 
 /**
  * Retuns value of system host, truncating full path if socket.
