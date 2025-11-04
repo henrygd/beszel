@@ -8,7 +8,7 @@ msgstr ""
 "Language: uk\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-01 19:01\n"
+"PO-Revision-Date: 2025-11-04 23:47\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -1198,6 +1198,11 @@ msgstr "Токени дозволяють агентам підключатис�
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Токени та відбитки використовуються для автентифікації WebSocket з'єднань до хабу."
+
+#: src/components/ui/chart.tsx
+#: src/components/ui/chart.tsx
+msgid "Total"
+msgstr "Разом"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
