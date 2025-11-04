@@ -35,6 +35,7 @@ import { getPagePath } from "@nanostores/router"
 const syntaxTheme = "github-dark-dimmed"
 
 export default function ContainersTable({ systemId }: { systemId?: string }) {
+	const loadTime = Date.now()
 	const [data, setData] = useState<ContainerRecord[]>([])
 	const [sorting, setSorting] = useBrowserStorage<SortingState>(
 		`sort-c-${systemId ? 1 : 0}`,
@@ -47,50 +48,47 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 	const [globalFilter, setGlobalFilter] = useState("")
 
 	useEffect(() => {
-		const pbOptions = {
-			fields: "id,name,image,cpu,memory,net,health,status,system,updated",
-		}
-
-		const fetchData = (lastXMs: number) => {
-			const updated = Date.now() - lastXMs
-			let filter: string
-			if (systemId) {
-				filter = pb.filter("system={:system} && updated > {:updated}", { system: systemId, updated })
-			} else {
-				filter = pb.filter("updated > {:updated}", { updated })
-			}
+		function fetchData(systemId?: string) {
 			pb.collection<ContainerRecord>("containers")
 				.getList(0, 2000, {
-					...pbOptions,
-					filter,
+					fields: "id,name,image,cpu,memory,net,health,status,system,updated",
+					filter: systemId ? pb.filter("system={:system}", { system: systemId }) : undefined,
 				})
-				.then(({ items }) => setData((curItems) => {
-					const containerIds = new Set(items.map(item => item.id))
-					const now = Date.now()
-					for (const item of curItems) {
-						if (!containerIds.has(item.id) && now - item.updated < 70_000) {
-							items.push(item)
+				.then(({ items }) => items.length && setData((curItems) => {
+					const lastUpdated = items[0].updated ?? 0
+					const containerIds = new Set()
+					const newItems = []
+					for (const item of items) {
+						if (Math.abs(lastUpdated - item.updated) < 70_000) {
+							containerIds.add(item.id)
+							newItems.push(item)
 						}
 					}
-					return items
+					for (const item of curItems) {
+						if (!containerIds.has(item.id) && lastUpdated - item.updated < 70_000) {
+							newItems.push(item)
+						}
+					}
+					return newItems
 				}))
 		}
 
 		// initial load
-		fetchData(70_000)
+		fetchData(systemId)
 
-		// if no systemId, poll every 10 seconds
+		// if no systemId, pull system containers after every system update
 		if (!systemId) {
-			// poll every 10 seconds
-			const intervalId = setInterval(() => fetchData(10_500), 10_000)
-			// clear interval on unmount
-			return () => clearInterval(intervalId)
+			return $allSystemsById.listen((_value, _oldValue, systemId) => {
+				// exclude initial load of systems
+				if (Date.now() - loadTime > 500) {
+					fetchData(systemId)
+				}
+			})
 		}
 
 		// if systemId, fetch containers after the system is updated
 		return listenKeys($allSystemsById, [systemId], (_newSystems) => {
-			const changeTime = Date.now()
-			setTimeout(() => fetchData(Date.now() - changeTime + 1000), 100)
+			fetchData(systemId)
 		})
 	}, [])
 
