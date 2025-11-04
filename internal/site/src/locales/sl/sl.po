@@ -1199,6 +1199,11 @@ msgstr "Žetoni omogočajo agentom povezavo in registracijo. Prstni odtisi so st
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Žetoni in prstni odtisi se uporabljajo za preverjanje pristnosti WebSocket povezav do vozlišča."
 
+#: src/components/ui/chart.tsx
+#: src/components/ui/chart.tsx
+msgid "Total"
+msgstr "Skupaj"
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
 msgstr "Skupni prejeti podatki za vsak vmesnik"

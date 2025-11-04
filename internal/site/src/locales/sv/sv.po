@@ -1199,6 +1199,11 @@ msgstr "Tokens tillåter agenter att ansluta och registrera. Fingeravtryck är s
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Tokens och fingeravtryck används för att autentisera WebSocket-anslutningar till hubben."
 
+#: src/components/ui/chart.tsx
+#: src/components/ui/chart.tsx
+msgid "Total"
+msgstr "Total"
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
 msgstr "Totalt mottagen data för varje gränssnitt"
