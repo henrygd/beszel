@@ -8,7 +8,7 @@ msgstr ""
 "Language: hr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-01 19:01\n"
+"PO-Revision-Date: 2025-11-04 23:47\n"
 "Last-Translator: \n"
 "Language-Team: Croatian\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
@@ -1198,6 +1198,11 @@ msgstr "Tokeni dopuštaju agentima prijavu i registraciju. Otisci su stabilni id
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Tokeni se uz otiske koriste za autentifikaciju WebSocket veza prema središnjoj kontroli."
+
+#: src/components/ui/chart.tsx
+#: src/components/ui/chart.tsx
+msgid "Total"
+msgstr "Ukupno"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
