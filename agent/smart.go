@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -23,6 +25,7 @@ type SmartManager struct {
 	SmartDevices []*DeviceInfo
 	refreshMutex sync.Mutex
 	lastScanTime time.Time
+	binPath      string
 }
 
 type scanOutput struct {
@@ -160,7 +163,7 @@ func (sm *SmartManager) ScanDevices(force bool) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, "smartctl", "--scan", "-j")
+	cmd := exec.CommandContext(ctx, sm.binPath, "--scan", "-j")
 	output, err := cmd.Output()
 
 	var (
@@ -382,7 +385,7 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 
 	// Try with -n standby first if we have existing data
 	args := sm.smartctlArgs(deviceInfo, true)
-	cmd := exec.CommandContext(ctx, "smartctl", args...)
+	cmd := exec.CommandContext(ctx, sm.binPath, args...)
 	output, err := cmd.CombinedOutput()
 
 	// Check if device is in standby (exit status 2)
@@ -395,7 +398,7 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 		ctx2, cancel2 := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel2()
 		args = sm.smartctlArgs(deviceInfo, false)
-		cmd = exec.CommandContext(ctx2, "smartctl", args...)
+		cmd = exec.CommandContext(ctx2, sm.binPath, args...)
 		output, err = cmd.CombinedOutput()
 	}
 
@@ -875,13 +878,24 @@ func (sm *SmartManager) parseSmartForNvme(output []byte) (bool, int) {
 }
 
 // detectSmartctl checks if smartctl is installed, returns an error if not
-func (sm *SmartManager) detectSmartctl() error {
-	if _, err := exec.LookPath("smartctl"); err == nil {
-		slog.Debug("smartctl found")
-		return nil
+func (sm *SmartManager) detectSmartctl() (string, error) {
+	if path, err := exec.LookPath("smartctl"); err == nil {
+		return path, nil
 	}
-	slog.Debug("smartctl not found")
-	return errors.New("smartctl not found")
+	locations := []string{}
+	if runtime.GOOS == "windows" {
+		locations = append(locations,
+			"C:\\Program Files\\smartmontools\\bin\\smartctl.exe",
+		)
+	} else {
+		locations = append(locations, "/opt/homebrew/bin/smartctl")
+	}
+	for _, location := range locations {
+		if _, err := os.Stat(location); err == nil {
+			return location, nil
+		}
+	}
+	return "", errors.New("smartctl not found")
 }
 
 // NewSmartManager creates and initializes a new SmartManager
@@ -889,9 +903,12 @@ func NewSmartManager() (*SmartManager, error) {
 	sm := &SmartManager{
 		SmartDataMap: make(map[string]*smart.SmartData),
 	}
-	if err := sm.detectSmartctl(); err != nil {
+	path, err := sm.detectSmartctl()
+	if err != nil {
+		slog.Debug(err.Error())
 		return nil, err
 	}
-
+	slog.Debug("smartctl", "path", path)
+	sm.binPath = path
 	return sm, nil
 }
