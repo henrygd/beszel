@@ -136,7 +136,7 @@ export default memo(function ContainerChart({
 						labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 						// @ts-expect-error
 						itemSorter={(a, b) => b.value - a.value}
-						content={<ChartTooltipContent filter={filter} contentFormatter={toolTipFormatter} />}
+						content={<ChartTooltipContent filter={filter} contentFormatter={toolTipFormatter} showTotal={true} />}
 					/>
 					{Object.keys(chartConfig).map((key) => {
 						const filtered = filteredKeys.has(key)
