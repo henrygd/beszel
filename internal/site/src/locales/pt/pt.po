@@ -8,7 +8,7 @@ msgstr ""
 "Language: pt\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-02 15:12\n"
+"PO-Revision-Date: 2025-11-04 22:13\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -134,7 +134,7 @@ msgstr "Alertas"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
-msgstr "Todos os contentores"
+msgstr "Todos os Contêineres"
 
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
