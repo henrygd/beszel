@@ -98,6 +98,15 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 		slog.Error("Error getting cpu metrics", "err", err)
 	}
 
+	if topProcess, err := getTopCpuProcess(cacheTimeMs); err == nil {
+		if topProcess != nil {
+			topProcess.Percent = twoDecimals(topProcess.Percent)
+			systemStats.TopCpuProcess = topProcess
+		}
+	} else {
+		slog.Error("Error getting top cpu process", "err", err)
+	}
+
 	// per-core cpu usage
 	if perCoreUsage, err := getPerCoreCpuUsage(cacheTimeMs); err == nil {
 		systemStats.CpuCoresUsage = perCoreUsage

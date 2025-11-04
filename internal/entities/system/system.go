@@ -47,6 +47,7 @@ type Stats struct {
 	MaxDiskIO         [2]uint64            `json:"diom,omitzero" cbor:"-"`                      // [max read bytes, max write bytes]
 	CpuBreakdown      []float64            `json:"cpub,omitempty" cbor:"33,keyasint,omitempty"` // [user, system, iowait, steal, idle]
 	CpuCoresUsage     Uint8Slice           `json:"cpus,omitempty" cbor:"34,keyasint,omitempty"` // per-core busy usage [CPU0..]
+	TopCpuProcess     *TopCpuProcess       `json:"tcp,omitempty" cbor:"35,keyasint,omitempty"`
 }
 
 // Uint8Slice wraps []uint8 to customize JSON encoding while keeping CBOR efficient.
@@ -152,4 +153,9 @@ type CombinedData struct {
 	Stats      Stats              `json:"stats" cbor:"0,keyasint"`
 	Info       Info               `json:"info" cbor:"1,keyasint"`
 	Containers []*container.Stats `json:"container" cbor:"2,keyasint"`
+}
+
+type TopCpuProcess struct {
+	Name    string  `json:"n" cbor:"0,keyasint"`
+	Percent float64 `json:"p" cbor:"1,keyasint"`
 }

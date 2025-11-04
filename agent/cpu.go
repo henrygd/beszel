@@ -2,14 +2,19 @@ package agent
 
 import (
 	"math"
+	"path/filepath"
 	"runtime"
+	"time"
 
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/shirou/gopsutil/v4/cpu"
+	"github.com/shirou/gopsutil/v4/process"
 )
 
 var lastCpuTimes = make(map[uint16]cpu.TimesStat)
 var lastPerCoreCpuTimes = make(map[uint16][]cpu.TimesStat)
+var lastProcessCpuTimes = make(map[uint16]map[int32]float64)
+var lastProcessCpuSampleTime = make(map[uint16]time.Time)
 
 // init initializes the CPU monitoring by storing the initial CPU times
 // for the default 60-second cache interval.
@@ -19,6 +24,16 @@ func init() {
 	}
 	if perCoreTimes, err := cpu.Times(true); err == nil {
 		lastPerCoreCpuTimes[60000] = perCoreTimes
+	}
+	if processes, err := process.Processes(); err == nil {
+		snapshot := make(map[int32]float64, len(processes))
+		for _, proc := range processes {
+			if times, err := proc.Times(); err == nil {
+				snapshot[proc.Pid] = times.Total()
+			}
+		}
+		lastProcessCpuTimes[60000] = snapshot
+		lastProcessCpuSampleTime[60000] = time.Now()
 	}
 }
 
@@ -103,6 +118,110 @@ func getPerCoreCpuUsage(cacheTimeMs uint16) (system.Uint8Slice, error) {
 
 	lastPerCoreCpuTimes[cacheTimeMs] = perCoreTimes
 	return usage, nil
+}
+
+// getTopCpuProcess returns the process with the highest CPU usage since the last run
+// for the given cache interval. It returns nil if insufficient data is available.
+func getTopCpuProcess(cacheTimeMs uint16) (*system.TopCpuProcess, error) {
+	processes, err := process.Processes()
+	if err != nil {
+		return nil, err
+	}
+
+	now := time.Now()
+
+	lastTimes, ok := lastProcessCpuTimes[cacheTimeMs]
+	if !ok {
+		if fallback := lastProcessCpuTimes[60000]; fallback != nil {
+			copied := make(map[int32]float64, len(fallback))
+			for pid, total := range fallback {
+				copied[pid] = total
+			}
+			lastTimes = copied
+			lastProcessCpuTimes[cacheTimeMs] = copied
+		} else {
+			lastTimes = make(map[int32]float64)
+			lastProcessCpuTimes[cacheTimeMs] = lastTimes
+		}
+	}
+
+	lastSample := lastProcessCpuSampleTime[cacheTimeMs]
+	if lastSample.IsZero() {
+		if fallback := lastProcessCpuSampleTime[60000]; !fallback.IsZero() {
+			lastSample = fallback
+			lastProcessCpuSampleTime[cacheTimeMs] = fallback
+		}
+	}
+
+	elapsed := now.Sub(lastSample).Seconds()
+	if lastSample.IsZero() || elapsed <= 0 {
+		snapshot := make(map[int32]float64, len(processes))
+		for _, proc := range processes {
+			if times, err := proc.Times(); err == nil {
+				snapshot[proc.Pid] = times.Total()
+			}
+		}
+		lastProcessCpuTimes[cacheTimeMs] = snapshot
+		lastProcessCpuSampleTime[cacheTimeMs] = now
+		return nil, nil
+	}
+
+	cpuCount := float64(runtime.NumCPU())
+	if cpuCount <= 0 {
+		cpuCount = 1
+	}
+
+	snapshot := make(map[int32]float64, len(processes))
+	var topName string
+	var topPercent float64
+
+	for _, proc := range processes {
+		times, err := proc.Times()
+		if err != nil {
+			continue
+		}
+
+		total := times.Total()
+		pid := proc.Pid
+		snapshot[pid] = total
+
+		lastTotal, ok := lastTimes[pid]
+		if !ok || total <= lastTotal {
+			continue
+		}
+
+		percent := clampPercent((total - lastTotal) / (elapsed * cpuCount) * 100)
+		if percent <= 0 {
+			continue
+		}
+
+		name, err := proc.Name()
+		if err != nil || name == "" {
+			if exe, exeErr := proc.Exe(); exeErr == nil && exe != "" {
+				name = filepath.Base(exe)
+			}
+		}
+		if name == "" {
+			continue
+		}
+
+		if percent > topPercent {
+			topPercent = percent
+			topName = name
+		}
+	}
+
+	lastProcessCpuTimes[cacheTimeMs] = snapshot
+	lastProcessCpuSampleTime[cacheTimeMs] = now
+
+	if topName == "" {
+		return nil, nil
+	}
+
+	return &system.TopCpuProcess{
+		Name:    topName,
+		Percent: topPercent,
+	}, nil
 }
 
 // calculateBusy calculates the CPU busy percentage between two time points.
