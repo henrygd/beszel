@@ -1,3 +1,17 @@
+## 0.15.4
+
+- Refactor containers table to fix clock issue causing no results. (#1337)
+
+- Fix Windows extra disk detection. (#1361)
+
+- Add total line to the tooltip of charts with multiple values. (#1280)
+
+- Add fallback paths for `smartctl` lookup. (#1362, #1363)
+
+- Fix `intel_gpu_top` parsing when engine instance id is in column. (#1230)
+
+- Update `henrygd/beszel-agent-nvidia` Dockerfile to build latest smartmontools. (#1335)
+
 ## 0.15.3
 
 - Add CPU state details and per-core usage. (#1356)
