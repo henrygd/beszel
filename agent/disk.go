@@ -31,12 +31,20 @@ func (a *Agent) initializeDiskInfo() {
 	filesystem, _ := GetEnv("FILESYSTEM")
 	efPath := "/extra-filesystems"
 	hasRoot := false
+	isWindows := runtime.GOOS == "windows"
 
 	partitions, err := disk.Partitions(false)
 	if err != nil {
 		slog.Error("Error getting disk partitions", "err", err)
 	}
 	slog.Debug("Disk", "partitions", partitions)
+
+	// trim trailing backslash for Windows devices (#1361)
+	if isWindows {
+		for i, p := range partitions {
+			partitions[i].Device = strings.TrimSuffix(p.Device, "\\")
+		}
+	}
 
 	// ioContext := context.WithValue(a.sensorsContext,
 	// 	common.EnvKey, common.EnvMap{common.HostProcEnvKey: "/tmp/testproc"},
@@ -52,7 +60,7 @@ func (a *Agent) initializeDiskInfo() {
 	// Helper function to add a filesystem to fsStats if it doesn't exist
 	addFsStat := func(device, mountpoint string, root bool, customName ...string) {
 		var key string
-		if runtime.GOOS == "windows" {
+		if isWindows {
 			key = device
 		} else {
 			key = filepath.Base(device)
