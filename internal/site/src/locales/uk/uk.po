@@ -8,7 +8,7 @@ msgstr ""
 "Language: uk\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-20 21:37\n"
+"PO-Revision-Date: 2025-10-28 23:00\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -370,8 +370,17 @@ msgstr "Копіювати YAML"
 msgid "CPU"
 msgstr "ЦП"
 
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "CPU Cores"
+msgstr "Ядра ЦП"
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "CPU Time Breakdown"
+msgstr "Розподіл часу ЦП"
+
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/cpu-sheet.tsx
 #: src/lib/alerts.ts
 msgid "CPU Usage"
 msgstr "Використання ЦП"
@@ -833,6 +842,10 @@ msgstr "Відкрити меню"
 msgid "Or continue with"
 msgstr "Або продовжити з"
 
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Other"
+msgstr "Інше"
+
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "Перезаписати існуючі сповіщення"
@@ -880,6 +893,15 @@ msgstr "Призупинено"
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused ({pausedSystemsLength})"
 msgstr "Призупинено ({pausedSystemsLength})"
+
+#: src/components/routes/system/cpu-sheet.tsx
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Per-core average utilization"
+msgstr "Середнє використання на ядро"
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Percentage of time spent in each state"
+msgstr "Відсоток часу, проведеного в кожному стані"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1266,6 +1288,7 @@ msgstr "Час роботи"
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "Використання"
 
@@ -1291,6 +1314,7 @@ msgstr "Значення"
 msgid "View"
 msgstr "Вигляд"
 
+#: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 msgid "View more"
 msgstr "Переглянути більше"

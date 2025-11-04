@@ -177,6 +177,10 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 	stats := &tempStats
 	// necessary because uint8 is not big enough for the sum
 	batterySum := 0
+	// accumulate per-core usage across records
+	var cpuCoresSums []uint64
+	// accumulate cpu breakdown [user, system, iowait, steal, idle]
+	var cpuBreakdownSums []float64
 
 	count := float64(len(records))
 	tempCount := float64(0)
@@ -194,6 +198,15 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		}
 
 		sum.Cpu += stats.Cpu
+		// accumulate cpu time breakdowns if present
+		if stats.CpuBreakdown != nil {
+			if len(cpuBreakdownSums) < len(stats.CpuBreakdown) {
+				cpuBreakdownSums = append(cpuBreakdownSums, make([]float64, len(stats.CpuBreakdown)-len(cpuBreakdownSums))...)
+			}
+			for i, v := range stats.CpuBreakdown {
+				cpuBreakdownSums[i] += v
+			}
+		}
 		sum.Mem += stats.Mem
 		sum.MemUsed += stats.MemUsed
 		sum.MemPct += stats.MemPct
@@ -217,6 +230,17 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		sum.DiskIO[1] += stats.DiskIO[1]
 		batterySum += int(stats.Battery[0])
 		sum.Battery[1] = stats.Battery[1]
+
+		// accumulate per-core usage if present
+		if stats.CpuCoresUsage != nil {
+			if len(cpuCoresSums) < len(stats.CpuCoresUsage) {
+				// extend slices to accommodate core count
+				cpuCoresSums = append(cpuCoresSums, make([]uint64, len(stats.CpuCoresUsage)-len(cpuCoresSums))...)
+			}
+			for i, v := range stats.CpuCoresUsage {
+				cpuCoresSums[i] += uint64(v)
+			}
+		}
 		// Set peak values
 		sum.MaxCpu = max(sum.MaxCpu, stats.MaxCpu, stats.Cpu)
 		sum.MaxMem = max(sum.MaxMem, stats.MaxMem, stats.MemUsed)
@@ -384,6 +408,25 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 
 				sum.GPUData[id] = gpu
 			}
+		}
+
+		// Average per-core usage
+		if len(cpuCoresSums) > 0 {
+			avg := make(system.Uint8Slice, len(cpuCoresSums))
+			for i := range cpuCoresSums {
+				v := math.Round(float64(cpuCoresSums[i]) / count)
+				avg[i] = uint8(v)
+			}
+			sum.CpuCoresUsage = avg
+		}
+
+		// Average CPU breakdown
+		if len(cpuBreakdownSums) > 0 {
+			avg := make([]float64, len(cpuBreakdownSums))
+			for i := range cpuBreakdownSums {
+				avg[i] = twoDecimals(cpuBreakdownSums[i] / count)
+			}
+			sum.CpuBreakdown = avg
 		}
 	}
 

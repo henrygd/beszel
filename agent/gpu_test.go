@@ -4,8 +4,10 @@
 package agent
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -1623,4 +1625,43 @@ func TestParseIntelData(t *testing.T) {
 			assert.Equal(t, tt.wantEngines, sample.Engines)
 		})
 	}
+}
+
+func TestIntelCollectorDeviceEnv(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("PATH", dir)
+
+	// Prepare a file to capture args
+	argsFile := filepath.Join(dir, "args.txt")
+
+	// Create a fake intel_gpu_top that records its arguments and prints minimal valid output
+	scriptPath := filepath.Join(dir, "intel_gpu_top")
+	script := fmt.Sprintf(`#!/bin/sh
+echo "$@" > %s
+echo "Freq MHz      IRQ RC6     Power W     IMC MiB/s             RCS             VCS"
+echo " req  act       /s   %%   gpu   pkg     rd     wr       %%  se  wa       %%  se  wa"
+echo "226  223      338  58  2.00  2.69   1820    965   0.00    0   0    0.00   0   0"
+echo "189  187      412  67  1.80  2.45   1950    823   8.50    2   1    15.00   1   0"
+`, argsFile)
+	if err := os.WriteFile(scriptPath, []byte(script), 0755); err != nil {
+		t.Fatal(err)
+	}
+
+	// Set device selector via prefixed env var
+	t.Setenv("BESZEL_AGENT_INTEL_GPU_DEVICE", "sriov")
+
+	gm := &GPUManager{GpuDataMap: make(map[string]*system.GPUData)}
+	if err := gm.collectIntelStats(); err != nil {
+		t.Fatalf("collectIntelStats error: %v", err)
+	}
+
+	// Verify that -d sriov was passed
+	data, err := os.ReadFile(argsFile)
+	if err != nil {
+		t.Fatalf("failed reading args file: %v", err)
+	}
+	argsStr := strings.TrimSpace(string(data))
+	require.Contains(t, argsStr, "-d sriov")
+	require.Contains(t, argsStr, "-s ")
+	require.Contains(t, argsStr, "-l")
 }

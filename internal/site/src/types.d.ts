@@ -84,6 +84,10 @@ export interface SystemStats {
 	cpu: number
 	/** peak cpu */
 	cpum?: number
+    /** cpu breakdown [user, system, iowait, steal, idle] (0-100 integers) */
+    cpub?: number[]
+    /** per-core cpu usage [CPU0..] (0-100 integers) */
+    cpus?: number[]
 	// TODO: remove these in future release in favor of la
 	/** load average 1 minute */
 	l1?: number

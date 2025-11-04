@@ -8,7 +8,7 @@ msgstr ""
 "Language: hu\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-20 21:37\n"
+"PO-Revision-Date: 2025-10-28 22:59\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -370,8 +370,17 @@ msgstr "YAML másolása"
 msgid "CPU"
 msgstr "CPU"
 
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "CPU Cores"
+msgstr "CPU magok"
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "CPU Time Breakdown"
+msgstr "CPU idő felbontása"
+
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/cpu-sheet.tsx
 #: src/lib/alerts.ts
 msgid "CPU Usage"
 msgstr "CPU használat"
@@ -597,7 +606,7 @@ msgstr "Ujjlenyomat"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
-msgstr "Firmware"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -833,6 +842,10 @@ msgstr "Menü megnyitása"
 msgid "Or continue with"
 msgstr "Vagy folytasd ezzel"
 
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Other"
+msgstr "Egyéb"
+
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "Felülírja a meglévő riasztásokat"
@@ -880,6 +893,15 @@ msgstr "Szüneteltetve"
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused ({pausedSystemsLength})"
 msgstr "Szüneteltetve ({pausedSystemsLength})"
+
+#: src/components/routes/system/cpu-sheet.tsx
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Per-core average utilization"
+msgstr "Átlagos kihasználtság magonként"
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Percentage of time spent in each state"
+msgstr "Az idő százalékos aránya minden állapotban"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1266,6 +1288,7 @@ msgstr "Üzemidő"
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "Használat"
 
@@ -1291,6 +1314,7 @@ msgstr "Érték"
 msgid "View"
 msgstr "Nézet"
 
+#: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 msgid "View more"
 msgstr "Továbbiak megjelenítése"
