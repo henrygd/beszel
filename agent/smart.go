@@ -1,3 +1,6 @@
+//go:generate -command fetchsmartctl go run ./tools/fetchsmartctl
+//go:generate fetchsmartctl -out ./smartmontools/smartctl.exe -url https://static.beszel.dev/bin/smartctl/smartctl-nc.exe -sha 3912249c3b329249aa512ce796fd1b64d7cbd8378b68ad2756b39163d9c30b47
+
 package agent
 
 import (
@@ -879,11 +882,20 @@ func (sm *SmartManager) parseSmartForNvme(output []byte) (bool, int) {
 
 // detectSmartctl checks if smartctl is installed, returns an error if not
 func (sm *SmartManager) detectSmartctl() (string, error) {
+	isWindows := runtime.GOOS == "windows"
+
+	// Load embedded smartctl.exe for Windows amd64 builds.
+	if isWindows && runtime.GOARCH == "amd64" {
+		if path, err := ensureEmbeddedSmartctl(); err == nil {
+			return path, nil
+		}
+	}
+
 	if path, err := exec.LookPath("smartctl"); err == nil {
 		return path, nil
 	}
 	locations := []string{}
-	if runtime.GOOS == "windows" {
+	if isWindows {
 		locations = append(locations,
 			"C:\\Program Files\\smartmontools\\bin\\smartctl.exe",
 		)

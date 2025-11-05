@@ -5,6 +5,7 @@ project_name: beszel
 before:
   hooks:
     - go mod tidy
+    - go generate -run fetchsmartctl ./agent
 
 builds:
   - id: beszel
