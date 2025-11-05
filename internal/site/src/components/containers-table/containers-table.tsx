@@ -35,6 +35,7 @@ import { getPagePath } from "@nanostores/router"
 const syntaxTheme = "github-dark-dimmed"
 
 export default function ContainersTable({ systemId }: { systemId?: string }) {
+	const loadTime = Date.now()
 	const [data, setData] = useState<ContainerRecord[]>([])
 	const [sorting, setSorting] = useBrowserStorage<SortingState>(
 		`sort-c-${systemId ? 1 : 0}`,
@@ -47,56 +48,53 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 	const [globalFilter, setGlobalFilter] = useState("")
 
 	useEffect(() => {
-		const pbOptions = {
-			fields: "id,name,image,cpu,memory,net,health,status,system,updated",
-		}
-
-		const fetchData = (lastXMs: number) => {
-			const updated = Date.now() - lastXMs
-			let filter: string
-			if (systemId) {
-				filter = pb.filter("system={:system} && updated > {:updated}", { system: systemId, updated })
-			} else {
-				filter = pb.filter("updated > {:updated}", { updated })
-			}
+		function fetchData(systemId?: string) {
 			pb.collection<ContainerRecord>("containers")
 				.getList(0, 2000, {
-					...pbOptions,
-					filter,
+					fields: "id,name,image,cpu,memory,net,health,status,system,updated",
+					filter: systemId ? pb.filter("system={:system}", { system: systemId }) : undefined,
 				})
-				.then(({ items }) => setData((curItems) => {
-					const containerIds = new Set(items.map(item => item.id))
-					const now = Date.now()
-					for (const item of curItems) {
-						if (!containerIds.has(item.id) && now - item.updated < 70_000) {
-							items.push(item)
+				.then(({ items }) => items.length && setData((curItems) => {
+					const lastUpdated = Math.max(items[0].updated, items.at(-1)?.updated ?? 0)
+					const containerIds = new Set()
+					const newItems = []
+					for (const item of items) {
+						if (Math.abs(lastUpdated - item.updated) < 70_000) {
+							containerIds.add(item.id)
+							newItems.push(item)
 						}
 					}
-					return items
+					for (const item of curItems) {
+						if (!containerIds.has(item.id) && lastUpdated - item.updated < 70_000) {
+							newItems.push(item)
+						}
+					}
+					return newItems
 				}))
 		}
 
 		// initial load
-		fetchData(70_000)
+		fetchData(systemId)
 
-		// if no systemId, poll every 10 seconds
+		// if no systemId, pull system containers after every system update
 		if (!systemId) {
-			// poll every 10 seconds
-			const intervalId = setInterval(() => fetchData(10_500), 10_000)
-			// clear interval on unmount
-			return () => clearInterval(intervalId)
+			return $allSystemsById.listen((_value, _oldValue, systemId) => {
+				// exclude initial load of systems
+				if (Date.now() - loadTime > 500) {
+					fetchData(systemId)
+				}
+			})
 		}
 
 		// if systemId, fetch containers after the system is updated
 		return listenKeys($allSystemsById, [systemId], (_newSystems) => {
-			const changeTime = Date.now()
-			setTimeout(() => fetchData(Date.now() - changeTime + 1000), 100)
+			fetchData(systemId)
 		})
 	}, [])
 
 	const table = useReactTable({
 		data,
-		columns: containerChartCols.filter(col => systemId ? col.id !== "system" : true),
+		columns: containerChartCols.filter((col) => (systemId ? col.id !== "system" : true)),
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
@@ -164,77 +162,78 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 	)
 }
 
-const AllContainersTable = memo(
-	function AllContainersTable({ table, rows, colLength }: { table: TableType<ContainerRecord>; rows: Row<ContainerRecord>[]; colLength: number }) {
-		// The virtualizer will need a reference to the scrollable container element
-		const scrollRef = useRef<HTMLDivElement>(null)
-		const activeContainer = useRef<ContainerRecord | null>(null)
-		const [sheetOpen, setSheetOpen] = useState(false)
-		const openSheet = (container: ContainerRecord) => {
-			activeContainer.current = container
-			setSheetOpen(true)
-		}
-
-		const virtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
-			count: rows.length,
-			estimateSize: () => 54,
-			getScrollElement: () => scrollRef.current,
-			overscan: 5,
-		})
-		const virtualRows = virtualizer.getVirtualItems()
-
-		const paddingTop = Math.max(0, virtualRows[0]?.start ?? 0 - virtualizer.options.scrollMargin)
-		const paddingBottom = Math.max(0, virtualizer.getTotalSize() - (virtualRows[virtualRows.length - 1]?.end ?? 0))
-
-		return (
-			<div
-				className={cn(
-					"h-min max-h-[calc(100dvh-17rem)] max-w-full relative overflow-auto border rounded-md",
-					// don't set min height if there are less than 2 rows, do set if we need to display the empty state
-					(!rows.length || rows.length > 2) && "min-h-50"
-				)}
-				ref={scrollRef}
-			>
-				{/* add header height to table size */}
-				<div style={{ height: `${virtualizer.getTotalSize() + 48}px`, paddingTop, paddingBottom }}>
-					<table className="text-sm w-full h-full text-nowrap">
-						<ContainersTableHead table={table} />
-						<TableBody>
-							{rows.length ? (
-								virtualRows.map((virtualRow) => {
-									const row = rows[virtualRow.index]
-									return (
-										<ContainerTableRow
-											key={row.id}
-											row={row}
-											virtualRow={virtualRow}
-											openSheet={openSheet}
-										/>
-									)
-								})
-							) : (
-								<TableRow>
-									<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
-										<Trans>No results.</Trans>
-									</TableCell>
-								</TableRow>
-							)}
-						</TableBody>
-					</table>
-				</div>
-				<ContainerSheet sheetOpen={sheetOpen} setSheetOpen={setSheetOpen} activeContainer={activeContainer} />
-			</div>
-		)
+const AllContainersTable = memo(function AllContainersTable({
+	table,
+	rows,
+	colLength,
+}: {
+	table: TableType<ContainerRecord>
+	rows: Row<ContainerRecord>[]
+	colLength: number
+}) {
+	// The virtualizer will need a reference to the scrollable container element
+	const scrollRef = useRef<HTMLDivElement>(null)
+	const activeContainer = useRef<ContainerRecord | null>(null)
+	const [sheetOpen, setSheetOpen] = useState(false)
+	const openSheet = (container: ContainerRecord) => {
+		activeContainer.current = container
+		setSheetOpen(true)
 	}
-)
 
+	const virtualizer = useVirtualizer<HTMLDivElement, HTMLTableRowElement>({
+		count: rows.length,
+		estimateSize: () => 54,
+		getScrollElement: () => scrollRef.current,
+		overscan: 5,
+	})
+	const virtualRows = virtualizer.getVirtualItems()
+
+	const paddingTop = Math.max(0, virtualRows[0]?.start ?? 0 - virtualizer.options.scrollMargin)
+	const paddingBottom = Math.max(0, virtualizer.getTotalSize() - (virtualRows[virtualRows.length - 1]?.end ?? 0))
+
+	return (
+		<div
+			className={cn(
+				"h-min max-h-[calc(100dvh-17rem)] max-w-full relative overflow-auto border rounded-md",
+				// don't set min height if there are less than 2 rows, do set if we need to display the empty state
+				(!rows.length || rows.length > 2) && "min-h-50"
+			)}
+			ref={scrollRef}
+		>
+			{/* add header height to table size */}
+			<div style={{ height: `${virtualizer.getTotalSize() + 48}px`, paddingTop, paddingBottom }}>
+				<table className="text-sm w-full h-full text-nowrap">
+					<ContainersTableHead table={table} />
+					<TableBody>
+						{rows.length ? (
+							virtualRows.map((virtualRow) => {
+								const row = rows[virtualRow.index]
+								return <ContainerTableRow key={row.id} row={row} virtualRow={virtualRow} openSheet={openSheet} />
+							})
+						) : (
+							<TableRow>
+								<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
+									<Trans>No results.</Trans>
+								</TableCell>
+							</TableRow>
+						)}
+					</TableBody>
+				</table>
+			</div>
+			<ContainerSheet sheetOpen={sheetOpen} setSheetOpen={setSheetOpen} activeContainer={activeContainer} />
+		</div>
+	)
+})
 
 async function getLogsHtml(container: ContainerRecord): Promise<string> {
 	try {
-		const [{ highlighter }, logsHtml] = await Promise.all([import('@/lib/shiki'), pb.send<{ logs: string }>("/api/beszel/containers/logs", {
-			system: container.system,
-			container: container.id,
-		})])
+		const [{ highlighter }, logsHtml] = await Promise.all([
+			import("@/lib/shiki"),
+			pb.send<{ logs: string }>("/api/beszel/containers/logs", {
+				system: container.system,
+				container: container.id,
+			}),
+		])
 		return logsHtml.logs ? highlighter.codeToHtml(logsHtml.logs, { lang: "log", theme: syntaxTheme }) : t`No results.`
 	} catch (error) {
 		console.error(error)
@@ -244,10 +243,13 @@ async function getLogsHtml(container: ContainerRecord): Promise<string> {
 
 async function getInfoHtml(container: ContainerRecord): Promise<string> {
 	try {
-		let [{ highlighter }, { info }] = await Promise.all([import('@/lib/shiki'), pb.send<{ info: string }>("/api/beszel/containers/info", {
-			system: container.system,
-			container: container.id,
-		})])
+		let [{ highlighter }, { info }] = await Promise.all([
+			import("@/lib/shiki"),
+			pb.send<{ info: string }>("/api/beszel/containers/info", {
+				system: container.system,
+				container: container.id,
+			}),
+		])
 		try {
 			info = JSON.stringify(JSON.parse(info), null, 2)
 		} catch (_) { }
@@ -258,7 +260,15 @@ async function getInfoHtml(container: ContainerRecord): Promise<string> {
 	}
 }
 
-function ContainerSheet({ sheetOpen, setSheetOpen, activeContainer }: { sheetOpen: boolean, setSheetOpen: (open: boolean) => void, activeContainer: RefObject<ContainerRecord | null> }) {
+function ContainerSheet({
+	sheetOpen,
+	setSheetOpen,
+	activeContainer,
+}: {
+	sheetOpen: boolean
+	setSheetOpen: (open: boolean) => void
+	activeContainer: RefObject<ContainerRecord | null>
+}) {
 	const container = activeContainer.current
 	if (!container) return null
 
@@ -297,14 +307,14 @@ function ContainerSheet({ sheetOpen, setSheetOpen, activeContainer }: { sheetOpe
 
 	useEffect(() => {
 		setLogsDisplay("")
-		setInfoDisplay("");
+		setInfoDisplay("")
 		if (!container) return
-		(async () => {
-			const [logsHtml, infoHtml] = await Promise.all([getLogsHtml(container), getInfoHtml(container)])
-			setLogsDisplay(logsHtml)
-			setInfoDisplay(infoHtml)
-			setTimeout(scrollLogsToBottom, 20)
-		})()
+			; (async () => {
+				const [logsHtml, infoHtml] = await Promise.all([getLogsHtml(container), getInfoHtml(container)])
+				setLogsDisplay(logsHtml)
+				setInfoDisplay(infoHtml)
+				setTimeout(scrollLogsToBottom, 20)
+			})()
 	}, [container])
 
 	return (
@@ -328,7 +338,9 @@ function ContainerSheet({ sheetOpen, setSheetOpen, activeContainer }: { sheetOpe
 					<SheetHeader>
 						<SheetTitle>{container.name}</SheetTitle>
 						<SheetDescription className="flex flex-wrap items-center gap-x-2 gap-y-1">
-							<Link className="hover:underline" href={getPagePath($router, "system", { id: container.system })}>{$allSystemsById.get()[container.system]?.name ?? ""}</Link>
+							<Link className="hover:underline" href={getPagePath($router, "system", { id: container.system })}>
+								{$allSystemsById.get()[container.system]?.name ?? ""}
+							</Link>
 							<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
 							{container.status}
 							<Separator orientation="vertical" className="h-2.5 bg-muted-foreground opacity-70" />
@@ -350,19 +362,20 @@ function ContainerSheet({ sheetOpen, setSheetOpen, activeContainer }: { sheetOpe
 								disabled={isRefreshingLogs}
 							>
 								<RefreshCwIcon
-									className={`size-4 transition-transform duration-300 ${isRefreshingLogs ? 'animate-spin' : ''}`}
+									className={`size-4 transition-transform duration-300 ${isRefreshingLogs ? "animate-spin" : ""}`}
 								/>
 							</Button>
-							<Button
-								variant="ghost"
-								size="sm"
-								onClick={() => setLogsFullscreenOpen(true)}
-								className="h-8 w-8 p-0"
-							>
+							<Button variant="ghost" size="sm" onClick={() => setLogsFullscreenOpen(true)} className="h-8 w-8 p-0">
 								<MaximizeIcon className="size-4" />
 							</Button>
 						</div>
-						<div ref={logsContainerRef} className={cn("max-h-[calc(50dvh-10rem)] w-full overflow-auto p-3 rounded-md bg-gh-dark text-white text-sm", !logsDisplay && ["animate-pulse", "h-full"])}>
+						<div
+							ref={logsContainerRef}
+							className={cn(
+								"max-h-[calc(50dvh-10rem)] w-full overflow-auto p-3 rounded-md bg-gh-dark text-white text-sm",
+								!logsDisplay && ["animate-pulse", "h-full"]
+							)}
+						>
 							<div dangerouslySetInnerHTML={{ __html: logsDisplay }} />
 						</div>
 						<div className="flex items-center w-full">
@@ -376,15 +389,18 @@ function ContainerSheet({ sheetOpen, setSheetOpen, activeContainer }: { sheetOpe
 								<MaximizeIcon className="size-4" />
 							</Button>
 						</div>
-						<div className={cn("grow h-[calc(50dvh-4rem)] w-full overflow-auto p-3 rounded-md bg-gh-dark text-white text-sm", !infoDisplay && "animate-pulse")}>
+						<div
+							className={cn(
+								"grow h-[calc(50dvh-4rem)] w-full overflow-auto p-3 rounded-md bg-gh-dark text-white text-sm",
+								!infoDisplay && "animate-pulse"
+							)}
+						>
 							<div dangerouslySetInnerHTML={{ __html: infoDisplay }} />
 						</div>
-
 					</div>
 				</SheetContent>
 			</Sheet>
 		</>
-
 	)
 }
 
@@ -406,39 +422,51 @@ function ContainersTableHead({ table }: { table: TableType<ContainerRecord> }) {
 	)
 }
 
-const ContainerTableRow = memo(
-	function ContainerTableRow({
-		row,
-		virtualRow,
-		openSheet,
-	}: {
-		row: Row<ContainerRecord>
-		virtualRow: VirtualItem
-		openSheet: (container: ContainerRecord) => void
-	}) {
-		return (
-			<TableRow
-				data-state={row.getIsSelected() && "selected"}
-				className="cursor-pointer transition-opacity"
-				onClick={() => openSheet(row.original)}
-			>
-				{row.getVisibleCells().map((cell) => (
-					<TableCell
-						key={cell.id}
-						className="py-0"
-						style={{
-							height: virtualRow.size,
-						}}
-					>
-						{flexRender(cell.column.columnDef.cell, cell.getContext())}
-					</TableCell>
-				))}
-			</TableRow>
-		)
-	}
-)
+const ContainerTableRow = memo(function ContainerTableRow({
+	row,
+	virtualRow,
+	openSheet,
+}: {
+	row: Row<ContainerRecord>
+	virtualRow: VirtualItem
+	openSheet: (container: ContainerRecord) => void
+}) {
+	return (
+		<TableRow
+			data-state={row.getIsSelected() && "selected"}
+			className="cursor-pointer transition-opacity"
+			onClick={() => openSheet(row.original)}
+		>
+			{row.getVisibleCells().map((cell) => (
+				<TableCell
+					key={cell.id}
+					className="py-0"
+					style={{
+						height: virtualRow.size,
+					}}
+				>
+					{flexRender(cell.column.columnDef.cell, cell.getContext())}
+				</TableCell>
+			))}
+		</TableRow>
+	)
+})
 
-function LogsFullscreenDialog({ open, onOpenChange, logsDisplay, containerName, onRefresh, isRefreshing }: { open: boolean, onOpenChange: (open: boolean) => void, logsDisplay: string, containerName: string, onRefresh: () => void | Promise<void>, isRefreshing: boolean }) {
+function LogsFullscreenDialog({
+	open,
+	onOpenChange,
+	logsDisplay,
+	containerName,
+	onRefresh,
+	isRefreshing,
+}: {
+	open: boolean
+	onOpenChange: (open: boolean) => void
+	logsDisplay: string
+	containerName: string
+	onRefresh: () => void | Promise<void>
+	isRefreshing: boolean
+}) {
 	const outerContainerRef = useRef<HTMLDivElement>(null)
 
 	useEffect(() => {
@@ -471,16 +499,24 @@ function LogsFullscreenDialog({ open, onOpenChange, logsDisplay, containerName, 
 					title={t`Refresh`}
 					aria-label={t`Refresh`}
 				>
-					<RefreshCwIcon
-						className={`size-4 transition-transform duration-300 ${isRefreshing ? 'animate-spin' : ''}`}
-					/>
+					<RefreshCwIcon className={`size-4 transition-transform duration-300 ${isRefreshing ? "animate-spin" : ""}`} />
 				</button>
 			</DialogContent>
 		</Dialog>
 	)
 }
 
-function InfoFullscreenDialog({ open, onOpenChange, infoDisplay, containerName }: { open: boolean, onOpenChange: (open: boolean) => void, infoDisplay: string, containerName: string }) {
+function InfoFullscreenDialog({
+	open,
+	onOpenChange,
+	infoDisplay,
+	containerName,
+}: {
+	open: boolean
+	onOpenChange: (open: boolean) => void
+	infoDisplay: string
+	containerName: string
+}) {
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="w-[calc(100vw-20px)] h-[calc(100dvh-20px)] max-w-none p-0 bg-gh-dark border-0 text-white">

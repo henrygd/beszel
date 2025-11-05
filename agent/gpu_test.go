@@ -1440,6 +1440,15 @@ func TestParseIntelHeaders(t *testing.T) {
 			wantPreEngineCols: 8, // 17 total cols - 3*3 = 8
 		},
 		{
+			name:              "basic headers with RCS BCS VCS using index in name",
+			header1:           "Freq MHz      IRQ RC6     Power W     IMC MiB/s           RCS/0           BCS/1           VCS/2",
+			header2:           " req  act       /s   %   gpu   pkg     rd     wr       %  se  wa       %  se  wa       %  se  wa",
+			wantEngineNames:   []string{"RCS", "BCS", "VCS"},
+			wantFriendlyNames: []string{"Render/3D", "Blitter", "Video"},
+			wantPowerIndex:    4, // "gpu" is at index 4
+			wantPreEngineCols: 8, // 17 total cols - 3*3 = 8
+		},
+		{
 			name:              "headers with only RCS",
 			header1:           "Freq MHz      IRQ RC6     Power W     IMC MiB/s             RCS",
 			header2:           " req  act       /s   %   gpu   pkg     rd     wr       %  se  wa",

@@ -30,6 +30,7 @@ export default function AreaChartDefault({
 	domain,
 	legend,
 	itemSorter,
+	showTotal = false,
 	reverseStackOrder = false,
 	hideYAxis = false,
 }: // logRender = false,
@@ -42,6 +43,7 @@ export default function AreaChartDefault({
 		dataPoints?: DataPoint[]
 		domain?: [number, number]
 		legend?: boolean
+		showTotal?: boolean
 		itemSorter?: (a: any, b: any) => number
 		reverseStackOrder?: boolean
 		hideYAxis?: boolean
@@ -65,18 +67,25 @@ export default function AreaChartDefault({
 						"ps-4": hideYAxis,
 					})}
 				>
-					<AreaChart reverseStackOrder={reverseStackOrder} accessibilityLayer data={chartData.systemStats} margin={hideYAxis ? { ...chartMargin, left: 5 } : chartMargin}>
+					<AreaChart
+						reverseStackOrder={reverseStackOrder}
+						accessibilityLayer
+						data={chartData.systemStats}
+						margin={hideYAxis ? { ...chartMargin, left: 5 } : chartMargin}
+					>
 						<CartesianGrid vertical={false} />
-						{!hideYAxis && <YAxis
-							direction="ltr"
-							orientation={chartData.orientation}
-							className="tracking-tighter"
-							width={yAxisWidth}
-							domain={domain ?? [0, max ?? "auto"]}
-							tickFormatter={(value, index) => updateYAxisWidth(tickFormatter(value, index))}
-							tickLine={false}
-							axisLine={false}
-						/>}
+						{!hideYAxis && (
+							<YAxis
+								direction="ltr"
+								orientation={chartData.orientation}
+								className="tracking-tighter"
+								width={yAxisWidth}
+								domain={domain ?? [0, max ?? "auto"]}
+								tickFormatter={(value, index) => updateYAxisWidth(tickFormatter(value, index))}
+								tickLine={false}
+								axisLine={false}
+							/>
+						)}
 						{xAxis(chartData)}
 						<ChartTooltip
 							animationEasing="ease-out"
@@ -87,6 +96,7 @@ export default function AreaChartDefault({
 								<ChartTooltipContent
 									labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 									contentFormatter={contentFormatter}
+									showTotal={showTotal}
 								/>
 							}
 						/>
@@ -114,5 +124,5 @@ export default function AreaChartDefault({
 				</ChartContainer>
 			</div>
 		)
-	}, [chartData.systemStats.at(-1), yAxisWidth, maxToggled])
+	}, [chartData.systemStats.at(-1), yAxisWidth, maxToggled, showTotal])
 }

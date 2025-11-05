@@ -1199,6 +1199,11 @@ msgstr "令牌允許代理程式連線和註冊。指紋是每個系統的唯一
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "令牌和指紋被用於驗證到 Hub 的 WebSocket 連線。"
 
+#: src/components/ui/chart.tsx
+#: src/components/ui/chart.tsx
+msgid "Total"
+msgstr "總計"
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
 msgstr "每個介面的總接收資料量"
