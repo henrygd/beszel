@@ -18,26 +18,35 @@ msgstr ""
 "X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 16\n"
 
-#. placeholder {0}: Math.trunc(system.info?.u / 86400)
 #: src/components/routes/system.tsx
-msgid "{0, plural, one {# day} other {# days}}"
-msgstr "{0, plural, one {# روز} other {# روز}}"
+#~ msgid "{0, plural, one {# day} other {# days}}"
+#~ msgstr "{0, plural, one {# روز} other {# روز}}"
 
-#. placeholder {0}: Math.trunc(system.info.u / 3600)
 #: src/components/routes/system.tsx
-msgid "{0, plural, one {# hour} other {# hours}}"
-msgstr "{0, plural, one {# ساعت} other {# ساعت}}"
+#~ msgid "{0, plural, one {# hour} other {# hours}}"
+#~ msgstr "{0, plural, one {# ساعت} other {# ساعت}}"
 
-#. placeholder {0}: Math.trunc(system.info.u / 60)
 #: src/components/routes/system.tsx
-msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
-msgstr "{0, plural, one {# دقیقه} few {# دقیقه} many {# دقیقه} other {# دقیقه}}"
+#~ msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
+#~ msgstr "{0, plural, one {# دقیقه} few {# دقیقه} many {# دقیقه} other {# دقیقه}}"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
 msgstr "{0} از {1} ردیف انتخاب شده است."
+
+#: src/lib/utils.ts
+msgid "{count, plural, one {{countString} day} other {{countString} days}}"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "{count, plural, one {{countString} hour} other {{countString} hours}}"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -89,7 +98,7 @@ msgstr "عملیات"
 msgid "Active"
 msgstr "فعال"
 
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Active Alerts"
 msgstr " هشدارهای فعال"
 
@@ -133,7 +142,15 @@ msgstr "تاریخچه هشدارها"
 msgid "Alerts"
 msgstr "هشدارها"
 
+#: src/components/command-palette.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/containers.tsx
+msgid "All Containers"
+msgstr ""
+
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/command-palette.tsx
+#: src/components/routes/home.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
@@ -226,6 +243,10 @@ msgstr "حافظه پنهان / بافرها"
 msgid "Cancel"
 msgstr "لغو"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Capacity"
+msgstr ""
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
 msgstr "احتیاط - احتمال از دست رفتن داده‌ها"
@@ -267,6 +288,14 @@ msgstr "برای جزئیات بیشتر، لاگ‌ها را بررسی کنی�
 msgid "Check your notification service"
 msgstr "سرویس اطلاع‌رسانی خود را بررسی کنید"
 
+#: src/components/containers-table/containers-table.tsx
+msgid "Click on a container to view more information."
+msgstr ""
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Click on a device to view more information."
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
 msgstr "برای مشاهده اطلاعات بیشتر روی یک سیستم کلیک کنید."
@@ -289,7 +318,7 @@ msgstr "نحوه دریافت هشدارهای اطلاع‌رسانی را پی
 msgid "Confirm password"
 msgstr "تأیید رمز عبور"
 
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "اتصال قطع است"
 
@@ -348,12 +377,22 @@ msgstr "محتوای <0>docker-compose.yml</0> عامل زیر را کپی کن�
 msgid "Copy YAML"
 msgstr "کپی YAML"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "پردازنده"
 
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "CPU Cores"
+msgstr ""
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "CPU Time Breakdown"
+msgstr ""
+
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/cpu-sheet.tsx
 #: src/lib/alerts.ts
 msgid "CPU Usage"
 msgstr "میزان استفاده از پردازنده"
@@ -384,8 +423,12 @@ msgstr "آپلود تجمعی"
 msgid "Current state"
 msgstr "وضعیت فعلی"
 
+#. Power Cycles
+#: src/components/routes/system/smart-table.tsx
+msgid "Cycles"
+msgstr ""
+
 #: src/components/command-palette.tsx
-#: src/components/routes/home.tsx
 msgid "Dashboard"
 msgstr "داشبورد"
 
@@ -401,6 +444,14 @@ msgstr "حذف"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
 msgstr "حذف اثر انگشت"
+
+#: src/components/containers-table/containers-table.tsx
+msgid "Detail"
+msgstr ""
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Device"
+msgstr ""
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -508,7 +559,7 @@ msgstr "خطا"
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "در {2, plural, one {# دقیقه} other {# دقیقه}} گذشته از {0}{1} بیشتر است"
 
@@ -532,6 +583,10 @@ msgstr "پیکربندی سیستم‌های فعلی خود را خارج کن�
 msgid "Fahrenheit (°F)"
 msgstr "فارنهایت (°F)"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Failed Attributes:"
+msgstr ""
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "احراز هویت ناموفق بود"
@@ -553,8 +608,10 @@ msgstr "به‌روزرسانی هشدار ناموفق بود"
 msgid "Filter by tags"
 msgstr ""
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "فیلتر..."
@@ -562,6 +619,10 @@ msgstr "فیلتر..."
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
 msgstr "اثر انگشت"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Firmware"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -604,6 +665,10 @@ msgstr "جدول"
 #~ msgid "Group"
 #~ msgstr ""
 
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Health"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -622,6 +687,11 @@ msgstr "بیکار"
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "اگر رمز عبور حساب مدیر خود را گم کرده‌اید، می‌توانید آن را با استفاده از دستور زیر بازنشانی کنید."
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -675,6 +745,7 @@ msgid "Login attempt failed"
 msgstr "تلاش برای ورود ناموفق بود"
 
 #: src/components/command-palette.tsx
+#: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
 msgid "Logs"
 msgstr "لاگ‌ها"
@@ -697,6 +768,7 @@ msgstr "دستورالعمل‌های راه‌اندازی دستی"
 msgid "Max 1 min"
 msgstr "حداکثر ۱ دقیقه"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "حافظه"
@@ -710,11 +782,17 @@ msgstr "میزان استفاده از حافظه"
 msgid "Memory usage of docker containers"
 msgstr "میزان استفاده از حافظه کانتینرهای داکر"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Model"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
 msgid "Name"
 msgstr "نام"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "شبکه"
@@ -739,9 +817,17 @@ msgstr "واحد شبکه"
 msgid "No results found."
 msgstr "هیچ نتیجه‌ای یافت نشد."
 
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "No results."
 msgstr "نتیجه‌ای یافت نشد."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "No S.M.A.R.T. attributes available for this device."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -781,10 +867,15 @@ msgstr "باز کردن منو"
 msgid "Or continue with"
 msgstr "یا ادامه با"
 
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Other"
+msgstr ""
+
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "بازنویسی هشدارهای موجود"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
 msgstr "صفحه"
@@ -828,6 +919,15 @@ msgstr "مکث شده"
 msgid "Paused ({pausedSystemsLength})"
 msgstr "مکث شده ({pausedSystemsLength})"
 
+#: src/components/routes/system/cpu-sheet.tsx
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Per-core average utilization"
+msgstr ""
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Percentage of time spent in each state"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "لطفاً برای اطمینان از تحویل هشدارها، یک <0>سرور SMTP پیکربندی کنید</0>."
@@ -865,6 +965,11 @@ msgstr "لطفاً به حساب کاربری خود وارد شوید"
 msgid "Port"
 msgstr "پورت"
 
+#. Power On Time
+#: src/components/routes/system/smart-table.tsx
+msgid "Power On"
+msgstr ""
+
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Precise utilization at the recorded time"
@@ -888,6 +993,11 @@ msgstr "خواندن"
 #: src/components/routes/system.tsx
 msgid "Received"
 msgstr "دریافت شد"
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+msgid "Refresh"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
@@ -919,6 +1029,14 @@ msgstr "چرخش توکن"
 msgid "Rows per page"
 msgstr "ردیف در هر صفحه"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Details"
+msgstr ""
+
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Self-Test"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "آدرس را با استفاده از کلید Enter یا کاما ذخیره کنید. برای غیرفعال کردن اعلان‌های ایمیلی، خالی بگذارید."
@@ -947,6 +1065,10 @@ msgstr "برای پیکربندی نحوه دریافت هشدارها، به <0
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "ارسال شد"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Serial Number"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -980,6 +1102,8 @@ msgstr "مرتب‌سازی بر اساس"
 msgid "State"
 msgstr "وضعیت"
 
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -994,6 +1118,7 @@ msgid "Swap Usage"
 msgstr "میزان استفاده از Swap"
 
 #: src/components/alerts-history-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -1027,6 +1152,7 @@ msgid "Tags"
 msgstr ""
 
 #. Temperature label in systems table
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr "دما"
@@ -1108,6 +1234,11 @@ msgstr "توکن‌ها به عامل‌ها اجازه اتصال و ثبت‌�
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "توکن‌ها و اثرات انگشت برای احراز هویت اتصالات WebSocket به هاب استفاده می‌شوند."
 
+#: src/components/ui/chart.tsx
+#: src/components/ui/chart.tsx
+msgid "Total"
+msgstr ""
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
 msgstr "داده‌های کل دریافت شده برای هر رابط"
@@ -1152,6 +1283,10 @@ msgstr "هنگامی که وضعیت بین بالا و پایین تغییر م
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "هنگامی که استفاده از هر دیسکی از یک آستانه فراتر رود، فعال می‌شود"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Type"
+msgstr ""
+
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
@@ -1177,6 +1312,10 @@ msgstr "فعال"
 msgid "Up ({upSystemsLength})"
 msgstr "فعال ({upSystemsLength})"
 
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Updated"
+msgstr ""
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
 msgstr "آپلود"
@@ -1189,6 +1328,7 @@ msgstr "آپتایم"
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "میزان استفاده"
 
@@ -1214,6 +1354,7 @@ msgstr "مقدار"
 msgid "View"
 msgstr "مشاهده"
 
+#: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 msgid "View more"
 msgstr "مشاهده بیشتر"

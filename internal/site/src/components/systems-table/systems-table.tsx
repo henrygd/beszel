@@ -20,6 +20,7 @@ import {
 	ArrowUpDownIcon,
 	ArrowUpIcon,
 	ChevronDownIcon,
+	ChevronRightIcon,
 	EyeIcon,
 	FilterIcon,
 	LayoutGridIcon,

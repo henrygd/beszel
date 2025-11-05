@@ -18,26 +18,35 @@ msgstr ""
 "X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 16\n"
 
-#. placeholder {0}: Math.trunc(system.info?.u / 86400)
 #: src/components/routes/system.tsx
-msgid "{0, plural, one {# day} other {# days}}"
-msgstr "{0, plural, one {# день} other {# дней}}"
+#~ msgid "{0, plural, one {# day} other {# days}}"
+#~ msgstr "{0, plural, one {# день} other {# дней}}"
 
-#. placeholder {0}: Math.trunc(system.info.u / 3600)
 #: src/components/routes/system.tsx
-msgid "{0, plural, one {# hour} other {# hours}}"
-msgstr "{0, plural, one {# час} other {# часов}}"
+#~ msgid "{0, plural, one {# hour} other {# hours}}"
+#~ msgstr "{0, plural, one {# час} other {# часов}}"
 
-#. placeholder {0}: Math.trunc(system.info.u / 60)
 #: src/components/routes/system.tsx
-msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
-msgstr "{0, plural, one {# минута} few {# минут} many {# минут} other {# минуты}}"
+#~ msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
+#~ msgstr "{0, plural, one {# минута} few {# минут} many {# минут} other {# минуты}}"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
 msgstr "Выбрано {0} из {1} строк."
+
+#: src/lib/utils.ts
+msgid "{count, plural, one {{countString} day} other {{countString} days}}"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "{count, plural, one {{countString} hour} other {{countString} hours}}"
+msgstr ""
+
+#: src/lib/utils.ts
+msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -89,7 +98,7 @@ msgstr "Действия"
 msgid "Active"
 msgstr "Активно"
 
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Active Alerts"
 msgstr "Активные оповещения"
 
@@ -133,7 +142,15 @@ msgstr "История оповещений"
 msgid "Alerts"
 msgstr "Оповещения"
 
+#: src/components/command-palette.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/containers.tsx
+msgid "All Containers"
+msgstr ""
+
 #: src/components/alerts/alerts-sheet.tsx
+#: src/components/command-palette.tsx
+#: src/components/routes/home.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
@@ -226,6 +243,10 @@ msgstr "Кэш / Буферы"
 msgid "Cancel"
 msgstr "Отмена"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Capacity"
+msgstr ""
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
 msgstr "Внимание - возможная потеря данных"
@@ -267,6 +288,14 @@ msgstr "Проверьте журналы для получения более �
 msgid "Check your notification service"
 msgstr "Проверьте ваш сервис уведомлений"
 
+#: src/components/containers-table/containers-table.tsx
+msgid "Click on a container to view more information."
+msgstr ""
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Click on a device to view more information."
+msgstr ""
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
 msgstr "Нажмите на систему для просмотра дополнительной информации."
@@ -289,7 +318,7 @@ msgstr "Настройте, как вы получаете уведомлени�
 msgid "Confirm password"
 msgstr "Подтвердите пароль"
 
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "Нет соединения"
 
@@ -348,12 +377,22 @@ msgstr "Скопируйте содержимое <0>docker-compose.yml</0> дл
 msgid "Copy YAML"
 msgstr "Скопировать YAML"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "ЦП"
 
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "CPU Cores"
+msgstr ""
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "CPU Time Breakdown"
+msgstr ""
+
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/cpu-sheet.tsx
 #: src/lib/alerts.ts
 msgid "CPU Usage"
 msgstr "Использование CPU"
@@ -384,8 +423,12 @@ msgstr "Совокупная выгрузка"
 msgid "Current state"
 msgstr "Текущее состояние"
 
+#. Power Cycles
+#: src/components/routes/system/smart-table.tsx
+msgid "Cycles"
+msgstr ""
+
 #: src/components/command-palette.tsx
-#: src/components/routes/home.tsx
 msgid "Dashboard"
 msgstr "Панель управления"
 
@@ -401,6 +444,14 @@ msgstr "Удалить"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
 msgstr "Удалить отпечаток"
+
+#: src/components/containers-table/containers-table.tsx
+msgid "Detail"
+msgstr ""
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Device"
+msgstr ""
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -508,7 +559,7 @@ msgstr "Ошибка"
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
-#: src/components/routes/home.tsx
+#: src/components/active-alerts.tsx
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Превышает {0}{1} за последние {2, plural, one {# минуту} other {# минут}}"
 
@@ -532,6 +583,10 @@ msgstr "Экспортируйте текущую конфигурацию си�
 msgid "Fahrenheit (°F)"
 msgstr "Фаренгейт (°F)"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Failed Attributes:"
+msgstr ""
+
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Не удалось аутентифицировать"
@@ -553,8 +608,10 @@ msgstr "Не удалось обновить оповещение"
 msgid "Filter by tags"
 msgstr ""
 
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Фильтр..."
@@ -562,6 +619,10 @@ msgstr "Фильтр..."
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
 msgstr "Отпечаток"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Firmware"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -604,6 +665,10 @@ msgstr "Сетка"
 #~ msgid "Group"
 #~ msgstr ""
 
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Health"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -622,6 +687,11 @@ msgstr "Неактивная"
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr "Если вы потеряли пароль от своей учетной записи администратора, вы можете сбросить его, используя следующую команду."
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -675,6 +745,7 @@ msgid "Login attempt failed"
 msgstr "Попытка входа не удалась"
 
 #: src/components/command-palette.tsx
+#: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
 msgid "Logs"
 msgstr "Журналы"
@@ -697,6 +768,7 @@ msgstr "Инструкции по ручной настройке"
 msgid "Max 1 min"
 msgstr "Макс 1 мин"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Память"
@@ -710,11 +782,17 @@ msgstr "Использование памяти"
 msgid "Memory usage of docker containers"
 msgstr "Использование памяти контейнерами Docker"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Model"
+msgstr ""
+
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
 msgid "Name"
 msgstr "Имя"
 
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
 msgstr "Сеть"
@@ -739,9 +817,17 @@ msgstr "Единицы измерения скорости сети"
 msgid "No results found."
 msgstr "Результаты не найдены."
 
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "No results."
 msgstr "Нет результатов."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "No S.M.A.R.T. attributes available for this device."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
@@ -781,10 +867,15 @@ msgstr "Открыть меню"
 msgid "Or continue with"
 msgstr "Или продолжить с"
 
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Other"
+msgstr ""
+
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "Перезаписать существующие оповещения"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
 msgstr "Страница"
@@ -828,6 +919,15 @@ msgstr "Пауза"
 msgid "Paused ({pausedSystemsLength})"
 msgstr "Пауза ({pausedSystemsLength})"
 
+#: src/components/routes/system/cpu-sheet.tsx
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Per-core average utilization"
+msgstr ""
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Percentage of time spent in each state"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "Пожалуйста, <0>настройте SMTP-сервер</0>, чтобы гарантировать доставку оповещений."
@@ -865,6 +965,11 @@ msgstr "Пожалуйста, войдите в свою учетную запи
 msgid "Port"
 msgstr "Порт"
 
+#. Power On Time
+#: src/components/routes/system/smart-table.tsx
+msgid "Power On"
+msgstr ""
+
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Precise utilization at the recorded time"
@@ -888,6 +993,11 @@ msgstr "Чтение"
 #: src/components/routes/system.tsx
 msgid "Received"
 msgstr "Получено"
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+msgid "Refresh"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
@@ -919,6 +1029,14 @@ msgstr "Обновить токен"
 msgid "Rows per page"
 msgstr "Строк на странице"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Details"
+msgstr ""
+
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Self-Test"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr "Сохраните адрес, используя клавишу ввода или запятую. Оставьте пустым, чтобы отключить уведомления по электронной почте."
@@ -947,6 +1065,10 @@ msgstr "Смотрите <0>настройки уведомлений</0>, чт�
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Отправлено"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Serial Number"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -980,6 +1102,8 @@ msgstr "Сортировать по"
 msgid "State"
 msgstr "Состояние"
 
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -994,6 +1118,7 @@ msgid "Swap Usage"
 msgstr "Использование подкачки"
 
 #: src/components/alerts-history-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -1027,6 +1152,7 @@ msgid "Tags"
 msgstr ""
 
 #. Temperature label in systems table
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr "Темп"
@@ -1108,6 +1234,11 @@ msgstr "Токены позволяют агентам подключаться 
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Токены и отпечатки используются для аутентификации соединений WebSocket с хабом."
 
+#: src/components/ui/chart.tsx
+#: src/components/ui/chart.tsx
+msgid "Total"
+msgstr ""
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
 msgstr "Общий объем полученных данных для каждого интерфейса"
@@ -1152,6 +1283,10 @@ msgstr "Срабатывает, когда статус переключаетс
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Срабатывает, когда использование любого диска превышает порог"
 
+#: src/components/routes/system/smart-table.tsx
+msgid "Type"
+msgstr ""
+
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
@@ -1177,6 +1312,10 @@ msgstr "В сети"
 msgid "Up ({upSystemsLength})"
 msgstr "В сети ({upSystemsLength})"
 
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Updated"
+msgstr ""
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
 msgstr "Загрузить"
@@ -1189,6 +1328,7 @@ msgstr "Время работы"
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
+#: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
 msgstr "Использование"
 
@@ -1214,6 +1354,7 @@ msgstr "Значение"
 msgid "View"
 msgstr "Вид"
 
+#: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 msgid "View more"
 msgstr "Показать больше"
