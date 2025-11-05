@@ -2,7 +2,6 @@ FROM --platform=$BUILDPLATFORM golang:alpine AS builder
 
 WORKDIR /app
 
-
 COPY ../go.mod ../go.sum ./
 RUN go mod download
 
@@ -13,7 +12,24 @@ COPY . ./
 ARG TARGETOS TARGETARCH
 RUN CGO_ENABLED=0 GOGC=75 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-w -s" -o /agent ./internal/cmd/agent
 
-RUN rm -rf /tmp/*
+# --------------------------
+# Smartmontools builder stage
+# --------------------------
+FROM nvidia/cuda:12.2.2-base-ubuntu22.04 AS smartmontools-builder
+
+RUN apt-get update && apt-get install -y \
+  wget \
+  build-essential \
+  && wget https://downloads.sourceforge.net/project/smartmontools/smartmontools/7.5/smartmontools-7.5.tar.gz \
+  && tar zxvf smartmontools-7.5.tar.gz \
+  && cd smartmontools-7.5 \
+  && ./configure --prefix=/usr --sysconfdir=/etc \
+  && make \
+  && make install \
+  && rm -rf /smartmontools-7.5* \
+  && apt-get remove -y wget build-essential \
+  && apt-get autoremove -y \
+  && rm -rf /var/lib/apt/lists/*
 
 # --------------------------
 # Final image: GPU-enabled agent with nvidia-smi
@@ -21,8 +37,8 @@ RUN rm -rf /tmp/*
 FROM nvidia/cuda:12.2.2-base-ubuntu22.04
 COPY --from=builder /agent /agent
 
-# this is so we don't need to create the /tmp directory in the scratch container
-COPY --from=builder /tmp /tmp
+# Copy smartmontools binaries and config files
+COPY --from=smartmontools-builder /usr/sbin/smartctl /usr/sbin/smartctl
 
 # Ensure data persistence across container recreations
 VOLUME ["/var/lib/beszel-agent"]

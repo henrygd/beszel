@@ -1,8 +1,10 @@
 import type { JSX } from "react"
+import { useLingui } from "@lingui/react/macro"
 import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 import { chartTimeData, cn } from "@/lib/utils"
 import type { ChartData } from "@/types"
+import { Separator } from "./separator"
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const
@@ -91,16 +93,18 @@ const ChartTooltip = RechartsPrimitive.Tooltip
 const ChartTooltipContent = React.forwardRef<
 	HTMLDivElement,
 	React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
-		React.ComponentProps<"div"> & {
-			hideLabel?: boolean
-			indicator?: "line" | "dot" | "dashed"
-			nameKey?: string
-			labelKey?: string
-			unit?: string
-			filter?: string
-			contentFormatter?: (item: any, key: string) => React.ReactNode | string
-			truncate?: boolean
-		}
+	React.ComponentProps<"div"> & {
+		hideLabel?: boolean
+		indicator?: "line" | "dot" | "dashed"
+		nameKey?: string
+		labelKey?: string
+		unit?: string
+		filter?: string
+		contentFormatter?: (item: any, key: string) => React.ReactNode | string
+		truncate?: boolean
+		showTotal?: boolean
+		totalLabel?: React.ReactNode
+	}
 >(
 	(
 		{
@@ -121,21 +125,100 @@ const ChartTooltipContent = React.forwardRef<
 			itemSorter,
 			contentFormatter: content = undefined,
 			truncate = false,
+			showTotal = false,
+			totalLabel,
 		},
 		ref
 	) => {
 		// const { config } = useChart()
 		const config = {}
+		const { t } = useLingui()
+		const totalLabelNode = totalLabel ?? t`Total`
+		const totalName = typeof totalLabelNode === "string" ? totalLabelNode : t`Total`
 
 		React.useMemo(() => {
 			if (filter) {
-				payload = payload?.filter((item) => (item.name as string)?.toLowerCase().includes(filter.toLowerCase()))
+				const filterTerms = filter.toLowerCase().split(" ").filter(term => term.length > 0)
+				payload = payload?.filter((item) => {
+					const itemName = (item.name as string)?.toLowerCase()
+					return filterTerms.some(term => itemName?.includes(term))
+				})
 			}
 			if (itemSorter) {
 				// @ts-expect-error
 				payload?.sort(itemSorter)
 			}
 		}, [itemSorter, payload])
+
+		const totalValueDisplay = React.useMemo(() => {
+			if (!showTotal || !payload?.length) {
+				return null
+			}
+
+			let totalValue = 0
+			let hasNumericValue = false
+			const aggregatedNestedValues: Record<string, number> = {}
+
+			for (const item of payload) {
+				const numericValue = typeof item.value === "number" ? item.value : Number(item.value)
+				if (Number.isFinite(numericValue)) {
+					totalValue += numericValue
+					hasNumericValue = true
+				}
+
+				if (content && item?.payload) {
+					const payloadKey = `${nameKey || item.name || item.dataKey || "value"}`
+					const nestedPayload = (item.payload as Record<string, unknown> | undefined)?.[payloadKey]
+
+					if (nestedPayload && typeof nestedPayload === "object") {
+						for (const [nestedKey, nestedValue] of Object.entries(nestedPayload)) {
+							if (typeof nestedValue === "number" && Number.isFinite(nestedValue)) {
+								aggregatedNestedValues[nestedKey] = (aggregatedNestedValues[nestedKey] ?? 0) + nestedValue
+							}
+						}
+					}
+				}
+			}
+
+			if (!hasNumericValue) {
+				return null
+			}
+
+			const totalKey = "__total__"
+			const totalItem: any = {
+				value: totalValue,
+				name: totalName,
+				dataKey: totalKey,
+				color,
+			}
+
+			if (content) {
+				const basePayload =
+					payload[0]?.payload && typeof payload[0].payload === "object"
+						? { ...(payload[0].payload as Record<string, unknown>) }
+						: {}
+				totalItem.payload = {
+					...basePayload,
+					[totalKey]: aggregatedNestedValues,
+				}
+			}
+
+			if (typeof formatter === "function") {
+				return formatter(
+					totalValue,
+					totalName,
+					totalItem,
+					payload.length,
+					totalItem.payload ?? payload[0]?.payload
+				)
+			}
+
+			if (content) {
+				return content(totalItem, totalKey)
+			}
+
+			return `${totalValue.toLocaleString()}${unit ?? ""}`
+		}, [color, content, formatter, nameKey, payload, showTotal, totalName, unit])
 
 		const tooltipLabel = React.useMemo(() => {
 			if (hideLabel || !payload?.length) {
@@ -238,6 +321,15 @@ const ChartTooltipContent = React.forwardRef<
 							</div>
 						)
 					})}
+					{totalValueDisplay ? (
+						<>
+							<Separator className="mt-0.5" />
+							<div className="flex items-center justify-between gap-2 -mt-0.75 font-medium">
+								<span className="text-muted-foreground ps-3">{totalLabelNode}</span>
+								<span>{totalValueDisplay}</span>
+							</div>
+						</>
+					) : null}
 				</div>
 			</div>
 		)
@@ -250,16 +342,19 @@ const ChartLegend = RechartsPrimitive.Legend
 const ChartLegendContent = React.forwardRef<
 	HTMLDivElement,
 	React.ComponentProps<"div"> &
-		Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
-			hideIcon?: boolean
-			nameKey?: string
-		}
->(({ className, payload, verticalAlign = "bottom" }, ref) => {
+	Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
+		hideIcon?: boolean
+		nameKey?: string
+		reverse?: boolean
+	}
+>(({ className, payload, verticalAlign = "bottom", reverse = false }, ref) => {
 	// const { config } = useChart()
 
 	if (!payload?.length) {
 		return null
 	}
+
+	const reversedPayload = reverse ? [...payload].reverse() : payload
 
 	return (
 		<div
@@ -270,7 +365,7 @@ const ChartLegendContent = React.forwardRef<
 				className
 			)}
 		>
-			{payload.map((item) => {
+			{reversedPayload.map((item) => {
 				// const key = `${nameKey || item.dataKey || 'value'}`
 				// const itemConfig = getPayloadConfigFromPayload(config, item, key)
 

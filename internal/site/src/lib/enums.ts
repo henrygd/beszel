@@ -54,6 +54,16 @@ export enum HourFormat {
 	"24h" = "24h",
 }
 
+/** Container health status */
+export enum ContainerHealth {
+	None,
+	Starting,
+	Healthy,
+	Unhealthy,
+}
+
+export const ContainerHealthLabels = ["None", "Starting", "Healthy", "Unhealthy"] as const
+
 /** Connection type */
 export enum ConnectionType {
 	SSH = 1,

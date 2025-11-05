@@ -1,7 +1,6 @@
 package migrations
 
 import (
-	"github.com/google/uuid"
 	"github.com/pocketbase/pocketbase/core"
 	m "github.com/pocketbase/pocketbase/migrations"
 )
@@ -719,7 +718,9 @@ func init() {
 				"type": "autodate"
 			}
 		],
-		"indexes": [],
+		"indexes": [
+			"CREATE INDEX ` + "`" + `idx_systems_status` + "`" + ` ON ` + "`" + `systems` + "`" + ` (` + "`" + `status` + "`" + `)"
+		],
 		"system": false
 	},
 	{
@@ -860,37 +861,158 @@ func init() {
 		"system": false,
 		"authRule": "verified=true",
 		"manageRule": null
+	},
+	{
+		"id": "pbc_1864144027",
+		"listRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id",
+		"viewRule": null,
+		"createRule": null,
+		"updateRule": null,
+		"deleteRule": null,
+		"name": "containers",
+		"type": "base",
+		"fields": [
+				{
+						"autogeneratePattern": "[a-f0-9]{6}",
+						"hidden": false,
+						"id": "text3208210256",
+						"max": 12,
+						"min": 6,
+						"name": "id",
+						"pattern": "^[a-f0-9]+$",
+						"presentable": false,
+						"primaryKey": true,
+						"required": true,
+						"system": true,
+						"type": "text"
+				},
+				{
+						"cascadeDelete": false,
+						"collectionId": "2hz5ncl8tizk5nx",
+						"hidden": false,
+						"id": "relation3377271179",
+						"maxSelect": 1,
+						"minSelect": 0,
+						"name": "system",
+						"presentable": false,
+						"required": false,
+						"system": false,
+						"type": "relation"
+				},
+				{
+						"autogeneratePattern": "",
+						"hidden": false,
+						"id": "text1579384326",
+						"max": 0,
+						"min": 0,
+						"name": "name",
+						"pattern": "",
+						"presentable": false,
+						"primaryKey": false,
+						"required": false,
+						"system": false,
+						"type": "text"
+				},
+				{
+						"autogeneratePattern": "",
+						"hidden": false,
+						"id": "text2063623452",
+						"max": 0,
+						"min": 0,
+						"name": "status",
+						"pattern": "",
+						"presentable": false,
+						"primaryKey": false,
+						"required": false,
+						"system": false,
+						"type": "text"
+				},
+				{
+						"hidden": false,
+						"id": "number3470402323",
+						"max": null,
+						"min": null,
+						"name": "health",
+						"onlyInt": false,
+						"presentable": false,
+						"required": false,
+						"system": false,
+						"type": "number"
+				},
+				{
+						"hidden": false,
+						"id": "number3128971310",
+						"max": 100,
+						"min": 0,
+						"name": "cpu",
+						"onlyInt": false,
+						"presentable": false,
+						"required": false,
+						"system": false,
+						"type": "number"
+				},
+				{
+						"hidden": false,
+						"id": "number3933025333",
+						"max": null,
+						"min": 0,
+						"name": "memory",
+						"onlyInt": false,
+						"presentable": false,
+						"required": false,
+						"system": false,
+						"type": "number"
+				},
+				{
+					"hidden": false,
+					"id": "number4075427327",
+					"max": null,
+					"min": null,
+					"name": "net",
+					"onlyInt": false,
+					"presentable": false,
+					"required": false,
+					"system": false,
+					"type": "number"
+				},
+				{
+					"hidden": false,
+					"id": "number3332085495",
+					"max": null,
+					"min": null,
+					"name": "updated",
+					"onlyInt": true,
+					"presentable": false,
+					"required": true,
+					"system": false,
+					"type": "number"
+				},
+				{
+					"autogeneratePattern": "",
+					"hidden": false,
+					"id": "text3309110367",
+					"max": 0,
+					"min": 0,
+					"name": "image",
+					"pattern": "",
+					"presentable": false,
+					"primaryKey": false,
+					"required": false,
+					"system": false,
+					"type": "text"
+				}
+		],
+		"indexes": [
+			"CREATE INDEX ` + "`" + `idx_JxWirjdhyO` + "`" + ` ON ` + "`" + `containers` + "`" + ` (` + "`" + `updated` + "`" + `)",
+			"CREATE INDEX ` + "`" + `idx_r3Ja0rs102` + "`" + ` ON ` + "`" + `containers` + "`" + ` (` + "`" + `system` + "`" + `)"
+		],
+		"system": false
 	}
 ]`
 
 		err := app.ImportCollectionsByMarshaledJSON([]byte(jsonData), false)
 		if err != nil {
 			return err
-		}
-
-		// Get all systems that don't have fingerprint records
-		var systemIds []string
-		err = app.DB().NewQuery(`
-			SELECT s.id FROM systems s
-			LEFT JOIN fingerprints f ON s.id = f.system
-			WHERE f.system IS NULL
-		`).Column(&systemIds)
-		if err != nil {
-			return err
-		}
-		// Create fingerprint records with unique UUID tokens for each system
-		for _, systemId := range systemIds {
-			token := uuid.New().String()
-			_, err = app.DB().NewQuery(`
-				INSERT INTO fingerprints (system, token)
-				VALUES ({:system}, {:token})
-			`).Bind(map[string]any{
-				"system": systemId,
-				"token":  token,
-			}).Execute()
-			if err != nil {
-				return err
-			}
 		}
 
 		return nil

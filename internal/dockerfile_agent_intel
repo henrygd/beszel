@@ -20,7 +20,7 @@ FROM alpine:edge
 
 COPY --from=builder /agent /agent
 
-RUN apk add --no-cache -X https://dl-cdn.alpinelinux.org/alpine/edge/testing igt-gpu-tools
+RUN apk add --no-cache -X https://dl-cdn.alpinelinux.org/alpine/edge/testing igt-gpu-tools smartmontools
 
 # Ensure data persistence across container recreations
 VOLUME ["/var/lib/beszel-agent"]

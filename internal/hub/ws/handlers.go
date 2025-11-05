@@ -18,11 +18,11 @@ type ResponseHandler interface {
 }
 
 // BaseHandler provides a default implementation that can be embedded to make HandleLegacy optional
-// type BaseHandler struct{}
+type BaseHandler struct{}
 
-// func (h *BaseHandler) HandleLegacy(rawData []byte) error {
-// 	return errors.New("legacy format not supported")
-// }
+func (h *BaseHandler) HandleLegacy(rawData []byte) error {
+	return errors.New("legacy format not supported")
+}
 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
@@ -57,6 +57,98 @@ func (ws *WsConn) RequestSystemData(ctx context.Context, data *system.CombinedDa
 
 	handler := &systemDataHandler{data: data}
 	return ws.handleAgentRequest(req, handler)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// stringResponseHandler is a generic handler for string responses from agents
+type stringResponseHandler struct {
+	BaseHandler
+	value    string
+	errorMsg string
+}
+
+func (h *stringResponseHandler) Handle(agentResponse common.AgentResponse) error {
+	if agentResponse.String == nil {
+		return errors.New(h.errorMsg)
+	}
+	h.value = *agentResponse.String
+	return nil
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// requestContainerStringViaWS is a generic function to request container-related strings via WebSocket
+func (ws *WsConn) requestContainerStringViaWS(ctx context.Context, action common.WebSocketAction, requestData any, errorMsg string) (string, error) {
+	if !ws.IsConnected() {
+		return "", gws.ErrConnClosed
+	}
+
+	req, err := ws.requestManager.SendRequest(ctx, action, requestData)
+	if err != nil {
+		return "", err
+	}
+
+	handler := &stringResponseHandler{errorMsg: errorMsg}
+	if err := ws.handleAgentRequest(req, handler); err != nil {
+		return "", err
+	}
+
+	return handler.value, nil
+}
+
+// RequestContainerLogs requests logs for a specific container via WebSocket.
+func (ws *WsConn) RequestContainerLogs(ctx context.Context, containerID string) (string, error) {
+	return ws.requestContainerStringViaWS(ctx, common.GetContainerLogs, common.ContainerLogsRequest{ContainerID: containerID}, "no logs in response")
+}
+
+// RequestContainerInfo requests information about a specific container via WebSocket.
+func (ws *WsConn) RequestContainerInfo(ctx context.Context, containerID string) (string, error) {
+	return ws.requestContainerStringViaWS(ctx, common.GetContainerInfo, common.ContainerInfoRequest{ContainerID: containerID}, "no info in response")
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// RequestSmartData requests SMART data via WebSocket.
+func (ws *WsConn) RequestSmartData(ctx context.Context) (map[string]any, error) {
+	if !ws.IsConnected() {
+		return nil, gws.ErrConnClosed
+	}
+	req, err := ws.requestManager.SendRequest(ctx, common.GetSmartData, nil)
+	if err != nil {
+		return nil, err
+	}
+	var result map[string]any
+	handler := ResponseHandler(&smartDataHandler{result: &result})
+	if err := ws.handleAgentRequest(req, handler); err != nil {
+		return nil, err
+	}
+	return result, nil
+}
+
+// smartDataHandler parses SMART data map from AgentResponse
+type smartDataHandler struct {
+	BaseHandler
+	result *map[string]any
+}
+
+func (h *smartDataHandler) Handle(agentResponse common.AgentResponse) error {
+	if agentResponse.SmartData == nil {
+		return errors.New("no SMART data in response")
+	}
+	// convert to map[string]any for transport convenience in hub layer
+	out := make(map[string]any, len(agentResponse.SmartData))
+	for k, v := range agentResponse.SmartData {
+		out[k] = v
+	}
+	*h.result = out
+	return nil
 }
 
 ////////////////////////////////////////////////////////////////////////////

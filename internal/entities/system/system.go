@@ -3,6 +3,7 @@ package system
 // TODO: this is confusing, make common package with common/types common/helpers etc
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/container"
@@ -41,9 +42,28 @@ type Stats struct {
 	LoadAvg           [3]float64           `json:"la,omitempty" cbor:"28,keyasint"`
 	Battery           [2]uint8             `json:"bat,omitzero" cbor:"29,keyasint,omitzero"` // [percent, charge state, current]
 	MaxMem            float64              `json:"mm,omitempty" cbor:"30,keyasint,omitempty"`
-	NetworkInterfaces map[string][4]uint64 `json:"ni,omitempty" cbor:"31,keyasint,omitempty"` // [upload bytes, download bytes, total upload, total download]
-	DiskIO            [2]uint64            `json:"dio,omitzero" cbor:"32,keyasint,omitzero"`  // [read bytes, write bytes]
-	MaxDiskIO         [2]uint64            `json:"diom,omitzero" cbor:"-"`                    // [max read bytes, max write bytes]
+	NetworkInterfaces map[string][4]uint64 `json:"ni,omitempty" cbor:"31,keyasint,omitempty"`   // [upload bytes, download bytes, total upload, total download]
+	DiskIO            [2]uint64            `json:"dio,omitzero" cbor:"32,keyasint,omitzero"`    // [read bytes, write bytes]
+	MaxDiskIO         [2]uint64            `json:"diom,omitzero" cbor:"-"`                      // [max read bytes, max write bytes]
+	CpuBreakdown      []float64            `json:"cpub,omitempty" cbor:"33,keyasint,omitempty"` // [user, system, iowait, steal, idle]
+	CpuCoresUsage     Uint8Slice           `json:"cpus,omitempty" cbor:"34,keyasint,omitempty"` // per-core busy usage [CPU0..]
+}
+
+// Uint8Slice wraps []uint8 to customize JSON encoding while keeping CBOR efficient.
+// JSON: encodes as array of numbers (avoids base64 string).
+// CBOR: falls back to default handling for []uint8 (byte string), keeping payload small.
+type Uint8Slice []uint8
+
+func (s Uint8Slice) MarshalJSON() ([]byte, error) {
+	if s == nil {
+		return []byte("null"), nil
+	}
+	// Convert to wider ints to force array-of-numbers encoding.
+	arr := make([]uint16, len(s))
+	for i, v := range s {
+		arr[i] = uint16(v)
+	}
+	return json.Marshal(arr)
 }
 
 type GPUData struct {
@@ -62,6 +82,7 @@ type FsStats struct {
 	Time           time.Time `json:"-"`
 	Root           bool      `json:"-"`
 	Mountpoint     string    `json:"-"`
+	Name           string    `json:"-"`
 	DiskTotal      float64   `json:"d" cbor:"0,keyasint"`
 	DiskUsed       float64   `json:"du" cbor:"1,keyasint"`
 	TotalRead      uint64    `json:"-"`

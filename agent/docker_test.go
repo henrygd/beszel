@@ -4,8 +4,10 @@
 package agent
 
 import (
+	"bytes"
 	"encoding/json"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -858,11 +860,61 @@ func TestDeltaTrackerCacheTimeIsolation(t *testing.T) {
 	assert.Equal(t, uint64(200000), recvTracker2.Delta(ctr.IdShort))
 }
 
+func TestParseDockerStatus(t *testing.T) {
+	tests := []struct {
+		name           string
+		input          string
+		expectedStatus string
+		expectedHealth container.DockerHealth
+	}{
+		{
+			name:           "status with About an removed",
+			input:          "Up About an hour (healthy)",
+			expectedStatus: "Up an hour",
+			expectedHealth: container.DockerHealthHealthy,
+		},
+		{
+			name:           "status without About an unchanged",
+			input:          "Up 2 hours (healthy)",
+			expectedStatus: "Up 2 hours",
+			expectedHealth: container.DockerHealthHealthy,
+		},
+		{
+			name:           "status with About and no parentheses",
+			input:          "Up About an hour",
+			expectedStatus: "Up an hour",
+			expectedHealth: container.DockerHealthNone,
+		},
+		{
+			name:           "status without parentheses",
+			input:          "Created",
+			expectedStatus: "Created",
+			expectedHealth: container.DockerHealthNone,
+		},
+		{
+			name:           "empty status",
+			input:          "",
+			expectedStatus: "",
+			expectedHealth: container.DockerHealthNone,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			status, health := parseDockerStatus(tt.input)
+			assert.Equal(t, tt.expectedStatus, status)
+			assert.Equal(t, tt.expectedHealth, health)
+		})
+	}
+}
+
 func TestConstantsAndUtilityFunctions(t *testing.T) {
 	// Test constants are properly defined
 	assert.Equal(t, uint16(60000), defaultCacheTimeMs)
 	assert.Equal(t, uint64(5e9), maxNetworkSpeedBps)
 	assert.Equal(t, 2100, dockerTimeoutMs)
+	assert.Equal(t, uint32(1024*1024), uint32(maxLogFrameSize)) // 1MB
+	assert.Equal(t, 5*1024*1024, maxTotalLogSize)               // 5MB
 
 	// Test utility functions
 	assert.Equal(t, 1.5, twoDecimals(1.499))
@@ -872,4 +924,282 @@ func TestConstantsAndUtilityFunctions(t *testing.T) {
 	assert.Equal(t, 1.0, bytesToMegabytes(1048576)) // 1 MB
 	assert.Equal(t, 0.5, bytesToMegabytes(524288))  // 512 KB
 	assert.Equal(t, 0.0, bytesToMegabytes(0))
+}
+
+func TestDecodeDockerLogStream(t *testing.T) {
+	tests := []struct {
+		name        string
+		input       []byte
+		expected    string
+		expectError bool
+	}{
+		{
+			name: "simple log entry",
+			input: []byte{
+				// Frame 1: stdout, 11 bytes
+				0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0B,
+				'H', 'e', 'l', 'l', 'o', ' ', 'W', 'o', 'r', 'l', 'd',
+			},
+			expected:    "Hello World",
+			expectError: false,
+		},
+		{
+			name: "multiple frames",
+			input: []byte{
+				// Frame 1: stdout, 5 bytes
+				0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05,
+				'H', 'e', 'l', 'l', 'o',
+				// Frame 2: stdout, 5 bytes
+				0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05,
+				'W', 'o', 'r', 'l', 'd',
+			},
+			expected:    "HelloWorld",
+			expectError: false,
+		},
+		{
+			name: "zero length frame",
+			input: []byte{
+				// Frame 1: stdout, 0 bytes
+				0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+				// Frame 2: stdout, 5 bytes
+				0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05,
+				'H', 'e', 'l', 'l', 'o',
+			},
+			expected:    "Hello",
+			expectError: false,
+		},
+		{
+			name:        "empty input",
+			input:       []byte{},
+			expected:    "",
+			expectError: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			reader := bytes.NewReader(tt.input)
+			var builder strings.Builder
+			err := decodeDockerLogStream(reader, &builder)
+
+			if tt.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expected, builder.String())
+			}
+		})
+	}
+}
+
+func TestDecodeDockerLogStreamMemoryProtection(t *testing.T) {
+	t.Run("excessively large frame should error", func(t *testing.T) {
+		// Create a frame with size exceeding maxLogFrameSize
+		excessiveSize := uint32(maxLogFrameSize + 1)
+		input := []byte{
+			// Frame header with excessive size
+			0x01, 0x00, 0x00, 0x00,
+			byte(excessiveSize >> 24), byte(excessiveSize >> 16), byte(excessiveSize >> 8), byte(excessiveSize),
+		}
+
+		reader := bytes.NewReader(input)
+		var builder strings.Builder
+		err := decodeDockerLogStream(reader, &builder)
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "log frame size")
+		assert.Contains(t, err.Error(), "exceeds maximum")
+	})
+
+	t.Run("total size limit should truncate", func(t *testing.T) {
+		// Create frames that exceed maxTotalLogSize (5MB)
+		// Use frames within maxLogFrameSize (1MB) to avoid single-frame rejection
+		frameSize := uint32(800 * 1024) // 800KB per frame
+		var input []byte
+
+		// Frames 1-6: 800KB each (total 4.8MB - within 5MB limit)
+		for i := 0; i < 6; i++ {
+			char := byte('A' + i)
+			frameHeader := []byte{
+				0x01, 0x00, 0x00, 0x00,
+				byte(frameSize >> 24), byte(frameSize >> 16), byte(frameSize >> 8), byte(frameSize),
+			}
+			input = append(input, frameHeader...)
+			input = append(input, bytes.Repeat([]byte{char}, int(frameSize))...)
+		}
+
+		// Frame 7: 800KB (would bring total to 5.6MB, exceeding 5MB limit - should be truncated)
+		frame7Header := []byte{
+			0x01, 0x00, 0x00, 0x00,
+			byte(frameSize >> 24), byte(frameSize >> 16), byte(frameSize >> 8), byte(frameSize),
+		}
+		input = append(input, frame7Header...)
+		input = append(input, bytes.Repeat([]byte{'Z'}, int(frameSize))...)
+
+		reader := bytes.NewReader(input)
+		var builder strings.Builder
+		err := decodeDockerLogStream(reader, &builder)
+
+		// Should complete without error (graceful truncation)
+		assert.NoError(t, err)
+		// Should have read 6 frames (4.8MB total, stopping before 7th would exceed 5MB limit)
+		expectedSize := int(frameSize) * 6
+		assert.Equal(t, expectedSize, builder.Len())
+		// Should contain A-F but not Z
+		result := builder.String()
+		assert.Contains(t, result, "A")
+		assert.Contains(t, result, "F")
+		assert.NotContains(t, result, "Z")
+	})
+}
+
+func TestAllocateBuffer(t *testing.T) {
+	tests := []struct {
+		name          string
+		currentCap    int
+		needed        int
+		expectedCap   int
+		shouldRealloc bool
+	}{
+		{
+			name:          "buffer has enough capacity",
+			currentCap:    1024,
+			needed:        512,
+			expectedCap:   1024,
+			shouldRealloc: false,
+		},
+		{
+			name:          "buffer needs reallocation",
+			currentCap:    512,
+			needed:        1024,
+			expectedCap:   1024,
+			shouldRealloc: true,
+		},
+		{
+			name:          "buffer needs exact size",
+			currentCap:    1024,
+			needed:        1024,
+			expectedCap:   1024,
+			shouldRealloc: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			current := make([]byte, 0, tt.currentCap)
+			result := allocateBuffer(current, tt.needed)
+
+			assert.Equal(t, tt.needed, len(result))
+			assert.GreaterOrEqual(t, cap(result), tt.expectedCap)
+
+			if tt.shouldRealloc {
+				// If reallocation was needed, capacity should be at least the needed size
+				assert.GreaterOrEqual(t, cap(result), tt.needed)
+			}
+		})
+	}
+}
+
+func TestShouldExcludeContainer(t *testing.T) {
+	tests := []struct {
+		name          string
+		containerName string
+		patterns      []string
+		expected      bool
+	}{
+		{
+			name:          "empty patterns excludes nothing",
+			containerName: "any-container",
+			patterns:      []string{},
+			expected:      false,
+		},
+		{
+			name:          "exact match - excluded",
+			containerName: "test-web",
+			patterns:      []string{"test-web", "test-api"},
+			expected:      true,
+		},
+		{
+			name:          "exact match - not excluded",
+			containerName: "prod-web",
+			patterns:      []string{"test-web", "test-api"},
+			expected:      false,
+		},
+		{
+			name:          "wildcard prefix match - excluded",
+			containerName: "test-web",
+			patterns:      []string{"test-*"},
+			expected:      true,
+		},
+		{
+			name:          "wildcard prefix match - not excluded",
+			containerName: "prod-web",
+			patterns:      []string{"test-*"},
+			expected:      false,
+		},
+		{
+			name:          "wildcard suffix match - excluded",
+			containerName: "myapp-staging",
+			patterns:      []string{"*-staging"},
+			expected:      true,
+		},
+		{
+			name:          "wildcard suffix match - not excluded",
+			containerName: "myapp-prod",
+			patterns:      []string{"*-staging"},
+			expected:      false,
+		},
+		{
+			name:          "wildcard both sides match - excluded",
+			containerName: "test-myapp-staging",
+			patterns:      []string{"*-myapp-*"},
+			expected:      true,
+		},
+		{
+			name:          "wildcard both sides match - not excluded",
+			containerName: "prod-yourapp-live",
+			patterns:      []string{"*-myapp-*"},
+			expected:      false,
+		},
+		{
+			name:          "multiple patterns - matches first",
+			containerName: "test-container",
+			patterns:      []string{"test-*", "*-staging"},
+			expected:      true,
+		},
+		{
+			name:          "multiple patterns - matches second",
+			containerName: "myapp-staging",
+			patterns:      []string{"test-*", "*-staging"},
+			expected:      true,
+		},
+		{
+			name:          "multiple patterns - no match",
+			containerName: "prod-web",
+			patterns:      []string{"test-*", "*-staging"},
+			expected:      false,
+		},
+		{
+			name:          "mixed exact and wildcard - exact match",
+			containerName: "temp-container",
+			patterns:      []string{"temp-container", "test-*"},
+			expected:      true,
+		},
+		{
+			name:          "mixed exact and wildcard - wildcard match",
+			containerName: "test-web",
+			patterns:      []string{"temp-container", "test-*"},
+			expected:      true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			dm := &dockerManager{
+				excludeContainers: tt.patterns,
+			}
+			result := dm.shouldExcludeContainer(tt.containerName)
+			assert.Equal(t, tt.expected, result)
+		})
+	}
 }

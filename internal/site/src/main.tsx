@@ -19,6 +19,7 @@ import * as systemsManager from "@/lib/systemsManager.ts"
 
 const LoginPage = lazy(() => import("@/components/login/login.tsx"))
 const Home = lazy(() => import("@/components/routes/home.tsx"))
+const Containers = lazy(() => import("@/components/routes/containers.tsx"))
 const SystemDetail = lazy(() => import("@/components/routes/system.tsx"))
 const CopyToClipboardDialog = lazy(() => import("@/components/copy-to-clipboard.tsx"))
 
@@ -48,7 +49,6 @@ const App = memo(() => {
 			// subscribe to new alert updates
 			.then(alertManager.subscribe)
 		return () => {
-			// updateFavicon("favicon.svg")
 			alertManager.unsubscribe()
 			systemsManager.unsubscribe()
 		}
@@ -60,6 +60,8 @@ const App = memo(() => {
 		return <Home />
 	} else if (page.route === "system") {
 		return <SystemDetail id={page.params.id} />
+	} else if (page.route === "containers") {
+		return <Containers />
 	} else if (page.route === "settings") {
 		return <Settings />
 	}

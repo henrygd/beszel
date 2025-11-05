@@ -8,7 +8,8 @@ type ApiInfo struct {
 	IdShort string
 	Names   []string
 	Status  string
-	// Image   string
+	State   string
+	Image   string
 	// ImageID string
 	// Command string
 	// Created int64
@@ -16,7 +17,6 @@ type ApiInfo struct {
 	// SizeRw     int64 `json:",omitempty"`
 	// SizeRootFs int64 `json:",omitempty"`
 	// Labels     map[string]string
-	// State      string
 	// HostConfig struct {
 	// 	NetworkMode string            `json:",omitempty"`
 	// 	Annotations map[string]string `json:",omitempty"`
@@ -103,6 +103,22 @@ type prevNetStats struct {
 	Recv uint64
 }
 
+type DockerHealth = uint8
+
+const (
+	DockerHealthNone DockerHealth = iota
+	DockerHealthStarting
+	DockerHealthHealthy
+	DockerHealthUnhealthy
+)
+
+var DockerHealthStrings = map[string]DockerHealth{
+	"none":      DockerHealthNone,
+	"starting":  DockerHealthStarting,
+	"healthy":   DockerHealthHealthy,
+	"unhealthy": DockerHealthUnhealthy,
+}
+
 // Docker container stats
 type Stats struct {
 	Name        string  `json:"n" cbor:"0,keyasint"`
@@ -110,6 +126,11 @@ type Stats struct {
 	Mem         float64 `json:"m" cbor:"2,keyasint"`
 	NetworkSent float64 `json:"ns" cbor:"3,keyasint"`
 	NetworkRecv float64 `json:"nr" cbor:"4,keyasint"`
+
+	Health DockerHealth `json:"-" cbor:"5,keyasint"`
+	Status string       `json:"-" cbor:"6,keyasint"`
+	Id     string       `json:"-" cbor:"7,keyasint"`
+	Image  string       `json:"-" cbor:"8,keyasint"`
 	// PrevCpu     [2]uint64    `json:"-"`
 	CpuSystem    uint64       `json:"-"`
 	CpuContainer uint64       `json:"-"`

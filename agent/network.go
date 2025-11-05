@@ -172,8 +172,24 @@ func (a *Agent) sumAndTrackPerNicDeltas(cacheTimeMs uint16, msElapsed uint64, ne
 		tracker.Set(upKey, v.BytesSent)
 		tracker.Set(downKey, v.BytesRecv)
 		if msElapsed > 0 {
-			upDelta = tracker.Delta(upKey) * 1000 / msElapsed
-			downDelta = tracker.Delta(downKey) * 1000 / msElapsed
+			if prevVal, ok := tracker.Previous(upKey); ok {
+				var deltaBytes uint64
+				if v.BytesSent >= prevVal {
+					deltaBytes = v.BytesSent - prevVal
+				} else {
+					deltaBytes = v.BytesSent
+				}
+				upDelta = deltaBytes * 1000 / msElapsed
+			}
+			if prevVal, ok := tracker.Previous(downKey); ok {
+				var deltaBytes uint64
+				if v.BytesRecv >= prevVal {
+					deltaBytes = v.BytesRecv - prevVal
+				} else {
+					deltaBytes = v.BytesRecv
+				}
+				downDelta = deltaBytes * 1000 / msElapsed
+			}
 		}
 		systemStats.NetworkInterfaces[v.Name] = [4]uint64{upDelta, downDelta, v.BytesSent, v.BytesRecv}
 	}
@@ -212,6 +228,10 @@ func (a *Agent) applyNetworkTotals(
 		a.initializeNetIoStats()
 		delete(a.netIoStats, cacheTimeMs)
 		delete(a.netInterfaceDeltaTrackers, cacheTimeMs)
+		systemStats.NetworkSent = 0
+		systemStats.NetworkRecv = 0
+		systemStats.Bandwidth[0], systemStats.Bandwidth[1] = 0, 0
+		return
 	}
 
 	systemStats.NetworkSent = networkSentPs

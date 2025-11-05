@@ -3,13 +3,17 @@ package agent
 import (
 	"bytes"
 	"context"
+	"encoding/binary"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"net"
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"strings"
 	"sync"
 	"time"
@@ -25,6 +29,16 @@ const (
 	dockerTimeoutMs = 2100
 	// Maximum realistic network speed (5 GB/s) to detect bad deltas
 	maxNetworkSpeedBps uint64 = 5e9
+	// Maximum conceivable memory usage of a container (100TB) to detect bad memory stats
+	maxMemoryUsage uint64 = 100 * 1024 * 1024 * 1024 * 1024
+	// Number of log lines to request when fetching container logs
+	dockerLogsTail = 200
+	// Maximum size of a single log frame (1MB) to prevent memory exhaustion
+	// A single log line larger than 1MB is likely an error or misconfiguration
+	maxLogFrameSize = 1024 * 1024
+	// Maximum total log content size (5MB) to prevent memory exhaustion
+	// This provides a reasonable limit for network transfer and browser rendering
+	maxTotalLogSize = 5 * 1024 * 1024
 )
 
 type dockerManager struct {
@@ -40,6 +54,7 @@ type dockerManager struct {
 	buf                 *bytes.Buffer               // Buffer to store and read response bodies
 	decoder             *json.Decoder               // Reusable JSON decoder that reads from buf
 	apiStats            *container.ApiStats         // Reusable API stats object
+	excludeContainers   []string                    // Patterns to exclude containers by name
 
 	// Cache-time-aware tracking for CPU stats (similar to cpu.go)
 	// Maps cache time intervals to container-specific CPU usage tracking
@@ -81,6 +96,19 @@ func (d *dockerManager) dequeue() {
 	}
 }
 
+// shouldExcludeContainer checks if a container name matches any exclusion pattern
+func (dm *dockerManager) shouldExcludeContainer(name string) bool {
+	if len(dm.excludeContainers) == 0 {
+		return false
+	}
+	for _, pattern := range dm.excludeContainers {
+		if match, _ := path.Match(pattern, name); match {
+			return true
+		}
+	}
+	return false
+}
+
 // Returns stats for all running containers with cache-time-aware delta tracking
 func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats, error) {
 	resp, err := dm.client.Get("http://localhost/containers/json")
@@ -108,6 +136,13 @@ func (dm *dockerManager) getDockerStats(cacheTimeMs uint16) ([]*container.Stats,
 
 	for _, ctr := range dm.apiContainerList {
 		ctr.IdShort = ctr.Id[:12]
+
+		// Skip this container if it matches the exclusion pattern
+		if dm.shouldExcludeContainer(ctr.Names[0][1:]) {
+			slog.Debug("Excluding container", "name", ctr.Names[0][1:])
+			continue
+		}
+
 		dm.validIds[ctr.IdShort] = struct{}{}
 		// check if container is less than 1 minute old (possible restart)
 		// note: can't use Created field because it's not updated on restart
@@ -198,17 +233,17 @@ func calculateMemoryUsage(apiStats *container.ApiStats, isWindows bool) (uint64,
 		return apiStats.MemoryStats.PrivateWorkingSet, nil
 	}
 
-	// Check if container has valid data, otherwise may be in restart loop (#103)
-	if apiStats.MemoryStats.Usage == 0 {
-		return 0, fmt.Errorf("no memory stats available")
-	}
-
 	memCache := apiStats.MemoryStats.Stats.InactiveFile
 	if memCache == 0 {
 		memCache = apiStats.MemoryStats.Stats.Cache
 	}
 
-	return apiStats.MemoryStats.Usage - memCache, nil
+	usedDelta := apiStats.MemoryStats.Usage - memCache
+	if usedDelta <= 0 || usedDelta > maxMemoryUsage {
+		return 0, fmt.Errorf("bad memory stats")
+	}
+
+	return usedDelta, nil
 }
 
 // getNetworkTracker returns the DeltaTracker for a specific cache time, creating it if needed
@@ -299,11 +334,46 @@ func updateContainerStatsValues(stats *container.Stats, cpuPct float64, usedMemo
 	stats.PrevReadTime = readTime
 }
 
+func parseDockerStatus(status string) (string, container.DockerHealth) {
+	trimmed := strings.TrimSpace(status)
+	if trimmed == "" {
+		return "", container.DockerHealthNone
+	}
+
+	// Remove "About " from status
+	trimmed = strings.Replace(trimmed, "About ", "", 1)
+
+	openIdx := strings.LastIndex(trimmed, "(")
+	if openIdx == -1 || !strings.HasSuffix(trimmed, ")") {
+		return trimmed, container.DockerHealthNone
+	}
+
+	statusText := strings.TrimSpace(trimmed[:openIdx])
+	if statusText == "" {
+		statusText = trimmed
+	}
+
+	healthText := strings.ToLower(strings.TrimSpace(strings.TrimSuffix(trimmed[openIdx+1:], ")")))
+	// Some Docker statuses include a "health:" prefix inside the parentheses.
+	// Strip it so it maps correctly to the known health states.
+	if colonIdx := strings.IndexRune(healthText, ':'); colonIdx != -1 {
+		prefix := strings.TrimSpace(healthText[:colonIdx])
+		if prefix == "health" || prefix == "health status" {
+			healthText = strings.TrimSpace(healthText[colonIdx+1:])
+		}
+	}
+	if health, ok := container.DockerHealthStrings[healthText]; ok {
+		return statusText, health
+	}
+
+	return trimmed, container.DockerHealthNone
+}
+
 // Updates stats for individual container with cache-time-aware delta tracking
 func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeMs uint16) error {
 	name := ctr.Names[0][1:]
 
-	resp, err := dm.client.Get("http://localhost/containers/" + ctr.IdShort + "/stats?stream=0&one-shot=1")
+	resp, err := dm.client.Get(fmt.Sprintf("http://localhost/containers/%s/stats?stream=0&one-shot=1", ctr.IdShort))
 	if err != nil {
 		return err
 	}
@@ -314,9 +384,15 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	// add empty values if they doesn't exist in map
 	stats, initialized := dm.containerStatsMap[ctr.IdShort]
 	if !initialized {
-		stats = &container.Stats{Name: name}
+		stats = &container.Stats{Name: name, Id: ctr.IdShort, Image: ctr.Image}
 		dm.containerStatsMap[ctr.IdShort] = stats
 	}
+
+	stats.Id = ctr.IdShort
+
+	statusText, health := parseDockerStatus(ctr.Status)
+	stats.Status = statusText
+	stats.Health = health
 
 	// reset current stats
 	stats.Cpu = 0
@@ -449,6 +525,19 @@ func newDockerManager(a *Agent) *dockerManager {
 		userAgent: "Docker-Client/",
 	}
 
+	// Read container exclusion patterns from environment variable
+	var excludeContainers []string
+	if excludeStr, set := GetEnv("EXCLUDE_CONTAINERS"); set && excludeStr != "" {
+		parts := strings.SplitSeq(excludeStr, ",")
+		for part := range parts {
+			trimmed := strings.TrimSpace(part)
+			if trimmed != "" {
+				excludeContainers = append(excludeContainers, trimmed)
+			}
+		}
+		slog.Info("EXCLUDE_CONTAINERS", "patterns", excludeContainers)
+	}
+
 	manager := &dockerManager{
 		client: &http.Client{
 			Timeout:   timeout,
@@ -458,6 +547,7 @@ func newDockerManager(a *Agent) *dockerManager {
 		sem:               make(chan struct{}, 5),
 		apiContainerList:  []*container.ApiInfo{},
 		apiStats:          &container.ApiStats{},
+		excludeContainers: excludeContainers,
 
 		// Initialize cache-time-aware tracking structures
 		lastCpuContainer:    make(map[uint16]map[string]uint64),
@@ -545,4 +635,123 @@ func getDockerHost() string {
 		}
 	}
 	return scheme + socks[0]
+}
+
+// getContainerInfo fetches the inspection data for a container
+func (dm *dockerManager) getContainerInfo(ctx context.Context, containerID string) ([]byte, error) {
+	endpoint := fmt.Sprintf("http://localhost/containers/%s/json", containerID)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := dm.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 1024))
+		return nil, fmt.Errorf("container info request failed: %s: %s", resp.Status, strings.TrimSpace(string(body)))
+	}
+
+	// Remove sensitive environment variables from Config.Env
+	var containerInfo map[string]any
+	if err := json.NewDecoder(resp.Body).Decode(&containerInfo); err != nil {
+		return nil, err
+	}
+	if config, ok := containerInfo["Config"].(map[string]any); ok {
+		delete(config, "Env")
+	}
+
+	return json.Marshal(containerInfo)
+}
+
+// getLogs fetches the logs for a container
+func (dm *dockerManager) getLogs(ctx context.Context, containerID string) (string, error) {
+	endpoint := fmt.Sprintf("http://localhost/containers/%s/logs?stdout=1&stderr=1&tail=%d", containerID, dockerLogsTail)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := dm.client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 1024))
+		return "", fmt.Errorf("logs request failed: %s: %s", resp.Status, strings.TrimSpace(string(body)))
+	}
+
+	var builder strings.Builder
+	if err := decodeDockerLogStream(resp.Body, &builder); err != nil {
+		return "", err
+	}
+
+	return builder.String(), nil
+}
+
+func decodeDockerLogStream(reader io.Reader, builder *strings.Builder) error {
+	const headerSize = 8
+	var header [headerSize]byte
+	buf := make([]byte, 0, dockerLogsTail*200)
+	totalBytesRead := 0
+
+	for {
+		if _, err := io.ReadFull(reader, header[:]); err != nil {
+			if errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) {
+				return nil
+			}
+			return err
+		}
+
+		frameLen := binary.BigEndian.Uint32(header[4:])
+		if frameLen == 0 {
+			continue
+		}
+
+		// Prevent memory exhaustion from excessively large frames
+		if frameLen > maxLogFrameSize {
+			return fmt.Errorf("log frame size (%d) exceeds maximum (%d)", frameLen, maxLogFrameSize)
+		}
+
+		// Check if reading this frame would exceed total log size limit
+		if totalBytesRead+int(frameLen) > maxTotalLogSize {
+			// Read and discard remaining data to avoid blocking
+			_, _ = io.Copy(io.Discard, io.LimitReader(reader, int64(frameLen)))
+			slog.Debug("Truncating logs: limit reached", "read", totalBytesRead, "limit", maxTotalLogSize)
+			return nil
+		}
+
+		buf = allocateBuffer(buf, int(frameLen))
+		if _, err := io.ReadFull(reader, buf[:frameLen]); err != nil {
+			if errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) {
+				if len(buf) > 0 {
+					builder.Write(buf[:min(int(frameLen), len(buf))])
+				}
+				return nil
+			}
+			return err
+		}
+		builder.Write(buf[:frameLen])
+		totalBytesRead += int(frameLen)
+	}
+}
+
+func allocateBuffer(current []byte, needed int) []byte {
+	if cap(current) >= needed {
+		return current[:needed]
+	}
+	return make([]byte, needed)
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }

@@ -17,6 +17,7 @@ export type DataPoint = {
 	dataKey: (data: SystemStatsRecord) => number | undefined
 	color: number | string
 	opacity: number
+	stackId?: string | number
 }
 
 export default function AreaChartDefault({
@@ -29,19 +30,25 @@ export default function AreaChartDefault({
 	domain,
 	legend,
 	itemSorter,
+	showTotal = false,
+	reverseStackOrder = false,
+	hideYAxis = false,
 }: // logRender = false,
-{
-	chartData: ChartData
-	max?: number
-	maxToggled?: boolean
-	tickFormatter: (value: number, index: number) => string
-	contentFormatter: ({ value, payload }: { value: number; payload: SystemStatsRecord }) => string
-	dataPoints?: DataPoint[]
-	domain?: [number, number]
-	legend?: boolean
-	itemSorter?: (a: any, b: any) => number
-	// logRender?: boolean
-}) {
+	{
+		chartData: ChartData
+		max?: number
+		maxToggled?: boolean
+		tickFormatter: (value: number, index: number) => string
+		contentFormatter: ({ value, payload }: { value: number; payload: SystemStatsRecord }) => string
+		dataPoints?: DataPoint[]
+		domain?: [number, number]
+		legend?: boolean
+		showTotal?: boolean
+		itemSorter?: (a: any, b: any) => number
+		reverseStackOrder?: boolean
+		hideYAxis?: boolean
+		// logRender?: boolean
+	}) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: ignore
@@ -56,21 +63,29 @@ export default function AreaChartDefault({
 			<div>
 				<ChartContainer
 					className={cn("h-full w-full absolute aspect-auto bg-card opacity-0 transition-opacity", {
-						"opacity-100": yAxisWidth,
+						"opacity-100": yAxisWidth || hideYAxis,
+						"ps-4": hideYAxis,
 					})}
 				>
-					<AreaChart accessibilityLayer data={chartData.systemStats} margin={chartMargin}>
+					<AreaChart
+						reverseStackOrder={reverseStackOrder}
+						accessibilityLayer
+						data={chartData.systemStats}
+						margin={hideYAxis ? { ...chartMargin, left: 5 } : chartMargin}
+					>
 						<CartesianGrid vertical={false} />
-						<YAxis
-							direction="ltr"
-							orientation={chartData.orientation}
-							className="tracking-tighter"
-							width={yAxisWidth}
-							domain={domain ?? [0, max ?? "auto"]}
-							tickFormatter={(value, index) => updateYAxisWidth(tickFormatter(value, index))}
-							tickLine={false}
-							axisLine={false}
-						/>
+						{!hideYAxis && (
+							<YAxis
+								direction="ltr"
+								orientation={chartData.orientation}
+								className="tracking-tighter"
+								width={yAxisWidth}
+								domain={domain ?? [0, max ?? "auto"]}
+								tickFormatter={(value, index) => updateYAxisWidth(tickFormatter(value, index))}
+								tickLine={false}
+								axisLine={false}
+							/>
+						)}
 						{xAxis(chartData)}
 						<ChartTooltip
 							animationEasing="ease-out"
@@ -81,6 +96,7 @@ export default function AreaChartDefault({
 								<ChartTooltipContent
 									labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 									contentFormatter={contentFormatter}
+									showTotal={showTotal}
 								/>
 							}
 						/>
@@ -99,13 +115,14 @@ export default function AreaChartDefault({
 									fillOpacity={dataPoint.opacity}
 									stroke={color}
 									isAnimationActive={false}
+									stackId={dataPoint.stackId}
 								/>
 							)
 						})}
-						{legend && <ChartLegend content={<ChartLegendContent />} />}
+						{legend && <ChartLegend content={<ChartLegendContent reverse={reverseStackOrder} />} />}
 					</AreaChart>
 				</ChartContainer>
 			</div>
 		)
-	}, [chartData.systemStats.at(-1), yAxisWidth, maxToggled])
+	}, [chartData.systemStats.at(-1), yAxisWidth, maxToggled, showTotal])
 }

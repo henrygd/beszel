@@ -1,0 +1,125 @@
+{
+   "json_format_version": [
+      1,
+      0
+   ],
+   "smartctl": {
+      "version": [
+         7,
+         3
+      ],
+      "svn_revision": "5338",
+      "platform_info": "x86_64-linux-6.12.43+deb12-amd64",
+      "build_info": "(local build)",
+      "argv": [
+         "smartctl",
+         "-aj",
+         "/dev/sde"
+      ],
+      "exit_status": 0
+   },
+   "local_time": {
+      "time_t": 1761502142,
+      "asctime": "Sun Oct 21 21:09:02 2025 MSK"
+   },
+   "device": {
+      "name": "/dev/sde",
+      "info_name": "/dev/sde",
+      "type": "scsi",
+      "protocol": "SCSI"
+   },
+   "scsi_vendor": "YADRO",
+   "scsi_product": "WUH721414AL4204",
+   "scsi_model_name": "YADRO WUH721414AL4204",
+   "scsi_revision": "C240",
+   "scsi_version": "SPC-4",
+   "user_capacity": {
+      "blocks": 3418095616,
+      "bytes": 14000519643136
+   },
+   "logical_block_size": 4096,
+   "scsi_lb_provisioning": {
+      "name": "fully provisioned",
+      "value": 0,
+      "management_enabled": {
+         "name": "LBPME",
+         "value": 0
+      },
+      "read_zeros": {
+         "name": "LBPRZ",
+         "value": 0
+      }
+   },
+   "rotation_rate": 7200,
+   "form_factor": {
+      "scsi_value": 2,
+      "name": "3.5 inches"
+   },
+   "logical_unit_id": "0x5000cca29063dc00",
+   "serial_number": "9YHSDH9B",
+   "device_type": {
+      "scsi_terminology": "Peripheral Device Type [PDT]",
+      "scsi_value": 0,
+      "name": "disk"
+   },
+   "scsi_transport_protocol": {
+      "name": "SAS (SPL-4)",
+      "value": 6
+   },
+   "smart_support": {
+      "available": true,
+      "enabled": true
+   },
+   "temperature_warning": {
+      "enabled": true
+   },
+   "smart_status": {
+      "passed": true
+   },
+   "temperature": {
+      "current": 34,
+      "drive_trip": 85
+   },
+   "power_on_time": {
+      "hours": 458,
+      "minutes": 25
+   },
+   "scsi_start_stop_cycle_counter": {
+      "year_of_manufacture": "2022",
+      "week_of_manufacture": "41",
+      "specified_cycle_count_over_device_lifetime": 50000,
+      "accumulated_start_stop_cycles": 2,
+      "specified_load_unload_count_over_device_lifetime": 600000,
+      "accumulated_load_unload_cycles": 418
+   },
+   "scsi_grown_defect_list": 0,
+   "scsi_error_counter_log": {
+      "read": {
+         "errors_corrected_by_eccfast": 0,
+         "errors_corrected_by_eccdelayed": 0,
+         "errors_corrected_by_rereads_rewrites": 0,
+         "total_errors_corrected": 0,
+         "correction_algorithm_invocations": 346,
+         "gigabytes_processed": "3,641",
+         "total_uncorrected_errors": 0
+      },
+      "write": {
+         "errors_corrected_by_eccfast": 0,
+         "errors_corrected_by_eccdelayed": 0,
+         "errors_corrected_by_rereads_rewrites": 0,
+         "total_errors_corrected": 0,
+         "correction_algorithm_invocations": 4052,
+         "gigabytes_processed": "2124,590",
+         "total_uncorrected_errors": 0
+      },
+      "verify": {
+         "errors_corrected_by_eccfast": 0,
+         "errors_corrected_by_eccdelayed": 0,
+         "errors_corrected_by_rereads_rewrites": 0,
+         "total_errors_corrected": 0,
+         "correction_algorithm_invocations": 223,
+         "gigabytes_processed": "0,000",
+         "total_uncorrected_errors": 0
+      }
+   }
+}

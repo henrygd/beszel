@@ -1,6 +1,7 @@
 package common
 
 import (
+	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/henrygd/beszel/internal/entities/system"
 )
 
@@ -11,6 +12,12 @@ const (
 	GetData WebSocketAction = iota
 	// Check the fingerprint of the agent
 	CheckFingerprint
+	// Request container logs from agent
+	GetContainerLogs
+	// Request container info from agent
+	GetContainerInfo
+	// Request SMART data from agent
+	GetSmartData
 	// Add new actions here...
 )
 
@@ -23,10 +30,13 @@ type HubRequest[T any] struct {
 
 // AgentResponse defines the structure for responses sent from agent to hub.
 type AgentResponse struct {
-	Id          *uint32              `cbor:"0,keyasint,omitempty"`
-	SystemData  *system.CombinedData `cbor:"1,keyasint,omitempty,omitzero"`
-	Fingerprint *FingerprintResponse `cbor:"2,keyasint,omitempty,omitzero"`
-	Error       string               `cbor:"3,keyasint,omitempty,omitzero"`
+	Id          *uint32                    `cbor:"0,keyasint,omitempty"`
+	SystemData  *system.CombinedData       `cbor:"1,keyasint,omitempty,omitzero"`
+	Fingerprint *FingerprintResponse       `cbor:"2,keyasint,omitempty,omitzero"`
+	Error       string                     `cbor:"3,keyasint,omitempty,omitzero"`
+	String      *string                    `cbor:"4,keyasint,omitempty,omitzero"`
+	SmartData   map[string]smart.SmartData `cbor:"5,keyasint,omitempty,omitzero"`
+	// Logs        *LogsPayload         `cbor:"4,keyasint,omitempty,omitzero"`
 	// RawBytes    []byte               `cbor:"4,keyasint,omitempty,omitzero"`
 }
 
@@ -46,4 +56,12 @@ type FingerprintResponse struct {
 type DataRequestOptions struct {
 	CacheTimeMs uint16 `cbor:"0,keyasint"`
 	// ResourceType uint8  `cbor:"1,keyasint,omitempty,omitzero"`
+}
+
+type ContainerLogsRequest struct {
+	ContainerID string `cbor:"0,keyasint"`
+}
+
+type ContainerInfoRequest struct {
+	ContainerID string `cbor:"0,keyasint"`
 }

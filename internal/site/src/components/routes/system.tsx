@@ -1,5 +1,5 @@
 import { t } from "@lingui/core/macro"
-import { Plural, Trans, useLingui } from "@lingui/react/macro"
+import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
 import { timeTicks } from "d3-time"
@@ -13,7 +13,7 @@ import {
 	XIcon,
 } from "lucide-react"
 import { subscribeKeys } from "nanostores"
-import React, { type JSX, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import React, { type JSX, lazy, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import AreaChartDefault, { type DataPoint } from "@/components/charts/area-chart"
 import ContainerChart from "@/components/charts/container-chart"
 import DiskChart from "@/components/charts/disk-chart"
@@ -41,9 +41,11 @@ import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 import {
 	chartTimeData,
 	cn,
+	compareSemVer,
 	debounce,
 	decimalString,
 	formatBytes,
+	secondsToString,
 	getHostDisplayValue,
 	listen,
 	parseSemVer,
@@ -71,7 +73,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import NetworkSheet from "./system/network-sheet"
+import CpuCoresSheet from "./system/cpu-sheet"
 import LineChartDefault from "../charts/line-chart"
+
+
 
 type ChartTimeData = {
 	time: number
@@ -93,8 +98,8 @@ function getTimeData(chartTime: ChartTimes, lastCreated: number) {
 		}
 	}
 
-	const buffer = chartTime === "1m" ? 400 : 20_000
-	const now = new Date(Date.now() + buffer)
+	// const buffer = chartTime === "1m" ? 400 : 20_000
+	const now = new Date(Date.now())
 	const startTime = chartTimeData[chartTime].getOffset(now)
 	const ticks = timeTicks(startTime, now, chartTimeData[chartTime].ticks ?? 12).map((date) => date.getTime())
 	const data = {
@@ -168,7 +173,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const [system, setSystem] = useState({} as SystemRecord)
 	const [systemStats, setSystemStats] = useState([] as SystemStatsRecord[])
 	const [containerData, setContainerData] = useState([] as ChartData["containerData"])
-	const netCardRef = useRef<HTMLDivElement>(null)
+	const temperatureChartRef = useRef<HTMLDivElement>(null)
 	const persistChartTime = useRef(false)
 	const [bottomSpacing, setBottomSpacing] = useState(0)
 	const [chartLoading, setChartLoading] = useState(true)
@@ -214,7 +219,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	// subscribe to realtime metrics if chart time is 1m
 	// biome-ignore lint/correctness/useExhaustiveDependencies: not necessary
 	useEffect(() => {
-		let unsub = () => {}
+		let unsub = () => { }
 		if (!system.id || chartTime !== "1m") {
 			return
 		}
@@ -355,21 +360,13 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				value: system.info.k,
 			},
 		}
-		let uptime: React.ReactNode
+		let uptime: string
 		if (system.info.u < 3600) {
-			uptime = (
-				<Plural
-					value={Math.trunc(system.info.u / 60)}
-					one="# minute"
-					few="# minutes"
-					many="# minutes"
-					other="# minutes"
-				/>
-			)
-		} else if (system.info.u < 172800) {
-			uptime = <Plural value={Math.trunc(system.info.u / 3600)} one="# hour" other="# hours" />
+			uptime = secondsToString(system.info.u, "minute")
+		} else if (system.info.u < 360000) {
+			uptime = secondsToString(system.info.u, "hour")
 		} else {
-			uptime = <Plural value={Math.trunc(system.info?.u / 86400)} one="# day" other="# days" />
+			uptime = secondsToString(system.info.u, "day")
 		}
 		return [
 			{ value: getHostDisplayValue(system), Icon: GlobeIcon },
@@ -395,19 +392,20 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 		}[]
 	}, [system, t])
 
-	/** Space for tooltip if more than 12 containers */
+	/** Space for tooltip if more than 10 sensors and no containers table */
 	useEffect(() => {
-		if (!netCardRef.current || !containerData.length) {
+		const sensors = Object.keys(systemStats.at(-1)?.stats.t ?? {})
+		if (!temperatureChartRef.current || sensors.length < 10 || containerData.length > 0) {
 			setBottomSpacing(0)
 			return
 		}
-		const tooltipHeight = (Object.keys(containerData[0]).length - 11) * 17.8 - 40
+		const tooltipHeight = (sensors.length - 10) * 17.8 - 40
 		const wrapperEl = chartWrapRef.current as HTMLDivElement
 		const wrapperRect = wrapperEl.getBoundingClientRect()
-		const chartRect = netCardRef.current.getBoundingClientRect()
+		const chartRect = temperatureChartRef.current.getBoundingClientRect()
 		const distanceToBottom = wrapperRect.bottom - chartRect.bottom
 		setBottomSpacing(tooltipHeight - distanceToBottom)
-	}, [containerData])
+	}, [])
 
 	// keyboard navigation between systems
 	useEffect(() => {
@@ -569,6 +567,18 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 					</div>
 				</Card>
 
+
+				{/* <Tabs defaultValue="overview" className="w-full">
+					<TabsList className="w-full h-11">
+						<TabsTrigger value="overview" className="w-full h-9">Overview</TabsTrigger>
+						<TabsTrigger value="containers" className="w-full h-9">Containers</TabsTrigger>
+						<TabsTrigger value="smart" className="w-full h-9">S.M.A.R.T.</TabsTrigger>
+					</TabsList>
+					<TabsContent value="smart">
+					</TabsContent>
+				</Tabs> */}
+
+
 				{/* main charts */}
 				<div className="grid xl:grid-cols-2 gap-4">
 					<ChartCard
@@ -576,7 +586,12 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						grid={grid}
 						title={t`CPU Usage`}
 						description={t`Average system-wide CPU utilization`}
-						cornerEl={maxValSelect}
+						cornerEl={
+							<div className="flex gap-2">
+								{maxValSelect}
+								<CpuCoresSheet chartData={chartData} dataEmpty={dataEmpty} grid={grid} maxValues={maxValues} />
+							</div>
+						}
 					>
 						<AreaChartDefault
 							chartData={chartData}
@@ -684,6 +699,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 								const { value: convertedValue, unit } = formatBytes(value, true, userSettings.unitDisk, false)
 								return `${decimalString(convertedValue, convertedValue >= 100 ? 1 : 2)} ${unit}`
 							}}
+							showTotal={true}
 						/>
 					</ChartCard>
 
@@ -737,30 +753,25 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 								const { value, unit } = formatBytes(data.value, true, userSettings.unitNet, false)
 								return `${decimalString(value, value >= 100 ? 1 : 2)} ${unit}`
 							}}
+							showTotal={true}
 						/>
 					</ChartCard>
 
 					{containerFilterBar && containerData.length > 0 && (
-						<div
-							ref={netCardRef}
-							className={cn({
-								"col-span-full": !grid,
-							})}
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={dockerOrPodman(t`Docker Network I/O`, system)}
+							description={dockerOrPodman(t`Network traffic of docker containers`, system)}
+							cornerEl={containerFilterBar}
 						>
-							<ChartCard
-								empty={dataEmpty}
-								title={dockerOrPodman(t`Docker Network I/O`, system)}
-								description={dockerOrPodman(t`Network traffic of docker containers`, system)}
-								cornerEl={containerFilterBar}
-							>
-								<ContainerChart
-									chartData={chartData}
-									chartType={ChartType.Network}
-									dataKey="n"
-									chartConfig={containerChartConfigs.network}
-								/>
-							</ChartCard>
-						</div>
+							<ContainerChart
+								chartData={chartData}
+								chartType={ChartType.Network}
+								dataKey="n"
+								chartConfig={containerChartConfigs.network}
+							/>
+						</ChartCard>
 					)}
 
 					{/* Swap chart */}
@@ -790,16 +801,21 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 					{/* Temperature chart */}
 					{systemStats.at(-1)?.stats.t && (
-						<ChartCard
-							empty={dataEmpty}
-							grid={grid}
-							title={t`Temperature`}
-							description={t`Temperatures of system sensors`}
-							cornerEl={<FilterBar store={$temperatureFilter} />}
-							legend={Object.keys(systemStats.at(-1)?.stats.t ?? {}).length < 12}
+						<div
+							ref={temperatureChartRef}
+							className={cn("odd:last-of-type:col-span-full", { "col-span-full": !grid })}
 						>
-							<TemperatureChart chartData={chartData} />
-						</ChartCard>
+							<ChartCard
+								empty={dataEmpty}
+								grid={grid}
+								title={t`Temperature`}
+								description={t`Temperatures of system sensors`}
+								cornerEl={<FilterBar store={$temperatureFilter} />}
+								legend={Object.keys(systemStats.at(-1)?.stats.t ?? {}).length < 12}
+							>
+								<TemperatureChart chartData={chartData} />
+							</ChartCard>
+						</div>
 					)}
 
 					{/* Battery chart */}
@@ -932,7 +948,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 									>
 										<DiskChart
 											chartData={chartData}
-											dataKey={`stats.efs.${extraFsName}.du`}
+											dataKey={({ stats }: SystemStatsRecord) => stats?.efs?.[extraFsName]?.du}
 											diskSize={systemStats.at(-1)?.stats.efs?.[extraFsName].d ?? NaN}
 										/>
 									</ChartCard>
@@ -950,9 +966,9 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 													label: t`Write`,
 													dataKey: ({ stats }) => {
 														if (showMax) {
-															return stats?.efs?.[extraFsName]?.wb ?? (stats?.efs?.[extraFsName]?.wm ?? 0) * 1024 * 1024
+															return stats?.efs?.[extraFsName]?.wbm || (stats?.efs?.[extraFsName]?.wm ?? 0) * 1024 * 1024
 														}
-														return stats?.efs?.[extraFsName]?.wb ?? (stats?.efs?.[extraFsName]?.w ?? 0) * 1024 * 1024
+														return stats?.efs?.[extraFsName]?.wb || (stats?.efs?.[extraFsName]?.w ?? 0) * 1024 * 1024
 													},
 													color: 3,
 													opacity: 0.3,
@@ -987,9 +1003,17 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						})}
 					</div>
 				)}
+
+				{compareSemVer(chartData.agentVersion, parseSemVer("0.15.0")) >= 0 && (
+					<LazySmartTable systemId={system.id} />
+				)}
+
+				{containerData.length > 0 && compareSemVer(chartData.agentVersion, parseSemVer("0.14.0")) >= 0 && (
+					<LazyContainersTable systemId={id} />
+				)}
 			</div>
 
-			{/* add space for tooltip if more than 12 containers */}
+			{/* add space for tooltip if lots of sensors */}
 			{bottomSpacing > 0 && <span className="block" style={{ height: bottomSpacing }} />}
 		</>
 	)
@@ -1103,7 +1127,7 @@ export function ChartCard({
 				<CardDescription>{description}</CardDescription>
 				{cornerEl && <div className="py-1 grid sm:justify-end sm:absolute sm:top-3.5 sm:end-3.5">{cornerEl}</div>}
 			</CardHeader>
-			<div className={cn("ps-0 w-[calc(100%-1.5em)] relative group", legend ? "h-54 md:h-56" : "h-48 md:h-52")}>
+			<div className={cn("ps-0 w-[calc(100%-1.3em)] relative group", legend ? "h-54 md:h-56" : "h-48 md:h-52")}>
 				{
 					<Spinner
 						msg={empty ? t`Waiting for enough records to display` : undefined}
@@ -1114,5 +1138,27 @@ export function ChartCard({
 				{isIntersecting && children}
 			</div>
 		</Card>
+	)
+}
+
+const ContainersTable = lazy(() => import("../containers-table/containers-table"))
+
+function LazyContainersTable({ systemId }: { systemId: string }) {
+	const { isIntersecting, ref } = useIntersectionObserver({ rootMargin: "90px" })
+	return (
+		<div ref={ref} className={cn(isIntersecting && "contents")}>
+			{isIntersecting && <ContainersTable systemId={systemId} />}
+		</div>
+	)
+}
+
+const SmartTable = lazy(() => import("./system/smart-table"))
+
+function LazySmartTable({ systemId }: { systemId: string }) {
+	const { isIntersecting, ref } = useIntersectionObserver({ rootMargin: "90px" })
+	return (
+		<div ref={ref} className={cn(isIntersecting && "contents")}>
+			{isIntersecting && <SmartTable systemId={systemId} />}
+		</div>
 	)
 }

@@ -86,6 +86,10 @@ export interface SystemStats {
 	cpu: number
 	/** peak cpu */
 	cpum?: number
+    /** cpu breakdown [user, system, iowait, steal, idle] (0-100 integers) */
+    cpub?: number[]
+    /** per-core cpu usage [CPU0..] (0-100 integers) */
+    cpus?: number[]
 	// TODO: remove these in future release in favor of la
 	/** load average 1 minute */
 	l1?: number
@@ -238,6 +242,19 @@ export interface AlertsHistoryRecord extends RecordModel {
 	resolved?: string | null
 }
 
+export interface ContainerRecord extends RecordModel {
+	id: string
+	system: string
+	name: string
+	image: string
+	cpu: number
+	memory: number
+	net: number
+	health: number
+	status: string
+	updated: number
+}
+
 export type ChartTimes = "1m" | "1h" | "12h" | "24h" | "1w" | "30d"
 
 export interface ChartTimeData {
@@ -301,3 +318,45 @@ export interface ChartData {
 // }
 
 export type AlertMap = Record<string, Map<string, AlertRecord>>
+
+export interface SmartData {
+	/** model family */
+	// mf?: string
+	/** model name */
+	mn?: string
+	/** serial number */
+	sn?: string
+	/** firmware version */
+	fv?: string
+	/** capacity */
+	c?: number
+	/** smart status */
+	s?: string
+	/** disk name (like /dev/sda) */
+	dn?: string
+	/** disk type */
+	dt?: string
+	/** temperature */
+	t?: number
+	/** attributes */
+	a?: SmartAttribute[]
+}
+
+export interface SmartAttribute {
+	/** id */
+	id?: number
+	/** name */
+	n: string
+	/** value */
+	v: number
+	/** worst */
+	w?: number
+	/** threshold */
+	t?: number
+	/** raw value */
+	rv?: number
+	/** raw string */
+	rs?: string
+	/** when failed */
+	wf?: string
+}
