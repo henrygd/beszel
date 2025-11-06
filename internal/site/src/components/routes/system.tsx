@@ -699,6 +699,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 								const { value: convertedValue, unit } = formatBytes(value, true, userSettings.unitDisk, false)
 								return `${decimalString(convertedValue, convertedValue >= 100 ? 1 : 2)} ${unit}`
 							}}
+							showTotal={true}
 						/>
 					</ChartCard>
 
@@ -752,6 +753,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 								const { value, unit } = formatBytes(data.value, true, userSettings.unitNet, false)
 								return `${decimalString(value, value >= 100 ? 1 : 2)} ${unit}`
 							}}
+							showTotal={true}
 						/>
 					</ChartCard>
 

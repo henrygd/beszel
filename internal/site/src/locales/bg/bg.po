@@ -1199,6 +1199,11 @@ msgstr "Токените позволяват на агентите да се с
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
 msgstr "Токените и пръстовите отпечатъци се използват за удостоверяване на WebSocket връзките към концентратора."
 
+#: src/components/ui/chart.tsx
+#: src/components/ui/chart.tsx
+msgid "Total"
+msgstr "Общо"
+
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
 msgstr "Общо получени данни за всеки интерфейс"
