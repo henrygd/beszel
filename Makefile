@@ -7,7 +7,7 @@ SKIP_WEB ?= false
 # Set executable extension based on target OS
 EXE_EXT := $(if $(filter windows,$(OS)),.exe,)
 
-.PHONY: tidy build-agent build-hub build-hub-dev build clean lint dev-server dev-agent dev-hub dev generate-locales
+.PHONY: tidy build-agent build-hub build-hub-dev build clean lint dev-server dev-agent dev-hub dev generate-locales fetch-smartctl-conditional
 .DEFAULT_GOAL := build
 
 clean:
@@ -46,8 +46,14 @@ build-dotnet-conditional:
 		fi; \
 	fi
 
+# Download smartctl.exe at build time for Windows (skips if already present)
+fetch-smartctl-conditional:
+	@if [ "$(OS)" = "windows" ]; then \
+		go generate -run fetchsmartctl ./agent; \
+	fi
+
 # Update build-agent to include conditional .NET build
-build-agent: tidy build-dotnet-conditional
+build-agent: tidy build-dotnet-conditional fetch-smartctl-conditional
 	GOOS=$(OS) GOARCH=$(ARCH) go build -o ./build/beszel-agent_$(OS)_$(ARCH)$(EXE_EXT) -ldflags "-w -s" ./internal/cmd/agent
 
 build-hub: tidy $(if $(filter false,$(SKIP_WEB)),build-web-ui)
