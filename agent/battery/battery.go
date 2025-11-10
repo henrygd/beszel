@@ -6,6 +6,7 @@ package battery
 import (
 	"errors"
 	"log/slog"
+	"math"
 
 	"github.com/distatus/battery"
 )
@@ -51,6 +52,8 @@ func GetBatteryStats() (batteryPercent uint8, batteryState uint8, err error) {
 	totalCharge := float64(0)
 	errs, partialErrs := err.(battery.Errors)
 
+	batteryState = math.MaxUint8
+
 	for i, bat := range batteries {
 		if partialErrs && errs[i] != nil {
 			// if there were some errors, like missing data, skip it
@@ -63,9 +66,12 @@ func GetBatteryStats() (batteryPercent uint8, batteryState uint8, err error) {
 		}
 		totalCapacity += bat.Full
 		totalCharge += bat.Current
+		if bat.State.Raw >= 0 {
+			batteryState = uint8(bat.State.Raw)
+		}
 	}
 
-	if totalCapacity == 0 {
+	if totalCapacity == 0 || batteryState == math.MaxUint8 {
 		// for macs there's sometimes a ghost battery with 0 capacity
 		// https://github.com/distatus/battery/issues/34
 		// Instead of skipping over those batteries, we'll check for total 0 capacity
@@ -74,6 +80,5 @@ func GetBatteryStats() (batteryPercent uint8, batteryState uint8, err error) {
 	}
 
 	batteryPercent = uint8(totalCharge / totalCapacity * 100)
-	batteryState = uint8(batteries[0].State.Raw)
 	return batteryPercent, batteryState, nil
 }
