@@ -1007,6 +1007,148 @@ func init() {
 			"CREATE INDEX ` + "`" + `idx_r3Ja0rs102` + "`" + ` ON ` + "`" + `containers` + "`" + ` (` + "`" + `system` + "`" + `)"
 		],
 		"system": false
+	},
+	{
+		"createRule": null,
+		"deleteRule": null,
+		"fields": [
+			{
+				"autogeneratePattern": "[a-z0-9]{10}",
+				"hidden": false,
+				"id": "text3208210256",
+				"max": 10,
+				"min": 6,
+				"name": "id",
+				"pattern": "^[a-z0-9]+$",
+				"presentable": false,
+				"primaryKey": true,
+				"required": true,
+				"system": true,
+				"type": "text"
+			},
+			{
+				"autogeneratePattern": "",
+				"hidden": false,
+				"id": "text1579384326",
+				"max": 0,
+				"min": 0,
+				"name": "name",
+				"pattern": "",
+				"presentable": false,
+				"primaryKey": false,
+				"required": false,
+				"system": false,
+				"type": "text"
+			},
+			{
+				"cascadeDelete": true,
+				"collectionId": "2hz5ncl8tizk5nx",
+				"hidden": false,
+				"id": "relation3377271179",
+				"maxSelect": 1,
+				"minSelect": 0,
+				"name": "system",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "relation"
+			},
+			{
+				"hidden": false,
+				"id": "number2063623452",
+				"max": null,
+				"min": null,
+				"name": "state",
+				"onlyInt": true,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "number1476559580",
+				"max": null,
+				"min": null,
+				"name": "sub",
+				"onlyInt": true,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "number3128971310",
+				"max": null,
+				"min": null,
+				"name": "cpu",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "number1052053287",
+				"max": null,
+				"min": null,
+				"name": "cpuPeak",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "number3933025333",
+				"max": null,
+				"min": null,
+				"name": "memory",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "number1828797201",
+				"max": null,
+				"min": null,
+				"name": "memPeak",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "number3332085495",
+				"max": null,
+				"min": null,
+				"name": "updated",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			}
+		],
+		"id": "pbc_3494996990",
+		"indexes": [
+			"CREATE INDEX ` + "`" + `idx_4Z7LuLNdQb` + "`" + ` ON ` + "`" + `systemd_services` + "`" + ` (` + "`" + `system` + "`" + `)",
+			"CREATE INDEX ` + "`" + `idx_pBp1fF837e` + "`" + ` ON ` + "`" + `systemd_services` + "`" + ` (` + "`" + `updated` + "`" + `)"
+		],
+		"listRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id",
+		"name": "systemd_services",
+		"system": false,
+		"type": "base",
+		"updateRule": null,
+		"viewRule": null
 	}
 ]`
 

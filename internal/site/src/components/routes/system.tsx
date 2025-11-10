@@ -75,8 +75,6 @@ import NetworkSheet from "./system/network-sheet"
 import CpuCoresSheet from "./system/cpu-sheet"
 import LineChartDefault from "../charts/line-chart"
 
-
-
 type ChartTimeData = {
 	time: number
 	data: {
@@ -1010,6 +1008,10 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				{containerData.length > 0 && compareSemVer(chartData.agentVersion, parseSemVer("0.14.0")) >= 0 && (
 					<LazyContainersTable systemId={id} />
 				)}
+
+				{system.info?.os === Os.Linux && compareSemVer(chartData.agentVersion, parseSemVer("0.16.0")) >= 0 && (
+					<LazySystemdTable systemId={id} />
+				)}
 			</div>
 
 			{/* add space for tooltip if lots of sensors */}
@@ -1177,6 +1179,17 @@ function LazySmartTable({ systemId }: { systemId: string }) {
 	return (
 		<div ref={ref} className={cn(isIntersecting && "contents")}>
 			{isIntersecting && <SmartTable systemId={systemId} />}
+		</div>
+	)
+}
+
+const SystemdTable = lazy(() => import("../systemd-table/systemd-table"))
+
+function LazySystemdTable({ systemId }: { systemId: string }) {
+	const { isIntersecting, ref } = useIntersectionObserver()
+	return (
+		<div ref={ref} className={cn(isIntersecting && "contents")}>
+			{isIntersecting && <SystemdTable systemId={systemId} />}
 		</div>
 	)
 }

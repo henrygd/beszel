@@ -7,6 +7,7 @@ import (
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/henrygd/beszel/internal/entities/systemd"
 	"github.com/lxzan/gws"
 	"golang.org/x/crypto/ssh"
 )
@@ -109,6 +110,44 @@ func (ws *WsConn) RequestContainerLogs(ctx context.Context, containerID string) 
 // RequestContainerInfo requests information about a specific container via WebSocket.
 func (ws *WsConn) RequestContainerInfo(ctx context.Context, containerID string) (string, error) {
 	return ws.requestContainerStringViaWS(ctx, common.GetContainerInfo, common.ContainerInfoRequest{ContainerID: containerID}, "no info in response")
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// RequestSystemdInfo requests detailed information about a systemd service via WebSocket.
+func (ws *WsConn) RequestSystemdInfo(ctx context.Context, serviceName string) (systemd.ServiceDetails, error) {
+	if !ws.IsConnected() {
+		return nil, gws.ErrConnClosed
+	}
+
+	req, err := ws.requestManager.SendRequest(ctx, common.GetSystemdInfo, common.SystemdInfoRequest{ServiceName: serviceName})
+	if err != nil {
+		return nil, err
+	}
+
+	var result systemd.ServiceDetails
+	handler := &systemdInfoHandler{result: &result}
+	if err := ws.handleAgentRequest(req, handler); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// systemdInfoHandler parses ServiceDetails from AgentResponse
+type systemdInfoHandler struct {
+	BaseHandler
+	result *systemd.ServiceDetails
+}
+
+func (h *systemdInfoHandler) Handle(agentResponse common.AgentResponse) error {
+	if agentResponse.ServiceInfo == nil {
+		return errors.New("no systemd info in response")
+	}
+	*h.result = agentResponse.ServiceInfo
+	return nil
 }
 
 ////////////////////////////////////////////////////////////////////////////
