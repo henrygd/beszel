@@ -430,7 +430,7 @@ const xAxis = ({ domain, ticks, chartTime }: ChartData) => {
 	}
 	cachedAxis = (
 		<RechartsPrimitive.XAxis
-			dataKey="created"
+			dataKey="timestamp"
 			domain={domain}
 			ticks={ticks}
 			allowDataOverflow
