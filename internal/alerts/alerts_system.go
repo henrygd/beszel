@@ -298,7 +298,7 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 		UserID:   alert.alertRecord.GetString("user"),
 		Title:    subject,
 		Message:  body,
-		Link:     am.hub.MakeLink("system", systemName),
+		Link:     am.hub.MakeLink("system", alert.systemRecord.Id),
 		LinkText: "View " + systemName,
 	})
 }

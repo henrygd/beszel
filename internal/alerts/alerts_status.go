@@ -161,19 +161,14 @@ func (am *AlertManager) sendStatusAlert(alertStatus string, systemName string, a
 	title := fmt.Sprintf("Connection to %s is %s %v", systemName, alertStatus, emoji)
 	message := strings.TrimSuffix(title, emoji)
 
-	// if errs := am.hub.ExpandRecord(alertRecord, []string{"user"}, nil); len(errs) > 0 {
-	// 	return errs["user"]
-	// }
-	// user := alertRecord.ExpandedOne("user")
-	// if user == nil {
-	// 	return nil
-	// }
+	// Get system ID for the link
+	systemID := alertRecord.GetString("system")
 
 	return am.SendAlert(AlertMessageData{
 		UserID:   alertRecord.GetString("user"),
 		Title:    title,
 		Message:  message,
-		Link:     am.hub.MakeLink("system", systemName),
+		Link:     am.hub.MakeLink("system", systemID),
 		LinkText: "View " + systemName,
 	})
 }
