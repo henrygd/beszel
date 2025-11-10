@@ -1006,11 +1006,11 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				)}
 
 				{containerData.length > 0 && compareSemVer(chartData.agentVersion, parseSemVer("0.14.0")) >= 0 && (
-					<LazyContainersTable systemId={id} />
+					<LazyContainersTable systemId={system.id} />
 				)}
 
 				{system.info?.os === Os.Linux && compareSemVer(chartData.agentVersion, parseSemVer("0.16.0")) >= 0 && (
-					<LazySystemdTable systemId={id} />
+					<LazySystemdTable systemId={system.id} />
 				)}
 			</div>
 
