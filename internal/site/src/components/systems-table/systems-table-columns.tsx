@@ -358,84 +358,66 @@ function TableCellWithMeter(info: CellContext<SystemRecord, unknown>) {
 function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 	const { info: sysInfo, status } = info.row.original
 	const rootDiskPct = sysInfo.dp
-	const extraFsData = sysInfo.efsp
+	const extraFsData = sysInfo.efs
 	const extraFsCount = extraFsData ? Object.keys(extraFsData).length : 0
 
-	const threshold = getMeterState(rootDiskPct)
-	const meterClass = cn(
-		"h-full",
-		(status !== SystemStatus.Up && STATUS_COLORS.paused) ||
-			(threshold === MeterState.Good && STATUS_COLORS.up) ||
-			(threshold === MeterState.Warn && STATUS_COLORS.pending) ||
-			STATUS_COLORS.down
-	)
+	function getMeterClass(pct: number) {
+		const threshold = getMeterState(pct)
+		return cn(
+			"h-full",
+			(status !== SystemStatus.Up && STATUS_COLORS.paused) ||
+				(threshold === MeterState.Good && STATUS_COLORS.up) ||
+				(threshold === MeterState.Warn && STATUS_COLORS.pending) ||
+				STATUS_COLORS.down
+		)
+	}
 
 	// No extra disks - show simple meter
 	if (extraFsCount === 0) {
-		return (
-			<div className="flex gap-2 items-center tabular-nums tracking-tight w-full">
-				<span className="min-w-8 shrink-0">{decimalString(rootDiskPct, rootDiskPct >= 10 ? 1 : 2)}%</span>
-				<span className="flex-1 min-w-8 grid bg-muted h-[1em] rounded-sm overflow-hidden">
-					<span className={meterClass} style={{ width: `${rootDiskPct}%` }}></span>
-				</span>
-			</div>
-		)
+		return TableCellWithMeter(info)
 	}
 
 	// Has extra disks - show with tooltip
 	return (
 		<Tooltip>
 			<TooltipTrigger asChild>
-				<div className="flex flex-col gap-0.5 w-full cursor-help relative z-10">
+				<Link href={getPagePath($router, "system", { id: info.row.original.id })} tabIndex={-1} className="flex flex-col gap-0.5 w-full relative z-10">
 					<div className="flex gap-2 items-center tabular-nums tracking-tight">
 						<span className="min-w-8 shrink-0">{decimalString(rootDiskPct, rootDiskPct >= 10 ? 1 : 2)}%</span>
 						<span className="flex-1 min-w-8 grid bg-muted h-[1em] rounded-sm overflow-hidden">
-							<span className={meterClass} style={{ width: `${rootDiskPct}%` }}></span>
+							<span className={getMeterClass(rootDiskPct)} style={{ width: `${rootDiskPct}%` }}></span>
+							{extraFsData && Object.entries(extraFsData).slice(0, 2).map(([_name, pct], index) => (
+								<span key={index} className={getMeterClass(pct)} style={{ width: `${pct}%` }}></span>
+							))}
 						</span>
 					</div>
-					<div className="text-[0.7rem] text-muted-foreground ps-0.5">+{extraFsCount} more</div>
-				</div>
+				</Link>
 			</TooltipTrigger>
-			<TooltipContent side="right" className="max-w-xs">
-				<div className="flex flex-col gap-2 py-1">
-					<div className="flex items-center gap-2 text-xs font-medium">
-						<HardDriveIcon className="size-3" />
-						<span>{t`All Disks`}</span>
-					</div>
+			<TooltipContent side="right" className="max-w-xs pb-2">
 					<div className="flex flex-col gap-1.5">
 						<div className="flex flex-col gap-0.5">
-							<div className="text-[0.65rem] text-muted-foreground uppercase tracking-wider">{t`Root`}</div>
+							<div className="text-[0.65rem] text-muted-foreground uppercase tabular-nums">{t`Root`}</div>
 							<div className="flex gap-2 items-center tabular-nums text-xs">
 								<span className="min-w-7">{decimalString(rootDiskPct, rootDiskPct >= 10 ? 1 : 2)}%</span>
-								<span className="flex-1 min-w-12 grid bg-muted/50 h-1.5 rounded-sm overflow-hidden">
-									<span className={meterClass} style={{ width: `${rootDiskPct}%` }}></span>
+								<span className="flex-1 min-w-12 grid bg-muted/50 h-2 rounded-sm overflow-hidden">
+									<span className={getMeterClass(rootDiskPct)} style={{ width: `${rootDiskPct}%` }}></span>
 								</span>
 							</div>
 						</div>
-						{extraFsData && Object.entries(extraFsData).map(([name, fs]) => {
-							const pct = fs.dp
-							const fsThreshold = getMeterState(pct)
-							const fsMeterClass = cn(
-								"h-full",
-								(status !== SystemStatus.Up && STATUS_COLORS.paused) ||
-									(fsThreshold === MeterState.Good && STATUS_COLORS.up) ||
-									(fsThreshold === MeterState.Warn && STATUS_COLORS.pending) ||
-									STATUS_COLORS.down
-							)
+						{extraFsData && Object.entries(extraFsData).map(([name, pct]) => {
 							return (
 								<div key={name} className="flex flex-col gap-0.5">
 									<div className="text-[0.65rem] text-muted-foreground uppercase tracking-wider truncate">{name}</div>
 									<div className="flex gap-2 items-center tabular-nums text-xs">
 										<span className="min-w-7">{decimalString(pct, pct >= 10 ? 1 : 2)}%</span>
-										<span className="flex-1 min-w-12 grid bg-muted/50 h-1.5 rounded-sm overflow-hidden">
-											<span className={fsMeterClass} style={{ width: `${pct}%` }}></span>
+										<span className="flex-1 min-w-12 grid bg-muted/50 h-2 rounded-sm overflow-hidden">
+											<span className={getMeterClass(pct)} style={{ width: `${pct}%` }}></span>
 										</span>
 									</div>
 								</div>
 							)
 						})}
 					</div>
-				</div>
 			</TooltipContent>
 		</Tooltip>
 	)

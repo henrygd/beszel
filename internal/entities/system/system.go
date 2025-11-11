@@ -99,10 +99,6 @@ type FsStats struct {
 	MaxDiskWriteBytes uint64 `json:"wbm,omitempty" cbor:"-"`
 }
 
-// ExtraFsInfo contains summary info for extra filesystems in the system info
-type ExtraFsInfo struct {
-	DiskPct float64 `json:"dp" cbor:"0,keyasint"`
-}
 
 type NetIoStats struct {
 	BytesRecv uint64
@@ -151,7 +147,7 @@ type Info struct {
 	// TODO: remove load fields in future release in favor of load avg array
 	LoadAvg        [3]float64     `json:"la,omitempty" cbor:"19,keyasint"`
 	ConnectionType ConnectionType `json:"ct,omitempty" cbor:"20,keyasint,omitempty,omitzero"`
-	ExtraFsPct     map[string]ExtraFsInfo `json:"efsp,omitempty" cbor:"21,keyasint,omitempty"`
+	ExtraFsPct     map[string]float64 `json:"efs,omitempty" cbor:"21,keyasint,omitempty"`
 }
 
 // Final data structure to return to the hub
