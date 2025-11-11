@@ -71,3 +71,26 @@ export enum ConnectionType {
 }
 
 export const connectionTypeLabels = ["", "SSH", "WebSocket"] as const
+
+/** Systemd service state */
+export enum ServiceStatus {
+	Active,
+	Inactive,
+	Failed,
+	Activating,
+	Deactivating,
+	Reloading,
+}
+
+export const ServiceStatusLabels = ["Active", "Inactive", "Failed", "Activating", "Deactivating", "Reloading"] as const
+
+/** Systemd service sub state */
+export enum ServiceSubState {
+	Dead,
+	Running,
+	Exited,
+	Failed,
+	Unknown,
+}
+
+export const ServiceSubStateLabels = ["Dead", "Running", "Exited", "Failed", "Unknown"] as const

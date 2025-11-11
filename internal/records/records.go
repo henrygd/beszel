@@ -490,6 +490,10 @@ func (rm *RecordManager) DeleteOldRecords() {
 		if err != nil {
 			return err
 		}
+		err = deleteOldSystemdServiceRecords(txApp)
+		if err != nil {
+			return err
+		}
 		err = deleteOldAlertsHistory(txApp, 200, 250)
 		if err != nil {
 			return err
@@ -556,6 +560,20 @@ func deleteOldSystemStats(app core.App) error {
 			return fmt.Errorf("failed to delete from %s: %v", collection, err)
 		}
 	}
+	return nil
+}
+
+// Deletes systemd service records that haven't been updated in the last 20 minutes
+func deleteOldSystemdServiceRecords(app core.App) error {
+	now := time.Now().UTC()
+	twentyMinutesAgo := now.Add(-20 * time.Minute)
+
+	// Delete systemd service records where updated < twentyMinutesAgo
+	_, err := app.DB().NewQuery("DELETE FROM systemd_services WHERE updated < {:updated}").Bind(dbx.Params{"updated": twentyMinutesAgo.UnixMilli()}).Execute()
+	if err != nil {
+		return fmt.Errorf("failed to delete old systemd service records: %v", err)
+	}
+
 	return nil
 }
 

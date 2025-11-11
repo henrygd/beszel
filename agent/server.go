@@ -15,6 +15,7 @@ import (
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/henrygd/beszel/internal/entities/systemd"
 
 	"github.com/blang/semver"
 	"github.com/fxamacker/cbor/v2"
@@ -173,6 +174,8 @@ func (a *Agent) handleSSHRequest(w io.Writer, req *common.HubRequest[cbor.RawMes
 			response.String = &v
 		case map[string]smart.SmartData:
 			response.SmartData = v
+		case systemd.ServiceDetails:
+			response.ServiceInfo = v
 		default:
 			response.Error = fmt.Sprintf("unsupported response type: %T", data)
 		}

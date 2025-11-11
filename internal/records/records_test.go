@@ -351,6 +351,83 @@ func TestDeleteOldAlertsHistoryEdgeCases(t *testing.T) {
 	})
 }
 
+// TestDeleteOldSystemdServiceRecords tests systemd service cleanup via DeleteOldRecords
+func TestDeleteOldSystemdServiceRecords(t *testing.T) {
+	hub, err := tests.NewTestHub(t.TempDir())
+	require.NoError(t, err)
+	defer hub.Cleanup()
+
+	rm := records.NewRecordManager(hub)
+
+	// Create test user and system
+	user, err := tests.CreateUser(hub, "test@example.com", "testtesttest")
+	require.NoError(t, err)
+
+	system, err := tests.CreateRecord(hub, "systems", map[string]any{
+		"name":   "test-system",
+		"host":   "localhost",
+		"port":   "45876",
+		"status": "up",
+		"users":  []string{user.Id},
+	})
+	require.NoError(t, err)
+
+	now := time.Now().UTC()
+
+	// Create old systemd service records that should be deleted (older than 20 minutes)
+	oldRecord, err := tests.CreateRecord(hub, "systemd_services", map[string]any{
+		"system":  system.Id,
+		"name":    "nginx.service",
+		"state":   0, // Active
+		"sub":     1, // Running
+		"cpu":     5.0,
+		"cpuPeak": 10.0,
+		"memory":  1024000,
+		"memPeak": 2048000,
+	})
+	require.NoError(t, err)
+	// Set updated time to 25 minutes ago (should be deleted)
+	oldRecord.SetRaw("updated", now.Add(-25*time.Minute).UnixMilli())
+	err = hub.SaveNoValidate(oldRecord)
+	require.NoError(t, err)
+
+	// Create recent systemd service record that should be kept (within 20 minutes)
+	recentRecord, err := tests.CreateRecord(hub, "systemd_services", map[string]any{
+		"system":  system.Id,
+		"name":    "apache.service",
+		"state":   1, // Inactive
+		"sub":     0, // Dead
+		"cpu":     2.0,
+		"cpuPeak": 3.0,
+		"memory":  512000,
+		"memPeak": 1024000,
+	})
+	require.NoError(t, err)
+	// Set updated time to 10 minutes ago (should be kept)
+	recentRecord.SetRaw("updated", now.Add(-10*time.Minute).UnixMilli())
+	err = hub.SaveNoValidate(recentRecord)
+	require.NoError(t, err)
+
+	// Count records before deletion
+	countBefore, err := hub.CountRecords("systemd_services")
+	require.NoError(t, err)
+	assert.Equal(t, int64(2), countBefore, "Should have 2 systemd service records initially")
+
+	// Run deletion via RecordManager
+	rm.DeleteOldRecords()
+
+	// Count records after deletion
+	countAfter, err := hub.CountRecords("systemd_services")
+	require.NoError(t, err)
+	assert.Equal(t, int64(1), countAfter, "Should have 1 systemd service record after deletion")
+
+	// Verify the correct record was kept
+	remainingRecords, err := hub.FindRecordsByFilter("systemd_services", "", "", 10, 0, nil)
+	require.NoError(t, err)
+	assert.Len(t, remainingRecords, 1, "Should have exactly 1 record remaining")
+	assert.Equal(t, "apache.service", remainingRecords[0].Get("name"), "The recent record should be kept")
+}
+
 // TestRecordManagerCreation tests RecordManager creation
 func TestRecordManagerCreation(t *testing.T) {
 	hub, err := tests.NewTestHub(t.TempDir())

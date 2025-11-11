@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"hash/fnv"
 	"math/rand"
 	"net"
 	"strings"
@@ -15,6 +16,7 @@ import (
 
 	"github.com/henrygd/beszel/internal/entities/container"
 	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/henrygd/beszel/internal/entities/systemd"
 
 	"github.com/henrygd/beszel"
 
@@ -174,6 +176,14 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 				return err
 			}
 		}
+
+		// add new systemd_stats record
+		if len(data.SystemdServices) > 0 {
+			if err := createSystemdStatsRecords(txApp, data.SystemdServices, sys.Id); err != nil {
+				return err
+			}
+		}
+
 		// update system record (do this last because it triggers alerts and we need above records to be inserted first)
 		systemRecord.Set("status", up)
 
@@ -187,11 +197,50 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 	return systemRecord, err
 }
 
+func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId string) error {
+	if len(data) == 0 {
+		return nil
+	}
+	// shared params for all records
+	params := dbx.Params{
+		"system":  systemId,
+		"updated": time.Now().UTC().UnixMilli(),
+	}
+
+	valueStrings := make([]string, 0, len(data))
+	for i, service := range data {
+		suffix := fmt.Sprintf("%d", i)
+		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:state%[1]s}, {:sub%[1]s}, {:cpu%[1]s}, {:cpuPeak%[1]s}, {:memory%[1]s}, {:memPeak%[1]s}, {:updated})", suffix))
+		params["id"+suffix] = getSystemdServiceId(systemId, service.Name)
+		params["name"+suffix] = service.Name
+		params["state"+suffix] = service.State
+		params["sub"+suffix] = service.Sub
+		params["cpu"+suffix] = service.Cpu
+		params["cpuPeak"+suffix] = service.CpuPeak
+		params["memory"+suffix] = service.Mem
+		params["memPeak"+suffix] = service.MemPeak
+	}
+	queryString := fmt.Sprintf(
+		"INSERT INTO systemd_services (id, system, name, state, sub, cpu, cpuPeak, memory, memPeak, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, state = excluded.state, sub = excluded.sub, cpu = excluded.cpu, cpuPeak = excluded.cpuPeak, memory = excluded.memory, memPeak = excluded.memPeak, updated = excluded.updated",
+		strings.Join(valueStrings, ","),
+	)
+	_, err := app.DB().NewQuery(queryString).Bind(params).Execute()
+	return err
+}
+
+// getSystemdServiceId generates a deterministic unique id for a systemd service
+func getSystemdServiceId(systemId string, serviceName string) string {
+	hash := fnv.New32a()
+	hash.Write([]byte(systemId + serviceName))
+	return fmt.Sprintf("%x", hash.Sum32())
+}
+
 // createContainerRecords creates container records
 func createContainerRecords(app core.App, data []*container.Stats, systemId string) error {
 	if len(data) == 0 {
 		return nil
 	}
+	// shared params for all records
 	params := dbx.Params{
 		"system":  systemId,
 		"updated": time.Now().UTC().UnixMilli(),
@@ -341,6 +390,52 @@ func (sys *System) FetchContainerLogsFromAgent(containerID string) (string, erro
 	}
 	// fetch via SSH
 	return sys.fetchStringFromAgentViaSSH(common.GetContainerLogs, common.ContainerLogsRequest{ContainerID: containerID}, "no logs in response")
+}
+
+// FetchSystemdInfoFromAgent fetches detailed systemd service information from the agent
+func (sys *System) FetchSystemdInfoFromAgent(serviceName string) (systemd.ServiceDetails, error) {
+	// fetch via websocket
+	if sys.WsConn != nil && sys.WsConn.IsConnected() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		return sys.WsConn.RequestSystemdInfo(ctx, serviceName)
+	}
+
+	var result systemd.ServiceDetails
+	err := sys.runSSHOperation(5*time.Second, 1, func(session *ssh.Session) (bool, error) {
+		stdout, err := session.StdoutPipe()
+		if err != nil {
+			return false, err
+		}
+		stdin, stdinErr := session.StdinPipe()
+		if stdinErr != nil {
+			return false, stdinErr
+		}
+		if err := session.Shell(); err != nil {
+			return false, err
+		}
+
+		req := common.HubRequest[any]{Action: common.GetSystemdInfo, Data: common.SystemdInfoRequest{ServiceName: serviceName}}
+		if err := cbor.NewEncoder(stdin).Encode(req); err != nil {
+			return false, err
+		}
+		_ = stdin.Close()
+
+		var resp common.AgentResponse
+		if err := cbor.NewDecoder(stdout).Decode(&resp); err != nil {
+			return false, err
+		}
+		if resp.ServiceInfo == nil {
+			if resp.Error != "" {
+				return false, errors.New(resp.Error)
+			}
+			return false, errors.New("no systemd info in response")
+		}
+		result = resp.ServiceInfo
+		return false, nil
+	})
+
+	return result, err
 }
 
 // FetchSmartDataFromAgent fetches SMART data from the agent

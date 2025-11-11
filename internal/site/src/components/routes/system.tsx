@@ -44,7 +44,6 @@ import {
 	chartTimeData,
 	cn,
 	compareSemVer,
-	debounce,
 	decimalString,
 	formatBytes,
 	secondsToString,
@@ -77,8 +76,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/
 import NetworkSheet from "./system/network-sheet"
 import CpuCoresSheet from "./system/cpu-sheet"
 import LineChartDefault from "../charts/line-chart"
-
-
 
 type ChartTimeData = {
 	time: number
@@ -1054,7 +1051,11 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				)}
 
 				{containerData.length > 0 && compareSemVer(chartData.agentVersion, parseSemVer("0.14.0")) >= 0 && (
-					<LazyContainersTable systemId={id} />
+					<LazyContainersTable systemId={system.id} />
+				)}
+
+				{system.info?.os === Os.Linux && compareSemVer(chartData.agentVersion, parseSemVer("0.16.0")) >= 0 && (
+					<LazySystemdTable systemId={system.id} />
 				)}
 			</div>
 
@@ -1087,15 +1088,34 @@ function GpuEnginesChart({ chartData }: { chartData: ChartData }) {
 }
 
 function FilterBar({ store = $containerFilter }: { store?: typeof $containerFilter }) {
-	const containerFilter = useStore(store)
+	const storeValue = useStore(store)
+	const [inputValue, setInputValue] = useState(storeValue)
 	const { t } = useLingui()
 
-	const debouncedStoreSet = useMemo(() => debounce((value: string) => store.set(value), 80), [store])
+	useEffect(() => {
+		setInputValue(storeValue)
+	}, [storeValue])
+
+	useEffect(() => {
+		if (inputValue === storeValue) {
+			return
+		}
+		const handle = window.setTimeout(() => store.set(inputValue), 80)
+		return () => clearTimeout(handle)
+	}, [inputValue, storeValue, store])
 
 	const handleChange = useCallback(
-		(e: React.ChangeEvent<HTMLInputElement>) => debouncedStoreSet(e.target.value),
-		[debouncedStoreSet]
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			const value = e.target.value
+			setInputValue(value)
+		},
+		[]
 	)
+
+	const handleClear = useCallback(() => {
+		setInputValue("")
+		store.set("")
+	}, [store])
 
 	return (
 		<>
@@ -1103,16 +1123,16 @@ function FilterBar({ store = $containerFilter }: { store?: typeof $containerFilt
 				placeholder={t`Filter...`}
 				className="ps-4 pe-8 w-full sm:w-44"
 				onChange={handleChange}
-				value={containerFilter}
+				value={inputValue}
 			/>
-			{containerFilter && (
+			{inputValue && (
 				<Button
 					type="button"
 					variant="ghost"
 					size="icon"
 					aria-label="Clear"
 					className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
-					onClick={() => store.set("")}
+					onClick={handleClear}
 				>
 					<XIcon className="h-4 w-4" />
 				</Button>
@@ -1204,6 +1224,17 @@ function LazySmartTable({ systemId }: { systemId: string }) {
 	return (
 		<div ref={ref} className={cn(isIntersecting && "contents")}>
 			{isIntersecting && <SmartTable systemId={systemId} />}
+		</div>
+	)
+}
+
+const SystemdTable = lazy(() => import("../systemd-table/systemd-table"))
+
+function LazySystemdTable({ systemId }: { systemId: string }) {
+	const { isIntersecting, ref } = useIntersectionObserver()
+	return (
+		<div ref={ref} className={cn(isIntersecting && "contents")}>
+			{isIntersecting && <SystemdTable systemId={systemId} />}
 		</div>
 	)
 }

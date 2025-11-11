@@ -4,6 +4,7 @@ go 1.25.3
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
+	github.com/coreos/go-systemd/v22 v22.6.0
 	github.com/distatus/battery v0.11.0
 	github.com/fxamacker/cbor/v2 v2.9.0
 	github.com/gliderlabs/ssh v0.3.8
@@ -39,6 +40,7 @@ require (
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/go-ozzo/ozzo-validation/v4 v4.3.0 // indirect
 	github.com/go-sql-driver/mysql v1.9.1 // indirect
+	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jaypipes/pcidb v1.0.1 // indirect

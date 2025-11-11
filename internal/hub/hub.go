@@ -270,6 +270,8 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	apiAuth.DELETE("/user-alerts", alerts.DeleteUserAlerts)
 	// get SMART data
 	apiAuth.GET("/smart", h.getSmartData)
+	// get systemd service details
+	apiAuth.GET("/systemd/info", h.getSystemdInfo)
 	// /containers routes
 	if enabled, _ := GetEnv("CONTAINER_DETAILS"); enabled != "false" {
 		// get container logs
@@ -340,6 +342,27 @@ func (h *Hub) getContainerInfo(e *core.RequestEvent) error {
 	return h.containerRequestHandler(e, func(system *systems.System, containerID string) (string, error) {
 		return system.FetchContainerInfoFromAgent(containerID)
 	}, "info")
+}
+
+// getSystemdInfo handles GET /api/beszel/systemd/info requests
+func (h *Hub) getSystemdInfo(e *core.RequestEvent) error {
+	query := e.Request.URL.Query()
+	systemID := query.Get("system")
+	serviceName := query.Get("service")
+
+	if systemID == "" || serviceName == "" {
+		return e.JSON(http.StatusBadRequest, map[string]string{"error": "system and service parameters are required"})
+	}
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil {
+		return e.JSON(http.StatusNotFound, map[string]string{"error": "system not found"})
+	}
+	details, err := system.FetchSystemdInfoFromAgent(serviceName)
+	if err != nil {
+		return e.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
+	}
+	e.Response.Header().Set("Cache-Control", "public, max-age=60")
+	return e.JSON(http.StatusOK, map[string]any{"details": details})
 }
 
 // getSmartData handles GET /api/beszel/smart requests
