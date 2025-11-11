@@ -17,6 +17,7 @@ import (
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/henrygd/beszel/internal/entities/systemd"
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/lxzan/gws"
@@ -276,6 +277,8 @@ func (client *WebSocketClient) sendResponse(data any, requestID *uint32) error {
 			response.String = &v
 		case map[string]smart.SmartData:
 			response.SmartData = v
+		case systemd.ServiceDetails:
+			response.ServiceInfo = v
 		// case []byte:
 		// 	response.RawBytes = v
 		// case string:

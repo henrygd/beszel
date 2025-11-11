@@ -41,7 +41,7 @@ export default memo(function ContainerChart({
 		// tick formatter
 		if (chartType === ChartType.CPU) {
 			obj.tickFormatter = (value) => {
-				const val = toFixedFloat(value, 2) + unit
+				const val = `${toFixedFloat(value, 2)}%`
 				return updateYAxisWidth(val)
 			}
 		} else {
@@ -78,7 +78,7 @@ export default memo(function ContainerChart({
 				return `${decimalString(value)} ${unit}`
 			}
 		} else {
-			obj.toolTipFormatter = (item: any) => `${decimalString(item.value)} ${unit}`
+			obj.toolTipFormatter = (item: any) => `${decimalString(item.value)}${unit}`
 		}
 		// data function
 		if (isNetChart) {

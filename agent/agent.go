@@ -43,6 +43,7 @@ type Agent struct {
 	dataDir                   string                                                // Directory for persisting data
 	keys                      []gossh.PublicKey                                     // SSH public keys
 	smartManager              *SmartManager                                         // Manages SMART data
+	systemdManager            *systemdManager                                       // Manages systemd services
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.
@@ -101,6 +102,11 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	// initialize docker manager
 	agent.dockerManager = newDockerManager(agent)
 
+	agent.systemdManager, err = newSystemdManager()
+	if err != nil {
+		slog.Debug("Systemd", "err", err)
+	}
+
 	agent.smartManager, err = NewSmartManager()
 	if err != nil {
 		slog.Debug("SMART", "err", err)
@@ -152,6 +158,11 @@ func (a *Agent) gatherStats(cacheTimeMs uint16) *system.CombinedData {
 		} else {
 			slog.Debug("Containers", "err", err)
 		}
+	}
+
+	// skip updating systemd services if cache time is not the default 60sec interval
+	if a.systemdManager != nil && cacheTimeMs == 60_000 && a.systemdManager.hasFreshStats {
+		data.SystemdServices = a.systemdManager.getServiceStats(nil, false)
 	}
 
 	data.Stats.ExtraFs = make(map[string]*system.FsStats)

@@ -50,6 +50,7 @@ func NewHandlerRegistry() *HandlerRegistry {
 	registry.Register(common.GetContainerLogs, &GetContainerLogsHandler{})
 	registry.Register(common.GetContainerInfo, &GetContainerInfoHandler{})
 	registry.Register(common.GetSmartData, &GetSmartDataHandler{})
+	registry.Register(common.GetSystemdInfo, &GetSystemdInfoHandler{})
 
 	return registry
 }
@@ -173,4 +174,32 @@ func (h *GetSmartDataHandler) Handle(hctx *HandlerContext) error {
 	}
 	data := hctx.Agent.smartManager.GetCurrentData()
 	return hctx.SendResponse(data, hctx.RequestID)
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+// GetSystemdInfoHandler handles detailed systemd service info requests
+type GetSystemdInfoHandler struct{}
+
+func (h *GetSystemdInfoHandler) Handle(hctx *HandlerContext) error {
+	if hctx.Agent.systemdManager == nil {
+		return errors.ErrUnsupported
+	}
+
+	var req common.SystemdInfoRequest
+	if err := cbor.Unmarshal(hctx.Request.Data, &req); err != nil {
+		return err
+	}
+	if req.ServiceName == "" {
+		return errors.New("service name is required")
+	}
+
+	details, err := hctx.Agent.systemdManager.getServiceDetails(req.ServiceName)
+	if err != nil {
+		return err
+	}
+
+	return hctx.SendResponse(details, hctx.RequestID)
 }

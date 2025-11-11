@@ -3,6 +3,7 @@ package common
 import (
 	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/henrygd/beszel/internal/entities/systemd"
 )
 
 type WebSocketAction = uint8
@@ -18,6 +19,8 @@ const (
 	GetContainerInfo
 	// Request SMART data from agent
 	GetSmartData
+	// Request detailed systemd service info from agent
+	GetSystemdInfo
 	// Add new actions here...
 )
 
@@ -36,6 +39,7 @@ type AgentResponse struct {
 	Error       string                     `cbor:"3,keyasint,omitempty,omitzero"`
 	String      *string                    `cbor:"4,keyasint,omitempty,omitzero"`
 	SmartData   map[string]smart.SmartData `cbor:"5,keyasint,omitempty,omitzero"`
+	ServiceInfo systemd.ServiceDetails     `cbor:"6,keyasint,omitempty,omitzero"`
 	// Logs        *LogsPayload         `cbor:"4,keyasint,omitempty,omitzero"`
 	// RawBytes    []byte               `cbor:"4,keyasint,omitempty,omitzero"`
 }
@@ -64,4 +68,8 @@ type ContainerLogsRequest struct {
 
 type ContainerInfoRequest struct {
 	ContainerID string `cbor:"0,keyasint"`
+}
+
+type SystemdInfoRequest struct {
+	ServiceName string `cbor:"0,keyasint"`
 }

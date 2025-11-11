@@ -1,7 +1,7 @@
 import { t } from "@lingui/core/macro"
 import { CpuIcon, HardDriveIcon, HourglassIcon, MemoryStickIcon, ServerIcon, ThermometerIcon } from "lucide-react"
 import type { RecordSubscription } from "pocketbase"
-import { EthernetIcon } from "@/components/ui/icons"
+import { EthernetIcon, GpuIcon } from "@/components/ui/icons"
 import { $alerts } from "@/lib/stores"
 import type { AlertInfo, AlertRecord } from "@/types"
 import { pb } from "./api"
@@ -40,6 +40,12 @@ export const alertInfo: Record<string, AlertInfo> = {
 		icon: EthernetIcon,
 		desc: () => t`Triggers when combined up/down exceeds a threshold`,
 		max: 125,
+	},
+	GPU: {
+		name: () => t`GPU Usage`,
+		unit: "%",
+		icon: GpuIcon,
+		desc: () => t`Triggers when GPU usage exceeds a threshold`,
 	},
 	Temperature: {
 		name: () => t`Temperature`,
