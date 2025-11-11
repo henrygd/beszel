@@ -8,7 +8,7 @@ msgstr ""
 "Language: ro\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-04 23:47\n"
+"PO-Revision-Date: 2025-11-11 01:21\n"
 "Last-Translator: \n"
 "Language-Team: Romanian\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : (n==0 || (n%100>0 && n%100<20)) ? 1 : 2);\n"
@@ -38,57 +38,57 @@ msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
-msgstr ""
+msgstr "1 oră"
 
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr ""
+msgstr "1 min"
 
 #: src/lib/utils.ts
 msgid "1 minute"
-msgstr ""
+msgstr "1 minut"
 
 #: src/lib/utils.ts
 msgid "1 week"
-msgstr ""
+msgstr "1 săptămână"
 
 #: src/lib/utils.ts
 msgid "12 hours"
-msgstr ""
+msgstr "12 ore"
 
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr ""
+msgstr "15 min"
 
 #: src/lib/utils.ts
 msgid "24 hours"
-msgstr ""
+msgstr "24 ore"
 
 #: src/lib/utils.ts
 msgid "30 days"
-msgstr ""
+msgstr "30 zile"
 
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr ""
+msgstr "5 min"
 
 #. Table column
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
-msgstr ""
+msgstr "Acțiuni"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Active"
-msgstr ""
+msgstr "Activ"
 
 #: src/components/active-alerts.tsx
 msgid "Active Alerts"
-msgstr ""
+msgstr "Alerte Active"
 
 #: src/components/add-system.tsx
 msgid "Add <0>System</0>"
@@ -113,22 +113,22 @@ msgstr ""
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
-msgstr ""
+msgstr "Admin"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr ""
+msgstr "Agent"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Alert History"
-msgstr ""
+msgstr "Istoric Alerte"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Alerts"
-msgstr ""
+msgstr "Alerte"
 
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
@@ -198,7 +198,7 @@ msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Battery"
-msgstr ""
+msgstr "Baterie"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -210,7 +210,7 @@ msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Binary"
-msgstr ""
+msgstr "Binar"
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
@@ -224,16 +224,16 @@ msgstr ""
 
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
-msgstr ""
+msgstr "Cache / Bufferuri"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
-msgstr ""
+msgstr "Anulare"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
-msgstr ""
+msgstr "Capacitate"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
@@ -241,7 +241,7 @@ msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr ""
+msgstr "Celsius (°C)"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -368,11 +368,11 @@ msgstr ""
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
-msgstr ""
+msgstr "Nuclee CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Time Breakdown"
@@ -383,7 +383,7 @@ msgstr ""
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/lib/alerts.ts
 msgid "CPU Usage"
-msgstr ""
+msgstr "Utilizare CPU"
 
 #: src/components/login/auth-form.tsx
 msgid "Create account"
@@ -392,11 +392,11 @@ msgstr ""
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
 msgid "Created"
-msgstr ""
+msgstr "Creat"
 
 #: src/components/routes/settings/general.tsx
 msgid "Critical (%)"
-msgstr ""
+msgstr "Critic (%)"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
@@ -418,7 +418,7 @@ msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Dashboard"
-msgstr ""
+msgstr "Tablou de Bord"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
@@ -427,7 +427,7 @@ msgstr ""
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
-msgstr ""
+msgstr "Șterge"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
@@ -439,7 +439,7 @@ msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
-msgstr ""
+msgstr "Dispozitiv"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -448,21 +448,21 @@ msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
-msgstr ""
+msgstr "Disc"
 
 #: src/components/routes/system.tsx
 msgid "Disk I/O"
-msgstr ""
+msgstr "Disc I/O"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
-msgstr ""
+msgstr "Unitate disc"
 
 #: src/components/charts/disk-chart.tsx
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
-msgstr ""
+msgstr "Utilizare Disc"
 
 #: src/components/routes/system.tsx
 msgid "Disk usage of {extraFsName}"
@@ -502,7 +502,7 @@ msgstr ""
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
-msgstr ""
+msgstr "Durată"
 
 #: src/components/add-system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -542,7 +542,7 @@ msgstr ""
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Error"
-msgstr ""
+msgstr "Eroare"
 
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
@@ -557,11 +557,11 @@ msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
-msgstr ""
+msgstr "Exportă"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
-msgstr ""
+msgstr "Exportă configurația"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export your current systems configuration."
@@ -680,11 +680,11 @@ msgstr ""
 #. Linux kernel
 #: src/components/routes/system.tsx
 msgid "Kernel"
-msgstr ""
+msgstr "Nucleu"
 
 #: src/components/routes/settings/general.tsx
 msgid "Language"
-msgstr ""
+msgstr "Limbă"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
@@ -770,7 +770,7 @@ msgstr ""
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Name"
-msgstr ""
+msgstr "Nume"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -818,7 +818,7 @@ msgstr ""
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Notifications"
-msgstr ""
+msgstr "Notificări"
 
 #: src/components/login/auth-form.tsx
 msgid "OAuth 2 / OIDC support"
@@ -844,7 +844,7 @@ msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Other"
-msgstr ""
+msgstr "Altele"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
@@ -938,7 +938,7 @@ msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr ""
+msgstr "Port"
 
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
@@ -1027,7 +1027,7 @@ msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Search"
-msgstr ""
+msgstr "Caută"
 
 #: src/components/command-palette.tsx
 msgid "Search for systems or settings..."
