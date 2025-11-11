@@ -40,13 +40,18 @@ type UserNotificationSettings struct {
 }
 
 type SystemAlertStats struct {
-	Cpu          float64            `json:"cpu"`
-	Mem          float64            `json:"mp"`
-	Disk         float64            `json:"dp"`
-	NetSent      float64            `json:"ns"`
-	NetRecv      float64            `json:"nr"`
-	Temperatures map[string]float32 `json:"t"`
-	LoadAvg      [3]float64         `json:"la"`
+	Cpu          float64                       `json:"cpu"`
+	Mem          float64                       `json:"mp"`
+	Disk         float64                       `json:"dp"`
+	NetSent      float64                       `json:"ns"`
+	NetRecv      float64                       `json:"nr"`
+	GPU          map[string]SystemAlertGPUData `json:"g"`
+	Temperatures map[string]float32            `json:"t"`
+	LoadAvg      [3]float64                    `json:"la"`
+}
+
+type SystemAlertGPUData struct {
+	Usage float64 `json:"u"`
 }
 
 type SystemAlertData struct {

@@ -301,18 +301,18 @@ export interface ChartData {
 	chartTime: ChartTimes
 }
 
-// interface AlertInfo {
-// 	name: () => string
-// 	unit: string
-// 	icon: any
-// 	desc: () => string
-// 	max?: number
-// 	min?: number
-// 	step?: number
-// 	start?: number
-// 	/** Single value description (when there's only one value, like status) */
-// 	singleDesc?: () => string
-// }
+export interface AlertInfo {
+	name: () => string
+	unit: string
+	icon: any
+	desc: () => string
+	max?: number
+	min?: number
+	step?: number
+	start?: number
+	/** Single value description (when there's only one value, like status) */
+	singleDesc?: () => string
+}
 
 export type AlertMap = Record<string, Map<string, AlertRecord>>
 

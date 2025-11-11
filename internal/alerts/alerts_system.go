@@ -64,6 +64,8 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		case "LoadAvg15":
 			val = data.Info.LoadAvg[2]
 			unit = ""
+		case "GPU":
+			val = data.Info.GpuPct
 		}
 
 		triggered := alertRecord.GetBool("triggered")
@@ -206,6 +208,17 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 				alert.val += stats.LoadAvg[1]
 			case "LoadAvg15":
 				alert.val += stats.LoadAvg[2]
+			case "GPU":
+				if len(stats.GPU) == 0 {
+					continue
+				}
+				maxUsage := 0.0
+				for _, gpu := range stats.GPU {
+					if gpu.Usage > maxUsage {
+						maxUsage = gpu.Usage
+					}
+				}
+				alert.val += maxUsage
 			default:
 				continue
 			}

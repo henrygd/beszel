@@ -75,6 +75,7 @@ func init() {
 					"Disk",
 					"Temperature",
 					"Bandwidth",
+					"GPU",
 					"LoadAvg1",
 					"LoadAvg5",
 					"LoadAvg15"
