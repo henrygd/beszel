@@ -30,6 +30,9 @@ const (
 	interval int = 60_000
 	// interval int = 10_000 // Debug interval for faster updates
 
+	// staticInfoInterval is how often to fetch static system info (15 minutes)
+	staticInfoInterval = 15 * time.Minute
+
 	// sessionTimeout is the maximum time to wait for SSH connections
 	sessionTimeout = 4 * time.Second
 )

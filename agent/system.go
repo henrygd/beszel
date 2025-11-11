@@ -31,12 +31,14 @@ type prevDisk struct {
 
 // Sets initial / non-changing values about the host system
 func (a *Agent) initializeSystemInfo() {
-	a.systemInfo.AgentVersion = beszel.Version
-	a.systemInfo.Hostname, _ = os.Hostname()
+	hostname, _ := os.Hostname()
+	a.staticSystemInfo.Hostname = hostname
+	a.staticSystemInfo.AgentVersion = beszel.Version
 
 	platform, family, version, _ := host.PlatformInformation()
 
 	var osFamily, osVersion, osKernel string
+	var osType system.Os
 	if platform == "darwin" {
 		osKernel = version
 		osFamily = "macOS" // macOS is the family name for Darwin
@@ -45,7 +47,7 @@ func (a *Agent) initializeSystemInfo() {
 		osKernel = strings.Replace(platform, "Microsoft ", "", 1) + " " + version
 		osFamily = family
 		osVersion = version
-		a.systemInfo.Os = system.Windows
+		osType = system.Windows
 	} else if platform == "freebsd" {
 		osKernel = version
 		osFamily = family
@@ -68,7 +70,9 @@ func (a *Agent) initializeSystemInfo() {
 	if osKernel == "" {
 		osKernel, _ = host.KernelVersion()
 	}
-	a.systemInfo.Oses = []system.OsInfo{{
+	a.staticSystemInfo.KernelVersion = osKernel
+	a.staticSystemInfo.Os = osType
+	a.staticSystemInfo.Oses = []system.OsInfo{{
 		Family:  osFamily,
 		Version: osVersion,
 		Kernel:  osKernel,
@@ -94,8 +98,9 @@ func (a *Agent) initializeSystemInfo() {
 			Cores:    totalCores,
 			Threads:  totalThreads,
 		}
-		a.systemInfo.Cpus = []system.CpuInfo{cpu}
-		slog.Debug("CPU info populated", "cpus", a.systemInfo.Cpus)
+		a.staticSystemInfo.Cpus = []system.CpuInfo{cpu}
+		a.staticSystemInfo.Threads = totalThreads
+		slog.Debug("CPU info populated", "cpus", a.staticSystemInfo.Cpus)
 	}
 
 	// zfs
@@ -106,16 +111,16 @@ func (a *Agent) initializeSystemInfo() {
 	}
 
 	// Collect disk info (model/vendor)
-	a.systemInfo.Disks = getDiskInfo()
+	a.staticSystemInfo.Disks = getDiskInfo()
 
 	// Collect network interface info
-	a.systemInfo.Networks = getNetworkInfo()
+	a.staticSystemInfo.Networks = getNetworkInfo()
 
-	// Collect total memory and store in systemInfo.Memory
+	// Collect total memory and store in staticSystemInfo.Memory
 	if v, err := mem.VirtualMemory(); err == nil {
 		total := fmt.Sprintf("%d GB", int((float64(v.Total)/(1024*1024*1024))+0.5))
-		a.systemInfo.Memory = []system.MemoryInfo{{Total: total}}
-		slog.Debug("Memory info populated", "memory", a.systemInfo.Memory)
+		a.staticSystemInfo.Memory = []system.MemoryInfo{{Total: total}}
+		slog.Debug("Memory info populated", "memory", a.staticSystemInfo.Memory)
 	}
 
 }

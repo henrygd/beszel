@@ -21,6 +21,14 @@ import (
 	gossh "golang.org/x/crypto/ssh"
 )
 
+const (
+	// StaticInfoIntervalMs defines the cache time threshold for including static system info
+	// Requests with cache time >= this value will include static info (reduces bandwidth)
+	// Note: uint16 max is 65535, so we can't use 15 minutes directly. The hub will make
+	// periodic requests at this interval.
+	StaticInfoIntervalMs uint16 = 60_001 // Just above the standard 60s interval
+)
+
 type Agent struct {
 	sync.Mutex                                                                      // Used to lock agent while collecting data
 	debug                     bool                                                  // true if LOG_LEVEL is set to debug
@@ -34,7 +42,8 @@ type Agent struct {
 	netInterfaceDeltaTrackers map[uint16]*deltatracker.DeltaTracker[string, uint64] // Per-cache-time NIC delta trackers
 	dockerManager             *dockerManager                                        // Manages Docker API requests
 	sensorConfig              *SensorConfig                                         // Sensors config
-	systemInfo                system.Info                                           // Host system info
+	systemInfo                system.Info                                           // Host system info (dynamic dashboard data)
+	staticSystemInfo          system.StaticInfo                                     // Static system info (collected at longer intervals)
 	gpuManager                *GPUManager                                           // Manages GPU data
 	cache                     *systemDataCache                                      // Cache for system stats based on cache time
 	connectionManager         *ConnectionManager                                    // Channel to signal connection events
@@ -151,6 +160,14 @@ func (a *Agent) gatherStats(cacheTimeMs uint16) *system.CombinedData {
 	}
 	// slog.Info("System data", "data", data, "cacheTimeMs", cacheTimeMs)
 
+	// Include static info for requests with longer intervals (e.g., 15 min)
+	// This reduces bandwidth by only sending static data occasionally
+	if cacheTimeMs >= StaticInfoIntervalMs {
+		staticInfoCopy := a.staticSystemInfo
+		data.StaticInfo = &staticInfoCopy
+		slog.Debug("Including static info", "cacheTimeMs", cacheTimeMs)
+	}
+
 	if a.dockerManager != nil {
 		if containerStats, err := a.dockerManager.getDockerStats(cacheTimeMs); err == nil {
 			data.Containers = containerStats
@@ -200,10 +217,10 @@ func (a *Agent) getFingerprint() string {
 	fingerprint, err := host.HostID()
 	if err != nil || fingerprint == "" {
 		cpuModel := ""
-		if len(a.systemInfo.Cpus) > 0 {
-			cpuModel = a.systemInfo.Cpus[0].Model
+		if len(a.staticSystemInfo.Cpus) > 0 {
+			cpuModel = a.staticSystemInfo.Cpus[0].Model
 		}
-		fingerprint = a.systemInfo.Hostname + cpuModel
+		fingerprint = a.staticSystemInfo.Hostname + cpuModel
 	}
 
 	// hash fingerprint

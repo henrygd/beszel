@@ -28,18 +28,20 @@ import (
 )
 
 type System struct {
-	Id           string               `db:"id"`
-	Host         string               `db:"host"`
-	Port         string               `db:"port"`
-	Status       string               `db:"status"`
-	manager      *SystemManager       // Manager that this system belongs to
-	client       *ssh.Client          // SSH client for fetching data
-	data         *system.CombinedData // system data from agent
-	ctx          context.Context      // Context for stopping the updater
-	cancel       context.CancelFunc   // Stops and removes system from updater
-	WsConn       *ws.WsConn           // Handler for agent WebSocket connection
-	agentVersion semver.Version       // Agent version
-	updateTicker *time.Ticker         // Ticker for updating the system
+	Id                 string               `db:"id"`
+	Host               string               `db:"host"`
+	Port               string               `db:"port"`
+	Status             string               `db:"status"`
+	manager            *SystemManager       // Manager that this system belongs to
+	client             *ssh.Client          // SSH client for fetching data
+	data               *system.CombinedData // system data from agent
+	staticInfo         *system.StaticInfo   // cached static system info (updated every 15 min)
+	lastStaticInfoTime time.Time            // last time static info was fetched
+	ctx                context.Context      // Context for stopping the updater
+	cancel             context.CancelFunc   // Stops and removes system from updater
+	WsConn             *ws.WsConn           // Handler for agent WebSocket connection
+	agentVersion       semver.Version       // Agent version
+	updateTicker       *time.Ticker         // Ticker for updating the system
 }
 
 func (sm *SystemManager) NewSystem(systemId string) *System {
@@ -112,8 +114,27 @@ func (sys *System) update() error {
 		sys.handlePaused()
 		return nil
 	}
-	data, err := sys.fetchDataFromAgent(common.DataRequestOptions{CacheTimeMs: uint16(interval)})
+
+	// Check if it's time to fetch static info (every 15 minutes)
+	now := time.Now()
+	shouldFetchStatic := sys.staticInfo == nil || now.Sub(sys.lastStaticInfoTime) >= staticInfoInterval
+
+	// Determine which cache time to use based on whether we need static info
+	cacheTimeMs := uint16(interval)
+	if shouldFetchStatic {
+		// Request with a cache time that signals the agent to include static info
+		// We use 60001ms (just above the standard interval) since uint16 max is 65535
+		cacheTimeMs = 60_001
+	}
+
+	data, err := sys.fetchDataFromAgent(common.DataRequestOptions{CacheTimeMs: cacheTimeMs})
 	if err == nil {
+		// If we received static info, cache it
+		if data.StaticInfo != nil {
+			sys.staticInfo = data.StaticInfo
+			sys.lastStaticInfoTime = now
+			sys.manager.hub.Logger().Debug("Updated static system info", "system", sys.Id)
+		}
 		_, err = sys.createRecords(data)
 	}
 	return err
@@ -134,9 +155,11 @@ func (sys *System) handlePaused() {
 
 // createRecords updates the system record and adds system_stats and container_stats records
 func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error) {
-	sys.manager.hub.Logger().Debug("Creating records - CPU array", "cpus", data.Info.Cpus)
-	sys.manager.hub.Logger().Debug("Creating records - Memory array", "memory", data.Info.Memory)
-	
+	// Build complete info combining dynamic and static data
+	completeInfo := sys.buildCompleteInfo(data)
+
+	sys.manager.hub.Logger().Debug("Creating records - complete info", "info", completeInfo)
+
 	systemRecord, err := sys.getRecord()
 	if err != nil {
 		return nil, err
@@ -187,7 +210,7 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		// update system record (do this last because it triggers alerts and we need above records to be inserted first)
 		systemRecord.Set("status", up)
 
-		systemRecord.Set("info", data.Info)
+		systemRecord.Set("info", completeInfo)
 		if err := txApp.SaveNoValidate(systemRecord); err != nil {
 			return err
 		}
@@ -195,6 +218,70 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 	})
 
 	return systemRecord, err
+}
+
+// buildCompleteInfo combines the dynamic Info with cached StaticInfo to create a complete system info structure
+// This is needed because we've split the original Info structure for bandwidth optimization
+func (sys *System) buildCompleteInfo(data *system.CombinedData) map[string]interface{} {
+	info := make(map[string]interface{})
+
+	// Add dynamic fields from data.Info
+	if data.Info.Uptime > 0 {
+		info["u"] = data.Info.Uptime
+	}
+	info["cpu"] = data.Info.Cpu
+	info["mp"] = data.Info.MemPct
+	info["dp"] = data.Info.DiskPct
+	info["b"] = data.Info.Bandwidth
+	info["bb"] = data.Info.BandwidthBytes
+	if data.Info.GpuPct > 0 {
+		info["g"] = data.Info.GpuPct
+	}
+	if data.Info.DashboardTemp > 0 {
+		info["dt"] = data.Info.DashboardTemp
+	}
+	if data.Info.LoadAvg1 > 0 || data.Info.LoadAvg5 > 0 || data.Info.LoadAvg15 > 0 {
+		info["l1"] = data.Info.LoadAvg1
+		info["l5"] = data.Info.LoadAvg5
+		info["l15"] = data.Info.LoadAvg15
+		info["la"] = data.Info.LoadAvg
+	}
+	if data.Info.ConnectionType > 0 {
+		info["ct"] = data.Info.ConnectionType
+	}
+
+	// Add static fields from cached staticInfo
+	if sys.staticInfo != nil {
+		info["h"] = sys.staticInfo.Hostname
+		if sys.staticInfo.KernelVersion != "" {
+			info["k"] = sys.staticInfo.KernelVersion
+		}
+		if sys.staticInfo.Threads > 0 {
+			info["t"] = sys.staticInfo.Threads
+		}
+		info["v"] = sys.staticInfo.AgentVersion
+		if sys.staticInfo.Podman {
+			info["p"] = true
+		}
+		info["os"] = sys.staticInfo.Os
+		if len(sys.staticInfo.Cpus) > 0 {
+			info["c"] = sys.staticInfo.Cpus
+		}
+		if len(sys.staticInfo.Memory) > 0 {
+			info["m"] = sys.staticInfo.Memory
+		}
+		if len(sys.staticInfo.Disks) > 0 {
+			info["d"] = sys.staticInfo.Disks
+		}
+		if len(sys.staticInfo.Networks) > 0 {
+			info["n"] = sys.staticInfo.Networks
+		}
+		if len(sys.staticInfo.Oses) > 0 {
+			info["o"] = sys.staticInfo.Oses
+		}
+	}
+
+	return info
 }
 
 func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId string) error {
