@@ -33,6 +33,7 @@ jobs:
             password_secret: DOCKERHUB_TOKEN
             tags: |
               type=raw,value=edge
+              type=raw,value=latest
               type=semver,pattern={{version}}
               type=semver,pattern={{major}}.{{minor}}
               type=semver,pattern={{major}}
@@ -99,6 +100,7 @@ jobs:
             password_secret: GITHUB_TOKEN
             tags: |
               type=raw,value=edge
+              type=raw,value=latest
               type=semver,pattern={{version}}
               type=semver,pattern={{major}}.{{minor}}
               type=semver,pattern={{major}}

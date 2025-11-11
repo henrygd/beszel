@@ -281,9 +281,9 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 		alert.name = after + "m Load"
 	}
 
-	// make title alert name lowercase if not CPU
+	// make title alert name lowercase if not CPU or GPU
 	titleAlertName := alert.name
-	if titleAlertName != "CPU" {
+	if titleAlertName != "CPU" && titleAlertName != "GPU" {
 		titleAlertName = strings.ToLower(titleAlertName)
 	}
 
