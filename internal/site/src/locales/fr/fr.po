@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-28 22:59\n"
+"PO-Revision-Date: 2025-11-11 19:25\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -990,7 +990,7 @@ msgstr "Réinitialiser le mot de passe"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Resolved"
-msgstr "Résolution"
+msgstr "Résolu"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
