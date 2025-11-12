@@ -8,7 +8,7 @@ msgstr ""
 "Language: es\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-05 18:06\n"
+"PO-Revision-Date: 2025-11-12 20:36\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -90,6 +90,10 @@ msgstr "Activo"
 msgid "Active Alerts"
 msgstr "Alertas activas"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Active state"
+msgstr "Estado activo"
+
 #: src/components/add-system.tsx
 msgid "Add <0>System</0>"
 msgstr "Agregar <0>sistema</0>"
@@ -114,6 +118,10 @@ msgstr "Ajustar las opciones de visualización para los gráficos."
 #: src/components/command-palette.tsx
 msgid "Admin"
 msgstr "Administrador"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "After"
+msgstr "Después"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -200,6 +208,18 @@ msgstr "Ancho de banda"
 msgid "Battery"
 msgstr "Batería"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became active"
+msgstr "Se activó"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became inactive"
+msgstr "Se desactivó"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Before"
+msgstr "Antes"
+
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
 msgstr "Beszel admite OpenID Connect y muchos proveedores de autenticación OAuth2."
@@ -217,6 +237,10 @@ msgstr "Binario"
 msgid "Bits (Kbps, Mbps, Gbps)"
 msgstr "Bits (kbps, Mbps, Gbps)"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Boot state"
+msgstr "Estado de arranque"
+
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
@@ -226,10 +250,26 @@ msgstr "Bytes (kB/s, MB/s, GB/s)"
 msgid "Cache / Buffers"
 msgstr "Caché / Buffers"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can reload"
+msgstr "Puede recargar"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can start"
+msgstr "Puede iniciar"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can stop"
+msgstr "Puede detener"
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "Cancelar"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Capabilities"
+msgstr "Capacidades"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
@@ -306,6 +346,10 @@ msgstr "Configura cómo recibe las notificaciones de alertas."
 msgid "Confirm password"
 msgstr "Confirmar contraseña"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Conflicts"
+msgstr "Conflictos"
+
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "La conexión está caída"
@@ -366,6 +410,7 @@ msgid "Copy YAML"
 msgstr "Copiar YAML"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "CPU"
@@ -373,6 +418,14 @@ msgstr "CPU"
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
 msgstr "Núcleos de CPU"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "CPU Peak"
+msgstr "Pico de CPU"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "CPU time"
+msgstr "Tiempo de CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Time Breakdown"
@@ -433,6 +486,10 @@ msgstr "Eliminar"
 msgid "Delete fingerprint"
 msgstr "Eliminar huella digital"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Description"
+msgstr "Descripción"
+
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
 msgstr "Detalle"
@@ -481,6 +538,7 @@ msgid "Docker Network I/O"
 msgstr "E/S de red de Docker"
 
 #: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Documentation"
 msgstr "Documentación"
 
@@ -541,6 +599,7 @@ msgstr "Ingrese su contraseña de un solo uso."
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
 msgstr "Error"
 
@@ -551,9 +610,17 @@ msgstr "Error"
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Excede {0}{1} en el último {2, plural, one {# minuto} other {# minutos}}"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exec main PID"
+msgstr "PID principal de ejecución"
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr "Los sistemas existentes no definidos en <0>config.yml</0> serán eliminados. Por favor, haz copias de seguridad regularmente."
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exited active"
+msgstr "Salió activo"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -592,10 +659,16 @@ msgstr "Error al enviar la notificación de prueba"
 msgid "Failed to update alert"
 msgstr "Error al actualizar la alerta"
 
+#. placeholder {0}: statusTotals[ServiceStatus.Failed]
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Failed: {0}"
+msgstr "Fallidos: {0}"
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Filtrar..."
@@ -640,6 +713,10 @@ msgstr "Motores GPU"
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
 msgstr "Consumo de energía de la GPU"
+
+#: src/lib/alerts.ts
+msgid "GPU Usage"
+msgstr "Uso de GPU"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
@@ -690,6 +767,15 @@ msgstr "Idioma"
 msgid "Layout"
 msgstr "Diseño"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Lifecycle"
+msgstr "Ciclo de vida"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "limit"
+msgstr "límite"
+
 #: src/components/routes/system.tsx
 msgid "Load Average"
 msgstr "Carga media"
@@ -710,6 +796,14 @@ msgstr "Carga media 5m"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
 msgstr "Carga media"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Load state"
+msgstr "Estado de carga"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Loading..."
+msgstr "Cargando..."
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -734,6 +828,10 @@ msgstr "Registros"
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
 msgstr "¿Buscas dónde crear alertas? Haz clic en los iconos de campana <0/> en la tabla de sistemas."
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Main PID"
+msgstr "PID principal"
+
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "Administrar preferencias de visualización y notificaciones."
@@ -749,9 +847,20 @@ msgid "Max 1 min"
 msgstr "Máx. 1 min"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Memoria"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory limit"
+msgstr "Límite de memoria"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory Peak"
+msgstr "Pico de memoria"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -769,6 +878,8 @@ msgstr "Modelo"
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
 msgstr "Nombre"
 
@@ -793,7 +904,14 @@ msgstr "Tráfico de red de interfaces públicas"
 msgid "Network unit"
 msgstr "Unidad de red"
 
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No"
+msgstr ""
+
 #: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
 msgstr "No se encontraron resultados."
 
@@ -802,6 +920,7 @@ msgstr "No se encontraron resultados."
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "No results."
 msgstr "Sin resultados."
 
@@ -954,6 +1073,10 @@ msgstr "Utilización precisa en el momento registrado"
 msgid "Preferred Language"
 msgstr "Idioma preferido"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Process started"
+msgstr "Proceso iniciado"
+
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
@@ -974,6 +1097,10 @@ msgstr "Recibido"
 msgid "Refresh"
 msgstr "Actualizar"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Relationships"
+msgstr "Relaciones"
+
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
 msgstr "Solicitar contraseña de un solo uso"
@@ -981,6 +1108,14 @@ msgstr "Solicitar contraseña de un solo uso"
 #: src/components/login/otp-forms.tsx
 msgid "Request OTP"
 msgstr "Solicitar OTP"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Required by"
+msgstr "Requerido por"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Requires"
+msgstr "Requiere"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
@@ -992,9 +1127,18 @@ msgstr "Restablecer contraseña"
 msgid "Resolved"
 msgstr "Resuelto"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Restarts"
+msgstr "Reinicios"
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Reanudar"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgctxt "Root disk label"
+msgid "Root"
+msgstr "Raíz"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1003,6 +1147,10 @@ msgstr "Rotar token"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
 msgstr "Filas por página"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Runtime Metrics"
+msgstr "Métricas de tiempo de ejecución"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
@@ -1045,6 +1193,10 @@ msgstr "Enviado"
 msgid "Serial Number"
 msgstr "Número de serie"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Service Details"
+msgstr "Detalles del servicio"
+
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "Establecer umbrales de porcentaje para los colores de los medidores."
@@ -1074,15 +1226,21 @@ msgstr "Ordenar por"
 
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "Estado"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
 msgstr "Estado"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "Sub State"
+msgstr "Subestado"
 
 #: src/components/routes/system.tsx
 msgid "Swap space used by the system"
@@ -1104,6 +1262,10 @@ msgstr "Sistema"
 msgid "System load averages over time"
 msgstr "Promedios de carga del sistema a lo largo del tiempo"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Systemd Services"
+msgstr "Servicios de systemd"
+
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "Sistemas"
@@ -1115,6 +1277,10 @@ msgstr "Los sistemas pueden ser gestionados en un archivo <0>config.yml</0> dent
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "Tabla"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Tasks"
+msgstr "Tareas"
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1212,6 +1378,19 @@ msgstr "Datos totales recibidos por cada interfaz"
 msgid "Total data sent for each interface"
 msgstr "Datos totales enviados por cada interfaz"
 
+#. placeholder {0}: data.length
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Total: {0}"
+msgstr ""
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggered by"
+msgstr "Activado por"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggers"
+msgstr "Activadores"
+
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
 msgstr "Se activa cuando la carga media de 1 minuto supera un umbral"
@@ -1237,6 +1416,10 @@ msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Se activa cuando el uso de CPU supera un umbral"
 
 #: src/lib/alerts.ts
+msgid "Triggers when GPU usage exceeds a threshold"
+msgstr "Se activa cuando el uso de GPU supera un umbral"
+
+#: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Se activa cuando el uso de memoria supera un umbral"
 
@@ -1251,6 +1434,10 @@ msgstr "Se activa cuando el uso de cualquier disco supera un umbral"
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Tipo"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unit file"
+msgstr "Archivo de unidad"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
@@ -1267,6 +1454,11 @@ msgstr "Token universal"
 msgid "Unknown"
 msgstr "Desconocida"
 
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unlimited"
+msgstr "Ilimitado"
+
 #. Context: System is up
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1278,8 +1470,13 @@ msgid "Up ({upSystemsLength})"
 msgstr "Activo ({upSystemsLength})"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "Actualizado"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Updated every 10 minutes."
+msgstr "Actualizado cada 10 minutos."
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
@@ -1340,6 +1537,10 @@ msgstr "Esperando suficientes registros para mostrar"
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "¿Quieres ayudar a mejorar nuestras traducciones? Consulta <0>Crowdin</0> para más detalles."
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Wants"
+msgstr "Desea"
+
 #: src/components/routes/settings/general.tsx
 msgid "Warning (%)"
 msgstr "Advertencia (%)"
@@ -1375,6 +1576,12 @@ msgstr "Configuración YAML"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "Configuración YAML"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Yes"
+msgstr "Sí"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
