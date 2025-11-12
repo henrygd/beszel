@@ -166,6 +166,7 @@ func (a *Agent) gatherStats(cacheTimeMs uint16) *system.CombinedData {
 	}
 
 	data.Stats.ExtraFs = make(map[string]*system.FsStats)
+	data.Info.ExtraFsPct = make(map[string]system.ExtraFsInfo)
 	for name, stats := range a.fsStats {
 		if !stats.Root && stats.DiskTotal > 0 {
 			// Use custom name if available, otherwise use device name
@@ -174,6 +175,11 @@ func (a *Agent) gatherStats(cacheTimeMs uint16) *system.CombinedData {
 				key = stats.Name
 			}
 			data.Stats.ExtraFs[key] = stats
+			// Add percentage info to Info struct for dashboard
+			if stats.DiskTotal > 0 {
+				pct := (stats.DiskUsed / stats.DiskTotal) * 100
+				data.Info.ExtraFsPct[key] = system.ExtraFsInfo{DiskPct: pct}
+			}
 		}
 	}
 	slog.Debug("Extra FS", "data", data.Stats.ExtraFs)

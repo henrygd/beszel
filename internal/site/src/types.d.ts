@@ -77,6 +77,13 @@ export interface SystemInfo {
 	os?: Os
 	/** connection type */
 	ct?: ConnectionType
+	/** extra filesystem percentages */
+	efsp?: Record<string, ExtraFsInfo>
+}
+
+export interface ExtraFsInfo {
+	/** disk percent */
+	dp: number
 }
 
 export interface SystemStats {
