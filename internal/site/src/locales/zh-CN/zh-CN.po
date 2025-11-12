@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-04 23:47\n"
+"PO-Revision-Date: 2025-11-12 20:36\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -90,6 +90,10 @@ msgstr "活跃"
 msgid "Active Alerts"
 msgstr "启用的警报"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Active state"
+msgstr "活动状态"
+
 #: src/components/add-system.tsx
 msgid "Add <0>System</0>"
 msgstr "<0>添加客户端</0>"
@@ -114,6 +118,10 @@ msgstr "调整图表的显示选项。"
 #: src/components/command-palette.tsx
 msgid "Admin"
 msgstr "管理员"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "After"
+msgstr "之后"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -200,6 +208,18 @@ msgstr "带宽"
 msgid "Battery"
 msgstr "电池"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became active"
+msgstr "变为活动"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became inactive"
+msgstr "变为非活动"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Before"
+msgstr "之前"
+
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
 msgstr "Beszel 支持 OpenID Connect 和其他 OAuth2 认证方式。"
@@ -217,6 +237,10 @@ msgstr "二进制"
 msgid "Bits (Kbps, Mbps, Gbps)"
 msgstr "比特 (Kbps, Mbps, Gbps)"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Boot state"
+msgstr "启动状态"
+
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
@@ -226,10 +250,26 @@ msgstr "字节 (KB/s, MB/s, GB/s)"
 msgid "Cache / Buffers"
 msgstr "缓存/缓冲区"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can reload"
+msgstr "可重载"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can start"
+msgstr "可启动"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can stop"
+msgstr "可停止"
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "取消"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Capabilities"
+msgstr "能力"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
@@ -306,6 +346,10 @@ msgstr "配置您接收警报通知的方式。"
 msgid "Confirm password"
 msgstr "确认密码"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Conflicts"
+msgstr "冲突"
+
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "连接已断开"
@@ -366,6 +410,7 @@ msgid "Copy YAML"
 msgstr "复制 YAML"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "CPU"
@@ -373,6 +418,14 @@ msgstr "CPU"
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
 msgstr "CPU 核心"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "CPU Peak"
+msgstr "CPU 峰值"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "CPU time"
+msgstr "CPU 时间"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Time Breakdown"
@@ -433,6 +486,10 @@ msgstr "删除"
 msgid "Delete fingerprint"
 msgstr "删除指纹"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Description"
+msgstr "描述"
+
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
 msgstr "详情"
@@ -481,6 +538,7 @@ msgid "Docker Network I/O"
 msgstr "Docker 网络 I/O"
 
 #: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Documentation"
 msgstr "文档"
 
@@ -541,6 +599,7 @@ msgstr "输入您的一次性密码。"
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
 msgstr "错误"
 
@@ -551,9 +610,17 @@ msgstr "错误"
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "在过去的{2, plural, one {# 分钟} other {# 分钟}}中超过{0}{1}"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exec main PID"
+msgstr "执行主进程 ID"
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr "未在<0>config.yml</0>中定义的客户端将被删除。请定期备份。"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exited active"
+msgstr "退出活动状态"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -592,10 +659,16 @@ msgstr "发送测试通知失败"
 msgid "Failed to update alert"
 msgstr "更新警报失败"
 
+#. placeholder {0}: statusTotals[ServiceStatus.Failed]
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Failed: {0}"
+msgstr "失败: {0}"
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "过滤..."
@@ -640,6 +713,10 @@ msgstr "GPU 引擎"
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
 msgstr "GPU 功耗"
+
+#: src/lib/alerts.ts
+msgid "GPU Usage"
+msgstr "GPU 使用率"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
@@ -690,6 +767,15 @@ msgstr "语言"
 msgid "Layout"
 msgstr "布局"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Lifecycle"
+msgstr "生命周期"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "limit"
+msgstr "限制"
+
 #: src/components/routes/system.tsx
 msgid "Load Average"
 msgstr "系统负载"
@@ -710,6 +796,14 @@ msgstr "5 分钟内的平均负载"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
 msgstr "负载"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Load state"
+msgstr "加载状态"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Loading..."
+msgstr "加载中..."
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -734,6 +828,10 @@ msgstr "日志"
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
 msgstr "在寻找创建警报的位置吗？点击系统表中的铃铛<0/>图标。"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Main PID"
+msgstr "主进程 ID"
+
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "管理显示和通知偏好。"
@@ -749,9 +847,20 @@ msgid "Max 1 min"
 msgstr "1分钟内最大值"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "内存"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory limit"
+msgstr "内存限制"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory Peak"
+msgstr "内存峰值"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -769,6 +878,8 @@ msgstr "型号"
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
 msgstr "名称"
 
@@ -793,7 +904,14 @@ msgstr "公共接口的网络流量"
 msgid "Network unit"
 msgstr "网络单位"
 
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No"
+msgstr "否"
+
 #: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
 msgstr "未找到结果。"
 
@@ -802,6 +920,7 @@ msgstr "未找到结果。"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "No results."
 msgstr "无结果。"
 
@@ -954,6 +1073,10 @@ msgstr "采集时间下的精确内存使用率"
 msgid "Preferred Language"
 msgstr "首选语言"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Process started"
+msgstr "进程启动"
+
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
@@ -974,6 +1097,10 @@ msgstr "接收"
 msgid "Refresh"
 msgstr "刷新"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Relationships"
+msgstr "关系"
+
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
 msgstr "请求一次性密码"
@@ -981,6 +1108,14 @@ msgstr "请求一次性密码"
 #: src/components/login/otp-forms.tsx
 msgid "Request OTP"
 msgstr "请求 OTP"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Required by"
+msgstr "被需要"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Requires"
+msgstr "需要"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
@@ -992,9 +1127,18 @@ msgstr "重置密码"
 msgid "Resolved"
 msgstr "已解决"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Restarts"
+msgstr "重启次数"
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "恢复"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgctxt "Root disk label"
+msgid "Root"
+msgstr "根"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1003,6 +1147,10 @@ msgstr "轮换令牌"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
 msgstr "每页行数"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Runtime Metrics"
+msgstr "运行时指标"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
@@ -1045,6 +1193,10 @@ msgstr "发送"
 msgid "Serial Number"
 msgstr "序列号"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Service Details"
+msgstr "服务详情"
+
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "设置仪表颜色的百分比阈值。"
@@ -1074,15 +1226,21 @@ msgstr "排序依据"
 
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "状态"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
 msgstr "状态"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "Sub State"
+msgstr "子状态"
 
 #: src/components/routes/system.tsx
 msgid "Swap space used by the system"
@@ -1104,6 +1262,10 @@ msgstr "系统"
 msgid "System load averages over time"
 msgstr "系统负载平均值随时间变化"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Systemd Services"
+msgstr "Systemd 服务"
+
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "系统"
@@ -1115,6 +1277,10 @@ msgstr "系统可以在数据目录中的<0>config.yml</0>文件中管理。"
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "表格"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Tasks"
+msgstr "任务数"
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1212,6 +1378,19 @@ msgstr "每个接口的总接收数据量"
 msgid "Total data sent for each interface"
 msgstr "每个接口的总发送数据量"
 
+#. placeholder {0}: data.length
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Total: {0}"
+msgstr "总计: {0}"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggered by"
+msgstr "由...触发"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggers"
+msgstr "触发器"
+
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
 msgstr "当 1 分钟负载平均值超过阈值时触发"
@@ -1237,6 +1416,10 @@ msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "当 CPU 使用率超过阈值时触发"
 
 #: src/lib/alerts.ts
+msgid "Triggers when GPU usage exceeds a threshold"
+msgstr "当 GPU 使用率超过阈值时触发"
+
+#: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "当内存使用率超过阈值时触发"
 
@@ -1251,6 +1434,10 @@ msgstr "当任何磁盘的使用率超过阈值时触发"
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "类型"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unit file"
+msgstr "单元文件"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
@@ -1267,6 +1454,11 @@ msgstr "通用令牌"
 msgid "Unknown"
 msgstr "未知"
 
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unlimited"
+msgstr "无限制"
+
 #. Context: System is up
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1278,8 +1470,13 @@ msgid "Up ({upSystemsLength})"
 msgstr "在线 ({upSystemsLength})"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "更新于"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Updated every 10 minutes."
+msgstr "每 10 分钟更新一次。"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
@@ -1340,6 +1537,10 @@ msgstr "正在收集足够的数据来显示"
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "想帮助我们改进翻译吗？查看<0>Crowdin</0>以获取更多详细信息。"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Wants"
+msgstr "希望"
+
 #: src/components/routes/settings/general.tsx
 msgid "Warning (%)"
 msgstr "警告 (%)"
@@ -1375,6 +1576,12 @@ msgstr "YAML 配置"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "YAML 配置"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Yes"
+msgstr "是"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
