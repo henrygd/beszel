@@ -1,3 +1,19 @@
+## 0.16.0
+
+- Add basic systemd service monitoring. (#1153)
+
+- Add GPU usage alerts.
+
+- Show additional disk percentages in systems table. (#1365)
+
+- Embed `smartctl` in the Windows binary (experimental). (#1362)
+
+- Add `EXCLUDE_SMART` environment variable to exclude devices from S.M.A.R.T. monitoring. (#1392)
+
+- Change alert links to use system ID instead of name.
+
+- Update Go dependencies.
+
 ## 0.15.4
 
 - Refactor containers table to fix clock issue causing no results. (#1337)
