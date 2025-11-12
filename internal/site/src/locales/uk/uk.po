@@ -8,7 +8,7 @@ msgstr ""
 "Language: uk\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-04 23:47\n"
+"PO-Revision-Date: 2025-11-12 20:36\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -90,6 +90,10 @@ msgstr "Активне"
 msgid "Active Alerts"
 msgstr "Активні сповіщення"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Active state"
+msgstr "Активний стан"
+
 #: src/components/add-system.tsx
 msgid "Add <0>System</0>"
 msgstr "Додати <0>Систему</0>"
@@ -114,6 +118,10 @@ msgstr "Налаштуйте параметри відображення для 
 #: src/components/command-palette.tsx
 msgid "Admin"
 msgstr "Адміністратор"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "After"
+msgstr "Після"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -200,6 +208,18 @@ msgstr "Пропускна здатність"
 msgid "Battery"
 msgstr "Батарея"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became active"
+msgstr "Стало активним"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became inactive"
+msgstr "Стало неактивним"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Before"
+msgstr "До"
+
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
 msgstr "Beszel підтримує OpenID Connect та багато постачальників автентифікації OAuth2."
@@ -217,6 +237,10 @@ msgstr "Двійковий"
 msgid "Bits (Kbps, Mbps, Gbps)"
 msgstr "Біти (Кбіт/с, Мбіт/с, Гбіт/с)"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Boot state"
+msgstr "Стан завантаження"
+
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
@@ -226,10 +250,26 @@ msgstr "Байти (КБ/с, МБ/с, ГБ/с)"
 msgid "Cache / Buffers"
 msgstr "Кеш / Буфери"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can reload"
+msgstr "Може перезавантажити"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can start"
+msgstr "Може запустити"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can stop"
+msgstr "Може зупинити"
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "Скасувати"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Capabilities"
+msgstr "Можливості"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
@@ -306,6 +346,10 @@ msgstr "Налаштуйте, як ви отримуєте сповіщення 
 msgid "Confirm password"
 msgstr "Підтвердьте пароль"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Conflicts"
+msgstr "Конфлікти"
+
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "З'єднання розірвано"
@@ -366,6 +410,7 @@ msgid "Copy YAML"
 msgstr "Копіювати YAML"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "ЦП"
@@ -373,6 +418,14 @@ msgstr "ЦП"
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
 msgstr "Ядра ЦП"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "CPU Peak"
+msgstr "Пік ЦП"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "CPU time"
+msgstr "Час ЦП"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Time Breakdown"
@@ -433,6 +486,10 @@ msgstr "Видалити"
 msgid "Delete fingerprint"
 msgstr "Видалити відбиток"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Description"
+msgstr "Опис"
+
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
 msgstr "Деталі"
@@ -481,6 +538,7 @@ msgid "Docker Network I/O"
 msgstr "Мережевий ввід/вивід Docker"
 
 #: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Documentation"
 msgstr "Документація"
 
@@ -541,6 +599,7 @@ msgstr "Введіть ваш одноразовий пароль."
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
 msgstr "Помилка"
 
@@ -551,9 +610,17 @@ msgstr "Помилка"
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Перевищує {0}{1} протягом {2, plural, one {останньої # хвилини} other {останніх # хвилин}}"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exec main PID"
+msgstr ""
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr "Існуючі системи, не визначені в <0>config.yml</0>, будуть видалені. Будь ласка, робіть регулярні резервні копії."
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exited active"
+msgstr "Завершилося активно"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -592,10 +659,16 @@ msgstr "Не вдалося надіслати тестове сповіщенн
 msgid "Failed to update alert"
 msgstr "Не вдалося оновити сповіщення"
 
+#. placeholder {0}: statusTotals[ServiceStatus.Failed]
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Failed: {0}"
+msgstr "Невдало: {0}"
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Фільтр..."
@@ -640,6 +713,10 @@ msgstr "Рушії GPU"
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
 msgstr "Енергоспоживання GPU"
+
+#: src/lib/alerts.ts
+msgid "GPU Usage"
+msgstr "Використання GPU"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
@@ -690,6 +767,15 @@ msgstr "Мова"
 msgid "Layout"
 msgstr "Макет"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Lifecycle"
+msgstr "Життєвий цикл"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "limit"
+msgstr ""
+
 #: src/components/routes/system.tsx
 msgid "Load Average"
 msgstr "Середнє навантаження"
@@ -710,6 +796,14 @@ msgstr "Середнє навантаження за 5 хв"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
 msgstr "Сер. навантаження"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Load state"
+msgstr "Стан завантаження"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Loading..."
+msgstr "Завантаження..."
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -734,6 +828,10 @@ msgstr "Журнали"
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
 msgstr "Шукаєте, де створити сповіщення? Натисніть на іконки дзвінка <0/> в таблиці систем."
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Main PID"
+msgstr ""
+
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "Керуйте параметрами відображення та сповіщень."
@@ -749,9 +847,20 @@ msgid "Max 1 min"
 msgstr "Макс 1 хв"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Пам'ять"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory limit"
+msgstr "Обмеження пам'яті"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory Peak"
+msgstr "Пік пам'яті"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -769,6 +878,8 @@ msgstr "Модель"
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
 msgstr "Ім'я"
 
@@ -793,7 +904,14 @@ msgstr "Мережевий трафік публічних інтерфейсі�
 msgid "Network unit"
 msgstr "Одиниця виміру мережі"
 
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No"
+msgstr "Ні"
+
 #: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
 msgstr "Результатів не знайдено."
 
@@ -802,6 +920,7 @@ msgstr "Результатів не знайдено."
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "No results."
 msgstr "Немає результатів."
 
@@ -954,6 +1073,10 @@ msgstr "Точне використання в записаний час"
 msgid "Preferred Language"
 msgstr "Бажана мова"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Process started"
+msgstr "Процес запущено"
+
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
@@ -974,6 +1097,10 @@ msgstr "Отримано"
 msgid "Refresh"
 msgstr "Оновити"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Relationships"
+msgstr "Зв'язки"
+
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
 msgstr "Запит одноразового пароля"
@@ -981,6 +1108,14 @@ msgstr "Запит одноразового пароля"
 #: src/components/login/otp-forms.tsx
 msgid "Request OTP"
 msgstr "Запит OTP"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Required by"
+msgstr "Потрібно для"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Requires"
+msgstr "Потребує"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
@@ -992,9 +1127,18 @@ msgstr "Скинути пароль"
 msgid "Resolved"
 msgstr "Вирішено"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Restarts"
+msgstr "Перезапуски"
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Відновити"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgctxt "Root disk label"
+msgid "Root"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1003,6 +1147,10 @@ msgstr "Оновити токен"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
 msgstr "Рядків на сторінку"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Runtime Metrics"
+msgstr "Метрики виконання"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
@@ -1045,6 +1193,10 @@ msgstr "Відправлено"
 msgid "Serial Number"
 msgstr "Серійний номер"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Service Details"
+msgstr "Деталі служби"
+
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "Встановіть відсоткові пороги для кольорів лічильників."
@@ -1074,15 +1226,21 @@ msgstr "Сортувати за"
 
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "Стан"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
 msgstr "Статус"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "Sub State"
+msgstr "Підстан"
 
 #: src/components/routes/system.tsx
 msgid "Swap space used by the system"
@@ -1104,6 +1262,10 @@ msgstr "Система"
 msgid "System load averages over time"
 msgstr "Середнє навантаження системи з часом"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Systemd Services"
+msgstr "Служби Systemd"
+
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "Системи"
@@ -1115,6 +1277,10 @@ msgstr "Системи можуть керуватися у файлі <0>config
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "Таблиця"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Tasks"
+msgstr "Завдання"
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1212,6 +1378,19 @@ msgstr "Загальний обсяг отриманих даних для ко�
 msgid "Total data sent for each interface"
 msgstr "Загальний обсяг відправлених даних для кожного інтерфейсу"
 
+#. placeholder {0}: data.length
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Total: {0}"
+msgstr "Всього: {0}"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggered by"
+msgstr "Запущено через"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggers"
+msgstr "Тригери"
+
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
 msgstr "Спрацьовує, коли середнє навантаження за 1 хвилину перевищує поріг"
@@ -1237,6 +1416,10 @@ msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Спрацьовує, коли використання ЦП перевищує поріг"
 
 #: src/lib/alerts.ts
+msgid "Triggers when GPU usage exceeds a threshold"
+msgstr "Спрацьовує, коли використання GPU перевищує поріг"
+
+#: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Спрацьовує, коли використання пам'яті перевищує поріг"
 
@@ -1251,6 +1434,10 @@ msgstr "Спрацьовує, коли використання будь-яко�
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Тип"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unit file"
+msgstr "Файл юніта"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
@@ -1267,6 +1454,11 @@ msgstr "Універсальний токен"
 msgid "Unknown"
 msgstr "Невідома"
 
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unlimited"
+msgstr "Необмежено"
+
 #. Context: System is up
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1278,8 +1470,13 @@ msgid "Up ({upSystemsLength})"
 msgstr "Працює ({upSystemsLength})"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "Оновлено"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Updated every 10 minutes."
+msgstr "Оновлюється кожні 10 хвилин."
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
@@ -1340,6 +1537,10 @@ msgstr "Очікування достатньої кількості запис�
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "Хочете допомогти покращити наші переклади? Подробиці на <0>Crowdin</0>."
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Wants"
+msgstr "Потребує"
+
 #: src/components/routes/settings/general.tsx
 msgid "Warning (%)"
 msgstr "Попередження (%)"
@@ -1375,6 +1576,12 @@ msgstr "Конфігурація YAML"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "Конфігурація YAML"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Yes"
+msgstr "Так"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
