@@ -144,8 +144,9 @@ type Info struct {
 	LoadAvg15      float64 `json:"l15,omitempty" cbor:"17,keyasint,omitempty"`
 	BandwidthBytes uint64  `json:"bb" cbor:"18,keyasint"`
 	// TODO: remove load fields in future release in favor of load avg array
-	LoadAvg        [3]float64     `json:"la,omitempty" cbor:"19,keyasint"`
-	ConnectionType ConnectionType `json:"ct,omitempty" cbor:"20,keyasint,omitempty,omitzero"`
+	LoadAvg        [3]float64         `json:"la,omitempty" cbor:"19,keyasint"`
+	ConnectionType ConnectionType     `json:"ct,omitempty" cbor:"20,keyasint,omitempty,omitzero"`
+	ExtraFsPct     map[string]float64 `json:"efs,omitempty" cbor:"21,keyasint,omitempty"`
 }
 
 // Final data structure to return to the hub
