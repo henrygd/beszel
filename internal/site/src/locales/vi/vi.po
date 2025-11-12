@@ -8,7 +8,7 @@ msgstr ""
 "Language: vi\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-04 23:47\n"
+"PO-Revision-Date: 2025-11-12 20:36\n"
 "Last-Translator: \n"
 "Language-Team: Vietnamese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -90,6 +90,10 @@ msgstr "Hoạt động"
 msgid "Active Alerts"
 msgstr "Cảnh báo hoạt động"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Active state"
+msgstr "Trạng thái hoạt động"
+
 #: src/components/add-system.tsx
 msgid "Add <0>System</0>"
 msgstr "Thêm <0>Hệ thống</0>"
@@ -114,6 +118,10 @@ msgstr "Điều chỉnh tùy chọn hiển thị cho biểu đồ."
 #: src/components/command-palette.tsx
 msgid "Admin"
 msgstr "Quản trị viên"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "After"
+msgstr "Sau"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -200,6 +208,18 @@ msgstr "Băng thông"
 msgid "Battery"
 msgstr "Pin"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became active"
+msgstr "Đã trở thành hoạt động"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became inactive"
+msgstr "Đã trở thành không hoạt động"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Before"
+msgstr "Trước"
+
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
 msgstr "Beszel hỗ trợ OpenID Connect và nhiều nhà cung cấp xác thực OAuth2."
@@ -217,6 +237,10 @@ msgstr "Nhị phân"
 msgid "Bits (Kbps, Mbps, Gbps)"
 msgstr "Bit (Kbps, Mbps, Gbps)"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Boot state"
+msgstr "Trạng thái khởi động"
+
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
@@ -226,10 +250,26 @@ msgstr "Byte (KB/giây, MB/giây, GB/giây)"
 msgid "Cache / Buffers"
 msgstr "Bộ nhớ đệm / Bộ đệm"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can reload"
+msgstr "Có thể tải lại"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can start"
+msgstr "Có thể khởi động"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can stop"
+msgstr "Có thể dừng"
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "Hủy bỏ"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Capabilities"
+msgstr "Khả năng"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
@@ -306,6 +346,10 @@ msgstr "Cấu hình cách bạn nhận thông báo cảnh báo."
 msgid "Confirm password"
 msgstr "Xác nhận mật khẩu"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Conflicts"
+msgstr "Xung đột"
+
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "Mất kết nối"
@@ -366,6 +410,7 @@ msgid "Copy YAML"
 msgstr "Sao chép YAML"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr ""
@@ -373,6 +418,14 @@ msgstr ""
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
 msgstr "Nhân CPU"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "CPU Peak"
+msgstr "Đỉnh CPU"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "CPU time"
+msgstr "Thời gian CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Time Breakdown"
@@ -433,6 +486,10 @@ msgstr "Xóa"
 msgid "Delete fingerprint"
 msgstr "Xóa vân tay"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Description"
+msgstr "Mô tả"
+
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
 msgstr "Chi tiết"
@@ -481,6 +538,7 @@ msgid "Docker Network I/O"
 msgstr "Mạng I/O Docker"
 
 #: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Documentation"
 msgstr "Tài liệu"
 
@@ -541,6 +599,7 @@ msgstr "Nhập mật khẩu một lần của bạn."
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
 msgstr "Lỗi"
 
@@ -551,9 +610,17 @@ msgstr "Lỗi"
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Vượt quá {0}{1} trong {2, plural, one {# phút} other {# phút}} qua"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exec main PID"
+msgstr "PID chính của Exec"
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr "Các hệ thống hiện có không được định nghĩa trong <0>config.yml</0> sẽ bị xóa. Vui lòng sao lưu thường xuyên."
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exited active"
+msgstr "Đã thoát khi hoạt động"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -592,10 +659,16 @@ msgstr "Gửi thông báo thử nghiệm thất bại"
 msgid "Failed to update alert"
 msgstr "Cập nhật cảnh báo thất bại"
 
+#. placeholder {0}: statusTotals[ServiceStatus.Failed]
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Failed: {0}"
+msgstr "Thất bại: {0}"
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Lọc..."
@@ -640,6 +713,10 @@ msgstr "Động cơ GPU"
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
 msgstr "Mức tiêu thụ điện của GPU"
+
+#: src/lib/alerts.ts
+msgid "GPU Usage"
+msgstr "Sử dụng GPU"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
@@ -690,6 +767,15 @@ msgstr "Ngôn ngữ"
 msgid "Layout"
 msgstr "Bố cục"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Lifecycle"
+msgstr "Vòng đời"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "limit"
+msgstr "giới hạn"
+
 #: src/components/routes/system.tsx
 msgid "Load Average"
 msgstr "Tải trung bình"
@@ -710,6 +796,14 @@ msgstr "Tải trung bình 5 phút"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
 msgstr "Tải TB"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Load state"
+msgstr "Trạng thái tải"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Loading..."
+msgstr "Đang tải..."
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -734,6 +828,10 @@ msgstr "Nhật ký"
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
 msgstr "Thay vào đó, bạn đang tìm nơi để tạo cảnh báo? Nhấp vào biểu tượng chuông <0/> trong bảng hệ thống."
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Main PID"
+msgstr "PID chính"
+
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "Quản lý tùy chọn hiển thị và thông báo."
@@ -749,9 +847,20 @@ msgid "Max 1 min"
 msgstr "Tối đa 1 phút"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Bộ nhớ"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory limit"
+msgstr "Giới hạn bộ nhớ"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory Peak"
+msgstr "Đỉnh bộ nhớ"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -769,6 +878,8 @@ msgstr "Mô hình"
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
 msgstr "Tên"
 
@@ -793,7 +904,14 @@ msgstr "Lưu lượng mạng của các giao diện công cộng"
 msgid "Network unit"
 msgstr "Đơn vị mạng"
 
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No"
+msgstr "Không"
+
 #: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
 msgstr "Không tìm thấy kết quả."
 
@@ -802,6 +920,7 @@ msgstr "Không tìm thấy kết quả."
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "No results."
 msgstr "Không có kết quả."
 
@@ -954,6 +1073,10 @@ msgstr "Sử dụng chính xác tại thời điểm ghi nhận"
 msgid "Preferred Language"
 msgstr "Ngôn ngữ Ưa thích"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Process started"
+msgstr "Tiến trình đã khởi động"
+
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
@@ -974,6 +1097,10 @@ msgstr "Đã nhận"
 msgid "Refresh"
 msgstr "Làm mới"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Relationships"
+msgstr "Mối quan hệ"
+
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
 msgstr "Yêu cầu mật khẩu một lần"
@@ -981,6 +1108,14 @@ msgstr "Yêu cầu mật khẩu một lần"
 #: src/components/login/otp-forms.tsx
 msgid "Request OTP"
 msgstr "Yêu cầu OTP"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Required by"
+msgstr "Được yêu cầu bởi"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Requires"
+msgstr "Yêu cầu"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
@@ -992,9 +1127,18 @@ msgstr "Đặt lại Mật khẩu"
 msgid "Resolved"
 msgstr "Đã giải quyết"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Restarts"
+msgstr "Khởi động lại"
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Tiếp tục"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgctxt "Root disk label"
+msgid "Root"
+msgstr "Gốc"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1003,6 +1147,10 @@ msgstr "Xoay vòng token"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
 msgstr "Số hàng mỗi trang"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Runtime Metrics"
+msgstr "Chỉ số thời gian chạy"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
@@ -1045,6 +1193,10 @@ msgstr "Đã gửi"
 msgid "Serial Number"
 msgstr "Số seri"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Service Details"
+msgstr "Chi tiết dịch vụ"
+
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "Đặt ngưỡng cho màu sắc đồng hồ."
@@ -1074,15 +1226,21 @@ msgstr "Sắp xếp theo"
 
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "Trạng thái"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
 msgstr "Trạng thái"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "Sub State"
+msgstr "Trạng thái phụ"
 
 #: src/components/routes/system.tsx
 msgid "Swap space used by the system"
@@ -1104,6 +1262,10 @@ msgstr "Hệ thống"
 msgid "System load averages over time"
 msgstr "Tải trung bình của hệ thống theo thời gian"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Systemd Services"
+msgstr "Dịch vụ Systemd"
+
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "Các hệ thống"
@@ -1115,6 +1277,10 @@ msgstr "Các hệ thống có thể được quản lý trong tệp <0>config.ym
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "Bảng"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Tasks"
+msgstr "Tác vụ"
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1212,6 +1378,19 @@ msgstr "Tổng dữ liệu nhận được cho mỗi giao diện"
 msgid "Total data sent for each interface"
 msgstr "Tổng dữ liệu gửi đi cho mỗi giao diện"
 
+#. placeholder {0}: data.length
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Total: {0}"
+msgstr "Tổng: {0}"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggered by"
+msgstr "Được kích hoạt bởi"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggers"
+msgstr "Kích hoạt"
+
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
 msgstr "Kích hoạt khi tải trung bình 1 phút vượt quá ngưỡng"
@@ -1237,6 +1416,10 @@ msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Kích hoạt khi sử dụng CPU vượt quá ngưỡng"
 
 #: src/lib/alerts.ts
+msgid "Triggers when GPU usage exceeds a threshold"
+msgstr "Kích hoạt khi sử dụng GPU vượt quá ngưỡng"
+
+#: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Kích hoạt khi sử dụng bộ nhớ vượt quá ngưỡng"
 
@@ -1251,6 +1434,10 @@ msgstr "Kích hoạt khi sử dụng bất kỳ đĩa nào vượt quá ngưỡn
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Loại"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unit file"
+msgstr "Tệp đơn vị"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
@@ -1267,6 +1454,11 @@ msgstr "Token chung"
 msgid "Unknown"
 msgstr "Không xác định"
 
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unlimited"
+msgstr "Không giới hạn"
+
 #. Context: System is up
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1278,8 +1470,13 @@ msgid "Up ({upSystemsLength})"
 msgstr "Hoạt động ({upSystemsLength})"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "Đã cập nhật"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Updated every 10 minutes."
+msgstr "Cập nhật mỗi 10 phút."
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
@@ -1340,6 +1537,10 @@ msgstr "Đang chờ đủ bản ghi để hiển thị"
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "Muốn giúp chúng tôi cải thiện bản dịch của mình? Xem <0>Crowdin</0> để biết thêm chi tiết."
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Wants"
+msgstr "Muốn"
+
 #: src/components/routes/settings/general.tsx
 msgid "Warning (%)"
 msgstr "Cảnh báo (%)"
@@ -1375,6 +1576,12 @@ msgstr "Cấu hình YAML"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "Cấu hình YAML"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Yes"
+msgstr "Có"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
