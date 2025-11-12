@@ -8,7 +8,7 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-04 23:47\n"
+"PO-Revision-Date: 2025-11-12 20:36\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -90,6 +90,10 @@ msgstr "활성"
 msgid "Active Alerts"
 msgstr "활성화된 알림들"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Active state"
+msgstr "활성 상태"
+
 #: src/components/add-system.tsx
 msgid "Add <0>System</0>"
 msgstr "<0>시스템</0> 추가"
@@ -114,6 +118,10 @@ msgstr "차트 표시 옵션 변경."
 #: src/components/command-palette.tsx
 msgid "Admin"
 msgstr "관리자"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "After"
+msgstr "이후"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -200,6 +208,18 @@ msgstr "대역폭"
 msgid "Battery"
 msgstr "배터리"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became active"
+msgstr "활성화됨"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became inactive"
+msgstr "비활성화됨"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Before"
+msgstr "이전"
+
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
 msgstr "Beszel은 OpenID Connect 및 많은 OAuth2 인증 제공자를 지원합니다."
@@ -217,6 +237,10 @@ msgstr "실행 파일"
 msgid "Bits (Kbps, Mbps, Gbps)"
 msgstr "비트 (Kbps, Mbps, Gbps)"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Boot state"
+msgstr "부팅 상태"
+
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
@@ -226,10 +250,26 @@ msgstr "바이트 (KB/s, MB/s, GB/s)"
 msgid "Cache / Buffers"
 msgstr "캐시 / 버퍼"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can reload"
+msgstr "재로드 가능"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can start"
+msgstr "시작 가능"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can stop"
+msgstr "중지 가능"
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "취소"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Capabilities"
+msgstr "권한"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
@@ -306,6 +346,10 @@ msgstr "알림을 수신할 방법을 설정하세요."
 msgid "Confirm password"
 msgstr "비밀번호 확인"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Conflicts"
+msgstr "충돌"
+
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "연결이 끊겼습니다"
@@ -366,6 +410,7 @@ msgid "Copy YAML"
 msgstr "YAML 복사"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "CPU"
@@ -373,6 +418,14 @@ msgstr "CPU"
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
 msgstr "CPU 코어"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "CPU Peak"
+msgstr "CPU 최대값"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "CPU time"
+msgstr "CPU 시간"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Time Breakdown"
@@ -433,6 +486,10 @@ msgstr "삭제"
 msgid "Delete fingerprint"
 msgstr "지문 삭제"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Description"
+msgstr "설명"
+
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
 msgstr "세부사항"
@@ -481,6 +538,7 @@ msgid "Docker Network I/O"
 msgstr "Docker 네트워크 I/O"
 
 #: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Documentation"
 msgstr "문서"
 
@@ -541,6 +599,7 @@ msgstr "OTP를 입력하세요."
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
 msgstr "오류"
 
@@ -551,9 +610,17 @@ msgstr "오류"
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "마지막 {2, plural, one {# 분} other {# 분}} 동안 {0}{1} 초과"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exec main PID"
+msgstr ""
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr "<0>config.yml</0>에 정의되지 않은 기존 시스템은 삭제됩니다. 정기적으로 백업을 하세요."
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exited active"
+msgstr "활성 종료됨"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -592,10 +659,16 @@ msgstr "테스트 알림 전송 실패"
 msgid "Failed to update alert"
 msgstr "알림 수정 실패"
 
+#. placeholder {0}: statusTotals[ServiceStatus.Failed]
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Failed: {0}"
+msgstr "실패: {0}"
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "필터..."
@@ -640,6 +713,10 @@ msgstr "GPU 엔진들"
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
 msgstr "GPU 전원 사용량"
+
+#: src/lib/alerts.ts
+msgid "GPU Usage"
+msgstr "GPU 사용량"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
@@ -690,6 +767,15 @@ msgstr "언어"
 msgid "Layout"
 msgstr "레이아웃"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Lifecycle"
+msgstr "생명주기"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "limit"
+msgstr ""
+
 #: src/components/routes/system.tsx
 msgid "Load Average"
 msgstr "부하 평균"
@@ -710,6 +796,14 @@ msgstr "부하 평균 5분"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
 msgstr "부하 평균"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Load state"
+msgstr "로드 상태"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Loading..."
+msgstr "로딩 중..."
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -734,6 +828,10 @@ msgstr "로그"
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
 msgstr "알림을 생성하려 하시나요? 시스템 테이블의 종 <0/> 아이콘을 클릭하세요."
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Main PID"
+msgstr ""
+
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "디스플레이 및 알림 설정"
@@ -749,9 +847,20 @@ msgid "Max 1 min"
 msgstr "1분간 최댓값"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "메모리"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory limit"
+msgstr "메모리 제한"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory Peak"
+msgstr "메모리 최대값"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -769,6 +878,8 @@ msgstr "모델"
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
 msgstr "이름"
 
@@ -793,7 +904,14 @@ msgstr "공용 인터페이스의 네트워크 트래픽"
 msgid "Network unit"
 msgstr "네트워크 단위"
 
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No"
+msgstr "아니오"
+
 #: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
 msgstr "결과가 없습니다."
 
@@ -802,6 +920,7 @@ msgstr "결과가 없습니다."
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "No results."
 msgstr "결과 없음."
 
@@ -954,6 +1073,10 @@ msgstr "기록된 시간의 정확한 사용량"
 msgid "Preferred Language"
 msgstr "선호 언어"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Process started"
+msgstr "프로세스 시작됨"
+
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
@@ -974,6 +1097,10 @@ msgstr "수신됨"
 msgid "Refresh"
 msgstr "새로고침"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Relationships"
+msgstr "관계"
+
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
 msgstr "OTP 요청"
@@ -981,6 +1108,14 @@ msgstr "OTP 요청"
 #: src/components/login/otp-forms.tsx
 msgid "Request OTP"
 msgstr "OTP 요청"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Required by"
+msgstr "필요한 대상"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Requires"
+msgstr "필요 항목"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
@@ -992,9 +1127,18 @@ msgstr "비밀번호 재설정"
 msgid "Resolved"
 msgstr "해결됨"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Restarts"
+msgstr "재시작 횟수"
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "재개"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgctxt "Root disk label"
+msgid "Root"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1003,6 +1147,10 @@ msgstr "토큰 회전"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
 msgstr "페이지당 행 수"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Runtime Metrics"
+msgstr "런타임 메트릭"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
@@ -1045,6 +1193,10 @@ msgstr "보냄"
 msgid "Serial Number"
 msgstr "시리얼 번호"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Service Details"
+msgstr "서비스 세부 정보"
+
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "그래프 미터 색상의 백분율 임계값을 설정합니다."
@@ -1074,15 +1226,21 @@ msgstr "정렬 기준"
 
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "상태"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
 msgstr "상태"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "Sub State"
+msgstr "하위 상태"
 
 #: src/components/routes/system.tsx
 msgid "Swap space used by the system"
@@ -1104,6 +1262,10 @@ msgstr "시스템"
 msgid "System load averages over time"
 msgstr "시간에 따른 시스템 부하 평균"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Systemd Services"
+msgstr ""
+
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "시스템"
@@ -1115,6 +1277,10 @@ msgstr "시스템은 데이터 디렉토리 내의 <0>config.yml</0> 파일에�
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "표"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Tasks"
+msgstr "작업"
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1212,6 +1378,19 @@ msgstr "각 인터페이스별 총합 다운로드 데이터량"
 msgid "Total data sent for each interface"
 msgstr "각 인터페이스별 총합 업로드 데이터량"
 
+#. placeholder {0}: data.length
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Total: {0}"
+msgstr "총: {0}"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggered by"
+msgstr "트리거 대상"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggers"
+msgstr "트리거"
+
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
 msgstr "1분 부하 평균이 임계값을 초과하면 트리거됩니다."
@@ -1237,6 +1416,10 @@ msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "CPU 사용량이 임계값을 초과할 때 트리거됩니다."
 
 #: src/lib/alerts.ts
+msgid "Triggers when GPU usage exceeds a threshold"
+msgstr "GPU 사용량이 임계값을 초과할 때 트리거됩니다."
+
+#: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "메모리 사용량이 임계값을 초과할 때 트리거됩니다."
 
@@ -1251,6 +1434,10 @@ msgstr "디스크 사용량이 임계값을 초과할 때 트리거됩니다."
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "유형"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unit file"
+msgstr ""
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
@@ -1267,6 +1454,11 @@ msgstr "범용 토큰"
 msgid "Unknown"
 msgstr "알 수 없음"
 
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unlimited"
+msgstr "무제한"
+
 #. Context: System is up
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1278,8 +1470,13 @@ msgid "Up ({upSystemsLength})"
 msgstr "온라인 ({upSystemsLength})"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "업데이트됨"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Updated every 10 minutes."
+msgstr "10분마다 업데이트됩니다."
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
@@ -1340,6 +1537,10 @@ msgstr "표시할 충분한 기록을 기다리는 중"
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "번역을 개선하는데 도움을 주시겠습니까? 자세한 내용은 <0>Crowdin</0>을 확인해 주세요."
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Wants"
+msgstr "요구 항목"
+
 #: src/components/routes/settings/general.tsx
 msgid "Warning (%)"
 msgstr "경고 (%)"
@@ -1375,6 +1576,12 @@ msgstr "YAML 구성"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "YAML 구성"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Yes"
+msgstr "예"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
