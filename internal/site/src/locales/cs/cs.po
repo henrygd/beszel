@@ -8,7 +8,7 @@ msgstr ""
 "Language: cs\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-04 23:47\n"
+"PO-Revision-Date: 2025-11-12 20:36\n"
 "Last-Translator: \n"
 "Language-Team: Czech\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 3;\n"
@@ -90,6 +90,10 @@ msgstr "Aktivní"
 msgid "Active Alerts"
 msgstr "Aktivní výstrahy"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Active state"
+msgstr "Aktivní stav"
+
 #: src/components/add-system.tsx
 msgid "Add <0>System</0>"
 msgstr "Přidat <0>Systém</0>"
@@ -114,6 +118,10 @@ msgstr "Upravit možnosti zobrazení pro grafy."
 #: src/components/command-palette.tsx
 msgid "Admin"
 msgstr "Administrátor"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "After"
+msgstr "Po"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -200,6 +208,18 @@ msgstr "Přenos"
 msgid "Battery"
 msgstr "Baterie"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became active"
+msgstr "Stal se aktivním"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became inactive"
+msgstr "Stal se neaktivním"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Before"
+msgstr "Před"
+
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
 msgstr "Beszel podporuje OpenID Connect a mnoho poskytovatelů OAuth2 ověřování."
@@ -217,6 +237,10 @@ msgstr "Binární"
 msgid "Bits (Kbps, Mbps, Gbps)"
 msgstr "Bity (Kbps, Mbps, Gbps)"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Boot state"
+msgstr "Stav zavádění"
+
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
@@ -226,10 +250,26 @@ msgstr "Byty (KB/s, MB/s, GB/s)"
 msgid "Cache / Buffers"
 msgstr "Cache / vyrovnávací paměť"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can reload"
+msgstr "Může znovu načíst"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can start"
+msgstr "Může spustit"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can stop"
+msgstr "Může zastavit"
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "Zrušit"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Capabilities"
+msgstr "Schopnosti"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
@@ -306,6 +346,10 @@ msgstr "Konfigurace způsobu přijímání upozornění."
 msgid "Confirm password"
 msgstr "Potvrdit heslo"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Conflicts"
+msgstr "Konflikty"
+
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "Připojení je nedostupné"
@@ -366,6 +410,7 @@ msgid "Copy YAML"
 msgstr "Kopírovat YAML"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "Procesor"
@@ -373,6 +418,14 @@ msgstr "Procesor"
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
 msgstr "CPU jádra"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "CPU Peak"
+msgstr "Špička CPU"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "CPU time"
+msgstr "Čas CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Time Breakdown"
@@ -433,6 +486,10 @@ msgstr "Odstranit"
 msgid "Delete fingerprint"
 msgstr "Smazat identifikátor"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Description"
+msgstr "Popis"
+
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
 msgstr ""
@@ -481,6 +538,7 @@ msgid "Docker Network I/O"
 msgstr "Síťové I/O Dockeru"
 
 #: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Documentation"
 msgstr "Dokumentace"
 
@@ -513,7 +571,7 @@ msgstr "Upravit"
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/otp-forms.tsx
 msgid "Email"
-msgstr ""
+msgstr "E-mail"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
@@ -541,6 +599,7 @@ msgstr "Zadejte Vaše jednorázové heslo."
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
 msgstr "Chyba"
 
@@ -551,9 +610,17 @@ msgstr "Chyba"
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Překračuje {0}{1} za {2, plural, one {poslední # minutu} few {poslední # minuty} other {posledních # minut}}"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exec main PID"
+msgstr "Hlavní PID spuštění"
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr "Stávající systémy, které nejsou definovány v <0>config.yml</0>, budou odstraněny. Provádějte pravidelné zálohování."
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exited active"
+msgstr "Ukončeno aktivně"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -592,10 +659,16 @@ msgstr "Nepodařilo se odeslat testovací oznámení"
 msgid "Failed to update alert"
 msgstr "Nepodařilo se aktualizovat upozornění"
 
+#. placeholder {0}: statusTotals[ServiceStatus.Failed]
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Failed: {0}"
+msgstr "Neúspěšné: {0}"
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Filtr..."
@@ -640,6 +713,10 @@ msgstr "GPU enginy"
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
 msgstr "Spotřeba energie GPU"
+
+#: src/lib/alerts.ts
+msgid "GPU Usage"
+msgstr "Využití GPU"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
@@ -690,6 +767,15 @@ msgstr "Jazyk"
 msgid "Layout"
 msgstr "Rozvržení"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Lifecycle"
+msgstr "Životní cyklus"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "limit"
+msgstr ""
+
 #: src/components/routes/system.tsx
 msgid "Load Average"
 msgstr "Průměrné vytížení"
@@ -710,6 +796,14 @@ msgstr "Průměrná zátěž 5m"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
 msgstr "Prům. zatížení"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Load state"
+msgstr "Stav načtení"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Loading..."
+msgstr "Načítání..."
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -734,6 +828,10 @@ msgstr "Logy"
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
 msgstr "Hledáte místo kde vytvářet upozornění? Klikněte na ikonu zvonku <0/> v systémové tabulce."
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Main PID"
+msgstr "Hlavní PID"
+
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "Správa nastavení zobrazení a oznámení."
@@ -749,9 +847,20 @@ msgid "Max 1 min"
 msgstr "Max. 1 min"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Paměť"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory limit"
+msgstr "Limit paměti"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory Peak"
+msgstr "Špička paměti"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -769,6 +878,8 @@ msgstr ""
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
 msgstr "Název"
 
@@ -793,7 +904,14 @@ msgstr "Síťový provoz veřejných rozhraní"
 msgid "Network unit"
 msgstr "Síťová jednotka"
 
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No"
+msgstr "Ne"
+
 #: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
 msgstr "Nenalezeny žádné výskyty."
 
@@ -802,6 +920,7 @@ msgstr "Nenalezeny žádné výskyty."
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "No results."
 msgstr "Žádné výsledky."
 
@@ -954,6 +1073,10 @@ msgstr "Přesné využití v zaznamenaném čase"
 msgid "Preferred Language"
 msgstr "Upřednostňovaný jazyk"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Process started"
+msgstr "Proces spuštěn"
+
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
@@ -974,6 +1097,10 @@ msgstr "Přijato"
 msgid "Refresh"
 msgstr "Aktualizovat"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Relationships"
+msgstr "Vztahy"
+
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
 msgstr "Požádat o jednorázové heslo"
@@ -981,6 +1108,14 @@ msgstr "Požádat o jednorázové heslo"
 #: src/components/login/otp-forms.tsx
 msgid "Request OTP"
 msgstr "Požádat OTP"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Required by"
+msgstr "Vyžadováno službou"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Requires"
+msgstr "Vyžaduje"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
@@ -992,9 +1127,18 @@ msgstr "Obnovit heslo"
 msgid "Resolved"
 msgstr "Vyřešeno"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Restarts"
+msgstr "Restarty"
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Pokračovat"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgctxt "Root disk label"
+msgid "Root"
+msgstr "Kořenový"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1003,6 +1147,10 @@ msgstr "Změnit token"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
 msgstr "Řádků na stránku"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Runtime Metrics"
+msgstr "Metriky běhu"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
@@ -1045,6 +1193,10 @@ msgstr "Odeslat"
 msgid "Serial Number"
 msgstr "Sériové číslo"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Service Details"
+msgstr "Detaily služby"
+
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "Nastavte procentuální prahové hodnoty pro barvy měřičů."
@@ -1074,15 +1226,21 @@ msgstr "Seřadit podle"
 
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "Stav"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
 msgstr "Stav"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "Sub State"
+msgstr "Podstav"
 
 #: src/components/routes/system.tsx
 msgid "Swap space used by the system"
@@ -1104,6 +1262,10 @@ msgstr "Systém"
 msgid "System load averages over time"
 msgstr "Průměry zatížení systému v průběhu času"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Systemd Services"
+msgstr "Služby systemd"
+
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "Systémy"
@@ -1115,6 +1277,10 @@ msgstr "Systémy lze spravovat v souboru <0>config.yml</0> uvnitř datového adr
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "Tabulka"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Tasks"
+msgstr "Úlohy"
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1212,6 +1378,19 @@ msgstr "Celkový přijatý objem dat pro každé rozhraní"
 msgid "Total data sent for each interface"
 msgstr "Celkový odeslaný objem dat pro každé rozhraní"
 
+#. placeholder {0}: data.length
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Total: {0}"
+msgstr "Celkem: {0}"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggered by"
+msgstr "Spuštěno službou"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggers"
+msgstr "Spouštěče"
+
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
 msgstr "Spustí se, když využití paměti během 1 minuty překročí prahovou hodnotu"
@@ -1237,6 +1416,10 @@ msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Spustí se, když využití procesoru překročí prahovou hodnotu"
 
 #: src/lib/alerts.ts
+msgid "Triggers when GPU usage exceeds a threshold"
+msgstr "Spustí se, když využití GPU překročí prahovou hodnotu"
+
+#: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Spustí se, když využití paměti překročí prahovou hodnotu"
 
@@ -1251,6 +1434,10 @@ msgstr "Spustí se, když využití disku překročí prahovou hodnotu"
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Typ"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unit file"
+msgstr "Soubor jednotky"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
@@ -1267,6 +1454,11 @@ msgstr "Univerzální token"
 msgid "Unknown"
 msgstr "Neznámá"
 
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unlimited"
+msgstr "Neomezeno"
+
 #. Context: System is up
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1278,8 +1470,13 @@ msgid "Up ({upSystemsLength})"
 msgstr "Funkční ({upSystemsLength})"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "Aktualizováno"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Updated every 10 minutes."
+msgstr "Aktualizováno každých 10 minut."
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
@@ -1340,6 +1537,10 @@ msgstr "Čeká se na dostatek záznamů k zobrazení"
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "Chcete nám pomoci s našimi překlady ještě lépe? Podívejte se na <0>Crowdin</0> pro více informací."
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Wants"
+msgstr "Chce"
+
 #: src/components/routes/settings/general.tsx
 msgid "Warning (%)"
 msgstr "Varování (%)"
@@ -1375,6 +1576,12 @@ msgstr "YAML konfigurace"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "YAML konfigurace"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Yes"
+msgstr "Ano"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
