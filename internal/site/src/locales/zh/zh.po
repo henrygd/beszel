@@ -8,15 +8,27 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-01 07:52\n"
+"PO-Revision-Date: 2025-08-28 23:21\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: zh-TW\n"
-"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 32\n"
+"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 16\n"
+
+#: src/components/routes/system.tsx
+#~ msgid "{0, plural, one {# day} other {# days}}"
+#~ msgstr "{0, plural, one {# 天} other {# 天}}"
+
+#: src/components/routes/system.tsx
+#~ msgid "{0, plural, one {# hour} other {# hours}}"
+#~ msgstr "{0, plural, one {# 小時} other {# 小時}}"
+
+#: src/components/routes/system.tsx
+#~ msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
+#~ msgstr "{0, plural, one {# 分鐘} few {# 分鐘} many {# 分鐘} other {# 分鐘}}"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
@@ -26,15 +38,15 @@ msgstr "已選取 {1} 個項目中的 {0} 個"
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} day} other {{countString} days}}"
-msgstr "{count, plural, one {{countString} 天} other {{countString} 天}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} hour} other {{countString} hours}}"
-msgstr "{count, plural, one {{countString} 小時} other {{countString} 小時}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
-msgstr "{count, plural, one {{countString} 分鐘} few {{countString} 分鐘} many {{countString} 分鐘} other {{countString} 分鐘}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -47,7 +59,7 @@ msgstr "1 分鐘"
 
 #: src/lib/utils.ts
 msgid "1 minute"
-msgstr "1 分鐘"
+msgstr "1 分钟"
 
 #: src/lib/utils.ts
 msgid "1 week"
@@ -134,7 +146,7 @@ msgstr "警報"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
-msgstr "所有容器"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
@@ -233,7 +245,7 @@ msgstr "取消"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
-msgstr "容量"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
@@ -278,11 +290,11 @@ msgstr "檢查您的通知服務"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
-msgstr "點擊容器以查看更多資訊。"
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
-msgstr "點擊裝置以查看更多資訊。"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -372,11 +384,11 @@ msgstr "CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
-msgstr "CPU 核心"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Time Breakdown"
-msgstr "CPU 時間細分"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -414,7 +426,7 @@ msgstr "目前狀態"
 #. Power Cycles
 #: src/components/routes/system/smart-table.tsx
 msgid "Cycles"
-msgstr "循環"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Dashboard"
@@ -435,11 +447,11 @@ msgstr "刪除指紋"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
-msgstr "詳細資訊"
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
-msgstr "裝置"
+msgstr ""
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -573,7 +585,7 @@ msgstr "華氏 (°F)"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
-msgstr "失敗屬性："
+msgstr ""
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
@@ -592,6 +604,10 @@ msgstr "發送測試通知失敗"
 msgid "Failed to update alert"
 msgstr "更新警報失敗"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Filter by tags"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
@@ -606,7 +622,7 @@ msgstr "指紋"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
-msgstr "韌體"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -645,9 +661,13 @@ msgstr "GPU 功耗"
 msgid "Grid"
 msgstr "網格"
 
+#: src/components/systems-table/systems-table-columns.tsx
+#~ msgid "Group"
+#~ msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Health"
-msgstr "健康狀態"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -671,7 +691,7 @@ msgstr "如果您遺失管理員帳號密碼，可以使用以下指令重設。
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
-msgstr "鏡像"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -764,7 +784,7 @@ msgstr "Docker 容器的記憶體使用量"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
-msgstr "型號"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -807,12 +827,17 @@ msgstr "沒有結果。"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "No S.M.A.R.T. attributes available for this device."
-msgstr "此裝置沒有可用的 S.M.A.R.T. 屬性。"
+msgstr ""
 
+#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "找不到任何系統。"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "No tags found"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -844,7 +869,7 @@ msgstr "或繼續使用"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Other"
-msgstr "其他"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
@@ -897,11 +922,11 @@ msgstr "已暫停 ({pausedSystemsLength})"
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Per-core average utilization"
-msgstr "每個核心的平均使用率"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Percentage of time spent in each state"
-msgstr "在每個狀態下花費的時間百分比"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -943,7 +968,7 @@ msgstr "Port"
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
 msgid "Power On"
-msgstr "電源開啟"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -972,7 +997,7 @@ msgstr "接收"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 msgid "Refresh"
-msgstr "重新整理"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
@@ -1006,11 +1031,11 @@ msgstr "每頁列數"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
-msgstr "S.M.A.R.T. 詳細資訊"
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Self-Test"
-msgstr "S.M.A.R.T. 自我測試"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -1043,7 +1068,7 @@ msgstr "傳送"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
-msgstr "序號"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1104,6 +1129,10 @@ msgstr "系統"
 msgid "System load averages over time"
 msgstr "系統平均負載隨時間變化"
 
+#: src/components/routes/settings/layout.tsx
+msgid "System Organization"
+msgstr ""
+
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "系統"
@@ -1115,6 +1144,12 @@ msgstr "可以用您Data資料夾中的<0>config.yml</0>來管理系統。"
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "列表"
+
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Tags"
+msgstr ""
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1202,7 +1237,7 @@ msgstr "令牌和指紋被用於驗證到 Hub 的 WebSocket 連線。"
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
-msgstr "總計"
+msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
@@ -1250,7 +1285,7 @@ msgstr "當任何磁碟使用率超過閾值時觸發"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
-msgstr "類型"
+msgstr ""
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
@@ -1279,7 +1314,7 @@ msgstr "上線 ({upSystemsLength})"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Updated"
-msgstr "已更新"
+msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"

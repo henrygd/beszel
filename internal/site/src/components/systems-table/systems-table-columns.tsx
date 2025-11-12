@@ -16,6 +16,7 @@ import {
 	PenBoxIcon,
 	PlayCircleIcon,
 	ServerIcon,
+	TagIcon,
 	Trash2Icon,
 	WifiIcon,
 } from "lucide-react"
@@ -46,6 +47,7 @@ import {
 	AlertDialogHeader,
 	AlertDialogTitle,
 } from "../ui/alert-dialog"
+import { Badge } from "../ui/badge"
 import { Button, buttonVariants } from "../ui/button"
 import { Dialog } from "../ui/dialog"
 import {
@@ -131,6 +133,43 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 				)
 			},
 			header: sortableHeader,
+		},
+		{
+			accessorKey: "tags",
+			id: "tags",
+			name: () => t`Tags`,
+			size: 150,
+			minSize: 80,
+			enableSorting: false,
+			Icon: TagIcon,
+			cell: (info) => {
+				const tags = info.row.original.tags
+				if (!tags || tags.length === 0) {
+					return <span className="text-muted-foreground text-xs">—</span>
+				}
+				return (
+					<div className="flex flex-wrap gap-1 py-0.5">
+						{tags.slice(0, 3).map((tag) => (
+							<Badge key={tag} variant="secondary" className="text-xs px-1.5 py-0">
+								{tag}
+							</Badge>
+						))}
+						{tags.length > 3 && (
+							<Badge variant="outline" className="text-xs px-1.5 py-0">
+								+{tags.length - 3}
+							</Badge>
+						)}
+					</div>
+				)
+			},
+			header: (info: HeaderContext<SystemRecord, unknown>) => {
+				return (
+					<div className="flex items-center gap-1.5 py-2">
+						<TagIcon className="size-3.5 opacity-80" />
+						<span>{t`Tags`}</span>
+					</div>
+				)
+			},
 		},
 		{
 			accessorFn: ({ info }) => info.cpu,

@@ -8,7 +8,7 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-28 23:00\n"
+"PO-Revision-Date: 2025-09-23 02:45\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -18,6 +18,18 @@ msgstr ""
 "X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
 "X-Crowdin-File-ID: 32\n"
 
+#: src/components/routes/system.tsx
+#~ msgid "{0, plural, one {# day} other {# days}}"
+#~ msgstr "{0, plural, one {# 일} other {# 일}}"
+
+#: src/components/routes/system.tsx
+#~ msgid "{0, plural, one {# hour} other {# hours}}"
+#~ msgstr "{0, plural, one {# 시간} other {# 시간}}"
+
+#: src/components/routes/system.tsx
+#~ msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
+#~ msgstr "{0, plural, one {# 분} few {# 분} many {# 분} other {# 분}}"
+
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -26,15 +38,15 @@ msgstr "{1}개의 행 중 {0}개가 선택되었습니다."
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} day} other {{countString} days}}"
-msgstr "{count, plural, one {{countString} 일} other {{countString} 일}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} hour} other {{countString} hours}}"
-msgstr "{count, plural, one {{countString} 시간} other {{countString} 시간}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
-msgstr "{count, plural, one {{countString} 분} few {{countString} 분} many {{countString} 분} other {{countString} 분}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -134,7 +146,7 @@ msgstr "알림"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
-msgstr "모든 컨테이너"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
@@ -233,7 +245,7 @@ msgstr "취소"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
-msgstr "용량"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
@@ -278,11 +290,11 @@ msgstr "알림 서비스를 확인하세요."
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
-msgstr "더 많은 정보를 보려면 컨테이너를 클릭하세요."
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
-msgstr "더 많은 정보를 보려면 장치를 클릭하세요."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -372,11 +384,11 @@ msgstr "CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
-msgstr "CPU 코어"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Time Breakdown"
-msgstr "CPU 시간 분배"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -414,7 +426,7 @@ msgstr "현재 상태"
 #. Power Cycles
 #: src/components/routes/system/smart-table.tsx
 msgid "Cycles"
-msgstr "사이클"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Dashboard"
@@ -435,11 +447,11 @@ msgstr "지문 삭제"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
-msgstr "세부사항"
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
-msgstr "장치"
+msgstr ""
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -573,7 +585,7 @@ msgstr "화씨 (°F)"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
-msgstr "실패한 속성:"
+msgstr ""
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
@@ -592,6 +604,10 @@ msgstr "테스트 알림 전송 실패"
 msgid "Failed to update alert"
 msgstr "알림 수정 실패"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Filter by tags"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
@@ -606,7 +622,7 @@ msgstr "지문"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
-msgstr "펌웨어"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -645,9 +661,13 @@ msgstr "GPU 전원 사용량"
 msgid "Grid"
 msgstr "그리드"
 
+#: src/components/systems-table/systems-table-columns.tsx
+#~ msgid "Group"
+#~ msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Health"
-msgstr "상태"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -671,7 +691,7 @@ msgstr "관리자 계정의 비밀번호를 잃어버린 경우, 다음 명령�
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
-msgstr "이미지"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -764,7 +784,7 @@ msgstr "Docker 컨테이너의 메모리 사용량"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
-msgstr "모델"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -807,12 +827,17 @@ msgstr "결과 없음."
 
 #: src/components/routes/system/smart-table.tsx
 msgid "No S.M.A.R.T. attributes available for this device."
-msgstr "이 장치에 사용할 수 있는 S.M.A.R.T. 속성이 없습니다."
+msgstr ""
 
+#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "시스템을 찾을 수 없습니다."
+
+#: src/components/systems-table/systems-table.tsx
+msgid "No tags found"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -844,7 +869,7 @@ msgstr "또는 아래 항목으로 진행하기"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Other"
-msgstr "기타"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
@@ -897,11 +922,11 @@ msgstr "일시 정지됨 ({pausedSystemsLength})"
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Per-core average utilization"
-msgstr "코어별 평균 사용률"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Percentage of time spent in each state"
-msgstr "각 상태에서 보낸 시간의 백분율"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -943,7 +968,7 @@ msgstr "포트"
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
 msgid "Power On"
-msgstr "전원 켜기"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -972,7 +997,7 @@ msgstr "수신됨"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 msgid "Refresh"
-msgstr "새로고침"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
@@ -1006,11 +1031,11 @@ msgstr "페이지당 행 수"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
-msgstr "S.M.A.R.T. 세부 정보"
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Self-Test"
-msgstr "S.M.A.R.T. 자체 테스트"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -1043,7 +1068,7 @@ msgstr "보냄"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
-msgstr "시리얼 번호"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1104,6 +1129,10 @@ msgstr "시스템"
 msgid "System load averages over time"
 msgstr "시간에 따른 시스템 부하 평균"
 
+#: src/components/routes/settings/layout.tsx
+msgid "System Organization"
+msgstr ""
+
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "시스템"
@@ -1115,6 +1144,12 @@ msgstr "시스템은 데이터 디렉토리 내의 <0>config.yml</0> 파일에�
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "표"
+
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Tags"
+msgstr ""
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1202,7 +1237,7 @@ msgstr "토큰과 지문은 허브에 대한 WebSocket 연결을 인증하는 �
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
-msgstr "총"
+msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
@@ -1250,7 +1285,7 @@ msgstr "디스크 사용량이 임계값을 초과할 때 트리거됩니다."
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
-msgstr "유형"
+msgstr ""
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
@@ -1279,7 +1314,7 @@ msgstr "온라인 ({upSystemsLength})"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Updated"
-msgstr "업데이트됨"
+msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"

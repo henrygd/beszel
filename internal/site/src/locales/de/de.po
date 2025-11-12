@@ -8,15 +8,27 @@ msgstr ""
 "Language: de\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-28 22:59\n"
+"PO-Revision-Date: 2025-10-05 16:13\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: de\n"
-"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 32\n"
+"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 16\n"
+
+#: src/components/routes/system.tsx
+#~ msgid "{0, plural, one {# day} other {# days}}"
+#~ msgstr "{0, plural, one {# Tag} other {# Tage}}"
+
+#: src/components/routes/system.tsx
+#~ msgid "{0, plural, one {# hour} other {# hours}}"
+#~ msgstr "{0, plural, one {# Stunde} other {# Stunden}}"
+
+#: src/components/routes/system.tsx
+#~ msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
+#~ msgstr "{0, plural, one {# Minute} other {# Minuten}}"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
@@ -26,15 +38,15 @@ msgstr "{0} von {1} Zeile(n) ausgewählt."
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} day} other {{countString} days}}"
-msgstr "{count, plural, one {{countString} Tag} other {{countString} Tage}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} hour} other {{countString} hours}}"
-msgstr "{count, plural, one {{countString} Stunde} other {{countString} Stunden}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
-msgstr "{count, plural, one {{countString} Minute} other {{countString} Minuten}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -123,7 +135,7 @@ msgstr "Agent"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Alert History"
-msgstr "Warnungsverlauf"
+msgstr "Alarm-Verlauf"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
@@ -134,7 +146,7 @@ msgstr "Warnungen"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
-msgstr "Alle Container"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
@@ -233,7 +245,7 @@ msgstr "Abbrechen"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
-msgstr "Kapazität"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
@@ -278,11 +290,11 @@ msgstr "Überprüfe deinen Benachrichtigungsdienst"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
-msgstr "Klicke auf einen Container, um weitere Informationen zu sehen."
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
-msgstr "Klicke auf ein Gerät, um weitere Informationen zu sehen."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -355,11 +367,11 @@ msgstr "Text kopieren"
 
 #: src/components/add-system.tsx
 msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
-msgstr "Kopiere den Installationsbefehl für den Agent unten oder registriere Agents automatisch mit einem <0>universellen Token</0>."
+msgstr "Kopieren Sie den Installationsbefehl für den Agent unten oder registrieren Sie Agents automatisch mit einem <0>universellen Token</0>."
 
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
-msgstr "Kopiere den<0>docker-compose.yml</0> Inhalt für den Agent unten oder registriere Agents automatisch mit einem <1>universellen Token</1>."
+msgstr "Kopieren Sie den<0>docker-compose.yml</0> Inhalt für den Agent unten oder registrieren Sie Agents automatisch mit einem <1>universellen Token</1>."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
@@ -372,11 +384,11 @@ msgstr "CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
-msgstr "CPU-Kerne"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Time Breakdown"
-msgstr "CPU-Zeit-Aufschlüsselung"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -414,7 +426,7 @@ msgstr "Aktueller Zustand"
 #. Power Cycles
 #: src/components/routes/system/smart-table.tsx
 msgid "Cycles"
-msgstr "Zyklen"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Dashboard"
@@ -435,11 +447,11 @@ msgstr "Fingerabdruck löschen"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
-msgstr "Details"
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
-msgstr "Gerät"
+msgstr ""
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -573,7 +585,7 @@ msgstr "Fahrenheit (°F)"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
-msgstr "Fehlgeschlagene Attribute:"
+msgstr ""
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
@@ -592,6 +604,10 @@ msgstr "Testbenachrichtigung konnte nicht gesendet werden"
 msgid "Failed to update alert"
 msgstr "Warnung konnte nicht aktualisiert werden"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Filter by tags"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
@@ -606,7 +622,7 @@ msgstr "Fingerabdruck"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
-msgstr "Firm­ware"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -645,9 +661,13 @@ msgstr "GPU-Leistungsaufnahme"
 msgid "Grid"
 msgstr "Raster"
 
+#: src/components/systems-table/systems-table-columns.tsx
+#~ msgid "Group"
+#~ msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Health"
-msgstr "Gesundheit"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -671,7 +691,7 @@ msgstr "Wenn du das Passwort für dein Administratorkonto verloren hast, kannst 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
-msgstr "Image"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -764,7 +784,7 @@ msgstr "Arbeitsspeichernutzung der Docker-Container"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
-msgstr "Modell"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -807,12 +827,17 @@ msgstr "Keine Ergebnisse."
 
 #: src/components/routes/system/smart-table.tsx
 msgid "No S.M.A.R.T. attributes available for this device."
-msgstr "Für dieses Gerät sind keine S.M.A.R.T.-Attribute verfügbar."
+msgstr ""
 
+#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "Keine Systeme gefunden."
+
+#: src/components/systems-table/systems-table.tsx
+msgid "No tags found"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -844,7 +869,7 @@ msgstr "Oder fortfahren mit"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Other"
-msgstr "Andere"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
@@ -897,11 +922,11 @@ msgstr "Pausiert ({pausedSystemsLength})"
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Per-core average utilization"
-msgstr "Durchschnittliche Auslastung pro Kern"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Percentage of time spent in each state"
-msgstr "Prozentsatz der Zeit in jedem Zustand"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -943,7 +968,7 @@ msgstr "Port"
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
 msgid "Power On"
-msgstr "Eingeschaltet"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -957,7 +982,7 @@ msgstr "Bevorzugte Sprache"
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
-msgstr "Öffentlicher Schlüssel"
+msgstr "Schlüssel"
 
 #. Disk read
 #: src/components/routes/system.tsx
@@ -972,7 +997,7 @@ msgstr "Empfangen"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 msgid "Refresh"
-msgstr "Aktualisieren"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
@@ -1006,11 +1031,11 @@ msgstr "Zeilen pro Seite"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
-msgstr "S.M.A.R.T.-Details"
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Self-Test"
-msgstr "S.M.A.R.T.-Selbsttest"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -1023,7 +1048,7 @@ msgstr "Einstellungen speichern"
 
 #: src/components/add-system.tsx
 msgid "Save system"
-msgstr "System speichern"
+msgstr "System sichern"
 
 #: src/components/navbar.tsx
 msgid "Search"
@@ -1043,7 +1068,7 @@ msgstr "Gesendet"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
-msgstr "Seriennummer"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1104,6 +1129,10 @@ msgstr "System"
 msgid "System load averages over time"
 msgstr "Systemlastdurchschnitt im Zeitverlauf"
 
+#: src/components/routes/settings/layout.tsx
+msgid "System Organization"
+msgstr ""
+
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "Systeme"
@@ -1115,6 +1144,12 @@ msgstr "Systeme können in einer <0>config.yml</0>-Datei im Datenverzeichnis ver
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "Tabelle"
+
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Tags"
+msgstr ""
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1202,15 +1237,15 @@ msgstr "Tokens und Fingerabdrücke werden verwendet, um WebSocket-Verbindungen z
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
-msgstr "Gesamt"
+msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
-msgstr "Empfangene Gesamtdatenmenge je Schnittstelle "
+msgstr "Gesamtdatenmenge für jede Schnittstelle empfangen"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data sent for each interface"
-msgstr "Gesendete Gesamtdatenmenge je Schnittstelle"
+msgstr "Gesamtdatenmenge für jede Schnittstelle gesendet"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
@@ -1230,7 +1265,7 @@ msgstr "Löst aus, wenn ein Sensor einen Schwellenwert überschreitet"
 
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
-msgstr "Löst aus, wenn die kombinierte Up- und Downloadrate einen Schwellenwert überschreitet"
+msgstr "Löst aus, wenn die kombinierte Auf-/Abwärtsbewegung einen Schwellenwert überschreitet"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
@@ -1250,7 +1285,7 @@ msgstr "Löst aus, wenn die Nutzung einer Festplatte einen Schwellenwert übersc
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
-msgstr "Typ"
+msgstr ""
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
@@ -1279,7 +1314,7 @@ msgstr "aktiv ({upSystemsLength})"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Updated"
-msgstr "Aktualisiert"
+msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"

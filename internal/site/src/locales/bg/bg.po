@@ -8,15 +8,27 @@ msgstr ""
 "Language: bg\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-20 21:37\n"
+"PO-Revision-Date: 2025-08-28 23:21\n"
 "Last-Translator: \n"
 "Language-Team: Bulgarian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: bg\n"
-"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 32\n"
+"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 16\n"
+
+#: src/components/routes/system.tsx
+#~ msgid "{0, plural, one {# day} other {# days}}"
+#~ msgstr "{0, plural, one {# ден} other {# дни}}"
+
+#: src/components/routes/system.tsx
+#~ msgid "{0, plural, one {# hour} other {# hours}}"
+#~ msgstr "{0, plural, one {# час} other {# часа}}"
+
+#: src/components/routes/system.tsx
+#~ msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
+#~ msgstr "{0, plural, one {# минута} few {# минути} many {# минути} other {# минути}}"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
@@ -26,15 +38,15 @@ msgstr "{0} от {1} селектирани."
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} day} other {{countString} days}}"
-msgstr "{count, plural, one {{countString} ден} other {{countString} дни}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} hour} other {{countString} hours}}"
-msgstr "{count, plural, one {{countString} час} other {{countString} часа}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
-msgstr "{count, plural, one {{countString} минута} few {{countString} минути} many {{countString} минути} other {{countString} минути}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -134,7 +146,7 @@ msgstr "Тревоги"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
-msgstr "Всички контейнери"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
@@ -233,7 +245,7 @@ msgstr "Откажи"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
-msgstr "Капацитет"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
@@ -278,11 +290,11 @@ msgstr "Провери услугата си за удостоверяване"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
-msgstr "Кликнете върху контейнер, за да видите повече информация."
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
-msgstr "Кликнете върху устройство, за да видите повече информация."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -372,11 +384,11 @@ msgstr "Процесор"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
-msgstr "CPU ядра"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Time Breakdown"
-msgstr "Разбивка на времето на CPU"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -414,7 +426,7 @@ msgstr "Текущо състояние"
 #. Power Cycles
 #: src/components/routes/system/smart-table.tsx
 msgid "Cycles"
-msgstr "Цикли"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Dashboard"
@@ -435,11 +447,11 @@ msgstr "Изтрий пръстов отпечатък"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
-msgstr "Подробности"
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
-msgstr "Устройство"
+msgstr ""
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -573,7 +585,7 @@ msgstr "Фаренхайт (°F)"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
-msgstr "Неуспешни атрибути:"
+msgstr ""
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
@@ -592,6 +604,10 @@ msgstr "Неуспешно изпрати тестова нотификация"
 msgid "Failed to update alert"
 msgstr "Неуспешно обнови тревога"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Filter by tags"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
@@ -606,7 +622,7 @@ msgstr "Пръстов отпечатък"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
-msgstr "Фърмуер"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -645,9 +661,13 @@ msgstr "Консумация на ток от графична карта"
 msgid "Grid"
 msgstr "Мрежово"
 
+#: src/components/systems-table/systems-table-columns.tsx
+#~ msgid "Group"
+#~ msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Health"
-msgstr "Здраве"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -671,7 +691,7 @@ msgstr "Ако си загубил паролата до администрат�
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
-msgstr "Образ"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -764,7 +784,7 @@ msgstr "Използването на памет от docker контейнер�
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
-msgstr "Модел"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -807,12 +827,17 @@ msgstr "Няма резултати."
 
 #: src/components/routes/system/smart-table.tsx
 msgid "No S.M.A.R.T. attributes available for this device."
-msgstr "Няма налични S.M.A.R.T. атрибути за това устройство."
+msgstr ""
 
+#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "Няма намерени системи."
+
+#: src/components/systems-table/systems-table.tsx
+msgid "No tags found"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -844,7 +869,7 @@ msgstr "Или продължи с"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Other"
-msgstr "Други"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
@@ -897,11 +922,11 @@ msgstr "На пауза ({pausedSystemsLength})"
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Per-core average utilization"
-msgstr "Средно използване на ядро"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Percentage of time spent in each state"
-msgstr "Процент време, прекарано във всяко състояние"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -943,7 +968,7 @@ msgstr "Порт"
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
 msgid "Power On"
-msgstr "Включване"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -972,7 +997,7 @@ msgstr "Получени"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 msgid "Refresh"
-msgstr "Опресни"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
@@ -1006,11 +1031,11 @@ msgstr "Редове на страница"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
-msgstr "S.M.A.R.T. Детайли"
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Self-Test"
-msgstr "S.M.A.R.T. Самотест"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -1043,7 +1068,7 @@ msgstr "Изпратени"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
-msgstr "Сериен номер"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1104,6 +1129,10 @@ msgstr "Система"
 msgid "System load averages over time"
 msgstr "Средно натоварване на системата във времето"
 
+#: src/components/routes/settings/layout.tsx
+msgid "System Organization"
+msgstr ""
+
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "Системи"
@@ -1115,6 +1144,12 @@ msgstr "Системите могат да бъдат управлявани в 
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "Таблица"
+
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Tags"
+msgstr ""
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1202,7 +1237,7 @@ msgstr "Токените и пръстовите отпечатъци се из�
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
-msgstr "Общо"
+msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
@@ -1250,7 +1285,7 @@ msgstr "Задейства се, когато употребата на няко
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
-msgstr "Тип"
+msgstr ""
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
@@ -1279,7 +1314,7 @@ msgstr "Нагоре ({upSystemsLength})"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Updated"
-msgstr "Актуализирано"
+msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"

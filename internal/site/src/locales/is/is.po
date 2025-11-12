@@ -8,15 +8,15 @@ msgstr ""
 "Language: is\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-09-22 23:10\n"
+"PO-Revision-Date: 2025-08-28 23:21\n"
 "Last-Translator: \n"
 "Language-Team: Icelandic\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: is\n"
-"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 32\n"
+"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 16\n"
 
 #. placeholder {0}: Math.trunc(system.info?.u / 86400)
 #: src/components/routes/system.tsx
@@ -89,7 +89,7 @@ msgstr "Aðgerðir"
 msgid "Active"
 msgstr ""
 
-#: src/components/active-alerts.tsx
+#: src/components/routes/home.tsx
 msgid "Active Alerts"
 msgstr "Virkar tilkynningar"
 
@@ -116,7 +116,7 @@ msgstr ""
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
-msgstr ""
+msgstr "Admin"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -133,15 +133,7 @@ msgstr ""
 msgid "Alerts"
 msgstr "Tilkynningar"
 
-#: src/components/command-palette.tsx
-#: src/components/containers-table/containers-table.tsx
-#: src/components/routes/containers.tsx
-msgid "All Containers"
-msgstr "Allar gámar"
-
 #: src/components/alerts/alerts-sheet.tsx
-#: src/components/command-palette.tsx
-#: src/components/routes/home.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
@@ -213,7 +205,7 @@ msgstr "Beszel notar <0>Shoutrrr</0> til að tengjast vinsælum tilkynningaþjó
 
 #: src/components/add-system.tsx
 msgid "Binary"
-msgstr ""
+msgstr "Binary"
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
@@ -233,10 +225,6 @@ msgstr "Skyndiminni / Biðminni"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "Hætta við"
-
-#: src/components/routes/system/smart-table.tsx
-msgid "Capacity"
-msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
@@ -279,14 +267,6 @@ msgstr "Skoðaðu logga til að sjá meiri upplýsingar."
 msgid "Check your notification service"
 msgstr "Athugaðu tilkynningaþjónustuna þína"
 
-#: src/components/containers-table/containers-table.tsx
-msgid "Click on a container to view more information."
-msgstr "Smelltu á gám til að sjá frekari upplýsingar."
-
-#: src/components/routes/system/smart-table.tsx
-msgid "Click on a device to view more information."
-msgstr ""
-
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
 msgstr ""
@@ -309,7 +289,7 @@ msgstr "Stilltu hvernig þú vilt fá tilkynningar."
 msgid "Confirm password"
 msgstr "Staðfestu lykilorð"
 
-#: src/components/active-alerts.tsx
+#: src/components/routes/home.tsx
 msgid "Connection is down"
 msgstr ""
 
@@ -368,7 +348,6 @@ msgstr ""
 msgid "Copy YAML"
 msgstr ""
 
-#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "Örgjörvi"
@@ -405,12 +384,8 @@ msgstr ""
 msgid "Current state"
 msgstr "Núverandi ástand"
 
-#. Power Cycles
-#: src/components/routes/system/smart-table.tsx
-msgid "Cycles"
-msgstr ""
-
 #: src/components/command-palette.tsx
+#: src/components/routes/home.tsx
 msgid "Dashboard"
 msgstr "Yfirlitssíða"
 
@@ -425,14 +400,6 @@ msgstr "Eyða"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
-msgstr ""
-
-#: src/components/containers-table/containers-table.tsx
-msgid "Detail"
-msgstr "Nánar"
-
-#: src/components/routes/system/smart-table.tsx
-msgid "Device"
 msgstr ""
 
 #. Context: Battery state
@@ -541,7 +508,7 @@ msgstr "Villa"
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
 #. placeholder {2}: alert.min
-#: src/components/active-alerts.tsx
+#: src/components/routes/home.tsx
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Fór yfir {0}{1} á síðustu {2, plural, one {# mínútu} other {# mínútum}}"
 
@@ -565,10 +532,6 @@ msgstr ""
 msgid "Fahrenheit (°F)"
 msgstr ""
 
-#: src/components/routes/system/smart-table.tsx
-msgid "Failed Attributes:"
-msgstr ""
-
 #: src/lib/api.ts
 msgid "Failed to authenticate"
 msgstr "Villa í auðkenningu"
@@ -586,20 +549,18 @@ msgstr "Villa í sendingu prufu skilaboða"
 msgid "Failed to update alert"
 msgstr "Mistókst að uppfæra tilkynningu"
 
-#: src/components/containers-table/containers-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Filter by tags"
+msgstr ""
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
-#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Sía..."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
-msgstr ""
-
-#: src/components/routes/system/smart-table.tsx
-msgid "Firmware"
 msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
@@ -619,7 +580,7 @@ msgstr ""
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Full"
-msgstr ""
+msgstr "Full"
 
 #. Context: General settings
 #: src/components/routes/settings/general.tsx
@@ -639,9 +600,9 @@ msgstr "Skjákorts rafmagnsnotkun"
 msgid "Grid"
 msgstr ""
 
-#: src/components/containers-table/containers-table-columns.tsx
-msgid "Health"
-msgstr "Heilsa"
+#: src/components/systems-table/systems-table-columns.tsx
+#~ msgid "Group"
+#~ msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -651,7 +612,7 @@ msgstr "Homebrew skipun"
 
 #: src/components/add-system.tsx
 msgid "Host / IP"
-msgstr ""
+msgstr "Host / IP"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -661,11 +622,6 @@ msgstr "Aðgerðalaus"
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
 msgstr ""
-
-#: src/components/containers-table/containers-table-columns.tsx
-msgctxt "Docker image"
-msgid "Image"
-msgstr "Mynd"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -719,7 +675,6 @@ msgid "Login attempt failed"
 msgstr "Innskránings tilraun misheppnaðist"
 
 #: src/components/command-palette.tsx
-#: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
 msgid "Logs"
 msgstr "Loggar"
@@ -742,7 +697,6 @@ msgstr ""
 msgid "Max 1 min"
 msgstr "Mest 1 mínúta"
 
-#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Minni"
@@ -756,26 +710,21 @@ msgstr "Minnisnotkun"
 msgid "Memory usage of docker containers"
 msgstr "Minnisnotkun docker kerfa"
 
-#: src/components/routes/system/smart-table.tsx
-msgid "Model"
-msgstr ""
-
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
-#: src/components/containers-table/containers-table-columns.tsx
 msgid "Name"
 msgstr "Nafn"
 
-#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
-msgstr ""
+msgstr "Net"
 
 #: src/components/routes/system.tsx
 msgid "Network traffic of docker containers"
 msgstr "Net traffík docker kerfa"
 
 #: src/components/routes/system.tsx
+#: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 #: src/components/routes/system/network-sheet.tsx
 msgid "Network traffic of public interfaces"
@@ -790,22 +739,19 @@ msgstr ""
 msgid "No results found."
 msgstr "Engar niðurstöður fundust."
 
-#: src/components/containers-table/containers-table.tsx
-#: src/components/containers-table/containers-table.tsx
-#: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
-#: src/components/routes/system/smart-table.tsx
 msgid "No results."
 msgstr ""
 
-#: src/components/routes/system/smart-table.tsx
-msgid "No S.M.A.R.T. attributes available for this device."
-msgstr ""
-
+#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "Engin kerfi fundust."
+
+#: src/components/systems-table/systems-table.tsx
+msgid "No tags found"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -839,7 +785,6 @@ msgstr "Eða halda áfram með"
 msgid "Overwrite existing alerts"
 msgstr "Yfirskrifa núverandi tilkynningu"
 
-#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
 msgstr "Síða"
@@ -918,7 +863,7 @@ msgstr "Vinsamlegast skráðu þig inn á aðganginn þinn"
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr ""
+msgstr "Port"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -974,14 +919,6 @@ msgstr ""
 msgid "Rows per page"
 msgstr ""
 
-#: src/components/routes/system/smart-table.tsx
-msgid "S.M.A.R.T. Details"
-msgstr ""
-
-#: src/components/routes/system/smart-table.tsx
-msgid "S.M.A.R.T. Self-Test"
-msgstr ""
-
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
 msgstr ""
@@ -1009,7 +946,7 @@ msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Sent"
-msgstr ""
+msgstr "Sent"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1043,8 +980,6 @@ msgstr "Raða eftir"
 msgid "State"
 msgstr ""
 
-#: src/components/containers-table/containers-table-columns.tsx
-#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
@@ -1059,7 +994,6 @@ msgid "Swap Usage"
 msgstr "Skipti minni"
 
 #: src/components/alerts-history-columns.tsx
-#: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
@@ -1068,6 +1002,10 @@ msgstr "Kerfi"
 
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
+msgstr ""
+
+#: src/components/routes/settings/layout.tsx
+msgid "System Organization"
 msgstr ""
 
 #: src/components/navbar.tsx
@@ -1082,8 +1020,13 @@ msgstr ""
 msgid "Table"
 msgstr "Tafla"
 
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Tags"
+msgstr ""
+
 #. Temperature label in systems table
-#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
 msgstr ""
@@ -1209,10 +1152,6 @@ msgstr "Virkjast þegar staða breytist milli virkur og óvirkur"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Virkjast þegar diska notkun fer yfir þröskuld"
 
-#: src/components/routes/system/smart-table.tsx
-msgid "Type"
-msgstr ""
-
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
@@ -1334,4 +1273,3 @@ msgstr ""
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Notenda stillingar vistaðar."
-

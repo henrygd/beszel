@@ -592,6 +592,10 @@ msgstr "שליחת התראת בדיקה נכשלה"
 msgid "Failed to update alert"
 msgstr "עדכון התראה נכשל"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Filter by tags"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
@@ -811,8 +815,13 @@ msgstr "אין מאפייני S.M.A.R.T. זמינים עבור התקן זה."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "לא נמצאו מערכות."
+
+#: src/components/systems-table/systems-table.tsx
+msgid "No tags found"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1104,6 +1113,10 @@ msgstr "מערכת"
 msgid "System load averages over time"
 msgstr "ממוצעי עומס מערכת לאורך זמן"
 
+#: src/components/routes/settings/layout.tsx
+msgid "System Organization"
+msgstr ""
+
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "מערכות"
@@ -1115,6 +1128,12 @@ msgstr "מערכות יכולות להיות מנוהלות בקובץ <0>config
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "טבלה"
+
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Tags"
+msgstr ""
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx

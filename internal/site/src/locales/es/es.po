@@ -8,15 +8,27 @@ msgstr ""
 "Language: es\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-04 22:13\n"
+"PO-Revision-Date: 2025-08-28 23:21\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: es-ES\n"
-"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 32\n"
+"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 16\n"
+
+#: src/components/routes/system.tsx
+#~ msgid "{0, plural, one {# day} other {# days}}"
+#~ msgstr "{0, plural, one {# día} other {# días}}"
+
+#: src/components/routes/system.tsx
+#~ msgid "{0, plural, one {# hour} other {# hours}}"
+#~ msgstr "{0, plural, one {# hora} other {# horas}}"
+
+#: src/components/routes/system.tsx
+#~ msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
+#~ msgstr "{0, plural, one {# minuto} other {# minutos}}"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
@@ -26,15 +38,15 @@ msgstr "{0} de {1} fila(s) seleccionada(s)."
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} day} other {{countString} days}}"
-msgstr "{count, plural, one {{countString} día} other {{countString} días}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} hour} other {{countString} hours}}"
-msgstr "{count, plural, one {{countString} hora} other {{countString} horas}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
-msgstr "{count, plural, one {{countString} minuto} other {{countString} minutos}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -88,15 +100,15 @@ msgstr "Activo"
 
 #: src/components/active-alerts.tsx
 msgid "Active Alerts"
-msgstr "Alertas activas"
+msgstr "Alertas Activas"
 
 #: src/components/add-system.tsx
 msgid "Add <0>System</0>"
-msgstr "Agregar <0>sistema</0>"
+msgstr "Agregar <0>Sistema</0>"
 
 #: src/components/add-system.tsx
 msgid "Add New System"
-msgstr "Agregar nuevo sistema"
+msgstr "Agregar Nuevo Sistema"
 
 #: src/components/add-system.tsx
 msgid "Add system"
@@ -123,7 +135,7 @@ msgstr "Agente"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Alert History"
-msgstr "Historial de alertas"
+msgstr "Historial de Alertas"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
@@ -134,7 +146,7 @@ msgstr "Alertas"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
-msgstr "Todos los contenedores"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
@@ -142,11 +154,11 @@ msgstr "Todos los contenedores"
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
-msgstr "Todos los sistemas"
+msgstr "Todos los Sistemas"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Are you sure you want to delete {name}?"
-msgstr "¿Estás seguro de que deseas eliminar {name}?"
+msgstr "¿Está seguro de que desea eliminar {name}?"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
@@ -189,7 +201,7 @@ msgstr "Utilización promedio de motores GPU"
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
-msgstr "Copias de seguridad"
+msgstr "Copias de Seguridad"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -215,12 +227,12 @@ msgstr "Binario"
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr "Bits (kbps, Mbps, Gbps)"
+msgstr "Bits (Kbps, Mbps, Gbps)"
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
-msgstr "Bytes (kB/s, MB/s, GB/s)"
+msgstr "Bytes (KB/s, MB/s, GB/s)"
 
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
@@ -233,7 +245,7 @@ msgstr "Cancelar"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
-msgstr "Capacidad"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
@@ -262,35 +274,35 @@ msgstr "Cargando"
 
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
-msgstr "Opciones de gráficos"
+msgstr "Opciones de Gráficos"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
-msgstr "Revisa {email} para un enlace de restablecimiento."
+msgstr "Revise {email} para un enlace de restablecimiento."
 
 #: src/components/routes/settings/layout.tsx
 msgid "Check logs for more details."
-msgstr "Revisa los registros para más detalles."
+msgstr "Revise los registros para más detalles."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
-msgstr "Verifica tu servicio de notificaciones"
+msgstr "Verifique su servicio de notificaciones"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
-msgstr "Haga clic en un contenedor para ver más información."
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
-msgstr "Haz clic en un dispositivo para ver más información."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
-msgstr "Haz clic en un sistema para ver más información."
+msgstr "Haga clic en un sistema para ver más información."
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
-msgstr "Haz clic para copiar"
+msgstr "Haga clic para copiar"
 
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -299,7 +311,7 @@ msgstr "Instrucciones de línea de comandos"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Configure how you receive alert notifications."
-msgstr "Configura cómo recibe las notificaciones de alertas."
+msgstr "Configure cómo recibe las notificaciones de alertas."
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/auth-form.tsx
@@ -372,11 +384,11 @@ msgstr "CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
-msgstr "Núcleos de CPU"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Time Breakdown"
-msgstr "Desglose de tiempo de CPU"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -392,7 +404,7 @@ msgstr "Crear cuenta"
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
 msgid "Created"
-msgstr "Creada"
+msgstr "Creado"
 
 #: src/components/routes/settings/general.tsx
 msgid "Critical (%)"
@@ -400,11 +412,11 @@ msgstr "Crítico (%)"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
-msgstr "Descarga acumulada"
+msgstr "Descarga acumulativa"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
-msgstr "Carga acumulada"
+msgstr "Carga acumulativa"
 
 #. Context: Battery state
 #: src/components/routes/system.tsx
@@ -414,7 +426,7 @@ msgstr "Estado actual"
 #. Power Cycles
 #: src/components/routes/system/smart-table.tsx
 msgid "Cycles"
-msgstr "Ciclos"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Dashboard"
@@ -422,7 +434,7 @@ msgstr "Tablero"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
-msgstr "Periodo de tiempo predeterminado"
+msgstr "Período de tiempo predeterminado"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -435,11 +447,11 @@ msgstr "Eliminar huella digital"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
-msgstr "Detalle"
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
-msgstr "Dispositivo"
+msgstr ""
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -462,7 +474,7 @@ msgstr "Unidad de disco"
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "Disk Usage"
-msgstr "Uso de disco"
+msgstr "Uso de Disco"
 
 #: src/components/routes/system.tsx
 msgid "Disk usage of {extraFsName}"
@@ -474,11 +486,11 @@ msgstr "Uso de CPU de Docker"
 
 #: src/components/routes/system.tsx
 msgid "Docker Memory Usage"
-msgstr "Uso de memoria de Docker"
+msgstr "Uso de Memoria de Docker"
 
 #: src/components/routes/system.tsx
 msgid "Docker Network I/O"
-msgstr "E/S de red de Docker"
+msgstr "E/S de Red de Docker"
 
 #: src/components/command-palette.tsx
 msgid "Documentation"
@@ -490,11 +502,11 @@ msgstr "Documentación"
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "Down"
-msgstr "Caído"
+msgstr "Abajo"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Down ({downSystemsLength})"
-msgstr "Caído ({downSystemsLength})"
+msgstr "Abajo ({downSystemsLength})"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
@@ -526,11 +538,11 @@ msgstr "Vacía"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
-msgstr "Ingresa la dirección de correo electrónico para restablecer la contraseña"
+msgstr "Ingrese la dirección de correo electrónico para restablecer la contraseña"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Enter email address..."
-msgstr "Ingresa dirección de correo..."
+msgstr "Ingrese dirección de correo..."
 
 #: src/components/login/otp-forms.tsx
 msgid "Enter your one-time password."
@@ -553,7 +565,7 @@ msgstr "Excede {0}{1} en el último {2, plural, one {# minuto} other {# minutos}
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
-msgstr "Los sistemas existentes no definidos en <0>config.yml</0> serán eliminados. Por favor, haz copias de seguridad regularmente."
+msgstr "Los sistemas existentes no definidos en <0>config.yml</0> serán eliminados. Por favor, haga copias de seguridad regularmente."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -565,7 +577,7 @@ msgstr "Exportar configuración"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export your current systems configuration."
-msgstr "Exporta la configuración actual de sus sistemas."
+msgstr "Exporte la configuración actual de sus sistemas."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
@@ -573,7 +585,7 @@ msgstr "Fahrenheit (°F)"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
-msgstr "Atributos fallidos:"
+msgstr ""
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
@@ -592,6 +604,10 @@ msgstr "Error al enviar la notificación de prueba"
 msgid "Failed to update alert"
 msgstr "Error al actualizar la alerta"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Filter by tags"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
@@ -606,7 +622,7 @@ msgstr "Huella dactilar"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
-msgstr "Firmware"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -614,7 +630,7 @@ msgstr "Por <0>{min}</0> {min, plural, one {minuto} other {minutos}}"
 
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
-msgstr "¿Olvidaste tu contraseña?"
+msgstr "¿Olvidó su contraseña?"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -645,9 +661,13 @@ msgstr "Consumo de energía de la GPU"
 msgid "Grid"
 msgstr "Cuadrícula"
 
+#: src/components/systems-table/systems-table-columns.tsx
+#~ msgid "Group"
+#~ msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Health"
-msgstr "Estado"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -657,7 +677,7 @@ msgstr "Comando Homebrew"
 
 #: src/components/add-system.tsx
 msgid "Host / IP"
-msgstr "Servidor / IP"
+msgstr "Host / IP"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -666,12 +686,12 @@ msgstr "Inactiva"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
-msgstr "Si has perdido la contraseña de tu cuenta de administrador, puedes restablecerla usando el siguiente comando."
+msgstr "Si ha perdido la contraseña de su cuenta de administrador, puede restablecerla usando el siguiente comando."
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
-msgstr "Imagen"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -692,7 +712,7 @@ msgstr "Diseño"
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
-msgstr "Carga media"
+msgstr "Carga Media"
 
 #: src/lib/alerts.ts
 msgid "Load Average 15m"
@@ -713,7 +733,7 @@ msgstr "Carga media"
 
 #: src/components/navbar.tsx
 msgid "Log Out"
-msgstr "Cerrar sesión"
+msgstr "Cerrar Sesión"
 
 #: src/components/login/login.tsx
 msgid "Login"
@@ -732,7 +752,7 @@ msgstr "Registros"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
-msgstr "¿Buscas dónde crear alertas? Haz clic en los iconos de campana <0/> en la tabla de sistemas."
+msgstr "¿Busca dónde crear alertas? Haga clic en los iconos de campana <0/> en la tabla de sistemas."
 
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
@@ -746,7 +766,7 @@ msgstr "Instrucciones manuales de configuración"
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx
 msgid "Max 1 min"
-msgstr "Máx. 1 min"
+msgstr "Máx 1 min"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -756,15 +776,15 @@ msgstr "Memoria"
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "Memory Usage"
-msgstr "Uso de memoria"
+msgstr "Uso de Memoria"
 
 #: src/components/routes/system.tsx
 msgid "Memory usage of docker containers"
-msgstr "Uso de memoria de los contenedores Docker"
+msgstr "Uso de memoria de los contenedores de Docker"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
-msgstr "Modelo"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -779,7 +799,7 @@ msgstr "Red"
 
 #: src/components/routes/system.tsx
 msgid "Network traffic of docker containers"
-msgstr "Tráfico de red de los contenedores Docker"
+msgstr "Tráfico de red de los contenedores de Docker"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system/network-sheet.tsx
@@ -807,12 +827,17 @@ msgstr "Sin resultados."
 
 #: src/components/routes/system/smart-table.tsx
 msgid "No S.M.A.R.T. attributes available for this device."
-msgstr "No hay atributos S.M.A.R.T. disponibles para este dispositivo."
+msgstr ""
 
+#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "No se encontraron sistemas."
+
+#: src/components/systems-table/systems-table.tsx
+msgid "No tags found"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -844,7 +869,7 @@ msgstr "O continuar con"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Other"
-msgstr "Otro"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
@@ -897,44 +922,44 @@ msgstr "Pausado ({pausedSystemsLength})"
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Per-core average utilization"
-msgstr "Uso promedio por núcleo"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Percentage of time spent in each state"
-msgstr "Porcentaje de tiempo dedicado a cada estado"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
-msgstr "Por favor, <0>configura un servidor SMTP</0> para asegurar que las alertas sean entregadas."
+msgstr "Por favor, <0>configure un servidor SMTP</0> para asegurar que las alertas sean entregadas."
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Please check logs for more details."
-msgstr "Por favor, revisa los registros para más detalles."
+msgstr "Por favor, revise los registros para más detalles."
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Please check your credentials and try again"
-msgstr "Por favor, verifica tus credenciales e inténtalo de nuevo"
+msgstr "Por favor, verifique sus credenciales e intente de nuevo"
 
 #: src/components/login/login.tsx
 msgid "Please create an admin account"
-msgstr "Por favor, crea una cuenta de administrador"
+msgstr "Por favor, cree una cuenta de administrador"
 
 #: src/components/login/auth-form.tsx
 msgid "Please enable pop-ups for this site"
-msgstr "Por favor, habilita las ventanas emergentes para este sitio"
+msgstr "Por favor, habilite las ventanas emergentes para este sitio"
 
 #: src/lib/api.ts
 msgid "Please log in again"
-msgstr "Por favor, inicia sesión de nuevo"
+msgstr "Por favor, inicie sesión de nuevo"
 
 #: src/components/login/auth-form.tsx
 msgid "Please see <0>the documentation</0> for instructions."
-msgstr "Por favor, consulta <0>la documentación</0> para obtener instrucciones."
+msgstr "Por favor, consulte <0>la documentación</0> para obtener instrucciones."
 
 #: src/components/login/login.tsx
 msgid "Please sign in to your account"
-msgstr "Por favor, inicia sesión en tu cuenta"
+msgstr "Por favor, inicie sesión en su cuenta"
 
 #: src/components/add-system.tsx
 msgid "Port"
@@ -943,7 +968,7 @@ msgstr "Puerto"
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
 msgid "Power On"
-msgstr "Encendido"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -952,12 +977,12 @@ msgstr "Utilización precisa en el momento registrado"
 
 #: src/components/routes/settings/general.tsx
 msgid "Preferred Language"
-msgstr "Idioma preferido"
+msgstr "Idioma Preferido"
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
-msgstr "Clave pública"
+msgstr "Clave Pública"
 
 #. Disk read
 #: src/components/routes/system.tsx
@@ -972,7 +997,7 @@ msgstr "Recibido"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 msgid "Refresh"
-msgstr "Actualizar"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
@@ -984,7 +1009,7 @@ msgstr "Solicitar OTP"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
-msgstr "Restablecer contraseña"
+msgstr "Restablecer Contraseña"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1006,24 +1031,24 @@ msgstr "Filas por página"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
-msgstr "Detalles S.M.A.R.T."
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Self-Test"
-msgstr "Autoprueba S.M.A.R.T."
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
-msgstr "Guarda la dirección usando la tecla enter o coma. Deja en blanco para desactivar las notificaciones por correo."
+msgstr "Guarde la dirección usando la tecla enter o coma. Deje en blanco para desactivar las notificaciones por correo."
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/notifications.tsx
 msgid "Save Settings"
-msgstr "Guardar configuración"
+msgstr "Guardar Configuración"
 
 #: src/components/add-system.tsx
 msgid "Save system"
-msgstr "Guardar sistema"
+msgstr "Guardar Sistema"
 
 #: src/components/navbar.tsx
 msgid "Search"
@@ -1035,7 +1060,7 @@ msgstr "Buscar sistemas o configuraciones..."
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
-msgstr "Consulta <0>configuración de notificaciones</0> para configurar cómo recibe alertas."
+msgstr "Consulte <0>configuración de notificaciones</0> para configurar cómo recibe alertas."
 
 #: src/components/routes/system.tsx
 msgid "Sent"
@@ -1043,7 +1068,7 @@ msgstr "Enviado"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
-msgstr "Número de serie"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1090,7 +1115,7 @@ msgstr "Espacio de swap utilizado por el sistema"
 
 #: src/components/routes/system.tsx
 msgid "Swap Usage"
-msgstr "Uso de swap"
+msgstr "Uso de Swap"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
@@ -1104,17 +1129,27 @@ msgstr "Sistema"
 msgid "System load averages over time"
 msgstr "Promedios de carga del sistema a lo largo del tiempo"
 
+#: src/components/routes/settings/layout.tsx
+msgid "System Organization"
+msgstr ""
+
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "Sistemas"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
-msgstr "Los sistemas pueden ser gestionados en un archivo <0>config.yml</0> dentro de tu directorio de datos."
+msgstr "Los sistemas pueden ser gestionados en un archivo <0>config.yml</0> dentro de su directorio de datos."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "Tabla"
+
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Tags"
+msgstr ""
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1145,7 +1180,7 @@ msgstr "Notificación de prueba enviada"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
-msgstr "Luego inicia sesión en el backend y restablece la contraseña de tu cuenta de usuario en la tabla de usuarios."
+msgstr "Luego inicie sesión en el backend y restablezca la contraseña de su cuenta de usuario en la tabla de usuarios."
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
@@ -1189,7 +1224,7 @@ msgstr "Token"
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens & Fingerprints"
-msgstr "Tokens y huellas digitales"
+msgstr "Tokens y Huellas Digitales"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
@@ -1202,7 +1237,7 @@ msgstr "Los tokens y las huellas digitales se utilizan para autenticar las conex
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
-msgstr "Total"
+msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
@@ -1250,7 +1285,7 @@ msgstr "Se activa cuando el uso de cualquier disco supera un umbral"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
-msgstr "Tipo"
+msgstr ""
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
@@ -1279,7 +1314,7 @@ msgstr "Activo ({upSystemsLength})"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Updated"
-msgstr "Actualizado"
+msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
@@ -1326,7 +1361,7 @@ msgstr "Ver más"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
-msgstr "Ver tus 200 alertas más recientes."
+msgstr "Ver sus 200 alertas más recientes."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
@@ -1338,7 +1373,7 @@ msgstr "Esperando suficientes registros para mostrar"
 
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
-msgstr "¿Quieres ayudar a mejorar nuestras traducciones? Consulta <0>Crowdin</0> para más detalles."
+msgstr "¿Quieres ayudarnos a mejorar nuestras traducciones? Consulta <0>Crowdin</0> para más detalles."
 
 #: src/components/routes/settings/general.tsx
 msgid "Warning (%)"
@@ -1378,4 +1413,4 @@ msgstr "Configuración YAML"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
-msgstr "Tu configuración de usuario ha sido actualizada."
+msgstr "Su configuración de usuario ha sido actualizada."

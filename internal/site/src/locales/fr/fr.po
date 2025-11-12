@@ -8,33 +8,45 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-28 22:59\n"
+"PO-Revision-Date: 2025-08-28 23:21\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: fr\n"
-"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 32\n"
+"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 16\n"
+
+#: src/components/routes/system.tsx
+#~ msgid "{0, plural, one {# day} other {# days}}"
+#~ msgstr "{0, plural, one {# jour} other {# jours}}"
+
+#: src/components/routes/system.tsx
+#~ msgid "{0, plural, one {# hour} other {# hours}}"
+#~ msgstr "{0, plural, one {# heure} other {# heures}}"
+
+#: src/components/routes/system.tsx
+#~ msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
+#~ msgstr ""
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
-msgstr "{0} sur {1} ligne(s) sélectionnée(s)."
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} day} other {{countString} days}}"
-msgstr "{count, plural, one {{countString} jour} other {{countString} jours}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} hour} other {{countString} hours}}"
-msgstr "{count, plural, one {{countString} heure} other {{countString} heures}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
-msgstr "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -43,7 +55,7 @@ msgstr "1 heure"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr "1 min"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 minute"
@@ -60,7 +72,7 @@ msgstr "12 heures"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr "15 min"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -73,7 +85,7 @@ msgstr "30 jours"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr "5 min"
+msgstr ""
 
 #. Table column
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -84,7 +96,7 @@ msgstr "Actions"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Active"
-msgstr "Active"
+msgstr ""
 
 #: src/components/active-alerts.tsx
 msgid "Active Alerts"
@@ -123,7 +135,7 @@ msgstr "Agent"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Alert History"
-msgstr "Historique des alertes"
+msgstr ""
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
@@ -134,7 +146,7 @@ msgstr "Alertes"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
-msgstr "Tous les conteneurs"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
@@ -150,7 +162,7 @@ msgstr "Êtes-vous sûr de vouloir supprimer {name} ?"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
-msgstr "Êtes-vous sûr ?"
+msgstr ""
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -215,12 +227,12 @@ msgstr "Binaire"
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr "Bits (Kbps, Mbps, Gbps)"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
-msgstr "Bytes (KB/s, MB/s, GB/s)"
+msgstr ""
 
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
@@ -233,7 +245,7 @@ msgstr "Annuler"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
-msgstr "Capacité"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
@@ -241,11 +253,11 @@ msgstr "Attention - perte de données potentielle"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr "Celsius (°C)"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
-msgstr "Ajuster les unités d'affichage pour les métriques."
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
@@ -278,15 +290,15 @@ msgstr "Vérifiez votre service de notification"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
-msgstr "Cliquez sur un conteneur pour voir plus d'informations."
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
-msgstr "Cliquez sur un appareil pour voir plus d'informations."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
-msgstr "Cliquez sur un système pour voir plus d'informations."
+msgstr ""
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
@@ -308,7 +320,7 @@ msgstr "Confirmer le mot de passe"
 
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
-msgstr "Connexion interrompue"
+msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -372,11 +384,11 @@ msgstr "CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
-msgstr "Cœurs CPU"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Time Breakdown"
-msgstr "Répartition du temps CPU"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -392,7 +404,7 @@ msgstr "Créer un compte"
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
 msgid "Created"
-msgstr "Date de création"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Critical (%)"
@@ -435,11 +447,11 @@ msgstr "Supprimer l'empreinte"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
-msgstr "Détail"
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
-msgstr "Appareil"
+msgstr ""
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -456,7 +468,7 @@ msgstr "Entrée/Sortie disque"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
-msgstr "Unité disque"
+msgstr ""
 
 #: src/components/charts/disk-chart.tsx
 #: src/components/routes/system.tsx
@@ -494,7 +506,7 @@ msgstr "Injoignable"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Down ({downSystemsLength})"
-msgstr "Injoignable ({downSystemsLength})"
+msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
@@ -502,7 +514,7 @@ msgstr "Télécharger"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
-msgstr "Durée"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -557,7 +569,7 @@ msgstr "Les systèmes existants non définis dans <0>config.yml</0> seront suppr
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
-msgstr "Exporter"
+msgstr ""
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
@@ -569,11 +581,11 @@ msgstr "Exportez la configuration actuelle de vos systèmes."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr "Fahrenheit (°F)"
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
-msgstr "Attributs défaillants :"
+msgstr ""
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
@@ -592,6 +604,10 @@ msgstr "Échec de l'envoi de la notification de test"
 msgid "Failed to update alert"
 msgstr "Échec de la mise à jour de l'alerte"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Filter by tags"
+msgstr ""
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
@@ -602,11 +618,11 @@ msgstr "Filtrer..."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
-msgstr "Empreinte"
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
-msgstr "Micrologiciel"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -645,9 +661,13 @@ msgstr "Consommation du GPU"
 msgid "Grid"
 msgstr "Grille"
 
+#: src/components/systems-table/systems-table-columns.tsx
+#~ msgid "Group"
+#~ msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Health"
-msgstr "Santé"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -671,7 +691,7 @@ msgstr "Si vous avez perdu le mot de passe de votre compte administrateur, vous 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
-msgstr "Image"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -692,24 +712,24 @@ msgstr "Disposition"
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
-msgstr "Charge moyenne"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Load Average 15m"
-msgstr "Charge moyenne 15m"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Load Average 1m"
-msgstr "Charge moyenne 1m"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Load Average 5m"
-msgstr "Charge moyenne 5m"
+msgstr ""
 
 #. Short label for load average
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
-msgstr "Charge moy."
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -764,7 +784,7 @@ msgstr "Utilisation de la mémoire des conteneurs Docker"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
-msgstr "Modèle"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -791,7 +811,7 @@ msgstr "Trafic réseau des interfaces publiques"
 #. Context: Bytes or bits
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
-msgstr "Unité réseau"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "No results found."
@@ -803,16 +823,21 @@ msgstr "Aucun résultat trouvé."
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "No results."
-msgstr "Aucun résultat."
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "No S.M.A.R.T. attributes available for this device."
-msgstr "Aucun attribut S.M.A.R.T. disponible pour cet appareil."
+msgstr ""
 
+#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "Aucun système trouvé."
+
+#: src/components/systems-table/systems-table.tsx
+msgid "No tags found"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -844,7 +869,7 @@ msgstr "Ou continuer avec"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Other"
-msgstr "Autre"
+msgstr ""
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
@@ -859,7 +884,7 @@ msgstr "Page"
 #. placeholder {1}: table.getPageCount()
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Page {0} of {1}"
-msgstr "Page {0} sur {1}"
+msgstr ""
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
@@ -892,16 +917,16 @@ msgstr "En pause"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused ({pausedSystemsLength})"
-msgstr "Mis en pause ({pausedSystemsLength})"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Per-core average utilization"
-msgstr "Utilisation moyenne par cœur"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Percentage of time spent in each state"
-msgstr "Pourcentage de temps passé dans chaque état"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -943,7 +968,7 @@ msgstr "Port"
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
 msgid "Power On"
-msgstr "Allumage"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -972,7 +997,7 @@ msgstr "Reçu"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 msgid "Refresh"
-msgstr "Actualiser"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
@@ -990,7 +1015,7 @@ msgstr "Réinitialiser le mot de passe"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Resolved"
-msgstr "Résolution"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
@@ -1002,15 +1027,15 @@ msgstr "Faire tourner le token"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
-msgstr "Lignes par page"
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
-msgstr "Détails S.M.A.R.T."
+msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Self-Test"
-msgstr "Auto-test S.M.A.R.T."
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -1043,7 +1068,7 @@ msgstr "Envoyé"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
-msgstr "Numéro de série"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1075,7 +1100,7 @@ msgstr "Trier par"
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
 msgid "State"
-msgstr "État"
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
@@ -1102,7 +1127,11 @@ msgstr "Système"
 
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
-msgstr "Charges moyennes du système dans le temps"
+msgstr ""
+
+#: src/components/routes/settings/layout.tsx
+msgid "System Organization"
+msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -1115,6 +1144,12 @@ msgstr "Les systèmes peuvent être gérés dans un fichier <0>config.yml</0> à
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "Tableau"
+
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Tags"
+msgstr ""
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1129,7 +1164,7 @@ msgstr "Température"
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"
-msgstr "Unité de température"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
@@ -1153,7 +1188,7 @@ msgstr "Cette action ne peut pas être annulée. Cela supprimera définitivement
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
-msgstr "Ceci supprimera définitivement tous les enregistrements sélectionnés de la base de données."
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Throughput of {extraFsName}"
@@ -1183,7 +1218,7 @@ msgstr "Changer le thème"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr "Token"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1202,7 +1237,7 @@ msgstr "Les tokens et les empreintes sont utilisés pour authentifier les connex
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
-msgstr "Total"
+msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
@@ -1214,15 +1249,15 @@ msgstr "Données totales envoyées pour chaque interface"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
-msgstr "Se déclenche lorsque la charge moyenne sur 1 minute dépasse un seuil"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
-msgstr "Se déclenche lorsque la charge moyenne sur 15 minute dépasse un seuil"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
-msgstr "Se déclenche lorsque la charge moyenne sur 5 minute dépasse un seuil"
+msgstr ""
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -1255,7 +1290,7 @@ msgstr ""
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
-msgstr "Préférences des unités"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1275,11 +1310,11 @@ msgstr "Joignable"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
-msgstr "Joignable ({upSystemsLength})"
+msgstr ""
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Updated"
-msgstr "Mis à jour"
+msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
@@ -1313,7 +1348,7 @@ msgstr "Utilisateurs"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
-msgstr "Valeur"
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
@@ -1326,7 +1361,7 @@ msgstr "Voir plus"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
-msgstr "Voir vos 200 dernières alertes."
+msgstr ""
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"

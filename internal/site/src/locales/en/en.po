@@ -13,6 +13,18 @@ msgstr ""
 "Language-Team: \n"
 "Plural-Forms: \n"
 
+#: src/components/routes/system.tsx
+#~ msgid "{0, plural, one {# day} other {# days}}"
+#~ msgstr "{0, plural, one {# day} other {# days}}"
+
+#: src/components/routes/system.tsx
+#~ msgid "{0, plural, one {# hour} other {# hours}}"
+#~ msgstr "{0, plural, one {# hour} other {# hours}}"
+
+#: src/components/routes/system.tsx
+#~ msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
+#~ msgstr "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
+
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -587,6 +599,10 @@ msgstr "Failed to send test notification"
 msgid "Failed to update alert"
 msgstr "Failed to update alert"
 
+#: src/components/systems-table/systems-table.tsx
+msgid "Filter by tags"
+msgstr "Filter by tags"
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
@@ -639,6 +655,10 @@ msgstr "GPU Power Draw"
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "Grid"
+
+#: src/components/systems-table/systems-table-columns.tsx
+#~ msgid "Group"
+#~ msgstr "Group"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Health"
@@ -806,8 +826,13 @@ msgstr "No S.M.A.R.T. attributes available for this device."
 
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "No systems found."
+
+#: src/components/systems-table/systems-table.tsx
+msgid "No tags found"
+msgstr "No tags found"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1099,6 +1124,10 @@ msgstr "System"
 msgid "System load averages over time"
 msgstr "System load averages over time"
 
+#: src/components/routes/settings/layout.tsx
+msgid "System Organization"
+msgstr "System Organization"
+
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "Systems"
@@ -1110,6 +1139,12 @@ msgstr "Systems may be managed in a <0>config.yml</0> file inside your data dire
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "Table"
+
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Tags"
+msgstr "Tags"
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
