@@ -90,6 +90,10 @@ msgstr "نشط"
 msgid "Active Alerts"
 msgstr "التنبيهات النشطة"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Active state"
+msgstr "الحالة النشطة"
+
 #: src/components/add-system.tsx
 msgid "Add <0>System</0>"
 msgstr "إضافة <0>نظام</0>"
@@ -114,6 +118,10 @@ msgstr "تعديل خيارات العرض للرسوم البيانية."
 #: src/components/command-palette.tsx
 msgid "Admin"
 msgstr "مسؤول"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "After"
+msgstr "بعد"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -200,6 +208,18 @@ msgstr "عرض النطاق الترددي"
 msgid "Battery"
 msgstr "البطارية"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became active"
+msgstr "أصبح نشطًا"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became inactive"
+msgstr "أصبح غير نشط"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Before"
+msgstr "قبل"
+
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
 msgstr "يدعم بيزيل بروتوكول OpenID Connect والعديد من مزوّدي المصادقة عبر بروتوكول OAuth2."
@@ -217,6 +237,10 @@ msgstr "ثنائي"
 msgid "Bits (Kbps, Mbps, Gbps)"
 msgstr "بت (كيلوبت/ثانية، ميجابت/ثانية، جيجابت/ثانية)"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Boot state"
+msgstr "حالة التمهيد"
+
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
@@ -226,10 +250,26 @@ msgstr "بايت (كيلوبايت/ثانية، ميجابايت/ثانية، ج
 msgid "Cache / Buffers"
 msgstr "ذاكرة التخزين المؤقت / المخازن المؤقتة"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can reload"
+msgstr "يمكن إعادة التحميل"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can start"
+msgstr "يمكن البدء"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can stop"
+msgstr "يمكن الإيقاف"
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "إلغاء"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Capabilities"
+msgstr "القدرات"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
@@ -306,6 +346,10 @@ msgstr "هيئ التنبيهات الواردة"
 msgid "Confirm password"
 msgstr "تأكيد كلمة المرور"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Conflicts"
+msgstr "التعارضات"
+
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "الاتصال مقطوع"
@@ -366,6 +410,7 @@ msgid "Copy YAML"
 msgstr "نسخ YAML"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "المعالج"
@@ -373,6 +418,14 @@ msgstr "المعالج"
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
 msgstr "نوى المعالج"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "CPU Peak"
+msgstr "ذروة المعالج"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "CPU time"
+msgstr "وقت المعالج"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Time Breakdown"
@@ -433,6 +486,10 @@ msgstr "حذف"
 msgid "Delete fingerprint"
 msgstr "حذف البصمة"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Description"
+msgstr "الوصف"
+
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
 msgstr "التفاصيل"
@@ -481,6 +538,7 @@ msgid "Docker Network I/O"
 msgstr "إدخال/إخراج الشبكة للدوكر"
 
 #: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Documentation"
 msgstr "التوثيق"
 
@@ -541,6 +599,7 @@ msgstr "أدخل كلمة المرور لمرة واحدة الخاصة بك."
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
 msgstr "خطأ"
 
@@ -551,9 +610,17 @@ msgstr "خطأ"
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "يتجاوز {0}{1} في آخر {2, plural, one {# دقيقة} other {# دقائق}}"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exec main PID"
+msgstr "معرف العملية الرئيسي للتنفيذ"
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr "سيتم حذف الأنظمة الحالية غير المعرفة في <0>config.yml</0>. يرجى عمل نسخ احتياطية بانتظام."
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exited active"
+msgstr "خرج نشطًا"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -592,10 +659,16 @@ msgstr "فشل في إرسال إشعار الاختبار"
 msgid "Failed to update alert"
 msgstr "فشل في تحديث التنبيه"
 
+#. placeholder {0}: statusTotals[ServiceStatus.Failed]
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Failed: {0}"
+msgstr "فشل: {0}"
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "تصفية..."
@@ -640,6 +713,10 @@ msgstr "محركات GPU"
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
 msgstr "استهلاك طاقة وحدة معالجة الرسوميات"
+
+#: src/lib/alerts.ts
+msgid "GPU Usage"
+msgstr "استخدام وحدة معالجة الرسوميات"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
@@ -690,6 +767,15 @@ msgstr "اللغة"
 msgid "Layout"
 msgstr "التخطيط"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Lifecycle"
+msgstr "دورة الحياة"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "limit"
+msgstr "الحد"
+
 #: src/components/routes/system.tsx
 msgid "Load Average"
 msgstr "متوسط التحميل"
@@ -710,6 +796,14 @@ msgstr "متوسط التحميل 5 دقائق"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
 msgstr "متوسط التحميل"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Load state"
+msgstr "حالة التحميل"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Loading..."
+msgstr "جاري التحميل..."
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -734,6 +828,10 @@ msgstr "السجلات"
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
 msgstr "هل تبحث عن مكان لإنشاء التنبيهات؟ انقر على أيقونات الجرس <0/> في جدول الأنظمة."
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Main PID"
+msgstr "معرف العملية الرئيسي"
+
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "إدارة تفضيلات العرض والإشعارات."
@@ -749,9 +847,20 @@ msgid "Max 1 min"
 msgstr "الحد الأقصى دقيقة"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "الذاكرة"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory limit"
+msgstr "حد الذاكرة"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory Peak"
+msgstr "ذروة الذاكرة"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -769,6 +878,8 @@ msgstr "الموديل"
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
 msgstr "الاسم"
 
@@ -793,7 +904,14 @@ msgstr "حركة مرور الشبكة للواجهات العامة"
 msgid "Network unit"
 msgstr "وحدة الشبكة"
 
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No"
+msgstr "لا"
+
 #: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
 msgstr "لم يتم العثور على نتائج."
 
@@ -802,6 +920,7 @@ msgstr "لم يتم العثور على نتائج."
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "No results."
 msgstr "لا توجد نتائج."
 
@@ -954,6 +1073,10 @@ msgstr "الاستخدام الدقيق في الوقت المسجل"
 msgid "Preferred Language"
 msgstr "اللغة المفضلة"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Process started"
+msgstr "تم بدء العملية"
+
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
@@ -974,6 +1097,10 @@ msgstr "تم الاستلام"
 msgid "Refresh"
 msgstr "تحديث"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Relationships"
+msgstr "العلاقات"
+
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
 msgstr "طلب كلمة مرور لمرة واحدة"
@@ -981,6 +1108,14 @@ msgstr "طلب كلمة مرور لمرة واحدة"
 #: src/components/login/otp-forms.tsx
 msgid "Request OTP"
 msgstr "طلب OTP"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Required by"
+msgstr "مطلوب من قبل"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Requires"
+msgstr "يتطلب"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
@@ -992,9 +1127,18 @@ msgstr "إعادة تعيين كلمة المرور"
 msgid "Resolved"
 msgstr "تم حلها"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Restarts"
+msgstr "إعادة التشغيل"
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "استئناف"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgctxt "Root disk label"
+msgid "Root"
+msgstr "الجذر"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1003,6 +1147,10 @@ msgstr "تدوير الرمز المميز"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
 msgstr "صفوف لكل صفحة"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Runtime Metrics"
+msgstr "مقاييس وقت التشغيل"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
@@ -1045,6 +1193,10 @@ msgstr "تم الإرسال"
 msgid "Serial Number"
 msgstr "الرقم التسلسلي"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Service Details"
+msgstr "تفاصيل الخدمة"
+
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "تعيين عتبات النسبة المئوية لألوان العداد."
@@ -1074,15 +1226,21 @@ msgstr "الترتيب حسب"
 
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "الحالة"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
 msgstr "الحالة"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "Sub State"
+msgstr "الحالة الفرعية"
 
 #: src/components/routes/system.tsx
 msgid "Swap space used by the system"
@@ -1104,6 +1262,10 @@ msgstr "النظام"
 msgid "System load averages over time"
 msgstr "متوسط تحميل النظام مع مرور الوقت"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Systemd Services"
+msgstr "خدمات systemd"
+
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "الأنظمة"
@@ -1115,6 +1277,10 @@ msgstr "يمكن إدارة الأنظمة في ملف <0>config.yml</0> داخ�
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "جدول"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Tasks"
+msgstr "المهام"
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1212,6 +1378,19 @@ msgstr "إجمالي البيانات المستلمة لكل واجهة"
 msgid "Total data sent for each interface"
 msgstr "إجمالي البيانات المرسلة لكل واجهة"
 
+#. placeholder {0}: data.length
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Total: {0}"
+msgstr "الإجمالي: {0}"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggered by"
+msgstr "تم التفعيل بواسطة"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggers"
+msgstr "المحفزات"
+
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز متوسط التحميل لمدة دقيقة واحدة عتبة معينة"
@@ -1237,6 +1416,10 @@ msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز استخدام وحدة المعالجة المركزية عتبة معينة"
 
 #: src/lib/alerts.ts
+msgid "Triggers when GPU usage exceeds a threshold"
+msgstr "يتم التفعيل عندما يتجاوز استخدام وحدة معالجة الرسوميات عتبة معينة"
+
+#: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "يتم التفعيل عندما يتجاوز استخدام الذاكرة عتبة معينة"
 
@@ -1251,6 +1434,10 @@ msgstr "يتم التفعيل عندما يتجاوز استخدام أي قرص
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "النوع"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unit file"
+msgstr "ملف الوحدة"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
@@ -1267,6 +1454,11 @@ msgstr "رمز مميز عالمي"
 msgid "Unknown"
 msgstr "غير معروفة"
 
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unlimited"
+msgstr "غير محدود"
+
 #. Context: System is up
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1278,8 +1470,13 @@ msgid "Up ({upSystemsLength})"
 msgstr "قيد التشغيل ({upSystemsLength})"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "تم التحديث"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Updated every 10 minutes."
+msgstr "يتم التحديث كل 10 دقائق."
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
@@ -1340,6 +1537,10 @@ msgstr "في انتظار وجود سجلات كافية للعرض"
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "هل تريد مساعدتنا في تحسين ترجماتنا؟ تحقق من <0>Crowdin</0> لمزيد من التفاصيل."
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Wants"
+msgstr "يريد"
+
 #: src/components/routes/settings/general.tsx
 msgid "Warning (%)"
 msgstr "تحذير (%)"
@@ -1375,6 +1576,12 @@ msgstr "تكوين YAML"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "تكوين YAML"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Yes"
+msgstr "نعم"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."

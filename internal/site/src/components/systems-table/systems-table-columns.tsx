@@ -401,7 +401,7 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 			<TooltipContent side="right" className="max-w-xs pb-2">
 					<div className="grid gap-1.5">
 						<div className="grid gap-0.5">
-							<div className="text-[0.65rem] text-muted-foreground uppercase tracking-wide tabular-nums">{t`Root`}</div>
+							<div className="text-[0.65rem] text-muted-foreground uppercase tracking-wide tabular-nums"><Trans context="Root disk label">Root</Trans></div>
 							<div className="flex gap-2 items-center tabular-nums text-xs">
 								<span className="min-w-7">{decimalString(rootDiskPct, rootDiskPct >= 10 ? 1 : 2)}%</span>
 								<span className="flex-1 min-w-12 grid bg-muted h-2.5 rounded-sm overflow-hidden">
