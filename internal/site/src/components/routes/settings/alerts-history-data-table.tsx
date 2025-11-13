@@ -7,6 +7,7 @@ import {
 	getFilteredRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
+	type PaginationState,
 	type SortingState,
 	useReactTable,
 	type VisibilityState,
@@ -40,8 +41,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/components/ui/use-toast"
 import { alertInfo } from "@/lib/alerts"
 import { pb } from "@/lib/api"
+import { $userSettings } from "@/lib/stores"
 import { cn, formatDuration, formatShortDate } from "@/lib/utils"
 import type { AlertsHistoryRecord } from "@/types"
+import { saveSettings } from "./layout"
+import { useStore } from "@nanostores/react"
 import { alertsHistoryColumns } from "../../alerts-history-columns"
 
 const SectionIntro = memo(() => {
@@ -66,6 +70,13 @@ export default function AlertsHistoryDataTable() {
 	const [globalFilter, setGlobalFilter] = useState("")
 	const { toast } = useToast()
 	const [deleteOpen, setDeleteDialogOpen] = useState(false)
+	const userSettings = useStore($userSettings)
+	
+	// Initialize pagination with user preference
+	const [pagination, setPagination] = useState<PaginationState>(() => ({
+		pageIndex: 0,
+		pageSize: userSettings.alertHistoryPageSize || 10,
+	}))
 
 	useEffect(() => {
 		let unsubscribe: (() => void) | undefined
@@ -136,12 +147,14 @@ export default function AlertsHistoryDataTable() {
 		onColumnFiltersChange: setColumnFilters,
 		onColumnVisibilityChange: setColumnVisibility,
 		onRowSelectionChange: setRowSelection,
+		onPaginationChange: setPagination,
 		state: {
 			sorting,
 			columnFilters,
 			columnVisibility,
 			rowSelection,
 			globalFilter,
+			pagination,
 		},
 		onGlobalFilterChange: setGlobalFilter,
 		globalFilterFn: (row, _columnId, filterValue) => {
@@ -318,7 +331,10 @@ export default function AlertsHistoryDataTable() {
 						<Select
 							value={`${table.getState().pagination.pageSize}`}
 							onValueChange={(value) => {
-								table.setPageSize(Number(value))
+								const newPageSize = Number(value);
+								table.setPageSize(newPageSize);
+								// Save the preference to user settings and backend
+								saveSettings({ alertHistoryPageSize: newPageSize });
 							}}
 						>
 							<SelectTrigger className="w-[4.8em]" id="rows-per-page">

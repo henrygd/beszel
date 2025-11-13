@@ -48,6 +48,7 @@ export const $userSettings = map<UserSettings>({
 	emails: [pb.authStore.record?.email || ""],
 	unitNet: Unit.Bytes,
 	unitTemp: Unit.Celsius,
+	alertHistoryPageSize: 10,
 })
 // update chart time on change
 listenKeys($userSettings, ["chartTime"], ({ chartTime }) => $chartTime.set(chartTime))
