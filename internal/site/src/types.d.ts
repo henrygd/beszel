@@ -79,6 +79,8 @@ export interface SystemInfo {
 	ct?: ConnectionType
 	/** extra filesystem percentages */
 	efs?: Record<string, number>
+	/** services [totalServices, numFailedServices] */
+	sv?: [number, number]
 }
 
 export interface SystemStats {

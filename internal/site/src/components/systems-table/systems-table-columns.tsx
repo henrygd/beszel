@@ -16,6 +16,7 @@ import {
 	PenBoxIcon,
 	PlayCircleIcon,
 	ServerIcon,
+	TerminalSquareIcon,
 	Trash2Icon,
 	WifiIcon,
 } from "lucide-react"
@@ -57,6 +58,7 @@ import {
 	DropdownMenuTrigger,
 } from "../ui/dropdown-menu"
 import { EthernetIcon, GpuIcon, HourglassIcon, ThermometerIcon, WebSocketIcon } from "../ui/icons"
+import { Separator } from "../ui/separator"
 
 const STATUS_COLORS = {
 	[SystemStatus.Up]: "bg-green-500",
@@ -69,7 +71,7 @@ const STATUS_COLORS = {
  * @param viewMode - "table" or "grid"
  * @returns - Column definitions for the systems table
  */
-export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<SystemRecord>[] {
+export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<SystemRecord>[] {
 	return [
 		{
 			// size: 200,
@@ -134,7 +136,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			header: sortableHeader,
 		},
 		{
-			accessorFn: ({ info }) => info.cpu,
+			accessorFn: ({ info }) => info.cpu || undefined,
 			id: "cpu",
 			name: () => t`CPU`,
 			cell: TableCellWithMeter,
@@ -143,7 +145,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 		},
 		{
 			// accessorKey: "info.mp",
-			accessorFn: ({ info }) => info.mp,
+			accessorFn: ({ info }) => info.mp || undefined,
 			id: "memory",
 			name: () => t`Memory`,
 			cell: TableCellWithMeter,
@@ -151,7 +153,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			header: sortableHeader,
 		},
 		{
-			accessorFn: ({ info }) => info.dp,
+			accessorFn: ({ info }) => info.dp || undefined,
 			id: "disk",
 			name: () => t`Disk`,
 			cell: DiskCellWithMultiple,
@@ -159,7 +161,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			header: sortableHeader,
 		},
 		{
-			accessorFn: ({ info }) => info.g,
+			accessorFn: ({ info }) => info.g || undefined,
 			id: "gpu",
 			name: () => "GPU",
 			cell: TableCellWithMeter,
@@ -172,9 +174,9 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 				const sum = info.la?.reduce((acc, curr) => acc + curr, 0)
 				// TODO: remove this in future release in favor of la array
 				if (!sum) {
-					return (info.l1 ?? 0) + (info.l5 ?? 0) + (info.l15 ?? 0)
+					return (info.l1 ?? 0) + (info.l5 ?? 0) + (info.l15 ?? 0) || undefined
 				}
-				return sum
+				return sum || undefined
 			},
 			name: () => t({ message: "Load Avg", comment: "Short label for load average" }),
 			size: 0,
@@ -217,7 +219,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			},
 		},
 		{
-			accessorFn: ({ info }) => info.bb || (info.b || 0) * 1024 * 1024,
+			accessorFn: ({ info }) => (info.bb || (info.b || 0) * 1024 * 1024) || undefined,
 			id: "net",
 			name: () => t`Net`,
 			size: 0,
@@ -260,10 +262,45 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			},
 		},
 		{
+			accessorFn: ({ info }) => info.sv?.[0],
+			id: "services",
+			name: () => t`Services`,
+			size: 50,
+			Icon: TerminalSquareIcon,
+			header: sortableHeader,
+			hideSort: true,
+			sortingFn: (a, b) => {
+				// sort priorities: 1) failed services, 2) total services
+				const [totalCountA, numFailedA] = a.original.info.sv ?? [0, 0]
+				const [totalCountB, numFailedB] = b.original.info.sv ?? [0, 0]
+				if (numFailedA !== numFailedB) {
+					return numFailedA - numFailedB
+				}
+				return totalCountA - totalCountB
+			},
+			cell(info) {
+				const sys = info.row.original
+				const [totalCount, numFailed] = sys.info.sv ?? [0, 0]
+				if (sys.status !== SystemStatus.Up || totalCount === 0) {
+					return null
+				}
+				return (
+					<span className="tabular-nums whitespace-nowrap flex gap-1.5 items-center">
+						<span
+							className={cn("block size-2 rounded-full", {
+								[STATUS_COLORS[SystemStatus.Down]]: numFailed > 0,
+								[STATUS_COLORS[SystemStatus.Up]]: numFailed === 0,
+							})}
+						/>
+						{totalCount} <span className="text-muted-foreground text-sm -ms-0.5">({t`Failed`.toLowerCase()}: {numFailed})</span>
+					</span>
+				)
+			},
+		},
+		{
 			accessorFn: ({ info }) => info.v,
 			id: "agent",
 			name: () => t`Agent`,
-			// invertSorting: true,
 			size: 50,
 			Icon: WifiIcon,
 			hideSort: true,

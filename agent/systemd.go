@@ -62,6 +62,24 @@ func (sm *systemdManager) startWorker(conn *dbus.Conn) {
 	}()
 }
 
+// getServiceStatsCount returns the number of systemd services.
+func (sm *systemdManager) getServiceStatsCount() int {
+	return len(sm.serviceStatsMap)
+}
+
+// getFailedServiceCount returns the number of systemd services in a failed state.
+func (sm *systemdManager) getFailedServiceCount() uint16 {
+	sm.Lock()
+	defer sm.Unlock()
+	count := uint16(0)
+	for _, service := range sm.serviceStatsMap {
+		if service.State == systemd.StatusFailed {
+			count++
+		}
+	}
+	return count
+}
+
 // getServiceStats collects statistics for all running systemd services.
 func (sm *systemdManager) getServiceStats(conn *dbus.Conn, refresh bool) []*systemd.Service {
 	// start := time.Now()
