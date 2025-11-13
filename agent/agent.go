@@ -222,3 +222,35 @@ func (a *Agent) getFingerprint() string {
 
 	return fingerprint
 }
+
+// isImmutableSystem detects if the system is likely an immutable system like Fedora Silverblue
+// where the real root filesystem is mounted at /sysroot instead of /
+func (a *Agent) isImmutableSystem() bool {
+	// Check for typical immutable system indicators
+	// 1. Check if /etc/os-release contains indicators of an immutable system
+	if osReleaseContent, err := os.ReadFile("/etc/os-release"); err == nil {
+		content := string(osReleaseContent)
+		// Look for indicators of atomic/immutable systems
+		if strings.Contains(content, "fedora") && strings.Contains(content, "silverblue") ||
+		   strings.Contains(content, "coreos") ||
+		   strings.Contains(content, "flatcar") ||
+		   strings.Contains(content, "rhel-atomic") ||
+		   strings.Contains(content, "centos-atomic") {
+			return true
+		}
+	}
+
+	// 2. Check if /run/ostree is present (ostree-based systems like Silverblue)
+	if _, err := os.Stat("/run/ostree"); err == nil {
+		return true
+	}
+
+	// 3. Check if /sysroot directory exists and is not just a normal mount
+	if _, err := os.Stat("/sysroot"); err == nil {
+		// Additional check: see if / is very small and appears to be an overlay
+		// This could be a sign of an immutable system
+		return true
+	}
+
+	return false
+}
