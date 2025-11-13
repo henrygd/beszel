@@ -20,6 +20,7 @@ import {
 	WifiIcon,
 } from "lucide-react"
 import { memo, useMemo, useRef, useState } from "react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 import { isReadOnlyUser, pb } from "@/lib/api"
 import { ConnectionType, connectionTypeLabels, MeterState, SystemStatus } from "@/lib/enums"
 import { $longestSystemNameLen, $userSettings } from "@/lib/stores"
@@ -153,7 +154,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			accessorFn: ({ info }) => info.dp,
 			id: "disk",
 			name: () => t`Disk`,
-			cell: TableCellWithMeter,
+			cell: DiskCellWithMultiple,
 			Icon: HardDriveIcon,
 			header: sortableHeader,
 		},
@@ -351,6 +352,79 @@ function TableCellWithMeter(info: CellContext<SystemRecord, unknown>) {
 				<span className={meterClass} style={{ width: `${val}%` }}></span>
 			</span>
 		</div>
+	)
+}
+
+function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
+	const { info: sysInfo, status, id } = info.row.original
+	const extraFs = Object.entries(sysInfo.efs ?? {})
+
+	// No extra disks - show basic meter
+	if (extraFs.length === 0) {
+		return TableCellWithMeter(info)
+	}
+
+	const rootDiskPct = sysInfo.dp
+	
+	// sort extra disks by percentage descending
+	extraFs.sort((a, b) => b[1] - a[1])
+	
+	function getMeterClass(pct: number) {
+		const threshold = getMeterState(pct)
+		return cn(
+			"h-full",
+			(status !== SystemStatus.Up && STATUS_COLORS.paused) ||
+				(threshold === MeterState.Good && STATUS_COLORS.up) ||
+				(threshold === MeterState.Warn && STATUS_COLORS.pending) ||
+				STATUS_COLORS.down
+		)
+	}
+
+	return (
+		<Tooltip>
+			<TooltipTrigger asChild>
+				<Link href={getPagePath($router, "system", { id })} tabIndex={-1} className="flex flex-col gap-0.5 w-full relative z-10">
+					<div className="flex gap-2 items-center tabular-nums tracking-tight">
+						<span className="min-w-8 shrink-0">{decimalString(rootDiskPct, rootDiskPct >= 10 ? 1 : 2)}%</span>
+						<span className="flex-1 min-w-8 grid bg-muted h-[1em] rounded-sm overflow-hidden">
+							{/* Root disk */}
+							<span className={getMeterClass(rootDiskPct)} style={{ width: `${rootDiskPct}%` }}></span>
+							{/* Extra disks */}
+							{extraFs.map(([_name, pct], index) => (
+								<span key={index} className={getMeterClass(pct)} style={{ width: `${pct}%` }}></span>
+							))}
+
+						</span>
+					</div>
+				</Link>
+			</TooltipTrigger>
+			<TooltipContent side="right" className="max-w-xs pb-2">
+					<div className="grid gap-1.5">
+						<div className="grid gap-0.5">
+							<div className="text-[0.65rem] text-muted-foreground uppercase tracking-wide tabular-nums"><Trans context="Root disk label">Root</Trans></div>
+							<div className="flex gap-2 items-center tabular-nums text-xs">
+								<span className="min-w-7">{decimalString(rootDiskPct, rootDiskPct >= 10 ? 1 : 2)}%</span>
+								<span className="flex-1 min-w-12 grid bg-muted h-2.5 rounded-sm overflow-hidden">
+									<span className={getMeterClass(rootDiskPct)} style={{ width: `${rootDiskPct}%` }}></span>
+								</span>
+							</div>
+						</div>
+						{extraFs.map(([name, pct]) => {
+							return (
+								<div key={name} className="grid gap-0.5">
+									<div className="text-[0.65rem] max-w-40 text-muted-foreground uppercase tracking-wide truncate">{name}</div>
+									<div className="flex gap-2 items-center tabular-nums text-xs">
+										<span className="min-w-7">{decimalString(pct, pct >= 10 ? 1 : 2)}%</span>
+										<span className="flex-1 min-w-12 grid bg-muted h-2.5 rounded-sm overflow-hidden">
+											<span className={getMeterClass(pct)} style={{ width: `${pct}%` }}></span>
+										</span>
+									</div>
+								</div>
+							)
+						})}
+					</div>
+			</TooltipContent>
+		</Tooltip>
 	)
 }
 
