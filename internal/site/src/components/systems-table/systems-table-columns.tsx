@@ -58,7 +58,6 @@ import {
 	DropdownMenuTrigger,
 } from "../ui/dropdown-menu"
 import { EthernetIcon, GpuIcon, HourglassIcon, ThermometerIcon, WebSocketIcon } from "../ui/icons"
-import { Separator } from "../ui/separator"
 
 const STATUS_COLORS = {
 	[SystemStatus.Up]: "bg-green-500",
@@ -231,10 +230,10 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 				if (sys.status === SystemStatus.Paused) {
 					return null
 				}
-				const { value, unit } = formatBytes(info.getValue() as number, true, userSettings.unitNet, false)
+				const { value, unit } = formatBytes((info.getValue() || 0) as number, true, userSettings.unitNet, false)
 				return (
 					<span className="tabular-nums whitespace-nowrap">
-						{decimalString(value, value >= 100 ? 1 : 2)} {unit}
+						{decimalString(value , value >= 100 ? 1 : 2)} {unit}
 					</span>
 				)
 			},
