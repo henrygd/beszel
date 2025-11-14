@@ -8,7 +8,7 @@ msgstr ""
 "Language: ro\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-12 20:36\n"
+"PO-Revision-Date: 2025-11-14 22:51\n"
 "Last-Translator: \n"
 "Language-Team: Romanian\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : (n==0 || (n%100>0 && n%100<20)) ? 1 : 2);\n"
@@ -112,6 +112,10 @@ msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
+msgstr ""
+
+#: src/components/routes/settings/general.tsx
+msgid "Adjust the width of the main layout"
 msgstr ""
 
 #: src/components/command-palette.tsx
@@ -638,6 +642,10 @@ msgstr ""
 msgid "Fahrenheit (°F)"
 msgstr ""
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Failed"
+msgstr ""
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr ""
@@ -765,6 +773,10 @@ msgstr "Limbă"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
+msgstr ""
+
+#: src/components/routes/settings/general.tsx
+msgid "Layout width"
 msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
@@ -1195,6 +1207,10 @@ msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
+msgstr ""
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
 msgstr ""
 
 #: src/components/routes/settings/general.tsx
