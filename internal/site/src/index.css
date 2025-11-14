@@ -34,6 +34,7 @@
 	--table-header: hsl(225, 6%, 97%);
 	--chart-saturation: 65%;
 	--chart-lightness: 50%;
+	--container: 1480px;
 }
 
 .dark {
@@ -149,7 +150,8 @@
 }
 
 @utility container {
-	@apply max-w-370 mx-auto px-4;
+	max-width: var(--container);
+	@apply mx-auto px-4;
 }
 
 @utility link {

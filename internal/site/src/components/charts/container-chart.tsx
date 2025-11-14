@@ -124,6 +124,7 @@ export default memo(function ContainerChart({
 					<CartesianGrid vertical={false} />
 					<YAxis
 						direction="ltr"
+						domain={[0, 'dataMax']}
 						orientation={chartData.orientation}
 						className="tracking-tighter"
 						width={yAxisWidth}

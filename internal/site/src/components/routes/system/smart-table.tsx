@@ -118,7 +118,9 @@ export const columns: ColumnDef<DiskInfo>[] = [
       sortingFn: (a, b) => a.original.device.localeCompare(b.original.device),
       header: ({ column }) => <HeaderButton column={column} name={t`Device`} Icon={HardDrive} />,
       cell: ({ row }) => (
-         <div className="font-medium ms-1.5">{row.getValue("device")}</div>
+         <div className="font-medium max-w-50 truncate ms-1.5" title={row.getValue("device")}>
+            {row.getValue("device")}
+         </div>
       ),
    },
    {

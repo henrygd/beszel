@@ -27,6 +27,7 @@ type systemdManager struct {
 	serviceStatsMap map[string]*systemd.Service
 	isRunning       bool
 	hasFreshStats   bool
+	patterns        []string
 }
 
 // newSystemdManager creates a new systemdManager.
@@ -39,6 +40,7 @@ func newSystemdManager() (*systemdManager, error) {
 
 	manager := &systemdManager{
 		serviceStatsMap: make(map[string]*systemd.Service),
+		patterns:        getServicePatterns(),
 	}
 
 	manager.startWorker(conn)
@@ -60,6 +62,24 @@ func (sm *systemdManager) startWorker(conn *dbus.Conn) {
 			_ = sm.getServiceStats(nil, true)
 		}
 	}()
+}
+
+// getServiceStatsCount returns the number of systemd services.
+func (sm *systemdManager) getServiceStatsCount() int {
+	return len(sm.serviceStatsMap)
+}
+
+// getFailedServiceCount returns the number of systemd services in a failed state.
+func (sm *systemdManager) getFailedServiceCount() uint16 {
+	sm.Lock()
+	defer sm.Unlock()
+	count := uint16(0)
+	for _, service := range sm.serviceStatsMap {
+		if service.State == systemd.StatusFailed {
+			count++
+		}
+	}
+	return count
 }
 
 // getServiceStats collects statistics for all running systemd services.
@@ -91,7 +111,7 @@ func (sm *systemdManager) getServiceStats(conn *dbus.Conn, refresh bool) []*syst
 		defer conn.Close()
 	}
 
-	units, err := conn.ListUnitsByPatternsContext(context.Background(), []string{"loaded"}, []string{"*.service"})
+	units, err := conn.ListUnitsByPatternsContext(context.Background(), []string{"loaded"}, sm.patterns)
 	if err != nil {
 		slog.Error("Error listing systemd service units", "err", err)
 		return nil
@@ -226,4 +246,27 @@ func unescapeServiceName(name string) string {
 		return name
 	}
 	return unescaped
+}
+
+// getServicePatterns returns the list of service patterns to match.
+// It reads from the SERVICE_PATTERNS environment variable if set,
+// otherwise defaults to "*service".
+func getServicePatterns() []string {
+	patterns := []string{}
+	if envPatterns, _ := GetEnv("SERVICE_PATTERNS"); envPatterns != "" {
+		for pattern := range strings.SplitSeq(envPatterns, ",") {
+			pattern = strings.TrimSpace(pattern)
+			if pattern == "" {
+				continue
+			}
+			if !strings.HasSuffix(pattern, ".service") {
+				pattern += ".service"
+			}
+			patterns = append(patterns, pattern)
+		}
+	}
+	if len(patterns) == 0 {
+		patterns = []string{"*.service"}
+	}
+	return patterns
 }
