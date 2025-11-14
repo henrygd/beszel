@@ -8,8 +8,10 @@ import {
 	ClockArrowUp,
 	CpuIcon,
 	GlobeIcon,
+	HardDriveIcon,
 	LayoutGridIcon,
 	MonitorIcon,
+	ServerIcon,
 	XIcon,
 } from "lucide-react"
 import { subscribeKeys } from "nanostores"
@@ -66,7 +68,7 @@ import { $router, navigate } from "../router"
 import Spinner from "../spinner"
 import { Button } from "../ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card"
-import { AppleIcon, ChartAverage, ChartMax, FreeBsdIcon, Rows, TuxIcon, WebSocketIcon, WindowsIcon } from "../ui/icons"
+import { AppleIcon, ChartAverage, ChartMax, EthernetIcon, FreeBsdIcon, Rows, TuxIcon, WebSocketIcon, WindowsIcon } from "../ui/icons"
 import { Input } from "../ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { Separator } from "../ui/separator"
@@ -333,6 +335,20 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 		})
 	}, [system, chartTime])
 
+	// Helper to format hardware info (disk/nic) with vendor and model
+	const formatHardwareInfo = useCallback((item: { n: string; v?: string; m?: string }) => {
+		const vendor = item.v && item.v.toLowerCase() !== 'unknown' ? item.v : null
+		const model = item.m && item.m.toLowerCase() !== 'unknown' ? item.m : null
+		if (vendor && model) {
+			return `${item.n}: ${vendor} ${model}`
+		} else if (model) {
+			return `${item.n}: ${model}`
+		} else if (vendor) {
+			return `${item.n}: ${vendor}`
+		}
+		return item.n
+	}, [])
+
 	// values for system info bar
 	const systemInfo = useMemo(() => {
 		if (!system.info) {
@@ -366,6 +382,11 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 		} else {
 			uptime = secondsToString(system.info.u, "day")
 		}
+		// Extract CPU and Memory info from arrays
+		const cpuInfo = system.info.c && system.info.c.length > 0 ? system.info.c[0] : undefined
+		const memoryInfo = system.info.m && system.info.m.length > 0 ? system.info.m[0] : undefined
+		const osData = system.info.o && system.info.o.length > 0 ? system.info.o[0] : undefined
+
 		return [
 			{ value: getHostDisplayValue(system), Icon: GlobeIcon },
 			{
@@ -376,19 +397,43 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				hide: system.info.h === system.host || system.info.h === system.name,
 			},
 			{ value: uptime, Icon: ClockArrowUp, label: t`Uptime`, hide: !system.info.u },
-			osInfo[system.info.os ?? Os.Linux],
-			{
-				value: `${system.info.m} (${system.info.c}c${system.info.t ? `/${system.info.t}t` : ""})`,
+			osData ? {
+				value: `${osData.f} ${osData.v}`.trim(),
+				Icon: osInfo[system.info.os ?? Os.Linux]?.Icon ?? TuxIcon,
+				label: osData.k ? `Kernel: ${osData.k}` : undefined,
+			} : osInfo[system.info.os ?? Os.Linux],
+			cpuInfo ? {
+				value: cpuInfo.m,
 				Icon: CpuIcon,
-				hide: !system.info.m,
-			},
-		] as {
+				hide: !cpuInfo.m,
+				label: [
+					(cpuInfo.c || cpuInfo.t) ? `Cores / Threads: ${cpuInfo.c || '?'} / ${cpuInfo.t || cpuInfo.c || '?'}` : null,
+					cpuInfo.a ? `Arch: ${cpuInfo.a}` : null,
+					cpuInfo.s ? `Speed: ${cpuInfo.s}` : null,
+				].filter(Boolean).join('\n'),
+			} : undefined,
+			memoryInfo ? {
+				value: memoryInfo.t,
+				Icon: ServerIcon,
+				label: "Total Memory",
+			} : undefined,
+			system.info.d && system.info.d.length > 0 ? {
+				value: `${system.info.d.length} ${system.info.d.length === 1 ? t`Disk` : t`Disks`}`,
+				Icon: HardDriveIcon,
+				label: system.info.d.map(formatHardwareInfo).join('\n'),
+			} : undefined,
+			system.info.n && system.info.n.length > 0 ? {
+				value: `${system.info.n.length} ${system.info.n.length === 1 ? t`NIC` : t`NICs`}`,
+				Icon: EthernetIcon,
+				label: system.info.n.map(formatHardwareInfo).join('\n'),
+			} : undefined,
+		].filter(Boolean) as {
 			value: string | number | undefined
 			label?: string
 			Icon: React.ElementType
 			hide?: boolean
 		}[]
-	}, [system, t])
+	}, [system, t, formatHardwareInfo])
 
 	/** Space for tooltip if more than 10 sensors and no containers table */
 	useEffect(() => {
