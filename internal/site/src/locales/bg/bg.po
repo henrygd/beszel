@@ -8,7 +8,7 @@ msgstr ""
 "Language: bg\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-12 20:36\n"
+"PO-Revision-Date: 2025-11-14 22:51\n"
 "Last-Translator: \n"
 "Language-Team: Bulgarian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -113,6 +113,10 @@ msgstr "Добави URL"
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
 msgstr "Настрой опциите за показване на диаграмите."
+
+#: src/components/routes/settings/general.tsx
+msgid "Adjust the width of the main layout"
+msgstr "Настройка ширината на основния макет"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -638,6 +642,10 @@ msgstr "Експортирай конфигурацията на системи�
 msgid "Fahrenheit (°F)"
 msgstr "Фаренхайт (°F)"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Failed"
+msgstr "Неуспешно"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "Неуспешни атрибути:"
@@ -766,6 +774,10 @@ msgstr "Език"
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "Подреждане"
+
+#: src/components/routes/settings/general.tsx
+msgid "Layout width"
+msgstr "Ширина на макета"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Lifecycle"
@@ -1196,6 +1208,10 @@ msgstr "Сериен номер"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
 msgstr "Детайли на услугата"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr "Услуги"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
