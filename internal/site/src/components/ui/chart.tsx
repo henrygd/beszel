@@ -5,6 +5,7 @@ import * as RechartsPrimitive from "recharts"
 import { chartTimeData, cn } from "@/lib/utils"
 import type { ChartData } from "@/types"
 import { Separator } from "./separator"
+import { AxisDomain } from "recharts/types/util/types"
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const
@@ -453,4 +454,16 @@ export {
 	ChartLegendContent,
 	xAxis,
 	// ChartStyle,
+}
+
+export function pinnedAxisDomain(): AxisDomain {
+	return [0, (dataMax: number) => {
+		if (dataMax > 10) {
+			return Math.round(dataMax)
+		}
+		if (dataMax > 1) {
+			return Math.round(dataMax / 0.1) * 0.1
+		}
+		return dataMax
+	}]
 }

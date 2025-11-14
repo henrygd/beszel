@@ -161,11 +161,19 @@ func (a *Agent) gatherStats(cacheTimeMs uint16) *system.CombinedData {
 	}
 
 	// skip updating systemd services if cache time is not the default 60sec interval
-	if a.systemdManager != nil && cacheTimeMs == 60_000 && a.systemdManager.hasFreshStats {
-		data.SystemdServices = a.systemdManager.getServiceStats(nil, false)
+	if a.systemdManager != nil && cacheTimeMs == 60_000 {
+		totalCount := uint16(a.systemdManager.getServiceStatsCount())
+		if totalCount > 0 {
+			numFailed := a.systemdManager.getFailedServiceCount()
+			data.Info.Services = []uint16{totalCount, numFailed}
+		}
+		if a.systemdManager.hasFreshStats {
+			data.SystemdServices = a.systemdManager.getServiceStats(nil, false)
+		}
 	}
 
 	data.Stats.ExtraFs = make(map[string]*system.FsStats)
+	data.Info.ExtraFsPct = make(map[string]float64)
 	for name, stats := range a.fsStats {
 		if !stats.Root && stats.DiskTotal > 0 {
 			// Use custom name if available, otherwise use device name
@@ -174,6 +182,11 @@ func (a *Agent) gatherStats(cacheTimeMs uint16) *system.CombinedData {
 				key = stats.Name
 			}
 			data.Stats.ExtraFs[key] = stats
+			// Add percentages to Info struct for dashboard
+			if stats.DiskTotal > 0 {
+				pct := twoDecimals((stats.DiskUsed / stats.DiskTotal) * 100)
+				data.Info.ExtraFsPct[key] = pct
+			}
 		}
 	}
 	slog.Debug("Extra FS", "data", data.Stats.ExtraFs)

@@ -294,7 +294,7 @@ function SystemdSheet({
 					setDetails(details)
 				} else {
 					setDetails(null)
-					setError(t`No systemd details returned`)
+					setError(t`No results found.`)
 				}
 			})
 			.catch((err) => {
@@ -362,12 +362,12 @@ function SystemdSheet({
 				{hasCurrent ? current : notAvailable}
 				{hasMax && (
 					<span className="text-muted-foreground ms-1.5">
-						{t`(limit: ${max})`}
+						{`(${t`limit`}: ${max})`}
 					</span>
 				)}
 				{max === null && (
 					<span className="text-muted-foreground ms-1.5">
-						{t`(limit: unlimited)`}
+						{`(${t`limit`}: ${t`Unlimited`.toLowerCase()})`}
 					</span>
 				)}
 			</>
@@ -435,6 +435,8 @@ function SystemdSheet({
 			</tr>
 		)
 	}
+	
+	const capitalize = (str: string) => `${str.charAt(0).toUpperCase()}${str.slice(1).toLowerCase()}`
 
 	return (
 		<Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
@@ -466,10 +468,10 @@ function SystemdSheet({
 								<tbody>
 									{renderRow("name", t`Name`, service.name, true)}
 									{renderRow("description", t`Description`, details?.Description, true)}
-									{renderRow("loadState", t`Load State`, details?.LoadState, true)}
+									{renderRow("loadState", t`Load state`, details?.LoadState, true)}
 									{renderRow(
 										"bootState",
-										t`Boot State`,
+										t`Boot state`,
 										<div className="flex items-center">
 											{details?.UnitFileState}
 											{details?.UnitFilePreset && (
@@ -478,8 +480,8 @@ function SystemdSheet({
 										</div>,
 										true
 									)}
-									{renderRow("unitFile", t`Unit File`, details?.FragmentPath, true)}
-									{renderRow("active", t`Active State`, activeStateValue, true)}
+									{renderRow("unitFile", t`Unit file`, details?.FragmentPath, true)}
+									{renderRow("active", t`Active state`, activeStateValue, true)}
 									{renderRow("status", t`Status`, statusTextValue, true)}
 									{renderRow(
 										"documentation",
@@ -501,12 +503,12 @@ function SystemdSheet({
 							<table className="w-full text-sm">
 								<tbody>
 									{renderRow("mainPid", t`Main PID`, mainPidValue, true)}
-									{renderRow("execMainPid", t`Exec Main PID`, execMainPidValue)}
+									{renderRow("execMainPid", t`Exec main PID`, execMainPidValue)}
 									{renderRow("tasks", t`Tasks`, tasks, true)}
-									{renderRow("cpuTime", t`CPU Time`, cpuTime)}
+									{renderRow("cpuTime", t`CPU time`, cpuTime)}
 									{renderRow("memory", t`Memory`, memoryCurrent, true)}
-									{renderRow("memoryPeak", t`Memory Peak`, memoryPeak)}
-									{renderRow("memoryLimit", t`Memory Limit`, memoryLimit)}
+									{renderRow("memoryPeak", capitalize(t`Memory Peak`), memoryPeak)}
+									{renderRow("memoryLimit", t`Memory limit`, memoryLimit)}
 									{renderRow("restarts", t`Restarts`, restartsValue, true)}
 								</tbody>
 							</table>
@@ -534,7 +536,7 @@ function SystemdSheet({
 									)}
 									{renderRow(
 										"requiredBy",
-										t`Required By`,
+										t`Required by`,
 										Array.isArray(details?.RequiredBy) && details.RequiredBy.length > 0
 											? details.RequiredBy.join(", ")
 											: undefined
@@ -565,7 +567,7 @@ function SystemdSheet({
 									)}
 									{renderRow(
 										"triggeredBy",
-										t`Triggered By`,
+										t`Triggered by`,
 										Array.isArray(details?.TriggeredBy) && details.TriggeredBy.length > 0
 											? details.TriggeredBy.join(", ")
 											: undefined
@@ -582,11 +584,11 @@ function SystemdSheet({
 						<div className="border rounded-md">
 							<table className="w-full text-sm">
 								<tbody>
-									{renderRow("activeSince", t`Became Active`, activeEnterTimestamp)}
+									{renderRow("activeSince", t`Became active`, activeEnterTimestamp)}
 									{service.state !== ServiceStatus.Active &&
-										renderRow("lastActive", t`Exited Active`, activeExitTimestamp)}
-									{renderRow("inactiveSince", t`Became Inactive`, inactiveEnterTimestamp)}
-									{renderRow("execMainStart", t`Process Started`, execMainStartTimestamp)}
+										renderRow("lastActive", t`Exited active`, activeExitTimestamp)}
+									{renderRow("inactiveSince", t`Became inactive`, inactiveEnterTimestamp)}
+									{renderRow("execMainStart", t`Process started`, execMainStartTimestamp)}
 									{/* {renderRow("invocationId", t`Invocation ID`, details?.InvocationID)} */}
 									{/* {renderRow("freezerState", t`Freezer State`, details?.FreezerState)} */}
 								</tbody>
@@ -601,9 +603,9 @@ function SystemdSheet({
 						<div className="border rounded-md">
 							<table className="w-full text-sm">
 								<tbody>
-									{renderRow("canStart", t`Can Start`, details?.CanStart ? t`Yes` : t`No`)}
-									{renderRow("canStop", t`Can Stop`, details?.CanStop ? t`Yes` : t`No`)}
-									{renderRow("canReload", t`Can Reload`, details?.CanReload ? t`Yes` : t`No`)}
+									{renderRow("canStart", t`Can start`, details?.CanStart ? t`Yes` : t`No`)}
+									{renderRow("canStop", t`Can stop`, details?.CanStop ? t`Yes` : t`No`)}
+									{renderRow("canReload", t`Can reload`, details?.CanReload ? t`Yes` : t`No`)}
 									{/* {renderRow("refuseManualStart", t`Refuse Manual Start`, details?.RefuseManualStart ? t`Yes` : t`No`)}
 									{renderRow("refuseManualStop", t`Refuse Manual Stop`, details?.RefuseManualStop ? t`Yes` : t`No`)} */}
 								</tbody>

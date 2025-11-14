@@ -90,6 +90,10 @@ msgstr "Aktív"
 msgid "Active Alerts"
 msgstr "Aktív riasztások"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Active state"
+msgstr "Aktív állapot"
+
 #: src/components/add-system.tsx
 msgid "Add <0>System</0>"
 msgstr "Hozzáadás <0>System</0>"
@@ -114,6 +118,10 @@ msgstr "Állítsa be a diagram megjelenítését."
 #: src/components/command-palette.tsx
 msgid "Admin"
 msgstr "Adminisztráció"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "After"
+msgstr "Utána"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -200,6 +208,18 @@ msgstr "Sávszélesség"
 msgid "Battery"
 msgstr "Akkumulátor"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became active"
+msgstr "Aktívvá vált"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became inactive"
+msgstr "Inaktívvá vált"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Before"
+msgstr "Előtte"
+
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
 msgstr "A Beszel támogatja az OpenID Connect-et és számos OAuth2 hitelesítési szolgáltatót."
@@ -217,6 +237,10 @@ msgstr "Bináris"
 msgid "Bits (Kbps, Mbps, Gbps)"
 msgstr "Bitek (Kbps, Mbps, Gbps)"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Boot state"
+msgstr "Indítási állapot"
+
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
@@ -226,10 +250,26 @@ msgstr "Byte-ok (KB/s, MB/s, GB/s)"
 msgid "Cache / Buffers"
 msgstr "Gyorsítótár / Pufferelések"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can reload"
+msgstr "Újratölthető"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can start"
+msgstr "Indítható"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can stop"
+msgstr "Leállítható"
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "Mégsem"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Capabilities"
+msgstr "Képességek"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
@@ -306,6 +346,10 @@ msgstr "Konfiguráld, hogyan kapod az értesítéseket."
 msgid "Confirm password"
 msgstr "Jelszó megerősítése"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Conflicts"
+msgstr "Konfliktusok"
+
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
 msgstr "Kapcsolat megszakadt"
@@ -355,17 +399,18 @@ msgstr "Szöveg másolása"
 
 #: src/components/add-system.tsx
 msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
-msgstr ""
+msgstr "Másold az alábbi ügynök telepítési parancsát, vagy regisztráld az ügynököket automatikusan egy <0>univerzális tokennel</0>."
 
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
-msgstr ""
+msgstr "Másold az alábbi ügynök <0>docker-compose.yml</0> tartalmát, vagy regisztráld az ügynököket automatikusan egy <1>univerzális tokennel</1>."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
 msgstr "YAML másolása"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "CPU"
@@ -373,6 +418,14 @@ msgstr "CPU"
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
 msgstr "CPU magok"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "CPU Peak"
+msgstr "CPU csúcs"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "CPU time"
+msgstr "CPU idő"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Time Breakdown"
@@ -433,6 +486,10 @@ msgstr "Törlés"
 msgid "Delete fingerprint"
 msgstr "Ujjlenyomat törlése"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Description"
+msgstr "Leírás"
+
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
 msgstr "Részlet"
@@ -481,6 +538,7 @@ msgid "Docker Network I/O"
 msgstr "Docker hálózat I/O"
 
 #: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Documentation"
 msgstr "Dokumentáció"
 
@@ -541,6 +599,7 @@ msgstr "Adja meg az egyszeri jelszavát."
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
 msgstr "Hiba"
 
@@ -551,9 +610,17 @@ msgstr "Hiba"
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Túllépi a {0}{1} értéket az elmúlt {2, plural, one {# percben} other {# percben}}"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exec main PID"
+msgstr ""
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr "A <0>config.yml</0> fájlban nem definiált meglévő rendszerek törlésre kerülnek. Kérjük, készítsen rendszeres biztonsági mentéseket."
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exited active"
+msgstr "Aktívként kilépett"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -592,10 +659,16 @@ msgstr "Teszt értesítés elküldése sikertelen"
 msgid "Failed to update alert"
 msgstr "Nem sikerült frissíteni a riasztást"
 
+#. placeholder {0}: statusTotals[ServiceStatus.Failed]
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Failed: {0}"
+msgstr "Sikertelen: {0}"
+
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Szűrő..."
@@ -640,6 +713,10 @@ msgstr "GPU-k"
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
 msgstr "GPU áramfelvétele"
+
+#: src/lib/alerts.ts
+msgid "GPU Usage"
+msgstr "GPU használat"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
@@ -690,6 +767,15 @@ msgstr "Nyelv"
 msgid "Layout"
 msgstr "Elrendezés"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Lifecycle"
+msgstr "Életciklus"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "limit"
+msgstr "korlát"
+
 #: src/components/routes/system.tsx
 msgid "Load Average"
 msgstr "Terhelési átlag"
@@ -710,6 +796,14 @@ msgstr "Terhelési átlag 5p"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
 msgstr "Terhelési átlag"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Load state"
+msgstr "Betöltési állapot"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Loading..."
+msgstr "Betöltés..."
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -734,6 +828,10 @@ msgstr "Naplók"
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
 msgstr "Inkább azt keresi, hogy hol hozhat létre riasztásokat? Kattintson a csengő <0/> ikonokra a rendszerek táblázatában."
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Main PID"
+msgstr ""
+
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "A megjelenítési és értesítési beállítások kezelése."
@@ -749,9 +847,20 @@ msgid "Max 1 min"
 msgstr "Maximum 1 perc"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "RAM"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory limit"
+msgstr "Memória korlát"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory Peak"
+msgstr "Memória csúcs"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -769,6 +878,8 @@ msgstr "Modell"
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
 msgstr "Név"
 
@@ -793,7 +904,14 @@ msgstr "Nyilvános interfészek hálózati forgalma"
 msgid "Network unit"
 msgstr "Sávszélesség mértékegysége"
 
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No"
+msgstr "Nem"
+
 #: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
 msgstr "Nincs találat."
 
@@ -802,6 +920,7 @@ msgstr "Nincs találat."
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "No results."
 msgstr "Nincs találat."
 
@@ -954,6 +1073,10 @@ msgstr "Pontos kihasználás a rögzített időpontban"
 msgid "Preferred Language"
 msgstr "Preferált nyelv"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Process started"
+msgstr "Folyamat elindítva"
+
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
@@ -974,6 +1097,10 @@ msgstr "Fogadott"
 msgid "Refresh"
 msgstr "Frissítés"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Relationships"
+msgstr "Kapcsolatok"
+
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
 msgstr "Egyszeri jelszó kérése"
@@ -981,6 +1108,14 @@ msgstr "Egyszeri jelszó kérése"
 #: src/components/login/otp-forms.tsx
 msgid "Request OTP"
 msgstr "OTP kérése"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Required by"
+msgstr "Szükséges"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Requires"
+msgstr "Igényel"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
@@ -992,9 +1127,18 @@ msgstr "Jelszó visszaállítása"
 msgid "Resolved"
 msgstr "Megoldva"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Restarts"
+msgstr "Újraindítások"
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Folytatás"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgctxt "Root disk label"
+msgid "Root"
+msgstr "Gyökér"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1003,6 +1147,10 @@ msgstr "Tokenváltás"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
 msgstr "Sorok száma oldalanként"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Runtime Metrics"
+msgstr "Futásidejű metrikák"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
@@ -1045,6 +1193,10 @@ msgstr "Elküldve"
 msgid "Serial Number"
 msgstr "Sorozatszám"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Service Details"
+msgstr "Szolgáltatás részletei"
+
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "Százalékos küszöbértékek beállítása a mérőszínekhez."
@@ -1074,15 +1226,21 @@ msgstr "Rendezés"
 
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "Állapot"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
 msgstr "Állapot"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "Sub State"
+msgstr "Részállapot"
 
 #: src/components/routes/system.tsx
 msgid "Swap space used by the system"
@@ -1104,6 +1262,10 @@ msgstr "Rendszer"
 msgid "System load averages over time"
 msgstr "Rendszer terhelési átlaga"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Systemd Services"
+msgstr "Systemd szolgáltatások"
+
 #: src/components/navbar.tsx
 msgid "Systems"
 msgstr "Rendszer"
@@ -1115,6 +1277,10 @@ msgstr "A rendszereket egy <0>config.yml</0> fájlban lehet kezelni az adatköny
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
 msgstr "Tábla"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Tasks"
+msgstr "Feladatok"
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1193,11 +1359,11 @@ msgstr "Tokenek & Ujjlenyomatok"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
-msgstr ""
+msgstr "A tokenek lehetővé teszik az ügynökök csatlakozását és regisztrációját. A fingeravtrykkok stabil azonosítók, amelyek minden rendszerre egyediek, és az első kapcsolódáskor kerülnek beállításra."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
-msgstr ""
+msgstr "A tokeneket és fingeravtrykkokat a hubhoz való WebSocket kapcsolatok hitelesítésére használják."
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
@@ -1211,6 +1377,19 @@ msgstr "Összes fogadott adat minden interfészenként"
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data sent for each interface"
 msgstr "Összes elküldött adat minden interfészenként"
+
+#. placeholder {0}: data.length
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Total: {0}"
+msgstr "Összesen: {0}"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggered by"
+msgstr "Kiváltva"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggers"
+msgstr "Kiváltók"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
@@ -1237,6 +1416,10 @@ msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Bekapcsol, ha a CPU érzékelő túllép egy küszöbértéket"
 
 #: src/lib/alerts.ts
+msgid "Triggers when GPU usage exceeds a threshold"
+msgstr "Riaszt, ha a GPU használat túllép egy küszöbértéket"
+
+#: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Bekapcsol, ha a Ram érzékelő túllép egy küszöbértéket"
 
@@ -1251,6 +1434,10 @@ msgstr "Bekapcsol, ha a lemez érzékelő túllép egy küszöbértéket"
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Típus"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unit file"
+msgstr "Egység fájl"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
@@ -1267,6 +1454,11 @@ msgstr "Univerzális token"
 msgid "Unknown"
 msgstr "Ismeretlen"
 
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unlimited"
+msgstr "Korlátlan"
+
 #. Context: System is up
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1278,8 +1470,13 @@ msgid "Up ({upSystemsLength})"
 msgstr "Online ({upSystemsLength})"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "Frissítve"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Updated every 10 minutes."
+msgstr "10 percenként frissítve."
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
@@ -1340,6 +1537,10 @@ msgstr "Elegendő rekordra várva a megjelenítéshez"
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "Szeretne segíteni nekünk abban, hogy fordításaink még jobbak legyenek? További részletekért nézze meg a <0>Crowdin</0> honlapot."
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Wants"
+msgstr "Igényel"
+
 #: src/components/routes/settings/general.tsx
 msgid "Warning (%)"
 msgstr "Figyelmeztetés (%)"
@@ -1354,7 +1555,7 @@ msgstr "Webhook / Push értesítések"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
-msgstr ""
+msgstr "Ha engedélyezve van, ez a token lehetővé teszi az ügynökök önregisztrációját előzetes rendszerlétrehozás nélkül. Egy óra után vagy a hub újraindításakor lejár."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1375,6 +1576,12 @@ msgstr "YAML konfiguráció"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "YAML konfiguráció"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Yes"
+msgstr "Igen"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
