@@ -41,11 +41,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/components/ui/use-toast"
 import { alertInfo } from "@/lib/alerts"
 import { pb } from "@/lib/api"
-import { $userSettings } from "@/lib/stores"
-import { cn, formatDuration, formatShortDate } from "@/lib/utils"
+import { cn, formatDuration, formatShortDate, useBrowserStorage } from "@/lib/utils"
 import type { AlertsHistoryRecord } from "@/types"
-import { saveSettings } from "./layout"
-import { useStore } from "@nanostores/react"
 import { alertsHistoryColumns } from "../../alerts-history-columns"
 
 const SectionIntro = memo(() => {
@@ -70,13 +67,12 @@ export default function AlertsHistoryDataTable() {
 	const [globalFilter, setGlobalFilter] = useState("")
 	const { toast } = useToast()
 	const [deleteOpen, setDeleteDialogOpen] = useState(false)
-	const userSettings = useStore($userSettings)
 	
-	// Initialize pagination with user preference
-	const [pagination, setPagination] = useState<PaginationState>(() => ({
+	// Store pagination preference in local storage
+	const [pagination, setPagination] = useBrowserStorage<PaginationState>("ah-pagination", {
 		pageIndex: 0,
-		pageSize: userSettings.alertHistoryPageSize || 10,
-	}))
+		pageSize: 10,
+	})
 
 	useEffect(() => {
 		let unsubscribe: (() => void) | undefined
@@ -331,13 +327,10 @@ export default function AlertsHistoryDataTable() {
 						<Select
 							value={`${table.getState().pagination.pageSize}`}
 							onValueChange={(value) => {
-								const newPageSize = Number(value);
-								table.setPageSize(newPageSize);
-								// Save the preference to user settings and backend
-								saveSettings({ alertHistoryPageSize: newPageSize });
+								table.setPageSize(Number(value));
 							}}
 						>
-							<SelectTrigger className="w-[4.8em]" id="rows-per-page">
+							<SelectTrigger className="w-18" id="rows-per-page">
 								<SelectValue placeholder={table.getState().pagination.pageSize} />
 							</SelectTrigger>
 							<SelectContent side="top">

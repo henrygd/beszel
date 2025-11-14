@@ -281,7 +281,6 @@ export interface UserSettings {
 	colorWarn?: number
 	colorCrit?: number
 	hourFormat?: HourFormat
-	alertHistoryPageSize?: number
 	layoutWidth?: number
 }
 
