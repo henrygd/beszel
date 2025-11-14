@@ -1,3 +1,17 @@
+## 0.16.1
+
+- Add services column to All Systems table. (#1153)
+
+- Add `SERVICE_PATTERNS` environment variable to filter systemd services. (#1153)
+
+- Fix detection and handling of immutable filesystems like Fedora Silverblue. (#1405)
+
+- Persist alert history page size preference. (#1404)
+
+- Add setting for layout width.
+
+- Update Go dependencies.
+
 ## 0.16.0
 
 - Add basic systemd service monitoring. (#1153)
