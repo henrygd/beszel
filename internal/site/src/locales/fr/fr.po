@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-12 20:36\n"
+"PO-Revision-Date: 2025-11-14 22:51\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -113,6 +113,10 @@ msgstr "Ajouter l’URL"
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
 msgstr "Ajuster les options d'affichage pour les graphiques."
+
+#: src/components/routes/settings/general.tsx
+msgid "Adjust the width of the main layout"
+msgstr "Ajuster la largeur de la mise en page principale"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -638,6 +642,10 @@ msgstr "Exportez la configuration actuelle de vos systèmes."
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenheit (°F)"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Failed"
+msgstr "Échoué"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "Attributs défaillants :"
@@ -766,6 +774,10 @@ msgstr "Langue"
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "Disposition"
+
+#: src/components/routes/settings/general.tsx
+msgid "Layout width"
+msgstr "Largeur de la mise en page"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Lifecycle"
@@ -1196,6 +1208,10 @@ msgstr "Numéro de série"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
 msgstr "Détails du service"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
