@@ -8,7 +8,7 @@ msgstr ""
 "Language: fa\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-12 20:36\n"
+"PO-Revision-Date: 2025-11-14 22:51\n"
 "Last-Translator: \n"
 "Language-Team: Persian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -113,6 +113,10 @@ msgstr "افزودن آدرس اینترنتی"
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
 msgstr "تنظیم گزینه‌های نمایش برای نمودارها."
+
+#: src/components/routes/settings/general.tsx
+msgid "Adjust the width of the main layout"
+msgstr "تنظیم عرض چیدمان اصلی"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -638,6 +642,10 @@ msgstr "پیکربندی سیستم‌های فعلی خود را خارج کن�
 msgid "Fahrenheit (°F)"
 msgstr "فارنهایت (°F)"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Failed"
+msgstr "ناموفق"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "ویژگی‌های ناموفق:"
@@ -766,6 +774,10 @@ msgstr "زبان"
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "طرح‌بندی"
+
+#: src/components/routes/settings/general.tsx
+msgid "Layout width"
+msgstr "عرض چیدمان"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Lifecycle"
@@ -1196,6 +1208,10 @@ msgstr "شماره سریال"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
 msgstr "جزئیات سرویس"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr "سرویس‌ها"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
