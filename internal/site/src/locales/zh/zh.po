@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-12 20:36\n"
+"PO-Revision-Date: 2025-11-14 22:51\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -113,6 +113,10 @@ msgstr "新增 URL"
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
 msgstr "調整圖表的顯示選項。"
+
+#: src/components/routes/settings/general.tsx
+msgid "Adjust the width of the main layout"
+msgstr "調整主版面寬度"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -638,6 +642,10 @@ msgstr "匯出您現在的系統設定。"
 msgid "Fahrenheit (°F)"
 msgstr "華氏 (°F)"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Failed"
+msgstr "失敗"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "失敗屬性："
@@ -766,6 +774,10 @@ msgstr "語言"
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "版面配置"
+
+#: src/components/routes/settings/general.tsx
+msgid "Layout width"
+msgstr "版面寬度"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Lifecycle"
@@ -1196,6 +1208,10 @@ msgstr "序號"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
 msgstr "服務詳細資訊"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr "服務"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
