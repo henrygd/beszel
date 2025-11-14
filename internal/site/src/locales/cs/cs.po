@@ -8,7 +8,7 @@ msgstr ""
 "Language: cs\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-12 20:36\n"
+"PO-Revision-Date: 2025-11-14 22:51\n"
 "Last-Translator: \n"
 "Language-Team: Czech\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 3;\n"
@@ -113,6 +113,10 @@ msgstr "Přidat URL"
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
 msgstr "Upravit možnosti zobrazení pro grafy."
+
+#: src/components/routes/settings/general.tsx
+msgid "Adjust the width of the main layout"
+msgstr "Upravit šířku hlavního rozvržení"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -638,6 +642,10 @@ msgstr "Exportovat aktuální konfiguraci systémů."
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenheita (°F)"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Failed"
+msgstr "Selhalo"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "Neúspěšné atributy:"
@@ -766,6 +774,10 @@ msgstr "Jazyk"
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "Rozvržení"
+
+#: src/components/routes/settings/general.tsx
+msgid "Layout width"
+msgstr "Šířka rozvržení"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Lifecycle"
@@ -1196,6 +1208,10 @@ msgstr "Sériové číslo"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
 msgstr "Detaily služby"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr "Služby"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
