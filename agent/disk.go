@@ -95,6 +95,9 @@ func (a *Agent) initializeDiskInfo() {
 		}
 	}
 
+	// Get the appropriate root mount point for this system
+	rootMountPoint := a.getRootMountPoint()
+
 	// Use FILESYSTEM env var to find root filesystem
 	if filesystem != "" {
 		for _, p := range partitions {
@@ -138,23 +141,11 @@ func (a *Agent) initializeDiskInfo() {
 	for _, p := range partitions {
 		// fmt.Println(p.Device, p.Mountpoint)
 		// Binary root fallback or docker root fallback
-		if !hasRoot && (p.Mountpoint == "/" || (p.Mountpoint == "/etc/hosts" && strings.HasPrefix(p.Device, "/dev"))) {
+		if !hasRoot && (p.Mountpoint == rootMountPoint || (p.Mountpoint == "/etc/hosts" && strings.HasPrefix(p.Device, "/dev"))) {
 			fs, match := findIoDevice(filepath.Base(p.Device), diskIoCounters, a.fsStats)
 			if match {
 				addFsStat(fs, p.Mountpoint, true)
 				hasRoot = true
-			}
-		}
-
-		// Check for immutable filesystems like Fedora Silverblue where real root is at /sysroot
-		if !hasRoot && p.Mountpoint == "/sysroot" {
-			// Check if this is likely an immutable system by checking for typical characteristics
-			if a.isImmutableSystem() {
-				fs, match := findIoDevice(filepath.Base(p.Device), diskIoCounters, a.fsStats)
-				if match {
-					addFsStat(fs, p.Mountpoint, true)
-					hasRoot = true
-				}
 			}
 		}
 
@@ -185,26 +176,9 @@ func (a *Agent) initializeDiskInfo() {
 
 	// If no root filesystem set, use fallback
 	if !hasRoot {
-		// Check if this is likely an immutable system and try /sysroot first
-		if a.isImmutableSystem() {
-			// Look specifically for a partition mounted at /sysroot
-			for _, p := range partitions {
-				if p.Mountpoint == "/sysroot" {
-					fs, _ := findIoDevice(filepath.Base(p.Device), diskIoCounters, a.fsStats)
-					slog.Info("Root disk (immutable system)", "mountpoint", "/sysroot", "io", fs)
-					a.fsStats[fs] = &system.FsStats{Root: true, Mountpoint: "/sysroot"}
-					hasRoot = true
-					break
-				}
-			}
-		}
-		
-		// If still no root found, use the original fallback
-		if !hasRoot {
-			rootDevice, _ := findIoDevice(filepath.Base(filesystem), diskIoCounters, a.fsStats)
-			slog.Info("Root disk", "mountpoint", "/", "io", rootDevice)
-			a.fsStats[rootDevice] = &system.FsStats{Root: true, Mountpoint: "/"}
-		}
+		rootDevice, _ := findIoDevice(filepath.Base(filesystem), diskIoCounters, a.fsStats)
+		slog.Info("Root disk", "mountpoint", rootMountPoint, "io", rootDevice)
+		a.fsStats[rootDevice] = &system.FsStats{Root: true, Mountpoint: rootMountPoint}
 	}
 
 	a.initializeDiskIoStats(diskIoCounters)
