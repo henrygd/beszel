@@ -8,7 +8,7 @@ msgstr ""
 "Language: tr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-12 20:36\n"
+"PO-Revision-Date: 2025-11-14 22:51\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -113,6 +113,10 @@ msgstr "URL Ekle"
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
 msgstr "Grafikler için görüntüleme seçeneklerini ayarlayın."
+
+#: src/components/routes/settings/general.tsx
+msgid "Adjust the width of the main layout"
+msgstr "Ana düzenin genişliğini ayarla"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -638,6 +642,10 @@ msgstr "Mevcut sistem yapılandırmanızı dışa aktarın."
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenhayt (°F)"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Failed"
+msgstr "Başarısız"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "Başarısız Özellikler:"
@@ -766,6 +774,10 @@ msgstr "Dil"
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "Düzen"
+
+#: src/components/routes/settings/general.tsx
+msgid "Layout width"
+msgstr "Düzen genişliği"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Lifecycle"
@@ -1196,6 +1208,10 @@ msgstr "Seri Numarası"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
 msgstr "Hizmet Ayrıntıları"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr "Hizmetler"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
