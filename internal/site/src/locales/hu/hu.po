@@ -8,7 +8,7 @@ msgstr ""
 "Language: hu\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-12 20:36\n"
+"PO-Revision-Date: 2025-11-14 22:51\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -113,6 +113,10 @@ msgstr "URL hozzáadása"
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
 msgstr "Állítsa be a diagram megjelenítését."
+
+#: src/components/routes/settings/general.tsx
+msgid "Adjust the width of the main layout"
+msgstr "A fő elrendezés szélességének beállítása"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -638,6 +642,10 @@ msgstr "Exportálja a jelenlegi rendszerkonfigurációt."
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenheit (°F)"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Failed"
+msgstr "Sikertelen"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "Sikertelen attribútumok:"
@@ -766,6 +774,10 @@ msgstr "Nyelv"
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "Elrendezés"
+
+#: src/components/routes/settings/general.tsx
+msgid "Layout width"
+msgstr "Elrendezés szélessége"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Lifecycle"
@@ -1196,6 +1208,10 @@ msgstr "Sorozatszám"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
 msgstr "Szolgáltatás részletei"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr "Szolgáltatások"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
