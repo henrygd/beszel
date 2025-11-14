@@ -114,6 +114,10 @@ msgstr "Adicionar URL"
 msgid "Adjust display options for charts."
 msgstr "Ajustar opções de exibição para gráficos."
 
+#: src/components/routes/settings/general.tsx
+msgid "Adjust the width of the main layout"
+msgstr "Ajustar a largura do layout principal"
+
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
@@ -638,6 +642,10 @@ msgstr "Exporte a configuração atual dos seus sistemas."
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenheit (°F)"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Failed"
+msgstr "Falhou"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "Atributos com Falha:"
@@ -766,6 +774,10 @@ msgstr "Idioma"
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "Aspeto"
+
+#: src/components/routes/settings/general.tsx
+msgid "Layout width"
+msgstr "Largura do layout"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Lifecycle"
@@ -1196,6 +1208,10 @@ msgstr "Número de Série"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
 msgstr "Detalhes do serviço"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr "Serviços"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
