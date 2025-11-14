@@ -8,7 +8,7 @@ msgstr ""
 "Language: nl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-12 20:36\n"
+"PO-Revision-Date: 2025-11-14 22:51\n"
 "Last-Translator: \n"
 "Language-Team: Dutch\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -113,6 +113,10 @@ msgstr "Voeg URL toe"
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
 msgstr "Weergaveopties voor grafieken aanpassen."
+
+#: src/components/routes/settings/general.tsx
+msgid "Adjust the width of the main layout"
+msgstr "Breedte van het hoofdlayout aanpassen"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -638,6 +642,10 @@ msgstr "Exporteer je huidige systeemconfiguratie."
 msgid "Fahrenheit (°F)"
 msgstr ""
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Failed"
+msgstr "Mislukt"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "Mislukte kenmerken:"
@@ -766,6 +774,10 @@ msgstr "Taal"
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "Indeling"
+
+#: src/components/routes/settings/general.tsx
+msgid "Layout width"
+msgstr "Layoutbreedte"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Lifecycle"
@@ -1196,6 +1208,10 @@ msgstr "Serienummer"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
 msgstr "Servicedetails"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
