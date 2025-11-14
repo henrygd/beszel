@@ -8,7 +8,7 @@ msgstr ""
 "Language: vi\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-12 20:36\n"
+"PO-Revision-Date: 2025-11-14 22:51\n"
 "Last-Translator: \n"
 "Language-Team: Vietnamese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -113,6 +113,10 @@ msgstr "Thêm URL"
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
 msgstr "Điều chỉnh tùy chọn hiển thị cho biểu đồ."
+
+#: src/components/routes/settings/general.tsx
+msgid "Adjust the width of the main layout"
+msgstr "Điều chỉnh chiều rộng bố cục chính"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -638,6 +642,10 @@ msgstr "Xuất cấu hình hệ thống hiện tại của bạn."
 msgid "Fahrenheit (°F)"
 msgstr "Độ F (°F)"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Failed"
+msgstr "Thất bại"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "Thuộc tính thất bại:"
@@ -766,6 +774,10 @@ msgstr "Ngôn ngữ"
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "Bố cục"
+
+#: src/components/routes/settings/general.tsx
+msgid "Layout width"
+msgstr "Chiều rộng bố cục"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Lifecycle"
@@ -1196,6 +1208,10 @@ msgstr "Số seri"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
 msgstr "Chi tiết dịch vụ"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr "Dịch vụ"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
