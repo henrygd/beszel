@@ -315,3 +315,32 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 		}
 	}
 }
+
+// getRootMountPoint returns the appropriate root mount point for the system
+// For immutable systems like Fedora Silverblue, it returns /sysroot instead of /
+func (a *Agent) getRootMountPoint() string {
+	// 1. Check if /etc/os-release contains indicators of an immutable system
+	if osReleaseContent, err := os.ReadFile("/etc/os-release"); err == nil {
+		content := string(osReleaseContent)
+		if strings.Contains(content, "fedora") && strings.Contains(content, "silverblue") ||
+			strings.Contains(content, "coreos") ||
+			strings.Contains(content, "flatcar") ||
+			strings.Contains(content, "rhel-atomic") ||
+			strings.Contains(content, "centos-atomic") {
+			// Verify that /sysroot exists before returning it
+			if _, err := os.Stat("/sysroot"); err == nil {
+				return "/sysroot"
+			}
+		}
+	}
+
+	// 2. Check if /run/ostree is present (ostree-based systems like Silverblue)
+	if _, err := os.Stat("/run/ostree"); err == nil {
+		// Verify that /sysroot exists before returning it
+		if _, err := os.Stat("/sysroot"); err == nil {
+			return "/sysroot"
+		}
+	}
+
+	return "/"
+}
