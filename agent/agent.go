@@ -229,3 +229,40 @@ func (a *Agent) getFingerprint() string {
 
 	return fingerprint
 }
+
+// getRootMountPoint returns the appropriate root mount point for the system
+// For immutable systems like Fedora Silverblue, it returns /sysroot instead of /
+func (a *Agent) getRootMountPoint() string {
+	// Check for typical immutable system indicators
+	// 1. Check if /etc/os-release contains indicators of an immutable system
+	if osReleaseContent, err := os.ReadFile("/etc/os-release"); err == nil {
+		content := string(osReleaseContent)
+		// Look for indicators of atomic/immutable systems
+		if strings.Contains(content, "fedora") && strings.Contains(content, "silverblue") ||
+		   strings.Contains(content, "coreos") ||
+		   strings.Contains(content, "flatcar") ||
+		   strings.Contains(content, "rhel-atomic") ||
+		   strings.Contains(content, "centos-atomic") {
+			// Verify that /sysroot exists before returning it
+			if _, err := os.Stat("/sysroot"); err == nil {
+				return "/sysroot"
+			}
+		}
+	}
+
+	// 2. Check if /run/ostree is present (ostree-based systems like Silverblue)
+	if _, err := os.Stat("/run/ostree"); err == nil {
+		// Verify that /sysroot exists before returning it
+		if _, err := os.Stat("/sysroot"); err == nil {
+			return "/sysroot"
+		}
+	}
+
+	return "/"
+}
+
+// isImmutableSystem detects if the system is likely an immutable system like Fedora Silverblue
+// where the real root filesystem is mounted at /sysroot instead of /
+func (a *Agent) isImmutableSystem() bool {
+	return a.getRootMountPoint() != "/"
+}
