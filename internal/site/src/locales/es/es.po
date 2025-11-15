@@ -8,7 +8,7 @@ msgstr ""
 "Language: es\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-14 22:51\n"
+"PO-Revision-Date: 2025-11-15 08:26\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -256,15 +256,15 @@ msgstr "Caché / Buffers"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Can reload"
-msgstr "Puede recargar"
+msgstr "Puede recargarse"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Can start"
-msgstr "Puede iniciar"
+msgstr "Puede iniciarse"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Can stop"
-msgstr "Puede detener"
+msgstr "Puede detenerse"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
