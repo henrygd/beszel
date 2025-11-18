@@ -36,28 +36,31 @@ import { AppleIcon, DockerIcon, FreeBsdIcon, TuxIcon, WindowsIcon } from "./ui/i
 import { InputCopy } from "./ui/input-copy"
 
 export function AddSystemButton({ className }: { className?: string }) {
-	const [open, setOpen] = useState(false)
-	const opened = useRef(false)
-	if (open) {
-		opened.current = true
-	}
+    if (isReadOnlyUser()) {
+        return null
+    }
+    const [open, setOpen] = useState(false)
+    const opened = useRef(false)
+    if (open) {
+        opened.current = true
+    }
 
-	return (
-		<Dialog open={open} onOpenChange={setOpen}>
-			<DialogTrigger asChild>
-				<Button
-					variant="outline"
-					className={cn("flex gap-1 max-xs:h-[2.4rem]", className, isReadOnlyUser() && "hidden")}
-				>
-					<PlusIcon className="h-4 w-4 -ms-1" />
-					<Trans>
-						Add <span className="hidden sm:inline">System</span>
-					</Trans>
-				</Button>
-			</DialogTrigger>
-			{opened.current && <SystemDialog setOpen={setOpen} />}
-		</Dialog>
-	)
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Button
+                    variant="outline"
+                    className={cn("flex gap-1 max-xs:h-[2.4rem]", className)}
+                >
+                    <PlusIcon className="h-4 w-4 -ms-1" />
+                    <Trans>
+                        Add <span className="hidden sm:inline">System</span>
+                    </Trans>
+                </Button>
+            </DialogTrigger>
+            {opened.current && <SystemDialog setOpen={setOpen} />}
+        </Dialog>
+    )
 }
 
 /**
