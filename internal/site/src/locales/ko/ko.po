@@ -114,6 +114,10 @@ msgstr "URL 추가"
 msgid "Adjust display options for charts."
 msgstr "차트 표시 옵션 변경."
 
+#: src/components/routes/settings/general.tsx
+msgid "Adjust the width of the main layout"
+msgstr "메인 레이아웃 너비 조정"
+
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
@@ -638,6 +642,10 @@ msgstr "현재 시스템 구성 내보내기"
 msgid "Fahrenheit (°F)"
 msgstr "화씨 (°F)"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Failed"
+msgstr "실패"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "실패한 속성:"
@@ -766,6 +774,10 @@ msgstr "언어"
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "레이아웃"
+
+#: src/components/routes/settings/general.tsx
+msgid "Layout width"
+msgstr "레이아웃 너비"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Lifecycle"
@@ -1196,6 +1208,10 @@ msgstr "시리얼 번호"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
 msgstr "서비스 세부 정보"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr "서비스"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."

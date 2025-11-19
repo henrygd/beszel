@@ -114,6 +114,10 @@ msgstr "Dodaj URL"
 msgid "Adjust display options for charts."
 msgstr "Podesite opcije prikaza za grafikone."
 
+#: src/components/routes/settings/general.tsx
+msgid "Adjust the width of the main layout"
+msgstr "Prilagodite širinu glavnog rasporeda"
+
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
@@ -638,6 +642,10 @@ msgstr "Izvoz trenutne sistemske konfiguracije."
 msgid "Fahrenheit (°F)"
 msgstr "Farenhajt (°F)"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Failed"
+msgstr "Neuspješno"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "Neuspjeli atributi:"
@@ -766,6 +774,10 @@ msgstr "Jezik"
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "Izgled"
+
+#: src/components/routes/settings/general.tsx
+msgid "Layout width"
+msgstr "Širina rasporeda"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Lifecycle"
@@ -1196,6 +1208,10 @@ msgstr "Serijski broj"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
 msgstr "Detalji usluge"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr "Usluge"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
