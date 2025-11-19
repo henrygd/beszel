@@ -17,9 +17,7 @@ import (
 	"github.com/henrygd/beszel/internal/entities/systemd"
 )
 
-var (
-	errNoActiveTime = errors.New("no active time")
-)
+var errNoActiveTime = errors.New("no active time")
 
 // systemdManager manages the collection of systemd service statistics.
 type systemdManager struct {
@@ -32,9 +30,12 @@ type systemdManager struct {
 
 // newSystemdManager creates a new systemdManager.
 func newSystemdManager() (*systemdManager, error) {
+	if skipSystemd, _ := GetEnv("SKIP_SYSTEMD"); skipSystemd == "true" {
+		return nil, nil
+	}
 	conn, err := dbus.NewSystemConnectionContext(context.Background())
 	if err != nil {
-		slog.Warn("Error connecting to systemd", "err", err, "ref", "https://beszel.dev/guide/systemd")
+		slog.Debug("Error connecting to systemd", "err", err, "ref", "https://beszel.dev/guide/systemd")
 		return nil, err
 	}
 
