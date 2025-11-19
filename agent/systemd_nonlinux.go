@@ -23,6 +23,16 @@ func (sm *systemdManager) getServiceStats(conn any, refresh bool) []*systemd.Ser
 	return nil
 }
 
+// getServiceStatsCount returns 0 for non-linux systems.
+func (sm *systemdManager) getServiceStatsCount() int {
+	return 0
+}
+
+// getFailedServiceCount returns 0 for non-linux systems.
+func (sm *systemdManager) getFailedServiceCount() uint16 {
+	return 0
+}
+
 func (sm *systemdManager) getServiceDetails(string) (systemd.ServiceDetails, error) {
 	return nil, errors.New("systemd manager unavailable")
 }

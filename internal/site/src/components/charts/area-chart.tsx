@@ -11,6 +11,7 @@ import {
 import { chartMargin, cn, formatShortDate } from "@/lib/utils"
 import type { ChartData, SystemStatsRecord } from "@/types"
 import { useYAxisWidth } from "./hooks"
+import { AxisDomain } from "recharts/types/util/types"
 
 export type DataPoint = {
 	label: string
@@ -41,7 +42,7 @@ export default function AreaChartDefault({
 		tickFormatter: (value: number, index: number) => string
 		contentFormatter: ({ value, payload }: { value: number; payload: SystemStatsRecord }) => string
 		dataPoints?: DataPoint[]
-		domain?: [number, number]
+		domain?: AxisDomain
 		legend?: boolean
 		showTotal?: boolean
 		itemSorter?: (a: any, b: any) => number

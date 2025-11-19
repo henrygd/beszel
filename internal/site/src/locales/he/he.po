@@ -114,6 +114,10 @@ msgstr "הוסף URL"
 msgid "Adjust display options for charts."
 msgstr "התאם אפשרויות תצוגה עבור גרפים."
 
+#: src/components/routes/settings/general.tsx
+msgid "Adjust the width of the main layout"
+msgstr "התאם את רוחב הפריסה הראשית"
+
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
@@ -638,6 +642,10 @@ msgstr "ייצא את תצורת המערכות הנוכחית שלך."
 msgid "Fahrenheit (°F)"
 msgstr "פרנהייט (°F)"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Failed"
+msgstr "נכשל"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "מאפיינים שנכשלו:"
@@ -766,6 +774,10 @@ msgstr "שפה"
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "פריסה"
+
+#: src/components/routes/settings/general.tsx
+msgid "Layout width"
+msgstr "רוחב פריסה"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Lifecycle"
@@ -1196,6 +1208,10 @@ msgstr "מספר סידורי"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
 msgstr "פרטי שירות"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr "שירותים"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."

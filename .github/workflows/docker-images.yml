@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      max-parallel: 5
       matrix:
         include:
           # henrygd/beszel
@@ -24,20 +25,18 @@ jobs:
               type=semver,pattern={{major}}.{{minor}}
               type=semver,pattern={{major}}
               type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
-
-          # henrygd/beszel-agent
+            
+          # henrygd/beszel-agent:alpine
           - image: henrygd/beszel-agent
-            dockerfile: ./internal/dockerfile_agent
+            dockerfile: ./internal/dockerfile_agent_alpine
             registry: docker.io
             username_secret: DOCKERHUB_USERNAME
             password_secret: DOCKERHUB_TOKEN
             tags: |
-              type=raw,value=edge
-              type=raw,value=latest
-              type=semver,pattern={{version}}
-              type=semver,pattern={{major}}.{{minor}}
-              type=semver,pattern={{major}}
-              type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
+              type=raw,value=alpine
+              type=semver,pattern={{version}}-alpine
+              type=semver,pattern={{major}}.{{minor}}-alpine
+              type=semver,pattern={{major}}-alpine
 
           # henrygd/beszel-agent-nvidia
           - image: henrygd/beszel-agent-nvidia
@@ -66,18 +65,6 @@ jobs:
               type=semver,pattern={{major}}.{{minor}}
               type=semver,pattern={{major}}
               type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
-
-          # henrygd/beszel-agent:alpine
-          - image: henrygd/beszel-agent
-            dockerfile: ./internal/dockerfile_agent_alpine
-            registry: docker.io
-            username_secret: DOCKERHUB_USERNAME
-            password_secret: DOCKERHUB_TOKEN
-            tags: |
-              type=raw,value=alpine
-              type=semver,pattern={{version}}-alpine
-              type=semver,pattern={{major}}.{{minor}}-alpine
-              type=semver,pattern={{major}}-alpine
 
           # ghcr.io/henrygd/beszel
           - image: ghcr.io/${{ github.repository }}/beszel
@@ -145,6 +132,19 @@ jobs:
               type=semver,pattern={{version}}-alpine
               type=semver,pattern={{major}}.{{minor}}-alpine
               type=semver,pattern={{major}}-alpine
+
+          # henrygd/beszel-agent (keep at bottom so it gets built after :alpine and gets the latest tag)
+          - image: henrygd/beszel-agent
+            dockerfile: ./internal/dockerfile_agent
+            registry: docker.io
+            username_secret: DOCKERHUB_USERNAME
+            password_secret: DOCKERHUB_TOKEN
+            tags: |
+              type=raw,value=edge
+              type=semver,pattern={{version}}
+              type=semver,pattern={{major}}.{{minor}}
+              type=semver,pattern={{major}}
+              type=raw,value={{sha}},enable=${{ github.ref_type != 'tag' }}
 
     permissions:
       contents: read

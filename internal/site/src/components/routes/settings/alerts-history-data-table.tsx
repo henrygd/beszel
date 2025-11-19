@@ -7,6 +7,7 @@ import {
 	getFilteredRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
+	type PaginationState,
 	type SortingState,
 	useReactTable,
 	type VisibilityState,
@@ -40,7 +41,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/components/ui/use-toast"
 import { alertInfo } from "@/lib/alerts"
 import { pb } from "@/lib/api"
-import { cn, formatDuration, formatShortDate } from "@/lib/utils"
+import { cn, formatDuration, formatShortDate, useBrowserStorage } from "@/lib/utils"
 import type { AlertsHistoryRecord } from "@/types"
 import { alertsHistoryColumns } from "../../alerts-history-columns"
 
@@ -66,6 +67,12 @@ export default function AlertsHistoryDataTable() {
 	const [globalFilter, setGlobalFilter] = useState("")
 	const { toast } = useToast()
 	const [deleteOpen, setDeleteDialogOpen] = useState(false)
+	
+	// Store pagination preference in local storage
+	const [pagination, setPagination] = useBrowserStorage<PaginationState>("ah-pagination", {
+		pageIndex: 0,
+		pageSize: 10,
+	})
 
 	useEffect(() => {
 		let unsubscribe: (() => void) | undefined
@@ -136,12 +143,14 @@ export default function AlertsHistoryDataTable() {
 		onColumnFiltersChange: setColumnFilters,
 		onColumnVisibilityChange: setColumnVisibility,
 		onRowSelectionChange: setRowSelection,
+		onPaginationChange: setPagination,
 		state: {
 			sorting,
 			columnFilters,
 			columnVisibility,
 			rowSelection,
 			globalFilter,
+			pagination,
 		},
 		onGlobalFilterChange: setGlobalFilter,
 		globalFilterFn: (row, _columnId, filterValue) => {
@@ -318,10 +327,10 @@ export default function AlertsHistoryDataTable() {
 						<Select
 							value={`${table.getState().pagination.pageSize}`}
 							onValueChange={(value) => {
-								table.setPageSize(Number(value))
+								table.setPageSize(Number(value));
 							}}
 						>
-							<SelectTrigger className="w-[4.8em]" id="rows-per-page">
+							<SelectTrigger className="w-18" id="rows-per-page">
 								<SelectValue placeholder={table.getState().pagination.pageSize} />
 							</SelectTrigger>
 							<SelectContent side="top">

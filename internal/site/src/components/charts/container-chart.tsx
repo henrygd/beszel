@@ -2,7 +2,7 @@
 import { useStore } from "@nanostores/react"
 import { memo, useMemo } from "react"
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
-import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
+import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, pinnedAxisDomain, xAxis } from "@/components/ui/chart"
 import { ChartType, Unit } from "@/lib/enums"
 import { $containerFilter, $userSettings } from "@/lib/stores"
 import { chartMargin, cn, decimalString, formatBytes, formatShortDate, toFixedFloat } from "@/lib/utils"
@@ -124,6 +124,7 @@ export default memo(function ContainerChart({
 					<CartesianGrid vertical={false} />
 					<YAxis
 						direction="ltr"
+						domain={pinnedAxisDomain()}
 						orientation={chartData.orientation}
 						className="tracking-tighter"
 						width={yAxisWidth}

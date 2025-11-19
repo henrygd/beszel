@@ -114,6 +114,10 @@ msgstr "添加 URL"
 msgid "Adjust display options for charts."
 msgstr "调整图表的显示选项。"
 
+#: src/components/routes/settings/general.tsx
+msgid "Adjust the width of the main layout"
+msgstr "调整主布局宽度"
+
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
@@ -638,6 +642,10 @@ msgstr "导出您当前的系统配置。"
 msgid "Fahrenheit (°F)"
 msgstr "华氏度 (°F)"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Failed"
+msgstr "失败"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
 msgstr "失败属性："
@@ -766,6 +774,10 @@ msgstr "语言"
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "布局"
+
+#: src/components/routes/settings/general.tsx
+msgid "Layout width"
+msgstr "布局宽度"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Lifecycle"
@@ -1196,6 +1208,10 @@ msgstr "序列号"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
 msgstr "服务详情"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr "服务"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."

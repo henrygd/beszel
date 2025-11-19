@@ -76,6 +76,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/
 import NetworkSheet from "./system/network-sheet"
 import CpuCoresSheet from "./system/cpu-sheet"
 import LineChartDefault from "../charts/line-chart"
+import { pinnedAxisDomain } from "../ui/chart"
 
 type ChartTimeData = {
 	time: number
@@ -648,6 +649,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 							]}
 							tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
 							contentFormatter={({ value }) => `${decimalString(value)}%`}
+							domain={pinnedAxisDomain()}
 						/>
 					</ChartCard>
 

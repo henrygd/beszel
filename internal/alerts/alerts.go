@@ -77,7 +77,6 @@ var supportsTitle = map[string]struct{}{
 	"ifttt":      {},
 	"join":       {},
 	"lark":       {},
-	"matrix":     {},
 	"ntfy":       {},
 	"opsgenie":   {},
 	"pushbullet": {},

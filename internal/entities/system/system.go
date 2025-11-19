@@ -187,6 +187,7 @@ type Info struct {
 	LoadAvg        [3]float64         `json:"la,omitempty" cbor:"19,keyasint"`
 	ConnectionType ConnectionType     `json:"ct,omitempty" cbor:"20,keyasint,omitempty,omitzero"`
 	ExtraFsPct     map[string]float64 `json:"efs,omitempty" cbor:"21,keyasint,omitempty"`
+	Services       []uint16           `json:"sv,omitempty" cbor:"22,keyasint,omitempty"` // [totalServices, numFailedServices]
 }
 
 // Final data structure to return to the hub

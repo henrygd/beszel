@@ -95,6 +95,9 @@ func (a *Agent) initializeDiskInfo() {
 		}
 	}
 
+	// Get the appropriate root mount point for this system
+	rootMountPoint := a.getRootMountPoint()
+
 	// Use FILESYSTEM env var to find root filesystem
 	if filesystem != "" {
 		for _, p := range partitions {
@@ -138,7 +141,7 @@ func (a *Agent) initializeDiskInfo() {
 	for _, p := range partitions {
 		// fmt.Println(p.Device, p.Mountpoint)
 		// Binary root fallback or docker root fallback
-		if !hasRoot && (p.Mountpoint == "/" || (p.Mountpoint == "/etc/hosts" && strings.HasPrefix(p.Device, "/dev"))) {
+		if !hasRoot && (p.Mountpoint == rootMountPoint || (p.Mountpoint == "/etc/hosts" && strings.HasPrefix(p.Device, "/dev"))) {
 			fs, match := findIoDevice(filepath.Base(p.Device), diskIoCounters, a.fsStats)
 			if match {
 				addFsStat(fs, p.Mountpoint, true)
@@ -174,8 +177,8 @@ func (a *Agent) initializeDiskInfo() {
 	// If no root filesystem set, use fallback
 	if !hasRoot {
 		rootDevice, _ := findIoDevice(filepath.Base(filesystem), diskIoCounters, a.fsStats)
-		slog.Info("Root disk", "mountpoint", "/", "io", rootDevice)
-		a.fsStats[rootDevice] = &system.FsStats{Root: true, Mountpoint: "/"}
+		slog.Info("Root disk", "mountpoint", rootMountPoint, "io", rootDevice)
+		a.fsStats[rootDevice] = &system.FsStats{Root: true, Mountpoint: rootMountPoint}
 	}
 
 	a.initializeDiskIoStats(diskIoCounters)
@@ -311,4 +314,33 @@ func (a *Agent) updateDiskIo(cacheTimeMs uint16, systemStats *system.Stats) {
 			}
 		}
 	}
+}
+
+// getRootMountPoint returns the appropriate root mount point for the system
+// For immutable systems like Fedora Silverblue, it returns /sysroot instead of /
+func (a *Agent) getRootMountPoint() string {
+	// 1. Check if /etc/os-release contains indicators of an immutable system
+	if osReleaseContent, err := os.ReadFile("/etc/os-release"); err == nil {
+		content := string(osReleaseContent)
+		if strings.Contains(content, "fedora") && strings.Contains(content, "silverblue") ||
+			strings.Contains(content, "coreos") ||
+			strings.Contains(content, "flatcar") ||
+			strings.Contains(content, "rhel-atomic") ||
+			strings.Contains(content, "centos-atomic") {
+			// Verify that /sysroot exists before returning it
+			if _, err := os.Stat("/sysroot"); err == nil {
+				return "/sysroot"
+			}
+		}
+	}
+
+	// 2. Check if /run/ostree is present (ostree-based systems like Silverblue)
+	if _, err := os.Stat("/run/ostree"); err == nil {
+		// Verify that /sysroot exists before returning it
+		if _, err := os.Stat("/sysroot"); err == nil {
+			return "/sysroot"
+		}
+	}
+
+	return "/"
 }
