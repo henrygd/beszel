@@ -244,6 +244,20 @@ export interface AlertsHistoryRecord extends RecordModel {
 	resolved?: string | null
 }
 
+export interface QuietHoursRecord extends RecordModel {
+	id: string
+	user: string
+	system: string
+	type: "one-time" | "daily"
+	start: string
+	end?: string | null
+	expand?: {
+		system?: {
+			name: string
+		}
+	}
+}
+
 export interface ContainerRecord extends RecordModel {
 	id: string
 	system: string

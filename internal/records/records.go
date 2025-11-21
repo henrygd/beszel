@@ -498,6 +498,10 @@ func (rm *RecordManager) DeleteOldRecords() {
 		if err != nil {
 			return err
 		}
+		err = deleteOldQuietHours(txApp)
+		if err != nil {
+			return err
+		}
 		return nil
 	})
 }
@@ -586,6 +590,17 @@ func deleteOldContainerRecords(app core.App) error {
 	_, err := app.DB().NewQuery("DELETE FROM containers WHERE updated < {:updated}").Bind(dbx.Params{"updated": tenMinutesAgo.UnixMilli()}).Execute()
 	if err != nil {
 		return fmt.Errorf("failed to delete old container records: %v", err)
+	}
+
+	return nil
+}
+
+// Deletes old quiet hours records where end date has passed
+func deleteOldQuietHours(app core.App) error {
+	now := time.Now().UTC()
+	_, err := app.DB().NewQuery("DELETE FROM quiet_hours WHERE type = 'one-time' AND end < {:now}").Bind(dbx.Params{"now": now}).Execute()
+	if err != nil {
+		return err
 	}
 
 	return nil

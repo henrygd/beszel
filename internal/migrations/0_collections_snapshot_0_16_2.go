@@ -1150,6 +1150,99 @@ func init() {
 		"type": "base",
 		"updateRule": null,
 		"viewRule": null
+	},
+	{
+		"createRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
+		"deleteRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
+		"fields": [
+			{
+				"autogeneratePattern": "[a-z0-9]{10}",
+				"hidden": false,
+				"id": "text3208210256",
+				"max": 10,
+				"min": 10,
+				"name": "id",
+				"pattern": "^[a-z0-9]+$",
+				"presentable": false,
+				"primaryKey": true,
+				"required": true,
+				"system": true,
+				"type": "text"
+			},
+			{
+				"cascadeDelete": true,
+				"collectionId": "_pb_users_auth_",
+				"hidden": false,
+				"id": "relation2375276105",
+				"maxSelect": 1,
+				"minSelect": 0,
+				"name": "user",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "relation"
+			},
+			{
+				"cascadeDelete": true,
+				"collectionId": "2hz5ncl8tizk5nx",
+				"hidden": false,
+				"id": "relation3377271179",
+				"maxSelect": 1,
+				"minSelect": 0,
+				"name": "system",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "relation"
+			},
+			{
+				"hidden": false,
+				"id": "select2844932856",
+				"maxSelect": 1,
+				"name": "type",
+				"presentable": false,
+				"required": true,
+				"system": false,
+				"type": "select",
+				"values": [
+					"one-time",
+					"daily"
+				]
+			},
+			{
+				"hidden": false,
+				"id": "date2675529103",
+				"max": "",
+				"min": "",
+				"name": "start",
+				"presentable": false,
+				"required": true,
+				"system": false,
+				"type": "date"
+			},
+			{
+				"hidden": false,
+				"id": "date16528305",
+				"max": "",
+				"min": "",
+				"name": "end",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "date"
+			}
+		],
+		"id": "pbc_451525641",
+		"indexes": [
+			"CREATE INDEX ` + "`" + `idx_q0iKnRP9v8` + "`" + ` ON ` + "`" + `quiet_hours` + "`" + ` (\n  ` + "`" + `user` + "`" + `,\n  ` + "`" + `system` + "`" + `\n)",
+			"CREATE INDEX ` + "`" + `idx_6T7ljT7FJd` + "`" + ` ON ` + "`" + `quiet_hours` + "`" + ` (\n  ` + "`" + `type` + "`" + `,\n  ` + "`" + `end` + "`" + `\n)"
+		],
+		"listRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
+		"name": "quiet_hours",
+		"system": false,
+		"type": "base",
+		"updateRule": "@request.auth.id != \"\" && user.id = @request.auth.id",
+		"viewRule": "@request.auth.id != \"\" && user.id = @request.auth.id"
 	}
 ]`
 
