@@ -8,7 +8,7 @@ msgstr ""
 "Language: ru\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-14 22:51\n"
+"PO-Revision-Date: 2025-11-21 23:15\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -786,7 +786,7 @@ msgstr "Жизненный цикл"
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
-msgstr ""
+msgstr "лимит"
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
@@ -1453,7 +1453,7 @@ msgstr "Тип"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
-msgstr "Файл юнита"
+msgstr "Unit файл"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
