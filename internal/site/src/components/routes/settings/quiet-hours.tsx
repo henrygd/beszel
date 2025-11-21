@@ -1,19 +1,11 @@
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
-import { CalendarClockIcon, MoreHorizontalIcon, PlusIcon, Trash2Icon } from "lucide-react"
+import { MoreHorizontalIcon, PlusIcon, Trash2Icon, ServerIcon, ClockIcon, CalendarIcon, ActivityIcon, PenSquareIcon } from "lucide-react"
 import { useEffect, useState } from "react"
-import {
-   AlertDialog,
-   AlertDialogAction,
-   AlertDialogCancel,
-   AlertDialogContent,
-   AlertDialogDescription,
-   AlertDialogFooter,
-   AlertDialogHeader,
-   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import { Button, buttonVariants } from "@/components/ui/button"
+
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
    Dialog,
    DialogContent,
@@ -37,15 +29,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/components/ui/use-toast"
 import { pb } from "@/lib/api"
 import { $systems } from "@/lib/stores"
-import { cn, formatShortDate } from "@/lib/utils"
+import { formatShortDate } from "@/lib/utils"
 import type { QuietHoursRecord } from "@/types"
 
 export function QuietHours() {
    const [data, setData] = useState<QuietHoursRecord[]>([])
    const [dialogOpen, setDialogOpen] = useState(false)
    const [editingRecord, setEditingRecord] = useState<QuietHoursRecord | null>(null)
-   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-   const [recordToDelete, setRecordToDelete] = useState<string | null>(null)
    const { toast } = useToast()
    const systems = useStore($systems)
 
@@ -87,11 +77,9 @@ export function QuietHours() {
       return () => unsubscribe?.()
    }, [])
 
-   const handleDelete = async () => {
-      if (!recordToDelete) return
-      setDeleteDialogOpen(false)
+   const handleDelete = async (id: string) => {
       try {
-         await pb.collection("quiet_hours").delete(recordToDelete)
+         await pb.collection("quiet_hours").delete(id)
       } catch (e: any) {
          toast({
             variant: "destructive",
@@ -99,12 +87,6 @@ export function QuietHours() {
             description: e.message || "Failed to delete quiet hours.",
          })
       }
-      setRecordToDelete(null)
-   }
-
-   const openDeleteDialog = (id: string) => {
-      setRecordToDelete(id)
-      setDeleteDialogOpen(true)
    }
 
    const openEditDialog = (record: QuietHoursRecord) => {
@@ -128,6 +110,59 @@ export function QuietHours() {
       const start = formatShortDate(record.start)
       const end = record.end ? formatShortDate(record.end) : ""
       return end ? `${start} - ${end}` : start
+   }
+
+   const getWindowState = (record: QuietHoursRecord): "active" | "past" | "future" => {
+      const now = new Date()
+
+      if (record.type === "daily") {
+         // For daily windows, check if current time is within the window
+         const startDate = new Date(record.start)
+         const endDate = record.end ? new Date(record.end) : null
+
+         // Get current time in local timezone
+         const currentMinutes = now.getHours() * 60 + now.getMinutes()
+         const startMinutes = startDate.getUTCHours() * 60 + startDate.getUTCMinutes()
+         const endMinutes = endDate ? endDate.getUTCHours() * 60 + endDate.getUTCMinutes() : null
+
+         // Convert UTC to local time offset
+         const offset = now.getTimezoneOffset()
+         const localStartMinutes = (startMinutes - offset + 1440) % 1440
+         const localEndMinutes = endMinutes !== null ? (endMinutes - offset + 1440) % 1440 : null
+
+         if (localEndMinutes === null) {
+            // No end time, so it's always active from start time onwards each day
+            return "active"
+         }
+
+         // Handle cases where window spans midnight
+         if (localStartMinutes <= localEndMinutes) {
+            return currentMinutes >= localStartMinutes && currentMinutes < localEndMinutes ? "active" : "future"
+         } else {
+            return currentMinutes >= localStartMinutes || currentMinutes < localEndMinutes ? "active" : "future"
+         }
+      } else {
+         // For one-time windows
+         const startDate = new Date(record.start)
+         const endDate = record.end ? new Date(record.end) : null
+
+         if (endDate) {
+            if (now >= startDate && now <= endDate) {
+               return "active"
+            } else if (now > endDate) {
+               return "past"
+            } else {
+               return "future"
+            }
+         } else {
+            // No end date
+            if (now >= startDate) {
+               return "active"
+            } else {
+               return "future"
+            }
+         }
+      }
    }
 
    return (
@@ -164,13 +199,28 @@ export function QuietHours() {
                   <TableHeader>
                      <TableRow className="border-border/50">
                         <TableHead className="px-4">
-                           <Trans>System</Trans>
+                           <span className="flex items-center gap-2">
+                              <ServerIcon className="size-4" />
+                              <Trans>System</Trans>
+                           </span>
                         </TableHead>
                         <TableHead className="px-4">
-                           <Trans>Type</Trans>
+                           <span className="flex items-center gap-2">
+                              <ClockIcon className="size-4" />
+                              <Trans>Type</Trans>
+                           </span>
                         </TableHead>
                         <TableHead className="px-4">
-                           <Trans>Schedule</Trans>
+                           <span className="flex items-center gap-2">
+                              <ActivityIcon className="size-4" />
+                              <Trans>State</Trans>
+                           </span>
+                        </TableHead>
+                        <TableHead className="px-4">
+                           <span className="flex items-center gap-2">
+                              <CalendarIcon className="size-4" />
+                              <Trans>Schedule</Trans>
+                           </span>
                         </TableHead>
                         <TableHead className="px-4 text-right sr-only">
                            <Trans>Actions</Trans>
@@ -186,6 +236,22 @@ export function QuietHours() {
                            <TableCell className="px-4 py-3">
                               {record.type === "daily" ? <Trans>Daily</Trans> : <Trans>One-time</Trans>}
                            </TableCell>
+                           <TableCell className="px-4 py-3">
+                              {(() => {
+                                 const state = getWindowState(record)
+                                 const stateConfig = {
+                                    active: { label: <Trans>Active</Trans>, variant: "success" as const },
+                                    past: { label: <Trans>Past</Trans>, variant: "danger" as const },
+                                    future: { label: <Trans>Future</Trans>, variant: "default" as const },
+                                 }
+                                 const config = stateConfig[state]
+                                 return (
+                                    <Badge variant={config.variant}>
+                                       {config.label}
+                                    </Badge>
+                                 )
+                              })()}
+                           </TableCell>
                            <TableCell className="px-4 py-3">{formatDateTime(record)}</TableCell>
                            <TableCell className="px-4 py-3 text-right">
                               <DropdownMenu>
@@ -197,10 +263,10 @@ export function QuietHours() {
                                  </DropdownMenuTrigger>
                                  <DropdownMenuContent align="end">
                                     <DropdownMenuItem onClick={() => openEditDialog(record)}>
-                                       <CalendarClockIcon className="me-2.5 size-4" />
+                                       <PenSquareIcon className="me-2.5 size-4" />
                                        <Trans>Edit</Trans>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => openDeleteDialog(record.id)}>
+                                    <DropdownMenuItem onClick={() => handleDelete(record.id)}>
                                        <Trash2Icon className="me-2.5 size-4" />
                                        <Trans>Delete</Trans>
                                     </DropdownMenuItem>
@@ -214,26 +280,7 @@ export function QuietHours() {
             </div>
          )}
 
-         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-            <AlertDialogContent>
-               <AlertDialogHeader>
-                  <AlertDialogTitle>
-                     <Trans>Are you sure?</Trans>
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                     <Trans>This will permanently delete these quiet hours.</Trans>
-                  </AlertDialogDescription>
-               </AlertDialogHeader>
-               <AlertDialogFooter>
-                  <AlertDialogCancel>
-                     <Trans>Cancel</Trans>
-                  </AlertDialogCancel>
-                  <AlertDialogAction className={cn(buttonVariants({ variant: "destructive" }))} onClick={handleDelete}>
-                     <Trans>Delete</Trans>
-                  </AlertDialogAction>
-               </AlertDialogFooter>
-            </AlertDialogContent>
-         </AlertDialog>
+
       </>
    )
 }
@@ -289,7 +336,7 @@ function QuietHoursDialog({
       } else {
          // Reset form
          setSelectedSystem("")
-         setIsGlobal(false)
+         setIsGlobal(true)
          setWindowType("one-time")
          setStartDateTime("")
          setEndDateTime("")
@@ -366,11 +413,11 @@ function QuietHoursDialog({
          <form onSubmit={handleSubmit} className="space-y-4">
             <Tabs value={isGlobal ? "global" : "system"} onValueChange={(value) => setIsGlobal(value === "global")}>
                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="system">
-                     <Trans>Specific System</Trans>
-                  </TabsTrigger>
                   <TabsTrigger value="global">
                      <Trans>All Systems</Trans>
+                  </TabsTrigger>
+                  <TabsTrigger value="system">
+                     <Trans>Specific System</Trans>
                   </TabsTrigger>
                </TabsList>
 
