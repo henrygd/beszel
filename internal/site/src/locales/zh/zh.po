@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-14 22:51\n"
+"PO-Revision-Date: 2025-11-22 03:50\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -1028,11 +1028,11 @@ msgstr "已暫停 ({pausedSystemsLength})"
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Per-core average utilization"
-msgstr "每個核心的平均使用率"
+msgstr "核心平均使用率"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Percentage of time spent in each state"
-msgstr "在每個狀態下花費的時間百分比"
+msgstr "狀態時間佔比"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1087,7 +1087,7 @@ msgstr "首選語言"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
-msgstr "程序已啟動"
+msgstr "進程啟動"
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
@@ -1123,7 +1123,7 @@ msgstr "請求 OTP"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Required by"
-msgstr "被需要於"
+msgstr "被需要"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Requires"
@@ -1296,7 +1296,7 @@ msgstr "列表"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
-msgstr "任務"
+msgstr "任務數"
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1555,7 +1555,7 @@ msgstr "想幫助我們改善翻譯嗎？查看<0>Crowdin</0>以取得更多詳�
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Wants"
-msgstr "想要"
+msgstr "可選依賴"
 
 #: src/components/routes/settings/general.tsx
 msgid "Warning (%)"
