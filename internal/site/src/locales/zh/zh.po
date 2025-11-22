@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-22 03:50\n"
+"PO-Revision-Date: 2025-11-22 05:56\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -214,11 +214,11 @@ msgstr "電池"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Became active"
-msgstr "變為活動"
+msgstr "啟用"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Became inactive"
-msgstr "變為非活動"
+msgstr "停用"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Before"
@@ -256,7 +256,7 @@ msgstr "快取/緩衝"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Can reload"
-msgstr "可重新載入"
+msgstr "可重載"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Can start"
@@ -273,7 +273,7 @@ msgstr "取消"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Capabilities"
-msgstr ""
+msgstr "能力"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
@@ -624,7 +624,7 @@ msgstr "未在 <0>config.yml</0> 中定義的現有系統將會被刪除。請�
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exited active"
-msgstr "退出時為活動"
+msgstr "結束"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -920,7 +920,7 @@ msgstr "網路單位"
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No"
-msgstr ""
+msgstr "否"
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1150,7 +1150,7 @@ msgstr "繼續"
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
-msgstr ""
+msgstr "Root"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1597,7 +1597,7 @@ msgstr "YAML 設定檔"
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Yes"
-msgstr ""
+msgstr "是"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
