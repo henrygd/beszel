@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-22 05:56\n"
+"PO-Revision-Date: 2025-11-22 11:14\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -1123,11 +1123,11 @@ msgstr "請求 OTP"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Required by"
-msgstr "被需要"
+msgstr "被依賴"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Requires"
-msgstr "需要"
+msgstr "依賴"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
