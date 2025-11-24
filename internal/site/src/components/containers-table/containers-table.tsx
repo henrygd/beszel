@@ -26,7 +26,7 @@ import { Sheet, SheetTitle, SheetHeader, SheetContent, SheetDescription } from "
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog"
 import { Button } from "@/components/ui/button"
 import { $allSystemsById } from "@/lib/stores"
-import { MaximizeIcon, RefreshCwIcon } from "lucide-react"
+import { MaximizeIcon, RefreshCwIcon, XIcon } from "lucide-react"
 import { Separator } from "../ui/separator"
 import { $router, Link } from "../router"
 import { listenKeys } from "nanostores"
@@ -147,12 +147,26 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 							<Trans>Click on a container to view more information.</Trans>
 						</CardDescription>
 					</div>
-					<Input
-						placeholder={t`Filter...`}
-						value={globalFilter}
-						onChange={(e) => setGlobalFilter(e.target.value)}
-						className="ms-auto px-4 w-full max-w-full md:w-64"
-					/>
+					<div className="relative ms-auto w-full max-w-full md:w-64">
+						<Input
+							placeholder={t`Filter...`}
+							value={globalFilter}
+							onChange={(e) => setGlobalFilter(e.target.value)}
+							className="ps-4 pe-10 w-full"
+						/>
+						{globalFilter && (
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon"
+								aria-label={t`Clear filter`}
+								className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+								onClick={() => setGlobalFilter("")}
+							>
+								<XIcon className="h-4 w-4" />
+							</Button>
+						)}
+					</div>
 				</div>
 			</CardHeader>
 			<div className="rounded-md">
