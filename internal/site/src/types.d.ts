@@ -250,7 +250,7 @@ export interface QuietHoursRecord extends RecordModel {
 	system: string
 	type: "one-time" | "daily"
 	start: string
-	end?: string | null
+	end: string
 	expand?: {
 		system?: {
 			name: string

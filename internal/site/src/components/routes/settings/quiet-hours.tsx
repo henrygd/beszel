@@ -103,13 +103,13 @@ export function QuietHours() {
       if (record.type === "daily") {
          // For daily windows, show only time
          const startTime = new Date(record.start).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-         const endTime = record.end ? new Date(record.end).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""
-         return endTime ? `${startTime} - ${endTime}` : startTime
+         const endTime = new Date(record.end).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+         return `${startTime} - ${endTime}`
       }
       // For one-time windows, show full date and time
       const start = formatShortDate(record.start)
-      const end = record.end ? formatShortDate(record.end) : ""
-      return end ? `${start} - ${end}` : start
+      const end = formatShortDate(record.end)
+      return `${start} - ${end}`
    }
 
    const getWindowState = (record: QuietHoursRecord): "active" | "past" | "future" => {
@@ -118,22 +118,17 @@ export function QuietHours() {
       if (record.type === "daily") {
          // For daily windows, check if current time is within the window
          const startDate = new Date(record.start)
-         const endDate = record.end ? new Date(record.end) : null
+         const endDate = new Date(record.end)
 
          // Get current time in local timezone
          const currentMinutes = now.getHours() * 60 + now.getMinutes()
          const startMinutes = startDate.getUTCHours() * 60 + startDate.getUTCMinutes()
-         const endMinutes = endDate ? endDate.getUTCHours() * 60 + endDate.getUTCMinutes() : null
+         const endMinutes = endDate.getUTCHours() * 60 + endDate.getUTCMinutes()
 
          // Convert UTC to local time offset
          const offset = now.getTimezoneOffset()
          const localStartMinutes = (startMinutes - offset + 1440) % 1440
-         const localEndMinutes = endMinutes !== null ? (endMinutes - offset + 1440) % 1440 : null
-
-         if (localEndMinutes === null) {
-            // No end time, so it's always active from start time onwards each day
-            return "active"
-         }
+         const localEndMinutes = (endMinutes - offset + 1440) % 1440
 
          // Handle cases where window spans midnight
          if (localStartMinutes <= localEndMinutes) {
@@ -144,23 +139,14 @@ export function QuietHours() {
       } else {
          // For one-time windows
          const startDate = new Date(record.start)
-         const endDate = record.end ? new Date(record.end) : null
+         const endDate = new Date(record.end)
 
-         if (endDate) {
-            if (now >= startDate && now <= endDate) {
-               return "active"
-            } else if (now > endDate) {
-               return "past"
-            } else {
-               return "future"
-            }
+         if (now >= startDate && now < endDate) {
+            return "active"
+         } else if (now >= endDate) {
+            return "past"
          } else {
-            // No end date
-            if (now >= startDate) {
-               return "active"
-            } else {
-               return "future"
-            }
+            return "future"
          }
       }
    }
@@ -490,20 +476,23 @@ function QuietHoursDialog({
                         onChange={(e) => setStartDateTime(e.target.value)}
                         min={formatDateTimeLocal(new Date(new Date().setHours(0, 0, 0, 0)))}
                         required
+                        className="tabular-nums tracking-tighter"
                      />
                   </div>
-                  <div className="grid gap-2">
-                     <Label htmlFor="end-datetime">
-                        <Trans>End Date & Time</Trans> (<Trans>Optional</Trans>)
-                     </Label>
-                     <Input
-                        id="end-datetime"
-                        type="datetime-local"
-                        value={endDateTime}
-                        onChange={(e) => setEndDateTime(e.target.value)}
-                        min={startDateTime || formatDateTimeLocal(new Date())}
-                     />
-                  </div>
+				<div className="grid gap-2">
+					<Label htmlFor="end-datetime">
+						<Trans>End Date & Time</Trans>
+					</Label>
+					<Input
+						id="end-datetime"
+						type="datetime-local"
+						value={endDateTime}
+						onChange={(e) => setEndDateTime(e.target.value)}
+						min={startDateTime || formatDateTimeLocal(new Date())}
+						required
+						className="tabular-nums tracking-tighter"
+					/>
+				</div>
                </>
             ) : (
                <>
@@ -519,12 +508,12 @@ function QuietHoursDialog({
                         required
                      />
                   </div>
-                  <div className="grid gap-2">
-                     <Label htmlFor="end-time">
-                        <Trans>End Time</Trans> (<Trans>Optional</Trans>)
-                     </Label>
-                     <Input id="end-time" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
-                  </div>
+				<div className="grid gap-2">
+					<Label htmlFor="end-time">
+						<Trans>End Time</Trans>
+					</Label>
+					<Input id="end-time" type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} required />
+				</div>
                </>
             )}
 

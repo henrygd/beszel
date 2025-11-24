@@ -153,22 +153,19 @@ func (am *AlertManager) IsNotificationSilenced(userID, systemID string) bool {
 			// Handle case where window crosses midnight
 			if endMinutes < startMinutes {
 				// Window crosses midnight (e.g., 23:00 - 01:00)
-				if nowMinutes >= startMinutes || nowMinutes <= endMinutes {
+				if nowMinutes >= startMinutes || nowMinutes < endMinutes {
 					return true
 				}
 			} else {
 				// Normal case (e.g., 09:00 - 17:00)
-				if nowMinutes >= startMinutes && nowMinutes <= endMinutes {
+				if nowMinutes >= startMinutes && nowMinutes < endMinutes {
 					return true
 				}
 			}
 		} else {
 			// One-time window: check if current time is within the date range
-			if now.After(start) || now.Equal(start) {
-				// If end is zero/null, suppression continues indefinitely from start
-				if end.IsZero() || now.Before(end) || now.Equal(end) {
-					return true
-				}
+			if (now.After(start) || now.Equal(start)) && now.Before(end) {
+				return true
 			}
 		}
 	}

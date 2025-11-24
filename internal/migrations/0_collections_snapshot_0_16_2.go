@@ -1227,7 +1227,7 @@ func init() {
 				"min": "",
 				"name": "end",
 				"presentable": false,
-				"required": false,
+				"required": true,
 				"system": false,
 				"type": "date"
 			}
