@@ -28,6 +28,7 @@ type AlertManager struct {
 
 type AlertMessageData struct {
 	UserID   string
+	SystemID string
 	Title    string
 	Message  string
 	Link     string
@@ -105,8 +106,81 @@ func (am *AlertManager) bindEvents() {
 	am.hub.OnRecordAfterDeleteSuccess("alerts").BindFunc(resolveHistoryOnAlertDelete)
 }
 
+// IsNotificationSilenced checks if a notification should be silenced based on configured quiet hours
+func (am *AlertManager) IsNotificationSilenced(userID, systemID string) bool {
+	// Query for quiet hours windows that match this user and system
+	// Include both global windows (system is null/empty) and system-specific windows
+	var filter string
+	var params dbx.Params
+
+	if systemID == "" {
+		// If no systemID provided, only check global windows
+		filter = "user={:user} AND system=''"
+		params = dbx.Params{"user": userID}
+	} else {
+		// Check both global and system-specific windows
+		filter = "user={:user} AND (system='' OR system={:system})"
+		params = dbx.Params{
+			"user":   userID,
+			"system": systemID,
+		}
+	}
+
+	quietHourWindows, err := am.hub.FindAllRecords("quiet_hours", dbx.NewExp(filter, params))
+	if err != nil || len(quietHourWindows) == 0 {
+		return false
+	}
+
+	now := time.Now().UTC()
+
+	for _, window := range quietHourWindows {
+		windowType := window.GetString("type")
+		start := window.GetDateTime("start").Time()
+		end := window.GetDateTime("end").Time()
+
+		if windowType == "daily" {
+			// For daily recurring windows, extract just the time portion and compare
+			// The start/end are stored as full datetime but we only care about HH:MM
+			startHour, startMin, _ := start.Clock()
+			endHour, endMin, _ := end.Clock()
+			nowHour, nowMin, _ := now.Clock()
+
+			// Convert to minutes since midnight for easier comparison
+			startMinutes := startHour*60 + startMin
+			endMinutes := endHour*60 + endMin
+			nowMinutes := nowHour*60 + nowMin
+
+			// Handle case where window crosses midnight
+			if endMinutes < startMinutes {
+				// Window crosses midnight (e.g., 23:00 - 01:00)
+				if nowMinutes >= startMinutes || nowMinutes < endMinutes {
+					return true
+				}
+			} else {
+				// Normal case (e.g., 09:00 - 17:00)
+				if nowMinutes >= startMinutes && nowMinutes < endMinutes {
+					return true
+				}
+			}
+		} else {
+			// One-time window: check if current time is within the date range
+			if (now.After(start) || now.Equal(start)) && now.Before(end) {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 // SendAlert sends an alert to the user
 func (am *AlertManager) SendAlert(data AlertMessageData) error {
+	// Check if alert is silenced
+	if am.IsNotificationSilenced(data.UserID, data.SystemID) {
+		am.hub.Logger().Info("Notification silenced", "user", data.UserID, "system", data.SystemID, "title", data.Title)
+		return nil
+	}
+
 	// get user settings
 	record, err := am.hub.FindFirstRecordByFilter(
 		"user_settings", "user={:user}",
