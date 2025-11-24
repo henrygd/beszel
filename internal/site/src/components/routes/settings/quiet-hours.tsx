@@ -30,7 +30,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { pb } from "@/lib/api"
 import { $systems } from "@/lib/stores"
 import { formatShortDate } from "@/lib/utils"
-import type { QuietHoursRecord } from "@/types"
+import type { QuietHoursRecord, SystemRecord } from "@/types"
 
 export function QuietHours() {
    const [data, setData] = useState<QuietHoursRecord[]>([])
@@ -80,11 +80,11 @@ export function QuietHours() {
    const handleDelete = async (id: string) => {
       try {
          await pb.collection("quiet_hours").delete(id)
-      } catch (e: any) {
+      } catch (e: unknown) {
          toast({
             variant: "destructive",
             title: t`Error`,
-            description: e.message || "Failed to delete quiet hours.",
+            description: (e as Error).message || "Failed to delete quiet hours.",
          })
       }
    }
@@ -302,7 +302,7 @@ function QuietHoursDialog({
    toast,
 }: {
    editingRecord: QuietHoursRecord | null
-   systems: any[]
+   systems: SystemRecord[]
    onClose: () => void
    toast: any
 }) {
@@ -334,14 +334,20 @@ function QuietHoursDialog({
             setEndDateTime(endDate ? formatDateTimeLocal(endDate) : "")
          }
       } else {
-         // Reset form
+         // Reset form with default dates: today at 12pm and 1pm
+         const today = new Date()
+         const noon = new Date(today)
+         noon.setHours(12, 0, 0, 0)
+         const onePm = new Date(today)
+         onePm.setHours(13, 0, 0, 0)
+
          setSelectedSystem("")
          setIsGlobal(true)
          setWindowType("one-time")
-         setStartDateTime("")
-         setEndDateTime("")
-         setStartTime("")
-         setEndTime("")
+         setStartDateTime(formatDateTimeLocal(noon))
+         setEndDateTime(formatDateTimeLocal(onePm))
+         setStartTime("12:00")
+         setEndTime("13:00")
       }
    }, [editingRecord])
 
