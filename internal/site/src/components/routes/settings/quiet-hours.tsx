@@ -114,7 +114,7 @@ export function QuietHours() {
 		return `${start} - ${end}`
 	}
 
-	const getWindowState = (record: QuietHoursRecord): "active" | "past" | "future" => {
+	const getWindowState = (record: QuietHoursRecord): "active" | "past" | "inactive" => {
 		const now = new Date()
 
 		if (record.type === "daily") {
@@ -134,9 +134,9 @@ export function QuietHours() {
 
 			// Handle cases where window spans midnight
 			if (localStartMinutes <= localEndMinutes) {
-				return currentMinutes >= localStartMinutes && currentMinutes < localEndMinutes ? "active" : "future"
+				return currentMinutes >= localStartMinutes && currentMinutes < localEndMinutes ? "active" : "inactive"
 			} else {
-				return currentMinutes >= localStartMinutes || currentMinutes < localEndMinutes ? "active" : "future"
+				return currentMinutes >= localStartMinutes || currentMinutes < localEndMinutes ? "active" : "inactive"
 			}
 		} else {
 			// For one-time windows
@@ -148,7 +148,7 @@ export function QuietHours() {
 			} else if (now >= endDate) {
 				return "past"
 			} else {
-				return "future"
+				return "inactive"
 			}
 		}
 	}
@@ -197,14 +197,14 @@ export function QuietHours() {
 								</TableHead>
 								<TableHead className="px-4">
 									<span className="flex items-center gap-2">
-										<ActivityIcon className="size-4" />
-										<Trans>State</Trans>
+										<CalendarIcon className="size-4" />
+										<Trans>Schedule</Trans>
 									</span>
 								</TableHead>
 								<TableHead className="px-4">
 									<span className="flex items-center gap-2">
-										<CalendarIcon className="size-4" />
-										<Trans>Schedule</Trans>
+										<ActivityIcon className="size-4" />
+										<Trans>State</Trans>
 									</span>
 								</TableHead>
 								<TableHead className="px-4 text-right sr-only">
@@ -221,19 +221,19 @@ export function QuietHours() {
 									<TableCell className="px-4 py-3">
 										{record.type === "daily" ? <Trans>Daily</Trans> : <Trans>One-time</Trans>}
 									</TableCell>
+									<TableCell className="px-4 py-3">{formatDateTime(record)}</TableCell>
 									<TableCell className="px-4 py-3">
 										{(() => {
 											const state = getWindowState(record)
 											const stateConfig = {
 												active: { label: <Trans>Active</Trans>, variant: "success" as const },
 												past: { label: <Trans>Past</Trans>, variant: "danger" as const },
-												future: { label: <Trans>Future</Trans>, variant: "default" as const },
+												inactive: { label: <Trans>Inactive</Trans>, variant: "default" as const },
 											}
 											const config = stateConfig[state]
 											return <Badge variant={config.variant}>{config.label}</Badge>
 										})()}
 									</TableCell>
-									<TableCell className="px-4 py-3">{formatDateTime(record)}</TableCell>
 									<TableCell className="px-4 py-3 text-right">
 										<DropdownMenu>
 											<DropdownMenuTrigger asChild>
@@ -285,7 +285,7 @@ function QuietHoursDialog({
 	editingRecord: QuietHoursRecord | null
 	systems: SystemRecord[]
 	onClose: () => void
-	toast: any
+	toast: ReturnType<typeof useToast>["toast"]
 }) {
 	const [selectedSystem, setSelectedSystem] = useState(editingRecord?.system || "")
 	const [isGlobal, setIsGlobal] = useState(!editingRecord?.system)
