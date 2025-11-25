@@ -48,7 +48,8 @@
 			},
 			"suspicious": {
 				"useAwait": "error",
-				"noEvolvingTypes": "error"
+				"noEvolvingTypes": "error",
+				"noArrayIndexKey": "off"
 			}
 		}
 	},
