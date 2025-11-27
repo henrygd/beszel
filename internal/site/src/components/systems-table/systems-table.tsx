@@ -24,6 +24,7 @@ import {
 	LayoutGridIcon,
 	LayoutListIcon,
 	Settings2Icon,
+	XIcon,
 } from "lucide-react"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -60,7 +61,7 @@ export default function SystemsTable() {
 	const upSystems = $upSystems.get()
 	const pausedSystems = $pausedSystems.get()
 	const { i18n, t } = useLingui()
-	const [filter, setFilter] = useState<string>()
+	const [filter, setFilter] = useState<string>("")
 	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
 	const [sorting, setSorting] = useBrowserStorage<SortingState>(
 		"sortMode",
@@ -145,7 +146,26 @@ export default function SystemsTable() {
 					</div>
 
 					<div className="flex gap-2 ms-auto w-full md:w-80">
-						<Input placeholder={t`Filter...`} onChange={(e) => setFilter(e.target.value)} className="px-4" />
+						<div className="relative flex-1">
+							<Input
+								placeholder={t`Filter...`}
+								onChange={(e) => setFilter(e.target.value)}
+								value={filter}
+								className="ps-4 pe-10 w-full"
+							/>
+							{filter && (
+								<Button
+									type="button"
+									variant="ghost"
+									size="icon"
+									aria-label="Clear filter"
+									className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+									onClick={() => setFilter("")}
+								>
+									<XIcon className="h-4 w-4" />
+								</Button>
+							)}
+						</div>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="outline">
@@ -278,6 +298,7 @@ export default function SystemsTable() {
 		upSystemsLength,
 		downSystemsLength,
 		pausedSystemsLength,
+		filter,
 	])
 
 	return (

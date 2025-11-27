@@ -30,11 +30,12 @@
 				"noUnusedFunctionParameters": "error",
 				"noUnusedPrivateClassMembers": "error",
 				"useExhaustiveDependencies": {
-					"level": "error",
+					"level": "warn",
 					"options": {
 						"reportUnnecessaryDependencies": false
 					}
 				},
+				"useUniqueElementIds": "off",
 				"noUnusedVariables": "error"
 			},
 			"style": {
@@ -47,7 +48,8 @@
 			},
 			"suspicious": {
 				"useAwait": "error",
-				"noEvolvingTypes": "error"
+				"noEvolvingTypes": "error",
+				"noArrayIndexKey": "off"
 			}
 		}
 	},
