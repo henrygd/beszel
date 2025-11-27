@@ -166,6 +166,7 @@ func (am *AlertManager) sendStatusAlert(alertStatus string, systemName string, a
 
 	return am.SendAlert(AlertMessageData{
 		UserID:   alertRecord.GetString("user"),
+		SystemID: systemID,
 		Title:    title,
 		Message:  message,
 		Link:     am.hub.MakeLink("system", systemID),

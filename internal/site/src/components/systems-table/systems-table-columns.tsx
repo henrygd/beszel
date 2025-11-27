@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/correctness/useHookAtTopLevel: <explanation> */
 import { t } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
@@ -218,7 +219,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			},
 		},
 		{
-			accessorFn: ({ info }) => (info.bb || (info.b || 0) * 1024 * 1024) || undefined,
+			accessorFn: ({ info }) => info.bb || (info.b || 0) * 1024 * 1024 || undefined,
 			id: "net",
 			name: () => t`Net`,
 			size: 0,
@@ -233,7 +234,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 				const { value, unit } = formatBytes((info.getValue() || 0) as number, true, userSettings.unitNet, false)
 				return (
 					<span className="tabular-nums whitespace-nowrap">
-						{decimalString(value , value >= 100 ? 1 : 2)} {unit}
+						{decimalString(value, value >= 100 ? 1 : 2)} {unit}
 					</span>
 				)
 			},
@@ -291,7 +292,10 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 								[STATUS_COLORS[SystemStatus.Up]]: numFailed === 0,
 							})}
 						/>
-						{totalCount} <span className="text-muted-foreground text-sm -ms-0.5">({t`Failed`.toLowerCase()}: {numFailed})</span>
+						{totalCount}{" "}
+						<span className="text-muted-foreground text-sm -ms-0.5">
+							({t`Failed`.toLowerCase()}: {numFailed})
+						</span>
 					</span>
 				)
 			},
@@ -395,70 +399,85 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 	const { info: sysInfo, status, id } = info.row.original
 	const extraFs = Object.entries(sysInfo.efs ?? {})
 
-	// No extra disks - show basic meter
 	if (extraFs.length === 0) {
 		return TableCellWithMeter(info)
 	}
 
 	const rootDiskPct = sysInfo.dp
-	
+
 	// sort extra disks by percentage descending
 	extraFs.sort((a, b) => b[1] - a[1])
-	
-	function getMeterClass(pct: number) {
+
+	function getIndicatorColor(pct: number) {
 		const threshold = getMeterState(pct)
-		return cn(
-			"h-full",
+		return (
 			(status !== SystemStatus.Up && STATUS_COLORS.paused) ||
-				(threshold === MeterState.Good && STATUS_COLORS.up) ||
-				(threshold === MeterState.Warn && STATUS_COLORS.pending) ||
-				STATUS_COLORS.down
+			(threshold === MeterState.Good && STATUS_COLORS.up) ||
+			(threshold === MeterState.Warn && STATUS_COLORS.pending) ||
+			STATUS_COLORS.down
 		)
+	}
+
+	function getMeterClass(pct: number) {
+		return cn("h-full", getIndicatorColor(pct))
 	}
 
 	return (
 		<Tooltip>
 			<TooltipTrigger asChild>
-				<Link href={getPagePath($router, "system", { id })} tabIndex={-1} className="flex flex-col gap-0.5 w-full relative z-10">
+				<Link
+					href={getPagePath($router, "system", { id })}
+					tabIndex={-1}
+					className="flex flex-col gap-0.5 w-full relative z-10"
+				>
 					<div className="flex gap-2 items-center tabular-nums tracking-tight">
 						<span className="min-w-8 shrink-0">{decimalString(rootDiskPct, rootDiskPct >= 10 ? 1 : 2)}%</span>
-						<span className="flex-1 min-w-8 grid bg-muted h-[1em] rounded-sm overflow-hidden">
+						<span className="flex-1 min-w-8 flex items-center gap-0.5 px-1 justify-end bg-muted h-[1em] rounded-sm overflow-hidden relative">
 							{/* Root disk */}
-							<span className={getMeterClass(rootDiskPct)} style={{ width: `${rootDiskPct}%` }}></span>
-							{/* Extra disks */}
-							{extraFs.map(([_name, pct], index) => (
-								<span key={index} className={getMeterClass(pct)} style={{ width: `${pct}%` }}></span>
+							<span
+								className={cn("absolute inset-0", getMeterClass(rootDiskPct))}
+								style={{ width: `${rootDiskPct}%` }}
+							></span>
+							{/* Extra disk indicators */}
+							{extraFs.map(([name, pct]) => (
+								<span
+									key={name}
+									className={cn("size-1.5 rounded-full shrink-0 outline-[0.5px] outline-muted", getIndicatorColor(pct))}
+								/>
 							))}
-
 						</span>
 					</div>
 				</Link>
 			</TooltipTrigger>
 			<TooltipContent side="right" className="max-w-xs pb-2">
-					<div className="grid gap-1.5">
-						<div className="grid gap-0.5">
-							<div className="text-[0.65rem] text-muted-foreground uppercase tracking-wide tabular-nums"><Trans context="Root disk label">Root</Trans></div>
-							<div className="flex gap-2 items-center tabular-nums text-xs">
-								<span className="min-w-7">{decimalString(rootDiskPct, rootDiskPct >= 10 ? 1 : 2)}%</span>
-								<span className="flex-1 min-w-12 grid bg-muted h-2.5 rounded-sm overflow-hidden">
-									<span className={getMeterClass(rootDiskPct)} style={{ width: `${rootDiskPct}%` }}></span>
-								</span>
-							</div>
+				<div className="grid gap-1">
+					<div className="grid gap-0.5">
+						<div className="text-[0.65rem] text-muted-foreground uppercase tracking-wide tabular-nums">
+							<Trans context="Root disk label">Root</Trans>
 						</div>
-						{extraFs.map(([name, pct]) => {
-							return (
-								<div key={name} className="grid gap-0.5">
-									<div className="text-[0.65rem] max-w-40 text-muted-foreground uppercase tracking-wide truncate">{name}</div>
-									<div className="flex gap-2 items-center tabular-nums text-xs">
-										<span className="min-w-7">{decimalString(pct, pct >= 10 ? 1 : 2)}%</span>
-										<span className="flex-1 min-w-12 grid bg-muted h-2.5 rounded-sm overflow-hidden">
-											<span className={getMeterClass(pct)} style={{ width: `${pct}%` }}></span>
-										</span>
-									</div>
-								</div>
-							)
-						})}
+						<div className="flex gap-2 items-center tabular-nums text-xs">
+							<span className="min-w-7">{decimalString(rootDiskPct, rootDiskPct >= 10 ? 1 : 2)}%</span>
+							<span className="flex-1 min-w-12 grid bg-muted h-2.5 rounded-sm overflow-hidden">
+								<span className={getMeterClass(rootDiskPct)} style={{ width: `${rootDiskPct}%` }}></span>
+							</span>
+						</div>
 					</div>
+					{extraFs.map(([name, pct]) => {
+						return (
+							<div key={name} className="grid gap-0.5">
+								<div className="text-[0.65rem] max-w-40 text-muted-foreground uppercase tracking-wide truncate">
+									{name}
+								</div>
+								<div className="flex gap-2 items-center tabular-nums text-xs">
+									<span className="min-w-7">{decimalString(pct, pct >= 10 ? 1 : 2)}%</span>
+									<span className="flex-1 min-w-12 grid bg-muted h-2.5 rounded-sm overflow-hidden">
+										<span className={getMeterClass(pct)} style={{ width: `${pct}%` }}></span>
+									</span>
+								</div>
+							</div>
+						)
+					})}
+				</div>
 			</TooltipContent>
 		</Tooltip>
 	)

@@ -309,6 +309,7 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 	}
 	am.SendAlert(AlertMessageData{
 		UserID:   alert.alertRecord.GetString("user"),
+		SystemID: alert.systemRecord.Id,
 		Title:    subject,
 		Message:  body,
 		Link:     am.hub.MakeLink("system", alert.systemRecord.Id),
