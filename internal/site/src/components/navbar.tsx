@@ -3,6 +3,7 @@ import { getPagePath } from "@nanostores/router"
 import {
 	ContainerIcon,
 	DatabaseBackupIcon,
+	HardDriveIcon,
 	LogOutIcon,
 	LogsIcon,
 	SearchIcon,
@@ -29,6 +30,7 @@ import { LangToggle } from "./lang-toggle"
 import { Logo } from "./logo"
 import { ModeToggle } from "./mode-toggle"
 import { $router, basePath, Link, prependBasePath } from "./router"
+import { t } from "@lingui/core/macro"
 
 const CommandPalette = lazy(() => import("./command-palette"))
 
@@ -54,6 +56,13 @@ export default function Navbar() {
 					aria-label="Containers"
 				>
 					<ContainerIcon className="h-[1.2rem] w-[1.2rem]" strokeWidth={1.5} />
+				</Link>
+				<Link
+					href={getPagePath($router, "smart")}
+					className={cn("hidden md:grid", buttonVariants({ variant: "ghost", size: "icon" }))}
+					aria-label="S.M.A.R.T."
+				>
+					<HardDriveIcon className="h-[1.2rem] w-[1.2rem]" strokeWidth={1.5} />
 				</Link>
 				<LangToggle />
 				<ModeToggle />

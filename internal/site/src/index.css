@@ -34,7 +34,7 @@
 	--table-header: hsl(225, 6%, 97%);
 	--chart-saturation: 65%;
 	--chart-lightness: 50%;
-	--container: 1480px;
+	--container: 1500px;
 }
 
 .dark {
@@ -117,7 +117,6 @@
 }
 
 @layer utilities {
-
 	/* Fonts */
 	@supports (font-variation-settings: normal) {
 		:root {
