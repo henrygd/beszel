@@ -1,3 +1,29 @@
+## 0.17.0
+
+- Add quiet hours to silence alerts during specific time periods. (#265)
+
+- Add dedicated S.M.A.R.T. page with persistent device storage.
+
+- Add alerts for S.M.A.R.T. failures.
+
+- Add `DISK_USAGE_CACHE` environment variable. (#1426)
+
+- Add `SKIP_SYSTEMD` environment variable. (#1448)
+
+- Add hub builds for Windows and FreeBSD.
+
+- Change extra disk indicators in systems table to display usage range as dots. (#1409)
+
+- Add clear button to filter inputs in all systems and containers tables. (#1447)
+
+- Strip ANSI escape sequences from docker logs. (#1478)
+
+- Fix issue where the Add System button is visible to read-only users. (#1442)
+
+- Fix font ligatures creating unwanted artifacts in random ids. (#1434)
+
+- Update Go dependencies.
+
 ## 0.16.1
 
 - Add services column to All Systems table. (#1153)
