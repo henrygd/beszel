@@ -365,16 +365,8 @@ function QuietHoursDialog({
 
 			if (editingRecord) {
 				await pb.collection("quiet_hours").update(editingRecord.id, data)
-				toast({
-					title: t`Updated`,
-					description: t`Quiet hours have been updated.`,
-				})
 			} else {
 				await pb.collection("quiet_hours").create(data)
-				toast({
-					title: t`Created`,
-					description: t`Quiet hours have been created.`,
-				})
 			}
 
 			onClose()
@@ -382,7 +374,7 @@ function QuietHoursDialog({
 			toast({
 				variant: "destructive",
 				title: t`Error`,
-				description: t`Failed to save quiet hours.`,
+				description: t`Failed to save settings`,
 			})
 		}
 	}
@@ -399,10 +391,10 @@ function QuietHoursDialog({
 				<Tabs value={isGlobal ? "global" : "system"} onValueChange={(value) => setIsGlobal(value === "global")}>
 					<TabsList className="grid w-full grid-cols-2">
 						<TabsTrigger value="global">
-							<Trans>All Systems</Trans>
+							<Trans>Global</Trans>
 						</TabsTrigger>
 						<TabsTrigger value="system">
-							<Trans>Specific System</Trans>
+							<Trans>System</Trans>
 						</TabsTrigger>
 					</TabsList>
 

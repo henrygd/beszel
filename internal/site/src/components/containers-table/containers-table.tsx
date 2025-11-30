@@ -54,23 +54,27 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 					fields: "id,name,image,cpu,memory,net,health,status,system,updated",
 					filter: systemId ? pb.filter("system={:system}", { system: systemId }) : undefined,
 				})
-				.then(({ items }) => items.length && setData((curItems) => {
-					const lastUpdated = Math.max(items[0].updated, items.at(-1)?.updated ?? 0)
-					const containerIds = new Set()
-					const newItems = []
-					for (const item of items) {
-						if (Math.abs(lastUpdated - item.updated) < 70_000) {
-							containerIds.add(item.id)
-							newItems.push(item)
-						}
-					}
-					for (const item of curItems) {
-						if (!containerIds.has(item.id) && lastUpdated - item.updated < 70_000) {
-							newItems.push(item)
-						}
-					}
-					return newItems
-				}))
+				.then(
+					({ items }) =>
+						items.length &&
+						setData((curItems) => {
+							const lastUpdated = Math.max(items[0].updated, items.at(-1)?.updated ?? 0)
+							const containerIds = new Set()
+							const newItems = []
+							for (const item of items) {
+								if (Math.abs(lastUpdated - item.updated) < 70_000) {
+									containerIds.add(item.id)
+									newItems.push(item)
+								}
+							}
+							for (const item of curItems) {
+								if (!containerIds.has(item.id) && lastUpdated - item.updated < 70_000) {
+									newItems.push(item)
+								}
+							}
+							return newItems
+						})
+				)
 		}
 
 		// initial load
@@ -159,7 +163,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 								type="button"
 								variant="ghost"
 								size="icon"
-								aria-label={t`Clear filter`}
+								aria-label={t`Clear`}
 								className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
 								onClick={() => setGlobalFilter("")}
 							>
@@ -266,7 +270,7 @@ async function getInfoHtml(container: ContainerRecord): Promise<string> {
 		])
 		try {
 			info = JSON.stringify(JSON.parse(info), null, 2)
-		} catch (_) { }
+		} catch (_) {}
 		return info ? highlighter.codeToHtml(info, { lang: "json", theme: syntaxTheme }) : t`No results.`
 	} catch (error) {
 		console.error(error)
@@ -323,12 +327,12 @@ function ContainerSheet({
 		setLogsDisplay("")
 		setInfoDisplay("")
 		if (!container) return
-			; (async () => {
-				const [logsHtml, infoHtml] = await Promise.all([getLogsHtml(container), getInfoHtml(container)])
-				setLogsDisplay(logsHtml)
-				setInfoDisplay(infoHtml)
-				setTimeout(scrollLogsToBottom, 20)
-			})()
+		;(async () => {
+			const [logsHtml, infoHtml] = await Promise.all([getLogsHtml(container), getInfoHtml(container)])
+			setLogsDisplay(logsHtml)
+			setInfoDisplay(infoHtml)
+			setTimeout(scrollLogsToBottom, 20)
+		})()
 	}, [container])
 
 	return (
@@ -505,9 +509,7 @@ function LogsFullscreenDialog({
 					</div>
 				</div>
 				<button
-					onClick={() => {
-						void onRefresh()
-					}}
+					onClick={onRefresh}
 					className="absolute top-3 right-11 opacity-60 hover:opacity-100 p-1"
 					disabled={isRefreshing}
 					title={t`Refresh`}

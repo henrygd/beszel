@@ -158,7 +158,7 @@ export default function SystemsTable() {
 									type="button"
 									variant="ghost"
 									size="icon"
-									aria-label="Clear filter"
+									aria-label={t`Clear`}
 									className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
 									onClick={() => setFilter("")}
 								>
