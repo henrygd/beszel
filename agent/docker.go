@@ -14,6 +14,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -23,6 +24,10 @@ import (
 
 	"github.com/blang/semver"
 )
+
+// ansiEscapePattern matches ANSI escape sequences (colors, cursor movement, etc.)
+// This includes CSI sequences like \x1b[...m and simple escapes like \x1b[K
+var ansiEscapePattern = regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]|\x1b\][^\x07]*\x07|\x1b[@-Z\\-_]`)
 
 const (
 	// Docker API timeout in milliseconds
@@ -692,7 +697,12 @@ func (dm *dockerManager) getLogs(ctx context.Context, containerID string) (strin
 		return "", err
 	}
 
-	return builder.String(), nil
+	// Strip ANSI escape sequences from logs for clean display in web UI
+	logs := builder.String()
+	if strings.Contains(logs, "\x1b") {
+		logs = ansiEscapePattern.ReplaceAllString(logs, "")
+	}
+	return logs, nil
 }
 
 func decodeDockerLogStream(reader io.Reader, builder *strings.Builder) error {
