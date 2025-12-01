@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-22 11:14\n"
+"PO-Revision-Date: 2025-12-01 23:32\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -756,7 +756,7 @@ msgstr "如果您遺失管理員帳號密碼，可以使用以下指令重設。
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
-msgstr "鏡像"
+msgstr "映像檔"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -1343,7 +1343,7 @@ msgstr "{extraFsName}的傳輸速率"
 
 #: src/components/routes/system.tsx
 msgid "Throughput of root filesystem"
-msgstr "Root文件系統的傳輸速率"
+msgstr "Root 檔案系統的傳輸速率"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
