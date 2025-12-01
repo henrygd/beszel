@@ -8,7 +8,7 @@ msgstr ""
 "Language: ru\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-21 23:15\n"
+"PO-Revision-Date: 2025-12-01 23:32\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -461,7 +461,7 @@ msgstr "Совокупная загрузка"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
-msgstr "Совокупная выгрузка"
+msgstr "Совокупная отдача"
 
 #. Context: Battery state
 #: src/components/routes/system.tsx
@@ -517,7 +517,7 @@ msgstr "Дисковый ввод/вывод"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
-msgstr "Единицы измерения температуры"
+msgstr "Единицы измерения дисковой активности"
 
 #: src/components/charts/disk-chart.tsx
 #: src/components/routes/system.tsx
@@ -560,7 +560,7 @@ msgstr "Не в сети ({downSystemsLength})"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
-msgstr "Скачать"
+msgstr "Загрузка"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
@@ -1311,7 +1311,7 @@ msgstr "Температура"
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"
-msgstr "Температура"
+msgstr "Единицы измерения температуры"
 
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
@@ -1496,7 +1496,7 @@ msgstr "Обновляется каждые 10 минут."
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
-msgstr "Загрузить"
+msgstr "Отдача"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"
