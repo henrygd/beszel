@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-11 19:25\n"
+"PO-Revision-Date: 2025-11-14 22:51\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -34,7 +34,7 @@ msgstr "{count, plural, one {{countString} heure} other {{countString} heures}}"
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
-msgstr "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
+msgstr ""
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -492,7 +492,7 @@ msgstr "Supprimer l'empreinte"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Description"
-msgstr "Description"
+msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
@@ -1211,7 +1211,7 @@ msgstr "Détails du service"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Services"
-msgstr "Services"
+msgstr ""
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1602,3 +1602,4 @@ msgstr "Oui"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Vos paramètres utilisateur ont été mis à jour."
+

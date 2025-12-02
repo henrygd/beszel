@@ -8,7 +8,7 @@ msgstr ""
 "Language: pt\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-04 22:13\n"
+"PO-Revision-Date: 2025-11-14 22:51\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -253,6 +253,18 @@ msgstr "Bytes (KB/s, MB/s, GB/s)"
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
 msgstr ""
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can reload"
+msgstr "Pode recarregar"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can start"
+msgstr "Pode iniciar"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can stop"
+msgstr "Pode parar"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Can reload"
@@ -1397,7 +1409,7 @@ msgstr "Dados totais enviados para cada interface"
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Total: {0}"
-msgstr "Total: {0}"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Triggered by"
@@ -1602,3 +1614,4 @@ msgstr "Sim"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "As configurações do seu usuário foram atualizadas."
+

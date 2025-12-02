@@ -8,7 +8,7 @@ msgstr ""
 "Language: no\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-28 23:00\n"
+"PO-Revision-Date: 2025-11-14 22:51\n"
 "Last-Translator: \n"
 "Language-Team: Norwegian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -1384,7 +1384,7 @@ msgstr "Tokens og fingeravtrykk blir brukt for å autentisere WebSocket-tilkobli
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
-msgstr "Total"
+msgstr ""
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
@@ -1449,7 +1449,7 @@ msgstr "Slår inn når forbruk av hvilken som helst disk overstiger en grensever
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
-msgstr "Type"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
@@ -1602,3 +1602,4 @@ msgstr "Ja"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Dine brukerinnstillinger har blitt oppdatert."
+

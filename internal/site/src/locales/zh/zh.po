@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-01 07:52\n"
+"PO-Revision-Date: 2025-12-01 23:32\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -214,11 +214,11 @@ msgstr "電池"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Became active"
-msgstr "變為活動"
+msgstr "啟用"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Became inactive"
-msgstr "變為非活動"
+msgstr "停用"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Before"
@@ -256,7 +256,7 @@ msgstr "快取/緩衝"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Can reload"
-msgstr "可重新載入"
+msgstr "可重載"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Can start"
@@ -273,7 +273,7 @@ msgstr "取消"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Capabilities"
-msgstr ""
+msgstr "能力"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
@@ -624,7 +624,7 @@ msgstr "未在 <0>config.yml</0> 中定義的現有系統將會被刪除。請�
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exited active"
-msgstr "退出時為活動"
+msgstr "結束"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -756,7 +756,7 @@ msgstr "如果您遺失管理員帳號密碼，可以使用以下指令重設。
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
-msgstr "鏡像"
+msgstr "映像檔"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -920,7 +920,7 @@ msgstr "網路單位"
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No"
-msgstr ""
+msgstr "否"
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1028,11 +1028,11 @@ msgstr "已暫停 ({pausedSystemsLength})"
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Per-core average utilization"
-msgstr "每個核心的平均使用率"
+msgstr "核心平均使用率"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Percentage of time spent in each state"
-msgstr "在每個狀態下花費的時間百分比"
+msgstr "狀態時間佔比"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1087,7 +1087,7 @@ msgstr "首選語言"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
-msgstr "程序已啟動"
+msgstr "進程啟動"
 
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
@@ -1123,11 +1123,11 @@ msgstr "請求 OTP"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Required by"
-msgstr "被需要於"
+msgstr "被依賴"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Requires"
-msgstr "需要"
+msgstr "依賴"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
@@ -1150,7 +1150,7 @@ msgstr "繼續"
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
-msgstr ""
+msgstr "Root"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1296,7 +1296,7 @@ msgstr "列表"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
-msgstr "任務"
+msgstr "任務數"
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1343,7 +1343,11 @@ msgstr "{extraFsName}的傳輸速率"
 
 #: src/components/routes/system.tsx
 msgid "Throughput of root filesystem"
-msgstr "Root文件系統的傳輸速率"
+msgstr "Root 檔案系統的傳輸速率"
+
+#: src/components/routes/settings/general.tsx
+msgid "Time format"
+msgstr "時間格式"
 
 #: src/components/routes/settings/general.tsx
 msgid "Time format"
@@ -1555,7 +1559,7 @@ msgstr "想幫助我們改善翻譯嗎？查看<0>Crowdin</0>以取得更多詳�
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Wants"
-msgstr "想要"
+msgstr "可選依賴"
 
 #: src/components/routes/settings/general.tsx
 msgid "Warning (%)"
@@ -1597,8 +1601,9 @@ msgstr "YAML 設定檔"
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Yes"
-msgstr ""
+msgstr "是"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "已更新您的使用者設定"
+

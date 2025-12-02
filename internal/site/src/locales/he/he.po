@@ -8,7 +8,7 @@ msgstr ""
 "Language: he\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-30 21:53\n"
+"PO-Revision-Date: 2025-11-14 22:51\n"
 "Last-Translator: \n"
 "Language-Team: Hebrew\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
@@ -1602,3 +1602,4 @@ msgstr "כן"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "הגדרות המשתמש שלך עודכנו."
+

@@ -8,7 +8,7 @@ msgstr ""
 "Language: sl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-28 23:00\n"
+"PO-Revision-Date: 2025-11-14 22:51\n"
 "Last-Translator: \n"
 "Language-Team: Slovenian\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
@@ -129,7 +129,7 @@ msgstr "Po"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr "Agent"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -885,7 +885,7 @@ msgstr "Poraba pomnilnika docker kontejnerjev"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
-msgstr "Model"
+msgstr ""
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1252,7 +1252,11 @@ msgstr "Stanje"
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
-msgstr "Status"
+msgstr ""
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "Sub State"
+msgstr "Podstanje"
 
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Sub State"
@@ -1602,3 +1606,4 @@ msgstr "Da"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Vaše uporabniške nastavitve so posodobljene."
+
