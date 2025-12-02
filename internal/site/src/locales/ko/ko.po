@@ -8,7 +8,7 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-14 22:51\n"
+"PO-Revision-Date: 2025-12-02 23:18\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -76,13 +76,16 @@ msgid "5 min"
 msgstr "5분"
 
 #. Table column
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "작업"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Active"
 msgstr "활성"
 
@@ -95,12 +98,14 @@ msgid "Active state"
 msgstr "활성 상태"
 
 #: src/components/add-system.tsx
-msgid "Add <0>System</0>"
-msgstr "<0>시스템</0> 추가"
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Add {foo}"
+msgstr "{foo} 추가"
 
 #: src/components/add-system.tsx
-msgid "Add New System"
-msgstr "새 시스템 추가"
+msgid "Add <0>System</0>"
+msgstr "<0>시스템</0> 추가"
 
 #: src/components/add-system.tsx
 msgid "Add system"
@@ -151,6 +156,7 @@ msgstr "모든 컨테이너"
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
@@ -267,6 +273,7 @@ msgid "Can stop"
 msgstr "중지 가능"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "취소"
@@ -319,6 +326,12 @@ msgstr "자세한 내용은 로그를 확인하세요."
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
 msgstr "알림 서비스를 확인하세요."
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Clear"
+msgstr "지우기"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
@@ -442,6 +455,10 @@ msgstr "CPU 시간 분배"
 msgid "CPU Usage"
 msgstr "CPU 사용량"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Create"
+msgstr "생성"
+
 #: src/components/login/auth-form.tsx
 msgid "Create account"
 msgstr "계정 생성"
@@ -473,15 +490,18 @@ msgstr "현재 상태"
 msgid "Cycles"
 msgstr "사이클"
 
-#: src/components/command-palette.tsx
-msgid "Dashboard"
-msgstr "대시보드"
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Daily"
+msgstr "매일"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
 msgstr "기본 기간"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "삭제"
@@ -566,10 +586,15 @@ msgstr "다운로드"
 msgid "Duration"
 msgstr "기간"
 
-#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "수정"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Edit {foo}"
+msgstr "{foo} 수정"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -585,6 +610,11 @@ msgstr "이메일 알림"
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "빔"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "End Time"
+msgstr "종료 시간"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -602,6 +632,8 @@ msgstr "OTP를 입력하세요."
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
@@ -656,6 +688,7 @@ msgstr "인증 실패"
 
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Failed to save settings"
 msgstr "설정 저장 실패"
 
@@ -714,6 +747,10 @@ msgstr "가득"
 msgid "General"
 msgstr "일반"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Global"
+msgstr "전역"
+
 #: src/components/routes/system.tsx
 msgid "GPU Engines"
 msgstr "GPU 엔진들"
@@ -757,6 +794,10 @@ msgstr "관리자 계정의 비밀번호를 잃어버린 경우, 다음 명령�
 msgctxt "Docker image"
 msgid "Image"
 msgstr "이미지"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Inactive"
+msgstr "비활성"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -959,12 +1000,19 @@ msgstr "OAuth 2 / OIDC 지원"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "매 시작 시, 데이터베이스가 파일에 정의된 시스템과 일치하도록 업데이트됩니다."
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "One-time"
+msgstr "일회성"
+
 #: src/components/login/auth-form.tsx
 msgid "One-time password"
 msgstr "OTP"
 
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "메뉴 열기"
@@ -981,6 +1029,7 @@ msgstr "기타"
 msgid "Overwrite existing alerts"
 msgstr "기존 알림 덮어쓰기"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
@@ -1012,6 +1061,10 @@ msgstr "비밀번호는 72 바이트 이하여야 합니다."
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"
 msgstr "비밀번호 재설정 요청이 접수되었습니다"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Past"
+msgstr "과거"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
@@ -1094,6 +1147,10 @@ msgstr "프로세스 시작됨"
 msgid "Public Key"
 msgstr "공개 키"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Quiet Hours"
+msgstr "조용한 시간"
+
 #. Disk read
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -1106,6 +1163,7 @@ msgstr "수신됨"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "Refresh"
 msgstr "새로고침"
 
@@ -1185,6 +1243,18 @@ msgstr "설정 저장"
 msgid "Save system"
 msgstr "시스템 저장"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule"
+msgstr "일정"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent, such as during maintenance periods."
+msgstr "유지보수 기간 등 알림이 전송되지 않을 조용한 시간을 예약하세요."
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent."
+msgstr "알림이 전송되지 않을 조용한 시간을 예약하세요."
+
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "검색"
@@ -1196,6 +1266,10 @@ msgstr "시스템 또는 설정 검색..."
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "알림을 받는 방법을 구성하려면 <0>알림 설정</0>을 참조하세요."
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Select {foo}"
+msgstr "{foo} 선택"
 
 #: src/components/routes/system.tsx
 msgid "Sent"
@@ -1240,8 +1314,14 @@ msgstr "SMTP 설정"
 msgid "Sort By"
 msgstr "정렬 기준"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Start Time"
+msgstr "시작 시간"
+
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "상태"
@@ -1266,9 +1346,15 @@ msgstr "시스템에서 사용된 스왑 공간"
 msgid "Swap Usage"
 msgstr "스왑 사용량"
 
+#: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
@@ -1280,7 +1366,7 @@ msgstr "시간에 따른 시스템 부하 평균"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Systemd Services"
-msgstr ""
+msgstr "Systemd 서비스"
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -1447,6 +1533,8 @@ msgstr "시스템의 전원이 켜지거나 꺼질때 트리거됩니다."
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "디스크 사용량이 임계값을 초과할 때 트리거됩니다."
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "유형"
@@ -1485,7 +1573,12 @@ msgstr "온라인"
 msgid "Up ({upSystemsLength})"
 msgstr "온라인 ({upSystemsLength})"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Update"
+msgstr "업데이트"
+
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "업데이트됨"
