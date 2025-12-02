@@ -708,7 +708,6 @@ func (dm *dockerManager) getLogs(ctx context.Context, containerID string) (strin
 func decodeDockerLogStream(reader io.Reader, builder *strings.Builder) error {
 	const headerSize = 8
 	var header [headerSize]byte
-	buf := make([]byte, 0, dockerLogsTail*200)
 	totalBytesRead := 0
 
 	for {
@@ -732,36 +731,18 @@ func decodeDockerLogStream(reader io.Reader, builder *strings.Builder) error {
 		// Check if reading this frame would exceed total log size limit
 		if totalBytesRead+int(frameLen) > maxTotalLogSize {
 			// Read and discard remaining data to avoid blocking
-			_, _ = io.Copy(io.Discard, io.LimitReader(reader, int64(frameLen)))
+			_, _ = io.CopyN(io.Discard, reader, int64(frameLen))
 			slog.Debug("Truncating logs: limit reached", "read", totalBytesRead, "limit", maxTotalLogSize)
 			return nil
 		}
 
-		buf = allocateBuffer(buf, int(frameLen))
-		if _, err := io.ReadFull(reader, buf[:frameLen]); err != nil {
+		n, err := io.CopyN(builder, reader, int64(frameLen))
+		if err != nil {
 			if errors.Is(err, io.EOF) || errors.Is(err, io.ErrUnexpectedEOF) {
-				if len(buf) > 0 {
-					builder.Write(buf[:min(int(frameLen), len(buf))])
-				}
 				return nil
 			}
 			return err
 		}
-		builder.Write(buf[:frameLen])
-		totalBytesRead += int(frameLen)
+		totalBytesRead += int(n)
 	}
-}
-
-func allocateBuffer(current []byte, needed int) []byte {
-	if cap(current) >= needed {
-		return current[:needed]
-	}
-	return make([]byte, needed)
-}
-
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
 }
