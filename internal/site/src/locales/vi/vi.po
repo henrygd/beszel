@@ -8,7 +8,7 @@ msgstr ""
 "Language: vi\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-14 22:51\n"
+"PO-Revision-Date: 2025-12-02 23:18\n"
 "Last-Translator: \n"
 "Language-Team: Vietnamese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -76,13 +76,16 @@ msgid "5 min"
 msgstr "5 phút"
 
 #. Table column
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "Hành động"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Active"
 msgstr "Hoạt động"
 
@@ -95,12 +98,14 @@ msgid "Active state"
 msgstr "Trạng thái hoạt động"
 
 #: src/components/add-system.tsx
-msgid "Add <0>System</0>"
-msgstr "Thêm <0>Hệ thống</0>"
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Add {foo}"
+msgstr ""
 
 #: src/components/add-system.tsx
-msgid "Add New System"
-msgstr "Thêm Hệ thống Mới"
+msgid "Add <0>System</0>"
+msgstr "Thêm <0>Hệ thống</0>"
 
 #: src/components/add-system.tsx
 msgid "Add system"
@@ -151,6 +156,7 @@ msgstr "Tất cả container"
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
@@ -267,6 +273,7 @@ msgid "Can stop"
 msgstr "Có thể dừng"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "Hủy bỏ"
@@ -319,6 +326,12 @@ msgstr "Kiểm tra nhật ký để biết thêm chi tiết."
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
 msgstr "Kiểm tra dịch vụ thông báo của bạn"
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Clear"
+msgstr "Xóa"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
@@ -442,6 +455,10 @@ msgstr "Phân tích thời gian CPU"
 msgid "CPU Usage"
 msgstr "Sử dụng CPU"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Create"
+msgstr "Tạo"
+
 #: src/components/login/auth-form.tsx
 msgid "Create account"
 msgstr "Tạo tài khoản"
@@ -473,15 +490,18 @@ msgstr "Trạng thái hiện tại"
 msgid "Cycles"
 msgstr "Chu kỳ"
 
-#: src/components/command-palette.tsx
-msgid "Dashboard"
-msgstr "Bảng điều khiển"
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Daily"
+msgstr "Hàng ngày"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
 msgstr "Thời gian mặc định"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "Xóa"
@@ -566,10 +586,15 @@ msgstr "Tải xuống"
 msgid "Duration"
 msgstr "Thời lượng"
 
-#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "Chỉnh sửa"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Edit {foo}"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -585,6 +610,11 @@ msgstr "Thông báo email"
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "Hết pin"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "End Time"
+msgstr "Thời gian kết thúc"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -602,6 +632,8 @@ msgstr "Nhập mật khẩu một lần của bạn."
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
@@ -656,6 +688,7 @@ msgstr "Xác thực thất bại"
 
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Failed to save settings"
 msgstr "Lưu cài đặt thất bại"
 
@@ -714,6 +747,10 @@ msgstr "Đầy pin"
 msgid "General"
 msgstr "Chung"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Global"
+msgstr "Toàn cầu"
+
 #: src/components/routes/system.tsx
 msgid "GPU Engines"
 msgstr "Động cơ GPU"
@@ -757,6 +794,10 @@ msgstr "Nếu bạn đã mất mật khẩu cho tài khoản quản trị viên 
 msgctxt "Docker image"
 msgid "Image"
 msgstr "Hình ảnh"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Inactive"
+msgstr "Không hoạt động"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -959,12 +1000,19 @@ msgstr "Hỗ trợ OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Mỗi khi khởi động lại, các hệ thống trong cơ sở dữ liệu sẽ được cập nhật để khớp với các hệ thống được định nghĩa trong tệp."
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "One-time"
+msgstr "Một lần"
+
 #: src/components/login/auth-form.tsx
 msgid "One-time password"
 msgstr "Mật khẩu một lần"
 
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Mở menu"
@@ -981,6 +1029,7 @@ msgstr "Khác"
 msgid "Overwrite existing alerts"
 msgstr "Ghi đè các cảnh báo hiện có"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
@@ -1012,6 +1061,10 @@ msgstr "Mật khẩu phải nhỏ hơn 72 byte."
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"
 msgstr "Yêu cầu đặt lại mật khẩu đã được nhận"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Past"
+msgstr "Quá khứ"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
@@ -1094,6 +1147,10 @@ msgstr "Tiến trình đã khởi động"
 msgid "Public Key"
 msgstr "Khóa"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Quiet Hours"
+msgstr "Giờ yên tĩnh"
+
 #. Disk read
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -1106,6 +1163,7 @@ msgstr "Đã nhận"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "Refresh"
 msgstr "Làm mới"
 
@@ -1185,6 +1243,18 @@ msgstr "Lưu Cài đặt"
 msgid "Save system"
 msgstr "Lưu hệ thống"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule"
+msgstr "Lịch trình"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent, such as during maintenance periods."
+msgstr "Lên lịch giờ yên tĩnh nơi thông báo sẽ không được gửi, chẳng hạn như trong thời gian bảo trì."
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent."
+msgstr "Lên lịch giờ yên tĩnh nơi thông báo sẽ không được gửi."
+
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "Tìm kiếm"
@@ -1196,6 +1266,10 @@ msgstr "Tìm kiếm hệ thống hoặc cài đặt..."
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Xem <0>cài đặt thông báo</0> để cấu hình cách bạn nhận cảnh báo."
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Select {foo}"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Sent"
@@ -1240,8 +1314,14 @@ msgstr "Cài đặt SMTP"
 msgid "Sort By"
 msgstr "Sắp xếp theo"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Start Time"
+msgstr "Thời gian bắt đầu"
+
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "Trạng thái"
@@ -1266,9 +1346,15 @@ msgstr "Không gian hoán đổi được sử dụng bởi hệ thống"
 msgid "Swap Usage"
 msgstr "Sử dụng Hoán đổi"
 
+#: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
@@ -1447,6 +1533,8 @@ msgstr "Kích hoạt khi trạng thái chuyển đổi giữa lên và xuống"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Kích hoạt khi sử dụng bất kỳ đĩa nào vượt quá ngưỡng"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Loại"
@@ -1485,7 +1573,12 @@ msgstr "Hoạt động"
 msgid "Up ({upSystemsLength})"
 msgstr "Hoạt động ({upSystemsLength})"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Update"
+msgstr "Cập nhật"
+
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "Đã cập nhật"
