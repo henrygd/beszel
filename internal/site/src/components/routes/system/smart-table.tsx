@@ -329,41 +329,41 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 			? { fields: SMART_DEVICE_FIELDS, filter: pb.filter("system = {:system}", { system: systemId }) }
 			: { fields: SMART_DEVICE_FIELDS }
 
-		;(async () => {
-			try {
-				unsubscribe = await pb.collection("smart_devices").subscribe(
-					"*",
-					(event) => {
-						const record = event.record as SmartDeviceRecord
-						setSmartDevices((currentDevices) => {
-							const devices = currentDevices ?? []
-							const matchesSystemScope = !systemId || record.system === systemId
+			; (async () => {
+				try {
+					unsubscribe = await pb.collection("smart_devices").subscribe(
+						"*",
+						(event) => {
+							const record = event.record as SmartDeviceRecord
+							setSmartDevices((currentDevices) => {
+								const devices = currentDevices ?? []
+								const matchesSystemScope = !systemId || record.system === systemId
 
-							if (event.action === "delete") {
-								return devices.filter((device) => device.id !== record.id)
-							}
+								if (event.action === "delete") {
+									return devices.filter((device) => device.id !== record.id)
+								}
 
-							if (!matchesSystemScope) {
-								// Record moved out of scope; ensure it disappears locally.
-								return devices.filter((device) => device.id !== record.id)
-							}
+								if (!matchesSystemScope) {
+									// Record moved out of scope; ensure it disappears locally.
+									return devices.filter((device) => device.id !== record.id)
+								}
 
-							const existingIndex = devices.findIndex((device) => device.id === record.id)
-							if (existingIndex === -1) {
-								return [record, ...devices]
-							}
+								const existingIndex = devices.findIndex((device) => device.id === record.id)
+								if (existingIndex === -1) {
+									return [record, ...devices]
+								}
 
-							const next = [...devices]
-							next[existingIndex] = record
-							return next
-						})
-					},
-					pbOptions
-				)
-			} catch (error) {
-				console.error("Failed to subscribe to SMART device updates:", error)
-			}
-		})()
+								const next = [...devices]
+								next[existingIndex] = record
+								return next
+							})
+						},
+						pbOptions
+					)
+				} catch (error) {
+					console.error("Failed to subscribe to SMART device updates:", error)
+				}
+			})()
 
 		return () => {
 			unsubscribe?.()
@@ -680,7 +680,7 @@ function DiskSheet({
 								<span>{firmwareVersion}</span>
 							</TooltipTrigger>
 							<TooltipContent>
-								<Trans>Firmware Version</Trans>
+								<Trans>Firmware</Trans>
 							</TooltipContent>
 						</Tooltip>
 					</SheetDescription>

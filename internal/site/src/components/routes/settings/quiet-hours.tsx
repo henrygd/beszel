@@ -24,7 +24,13 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -36,13 +42,14 @@ import { $systems } from "@/lib/stores"
 import { formatShortDate } from "@/lib/utils"
 import type { QuietHoursRecord, SystemRecord } from "@/types"
 
+const quietHoursTranslation = t`Quiet Hours`
+
 export function QuietHours() {
 	const [data, setData] = useState<QuietHoursRecord[]>([])
 	const [dialogOpen, setDialogOpen] = useState(false)
 	const [editingRecord, setEditingRecord] = useState<QuietHoursRecord | null>(null)
 	const { toast } = useToast()
 	const systems = useStore($systems)
-
 	useEffect(() => {
 		let unsubscribe: (() => void) | undefined
 		const pbOptions = {
@@ -157,9 +164,7 @@ export function QuietHours() {
 		<>
 			<div className="grid grid-cols-1 sm:flex items-center justify-between gap-4 mb-3">
 				<div>
-					<h3 className="mb-1 text-lg font-medium">
-						<Trans>Quiet hours</Trans>
-					</h3>
+					<h3 className="mb-1 text-lg font-medium">{quietHoursTranslation}</h3>
 					<p className="text-sm text-muted-foreground leading-relaxed">
 						<Trans>
 							Schedule quiet hours where notifications will not be sent, such as during maintenance periods.
@@ -171,7 +176,7 @@ export function QuietHours() {
 						<Button variant="outline" className="h-10 shrink-0" onClick={() => setEditingRecord(null)}>
 							<PlusIcon className="size-4" />
 							<span className="ms-1">
-								<Trans>Add Quiet Hours</Trans>
+								<Trans>Add {{ foo: quietHoursTranslation }}</Trans>
 							</span>
 						</Button>
 					</DialogTrigger>
@@ -249,6 +254,7 @@ export function QuietHours() {
 													<PenSquareIcon className="me-2.5 size-4" />
 													<Trans>Edit</Trans>
 												</DropdownMenuItem>
+												<DropdownMenuSeparator />
 												<DropdownMenuItem onClick={() => handleDelete(record.id)}>
 													<Trash2Icon className="me-2.5 size-4" />
 													<Trans>Delete</Trans>
@@ -382,9 +388,15 @@ function QuietHoursDialog({
 	return (
 		<DialogContent>
 			<DialogHeader>
-				<DialogTitle>{editingRecord ? <Trans>Edit Quiet Hours</Trans> : <Trans>Add Quiet Hours</Trans>}</DialogTitle>
+				<DialogTitle>
+					{editingRecord ? (
+						<Trans>Edit {{ foo: quietHoursTranslation }}</Trans>
+					) : (
+						<Trans>Add {{ foo: quietHoursTranslation }}</Trans>
+					)}
+				</DialogTitle>
 				<DialogDescription>
-					<Trans>Configure quiet hours where notifications will not be sent.</Trans>
+					<Trans>Schedule quiet hours where notifications will not be sent.</Trans>
 				</DialogDescription>
 			</DialogHeader>
 			<form onSubmit={handleSubmit} className="space-y-4">
@@ -405,7 +417,7 @@ function QuietHoursDialog({
 							</Label>
 							<Select value={selectedSystem} onValueChange={setSelectedSystem}>
 								<SelectTrigger id="system">
-									<SelectValue placeholder={t`Select a system`} />
+									<SelectValue placeholder={t`Select ${{ foo: t`System`.toLocaleLowerCase() }}`} />
 								</SelectTrigger>
 								<SelectContent>
 									{systems.map((system) => (

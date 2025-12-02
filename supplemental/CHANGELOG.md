@@ -2,7 +2,7 @@
 
 - Add quiet hours to silence alerts during specific time periods. (#265)
 
-- Add dedicated S.M.A.R.T. page with persistent device storage.
+- Add dedicated S.M.A.R.T. page.
 
 - Add alerts for S.M.A.R.T. failures.
 
@@ -13,8 +13,6 @@
 - Add hub builds for Windows and FreeBSD.
 
 - Change extra disk indicators in systems table to display usage range as dots. (#1409)
-
-- Add clear button to filter inputs in all systems and containers tables. (#1447)
 
 - Strip ANSI escape sequences from docker logs. (#1478)
 

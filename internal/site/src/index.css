@@ -161,10 +161,6 @@
 @utility ns-dialog {
 	/* New system dialog width */
 	min-width: 30.3rem;
-
-	:where(:lang(zh), :lang(zh-CN), :lang(ko)) & {
-		min-width: 27.9rem;
-	}
 }
 
 .recharts-tooltip-wrapper {

@@ -76,13 +76,16 @@ msgid "5 min"
 msgstr "5 分鐘"
 
 #. Table column
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "操作"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Active"
 msgstr "啟用中"
 
@@ -95,12 +98,14 @@ msgid "Active state"
 msgstr "活動狀態"
 
 #: src/components/add-system.tsx
-msgid "Add <0>System</0>"
-msgstr "新增<0>系統</0>"
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Add {foo}"
+msgstr ""
 
 #: src/components/add-system.tsx
-msgid "Add New System"
-msgstr "新增新系統"
+msgid "Add <0>System</0>"
+msgstr "新增<0>系統</0>"
 
 #: src/components/add-system.tsx
 msgid "Add system"
@@ -151,6 +156,7 @@ msgstr "所有容器"
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
@@ -267,6 +273,7 @@ msgid "Can stop"
 msgstr "可停止"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "取消"
@@ -319,6 +326,12 @@ msgstr "檢查日誌以取得更多資訊。"
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
 msgstr "檢查您的通知服務"
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Clear"
+msgstr "清除"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
@@ -442,6 +455,10 @@ msgstr "CPU 時間細分"
 msgid "CPU Usage"
 msgstr "CPU 使用率"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Create"
+msgstr "建立"
+
 #: src/components/login/auth-form.tsx
 msgid "Create account"
 msgstr "創建帳戶"
@@ -473,15 +490,18 @@ msgstr "目前狀態"
 msgid "Cycles"
 msgstr "週期"
 
-#: src/components/command-palette.tsx
-msgid "Dashboard"
-msgstr "控制面板"
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Daily"
+msgstr "每日"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
 msgstr "預設時間段"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "刪除"
@@ -566,10 +586,15 @@ msgstr "下載"
 msgid "Duration"
 msgstr "持續時間"
 
-#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "編輯"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Edit {foo}"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -585,6 +610,11 @@ msgstr "電子郵件通知"
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "空電"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "End Time"
+msgstr "結束時間"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -602,6 +632,8 @@ msgstr "輸入您的一次性密碼。"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
@@ -656,6 +688,7 @@ msgstr "認證失敗"
 
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Failed to save settings"
 msgstr "儲存設定失敗"
 
@@ -714,6 +747,10 @@ msgstr "滿電"
 msgid "General"
 msgstr "一般"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Global"
+msgstr "全域"
+
 #: src/components/routes/system.tsx
 msgid "GPU Engines"
 msgstr "GPU 引擎"
@@ -757,6 +794,10 @@ msgstr "如果您遺失了管理員帳號密碼，可以使用以下指令重設
 msgctxt "Docker image"
 msgid "Image"
 msgstr "鏡像"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Inactive"
+msgstr "未啟用"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -959,12 +1000,19 @@ msgstr "支援 OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "每次重新啟動時，將會以檔案中的系統定義更新資料庫。"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "One-time"
+msgstr "一次性"
+
 #: src/components/login/auth-form.tsx
 msgid "One-time password"
 msgstr "一次性密碼"
 
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "開啟選單"
@@ -981,6 +1029,7 @@ msgstr "其他"
 msgid "Overwrite existing alerts"
 msgstr "覆蓋現有警報"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
@@ -1012,6 +1061,10 @@ msgstr "密碼必須少於 72 個字節。"
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"
 msgstr "已收到密碼重設請求"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Past"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
@@ -1094,6 +1147,10 @@ msgstr "進程啟動"
 msgid "Public Key"
 msgstr "公鑰"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Quiet Hours"
+msgstr "靜音時段"
+
 #. Disk read
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -1106,6 +1163,7 @@ msgstr "接收"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "Refresh"
 msgstr "重新整理"
 
@@ -1185,6 +1243,18 @@ msgstr "儲存設定"
 msgid "Save system"
 msgstr "儲存系統"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule"
+msgstr ""
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent, such as during maintenance periods."
+msgstr "安排不會發送通知的靜音時段，例如在維護期間。"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent."
+msgstr "安排不會發送通知的靜音時段。"
+
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "搜索"
@@ -1196,6 +1266,10 @@ msgstr "搜索系統或設置..."
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "查看<0>通知設置</0>以配置您接收警報的方式。"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Select {foo}"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Sent"
@@ -1240,8 +1314,14 @@ msgstr "SMTP設置"
 msgid "Sort By"
 msgstr "排序依據"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Start Time"
+msgstr "開始時間"
+
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "狀態"
@@ -1266,9 +1346,15 @@ msgstr "系統使用的交換空間"
 msgid "Swap Usage"
 msgstr "交換使用"
 
+#: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
@@ -1447,6 +1533,8 @@ msgstr "當狀態在上和下之間切換時觸發"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "當任何磁碟的使用超過閾值時觸發"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "類型"
@@ -1485,7 +1573,12 @@ msgstr "上線"
 msgid "Up ({upSystemsLength})"
 msgstr "上線 ({upSystemsLength})"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Update"
+msgstr "更新"
+
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "已更新"
@@ -1602,4 +1695,3 @@ msgstr "是"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "您的用戶設置已更新。"
-

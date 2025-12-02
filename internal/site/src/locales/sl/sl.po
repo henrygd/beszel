@@ -76,13 +76,16 @@ msgid "5 min"
 msgstr "5 min"
 
 #. Table column
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "Dejanja"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Active"
 msgstr "Aktivno"
 
@@ -95,12 +98,14 @@ msgid "Active state"
 msgstr "Aktivno stanje"
 
 #: src/components/add-system.tsx
-msgid "Add <0>System</0>"
-msgstr "Dodaj <0>sistem</0>"
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Add {foo}"
+msgstr "Dodaj {foo}"
 
 #: src/components/add-system.tsx
-msgid "Add New System"
-msgstr "Dodaj nov sistem"
+msgid "Add <0>System</0>"
+msgstr "Dodaj <0>sistem</0>"
 
 #: src/components/add-system.tsx
 msgid "Add system"
@@ -151,6 +156,7 @@ msgstr "Vsi kontejnerji"
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
@@ -267,6 +273,7 @@ msgid "Can stop"
 msgstr "Lahko ustavi"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "Prekliči"
@@ -319,6 +326,12 @@ msgstr "Za več podrobnosti preverite dnevnike."
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
 msgstr "Preverite storitev obveščanja"
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Clear"
+msgstr "Počisti"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
@@ -442,6 +455,10 @@ msgstr "Razčlenitev časa CPU"
 msgid "CPU Usage"
 msgstr "CPU poraba"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Create"
+msgstr "Ustvari"
+
 #: src/components/login/auth-form.tsx
 msgid "Create account"
 msgstr "Ustvari račun"
@@ -473,15 +490,18 @@ msgstr "Trenutno stanje"
 msgid "Cycles"
 msgstr "Cikli"
 
-#: src/components/command-palette.tsx
-msgid "Dashboard"
-msgstr "Nadzorna plošča"
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Daily"
+msgstr "Dnevno"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
 msgstr "Privzeto časovno obdobje"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "Izbriši"
@@ -566,10 +586,15 @@ msgstr "Prenesi"
 msgid "Duration"
 msgstr "Trajanje"
 
-#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "Uredi"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Edit {foo}"
+msgstr "Uredi {foo}"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -585,6 +610,11 @@ msgstr "E-poštna obvestila"
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "Prazna"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "End Time"
+msgstr "Čas konca"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -602,6 +632,8 @@ msgstr "Vnesite svoje enkratno geslo."
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
@@ -656,6 +688,7 @@ msgstr "Preverjanje pristnosti ni uspelo"
 
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Failed to save settings"
 msgstr "Shranjevanje nastavitev ni uspelo"
 
@@ -714,6 +747,10 @@ msgstr "Polna"
 msgid "General"
 msgstr "Splošno"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Global"
+msgstr "Globalno"
+
 #: src/components/routes/system.tsx
 msgid "GPU Engines"
 msgstr "GPU motorji"
@@ -757,6 +794,10 @@ msgstr "Če ste izgubili geslo za svoj skrbniški račun, ga lahko ponastavite z
 msgctxt "Docker image"
 msgid "Image"
 msgstr "Slika"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Inactive"
+msgstr "Neaktivno"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -959,12 +1000,19 @@ msgstr "Podpora za OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Ob vsakem ponovnem zagonu bodo sistemi v zbirki podatkov posodobljeni, da se bodo ujemali s sistemi, definiranimi v datoteki."
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "One-time"
+msgstr "Enkratno"
+
 #: src/components/login/auth-form.tsx
 msgid "One-time password"
 msgstr "Enkratno geslo"
 
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Odpri menu"
@@ -981,6 +1029,7 @@ msgstr "Drugo"
 msgid "Overwrite existing alerts"
 msgstr "Prepiši obstoječe alarme"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
@@ -1012,6 +1061,10 @@ msgstr "Geslo mora biti krajše od 72 bajtov."
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"
 msgstr "Prejeta zahteva za ponastavitev gesla"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Past"
+msgstr "Preteklo"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
@@ -1094,6 +1147,10 @@ msgstr "Proces začet"
 msgid "Public Key"
 msgstr "Javni ključ"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Quiet Hours"
+msgstr "Tihi čas"
+
 #. Disk read
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -1106,6 +1163,7 @@ msgstr "Prejeto"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "Refresh"
 msgstr "Osveži"
 
@@ -1185,6 +1243,18 @@ msgstr "Shrani nastavitve"
 msgid "Save system"
 msgstr "Shrani sistem"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule"
+msgstr "Razpored"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent, such as during maintenance periods."
+msgstr "Razporedite tihi čas, ko obvestila ne bodo poslana, na primer med vzdrževalnimi obdobji."
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent."
+msgstr "Razporedite tihi čas, ko obvestila ne bodo poslana."
+
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "Iskanje"
@@ -1196,6 +1266,10 @@ msgstr "Iskanje sistemov ali nastavitev..."
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Glejte <0>nastavitve obvestil</0>, da nastavite način prejemanja opozoril."
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Select {foo}"
+msgstr "Izberi {foo}"
 
 #: src/components/routes/system.tsx
 msgid "Sent"
@@ -1240,8 +1314,14 @@ msgstr "SMTP nastavitve"
 msgid "Sort By"
 msgstr "Razvrsti po"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Start Time"
+msgstr "Čas začetka"
+
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "Stanje"
@@ -1258,10 +1338,6 @@ msgstr ""
 msgid "Sub State"
 msgstr "Podstanje"
 
-#: src/components/systemd-table/systemd-table-columns.tsx
-msgid "Sub State"
-msgstr "Podstanje"
-
 #: src/components/routes/system.tsx
 msgid "Swap space used by the system"
 msgstr "Swap prostor, ki ga uporablja sistem"
@@ -1270,9 +1346,15 @@ msgstr "Swap prostor, ki ga uporablja sistem"
 msgid "Swap Usage"
 msgstr "Swap uporaba"
 
+#: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
@@ -1451,6 +1533,8 @@ msgstr "Sproži se, ko se stanje preklaplja med gor in dol"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Sproži se, ko uporaba katerega koli diska preseže prag"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Vrsta"
@@ -1489,7 +1573,12 @@ msgstr "Delujoč"
 msgid "Up ({upSystemsLength})"
 msgstr "Delujoči ({upSystemsLength})"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Update"
+msgstr "Posodobi"
+
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "Posodobljeno"
@@ -1606,4 +1695,3 @@ msgstr "Da"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Vaše uporabniške nastavitve so posodobljene."
-
