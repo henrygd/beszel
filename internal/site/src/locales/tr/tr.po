@@ -8,7 +8,7 @@ msgstr ""
 "Language: tr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-14 22:51\n"
+"PO-Revision-Date: 2025-12-02 23:18\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -76,13 +76,16 @@ msgid "5 min"
 msgstr "5 dk"
 
 #. Table column
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "Eylemler"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Active"
 msgstr "Aktif"
 
@@ -95,12 +98,14 @@ msgid "Active state"
 msgstr "Aktif durum"
 
 #: src/components/add-system.tsx
-msgid "Add <0>System</0>"
-msgstr "<0>Sistem</0> Ekle"
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Add {foo}"
+msgstr "{foo} ekle"
 
 #: src/components/add-system.tsx
-msgid "Add New System"
-msgstr "Yeni Sistem Ekle"
+msgid "Add <0>System</0>"
+msgstr "<0>Sistem</0> Ekle"
 
 #: src/components/add-system.tsx
 msgid "Add system"
@@ -151,6 +156,7 @@ msgstr "Tüm Konteynerler"
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
@@ -267,6 +273,7 @@ msgid "Can stop"
 msgstr "Durdurulabilir"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "İptal"
@@ -319,6 +326,12 @@ msgstr "Daha fazla ayrıntı için günlükleri kontrol edin."
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
 msgstr "Bildirim hizmetinizi kontrol edin"
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Clear"
+msgstr "Temizle"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
@@ -442,6 +455,10 @@ msgstr "CPU Zaman Dağılımı"
 msgid "CPU Usage"
 msgstr "CPU Kullanımı"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Create"
+msgstr "Oluştur"
+
 #: src/components/login/auth-form.tsx
 msgid "Create account"
 msgstr "Hesap oluştur"
@@ -473,15 +490,18 @@ msgstr "Mevcut durum"
 msgid "Cycles"
 msgstr "Döngüler"
 
-#: src/components/command-palette.tsx
-msgid "Dashboard"
-msgstr "Gösterge Paneli"
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Daily"
+msgstr "Günlük"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
 msgstr "Varsayılan zaman dilimi"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "Sil"
@@ -566,10 +586,15 @@ msgstr "İndir"
 msgid "Duration"
 msgstr "Süre"
 
-#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "Düzenle"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Edit {foo}"
+msgstr "{foo} düzenle"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -585,6 +610,11 @@ msgstr "E-posta bildirimleri"
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "Boş"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "End Time"
+msgstr "Bitiş Saati"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -602,6 +632,8 @@ msgstr "Tek kullanımlık şifrenizi girin."
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
@@ -656,6 +688,7 @@ msgstr "Kimlik doğrulama başarısız"
 
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Failed to save settings"
 msgstr "Ayarlar kaydedilemedi"
 
@@ -714,6 +747,10 @@ msgstr "Dolu"
 msgid "General"
 msgstr "Genel"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Global"
+msgstr "Genel"
+
 #: src/components/routes/system.tsx
 msgid "GPU Engines"
 msgstr "GPU motorları"
@@ -757,6 +794,10 @@ msgstr "Yönetici hesabınızın şifresini kaybettiyseniz, aşağıdaki komutu 
 msgctxt "Docker image"
 msgid "Image"
 msgstr "İmaj"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Inactive"
+msgstr "Pasif"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -959,12 +1000,19 @@ msgstr "OAuth 2 / OIDC desteği"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Her yeniden başlatmada, veritabanındaki sistemler dosyada tanımlanan sistemlerle eşleşecek şekilde güncellenecektir."
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "One-time"
+msgstr "Bir seferlik"
+
 #: src/components/login/auth-form.tsx
 msgid "One-time password"
 msgstr "Tek kullanımlık şifre"
 
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Menüyü aç"
@@ -981,6 +1029,7 @@ msgstr "Diğer"
 msgid "Overwrite existing alerts"
 msgstr "Mevcut uyarıların üzerine yaz"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
@@ -1012,6 +1061,10 @@ msgstr "Parola 72 bayttan küçük olmalıdır."
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"
 msgstr "Şifre sıfırlama isteği alındı"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Past"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
@@ -1094,6 +1147,10 @@ msgstr "Süreç başlatıldı"
 msgid "Public Key"
 msgstr "Genel Anahtar"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Quiet Hours"
+msgstr "Sessiz Saatler"
+
 #. Disk read
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -1106,6 +1163,7 @@ msgstr "Alındı"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "Refresh"
 msgstr "Yenile"
 
@@ -1185,6 +1243,18 @@ msgstr "Ayarları Kaydet"
 msgid "Save system"
 msgstr "Sistemi kaydet"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule"
+msgstr "Zamanla"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent, such as during maintenance periods."
+msgstr "Bildirimlerin gönderilmeyeceği sessiz saatleri zamanlayın, örneğin bakım dönemleri sırasında."
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent."
+msgstr "Bildirimlerin gönderilmeyeceği sessiz saatleri zamanlayın."
+
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "Ara"
@@ -1196,6 +1266,10 @@ msgstr "Sistemler veya ayarlar için ara..."
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Uyarıları nasıl alacağınızı yapılandırmak için <0>bildirim ayarlarını</0> inceleyin."
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Select {foo}"
+msgstr "Seç {foo}"
 
 #: src/components/routes/system.tsx
 msgid "Sent"
@@ -1240,8 +1314,14 @@ msgstr "SMTP ayarları"
 msgid "Sort By"
 msgstr "Sıralama Ölçütü"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Start Time"
+msgstr "Başlangıç Saati"
+
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "Durum"
@@ -1266,9 +1346,15 @@ msgstr "Sistem tarafından kullanılan takas alanı"
 msgid "Swap Usage"
 msgstr "Takas Kullanımı"
 
+#: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
@@ -1447,6 +1533,8 @@ msgstr "Durum yukarı ve aşağı arasında değiştiğinde tetiklenir"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Herhangi bir diskin kullanımı bir eşiği aştığında tetiklenir"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Tür"
@@ -1485,7 +1573,12 @@ msgstr "Açık"
 msgid "Up ({upSystemsLength})"
 msgstr "Açık ({upSystemsLength})"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Update"
+msgstr "Güncelle"
+
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "Güncellendi"
