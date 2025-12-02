@@ -8,7 +8,7 @@ msgstr ""
 "Language: da\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-14 22:51\n"
+"PO-Revision-Date: 2025-12-02 23:18\n"
 "Last-Translator: \n"
 "Language-Team: Danish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -76,13 +76,16 @@ msgid "5 min"
 msgstr "5 minutter"
 
 #. Table column
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "Handlinger"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Active"
 msgstr "Aktiv"
 
@@ -95,12 +98,14 @@ msgid "Active state"
 msgstr "Aktiv tilstand"
 
 #: src/components/add-system.tsx
-msgid "Add <0>System</0>"
-msgstr "Tilføj <0>System</0>"
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Add {foo}"
+msgstr "Tilføj {foo}"
 
 #: src/components/add-system.tsx
-msgid "Add New System"
-msgstr "Tilføj nyt system"
+msgid "Add <0>System</0>"
+msgstr "Tilføj <0>System</0>"
 
 #: src/components/add-system.tsx
 msgid "Add system"
@@ -151,6 +156,7 @@ msgstr "Alle containere"
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
@@ -267,13 +273,14 @@ msgid "Can stop"
 msgstr "Kan stoppe"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "Fortryd"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Capabilities"
-msgstr ""
+msgstr "Funktioner"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
@@ -321,6 +328,12 @@ msgid "Check your notification service"
 msgstr "Tjek din notifikationstjeneste"
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Clear"
+msgstr "Ryd"
+
+#: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
 msgstr "Klik på en container for at se mere information."
 
@@ -352,7 +365,7 @@ msgstr "Bekræft adgangskode"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Conflicts"
-msgstr ""
+msgstr "Konflikter"
 
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
@@ -442,6 +455,10 @@ msgstr "CPU-tidsfordeling"
 msgid "CPU Usage"
 msgstr "CPU forbrug"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Create"
+msgstr "Opret"
+
 #: src/components/login/auth-form.tsx
 msgid "Create account"
 msgstr "Opret konto"
@@ -473,15 +490,18 @@ msgstr "Nuværende tilstand"
 msgid "Cycles"
 msgstr "Cykler"
 
-#: src/components/command-palette.tsx
-msgid "Dashboard"
-msgstr "Oversigtspanel"
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Daily"
+msgstr "Dagligt"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
 msgstr "Standard tidsperiode"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "Slet"
@@ -566,10 +586,15 @@ msgstr "Hent ned"
 msgid "Duration"
 msgstr "Varighed"
 
-#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "Rediger"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Edit {foo}"
+msgstr "Rediger {foo}"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -585,6 +610,11 @@ msgstr "Email-notifikationer"
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "Tom"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "End Time"
+msgstr "Sluttid"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -602,6 +632,8 @@ msgstr "Indtast din engangsadgangskode."
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
@@ -656,6 +688,7 @@ msgstr "Kunne ikke godkende"
 
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Failed to save settings"
 msgstr "Kunne ikke gemme indstillinger"
 
@@ -714,6 +747,10 @@ msgstr "Fuldt opladt"
 msgid "General"
 msgstr "Generelt"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Global"
+msgstr ""
+
 #: src/components/routes/system.tsx
 msgid "GPU Engines"
 msgstr "GPU-enheder"
@@ -757,6 +794,10 @@ msgstr "Hvis du har mistet adgangskoden til din administratorkonto, kan du nulst
 msgctxt "Docker image"
 msgid "Image"
 msgstr "Billede"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Inactive"
+msgstr "Inaktiv"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -959,12 +1000,19 @@ msgstr "OAuth 2 / OIDC understøttelse"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Ved hver genstart vil systemer i databasen blive opdateret til at matche de systemer, der er defineret i filen."
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "One-time"
+msgstr "Engangs"
+
 #: src/components/login/auth-form.tsx
 msgid "One-time password"
 msgstr "Engangsadgangskode"
 
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Åbn menu"
@@ -981,6 +1029,7 @@ msgstr "Andre"
 msgid "Overwrite existing alerts"
 msgstr "Overskriv eksisterende alarmer"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
@@ -1012,6 +1061,10 @@ msgstr "Adgangskoden skal være mindre end 72 bytes."
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"
 msgstr "Anmodning om nulstilling af adgangskode modtaget"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Past"
+msgstr "Tidligere"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
@@ -1094,6 +1147,10 @@ msgstr "Proces startet"
 msgid "Public Key"
 msgstr "Offentlig nøgle"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Quiet Hours"
+msgstr "Stille timer"
+
 #. Disk read
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -1106,6 +1163,7 @@ msgstr "Modtaget"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "Refresh"
 msgstr "Opdater"
 
@@ -1185,6 +1243,18 @@ msgstr "Gem indstillinger"
 msgid "Save system"
 msgstr "Gem system"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule"
+msgstr "Planlæg"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent, such as during maintenance periods."
+msgstr "Planlæg stille timer hvor meddelelser ikke vil blive sendt, såsom under vedligeholdelsesperioder."
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent."
+msgstr "Planlæg stille timer hvor meddelelser ikke vil blive sendt."
+
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "Søg"
@@ -1196,6 +1266,10 @@ msgstr "Søg efter systemer eller indstillinger..."
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Se <0>meddelelsesindstillinger</0> for at konfigurere, hvordan du modtager alarmer."
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Select {foo}"
+msgstr "Vælg {foo}"
 
 #: src/components/routes/system.tsx
 msgid "Sent"
@@ -1240,8 +1314,14 @@ msgstr "SMTP-indstillinger"
 msgid "Sort By"
 msgstr "Sorter efter"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Start Time"
+msgstr "Starttid"
+
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "Tilstand"
@@ -1266,9 +1346,15 @@ msgstr "Swap plads brugt af systemet"
 msgid "Swap Usage"
 msgstr "Swap forbrug"
 
+#: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
@@ -1433,7 +1519,7 @@ msgstr "Udløser når CPU-forbrug overstiger en tærskel"
 
 #: src/lib/alerts.ts
 msgid "Triggers when GPU usage exceeds a threshold"
-msgstr ""
+msgstr "Udløses når GPU-brug overstiger en grænse"
 
 #: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
@@ -1447,6 +1533,8 @@ msgstr "Udløser når status skifter mellem op og ned"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Udløser når brugen af en disk overstiger en tærskel"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Type"
@@ -1485,7 +1573,12 @@ msgstr "Oppe"
 msgid "Up ({upSystemsLength})"
 msgstr "Oppe ({upSystemsLength})"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Update"
+msgstr "Opdater"
+
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "Opdateret"
