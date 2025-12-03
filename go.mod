@@ -1,6 +1,6 @@
 module github.com/henrygd/beszel
 
-go 1.25.3
+go 1.25.5
 
 require (
 	github.com/blang/semver v3.5.1+incompatible
