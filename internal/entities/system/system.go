@@ -40,14 +40,15 @@ type Stats struct {
 	Bandwidth      [2]uint64           `json:"b,omitzero" cbor:"26,keyasint,omitzero"`  // [sent bytes, recv bytes]
 	MaxBandwidth   [2]uint64           `json:"bm,omitzero" cbor:"27,keyasint,omitzero"` // [sent bytes, recv bytes]
 	// TODO: remove other load fields in future release in favor of load avg array
-	LoadAvg           [3]float64           `json:"la,omitempty" cbor:"28,keyasint"`
-	Battery           [2]uint8             `json:"bat,omitzero" cbor:"29,keyasint,omitzero"` // [percent, charge state, current]
-	MaxMem            float64              `json:"mm,omitempty" cbor:"30,keyasint,omitempty"`
-	NetworkInterfaces map[string][4]uint64 `json:"ni,omitempty" cbor:"31,keyasint,omitempty"`   // [upload bytes, download bytes, total upload, total download]
-	DiskIO            [2]uint64            `json:"dio,omitzero" cbor:"32,keyasint,omitzero"`    // [read bytes, write bytes]
-	MaxDiskIO         [2]uint64            `json:"diom,omitzero" cbor:"-"`                      // [max read bytes, max write bytes]
-	CpuBreakdown      []float64            `json:"cpub,omitempty" cbor:"33,keyasint,omitempty"` // [user, system, iowait, steal, idle]
-	CpuCoresUsage     Uint8Slice           `json:"cpus,omitempty" cbor:"34,keyasint,omitempty"` // per-core busy usage [CPU0..]
+	LoadAvg           [3]float64                    `json:"la,omitempty" cbor:"28,keyasint"`
+	Battery           [2]uint8                      `json:"bat,omitzero" cbor:"29,keyasint,omitzero"` // [percent, charge state, current]
+	MaxMem            float64                       `json:"mm,omitempty" cbor:"30,keyasint,omitempty"`
+	NetworkInterfaces map[string][4]uint64          `json:"ni,omitempty" cbor:"31,keyasint,omitempty"`   // [upload bytes, download bytes, total upload, total download]
+	DiskIO            [2]uint64                     `json:"dio,omitzero" cbor:"32,keyasint,omitzero"`    // [read bytes, write bytes]
+	MaxDiskIO         [2]uint64                     `json:"diom,omitzero" cbor:"-"`                      // [max read bytes, max write bytes]
+	CpuBreakdown      []float64                     `json:"cpub,omitempty" cbor:"33,keyasint,omitempty"` // [user, system, iowait, steal, idle]
+	CpuCoresUsage     Uint8Slice                    `json:"cpus,omitempty" cbor:"34,keyasint,omitempty"` // per-core busy usage [CPU0..]
+	NetConnections    map[string]*NetConnectionStats `json:"nc,omitempty" cbor:"35,keyasint,omitempty"`   // per-interface connection states
 }
 
 // Uint8Slice wraps []uint8 to customize JSON encoding while keeping CBOR efficient.
@@ -104,6 +105,36 @@ type NetIoStats struct {
 	BytesSent uint64
 	Time      time.Time
 	Name      string
+}
+
+// NetConnectionStats tracks TCP/UDP connection states per interface
+type NetConnectionStats struct {
+	TCPEstablished uint32 `json:"te" cbor:"0,keyasint"`          // Active TCP connections
+	TCPListen      uint32 `json:"tl" cbor:"1,keyasint"`          // TCP listening sockets
+	TCPTimeWait    uint32 `json:"tw" cbor:"2,keyasint"`          // TCP TIME_WAIT state
+	TCPCloseWait   uint32 `json:"tcw" cbor:"3,keyasint"`         // TCP CLOSE_WAIT state
+	TCPSynSent     uint32 `json:"ts" cbor:"4,keyasint"`          // TCP SYN_SENT state
+	TCPSynRecv     uint32 `json:"tsr" cbor:"5,keyasint"`         // TCP SYN_RECV state
+	TCPFinWait1    uint32 `json:"tf1" cbor:"6,keyasint"`         // TCP FIN_WAIT1 state
+	TCPFinWait2    uint32 `json:"tf2" cbor:"7,keyasint"`         // TCP FIN_WAIT2 state
+	TCPClosing     uint32 `json:"tcl" cbor:"8,keyasint"`         // TCP CLOSING state
+	TCPLastAck     uint32 `json:"tla" cbor:"9,keyasint"`         // TCP LAST_ACK state
+	UDPCount       uint32 `json:"u" cbor:"10,keyasint"`          // UDP socket count
+	TCPTotal       uint32 `json:"tt" cbor:"11,keyasint"`         // Total TCP connections
+	Total          uint32 `json:"t" cbor:"12,keyasint"`          // Total connections (TCP + UDP)
+	// IPv6-specific stats
+	TCP6Established uint32 `json:"te6" cbor:"13,keyasint"`        // Active TCP6 connections
+	TCP6Listen      uint32 `json:"tl6" cbor:"14,keyasint"`        // TCP6 listening sockets
+	TCP6TimeWait    uint32 `json:"tw6" cbor:"15,keyasint"`        // TCP6 TIME_WAIT state
+	TCP6CloseWait   uint32 `json:"tcw6" cbor:"16,keyasint"`       // TCP6 CLOSE_WAIT state
+	TCP6SynSent     uint32 `json:"ts6" cbor:"17,keyasint"`        // TCP6 SYN_SENT state
+	TCP6SynRecv     uint32 `json:"tsr6" cbor:"18,keyasint"`       // TCP6 SYN_RECV state
+	TCP6FinWait1    uint32 `json:"tf16" cbor:"19,keyasint"`       // TCP6 FIN_WAIT1 state
+	TCP6FinWait2    uint32 `json:"tf26" cbor:"20,keyasint"`       // TCP6 FIN_WAIT2 state
+	TCP6Closing     uint32 `json:"tcl6" cbor:"21,keyasint"`       // TCP6 CLOSING state
+	TCP6LastAck     uint32 `json:"tla6" cbor:"22,keyasint"`       // TCP6 LAST_ACK state
+	UDP6Count       uint32 `json:"u6" cbor:"23,keyasint"`         // UDP6 socket count
+	TCP6Total       uint32 `json:"tt6" cbor:"24,keyasint"`        // Total TCP6 connections
 }
 
 type Os = uint8
