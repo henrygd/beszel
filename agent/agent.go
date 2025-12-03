@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/gliderlabs/ssh"
 	"github.com/henrygd/beszel"
@@ -29,6 +30,8 @@ type Agent struct {
 	fsNames                   []string                                              // List of filesystem device names being monitored
 	fsStats                   map[string]*system.FsStats                            // Keeps track of disk stats for each filesystem
 	diskPrev                  map[uint16]map[string]prevDisk                        // Previous disk I/O counters per cache interval
+	diskUsageCacheDuration    time.Duration                                         // How long to cache disk usage (to avoid waking sleeping disks)
+	lastDiskUsageUpdate       time.Time                                             // Last time disk usage was collected
 	netInterfaces             map[string]struct{}                                   // Stores all valid network interfaces
 	netIoStats                map[uint16]system.NetIoStats                          // Keeps track of bandwidth usage per cache interval
 	netInterfaceDeltaTrackers map[uint16]*deltatracker.DeltaTracker[string, uint64] // Per-cache-time NIC delta trackers
@@ -69,6 +72,16 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 
 	agent.memCalc, _ = GetEnv("MEM_CALC")
 	agent.sensorConfig = agent.newSensorConfig()
+
+	// Parse disk usage cache duration (e.g., "15m", "1h") to avoid waking sleeping disks
+	if diskUsageCache, exists := GetEnv("DISK_USAGE_CACHE"); exists {
+		if duration, err := time.ParseDuration(diskUsageCache); err == nil {
+			agent.diskUsageCacheDuration = duration
+			slog.Info("DISK_USAGE_CACHE", "duration", duration)
+		} else {
+			slog.Warn("Invalid DISK_USAGE_CACHE", "err", err)
+		}
+	}
 	// Set up slog with a log level determined by the LOG_LEVEL env var
 	if logLevelStr, exists := GetEnv("LOG_LEVEL"); exists {
 		switch strings.ToLower(logLevelStr) {

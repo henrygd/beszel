@@ -26,7 +26,7 @@ import { Sheet, SheetTitle, SheetHeader, SheetContent, SheetDescription } from "
 import { Dialog, DialogContent, DialogTitle } from "../ui/dialog"
 import { Button } from "@/components/ui/button"
 import { $allSystemsById } from "@/lib/stores"
-import { MaximizeIcon, RefreshCwIcon, XIcon } from "lucide-react"
+import { LoaderCircleIcon, MaximizeIcon, RefreshCwIcon, XIcon } from "lucide-react"
 import { Separator } from "../ui/separator"
 import { $router, Link } from "../router"
 import { listenKeys } from "nanostores"
@@ -36,7 +36,7 @@ const syntaxTheme = "github-dark-dimmed"
 
 export default function ContainersTable({ systemId }: { systemId?: string }) {
 	const loadTime = Date.now()
-	const [data, setData] = useState<ContainerRecord[]>([])
+	const [data, setData] = useState<ContainerRecord[] | undefined>(undefined)
 	const [sorting, setSorting] = useBrowserStorage<SortingState>(
 		`sort-c-${systemId ? 1 : 0}`,
 		[{ id: systemId ? "name" : "system", desc: false }],
@@ -54,23 +54,27 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 					fields: "id,name,image,cpu,memory,net,health,status,system,updated",
 					filter: systemId ? pb.filter("system={:system}", { system: systemId }) : undefined,
 				})
-				.then(({ items }) => items.length && setData((curItems) => {
-					const lastUpdated = Math.max(items[0].updated, items.at(-1)?.updated ?? 0)
-					const containerIds = new Set()
-					const newItems = []
-					for (const item of items) {
-						if (Math.abs(lastUpdated - item.updated) < 70_000) {
-							containerIds.add(item.id)
-							newItems.push(item)
-						}
-					}
-					for (const item of curItems) {
-						if (!containerIds.has(item.id) && lastUpdated - item.updated < 70_000) {
-							newItems.push(item)
-						}
-					}
-					return newItems
-				}))
+				.then(
+					({ items }) =>
+						items.length &&
+						setData((curItems) => {
+							const lastUpdated = Math.max(items[0].updated, items.at(-1)?.updated ?? 0)
+							const containerIds = new Set()
+							const newItems = []
+							for (const item of items) {
+								if (Math.abs(lastUpdated - item.updated) < 70_000) {
+									containerIds.add(item.id)
+									newItems.push(item)
+								}
+							}
+							for (const item of curItems ?? []) {
+								if (!containerIds.has(item.id) && lastUpdated - item.updated < 70_000) {
+									newItems.push(item)
+								}
+							}
+							return newItems
+						})
+				)
 		}
 
 		// initial load
@@ -93,7 +97,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 	}, [])
 
 	const table = useReactTable({
-		data,
+		data: data ?? [],
 		columns: containerChartCols.filter((col) => (systemId ? col.id !== "system" : true)),
 		getCoreRowModel: getCoreRowModel(),
 		getSortedRowModel: getSortedRowModel(),
@@ -159,7 +163,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 								type="button"
 								variant="ghost"
 								size="icon"
-								aria-label={t`Clear filter`}
+								aria-label={t`Clear`}
 								className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
 								onClick={() => setGlobalFilter("")}
 							>
@@ -170,7 +174,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 				</div>
 			</CardHeader>
 			<div className="rounded-md">
-				<AllContainersTable table={table} rows={rows} colLength={visibleColumns.length} />
+				<AllContainersTable table={table} rows={rows} colLength={visibleColumns.length} data={data} />
 			</div>
 		</Card>
 	)
@@ -180,10 +184,12 @@ const AllContainersTable = memo(function AllContainersTable({
 	table,
 	rows,
 	colLength,
+	data,
 }: {
 	table: TableType<ContainerRecord>
 	rows: Row<ContainerRecord>[]
 	colLength: number
+	data: ContainerRecord[] | undefined
 }) {
 	// The virtualizer will need a reference to the scrollable container element
 	const scrollRef = useRef<HTMLDivElement>(null)
@@ -227,7 +233,11 @@ const AllContainersTable = memo(function AllContainersTable({
 						) : (
 							<TableRow>
 								<TableCell colSpan={colLength} className="h-37 text-center pointer-events-none">
-									<Trans>No results.</Trans>
+									{data ? (
+										<Trans>No results.</Trans>
+									) : (
+										<LoaderCircleIcon className="animate-spin size-10 opacity-60 mx-auto" />
+									)}
 								</TableCell>
 							</TableRow>
 						)}
@@ -266,7 +276,7 @@ async function getInfoHtml(container: ContainerRecord): Promise<string> {
 		])
 		try {
 			info = JSON.stringify(JSON.parse(info), null, 2)
-		} catch (_) { }
+		} catch (_) {}
 		return info ? highlighter.codeToHtml(info, { lang: "json", theme: syntaxTheme }) : t`No results.`
 	} catch (error) {
 		console.error(error)
@@ -323,12 +333,12 @@ function ContainerSheet({
 		setLogsDisplay("")
 		setInfoDisplay("")
 		if (!container) return
-			; (async () => {
-				const [logsHtml, infoHtml] = await Promise.all([getLogsHtml(container), getInfoHtml(container)])
-				setLogsDisplay(logsHtml)
-				setInfoDisplay(infoHtml)
-				setTimeout(scrollLogsToBottom, 20)
-			})()
+		;(async () => {
+			const [logsHtml, infoHtml] = await Promise.all([getLogsHtml(container), getInfoHtml(container)])
+			setLogsDisplay(logsHtml)
+			setInfoDisplay(infoHtml)
+			setTimeout(scrollLogsToBottom, 20)
+		})()
 	}, [container])
 
 	return (
@@ -505,9 +515,7 @@ function LogsFullscreenDialog({
 					</div>
 				</div>
 				<button
-					onClick={() => {
-						void onRefresh()
-					}}
+					onClick={onRefresh}
 					className="absolute top-3 right-11 opacity-60 hover:opacity-100 p-1"
 					disabled={isRefreshing}
 					title={t`Refresh`}

@@ -14,9 +14,9 @@ func TestGetSystemdServiceId(t *testing.T) {
 		serviceName := "nginx.service"
 
 		// Call multiple times and ensure same result
-		id1 := getSystemdServiceId(systemId, serviceName)
-		id2 := getSystemdServiceId(systemId, serviceName)
-		id3 := getSystemdServiceId(systemId, serviceName)
+		id1 := makeStableHashId(systemId, serviceName)
+		id2 := makeStableHashId(systemId, serviceName)
+		id3 := makeStableHashId(systemId, serviceName)
 
 		assert.Equal(t, id1, id2)
 		assert.Equal(t, id2, id3)
@@ -29,10 +29,10 @@ func TestGetSystemdServiceId(t *testing.T) {
 		serviceName1 := "nginx.service"
 		serviceName2 := "apache.service"
 
-		id1 := getSystemdServiceId(systemId1, serviceName1)
-		id2 := getSystemdServiceId(systemId2, serviceName1)
-		id3 := getSystemdServiceId(systemId1, serviceName2)
-		id4 := getSystemdServiceId(systemId2, serviceName2)
+		id1 := makeStableHashId(systemId1, serviceName1)
+		id2 := makeStableHashId(systemId2, serviceName1)
+		id3 := makeStableHashId(systemId1, serviceName2)
+		id4 := makeStableHashId(systemId2, serviceName2)
 
 		// All IDs should be different
 		assert.NotEqual(t, id1, id2)
@@ -56,14 +56,14 @@ func TestGetSystemdServiceId(t *testing.T) {
 		}
 
 		for _, tc := range testCases {
-			id := getSystemdServiceId(tc.systemId, tc.serviceName)
+			id := makeStableHashId(tc.systemId, tc.serviceName)
 			// FNV-32 produces 8 hex characters
 			assert.Len(t, id, 8, "ID should be 8 characters for systemId='%s', serviceName='%s'", tc.systemId, tc.serviceName)
 		}
 	})
 
 	t.Run("hexadecimal output", func(t *testing.T) {
-		id := getSystemdServiceId("test-system", "test-service")
+		id := makeStableHashId("test-system", "test-service")
 		assert.NotEmpty(t, id)
 
 		// Should only contain hexadecimal characters

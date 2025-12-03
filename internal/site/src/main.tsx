@@ -20,6 +20,7 @@ import * as systemsManager from "@/lib/systemsManager.ts"
 const LoginPage = lazy(() => import("@/components/login/login.tsx"))
 const Home = lazy(() => import("@/components/routes/home.tsx"))
 const Containers = lazy(() => import("@/components/routes/containers.tsx"))
+const Smart = lazy(() => import("@/components/routes/smart.tsx"))
 const SystemDetail = lazy(() => import("@/components/routes/system.tsx"))
 const CopyToClipboardDialog = lazy(() => import("@/components/copy-to-clipboard.tsx"))
 
@@ -62,6 +63,8 @@ const App = memo(() => {
 		return <SystemDetail id={page.params.id} />
 	} else if (page.route === "containers") {
 		return <Containers />
+	} else if (page.route === "smart") {
+		return <Smart />
 	} else if (page.route === "settings") {
 		return <Settings />
 	}
@@ -97,7 +100,7 @@ const Layout = () => {
 					<LoginPage />
 				</Suspense>
 			) : (
-				<div style={{"--container": `${userSettings.layoutWidth ?? 1480}px`} as React.CSSProperties}>
+				<div style={{ "--container": `${userSettings.layoutWidth ?? 1500}px` } as React.CSSProperties}>
 					<div className="container">
 						<Navbar />
 					</div>
