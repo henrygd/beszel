@@ -29,21 +29,20 @@ import (
 )
 
 type System struct {
-	Id                 string               `db:"id"`
-	Host               string               `db:"host"`
-	Port               string               `db:"port"`
-	Status             string               `db:"status"`
-	manager            *SystemManager       // Manager that this system belongs to
-	client             *ssh.Client          // SSH client for fetching data
-	data               *system.CombinedData // system data from agent
-	staticInfo         *system.StaticInfo   // cached static system info (updated every 15 min)
-	lastStaticInfoTime time.Time            // last time static info was fetched
-	ctx                context.Context      // Context for stopping the updater
-	cancel             context.CancelFunc   // Stops and removes system from updater
-	WsConn             *ws.WsConn           // Handler for agent WebSocket connection
-	agentVersion       semver.Version       // Agent version
-	updateTicker       *time.Ticker         // Ticker for updating the system
-	smartOnce          sync.Once            // Once for fetching and saving smart devices
+	Id           string               `db:"id"`
+	Host         string               `db:"host"`
+	Port         string               `db:"port"`
+	Status       string               `db:"status"`
+	manager      *SystemManager       // Manager that this system belongs to
+	client       *ssh.Client          // SSH client for fetching data
+	data         *system.CombinedData // system data from agent
+	staticInfo   *system.StaticInfo   // cached static system info, fetched once per connection
+	ctx          context.Context      // Context for stopping the updater
+	cancel       context.CancelFunc   // Stops and removes system from updater
+	WsConn       *ws.WsConn           // Handler for agent WebSocket connection
+	agentVersion semver.Version       // Agent version
+	updateTicker *time.Ticker         // Ticker for updating the system
+	smartOnce    sync.Once            // Once for fetching and saving smart devices
 }
 
 func (sm *SystemManager) NewSystem(systemId string) *System {
@@ -117,13 +116,9 @@ func (sys *System) update() error {
 		return nil
 	}
 
-	// Check if it's time to fetch static info (every 15 minutes)
-	now := time.Now()
-	shouldFetchStatic := sys.staticInfo == nil || now.Sub(sys.lastStaticInfoTime) >= staticInfoInterval
-
 	// Determine which cache time to use based on whether we need static info
 	cacheTimeMs := uint16(interval)
-	if shouldFetchStatic {
+	if sys.staticInfo == nil {
 		// Request with a cache time that signals the agent to include static info
 		// We use 60001ms (just above the standard interval) since uint16 max is 65535
 		cacheTimeMs = 60_001
@@ -134,8 +129,7 @@ func (sys *System) update() error {
 		// If we received static info, cache it
 		if data.StaticInfo != nil {
 			sys.staticInfo = data.StaticInfo
-			sys.lastStaticInfoTime = now
-			sys.manager.hub.Logger().Debug("Updated static system info", "system", sys.Id)
+			sys.manager.hub.Logger().Debug("Cached static system info", "system", sys.Id)
 		}
 		_, err = sys.createRecords(data)
 	}
@@ -692,6 +686,7 @@ func (sys *System) closeSSHConnection() {
 		sys.client.Close()
 		sys.client = nil
 	}
+	sys.staticInfo = nil
 }
 
 // closeWebSocketConnection closes the WebSocket connection but keeps the system in the manager
@@ -701,6 +696,7 @@ func (sys *System) closeWebSocketConnection() {
 	if sys.WsConn != nil {
 		sys.WsConn.Close(nil)
 	}
+	sys.staticInfo = nil
 }
 
 // extractAgentVersion extracts the beszel version from SSH server version string
