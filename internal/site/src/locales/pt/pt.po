@@ -8,7 +8,7 @@ msgstr ""
 "Language: pt\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-04 22:13\n"
+"PO-Revision-Date: 2025-11-14 22:51\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -76,13 +76,16 @@ msgid "5 min"
 msgstr "5 min"
 
 #. Table column
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "Ações"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Active"
 msgstr "Ativo"
 
@@ -95,12 +98,14 @@ msgid "Active state"
 msgstr "Estado ativo"
 
 #: src/components/add-system.tsx
-msgid "Add <0>System</0>"
-msgstr "Adicionar <0>Sistema</0>"
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Add {foo}"
+msgstr "Adicionar {foo}"
 
 #: src/components/add-system.tsx
-msgid "Add New System"
-msgstr "Adicionar Novo Sistema"
+msgid "Add <0>System</0>"
+msgstr "Adicionar <0>Sistema</0>"
 
 #: src/components/add-system.tsx
 msgid "Add system"
@@ -151,6 +156,7 @@ msgstr "Todos os Contêineres"
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
@@ -267,6 +273,7 @@ msgid "Can stop"
 msgstr "Pode parar"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "Cancelar"
@@ -319,6 +326,12 @@ msgstr "Verifique os logs para mais detalhes."
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
 msgstr "Verifique seu serviço de notificação"
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Clear"
+msgstr ""
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
@@ -442,6 +455,10 @@ msgstr "Distribuição do Tempo de CPU"
 msgid "CPU Usage"
 msgstr "Uso de CPU"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Create"
+msgstr "Criar"
+
 #: src/components/login/auth-form.tsx
 msgid "Create account"
 msgstr "Criar conta"
@@ -473,15 +490,18 @@ msgstr "Estado atual"
 msgid "Cycles"
 msgstr "Ciclos"
 
-#: src/components/command-palette.tsx
-msgid "Dashboard"
-msgstr "Painel"
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Daily"
+msgstr "Diariamente"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
 msgstr "Período de tempo padrão"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "Excluir"
@@ -566,10 +586,15 @@ msgstr "Transferir"
 msgid "Duration"
 msgstr "Duração"
 
-#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "Editar"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Edit {foo}"
+msgstr "Editar {foo}"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -585,6 +610,11 @@ msgstr "Notificações por email"
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "Vazia"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "End Time"
+msgstr ""
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -602,6 +632,8 @@ msgstr "Insira a sua senha de uso único."
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
@@ -656,6 +688,7 @@ msgstr "Falha na autenticação"
 
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Failed to save settings"
 msgstr "Falha ao guardar as definições"
 
@@ -714,6 +747,10 @@ msgstr "Cheia"
 msgid "General"
 msgstr "Geral"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Global"
+msgstr "Global"
+
 #: src/components/routes/system.tsx
 msgid "GPU Engines"
 msgstr "Motores GPU"
@@ -757,6 +794,10 @@ msgstr "Se você perdeu a senha da sua conta de administrador, pode redefini-la 
 msgctxt "Docker image"
 msgid "Image"
 msgstr "Imagem"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Inactive"
+msgstr "Inativo"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -834,7 +875,7 @@ msgstr "Tentativa de login falhou"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
 msgid "Logs"
-msgstr ""
+msgstr "Logs"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
@@ -959,12 +1000,19 @@ msgstr "Suporte a OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "A cada reinício, os sistemas no banco de dados serão atualizados para corresponder aos sistemas definidos no arquivo."
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "One-time"
+msgstr "Uma vez"
+
 #: src/components/login/auth-form.tsx
 msgid "One-time password"
 msgstr "Senha de uso único"
 
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Abrir menu"
@@ -981,6 +1029,7 @@ msgstr "Outro"
 msgid "Overwrite existing alerts"
 msgstr "Sobrescrever alertas existentes"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
@@ -1012,6 +1061,10 @@ msgstr "A password tem que ter menos de 72 bytes."
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"
 msgstr "Solicitação de redefinição de senha recebida"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Past"
+msgstr "Passado"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
@@ -1094,6 +1147,10 @@ msgstr "Processo iniciado"
 msgid "Public Key"
 msgstr "Chave Pública"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Quiet Hours"
+msgstr "Horas Silenciosas"
+
 #. Disk read
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -1106,6 +1163,7 @@ msgstr "Recebido"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "Refresh"
 msgstr "Atualizar"
 
@@ -1185,6 +1243,18 @@ msgstr "Guardar Definições"
 msgid "Save system"
 msgstr "Guardar Sistema"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule"
+msgstr "Agendar"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent, such as during maintenance periods."
+msgstr "Agende horas silenciosas onde as notificações não serão enviadas, como durante períodos de manutenção."
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent."
+msgstr "Agende horas silenciosas onde as notificações não serão enviadas."
+
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "Pesquisar"
@@ -1196,6 +1266,10 @@ msgstr "Pesquisar por sistemas ou configurações..."
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Veja <0>configurações de notificação</0> para configurar como você recebe alertas."
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Select {foo}"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Sent"
@@ -1240,8 +1314,14 @@ msgstr "Configurações SMTP"
 msgid "Sort By"
 msgstr "Ordenar Por"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Start Time"
+msgstr ""
+
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "Estado"
@@ -1266,9 +1346,15 @@ msgstr "Espaço de swap usado pelo sistema"
 msgid "Swap Usage"
 msgstr "Uso de Swap"
 
+#: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
@@ -1397,7 +1483,7 @@ msgstr "Dados totais enviados para cada interface"
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Total: {0}"
-msgstr "Total: {0}"
+msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Triggered by"
@@ -1447,6 +1533,8 @@ msgstr "Dispara quando o status alterna entre ativo e inativo"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Dispara quando o uso de qualquer disco excede um limite"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Tipo"
@@ -1485,7 +1573,12 @@ msgstr "Ligado"
 msgid "Up ({upSystemsLength})"
 msgstr "Ativo ({upSystemsLength})"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Update"
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "Atualizado"

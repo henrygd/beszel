@@ -422,6 +422,13 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 		return cn("h-full", getIndicatorColor(pct))
 	}
 
+	// Extra disk indicators (max 3 dots - one per state if any disk exists in range)
+	const stateColors = [STATUS_COLORS.up, STATUS_COLORS.pending, STATUS_COLORS.down]
+	const extraDiskIndicators =
+		status !== SystemStatus.Up
+			? []
+			: [...new Set(extraFs.map(([, pct]) => getMeterState(pct)))].sort().map((state) => stateColors[state])
+
 	return (
 		<Tooltip>
 			<TooltipTrigger asChild>
@@ -439,10 +446,10 @@ function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
 								style={{ width: `${rootDiskPct}%` }}
 							></span>
 							{/* Extra disk indicators */}
-							{extraFs.map(([name, pct]) => (
+							{extraDiskIndicators.map((color) => (
 								<span
-									key={name}
-									className={cn("size-1.5 rounded-full shrink-0 outline-[0.5px] outline-muted", getIndicatorColor(pct))}
+									key={color}
+									className={cn("size-1.5 rounded-full shrink-0 outline-[0.5px] outline-muted", color)}
 								/>
 							))}
 						</span>

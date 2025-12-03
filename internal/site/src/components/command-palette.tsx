@@ -8,10 +8,11 @@ import {
 	ContainerIcon,
 	DatabaseBackupIcon,
 	FingerprintIcon,
-	LayoutDashboard,
+	HardDriveIcon,
 	LogsIcon,
 	MailIcon,
 	Server,
+	ServerIcon,
 	SettingsIcon,
 	UsersIcon,
 } from "lucide-react"
@@ -81,15 +82,15 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 					)}
 					<CommandGroup heading={t`Pages / Settings`}>
 						<CommandItem
-							keywords={["home", t`All Systems`]}
+							keywords={["home"]}
 							onSelect={() => {
 								navigate(basePath)
 								setOpen(false)
 							}}
 						>
-							<LayoutDashboard className="me-2 size-4" />
+							<ServerIcon className="me-2 size-4" />
 							<span>
-								<Trans>Dashboard</Trans>
+								<Trans>All Systems</Trans>
 							</span>
 							<CommandShortcut>
 								<Trans>Page</Trans>
@@ -105,6 +106,18 @@ export default memo(function CommandPalette({ open, setOpen }: { open: boolean; 
 							<span>
 								<Trans>All Containers</Trans>
 							</span>
+							<CommandShortcut>
+								<Trans>Page</Trans>
+							</CommandShortcut>
+						</CommandItem>
+						<CommandItem
+							onSelect={() => {
+								navigate(getPagePath($router, "smart"))
+								setOpen(false)
+							}}
+						>
+							<HardDriveIcon className="me-2 size-4" />
+							<span>S.M.A.R.T.</span>
 							<CommandShortcut>
 								<Trans>Page</Trans>
 							</CommandShortcut>

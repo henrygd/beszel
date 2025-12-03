@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-30 21:53\n"
+"PO-Revision-Date: 2025-11-14 22:51\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -76,13 +76,16 @@ msgid "5 min"
 msgstr "5 分钟"
 
 #. Table column
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "操作"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Active"
 msgstr "活跃"
 
@@ -95,12 +98,14 @@ msgid "Active state"
 msgstr "活动状态"
 
 #: src/components/add-system.tsx
-msgid "Add <0>System</0>"
-msgstr "<0>添加客户端</0>"
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Add {foo}"
+msgstr "添加 {foo}"
 
 #: src/components/add-system.tsx
-msgid "Add New System"
-msgstr "添加新客户端"
+msgid "Add <0>System</0>"
+msgstr "<0>添加客户端</0>"
 
 #: src/components/add-system.tsx
 msgid "Add system"
@@ -151,6 +156,7 @@ msgstr "所有容器"
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
@@ -267,6 +273,7 @@ msgid "Can stop"
 msgstr "可停止"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "取消"
@@ -319,6 +326,12 @@ msgstr "检查日志以获取更多详细信息。"
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
 msgstr "检查您的通知服务"
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Clear"
+msgstr "清除"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
@@ -442,6 +455,10 @@ msgstr "CPU 时间细分"
 msgid "CPU Usage"
 msgstr "CPU 使用率"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Create"
+msgstr "创建"
+
 #: src/components/login/auth-form.tsx
 msgid "Create account"
 msgstr "创建账户"
@@ -473,15 +490,18 @@ msgstr "当前状态"
 msgid "Cycles"
 msgstr "循环次数"
 
-#: src/components/command-palette.tsx
-msgid "Dashboard"
-msgstr "仪表板"
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Daily"
+msgstr "每日"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
 msgstr "默认时间段"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "删除"
@@ -566,10 +586,15 @@ msgstr "下载"
 msgid "Duration"
 msgstr "持续时间"
 
-#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "编辑"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Edit {foo}"
+msgstr "编辑 {foo}"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -585,6 +610,11 @@ msgstr "电子邮件通知"
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "空电"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "End Time"
+msgstr "结束时间"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -602,6 +632,8 @@ msgstr "输入您的一次性密码。"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
@@ -656,6 +688,7 @@ msgstr "认证失败"
 
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Failed to save settings"
 msgstr "保存设置失败"
 
@@ -714,6 +747,10 @@ msgstr "满电"
 msgid "General"
 msgstr "常规"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Global"
+msgstr "全局"
+
 #: src/components/routes/system.tsx
 msgid "GPU Engines"
 msgstr "GPU 引擎"
@@ -757,6 +794,10 @@ msgstr "如果您丢失了管理员账户的密码，可以使用以下命令重
 msgctxt "Docker image"
 msgid "Image"
 msgstr "镜像"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Inactive"
+msgstr "非活跃"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -959,12 +1000,19 @@ msgstr "支持 OAuth 2/OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "每次重启时，数据库中的系统将更新以匹配文件中定义的系统。"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "One-time"
+msgstr "一次性"
+
 #: src/components/login/auth-form.tsx
 msgid "One-time password"
 msgstr "一次性密码"
 
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "打开菜单"
@@ -981,6 +1029,7 @@ msgstr "其他"
 msgid "Overwrite existing alerts"
 msgstr "覆盖现有警报"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
@@ -1012,6 +1061,10 @@ msgstr "密码必须小于 72 字节。"
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"
 msgstr "已收到密码重置请求"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Past"
+msgstr "过去"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
@@ -1094,6 +1147,10 @@ msgstr "进程启动"
 msgid "Public Key"
 msgstr "公钥"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Quiet Hours"
+msgstr "静默时间"
+
 #. Disk read
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -1106,6 +1163,7 @@ msgstr "接收"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "Refresh"
 msgstr "刷新"
 
@@ -1185,6 +1243,18 @@ msgstr "保存设置"
 msgid "Save system"
 msgstr "保存系统"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule"
+msgstr "计划"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent, such as during maintenance periods."
+msgstr "安排静默时间，在此期间不会发送通知，例如在维护期间。"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent."
+msgstr "安排静默时间，在此期间不会发送通知。"
+
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "搜索"
@@ -1196,6 +1266,10 @@ msgstr "搜索系统或设置..."
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "查看<0>通知设置</0>以配置您接收警报的方式。"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Select {foo}"
+msgstr "选择 {foo}"
 
 #: src/components/routes/system.tsx
 msgid "Sent"
@@ -1240,8 +1314,14 @@ msgstr "SMTP 设置"
 msgid "Sort By"
 msgstr "排序依据"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Start Time"
+msgstr "开始时间"
+
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "状态"
@@ -1266,9 +1346,15 @@ msgstr "系统使用的 SWAP 空间"
 msgid "Swap Usage"
 msgstr "SWAP 使用率"
 
+#: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
@@ -1447,6 +1533,8 @@ msgstr "当状态在上线与掉线之间切换时触发"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "当任何磁盘的使用率超过阈值时触发"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "类型"
@@ -1485,7 +1573,12 @@ msgstr "在线"
 msgid "Up ({upSystemsLength})"
 msgstr "在线 ({upSystemsLength})"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Update"
+msgstr "更新"
+
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "更新于"

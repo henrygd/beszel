@@ -104,6 +104,7 @@ func NewAlertManager(app hubLike) *AlertManager {
 func (am *AlertManager) bindEvents() {
 	am.hub.OnRecordAfterUpdateSuccess("alerts").BindFunc(updateHistoryOnAlertUpdate)
 	am.hub.OnRecordAfterDeleteSuccess("alerts").BindFunc(resolveHistoryOnAlertDelete)
+	am.hub.OnRecordAfterUpdateSuccess("smart_devices").BindFunc(am.handleSmartDeviceAlert)
 }
 
 // IsNotificationSilenced checks if a notification should be silenced based on configured quiet hours

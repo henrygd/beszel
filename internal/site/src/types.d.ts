@@ -407,6 +407,23 @@ export interface SmartAttribute {
 	wf?: string
 }
 
+export interface SmartDeviceRecord extends RecordModel {
+	id: string
+	system: string
+	name: string
+	model: string
+	state: string
+	capacity: number
+	temp: number
+	firmware: string
+	serial: string
+	type: string
+	hours: number
+	cycles: number
+	attributes: SmartAttribute[]
+	updated: string
+}
+
 export interface SystemdRecord extends RecordModel {
 	system: string
 	name: string

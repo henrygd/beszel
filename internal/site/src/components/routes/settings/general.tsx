@@ -21,7 +21,7 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 	const [isLoading, setIsLoading] = useState(false)
 	const { i18n } = useLingui()
 	const currentUserSettings = useStore($userSettings)
-	const layoutWidth = currentUserSettings.layoutWidth ?? 1480
+	const layoutWidth = currentUserSettings.layoutWidth ?? 1500
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault()

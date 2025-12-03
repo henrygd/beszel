@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/henrygd/beszel/internal/common"
@@ -42,6 +43,7 @@ type System struct {
 	WsConn             *ws.WsConn           // Handler for agent WebSocket connection
 	agentVersion       semver.Version       // Agent version
 	updateTicker       *time.Ticker         // Ticker for updating the system
+	smartOnce          sync.Once            // Once for fetching and saving smart devices
 }
 
 func (sm *SystemManager) NewSystem(systemId string) *System {
@@ -217,6 +219,13 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		return nil
 	})
 
+	// Fetch and save SMART devices when system first comes online
+	if err == nil {
+		sys.smartOnce.Do(func() {
+			go sys.FetchAndSaveSmartDevices()
+		})
+	}
+
 	return systemRecord, err
 }
 
@@ -298,7 +307,7 @@ func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId s
 	for i, service := range data {
 		suffix := fmt.Sprintf("%d", i)
 		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:state%[1]s}, {:sub%[1]s}, {:cpu%[1]s}, {:cpuPeak%[1]s}, {:memory%[1]s}, {:memPeak%[1]s}, {:updated})", suffix))
-		params["id"+suffix] = getSystemdServiceId(systemId, service.Name)
+		params["id"+suffix] = makeStableHashId(systemId, service.Name)
 		params["name"+suffix] = service.Name
 		params["state"+suffix] = service.State
 		params["sub"+suffix] = service.Sub
@@ -313,13 +322,6 @@ func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId s
 	)
 	_, err := app.DB().NewQuery(queryString).Bind(params).Execute()
 	return err
-}
-
-// getSystemdServiceId generates a deterministic unique id for a systemd service
-func getSystemdServiceId(systemId string, serviceName string) string {
-	hash := fnv.New32a()
-	hash.Write([]byte(systemId + serviceName))
-	return fmt.Sprintf("%x", hash.Sum32())
 }
 
 // createContainerRecords creates container records
@@ -525,43 +527,12 @@ func (sys *System) FetchSystemdInfoFromAgent(serviceName string) (systemd.Servic
 	return result, err
 }
 
-// FetchSmartDataFromAgent fetches SMART data from the agent
-func (sys *System) FetchSmartDataFromAgent() (map[string]any, error) {
-	// fetch via websocket
-	if sys.WsConn != nil && sys.WsConn.IsConnected() {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		return sys.WsConn.RequestSmartData(ctx)
+func makeStableHashId(strings ...string) string {
+	hash := fnv.New32a()
+	for _, str := range strings {
+		hash.Write([]byte(str))
 	}
-	// fetch via SSH
-	var result map[string]any
-	err := sys.runSSHOperation(5*time.Second, 1, func(session *ssh.Session) (bool, error) {
-		stdout, err := session.StdoutPipe()
-		if err != nil {
-			return false, err
-		}
-		stdin, stdinErr := session.StdinPipe()
-		if stdinErr != nil {
-			return false, stdinErr
-		}
-		if err := session.Shell(); err != nil {
-			return false, err
-		}
-		req := common.HubRequest[any]{Action: common.GetSmartData}
-		_ = cbor.NewEncoder(stdin).Encode(req)
-		_ = stdin.Close()
-		var resp common.AgentResponse
-		if err := cbor.NewDecoder(stdout).Decode(&resp); err != nil {
-			return false, err
-		}
-		// Convert to generic map for JSON response
-		result = make(map[string]any, len(resp.SmartData))
-		for k, v := range resp.SmartData {
-			result[k] = v
-		}
-		return false, nil
-	})
-	return result, err
+	return fmt.Sprintf("%x", hash.Sum32())
 }
 
 // fetchDataViaSSH handles fetching data using SSH.

@@ -8,7 +8,7 @@ msgstr ""
 "Language: uk\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-10-28 23:00\n"
+"PO-Revision-Date: 2025-11-14 22:51\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -76,13 +76,16 @@ msgid "5 min"
 msgstr "5 хв"
 
 #. Table column
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "Дії"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Active"
 msgstr "Активне"
 
@@ -95,12 +98,14 @@ msgid "Active state"
 msgstr "Активний стан"
 
 #: src/components/add-system.tsx
-msgid "Add <0>System</0>"
-msgstr "Додати <0>Систему</0>"
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Add {foo}"
+msgstr ""
 
 #: src/components/add-system.tsx
-msgid "Add New System"
-msgstr "Додати нову систему"
+msgid "Add <0>System</0>"
+msgstr "Додати <0>Систему</0>"
 
 #: src/components/add-system.tsx
 msgid "Add system"
@@ -151,6 +156,7 @@ msgstr "Всі контейнери"
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
@@ -267,6 +273,7 @@ msgid "Can stop"
 msgstr "Може зупинити"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "Скасувати"
@@ -319,6 +326,12 @@ msgstr "Перевірте журнали для отримання додатк
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
 msgstr "Перевірте свій сервіс сповіщень"
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Clear"
+msgstr "Очистити"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
@@ -442,6 +455,10 @@ msgstr "Розподіл часу ЦП"
 msgid "CPU Usage"
 msgstr "Використання ЦП"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Create"
+msgstr "Створити"
+
 #: src/components/login/auth-form.tsx
 msgid "Create account"
 msgstr "Створити обліковий запис"
@@ -473,15 +490,18 @@ msgstr "Поточний стан"
 msgid "Cycles"
 msgstr "Цикли"
 
-#: src/components/command-palette.tsx
-msgid "Dashboard"
-msgstr "Панель управління"
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Daily"
+msgstr "Щодня"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
 msgstr "Стандартний період часу"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "Видалити"
@@ -566,10 +586,15 @@ msgstr "Завантажити"
 msgid "Duration"
 msgstr "Тривалість"
 
-#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "Редагувати"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Edit {foo}"
+msgstr ""
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -585,6 +610,11 @@ msgstr "Сповіщення електронною поштою"
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "Порожня"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "End Time"
+msgstr "Час завершення"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -602,6 +632,8 @@ msgstr "Введіть ваш одноразовий пароль."
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
@@ -616,7 +648,7 @@ msgstr "Перевищує {0}{1} протягом {2, plural, one {останн
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exec main PID"
-msgstr ""
+msgstr "Основний PID процесу"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
@@ -656,6 +688,7 @@ msgstr "Не вдалося автентифікувати"
 
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Failed to save settings"
 msgstr "Не вдалося зберегти налаштування"
 
@@ -714,6 +747,10 @@ msgstr "Повна"
 msgid "General"
 msgstr "Загальні"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Global"
+msgstr "Глобально"
+
 #: src/components/routes/system.tsx
 msgid "GPU Engines"
 msgstr "Рушії GPU"
@@ -758,6 +795,10 @@ msgctxt "Docker image"
 msgid "Image"
 msgstr "Образ"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Inactive"
+msgstr "Неактивне"
+
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
 msgstr "Неправильна адреса електронної пошти."
@@ -786,7 +827,7 @@ msgstr "Життєвий цикл"
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
-msgstr ""
+msgstr "обмеження"
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
@@ -842,7 +883,7 @@ msgstr "Шукаєте, де створити сповіщення? Натисн
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
-msgstr ""
+msgstr "Основний PID"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
@@ -959,12 +1000,19 @@ msgstr "Підтримка OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "При кожному перезапуску системи в базі даних будуть оновлені, щоб відповідати системам, визначеним у файлі."
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "One-time"
+msgstr "Одноразовий"
+
 #: src/components/login/auth-form.tsx
 msgid "One-time password"
 msgstr "Одноразовий пароль"
 
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Відкрити меню"
@@ -981,6 +1029,7 @@ msgstr "Інше"
 msgid "Overwrite existing alerts"
 msgstr "Перезаписати існуючі сповіщення"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
@@ -1012,6 +1061,10 @@ msgstr "Пароль не повинен перевищувати 72 байти.
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"
 msgstr "Запит на скидання пароля отримано"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Past"
+msgstr "Минуле"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
@@ -1094,6 +1147,10 @@ msgstr "Процес запущено"
 msgid "Public Key"
 msgstr "Ключ"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Quiet Hours"
+msgstr "Тихі години"
+
 #. Disk read
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -1106,6 +1163,7 @@ msgstr "Отримано"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "Refresh"
 msgstr "Оновити"
 
@@ -1150,7 +1208,7 @@ msgstr "Відновити"
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
-msgstr ""
+msgstr "Корінь"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1185,6 +1243,18 @@ msgstr "Зберегти налаштування"
 msgid "Save system"
 msgstr "Зберегти систему"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule"
+msgstr "Розклад"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent, such as during maintenance periods."
+msgstr ""
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent."
+msgstr ""
+
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "Пошук"
@@ -1196,6 +1266,10 @@ msgstr "Шукати системи або налаштування..."
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Перегляньте <0>налаштування сповіщень</0>, щоб налаштувати, як ви отримуєте сповіщення."
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Select {foo}"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Sent"
@@ -1240,8 +1314,14 @@ msgstr "Налаштування SMTP"
 msgid "Sort By"
 msgstr "Сортувати за"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Start Time"
+msgstr "Час початку"
+
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "Стан"
@@ -1266,9 +1346,15 @@ msgstr "Область підкачки, використана системою
 msgid "Swap Usage"
 msgstr "Використання підкачки"
 
+#: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
@@ -1447,6 +1533,8 @@ msgstr "Спрацьовує, коли статус перемикається �
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Спрацьовує, коли використання будь-якого диска перевищує поріг"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
 msgstr "Тип"
@@ -1485,7 +1573,12 @@ msgstr "Працює"
 msgid "Up ({upSystemsLength})"
 msgstr "Працює ({upSystemsLength})"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Update"
+msgstr "Оновити"
+
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
 msgstr "Оновлено"

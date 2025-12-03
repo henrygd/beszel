@@ -225,8 +225,19 @@ func (a *Agent) initializeDiskIoStats(diskIoCounters map[string]disk.IOCountersS
 
 // Updates disk usage statistics for all monitored filesystems
 func (a *Agent) updateDiskUsage(systemStats *system.Stats) {
+	// Check if we should skip extra filesystem collection to avoid waking sleeping disks.
+	// Root filesystem is always updated since it can't be sleeping while the agent runs.
+	// Always collect on first call (lastDiskUsageUpdate is zero) or if caching is disabled.
+	cacheExtraFs := a.diskUsageCacheDuration > 0 &&
+		!a.lastDiskUsageUpdate.IsZero() &&
+		time.Since(a.lastDiskUsageUpdate) < a.diskUsageCacheDuration
+
 	// disk usage
 	for _, stats := range a.fsStats {
+		// Skip non-root filesystems if caching is active
+		if cacheExtraFs && !stats.Root {
+			continue
+		}
 		if d, err := disk.Usage(stats.Mountpoint); err == nil {
 			stats.DiskTotal = bytesToGigabytes(d.Total)
 			stats.DiskUsed = bytesToGigabytes(d.Used)
@@ -243,6 +254,11 @@ func (a *Agent) updateDiskUsage(systemStats *system.Stats) {
 			stats.TotalRead = 0
 			stats.TotalWrite = 0
 		}
+	}
+
+	// Update the last disk usage update time when we've collected extra filesystems
+	if !cacheExtraFs {
+		a.lastDiskUsageUpdate = time.Now()
 	}
 }
 
