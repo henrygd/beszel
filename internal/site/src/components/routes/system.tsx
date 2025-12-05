@@ -18,7 +18,7 @@ import AreaChartDefault, { type DataPoint } from "@/components/charts/area-chart
 import ContainerChart from "@/components/charts/container-chart"
 import DiskChart from "@/components/charts/disk-chart"
 import GpuPowerChart from "@/components/charts/gpu-power-chart"
-import { useContainerChartConfigs } from "@/components/charts/hooks"
+import { useContainerChartConfigs, useConnectionStatsMain } from "@/components/charts/hooks"
 import LoadAverageChart from "@/components/charts/load-average-chart"
 import MemChart from "@/components/charts/mem-chart"
 import SwapChart from "@/components/charts/swap-chart"
@@ -73,6 +73,7 @@ import { Separator } from "../ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import NetworkSheet from "./system/network-sheet"
 import CpuCoresSheet from "./system/cpu-sheet"
+import ConnectionSheet from "./system/connection-sheet"
 import LineChartDefault from "../charts/line-chart"
 import { pinnedAxisDomain } from "../ui/chart"
 
@@ -457,6 +458,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const hasGpuData = lastGpuVals.length > 0
 	const hasGpuPowerData = lastGpuVals.some((gpu) => gpu.p !== undefined || gpu.pp !== undefined)
 	const hasGpuEnginesData = lastGpuVals.some((gpu) => gpu.e !== undefined)
+	const connectionStats = useConnectionStatsMain()
+	const hasConnectionData = systemStats.at(-1)?.stats?.nc !== undefined
 
 	let translatedStatus: string = system.status
 	if (system.status === SystemStatus.Up) {
@@ -795,6 +798,26 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 							legend={true}
 						>
 							<LoadAverageChart chartData={chartData} />
+						</ChartCard>
+					)}
+
+					{/* TCP & UDP Connections chart */}
+					{hasConnectionData && (
+						<ChartCard
+							empty={dataEmpty}
+							grid={grid}
+							title={t`Network Connections`}
+							description={t`TCP and UDP socket counts over time (IPv4 & IPv6)`}
+							legend={true}
+							cornerEl={<ConnectionSheet chartData={chartData} dataEmpty={dataEmpty} grid={grid} />}
+						>
+							<AreaChartDefault
+								chartData={chartData}
+								dataPoints={[connectionStats.tcp, connectionStats.tcp6, connectionStats.udp, connectionStats.udp6]}
+								legend={true}
+								tickFormatter={(val) => val.toLocaleString()}
+								contentFormatter={({ value }) => value.toLocaleString()}
+							/>
 						</ChartCard>
 					)}
 

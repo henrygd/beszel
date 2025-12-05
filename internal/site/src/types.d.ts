@@ -157,6 +157,61 @@ export interface SystemStats {
 	bat?: [number, BatteryState]
 	/** network interfaces [upload bytes, download bytes, total upload bytes, total download bytes] */
 	ni?: Record<string, [number, number, number, number]>
+	/** network connections per interface */
+	nc?: Record<string, NetConnectionStats>
+}
+
+export interface NetConnectionStats {
+	/** TCP established connections */
+	te: number
+	/** TCP listening sockets */
+	tl: number
+	/** TCP TIME_WAIT state */
+	tw: number
+	/** TCP CLOSE_WAIT state */
+	tcw: number
+	/** TCP SYN_SENT state */
+	ts: number
+	/** TCP SYN_RECV state */
+	tsr: number
+	/** TCP FIN_WAIT1 state */
+	tf1: number
+	/** TCP FIN_WAIT2 state */
+	tf2: number
+	/** TCP CLOSING state */
+	tcl: number
+	/** TCP LAST_ACK state */
+	tla: number
+	/** UDP socket count */
+	u: number
+	/** Total TCP connections */
+	tt: number
+	/** Total connections (TCP + UDP) */
+	t: number
+	/** TCP6 established connections */
+	te6: number
+	/** TCP6 listening sockets */
+	tl6: number
+	/** TCP6 TIME_WAIT state */
+	tw6: number
+	/** TCP6 CLOSE_WAIT state */
+	tcw6: number
+	/** TCP6 SYN_SENT state */
+	ts6: number
+	/** TCP6 SYN_RECV state */
+	tsr6: number
+	/** TCP6 FIN_WAIT1 state */
+	tf16: number
+	/** TCP6 FIN_WAIT2 state */
+	tf26: number
+	/** TCP6 CLOSING state */
+	tcl6: number
+	/** TCP6 LAST_ACK state */
+	tla6: number
+	/** UDP6 socket count */
+	u6: number
+	/** Total TCP6 connections */
+	tt6: number
 }
 
 export interface GPUData {

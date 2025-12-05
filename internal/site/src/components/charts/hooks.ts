@@ -123,3 +123,165 @@ export function useNetworkInterfaces(interfaces: SystemStats["ni"]) {
 		},
 	}
 }
+
+// Connection stats data points for charting - main view (TCP & UDP totals)
+export function useConnectionStatsMain() {
+	return {
+		tcp: {
+			label: "TCP",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.nc?.["_total"]?.tt ?? 0,
+			color: "hsl(220, 70%, 50%)",
+			opacity: 0.3,
+		},
+		tcp6: {
+			label: "TCP6",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.nc?.["_total"]?.tt6 ?? 0,
+			color: "hsl(250, 70%, 50%)",
+			opacity: 0.3,
+		},
+		udp: {
+			label: "UDP",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.nc?.["_total"]?.u ?? 0,
+			color: "hsl(180, 70%, 50%)",
+			opacity: 0.3,
+		},
+		udp6: {
+			label: "UDP6",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.nc?.["_total"]?.u6 ?? 0,
+			color: "hsl(160, 70%, 50%)",
+			opacity: 0.3,
+		},
+	}
+}
+
+// Connection stats data points for detailed sheet (all TCP states)
+export function useConnectionStatsDetailed() {
+	return {
+		established: {
+			label: "Established",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.nc?.["_total"]?.te ?? 0,
+			color: "hsl(142, 70%, 50%)",
+			opacity: 0.3,
+		},
+		listening: {
+			label: "Listening",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.nc?.["_total"]?.tl ?? 0,
+			color: "hsl(280, 70%, 50%)",
+			opacity: 0.3,
+		},
+		timeWait: {
+			label: "Time Wait",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.nc?.["_total"]?.tw ?? 0,
+			color: "hsl(30, 70%, 50%)",
+			opacity: 0.3,
+		},
+		closeWait: {
+			label: "Close Wait",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.nc?.["_total"]?.tcw ?? 0,
+			color: "hsl(0, 70%, 50%)",
+			opacity: 0.3,
+		},
+		finWait1: {
+			label: "FIN Wait 1",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.nc?.["_total"]?.tf1 ?? 0,
+			color: "hsl(320, 70%, 50%)",
+			opacity: 0.3,
+		},
+		finWait2: {
+			label: "FIN Wait 2",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.nc?.["_total"]?.tf2 ?? 0,
+			color: "hsl(260, 70%, 50%)",
+			opacity: 0.3,
+		},
+		synSent: {
+			label: "SYN Sent",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.nc?.["_total"]?.ts ?? 0,
+			color: "hsl(200, 70%, 50%)",
+			opacity: 0.3,
+		},
+		synRecv: {
+			label: "SYN Recv",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.nc?.["_total"]?.tsr ?? 0,
+			color: "hsl(160, 70%, 50%)",
+			opacity: 0.3,
+		},
+		closing: {
+			label: "Closing",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.nc?.["_total"]?.tcl ?? 0,
+			color: "hsl(340, 70%, 50%)",
+			opacity: 0.3,
+		},
+		lastAck: {
+			label: "Last ACK",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.nc?.["_total"]?.tla ?? 0,
+			color: "hsl(380, 70%, 50%)",
+			opacity: 0.3,
+		},
+	}
+}
+
+// IPv6 Connection stats data points for detailed sheet (all TCP6 states)
+export function useConnectionStatsIPv6() {
+	return {
+		established: {
+			label: "Established",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.nc?.["_total"]?.te6 ?? 0,
+			color: "hsl(142, 70%, 50%)",
+			opacity: 0.3,
+		},
+		listening: {
+			label: "Listening",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.nc?.["_total"]?.tl6 ?? 0,
+			color: "hsl(280, 70%, 50%)",
+			opacity: 0.3,
+		},
+		timeWait: {
+			label: "Time Wait",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.nc?.["_total"]?.tw6 ?? 0,
+			color: "hsl(30, 70%, 50%)",
+			opacity: 0.3,
+		},
+		closeWait: {
+			label: "Close Wait",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.nc?.["_total"]?.tcw6 ?? 0,
+			color: "hsl(0, 70%, 50%)",
+			opacity: 0.3,
+		},
+		finWait1: {
+			label: "FIN Wait 1",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.nc?.["_total"]?.tf16 ?? 0,
+			color: "hsl(320, 70%, 50%)",
+			opacity: 0.3,
+		},
+		finWait2: {
+			label: "FIN Wait 2",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.nc?.["_total"]?.tf26 ?? 0,
+			color: "hsl(260, 70%, 50%)",
+			opacity: 0.3,
+		},
+		synSent: {
+			label: "SYN Sent",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.nc?.["_total"]?.ts6 ?? 0,
+			color: "hsl(200, 70%, 50%)",
+			opacity: 0.3,
+		},
+		synRecv: {
+			label: "SYN Recv",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.nc?.["_total"]?.tsr6 ?? 0,
+			color: "hsl(160, 70%, 50%)",
+			opacity: 0.3,
+		},
+		closing: {
+			label: "Closing",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.nc?.["_total"]?.tcl6 ?? 0,
+			color: "hsl(340, 70%, 50%)",
+			opacity: 0.3,
+		},
+		lastAck: {
+			label: "Last ACK",
+			dataKey: ({ stats }: SystemStatsRecord) => stats?.nc?.["_total"]?.tla6 ?? 0,
+			color: "hsl(380, 70%, 50%)",
+			opacity: 0.3,
+		},
+	}
+}
