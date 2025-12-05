@@ -137,7 +137,7 @@ export default memo(function ContainerChart({
 						animationEasing="ease-out"
 						animationDuration={150}
 						truncate={true}
-						labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
+						labelFormatter={(_, data) => formatShortDate(data[0].payload.timestamp)}
 						// @ts-expect-error
 						itemSorter={(a, b) => b.value - a.value}
 						content={<ChartTooltipContent filter={filter} contentFormatter={toolTipFormatter} showTotal={true} />}

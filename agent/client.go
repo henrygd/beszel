@@ -269,7 +269,7 @@ func (client *WebSocketClient) sendResponse(data any, requestID *uint32) error {
 
 		// Set the appropriate typed field based on data type
 		switch v := data.(type) {
-		case *system.CombinedData:
+		case []*system.CombinedData:
 			response.SystemData = v
 		case *common.FingerprintResponse:
 			response.Fingerprint = v

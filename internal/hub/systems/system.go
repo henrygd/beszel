@@ -29,25 +29,24 @@ import (
 )
 
 type System struct {
-	Id           string               `db:"id"`
-	Host         string               `db:"host"`
-	Port         string               `db:"port"`
-	Status       string               `db:"status"`
-	manager      *SystemManager       // Manager that this system belongs to
-	client       *ssh.Client          // SSH client for fetching data
-	data         *system.CombinedData // system data from agent
-	ctx          context.Context      // Context for stopping the updater
-	cancel       context.CancelFunc   // Stops and removes system from updater
-	WsConn       *ws.WsConn           // Handler for agent WebSocket connection
-	agentVersion semver.Version       // Agent version
-	updateTicker *time.Ticker         // Ticker for updating the system
-	smartOnce    sync.Once            // Once for fetching and saving smart devices
+	Id           string                 `db:"id"`
+	Host         string                 `db:"host"`
+	Port         string                 `db:"port"`
+	Status       string                 `db:"status"`
+	manager      *SystemManager         // Manager that this system belongs to
+	client       *ssh.Client            // SSH client for fetching data
+	data         []*system.CombinedData // system data from agent
+	ctx          context.Context        // Context for stopping the updater
+	cancel       context.CancelFunc     // Stops and removes system from updater
+	WsConn       *ws.WsConn             // Handler for agent WebSocket connection
+	agentVersion semver.Version         // Agent version
+	updateTicker *time.Ticker           // Ticker for updating the system
+	smartOnce    sync.Once              // Once for fetching and saving smart devices
 }
 
 func (sm *SystemManager) NewSystem(systemId string) *System {
 	system := &System{
-		Id:   systemId,
-		data: &system.CombinedData{},
+		Id: systemId,
 	}
 	system.ctx, system.cancel = system.getContext()
 	return system
@@ -135,58 +134,66 @@ func (sys *System) handlePaused() {
 }
 
 // createRecords updates the system record and adds system_stats and container_stats records
-func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error) {
+func (sys *System) createRecords(data []*system.CombinedData) (*core.Record, error) {
+	if len(data) == 0 {
+		return nil, errors.New("no data to create records")
+	}
+
 	systemRecord, err := sys.getRecord()
 	if err != nil {
 		return nil, err
 	}
 	hub := sys.manager.hub
-	err = hub.RunInTransaction(func(txApp core.App) error {
-		// add system_stats and container_stats records
-		systemStatsCollection, err := txApp.FindCachedCollectionByNameOrId("system_stats")
-		if err != nil {
-			return err
-		}
 
-		systemStatsRecord := core.NewRecord(systemStatsCollection)
-		systemStatsRecord.Set("system", systemRecord.Id)
-		systemStatsRecord.Set("stats", data.Stats)
-		systemStatsRecord.Set("type", "1m")
-		if err := txApp.SaveNoValidate(systemStatsRecord); err != nil {
-			return err
-		}
-		if len(data.Containers) > 0 {
-			// add / update containers records
-			if data.Containers[0].Id != "" {
-				if err := createContainerRecords(txApp, data.Containers, sys.Id); err != nil {
-					return err
-				}
-			}
-			// add new container_stats record
-			containerStatsCollection, err := txApp.FindCachedCollectionByNameOrId("container_stats")
+	err = hub.RunInTransaction(func(txApp core.App) error {
+		for _, d := range data { // add system_stats and container_stats records
+			systemStatsCollection, err := txApp.FindCachedCollectionByNameOrId("system_stats")
 			if err != nil {
 				return err
 			}
-			containerStatsRecord := core.NewRecord(containerStatsCollection)
-			containerStatsRecord.Set("system", systemRecord.Id)
-			containerStatsRecord.Set("stats", data.Containers)
-			containerStatsRecord.Set("type", "1m")
-			if err := txApp.SaveNoValidate(containerStatsRecord); err != nil {
+
+			systemStatsRecord := core.NewRecord(systemStatsCollection)
+			systemStatsRecord.Set("timestamp", d.Timestamp)
+			systemStatsRecord.Set("system", systemRecord.Id)
+			systemStatsRecord.Set("stats", d.Stats)
+			systemStatsRecord.Set("type", "1m")
+			if err := txApp.SaveNoValidate(systemStatsRecord); err != nil {
 				return err
 			}
-		}
+			if len(d.Containers) > 0 {
+				// add / update containers records
+				if d.Containers[0].Id != "" {
+					if err := createContainerRecords(txApp, d.Containers, sys.Id); err != nil {
+						return err
+					}
+				}
+				// add new container_stats record
+				containerStatsCollection, err := txApp.FindCachedCollectionByNameOrId("container_stats")
+				if err != nil {
+					return err
+				}
+				containerStatsRecord := core.NewRecord(containerStatsCollection)
+				containerStatsRecord.Set("timestamp", d.Timestamp)
+				containerStatsRecord.Set("system", systemRecord.Id)
+				containerStatsRecord.Set("stats", d.Containers)
+				containerStatsRecord.Set("type", "1m")
+				if err := txApp.SaveNoValidate(containerStatsRecord); err != nil {
+					return err
+				}
+			}
 
-		// add new systemd_stats record
-		if len(data.SystemdServices) > 0 {
-			if err := createSystemdStatsRecords(txApp, data.SystemdServices, sys.Id); err != nil {
-				return err
+			// add new systemd_stats record
+			if len(d.SystemdServices) > 0 {
+				if err := createSystemdStatsRecords(txApp, d.SystemdServices, sys.Id); err != nil {
+					return err
+				}
 			}
 		}
 
 		// update system record (do this last because it triggers alerts and we need above records to be inserted first)
 		systemRecord.Set("status", up)
 
-		systemRecord.Set("info", data.Info)
+		systemRecord.Set("info", data[0].Info)
 		if err := txApp.SaveNoValidate(systemRecord); err != nil {
 			return err
 		}
@@ -303,11 +310,7 @@ func (sys *System) getContext() (context.Context, context.CancelFunc) {
 
 // fetchDataFromAgent attempts to fetch data from the agent,
 // prioritizing WebSocket if available.
-func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*system.CombinedData, error) {
-	if sys.data == nil {
-		sys.data = &system.CombinedData{}
-	}
-
+func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) ([]*system.CombinedData, error) {
 	if sys.WsConn != nil && sys.WsConn.IsConnected() {
 		wsData, err := sys.fetchDataViaWebSocket(options)
 		if err == nil {
@@ -324,11 +327,11 @@ func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*syste
 	return sshData, nil
 }
 
-func (sys *System) fetchDataViaWebSocket(options common.DataRequestOptions) (*system.CombinedData, error) {
+func (sys *System) fetchDataViaWebSocket(options common.DataRequestOptions) ([]*system.CombinedData, error) {
 	if sys.WsConn == nil || !sys.WsConn.IsConnected() {
 		return nil, errors.New("no websocket connection")
 	}
-	err := sys.WsConn.RequestSystemData(context.Background(), sys.data, options)
+	err := sys.WsConn.RequestSystemData(context.Background(), &sys.data, options)
 	if err != nil {
 		return nil, err
 	}
@@ -448,7 +451,7 @@ func makeStableHashId(strings ...string) string {
 // fetchDataViaSSH handles fetching data using SSH.
 // This function encapsulates the original SSH logic.
 // It updates sys.data directly upon successful fetch.
-func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.CombinedData, error) {
+func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) ([]*system.CombinedData, error) {
 	err := sys.runSSHOperation(4*time.Second, 1, func(session *ssh.Session) (bool, error) {
 		stdout, err := session.StdoutPipe()
 		if err != nil {
@@ -459,8 +462,7 @@ func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.C
 			return false, err
 		}
 
-		*sys.data = system.CombinedData{}
-
+		sys.data = sys.data[:0]
 		if sys.agentVersion.GTE(beszel.MinVersionAgentResponse) && stdinErr == nil {
 			req := common.HubRequest[any]{Action: common.GetData, Data: options}
 			_ = cbor.NewEncoder(stdin).Encode(req)
@@ -468,7 +470,9 @@ func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.C
 
 			var resp common.AgentResponse
 			if decErr := cbor.NewDecoder(stdout).Decode(&resp); decErr == nil && resp.SystemData != nil {
-				*sys.data = *resp.SystemData
+				if resp.SystemData != nil {
+					sys.data = append(sys.data, resp.SystemData...)
+				}
 				if err := session.Wait(); err != nil {
 					return false, err
 				}

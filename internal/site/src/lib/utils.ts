@@ -329,15 +329,15 @@ export const tokenMap = new Map<SystemRecord["id"], FingerprintRecord["token"]>(
 
 /** Calculate duration between two dates and format as human-readable string */
 export function formatDuration(
-	createdDate: string | null | undefined,
+	timestampDate: string | null | undefined,
 	resolvedDate: string | null | undefined
 ): string {
-	const created = createdDate ? new Date(createdDate) : null
+	const timestamp = timestampDate ? new Date(timestampDate) : null
 	const resolved = resolvedDate ? new Date(resolvedDate) : null
 
-	if (!created || !resolved) return ""
+	if (!timestamp || !resolved) return ""
 
-	const diffMs = resolved.getTime() - created.getTime()
+	const diffMs = resolved.getTime() - timestamp.getTime()
 	if (diffMs < 0) return ""
 
 	const totalSeconds = Math.floor(diffMs / 1000)

@@ -78,13 +78,13 @@ export default function AlertsHistoryDataTable() {
 		let unsubscribe: (() => void) | undefined
 		const pbOptions = {
 			expand: "system",
-			fields: "id,name,value,state,created,resolved,expand.system.name",
+			fields: "id,name,value,state,timestamp,resolved,expand.system.name",
 		}
 		// Initial load
 		pb.collection<AlertsHistoryRecord>("alerts_history")
 			.getList(0, 200, {
 				...pbOptions,
-				sort: "-created",
+				sort: "-timestamp",
 			})
 			.then(({ items }) => setData(items))
 
@@ -156,12 +156,12 @@ export default function AlertsHistoryDataTable() {
 		globalFilterFn: (row, _columnId, filterValue) => {
 			const system = row.original.expand?.system?.name ?? ""
 			const name = row.getValue("name") ?? ""
-			const created = row.getValue("created") ?? ""
+			const timestamp = row.getValue("timestamp") ?? ""
 			const search = String(filterValue).toLowerCase()
 			return (
 				system.toLowerCase().includes(search) ||
 				(name as string).toLowerCase().includes(search) ||
-				(created as string).toLowerCase().includes(search)
+				(timestamp as string).toLowerCase().includes(search)
 			)
 		},
 	})
@@ -202,9 +202,9 @@ export default function AlertsHistoryDataTable() {
 			name: (record) => alertInfo[record.name]?.name() || record.name,
 			value: (record) => record.value + (alertInfo[record.name]?.unit ?? ""),
 			state: (record) => (record.resolved ? t`Resolved` : t`Active`),
-			created: (record) => formatShortDate(record.created),
+			timestamp: (record) => formatShortDate(record.timestamp),
 			resolved: (record) => (record.resolved ? formatShortDate(record.resolved) : ""),
-			duration: (record) => (record.resolved ? formatDuration(record.created, record.resolved) : ""),
+			duration: (record) => (record.resolved ? formatDuration(record.timestamp, record.resolved) : ""),
 		}
 		const csvRows = [Object.keys(cells).join(",")]
 		for (const row of selectedRows) {
