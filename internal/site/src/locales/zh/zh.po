@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-12-08 13:54\n"
+"PO-Revision-Date: 2025-12-08 15:28\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -1245,7 +1245,7 @@ msgstr "儲存系統"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
-msgstr ""
+msgstr "排程"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule quiet hours where notifications will not be sent, such as during maintenance periods."
@@ -1269,7 +1269,7 @@ msgstr "查看<0>通知設定</0>以設定您如何接收警報。"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Select {foo}"
-msgstr "選擇{foo}"
+msgstr "選取{foo}"
 
 #: src/components/routes/system.tsx
 msgid "Sent"
