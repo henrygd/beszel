@@ -10,11 +10,11 @@ import {
 	$upSystems,
 } from "@/lib/stores"
 import { updateFavicon } from "@/lib/utils"
-import type { SystemRecord } from "@/types"
+import type { SystemRecord, SystemStats } from "@/types"
 import { SystemStatus } from "./enums"
 
 const COLLECTION = pb.collection<SystemRecord>("systems")
-const FIELDS_DEFAULT = "id,name,host,port,info,status"
+const FIELDS_DEFAULT = "id,name,host,port,info,status,config"
 
 /** Maximum system name length for display purposes */
 const MAX_SYSTEM_NAME_LENGTH = 22
@@ -73,7 +73,21 @@ export function init() {
 }
 
 /** Update the longest system name length and favicon based on system status */
-function onSystemsChanged(_: Record<string, SystemRecord>, changedSystem: SystemRecord | undefined) {
+async function onSystemsChanged(_: Record<string, SystemRecord>, changedSystem: SystemRecord | undefined) {
+	console.log(_, changedSystem, 'onSystemChange');
+	if(changedSystem?.config && changedSystem.config.temprature){
+		const thisLatestSystemStats: any = await pb.collection('system_stats').getFirstListItem(`system="${changedSystem.id}"`, {
+			sort: '-updated', // descending by updated time
+		});
+		if(thisLatestSystemStats){
+			console.log(thisLatestSystemStats, 'lol');
+			
+			changedSystem.info.dt = thisLatestSystemStats.stats.t[changedSystem.config.temprature]
+			await COLLECTION.update(changedSystem.id, changedSystem)
+		}
+		console.log(thisLatestSystemStats, 'lul');
+		
+	}
 	const downSystemsStore = $downSystems.get()
 	const downSystems = Object.values(downSystemsStore)
 

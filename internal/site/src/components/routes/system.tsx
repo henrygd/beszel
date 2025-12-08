@@ -75,6 +75,7 @@ import NetworkSheet from "./system/network-sheet"
 import CpuCoresSheet from "./system/cpu-sheet"
 import LineChartDefault from "../charts/line-chart"
 import { pinnedAxisDomain } from "../ui/chart"
+import TempratureSelect from "../charts/temprature-select"
 
 type ChartTimeData = {
 	time: number
@@ -809,7 +810,14 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 								grid={grid}
 								title={t`Temperature`}
 								description={t`Temperatures of system sensors`}
-								cornerEl={<FilterBar store={$temperatureFilter} />}
+								cornerEl={
+									<div style={{display: 'flex'}}>
+										<div className="xl:ms-auto flex items-center gap-2 max-sm:-mb-1">
+											<TempratureSelect className="w-full" agentVersion={chartData.agentVersion} chartData={chartData} system={system} />
+										</div>
+										<FilterBar store={$temperatureFilter} />
+									</div>
+								}
 								legend={Object.keys(systemStats.at(-1)?.stats.t ?? {}).length < 12}
 							>
 								<TemperatureChart chartData={chartData} />

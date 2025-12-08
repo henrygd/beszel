@@ -22,6 +22,10 @@ export interface FingerprintRecord extends RecordModel {
 	}
 }
 
+export interface SystemRecordConfig extends RecordModel {
+	temprature: string
+}
+
 export interface SystemRecord extends RecordModel {
 	name: string
 	host: string
@@ -29,7 +33,8 @@ export interface SystemRecord extends RecordModel {
 	port: string
 	info: SystemInfo
 	v: string
-	updated: string
+	updated: string,
+	config: SystemRecordConfig
 }
 
 export interface SystemInfo {
@@ -80,7 +85,8 @@ export interface SystemInfo {
 	/** extra filesystem percentages */
 	efs?: Record<string, number>
 	/** services [totalServices, numFailedServices] */
-	sv?: [number, number]
+	sv?: [number, number],
+
 }
 
 export interface SystemStats {
