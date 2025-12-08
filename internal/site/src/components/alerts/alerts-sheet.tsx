@@ -245,7 +245,7 @@ export function AlertContent({
 						{!singleDescription && (
 							<div>
 								<p id={`v${name}`} className="text-sm block h-8">
-									{alertKey === "Battery" ? (
+									{alertData.invert ? (
 										<Trans>
 											Average drops below{" "}
 											<strong className="text-foreground">

@@ -233,7 +233,7 @@ export const columns: ColumnDef<DiskInfo>[] = [
 			if (!cycles && cycles !== 0) {
 				return <div className="text-muted-foreground ms-1.5">N/A</div>
 			}
-			return <span className="ms-1.5">{cycles}</span>
+			return <span className="ms-1.5">{cycles.toLocaleString()}</span>
 		},
 	},
 	{
@@ -329,41 +329,41 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 			? { fields: SMART_DEVICE_FIELDS, filter: pb.filter("system = {:system}", { system: systemId }) }
 			: { fields: SMART_DEVICE_FIELDS }
 
-			; (async () => {
-				try {
-					unsubscribe = await pb.collection("smart_devices").subscribe(
-						"*",
-						(event) => {
-							const record = event.record as SmartDeviceRecord
-							setSmartDevices((currentDevices) => {
-								const devices = currentDevices ?? []
-								const matchesSystemScope = !systemId || record.system === systemId
+		;(async () => {
+			try {
+				unsubscribe = await pb.collection("smart_devices").subscribe(
+					"*",
+					(event) => {
+						const record = event.record as SmartDeviceRecord
+						setSmartDevices((currentDevices) => {
+							const devices = currentDevices ?? []
+							const matchesSystemScope = !systemId || record.system === systemId
 
-								if (event.action === "delete") {
-									return devices.filter((device) => device.id !== record.id)
-								}
+							if (event.action === "delete") {
+								return devices.filter((device) => device.id !== record.id)
+							}
 
-								if (!matchesSystemScope) {
-									// Record moved out of scope; ensure it disappears locally.
-									return devices.filter((device) => device.id !== record.id)
-								}
+							if (!matchesSystemScope) {
+								// Record moved out of scope; ensure it disappears locally.
+								return devices.filter((device) => device.id !== record.id)
+							}
 
-								const existingIndex = devices.findIndex((device) => device.id === record.id)
-								if (existingIndex === -1) {
-									return [record, ...devices]
-								}
+							const existingIndex = devices.findIndex((device) => device.id === record.id)
+							if (existingIndex === -1) {
+								return [record, ...devices]
+							}
 
-								const next = [...devices]
-								next[existingIndex] = record
-								return next
-							})
-						},
-						pbOptions
-					)
-				} catch (error) {
-					console.error("Failed to subscribe to SMART device updates:", error)
-				}
-			})()
+							const next = [...devices]
+							next[existingIndex] = record
+							return next
+						})
+					},
+					pbOptions
+				)
+			} catch (error) {
+				console.error("Failed to subscribe to SMART device updates:", error)
+			}
+		})()
 
 		return () => {
 			unsubscribe?.()
@@ -421,14 +421,14 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 								<Button
 									variant="ghost"
 									size="icon"
-									className="size-8"
+									className="size-10"
 									onClick={(event) => event.stopPropagation()}
 									onMouseDown={(event) => event.stopPropagation()}
 								>
 									<span className="sr-only">
 										<Trans>Open menu</Trans>
 									</span>
-									<MoreHorizontalIcon className="size-4" />
+									<MoreHorizontalIcon className="w-5" />
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>

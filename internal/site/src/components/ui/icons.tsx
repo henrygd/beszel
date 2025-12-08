@@ -131,6 +131,7 @@ export function HourglassIcon(props: SVGProps<SVGSVGElement>) {
 	)
 }
 
+// Apache 2.0 https://github.com/Templarian/MaterialDesign/blob/master/LICENSE
 export function WebSocketIcon(props: SVGProps<SVGSVGElement>) {
 	return (
 		<svg viewBox="0 0 256 193" {...props} fill="currentColor">
@@ -140,10 +141,47 @@ export function WebSocketIcon(props: SVGProps<SVGSVGElement>) {
 	)
 }
 
-export function BatteryIcon(props: SVGProps<SVGSVGElement>) {
+// Apache 2.0 https://github.com/Templarian/MaterialDesign/blob/master/LICENSE
+export function BatteryMediumIcon(props: SVGProps<SVGSVGElement>) {
+	return (
+		<svg viewBox="0 0 24 24" {...props} fill="currentColor">
+			<path d="M16 13H8V6h8m.67-2H15V2H9v2H7.33A1.33 1.33 0 0 0 6 5.33v15.34C6 21.4 6.6 22 7.33 22h9.34A1.33 1.33 0 0 0 18 20.67V5.33C18 4.6 17.4 4 16.67 4" />
+		</svg>
+	)
+}
+
+// Apache 2.0 https://github.com/Templarian/MaterialDesign/blob/master/LICENSE
+export function BatteryLowIcon(props: SVGProps<SVGSVGElement>) {
+	return (
+		<svg viewBox="0 0 24 24" {...props} fill="currentColor">
+			<path d="M16 20H8V6h8m.67-2H15V2H9v2H7.33C6.6 4 6 4.6 6 5.33v15.34C6 21.4 6.6 22 7.33 22h9.34c.74 0 1.33-.59 1.33-1.33V5.33C18 4.6 17.4 4 16.67 4M15 16H9v3h6zm0-4.5H9v3h6z" />
+		</svg>
+	)
+}
+
+// Apache 2.0 https://github.com/Templarian/MaterialDesign/blob/master/LICENSE
+export function BatteryHighIcon(props: SVGProps<SVGSVGElement>) {
+	return (
+		<svg viewBox="0 0 24 24" {...props} fill="currentColor">
+			<path d="M16 9H8V6h8m.67-2H15V2H9v2H7.33A1.33 1.33 0 0 0 6 5.33v15.34C6 21.4 6.6 22 7.33 22h9.34A1.33 1.33 0 0 0 18 20.67V5.33C18 4.6 17.4 4 16.67 4" />
+		</svg>
+	)
+}
+
+// Apache 2.0 https://github.com/Templarian/MaterialDesign/blob/master/LICENSE
+export function BatteryFullIcon(props: SVGProps<SVGSVGElement>) {
+	return (
+		<svg viewBox="0 0 24 24" {...props} fill="currentColor">
+			<path d="M16.67 4H15V2H9v2H7.33A1.33 1.33 0 0 0 6 5.33v15.34C6 21.4 6.6 22 7.33 22h9.34A1.33 1.33 0 0 0 18 20.67V5.33C18 4.6 17.4 4 16.67 4" />
+		</svg>
+	)
+}
+
+// https://github.com/phosphor-icons/core (MIT license)
+export function PlugChargingIcon(props: SVGProps<SVGSVGElement>) {
 	return (
 		<svg viewBox="0 0 256 256" {...props} fill="currentColor">
-			<path d="M176,32H80A24,24,0,0,0,56,56V224a24,24,0,0,0,24,24h96a24,24,0,0,0,24-24V56A24,24,0,0,0,176,32Zm8,192a8,8,0,0,1-8,8H80a8,8,0,0,1-8-8V56a8,8,0,0,1,8-8h96a8,8,0,0,1,8,8Zm-16-24a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,200ZM88,8a8,8,0,0,1,8-8h64a8,8,0,0,1,0,16H96A8,8,0,0,1,88,8Zm80,152a8,8,0,0,1-8,8H96a8,8,0,0,1,0-16h64A8,8,0,0,1,168,160Z"></path>
+			<path d="M224,48H180V16a12,12,0,0,0-24,0V48H100V16a12,12,0,0,0-24,0V48H32.55C24.4,48,20,54.18,20,60A12,12,0,0,0,32,72H44v92a44.05,44.05,0,0,0,44,44h28v32a12,12,0,0,0,24,0V208h28a44.05,44.05,0,0,0,44-44V72h12a12,12,0,0,0,0-24ZM188,164a20,20,0,0,1-20,20H88a20,20,0,0,1-20-20V72H188Zm-85.86-29.17a12,12,0,0,1-1.38-11l12-32a12,12,0,1,1,22.48,8.42L129.32,116H144a12,12,0,0,1,11.24,16.21l-12,32a12,12,0,0,1-22.48-8.42L126.68,140H112A12,12,0,0,1,102.14,134.83Z" />
 		</svg>
 	)
 }
