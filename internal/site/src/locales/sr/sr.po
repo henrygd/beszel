@@ -8,7 +8,7 @@ msgstr ""
 "Language: sr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-12-05 20:24\n"
+"PO-Revision-Date: 2025-12-08 18:22\n"
 "Last-Translator: \n"
 "Language-Team: Serbian (Cyrillic)\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
@@ -180,7 +180,7 @@ msgstr "Просек"
 
 #: src/components/routes/system.tsx
 msgid "Average CPU utilization of containers"
-msgstr "Просечна CPU употреба контејнера"
+msgstr "Просечна искоришћеност процесора контејнера"
 
 #. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
@@ -189,11 +189,11 @@ msgstr "Просек премашује <0>{value}{0}</0>"
 
 #: src/components/routes/system.tsx
 msgid "Average power consumption of GPUs"
-msgstr "Просечна потрошња енергије GPU-ова"
+msgstr "Просечна потрошња енергије графичких картица"
 
 #: src/components/routes/system.tsx
 msgid "Average system-wide CPU utilization"
-msgstr "Просечна системска CPU употреба"
+msgstr "Просечна системска искоришћеност процесор"
 
 #. placeholder {0}: gpu.n
 #: src/components/routes/system.tsx
@@ -202,7 +202,7 @@ msgstr "Просечна употреба {0}"
 
 #: src/components/routes/system.tsx
 msgid "Average utilization of GPU engines"
-msgstr "Просечна употреба GPU енгине-а"
+msgstr "Просечна искоришћеност мотора графичких картица"
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
@@ -378,7 +378,7 @@ msgstr "Настави"
 
 #: src/lib/utils.ts
 msgid "Copied to clipboard"
-msgstr "Копирано у клипборд"
+msgstr "Копирано у међуспремник"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -399,7 +399,7 @@ msgstr "Копирај env"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
-msgstr "Копирај хост"
+msgstr "Копирај хоста"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -438,7 +438,7 @@ msgstr "CPU језгра"
 
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "CPU Peak"
-msgstr "CPU пик"
+msgstr "CPU врхунац"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "CPU time"
@@ -446,14 +446,14 @@ msgstr "CPU време"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Time Breakdown"
-msgstr "Растављање CPU времена"
+msgstr "Расподела времена процесора"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/lib/alerts.ts
 msgid "CPU Usage"
-msgstr "CPU употреба"
+msgstr "Искоришћеност процесора"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Create"
@@ -537,7 +537,7 @@ msgstr "Диск I/O"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
-msgstr "Јединица диска"
+msgstr "Диск јединица"
 
 #: src/components/charts/disk-chart.tsx
 #: src/components/routes/system.tsx
@@ -600,16 +600,16 @@ msgstr "Измени {foo}"
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/otp-forms.tsx
 msgid "Email"
-msgstr "Имејл"
+msgstr "Е-пошта"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
-msgstr "Имејл обавештења"
+msgstr "Обавештењe е-поштом"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Empty"
-msgstr "Празна"
+msgstr "Празнo"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -618,11 +618,11 @@ msgstr "Време завршетка"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
-msgstr "Унесите имејл адресу за ресетовање лозинке"
+msgstr "Унесите адресу е-поште за ресетовање лозинке"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Enter email address..."
-msgstr "Унесите имејл адресу..."
+msgstr "Унесите адресу е-поште..."
 
 #: src/components/login/otp-forms.tsx
 msgid "Enter your one-time password."
@@ -879,7 +879,7 @@ msgstr "Логови"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
-msgstr "Тражите где да креирате упозорења? Кликните на звона <0/> иконе у табели система."
+msgstr "Тражите где да креирате упозорења? Кликните на звоно <0/> у табели система."
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
@@ -913,7 +913,7 @@ msgstr "Ограничење меморије"
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Memory Peak"
-msgstr "Пик меморије"
+msgstr "Врхунац меморије"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -1064,7 +1064,7 @@ msgstr "Захтев за ресетовање лозинке примљен"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Past"
-msgstr "Прошло"
+msgstr "Прошлост"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
@@ -1098,7 +1098,7 @@ msgstr "Молимо вас проверите логове за више дет
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 msgid "Please check your credentials and try again"
-msgstr "Молимо вас проверите ваше акредитиве и покушајте поново"
+msgstr "Молимо вас проверите своје податке за пријаву и покушајте поново"
 
 #: src/components/login/login.tsx
 msgid "Please create an admin account"
@@ -1106,11 +1106,11 @@ msgstr "Молимо вас креирајте администраторски 
 
 #: src/components/login/auth-form.tsx
 msgid "Please enable pop-ups for this site"
-msgstr "Молимо вас омогућите поп-упе за овај сајт"
+msgstr "Молимо вас омогућите искачуће прозоре за овај сајт"
 
 #: src/lib/api.ts
 msgid "Please log in again"
-msgstr "Молимо вас пријавите се поново"
+msgstr "Молимо вас да се пријавите поново"
 
 #: src/components/login/auth-form.tsx
 msgid "Please see <0>the documentation</0> for instructions."
@@ -1118,7 +1118,7 @@ msgstr "Молимо вас погледајте <0>документацију</
 
 #: src/components/login/login.tsx
 msgid "Please sign in to your account"
-msgstr "Молимо вас пријавите се на ваш налог"
+msgstr "Молимо вас да се пријавите на ваш налог"
 
 #: src/components/add-system.tsx
 msgid "Port"
@@ -1127,7 +1127,7 @@ msgstr "Порт"
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
 msgid "Power On"
-msgstr "Укључен"
+msgstr "Укључи"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -1228,11 +1228,11 @@ msgstr "S.M.A.R.T. детаљи"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Self-Test"
-msgstr "S.M.A.R.T. само-тест"
+msgstr "S.M.A.R.T. самопровера"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
-msgstr "Сачувајте адресу користећи enter тастер или зарез. Оставите празно да онемогућите имејл обавештења."
+msgstr "Сачувајте адресу користећи enter тастер или зарез. Оставите празно да онемогућите обавештења путем е -поште."
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/notifications.tsx
@@ -1437,7 +1437,7 @@ msgstr "Формат времена"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
-msgstr "На имејл(ове)"
+msgstr "На е-пошту(е)"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
