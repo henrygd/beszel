@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-12-02 23:17\n"
+"PO-Revision-Date: 2025-12-08 13:54\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -101,7 +101,7 @@ msgstr "活動狀態"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
-msgstr ""
+msgstr "新增{foo}"
 
 #: src/components/add-system.tsx
 msgid "Add <0>System</0>"
@@ -331,7 +331,7 @@ msgstr "檢查您的通知服務"
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
-msgstr ""
+msgstr "清除"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
@@ -594,7 +594,7 @@ msgstr "編輯"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
-msgstr ""
+msgstr "編輯{foo}"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -1064,7 +1064,7 @@ msgstr "已收到密碼重設請求"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Past"
-msgstr ""
+msgstr "已過期"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
@@ -1269,7 +1269,7 @@ msgstr "查看<0>通知設定</0>以設定您如何接收警報。"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Select {foo}"
-msgstr ""
+msgstr "選擇{foo}"
 
 #: src/components/routes/system.tsx
 msgid "Sent"
