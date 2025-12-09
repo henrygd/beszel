@@ -1053,53 +1053,6 @@ func TestDecodeDockerLogStreamMemoryProtection(t *testing.T) {
 	})
 }
 
-func TestAllocateBuffer(t *testing.T) {
-	tests := []struct {
-		name          string
-		currentCap    int
-		needed        int
-		expectedCap   int
-		shouldRealloc bool
-	}{
-		{
-			name:          "buffer has enough capacity",
-			currentCap:    1024,
-			needed:        512,
-			expectedCap:   1024,
-			shouldRealloc: false,
-		},
-		{
-			name:          "buffer needs reallocation",
-			currentCap:    512,
-			needed:        1024,
-			expectedCap:   1024,
-			shouldRealloc: true,
-		},
-		{
-			name:          "buffer needs exact size",
-			currentCap:    1024,
-			needed:        1024,
-			expectedCap:   1024,
-			shouldRealloc: false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			current := make([]byte, 0, tt.currentCap)
-			result := allocateBuffer(current, tt.needed)
-
-			assert.Equal(t, tt.needed, len(result))
-			assert.GreaterOrEqual(t, cap(result), tt.expectedCap)
-
-			if tt.shouldRealloc {
-				// If reallocation was needed, capacity should be at least the needed size
-				assert.GreaterOrEqual(t, cap(result), tt.needed)
-			}
-		})
-	}
-}
-
 func TestShouldExcludeContainer(t *testing.T) {
 	tests := []struct {
 		name          string
@@ -1259,4 +1212,3 @@ func TestAnsiEscapePattern(t *testing.T) {
 		})
 	}
 }
-

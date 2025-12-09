@@ -24,6 +24,7 @@ export default defineConfig({
 		"tr",
 		"ru",
 		"sl",
+		"sr",
 		"sv",
 		"uk",
 		"vi",

@@ -1,0 +1,1692 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2025-12-04 14:50-0500\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: sr\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
+#. placeholder {1}: table.getFilteredRowModel().rows.length
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "{0} of {1} row(s) selected."
+msgstr "{0} од {1} редова изабрано."
+
+#: src/lib/utils.ts
+msgid "{count, plural, one {{countString} day} other {{countString} days}}"
+msgstr "{count, plural, one {{countString} дан} few {{countString} дана} other {{countString} дана}}"
+
+#: src/lib/utils.ts
+msgid "{count, plural, one {{countString} hour} other {{countString} hours}}"
+msgstr "{count, plural, one {{countString} сат} few {{countString} сата} other {{countString} сати}}"
+
+#: src/lib/utils.ts
+msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
+msgstr "{count, plural, one {{countString} минут} few {{countString} минута} many {{countString} минута} other {{countString} минута}}"
+
+#: src/lib/utils.ts
+msgid "1 hour"
+msgstr "1 сат"
+
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "1 min"
+msgstr "1 мин"
+
+#: src/lib/utils.ts
+msgid "1 minute"
+msgstr "1 минут"
+
+#: src/lib/utils.ts
+msgid "1 week"
+msgstr "1 недеља"
+
+#: src/lib/utils.ts
+msgid "12 hours"
+msgstr "12 сати"
+
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "15 min"
+msgstr "15 мин"
+
+#: src/lib/utils.ts
+msgid "24 hours"
+msgstr "24 сата"
+
+#: src/lib/utils.ts
+msgid "30 days"
+msgstr "30 дана"
+
+#. Load average
+#: src/components/charts/load-average-chart.tsx
+msgid "5 min"
+msgstr "5 мин"
+
+#. Table column
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Actions"
+msgstr "Акције"
+
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Active"
+msgstr "Активно"
+
+#: src/components/active-alerts.tsx
+msgid "Active Alerts"
+msgstr "Активна упозорења"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Active state"
+msgstr "Активно стање"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Add {foo}"
+msgstr "Додај {foo}"
+
+#: src/components/add-system.tsx
+msgid "Add <0>System</0>"
+msgstr "Додај <0>систем</0>"
+
+#: src/components/add-system.tsx
+msgid "Add system"
+msgstr "Додај систем"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Add URL"
+msgstr "Додај URL"
+
+#: src/components/routes/settings/general.tsx
+msgid "Adjust display options for charts."
+msgstr "Подесите опције приказа за графиконе."
+
+#: src/components/routes/settings/general.tsx
+msgid "Adjust the width of the main layout"
+msgstr "Подесите ширину главног распореда"
+
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+msgid "Admin"
+msgstr "Администратор"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "After"
+msgstr "После"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Agent"
+msgstr "Агент"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "Alert History"
+msgstr "Историја упозорења"
+
+#: src/components/alerts/alert-button.tsx
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Alerts"
+msgstr "Упозорења"
+
+#: src/components/command-palette.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/containers.tsx
+msgid "All Containers"
+msgstr "Сви контејнери"
+
+#: src/components/alerts/alerts-sheet.tsx
+#: src/components/command-palette.tsx
+#: src/components/routes/home.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "All Systems"
+msgstr "Сви системи"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Are you sure you want to delete {name}?"
+msgstr "Да ли сте сигурни да желите да избришете {name}?"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Are you sure?"
+msgstr "Да ли сте сигурни?"
+
+#: src/components/copy-to-clipboard.tsx
+msgid "Automatic copy requires a secure context."
+msgstr "Аутоматско копирање захтева безбедан контекст."
+
+#: src/components/routes/system.tsx
+msgid "Average"
+msgstr "Просек"
+
+#: src/components/routes/system.tsx
+msgid "Average CPU utilization of containers"
+msgstr "Просечна CPU употреба контејнера"
+
+#. placeholder {0}: alertData.unit
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Average exceeds <0>{value}{0}</0>"
+msgstr "Просек премашује <0>{value}{0}</0>"
+
+#: src/components/routes/system.tsx
+msgid "Average power consumption of GPUs"
+msgstr "Просечна потрошња енергије GPU-ова"
+
+#: src/components/routes/system.tsx
+msgid "Average system-wide CPU utilization"
+msgstr "Просечна системска CPU употреба"
+
+#. placeholder {0}: gpu.n
+#: src/components/routes/system.tsx
+msgid "Average utilization of {0}"
+msgstr "Просечна употреба {0}"
+
+#: src/components/routes/system.tsx
+msgid "Average utilization of GPU engines"
+msgstr "Просечна употреба GPU енгине-а"
+
+#: src/components/command-palette.tsx
+#: src/components/navbar.tsx
+msgid "Backups"
+msgstr "Резервне копије"
+
+#: src/components/routes/system.tsx
+#: src/lib/alerts.ts
+msgid "Bandwidth"
+msgstr "Пропусни опсег"
+
+#: src/components/routes/system.tsx
+msgid "Battery"
+msgstr "Батерија"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became active"
+msgstr "Постао активан"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became inactive"
+msgstr "Постао неактиван"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Before"
+msgstr "Пре"
+
+#: src/components/login/auth-form.tsx
+msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
+msgstr "Beszel подржава OpenID Connect и многе OAuth2 провајдере аутентификације."
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
+msgstr "Beszel користи <0>Shoutrrr</0> за интеграцију са популарним сервисима за обавештавања."
+
+#: src/components/add-system.tsx
+msgid "Binary"
+msgstr "Бинарни"
+
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/general.tsx
+msgid "Bits (Kbps, Mbps, Gbps)"
+msgstr "Битови (Kbps, Mbps, Gbps)"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Boot state"
+msgstr "Стање покретања"
+
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/general.tsx
+msgid "Bytes (KB/s, MB/s, GB/s)"
+msgstr "Бајтови (KB/s, MB/s, GB/s)"
+
+#: src/components/charts/mem-chart.tsx
+msgid "Cache / Buffers"
+msgstr "Кеш / Бафери"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can reload"
+msgstr "Може се поново учитати"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can start"
+msgstr "Може се покренути"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can stop"
+msgstr "Може се зауставити"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Cancel"
+msgstr "Откажи"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Capabilities"
+msgstr "Могућности"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Capacity"
+msgstr "Капацитет"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "Caution - potential data loss"
+msgstr "Пажња - потенцијални губитак података"
+
+#: src/components/routes/settings/general.tsx
+msgid "Celsius (°C)"
+msgstr "Целзијус (°C)"
+
+#: src/components/routes/settings/general.tsx
+msgid "Change display units for metrics."
+msgstr "Промените јединице приказа за метрике."
+
+#: src/components/routes/settings/general.tsx
+msgid "Change general application options."
+msgstr "Промените опште опције апликације."
+
+#: src/components/routes/system.tsx
+msgid "Charge"
+msgstr "Напуњеност"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Charging"
+msgstr "Пуни се"
+
+#: src/components/routes/settings/general.tsx
+msgid "Chart options"
+msgstr "Опције графикона"
+
+#: src/components/login/forgot-pass-form.tsx
+msgid "Check {email} for a reset link."
+msgstr "Проверите {email} за линк за ресетовање."
+
+#: src/components/routes/settings/layout.tsx
+msgid "Check logs for more details."
+msgstr "Проверите логове за више детаља."
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Check your notification service"
+msgstr "Проверите ваш сервис за обавештавања"
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Clear"
+msgstr "Обриши"
+
+#: src/components/containers-table/containers-table.tsx
+msgid "Click on a container to view more information."
+msgstr "Кликните на контејнер да видите више информација."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Click on a device to view more information."
+msgstr "Кликните на уређај да видите више информација."
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Click on a system to view more information."
+msgstr "Кликните на систем да видите више информација."
+
+#: src/components/ui/input-copy.tsx
+msgid "Click to copy"
+msgstr "Кликните да копирате"
+
+#: src/components/login/forgot-pass-form.tsx
+#: src/components/login/forgot-pass-form.tsx
+msgid "Command line instructions"
+msgstr "Инструкције командне линије"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Configure how you receive alert notifications."
+msgstr "Конфигуришите како primate обавештења о упозорењима."
+
+#: src/components/login/auth-form.tsx
+#: src/components/login/auth-form.tsx
+msgid "Confirm password"
+msgstr "Потврдите лозинку"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Conflicts"
+msgstr "Конфликти"
+
+#: src/components/active-alerts.tsx
+msgid "Connection is down"
+msgstr "Веза је прекинута"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Continue"
+msgstr "Настави"
+
+#: src/lib/utils.ts
+msgid "Copied to clipboard"
+msgstr "Копирано у клипборд"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy docker compose file content"
+msgid "Copy docker compose"
+msgstr "Копирај docker compose"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy docker run command"
+msgid "Copy docker run"
+msgstr "Копирај docker run"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Environment variables"
+msgid "Copy env"
+msgstr "Копирај env"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Copy host"
+msgstr "Копирај хост"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy Linux command"
+msgstr "Копирај Linux команду"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Copy name"
+msgstr "Копирај име"
+
+#: src/components/copy-to-clipboard.tsx
+msgid "Copy text"
+msgstr "Копирај текст"
+
+#: src/components/add-system.tsx
+msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
+msgstr "Копирајте команду за инсталацију агента испод, или региструјте агенте аутоматски са <0>универзалним токеном</0>."
+
+#: src/components/add-system.tsx
+msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
+msgstr "Копирајте садржај<0>docker-compose.yml</0> датотеке за агента испод, или региструјте агенте аутоматски са <1>универзалним токеном</1>."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Copy YAML"
+msgstr "Копирај YAML"
+
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "CPU"
+msgstr ""
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "CPU Cores"
+msgstr "CPU језгра"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "CPU Peak"
+msgstr "CPU пик"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "CPU time"
+msgstr "CPU време"
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "CPU Time Breakdown"
+msgstr "Растављање CPU времена"
+
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system/cpu-sheet.tsx
+#: src/lib/alerts.ts
+msgid "CPU Usage"
+msgstr "CPU употреба"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Create"
+msgstr "Креирај"
+
+#: src/components/login/auth-form.tsx
+msgid "Create account"
+msgstr "Креирај налог"
+
+#. Context: date created
+#: src/components/alerts-history-columns.tsx
+msgid "Created"
+msgstr "Креирано"
+
+#: src/components/routes/settings/general.tsx
+msgid "Critical (%)"
+msgstr "Критично (%)"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Download"
+msgstr "Кумулативно преузимање"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Cumulative Upload"
+msgstr "Кумулативно отпремање"
+
+#. Context: Battery state
+#: src/components/routes/system.tsx
+msgid "Current state"
+msgstr "Тренутно стање"
+
+#. Power Cycles
+#: src/components/routes/system/smart-table.tsx
+msgid "Cycles"
+msgstr "Циклуси"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Daily"
+msgstr "Дневно"
+
+#: src/components/routes/settings/general.tsx
+msgid "Default time period"
+msgstr "Подразумевани временски период"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Delete"
+msgstr "Избриши"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Delete fingerprint"
+msgstr "Избриши отисак"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Description"
+msgstr "Опис"
+
+#: src/components/containers-table/containers-table.tsx
+msgid "Detail"
+msgstr "Детаљ"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Device"
+msgstr "Уређај"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Discharging"
+msgstr "Празни се"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Disk"
+msgstr "Диск"
+
+#: src/components/routes/system.tsx
+msgid "Disk I/O"
+msgstr "Диск I/O"
+
+#: src/components/routes/settings/general.tsx
+msgid "Disk unit"
+msgstr "Јединица диска"
+
+#: src/components/charts/disk-chart.tsx
+#: src/components/routes/system.tsx
+#: src/lib/alerts.ts
+msgid "Disk Usage"
+msgstr "Употреба диска"
+
+#: src/components/routes/system.tsx
+msgid "Disk usage of {extraFsName}"
+msgstr "Употреба диска {extraFsName}"
+
+#: src/components/routes/system.tsx
+msgid "Docker CPU Usage"
+msgstr "Docker CPU употреба"
+
+#: src/components/routes/system.tsx
+msgid "Docker Memory Usage"
+msgstr "Docker употреба меморије"
+
+#: src/components/routes/system.tsx
+msgid "Docker Network I/O"
+msgstr "Docker мрежни I/O"
+
+#: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Documentation"
+msgstr "Документација"
+
+#. Context: System is down
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
+msgid "Down"
+msgstr "Искључен"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Down ({downSystemsLength})"
+msgstr "Искључен ({downSystemsLength})"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Download"
+msgstr "Преузимање"
+
+#: src/components/alerts-history-columns.tsx
+msgid "Duration"
+msgstr "Трајање"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Edit"
+msgstr "Измени"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Edit {foo}"
+msgstr "Измени {foo}"
+
+#: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
+#: src/components/login/otp-forms.tsx
+msgid "Email"
+msgstr "Имејл"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Email notifications"
+msgstr "Имејл обавештења"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Empty"
+msgstr "Празна"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "End Time"
+msgstr "Време завршетка"
+
+#: src/components/login/login.tsx
+msgid "Enter email address to reset password"
+msgstr "Унесите имејл адресу за ресетовање лозинке"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Enter email address..."
+msgstr "Унесите имејл адресу..."
+
+#: src/components/login/otp-forms.tsx
+msgid "Enter your one-time password."
+msgstr "Унесите вашу једнократну лозинку."
+
+#: src/components/login/auth-form.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/config-yaml.tsx
+#: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Error"
+msgstr "Грешка"
+
+#. placeholder {0}: alert.value
+#. placeholder {1}: info.unit
+#. placeholder {2}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
+msgstr "Премашује {0}{1} у последњих {2, plural, one {# минуту} few {# минута} other {# минута}}"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exec main PID"
+msgstr "Главни PID извршавања"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
+msgstr ""
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exited active"
+msgstr "Излазак активан"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Export"
+msgstr "Извези"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "Export configuration"
+msgstr ""
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "Export your current systems configuration."
+msgstr ""
+
+#: src/components/routes/settings/general.tsx
+msgid "Fahrenheit (°F)"
+msgstr "Фаренхајт (°F)"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Failed"
+msgstr "Неуспело"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Failed Attributes:"
+msgstr "Неуспели атрибути:"
+
+#: src/lib/api.ts
+msgid "Failed to authenticate"
+msgstr "Неуспела аутентификација"
+
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Failed to save settings"
+msgstr "Неуспело чување подешавања"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Failed to send test notification"
+msgstr "Неуспело слање тест обавештења"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Failed to update alert"
+msgstr "Неуспело ажурирање упозорења"
+
+#. placeholder {0}: statusTotals[ServiceStatus.Failed]
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Failed: {0}"
+msgstr "Неуспело: {0}"
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Filter..."
+msgstr "Филтрирај..."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Fingerprint"
+msgstr "Отисак"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Firmware"
+msgstr "Фирмвер"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
+msgstr "За <0>{min}</0> {min, plural, one {минуту} few {минута} other {минута}}"
+
+#: src/components/login/auth-form.tsx
+msgid "Forgot password?"
+msgstr "Заборављена лозинка?"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "FreeBSD command"
+msgstr "FreeBSD команда"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Full"
+msgstr "Пуно"
+
+#. Context: General settings
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "General"
+msgstr "Опште"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Global"
+msgstr "Глобално"
+
+#: src/components/routes/system.tsx
+msgid "GPU Engines"
+msgstr "GPU енгине"
+
+#: src/components/routes/system.tsx
+msgid "GPU Power Draw"
+msgstr "GPU потрошња енергије"
+
+#: src/lib/alerts.ts
+msgid "GPU Usage"
+msgstr "GPU употреба"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Grid"
+msgstr "Мрежа"
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgid "Health"
+msgstr "Здравље"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "Homebrew command"
+msgstr "Homebrew команда"
+
+#: src/components/add-system.tsx
+msgid "Host / IP"
+msgstr "Хост / IP"
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Idle"
+msgstr "Неактивно"
+
+#: src/components/login/forgot-pass-form.tsx
+msgid "If you've lost the password to your admin account, you may reset it using the following command."
+msgstr "Ако сте изгубили лозинку за ваш администраторски налог, можете је ресетовати користећи следећу команду."
+
+#: src/components/containers-table/containers-table-columns.tsx
+msgctxt "Docker image"
+msgid "Image"
+msgstr ""
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Inactive"
+msgstr "Неактивно"
+
+#: src/components/login/auth-form.tsx
+msgid "Invalid email address."
+msgstr "Неважећа имејл адреса."
+
+#. Linux kernel
+#: src/components/routes/system.tsx
+msgid "Kernel"
+msgstr "Кернел"
+
+#: src/components/routes/settings/general.tsx
+msgid "Language"
+msgstr "Језик"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Layout"
+msgstr "Распоред"
+
+#: src/components/routes/settings/general.tsx
+msgid "Layout width"
+msgstr "Ширина распореда"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Lifecycle"
+msgstr "Животни циклус"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "limit"
+msgstr "ограничење"
+
+#: src/components/routes/system.tsx
+msgid "Load Average"
+msgstr "Просечно оптерећење"
+
+#: src/lib/alerts.ts
+msgid "Load Average 15m"
+msgstr "Просечно оптерећење 15м"
+
+#: src/lib/alerts.ts
+msgid "Load Average 1m"
+msgstr "Просечно оптерећење 1м"
+
+#: src/lib/alerts.ts
+msgid "Load Average 5m"
+msgstr "Просечно оптерећење 5м"
+
+#. Short label for load average
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Load Avg"
+msgstr "Просечно опт."
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Load state"
+msgstr "Стање учитавања"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Loading..."
+msgstr "Учитавање..."
+
+#: src/components/navbar.tsx
+msgid "Log Out"
+msgstr "Одјави се"
+
+#: src/components/login/login.tsx
+msgid "Login"
+msgstr "Пријава"
+
+#: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
+msgid "Login attempt failed"
+msgstr "Неуспешан покушај пријаве"
+
+#: src/components/command-palette.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/navbar.tsx
+msgid "Logs"
+msgstr "Логови"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
+msgstr "Тражите где да креирате упозорења? Кликните на звона <0/> иконе у табели система."
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Main PID"
+msgstr "Главни PID"
+
+#: src/components/routes/settings/layout.tsx
+msgid "Manage display and notification preferences."
+msgstr "Управљајте преференцама приказа и обавештења."
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Manual setup instructions"
+msgstr "Упутства за ручно подешавање"
+
+#. Chart select field. Please try to keep this short.
+#: src/components/routes/system.tsx
+msgid "Max 1 min"
+msgstr "Макс 1 мин"
+
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Memory"
+msgstr "Меморија"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory limit"
+msgstr "Ограничење меморије"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory Peak"
+msgstr "Пик меморије"
+
+#: src/components/routes/system.tsx
+#: src/lib/alerts.ts
+msgid "Memory Usage"
+msgstr "Употреба меморије"
+
+#: src/components/routes/system.tsx
+msgid "Memory usage of docker containers"
+msgstr "Употреба меморије docker контејнера"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Model"
+msgstr "Модел"
+
+#: src/components/add-system.tsx
+#: src/components/alerts-history-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Name"
+msgstr "Име"
+
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Net"
+msgstr "Мрежа"
+
+#: src/components/routes/system.tsx
+msgid "Network traffic of docker containers"
+msgstr "Мрежни саобраћај docker контејнера"
+
+#: src/components/routes/system.tsx
+#: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
+msgid "Network traffic of public interfaces"
+msgstr "Мрежни саобраћај јавних интерфејса"
+
+#. Context: Bytes or bits
+#: src/components/routes/settings/general.tsx
+msgid "Network unit"
+msgstr "Мрежна јединица"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No"
+msgstr ""
+
+#: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No results found."
+msgstr "Нису пронађени резултати."
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No results."
+msgstr "Нема резултата."
+
+#: src/components/routes/system/smart-table.tsx
+msgid "No S.M.A.R.T. attributes available for this device."
+msgstr "Нема доступних S.M.A.R.T. атрибута за овај уређај."
+
+#: src/components/systems-table/systems-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "No systems found."
+msgstr "Нису пронађени системи."
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/notifications.tsx
+msgid "Notifications"
+msgstr "Обавештења"
+
+#: src/components/login/auth-form.tsx
+msgid "OAuth 2 / OIDC support"
+msgstr "OAuth 2 / OIDC подршка"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
+msgstr "При сваком поновном покретању, системи у бази података ће се ажурирати да одговарају системима дефинисаним у датотеци."
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "One-time"
+msgstr "Једнократно"
+
+#: src/components/login/auth-form.tsx
+msgid "One-time password"
+msgstr "Једнократна лозинка"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Open menu"
+msgstr "Отвори мени"
+
+#: src/components/login/auth-form.tsx
+msgid "Or continue with"
+msgstr "Или наставите са"
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Other"
+msgstr "Остало"
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Overwrite existing alerts"
+msgstr "Препиши постојећа упозорења"
+
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+msgid "Page"
+msgstr "Страница"
+
+#. placeholder {0}: table.getState().pagination.pageIndex + 1
+#. placeholder {1}: table.getPageCount()
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Page {0} of {1}"
+msgstr "Страница {0} од {1}"
+
+#: src/components/command-palette.tsx
+msgid "Pages / Settings"
+msgstr "Странице / Подешавања"
+
+#: src/components/login/auth-form.tsx
+#: src/components/login/auth-form.tsx
+msgid "Password"
+msgstr "Лозинка"
+
+#: src/components/login/auth-form.tsx
+msgid "Password must be at least 8 characters."
+msgstr "Лозинка мора имати најмање 8 карактера."
+
+#: src/components/login/auth-form.tsx
+msgid "Password must be less than 72 bytes."
+msgstr "Лозинка мора бити мања од 72 бајта."
+
+#: src/components/login/forgot-pass-form.tsx
+msgid "Password reset request received"
+msgstr "Захтев за ресетовање лозинке примљен"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Past"
+msgstr "Прошло"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Pause"
+msgstr "Паузирај"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Paused"
+msgstr "Паузирано"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Paused ({pausedSystemsLength})"
+msgstr "Паузирано ({pausedSystemsLength})"
+
+#: src/components/routes/system/cpu-sheet.tsx
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Per-core average utilization"
+msgstr "Просечна употреба по језгру"
+
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Percentage of time spent in each state"
+msgstr "Проценат времена проведеног у сваком стању"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
+msgstr "Молимо вас <0>конфигуришите SMTP сервер</0> да бисте осигурали да се упозорења испоручују."
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "Please check logs for more details."
+msgstr "Молимо вас проверите логове за више детаља."
+
+#: src/components/login/auth-form.tsx
+#: src/components/login/forgot-pass-form.tsx
+msgid "Please check your credentials and try again"
+msgstr "Молимо вас проверите ваше акредитиве и покушајте поново"
+
+#: src/components/login/login.tsx
+msgid "Please create an admin account"
+msgstr "Молимо вас креирајте администраторски налог"
+
+#: src/components/login/auth-form.tsx
+msgid "Please enable pop-ups for this site"
+msgstr "Молимо вас омогућите поп-упе за овај сајт"
+
+#: src/lib/api.ts
+msgid "Please log in again"
+msgstr "Молимо вас пријавите се поново"
+
+#: src/components/login/auth-form.tsx
+msgid "Please see <0>the documentation</0> for instructions."
+msgstr "Молимо вас погледајте <0>документацију</0> за упутства."
+
+#: src/components/login/login.tsx
+msgid "Please sign in to your account"
+msgstr "Молимо вас пријавите се на ваш налог"
+
+#: src/components/add-system.tsx
+msgid "Port"
+msgstr "Порт"
+
+#. Power On Time
+#: src/components/routes/system/smart-table.tsx
+msgid "Power On"
+msgstr "Укључен"
+
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
+msgid "Precise utilization at the recorded time"
+msgstr "Прецизна употреба у тренутку снимања"
+
+#: src/components/routes/settings/general.tsx
+msgid "Preferred Language"
+msgstr "Жељени језик"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Process started"
+msgstr "Процес покренут"
+
+#. Use 'Key' if your language requires many more characters
+#: src/components/add-system.tsx
+msgid "Public Key"
+msgstr "Јавни кључ"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Quiet Hours"
+msgstr "Тихи сати"
+
+#. Disk read
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
+msgid "Read"
+msgstr "Читање"
+
+#: src/components/routes/system.tsx
+msgid "Received"
+msgstr "Примљено"
+
+#: src/components/containers-table/containers-table.tsx
+#: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
+msgid "Refresh"
+msgstr "Освежи"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Relationships"
+msgstr "Односи"
+
+#: src/components/login/login.tsx
+msgid "Request a one-time password"
+msgstr "Затражи једнократну лозинку"
+
+#: src/components/login/otp-forms.tsx
+msgid "Request OTP"
+msgstr "Затражи OTP"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Required by"
+msgstr "Захтевано од"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Requires"
+msgstr "Захтева"
+
+#: src/components/login/forgot-pass-form.tsx
+msgid "Reset Password"
+msgstr "Ресетуј лозинку"
+
+#: src/components/alerts-history-columns.tsx
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Resolved"
+msgstr "Решено"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Restarts"
+msgstr "Поновна покретања"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Resume"
+msgstr "Настави"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgctxt "Root disk label"
+msgid "Root"
+msgstr "Root"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Rotate token"
+msgstr "Ротирај токен"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "Rows per page"
+msgstr "Редова по страници"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Runtime Metrics"
+msgstr "Метрике у време извршавања"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Details"
+msgstr "S.M.A.R.T. детаљи"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "S.M.A.R.T. Self-Test"
+msgstr "S.M.A.R.T. само-тест"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Save address using enter key or comma. Leave blank to disable email notifications."
+msgstr "Сачувајте адресу користећи enter тастер или зарез. Оставите празно да онемогућите имејл обавештења."
+
+#: src/components/routes/settings/general.tsx
+#: src/components/routes/settings/notifications.tsx
+msgid "Save Settings"
+msgstr "Сачувај подешавања"
+
+#: src/components/add-system.tsx
+msgid "Save system"
+msgstr "Сачувај систем"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule"
+msgstr "Распоред"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent, such as during maintenance periods."
+msgstr "Закажите тихе сате када се обавештења неће слати, као што су периоди одржавања."
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent."
+msgstr "Закажите тихе сате када се обавештења неће слати."
+
+#: src/components/navbar.tsx
+msgid "Search"
+msgstr "Претрага"
+
+#: src/components/command-palette.tsx
+msgid "Search for systems or settings..."
+msgstr "Претражите системе или подешавања..."
+
+#: src/components/alerts/alerts-sheet.tsx
+msgid "See <0>notification settings</0> to configure how you receive alerts."
+msgstr "Погледајте <0>подешавања обавештења</0> да конфигуришете како primate упозорења."
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Select {foo}"
+msgstr "Изаберите {foo}"
+
+#: src/components/routes/system.tsx
+msgid "Sent"
+msgstr "Послато"
+
+#: src/components/routes/system/smart-table.tsx
+msgid "Serial Number"
+msgstr "Серијски број"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Service Details"
+msgstr "Детаљи сервиса"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr "Сервиси"
+
+#: src/components/routes/settings/general.tsx
+msgid "Set percentage thresholds for meter colors."
+msgstr "Подесите процентуалне прагове за боје мерача."
+
+#: src/components/command-palette.tsx
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/layout.tsx
+msgid "Settings"
+msgstr "Подешавања"
+
+#: src/components/routes/settings/layout.tsx
+msgid "Settings saved"
+msgstr "Подешавања сачувана"
+
+#: src/components/login/auth-form.tsx
+msgid "Sign in"
+msgstr "Пријави се"
+
+#: src/components/command-palette.tsx
+msgid "SMTP settings"
+msgstr "SMTP подешавања"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Sort By"
+msgstr "Сортирај по"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Start Time"
+msgstr "Време почетка"
+
+#. Context: alert state (active or resolved)
+#: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "State"
+msgstr "Стање"
+
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systems-table/systems-table.tsx
+#: src/lib/alerts.ts
+msgid "Status"
+msgstr "Статус"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "Sub State"
+msgstr "Подстање"
+
+#: src/components/routes/system.tsx
+msgid "Swap space used by the system"
+msgstr "Swap простор који користи систем"
+
+#: src/components/routes/system.tsx
+msgid "Swap Usage"
+msgstr "Swap употреба"
+
+#: src/components/add-system.tsx
+#: src/components/alerts-history-columns.tsx
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+#: src/lib/alerts.ts
+msgid "System"
+msgstr "Систем"
+
+#: src/components/routes/system.tsx
+msgid "System load averages over time"
+msgstr "Просечна оптерећења система током времена"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Systemd Services"
+msgstr "Systemd сервиси"
+
+#: src/components/navbar.tsx
+msgid "Systems"
+msgstr "Системи"
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
+msgstr "Системи се могу управљати у <0>config.yml</0> датотеци у вашем директоријуму података."
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Table"
+msgstr "Табела"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Tasks"
+msgstr "Задаци"
+
+#. Temperature label in systems table
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Temp"
+msgstr "Темп"
+
+#: src/components/routes/system.tsx
+#: src/lib/alerts.ts
+msgid "Temperature"
+msgstr "Температура"
+
+#: src/components/routes/settings/general.tsx
+msgid "Temperature unit"
+msgstr "Јединица температуре"
+
+#: src/components/routes/system.tsx
+msgid "Temperatures of system sensors"
+msgstr "Температуре системских сензора"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Test <0>URL</0>"
+msgstr "Тестирај <0>URL</0>"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Test notification sent"
+msgstr "Тест обавештење послато"
+
+#: src/components/login/forgot-pass-form.tsx
+msgid "Then log into the backend and reset your user account password in the users table."
+msgstr "Затим се пријавите на backend и ресетујте лозинку корисничког налога у табели корисника."
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
+msgstr "Ова акција се не може опозвати. Ово ће трајно избрисати све тренутне записе за {name} из базе података."
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "This will permanently delete all selected records from the database."
+msgstr "Ово ће трајно избрисати све изабране записе из базе података."
+
+#: src/components/routes/system.tsx
+msgid "Throughput of {extraFsName}"
+msgstr "Проток {extraFsName}"
+
+#: src/components/routes/system.tsx
+msgid "Throughput of root filesystem"
+msgstr "Проток root фајл система"
+
+#: src/components/routes/settings/general.tsx
+msgid "Time format"
+msgstr "Формат времена"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "To email(s)"
+msgstr "На имејл(ове)"
+
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
+msgid "Toggle grid"
+msgstr "Укључи/искључи мрежу"
+
+#: src/components/mode-toggle.tsx
+msgid "Toggle theme"
+msgstr "Промени тему"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Token"
+msgstr ""
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/layout.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens & Fingerprints"
+msgstr "Токени и отисци"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
+msgstr "Токени омогућавају агентима да се повежу и региструју. Отисци су стабилни идентификатори јединствени за сваки систем, постављени при првом повезивању."
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
+msgstr "Токени и отисци се користе за аутентификацију WebSocket веза са хабом."
+
+#: src/components/ui/chart.tsx
+#: src/components/ui/chart.tsx
+msgid "Total"
+msgstr "Укупно"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data received for each interface"
+msgstr "Укупни подаци примљени за сваки интерфејс"
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Total data sent for each interface"
+msgstr "Укупни подаци poslati за сваки интерфејс"
+
+#. placeholder {0}: data.length
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Total: {0}"
+msgstr "Укупно: {0}"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggered by"
+msgstr "Окинуто од"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggers"
+msgstr "Окидачи"
+
+#: src/lib/alerts.ts
+msgid "Triggers when 1 minute load average exceeds a threshold"
+msgstr "Окида се када просечно оптерећење од 1 минут премаши prag"
+
+#: src/lib/alerts.ts
+msgid "Triggers when 15 minute load average exceeds a threshold"
+msgstr "Окида се када просечно оптерећење од 15 минута премаши праг"
+
+#: src/lib/alerts.ts
+msgid "Triggers when 5 minute load average exceeds a threshold"
+msgstr "Окида се када просечно оптерећење од 5 минута премаши праг"
+
+#: src/lib/alerts.ts
+msgid "Triggers when any sensor exceeds a threshold"
+msgstr "Окида се када било који сензор премаши праг"
+
+#: src/lib/alerts.ts
+msgid "Triggers when combined up/down exceeds a threshold"
+msgstr "Окида се када комбиновано горе/доле премаши праг"
+
+#: src/lib/alerts.ts
+msgid "Triggers when CPU usage exceeds a threshold"
+msgstr "Окида се када CPU употреба премаши праг"
+
+#: src/lib/alerts.ts
+msgid "Triggers when GPU usage exceeds a threshold"
+msgstr "Окида се када GPU употреба премаши праг"
+
+#: src/lib/alerts.ts
+msgid "Triggers when memory usage exceeds a threshold"
+msgstr "Окида се када употреба меморије премаши праг"
+
+#: src/lib/alerts.ts
+msgid "Triggers when status switches between up and down"
+msgstr "Окида се када статус прелази између укљученог и искљученог"
+
+#: src/lib/alerts.ts
+msgid "Triggers when usage of any disk exceeds a threshold"
+msgstr "Окида се када употреба било ког диска премаши праг"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/smart-table.tsx
+msgid "Type"
+msgstr "Тип"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unit file"
+msgstr "Јединична датотека"
+
+#. Temperature / network units
+#: src/components/routes/settings/general.tsx
+msgid "Unit preferences"
+msgstr "Преференце јединица"
+
+#: src/components/command-palette.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Universal token"
+msgstr ""
+
+#. Context: Battery state
+#: src/lib/i18n.ts
+msgid "Unknown"
+msgstr "Непознато"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unlimited"
+msgstr "Неограничено"
+
+#. Context: System is up
+#: src/components/routes/system.tsx
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Up"
+msgstr "Укључен"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Up ({upSystemsLength})"
+msgstr "Укључен ({upSystemsLength})"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Update"
+msgstr "Ажурирај"
+
+#: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "Updated"
+msgstr ""
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Updated every 10 minutes."
+msgstr "Ажурира се сваких 10 минута."
+
+#: src/components/routes/system/network-sheet.tsx
+msgid "Upload"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Uptime"
+msgstr "Време рада"
+
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
+#: src/components/routes/system/cpu-sheet.tsx
+msgid "Usage"
+msgstr ""
+
+#: src/components/routes/system.tsx
+msgid "Usage of root partition"
+msgstr "Употреба root партиције"
+
+#: src/components/charts/mem-chart.tsx
+#: src/components/charts/swap-chart.tsx
+msgid "Used"
+msgstr ""
+
+#: src/components/command-palette.tsx
+#: src/components/navbar.tsx
+msgid "Users"
+msgstr "Корисници"
+
+#: src/components/alerts-history-columns.tsx
+msgid "Value"
+msgstr "Вредност"
+
+#: src/components/systems-table/systems-table.tsx
+msgid "View"
+msgstr "Погледај"
+
+#: src/components/routes/system/cpu-sheet.tsx
+#: src/components/routes/system/network-sheet.tsx
+msgid "View more"
+msgstr "Погледај више"
+
+#: src/components/routes/settings/alerts-history-data-table.tsx
+msgid "View your 200 most recent alerts."
+msgstr "Погледајте ваших 200 најновијих упозорења."
+
+#: src/components/systems-table/systems-table.tsx
+msgid "Visible Fields"
+msgstr "Видљива поља"
+
+#: src/components/routes/system.tsx
+msgid "Waiting for enough records to display"
+msgstr "Чека се довољно записа за приказ"
+
+#: src/components/routes/settings/general.tsx
+msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
+msgstr "Желите да помогнете у побољшању наших превода? Проверите <0>Crowdin</0> за детаље."
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Wants"
+msgstr "Жели"
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning (%)"
+msgstr ""
+
+#: src/components/routes/settings/general.tsx
+msgid "Warning thresholds"
+msgstr "Прагове упозорења"
+
+#: src/components/routes/settings/notifications.tsx
+msgid "Webhook / Push notifications"
+msgstr ""
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
+msgstr "Када је омогућено, овај токен омогућава агентима да се сами региструју без претходног креирања система. Истиче након једног сата или при поновном покретању хаба."
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgctxt "Button to copy install command"
+msgid "Windows command"
+msgstr ""
+
+#. Disk write
+#: src/components/routes/system.tsx
+#: src/components/routes/system.tsx
+msgid "Write"
+msgstr ""
+
+#: src/components/routes/settings/layout.tsx
+msgid "YAML Config"
+msgstr ""
+
+#: src/components/routes/settings/config-yaml.tsx
+msgid "YAML Configuration"
+msgstr "YAML конфигурација"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Yes"
+msgstr ""
+
+#: src/components/routes/settings/layout.tsx
+msgid "Your user settings have been updated."
+msgstr "Ваша корисничка подешавања су ажурирана."

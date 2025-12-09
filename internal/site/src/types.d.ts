@@ -61,6 +61,8 @@ export interface SystemInfo {
 	mp: number
 	/** disk percent */
 	dp: number
+	/** battery percent and state */
+	bat?: [number, BatteryState]
 	/** bandwidth (mb) */
 	b: number
 	/** bandwidth bytes */
@@ -331,6 +333,7 @@ export interface AlertInfo {
 	start?: number
 	/** Single value description (when there's only one value, like status) */
 	singleDesc?: () => string
+	invert?: boolean
 }
 
 export type AlertMap = Record<string, Map<string, AlertRecord>>

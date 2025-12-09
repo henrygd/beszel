@@ -95,11 +95,6 @@ export default [
 		e: "🇧🇷",
 	},
 	{
-		lang: "tr",
-		label: "Türkçe",
-		e: "🇹🇷",
-	},
-	{
 		lang: "ru",
 		label: "Русский",
 		e: "🇷🇺",
@@ -110,9 +105,19 @@ export default [
 		e: "🇸🇮",
 	},
 	{
+		lang: "sr",
+		label: "Српски",
+		e: "🇷🇸",
+	},
+	{
 		lang: "sv",
 		label: "Svenska",
 		e: "🇸🇪",
+	},
+	{
+		lang: "tr",
+		label: "Türkçe",
+		e: "🇹🇷",
 	},
 	{
 		lang: "uk",
