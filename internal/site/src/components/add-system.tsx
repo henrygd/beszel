@@ -23,7 +23,6 @@ import { $publicKey, $systems } from "@/lib/stores"
 import { cn, generateToken, tokenMap, useBrowserStorage } from "@/lib/utils"
 import type { SystemRecord } from "@/types"
 import { InputTags } from "@/components/ui/input-tags"
-import { GroupInput } from "@/components/ui/group-input"
 import {
 	copyDockerCompose,
 	copyDockerRun,
@@ -83,11 +82,6 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 	const [tags, setTags] = useState<string[]>(system?.tags ?? [])
 	const [token, setToken] = useState(system?.token ?? "")
 
-	// Derive groups from all systems
-	const systems = useStore($systems)
-	const groups = Array.from(new Set(systems.map(s => s.group).filter(Boolean))) as string[]
-	const [group, setGroup] = useState<string>(system?.group ?? "")
-
 	useEffect(() => {
 		;(async () => {
 			// if no system, generate a new token
@@ -113,7 +107,6 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 		const data = Object.fromEntries(formData) as Record<string, any>
 		data.users = pb.authStore.record!.id
 		data.tags = tags
-		data.group = group // Save group
 		try {
 			setOpen(false)
 			if (system) {
@@ -237,8 +230,6 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 								<InputTags id="tags" value={tags} onChange={setTags} placeholder="Add tags..." />
 							</div>
 						</div>
-						<Label htmlFor="group" className="xs:text-end">Group</Label>
-						<GroupInput value={group} groups={groups} onChange={setGroup} />
 					</div>
 					<DialogFooter className="flex justify-end gap-x-2 gap-y-3 flex-col mt-5">
 						{/* Docker */}
