@@ -1,8 +1,8 @@
-import { msg, t } from "@lingui/core/macro"
+import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
-import { ChevronDownIcon, ExternalLinkIcon, PlusIcon } from "lucide-react"
+import { ChevronDownIcon, ExternalLinkIcon, PlusIcon, XIcon, Check } from "lucide-react"
 import { memo, useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
@@ -21,7 +21,16 @@ import { isReadOnlyUser, pb } from "@/lib/api"
 import { SystemStatus } from "@/lib/enums"
 import { $publicKey } from "@/lib/stores"
 import { cn, generateToken, tokenMap, useBrowserStorage } from "@/lib/utils"
-import type { SystemRecord } from "@/types"
+import type { SystemRecord, TagRecord } from "@/types"
+import { Badge } from "./ui/badge"
+import {
+	DropdownMenu,
+	DropdownMenuCheckboxItem,
+	DropdownMenuContent,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "./ui/dropdown-menu"
 import {
 	copyDockerCompose,
 	copyDockerRun,
@@ -31,12 +40,11 @@ import {
 	InstallDropdown,
 } from "./install-dropdowns"
 import { $router, basePath, Link, navigate } from "./router"
-import { DropdownMenu, DropdownMenuTrigger } from "./ui/dropdown-menu"
 import { AppleIcon, DockerIcon, FreeBsdIcon, TuxIcon, WindowsIcon } from "./ui/icons"
 import { InputCopy } from "./ui/input-copy"
 
 export function AddSystemButton({ className }: { className?: string }) {
-	if (isReadOnlyUser()) {
+		if (isReadOnlyUser()) {
 		return null
 	}
 	const [open, setOpen] = useState(false)
@@ -48,7 +56,10 @@ export function AddSystemButton({ className }: { className?: string }) {
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
-				<Button variant="outline" className={cn("flex gap-1 max-xs:h-[2.4rem]", className)}>
+				<Button
+					variant="outline"
+					className={cn("flex gap-1 max-xs:h-[2.4rem]", className, isReadOnlyUser() && "hidden")}
+				>
 					<PlusIcon className="h-4 w-4 -ms-1" />
 					<Trans>
 						Add <span className="hidden sm:inline">System</span>
@@ -79,23 +90,42 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 	const isUnixSocket = hostValue.startsWith("/")
 	const [tab, setTab] = useBrowserStorage("as-tab", "docker")
 	const [token, setToken] = useState(system?.token ?? "")
+	const [availableTags, setAvailableTags] = useState<TagRecord[]>([])
+	const [selectedTags, setSelectedTags] = useState<string[]>(system?.tags ?? [])
+	const [tagSearchQuery, setTagSearchQuery] = useState("")
 
 	useEffect(() => {
 		;(async () => {
+			// Load available tags
+			try {
+				const tags = await pb.collection("tags").getFullList<TagRecord>({
+					sort: "name",
+				})
+				setAvailableTags(tags)
+			} catch (e) {
+				console.error("Failed to load tags", e)
+			}
+
 			// if no system, generate a new token
 			if (!system) {
 				nextSystemToken ||= generateToken()
-				return setToken(nextSystemToken)
+				setToken(nextSystemToken)
+				return
 			}
 			// if system exists,get the token from the fingerprint record
 			if (tokenMap.has(system.id)) {
-				return setToken(tokenMap.get(system.id)!)
+				setToken(tokenMap.get(system.id)!)
+				return
 			}
-			const { token } = await pb.collection("fingerprints").getFirstListItem(`system = "${system.id}"`, {
-				fields: "token",
-			})
-			tokenMap.set(system.id, token)
-			setToken(token)
+			try {
+				const { token } = await pb.collection("fingerprints").getFirstListItem(`system = "${system.id}"`, {
+					fields: "token",
+				})
+				tokenMap.set(system.id, token)
+				setToken(token)
+			} catch (e) {
+				console.error("Failed to load fingerprint", e)
+			}
 		})()
 	}, [system?.id, nextSystemToken])
 
@@ -104,6 +134,7 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 		const formData = new FormData(e.target as HTMLFormElement)
 		const data = Object.fromEntries(formData) as Record<string, any>
 		data.users = pb.authStore.record!.id
+		data.tags = selectedTags
 		try {
 			setOpen(false)
 			if (system) {
@@ -123,9 +154,8 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 			console.error(e)
 		}
 	}
-
+	
 	const systemTranslation = t`System`
-
 	return (
 		<DialogContent
 			className="w-[90%] sm:w-auto sm:ns-dialog max-w-full rounded-lg"
@@ -220,6 +250,106 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 							<Trans>Token</Trans>
 						</Label>
 						<InputCopy value={token} id="tkn" name="tkn" />
+						{availableTags.length > 0 && (
+							<>
+								<Label htmlFor="tags" className="xs:text-end self-start pt-2">
+									<Trans>Tags</Trans>
+								</Label>
+								<div className="flex flex-col gap-2">
+									<DropdownMenu>
+										<DropdownMenuTrigger asChild>
+											<Button variant="outline" className="justify-between font-normal">
+												{selectedTags.length > 0 ? (
+													<span className="truncate">
+														{selectedTags.length === 1
+															? availableTags.find((t) => t.id === selectedTags[0])?.name
+															: t`${selectedTags.length} tags selected`}
+													</span>
+												) : (
+													<span className="text-muted-foreground">
+														<Trans>Select tags...</Trans>
+													</span>
+												)}
+												<ChevronDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+											</Button>
+										</DropdownMenuTrigger>
+										<DropdownMenuContent className="w-80 max-h-96 overflow-y-auto" align="start">
+											<div className="px-2 py-1.5">
+												<Input
+													placeholder={t`Search tags...`}
+													value={tagSearchQuery}
+													onChange={(e) => setTagSearchQuery(e.target.value)}
+													className="h-8"
+												/>
+											</div>
+											<DropdownMenuSeparator />
+											<div className="max-h-80 overflow-y-auto">
+												{availableTags
+													.filter((tag) =>
+														tag.name.toLowerCase().includes(tagSearchQuery.toLowerCase())
+													)
+													.map((tag) => {
+														const isSelected = selectedTags.includes(tag.id)
+														return (
+															<DropdownMenuCheckboxItem
+																key={tag.id}
+																checked={isSelected}
+																onCheckedChange={(checked) => {
+																	setSelectedTags((prev) =>
+																		checked ? [...prev, tag.id] : prev.filter((id) => id !== tag.id)
+																	)
+																}}
+																onSelect={(e) => e.preventDefault()}
+															>
+																<Badge
+																	style={{ backgroundColor: tag.color || "#3b82f6" }}
+																	className="text-white text-xs"
+																>
+																	{tag.name}
+																</Badge>
+															</DropdownMenuCheckboxItem>
+														)
+													})}
+												{availableTags.filter((tag) =>
+													tag.name.toLowerCase().includes(tagSearchQuery.toLowerCase())
+												).length === 0 && (
+													<div className="py-6 text-center text-sm text-muted-foreground">
+														<Trans>No tags found.</Trans>
+													</div>
+												)}
+											</div>
+										</DropdownMenuContent>
+									</DropdownMenu>
+									{selectedTags.length > 0 && (
+										<div className="flex flex-wrap gap-1.5">
+											{selectedTags.map((tagId) => {
+												const tag = availableTags.find((t) => t.id === tagId)
+												if (!tag) return null
+												return (
+													<Badge
+														key={tag.id}
+														style={{ backgroundColor: tag.color || "#3b82f6" }}
+														className="text-white text-xs"
+													>
+														{tag.name}
+														<button
+															type="button"
+															className="ml-1 hover:bg-white/20 rounded-full"
+															onClick={(e) => {
+																e.stopPropagation()
+																setSelectedTags((prev) => prev.filter((id) => id !== tagId))
+															}}
+														>
+															<XIcon className="h-3 w-3" />
+														</button>
+													</Badge>
+												)
+											})}
+										</div>
+									)}
+								</div>
+							</>
+						)}
 					</div>
 					<DialogFooter className="flex justify-end gap-x-2 gap-y-3 flex-col mt-5">
 						{/* Docker */}

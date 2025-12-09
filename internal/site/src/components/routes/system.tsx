@@ -10,6 +10,7 @@ import {
 	GlobeIcon,
 	LayoutGridIcon,
 	MonitorIcon,
+	TagIcon,
 	XIcon,
 } from "lucide-react"
 import { subscribeKeys } from "nanostores"
@@ -60,7 +61,9 @@ import type {
 	SystemRecord,
 	SystemStats,
 	SystemStatsRecord,
+	TagRecord,
 } from "@/types"
+import { Badge } from "../ui/badge"
 import ChartTimeSelect from "../charts/chart-time-select"
 import { $router, navigate } from "../router"
 import Spinner from "../spinner"
@@ -472,7 +475,22 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				<Card>
 					<div className="grid xl:flex gap-4 px-4 sm:px-6 pt-3 sm:pt-4 pb-5">
 						<div>
-							<h1 className="text-[1.6rem] font-semibold mb-1.5">{system.name}</h1>
+							<div className="flex items-center gap-3 mb-1.5">
+								<h1 className="text-[1.6rem] font-semibold">{system.name}</h1>
+								{system.expand?.tags && system.expand.tags.length > 0 && (
+									<div className="flex flex-wrap gap-1.5">
+										{system.expand.tags.map((tag: TagRecord) => (
+											<Badge
+												key={tag.id}
+												style={{ backgroundColor: tag.color || "#3b82f6" }}
+												className="text-white text-sm"
+											>
+												{tag.name}
+											</Badge>
+										))}
+									</div>
+								)}
+							</div>
 							<div className="flex flex-wrap items-center gap-3 gap-y-2 text-sm opacity-90">
 								<TooltipProvider>
 									<Tooltip>

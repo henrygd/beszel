@@ -2,7 +2,7 @@ import { t } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath, redirectPage } from "@nanostores/router"
-import { AlertOctagonIcon, BellIcon, FileSlidersIcon, FingerprintIcon, SettingsIcon } from "lucide-react"
+import { AlertOctagonIcon, BellIcon, FileSlidersIcon, FingerprintIcon, SettingsIcon, TagIcon} from "lucide-react"
 import { lazy, useEffect } from "react"
 import { $router } from "@/components/router.tsx"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx"
@@ -18,12 +18,14 @@ const notificationsSettingsImport = () => import("./notifications.tsx")
 const configYamlSettingsImport = () => import("./config-yaml.tsx")
 const fingerprintsSettingsImport = () => import("./tokens-fingerprints.tsx")
 const alertsHistoryDataTableSettingsImport = () => import("./alerts-history-data-table.tsx")
+const tagsSettingsImport = () => import("./tags.tsx")
 
 const GeneralSettings = lazy(generalSettingsImport)
 const NotificationsSettings = lazy(notificationsSettingsImport)
 const ConfigYamlSettings = lazy(configYamlSettingsImport)
 const FingerprintsSettings = lazy(fingerprintsSettingsImport)
 const AlertsHistoryDataTableSettings = lazy(alertsHistoryDataTableSettingsImport)
+const TagsSettings = lazy(tagsSettingsImport)
 
 export async function saveSettings(newSettings: Partial<UserSettings>) {
 	try {
@@ -67,6 +69,13 @@ export default function SettingsLayout() {
 			href: getPagePath($router, "settings", { name: "notifications" }),
 			icon: BellIcon,
 			preload: notificationsSettingsImport,
+		},
+		{
+			title: t`Tags`,
+			href: getPagePath($router, "settings", { name: "tags" }),
+			icon: TagIcon,
+			noReadOnly: true,
+			preload: tagsSettingsImport,
 		},
 		{
 			title: t`Tokens & Fingerprints`,
@@ -135,6 +144,8 @@ function SettingsContent({ name }: { name: string }) {
 			return <GeneralSettings userSettings={userSettings} />
 		case "notifications":
 			return <NotificationsSettings userSettings={userSettings} />
+		case "tags":
+			return <TagsSettings />		
 		case "config":
 			return <ConfigYamlSettings />
 		case "tokens":
