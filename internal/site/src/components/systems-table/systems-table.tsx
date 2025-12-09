@@ -19,8 +19,6 @@ import {
 	ArrowDownIcon,
 	ArrowUpDownIcon,
 	ArrowUpIcon,
-	ChevronDownIcon,
-	ChevronRightIcon,
 	EyeIcon,
 	FilterIcon,
 	LayoutGridIcon,
@@ -45,7 +43,7 @@ import { Input } from "@/components/ui/input"
 import { TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { SystemStatus } from "@/lib/enums"
-import { $downSystems, $pausedSystems, $systems, $upSystems, $userSettings } from "@/lib/stores"
+import { $downSystems, $pausedSystems, $systems, $upSystems } from "@/lib/stores"
 import { cn, runOnce, useBrowserStorage } from "@/lib/utils"
 import type { SystemRecord } from "@/types"
 import { useDebounce } from "@/lib/useDebounce"
@@ -67,7 +65,6 @@ export default function SystemsTable() {
 	const downSystems = $downSystems.get()
 	const upSystems = $upSystems.get()
 	const pausedSystems = $pausedSystems.get()
-	const userSettings = useStore($userSettings)
 	const { i18n, t } = useLingui()
 	const [filter, setFilter] = useState<string>("")
 	const debouncedFilter = useDebounce(filter, 300)
@@ -80,7 +77,6 @@ export default function SystemsTable() {
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 	const [columnVisibility, setColumnVisibility] = useBrowserStorage<VisibilityState>("cols", {})
 	const [selectedTags, setSelectedTags] = useState<string[]>([])
-	const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set())
 
 	const locale = i18n.locale
 
@@ -155,19 +151,6 @@ export default function SystemsTable() {
 	const [upSystemsLength, downSystemsLength, pausedSystemsLength] = useMemo(() => {
 		return [Object.values(upSystems).length, Object.values(downSystems).length, Object.values(pausedSystems).length]
 	}, [upSystems, downSystems, pausedSystems])
-
-	// Optimized group processing with reduce
-	const groupedSystems = useMemo(() => {
-		return filteredData.reduce((groups, system) => {
-			const group = system.group || "Ungrouped"
-			groups[group] ??= []
-			groups[group].push(system)
-			return groups
-		}, {} as Record<string, SystemRecord[]>)
-	}, [filteredData])
-
-	// Determine if there is at least one system with a non-empty group
-	const hasAnyGrouped = useMemo(() => filteredData.some(sys => sys.group && sys.group.trim()), [filteredData])
 
 	// TODO: hiding temp then gpu messes up table headers
 	const CardHead = useMemo(() => {
@@ -374,89 +357,22 @@ export default function SystemsTable() {
 		<Card>
 			{CardHead}
 			<div className="p-6 pt-0 max-sm:py-3 max-sm:px-2">
-				{userSettings.groupingEnabled ? (
-					// Grouped layout
-					Object.entries(groupedSystems)
-						.filter(([group]) => group !== "Ungrouped" || hasAnyGrouped)
-						.map(([group, systems]) => {
-							const systemRows = systems.map(sys => table.getRowModel().rows.find(r => r.original.id === sys.id)).filter((row): row is Row<SystemRecord> => row !== undefined)
-							const isCollapsed = collapsedGroups.has(group)
-							
-							return (
-								<div key={group} className="mb-8">
-									<button
-										onClick={() => {
-											const newCollapsed = new Set(collapsedGroups)
-											if (isCollapsed) {
-												newCollapsed.delete(group)
-											} else {
-												newCollapsed.add(group)
-											}
-											setCollapsedGroups(newCollapsed)
-										}}
-										className="flex items-center gap-2 text-xl font-bold mb-2 hover:text-primary transition-colors cursor-pointer"
-									>
-										{isCollapsed ? (
-											<ChevronRightIcon className="h-5 w-5" />
-										) : (
-											<ChevronDownIcon className="h-5 w-5" />
-										)}
-										{group}
-									</button>
-									<div className="text-sm text-muted-foreground mb-3">
-										{(() => {
-											const onlineCount = systemRows.filter(row => row.original.status === "up").length
-											const offlineCount = systemRows.filter(row => row.original.status !== "up").length
-											return (
-												<span>
-													{onlineCount} online, {offlineCount} offline
-												</span>
-											)
-										})()}
-									</div>
-									{!isCollapsed && (
-										<>
-											{viewMode === "table" ? (
-												<div className="rounded-md border overflow-hidden">
-													<AllSystemsTable table={table} rows={systemRows} colLength={visibleColumns.length} />
-												</div>
-											) : (
-												<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-													{systemRows.length ? (
-														systemRows.map((row) => {
-															return <SystemCard key={row.original.id} row={row} table={table} colLength={visibleColumns.length} />
-														})
-													) : (
-														<div className="col-span-full text-center py-8">
-															<Trans>No systems found.</Trans>
-														</div>
-													)}
-												</div>
-											)}
-										</>
-									)}
-								</div>
-							)
-						})
+				{viewMode === "table" ? (
+					<div className="rounded-md">
+						<AllSystemsTable table={table} rows={rows} colLength={visibleColumns.length} />
+					</div>
 				) : (
-					// Simple layout (original)
-					viewMode === "table" ? (
-						<div className="rounded-md">
-							<AllSystemsTable table={table} rows={rows} colLength={visibleColumns.length} />
-						</div>
-					) : (
-						<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-							{rows?.length ? (
-								rows.map((row) => {
-									return <SystemCard key={row.original.id} row={row} table={table} colLength={visibleColumns.length} />
-								})
-							) : (
-								<div className="col-span-full text-center py-8">
-									<Trans>No systems found.</Trans>
-								</div>
-							)}
-						</div>
-					)
+					<div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+						{rows?.length ? (
+							rows.map((row) => {
+								return <SystemCard key={row.original.id} row={row} table={table} colLength={visibleColumns.length} />
+							})
+						) : (
+							<div className="col-span-full text-center py-8">
+								<Trans>No systems found.</Trans>
+							</div>
+						)}
+					</div>
 				)}
 			</div>
 		</Card>
