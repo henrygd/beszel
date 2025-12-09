@@ -120,6 +120,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 					if (nameLower.includes(filterInputLower)) {
 						return true
 					}
+					const statusLower = statusTranslations[status as keyof typeof statusTranslations]
 					if (statusLower?.includes(filterInputLower)) {
 						return true
 					}

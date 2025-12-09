@@ -202,7 +202,7 @@ export default function SystemsTable() {
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end" className="h-72 md:h-auto min-w-48 md:min-w-auto overflow-y-auto">
-								<div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-s md:divide-y-0">
+								<div className="grid grid-cols-1 md:grid-cols-5 divide-y md:divide-s md:divide-y-0">
 									<div className="border-r">
 										<DropdownMenuLabel className="pt-2 px-3.5 flex items-center gap-2">
 											<LayoutGridIcon className="size-4" />
