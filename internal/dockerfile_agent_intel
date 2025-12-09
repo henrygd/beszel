@@ -16,7 +16,7 @@ RUN CGO_ENABLED=0 GOGC=75 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-
 # Final image
 # Note: must cap_add: [CAP_PERFMON] and mount /dev/dri/ as volume
 # --------------------------
-FROM alpine:edge
+FROM alpine:3.22
 
 COPY --from=builder /agent /agent
 

@@ -1,4 +1,4 @@
-/** biome-ignore-all lint/correctness/useHookAtTopLevel: <explanation> */
+/** biome-ignore-all lint/correctness/useHookAtTopLevel: Hooks live inside memoized column definitions */
 import { t } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
@@ -24,7 +24,7 @@ import {
 import { memo, useMemo, useRef, useState } from "react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 import { isReadOnlyUser, pb } from "@/lib/api"
-import { ConnectionType, connectionTypeLabels, MeterState, SystemStatus } from "@/lib/enums"
+import { BatteryState, ConnectionType, connectionTypeLabels, MeterState, SystemStatus } from "@/lib/enums"
 import { $longestSystemNameLen, $userSettings } from "@/lib/stores"
 import {
 	cn,
@@ -35,6 +35,7 @@ import {
 	getMeterState,
 	parseSemVer,
 } from "@/lib/utils"
+import { batteryStateTranslations } from "@/lib/i18n"
 import type { SystemRecord } from "@/types"
 import { SystemDialog } from "../add-system"
 import AlertButton from "../alerts/alert-button"
@@ -58,7 +59,18 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "../ui/dropdown-menu"
-import { EthernetIcon, GpuIcon, HourglassIcon, ThermometerIcon, WebSocketIcon } from "../ui/icons"
+import {
+	BatteryMediumIcon,
+	EthernetIcon,
+	GpuIcon,
+	HourglassIcon,
+	ThermometerIcon,
+	WebSocketIcon,
+	BatteryHighIcon,
+	BatteryLowIcon,
+	PlugChargingIcon,
+	BatteryFullIcon,
+} from "../ui/icons"
 
 const STATUS_COLORS = {
 	[SystemStatus.Up]: "bg-green-500",
@@ -258,6 +270,52 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 					<span className={cn("tabular-nums whitespace-nowrap", viewMode === "table" && "ps-0.5")}>
 						{decimalString(value, value >= 100 ? 1 : 2)} {unit}
 					</span>
+				)
+			},
+		},
+		{
+			accessorFn: ({ info }) => info.bat?.[0],
+			id: "battery",
+			name: () => t({ message: "Bat", comment: "Battery label in systems table header" }),
+			size: 70,
+			Icon: BatteryMediumIcon,
+			header: sortableHeader,
+			hideSort: true,
+			cell(info) {
+				const [pct, state] = info.row.original.info.bat ?? []
+				if (pct === undefined) {
+					return null
+				}
+
+				const iconColor = pct < 10 ? "text-red-500" : pct < 25 ? "text-yellow-500" : "text-muted-foreground"
+
+				let Icon = PlugChargingIcon
+
+				if (state !== BatteryState.Charging) {
+					if (pct < 25) {
+						Icon = BatteryLowIcon
+					} else if (pct < 75) {
+						Icon = BatteryMediumIcon
+					} else if (pct < 95) {
+						Icon = BatteryHighIcon
+					} else {
+						Icon = BatteryFullIcon
+					}
+				}
+
+				const stateLabel =
+					state !== undefined ? (batteryStateTranslations[state as BatteryState]?.() ?? undefined) : undefined
+
+				return (
+					<Link
+						tabIndex={-1}
+						href={getPagePath($router, "system", { id: info.row.original.id })}
+						className="flex items-center gap-1 tabular-nums tracking-tight relative z-10"
+						title={stateLabel}
+					>
+						<Icon className={cn("size-3.5", iconColor)} />
+						<span className="min-w-10">{pct}%</span>
+					</Link>
 				)
 			},
 		},
@@ -599,5 +657,5 @@ export const ActionsButton = memo(({ system }: { system: SystemRecord }) => {
 				</AlertDialog>
 			</>
 		)
-	}, [id, status, host, name, t, deleteOpen, editOpen])
+	}, [id, status, host, name, system, t, deleteOpen, editOpen])
 })

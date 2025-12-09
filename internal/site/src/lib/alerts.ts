@@ -1,10 +1,11 @@
 import { t } from "@lingui/core/macro"
-import { CpuIcon, HardDriveIcon, HourglassIcon, MemoryStickIcon, ServerIcon, ThermometerIcon } from "lucide-react"
+import { CpuIcon, HardDriveIcon, MemoryStickIcon, ServerIcon } from "lucide-react"
 import type { RecordSubscription } from "pocketbase"
 import { EthernetIcon, GpuIcon } from "@/components/ui/icons"
 import { $alerts } from "@/lib/stores"
 import type { AlertInfo, AlertRecord } from "@/types"
 import { pb } from "./api"
+import { ThermometerIcon, BatteryMediumIcon, HourglassIcon } from "@/components/ui/icons"
 
 /** Alert info for each alert type */
 export const alertInfo: Record<string, AlertInfo> = {
@@ -82,6 +83,14 @@ export const alertInfo: Record<string, AlertInfo> = {
 		start: 10,
 		step: 0.1,
 		desc: () => t`Triggers when 15 minute load average exceeds a threshold`,
+	},
+	Battery: {
+		name: () => t`Battery`,
+		unit: "%",
+		icon: BatteryMediumIcon,
+		desc: () => t`Triggers when battery charge drops below a threshold`,
+		start: 20,
+		invert: true,
 	},
 } as const
 

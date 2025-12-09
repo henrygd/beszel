@@ -61,6 +61,11 @@ export const ActiveAlerts = () => {
 										<AlertDescription>
 											{alert.name === "Status" ? (
 												<Trans>Connection is down</Trans>
+											) : info.invert ? (
+												<Trans>
+													Below {alert.value}
+													{info.unit} in last <Plural value={alert.min} one="# minute" other="# minutes" />
+												</Trans>
 											) : (
 												<Trans>
 													Exceeds {alert.value}

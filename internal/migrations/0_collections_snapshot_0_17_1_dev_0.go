@@ -78,7 +78,8 @@ func init() {
 					"GPU",
 					"LoadAvg1",
 					"LoadAvg5",
-					"LoadAvg15"
+					"LoadAvg15",
+					"Battery"
 				]
 			},
 			{
