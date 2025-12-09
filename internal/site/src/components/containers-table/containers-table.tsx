@@ -55,8 +55,11 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 					filter: systemId ? pb.filter("system={:system}", { system: systemId }) : undefined,
 				})
 				.then(
-					({ items }) =>
-						items.length &&
+					({ items }) => {
+						if (items.length === 0) {
+							setData([]);
+							return;
+						}
 						setData((curItems) => {
 							const lastUpdated = Math.max(items[0].updated, items.at(-1)?.updated ?? 0)
 							const containerIds = new Set()
@@ -74,6 +77,7 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 							}
 							return newItems
 						})
+					}
 				)
 		}
 
@@ -333,12 +337,12 @@ function ContainerSheet({
 		setLogsDisplay("")
 		setInfoDisplay("")
 		if (!container) return
-		;(async () => {
-			const [logsHtml, infoHtml] = await Promise.all([getLogsHtml(container), getInfoHtml(container)])
-			setLogsDisplay(logsHtml)
-			setInfoDisplay(infoHtml)
-			setTimeout(scrollLogsToBottom, 20)
-		})()
+			;(async () => {
+				const [logsHtml, infoHtml] = await Promise.all([getLogsHtml(container), getInfoHtml(container)])
+				setLogsDisplay(logsHtml)
+				setInfoDisplay(infoHtml)
+				setTimeout(scrollLogsToBottom, 20)
+			})()
 	}, [container])
 
 	return (
