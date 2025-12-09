@@ -1203,3 +1203,60 @@ func TestShouldExcludeContainer(t *testing.T) {
 		})
 	}
 }
+
+func TestAnsiEscapePattern(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected string
+	}{
+		{
+			name:     "no ANSI codes",
+			input:    "Hello, World!",
+			expected: "Hello, World!",
+		},
+		{
+			name:     "simple color code",
+			input:    "\x1b[34mINFO\x1b[0m client mode",
+			expected: "INFO client mode",
+		},
+		{
+			name:     "multiple color codes",
+			input:    "\x1b[31mERROR\x1b[0m: \x1b[33mWarning\x1b[0m message",
+			expected: "ERROR: Warning message",
+		},
+		{
+			name:     "bold and color",
+			input:    "\x1b[1;32mSUCCESS\x1b[0m",
+			expected: "SUCCESS",
+		},
+		{
+			name:     "cursor movement codes",
+			input:    "Line 1\x1b[KLine 2",
+			expected: "Line 1Line 2",
+		},
+		{
+			name:     "256 color code",
+			input:    "\x1b[38;5;196mRed text\x1b[0m",
+			expected: "Red text",
+		},
+		{
+			name:     "RGB/truecolor code",
+			input:    "\x1b[38;2;255;0;0mRed text\x1b[0m",
+			expected: "Red text",
+		},
+		{
+			name:     "mixed content with newlines",
+			input:    "\x1b[34m2024-01-01 12:00:00\x1b[0m INFO Starting\n\x1b[31m2024-01-01 12:00:01\x1b[0m ERROR Failed",
+			expected: "2024-01-01 12:00:00 INFO Starting\n2024-01-01 12:00:01 ERROR Failed",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := ansiEscapePattern.ReplaceAllString(tt.input, "")
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+

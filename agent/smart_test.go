@@ -588,3 +588,195 @@ func TestIsVirtualDeviceScsi(t *testing.T) {
 		})
 	}
 }
+
+func TestRefreshExcludedDevices(t *testing.T) {
+	tests := []struct {
+		name         string
+		envValue     string
+		expectedDevs map[string]struct{}
+	}{
+		{
+			name:         "empty env",
+			envValue:     "",
+			expectedDevs: map[string]struct{}{},
+		},
+		{
+			name:     "single device",
+			envValue: "/dev/sda",
+			expectedDevs: map[string]struct{}{
+				"/dev/sda": {},
+			},
+		},
+		{
+			name:     "multiple devices",
+			envValue: "/dev/sda,/dev/sdb,/dev/nvme0",
+			expectedDevs: map[string]struct{}{
+				"/dev/sda":   {},
+				"/dev/sdb":   {},
+				"/dev/nvme0": {},
+			},
+		},
+		{
+			name:     "devices with whitespace",
+			envValue: " /dev/sda , /dev/sdb ,  /dev/nvme0  ",
+			expectedDevs: map[string]struct{}{
+				"/dev/sda":   {},
+				"/dev/sdb":   {},
+				"/dev/nvme0": {},
+			},
+		},
+		{
+			name:     "duplicate devices",
+			envValue: "/dev/sda,/dev/sdb,/dev/sda",
+			expectedDevs: map[string]struct{}{
+				"/dev/sda": {},
+				"/dev/sdb": {},
+			},
+		},
+		{
+			name:     "empty entries and whitespace",
+			envValue: "/dev/sda,, /dev/sdb , , ",
+			expectedDevs: map[string]struct{}{
+				"/dev/sda": {},
+				"/dev/sdb": {},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.envValue != "" {
+				t.Setenv("EXCLUDE_SMART", tt.envValue)
+			} else {
+				// Ensure env var is not set for empty test
+				os.Unsetenv("EXCLUDE_SMART")
+			}
+
+			sm := &SmartManager{}
+			sm.refreshExcludedDevices()
+
+			assert.Equal(t, tt.expectedDevs, sm.excludedDevices)
+		})
+	}
+}
+
+func TestIsExcludedDevice(t *testing.T) {
+	sm := &SmartManager{
+		excludedDevices: map[string]struct{}{
+			"/dev/sda":   {},
+			"/dev/nvme0": {},
+		},
+	}
+
+	tests := []struct {
+		name         string
+		deviceName   string
+		expectedBool bool
+	}{
+		{"excluded device sda", "/dev/sda", true},
+		{"excluded device nvme0", "/dev/nvme0", true},
+		{"non-excluded device sdb", "/dev/sdb", false},
+		{"non-excluded device nvme1", "/dev/nvme1", false},
+		{"empty device name", "", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := sm.isExcludedDevice(tt.deviceName)
+			assert.Equal(t, tt.expectedBool, result)
+		})
+	}
+}
+
+func TestFilterExcludedDevices(t *testing.T) {
+	tests := []struct {
+		name           string
+		excludedDevs   map[string]struct{}
+		inputDevices   []*DeviceInfo
+		expectedDevs   []*DeviceInfo
+		expectedLength int
+	}{
+		{
+			name:         "no exclusions",
+			excludedDevs: map[string]struct{}{},
+			inputDevices: []*DeviceInfo{
+				{Name: "/dev/sda"},
+				{Name: "/dev/sdb"},
+				{Name: "/dev/nvme0"},
+			},
+			expectedDevs: []*DeviceInfo{
+				{Name: "/dev/sda"},
+				{Name: "/dev/sdb"},
+				{Name: "/dev/nvme0"},
+			},
+			expectedLength: 3,
+		},
+		{
+			name: "some devices excluded",
+			excludedDevs: map[string]struct{}{
+				"/dev/sda":   {},
+				"/dev/nvme0": {},
+			},
+			inputDevices: []*DeviceInfo{
+				{Name: "/dev/sda"},
+				{Name: "/dev/sdb"},
+				{Name: "/dev/nvme0"},
+				{Name: "/dev/nvme1"},
+			},
+			expectedDevs: []*DeviceInfo{
+				{Name: "/dev/sdb"},
+				{Name: "/dev/nvme1"},
+			},
+			expectedLength: 2,
+		},
+		{
+			name: "all devices excluded",
+			excludedDevs: map[string]struct{}{
+				"/dev/sda": {},
+				"/dev/sdb": {},
+			},
+			inputDevices: []*DeviceInfo{
+				{Name: "/dev/sda"},
+				{Name: "/dev/sdb"},
+			},
+			expectedDevs:   []*DeviceInfo{},
+			expectedLength: 0,
+		},
+		{
+			name:           "nil devices",
+			excludedDevs:   map[string]struct{}{},
+			inputDevices:   nil,
+			expectedDevs:   []*DeviceInfo{},
+			expectedLength: 0,
+		},
+		{
+			name: "filter nil and empty name devices",
+			excludedDevs: map[string]struct{}{
+				"/dev/sda": {},
+			},
+			inputDevices: []*DeviceInfo{
+				{Name: "/dev/sda"},
+				nil,
+				{Name: ""},
+				{Name: "/dev/sdb"},
+			},
+			expectedDevs: []*DeviceInfo{
+				{Name: "/dev/sdb"},
+			},
+			expectedLength: 1,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			sm := &SmartManager{
+				excludedDevices: tt.excludedDevs,
+			}
+
+			result := sm.filterExcludedDevices(tt.inputDevices)
+
+			assert.Len(t, result, tt.expectedLength)
+			assert.Equal(t, tt.expectedDevs, result)
+		})
+	}
+}

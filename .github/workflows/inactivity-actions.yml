@@ -10,12 +10,25 @@ permissions:
   pull-requests: write
 
 jobs:
+  lock-inactive:
+    name: Lock Inactive Issues
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: klaasnicolaas/action-inactivity-lock@v1.1.3
+        id: lock
+        with:
+          days-inactive-issues: 14
+          lock-reason-issues: ""
+          # Action can not skip PRs, set it to 100 years to cover it.
+          days-inactive-prs: 36524
+          lock-reason-prs: ""
+
   close-stale:
     name: Close Stale Issues
     runs-on: ubuntu-24.04
     steps:
       - name: Close Stale Issues
-        uses: actions/stale@v9
+        uses: actions/stale@v10
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -32,6 +45,8 @@ jobs:
           # Timing
           days-before-issue-stale: 14
           days-before-issue-close: 7
+          # Action can not skip PRs, set it to 100 years to cover it.
+          days-before-pr-stale: 36524
 
           # Labels
           stale-issue-label: 'stale'

@@ -8,27 +8,15 @@ msgstr ""
 "Language: ja\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-28 23:21\n"
+"PO-Revision-Date: 2025-11-14 22:51\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: ja\n"
-"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 16\n"
-
-#: src/components/routes/system.tsx
-#~ msgid "{0, plural, one {# day} other {# days}}"
-#~ msgstr "{0, plural, one {# 日} other {# 日}}"
-
-#: src/components/routes/system.tsx
-#~ msgid "{0, plural, one {# hour} other {# hours}}"
-#~ msgstr "{0, plural, one {# 時間} other {# 時間}}"
-
-#: src/components/routes/system.tsx
-#~ msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
-#~ msgstr "{0, plural, one {# 分} few {# 分} many {# 分} other {# 分}}"
+"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 32\n"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
@@ -38,15 +26,15 @@ msgstr "{1}行のうち{0}行が選択されました。"
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} day} other {{countString} days}}"
-msgstr ""
+msgstr "{count, plural, one {{countString} 日} other {{countString} 日}}"
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} hour} other {{countString} hours}}"
-msgstr ""
+msgstr "{count, plural, one {{countString} 時間} other {{countString} 時間}}"
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
-msgstr ""
+msgstr "{count, plural, one {{countString} 分} few {{countString} 分} many {{countString} 分} other {{countString} 分}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -88,13 +76,16 @@ msgid "5 min"
 msgstr "5分"
 
 #. Table column
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "アクション"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Active"
 msgstr "アクティブ"
 
@@ -102,13 +93,19 @@ msgstr "アクティブ"
 msgid "Active Alerts"
 msgstr "アクティブなアラート"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Active state"
+msgstr "アクティブ状態"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Add {foo}"
+msgstr "{foo}を追加"
+
 #: src/components/add-system.tsx
 msgid "Add <0>System</0>"
 msgstr "<0>システム</0>を追加"
-
-#: src/components/add-system.tsx
-msgid "Add New System"
-msgstr "新しいシステムを追加"
 
 #: src/components/add-system.tsx
 msgid "Add system"
@@ -122,10 +119,18 @@ msgstr "URLを追加"
 msgid "Adjust display options for charts."
 msgstr "チャートの表示オプションを調整します。"
 
+#: src/components/routes/settings/general.tsx
+msgid "Adjust the width of the main layout"
+msgstr "メインレイアウトの幅を調整"
+
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
 msgstr "管理者"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "After"
+msgstr "後"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -146,11 +151,12 @@ msgstr "アラート"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
-msgstr ""
+msgstr "すべてのコンテナ"
 
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
@@ -212,6 +218,18 @@ msgstr "帯域幅"
 msgid "Battery"
 msgstr "バッテリー"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became active"
+msgstr "アクティブになった"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became inactive"
+msgstr "非アクティブになった"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Before"
+msgstr "前"
+
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
 msgstr "BeszelはOpenID Connectと多くのOAuth2認証プロバイダーをサポートしています。"
@@ -229,6 +247,10 @@ msgstr "バイナリ"
 msgid "Bits (Kbps, Mbps, Gbps)"
 msgstr "ビット (Kbps, Mbps, Gbps)"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Boot state"
+msgstr "ブート状態"
+
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
@@ -238,14 +260,31 @@ msgstr "バイト (KB/s, MB/s, GB/s)"
 msgid "Cache / Buffers"
 msgstr "キャッシュ / バッファ"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can reload"
+msgstr "リロード可能"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can start"
+msgstr "開始可能"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can stop"
+msgstr "停止可能"
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "キャンセル"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Capabilities"
+msgstr "機能"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
-msgstr ""
+msgstr "容量"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
@@ -289,12 +328,18 @@ msgid "Check your notification service"
 msgstr "通知サービスを確認してください"
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Clear"
+msgstr "クリア"
+
+#: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
-msgstr ""
+msgstr "詳細情報を表示するにはコンテナをクリックしてください。"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
-msgstr ""
+msgstr "詳細情報を表示するにはデバイスをクリックしてください。"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -317,6 +362,10 @@ msgstr "アラート通知の受信方法を設定します。"
 #: src/components/login/auth-form.tsx
 msgid "Confirm password"
 msgstr "パスワードを確認"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Conflicts"
+msgstr "競合"
 
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
@@ -378,17 +427,26 @@ msgid "Copy YAML"
 msgstr "YAMLをコピー"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr "CPU"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
-msgstr ""
+msgstr "CPU コア"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "CPU Peak"
+msgstr "CPUピーク"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "CPU time"
+msgstr "CPU時間"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Time Breakdown"
-msgstr ""
+msgstr "CPU 時間の内訳"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -396,6 +454,10 @@ msgstr ""
 #: src/lib/alerts.ts
 msgid "CPU Usage"
 msgstr "CPU使用率"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Create"
+msgstr "作成"
 
 #: src/components/login/auth-form.tsx
 msgid "Create account"
@@ -426,17 +488,20 @@ msgstr "現在の状態"
 #. Power Cycles
 #: src/components/routes/system/smart-table.tsx
 msgid "Cycles"
-msgstr ""
+msgstr "サイクル"
 
-#: src/components/command-palette.tsx
-msgid "Dashboard"
-msgstr "ダッシュボード"
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Daily"
+msgstr "毎日"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
 msgstr "デフォルトの期間"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "削除"
@@ -445,13 +510,17 @@ msgstr "削除"
 msgid "Delete fingerprint"
 msgstr "フィンガープリントを削除"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Description"
+msgstr "説明"
+
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
-msgstr ""
+msgstr "詳細"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
-msgstr ""
+msgstr "デバイス"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -493,6 +562,7 @@ msgid "Docker Network I/O"
 msgstr "DockerネットワークI/O"
 
 #: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Documentation"
 msgstr "ドキュメント"
 
@@ -516,10 +586,15 @@ msgstr "ダウンロード"
 msgid "Duration"
 msgstr "期間"
 
-#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "編集"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Edit {foo}"
+msgstr "{foo}を編集"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -535,6 +610,11 @@ msgstr "メール通知"
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "空"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "End Time"
+msgstr "終了時間"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -552,7 +632,10 @@ msgstr "ワンタイムパスワードを入力してください。"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
 msgstr "エラー"
 
@@ -563,9 +646,17 @@ msgstr "エラー"
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "過去{2, plural, one {# 分} other {# 分}}で{0}{1}を超えています"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exec main PID"
+msgstr "実行メインPID"
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr "<0>config.yml</0>に定義されていない既存のシステムは削除されます。定期的にバックアップを作成してください。"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exited active"
+msgstr "アクティブ状態で終了"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -583,9 +674,13 @@ msgstr "現在のシステム設定をエクスポートします。"
 msgid "Fahrenheit (°F)"
 msgstr "華氏 (°F)"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Failed"
+msgstr "失敗"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
-msgstr ""
+msgstr "失敗した属性:"
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
@@ -593,6 +688,7 @@ msgstr "認証に失敗しました"
 
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Failed to save settings"
 msgstr "設定の保存に失敗しました"
 
@@ -604,14 +700,16 @@ msgstr "テスト通知の送信に失敗しました"
 msgid "Failed to update alert"
 msgstr "アラートの更新に失敗しました"
 
-#: src/components/systems-table/systems-table.tsx
-msgid "Filter by tags"
-msgstr ""
+#. placeholder {0}: statusTotals[ServiceStatus.Failed]
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Failed: {0}"
+msgstr "失敗: {0}"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "フィルター..."
@@ -622,7 +720,7 @@ msgstr "フィンガープリント"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
-msgstr ""
+msgstr "ファームウェア"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -649,6 +747,10 @@ msgstr "満充電"
 msgid "General"
 msgstr "一般"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Global"
+msgstr "グローバル"
+
 #: src/components/routes/system.tsx
 msgid "GPU Engines"
 msgstr "GPUエンジン"
@@ -657,17 +759,17 @@ msgstr "GPUエンジン"
 msgid "GPU Power Draw"
 msgstr "GPUの消費電力"
 
+#: src/lib/alerts.ts
+msgid "GPU Usage"
+msgstr "GPU使用率"
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "グリッド"
 
-#: src/components/systems-table/systems-table-columns.tsx
-#~ msgid "Group"
-#~ msgstr ""
-
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Health"
-msgstr ""
+msgstr "ヘルス"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -691,7 +793,11 @@ msgstr "管理者アカウントのパスワードを忘れた場合は、次の
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
-msgstr ""
+msgstr "イメージ"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Inactive"
+msgstr "非アクティブ"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -709,6 +815,19 @@ msgstr "言語"
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "レイアウト"
+
+#: src/components/routes/settings/general.tsx
+msgid "Layout width"
+msgstr "レイアウト幅"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Lifecycle"
+msgstr "ライフサイクル"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "limit"
+msgstr "制限"
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
@@ -730,6 +849,14 @@ msgstr "負荷平均 (5分)"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
 msgstr "負荷平均"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Load state"
+msgstr "ロード状態"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Loading..."
+msgstr "読み込み中..."
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -754,6 +881,10 @@ msgstr "ログ"
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
 msgstr "アラートを作成する場所を探していますか？システムテーブルのベル<0/>アイコンをクリックしてください。"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Main PID"
+msgstr "メインPID"
+
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "表示と通知の設定を管理します。"
@@ -769,9 +900,20 @@ msgid "Max 1 min"
 msgstr "最大1分"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "メモリ"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory limit"
+msgstr "メモリ制限"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory Peak"
+msgstr "メモリピーク"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -784,11 +926,13 @@ msgstr "Dockerコンテナのメモリ使用率"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
-msgstr ""
+msgstr "モデル"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
 msgstr "名前"
 
@@ -813,7 +957,14 @@ msgstr "パブリックインターフェースのネットワークトラフィ
 msgid "Network unit"
 msgstr "ネットワーク単位"
 
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No"
+msgstr "いいえ"
+
 #: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
 msgstr "結果が見つかりませんでした。"
 
@@ -822,22 +973,18 @@ msgstr "結果が見つかりませんでした。"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "No results."
 msgstr "結果がありません。"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "No S.M.A.R.T. attributes available for this device."
-msgstr ""
+msgstr "このデバイスのS.M.A.R.T.属性は利用できません。"
 
-#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "システムが見つかりませんでした。"
-
-#: src/components/systems-table/systems-table.tsx
-msgid "No tags found"
-msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -853,12 +1000,19 @@ msgstr "OAuth 2 / OIDCサポート"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "再起動のたびに、データベース内のシステムはファイルに定義されたシステムに一致するように更新されます。"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "One-time"
+msgstr "1回限り"
+
 #: src/components/login/auth-form.tsx
 msgid "One-time password"
 msgstr "ワンタイムパスワード"
 
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "メニューを開く"
@@ -869,12 +1023,13 @@ msgstr "または、以下の方法でログイン"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Other"
-msgstr ""
+msgstr "その他"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "既存のアラートを上書き"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
@@ -907,6 +1062,10 @@ msgstr "パスワードは72バイト未満でなければなりません。"
 msgid "Password reset request received"
 msgstr "パスワードリセットのリクエストを受け取りました"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Past"
+msgstr "過去"
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "一時停止"
@@ -922,11 +1081,11 @@ msgstr "一時停止 ({pausedSystemsLength})"
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Per-core average utilization"
-msgstr ""
+msgstr "コアごとの平均使用率"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Percentage of time spent in each state"
-msgstr ""
+msgstr "各状態で費やした時間の割合"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -968,7 +1127,7 @@ msgstr "ポート"
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
 msgid "Power On"
-msgstr ""
+msgstr "電源オン"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -979,10 +1138,18 @@ msgstr "記録された時点での正確な利用"
 msgid "Preferred Language"
 msgstr "優先言語"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Process started"
+msgstr "プロセス開始"
+
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
 msgstr "公開鍵"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Quiet Hours"
+msgstr "サイレント時間"
 
 #. Disk read
 #: src/components/routes/system.tsx
@@ -996,8 +1163,13 @@ msgstr "受信"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "Refresh"
-msgstr ""
+msgstr "更新"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Relationships"
+msgstr "関係"
 
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
@@ -1006,6 +1178,14 @@ msgstr "ワンタイムパスワードをリクエスト"
 #: src/components/login/otp-forms.tsx
 msgid "Request OTP"
 msgstr "OTP をリクエスト"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Required by"
+msgstr "必要とされる"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Requires"
+msgstr "必要とする"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
@@ -1017,9 +1197,18 @@ msgstr "パスワードをリセット"
 msgid "Resolved"
 msgstr "解決済み"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Restarts"
+msgstr "再起動"
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "再開"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgctxt "Root disk label"
+msgid "Root"
+msgstr "ルート"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1029,13 +1218,17 @@ msgstr "トークンをローテート"
 msgid "Rows per page"
 msgstr "ページあたりの行数"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Runtime Metrics"
+msgstr "ランタイムメトリクス"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
-msgstr ""
+msgstr "S.M.A.R.T.詳細"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Self-Test"
-msgstr ""
+msgstr "S.M.A.R.T.セルフテスト"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -1050,6 +1243,18 @@ msgstr "設定を保存"
 msgid "Save system"
 msgstr "システムを保存"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule"
+msgstr "スケジュール"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent, such as during maintenance periods."
+msgstr "メンテナンス期間中などの通知が送信されないサイレント時間をスケジュールします。"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent."
+msgstr "通知が送信されないサイレント時間をスケジュールします。"
+
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "検索"
@@ -1062,13 +1267,25 @@ msgstr "システムまたは設定を検索..."
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "アラートの受信方法を設定するには<0>通知設定</0>を参照してください。"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Select {foo}"
+msgstr "{foo}を選択"
+
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "送信"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
-msgstr ""
+msgstr "シリアル番号"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Service Details"
+msgstr "サービス詳細"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr "サービス"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1097,17 +1314,29 @@ msgstr "SMTP設定"
 msgid "Sort By"
 msgstr "並び替え基準"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Start Time"
+msgstr "開始時間"
+
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "状態"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
 msgstr "ステータス"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "Sub State"
+msgstr "サブ状態"
 
 #: src/components/routes/system.tsx
 msgid "Swap space used by the system"
@@ -1117,9 +1346,15 @@ msgstr "システムが使用するスワップ領域"
 msgid "Swap Usage"
 msgstr "スワップ使用量"
 
+#: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
@@ -1129,9 +1364,9 @@ msgstr "システム"
 msgid "System load averages over time"
 msgstr "システムの負荷平均の推移"
 
-#: src/components/routes/settings/layout.tsx
-msgid "System Organization"
-msgstr ""
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Systemd Services"
+msgstr "Systemdサービス"
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -1145,11 +1380,9 @@ msgstr "システムはデータディレクトリ内の<0>config.yml</0>ファ�
 msgid "Table"
 msgstr "テーブル"
 
-#: src/components/systems-table/systems-table-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
-#: src/components/systems-table/systems-table.tsx
-msgid "Tags"
-msgstr ""
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Tasks"
+msgstr "タスク"
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1237,7 +1470,7 @@ msgstr "トークンとフィンガープリントは、ハブへのWebSocket接
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
-msgstr ""
+msgstr "総数"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
@@ -1246,6 +1479,19 @@ msgstr "各インターフェースの総受信データ量"
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data sent for each interface"
 msgstr "各インターフェースの総送信データ量"
+
+#. placeholder {0}: data.length
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Total: {0}"
+msgstr "合計: {0}"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggered by"
+msgstr "トリガー元"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggers"
+msgstr "トリガー"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
@@ -1272,6 +1518,10 @@ msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "CPU使用率がしきい値を超えたときにトリガーされます"
 
 #: src/lib/alerts.ts
+msgid "Triggers when GPU usage exceeds a threshold"
+msgstr "GPU使用率がしきい値を超えたときにトリガーされます"
+
+#: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "メモリ使用率がしきい値を超えたときにトリガーされます"
 
@@ -1283,9 +1533,15 @@ msgstr "ステータスが上から下に切り替わるときにトリガーさ
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "ディスクの使用量がしきい値を超えたときにトリガーされます"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
-msgstr ""
+msgstr "タイプ"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unit file"
+msgstr "ユニットファイル"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
@@ -1302,6 +1558,11 @@ msgstr "ユニバーサルトークン"
 msgid "Unknown"
 msgstr "不明"
 
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unlimited"
+msgstr "無制限"
+
 #. Context: System is up
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1312,9 +1573,19 @@ msgstr "正常"
 msgid "Up ({upSystemsLength})"
 msgstr "正常 ({upSystemsLength})"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Update"
+msgstr "更新"
+
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
-msgstr ""
+msgstr "更新済み"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Updated every 10 minutes."
+msgstr "10分ごとに更新されます。"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
@@ -1375,6 +1646,10 @@ msgstr "表示するのに十分なレコードを待っています"
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "翻訳をさらに良くするためにご協力をお願いします。詳細については<0>Crowdin</0>をご覧ください。"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Wants"
+msgstr "要求"
+
 #: src/components/routes/settings/general.tsx
 msgid "Warning (%)"
 msgstr "警告 (%)"
@@ -1410,6 +1685,12 @@ msgstr "YAML設定"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "YAML設定"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Yes"
+msgstr "はい"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."

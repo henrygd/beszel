@@ -64,6 +64,8 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		case "LoadAvg15":
 			val = data.Info.LoadAvg[2]
 			unit = ""
+		case "GPU":
+			val = data.Info.GpuPct
 		}
 
 		triggered := alertRecord.GetBool("triggered")
@@ -206,6 +208,17 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 				alert.val += stats.LoadAvg[1]
 			case "LoadAvg15":
 				alert.val += stats.LoadAvg[2]
+			case "GPU":
+				if len(stats.GPU) == 0 {
+					continue
+				}
+				maxUsage := 0.0
+				for _, gpu := range stats.GPU {
+					if gpu.Usage > maxUsage {
+						maxUsage = gpu.Usage
+					}
+				}
+				alert.val += maxUsage
 			default:
 				continue
 			}
@@ -268,9 +281,9 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 		alert.name = after + "m Load"
 	}
 
-	// make title alert name lowercase if not CPU
+	// make title alert name lowercase if not CPU or GPU
 	titleAlertName := alert.name
-	if titleAlertName != "CPU" {
+	if titleAlertName != "CPU" && titleAlertName != "GPU" {
 		titleAlertName = strings.ToLower(titleAlertName)
 	}
 
@@ -296,9 +309,10 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 	}
 	am.SendAlert(AlertMessageData{
 		UserID:   alert.alertRecord.GetString("user"),
+		SystemID: alert.systemRecord.Id,
 		Title:    subject,
 		Message:  body,
-		Link:     am.hub.MakeLink("system", systemName),
+		Link:     am.hub.MakeLink("system", alert.systemRecord.Id),
 		LinkText: "View " + systemName,
 	})
 }

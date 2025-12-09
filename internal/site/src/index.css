@@ -34,6 +34,7 @@
 	--table-header: hsl(225, 6%, 97%);
 	--chart-saturation: 65%;
 	--chart-lightness: 50%;
+	--container: 1500px;
 }
 
 .dark {
@@ -116,7 +117,6 @@
 }
 
 @layer utilities {
-
 	/* Fonts */
 	@supports (font-variation-settings: normal) {
 		:root {
@@ -141,6 +141,7 @@
 
 	body {
 		@apply bg-background text-foreground;
+		font-variant-ligatures: no-contextual;
 	}
 
 	button {
@@ -149,7 +150,8 @@
 }
 
 @utility container {
-	@apply max-w-370 mx-auto px-4;
+	max-width: var(--container);
+	@apply mx-auto px-4;
 }
 
 @utility link {
@@ -159,10 +161,6 @@
 @utility ns-dialog {
 	/* New system dialog width */
 	min-width: 30.3rem;
-
-	:where(:lang(zh), :lang(zh-CN), :lang(ko)) & {
-		min-width: 27.9rem;
-	}
 }
 
 .recharts-tooltip-wrapper {

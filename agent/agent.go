@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/gliderlabs/ssh"
 	"github.com/henrygd/beszel"
@@ -29,6 +30,8 @@ type Agent struct {
 	fsNames                   []string                                              // List of filesystem device names being monitored
 	fsStats                   map[string]*system.FsStats                            // Keeps track of disk stats for each filesystem
 	diskPrev                  map[uint16]map[string]prevDisk                        // Previous disk I/O counters per cache interval
+	diskUsageCacheDuration    time.Duration                                         // How long to cache disk usage (to avoid waking sleeping disks)
+	lastDiskUsageUpdate       time.Time                                             // Last time disk usage was collected
 	netInterfaces             map[string]struct{}                                   // Stores all valid network interfaces
 	netIoStats                map[uint16]system.NetIoStats                          // Keeps track of bandwidth usage per cache interval
 	netInterfaceDeltaTrackers map[uint16]*deltatracker.DeltaTracker[string, uint64] // Per-cache-time NIC delta trackers
@@ -43,6 +46,7 @@ type Agent struct {
 	dataDir                   string                                                // Directory for persisting data
 	keys                      []gossh.PublicKey                                     // SSH public keys
 	smartManager              *SmartManager                                         // Manages SMART data
+	systemdManager            *systemdManager                                       // Manages systemd services
 }
 
 // NewAgent creates a new agent with the given data directory for persisting data.
@@ -68,6 +72,16 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 
 	agent.memCalc, _ = GetEnv("MEM_CALC")
 	agent.sensorConfig = agent.newSensorConfig()
+
+	// Parse disk usage cache duration (e.g., "15m", "1h") to avoid waking sleeping disks
+	if diskUsageCache, exists := GetEnv("DISK_USAGE_CACHE"); exists {
+		if duration, err := time.ParseDuration(diskUsageCache); err == nil {
+			agent.diskUsageCacheDuration = duration
+			slog.Info("DISK_USAGE_CACHE", "duration", duration)
+		} else {
+			slog.Warn("Invalid DISK_USAGE_CACHE", "err", err)
+		}
+	}
 	// Set up slog with a log level determined by the LOG_LEVEL env var
 	if logLevelStr, exists := GetEnv("LOG_LEVEL"); exists {
 		switch strings.ToLower(logLevelStr) {
@@ -100,6 +114,11 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 
 	// initialize docker manager
 	agent.dockerManager = newDockerManager(agent)
+
+	agent.systemdManager, err = newSystemdManager()
+	if err != nil {
+		slog.Debug("Systemd", "err", err)
+	}
 
 	agent.smartManager, err = NewSmartManager()
 	if err != nil {
@@ -154,7 +173,20 @@ func (a *Agent) gatherStats(cacheTimeMs uint16) *system.CombinedData {
 		}
 	}
 
+	// skip updating systemd services if cache time is not the default 60sec interval
+	if a.systemdManager != nil && cacheTimeMs == 60_000 {
+		totalCount := uint16(a.systemdManager.getServiceStatsCount())
+		if totalCount > 0 {
+			numFailed := a.systemdManager.getFailedServiceCount()
+			data.Info.Services = []uint16{totalCount, numFailed}
+		}
+		if a.systemdManager.hasFreshStats {
+			data.SystemdServices = a.systemdManager.getServiceStats(nil, false)
+		}
+	}
+
 	data.Stats.ExtraFs = make(map[string]*system.FsStats)
+	data.Info.ExtraFsPct = make(map[string]float64)
 	for name, stats := range a.fsStats {
 		if !stats.Root && stats.DiskTotal > 0 {
 			// Use custom name if available, otherwise use device name
@@ -163,6 +195,11 @@ func (a *Agent) gatherStats(cacheTimeMs uint16) *system.CombinedData {
 				key = stats.Name
 			}
 			data.Stats.ExtraFs[key] = stats
+			// Add percentages to Info struct for dashboard
+			if stats.DiskTotal > 0 {
+				pct := twoDecimals((stats.DiskUsed / stats.DiskTotal) * 100)
+				data.Info.ExtraFsPct[key] = pct
+			}
 		}
 	}
 	slog.Debug("Extra FS", "data", data.Stats.ExtraFs)

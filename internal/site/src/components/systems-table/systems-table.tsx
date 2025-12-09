@@ -26,6 +26,7 @@ import {
 	LayoutGridIcon,
 	LayoutListIcon,
 	Settings2Icon,
+	XIcon,
 } from "lucide-react"
 import { memo, useEffect, useMemo, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -54,7 +55,7 @@ import { getSystemTags } from "@/lib/tagCache"
 import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
-import SystemsTableColumns, { ActionsButton, IndicatorDot } from "./systems-table-columns"
+import { SystemsTableColumns, ActionsButton, IndicatorDot } from "./systems-table-columns"
 
 type ViewMode = "table" | "grid"
 type StatusFilter = "all" | SystemRecord["status"]
@@ -68,7 +69,7 @@ export default function SystemsTable() {
 	const pausedSystems = $pausedSystems.get()
 	const userSettings = useStore($userSettings)
 	const { i18n, t } = useLingui()
-	const [filter, setFilter] = useState<string>()
+	const [filter, setFilter] = useState<string>("")
 	const debouncedFilter = useDebounce(filter, 300)
 	const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
 	const [sorting, setSorting] = useBrowserStorage<SortingState>(
@@ -181,8 +182,28 @@ export default function SystemsTable() {
 							<Trans>Click on a system to view more information.</Trans>
 						</CardDescription>
 					</div>
-					<div className="flex gap-2 ms-auto w-auto items-center">
-						<Input placeholder={t`Filter...`} onChange={(e) => setFilter(e.target.value)} className="px-4 min-w-0" />
+
+					<div className="flex gap-2 ms-auto w-full md:w-auto items-center">
+						<div className="relative flex-1 md:w-80">
+							<Input
+								placeholder={t`Filter...`}
+								onChange={(e) => setFilter(e.target.value)}
+								value={filter}
+								className="ps-4 pe-10 w-full"
+							/>
+							{filter && (
+								<Button
+									type="button"
+									variant="ghost"
+									size="icon"
+									aria-label={t`Clear`}
+									className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 text-muted-foreground"
+									onClick={() => setFilter("")}
+								>
+									<XIcon className="h-4 w-4" />
+								</Button>
+							)}
+						</div>
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button variant="outline" className="flex gap-2 items-center">
@@ -346,6 +367,7 @@ export default function SystemsTable() {
 		pausedSystemsLength,
 		selectedTags,
 		allTags,
+		filter,
 	])
 
 	return (

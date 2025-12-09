@@ -268,8 +268,10 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// update / delete user alerts
 	apiAuth.POST("/user-alerts", alerts.UpsertUserAlerts)
 	apiAuth.DELETE("/user-alerts", alerts.DeleteUserAlerts)
-	// get SMART data
-	apiAuth.GET("/smart", h.getSmartData)
+	// refresh SMART devices for a system
+	apiAuth.POST("/smart/refresh", h.refreshSmartData)
+	// get systemd service details
+	apiAuth.GET("/systemd/info", h.getSystemdInfo)
 	// /containers routes
 	if enabled, _ := GetEnv("CONTAINER_DETAILS"); enabled != "false" {
 		// get container logs
@@ -342,22 +344,46 @@ func (h *Hub) getContainerInfo(e *core.RequestEvent) error {
 	}, "info")
 }
 
-// getSmartData handles GET /api/beszel/smart requests
-func (h *Hub) getSmartData(e *core.RequestEvent) error {
-	systemID := e.Request.URL.Query().Get("system")
-	if systemID == "" {
-		return e.JSON(http.StatusBadRequest, map[string]string{"error": "system parameter is required"})
+// getSystemdInfo handles GET /api/beszel/systemd/info requests
+func (h *Hub) getSystemdInfo(e *core.RequestEvent) error {
+	query := e.Request.URL.Query()
+	systemID := query.Get("system")
+	serviceName := query.Get("service")
+
+	if systemID == "" || serviceName == "" {
+		return e.JSON(http.StatusBadRequest, map[string]string{"error": "system and service parameters are required"})
 	}
 	system, err := h.sm.GetSystem(systemID)
 	if err != nil {
 		return e.JSON(http.StatusNotFound, map[string]string{"error": "system not found"})
 	}
-	data, err := system.FetchSmartDataFromAgent()
+	details, err := system.FetchSystemdInfoFromAgent(serviceName)
 	if err != nil {
 		return e.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
 	}
 	e.Response.Header().Set("Cache-Control", "public, max-age=60")
-	return e.JSON(http.StatusOK, data)
+	return e.JSON(http.StatusOK, map[string]any{"details": details})
+}
+
+// refreshSmartData handles POST /api/beszel/smart/refresh requests
+// Fetches fresh SMART data from the agent and updates the collection
+func (h *Hub) refreshSmartData(e *core.RequestEvent) error {
+	systemID := e.Request.URL.Query().Get("system")
+	if systemID == "" {
+		return e.JSON(http.StatusBadRequest, map[string]string{"error": "system parameter is required"})
+	}
+
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil {
+		return e.JSON(http.StatusNotFound, map[string]string{"error": "system not found"})
+	}
+
+	// Fetch and save SMART devices
+	if err := system.FetchAndSaveSmartDevices(); err != nil {
+		return e.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	}
+
+	return e.JSON(http.StatusOK, map[string]string{"status": "ok"})
 }
 
 // generates key pair if it doesn't exist and returns signer

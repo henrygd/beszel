@@ -14,6 +14,7 @@ import { toast } from "@/components/ui/use-toast"
 import { isAdmin, pb } from "@/lib/api"
 import type { UserSettings } from "@/types"
 import { saveSettings } from "./layout"
+import { QuietHours } from "./quiet-hours"
 
 interface ShoutrrrUrlCardProps {
 	url: string
@@ -120,19 +121,32 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 				</div>
 				<Separator />
 				<div className="space-y-3">
-					<div>
-						<h3 className="mb-1 text-lg font-medium">
-							<Trans>Webhook / Push notifications</Trans>
-						</h3>
-						<p className="text-sm text-muted-foreground leading-relaxed">
-							<Trans>
-								Beszel uses{" "}
-								<a href="https://beszel.dev/guide/notifications" target="_blank" className="link" rel="noopener">
-									Shoutrrr
-								</a>{" "}
-								to integrate with popular notification services.
-							</Trans>
-						</p>
+					<div className="grid grid-cols-1 sm:flex items-center justify-between gap-4">
+						<div>
+							<h3 className="mb-1 text-lg font-medium">
+								<Trans>Webhook / Push notifications</Trans>
+							</h3>
+							<p className="text-sm text-muted-foreground leading-relaxed">
+								<Trans>
+									Beszel uses{" "}
+									<a href="https://beszel.dev/guide/notifications" target="_blank" className="link" rel="noopener">
+										Shoutrrr
+									</a>{" "}
+									to integrate with popular notification services.
+								</Trans>
+							</p>
+						</div>
+						<Button
+							type="button"
+							variant="outline"
+							className="h-10 shrink-0"
+							onClick={addWebhook}
+						>
+							<PlusIcon className="size-4" />
+							<span className="ms-1">
+								<Trans>Add URL</Trans>
+							</span>
+						</Button>
 					</div>
 					{webhooks.length > 0 && (
 						<div className="grid gap-2.5" id="webhooks">
@@ -146,16 +160,10 @@ const SettingsNotificationsPage = ({ userSettings }: { userSettings: UserSetting
 							))}
 						</div>
 					)}
-					<Button
-						type="button"
-						variant="outline"
-						size="sm"
-						className="mt-2 flex items-center gap-1"
-						onClick={addWebhook}
-					>
-						<PlusIcon className="h-4 w-4 -ms-0.5" />
-						<Trans>Add URL</Trans>
-					</Button>
+				</div>
+				<Separator />
+				<div className="space-y-3">
+					<QuietHours />
 				</div>
 				<Separator />
 				<Button
@@ -194,7 +202,7 @@ const ShoutrrrUrlCard = ({ url, onUrlChange, onRemove }: ShoutrrrUrlCardProps) =
 	}
 
 	return (
-		<Card className="bg-muted/40 p-2 md:p-3">
+		<Card className="bg-table-header p-2 md:p-3">
 			<div className="flex items-center gap-1">
 				<Input
 					type="url"

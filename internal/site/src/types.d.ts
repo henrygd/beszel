@@ -1,5 +1,5 @@
 import type { RecordModel } from "pocketbase"
-import type { Unit, Os, BatteryState, HourFormat, ConnectionType } from "@/lib/enums"
+import type { Unit, Os, BatteryState, HourFormat, ConnectionType, ServiceStatus, ServiceSubState } from "@/lib/enums"
 
 // global window properties
 declare global {
@@ -79,6 +79,10 @@ export interface SystemInfo {
 	os?: Os
 	/** connection type */
 	ct?: ConnectionType
+	/** extra filesystem percentages */
+	efs?: Record<string, number>
+	/** services [totalServices, numFailedServices] */
+	sv?: [number, number]
 }
 
 export interface SystemStats {
@@ -86,10 +90,10 @@ export interface SystemStats {
 	cpu: number
 	/** peak cpu */
 	cpum?: number
-    /** cpu breakdown [user, system, iowait, steal, idle] (0-100 integers) */
-    cpub?: number[]
-    /** per-core cpu usage [CPU0..] (0-100 integers) */
-    cpus?: number[]
+	/** cpu breakdown [user, system, iowait, steal, idle] (0-100 integers) */
+	cpub?: number[]
+	/** per-core cpu usage [CPU0..] (0-100 integers) */
+	cpus?: number[]
 	// TODO: remove these in future release in favor of la
 	/** load average 1 minute */
 	l1?: number
@@ -242,6 +246,20 @@ export interface AlertsHistoryRecord extends RecordModel {
 	resolved?: string | null
 }
 
+export interface QuietHoursRecord extends RecordModel {
+	id: string
+	user: string
+	system: string
+	type: "one-time" | "daily"
+	start: string
+	end: string
+	expand?: {
+		system?: {
+			name: string
+		}
+	}
+}
+
 export interface ContainerRecord extends RecordModel {
 	id: string
 	system: string
@@ -280,6 +298,7 @@ export interface UserSettings {
 	colorWarn?: number
 	colorCrit?: number
 	hourFormat?: HourFormat
+	layoutWidth?: number
 }
 
 type ChartDataContainer = {
@@ -304,18 +323,18 @@ export interface ChartData {
 	chartTime: ChartTimes
 }
 
-// interface AlertInfo {
-// 	name: () => string
-// 	unit: string
-// 	icon: any
-// 	desc: () => string
-// 	max?: number
-// 	min?: number
-// 	step?: number
-// 	start?: number
-// 	/** Single value description (when there's only one value, like status) */
-// 	singleDesc?: () => string
-// }
+export interface AlertInfo {
+	name: () => string
+	unit: string
+	icon: any
+	desc: () => string
+	max?: number
+	min?: number
+	step?: number
+	start?: number
+	/** Single value description (when there's only one value, like status) */
+	singleDesc?: () => string
+}
 
 export type AlertMap = Record<string, Map<string, AlertRecord>>
 
@@ -359,4 +378,148 @@ export interface SmartAttribute {
 	rs?: string
 	/** when failed */
 	wf?: string
+}
+
+export interface SmartDeviceRecord extends RecordModel {
+	id: string
+	system: string
+	name: string
+	model: string
+	state: string
+	capacity: number
+	temp: number
+	firmware: string
+	serial: string
+	type: string
+	hours: number
+	cycles: number
+	attributes: SmartAttribute[]
+	updated: string
+}
+
+export interface SystemdRecord extends RecordModel {
+	system: string
+	name: string
+	state: ServiceStatus
+	sub: ServiceSubState
+	cpu: number
+	cpuPeak: number
+	memory: number
+	memPeak: number
+	updated: number
+}
+
+export interface SystemdServiceDetails {
+	AccessSELinuxContext: string;
+	ActivationDetails: any[];
+	ActiveEnterTimestamp: number;
+	ActiveEnterTimestampMonotonic: number;
+	ActiveExitTimestamp: number;
+	ActiveExitTimestampMonotonic: number;
+	ActiveState: string;
+	After: string[];
+	AllowIsolate: boolean;
+	AssertResult: boolean;
+	AssertTimestamp: number;
+	AssertTimestampMonotonic: number;
+	Asserts: any[];
+	Before: string[];
+	BindsTo: any[];
+	BoundBy: any[];
+	CPUUsageNSec: number;
+	CanClean: any[];
+	CanFreeze: boolean;
+	CanIsolate: boolean;
+	CanLiveMount: boolean;
+	CanReload: boolean;
+	CanStart: boolean;
+	CanStop: boolean;
+	CollectMode: string;
+	ConditionResult: boolean;
+	ConditionTimestamp: number;
+	ConditionTimestampMonotonic: number;
+	Conditions: any[];
+	ConflictedBy: any[];
+	Conflicts: string[];
+	ConsistsOf: any[];
+	DebugInvocation: boolean;
+	DefaultDependencies: boolean;
+	Description: string;
+	Documentation: string[];
+	DropInPaths: any[];
+	ExecMainPID: number;
+	FailureAction: string;
+	FailureActionExitStatus: number;
+	Following: string;
+	FragmentPath: string;
+	FreezerState: string;
+	Id: string;
+	IgnoreOnIsolate: boolean;
+	InactiveEnterTimestamp: number;
+	InactiveEnterTimestampMonotonic: number;
+	InactiveExitTimestamp: number;
+	InactiveExitTimestampMonotonic: number;
+	InvocationID: string;
+	Job: Array<number | string>;
+	JobRunningTimeoutUSec: number;
+	JobTimeoutAction: string;
+	JobTimeoutRebootArgument: string;
+	JobTimeoutUSec: number;
+	JoinsNamespaceOf: any[];
+	LoadError: string[];
+	LoadState: string;
+	MainPID: number;
+	Markers: any[];
+	MemoryCurrent: number;
+	MemoryLimit: number;
+	MemoryPeak: number;
+	NRestarts: number;
+	Names: string[];
+	NeedDaemonReload: boolean;
+	OnFailure: any[];
+	OnFailureJobMode: string;
+	OnFailureOf: any[];
+	OnSuccess: any[];
+	OnSuccessJobMode: string;
+	OnSuccessOf: any[];
+	PartOf: any[];
+	Perpetual: boolean;
+	PropagatesReloadTo: any[];
+	PropagatesStopTo: any[];
+	RebootArgument: string;
+	Refs: any[];
+	RefuseManualStart: boolean;
+	RefuseManualStop: boolean;
+	ReloadPropagatedFrom: any[];
+	RequiredBy: any[];
+	Requires: string[];
+	RequiresMountsFor: any[];
+	Requisite: any[];
+	RequisiteOf: any[];
+	Result: string;
+	SliceOf: any[];
+	SourcePath: string;
+	StartLimitAction: string;
+	StartLimitBurst: number;
+	StartLimitIntervalUSec: number;
+	StateChangeTimestamp: number;
+	StateChangeTimestampMonotonic: number;
+	StopPropagatedFrom: any[];
+	StopWhenUnneeded: boolean;
+	SubState: string;
+	SuccessAction: string;
+	SuccessActionExitStatus: number;
+	SurviveFinalKillSignal: boolean;
+	TasksCurrent: number;
+	TasksMax: number;
+	Transient: boolean;
+	TriggeredBy: string[];
+	Triggers: any[];
+	UnitFilePreset: string;
+	UnitFileState: string;
+	UpheldBy: any[];
+	Upholds: any[];
+	WantedBy: any[];
+	Wants: string[];
+	WantsMountsFor: any[];
 }

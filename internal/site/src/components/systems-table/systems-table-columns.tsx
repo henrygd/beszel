@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/correctness/useHookAtTopLevel: <explanation> */
 import { t } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
@@ -17,10 +18,12 @@ import {
 	PlayCircleIcon,
 	ServerIcon,
 	TagIcon,
+	TerminalSquareIcon,
 	Trash2Icon,
 	WifiIcon,
 } from "lucide-react"
 import { memo, useMemo, useRef, useState } from "react"
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip"
 import { isReadOnlyUser, pb } from "@/lib/api"
 import { ConnectionType, connectionTypeLabels, MeterState, SystemStatus } from "@/lib/enums"
 import { $longestSystemNameLen, $userSettings } from "@/lib/stores"
@@ -70,7 +73,7 @@ const STATUS_COLORS = {
  * @param viewMode - "table" or "grid"
  * @returns - Column definitions for the systems table
  */
-export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<SystemRecord>[] {
+export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<SystemRecord>[] {
 	return [
 		{
 			// size: 200,
@@ -172,7 +175,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			},
 		},
 		{
-			accessorFn: ({ info }) => info.cpu,
+			accessorFn: ({ info }) => info.cpu || undefined,
 			id: "cpu",
 			name: () => t`CPU`,
 			cell: TableCellWithMeter,
@@ -181,7 +184,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 		},
 		{
 			// accessorKey: "info.mp",
-			accessorFn: ({ info }) => info.mp,
+			accessorFn: ({ info }) => info.mp || undefined,
 			id: "memory",
 			name: () => t`Memory`,
 			cell: TableCellWithMeter,
@@ -189,15 +192,15 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			header: sortableHeader,
 		},
 		{
-			accessorFn: ({ info }) => info.dp,
+			accessorFn: ({ info }) => info.dp || undefined,
 			id: "disk",
 			name: () => t`Disk`,
-			cell: TableCellWithMeter,
+			cell: DiskCellWithMultiple,
 			Icon: HardDriveIcon,
 			header: sortableHeader,
 		},
 		{
-			accessorFn: ({ info }) => info.g,
+			accessorFn: ({ info }) => info.g || undefined,
 			id: "gpu",
 			name: () => "GPU",
 			cell: TableCellWithMeter,
@@ -210,9 +213,9 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 				const sum = info.la?.reduce((acc, curr) => acc + curr, 0)
 				// TODO: remove this in future release in favor of la array
 				if (!sum) {
-					return (info.l1 ?? 0) + (info.l5 ?? 0) + (info.l15 ?? 0)
+					return (info.l1 ?? 0) + (info.l5 ?? 0) + (info.l15 ?? 0) || undefined
 				}
-				return sum
+				return sum || undefined
 			},
 			name: () => t({ message: "Load Avg", comment: "Short label for load average" }),
 			size: 0,
@@ -255,7 +258,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			},
 		},
 		{
-			accessorFn: ({ info }) => info.bb || (info.b || 0) * 1024 * 1024,
+			accessorFn: ({ info }) => info.bb || (info.b || 0) * 1024 * 1024 || undefined,
 			id: "net",
 			name: () => t`Net`,
 			size: 0,
@@ -267,7 +270,7 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 				if (sys.status === SystemStatus.Paused) {
 					return null
 				}
-				const { value, unit } = formatBytes(info.getValue() as number, true, userSettings.unitNet, false)
+				const { value, unit } = formatBytes((info.getValue() || 0) as number, true, userSettings.unitNet, false)
 				return (
 					<span className="tabular-nums whitespace-nowrap">
 						{decimalString(value, value >= 100 ? 1 : 2)} {unit}
@@ -298,10 +301,48 @@ export default function SystemsTableColumns(viewMode: "table" | "grid"): ColumnD
 			},
 		},
 		{
+			accessorFn: ({ info }) => info.sv?.[0],
+			id: "services",
+			name: () => t`Services`,
+			size: 50,
+			Icon: TerminalSquareIcon,
+			header: sortableHeader,
+			hideSort: true,
+			sortingFn: (a, b) => {
+				// sort priorities: 1) failed services, 2) total services
+				const [totalCountA, numFailedA] = a.original.info.sv ?? [0, 0]
+				const [totalCountB, numFailedB] = b.original.info.sv ?? [0, 0]
+				if (numFailedA !== numFailedB) {
+					return numFailedA - numFailedB
+				}
+				return totalCountA - totalCountB
+			},
+			cell(info) {
+				const sys = info.row.original
+				const [totalCount, numFailed] = sys.info.sv ?? [0, 0]
+				if (sys.status !== SystemStatus.Up || totalCount === 0) {
+					return null
+				}
+				return (
+					<span className="tabular-nums whitespace-nowrap flex gap-1.5 items-center">
+						<span
+							className={cn("block size-2 rounded-full", {
+								[STATUS_COLORS[SystemStatus.Down]]: numFailed > 0,
+								[STATUS_COLORS[SystemStatus.Up]]: numFailed === 0,
+							})}
+						/>
+						{totalCount}{" "}
+						<span className="text-muted-foreground text-sm -ms-0.5">
+							({t`Failed`.toLowerCase()}: {numFailed})
+						</span>
+					</span>
+				)
+			},
+		},
+		{
 			accessorFn: ({ info }) => info.v,
 			id: "agent",
 			name: () => t`Agent`,
-			// invertSorting: true,
 			size: 50,
 			Icon: WifiIcon,
 			hideSort: true,
@@ -390,6 +431,101 @@ function TableCellWithMeter(info: CellContext<SystemRecord, unknown>) {
 				<span className={meterClass} style={{ width: `${val}%` }}></span>
 			</span>
 		</div>
+	)
+}
+
+function DiskCellWithMultiple(info: CellContext<SystemRecord, unknown>) {
+	const { info: sysInfo, status, id } = info.row.original
+	const extraFs = Object.entries(sysInfo.efs ?? {})
+
+	if (extraFs.length === 0) {
+		return TableCellWithMeter(info)
+	}
+
+	const rootDiskPct = sysInfo.dp
+
+	// sort extra disks by percentage descending
+	extraFs.sort((a, b) => b[1] - a[1])
+
+	function getIndicatorColor(pct: number) {
+		const threshold = getMeterState(pct)
+		return (
+			(status !== SystemStatus.Up && STATUS_COLORS.paused) ||
+			(threshold === MeterState.Good && STATUS_COLORS.up) ||
+			(threshold === MeterState.Warn && STATUS_COLORS.pending) ||
+			STATUS_COLORS.down
+		)
+	}
+
+	function getMeterClass(pct: number) {
+		return cn("h-full", getIndicatorColor(pct))
+	}
+
+	// Extra disk indicators (max 3 dots - one per state if any disk exists in range)
+	const stateColors = [STATUS_COLORS.up, STATUS_COLORS.pending, STATUS_COLORS.down]
+	const extraDiskIndicators =
+		status !== SystemStatus.Up
+			? []
+			: [...new Set(extraFs.map(([, pct]) => getMeterState(pct)))].sort().map((state) => stateColors[state])
+
+	return (
+		<Tooltip>
+			<TooltipTrigger asChild>
+				<Link
+					href={getPagePath($router, "system", { id })}
+					tabIndex={-1}
+					className="flex flex-col gap-0.5 w-full relative z-10"
+				>
+					<div className="flex gap-2 items-center tabular-nums tracking-tight">
+						<span className="min-w-8 shrink-0">{decimalString(rootDiskPct, rootDiskPct >= 10 ? 1 : 2)}%</span>
+						<span className="flex-1 min-w-8 flex items-center gap-0.5 px-1 justify-end bg-muted h-[1em] rounded-sm overflow-hidden relative">
+							{/* Root disk */}
+							<span
+								className={cn("absolute inset-0", getMeterClass(rootDiskPct))}
+								style={{ width: `${rootDiskPct}%` }}
+							></span>
+							{/* Extra disk indicators */}
+							{extraDiskIndicators.map((color) => (
+								<span
+									key={color}
+									className={cn("size-1.5 rounded-full shrink-0 outline-[0.5px] outline-muted", color)}
+								/>
+							))}
+						</span>
+					</div>
+				</Link>
+			</TooltipTrigger>
+			<TooltipContent side="right" className="max-w-xs pb-2">
+				<div className="grid gap-1">
+					<div className="grid gap-0.5">
+						<div className="text-[0.65rem] text-muted-foreground uppercase tracking-wide tabular-nums">
+							<Trans context="Root disk label">Root</Trans>
+						</div>
+						<div className="flex gap-2 items-center tabular-nums text-xs">
+							<span className="min-w-7">{decimalString(rootDiskPct, rootDiskPct >= 10 ? 1 : 2)}%</span>
+							<span className="flex-1 min-w-12 grid bg-muted h-2.5 rounded-sm overflow-hidden">
+								<span className={getMeterClass(rootDiskPct)} style={{ width: `${rootDiskPct}%` }}></span>
+							</span>
+						</div>
+					</div>
+					{extraFs.map(([name, pct]) => {
+						return (
+							<div key={name} className="grid gap-0.5">
+								<div className="text-[0.65rem] max-w-40 text-muted-foreground uppercase tracking-wide truncate">
+									{name}
+								</div>
+								<div className="flex gap-2 items-center tabular-nums text-xs">
+									<span className="min-w-7">{decimalString(pct, pct >= 10 ? 1 : 2)}%</span>
+									<span className="flex-1 min-w-12 grid bg-muted h-2.5 rounded-sm overflow-hidden">
+										<span className={getMeterClass(pct)} style={{ width: `${pct}%` }}></span>
+									</span>
+								</div>
+							</div>
+						)
+					})}
+				</div>
+			</TooltipContent>
+		</Tooltip>
 	)
 }
 

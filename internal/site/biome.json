@@ -17,6 +17,9 @@
 		"enabled": true,
 		"rules": {
 			"recommended": true,
+			"a11y": {
+				"useButtonType": "off"
+			},
 			"complexity": {
 				"noUselessStringConcat": "error",
 				"noUselessUndefinedInitialization": "error",
@@ -30,12 +33,16 @@
 				"noUnusedFunctionParameters": "error",
 				"noUnusedPrivateClassMembers": "error",
 				"useExhaustiveDependencies": {
-					"level": "error",
+					"level": "warn",
 					"options": {
 						"reportUnnecessaryDependencies": false
 					}
 				},
+				"useUniqueElementIds": "off",
 				"noUnusedVariables": "error"
+			},
+			"security": {
+				"noDangerouslySetInnerHtml": "warn"
 			},
 			"style": {
 				"noParameterProperties": "error",
@@ -47,7 +54,8 @@
 			},
 			"suspicious": {
 				"useAwait": "error",
-				"noEvolvingTypes": "error"
+				"noEvolvingTypes": "error",
+				"noArrayIndexKey": "off"
 			}
 		}
 	},

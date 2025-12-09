@@ -8,45 +8,33 @@ msgstr ""
 "Language: da\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-28 23:21\n"
+"PO-Revision-Date: 2025-11-14 22:51\n"
 "Last-Translator: \n"
 "Language-Team: Danish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: da\n"
-"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 16\n"
-
-#: src/components/routes/system.tsx
-#~ msgid "{0, plural, one {# day} other {# days}}"
-#~ msgstr "{0, plural, one {# day} other {# days}}"
-
-#: src/components/routes/system.tsx
-#~ msgid "{0, plural, one {# hour} other {# hours}}"
-#~ msgstr "{0, plural, one {# hour} other {# hours}}"
-
-#: src/components/routes/system.tsx
-#~ msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
-#~ msgstr ""
+"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 32\n"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
-msgstr ""
+msgstr "{0} af {1} række(r) valgt."
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} day} other {{countString} days}}"
-msgstr ""
+msgstr "{count, plural, one {{countString} dag} other {{countString} dage}}"
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} hour} other {{countString} hours}}"
-msgstr ""
+msgstr "{count, plural, one {{countString} time} other {{countString} timer}}"
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
-msgstr ""
+msgstr "{count, plural, one {{countString} minut} other {{countString} minutter}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -55,7 +43,7 @@ msgstr "1 time"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "1 min"
-msgstr ""
+msgstr "1 minut"
 
 #: src/lib/utils.ts
 msgid "1 minute"
@@ -72,7 +60,7 @@ msgstr "12 timer"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "15 min"
-msgstr ""
+msgstr "15 minutter"
 
 #: src/lib/utils.ts
 msgid "24 hours"
@@ -85,30 +73,39 @@ msgstr "30 dage"
 #. Load average
 #: src/components/charts/load-average-chart.tsx
 msgid "5 min"
-msgstr ""
+msgstr "5 minutter"
 
 #. Table column
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "Handlinger"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Active"
-msgstr ""
+msgstr "Aktiv"
 
 #: src/components/active-alerts.tsx
 msgid "Active Alerts"
 msgstr "Aktive Alarmer"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Active state"
+msgstr "Aktiv tilstand"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Add {foo}"
+msgstr "Tilføj {foo}"
+
 #: src/components/add-system.tsx
 msgid "Add <0>System</0>"
 msgstr "Tilføj <0>System</0>"
-
-#: src/components/add-system.tsx
-msgid "Add New System"
-msgstr "Tilføj nyt system"
 
 #: src/components/add-system.tsx
 msgid "Add system"
@@ -122,10 +119,18 @@ msgstr "Tilføj URL"
 msgid "Adjust display options for charts."
 msgstr "Juster visningsindstillinger for diagrammer."
 
+#: src/components/routes/settings/general.tsx
+msgid "Adjust the width of the main layout"
+msgstr "Juster bredden af hovedlayoutet"
+
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
-msgstr "Admin"
+msgstr "Administrator"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "After"
+msgstr "Efter"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -135,7 +140,7 @@ msgstr "Agent"
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Alert History"
-msgstr ""
+msgstr "Advarselshistorik"
 
 #: src/components/alerts/alert-button.tsx
 #: src/components/alerts/alerts-sheet.tsx
@@ -146,11 +151,12 @@ msgstr "Alarmer"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
-msgstr ""
+msgstr "Alle containere"
 
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
@@ -162,7 +168,7 @@ msgstr "Er du sikker på, at du vil slette {name}?"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
-msgstr ""
+msgstr "Er du sikker?"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -196,7 +202,7 @@ msgstr "Gennemsnitlig udnyttelse af {0}"
 
 #: src/components/routes/system.tsx
 msgid "Average utilization of GPU engines"
-msgstr "Gennemsnitlig udnyttelse af GPU-motorer"
+msgstr "Gennemsnitlig udnyttelse af GPU-enheder"
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
@@ -211,6 +217,18 @@ msgstr "Båndbredde"
 #: src/components/routes/system.tsx
 msgid "Battery"
 msgstr "Batteri"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became active"
+msgstr "Blev aktiv"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became inactive"
+msgstr "Blev inaktiv"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Before"
+msgstr "Før"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -227,25 +245,46 @@ msgstr "Binær"
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr ""
+msgstr "Bits (Kbps, Mbps, Gbps)"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Boot state"
+msgstr "Opstartstilstand"
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
-msgstr ""
+msgstr "Bytes (KB/s, MB/s, GB/s)"
 
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
 msgstr "Cache / Buffere"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can reload"
+msgstr "Kan genindlæse"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can start"
+msgstr "Kan starte"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can stop"
+msgstr "Kan stoppe"
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "Fortryd"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Capabilities"
+msgstr "Funktioner"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
-msgstr ""
+msgstr "Kapacitet"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
@@ -253,11 +292,11 @@ msgstr "Forsigtig - muligt tab af data"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr ""
+msgstr "Celsius (°C)"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
-msgstr ""
+msgstr "Ændre viste enheder for målinger."
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
@@ -289,16 +328,22 @@ msgid "Check your notification service"
 msgstr "Tjek din notifikationstjeneste"
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Clear"
+msgstr "Ryd"
+
+#: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
-msgstr ""
+msgstr "Klik på en container for at se mere information."
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
-msgstr ""
+msgstr "Klik på en enhed for at se flere oplysninger."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
-msgstr ""
+msgstr "Klik på et system for at se mere information."
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
@@ -318,9 +363,13 @@ msgstr "Konfigurer hvordan du modtager advarselsmeddelelser."
 msgid "Confirm password"
 msgstr "Bekræft adgangskode"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Conflicts"
+msgstr "Konflikter"
+
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
-msgstr ""
+msgstr "Forbindelsen er nede"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -346,7 +395,7 @@ msgstr "Kopiér docker run"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Environment variables"
 msgid "Copy env"
-msgstr ""
+msgstr "Kopier miljø"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy host"
@@ -367,28 +416,37 @@ msgstr "Kopier tekst"
 
 #: src/components/add-system.tsx
 msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
-msgstr ""
+msgstr "Kopier installationskommandoen for agenten nedenfor, eller registrer agenter automatisk med en <0>universalnøgle</0>."
 
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
-msgstr ""
+msgstr "Kopier <0>docker-compose.yml</0> indholdet for agenten nedenfor, eller registrer agenter automatisk med en <1>universalnøgle</1>."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
-msgstr ""
+msgstr "Kopier YAML"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
+msgstr "CPU-kerner"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "CPU Peak"
+msgstr "CPU Peak"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "CPU time"
 msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Time Breakdown"
-msgstr ""
+msgstr "CPU-tidsfordeling"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -397,6 +455,10 @@ msgstr ""
 msgid "CPU Usage"
 msgstr "CPU forbrug"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Create"
+msgstr "Opret"
+
 #: src/components/login/auth-form.tsx
 msgid "Create account"
 msgstr "Opret konto"
@@ -404,7 +466,7 @@ msgstr "Opret konto"
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
 msgid "Created"
-msgstr ""
+msgstr "Oprettet"
 
 #: src/components/routes/settings/general.tsx
 msgid "Critical (%)"
@@ -426,32 +488,39 @@ msgstr "Nuværende tilstand"
 #. Power Cycles
 #: src/components/routes/system/smart-table.tsx
 msgid "Cycles"
-msgstr ""
+msgstr "Cykler"
 
-#: src/components/command-palette.tsx
-msgid "Dashboard"
-msgstr "Oversigtspanel"
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Daily"
+msgstr "Dagligt"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
 msgstr "Standard tidsperiode"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "Slet"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
-msgstr ""
+msgstr "Slet fingeraftryk"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Description"
+msgstr "Beskrivelse"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
-msgstr ""
+msgstr "Detalje"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
-msgstr ""
+msgstr "Enhed"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -468,7 +537,7 @@ msgstr "Disk I/O"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
-msgstr ""
+msgstr "Diskenhed"
 
 #: src/components/charts/disk-chart.tsx
 #: src/components/routes/system.tsx
@@ -493,6 +562,7 @@ msgid "Docker Network I/O"
 msgstr "Docker Netværk I/O"
 
 #: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Documentation"
 msgstr "Dokumentation"
 
@@ -506,20 +576,25 @@ msgstr "Nede"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Down ({downSystemsLength})"
-msgstr ""
+msgstr "Nede ({downSystemsLength})"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
-msgstr "Download"
+msgstr "Hent ned"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
-msgstr ""
+msgstr "Varighed"
 
-#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "Rediger"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Edit {foo}"
+msgstr "Rediger {foo}"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -535,6 +610,11 @@ msgstr "Email-notifikationer"
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "Tom"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "End Time"
+msgstr "Sluttid"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -552,7 +632,10 @@ msgstr "Indtast din engangsadgangskode."
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
 msgstr "Fejl"
 
@@ -563,13 +646,21 @@ msgstr "Fejl"
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Overskrider {0}{1} i sidste {2, plural, one {# minut} other {# minutter}}"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exec main PID"
+msgstr ""
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr "Eksisterende systemer ikke defineret i <0>config.yml</0> vil blive slettet. Opret venligst regelmæssige sikkerhedskopier."
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exited active"
+msgstr "Afsluttet aktiv"
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
-msgstr ""
+msgstr "Eksporter"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
@@ -581,11 +672,15 @@ msgstr "Eksporter din nuværende systemkonfiguration."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr ""
+msgstr "Fahrenheit (°F)"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Failed"
+msgstr "Mislykkedes"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
-msgstr ""
+msgstr "Mislykkede attributter:"
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
@@ -593,6 +688,7 @@ msgstr "Kunne ikke godkende"
 
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Failed to save settings"
 msgstr "Kunne ikke gemme indstillinger"
 
@@ -604,21 +700,23 @@ msgstr "Afsendelse af testnotifikation mislykkedes"
 msgid "Failed to update alert"
 msgstr "Kunne ikke opdatere alarm"
 
-#: src/components/systems-table/systems-table.tsx
-msgid "Filter by tags"
-msgstr ""
+#. placeholder {0}: statusTotals[ServiceStatus.Failed]
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Failed: {0}"
+msgstr "Mislykkedes: {0}"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Filter..."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
-msgstr ""
+msgstr "Fingeraftryk"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
@@ -649,25 +747,29 @@ msgstr "Fuldt opladt"
 msgid "General"
 msgstr "Generelt"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Global"
+msgstr "Global"
+
 #: src/components/routes/system.tsx
 msgid "GPU Engines"
-msgstr "GPU-motorer"
+msgstr "GPU-enheder"
 
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
 msgstr "Gpu Strøm Træk"
 
+#: src/lib/alerts.ts
+msgid "GPU Usage"
+msgstr "GPU-forbrug"
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "Gitter"
 
-#: src/components/systems-table/systems-table-columns.tsx
-#~ msgid "Group"
-#~ msgstr ""
-
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Health"
-msgstr ""
+msgstr "Sundhed"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -691,7 +793,11 @@ msgstr "Hvis du har mistet adgangskoden til din administratorkonto, kan du nulst
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
-msgstr ""
+msgstr "Billede"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Inactive"
+msgstr "Inaktiv"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -700,7 +806,7 @@ msgstr "Ugyldig email adresse."
 #. Linux kernel
 #: src/components/routes/system.tsx
 msgid "Kernel"
-msgstr "Kernel"
+msgstr "Kerne"
 
 #: src/components/routes/settings/general.tsx
 msgid "Language"
@@ -708,28 +814,49 @@ msgstr "Sprog"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
-msgstr "Layout"
+msgstr "Opstilling"
+
+#: src/components/routes/settings/general.tsx
+msgid "Layout width"
+msgstr "Layoutbredde"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Lifecycle"
+msgstr "Livscyklus"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "limit"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
-msgstr ""
+msgstr "Belastning Gennemsnitlig"
 
 #: src/lib/alerts.ts
 msgid "Load Average 15m"
-msgstr ""
+msgstr "Belastning Gennemsnitlig 15m"
 
 #: src/lib/alerts.ts
 msgid "Load Average 1m"
-msgstr ""
+msgstr "Belastning Gennemsnitlig 1m"
 
 #: src/lib/alerts.ts
 msgid "Load Average 5m"
-msgstr ""
+msgstr "Belastning Gennemsnitlig 5m"
 
 #. Short label for load average
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
-msgstr ""
+msgstr "Belastning gns."
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Load state"
+msgstr "Indlæsningstilstand"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Loading..."
+msgstr "Indlæser..."
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -754,6 +881,10 @@ msgstr "Logs"
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
 msgstr "Leder du i stedet for efter hvor du kan oprette alarmer? Klik på klokken <0/> ikoner i system tabellen."
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Main PID"
+msgstr ""
+
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "Administrer display og notifikationsindstillinger."
@@ -769,9 +900,20 @@ msgid "Max 1 min"
 msgstr "Maks. 1 min"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Hukommelse"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory limit"
+msgstr "Hukommelsesgrænse"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory Peak"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -784,18 +926,20 @@ msgstr "Hukommelsesforbrug af dockercontainere"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
-msgstr ""
+msgstr "Model"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
 msgstr "Navn"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
-msgstr "Net"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Network traffic of docker containers"
@@ -811,9 +955,16 @@ msgstr "Netværkstrafik af offentlige grænseflader"
 #. Context: Bytes or bits
 #: src/components/routes/settings/general.tsx
 msgid "Network unit"
-msgstr ""
+msgstr "Netværksenhed"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No"
+msgstr "Nej"
 
 #: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
 msgstr "Ingen resultater fundet."
 
@@ -822,22 +973,18 @@ msgstr "Ingen resultater fundet."
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "No results."
-msgstr ""
+msgstr "Ingen resultater."
 
 #: src/components/routes/system/smart-table.tsx
 msgid "No S.M.A.R.T. attributes available for this device."
-msgstr ""
+msgstr "Ingen S.M.A.R.T.-attributter tilgængelige for denne enhed."
 
-#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "Ingen systemer fundet."
-
-#: src/components/systems-table/systems-table.tsx
-msgid "No tags found"
-msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -853,12 +1000,19 @@ msgstr "OAuth 2 / OIDC understøttelse"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Ved hver genstart vil systemer i databasen blive opdateret til at matche de systemer, der er defineret i filen."
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "One-time"
+msgstr "Engangs"
+
 #: src/components/login/auth-form.tsx
 msgid "One-time password"
 msgstr "Engangsadgangskode"
 
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Åbn menu"
@@ -869,12 +1023,13 @@ msgstr "Eller fortsæt med"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Other"
-msgstr ""
+msgstr "Andre"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "Overskriv eksisterende alarmer"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
@@ -884,7 +1039,7 @@ msgstr "Side"
 #. placeholder {1}: table.getPageCount()
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Page {0} of {1}"
-msgstr ""
+msgstr "Side {0} af {1}"
 
 #: src/components/command-palette.tsx
 msgid "Pages / Settings"
@@ -907,6 +1062,10 @@ msgstr "Adgangskoden skal være mindre end 72 bytes."
 msgid "Password reset request received"
 msgstr "Anmodning om nulstilling af adgangskode modtaget"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Past"
+msgstr "Tidligere"
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "Pause"
@@ -917,16 +1076,16 @@ msgstr "Sat på pause"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused ({pausedSystemsLength})"
-msgstr ""
+msgstr "Sat på pause ({pausedSystemsLength})"
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Per-core average utilization"
-msgstr ""
+msgstr "Gennemsnitlig udnyttelse pr. kerne"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Percentage of time spent in each state"
-msgstr ""
+msgstr "Procentdel af tid brugt i hver tilstand"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -968,7 +1127,7 @@ msgstr "Port"
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
 msgid "Power On"
-msgstr ""
+msgstr "Tænd"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -979,10 +1138,18 @@ msgstr "Præcis udnyttelse på det registrerede tidspunkt"
 msgid "Preferred Language"
 msgstr "Foretrukket sprog"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Process started"
+msgstr "Proces startet"
+
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
 msgstr "Offentlig nøgle"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Quiet Hours"
+msgstr "Stille timer"
 
 #. Disk read
 #: src/components/routes/system.tsx
@@ -996,8 +1163,13 @@ msgstr "Modtaget"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "Refresh"
-msgstr ""
+msgstr "Opdater"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Relationships"
+msgstr "Relationer"
 
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
@@ -1007,6 +1179,14 @@ msgstr "Anmod om engangsadgangskode"
 msgid "Request OTP"
 msgstr "Anmod OTP"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Required by"
+msgstr "Kræves af"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Requires"
+msgstr "Kræver"
+
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
 msgstr "Nulstil adgangskode"
@@ -1015,27 +1195,40 @@ msgstr "Nulstil adgangskode"
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Resolved"
-msgstr ""
+msgstr "Løst"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Restarts"
+msgstr "Genstarter"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Genoptag"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgctxt "Root disk label"
+msgid "Root"
+msgstr ""
+
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
-msgstr ""
+msgstr "Roter nøgle"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
-msgstr ""
+msgstr "Rækker per side"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Runtime Metrics"
+msgstr "Køretidsmålinger"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
-msgstr ""
+msgstr "S.M.A.R.T.-detaljer"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Self-Test"
-msgstr ""
+msgstr "S.M.A.R.T. selvtest"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -1050,6 +1243,18 @@ msgstr "Gem indstillinger"
 msgid "Save system"
 msgstr "Gem system"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule"
+msgstr "Planlæg"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent, such as during maintenance periods."
+msgstr "Planlæg stille timer hvor meddelelser ikke vil blive sendt, såsom under vedligeholdelsesperioder."
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent."
+msgstr "Planlæg stille timer hvor meddelelser ikke vil blive sendt."
+
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "Søg"
@@ -1062,13 +1267,25 @@ msgstr "Søg efter systemer eller indstillinger..."
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Se <0>meddelelsesindstillinger</0> for at konfigurere, hvordan du modtager alarmer."
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Select {foo}"
+msgstr "Vælg {foo}"
+
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Sendt"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
-msgstr ""
+msgstr "Serienummer"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Service Details"
+msgstr "Tjenestedetaljer"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr "Tjenester"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1097,17 +1314,29 @@ msgstr "SMTP-indstillinger"
 msgid "Sort By"
 msgstr "Sorter efter"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Start Time"
+msgstr "Starttid"
+
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
-msgstr ""
+msgstr "Tilstand"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
 msgstr "Status"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "Sub State"
+msgstr "Undertilstand"
 
 #: src/components/routes/system.tsx
 msgid "Swap space used by the system"
@@ -1117,9 +1346,15 @@ msgstr "Swap plads brugt af systemet"
 msgid "Swap Usage"
 msgstr "Swap forbrug"
 
+#: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
@@ -1127,10 +1362,10 @@ msgstr "System"
 
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
-msgstr ""
+msgstr "Gennemsnitlig system belastning over tid"
 
-#: src/components/routes/settings/layout.tsx
-msgid "System Organization"
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Systemd Services"
 msgstr ""
 
 #: src/components/navbar.tsx
@@ -1145,11 +1380,9 @@ msgstr "Systemer kan være administreres i filen <0>config.yml</0> i din datamap
 msgid "Table"
 msgstr "Tabel"
 
-#: src/components/systems-table/systems-table-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
-#: src/components/systems-table/systems-table.tsx
-msgid "Tags"
-msgstr ""
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Tasks"
+msgstr "Opgaver"
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1164,7 +1397,7 @@ msgstr "Temperatur"
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"
-msgstr ""
+msgstr "Temperaturenhed"
 
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
@@ -1188,7 +1421,7 @@ msgstr "Denne handling kan ikke fortrydes. Dette vil permanent slette alle aktue
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
-msgstr ""
+msgstr "Dette vil permanent slette alle poster fra databasen."
 
 #: src/components/routes/system.tsx
 msgid "Throughput of {extraFsName}"
@@ -1218,26 +1451,26 @@ msgstr "Skift tema"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr ""
+msgstr "Nøgle"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens & Fingerprints"
-msgstr ""
+msgstr "Nøgler & fingeraftryk"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
-msgstr ""
+msgstr "Nøgler tillader agenter at oprette forbindelse og registrere. Fingeraftryk er stabile identifikatorer unikke for hvert system, indstillet ved første forbindelse."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
-msgstr ""
+msgstr "Nøgler og fingeraftryk bruges til at godkende WebSocket-forbindelser til hubben."
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
-msgstr ""
+msgstr "Samlet"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
@@ -1247,17 +1480,30 @@ msgstr "Samlet modtaget data for hver interface"
 msgid "Total data sent for each interface"
 msgstr "Samlet sendt data for hver interface"
 
+#. placeholder {0}: data.length
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Total: {0}"
+msgstr "I alt: {0}"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggered by"
+msgstr "Udløst af"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggers"
+msgstr "Udløsere"
+
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Udløser når 1 minut belastning gennemsnit overstiger en tærskel"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Udløser når 15 minut belastning gennemsnit overstiger en tærskel"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
-msgstr ""
+msgstr "Udløser når 5 minut belastning gennemsnit overstiger en tærskel"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
@@ -1272,6 +1518,10 @@ msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "Udløser når CPU-forbrug overstiger en tærskel"
 
 #: src/lib/alerts.ts
+msgid "Triggers when GPU usage exceeds a threshold"
+msgstr "Udløses når GPU-brug overstiger en grænse"
+
+#: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Udløser når hukommelsesforbruget overstiger en tærskel"
 
@@ -1283,24 +1533,35 @@ msgstr "Udløser når status skifter mellem op og ned"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Udløser når brugen af en disk overstiger en tærskel"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
+msgstr "Type"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unit file"
 msgstr ""
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
-msgstr ""
+msgstr "Enhedspræferencer"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
-msgstr ""
+msgstr "Universalnøgle"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Unknown"
 msgstr "Ukendt"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unlimited"
+msgstr ""
 
 #. Context: System is up
 #: src/components/routes/system.tsx
@@ -1310,15 +1571,25 @@ msgstr "Oppe"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
-msgstr ""
+msgstr "Oppe ({upSystemsLength})"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Update"
+msgstr "Opdater"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
-msgstr ""
+msgstr "Opdateret"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Updated every 10 minutes."
+msgstr "Opdateret hver 10. minut."
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
-msgstr "Upload"
+msgstr "Overfør"
 
 #: src/components/routes/system.tsx
 msgid "Uptime"
@@ -1348,7 +1619,7 @@ msgstr "Brugere"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
-msgstr ""
+msgstr "Værdi"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "View"
@@ -1361,7 +1632,7 @@ msgstr "Se mere"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "View your 200 most recent alerts."
-msgstr ""
+msgstr "Se dine 200 nyeste alarmer."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
@@ -1374,6 +1645,10 @@ msgstr "Venter på nok posteringer til at vise"
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "Vil du hjælpe os med at gøre vores oversættelser endnu bedre? Tjek <0>Crowdin</0> for flere detaljer."
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Wants"
+msgstr "Ønsker"
 
 #: src/components/routes/settings/general.tsx
 msgid "Warning (%)"
@@ -1389,7 +1664,7 @@ msgstr "Webhook / Push notifikationer"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
-msgstr ""
+msgstr "Når aktiveret tillader denne nøgle agenter at selvregistrere uden forudgående systemoprettelse. Udløber efter en time eller ved hub-genstart."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1410,6 +1685,12 @@ msgstr "YAML Konfiguration"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "YAML Konfiguration"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Yes"
+msgstr "Ja"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."

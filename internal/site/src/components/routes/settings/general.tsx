@@ -2,14 +2,17 @@
 import { Trans, useLingui } from "@lingui/react/macro"
 import { LanguagesIcon, LoaderCircleIcon, SaveIcon } from "lucide-react"
 import { useState } from "react"
+import { useStore } from "@nanostores/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
+import Slider from "@/components/ui/slider"
 import { HourFormat, Unit } from "@/lib/enums"
 import { dynamicActivate } from "@/lib/i18n"
 import languages from "@/lib/languages"
+import { $userSettings } from "@/lib/stores"
 import { chartTimeData, currentHour12 } from "@/lib/utils"
 import type { UserSettings } from "@/types"
 import { saveSettings } from "./layout"
@@ -17,6 +20,8 @@ import { saveSettings } from "./layout"
 export default function SettingsProfilePage({ userSettings }: { userSettings: UserSettings }) {
 	const [isLoading, setIsLoading] = useState(false)
 	const { i18n } = useLingui()
+	const currentUserSettings = useStore($userSettings)
+	const layoutWidth = currentUserSettings.layoutWidth ?? 1500
 
 	async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
 		e.preventDefault()
@@ -71,6 +76,27 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 							))}
 						</SelectContent>
 					</Select>
+				</div>
+				<Separator />
+				<div className="grid gap-2">
+					<div className="mb-2">
+						<h3 className="mb-1 text-lg font-medium">
+							<Trans>Layout width</Trans>
+						</h3>
+						<Label htmlFor="layoutWidth" className="text-sm text-muted-foreground leading-relaxed">
+							<Trans>Adjust the width of the main layout</Trans> ({layoutWidth}px)
+						</Label>
+					</div>
+					<Slider
+						id="layoutWidth"
+						name="layoutWidth"
+						value={[layoutWidth]}
+						onValueChange={(val) => $userSettings.setKey("layoutWidth", val[0])}
+						min={1000}
+						max={2000}
+						step={10}
+						className="w-full mb-1"
+					/>
 				</div>
 				<Separator />
 				<div className="grid gap-2">

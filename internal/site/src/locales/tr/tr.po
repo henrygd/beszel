@@ -8,27 +8,15 @@ msgstr ""
 "Language: tr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-28 23:21\n"
+"PO-Revision-Date: 2025-11-14 22:51\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: tr\n"
-"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 16\n"
-
-#: src/components/routes/system.tsx
-#~ msgid "{0, plural, one {# day} other {# days}}"
-#~ msgstr "{0, plural, one {# gün} other {# gün}}"
-
-#: src/components/routes/system.tsx
-#~ msgid "{0, plural, one {# hour} other {# hours}}"
-#~ msgstr "{0, plural, one {# saat} other {# saat}}"
-
-#: src/components/routes/system.tsx
-#~ msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
-#~ msgstr "{0, plural, one {# dakika} few {# dakika} many {# dakika} other {# dakika}}"
+"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 32\n"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
@@ -38,15 +26,15 @@ msgstr "{1} satırdan {0} tanesi seçildi."
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} day} other {{countString} days}}"
-msgstr ""
+msgstr "{count, plural, one {{countString} gün} other {{countString} gün}}"
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} hour} other {{countString} hours}}"
-msgstr ""
+msgstr "{count, plural, one {{countString} saat} other {{countString} saat}}"
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
-msgstr ""
+msgstr "{count, plural, one {{countString} dakika} few {{countString} dakika} many {{countString} dakika} other {{countString} dakika}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -88,13 +76,16 @@ msgid "5 min"
 msgstr "5 dk"
 
 #. Table column
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "Eylemler"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Active"
 msgstr "Aktif"
 
@@ -102,13 +93,19 @@ msgstr "Aktif"
 msgid "Active Alerts"
 msgstr "Aktif Uyarılar"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Active state"
+msgstr "Aktif durum"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Add {foo}"
+msgstr "{foo} ekle"
+
 #: src/components/add-system.tsx
 msgid "Add <0>System</0>"
 msgstr "<0>Sistem</0> Ekle"
-
-#: src/components/add-system.tsx
-msgid "Add New System"
-msgstr "Yeni Sistem Ekle"
 
 #: src/components/add-system.tsx
 msgid "Add system"
@@ -122,10 +119,18 @@ msgstr "URL Ekle"
 msgid "Adjust display options for charts."
 msgstr "Grafikler için görüntüleme seçeneklerini ayarlayın."
 
+#: src/components/routes/settings/general.tsx
+msgid "Adjust the width of the main layout"
+msgstr "Ana düzenin genişliğini ayarla"
+
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
 msgstr "Yönetici"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "After"
+msgstr "Sonra"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -146,11 +151,12 @@ msgstr "Uyarılar"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
-msgstr ""
+msgstr "Tüm Konteynerler"
 
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
@@ -212,6 +218,18 @@ msgstr "Bant Genişliği"
 msgid "Battery"
 msgstr "Pil"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became active"
+msgstr "Aktif oldu"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became inactive"
+msgstr "Pasif oldu"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Before"
+msgstr "Önce"
+
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
 msgstr "Beszel, OpenID Connect ve birçok OAuth2 kimlik doğrulama sağlayıcısını destekler."
@@ -229,6 +247,10 @@ msgstr "İkili"
 msgid "Bits (Kbps, Mbps, Gbps)"
 msgstr "Bit (Kbps, Mbps, Gbps)"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Boot state"
+msgstr "Önyükleme durumu"
+
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
@@ -238,14 +260,31 @@ msgstr "Bayt (KB/s, MB/s, GB/s)"
 msgid "Cache / Buffers"
 msgstr "Önbellek / Tamponlar"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can reload"
+msgstr "Yeniden yüklenebilir"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can start"
+msgstr "Başlatılabilir"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can stop"
+msgstr "Durdurulabilir"
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "İptal"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Capabilities"
+msgstr "Yetenekler"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
-msgstr ""
+msgstr "Kapasite"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
@@ -289,12 +328,18 @@ msgid "Check your notification service"
 msgstr "Bildirim hizmetinizi kontrol edin"
 
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Clear"
+msgstr "Temizle"
+
+#: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
-msgstr ""
+msgstr "Daha fazla bilgi görüntülemek için bir konteynere tıklayın."
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
-msgstr ""
+msgstr "Daha fazla bilgi görüntülemek için bir cihaza tıklayın."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -317,6 +362,10 @@ msgstr "Uyarı bildirimlerini nasıl alacağınızı yapılandırın."
 #: src/components/login/auth-form.tsx
 msgid "Confirm password"
 msgstr "Şifreyi onayla"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Conflicts"
+msgstr "Çakışmalar"
 
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
@@ -378,17 +427,26 @@ msgid "Copy YAML"
 msgstr "YAML'ı kopyala"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr "CPU"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
-msgstr ""
+msgstr "CPU Çekirdekleri"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "CPU Peak"
+msgstr "CPU Tepe Değeri"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "CPU time"
+msgstr "CPU zamanı"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Time Breakdown"
-msgstr ""
+msgstr "CPU Zaman Dağılımı"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -396,6 +454,10 @@ msgstr ""
 #: src/lib/alerts.ts
 msgid "CPU Usage"
 msgstr "CPU Kullanımı"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Create"
+msgstr "Oluştur"
 
 #: src/components/login/auth-form.tsx
 msgid "Create account"
@@ -426,17 +488,20 @@ msgstr "Mevcut durum"
 #. Power Cycles
 #: src/components/routes/system/smart-table.tsx
 msgid "Cycles"
-msgstr ""
+msgstr "Döngüler"
 
-#: src/components/command-palette.tsx
-msgid "Dashboard"
-msgstr "Gösterge Paneli"
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Daily"
+msgstr "Günlük"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
 msgstr "Varsayılan zaman dilimi"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "Sil"
@@ -445,13 +510,17 @@ msgstr "Sil"
 msgid "Delete fingerprint"
 msgstr "Parmak izini sil"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Description"
+msgstr "Açıklama"
+
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
-msgstr ""
+msgstr "Ayrıntı"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
-msgstr ""
+msgstr "Cihaz"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -460,7 +529,7 @@ msgstr "Boşalıyor"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
-msgstr "Disk"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Disk I/O"
@@ -493,6 +562,7 @@ msgid "Docker Network I/O"
 msgstr "Docker Ağ G/Ç"
 
 #: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Documentation"
 msgstr "Dokümantasyon"
 
@@ -516,10 +586,15 @@ msgstr "İndir"
 msgid "Duration"
 msgstr "Süre"
 
-#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "Düzenle"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Edit {foo}"
+msgstr "{foo} düzenle"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -535,6 +610,11 @@ msgstr "E-posta bildirimleri"
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "Boş"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "End Time"
+msgstr "Bitiş Saati"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -552,7 +632,10 @@ msgstr "Tek kullanımlık şifrenizi girin."
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
 msgstr "Hata"
 
@@ -563,9 +646,17 @@ msgstr "Hata"
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "Son {2, plural, one {# dakika} other {# dakika}} içinde {0}{1} aşıyor"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exec main PID"
+msgstr "Çalıştırma ana PID"
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr "<0>config.yml</0> içinde tanımlanmayan mevcut sistemler silinecektir. Lütfen düzenli yedekler alın."
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exited active"
+msgstr "Aktif olarak çıktı"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -583,9 +674,13 @@ msgstr "Mevcut sistem yapılandırmanızı dışa aktarın."
 msgid "Fahrenheit (°F)"
 msgstr "Fahrenhayt (°F)"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Failed"
+msgstr "Başarısız"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
-msgstr ""
+msgstr "Başarısız Özellikler:"
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
@@ -593,6 +688,7 @@ msgstr "Kimlik doğrulama başarısız"
 
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Failed to save settings"
 msgstr "Ayarlar kaydedilemedi"
 
@@ -604,14 +700,16 @@ msgstr "Test bildirimi gönderilemedi"
 msgid "Failed to update alert"
 msgstr "Uyarı güncellenemedi"
 
-#: src/components/systems-table/systems-table.tsx
-msgid "Filter by tags"
-msgstr ""
+#. placeholder {0}: statusTotals[ServiceStatus.Failed]
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Failed: {0}"
+msgstr "Başarısız: {0}"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "Filtrele..."
@@ -622,7 +720,7 @@ msgstr "Parmak izi"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
-msgstr ""
+msgstr "Donanım Yazılımı"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -649,6 +747,10 @@ msgstr "Dolu"
 msgid "General"
 msgstr "Genel"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Global"
+msgstr "Genel"
+
 #: src/components/routes/system.tsx
 msgid "GPU Engines"
 msgstr "GPU motorları"
@@ -657,17 +759,17 @@ msgstr "GPU motorları"
 msgid "GPU Power Draw"
 msgstr "GPU Güç Çekimi"
 
+#: src/lib/alerts.ts
+msgid "GPU Usage"
+msgstr "GPU Kullanımı"
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "Izgara"
 
-#: src/components/systems-table/systems-table-columns.tsx
-#~ msgid "Group"
-#~ msgstr ""
-
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Health"
-msgstr ""
+msgstr "Sağlık"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -677,7 +779,7 @@ msgstr "Homebrew komutu"
 
 #: src/components/add-system.tsx
 msgid "Host / IP"
-msgstr "Host / IP"
+msgstr "Ana Bilgisayar / IP"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -691,7 +793,11 @@ msgstr "Yönetici hesabınızın şifresini kaybettiyseniz, aşağıdaki komutu 
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
-msgstr ""
+msgstr "İmaj"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Inactive"
+msgstr "Pasif"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -709,6 +815,19 @@ msgstr "Dil"
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "Düzen"
+
+#: src/components/routes/settings/general.tsx
+msgid "Layout width"
+msgstr "Düzen genişliği"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Lifecycle"
+msgstr "Yaşam döngüsü"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "limit"
+msgstr "Sınır"
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
@@ -730,6 +849,14 @@ msgstr "Yük Ortalaması 5d"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
 msgstr "Yük Ort."
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Load state"
+msgstr "Yükleme durumu"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Loading..."
+msgstr "Yükleniyor..."
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -754,6 +881,10 @@ msgstr "Günlükler"
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
 msgstr "Uyarı oluşturma yerini mi arıyorsunuz? Sistemler tablosundaki zil <0/> simgelerine tıklayın."
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Main PID"
+msgstr "Ana PID"
+
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "Görüntüleme ve bildirim tercihlerini yönetin."
@@ -769,9 +900,20 @@ msgid "Max 1 min"
 msgstr "Maks 1 dk"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "Bellek"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory limit"
+msgstr "Bellek sınırı"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory Peak"
+msgstr "Bellek Tepe Değeri"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -789,6 +931,8 @@ msgstr ""
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
 msgstr "Ad"
 
@@ -813,7 +957,14 @@ msgstr "Genel arayüzlerin ağ trafiği"
 msgid "Network unit"
 msgstr "Ağ birimi"
 
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No"
+msgstr "Hayır"
+
 #: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
 msgstr "Sonuç bulunamadı."
 
@@ -822,22 +973,18 @@ msgstr "Sonuç bulunamadı."
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "No results."
 msgstr "Sonuç yok."
 
 #: src/components/routes/system/smart-table.tsx
 msgid "No S.M.A.R.T. attributes available for this device."
-msgstr ""
+msgstr "Bu cihaz için kullanılabilir S.M.A.R.T. özelliği yok."
 
-#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "Sistem bulunamadı."
-
-#: src/components/systems-table/systems-table.tsx
-msgid "No tags found"
-msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -853,12 +1000,19 @@ msgstr "OAuth 2 / OIDC desteği"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "Her yeniden başlatmada, veritabanındaki sistemler dosyada tanımlanan sistemlerle eşleşecek şekilde güncellenecektir."
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "One-time"
+msgstr "Bir seferlik"
+
 #: src/components/login/auth-form.tsx
 msgid "One-time password"
 msgstr "Tek kullanımlık şifre"
 
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "Menüyü aç"
@@ -869,12 +1023,13 @@ msgstr "Veya devam et"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Other"
-msgstr ""
+msgstr "Diğer"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "Mevcut uyarıların üzerine yaz"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
@@ -907,6 +1062,10 @@ msgstr "Parola 72 bayttan küçük olmalıdır."
 msgid "Password reset request received"
 msgstr "Şifre sıfırlama isteği alındı"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Past"
+msgstr ""
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "Duraklat"
@@ -922,11 +1081,11 @@ msgstr "Duraklatıldı ({pausedSystemsLength})"
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Per-core average utilization"
-msgstr ""
+msgstr "Çekirdek başına ortalama kullanım"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Percentage of time spent in each state"
-msgstr ""
+msgstr "Her durumda harcanan zamanın yüzdesi"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -963,12 +1122,12 @@ msgstr "Lütfen hesabınıza giriş yapın"
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr "Port"
+msgstr ""
 
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
 msgid "Power On"
-msgstr ""
+msgstr "Güç Açık"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -979,10 +1138,18 @@ msgstr "Kayıtlı zamanda kesin kullanım"
 msgid "Preferred Language"
 msgstr "Tercih Edilen Dil"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Process started"
+msgstr "Süreç başlatıldı"
+
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
 msgstr "Genel Anahtar"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Quiet Hours"
+msgstr "Sessiz Saatler"
 
 #. Disk read
 #: src/components/routes/system.tsx
@@ -996,8 +1163,13 @@ msgstr "Alındı"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "Refresh"
-msgstr ""
+msgstr "Yenile"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Relationships"
+msgstr "İlişkiler"
 
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
@@ -1006,6 +1178,14 @@ msgstr "Tek kullanımlık şifre iste"
 #: src/components/login/otp-forms.tsx
 msgid "Request OTP"
 msgstr "OTP iste"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Required by"
+msgstr "Gerektiren"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Requires"
+msgstr "Gerektirir"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
@@ -1017,9 +1197,18 @@ msgstr "Şifreyi Sıfırla"
 msgid "Resolved"
 msgstr "Çözüldü"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Restarts"
+msgstr "Yeniden başlatmalar"
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "Devam et"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgctxt "Root disk label"
+msgid "Root"
+msgstr "Kök"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1029,13 +1218,17 @@ msgstr "Token'ı döndür"
 msgid "Rows per page"
 msgstr "Sayfa başına satır"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Runtime Metrics"
+msgstr "Çalışma Zamanı Metrikleri"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
-msgstr ""
+msgstr "S.M.A.R.T. Ayrıntıları"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Self-Test"
-msgstr ""
+msgstr "S.M.A.R.T. Kendiliğinden Test"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -1050,6 +1243,18 @@ msgstr "Ayarları Kaydet"
 msgid "Save system"
 msgstr "Sistemi kaydet"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule"
+msgstr "Zamanla"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent, such as during maintenance periods."
+msgstr "Bildirimlerin gönderilmeyeceği sessiz saatleri zamanlayın, örneğin bakım dönemleri sırasında."
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent."
+msgstr "Bildirimlerin gönderilmeyeceği sessiz saatleri zamanlayın."
+
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "Ara"
@@ -1062,13 +1267,25 @@ msgstr "Sistemler veya ayarlar için ara..."
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Uyarıları nasıl alacağınızı yapılandırmak için <0>bildirim ayarlarını</0> inceleyin."
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Select {foo}"
+msgstr "Seç {foo}"
+
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "Gönderildi"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
-msgstr ""
+msgstr "Seri Numarası"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Service Details"
+msgstr "Hizmet Ayrıntıları"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr "Hizmetler"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1097,17 +1314,29 @@ msgstr "SMTP ayarları"
 msgid "Sort By"
 msgstr "Sıralama Ölçütü"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Start Time"
+msgstr "Başlangıç Saati"
+
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "Durum"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
 msgstr "Durum"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "Sub State"
+msgstr "Alt Durum"
 
 #: src/components/routes/system.tsx
 msgid "Swap space used by the system"
@@ -1117,9 +1346,15 @@ msgstr "Sistem tarafından kullanılan takas alanı"
 msgid "Swap Usage"
 msgstr "Takas Kullanımı"
 
+#: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
@@ -1129,9 +1364,9 @@ msgstr "Sistem"
 msgid "System load averages over time"
 msgstr "Zaman içindeki sistem yükü ortalamaları"
 
-#: src/components/routes/settings/layout.tsx
-msgid "System Organization"
-msgstr ""
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Systemd Services"
+msgstr "Systemd Hizmetleri"
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -1145,11 +1380,9 @@ msgstr "Sistemler, veri dizininizdeki bir <0>config.yml</0> dosyasında yönetil
 msgid "Table"
 msgstr "Tablo"
 
-#: src/components/systems-table/systems-table-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
-#: src/components/systems-table/systems-table.tsx
-msgid "Tags"
-msgstr ""
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Tasks"
+msgstr "Görevler"
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1172,7 +1405,7 @@ msgstr "Sistem sensörlerinin sıcaklıkları"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test <0>URL</0>"
-msgstr "Test <0>URL</0>"
+msgstr "<0>URL</0>'yi Test Et"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test notification sent"
@@ -1218,7 +1451,7 @@ msgstr "Temayı değiştir"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr "Token"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1237,7 +1470,7 @@ msgstr "Token'lar ve parmak izleri hub'a WebSocket bağlantılarını doğrulama
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
-msgstr ""
+msgstr "Toplam"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
@@ -1246,6 +1479,19 @@ msgstr "Her arayüz için alınan toplam veri"
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data sent for each interface"
 msgstr "Her arayüz için gönderilen toplam veri"
+
+#. placeholder {0}: data.length
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Total: {0}"
+msgstr "Toplam: {0}"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggered by"
+msgstr "Tetikleyen"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggers"
+msgstr "Tetikleyiciler"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
@@ -1272,6 +1518,10 @@ msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "CPU kullanımı bir eşiği aştığında tetiklenir"
 
 #: src/lib/alerts.ts
+msgid "Triggers when GPU usage exceeds a threshold"
+msgstr "GPU kullanımı bir eşiği aştığında tetiklenir"
+
+#: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "Bellek kullanımı bir eşiği aştığında tetiklenir"
 
@@ -1283,9 +1533,15 @@ msgstr "Durum yukarı ve aşağı arasında değiştiğinde tetiklenir"
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "Herhangi bir diskin kullanımı bir eşiği aştığında tetiklenir"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
-msgstr ""
+msgstr "Tür"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unit file"
+msgstr "Birim dosyası"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
@@ -1302,6 +1558,11 @@ msgstr "Evrensel token"
 msgid "Unknown"
 msgstr "Bilinmiyor"
 
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unlimited"
+msgstr "Sınırsız"
+
 #. Context: System is up
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1312,9 +1573,19 @@ msgstr "Açık"
 msgid "Up ({upSystemsLength})"
 msgstr "Açık ({upSystemsLength})"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Update"
+msgstr "Güncelle"
+
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
-msgstr ""
+msgstr "Güncellendi"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Updated every 10 minutes."
+msgstr "Her 10 dakikada bir güncellenir."
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
@@ -1375,6 +1646,10 @@ msgstr "Görüntülemek için yeterli kayıt bekleniyor"
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "Çevirilerimizi daha iyi hale getirmemize yardımcı olmak ister misiniz? Daha fazla bilgi için <0>Crowdin</0> inceleyin."
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Wants"
+msgstr "İstekler"
+
 #: src/components/routes/settings/general.tsx
 msgid "Warning (%)"
 msgstr "Uyarı (%)"
@@ -1410,6 +1685,12 @@ msgstr "YAML Yapılandırması"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "YAML Yapılandırması"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Yes"
+msgstr "Evet"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."

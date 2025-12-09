@@ -8,27 +8,15 @@ msgstr ""
 "Language: fa\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-08-28 23:21\n"
+"PO-Revision-Date: 2025-11-14 22:51\n"
 "Last-Translator: \n"
 "Language-Team: Persian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Crowdin-Project: beszel\n"
 "X-Crowdin-Project-ID: 733311\n"
 "X-Crowdin-Language: fa\n"
-"X-Crowdin-File: /main/beszel/site/src/locales/en/en.po\n"
-"X-Crowdin-File-ID: 16\n"
-
-#: src/components/routes/system.tsx
-#~ msgid "{0, plural, one {# day} other {# days}}"
-#~ msgstr "{0, plural, one {# روز} other {# روز}}"
-
-#: src/components/routes/system.tsx
-#~ msgid "{0, plural, one {# hour} other {# hours}}"
-#~ msgstr "{0, plural, one {# ساعت} other {# ساعت}}"
-
-#: src/components/routes/system.tsx
-#~ msgid "{0, plural, one {# minute} few {# minutes} many {# minutes} other {# minutes}}"
-#~ msgstr "{0, plural, one {# دقیقه} few {# دقیقه} many {# دقیقه} other {# دقیقه}}"
+"X-Crowdin-File: /main/internal/site/src/locales/en/en.po\n"
+"X-Crowdin-File-ID: 32\n"
 
 #. placeholder {0}: table.getFilteredSelectedRowModel().rows.length
 #. placeholder {1}: table.getFilteredRowModel().rows.length
@@ -38,15 +26,15 @@ msgstr "{0} از {1} ردیف انتخاب شده است."
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} day} other {{countString} days}}"
-msgstr ""
+msgstr "{count, plural, one {{countString} روز} other {{countString} روز}}"
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} hour} other {{countString} hours}}"
-msgstr ""
+msgstr "{count, plural, one {{countString} ساعت} other {{countString} ساعت}}"
 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
-msgstr ""
+msgstr "{count, plural, one {{countString} دقیقه} few {{countString} دقیقه} many {{countString} دقیقه} other {{countString} دقیقه}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -88,13 +76,16 @@ msgid "5 min"
 msgstr "۵ دقیقه"
 
 #. Table column
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Actions"
 msgstr "عملیات"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Active"
 msgstr "فعال"
 
@@ -102,13 +93,19 @@ msgstr "فعال"
 msgid "Active Alerts"
 msgstr " هشدارهای فعال"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Active state"
+msgstr "وضعیت فعال"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Add {foo}"
+msgstr "افزودن {foo}"
+
 #: src/components/add-system.tsx
 msgid "Add <0>System</0>"
 msgstr "افزودن <0>سیستم</0>"
-
-#: src/components/add-system.tsx
-msgid "Add New System"
-msgstr "افزودن سیستم جدید"
 
 #: src/components/add-system.tsx
 msgid "Add system"
@@ -122,10 +119,18 @@ msgstr "افزودن آدرس اینترنتی"
 msgid "Adjust display options for charts."
 msgstr "تنظیم گزینه‌های نمایش برای نمودارها."
 
+#: src/components/routes/settings/general.tsx
+msgid "Adjust the width of the main layout"
+msgstr "تنظیم عرض چیدمان اصلی"
+
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
 msgstr "مدیر"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "After"
+msgstr "بعد از"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -146,11 +151,12 @@ msgstr "هشدارها"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
-msgstr ""
+msgstr "همه کانتینرها"
 
 #: src/components/alerts/alerts-sheet.tsx
 #: src/components/command-palette.tsx
 #: src/components/routes/home.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "All Systems"
@@ -212,6 +218,18 @@ msgstr "پهنای باند"
 msgid "Battery"
 msgstr "باتری"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became active"
+msgstr "فعال شد"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Became inactive"
+msgstr "غیرفعال شد"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Before"
+msgstr "قبل از"
+
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
 msgstr "بِزل از OpenID Connect و بسیاری از ارائه‌دهندگان احراز هویت OAuth2 پشتیبانی می‌کند."
@@ -229,6 +247,10 @@ msgstr "دودویی"
 msgid "Bits (Kbps, Mbps, Gbps)"
 msgstr "بیت (کیلوبیت بر ثانیه، مگابیت بر ثانیه، گیگابیت بر ثانیه)"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Boot state"
+msgstr "وضعیت بوت"
+
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
@@ -238,14 +260,31 @@ msgstr "بایت (کیلوبایت بر ثانیه، مگابایت بر ثان�
 msgid "Cache / Buffers"
 msgstr "حافظه پنهان / بافرها"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can reload"
+msgstr "می‌تواند بارگذاری مجدد شود"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can start"
+msgstr "می‌تواند شروع شود"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Can stop"
+msgstr "می‌تواند متوقف شود"
+
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Cancel"
 msgstr "لغو"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Capabilities"
+msgstr "قابلیت‌ها"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
-msgstr ""
+msgstr "ظرفیت"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
@@ -289,12 +328,18 @@ msgid "Check your notification service"
 msgstr "سرویس اطلاع‌رسانی خود را بررسی کنید"
 
 #: src/components/containers-table/containers-table.tsx
-msgid "Click on a container to view more information."
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systems-table/systems-table.tsx
+msgid "Clear"
 msgstr ""
+
+#: src/components/containers-table/containers-table.tsx
+msgid "Click on a container to view more information."
+msgstr "برای مشاهده اطلاعات بیشتر روی کانتینر کلیک کنید."
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
-msgstr ""
+msgstr "برای مشاهده اطلاعات بیشتر روی دستگاه کلیک کنید."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
@@ -317,6 +362,10 @@ msgstr "نحوه دریافت هشدارهای اطلاع‌رسانی را پی
 #: src/components/login/auth-form.tsx
 msgid "Confirm password"
 msgstr "تأیید رمز عبور"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Conflicts"
+msgstr "تعارض‌ها"
 
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
@@ -378,17 +427,26 @@ msgid "Copy YAML"
 msgstr "کپی YAML"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
 msgstr "پردازنده"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
-msgstr ""
+msgstr "هسته‌های CPU"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "CPU Peak"
+msgstr "حداکثر CPU"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "CPU time"
+msgstr "زمان CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Time Breakdown"
-msgstr ""
+msgstr "تجزیه زمان CPU"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -396,6 +454,10 @@ msgstr ""
 #: src/lib/alerts.ts
 msgid "CPU Usage"
 msgstr "میزان استفاده از پردازنده"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Create"
+msgstr "ایجاد"
 
 #: src/components/login/auth-form.tsx
 msgid "Create account"
@@ -426,17 +488,20 @@ msgstr "وضعیت فعلی"
 #. Power Cycles
 #: src/components/routes/system/smart-table.tsx
 msgid "Cycles"
-msgstr ""
+msgstr "چرخه‌ها"
 
-#: src/components/command-palette.tsx
-msgid "Dashboard"
-msgstr "داشبورد"
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Daily"
+msgstr "روزانه"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
 msgstr "بازه زمانی پیش‌فرض"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Delete"
 msgstr "حذف"
@@ -445,13 +510,17 @@ msgstr "حذف"
 msgid "Delete fingerprint"
 msgstr "حذف اثر انگشت"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Description"
+msgstr "توضیحات"
+
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
-msgstr ""
+msgstr "جزئیات"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
-msgstr ""
+msgstr "دستگاه"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -493,6 +562,7 @@ msgid "Docker Network I/O"
 msgstr "ورودی/خروجی شبکه داکر"
 
 #: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Documentation"
 msgstr "مستندات"
 
@@ -516,10 +586,15 @@ msgstr "دانلود"
 msgid "Duration"
 msgstr "مدت زمان"
 
-#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
 msgstr "ویرایش"
+
+#: src/components/add-system.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Edit {foo}"
+msgstr "ویرایش {foo}"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -535,6 +610,11 @@ msgstr "اعلان‌های ایمیلی"
 #: src/lib/i18n.ts
 msgid "Empty"
 msgstr "خالی"
+
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "End Time"
+msgstr "زمان پایان"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -552,7 +632,10 @@ msgstr "رمز عبور یک‌بار مصرف خود را وارد کنید."
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
 msgstr "خطا"
 
@@ -563,9 +646,17 @@ msgstr "خطا"
 msgid "Exceeds {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
 msgstr "در {2, plural, one {# دقیقه} other {# دقیقه}} گذشته از {0}{1} بیشتر است"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exec main PID"
+msgstr ""
+
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
 msgstr "سیستم‌های موجود که در <0>config.yml</0> تعریف نشده‌اند حذف خواهند شد. لطفاً به طور منظم پشتیبان‌گیری کنید."
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Exited active"
+msgstr "خروج فعال"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -583,9 +674,13 @@ msgstr "پیکربندی سیستم‌های فعلی خود را خارج کن�
 msgid "Fahrenheit (°F)"
 msgstr "فارنهایت (°F)"
 
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Failed"
+msgstr "ناموفق"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "Failed Attributes:"
-msgstr ""
+msgstr "ویژگی‌های ناموفق:"
 
 #: src/lib/api.ts
 msgid "Failed to authenticate"
@@ -593,6 +688,7 @@ msgstr "احراز هویت ناموفق بود"
 
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/notifications.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 msgid "Failed to save settings"
 msgstr "ذخیره تنظیمات ناموفق بود"
 
@@ -604,14 +700,16 @@ msgstr "ارسال اعلان آزمایشی ناموفق بود"
 msgid "Failed to update alert"
 msgstr "به‌روزرسانی هشدار ناموفق بود"
 
-#: src/components/systems-table/systems-table.tsx
-msgid "Filter by tags"
-msgstr ""
+#. placeholder {0}: statusTotals[ServiceStatus.Failed]
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Failed: {0}"
+msgstr "ناموفق: {0}"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
 msgstr "فیلتر..."
@@ -622,7 +720,7 @@ msgstr "اثر انگشت"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
-msgstr ""
+msgstr "فرم‌ویر"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -649,6 +747,10 @@ msgstr "پر"
 msgid "General"
 msgstr "عمومی"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Global"
+msgstr "جهانی"
+
 #: src/components/routes/system.tsx
 msgid "GPU Engines"
 msgstr "موتورهای GPU"
@@ -657,17 +759,17 @@ msgstr "موتورهای GPU"
 msgid "GPU Power Draw"
 msgstr "مصرف برق پردازنده گرافیکی"
 
+#: src/lib/alerts.ts
+msgid "GPU Usage"
+msgstr "میزان استفاده از GPU"
+
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
 msgstr "جدول"
 
-#: src/components/systems-table/systems-table-columns.tsx
-#~ msgid "Group"
-#~ msgstr ""
-
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Health"
-msgstr ""
+msgstr "سلامتی"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -691,7 +793,11 @@ msgstr "اگر رمز عبور حساب مدیر خود را گم کرده‌ا�
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
-msgstr ""
+msgstr "تصویر"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Inactive"
+msgstr "غیرفعال"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -709,6 +815,19 @@ msgstr "زبان"
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
 msgstr "طرح‌بندی"
+
+#: src/components/routes/settings/general.tsx
+msgid "Layout width"
+msgstr "عرض چیدمان"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Lifecycle"
+msgstr "چرخه حیات"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "limit"
+msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
@@ -730,6 +849,14 @@ msgstr "میانگین بار ۵ دقیقه"
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
 msgstr "میانگین بار"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Load state"
+msgstr "وضعیت بارگذاری"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Loading..."
+msgstr "در حال بارگذاری..."
 
 #: src/components/navbar.tsx
 msgid "Log Out"
@@ -754,6 +881,10 @@ msgstr "لاگ‌ها"
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
 msgstr "به دنبال جایی برای ایجاد هشدار هستید؟ روی آیکون‌های زنگ <0/> در جدول سیستم‌ها کلیک کنید."
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Main PID"
+msgstr ""
+
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
 msgstr "مدیریت تنظیمات نمایش و اعلان‌ها."
@@ -769,9 +900,20 @@ msgid "Max 1 min"
 msgstr "حداکثر ۱ دقیقه"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
 msgstr "حافظه"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory limit"
+msgstr "محدودیت حافظه"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Memory Peak"
+msgstr "حداکثر حافظه"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -784,11 +926,13 @@ msgstr "میزان استفاده از حافظه کانتینرهای داکر"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
-msgstr ""
+msgstr "مدل"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "Name"
 msgstr "نام"
 
@@ -813,7 +957,14 @@ msgstr "ترافیک شبکه رابط‌های عمومی"
 msgid "Network unit"
 msgstr "واحد شبکه"
 
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "No"
+msgstr "خیر"
+
 #: src/components/command-palette.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
 msgstr "هیچ نتیجه‌ای یافت نشد."
 
@@ -822,22 +973,18 @@ msgstr "هیچ نتیجه‌ای یافت نشد."
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 msgid "No results."
 msgstr "نتیجه‌ای یافت نشد."
 
 #: src/components/routes/system/smart-table.tsx
 msgid "No S.M.A.R.T. attributes available for this device."
-msgstr ""
+msgstr "هیچ ویژگی S.M.A.R.T برای این دستگاه موجود نیست."
 
-#: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
 msgstr "هیچ سیستمی یافت نشد."
-
-#: src/components/systems-table/systems-table.tsx
-msgid "No tags found"
-msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -853,12 +1000,19 @@ msgstr "پشتیبانی از OAuth 2 / OIDC"
 msgid "On each restart, systems in the database will be updated to match the systems defined in the file."
 msgstr "در هر بار راه‌اندازی مجدد، سیستم‌های موجود در پایگاه داده با سیستم‌های تعریف شده در فایل مطابقت داده می‌شوند."
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "One-time"
+msgstr "یک‌بار مصرف"
+
 #: src/components/login/auth-form.tsx
 msgid "One-time password"
 msgstr "رمز عبور یک‌بار مصرف"
 
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Open menu"
 msgstr "باز کردن منو"
@@ -869,12 +1023,13 @@ msgstr "یا ادامه با"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Other"
-msgstr ""
+msgstr "سایر"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Overwrite existing alerts"
 msgstr "بازنویسی هشدارهای موجود"
 
+#: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Page"
@@ -907,6 +1062,10 @@ msgstr "رمز عبور باید کمتر از ۷۲ بایت باشد."
 msgid "Password reset request received"
 msgstr "درخواست بازنشانی رمز عبور دریافت شد"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Past"
+msgstr "گذشته"
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
 msgstr "توقف"
@@ -922,11 +1081,11 @@ msgstr "مکث شده ({pausedSystemsLength})"
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Per-core average utilization"
-msgstr ""
+msgstr "میانگین استفاده در هر هسته"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Percentage of time spent in each state"
-msgstr ""
+msgstr "درصد زمان صرف شده در هر حالت"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -968,7 +1127,7 @@ msgstr "پورت"
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
 msgid "Power On"
-msgstr ""
+msgstr "روشن کردن"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
@@ -979,10 +1138,18 @@ msgstr "میزان دقیق استفاده در زمان ثبت شده"
 msgid "Preferred Language"
 msgstr "زبان ترجیحی"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Process started"
+msgstr "فرآیند شروع شد"
+
 #. Use 'Key' if your language requires many more characters
 #: src/components/add-system.tsx
 msgid "Public Key"
 msgstr "کلید عمومی"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Quiet Hours"
+msgstr "ساعات آرام"
 
 #. Disk read
 #: src/components/routes/system.tsx
@@ -996,8 +1163,13 @@ msgstr "دریافت شد"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/routes/system/smart-table.tsx
 msgid "Refresh"
-msgstr ""
+msgstr "تازه‌سازی"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Relationships"
+msgstr "روابط"
 
 #: src/components/login/login.tsx
 msgid "Request a one-time password"
@@ -1006,6 +1178,14 @@ msgstr "درخواست رمز عبور یک‌بار مصرف"
 #: src/components/login/otp-forms.tsx
 msgid "Request OTP"
 msgstr "درخواست OTP"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Required by"
+msgstr "مورد نیاز توسط"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Requires"
+msgstr "نیازمند"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Reset Password"
@@ -1017,9 +1197,18 @@ msgstr "بازنشانی رمز عبور"
 msgid "Resolved"
 msgstr "حل شده"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Restarts"
+msgstr "راه‌اندازی مجدد"
+
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
 msgstr "ادامه"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgctxt "Root disk label"
+msgid "Root"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1029,13 +1218,17 @@ msgstr "چرخش توکن"
 msgid "Rows per page"
 msgstr "ردیف در هر صفحه"
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Runtime Metrics"
+msgstr "معیارهای زمان اجرا"
+
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
-msgstr ""
+msgstr "جزئیات S.M.A.R.T"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Self-Test"
-msgstr ""
+msgstr "تست خود S.M.A.R.T"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
@@ -1050,6 +1243,18 @@ msgstr "ذخیره تنظیمات"
 msgid "Save system"
 msgstr "ذخیره سیستم"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule"
+msgstr "برنامه‌ریزی"
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent, such as during maintenance periods."
+msgstr "برنامه‌ریزی ساعات آرام که در آن اعلان‌ها ارسال نخواهند شد، مانند در طول دوره‌های تعمیر و نگهداری."
+
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Schedule quiet hours where notifications will not be sent."
+msgstr "برنامه‌ریزی ساعات آرام که در آن اعلان‌ها ارسال نخواهند شد."
+
 #: src/components/navbar.tsx
 msgid "Search"
 msgstr "جستجو"
@@ -1062,13 +1267,25 @@ msgstr "جستجو برای سیستم‌ها یا تنظیمات..."
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "برای پیکربندی نحوه دریافت هشدارها، به <0>تنظیمات اعلان</0> مراجعه کنید."
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Select {foo}"
+msgstr "انتخاب {foo}"
+
 #: src/components/routes/system.tsx
 msgid "Sent"
 msgstr "ارسال شد"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
-msgstr ""
+msgstr "شماره سریال"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Service Details"
+msgstr "جزئیات سرویس"
+
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Services"
+msgstr "سرویس‌ها"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1097,17 +1314,29 @@ msgstr "تنظیمات SMTP"
 msgid "Sort By"
 msgstr "مرتب‌سازی بر اساس"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Start Time"
+msgstr "زمان شروع"
+
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 msgid "State"
 msgstr "وضعیت"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
 msgstr "وضعیت"
+
+#: src/components/systemd-table/systemd-table-columns.tsx
+msgid "Sub State"
+msgstr "وضعیت فرعی"
 
 #: src/components/routes/system.tsx
 msgid "Swap space used by the system"
@@ -1117,9 +1346,15 @@ msgstr "فضای Swap استفاده شده توسط سیستم"
 msgid "Swap Usage"
 msgstr "میزان استفاده از Swap"
 
+#: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
+#: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
@@ -1129,9 +1364,9 @@ msgstr "سیستم"
 msgid "System load averages over time"
 msgstr "میانگین بار سیستم در طول زمان"
 
-#: src/components/routes/settings/layout.tsx
-msgid "System Organization"
-msgstr ""
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Systemd Services"
+msgstr "خدمات Systemd"
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -1145,11 +1380,9 @@ msgstr "سیستم‌ها ممکن است در یک فایل <0>config.yml</0> �
 msgid "Table"
 msgstr "جدول"
 
-#: src/components/systems-table/systems-table-columns.tsx
-#: src/components/systems-table/systems-table-columns.tsx
-#: src/components/systems-table/systems-table.tsx
-msgid "Tags"
-msgstr ""
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Tasks"
+msgstr "وظایف"
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1237,7 +1470,7 @@ msgstr "توکن‌ها و اثرات انگشت برای احراز هویت ا
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
-msgstr ""
+msgstr "کل"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
@@ -1246,6 +1479,19 @@ msgstr "داده‌های کل دریافت شده برای هر رابط"
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data sent for each interface"
 msgstr "داده‌های کل ارسال شده برای هر رابط"
+
+#. placeholder {0}: data.length
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Total: {0}"
+msgstr "کل: {0}"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggered by"
+msgstr "فعال شده توسط"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Triggers"
+msgstr "محرک‌ها"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
@@ -1272,6 +1518,10 @@ msgid "Triggers when CPU usage exceeds a threshold"
 msgstr "هنگامی که میزان استفاده از CPU از یک آستانه فراتر رود، فعال می‌شود"
 
 #: src/lib/alerts.ts
+msgid "Triggers when GPU usage exceeds a threshold"
+msgstr "هنگامی که میزان استفاده از GPU از یک آستانه فراتر رود، فعال می‌شود"
+
+#: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
 msgstr "هنگامی که میزان استفاده از حافظه از یک آستانه فراتر رود، فعال می‌شود"
 
@@ -1283,8 +1533,14 @@ msgstr "هنگامی که وضعیت بین بالا و پایین تغییر م
 msgid "Triggers when usage of any disk exceeds a threshold"
 msgstr "هنگامی که استفاده از هر دیسکی از یک آستانه فراتر رود، فعال می‌شود"
 
+#: src/components/routes/settings/quiet-hours.tsx
+#: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
+msgstr "نوع"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unit file"
 msgstr ""
 
 #. Temperature / network units
@@ -1302,6 +1558,11 @@ msgstr "توکن جهانی"
 msgid "Unknown"
 msgstr "ناشناخته"
 
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Unlimited"
+msgstr "نامحدود"
+
 #. Context: System is up
 #: src/components/routes/system.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1312,9 +1573,19 @@ msgstr "فعال"
 msgid "Up ({upSystemsLength})"
 msgstr "فعال ({upSystemsLength})"
 
+#: src/components/routes/settings/quiet-hours.tsx
+msgid "Update"
+msgstr "به‌روزرسانی"
+
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/smart-table.tsx
+#: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Updated"
-msgstr ""
+msgstr "به‌روزرسانی شد"
+
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Updated every 10 minutes."
+msgstr "هر ۱۰ دقیقه به‌روزرسانی می‌شود."
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
@@ -1375,6 +1646,10 @@ msgstr "در انتظار رکوردهای کافی برای نمایش"
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
 msgstr "می‌خواهید به ما کمک کنید تا ترجمه‌های خود را بهتر کنیم؟ برای جزئیات بیشتر به <0>Crowdin</0> مراجعه کنید."
 
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Wants"
+msgstr "می‌خواهد"
+
 #: src/components/routes/settings/general.tsx
 msgid "Warning (%)"
 msgstr "هشدار (%)"
@@ -1410,6 +1685,12 @@ msgstr "پیکربندی YAML"
 #: src/components/routes/settings/config-yaml.tsx
 msgid "YAML Configuration"
 msgstr "پیکربندی YAML"
+
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+#: src/components/systemd-table/systemd-table.tsx
+msgid "Yes"
+msgstr "بله"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."

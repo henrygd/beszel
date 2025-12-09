@@ -6,7 +6,9 @@ import (
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/common"
+	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/henrygd/beszel/internal/entities/system"
+	"github.com/henrygd/beszel/internal/entities/systemd"
 	"github.com/lxzan/gws"
 	"golang.org/x/crypto/ssh"
 )
@@ -115,8 +117,46 @@ func (ws *WsConn) RequestContainerInfo(ctx context.Context, containerID string) 
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 
+// RequestSystemdInfo requests detailed information about a systemd service via WebSocket.
+func (ws *WsConn) RequestSystemdInfo(ctx context.Context, serviceName string) (systemd.ServiceDetails, error) {
+	if !ws.IsConnected() {
+		return nil, gws.ErrConnClosed
+	}
+
+	req, err := ws.requestManager.SendRequest(ctx, common.GetSystemdInfo, common.SystemdInfoRequest{ServiceName: serviceName})
+	if err != nil {
+		return nil, err
+	}
+
+	var result systemd.ServiceDetails
+	handler := &systemdInfoHandler{result: &result}
+	if err := ws.handleAgentRequest(req, handler); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+// systemdInfoHandler parses ServiceDetails from AgentResponse
+type systemdInfoHandler struct {
+	BaseHandler
+	result *systemd.ServiceDetails
+}
+
+func (h *systemdInfoHandler) Handle(agentResponse common.AgentResponse) error {
+	if agentResponse.ServiceInfo == nil {
+		return errors.New("no systemd info in response")
+	}
+	*h.result = agentResponse.ServiceInfo
+	return nil
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
 // RequestSmartData requests SMART data via WebSocket.
-func (ws *WsConn) RequestSmartData(ctx context.Context) (map[string]any, error) {
+func (ws *WsConn) RequestSmartData(ctx context.Context) (map[string]smart.SmartData, error) {
 	if !ws.IsConnected() {
 		return nil, gws.ErrConnClosed
 	}
@@ -124,7 +164,7 @@ func (ws *WsConn) RequestSmartData(ctx context.Context) (map[string]any, error) 
 	if err != nil {
 		return nil, err
 	}
-	var result map[string]any
+	var result map[string]smart.SmartData
 	handler := ResponseHandler(&smartDataHandler{result: &result})
 	if err := ws.handleAgentRequest(req, handler); err != nil {
 		return nil, err
@@ -135,19 +175,14 @@ func (ws *WsConn) RequestSmartData(ctx context.Context) (map[string]any, error) 
 // smartDataHandler parses SMART data map from AgentResponse
 type smartDataHandler struct {
 	BaseHandler
-	result *map[string]any
+	result *map[string]smart.SmartData
 }
 
 func (h *smartDataHandler) Handle(agentResponse common.AgentResponse) error {
 	if agentResponse.SmartData == nil {
 		return errors.New("no SMART data in response")
 	}
-	// convert to map[string]any for transport convenience in hub layer
-	out := make(map[string]any, len(agentResponse.SmartData))
-	for k, v := range agentResponse.SmartData {
-		out[k] = v
-	}
-	*h.result = out
+	*h.result = agentResponse.SmartData
 	return nil
 }
 

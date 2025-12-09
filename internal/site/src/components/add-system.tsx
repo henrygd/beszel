@@ -1,4 +1,4 @@
-import { t } from "@lingui/core/macro"
+import { msg, t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
@@ -38,6 +38,9 @@ import { AppleIcon, DockerIcon, FreeBsdIcon, TuxIcon, WindowsIcon } from "./ui/i
 import { InputCopy } from "./ui/input-copy"
 
 export function AddSystemButton({ className }: { className?: string }) {
+	if (isReadOnlyUser()) {
+		return null
+	}
 	const [open, setOpen] = useState(false)
 	const opened = useRef(false)
 	if (open) {
@@ -47,10 +50,7 @@ export function AddSystemButton({ className }: { className?: string }) {
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
-				<Button
-					variant="outline"
-					className={cn("flex gap-1 max-xs:h-[2.4rem]", className, isReadOnlyUser() && "hidden")}
-				>
+				<Button variant="outline" className={cn("flex gap-1 max-xs:h-[2.4rem]", className)}>
 					<PlusIcon className="h-4 w-4 -ms-1" />
 					<Trans>
 						Add <span className="hidden sm:inline">System</span>
@@ -134,6 +134,8 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 		}
 	}
 
+	const systemTranslation = t`System`
+
 	return (
 		<DialogContent
 			className="w-[90%] sm:w-auto sm:ns-dialog max-w-full rounded-lg"
@@ -144,7 +146,11 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 			<Tabs defaultValue={tab} onValueChange={setTab}>
 				<DialogHeader>
 					<DialogTitle className="mb-1 pb-1 max-w-100 truncate pr-8">
-						{system ? `${t`Edit`} ${system?.name}` : <Trans>Add New System</Trans>}
+						{system ? (
+							<Trans>Edit {{ foo: systemTranslation }}</Trans>
+						) : (
+							<Trans>Add {{ foo: systemTranslation }}</Trans>
+						)}
 					</DialogTitle>
 					<TabsList className="grid w-full grid-cols-2">
 						<TabsTrigger value="docker">Docker</TabsTrigger>

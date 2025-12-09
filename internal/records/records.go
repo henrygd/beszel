@@ -490,7 +490,15 @@ func (rm *RecordManager) DeleteOldRecords() {
 		if err != nil {
 			return err
 		}
+		err = deleteOldSystemdServiceRecords(txApp)
+		if err != nil {
+			return err
+		}
 		err = deleteOldAlertsHistory(txApp, 200, 250)
+		if err != nil {
+			return err
+		}
+		err = deleteOldQuietHours(txApp)
 		if err != nil {
 			return err
 		}
@@ -559,6 +567,20 @@ func deleteOldSystemStats(app core.App) error {
 	return nil
 }
 
+// Deletes systemd service records that haven't been updated in the last 20 minutes
+func deleteOldSystemdServiceRecords(app core.App) error {
+	now := time.Now().UTC()
+	twentyMinutesAgo := now.Add(-20 * time.Minute)
+
+	// Delete systemd service records where updated < twentyMinutesAgo
+	_, err := app.DB().NewQuery("DELETE FROM systemd_services WHERE updated < {:updated}").Bind(dbx.Params{"updated": twentyMinutesAgo.UnixMilli()}).Execute()
+	if err != nil {
+		return fmt.Errorf("failed to delete old systemd service records: %v", err)
+	}
+
+	return nil
+}
+
 // Deletes container records that haven't been updated in the last 10 minutes
 func deleteOldContainerRecords(app core.App) error {
 	now := time.Now().UTC()
@@ -568,6 +590,17 @@ func deleteOldContainerRecords(app core.App) error {
 	_, err := app.DB().NewQuery("DELETE FROM containers WHERE updated < {:updated}").Bind(dbx.Params{"updated": tenMinutesAgo.UnixMilli()}).Execute()
 	if err != nil {
 		return fmt.Errorf("failed to delete old container records: %v", err)
+	}
+
+	return nil
+}
+
+// Deletes old quiet hours records where end date has passed
+func deleteOldQuietHours(app core.App) error {
+	now := time.Now().UTC()
+	_, err := app.DB().NewQuery("DELETE FROM quiet_hours WHERE type = 'one-time' AND end < {:now}").Bind(dbx.Params{"now": now}).Execute()
+	if err != nil {
+		return err
 	}
 
 	return nil

@@ -14,12 +14,13 @@ import { Toaster } from "@/components/ui/toaster.tsx"
 import { alertManager } from "@/lib/alerts"
 import { pb, updateUserSettings } from "@/lib/api.ts"
 import { dynamicActivate, getLocale } from "@/lib/i18n"
-import { $authenticated, $copyContent, $direction, $publicKey } from "@/lib/stores.ts"
+import { $authenticated, $copyContent, $direction, $publicKey, $userSettings } from "@/lib/stores.ts"
 import * as systemsManager from "@/lib/systemsManager.ts"
 
 const LoginPage = lazy(() => import("@/components/login/login.tsx"))
 const Home = lazy(() => import("@/components/routes/home.tsx"))
 const Containers = lazy(() => import("@/components/routes/containers.tsx"))
+const Smart = lazy(() => import("@/components/routes/smart.tsx"))
 const SystemDetail = lazy(() => import("@/components/routes/system.tsx"))
 const CopyToClipboardDialog = lazy(() => import("@/components/copy-to-clipboard.tsx"))
 
@@ -62,6 +63,8 @@ const App = memo(() => {
 		return <SystemDetail id={page.params.id} />
 	} else if (page.route === "containers") {
 		return <Containers />
+	} else if (page.route === "smart") {
+		return <Smart />
 	} else if (page.route === "settings") {
 		return <Settings />
 	}
@@ -71,6 +74,7 @@ const Layout = () => {
 	const authenticated = useStore($authenticated)
 	const copyContent = useStore($copyContent)
 	const direction = useStore($direction)
+	const userSettings = useStore($userSettings)
 
 	useEffect(() => {
 		document.documentElement.dir = direction
@@ -96,7 +100,7 @@ const Layout = () => {
 					<LoginPage />
 				</Suspense>
 			) : (
-				<>
+				<div style={{ "--container": `${userSettings.layoutWidth ?? 1500}px` } as React.CSSProperties}>
 					<div className="container">
 						<Navbar />
 					</div>
@@ -108,7 +112,7 @@ const Layout = () => {
 							</Suspense>
 						)}
 					</div>
-				</>
+				</div>
 			)}
 		</DirectionProvider>
 	)

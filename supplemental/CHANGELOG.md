@@ -1,3 +1,57 @@
+## 0.17.0
+
+- Add quiet hours to silence alerts during specific time periods. (#265)
+
+- Add dedicated S.M.A.R.T. page.
+
+- Add alerts for S.M.A.R.T. failures.
+
+- Add `DISK_USAGE_CACHE` environment variable. (#1426)
+
+- Add `SKIP_SYSTEMD` environment variable. (#1448)
+
+- Add hub builds for Windows and FreeBSD.
+
+- Change extra disk indicators in systems table to display usage range as dots. (#1409)
+
+- Strip ANSI escape sequences from docker logs. (#1478)
+
+- Fix issue where the Add System button is visible to read-only users. (#1442)
+
+- Fix font ligatures creating unwanted artifacts in random ids. (#1434)
+
+- Update Go dependencies.
+
+## 0.16.1
+
+- Add services column to All Systems table. (#1153)
+
+- Add `SERVICE_PATTERNS` environment variable to filter systemd services. (#1153)
+
+- Fix detection and handling of immutable filesystems like Fedora Silverblue. (#1405)
+
+- Persist alert history page size preference. (#1404)
+
+- Add setting for layout width.
+
+- Update Go dependencies.
+
+## 0.16.0
+
+- Add basic systemd service monitoring. (#1153)
+
+- Add GPU usage alerts.
+
+- Show additional disk percentages in systems table. (#1365)
+
+- Embed `smartctl` in the Windows binary (experimental). (#1362)
+
+- Add `EXCLUDE_SMART` environment variable to exclude devices from S.M.A.R.T. monitoring. (#1392)
+
+- Change alert links to use system ID instead of name.
+
+- Update Go dependencies.
+
 ## 0.15.4
 
 - Refactor containers table to fix clock issue causing no results. (#1337)
