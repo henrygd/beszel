@@ -430,7 +430,7 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 	// Check if we have any existing data for this device
 	hasExistingData := sm.hasDataForDevice(deviceInfo.Name)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
 	// Try with -n standby first if we have existing data
@@ -445,7 +445,7 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 			return nil
 		}
 		// No cached data, need to collect initial data by bypassing standby
-		ctx2, cancel2 := context.WithTimeout(context.Background(), 2*time.Second)
+		ctx2, cancel2 := context.WithTimeout(context.Background(), 15*time.Second)
 		defer cancel2()
 		args = sm.smartctlArgs(deviceInfo, false)
 		cmd = exec.CommandContext(ctx2, sm.binPath, args...)

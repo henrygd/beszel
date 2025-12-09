@@ -49,6 +49,7 @@ type SystemAlertStats struct {
 	GPU          map[string]SystemAlertGPUData `json:"g"`
 	Temperatures map[string]float32            `json:"t"`
 	LoadAvg      [3]float64                    `json:"la"`
+	Battery      [2]uint8                      `json:"bat"`
 }
 
 type SystemAlertGPUData struct {

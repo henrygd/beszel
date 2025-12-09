@@ -66,17 +66,30 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			unit = ""
 		case "GPU":
 			val = data.Info.GpuPct
+		case "Battery":
+			if data.Stats.Battery[0] == 0 {
+				continue
+			}
+			val = float64(data.Stats.Battery[0])
 		}
 
 		triggered := alertRecord.GetBool("triggered")
 		threshold := alertRecord.GetFloat("value")
 
+		// Battery alert has inverted logic: trigger when value is BELOW threshold
+		lowAlert := isLowAlert(name)
+
 		// CONTINUE
-		// IF alert is not triggered and curValue is less than threshold
-		// OR alert is triggered and curValue is greater than threshold
-		if (!triggered && val <= threshold) || (triggered && val > threshold) {
-			// log.Printf("Skipping alert %s: val %f | threshold %f | triggered %v\n", name, val, threshold, triggered)
-			continue
+		// For normal alerts: IF not triggered and curValue <= threshold, OR triggered and curValue > threshold
+		// For low alerts (Battery): IF not triggered and curValue >= threshold, OR triggered and curValue < threshold
+		if lowAlert {
+			if (!triggered && val >= threshold) || (triggered && val < threshold) {
+				continue
+			}
+		} else {
+			if (!triggered && val <= threshold) || (triggered && val > threshold) {
+				continue
+			}
 		}
 
 		min := max(1, cast.ToUint8(alertRecord.Get("min")))
@@ -94,7 +107,11 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 
 		// send alert immediately if min is 1 - no need to sum up values.
 		if min == 1 {
-			alert.triggered = val > threshold
+			if lowAlert {
+				alert.triggered = val < threshold
+			} else {
+				alert.triggered = val > threshold
+			}
 			go am.sendSystemAlert(alert)
 			continue
 		}
@@ -219,6 +236,8 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 					}
 				}
 				alert.val += maxUsage
+			case "Battery":
+				alert.val += float64(stats.Battery[0])
 			default:
 				continue
 			}
@@ -256,12 +275,24 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		// log.Printf("%s: val %f | count %d | min-count %f | threshold %f\n", alert.name, alert.val, alert.count, minCount, alert.threshold)
 		// pass through alert if count is greater than or equal to minCount
 		if float32(alert.count) >= minCount {
-			if !alert.triggered && alert.val > alert.threshold {
-				alert.triggered = true
-				go am.sendSystemAlert(alert)
-			} else if alert.triggered && alert.val <= alert.threshold {
-				alert.triggered = false
-				go am.sendSystemAlert(alert)
+			// Battery alert has inverted logic: trigger when value is BELOW threshold
+			lowAlert := isLowAlert(alert.name)
+			if lowAlert {
+				if !alert.triggered && alert.val < alert.threshold {
+					alert.triggered = true
+					go am.sendSystemAlert(alert)
+				} else if alert.triggered && alert.val >= alert.threshold {
+					alert.triggered = false
+					go am.sendSystemAlert(alert)
+				}
+			} else {
+				if !alert.triggered && alert.val > alert.threshold {
+					alert.triggered = true
+					go am.sendSystemAlert(alert)
+				} else if alert.triggered && alert.val <= alert.threshold {
+					alert.triggered = false
+					go am.sendSystemAlert(alert)
+				}
 			}
 		}
 	}
@@ -288,10 +319,19 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 	}
 
 	var subject string
+	lowAlert := isLowAlert(alert.name)
 	if alert.triggered {
-		subject = fmt.Sprintf("%s %s above threshold", systemName, titleAlertName)
+		if lowAlert {
+			subject = fmt.Sprintf("%s %s below threshold", systemName, titleAlertName)
+		} else {
+			subject = fmt.Sprintf("%s %s above threshold", systemName, titleAlertName)
+		}
 	} else {
-		subject = fmt.Sprintf("%s %s below threshold", systemName, titleAlertName)
+		if lowAlert {
+			subject = fmt.Sprintf("%s %s above threshold", systemName, titleAlertName)
+		} else {
+			subject = fmt.Sprintf("%s %s below threshold", systemName, titleAlertName)
+		}
 	}
 	minutesLabel := "minute"
 	if alert.min > 1 {
@@ -315,4 +355,8 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 		Link:     am.hub.MakeLink("system", alert.systemRecord.Id),
 		LinkText: "View " + systemName,
 	})
+}
+
+func isLowAlert(name string) bool {
+	return name == "Battery"
 }
