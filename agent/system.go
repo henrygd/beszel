@@ -115,6 +115,35 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 
 	// memory
 	if v, err := mem.VirtualMemory(); err == nil {
+		// Validate memory values - in some container environments (e.g., Oracle Cloud with cgroup2),
+		// gopsutil may return invalid values when memory.max is set to "max" (unlimited).
+		if v.Used > v.Total || v.UsedPercent > 100 {
+			slog.Debug("Invalid memory stats from gopsutil, falling back to /proc/meminfo",
+				"used", v.Used, "total", v.Total, "usedPercent", v.UsedPercent)
+			if memInfo, err := parseMemInfo(); err == nil {
+				v.Total = memInfo.Total
+				v.Free = memInfo.Free
+				v.Available = memInfo.Available
+				v.Buffers = memInfo.Buffers
+				v.Cached = memInfo.Cached
+				v.Shared = memInfo.Shared
+				v.SwapTotal = memInfo.SwapTotal
+				v.SwapFree = memInfo.SwapFree
+				v.SwapCached = memInfo.SwapCached
+
+				// Calculate used memory with underflow protection
+				freeAndCache := v.Free + v.Buffers + v.Cached
+				if freeAndCache < v.Total {
+					v.Used = v.Total - freeAndCache
+				} else {
+					v.Used = 0
+				}
+				if v.Total > 0 {
+					v.UsedPercent = float64(v.Used) / float64(v.Total) * 100.0
+				}
+			}
+		}
+
 		// swap
 		systemStats.Swap = bytesToGigabytes(v.SwapTotal)
 		systemStats.SwapUsed = bytesToGigabytes(v.SwapTotal - v.SwapFree - v.SwapCached)
@@ -239,4 +268,75 @@ func getARCSize() (uint64, error) {
 	}
 
 	return 0, fmt.Errorf("failed to parse size field")
+}
+
+// memInfo holds memory information parsed from /proc/meminfo
+type memInfo struct {
+	Total      uint64
+	Free       uint64
+	Available  uint64
+	Buffers    uint64
+	Cached     uint64
+	Shared     uint64
+	SwapTotal  uint64
+	SwapFree   uint64
+	SwapCached uint64
+}
+
+// parseMemInfo reads /proc/meminfo directly and returns memory statistics.
+func parseMemInfo() (*memInfo, error) {
+	file, err := os.Open("/proc/meminfo")
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	info := &memInfo{}
+	scanner := bufio.NewScanner(file)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		fields := strings.Fields(line)
+		if len(fields) < 2 {
+			continue
+		}
+
+		// Values in /proc/meminfo are in kB, convert to bytes
+		value, err := strconv.ParseUint(fields[1], 10, 64)
+		if err != nil {
+			continue
+		}
+		valueBytes := value * 1024
+
+		switch fields[0] {
+		case "MemTotal:":
+			info.Total = valueBytes
+		case "MemFree:":
+			info.Free = valueBytes
+		case "MemAvailable:":
+			info.Available = valueBytes
+		case "Buffers:":
+			info.Buffers = valueBytes
+		case "Cached:":
+			info.Cached = valueBytes
+		case "Shmem:":
+			info.Shared = valueBytes
+		case "SwapTotal:":
+			info.SwapTotal = valueBytes
+		case "SwapFree:":
+			info.SwapFree = valueBytes
+		case "SwapCached:":
+			info.SwapCached = valueBytes
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+
+	if info.Total == 0 {
+		return nil, fmt.Errorf("failed to parse MemTotal from /proc/meminfo")
+	}
+
+	return info, nil
 }
