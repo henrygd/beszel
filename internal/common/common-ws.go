@@ -34,7 +34,7 @@ type HubRequest[T any] struct {
 // AgentResponse defines the structure for responses sent from agent to hub.
 type AgentResponse struct {
 	Id          *uint32                    `cbor:"0,keyasint,omitempty"`
-	SystemData  *system.CombinedData       `cbor:"1,keyasint,omitempty,omitzero"`
+	SystemData  []*system.CombinedData     `cbor:"1,keyasint,omitempty,omitzero"`
 	Fingerprint *FingerprintResponse       `cbor:"2,keyasint,omitempty,omitzero"`
 	Error       string                     `cbor:"3,keyasint,omitempty,omitzero"`
 	String      *string                    `cbor:"4,keyasint,omitempty,omitzero"`

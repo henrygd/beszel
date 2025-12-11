@@ -40,6 +40,7 @@ type Agent struct {
 	systemInfo                system.Info                                           // Host system info
 	gpuManager                *GPUManager                                           // Manages GPU data
 	cache                     *systemDataCache                                      // Cache for system stats based on cache time
+	offlineCache              *systemOfflineCache                                   // Cache for offline data storage
 	connectionManager         *ConnectionManager                                    // Channel to signal connection events
 	handlerRegistry           *HandlerRegistry                                      // Registry for routing incoming messages
 	server                    *ssh.Server                                           // SSH server
@@ -53,8 +54,9 @@ type Agent struct {
 // If the data directory is not set, it will attempt to find the optimal directory.
 func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	agent = &Agent{
-		fsStats: make(map[string]*system.FsStats),
-		cache:   NewSystemDataCache(),
+		fsStats:      make(map[string]*system.FsStats),
+		cache:        NewSystemDataCache(),
+		offlineCache: NewSystemOfflineCache(),
 	}
 
 	// Initialize disk I/O previous counters storage
@@ -136,6 +138,11 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 		slog.Debug("Stats", "data", agent.gatherStats(0))
 	}
 
+	// start offline cache filler
+	if val, exists := GetEnv("OFFLINE_CACHING"); exists && val == "true" {
+		go agent.fillOfflineCache()
+	}
+
 	return agent, nil
 }
 
@@ -158,9 +165,11 @@ func (a *Agent) gatherStats(cacheTimeMs uint16) *system.CombinedData {
 		return data
 	}
 
+	now := time.Now()
 	*data = system.CombinedData{
-		Stats: a.getSystemStats(cacheTimeMs),
-		Info:  a.systemInfo,
+		Stats:     a.getSystemStats(cacheTimeMs),
+		Info:      a.systemInfo,
+		Timestamp: &now,
 	}
 	// slog.Info("System data", "data", data, "cacheTimeMs", cacheTimeMs)
 
@@ -241,4 +250,16 @@ func (a *Agent) getFingerprint() string {
 	}
 
 	return fingerprint
+}
+
+func (a *Agent) fillOfflineCache() {
+	ticker := time.NewTicker(1 * time.Minute)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		if a.connectionManager.State == Disconnected {
+			data := a.gatherStats(0)
+			a.offlineCache.Add(*data)
+		}
+	}
 }
