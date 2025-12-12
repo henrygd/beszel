@@ -780,3 +780,36 @@ func TestFilterExcludedDevices(t *testing.T) {
 		})
 	}
 }
+
+func TestIsNvmeControllerPath(t *testing.T) {
+	tests := []struct {
+		path     string
+		expected bool
+	}{
+		// Controller paths (should return true)
+		{"/dev/nvme0", true},
+		{"/dev/nvme1", true},
+		{"/dev/nvme10", true},
+		{"nvme0", true},
+
+		// Namespace paths (should return false)
+		{"/dev/nvme0n1", false},
+		{"/dev/nvme1n1", false},
+		{"/dev/nvme0n1p1", false},
+		{"nvme0n1", false},
+
+		// Non-NVMe paths (should return false)
+		{"/dev/sda", false},
+		{"/dev/sda1", false},
+		{"/dev/hda", false},
+		{"", false},
+		{"/dev/nvme", false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.path, func(t *testing.T) {
+			result := isNvmeControllerPath(tt.path)
+			assert.Equal(t, tt.expected, result, "path: %s", tt.path)
+		})
+	}
+}

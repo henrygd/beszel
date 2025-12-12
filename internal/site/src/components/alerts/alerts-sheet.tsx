@@ -245,13 +245,23 @@ export function AlertContent({
 						{!singleDescription && (
 							<div>
 								<p id={`v${name}`} className="text-sm block h-8">
-									<Trans>
-										Average exceeds{" "}
-										<strong className="text-foreground">
-											{value}
-											{alertData.unit}
-										</strong>
-									</Trans>
+									{alertData.invert ? (
+										<Trans>
+											Average drops below{" "}
+											<strong className="text-foreground">
+												{value}
+												{alertData.unit}
+											</strong>
+										</Trans>
+									) : (
+										<Trans>
+											Average exceeds{" "}
+											<strong className="text-foreground">
+												{value}
+												{alertData.unit}
+											</strong>
+										</Trans>
+									)}
 								</p>
 								<div className="flex gap-3">
 									<Slider
