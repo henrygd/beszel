@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -453,6 +454,34 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 	}
 
 	hasValidData := sm.parseSmartOutput(deviceInfo, output)
+
+	// If NVMe controller path failed, try namespace path as fallback.
+	// NVMe controllers (/dev/nvme0) don't always support SMART queries. See github.com/henrygd/beszel/issues/1504
+	if !hasValidData && err != nil && isNvmeControllerPath(deviceInfo.Name) {
+		controllerPath := deviceInfo.Name
+		namespacePath := controllerPath + "n1"
+		if !sm.isExcludedDevice(namespacePath) {
+			deviceInfo.Name = namespacePath
+
+			ctx3, cancel3 := context.WithTimeout(context.Background(), 15*time.Second)
+			defer cancel3()
+			args = sm.smartctlArgs(deviceInfo, false)
+			cmd = exec.CommandContext(ctx3, sm.binPath, args...)
+			output, err = cmd.CombinedOutput()
+			hasValidData = sm.parseSmartOutput(deviceInfo, output)
+
+			// Auto-exclude the controller path so future scans don't re-add it
+			if hasValidData {
+				sm.Lock()
+				if sm.excludedDevices == nil {
+					sm.excludedDevices = make(map[string]struct{})
+				}
+				sm.excludedDevices[controllerPath] = struct{}{}
+				sm.Unlock()
+				slog.Debug("auto-excluded NVMe controller path", "path", controllerPath)
+			}
+		}
+	}
 
 	if !hasValidData {
 		if err != nil {
@@ -955,6 +984,27 @@ func (sm *SmartManager) detectSmartctl() (string, error) {
 		}
 	}
 	return "", errors.New("smartctl not found")
+}
+
+// isNvmeControllerPath checks if the path matches an NVMe controller pattern
+// like /dev/nvme0, /dev/nvme1, etc. (without namespace suffix like n1)
+func isNvmeControllerPath(path string) bool {
+	base := filepath.Base(path)
+	if !strings.HasPrefix(base, "nvme") {
+		return false
+	}
+	suffix := strings.TrimPrefix(base, "nvme")
+	if suffix == "" {
+		return false
+	}
+	// Controller paths are just "nvme" + digits (e.g., nvme0, nvme1)
+	// Namespace paths have "n" after the controller number (e.g., nvme0n1)
+	for _, c := range suffix {
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+	return true
 }
 
 // NewSmartManager creates and initializes a new SmartManager
