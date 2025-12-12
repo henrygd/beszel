@@ -552,11 +552,8 @@ func createTestCombinedData() *system.CombinedData {
 		},
 		Info: system.Info{
 			Hostname:     "test-host",
-			Cores:        8,
-			CpuModel:     "Test CPU Model",
 			Uptime:       3600,
 			AgentVersion: "0.12.0",
-			Os:           system.Linux,
 		},
 		Containers: []*container.Stats{
 			{

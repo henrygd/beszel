@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -12,7 +13,9 @@ import (
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/agent/battery"
 	"github.com/henrygd/beszel/internal/entities/system"
-
+	"github.com/jaypipes/ghw/pkg/block"
+	ghwnet "github.com/jaypipes/ghw/pkg/net"
+	ghwpci "github.com/jaypipes/ghw/pkg/pci"
 	"github.com/shirou/gopsutil/v4/cpu"
 	"github.com/shirou/gopsutil/v4/host"
 	"github.com/shirou/gopsutil/v4/load"
@@ -28,41 +31,76 @@ type prevDisk struct {
 
 // Sets initial / non-changing values about the host system
 func (a *Agent) initializeSystemInfo() {
-	a.systemInfo.AgentVersion = beszel.Version
-	a.systemInfo.Hostname, _ = os.Hostname()
+	hostname, _ := os.Hostname()
+	a.staticSystemInfo.Hostname = hostname
+	a.staticSystemInfo.AgentVersion = beszel.Version
 
-	platform, _, version, _ := host.PlatformInformation()
+	platform, family, version, _ := host.PlatformInformation()
 
+	var osFamily, osVersion, osKernel string
+	var osType system.Os
 	if platform == "darwin" {
-		a.systemInfo.KernelVersion = version
-		a.systemInfo.Os = system.Darwin
+		osKernel = version
+		osFamily = "macOS" // macOS is the family name for Darwin
+		osVersion = version
 	} else if strings.Contains(platform, "indows") {
-		a.systemInfo.KernelVersion = fmt.Sprintf("%s %s", strings.Replace(platform, "Microsoft ", "", 1), version)
-		a.systemInfo.Os = system.Windows
+		osKernel = strings.Replace(platform, "Microsoft ", "", 1) + " " + version
+		osFamily = family
+		osVersion = version
+		osType = system.Windows
 	} else if platform == "freebsd" {
-		a.systemInfo.Os = system.Freebsd
-		a.systemInfo.KernelVersion = version
+		osKernel = version
+		osFamily = family
+		osVersion = version
 	} else {
-		a.systemInfo.Os = system.Linux
+		osFamily = family
+		osVersion = version
+		osKernel = ""
+		osRelease := readOsRelease()
+		if pretty, ok := osRelease["PRETTY_NAME"]; ok {
+			osFamily = pretty
+		}
+		if name, ok := osRelease["NAME"]; ok {
+			osFamily = name
+		}
+		if versionId, ok := osRelease["VERSION_ID"]; ok {
+			osVersion = versionId
+		}
 	}
-
-	if a.systemInfo.KernelVersion == "" {
-		a.systemInfo.KernelVersion, _ = host.KernelVersion()
+	if osKernel == "" {
+		osKernel, _ = host.KernelVersion()
 	}
+	a.staticSystemInfo.KernelVersion = osKernel
+	a.staticSystemInfo.Os = osType
+	a.staticSystemInfo.Oses = []system.OsInfo{{
+		Family:  osFamily,
+		Version: osVersion,
+		Kernel:  osKernel,
+	}}
 
 	// cpu model
 	if info, err := cpu.Info(); err == nil && len(info) > 0 {
-		a.systemInfo.CpuModel = info[0].ModelName
-	}
-	// cores / threads
-	a.systemInfo.Cores, _ = cpu.Counts(false)
-	if threads, err := cpu.Counts(true); err == nil {
-		if threads > 0 && threads < a.systemInfo.Cores {
-			// in lxc logical cores reflects container limits, so use that as cores if lower
-			a.systemInfo.Cores = threads
-		} else {
-			a.systemInfo.Threads = threads
+		arch := runtime.GOARCH
+		totalCores := 0
+		totalThreads := 0
+		for _, cpuInfo := range info {
+			totalCores += int(cpuInfo.Cores)
+			totalThreads++
 		}
+		modelName := info[0].ModelName
+		if idx := strings.Index(modelName, "@"); idx > 0 {
+			modelName = strings.TrimSpace(modelName[:idx])
+		}
+		cpu := system.CpuInfo{
+			Model:    modelName,
+			SpeedGHz: fmt.Sprintf("%.2f GHz", info[0].Mhz/1000),
+			Arch:     arch,
+			Cores:    totalCores,
+			Threads:  totalThreads,
+		}
+		a.staticSystemInfo.Cpus = []system.CpuInfo{cpu}
+		a.staticSystemInfo.Threads = totalThreads
+		slog.Debug("CPU info populated", "cpus", a.staticSystemInfo.Cpus)
 	}
 
 	// zfs
@@ -71,6 +109,41 @@ func (a *Agent) initializeSystemInfo() {
 	} else {
 		a.zfs = true
 	}
+
+	// Collect disk info (model/vendor)
+	a.staticSystemInfo.Disks = getDiskInfo()
+
+	// Collect network interface info
+	a.staticSystemInfo.Networks = getNetworkInfo()
+
+	// Collect total memory and store in staticSystemInfo.Memory
+	if v, err := mem.VirtualMemory(); err == nil {
+		total := fmt.Sprintf("%d GB", int((float64(v.Total)/(1024*1024*1024))+0.5))
+		a.staticSystemInfo.Memory = []system.MemoryInfo{{Total: total}}
+		slog.Debug("Memory info populated", "memory", a.staticSystemInfo.Memory)
+	}
+
+}
+
+// readPrettyName reads the PRETTY_NAME from /etc/os-release
+func readPrettyName() string {
+	file, err := os.Open("/etc/os-release")
+	if err != nil {
+		return ""
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, "PRETTY_NAME=") {
+			// Remove the prefix and any surrounding quotes
+			prettyName := strings.TrimPrefix(line, "PRETTY_NAME=")
+			prettyName = strings.Trim(prettyName, `"`)
+			return prettyName
+		}
+	}
+	return ""
 }
 
 // Returns current info, stats about the host system
@@ -240,3 +313,136 @@ func getARCSize() (uint64, error) {
 
 	return 0, fmt.Errorf("failed to parse size field")
 }
+
+func getDiskInfo() []system.DiskInfo {
+	blockInfo, err := block.New()
+	if err != nil {
+		slog.Debug("Failed to get block info with ghw", "err", err)
+		return nil
+	}
+
+	var disks []system.DiskInfo
+	for _, disk := range blockInfo.Disks {
+		disks = append(disks, system.DiskInfo{
+			Name:   disk.Name,
+			Model:  disk.Model,
+			Vendor: disk.Vendor,
+		})
+	}
+	return disks
+}
+
+func getNetworkInfo() []system.NetworkInfo {
+	netInfo, err := ghwnet.New()
+	if err != nil {
+		slog.Debug("Failed to get network info with ghw", "err", err)
+		return nil
+	}
+	pciInfo, err := ghwpci.New()
+	if err != nil {
+		slog.Debug("Failed to get PCI info with ghw", "err", err)
+	}
+
+	var networks []system.NetworkInfo
+	for _, nic := range netInfo.NICs {
+		if nic.IsVirtual {
+			continue
+		}
+		var vendor, model string
+		if nic.PCIAddress != nil && pciInfo != nil {
+			for _, dev := range pciInfo.Devices {
+				if dev.Address == *nic.PCIAddress {
+					if dev.Vendor != nil {
+						vendor = dev.Vendor.Name
+					}
+					if dev.Product != nil {
+						model = dev.Product.Name
+					}
+					break
+				}
+			}
+		}
+
+		networks = append(networks, system.NetworkInfo{
+			Name:   nic.Name,
+			Vendor: vendor,
+			Model:  model,
+		})
+	}
+	return networks
+}
+
+// getInterfaceCapabilitiesFromGhw uses ghw library to get interface capabilities
+func getInterfaceCapabilitiesFromGhw(nic *ghwnet.NIC) string {
+	// Use the speed information from ghw if available
+	if nic.Speed != "" {
+		return nic.Speed
+	}
+
+	// If no speed info from ghw, try to get interface type from name
+	return getInterfaceTypeFromName(nic.Name)
+}
+
+// getInterfaceTypeFromName tries to determine interface type from name
+func getInterfaceTypeFromName(ifaceName string) string {
+	// Common interface naming patterns
+	switch {
+	case strings.HasPrefix(ifaceName, "eth"):
+		return "Ethernet"
+	case strings.HasPrefix(ifaceName, "en"):
+		return "Ethernet"
+	case strings.HasPrefix(ifaceName, "wlan"):
+		return "WiFi"
+	case strings.HasPrefix(ifaceName, "wl"):
+		return "WiFi"
+	case strings.HasPrefix(ifaceName, "usb"):
+		return "USB"
+	case strings.HasPrefix(ifaceName, "tun"):
+		return "Tunnel"
+	case strings.HasPrefix(ifaceName, "tap"):
+		return "TAP"
+	case strings.HasPrefix(ifaceName, "br"):
+		return "Bridge"
+	case strings.HasPrefix(ifaceName, "bond"):
+		return "Bond"
+	case strings.HasPrefix(ifaceName, "veth"):
+		return "Virtual Ethernet"
+	case strings.HasPrefix(ifaceName, "docker"):
+		return "Docker"
+	case strings.HasPrefix(ifaceName, "lo"):
+		return "Loopback"
+	default:
+		return ""
+	}
+}
+
+func readOsRelease() map[string]string {
+	file, err := os.Open("/etc/os-release")
+	if err != nil {
+		return map[string]string{}
+	}
+	defer file.Close()
+
+	release := make(map[string]string)
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if i := strings.Index(line, "="); i > 0 {
+			key := line[:i]
+			val := strings.Trim(line[i+1:], `"`)
+			release[key] = val
+		}
+	}
+	return release
+}
+
+func getMemoryInfo() []system.MemoryInfo {
+	var total string
+	if v, err := mem.VirtualMemory(); err == nil {
+		total = fmt.Sprintf("%d GB", int((float64(v.Total)/(1024*1024*1024))+0.5))
+	}
+	return []system.MemoryInfo{{
+		Total: total,
+	}}
+}
+
