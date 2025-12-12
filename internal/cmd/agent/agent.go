@@ -17,9 +17,8 @@ import (
 type cmdOptions struct {
 	key    string // key is the public key(s) for SSH authentication.
 	listen string // listen is the address or port to listen on.
-	// TODO: add hubURL and token
-	// hubURL string // hubURL is the URL of the hub to use.
-	// token  string // token is the token to use for authentication.
+	hubURL string // hubURL is the URL of the Beszel hub.
+	token  string // token is the token to use for authentication.
 }
 
 // parse parses the command line flags and populates the config struct.
@@ -47,13 +46,13 @@ func (opts *cmdOptions) parse() bool {
 	// pflag.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
 	pflag.StringVarP(&opts.key, "key", "k", "", "Public key(s) for SSH authentication")
 	pflag.StringVarP(&opts.listen, "listen", "l", "", "Address or port to listen on")
-	// pflag.StringVarP(&opts.hubURL, "hub-url", "u", "", "URL of the hub to use")
-	// pflag.StringVarP(&opts.token, "token", "t", "", "Token to use for authentication")
+	pflag.StringVarP(&opts.hubURL, "url", "u", "", "URL of the Beszel hub")
+	pflag.StringVarP(&opts.token, "token", "t", "", "Token to use for authentication")
 	chinaMirrors := pflag.BoolP("china-mirrors", "c", false, "Use mirror for update (gh.beszel.dev) instead of GitHub")
 	help := pflag.BoolP("help", "h", false, "Show this help message")
 
 	// Convert old single-dash long flags to double-dash for backward compatibility
-	flagsToConvert := []string{"key", "listen"}
+	flagsToConvert := []string{"key", "listen", "url", "token"}
 	for i, arg := range os.Args {
 		for _, flag := range flagsToConvert {
 			singleDash := "-" + flag
@@ -95,6 +94,13 @@ func (opts *cmdOptions) parse() bool {
 		return true
 	}
 
+	// Set environment variables from CLI flags (if provided)
+	if opts.hubURL != "" {
+		os.Setenv("HUB_URL", opts.hubURL)
+	}
+	if opts.token != "" {
+		os.Setenv("TOKEN", opts.token)
+	}
 	return false
 }
 
