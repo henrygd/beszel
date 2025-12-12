@@ -87,6 +87,9 @@ func (a *Agent) updateNetworkStats(cacheTimeMs uint16, systemStats *system.Stats
 		bytesSentPerSecond, bytesRecvPerSecond := a.computeBytesPerSecond(msElapsed, totalBytesSent, totalBytesRecv, nis)
 		a.applyNetworkTotals(cacheTimeMs, netIO, systemStats, nis, totalBytesSent, totalBytesRecv, bytesSentPerSecond, bytesRecvPerSecond)
 	}
+
+	// connection states per interface
+	a.updateConnectionStats(systemStats)
 }
 
 func (a *Agent) initializeNetIoStats() {
@@ -255,5 +258,154 @@ func (a *Agent) skipNetworkInterface(v psutilNet.IOCountersStat) bool {
 		return true
 	default:
 		return false
+	}
+}
+
+// updateConnectionStats collects TCP/UDP connection state information per network interface
+func (a *Agent) updateConnectionStats(systemStats *system.Stats) {
+	// Get all connections (TCP and UDP, IPv4 and IPv6)
+	connections, err := psutilNet.Connections("all")
+	if err != nil {
+		slog.Debug("Error getting network connections", "err", err)
+		return
+	}
+
+	// Initialize the map if needed
+	if systemStats.NetConnections == nil {
+		systemStats.NetConnections = make(map[string]*system.NetConnectionStats)
+	}
+
+	// Create stats for each valid network interface
+	for ifaceName := range a.netInterfaces {
+		stats := &system.NetConnectionStats{}
+		systemStats.NetConnections[ifaceName] = stats
+	}
+
+	// Also track connections without specific interface (aggregate)
+	aggregateStats := &system.NetConnectionStats{}
+
+	// Process each connection
+	for _, conn := range connections {
+		// Determine which interface this connection belongs to
+		// For simplicity, we'll use the local address to determine interface
+		ifaceName := a.getInterfaceForAddress(conn.Laddr.IP)
+
+		// Update the appropriate stats
+		var targetStats *system.NetConnectionStats
+		if ifaceName != "" {
+			if stats, exists := systemStats.NetConnections[ifaceName]; exists {
+				targetStats = stats
+			}
+		}
+
+		// Always update aggregate stats
+		a.incrementConnectionState(aggregateStats, conn)
+
+		// Update per-interface stats if we found a matching interface
+		if targetStats != nil {
+			a.incrementConnectionState(targetStats, conn)
+		}
+	}
+
+	// Store aggregate stats under special key
+	systemStats.NetConnections["_total"] = aggregateStats
+}
+
+// getInterfaceForAddress determines which network interface an IP address belongs to
+func (a *Agent) getInterfaceForAddress(ipAddr string) string {
+	if ipAddr == "" || ipAddr == "0.0.0.0" || ipAddr == "::" || ipAddr == "127.0.0.1" || ipAddr == "::1" {
+		return ""
+	}
+
+	// Get all network interfaces
+	interfaces, err := psutilNet.Interfaces()
+	if err != nil {
+		return ""
+	}
+
+	// Find matching interface by checking addresses
+	for _, iface := range interfaces {
+		for _, addr := range iface.Addrs {
+			if addr.Addr == ipAddr {
+				// Check if this interface is in our valid interfaces list
+				if _, exists := a.netInterfaces[iface.Name]; exists {
+					return iface.Name
+				}
+			}
+		}
+	}
+
+	return ""
+}
+
+// incrementConnectionState increments the appropriate counter based on connection type and state
+func (a *Agent) incrementConnectionState(stats *system.NetConnectionStats, conn psutilNet.ConnectionStat) {
+	// Detect IPv6 by checking if the address contains colons
+	isIPv6 := strings.Contains(conn.Laddr.IP, ":")
+
+	if conn.Type == 1 { // SOCK_STREAM = TCP (but might also be Unix sockets)
+		// Skip Unix domain sockets - they have "NONE" status and no IP address
+		if conn.Status == "NONE" || conn.Status == "" && conn.Laddr.IP == "" {
+			return
+		}
+
+		stats.Total++
+
+		if isIPv6 {
+			stats.TCP6Total++
+			switch conn.Status {
+			case "ESTABLISHED":
+				stats.TCP6Established++
+			case "LISTEN":
+				stats.TCP6Listen++
+			case "TIME_WAIT", "TIME-WAIT":
+				stats.TCP6TimeWait++
+			case "CLOSE_WAIT", "CLOSE-WAIT":
+				stats.TCP6CloseWait++
+			case "SYN_SENT", "SYN-SENT":
+				stats.TCP6SynSent++
+			case "SYN_RECV", "SYN-RECV", "SYN_RCVD":
+				stats.TCP6SynRecv++
+			case "FIN_WAIT1", "FIN-WAIT-1", "FIN_WAIT_1":
+				stats.TCP6FinWait1++
+			case "FIN_WAIT2", "FIN-WAIT-2", "FIN_WAIT_2":
+				stats.TCP6FinWait2++
+			case "CLOSING":
+				stats.TCP6Closing++
+			case "LAST_ACK", "LAST-ACK":
+				stats.TCP6LastAck++
+			}
+		} else {
+			stats.TCPTotal++
+			switch conn.Status {
+			case "ESTABLISHED":
+				stats.TCPEstablished++
+			case "LISTEN":
+				stats.TCPListen++
+			case "TIME_WAIT", "TIME-WAIT":
+				stats.TCPTimeWait++
+			case "CLOSE_WAIT", "CLOSE-WAIT":
+				stats.TCPCloseWait++
+			case "SYN_SENT", "SYN-SENT":
+				stats.TCPSynSent++
+			case "SYN_RECV", "SYN-RECV", "SYN_RCVD":
+				stats.TCPSynRecv++
+			case "FIN_WAIT1", "FIN-WAIT-1", "FIN_WAIT_1":
+				stats.TCPFinWait1++
+			case "FIN_WAIT2", "FIN-WAIT-2", "FIN_WAIT_2":
+				stats.TCPFinWait2++
+			case "CLOSING":
+				stats.TCPClosing++
+			case "LAST_ACK", "LAST-ACK":
+				stats.TCPLastAck++
+			}
+		}
+	} else if conn.Type == 2 { // SOCK_DGRAM = UDP
+		stats.Total++
+		if isIPv6 {
+			stats.UDP6Count++
+		} else {
+			stats.UDPCount++
+		}
 	}
 }
