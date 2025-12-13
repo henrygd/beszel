@@ -168,7 +168,7 @@ func (a *Agent) handleSSHRequest(w io.Writer, req *common.HubRequest[cbor.RawMes
 	sshResponder := func(data any, requestID *uint32) error {
 		response := common.AgentResponse{Id: requestID}
 		switch v := data.(type) {
-		case *system.CombinedData:
+		case []*system.CombinedData:
 			response.SystemData = v
 		case string:
 			response.String = &v

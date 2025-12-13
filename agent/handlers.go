@@ -94,8 +94,10 @@ func (h *GetDataHandler) Handle(hctx *HandlerContext) error {
 	var options common.DataRequestOptions
 	_ = cbor.Unmarshal(hctx.Request.Data, &options)
 
-	sysStats := hctx.Agent.gatherStats(options.CacheTimeMs)
-	return hctx.SendResponse(sysStats, hctx.RequestID)
+	data := hctx.Agent.offlineCache.GetAll()
+	data = append(data, hctx.Agent.gatherStats(options.CacheTimeMs))
+
+	return hctx.SendResponse(data, hctx.RequestID)
 }
 
 ////////////////////////////////////////////////////////////////////////////

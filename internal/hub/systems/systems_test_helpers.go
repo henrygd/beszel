@@ -61,7 +61,7 @@ func (sm *SystemManager) GetAllSystemIDs() []string {
 // TESTING ONLY: GetSystemData returns the combined data for a system with the given ID
 // Returns nil if the system doesn't exist
 // This method is intended for testing
-func (sm *SystemManager) GetSystemData(systemID string) *entities.CombinedData {
+func (sm *SystemManager) GetSystemData(systemID string) []*entities.CombinedData {
 	sys, ok := sm.systems.GetOk(systemID)
 	if !ok {
 		return nil

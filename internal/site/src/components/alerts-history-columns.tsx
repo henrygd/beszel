@@ -100,8 +100,8 @@ export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 		},
 	},
 	{
-		accessorKey: "created",
-		accessorFn: (record) => formatShortDate(record.created),
+		accessorKey: "timestamp",
+		accessorFn: (record) => formatShortDate(record.timestamp),
 		enableSorting: true,
 		invertSorting: true,
 		header: ({ column }) => (
@@ -110,7 +110,7 @@ export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 			</Button>
 		),
 		cell: ({ getValue, row }) => (
-			<span className="ps-1 tabular-nums tracking-tight" title={`${row.original.created} UTC`}>
+			<span className="ps-1 tabular-nums tracking-tight" title={`${row.original.timestamp} UTC`}>
 				{getValue() as string}
 			</span>
 		),
@@ -141,12 +141,12 @@ export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 		invertSorting: true,
 		enableSorting: true,
 		sortingFn: (rowA, rowB) => {
-			const aCreated = new Date(rowA.original.created)
-			const bCreated = new Date(rowB.original.created)
+			const aTimestamp = new Date(rowA.original.timestamp)
+			const bTimestamp = new Date(rowB.original.timestamp)
 			const aResolved = rowA.original.resolved ? new Date(rowA.original.resolved) : null
 			const bResolved = rowB.original.resolved ? new Date(rowB.original.resolved) : null
-			const aDuration = aResolved ? aResolved.getTime() - aCreated.getTime() : null
-			const bDuration = bResolved ? bResolved.getTime() - bCreated.getTime() : null
+			const aDuration = aResolved ? aResolved.getTime() - aTimestamp.getTime() : null
+			const bDuration = bResolved ? bResolved.getTime() - bTimestamp.getTime() : null
 			if (!aDuration && bDuration) return -1
 			if (aDuration && !bDuration) return 1
 			return (aDuration || 0) - (bDuration || 0)
@@ -157,7 +157,7 @@ export const alertsHistoryColumns: ColumnDef<AlertsHistoryRecord>[] = [
 			</Button>
 		),
 		cell: ({ row }) => {
-			const duration = formatDuration(row.original.created, row.original.resolved)
+			const duration = formatDuration(row.original.timestamp, row.original.resolved)
 			if (!duration) {
 				return null
 			}

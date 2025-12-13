@@ -125,29 +125,29 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 	}
 
 	systemStats := []struct {
-		Stats   []byte         `db:"stats"`
-		Created types.DateTime `db:"created"`
+		Stats     []byte         `db:"stats"`
+		Timestamp types.DateTime `db:"timestamp"`
 	}{}
 
 	err = am.hub.DB().
-		Select("stats", "created").
+		Select("stats", "timestamp").
 		From("system_stats").
 		Where(dbx.NewExp(
-			"system={:system} AND type='1m' AND created > {:created}",
+			"system={:system} AND type='1m' AND timestamp > {:timestamp}",
 			dbx.Params{
 				"system": systemRecord.Id,
 				// subtract some time to give us a bit of buffer
-				"created": oldestTime.Add(-time.Second * 90),
+				"timestamp": oldestTime.Add(-time.Second * 90),
 			},
 		)).
-		OrderBy("created").
+		OrderBy("timestamp").
 		All(&systemStats)
 	if err != nil || len(systemStats) == 0 {
 		return err
 	}
 
 	// get oldest record creation time from first record in the slice
-	oldestRecordTime := systemStats[0].Created.Time()
+	oldestRecordTime := systemStats[0].Timestamp.Time()
 	// log.Println("oldestRecordTime", oldestRecordTime.String())
 
 	// Filter validAlerts to keep only those with time newer than oldestRecord
@@ -170,7 +170,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 	for i := range systemStats {
 		stat := systemStats[i]
 		// subtract 10 seconds to give a small time buffer
-		systemStatsCreation := stat.Created.Time().Add(-time.Second * 10)
+		systemStatsCreation := stat.Timestamp.Time().Add(-time.Second * 10)
 		if err := json.Unmarshal(stat.Stats, &stats); err != nil {
 			return err
 		}

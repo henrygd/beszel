@@ -61,7 +61,7 @@ export default memo(function LoadAverageChart({ chartData }: { chartData: ChartD
 						animationDuration={150}
 						content={
 							<ChartTooltipContent
-								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
+								labelFormatter={(_, data) => formatShortDate(data[0].payload.timestamp)}
 								contentFormatter={(item) => decimalString(item.value)}
 							/>
 						}
