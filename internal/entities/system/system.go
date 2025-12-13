@@ -115,6 +115,37 @@ const (
 	Freebsd
 )
 
+type DiskInfo struct {
+	Name   string `json:"n"`
+	Model  string `json:"m,omitempty"`
+	Vendor string `json:"v,omitempty"`
+}
+
+type NetworkInfo struct {
+	Name   string `json:"n"`
+	Vendor string `json:"v,omitempty"`
+	Model  string `json:"m,omitempty"`
+	Speed  string `json:"s,omitempty"`
+}
+
+type MemoryInfo struct {
+	Total string `json:"t,omitempty"`
+}
+
+type CpuInfo struct {
+	Model    string `json:"m"`
+	SpeedGHz string `json:"s"`
+	Arch     string `json:"a"`
+	Cores    int    `json:"c"`
+	Threads  int    `json:"t"`
+}
+
+type OsInfo struct {
+	Family  string `json:"f"`
+	Version string `json:"v"`
+	Kernel  string `json:"k"`
+}
+
 type ConnectionType = uint8
 
 const (
@@ -123,26 +154,35 @@ const (
 	ConnectionTypeWebSocket
 )
 
+// StaticInfo contains system information that rarely or never changes
+// This is collected at a longer interval (e.g., 10-15 minutes) to reduce bandwidth
+type StaticInfo struct {
+	Hostname      string          `json:"h" cbor:"0,keyasint"`
+	KernelVersion string          `json:"k,omitempty" cbor:"1,keyasint,omitempty"`
+	Threads       int             `json:"t,omitempty" cbor:"2,keyasint,omitempty"`
+	AgentVersion  string          `json:"v" cbor:"3,keyasint"`
+	Podman        bool            `json:"p,omitempty" cbor:"4,keyasint,omitempty"`
+	Os            Os              `json:"os" cbor:"5,keyasint"`
+	Disks         []DiskInfo      `json:"d,omitempty" cbor:"6,omitempty"`
+	Networks      []NetworkInfo   `json:"n,omitempty" cbor:"7,omitempty"`
+	Memory        []MemoryInfo    `json:"m" cbor:"8"`
+	Cpus          []CpuInfo       `json:"c" cbor:"9"`
+	Oses          []OsInfo        `json:"o,omitempty" cbor:"10,omitempty"`
+}
+
+// Info contains frequently-changing system snapshot data for the dashboard
 type Info struct {
-	Hostname       string  `json:"h" cbor:"0,keyasint"`
-	KernelVersion  string  `json:"k,omitempty" cbor:"1,keyasint,omitempty"`
-	Cores          int     `json:"c" cbor:"2,keyasint"`
-	Threads        int     `json:"t,omitempty" cbor:"3,keyasint,omitempty"`
-	CpuModel       string  `json:"m" cbor:"4,keyasint"`
-	Uptime         uint64  `json:"u" cbor:"5,keyasint"`
-	Cpu            float64 `json:"cpu" cbor:"6,keyasint"`
-	MemPct         float64 `json:"mp" cbor:"7,keyasint"`
-	DiskPct        float64 `json:"dp" cbor:"8,keyasint"`
-	Bandwidth      float64 `json:"b" cbor:"9,keyasint"`
-	AgentVersion   string  `json:"v" cbor:"10,keyasint"`
-	Podman         bool    `json:"p,omitempty" cbor:"11,keyasint,omitempty"`
-	GpuPct         float64 `json:"g,omitempty" cbor:"12,keyasint,omitempty"`
-	DashboardTemp  float64 `json:"dt,omitempty" cbor:"13,keyasint,omitempty"`
-	Os             Os      `json:"os" cbor:"14,keyasint"`
-	LoadAvg1       float64 `json:"l1,omitempty" cbor:"15,keyasint,omitempty"`
-	LoadAvg5       float64 `json:"l5,omitempty" cbor:"16,keyasint,omitempty"`
-	LoadAvg15      float64 `json:"l15,omitempty" cbor:"17,keyasint,omitempty"`
-	BandwidthBytes uint64  `json:"bb" cbor:"18,keyasint"`
+	Uptime         uint64         `json:"u" cbor:"0,keyasint"`
+	Cpu            float64        `json:"cpu" cbor:"1,keyasint"`
+	MemPct         float64        `json:"mp" cbor:"2,keyasint"`
+	DiskPct        float64        `json:"dp" cbor:"3,keyasint"`
+	Bandwidth      float64        `json:"b" cbor:"4,keyasint"`
+	GpuPct         float64        `json:"g,omitempty" cbor:"5,keyasint,omitempty"`
+	DashboardTemp  float64        `json:"dt,omitempty" cbor:"6,keyasint,omitempty"`
+	LoadAvg1       float64        `json:"l1,omitempty" cbor:"7,keyasint,omitempty"`
+	LoadAvg5       float64        `json:"l5,omitempty" cbor:"8,keyasint,omitempty"`
+	LoadAvg15      float64        `json:"l15,omitempty" cbor:"9,keyasint,omitempty"`
+	BandwidthBytes uint64         `json:"bb" cbor:"10,keyasint"`
 	// TODO: remove load fields in future release in favor of load avg array
 	LoadAvg        [3]float64         `json:"la,omitempty" cbor:"19,keyasint"`
 	ConnectionType ConnectionType     `json:"ct,omitempty" cbor:"20,keyasint,omitempty,omitzero"`
@@ -157,4 +197,5 @@ type CombinedData struct {
 	Info            Info               `json:"info" cbor:"1,keyasint"`
 	Containers      []*container.Stats `json:"container" cbor:"2,keyasint"`
 	SystemdServices []*systemd.Service `json:"systemd,omitempty" cbor:"3,keyasint,omitempty"`
+	StaticInfo      *StaticInfo        `json:"static_info,omitempty" cbor:"4,keyasint,omitempty"` // Collected at longer intervals
 }
