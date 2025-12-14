@@ -8,7 +8,7 @@ msgstr ""
 "Language: es\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-12-05 20:24\n"
+"PO-Revision-Date: 2025-12-14 09:39\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -331,7 +331,7 @@ msgstr "Verifica tu servicio de notificaciones"
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Clear"
-msgstr ""
+msgstr "Limpiar"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
