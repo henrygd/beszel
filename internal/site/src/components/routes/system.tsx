@@ -3,15 +3,7 @@ import { Trans, useLingui } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
 import { timeTicks } from "d3-time"
-import {
-	ChevronRightSquareIcon,
-	ClockArrowUp,
-	CpuIcon,
-	GlobeIcon,
-	LayoutGridIcon,
-	MonitorIcon,
-	XIcon,
-} from "lucide-react"
+import { XIcon } from "lucide-react"
 import { subscribeKeys } from "nanostores"
 import React, { type JSX, lazy, memo, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import AreaChartDefault, { type DataPoint } from "@/components/charts/area-chart"
@@ -24,7 +16,7 @@ import MemChart from "@/components/charts/mem-chart"
 import SwapChart from "@/components/charts/swap-chart"
 import TemperatureChart from "@/components/charts/temperature-chart"
 import { getPbTimestamp, pb } from "@/lib/api"
-import { ChartType, ConnectionType, connectionTypeLabels, Os, SystemStatus, Unit } from "@/lib/enums"
+import { ChartType, Os, SystemStatus, Unit } from "@/lib/enums"
 import { batteryStateTranslations } from "@/lib/i18n"
 import {
 	$allSystemsById,
@@ -44,8 +36,6 @@ import {
 	compareSemVer,
 	decimalString,
 	formatBytes,
-	secondsToString,
-	getHostDisplayValue,
 	listen,
 	parseSemVer,
 	toFixedFloat,
@@ -61,20 +51,18 @@ import type {
 	SystemStats,
 	SystemStatsRecord,
 } from "@/types"
-import ChartTimeSelect from "../charts/chart-time-select"
 import { $router, navigate } from "../router"
 import Spinner from "../spinner"
 import { Button } from "../ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card"
-import { AppleIcon, ChartAverage, ChartMax, FreeBsdIcon, Rows, TuxIcon, WebSocketIcon, WindowsIcon } from "../ui/icons"
+import { ChartAverage, ChartMax } from "../ui/icons"
 import { Input } from "../ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
-import { Separator } from "../ui/separator"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip"
 import NetworkSheet from "./system/network-sheet"
 import CpuCoresSheet from "./system/cpu-sheet"
 import LineChartDefault from "../charts/line-chart"
 import { pinnedAxisDomain } from "../ui/chart"
+import InfoBar from "./system/info-bar"
 
 type ChartTimeData = {
 	time: number
@@ -154,8 +142,8 @@ async function getStats<T extends SystemStatsRecord | ContainerStatsRecord>(
 	})
 }
 
-function dockerOrPodman(str: string, system: SystemRecord): string {
-	if (system.info.p) {
+function dockerOrPodman(str: string, isPodman: boolean): string {
+	if (isPodman) {
 		return str.replace("docker", "podman").replace("Docker", "Podman")
 	}
 	return str
@@ -178,6 +166,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const isLongerChart = !["1m", "1h"].includes(chartTime) // true if chart time is not 1m or 1h
 	const userSettings = $userSettings.get()
 	const chartWrapRef = useRef<HTMLDivElement>(null)
+	const [isPodman, setIsPodman] = useState(system.info?.p ?? false)
 
 	useEffect(() => {
 		return () => {
@@ -217,7 +206,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	// subscribe to realtime metrics if chart time is 1m
 	// biome-ignore lint/correctness/useExhaustiveDependencies: not necessary
 	useEffect(() => {
-		let unsub = () => { }
+		let unsub = () => {}
 		if (!system.id || chartTime !== "1m") {
 			return
 		}
@@ -333,62 +322,9 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 		})
 	}, [system, chartTime])
 
-	// values for system info bar
-	const systemInfo = useMemo(() => {
-		if (!system.info) {
-			return []
-		}
-
-		const osInfo = {
-			[Os.Linux]: {
-				Icon: TuxIcon,
-				value: system.info.k,
-				label: t({ comment: "Linux kernel", message: "Kernel" }),
-			},
-			[Os.Darwin]: {
-				Icon: AppleIcon,
-				value: `macOS ${system.info.k}`,
-			},
-			[Os.Windows]: {
-				Icon: WindowsIcon,
-				value: system.info.k,
-			},
-			[Os.FreeBSD]: {
-				Icon: FreeBsdIcon,
-				value: system.info.k,
-			},
-		}
-		let uptime: string
-		if (system.info.u < 3600) {
-			uptime = secondsToString(system.info.u, "minute")
-		} else if (system.info.u < 360000) {
-			uptime = secondsToString(system.info.u, "hour")
-		} else {
-			uptime = secondsToString(system.info.u, "day")
-		}
-		return [
-			{ value: getHostDisplayValue(system), Icon: GlobeIcon },
-			{
-				value: system.info.h,
-				Icon: MonitorIcon,
-				label: "Hostname",
-				// hide if hostname is same as host or name
-				hide: system.info.h === system.host || system.info.h === system.name,
-			},
-			{ value: uptime, Icon: ClockArrowUp, label: t`Uptime`, hide: !system.info.u },
-			osInfo[system.info.os ?? Os.Linux],
-			{
-				value: `${system.info.m} (${system.info.c}c${system.info.t ? `/${system.info.t}t` : ""})`,
-				Icon: CpuIcon,
-				hide: !system.info.m,
-			},
-		] as {
-			value: string | number | undefined
-			label?: string
-			Icon: React.ElementType
-			hide?: boolean
-		}[]
-	}, [system, t])
+	useEffect(() => {
+		setIsPodman(system.info?.p ?? false)
+	}, [system.info?.p])
 
 	/** Space for tooltip if more than 10 sensors and no containers table */
 	useEffect(() => {
@@ -458,113 +394,11 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const hasGpuPowerData = lastGpuVals.some((gpu) => gpu.p !== undefined || gpu.pp !== undefined)
 	const hasGpuEnginesData = lastGpuVals.some((gpu) => gpu.e !== undefined)
 
-	let translatedStatus: string = system.status
-	if (system.status === SystemStatus.Up) {
-		translatedStatus = t({ message: "Up", comment: "Context: System is up" })
-	} else if (system.status === SystemStatus.Down) {
-		translatedStatus = t({ message: "Down", comment: "Context: System is down" })
-	}
-
 	return (
 		<>
 			<div ref={chartWrapRef} className="grid gap-4 mb-14 overflow-x-clip">
 				{/* system info */}
-				<Card>
-					<div className="grid xl:flex gap-4 px-4 sm:px-6 pt-3 sm:pt-4 pb-5">
-						<div>
-							<h1 className="text-[1.6rem] font-semibold mb-1.5">{system.name}</h1>
-							<div className="flex flex-wrap items-center gap-3 gap-y-2 text-sm opacity-90">
-								<TooltipProvider>
-									<Tooltip>
-										<TooltipTrigger asChild>
-											<div className="capitalize flex gap-2 items-center">
-												<span className={cn("relative flex h-3 w-3")}>
-													{system.status === SystemStatus.Up && (
-														<span
-															className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
-															style={{ animationDuration: "1.5s" }}
-														></span>
-													)}
-													<span
-														className={cn("relative inline-flex rounded-full h-3 w-3", {
-															"bg-green-500": system.status === SystemStatus.Up,
-															"bg-red-500": system.status === SystemStatus.Down,
-															"bg-primary/40": system.status === SystemStatus.Paused,
-															"bg-yellow-500": system.status === SystemStatus.Pending,
-														})}
-													></span>
-												</span>
-												{translatedStatus}
-											</div>
-										</TooltipTrigger>
-										{system.info.ct && (
-											<TooltipContent>
-												<div className="flex gap-1 items-center">
-													{system.info.ct === ConnectionType.WebSocket ? (
-														<WebSocketIcon className="size-4" />
-													) : (
-														<ChevronRightSquareIcon className="size-4" strokeWidth={2} />
-													)}
-													{connectionTypeLabels[system.info.ct as ConnectionType]}
-												</div>
-											</TooltipContent>
-										)}
-									</Tooltip>
-								</TooltipProvider>
-
-								{systemInfo.map(({ value, label, Icon, hide }) => {
-									if (hide || !value) {
-										return null
-									}
-									const content = (
-										<div className="flex gap-1.5 items-center">
-											<Icon className="h-4 w-4" /> {value}
-										</div>
-									)
-									return (
-										<div key={value} className="contents">
-											<Separator orientation="vertical" className="h-4 bg-primary/30" />
-											{label ? (
-												<TooltipProvider>
-													<Tooltip delayDuration={150}>
-														<TooltipTrigger asChild>{content}</TooltipTrigger>
-														<TooltipContent>{label}</TooltipContent>
-													</Tooltip>
-												</TooltipProvider>
-											) : (
-												content
-											)}
-										</div>
-									)
-								})}
-							</div>
-						</div>
-						<div className="xl:ms-auto flex items-center gap-2 max-sm:-mb-1">
-							<ChartTimeSelect className="w-full xl:w-40" agentVersion={chartData.agentVersion} />
-							<TooltipProvider delayDuration={100}>
-								<Tooltip>
-									<TooltipTrigger asChild>
-										<Button
-											aria-label={t`Toggle grid`}
-											variant="outline"
-											size="icon"
-											className="hidden xl:flex p-0 text-primary"
-											onClick={() => setGrid(!grid)}
-										>
-											{grid ? (
-												<LayoutGridIcon className="h-[1.2rem] w-[1.2rem] opacity-75" />
-											) : (
-												<Rows className="h-[1.3rem] w-[1.3rem] opacity-75" />
-											)}
-										</Button>
-									</TooltipTrigger>
-									<TooltipContent>{t`Toggle grid`}</TooltipContent>
-								</Tooltip>
-							</TooltipProvider>
-						</div>
-					</div>
-				</Card>
-
+				<InfoBar system={system} chartData={chartData} grid={grid} setGrid={setGrid} setIsPodman={setIsPodman} />
 
 				{/* <Tabs defaultValue="overview" className="w-full">
 					<TabsList className="w-full h-11">
@@ -575,7 +409,6 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 					<TabsContent value="smart">
 					</TabsContent>
 				</Tabs> */}
-
 
 				{/* main charts */}
 				<div className="grid xl:grid-cols-2 gap-4">
@@ -612,7 +445,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						<ChartCard
 							empty={dataEmpty}
 							grid={grid}
-							title={dockerOrPodman(t`Docker CPU Usage`, system)}
+							title={dockerOrPodman(t`Docker CPU Usage`, isPodman)}
 							description={t`Average CPU utilization of containers`}
 							cornerEl={containerFilterBar}
 						>
@@ -639,8 +472,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						<ChartCard
 							empty={dataEmpty}
 							grid={grid}
-							title={dockerOrPodman(t`Docker Memory Usage`, system)}
-							description={dockerOrPodman(t`Memory usage of docker containers`, system)}
+							title={dockerOrPodman(t`Docker Memory Usage`, isPodman)}
+							description={dockerOrPodman(t`Memory usage of docker containers`, isPodman)}
 							cornerEl={containerFilterBar}
 						>
 							<ContainerChart
@@ -760,8 +593,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						<ChartCard
 							empty={dataEmpty}
 							grid={grid}
-							title={dockerOrPodman(t`Docker Network I/O`, system)}
-							description={dockerOrPodman(t`Network traffic of docker containers`, system)}
+							title={dockerOrPodman(t`Docker Network I/O`, isPodman)}
+							description={dockerOrPodman(t`Network traffic of docker containers`, isPodman)}
 							cornerEl={containerFilterBar}
 						>
 							<ContainerChart
@@ -800,10 +633,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 					{/* Temperature chart */}
 					{systemStats.at(-1)?.stats.t && (
-						<div
-							ref={temperatureChartRef}
-							className={cn("odd:last-of-type:col-span-full", { "col-span-full": !grid })}
-						>
+						<div ref={temperatureChartRef} className={cn("odd:last-of-type:col-span-full", { "col-span-full": !grid })}>
 							<ChartCard
 								empty={dataEmpty}
 								grid={grid}
@@ -965,7 +795,9 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 													label: t`Write`,
 													dataKey: ({ stats }) => {
 														if (showMax) {
-															return stats?.efs?.[extraFsName]?.wbm || (stats?.efs?.[extraFsName]?.wm ?? 0) * 1024 * 1024
+															return (
+																stats?.efs?.[extraFsName]?.wbm || (stats?.efs?.[extraFsName]?.wm ?? 0) * 1024 * 1024
+															)
 														}
 														return stats?.efs?.[extraFsName]?.wb || (stats?.efs?.[extraFsName]?.w ?? 0) * 1024 * 1024
 													},
@@ -1003,9 +835,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 					</div>
 				)}
 
-				{compareSemVer(chartData.agentVersion, parseSemVer("0.15.0")) >= 0 && (
-					<LazySmartTable systemId={system.id} />
-				)}
+				{compareSemVer(chartData.agentVersion, parseSemVer("0.15.0")) >= 0 && <LazySmartTable systemId={system.id} />}
 
 				{containerData.length > 0 && compareSemVer(chartData.agentVersion, parseSemVer("0.14.0")) >= 0 && (
 					<LazyContainersTable systemId={system.id} />
@@ -1061,13 +891,10 @@ function FilterBar({ store = $containerFilter }: { store?: typeof $containerFilt
 		return () => clearTimeout(handle)
 	}, [inputValue, storeValue, store])
 
-	const handleChange = useCallback(
-		(e: React.ChangeEvent<HTMLInputElement>) => {
-			const value = e.target.value
-			setInputValue(value)
-		},
-		[]
-	)
+	const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+		const value = e.target.value
+		setInputValue(value)
+	}, [])
 
 	const handleClear = useCallback(() => {
 		setInputValue("")

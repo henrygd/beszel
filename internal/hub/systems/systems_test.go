@@ -266,18 +266,20 @@ func testOld(t *testing.T, hub *tests.TestHub) {
 
 		// Create test system data
 		testData := &system.CombinedData{
+			Details: &system.Details{
+				Hostname: "data-test.example.com",
+				Kernel:   "5.15.0-generic",
+				Cores:    4,
+				Threads:  8,
+				CpuModel: "Test CPU",
+			},
 			Info: system.Info{
-				Hostname:      "data-test.example.com",
-				KernelVersion: "5.15.0-generic",
-				Cores:         4,
-				Threads:       8,
-				CpuModel:      "Test CPU",
-				Uptime:        3600,
-				Cpu:           25.5,
-				MemPct:        40.2,
-				DiskPct:       60.0,
-				Bandwidth:     100.0,
-				AgentVersion:  "1.0.0",
+				Uptime:       3600,
+				Cpu:          25.5,
+				MemPct:       40.2,
+				DiskPct:      60.0,
+				Bandwidth:    100.0,
+				AgentVersion: "1.0.0",
 			},
 			Stats: system.Stats{
 				Cpu:         25.5,

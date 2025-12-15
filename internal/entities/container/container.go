@@ -34,6 +34,17 @@ type ApiStats struct {
 	MemoryStats MemoryStats `json:"memory_stats"`
 }
 
+// Docker system info from /info
+type HostInfo struct {
+	OperatingSystem string `json:"OperatingSystem"`
+	KernelVersion   string `json:"KernelVersion"`
+	NCPU            int    `json:"NCPU"`
+	MemTotal        uint64 `json:"MemTotal"`
+	// OSVersion       string `json:"OSVersion"`
+	// OSType          string `json:"OSType"`
+	// Architecture    string `json:"Architecture"`
+}
+
 func (s *ApiStats) CalculateCpuPercentLinux(prevCpuContainer uint64, prevCpuSystem uint64) float64 {
 	cpuDelta := s.CPUStats.CPUUsage.TotalUsage - prevCpuContainer
 	systemDelta := s.CPUStats.SystemUsage - prevCpuSystem

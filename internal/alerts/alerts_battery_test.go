@@ -60,10 +60,10 @@ func TestBatteryAlertLogic(t *testing.T) {
 	combinedDataHigh := &system.CombinedData{
 		Stats: statsHigh,
 		Info: system.Info{
-			Hostname: "test-host",
-			Cpu:      10,
-			MemPct:   30,
-			DiskPct:  40,
+			AgentVersion: "0.12.0",
+			Cpu:          10,
+			MemPct:       30,
+			DiskPct:      40,
 		},
 	}
 
@@ -100,10 +100,10 @@ func TestBatteryAlertLogic(t *testing.T) {
 	combinedDataLow := &system.CombinedData{
 		Stats: statsLow,
 		Info: system.Info{
-			Hostname: "test-host",
-			Cpu:      10,
-			MemPct:   30,
-			DiskPct:  40,
+			AgentVersion: "0.12.0",
+			Cpu:          10,
+			MemPct:       30,
+			DiskPct:      40,
 		},
 	}
 
@@ -142,10 +142,10 @@ func TestBatteryAlertLogic(t *testing.T) {
 	combinedDataRecovered := &system.CombinedData{
 		Stats: statsRecovered,
 		Info: system.Info{
-			Hostname: "test-host",
-			Cpu:      10,
-			MemPct:   30,
-			DiskPct:  40,
+			AgentVersion: "0.12.0",
+			Cpu:          10,
+			MemPct:       30,
+			DiskPct:      40,
 		},
 	}
 
@@ -198,10 +198,10 @@ func TestBatteryAlertNoBattery(t *testing.T) {
 	combinedData := &system.CombinedData{
 		Stats: statsNoBattery,
 		Info: system.Info{
-			Hostname: "test-host",
-			Cpu:      10,
-			MemPct:   30,
-			DiskPct:  40,
+			AgentVersion: "0.12.0",
+			Cpu:          10,
+			MemPct:       30,
+			DiskPct:      40,
 		},
 	}
 
@@ -294,10 +294,10 @@ func TestBatteryAlertAveragedSamples(t *testing.T) {
 			Battery: [2]uint8{15, 1},
 		},
 		Info: system.Info{
-			Hostname: "test-host",
-			Cpu:      10,
-			MemPct:   30,
-			DiskPct:  40,
+			AgentVersion: "0.12.0",
+			Cpu:          10,
+			MemPct:       30,
+			DiskPct:      40,
 		},
 	}
 
@@ -360,10 +360,10 @@ func TestBatteryAlertAveragedSamples(t *testing.T) {
 			Battery: [2]uint8{50, 1},
 		},
 		Info: system.Info{
-			Hostname: "test-host",
-			Cpu:      10,
-			MemPct:   30,
-			DiskPct:  40,
+			AgentVersion: "0.12.0",
+			Cpu:          10,
+			MemPct:       30,
+			DiskPct:      40,
 		},
 	}
 

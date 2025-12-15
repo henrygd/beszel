@@ -2,6 +2,7 @@ package agent
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/agent/battery"
+	"github.com/henrygd/beszel/internal/entities/container"
 	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/shirou/gopsutil/v4/cpu"
@@ -27,41 +29,70 @@ type prevDisk struct {
 }
 
 // Sets initial / non-changing values about the host system
-func (a *Agent) initializeSystemInfo() {
+func (a *Agent) refreshStaticInfo() {
 	a.systemInfo.AgentVersion = beszel.Version
-	a.systemInfo.Hostname, _ = os.Hostname()
+
+	// get host info from Docker if available
+	var hostInfo container.HostInfo
+
+	if a.dockerManager != nil {
+		a.systemDetails.Podman = a.dockerManager.IsPodman()
+		hostInfo, _ = a.dockerManager.GetHostInfo()
+	}
+
+	a.systemDetails.Hostname, _ = os.Hostname()
 
 	platform, _, version, _ := host.PlatformInformation()
 
 	if platform == "darwin" {
-		a.systemInfo.KernelVersion = version
-		a.systemInfo.Os = system.Darwin
+		a.systemDetails.Os = system.Darwin
+		a.systemDetails.OsName = fmt.Sprintf("macOS %s", version)
 	} else if strings.Contains(platform, "indows") {
-		a.systemInfo.KernelVersion = fmt.Sprintf("%s %s", strings.Replace(platform, "Microsoft ", "", 1), version)
-		a.systemInfo.Os = system.Windows
+		a.systemDetails.Os = system.Windows
+		a.systemDetails.OsName = fmt.Sprintf("%s %s", strings.Replace(platform, "Microsoft ", "", 1), version)
 	} else if platform == "freebsd" {
-		a.systemInfo.Os = system.Freebsd
-		a.systemInfo.KernelVersion = version
+		a.systemDetails.Os = system.Freebsd
+		a.systemDetails.Kernel = version
+		a.systemDetails.OsName = "FreeBSD"
 	} else {
-		a.systemInfo.Os = system.Linux
-	}
-
-	if a.systemInfo.KernelVersion == "" {
-		a.systemInfo.KernelVersion, _ = host.KernelVersion()
+		a.systemDetails.Os = system.Linux
+		a.systemDetails.OsName = hostInfo.OperatingSystem
+		a.systemDetails.Kernel = hostInfo.KernelVersion
+		if a.systemDetails.OsName == "" {
+			if prettyName, err := getLinuxOsPrettyName(); err == nil {
+				a.systemDetails.OsName = prettyName
+			} else {
+				a.systemDetails.OsName = platform
+			}
+		}
+		if a.systemDetails.Kernel == "" {
+			a.systemDetails.Kernel = version
+		}
 	}
 
 	// cpu model
 	if info, err := cpu.Info(); err == nil && len(info) > 0 {
-		a.systemInfo.CpuModel = info[0].ModelName
+		a.systemDetails.CpuModel = info[0].ModelName
 	}
 	// cores / threads
-	a.systemInfo.Cores, _ = cpu.Counts(false)
-	if threads, err := cpu.Counts(true); err == nil {
-		if threads > 0 && threads < a.systemInfo.Cores {
-			// in lxc logical cores reflects container limits, so use that as cores if lower
-			a.systemInfo.Cores = threads
-		} else {
-			a.systemInfo.Threads = threads
+	a.systemDetails.Cores, _ = cpu.Counts(false)
+	a.systemDetails.Threads = hostInfo.NCPU
+	if a.systemDetails.Threads == 0 {
+		if threads, err := cpu.Counts(true); err == nil {
+			if threads > 0 && threads < a.systemDetails.Cores {
+				// in lxc logical cores reflects container limits, so use that as cores if lower
+				a.systemDetails.Cores = threads
+			} else {
+				a.systemDetails.Threads = threads
+			}
+		}
+	}
+
+	// total memory
+	a.systemDetails.MemoryTotal = hostInfo.MemTotal
+	if a.systemDetails.MemoryTotal == 0 {
+		if v, err := mem.VirtualMemory(); err == nil {
+			a.systemDetails.MemoryTotal = v.Total
 		}
 	}
 
@@ -195,21 +226,16 @@ func (a *Agent) getSystemStats(cacheTimeMs uint16) system.Stats {
 		}
 	}
 
-	// update base system info
+	// update system info
 	a.systemInfo.ConnectionType = a.connectionManager.ConnectionType
 	a.systemInfo.Cpu = systemStats.Cpu
 	a.systemInfo.LoadAvg = systemStats.LoadAvg
-	// TODO: remove these in future release in favor of load avg array
-	a.systemInfo.LoadAvg1 = systemStats.LoadAvg[0]
-	a.systemInfo.LoadAvg5 = systemStats.LoadAvg[1]
-	a.systemInfo.LoadAvg15 = systemStats.LoadAvg[2]
 	a.systemInfo.MemPct = systemStats.MemPct
 	a.systemInfo.DiskPct = systemStats.DiskPct
 	a.systemInfo.Battery = systemStats.Battery
 	a.systemInfo.Uptime, _ = host.Uptime()
-	// TODO: in future release, remove MB bandwidth values in favor of bytes
-	a.systemInfo.Bandwidth = twoDecimals(systemStats.NetworkSent + systemStats.NetworkRecv)
 	a.systemInfo.BandwidthBytes = systemStats.Bandwidth[0] + systemStats.Bandwidth[1]
+	a.systemInfo.Threads = a.systemDetails.Threads
 	slog.Debug("sysinfo", "data", a.systemInfo)
 
 	return systemStats
@@ -239,4 +265,25 @@ func getARCSize() (uint64, error) {
 	}
 
 	return 0, fmt.Errorf("failed to parse size field")
+}
+
+// getLinuxOsPrettyName attempts to get the pretty OS name from /etc/os-release on Linux systems
+func getLinuxOsPrettyName() (string, error) {
+	file, err := os.Open("/etc/os-release")
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if after, ok := strings.CutPrefix(line, "PRETTY_NAME="); ok {
+			value := after
+			value = strings.Trim(value, `"`)
+			return value, nil
+		}
+	}
+
+	return "", errors.New("pretty name not found")
 }

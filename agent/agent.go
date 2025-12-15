@@ -17,6 +17,7 @@ import (
 	"github.com/gliderlabs/ssh"
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/agent/deltatracker"
+	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/shirou/gopsutil/v4/host"
 	gossh "golang.org/x/crypto/ssh"
@@ -37,7 +38,8 @@ type Agent struct {
 	netInterfaceDeltaTrackers map[uint16]*deltatracker.DeltaTracker[string, uint64] // Per-cache-time NIC delta trackers
 	dockerManager             *dockerManager                                        // Manages Docker API requests
 	sensorConfig              *SensorConfig                                         // Sensors config
-	systemInfo                system.Info                                           // Host system info
+	systemInfo                system.Info                                           // Host system info (dynamic)
+	systemDetails             system.Details                                        // Host system details (static, once-per-connection)
 	gpuManager                *GPUManager                                           // Manages GPU data
 	cache                     *systemDataCache                                      // Cache for system stats based on cache time
 	connectionManager         *ConnectionManager                                    // Channel to signal connection events
@@ -97,8 +99,11 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 
 	slog.Debug(beszel.Version)
 
+	// initialize docker manager
+	agent.dockerManager = newDockerManager()
+
 	// initialize system info
-	agent.initializeSystemInfo()
+	agent.refreshStaticInfo()
 
 	// initialize connection manager
 	agent.connectionManager = newConnectionManager(agent)
@@ -111,9 +116,6 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 
 	// initialize net io stats
 	agent.initializeNetIoStats()
-
-	// initialize docker manager
-	agent.dockerManager = newDockerManager(agent)
 
 	agent.systemdManager, err = newSystemdManager()
 	if err != nil {
@@ -133,7 +135,7 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 
 	// if debugging, print stats
 	if agent.debug {
-		slog.Debug("Stats", "data", agent.gatherStats(0))
+		slog.Debug("Stats", "data", agent.gatherStats(common.DataRequestOptions{CacheTimeMs: 60_000, IncludeDetails: true}))
 	}
 
 	return agent, nil
@@ -148,10 +150,11 @@ func GetEnv(key string) (value string, exists bool) {
 	return os.LookupEnv(key)
 }
 
-func (a *Agent) gatherStats(cacheTimeMs uint16) *system.CombinedData {
+func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedData {
 	a.Lock()
 	defer a.Unlock()
 
+	cacheTimeMs := options.CacheTimeMs
 	data, isCached := a.cache.Get(cacheTimeMs)
 	if isCached {
 		slog.Debug("Cached data", "cacheTimeMs", cacheTimeMs)
@@ -162,6 +165,12 @@ func (a *Agent) gatherStats(cacheTimeMs uint16) *system.CombinedData {
 		Stats: a.getSystemStats(cacheTimeMs),
 		Info:  a.systemInfo,
 	}
+
+	// Include static info only when requested
+	if options.IncludeDetails {
+		data.Details = &a.systemDetails
+	}
+
 	// slog.Info("System data", "data", data, "cacheTimeMs", cacheTimeMs)
 
 	if a.dockerManager != nil {
@@ -225,7 +234,7 @@ func (a *Agent) getFingerprint() string {
 	// if no fingerprint is found, generate one
 	fingerprint, err := host.HostID()
 	if err != nil || fingerprint == "" {
-		fingerprint = a.systemInfo.Hostname + a.systemInfo.CpuModel
+		fingerprint = a.systemDetails.Hostname + a.systemDetails.CpuModel
 	}
 
 	// hash fingerprint

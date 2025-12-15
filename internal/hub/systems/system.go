@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"hash/fnv"
+	"log/slog"
 	"math/rand"
 	"net"
 	"strings"
@@ -42,6 +43,7 @@ type System struct {
 	agentVersion semver.Version       // Agent version
 	updateTicker *time.Ticker         // Ticker for updating the system
 	smartOnce    sync.Once            // Once for fetching and saving smart devices
+	detailsOnce  sync.Once            // Once for fetching and saving static system details
 }
 
 func (sm *SystemManager) NewSystem(systemId string) *System {
@@ -114,7 +116,14 @@ func (sys *System) update() error {
 		sys.handlePaused()
 		return nil
 	}
-	data, err := sys.fetchDataFromAgent(common.DataRequestOptions{CacheTimeMs: uint16(interval)})
+	options := common.DataRequestOptions{
+		CacheTimeMs: uint16(interval),
+	}
+	// fetch system details only on the first update
+	sys.detailsOnce.Do(func() {
+		options.IncludeDetails = true
+	})
+	data, err := sys.fetchDataFromAgent(options)
 	if err == nil {
 		_, err = sys.createRecords(data)
 	}
@@ -142,6 +151,12 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 	}
 	hub := sys.manager.hub
 	err = hub.RunInTransaction(func(txApp core.App) error {
+		if data.Details != nil {
+			slog.Info("Static info", "data", data.Details)
+			if err := createStaticInfoRecord(txApp, data.Details, sys.Id); err != nil {
+				return err
+			}
+		}
 		// add system_stats and container_stats records
 		systemStatsCollection, err := txApp.FindCachedCollectionByNameOrId("system_stats")
 		if err != nil {
@@ -201,6 +216,29 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 	}
 
 	return systemRecord, err
+}
+
+func createStaticInfoRecord(app core.App, data *system.Details, systemId string) error {
+	record, err := app.FindRecordById("system_details", systemId)
+	if err != nil {
+		collection, err := app.FindCollectionByNameOrId("system_details")
+		if err != nil {
+			return err
+		}
+		record = core.NewRecord(collection)
+		record.Set("id", systemId)
+	}
+	record.Set("system", systemId)
+	record.Set("hostname", data.Hostname)
+	record.Set("kernel", data.Kernel)
+	record.Set("cores", data.Cores)
+	record.Set("threads", data.Threads)
+	record.Set("cpu", data.CpuModel)
+	record.Set("os", data.Os)
+	record.Set("os_name", data.OsName)
+	record.Set("memory", data.MemoryTotal)
+	record.Set("podman", data.Podman)
+	return app.SaveNoValidate(record)
 }
 
 func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId string) error {

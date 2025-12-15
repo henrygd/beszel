@@ -1,3 +1,9 @@
+## 0.18.0
+
+- Remove `la1`, `la5`, `la15` fields from `Info` struct in favor of `la` array.
+
+- Remove `MB` bandwidth values in favor of bytes.
+
 ## 0.17.0
 
 - Add quiet hours to silence alerts during specific time periods. (#265)

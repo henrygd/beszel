@@ -513,7 +513,7 @@ func TestWriteToSessionEncoding(t *testing.T) {
 				err = json.Unmarshal([]byte(encodedData), &decodedJson)
 				assert.Error(t, err, "Should not be valid JSON data")
 
-				assert.Equal(t, testData.Info.Hostname, decodedCbor.Info.Hostname)
+				assert.Equal(t, testData.Details.Hostname, decodedCbor.Details.Hostname)
 				assert.Equal(t, testData.Stats.Cpu, decodedCbor.Stats.Cpu)
 			} else {
 				// Should be JSON - try to decode as JSON
@@ -526,7 +526,7 @@ func TestWriteToSessionEncoding(t *testing.T) {
 				assert.Error(t, err, "Should not be valid CBOR data")
 
 				// Verify the decoded JSON data matches our test data
-				assert.Equal(t, testData.Info.Hostname, decodedJson.Info.Hostname)
+				assert.Equal(t, testData.Details.Hostname, decodedJson.Details.Hostname)
 				assert.Equal(t, testData.Stats.Cpu, decodedJson.Stats.Cpu)
 
 				// Verify it looks like JSON (starts with '{' and contains readable field names)
@@ -551,12 +551,8 @@ func createTestCombinedData() *system.CombinedData {
 			DiskPct:   50.0,
 		},
 		Info: system.Info{
-			Hostname:     "test-host",
-			Cores:        8,
-			CpuModel:     "Test CPU Model",
 			Uptime:       3600,
 			AgentVersion: "0.12.0",
-			Os:           system.Linux,
 		},
 		Containers: []*container.Stats{
 			{
