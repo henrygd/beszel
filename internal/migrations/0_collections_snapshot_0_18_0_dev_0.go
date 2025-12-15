@@ -1596,9 +1596,7 @@ func init() {
 			}
 		],
 		"id": "pbc_3116237454",
-		"indexes": [
-			"CREATE UNIQUE INDEX ` + "`" + `idx_5d1egp3jVU` + "`" + ` ON ` + "`" + `system_details` + "`" + ` (` + "`" + `system` + "`" + `)"
-		],
+		"indexes": [],
 		"listRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id",
 		"name": "system_details",
 		"system": false,
