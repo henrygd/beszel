@@ -1540,6 +1540,20 @@ func init() {
 				"type": "text"
 			},
 			{
+				"autogeneratePattern": "",
+				"hidden": false,
+				"id": "text4161937994",
+				"max": 0,
+				"min": 0,
+				"name": "arch",
+				"pattern": "",
+				"presentable": false,
+				"primaryKey": false,
+				"required": false,
+				"system": false,
+				"type": "text"
+			},
+			{
 				"hidden": false,
 				"id": "number4245036687",
 				"max": null,

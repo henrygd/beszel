@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -41,6 +42,11 @@ func (a *Agent) refreshStaticInfo() {
 	}
 
 	a.systemDetails.Hostname, _ = os.Hostname()
+	if arch, err := host.KernelArch(); err == nil {
+		a.systemDetails.Arch = arch
+	} else {
+		a.systemDetails.Arch = runtime.GOARCH
+	}
 
 	platform, _, version, _ := host.PlatformInformation()
 

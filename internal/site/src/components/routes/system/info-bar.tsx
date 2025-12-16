@@ -7,6 +7,7 @@ import { cn, formatBytes, getHostDisplayValue, secondsToString, toFixedFloat } f
 import { Separator } from "@/components/ui/separator"
 import {
 	AppleIcon,
+	BinaryIcon,
 	ChevronRightSquareIcon,
 	ClockArrowUp,
 	CpuIcon,
@@ -46,7 +47,7 @@ export default function InfoBar({
 		}
 		pb.collection<SystemDetailsRecord>("system_details")
 			.getOne(system.id, {
-				fields: "hostname,kernel,cores,threads,cpu,os,os_name,memory,podman",
+				fields: "hostname,kernel,cores,threads,cpu,os,os_name,arch,memory,podman",
 				headers: {
 					"Cache-Control": "public, max-age=60",
 				},
@@ -72,6 +73,7 @@ export default function InfoBar({
 		const cpuModel = details?.cpu ?? system.info.m
 		const os = details?.os ?? system.info.os ?? Os.Linux
 		const osName = details?.os_name
+		const arch = details?.arch
 		const memory = details?.memory
 
 		const osInfo = {
@@ -116,12 +118,19 @@ export default function InfoBar({
 			},
 			{ value: uptime, Icon: ClockArrowUp, label: t`Uptime`, hide: !system.info.u },
 			osInfo[os],
+			{ value: arch, Icon: BinaryIcon, hide: !arch },
 		] as {
 			value: string | number | undefined
 			label?: string
 			Icon: React.ElementType
 			hide?: boolean
 		}[]
+
+		info.push({
+			value: `${cpuModel} (${cores}c${threads ? `/${threads}t` : ""})`,
+			Icon: CpuIcon,
+			hide: !cpuModel,
+		})
 
 		if (memory) {
 			const memValue = formatBytes(memory, false, undefined, false)
@@ -132,12 +141,6 @@ export default function InfoBar({
 				label: t`Memory`,
 			})
 		}
-
-		info.push({
-			value: `${cpuModel} (${cores}c${threads ? `/${threads}t` : ""})`,
-			Icon: CpuIcon,
-			hide: !cpuModel,
-		})
 
 		return info
 	}, [system, details, t])
