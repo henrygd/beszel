@@ -504,10 +504,11 @@ KEY=$(echo "$KEY" | tr -d '\n')
 # Verify checksum
 if command -v sha256sum >/dev/null; then
   CHECK_CMD="sha256sum"
-elif command -v md5 >/dev/null; then
-  CHECK_CMD="md5 -q"
+elif command -v sha256 >/dev/null; then
+  # FreeBSD uses 'sha256' instead of 'sha256sum', with different output format
+  CHECK_CMD="sha256 -q"
 else
-  echo "No MD5 checksum utility found"
+  echo "No SHA256 checksum utility found"
   exit 1
 fi
 
