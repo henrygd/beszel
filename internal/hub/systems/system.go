@@ -388,7 +388,8 @@ func (sys *System) fetchStringFromAgentViaSSH(action common.WebSocketAction, req
 		if err := session.Shell(); err != nil {
 			return false, err
 		}
-		req := common.HubRequest[any]{Action: action, Data: requestData}
+		reqDataBytes, _ := cbor.Marshal(requestData)
+		req := common.HubRequest[cbor.RawMessage]{Action: action, Data: reqDataBytes}
 		_ = cbor.NewEncoder(stdin).Encode(req)
 		_ = stdin.Close()
 		var resp common.AgentResponse
@@ -452,7 +453,8 @@ func (sys *System) FetchSystemdInfoFromAgent(serviceName string) (systemd.Servic
 			return false, err
 		}
 
-		req := common.HubRequest[any]{Action: common.GetSystemdInfo, Data: common.SystemdInfoRequest{ServiceName: serviceName}}
+		reqDataBytes, _ := cbor.Marshal(common.SystemdInfoRequest{ServiceName: serviceName})
+		req := common.HubRequest[cbor.RawMessage]{Action: common.GetSystemdInfo, Data: reqDataBytes}
 		if err := cbor.NewEncoder(stdin).Encode(req); err != nil {
 			return false, err
 		}
@@ -500,7 +502,8 @@ func (sys *System) fetchDataViaSSH(options common.DataRequestOptions) (*system.C
 		*sys.data = system.CombinedData{}
 
 		if sys.agentVersion.GTE(beszel.MinVersionAgentResponse) && stdinErr == nil {
-			req := common.HubRequest[any]{Action: common.GetData, Data: options}
+			reqDataBytes, _ := cbor.Marshal(options)
+			req := common.HubRequest[cbor.RawMessage]{Action: common.GetData, Data: reqDataBytes}
 			_ = cbor.NewEncoder(stdin).Encode(req)
 			_ = stdin.Close()
 
