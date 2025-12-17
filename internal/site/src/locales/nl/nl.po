@@ -8,7 +8,7 @@ msgstr ""
 "Language: nl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-12-17 10:18\n"
+"PO-Revision-Date: 2025-12-17 12:02\n"
 "Last-Translator: \n"
 "Language-Team: Dutch\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -126,7 +126,7 @@ msgstr "Breedte van het hoofdlayout aanpassen"
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
 msgid "Admin"
-msgstr ""
+msgstr "Admin"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "After"
@@ -134,7 +134,7 @@ msgstr "Na"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr ""
+msgstr "Agent"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -245,7 +245,7 @@ msgstr "Binair"
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bits (Kbps, Mbps, Gbps)"
-msgstr ""
+msgstr "Bits (Kbps, Mbps, Gbps)"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Boot state"
@@ -254,11 +254,11 @@ msgstr "Opstartstatus"
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Bytes (KB/s, MB/s, GB/s)"
-msgstr ""
+msgstr "Bytes (KB/s, MB/s, GB/s)"
 
 #: src/components/charts/mem-chart.tsx
 msgid "Cache / Buffers"
-msgstr ""
+msgstr "Cache / Buffers"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Can reload"
@@ -292,7 +292,7 @@ msgstr "Opgelet - potentieel gegevensverlies"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
-msgstr ""
+msgstr "Celsius (°C)"
 
 #: src/components/routes/settings/general.tsx
 msgid "Change display units for metrics."
@@ -430,7 +430,7 @@ msgstr "YAML kopiëren"
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
@@ -516,7 +516,7 @@ msgstr "Beschrijving"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
-msgstr ""
+msgstr "Details"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
@@ -672,7 +672,7 @@ msgstr "Exporteer je huidige systeemconfiguratie."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr ""
+msgstr "Fahrenheit (°F)"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Failed"
@@ -720,7 +720,7 @@ msgstr "Vingerafdruk"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
-msgstr ""
+msgstr "Firmware"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -793,7 +793,7 @@ msgstr "Als je het wachtwoord voor je beheerdersaccount bent kwijtgeraakt, kan j
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
-msgstr ""
+msgstr "Afbeelding"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
@@ -806,7 +806,7 @@ msgstr "Ongeldig e-mailadres."
 #. Linux kernel
 #: src/components/routes/system.tsx
 msgid "Kernel"
-msgstr ""
+msgstr "Kernel"
 
 #: src/components/routes/settings/general.tsx
 msgid "Language"
@@ -822,12 +822,12 @@ msgstr "Layoutbreedte"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Lifecycle"
-msgstr ""
+msgstr "Levenscyclus"
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
-msgstr ""
+msgstr "limiet"
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
@@ -897,7 +897,7 @@ msgstr "Handmatige installatie-instructies"
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx
 msgid "Max 1 min"
-msgstr ""
+msgstr "Max 1 min"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -926,7 +926,7 @@ msgstr "Geheugengebruik van docker containers"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
-msgstr ""
+msgstr "Model"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1064,7 +1064,7 @@ msgstr "Wachtwoord reset aanvraag ontvangen"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Past"
-msgstr ""
+msgstr "Verleden"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
@@ -1208,7 +1208,7 @@ msgstr "Hervatten"
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
-msgstr ""
+msgstr "Root"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1285,7 +1285,7 @@ msgstr "Servicedetails"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Services"
-msgstr ""
+msgstr "Services"
 
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
@@ -1317,7 +1317,7 @@ msgstr "Sorteren op"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Start Time"
-msgstr ""
+msgstr "Starttijd"
 
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
@@ -1332,7 +1332,7 @@ msgstr "Status"
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
-msgstr ""
+msgstr "Status"
 
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Sub State"
@@ -1405,7 +1405,7 @@ msgstr "Temperatuur van systeem sensoren"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test <0>URL</0>"
-msgstr ""
+msgstr "Test <0>URL</0>"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test notification sent"
@@ -1491,7 +1491,7 @@ msgstr "Geactiveerd door"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Triggers"
-msgstr ""
+msgstr "Triggers"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 1 minute load average exceeds a threshold"
@@ -1537,7 +1537,7 @@ msgstr "Triggert wanneer het gebruik van een schijf een drempelwaarde overschrij
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
-msgstr ""
+msgstr "Type"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
