@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"maps"
 	"math"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -18,6 +19,24 @@ import (
 )
 
 var errNoActiveTime = errors.New("no active time")
+
+// isSystemdAvailable checks if systemd is running as the init system (PID 1).
+// This prevents unnecessary connection attempts on systems using other init systems
+// like OpenRC, runit, or when running in containers without systemd.
+func isSystemdAvailable() bool {
+	// Check if /run/systemd/system directory exists - this is a reliable indicator
+	// that systemd is running as the init system
+	if _, err := os.Stat("/run/systemd/system"); err == nil {
+		return true
+	}
+
+	// Fallback: check if PID 1 is systemd by reading /proc/1/comm
+	if data, err := os.ReadFile("/proc/1/comm"); err == nil {
+		return strings.TrimSpace(string(data)) == "systemd"
+	}
+
+	return false
+}
 
 // systemdManager manages the collection of systemd service statistics.
 type systemdManager struct {
@@ -33,6 +52,13 @@ func newSystemdManager() (*systemdManager, error) {
 	if skipSystemd, _ := GetEnv("SKIP_SYSTEMD"); skipSystemd == "true" {
 		return nil, nil
 	}
+
+	// Check if systemd is available on the system before attempting connection
+	if !isSystemdAvailable() {
+		slog.Debug("Systemd not available on this system")
+		return nil, nil
+	}
+
 	conn, err := dbus.NewSystemConnectionContext(context.Background())
 	if err != nil {
 		slog.Debug("Error connecting to systemd", "err", err, "ref", "https://beszel.dev/guide/systemd")
