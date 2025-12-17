@@ -41,9 +41,10 @@ export default function InfoBar({
 
 	// Fetch system_details on mount / when system changes
 	useEffect(() => {
+		setDetails(null)
 		// skip fetching system details if agent is older version which includes details in Info struct
 		if (!system.id || system.info?.m) {
-			return setDetails(null)
+			return
 		}
 		pb.collection<SystemDetailsRecord>("system_details")
 			.getOne(system.id, {
@@ -82,7 +83,6 @@ export default function InfoBar({
 				// show kernel in tooltip if os name is available, otherwise show the kernel
 				value: osName || kernel,
 				label: osName ? kernel : undefined,
-				// label: t({ comment: "Linux kernel", message: "Kernel" }),
 			},
 			[Os.Darwin]: {
 				Icon: AppleIcon,
@@ -91,6 +91,7 @@ export default function InfoBar({
 			[Os.Windows]: {
 				Icon: WindowsIcon,
 				value: osName || kernel,
+				label: osName ? kernel : undefined,
 			},
 			[Os.FreeBSD]: {
 				Icon: FreeBsdIcon,

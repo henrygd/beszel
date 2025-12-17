@@ -55,24 +55,29 @@ func (a *Agent) refreshStaticInfo() {
 		a.systemDetails.OsName = fmt.Sprintf("macOS %s", version)
 	} else if strings.Contains(platform, "indows") {
 		a.systemDetails.Os = system.Windows
-		a.systemDetails.OsName = fmt.Sprintf("%s %s", strings.Replace(platform, "Microsoft ", "", 1), version)
+		a.systemDetails.OsName = strings.Replace(platform, "Microsoft ", "", 1)
+		a.systemDetails.Kernel = version
 	} else if platform == "freebsd" {
 		a.systemDetails.Os = system.Freebsd
-		a.systemDetails.Kernel = version
-		a.systemDetails.OsName = "FreeBSD"
+		a.systemDetails.Kernel, _ = host.KernelVersion()
+		if prettyName, err := getOsPrettyName(); err == nil {
+			a.systemDetails.OsName = prettyName
+		} else {
+			a.systemDetails.OsName = "FreeBSD"
+		}
 	} else {
 		a.systemDetails.Os = system.Linux
 		a.systemDetails.OsName = hostInfo.OperatingSystem
-		a.systemDetails.Kernel = hostInfo.KernelVersion
 		if a.systemDetails.OsName == "" {
-			if prettyName, err := getLinuxOsPrettyName(); err == nil {
+			if prettyName, err := getOsPrettyName(); err == nil {
 				a.systemDetails.OsName = prettyName
 			} else {
 				a.systemDetails.OsName = platform
 			}
 		}
+		a.systemDetails.Kernel = hostInfo.KernelVersion
 		if a.systemDetails.Kernel == "" {
-			a.systemDetails.Kernel = version
+			a.systemDetails.Kernel, _ = host.KernelVersion()
 		}
 	}
 
@@ -81,18 +86,17 @@ func (a *Agent) refreshStaticInfo() {
 		a.systemDetails.CpuModel = info[0].ModelName
 	}
 	// cores / threads
-	a.systemDetails.Cores, _ = cpu.Counts(false)
-	a.systemDetails.Threads = hostInfo.NCPU
-	if a.systemDetails.Threads == 0 {
-		if threads, err := cpu.Counts(true); err == nil {
-			if threads > 0 && threads < a.systemDetails.Cores {
-				// in lxc logical cores reflects container limits, so use that as cores if lower
-				a.systemDetails.Cores = threads
-			} else {
-				a.systemDetails.Threads = threads
-			}
-		}
+	cores, _ := cpu.Counts(false)
+	threads := hostInfo.NCPU
+	if threads == 0 {
+		threads, _ = cpu.Counts(true)
 	}
+	// in lxc, logical cores reflects container limits, so use that as cores if lower
+	if threads > 0 && threads < cores {
+		cores = threads
+	}
+	a.systemDetails.Cores = cores
+	a.systemDetails.Threads = threads
 
 	// total memory
 	a.systemDetails.MemoryTotal = hostInfo.MemTotal
@@ -273,8 +277,8 @@ func getARCSize() (uint64, error) {
 	return 0, fmt.Errorf("failed to parse size field")
 }
 
-// getLinuxOsPrettyName attempts to get the pretty OS name from /etc/os-release on Linux systems
-func getLinuxOsPrettyName() (string, error) {
+// getOsPrettyName attempts to get the pretty OS name from /etc/os-release on Linux systems
+func getOsPrettyName() (string, error) {
 	file, err := os.Open("/etc/os-release")
 	if err != nil {
 		return "", err
