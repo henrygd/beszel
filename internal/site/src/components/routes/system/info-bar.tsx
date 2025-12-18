@@ -7,7 +7,6 @@ import { cn, formatBytes, getHostDisplayValue, secondsToString, toFixedFloat } f
 import { Separator } from "@/components/ui/separator"
 import {
 	AppleIcon,
-	BinaryIcon,
 	ChevronRightSquareIcon,
 	ClockArrowUp,
 	CpuIcon,
@@ -22,6 +21,7 @@ import type { ChartData, SystemDetailsRecord, SystemRecord } from "@/types"
 import { useEffect, useMemo, useState } from "react"
 import { useLingui } from "@lingui/react/macro"
 import { pb } from "@/lib/api"
+import { plural } from "@lingui/core/macro"
 
 export default function InfoBar({
 	system,
@@ -70,7 +70,7 @@ export default function InfoBar({
 		const hostname = details?.hostname ?? system.info.h
 		const kernel = details?.kernel ?? system.info.k
 		const cores = details?.cores ?? system.info.c
-		const threads = details?.threads ?? system.info.t
+		const threads = details?.threads ?? system.info.t ?? 0
 		const cpuModel = details?.cpu ?? system.info.m
 		const os = details?.os ?? system.info.os ?? Os.Linux
 		const osName = details?.os_name
@@ -119,19 +119,18 @@ export default function InfoBar({
 			},
 			{ value: uptime, Icon: ClockArrowUp, label: t`Uptime`, hide: !system.info.u },
 			osInfo[os],
-			{ value: arch, Icon: BinaryIcon, hide: !arch },
+			{
+				value: cpuModel,
+				Icon: CpuIcon,
+				hide: !cpuModel,
+				label: `${plural(cores, { one: "# core", other: "# cores" })} / ${plural(threads, { one: "# thread", other: "# threads" })}${arch ? ` / ${arch}` : ""}`,
+			},
 		] as {
 			value: string | number | undefined
 			label?: string
 			Icon: React.ElementType
 			hide?: boolean
 		}[]
-
-		info.push({
-			value: `${cpuModel} (${cores}c${threads ? `/${threads}t` : ""})`,
-			Icon: CpuIcon,
-			hide: !cpuModel,
-		})
 
 		if (memory) {
 			const memValue = formatBytes(memory, false, undefined, false)
