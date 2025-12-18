@@ -233,7 +233,8 @@ func (a *Agent) getFingerprint() string {
 
 	// if no fingerprint is found, generate one
 	fingerprint, err := host.HostID()
-	if err != nil || fingerprint == "" {
+	// we ignore a commonly known "product_uuid" known not to be unique
+	if err != nil || fingerprint == "" || fingerprint == "03000200-0400-0500-0006-000700080009" {
 		fingerprint = a.systemDetails.Hostname + a.systemDetails.CpuModel
 	}
 
