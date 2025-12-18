@@ -1,10 +1,5 @@
-import ChartTimeSelect from "@/components/charts/chart-time-select"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { FreeBsdIcon, TuxIcon, WebSocketIcon, WindowsIcon } from "@/components/ui/icons"
-import { SystemStatus, ConnectionType, connectionTypeLabels, Os } from "@/lib/enums"
-import { cn, formatBytes, getHostDisplayValue, secondsToString, toFixedFloat } from "@/lib/utils"
-import { Separator } from "@/components/ui/separator"
+import { plural } from "@lingui/core/macro"
+import { useLingui } from "@lingui/react/macro"
 import {
 	AppleIcon,
 	ChevronRightSquareIcon,
@@ -12,16 +7,21 @@ import {
 	CpuIcon,
 	GlobeIcon,
 	LayoutGridIcon,
+	MemoryStickIcon,
 	MonitorIcon,
 	Rows,
-	MemoryStickIcon,
 } from "lucide-react"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import type { ChartData, SystemDetailsRecord, SystemRecord } from "@/types"
 import { useEffect, useMemo, useState } from "react"
-import { useLingui } from "@lingui/react/macro"
+import ChartTimeSelect from "@/components/charts/chart-time-select"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { FreeBsdIcon, TuxIcon, WebSocketIcon, WindowsIcon } from "@/components/ui/icons"
+import { Separator } from "@/components/ui/separator"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { pb } from "@/lib/api"
-import { plural } from "@lingui/core/macro"
+import { ConnectionType, connectionTypeLabels, Os, SystemStatus } from "@/lib/enums"
+import { cn, formatBytes, getHostDisplayValue, secondsToString, toFixedFloat } from "@/lib/utils"
+import type { ChartData, SystemDetailsRecord, SystemRecord } from "@/types"
 
 export default function InfoBar({
 	system,
@@ -41,6 +41,7 @@ export default function InfoBar({
 
 	// Fetch system_details on mount / when system changes
 	useEffect(() => {
+		let active = true
 		setDetails(null)
 		// skip fetching system details if agent is older version which includes details in Info struct
 		if (!system.id || system.info?.m) {
@@ -54,10 +55,16 @@ export default function InfoBar({
 				},
 			})
 			.then((details) => {
-				setDetails(details)
-				setIsPodman(details.podman)
+				if (active) {
+					setDetails(details)
+					setIsPodman(details.podman)
+				}
 			})
-			.catch(() => setDetails(null))
+			.catch(() => {})
+
+		return () => {
+			active = false
+		}
 	}, [system.id])
 
 	// values for system info bar - use details with fallback to system.info

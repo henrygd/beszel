@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"hash/fnv"
-	"log/slog"
 	"math/rand"
 	"net"
 	"strings"
@@ -152,8 +151,7 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 	hub := sys.manager.hub
 	err = hub.RunInTransaction(func(txApp core.App) error {
 		if data.Details != nil {
-			slog.Info("Static info", "data", data.Details)
-			if err := createStaticInfoRecord(txApp, data.Details, sys.Id); err != nil {
+			if err := createSystemDetailsRecord(txApp, data.Details, sys.Id); err != nil {
 				return err
 			}
 		}
@@ -218,28 +216,29 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 	return systemRecord, err
 }
 
-func createStaticInfoRecord(app core.App, data *system.Details, systemId string) error {
-	record, err := app.FindRecordById("system_details", systemId)
-	if err != nil {
-		collection, err := app.FindCollectionByNameOrId("system_details")
-		if err != nil {
-			return err
-		}
-		record = core.NewRecord(collection)
-		record.Set("id", systemId)
+func createSystemDetailsRecord(app core.App, data *system.Details, systemId string) error {
+	params := dbx.Params{
+		"id":       systemId,
+		"system":   systemId,
+		"hostname": data.Hostname,
+		"kernel":   data.Kernel,
+		"cores":    data.Cores,
+		"threads":  data.Threads,
+		"cpu":      data.CpuModel,
+		"os":       data.Os,
+		"os_name":  data.OsName,
+		"arch":     data.Arch,
+		"memory":   data.MemoryTotal,
+		"podman":   data.Podman,
+		"updated":  time.Now().UTC(),
 	}
-	record.Set("system", systemId)
-	record.Set("hostname", data.Hostname)
-	record.Set("kernel", data.Kernel)
-	record.Set("cores", data.Cores)
-	record.Set("threads", data.Threads)
-	record.Set("cpu", data.CpuModel)
-	record.Set("os", data.Os)
-	record.Set("os_name", data.OsName)
-	record.Set("arch", data.Arch)
-	record.Set("memory", data.MemoryTotal)
-	record.Set("podman", data.Podman)
-	return app.SaveNoValidate(record)
+	queryString := `INSERT INTO system_details (id, system, hostname, kernel, cores, threads, cpu, os, os_name, arch, memory, podman, updated) 
+		VALUES ({:id}, {:system}, {:hostname}, {:kernel}, {:cores}, {:threads}, {:cpu}, {:os}, {:os_name}, {:arch}, {:memory}, {:podman}, {:updated}) 
+		ON CONFLICT(id) DO UPDATE SET system = excluded.system, hostname = excluded.hostname, kernel = excluded.kernel, cores = excluded.cores, 
+		threads = excluded.threads, cpu = excluded.cpu, os = excluded.os, os_name = excluded.os_name, arch = excluded.arch, 
+		memory = excluded.memory, podman = excluded.podman, updated = excluded.updated`
+	_, err := app.DB().NewQuery(queryString).Bind(params).Execute()
+	return err
 }
 
 func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId string) error {
