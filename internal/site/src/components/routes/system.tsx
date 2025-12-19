@@ -168,7 +168,6 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const userSettings = $userSettings.get()
 	const chartWrapRef = useRef<HTMLDivElement>(null)
 	const [details, setDetails] = useState<SystemDetailsRecord | null>(null)
-	const isPodman = useMemo(() => details?.podman ?? system.info?.p ?? false, [details, system.info?.p])
 
 	useEffect(() => {
 		return () => {
@@ -408,6 +407,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const hasGpuData = lastGpuVals.length > 0
 	const hasGpuPowerData = lastGpuVals.some((gpu) => gpu.p !== undefined || gpu.pp !== undefined)
 	const hasGpuEnginesData = lastGpuVals.some((gpu) => gpu.e !== undefined)
+	const isLinux = (details?.os || system.info?.os) === Os.Linux
+	const isPodman = details?.podman ?? system.info?.p ?? false
 
 	return (
 		<>
@@ -856,7 +857,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 					<LazyContainersTable systemId={system.id} />
 				)}
 
-				{system.info?.os === Os.Linux && compareSemVer(chartData.agentVersion, parseSemVer("0.16.0")) >= 0 && (
+				{isLinux && compareSemVer(chartData.agentVersion, parseSemVer("0.16.0")) >= 0 && (
 					<LazySystemdTable systemId={system.id} />
 				)}
 			</div>
