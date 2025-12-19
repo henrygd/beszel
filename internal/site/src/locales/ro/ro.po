@@ -8,7 +8,7 @@ msgstr ""
 "Language: ro\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-12-02 23:17\n"
+"PO-Revision-Date: 2025-12-19 10:55\n"
 "Last-Translator: \n"
 "Language-Team: Romanian\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : (n==0 || (n%100>0 && n%100<20)) ? 1 : 2);\n"
@@ -168,7 +168,7 @@ msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Are you sure?"
-msgstr ""
+msgstr "Ești sigur?"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
@@ -212,7 +212,7 @@ msgstr ""
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "Bandwidth"
-msgstr ""
+msgstr "Trafic"
 
 #: src/components/routes/system.tsx
 msgid "Battery"
@@ -228,7 +228,7 @@ msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Before"
-msgstr ""
+msgstr "Înainte"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -280,7 +280,7 @@ msgstr "Anulare"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Capabilities"
-msgstr ""
+msgstr "Capabilități"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Capacity"
@@ -365,7 +365,7 @@ msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Conflicts"
-msgstr ""
+msgstr "Conflicte"
 
 #: src/components/active-alerts.tsx
 msgid "Connection is down"
@@ -374,7 +374,7 @@ msgstr ""
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Continue"
-msgstr ""
+msgstr "Continuă"
 
 #: src/lib/utils.ts
 msgid "Copied to clipboard"
