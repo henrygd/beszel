@@ -167,7 +167,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const isLongerChart = !["1m", "1h"].includes(chartTime) // true if chart time is not 1m or 1h
 	const userSettings = $userSettings.get()
 	const chartWrapRef = useRef<HTMLDivElement>(null)
-	const [details, setDetails] = useState<SystemDetailsRecord | null>(null)
+	const [details, setDetails] = useState<SystemDetailsRecord>({} as SystemDetailsRecord)
 
 	useEffect(() => {
 		return () => {
@@ -177,7 +177,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 			persistChartTime.current = false
 			setSystemStats([])
 			setContainerData([])
-			setDetails(null)
+			setDetails({} as SystemDetailsRecord)
 			$containerFilter.set("")
 		}
 	}, [id])
@@ -407,7 +407,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const hasGpuData = lastGpuVals.length > 0
 	const hasGpuPowerData = lastGpuVals.some((gpu) => gpu.p !== undefined || gpu.pp !== undefined)
 	const hasGpuEnginesData = lastGpuVals.some((gpu) => gpu.e !== undefined)
-	const isLinux = (details?.os || system.info?.os) === Os.Linux
+	const isLinux = (details?.os ?? system.info?.os) === Os.Linux
 	const isPodman = details?.podman ?? system.info?.p ?? false
 
 	return (
