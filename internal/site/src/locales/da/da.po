@@ -8,7 +8,7 @@ msgstr ""
 "Language: da\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-12-19 08:46\n"
+"PO-Revision-Date: 2025-12-19 10:55\n"
 "Last-Translator: \n"
 "Language-Team: Danish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -939,7 +939,7 @@ msgstr "Navn"
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
-msgstr ""
+msgstr "Net"
 
 #: src/components/routes/system.tsx
 msgid "Network traffic of docker containers"
@@ -1208,7 +1208,7 @@ msgstr "Genoptag"
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
-msgstr ""
+msgstr "Root"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1366,7 +1366,7 @@ msgstr "Gennemsnitlig system belastning over tid"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Systemd Services"
-msgstr ""
+msgstr "Systemd Services"
 
 #: src/components/navbar.tsx
 msgid "Systems"
@@ -1541,7 +1541,7 @@ msgstr "Type"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
-msgstr ""
+msgstr "Enhed fil"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
@@ -1561,7 +1561,7 @@ msgstr "Ukendt"
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unlimited"
-msgstr ""
+msgstr "Ubegrænset"
 
 #. Context: System is up
 #: src/components/routes/system.tsx
