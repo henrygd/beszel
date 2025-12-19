@@ -42,8 +42,9 @@ type System struct {
 	agentVersion   semver.Version       // Agent version
 	updateTicker   *time.Ticker         // Ticker for updating the system
 	detailsFetched atomic.Bool          // True if static system details have been fetched and saved
-	smartFetched   atomic.Bool          // True if SMART devices have been fetched and saved
 	smartFetching  atomic.Bool          // True if SMART devices are currently being fetched
+	smartInterval  time.Duration        // Interval for periodic SMART data updates
+	lastSmartFetch atomic.Int64         // Unix milliseconds of last SMART data fetch
 }
 
 func (sm *SystemManager) NewSystem(systemId string) *System {
@@ -132,14 +133,20 @@ func (sys *System) update() error {
 	// create system records
 	_, err = sys.createRecords(data)
 
-	// Fetch and save SMART devices when system first comes online
-	if backgroundSmartFetchEnabled() && !sys.smartFetched.Load() && sys.smartFetching.CompareAndSwap(false, true) {
-		go func() {
-			defer sys.smartFetching.Store(false)
-			if err := sys.FetchAndSaveSmartDevices(); err == nil {
-				sys.smartFetched.Store(true)
-			}
-		}()
+	// Fetch and save SMART devices when system first comes online or at intervals
+	if backgroundSmartFetchEnabled() {
+		if sys.smartInterval <= 0 {
+			sys.smartInterval = time.Hour
+		}
+		lastFetch := sys.lastSmartFetch.Load()
+		if time.Since(time.UnixMilli(lastFetch)) >= sys.smartInterval && sys.smartFetching.CompareAndSwap(false, true) {
+			go func() {
+				defer sys.smartFetching.Store(false)
+				// Throttle retries even on failure.
+				sys.lastSmartFetch.Store(time.Now().UnixMilli())
+				_ = sys.FetchAndSaveSmartDevices()
+			}()
+		}
 	}
 
 	return err
@@ -212,6 +219,10 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 				return err
 			}
 			sys.detailsFetched.Store(true)
+			// update smart interval if it's set on the agent side
+			if data.Details.SmartInterval > 0 {
+				sys.smartInterval = data.Details.SmartInterval
+			}
 		}
 
 		// update system record (do this last because it triggers alerts and we need above records to be inserted first)

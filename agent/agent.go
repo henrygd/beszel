@@ -84,6 +84,7 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 			slog.Warn("Invalid DISK_USAGE_CACHE", "err", err)
 		}
 	}
+
 	// Set up slog with a log level determined by the LOG_LEVEL env var
 	if logLevelStr, exists := GetEnv("LOG_LEVEL"); exists {
 		switch strings.ToLower(logLevelStr) {
@@ -104,6 +105,16 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 
 	// initialize system info
 	agent.refreshSystemDetails()
+
+	// SMART_INTERVAL env var to update smart data at this interval
+	if smartIntervalEnv, exists := GetEnv("SMART_INTERVAL"); exists {
+		if duration, err := time.ParseDuration(smartIntervalEnv); err == nil && duration > 0 {
+			agent.systemDetails.SmartInterval = duration
+			slog.Info("SMART_INTERVAL", "duration", duration)
+		} else {
+			slog.Warn("Invalid SMART_INTERVAL", "err", err)
+		}
+	}
 
 	// initialize connection manager
 	agent.connectionManager = newConnectionManager(agent)

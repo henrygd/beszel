@@ -155,16 +155,17 @@ type Info struct {
 
 // Data that does not change during process lifetime and is not needed in All Systems table
 type Details struct {
-	Hostname    string `cbor:"0,keyasint"`
-	Kernel      string `cbor:"1,keyasint,omitempty"`
-	Cores       int    `cbor:"2,keyasint"`
-	Threads     int    `cbor:"3,keyasint"`
-	CpuModel    string `cbor:"4,keyasint"`
-	Os          Os     `cbor:"5,keyasint"`
-	OsName      string `cbor:"6,keyasint"`
-	Arch        string `cbor:"7,keyasint"`
-	Podman      bool   `cbor:"8,keyasint,omitempty"`
-	MemoryTotal uint64 `cbor:"9,keyasint"`
+	Hostname      string        `cbor:"0,keyasint"`
+	Kernel        string        `cbor:"1,keyasint,omitempty"`
+	Cores         int           `cbor:"2,keyasint"`
+	Threads       int           `cbor:"3,keyasint"`
+	CpuModel      string        `cbor:"4,keyasint"`
+	Os            Os            `cbor:"5,keyasint"`
+	OsName        string        `cbor:"6,keyasint"`
+	Arch          string        `cbor:"7,keyasint"`
+	Podman        bool          `cbor:"8,keyasint,omitempty"`
+	MemoryTotal   uint64        `cbor:"9,keyasint"`
+	SmartInterval time.Duration `cbor:"10,keyasint,omitempty"`
 }
 
 // Final data structure to return to the hub
