@@ -8,7 +8,7 @@ msgstr ""
 "Language: ro\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-12-19 10:55\n"
+"PO-Revision-Date: 2025-12-19 11:58\n"
 "Last-Translator: \n"
 "Language-Team: Romanian\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : (n==0 || (n%100>0 && n%100<20)) ? 1 : 2);\n"
@@ -408,11 +408,11 @@ msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Copy name"
-msgstr ""
+msgstr "Copiază nume"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Copy text"
-msgstr ""
+msgstr "Copiază text"
 
 #: src/components/add-system.tsx
 msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
@@ -457,11 +457,11 @@ msgstr "Utilizare CPU"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Create"
-msgstr ""
+msgstr "Creează"
 
 #: src/components/login/auth-form.tsx
 msgid "Create account"
-msgstr ""
+msgstr "Creează cont"
 
 #. Context: date created
 #: src/components/alerts-history-columns.tsx
@@ -488,12 +488,12 @@ msgstr ""
 #. Power Cycles
 #: src/components/routes/system/smart-table.tsx
 msgid "Cycles"
-msgstr ""
+msgstr "Cicluri"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Daily"
-msgstr ""
+msgstr "Zilnic"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
@@ -512,11 +512,11 @@ msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Description"
-msgstr ""
+msgstr "Descriere"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
-msgstr ""
+msgstr "Detalii"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
@@ -572,15 +572,15 @@ msgstr ""
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "Down"
-msgstr ""
+msgstr "Jos"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Down ({downSystemsLength})"
-msgstr ""
+msgstr "Jos ({downSystemsLength})"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
-msgstr ""
+msgstr "Descarcă"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
@@ -589,27 +589,27 @@ msgstr "Durată"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
-msgstr ""
+msgstr "Editează"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
-msgstr ""
+msgstr "Editează {foo}"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/otp-forms.tsx
 msgid "Email"
-msgstr ""
+msgstr "Email"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
-msgstr ""
+msgstr "Notificări email"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Empty"
-msgstr ""
+msgstr "Gol"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -749,7 +749,7 @@ msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Global"
-msgstr ""
+msgstr "Global"
 
 #: src/components/routes/system.tsx
 msgid "GPU Engines"
@@ -793,11 +793,11 @@ msgstr ""
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
-msgstr ""
+msgstr "Imagine"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
-msgstr ""
+msgstr "Inactiv"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -827,7 +827,7 @@ msgstr ""
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "limit"
-msgstr ""
+msgstr "limită"
 
 #: src/components/routes/system.tsx
 msgid "Load Average"
@@ -875,7 +875,7 @@ msgstr ""
 #: src/components/containers-table/containers-table.tsx
 #: src/components/navbar.tsx
 msgid "Logs"
-msgstr ""
+msgstr "Jurnale"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
@@ -904,11 +904,11 @@ msgstr ""
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Memory"
-msgstr ""
+msgstr "Memorie"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Memory limit"
-msgstr ""
+msgstr "Limita memoriei"
 
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -918,7 +918,7 @@ msgstr ""
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "Memory Usage"
-msgstr ""
+msgstr "Memorie Utilizată"
 
 #: src/components/routes/system.tsx
 msgid "Memory usage of docker containers"
@@ -926,7 +926,7 @@ msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
-msgstr ""
+msgstr "Model"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -939,7 +939,7 @@ msgstr "Nume"
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
-msgstr ""
+msgstr "Rețea"
 
 #: src/components/routes/system.tsx
 msgid "Network traffic of docker containers"
@@ -961,7 +961,7 @@ msgstr ""
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No"
-msgstr ""
+msgstr "Nu"
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1068,11 +1068,11 @@ msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
-msgstr ""
+msgstr "Suspendare"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Paused"
-msgstr ""
+msgstr "Suspendat"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused ({pausedSystemsLength})"
@@ -1155,17 +1155,17 @@ msgstr ""
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Read"
-msgstr ""
+msgstr "Citit"
 
 #: src/components/routes/system.tsx
 msgid "Received"
-msgstr ""
+msgstr "Primit"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Refresh"
-msgstr ""
+msgstr "Actualizează"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Relationships"
@@ -1208,7 +1208,7 @@ msgstr ""
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
-msgstr ""
+msgstr "Rădăcină"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1224,7 +1224,7 @@ msgstr ""
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Details"
-msgstr ""
+msgstr "Detalii S.M.A.R.T."
 
 #: src/components/routes/system/smart-table.tsx
 msgid "S.M.A.R.T. Self-Test"
@@ -1273,11 +1273,11 @@ msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "Sent"
-msgstr ""
+msgstr "Trimis"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Serial Number"
-msgstr ""
+msgstr "Număr Serial"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Service Details"
@@ -1358,7 +1358,7 @@ msgstr ""
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
-msgstr ""
+msgstr "Sistem"
 
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
@@ -1370,7 +1370,7 @@ msgstr ""
 
 #: src/components/navbar.tsx
 msgid "Systems"
-msgstr ""
+msgstr "Sisteme"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
@@ -1382,7 +1382,7 @@ msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Tasks"
-msgstr ""
+msgstr "Sarcini"
 
 #. Temperature label in systems table
 #: src/components/routes/system/smart-table.tsx
@@ -1393,11 +1393,11 @@ msgstr ""
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "Temperature"
-msgstr ""
+msgstr "Temperatură"
 
 #: src/components/routes/settings/general.tsx
 msgid "Temperature unit"
-msgstr ""
+msgstr "Unitate temperatură"
 
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
@@ -1470,7 +1470,7 @@ msgstr ""
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
-msgstr ""
+msgstr "Total"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
@@ -1483,7 +1483,7 @@ msgstr ""
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Total: {0}"
-msgstr ""
+msgstr "Total: {0}"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Triggered by"
@@ -1537,7 +1537,7 @@ msgstr ""
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
-msgstr ""
+msgstr "Tip"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
@@ -1601,21 +1601,21 @@ msgstr ""
 #: src/components/routes/system.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Usage"
-msgstr ""
+msgstr "Utilizare"
 
 #: src/components/routes/system.tsx
 msgid "Usage of root partition"
-msgstr ""
+msgstr "Utilizarea partiţiei rădăcină"
 
 #: src/components/charts/mem-chart.tsx
 #: src/components/charts/swap-chart.tsx
 msgid "Used"
-msgstr ""
+msgstr "Utilizat"
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Users"
-msgstr ""
+msgstr "Utilizatori"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Value"
@@ -1690,7 +1690,7 @@ msgstr ""
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Yes"
-msgstr ""
+msgstr "Da"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
