@@ -1,3 +1,15 @@
+## 0.18.0
+
+- Collect S.M.A.R.T. data in the background every hour.
+
+- Add `SMART_INTERVAL` environment variable to customize S.M.A.R.T. data collection interval.
+
+- Collect system distribution and architecture.
+
+- Add `system_details` collection to store infrequently updated system information.
+
+- Skip known non-unique product UUID when generating fingerprints. (#1556)
+
 ## 0.17.0
 
 - Add quiet hours to silence alerts during specific time periods. (#265)

@@ -142,7 +142,6 @@ func (sys *System) update() error {
 		if time.Since(time.UnixMilli(lastFetch)) >= sys.smartInterval && sys.smartFetching.CompareAndSwap(false, true) {
 			go func() {
 				defer sys.smartFetching.Store(false)
-				// Throttle retries even on failure.
 				sys.lastSmartFetch.Store(time.Now().UnixMilli())
 				_ = sys.FetchAndSaveSmartDevices()
 			}()
