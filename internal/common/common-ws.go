@@ -58,8 +58,8 @@ type FingerprintResponse struct {
 }
 
 type DataRequestOptions struct {
-	CacheTimeMs uint16 `cbor:"0,keyasint"`
-	// ResourceType uint8  `cbor:"1,keyasint,omitempty,omitzero"`
+	CacheTimeMs    uint16 `cbor:"0,keyasint"`
+	IncludeDetails bool   `cbor:"1,keyasint"`
 }
 
 type ContainerLogsRequest struct {
