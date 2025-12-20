@@ -802,6 +802,24 @@ func TestNetworkRateCalculationFormula(t *testing.T) {
 	}
 }
 
+func TestGetHostInfo(t *testing.T) {
+	data, err := os.ReadFile("test-data/system_info.json")
+	require.NoError(t, err)
+
+	var info container.HostInfo
+	err = json.Unmarshal(data, &info)
+	require.NoError(t, err)
+
+	assert.Equal(t, "6.8.0-31-generic", info.KernelVersion)
+	assert.Equal(t, "Ubuntu 24.04 LTS", info.OperatingSystem)
+	// assert.Equal(t, "24.04", info.OSVersion)
+	// assert.Equal(t, "linux", info.OSType)
+	// assert.Equal(t, "x86_64", info.Architecture)
+	assert.EqualValues(t, 4, info.NCPU)
+	assert.EqualValues(t, 2095882240, info.MemTotal)
+	// assert.Equal(t, "27.0.1", info.ServerVersion)
+}
+
 func TestDeltaTrackerCacheTimeIsolation(t *testing.T) {
 	// Test that different cache times have separate DeltaTracker instances
 	dm := &dockerManager{

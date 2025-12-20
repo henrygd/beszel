@@ -1,0 +1,17 @@
+{
+  "ID": "7TRN:IPZB:QYBB:VPBQ:UMPP:KARE:6ZNR:XE6T:7EWV:PKF4:ZOJD:TPYS",
+  "Containers": 14,
+  "ContainersRunning": 3,
+  "ContainersPaused": 1,
+  "ContainersStopped": 10,
+  "Images": 508,
+  "Driver": "overlay2",
+  "KernelVersion": "6.8.0-31-generic",
+  "OperatingSystem": "Ubuntu 24.04 LTS",
+  "OSVersion": "24.04",
+  "OSType": "linux",
+  "Architecture": "x86_64",
+  "NCPU": 4,
+  "MemTotal": 2095882240,
+  "ServerVersion": "27.0.1"
+}

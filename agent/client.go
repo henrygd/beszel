@@ -201,7 +201,7 @@ func (client *WebSocketClient) handleAuthChallenge(msg *common.HubRequest[cbor.R
 
 	if authRequest.NeedSysInfo {
 		response.Name, _ = GetEnv("SYSTEM_NAME")
-		response.Hostname = client.agent.systemInfo.Hostname
+		response.Hostname = client.agent.systemDetails.Hostname
 		serverAddr := client.agent.connectionManager.serverOptions.Addr
 		_, response.Port, _ = net.SplitHostPort(serverAddr)
 	}

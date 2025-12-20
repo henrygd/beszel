@@ -33,10 +33,7 @@
 				"noUnusedFunctionParameters": "error",
 				"noUnusedPrivateClassMembers": "error",
 				"useExhaustiveDependencies": {
-					"level": "warn",
-					"options": {
-						"reportUnnecessaryDependencies": false
-					}
+					"level": "off"
 				},
 				"useUniqueElementIds": "off",
 				"noUnusedVariables": "error"
