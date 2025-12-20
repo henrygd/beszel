@@ -9,7 +9,7 @@ import (
 	"math/rand"
 	"net"
 	"strings"
-	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/henrygd/beszel/internal/common"
@@ -29,19 +29,22 @@ import (
 )
 
 type System struct {
-	Id           string               `db:"id"`
-	Host         string               `db:"host"`
-	Port         string               `db:"port"`
-	Status       string               `db:"status"`
-	manager      *SystemManager       // Manager that this system belongs to
-	client       *ssh.Client          // SSH client for fetching data
-	data         *system.CombinedData // system data from agent
-	ctx          context.Context      // Context for stopping the updater
-	cancel       context.CancelFunc   // Stops and removes system from updater
-	WsConn       *ws.WsConn           // Handler for agent WebSocket connection
-	agentVersion semver.Version       // Agent version
-	updateTicker *time.Ticker         // Ticker for updating the system
-	smartOnce    sync.Once            // Once for fetching and saving smart devices
+	Id             string               `db:"id"`
+	Host           string               `db:"host"`
+	Port           string               `db:"port"`
+	Status         string               `db:"status"`
+	manager        *SystemManager       // Manager that this system belongs to
+	client         *ssh.Client          // SSH client for fetching data
+	data           *system.CombinedData // system data from agent
+	ctx            context.Context      // Context for stopping the updater
+	cancel         context.CancelFunc   // Stops and removes system from updater
+	WsConn         *ws.WsConn           // Handler for agent WebSocket connection
+	agentVersion   semver.Version       // Agent version
+	updateTicker   *time.Ticker         // Ticker for updating the system
+	detailsFetched atomic.Bool          // True if static system details have been fetched and saved
+	smartFetching  atomic.Bool          // True if SMART devices are currently being fetched
+	smartInterval  time.Duration        // Interval for periodic SMART data updates
+	lastSmartFetch atomic.Int64         // Unix milliseconds of last SMART data fetch
 }
 
 func (sm *SystemManager) NewSystem(systemId string) *System {
@@ -114,10 +117,37 @@ func (sys *System) update() error {
 		sys.handlePaused()
 		return nil
 	}
-	data, err := sys.fetchDataFromAgent(common.DataRequestOptions{CacheTimeMs: uint16(interval)})
-	if err == nil {
-		_, err = sys.createRecords(data)
+	options := common.DataRequestOptions{
+		CacheTimeMs: uint16(interval),
 	}
+	// fetch system details if not already fetched
+	if !sys.detailsFetched.Load() {
+		options.IncludeDetails = true
+	}
+
+	data, err := sys.fetchDataFromAgent(options)
+	if err != nil {
+		return err
+	}
+
+	// create system records
+	_, err = sys.createRecords(data)
+
+	// Fetch and save SMART devices when system first comes online or at intervals
+	if backgroundSmartFetchEnabled() {
+		if sys.smartInterval <= 0 {
+			sys.smartInterval = time.Hour
+		}
+		lastFetch := sys.lastSmartFetch.Load()
+		if time.Since(time.UnixMilli(lastFetch)) >= sys.smartInterval && sys.smartFetching.CompareAndSwap(false, true) {
+			go func() {
+				defer sys.smartFetching.Store(false)
+				sys.lastSmartFetch.Store(time.Now().UnixMilli())
+				_ = sys.FetchAndSaveSmartDevices()
+			}()
+		}
+	}
+
 	return err
 }
 
@@ -142,12 +172,11 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 	}
 	hub := sys.manager.hub
 	err = hub.RunInTransaction(func(txApp core.App) error {
-		// add system_stats and container_stats records
+		// add system_stats record
 		systemStatsCollection, err := txApp.FindCachedCollectionByNameOrId("system_stats")
 		if err != nil {
 			return err
 		}
-
 		systemStatsRecord := core.NewRecord(systemStatsCollection)
 		systemStatsRecord.Set("system", systemRecord.Id)
 		systemStatsRecord.Set("stats", data.Stats)
@@ -155,14 +184,14 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		if err := txApp.SaveNoValidate(systemStatsRecord); err != nil {
 			return err
 		}
+
+		// add containers and container_stats records
 		if len(data.Containers) > 0 {
-			// add / update containers records
 			if data.Containers[0].Id != "" {
 				if err := createContainerRecords(txApp, data.Containers, sys.Id); err != nil {
 					return err
 				}
 			}
-			// add new container_stats record
 			containerStatsCollection, err := txApp.FindCachedCollectionByNameOrId("container_stats")
 			if err != nil {
 				return err
@@ -183,9 +212,20 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 			}
 		}
 
+		// add system details record
+		if data.Details != nil {
+			if err := createSystemDetailsRecord(txApp, data.Details, sys.Id); err != nil {
+				return err
+			}
+			sys.detailsFetched.Store(true)
+			// update smart interval if it's set on the agent side
+			if data.Details.SmartInterval > 0 {
+				sys.smartInterval = data.Details.SmartInterval
+			}
+		}
+
 		// update system record (do this last because it triggers alerts and we need above records to be inserted first)
 		systemRecord.Set("status", up)
-
 		systemRecord.Set("info", data.Info)
 		if err := txApp.SaveNoValidate(systemRecord); err != nil {
 			return err
@@ -193,14 +233,32 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		return nil
 	})
 
-	// Fetch and save SMART devices when system first comes online
-	if err == nil {
-		sys.smartOnce.Do(func() {
-			go sys.FetchAndSaveSmartDevices()
-		})
-	}
-
 	return systemRecord, err
+}
+
+func createSystemDetailsRecord(app core.App, data *system.Details, systemId string) error {
+	collectionName := "system_details"
+	params := dbx.Params{
+		"id":       systemId,
+		"system":   systemId,
+		"hostname": data.Hostname,
+		"kernel":   data.Kernel,
+		"cores":    data.Cores,
+		"threads":  data.Threads,
+		"cpu":      data.CpuModel,
+		"os":       data.Os,
+		"os_name":  data.OsName,
+		"arch":     data.Arch,
+		"memory":   data.MemoryTotal,
+		"podman":   data.Podman,
+		"updated":  time.Now().UTC(),
+	}
+	result, err := app.DB().Update(collectionName, params, dbx.HashExp{"id": systemId}).Execute()
+	rowsAffected, _ := result.RowsAffected()
+	if err != nil || rowsAffected == 0 {
+		_, err = app.DB().Insert(collectionName, params).Execute()
+	}
+	return err
 }
 
 func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId string) error {

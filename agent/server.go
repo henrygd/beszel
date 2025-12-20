@@ -202,7 +202,7 @@ func (a *Agent) handleSSHRequest(w io.Writer, req *common.HubRequest[cbor.RawMes
 
 // handleLegacyStats serves the legacy one-shot stats payload for older hubs
 func (a *Agent) handleLegacyStats(w io.Writer, hubVersion semver.Version) error {
-	stats := a.gatherStats(60_000)
+	stats := a.gatherStats(common.DataRequestOptions{CacheTimeMs: 60_000})
 	return a.writeToSession(w, stats, hubVersion)
 }
 
