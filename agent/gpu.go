@@ -44,6 +44,7 @@ type GPUManager struct {
 	rocmSmi       bool
 	tegrastats    bool
 	intelGpuStats bool
+	nvml          bool
 	GpuDataMap    map[string]*system.GPUData
 	// lastAvgData stores the last calculated averages for each GPU
 	// Used when a collection happens before new data arrives (Count == 0)
@@ -396,7 +397,7 @@ func (gm *GPUManager) detectGPUs() error {
 	if _, err := exec.LookPath(intelGpuStatsCmd); err == nil {
 		gm.intelGpuStats = true
 	}
-	if gm.nvidiaSmi || gm.rocmSmi || gm.tegrastats || gm.intelGpuStats {
+	if gm.nvidiaSmi || gm.rocmSmi || gm.tegrastats || gm.intelGpuStats || gm.nvml {
 		return nil
 	}
 	return fmt.Errorf("no GPU found - install nvidia-smi, rocm-smi, tegrastats, or intel_gpu_top")
@@ -467,7 +468,20 @@ func NewGPUManager() (*GPUManager, error) {
 	gm.GpuDataMap = make(map[string]*system.GPUData)
 
 	if gm.nvidiaSmi {
-		gm.startCollector(nvidiaSmiCmd)
+		if nvml, _ := GetEnv("NVML"); nvml == "true" {
+			gm.nvml = true
+			gm.nvidiaSmi = false
+			collector := &nvmlCollector{gm: &gm}
+			if err := collector.init(); err == nil {
+				go collector.start()
+			} else {
+				slog.Warn("Failed to initialize NVML, falling back to nvidia-smi", "err", err)
+				gm.nvidiaSmi = true
+				gm.startCollector(nvidiaSmiCmd)
+			}
+		} else {
+			gm.startCollector(nvidiaSmiCmd)
+		}
 	}
 	if gm.rocmSmi {
 		gm.startCollector(rocmSmiCmd)
