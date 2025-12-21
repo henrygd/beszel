@@ -99,6 +99,7 @@ export type DiskInfo = {
 	device: string
 	model: string
 	capacity: string
+	capacityBytes: number
 	status: string
 	temperature: number
 	deviceType: string
@@ -125,6 +126,7 @@ function convertSmartDeviceRecordToDiskInfo(records: SmartDeviceRecord[]): DiskI
 		serialNumber: record.serial || unknown,
 		firmwareVersion: record.firmware || unknown,
 		capacity: record.capacity ? formatCapacity(record.capacity) : unknown,
+		capacityBytes: record.capacity || 0,
 		status: record.state || unknown,
 		temperature: record.temp || 0,
 		deviceType: record.type || unknown,
@@ -175,6 +177,7 @@ export const columns: ColumnDef<DiskInfo>[] = [
 	},
 	{
 		accessorKey: "capacity",
+		sortingFn: (a, b) => a.original.capacityBytes - b.original.capacityBytes,
 		header: ({ column }) => <HeaderButton column={column} name={t`Capacity`} Icon={BinaryIcon} />,
 		cell: ({ getValue }) => <span className="ms-1.5">{getValue() as string}</span>,
 	},
