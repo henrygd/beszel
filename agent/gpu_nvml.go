@@ -143,20 +143,38 @@ func (c *nvmlCollector) collect() {
 	defer c.gm.Unlock()
 
 	for i, device := range c.devices {
+		id := fmt.Sprintf("%d", i)
 		bdf := c.bdfs[i]
+
+		// Update GPUDataMap
+		if _, ok := c.gm.GpuDataMap[id]; !ok {
+			var nameBuf [64]byte
+			if ret := nvmlDeviceGetName(device, &nameBuf[0], 64); ret != nvmlReturn(nvmlSuccess) {
+				continue
+			}
+			name := string(nameBuf[:strings.Index(string(nameBuf[:]), "\x00")])
+			name = strings.TrimPrefix(name, "NVIDIA ")
+			c.gm.GpuDataMap[id] = &system.GPUData{Name: strings.TrimSuffix(name, " Laptop GPU")}
+		}
+		gpu := c.gm.GpuDataMap[id]
+
 		if bdf != "" && !c.isGPUActive(bdf) {
 			slog.Info("NVML: GPU is suspended, skipping", "bdf", bdf)
+			gpu.Temperature = 0
+			gpu.MemoryUsed = 0
 			continue
 		}
-		slog.Info("NVML: Collecting data for GPU", "bdf", bdf)
-
-		id := fmt.Sprintf("%d", i)
 
 		// Utilization
 		var utilization nvmlUtilization
 		if ret := nvmlDeviceGetUtilizationRates(device, &utilization); ret != nvmlReturn(nvmlSuccess) {
+			slog.Info("NVML: Utilization failed (GPU likely suspended)", "bdf", bdf, "ret", ret)
+			gpu.Temperature = 0
+			gpu.MemoryUsed = 0
 			continue
 		}
+
+		slog.Info("NVML: Collecting data for GPU", "bdf", bdf)
 
 		// Temperature
 		var temp uint32
@@ -181,16 +199,6 @@ func (c *nvmlCollector) collect() {
 		var power uint32
 		nvmlDeviceGetPowerUsage(device, &power)
 
-		// Update GPUDataMap
-		if _, ok := c.gm.GpuDataMap[id]; !ok {
-			var nameBuf [64]byte
-			nvmlDeviceGetName(device, &nameBuf[0], 64)
-			name := string(nameBuf[:strings.Index(string(nameBuf[:]), "\x00")])
-			name = strings.TrimPrefix(name, "NVIDIA ")
-			c.gm.GpuDataMap[id] = &system.GPUData{Name: strings.TrimSuffix(name, " Laptop GPU")}
-		}
-
-		gpu := c.gm.GpuDataMap[id]
 		gpu.Temperature = float64(temp)
 		gpu.MemoryUsed = float64(usedMem) / 1024 / 1024 / mebibytesInAMegabyte
 		gpu.MemoryTotal = float64(totalMem) / 1024 / 1024 / mebibytesInAMegabyte

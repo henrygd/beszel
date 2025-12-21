@@ -298,8 +298,13 @@ func (gm *GPUManager) calculateGPUAverage(id string, gpu *system.GPUData, cacheK
 	currentCount := uint32(gpu.Count)
 	deltaCount := gm.calculateDeltaCount(currentCount, lastSnapshot)
 
-	// If no new data arrived, use last known average
+	// If no new data arrived
 	if deltaCount == 0 {
+		// If GPU appears suspended (instantaneous values are 0), return zero values
+		// Otherwise return last known average for temporary collection gaps
+		if gpu.Temperature == 0 && gpu.MemoryUsed == 0 {
+			return system.GPUData{Name: gpu.Name}
+		}
 		return gm.lastAvgData[id] // zero value if not found
 	}
 
