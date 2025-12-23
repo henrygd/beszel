@@ -208,7 +208,8 @@ func (sm *SystemManager) onRecordAfterUpdateSuccess(e *core.RecordEvent) error {
 
 	// Trigger system alerts when system comes online
 	if newStatus == up {
-		if err := sm.hub.HandleSystemAlerts(e.Record, system.data); err != nil {
+		// TODO: update this to handle multiple data records
+		if err := sm.hub.HandleSystemAlerts(e.Record, system.data[0]); err != nil {
 			e.App.Logger().Error("Error handling system alerts", "err", err)
 		}
 	}
@@ -243,7 +244,6 @@ func (sm *SystemManager) AddSystem(sys *System) error {
 	// Initialize system for monitoring
 	sys.manager = sm
 	sys.ctx, sys.cancel = sys.getContext()
-	sys.data = &system.CombinedData{}
 	sm.systems.Set(sys.Id, sys)
 
 	// Start monitoring in background

@@ -32,7 +32,7 @@ func (h *BaseHandler) HandleLegacy(rawData []byte) error {
 
 // systemDataHandler implements ResponseHandler for system data requests
 type systemDataHandler struct {
-	data *system.CombinedData
+	data *[]*system.CombinedData
 }
 
 func (h *systemDataHandler) HandleLegacy(rawData []byte) error {
@@ -40,14 +40,12 @@ func (h *systemDataHandler) HandleLegacy(rawData []byte) error {
 }
 
 func (h *systemDataHandler) Handle(agentResponse common.AgentResponse) error {
-	if agentResponse.SystemData != nil {
-		*h.data = *agentResponse.SystemData
-	}
+	*h.data = append(*h.data, agentResponse.SystemData...)
 	return nil
 }
 
 // RequestSystemData requests system metrics from the agent and unmarshals the response.
-func (ws *WsConn) RequestSystemData(ctx context.Context, data *system.CombinedData, options common.DataRequestOptions) error {
+func (ws *WsConn) RequestSystemData(ctx context.Context, data *[]*system.CombinedData, options common.DataRequestOptions) error {
 	if !ws.IsConnected() {
 		return gws.ErrConnClosed
 	}
