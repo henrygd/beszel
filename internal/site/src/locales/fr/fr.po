@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-12-05 20:24\n"
+"PO-Revision-Date: 2025-12-25 22:44\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -512,7 +512,7 @@ msgstr "Supprimer l'empreinte"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Description"
-msgstr ""
+msgstr "Description"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
