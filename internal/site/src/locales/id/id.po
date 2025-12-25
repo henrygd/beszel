@@ -8,7 +8,7 @@ msgstr ""
 "Language: id\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-12-25 09:22\n"
+"PO-Revision-Date: 2025-12-25 10:45\n"
 "Last-Translator: \n"
 "Language-Team: Indonesian\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -172,7 +172,7 @@ msgstr "Apakah anda yakin?"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
-msgstr "Kopi otomatis memerlukan konteks yang aman."
+msgstr "Menyalin otomatis memerlukan konteks yang aman."
 
 #: src/components/routes/system.tsx
 msgid "Average"
@@ -180,7 +180,7 @@ msgstr "Rata-rata"
 
 #: src/components/routes/system.tsx
 msgid "Average CPU utilization of containers"
-msgstr "Byte (KB/s, MB/s, GB/s)"
+msgstr "Rata-rata utilisasi CPU untuk semua kontainer"
 
 #. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
@@ -335,19 +335,19 @@ msgstr "Bersihkan"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
-msgstr ""
+msgstr "Klik pada kontainer untuk melihat informasi lebih banyak."
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
-msgstr ""
+msgstr "Klik pada perangkat untuk melihat informasi lebih banyak."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
-msgstr ""
+msgstr "Klik pada sistem untuk melihat informasi lebih banyak."
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
-msgstr ""
+msgstr "Klik untuk menyalin"
 
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/forgot-pass-form.tsx
