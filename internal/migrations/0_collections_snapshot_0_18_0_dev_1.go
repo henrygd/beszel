@@ -350,6 +350,96 @@ func init() {
 		"system": false
 	},
 	{
+		"id": "k8s_pod_stats01",
+		"listRule": "@request.auth.id != \"\"",
+		"viewRule": null,
+		"createRule": null,
+		"updateRule": null,
+		"deleteRule": null,
+		"name": "pod_stats",
+		"type": "base",
+		"fields": [
+			{
+				"autogeneratePattern": "[a-z0-9]{15}",
+				"hidden": false,
+				"id": "text3208210256",
+				"max": 15,
+				"min": 15,
+				"name": "id",
+				"pattern": "^[a-z0-9]+$",
+				"presentable": false,
+				"primaryKey": true,
+				"required": true,
+				"system": true,
+				"type": "text"
+			},
+			{
+				"cascadeDelete": true,
+				"collectionId": "2hz5ncl8tizk5nx",
+				"hidden": false,
+				"id": "pod_system01",
+				"maxSelect": 1,
+				"minSelect": 0,
+				"name": "system",
+				"presentable": false,
+				"required": true,
+				"system": false,
+				"type": "relation"
+			},
+			{
+				"hidden": false,
+				"id": "pod_stats01",
+				"maxSize": 2000000,
+				"name": "stats",
+				"presentable": false,
+				"required": true,
+				"system": false,
+				"type": "json"
+			},
+			{
+				"hidden": false,
+				"id": "pod_type01",
+				"maxSelect": 1,
+				"name": "type",
+				"presentable": false,
+				"required": true,
+				"system": false,
+				"type": "select",
+				"values": [
+					"1m",
+					"10m",
+					"20m",
+					"120m",
+					"480m"
+				]
+			},
+			{
+				"hidden": false,
+				"id": "autodate2990389176",
+				"name": "created",
+				"onCreate": true,
+				"onUpdate": false,
+				"presentable": false,
+				"system": false,
+				"type": "autodate"
+			},
+			{
+				"hidden": false,
+				"id": "autodate3332085495",
+				"name": "updated",
+				"onCreate": true,
+				"onUpdate": true,
+				"presentable": false,
+				"system": false,
+				"type": "autodate"
+			}
+		],
+		"indexes": [
+			"CREATE INDEX ` + "`" + `idx_pod_stats01` + "`" + ` ON ` + "`" + `pod_stats` + "`" + ` (\n  ` + "`" + `system` + "`" + `,\n  ` + "`" + `type` + "`" + `,\n  ` + "`" + `created` + "`" + `\n)"
+		],
+		"system": false
+	},
+	{
 		"id": "pbc_3663931638",
 		"listRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id",
 		"viewRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id",
@@ -1007,6 +1097,152 @@ func init() {
 		"indexes": [
 			"CREATE INDEX ` + "`" + `idx_JxWirjdhyO` + "`" + ` ON ` + "`" + `containers` + "`" + ` (` + "`" + `updated` + "`" + `)",
 			"CREATE INDEX ` + "`" + `idx_r3Ja0rs102` + "`" + ` ON ` + "`" + `containers` + "`" + ` (` + "`" + `system` + "`" + `)"
+		],
+		"system": false
+	},
+	{
+		"id": "k8s_pods_collection",
+		"listRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id",
+		"viewRule": null,
+		"createRule": null,
+		"updateRule": null,
+		"deleteRule": null,
+		"name": "pods",
+		"type": "base",
+		"fields": [
+			{
+				"autogeneratePattern": "[a-z0-9]{15}",
+				"hidden": false,
+				"id": "text_pod_id",
+				"max": 15,
+				"min": 10,
+				"name": "id",
+				"pattern": "^[a-z0-9]+$",
+				"presentable": false,
+				"primaryKey": true,
+				"required": true,
+				"system": true,
+				"type": "text"
+			},
+			{
+				"cascadeDelete": false,
+				"collectionId": "2hz5ncl8tizk5nx",
+				"hidden": false,
+				"id": "relation_pod_system",
+				"maxSelect": 1,
+				"minSelect": 0,
+				"name": "system",
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "relation"
+			},
+			{
+				"autogeneratePattern": "",
+				"hidden": false,
+				"id": "text_pod_name",
+				"max": 0,
+				"min": 0,
+				"name": "name",
+				"pattern": "",
+				"presentable": false,
+				"primaryKey": false,
+				"required": false,
+				"system": false,
+				"type": "text"
+			},
+			{
+				"autogeneratePattern": "",
+				"hidden": false,
+				"id": "text_pod_namespace",
+				"max": 0,
+				"min": 0,
+				"name": "namespace",
+				"pattern": "",
+				"presentable": false,
+				"primaryKey": false,
+				"required": false,
+				"system": false,
+				"type": "text"
+			},
+			{
+				"autogeneratePattern": "",
+				"hidden": false,
+				"id": "text_pod_status",
+				"max": 0,
+				"min": 0,
+				"name": "status",
+				"pattern": "",
+				"presentable": false,
+				"primaryKey": false,
+				"required": false,
+				"system": false,
+				"type": "text"
+			},
+			{
+				"hidden": false,
+				"id": "number_pod_cpu",
+				"max": 100,
+				"min": 0,
+				"name": "cpu",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "number_pod_memory",
+				"max": null,
+				"min": 0,
+				"name": "memory",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "number_pod_net",
+				"max": null,
+				"min": null,
+				"name": "net",
+				"onlyInt": false,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "number_pod_restarts",
+				"max": null,
+				"min": 0,
+				"name": "restarts",
+				"onlyInt": true,
+				"presentable": false,
+				"required": false,
+				"system": false,
+				"type": "number"
+			},
+			{
+				"hidden": false,
+				"id": "number_pod_updated",
+				"max": null,
+				"min": null,
+				"name": "updated",
+				"onlyInt": true,
+				"presentable": false,
+				"required": true,
+				"system": false,
+				"type": "number"
+			}
+		],
+		"indexes": [
+			"CREATE INDEX ` + "`" + `idx_pod_updated` + "`" + ` ON ` + "`" + `pods` + "`" + ` (` + "`" + `updated` + "`" + `)",
+			"CREATE INDEX ` + "`" + `idx_pod_system` + "`" + ` ON ` + "`" + `pods` + "`" + ` (` + "`" + `system` + "`" + `)"
 		],
 		"system": false
 	},

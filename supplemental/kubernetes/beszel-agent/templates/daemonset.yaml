@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "beszel-agent.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "beszel-agent.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "beszel-agent.selectorLabels" . | nindent 6 }}
+  updateStrategy:
+    {{- toYaml .Values.updateStrategy | nindent 4 }}
+  template:
+    metadata:
+      labels:
+        {{- include "beszel-agent.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      {{- if .Values.agent.monitorHost }}
+      # Host access needed for node monitoring
+      hostNetwork: true
+      hostPID: true
+      {{- end }}
+      containers:
+      - name: agent
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+        - name: PORT
+          value: "45876"
+        {{- if .Values.agent.key }}
+        - name: KEY
+          value: {{ .Values.agent.key | quote }}
+        {{- end }}
+        {{- if .Values.agent.token }}
+        - name: TOKEN
+          value: {{ .Values.agent.token | quote }}
+        {{- end }}
+        {{- if .Values.agent.hubUrl }}
+        - name: HUB_URL
+          value: {{ .Values.agent.hubUrl | quote }}
+        {{- end }}
+        {{- if .Values.agent.kubernetes.clusterMetrics }}
+        - name: K8S_CLUSTER_METRICS
+          value: "true"
+        {{- end }}
+        {{- if .Values.agent.kubernetes.namespace }}
+        - name: K8S_NAMESPACE
+          value: {{ .Values.agent.kubernetes.namespace | quote }}
+        {{- end }}
+        {{- with .Values.agent.extraEnv }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.agent.monitorHost }}
+        # Privileged access for host monitoring
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+              - SYS_ADMIN
+              - NET_ADMIN
+        volumeMounts:
+        - name: host-root
+          mountPath: /host
+          readOnly: true
+        {{- else }}
+        # Minimal security context for Kubernetes-only monitoring
+        securityContext:
+          privileged: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+        {{- end }}
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+      {{- if .Values.agent.monitorHost }}
+      volumes:
+      - name: host-root
+        hostPath:
+          path: /
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
