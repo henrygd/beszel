@@ -1,12 +1,12 @@
 apiVersion: v1
-description: Installs beszel-hub in kubernetes
-home: https://github.com/henrygd/beszel/tree/main/supplemental/helm/beszel-hub
-name: beszel-hub
+description: Installs beszel-agent in kubernetes
+home: https://github.com/henrygd/beszel/tree/main/supplemental/helm/beszel-agent
+name: beszel-agent
 appVersion: "0.17.0"
 # Do not touch will be updated during release
 version: 0.1.0
 sources:
-  - https://github.com/henrygd/beszel/tree/main/supplemental/helm/beszel-hub
+  - https://github.com/henrygd/beszel/tree/main/supplemental/helm/beszel-agent
   - https://www.beszel.dev/
   - https://github.com/henrygd/beszel
 icon: https://repository-images.githubusercontent.com/825470378/2710c6db-f934-4a8b-a2c4-7a0abbcd2ad6
