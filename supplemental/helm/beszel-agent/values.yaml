@@ -162,6 +162,8 @@ env:
   KEY: ""
   # Authentication token - OPTIONAL
   TOKEN: ""
+  # Agent name in the Hub - OPTIONAL (defaults to node name)
+  SYSTEM_NAME: ""
   # For GPU support (henrygd/beszel-agent-nvidia only)
   # NVIDIA_VISIBLE_DEVICES: "all"
   # NVIDIA_DRIVER_CAPABILITIES: "compute,video,utility"

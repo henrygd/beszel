@@ -52,6 +52,10 @@ spec:
               hostPort: {{ .Values.service.hostPort }}
               {{- end }}
           env:
+            - name: SYSTEM_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
             - name: KEY
               valueFrom:
                 secretKeyRef:
@@ -65,7 +69,7 @@ spec:
                   key: token
             {{- end }}
             {{- range $key, $value := .Values.env }}
-            {{- if and (ne $key "KEY") (ne $key "TOKEN") (ne $key "") }}
+            {{- if and (ne $key "KEY") (ne $key "TOKEN") (ne $key "SYSTEM_NAME") (ne $value "") }}
             - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}
