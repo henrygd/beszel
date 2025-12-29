@@ -25,21 +25,13 @@ This Helm chart simplifies the deployment of Beszel Agent in Kubernetes environm
 
 ## Quick Start
 
-### 1. Get the SSH Key for Authentication
-
-You need an SSH public key to authenticate the agent with the Hub. Generate one if you don't have it:
-
-```bash
-# Generate SSH key (if you don't have one)
-ssh-keygen -t ed25519 -f ~/.ssh/beszel_agent -N ""
-cat ~/.ssh/beszel_agent.pub
-```
-
-### 2. Install the Chart
+### 1. Install the Chart
 
 ```bash
 helm install beszel-agent ./beszel-agent \
-  --set env.KEY="ssh-ed25519 AAAA... your-public-key"
+  --set env.KEY="ssh-ed25519 AAAA... your-public-key" \
+  --set env.TOKEN="your-token-value" \
+  --set env.HUB_URL="http://beszel-hub:8090"
 ```
 
 Or with custom values:
@@ -48,7 +40,7 @@ Or with custom values:
 helm install beszel-agent ./beszel-agent -f custom-values.yaml
 ```
 
-### 3. Verify the Agent is Running
+### 2. Verify the Agent is Running
 
 ```bash
 kubectl get pods -l app.kubernetes.io/name=beszel-agent
@@ -64,10 +56,12 @@ Essential parameters to configure:
 | Parameter | Default | Description |
 |-----------|---------|-------------|
 | `daemonset.enabled` | `true` | Deploy as DaemonSet (one pod per node) |
-| `env.KEY` | `""` | **REQUIRED** - SSH public key for authentication |
+| `env.KEY` | Required | SSH public key for Hub authentication |
+| `env.TOKEN` | Empty | Authentication token (optional) |
+| `env.HUB_URL` | Empty | Hub URL (e.g., http://beszel-hub:8090) |
 | `env.PORT` | `45876` | Port the agent listens on |
 | `image.repository` | `henrygd/beszel-agent` | Container image |
-| `image.tag` | Chart AppVersion (0.9) | Image version |
+| `image.tag` | Chart AppVersion (0.17.0) | Image version |
 | `hostNetwork` | `false` | Use host network for network monitoring |
 | `tolerations` | Allows all taints | Tolerations for running on tainted nodes |
 
@@ -75,7 +69,9 @@ Essential parameters to configure:
 
 ```bash
 helm install beszel-agent ./beszel-agent \
-  --set env.KEY="ssh-ed25519 AAAA... your-public-key"
+  --set env.KEY="ssh-ed25519 AAAA... your-public-key" \
+  --set env.TOKEN="your-token-value" \
+  --set env.HUB_URL="http://beszel-hub:8090"
 ```
 
 ### Standard Configuration
@@ -89,6 +85,8 @@ image:
 env:
   PORT: "45876"
   KEY: "ssh-ed25519 AAAA... your-public-key"
+  TOKEN: "your-token-value"
+  HUB_URL: "http://beszel-hub:8090"
 
 # Use host network for accurate network monitoring
 hostNetwork: false
@@ -108,6 +106,8 @@ gpuRuntime: nvidia
 env:
   PORT: "45876"
   KEY: "ssh-ed25519 AAAA... your-public-key"
+  TOKEN: "your-token-value"
+  HUB_URL: "http://beszel-hub:8090"
   NVIDIA_VISIBLE_DEVICES: "all"
   NVIDIA_DRIVER_CAPABILITIES: "compute,video,utility"
 ```
@@ -120,7 +120,9 @@ helm install beszel-agent ./beszel-agent \
   --set gpuRuntime=nvidia \
   --set env.NVIDIA_VISIBLE_DEVICES=all \
   --set env.NVIDIA_DRIVER_CAPABILITIES="compute,video,utility" \
-  --set env.KEY="ssh-ed25519 AAAA... your-public-key"
+  --set env.KEY="ssh-ed25519 AAAA... your-public-key" \
+  --set env.TOKEN="your-token-value" \
+  --set env.HUB_URL="http://beszel-hub:8090"
 ```
 
 ### Monitor Additional Filesystems
@@ -129,19 +131,12 @@ To monitor additional disks or partitions:
 
 ```yaml
 volumes:
-  - name: docker-sock
-    hostPath:
-      path: /var/run/docker.sock
-      type: Socket
   - name: extra-filesystems
     hostPath:
       path: /mnt/disk/.beszel
       type: DirectoryOrCreate
 
 volumeMounts:
-  - name: docker-sock
-    mountPath: /var/run/docker.sock
-    readOnly: true
   - name: extra-filesystems
     mountPath: /extra-filesystems
     readOnly: true
@@ -149,6 +144,8 @@ volumeMounts:
 env:
   PORT: "45876"
   KEY: "ssh-ed25519 AAAA... your-public-key"
+  TOKEN: "your-token-value"
+  HUB_URL: "http://beszel-hub:8090"
 ```
 
 ### Advanced Configuration
@@ -203,6 +200,8 @@ hostNetwork: true
 env:
   PORT: "45876"
   KEY: "ssh-ed25519 AAAA... your-public-key"
+  TOKEN: "your-token-value"
+  HUB_URL: "http://beszel-hub:8090"
 ```
 
 #### DaemonSet Mode
@@ -245,7 +244,9 @@ nodeSelector:
 
 ```bash
 helm install beszel-agent ./beszel-agent \
-  --set env.KEY="ssh-ed25519 AAAA... your-public-key"
+  --set env.KEY="ssh-ed25519 AAAA... your-public-key" \
+  --set env.TOKEN="your-token-value" \
+  --set env.HUB_URL="http://beszel-hub:8090"
 ```
 
 This deploys one agent on every node in the cluster automatically.
@@ -262,6 +263,8 @@ replicaCount: 1
 env:
   PORT: "45876"
   KEY: "ssh-ed25519 AAAA... your-public-key"
+  TOKEN: "your-token-value"
+  HUB_URL: "http://beszel-hub:8090"
 ```
 
 Or via CLI:
@@ -270,7 +273,9 @@ Or via CLI:
 helm install beszel-agent ./beszel-agent \
   --set daemonset.enabled=false \
   --set replicaCount=1 \
-  --set env.KEY="ssh-ed25519 AAAA... your-public-key"
+  --set env.KEY="ssh-ed25519 AAAA... your-public-key" \
+  --set env.TOKEN="your-token-value" \
+  --set env.HUB_URL="http://beszel-hub:8090"
 ```
 
 ### Network Monitoring with Host Network
@@ -281,6 +286,8 @@ hostNetwork: true
 env:
   PORT: "45876"
   KEY: "ssh-ed25519 AAAA... your-public-key"
+  TOKEN: "your-token-value"
+  HUB_URL: "http://beszel-hub:8090"
 
 podSecurityContext:
   hostNetwork: true
@@ -306,11 +313,13 @@ kubectl describe pod <pod-name>
 ```bash
 # Update the SSH key
 helm upgrade beszel-agent ./beszel-agent \
-  --set env.KEY="ssh-ed25519 AAAA... new-public-key"
+  --set env.KEY="ssh-ed25519 AAAA... your-public-key" \
+  --set env.TOKEN="your-token-value" \
+  --set env.HUB_URL="http://beszel-hub:8090"
 
 # Change image version
 helm upgrade beszel-agent ./beszel-agent \
-  --set image.tag="0.10.0"
+  --set image.tag="0.17.0"
 ```
 
 ### Restart All Agents
@@ -338,6 +347,8 @@ helm rollback beszel-agent 1  # Rollback to previous version
 |----------|---------|-------------|
 | `PORT` | `45876` | Port the agent listens on |
 | `KEY` | Required | SSH public key for Hub authentication |
+| `TOKEN` | Empty | Authentication token (optional) |
+| `HUB_URL` | Empty | Hub URL (e.g., http://beszel-hub:8090) |
 | `NVIDIA_VISIBLE_DEVICES` | Not set | GPU visibility (GPU agents only) |
 | `NVIDIA_DRIVER_CAPABILITIES` | Not set | GPU capabilities (GPU agents only) |
 
@@ -404,20 +415,41 @@ resources:
 - Regularly update agent image to latest version
 - Use private container registries if applicable
 
-### Using Kubernetes Secrets for SSH Key
+### Using Kubernetes Secrets for Configuration
+
+The chart automatically creates a Kubernetes Secret to store sensitive authentication data:
 
 ```bash
-# Create secret
-kubectl create secret generic beszel-agent-key \
-  --from-literal=key="ssh-ed25519 AAAA... your-public-key"
-
-# Reference in values
-env:
-  PORT: "45876"
-  # KEY will be set from secret in deployment
+# Install with all configuration options
+helm install beszel-agent ./beszel-agent \
+  --set env.KEY="ssh-ed25519 AAAA... your-public-key" \
+  --set env.TOKEN="your-optional-token" \
+  --set env.HUB_URL="http://beszel-hub:8090"
 ```
 
-Then update deployment.yaml to reference the secret.
+Or create the installation with a values file:
+
+```yaml
+# values.yaml
+env:
+  KEY: "ssh-ed25519 AAAA... your-public-key"
+  TOKEN: "your-optional-token"
+  HUB_URL: "http://beszel-hub:8090"
+```
+
+Configuration stored in Kubernetes Secrets (encrypted at rest):
+- `KEY` - SSH public key for authentication (required)
+- `TOKEN` - Authentication token (optional)
+
+Configuration as regular environment variables:
+- `HUB_URL` - Hub address (e.g., http://beszel-hub:8090 or https://beszel.example.com)
+
+To verify the secret was created:
+
+```bash
+kubectl get secret beszel-agent
+kubectl get secret beszel-agent -o jsonpath='{.data.ssh-key}' | base64 -d
+```
 
 ## Support and Documentation
 
@@ -428,7 +460,7 @@ Then update deployment.yaml to reference the secret.
 ## Chart Information
 
 - **Chart Version**: 0.1.0
-- **App Version**: 0.9
+- **App Version**: 0.17.0
 - **Kubernetes Version**: 1.19+
 - **Maintainer**: cloudwithdan (nikoloskid@pm.me)
 

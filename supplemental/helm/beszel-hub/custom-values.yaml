@@ -1,9 +1,0 @@
-replicaCount: 1
-service:
-  type: LoadBalancer
-  annotations:
-    metallb.io/ip-allocated-from-pool: pool
-    metallb.universe.tf/allow-shared-ip: beszel-hub
-  loadBalancerIP: "10.0.10.210"
-persistentVolumeClaim:
-  size: 1Gi
