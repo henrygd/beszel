@@ -19,7 +19,7 @@ import (
 
 	"github.com/henrygd/beszel/internal/entities/smart"
 
-	"golang.org/x/exp/slog"
+	"log/slog"
 )
 
 // SmartManager manages data collection for SMART devices

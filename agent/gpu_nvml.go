@@ -8,7 +8,7 @@ import (
 
 	"github.com/ebitengine/purego"
 	"github.com/henrygd/beszel/internal/entities/system"
-	"golang.org/x/exp/slog"
+	"log/slog"
 )
 
 // NVML constants and types
