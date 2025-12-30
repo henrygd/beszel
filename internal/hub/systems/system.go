@@ -16,6 +16,7 @@ import (
 	"github.com/henrygd/beszel/internal/hub/ws"
 
 	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/kubernetes"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/entities/systemd"
 
@@ -205,6 +206,27 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 			}
 		}
 
+		// add pod_stats records
+		if len(data.Pods) > 0 {
+			// create pod records for table view (only if pods have data)
+			if len(data.Pods) > 0 && data.Pods[0].Name != "" {
+				if err := createPodRecords(txApp, data.Pods, sys.Id); err != nil {
+					return err
+				}
+			}
+			podStatsCollection, err := txApp.FindCachedCollectionByNameOrId("pod_stats")
+			if err != nil {
+				return err
+			}
+			podStatsRecord := core.NewRecord(podStatsCollection)
+			podStatsRecord.Set("system", systemRecord.Id)
+			podStatsRecord.Set("stats", data.Pods)
+			podStatsRecord.Set("type", "1m")
+			if err := txApp.SaveNoValidate(podStatsRecord); err != nil {
+				return err
+			}
+		}
+
 		// add new systemd_stats record
 		if len(data.SystemdServices) > 0 {
 			if err := createSystemdStatsRecords(txApp, data.SystemdServices, sys.Id); err != nil {
@@ -317,6 +339,43 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 	}
 	queryString := fmt.Sprintf(
 		"INSERT INTO containers (id, system, name, image, status, health, cpu, memory, net, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, image = excluded.image, status = excluded.status, health = excluded.health, cpu = excluded.cpu, memory = excluded.memory, net = excluded.net, updated = excluded.updated",
+		strings.Join(valueStrings, ","),
+	)
+	_, err := app.DB().NewQuery(queryString).Bind(params).Execute()
+	return err
+}
+
+// createPodRecords creates pod records for Kubernetes pods
+func createPodRecords(app core.App, data []*kubernetes.PodStats, systemId string) error {
+	if len(data) == 0 {
+		return nil
+	}
+	// shared params for all records
+	params := dbx.Params{
+		"system":  systemId,
+		"updated": time.Now().UTC().UnixMilli(),
+	}
+	valueStrings := make([]string, 0, len(data))
+	for i, pod := range data {
+		suffix := fmt.Sprintf("%d", i)
+		// Create unique ID from namespace and pod name
+		podId := fmt.Sprintf("%s-%s", pod.Namespace, pod.Name)
+		// Hash to create shorter ID if needed
+		if len(podId) > 50 {
+			podId = fmt.Sprintf("%x", []byte(podId))[:15]
+		}
+		valueStrings = append(valueStrings, fmt.Sprintf("({:id%[1]s}, {:system}, {:name%[1]s}, {:namespace%[1]s}, {:status%[1]s}, {:cpu%[1]s}, {:memory%[1]s}, {:net%[1]s}, {:restarts%[1]s}, {:updated})", suffix))
+		params["id"+suffix] = podId
+		params["name"+suffix] = pod.Name
+		params["namespace"+suffix] = pod.Namespace
+		params["status"+suffix] = pod.Status
+		params["cpu"+suffix] = pod.Cpu
+		params["memory"+suffix] = pod.Mem
+		params["net"+suffix] = pod.NetworkSent + pod.NetworkRecv
+		params["restarts"+suffix] = pod.RestartCount
+	}
+	queryString := fmt.Sprintf(
+		"INSERT INTO pods (id, system, name, namespace, status, cpu, memory, net, restarts, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, namespace = excluded.namespace, status = excluded.status, cpu = excluded.cpu, memory = excluded.memory, net = excluded.net, restarts = excluded.restarts, updated = excluded.updated",
 		strings.Join(valueStrings, ","),
 	)
 	_, err := app.DB().NewQuery(queryString).Bind(params).Execute()
@@ -447,6 +506,30 @@ func (sys *System) FetchContainerLogsFromAgent(containerID string) (string, erro
 	}
 	// fetch via SSH
 	return sys.fetchStringFromAgentViaSSH(common.GetContainerLogs, common.ContainerLogsRequest{ContainerID: containerID}, "no logs in response")
+}
+
+// FetchPodInfoFromAgent fetches pod info from the agent
+func (sys *System) FetchPodInfoFromAgent(namespace, podName string) (string, error) {
+	// fetch via websocket
+	if sys.WsConn != nil && sys.WsConn.IsConnected() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		return sys.WsConn.RequestPodInfo(ctx, namespace, podName)
+	}
+	// fetch via SSH
+	return sys.fetchStringFromAgentViaSSH(common.GetPodInfo, common.PodInfoRequest{Namespace: namespace, PodName: podName}, "no info in response")
+}
+
+// FetchPodLogsFromAgent fetches pod logs from the agent
+func (sys *System) FetchPodLogsFromAgent(namespace, podName string) (string, error) {
+	// fetch via websocket
+	if sys.WsConn != nil && sys.WsConn.IsConnected() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		return sys.WsConn.RequestPodLogs(ctx, namespace, podName)
+	}
+	// fetch via SSH
+	return sys.fetchStringFromAgentViaSSH(common.GetPodLogs, common.PodLogsRequest{Namespace: namespace, PodName: podName}, "no logs in response")
 }
 
 // FetchSystemdInfoFromAgent fetches detailed systemd service information from the agent

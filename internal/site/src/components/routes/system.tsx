@@ -857,6 +857,9 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 					<LazyContainersTable systemId={system.id} />
 				)}
 
+				{/* Show pods table if running Kubernetes */}
+				{compareSemVer(chartData.agentVersion, parseSemVer("0.17.0")) >= 0 && <LazyPodsTable systemId={system.id} />}
+
 				{isLinux && compareSemVer(chartData.agentVersion, parseSemVer("0.16.0")) >= 0 && (
 					<LazySystemdTable systemId={system.id} />
 				)}
@@ -1035,6 +1038,17 @@ function LazySystemdTable({ systemId }: { systemId: string }) {
 	return (
 		<div ref={ref} className={cn(isIntersecting && "contents")}>
 			{isIntersecting && <SystemdTable systemId={systemId} />}
+		</div>
+	)
+}
+
+const PodsTable = lazy(() => import("../pods-table/pods-table"))
+
+function LazyPodsTable({ systemId }: { systemId: string }) {
+	const { isIntersecting, ref } = useIntersectionObserver({ rootMargin: "90px" })
+	return (
+		<div ref={ref} className={cn(isIntersecting && "contents")}>
+			{isIntersecting && <PodsTable systemId={systemId} />}
 		</div>
 	)
 }

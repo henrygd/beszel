@@ -113,6 +113,16 @@ func (ws *WsConn) RequestContainerInfo(ctx context.Context, containerID string) 
 	return ws.requestContainerStringViaWS(ctx, common.GetContainerInfo, common.ContainerInfoRequest{ContainerID: containerID}, "no info in response")
 }
 
+// RequestPodLogs requests logs for a specific pod via WebSocket.
+func (ws *WsConn) RequestPodLogs(ctx context.Context, namespace, podName string) (string, error) {
+	return ws.requestContainerStringViaWS(ctx, common.GetPodLogs, common.PodLogsRequest{Namespace: namespace, PodName: podName}, "no logs in response")
+}
+
+// RequestPodInfo requests information about a specific pod via WebSocket.
+func (ws *WsConn) RequestPodInfo(ctx context.Context, namespace, podName string) (string, error) {
+	return ws.requestContainerStringViaWS(ctx, common.GetPodInfo, common.PodInfoRequest{Namespace: namespace, PodName: podName}, "no info in response")
+}
+
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////

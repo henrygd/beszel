@@ -1,0 +1,53 @@
+# Default values for beszel-agent
+image:
+  repository: henrygd/beszel-agent
+  pullPolicy: IfNotPresent
+  tag: ""
+
+serviceAccount:
+  create: true
+  name: "beszel-agent"
+
+rbac:
+  create: true
+
+agent:
+  # SSH public key from the Beszel hub (REQUIRED for SSH mode)
+  # Copy this from the hub's system connection page
+  key: ""
+  
+  # Authentication token for WebSocket connection (REQUIRED for WebSocket mode)  
+  # Get this from the hub when adding a new system
+  token: ""
+  
+  # Hub URL for WebSocket connection (optional, for WebSocket mode)
+  # Example: "wss://your-hub-domain/api/beszel/ws"
+  hubUrl: ""
+  
+  # Enable host node monitoring (CPU, memory, disk, network of the node itself)
+  # Set to false to only monitor Kubernetes pods (no host access needed)
+  monitorHost: true
+  
+  kubernetes:
+    clusterMetrics: true
+    # Namespace to monitor. Leave empty or set to "" for all namespaces.
+    # Set to a specific namespace (e.g., "production") to filter pods.
+    namespace: ""
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+tolerations:
+  - effect: NoSchedule
+    operator: Exists
+
+updateStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 1
+

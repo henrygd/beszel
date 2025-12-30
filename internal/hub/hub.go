@@ -279,6 +279,13 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 		// get container info
 		apiAuth.GET("/containers/info", h.getContainerInfo)
 	}
+	// /pods routes (for Kubernetes)
+	if enabled, _ := GetEnv("POD_DETAILS"); enabled != "false" {
+		// get pod logs
+		apiAuth.GET("/pods/logs", h.getPodLogs)
+		// get pod info
+		apiAuth.GET("/pods/info", h.getPodInfo)
+	}
 	return nil
 }
 
@@ -341,6 +348,42 @@ func (h *Hub) getContainerLogs(e *core.RequestEvent) error {
 func (h *Hub) getContainerInfo(e *core.RequestEvent) error {
 	return h.containerRequestHandler(e, func(system *systems.System, containerID string) (string, error) {
 		return system.FetchContainerInfoFromAgent(containerID)
+	}, "info")
+}
+
+// podRequestHandler handles both pod logs and info requests
+func (h *Hub) podRequestHandler(e *core.RequestEvent, fetchFunc func(*systems.System, string, string) (string, error), responseKey string) error {
+	systemID := e.Request.URL.Query().Get("system")
+	namespace := e.Request.URL.Query().Get("namespace")
+	podName := e.Request.URL.Query().Get("pod")
+
+	if systemID == "" || namespace == "" || podName == "" {
+		return e.JSON(http.StatusBadRequest, map[string]string{"error": "system, namespace, and pod parameters are required"})
+	}
+
+	system, err := h.sm.GetSystem(systemID)
+	if err != nil {
+		return e.JSON(http.StatusNotFound, map[string]string{"error": "system not found"})
+	}
+
+	data, err := fetchFunc(system, namespace, podName)
+	if err != nil {
+		return e.JSON(http.StatusNotFound, map[string]string{"error": err.Error()})
+	}
+
+	return e.JSON(http.StatusOK, map[string]string{responseKey: data})
+}
+
+// getPodLogs handles GET /api/beszel/pods/logs requests
+func (h *Hub) getPodLogs(e *core.RequestEvent) error {
+	return h.podRequestHandler(e, func(system *systems.System, namespace, podName string) (string, error) {
+		return system.FetchPodLogsFromAgent(namespace, podName)
+	}, "logs")
+}
+
+func (h *Hub) getPodInfo(e *core.RequestEvent) error {
+	return h.podRequestHandler(e, func(system *systems.System, namespace, podName string) (string, error) {
+		return system.FetchPodInfoFromAgent(namespace, podName)
 	}, "info")
 }
 

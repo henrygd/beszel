@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/kubernetes"
 	"github.com/henrygd/beszel/internal/entities/system"
 
 	"github.com/pocketbase/dbx"
@@ -43,10 +44,12 @@ type StatsRecord struct {
 var (
 	statsRecord    StatsRecord
 	containerStats []container.Stats
+	podStats       []kubernetes.PodStats
 	sumStats       system.Stats
 	tempStats      system.Stats
 	queryParams    = make(dbx.Params, 1)
 	containerSums  = make(map[string]*container.Stats)
+	podSums        = make(map[string]*kubernetes.PodStats)
 )
 
 // Create longer records by averaging shorter records
@@ -82,12 +85,16 @@ func (rm *RecordManager) CreateLongerRecords() {
 	// wrap the operations in a transaction
 	rm.app.RunInTransaction(func(txApp core.App) error {
 		var err error
-		collections := [2]*core.Collection{}
+		collections := [3]*core.Collection{}
 		collections[0], err = txApp.FindCachedCollectionByNameOrId("system_stats")
 		if err != nil {
 			return err
 		}
 		collections[1], err = txApp.FindCachedCollectionByNameOrId("container_stats")
+		if err != nil {
+			return err
+		}
+		collections[2], err = txApp.FindCachedCollectionByNameOrId("pod_stats")
 		if err != nil {
 			return err
 		}
@@ -150,8 +157,9 @@ func (rm *RecordManager) CreateLongerRecords() {
 					case "system_stats":
 						longerRecord.Set("stats", rm.AverageSystemStats(db, recordIds))
 					case "container_stats":
-
 						longerRecord.Set("stats", rm.AverageContainerStats(db, recordIds))
+					case "pod_stats":
+						longerRecord.Set("stats", rm.AveragePodStats(db, recordIds))
 					}
 					if err := txApp.SaveNoValidate(longerRecord); err != nil {
 						log.Println("failed to save longer record", "err", err)
@@ -479,6 +487,68 @@ func (rm *RecordManager) AverageContainerStats(db dbx.Builder, records RecordIds
 	return result
 }
 
+// Calculate the average stats of a list of pod_stats records
+func (rm *RecordManager) AveragePodStats(db dbx.Builder, records RecordIds) []kubernetes.PodStats {
+	// Clear global map for reuse
+	for k := range podSums {
+		delete(podSums, k)
+	}
+	sums := podSums
+	count := float64(len(records))
+
+	for i := range records {
+		id := records[i].Id
+		// clear global statsRecord and podStats for reuse
+		statsRecord.Stats = statsRecord.Stats[:0]
+		podStats = podStats[:0]
+
+		queryParams["id"] = id
+		db.NewQuery("SELECT stats FROM pod_stats WHERE id = {:id}").Bind(queryParams).One(&statsRecord)
+
+		if err := json.Unmarshal(statsRecord.Stats, &podStats); err != nil {
+			return []kubernetes.PodStats{}
+		}
+		for i := range podStats {
+			stat := podStats[i]
+			// Use namespace/name as unique key
+			podKey := stat.Namespace + "/" + stat.Name
+			if _, ok := sums[podKey]; !ok {
+				sums[podKey] = &kubernetes.PodStats{
+					Name:           stat.Name,
+					Namespace:      stat.Namespace,
+					Node:           stat.Node,
+					Status:         stat.Status,
+					RestartCount:   stat.RestartCount,
+					ContainerCount: stat.ContainerCount,
+				}
+			}
+			sums[podKey].Cpu += stat.Cpu
+			sums[podKey].Mem += stat.Mem
+			sums[podKey].MemLimit += stat.MemLimit
+			sums[podKey].NetworkSent += stat.NetworkSent
+			sums[podKey].NetworkRecv += stat.NetworkRecv
+		}
+	}
+
+	result := make([]kubernetes.PodStats, 0, len(sums))
+	for _, value := range sums {
+		result = append(result, kubernetes.PodStats{
+			Name:           value.Name,
+			Namespace:      value.Namespace,
+			Node:           value.Node,
+			Cpu:            twoDecimals(value.Cpu / count),
+			Mem:            twoDecimals(value.Mem / count),
+			MemLimit:       twoDecimals(value.MemLimit / count),
+			NetworkSent:    twoDecimals(value.NetworkSent / count),
+			NetworkRecv:    twoDecimals(value.NetworkRecv / count),
+			Status:         value.Status,
+			RestartCount:   value.RestartCount,
+			ContainerCount: value.ContainerCount,
+		})
+	}
+	return result
+}
+
 // Delete old records
 func (rm *RecordManager) DeleteOldRecords() {
 	rm.app.RunInTransaction(func(txApp core.App) error {
@@ -528,7 +598,7 @@ func deleteOldAlertsHistory(app core.App, countToKeep, countBeforeDeletion int) 
 // Deletes system_stats records older than what is displayed in the UI
 func deleteOldSystemStats(app core.App) error {
 	// Collections to process
-	collections := [2]string{"system_stats", "container_stats"}
+	collections := [3]string{"system_stats", "container_stats", "pod_stats"}
 
 	// Record types and their retention periods
 	type RecordDeletionData struct {
@@ -590,6 +660,12 @@ func deleteOldContainerRecords(app core.App) error {
 	_, err := app.DB().NewQuery("DELETE FROM containers WHERE updated < {:updated}").Bind(dbx.Params{"updated": tenMinutesAgo.UnixMilli()}).Execute()
 	if err != nil {
 		return fmt.Errorf("failed to delete old container records: %v", err)
+	}
+
+	// Also delete pod records that haven't been updated in the last 10 minutes
+	_, err = app.DB().NewQuery("DELETE FROM pods WHERE updated < {:updated}").Bind(dbx.Params{"updated": tenMinutesAgo.UnixMilli()}).Execute()
+	if err != nil {
+		return fmt.Errorf("failed to delete old pod records: %v", err)
 	}
 
 	return nil
