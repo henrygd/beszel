@@ -140,6 +140,11 @@ export const columns: ColumnDef<SmartDeviceRecord>[] = [
 	{
 		accessorKey: "capacity",
 		invertSorting: true,
+		sortingFn: (a, b) => {
+			const ca = (a.original.capacity ?? 0) as number
+			const cb = (b.original.capacity ?? 0) as number
+			return ca === cb ? 0 : ca > cb ? 1 : -1
+		},
 		header: ({ column }) => <HeaderButton column={column} name={t`Capacity`} Icon={BinaryIcon} />,
 		cell: ({ getValue }) => <span className="ms-1.5">{formatCapacity(getValue() as number)}</span>,
 	},
@@ -304,41 +309,41 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 			? { fields: SMART_DEVICE_FIELDS, filter: pb.filter("system = {:system}", { system: systemId }) }
 			: { fields: SMART_DEVICE_FIELDS }
 
-			; (async () => {
-				try {
-					unsubscribe = await pb.collection("smart_devices").subscribe(
-						"*",
-						(event) => {
-							const record = event.record as SmartDeviceRecord
-							setSmartDevices((currentDevices) => {
-								const devices = currentDevices ?? []
-								const matchesSystemScope = !systemId || record.system === systemId
+		; (async () => {
+			try {
+				unsubscribe = await pb.collection("smart_devices").subscribe(
+					"*",
+					(event) => {
+						const record = event.record as SmartDeviceRecord
+						setSmartDevices((currentDevices) => {
+							const devices = currentDevices ?? []
+							const matchesSystemScope = !systemId || record.system === systemId
 
-								if (event.action === "delete") {
-									return devices.filter((device) => device.id !== record.id)
-								}
+							if (event.action === "delete") {
+								return devices.filter((device) => device.id !== record.id)
+							}
 
-								if (!matchesSystemScope) {
-									// Record moved out of scope; ensure it disappears locally.
-									return devices.filter((device) => device.id !== record.id)
-								}
+							if (!matchesSystemScope) {
+								// Record moved out of scope; ensure it disappears locally.
+								return devices.filter((device) => device.id !== record.id)
+							}
 
-								const existingIndex = devices.findIndex((device) => device.id === record.id)
-								if (existingIndex === -1) {
-									return [record, ...devices]
-								}
+							const existingIndex = devices.findIndex((device) => device.id === record.id)
+							if (existingIndex === -1) {
+								return [record, ...devices]
+							}
 
-								const next = [...devices]
-								next[existingIndex] = record
-								return next
-							})
-						},
-						pbOptions
-					)
-				} catch (error) {
-					console.error("Failed to subscribe to SMART device updates:", error)
-				}
-			})()
+							const next = [...devices]
+							next[existingIndex] = record
+							return next
+						})
+					},
+					pbOptions
+				)
+			} catch (error) {
+				console.error("Failed to subscribe to SMART device updates:", error)
+			}
+		})()
 
 		return () => {
 			unsubscribe?.()
@@ -406,8 +411,8 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 							<DropdownMenuContent align="end" onClick={(event) => event.stopPropagation()}>
 								<DropdownMenuItem
 									onClick={(event) => {
-										event.stopPropagation()
-										handleRowRefresh(disk)
+									event.stopPropagation()
+									handleRowRefresh(disk)
 									}}
 									disabled={isRowRefreshing || isRowDeleting}
 								>
@@ -417,8 +422,8 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 								<DropdownMenuSeparator />
 								<DropdownMenuItem
 									onClick={(event) => {
-										event.stopPropagation()
-										handleDeleteDevice(disk)
+									event.stopPropagation()
+									handleDeleteDevice(disk)
 									}}
 									disabled={isRowDeleting}
 								>
@@ -523,40 +528,39 @@ export default function DisksTable({ systemId }: { systemId?: string }) {
 									})}
 								</TableRow>
 							))}
-						</TableHeader>
-						<TableBody>
-							{table.getRowModel().rows?.length ? (
-								table.getRowModel().rows.map((row) => (
-									<TableRow
-										key={row.id}
-										data-state={row.getIsSelected() && "selected"}
-										className="cursor-pointer"
-										onClick={() => openSheet(row.original)}
-									>
-										{row.getVisibleCells().map((cell) => (
-											<TableCell key={cell.id} className="md:ps-5">
-												{flexRender(cell.column.columnDef.cell, cell.getContext())}
-											</TableCell>
-										))}
+							</TableHeader>
+							<TableBody>
+								{table.getRowModel().rows?.length ? (
+									table.getRowModel().rows.map((row) => (
+										<TableRow
+											key={row.id}
+											data-state={row.getIsSelected() && "selected"}
+											className="cursor-pointer"
+											onClick={() => openSheet(row.original)}
+										>
+											{row.getVisibleCells().map((cell) => (
+												<TableCell key={cell.id} className="md:ps-5">
+													{flexRender(cell.column.columnDef.cell, cell.getContext())}
+												</TableCell>
+											))}
+										</TableRow>
+									)) : (
+									<TableRow>
+										<TableCell colSpan={tableColumns.length} className="h-24 text-center">
+											{smartDevices ? (
+												t`No results.`
+											) : (
+												<LoaderCircleIcon className="animate-spin size-10 opacity-60 mx-auto" />
+											)
+										</TableCell>
 									</TableRow>
-								))
-							) : (
-								<TableRow>
-									<TableCell colSpan={tableColumns.length} className="h-24 text-center">
-										{smartDevices ? (
-											t`No results.`
-										) : (
-											<LoaderCircleIcon className="animate-spin size-10 opacity-60 mx-auto" />
-										)}
-									</TableCell>
-								</TableRow>
-							)}
-						</TableBody>
-					</Table>
-				</div>
-			</Card>
-			<DiskSheet diskId={activeDiskId} open={sheetOpen} onOpenChange={setSheetOpen} />
-		</div>
+								)}
+							</TableBody>
+						</Table>
+					</div>
+				</Card>
+				<DiskSheet diskId={activeDiskId} open={sheetOpen} onOpenChange={setSheetOpen} />
+			</div>
 	)
 }
 
@@ -693,12 +697,12 @@ function DiskSheet({
 
 												return (
 													<TableRow key={row.id} className={isFailedAttribute ? "text-red-600 dark:text-red-400" : ""}>
-														{row.getVisibleCells().map((cell) => (
-															<TableCell key={cell.id}>
-																{flexRender(cell.column.columnDef.cell, cell.getContext())}
-															</TableCell>
-														))}
-													</TableRow>
+												{row.getVisibleCells().map((cell) => (
+													<TableCell key={cell.id}>
+														{flexRender(cell.column.columnDef.cell, cell.getContext())}
+													</TableCell>
+												))}
+												</TableRow>
 												)
 											})}
 										</TableBody>
@@ -710,9 +714,9 @@ function DiskSheet({
 								</div>
 							)}
 						</>
-					)}
-				</div>
-			</SheetContent>
-		</Sheet>
-	)
+						)}
+					</div>
+				</SheetContent>
+			</Sheet>
+		)
 }
