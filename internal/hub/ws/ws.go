@@ -2,6 +2,7 @@ package ws
 
 import (
 	"errors"
+	"net/http"
 	"time"
 	"weak"
 
@@ -47,7 +48,11 @@ func GetUpgrader() *gws.Upgrader {
 		return upgrader
 	}
 	handler := &Handler{}
-	upgrader = gws.NewUpgrader(handler, &gws.ServerOption{})
+	upgrader = gws.NewUpgrader(handler, &gws.ServerOption{
+		ResponseHeader: http.Header{
+			"X-Accel-Buffering": []string{"no"},
+		},
+	})
 	return upgrader
 }
 
