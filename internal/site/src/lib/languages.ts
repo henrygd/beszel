@@ -27,7 +27,7 @@ export default [
 	{
 		lang: "en",
 		label: "English",
-		e: "🇺🇸",
+		e: "🇬🇧",
 	},
 	{
 		lang: "es",
