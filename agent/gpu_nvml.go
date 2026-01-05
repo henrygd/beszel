@@ -2,13 +2,13 @@ package agent
 
 import (
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 	"unsafe"
 
 	"github.com/ebitengine/purego"
 	"github.com/henrygd/beszel/internal/entities/system"
-	"log/slog"
 )
 
 // NVML constants and types
@@ -180,7 +180,7 @@ func (c *nvmlCollector) collect() {
 		var temp uint32
 		nvmlDeviceGetTemperature(device, 0, &temp) // 0 is NVML_TEMPERATURE_GPU
 
-		// only poll memory if GPU is active to avoid resetting 21 second suspend timer
+		// Memory: only poll if GPU is active to avoid leaving D3cold state (#1522)
 		if utilization.Gpu > 0 {
 			var usedMem, totalMem uint64
 			if c.isV2 {

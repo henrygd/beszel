@@ -20,24 +20,6 @@ import (
 
 var errNoActiveTime = errors.New("no active time")
 
-// isSystemdAvailable checks if systemd is running as the init system (PID 1).
-// This prevents unnecessary connection attempts on systems using other init systems
-// like OpenRC, runit, or when running in containers without systemd.
-func isSystemdAvailable() bool {
-	// Check if /run/systemd/system directory exists - this is a reliable indicator
-	// that systemd is running as the init system
-	if _, err := os.Stat("/run/systemd/system"); err == nil {
-		return true
-	}
-
-	// Fallback: check if PID 1 is systemd by reading /proc/1/comm
-	if data, err := os.ReadFile("/proc/1/comm"); err == nil {
-		return strings.TrimSpace(string(data)) == "systemd"
-	}
-
-	return false
-}
-
 // systemdManager manages the collection of systemd service statistics.
 type systemdManager struct {
 	sync.Mutex
@@ -45,6 +27,17 @@ type systemdManager struct {
 	isRunning       bool
 	hasFreshStats   bool
 	patterns        []string
+}
+
+// isSystemdAvailable checks if systemd is used on the system to avoid unnecessary connection attempts.
+func isSystemdAvailable() bool {
+	if _, err := os.Stat("/run/systemd/system"); err == nil {
+		return true
+	}
+	if data, err := os.ReadFile("/proc/1/comm"); err == nil {
+		return strings.TrimSpace(string(data)) == "systemd"
+	}
+	return false
 }
 
 // newSystemdManager creates a new systemdManager.
