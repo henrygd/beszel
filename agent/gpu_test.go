@@ -825,7 +825,7 @@ func TestInitializeSnapshots(t *testing.T) {
 }
 
 func TestCalculateGPUAverage(t *testing.T) {
-	t.Run("returns zero value when deltaCount is zero", func(t *testing.T) {
+	t.Run("returns cached average when deltaCount is zero", func(t *testing.T) {
 		gm := &GPUManager{
 			lastSnapshots: map[uint16]map[string]*gpuSnapshot{
 				5000: {
@@ -838,15 +838,41 @@ func TestCalculateGPUAverage(t *testing.T) {
 		}
 
 		gpu := &system.GPUData{
-			Count: 10.0, // Same as snapshot, so delta = 0
-			Usage: 100.0,
-			Power: 200.0,
+			Count:       10.0, // Same as snapshot, so delta = 0
+			Usage:       100.0,
+			Power:       200.0,
+			Temperature: 50.0, // Non-zero to avoid "suspended" check
 		}
 
 		result := gm.calculateGPUAverage("0", gpu, 5000)
 
 		assert.Equal(t, 50.0, result.Usage, "Should return cached average")
 		assert.Equal(t, 100.0, result.Power, "Should return cached average")
+	})
+
+	t.Run("returns zero value when GPU is suspended", func(t *testing.T) {
+		gm := &GPUManager{
+			lastSnapshots: map[uint16]map[string]*gpuSnapshot{
+				5000: {
+					"0": {count: 10, usage: 100, power: 200},
+				},
+			},
+			lastAvgData: map[string]system.GPUData{
+				"0": {Usage: 50.0, Power: 100.0},
+			},
+		}
+
+		gpu := &system.GPUData{
+			Name:        "Test GPU",
+			Count:       10.0,
+			Temperature: 0,
+			MemoryUsed:  0,
+		}
+
+		result := gm.calculateGPUAverage("0", gpu, 5000)
+
+		assert.Equal(t, 0.0, result.Usage, "Should return zero usage")
+		assert.Equal(t, 0.0, result.Power, "Should return zero power")
 	})
 
 	t.Run("calculates average for standard GPU", func(t *testing.T) {
