@@ -1,53 +1,13 @@
 package systems
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 	"strings"
-	"time"
 
-	"github.com/fxamacker/cbor/v2"
-	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/pocketbase/pocketbase/core"
-	"golang.org/x/crypto/ssh"
 )
-
-// FetchSmartDataFromAgent fetches SMART data from the agent
-func (sys *System) FetchSmartDataFromAgent() (map[string]smart.SmartData, error) {
-	// fetch via websocket
-	if sys.WsConn != nil && sys.WsConn.IsConnected() {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		return sys.WsConn.RequestSmartData(ctx)
-	}
-	// fetch via SSH
-	var result map[string]smart.SmartData
-	err := sys.runSSHOperation(5*time.Second, 1, func(session *ssh.Session) (bool, error) {
-		stdout, err := session.StdoutPipe()
-		if err != nil {
-			return false, err
-		}
-		stdin, stdinErr := session.StdinPipe()
-		if stdinErr != nil {
-			return false, stdinErr
-		}
-		if err := session.Shell(); err != nil {
-			return false, err
-		}
-		req := common.HubRequest[any]{Action: common.GetSmartData}
-		_ = cbor.NewEncoder(stdin).Encode(req)
-		_ = stdin.Close()
-		var resp common.AgentResponse
-		if err := cbor.NewDecoder(stdout).Decode(&resp); err != nil {
-			return false, err
-		}
-		result = resp.SmartData
-		return false, nil
-	})
-	return result, err
-}
 
 // FetchAndSaveSmartDevices fetches SMART data from the agent and saves it to the database
 func (sys *System) FetchAndSaveSmartDevices() error {

@@ -16,7 +16,7 @@ import MemChart from "@/components/charts/mem-chart"
 import SwapChart from "@/components/charts/swap-chart"
 import TemperatureChart from "@/components/charts/temperature-chart"
 import { getPbTimestamp, pb } from "@/lib/api"
-import { ChartType, Os, SystemStatus, Unit } from "@/lib/enums"
+import { ChartType, SystemStatus, Unit } from "@/lib/enums"
 import { batteryStateTranslations } from "@/lib/i18n"
 import {
 	$allSystemsById,
@@ -222,7 +222,6 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	}, [system.id])
 
 	// subscribe to realtime metrics if chart time is 1m
-	// biome-ignore lint/correctness/useExhaustiveDependencies: not necessary
 	useEffect(() => {
 		let unsub = () => {}
 		if (!system.id || chartTime !== "1m") {
@@ -260,7 +259,6 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 		}
 	}, [chartTime, system.id])
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: not necessary
 	const chartData: ChartData = useMemo(() => {
 		const lastCreated = Math.max(
 			(systemStats.at(-1)?.created as number) ?? 0,
@@ -300,7 +298,6 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	}, [])
 
 	// get stats
-	// biome-ignore lint/correctness/useExhaustiveDependencies: not necessary
 	useEffect(() => {
 		if (!system.id || !chartTime || chartTime === "1m") {
 			return
@@ -407,7 +404,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const hasGpuData = lastGpuVals.length > 0
 	const hasGpuPowerData = lastGpuVals.some((gpu) => gpu.p !== undefined || gpu.pp !== undefined)
 	const hasGpuEnginesData = lastGpuVals.some((gpu) => gpu.e !== undefined)
-	const isLinux = (details?.os ?? system.info?.os) === Os.Linux
+	const isLinux = !(details?.os ?? system.info?.os)
 	const isPodman = details?.podman ?? system.info?.p ?? false
 
 	return (

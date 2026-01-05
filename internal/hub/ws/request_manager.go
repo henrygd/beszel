@@ -45,7 +45,15 @@ func NewRequestManager(conn *gws.Conn) *RequestManager {
 func (rm *RequestManager) SendRequest(ctx context.Context, action common.WebSocketAction, data any) (*PendingRequest, error) {
 	reqID := RequestID(rm.nextID.Add(1))
 
-	reqCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	// Respect any caller-provided deadline. If none is set, apply a reasonable default
+	// so pending requests don't live forever if the agent never responds.
+	reqCtx := ctx
+	var cancel context.CancelFunc
+	if _, hasDeadline := ctx.Deadline(); hasDeadline {
+		reqCtx, cancel = context.WithCancel(ctx)
+	} else {
+		reqCtx, cancel = context.WithTimeout(ctx, 5*time.Second)
+	}
 
 	req := &PendingRequest{
 		ID:         reqID,
@@ -96,6 +104,11 @@ func (rm *RequestManager) handleResponse(message *gws.Message) {
 	var response common.AgentResponse
 	if err := cbor.Unmarshal(message.Data.Bytes(), &response); err != nil {
 		// Legacy response without ID - route to first pending request of any type
+		rm.routeLegacyResponse(message)
+		return
+	}
+
+	if response.Id == nil {
 		rm.routeLegacyResponse(message)
 		return
 	}
