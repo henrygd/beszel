@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/ebitengine/purego"
-	"golang.org/x/exp/slog"
+	"log/slog"
 )
 
 func openLibrary(name string) (uintptr, error) {
