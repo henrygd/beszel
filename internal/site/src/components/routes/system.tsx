@@ -402,7 +402,13 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const dataEmpty = !chartLoading && chartData.systemStats.length === 0
 	const lastGpuVals = Object.values(systemStats.at(-1)?.stats.g ?? {})
 	const hasGpuData = lastGpuVals.length > 0
-	const hasGpuPowerData = lastGpuVals.some((gpu) => gpu.p !== undefined || gpu.pp !== undefined)
+	const hasGpuPowerData = systemStats.some((record) => {
+		const gpus = record.stats?.g
+		if (!gpus) {
+			return false
+		}
+		return Object.values(gpus).some((gpu) => gpu.p !== undefined || gpu.pp !== undefined)
+	})
 	const hasGpuEnginesData = lastGpuVals.some((gpu) => gpu.e !== undefined)
 	const isLinux = !(details?.os ?? system.info?.os)
 	const isPodman = details?.podman ?? system.info?.p ?? false
