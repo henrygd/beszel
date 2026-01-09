@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"context"
 	"errors"
 	"time"
 	"weak"
@@ -160,4 +161,15 @@ func (ws *WsConn) handleAgentRequest(req *PendingRequest, handler ResponseHandle
 // IsConnected returns true if the WebSocket connection is active.
 func (ws *WsConn) IsConnected() bool {
 	return ws.conn != nil
+}
+
+// AgentVersion returns the connected agent's version (as reported during handshake).
+func (ws *WsConn) AgentVersion() semver.Version {
+	return ws.agentVersion
+}
+
+// SendRequest sends a request to the agent and returns a pending request handle.
+// This is used by the transport layer to send requests.
+func (ws *WsConn) SendRequest(ctx context.Context, action common.WebSocketAction, data any) (*PendingRequest, error) {
+	return ws.requestManager.SendRequest(ctx, action, data)
 }

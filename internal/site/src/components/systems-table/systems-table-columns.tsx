@@ -287,12 +287,12 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 					return null
 				}
 
-				const iconColor = pct < 10 ? "text-red-500" : pct < 25 ? "text-yellow-500" : "text-muted-foreground"
-
 				let Icon = PlugChargingIcon
+				let iconColor = "text-muted-foreground"
 
 				if (state !== BatteryState.Charging) {
 					if (pct < 25) {
+						iconColor = pct < 11 ? "text-red-500" : "text-yellow-500"
 						Icon = BatteryLowIcon
 					} else if (pct < 75) {
 						Icon = BatteryMediumIcon

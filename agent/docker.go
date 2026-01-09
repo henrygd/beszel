@@ -60,6 +60,7 @@ type dockerManager struct {
 	decoder             *json.Decoder               // Reusable JSON decoder that reads from buf
 	apiStats            *container.ApiStats         // Reusable API stats object
 	excludeContainers   []string                    // Patterns to exclude containers by name
+	usingPodman         bool                        // Whether the Docker Engine API is running on Podman
 
 	// Cache-time-aware tracking for CPU stats (similar to cpu.go)
 	// Maps cache time intervals to container-specific CPU usage tracking
@@ -478,7 +479,7 @@ func (dm *dockerManager) deleteContainerStatsSync(id string) {
 }
 
 // Creates a new http client for Docker or Podman API
-func newDockerManager(a *Agent) *dockerManager {
+func newDockerManager() *dockerManager {
 	dockerHost, exists := GetEnv("DOCKER_HOST")
 	if exists {
 		// return nil if set to empty string
@@ -564,7 +565,7 @@ func newDockerManager(a *Agent) *dockerManager {
 
 	// If using podman, return client
 	if strings.Contains(dockerHost, "podman") {
-		a.systemInfo.Podman = true
+		manager.usingPodman = true
 		manager.goodDockerVersion = true
 		return manager
 	}
@@ -693,7 +694,8 @@ func (dm *dockerManager) getLogs(ctx context.Context, containerID string) (strin
 	}
 
 	var builder strings.Builder
-	if err := decodeDockerLogStream(resp.Body, &builder); err != nil {
+	multiplexed := resp.Header.Get("Content-Type") == "application/vnd.docker.multiplexed-stream"
+	if err := decodeDockerLogStream(resp.Body, &builder, multiplexed); err != nil {
 		return "", err
 	}
 
@@ -705,7 +707,11 @@ func (dm *dockerManager) getLogs(ctx context.Context, containerID string) (strin
 	return logs, nil
 }
 
-func decodeDockerLogStream(reader io.Reader, builder *strings.Builder) error {
+func decodeDockerLogStream(reader io.Reader, builder *strings.Builder, multiplexed bool) error {
+	if !multiplexed {
+		_, err := io.Copy(builder, io.LimitReader(reader, maxTotalLogSize))
+		return err
+	}
 	const headerSize = 8
 	var header [headerSize]byte
 	totalBytesRead := 0
@@ -745,4 +751,23 @@ func decodeDockerLogStream(reader io.Reader, builder *strings.Builder) error {
 		}
 		totalBytesRead += int(n)
 	}
+}
+
+// GetHostInfo fetches the system info from Docker
+func (dm *dockerManager) GetHostInfo() (info container.HostInfo, err error) {
+	resp, err := dm.client.Get("http://localhost/info")
+	if err != nil {
+		return info, err
+	}
+	defer resp.Body.Close()
+
+	if err := json.NewDecoder(resp.Body).Decode(&info); err != nil {
+		return info, err
+	}
+
+	return info, nil
+}
+
+func (dm *dockerManager) IsPodman() bool {
+	return dm.usingPodman
 }

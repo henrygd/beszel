@@ -6,6 +6,7 @@ require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/coreos/go-systemd/v22 v22.6.0
 	github.com/distatus/battery v0.11.0
+	github.com/ebitengine/purego v0.9.1
 	github.com/fxamacker/cbor/v2 v2.9.0
 	github.com/gliderlabs/ssh v0.3.8
 	github.com/google/uuid v1.6.0
@@ -20,6 +21,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/crypto v0.45.0
 	golang.org/x/exp v0.0.0-20251125195548-87e1e737ad39
+	golang.org/x/sys v0.38.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -31,7 +33,6 @@ require (
 	github.com/dolthub/maphash v0.1.0 // indirect
 	github.com/domodwyer/mailyak/v3 v3.6.2 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/ebitengine/purego v0.9.1 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.11 // indirect
 	github.com/ganigeorgiev/fexpr v0.5.0 // indirect
@@ -57,7 +58,6 @@ require (
 	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/oauth2 v0.33.0 // indirect
 	golang.org/x/sync v0.18.0 // indirect
-	golang.org/x/sys v0.38.0 // indirect
 	golang.org/x/term v0.37.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
 	howett.net/plist v1.0.1 // indirect

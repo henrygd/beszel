@@ -802,6 +802,24 @@ func TestNetworkRateCalculationFormula(t *testing.T) {
 	}
 }
 
+func TestGetHostInfo(t *testing.T) {
+	data, err := os.ReadFile("test-data/system_info.json")
+	require.NoError(t, err)
+
+	var info container.HostInfo
+	err = json.Unmarshal(data, &info)
+	require.NoError(t, err)
+
+	assert.Equal(t, "6.8.0-31-generic", info.KernelVersion)
+	assert.Equal(t, "Ubuntu 24.04 LTS", info.OperatingSystem)
+	// assert.Equal(t, "24.04", info.OSVersion)
+	// assert.Equal(t, "linux", info.OSType)
+	// assert.Equal(t, "x86_64", info.Architecture)
+	assert.EqualValues(t, 4, info.NCPU)
+	assert.EqualValues(t, 2095882240, info.MemTotal)
+	// assert.Equal(t, "27.0.1", info.ServerVersion)
+}
+
 func TestDeltaTrackerCacheTimeIsolation(t *testing.T) {
 	// Test that different cache times have separate DeltaTracker instances
 	dm := &dockerManager{
@@ -932,6 +950,7 @@ func TestDecodeDockerLogStream(t *testing.T) {
 		input       []byte
 		expected    string
 		expectError bool
+		multiplexed bool
 	}{
 		{
 			name: "simple log entry",
@@ -942,6 +961,7 @@ func TestDecodeDockerLogStream(t *testing.T) {
 			},
 			expected:    "Hello World",
 			expectError: false,
+			multiplexed: true,
 		},
 		{
 			name: "multiple frames",
@@ -955,6 +975,7 @@ func TestDecodeDockerLogStream(t *testing.T) {
 			},
 			expected:    "HelloWorld",
 			expectError: false,
+			multiplexed: true,
 		},
 		{
 			name: "zero length frame",
@@ -967,12 +988,20 @@ func TestDecodeDockerLogStream(t *testing.T) {
 			},
 			expected:    "Hello",
 			expectError: false,
+			multiplexed: true,
 		},
 		{
 			name:        "empty input",
 			input:       []byte{},
 			expected:    "",
 			expectError: false,
+			multiplexed: true,
+		},
+		{
+			name:        "raw stream (not multiplexed)",
+			input:       []byte("raw log content"),
+			expected:    "raw log content",
+			multiplexed: false,
 		},
 	}
 
@@ -980,7 +1009,7 @@ func TestDecodeDockerLogStream(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			reader := bytes.NewReader(tt.input)
 			var builder strings.Builder
-			err := decodeDockerLogStream(reader, &builder)
+			err := decodeDockerLogStream(reader, &builder, tt.multiplexed)
 
 			if tt.expectError {
 				assert.Error(t, err)
@@ -1004,7 +1033,7 @@ func TestDecodeDockerLogStreamMemoryProtection(t *testing.T) {
 
 		reader := bytes.NewReader(input)
 		var builder strings.Builder
-		err := decodeDockerLogStream(reader, &builder)
+		err := decodeDockerLogStream(reader, &builder, true)
 
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "log frame size")
@@ -1038,7 +1067,7 @@ func TestDecodeDockerLogStreamMemoryProtection(t *testing.T) {
 
 		reader := bytes.NewReader(input)
 		var builder strings.Builder
-		err := decodeDockerLogStream(reader, &builder)
+		err := decodeDockerLogStream(reader, &builder, true)
 
 		// Should complete without error (graceful truncation)
 		assert.NoError(t, err)

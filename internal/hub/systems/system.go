@@ -9,13 +9,15 @@ import (
 	"math/rand"
 	"net"
 	"strings"
-	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/henrygd/beszel/internal/common"
+	"github.com/henrygd/beszel/internal/hub/transport"
 	"github.com/henrygd/beszel/internal/hub/ws"
 
 	"github.com/henrygd/beszel/internal/entities/container"
+	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/entities/systemd"
 
@@ -23,25 +25,30 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/fxamacker/cbor/v2"
+	"github.com/lxzan/gws"
 	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase/core"
 	"golang.org/x/crypto/ssh"
 )
 
 type System struct {
-	Id           string               `db:"id"`
-	Host         string               `db:"host"`
-	Port         string               `db:"port"`
-	Status       string               `db:"status"`
-	manager      *SystemManager       // Manager that this system belongs to
-	client       *ssh.Client          // SSH client for fetching data
-	data         *system.CombinedData // system data from agent
-	ctx          context.Context      // Context for stopping the updater
-	cancel       context.CancelFunc   // Stops and removes system from updater
-	WsConn       *ws.WsConn           // Handler for agent WebSocket connection
-	agentVersion semver.Version       // Agent version
-	updateTicker *time.Ticker         // Ticker for updating the system
-	smartOnce    sync.Once            // Once for fetching and saving smart devices
+	Id             string                  `db:"id"`
+	Host           string                  `db:"host"`
+	Port           string                  `db:"port"`
+	Status         string                  `db:"status"`
+	manager        *SystemManager          // Manager that this system belongs to
+	client         *ssh.Client             // SSH client for fetching data
+	sshTransport   *transport.SSHTransport // SSH transport for requests
+	data           *system.CombinedData    // system data from agent
+	ctx            context.Context         // Context for stopping the updater
+	cancel         context.CancelFunc      // Stops and removes system from updater
+	WsConn         *ws.WsConn              // Handler for agent WebSocket connection
+	agentVersion   semver.Version          // Agent version
+	updateTicker   *time.Ticker            // Ticker for updating the system
+	detailsFetched atomic.Bool             // True if static system details have been fetched and saved
+	smartFetching  atomic.Bool             // True if SMART devices are currently being fetched
+	smartInterval  time.Duration           // Interval for periodic SMART data updates
+	lastSmartFetch atomic.Int64            // Unix milliseconds of last SMART data fetch
 }
 
 func (sm *SystemManager) NewSystem(systemId string) *System {
@@ -114,10 +121,37 @@ func (sys *System) update() error {
 		sys.handlePaused()
 		return nil
 	}
-	data, err := sys.fetchDataFromAgent(common.DataRequestOptions{CacheTimeMs: uint16(interval)})
-	if err == nil {
-		_, err = sys.createRecords(data)
+	options := common.DataRequestOptions{
+		CacheTimeMs: uint16(interval),
 	}
+	// fetch system details if not already fetched
+	if !sys.detailsFetched.Load() {
+		options.IncludeDetails = true
+	}
+
+	data, err := sys.fetchDataFromAgent(options)
+	if err != nil {
+		return err
+	}
+
+	// create system records
+	_, err = sys.createRecords(data)
+
+	// Fetch and save SMART devices when system first comes online or at intervals
+	if backgroundSmartFetchEnabled() {
+		if sys.smartInterval <= 0 {
+			sys.smartInterval = time.Hour
+		}
+		lastFetch := sys.lastSmartFetch.Load()
+		if time.Since(time.UnixMilli(lastFetch)) >= sys.smartInterval && sys.smartFetching.CompareAndSwap(false, true) {
+			go func() {
+				defer sys.smartFetching.Store(false)
+				sys.lastSmartFetch.Store(time.Now().UnixMilli())
+				_ = sys.FetchAndSaveSmartDevices()
+			}()
+		}
+	}
+
 	return err
 }
 
@@ -142,12 +176,11 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 	}
 	hub := sys.manager.hub
 	err = hub.RunInTransaction(func(txApp core.App) error {
-		// add system_stats and container_stats records
+		// add system_stats record
 		systemStatsCollection, err := txApp.FindCachedCollectionByNameOrId("system_stats")
 		if err != nil {
 			return err
 		}
-
 		systemStatsRecord := core.NewRecord(systemStatsCollection)
 		systemStatsRecord.Set("system", systemRecord.Id)
 		systemStatsRecord.Set("stats", data.Stats)
@@ -155,14 +188,14 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		if err := txApp.SaveNoValidate(systemStatsRecord); err != nil {
 			return err
 		}
+
+		// add containers and container_stats records
 		if len(data.Containers) > 0 {
-			// add / update containers records
 			if data.Containers[0].Id != "" {
 				if err := createContainerRecords(txApp, data.Containers, sys.Id); err != nil {
 					return err
 				}
 			}
-			// add new container_stats record
 			containerStatsCollection, err := txApp.FindCachedCollectionByNameOrId("container_stats")
 			if err != nil {
 				return err
@@ -183,9 +216,20 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 			}
 		}
 
+		// add system details record
+		if data.Details != nil {
+			if err := createSystemDetailsRecord(txApp, data.Details, sys.Id); err != nil {
+				return err
+			}
+			sys.detailsFetched.Store(true)
+			// update smart interval if it's set on the agent side
+			if data.Details.SmartInterval > 0 {
+				sys.smartInterval = data.Details.SmartInterval
+			}
+		}
+
 		// update system record (do this last because it triggers alerts and we need above records to be inserted first)
 		systemRecord.Set("status", up)
-
 		systemRecord.Set("info", data.Info)
 		if err := txApp.SaveNoValidate(systemRecord); err != nil {
 			return err
@@ -193,14 +237,32 @@ func (sys *System) createRecords(data *system.CombinedData) (*core.Record, error
 		return nil
 	})
 
-	// Fetch and save SMART devices when system first comes online
-	if err == nil {
-		sys.smartOnce.Do(func() {
-			go sys.FetchAndSaveSmartDevices()
-		})
-	}
-
 	return systemRecord, err
+}
+
+func createSystemDetailsRecord(app core.App, data *system.Details, systemId string) error {
+	collectionName := "system_details"
+	params := dbx.Params{
+		"id":       systemId,
+		"system":   systemId,
+		"hostname": data.Hostname,
+		"kernel":   data.Kernel,
+		"cores":    data.Cores,
+		"threads":  data.Threads,
+		"cpu":      data.CpuModel,
+		"os":       data.Os,
+		"os_name":  data.OsName,
+		"arch":     data.Arch,
+		"memory":   data.MemoryTotal,
+		"podman":   data.Podman,
+		"updated":  time.Now().UTC(),
+	}
+	result, err := app.DB().Update(collectionName, params, dbx.HashExp{"id": systemId}).Execute()
+	rowsAffected, _ := result.RowsAffected()
+	if err != nil || rowsAffected == 0 {
+		_, err = app.DB().Insert(collectionName, params).Execute()
+	}
+	return err
 }
 
 func createSystemdStatsRecords(app core.App, data []*systemd.Service, systemId string) error {
@@ -301,8 +363,78 @@ func (sys *System) getContext() (context.Context, context.CancelFunc) {
 	return sys.ctx, sys.cancel
 }
 
-// fetchDataFromAgent attempts to fetch data from the agent,
-// prioritizing WebSocket if available.
+// request sends a request to the agent, trying WebSocket first, then SSH.
+// This is the unified request method that uses the transport abstraction.
+func (sys *System) request(ctx context.Context, action common.WebSocketAction, req any, dest any) error {
+	// Try WebSocket first
+	if sys.WsConn != nil && sys.WsConn.IsConnected() {
+		wsTransport := transport.NewWebSocketTransport(sys.WsConn)
+		if err := wsTransport.Request(ctx, action, req, dest); err == nil {
+			return nil
+		} else if !shouldFallbackToSSH(err) {
+			return err
+		} else if shouldCloseWebSocket(err) {
+			sys.closeWebSocketConnection()
+		}
+	}
+
+	// Fall back to SSH if WebSocket fails
+	if err := sys.ensureSSHTransport(); err != nil {
+		return err
+	}
+	err := sys.sshTransport.RequestWithRetry(ctx, action, req, dest, 1)
+	// Keep legacy SSH client/version fields in sync for other code paths.
+	if sys.sshTransport != nil {
+		sys.client = sys.sshTransport.GetClient()
+		sys.agentVersion = sys.sshTransport.GetAgentVersion()
+	}
+	return err
+}
+
+func shouldFallbackToSSH(err error) bool {
+	if err == nil {
+		return false
+	}
+	if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+		return true
+	}
+	if errors.Is(err, gws.ErrConnClosed) {
+		return true
+	}
+	return errors.Is(err, transport.ErrWebSocketNotConnected)
+}
+
+func shouldCloseWebSocket(err error) bool {
+	if err == nil {
+		return false
+	}
+	return errors.Is(err, gws.ErrConnClosed) || errors.Is(err, transport.ErrWebSocketNotConnected)
+}
+
+// ensureSSHTransport ensures the SSH transport is initialized and connected.
+func (sys *System) ensureSSHTransport() error {
+	if sys.sshTransport == nil {
+		if sys.manager.sshConfig == nil {
+			if err := sys.manager.createSSHClientConfig(); err != nil {
+				return err
+			}
+		}
+		sys.sshTransport = transport.NewSSHTransport(transport.SSHTransportConfig{
+			Host:    sys.Host,
+			Port:    sys.Port,
+			Config:  sys.manager.sshConfig,
+			Timeout: 4 * time.Second,
+		})
+	}
+	// Sync client state with transport
+	if sys.client != nil {
+		sys.sshTransport.SetClient(sys.client)
+		sys.sshTransport.SetAgentVersion(sys.agentVersion)
+	}
+	return nil
+}
+
+// fetchDataFromAgent attempts to fetch data from the agent, prioritizing WebSocket if available.
 func (sys *System) fetchDataFromAgent(options common.DataRequestOptions) (*system.CombinedData, error) {
 	if sys.data == nil {
 		sys.data = &system.CombinedData{}
@@ -328,112 +460,47 @@ func (sys *System) fetchDataViaWebSocket(options common.DataRequestOptions) (*sy
 	if sys.WsConn == nil || !sys.WsConn.IsConnected() {
 		return nil, errors.New("no websocket connection")
 	}
-	err := sys.WsConn.RequestSystemData(context.Background(), sys.data, options)
+	wsTransport := transport.NewWebSocketTransport(sys.WsConn)
+	err := wsTransport.Request(context.Background(), common.GetData, options, sys.data)
 	if err != nil {
 		return nil, err
 	}
 	return sys.data, nil
 }
 
-// fetchStringFromAgentViaSSH is a generic function to fetch strings via SSH
-func (sys *System) fetchStringFromAgentViaSSH(action common.WebSocketAction, requestData any, errorMsg string) (string, error) {
-	var result string
-	err := sys.runSSHOperation(4*time.Second, 1, func(session *ssh.Session) (bool, error) {
-		stdout, err := session.StdoutPipe()
-		if err != nil {
-			return false, err
-		}
-		stdin, stdinErr := session.StdinPipe()
-		if stdinErr != nil {
-			return false, stdinErr
-		}
-		if err := session.Shell(); err != nil {
-			return false, err
-		}
-		req := common.HubRequest[any]{Action: action, Data: requestData}
-		_ = cbor.NewEncoder(stdin).Encode(req)
-		_ = stdin.Close()
-		var resp common.AgentResponse
-		err = cbor.NewDecoder(stdout).Decode(&resp)
-		if err != nil {
-			return false, err
-		}
-		if resp.String == nil {
-			return false, errors.New(errorMsg)
-		}
-		result = *resp.String
-		return false, nil
-	})
-	return result, err
-}
-
 // FetchContainerInfoFromAgent fetches container info from the agent
 func (sys *System) FetchContainerInfoFromAgent(containerID string) (string, error) {
-	// fetch via websocket
-	if sys.WsConn != nil && sys.WsConn.IsConnected() {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		return sys.WsConn.RequestContainerInfo(ctx, containerID)
-	}
-	// fetch via SSH
-	return sys.fetchStringFromAgentViaSSH(common.GetContainerInfo, common.ContainerInfoRequest{ContainerID: containerID}, "no info in response")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	var result string
+	err := sys.request(ctx, common.GetContainerInfo, common.ContainerInfoRequest{ContainerID: containerID}, &result)
+	return result, err
 }
 
 // FetchContainerLogsFromAgent fetches container logs from the agent
 func (sys *System) FetchContainerLogsFromAgent(containerID string) (string, error) {
-	// fetch via websocket
-	if sys.WsConn != nil && sys.WsConn.IsConnected() {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		return sys.WsConn.RequestContainerLogs(ctx, containerID)
-	}
-	// fetch via SSH
-	return sys.fetchStringFromAgentViaSSH(common.GetContainerLogs, common.ContainerLogsRequest{ContainerID: containerID}, "no logs in response")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	var result string
+	err := sys.request(ctx, common.GetContainerLogs, common.ContainerLogsRequest{ContainerID: containerID}, &result)
+	return result, err
 }
 
 // FetchSystemdInfoFromAgent fetches detailed systemd service information from the agent
 func (sys *System) FetchSystemdInfoFromAgent(serviceName string) (systemd.ServiceDetails, error) {
-	// fetch via websocket
-	if sys.WsConn != nil && sys.WsConn.IsConnected() {
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-		defer cancel()
-		return sys.WsConn.RequestSystemdInfo(ctx, serviceName)
-	}
-
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	var result systemd.ServiceDetails
-	err := sys.runSSHOperation(5*time.Second, 1, func(session *ssh.Session) (bool, error) {
-		stdout, err := session.StdoutPipe()
-		if err != nil {
-			return false, err
-		}
-		stdin, stdinErr := session.StdinPipe()
-		if stdinErr != nil {
-			return false, stdinErr
-		}
-		if err := session.Shell(); err != nil {
-			return false, err
-		}
+	err := sys.request(ctx, common.GetSystemdInfo, common.SystemdInfoRequest{ServiceName: serviceName}, &result)
+	return result, err
+}
 
-		req := common.HubRequest[any]{Action: common.GetSystemdInfo, Data: common.SystemdInfoRequest{ServiceName: serviceName}}
-		if err := cbor.NewEncoder(stdin).Encode(req); err != nil {
-			return false, err
-		}
-		_ = stdin.Close()
-
-		var resp common.AgentResponse
-		if err := cbor.NewDecoder(stdout).Decode(&resp); err != nil {
-			return false, err
-		}
-		if resp.ServiceInfo == nil {
-			if resp.Error != "" {
-				return false, errors.New(resp.Error)
-			}
-			return false, errors.New("no systemd info in response")
-		}
-		result = resp.ServiceInfo
-		return false, nil
-	})
-
+// FetchSmartDataFromAgent fetches SMART data from the agent
+func (sys *System) FetchSmartDataFromAgent() (map[string]smart.SmartData, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	defer cancel()
+	var result map[string]smart.SmartData
+	err := sys.request(ctx, common.GetSmartData, nil, &result)
 	return result, err
 }
 
@@ -598,6 +665,9 @@ func (sys *System) createSessionWithTimeout(timeout time.Duration) (*ssh.Session
 
 // closeSSHConnection closes the SSH connection but keeps the system in the manager
 func (sys *System) closeSSHConnection() {
+	if sys.sshTransport != nil {
+		sys.sshTransport.Close()
+	}
 	if sys.client != nil {
 		sys.client.Close()
 		sys.client = nil

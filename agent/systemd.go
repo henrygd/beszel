@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"maps"
 	"math"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -28,11 +29,29 @@ type systemdManager struct {
 	patterns        []string
 }
 
+// isSystemdAvailable checks if systemd is used on the system to avoid unnecessary connection attempts.
+func isSystemdAvailable() bool {
+	if _, err := os.Stat("/run/systemd/system"); err == nil {
+		return true
+	}
+	if data, err := os.ReadFile("/proc/1/comm"); err == nil {
+		return strings.TrimSpace(string(data)) == "systemd"
+	}
+	return false
+}
+
 // newSystemdManager creates a new systemdManager.
 func newSystemdManager() (*systemdManager, error) {
 	if skipSystemd, _ := GetEnv("SKIP_SYSTEMD"); skipSystemd == "true" {
 		return nil, nil
 	}
+
+	// Check if systemd is available on the system before attempting connection
+	if !isSystemdAvailable() {
+		slog.Debug("Systemd not available on this system")
+		return nil, nil
+	}
+
 	conn, err := dbus.NewSystemConnectionContext(context.Background())
 	if err != nil {
 		slog.Debug("Error connecting to systemd", "err", err, "ref", "https://beszel.dev/guide/systemd")
