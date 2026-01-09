@@ -13,9 +13,7 @@ import (
 
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/common"
-	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/henrygd/beszel/internal/entities/system"
-	"github.com/henrygd/beszel/internal/entities/systemd"
 
 	"github.com/blang/semver"
 	"github.com/fxamacker/cbor/v2"
@@ -165,20 +163,9 @@ func (a *Agent) handleSSHRequest(w io.Writer, req *common.HubRequest[cbor.RawMes
 	}
 
 	// responder that writes AgentResponse to stdout
+	// Uses legacy typed fields for backward compatibility with <= 0.17
 	sshResponder := func(data any, requestID *uint32) error {
-		response := common.AgentResponse{Id: requestID}
-		switch v := data.(type) {
-		case *system.CombinedData:
-			response.SystemData = v
-		case string:
-			response.String = &v
-		case map[string]smart.SmartData:
-			response.SmartData = v
-		case systemd.ServiceDetails:
-			response.ServiceInfo = v
-		default:
-			response.Error = fmt.Sprintf("unsupported response type: %T", data)
-		}
+		response := newAgentResponse(data, requestID)
 		return cbor.NewEncoder(w).Encode(response)
 	}
 
@@ -202,7 +189,7 @@ func (a *Agent) handleSSHRequest(w io.Writer, req *common.HubRequest[cbor.RawMes
 
 // handleLegacyStats serves the legacy one-shot stats payload for older hubs
 func (a *Agent) handleLegacyStats(w io.Writer, hubVersion semver.Version) error {
-	stats := a.gatherStats(60_000)
+	stats := a.gatherStats(common.DataRequestOptions{CacheTimeMs: 60_000})
 	return a.writeToSession(w, stats, hubVersion)
 }
 

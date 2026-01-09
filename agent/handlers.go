@@ -9,7 +9,7 @@ import (
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/smart"
 
-	"golang.org/x/exp/slog"
+	"log/slog"
 )
 
 // HandlerContext provides context for request handlers
@@ -94,7 +94,7 @@ func (h *GetDataHandler) Handle(hctx *HandlerContext) error {
 	var options common.DataRequestOptions
 	_ = cbor.Unmarshal(hctx.Request.Data, &options)
 
-	sysStats := hctx.Agent.gatherStats(options.CacheTimeMs)
+	sysStats := hctx.Agent.gatherStats(options)
 	return hctx.SendResponse(sysStats, hctx.RequestID)
 }
 

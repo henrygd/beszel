@@ -415,7 +415,11 @@ func TestExpiryMap_RemoveValue_WithExpiration(t *testing.T) {
 	// Wait for first value to expire
 	time.Sleep(time.Millisecond * 20)
 
-	// Try to remove the expired value - should remove one of the "value1" entries
+	// Trigger lazy cleanup of the expired key
+	_, ok := em.GetOk("key1")
+	assert.False(t, ok)
+
+	// Try to remove the remaining "value1" entry (key3)
 	removedValue, ok := em.RemovebyValue("value1")
 	assert.True(t, ok)
 	assert.Equal(t, "value1", removedValue)
@@ -423,14 +427,9 @@ func TestExpiryMap_RemoveValue_WithExpiration(t *testing.T) {
 	// Should still have key2 (different value)
 	assert.True(t, em.Has("key2"))
 
-	// Should have removed one of the "value1" entries (either key1 or key3)
-	// But we can't predict which one due to map iteration order
-	key1Exists := em.Has("key1")
-	key3Exists := em.Has("key3")
-
-	// Exactly one of key1 or key3 should be gone
-	assert.False(t, key1Exists && key3Exists) // Both shouldn't exist
-	assert.True(t, key1Exists || key3Exists)  // At least one should still exist
+	// key1 should be gone due to expiration and key3 should be removed by value.
+	assert.False(t, em.Has("key1"))
+	assert.False(t, em.Has("key3"))
 }
 
 func TestExpiryMap_ValueOperations_Integration(t *testing.T) {

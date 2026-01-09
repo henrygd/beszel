@@ -1,6 +1,7 @@
 package common
 
 import (
+	"github.com/fxamacker/cbor/v2"
 	"github.com/henrygd/beszel/internal/entities/smart"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/henrygd/beszel/internal/entities/systemd"
@@ -34,14 +35,14 @@ type HubRequest[T any] struct {
 // AgentResponse defines the structure for responses sent from agent to hub.
 type AgentResponse struct {
 	Id          *uint32                    `cbor:"0,keyasint,omitempty"`
-	SystemData  *system.CombinedData       `cbor:"1,keyasint,omitempty,omitzero"`
-	Fingerprint *FingerprintResponse       `cbor:"2,keyasint,omitempty,omitzero"`
+	SystemData  *system.CombinedData       `cbor:"1,keyasint,omitempty,omitzero"` // Legacy (<= 0.17)
+	Fingerprint *FingerprintResponse       `cbor:"2,keyasint,omitempty,omitzero"` // Legacy (<= 0.17)
 	Error       string                     `cbor:"3,keyasint,omitempty,omitzero"`
-	String      *string                    `cbor:"4,keyasint,omitempty,omitzero"`
-	SmartData   map[string]smart.SmartData `cbor:"5,keyasint,omitempty,omitzero"`
-	ServiceInfo systemd.ServiceDetails     `cbor:"6,keyasint,omitempty,omitzero"`
-	// Logs        *LogsPayload         `cbor:"4,keyasint,omitempty,omitzero"`
-	// RawBytes    []byte               `cbor:"4,keyasint,omitempty,omitzero"`
+	String      *string                    `cbor:"4,keyasint,omitempty,omitzero"` // Legacy (<= 0.17)
+	SmartData   map[string]smart.SmartData `cbor:"5,keyasint,omitempty,omitzero"` // Legacy (<= 0.17)
+	ServiceInfo systemd.ServiceDetails     `cbor:"6,keyasint,omitempty,omitzero"` // Legacy (<= 0.17)
+	// Data is the generic response payload for new endpoints (0.18+)
+	Data cbor.RawMessage `cbor:"7,keyasint,omitempty,omitzero"`
 }
 
 type FingerprintRequest struct {
@@ -58,8 +59,8 @@ type FingerprintResponse struct {
 }
 
 type DataRequestOptions struct {
-	CacheTimeMs uint16 `cbor:"0,keyasint"`
-	// ResourceType uint8  `cbor:"1,keyasint,omitempty,omitzero"`
+	CacheTimeMs    uint16 `cbor:"0,keyasint"`
+	IncludeDetails bool   `cbor:"1,keyasint"`
 }
 
 type ContainerLogsRequest struct {

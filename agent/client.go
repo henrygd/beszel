@@ -15,9 +15,6 @@ import (
 
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/common"
-	"github.com/henrygd/beszel/internal/entities/smart"
-	"github.com/henrygd/beszel/internal/entities/system"
-	"github.com/henrygd/beszel/internal/entities/systemd"
 
 	"github.com/fxamacker/cbor/v2"
 	"github.com/lxzan/gws"
@@ -201,7 +198,7 @@ func (client *WebSocketClient) handleAuthChallenge(msg *common.HubRequest[cbor.R
 
 	if authRequest.NeedSysInfo {
 		response.Name, _ = GetEnv("SYSTEM_NAME")
-		response.Hostname = client.agent.systemInfo.Hostname
+		response.Hostname = client.agent.systemDetails.Hostname
 		serverAddr := client.agent.connectionManager.serverOptions.Addr
 		_, response.Port, _ = net.SplitHostPort(serverAddr)
 	}
@@ -259,40 +256,16 @@ func (client *WebSocketClient) sendMessage(data any) error {
 	return err
 }
 
-// sendResponse sends a response with optional request ID for the new protocol
+// sendResponse sends a response with optional request ID.
+// For ID-based requests, we must populate legacy typed fields for backward
+// compatibility with older hubs (<= 0.17) that don't read the generic Data field.
 func (client *WebSocketClient) sendResponse(data any, requestID *uint32) error {
 	if requestID != nil {
-		// New format with ID - use typed fields
-		response := common.AgentResponse{
-			Id: requestID,
-		}
-
-		// Set the appropriate typed field based on data type
-		switch v := data.(type) {
-		case *system.CombinedData:
-			response.SystemData = v
-		case *common.FingerprintResponse:
-			response.Fingerprint = v
-		case string:
-			response.String = &v
-		case map[string]smart.SmartData:
-			response.SmartData = v
-		case systemd.ServiceDetails:
-			response.ServiceInfo = v
-		// case []byte:
-		// 	response.RawBytes = v
-		// case string:
-		// 	response.RawBytes = []byte(v)
-		default:
-			// For any other type, convert to error
-			response.Error = fmt.Sprintf("unsupported response type: %T", data)
-		}
-
+		response := newAgentResponse(data, requestID)
 		return client.sendMessage(response)
-	} else {
-		// Legacy format - send data directly
-		return client.sendMessage(data)
 	}
+	// Legacy format - send data directly
+	return client.sendMessage(data)
 }
 
 // getUserAgent returns one of two User-Agent strings based on current time.

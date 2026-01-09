@@ -22,7 +22,7 @@ func createTestCacheData() *system.CombinedData {
 			DiskTotal: 100000,
 		},
 		Info: system.Info{
-			Hostname: "test-host",
+			AgentVersion: "0.12.0",
 		},
 		Containers: []*container.Stats{
 			{
@@ -128,7 +128,7 @@ func TestCacheMultipleIntervals(t *testing.T) {
 				Mem: 16384,
 			},
 			Info: system.Info{
-				Hostname: "test-host-2",
+				AgentVersion: "0.12.0",
 			},
 			Containers: []*container.Stats{},
 		}
@@ -171,7 +171,7 @@ func TestCacheOverwrite(t *testing.T) {
 			Mem: 32768,
 		},
 		Info: system.Info{
-			Hostname: "updated-host",
+			AgentVersion: "0.12.0",
 		},
 		Containers: []*container.Stats{},
 	}

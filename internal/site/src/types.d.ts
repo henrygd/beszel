@@ -389,6 +389,19 @@ export interface SmartAttribute {
 	wf?: string
 }
 
+export interface SystemDetailsRecord extends RecordModel {
+	system: string
+	hostname: string
+	kernel: string
+	cores: number
+	threads: number
+	cpu: string
+	os: Os
+	os_name: string
+	memory: number
+	podman: boolean
+}
+
 export interface SmartDeviceRecord extends RecordModel {
 	id: string
 	system: string
