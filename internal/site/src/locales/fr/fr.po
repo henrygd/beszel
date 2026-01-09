@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-12-25 22:44\n"
+"PO-Revision-Date: 2026-01-09 21:08\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -572,7 +572,7 @@ msgstr "Documentation"
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "Down"
-msgstr "Injoignable"
+msgstr "Hors ligne"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Down ({downSystemsLength})"
@@ -724,7 +724,7 @@ msgstr "Micrologiciel"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
-msgstr "Pour <0>{min}</0> {min, plural, one {minute} other {minutes}}"
+msgstr "Pendant <0>{min}</0> {min, plural, one {minute} other {minutes}}"
 
 #: src/components/login/auth-form.tsx
 msgid "Forgot password?"
@@ -939,7 +939,7 @@ msgstr "Nom"
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
-msgstr "Net"
+msgstr "Rés"
 
 #: src/components/routes/system.tsx
 msgid "Network traffic of docker containers"
@@ -1499,11 +1499,11 @@ msgstr "Se déclenche lorsque la charge moyenne sur 1 minute dépasse un seuil"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 15 minute load average exceeds a threshold"
-msgstr "Se déclenche lorsque la charge moyenne sur 15 minute dépasse un seuil"
+msgstr "Se déclenche lorsque la charge moyenne sur 15 minutes dépasse un seuil"
 
 #: src/lib/alerts.ts
 msgid "Triggers when 5 minute load average exceeds a threshold"
-msgstr "Se déclenche lorsque la charge moyenne sur 5 minute dépasse un seuil"
+msgstr "Se déclenche lorsque la charge moyenne sur 5 minutes dépasse un seuil"
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
