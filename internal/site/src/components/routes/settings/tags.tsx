@@ -18,6 +18,30 @@ import { pb } from "@/lib/api"
 import type { TagRecord } from "@/types"
 import { Badge } from "@/components/ui/badge"
 
+// Generate a random vibrant color
+function getRandomColor(): string {
+	const colors = [
+		"#ef4444", // red
+		"#f97316", // orange
+		"#f59e0b", // amber
+		"#eab308", // yellow
+		"#84cc16", // lime
+		"#22c55e", // green
+		"#10b981", // emerald
+		"#14b8a6", // teal
+		"#06b6d4", // cyan
+		"#0ea5e9", // sky
+		"#3b82f6", // blue
+		"#6366f1", // indigo
+		"#8b5cf6", // violet
+		"#a855f7", // purple
+		"#d946ef", // fuchsia
+		"#ec4899", // pink
+		"#f43f5e", // rose
+	]
+	return colors[Math.floor(Math.random() * colors.length)]
+}
+
 export default function TagsSettings() {
 	const { t } = useLingui()
 	const [tags, setTags] = useState<TagRecord[]>([])
@@ -52,7 +76,7 @@ export default function TagsSettings() {
 	function openCreateDialog() {
 		setEditingTag(null)
 		setNewTagName("")
-		setNewTagColor("#3b82f6")
+		setNewTagColor(getRandomColor())
 		setDialogOpen(true)
 	}
 
@@ -98,7 +122,7 @@ export default function TagsSettings() {
 				})
 			}
 			setNewTagName("")
-			setNewTagColor("#3b82f6")
+			setNewTagColor(getRandomColor())
 			setEditingTag(null)
 			setDialogOpen(false)
 		} catch (e: any) {
