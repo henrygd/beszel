@@ -53,7 +53,7 @@ export function getLocale() {
 	}
 	locale = (locale || "en").split("-")[0]
 	// use en if locale is not in languages
-	if (!languages.some((l) => l.lang === locale)) {
+	if (!languages.some((l) => l[0] === locale)) {
 		locale = "en"
 	}
 	return locale

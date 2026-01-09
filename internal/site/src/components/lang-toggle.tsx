@@ -18,7 +18,7 @@ export function LangToggle() {
 				</Button>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className="grid grid-cols-3">
-				{languages.map(({ lang, label, e }) => (
+				{languages.map(([lang, label, e]) => (
 					<DropdownMenuItem
 						key={lang}
 						className={cn("px-2.5 flex gap-2.5 cursor-pointer", lang === i18n.locale && "bg-accent/70 font-medium")}
