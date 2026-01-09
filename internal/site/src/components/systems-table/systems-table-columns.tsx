@@ -161,6 +161,40 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			header: sortableHeader,
 		},
 		{
+			accessorKey: "tags",
+			id: "tags",
+			name: () => t`Tags`,
+			size: 120,
+			hideSort: true,
+			Icon: TagIcon,
+			header: sortableHeader,
+			cell: ({ row }) => {
+				const system = row.original
+				if (!system.expand?.tags || system.expand.tags.length === 0) {
+					return null
+				}
+				const maxTags = viewMode === "table" ? 1 : 3
+				return (
+					<div className="flex flex-wrap gap-1 relative z-10" onClick={(e) => e.stopPropagation()}>
+						{system.expand.tags.slice(0, maxTags).map((tag: TagRecord) => (
+							<Badge
+								key={tag.id}
+								style={{ backgroundColor: tag.color || "#3b82f6" }}
+								className="text-white text-xs px-1.5 py-0"
+							>
+								{tag.name}
+							</Badge>
+						))}
+						{system.expand.tags.length > maxTags && (
+							<Badge variant="secondary" className="text-xs px-1.5 py-0">
+								+{system.expand.tags.length - maxTags}
+							</Badge>
+						)}
+					</div>
+				)
+			},
+		},
+		{
 			accessorFn: ({ info }) => info.cpu || undefined,
 			id: "cpu",
 			name: () => t`CPU`,
@@ -410,40 +444,6 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 						{!system.info.ct && <IndicatorDot system={system} className={cn(color, "bg-current mx-0.5")} />}
 						<span className="truncate max-w-14">{info.getValue() as string}</span>
 					</Link>
-				)
-			},
-		},
-		{
-			accessorKey: "tags",
-			id: "tags",
-			name: () => t`Tags`,
-			size: 120,
-			hideSort: true,
-			Icon: TagIcon,
-			header: sortableHeader,
-			cell: ({ row }) => {
-				const system = row.original
-				if (!system.expand?.tags || system.expand.tags.length === 0) {
-					return null
-				}
-				const maxTags = viewMode === "table" ? 1 : 3
-				return (
-					<div className="flex flex-wrap gap-1 relative z-10" onClick={(e) => e.stopPropagation()}>
-						{system.expand.tags.slice(0, maxTags).map((tag: TagRecord) => (
-							<Badge
-								key={tag.id}
-								style={{ backgroundColor: tag.color || "#3b82f6" }}
-								className="text-white text-xs px-1.5 py-0"
-							>
-								{tag.name}
-							</Badge>
-						))}
-						{system.expand.tags.length > maxTags && (
-							<Badge variant="secondary" className="text-xs px-1.5 py-0">
-								+{system.expand.tags.length - maxTags}
-							</Badge>
-						)}
-					</div>
 				)
 			},
 		},
