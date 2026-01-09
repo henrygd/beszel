@@ -27,12 +27,12 @@ export default [
 	{
 		lang: "en",
 		label: "English",
-		e: "🇺🇸",
+		e: "🇬🇧",
 	},
 	{
 		lang: "es",
 		label: "Español",
-		e: "🇲🇽",
+		e: "🇪🇸",
 	},
 	{
 		lang: "fa",
@@ -92,7 +92,7 @@ export default [
 	{
 		lang: "pt",
 		label: "Português",
-		e: "🇧🇷",
+		e: "🇵🇹",
 	},
 	{
 		lang: "ru",
