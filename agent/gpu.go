@@ -15,7 +15,7 @@ import (
 
 	"github.com/henrygd/beszel/internal/entities/system"
 
-	"golang.org/x/exp/slog"
+	"log/slog"
 )
 
 const (

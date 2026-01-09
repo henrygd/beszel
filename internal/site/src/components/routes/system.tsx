@@ -16,7 +16,7 @@ import MemChart from "@/components/charts/mem-chart"
 import SwapChart from "@/components/charts/swap-chart"
 import TemperatureChart from "@/components/charts/temperature-chart"
 import { getPbTimestamp, pb } from "@/lib/api"
-import { ChartType, Os, SystemStatus, Unit } from "@/lib/enums"
+import { ChartType, SystemStatus, Unit } from "@/lib/enums"
 import { batteryStateTranslations } from "@/lib/i18n"
 import {
 	$allSystemsById,
@@ -222,7 +222,6 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	}, [system.id])
 
 	// subscribe to realtime metrics if chart time is 1m
-	// biome-ignore lint/correctness/useExhaustiveDependencies: not necessary
 	useEffect(() => {
 		let unsub = () => {}
 		if (!system.id || chartTime !== "1m") {
@@ -260,7 +259,6 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 		}
 	}, [chartTime, system.id])
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: not necessary
 	const chartData: ChartData = useMemo(() => {
 		const lastCreated = Math.max(
 			(systemStats.at(-1)?.created as number) ?? 0,
@@ -300,7 +298,6 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	}, [])
 
 	// get stats
-	// biome-ignore lint/correctness/useExhaustiveDependencies: not necessary
 	useEffect(() => {
 		if (!system.id || !chartTime || chartTime === "1m") {
 			return
@@ -403,11 +400,35 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const containerFilterBar = containerData.length ? <FilterBar /> : null
 
 	const dataEmpty = !chartLoading && chartData.systemStats.length === 0
-	const lastGpuVals = Object.values(systemStats.at(-1)?.stats.g ?? {})
-	const hasGpuData = lastGpuVals.length > 0
-	const hasGpuPowerData = lastGpuVals.some((gpu) => gpu.p !== undefined || gpu.pp !== undefined)
-	const hasGpuEnginesData = lastGpuVals.some((gpu) => gpu.e !== undefined)
-	const isLinux = (details?.os ?? system.info?.os) === Os.Linux
+	const lastGpus = systemStats.at(-1)?.stats?.g
+
+	let hasGpuData = false
+	let hasGpuEnginesData = false
+	let hasGpuPowerData = false
+
+	if (lastGpus) {
+		// check if there are any GPUs with engines
+		for (const id in lastGpus) {
+			hasGpuData = true
+			if (lastGpus[id].e !== undefined) {
+				hasGpuEnginesData = true
+				break
+			}
+		}
+		// check if there are any GPUs with power data
+		for (let i = 0; i < systemStats.length && !hasGpuPowerData; i++) {
+			const gpus = systemStats[i].stats?.g
+			if (!gpus) continue
+			for (const id in gpus) {
+				if (gpus[id].p !== undefined || gpus[id].pp !== undefined) {
+					hasGpuPowerData = true
+					break
+				}
+			}
+		}
+	}
+
+	const isLinux = !(details?.os ?? system.info?.os)
 	const isPodman = details?.podman ?? system.info?.p ?? false
 
 	return (
@@ -718,64 +739,65 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 								<GpuEnginesChart chartData={chartData} />
 							</ChartCard>
 						)}
-						{Object.keys(systemStats.at(-1)?.stats.g ?? {}).map((id) => {
-							const gpu = systemStats.at(-1)?.stats.g?.[id] as GPUData
-							return (
-								<div key={id} className="contents">
-									<ChartCard
-										className={cn(grid && "!col-span-1")}
-										empty={dataEmpty}
-										grid={grid}
-										title={`${gpu.n} ${t`Usage`}`}
-										description={t`Average utilization of ${gpu.n}`}
-									>
-										<AreaChartDefault
-											chartData={chartData}
-											dataPoints={[
-												{
-													label: t`Usage`,
-													dataKey: ({ stats }) => stats?.g?.[id]?.u ?? 0,
-													color: 1,
-													opacity: 0.35,
-												},
-											]}
-											tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
-											contentFormatter={({ value }) => `${decimalString(value)}%`}
-										/>
-									</ChartCard>
-
-									{(gpu.mt ?? 0) > 0 && (
+						{lastGpus &&
+							Object.keys(lastGpus).map((id) => {
+								const gpu = lastGpus[id] as GPUData
+								return (
+									<div key={id} className="contents">
 										<ChartCard
+											className={cn(grid && "!col-span-1")}
 											empty={dataEmpty}
 											grid={grid}
-											title={`${gpu.n} VRAM`}
-											description={t`Precise utilization at the recorded time`}
+											title={`${gpu.n} ${t`Usage`}`}
+											description={t`Average utilization of ${gpu.n}`}
 										>
 											<AreaChartDefault
 												chartData={chartData}
 												dataPoints={[
 													{
 														label: t`Usage`,
-														dataKey: ({ stats }) => stats?.g?.[id]?.mu ?? 0,
-														color: 2,
-														opacity: 0.25,
+														dataKey: ({ stats }) => stats?.g?.[id]?.u ?? 0,
+														color: 1,
+														opacity: 0.35,
 													},
 												]}
-												max={gpu.mt}
-												tickFormatter={(val) => {
-													const { value, unit } = formatBytes(val, false, Unit.Bytes, true)
-													return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
-												}}
-												contentFormatter={({ value }) => {
-													const { value: convertedValue, unit } = formatBytes(value, false, Unit.Bytes, true)
-													return `${decimalString(convertedValue)} ${unit}`
-												}}
+												tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
+												contentFormatter={({ value }) => `${decimalString(value)}%`}
 											/>
 										</ChartCard>
-									)}
-								</div>
-							)
-						})}
+
+										{(gpu.mt ?? 0) > 0 && (
+											<ChartCard
+												empty={dataEmpty}
+												grid={grid}
+												title={`${gpu.n} VRAM`}
+												description={t`Precise utilization at the recorded time`}
+											>
+												<AreaChartDefault
+													chartData={chartData}
+													dataPoints={[
+														{
+															label: t`Usage`,
+															dataKey: ({ stats }) => stats?.g?.[id]?.mu ?? 0,
+															color: 2,
+															opacity: 0.25,
+														},
+													]}
+													max={gpu.mt}
+													tickFormatter={(val) => {
+														const { value, unit } = formatBytes(val, false, Unit.Bytes, true)
+														return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
+													}}
+													contentFormatter={({ value }) => {
+														const { value: convertedValue, unit } = formatBytes(value, false, Unit.Bytes, true)
+														return `${decimalString(convertedValue)} ${unit}`
+													}}
+												/>
+											</ChartCard>
+										)}
+									</div>
+								)
+							})}
 					</div>
 				)}
 

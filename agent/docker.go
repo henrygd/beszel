@@ -694,7 +694,8 @@ func (dm *dockerManager) getLogs(ctx context.Context, containerID string) (strin
 	}
 
 	var builder strings.Builder
-	if err := decodeDockerLogStream(resp.Body, &builder); err != nil {
+	multiplexed := resp.Header.Get("Content-Type") == "application/vnd.docker.multiplexed-stream"
+	if err := decodeDockerLogStream(resp.Body, &builder, multiplexed); err != nil {
 		return "", err
 	}
 
@@ -706,7 +707,11 @@ func (dm *dockerManager) getLogs(ctx context.Context, containerID string) (strin
 	return logs, nil
 }
 
-func decodeDockerLogStream(reader io.Reader, builder *strings.Builder) error {
+func decodeDockerLogStream(reader io.Reader, builder *strings.Builder, multiplexed bool) error {
+	if !multiplexed {
+		_, err := io.Copy(builder, io.LimitReader(reader, maxTotalLogSize))
+		return err
+	}
 	const headerSize = 8
 	var header [headerSize]byte
 	totalBytesRead := 0

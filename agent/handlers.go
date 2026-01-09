@@ -9,7 +9,7 @@ import (
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/smart"
 
-	"golang.org/x/exp/slog"
+	"log/slog"
 )
 
 // HandlerContext provides context for request handlers

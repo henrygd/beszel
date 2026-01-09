@@ -4,6 +4,7 @@ package agent
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -45,6 +46,35 @@ func TestUnescapeServiceNameInvalid(t *testing.T) {
 			result := unescapeServiceName(input)
 			assert.Equal(t, input, result, "Invalid escape sequences should return original string")
 		})
+	}
+}
+
+func TestIsSystemdAvailable(t *testing.T) {
+	// Note: This test's result will vary based on the actual system running the tests
+	// On systems with systemd, it should return true
+	// On systems without systemd, it should return false
+	result := isSystemdAvailable()
+
+	// Check if either the /run/systemd/system directory exists or PID 1 is systemd
+	runSystemdExists := false
+	if _, err := os.Stat("/run/systemd/system"); err == nil {
+		runSystemdExists = true
+	}
+
+	pid1IsSystemd := false
+	if data, err := os.ReadFile("/proc/1/comm"); err == nil {
+		pid1IsSystemd = strings.TrimSpace(string(data)) == "systemd"
+	}
+
+	expected := runSystemdExists || pid1IsSystemd
+
+	assert.Equal(t, expected, result, "isSystemdAvailable should correctly detect systemd presence")
+
+	// Log the result for informational purposes
+	if result {
+		t.Log("Systemd is available on this system")
+	} else {
+		t.Log("Systemd is not available on this system")
 	}
 }
 

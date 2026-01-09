@@ -2,13 +2,13 @@ package agent
 
 import (
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 	"unsafe"
 
 	"github.com/ebitengine/purego"
 	"github.com/henrygd/beszel/internal/entities/system"
-	"golang.org/x/exp/slog"
 )
 
 // NVML constants and types
@@ -180,19 +180,33 @@ func (c *nvmlCollector) collect() {
 		var temp uint32
 		nvmlDeviceGetTemperature(device, 0, &temp) // 0 is NVML_TEMPERATURE_GPU
 
-		// Memory
-		var usedMem, totalMem uint64
-		if c.isV2 {
-			var memory nvmlMemoryV2
-			memory.Version = 0x02000028 // (2 << 24) | 40 bytes
-			nvmlDeviceGetMemoryInfo(device, uintptr(unsafe.Pointer(&memory)))
-			usedMem = memory.Used
-			totalMem = memory.Total
+		// Memory: only poll if GPU is active to avoid leaving D3cold state (#1522)
+		if utilization.Gpu > 0 {
+			var usedMem, totalMem uint64
+			if c.isV2 {
+				var memory nvmlMemoryV2
+				memory.Version = 0x02000028 // (2 << 24) | 40 bytes
+				if ret := nvmlDeviceGetMemoryInfo(device, uintptr(unsafe.Pointer(&memory))); ret != nvmlReturn(nvmlSuccess) {
+					slog.Debug("NVML: MemoryInfo_v2 failed", "bdf", bdf, "ret", ret)
+				} else {
+					usedMem = memory.Used
+					totalMem = memory.Total
+				}
+			} else {
+				var memory nvmlMemoryV1
+				if ret := nvmlDeviceGetMemoryInfo(device, uintptr(unsafe.Pointer(&memory))); ret != nvmlReturn(nvmlSuccess) {
+					slog.Debug("NVML: MemoryInfo failed", "bdf", bdf, "ret", ret)
+				} else {
+					usedMem = memory.Used
+					totalMem = memory.Total
+				}
+			}
+			if totalMem > 0 {
+				gpu.MemoryUsed = float64(usedMem) / 1024 / 1024 / mebibytesInAMegabyte
+				gpu.MemoryTotal = float64(totalMem) / 1024 / 1024 / mebibytesInAMegabyte
+			}
 		} else {
-			var memory nvmlMemoryV1
-			nvmlDeviceGetMemoryInfo(device, uintptr(unsafe.Pointer(&memory)))
-			usedMem = memory.Used
-			totalMem = memory.Total
+			slog.Debug("NVML: Skipping memory info (utilization=0)", "bdf", bdf)
 		}
 
 		// Power
@@ -200,8 +214,6 @@ func (c *nvmlCollector) collect() {
 		nvmlDeviceGetPowerUsage(device, &power)
 
 		gpu.Temperature = float64(temp)
-		gpu.MemoryUsed = float64(usedMem) / 1024 / 1024 / mebibytesInAMegabyte
-		gpu.MemoryTotal = float64(totalMem) / 1024 / 1024 / mebibytesInAMegabyte
 		gpu.Usage += float64(utilization.Gpu)
 		gpu.Power += float64(power) / 1000.0
 		gpu.Count++
