@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-12-08 15:28\n"
+"PO-Revision-Date: 2026-01-10 17:34\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -172,7 +172,7 @@ msgstr "您確定嗎？"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
-msgstr "只有在受保護的環境才能自動複製。"
+msgstr "只有在受保護的環境（HTTPS）才能自動複製。"
 
 #: src/components/routes/system.tsx
 msgid "Average"
@@ -232,7 +232,7 @@ msgstr "之前"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
-msgstr "Beszel支援OpenID Connect和許多OAuth2認證提供者。"
+msgstr "Beszel 支援 OpenID Connect 和許多 OAuth2 認證提供者。"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
@@ -317,7 +317,7 @@ msgstr "圖表選項"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
-msgstr "檢查{email}以取得重設連結。"
+msgstr "檢查 {email} 以取得重設連結。"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Check logs for more details."
@@ -424,7 +424,7 @@ msgstr "複製下面的代理程式<0>docker-compose.yml</0>內容，或使用<1
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
-msgstr "複製YAML"
+msgstr "複製 YAML"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -897,7 +897,7 @@ msgstr "手動設定說明"
 #. Chart select field. Please try to keep this short.
 #: src/components/routes/system.tsx
 msgid "Max 1 min"
-msgstr "最多1分鐘"
+msgstr "最多 1 分鐘"
 
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -1052,7 +1052,7 @@ msgstr "密碼"
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be at least 8 characters."
-msgstr "密碼需要至少8個字元"
+msgstr "密碼需要至少 8 個字元。"
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
@@ -1089,7 +1089,7 @@ msgstr "狀態時間佔比"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
-msgstr "請<0>設定一個SMTP 伺服器</0>以確保能傳送警報。"
+msgstr "請<0>設定一個 SMTP 伺服器</0>以確保能傳送警報。"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Please check logs for more details."
@@ -1344,7 +1344,7 @@ msgstr "系統的虛擬記憶體使用量"
 
 #: src/components/routes/system.tsx
 msgid "Swap Usage"
-msgstr "虛擬記憶體使用量"
+msgstr "交換空間使用量"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1515,7 +1515,7 @@ msgstr "當總流量超過閾值時觸發"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
-msgstr "當CPU使用率超過閾值時觸發"
+msgstr "當 CPU 使用率超過閾值時觸發"
 
 #: src/lib/alerts.ts
 msgid "Triggers when GPU usage exceeds a threshold"
