@@ -6,6 +6,8 @@
 
 - Add battery charge to systems table.
 
+- Add option to make universal token permanent. (#1097, #1614)
+
 - Add `--url` and `--token` command line arguments to the agent. (#1524)
 
 - Collect S.M.A.R.T. data in the background every hour.
@@ -30,10 +32,11 @@
 
 - Fix loader visibility when no systems are present. (#1511)
 
-- Add Serbian translations.
+- Rename login honeypot field to prevent password manager autofill (#1011).
+
+- Add Serbian and Bahasa Indonesia translations.
 
 - Update Go dependencies.
-
 
 ## 0.17.0
 
@@ -319,4 +322,4 @@ Note that the default memory calculation changed in this release, which may caus
 
 ## Older
 
-Release notes are available at https://github.com/henrygd/beszel/releases
+Release notes are available at <https://github.com/henrygd/beszel/releases>
