@@ -59,6 +59,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { ChartAverage, ChartMax } from "../ui/icons"
 import { Input } from "../ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs"
 import NetworkSheet from "./system/network-sheet"
 import CpuCoresSheet from "./system/cpu-sheet"
 import LineChartDefault from "../charts/line-chart"
@@ -143,8 +144,8 @@ async function getStats<T extends SystemStatsRecord | ContainerStatsRecord>(
 	})
 }
 
-function dockerOrPodman(str: string, isPodman: boolean): string {
-	if (isPodman) {
+function dockerOrPodman(str: string, system: SystemRecord): string {
+	if (system.info.p) {
 		return str.replace("docker", "podman").replace("Docker", "Podman")
 	}
 	return str
@@ -167,6 +168,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const isLongerChart = !["1m", "1h"].includes(chartTime) // true if chart time is not 1m or 1h
 	const userSettings = $userSettings.get()
 	const chartWrapRef = useRef<HTMLDivElement>(null)
+	const [activeTab, setActiveTab] = useBrowserStorage("system-tab", "overview")
 	const [details, setDetails] = useState<SystemDetailsRecord>({} as SystemDetailsRecord)
 
 	useEffect(() => {
@@ -222,8 +224,9 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	}, [system.id])
 
 	// subscribe to realtime metrics if chart time is 1m
+	// biome-ignore lint/correctness/useExhaustiveDependencies: not necessary
 	useEffect(() => {
-		let unsub = () => {}
+		let unsub = () => { }
 		if (!system.id || chartTime !== "1m") {
 			return
 		}
@@ -259,6 +262,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 		}
 	}, [chartTime, system.id])
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: not necessary
 	const chartData: ChartData = useMemo(() => {
 		const lastCreated = Math.max(
 			(systemStats.at(-1)?.created as number) ?? 0,
@@ -298,6 +302,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	}, [])
 
 	// get stats
+	// biome-ignore lint/correctness/useExhaustiveDependencies: not necessary
 	useEffect(() => {
 		if (!system.id || !chartTime || chartTime === "1m") {
 			return
@@ -400,36 +405,12 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const containerFilterBar = containerData.length ? <FilterBar /> : null
 
 	const dataEmpty = !chartLoading && chartData.systemStats.length === 0
-	const lastGpus = systemStats.at(-1)?.stats?.g
-
-	let hasGpuData = false
-	let hasGpuEnginesData = false
-	let hasGpuPowerData = false
-
-	if (lastGpus) {
-		// check if there are any GPUs with engines
-		for (const id in lastGpus) {
-			hasGpuData = true
-			if (lastGpus[id].e !== undefined) {
-				hasGpuEnginesData = true
-				break
-			}
-		}
-		// check if there are any GPUs with power data
-		for (let i = 0; i < systemStats.length && !hasGpuPowerData; i++) {
-			const gpus = systemStats[i].stats?.g
-			if (!gpus) continue
-			for (const id in gpus) {
-				if (gpus[id].p !== undefined || gpus[id].pp !== undefined) {
-					hasGpuPowerData = true
-					break
-				}
-			}
-		}
-	}
+	const lastGpuVals = Object.values(systemStats.at(-1)?.stats.g ?? {})
+	const hasGpuData = lastGpuVals.length > 0
+	const hasGpuPowerData = lastGpuVals.some((gpu) => gpu.p !== undefined || gpu.pp !== undefined)
+	const hasGpuEnginesData = lastGpuVals.some((gpu) => gpu.e !== undefined)
 
 	const isLinux = !(details?.os ?? system.info?.os)
-	const isPodman = details?.podman ?? system.info?.p ?? false
 
 	return (
 		<>
@@ -437,17 +418,30 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				{/* system info */}
 				<InfoBar system={system} chartData={chartData} grid={grid} setGrid={setGrid} details={details} />
 
-				{/* <Tabs defaultValue="overview" className="w-full">
-					<TabsList className="w-full h-11">
-						<TabsTrigger value="overview" className="w-full h-9">Overview</TabsTrigger>
-						<TabsTrigger value="containers" className="w-full h-9">Containers</TabsTrigger>
-						<TabsTrigger value="smart" className="w-full h-9">S.M.A.R.T.</TabsTrigger>
-					</TabsList>
-					<TabsContent value="smart">
-					</TabsContent>
-				</Tabs> */}
+				<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+					<Card className="p-1">
+						<TabsList className="w-full h-11 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
+							<TabsTrigger value="overview" className="h-9">
+								<Trans>Core Metrics</Trans>
+							</TabsTrigger>
+							<TabsTrigger value="disks" className="h-9">
+								<Trans>Disks</Trans>
+							</TabsTrigger>
+							{containerData.length > 0 && compareSemVer(chartData.agentVersion, parseSemVer("0.14.0")) >= 0 && (
+								<TabsTrigger value="containers" className="h-9">
+									<Trans>Containers</Trans>
+								</TabsTrigger>
+							)}
+							{isLinux && compareSemVer(chartData.agentVersion, parseSemVer("0.16.0")) >= 0 && (
+								<TabsTrigger value="services" className="h-9">
+									<Trans>Services</Trans>
+								</TabsTrigger>
+							)}
+						</TabsList>
+					</Card>
 
-				{/* main charts */}
+					<TabsContent value="overview" className="mt-4">
+						{/* main charts */}
 				<div className="grid xl:grid-cols-2 gap-4">
 					<ChartCard
 						empty={dataEmpty}
@@ -478,23 +472,6 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						/>
 					</ChartCard>
 
-					{containerFilterBar && (
-						<ChartCard
-							empty={dataEmpty}
-							grid={grid}
-							title={dockerOrPodman(t`Docker CPU Usage`, isPodman)}
-							description={t`Average CPU utilization of containers`}
-							cornerEl={containerFilterBar}
-						>
-							<ContainerChart
-								chartData={chartData}
-								dataKey="c"
-								chartType={ChartType.CPU}
-								chartConfig={containerChartConfigs.cpu}
-							/>
-						</ChartCard>
-					)}
-
 					<ChartCard
 						empty={dataEmpty}
 						grid={grid}
@@ -503,73 +480,6 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						cornerEl={maxValSelect}
 					>
 						<MemChart chartData={chartData} showMax={showMax} />
-					</ChartCard>
-
-					{containerFilterBar && (
-						<ChartCard
-							empty={dataEmpty}
-							grid={grid}
-							title={dockerOrPodman(t`Docker Memory Usage`, isPodman)}
-							description={dockerOrPodman(t`Memory usage of docker containers`, isPodman)}
-							cornerEl={containerFilterBar}
-						>
-							<ContainerChart
-								chartData={chartData}
-								dataKey="m"
-								chartType={ChartType.Memory}
-								chartConfig={containerChartConfigs.memory}
-							/>
-						</ChartCard>
-					)}
-
-					<ChartCard empty={dataEmpty} grid={grid} title={t`Disk Usage`} description={t`Usage of root partition`}>
-						<DiskChart chartData={chartData} dataKey="stats.du" diskSize={systemStats.at(-1)?.stats.d ?? NaN} />
-					</ChartCard>
-
-					<ChartCard
-						empty={dataEmpty}
-						grid={grid}
-						title={t`Disk I/O`}
-						description={t`Throughput of root filesystem`}
-						cornerEl={maxValSelect}
-					>
-						<AreaChartDefault
-							chartData={chartData}
-							maxToggled={maxValues}
-							dataPoints={[
-								{
-									label: t({ message: "Write", comment: "Disk write" }),
-									dataKey: ({ stats }: SystemStatsRecord) => {
-										if (showMax) {
-											return stats?.dio?.[1] ?? (stats?.dwm ?? 0) * 1024 * 1024
-										}
-										return stats?.dio?.[1] ?? (stats?.dw ?? 0) * 1024 * 1024
-									},
-									color: 3,
-									opacity: 0.3,
-								},
-								{
-									label: t({ message: "Read", comment: "Disk read" }),
-									dataKey: ({ stats }: SystemStatsRecord) => {
-										if (showMax) {
-											return stats?.diom?.[0] ?? (stats?.drm ?? 0) * 1024 * 1024
-										}
-										return stats?.dio?.[0] ?? (stats?.dr ?? 0) * 1024 * 1024
-									},
-									color: 1,
-									opacity: 0.3,
-								},
-							]}
-							tickFormatter={(val) => {
-								const { value, unit } = formatBytes(val, true, userSettings.unitDisk, false)
-								return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
-							}}
-							contentFormatter={({ value }) => {
-								const { value: convertedValue, unit } = formatBytes(value, true, userSettings.unitDisk, false)
-								return `${decimalString(convertedValue, convertedValue >= 100 ? 1 : 2)} ${unit}`
-							}}
-							showTotal={true}
-						/>
 					</ChartCard>
 
 					<ChartCard
@@ -626,23 +536,6 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 						/>
 					</ChartCard>
 
-					{containerFilterBar && containerData.length > 0 && (
-						<ChartCard
-							empty={dataEmpty}
-							grid={grid}
-							title={dockerOrPodman(t`Docker Network I/O`, isPodman)}
-							description={dockerOrPodman(t`Network traffic of docker containers`, isPodman)}
-							cornerEl={containerFilterBar}
-						>
-							<ContainerChart
-								chartData={chartData}
-								chartType={ChartType.Network}
-								dataKey="n"
-								chartConfig={containerChartConfigs.network}
-							/>
-						</ChartCard>
-					)}
-
 					{/* Swap chart */}
 					{(systemStats.at(-1)?.stats.su ?? 0) > 0 && (
 						<ChartCard
@@ -670,7 +563,10 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 					{/* Temperature chart */}
 					{systemStats.at(-1)?.stats.t && (
-						<div ref={temperatureChartRef} className={cn("odd:last-of-type:col-span-full", { "col-span-full": !grid })}>
+						<div
+							ref={temperatureChartRef}
+							className={cn("odd:last-of-type:col-span-full", { "col-span-full": !grid })}
+						>
 							<ChartCard
 								empty={dataEmpty}
 								grid={grid}
@@ -739,149 +635,254 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 								<GpuEnginesChart chartData={chartData} />
 							</ChartCard>
 						)}
-						{lastGpus &&
-							Object.keys(lastGpus).map((id) => {
-								const gpu = lastGpus[id] as GPUData
-								return (
-									<div key={id} className="contents">
+						{Object.keys(systemStats.at(-1)?.stats.g ?? {}).map((id) => {
+							const gpu = systemStats.at(-1)?.stats.g?.[id] as GPUData
+							return (
+								<div key={id} className="contents">
+									<ChartCard
+										className={cn(grid && "!col-span-1")}
+										empty={dataEmpty}
+										grid={grid}
+										title={`${gpu.n} ${t`Usage`}`}
+										description={t`Average utilization of ${gpu.n}`}
+									>
+										<AreaChartDefault
+											chartData={chartData}
+											dataPoints={[
+												{
+													label: t`Usage`,
+													dataKey: ({ stats }) => stats?.g?.[id]?.u ?? 0,
+													color: 1,
+													opacity: 0.35,
+												},
+											]}
+											tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
+											contentFormatter={({ value }) => `${decimalString(value)}%`}
+										/>
+									</ChartCard>
+
+									{(gpu.mt ?? 0) > 0 && (
 										<ChartCard
-											className={cn(grid && "!col-span-1")}
 											empty={dataEmpty}
 											grid={grid}
-											title={`${gpu.n} ${t`Usage`}`}
-											description={t`Average utilization of ${gpu.n}`}
+											title={`${gpu.n} VRAM`}
+											description={t`Precise utilization at the recorded time`}
 										>
 											<AreaChartDefault
 												chartData={chartData}
 												dataPoints={[
 													{
 														label: t`Usage`,
-														dataKey: ({ stats }) => stats?.g?.[id]?.u ?? 0,
-														color: 1,
-														opacity: 0.35,
+														dataKey: ({ stats }) => stats?.g?.[id]?.mu ?? 0,
+														color: 2,
+														opacity: 0.25,
 													},
 												]}
-												tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
-												contentFormatter={({ value }) => `${decimalString(value)}%`}
+												max={gpu.mt}
+												tickFormatter={(val) => {
+													const { value, unit } = formatBytes(val, false, Unit.Bytes, true)
+													return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
+												}}
+												contentFormatter={({ value }) => {
+													const { value: convertedValue, unit } = formatBytes(value, false, Unit.Bytes, true)
+													return `${decimalString(convertedValue)} ${unit}`
+												}}
 											/>
 										</ChartCard>
-
-										{(gpu.mt ?? 0) > 0 && (
-											<ChartCard
-												empty={dataEmpty}
-												grid={grid}
-												title={`${gpu.n} VRAM`}
-												description={t`Precise utilization at the recorded time`}
-											>
-												<AreaChartDefault
-													chartData={chartData}
-													dataPoints={[
-														{
-															label: t`Usage`,
-															dataKey: ({ stats }) => stats?.g?.[id]?.mu ?? 0,
-															color: 2,
-															opacity: 0.25,
-														},
-													]}
-													max={gpu.mt}
-													tickFormatter={(val) => {
-														const { value, unit } = formatBytes(val, false, Unit.Bytes, true)
-														return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
-													}}
-													contentFormatter={({ value }) => {
-														const { value: convertedValue, unit } = formatBytes(value, false, Unit.Bytes, true)
-														return `${decimalString(convertedValue)} ${unit}`
-													}}
-												/>
-											</ChartCard>
-										)}
-									</div>
-								)
-							})}
-					</div>
-				)}
-
-				{/* extra filesystem charts */}
-				{Object.keys(systemStats.at(-1)?.stats.efs ?? {}).length > 0 && (
-					<div className="grid xl:grid-cols-2 gap-4">
-						{Object.keys(systemStats.at(-1)?.stats.efs ?? {}).map((extraFsName) => {
-							return (
-								<div key={extraFsName} className="contents">
-									<ChartCard
-										empty={dataEmpty}
-										grid={grid}
-										title={`${extraFsName} ${t`Usage`}`}
-										description={t`Disk usage of ${extraFsName}`}
-									>
-										<DiskChart
-											chartData={chartData}
-											dataKey={({ stats }: SystemStatsRecord) => stats?.efs?.[extraFsName]?.du}
-											diskSize={systemStats.at(-1)?.stats.efs?.[extraFsName].d ?? NaN}
-										/>
-									</ChartCard>
-									<ChartCard
-										empty={dataEmpty}
-										grid={grid}
-										title={`${extraFsName} I/O`}
-										description={t`Throughput of ${extraFsName}`}
-										cornerEl={maxValSelect}
-									>
-										<AreaChartDefault
-											chartData={chartData}
-											dataPoints={[
-												{
-													label: t`Write`,
-													dataKey: ({ stats }) => {
-														if (showMax) {
-															return (
-																stats?.efs?.[extraFsName]?.wbm || (stats?.efs?.[extraFsName]?.wm ?? 0) * 1024 * 1024
-															)
-														}
-														return stats?.efs?.[extraFsName]?.wb || (stats?.efs?.[extraFsName]?.w ?? 0) * 1024 * 1024
-													},
-													color: 3,
-													opacity: 0.3,
-												},
-												{
-													label: t`Read`,
-													dataKey: ({ stats }) => {
-														if (showMax) {
-															return (
-																stats?.efs?.[extraFsName]?.rbm ?? (stats?.efs?.[extraFsName]?.rm ?? 0) * 1024 * 1024
-															)
-														}
-														return stats?.efs?.[extraFsName]?.rb ?? (stats?.efs?.[extraFsName]?.r ?? 0) * 1024 * 1024
-													},
-													color: 1,
-													opacity: 0.3,
-												},
-											]}
-											maxToggled={maxValues}
-											tickFormatter={(val) => {
-												const { value, unit } = formatBytes(val, true, userSettings.unitDisk, false)
-												return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
-											}}
-											contentFormatter={({ value }) => {
-												const { value: convertedValue, unit } = formatBytes(value, true, userSettings.unitDisk, false)
-												return `${decimalString(convertedValue, convertedValue >= 100 ? 1 : 2)} ${unit}`
-											}}
-										/>
-									</ChartCard>
+									)}
 								</div>
 							)
 						})}
 					</div>
 				)}
+					</TabsContent>
 
-				{compareSemVer(chartData.agentVersion, parseSemVer("0.15.0")) >= 0 && <LazySmartTable systemId={system.id} />}
+					<TabsContent value="disks" className="mt-4">
+						<div className="grid xl:grid-cols-2 gap-4">
+							{/* Root disk charts */}
+							<ChartCard empty={dataEmpty} grid={grid} title={t`Disk Usage`} description={t`Usage of root partition`}>
+								<DiskChart chartData={chartData} dataKey="stats.du" diskSize={systemStats.at(-1)?.stats.d ?? NaN} />
+							</ChartCard>
 
-				{containerData.length > 0 && compareSemVer(chartData.agentVersion, parseSemVer("0.14.0")) >= 0 && (
-					<LazyContainersTable systemId={system.id} />
-				)}
+							<ChartCard
+								empty={dataEmpty}
+								grid={grid}
+								title={t`Disk I/O`}
+								description={t`Throughput of root filesystem`}
+								cornerEl={maxValSelect}
+							>
+								<AreaChartDefault
+									chartData={chartData}
+									maxToggled={maxValues}
+									dataPoints={[
+										{
+											label: t({ message: "Write", comment: "Disk write" }),
+											dataKey: ({ stats }: SystemStatsRecord) => {
+												if (showMax) {
+													return stats?.dio?.[1] ?? (stats?.dwm ?? 0) * 1024 * 1024
+												}
+												return stats?.dio?.[1] ?? (stats?.dw ?? 0) * 1024 * 1024
+											},
+											color: 3,
+											opacity: 0.3,
+										},
+										{
+											label: t({ message: "Read", comment: "Disk read" }),
+											dataKey: ({ stats }: SystemStatsRecord) => {
+												if (showMax) {
+													return stats?.diom?.[0] ?? (stats?.drm ?? 0) * 1024 * 1024
+												}
+												return stats?.dio?.[0] ?? (stats?.dr ?? 0) * 1024 * 1024
+											},
+											color: 1,
+											opacity: 0.3,
+										},
+									]}
+									tickFormatter={(val) => {
+										const { value, unit } = formatBytes(val, true, userSettings.unitDisk, false)
+										return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
+									}}
+									contentFormatter={({ value }) => {
+										const { value: convertedValue, unit } = formatBytes(value, true, userSettings.unitDisk, false)
+										return `${decimalString(convertedValue, convertedValue >= 100 ? 1 : 2)} ${unit}`
+									}}
+									showTotal={true}
+								/>
+							</ChartCard>
 
-				{isLinux && compareSemVer(chartData.agentVersion, parseSemVer("0.16.0")) >= 0 && (
-					<LazySystemdTable systemId={system.id} />
-				)}
+							{/* Extra filesystem charts */}
+							{Object.keys(systemStats.at(-1)?.stats.efs ?? {}).map((extraFsName) => {
+									return (
+										<div key={extraFsName} className="contents">
+											<ChartCard
+												empty={dataEmpty}
+												grid={grid}
+												title={`${extraFsName} ${t`Usage`}`}
+												description={t`Disk usage of ${extraFsName}`}
+											>
+												<DiskChart
+													chartData={chartData}
+													dataKey={({ stats }: SystemStatsRecord) => stats?.efs?.[extraFsName]?.du}
+													diskSize={systemStats.at(-1)?.stats.efs?.[extraFsName].d ?? NaN}
+												/>
+											</ChartCard>
+											<ChartCard
+												empty={dataEmpty}
+												grid={grid}
+												title={`${extraFsName} I/O`}
+												description={t`Throughput of ${extraFsName}`}
+												cornerEl={maxValSelect}
+											>
+												<AreaChartDefault
+													chartData={chartData}
+													dataPoints={[
+														{
+															label: t`Write`,
+															dataKey: ({ stats }) => {
+																if (showMax) {
+																	return stats?.efs?.[extraFsName]?.wbm || (stats?.efs?.[extraFsName]?.wm ?? 0) * 1024 * 1024
+																}
+																return stats?.efs?.[extraFsName]?.wb || (stats?.efs?.[extraFsName]?.w ?? 0) * 1024 * 1024
+															},
+															color: 3,
+															opacity: 0.3,
+														},
+														{
+															label: t`Read`,
+															dataKey: ({ stats }) => {
+																if (showMax) {
+																	return (
+																		stats?.efs?.[extraFsName]?.rbm ?? (stats?.efs?.[extraFsName]?.rm ?? 0) * 1024 * 1024
+																	)
+																}
+																return stats?.efs?.[extraFsName]?.rb ?? (stats?.efs?.[extraFsName]?.r ?? 0) * 1024 * 1024
+															},
+															color: 1,
+															opacity: 0.3,
+														},
+													]}
+													maxToggled={maxValues}
+													tickFormatter={(val) => {
+														const { value, unit } = formatBytes(val, true, userSettings.unitDisk, false)
+														return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
+													}}
+													contentFormatter={({ value }) => {
+														const { value: convertedValue, unit } = formatBytes(value, true, userSettings.unitDisk, false)
+														return `${decimalString(convertedValue, convertedValue >= 100 ? 1 : 2)} ${unit}`
+													}}
+												/>
+											</ChartCard>
+										</div>
+									)
+								})}
+						</div>
+
+						{/* S.M.A.R.T. Table */}
+						{compareSemVer(chartData.agentVersion, parseSemVer("0.15.0")) >= 0 && (
+							<div className="mt-4">
+								<LazySmartTable systemId={system.id} />
+							</div>
+						)}
+					</TabsContent>
+
+					{containerData.length > 0 && compareSemVer(chartData.agentVersion, parseSemVer("0.14.0")) >= 0 && (
+						<TabsContent value="containers" className="mt-4">
+							<div className="grid xl:grid-cols-2 gap-4 mb-4">
+								<ChartCard
+									empty={dataEmpty}
+									grid={grid}
+									title={dockerOrPodman(t`Docker CPU Usage`, system)}
+									description={t`Average CPU utilization of containers`}
+									cornerEl={containerFilterBar}
+								>
+									<ContainerChart
+										chartData={chartData}
+										dataKey="c"
+										chartType={ChartType.CPU}
+										chartConfig={containerChartConfigs.cpu}
+									/>
+								</ChartCard>
+
+								<ChartCard
+									empty={dataEmpty}
+									grid={grid}
+									title={dockerOrPodman(t`Docker Memory Usage`, system)}
+									description={dockerOrPodman(t`Memory usage of docker containers`, system)}
+									cornerEl={containerFilterBar}
+								>
+									<ContainerChart
+										chartData={chartData}
+										dataKey="m"
+										chartType={ChartType.Memory}
+										chartConfig={containerChartConfigs.memory}
+									/>
+								</ChartCard>
+
+								<ChartCard
+									empty={dataEmpty}
+									grid={grid}
+									title={dockerOrPodman(t`Docker Network I/O`, system)}
+									description={dockerOrPodman(t`Network traffic of docker containers`, system)}
+									cornerEl={containerFilterBar}
+								>
+									<ContainerChart
+										chartData={chartData}
+										chartType={ChartType.Network}
+										dataKey="n"
+										chartConfig={containerChartConfigs.network}
+									/>
+								</ChartCard>
+							</div>
+							<LazyContainersTable systemId={system.id} />
+						</TabsContent>
+					)}
+
+					{isLinux && compareSemVer(chartData.agentVersion, parseSemVer("0.16.0")) >= 0 && (
+						<TabsContent value="services" className="mt-4">
+							<LazySystemdTable systemId={system.id} />
+						</TabsContent>
+					)}
+				</Tabs>
 			</div>
 
 			{/* add space for tooltip if lots of sensors */}
@@ -929,10 +930,13 @@ function FilterBar({ store = $containerFilter }: { store?: typeof $containerFilt
 		return () => clearTimeout(handle)
 	}, [inputValue, storeValue, store])
 
-	const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-		const value = e.target.value
-		setInputValue(value)
-	}, [])
+	const handleChange = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			const value = e.target.value
+			setInputValue(value)
+		},
+		[]
+	)
 
 	const handleClear = useCallback(() => {
 		setInputValue("")
