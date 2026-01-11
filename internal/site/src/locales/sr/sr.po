@@ -8,7 +8,7 @@ msgstr ""
 "Language: sr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-01-11 18:53\n"
+"PO-Revision-Date: 2026-01-11 22:21\n"
 "Last-Translator: \n"
 "Language-Team: Serbian (Cyrillic)\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
@@ -654,6 +654,10 @@ msgstr "Унесите адресу е-поште..."
 msgid "Enter your one-time password."
 msgstr "Унесите вашу једнократну лозинку."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Ephemeral"
+msgstr "Ефемеран"
+
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
@@ -683,6 +687,10 @@ msgstr "Системи који нису дефинисани у <0>config.yml</
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exited active"
 msgstr "Излазак активан"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Expires after one hour or on hub restart."
+msgstr "Истиче након једног сата или при поновном покретању хаба."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -1109,6 +1117,14 @@ msgstr "Просечна употреба по језгру"
 msgid "Percentage of time spent in each state"
 msgstr "Проценат времена проведеног у сваком стању"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Permanent"
+msgstr "Трајан"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Persistence"
+msgstr "Упорност"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "Молимо вас <0>конфигуришите SMTP сервер</0> да бисте осигурали да се упозорења испоручују."
@@ -1264,6 +1280,10 @@ msgstr "Сачувај подешавања"
 #: src/components/add-system.tsx
 msgid "Save system"
 msgstr "Сачувај систем"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Saved in the database and does not expire until you disable it."
+msgstr "Сачувано у бази података и не истиче док га не онемогућите."
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1689,8 +1709,8 @@ msgid "Webhook / Push notifications"
 msgstr "Webhook / Push обавештења"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
-msgstr "Када је омогућено, овај токен омогућава агентима да се сами региструју без претходног креирања система. Истиче након једног сата или при поновном покретању хаба."
+msgid "When enabled, this token allows agents to self-register without prior system creation."
+msgstr "Када је омогућен, овај токен омогућава агентима да се сами региструју без претходног креирања система."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
