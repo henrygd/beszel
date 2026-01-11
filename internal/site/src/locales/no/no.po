@@ -8,7 +8,7 @@ msgstr ""
 "Language: no\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-14 22:51\n"
+"PO-Revision-Date: 2025-12-05 20:24\n"
 "Last-Translator: \n"
 "Language-Team: Norwegian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -24,6 +24,10 @@ msgstr ""
 msgid "{0} of {1} row(s) selected."
 msgstr "{0} av {1} rad(er) valgt."
 
+#: src/components/routes/system/info-bar.tsx
+msgid "{cores, plural, one {# core} other {# cores}}"
+msgstr "{cores, plural, one {# kjerne} other {# kjerner}}"
+
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} day} other {{countString} days}}"
 msgstr "{count, plural, one {{countString} dag} other {{countString} dager}}"
@@ -35,6 +39,10 @@ msgstr "{count, plural, one {{countString} time} other {{countString} timer}}"
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} minutt} other {{countString} minutter}}"
+
+#: src/components/routes/system/info-bar.tsx
+msgid "{threads, plural, one {# thread} other {# threads}}"
+msgstr "{threads, plural, one {# tråd} other {# tråder}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -184,6 +192,11 @@ msgstr "Gjennomsnittlig CPU-utnyttelse av konteinere"
 
 #. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
+msgid "Average drops below <0>{value}{0}</0>"
+msgstr "Gjennomsnittet faller under <0>{value}{0}</0>"
+
+#. placeholder {0}: alertData.unit
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Gjennomsnittet overstiger <0>{value}{0}</0>"
 
@@ -214,7 +227,13 @@ msgstr "Sikkerhetskopier"
 msgid "Bandwidth"
 msgstr "Båndbredde"
 
+#. Battery label in systems table header
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Bat"
+msgstr ""
+
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Battery"
 msgstr "Batteri"
 
@@ -229,6 +248,13 @@ msgstr "Ble inaktiv"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Before"
 msgstr "Før"
+
+#. placeholder {0}: alert.value
+#. placeholder {1}: info.unit
+#. placeholder {2}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Below {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
+msgstr "Under {0}{1} i siste {2, plural, one {# minutt} other {# minutter}}"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -568,7 +594,7 @@ msgstr "Dokumentasjon"
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "Down"
@@ -803,11 +829,6 @@ msgstr "Inaktiv"
 msgid "Invalid email address."
 msgstr "Ugyldig e-postadresse."
 
-#. Linux kernel
-#: src/components/routes/system.tsx
-msgid "Kernel"
-msgstr "Kjerne"
-
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Språk"
@@ -900,6 +921,7 @@ msgid "Max 1 min"
 msgstr "Maks 1 min"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1064,7 +1086,7 @@ msgstr "Mottatt forespørsel om å nullstille passord"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Past"
-msgstr ""
+msgstr "Fortid"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
@@ -1317,7 +1339,7 @@ msgstr "Sorter Etter"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Start Time"
-msgstr ""
+msgstr "Starttid"
 
 #. Context: alert state (active or resolved)
 #: src/components/alerts-history-columns.tsx
@@ -1439,8 +1461,8 @@ msgstr "Tidsformat"
 msgid "To email(s)"
 msgstr "Til e-postadresse(r)"
 
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/info-bar.tsx
+#: src/components/routes/system/info-bar.tsx
 msgid "Toggle grid"
 msgstr "Rutenett av/på"
 
@@ -1510,6 +1532,10 @@ msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Slår inn når enhver sensor overstiger en grenseverdi"
 
 #: src/lib/alerts.ts
+msgid "Triggers when battery charge drops below a threshold"
+msgstr "Utløses når batterilading faller under en terskel"
+
+#: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Slår inn når kombinert opp/ned overskrider en grenseverdi"
 
@@ -1537,7 +1563,7 @@ msgstr "Slår inn når forbruk av hvilken som helst disk overstiger en grensever
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Type"
-msgstr ""
+msgstr "Type"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
@@ -1564,7 +1590,7 @@ msgid "Unlimited"
 msgstr "Ubegrenset"
 
 #. Context: System is up
-#: src/components/routes/system.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
 msgstr "Oppe"
@@ -1591,7 +1617,7 @@ msgstr "Oppdatert hvert 10. minutt."
 msgid "Upload"
 msgstr "Last opp"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/info-bar.tsx
 msgid "Uptime"
 msgstr "Oppetid"
 
