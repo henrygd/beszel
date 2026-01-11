@@ -8,7 +8,7 @@ msgstr ""
 "Language: vi\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-12-02 23:18\n"
+"PO-Revision-Date: 2026-01-11 18:53\n"
 "Last-Translator: \n"
 "Language-Team: Vietnamese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -24,6 +24,10 @@ msgstr ""
 msgid "{0} of {1} row(s) selected."
 msgstr "Đã chọn {0} trên {1} hàng."
 
+#: src/components/routes/system/info-bar.tsx
+msgid "{cores, plural, one {# core} other {# cores}}"
+msgstr "{cores, plural, one {# nhân} other {# nhân}}"
+
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} day} other {{countString} days}}"
 msgstr "{count, plural, one {{countString} ngày} other {{countString} ngày}}"
@@ -35,6 +39,10 @@ msgstr "{count, plural, one {{countString} giờ} other {{countString} giờ}}"
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} phút} few {{countString} phút} many {{countString} phút} other {{countString} phút}}"
+
+#: src/components/routes/system/info-bar.tsx
+msgid "{threads, plural, one {# thread} other {# threads}}"
+msgstr "{threads, plural, one {# luồng} other {# luồng}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -101,7 +109,7 @@ msgstr "Trạng thái hoạt động"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Add {foo}"
-msgstr ""
+msgstr "Thêm {foo}"
 
 #: src/components/add-system.tsx
 msgid "Add <0>System</0>"
@@ -184,6 +192,11 @@ msgstr "Sử dụng CPU trung bình của các container"
 
 #. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
+msgid "Average drops below <0>{value}{0}</0>"
+msgstr "Trung bình giảm xuống dưới <0>{value}{0}</0>"
+
+#. placeholder {0}: alertData.unit
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Trung bình vượt quá <0>{value}{0}</0>"
 
@@ -214,7 +227,13 @@ msgstr "Sao lưu"
 msgid "Bandwidth"
 msgstr "Băng thông"
 
+#. Battery label in systems table header
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Bat"
+msgstr "Pin"
+
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Battery"
 msgstr "Pin"
 
@@ -229,6 +248,13 @@ msgstr "Đã trở thành không hoạt động"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Before"
 msgstr "Trước"
+
+#. placeholder {0}: alert.value
+#. placeholder {1}: info.unit
+#. placeholder {2}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Below {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
+msgstr "Dưới {0}{1} trong {2, plural, one {# phút} other {# phút}} qua"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -568,7 +594,7 @@ msgstr "Tài liệu"
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "Down"
@@ -594,7 +620,7 @@ msgstr "Chỉnh sửa"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
-msgstr ""
+msgstr "Chỉnh sửa {foo}"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -803,11 +829,6 @@ msgstr "Không hoạt động"
 msgid "Invalid email address."
 msgstr "Địa chỉ email không hợp lệ."
 
-#. Linux kernel
-#: src/components/routes/system.tsx
-msgid "Kernel"
-msgstr "Nhân"
-
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Ngôn ngữ"
@@ -900,6 +921,7 @@ msgid "Max 1 min"
 msgstr "Tối đa 1 phút"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1269,7 +1291,7 @@ msgstr "Xem <0>cài đặt thông báo</0> để cấu hình cách bạn nhận 
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Select {foo}"
-msgstr ""
+msgstr "Chọn {foo}"
 
 #: src/components/routes/system.tsx
 msgid "Sent"
@@ -1439,8 +1461,8 @@ msgstr "Định dạng thời gian"
 msgid "To email(s)"
 msgstr "Đến email(s)"
 
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/info-bar.tsx
+#: src/components/routes/system/info-bar.tsx
 msgid "Toggle grid"
 msgstr "Chuyển đổi lưới"
 
@@ -1510,6 +1532,10 @@ msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Kích hoạt khi bất kỳ cảm biến nào vượt quá ngưỡng"
 
 #: src/lib/alerts.ts
+msgid "Triggers when battery charge drops below a threshold"
+msgstr "Kích hoạt khi mức pin giảm xuống dưới ngưỡng"
+
+#: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Kích hoạt khi kết hợp lên/xuống vượt quá ngưỡng"
 
@@ -1564,7 +1590,7 @@ msgid "Unlimited"
 msgstr "Không giới hạn"
 
 #. Context: System is up
-#: src/components/routes/system.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
 msgstr "Hoạt động"
@@ -1591,7 +1617,7 @@ msgstr "Cập nhật mỗi 10 phút."
 msgid "Upload"
 msgstr "Tải lên"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/info-bar.tsx
 msgid "Uptime"
 msgstr "Thời gian hoạt động"
 
