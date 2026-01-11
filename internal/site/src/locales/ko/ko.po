@@ -8,7 +8,7 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-01-11 18:53\n"
+"PO-Revision-Date: 2026-01-11 22:21\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -654,6 +654,10 @@ msgstr "이메일 주소 입력..."
 msgid "Enter your one-time password."
 msgstr "OTP를 입력하세요."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Ephemeral"
+msgstr "일시적"
+
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
@@ -683,6 +687,10 @@ msgstr "<0>config.yml</0>에 정의되지 않은 기존 시스템은 삭제됩�
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exited active"
 msgstr "활성 종료됨"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Expires after one hour or on hub restart."
+msgstr "한 시간 후 또는 허브 재시작 시 만료됩니다."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -1109,6 +1117,14 @@ msgstr "코어별 평균 사용률"
 msgid "Percentage of time spent in each state"
 msgstr "각 상태에서 보낸 시간의 백분율"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Permanent"
+msgstr "영구적"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Persistence"
+msgstr "지속성"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "알림이 전달되도록 <0>SMTP 서버를 구성</0>하세요."
@@ -1264,6 +1280,10 @@ msgstr "설정 저장"
 #: src/components/add-system.tsx
 msgid "Save system"
 msgstr "시스템 저장"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Saved in the database and does not expire until you disable it."
+msgstr "데이터베이스에 저장되며 비활성화할 때까지 만료되지 않습니다."
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1689,8 +1709,8 @@ msgid "Webhook / Push notifications"
 msgstr "Webhook / 푸시 알림"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
-msgstr "활성화하면 이 토큰을 통해 에이전트가 사전 시스템 생성 없이 자체 등록할 수 있습니다. 1시간 후 또는 허브 재시작 시 만료됩니다."
+msgid "When enabled, this token allows agents to self-register without prior system creation."
+msgstr "활성화되면 이 토큰은 사전 시스템 생성 없이 에이전트가 자체 등록할 수 있도록 합니다."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
