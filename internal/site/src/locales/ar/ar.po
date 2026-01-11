@@ -8,7 +8,7 @@ msgstr ""
 "Language: ar\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-01-11 18:53\n"
+"PO-Revision-Date: 2026-01-11 22:20\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
@@ -654,6 +654,10 @@ msgstr "أدخل عنوان البريد الإشباكي..."
 msgid "Enter your one-time password."
 msgstr "أدخل كلمة المرور لمرة واحدة الخاصة بك."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Ephemeral"
+msgstr "مؤقت"
+
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
@@ -683,6 +687,10 @@ msgstr "سيتم حذف الأنظمة الحالية غير المعرفة في
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exited active"
 msgstr "خرج نشطًا"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Expires after one hour or on hub restart."
+msgstr "ينتهي بعد ساعة واحدة أو عند إعادة تشغيل المحور."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -1109,6 +1117,14 @@ msgstr "متوسط الاستخدام لكل نواة"
 msgid "Percentage of time spent in each state"
 msgstr "النسبة المئوية للوقت المقضي في كل حالة"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Permanent"
+msgstr "دائم"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Persistence"
+msgstr "الاستمرارية"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "يرجى <0>تكوين خادم SMTP</0> لضمان تسليم التنبيهات."
@@ -1264,6 +1280,10 @@ msgstr "حفظ الإعدادات"
 #: src/components/add-system.tsx
 msgid "Save system"
 msgstr "احفظ النظام"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Saved in the database and does not expire until you disable it."
+msgstr "محفوظ في قاعدة البيانات ولا ينتهي حتى تقوم بتعطيله."
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1689,8 +1709,8 @@ msgid "Webhook / Push notifications"
 msgstr "إشعارات Webhook / Push"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
-msgstr "عند التفعيل، يسمح هذا الرمز المميز للوكلاء بالتسجيل الذاتي دون إنشاء نظام مسبق. ينتهي بعد ساعة واحدة أو عند إعادة تشغيل المحور."
+msgid "When enabled, this token allows agents to self-register without prior system creation."
+msgstr "عند التفعيل، يسمح هذا الرمز المميز للوكلاء بالتسجيل الذاتي دون إنشاء نظام مسبق."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
