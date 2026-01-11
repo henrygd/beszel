@@ -8,7 +8,7 @@ msgstr ""
 "Language: th\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-01-11 18:53\n"
+"PO-Revision-Date: 2026-01-11 22:21\n"
 "Last-Translator: \n"
 "Language-Team: Thai\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -654,6 +654,10 @@ msgstr ""
 msgid "Enter your one-time password."
 msgstr ""
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Ephemeral"
+msgstr ""
+
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
@@ -682,6 +686,10 @@ msgstr ""
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exited active"
+msgstr ""
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Expires after one hour or on hub restart."
 msgstr ""
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -1109,6 +1117,14 @@ msgstr ""
 msgid "Percentage of time spent in each state"
 msgstr ""
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Permanent"
+msgstr ""
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Persistence"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr ""
@@ -1263,6 +1279,10 @@ msgstr ""
 
 #: src/components/add-system.tsx
 msgid "Save system"
+msgstr ""
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Saved in the database and does not expire until you disable it."
 msgstr ""
 
 #: src/components/routes/settings/quiet-hours.tsx
@@ -1689,7 +1709,7 @@ msgid "Webhook / Push notifications"
 msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
+msgid "When enabled, this token allows agents to self-register without prior system creation."
 msgstr ""
 
 #: src/components/add-system.tsx
