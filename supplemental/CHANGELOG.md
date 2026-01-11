@@ -1,5 +1,13 @@
 ## 0.18.0
 
+- Add experimental NVML GPU collector. (#1522, #1587)
+
+- Add low battery alerts. (#1507)
+
+- Add battery charge to systems table.
+
+- Add `--url` and `--token` command line arguments to the agent. (#1524)
+
 - Collect S.M.A.R.T. data in the background every hour.
 
 - Add `SMART_INTERVAL` environment variable to customize S.M.A.R.T. data collection interval.
@@ -8,7 +16,24 @@
 
 - Add `system_details` collection to store infrequently updated system information.
 
+- Improve S.M.A.R.T. device path lookup for NVMe devices. (#1504)
+
+- Use origin country flags for Spanish, Portuguese, English languages. (#1571)
+
+- Raise `smartctl` timeout to 15 seconds. (#1465)
+
 - Skip known non-unique product UUID when generating fingerprints. (#1556)
+
+- Fix container logs decoding for raw streams. (#1535)
+
+- Fix capacity sorting in S.M.A.R.T. table. (#1551)
+
+- Fix loader visibility when no systems are present. (#1511)
+
+- Add Serbian translations.
+
+- Update Go dependencies.
+
 
 ## 0.17.0
 

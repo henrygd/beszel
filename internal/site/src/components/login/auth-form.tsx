@@ -25,13 +25,13 @@ const passwordSchema = v.pipe(
 )
 
 const LoginSchema = v.looseObject({
-	name: honeypot,
+	company_website: honeypot,
 	email: emailSchema,
 	password: passwordSchema,
 })
 
 const RegisterSchema = v.looseObject({
-	name: honeypot,
+	company_website: honeypot,
 	email: emailSchema,
 	password: passwordSchema,
 	passwordConfirm: passwordSchema,
@@ -248,8 +248,8 @@ export function UserAuthForm({
 							)}
 							<div className="sr-only">
 								{/* honeypot */}
-								<label htmlFor="name"></label>
-								<input id="name" type="text" name="name" tabIndex={-1} autoComplete="off" />
+								<label htmlFor="company_website"></label>
+								<input id="company_website" type="text" name="company_website" tabIndex={-1} autoComplete="off" />
 							</div>
 							<button className={cn(buttonVariants())} disabled={isLoading}>
 								{isLoading ? (
@@ -305,9 +305,9 @@ export function UserAuthForm({
 									className="me-2 h-4 w-4 dark:brightness-0 dark:invert"
 									src={getAuthProviderIcon(provider)}
 									alt=""
-									// onError={(e) => {
-									// 	e.currentTarget.src = "/static/lock.svg"
-									// }}
+								// onError={(e) => {
+								// 	e.currentTarget.src = "/static/lock.svg"
+								// }}
 								/>
 							)}
 							<span className="translate-y-px">{provider.displayName}</span>

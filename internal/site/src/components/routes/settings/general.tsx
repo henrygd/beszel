@@ -68,10 +68,10 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
-							{languages.map((lang) => (
-								<SelectItem key={lang.lang} value={lang.lang}>
-									<span className="me-2.5">{lang.e}</span>
-									{lang.label}
+							{languages.map(([lang, label, e]) => (
+								<SelectItem key={lang} value={lang}>
+									<span className="me-2.5">{e}</span>
+									{label}
 								</SelectItem>
 							))}
 						</SelectContent>
