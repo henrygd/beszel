@@ -1,3 +1,5 @@
+//go:build (linux || windows) && (amd64 || arm64)
+
 package agent
 
 import (

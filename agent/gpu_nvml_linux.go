@@ -1,14 +1,14 @@
-//go:build linux
+//go:build linux && (amd64 || arm64)
 
 package agent
 
 import (
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/ebitengine/purego"
-	"log/slog"
 )
 
 func openLibrary(name string) (uintptr, error) {
