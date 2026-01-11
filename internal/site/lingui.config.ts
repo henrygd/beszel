@@ -14,6 +14,7 @@ export default defineConfig({
 		"he",
 		"hr",
 		"hu",
+		"id",
 		"it",
 		"ja",
 		"ko",

@@ -20,6 +20,7 @@ import (
 	"github.com/henrygd/beszel/internal/users"
 
 	"github.com/google/uuid"
+	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
@@ -288,24 +289,90 @@ func (h *Hub) getUniversalToken(e *core.RequestEvent) error {
 	userID := e.Auth.Id
 	query := e.Request.URL.Query()
 	token := query.Get("token")
+	enable := query.Get("enable")
+	permanent := query.Get("permanent")
 
+	// helper for deleting any existing permanent token record for this user
+	deletePermanent := func() error {
+		rec, err := h.FindFirstRecordByFilter("universal_tokens", "user = {:user}", dbx.Params{"user": userID})
+		if err != nil {
+			return nil // no record
+		}
+		return h.Delete(rec)
+	}
+
+	// helper for upserting a permanent token record for this user
+	upsertPermanent := func(token string) error {
+		rec, err := h.FindFirstRecordByFilter("universal_tokens", "user = {:user}", dbx.Params{"user": userID})
+		if err == nil {
+			rec.Set("token", token)
+			return h.Save(rec)
+		}
+
+		col, err := h.FindCachedCollectionByNameOrId("universal_tokens")
+		if err != nil {
+			return err
+		}
+		newRec := core.NewRecord(col)
+		newRec.Set("user", userID)
+		newRec.Set("token", token)
+		return h.Save(newRec)
+	}
+
+	// Disable universal tokens (both ephemeral and permanent)
+	if enable == "0" {
+		tokenMap.RemovebyValue(userID)
+		_ = deletePermanent()
+		return e.JSON(http.StatusOK, map[string]any{"token": token, "active": false, "permanent": false})
+	}
+
+	// Enable universal token (ephemeral or permanent)
+	if enable == "1" {
+		if token == "" {
+			token = uuid.New().String()
+		}
+
+		if permanent == "1" {
+			// make token permanent (persist across restarts)
+			tokenMap.RemovebyValue(userID)
+			if err := upsertPermanent(token); err != nil {
+				return err
+			}
+			return e.JSON(http.StatusOK, map[string]any{"token": token, "active": true, "permanent": true})
+		}
+
+		// default: ephemeral mode (1 hour)
+		_ = deletePermanent()
+		tokenMap.Set(token, userID, time.Hour)
+		return e.JSON(http.StatusOK, map[string]any{"token": token, "active": true, "permanent": false})
+	}
+
+	// Read current state
+	// Prefer permanent token if it exists.
+	if rec, err := h.FindFirstRecordByFilter("universal_tokens", "user = {:user}", dbx.Params{"user": userID}); err == nil {
+		dbToken := rec.GetString("token")
+		// If no token was provided, or the caller is asking about their permanent token, return it.
+		if token == "" || token == dbToken {
+			return e.JSON(http.StatusOK, map[string]any{"token": dbToken, "active": true, "permanent": true})
+		}
+		// Token doesn't match their permanent token (avoid leaking other info)
+		return e.JSON(http.StatusOK, map[string]any{"token": token, "active": false, "permanent": false})
+	}
+
+	// No permanent token; fall back to ephemeral token map.
 	if token == "" {
 		// return existing token if it exists
 		if token, _, ok := tokenMap.GetByValue(userID); ok {
-			return e.JSON(http.StatusOK, map[string]any{"token": token, "active": true})
+			return e.JSON(http.StatusOK, map[string]any{"token": token, "active": true, "permanent": false})
 		}
 		// if no token is provided, generate a new one
 		token = uuid.New().String()
 	}
-	response := map[string]any{"token": token}
 
-	switch query.Get("enable") {
-	case "1":
-		tokenMap.Set(token, userID, time.Hour)
-	case "0":
-		tokenMap.RemovebyValue(userID)
-	}
-	_, response["active"] = tokenMap.GetOk(token)
+	// Token is considered active only if it belongs to the current user.
+	activeUser, ok := tokenMap.GetOk(token)
+	active := ok && activeUser == userID
+	response := map[string]any{"token": token, "active": active, "permanent": false}
 	return e.JSON(http.StatusOK, response)
 }
 
