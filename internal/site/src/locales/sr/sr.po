@@ -8,7 +8,7 @@ msgstr ""
 "Language: sr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-12-08 18:22\n"
+"PO-Revision-Date: 2026-01-11 18:53\n"
 "Last-Translator: \n"
 "Language-Team: Serbian (Cyrillic)\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
@@ -24,6 +24,10 @@ msgstr ""
 msgid "{0} of {1} row(s) selected."
 msgstr "{0} од {1} редова изабрано."
 
+#: src/components/routes/system/info-bar.tsx
+msgid "{cores, plural, one {# core} other {# cores}}"
+msgstr "{cores, plural, one {# jezgro} few {# jezgra} other {# jezgara}}"
+
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} day} other {{countString} days}}"
 msgstr "{count, plural, one {{countString} дан} few {{countString} дана} other {{countString} дана}}"
@@ -35,6 +39,10 @@ msgstr "{count, plural, one {{countString} сат} few {{countString} сата} 
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} минут} few {{countString} минута} many {{countString} минута} other {{countString} минута}}"
+
+#: src/components/routes/system/info-bar.tsx
+msgid "{threads, plural, one {# thread} other {# threads}}"
+msgstr "{threads, plural, one {# nit} few {# niti} other {# niti}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -184,6 +192,11 @@ msgstr "Просечна искоришћеност процесора конт�
 
 #. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
+msgid "Average drops below <0>{value}{0}</0>"
+msgstr "Prosek pada ispod <0>{value}{0}</0>"
+
+#. placeholder {0}: alertData.unit
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Просек премашује <0>{value}{0}</0>"
 
@@ -214,7 +227,13 @@ msgstr "Резервне копије"
 msgid "Bandwidth"
 msgstr "Пропусни опсег"
 
+#. Battery label in systems table header
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Bat"
+msgstr ""
+
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Battery"
 msgstr "Батерија"
 
@@ -229,6 +248,13 @@ msgstr "Постао неактиван"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Before"
 msgstr "Пре"
+
+#. placeholder {0}: alert.value
+#. placeholder {1}: info.unit
+#. placeholder {2}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Below {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
+msgstr "Ispod {0}{1} u poslednjih {2, plural, one {# minuti} few {# minuta} other {# minuta}}"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -568,7 +594,7 @@ msgstr "Документација"
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "Down"
@@ -803,11 +829,6 @@ msgstr "Неактивно"
 msgid "Invalid email address."
 msgstr "Неважећа имејл адреса."
 
-#. Linux kernel
-#: src/components/routes/system.tsx
-msgid "Kernel"
-msgstr "Кернел"
-
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Језик"
@@ -900,6 +921,7 @@ msgid "Max 1 min"
 msgstr "Макс 1 мин"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1439,8 +1461,8 @@ msgstr "Формат времена"
 msgid "To email(s)"
 msgstr "На е-пошту(е)"
 
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/info-bar.tsx
+#: src/components/routes/system/info-bar.tsx
 msgid "Toggle grid"
 msgstr "Укључи/искључи мрежу"
 
@@ -1510,6 +1532,10 @@ msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Окида се када било који сензор премаши праг"
 
 #: src/lib/alerts.ts
+msgid "Triggers when battery charge drops below a threshold"
+msgstr "Pokreće se kada nivo baterije padne ispod praga"
+
+#: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Окида се када комбиновано горе/доле премаши праг"
 
@@ -1564,7 +1590,7 @@ msgid "Unlimited"
 msgstr "Неограничено"
 
 #. Context: System is up
-#: src/components/routes/system.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
 msgstr "Укључен"
@@ -1591,7 +1617,7 @@ msgstr "Ажурира се сваких 10 минута."
 msgid "Upload"
 msgstr "Отпреми"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/info-bar.tsx
 msgid "Uptime"
 msgstr "Време рада"
 
