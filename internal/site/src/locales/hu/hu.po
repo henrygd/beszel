@@ -654,6 +654,10 @@ msgstr "Adja meg az e-mail címet..."
 msgid "Enter your one-time password."
 msgstr "Adja meg az egyszeri jelszavát."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Ephemeral"
+msgstr "Átmeneti"
+
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
@@ -683,6 +687,10 @@ msgstr "A <0>config.yml</0> fájlban nem definiált meglévő rendszerek törlé
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exited active"
 msgstr "Aktívként kilépett"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Expires after one hour or on hub restart."
+msgstr "Lejár egy óra után vagy a hub újraindításakor."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -1109,6 +1117,14 @@ msgstr "Átlagos kihasználtság magonként"
 msgid "Percentage of time spent in each state"
 msgstr "Az idő százalékos aránya minden állapotban"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Permanent"
+msgstr "Állandó"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Persistence"
+msgstr "Kitartás"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "Kérjük, <0>konfigurálj egy SMTP szervert</0> az értesítések kézbesítésének biztosítása érdekében."
@@ -1264,6 +1280,10 @@ msgstr "Beállítások mentése"
 #: src/components/add-system.tsx
 msgid "Save system"
 msgstr "Rendszer mentése"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Saved in the database and does not expire until you disable it."
+msgstr "Elmentve az adatbázisban és nem jár le, amíg ki nem kapcsolod."
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1689,8 +1709,8 @@ msgid "Webhook / Push notifications"
 msgstr "Webhook / Push értesítések"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
-msgstr "Ha engedélyezve van, ez a token lehetővé teszi az ügynökök önregisztrációját előzetes rendszerlétrehozás nélkül. Egy óra után vagy a hub újraindításakor lejár."
+msgid "When enabled, this token allows agents to self-register without prior system creation."
+msgstr "Ha engedélyezve van, ez a token lehetővé teszi az ügynökök számára az önregisztrációt rendszer előzetes létrehozása nélkül."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx

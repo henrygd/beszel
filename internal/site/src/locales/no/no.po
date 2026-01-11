@@ -654,6 +654,10 @@ msgstr "Skriv inn e-postadresse..."
 msgid "Enter your one-time password."
 msgstr "Skriv inn ditt engangspassord."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Ephemeral"
+msgstr "Flyktig"
+
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
@@ -683,6 +687,10 @@ msgstr "Eksisterende systemer som ikke er er definert i <0>config.yml</0> vil bl
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exited active"
 msgstr "Avsluttet aktiv"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Expires after one hour or on hub restart."
+msgstr "Utløper etter en time eller ved hub-omstart."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -1109,6 +1117,14 @@ msgstr "Gjennomsnittlig utnyttelse per kjerne"
 msgid "Percentage of time spent in each state"
 msgstr "Prosentandel av tid brukt i hver tilstand"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Permanent"
+msgstr "Permanent"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Persistence"
+msgstr "Vedvarenhet"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "Vennligst <0>konfigurer en SMTP-server</0> for å forsikre deg om at varsler blir levert."
@@ -1264,6 +1280,10 @@ msgstr "Lagre Innstillinger"
 #: src/components/add-system.tsx
 msgid "Save system"
 msgstr "Lagre system"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Saved in the database and does not expire until you disable it."
+msgstr "Lagret i databasen og utløper ikke før du deaktiverer det."
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1689,8 +1709,8 @@ msgid "Webhook / Push notifications"
 msgstr "Webhook / Push-varslinger"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
-msgstr "Når aktivert lar denne tokenen agenter registrere seg selv uten å opprettes på systemet først. Utløper etter én time eller når huben starter på nytt."
+msgid "When enabled, this token allows agents to self-register without prior system creation."
+msgstr "Når aktivert, tillater denne tokenen agenter å registrere seg selv uten forutgående systemskapelse."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx

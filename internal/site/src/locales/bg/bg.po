@@ -654,6 +654,10 @@ msgstr "Въведи имейл адрес..."
 msgid "Enter your one-time password."
 msgstr "Въведете Вашата еднократна парола."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Ephemeral"
+msgstr "Ефимерен"
+
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
@@ -683,6 +687,10 @@ msgstr "Съществуващи системи които не са дефин�
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exited active"
 msgstr "Излезе активно"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Expires after one hour or on hub restart."
+msgstr "Изтича след един час или при рестартиране на хъба."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -1109,6 +1117,14 @@ msgstr "Средно използване на ядро"
 msgid "Percentage of time spent in each state"
 msgstr "Процент време, прекарано във всяко състояние"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Permanent"
+msgstr "Постоянен"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Persistence"
+msgstr "Устойчивост"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "Моля <0>конфигурурай SMTP сървър</0> за да се подсигуриш, че тревогите са доставени."
@@ -1264,6 +1280,10 @@ msgstr "Запази настройките"
 #: src/components/add-system.tsx
 msgid "Save system"
 msgstr "Запази система"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Saved in the database and does not expire until you disable it."
+msgstr "Запазен е в базата данни и не изтича, докато не го деактивирате."
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1689,8 +1709,8 @@ msgid "Webhook / Push notifications"
 msgstr "Webhook / Пуш нотификации"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
-msgstr "Когато е активиран, този символ позволява на агентите да се регистрират сами без предварително създаване на система. Изтича след един час или при рестартиране на хъба."
+msgid "When enabled, this token allows agents to self-register without prior system creation."
+msgstr "Когато е активиран, този символ позволява на агентите да се регистрират сами без предварително създаване на система."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
