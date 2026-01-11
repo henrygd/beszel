@@ -32,6 +32,7 @@ import {
 import { AppleIcon, DockerIcon, FreeBsdIcon, TuxIcon, WindowsIcon } from "@/components/ui/icons"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { toast } from "@/components/ui/use-toast"
 import { isReadOnlyUser, pb } from "@/lib/api"
@@ -137,21 +138,23 @@ const SectionUniversalToken = memo(() => {
 	const [token, setToken] = useState("")
 	const [isLoading, setIsLoading] = useState(true)
 	const [checked, setChecked] = useState(false)
+	const [isPermanent, setIsPermanent] = useState(false)
 
-	async function updateToken(enable: number = -1) {
+	async function updateToken(enable: number = -1, permanent: number = -1) {
 		// enable: 0 for disable, 1 for enable, -1 (unset) for get current state
 		const data = await pb.send(`/api/beszel/universal-token`, {
 			query: {
 				token,
 				enable,
+				permanent,
 			},
 		})
 		setToken(data.token)
 		setChecked(data.active)
+		setIsPermanent(!!data.permanent)
 		setIsLoading(false)
 	}
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: only on mount
 	useEffect(() => {
 		updateToken()
 	}, [])
@@ -162,30 +165,64 @@ const SectionUniversalToken = memo(() => {
 				<Trans>Universal token</Trans>
 			</h3>
 			<p className="text-sm text-muted-foreground leading-relaxed">
-				<Trans>
-					When enabled, this token allows agents to self-register without prior system creation. Expires after one hour
-					or on hub restart.
-				</Trans>
+				<Trans>When enabled, this token allows agents to self-register without prior system creation.</Trans>
 			</p>
-			<div className="min-h-16 overflow-auto max-w-full inline-flex items-center gap-5 mt-3 border py-2 ps-5 pe-4 rounded-md">
+			<div className="mt-3 border rounded-md px-4 py-3 max-w-full">
 				{!isLoading && (
-					<>
-						<Switch
-							defaultChecked={checked}
-							onCheckedChange={(checked) => {
-								updateToken(checked ? 1 : 0)
-							}}
-						/>
-						<span
-							className={cn(
-								"text-sm text-primary opacity-60 transition-opacity",
-								checked ? "opacity-100" : "select-none"
-							)}
-						>
-							{token}
-						</span>
-						<ActionsButtonUniversalToken token={token} checked={checked} />
-					</>
+					<div className="flex flex-col gap-3">
+						<div className="flex items-center gap-4 min-w-0">
+							<Switch
+								checked={checked}
+								onCheckedChange={(checked) => {
+									// Keep current permanence preference when enabling/disabling
+									updateToken(checked ? 1 : 0, isPermanent ? 1 : 0)
+								}}
+							/>
+							<div className="min-w-0 flex-1 overflow-auto">
+								<span
+									className={cn(
+										"text-sm text-primary opacity-60 transition-opacity",
+										checked ? "opacity-100" : "select-none"
+									)}
+								>
+									{token}
+								</span>
+							</div>
+							<ActionsButtonUniversalToken token={token} checked={checked} />
+						</div>
+
+						{checked && (
+							<div className="border-t pt-3">
+								<div className="text-sm font-medium">
+									<Trans>Persistence</Trans>
+								</div>
+								<Tabs
+									value={isPermanent ? "permanent" : "ephemeral"}
+									onValueChange={(value) => updateToken(1, value === "permanent" ? 1 : 0)}
+									className="mt-2"
+								>
+									<TabsList>
+										<TabsTrigger className="xs:min-w-40" value="ephemeral">
+											<Trans>Ephemeral</Trans>
+										</TabsTrigger>
+										<TabsTrigger className="xs:min-w-40" value="permanent">
+											<Trans>Permanent</Trans>
+										</TabsTrigger>
+									</TabsList>
+									<TabsContent value="ephemeral" className="mt-3">
+										<p className="text-sm text-muted-foreground leading-relaxed">
+											<Trans>Expires after one hour or on hub restart.</Trans>
+										</p>
+									</TabsContent>
+									<TabsContent value="permanent" className="mt-3">
+										<p className="text-sm text-muted-foreground leading-relaxed">
+											<Trans>Saved in the database and does not expire until you disable it.</Trans>
+										</p>
+									</TabsContent>
+								</Tabs>
+							</div>
+						)}
+					</div>
 				)}
 			</div>
 		</div>

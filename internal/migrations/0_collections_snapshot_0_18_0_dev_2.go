@@ -1617,6 +1617,74 @@ func init() {
 		"type": "base",
 		"updateRule": "",
 		"viewRule": "@request.auth.id != \"\" && system.users.id ?= @request.auth.id"
+	},
+	{
+		"createRule": null,
+		"deleteRule": null,
+		"fields": [
+			{
+				"autogeneratePattern": "[a-z0-9]{10}",
+				"hidden": false,
+				"id": "text3208210256",
+				"max": 10,
+				"min": 10,
+				"name": "id",
+				"pattern": "^[a-z0-9]+$",
+				"presentable": false,
+				"primaryKey": true,
+				"required": true,
+				"system": true,
+				"type": "text"
+			},
+			{
+				"cascadeDelete": true,
+				"collectionId": "_pb_users_auth_",
+				"hidden": false,
+				"id": "relation2375276105",
+				"maxSelect": 1,
+				"minSelect": 0,
+				"name": "user",
+				"presentable": false,
+				"required": true,
+				"system": false,
+				"type": "relation"
+			},
+			{
+				"autogeneratePattern": "",
+				"hidden": false,
+				"id": "text1597481275",
+				"max": 0,
+				"min": 0,
+				"name": "token",
+				"pattern": "",
+				"presentable": false,
+				"primaryKey": false,
+				"required": false,
+				"system": false,
+				"type": "text"
+			},
+			{
+				"hidden": false,
+				"id": "autodate2990389176",
+				"name": "created",
+				"onCreate": true,
+				"onUpdate": false,
+				"presentable": false,
+				"system": false,
+				"type": "autodate"
+			}
+		],
+		"id": "pbc_3383022248",
+		"indexes": [
+			"CREATE INDEX ` + "`" + `idx_iaD9Y2Lgbl` + "`" + ` ON ` + "`" + `universal_tokens` + "`" + ` (` + "`" + `token` + "`" + `)",
+			"CREATE UNIQUE INDEX ` + "`" + `idx_wdR0A4PbRG` + "`" + ` ON ` + "`" + `universal_tokens` + "`" + ` (` + "`" + `user` + "`" + `)"
+		],
+		"listRule": null,
+		"name": "universal_tokens",
+		"system": false,
+		"type": "base",
+		"updateRule": null,
+		"viewRule": null
 	}
 ]`
 

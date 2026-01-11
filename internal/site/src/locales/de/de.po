@@ -8,7 +8,7 @@ msgstr ""
 "Language: de\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-11-14 22:51\n"
+"PO-Revision-Date: 2025-12-05 20:24\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -24,6 +24,10 @@ msgstr ""
 msgid "{0} of {1} row(s) selected."
 msgstr "{0} von {1} Zeile(n) ausgewählt."
 
+#: src/components/routes/system/info-bar.tsx
+msgid "{cores, plural, one {# core} other {# cores}}"
+msgstr "{cores, plural, one {# Kern} other {# Kerne}}"
+
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} day} other {{countString} days}}"
 msgstr "{count, plural, one {{countString} Tag} other {{countString} Tage}}"
@@ -35,6 +39,10 @@ msgstr "{count, plural, one {{countString} Stunde} other {{countString} Stunden}
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} Minute} other {{countString} Minuten}}"
+
+#: src/components/routes/system/info-bar.tsx
+msgid "{threads, plural, one {# thread} other {# threads}}"
+msgstr "{threads, plural, one {# Thread} other {# Threads}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -184,6 +192,11 @@ msgstr "Durchschnittliche CPU-Auslastung der Container"
 
 #. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
+msgid "Average drops below <0>{value}{0}</0>"
+msgstr "Durchschnitt unterschreitet <0>{value}{0}</0>"
+
+#. placeholder {0}: alertData.unit
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Durchschnitt überschreitet <0>{value}{0}</0>"
 
@@ -214,7 +227,13 @@ msgstr "Backups"
 msgid "Bandwidth"
 msgstr "Bandbreite"
 
+#. Battery label in systems table header
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Bat"
+msgstr "Bat"
+
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Battery"
 msgstr "Batterie"
 
@@ -229,6 +248,13 @@ msgstr "Wurde inaktiv"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Before"
 msgstr "Vor"
+
+#. placeholder {0}: alert.value
+#. placeholder {1}: info.unit
+#. placeholder {2}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Below {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
+msgstr "Unterschreitet {0}{1} in den letzten {2, plural, one {# Minute} other {# Minuten}}"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -568,7 +594,7 @@ msgstr "Dokumentation"
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "Down"
@@ -803,11 +829,6 @@ msgstr "Inaktiv"
 msgid "Invalid email address."
 msgstr "Ungültige E-Mail-Adresse."
 
-#. Linux kernel
-#: src/components/routes/system.tsx
-msgid "Kernel"
-msgstr "Kernel"
-
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Sprache"
@@ -900,6 +921,7 @@ msgid "Max 1 min"
 msgstr "Max 1 Min"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1439,8 +1461,8 @@ msgstr "Zeitformat"
 msgid "To email(s)"
 msgstr "An E-Mail(s)"
 
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/info-bar.tsx
+#: src/components/routes/system/info-bar.tsx
 msgid "Toggle grid"
 msgstr "Raster umschalten"
 
@@ -1510,6 +1532,10 @@ msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Löst aus, wenn ein Sensor einen Schwellenwert überschreitet"
 
 #: src/lib/alerts.ts
+msgid "Triggers when battery charge drops below a threshold"
+msgstr "Löst aus, wenn der Batterieladestand unter einen Schwellenwert fällt"
+
+#: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Löst aus, wenn die kombinierte Up- und Downloadrate einen Schwellenwert überschreitet"
 
@@ -1564,7 +1590,7 @@ msgid "Unlimited"
 msgstr "Unbegrenzt"
 
 #. Context: System is up
-#: src/components/routes/system.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
 msgstr "aktiv"
@@ -1591,7 +1617,7 @@ msgstr "Alle 10 Minuten aktualisiert."
 msgid "Upload"
 msgstr "Hochladen"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/info-bar.tsx
 msgid "Uptime"
 msgstr "Betriebszeit"
 

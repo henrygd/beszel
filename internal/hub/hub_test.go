@@ -378,7 +378,18 @@ func TestApiRoutesAuthentication(t *testing.T) {
 				"Authorization": userToken,
 			},
 			ExpectedStatus:  200,
-			ExpectedContent: []string{"active", "token"},
+			ExpectedContent: []string{"active", "token", "permanent"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /universal-token - enable permanent should succeed",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/universal-token?enable=1&permanent=1&token=permanent-token-123",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"\"permanent\":true", "permanent-token-123"},
 			TestAppFactory:  testAppFactory,
 		},
 		{

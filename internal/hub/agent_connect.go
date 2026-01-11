@@ -66,6 +66,15 @@ func (acr *agentConnectRequest) agentConnect() (err error) {
 
 	// Check if token is an active universal token
 	acr.userId, acr.isUniversalToken = universalTokenMap.GetMap().GetOk(acr.token)
+	if !acr.isUniversalToken {
+		// Fallback: check for a permanent universal token stored in the DB
+		if rec, err := acr.hub.FindFirstRecordByFilter("universal_tokens", "token = {:token}", dbx.Params{"token": acr.token}); err == nil {
+			if userID := rec.GetString("user"); userID != "" {
+				acr.userId = userID
+				acr.isUniversalToken = true
+			}
+		}
+	}
 
 	// Find matching fingerprint records for this token
 	fpRecords := getFingerprintRecordsByToken(acr.token, acr.hub)
