@@ -8,7 +8,7 @@ msgstr ""
 "Language: cs\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-12-05 20:24\n"
+"PO-Revision-Date: 2026-01-11 18:53\n"
 "Last-Translator: \n"
 "Language-Team: Czech\n"
 "Plural-Forms: nplurals=4; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 3;\n"
@@ -24,6 +24,10 @@ msgstr ""
 msgid "{0} of {1} row(s) selected."
 msgstr "{0} z {1} vybraných řádků."
 
+#: src/components/routes/system/info-bar.tsx
+msgid "{cores, plural, one {# core} other {# cores}}"
+msgstr "{cores, plural, one {# jádro} few {# jádra} many {# jader} other {# jader}}"
+
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} day} other {{countString} days}}"
 msgstr "{count, plural, one {{countString} den} few {{countString} dny} other {{countString} dní}}"
@@ -35,6 +39,10 @@ msgstr "{count, plural, one {{countString} Hodina} few {{countString} Hodiny} ma
 #: src/lib/utils.ts
 msgid "{count, plural, one {{countString} minute} few {{countString} minutes} many {{countString} minutes} other {{countString} minutes}}"
 msgstr "{count, plural, one {{countString} minuta} few {{countString} minuty} many {{countString} minut} other {{countString} minut}}"
+
+#: src/components/routes/system/info-bar.tsx
+msgid "{threads, plural, one {# thread} other {# threads}}"
+msgstr "{threads, plural, one {# vlákno} few {# vlákna} many {# vláken} other {# vláken}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -184,6 +192,11 @@ msgstr "Průměrné využití CPU kontejnerů"
 
 #. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
+msgid "Average drops below <0>{value}{0}</0>"
+msgstr "Průměr klesne pod <0>{value}{0}</0>"
+
+#. placeholder {0}: alertData.unit
+#: src/components/alerts/alerts-sheet.tsx
 msgid "Average exceeds <0>{value}{0}</0>"
 msgstr "Průměr je vyšší než <0>{value}{0}</0>"
 
@@ -214,7 +227,13 @@ msgstr "Zálohy"
 msgid "Bandwidth"
 msgstr "Přenos"
 
+#. Battery label in systems table header
+#: src/components/systems-table/systems-table-columns.tsx
+msgid "Bat"
+msgstr ""
+
 #: src/components/routes/system.tsx
+#: src/lib/alerts.ts
 msgid "Battery"
 msgstr "Baterie"
 
@@ -229,6 +248,13 @@ msgstr "Stal se neaktivním"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Before"
 msgstr "Před"
+
+#. placeholder {0}: alert.value
+#. placeholder {1}: info.unit
+#. placeholder {2}: alert.min
+#: src/components/active-alerts.tsx
+msgid "Below {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
+msgstr "Pod {0}{1} za {2, plural, one {poslední # minutu} few {poslední # minuty} other {posledních # minut}}"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -568,7 +594,7 @@ msgstr "Dokumentace"
 
 #. Context: System is down
 #: src/components/alerts-history-columns.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "Down"
@@ -803,11 +829,6 @@ msgstr "Neaktivní"
 msgid "Invalid email address."
 msgstr "Neplatná e-mailová adresa."
 
-#. Linux kernel
-#: src/components/routes/system.tsx
-msgid "Kernel"
-msgstr "Jádro"
-
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Jazyk"
@@ -900,6 +921,7 @@ msgid "Max 1 min"
 msgstr "Max. 1 min"
 
 #: src/components/containers-table/containers-table-columns.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
@@ -1439,8 +1461,8 @@ msgstr "Formát času"
 msgid "To email(s)"
 msgstr "Na email(y)"
 
-#: src/components/routes/system.tsx
-#: src/components/routes/system.tsx
+#: src/components/routes/system/info-bar.tsx
+#: src/components/routes/system/info-bar.tsx
 msgid "Toggle grid"
 msgstr "Přepnout mřížku"
 
@@ -1510,6 +1532,10 @@ msgid "Triggers when any sensor exceeds a threshold"
 msgstr "Spustí se, když některý senzor překročí prahovou hodnotu"
 
 #: src/lib/alerts.ts
+msgid "Triggers when battery charge drops below a threshold"
+msgstr "Spustí se, když úroveň nabití baterie klesne pod prahovou hodnotu"
+
+#: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
 msgstr "Spustí se, když kombinace up/down překročí prahovou hodnotu"
 
@@ -1564,7 +1590,7 @@ msgid "Unlimited"
 msgstr "Neomezeno"
 
 #. Context: System is up
-#: src/components/routes/system.tsx
+#: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
 msgstr "Funkční"
@@ -1591,7 +1617,7 @@ msgstr "Aktualizováno každých 10 minut."
 msgid "Upload"
 msgstr "Odeslání"
 
-#: src/components/routes/system.tsx
+#: src/components/routes/system/info-bar.tsx
 msgid "Uptime"
 msgstr "Doba provozu"
 
