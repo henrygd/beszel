@@ -8,7 +8,7 @@ msgstr ""
 "Language: tr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-01-11 18:53\n"
+"PO-Revision-Date: 2026-01-11 22:21\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -654,6 +654,10 @@ msgstr "E-posta adresini girin..."
 msgid "Enter your one-time password."
 msgstr "Tek kullanımlık şifrenizi girin."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Ephemeral"
+msgstr "Geçici"
+
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
@@ -683,6 +687,10 @@ msgstr "<0>config.yml</0> içinde tanımlanmayan mevcut sistemler silinecektir. 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exited active"
 msgstr "Aktif olarak çıktı"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Expires after one hour or on hub restart."
+msgstr "Bir saat sonra veya hub yeniden başlatıldığında sona erer."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -1109,6 +1117,14 @@ msgstr "Çekirdek başına ortalama kullanım"
 msgid "Percentage of time spent in each state"
 msgstr "Her durumda harcanan zamanın yüzdesi"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Permanent"
+msgstr "Kalıcı"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Persistence"
+msgstr "Kalıcılık"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "Uyarıların teslim edilmesini sağlamak için lütfen bir SMTP sunucusu <0>yapılandırın</0>."
@@ -1264,6 +1280,10 @@ msgstr "Ayarları Kaydet"
 #: src/components/add-system.tsx
 msgid "Save system"
 msgstr "Sistemi kaydet"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Saved in the database and does not expire until you disable it."
+msgstr "Veritabanında kaydedilir ve siz devre dışı bırakana kadar süresi dolmaz."
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1689,8 +1709,8 @@ msgid "Webhook / Push notifications"
 msgstr "Webhook / Anlık bildirimler"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
-msgstr "Etkinleştirildiğinde, bu token agentların önceden sistem oluşturmadan kendilerini kaydetmelerine izin verir. Bir saat sonra veya hub yeniden başlatıldığında sona erer."
+msgid "When enabled, this token allows agents to self-register without prior system creation."
+msgstr "Etkinleştirildiğinde, bu token aracıların önceden sistem oluşturmadan kendilerini kaydetmelerine izin verir."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
