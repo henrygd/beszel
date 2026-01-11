@@ -29,10 +29,17 @@ type systemdManager struct {
 	patterns        []string
 }
 
-// isSystemdAvailable checks if systemd is used on the system to avoid unnecessary connection attempts.
+// isSystemdAvailable checks if systemd is used on the system to avoid unnecessary connection attempts (#1548)
 func isSystemdAvailable() bool {
-	if _, err := os.Stat("/run/systemd/system"); err == nil {
-		return true
+	paths := []string{
+		"/run/systemd/system",
+		"/run/dbus/system_bus_socket",
+		"/var/run/dbus/system_bus_socket",
+	}
+	for _, path := range paths {
+		if _, err := os.Stat(path); err == nil {
+			return true
+		}
 	}
 	if data, err := os.ReadFile("/proc/1/comm"); err == nil {
 		return strings.TrimSpace(string(data)) == "systemd"
@@ -48,7 +55,7 @@ func newSystemdManager() (*systemdManager, error) {
 
 	// Check if systemd is available on the system before attempting connection
 	if !isSystemdAvailable() {
-		slog.Debug("Systemd not available on this system")
+		slog.Debug("Systemd not available")
 		return nil, nil
 	}
 
