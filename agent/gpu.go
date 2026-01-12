@@ -168,7 +168,13 @@ func (gm *GPUManager) getJetsonParser() func(output []byte) bool {
 		// Parse power usage
 		powerMatches := powerPattern.FindSubmatch(output)
 		if powerMatches != nil {
-			power, _ := strconv.ParseFloat(string(powerMatches[2]), 64)
+			// powerMatches[2] is the "(GPU_SOC|CPU_GPU_CV) <N>mW" capture
+			// powerMatches[3] is the "VDD_SYS_GPU <N>/<N>" capture
+			powerStr := string(powerMatches[2])
+			if powerStr == "" {
+				powerStr = string(powerMatches[3])
+			}
+			power, _ := strconv.ParseFloat(powerStr, 64)
 			gpuData.Power += power / milliwattsInAWatt
 		}
 		gpuData.Count++
