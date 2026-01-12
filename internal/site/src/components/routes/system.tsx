@@ -407,12 +407,17 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	let hasGpuPowerData = false
 
 	if (lastGpus) {
+		// check if there are any GPUs at all
+		hasGpuData = Object.keys(lastGpus).length > 0
 		// check if there are any GPUs with engines
-		for (const id in lastGpus) {
-			hasGpuData = true
-			if (lastGpus[id].e !== undefined) {
-				hasGpuEnginesData = true
-				break
+		for (let i = 0; i < systemStats.length && !hasGpuEnginesData; i++) {
+			const gpus = systemStats[i].stats?.g
+			if (!gpus) continue
+			for (const id in gpus) {
+				if (gpus[id].e !== undefined) {
+					hasGpuEnginesData = true
+					break
+				}
 			}
 		}
 		// check if there are any GPUs with power data
