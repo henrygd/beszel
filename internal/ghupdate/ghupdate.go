@@ -11,6 +11,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -345,5 +346,32 @@ func archiveSuffix(binaryName, goos, goarch string) string {
 	if goos == "windows" {
 		return fmt.Sprintf("%s_%s_%s.zip", binaryName, goos, goarch)
 	}
+	// Use glibc build for agent on glibc systems (includes NVML support via purego)
+	if binaryName == "beszel-agent" && goos == "linux" && goarch == "amd64" && isGlibc() {
+		return fmt.Sprintf("%s_%s_%s_glibc.tar.gz", binaryName, goos, goarch)
+	}
 	return fmt.Sprintf("%s_%s_%s.tar.gz", binaryName, goos, goarch)
+}
+
+func isGlibc() bool {
+	for _, path := range []string{
+		"/lib64/ld-linux-x86-64.so.2",                // common on many distros
+		"/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2", // Debian/Ubuntu
+		"/lib/ld-linux-x86-64.so.2",                  // alternate
+	} {
+		if _, err := os.Stat(path); err == nil {
+			return true
+		}
+	}
+	// Fallback to ldd output when present (musl ldd reports musl, glibc reports GNU libc/glibc).
+	if lddPath, err := exec.LookPath("ldd"); err == nil {
+		out, err := exec.Command(lddPath, "--version").CombinedOutput()
+		if err == nil {
+			s := strings.ToLower(string(out))
+			if strings.Contains(s, "gnu libc") || strings.Contains(s, "glibc") {
+				return true
+			}
+		}
+	}
+	return false
 }

@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"maps"
 	"os/exec"
 	"regexp"
@@ -14,8 +15,6 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/system"
-
-	"log/slog"
 )
 
 const (

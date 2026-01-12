@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM golang:alpine AS builder
+FROM --platform=$BUILDPLATFORM golang:bookworm AS builder
 
 WORKDIR /app
 
@@ -10,7 +10,7 @@ COPY . ./
 
 # Build
 ARG TARGETOS TARGETARCH
-RUN CGO_ENABLED=0 GOGC=75 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -ldflags "-w -s" -o /agent ./internal/cmd/agent
+RUN CGO_ENABLED=0 GOGC=75 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -tags glibc -ldflags "-w -s" -o /agent ./internal/cmd/agent
 
 # --------------------------
 # Smartmontools builder stage
