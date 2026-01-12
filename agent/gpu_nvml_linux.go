@@ -1,4 +1,4 @@
-//go:build linux && (amd64 || arm64)
+//go:build linux && amd64
 
 package agent
 
