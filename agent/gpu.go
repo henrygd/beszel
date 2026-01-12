@@ -237,10 +237,11 @@ func (gm *GPUManager) parseAmdData(output []byte) bool {
 		totalMemory, _ := strconv.ParseFloat(v.MemoryTotal, 64)
 		usage, _ := strconv.ParseFloat(v.Usage, 64)
 
-		if _, ok := gm.GpuDataMap[v.ID]; !ok {
-			gm.GpuDataMap[v.ID] = &system.GPUData{Name: v.Name}
+		id := v.ID
+		if _, ok := gm.GpuDataMap[id]; !ok {
+			gm.GpuDataMap[id] = &system.GPUData{Name: v.Name}
 		}
-		gpu := gm.GpuDataMap[v.ID]
+		gpu := gm.GpuDataMap[id]
 		gpu.Temperature, _ = strconv.ParseFloat(v.Temperature, 64)
 		gpu.MemoryUsed = bytesToMegabytes(memoryUsage)
 		gpu.MemoryTotal = bytesToMegabytes(totalMemory)

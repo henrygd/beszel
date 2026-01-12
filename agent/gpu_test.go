@@ -1385,7 +1385,7 @@ func TestIntelUpdateFromStats(t *testing.T) {
 	ok := gm.updateIntelFromStats(&sample1)
 	assert.True(t, ok)
 
-	gpu := gm.GpuDataMap["0"]
+	gpu := gm.GpuDataMap["i0"]
 	require.NotNil(t, gpu)
 	assert.Equal(t, "GPU", gpu.Name)
 	assert.EqualValues(t, 10.5, gpu.Power)
@@ -1407,7 +1407,7 @@ func TestIntelUpdateFromStats(t *testing.T) {
 	ok = gm.updateIntelFromStats(&sample2)
 	assert.True(t, ok)
 
-	gpu = gm.GpuDataMap["0"]
+	gpu = gm.GpuDataMap["i0"]
 	require.NotNil(t, gpu)
 	assert.EqualValues(t, 10.5, gpu.Power)
 	assert.EqualValues(t, 30.0, gpu.Engines["Render/3D"]) // 20 + 10
@@ -1446,7 +1446,7 @@ echo "298  295      278  51  2.20  3.12   1675    942   5.75    1   2    9.50   
 		t.Fatalf("collectIntelStats error: %v", err)
 	}
 
-	gpu := gm.GpuDataMap["0"]
+	gpu := gm.GpuDataMap["i0"]
 	require.NotNil(t, gpu)
 	// Power should be sum of samples 2-4 (first is skipped): 2.0 + 1.8 + 2.2 = 6.0
 	assert.EqualValues(t, 6.0, gpu.Power)
