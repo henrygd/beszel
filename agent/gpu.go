@@ -136,10 +136,10 @@ func (gm *GPUManager) getJetsonParser() func(output []byte) bool {
 	// use closure to avoid recompiling the regex
 	ramPattern := regexp.MustCompile(`RAM (\d+)/(\d+)MB`)
 	gr3dPattern := regexp.MustCompile(`GR3D_FREQ (\d+)%`)
-	tempPattern := regexp.MustCompile(`tj@(\d+\.?\d*)C`)
+	tempPattern := regexp.MustCompile(`(?:tj|GPU)@(\d+\.?\d*)C`)
 	// Orin Nano / NX do not have GPU specific power monitor
 	// TODO: Maybe use VDD_IN for Nano / NX and add a total system power chart
-	powerPattern := regexp.MustCompile(`(GPU_SOC|CPU_GPU_CV) (\d+)mW`)
+	powerPattern := regexp.MustCompile(`(GPU_SOC|CPU_GPU_CV)\s+(\d+)mW|VDD_SYS_GPU\s+(\d+)/\d+`)
 
 	// jetson devices have only one gpu so we'll just initialize here
 	gpuData := &system.GPUData{Name: "GPU"}
