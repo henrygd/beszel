@@ -17,7 +17,7 @@ RUN rm -rf /tmp/*
 # --------------------------
 # Final image: default scratch-based agent
 # --------------------------
-FROM alpine:3.22
+FROM alpine:3.23
 COPY --from=builder /agent /agent
 
 RUN apk add --no-cache smartmontools
