@@ -654,6 +654,10 @@ msgstr "הכנס כתובת אימייל..."
 msgid "Enter your one-time password."
 msgstr "הכנס את הסיסמה החד-פעמית שלך."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Ephemeral"
+msgstr "זמני"
+
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
@@ -683,6 +687,10 @@ msgstr "מערכות קיימות שלא מוגדרות ב-<0>config.yml</0> י�
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exited active"
 msgstr "יצא פעיל"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Expires after one hour or on hub restart."
+msgstr "פג תוקף לאחר שעה או בהפעלה מחדש של ה-hub."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -1109,6 +1117,14 @@ msgstr "ניצול ממוצע לליבה"
 msgid "Percentage of time spent in each state"
 msgstr "אחוז הזמן המוקדש לכל מצב"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Permanent"
+msgstr "קבוע"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Persistence"
+msgstr "עקביות"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "אנא <0>הגדר שרת SMTP</0> כדי להבטיח שהתראות יישלחו."
@@ -1264,6 +1280,10 @@ msgstr "שמור הגדרות"
 #: src/components/add-system.tsx
 msgid "Save system"
 msgstr "שמור מערכת"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Saved in the database and does not expire until you disable it."
+msgstr "נשמר במסד הנתונים ולא פג תוקף עד שתבטל אותו."
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1689,8 +1709,8 @@ msgid "Webhook / Push notifications"
 msgstr "Webhook / התראות דחיפה"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
-msgstr "כאשר מופעל, token זה מאפשר לסוכנים להירשם עצמאית ללא יצירת מערכת מוקדמת. פג לאחר שעה אחת או בהפעלה מחדש של hub."
+msgid "When enabled, this token allows agents to self-register without prior system creation."
+msgstr "כאשר מופעל, אסימון זה מאפשר לסוכנים להירשם באופן עצמי ללא יצירת מערכת מוקדמת."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
