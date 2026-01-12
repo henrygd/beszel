@@ -8,7 +8,7 @@ msgstr ""
 "Language: id\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-01-11 22:20\n"
+"PO-Revision-Date: 2026-01-12 21:37\n"
 "Last-Translator: \n"
 "Language-Team: Indonesian\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -230,7 +230,7 @@ msgstr "Pita lebar"
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
-msgstr ""
+msgstr "Baterai"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -500,11 +500,11 @@ msgstr "Kritis (%)"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
-msgstr "Download Kumulatif"
+msgstr "Akumulasi Download"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
-msgstr "Upload Kumulatif"
+msgstr "Akumulasi Upload"
 
 #. Context: Battery state
 #: src/components/routes/system.tsx
@@ -523,7 +523,7 @@ msgstr "Harian"
 
 #: src/components/routes/settings/general.tsx
 msgid "Default time period"
-msgstr "Periode waktu default"
+msgstr "Standar waktu"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -534,7 +534,7 @@ msgstr "Hapus"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
-msgstr "Hapus sidik jari"
+msgstr "Hapus fingerprint"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Description"
@@ -551,7 +551,7 @@ msgstr "Perangkat"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Discharging"
-msgstr "Sedang mengosongkan"
+msgstr "Sedang tidak di charge"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
@@ -615,12 +615,12 @@ msgstr "Durasi"
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Edit"
-msgstr ""
+msgstr "Ubah"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
-msgstr ""
+msgstr "Ubah {foo}"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -652,7 +652,7 @@ msgstr "Masukkan alamat email..."
 
 #: src/components/login/otp-forms.tsx
 msgid "Enter your one-time password."
-msgstr "Masukkan kata sandi satu kali anda."
+msgstr "Masukkan otp anda."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Ephemeral"
@@ -698,11 +698,11 @@ msgstr "Ekspor"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export configuration"
-msgstr "Ekspor konfigurasi"
+msgstr "Export konfigurasi"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Export your current systems configuration."
-msgstr "Ekspor konfigurasi sistem anda saat ini."
+msgstr "Export konfigurasi sistem anda saat ini."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
@@ -728,7 +728,7 @@ msgstr "Gagal menyimpan pengaturan"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Failed to send test notification"
-msgstr "Gagal mengirim notifikasi tes"
+msgstr "Gagal mengirim tes notifikasi"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Failed to update alert"
@@ -787,7 +787,7 @@ msgstr ""
 
 #: src/components/routes/system.tsx
 msgid "GPU Engines"
-msgstr "Mesin GPU"
+msgstr "GPU"
 
 #: src/components/routes/system.tsx
 msgid "GPU Power Draw"
@@ -799,7 +799,7 @@ msgstr "Penggunaan GPU"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Grid"
-msgstr ""
+msgstr "Kartu"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Health"
@@ -843,11 +843,11 @@ msgstr "Bahasa"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Layout"
-msgstr ""
+msgstr "Tampilan"
 
 #: src/components/routes/settings/general.tsx
 msgid "Layout width"
-msgstr "Lebar layout"
+msgstr "Lebar tampilan"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Lifecycle"
@@ -877,11 +877,11 @@ msgstr "Rata-rata Beban 5m"
 #. Short label for load average
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Load Avg"
-msgstr "Rata Beban"
+msgstr "Rata-rata Beban"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Load state"
-msgstr "Status beban"
+msgstr "Beban saat ini"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
@@ -969,7 +969,7 @@ msgstr "Nama"
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Net"
-msgstr ""
+msgstr "Jaringan"
 
 #: src/components/routes/system.tsx
 msgid "Network traffic of docker containers"
@@ -1014,7 +1014,7 @@ msgstr "Tidak ada atribut S.M.A.R.T. yang tersedia untuk perangkat ini."
 #: src/components/systems-table/systems-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "No systems found."
-msgstr "Tidak ada sistem ditemukan."
+msgstr "Sistem tidak ditemukan."
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1033,11 +1033,11 @@ msgstr "Pada setiap restart, sistem dalam database akan diperbarui untuk mencoco
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "One-time"
-msgstr "Sekali"
+msgstr "Sekali pakai"
 
 #: src/components/login/auth-form.tsx
 msgid "One-time password"
-msgstr "Kata sandi sekali pakai"
+msgstr "Kata sandi sekali pakai (OTP)"
 
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1123,7 +1123,7 @@ msgstr "Permanen"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Persistence"
-msgstr "Ketekunan"
+msgstr "Tetap berlaku"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1174,7 +1174,7 @@ msgstr "Utilisasi tepat pada waktu yang direkam"
 
 #: src/components/routes/settings/general.tsx
 msgid "Preferred Language"
-msgstr "Bahasa Pilihan"
+msgstr "Pilihan Bahasa"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Process started"
@@ -1203,7 +1203,7 @@ msgstr "Diterima"
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
 msgid "Refresh"
-msgstr ""
+msgstr "Muat ulang"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Relationships"
@@ -1250,7 +1250,7 @@ msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
-msgstr "Putar token"
+msgstr "Ganti ulang token"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
@@ -1291,7 +1291,7 @@ msgstr "Jadwal"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule quiet hours where notifications will not be sent, such as during maintenance periods."
-msgstr "Jadwalkan jam tenang dimana notifikasi tidak akan dikirim, seperti selama periode pemeliharaan."
+msgstr "Jadwalkan jam tenang dimana notifikasi tidak akan dikirim, seperti saat periode pemeliharaan."
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule quiet hours where notifications will not be sent."
@@ -1430,7 +1430,7 @@ msgstr "Tugas"
 #: src/components/routes/system/smart-table.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Temp"
-msgstr ""
+msgstr "Temperatur"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -1459,7 +1459,7 @@ msgstr "Kemudian masuk ke backend dan reset kata sandi akun pengguna anda di tab
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
-msgstr ""
+msgstr "Aksi ini tidak dapat di kembalikan. ini akan menghapus permanen semua record {name} dari database"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
@@ -1484,11 +1484,11 @@ msgstr "Ke email"
 #: src/components/routes/system/info-bar.tsx
 #: src/components/routes/system/info-bar.tsx
 msgid "Toggle grid"
-msgstr ""
+msgstr "Ganti tampilan"
 
 #: src/components/mode-toggle.tsx
 msgid "Toggle theme"
-msgstr "Toggle tema"
+msgstr "Ganti tema"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1499,15 +1499,15 @@ msgstr ""
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens & Fingerprints"
-msgstr "Token & Sidik Jari"
+msgstr "Token & Fingerprint"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
-msgstr "Token memungkinkan agen untuk terhubung dan mendaftar. Sidik jari adalah pengidentifikasi stabil unik untuk setiap sistem, ditetapkan pada koneksi pertama."
+msgstr "Token memungkinkan agen untuk terhubung dan mendaftar. Fingerprint adalah sistem indentifikasi yang stabil dan unik untuk setiap sistem, diatur pada koneksi pertama."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
-msgstr "Token dan sidik jari digunakan untuk mengautentikasi koneksi WebSocket ke hub."
+msgstr "Token dan Fingerprint digunakan untuk mengautentikasi koneksi WebSocket ke hub."
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
@@ -1553,11 +1553,11 @@ msgstr "Dipicu ketika sensor apa pun melebihi ambang batas"
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
-msgstr "Dipicu ketika muatan baterai turun di bawah ambang batas"
+msgstr "Dipicu ketika baterai turun di bawah ambang batas"
 
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
-msgstr "Dipicu ketika kombinasi up/down melebihi ambang batas"
+msgstr "Dipicu ketika up atau down melebihi ambang batas"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
@@ -1592,7 +1592,7 @@ msgstr "File unit"
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
 msgid "Unit preferences"
-msgstr "Preferensi unit"
+msgstr "Pengaturan satuan"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -1613,11 +1613,11 @@ msgstr "Tidak terbatas"
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Up"
-msgstr ""
+msgstr "Nyala"
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Up ({upSystemsLength})"
-msgstr ""
+msgstr "Nyala selama ({upSystemsLength})"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Update"
@@ -1682,7 +1682,7 @@ msgstr "Lihat 200 peringatan terbaru anda."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Visible Fields"
-msgstr "Field yang Terlihat"
+msgstr "Metrik yang Terlihat"
 
 #: src/components/routes/system.tsx
 msgid "Waiting for enough records to display"
@@ -1706,11 +1706,11 @@ msgstr "Ambang peringatan"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Webhook / Push notifications"
-msgstr "Notifikasi Webhook / Push"
+msgstr "Webhook / Push notifikasi"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation."
-msgstr "Ketika diaktifkan, token ini memungkinkan agen untuk mendaftar sendiri tanpa pembuatan sistem sebelumnya."
+msgstr "Ketika diaktifkan, token ini memungkinkan agen untuk mendaftar sendiri tanpa pembuatan sistem."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
