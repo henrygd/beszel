@@ -57,8 +57,13 @@ export default function ContainersTable({ systemId }: { systemId?: string }) {
 				.then(
 					({ items }) => {
 						if (items.length === 0) {
-							setData([]);
-							return;
+							setData((curItems) => {
+								if (systemId) {
+									return curItems?.filter((item) => item.system !== systemId) ?? []
+								}
+								return []
+							})
+							return
 						}
 						setData((curItems) => {
 							const lastUpdated = Math.max(items[0].updated, items.at(-1)?.updated ?? 0)
@@ -280,7 +285,7 @@ async function getInfoHtml(container: ContainerRecord): Promise<string> {
 		])
 		try {
 			info = JSON.stringify(JSON.parse(info), null, 2)
-		} catch (_) {}
+		} catch (_) { }
 		return info ? highlighter.codeToHtml(info, { lang: "json", theme: syntaxTheme }) : t`No results.`
 	} catch (error) {
 		console.error(error)
@@ -337,7 +342,7 @@ function ContainerSheet({
 		setLogsDisplay("")
 		setInfoDisplay("")
 		if (!container) return
-			;(async () => {
+			; (async () => {
 				const [logsHtml, infoHtml] = await Promise.all([getLogsHtml(container), getInfoHtml(container)])
 				setLogsDisplay(logsHtml)
 				setInfoDisplay(infoHtml)
