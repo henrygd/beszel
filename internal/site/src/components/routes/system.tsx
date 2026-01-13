@@ -405,10 +405,30 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const containerFilterBar = containerData.length ? <FilterBar /> : null
 
 	const dataEmpty = !chartLoading && chartData.systemStats.length === 0
-	const lastGpuVals = Object.values(systemStats.at(-1)?.stats.g ?? {})
-	const hasGpuData = lastGpuVals.length > 0
-	const hasGpuPowerData = lastGpuVals.some((gpu) => gpu.p !== undefined || gpu.pp !== undefined)
-	const hasGpuEnginesData = lastGpuVals.some((gpu) => gpu.e !== undefined)
+	const lastGpus = systemStats.at(-1)?.stats?.g
+
+	let hasGpuData = false
+	let hasGpuEnginesData = false
+	let hasGpuPowerData = false
+
+	if (lastGpus) {
+		// check if there are any GPUs at all
+		hasGpuData = Object.keys(lastGpus).length > 0
+		// check if there are any GPUs with engines or power data
+		for (let i = 0; i < systemStats.length && (!hasGpuEnginesData || !hasGpuPowerData); i++) {
+			const gpus = systemStats[i].stats?.g
+			if (!gpus) continue
+			for (const id in gpus) {
+				if (!hasGpuEnginesData && gpus[id].e !== undefined) {
+					hasGpuEnginesData = true
+				}
+				if (!hasGpuPowerData && (gpus[id].p !== undefined || gpus[id].pp !== undefined)) {
+					hasGpuPowerData = true
+				}
+				if (hasGpuEnginesData && hasGpuPowerData) break
+			}
+		}
+	}
 
 	const isLinux = !(details?.os ?? system.info?.os)
 
@@ -892,16 +912,30 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 })
 
 function GpuEnginesChart({ chartData }: { chartData: ChartData }) {
-	const dataPoints: DataPoint[] = []
-	const engines = Object.keys(chartData.systemStats?.at(-1)?.stats.g?.[0]?.e ?? {}).sort()
-	for (const engine of engines) {
-		dataPoints.push({
-			label: engine,
-			dataKey: ({ stats }: SystemStatsRecord) => stats?.g?.[0]?.e?.[engine] ?? 0,
-			color: `hsl(${140 + (((engines.indexOf(engine) * 360) / engines.length) % 360)}, 65%, 52%)`,
-			opacity: 0.35,
-		})
+	const { gpuId, engines } = useMemo(() => {
+		for (let i = chartData.systemStats.length - 1; i >= 0; i--) {
+			const gpus = chartData.systemStats[i].stats?.g
+			if (!gpus) continue
+			for (const id in gpus) {
+				if (gpus[id].e) {
+					return { gpuId: id, engines: Object.keys(gpus[id].e).sort() }
+				}
+			}
+		}
+		return { gpuId: null, engines: [] }
+	}, [chartData.systemStats])
+
+	if (!gpuId) {
+		return null
 	}
+
+	const dataPoints: DataPoint[] = engines.map((engine, i) => ({
+		label: engine,
+		dataKey: ({ stats }: SystemStatsRecord) => stats?.g?.[gpuId]?.e?.[engine] ?? 0,
+		color: `hsl(${140 + (((i * 360) / engines.length) % 360)}, 65%, 52%)`,
+		opacity: 0.35,
+	}))
+
 	return (
 		<LineChartDefault
 			legend={true}

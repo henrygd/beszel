@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"maps"
 	"os/exec"
 	"regexp"
@@ -14,8 +15,6 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/system"
-
-	"log/slog"
 )
 
 const (
@@ -137,10 +136,10 @@ func (gm *GPUManager) getJetsonParser() func(output []byte) bool {
 	// use closure to avoid recompiling the regex
 	ramPattern := regexp.MustCompile(`RAM (\d+)/(\d+)MB`)
 	gr3dPattern := regexp.MustCompile(`GR3D_FREQ (\d+)%`)
-	tempPattern := regexp.MustCompile(`tj@(\d+\.?\d*)C`)
+	tempPattern := regexp.MustCompile(`(?:tj|GPU)@(\d+\.?\d*)C`)
 	// Orin Nano / NX do not have GPU specific power monitor
 	// TODO: Maybe use VDD_IN for Nano / NX and add a total system power chart
-	powerPattern := regexp.MustCompile(`(GPU_SOC|CPU_GPU_CV) (\d+)mW`)
+	powerPattern := regexp.MustCompile(`(GPU_SOC|CPU_GPU_CV)\s+(\d+)mW|VDD_SYS_GPU\s+(\d+)/\d+`)
 
 	// jetson devices have only one gpu so we'll just initialize here
 	gpuData := &system.GPUData{Name: "GPU"}
@@ -169,7 +168,13 @@ func (gm *GPUManager) getJetsonParser() func(output []byte) bool {
 		// Parse power usage
 		powerMatches := powerPattern.FindSubmatch(output)
 		if powerMatches != nil {
-			power, _ := strconv.ParseFloat(string(powerMatches[2]), 64)
+			// powerMatches[2] is the "(GPU_SOC|CPU_GPU_CV) <N>mW" capture
+			// powerMatches[3] is the "VDD_SYS_GPU <N>/<N>" capture
+			powerStr := string(powerMatches[2])
+			if powerStr == "" {
+				powerStr = string(powerMatches[3])
+			}
+			power, _ := strconv.ParseFloat(powerStr, 64)
 			gpuData.Power += power / milliwattsInAWatt
 		}
 		gpuData.Count++
@@ -232,10 +237,11 @@ func (gm *GPUManager) parseAmdData(output []byte) bool {
 		totalMemory, _ := strconv.ParseFloat(v.MemoryTotal, 64)
 		usage, _ := strconv.ParseFloat(v.Usage, 64)
 
-		if _, ok := gm.GpuDataMap[v.ID]; !ok {
-			gm.GpuDataMap[v.ID] = &system.GPUData{Name: v.Name}
+		id := v.ID
+		if _, ok := gm.GpuDataMap[id]; !ok {
+			gm.GpuDataMap[id] = &system.GPUData{Name: v.Name}
 		}
-		gpu := gm.GpuDataMap[v.ID]
+		gpu := gm.GpuDataMap[id]
 		gpu.Temperature, _ = strconv.ParseFloat(v.Temperature, 64)
 		gpu.MemoryUsed = bytesToMegabytes(memoryUsage)
 		gpu.MemoryTotal = bytesToMegabytes(totalMemory)
