@@ -1,3 +1,19 @@
+## 0.18.2
+
+- Add separate dynamically linked glibc build for Linux. (#1618)
+
+- Fix GPU ID collision between Intel and NVIDIA collectors. (#1522)
+
+- Only hide GPU engine graph if entire usage is 0%. (#1624)
+
+- Add Jetson tegrastats regex support for pre-Jetpack 5 versions. (#1631)
+
+- Improve Indonesian translations. (#1625)
+
+## 0.18.1
+
+- Fix bug in 0.18.0 where all containers were cleared from the "All Containers" page when any system returned no containers.
+
 ## 0.18.0
 
 - Add experimental NVML GPU collector. (#1522, #1587)
@@ -5,6 +21,8 @@
 - Add low battery alerts. (#1507)
 
 - Add battery charge to systems table.
+
+- Add option to make universal token permanent. (#1097, #1614)
 
 - Add `--url` and `--token` command line arguments to the agent. (#1524)
 
@@ -30,10 +48,11 @@
 
 - Fix loader visibility when no systems are present. (#1511)
 
-- Add Serbian translations.
+- Rename login honeypot field to prevent password manager autofill (#1011).
+
+- Add Serbian and Bahasa Indonesia translations.
 
 - Update Go dependencies.
-
 
 ## 0.17.0
 
@@ -319,4 +338,4 @@ Note that the default memory calculation changed in this release, which may caus
 
 ## Older
 
-Release notes are available at https://github.com/henrygd/beszel/releases
+Release notes are available at <https://github.com/henrygd/beszel/releases>

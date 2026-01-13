@@ -654,6 +654,10 @@ msgstr "Ingresa dirección de correo..."
 msgid "Enter your one-time password."
 msgstr "Ingrese su contraseña de un solo uso."
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Ephemeral"
+msgstr "Efímero"
+
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
@@ -683,6 +687,10 @@ msgstr "Los sistemas existentes no definidos en <0>config.yml</0> serán elimina
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exited active"
 msgstr "Salió activo"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Expires after one hour or on hub restart."
+msgstr "Expira después de una hora o al reiniciar el hub."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -1109,6 +1117,14 @@ msgstr "Uso promedio por núcleo"
 msgid "Percentage of time spent in each state"
 msgstr "Porcentaje de tiempo dedicado a cada estado"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Permanent"
+msgstr "Permanente"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Persistence"
+msgstr "Persistencia"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "Por favor, <0>configura un servidor SMTP</0> para asegurar que las alertas sean entregadas."
@@ -1264,6 +1280,10 @@ msgstr "Guardar configuración"
 #: src/components/add-system.tsx
 msgid "Save system"
 msgstr "Guardar sistema"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Saved in the database and does not expire until you disable it."
+msgstr "Guardado en la base de datos y no expira hasta que lo desactives."
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1689,8 +1709,8 @@ msgid "Webhook / Push notifications"
 msgstr "Notificaciones Webhook / Push"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
-msgstr "Cuando está habilitado, este token permite que los agentes se auto-registren sin crear previamente el sistema. Expira después de una hora o al reiniciar el hub."
+msgid "When enabled, this token allows agents to self-register without prior system creation."
+msgstr "Cuando está habilitado, este token permite a los agentes registrarse automáticamente sin creación previa del sistema."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx

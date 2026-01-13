@@ -307,6 +307,19 @@ func TestParseJetsonData(t *testing.T) {
 				Count:       1,
 			},
 		},
+		{
+			name:  "orin-style output with GPU@ temp and VDD_SYS_GPU power",
+			input: "RAM 3276/7859MB (lfb 5x4MB) SWAP 1626/12122MB (cached 181MB) CPU [44%@1421,49%@2031,67%@2034,17%@1420,25%@1419,8%@1420] EMC_FREQ 1%@1866 GR3D_FREQ 0%@114 APE 150 MTS fg 1% bg 1% PLL@42.5C MCPU@42.5C PMIC@50C Tboard@38C GPU@39.5C BCPU@42.5C thermal@41.3C Tdiode@39.25C VDD_SYS_GPU 182/182 VDD_SYS_SOC 730/730 VDD_4V0_WIFI 0/0 VDD_IN 5297/5297 VDD_SYS_CPU 1917/1917 VDD_SYS_DDR 1241/1241",
+			wantMetrics: &system.GPUData{
+				Name:        "GPU",
+				MemoryUsed:  3276.0,
+				MemoryTotal: 7859.0,
+				Usage:       0.0,
+				Power:       0.182, // 182mW -> 0.182W
+				Temperature: 39.5,
+				Count:       1,
+			},
+		},
 	}
 
 	for _, tt := range tests {
@@ -1372,7 +1385,7 @@ func TestIntelUpdateFromStats(t *testing.T) {
 	ok := gm.updateIntelFromStats(&sample1)
 	assert.True(t, ok)
 
-	gpu := gm.GpuDataMap["0"]
+	gpu := gm.GpuDataMap["i0"]
 	require.NotNil(t, gpu)
 	assert.Equal(t, "GPU", gpu.Name)
 	assert.EqualValues(t, 10.5, gpu.Power)
@@ -1394,7 +1407,7 @@ func TestIntelUpdateFromStats(t *testing.T) {
 	ok = gm.updateIntelFromStats(&sample2)
 	assert.True(t, ok)
 
-	gpu = gm.GpuDataMap["0"]
+	gpu = gm.GpuDataMap["i0"]
 	require.NotNil(t, gpu)
 	assert.EqualValues(t, 10.5, gpu.Power)
 	assert.EqualValues(t, 30.0, gpu.Engines["Render/3D"]) // 20 + 10
@@ -1433,7 +1446,7 @@ echo "298  295      278  51  2.20  3.12   1675    942   5.75    1   2    9.50   
 		t.Fatalf("collectIntelStats error: %v", err)
 	}
 
-	gpu := gm.GpuDataMap["0"]
+	gpu := gm.GpuDataMap["i0"]
 	require.NotNil(t, gpu)
 	// Power should be sum of samples 2-4 (first is skipped): 2.0 + 1.8 + 2.2 = 6.0
 	assert.EqualValues(t, 6.0, gpu.Power)

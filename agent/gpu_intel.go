@@ -27,10 +27,11 @@ func (gm *GPUManager) updateIntelFromStats(sample *intelGpuStats) bool {
 	defer gm.Unlock()
 
 	// only one gpu for now - cmd doesn't provide all by default
-	gpuData, ok := gm.GpuDataMap["0"]
+	id := "i0" // prefix with i to avoid conflicts with nvidia card ids
+	gpuData, ok := gm.GpuDataMap[id]
 	if !ok {
 		gpuData = &system.GPUData{Name: "GPU", Engines: make(map[string]float64)}
-		gm.GpuDataMap["0"] = gpuData
+		gm.GpuDataMap[id] = gpuData
 	}
 
 	gpuData.Power += sample.PowerGPU

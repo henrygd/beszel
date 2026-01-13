@@ -12,6 +12,24 @@ is_freebsd() {
   [ "$(uname -s)" = "FreeBSD" ]
 }
 
+is_glibc() {
+  # Prefer glibc-enabled agent (NVML via purego) on linux/amd64 glibc systems.
+  # Check common dynamic loader paths first (fast + reliable).
+  for p in \
+    /lib64/ld-linux-x86-64.so.2 \
+    /lib/x86_64-linux-gnu/ld-linux-x86-64.so.2 \
+    /lib/ld-linux-x86-64.so.2; do
+    [ -e "$p" ] && return 0
+  done
+
+  # Fallback to ldd output if available.
+  if command -v ldd >/dev/null 2>&1; then
+    ldd --version 2>&1 | grep -qiE 'gnu libc|glibc' && return 0
+  fi
+
+  return 1
+}
+
 
 # If SELinux is enabled, set the context of the binary
 set_selinux_context() {
@@ -598,6 +616,9 @@ echo "Downloading and installing the agent..."
 OS=$(uname -s | sed -e 'y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/')
 ARCH=$(detect_architecture)
 FILE_NAME="beszel-agent_${OS}_${ARCH}.tar.gz"
+if [ "$OS" = "linux" ] && [ "$ARCH" = "amd64" ] && is_glibc; then
+  FILE_NAME="beszel-agent_${OS}_${ARCH}_glibc.tar.gz"
+fi
 
 # Determine version to install
 if [ "$VERSION" = "latest" ]; then

@@ -654,6 +654,10 @@ msgstr "メールアドレスを入力..."
 msgid "Enter your one-time password."
 msgstr "ワンタイムパスワードを入力してください。"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Ephemeral"
+msgstr "一時的"
+
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
@@ -683,6 +687,10 @@ msgstr "<0>config.yml</0>に定義されていない既存のシステムは削�
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exited active"
 msgstr "アクティブ状態で終了"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Expires after one hour or on hub restart."
+msgstr "1時間後、またはハブの再起動時に有効期限が切れます。"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -1109,6 +1117,14 @@ msgstr "コアごとの平均使用率"
 msgid "Percentage of time spent in each state"
 msgstr "各状態で費やした時間の割合"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Permanent"
+msgstr "永久"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Persistence"
+msgstr "永続性"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "アラートが配信されるように<0>SMTPサーバーを設定</0>してください。"
@@ -1264,6 +1280,10 @@ msgstr "設定を保存"
 #: src/components/add-system.tsx
 msgid "Save system"
 msgstr "システムを保存"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Saved in the database and does not expire until you disable it."
+msgstr "データベースに保存され、無効にするまで有効期限が切れません。"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1689,8 +1709,8 @@ msgid "Webhook / Push notifications"
 msgstr "Webhook / プッシュ通知"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
-msgstr "有効にすると、このトークンはエージェントが事前のシステム作成なしに自己登録することを可能にします。1時間後またはハブの再起動時に期限切れになります。"
+msgid "When enabled, this token allows agents to self-register without prior system creation."
+msgstr "有効にすると、このトークンによりエージェントは事前のシステム作成なしで自己登録できます。"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx

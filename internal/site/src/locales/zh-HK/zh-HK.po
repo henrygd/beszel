@@ -654,6 +654,10 @@ msgstr "輸入電子郵件地址..."
 msgid "Enter your one-time password."
 msgstr "輸入您的一次性密碼。"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Ephemeral"
+msgstr "臨時"
+
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
@@ -683,6 +687,10 @@ msgstr "未在<0>config.yml</0>中定義的現有系統將被刪除。請定期�
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exited active"
 msgstr "退出活動狀態"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Expires after one hour or on hub restart."
+msgstr "一小時後或重新啟動集線器時過期。"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -1109,6 +1117,14 @@ msgstr "每個核心的平均使用率"
 msgid "Percentage of time spent in each state"
 msgstr "在每個狀態下花費的時間百分比"
 
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Permanent"
+msgstr "永久"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Persistence"
+msgstr "持久性"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
 msgstr "請<0>配置SMTP伺服器</0>以確保警報被傳送。"
@@ -1264,6 +1280,10 @@ msgstr "儲存設定"
 #: src/components/add-system.tsx
 msgid "Save system"
 msgstr "儲存系統"
+
+#: src/components/routes/settings/tokens-fingerprints.tsx
+msgid "Saved in the database and does not expire until you disable it."
+msgstr "儲存在資料庫中，在您停用之前不會過期。"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1689,8 +1709,8 @@ msgid "Webhook / Push notifications"
 msgstr "Webhook / 推送通知"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
-msgid "When enabled, this token allows agents to self-register without prior system creation. Expires after one hour or on hub restart."
-msgstr "啟用時，此令牌允許代理程式在無需預先創建系統的情況下自動註冊。在一小時後或中心重啟時過期。"
+msgid "When enabled, this token allows agents to self-register without prior system creation."
+msgstr "啟用後，此權杖允許代理無需事先建立系統即可自行註冊。"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx

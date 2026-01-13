@@ -19,11 +19,11 @@ func TestSystemdManagerGetServiceStats(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Test with refresh = true
-	result := manager.getServiceStats(true)
+	result := manager.getServiceStats("any-service", true)
 	assert.Nil(t, result)
 
 	// Test with refresh = false
-	result = manager.getServiceStats(false)
+	result = manager.getServiceStats("any-service", false)
 	assert.Nil(t, result)
 }
 

@@ -76,6 +76,18 @@ builds:
       - goos: windows
         goarch: riscv64
 
+  - id: beszel-agent-linux-amd64-glibc
+    binary: beszel-agent
+    main: internal/cmd/agent/agent.go
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -tags=glibc
+    goos:
+      - linux
+    goarch:
+      - amd64
+
 archives:
   - id: beszel-agent
     formats: [tar.gz]
@@ -88,6 +100,15 @@ archives:
     format_overrides:
       - goos: windows
         formats: [zip]
+
+  - id: beszel-agent-linux-amd64-glibc
+    formats: [tar.gz]
+    ids:
+      - beszel-agent-linux-amd64-glibc
+    name_template: >-
+      {{ .Binary }}_
+      {{- .Os }}_
+      {{- .Arch }}_glibc
 
   - id: beszel
     formats: [tar.gz]
