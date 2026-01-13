@@ -31,9 +31,6 @@ func (opts *cmdOptions) parse() bool {
 
 	// Subcommands that don't require any pflag parsing
 	switch subcommand {
-	case "-v", "version":
-		fmt.Println(beszel.AppName+"-agent", beszel.Version)
-		return true
 	case "health":
 		err := health.Check()
 		if err != nil {
@@ -49,6 +46,7 @@ func (opts *cmdOptions) parse() bool {
 	pflag.StringVarP(&opts.hubURL, "url", "u", "", "URL of the Beszel hub")
 	pflag.StringVarP(&opts.token, "token", "t", "", "Token to use for authentication")
 	chinaMirrors := pflag.BoolP("china-mirrors", "c", false, "Use mirror for update (gh.beszel.dev) instead of GitHub")
+	version := pflag.BoolP("version", "v", false, "Show version information")
 	help := pflag.BoolP("help", "h", false, "Show this help message")
 
 	// Convert old single-dash long flags to double-dash for backward compatibility
@@ -86,6 +84,9 @@ func (opts *cmdOptions) parse() bool {
 
 	// Must run after pflag.Parse()
 	switch {
+	case *version:
+		fmt.Println(beszel.AppName+"-agent", beszel.Version)
+		return true
 	case *help || subcommand == "help":
 		pflag.Usage()
 		return true
