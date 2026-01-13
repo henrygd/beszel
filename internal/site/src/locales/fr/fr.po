@@ -8,7 +8,7 @@ msgstr ""
 "Language: fr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-01-11 22:20\n"
+"PO-Revision-Date: 2026-01-13 22:24\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
@@ -1119,7 +1119,7 @@ msgstr "Pourcentage de temps passé dans chaque état"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Permanent"
-msgstr ""
+msgstr "Permanent"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Persistence"
