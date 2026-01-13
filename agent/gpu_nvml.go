@@ -1,4 +1,4 @@
-//go:build (linux || windows) && amd64
+//go:build amd64 && (windows || (linux && glibc))
 
 package agent
 

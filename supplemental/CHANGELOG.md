@@ -1,3 +1,19 @@
+## 0.18.2
+
+- Add separate dynamically linked glibc build for Linux. (#1618)
+
+- Fix GPU ID collision between Intel and NVIDIA collectors. (#1522)
+
+- Only hide GPU engine graph if entire usage is 0%. (#1624)
+
+- Add Jetson tegrastats regex support for pre-Jetpack 5 versions. (#1631)
+
+- Improve Indonesian translations. (#1625)
+
+## 0.18.1
+
+- Fix bug in 0.18.0 where all containers were cleared from the "All Containers" page when any system returned no containers.
+
 ## 0.18.0
 
 - Add experimental NVML GPU collector. (#1522, #1587)
