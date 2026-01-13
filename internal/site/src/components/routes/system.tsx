@@ -440,13 +440,18 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 				<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
 					<Card className="p-1">
-						<TabsList className="w-full h-11 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4">
+						<TabsList className="w-full h-11 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
 							<TabsTrigger value="overview" className="h-9">
 								<Trans>Core Metrics</Trans>
 							</TabsTrigger>
 							<TabsTrigger value="disks" className="h-9">
 								<Trans>Disks</Trans>
 							</TabsTrigger>
+							{hasGpuData && (
+								<TabsTrigger value="gpu" className="h-9">
+									<Trans>GPU</Trans>
+								</TabsTrigger>
+							)}
 							{containerData.length > 0 && compareSemVer(chartData.agentVersion, parseSemVer("0.14.0")) >= 0 && (
 								<TabsTrigger value="containers" className="h-9">
 									<Trans>Containers</Trans>
@@ -628,93 +633,96 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 							/>
 						</ChartCard>
 					)}
-					{/* GPU power draw chart */}
-					{hasGpuPowerData && (
-						<ChartCard
-							empty={dataEmpty}
-							grid={grid}
-							title={t`GPU Power Draw`}
-							description={t`Average power consumption of GPUs`}
-						>
-							<GpuPowerChart chartData={chartData} />
-						</ChartCard>
-					)}
 				</div>
+					</TabsContent>
 
-				{/* Non-power GPU charts */}
-				{hasGpuData && (
-					<div className="grid xl:grid-cols-2 gap-4">
-						{hasGpuEnginesData && (
-							<ChartCard
-								legend={true}
-								empty={dataEmpty}
-								grid={grid}
-								title={t`GPU Engines`}
-								description={t`Average utilization of GPU engines`}
-							>
-								<GpuEnginesChart chartData={chartData} />
-							</ChartCard>
-						)}
-						{Object.keys(systemStats.at(-1)?.stats.g ?? {}).map((id) => {
-							const gpu = systemStats.at(-1)?.stats.g?.[id] as GPUData
-							return (
-								<div key={id} className="contents">
-									<ChartCard
-										className={cn(grid && "!col-span-1")}
-										empty={dataEmpty}
-										grid={grid}
-										title={`${gpu.n} ${t`Usage`}`}
-										description={t`Average utilization of ${gpu.n}`}
-									>
-										<AreaChartDefault
-											chartData={chartData}
-											dataPoints={[
-												{
-													label: t`Usage`,
-													dataKey: ({ stats }) => stats?.g?.[id]?.u ?? 0,
-													color: 1,
-													opacity: 0.35,
-												},
-											]}
-											tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
-											contentFormatter={({ value }) => `${decimalString(value)}%`}
-										/>
-									</ChartCard>
+					<TabsContent value="gpu" className="mt-4">
+						<div className="grid xl:grid-cols-2 gap-4">
+							{/* GPU power draw chart */}
+							{hasGpuPowerData && (
+								<ChartCard
+									empty={dataEmpty}
+									grid={grid}
+									title={t`GPU Power Draw`}
+									description={t`Average power consumption of GPUs`}
+								>
+									<GpuPowerChart chartData={chartData} />
+								</ChartCard>
+							)}
 
-									{(gpu.mt ?? 0) > 0 && (
+							{/* GPU Engines chart */}
+							{hasGpuEnginesData && (
+								<ChartCard
+									legend={true}
+									empty={dataEmpty}
+									grid={grid}
+									title={t`GPU Engines`}
+									description={t`Average utilization of GPU engines`}
+								>
+									<GpuEnginesChart chartData={chartData} />
+								</ChartCard>
+							)}
+
+							{/* Individual GPU charts */}
+							{Object.keys(systemStats.at(-1)?.stats.g ?? {}).map((id) => {
+								const gpu = systemStats.at(-1)?.stats.g?.[id] as GPUData
+								return (
+									<div key={id} className="contents">
 										<ChartCard
+											className={cn(grid && "!col-span-1")}
 											empty={dataEmpty}
 											grid={grid}
-											title={`${gpu.n} VRAM`}
-											description={t`Precise utilization at the recorded time`}
+											title={`${gpu.n} ${t`Usage`}`}
+											description={t`Average utilization of ${gpu.n}`}
 										>
 											<AreaChartDefault
 												chartData={chartData}
 												dataPoints={[
 													{
 														label: t`Usage`,
-														dataKey: ({ stats }) => stats?.g?.[id]?.mu ?? 0,
-														color: 2,
-														opacity: 0.25,
+														dataKey: ({ stats }) => stats?.g?.[id]?.u ?? 0,
+														color: 1,
+														opacity: 0.35,
 													},
 												]}
-												max={gpu.mt}
-												tickFormatter={(val) => {
-													const { value, unit } = formatBytes(val, false, Unit.Bytes, true)
-													return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
-												}}
-												contentFormatter={({ value }) => {
-													const { value: convertedValue, unit } = formatBytes(value, false, Unit.Bytes, true)
-													return `${decimalString(convertedValue)} ${unit}`
-												}}
+												tickFormatter={(val) => `${toFixedFloat(val, 2)}%`}
+												contentFormatter={({ value }) => `${decimalString(value)}%`}
 											/>
 										</ChartCard>
-									)}
-								</div>
-							)
-						})}
-					</div>
-				)}
+
+										{(gpu.mt ?? 0) > 0 && (
+											<ChartCard
+												empty={dataEmpty}
+												grid={grid}
+												title={`${gpu.n} VRAM`}
+												description={t`Precise utilization at the recorded time`}
+											>
+												<AreaChartDefault
+													chartData={chartData}
+													dataPoints={[
+														{
+															label: t`Usage`,
+															dataKey: ({ stats }) => stats?.g?.[id]?.mu ?? 0,
+															color: 2,
+															opacity: 0.25,
+														},
+													]}
+													max={gpu.mt}
+													tickFormatter={(val) => {
+														const { value, unit } = formatBytes(val, false, Unit.Bytes, true)
+														return `${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`
+													}}
+													contentFormatter={({ value }) => {
+														const { value: convertedValue, unit } = formatBytes(value, false, Unit.Bytes, true)
+														return `${decimalString(convertedValue)} ${unit}`
+													}}
+												/>
+											</ChartCard>
+										)}
+									</div>
+								)
+							})}
+						</div>
 					</TabsContent>
 
 					<TabsContent value="disks" className="mt-4">
