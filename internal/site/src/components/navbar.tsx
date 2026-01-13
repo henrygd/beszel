@@ -30,7 +30,7 @@ import { LangToggle } from "./lang-toggle"
 import { Logo } from "./logo"
 import { ModeToggle } from "./mode-toggle"
 import { $router, basePath, Link, prependBasePath } from "./router"
-import { t } from "@lingui/core/macro"
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
 
 const CommandPalette = lazy(() => import("./command-palette"))
 
@@ -50,29 +50,50 @@ export default function Navbar() {
 			<SearchButton />
 
 			<div className="flex items-center ms-auto" onMouseEnter={() => import("@/components/routes/settings/general")}>
-				<Link
-					href={getPagePath($router, "containers")}
-					className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
-					aria-label="Containers"
-				>
-					<ContainerIcon className="h-[1.2rem] w-[1.2rem]" strokeWidth={1.5} />
-				</Link>
-				<Link
-					href={getPagePath($router, "smart")}
-					className={cn("hidden md:grid", buttonVariants({ variant: "ghost", size: "icon" }))}
-					aria-label="S.M.A.R.T."
-				>
-					<HardDriveIcon className="h-[1.2rem] w-[1.2rem]" strokeWidth={1.5} />
-				</Link>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Link
+							href={getPagePath($router, "containers")}
+							className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
+							aria-label="Containers"
+						>
+							<ContainerIcon className="h-[1.2rem] w-[1.2rem]" strokeWidth={1.5} />
+						</Link>
+					</TooltipTrigger>
+					<TooltipContent>
+						<Trans>Containers</Trans>
+					</TooltipContent>
+				</Tooltip>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Link
+							href={getPagePath($router, "smart")}
+							className={cn("hidden md:grid", buttonVariants({ variant: "ghost", size: "icon" }))}
+							aria-label="S.M.A.R.T."
+						>
+							<HardDriveIcon className="h-[1.2rem] w-[1.2rem]" strokeWidth={1.5} />
+						</Link>
+					</TooltipTrigger>
+					<TooltipContent>
+						<Trans>S.M.A.R.T.</Trans>
+					</TooltipContent>
+				</Tooltip>
 				<LangToggle />
 				<ModeToggle />
-				<Link
-					href={getPagePath($router, "settings", { name: "general" })}
-					aria-label="Settings"
-					className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
-				>
-					<SettingsIcon className="h-[1.2rem] w-[1.2rem]" />
-				</Link>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Link
+							href={getPagePath($router, "settings", { name: "general" })}
+							aria-label="Settings"
+							className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
+						>
+							<SettingsIcon className="h-[1.2rem] w-[1.2rem]" />
+						</Link>
+					</TooltipTrigger>
+					<TooltipContent>
+						<Trans>Settings</Trans>
+					</TooltipContent>
+				</Tooltip>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<button aria-label="User Actions" className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}>
