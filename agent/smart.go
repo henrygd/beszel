@@ -435,7 +435,7 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 	defer cancel()
 
 	// Try with -n standby first if we have existing data
-	args := sm.smartctlArgs(deviceInfo, true)
+	args := sm.smartctlArgs(deviceInfo, hasExistingData)
 	cmd := exec.CommandContext(ctx, sm.binPath, args...)
 	output, err := cmd.CombinedOutput()
 
