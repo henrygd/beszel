@@ -540,7 +540,7 @@ if is_alpine; then
   # Add the user to the docker group to allow access to the Docker socket if group docker exists
   if getent group docker; then
     echo "Adding beszel to docker group"
-    usermod -aG docker beszel
+    addgroup beszel docker
   fi
   
 elif is_openwrt; then
