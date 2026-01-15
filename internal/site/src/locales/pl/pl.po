@@ -8,7 +8,7 @@ msgstr ""
 "Language: pl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-01-15 14:49\n"
+"PO-Revision-Date: 2026-01-15 15:56\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
@@ -193,7 +193,7 @@ msgstr "Średnie wykorzystanie procesora przez kontenery"
 #. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Average drops below <0>{value}{0}</0>"
-msgstr ""
+msgstr "Średnia spada poniżej <0>{value}{0}</0>"
 
 #. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
@@ -230,7 +230,7 @@ msgstr "Przepustowość"
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
-msgstr ""
+msgstr "Bateria"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -254,7 +254,7 @@ msgstr "Przed"
 #. placeholder {2}: alert.min
 #: src/components/active-alerts.tsx
 msgid "Below {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
-msgstr ""
+msgstr "Poniżej {0}{1} w ciągu ostatnich {2, plural, one {# minuty} other {# minut}}"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -1283,7 +1283,7 @@ msgstr "Zapisz system"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
-msgstr "Zapisane w bazie danych i nie wygasa, dopóki go nie wyłączysz."
+msgstr "Zapisany w bazie danych. Nie wygasa, dopóki go nie wyłączysz."
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1553,7 +1553,7 @@ msgstr "Wyzwalane, gdy jakikolwiek czujnik przekroczy ustalony próg."
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
-msgstr ""
+msgstr "Uruchamia się, gdy poziom baterii spadnie poniżej wybranej wartości"
 
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
