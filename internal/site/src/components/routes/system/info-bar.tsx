@@ -13,6 +13,7 @@ import {
 } from "lucide-react"
 import { useMemo } from "react"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { FreeBsdIcon, TuxIcon, WebSocketIcon, WindowsIcon } from "@/components/ui/icons"
@@ -20,7 +21,7 @@ import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { ConnectionType, connectionTypeLabels, Os, SystemStatus } from "@/lib/enums"
 import { cn, formatBytes, getHostDisplayValue, secondsToString, toFixedFloat } from "@/lib/utils"
-import type { ChartData, SystemDetailsRecord, SystemRecord } from "@/types"
+import type { ChartData, SystemDetailsRecord, SystemRecord, TagRecord } from "@/types"
 
 export default function InfoBar({
 	system,
@@ -133,7 +134,22 @@ export default function InfoBar({
 		<Card>
 			<div className="grid xl:flex gap-4 px-4 sm:px-6 pt-3 sm:pt-4 pb-5">
 				<div>
-					<h1 className="text-[1.6rem] font-semibold mb-1.5">{system.name}</h1>
+					<div className="flex items-center gap-3 mb-1.5">
+						<h1 className="text-[1.6rem] font-semibold">{system.name}</h1>
+						{system.expand?.tags && system.expand.tags.length > 0 && (
+							<div className="flex flex-wrap gap-1.5">
+								{system.expand.tags.map((tag: TagRecord) => (
+									<Badge
+										key={tag.id}
+										style={{ backgroundColor: tag.color || "#3b82f6" }}
+										className="text-white text-sm"
+									>
+										{tag.name}
+									</Badge>
+								))}
+							</div>
+						)}
+					</div>
 					<div className="flex flex-wrap items-center gap-3 gap-y-2 text-sm opacity-90">
 						<TooltipProvider>
 							<Tooltip>
