@@ -129,20 +129,27 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 				const { name, id } = info.row.original
 				const longestName = useStore($longestSystemNameLen)
 				return (
-					<>
-						<span className="flex gap-2 items-center font-medium text-sm text-nowrap md:ps-1">
-							<IndicatorDot system={info.row.original} />
-							{/* NOTE: change to 1 ch if switching to monospace font */}
-							<span className="truncate" style={{ width: `${longestName / 1.1}ch` }}>
-								{name}
-							</span>
-						</span>
-						<Link
-							href={getPagePath($router, "system", { id })}
-							className="inset-0 absolute size-full"
-							aria-label={name}
-						></Link>
-					</>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<div className="relative">
+								<span className="flex gap-2 items-center font-medium text-sm text-nowrap md:ps-1">
+									<IndicatorDot system={info.row.original} />
+									{/* NOTE: change to 1 ch if switching to monospace font */}
+									<span className="truncate" style={{ width: `${longestName / 1.1}ch` }}>
+										{name}
+									</span>
+								</span>
+								<Link
+									href={getPagePath($router, "system", { id })}
+									className="inset-0 absolute size-full"
+									aria-label={name}
+								></Link>
+							</div>
+						</TooltipTrigger>
+						<TooltipContent>
+							<p>{name}</p>
+						</TooltipContent>
+					</Tooltip>
 				)
 			},
 			header: sortableHeader,
