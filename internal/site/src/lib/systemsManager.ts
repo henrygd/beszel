@@ -9,7 +9,7 @@ import {
 	$pausedSystems,
 	$upSystems,
 } from "@/lib/stores"
-import { updateFavicon } from "@/lib/utils"
+import { getVisualStringWidth, updateFavicon } from "@/lib/utils"
 import type { SystemRecord } from "@/types"
 import { SystemStatus } from "./enums"
 
@@ -79,7 +79,7 @@ function onSystemsChanged(_: Record<string, SystemRecord>, changedSystem: System
 
 	// Update longest system name length
 	const longestName = $longestSystemNameLen.get()
-	const nameLen = Math.min(MAX_SYSTEM_NAME_LENGTH, changedSystem?.name.length || 0)
+	const nameLen = Math.min(MAX_SYSTEM_NAME_LENGTH, getVisualStringWidth(changedSystem?.name || ""))
 	if (nameLen > longestName) {
 		$longestSystemNameLen.set(nameLen)
 	}
