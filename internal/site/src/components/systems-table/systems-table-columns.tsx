@@ -128,17 +128,32 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			cell: (info) => {
 				const { name, id } = info.row.original
 				const longestName = useStore($longestSystemNameLen)
+				const linkUrl = getPagePath($router, "system", { id })
+
 				return (
 					<>
 						<span className="flex gap-2 items-center font-medium text-sm text-nowrap md:ps-1">
 							<IndicatorDot system={info.row.original} />
-							{/* NOTE: change to 1 ch if switching to monospace font */}
-							<span className="truncate" style={{ width: `${longestName / 1.1}ch` }}>
+							<Link
+								href={linkUrl}
+								tabIndex={-1}
+								className="truncate z-10 relative"
+								style={{ width: `${longestName / 1.05}ch` }}
+								onMouseEnter={(e) => {
+									// set title on hover if text is truncated to show full name
+									const a = e.currentTarget
+									if (a.scrollWidth > a.clientWidth) {
+										a.title = name
+									} else {
+										a.removeAttribute("title")
+									}
+								}}
+							>
 								{name}
-							</span>
+							</Link>
 						</span>
 						<Link
-							href={getPagePath($router, "system", { id })}
+							href={linkUrl}
 							className="inset-0 absolute size-full"
 							aria-label={name}
 						></Link>
@@ -439,9 +454,9 @@ function TableCellWithMeter(info: CellContext<SystemRecord, unknown>) {
 	const meterClass = cn(
 		"h-full",
 		(info.row.original.status !== SystemStatus.Up && STATUS_COLORS.paused) ||
-			(threshold === MeterState.Good && STATUS_COLORS.up) ||
-			(threshold === MeterState.Warn && STATUS_COLORS.pending) ||
-			STATUS_COLORS.down
+		(threshold === MeterState.Good && STATUS_COLORS.up) ||
+		(threshold === MeterState.Warn && STATUS_COLORS.pending) ||
+		STATUS_COLORS.down
 	)
 	return (
 		<div className="flex gap-2 items-center tabular-nums tracking-tight w-full">
@@ -553,7 +568,7 @@ export function IndicatorDot({ system, className }: { system: SystemRecord; clas
 	return (
 		<span
 			className={cn("shrink-0 size-2 rounded-full", className)}
-			// style={{ marginBottom: "-1px" }}
+		// style={{ marginBottom: "-1px" }}
 		/>
 	)
 }

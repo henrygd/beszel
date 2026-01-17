@@ -27,7 +27,7 @@ export async function copyToClipboard(content: string) {
 			duration,
 			description: t`Copied to clipboard`,
 		})
-	} catch (e) {
+	} catch (_e) {
 		$copyContent.set(content)
 	}
 }
@@ -316,7 +316,7 @@ export const getHostDisplayValue = (system: SystemRecord): string => system.host
 export const generateToken = () => {
 	try {
 		return crypto?.randomUUID()
-	} catch (e) {
+	} catch (_e) {
 		return Array.from({ length: 2 }, () => (performance.now() * Math.random()).toString(16).replace(".", "-")).join("-")
 	}
 }
@@ -427,6 +427,30 @@ export function runOnce<T extends (...args: any[]) => any>(fn: T): T {
 		}
 		return state.result
 	}) as T
+}
+
+/** Get the visual width of a string, accounting for full-width characters */
+export function getVisualStringWidth(str: string): number {
+	let width = 0
+	for (const char of str) {
+		const code = char.codePointAt(0) || 0
+		// Hangul Jamo and Syllables are often slightly thinner than Hanzi/Kanji
+		if ((code >= 0x1100 && code <= 0x115f) || (code >= 0xac00 && code <= 0xd7af)) {
+			width += 1.8
+			continue
+		}
+		// Count CJK and other full-width characters as 2 units, others as 1
+		// Arabic and Cyrillic are counted as 1
+		const isFullWidth =
+			(code >= 0x2e80 && code <= 0x9fff) || // CJK Radicals, Symbols, and Ideographs
+			(code >= 0xf900 && code <= 0xfaff) || // CJK Compatibility Ideographs
+			(code >= 0xfe30 && code <= 0xfe6f) || // CJK Compatibility Forms
+			(code >= 0xff00 && code <= 0xff60) || // Fullwidth Forms
+			(code >= 0xffe0 && code <= 0xffe6) || // Fullwidth Symbols
+			code > 0xffff // Emojis and other supplementary plane characters
+		width += isFullWidth ? 2 : 1
+	}
+	return width
 }
 
 /** Format seconds to hours, minutes, or seconds */
