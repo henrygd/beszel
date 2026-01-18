@@ -8,7 +8,7 @@ msgstr ""
 "Language: hu\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-01-11 22:20\n"
+"PO-Revision-Date: 2026-01-18 23:33\n"
 "Last-Translator: \n"
 "Language-Team: Hungarian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -230,7 +230,7 @@ msgstr "Sávszélesség"
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
-msgstr "Akk"
+msgstr "Akku"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -656,7 +656,7 @@ msgstr "Adja meg az egyszeri jelszavát."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Ephemeral"
-msgstr "Átmeneti"
+msgstr "Ideiglenes"
 
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -754,7 +754,7 @@ msgstr "Ujjlenyomat"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
-msgstr ""
+msgstr "Firmware"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -1123,7 +1123,7 @@ msgstr "Állandó"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Persistence"
-msgstr "Kitartás"
+msgstr "Tartósság"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Please <0>configure an SMTP server</0> to ensure alerts are delivered."
@@ -1311,7 +1311,7 @@ msgstr "Lásd <0>az értesítési beállításokat</0>, hogy konfigurálja, hogy
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Select {foo}"
-msgstr ""
+msgstr "{foo} kiválasztása"
 
 #: src/components/routes/system.tsx
 msgid "Sent"
@@ -1553,7 +1553,7 @@ msgstr "Bekapcsol, ha bármelyik érzékelő túllép egy küszöbértéket"
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
-msgstr ""
+msgstr "Riaszt, ha az akkumulátor töltöttségi szintje egy küszöbérték alá esik"
 
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
@@ -1710,7 +1710,7 @@ msgstr "Webhook / Push értesítések"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation."
-msgstr "Ha engedélyezve van, ez a token lehetővé teszi az ügynökök számára az önregisztrációt rendszer előzetes létrehozása nélkül."
+msgstr "Ha engedélyezve van, ez a token lehetővé teszi az ügynökök számára a regisztrációt a rendszer előzetes létrehozása nélkül."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
