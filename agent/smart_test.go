@@ -195,6 +195,24 @@ func TestDevicesSnapshotReturnsCopy(t *testing.T) {
 	assert.Len(t, snapshot, 2)
 }
 
+func TestScanDevicesWithEnvOverrideAndSeparator(t *testing.T) {
+	t.Setenv("SMART_DEVICES_SEPARATOR", "|")
+	t.Setenv("SMART_DEVICES", "/dev/sda:jmb39x-q,0|/dev/nvme0:nvme")
+
+	sm := &SmartManager{
+		SmartDataMap: make(map[string]*smart.SmartData),
+	}
+
+	err := sm.ScanDevices(true)
+	require.NoError(t, err)
+
+	require.Len(t, sm.SmartDevices, 2)
+	assert.Equal(t, "/dev/sda", sm.SmartDevices[0].Name)
+	assert.Equal(t, "jmb39x-q,0", sm.SmartDevices[0].Type)
+	assert.Equal(t, "/dev/nvme0", sm.SmartDevices[1].Name)
+	assert.Equal(t, "nvme", sm.SmartDevices[1].Type)
+}
+
 func TestScanDevicesWithEnvOverride(t *testing.T) {
 	t.Setenv("SMART_DEVICES", "/dev/sda:sat, /dev/nvme0:nvme")
 

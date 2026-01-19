@@ -202,7 +202,11 @@ func (sm *SmartManager) ScanDevices(force bool) error {
 }
 
 func (sm *SmartManager) parseConfiguredDevices(config string) ([]*DeviceInfo, error) {
-	entries := strings.Split(config, ",")
+	splitChar := os.Getenv("SMART_DEVICES_SEPARATOR")
+	if splitChar == "" {
+		splitChar = ","
+	}
+	entries := strings.Split(config, splitChar)
 	devices := make([]*DeviceInfo, 0, len(entries))
 	for _, entry := range entries {
 		entry = strings.TrimSpace(entry)
