@@ -8,7 +8,7 @@ msgstr ""
 "Language: nl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-01-11 22:20\n"
+"PO-Revision-Date: 2026-01-20 22:33\n"
 "Last-Translator: \n"
 "Language-Team: Dutch\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -42,7 +42,7 @@ msgstr "{count, plural, one {{countString} minuut} other {{countString} minuten}
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{threads, plural, one {# thread} other {# threads}}"
-msgstr ""
+msgstr "{threads, plural, one {# thread} other {# threads}}"
 
 #: src/lib/utils.ts
 msgid "1 hour"
@@ -230,7 +230,7 @@ msgstr "Bandbreedte"
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
-msgstr ""
+msgstr "Bat"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -1119,7 +1119,7 @@ msgstr "Percentage tijd besteed in elke status"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Permanent"
-msgstr ""
+msgstr "Blijvend"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Persistence"
