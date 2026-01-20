@@ -1,8 +1,24 @@
 name: 🚀 Feature request
 description: Request a new feature or change.
 title: "[Feature]: "
-labels: ["enhancement", "needs review"]
+labels: ["enhancement"]
 body:
+  - type: checkboxes
+    attributes:
+      label: Welcome!
+      description: |
+        The issue tracker is for reporting bugs and feature requests only. For end-user related support questions, please use the **[GitHub Discussions](https://github.com/henrygd/beszel/discussions)** instead
+
+        Please note:
+        - For **Bug reports**, use the [Bug Form](https://github.com/henrygd/beszel/issues/new?template=bug_report.yml).
+        - Any requests for new translations should be requested within the [crowdin project](https://crowdin.com/project/beszel).
+
+      options:
+      - label: I have searched open and closed feature requests to make sure this or similar feature request does not already exist.
+        required: true
+      - label: This is a feature request, not a bug report or support question.
+        required: true
+
   - type: dropdown
     id: component
     attributes:
@@ -12,65 +28,29 @@ body:
         - Hub
         - Agent
         - Hub & Agent
+      default: 0
     validations:
       required: true
-  - type: markdown
-    attributes:
-      value: Before submitting, please search existing [issues](https://github.com/henrygd/beszel/issues) and [discussions](https://github.com/henrygd/beszel/discussions) (including closed).
+
   - type: textarea
+    id: description
     attributes:
-      label: Describe the feature you would like to see
+      label: Description
+      description: |
+        Describe the solution or feature you'd like. Explain what problem this solves or what value it adds.
+        **Important:** Be specific and detailed. Vague requests like "make it better" will be closed.
+      placeholder: |
+        Example:
+        - What is the feature?
+        - What problem does it solve?
+        - How should it work?
     validations:
       required: true
+
   - type: textarea
     id: motivation
     attributes:
       label: Motivation / Use Case
       description: Why do you want this feature? What problem does it solve?
-    validations:
-      required: true
-  - type: textarea
-    attributes:
-      label: Describe how you would like to see this feature implemented
-    validations:
-      required: true
-  - type: textarea
-    id: logs
-    attributes:
-      label: Screenshots
-      description: Please attach any relevant screenshots, such as images from your current solution or similar implementations.
-    validations:
-      required: false
-  - type: dropdown
-    id: category
-    attributes:
-      label: Category
-      description: Which category does this relate to most?
-      options:
-        - Metrics
-        - Charts & Visualization
-        - Settings & Configuration
-        - Notifications & Alerts
-        - Authentication
-        - Installation
-        - Performance
-        - UI / UX
-        - Other
-    validations:
-      required: true
-  - type: dropdown
-    id: metrics
-    attributes:
-      label: Affected Metrics
-      description: If applicable, which specific metric does this relate to most?
-      options:
-        - CPU
-        - Memory
-        - Storage
-        - Network
-        - Containers
-        - GPU
-        - Sensors
-        - Other
     validations:
       required: true
