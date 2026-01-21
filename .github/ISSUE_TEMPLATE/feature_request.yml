@@ -12,6 +12,7 @@ body:
         Please note:
         - For **Bug reports**, use the [Bug Form](https://github.com/henrygd/beszel/issues/new?template=bug_report.yml).
         - Any requests for new translations should be requested within the [crowdin project](https://crowdin.com/project/beszel).
+        - Create one issue per feature request. This helps us keep track of requests and prioritize them accordingly.
 
       options:
       - label: I have searched open and closed feature requests to make sure this or similar feature request does not already exist.

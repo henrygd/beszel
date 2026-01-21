@@ -41,7 +41,7 @@ body:
   - type: textarea
     id: description
     attributes:
-      label: What did you do?
+      label: Problem Description
       description: |
         How to write a good bug report?
 
