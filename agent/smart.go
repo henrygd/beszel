@@ -202,7 +202,11 @@ func (sm *SmartManager) ScanDevices(force bool) error {
 }
 
 func (sm *SmartManager) parseConfiguredDevices(config string) ([]*DeviceInfo, error) {
-	entries := strings.Split(config, ",")
+	splitChar := os.Getenv("SMART_DEVICES_SEPARATOR")
+	if splitChar == "" {
+		splitChar = ","
+	}
+	entries := strings.Split(config, splitChar)
 	devices := make([]*DeviceInfo, 0, len(entries))
 	for _, entry := range entries {
 		entry = strings.TrimSpace(entry)
@@ -324,6 +328,16 @@ func normalizeParserType(value string) string {
 	default:
 		return strings.ToLower(strings.TrimSpace(value))
 	}
+}
+
+// deviceKey creates a composite key from device name and type.
+// This allows multiple drives under the same device path (e.g., RAID controllers)
+// to be tracked separately.
+func deviceKey(name, deviceType string) string {
+	if deviceType == "" {
+		return name
+	}
+	return name + "|" + deviceType
 }
 
 // parseSmartOutput attempts each SMART parser, optionally detecting the type when
@@ -586,7 +600,7 @@ func mergeDeviceLists(existing, scanned, configured []*DeviceInfo) []*DeviceInfo
 		if dev == nil || dev.Name == "" {
 			continue
 		}
-		existingIndex[dev.Name] = dev
+		existingIndex[deviceKey(dev.Name, dev.Type)] = dev
 	}
 
 	finalDevices := make([]*DeviceInfo, 0, len(scanned)+len(configured))
@@ -602,12 +616,14 @@ func mergeDeviceLists(existing, scanned, configured []*DeviceInfo) []*DeviceInfo
 		// Work on a copy so we can safely adjust metadata without mutating the
 		// input slices that may be reused elsewhere.
 		copyDev := *dev
-		if prev := existingIndex[copyDev.Name]; prev != nil {
+		key := deviceKey(copyDev.Name, copyDev.Type)
+		if prev := existingIndex[key]; prev != nil {
 			preserveVerifiedType(&copyDev, prev)
 		}
 
 		finalDevices = append(finalDevices, &copyDev)
-		deviceIndex[copyDev.Name] = finalDevices[len(finalDevices)-1]
+		copyKey := deviceKey(copyDev.Name, copyDev.Type)
+		deviceIndex[copyKey] = finalDevices[len(finalDevices)-1]
 	}
 
 	// Merge configured devices on top so users can override scan results (except
@@ -617,7 +633,8 @@ func mergeDeviceLists(existing, scanned, configured []*DeviceInfo) []*DeviceInfo
 			continue
 		}
 
-		if existingDev, ok := deviceIndex[dev.Name]; ok {
+		key := deviceKey(dev.Name, dev.Type)
+		if existingDev, ok := deviceIndex[key]; ok {
 			// Only update the type if it has not been verified yet; otherwise we
 			// keep the existing verified metadata intact.
 			if dev.Type != "" && !existingDev.typeVerified {
@@ -636,14 +653,16 @@ func mergeDeviceLists(existing, scanned, configured []*DeviceInfo) []*DeviceInfo
 		}
 
 		copyDev := *dev
-		if prev := existingIndex[copyDev.Name]; prev != nil {
+		key = deviceKey(copyDev.Name, copyDev.Type)
+		if prev := existingIndex[key]; prev != nil {
 			preserveVerifiedType(&copyDev, prev)
 		} else if copyDev.Type != "" {
 			copyDev.parserType = normalizeParserType(copyDev.Type)
 		}
 
 		finalDevices = append(finalDevices, &copyDev)
-		deviceIndex[copyDev.Name] = finalDevices[len(finalDevices)-1]
+		copyKey := deviceKey(copyDev.Name, copyDev.Type)
+		deviceIndex[copyKey] = finalDevices[len(finalDevices)-1]
 	}
 
 	return finalDevices
@@ -661,12 +680,12 @@ func (sm *SmartManager) updateSmartDevices(devices []*DeviceInfo) {
 		return
 	}
 
-	validNames := make(map[string]struct{}, len(devices))
+	validKeys := make(map[string]struct{}, len(devices))
 	for _, device := range devices {
 		if device == nil || device.Name == "" {
 			continue
 		}
-		validNames[device.Name] = struct{}{}
+		validKeys[deviceKey(device.Name, device.Type)] = struct{}{}
 	}
 
 	for key, data := range sm.SmartDataMap {
@@ -675,7 +694,7 @@ func (sm *SmartManager) updateSmartDevices(devices []*DeviceInfo) {
 			continue
 		}
 
-		if _, ok := validNames[data.DiskName]; ok {
+		if _, ok := validKeys[deviceKey(data.DiskName, data.DiskType)]; ok {
 			continue
 		}
 
