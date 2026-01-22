@@ -1,19 +1,54 @@
 body:
-  - type: markdown
+  - type: checkboxes
+    id: terms
     attributes:
-      value: |
-        ### Before opening a discussion:
+      label: Welcome!
+      description: |
+        Thank you for reaching out to the Beszel community for support! To help us assist you better, please make sure to review the following points before submitting your request:
 
-        - Check the [common issues guide](https://beszel.dev/guide/common-issues).
-        - Search existing [issues](https://github.com/henrygd/beszel/issues) and [discussions](https://github.com/henrygd/beszel/discussions) (including closed).
+        Please note:
+        - For translation-related issues or requests, please use the [Crowdin project](https://crowdin.com/project/beszel).
+        **- Please do not submit support reqeusts that are specific to ZFS. We plan to add integration with ZFS utilities in the near future.**
+
+      options:
+      - label: I have read the [Documentation](https://beszel.dev/guide/getting-started)
+        required: true
+      - label: I have checked the [Common Issues Guide](https://beszel.dev/guide/common-issues) and my problem was not mentioned there.
+        required: true
+      - label: I have searched open and closed issues and discussions and my problem was not mentioned before.
+        required: true
+      - label: I have verified I am using the latest version available. You can check the latest release [here](https://github.com/henrygd/beszel/releases).
+        required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which part of Beszel is this about?
+      options:
+        - Hub
+        - Agent
+        - Hub & Agent
+    default: 0
+    validations:
+      required: true
 
   - type: textarea
     id: description
     attributes:
-      label: Description
-      description: A clear and concise description of the issue or question. If applicable, add screenshots to help explain your problem.
+      label: Problem Description
+      description: |
+        How to write a good bug report?
+
+        - Respect the issue template as much as possible.
+        - The title should be short and descriptive.
+        - Explain the conditions which led you to report this issue: the context.
+        - The context should lead to something, a problem that you’re facing.
+        - Remain clear and concise.
+        - Format your messages to help the reader focus on what matters and understand the structure of your message, use [Markdown syntax](https://help.github.com/articles/github-flavored-markdown)
     validations:
       required: true
+
   - type: input
     id: system
     attributes:
@@ -21,13 +56,15 @@ body:
       placeholder: linux/amd64 (agent), freebsd/arm64 (hub)
     validations:
       required: true
-  - type: input
-    id: version
-    attributes:
-      label: Beszel version
-      placeholder: 0.9.1
-    validations:
-      required: true
+  
+#  - type: input
+#    id: version
+#    attributes:
+#      label: Beszel version
+#      placeholder: 0.9.1
+#    validations:
+#      required: true
+
   - type: dropdown
     id: install-method
     attributes:
@@ -41,18 +78,21 @@ body:
         - Other (please describe above)
     validations:
       required: true
+  
   - type: textarea
     id: config
     attributes:
       label: Configuration
       description: Please provide any relevant service configuration
       render: yaml
+
   - type: textarea
     id: hub-logs
     attributes:
       label: Hub Logs
       description: Check the logs page in PocketBase (`/_/#/logs`) for relevant errors (copy JSON).
       render: json
+
   - type: textarea
     id: agent-logs
     attributes:

@@ -54,6 +54,12 @@ type DeviceInfo struct {
 	parserType string
 }
 
+// deviceKey is a composite key for a device, used to identify a device uniquely.
+type deviceKey struct {
+	name       string
+	deviceType string
+}
+
 var errNoValidSmartData = fmt.Errorf("no valid SMART data found") // Error for missing data
 
 // Refresh updates SMART data for all known devices
@@ -165,7 +171,7 @@ func (sm *SmartManager) ScanDevices(force bool) error {
 		configuredDevices = parsedDevices
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	cmd := exec.CommandContext(ctx, sm.binPath, "--scan", "-j")
@@ -202,7 +208,11 @@ func (sm *SmartManager) ScanDevices(force bool) error {
 }
 
 func (sm *SmartManager) parseConfiguredDevices(config string) ([]*DeviceInfo, error) {
-	entries := strings.Split(config, ",")
+	splitChar := os.Getenv("SMART_DEVICES_SEPARATOR")
+	if splitChar == "" {
+		splitChar = ","
+	}
+	entries := strings.Split(config, splitChar)
 	devices := make([]*DeviceInfo, 0, len(entries))
 	for _, entry := range entries {
 		entry = strings.TrimSpace(entry)
@@ -324,6 +334,13 @@ func normalizeParserType(value string) string {
 	default:
 		return strings.ToLower(strings.TrimSpace(value))
 	}
+}
+
+// makeDeviceKey creates a composite key from device name and type.
+// This allows multiple drives under the same device path (e.g., RAID controllers)
+// to be tracked separately.
+func makeDeviceKey(name, deviceType string) deviceKey {
+	return deviceKey{name: name, deviceType: deviceType}
 }
 
 // parseSmartOutput attempts each SMART parser, optionally detecting the type when
@@ -569,6 +586,28 @@ func mergeDeviceLists(existing, scanned, configured []*DeviceInfo) []*DeviceInfo
 		return existing
 	}
 
+	// buildUniqueNameIndex returns devices that appear exactly once by name.
+	// It is used to safely apply name-only fallbacks without RAID ambiguity.
+	buildUniqueNameIndex := func(devices []*DeviceInfo) map[string]*DeviceInfo {
+		counts := make(map[string]int, len(devices))
+		for _, dev := range devices {
+			if dev == nil || dev.Name == "" {
+				continue
+			}
+			counts[dev.Name]++
+		}
+		unique := make(map[string]*DeviceInfo, len(counts))
+		for _, dev := range devices {
+			if dev == nil || dev.Name == "" {
+				continue
+			}
+			if counts[dev.Name] == 1 {
+				unique[dev.Name] = dev
+			}
+		}
+		return unique
+	}
+
 	// preserveVerifiedType copies the verified type/parser metadata from an existing
 	// device record so that subsequent scans/config updates never downgrade a
 	// previously verified device.
@@ -581,69 +620,90 @@ func mergeDeviceLists(existing, scanned, configured []*DeviceInfo) []*DeviceInfo
 		target.parserType = prev.parserType
 	}
 
-	existingIndex := make(map[string]*DeviceInfo, len(existing))
+	// applyConfiguredMetadata updates a matched device with any configured
+	// overrides, preserving verified type data when present.
+	applyConfiguredMetadata := func(existingDev, configuredDev *DeviceInfo) {
+		// Only update the type if it has not been verified yet; otherwise we
+		// keep the existing verified metadata intact.
+		if configuredDev.Type != "" && !existingDev.typeVerified {
+			newType := strings.TrimSpace(configuredDev.Type)
+			existingDev.Type = newType
+			existingDev.typeVerified = false
+			existingDev.parserType = normalizeParserType(newType)
+		}
+		if configuredDev.InfoName != "" {
+			existingDev.InfoName = configuredDev.InfoName
+		}
+		if configuredDev.Protocol != "" {
+			existingDev.Protocol = configuredDev.Protocol
+		}
+	}
+
+	existingIndex := make(map[deviceKey]*DeviceInfo, len(existing))
 	for _, dev := range existing {
 		if dev == nil || dev.Name == "" {
 			continue
 		}
-		existingIndex[dev.Name] = dev
+		existingIndex[makeDeviceKey(dev.Name, dev.Type)] = dev
 	}
+	existingByName := buildUniqueNameIndex(existing)
 
 	finalDevices := make([]*DeviceInfo, 0, len(scanned)+len(configured))
-	deviceIndex := make(map[string]*DeviceInfo, len(scanned)+len(configured))
+	deviceIndex := make(map[deviceKey]*DeviceInfo, len(scanned)+len(configured))
 
 	// Start with the newly scanned devices so we always surface fresh metadata,
 	// but ensure we retain any previously verified parser assignment.
-	for _, dev := range scanned {
-		if dev == nil || dev.Name == "" {
+	for _, scannedDevice := range scanned {
+		if scannedDevice == nil || scannedDevice.Name == "" {
 			continue
 		}
 
 		// Work on a copy so we can safely adjust metadata without mutating the
 		// input slices that may be reused elsewhere.
-		copyDev := *dev
-		if prev := existingIndex[copyDev.Name]; prev != nil {
+		copyDev := *scannedDevice
+		key := makeDeviceKey(copyDev.Name, copyDev.Type)
+		if prev := existingIndex[key]; prev != nil {
+			preserveVerifiedType(&copyDev, prev)
+		} else if prev := existingByName[copyDev.Name]; prev != nil {
 			preserveVerifiedType(&copyDev, prev)
 		}
 
 		finalDevices = append(finalDevices, &copyDev)
-		deviceIndex[copyDev.Name] = finalDevices[len(finalDevices)-1]
+		copyKey := makeDeviceKey(copyDev.Name, copyDev.Type)
+		deviceIndex[copyKey] = finalDevices[len(finalDevices)-1]
 	}
+	deviceIndexByName := buildUniqueNameIndex(finalDevices)
 
 	// Merge configured devices on top so users can override scan results (except
 	// for verified type information).
-	for _, dev := range configured {
-		if dev == nil || dev.Name == "" {
+	for _, configuredDevice := range configured {
+		if configuredDevice == nil || configuredDevice.Name == "" {
 			continue
 		}
 
-		if existingDev, ok := deviceIndex[dev.Name]; ok {
-			// Only update the type if it has not been verified yet; otherwise we
-			// keep the existing verified metadata intact.
-			if dev.Type != "" && !existingDev.typeVerified {
-				newType := strings.TrimSpace(dev.Type)
-				existingDev.Type = newType
-				existingDev.typeVerified = false
-				existingDev.parserType = normalizeParserType(newType)
-			}
-			if dev.InfoName != "" {
-				existingDev.InfoName = dev.InfoName
-			}
-			if dev.Protocol != "" {
-				existingDev.Protocol = dev.Protocol
-			}
+		key := makeDeviceKey(configuredDevice.Name, configuredDevice.Type)
+		if existingDev, ok := deviceIndex[key]; ok {
+			applyConfiguredMetadata(existingDev, configuredDevice)
+			continue
+		}
+		if existingDev := deviceIndexByName[configuredDevice.Name]; existingDev != nil {
+			applyConfiguredMetadata(existingDev, configuredDevice)
 			continue
 		}
 
-		copyDev := *dev
-		if prev := existingIndex[copyDev.Name]; prev != nil {
+		copyDev := *configuredDevice
+		key = makeDeviceKey(copyDev.Name, copyDev.Type)
+		if prev := existingIndex[key]; prev != nil {
+			preserveVerifiedType(&copyDev, prev)
+		} else if prev := existingByName[copyDev.Name]; prev != nil {
 			preserveVerifiedType(&copyDev, prev)
 		} else if copyDev.Type != "" {
 			copyDev.parserType = normalizeParserType(copyDev.Type)
 		}
 
 		finalDevices = append(finalDevices, &copyDev)
-		deviceIndex[copyDev.Name] = finalDevices[len(finalDevices)-1]
+		copyKey := makeDeviceKey(copyDev.Name, copyDev.Type)
+		deviceIndex[copyKey] = finalDevices[len(finalDevices)-1]
 	}
 
 	return finalDevices
@@ -661,12 +721,14 @@ func (sm *SmartManager) updateSmartDevices(devices []*DeviceInfo) {
 		return
 	}
 
-	validNames := make(map[string]struct{}, len(devices))
+	validKeys := make(map[deviceKey]struct{}, len(devices))
+	nameCounts := make(map[string]int, len(devices))
 	for _, device := range devices {
 		if device == nil || device.Name == "" {
 			continue
 		}
-		validNames[device.Name] = struct{}{}
+		validKeys[makeDeviceKey(device.Name, device.Type)] = struct{}{}
+		nameCounts[device.Name]++
 	}
 
 	for key, data := range sm.SmartDataMap {
@@ -675,7 +737,11 @@ func (sm *SmartManager) updateSmartDevices(devices []*DeviceInfo) {
 			continue
 		}
 
-		if _, ok := validNames[data.DiskName]; ok {
+		if data.DiskType == "" {
+			if nameCounts[data.DiskName] == 1 {
+				continue
+			}
+		} else if _, ok := validKeys[makeDeviceKey(data.DiskName, data.DiskType)]; ok {
 			continue
 		}
 
