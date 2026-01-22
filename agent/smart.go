@@ -171,7 +171,7 @@ func (sm *SmartManager) ScanDevices(force bool) error {
 		configuredDevices = parsedDevices
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	cmd := exec.CommandContext(ctx, sm.binPath, "--scan", "-j")
