@@ -51,7 +51,8 @@ jobs:
           # Labels
           stale-issue-label: 'stale'
           remove-stale-when-updated: true
-          only-issue-labels: 'awaiting-requester'
+          any-of-labels: 'awaiting-requester'
+          exempt-issue-labels: 'enhancement' 
 
           # Exemptions
           exempt-assignees: true

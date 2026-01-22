@@ -1,0 +1,19 @@
+body:
+  - type: dropdown
+    id: component
+    attributes:
+      label: Component
+      description: Which part of Beszel is this about?
+      options:
+        - Hub
+        - Agent
+        - Hub & Agent
+      default: 0
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Description
+      description: Please describe in detail what you want to share.
+    validations:
+      required: true
