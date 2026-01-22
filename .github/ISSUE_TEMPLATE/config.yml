@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: 🗣️ Translations
+    url: https://crowdin.com/project/beszel
+    about: Please report translation issues and request new translations here. 
   - name: 💬 Support and questions
     url: https://github.com/henrygd/beszel/discussions
     about: Ask and answer questions here.

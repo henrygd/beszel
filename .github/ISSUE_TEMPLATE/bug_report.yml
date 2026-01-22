@@ -1,8 +1,30 @@
 name: 🐛 Bug report
-description: Report a new bug or issue.
+description: Use this template to report a bug or issue.
 title: '[Bug]: '
-labels: ['bug', "needs confirmation"]
+labels: ['bug']
 body:
+  - type: checkboxes
+    attributes:
+      label: Welcome!
+      description: |
+        The issue tracker is for reporting bugs and feature requests only. For end-user related support questions, please use the **[GitHub Discussions](https://github.com/henrygd/beszel/discussions/new?category=support)** instead
+
+        Please note:
+        - For translation-related issues or requests, please use the [Crowdin project](https://crowdin.com/project/beszel).
+        - To request a change or feature, use the [feature request form](https://github.com/henrygd/beszel/issues/new?template=feature_request.yml).
+        - Any issues that can be resolved by consulting the documentation or by reviewing existing open or closed issues will be closed.
+        **- Please do not submit bugs that are specific to ZFS. We plan to add integration with ZFS utilities in the near future.**
+
+      options:
+      - label: I have read the [Documentation](https://beszel.dev/guide/getting-started)
+        required: true
+      - label: I have checked the [Common Issues Guide](https://beszel.dev/guide/common-issues) and my problem was not mentioned there.
+        required: true
+      - label: I have searched open and closed issues and my problem was not mentioned before.
+        required: true
+      - label: I have verified I am using the latest version available. You can check the latest release [here](https://github.com/henrygd/beszel/releases).
+        required: true
+
   - type: dropdown
     id: component
     attributes:
@@ -12,81 +34,53 @@ body:
         - Hub
         - Agent
         - Hub & Agent
+      default: 0
     validations:
       required: true
-  - type: markdown
-    attributes:
-      value: |
-        ### Thanks for taking the time to fill out this bug report!
 
-        - For more general support, please [start a support thread](https://github.com/henrygd/beszel/discussions/new?category=support).
-        - To request a change or feature, use the [feature request form](https://github.com/henrygd/beszel/issues/new?template=feature_request.yml).
-        - Please do not submit bugs that are specific to ZFS. We plan to add integration with ZFS utilities in the near future.
-
-        ### Before submitting a bug report:
-
-        - Check the [common issues guide](https://beszel.dev/guide/common-issues).
-        - Search existing [issues](https://github.com/henrygd/beszel/issues) and [discussions](https://github.com/henrygd/beszel/discussions) (including closed).
   - type: textarea
     id: description
     attributes:
-      label: Description
-      description: Explain the issue you experienced clearly and concisely.
-      placeholder: I went to the coffee pot and it was empty.
+      label: Problem Description
+      description: |
+        How to write a good bug report?
+
+        - Respect the issue template as much as possible.
+        - The title should be short and descriptive.
+        - Explain the conditions which led you to report this issue: the context.
+        - The context should lead to something, a problem that you’re facing.
+        - Remain clear and concise.
+        - Format your messages to help the reader focus on what matters and understand the structure of your message, use [Markdown syntax](https://help.github.com/articles/github-flavored-markdown)
     validations:
       required: true
+
   - type: textarea
     id: expected-behavior
     attributes:
       label: Expected Behavior
-      description: In a perfect world, what should have happened?
+      description: |
+        In a perfect world, what should have happened?
+        **Important:** Be specific. Vague descriptions like "it should work" are not helpful.
       placeholder: When I got to the coffee pot, it should have been full.
     validations:
       required: true
+
   - type: textarea
     id: steps-to-reproduce
     attributes:
       label: Steps to Reproduce
-      description: Describe how to reproduce the issue in repeatable steps.
+      description: |
+        Provide detailed, numbered steps that someone else can follow to reproduce the issue.
+        **Important:** Vague descriptions like "it doesn't work" or "it's broken" will result in the issue being closed.
+        Include specific actions, URLs, button clicks, and any relevant data or configuration.
       placeholder: |
         1. Go to the coffee pot.
         2. Make more coffee.
         3. Pour it into a cup.
+        4. Observe that the cup is empty instead of full.
     validations:
       required: true
-  - type: dropdown
-    id: category
-    attributes:
-      label: Category
-      description: Which category does this relate to most?
-      options:
-        - Metrics
-        - Charts & Visualization
-        - Settings & Configuration
-        - Notifications & Alerts
-        - Authentication
-        - Installation
-        - Performance
-        - UI / UX
-        - Other
-    validations:
-      required: true
-  - type: dropdown
-    id: metrics
-    attributes:
-      label: Affected Metrics
-      description: If applicable, which specific metric does this relate to most?
-      options:
-        - CPU
-        - Memory
-        - Storage
-        - Network
-        - Containers
-        - GPU
-        - Sensors
-        - Other
-    validations:
-      required: true
+
   - type: input
     id: system
     attributes:
@@ -94,6 +88,7 @@ body:
       placeholder: linux/amd64 (agent), freebsd/arm64 (hub)
     validations:
       required: true
+  
   - type: input
     id: version
     attributes:
@@ -101,6 +96,7 @@ body:
       placeholder: 0.9.1
     validations:
       required: true
+  
   - type: dropdown
     id: install-method
     attributes:
@@ -114,18 +110,21 @@ body:
         - Other (please describe above)
     validations:
       required: true
+  
   - type: textarea
     id: config
     attributes:
       label: Configuration
       description: Please provide any relevant service configuration
       render: yaml
+  
   - type: textarea
     id: hub-logs
     attributes:
       label: Hub Logs
       description: Check the logs page in PocketBase (`/_/#/logs`) for relevant errors (copy JSON).
       render: json
+  
   - type: textarea
     id: agent-logs
     attributes:
