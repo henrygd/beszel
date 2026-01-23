@@ -373,6 +373,20 @@ else
   BIN_PATH="/opt/beszel-agent/beszel-agent"
 fi
 
+# Stop existing service if it exists (for upgrades)
+if [ -f "$BIN_PATH" ]; then
+  echo "Existing installation detected. Stopping service for upgrade..."
+  if is_alpine; then
+    rc-service beszel-agent stop 2>/dev/null || true
+  elif is_openwrt; then
+    /etc/init.d/beszel-agent stop 2>/dev/null || true
+  elif is_freebsd; then
+    service beszel-agent stop 2>/dev/null || true
+  else
+    systemctl stop beszel-agent.service 2>/dev/null || true
+  fi
+fi
+
 # Uninstall process
 if [ "$UNINSTALL" = true ]; then
   # Clean up SELinux contexts before removing files
@@ -507,10 +521,14 @@ else
   echo "Warning: Please ensure 'tar' and 'curl' and 'sha256sum (coreutils)' are installed."
 fi
 
-# If no SSH key is provided, ask for the SSH key interactively
+# If no SSH key is provided, ask for the SSH key interactively (skip if upgrading)
 if [ -z "$KEY" ]; then
-  printf "Enter your SSH key: "
-  read KEY
+  if [ -f "$BIN_PATH" ]; then
+    echo "Upgrading existing installation. Using existing service configuration."
+  else
+    printf "Enter your SSH key: "
+    read KEY
+  fi
 fi
 
 # Remove newlines from KEY
@@ -667,6 +685,11 @@ if ! tar -xzf "$FILE_NAME" beszel-agent; then
   exit 1
 fi
 
+if [ -f "$BIN_PATH" ]; then
+  echo "Backing up existing binary..."
+  cp "$BIN_PATH" "$BIN_PATH.bak"
+fi
+
 mv beszel-agent "$BIN_PATH"
 chown beszel:beszel "$BIN_PATH"
 chmod 755 "$BIN_PATH"
@@ -695,8 +718,9 @@ detect_nvidia_devices() {
 
 # Modify service installation part, add Alpine check before systemd service creation
 if is_alpine; then
-  echo "Creating OpenRC service for Alpine Linux..."
-  cat >/etc/init.d/beszel-agent <<EOF
+  if [ ! -f /etc/init.d/beszel-agent ]; then
+    echo "Creating OpenRC service for Alpine Linux..."
+    cat >/etc/init.d/beszel-agent <<EOF
 #!/sbin/openrc-run
 
 name="beszel-agent"
@@ -722,9 +746,11 @@ depend() {
     after firewall
 }
 EOF
-
-  chmod +x /etc/init.d/beszel-agent
-  rc-update add beszel-agent default
+    chmod +x /etc/init.d/beszel-agent
+    rc-update add beszel-agent default
+  else
+    echo "Alpine OpenRC service file already exists. Skipping creation."
+  fi
 
   # Create log files with proper permissions
   touch /var/log/beszel-agent.log /var/log/beszel-agent.err
@@ -771,8 +797,9 @@ EOF
   fi
 
 elif is_openwrt; then
-  echo "Creating procd init script service for OpenWRT..."
-  cat >/etc/init.d/beszel-agent <<EOF
+  if [ ! -f /etc/init.d/beszel-agent ]; then
+    echo "Creating procd init script service for OpenWRT..."
+    cat >/etc/init.d/beszel-agent <<EOF
 #!/bin/sh /etc/rc.common
 
 USE_PROCD=1
@@ -800,10 +827,12 @@ update() {
 }
 
 EOF
-
-  # Enable the service
-  chmod +x /etc/init.d/beszel-agent
-  /etc/init.d/beszel-agent enable
+    # Enable the service
+    chmod +x /etc/init.d/beszel-agent
+    /etc/init.d/beszel-agent enable
+  else
+    echo "OpenWRT init script already exists. Skipping creation."
+  fi
 
   # Start the service
   /etc/init.d/beszel-agent restart
@@ -841,25 +870,33 @@ EOF
   fi
 
 elif is_freebsd; then
-  echo "Creating FreeBSD rc service..."
+  echo "Checking for existing FreeBSD service configuration..."
   
-  # Create environment configuration file with proper permissions
-  echo "Creating environment configuration file..."
-  cat >"$AGENT_DIR/env" <<EOF
+  # Create environment configuration file with proper permissions if it doesn't exist
+  if [ ! -f "$AGENT_DIR/env" ]; then
+    echo "Creating environment configuration file..."
+    cat >"$AGENT_DIR/env" <<EOF
 LISTEN=$PORT
 KEY="$KEY"
 TOKEN=$TOKEN
 HUB_URL=$HUB_URL
 EOF
-  chmod 640 "$AGENT_DIR/env"
-  chown root:beszel "$AGENT_DIR/env"
+    chmod 640 "$AGENT_DIR/env"
+    chown root:beszel "$AGENT_DIR/env"
+  else
+    echo "FreeBSD environment file already exists. Skipping creation."
+  fi
   
-  # Create the rc service file
-  generate_freebsd_rc_service > /usr/local/etc/rc.d/beszel-agent
+  # Create the rc service file if it doesn't exist
+  if [ ! -f /usr/local/etc/rc.d/beszel-agent ]; then
+    echo "Creating FreeBSD rc service..."
+    generate_freebsd_rc_service > /usr/local/etc/rc.d/beszel-agent
+    # Set proper permissions for the rc script
+    chmod 755 /usr/local/etc/rc.d/beszel-agent
+  else
+    echo "FreeBSD rc service file already exists. Skipping creation."
+  fi
 
-  # Set proper permissions for the rc script
-  chmod 755 /usr/local/etc/rc.d/beszel-agent
-  
   # Enable and start the service
   echo "Enabling and starting the agent service..."
   sysrc beszel_agent_enable="YES"
@@ -905,12 +942,13 @@ EOF
 
 else
   # Original systemd service installation code
-  echo "Creating the systemd service for the agent..."
+  if [ ! -f /etc/systemd/system/beszel-agent.service ]; then
+    echo "Creating the systemd service for the agent..."
 
-  # Detect NVIDIA devices and grant device permissions
-  NVIDIA_DEVICES=$(detect_nvidia_devices)
+    # Detect NVIDIA devices and grant device permissions
+    NVIDIA_DEVICES=$(detect_nvidia_devices)
 
-  cat >/etc/systemd/system/beszel-agent.service <<EOF
+    cat >/etc/systemd/system/beszel-agent.service <<EOF
 [Unit]
 Description=Beszel Agent Service
 Wants=network-online.target
@@ -944,12 +982,15 @@ $(if [ -n "$NVIDIA_DEVICES" ]; then printf "%b" "# NVIDIA device permissions\n${
 [Install]
 WantedBy=multi-user.target
 EOF
+  else
+    echo "Systemd service file already exists. Skipping creation."
+  fi
 
   # Load and start the service
   printf "\nLoading and starting the agent service...\n"
   systemctl daemon-reload
   systemctl enable beszel-agent.service
-  systemctl start beszel-agent.service
+  systemctl restart beszel-agent.service
 
 
 
