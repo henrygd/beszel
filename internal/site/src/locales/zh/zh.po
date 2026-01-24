@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-01-11 22:20\n"
+"PO-Revision-Date: 2026-01-24 02:14\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -690,7 +690,7 @@ msgstr "結束"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
-msgstr "一小時後或重新啟動集線器時過期。"
+msgstr "在一個小時或者重新啟動 Hub 時過期。"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
