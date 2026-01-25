@@ -17,6 +17,7 @@ import (
 	"github.com/gliderlabs/ssh"
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/agent/deltatracker"
+	"github.com/henrygd/beszel/agent/health"
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/system"
 	"github.com/shirou/gopsutil/v4/host"
@@ -70,6 +71,7 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 		slog.Warn("Data directory not found")
 	} else {
 		slog.Info("Data directory", "path", agent.dataDir)
+		health.SetDataDir(agent.dataDir)
 	}
 
 	agent.memCalc, _ = GetEnv("MEM_CALC")

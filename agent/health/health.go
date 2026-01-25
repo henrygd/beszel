@@ -1,5 +1,5 @@
 // Package health provides functions to check and update the health of the agent.
-// It uses a file in the temp directory to store the timestamp of the last connection attempt.
+// It uses a file in the data directory to store the timestamp of the last connection attempt.
 // If the timestamp is older than 90 seconds, the agent is considered unhealthy.
 // NB: The agent must be started with the Start() method to be considered healthy.
 package health
@@ -14,6 +14,12 @@ import (
 
 // healthFile is the path to the health file
 var healthFile = filepath.Join(os.TempDir(), "beszel_health")
+
+// SetDataDir sets the data directory for the health file.
+// This should be called before any other health functions.
+func SetDataDir(dir string) {
+	healthFile = filepath.Join(dir, "beszel_health")
+}
 
 // Check checks if the agent is connected by checking the modification time of the health file
 func Check() error {
