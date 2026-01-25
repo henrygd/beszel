@@ -3,11 +3,16 @@ import { Plural, Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
 import { GlobeIcon, ServerIcon } from "lucide-react"
-import { lazy, memo, Suspense, useMemo, useState } from "react"
+import { useEffect, lazy, memo, Suspense, useMemo, useState } from "react"
 import { $router, Link } from "@/components/router"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Switch } from "@/components/ui/switch"
+import { Separator } from "@/components/ui/separator"
+import { Button } from "@/components/ui/button"
+import { SearchIcon } from "lucide-react"
+import { DockerIcon } from "@/components/ui/icons"
+import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/components/ui/use-toast"
 import { alertInfo } from "@/lib/alerts"
@@ -61,23 +66,48 @@ const deleteAlerts = debounce(async ({ name, systems }: { name: string; systems:
 	}
 }, alertDebounce)
 
+const fetchContainers = async (systemId: string) => {
+	const { items } = await pb.collection("containers").getList(0, 500, {
+		fields: "id,name,system",
+		filter: pb.filter("system={:system}", { system: systemId }),
+	})
+	return items.sort((a: any, b: any) => a.name.localeCompare(b.name)) as any[]
+}
+
 export const AlertDialogContent = memo(function AlertDialogContent({ system }: { system: SystemRecord }) {
 	const alerts = useStore($alerts)
 	const [overwriteExisting, setOverwriteExisting] = useState<boolean | "indeterminate">(false)
 	const [currentTab, setCurrentTab] = useState("system")
+	const [containers, setContainers] = useState<{ id: string; name: string }[]>([])
+	const [containerSearch, setContainerSearch] = useState("")
+
+	useEffect(() => {
+		fetchContainers(system.id).then(setContainers)
+	}, [system.id])
 
 	const systemAlerts = alerts[system.id] ?? new Map()
 
-	// We need to keep a copy of alerts when we switch to global tab. If we always compare to
-	// current alerts, it will only be updated when first checked, then won't be updated because
-	// after that it exists.
+	const getContainerAlertInfo = (name: string): AlertInfo => ({
+		name: () => name,
+		unit: "",
+		icon: DockerIcon,
+		desc: () => t`Triggers when container is unhealthy`,
+		singleDesc: () => t`Unhealthy`,
+		start: 1,
+		invert: true,
+	})
+
 	const alertsWhenGlobalSelected = useMemo(() => {
 		return currentTab === "global" ? structuredClone(alerts) : alerts
-	}, [currentTab])
+	}, [currentTab, alerts])
+
+	const filteredContainers = useMemo(() => {
+		return containers.filter((c) => c.name.toLowerCase().includes(containerSearch.toLowerCase()))
+	}, [containers, containerSearch])
 
 	return (
 		<>
-			<DialogHeader>
+			<DialogHeader className="px-1">
 				<DialogTitle className="text-xl">
 					<Trans>Alerts</Trans>
 				</DialogTitle>
@@ -102,7 +132,7 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 						<Trans>All Systems</Trans>
 					</TabsTrigger>
 				</TabsList>
-				<TabsContent value="system">
+				<TabsContent value="system" className="mt-4 outline-none">
 					<div className="grid gap-3">
 						{alertKeys.map((name) => (
 							<AlertContent
@@ -113,6 +143,48 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 								system={system}
 							/>
 						))}
+						<Separator className="my-2" />
+						<div className="space-y-3">
+							<div className="flex flex-wrap items-center justify-between gap-y-2 px-1">
+								<div className="grid gap-0.5 select-none">
+									<p className="font-semibold flex gap-2.5 items-center text-sm">
+										<DockerIcon className="h-4 w-4 opacity-85" />
+										<Trans>Container Status</Trans>
+									</p>
+									<p className="text-xs text-muted-foreground">
+										<Trans>Triggers when container is unhealthy</Trans>
+									</p>
+								</div>
+							</div>
+							<div className="relative">
+								<SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+								<Input
+									placeholder={t`Search containers...`}
+									className="pl-9 h-9 bg-muted/40 border-muted-foreground/10"
+									value={containerSearch}
+									onChange={(e) => setContainerSearch(e.target.value)}
+								/>
+							</div>
+							<div className="grid gap-3 max-h-[350px] overflow-y-auto pr-1 scroll-sm">
+								{filteredContainers.map((c) => {
+									const alertKey = `Container ${c.name}`
+									return (
+										<AlertContent
+											key={c.id}
+											alertKey={alertKey}
+											data={getContainerAlertInfo(c.name)}
+											alert={systemAlerts.get(alertKey)}
+											system={system}
+										/>
+									)
+								})}
+								{containers.length > 0 && filteredContainers.length === 0 && (
+									<p className="text-center py-4 text-sm text-muted-foreground italic">
+										<Trans>No containers found</Trans>
+									</p>
+								)}
+							</div>
+						</div>
 					</div>
 				</TabsContent>
 				<TabsContent value="global">
@@ -171,7 +243,7 @@ export function AlertContent({
 
 	const [checked, setChecked] = useState(global ? false : !!alert)
 	const [min, setMin] = useState(alert?.min || 10)
-	const [value, setValue] = useState(alert?.value || (singleDescription ? 0 : (alertData.start ?? 80)))
+	const [value, setValue] = useState(alert?.value ?? (singleDescription ? (alertData.start ?? 0) : (alertData.start ?? 80)))
 
 	const Icon = alertData.icon
 
