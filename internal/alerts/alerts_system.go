@@ -127,6 +127,7 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 		if min == 1 {
 			if strings.HasPrefix(name, "Container ") {
 				alert.triggered = val == float64(container.DockerHealthUnhealthy)
+				go am.sendContainerAlert(alert)
 			} else {
 				lowAlert := isLowAlert(name)
 				if lowAlert {
@@ -134,8 +135,8 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 				} else {
 					alert.triggered = val > threshold
 				}
+				go am.sendSystemAlert(alert)
 			}
-			go am.sendSystemAlert(alert)
 			continue
 		}
 
@@ -341,10 +342,10 @@ func (am *AlertManager) HandleSystemAlerts(systemRecord *core.Record, data *syst
 			if strings.HasPrefix(alert.name, "Container ") {
 				if !alert.triggered && float32(alert.val) >= minCount {
 					alert.triggered = true
-					go am.sendSystemAlert(alert)
+					go am.sendContainerAlert(alert)
 				} else if alert.triggered && float32(alert.val) < minCount {
 					alert.triggered = false
-					go am.sendSystemAlert(alert)
+					go am.sendContainerAlert(alert)
 				}
 			} else {
 				// Battery alert has inverted logic: trigger when value is BELOW threshold
@@ -422,6 +423,53 @@ func (am *AlertManager) sendSystemAlert(alert SystemAlertData) {
 		alert.descriptor = alert.name
 	}
 	body := fmt.Sprintf("%s averaged %.2f%s for the previous %v %s.", alert.descriptor, alert.val, alert.unit, alert.min, minutesLabel)
+
+	alert.alertRecord.Set("triggered", alert.triggered)
+	if err := am.hub.Save(alert.alertRecord); err != nil {
+		am.hub.Logger().Error("failed to save alert record", "err", err)
+		return
+	}
+	// manually create alert history record to ensure it's logged
+	if alert.triggered {
+		_, _ = createAlertHistoryRecord(am.hub, alert.alertRecord)
+	}
+
+	am.SendAlert(AlertMessageData{
+		UserID:   alert.alertRecord.GetString("user"),
+		SystemID: alert.systemRecord.Id,
+		Title:    subject,
+		Message:  body,
+		Link:     am.hub.MakeLink("system", alert.systemRecord.Id),
+		LinkText: "View " + systemName,
+	})
+}
+
+func (am *AlertManager) sendContainerAlert(alert SystemAlertData) {
+	systemName := alert.systemRecord.GetString("name")
+	containerName := strings.TrimPrefix(alert.name, "Container ")
+
+	var subject string
+	if alert.triggered {
+		subject = fmt.Sprintf("%s Container %s is unhealthy", systemName, containerName)
+	} else {
+		subject = fmt.Sprintf("%s Container %s is healthy", systemName, containerName)
+	}
+
+	var body string
+	if alert.min == 1 {
+		if alert.triggered {
+			body = fmt.Sprintf("Container %s is unhealthy.", containerName)
+		} else {
+			body = fmt.Sprintf("Container %s is healthy.", containerName)
+		}
+	} else {
+		minutesLabel := "minutes"
+		if alert.triggered {
+			body = fmt.Sprintf("Container %s was unhealthy for the majority of the previous %d %s.", containerName, alert.min, minutesLabel)
+		} else {
+			body = fmt.Sprintf("Container %s has recovered and is healthy.", containerName)
+		}
+	}
 
 	alert.alertRecord.Set("triggered", alert.triggered)
 	if err := am.hub.Save(alert.alertRecord); err != nil {
