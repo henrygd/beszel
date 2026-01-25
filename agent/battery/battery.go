@@ -65,7 +65,7 @@ func GetBatteryStats() (batteryPercent uint8, batteryState uint8, err error) {
 			continue
 		}
 		totalCapacity += bat.Full
-		totalCharge += bat.Current
+		totalCharge += min(bat.Current, bat.Full)
 		if bat.State.Raw >= 0 {
 			batteryState = uint8(bat.State.Raw)
 		}
