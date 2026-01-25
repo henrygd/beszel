@@ -9,13 +9,6 @@ SERVICE_USER=beszel
 
 . /usr/share/debconf/confmodule
 
-# This would normally be in the config control file, however this is currently
-# broken in goreleaser. Temporarily do it here.
-# https://github.com/goreleaser/goreleaser/issues/5487
-db_version 2.0
-db_input high beszel-agent/key || true
-db_go
-
 # Create group and user
 if ! getent group "$SERVICE_USER" >/dev/null; then
 	echo "Creating $SERVICE_USER group"
