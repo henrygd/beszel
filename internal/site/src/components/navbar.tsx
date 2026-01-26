@@ -129,7 +129,7 @@ export default function Navbar() {
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
-				<AddSystemButton className="ms-2 hidden 450:flex" />
+				<AddSystemButton className="ms-2" />
 			</div>
 		</div>
 	)
