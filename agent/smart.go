@@ -515,10 +515,9 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 // smartctlArgs returns the arguments for the smartctl command
 // based on the device type and whether to include standby mode
 func (sm *SmartManager) smartctlArgs(deviceInfo *DeviceInfo, includeStandby bool) []string {
-	args := make([]string, 0, 7)
+	args := make([]string, 0, 9)
+	var deviceType, parserType string
 
-	deviceType := ""
-	parserType := ""
 	if deviceInfo != nil {
 		deviceType = strings.ToLower(deviceInfo.Type)
 		parserType = strings.ToLower(deviceInfo.parserType)
@@ -884,7 +883,7 @@ func getSmartStatus(temperature uint8, passed bool) string {
 
 func temperatureFromAtaDeviceStatistics(stats smart.AtaDeviceStatistics) (uint8, bool) {
 	entry := findAtaDeviceStatisticsEntry(stats, 5, "Temperature Statistics", "Current Temperature")
-	if entry == nil || !entry.Flags.Valid || entry.Value == nil {
+	if entry == nil || entry.Value == nil {
 		return 0, false
 	}
 	if *entry.Value > 255 {
@@ -895,7 +894,7 @@ func temperatureFromAtaDeviceStatistics(stats smart.AtaDeviceStatistics) (uint8,
 
 // findAtaDeviceStatisticsEntry centralizes ATA devstat lookups so additional
 // metrics can be pulled from the same structure in the future.
-func findAtaDeviceStatisticsEntry(stats smart.AtaDeviceStatistics, pageNumber int, pageName, entryName string) *smart.AtaDeviceStatisticsEntry {
+func findAtaDeviceStatisticsEntry(stats smart.AtaDeviceStatistics, pageNumber uint16, pageName, entryName string) *smart.AtaDeviceStatisticsEntry {
 	for pageIdx := range stats.Pages {
 		page := &stats.Pages[pageIdx]
 		if pageNumber > 0 && page.Number != pageNumber {

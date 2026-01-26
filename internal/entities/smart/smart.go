@@ -130,7 +130,6 @@ type SummaryInfo struct {
 }
 
 type AtaSmartAttributes struct {
-	// Revision int                 `json:"revision"`
 	Table []AtaSmartAttribute `json:"table"`
 }
 
@@ -139,27 +138,14 @@ type AtaDeviceStatistics struct {
 }
 
 type AtaDeviceStatisticsPage struct {
-	Number   int                        `json:"number"`
-	Name     string                     `json:"name"`
-	Revision int                        `json:"revision,omitempty"`
-	Table    []AtaDeviceStatisticsEntry `json:"table"`
+	Number uint16                     `json:"number"`
+	Name   string                     `json:"name"`
+	Table  []AtaDeviceStatisticsEntry `json:"table"`
 }
 
 type AtaDeviceStatisticsEntry struct {
-	Offset int                      `json:"offset"`
-	Name   string                   `json:"name"`
-	Size   int                      `json:"size"`
-	Value  *uint64                  `json:"value,omitempty"`
-	Flags  AtaDeviceStatisticsFlags `json:"flags"`
-}
-
-type AtaDeviceStatisticsFlags struct {
-	Value                 int    `json:"value"`
-	String                string `json:"string"`
-	Valid                 bool   `json:"valid"`
-	Normalized            bool   `json:"normalized"`
-	SupportsDSN           bool   `json:"supports_dsn"`
-	MonitoredConditionMet bool   `json:"monitored_condition_met"`
+	Name  string  `json:"name"`
+	Value *uint64 `json:"value,omitempty"`
 }
 
 type AtaSmartAttribute struct {

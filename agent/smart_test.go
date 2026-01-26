@@ -300,13 +300,19 @@ func TestSmartctlArgs(t *testing.T) {
 
 	sataDevice := &DeviceInfo{Name: "/dev/sda", Type: "sat"}
 	assert.Equal(t,
-		[]string{"-d", "sat", "-a", "--json=c", "-n", "standby", "/dev/sda"},
+		[]string{"-d", "sat", "-a", "--json=c", "-l", "devstat", "-n", "standby", "/dev/sda"},
 		sm.smartctlArgs(sataDevice, true),
 	)
 
 	assert.Equal(t,
-		[]string{"-d", "sat", "-a", "--json=c", "/dev/sda"},
+		[]string{"-d", "sat", "-a", "--json=c", "-l", "devstat", "/dev/sda"},
 		sm.smartctlArgs(sataDevice, false),
+	)
+
+	nvmeDevice := &DeviceInfo{Name: "/dev/nvme0", Type: "nvme"}
+	assert.Equal(t,
+		[]string{"-d", "nvme", "-a", "--json=c", "-n", "standby", "/dev/nvme0"},
+		sm.smartctlArgs(nvmeDevice, true),
 	)
 
 	assert.Equal(t,
