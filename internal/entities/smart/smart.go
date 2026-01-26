@@ -134,6 +134,34 @@ type AtaSmartAttributes struct {
 	Table []AtaSmartAttribute `json:"table"`
 }
 
+type AtaDeviceStatistics struct {
+	Pages []AtaDeviceStatisticsPage `json:"pages"`
+}
+
+type AtaDeviceStatisticsPage struct {
+	Number   int                        `json:"number"`
+	Name     string                     `json:"name"`
+	Revision int                        `json:"revision,omitempty"`
+	Table    []AtaDeviceStatisticsEntry `json:"table"`
+}
+
+type AtaDeviceStatisticsEntry struct {
+	Offset int                      `json:"offset"`
+	Name   string                   `json:"name"`
+	Size   int                      `json:"size"`
+	Value  *uint64                  `json:"value,omitempty"`
+	Flags  AtaDeviceStatisticsFlags `json:"flags"`
+}
+
+type AtaDeviceStatisticsFlags struct {
+	Value                 int    `json:"value"`
+	String                string `json:"string"`
+	Valid                 bool   `json:"valid"`
+	Normalized            bool   `json:"normalized"`
+	SupportsDSN           bool   `json:"supports_dsn"`
+	MonitoredConditionMet bool   `json:"monitored_condition_met"`
+}
+
 type AtaSmartAttribute struct {
 	ID         uint16 `json:"id"`
 	Name       string `json:"name"`
@@ -343,7 +371,8 @@ type SmartInfoForSata struct {
 	SmartStatus SmartStatusInfo `json:"smart_status"`
 	// AtaSmartData                 AtaSmartData                 `json:"ata_smart_data"`
 	// AtaSctCapabilities           AtaSctCapabilities           `json:"ata_sct_capabilities"`
-	AtaSmartAttributes AtaSmartAttributes `json:"ata_smart_attributes"`
+	AtaSmartAttributes  AtaSmartAttributes  `json:"ata_smart_attributes"`
+	AtaDeviceStatistics AtaDeviceStatistics `json:"ata_device_statistics"`
 	// PowerOnTime                  PowerOnTimeInfo              `json:"power_on_time"`
 	// PowerCycleCount              uint16                       `json:"power_cycle_count"`
 	Temperature TemperatureInfo `json:"temperature"`

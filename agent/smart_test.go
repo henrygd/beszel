@@ -89,6 +89,39 @@ func TestParseSmartForSata(t *testing.T) {
 	}
 }
 
+func TestParseSmartForSataDeviceStatisticsTemperature(t *testing.T) {
+	jsonPayload := []byte(`{
+		"smartctl": {"exit_status": 0},
+		"device": {"name": "/dev/sdb", "type": "sat"},
+		"model_name": "SanDisk SSD U110 16GB",
+		"serial_number": "DEVSTAT123",
+		"firmware_version": "U21B001",
+		"user_capacity": {"bytes": 16013942784},
+		"smart_status": {"passed": true},
+		"ata_smart_attributes": {"table": []},
+		"ata_device_statistics": {
+			"pages": [
+				{
+					"number": 5,
+					"name": "Temperature Statistics",
+					"table": [
+						{"name": "Current Temperature", "value": 22, "flags": {"valid": true}}
+					]
+				}
+			]
+		}
+	}`)
+
+	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
+	hasData, exitStatus := sm.parseSmartForSata(jsonPayload)
+	require.True(t, hasData)
+	assert.Equal(t, 0, exitStatus)
+
+	deviceData, ok := sm.SmartDataMap["DEVSTAT123"]
+	require.True(t, ok, "expected smart data entry for serial DEVSTAT123")
+	assert.Equal(t, uint8(22), deviceData.Temperature)
+}
+
 func TestParseSmartForSataParentheticalRawValue(t *testing.T) {
 	jsonPayload := []byte(`{
 		"smartctl": {"exit_status": 0},
@@ -516,18 +549,18 @@ func TestUpdateSmartDevicesPreservesRAIDDrives(t *testing.T) {
 		},
 		SmartDataMap: map[string]*smart.SmartData{
 			"serial-0": {
-				DiskName: "/dev/sda",
-				DiskType: "megaraid,0",
+				DiskName:     "/dev/sda",
+				DiskType:     "megaraid,0",
 				SerialNumber: "serial-0",
 			},
 			"serial-1": {
-				DiskName: "/dev/sda",
-				DiskType: "megaraid,1",
+				DiskName:     "/dev/sda",
+				DiskType:     "megaraid,1",
 				SerialNumber: "serial-1",
 			},
 			"serial-stale": {
-				DiskName: "/dev/sda",
-				DiskType: "megaraid,2",
+				DiskName:     "/dev/sda",
+				DiskType:     "megaraid,2",
 				SerialNumber: "serial-stale",
 			},
 		},
