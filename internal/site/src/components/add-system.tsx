@@ -2,7 +2,7 @@ import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
-import { ChevronDownIcon, ExternalLinkIcon, PlusIcon, XIcon, Check } from "lucide-react"
+import { ChevronDownIcon, ExternalLinkIcon, PlusIcon, XIcon } from "lucide-react"
 import { memo, useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
@@ -27,7 +27,6 @@ import {
 	DropdownMenu,
 	DropdownMenuCheckboxItem,
 	DropdownMenuContent,
-	DropdownMenuLabel,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "./ui/dropdown-menu"
@@ -42,6 +41,17 @@ import {
 import { $router, basePath, Link, navigate } from "./router"
 import { AppleIcon, DockerIcon, FreeBsdIcon, TuxIcon, WindowsIcon } from "./ui/icons"
 import { InputCopy } from "./ui/input-copy"
+import { toast } from "./ui/use-toast"
+
+// Generate a random vibrant color for new tags
+function getRandomColor(): string {
+	const colors = [
+		"#ef4444", "#f97316", "#f59e0b", "#eab308", "#84cc16", "#22c55e",
+		"#10b981", "#14b8a6", "#06b6d4", "#0ea5e9", "#3b82f6", "#6366f1",
+		"#8b5cf6", "#a855f7", "#d946ef", "#ec4899", "#f43f5e",
+	]
+	return colors[Math.floor(Math.random() * colors.length)]
+}
 
 export function AddSystemButton({ className }: { className?: string }) {
 		if (isReadOnlyUser()) {
@@ -127,6 +137,29 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 			}
 		})()
 	}, [system?.id, nextSystemToken])
+
+	async function createTagFromSearch() {
+		const name = tagSearchQuery.trim()
+		if (!name) return
+		// Check if tag with this name already exists
+		if (availableTags.some((tag) => tag.name.toLowerCase() === name.toLowerCase())) return
+		try {
+			const record = await pb.collection("tags").create<TagRecord>({
+				name,
+				color: getRandomColor(),
+			})
+			setAvailableTags((prev) => [...prev, record].sort((a, b) => a.name.localeCompare(b.name)))
+			setSelectedTags((prev) => [...prev, record.id])
+			setTagSearchQuery("")
+		} catch (e: any) {
+			console.error("Failed to create tag", e)
+			toast({
+				title: t`Failed to create tag`,
+				description: e.message || t`Check logs for more details.`,
+				variant: "destructive",
+			})
+		}
+	}
 
 	async function handleSubmit(e: SubmitEvent) {
 		e.preventDefault()
@@ -249,106 +282,125 @@ export const SystemDialog = ({ setOpen, system }: { setOpen: (open: boolean) => 
 							<Trans>Token</Trans>
 						</Label>
 						<InputCopy value={token} id="tkn" name="tkn" />
-						{availableTags.length > 0 && (
-							<>
-								<Label htmlFor="tags" className="xs:text-end self-start pt-2">
-									<Trans>Tags</Trans>
-								</Label>
-								<div className="flex flex-col gap-2">
-									<DropdownMenu>
-										<DropdownMenuTrigger asChild>
-											<Button variant="outline" className="justify-between font-normal">
-												{selectedTags.length > 0 ? (
-													<span className="truncate">
-														{selectedTags.length === 1
-															? availableTags.find((t) => t.id === selectedTags[0])?.name
-															: t`${selectedTags.length} tags selected`}
-													</span>
-												) : (
-													<span className="text-muted-foreground">
-														<Trans>Select tags...</Trans>
-													</span>
-												)}
-												<ChevronDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-											</Button>
-										</DropdownMenuTrigger>
-										<DropdownMenuContent className="w-80 max-h-96 overflow-y-auto" align="start">
-											<div className="px-2 py-1.5">
-												<Input
-													placeholder={t`Search tags...`}
-													value={tagSearchQuery}
-													onChange={(e) => setTagSearchQuery(e.target.value)}
-													className="h-8"
-												/>
-											</div>
-											<DropdownMenuSeparator />
-											<div className="max-h-80 overflow-y-auto">
-												{availableTags
-													.filter((tag) =>
-														tag.name.toLowerCase().includes(tagSearchQuery.toLowerCase())
-													)
-													.map((tag) => {
-														const isSelected = selectedTags.includes(tag.id)
-														return (
-															<DropdownMenuCheckboxItem
-																key={tag.id}
-																checked={isSelected}
-																onCheckedChange={(checked) => {
-																	setSelectedTags((prev) =>
-																		checked ? [...prev, tag.id] : prev.filter((id) => id !== tag.id)
-																	)
-																}}
-																onSelect={(e) => e.preventDefault()}
-															>
-																<Badge
-																	style={{ backgroundColor: tag.color || "#3b82f6" }}
-																	className="text-white text-xs"
-																>
-																	{tag.name}
-																</Badge>
-															</DropdownMenuCheckboxItem>
-														)
-													})}
-												{availableTags.filter((tag) =>
-													tag.name.toLowerCase().includes(tagSearchQuery.toLowerCase())
-												).length === 0 && (
-													<div className="py-6 text-center text-sm text-muted-foreground">
-														<Trans>No tags found.</Trans>
-													</div>
-												)}
-											</div>
-										</DropdownMenuContent>
-									</DropdownMenu>
-									{selectedTags.length > 0 && (
-										<div className="flex flex-wrap gap-1.5">
-											{selectedTags.map((tagId) => {
-												const tag = availableTags.find((t) => t.id === tagId)
-												if (!tag) return null
+						<Label htmlFor="tags" className="xs:text-end self-start pt-2">
+							<Trans>Tags</Trans>
+						</Label>
+						<div className="flex flex-col gap-2">
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<Button variant="outline" className="justify-between font-normal">
+										{selectedTags.length > 0 ? (
+											<span className="truncate">
+												{selectedTags.length === 1
+													? availableTags.find((t) => t.id === selectedTags[0])?.name
+													: t`${selectedTags.length} tags selected`}
+											</span>
+										) : (
+											<span className="text-muted-foreground">
+												<Trans>Select tags...</Trans>
+											</span>
+										)}
+										<ChevronDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+									</Button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent className="w-80" align="start">
+									<div className="px-2 py-1.5">
+										<Input
+											placeholder={t`Search or create tag...`}
+											value={tagSearchQuery}
+											onChange={(e) => setTagSearchQuery(e.target.value)}
+											className="h-8"
+											onKeyDown={(e) => {
+												if (e.key === "Enter") {
+													e.preventDefault()
+													createTagFromSearch()
+												}
+											}}
+										/>
+									</div>
+									<DropdownMenuSeparator />
+									<div className="max-h-60 overflow-y-auto">
+										{availableTags
+											.filter((tag) =>
+												tag.name.toLowerCase().includes(tagSearchQuery.toLowerCase())
+											)
+											.map((tag) => {
+												const isSelected = selectedTags.includes(tag.id)
 												return (
-													<Badge
+													<DropdownMenuCheckboxItem
 														key={tag.id}
-														style={{ backgroundColor: tag.color || "#3b82f6" }}
-														className="text-white text-xs"
+														checked={isSelected}
+														onCheckedChange={(checked) => {
+															setSelectedTags((prev) =>
+																checked ? [...prev, tag.id] : prev.filter((id) => id !== tag.id)
+															)
+														}}
+														onSelect={(e) => e.preventDefault()}
 													>
-														{tag.name}
-														<button
-															type="button"
-															className="ml-1 hover:bg-white/20 rounded-full"
-															onClick={(e) => {
-																e.stopPropagation()
-																setSelectedTags((prev) => prev.filter((id) => id !== tagId))
-															}}
+														<Badge
+															style={{ backgroundColor: tag.color || "#3b82f6" }}
+															className="text-white text-xs"
 														>
-															<XIcon className="h-3 w-3" />
-														</button>
-													</Badge>
+															{tag.name}
+														</Badge>
+													</DropdownMenuCheckboxItem>
 												)
 											})}
-										</div>
-									)}
+										{tagSearchQuery &&
+											!availableTags.some(
+												(tag) => tag.name.toLowerCase() === tagSearchQuery.toLowerCase()
+											) && (
+												<div className="py-3 px-2 text-center text-sm text-muted-foreground">
+													<Trans>
+														Press Enter to create "{tagSearchQuery}"
+													</Trans>
+												</div>
+											)}
+										{availableTags.length === 0 && !tagSearchQuery && (
+											<div className="py-4 text-center text-sm text-muted-foreground">
+												<Trans>Type a name and press Enter to create a tag.</Trans>
+											</div>
+										)}
+										{availableTags.length > 0 &&
+											!tagSearchQuery &&
+											availableTags.filter((tag) =>
+												tag.name.toLowerCase().includes(tagSearchQuery.toLowerCase())
+											).length === 0 && (
+												<div className="py-4 text-center text-sm text-muted-foreground">
+													<Trans>No tags found.</Trans>
+												</div>
+											)}
+									</div>
+								</DropdownMenuContent>
+							</DropdownMenu>
+							{selectedTags.length > 0 && (
+								<div className="flex flex-wrap gap-1.5">
+									{selectedTags.map((tagId) => {
+										const tag = availableTags.find((t) => t.id === tagId)
+										if (!tag) return null
+										return (
+											<Badge
+												key={tag.id}
+												style={{ backgroundColor: tag.color || "#3b82f6" }}
+												className="text-white text-xs"
+											>
+												{tag.name}
+												<button
+													type="button"
+													className="ml-1 hover:bg-white/20 rounded-full"
+													onClick={(e) => {
+														e.stopPropagation()
+														setSelectedTags((prev) => prev.filter((id) => id !== tagId))
+													}}
+												>
+													<XIcon className="h-3 w-3" />
+												</button>
+											</Badge>
+										)
+									})}
 								</div>
-							</>
-						)}
+							)}
+						</div>
 					</div>
 					<DialogFooter className="flex justify-end gap-x-2 gap-y-3 flex-col mt-5">
 						{/* Docker */}
