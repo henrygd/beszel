@@ -89,6 +89,39 @@ func TestParseSmartForSata(t *testing.T) {
 	}
 }
 
+func TestParseSmartForSataDeviceStatisticsTemperature(t *testing.T) {
+	jsonPayload := []byte(`{
+		"smartctl": {"exit_status": 0},
+		"device": {"name": "/dev/sdb", "type": "sat"},
+		"model_name": "SanDisk SSD U110 16GB",
+		"serial_number": "DEVSTAT123",
+		"firmware_version": "U21B001",
+		"user_capacity": {"bytes": 16013942784},
+		"smart_status": {"passed": true},
+		"ata_smart_attributes": {"table": []},
+		"ata_device_statistics": {
+			"pages": [
+				{
+					"number": 5,
+					"name": "Temperature Statistics",
+					"table": [
+						{"name": "Current Temperature", "value": 22, "flags": {"valid": true}}
+					]
+				}
+			]
+		}
+	}`)
+
+	sm := &SmartManager{SmartDataMap: make(map[string]*smart.SmartData)}
+	hasData, exitStatus := sm.parseSmartForSata(jsonPayload)
+	require.True(t, hasData)
+	assert.Equal(t, 0, exitStatus)
+
+	deviceData, ok := sm.SmartDataMap["DEVSTAT123"]
+	require.True(t, ok, "expected smart data entry for serial DEVSTAT123")
+	assert.Equal(t, uint8(22), deviceData.Temperature)
+}
+
 func TestParseSmartForSataParentheticalRawValue(t *testing.T) {
 	jsonPayload := []byte(`{
 		"smartctl": {"exit_status": 0},
@@ -195,6 +228,24 @@ func TestDevicesSnapshotReturnsCopy(t *testing.T) {
 	assert.Len(t, snapshot, 2)
 }
 
+func TestScanDevicesWithEnvOverrideAndSeparator(t *testing.T) {
+	t.Setenv("SMART_DEVICES_SEPARATOR", "|")
+	t.Setenv("SMART_DEVICES", "/dev/sda:jmb39x-q,0|/dev/nvme0:nvme")
+
+	sm := &SmartManager{
+		SmartDataMap: make(map[string]*smart.SmartData),
+	}
+
+	err := sm.ScanDevices(true)
+	require.NoError(t, err)
+
+	require.Len(t, sm.SmartDevices, 2)
+	assert.Equal(t, "/dev/sda", sm.SmartDevices[0].Name)
+	assert.Equal(t, "jmb39x-q,0", sm.SmartDevices[0].Type)
+	assert.Equal(t, "/dev/nvme0", sm.SmartDevices[1].Name)
+	assert.Equal(t, "nvme", sm.SmartDevices[1].Type)
+}
+
 func TestScanDevicesWithEnvOverride(t *testing.T) {
 	t.Setenv("SMART_DEVICES", "/dev/sda:sat, /dev/nvme0:nvme")
 
@@ -249,13 +300,19 @@ func TestSmartctlArgs(t *testing.T) {
 
 	sataDevice := &DeviceInfo{Name: "/dev/sda", Type: "sat"}
 	assert.Equal(t,
-		[]string{"-d", "sat", "-a", "--json=c", "-n", "standby", "/dev/sda"},
+		[]string{"-d", "sat", "-a", "--json=c", "-l", "devstat", "-n", "standby", "/dev/sda"},
 		sm.smartctlArgs(sataDevice, true),
 	)
 
 	assert.Equal(t,
-		[]string{"-d", "sat", "-a", "--json=c", "/dev/sda"},
+		[]string{"-d", "sat", "-a", "--json=c", "-l", "devstat", "/dev/sda"},
 		sm.smartctlArgs(sataDevice, false),
+	)
+
+	nvmeDevice := &DeviceInfo{Name: "/dev/nvme0", Type: "nvme"}
+	assert.Equal(t,
+		[]string{"-d", "nvme", "-a", "--json=c", "-n", "standby", "/dev/nvme0"},
+		sm.smartctlArgs(nvmeDevice, true),
 	)
 
 	assert.Equal(t,
@@ -440,6 +497,88 @@ func TestMergeDeviceListsUpdatesTypeWhenUnverified(t *testing.T) {
 	assert.False(t, device.typeVerified)
 	assert.Equal(t, "nvme", device.Type)
 	assert.Equal(t, "", device.parserType)
+}
+
+func TestMergeDeviceListsHandlesDevicesWithSameNameAndDifferentTypes(t *testing.T) {
+	// There are use cases where the same device name is re-used,
+	// for example, a RAID controller with multiple drives.
+	scanned := []*DeviceInfo{
+		{Name: "/dev/sda", Type: "megaraid,0"},
+		{Name: "/dev/sda", Type: "megaraid,1"},
+		{Name: "/dev/sda", Type: "megaraid,2"},
+	}
+
+	merged := mergeDeviceLists(nil, scanned, nil)
+	require.Len(t, merged, 3, "should have 3 separate devices for RAID controller")
+
+	byKey := make(map[string]*DeviceInfo, len(merged))
+	for _, dev := range merged {
+		key := dev.Name + "|" + dev.Type
+		byKey[key] = dev
+	}
+
+	assert.Contains(t, byKey, "/dev/sda|megaraid,0")
+	assert.Contains(t, byKey, "/dev/sda|megaraid,1")
+	assert.Contains(t, byKey, "/dev/sda|megaraid,2")
+}
+
+func TestMergeDeviceListsHandlesMixedRAIDAndRegular(t *testing.T) {
+	// Test mixing RAID drives with regular devices
+	scanned := []*DeviceInfo{
+		{Name: "/dev/sda", Type: "megaraid,0"},
+		{Name: "/dev/sda", Type: "megaraid,1"},
+		{Name: "/dev/sdb", Type: "sat"},
+		{Name: "/dev/nvme0", Type: "nvme"},
+	}
+
+	merged := mergeDeviceLists(nil, scanned, nil)
+	require.Len(t, merged, 4, "should have 4 separate devices")
+
+	byKey := make(map[string]*DeviceInfo, len(merged))
+	for _, dev := range merged {
+		key := dev.Name + "|" + dev.Type
+		byKey[key] = dev
+	}
+
+	assert.Contains(t, byKey, "/dev/sda|megaraid,0")
+	assert.Contains(t, byKey, "/dev/sda|megaraid,1")
+	assert.Contains(t, byKey, "/dev/sdb|sat")
+	assert.Contains(t, byKey, "/dev/nvme0|nvme")
+}
+
+func TestUpdateSmartDevicesPreservesRAIDDrives(t *testing.T) {
+	// Test that updateSmartDevices correctly validates RAID drives using composite keys
+	sm := &SmartManager{
+		SmartDevices: []*DeviceInfo{
+			{Name: "/dev/sda", Type: "megaraid,0"},
+			{Name: "/dev/sda", Type: "megaraid,1"},
+		},
+		SmartDataMap: map[string]*smart.SmartData{
+			"serial-0": {
+				DiskName:     "/dev/sda",
+				DiskType:     "megaraid,0",
+				SerialNumber: "serial-0",
+			},
+			"serial-1": {
+				DiskName:     "/dev/sda",
+				DiskType:     "megaraid,1",
+				SerialNumber: "serial-1",
+			},
+			"serial-stale": {
+				DiskName:     "/dev/sda",
+				DiskType:     "megaraid,2",
+				SerialNumber: "serial-stale",
+			},
+		},
+	}
+
+	sm.updateSmartDevices(sm.SmartDevices)
+
+	// serial-0 and serial-1 should be preserved (matching devices exist)
+	assert.Contains(t, sm.SmartDataMap, "serial-0")
+	assert.Contains(t, sm.SmartDataMap, "serial-1")
+	// serial-stale should be removed (no matching device)
+	assert.NotContains(t, sm.SmartDataMap, "serial-stale")
 }
 
 func TestParseSmartOutputMarksVerified(t *testing.T) {
