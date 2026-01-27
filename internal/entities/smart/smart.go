@@ -138,8 +138,7 @@ type AtaDeviceStatistics struct {
 }
 
 type AtaDeviceStatisticsPage struct {
-	Number uint16                     `json:"number"`
-	Name   string                     `json:"name"`
+	Number uint8                      `json:"number"`
 	Table  []AtaDeviceStatisticsEntry `json:"table"`
 }
 

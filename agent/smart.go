@@ -882,7 +882,7 @@ func getSmartStatus(temperature uint8, passed bool) string {
 }
 
 func temperatureFromAtaDeviceStatistics(stats smart.AtaDeviceStatistics) (uint8, bool) {
-	entry := findAtaDeviceStatisticsEntry(stats, 5, "Temperature Statistics", "Current Temperature")
+	entry := findAtaDeviceStatisticsEntry(stats, 5, "Current Temperature")
 	if entry == nil || entry.Value == nil {
 		return 0, false
 	}
@@ -894,18 +894,15 @@ func temperatureFromAtaDeviceStatistics(stats smart.AtaDeviceStatistics) (uint8,
 
 // findAtaDeviceStatisticsEntry centralizes ATA devstat lookups so additional
 // metrics can be pulled from the same structure in the future.
-func findAtaDeviceStatisticsEntry(stats smart.AtaDeviceStatistics, pageNumber uint16, pageName, entryName string) *smart.AtaDeviceStatisticsEntry {
+func findAtaDeviceStatisticsEntry(stats smart.AtaDeviceStatistics, pageNumber uint8, entryName string) *smart.AtaDeviceStatisticsEntry {
 	for pageIdx := range stats.Pages {
 		page := &stats.Pages[pageIdx]
-		if pageNumber > 0 && page.Number != pageNumber {
-			continue
-		}
-		if pageName != "" && !strings.EqualFold(page.Name, pageName) {
+		if page.Number != pageNumber {
 			continue
 		}
 		for entryIdx := range page.Table {
 			entry := &page.Table[entryIdx]
-			if entryName != "" && !strings.EqualFold(entry.Name, entryName) {
+			if !strings.EqualFold(entry.Name, entryName) {
 				continue
 			}
 			return entry
