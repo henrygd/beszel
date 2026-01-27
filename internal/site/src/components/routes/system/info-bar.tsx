@@ -10,6 +10,7 @@ import {
 	MemoryStickIcon,
 	MonitorIcon,
 	Rows,
+	TagIcon,
 } from "lucide-react"
 import { useMemo } from "react"
 import ChartTimeSelect from "@/components/charts/chart-time-select"
@@ -134,22 +135,7 @@ export default function InfoBar({
 		<Card>
 			<div className="grid xl:flex gap-4 px-4 sm:px-6 pt-3 sm:pt-4 pb-5">
 				<div>
-					<div className="flex items-center gap-3 mb-1.5">
-						<h1 className="text-[1.6rem] font-semibold">{system.name}</h1>
-						{system.expand?.tags && system.expand.tags.length > 0 && (
-							<div className="flex flex-wrap gap-1.5">
-								{system.expand.tags.map((tag: TagRecord) => (
-									<Badge
-										key={tag.id}
-										style={{ backgroundColor: tag.color || "#3b82f6" }}
-										className="text-white text-sm"
-									>
-										{tag.name}
-									</Badge>
-								))}
-							</div>
-						)}
-					</div>
+					<h1 className="text-[1.6rem] font-semibold mb-1.5">{system.name}</h1>
 					<div className="flex flex-wrap items-center gap-3 gap-y-2 text-sm opacity-90">
 						<TooltipProvider>
 							<Tooltip>
@@ -189,7 +175,7 @@ export default function InfoBar({
 							</Tooltip>
 						</TooltipProvider>
 
-						{systemInfo.map(({ value, label, Icon, hide }) => {
+						{systemInfo.map(({ value, label, Icon, hide }, index) => {
 							if (hide || !value) {
 								return null
 							}
@@ -210,6 +196,35 @@ export default function InfoBar({
 										</TooltipProvider>
 									) : (
 										content
+									)}
+									{/* Render tags after host/IP (index 0) */}
+									{index === 1 && system.expand?.tags && system.expand.tags.length > 0 && (
+										<>
+											<Separator orientation="vertical" className="h-4 bg-primary/30" />
+											<TooltipProvider>
+												<Tooltip delayDuration={150}>
+													<TooltipTrigger asChild>
+														<div className="flex gap-1.5 items-center cursor-default">
+															<TagIcon className="h-4 w-4" />
+															<span>{system.expand.tags.length}</span>
+														</div>
+													</TooltipTrigger>
+													<TooltipContent>
+														<div className="flex flex-wrap gap-1.5 max-w-64">
+															{system.expand.tags.map((tag: TagRecord) => (
+																<Badge
+																	key={tag.id}
+																	style={{ backgroundColor: tag.color || "#3b82f6" }}
+																	className="text-white text-xs"
+																>
+																	{tag.name}
+																</Badge>
+															))}
+														</div>
+													</TooltipContent>
+												</Tooltip>
+											</TooltipProvider>
+										</>
 									)}
 								</div>
 							)
