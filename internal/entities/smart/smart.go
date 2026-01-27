@@ -130,8 +130,21 @@ type SummaryInfo struct {
 }
 
 type AtaSmartAttributes struct {
-	// Revision int                 `json:"revision"`
 	Table []AtaSmartAttribute `json:"table"`
+}
+
+type AtaDeviceStatistics struct {
+	Pages []AtaDeviceStatisticsPage `json:"pages"`
+}
+
+type AtaDeviceStatisticsPage struct {
+	Number uint8                      `json:"number"`
+	Table  []AtaDeviceStatisticsEntry `json:"table"`
+}
+
+type AtaDeviceStatisticsEntry struct {
+	Name  string  `json:"name"`
+	Value *uint64 `json:"value,omitempty"`
 }
 
 type AtaSmartAttribute struct {
@@ -343,7 +356,8 @@ type SmartInfoForSata struct {
 	SmartStatus SmartStatusInfo `json:"smart_status"`
 	// AtaSmartData                 AtaSmartData                 `json:"ata_smart_data"`
 	// AtaSctCapabilities           AtaSctCapabilities           `json:"ata_sct_capabilities"`
-	AtaSmartAttributes AtaSmartAttributes `json:"ata_smart_attributes"`
+	AtaSmartAttributes  AtaSmartAttributes  `json:"ata_smart_attributes"`
+	AtaDeviceStatistics AtaDeviceStatistics `json:"ata_device_statistics"`
 	// PowerOnTime                  PowerOnTimeInfo              `json:"power_on_time"`
 	// PowerCycleCount              uint16                       `json:"power_cycle_count"`
 	Temperature TemperatureInfo `json:"temperature"`
