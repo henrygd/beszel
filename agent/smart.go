@@ -515,10 +515,12 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 // smartctlArgs returns the arguments for the smartctl command
 // based on the device type and whether to include standby mode
 func (sm *SmartManager) smartctlArgs(deviceInfo *DeviceInfo, includeStandby bool) []string {
-	args := make([]string, 0, 7)
+	args := make([]string, 0, 9)
+	var deviceType, parserType string
 
 	if deviceInfo != nil {
-		deviceType := strings.ToLower(deviceInfo.Type)
+		deviceType = strings.ToLower(deviceInfo.Type)
+		parserType = strings.ToLower(deviceInfo.parserType)
 		// types sometimes misidentified in scan; see github.com/henrygd/beszel/issues/1345
 		if deviceType != "" && deviceType != "scsi" && deviceType != "ata" {
 			args = append(args, "-d", deviceInfo.Type)
@@ -526,6 +528,13 @@ func (sm *SmartManager) smartctlArgs(deviceInfo *DeviceInfo, includeStandby bool
 	}
 
 	args = append(args, "-a", "--json=c")
+	effectiveType := parserType
+	if effectiveType == "" {
+		effectiveType = deviceType
+	}
+	if effectiveType == "sat" || effectiveType == "ata" {
+		args = append(args, "-l", "devstat")
+	}
 
 	if includeStandby {
 		args = append(args, "-n", "standby")
@@ -829,6 +838,11 @@ func (sm *SmartManager) parseSmartForSata(output []byte) (bool, int) {
 	smartData.FirmwareVersion = data.FirmwareVersion
 	smartData.Capacity = data.UserCapacity.Bytes
 	smartData.Temperature = data.Temperature.Current
+	if smartData.Temperature == 0 {
+		if temp, ok := temperatureFromAtaDeviceStatistics(data.AtaDeviceStatistics); ok {
+			smartData.Temperature = temp
+		}
+	}
 	smartData.SmartStatus = getSmartStatus(smartData.Temperature, data.SmartStatus.Passed)
 	smartData.DiskName = data.Device.Name
 	smartData.DiskType = data.Device.Type
@@ -865,6 +879,36 @@ func getSmartStatus(temperature uint8, passed bool) string {
 	} else {
 		return "UNKNOWN"
 	}
+}
+
+func temperatureFromAtaDeviceStatistics(stats smart.AtaDeviceStatistics) (uint8, bool) {
+	entry := findAtaDeviceStatisticsEntry(stats, 5, "Current Temperature")
+	if entry == nil || entry.Value == nil {
+		return 0, false
+	}
+	if *entry.Value > 255 {
+		return 0, false
+	}
+	return uint8(*entry.Value), true
+}
+
+// findAtaDeviceStatisticsEntry centralizes ATA devstat lookups so additional
+// metrics can be pulled from the same structure in the future.
+func findAtaDeviceStatisticsEntry(stats smart.AtaDeviceStatistics, pageNumber uint8, entryName string) *smart.AtaDeviceStatisticsEntry {
+	for pageIdx := range stats.Pages {
+		page := &stats.Pages[pageIdx]
+		if page.Number != pageNumber {
+			continue
+		}
+		for entryIdx := range page.Table {
+			entry := &page.Table[entryIdx]
+			if !strings.EqualFold(entry.Name, entryName) {
+				continue
+			}
+			return entry
+		}
+	}
+	return nil
 }
 
 func (sm *SmartManager) parseSmartForScsi(output []byte) (bool, int) {
