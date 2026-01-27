@@ -106,12 +106,12 @@ func Update(useMirror bool) error {
 		}
 	}
 
-	// 6) Fix SELinux context if necessary
+	// Fix SELinux context if necessary
 	if err := ghupdate.HandleSELinuxContext(exePath); err != nil {
 		ghupdate.ColorPrintf(ghupdate.ColorYellow, "Warning: SELinux context handling: %v", err)
 	}
 
-	// 7) Restart service if running under a recognised init system
+	// Restart service if running under a recognised init system
 	if r := detectRestarter(); r != nil {
 		if err := r.Restart(); err != nil {
 			ghupdate.ColorPrintf(ghupdate.ColorYellow, "Warning: failed to restart service: %v", err)
