@@ -49,10 +49,12 @@ export function AddSystemButton({ className }: { className?: string }) {
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger asChild>
 				<Button variant="outline" className={cn("flex gap-1 max-xs:h-[2.4rem]", className)}>
-					<PlusIcon className="h-4 w-4 -ms-1" />
-					<Trans>
-						Add <span className="hidden sm:inline">System</span>
-					</Trans>
+					<PlusIcon className="h-4 w-4 450:-ms-1" />
+					<span className="hidden 450:inline">
+						<Trans>
+							Add <span className="hidden sm:inline">System</span>
+						</Trans>
+					</span>
 				</Button>
 			</DialogTrigger>
 			{opened.current && <SystemDialog setOpen={setOpen} />}
