@@ -52,6 +52,7 @@ import AlertButton from "../alerts/alert-button"
 import { $router, Link } from "../router"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card"
 import { SystemsTableColumns, ActionsButton, IndicatorDot } from "./systems-table-columns"
+import { getTagColorClasses } from "../tags-columns"
 
 type ViewMode = "table" | "grid"
 type StatusFilter = "all" | SystemRecord["status"]
@@ -256,8 +257,7 @@ export default function SystemsTable() {
 															>
 																<div className="flex items-center gap-2 min-w-0 flex-1">
 																	<Badge
-																		style={{ backgroundColor: tag.color || "#3b82f6" }}
-																		className="text-white text-xs px-2 py-0.5 shrink-0"
+																		className={cn("text-xs px-2 py-0.5 shrink-0 pointer-events-none", getTagColorClasses(tag.color))}
 																	>
 																		{tag.name}
 																	</Badge>
