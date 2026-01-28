@@ -49,6 +49,7 @@ export default function Navbar() {
 			</Link>
 			<SearchButton />
 
+			{/** biome-ignore lint/a11y/noStaticElementInteractions: ignore */}
 			<div className="flex items-center ms-auto" onMouseEnter={() => import("@/components/routes/settings/general")}>
 				<Tooltip>
 					<TooltipTrigger asChild>
@@ -61,7 +62,7 @@ export default function Navbar() {
 						</Link>
 					</TooltipTrigger>
 					<TooltipContent>
-						<Trans>Containers</Trans>
+						<Trans>All Containers</Trans>
 					</TooltipContent>
 				</Tooltip>
 				<Tooltip>
@@ -156,14 +157,14 @@ export default function Navbar() {
 	)
 }
 
+const Kbd = ({ children }: { children: React.ReactNode }) => (
+	<kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+		{children}
+	</kbd>
+)
+
 function SearchButton() {
 	const [open, setOpen] = useState(false)
-
-	const Kbd = ({ children }: { children: React.ReactNode }) => (
-		<kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-			{children}
-		</kbd>
-	)
 
 	return (
 		<>

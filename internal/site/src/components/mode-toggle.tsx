@@ -3,6 +3,7 @@ import { MoonStarIcon, SunIcon } from "lucide-react"
 import { useTheme } from "@/components/theme-provider"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
+import { Trans } from "@lingui/react/macro"
 
 export function ModeToggle() {
 	const { theme, setTheme } = useTheme()
@@ -21,7 +22,7 @@ export function ModeToggle() {
 				</Button>
 			</TooltipTrigger>
 			<TooltipContent>
-				{theme === "dark" ? t`Switch to light mode` : t`Switch to dark mode`}
+				<Trans>Toggle theme</Trans>
 			</TooltipContent>
 		</Tooltip>
 	)
