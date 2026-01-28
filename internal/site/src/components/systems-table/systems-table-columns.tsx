@@ -195,7 +195,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 						{system.expand.tags.slice(0, maxTags).map((tag: TagRecord) => (
 							<Badge
 								key={tag.id}
-								className={cn("text-xs px-1.5 py-0", getTagColorClasses(tag.color))}
+								className={cn("text-xs px-1.5 py-0 pointer-events-none", getTagColorClasses(tag.color))}
 							>
 								{tag.name}
 							</Badge>

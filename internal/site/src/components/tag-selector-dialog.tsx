@@ -114,7 +114,7 @@ export function TagSelectorDialog({
 										}}
 										onSelect={(e) => e.preventDefault()}
 									>
-										<Badge className={cn("text-xs", getTagColorClasses(tag.color))}>
+										<Badge className={cn("text-xs pointer-events-none", getTagColorClasses(tag.color))}>
 											{tag.name}
 										</Badge>
 									</DropdownMenuCheckboxItem>
@@ -155,12 +155,12 @@ export function TagSelectorDialog({
 						return (
 							<Badge
 								key={tag.id}
-								className={cn("text-xs", getTagColorClasses(tag.color))}
+								className={cn("text-xs pointer-events-none", getTagColorClasses(tag.color))}
 							>
 								{tag.name}
 								<button
 									type="button"
-									className="ml-1 hover:bg-black/10 dark:hover:bg-white/20 rounded-full"
+									className="ml-1 hover:bg-black/10 dark:hover:bg-white/20 rounded-full pointer-events-auto"
 									onClick={(e) => {
 										e.stopPropagation()
 										onSelectedTagsChange(selectedTags.filter((id) => id !== tagId))

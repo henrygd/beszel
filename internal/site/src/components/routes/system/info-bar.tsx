@@ -215,7 +215,7 @@ export default function InfoBar({
 															{system.expand.tags.map((tag: TagRecord) => (
 																<Badge
 																	key={tag.id}
-																	className={`text-xs ${getTagColorClasses(tag.color)}`}
+																	className={`text-xs pointer-events-none ${getTagColorClasses(tag.color)}`}
 																>
 																	{tag.name}
 																</Badge>

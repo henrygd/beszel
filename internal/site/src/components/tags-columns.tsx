@@ -17,6 +17,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { cn } from "@/lib/utils"
 import type { SystemRecord, TagRecord } from "@/types"
 
 export interface TagWithSystems extends TagRecord {
@@ -93,7 +94,7 @@ export function createTagsColumns(
 				</span>
 			),
 			cell: ({ row }) => (
-				<Badge className={getTagColorClasses(row.original.color)}>
+				<Badge className={cn("pointer-events-none", getTagColorClasses(row.original.color))}>
 					{row.original.name}
 				</Badge>
 			),

@@ -12,7 +12,6 @@ import {
 	useReactTable,
 } from "@tanstack/react-table"
 import {
-	ChevronDownIcon,
 	ChevronLeftIcon,
 	ChevronRightIcon,
 	ChevronsLeftIcon,
@@ -20,7 +19,6 @@ import {
 	PlusIcon,
 	TagIcon,
 	Trash2Icon,
-	XIcon,
 } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import {
@@ -34,23 +32,7 @@ import {
 	AlertDialogTitle,
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog"
-import {
-	DropdownMenu,
-	DropdownMenuCheckboxItem,
-	DropdownMenuContent,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -59,7 +41,8 @@ import { toast } from "@/components/ui/use-toast"
 import { cn, useBrowserStorage } from "@/lib/utils"
 import { pb } from "@/lib/api"
 import type { SystemRecord, TagRecord } from "@/types"
-import { createTagsColumns, getRandomColor, getTagColorClasses, tagColorClasses, tagColors, type TagWithSystems } from "@/components/tags-columns"
+import { createTagsColumns, getRandomColor, type TagWithSystems } from "@/components/tags-columns"
+import { TagEditDialog } from "@/components/tag-edit-dialog"
 
 export default function TagsSettings() {
 	const { t: tFunc } = useLingui()
@@ -400,161 +383,21 @@ export default function TagsSettings() {
 			</div>
 
 			{/* Create/Edit Tag Dialog */}
-			<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-				<DialogContent className="sm:max-w-lg">
-					<DialogHeader>
-						<DialogTitle>
-							{editingTag ? <Trans>Edit Tag</Trans> : <Trans>Create New Tag</Trans>}
-						</DialogTitle>
-						<DialogDescription>
-							{editingTag ? (
-								<Trans>Update the tag name, color, and assigned systems.</Trans>
-							) : (
-								<Trans>Create a new tag and assign it to systems.</Trans>
-							)}
-						</DialogDescription>
-					</DialogHeader>
-					<div className="grid xs:grid-cols-[auto_1fr] gap-y-3 gap-x-4 items-center mt-1">
-						<Label htmlFor="tag-name" className="xs:text-end">
-							<Trans>Name</Trans>
-						</Label>
-						<Input
-							id="tag-name"
-							value={newTagName}
-							onChange={(e) => setNewTagName(e.target.value)}
-							placeholder={t`e.g., Production, Development`}
-							maxLength={50}
-						/>
-						<Label className="xs:text-end self-start pt-2">
-							<Trans>Color</Trans>
-						</Label>
-						<div className="flex flex-col gap-2">
-							<div className="flex flex-wrap gap-1.5">
-								{tagColors.map((color) => (
-									<button
-										key={color}
-										type="button"
-										onClick={() => setNewTagColor(color)}
-										className={cn(
-											"w-6 h-6 rounded-full transition-all",
-											tagColorClasses[color].split(" ").filter(c => c.startsWith("bg-") && !c.includes("dark")).join(" "),
-											newTagColor === color && "ring-2 ring-offset-2 ring-primary"
-										)}
-									/>
-								))}
-							</div>
-							<Badge className={cn(getTagColorClasses(newTagColor), "self-start")}>
-								{newTagName || t`Preview`}
-							</Badge>
-						</div>
-						<Label className="xs:text-end self-start pt-2">
-							<Trans>Systems</Trans>
-						</Label>
-						<div className="flex flex-col gap-2">
-							<DropdownMenu>
-								<DropdownMenuTrigger asChild>
-									<Button variant="outline" className="justify-between font-normal">
-										{selectedSystems.length > 0 ? (
-											<span className="truncate">
-												{selectedSystems.length === 1
-													? systems.find((s) => s.id === selectedSystems[0])?.name
-													: t`${selectedSystems.length} systems selected`}
-											</span>
-										) : (
-											<span className="text-muted-foreground">
-												<Trans>Select systems...</Trans>
-											</span>
-										)}
-										<ChevronDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-									</Button>
-								</DropdownMenuTrigger>
-								<DropdownMenuContent className="w-80" align="start">
-									<div className="px-2 py-1.5">
-										<Input
-											placeholder={t`Search systems...`}
-											value={systemSearchQuery}
-											onChange={(e) => setSystemSearchQuery(e.target.value)}
-											className="h-8"
-										/>
-									</div>
-									<DropdownMenuSeparator />
-									<div className="max-h-60 overflow-y-auto">
-										{systems
-											.filter((system) =>
-												system.name.toLowerCase().includes(systemSearchQuery.toLowerCase())
-											)
-											.map((system) => {
-												const isSelected = selectedSystems.includes(system.id)
-												return (
-													<DropdownMenuCheckboxItem
-														key={system.id}
-														checked={isSelected}
-														onCheckedChange={(checked) => {
-															setSelectedSystems((prev) =>
-																checked ? [...prev, system.id] : prev.filter((id) => id !== system.id)
-															)
-														}}
-														onSelect={(e) => e.preventDefault()}
-													>
-														{system.name}
-													</DropdownMenuCheckboxItem>
-												)
-											})}
-										{systems.length === 0 && (
-											<div className="py-4 text-center text-sm text-muted-foreground">
-												<Trans>No systems found.</Trans>
-											</div>
-										)}
-										{systems.length > 0 &&
-											systemSearchQuery &&
-											systems.filter((s) =>
-												s.name.toLowerCase().includes(systemSearchQuery.toLowerCase())
-											).length === 0 && (
-												<div className="py-4 text-center text-sm text-muted-foreground">
-													<Trans>No systems found.</Trans>
-												</div>
-											)}
-									</div>
-								</DropdownMenuContent>
-							</DropdownMenu>
-							{selectedSystems.length > 0 && (
-								<div className="flex flex-wrap gap-1.5">
-									{selectedSystems.map((systemId) => {
-										const system = systems.find((s) => s.id === systemId)
-										if (!system) return null
-										return (
-											<Badge
-												key={system.id}
-												variant="secondary"
-												className="text-xs"
-											>
-												{system.name}
-												<button
-													type="button"
-													className="ml-1 hover:bg-muted-foreground/20 rounded-full"
-													onClick={() => {
-														setSelectedSystems((prev) => prev.filter((id) => id !== systemId))
-													}}
-												>
-													<XIcon className="h-3 w-3" />
-												</button>
-											</Badge>
-										)
-									})}
-								</div>
-							)}
-						</div>
-					</div>
-					<DialogFooter className="mt-4">
-						<Button variant="outline" onClick={() => setDialogOpen(false)}>
-							<Trans>Cancel</Trans>
-						</Button>
-						<Button onClick={saveTag}>
-							{editingTag ? <Trans>Save</Trans> : <Trans>Create</Trans>}
-						</Button>
-					</DialogFooter>
-				</DialogContent>
-			</Dialog>
+			<TagEditDialog
+				open={dialogOpen}
+				onOpenChange={setDialogOpen}
+				editingTag={editingTag}
+				tagName={newTagName}
+				tagColor={newTagColor}
+				selectedSystems={selectedSystems}
+				systemSearchQuery={systemSearchQuery}
+				systems={systems}
+				onTagNameChange={setNewTagName}
+				onTagColorChange={setNewTagColor}
+				onSelectedSystemsChange={setSelectedSystems}
+				onSystemSearchQueryChange={setSystemSearchQuery}
+				onSave={saveTag}
+			/>
 
 			{/* Data Table */}
 			<div className="rounded-md border">
@@ -575,7 +418,11 @@ export default function TagsSettings() {
 					<TableBody>
 						{table.getRowModel().rows.length ? (
 							table.getRowModel().rows.map((row) => (
-								<TableRow key={row.id}>
+								<TableRow  
+									key={row.id}
+									className="cursor-pointer hover:bg-muted/50"
+									onClick={() => openEditDialog(row.original)}
+								>
 									{row.getVisibleCells().map((cell) => (
 										<TableCell key={cell.id} className="py-2 px-3">
 											{flexRender(cell.column.columnDef.cell, cell.getContext())}
