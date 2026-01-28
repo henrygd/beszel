@@ -1,16 +1,27 @@
 import { t } from "@lingui/core/macro"
 import { Trans, useLingui } from "@lingui/react/macro"
 import {
-	type ColumnDef,
 	flexRender,
 	getCoreRowModel,
 	getFilteredRowModel,
+	getPaginationRowModel,
 	getSortedRowModel,
+	type PaginationState,
 	type RowSelectionState,
 	type SortingState,
 	useReactTable,
 } from "@tanstack/react-table"
-import { ChevronDownIcon, MoreHorizontalIcon, PencilIcon, PlusIcon, ServerIcon, TagIcon, Trash2Icon, TrashIcon, XIcon } from "lucide-react"
+import {
+	ChevronDownIcon,
+	ChevronLeftIcon,
+	ChevronRightIcon,
+	ChevronsLeftIcon,
+	ChevronsRightIcon,
+	PlusIcon,
+	TagIcon,
+	Trash2Icon,
+	XIcon,
+} from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import {
 	AlertDialog,
@@ -25,7 +36,6 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button, buttonVariants } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import {
 	Dialog,
 	DialogContent,
@@ -38,55 +48,18 @@ import {
 	DropdownMenu,
 	DropdownMenuCheckboxItem,
 	DropdownMenuContent,
-	DropdownMenuItem,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { toast } from "@/components/ui/use-toast"
-import { cn } from "@/lib/utils"
+import { cn, useBrowserStorage } from "@/lib/utils"
 import { pb } from "@/lib/api"
 import type { SystemRecord, TagRecord } from "@/types"
-
-// Tag color names (Tailwind colors)
-const tagColors = ["red", "orange", "amber", "yellow", "lime", "green", "emerald", "teal", "cyan", "sky", "blue", "indigo", "violet", "purple", "fuchsia", "pink", "rose"]
-
-// Tag color classes mapping
-export const tagColorClasses: Record<string, string> = {
-	red: "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300",
-	orange: "bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-300",
-	amber: "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-300",
-	yellow: "bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-300",
-	lime: "bg-lime-100 text-lime-700 dark:bg-lime-950 dark:text-lime-300",
-	green: "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300",
-	emerald: "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300",
-	teal: "bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-300",
-	cyan: "bg-cyan-100 text-cyan-700 dark:bg-cyan-950 dark:text-cyan-300",
-	sky: "bg-sky-100 text-sky-700 dark:bg-sky-950 dark:text-sky-300",
-	blue: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300",
-	indigo: "bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300",
-	violet: "bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-300",
-	purple: "bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300",
-	fuchsia: "bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-950 dark:text-fuchsia-300",
-	pink: "bg-pink-100 text-pink-700 dark:bg-pink-950 dark:text-pink-300",
-	rose: "bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300",
-}
-
-// Generate a random color name
-export function getRandomColor(): string {
-	return tagColors[Math.floor(Math.random() * tagColors.length)]
-}
-
-// Get classes for a tag color
-export function getTagColorClasses(color?: string): string {
-	return tagColorClasses[color || "blue"] || tagColorClasses.blue
-}
-
-interface TagWithSystems extends TagRecord {
-	systems: SystemRecord[]
-}
+import { createTagsColumns, getRandomColor, getTagColorClasses, tagColorClasses, tagColors, type TagWithSystems } from "@/components/tags-columns"
 
 export default function TagsSettings() {
 	const { t: tFunc } = useLingui()
@@ -103,6 +76,10 @@ export default function TagsSettings() {
 	const [sorting, setSorting] = useState<SortingState>([])
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+	const [pagination, setPagination] = useBrowserStorage<PaginationState>("tags-pagination", {
+		pageIndex: 0,
+		pageSize: 10,
+	})
 
 	// Initial data load
 	useEffect(() => {
@@ -325,122 +302,24 @@ export default function TagsSettings() {
 		}
 	}
 
-	const columns = useMemo<ColumnDef<TagWithSystems>[]>(
-		() => [
-			{
-				id: "select",
-				header: ({ table }) => (
-					<Checkbox
-						className="ms-2"
-						checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
-						onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-						aria-label="Select all"
-					/>
-				),
-				cell: ({ row }) => (
-					<Checkbox
-						className="ms-2"
-						checked={row.getIsSelected()}
-						onCheckedChange={(value) => row.toggleSelected(!!value)}
-						aria-label="Select row"
-					/>
-				),
-				enableSorting: false,
-				enableHiding: false,
-			},
-			{
-				accessorKey: "name",
-				header: () => (
-					<span className="flex items-center gap-2">
-						<TagIcon className="size-4" />
-						<Trans>Tag</Trans>
-					</span>
-				),
-				cell: ({ row }) => (
-					<Badge className={getTagColorClasses(row.original.color)}>
-						{row.original.name}
-					</Badge>
-				),
-			},
-			{
-				id: "systems",
-				accessorFn: (row) => row.systems.length,
-				header: () => (
-					<span className="flex items-center gap-2">
-						<ServerIcon className="size-4" />
-						<Trans>Systems</Trans>
-					</span>
-				),
-				cell: ({ row }) => {
-					const systemsList = row.original.systems
-					return (
-						<Button
-							variant="ghost"
-							size="sm"
-							className="h-8 px-3 gap-2"
-							onClick={() => openEditDialog(row.original)}
-						>
-							<span>{systemsList.length}</span>
-							{systemsList.length > 0 && (
-								<span className="text-muted-foreground text-xs truncate max-w-40 hidden sm:inline">
-									({systemsList.map((s) => s.name).join(", ")})
-								</span>
-							)}
-						</Button>
-					)
-				},
-			},
-			{
-				id: "actions",
-				header: () => (
-					<span className="sr-only">
-						<Trans>Actions</Trans>
-					</span>
-				),
-				cell: ({ row }) => (
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button variant="ghost" size="icon">
-								<span className="sr-only">
-									<Trans>Open menu</Trans>
-								</span>
-								<MoreHorizontalIcon className="size-5" />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end">
-							<DropdownMenuItem onSelect={() => openEditDialog(row.original)}>
-								<PencilIcon className="me-2.5 size-4" />
-								<Trans>Edit tag</Trans>
-							</DropdownMenuItem>
-							<DropdownMenuSeparator />
-							<DropdownMenuItem
-								className="text-destructive focus:text-destructive"
-								onSelect={() => deleteTag(row.original.id, row.original.name)}
-							>
-								<TrashIcon className="me-2.5 size-4" />
-								<Trans>Delete tag</Trans>
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
-				),
-			},
-		],
-		[systems]
-	)
+	const columns = createTagsColumns(openEditDialog, deleteTag)
 
 	const table = useReactTable({
 		data: tagsWithSystems,
 		columns,
 		getCoreRowModel: getCoreRowModel(),
+		getPaginationRowModel: getPaginationRowModel(),
 		getSortedRowModel: getSortedRowModel(),
 		getFilteredRowModel: getFilteredRowModel(),
 		onSortingChange: setSorting,
 		onGlobalFilterChange: setGlobalFilter,
 		onRowSelectionChange: setRowSelection,
+		onPaginationChange: setPagination,
 		state: {
 			sorting,
 			globalFilter,
 			rowSelection,
+			pagination,
 		},
 		globalFilterFn: (row, _columnId, filterValue) => {
 			const tagName = row.original.name.toLowerCase()
@@ -722,6 +601,94 @@ export default function TagsSettings() {
 						)}
 					</TableBody>
 				</Table>
+			</div>
+
+			{/* Pagination */}
+			<div className="flex items-center justify-between ps-1 tabular-nums">
+				<div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
+					<Trans>
+						{table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s)
+						selected.
+					</Trans>
+				</div>
+				<div className="flex w-full items-center gap-8 lg:w-fit">
+					<div className="hidden items-center gap-2 lg:flex">
+						<Label htmlFor="rows-per-page" className="text-sm font-medium">
+							<Trans>Rows per page</Trans>
+						</Label>
+						<Select
+							value={`${table.getState().pagination.pageSize}`}
+							onValueChange={(value) => {
+								table.setPageSize(Number(value))
+							}}
+						>
+							<SelectTrigger className="w-18" id="rows-per-page">
+								<SelectValue placeholder={table.getState().pagination.pageSize} />
+							</SelectTrigger>
+							<SelectContent side="top">
+								{[10, 20, 50, 100].map((pageSize) => (
+									<SelectItem key={pageSize} value={`${pageSize}`}>
+										{pageSize}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					</div>
+					<div className="flex w-fit items-center justify-center text-sm font-medium">
+						<Trans>
+							Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+						</Trans>
+					</div>
+					<div className="ms-auto flex items-center gap-2 lg:ms-0">
+						<Button
+							variant="outline"
+							className="hidden size-9 p-0 lg:flex"
+							onClick={() => table.setPageIndex(0)}
+							disabled={!table.getCanPreviousPage()}
+						>
+							<span className="sr-only">
+								<Trans>Go to first page</Trans>
+							</span>
+							<ChevronsLeftIcon className="size-5" />
+						</Button>
+						<Button
+							variant="outline"
+							className="size-9"
+							size="icon"
+							onClick={() => table.previousPage()}
+							disabled={!table.getCanPreviousPage()}
+						>
+							<span className="sr-only">
+								<Trans>Go to previous page</Trans>
+							</span>
+							<ChevronLeftIcon className="size-5" />
+						</Button>
+						<Button
+							variant="outline"
+							className="size-9"
+							size="icon"
+							onClick={() => table.nextPage()}
+							disabled={!table.getCanNextPage()}
+						>
+							<span className="sr-only">
+								<Trans>Go to next page</Trans>
+							</span>
+							<ChevronRightIcon className="size-5" />
+						</Button>
+						<Button
+							variant="outline"
+							className="hidden size-9 lg:flex"
+							size="icon"
+							onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+							disabled={!table.getCanNextPage()}
+						>
+							<span className="sr-only">
+								<Trans>Go to last page</Trans>
+							</span>
+							<ChevronsRightIcon className="size-5" />
+						</Button>
+					</div>
+				</div>
 			</div>
 		</div>
 	)
