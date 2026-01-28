@@ -37,7 +37,8 @@ import {
 	parseSemVer,
 } from "@/lib/utils"
 import { batteryStateTranslations } from "@/lib/i18n"
-import type { SystemRecord, TagRecord} from "@/types"
+import type { SystemRecord, TagRecord } from "@/types"
+import { getTagColorClasses } from "../routes/settings/tags"
 import { SystemDialog } from "../add-system"
 import AlertButton from "../alerts/alert-button"
 import { Badge } from "../ui/badge"
@@ -194,8 +195,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 						{system.expand.tags.slice(0, maxTags).map((tag: TagRecord) => (
 							<Badge
 								key={tag.id}
-								style={{ backgroundColor: tag.color || "#3b82f6" }}
-								className="text-white text-xs px-1.5 py-0"
+								className={cn("text-xs px-1.5 py-0", getTagColorClasses(tag.color))}
 							>
 								{tag.name}
 							</Badge>

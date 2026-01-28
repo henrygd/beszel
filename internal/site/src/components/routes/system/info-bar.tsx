@@ -23,6 +23,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { ConnectionType, connectionTypeLabels, Os, SystemStatus } from "@/lib/enums"
 import { cn, formatBytes, getHostDisplayValue, secondsToString, toFixedFloat } from "@/lib/utils"
 import type { ChartData, SystemDetailsRecord, SystemRecord, TagRecord } from "@/types"
+import { getTagColorClasses } from "@/components/routes/settings/tags"
 
 export default function InfoBar({
 	system,
@@ -214,8 +215,7 @@ export default function InfoBar({
 															{system.expand.tags.map((tag: TagRecord) => (
 																<Badge
 																	key={tag.id}
-																	style={{ backgroundColor: tag.color || "#3b82f6" }}
-																	className="text-white text-xs"
+																	className={`text-xs ${getTagColorClasses(tag.color)}`}
 																>
 																	{tag.name}
 																</Badge>
