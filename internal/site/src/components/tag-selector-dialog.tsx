@@ -1,17 +1,9 @@
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
-import { ChevronDownIcon, XIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import {
-	DropdownMenu,
-	DropdownMenuCheckboxItem,
-	DropdownMenuContent,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
 import { toast } from "@/components/ui/use-toast"
+import { SearchableDropdown } from "@/components/ui/searchable-dropdown"
+import { SelectedBadgeList } from "@/components/ui/selected-badge-list"
 import { pb } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import type { TagRecord } from "@/types"
@@ -34,8 +26,8 @@ export function TagSelectorDialog({
 	onSelectedTagsChange,
 	onSearchQueryChange,
 }: TagSelectorDialogProps) {
-	async function createTagFromSearch() {
-		const name = tagSearchQuery.trim()
+	async function createTagFromSearch(query: string) {
+		const name = query.trim()
 		if (!name) return
 		// Check if tag with this name already exists
 		if (availableTags.some((tag) => tag.name.toLowerCase() === name.toLowerCase())) return
@@ -57,122 +49,59 @@ export function TagSelectorDialog({
 		}
 	}
 
+	const displayText = (selectedCount: number) => {
+		if (selectedCount === 0) return t`Select tags...`
+		if (selectedCount === 1) {
+			const tag = availableTags.find((t) => t.id === selectedTags[0])
+			return tag?.name || t`1 tag selected`
+		}
+		return t`${selectedCount} tags selected`
+	}
+
 	return (
 		<div className="flex flex-col gap-2">
-			<DropdownMenu>
-				<DropdownMenuTrigger asChild>
-					<Button variant="outline" className="justify-between font-normal">
-						{selectedTags.length > 0 ? (
-							<span className="truncate">
-								{selectedTags.length === 1
-									? availableTags.find((t) => t.id === selectedTags[0])?.name
-									: t`${selectedTags.length} tags selected`}
-							</span>
-						) : (
-							<span className="text-muted-foreground">
-								<Trans>Select tags...</Trans>
-							</span>
-						)}
-						<ChevronDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-					</Button>
-				</DropdownMenuTrigger>
-				<DropdownMenuContent className="w-80" align="start">
-					<div className="px-2 py-1.5">
-						<Input
-							placeholder={t`Search or create tag...`}
-							value={tagSearchQuery}
-							onChange={(e) => onSearchQueryChange(e.target.value)}
-							className="h-8"
-							onClick={(e) => e.stopPropagation()}
-							onKeyDown={(e) => {
-								e.stopPropagation()
-								if (e.key === "Enter") {
-									e.preventDefault()
-									createTagFromSearch()
-								}
-							}}
-						/>
+			<SearchableDropdown
+				items={availableTags}
+				selectedIds={selectedTags}
+				searchQuery={tagSearchQuery}
+				onSearchChange={onSearchQueryChange}
+				onSelectionChange={onSelectedTagsChange}
+				getItemId={(tag) => tag.id}
+				getItemLabel={(tag) => tag.name}
+				renderItem={(tag) => (
+					<Badge className={cn("text-xs pointer-events-none", getTagColorClasses(tag.color))}>
+						{tag.name}
+					</Badge>
+				)}
+				placeholder={t`Search or create tag...`}
+				getDisplayText={(count) => (count === 1 ? availableTags.find((t) => t.id === selectedTags[0])?.name || t`1 tag selected` : displayText(count))}
+				stopPropagation
+				onCreateItem={createTagFromSearch}
+				createMessage={
+					<div className="py-3 px-2 text-center text-sm text-muted-foreground">
+						<Trans>Press Enter to create "{tagSearchQuery}"</Trans>
 					</div>
-					<DropdownMenuSeparator />
-					<div className="max-h-60 overflow-y-auto">
-						{availableTags
-							.filter((tag) =>
-								tag.name.toLowerCase().includes(tagSearchQuery.toLowerCase())
-							)
-							.map((tag) => {
-								const isSelected = selectedTags.includes(tag.id)
-								return (
-									<DropdownMenuCheckboxItem
-										key={tag.id}
-										checked={isSelected}
-										onCheckedChange={(checked) => {
-											onSelectedTagsChange(
-												checked
-													? [...selectedTags, tag.id]
-													: selectedTags.filter((id) => id !== tag.id)
-											)
-										}}
-										onSelect={(e) => e.preventDefault()}
-									>
-										<Badge className={cn("text-xs pointer-events-none", getTagColorClasses(tag.color))}>
-											{tag.name}
-										</Badge>
-									</DropdownMenuCheckboxItem>
-								)
-							})}
-						{tagSearchQuery &&
-							!availableTags.some(
-								(tag) => tag.name.toLowerCase() === tagSearchQuery.toLowerCase()
-							) && (
-								<div className="py-3 px-2 text-center text-sm text-muted-foreground">
-									<Trans>
-										Press Enter to create "{tagSearchQuery}"
-									</Trans>
-								</div>
-							)}
-						{availableTags.length === 0 && !tagSearchQuery && (
-							<div className="py-4 text-center text-sm text-muted-foreground">
-								<Trans>Type a name and press Enter to create a tag.</Trans>
-							</div>
-						)}
-						{availableTags.length > 0 &&
-							!tagSearchQuery &&
-							availableTags.filter((tag) =>
-								tag.name.toLowerCase().includes(tagSearchQuery.toLowerCase())
-							).length === 0 && (
-								<div className="py-4 text-center text-sm text-muted-foreground">
-									<Trans>No tags found.</Trans>
-								</div>
-							)}
+				}
+				emptyMessage={
+					<div className="py-4 text-center text-sm text-muted-foreground">
+						<Trans>Type a name and press Enter to create a tag.</Trans>
 					</div>
-				</DropdownMenuContent>
-			</DropdownMenu>
-			{selectedTags.length > 0 && (
-				<div className="flex flex-wrap gap-1.5">
-					{selectedTags.map((tagId) => {
-						const tag = availableTags.find((t) => t.id === tagId)
-						if (!tag) return null
-						return (
-							<Badge
-								key={tag.id}
-								className={cn("text-xs pointer-events-none", getTagColorClasses(tag.color))}
-							>
-								{tag.name}
-								<button
-									type="button"
-									className="ml-1 hover:bg-black/10 dark:hover:bg-white/20 rounded-full pointer-events-auto"
-									onClick={(e) => {
-										e.stopPropagation()
-										onSelectedTagsChange(selectedTags.filter((id) => id !== tagId))
-									}}
-								>
-									<XIcon className="h-3 w-3" />
-								</button>
-							</Badge>
-						)
-					})}
-				</div>
-			)}
+				}
+				noResultsMessage={
+					<div className="py-4 text-center text-sm text-muted-foreground">
+						<Trans>No tags found.</Trans>
+					</div>
+				}
+			/>
+
+			<SelectedBadgeList
+				items={availableTags}
+				selectedIds={selectedTags}
+				getItemId={(tag) => tag.id}
+				getItemLabel={(tag) => tag.name}
+				getItemClasses={(tag) => getTagColorClasses(tag.color)}
+				onRemove={(id) => onSelectedTagsChange(selectedTags.filter((tagId) => tagId !== id))}
+			/>
 		</div>
 	)
 }

@@ -43,6 +43,7 @@ import { pb } from "@/lib/api"
 import type { SystemRecord, TagRecord } from "@/types"
 import { createTagsColumns, getRandomColor, type TagWithSystems } from "@/components/tags-columns"
 import { TagEditDialog } from "@/components/tag-edit-dialog"
+import { syncTagAssignments, updateSystemsStateAfterTagAssignment } from "@/lib/tag-utils"
 
 export default function TagsSettings() {
 	const { t: tFunc } = useLingui()
@@ -155,33 +156,8 @@ export default function TagsSettings() {
 				const toAdd = selectedSystems.filter((id) => !currentSystems.includes(id))
 				const toRemove = currentSystems.filter((id) => !selectedSystems.includes(id))
 
-				const updates = [
-					...toAdd.map((systemId) => {
-						const system = systems.find((s) => s.id === systemId)
-						const newTags = [...(system?.tags || []), tagId]
-						return pb.collection("systems").update(systemId, { tags: newTags })
-					}),
-					...toRemove.map((systemId) => {
-						const system = systems.find((s) => s.id === systemId)
-						const newTags = (system?.tags || []).filter((t) => t !== tagId)
-						return pb.collection("systems").update(systemId, { tags: newTags })
-					}),
-				]
-
-				if (updates.length > 0) {
-					await Promise.all(updates)
-					setSystems((prev) =>
-						prev.map((s) => {
-							if (toAdd.includes(s.id)) {
-								return { ...s, tags: [...(s.tags || []), tagId] }
-							}
-							if (toRemove.includes(s.id)) {
-								return { ...s, tags: (s.tags || []).filter((t) => t !== tagId) }
-							}
-							return s
-						})
-					)
-				}
+				await syncTagAssignments(tagId, currentSystems, selectedSystems, systems)
+				setSystems((prev) => updateSystemsStateAfterTagAssignment(prev, tagId, toAdd, toRemove))
 
 				toast({
 					title: tFunc`Tag updated`,
@@ -198,20 +174,8 @@ export default function TagsSettings() {
 
 				// Assign to selected systems
 				if (selectedSystems.length > 0) {
-					const updates = selectedSystems.map((systemId) => {
-						const system = systems.find((s) => s.id === systemId)
-						const newTags = [...(system?.tags || []), tagId]
-						return pb.collection("systems").update(systemId, { tags: newTags })
-					})
-					await Promise.all(updates)
-					setSystems((prev) =>
-						prev.map((s) => {
-							if (selectedSystems.includes(s.id)) {
-								return { ...s, tags: [...(s.tags || []), tagId] }
-							}
-							return s
-						})
-					)
+					await syncTagAssignments(tagId, [], selectedSystems, systems)
+					setSystems((prev) => updateSystemsStateAfterTagAssignment(prev, tagId, selectedSystems, []))
 				}
 
 				toast({

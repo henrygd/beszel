@@ -1,6 +1,5 @@
 import { t } from "@lingui/core/macro"
 import { Trans } from "@lingui/react/macro"
-import { ChevronDownIcon, XIcon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -11,15 +10,10 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog"
-import {
-	DropdownMenu,
-	DropdownMenuCheckboxItem,
-	DropdownMenuContent,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { SearchableDropdown } from "@/components/ui/searchable-dropdown"
+import { SelectedBadgeList } from "@/components/ui/selected-badge-list"
 import { cn } from "@/lib/utils"
 import type { SystemRecord, TagRecord } from "@/types"
 import { tagColors, tagColorClasses, getTagColorClasses, type TagWithSystems } from "@/components/tags-columns"
@@ -107,100 +101,36 @@ export function TagEditDialog({
 						<Trans>Systems</Trans>
 					</Label>
 					<div className="flex flex-col gap-2">
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button variant="outline" className="justify-between font-normal">
-									{selectedSystems.length > 0 ? (
-										<span className="truncate">
-											{selectedSystems.length === 1
-												? systems.find((s) => s.id === selectedSystems[0])?.name
-												: t`${selectedSystems.length} systems selected`}
-										</span>
-									) : (
-										<span className="text-muted-foreground">
-											<Trans>Select systems...</Trans>
-										</span>
-									)}
-									<ChevronDownIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent className="w-80" align="start">
-								<div className="px-2 py-1.5">
-									<Input
-										placeholder={t`Search systems...`}
-										value={systemSearchQuery}
-										onChange={(e) => onSystemSearchQueryChange(e.target.value)}
-										className="h-8"
-									/>
+						<SearchableDropdown
+							items={systems}
+							selectedIds={selectedSystems}
+							searchQuery={systemSearchQuery}
+							onSearchChange={onSystemSearchQueryChange}
+							onSelectionChange={onSelectedSystemsChange}
+							getItemId={(system) => system.id}
+							getItemLabel={(system) => system.name}
+							renderItem={(system) => system.name}
+							placeholder={t`Search systems...`}
+							getDisplayText={(count) => (count === 0 ? t`Select systems...` : count === 1 ? systems.find((s) => s.id === selectedSystems[0])?.name || t`1 system selected` : t`${count} systems selected`)}
+							emptyMessage={
+								<div className="py-4 text-center text-sm text-muted-foreground">
+									<Trans>No systems found.</Trans>
 								</div>
-								<DropdownMenuSeparator />
-								<div className="max-h-60 overflow-y-auto">
-									{systems
-										.filter((system) =>
-											system.name.toLowerCase().includes(systemSearchQuery.toLowerCase())
-										)
-										.map((system) => {
-											const isSelected = selectedSystems.includes(system.id)
-											return (
-												<DropdownMenuCheckboxItem
-													key={system.id}
-													checked={isSelected}
-													onCheckedChange={(checked) => {
-														onSelectedSystemsChange(
-															checked
-																? [...selectedSystems, system.id]
-																: selectedSystems.filter((id) => id !== system.id)
-														)
-													}}
-													onSelect={(e) => e.preventDefault()}
-												>
-													{system.name}
-												</DropdownMenuCheckboxItem>
-											)
-										})}
-									{systems.length === 0 && (
-										<div className="py-4 text-center text-sm text-muted-foreground">
-											<Trans>No systems found.</Trans>
-										</div>
-									)}
-									{systems.length > 0 &&
-										systemSearchQuery &&
-										systems.filter((s) =>
-											s.name.toLowerCase().includes(systemSearchQuery.toLowerCase())
-										).length === 0 && (
-											<div className="py-4 text-center text-sm text-muted-foreground">
-												<Trans>No systems found.</Trans>
-											</div>
-										)}
+							}
+							noResultsMessage={
+								<div className="py-4 text-center text-sm text-muted-foreground">
+									<Trans>No systems found.</Trans>
 								</div>
-							</DropdownMenuContent>
-						</DropdownMenu>
-						{selectedSystems.length > 0 && (
-							<div className="flex flex-wrap gap-1.5">
-								{selectedSystems.map((systemId) => {
-									const system = systems.find((s) => s.id === systemId)
-									if (!system) return null
-									return (
-										<Badge
-											key={system.id}
-											variant="secondary"
-											className="text-xs pointer-events-none"
-										>
-											{system.name}
-											<button
-												type="button"
-												className="ml-1 hover:bg-muted-foreground/20 rounded-full pointer-events-auto"
-												onClick={() => {
-													onSelectedSystemsChange(selectedSystems.filter((id) => id !== systemId))
-												}}
-											>
-												<XIcon className="h-3 w-3" />
-											</button>
-										</Badge>
-									)
-								})}
-							</div>
-						)}
+							}
+						/>
+						<SelectedBadgeList
+							items={systems}
+							selectedIds={selectedSystems}
+							getItemId={(system) => system.id}
+							getItemLabel={(system) => system.name}
+							onRemove={(id) => onSelectedSystemsChange(selectedSystems.filter((sId) => sId !== id))}
+							variant="secondary"
+						/>
 					</div>
 				</div>
 				<DialogFooter className="mt-4">
