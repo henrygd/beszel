@@ -45,6 +45,11 @@ func Update(cmd *cobra.Command, _ []string) {
 		fmt.Printf("Warning: failed to set executable permissions: %v\n", err)
 	}
 
+	// Fix SELinux context if necessary
+	if err := ghupdate.HandleSELinuxContext(exePath); err != nil {
+		ghupdate.ColorPrintf(ghupdate.ColorYellow, "Warning: SELinux context handling: %v", err)
+	}
+
 	// Try to restart the service if it's running
 	restartService()
 }

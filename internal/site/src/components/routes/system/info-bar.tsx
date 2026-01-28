@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { FreeBsdIcon, TuxIcon, WebSocketIcon, WindowsIcon } from "@/components/ui/icons"
 import { Separator } from "@/components/ui/separator"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { ConnectionType, connectionTypeLabels, Os, SystemStatus } from "@/lib/enums"
 import { cn, formatBytes, getHostDisplayValue, secondsToString, toFixedFloat } from "@/lib/utils"
 import type { ChartData, SystemDetailsRecord, SystemRecord } from "@/types"
@@ -135,43 +135,41 @@ export default function InfoBar({
 				<div>
 					<h1 className="text-[1.6rem] font-semibold mb-1.5">{system.name}</h1>
 					<div className="flex flex-wrap items-center gap-3 gap-y-2 text-sm opacity-90">
-						<TooltipProvider>
-							<Tooltip>
-								<TooltipTrigger asChild>
-									<div className="capitalize flex gap-2 items-center">
-										<span className={cn("relative flex h-3 w-3")}>
-											{system.status === SystemStatus.Up && (
-												<span
-													className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
-													style={{ animationDuration: "1.5s" }}
-												></span>
-											)}
+						<Tooltip>
+							<TooltipTrigger asChild>
+								<div className="capitalize flex gap-2 items-center">
+									<span className={cn("relative flex h-3 w-3")}>
+										{system.status === SystemStatus.Up && (
 											<span
-												className={cn("relative inline-flex rounded-full h-3 w-3", {
-													"bg-green-500": system.status === SystemStatus.Up,
-													"bg-red-500": system.status === SystemStatus.Down,
-													"bg-primary/40": system.status === SystemStatus.Paused,
-													"bg-yellow-500": system.status === SystemStatus.Pending,
-												})}
+												className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
+												style={{ animationDuration: "1.5s" }}
 											></span>
-										</span>
-										{translatedStatus}
+										)}
+										<span
+											className={cn("relative inline-flex rounded-full h-3 w-3", {
+												"bg-green-500": system.status === SystemStatus.Up,
+												"bg-red-500": system.status === SystemStatus.Down,
+												"bg-primary/40": system.status === SystemStatus.Paused,
+												"bg-yellow-500": system.status === SystemStatus.Pending,
+											})}
+										></span>
+									</span>
+									{translatedStatus}
+								</div>
+							</TooltipTrigger>
+							{system.info.ct && (
+								<TooltipContent>
+									<div className="flex gap-1 items-center">
+										{system.info.ct === ConnectionType.WebSocket ? (
+											<WebSocketIcon className="size-4" />
+										) : (
+											<ChevronRightSquareIcon className="size-4" strokeWidth={2} />
+										)}
+										{connectionTypeLabels[system.info.ct as ConnectionType]}
 									</div>
-								</TooltipTrigger>
-								{system.info.ct && (
-									<TooltipContent>
-										<div className="flex gap-1 items-center">
-											{system.info.ct === ConnectionType.WebSocket ? (
-												<WebSocketIcon className="size-4" />
-											) : (
-												<ChevronRightSquareIcon className="size-4" strokeWidth={2} />
-											)}
-											{connectionTypeLabels[system.info.ct as ConnectionType]}
-										</div>
-									</TooltipContent>
-								)}
-							</Tooltip>
-						</TooltipProvider>
+								</TooltipContent>
+							)}
+						</Tooltip>
 
 						{systemInfo.map(({ value, label, Icon, hide }) => {
 							if (hide || !value) {
@@ -186,12 +184,10 @@ export default function InfoBar({
 								<div key={value} className="contents">
 									<Separator orientation="vertical" className="h-4 bg-primary/30" />
 									{label ? (
-										<TooltipProvider>
-											<Tooltip delayDuration={150}>
-												<TooltipTrigger asChild>{content}</TooltipTrigger>
-												<TooltipContent>{label}</TooltipContent>
-											</Tooltip>
-										</TooltipProvider>
+										<Tooltip delayDuration={100}>
+											<TooltipTrigger asChild>{content}</TooltipTrigger>
+											<TooltipContent>{label}</TooltipContent>
+										</Tooltip>
 									) : (
 										content
 									)}
@@ -202,26 +198,24 @@ export default function InfoBar({
 				</div>
 				<div className="xl:ms-auto flex items-center gap-2 max-sm:-mb-1">
 					<ChartTimeSelect className="w-full xl:w-40" agentVersion={chartData.agentVersion} />
-					<TooltipProvider delayDuration={100}>
-						<Tooltip>
-							<TooltipTrigger asChild>
-								<Button
-									aria-label={t`Toggle grid`}
-									variant="outline"
-									size="icon"
-									className="hidden xl:flex p-0 text-primary"
-									onClick={() => setGrid(!grid)}
-								>
-									{grid ? (
-										<LayoutGridIcon className="h-[1.2rem] w-[1.2rem] opacity-75" />
-									) : (
-										<Rows className="h-[1.3rem] w-[1.3rem] opacity-75" />
-									)}
-								</Button>
-							</TooltipTrigger>
-							<TooltipContent>{t`Toggle grid`}</TooltipContent>
-						</Tooltip>
-					</TooltipProvider>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								aria-label={t`Toggle grid`}
+								variant="outline"
+								size="icon"
+								className="hidden xl:flex p-0 text-primary"
+								onClick={() => setGrid(!grid)}
+							>
+								{grid ? (
+									<LayoutGridIcon className="h-[1.2rem] w-[1.2rem] opacity-75" />
+								) : (
+									<Rows className="h-[1.3rem] w-[1.3rem] opacity-75" />
+								)}
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>{t`Toggle grid`}</TooltipContent>
+					</Tooltip>
 				</div>
 			</div>
 		</Card>
