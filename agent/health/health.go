@@ -9,11 +9,31 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	"time"
 )
 
 // healthFile is the path to the health file
-var healthFile = filepath.Join(os.TempDir(), "beszel_health")
+var healthFile = getHealthFilePath()
+
+func getHealthFilePath() string {
+	filename := "beszel_health"
+	if runtime.GOOS == "linux" {
+		fullPath := filepath.Join("/dev/shm", filename)
+		if err := updateHealthFile(fullPath); err == nil {
+			return fullPath
+		}
+	}
+	return filepath.Join(os.TempDir(), filename)
+}
+
+func updateHealthFile(path string) error {
+	file, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	return file.Close()
+}
 
 // Check checks if the agent is connected by checking the modification time of the health file
 func Check() error {
@@ -30,11 +50,7 @@ func Check() error {
 
 // Update updates the modification time of the health file
 func Update() error {
-	file, err := os.Create(healthFile)
-	if err != nil {
-		return err
-	}
-	return file.Close()
+	return updateHealthFile(healthFile)
 }
 
 // CleanUp removes the health file
