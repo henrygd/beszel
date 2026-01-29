@@ -21,6 +21,7 @@ const (
 	// Commands
 	nvidiaSmiCmd  string = "nvidia-smi"
 	rocmSmiCmd    string = "rocm-smi"
+	amdgpuCmd     string = "amdgpu" // internal cmd for sysfs collection
 	tegraStatsCmd string = "tegrastats"
 
 	// Polling intervals
@@ -41,6 +42,7 @@ type GPUManager struct {
 	sync.Mutex
 	nvidiaSmi     bool
 	rocmSmi       bool
+	amdgpu        bool
 	tegrastats    bool
 	intelGpuStats bool
 	nvml          bool
@@ -399,7 +401,13 @@ func (gm *GPUManager) detectGPUs() error {
 		gm.nvidiaSmi = true
 	}
 	if _, err := exec.LookPath(rocmSmiCmd); err == nil {
-		gm.rocmSmi = true
+		if val, _ := GetEnv("AMD_SYSFS"); val == "true" {
+			gm.amdgpu = true
+		} else {
+			gm.rocmSmi = true
+		}
+	} else if gm.hasAmdSysfs() {
+		gm.amdgpu = true
 	}
 	if _, err := exec.LookPath(tegraStatsCmd); err == nil {
 		gm.tegrastats = true
@@ -408,10 +416,10 @@ func (gm *GPUManager) detectGPUs() error {
 	if _, err := exec.LookPath(intelGpuStatsCmd); err == nil {
 		gm.intelGpuStats = true
 	}
-	if gm.nvidiaSmi || gm.rocmSmi || gm.tegrastats || gm.intelGpuStats || gm.nvml {
+	if gm.nvidiaSmi || gm.rocmSmi || gm.amdgpu || gm.tegrastats || gm.intelGpuStats || gm.nvml {
 		return nil
 	}
-	return fmt.Errorf("no GPU found - install nvidia-smi, rocm-smi, tegrastats, or intel_gpu_top")
+	return fmt.Errorf("no GPU found - install nvidia-smi, rocm-smi, or intel_gpu_top")
 }
 
 // startCollector starts the appropriate GPU data collector based on the command
@@ -448,6 +456,12 @@ func (gm *GPUManager) startCollector(command string) {
 		collector.cmdArgs = []string{"--interval", tegraStatsInterval}
 		collector.parse = gm.getJetsonParser()
 		go collector.start()
+	case amdgpuCmd:
+		go func() {
+			if err := gm.collectAmdStats(); err != nil {
+				slog.Warn("Error collecting AMD GPU data via sysfs", "err", err)
+			}
+		}()
 	case rocmSmiCmd:
 		collector.cmdArgs = []string{"--showid", "--showtemp", "--showuse", "--showpower", "--showproductname", "--showmeminfo", "vram", "--json"}
 		collector.parse = gm.parseAmdData
@@ -459,7 +473,7 @@ func (gm *GPUManager) startCollector(command string) {
 					if failures > maxFailureRetries {
 						break
 					}
-					slog.Warn("Error collecting AMD GPU data", "err", err)
+					slog.Warn("Error collecting AMD GPU data via rocm-smi", "err", err)
 				}
 				time.Sleep(rocmSmiInterval)
 			}
@@ -496,6 +510,9 @@ func NewGPUManager() (*GPUManager, error) {
 	}
 	if gm.rocmSmi {
 		gm.startCollector(rocmSmiCmd)
+	}
+	if gm.amdgpu {
+		gm.startCollector(amdgpuCmd)
 	}
 	if gm.tegrastats {
 		gm.startCollector(tegraStatsCmd)
