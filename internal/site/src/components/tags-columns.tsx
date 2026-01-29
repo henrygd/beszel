@@ -79,6 +79,7 @@ export function createTagsColumns(
 					className="ms-2"
 					checked={row.getIsSelected()}
 					onCheckedChange={(value) => row.toggleSelected(!!value)}
+  					onClick={(e) => e.stopPropagation()}
 					aria-label="Select row"
 				/>
 			),
@@ -153,6 +154,7 @@ export function createTagsColumns(
 						<DropdownMenuItem
 							className="text-destructive focus:text-destructive"
 							onSelect={() => onDeleteTag(row.original.id, row.original.name)}
+							onClick={(e) => e.stopPropagation()}
 						>
 							<TrashIcon className="me-2.5 size-4" />
 							<Trans>Delete tag</Trans>
