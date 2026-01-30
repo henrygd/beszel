@@ -34,7 +34,7 @@ import { $router, basePath, Link, navigate } from "./router"
 import { AppleIcon, DockerIcon, FreeBsdIcon, TuxIcon, WindowsIcon } from "./ui/icons"
 import { InputCopy } from "./ui/input-copy"
 import { toast } from "./ui/use-toast"
-import { TagSelectorDialog } from "./tag-selector-dialog"
+import { TagSelectorDialog } from "./tags/tag-selector-dialog"
 import { DropdownMenu, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu"
 
 export function AddSystemButton({ className }: { className?: string }) {
