@@ -144,13 +144,27 @@ func (sm *systemdManager) getServiceStats(conn *dbus.Conn, refresh bool) []*syst
 		return nil
 	}
 
+	// Track which units are currently present to remove stale entries
+	currentUnits := make(map[string]struct{}, len(units))
+
 	for _, unit := range units {
+		currentUnits[unit.Name] = struct{}{}
 		service, err := sm.updateServiceStats(conn, unit)
 		if err != nil {
 			continue
 		}
 		services = append(services, service)
 	}
+
+	// Remove services that no longer exist in systemd
+	sm.Lock()
+	for unitName := range sm.serviceStatsMap {
+		if _, exists := currentUnits[unitName]; !exists {
+			delete(sm.serviceStatsMap, unitName)
+		}
+	}
+	sm.Unlock()
+
 	sm.hasFreshStats = true
 	return services
 }
