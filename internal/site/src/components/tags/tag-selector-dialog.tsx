@@ -7,7 +7,7 @@ import { SelectedBadgeList } from "@/components/ui/selected-badge-list"
 import { pb } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import type { TagRecord } from "@/types"
-import { getRandomColor, getTagColorClasses } from "@/components/tags-columns"
+import { getRandomColor, getTagColorClasses } from "./tags-columns"
 
 interface TagSelectorDialogProps {
 	availableTags: TagRecord[]

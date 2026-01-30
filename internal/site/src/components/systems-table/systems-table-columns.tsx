@@ -38,7 +38,7 @@ import {
 } from "@/lib/utils"
 import { batteryStateTranslations } from "@/lib/i18n"
 import type { SystemRecord, TagRecord } from "@/types"
-import { getTagColorClasses } from "../tags-columns"
+import { getTagColorClasses } from "../tags/tags-columns"
 import { SystemDialog } from "../add-system"
 import AlertButton from "../alerts/alert-button"
 import { Badge } from "../ui/badge"

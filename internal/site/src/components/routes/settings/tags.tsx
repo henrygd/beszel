@@ -30,7 +30,6 @@ import {
 	AlertDialogFooter,
 	AlertDialogHeader,
 	AlertDialogTitle,
-	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -41,8 +40,8 @@ import { toast } from "@/components/ui/use-toast"
 import { cn, useBrowserStorage } from "@/lib/utils"
 import { pb } from "@/lib/api"
 import type { SystemRecord, TagRecord } from "@/types"
-import { createTagsColumns, getRandomColor, type TagWithSystems } from "@/components/tags-columns"
-import { TagEditDialog } from "@/components/tag-edit-dialog"
+import { createTagsColumns, getRandomColor, type TagWithSystems } from "@/components/tags/tags-columns"
+import { TagEditDialog } from "@/components/tags/tag-edit-dialog"
 import { syncTagAssignments, updateSystemsStateAfterTagAssignment } from "@/lib/tag-utils"
 
 export default function TagsSettings() {
@@ -60,6 +59,7 @@ export default function TagsSettings() {
 	const [sorting, setSorting] = useState<SortingState>([])
 	const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+	const [tagToDelete, setTagToDelete] = useState<{ id: string; name: string } | null>(null)
 	const [pagination, setPagination] = useBrowserStorage<PaginationState>("tags-pagination", {
 		pageIndex: 0,
 		pageSize: 10,
@@ -195,58 +195,52 @@ export default function TagsSettings() {
 		}
 	}
 
-	async function deleteTag(id: string, name: string) {
-		if (!confirm(tFunc`Are you sure you want to delete the tag "${name}"? This will remove it from all systems.`)) {
-			return
-		}
-
-		try {
-			await pb.collection("tags").delete(id)
-			setTags(tags.filter((tag) => tag.id !== id))
-			toast({
-				title: tFunc`Tag deleted`,
-				description: tFunc`The tag has been deleted successfully.`,
-			})
-		} catch (e) {
-			console.error("Failed to delete tag", e)
-			toast({
-				title: tFunc`Failed to delete tag`,
-				description: tFunc`Check logs for more details.`,
-				variant: "destructive",
-			})
-		}
+	function deleteTag(id: string, name: string) {
+		setTagToDelete({ id, name })
+		setDeleteDialogOpen(true)
 	}
 
-	async function handleBulkDelete() {
+	async function handleDelete() {
 		setDeleteDialogOpen(false)
-		const selectedIds = table.getSelectedRowModel().rows.map((row) => row.original.id)
+		const isSingleDelete = tagToDelete !== null
+		const selectedIds = isSingleDelete
+			? [tagToDelete.id]
+			: table.getSelectedRowModel().rows.map((row) => row.original.id)
+
 		try {
-			let batch = pb.createBatch()
-			let inBatch = 0
-			for (const id of selectedIds) {
-				batch.collection("tags").delete(id)
-				inBatch++
-				if (inBatch > 20) {
-					await batch.send()
-					batch = pb.createBatch()
-					inBatch = 0
+			if (selectedIds.length === 1) {
+				await pb.collection("tags").delete(selectedIds[0])
+			} else {
+				let batch = pb.createBatch()
+				let inBatch = 0
+				for (const id of selectedIds) {
+					batch.collection("tags").delete(id)
+					inBatch++
+					if (inBatch > 20) {
+						await batch.send()
+						batch = pb.createBatch()
+						inBatch = 0
+					}
 				}
+				inBatch && (await batch.send())
 			}
-			inBatch && (await batch.send())
 			setTags((prev) => prev.filter((tag) => !selectedIds.includes(tag.id)))
-			table.resetRowSelection()
+			if (!isSingleDelete) {
+				table.resetRowSelection()
+			}
 			toast({
-				title: tFunc`Tags deleted`,
+				title: tFunc`Tag${selectedIds.length > 1 ? "s" : ""} deleted`,
 				description: tFunc`${selectedIds.length} tag(s) deleted successfully.`,
 			})
 		} catch (e) {
-			console.error("Failed to delete tags", e)
+			console.error("Failed to delete tag(s)", e)
 			toast({
 				title: tFunc`Error`,
-				description: tFunc`Failed to delete tags.`,
+				description: tFunc`Failed to delete tag(s).`,
 				variant: "destructive",
 			})
 		}
+		setTagToDelete(null)
 	}
 
 	const columns = createTagsColumns(openEditDialog, deleteTag)
@@ -297,39 +291,16 @@ export default function TagsSettings() {
 				</div>
 				<div className="flex items-center gap-2">
 					{table.getFilteredSelectedRowModel().rows.length > 0 && (
-						<AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-							<AlertDialogTrigger asChild>
-								<Button variant="destructive" className="h-9 shrink-0">
-									<Trash2Icon className="size-4 shrink-0" />
-									<span className="ms-1">
-										<Trans>Delete ({table.getFilteredSelectedRowModel().rows.length})</Trans>
-									</span>
-								</Button>
-							</AlertDialogTrigger>
-							<AlertDialogContent>
-								<AlertDialogHeader>
-									<AlertDialogTitle>
-										<Trans>Are you sure?</Trans>
-									</AlertDialogTitle>
-									<AlertDialogDescription>
-										<Trans>
-											This will permanently delete {table.getFilteredSelectedRowModel().rows.length} tag(s) and remove them from all systems.
-										</Trans>
-									</AlertDialogDescription>
-								</AlertDialogHeader>
-								<AlertDialogFooter>
-									<AlertDialogCancel>
-										<Trans>Cancel</Trans>
-									</AlertDialogCancel>
-									<AlertDialogAction
-										className={cn(buttonVariants({ variant: "destructive" }))}
-										onClick={handleBulkDelete}
-									>
-										<Trans>Delete</Trans>
-									</AlertDialogAction>
-								</AlertDialogFooter>
-							</AlertDialogContent>
-						</AlertDialog>
+						<Button
+							variant="destructive"
+							className="h-9 shrink-0"
+							onClick={() => setDeleteDialogOpen(true)}
+						>
+							<Trash2Icon className="size-4 shrink-0" />
+							<span className="ms-1">
+								<Trans>Delete ({table.getFilteredSelectedRowModel().rows.length})</Trans>
+							</span>
+						</Button>
 					)}
 					<Input
 						placeholder={t`Filter tags...`}
@@ -362,6 +333,42 @@ export default function TagsSettings() {
 				onSystemSearchQueryChange={setSystemSearchQuery}
 				onSave={saveTag}
 			/>
+
+			{/* Delete Confirmation Dialog */}
+			<AlertDialog open={deleteDialogOpen} onOpenChange={(open) => {
+				setDeleteDialogOpen(open)
+				if (!open) setTagToDelete(null)
+			}}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>
+							<Trans>Are you sure?</Trans>
+						</AlertDialogTitle>
+						<AlertDialogDescription>
+							{tagToDelete ? (
+								<Trans>
+									This will permanently delete the tag "{tagToDelete.name}" and remove it from all systems.
+								</Trans>
+							) : (
+								<Trans>
+									This will permanently delete {table.getFilteredSelectedRowModel().rows.length} tag(s) and remove them from all systems.
+								</Trans>
+							)}
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>
+							<Trans>Cancel</Trans>
+						</AlertDialogCancel>
+						<AlertDialogAction
+							className={cn(buttonVariants({ variant: "destructive" }))}
+							onClick={handleDelete}
+						>
+							<Trans>Delete</Trans>
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 
 			{/* Data Table */}
 			<div className="rounded-md border">

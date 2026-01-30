@@ -16,7 +16,7 @@ import { SearchableDropdown } from "@/components/ui/searchable-dropdown"
 import { SelectedBadgeList } from "@/components/ui/selected-badge-list"
 import { cn } from "@/lib/utils"
 import type { SystemRecord, TagRecord } from "@/types"
-import { tagColors, tagColorClasses, getTagColorClasses, type TagWithSystems } from "@/components/tags-columns"
+import { tagColors, tagColorClasses, getTagColorClasses, type TagWithSystems } from "./tags-columns"
 
 interface TagEditDialogProps {
 	open: boolean
@@ -87,7 +87,7 @@ export function TagEditDialog({
 									onClick={() => onTagColorChange(color)}
 									className={cn(
 										"w-6 h-6 rounded-full transition-all",
-										tagColorClasses[color].split(" ").filter(c => c.startsWith("bg-") && !c.includes("dark")).join(" "),
+										tagColorClasses[color].split(" ").filter(c => c.startsWith("bg-") || c.startsWith("dark:bg-")).join(" "),
 										tagColor === color && "ring-2 ring-offset-2 ring-primary"
 									)}
 								/>

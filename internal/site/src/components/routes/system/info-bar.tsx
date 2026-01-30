@@ -23,7 +23,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { ConnectionType, connectionTypeLabels, Os, SystemStatus } from "@/lib/enums"
 import { cn, formatBytes, getHostDisplayValue, secondsToString, toFixedFloat } from "@/lib/utils"
 import type { ChartData, SystemDetailsRecord, SystemRecord, TagRecord } from "@/types"
-import { getTagColorClasses } from "@/components/tags-columns"
+import { getTagColorClasses } from "@/components/tags/tags-columns"
 
 export default function InfoBar({
 	system,
