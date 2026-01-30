@@ -6,6 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.4" />
+    <PackageReference Include="LibreHardwareMonitorLib" Version="0.9.5" />
   </ItemGroup>
 </Project>
