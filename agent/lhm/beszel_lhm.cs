@@ -52,7 +52,12 @@ class Program
     foreach (var sensor in hardware.Sensors)
     {
       var validTemp = sensor.SensorType == SensorType.Temperature && sensor.Value.HasValue;
-      if (!validTemp || sensor.Name.Contains("Distance"))
+      if (!validTemp ||
+          sensor.Name.IndexOf("Distance", StringComparison.OrdinalIgnoreCase) >= 0 ||
+          sensor.Name.IndexOf("Limit", StringComparison.OrdinalIgnoreCase) >= 0 ||
+          sensor.Name.IndexOf("Critical", StringComparison.OrdinalIgnoreCase) >= 0 ||
+          sensor.Name.IndexOf("Warning", StringComparison.OrdinalIgnoreCase) >= 0 ||
+          sensor.Name.IndexOf("Resolution", StringComparison.OrdinalIgnoreCase) >= 0)
       {
         continue;
       }
