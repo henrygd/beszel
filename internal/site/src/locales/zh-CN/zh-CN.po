@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-01-11 22:21\n"
+"PO-Revision-Date: 2026-01-31 21:16\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -113,7 +113,7 @@ msgstr "添加 {foo}"
 
 #: src/components/add-system.tsx
 msgid "Add <0>System</0>"
-msgstr "<0>添加客户端</0>"
+msgstr "添加<0>客户端</0>"
 
 #: src/components/add-system.tsx
 msgid "Add system"
