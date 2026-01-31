@@ -8,7 +8,7 @@ msgstr ""
 "Language: id\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-01-12 21:37\n"
+"PO-Revision-Date: 2026-01-31 21:16\n"
 "Last-Translator: \n"
 "Language-Team: Indonesian\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -22,7 +22,7 @@ msgstr ""
 #. placeholder {1}: table.getFilteredRowModel().rows.length
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "{0} of {1} row(s) selected."
-msgstr "{0} dari {1} baris dipilih."
+msgstr "{0} dari {1} baris terpilih."
 
 #: src/components/routes/system/info-bar.tsx
 msgid "{cores, plural, one {# core} other {# cores}}"
@@ -125,11 +125,11 @@ msgstr "Tambah URL"
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust display options for charts."
-msgstr "Sesuaikan pengaturan tampilan untuk untuk grafik."
+msgstr "Sesuaikan tampilan grafik."
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust the width of the main layout"
-msgstr "Sesuaikan lebar layout utama"
+msgstr "Sesuaikan lebar layar utama"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -180,7 +180,7 @@ msgstr "Apakah anda yakin?"
 
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
-msgstr "Menyalin otomatis memerlukan konteks yang aman."
+msgstr "Copy memerlukan https."
 
 #: src/components/routes/system.tsx
 msgid "Average"
@@ -215,7 +215,7 @@ msgstr "Rata-rata utilisasi {0}"
 
 #: src/components/routes/system.tsx
 msgid "Average utilization of GPU engines"
-msgstr "Rata-rata utilisasi mesin GPU"
+msgstr "Rata-rata utilisasi GPU"
 
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
@@ -225,7 +225,7 @@ msgstr "Cadangan"
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "Bandwidth"
-msgstr "Pita lebar"
+msgstr "Bandwith"
 
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
@@ -258,7 +258,7 @@ msgstr "Di bawah {0}{1} dalam {2, plural, one {# menit} other {# menit}} terakhi
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
-msgstr "Beszel mendukung OpenID Connecnt dan banyak penyedia autentikasi OAuth2."
+msgstr "Beszel mendukung OpenID Connect dan OAuth2 dari berbagai penyedia layanan."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
@@ -330,7 +330,7 @@ msgstr "Ubah pengaturan umum aplikasi."
 
 #: src/components/routes/system.tsx
 msgid "Charge"
-msgstr "Isi"
+msgstr "Isi baterai"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -339,19 +339,19 @@ msgstr "Sedang mengisi"
 
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
-msgstr "Pengaturan grafik"
+msgstr "Pilihan grafik"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
-msgstr "Periksa {email} untuk tautan atur ulang."
+msgstr "Periksa {email} untuk tautan atur ulang password."
 
 #: src/components/routes/settings/layout.tsx
 msgid "Check logs for more details."
-msgstr "Periksa catatan untuk lebih detail."
+msgstr "Periksa riwayat untuk lebih detail."
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
-msgstr "Periksa penyedia jasa notifikasi anda"
+msgstr "Periksa jasa penyedia notifikasi anda"
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/routes/system/smart-table.tsx
