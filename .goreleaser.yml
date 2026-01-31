@@ -158,9 +158,7 @@ nfpms:
         - debconf
       scripts:
         templates: ./supplemental/debian/templates
-        # Currently broken due to a bug in goreleaser
-        # https://github.com/goreleaser/goreleaser/issues/5487
-        #config: ./supplemental/debian/config.sh
+        config: ./supplemental/debian/config.sh
 
 scoops:
   - ids: [beszel-agent]

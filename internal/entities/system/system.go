@@ -27,8 +27,8 @@ type Stats struct {
 	DiskWritePs    float64             `json:"dw" cbor:"13,keyasint"`
 	MaxDiskReadPs  float64             `json:"drm,omitempty" cbor:"14,keyasint,omitempty"`
 	MaxDiskWritePs float64             `json:"dwm,omitempty" cbor:"15,keyasint,omitempty"`
-	NetworkSent    float64             `json:"ns" cbor:"16,keyasint"`
-	NetworkRecv    float64             `json:"nr" cbor:"17,keyasint"`
+	NetworkSent    float64             `json:"ns,omitzero" cbor:"16,keyasint,omitzero"`
+	NetworkRecv    float64             `json:"nr,omitzero" cbor:"17,keyasint,omitzero"`
 	MaxNetworkSent float64             `json:"nsm,omitempty" cbor:"18,keyasint,omitempty"`
 	MaxNetworkRecv float64             `json:"nrm,omitempty" cbor:"19,keyasint,omitempty"`
 	Temperatures   map[string]float64  `json:"t,omitempty" cbor:"20,keyasint,omitempty"`

@@ -21,7 +21,14 @@ import { $allSystemsById } from "@/lib/stores"
 import { useStore } from "@nanostores/react"
 
 // Unit names and their corresponding number of seconds for converting docker status strings
-const unitSeconds = [["s", 1], ["mi", 60], ["h", 3600], ["d", 86400], ["w", 604800], ["mo", 2592000]] as const
+const unitSeconds = [
+	["s", 1],
+	["mi", 60],
+	["h", 3600],
+	["d", 86400],
+	["w", 604800],
+	["mo", 2592000],
+] as const
 // Convert docker status string to number of seconds ("Up X minutes", "Up X hours", etc.)
 function getStatusValue(status: string): number {
 	const [_, num, unit] = status.split(" ")
@@ -101,7 +108,7 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		header: ({ column }) => <HeaderButton column={column} name={t`Net`} Icon={EthernetIcon} />,
 		cell: ({ getValue }) => {
 			const val = getValue() as number
-			const formatted = formatBytes(val, true, undefined, true)
+			const formatted = formatBytes(val, true, undefined, false)
 			return (
 				<span className="ms-1.5 tabular-nums">{`${decimalString(formatted.value, formatted.value >= 10 ? 1 : 2)} ${formatted.unit}`}</span>
 			)
@@ -117,13 +124,14 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 			const healthStatus = ContainerHealthLabels[healthValue] || "Unknown"
 			return (
 				<Badge variant="outline" className="dark:border-white/12">
-					<span className={cn("size-2 me-1.5 rounded-full", {
-						"bg-green-500": healthValue === ContainerHealth.Healthy,
-						"bg-red-500": healthValue === ContainerHealth.Unhealthy,
-						"bg-yellow-500": healthValue === ContainerHealth.Starting,
-						"bg-zinc-500": healthValue === ContainerHealth.None,
-					})}>
-					</span>
+					<span
+						className={cn("size-2 me-1.5 rounded-full", {
+							"bg-green-500": healthValue === ContainerHealth.Healthy,
+							"bg-red-500": healthValue === ContainerHealth.Unhealthy,
+							"bg-yellow-500": healthValue === ContainerHealth.Starting,
+							"bg-zinc-500": healthValue === ContainerHealth.None,
+						})}
+					></span>
 					{healthStatus}
 				</Badge>
 			)
@@ -157,11 +165,7 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		header: ({ column }) => <HeaderButton column={column} name={t`Updated`} Icon={ClockIcon} />,
 		cell: ({ getValue }) => {
 			const timestamp = getValue() as number
-			return (
-				<span className="ms-1.5 tabular-nums">
-					{hourWithSeconds(new Date(timestamp).toISOString())}
-				</span>
-			)
+			return <span className="ms-1.5 tabular-nums">{hourWithSeconds(new Date(timestamp).toISOString())}</span>
 		},
 	},
 	{
@@ -181,11 +185,22 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 	},
 ]
 
-function HeaderButton({ column, name, Icon }: { column: Column<ContainerRecord>; name: string; Icon: React.ElementType }) {
+function HeaderButton({
+	column,
+	name,
+	Icon,
+}: {
+	column: Column<ContainerRecord>
+	name: string
+	Icon: React.ElementType
+}) {
 	const isSorted = column.getIsSorted()
 	return (
 		<Button
-			className={cn("h-9 px-3 flex items-center gap-2 duration-50", isSorted && "bg-accent/70 light:bg-accent text-accent-foreground/90")}
+			className={cn(
+				"h-9 px-3 flex items-center gap-2 duration-50",
+				isSorted && "bg-accent/70 light:bg-accent text-accent-foreground/90"
+			)}
 			variant="ghost"
 			onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
 		>

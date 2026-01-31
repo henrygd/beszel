@@ -2,7 +2,14 @@
 import { useStore } from "@nanostores/react"
 import { memo, useMemo } from "react"
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
-import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, pinnedAxisDomain, xAxis } from "@/components/ui/chart"
+import {
+	type ChartConfig,
+	ChartContainer,
+	ChartTooltip,
+	ChartTooltipContent,
+	pinnedAxisDomain,
+	xAxis,
+} from "@/components/ui/chart"
 import { ChartType, Unit } from "@/lib/enums"
 import { $containerFilter, $userSettings } from "@/lib/stores"
 import { chartMargin, cn, decimalString, formatBytes, formatShortDate, toFixedFloat } from "@/lib/utils"
@@ -47,27 +54,49 @@ export default memo(function ContainerChart({
 		} else {
 			const chartUnit = isNetChart ? userSettings.unitNet : Unit.Bytes
 			obj.tickFormatter = (val) => {
-				const { value, unit } = formatBytes(val, isNetChart, chartUnit, true)
+				const { value, unit } = formatBytes(val, isNetChart, chartUnit, !isNetChart)
 				return updateYAxisWidth(`${toFixedFloat(value, value >= 10 ? 0 : 1)} ${unit}`)
 			}
 		}
 		// tooltip formatter
 		if (isNetChart) {
+			const getRxTxBytes = (record?: { b?: [number, number]; ns?: number; nr?: number }) => {
+				if (record?.b?.length && record.b.length >= 2) {
+					return [Number(record.b[0]) || 0, Number(record.b[1]) || 0]
+				}
+				return [(record?.ns ?? 0) * 1024 * 1024, (record?.nr ?? 0) * 1024 * 1024]
+			}
+			const formatRxTx = (recv: number, sent: number) => {
+				const { value: receivedValue, unit: receivedUnit } = formatBytes(recv, true, userSettings.unitNet, false)
+				const { value: sentValue, unit: sentUnit } = formatBytes(sent, true, userSettings.unitNet, false)
+				return (
+					<span className="flex">
+						{decimalString(receivedValue)} {receivedUnit}
+						<span className="opacity-70 ms-0.5"> rx </span>
+						<Separator orientation="vertical" className="h-3 mx-1.5 bg-primary/40" />
+						{decimalString(sentValue)} {sentUnit}
+						<span className="opacity-70 ms-0.5"> tx</span>
+					</span>
+				)
+			}
 			obj.toolTipFormatter = (item: any, key: string) => {
 				try {
-					const sent = item?.payload?.[key]?.ns ?? 0
-					const received = item?.payload?.[key]?.nr ?? 0
-					const { value: receivedValue, unit: receivedUnit } = formatBytes(received, true, userSettings.unitNet, true)
-					const { value: sentValue, unit: sentUnit } = formatBytes(sent, true, userSettings.unitNet, true)
-					return (
-						<span className="flex">
-							{decimalString(receivedValue)} {receivedUnit}
-							<span className="opacity-70 ms-0.5"> rx </span>
-							<Separator orientation="vertical" className="h-3 mx-1.5 bg-primary/40" />
-							{decimalString(sentValue)} {sentUnit}
-							<span className="opacity-70 ms-0.5"> tx</span>
-						</span>
-					)
+					if (key === "__total__") {
+						let totalSent = 0
+						let totalRecv = 0
+						const payloadData = item?.payload && typeof item.payload === "object" ? item.payload : {}
+						for (const value of Object.values(payloadData)) {
+							if (!value || typeof value !== "object") {
+								continue
+							}
+							const [sent, recv] = getRxTxBytes(value as { b?: [number, number]; ns?: number; nr?: number })
+							totalSent += sent
+							totalRecv += recv
+						}
+						return formatRxTx(totalRecv, totalSent)
+					}
+					const [sent, recv] = getRxTxBytes(item?.payload?.[key])
+					return formatRxTx(recv, sent)
 				} catch (e) {
 					return null
 				}
@@ -82,7 +111,15 @@ export default memo(function ContainerChart({
 		}
 		// data function
 		if (isNetChart) {
-			obj.dataFunction = (key: string, data: any) => (data[key] ? data[key].nr + data[key].ns : null)
+			obj.dataFunction = (key: string, data: any) => {
+				const payload = data[key]
+				if (!payload) {
+					return null
+				}
+				const sent = payload?.b?.[0] ?? (payload?.ns ?? 0) * 1024 * 1024
+				const recv = payload?.b?.[1] ?? (payload?.nr ?? 0) * 1024 * 1024
+				return sent + recv
+			}
 		} else {
 			obj.dataFunction = (key: string, data: any) => data[key]?.[dataKey] ?? null
 		}
@@ -94,11 +131,16 @@ export default memo(function ContainerChart({
 		if (!filter) {
 			return new Set<string>()
 		}
-		const filterTerms = filter.toLowerCase().split(" ").filter(term => term.length > 0)
-		return new Set(Object.keys(chartConfig).filter((key) => {
-			const keyLower = key.toLowerCase()
-			return !filterTerms.some(term => keyLower.includes(term))
-		}))
+		const filterTerms = filter
+			.toLowerCase()
+			.split(" ")
+			.filter((term) => term.length > 0)
+		return new Set(
+			Object.keys(chartConfig).filter((key) => {
+				const keyLower = key.toLowerCase()
+				return !filterTerms.some((term) => keyLower.includes(term))
+			})
+		)
 	}, [chartConfig, filter])
 
 	// console.log('rendered at', new Date())

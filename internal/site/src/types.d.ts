@@ -215,9 +215,11 @@ interface ContainerStats {
 	/** memory used (gb) */
 	m: number
 	// network sent (mb)
-	ns: number
+	ns?: number
 	// network received (mb)
-	nr: number
+	nr?: number
+	/** bandwidth bytes [sent, recv] */
+	b?: [number, number]
 }
 
 export interface SystemStatsRecord extends RecordModel {

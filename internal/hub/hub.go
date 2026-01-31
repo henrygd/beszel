@@ -194,7 +194,34 @@ func setCollectionAuthSettings(app core.App) error {
 	}
 	containersListRule := strings.Replace(systemsReadRule, "users.id", "system.users.id", 1)
 	containersCollection.ListRule = &containersListRule
-	return app.Save(containersCollection)
+	if err := app.Save(containersCollection); err != nil {
+		return err
+	}
+
+	// allow all users to access system-related collections if SHARE_ALL_SYSTEMS is set
+	// these collections all have a "system" relation field
+	systemRelatedCollections := []string{"system_details", "smart_devices", "systemd_services"}
+	for _, collectionName := range systemRelatedCollections {
+		collection, err := app.FindCollectionByNameOrId(collectionName)
+		if err != nil {
+			return err
+		}
+		collection.ListRule = &containersListRule
+		// set viewRule for collections that need it (system_details, smart_devices)
+		if collection.ViewRule != nil {
+			collection.ViewRule = &containersListRule
+		}
+		// set deleteRule for smart_devices (allows user to dismiss disk warnings)
+		if collectionName == "smart_devices" {
+			deleteRule := containersListRule + " && @request.auth.role != \"readonly\""
+			collection.DeleteRule = &deleteRule
+		}
+		if err := app.Save(collection); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // registerCronJobs sets up scheduled tasks

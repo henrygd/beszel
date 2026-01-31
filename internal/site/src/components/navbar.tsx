@@ -30,7 +30,7 @@ import { LangToggle } from "./lang-toggle"
 import { Logo } from "./logo"
 import { ModeToggle } from "./mode-toggle"
 import { $router, basePath, Link, prependBasePath } from "./router"
-import { t } from "@lingui/core/macro"
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
 
 const CommandPalette = lazy(() => import("./command-palette"))
 
@@ -49,30 +49,52 @@ export default function Navbar() {
 			</Link>
 			<SearchButton />
 
+			{/** biome-ignore lint/a11y/noStaticElementInteractions: ignore */}
 			<div className="flex items-center ms-auto" onMouseEnter={() => import("@/components/routes/settings/general")}>
-				<Link
-					href={getPagePath($router, "containers")}
-					className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
-					aria-label="Containers"
-				>
-					<ContainerIcon className="h-[1.2rem] w-[1.2rem]" strokeWidth={1.5} />
-				</Link>
-				<Link
-					href={getPagePath($router, "smart")}
-					className={cn("hidden md:grid", buttonVariants({ variant: "ghost", size: "icon" }))}
-					aria-label="S.M.A.R.T."
-				>
-					<HardDriveIcon className="h-[1.2rem] w-[1.2rem]" strokeWidth={1.5} />
-				</Link>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Link
+							href={getPagePath($router, "containers")}
+							className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
+							aria-label="Containers"
+						>
+							<ContainerIcon className="h-[1.2rem] w-[1.2rem]" strokeWidth={1.5} />
+						</Link>
+					</TooltipTrigger>
+					<TooltipContent>
+						<Trans>All Containers</Trans>
+					</TooltipContent>
+				</Tooltip>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Link
+							href={getPagePath($router, "smart")}
+							className={cn("hidden md:grid", buttonVariants({ variant: "ghost", size: "icon" }))}
+							aria-label="S.M.A.R.T."
+						>
+							<HardDriveIcon className="h-[1.2rem] w-[1.2rem]" strokeWidth={1.5} />
+						</Link>
+					</TooltipTrigger>
+					<TooltipContent>
+						<Trans>S.M.A.R.T.</Trans>
+					</TooltipContent>
+				</Tooltip>
 				<LangToggle />
 				<ModeToggle />
-				<Link
-					href={getPagePath($router, "settings", { name: "general" })}
-					aria-label="Settings"
-					className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
-				>
-					<SettingsIcon className="h-[1.2rem] w-[1.2rem]" />
-				</Link>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<Link
+							href={getPagePath($router, "settings", { name: "general" })}
+							aria-label="Settings"
+							className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}
+						>
+							<SettingsIcon className="h-[1.2rem] w-[1.2rem]" />
+						</Link>
+					</TooltipTrigger>
+					<TooltipContent>
+						<Trans>Settings</Trans>
+					</TooltipContent>
+				</Tooltip>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
 						<button aria-label="User Actions" className={cn(buttonVariants({ variant: "ghost", size: "icon" }))}>
@@ -129,20 +151,20 @@ export default function Navbar() {
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
-				<AddSystemButton className="ms-2 hidden 450:flex" />
+				<AddSystemButton className="ms-2" />
 			</div>
 		</div>
 	)
 }
 
+const Kbd = ({ children }: { children: React.ReactNode }) => (
+	<kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+		{children}
+	</kbd>
+)
+
 function SearchButton() {
 	const [open, setOpen] = useState(false)
-
-	const Kbd = ({ children }: { children: React.ReactNode }) => (
-		<kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-			{children}
-		</kbd>
-	)
 
 	return (
 		<>
