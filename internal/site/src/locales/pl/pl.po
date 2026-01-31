@@ -8,7 +8,7 @@ msgstr ""
 "Language: pl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-12-18 19:21\n"
+"PO-Revision-Date: 2026-01-31 21:16\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "Plural-Forms: nplurals=4; plural=(n==1 ? 0 : (n%10>=2 && n%10<=4) && (n%100<12 || n%100>14) ? 1 : n!=1 && (n%10>=0 && n%10<=1) || (n%10>=5 && n%10<=9) || (n%100>=12 && n%100<=14) ? 2 : 3);\n"
@@ -129,7 +129,7 @@ msgstr "Dostosuj opcje wyświetlania wykresów."
 
 #: src/components/routes/settings/general.tsx
 msgid "Adjust the width of the main layout"
-msgstr "Dostosuj szerokość głównego układu"
+msgstr "Dostosuj szerokość widoku"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -188,12 +188,12 @@ msgstr "Średnia"
 
 #: src/components/routes/system.tsx
 msgid "Average CPU utilization of containers"
-msgstr "Średnie wykorzystanie procesora przez kontenery"
+msgstr "Średnie wykorzystanie CPU przez kontenery"
 
 #. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Average drops below <0>{value}{0}</0>"
-msgstr ""
+msgstr "Średnia spada poniżej <0>{value}{0}</0>"
 
 #. placeholder {0}: alertData.unit
 #: src/components/alerts/alerts-sheet.tsx
@@ -206,7 +206,7 @@ msgstr "Średnie zużycie energii przez GPU"
 
 #: src/components/routes/system.tsx
 msgid "Average system-wide CPU utilization"
-msgstr "Średnie wykorzystanie procesora w całym systemie"
+msgstr "Średnie wykorzystanie CPU w całym systemie"
 
 #. placeholder {0}: gpu.n
 #: src/components/routes/system.tsx
@@ -220,7 +220,7 @@ msgstr "Średnie wykorzystanie silników GPU"
 #: src/components/command-palette.tsx
 #: src/components/navbar.tsx
 msgid "Backups"
-msgstr "Kopie"
+msgstr "Kopie zapasowe"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -230,7 +230,7 @@ msgstr "Przepustowość"
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
-msgstr ""
+msgstr "Bateria"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -254,7 +254,7 @@ msgstr "Przed"
 #. placeholder {2}: alert.min
 #: src/components/active-alerts.tsx
 msgid "Below {0}{1} in last {2, plural, one {# minute} other {# minutes}}"
-msgstr ""
+msgstr "Poniżej {0}{1} w ciągu ostatnich {2, plural, one {# minuty} other {# minut}}"
 
 #: src/components/login/auth-form.tsx
 msgid "Beszel supports OpenID Connect and many OAuth2 authentication providers."
@@ -262,7 +262,7 @@ msgstr "Beszel obsługuje OpenID Connect i wielu dostawców uwierzytelniania OAu
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Beszel uses <0>Shoutrrr</0> to integrate with popular notification services."
-msgstr "Beszel używa <0>Shoutrrr</0> do integracji z popularnych serwisów powiadomień."
+msgstr "Beszel używa <0>Shoutrrr</0> do integracji z popularnymi serwisami powiadomień."
 
 #: src/components/add-system.tsx
 msgid "Binary"
@@ -314,7 +314,7 @@ msgstr "Pojemność"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Caution - potential data loss"
-msgstr "Uwaga- potencjalna utrata danych."
+msgstr "Uwaga - ryzyko utraty danych"
 
 #: src/components/routes/settings/general.tsx
 msgid "Celsius (°C)"
@@ -326,7 +326,7 @@ msgstr "Zmień jednostki wyświetlania dla metryk."
 
 #: src/components/routes/settings/general.tsx
 msgid "Change general application options."
-msgstr "Zmiana ogólnych ustawień aplikacji."
+msgstr "Zmień ogólne ustawienia aplikacji."
 
 #: src/components/routes/system.tsx
 msgid "Charge"
@@ -339,7 +339,7 @@ msgstr "Ładuje się"
 
 #: src/components/routes/settings/general.tsx
 msgid "Chart options"
-msgstr "Opcje wykresu"
+msgstr "Wykresy"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Check {email} for a reset link."
@@ -361,15 +361,15 @@ msgstr "Wyczyść"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Click on a container to view more information."
-msgstr "Kliknij na kontener, aby wyświetlić więcej informacji."
+msgstr "Wybierz kontener, aby wyświetlić więcej informacji."
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Click on a device to view more information."
-msgstr "Kliknij na urządzenie, aby wyświetlić więcej informacji."
+msgstr "Wybierz urządzenie, aby wyświetlić więcej informacji."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Click on a system to view more information."
-msgstr "Kliknij na system, aby zobaczyć więcej informacji."
+msgstr "Wybierz system, aby wyświetlić więcej informacji."
 
 #: src/components/ui/input-copy.tsx
 msgid "Click to copy"
@@ -500,11 +500,11 @@ msgstr "Krytyczny (%)"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Download"
-msgstr "Pobieranie skumulowane"
+msgstr "Pobieranie łącznie"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Cumulative Upload"
-msgstr "Wysyłanie skumulowane"
+msgstr "Wysyłanie łącznie"
 
 #. Context: Battery state
 #: src/components/routes/system.tsx
@@ -577,11 +577,11 @@ msgstr "Wykorzystanie dysku {extraFsName}"
 
 #: src/components/routes/system.tsx
 msgid "Docker CPU Usage"
-msgstr "Wykorzystanie procesora przez Docker"
+msgstr "Użycie CPU przez Docker"
 
 #: src/components/routes/system.tsx
 msgid "Docker Memory Usage"
-msgstr "Wykorzystanie pamięci przez Docker"
+msgstr "Użycie pamięci przez Docker"
 
 #: src/components/routes/system.tsx
 msgid "Docker Network I/O"
@@ -656,7 +656,7 @@ msgstr "Wprowadź swoje jednorazowe hasło."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Ephemeral"
-msgstr "Efemeryczny"
+msgstr "Tymczasowy"
 
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -682,7 +682,7 @@ msgstr "Główny PID wykonania"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
-msgstr "Istniejące systemy, które nie są zdefiniowane w <0>config.yml</0>, zostaną usunięte. Proszę regularnie tworzyć kopie zapasowe."
+msgstr "Istniejące systemy, które nie są zdefiniowane w <0>config.yml</0>, zostaną usunięte. Pamiętaj aby regularnie tworzyć kopie zapasowe."
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exited active"
@@ -728,7 +728,7 @@ msgstr "Nie udało się zapisać ustawień"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Failed to send test notification"
-msgstr "Nie udało się wysłać testowego powiadomienia"
+msgstr "Nie udało się wysłać powiadomienia testowego"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "Failed to update alert"
@@ -803,7 +803,7 @@ msgstr "Siatka"
 
 #: src/components/containers-table/containers-table-columns.tsx
 msgid "Health"
-msgstr "Zdrowie"
+msgstr "Kondycja"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
@@ -864,15 +864,15 @@ msgstr "Średnie obciążenie"
 
 #: src/lib/alerts.ts
 msgid "Load Average 15m"
-msgstr "Średnie obciążenie 15 m"
+msgstr "Średnie obciążenie 15 min"
 
 #: src/lib/alerts.ts
 msgid "Load Average 1m"
-msgstr "Średnie obciążenie 1 m"
+msgstr "Średnie obciążenie 1 min"
 
 #: src/lib/alerts.ts
 msgid "Load Average 5m"
-msgstr "Średnie obciążenie 5 m"
+msgstr "Średnie obciążenie 5 min"
 
 #. Short label for load average
 #: src/components/systems-table/systems-table-columns.tsx
@@ -948,7 +948,7 @@ msgstr "Szczyt pamięci"
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
 msgid "Memory Usage"
-msgstr "Wykorzystanie pamięci"
+msgstr "Użycie pamięci"
 
 #: src/components/routes/system.tsx
 msgid "Memory usage of docker containers"
@@ -996,7 +996,7 @@ msgstr "Nie"
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "No results found."
-msgstr "Brak wyników."
+msgstr "Nie znaleziono wyników."
 
 #: src/components/containers-table/containers-table.tsx
 #: src/components/containers-table/containers-table.tsx
@@ -1082,7 +1082,7 @@ msgstr "Hasło"
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be at least 8 characters."
-msgstr "Hasło musi mieć co najmniej 8 znaków."
+msgstr "Hasło musi zawierać co najmniej 8 znaków."
 
 #: src/components/login/auth-form.tsx
 msgid "Password must be less than 72 bytes."
@@ -1090,11 +1090,11 @@ msgstr "Hasło musi być mniejsze niż 72 bajty."
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Password reset request received"
-msgstr "Otrzymane żądanie resetowania hasła"
+msgstr "Otrzymano żądanie resetowania hasła"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Past"
-msgstr "Przeszłe"
+msgstr "Poprzednie"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Pause"
@@ -1237,7 +1237,7 @@ msgstr "Rozwiązany"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Restarts"
-msgstr "Ponowne uruchomienia"
+msgstr "Uruchamia ponownie"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Resume"
@@ -1283,7 +1283,7 @@ msgstr "Zapisz system"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
-msgstr "Zapisane w bazie danych i nie wygasa, dopóki go nie wyłączysz."
+msgstr "Zapisany w bazie danych. Nie wygasa, dopóki go nie wyłączysz."
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1342,7 +1342,7 @@ msgstr "Ustawienia"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Settings saved"
-msgstr "Ustawienia zapisane"
+msgstr "Ustawienia zostały zapisane"
 
 #: src/components/login/auth-form.tsx
 msgid "Sign in"
@@ -1484,7 +1484,7 @@ msgstr "Do e-mail(ów)"
 #: src/components/routes/system/info-bar.tsx
 #: src/components/routes/system/info-bar.tsx
 msgid "Toggle grid"
-msgstr "Przełącz siatkę"
+msgstr "Przełącz widok"
 
 #: src/components/mode-toggle.tsx
 msgid "Toggle theme"
@@ -1553,7 +1553,7 @@ msgstr "Wyzwalane, gdy jakikolwiek czujnik przekroczy ustalony próg."
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
-msgstr ""
+msgstr "Uruchamia się, gdy poziom baterii spadnie poniżej wybranej wartości"
 
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
@@ -1569,7 +1569,7 @@ msgstr "Wyzwalane, gdy użycie GPU przekroczy próg"
 
 #: src/lib/alerts.ts
 msgid "Triggers when memory usage exceeds a threshold"
-msgstr "Wyzwalane, wykorzystanie pamięci przekroczy ustalony próg."
+msgstr "Wyzwalane, wykorzystanie pamięci przekroczy ustalony próg"
 
 #: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"
@@ -1690,7 +1690,7 @@ msgstr "Oczekiwanie na wystarczającą liczbę rekordów do wyświetlenia"
 
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
-msgstr "Chcesz pomóc nam uczynić nasze tłumaczenia jeszcze lepszymi? Sprawdź <0>Crowdin</0> po więcej szczegółów."
+msgstr "Chcesz pomóc ulepszyć nasze tłumaczenie? Sprawdź <0>Crowdin</0> po szczegóły."
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Wants"
@@ -1722,7 +1722,7 @@ msgstr "Polecenie Windows"
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Write"
-msgstr "Napisz"
+msgstr "Zapis"
 
 #: src/components/routes/settings/layout.tsx
 msgid "YAML Config"
@@ -1741,3 +1741,4 @@ msgstr "Tak"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Twoje ustawienia użytkownika zostały zaktualizowane."
+
