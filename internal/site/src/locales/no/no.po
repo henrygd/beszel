@@ -8,7 +8,7 @@ msgstr ""
 "Language: no\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-01-17 12:51\n"
+"PO-Revision-Date: 2026-01-31 21:16\n"
 "Last-Translator: \n"
 "Language-Team: Norwegian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -908,7 +908,7 @@ msgstr "Logger"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
-msgstr "Ser du etter hvor du kan opprette alarmer? Klikk på bjelle-ikonene <0/> i systemtabellen."
+msgstr "Ser du etter hvor du kan opprette alarmer? Klikk på bjelle-ikonet <0/> for systemet i systemoversikten."
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
@@ -1549,7 +1549,7 @@ msgstr "Slår inn når gjennomsnittsbelastningen over 5 minutter overstiger en g
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
-msgstr "Slår inn når enhver sensor overstiger en grenseverdi"
+msgstr "Slår inn når hvilken som helst sensor overstiger en grenseverdi"
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
