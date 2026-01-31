@@ -8,7 +8,7 @@ msgstr ""
 "Language: sv\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-12-05 20:24\n"
+"PO-Revision-Date: 2026-01-31 21:16\n"
 "Last-Translator: \n"
 "Language-Team: Swedish\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -157,6 +157,7 @@ msgstr "Larm"
 
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
 msgstr "Alla behållare"
@@ -230,7 +231,7 @@ msgstr "Bandbredd"
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
-msgstr "Bat"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -837,6 +838,7 @@ msgstr "Inaktiv"
 msgid "Invalid email address."
 msgstr "Ogiltig e-postadress."
 
+#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Språk"
@@ -1119,7 +1121,7 @@ msgstr "Procentandel av tid spenderad i varje tillstånd"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Permanent"
-msgstr "Permanent"
+msgstr ""
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Persistence"
@@ -1335,6 +1337,7 @@ msgstr "Ställ in procentuella tröskelvärden för mätarfärger."
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Settings"
@@ -1486,6 +1489,7 @@ msgstr "Till e-postadress(er)"
 msgid "Toggle grid"
 msgstr "Växla rutnät"
 
+#: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
 msgid "Toggle theme"
 msgstr "Växla tema"

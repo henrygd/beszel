@@ -8,7 +8,7 @@ msgstr ""
 "Language: no\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-12-05 20:24\n"
+"PO-Revision-Date: 2026-01-31 21:16\n"
 "Last-Translator: \n"
 "Language-Team: Norwegian\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -157,6 +157,7 @@ msgstr "Alarmer"
 
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
 msgstr "Alle containere"
@@ -230,7 +231,7 @@ msgstr "Båndbredde"
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
-msgstr ""
+msgstr "Batteri"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -837,6 +838,7 @@ msgstr "Inaktiv"
 msgid "Invalid email address."
 msgstr "Ugyldig e-postadresse."
 
+#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Språk"
@@ -908,7 +910,7 @@ msgstr "Logger"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Looking instead for where to create alerts? Click the bell <0/> icons in the systems table."
-msgstr "Ser du etter hvor du kan opprette alarmer? Klikk på bjelle-ikonene <0/> i systemtabellen."
+msgstr "Ser du etter hvor du kan opprette alarmer? Klikk på bjelle-ikonet <0/> for systemet i systemoversikten."
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
@@ -1335,6 +1337,7 @@ msgstr "Angi prosentvise terskler for målerfarger."
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Settings"
@@ -1487,6 +1490,7 @@ msgid "Toggle grid"
 msgstr "Rutenett av/på"
 
 #: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
 msgid "Toggle theme"
 msgstr "Tema av/på"
 
@@ -1549,7 +1553,7 @@ msgstr "Slår inn når gjennomsnittsbelastningen over 5 minutter overstiger en g
 
 #: src/lib/alerts.ts
 msgid "Triggers when any sensor exceeds a threshold"
-msgstr "Slår inn når enhver sensor overstiger en grenseverdi"
+msgstr "Slår inn når hvilken som helst sensor overstiger en grenseverdi"
 
 #: src/lib/alerts.ts
 msgid "Triggers when battery charge drops below a threshold"
