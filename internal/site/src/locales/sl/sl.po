@@ -8,7 +8,7 @@ msgstr ""
 "Language: sl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-12-05 20:24\n"
+"PO-Revision-Date: 2026-01-31 21:16\n"
 "Last-Translator: \n"
 "Language-Team: Slovenian\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n%100==4 ? 2 : 3;\n"
@@ -142,7 +142,7 @@ msgstr "Po"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr "Agent"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -230,7 +230,7 @@ msgstr "Pasovna širina"
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
-msgstr "Bat"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -456,7 +456,7 @@ msgstr "Kopiraj YAML"
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr "CPU"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
@@ -706,7 +706,7 @@ msgstr "Izvozi trenutne nastavitve sistema."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr "Fahrenheit (°F)"
+msgstr ""
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Failed"
@@ -1741,3 +1741,4 @@ msgstr "Da"
 #: src/components/routes/settings/layout.tsx
 msgid "Your user settings have been updated."
 msgstr "Vaše uporabniške nastavitve so posodobljene."
+
