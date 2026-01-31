@@ -190,6 +190,8 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		id := record.Id
 		// clear global statsRecord for reuse
 		statsRecord.Stats = statsRecord.Stats[:0]
+		// reset tempStats each iteration to avoid omitzero fields retaining stale values
+		*stats = system.Stats{}
 
 		queryParams["id"] = id
 		db.NewQuery("SELECT stats FROM system_stats WHERE id = {:id}").Bind(queryParams).One(&statsRecord)
@@ -444,9 +446,11 @@ func (rm *RecordManager) AverageContainerStats(db dbx.Builder, records RecordIds
 
 	for i := range records {
 		id := records[i].Id
-		// clear global statsRecord and containerStats for reuse
+		// clear global statsRecord for reuse
 		statsRecord.Stats = statsRecord.Stats[:0]
-		containerStats = containerStats[:0]
+		// must set to nil (not [:0]) to avoid json.Unmarshal reusing backing array
+		// which causes omitzero fields to inherit stale values from previous iterations
+		containerStats = nil
 
 		queryParams["id"] = id
 		db.NewQuery("SELECT stats FROM container_stats WHERE id = {:id}").Bind(queryParams).One(&statsRecord)
