@@ -7,6 +7,7 @@ import { lazy, memo, Suspense, useMemo, useState } from "react"
 import { $router, Link } from "@/components/router"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/components/ui/use-toast"
@@ -263,15 +264,30 @@ export function AlertContent({
 										</Trans>
 									)}
 								</p>
-								<div className="flex gap-3">
+								<div className="flex gap-3 items-center">
 									<Slider
 										aria-labelledby={`v${name}`}
 										defaultValue={[value]}
+										value={[value]}
 										onValueCommit={(val) => sendUpsert(min, val[0])}
 										onValueChange={(val) => setValue(val[0])}
 										step={alertData.step ?? 1}
 										min={alertData.min ?? 1}
 										max={alertData.max ?? 99}
+									/>
+									<Input
+										type="number"
+										value={value}
+										onChange={(e) => {
+											const val = parseFloat(e.target.value)
+											if (!isNaN(val)) setValue(val)
+										}}
+										onBlur={() => sendUpsert(min, value)}
+										onKeyDown={(e) => e.key === "Enter" && sendUpsert(min, value)}
+										step={alertData.step ?? 1}
+										min={alertData.min ?? 1}
+										max={alertData.max ?? 99}
+										className="w-16 h-8 text-center px-1"
 									/>
 								</div>
 							</div>
@@ -289,14 +305,28 @@ export function AlertContent({
 									<Plural value={min} one="minute" other="minutes" />
 								</Trans>
 							</p>
-							<div className="flex gap-3">
+							<div className="flex gap-3 items-center">
 								<Slider
-									aria-labelledby={`v${name}`}
+									aria-labelledby={`t${name}`}
 									defaultValue={[min]}
+									value={[min]}
 									onValueCommit={(minVal) => sendUpsert(minVal[0], value)}
 									onValueChange={(val) => setMin(val[0])}
 									min={1}
 									max={60}
+								/>
+								<Input
+									type="number"
+									value={min}
+									onChange={(e) => {
+										const val = parseInt(e.target.value, 10)
+										if (!isNaN(val)) setMin(val)
+									}}
+									onBlur={() => sendUpsert(min, value)}
+									onKeyDown={(e) => e.key === "Enter" && sendUpsert(min, value)}
+									min={1}
+									max={60}
+									className="w-16 h-8 text-center px-1"
 								/>
 							</div>
 						</div>
