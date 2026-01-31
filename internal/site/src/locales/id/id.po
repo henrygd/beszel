@@ -8,7 +8,7 @@ msgstr ""
 "Language: id\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-01-31 21:16\n"
+"PO-Revision-Date: 2026-01-31 22:39\n"
 "Last-Translator: \n"
 "Language-Team: Indonesian\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -157,6 +157,7 @@ msgstr "Peringatan"
 
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
 msgstr "Semua Container"
@@ -837,6 +838,7 @@ msgstr "Tidak aktif"
 msgid "Invalid email address."
 msgstr "Alamat email tidak valid."
 
+#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Bahasa"
@@ -1335,6 +1337,7 @@ msgstr "Tetapkan ambang persentase untuk warna meter."
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Settings"
@@ -1486,6 +1489,7 @@ msgstr "Ke email"
 msgid "Toggle grid"
 msgstr "Ganti tampilan"
 
+#: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
 msgid "Toggle theme"
 msgstr "Ganti tema"
