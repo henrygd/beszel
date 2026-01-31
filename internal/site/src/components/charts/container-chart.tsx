@@ -38,6 +38,23 @@ export default memo(function ContainerChart({
 
 	const isNetChart = chartType === ChartType.Network
 
+	// Filter with set lookup
+	const filteredKeys = useMemo(() => {
+		if (!filter) {
+			return new Set<string>()
+		}
+		const filterTerms = filter
+			.toLowerCase()
+			.split(" ")
+			.filter((term) => term.length > 0)
+		return new Set(
+			Object.keys(chartConfig).filter((key) => {
+				const keyLower = key.toLowerCase()
+				return !filterTerms.some((term) => keyLower.includes(term))
+			})
+		)
+	}, [chartConfig, filter])
+
 	// biome-ignore lint/correctness/useExhaustiveDependencies: not necessary
 	const { toolTipFormatter, dataFunction, tickFormatter } = useMemo(() => {
 		const obj = {} as {
@@ -85,8 +102,12 @@ export default memo(function ContainerChart({
 						let totalSent = 0
 						let totalRecv = 0
 						const payloadData = item?.payload && typeof item.payload === "object" ? item.payload : {}
-						for (const value of Object.values(payloadData)) {
+						for (const [containerKey, value] of Object.entries(payloadData)) {
 							if (!value || typeof value !== "object") {
+								continue
+							}
+							// Skip filtered out containers
+							if (filteredKeys.has(containerKey)) {
 								continue
 							}
 							const [sent, recv] = getRxTxBytes(value as { b?: [number, number]; ns?: number; nr?: number })
@@ -124,24 +145,7 @@ export default memo(function ContainerChart({
 			obj.dataFunction = (key: string, data: any) => data[key]?.[dataKey] ?? null
 		}
 		return obj
-	}, [])
-
-	// Filter with set lookup
-	const filteredKeys = useMemo(() => {
-		if (!filter) {
-			return new Set<string>()
-		}
-		const filterTerms = filter
-			.toLowerCase()
-			.split(" ")
-			.filter((term) => term.length > 0)
-		return new Set(
-			Object.keys(chartConfig).filter((key) => {
-				const keyLower = key.toLowerCase()
-				return !filterTerms.some((term) => keyLower.includes(term))
-			})
-		)
-	}, [chartConfig, filter])
+	}, [filteredKeys])
 
 	// console.log('rendered at', new Date())
 
