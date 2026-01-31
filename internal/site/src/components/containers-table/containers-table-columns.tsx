@@ -1,4 +1,5 @@
 import type { Column, ColumnDef } from "@tanstack/react-table"
+import { lazy, Suspense } from "react"
 import { Button } from "@/components/ui/button"
 import { cn, decimalString, formatBytes, hourWithSeconds } from "@/lib/utils"
 import type { ContainerRecord } from "@/types"
@@ -33,6 +34,9 @@ function getStatusValue(status: string): number {
 	return 0
 }
 
+// Lazy load the alert button component
+const ContainerAlertButton = lazy(() => import("@/components/alerts/container-alert-button"))
+
 export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 	{
 		id: "name",
@@ -55,7 +59,7 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		header: ({ column }) => <HeaderButton column={column} name={t`System`} Icon={ServerIcon} />,
 		cell: ({ getValue }) => {
 			const allSystems = useStore($allSystemsById)
-			return <span className="ms-1.5 xl:w-34 block truncate">{allSystems[getValue() as string]?.name ?? ""}</span>
+			return <span className="ms-1.5 xl:w-30 block truncate">{allSystems[getValue() as string]?.name ?? ""}</span>
 		},
 	},
 	// {
@@ -129,15 +133,17 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 		id: "image",
 		sortingFn: (a, b) => a.original.image.localeCompare(b.original.image),
 		accessorFn: (record) => record.image,
+		enableHiding: true,
 		header: ({ column }) => <HeaderButton column={column} name={t({ message: "Image", context: "Docker image" })} Icon={LayersIcon} />,
 		cell: ({ getValue }) => {
-			return <span className="ms-1.5 xl:w-40 block truncate">{getValue() as string}</span>
+			return <span className="ms-1.5 xl:w-30 block truncate">{getValue() as string}</span>
 		},
 	},
 	{
 		id: "status",
 		accessorFn: (record) => record.status,
 		invertSorting: true,
+		enableHiding: true,
 		sortingFn: (a, b) => getStatusValue(a.original.status) - getStatusValue(b.original.status),
 		header: ({ column }) => <HeaderButton column={column} name={t`Status`} Icon={HourglassIcon} />,
 		cell: ({ getValue }) => {
@@ -155,6 +161,21 @@ export const containerChartCols: ColumnDef<ContainerRecord>[] = [
 				<span className="ms-1.5 tabular-nums">
 					{hourWithSeconds(new Date(timestamp).toISOString())}
 				</span>
+			)
+		},
+	},
+	{
+		id: "actions",
+		header: () => <div className="text-center">{t`Actions`}</div>,
+		cell: ({ row }) => {
+			// Lazy load the alert button component
+			const ContainerAlertButton = lazy(() => import("@/components/alerts/container-alert-button"))
+			return (
+				<div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
+					<Suspense fallback={<div className="h-8 w-8" />}>
+						<ContainerAlertButton systemId={row.original.system} container={row.original} />
+					</Suspense>
+				</div>
 			)
 		},
 	},

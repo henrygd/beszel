@@ -3,7 +3,7 @@ import PocketBase from "pocketbase"
 import { basePath } from "@/components/router"
 import { toast } from "@/components/ui/use-toast"
 import type { ChartTimes, UserSettings } from "@/types"
-import { $alerts, $allSystemsById, $allSystemsByName, $userSettings } from "./stores"
+import { $alerts, $allSystemsById, $allSystemsByName, $containerAlerts, $userSettings } from "./stores"
 import { chartTimeData } from "./utils"
 
 /** PocketBase JS Client */
@@ -30,6 +30,7 @@ export function logOut() {
 	$allSystemsByName.set({})
 	$allSystemsById.set({})
 	$alerts.set({})
+	$containerAlerts.set({})
 	$userSettings.set({} as UserSettings)
 	sessionStorage.setItem("lo", "t") // prevent auto login on logout
 	pb.authStore.clear()

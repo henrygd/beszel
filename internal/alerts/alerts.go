@@ -105,6 +105,8 @@ func NewAlertManager(app hubLike) *AlertManager {
 func (am *AlertManager) bindEvents() {
 	am.hub.OnRecordAfterUpdateSuccess("alerts").BindFunc(updateHistoryOnAlertUpdate)
 	am.hub.OnRecordAfterDeleteSuccess("alerts").BindFunc(resolveHistoryOnAlertDelete)
+	am.hub.OnRecordAfterUpdateSuccess("container_alerts").BindFunc(updateHistoryOnContainerAlertUpdate)
+	am.hub.OnRecordAfterDeleteSuccess("container_alerts").BindFunc(resolveHistoryOnContainerAlertDelete)
 	am.hub.OnRecordAfterUpdateSuccess("smart_devices").BindFunc(am.handleSmartDeviceAlert)
 }
 

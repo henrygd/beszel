@@ -3,16 +3,11 @@ import { Plural, Trans } from "@lingui/react/macro"
 import { useStore } from "@nanostores/react"
 import { getPagePath } from "@nanostores/router"
 import { GlobeIcon, ServerIcon } from "lucide-react"
-import { useEffect, lazy, memo, Suspense, useMemo, useState } from "react"
+import { lazy, memo, Suspense, useMemo, useState } from "react"
 import { $router, Link } from "@/components/router"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Switch } from "@/components/ui/switch"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
-import { SearchIcon } from "lucide-react"
-import { DockerIcon } from "@/components/ui/icons"
-import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "@/components/ui/use-toast"
 import { alertInfo } from "@/lib/alerts"
@@ -39,112 +34,50 @@ const failedUpdateToast = (error: unknown) => {
 }
 
 /** Create or update alerts for a given name and systems */
-async function upsertAlertsSync({ name, value, min, systems }: { name: string; value: number; min: number; systems: string[] }) {
-	try {
-		await pb.send<{ success: boolean }>(endpoint, {
-			method: "POST",
-			// overwrite is always true because we've done filtering client side
-			body: { name, value, min, systems, overwrite: true },
-			requestKey: null,
-		})
-	} catch (error) {
-		failedUpdateToast(error)
-	}
-}
+const upsertAlerts = debounce(
+	async ({ name, value, min, systems }: { name: string; value: number; min: number; systems: string[] }) => {
+		try {
+			await pb.send<{ success: boolean }>(endpoint, {
+				method: "POST",
+				// overwrite is always true because we've done filtering client side
+				body: { name, value, min, systems, overwrite: true },
+			})
+		} catch (error) {
+			failedUpdateToast(error)
+		}
+	},
+	alertDebounce
+)
 
 /** Delete alerts for a given name and systems */
-async function deleteAlertsSync({ name, systems }: { name: string; systems: string[] }) {
+const deleteAlerts = debounce(async ({ name, systems }: { name: string; systems: string[] }) => {
 	try {
 		await pb.send<{ success: boolean }>(endpoint, {
 			method: "DELETE",
 			body: { name, systems },
-			requestKey: null,
 		})
 	} catch (error) {
 		failedUpdateToast(error)
 	}
-}
-
-const upsertAlerts = debounce(upsertAlertsSync, alertDebounce)
-const deleteAlerts = debounce(deleteAlertsSync, alertDebounce)
-
-const fetchContainers = async (systemId: string) => {
-	const { items } = await pb.collection("containers").getList(0, 500, {
-		fields: "id,name,system",
-		filter: pb.filter("system={:system}", { system: systemId }),
-	})
-	return items.sort((a: any, b: any) => a.name.localeCompare(b.name)) as any[]
-}
+}, alertDebounce)
 
 export const AlertDialogContent = memo(function AlertDialogContent({ system }: { system: SystemRecord }) {
 	const alerts = useStore($alerts)
 	const [overwriteExisting, setOverwriteExisting] = useState<boolean | "indeterminate">(false)
 	const [currentTab, setCurrentTab] = useState("system")
-	const [containers, setContainers] = useState<{ id: string; name: string }[]>([])
-	const [containerSearch, setContainerSearch] = useState("")
-
-	useEffect(() => {
-		fetchContainers(system.id).then(setContainers)
-	}, [system.id])
 
 	const systemAlerts = alerts[system.id] ?? new Map()
 
-	const getContainerAlertInfo = (name: string): AlertInfo => ({
-		name: () => name,
-		unit: "",
-		icon: DockerIcon,
-		desc: () => t`Triggers when container is unhealthy`,
-		singleDesc: () => t`Unhealthy`,
-		start: 1,
-		invert: true,
-	})
-
+	// We need to keep a copy of alerts when we switch to global tab. If we always compare to
+	// current alerts, it will only be updated when first checked, then won't be updated because
+	// after that it exists.
 	const alertsWhenGlobalSelected = useMemo(() => {
 		return currentTab === "global" ? structuredClone(alerts) : alerts
-	}, [currentTab, alerts])
-
-	const [bulkEnabled, setBulkEnabled] = useState(false)
-	const [bulkMin, setBulkMin] = useState(10)
-
-	useEffect(() => {
-		if (containers.length > 0) {
-			const enabledCount = containers.filter((c) => systemAlerts.has(`Container ${c.name}`)).length
-			const allEnabled = enabledCount === containers.length
-			// Only update global state if we have exactly one container OR if we just loaded multiple and they are all enabled
-			if (containers.length === 1 || (!bulkEnabled && allEnabled)) {
-				setBulkEnabled(allEnabled)
-				const alert = systemAlerts.get(`Container ${containers[0].name}`)
-				if (alert) {
-					setBulkMin(alert.min)
-				}
-			}
-		}
-	}, [containers.length, systemAlerts])
-
-	const filteredContainers = useMemo(() => {
-		return containers.filter((c) => c.name.toLowerCase().includes(containerSearch.toLowerCase()))
-	}, [containers, containerSearch])
-
-	const updateAllContainersMin = useMemo(
-		() =>
-			debounce(async (val: number) => {
-				for (const c of filteredContainers) {
-					if (systemAlerts.has(`Container ${c.name}`)) {
-						await upsertAlertsSync({
-							name: `Container ${c.name}`,
-							value: 1,
-							min: val,
-							systems: [system.id],
-						})
-					}
-				}
-			}, 200),
-		[filteredContainers, system.id, systemAlerts]
-	)
+	}, [currentTab])
 
 	return (
 		<>
-			<DialogHeader className="px-1">
+			<DialogHeader>
 				<DialogTitle className="text-xl">
 					<Trans>Alerts</Trans>
 				</DialogTitle>
@@ -169,7 +102,7 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 						<Trans>All Systems</Trans>
 					</TabsTrigger>
 				</TabsList>
-				<TabsContent value="system" className="mt-4 outline-none">
+				<TabsContent value="system">
 					<div className="grid gap-3">
 						{alertKeys.map((name) => (
 							<AlertContent
@@ -180,96 +113,6 @@ export const AlertDialogContent = memo(function AlertDialogContent({ system }: {
 								system={system}
 							/>
 						))}
-						<Separator className="my-2" />
-						{/* Container Alerts */}
-						<div className="space-y-3">
-							<div className="rounded-lg border border-muted-foreground/15 hover:border-muted-foreground/20 transition-colors duration-100 group p-4">
-								<div className="flex flex-row items-center justify-between gap-4 select-none">
-									<div className="grid gap-1">
-										<p className="font-semibold flex gap-2.5 items-center">
-											<DockerIcon className="h-4 w-4 opacity-85" />
-											<Trans>All Containers</Trans>
-										</p>
-										<span className="block text-sm text-muted-foreground">
-											{bulkEnabled ? (
-												<Trans>
-													Any container unhealthy for <strong className="text-foreground">{bulkMin}</strong>{" "}
-													<Plural value={bulkMin} one="minute" other="minutes" />
-												</Trans>
-											) : (
-												<Trans>Set unhealthy alert for all containers</Trans>
-											)}
-										</span>
-									</div>
-									<Switch
-										checked={bulkEnabled}
-										onCheckedChange={async (newChecked) => {
-											setBulkEnabled(newChecked)
-											if (newChecked) {
-												for (const c of filteredContainers) {
-													await upsertAlertsSync({
-														name: `Container ${c.name}`,
-														value: 1,
-														min: bulkMin,
-														systems: [system.id],
-													})
-												}
-											} else {
-												const alertNames = filteredContainers.map((c) => `Container ${c.name}`)
-												for (const name of alertNames) {
-													await deleteAlertsSync({ name, systems: [system.id] })
-												}
-											}
-										}}
-									/>
-								</div>
-								{bulkEnabled && (
-									<div className="mt-4 pt-1 mb-1">
-										<Suspense fallback={<div className="h-4 w-full" />}>
-											<Slider
-												value={[bulkMin]}
-												onValueChange={(val) => {
-													setBulkMin(val[0])
-													updateAllContainersMin(val[0])
-												}}
-												min={1}
-												max={60}
-											/>
-										</Suspense>
-									</div>
-								)}
-							</div>
-
-							<div className="relative">
-								<SearchIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
-								<Input
-									placeholder={t`Search containers...`}
-									className="pl-9 h-9 bg-muted/40 border-muted-foreground/10"
-									value={containerSearch}
-									onChange={(e) => setContainerSearch(e.target.value)}
-								/>
-							</div>
-
-							<div className="grid gap-3 max-h-[350px] overflow-y-auto pr-1 scroll-sm">
-								{filteredContainers.map((c) => {
-									const alertKey = `Container ${c.name}`
-									return (
-										<AlertContent
-											key={c.id}
-											alertKey={alertKey}
-											data={getContainerAlertInfo(c.name)}
-											alert={systemAlerts.get(alertKey)}
-											system={system}
-										/>
-									)
-								})}
-								{containers.length > 0 && filteredContainers.length === 0 && (
-									<p className="text-center py-4 text-sm text-muted-foreground italic">
-										<Trans>No containers found</Trans>
-									</p>
-								)}
-							</div>
-						</div>
 					</div>
 				</TabsContent>
 				<TabsContent value="global">
@@ -328,25 +171,7 @@ export function AlertContent({
 
 	const [checked, setChecked] = useState(global ? false : !!alert)
 	const [min, setMin] = useState(alert?.min || 10)
-	const [value, setValue] = useState(alert?.value ?? (singleDescription ? (alertData.start ?? 0) : (alertData.start ?? 80)))
-
-	useEffect(() => {
-		if (!global) {
-			setChecked(!!alert)
-		}
-	}, [alert, global])
-
-	useEffect(() => {
-		if (alert?.min) {
-			setMin(alert.min)
-		}
-	}, [alert?.min])
-
-	useEffect(() => {
-		if (alert?.value !== undefined) {
-			setValue(alert.value)
-		}
-	}, [alert?.value])
+	const [value, setValue] = useState(alert?.value || (singleDescription ? 0 : (alertData.start ?? 80)))
 
 	const Icon = alertData.icon
 
@@ -441,11 +266,9 @@ export function AlertContent({
 								<div className="flex gap-3">
 									<Slider
 										aria-labelledby={`v${name}`}
-										value={[value]}
-										onValueChange={(val) => {
-											setValue(val[0])
-											sendUpsert(min, val[0])
-										}}
+										defaultValue={[value]}
+										onValueCommit={(val) => sendUpsert(min, val[0])}
+										onValueChange={(val) => setValue(val[0])}
 										step={alertData.step ?? 1}
 										min={alertData.min ?? 1}
 										max={alertData.max ?? 99}
@@ -469,11 +292,9 @@ export function AlertContent({
 							<div className="flex gap-3">
 								<Slider
 									aria-labelledby={`v${name}`}
-									value={[min]}
-									onValueChange={(val) => {
-										setMin(val[0])
-										sendUpsert(val[0], value)
-									}}
+									defaultValue={[min]}
+									onValueCommit={(minVal) => sendUpsert(minVal[0], value)}
+									onValueChange={(val) => setMin(val[0])}
 									min={1}
 									max={60}
 								/>

@@ -135,8 +135,8 @@ type Stats struct {
 	NetworkSent float64 `json:"ns" cbor:"3,keyasint"`
 	NetworkRecv float64 `json:"nr" cbor:"4,keyasint"`
 
-	Health DockerHealth `json:"h" cbor:"5,keyasint"`
-	Status string       `json:"s" cbor:"6,keyasint"`
+	Health DockerHealth `json:"-" cbor:"5,keyasint"`
+	Status string       `json:"-" cbor:"6,keyasint"`
 	Id     string       `json:"-" cbor:"7,keyasint"`
 	Image  string       `json:"-" cbor:"8,keyasint"`
 	// PrevCpu     [2]uint64    `json:"-"`

@@ -269,6 +269,9 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	// update / delete user alerts
 	apiAuth.POST("/user-alerts", alerts.UpsertUserAlerts)
 	apiAuth.DELETE("/user-alerts", alerts.DeleteUserAlerts)
+	// update / delete container alerts
+	apiAuth.POST("/user-container-alerts", alerts.UpsertUserContainerAlerts)
+	apiAuth.DELETE("/user-container-alerts", alerts.DeleteUserContainerAlerts)
 	// refresh SMART devices for a system
 	apiAuth.POST("/smart/refresh", h.refreshSmartData)
 	// get systemd service details
