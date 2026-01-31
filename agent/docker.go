@@ -335,6 +335,8 @@ func validateCpuPercentage(cpuPct float64, containerName string) error {
 func updateContainerStatsValues(stats *container.Stats, cpuPct float64, usedMemory uint64, sent_delta, recv_delta uint64, readTime time.Time) {
 	stats.Cpu = twoDecimals(cpuPct)
 	stats.Mem = bytesToMegabytes(float64(usedMemory))
+	stats.Bandwidth = [2]uint64{sent_delta, recv_delta}
+	// TODO(0.19+): stop populating NetworkSent/NetworkRecv (deprecated in 0.18.3)
 	stats.NetworkSent = bytesToMegabytes(float64(sent_delta))
 	stats.NetworkRecv = bytesToMegabytes(float64(recv_delta))
 	stats.PrevReadTime = readTime
@@ -403,6 +405,8 @@ func (dm *dockerManager) updateContainerStats(ctr *container.ApiInfo, cacheTimeM
 	// reset current stats
 	stats.Cpu = 0
 	stats.Mem = 0
+	stats.Bandwidth = [2]uint64{0, 0}
+	// TODO(0.19+): stop populating NetworkSent/NetworkRecv (deprecated in 0.18.3)
 	stats.NetworkSent = 0
 	stats.NetworkRecv = 0
 
