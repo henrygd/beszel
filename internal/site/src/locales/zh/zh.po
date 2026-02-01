@@ -8,7 +8,7 @@ msgstr ""
 "Language: zh\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-01-10 17:34\n"
+"PO-Revision-Date: 2026-01-31 21:16\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -142,7 +142,7 @@ msgstr "之後"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
-msgstr "代理"
+msgstr "Agent"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
@@ -157,6 +157,7 @@ msgstr "警報"
 
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
 msgstr "所有容器"
@@ -442,11 +443,11 @@ msgstr "複製文字"
 
 #: src/components/add-system.tsx
 msgid "Copy the installation command for the agent below, or register agents automatically with a <0>universal token</0>."
-msgstr "複製下面的代理程式安裝指令，或使用<0>通用令牌</0>自動註冊代理程式。"
+msgstr "以下方指令安裝 Agent ，或使用<0>通用 Token</0>進行自動註冊。"
 
 #: src/components/add-system.tsx
 msgid "Copy the<0>docker-compose.yml</0> content for the agent below, or register agents automatically with a <1>universal token</1>."
-msgstr "複製下面的代理程式<0>docker-compose.yml</0>內容，或使用<1>通用令牌</1>自動註冊代理程式。"
+msgstr "以下方<0>docker-compose.yml</0>執行 Agent，或使用<1>通用 Token</1>進行自動註冊。"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Copy YAML"
@@ -534,7 +535,7 @@ msgstr "刪除"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Delete fingerprint"
-msgstr "刪除指紋"
+msgstr "刪除 Fingerprint"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Description"
@@ -690,7 +691,7 @@ msgstr "結束"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Expires after one hour or on hub restart."
-msgstr "一小時後或重新啟動集線器時過期。"
+msgstr "在一個小時後或者重新啟動 Hub 時過期。"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Export"
@@ -750,7 +751,7 @@ msgstr "篩選..."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
-msgstr "指紋"
+msgstr "Fingerprint"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
@@ -837,6 +838,7 @@ msgstr "未啟用"
 msgid "Invalid email address."
 msgstr "無效的電子郵件地址。"
 
+#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "語言"
@@ -1250,7 +1252,7 @@ msgstr "Root"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
-msgstr "輪替令牌"
+msgstr "重設 Token"
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "Rows per page"
@@ -1283,7 +1285,7 @@ msgstr "儲存系統"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Saved in the database and does not expire until you disable it."
-msgstr "保存在資料庫中，在您停用之前不會過期。"
+msgstr "儲存在資料庫中，在您停用之前不會過期。"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Schedule"
@@ -1335,6 +1337,7 @@ msgstr "設定儀表顏色的百分比閾值。"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Settings"
@@ -1487,27 +1490,28 @@ msgid "Toggle grid"
 msgstr "切換網格"
 
 #: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
 msgid "Toggle theme"
 msgstr "切換主題"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr "令牌"
+msgstr "Token"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens & Fingerprints"
-msgstr "令牌和指紋"
+msgstr "Token & Fingerprint"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens allow agents to connect and register. Fingerprints are stable identifiers unique to each system, set on first connection."
-msgstr "令牌允許代理程式連線和註冊。指紋是每個系統的唯一穩定識別符，在首次連線時產生。"
+msgstr "Token 用於 Agent 的連線和註冊。Fingerprint 則是每個系統唯一的穩定識別碼，於初次連線時設定。"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Tokens and fingerprints are used to authenticate WebSocket connections to the hub."
-msgstr "令牌和指紋被用於驗證到 Hub 的 WebSocket 連線。"
+msgstr "Token 與 Fingerprint 用於驗證連往 Hub 的 WebSocket 連線。"
 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
@@ -1597,7 +1601,7 @@ msgstr "單位偏好"
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Universal token"
-msgstr "通用令牌"
+msgstr "通用 Token"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -1710,7 +1714,7 @@ msgstr "Webhook / 推送通知"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation."
-msgstr "啟用後，此令牌允許代理無需事先建立系統即可自行註冊。"
+msgstr "啟用後，此 Token 可讓 Agent 自行註冊，無需預先在系統中建立項目。"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx

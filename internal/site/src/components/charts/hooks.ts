@@ -35,10 +35,13 @@ export function useContainerChartConfigs(containerData: ChartData["containerData
 					continue
 				}
 
-				// Accumulate all metrics in one operation
+// Accumulate all metrics in one operation
 				const cpu = containerStats.c ?? 0
 				const memory = containerStats.m ?? 0
-				const network = (containerStats.nr ?? 0) + (containerStats.ns ?? 0)
+				// Use new byte format if available, otherwise fall back to legacy format
+				const sentBytes = containerStats.b?.[0] ?? (containerStats.ns ?? 0) * 1024 * 1024
+				const recvBytes = containerStats.b?.[1] ?? (containerStats.nr ?? 0) * 1024 * 1024
+				const network = sentBytes + recvBytes
 				const current = combinedUsage.get(containerName) ?? 0
 				combinedUsage.set(containerName, current + cpu + memory + network)
 			}

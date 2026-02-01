@@ -8,7 +8,7 @@ msgstr ""
 "Language: vi\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-12-02 23:18\n"
+"PO-Revision-Date: 2026-01-31 21:16\n"
 "Last-Translator: \n"
 "Language-Team: Vietnamese\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -157,6 +157,7 @@ msgstr "Cảnh báo"
 
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
 msgstr "Tất cả container"
@@ -456,7 +457,7 @@ msgstr "Sao chép YAML"
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr "CPU"
+msgstr ""
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
@@ -626,7 +627,7 @@ msgstr "Chỉnh sửa {foo}"
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/otp-forms.tsx
 msgid "Email"
-msgstr "Email"
+msgstr ""
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
@@ -837,6 +838,7 @@ msgstr "Không hoạt động"
 msgid "Invalid email address."
 msgstr "Địa chỉ email không hợp lệ."
 
+#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Ngôn ngữ"
@@ -1335,6 +1337,7 @@ msgstr "Đặt ngưỡng cho màu sắc đồng hồ."
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Settings"
@@ -1487,13 +1490,14 @@ msgid "Toggle grid"
 msgstr "Chuyển đổi lưới"
 
 #: src/components/mode-toggle.tsx
+#: src/components/mode-toggle.tsx
 msgid "Toggle theme"
 msgstr "Chuyển đổi chủ đề"
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr "Token"
+msgstr ""
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
