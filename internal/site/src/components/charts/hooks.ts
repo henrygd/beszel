@@ -22,57 +22,27 @@ export interface ContainerChartConfigs {
  */
 export function useContainerChartConfigs(containerData: ChartData["containerData"]): ContainerChartConfigs {
 	return useMemo(() => {
-		// Calculate combined usage in a single pass
-		const combinedUsage = new Map<string, number>()
+		if (!containerData.length) return { cpu: {}, memory: {}, network: {} }
 
-		for (let i = 0; i < containerData.length; i++) {
-			const stats = containerData[i]
-			const containerNames = Object.keys(stats)
-
-			for (let j = 0; j < containerNames.length; j++) {
-				const containerName = containerNames[j]
-				// Skip metadata field
-				if (containerName === "created") {
-					continue
-				}
-
-				const containerStats = stats[containerName]
-				if (!containerStats) {
-					continue
-				}
-
-// Accumulate all metrics in one operation
-				const cpu = containerStats.c ?? 0
-				const memory = containerStats.m ?? 0
-				// Use new byte format if available, otherwise fall back to legacy format
-				const sentBytes = containerStats.b?.[0] ?? (containerStats.ns ?? 0) * 1024 * 1024
-				const recvBytes = containerStats.b?.[1] ?? (containerStats.nr ?? 0) * 1024 * 1024
-				const network = sentBytes + recvBytes
-				const current = combinedUsage.get(containerName) ?? 0
-				combinedUsage.set(containerName, current + cpu + memory + network)
+		// Collect all containers and their total usage across all data points
+		const usage = new Map<string, number>()
+		for (const dataPoint of containerData) {
+			for (const [name, s] of Object.entries(dataPoint)) {
+				if (name === "created" || !s || typeof s !== "object") continue
+				const stats = s as { c?: number; m?: number; b?: number[] }
+				const value = (stats.c ?? 0) + (stats.m ?? 0) + (stats.b?.[0] ?? 0) + (stats.b?.[1] ?? 0)
+				usage.set(name, (usage.get(name) ?? 0) + value)
 			}
 		}
 
-		// Sort containers by combined usage to ensure consistent color assignment
-		const sortedContainers = Array.from(combinedUsage.entries()).sort(([, a], [, b]) => b - a)
-		const count = sortedContainers.length
-
-		// Generate chart configurations with consistent colors
-		const chartConfig = {} as Record<string, { label: string; color: string }>
-		for (let i = 0; i < count; i++) {
-			const [containerName] = sortedContainers[i]
-			chartConfig[containerName] = {
-				label: containerName,
-				color: getChartColor(i, count),
-			}
+		// Sort by total usage and generate config with consistent colors
+		const sorted = [...usage.entries()].sort(([, a], [, b]) => b - a)
+		const chartConfig: ChartConfig = {}
+		for (let i = 0; i < sorted.length; i++) {
+			chartConfig[sorted[i][0]] = { label: sorted[i][0], color: getChartColor(i, sorted.length) }
 		}
 
-		// Return the same configuration for all chart types
-		return {
-			cpu: chartConfig,
-			memory: chartConfig,
-			network: chartConfig,
-		}
+		return { cpu: chartConfig, memory: chartConfig, network: chartConfig }
 	}, [containerData])
 }
 
