@@ -236,6 +236,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 	const hasContainers = containerData.length > 0 && compareSemVer(chartData.agentVersion, parseSemVer("0.14.0")) >= 0
 	const isLinux = !(details?.os ?? system.info?.os)
 	const hasServices = isLinux && compareSemVer(chartData.agentVersion, parseSemVer("0.16.0")) >= 0
+	const tabCount = 2 + +hasGpuData + +hasContainers + +hasServices
 
 	return (
 		<div className="grid gap-4 mb-14 overflow-x-clip">
@@ -243,7 +244,7 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 
 			<Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
 				<Card className="p-1">
-					<TabsList className="w-full h-11 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+					<TabsList className="w-full h-11 grid" style={{ gridTemplateColumns: `repeat(${tabCount}, 1fr)` }}>
 						<TabsTrigger value="overview" className="h-9"><Trans>Core Metrics</Trans></TabsTrigger>
 						<TabsTrigger value="disks" className="h-9"><Trans>Disks</Trans></TabsTrigger>
 						{hasGpuData && <TabsTrigger value="gpu" className="h-9"><Trans>GPU</Trans></TabsTrigger>}
