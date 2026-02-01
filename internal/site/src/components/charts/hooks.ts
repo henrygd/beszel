@@ -2,6 +2,12 @@ import { useMemo, useState } from "react"
 import type { ChartConfig } from "@/components/ui/chart"
 import type { ChartData, SystemStats, SystemStatsRecord } from "@/types"
 
+/** Generates evenly distributed HSL colors for chart series */
+function getChartColor(index: number, total: number, startHue = 0): string {
+	const hue = (startHue + (index * 360) / total) % 360
+	return `hsl(${hue}, 60%, 55%)`
+}
+
 /** Chart configurations for CPU, memory, and network usage charts */
 export interface ContainerChartConfigs {
 	cpu: ChartConfig
@@ -55,10 +61,9 @@ export function useContainerChartConfigs(containerData: ChartData["containerData
 		const chartConfig = {} as Record<string, { label: string; color: string }>
 		for (let i = 0; i < count; i++) {
 			const [containerName] = sortedContainers[i]
-			const hue = ((i * 360) / count) % 360
 			chartConfig[containerName] = {
 				label: containerName,
-				color: `hsl(${hue}, 60%, 55%)`,
+				color: getChartColor(i, count),
 			}
 		}
 
@@ -104,11 +109,10 @@ export function useNetworkInterfaces(interfaces: SystemStats["ni"]) {
 	return {
 		length: sortedKeys.length,
 		data: (index = 3) => {
-			return sortedKeys.map((key) => ({
+			return sortedKeys.map((key, i) => ({
 				label: key,
 				dataKey: ({ stats }: SystemStatsRecord) => stats?.ni?.[key]?.[index],
-				color: `hsl(${220 + (((sortedKeys.indexOf(key) * 360) / sortedKeys.length) % 360)}, 70%, 50%)`,
-
+				color: getChartColor(i, sortedKeys.length, 220),
 				opacity: 0.3,
 			}))
 		},
