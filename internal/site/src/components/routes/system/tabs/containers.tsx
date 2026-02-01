@@ -1,11 +1,12 @@
 import { t } from "@lingui/core/macro"
 import { lazy } from "react"
 import ContainerChart from "@/components/charts/container-chart"
+import { useContainerChartConfigs } from "@/components/charts/hooks"
 import { ChartType } from "@/lib/enums"
 import { useIntersectionObserver } from "@/lib/use-intersection-observer"
 import { cn } from "@/lib/utils"
 import type { SystemRecord } from "@/types"
-import { ChartCard } from "./shared"
+import { ChartCard, FilterBar } from "./shared"
 import type { ContainersTabProps } from "./types"
 
 const ContainersTable = lazy(() => import("../../../containers-table/containers-table"))
@@ -26,14 +27,11 @@ function dockerOrPodman(str: string, system: SystemRecord): string {
 	return str
 }
 
-export function ContainersTab({
-	chartData,
-	grid,
-	dataEmpty,
-	containerFilterBar,
-	containerChartConfigs,
-	system,
-}: ContainersTabProps) {
+export function ContainersTab({ chartData, grid, system }: ContainersTabProps) {
+	const containerChartConfigs = useContainerChartConfigs(chartData.containerData)
+	const dataEmpty = chartData.systemStats.length === 0
+	const filterBar = <FilterBar />
+
 	return (
 		<>
 			<div className="grid xl:grid-cols-2 gap-4 mb-4">
@@ -42,7 +40,7 @@ export function ContainersTab({
 					grid={grid}
 					title={dockerOrPodman(t`Docker CPU Usage`, system)}
 					description={t`Average CPU utilization of containers`}
-					cornerEl={containerFilterBar}
+					cornerEl={filterBar}
 				>
 					<ContainerChart
 						chartData={chartData}
@@ -57,7 +55,7 @@ export function ContainersTab({
 					grid={grid}
 					title={dockerOrPodman(t`Docker Memory Usage`, system)}
 					description={dockerOrPodman(t`Memory usage of docker containers`, system)}
-					cornerEl={containerFilterBar}
+					cornerEl={filterBar}
 				>
 					<ContainerChart
 						chartData={chartData}
@@ -72,7 +70,7 @@ export function ContainersTab({
 					grid={grid}
 					title={dockerOrPodman(t`Docker Network I/O`, system)}
 					description={dockerOrPodman(t`Network traffic of docker containers`, system)}
-					cornerEl={containerFilterBar}
+					cornerEl={filterBar}
 				>
 					<ContainerChart
 						chartData={chartData}

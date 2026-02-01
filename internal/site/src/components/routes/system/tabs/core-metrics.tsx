@@ -1,30 +1,31 @@
 import { t } from "@lingui/core/macro"
+import { useStore } from "@nanostores/react"
 import AreaChartDefault from "@/components/charts/area-chart"
 import LoadAverageChart from "@/components/charts/load-average-chart"
 import MemChart from "@/components/charts/mem-chart"
 import SwapChart from "@/components/charts/swap-chart"
 import TemperatureChart from "@/components/charts/temperature-chart"
 import { batteryStateTranslations } from "@/lib/i18n"
-import { $temperatureFilter } from "@/lib/stores"
+import { $chartTime, $maxValues, $temperatureFilter, $userSettings } from "@/lib/stores"
 import { cn, decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
 import type { SystemStatsRecord } from "@/types"
 import { pinnedAxisDomain } from "../../../ui/chart"
 import CpuCoresSheet from "../cpu-sheet"
 import NetworkSheet from "../network-sheet"
-import { ChartCard, FilterBar } from "./shared"
-import type { CoreMetricsTabProps } from "./types"
+import { ChartCard, FilterBar, SelectAvgMax } from "./shared"
+import type { BaseTabProps } from "./types"
 
-export function CoreMetricsTab({
-	chartData,
-	grid,
-	dataEmpty,
-	maxValSelect,
-	showMax,
-	systemStats,
-	temperatureChartRef,
-	maxValues,
-	userSettings,
-}: CoreMetricsTabProps) {
+export function CoreMetricsTab({ chartData, grid }: BaseTabProps) {
+	const maxValues = useStore($maxValues)
+	const chartTime = useStore($chartTime)
+	const userSettings = $userSettings.get()
+
+	const isLongerChart = !["1m", "1h"].includes(chartTime)
+	const showMax = maxValues && isLongerChart
+	const maxValSelect = isLongerChart ? <SelectAvgMax max={maxValues} /> : null
+	const dataEmpty = chartData.systemStats.length === 0
+	const systemStats = chartData.systemStats
+
 	return (
 		<div className="grid xl:grid-cols-2 gap-4">
 			<ChartCard
@@ -117,19 +118,12 @@ export function CoreMetricsTab({
 				/>
 			</ChartCard>
 
-			{/* Swap chart */}
 			{(systemStats.at(-1)?.stats.su ?? 0) > 0 && (
-				<ChartCard
-					empty={dataEmpty}
-					grid={grid}
-					title={t`Swap Usage`}
-					description={t`Swap space used by the system`}
-				>
+				<ChartCard empty={dataEmpty} grid={grid} title={t`Swap Usage`} description={t`Swap space used by the system`}>
 					<SwapChart chartData={chartData} />
 				</ChartCard>
 			)}
 
-			{/* Load Average chart */}
 			{chartData.agentVersion?.minor >= 12 && (
 				<ChartCard
 					empty={dataEmpty}
@@ -142,12 +136,8 @@ export function CoreMetricsTab({
 				</ChartCard>
 			)}
 
-			{/* Temperature chart */}
 			{systemStats.at(-1)?.stats.t && (
-				<div
-					ref={temperatureChartRef}
-					className={cn("odd:last-of-type:col-span-full", { "col-span-full": !grid })}
-				>
+				<div className={cn("odd:last-of-type:col-span-full", { "col-span-full": !grid })}>
 					<ChartCard
 						empty={dataEmpty}
 						grid={grid}
@@ -161,7 +151,6 @@ export function CoreMetricsTab({
 				</div>
 			)}
 
-			{/* Battery chart */}
 			{systemStats.at(-1)?.stats.bat && (
 				<ChartCard
 					empty={dataEmpty}

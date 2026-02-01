@@ -7,7 +7,7 @@ import { Unit } from "@/lib/enums"
 import { cn, decimalString, formatBytes, toFixedFloat } from "@/lib/utils"
 import type { ChartData, GPUData, SystemStatsRecord } from "@/types"
 import { ChartCard } from "./shared"
-import type { GpuTabProps } from "./types"
+import type { BaseTabProps } from "./types"
 
 function GpuEnginesChart({ chartData }: { chartData: ChartData }) {
 	const { gpuId, engines } = useMemo(() => {
@@ -23,9 +23,7 @@ function GpuEnginesChart({ chartData }: { chartData: ChartData }) {
 		return { gpuId: null, engines: [] }
 	}, [chartData.systemStats])
 
-	if (!gpuId) {
-		return null
-	}
+	if (!gpuId) return null
 
 	const dataPoints: DataPoint[] = engines.map((engine, i) => ({
 		label: engine,
@@ -45,17 +43,28 @@ function GpuEnginesChart({ chartData }: { chartData: ChartData }) {
 	)
 }
 
-export function GpuTab({
-	chartData,
-	grid,
-	dataEmpty,
-	hasGpuPowerData,
-	hasGpuEnginesData,
-	systemStats,
-}: GpuTabProps) {
+export function GpuTab({ chartData, grid }: BaseTabProps) {
+	const systemStats = chartData.systemStats
+	const dataEmpty = systemStats.length === 0
+
+	// Compute GPU flags internally
+	const { hasGpuEnginesData, hasGpuPowerData } = useMemo(() => {
+		let engines = false
+		let power = false
+		for (let i = 0; i < systemStats.length && (!engines || !power); i++) {
+			const gpus = systemStats[i].stats?.g
+			if (!gpus) continue
+			for (const id in gpus) {
+				if (!engines && gpus[id].e !== undefined) engines = true
+				if (!power && (gpus[id].p !== undefined || gpus[id].pp !== undefined)) power = true
+				if (engines && power) break
+			}
+		}
+		return { hasGpuEnginesData: engines, hasGpuPowerData: power }
+	}, [systemStats])
+
 	return (
 		<div className="grid xl:grid-cols-2 gap-4">
-			{/* GPU power draw chart */}
 			{hasGpuPowerData && (
 				<ChartCard
 					empty={dataEmpty}
@@ -67,7 +76,6 @@ export function GpuTab({
 				</ChartCard>
 			)}
 
-			{/* GPU Engines chart */}
 			{hasGpuEnginesData && (
 				<ChartCard
 					legend={true}
@@ -80,7 +88,6 @@ export function GpuTab({
 				</ChartCard>
 			)}
 
-			{/* Individual GPU charts */}
 			{Object.keys(systemStats.at(-1)?.stats.g ?? {}).map((id) => {
 				const gpu = systemStats.at(-1)?.stats.g?.[id] as GPUData
 				return (
