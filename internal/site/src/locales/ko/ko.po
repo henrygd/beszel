@@ -8,7 +8,7 @@ msgstr ""
 "Language: ko\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-02-02 10:04\n"
+"PO-Revision-Date: 2026-02-02 12:39\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
@@ -679,7 +679,7 @@ msgstr "마지막 {2, plural, one {# 분} other {# 분}} 동안 {0}{1} 초과"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exec main PID"
-msgstr ""
+msgstr "Exec 주 PID"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
@@ -1591,7 +1591,7 @@ msgstr "유형"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Unit file"
-msgstr ""
+msgstr "Unit 파일"
 
 #. Temperature / network units
 #: src/components/routes/settings/general.tsx
