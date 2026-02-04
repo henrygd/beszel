@@ -7,13 +7,15 @@ param (
     [int]$Port = 45876,
     [string]$AgentPath = "",
     [string]$NSSMPath = "",
-    [switch]$ConfigureFirewall
+    [switch]$ConfigureFirewall,
+    [ValidateSet("Auto", "Scoop", "WinGet")]
+    [string]$InstallMethod = "Auto"
 )
 
 # Check if required parameters are provided
 if ([string]::IsNullOrWhiteSpace($Key)) {
     Write-Host "ERROR: SSH Key is required." -ForegroundColor Red
-    Write-Host "Usage: .\install-agent.ps1 -Key 'your-ssh-key-here' [-Token 'your-token-here'] [-Url 'your-hub-url-here'] [-Port port-number] [-ConfigureFirewall]" -ForegroundColor Yellow
+    Write-Host "Usage: .\install-agent.ps1 -Key 'your-ssh-key-here' [-Token 'your-token-here'] [-Url 'your-hub-url-here'] [-Port port-number] [-InstallMethod Auto|Scoop|WinGet] [-ConfigureFirewall]" -ForegroundColor Yellow
     Write-Host "Note: Token and Url are optional for backwards compatibility with older hub versions." -ForegroundColor Yellow
     exit 1
 }
@@ -486,18 +488,34 @@ try {
             Write-Host "2. Install WinGet and run this script again" -ForegroundColor Yellow
             exit 1
         }
-        
-        if (Test-CommandExists "scoop") {
+
+        if ($InstallMethod -eq "Scoop") {
+            if (-not (Test-CommandExists "scoop")) {
+                throw "InstallMethod is set to Scoop, but Scoop is not available in PATH."
+            }
             Write-Host "Using Scoop for installation..."
             $AgentPath = Install-WithScoop -Key $Key -Port $Port
         }
-        elseif (Test-CommandExists "winget") {
+        elseif ($InstallMethod -eq "WinGet") {
+            if (-not (Test-CommandExists "winget")) {
+                throw "InstallMethod is set to WinGet, but WinGet is not available in PATH."
+            }
             Write-Host "Using WinGet for installation..."
             $AgentPath = Install-WithWinGet -Key $Key -Port $Port
         }
         else {
-            Write-Host "Neither Scoop nor WinGet is installed. Installing Scoop..."
-            $AgentPath = Install-WithScoop -Key $Key -Port $Port
+            if (Test-CommandExists "scoop") {
+                Write-Host "Using Scoop for installation..."
+                $AgentPath = Install-WithScoop -Key $Key -Port $Port
+            }
+            elseif (Test-CommandExists "winget") {
+                Write-Host "Using WinGet for installation..."
+                $AgentPath = Install-WithWinGet -Key $Key -Port $Port
+            }
+            else {
+                Write-Host "Neither Scoop nor WinGet is installed. Installing Scoop..."
+                $AgentPath = Install-WithScoop -Key $Key -Port $Port
+            }
         }
     }
 
@@ -561,7 +579,8 @@ try {
             "-Token", "`"$Token`"",
             "-Url", "`"$Url`"",
             "-Port", $Port,
-            "-AgentPath", "`"$AgentPath`""
+            "-AgentPath", "`"$AgentPath`"",
+            "-InstallMethod", $InstallMethod
         )
         
         # Add NSSMPath if we found it
