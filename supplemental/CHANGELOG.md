@@ -1,3 +1,49 @@
+## 0.18.3
+
+- Add experimental sysfs AMD GPU collector. (#737, #1569)
+
+- Update LibreHardwareMonitorLib to 0.9.5. (#1697)
+
+- Improve container network stats accuracy.
+
+- Fix `SHARE_ALL_SYSTEMS` for system_details, smart_devices, and systemd_services. (#1660)
+
+- Parse ATA device statistics for temperature and future metrics. (#1689)
+
+- Add `SMART_DEVICES_SEPARATOR` environment variable and allow drives with the same name to be added with different types (e.g. RAID controllers). (#1655)
+
+- Add tooltips for navbar buttons. (#1636)
+
+- Add icon button for mobile use. (#1687)
+
+- Add tooltip to system name in systems table. (#1640)
+
+- Improve CJK truncation in UI.
+
+- Fix container uptime sorting edge case. (#1696)
+
+- Remove stale systemd services from tracking after deletion. (#1594)
+
+- Apply SELinux context after binary replacement. (#1678)
+
+- Update honeypot field name and autofill ignores. (#1011)
+
+- Write health_file to `/dev/shm` instead of `/tmp` if available. (#1455)
+
+- Don't force lowercase text for active alerts. (#1682)
+
+- Ensure battery current charge doesn't exceed full capacity. (#1668)
+
+- Increase `smartctl --scan` timeout to 10 seconds. (#1465)
+
+- Use name-only matching for unique S.M.A.R.T. devices. (#1655)
+
+- Fix smartctlArgs call to use hasExistingData flag. (#1645)
+
+- Ignore alt key combinations when navigating systems with arrow keys. (#1698)
+
+- Update Go dependencies
+
 ## 0.18.2
 
 - Add separate dynamically linked glibc build for Linux. (#1618)

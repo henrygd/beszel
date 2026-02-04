@@ -190,6 +190,8 @@ func (rm *RecordManager) AverageSystemStats(db dbx.Builder, records RecordIds) *
 		id := record.Id
 		// clear global statsRecord for reuse
 		statsRecord.Stats = statsRecord.Stats[:0]
+		// reset tempStats each iteration to avoid omitzero fields retaining stale values
+		*stats = system.Stats{}
 
 		queryParams["id"] = id
 		db.NewQuery("SELECT stats FROM system_stats WHERE id = {:id}").Bind(queryParams).One(&statsRecord)
@@ -444,9 +446,11 @@ func (rm *RecordManager) AverageContainerStats(db dbx.Builder, records RecordIds
 
 	for i := range records {
 		id := records[i].Id
-		// clear global statsRecord and containerStats for reuse
+		// clear global statsRecord for reuse
 		statsRecord.Stats = statsRecord.Stats[:0]
-		containerStats = containerStats[:0]
+		// must set to nil (not [:0]) to avoid json.Unmarshal reusing backing array
+		// which causes omitzero fields to inherit stale values from previous iterations
+		containerStats = nil
 
 		queryParams["id"] = id
 		db.NewQuery("SELECT stats FROM container_stats WHERE id = {:id}").Bind(queryParams).One(&statsRecord)
@@ -461,19 +465,24 @@ func (rm *RecordManager) AverageContainerStats(db dbx.Builder, records RecordIds
 			}
 			sums[stat.Name].Cpu += stat.Cpu
 			sums[stat.Name].Mem += stat.Mem
-			sums[stat.Name].NetworkSent += stat.NetworkSent
-			sums[stat.Name].NetworkRecv += stat.NetworkRecv
+			sentBytes := stat.Bandwidth[0]
+			recvBytes := stat.Bandwidth[1]
+			if sentBytes == 0 && recvBytes == 0 && (stat.NetworkSent != 0 || stat.NetworkRecv != 0) {
+				sentBytes = uint64(stat.NetworkSent * 1024 * 1024)
+				recvBytes = uint64(stat.NetworkRecv * 1024 * 1024)
+			}
+			sums[stat.Name].Bandwidth[0] += sentBytes
+			sums[stat.Name].Bandwidth[1] += recvBytes
 		}
 	}
 
 	result := make([]container.Stats, 0, len(sums))
 	for _, value := range sums {
 		result = append(result, container.Stats{
-			Name:        value.Name,
-			Cpu:         twoDecimals(value.Cpu / count),
-			Mem:         twoDecimals(value.Mem / count),
-			NetworkSent: twoDecimals(value.NetworkSent / count),
-			NetworkRecv: twoDecimals(value.NetworkRecv / count),
+			Name:      value.Name,
+			Cpu:       twoDecimals(value.Cpu / count),
+			Mem:       twoDecimals(value.Mem / count),
+			Bandwidth: [2]uint64{uint64(float64(value.Bandwidth[0]) / count), uint64(float64(value.Bandwidth[1]) / count)},
 		})
 	}
 	return result

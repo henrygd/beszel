@@ -317,7 +317,11 @@ func createContainerRecords(app core.App, data []*container.Stats, systemId stri
 		params["health"+suffix] = container.Health
 		params["cpu"+suffix] = container.Cpu
 		params["memory"+suffix] = container.Mem
-		params["net"+suffix] = container.NetworkSent + container.NetworkRecv
+		netBytes := container.Bandwidth[0] + container.Bandwidth[1]
+		if netBytes == 0 {
+			netBytes = uint64((container.NetworkSent + container.NetworkRecv) * 1024 * 1024)
+		}
+		params["net"+suffix] = netBytes
 	}
 	queryString := fmt.Sprintf(
 		"INSERT INTO containers (id, system, name, image, status, health, cpu, memory, net, updated) VALUES %s ON CONFLICT(id) DO UPDATE SET system = excluded.system, name = excluded.name, image = excluded.image, status = excluded.status, health = excluded.health, cpu = excluded.cpu, memory = excluded.memory, net = excluded.net, updated = excluded.updated",
