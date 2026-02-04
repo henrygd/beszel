@@ -50,10 +50,12 @@ export function useContainerChartConfigs(containerData: ChartData["containerData
 				const currentCpu = totalUsage.cpu.get(containerName) ?? 0
 				const currentMemory = totalUsage.memory.get(containerName) ?? 0
 				const currentNetwork = totalUsage.network.get(containerName) ?? 0
+				const sentBytes = containerStats.b?.[0] ?? (containerStats.ns ?? 0) * 1024 * 1024
+				const recvBytes = containerStats.b?.[1] ?? (containerStats.nr ?? 0) * 1024 * 1024
 
 				totalUsage.cpu.set(containerName, currentCpu + (containerStats.c ?? 0))
 				totalUsage.memory.set(containerName, currentMemory + (containerStats.m ?? 0))
-				totalUsage.network.set(containerName, currentNetwork + (containerStats.nr ?? 0) + (containerStats.ns ?? 0))
+				totalUsage.network.set(containerName, currentNetwork + sentBytes + recvBytes)
 			}
 		}
 

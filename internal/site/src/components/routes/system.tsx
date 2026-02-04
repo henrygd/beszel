@@ -363,7 +363,8 @@ export default memo(function SystemDetail({ id }: { id: string }) {
 				e.target instanceof HTMLTextAreaElement ||
 				e.shiftKey ||
 				e.ctrlKey ||
-				e.metaKey
+				e.metaKey ||
+				e.altKey
 			) {
 				return
 			}
