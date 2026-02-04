@@ -8,7 +8,7 @@ msgstr ""
 "Language: uk\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2025-12-02 23:18\n"
+"PO-Revision-Date: 2026-01-31 21:16\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Plural-Forms: nplurals=4; plural=((n%10==1 && n%100!=11) ? 0 : ((n%10 >= 2 && n%10 <=4 && (n%100 < 12 || n%100 > 14)) ? 1 : ((n%10 == 0 || (n%10 >= 5 && n%10 <=9)) || (n%100 >= 11 && n%100 <= 14)) ? 2 : 3));\n"
@@ -157,6 +157,7 @@ msgstr "Сповіщення"
 
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
 msgstr "Всі контейнери"
@@ -230,7 +231,7 @@ msgstr "Пропускна здатність"
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
-msgstr "Bat"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -837,6 +838,7 @@ msgstr "Неактивне"
 msgid "Invalid email address."
 msgstr "Неправильна адреса електронної пошти."
 
+#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Мова"
@@ -1335,6 +1337,7 @@ msgstr "Встановіть відсоткові пороги для кольо
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Settings"
@@ -1486,6 +1489,7 @@ msgstr "На електронну пошту"
 msgid "Toggle grid"
 msgstr "Перемкнути сітку"
 
+#: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
 msgid "Toggle theme"
 msgstr "Перемкнути тему"

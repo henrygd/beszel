@@ -94,18 +94,18 @@ const ChartTooltip = RechartsPrimitive.Tooltip
 const ChartTooltipContent = React.forwardRef<
 	HTMLDivElement,
 	React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
-	React.ComponentProps<"div"> & {
-		hideLabel?: boolean
-		indicator?: "line" | "dot" | "dashed"
-		nameKey?: string
-		labelKey?: string
-		unit?: string
-		filter?: string
-		contentFormatter?: (item: any, key: string) => React.ReactNode | string
-		truncate?: boolean
-		showTotal?: boolean
-		totalLabel?: React.ReactNode
-	}
+		React.ComponentProps<"div"> & {
+			hideLabel?: boolean
+			indicator?: "line" | "dot" | "dashed"
+			nameKey?: string
+			labelKey?: string
+			unit?: string
+			filter?: string
+			contentFormatter?: (item: any, key: string) => React.ReactNode | string
+			truncate?: boolean
+			showTotal?: boolean
+			totalLabel?: React.ReactNode
+		}
 >(
 	(
 		{
@@ -139,10 +139,13 @@ const ChartTooltipContent = React.forwardRef<
 
 		React.useMemo(() => {
 			if (filter) {
-				const filterTerms = filter.toLowerCase().split(" ").filter(term => term.length > 0)
+				const filterTerms = filter
+					.toLowerCase()
+					.split(" ")
+					.filter((term) => term.length > 0)
 				payload = payload?.filter((item) => {
 					const itemName = (item.name as string)?.toLowerCase()
-					return filterTerms.some(term => itemName?.includes(term))
+					return filterTerms.some((term) => itemName?.includes(term))
 				})
 			}
 			if (itemSorter) {
@@ -158,26 +161,12 @@ const ChartTooltipContent = React.forwardRef<
 
 			let totalValue = 0
 			let hasNumericValue = false
-			const aggregatedNestedValues: Record<string, number> = {}
 
 			for (const item of payload) {
 				const numericValue = typeof item.value === "number" ? item.value : Number(item.value)
 				if (Number.isFinite(numericValue)) {
 					totalValue += numericValue
 					hasNumericValue = true
-				}
-
-				if (content && item?.payload) {
-					const payloadKey = `${nameKey || item.name || item.dataKey || "value"}`
-					const nestedPayload = (item.payload as Record<string, unknown> | undefined)?.[payloadKey]
-
-					if (nestedPayload && typeof nestedPayload === "object") {
-						for (const [nestedKey, nestedValue] of Object.entries(nestedPayload)) {
-							if (typeof nestedValue === "number" && Number.isFinite(nestedValue)) {
-								aggregatedNestedValues[nestedKey] = (aggregatedNestedValues[nestedKey] ?? 0) + nestedValue
-							}
-						}
-					}
 				}
 			}
 
@@ -194,24 +183,11 @@ const ChartTooltipContent = React.forwardRef<
 			}
 
 			if (content) {
-				const basePayload =
-					payload[0]?.payload && typeof payload[0].payload === "object"
-						? { ...(payload[0].payload as Record<string, unknown>) }
-						: {}
-				totalItem.payload = {
-					...basePayload,
-					[totalKey]: aggregatedNestedValues,
-				}
+				totalItem.payload = payload[0]?.payload
 			}
 
 			if (typeof formatter === "function") {
-				return formatter(
-					totalValue,
-					totalName,
-					totalItem,
-					payload.length,
-					totalItem.payload ?? payload[0]?.payload
-				)
+				return formatter(totalValue, totalName, totalItem, payload.length, totalItem.payload ?? payload[0]?.payload)
 			}
 
 			if (content) {
@@ -343,11 +319,11 @@ const ChartLegend = RechartsPrimitive.Legend
 const ChartLegendContent = React.forwardRef<
 	HTMLDivElement,
 	React.ComponentProps<"div"> &
-	Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
-		hideIcon?: boolean
-		nameKey?: string
-		reverse?: boolean
-	}
+		Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
+			hideIcon?: boolean
+			nameKey?: string
+			reverse?: boolean
+		}
 >(({ className, payload, verticalAlign = "bottom", reverse = false }, ref) => {
 	// const { config } = useChart()
 
@@ -457,13 +433,16 @@ export {
 }
 
 export function pinnedAxisDomain(): AxisDomain {
-	return [0, (dataMax: number) => {
-		if (dataMax > 10) {
-			return Math.round(dataMax)
-		}
-		if (dataMax > 1) {
-			return Math.round(dataMax / 0.1) * 0.1
-		}
-		return dataMax
-	}]
+	return [
+		0,
+		(dataMax: number) => {
+			if (dataMax > 10) {
+				return Math.round(dataMax)
+			}
+			if (dataMax > 1) {
+				return Math.round(dataMax / 0.1) * 0.1
+			}
+			return dataMax
+		},
+	]
 }

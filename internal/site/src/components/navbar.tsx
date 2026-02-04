@@ -75,9 +75,7 @@ export default function Navbar() {
 							<HardDriveIcon className="h-[1.2rem] w-[1.2rem]" strokeWidth={1.5} />
 						</Link>
 					</TooltipTrigger>
-					<TooltipContent>
-						<Trans>S.M.A.R.T.</Trans>
-					</TooltipContent>
+					<TooltipContent>S.M.A.R.T.</TooltipContent>
 				</Tooltip>
 				<LangToggle />
 				<ModeToggle />
