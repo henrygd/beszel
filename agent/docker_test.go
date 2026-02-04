@@ -184,11 +184,12 @@ func TestUpdateContainerStatsValues(t *testing.T) {
 	// Check memory (should be converted to MB: 1048576 bytes = 1 MB)
 	assert.Equal(t, 1.0, stats.Mem)
 
-	// Check network sent (should be converted to MB: 524288 bytes = 0.5 MB)
-	assert.Equal(t, 0.5, stats.NetworkSent)
+	// Check bandwidth (raw bytes)
+	assert.Equal(t, [2]uint64{524288, 262144}, stats.Bandwidth)
 
-	// Check network recv (should be converted to MB: 262144 bytes = 0.25 MB)
-	assert.Equal(t, 0.25, stats.NetworkRecv)
+	// Deprecated fields still populated for backward compatibility with older hubs
+	assert.Equal(t, 0.5, stats.NetworkSent)  // 524288 bytes = 0.5 MB
+	assert.Equal(t, 0.25, stats.NetworkRecv) // 262144 bytes = 0.25 MB
 
 	// Check read time
 	assert.Equal(t, testTime, stats.PrevReadTime)
@@ -527,8 +528,10 @@ func TestContainerStatsInitialization(t *testing.T) {
 
 	assert.Equal(t, 45.67, stats.Cpu)
 	assert.Equal(t, 2.0, stats.Mem)
-	assert.Equal(t, 1.0, stats.NetworkSent)
-	assert.Equal(t, 0.5, stats.NetworkRecv)
+	assert.Equal(t, [2]uint64{1048576, 524288}, stats.Bandwidth)
+	// Deprecated fields still populated for backward compatibility with older hubs
+	assert.Equal(t, 1.0, stats.NetworkSent) // 1048576 bytes = 1 MB
+	assert.Equal(t, 0.5, stats.NetworkRecv) // 524288 bytes = 0.5 MB
 	assert.Equal(t, testTime, stats.PrevReadTime)
 }
 
@@ -689,6 +692,8 @@ func TestContainerStatsEndToEndWithRealData(t *testing.T) {
 
 	assert.Equal(t, cpuPct, testStats.Cpu)
 	assert.Equal(t, bytesToMegabytes(float64(usedMemory)), testStats.Mem)
+	assert.Equal(t, [2]uint64{1000000, 500000}, testStats.Bandwidth)
+	// Deprecated fields still populated for backward compatibility with older hubs
 	assert.Equal(t, bytesToMegabytes(1000000), testStats.NetworkSent)
 	assert.Equal(t, bytesToMegabytes(500000), testStats.NetworkRecv)
 	assert.Equal(t, testTime, testStats.PrevReadTime)

@@ -152,6 +152,7 @@ msgstr "Alerts"
 
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
 msgstr "All Containers"
@@ -832,6 +833,7 @@ msgstr "Inactive"
 msgid "Invalid email address."
 msgstr "Invalid email address."
 
+#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Language"
@@ -1330,6 +1332,7 @@ msgstr "Set percentage thresholds for meter colors."
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Settings"
@@ -1481,6 +1484,7 @@ msgstr "To email(s)"
 msgid "Toggle grid"
 msgstr "Toggle grid"
 
+#: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
 msgid "Toggle theme"
 msgstr "Toggle theme"
