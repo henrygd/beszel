@@ -7,6 +7,7 @@ package agent
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -262,4 +263,35 @@ func (a *Agent) getFingerprint() string {
 	}
 
 	return fingerprint
+}
+
+// ResetFingerprint removes the fingerprint file from the data directory.
+// This allows the agent to generate and register a new fingerprint on next startup.
+// The user should also rotate the token on the hub at /settings/tokens.
+func ResetFingerprint() error {
+	dataDir, err := getDataDir()
+	if err != nil {
+		return fmt.Errorf("failed to find data directory: %w", err)
+	}
+
+	fingerprintPath := filepath.Join(dataDir, "fingerprint")
+
+	// Check if fingerprint file exists
+	if _, err := os.Stat(fingerprintPath); os.IsNotExist(err) {
+		fmt.Println("No fingerprint file found at", fingerprintPath)
+		return nil
+	}
+
+	// Remove the fingerprint file
+	if err := os.Remove(fingerprintPath); err != nil {
+		return fmt.Errorf("failed to remove fingerprint file: %w", err)
+	}
+
+	fmt.Println("Fingerprint file removed:", fingerprintPath)
+	fmt.Println("\nNext steps:")
+	fmt.Println("  1. Go to your Beszel hub at /settings/tokens")
+	fmt.Println("  2. Click 'Rotate fingerprints' to allow this agent to register a new fingerprint")
+	fmt.Println("  3. Restart the agent service")
+
+	return nil
 }

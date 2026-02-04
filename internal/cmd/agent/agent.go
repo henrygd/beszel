@@ -41,6 +41,12 @@ func (opts *cmdOptions) parse() bool {
 		}
 		fmt.Print("ok")
 		return true
+	case "reset-fingerprint":
+		err := agent.ResetFingerprint()
+		if err != nil {
+			log.Fatal(err)
+		}
+		return true
 	}
 
 	// pflag.CommandLine.ParseErrorsWhitelist.UnknownFlags = true
@@ -73,9 +79,9 @@ func (opts *cmdOptions) parse() bool {
 		builder.WriteString(os.Args[0])
 		builder.WriteString(" [command] [flags]\n")
 		builder.WriteString("\nCommands:\n")
-		builder.WriteString("  health    Check if the agent is running\n")
-		// builder.WriteString("  help      Display this help message\n")
-		builder.WriteString("  update    Update to the latest version\n")
+		builder.WriteString("  health             Check if the agent is running\n")
+		builder.WriteString("  reset-fingerprint  Remove fingerprint to allow re-registration\n")
+		builder.WriteString("  update             Update to the latest version\n")
 		builder.WriteString("\nFlags:\n")
 		fmt.Print(builder.String())
 		pflag.PrintDefaults()
