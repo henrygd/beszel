@@ -36,6 +36,9 @@ var hubVersions map[string]semver.Version
 // and begins listening for connections. Returns an error if the server
 // is already running or if there's an issue starting the server.
 func (a *Agent) StartServer(opts ServerOptions) error {
+	if disableSSH, _ := GetEnv("DISABLE_SSH"); disableSSH == "true" {
+		return errors.New("SSH disabled")
+	}
 	if a.server != nil {
 		return errors.New("server already started")
 	}

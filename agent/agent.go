@@ -239,7 +239,9 @@ func (a *Agent) getFingerprint() string {
 	// first look for a fingerprint in the data directory
 	if a.dataDir != "" {
 		if fp, err := os.ReadFile(filepath.Join(a.dataDir, "fingerprint")); err == nil {
-			return string(fp)
+			if s := strings.TrimSpace(string(fp)); s != "" {
+				return s
+			}
 		}
 	}
 

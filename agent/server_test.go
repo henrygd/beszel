@@ -1,3 +1,6 @@
+//go:build testing
+// +build testing
+
 package agent
 
 import (
@@ -178,6 +181,23 @@ func TestStartServer(t *testing.T) {
 			client.Close()
 		})
 	}
+}
+
+func TestStartServerDisableSSH(t *testing.T) {
+	os.Setenv("BESZEL_AGENT_DISABLE_SSH", "true")
+	defer os.Unsetenv("BESZEL_AGENT_DISABLE_SSH")
+
+	agent, err := NewAgent("")
+	require.NoError(t, err)
+
+	opts := ServerOptions{
+		Network: "tcp",
+		Addr:    ":45990",
+	}
+
+	err = agent.StartServer(opts)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "SSH disabled")
 }
 
 /////////////////////////////////////////////////////////////////
