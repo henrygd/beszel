@@ -63,9 +63,9 @@ func detectRestarter() restarter {
 	if path, err := exec.LookPath("rc-service"); err == nil {
 		return &openRCRestarter{cmd: path}
 	}
-    if path, err := exec.LookPath("procd"); err == nil {
-        return &openWRTRestarter{cmd: path}
-    }
+	if path, err := exec.LookPath("procd"); err == nil {
+		return &openWRTRestarter{cmd: path}
+	}
 	if path, err := exec.LookPath("service"); err == nil {
 		if runtime.GOOS == "freebsd" {
 			return &freeBSDRestarter{cmd: path}
@@ -79,7 +79,7 @@ func detectRestarter() restarter {
 func Update(useMirror bool) error {
 	exePath, _ := os.Executable()
 
-	dataDir, err := getDataDir()
+	dataDir, err := GetDataDir()
 	if err != nil {
 		dataDir = os.TempDir()
 	}
@@ -125,4 +125,3 @@ func Update(useMirror bool) error {
 
 	return nil
 }
-
