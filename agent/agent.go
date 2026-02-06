@@ -5,12 +5,8 @@
 package agent
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
-	"fmt"
 	"log/slog"
 	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -20,7 +16,6 @@ import (
 	"github.com/henrygd/beszel/agent/deltatracker"
 	"github.com/henrygd/beszel/internal/common"
 	"github.com/henrygd/beszel/internal/entities/system"
-	"github.com/shirou/gopsutil/v4/host"
 	gossh "golang.org/x/crypto/ssh"
 )
 
@@ -66,7 +61,7 @@ func NewAgent(dataDir ...string) (agent *Agent, err error) {
 	agent.netIoStats = make(map[uint16]system.NetIoStats)
 	agent.netInterfaceDeltaTrackers = make(map[uint16]*deltatracker.DeltaTracker[string, uint64])
 
-	agent.dataDir, err = getDataDir(dataDir...)
+	agent.dataDir, err = GetDataDir(dataDir...)
 	if err != nil {
 		slog.Warn("Data directory not found")
 	} else {
@@ -229,71 +224,18 @@ func (a *Agent) gatherStats(options common.DataRequestOptions) *system.CombinedD
 	return data
 }
 
-// StartAgent initializes and starts the agent with optional WebSocket connection
+// Start initializes and starts the agent with optional WebSocket connection
 func (a *Agent) Start(serverOptions ServerOptions) error {
 	a.keys = serverOptions.Keys
 	return a.connectionManager.Start(serverOptions)
 }
 
 func (a *Agent) getFingerprint() string {
-	// first look for a fingerprint in the data directory
-	if a.dataDir != "" {
-		if fp, err := os.ReadFile(filepath.Join(a.dataDir, "fingerprint")); err == nil {
-			if s := strings.TrimSpace(string(fp)); s != "" {
-				return s
-			}
-		}
-	}
-
-	// if no fingerprint is found, generate one
-	fingerprint, err := host.HostID()
-	// we ignore a commonly known "product_uuid" known not to be unique
-	if err != nil || fingerprint == "" || fingerprint == "03000200-0400-0500-0006-000700080009" {
-		fingerprint = a.systemDetails.Hostname + a.systemDetails.CpuModel
-	}
-
-	// hash fingerprint
-	sum := sha256.Sum256([]byte(fingerprint))
-	fingerprint = hex.EncodeToString(sum[:24])
-
-	// save fingerprint to data directory
-	if a.dataDir != "" {
-		err = os.WriteFile(filepath.Join(a.dataDir, "fingerprint"), []byte(fingerprint), 0644)
-		if err != nil {
+	fp, fromFile := GetFingerprint(a.dataDir, a.systemDetails.Hostname, a.systemDetails.CpuModel)
+	if a.dataDir != "" && !fromFile {
+		if err := SaveFingerprint(a.dataDir, fp); err != nil {
 			slog.Warn("Failed to save fingerprint", "err", err)
 		}
 	}
-
-	return fingerprint
-}
-
-// ResetFingerprint removes the fingerprint file from the data directory.
-// This allows the agent to generate and register a new fingerprint on next startup.
-// The user should also rotate the token on the hub at /settings/tokens.
-func ResetFingerprint() error {
-	dataDir, err := getDataDir()
-	if err != nil {
-		return fmt.Errorf("failed to find data directory: %w", err)
-	}
-
-	fingerprintPath := filepath.Join(dataDir, "fingerprint")
-
-	// Check if fingerprint file exists
-	if _, err := os.Stat(fingerprintPath); os.IsNotExist(err) {
-		fmt.Println("No fingerprint file found at", fingerprintPath)
-		return nil
-	}
-
-	// Remove the fingerprint file
-	if err := os.Remove(fingerprintPath); err != nil {
-		return fmt.Errorf("failed to remove fingerprint file: %w", err)
-	}
-
-	fmt.Println("Fingerprint file removed:", fingerprintPath)
-	fmt.Println("\nNext steps:")
-	fmt.Println("  1. Go to your Beszel hub at /settings/tokens")
-	fmt.Println("  2. Click 'Rotate fingerprints' to allow this agent to register a new fingerprint")
-	fmt.Println("  3. Restart the agent service")
-
-	return nil
+	return fp
 }
