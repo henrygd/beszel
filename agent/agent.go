@@ -231,11 +231,5 @@ func (a *Agent) Start(serverOptions ServerOptions) error {
 }
 
 func (a *Agent) getFingerprint() string {
-	fp, fromFile := GetFingerprint(a.dataDir, a.systemDetails.Hostname, a.systemDetails.CpuModel)
-	if a.dataDir != "" && !fromFile {
-		if err := SaveFingerprint(a.dataDir, fp); err != nil {
-			slog.Warn("Failed to save fingerprint", "err", err)
-		}
-	}
-	return fp
+	return GetFingerprint(a.dataDir, a.systemDetails.Hostname, a.systemDetails.CpuModel)
 }

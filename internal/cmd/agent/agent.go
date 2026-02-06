@@ -147,7 +147,7 @@ func handleFingerprint() {
 	switch subCmd {
 	case "", "view":
 		dataDir, _ := agent.GetDataDir()
-		fp, _ := agent.GetFingerprint(dataDir, "", "")
+		fp := agent.GetFingerprint(dataDir, "", "")
 		fmt.Println(fp)
 	case "help", "-h", "--help":
 		fmt.Print(fingerprintUsage())
