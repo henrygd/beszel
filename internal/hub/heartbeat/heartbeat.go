@@ -56,7 +56,6 @@ type AlertInfo struct {
 	SystemID   string  `json:"system_id"`
 	SystemName string  `json:"system_name"`
 	AlertName  string  `json:"alert_name"`
-	Value      float64 `json:"value"`
 	Threshold  float64 `json:"threshold"`
 }
 
