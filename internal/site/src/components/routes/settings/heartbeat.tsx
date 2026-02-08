@@ -87,8 +87,8 @@ export default function HeartbeatSettings() {
 				</h3>
 				<p className="text-sm text-muted-foreground leading-relaxed">
 					<Trans>
-						Send periodic outbound pings to an external monitoring service so you can monitor Beszel without
-						exposing it to the internet.
+						Send periodic outbound pings to an external monitoring service so you can monitor Beszel without exposing it
+						to the internet.
 					</Trans>
 				</p>
 			</div>
@@ -102,7 +102,7 @@ export default function HeartbeatSettings() {
 			) : status?.enabled ? (
 				<div className="space-y-5">
 					<div className="flex items-center gap-2">
-						<Badge variant="default" className="bg-green-600 hover:bg-green-600">
+						<Badge variant="success">
 							<Trans>Active</Trans>
 						</Badge>
 					</div>
@@ -141,16 +141,15 @@ export default function HeartbeatSettings() {
 						</h4>
 						<p className="text-sm text-muted-foreground leading-relaxed mb-2">
 							<Trans>
-								When using POST, each heartbeat includes a JSON payload with system status summary,
-								list of down systems, and triggered alerts.
+								When using POST, each heartbeat includes a JSON payload with system status summary, list of down
+								systems, and triggered alerts.
 							</Trans>
 						</p>
 						<p className="text-sm text-muted-foreground leading-relaxed">
 							<Trans>
-								The overall status is <code className="bg-muted rounded-sm px-1 text-primary">ok</code> when all
-								systems are up, <code className="bg-muted rounded-sm px-1 text-primary">warn</code> when alerts
-								are triggered, and <code className="bg-muted rounded-sm px-1 text-primary">error</code> when any
-								system is down.
+								The overall status is <code className="bg-muted rounded-sm px-1 text-primary">ok</code> when all systems
+								are up, <code className="bg-muted rounded-sm px-1 text-primary">warn</code> when alerts are triggered,
+								and <code className="bg-muted rounded-sm px-1 text-primary">error</code> when any system is down.
 							</Trans>
 						</p>
 					</div>
@@ -209,8 +208,7 @@ function EnvVarItem({ name, description, example }: { name: string; description:
 			<code className="text-sm font-mono text-primary">{name}</code>
 			<p className="text-sm text-muted-foreground mt-0.5">{description}</p>
 			<p className="text-xs text-muted-foreground mt-0.5">
-				<Trans>Example:</Trans>{" "}
-				<code className="font-mono">{example}</code>
+				<Trans>Example:</Trans> <code className="font-mono">{example}</code>
 			</p>
 		</div>
 	)
