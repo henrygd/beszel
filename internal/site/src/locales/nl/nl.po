@@ -179,6 +179,10 @@ msgstr "Weet je zeker dat je {name} wilt verwijderen?"
 msgid "Are you sure?"
 msgstr "Weet je het zeker?"
 
+#: src/components/routes/settings/general.tsx
+msgid "Auto"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "Automatisch kopiëren vereist een veilige context."
@@ -782,6 +786,10 @@ msgstr "Vol"
 msgid "General"
 msgstr "Algemeen"
 
+#: src/components/routes/settings/general.tsx
+msgid "Gigabytes (GB)"
+msgstr ""
+
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Global"
 msgstr "Globaal"
@@ -930,6 +938,10 @@ msgstr "Handmatige installatie-instructies"
 msgid "Max 1 min"
 msgstr "Max 1 min"
 
+#: src/components/routes/settings/general.tsx
+msgid "Megabytes (MB)"
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -946,6 +958,10 @@ msgstr "Geheugenlimiet"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Memory Peak"
 msgstr "Geheugenpiek"
+
+#: src/components/routes/settings/general.tsx
+msgid "Memory unit"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -1448,6 +1464,10 @@ msgstr "Temperatuureenheid"
 msgid "Temperatures of system sensors"
 msgstr "Temperatuur van systeem sensoren"
 
+#: src/components/routes/settings/general.tsx
+msgid "Terabytes (TB)"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Test <0>URL</0>"
 msgstr "Test <0>URL</0>"
@@ -1642,6 +1662,7 @@ msgid "Upload"
 msgstr "Uploaden"
 
 #: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
 msgstr "Actief"
 

@@ -179,6 +179,10 @@ msgstr "{name}を削除してもよろしいですか？"
 msgid "Are you sure?"
 msgstr "よろしいですか？"
 
+#: src/components/routes/settings/general.tsx
+msgid "Auto"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "自動コピーには安全なコンテキストが必要です。"
@@ -782,6 +786,10 @@ msgstr "満充電"
 msgid "General"
 msgstr "一般"
 
+#: src/components/routes/settings/general.tsx
+msgid "Gigabytes (GB)"
+msgstr ""
+
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Global"
 msgstr "グローバル"
@@ -930,6 +938,10 @@ msgstr "手動セットアップの手順"
 msgid "Max 1 min"
 msgstr "最大1分"
 
+#: src/components/routes/settings/general.tsx
+msgid "Megabytes (MB)"
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -946,6 +958,10 @@ msgstr "メモリ制限"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Memory Peak"
 msgstr "メモリピーク"
+
+#: src/components/routes/settings/general.tsx
+msgid "Memory unit"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -1448,6 +1464,10 @@ msgstr "温度単位"
 msgid "Temperatures of system sensors"
 msgstr "システムセンサーの温度"
 
+#: src/components/routes/settings/general.tsx
+msgid "Terabytes (TB)"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Test <0>URL</0>"
 msgstr "テスト<0>URL</0>"
@@ -1642,6 +1662,7 @@ msgid "Upload"
 msgstr "アップロード"
 
 #: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
 msgstr "稼働時間"
 

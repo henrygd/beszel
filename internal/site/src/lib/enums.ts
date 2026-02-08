@@ -20,6 +20,10 @@ export enum Unit {
 	Bits,
 	Celsius,
 	Fahrenheit,
+	KB,
+	MB,
+	GB,
+	TB,
 }
 
 /** Meter state for color */

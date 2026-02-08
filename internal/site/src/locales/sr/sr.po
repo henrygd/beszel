@@ -179,6 +179,10 @@ msgstr "Да ли сте сигурни да желите да избришет�
 msgid "Are you sure?"
 msgstr "Да ли сте сигурни?"
 
+#: src/components/routes/settings/general.tsx
+msgid "Auto"
+msgstr ""
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "Аутоматско копирање захтева безбедан контекст."
@@ -782,6 +786,10 @@ msgstr "Пуно"
 msgid "General"
 msgstr "Опште"
 
+#: src/components/routes/settings/general.tsx
+msgid "Gigabytes (GB)"
+msgstr ""
+
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Global"
 msgstr "Глобално"
@@ -930,6 +938,10 @@ msgstr "Упутства за ручно подешавање"
 msgid "Max 1 min"
 msgstr "Макс 1 мин"
 
+#: src/components/routes/settings/general.tsx
+msgid "Megabytes (MB)"
+msgstr ""
+
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -946,6 +958,10 @@ msgstr "Ограничење меморије"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Memory Peak"
 msgstr "Врхунац меморије"
+
+#: src/components/routes/settings/general.tsx
+msgid "Memory unit"
+msgstr ""
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -1448,6 +1464,10 @@ msgstr "Јединица температуре"
 msgid "Temperatures of system sensors"
 msgstr "Температуре системских сензора"
 
+#: src/components/routes/settings/general.tsx
+msgid "Terabytes (TB)"
+msgstr ""
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Test <0>URL</0>"
 msgstr "Тестирај <0>URL</0>"
@@ -1642,6 +1662,7 @@ msgid "Upload"
 msgstr "Отпреми"
 
 #: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
 msgstr "Време рада"
 

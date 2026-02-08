@@ -267,6 +267,21 @@ export function formatBytes(
 			unit: `Tb${suffix}`,
 		}
 	}
+
+	// Handle specific units (KB, MB, GB, TB)
+	if (unit == Unit.KB) {
+		return { value: size / 1024, unit: "KB" }
+	}
+	if (unit == Unit.MB) {
+		return { value: size / (1024 * 1024), unit: "MB" }
+	}
+	if (unit == Unit.GB) {
+		return { value: size / (1024 * 1024 * 1024), unit: "GB" }
+	}
+	if (unit == Unit.TB) {
+		return { value: size / (1024 * 1024 * 1024 * 1024), unit: "TB" }
+	}
+
 	// bytes
 	const suffix = perSecond ? "/s" : ""
 	if (size < 100) return { value: size, unit: `B${suffix}` }

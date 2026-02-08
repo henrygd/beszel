@@ -174,6 +174,10 @@ msgstr "Are you sure you want to delete {name}?"
 msgid "Are you sure?"
 msgstr "Are you sure?"
 
+#: src/components/routes/settings/general.tsx
+msgid "Auto"
+msgstr "Auto"
+
 #: src/components/copy-to-clipboard.tsx
 msgid "Automatic copy requires a secure context."
 msgstr "Automatic copy requires a secure context."
@@ -777,6 +781,10 @@ msgstr "Full"
 msgid "General"
 msgstr "General"
 
+#: src/components/routes/settings/general.tsx
+msgid "Gigabytes (GB)"
+msgstr "Gigabytes (GB)"
+
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Global"
 msgstr "Global"
@@ -925,6 +933,10 @@ msgstr "Manual setup instructions"
 msgid "Max 1 min"
 msgstr "Max 1 min"
 
+#: src/components/routes/settings/general.tsx
+msgid "Megabytes (MB)"
+msgstr "Megabytes (MB)"
+
 #: src/components/containers-table/containers-table-columns.tsx
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systemd-table/systemd-table-columns.tsx
@@ -941,6 +953,10 @@ msgstr "Memory limit"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Memory Peak"
 msgstr "Memory Peak"
+
+#: src/components/routes/settings/general.tsx
+msgid "Memory unit"
+msgstr "Memory unit"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -1443,6 +1459,10 @@ msgstr "Temperature unit"
 msgid "Temperatures of system sensors"
 msgstr "Temperatures of system sensors"
 
+#: src/components/routes/settings/general.tsx
+msgid "Terabytes (TB)"
+msgstr "Terabytes (TB)"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Test <0>URL</0>"
 msgstr "Test <0>URL</0>"
@@ -1637,6 +1657,7 @@ msgid "Upload"
 msgstr "Upload"
 
 #: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
 msgstr "Uptime"
 

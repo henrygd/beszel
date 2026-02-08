@@ -2,7 +2,8 @@ import { useLingui } from "@lingui/react/macro"
 import { memo } from "react"
 import { Area, AreaChart, CartesianGrid, YAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, xAxis } from "@/components/ui/chart"
-import { Unit } from "@/lib/enums"
+import { $userSettings } from "@/lib/stores"
+import { useStore } from "@nanostores/react"
 import { chartMargin, cn, decimalString, formatBytes, formatShortDate, toFixedFloat } from "@/lib/utils"
 import type { ChartData } from "@/types"
 import { useYAxisWidth } from "./hooks"
@@ -10,6 +11,7 @@ import { useYAxisWidth } from "./hooks"
 export default memo(function MemChart({ chartData, showMax }: { chartData: ChartData; showMax: boolean }) {
 	const { yAxisWidth, updateYAxisWidth } = useYAxisWidth()
 	const { t } = useLingui()
+	const userSettings = useStore($userSettings)
 
 	const totalMem = toFixedFloat(chartData.systemStats.at(-1)?.stats.m ?? 0, 1)
 
@@ -41,7 +43,7 @@ export default memo(function MemChart({ chartData, showMax }: { chartData: Chart
 							tickLine={false}
 							axisLine={false}
 							tickFormatter={(value) => {
-								const { value: convertedValue, unit } = formatBytes(value * 1024, false, Unit.Bytes, true)
+								const { value: convertedValue, unit } = formatBytes(value * 1024, false, userSettings.unitMem, true)
 								return updateYAxisWidth(toFixedFloat(convertedValue, value >= 10 ? 0 : 1) + " " + unit)
 							}}
 						/>
@@ -58,7 +60,7 @@ export default memo(function MemChart({ chartData, showMax }: { chartData: Chart
 								labelFormatter={(_, data) => formatShortDate(data[0].payload.created)}
 								contentFormatter={({ value }) => {
 									// mem values are supplied as GB
-									const { value: convertedValue, unit } = formatBytes(value * 1024, false, Unit.Bytes, true)
+									const { value: convertedValue, unit } = formatBytes(value * 1024, false, userSettings.unitMem, true)
 									return decimalString(convertedValue, convertedValue >= 100 ? 1 : 2) + " " + unit
 								}}
 								showTotal={true}
