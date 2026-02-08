@@ -15,6 +15,7 @@ import (
 	"github.com/henrygd/beszel"
 	"github.com/henrygd/beszel/internal/alerts"
 	"github.com/henrygd/beszel/internal/hub/config"
+	"github.com/henrygd/beszel/internal/hub/heartbeat"
 	"github.com/henrygd/beszel/internal/hub/systems"
 	"github.com/henrygd/beszel/internal/records"
 	"github.com/henrygd/beszel/internal/users"
@@ -30,12 +31,14 @@ import (
 type Hub struct {
 	core.App
 	*alerts.AlertManager
-	um     *users.UserManager
-	rm     *records.RecordManager
-	sm     *systems.SystemManager
-	pubKey string
-	signer ssh.Signer
-	appURL string
+	um            *users.UserManager
+	rm            *records.RecordManager
+	sm            *systems.SystemManager
+	hb            *heartbeat.Heartbeat
+	hbStop        chan struct{}
+	pubKey        string
+	signer        ssh.Signer
+	appURL        string
 }
 
 // NewHub creates a new Hub instance with default configuration
@@ -48,6 +51,10 @@ func NewHub(app core.App) *Hub {
 	hub.rm = records.NewRecordManager(hub)
 	hub.sm = systems.NewSystemManager(hub)
 	hub.appURL, _ = GetEnv("APP_URL")
+	hub.hb = heartbeat.New(app, GetEnv)
+	if hub.hb != nil {
+		hub.hbStop = make(chan struct{})
+	}
 	return hub
 }
 
@@ -87,6 +94,10 @@ func (h *Hub) StartHub() error {
 		// start system updates
 		if err := h.sm.Initialize(); err != nil {
 			return err
+		}
+		// start heartbeat if configured
+		if h.hb != nil {
+			go h.hb.Start(h.hbStop)
 		}
 		return e.Next()
 	})
@@ -287,6 +298,9 @@ func (h *Hub) registerApiRoutes(se *core.ServeEvent) error {
 	})
 	// send test notification
 	apiAuth.POST("/test-notification", h.SendTestNotification)
+	// heartbeat status and test
+	apiAuth.GET("/heartbeat-status", h.getHeartbeatStatus)
+	apiAuth.POST("/test-heartbeat", h.testHeartbeat)
 	// get config.yml content
 	apiAuth.GET("/config-yaml", config.GetYamlConfig)
 	// handle agent websocket connection
@@ -401,6 +415,36 @@ func (h *Hub) getUniversalToken(e *core.RequestEvent) error {
 	active := ok && activeUser == userID
 	response := map[string]any{"token": token, "active": active, "permanent": false}
 	return e.JSON(http.StatusOK, response)
+}
+
+// getHeartbeatStatus returns current heartbeat configuration and whether it's enabled
+func (h *Hub) getHeartbeatStatus(e *core.RequestEvent) error {
+	if h.hb == nil {
+		return e.JSON(http.StatusOK, map[string]any{
+			"enabled": false,
+			"msg":     "Set BESZEL_HUB_HEARTBEAT_URL to enable outbound heartbeat monitoring",
+		})
+	}
+	cfg := h.hb.GetConfig()
+	return e.JSON(http.StatusOK, map[string]any{
+		"enabled":  true,
+		"url":      cfg.URL,
+		"interval": cfg.Interval,
+		"method":   cfg.Method,
+	})
+}
+
+// testHeartbeat triggers a single heartbeat ping and returns the result
+func (h *Hub) testHeartbeat(e *core.RequestEvent) error {
+	if h.hb == nil {
+		return e.JSON(http.StatusOK, map[string]any{
+			"err": "Heartbeat not configured. Set BESZEL_HUB_HEARTBEAT_URL environment variable.",
+		})
+	}
+	if err := h.hb.Send(); err != nil {
+		return e.JSON(http.StatusOK, map[string]any{"err": err.Error()})
+	}
+	return e.JSON(http.StatusOK, map[string]any{"err": false})
 }
 
 // containerRequestHandler handles both container logs and info requests

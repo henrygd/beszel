@@ -1,3 +1,9 @@
+## Unreleased
+
+- Add outbound heartbeat monitoring to external services (BetterStack, Uptime Kuma, Healthchecks.io, etc.) with system status summary payload. Configured via `BESZEL_HUB_HEARTBEAT_URL`, `BESZEL_HUB_HEARTBEAT_INTERVAL`, and `BESZEL_HUB_HEARTBEAT_METHOD` environment variables.
+
+- Add Heartbeat settings page to the admin UI with status display, configuration reference, and test button.
+
 ## 0.18.3
 
 - Add experimental sysfs AMD GPU collector. (#737, #1569)
