@@ -198,6 +198,9 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 									<SelectItem value={String(Unit.Bytes)}>
 										<Trans>Auto</Trans>
 									</SelectItem>
+									<SelectItem value={String(Unit.TB)}>
+										<Trans>Terabytes (TB)</Trans>
+									</SelectItem>
 									<SelectItem value={String(Unit.GB)}>
 										<Trans>Gigabytes (GB)</Trans>
 									</SelectItem>
@@ -206,9 +209,6 @@ export default function SettingsProfilePage({ userSettings }: { userSettings: Us
 									</SelectItem>
 									<SelectItem value={String(Unit.KB)}>
 										<Trans>Kilobytes (KB)</Trans>
-									</SelectItem>
-									<SelectItem value={String(Unit.TB)}>
-										<Trans>Terabytes (TB)</Trans>
 									</SelectItem>
 								</SelectContent>
 							</Select>
