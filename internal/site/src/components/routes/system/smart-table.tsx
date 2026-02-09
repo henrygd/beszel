@@ -206,7 +206,12 @@ export const columns: ColumnDef<SmartDeviceRecord>[] = [
 		invertSorting: true,
 		header: ({ column }) => <HeaderButton column={column} name={t`Temp`} Icon={ThermometerIcon} />,
 		cell: ({ getValue }) => {
-			const { value, unit } = formatTemperature(getValue() as number)
+			const temp = getValue() as number | undefined | null
+			// Most devices won't report a real 0C temperature; treat 0 as "unknown".
+			if (temp == null || temp === 0) {
+				return <div className="text-muted-foreground ms-1.5">N/A</div>
+			}
+			const { value, unit } = formatTemperature(temp)
 			return <span className="ms-1.5">{`${value} ${unit}`}</span>
 		},
 	},

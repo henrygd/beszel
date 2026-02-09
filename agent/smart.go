@@ -30,6 +30,7 @@ type SmartManager struct {
 	refreshMutex    sync.Mutex
 	lastScanTime    time.Time
 	binPath         string
+	hasSmartctl     bool
 	excludedDevices map[string]struct{}
 }
 
@@ -171,25 +172,33 @@ func (sm *SmartManager) ScanDevices(force bool) error {
 		configuredDevices = parsedDevices
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	cmd := exec.CommandContext(ctx, sm.binPath, "--scan", "-j")
-	output, err := cmd.Output()
-
 	var (
 		scanErr        error
 		scannedDevices []*DeviceInfo
 		hasValidScan   bool
 	)
 
-	if err != nil {
-		scanErr = err
-	} else {
-		scannedDevices, hasValidScan = sm.parseScan(output)
-		if !hasValidScan {
-			scanErr = errNoValidSmartData
+	if sm.hasSmartctl {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+
+		cmd := exec.CommandContext(ctx, sm.binPath, "--scan", "-j")
+		output, err := cmd.Output()
+		if err != nil {
+			scanErr = err
+		} else {
+			scannedDevices, hasValidScan = sm.parseScan(output)
+			if !hasValidScan {
+				scanErr = errNoValidSmartData
+			}
 		}
+	}
+
+	// Add eMMC devices (Linux only) by reading sysfs health fields. This does not
+	// require smartctl and does not scan the whole device.
+	if emmcDevices := scanEmmcDevices(); len(emmcDevices) > 0 {
+		scannedDevices = append(scannedDevices, emmcDevices...)
+		hasValidScan = true
 	}
 
 	finalDevices := mergeDeviceLists(currentDevices, scannedDevices, configuredDevices)
@@ -440,6 +449,18 @@ func (sm *SmartManager) parseSmartOutput(deviceInfo *DeviceInfo, output []byte) 
 // for initial data collection when no cached data exists
 func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 	if deviceInfo != nil && sm.isExcludedDevice(deviceInfo.Name) {
+		return errNoValidSmartData
+	}
+
+	// eMMC health is not exposed via SMART on Linux, but the kernel provides
+	// wear / EOL indicators via sysfs. Prefer that path when available.
+	if deviceInfo != nil {
+		if ok, err := sm.collectEmmcHealth(deviceInfo); ok {
+			return err
+		}
+	}
+
+	if !sm.hasSmartctl {
 		return errNoValidSmartData
 	}
 
@@ -1125,10 +1146,13 @@ func NewSmartManager() (*SmartManager, error) {
 	sm.refreshExcludedDevices()
 	path, err := sm.detectSmartctl()
 	if err != nil {
+		// smartctl is optional; keep SMART manager enabled so we can still
+		// report eMMC health via sysfs on Linux.
 		slog.Debug(err.Error())
-		return nil, err
+		return sm, nil
 	}
 	slog.Debug("smartctl", "path", path)
 	sm.binPath = path
+	sm.hasSmartctl = true
 	return sm, nil
 }
