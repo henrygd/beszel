@@ -31,15 +31,15 @@ func (opts *cmdOptions) parse() bool {
 
 	// Subcommands that don't require any pflag parsing
 	switch subcommand {
-	case "-v", "version":
-		fmt.Println(beszel.AppName+"-agent", beszel.Version)
-		return true
 	case "health":
 		err := health.Check()
 		if err != nil {
 			log.Fatal(err)
 		}
 		fmt.Print("ok")
+		return true
+	case "fingerprint":
+		handleFingerprint()
 		return true
 	}
 
@@ -49,6 +49,7 @@ func (opts *cmdOptions) parse() bool {
 	pflag.StringVarP(&opts.hubURL, "url", "u", "", "URL of the Beszel hub")
 	pflag.StringVarP(&opts.token, "token", "t", "", "Token to use for authentication")
 	chinaMirrors := pflag.BoolP("china-mirrors", "c", false, "Use mirror for update (gh.beszel.dev) instead of GitHub")
+	version := pflag.BoolP("version", "v", false, "Show version information")
 	help := pflag.BoolP("help", "h", false, "Show this help message")
 
 	// Convert old single-dash long flags to double-dash for backward compatibility
@@ -73,9 +74,9 @@ func (opts *cmdOptions) parse() bool {
 		builder.WriteString(os.Args[0])
 		builder.WriteString(" [command] [flags]\n")
 		builder.WriteString("\nCommands:\n")
-		builder.WriteString("  health    Check if the agent is running\n")
-		// builder.WriteString("  help      Display this help message\n")
-		builder.WriteString("  update    Update to the latest version\n")
+		builder.WriteString("  fingerprint  View or reset the agent fingerprint\n")
+		builder.WriteString("  health       Check if the agent is running\n")
+		builder.WriteString("  update       Update to the latest version\n")
 		builder.WriteString("\nFlags:\n")
 		fmt.Print(builder.String())
 		pflag.PrintDefaults()
@@ -86,6 +87,9 @@ func (opts *cmdOptions) parse() bool {
 
 	// Must run after pflag.Parse()
 	switch {
+	case *version:
+		fmt.Println(beszel.AppName+"-agent", beszel.Version)
+		return true
 	case *help || subcommand == "help":
 		pflag.Usage()
 		return true
@@ -131,6 +135,38 @@ func (opts *cmdOptions) loadPublicKeys() ([]ssh.PublicKey, error) {
 
 func (opts *cmdOptions) getAddress() string {
 	return agent.GetAddress(opts.listen)
+}
+
+// handleFingerprint handles the "fingerprint" command with subcommands "view" and "reset".
+func handleFingerprint() {
+	subCmd := ""
+	if len(os.Args) > 2 {
+		subCmd = os.Args[2]
+	}
+
+	switch subCmd {
+	case "", "view":
+		dataDir, _ := agent.GetDataDir()
+		fp := agent.GetFingerprint(dataDir, "", "")
+		fmt.Println(fp)
+	case "help", "-h", "--help":
+		fmt.Print(fingerprintUsage())
+	case "reset":
+		dataDir, err := agent.GetDataDir()
+		if err != nil {
+			log.Fatal(err)
+		}
+		if err := agent.DeleteFingerprint(dataDir); err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("Fingerprint reset. A new one will be generated on next start.")
+	default:
+		log.Fatalf("Unknown command: %q\n\n%s", subCmd, fingerprintUsage())
+	}
+}
+
+func fingerprintUsage() string {
+	return fmt.Sprintf("Usage: %s fingerprint [view|reset]\n\nCommands:\n  view   Print fingerprint (default)\n  reset  Reset saved fingerprint\n", os.Args[0])
 }
 
 func main() {
