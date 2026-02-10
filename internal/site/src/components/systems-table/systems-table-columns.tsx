@@ -8,6 +8,7 @@ import type { ClassValue } from "clsx"
 import {
 	ArrowUpDownIcon,
 	ChevronRightSquareIcon,
+	ClockArrowUp,
 	CopyIcon,
 	CpuIcon,
 	HardDriveIcon,
@@ -35,6 +36,7 @@ import {
 	formatTemperature,
 	getMeterState,
 	parseSemVer,
+	secondsToString,
 } from "@/lib/utils"
 import { batteryStateTranslations } from "@/lib/i18n"
 import type { SystemRecord, TagRecord } from "@/types"
@@ -418,6 +420,29 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 						</span>
 					</span>
 				)
+			},
+		},
+		{
+			accessorFn: ({ info }) => info.u || undefined,
+			id: "uptime",
+			name: () => t`Uptime`,
+			size: 50,
+			Icon: ClockArrowUp,
+			header: sortableHeader,
+			cell(info) {
+				const uptime = info.getValue() as number
+				if (!uptime) {
+					return null
+				}
+				let formatted: string
+				if (uptime < 3600) {
+					formatted = secondsToString(uptime, "minute")
+				} else if (uptime < 360000) {
+					formatted = secondsToString(uptime, "hour")
+				} else {
+					formatted = secondsToString(uptime, "day")
+				}
+				return <span className="tabular-nums whitespace-nowrap">{formatted}</span>
 			},
 		},
 		{
