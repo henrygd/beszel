@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -18,8 +19,6 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/smart"
-
-	"log/slog"
 )
 
 // SmartManager manages data collection for SMART devices
