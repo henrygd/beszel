@@ -1145,10 +1145,13 @@ func NewSmartManager() (*SmartManager, error) {
 	sm.refreshExcludedDevices()
 	path, err := sm.detectSmartctl()
 	if err != nil {
-		// smartctl is optional; keep SMART manager enabled so we can still
-		// report eMMC health via sysfs on Linux.
-		slog.Debug(err.Error())
-		return sm, nil
+		// Keep the previous fail-fast behavior unless this Linux host exposes
+		// eMMC health via sysfs, in which case smartctl is optional.
+		if runtime.GOOS == "linux" && len(scanEmmcDevices()) > 0 {
+			slog.Debug(err.Error())
+			return sm, nil
+		}
+		return nil, err
 	}
 	slog.Debug("smartctl", "path", path)
 	sm.binPath = path
