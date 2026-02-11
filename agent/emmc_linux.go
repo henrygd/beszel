@@ -39,10 +39,7 @@ func scanEmmcDevices() []*DeviceInfo {
 		}
 
 		deviceDir := filepath.Join(blockDir, name, "device")
-		if !fileExists(filepath.Join(deviceDir, "pre_eol_info")) &&
-			!fileExists(filepath.Join(deviceDir, "life_time")) &&
-			!fileExists(filepath.Join(deviceDir, "device_life_time_est_typ_a")) &&
-			!fileExists(filepath.Join(deviceDir, "device_life_time_est_typ_b")) {
+		if !hasEmmcHealthFiles(deviceDir) {
 			continue
 		}
 
@@ -118,7 +115,6 @@ func (sm *SmartManager) collectEmmcHealth(deviceInfo *DeviceInfo) (bool, error) 
 	data.DiskName = filepath.Join("/dev", base)
 	data.DiskType = "emmc"
 	data.Attributes = attrs
-	sm.SmartDataMap[key] = data
 
 	return true, nil
 }
@@ -178,7 +174,7 @@ func readBlockCapacityBytes(blockName string) (uint64, bool) {
 	if !ok {
 		return 0, false
 	}
-	sectors, err := strconv.ParseUint(strings.TrimSpace(sizeStr), 10, 64)
+	sectors, err := strconv.ParseUint(sizeStr, 10, 64)
 	if err != nil || sectors == 0 {
 		return 0, false
 	}
@@ -186,7 +182,7 @@ func readBlockCapacityBytes(blockName string) (uint64, bool) {
 	lbsStr, ok := readStringFileOK(lbsPath)
 	logicalBlockSize := uint64(512)
 	if ok {
-		if parsed, err := strconv.ParseUint(strings.TrimSpace(lbsStr), 10, 64); err == nil && parsed > 0 {
+		if parsed, err := strconv.ParseUint(lbsStr, 10, 64); err == nil && parsed > 0 {
 			logicalBlockSize = parsed
 		}
 	}
@@ -216,7 +212,16 @@ func readStringFileOK(path string) (string, bool) {
 	return strings.TrimSpace(string(b)), true
 }
 
-func fileExists(path string) bool {
-	_, err := os.Stat(path)
-	return err == nil
+func hasEmmcHealthFiles(deviceDir string) bool {
+	entries, err := os.ReadDir(deviceDir)
+	if err != nil {
+		return false
+	}
+	for _, ent := range entries {
+		switch ent.Name() {
+		case "pre_eol_info", "life_time", "device_life_time_est_typ_a", "device_life_time_est_typ_b":
+			return true
+		}
+	}
+	return false
 }

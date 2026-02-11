@@ -40,7 +40,7 @@ func parseHexOrDecByte(s string) (uint8, bool) {
 }
 
 func parseHexBytePair(s string) (uint8, uint8, bool) {
-	fields := strings.Fields(strings.TrimSpace(s))
+	fields := strings.Fields(s)
 	if len(fields) < 2 {
 		return 0, 0, false
 	}
