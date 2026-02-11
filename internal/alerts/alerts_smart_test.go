@@ -58,6 +58,74 @@ func TestSmartDeviceAlert(t *testing.T) {
 	assert.Contains(t, lastMessage.Text, "FAILED")
 }
 
+func TestSmartDeviceAlertPassedToWarning(t *testing.T) {
+	hub, user := beszelTests.GetHubWithUser(t)
+	defer hub.Cleanup()
+
+	system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
+		"name":  "test-system",
+		"users": []string{user.Id},
+		"host":  "127.0.0.1",
+	})
+	assert.NoError(t, err)
+
+	smartDevice, err := beszelTests.CreateRecord(hub, "smart_devices", map[string]any{
+		"system": system.Id,
+		"name":   "/dev/mmcblk0",
+		"model":  "eMMC",
+		"state":  "PASSED",
+	})
+	assert.NoError(t, err)
+
+	smartDevice, err = hub.FindRecordById("smart_devices", smartDevice.Id)
+	assert.NoError(t, err)
+
+	smartDevice.Set("state", "WARNING")
+	err = hub.Save(smartDevice)
+	assert.NoError(t, err)
+
+	time.Sleep(50 * time.Millisecond)
+
+	assert.EqualValues(t, 1, hub.TestMailer.TotalSend(), "should have 1 email sent after state changed to WARNING")
+	lastMessage := hub.TestMailer.LastMessage()
+	assert.Contains(t, lastMessage.Subject, "SMART warning on test-system")
+	assert.Contains(t, lastMessage.Text, "WARNING")
+}
+
+func TestSmartDeviceAlertWarningToFailed(t *testing.T) {
+	hub, user := beszelTests.GetHubWithUser(t)
+	defer hub.Cleanup()
+
+	system, err := beszelTests.CreateRecord(hub, "systems", map[string]any{
+		"name":  "test-system",
+		"users": []string{user.Id},
+		"host":  "127.0.0.1",
+	})
+	assert.NoError(t, err)
+
+	smartDevice, err := beszelTests.CreateRecord(hub, "smart_devices", map[string]any{
+		"system": system.Id,
+		"name":   "/dev/mmcblk0",
+		"model":  "eMMC",
+		"state":  "WARNING",
+	})
+	assert.NoError(t, err)
+
+	smartDevice, err = hub.FindRecordById("smart_devices", smartDevice.Id)
+	assert.NoError(t, err)
+
+	smartDevice.Set("state", "FAILED")
+	err = hub.Save(smartDevice)
+	assert.NoError(t, err)
+
+	time.Sleep(50 * time.Millisecond)
+
+	assert.EqualValues(t, 1, hub.TestMailer.TotalSend(), "should have 1 email sent after state changed from WARNING to FAILED")
+	lastMessage := hub.TestMailer.LastMessage()
+	assert.Contains(t, lastMessage.Subject, "SMART failure on test-system")
+	assert.Contains(t, lastMessage.Text, "FAILED")
+}
+
 func TestSmartDeviceAlertNoAlertOnNonPassedToFailed(t *testing.T) {
 	hub, user := beszelTests.GetHubWithUser(t)
 	defer hub.Cleanup()
@@ -83,7 +151,8 @@ func TestSmartDeviceAlertNoAlertOnNonPassedToFailed(t *testing.T) {
 	smartDevice, err = hub.FindRecordById("smart_devices", smartDevice.Id)
 	assert.NoError(t, err)
 
-	// Update the state from UNKNOWN to FAILED - should NOT trigger alert
+	// Update the state from UNKNOWN to FAILED - should NOT trigger alert.
+	// We only alert from known healthy/degraded states.
 	smartDevice.Set("state", "FAILED")
 	err = hub.Save(smartDevice)
 	assert.NoError(t, err)
