@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  actions: write
   issues: write
   pull-requests: write
 
@@ -48,6 +49,9 @@ jobs:
           # Action can not skip PRs, set it to 100 years to cover it.
           days-before-pr-stale: 36524
 
+          # Max issues to process before early exit. Next run resumes from cache. GH API limit: 5000.
+          operations-per-run: 1500
+
           # Labels
           stale-issue-label: 'stale'
           remove-stale-when-updated: true
@@ -56,4 +60,5 @@ jobs:
 
           # Exemptions
           exempt-assignees: true
+
           exempt-milestones: true
