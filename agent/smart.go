@@ -28,8 +28,7 @@ type SmartManager struct {
 	SmartDevices    []*DeviceInfo
 	refreshMutex    sync.Mutex
 	lastScanTime    time.Time
-	binPath         string
-	hasSmartctl     bool
+	smartctlPath    string
 	excludedDevices map[string]struct{}
 }
 
@@ -177,11 +176,11 @@ func (sm *SmartManager) ScanDevices(force bool) error {
 		hasValidScan   bool
 	)
 
-	if sm.hasSmartctl {
+	if sm.smartctlPath != "" {
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
-		cmd := exec.CommandContext(ctx, sm.binPath, "--scan", "-j")
+		cmd := exec.CommandContext(ctx, sm.smartctlPath, "--scan", "-j")
 		output, err := cmd.Output()
 		if err != nil {
 			scanErr = err
@@ -459,7 +458,7 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 		}
 	}
 
-	if !sm.hasSmartctl {
+	if sm.smartctlPath == "" {
 		return errNoValidSmartData
 	}
 
@@ -473,7 +472,7 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 
 	// Try with -n standby first if we have existing data
 	args := sm.smartctlArgs(deviceInfo, hasExistingData)
-	cmd := exec.CommandContext(ctx, sm.binPath, args...)
+	cmd := exec.CommandContext(ctx, sm.smartctlPath, args...)
 	output, err := cmd.CombinedOutput()
 
 	// Check if device is in standby (exit status 2)
@@ -486,7 +485,7 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 		ctx2, cancel2 := context.WithTimeout(context.Background(), 15*time.Second)
 		defer cancel2()
 		args = sm.smartctlArgs(deviceInfo, false)
-		cmd = exec.CommandContext(ctx2, sm.binPath, args...)
+		cmd = exec.CommandContext(ctx2, sm.smartctlPath, args...)
 		output, err = cmd.CombinedOutput()
 	}
 
@@ -503,7 +502,7 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 			ctx3, cancel3 := context.WithTimeout(context.Background(), 15*time.Second)
 			defer cancel3()
 			args = sm.smartctlArgs(deviceInfo, false)
-			cmd = exec.CommandContext(ctx3, sm.binPath, args...)
+			cmd = exec.CommandContext(ctx3, sm.smartctlPath, args...)
 			output, err = cmd.CombinedOutput()
 			hasValidData = sm.parseSmartOutput(deviceInfo, output)
 
@@ -1144,17 +1143,15 @@ func NewSmartManager() (*SmartManager, error) {
 	}
 	sm.refreshExcludedDevices()
 	path, err := sm.detectSmartctl()
+	slog.Debug("smartctl", "path", path, "err", err)
 	if err != nil {
 		// Keep the previous fail-fast behavior unless this Linux host exposes
 		// eMMC health via sysfs, in which case smartctl is optional.
 		if runtime.GOOS == "linux" && len(scanEmmcDevices()) > 0 {
-			slog.Debug(err.Error())
 			return sm, nil
 		}
 		return nil, err
 	}
-	slog.Debug("smartctl", "path", path)
-	sm.binPath = path
-	sm.hasSmartctl = true
+	sm.smartctlPath = path
 	return sm, nil
 }
