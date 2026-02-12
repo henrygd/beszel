@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -18,8 +19,6 @@ import (
 	"time"
 
 	"github.com/henrygd/beszel/internal/entities/smart"
-
-	"log/slog"
 )
 
 // SmartManager manages data collection for SMART devices
@@ -1125,7 +1124,6 @@ func NewSmartManager() (*SmartManager, error) {
 	sm.refreshExcludedDevices()
 	path, err := sm.detectSmartctl()
 	if err != nil {
-		slog.Debug(err.Error())
 		return nil, err
 	}
 	slog.Debug("smartctl", "path", path)
