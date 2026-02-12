@@ -434,7 +434,7 @@ const SystemTableRow = memo(
 								width: cell.column.getSize(),
 								height: virtualRow.size,
 							}}
-							className="py-0"
+							className="py-0 ps-4.5"
 						>
 							{flexRender(cell.column.columnDef.cell, cell.getContext())}
 						</TableCell>

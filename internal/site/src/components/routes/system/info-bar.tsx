@@ -19,7 +19,7 @@ import { FreeBsdIcon, TuxIcon, WebSocketIcon, WindowsIcon } from "@/components/u
 import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { ConnectionType, connectionTypeLabels, Os, SystemStatus } from "@/lib/enums"
-import { cn, formatBytes, getHostDisplayValue, secondsToString, toFixedFloat } from "@/lib/utils"
+import { cn, formatBytes, getHostDisplayValue, secondsToUptimeString, toFixedFloat } from "@/lib/utils"
 import type { ChartData, SystemDetailsRecord, SystemRecord } from "@/types"
 
 export default function InfoBar({
@@ -77,14 +77,6 @@ export default function InfoBar({
 			},
 		}
 
-		let uptime: string
-		if (system.info.u < 3600) {
-			uptime = secondsToString(system.info.u, "minute")
-		} else if (system.info.u < 360000) {
-			uptime = secondsToString(system.info.u, "hour")
-		} else {
-			uptime = secondsToString(system.info.u, "day")
-		}
 		const info = [
 			{ value: getHostDisplayValue(system), Icon: GlobeIcon },
 			{
@@ -94,7 +86,7 @@ export default function InfoBar({
 				// hide if hostname is same as host or name
 				hide: hostname === system.host || hostname === system.name,
 			},
-			{ value: uptime, Icon: ClockArrowUp, label: t`Uptime`, hide: !system.info.u },
+			{ value: secondsToUptimeString(system.info.u), Icon: ClockArrowUp, label: t`Uptime`, hide: !system.info.u },
 			osInfo[os],
 			{
 				value: cpuModel,
