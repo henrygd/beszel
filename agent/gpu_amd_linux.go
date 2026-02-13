@@ -172,6 +172,8 @@ var getRadeonNames = sync.OnceValue(func() map[string]string {
 
 		"744c": "RX 7900",
 
+		"7480": "RX 7600",
+
 		"1681": "680M",
 
 		"7448": "PRO W7900",
