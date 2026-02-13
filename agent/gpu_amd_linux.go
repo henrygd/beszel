@@ -32,6 +32,7 @@ func (gm *GPUManager) hasAmdSysfs() bool {
 
 // collectAmdStats collects AMD GPU metrics directly from sysfs to avoid the overhead of rocm-smi
 func (gm *GPUManager) collectAmdStats() error {
+	sysfsPollInterval := 3000 * time.Millisecond
 	cards, err := filepath.Glob("/sys/class/drm/card*")
 	if err != nil {
 		return err
@@ -70,7 +71,7 @@ func (gm *GPUManager) collectAmdStats() error {
 			continue
 		}
 		failures = 0
-		time.Sleep(rocmSmiInterval)
+		time.Sleep(sysfsPollInterval)
 	}
 }
 

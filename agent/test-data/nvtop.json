@@ -1,0 +1,34 @@
+[
+  {
+   "device_name": "NVIDIA GeForce RTX 3050 Ti Laptop GPU",
+   "gpu_clock": "1485MHz",
+   "mem_clock": "6001MHz",
+   "temp": "48C",
+   "fan_speed": null,
+   "power_draw": "13W",
+   "gpu_util": "5%",
+   "encode": "0%",
+   "decode": "0%",
+   "mem_util": "8%",
+   "mem_total": "4294967296",
+   "mem_used": "349372416",
+   "mem_free": "3945594880",
+   "processes" : []
+  },
+  {
+   "device_name": "AMD Radeon 680M",
+   "gpu_clock": "2200MHz",
+   "mem_clock": "2400MHz",
+   "temp": "48C",
+   "fan_speed": "CPU Fan",
+   "power_draw": "9W",
+   "gpu_util": "12%",
+   "encode": null,
+   "decode": "0%",
+   "mem_util": "7%",
+   "mem_total": "16929173504",
+   "mem_used": "1213784064",
+   "mem_free": "15715389440",
+   "processes" : []
+  }
+]
