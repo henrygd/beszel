@@ -9,6 +9,7 @@ import (
 	"maps"
 	"os/exec"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -22,8 +23,9 @@ const (
 	nvidiaSmiCmd  string = "nvidia-smi"
 	rocmSmiCmd    string = "rocm-smi"
 	tegraStatsCmd string = "tegrastats"
-	nvtopCmd      string = "nvtop"
-	noGPUFoundMsg string = "no GPU found - see https://beszel.dev/guide/gpu"
+	nvtopCmd         string = "nvtop"
+	powermetricsCmd  string = "powermetrics"
+	noGPUFoundMsg    string = "no GPU found - see https://beszel.dev/guide/gpu"
 
 	// Command retry and timeout constants
 	retryWaitTime     time.Duration = 5 * time.Second
@@ -82,15 +84,17 @@ var errNoValidData = fmt.Errorf("no valid GPU data found") // Error for missing 
 type collectorSource string
 
 const (
-	collectorSourceNVTop       collectorSource = collectorSource(nvtopCmd)
-	collectorSourceNVML        collectorSource = "nvml"
-	collectorSourceNvidiaSMI   collectorSource = collectorSource(nvidiaSmiCmd)
-	collectorSourceIntelGpuTop collectorSource = collectorSource(intelGpuStatsCmd)
-	collectorSourceAmdSysfs    collectorSource = "amd_sysfs"
-	collectorSourceRocmSMI     collectorSource = collectorSource(rocmSmiCmd)
-	collectorGroupNvidia       string          = "nvidia"
-	collectorGroupIntel        string          = "intel"
-	collectorGroupAmd          string          = "amd"
+	collectorSourceNVTop         collectorSource = collectorSource(nvtopCmd)
+	collectorSourceNVML          collectorSource = "nvml"
+	collectorSourceNvidiaSMI     collectorSource = collectorSource(nvidiaSmiCmd)
+	collectorSourceIntelGpuTop   collectorSource = collectorSource(intelGpuStatsCmd)
+	collectorSourceAmdSysfs      collectorSource = "amd_sysfs"
+	collectorSourceRocmSMI       collectorSource = collectorSource(rocmSmiCmd)
+	collectorSourcePowermetrics  collectorSource = collectorSource(powermetricsCmd)
+	collectorGroupNvidia         string          = "nvidia"
+	collectorGroupIntel          string          = "intel"
+	collectorGroupAmd            string          = "amd"
+	collectorGroupApple          string          = "apple"
 )
 
 func isValidCollectorSource(source collectorSource) bool {
@@ -100,7 +104,8 @@ func isValidCollectorSource(source collectorSource) bool {
 		collectorSourceNvidiaSMI,
 		collectorSourceIntelGpuTop,
 		collectorSourceAmdSysfs,
-		collectorSourceRocmSMI:
+		collectorSourceRocmSMI,
+		collectorSourcePowermetrics:
 		return true
 	}
 	return false
@@ -108,12 +113,13 @@ func isValidCollectorSource(source collectorSource) bool {
 
 // gpuCapabilities describes detected GPU tooling and sysfs support on the host.
 type gpuCapabilities struct {
-	hasNvidiaSmi   bool
-	hasRocmSmi     bool
-	hasAmdSysfs    bool
-	hasTegrastats  bool
-	hasIntelGpuTop bool
-	hasNvtop       bool
+	hasNvidiaSmi    bool
+	hasRocmSmi      bool
+	hasAmdSysfs     bool
+	hasTegrastats   bool
+	hasIntelGpuTop  bool
+	hasNvtop        bool
+	hasPowermetrics bool
 }
 
 type collectorDefinition struct {
@@ -449,11 +455,16 @@ func (gm *GPUManager) discoverGpuCapabilities() gpuCapabilities {
 	if _, err := exec.LookPath(nvtopCmd); err == nil {
 		caps.hasNvtop = true
 	}
+	if runtime.GOOS == "darwin" {
+		if _, err := exec.LookPath(powermetricsCmd); err == nil {
+			caps.hasPowermetrics = true
+		}
+	}
 	return caps
 }
 
 func hasAnyGpuCollector(caps gpuCapabilities) bool {
-	return caps.hasNvidiaSmi || caps.hasRocmSmi || caps.hasAmdSysfs || caps.hasTegrastats || caps.hasIntelGpuTop || caps.hasNvtop
+	return caps.hasNvidiaSmi || caps.hasRocmSmi || caps.hasAmdSysfs || caps.hasTegrastats || caps.hasIntelGpuTop || caps.hasNvtop || caps.hasPowermetrics
 }
 
 func (gm *GPUManager) startIntelCollector() {
@@ -567,6 +578,14 @@ func (gm *GPUManager) collectorDefinitions(caps gpuCapabilities) map[collectorSo
 				return true
 			},
 		},
+		collectorSourcePowermetrics: {
+			group:     collectorGroupApple,
+			available: caps.hasPowermetrics,
+			start: func(_ func()) bool {
+				gm.startPowermetricsCollector()
+				return true
+			},
+		},
 	}
 }
 
@@ -672,6 +691,10 @@ func (gm *GPUManager) resolveLegacyCollectorPriority(caps gpuCapabilities) []col
 
 	if caps.hasIntelGpuTop {
 		priorities = append(priorities, collectorSourceIntelGpuTop)
+	}
+
+	if caps.hasPowermetrics {
+		priorities = append(priorities, collectorSourcePowermetrics)
 	}
 
 	// Keep nvtop as a legacy last resort only when no vendor collector exists.

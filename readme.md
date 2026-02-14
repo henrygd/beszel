@@ -48,7 +48,7 @@ The [quick start guide](https://beszel.dev/guide/getting-started) and other docu
 - **Network usage** - Host system and containers.
 - **Load average** - Host system.
 - **Temperature** - Host system sensors.
-- **GPU usage / power draw** - Nvidia, AMD, and Intel.
+- **GPU usage / power draw** - Nvidia, AMD, Intel, and Apple (macOS via powermetrics).
 - **Battery** - Host system battery charge.
 - **Containers** - Status and metrics of all running Docker / Podman containers.
 - **S.M.A.R.T.** - Host system disk health (includes eMMC wear/EOL via Linux sysfs when available).
