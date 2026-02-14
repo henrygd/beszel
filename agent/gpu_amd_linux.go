@@ -103,8 +103,17 @@ func (gm *GPUManager) updateAmdGpuData(cardPath string) bool {
 
 	// Read all sysfs values first (no lock needed - these can be slow)
 	usage, usageErr := readSysfsFloat(filepath.Join(devicePath, "gpu_busy_percent"))
-	memUsed, memUsedErr := readSysfsFloat(filepath.Join(devicePath, "mem_info_vram_used"))
-	memTotal, _ := readSysfsFloat(filepath.Join(devicePath, "mem_info_vram_total"))
+	vramUsed, memUsedErr := readSysfsFloat(filepath.Join(devicePath, "mem_info_vram_used"))
+	vramTotal, _ := readSysfsFloat(filepath.Join(devicePath, "mem_info_vram_total"))
+	memUsed := vramUsed
+	memTotal := vramTotal
+	// if gtt is present, add it to the memory used and total (https://github.com/henrygd/beszel/issues/1569#issuecomment-3837640484)
+	if gttUsed, err := readSysfsFloat(filepath.Join(devicePath, "mem_info_gtt_used")); err == nil && gttUsed > 0 {
+		if gttTotal, err := readSysfsFloat(filepath.Join(devicePath, "mem_info_gtt_total")); err == nil {
+			memUsed += gttUsed
+			memTotal += gttTotal
+		}
+	}
 
 	var temp, power float64
 	hwmons, _ := filepath.Glob(filepath.Join(devicePath, "hwmon/hwmon*"))

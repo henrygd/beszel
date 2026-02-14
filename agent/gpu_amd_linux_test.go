@@ -119,40 +119,68 @@ func TestAmdgpuNameCacheRoundTrip(t *testing.T) {
 }
 
 func TestUpdateAmdGpuDataWithFakeSysfs(t *testing.T) {
-	dir := t.TempDir()
-	cardPath := filepath.Join(dir, "card0")
-	devicePath := filepath.Join(cardPath, "device")
-	hwmonPath := filepath.Join(devicePath, "hwmon", "hwmon0")
-	require.NoError(t, os.MkdirAll(hwmonPath, 0o755))
-
-	write := func(name, content string) {
-		require.NoError(t, os.WriteFile(filepath.Join(devicePath, name), []byte(content), 0o644))
+	tests := []struct {
+		name            string
+		writeGTT        bool
+		wantMemoryUsed  float64
+		wantMemoryTotal float64
+	}{
+		{
+			name:            "sums vram and gtt when gtt is present",
+			writeGTT:        true,
+			wantMemoryUsed:  bytesToMegabytes(1073741824 + 536870912),
+			wantMemoryTotal: bytesToMegabytes(2147483648 + 4294967296),
+		},
+		{
+			name:            "falls back to vram when gtt is missing",
+			writeGTT:        false,
+			wantMemoryUsed:  bytesToMegabytes(1073741824),
+			wantMemoryTotal: bytesToMegabytes(2147483648),
+		},
 	}
-	write("vendor", "0x1002")
-	write("device", "0x1506")
-	write("revision", "0xc1")
-	write("gpu_busy_percent", "25")
-	write("mem_info_vram_used", "1073741824")
-	write("mem_info_vram_total", "2147483648")
-	require.NoError(t, os.WriteFile(filepath.Join(hwmonPath, "temp1_input"), []byte("45000"), 0o644))
-	require.NoError(t, os.WriteFile(filepath.Join(hwmonPath, "power1_input"), []byte("20000000"), 0o644))
 
-	// Pre-cache name so getAmdGpuName returns a known value (it uses system amdgpu.ids path)
-	cacheAmdgpuName("1506", "c1", "AMD Radeon 610M Graphics", true)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			dir := t.TempDir()
+			cardPath := filepath.Join(dir, "card0")
+			devicePath := filepath.Join(cardPath, "device")
+			hwmonPath := filepath.Join(devicePath, "hwmon", "hwmon0")
+			require.NoError(t, os.MkdirAll(hwmonPath, 0o755))
 
-	gm := &GPUManager{GpuDataMap: make(map[string]*system.GPUData)}
-	ok := gm.updateAmdGpuData(cardPath)
-	require.True(t, ok)
+			write := func(name, content string) {
+				require.NoError(t, os.WriteFile(filepath.Join(devicePath, name), []byte(content), 0o644))
+			}
+			write("vendor", "0x1002")
+			write("device", "0x1506")
+			write("revision", "0xc1")
+			write("gpu_busy_percent", "25")
+			write("mem_info_vram_used", "1073741824")
+			write("mem_info_vram_total", "2147483648")
+			if tt.writeGTT {
+				write("mem_info_gtt_used", "536870912")
+				write("mem_info_gtt_total", "4294967296")
+			}
+			require.NoError(t, os.WriteFile(filepath.Join(hwmonPath, "temp1_input"), []byte("45000"), 0o644))
+			require.NoError(t, os.WriteFile(filepath.Join(hwmonPath, "power1_input"), []byte("20000000"), 0o644))
 
-	gpu, ok := gm.GpuDataMap["card0"]
-	require.True(t, ok)
-	assert.Equal(t, "AMD Radeon 610M", gpu.Name)
-	assert.Equal(t, 25.0, gpu.Usage)
-	assert.Equal(t, bytesToMegabytes(1073741824), gpu.MemoryUsed)
-	assert.Equal(t, bytesToMegabytes(2147483648), gpu.MemoryTotal)
-	assert.Equal(t, 45.0, gpu.Temperature)
-	assert.Equal(t, 20.0, gpu.Power)
-	assert.Equal(t, 1.0, gpu.Count)
+			// Pre-cache name so getAmdGpuName returns a known value (it uses system amdgpu.ids path)
+			cacheAmdgpuName("1506", "c1", "AMD Radeon 610M Graphics", true)
+
+			gm := &GPUManager{GpuDataMap: make(map[string]*system.GPUData)}
+			ok := gm.updateAmdGpuData(cardPath)
+			require.True(t, ok)
+
+			gpu, ok := gm.GpuDataMap["card0"]
+			require.True(t, ok)
+			assert.Equal(t, "AMD Radeon 610M", gpu.Name)
+			assert.Equal(t, 25.0, gpu.Usage)
+			assert.Equal(t, tt.wantMemoryUsed, gpu.MemoryUsed)
+			assert.Equal(t, tt.wantMemoryTotal, gpu.MemoryTotal)
+			assert.Equal(t, 45.0, gpu.Temperature)
+			assert.Equal(t, 20.0, gpu.Power)
+			assert.Equal(t, 1.0, gpu.Count)
+		})
+	}
 }
 
 func TestLookupAmdgpuNameInFile(t *testing.T) {
