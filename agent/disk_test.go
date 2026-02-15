@@ -94,6 +94,62 @@ func TestParseFilesystemEntry(t *testing.T) {
 	}
 }
 
+func TestFindIoDevice(t *testing.T) {
+	t.Run("matches by device name", func(t *testing.T) {
+		ioCounters := map[string]disk.IOCountersStat{
+			"sda": {Name: "sda"},
+			"sdb": {Name: "sdb"},
+		}
+
+		device, ok := findIoDevice("sdb", ioCounters)
+		assert.True(t, ok)
+		assert.Equal(t, "sdb", device)
+	})
+
+	t.Run("matches by device label", func(t *testing.T) {
+		ioCounters := map[string]disk.IOCountersStat{
+			"sda": {Name: "sda", Label: "rootfs"},
+			"sdb": {Name: "sdb"},
+		}
+
+		device, ok := findIoDevice("rootfs", ioCounters)
+		assert.True(t, ok)
+		assert.Equal(t, "sda", device)
+	})
+
+	t.Run("returns no fallback when not found", func(t *testing.T) {
+		ioCounters := map[string]disk.IOCountersStat{
+			"sda": {Name: "sda"},
+			"sdb": {Name: "sdb"},
+		}
+
+		device, ok := findIoDevice("nvme0n1p1", ioCounters)
+		assert.False(t, ok)
+		assert.Equal(t, "", device)
+	})
+}
+
+func TestIsDockerSpecialMountpoint(t *testing.T) {
+	testCases := []struct {
+		name       string
+		mountpoint string
+		expected   bool
+	}{
+		{name: "hosts", mountpoint: "/etc/hosts", expected: true},
+		{name: "resolv", mountpoint: "/etc/resolv.conf", expected: true},
+		{name: "hostname", mountpoint: "/etc/hostname", expected: true},
+		{name: "root", mountpoint: "/", expected: false},
+		{name: "passwd", mountpoint: "/etc/passwd", expected: false},
+		{name: "extra-filesystem", mountpoint: "/extra-filesystems/sda1", expected: false},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			assert.Equal(t, tc.expected, isDockerSpecialMountpoint(tc.mountpoint))
+		})
+	}
+}
+
 func TestInitializeDiskInfoWithCustomNames(t *testing.T) {
 	// Set up environment variables
 	oldEnv := os.Getenv("EXTRA_FILESYSTEMS")

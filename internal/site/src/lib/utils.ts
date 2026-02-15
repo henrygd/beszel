@@ -466,3 +466,14 @@ export function secondsToString(seconds: number, unit: "hour" | "minute" | "day"
 			return plural(count, { one: `${countString} day`, other: `${countString} days` })
 	}
 }
+
+/** Format seconds to uptime string - "X minutes", "X hours", "X days" */
+export function secondsToUptimeString(seconds: number): string {
+	if (seconds < 3600) {
+		return secondsToString(seconds, "minute")
+	} else if (seconds < 360000) {
+		return secondsToString(seconds, "hour")
+	} else {
+		return secondsToString(seconds, "day")
+	}
+}
