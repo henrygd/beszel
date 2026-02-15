@@ -37,6 +37,9 @@ RUN apt-get update && apt-get install -y \
 FROM nvidia/cuda:12.2.2-base-ubuntu22.04
 COPY --from=builder /agent /agent
 
+# AMD GPU name lookup (used by agent on hybrid laptops when /usr/share/libdrm/amdgpu.ids is read)
+COPY --from=builder /app/agent/test-data/amdgpu.ids /usr/share/libdrm/amdgpu.ids
+
 # Copy smartmontools binaries and config files
 COPY --from=smartmontools-builder /usr/sbin/smartctl /usr/sbin/smartctl
 
