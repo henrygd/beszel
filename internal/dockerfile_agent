@@ -23,6 +23,9 @@ COPY --from=builder /agent /agent
 # this is so we don't need to create the /tmp directory in the scratch container
 COPY --from=builder /tmp /tmp
 
+# AMD GPU name lookup (used by agent on Linux when /usr/share/libdrm/amdgpu.ids is read)
+COPY --from=builder /app/agent/test-data/amdgpu.ids /usr/share/libdrm/amdgpu.ids
+
 # Ensure data persistence across container recreations
 VOLUME ["/var/lib/beszel-agent"]
 
