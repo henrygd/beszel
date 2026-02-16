@@ -199,6 +199,13 @@ func (sm *SmartManager) ScanDevices(force bool) error {
 		hasValidScan = true
 	}
 
+	// Add Linux mdraid arrays by reading sysfs health fields. This does not
+	// require smartctl and does not scan the whole device.
+	if raidDevices := scanMdraidDevices(); len(raidDevices) > 0 {
+		scannedDevices = append(scannedDevices, raidDevices...)
+		hasValidScan = true
+	}
+
 	finalDevices := mergeDeviceLists(currentDevices, scannedDevices, configuredDevices)
 	finalDevices = sm.filterExcludedDevices(finalDevices)
 	sm.updateSmartDevices(finalDevices)
@@ -450,6 +457,12 @@ func (sm *SmartManager) CollectSmart(deviceInfo *DeviceInfo) error {
 		return errNoValidSmartData
 	}
 
+	// mdraid health is not exposed via SMART; Linux exposes array state in sysfs.
+	if deviceInfo != nil {
+		if ok, err := sm.collectMdraidHealth(deviceInfo); ok {
+			return err
+		}
+	}
 	// eMMC health is not exposed via SMART on Linux, but the kernel provides
 	// wear / EOL indicators via sysfs. Prefer that path when available.
 	if deviceInfo != nil {
@@ -1146,9 +1159,11 @@ func NewSmartManager() (*SmartManager, error) {
 	slog.Debug("smartctl", "path", path, "err", err)
 	if err != nil {
 		// Keep the previous fail-fast behavior unless this Linux host exposes
-		// eMMC health via sysfs, in which case smartctl is optional.
-		if runtime.GOOS == "linux" && len(scanEmmcDevices()) > 0 {
-			return sm, nil
+		// eMMC or mdraid health via sysfs, in which case smartctl is optional.
+		if runtime.GOOS == "linux" {
+			if len(scanEmmcDevices()) > 0 || len(scanMdraidDevices()) > 0 {
+				return sm, nil
+			}
 		}
 		return nil, err
 	}
