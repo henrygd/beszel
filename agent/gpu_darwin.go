@@ -5,6 +5,8 @@ package agent
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
+	"io"
 	"log/slog"
 	"os/exec"
 	"strconv"
@@ -19,13 +21,16 @@ const (
 	powermetricsSampleIntervalMs = 500
 	// powermetricsPollInterval is how often we run powermetrics to collect a new sample.
 	powermetricsPollInterval = 2 * time.Second
+	// macmonIntervalMs is the sampling interval passed to macmon pipe (-i), in milliseconds.
+	macmonIntervalMs = 2500
 )
+
+const appleGPUID = "0"
 
 // startPowermetricsCollector runs powermetrics --samplers gpu_power in a loop and updates
 // GPU usage and power. Requires root (sudo) on macOS. A single logical GPU is reported as id "0".
 func (gm *GPUManager) startPowermetricsCollector() {
 	// Ensure single GPU entry for Apple GPU
-	const appleGPUID = "0"
 	if _, ok := gm.GpuDataMap[appleGPUID]; !ok {
 		gm.GpuDataMap[appleGPUID] = &system.GPUData{Name: "Apple GPU"}
 	}
@@ -110,7 +115,6 @@ func (gm *GPUManager) parsePowermetricsData(output []byte) bool {
 	gm.Lock()
 	defer gm.Unlock()
 
-	const appleGPUID = "0"
 	if _, ok := gm.GpuDataMap[appleGPUID]; !ok {
 		gm.GpuDataMap[appleGPUID] = &system.GPUData{Name: "Apple GPU"}
 	}
@@ -124,6 +128,125 @@ func (gm *GPUManager) parsePowermetricsData(output []byte) bool {
 		// mW -> W
 		gpu.Power += powerMW / milliwattsInAWatt
 	}
+	gpu.Count++
+	return true
+}
+
+// startMacmonCollector runs `macmon pipe` in a loop and parses one JSON object per line.
+// This collector does not require sudo. A single logical GPU is reported as id "0".
+func (gm *GPUManager) startMacmonCollector() {
+	if _, ok := gm.GpuDataMap[appleGPUID]; !ok {
+		gm.GpuDataMap[appleGPUID] = &system.GPUData{Name: "Apple GPU"}
+	}
+
+	go func() {
+		failures := 0
+		for {
+			if err := gm.collectMacmonPipe(); err != nil {
+				failures++
+				if failures > maxFailureRetries {
+					slog.Warn("macmon GPU collector failed repeatedly, stopping", "err", err)
+					break
+				}
+				slog.Warn("Error collecting macOS GPU data via macmon", "err", err)
+				time.Sleep(retryWaitTime)
+				continue
+			}
+			failures = 0
+			// `macmon pipe` is long-running; if it returns, wait a bit before restarting.
+			time.Sleep(retryWaitTime)
+		}
+	}()
+}
+
+type macmonTemp struct {
+	GPUTempAvg float64 `json:"gpu_temp_avg"`
+}
+
+type macmonSample struct {
+	GPUPower    float64    `json:"gpu_power"`     // watts (macmon reports fractional values)
+	GPURAMPower float64    `json:"gpu_ram_power"` // watts
+	GPUUsage    []float64  `json:"gpu_usage"`     // [freq_mhz, usage] where usage is typically 0..1
+	Temp        macmonTemp `json:"temp"`
+}
+
+func (gm *GPUManager) collectMacmonPipe() (err error) {
+	cmd := exec.Command(macmonCmd, "pipe", "-i", strconv.Itoa(macmonIntervalMs))
+	// Avoid blocking if macmon writes to stderr.
+	cmd.Stderr = io.Discard
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return err
+	}
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+
+	// Ensure we always reap the child to avoid zombies on any return path and
+	// propagate a non-zero exit code if no other error was set.
+	defer func() {
+		_ = stdout.Close()
+		if cmd.ProcessState == nil || !cmd.ProcessState.Exited() {
+			_ = cmd.Process.Kill()
+		}
+		if waitErr := cmd.Wait(); err == nil && waitErr != nil {
+			err = waitErr
+		}
+	}()
+
+	scanner := bufio.NewScanner(stdout)
+	var hadSample bool
+	for scanner.Scan() {
+		line := bytes.TrimSpace(scanner.Bytes())
+		if len(line) == 0 {
+			continue
+		}
+		if gm.parseMacmonLine(line) {
+			hadSample = true
+		}
+	}
+	if scanErr := scanner.Err(); scanErr != nil {
+		return scanErr
+	}
+	if !hadSample {
+		return errNoValidData
+	}
+	return nil
+}
+
+// parseMacmonLine parses a single macmon JSON line and updates Apple GPU metrics.
+func (gm *GPUManager) parseMacmonLine(line []byte) bool {
+	var sample macmonSample
+	if err := json.Unmarshal(line, &sample); err != nil {
+		return false
+	}
+
+	usage := 0.0
+	if len(sample.GPUUsage) >= 2 {
+		usage = sample.GPUUsage[1]
+		// Heuristic: macmon typically reports 0..1; convert to percentage.
+		if usage <= 1.0 {
+			usage *= 100
+		}
+	}
+
+	// Consider the line valid if it contains at least one GPU metric.
+	if usage == 0 && sample.GPUPower == 0 && sample.Temp.GPUTempAvg == 0 {
+		return false
+	}
+
+	gm.Lock()
+	defer gm.Unlock()
+
+	gpu, ok := gm.GpuDataMap[appleGPUID]
+	if !ok {
+		gpu = &system.GPUData{Name: "Apple GPU"}
+		gm.GpuDataMap[appleGPUID] = gpu
+	}
+	gpu.Temperature = sample.Temp.GPUTempAvg
+	gpu.Usage += usage
+	// macmon reports power in watts; include VRAM power if present.
+	gpu.Power += sample.GPUPower + sample.GPURAMPower
 	gpu.Count++
 	return true
 }
