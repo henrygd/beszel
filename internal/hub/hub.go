@@ -31,14 +31,14 @@ import (
 type Hub struct {
 	core.App
 	*alerts.AlertManager
-	um            *users.UserManager
-	rm            *records.RecordManager
-	sm            *systems.SystemManager
-	hb            *heartbeat.Heartbeat
-	hbStop        chan struct{}
-	pubKey        string
-	signer        ssh.Signer
-	appURL        string
+	um     *users.UserManager
+	rm     *records.RecordManager
+	sm     *systems.SystemManager
+	hb     *heartbeat.Heartbeat
+	hbStop chan struct{}
+	pubKey string
+	signer ssh.Signer
+	appURL string
 }
 
 // NewHub creates a new Hub instance with default configuration
@@ -419,10 +419,13 @@ func (h *Hub) getUniversalToken(e *core.RequestEvent) error {
 
 // getHeartbeatStatus returns current heartbeat configuration and whether it's enabled
 func (h *Hub) getHeartbeatStatus(e *core.RequestEvent) error {
+	if e.Auth.GetString("role") != "admin" {
+		return e.ForbiddenError("Requires admin role", nil)
+	}
 	if h.hb == nil {
 		return e.JSON(http.StatusOK, map[string]any{
 			"enabled": false,
-			"msg":     "Set BESZEL_HUB_HEARTBEAT_URL to enable outbound heartbeat monitoring",
+			"msg":     "Set HEARTBEAT_URL to enable outbound heartbeat monitoring",
 		})
 	}
 	cfg := h.hb.GetConfig()
@@ -436,9 +439,12 @@ func (h *Hub) getHeartbeatStatus(e *core.RequestEvent) error {
 
 // testHeartbeat triggers a single heartbeat ping and returns the result
 func (h *Hub) testHeartbeat(e *core.RequestEvent) error {
+	if e.Auth.GetString("role") != "admin" {
+		return e.ForbiddenError("Requires admin role", nil)
+	}
 	if h.hb == nil {
 		return e.JSON(http.StatusOK, map[string]any{
-			"err": "Heartbeat not configured. Set BESZEL_HUB_HEARTBEAT_URL environment variable.",
+			"err": "Heartbeat not configured. Set HEARTBEAT_URL environment variable.",
 		})
 	}
 	if err := h.hb.Send(); err != nil {

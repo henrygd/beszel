@@ -363,6 +363,58 @@ func TestApiRoutesAuthentication(t *testing.T) {
 			TestAppFactory:  testAppFactory,
 		},
 		{
+			Name:            "GET /heartbeat-status - no auth should fail",
+			Method:          http.MethodGet,
+			URL:             "/api/beszel/heartbeat-status",
+			ExpectedStatus:  401,
+			ExpectedContent: []string{"requires valid"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /heartbeat-status - with user auth should fail",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/heartbeat-status",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  403,
+			ExpectedContent: []string{"Requires admin role"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /heartbeat-status - with admin auth should succeed",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/heartbeat-status",
+			Headers: map[string]string{
+				"Authorization": adminUserToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{`"enabled":false`},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "POST /test-heartbeat - with user auth should fail",
+			Method: http.MethodPost,
+			URL:    "/api/beszel/test-heartbeat",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  403,
+			ExpectedContent: []string{"Requires admin role"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "POST /test-heartbeat - with admin auth should report disabled state",
+			Method: http.MethodPost,
+			URL:    "/api/beszel/test-heartbeat",
+			Headers: map[string]string{
+				"Authorization": adminUserToken,
+			},
+			ExpectedStatus:  200,
+			ExpectedContent: []string{"Heartbeat not configured"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
 			Name:            "GET /universal-token - no auth should fail",
 			Method:          http.MethodGet,
 			URL:             "/api/beszel/universal-token",

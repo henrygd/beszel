@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -26,13 +27,13 @@ const (
 type Payload struct {
 	// Status is "ok" when all non-paused systems are up, "warn" when alerts
 	// are triggered but no systems are down, and "error" when any system is down.
-	Status    string          `json:"status"`
-	Timestamp string          `json:"timestamp"`
-	Msg       string          `json:"msg"`
-	Systems   SystemsSummary  `json:"systems"`
-	Down      []SystemInfo    `json:"down_systems,omitempty"`
-	Alerts    []AlertInfo     `json:"triggered_alerts,omitempty"`
-	Version   string          `json:"beszel_version"`
+	Status    string         `json:"status"`
+	Timestamp string         `json:"timestamp"`
+	Msg       string         `json:"msg"`
+	Systems   SystemsSummary `json:"systems"`
+	Down      []SystemInfo   `json:"down_systems,omitempty"`
+	Alerts    []AlertInfo    `json:"triggered_alerts,omitempty"`
+	Version   string         `json:"beszel_version"`
 }
 
 // SystemsSummary contains counts of systems by status.
@@ -76,8 +77,9 @@ type Heartbeat struct {
 // New creates a Heartbeat if configuration is present.
 // Returns nil if HEARTBEAT_URL is not set (feature disabled).
 func New(app core.App, getEnv func(string) (string, bool)) *Heartbeat {
-	url, ok := getEnv("HEARTBEAT_URL")
-	if !ok || url == "" {
+	url, _ := getEnv("HEARTBEAT_URL")
+	url = strings.TrimSpace(url)
+	if app == nil || url == "" {
 		return nil
 	}
 
@@ -88,10 +90,10 @@ func New(app core.App, getEnv func(string) (string, bool)) *Heartbeat {
 		}
 	}
 
-	method := "POST"
+	method := http.MethodPost
 	if v, ok := getEnv("HEARTBEAT_METHOD"); ok {
 		v = strings.ToUpper(strings.TrimSpace(v))
-		if v == "GET" || v == "HEAD" {
+		if v == http.MethodGet || v == http.MethodHead {
 			method = v
 		}
 	}
@@ -110,8 +112,9 @@ func New(app core.App, getEnv func(string) (string, bool)) *Heartbeat {
 // Start begins the heartbeat loop. It blocks and should be called in a goroutine.
 // The loop runs until the provided stop channel is closed.
 func (hb *Heartbeat) Start(stop <-chan struct{}) {
+	sanitizedURL := sanitizeHeartbeatURL(hb.config.URL)
 	hb.app.Logger().Info("Heartbeat enabled",
-		"url", hb.config.URL,
+		"url", sanitizedURL,
 		"interval", fmt.Sprintf("%ds", hb.config.Interval),
 		"method", hb.config.Method,
 	)
@@ -143,23 +146,25 @@ func (hb *Heartbeat) GetConfig() Config {
 }
 
 func (hb *Heartbeat) send() error {
-	payload, err := hb.buildPayload()
-	if err != nil {
-		hb.app.Logger().Error("Heartbeat: failed to build payload", "err", err)
-		return err
-	}
-
 	var req *http.Request
+	var err error
+	method := normalizeMethod(hb.config.Method)
 
-	if hb.config.Method == "GET" || hb.config.Method == "HEAD" {
-		req, err = http.NewRequest(hb.config.Method, hb.config.URL, nil)
+	if method == http.MethodGet || method == http.MethodHead {
+		req, err = http.NewRequest(method, hb.config.URL, nil)
 	} else {
+		payload, payloadErr := hb.buildPayload()
+		if payloadErr != nil {
+			hb.app.Logger().Error("Heartbeat: failed to build payload", "err", payloadErr)
+			return payloadErr
+		}
+
 		body, jsonErr := json.Marshal(payload)
 		if jsonErr != nil {
 			hb.app.Logger().Error("Heartbeat: failed to marshal payload", "err", jsonErr)
 			return jsonErr
 		}
-		req, err = http.NewRequest("POST", hb.config.URL, bytes.NewReader(body))
+		req, err = http.NewRequest(http.MethodPost, hb.config.URL, bytes.NewReader(body))
 		if err == nil {
 			req.Header.Set("Content-Type", "application/json")
 		}
@@ -174,14 +179,14 @@ func (hb *Heartbeat) send() error {
 
 	resp, err := hb.client.Do(req)
 	if err != nil {
-		hb.app.Logger().Error("Heartbeat: request failed", "url", hb.config.URL, "err", err)
+		hb.app.Logger().Error("Heartbeat: request failed", "url", sanitizeHeartbeatURL(hb.config.URL), "err", err)
 		return err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
 		hb.app.Logger().Warn("Heartbeat: non-success response",
-			"url", hb.config.URL,
+			"url", sanitizeHeartbeatURL(hb.config.URL),
 			"status", resp.StatusCode,
 		)
 		return fmt.Errorf("heartbeat endpoint returned status %d", resp.StatusCode)
@@ -220,9 +225,11 @@ func (hb *Heartbeat) buildPayload() (*Payload, error) {
 
 	// Get names of down systems.
 	var downSystems []SystemInfo
-	err = db.NewQuery("SELECT id, name, host FROM systems WHERE status = 'down'").All(&downSystems)
-	if err != nil {
-		return nil, fmt.Errorf("query down systems: %w", err)
+	if summary.Down > 0 {
+		err = db.NewQuery("SELECT id, name, host FROM systems WHERE status = 'down'").All(&downSystems)
+		if err != nil {
+			return nil, fmt.Errorf("query down systems: %w", err)
+		}
 	}
 
 	// Get triggered alerts with system names.
@@ -277,4 +284,20 @@ func (hb *Heartbeat) buildPayload() (*Payload, error) {
 		Alerts:    alerts,
 		Version:   beszel.Version,
 	}, nil
+}
+
+func normalizeMethod(method string) string {
+	upper := strings.ToUpper(strings.TrimSpace(method))
+	if upper == http.MethodGet || upper == http.MethodHead || upper == http.MethodPost {
+		return upper
+	}
+	return http.MethodPost
+}
+
+func sanitizeHeartbeatURL(rawURL string) string {
+	parsed, err := url.Parse(strings.TrimSpace(rawURL))
+	if err != nil || parsed.Scheme == "" || parsed.Host == "" {
+		return "<invalid-url>"
+	}
+	return parsed.Scheme + "://" + parsed.Host
 }

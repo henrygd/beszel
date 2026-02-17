@@ -136,7 +136,7 @@ export default function HeartbeatSettings() {
 					<Separator />
 
 					<div>
-						<h4 className="text-base font-medium mb-1">
+						<h4 className="text-base font-medium mb-2">
 							<Trans>Payload format</Trans>
 						</h4>
 						<p className="text-sm text-muted-foreground leading-relaxed mb-2">
@@ -155,30 +155,20 @@ export default function HeartbeatSettings() {
 					</div>
 				</div>
 			) : (
-				<div className="space-y-4">
-					<p className="text-sm text-muted-foreground leading-relaxed">
-						<Trans>Heartbeat monitoring is not configured.</Trans>
-					</p>
+				<div className="grid gap-4">
 					<div>
-						<h4 className="text-base font-medium mb-1">
-							<Trans>Configuration</Trans>
-						</h4>
 						<p className="text-sm text-muted-foreground leading-relaxed mb-3">
 							<Trans>Set the following environment variables on your Beszel hub to enable heartbeat monitoring:</Trans>
 						</p>
-						<div className="grid gap-2">
+						<div className="grid gap-2.5">
 							<EnvVarItem
-								name="BESZEL_HUB_HEARTBEAT_URL"
+								name="HEARTBEAT_URL"
 								description={t`Endpoint URL to ping (required)`}
 								example="https://uptime.betterstack.com/api/v1/heartbeat/xxxx"
 							/>
+							<EnvVarItem name="HEARTBEAT_INTERVAL" description={t`Seconds between pings (default: 60)`} example="60" />
 							<EnvVarItem
-								name="BESZEL_HUB_HEARTBEAT_INTERVAL"
-								description={t`Seconds between pings (default: 60)`}
-								example="60"
-							/>
-							<EnvVarItem
-								name="BESZEL_HUB_HEARTBEAT_METHOD"
+								name="HEARTBEAT_METHOD"
 								description={t`HTTP method: POST, GET, or HEAD (default: POST)`}
 								example="POST"
 							/>
@@ -204,10 +194,10 @@ function ConfigItem({ label, value, mono }: { label: string; value: string; mono
 
 function EnvVarItem({ name, description, example }: { name: string; description: string; example: string }) {
 	return (
-		<div className="bg-muted/50 rounded-md px-3 py-2">
-			<code className="text-sm font-mono text-primary">{name}</code>
-			<p className="text-sm text-muted-foreground mt-0.5">{description}</p>
-			<p className="text-xs text-muted-foreground mt-0.5">
+		<div className="bg-muted/50 rounded-md px-3 py-2 grid gap-1.5">
+			<code className="text-sm font-mono text-primary font-medium leading-tight">{name}</code>
+			<p className="text-sm text-muted-foreground">{description}</p>
+			<p className="text-xs text-muted-foreground">
 				<Trans>Example:</Trans> <code className="font-mono">{example}</code>
 			</p>
 		</div>
