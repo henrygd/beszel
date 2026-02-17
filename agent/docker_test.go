@@ -5,7 +5,13 @@ package agent
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"net"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
@@ -377,6 +383,115 @@ func TestDockerManagerCreation(t *testing.T) {
 	assert.NotNil(t, dm.lastCpuSystem)
 	assert.NotNil(t, dm.networkSentTrackers)
 	assert.NotNil(t, dm.networkRecvTrackers)
+}
+
+func TestCheckDockerVersion(t *testing.T) {
+	tests := []struct {
+		name             string
+		responses        []struct {
+			statusCode int
+			body       string
+		}
+		expectedGood     bool
+		expectedRequests int
+	}{
+		{
+			name: "200 with good version on first try",
+			responses: []struct {
+				statusCode int
+				body       string
+			}{
+				{http.StatusOK, `{"Version":"25.0.1"}`},
+			},
+			expectedGood:     true,
+			expectedRequests: 1,
+		},
+		{
+			name: "200 with old version on first try",
+			responses: []struct {
+				statusCode int
+				body       string
+			}{
+				{http.StatusOK, `{"Version":"24.0.7"}`},
+			},
+			expectedGood:     false,
+			expectedRequests: 1,
+		},
+		{
+			name: "non-200 then 200 with good version",
+			responses: []struct {
+				statusCode int
+				body       string
+			}{
+				{http.StatusServiceUnavailable, `"not ready"`},
+				{http.StatusOK, `{"Version":"25.1.0"}`},
+			},
+			expectedGood:     true,
+			expectedRequests: 2,
+		},
+		{
+			name: "non-200 on all retries",
+			responses: []struct {
+				statusCode int
+				body       string
+			}{
+				{http.StatusInternalServerError, `"error"`},
+				{http.StatusUnauthorized, `"error"`},
+			},
+			expectedGood:     false,
+			expectedRequests: 2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			requestCount := 0
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				idx := requestCount
+				requestCount++
+				if idx >= len(tt.responses) {
+					idx = len(tt.responses) - 1
+				}
+				w.WriteHeader(tt.responses[idx].statusCode)
+				fmt.Fprint(w, tt.responses[idx].body)
+			}))
+			defer server.Close()
+
+			dm := &dockerManager{
+				client: &http.Client{
+					Transport: &http.Transport{
+						DialContext: func(_ context.Context, network, _ string) (net.Conn, error) {
+							return net.Dial(network, server.Listener.Addr().String())
+						},
+					},
+				},
+			}
+
+			dm.checkDockerVersion()
+
+			assert.Equal(t, tt.expectedGood, dm.goodDockerVersion)
+			assert.Equal(t, tt.expectedRequests, requestCount)
+		})
+	}
+
+	t.Run("request error on all retries", func(t *testing.T) {
+		requestCount := 0
+		dm := &dockerManager{
+			client: &http.Client{
+				Transport: &http.Transport{
+					DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
+						requestCount++
+						return nil, errors.New("connection refused")
+					},
+				},
+			},
+		}
+
+		dm.checkDockerVersion()
+
+		assert.False(t, dm.goodDockerVersion)
+		assert.Equal(t, 2, requestCount)
+	})
 }
 
 func TestCycleCpuDeltas(t *testing.T) {
