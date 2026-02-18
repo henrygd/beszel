@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"encoding/binary"
@@ -734,8 +735,17 @@ func (dm *dockerManager) getLogs(ctx context.Context, containerID string) (strin
 	}
 
 	var builder strings.Builder
-	multiplexed := resp.Header.Get("Content-Type") == "application/vnd.docker.multiplexed-stream"
-	if err := decodeDockerLogStream(resp.Body, &builder, multiplexed); err != nil {
+	contentType := resp.Header.Get("Content-Type")
+	multiplexed := strings.HasSuffix(contentType, "multiplexed-stream")
+	logReader := io.Reader(resp.Body)
+	if !multiplexed {
+		// Podman may return multiplexed logs without Content-Type. Sniff the first frame header
+		// with a small buffered reader only when the header check fails.
+		bufferedReader := bufio.NewReaderSize(resp.Body, 8)
+		multiplexed = detectDockerMultiplexedStream(bufferedReader)
+		logReader = bufferedReader
+	}
+	if err := decodeDockerLogStream(logReader, &builder, multiplexed); err != nil {
 		return "", err
 	}
 
@@ -745,6 +755,23 @@ func (dm *dockerManager) getLogs(ctx context.Context, containerID string) (strin
 		logs = ansiEscapePattern.ReplaceAllString(logs, "")
 	}
 	return logs, nil
+}
+
+func detectDockerMultiplexedStream(reader *bufio.Reader) bool {
+	const headerSize = 8
+	header, err := reader.Peek(headerSize)
+	if err != nil {
+		return false
+	}
+	if header[0] != 0x01 && header[0] != 0x02 {
+		return false
+	}
+	// Docker's stream framing header reserves bytes 1-3 as zero.
+	if header[1] != 0 || header[2] != 0 || header[3] != 0 {
+		return false
+	}
+	frameLen := binary.BigEndian.Uint32(header[4:])
+	return frameLen <= maxLogFrameSize
 }
 
 func decodeDockerLogStream(reader io.Reader, builder *strings.Builder, multiplexed bool) error {

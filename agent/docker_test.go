@@ -914,6 +914,42 @@ func TestContainerStatsEndToEndWithRealData(t *testing.T) {
 	assert.Equal(t, testTime, testStats.PrevReadTime)
 }
 
+func TestGetLogsDetectsMultiplexedWithoutContentType(t *testing.T) {
+	// Docker multiplexed frame: [stream][0,0,0][len(4 bytes BE)][payload]
+	frame := []byte{
+		0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05,
+		'H', 'e', 'l', 'l', 'o',
+	}
+	rt := &recordingRoundTripper{
+		statusCode: 200,
+		body:       string(frame),
+		// Intentionally omit content type to simulate Podman behavior.
+	}
+	dm := &dockerManager{
+		client: &http.Client{Transport: rt},
+	}
+
+	logs, err := dm.getLogs(context.Background(), "abcdef123456")
+	require.NoError(t, err)
+	assert.Equal(t, "Hello", logs)
+}
+
+func TestGetLogsDoesNotMisclassifyRawStreamAsMultiplexed(t *testing.T) {
+	// Starts with 0x01, but doesn't match Docker frame signature (reserved bytes aren't all zero).
+	raw := []byte{0x01, 0x02, 0x03, 0x04, 'r', 'a', 'w'}
+	rt := &recordingRoundTripper{
+		statusCode: 200,
+		body:       string(raw),
+	}
+	dm := &dockerManager{
+		client: &http.Client{Transport: rt},
+	}
+
+	logs, err := dm.getLogs(context.Background(), "abcdef123456")
+	require.NoError(t, err)
+	assert.Equal(t, raw, []byte(logs))
+}
+
 func TestEdgeCasesWithRealData(t *testing.T) {
 	// Test with minimal container stats
 	minimalStats := &container.ApiStats{
