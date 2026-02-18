@@ -594,18 +594,22 @@ func (dm *dockerManager) checkDockerVersion() {
 	const versionMaxTries = 2
 	for i := 1; i <= versionMaxTries; i++ {
 		resp, err = dm.client.Get("http://localhost/version")
-		if err == nil {
+		if err == nil && resp.StatusCode == http.StatusOK {
 			break
 		}
 		if resp != nil {
 			resp.Body.Close()
 		}
 		if i < versionMaxTries {
-			slog.Debug("Failed to get Docker version; retrying", "attempt", i, "error", err)
+			if err != nil {
+				slog.Debug("Failed to get Docker version; retrying", "attempt", i, "error", err)
+			} else {
+				slog.Debug("Failed to get Docker version; retrying", "attempt", i, "status code", resp.StatusCode)
+			}
 			time.Sleep(5 * time.Second)
 		}
 	}
-	if err != nil {
+	if err != nil || resp.StatusCode != http.StatusOK {
 		return
 	}
 	if err := dm.decode(resp, &versionInfo); err != nil {
