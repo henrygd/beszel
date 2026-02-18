@@ -387,8 +387,8 @@ func TestDockerManagerCreation(t *testing.T) {
 
 func TestCheckDockerVersion(t *testing.T) {
 	tests := []struct {
-		name             string
-		responses        []struct {
+		name      string
+		responses []struct {
 			statusCode int
 			body       string
 		}
@@ -465,6 +465,7 @@ func TestCheckDockerVersion(t *testing.T) {
 						},
 					},
 				},
+				retrySleep: func(time.Duration) {},
 			}
 
 			dm.checkDockerVersion()
@@ -485,6 +486,7 @@ func TestCheckDockerVersion(t *testing.T) {
 					},
 				},
 			},
+			retrySleep: func(time.Duration) {},
 		}
 
 		dm.checkDockerVersion()

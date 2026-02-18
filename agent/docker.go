@@ -72,6 +72,7 @@ type dockerManager struct {
 	// cacheTimeMs -> DeltaTracker for network bytes sent/received
 	networkSentTrackers map[uint16]*deltatracker.DeltaTracker[string, uint64]
 	networkRecvTrackers map[uint16]*deltatracker.DeltaTracker[string, uint64]
+	retrySleep          func(time.Duration)
 }
 
 // userAgentRoundTripper is a custom http.RoundTripper that adds a User-Agent header to all requests
@@ -565,6 +566,7 @@ func newDockerManager() *dockerManager {
 		lastCpuReadTime:     make(map[uint16]map[string]time.Time),
 		networkSentTrackers: make(map[uint16]*deltatracker.DeltaTracker[string, uint64]),
 		networkRecvTrackers: make(map[uint16]*deltatracker.DeltaTracker[string, uint64]),
+		retrySleep:          time.Sleep,
 	}
 
 	// If using podman, return client
@@ -574,7 +576,7 @@ func newDockerManager() *dockerManager {
 		return manager
 	}
 
-	// this can take up to 5 seconds with retry, so run in goroutine
+	// run version check in goroutine to avoid blocking (server may not be ready and requires retries)
 	go manager.checkDockerVersion()
 
 	// give version check a chance to complete before returning
@@ -601,12 +603,8 @@ func (dm *dockerManager) checkDockerVersion() {
 			resp.Body.Close()
 		}
 		if i < versionMaxTries {
-			if err != nil {
-				slog.Debug("Failed to get Docker version; retrying", "attempt", i, "error", err)
-			} else {
-				slog.Debug("Failed to get Docker version; retrying", "attempt", i, "status code", resp.StatusCode)
-			}
-			time.Sleep(5 * time.Second)
+			slog.Debug("Failed to get Docker version; retrying", "attempt", i, "err", err, "response", resp)
+			dm.retrySleep(5 * time.Second)
 		}
 	}
 	if err != nil || resp.StatusCode != http.StatusOK {
