@@ -708,13 +708,10 @@ func (gm *GPUManager) resolveLegacyCollectorPriority(caps gpuCapabilities) []col
 		priorities = append(priorities, collectorSourceIntelGpuTop)
 	}
 
-	// Prefer macmon on macOS (no sudo). Fall back to powermetrics if present.
-	if caps.hasMacmon {
-		priorities = append(priorities, collectorSourceMacmon)
-	} else if caps.hasPowermetrics {
-		priorities = append(priorities, collectorSourcePowermetrics)
-	}
-	// Keep nvtop as a legacy last resort only when no vendor collector exists.
+	// Apple collectors are currently opt-in only.
+	// Enable them with GPU_COLLECTOR=macmon or GPU_COLLECTOR=powermetrics.
+
+	// Keep nvtop as a last resort only when no vendor collector exists.
 	if len(priorities) == 0 && caps.hasNvtop {
 		priorities = append(priorities, collectorSourceNVTop)
 	}
