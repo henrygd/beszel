@@ -28,6 +28,7 @@ import (
 // ansiEscapePattern matches ANSI escape sequences (colors, cursor movement, etc.)
 // This includes CSI sequences like \x1b[...m and simple escapes like \x1b[K
 var ansiEscapePattern = regexp.MustCompile(`\x1b\[[0-9;]*[a-zA-Z]|\x1b\][^\x07]*\x07|\x1b[@-Z\\-_]`)
+var dockerContainerIDPattern = regexp.MustCompile(`^[a-fA-F0-9]{12,64}$`)
 
 const (
 	// Docker API timeout in milliseconds
@@ -649,9 +650,34 @@ func getDockerHost() string {
 	return scheme + socks[0]
 }
 
+func validateContainerID(containerID string) error {
+	if !dockerContainerIDPattern.MatchString(containerID) {
+		return fmt.Errorf("invalid container id")
+	}
+	return nil
+}
+
+func buildDockerContainerEndpoint(containerID, action string, query url.Values) (string, error) {
+	if err := validateContainerID(containerID); err != nil {
+		return "", err
+	}
+	u := &url.URL{
+		Scheme: "http",
+		Host:   "localhost",
+		Path:   fmt.Sprintf("/containers/%s/%s", url.PathEscape(containerID), action),
+	}
+	if len(query) > 0 {
+		u.RawQuery = query.Encode()
+	}
+	return u.String(), nil
+}
+
 // getContainerInfo fetches the inspection data for a container
 func (dm *dockerManager) getContainerInfo(ctx context.Context, containerID string) ([]byte, error) {
-	endpoint := fmt.Sprintf("http://localhost/containers/%s/json", containerID)
+	endpoint, err := buildDockerContainerEndpoint(containerID, "json", nil)
+	if err != nil {
+		return nil, err
+	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, err
@@ -682,7 +708,15 @@ func (dm *dockerManager) getContainerInfo(ctx context.Context, containerID strin
 
 // getLogs fetches the logs for a container
 func (dm *dockerManager) getLogs(ctx context.Context, containerID string) (string, error) {
-	endpoint := fmt.Sprintf("http://localhost/containers/%s/logs?stdout=1&stderr=1&tail=%d", containerID, dockerLogsTail)
+	query := url.Values{
+		"stdout": []string{"1"},
+		"stderr": []string{"1"},
+		"tail":   []string{fmt.Sprintf("%d", dockerLogsTail)},
+	}
+	endpoint, err := buildDockerContainerEndpoint(containerID, "logs", query)
+	if err != nil {
+		return "", err
+	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return "", err

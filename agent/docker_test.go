@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -24,6 +25,37 @@ import (
 )
 
 var defaultCacheTimeMs = uint16(60_000)
+
+type recordingRoundTripper struct {
+	statusCode  int
+	body        string
+	contentType string
+	called      bool
+	lastPath    string
+	lastQuery   map[string]string
+}
+
+func (rt *recordingRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	rt.called = true
+	rt.lastPath = req.URL.EscapedPath()
+	rt.lastQuery = map[string]string{}
+	for key, values := range req.URL.Query() {
+		if len(values) > 0 {
+			rt.lastQuery[key] = values[0]
+		}
+	}
+	resp := &http.Response{
+		StatusCode: rt.statusCode,
+		Status:     "200 OK",
+		Header:     make(http.Header),
+		Body:       io.NopCloser(strings.NewReader(rt.body)),
+		Request:    req,
+	}
+	if rt.contentType != "" {
+		resp.Header.Set("Content-Type", rt.contentType)
+	}
+	return resp, nil
+}
 
 // cycleCpuDeltas cycles the CPU tracking data for a specific cache time interval
 func (dm *dockerManager) cycleCpuDeltas(cacheTimeMs uint16) {
@@ -114,6 +146,72 @@ func TestCalculateMemoryUsage(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestBuildDockerContainerEndpoint(t *testing.T) {
+	t.Run("valid container ID builds escaped endpoint", func(t *testing.T) {
+		endpoint, err := buildDockerContainerEndpoint("0123456789ab", "json", nil)
+		require.NoError(t, err)
+		assert.Equal(t, "http://localhost/containers/0123456789ab/json", endpoint)
+	})
+
+	t.Run("invalid container ID is rejected", func(t *testing.T) {
+		_, err := buildDockerContainerEndpoint("../../version", "json", nil)
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "invalid container id")
+	})
+}
+
+func TestContainerDetailsRequestsValidateContainerID(t *testing.T) {
+	rt := &recordingRoundTripper{
+		statusCode: 200,
+		body:       `{"Config":{"Env":["SECRET=1"]}}`,
+	}
+	dm := &dockerManager{
+		client: &http.Client{Transport: rt},
+	}
+
+	_, err := dm.getContainerInfo(context.Background(), "../version")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid container id")
+	assert.False(t, rt.called, "request should be rejected before dispatching to Docker API")
+}
+
+func TestContainerDetailsRequestsUseExpectedDockerPaths(t *testing.T) {
+	t.Run("container info uses container json endpoint", func(t *testing.T) {
+		rt := &recordingRoundTripper{
+			statusCode: 200,
+			body:       `{"Config":{"Env":["SECRET=1"]},"Name":"demo"}`,
+		}
+		dm := &dockerManager{
+			client: &http.Client{Transport: rt},
+		}
+
+		body, err := dm.getContainerInfo(context.Background(), "0123456789ab")
+		require.NoError(t, err)
+		assert.True(t, rt.called)
+		assert.Equal(t, "/containers/0123456789ab/json", rt.lastPath)
+		assert.NotContains(t, string(body), "SECRET=1", "sensitive env vars should be removed")
+	})
+
+	t.Run("container logs uses expected endpoint and query params", func(t *testing.T) {
+		rt := &recordingRoundTripper{
+			statusCode: 200,
+			body:       "line1\nline2\n",
+		}
+		dm := &dockerManager{
+			client: &http.Client{Transport: rt},
+		}
+
+		logs, err := dm.getLogs(context.Background(), "abcdef123456")
+		require.NoError(t, err)
+		assert.True(t, rt.called)
+		assert.Equal(t, "/containers/abcdef123456/logs", rt.lastPath)
+		assert.Equal(t, "1", rt.lastQuery["stdout"])
+		assert.Equal(t, "1", rt.lastQuery["stderr"])
+		assert.Equal(t, "200", rt.lastQuery["tail"])
+		assert.Equal(t, "line1\nline2\n", logs)
+	})
 }
 
 func TestValidateCpuPercentage(t *testing.T) {

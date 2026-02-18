@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"path"
+	"regexp"
 	"strings"
 	"time"
 
@@ -40,6 +41,8 @@ type Hub struct {
 	signer ssh.Signer
 	appURL string
 }
+
+var containerIDPattern = regexp.MustCompile(`^[a-fA-F0-9]{12,64}$`)
 
 // NewHub creates a new Hub instance with default configuration
 func NewHub(app core.App) *Hub {
@@ -460,6 +463,9 @@ func (h *Hub) containerRequestHandler(e *core.RequestEvent, fetchFunc func(*syst
 
 	if systemID == "" || containerID == "" {
 		return e.JSON(http.StatusBadRequest, map[string]string{"error": "system and container parameters are required"})
+	}
+	if !containerIDPattern.MatchString(containerID) {
+		return e.JSON(http.StatusBadRequest, map[string]string{"error": "invalid container parameter"})
 	}
 
 	system, err := h.sm.GetSystem(systemID)

@@ -545,12 +545,45 @@ func TestApiRoutesAuthentication(t *testing.T) {
 		{
 			Name:   "GET /containers/logs - with auth but invalid system should fail",
 			Method: http.MethodGet,
-			URL:    "/api/beszel/containers/logs?system=invalid-system&container=test-container",
+			URL:    "/api/beszel/containers/logs?system=invalid-system&container=0123456789ab",
 			Headers: map[string]string{
 				"Authorization": userToken,
 			},
 			ExpectedStatus:  404,
 			ExpectedContent: []string{"system not found"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /containers/logs - traversal container should fail validation",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/containers/logs?system=" + system.Id + "&container=..%2F..%2Fversion",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  400,
+			ExpectedContent: []string{"invalid container parameter"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /containers/info - traversal container should fail validation",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/containers/info?system=" + system.Id + "&container=../../version?x=",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  400,
+			ExpectedContent: []string{"invalid container parameter"},
+			TestAppFactory:  testAppFactory,
+		},
+		{
+			Name:   "GET /containers/info - non-hex container should fail validation",
+			Method: http.MethodGet,
+			URL:    "/api/beszel/containers/info?system=" + system.Id + "&container=container_name",
+			Headers: map[string]string{
+				"Authorization": userToken,
+			},
+			ExpectedStatus:  400,
+			ExpectedContent: []string{"invalid container parameter"},
 			TestAppFactory:  testAppFactory,
 		},
 
