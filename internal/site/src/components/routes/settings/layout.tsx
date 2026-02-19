@@ -91,18 +91,18 @@ export default function SettingsLayout() {
 			preload: alertsHistoryDataTableSettingsImport,
 		},
 		{
-			title: t`YAML Config`,
-			href: getPagePath($router, "settings", { name: "config" }),
-			icon: FileSlidersIcon,
-			admin: true,
-			preload: configYamlSettingsImport,
-		},
-		{
 			title: t`Heartbeat`,
 			href: getPagePath($router, "settings", { name: "heartbeat" }),
 			icon: HeartPulseIcon,
 			admin: true,
 			preload: heartbeatSettingsImport,
+		},
+		{
+			title: t`YAML Config`,
+			href: getPagePath($router, "settings", { name: "config" }),
+			icon: FileSlidersIcon,
+			admin: true,
+			preload: configYamlSettingsImport,
 		},
 	]
 

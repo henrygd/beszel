@@ -97,7 +97,7 @@ export default function HeartbeatSettings() {
 			{isLoading ? (
 				<div className="flex items-center gap-2 text-muted-foreground py-4">
 					<LoaderCircleIcon className="h-4 w-4 animate-spin" />
-					<Trans>Loading heartbeat status...</Trans>
+					<Trans>Loading...</Trans>
 				</div>
 			) : status?.enabled ? (
 				<div className="space-y-5">

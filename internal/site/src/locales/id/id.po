@@ -93,6 +93,7 @@ msgstr "Aksi"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Active"
 msgstr "Aktif"
@@ -139,6 +140,10 @@ msgstr "Admin"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "After"
 msgstr "Setelah"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "After setting the environment variables, restart your Beszel hub for changes to take effect."
+msgstr "Setelah mengatur variabel lingkungan, restart hub Beszel Anda agar perubahan dapat diterapkan."
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -350,6 +355,10 @@ msgstr "Periksa {email} untuk tautan atur ulang password."
 msgid "Check logs for more details."
 msgstr "Periksa riwayat untuk lebih detail."
 
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Check your monitoring service"
+msgstr "Periksa layanan pemantauan Anda"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
 msgstr "Periksa jasa penyedia notifikasi anda"
@@ -457,7 +466,7 @@ msgstr "Salin YAML"
 #: src/components/systemd-table/systemd-table-columns.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "CPU"
-msgstr ""
+msgstr "CPU"
 
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "CPU Cores"
@@ -543,7 +552,7 @@ msgstr "Deskripsi"
 
 #: src/components/containers-table/containers-table.tsx
 msgid "Detail"
-msgstr ""
+msgstr "Detail"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Device"
@@ -556,11 +565,11 @@ msgstr "Sedang tidak di charge"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Disk"
-msgstr ""
+msgstr "Disk"
 
 #: src/components/routes/system.tsx
 msgid "Disk I/O"
-msgstr ""
+msgstr "Disk I/O"
 
 #: src/components/routes/settings/general.tsx
 msgid "Disk unit"
@@ -586,7 +595,7 @@ msgstr "Penggunaan Memori Docker"
 
 #: src/components/routes/system.tsx
 msgid "Docker Network I/O"
-msgstr ""
+msgstr "Docker Network I/O"
 
 #: src/components/command-palette.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -607,7 +616,7 @@ msgstr "Mati ({downSystemsLength})"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Download"
-msgstr ""
+msgstr "Unduh"
 
 #: src/components/alerts-history-columns.tsx
 msgid "Duration"
@@ -627,7 +636,7 @@ msgstr "Ubah {foo}"
 #: src/components/login/forgot-pass-form.tsx
 #: src/components/login/otp-forms.tsx
 msgid "Email"
-msgstr ""
+msgstr "Email"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Email notifications"
@@ -642,6 +651,14 @@ msgstr "Kosong"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "End Time"
 msgstr "Waktu Berakhir"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Endpoint URL"
+msgstr "URL Titik Akhir"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Endpoint URL to ping (required)"
+msgstr "URL titik akhir untuk di-ping (diperlukan)"
 
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
@@ -662,13 +679,20 @@ msgstr "Sementara"
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
+#: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
-msgstr ""
+msgstr "Error"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Example:"
+msgstr "Contoh:"
 
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
@@ -707,7 +731,7 @@ msgstr "Export konfigurasi sistem anda saat ini."
 
 #: src/components/routes/settings/general.tsx
 msgid "Fahrenheit (°F)"
-msgstr ""
+msgstr "Fahrenheit (°F)"
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Failed"
@@ -726,6 +750,10 @@ msgstr "Gagal mengautentikasi"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Failed to save settings"
 msgstr "Gagal menyimpan pengaturan"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Failed to send heartbeat"
+msgstr "Gagal mengirim heartbeat"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Failed to send test notification"
@@ -747,7 +775,7 @@ msgstr "Gagal: {0}"
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systems-table/systems-table.tsx
 msgid "Filter..."
-msgstr ""
+msgstr "Saring..."
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Fingerprint"
@@ -755,7 +783,7 @@ msgstr "Sidik jari"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Firmware"
-msgstr ""
+msgstr "Firmware"
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "For <0>{min}</0> {min, plural, one {minute} other {minutes}}"
@@ -784,7 +812,7 @@ msgstr "Umum"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Global"
-msgstr ""
+msgstr "Global"
 
 #: src/components/routes/system.tsx
 msgid "GPU Engines"
@@ -806,6 +834,18 @@ msgstr "Kartu"
 msgid "Health"
 msgstr "Kesehatan"
 
+#: src/components/routes/settings/layout.tsx
+msgid "Heartbeat"
+msgstr "Heartbeat"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Heartbeat Monitoring"
+msgstr "Pemantauan Heartbeat"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Heartbeat sent successfully"
+msgstr "Heartbeat berhasil dikirim"
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -814,12 +854,20 @@ msgstr "Perintah Homebrew"
 
 #: src/components/add-system.tsx
 msgid "Host / IP"
-msgstr ""
+msgstr "Host / IP"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "HTTP Method"
+msgstr "Metode HTTP"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "HTTP method: POST, GET, or HEAD (default: POST)"
+msgstr "Metode HTTP: POST, GET, atau HEAD (default: POST)"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Idle"
-msgstr ""
+msgstr "Idle"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "If you've lost the password to your admin account, you may reset it using the following command."
@@ -828,11 +876,15 @@ msgstr "Jika anda kehilangan kata sandi untuk akun admin anda, anda dapat merese
 #: src/components/containers-table/containers-table-columns.tsx
 msgctxt "Docker image"
 msgid "Image"
-msgstr ""
+msgstr "Image"
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "Tidak aktif"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Interval"
+msgstr "Interval"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -885,6 +937,7 @@ msgstr "Rata-rata Beban"
 msgid "Load state"
 msgstr "Beban saat ini"
 
+#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "Memuat..."
@@ -958,7 +1011,7 @@ msgstr "Penggunaan memori kontainer docker"
 
 #: src/components/routes/system/smart-table.tsx
 msgid "Model"
-msgstr ""
+msgstr "Model"
 
 #: src/components/add-system.tsx
 #: src/components/alerts-history-columns.tsx
@@ -1110,6 +1163,10 @@ msgstr "Dijeda"
 msgid "Paused ({pausedSystemsLength})"
 msgstr "Dijeda ({pausedSystemsLength})"
 
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Payload format"
+msgstr "Format payload"
+
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Per-core average utilization"
@@ -1162,7 +1219,7 @@ msgstr "Silakan masuk ke akun anda"
 
 #: src/components/add-system.tsx
 msgid "Port"
-msgstr ""
+msgstr "Port"
 
 #. Power On Time
 #: src/components/routes/system/smart-table.tsx
@@ -1248,7 +1305,7 @@ msgstr "Lanjutkan"
 #: src/components/systems-table/systems-table-columns.tsx
 msgctxt "Root disk label"
 msgid "Root"
-msgstr ""
+msgstr "Root"
 
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Rotate token"
@@ -1307,6 +1364,10 @@ msgstr "Cari"
 msgid "Search for systems or settings..."
 msgstr "Cari sistem atau pengaturan..."
 
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Seconds between pings (default: 60)"
+msgstr "Detik di antara ping (default: 60)"
+
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Lihat <0>pengaturan notifikasi</0> untuk mengkonfigurasi bagaimana anda menerima peringatan."
@@ -1314,6 +1375,18 @@ msgstr "Lihat <0>pengaturan notifikasi</0> untuk mengkonfigurasi bagaimana anda 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Select {foo}"
 msgstr "Pilih {foo}"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Send a single heartbeat ping to verify your endpoint is working."
+msgstr "Kirim satu ping heartbeat untuk memverifikasi titik akhir Anda berfungsi."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Send periodic outbound pings to an external monitoring service so you can monitor Beszel without exposing it to the internet."
+msgstr "Kirim ping keluar secara berkala ke layanan pemantauan eksternal sehingga Anda dapat memantau Beszel tanpa mengeksposnya ke internet."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Send test heartbeat"
+msgstr "Kirim tes heartbeat"
 
 #: src/components/routes/system.tsx
 msgid "Sent"
@@ -1334,6 +1407,10 @@ msgstr "Layanan"
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "Tetapkan ambang persentase untuk warna meter."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Set the following environment variables on your Beszel hub to enable heartbeat monitoring:"
+msgstr "Setel variabel lingkungan berikut di hub Beszel Anda untuk mengaktifkan pemantauan heartbeat:"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1377,7 +1454,7 @@ msgstr "Status"
 #: src/components/systems-table/systems-table.tsx
 #: src/lib/alerts.ts
 msgid "Status"
-msgstr ""
+msgstr "Status"
 
 #: src/components/systemd-table/systemd-table-columns.tsx
 msgid "Sub State"
@@ -1452,9 +1529,17 @@ msgstr "Temperatur sensor sistem"
 msgid "Test <0>URL</0>"
 msgstr "Tes <0>URL</0>"
 
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Test heartbeat"
+msgstr "Tes heartbeat"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Test notification sent"
 msgstr "Notifikasi tes dikirim"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "The overall status is <0>ok</0> when all systems are up, <1>warn</1> when alerts are triggered, and <2>error</2> when any system is down."
+msgstr "Status keseluruhan adalah <0>ok</0> ketika semua sistem aktif, <1>warn</1> ketika peringatan dipicu, dan <2>error</2> ketika ada sistem yang mati."
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
@@ -1497,7 +1582,7 @@ msgstr "Ganti tema"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "Token"
-msgstr ""
+msgstr "Token"
 
 #: src/components/command-palette.tsx
 #: src/components/routes/settings/layout.tsx
@@ -1516,7 +1601,7 @@ msgstr "Token dan Fingerprint digunakan untuk mengautentikasi koneksi WebSocket 
 #: src/components/ui/chart.tsx
 #: src/components/ui/chart.tsx
 msgid "Total"
-msgstr ""
+msgstr "Total"
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Total data received for each interface"
@@ -1529,7 +1614,7 @@ msgstr "Total data yang dikirim untuk setiap antarmuka"
 #. placeholder {0}: data.length
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Total: {0}"
-msgstr ""
+msgstr "Total: {0}"
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Triggered by"
@@ -1639,9 +1724,10 @@ msgstr "Diperbarui setiap 10 menit."
 
 #: src/components/routes/system/network-sheet.tsx
 msgid "Upload"
-msgstr ""
+msgstr "Unggah"
 
 #: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
 msgstr "Waktu aktif"
 
@@ -1715,6 +1801,10 @@ msgstr "Webhook / Push notifikasi"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation."
 msgstr "Ketika diaktifkan, token ini memungkinkan agen untuk mendaftar sendiri tanpa pembuatan sistem."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
+msgstr "Saat menggunakan POST, setiap heartbeat menyertakan payload JSON dengan ringkasan status sistem, daftar sistem yang mati, dan peringatan yang dipicu."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
