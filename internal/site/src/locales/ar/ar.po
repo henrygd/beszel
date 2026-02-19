@@ -8,7 +8,7 @@ msgstr ""
 "Language: ar\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-01-31 21:16\n"
+"PO-Revision-Date: 2026-02-19 19:43\n"
 "Last-Translator: \n"
 "Language-Team: Arabic\n"
 "Plural-Forms: nplurals=6; plural=(n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5);\n"
@@ -157,6 +157,7 @@ msgstr "التنبيهات"
 
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
 msgstr "جميع الحاويات"
@@ -837,6 +838,7 @@ msgstr "غير نشط"
 msgid "Invalid email address."
 msgstr "عنوان البريد الإشباكي غير صالح."
 
+#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "اللغة"
@@ -1335,6 +1337,7 @@ msgstr "تعيين عتبات النسبة المئوية لألوان العد�
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Settings"
@@ -1486,6 +1489,7 @@ msgstr "إلى البريد الإشباكي"
 msgid "Toggle grid"
 msgstr "تبديل الشبكة"
 
+#: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
 msgid "Toggle theme"
 msgstr "تبديل السمة"
