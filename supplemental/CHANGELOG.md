@@ -1,3 +1,29 @@
+## Unreleased
+
+- Add outbound heartbeat monitoring to external services (BetterStack, Uptime Kuma, Healthchecks.io, etc.) with system status summary payload. Configured via `BESZEL_HUB_HEARTBEAT_URL`, `BESZEL_HUB_HEARTBEAT_INTERVAL`, and `BESZEL_HUB_HEARTBEAT_METHOD` environment variables.
+
+- Add GPU monitoring for Apple Silicon. (#1747, #1746)
+
+- Add `nvtop` integration for expanded GPU compatibility.
+
+- Add `GPU_COLLECTOR` environment variable to manually specify the GPU collector(s).
+
+- Add eMMC health monitoring via sysfs. (#1736)
+
+- Add uptime to systems table. (#1719)
+
+- Add `DISABLE_SSH` environment variable to disable SSH agent functionality. (#1061)
+
+- Add `fingerprint` command to the agent. (#1726)
+
+- Include GTT memory in AMD GPU metrics and improve device name lookup. (#1569)
+
+- Fix issue where the agent could report incorrect root disk I/O when running in Docker. (#1737)
+
+- Update Go to 1.26.
+
+- Add `InstallMethod` parameter to Windows install script.
+
 ## 0.18.3
 
 - Add experimental sysfs AMD GPU collector. (#737, #1569)

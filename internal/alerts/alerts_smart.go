@@ -2,18 +2,18 @@ package alerts
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/pocketbase/pocketbase/core"
 )
 
-// handleSmartDeviceAlert sends alerts when a SMART device state changes from PASSED to FAILED.
+// handleSmartDeviceAlert sends alerts when a SMART device state worsens into WARNING/FAILED.
 // This is automatic and does not require user opt-in.
 func (am *AlertManager) handleSmartDeviceAlert(e *core.RecordEvent) error {
 	oldState := e.Record.Original().GetString("state")
 	newState := e.Record.GetString("state")
 
-	// Only alert when transitioning from PASSED to FAILED
-	if oldState != "PASSED" || newState != "FAILED" {
+	if !shouldSendSmartDeviceAlert(oldState, newState) {
 		return e.Next()
 	}
 
@@ -32,14 +32,15 @@ func (am *AlertManager) handleSmartDeviceAlert(e *core.RecordEvent) error {
 	systemName := systemRecord.GetString("name")
 	deviceName := e.Record.GetString("name")
 	model := e.Record.GetString("model")
+	statusLabel := smartStateLabel(newState)
 
 	// Build alert message
-	title := fmt.Sprintf("SMART failure on %s: %s \U0001F534", systemName, deviceName)
+	title := fmt.Sprintf("SMART %s on %s: %s %s", statusLabel, systemName, deviceName, smartStateEmoji(newState))
 	var message string
 	if model != "" {
-		message = fmt.Sprintf("Disk %s (%s) SMART status changed to FAILED", deviceName, model)
+		message = fmt.Sprintf("Disk %s (%s) SMART status changed to %s", deviceName, model, newState)
 	} else {
-		message = fmt.Sprintf("Disk %s SMART status changed to FAILED", deviceName)
+		message = fmt.Sprintf("Disk %s SMART status changed to %s", deviceName, newState)
 	}
 
 	// Get users associated with the system
@@ -65,3 +66,42 @@ func (am *AlertManager) handleSmartDeviceAlert(e *core.RecordEvent) error {
 	return e.Next()
 }
 
+func shouldSendSmartDeviceAlert(oldState, newState string) bool {
+	oldSeverity := smartStateSeverity(oldState)
+	newSeverity := smartStateSeverity(newState)
+
+	// Ignore unknown states and recoveries; only alert on worsening transitions
+	// from known-good/degraded states into WARNING/FAILED.
+	return oldSeverity >= 1 && newSeverity > oldSeverity
+}
+
+func smartStateSeverity(state string) int {
+	switch state {
+	case "PASSED":
+		return 1
+	case "WARNING":
+		return 2
+	case "FAILED":
+		return 3
+	default:
+		return 0
+	}
+}
+
+func smartStateEmoji(state string) string {
+	switch state {
+	case "WARNING":
+		return "\U0001F7E0"
+	default:
+		return "\U0001F534"
+	}
+}
+
+func smartStateLabel(state string) string {
+	switch state {
+	case "FAILED":
+		return "failure"
+	default:
+		return strings.ToLower(state)
+	}
+}
