@@ -1,5 +1,4 @@
 //go:build testing
-// +build testing
 
 // Package tests provides helpers for testing the application.
 package tests
