@@ -8,7 +8,7 @@ msgstr ""
 "Language: hr\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-01-31 21:16\n"
+"PO-Revision-Date: 2026-02-19 19:43\n"
 "Last-Translator: \n"
 "Language-Team: Croatian\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
@@ -157,6 +157,7 @@ msgstr "Upozorenja"
 
 #: src/components/command-palette.tsx
 #: src/components/containers-table/containers-table.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/containers.tsx
 msgid "All Containers"
 msgstr "Svi spremnici"
@@ -837,6 +838,7 @@ msgstr "Neaktivno"
 msgid "Invalid email address."
 msgstr "Nevažeća email adresa."
 
+#: src/components/lang-toggle.tsx
 #: src/components/routes/settings/general.tsx
 msgid "Language"
 msgstr "Jezik"
@@ -1170,7 +1172,7 @@ msgstr "Uključivanje"
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
 msgid "Precise utilization at the recorded time"
-msgstr "Precizno iskorištenje u zabilježenom vremenu"
+msgstr "Precizno iskorištenje u zabilježenom trenutku"
 
 #: src/components/routes/settings/general.tsx
 msgid "Preferred Language"
@@ -1270,7 +1272,7 @@ msgstr "S.M.A.R.T. Samotestiranje"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Save address using enter key or comma. Leave blank to disable email notifications."
-msgstr "Spremite adresu pomoću tipke enter ili zareza. Ostavite prazno kako biste onemogućili obavijesti e-poštom."
+msgstr "Spremite adresu pomoću tipke enter ili zarez. Ostavite prazno kako biste onemogućili obavijesti e-poštom."
 
 #: src/components/routes/settings/general.tsx
 #: src/components/routes/settings/notifications.tsx
@@ -1303,11 +1305,11 @@ msgstr "Pretraži"
 
 #: src/components/command-palette.tsx
 msgid "Search for systems or settings..."
-msgstr "Pretraži za sisteme ili postavke..."
+msgstr "Pretraži sustave ili postavke..."
 
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
-msgstr "Pogledajte <0>postavke obavijesti</0> da biste konfigurirali način primanja upozorenja."
+msgstr "Pogledajte <0>postavke obavijesti</0> kako biste konfigurirali način primanja upozorenja."
 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Select {foo}"
@@ -1335,6 +1337,7 @@ msgstr "Postavite pragove postotka za boje mjerača."
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
+#: src/components/navbar.tsx
 #: src/components/routes/settings/layout.tsx
 #: src/components/routes/settings/layout.tsx
 msgid "Settings"
@@ -1382,7 +1385,7 @@ msgstr "Podstanje"
 
 #: src/components/routes/system.tsx
 msgid "Swap space used by the system"
-msgstr "Swap prostor uzet od strane sistema"
+msgstr "Swap prostor kojeg je zauzeo sustav"
 
 #: src/components/routes/system.tsx
 msgid "Swap Usage"
@@ -1400,7 +1403,7 @@ msgstr "Swap Iskorištenost"
 #: src/components/systems-table/systems-table-columns.tsx
 #: src/lib/alerts.ts
 msgid "System"
-msgstr "Sistem"
+msgstr "Sustav"
 
 #: src/components/routes/system.tsx
 msgid "System load averages over time"
@@ -1416,7 +1419,7 @@ msgstr "Sustavi"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Systems may be managed in a <0>config.yml</0> file inside your data directory."
-msgstr "Sistemima se može upravljati u <0>config.yml</0> datoteci unutar data direktorija."
+msgstr "Sustavima se može upravljati pomoću <0>config.yml</0> datoteke unutar data mape."
 
 #: src/components/systems-table/systems-table.tsx
 msgid "Table"
@@ -1443,15 +1446,15 @@ msgstr "Mjerna jedinica za temperaturu"
 
 #: src/components/routes/system.tsx
 msgid "Temperatures of system sensors"
-msgstr "Temperature sistemskih senzora"
+msgstr "Temperature sustavnih mjerila"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test <0>URL</0>"
-msgstr "Testni <0>URL</0>"
+msgstr "Probni <0>URL</0>"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Test notification sent"
-msgstr "Testna obavijest poslana"
+msgstr "Probna obavijest poslana"
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
@@ -1459,7 +1462,7 @@ msgstr "Zatim se prijavite u backend i resetirajte lozinku korisničkog računa 
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "This action cannot be undone. This will permanently delete all current records for {name} from the database."
-msgstr "Ova radnja se ne može poništiti. Ovo će trajno izbrisati sve trenutne zapise za {name} iz baze podataka."
+msgstr "Ova radnja ne može se poništiti. Svi trenutni zapisi za {name} bit će trajno izbrisani iz baze podataka."
 
 #: src/components/routes/settings/alerts-history-data-table.tsx
 msgid "This will permanently delete all selected records from the database."
@@ -1479,13 +1482,14 @@ msgstr "Format vremena"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "To email(s)"
-msgstr "Primaoci e-pošte"
+msgstr "Primaoci emaila"
 
 #: src/components/routes/system/info-bar.tsx
 #: src/components/routes/system/info-bar.tsx
 msgid "Toggle grid"
 msgstr "Uključi/isključi rešetku"
 
+#: src/components/mode-toggle.tsx
 #: src/components/mode-toggle.tsx
 msgid "Toggle theme"
 msgstr "Uključi/isključi temu"
@@ -1557,7 +1561,7 @@ msgstr "Pokreće se kada razina baterije padne ispod praga"
 
 #: src/lib/alerts.ts
 msgid "Triggers when combined up/down exceeds a threshold"
-msgstr "Pokreće se kada kombinacija gore/dolje premaši prag"
+msgstr "Pokreće se kada kumulativna propusnost gore/dolje premaši prag"
 
 #: src/lib/alerts.ts
 msgid "Triggers when CPU usage exceeds a threshold"
@@ -1573,7 +1577,7 @@ msgstr "Pokreće se kada iskorištenost memorije premaši prag"
 
 #: src/lib/alerts.ts
 msgid "Triggers when status switches between up and down"
-msgstr "Pokreće se kada se status sistema promijeni"
+msgstr "Pokreće se kada se status sustava promijeni"
 
 #: src/lib/alerts.ts
 msgid "Triggers when usage of any disk exceeds a threshold"
@@ -1602,7 +1606,7 @@ msgstr "Sveopći token"
 #. Context: Battery state
 #: src/lib/i18n.ts
 msgid "Unknown"
-msgstr "Nepoznata"
+msgstr "Nepoznato"
 
 #: src/components/systemd-table/systemd-table.tsx
 #: src/components/systemd-table/systemd-table.tsx
@@ -1686,11 +1690,11 @@ msgstr "Vidljiva polja"
 
 #: src/components/routes/system.tsx
 msgid "Waiting for enough records to display"
-msgstr "Čeka se na više podataka prije prikaza"
+msgstr "Potrebno je više podataka za prikaz"
 
 #: src/components/routes/settings/general.tsx
 msgid "Want to help improve our translations? Check <0>Crowdin</0> for details."
-msgstr "Želite li nam pomoći da naše prijevode učinimo još boljim? Posjetite <0>Crowdin</0> za više detalja."
+msgstr "Želite li nam pomoći poboljšati prijevode? Posjetite <0>Crowdin</0> za više detalja."
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Wants"
