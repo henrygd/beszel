@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -32,6 +33,26 @@ func createTestHub(t testing.TB) (*Hub, *pbtests.TestApp, error) {
 		return nil, nil, err
 	}
 	return NewHub(testApp), testApp, nil
+}
+
+// cleanupTestHub stops background system goroutines before tearing down the app.
+func cleanupTestHub(hub *Hub, testApp *pbtests.TestApp) {
+	if hub != nil {
+		sm := hub.GetSystemManager()
+		sm.RemoveAllSystems()
+		// Give updater goroutines a brief window to observe cancellation before DB teardown.
+		for range 20 {
+			if sm.GetSystemCount() == 0 {
+				break
+			}
+			runtime.Gosched()
+			time.Sleep(5 * time.Millisecond)
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	if testApp != nil {
+		testApp.Cleanup()
+	}
 }
 
 // Helper function to create a test record
@@ -63,7 +84,7 @@ func TestValidateAgentHeaders(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer testApp.Cleanup()
+	defer cleanupTestHub(hub, testApp)
 
 	testCases := []struct {
 		name          string
@@ -144,7 +165,7 @@ func TestGetAllFingerprintRecordsByToken(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer testApp.Cleanup()
+	defer cleanupTestHub(hub, testApp)
 
 	// create test user
 	userRecord, err := createTestUser(testApp)
@@ -234,7 +255,7 @@ func TestSetFingerprint(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer testApp.Cleanup()
+	defer cleanupTestHub(hub, testApp)
 
 	// Create test user
 	userRecord, err := createTestUser(testApp)
@@ -314,7 +335,7 @@ func TestCreateSystemFromAgentData(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer testApp.Cleanup()
+	defer cleanupTestHub(hub, testApp)
 
 	// Create test user
 	userRecord, err := createTestUser(testApp)
@@ -424,7 +445,7 @@ func TestUniversalTokenFlow(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer testApp.Cleanup()
+	defer cleanupTestHub(nil, testApp)
 
 	// Create test user
 	userRecord, err := createTestUser(testApp)
@@ -492,7 +513,7 @@ func TestAgentConnect(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer testApp.Cleanup()
+	defer cleanupTestHub(hub, testApp)
 
 	// Create test user
 	userRecord, err := createTestUser(testApp)
@@ -651,7 +672,7 @@ func TestHandleAgentConnect(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer testApp.Cleanup()
+	defer cleanupTestHub(hub, testApp)
 
 	// Create test user
 	userRecord, err := createTestUser(testApp)
@@ -736,7 +757,7 @@ func TestAgentWebSocketIntegration(t *testing.T) {
 	// Create hub and test app
 	hub, testApp, err := createTestHub(t)
 	require.NoError(t, err)
-	defer testApp.Cleanup()
+	defer cleanupTestHub(hub, testApp)
 
 	// Get the hub's SSH key
 	hubSigner, err := hub.GetSSHKey("")
@@ -941,6 +962,8 @@ func TestAgentWebSocketIntegration(t *testing.T) {
 				}
 			}
 
+			time.Sleep(20 * time.Millisecond)
+
 			// Verify fingerprint state by re-reading the specific record
 			updatedFingerprintRecord, err := testApp.FindRecordById("fingerprints", fingerprintRecord.Id)
 			require.NoError(t, err)
@@ -975,7 +998,7 @@ func TestMultipleSystemsWithSameUniversalToken(t *testing.T) {
 	// Create hub and test app
 	hub, testApp, err := createTestHub(t)
 	require.NoError(t, err)
-	defer testApp.Cleanup()
+	defer cleanupTestHub(hub, testApp)
 
 	// Get the hub's SSH key
 	hubSigner, err := hub.GetSSHKey("")
@@ -1143,6 +1166,8 @@ func TestMultipleSystemsWithSameUniversalToken(t *testing.T) {
 					assert.Equal(t, systemCount, systemsAfterCount, "Total system count should remain the same")
 				}
 
+				time.Sleep(20 * time.Millisecond)
+
 				// Verify that a fingerprint record exists for this fingerprint
 				fingerprints, err := testApp.FindRecordsByFilter("fingerprints", "token = {:token} && fingerprint = {:fingerprint}", "", -1, 0, map[string]any{
 					"token":       universalToken,
@@ -1175,7 +1200,7 @@ func TestPermanentUniversalTokenFromDB(t *testing.T) {
 	// Create hub and test app
 	hub, testApp, err := createTestHub(t)
 	require.NoError(t, err)
-	defer testApp.Cleanup()
+	defer cleanupTestHub(hub, testApp)
 
 	// Get the hub's SSH key
 	hubSigner, err := hub.GetSSHKey("")
@@ -1272,7 +1297,7 @@ verify:
 func TestFindOrCreateSystemForToken(t *testing.T) {
 	hub, testApp, err := createTestHub(t)
 	require.NoError(t, err)
-	defer testApp.Cleanup()
+	defer cleanupTestHub(hub, testApp)
 
 	// Create test user
 	userRecord, err := createTestUser(testApp)
