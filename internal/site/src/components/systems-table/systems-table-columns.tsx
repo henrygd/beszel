@@ -35,7 +35,7 @@ import {
 	formatTemperature,
 	getMeterState,
 	parseSemVer,
-	secondsToString,
+	secondsToUptimeString,
 } from "@/lib/utils"
 import { batteryStateTranslations } from "@/lib/i18n"
 import type { SystemRecord } from "@/types"
@@ -154,11 +154,7 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 								{name}
 							</Link>
 						</span>
-						<Link
-							href={linkUrl}
-							className="inset-0 absolute size-full"
-							aria-label={name}
-						></Link>
+						<Link href={linkUrl} className="inset-0 absolute size-full" aria-label={name}></Link>
 					</>
 				)
 			},
@@ -382,20 +378,13 @@ export function SystemsTableColumns(viewMode: "table" | "grid"): ColumnDef<Syste
 			size: 50,
 			Icon: ClockArrowUp,
 			header: sortableHeader,
+			hideSort: true,
 			cell(info) {
 				const uptime = info.getValue() as number
 				if (!uptime) {
 					return null
 				}
-				let formatted: string
-				if (uptime < 3600) {
-					formatted = secondsToString(uptime, "minute")
-				} else if (uptime < 360000) {
-					formatted = secondsToString(uptime, "hour")
-				} else {
-					formatted = secondsToString(uptime, "day")
-				}
-				return <span className="tabular-nums whitespace-nowrap">{formatted}</span>
+				return <span className="tabular-nums whitespace-nowrap">{secondsToUptimeString(uptime)}</span>
 			},
 		},
 		{
@@ -479,9 +468,9 @@ function TableCellWithMeter(info: CellContext<SystemRecord, unknown>) {
 	const meterClass = cn(
 		"h-full",
 		(info.row.original.status !== SystemStatus.Up && STATUS_COLORS.paused) ||
-		(threshold === MeterState.Good && STATUS_COLORS.up) ||
-		(threshold === MeterState.Warn && STATUS_COLORS.pending) ||
-		STATUS_COLORS.down
+			(threshold === MeterState.Good && STATUS_COLORS.up) ||
+			(threshold === MeterState.Warn && STATUS_COLORS.pending) ||
+			STATUS_COLORS.down
 	)
 	return (
 		<div className="flex gap-2 items-center tabular-nums tracking-tight w-full">
@@ -593,7 +582,7 @@ export function IndicatorDot({ system, className }: { system: SystemRecord; clas
 	return (
 		<span
 			className={cn("shrink-0 size-2 rounded-full", className)}
-		// style={{ marginBottom: "-1px" }}
+			// style={{ marginBottom: "-1px" }}
 		/>
 	)
 }
