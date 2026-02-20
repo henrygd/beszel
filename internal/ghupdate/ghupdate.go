@@ -34,7 +34,7 @@ func ColorPrint(color, text string) {
 	fmt.Println(color + text + colorReset)
 }
 
-func ColorPrintf(color, format string, args ...interface{}) {
+func ColorPrintf(color, format string, args ...any) {
 	fmt.Printf(color+format+colorReset+"\n", args...)
 }
 

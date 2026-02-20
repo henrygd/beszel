@@ -100,7 +100,7 @@ const Layout = () => {
 					<LoginPage />
 				</Suspense>
 			) : (
-				<div style={{ "--container": `${userSettings.layoutWidth ?? 1500}px` } as React.CSSProperties}>
+				<div style={{ "--container": `${userSettings.layoutWidth ?? 1580}px` } as React.CSSProperties}>
 					<div className="container">
 						<Navbar />
 					</div>

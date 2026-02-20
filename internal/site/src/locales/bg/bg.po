@@ -93,6 +93,7 @@ msgstr "Действия"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Active"
 msgstr "Активен"
@@ -139,6 +140,10 @@ msgstr "Администратор"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "After"
 msgstr "След"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "After setting the environment variables, restart your Beszel hub for changes to take effect."
+msgstr "След като настроите променливите на средата, рестартирайте вашия Beszel hub, за да влязат промените в сила."
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -231,7 +236,7 @@ msgstr "Bandwidth на мрежата"
 #. Battery label in systems table header
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Bat"
-msgstr ""
+msgstr "Бат"
 
 #: src/components/routes/system.tsx
 #: src/lib/alerts.ts
@@ -349,6 +354,10 @@ msgstr "Провери {email} за линк за нулиране."
 #: src/components/routes/settings/layout.tsx
 msgid "Check logs for more details."
 msgstr "Провери log-овете за повече информация."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Check your monitoring service"
+msgstr "Проверете вашата услуга за мониторинг"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
@@ -621,7 +630,7 @@ msgstr "Редактирай"
 #: src/components/add-system.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Edit {foo}"
-msgstr ""
+msgstr "Редактиране на {foo}"
 
 #: src/components/login/auth-form.tsx
 #: src/components/login/forgot-pass-form.tsx
@@ -643,6 +652,14 @@ msgstr "Празна"
 msgid "End Time"
 msgstr "Крайно време"
 
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Endpoint URL"
+msgstr "URL адрес на крайната точка"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Endpoint URL to ping (required)"
+msgstr "URL адрес на крайната точка за пинг (задължително)"
+
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
 msgstr "Въведи имейл адрес за да нулираш паролата"
@@ -662,6 +679,9 @@ msgstr "Ефимерен"
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
+#: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -669,6 +689,10 @@ msgstr "Ефимерен"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
 msgstr "Грешка"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Example:"
+msgstr "Пример:"
 
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
@@ -679,7 +703,7 @@ msgstr "Надвишава {0}{1} в последните {2, plural, one {# м�
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Exec main PID"
-msgstr ""
+msgstr "PID на главния изпълнителен процес"
 
 #: src/components/routes/settings/config-yaml.tsx
 msgid "Existing systems not defined in <0>config.yml</0> will be deleted. Please make regular backups."
@@ -726,6 +750,10 @@ msgstr "Неуспешно удостоверяване"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Failed to save settings"
 msgstr "Неуспешно запазване на настройки"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Failed to send heartbeat"
+msgstr "Неуспешно изпращане на heartbeat"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Failed to send test notification"
@@ -806,6 +834,18 @@ msgstr "Мрежово"
 msgid "Health"
 msgstr "Здраве"
 
+#: src/components/routes/settings/layout.tsx
+msgid "Heartbeat"
+msgstr "Heartbeat"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Heartbeat Monitoring"
+msgstr "Мониторинг на heartbeat"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Heartbeat sent successfully"
+msgstr "Heartbeat е изпратен успешно"
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -815,6 +855,14 @@ msgstr "Команда Homebrew"
 #: src/components/add-system.tsx
 msgid "Host / IP"
 msgstr "Хост / IP"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "HTTP Method"
+msgstr "HTTP метод"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "HTTP method: POST, GET, or HEAD (default: POST)"
+msgstr "HTTP метод: POST, GET или HEAD (по подразбиране: POST)"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -833,6 +881,10 @@ msgstr "Образ"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "Неактивен"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Interval"
+msgstr "Интервал"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -885,6 +937,7 @@ msgstr "Средно натоварване"
 msgid "Load state"
 msgstr "Състояние на зареждане"
 
+#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "Зареждане..."
@@ -914,7 +967,7 @@ msgstr "Търсиш къде да създадеш тревоги? Натисн
 
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Main PID"
-msgstr ""
+msgstr "Главен PID"
 
 #: src/components/routes/settings/layout.tsx
 msgid "Manage display and notification preferences."
@@ -1109,6 +1162,10 @@ msgstr "На пауза"
 #: src/components/systems-table/systems-table.tsx
 msgid "Paused ({pausedSystemsLength})"
 msgstr "На пауза ({pausedSystemsLength})"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Payload format"
+msgstr "Формат на полезния товар"
 
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
@@ -1307,6 +1364,10 @@ msgstr "Търси"
 msgid "Search for systems or settings..."
 msgstr "Търси за системи или настройки..."
 
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Seconds between pings (default: 60)"
+msgstr "Секунди между пинговете (по подразбиране: 60)"
+
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Виж <0>настройките за нотификациите</0> за да конфигурираш как получаваш тревоги."
@@ -1314,6 +1375,18 @@ msgstr "Виж <0>настройките за нотификациите</0> з�
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Select {foo}"
 msgstr "Избери {foo}"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Send a single heartbeat ping to verify your endpoint is working."
+msgstr "Изпратете единичен heartbeat пинг, за да проверите дали вашата крайна точка работи."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Send periodic outbound pings to an external monitoring service so you can monitor Beszel without exposing it to the internet."
+msgstr "Изпращайте периодични изходящи пингове към външна услуга за мониторинг, за да можете да наблюдавате Beszel, без да го излагате на интернет."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Send test heartbeat"
+msgstr "Изпращане на тестов heartbeat"
 
 #: src/components/routes/system.tsx
 msgid "Sent"
@@ -1334,6 +1407,10 @@ msgstr "Услуги"
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "Задайте процентни прагове за цветовете на измервателните уреди."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Set the following environment variables on your Beszel hub to enable heartbeat monitoring:"
+msgstr "Задайте следните променливи на средата на вашия Beszel hub, за да активирате мониторинга на heartbeat:"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1452,9 +1529,17 @@ msgstr "Температири на системни сензори"
 msgid "Test <0>URL</0>"
 msgstr "Тествай <0>URL</0>"
 
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Test heartbeat"
+msgstr "Тестов heartbeat"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Test notification sent"
 msgstr "Тестова нотификация изпратена"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "The overall status is <0>ok</0> when all systems are up, <1>warn</1> when alerts are triggered, and <2>error</2> when any system is down."
+msgstr "Общият статус е <0>ok</0>, когато всички системи работят, <1>warn</1>, когато са задействани предупреждения, и <2>error</2>, когато някоя система е спряла."
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
@@ -1642,6 +1727,7 @@ msgid "Upload"
 msgstr "Качване"
 
 #: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
 msgstr "Време на работа"
 
@@ -1715,6 +1801,10 @@ msgstr "Webhook / Пуш нотификации"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation."
 msgstr "Когато е активиран, този символ позволява на агентите да се регистрират сами без предварително създаване на система."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
+msgstr "При използване на POST всеки heartbeat включва JSON полезен товар с резюме на състоянието на системата, списък на спрените системи и задействаните предупреждения."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx

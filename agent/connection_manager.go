@@ -1,9 +1,9 @@
 package agent
 
 import (
+	"context"
 	"errors"
 	"log/slog"
-	"os"
 	"os/signal"
 	"syscall"
 	"time"
@@ -91,8 +91,8 @@ func (c *ConnectionManager) Start(serverOptions ServerOptions) error {
 	c.eventChan = make(chan ConnectionEvent, 1)
 
 	// signal handling for shutdown
-	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+	sigCtx, stopSignals := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stopSignals()
 
 	c.startWsTicker()
 	c.connect()
@@ -109,8 +109,8 @@ func (c *ConnectionManager) Start(serverOptions ServerOptions) error {
 			_ = c.startWebSocketConnection()
 		case <-healthTicker:
 			_ = health.Update()
-		case <-sigChan:
-			slog.Info("Shutting down")
+		case <-sigCtx.Done():
+			slog.Info("Shutting down", "cause", context.Cause(sigCtx))
 			_ = c.agent.StopServer()
 			c.closeWebSocket()
 			return health.CleanUp()

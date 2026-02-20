@@ -88,6 +88,7 @@ msgstr "Actions"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Active"
 msgstr "Active"
@@ -134,6 +135,10 @@ msgstr "Admin"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "After"
 msgstr "After"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "After setting the environment variables, restart your Beszel hub for changes to take effect."
+msgstr "After setting the environment variables, restart your Beszel hub for changes to take effect."
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -344,6 +349,10 @@ msgstr "Check {email} for a reset link."
 #: src/components/routes/settings/layout.tsx
 msgid "Check logs for more details."
 msgstr "Check logs for more details."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Check your monitoring service"
+msgstr "Check your monitoring service"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
@@ -638,6 +647,14 @@ msgstr "Empty"
 msgid "End Time"
 msgstr "End Time"
 
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Endpoint URL"
+msgstr "Endpoint URL"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Endpoint URL to ping (required)"
+msgstr "Endpoint URL to ping (required)"
+
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
 msgstr "Enter email address to reset password"
@@ -657,6 +674,9 @@ msgstr "Ephemeral"
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
+#: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -664,6 +684,10 @@ msgstr "Ephemeral"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
 msgstr "Error"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Example:"
+msgstr "Example:"
 
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
@@ -721,6 +745,10 @@ msgstr "Failed to authenticate"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Failed to save settings"
 msgstr "Failed to save settings"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Failed to send heartbeat"
+msgstr "Failed to send heartbeat"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Failed to send test notification"
@@ -801,6 +829,18 @@ msgstr "Grid"
 msgid "Health"
 msgstr "Health"
 
+#: src/components/routes/settings/layout.tsx
+msgid "Heartbeat"
+msgstr "Heartbeat"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Heartbeat Monitoring"
+msgstr "Heartbeat Monitoring"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Heartbeat sent successfully"
+msgstr "Heartbeat sent successfully"
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -810,6 +850,14 @@ msgstr "Homebrew command"
 #: src/components/add-system.tsx
 msgid "Host / IP"
 msgstr "Host / IP"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "HTTP Method"
+msgstr "HTTP Method"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "HTTP method: POST, GET, or HEAD (default: POST)"
+msgstr "HTTP method: POST, GET, or HEAD (default: POST)"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -828,6 +876,10 @@ msgstr "Image"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "Inactive"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Interval"
+msgstr "Interval"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -880,6 +932,7 @@ msgstr "Load Avg"
 msgid "Load state"
 msgstr "Load state"
 
+#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "Loading..."
@@ -1105,6 +1158,10 @@ msgstr "Paused"
 msgid "Paused ({pausedSystemsLength})"
 msgstr "Paused ({pausedSystemsLength})"
 
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Payload format"
+msgstr "Payload format"
+
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Per-core average utilization"
@@ -1302,6 +1359,10 @@ msgstr "Search"
 msgid "Search for systems or settings..."
 msgstr "Search for systems or settings..."
 
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Seconds between pings (default: 60)"
+msgstr "Seconds between pings (default: 60)"
+
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "See <0>notification settings</0> to configure how you receive alerts."
@@ -1309,6 +1370,18 @@ msgstr "See <0>notification settings</0> to configure how you receive alerts."
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Select {foo}"
 msgstr "Select {foo}"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Send a single heartbeat ping to verify your endpoint is working."
+msgstr "Send a single heartbeat ping to verify your endpoint is working."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Send periodic outbound pings to an external monitoring service so you can monitor Beszel without exposing it to the internet."
+msgstr "Send periodic outbound pings to an external monitoring service so you can monitor Beszel without exposing it to the internet."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Send test heartbeat"
+msgstr "Send test heartbeat"
 
 #: src/components/routes/system.tsx
 msgid "Sent"
@@ -1329,6 +1402,10 @@ msgstr "Services"
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "Set percentage thresholds for meter colors."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Set the following environment variables on your Beszel hub to enable heartbeat monitoring:"
+msgstr "Set the following environment variables on your Beszel hub to enable heartbeat monitoring:"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1447,9 +1524,17 @@ msgstr "Temperatures of system sensors"
 msgid "Test <0>URL</0>"
 msgstr "Test <0>URL</0>"
 
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Test heartbeat"
+msgstr "Test heartbeat"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Test notification sent"
 msgstr "Test notification sent"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "The overall status is <0>ok</0> when all systems are up, <1>warn</1> when alerts are triggered, and <2>error</2> when any system is down."
+msgstr "The overall status is <0>ok</0> when all systems are up, <1>warn</1> when alerts are triggered, and <2>error</2> when any system is down."
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
@@ -1637,6 +1722,7 @@ msgid "Upload"
 msgstr "Upload"
 
 #: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
 msgstr "Uptime"
 
@@ -1710,6 +1796,10 @@ msgstr "Webhook / Push notifications"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation."
 msgstr "When enabled, this token allows agents to self-register without prior system creation."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
+msgstr "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx

@@ -103,10 +103,8 @@ func (gm *GPUManager) updateAmdGpuData(cardPath string) bool {
 
 	// Read all sysfs values first (no lock needed - these can be slow)
 	usage, usageErr := readSysfsFloat(filepath.Join(devicePath, "gpu_busy_percent"))
-	vramUsed, memUsedErr := readSysfsFloat(filepath.Join(devicePath, "mem_info_vram_used"))
-	vramTotal, _ := readSysfsFloat(filepath.Join(devicePath, "mem_info_vram_total"))
-	memUsed := vramUsed
-	memTotal := vramTotal
+	memUsed, memUsedErr := readSysfsFloat(filepath.Join(devicePath, "mem_info_vram_used"))
+	memTotal, _ := readSysfsFloat(filepath.Join(devicePath, "mem_info_vram_total"))
 	// if gtt is present, add it to the memory used and total (https://github.com/henrygd/beszel/issues/1569#issuecomment-3837640484)
 	if gttUsed, err := readSysfsFloat(filepath.Join(devicePath, "mem_info_gtt_used")); err == nil && gttUsed > 0 {
 		if gttTotal, err := readSysfsFloat(filepath.Join(devicePath, "mem_info_gtt_total")); err == nil {
@@ -243,7 +241,10 @@ func getCachedAmdgpuName(deviceID, revisionID string) (name string, found bool, 
 
 // normalizeAmdgpuName trims standard suffixes from AMDGPU product names.
 func normalizeAmdgpuName(name string) string {
-	return strings.TrimSuffix(strings.TrimSpace(name), " Graphics")
+	for _, suffix := range []string{" Graphics", " Series"} {
+		name = strings.TrimSuffix(name, suffix)
+	}
+	return name
 }
 
 // cacheAmdgpuName stores a resolved AMDGPU name in the lookup cache.

@@ -1,5 +1,4 @@
 //go:build testing
-// +build testing
 
 package hub_test
 

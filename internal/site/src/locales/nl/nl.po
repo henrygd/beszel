@@ -8,7 +8,7 @@ msgstr ""
 "Language: nl\n"
 "Project-Id-Version: beszel\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Revision-Date: 2026-01-31 21:16\n"
+"PO-Revision-Date: 2026-02-19 19:40\n"
 "Last-Translator: \n"
 "Language-Team: Dutch\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
@@ -59,7 +59,7 @@ msgstr "1 minuut"
 
 #: src/lib/utils.ts
 msgid "1 week"
-msgstr "1 week"
+msgstr "1 Maand"
 
 #: src/lib/utils.ts
 msgid "12 hours"
@@ -93,6 +93,7 @@ msgstr "Acties"
 
 #: src/components/alerts-history-columns.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
+#: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Active"
 msgstr "Actief"
@@ -139,6 +140,10 @@ msgstr "Administrator"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "After"
 msgstr "Na"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "After setting the environment variables, restart your Beszel hub for changes to take effect."
+msgstr "Start na het instellen van de omgevingsvariabelen je Beszel-hub opnieuw op om de wijzigingen door te voeren."
 
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Agent"
@@ -349,6 +354,10 @@ msgstr "Controleer {email} op een reset link."
 #: src/components/routes/settings/layout.tsx
 msgid "Check logs for more details."
 msgstr "Controleer de logs voor meer details."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Check your monitoring service"
+msgstr "Controleer je monitoringservice"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Check your notification service"
@@ -643,6 +652,14 @@ msgstr "Leeg"
 msgid "End Time"
 msgstr "Eindtijd"
 
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Endpoint URL"
+msgstr "Endpoint-URL"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Endpoint URL to ping (required)"
+msgstr "Endpoint-URL om te pingen (vereist)"
+
 #: src/components/login/login.tsx
 msgid "Enter email address to reset password"
 msgstr "Voer een e-mailadres in om het wachtwoord opnieuw in te stellen"
@@ -662,6 +679,9 @@ msgstr "Tijdelijk"
 #: src/components/login/auth-form.tsx
 #: src/components/routes/settings/alerts-history-data-table.tsx
 #: src/components/routes/settings/config-yaml.tsx
+#: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/heartbeat.tsx
+#: src/components/routes/settings/heartbeat.tsx
 #: src/components/routes/settings/notifications.tsx
 #: src/components/routes/settings/quiet-hours.tsx
 #: src/components/routes/settings/quiet-hours.tsx
@@ -669,6 +689,10 @@ msgstr "Tijdelijk"
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Error"
 msgstr "Fout"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Example:"
+msgstr "Voorbeeld:"
 
 #. placeholder {0}: alert.value
 #. placeholder {1}: info.unit
@@ -726,6 +750,10 @@ msgstr "Authenticatie mislukt"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Failed to save settings"
 msgstr "Instellingen opslaan mislukt"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Failed to send heartbeat"
+msgstr "Verzenden van heartbeat mislukt"
 
 #: src/components/routes/settings/notifications.tsx
 msgid "Failed to send test notification"
@@ -806,6 +834,18 @@ msgstr "Raster"
 msgid "Health"
 msgstr "Gezondheid"
 
+#: src/components/routes/settings/layout.tsx
+msgid "Heartbeat"
+msgstr "Heartbeat"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Heartbeat Monitoring"
+msgstr "Heartbeat-monitoring"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Heartbeat sent successfully"
+msgstr "Heartbeat succesvol verzonden"
+
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgctxt "Button to copy install command"
@@ -815,6 +855,14 @@ msgstr "Homebrew-commando"
 #: src/components/add-system.tsx
 msgid "Host / IP"
 msgstr "Host / IP-adres"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "HTTP Method"
+msgstr "HTTP-methode"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "HTTP method: POST, GET, or HEAD (default: POST)"
+msgstr "HTTP-methode: POST, GET of HEAD (standaard: POST)"
 
 #. Context: Battery state
 #: src/lib/i18n.ts
@@ -833,6 +881,10 @@ msgstr "Afbeelding"
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Inactive"
 msgstr "Inactief"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Interval"
+msgstr "Interval"
 
 #: src/components/login/auth-form.tsx
 msgid "Invalid email address."
@@ -885,6 +937,7 @@ msgstr "Gem. Belasting"
 msgid "Load state"
 msgstr "Laadstatus"
 
+#: src/components/routes/settings/heartbeat.tsx
 #: src/components/systemd-table/systemd-table.tsx
 msgid "Loading..."
 msgstr "Laden..."
@@ -1110,6 +1163,10 @@ msgstr "Gepauzeerd"
 msgid "Paused ({pausedSystemsLength})"
 msgstr "Gepauzeerd ({pausedSystemsLength})"
 
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Payload format"
+msgstr "Payload-indeling"
+
 #: src/components/routes/system/cpu-sheet.tsx
 #: src/components/routes/system/cpu-sheet.tsx
 msgid "Per-core average utilization"
@@ -1307,6 +1364,10 @@ msgstr "Zoeken"
 msgid "Search for systems or settings..."
 msgstr "Zoek naar systemen of instellingen..."
 
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Seconds between pings (default: 60)"
+msgstr "Seconden tussen pings (standaard: 60)"
+
 #: src/components/alerts/alerts-sheet.tsx
 msgid "See <0>notification settings</0> to configure how you receive alerts."
 msgstr "Zie <0>notificatie-instellingen</0> om te configureren hoe je meldingen ontvangt."
@@ -1314,6 +1375,18 @@ msgstr "Zie <0>notificatie-instellingen</0> om te configureren hoe je meldingen 
 #: src/components/routes/settings/quiet-hours.tsx
 msgid "Select {foo}"
 msgstr "Selecteer {foo}"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Send a single heartbeat ping to verify your endpoint is working."
+msgstr "Stuur een enkele heartbeat-ping om te controleren of je endpoint werkt."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Send periodic outbound pings to an external monitoring service so you can monitor Beszel without exposing it to the internet."
+msgstr "Stuur periodieke uitgaande pings naar een externe monitoringservice, zodat je Beszel kunt monitoren zonder het aan het internet bloot te stellen."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Send test heartbeat"
+msgstr "Stuur test-heartbeat"
 
 #: src/components/routes/system.tsx
 msgid "Sent"
@@ -1334,6 +1407,10 @@ msgstr "Services"
 #: src/components/routes/settings/general.tsx
 msgid "Set percentage thresholds for meter colors."
 msgstr "Stel percentagedrempels in voor meterkleuren."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Set the following environment variables on your Beszel hub to enable heartbeat monitoring:"
+msgstr "Stel de volgende omgevingsvariabelen in op je Beszel-hub om heartbeat-monitoring in te schakelen:"
 
 #: src/components/command-palette.tsx
 #: src/components/command-palette.tsx
@@ -1452,9 +1529,17 @@ msgstr "Temperatuur van systeem sensoren"
 msgid "Test <0>URL</0>"
 msgstr "Test <0>URL</0>"
 
+#: src/components/routes/settings/heartbeat.tsx
+msgid "Test heartbeat"
+msgstr "Test-heartbeat"
+
 #: src/components/routes/settings/notifications.tsx
 msgid "Test notification sent"
 msgstr "Testmelding verzonden"
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "The overall status is <0>ok</0> when all systems are up, <1>warn</1> when alerts are triggered, and <2>error</2> when any system is down."
+msgstr "De algehele status is <0>ok</0> wanneer alle systemen in de lucht zijn, <1>waarschuwing</1> wanneer meldingen zijn geactiveerd, en <2>fout</2> wanneer een systeem plat ligt."
 
 #: src/components/login/forgot-pass-form.tsx
 msgid "Then log into the backend and reset your user account password in the users table."
@@ -1642,6 +1727,7 @@ msgid "Upload"
 msgstr "Uploaden"
 
 #: src/components/routes/system/info-bar.tsx
+#: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
 msgstr "Actief"
 
@@ -1715,6 +1801,10 @@ msgstr "Webhook / Pushmeldingen"
 #: src/components/routes/settings/tokens-fingerprints.tsx
 msgid "When enabled, this token allows agents to self-register without prior system creation."
 msgstr "Indien ingeschakeld, stelt deze token agenten in staat zich zelf te registreren zonder voorafgaande systeemcreatie."
+
+#: src/components/routes/settings/heartbeat.tsx
+msgid "When using POST, each heartbeat includes a JSON payload with system status summary, list of down systems, and triggered alerts."
+msgstr "Bij gebruik van POST bevat elke heartbeat een JSON-payload met een samenvatting van de systeemstatus, een lijst met uitgevallen systemen en geactiveerde meldingen."
 
 #: src/components/add-system.tsx
 #: src/components/routes/settings/tokens-fingerprints.tsx

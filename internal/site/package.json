@@ -8,6 +8,7 @@
 		"build": "lingui extract --overwrite && lingui compile && vite build",
 		"preview": "vite preview",
 		"sync": "lingui extract --overwrite && lingui compile",
+		"sync_no_compile": "lingui extract --overwrite --clean",
 		"sync_and_purge": "lingui extract --overwrite --clean && lingui compile",
 		"format": "biome format --write .",
 		"lint": "biome lint .",
