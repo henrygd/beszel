@@ -1729,7 +1729,7 @@ msgstr "업로드"
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
-msgstr "가동 시간"
+msgstr "가동시간"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
