@@ -1729,7 +1729,7 @@ msgstr "Tải lên"
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
-msgstr "Thời gian hoạt động"
+msgstr "Uptime"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx

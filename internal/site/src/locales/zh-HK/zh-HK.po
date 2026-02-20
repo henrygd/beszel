@@ -1729,7 +1729,7 @@ msgstr "上傳"
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
-msgstr "正常運行時間"
+msgstr "運行時間"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx

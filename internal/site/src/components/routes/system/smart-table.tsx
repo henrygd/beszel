@@ -675,7 +675,7 @@ function DiskSheet({
 								)}
 							</Alert>
 							{smartAttributes.length > 0 ? (
-								<div className="rounded-md border flex-1 min-h-0 flex flex-col">
+								<div className="rounded-md border min-h-0 flex flex-col">
 									<Table>
 										<TableHeader className="sticky top-0 z-10">
 											{table.getHeaderGroups().map((headerGroup) => (

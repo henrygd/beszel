@@ -1729,7 +1729,7 @@ msgstr "Yükle"
 #: src/components/routes/system/info-bar.tsx
 #: src/components/systems-table/systems-table-columns.tsx
 msgid "Uptime"
-msgstr "Çalışma Süresi"
+msgstr "Uptime"
 
 #: src/components/routes/system.tsx
 #: src/components/routes/system.tsx
